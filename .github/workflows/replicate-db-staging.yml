@@ -58,6 +58,6 @@ jobs:
             --overrides '{
                 "containerOverrides": [{
                   "name": "${{ env.CONTAINER_NAME }}",
-                  "command": ["/bin/sh", "-c", "./bin/db_replicate"]
+                  "command": ["/bin/sh", "-c", "./bin/db-replicate"]
                 }]
               }'
