@@ -19,7 +19,8 @@ class QuotaOrderNumber < Sequel::Model
 
   one_to_many :quota_order_number_origins,
               primary_key: :quota_order_number_sid,
-              key: :quota_order_number_sid do |ds|
+              key: :quota_order_number_sid,
+              graph_use_association_block: true do |ds|
                 ds.with_actual(QuotaOrderNumberOrigin)
               end
 

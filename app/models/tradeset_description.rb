@@ -5,7 +5,8 @@ class TradesetDescription < Sequel::Model
   many_to_one :goods_nomenclature,
               key: :goods_nomenclature_item_id,
               primary_key: :goods_nomenclature_item_id,
-              condition: ->(ds) { ds.producline_suffix == GoodsNomenclatureIndent::NON_GROUPING_PRODUCTLINE_SUFFIX } do |ds|
+              condition: ->(ds) { ds.producline_suffix == GoodsNomenclatureIndent::NON_GROUPING_PRODUCTLINE_SUFFIX },
+              graph_use_association_block: true do |ds|
     ds.with_actual(GoodsNomenclature)
   end
 

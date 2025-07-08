@@ -139,7 +139,7 @@ module Api
           conditions[Sequel[:exemptions][:code]] = exemption_code
 
           ::GreenLanes::CategoryAssessment
-            .association_join(:exemptions)
+            .association_inner_join(:exemptions)
             .where(Sequel.|(conditions))
             .select_all(:green_lanes_category_assessments)
             .eager(:theme)

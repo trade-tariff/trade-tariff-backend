@@ -145,7 +145,7 @@ module GoodsNomenclatures
 
       dataset_module do
         def with_leaf_column
-          association_join(tree_node: proc { |ds| ds.join_child_sids })
+          association_inner_join(tree_node: proc { |ds| ds.join_child_sids })
             .select_all(:goods_nomenclatures)
             .select_append(:tree_node__number_indents, :tree_node__depth)
             .select_append(Sequel.as({ tree_node__child_sid: nil }, :leaf))

@@ -12,7 +12,8 @@ class SearchSuggestion < Sequel::Model
   set_primary_key %i[id value]
 
   many_to_one :goods_nomenclature, key: :goods_nomenclature_sid,
-                                   foreign_key: :goods_nomenclature_sid do |ds|
+                                   foreign_key: :goods_nomenclature_sid,
+                                   graph_use_association_block: true do |ds|
                                      ds.with_actual(GoodsNomenclature)
                                    end
 

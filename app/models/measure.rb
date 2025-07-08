@@ -25,7 +25,8 @@ class Measure < Sequel::Model
   plugin :national
 
   many_to_one :goods_nomenclature, key: :goods_nomenclature_sid,
-                                   foreign_key: :goods_nomenclature_sid do |ds|
+                                   foreign_key: :goods_nomenclature_sid,
+                                   graph_use_association_block: true do |ds|
                                      ds.with_actual(GoodsNomenclature)
                                    end
 
@@ -34,7 +35,8 @@ class Measure < Sequel::Model
 
   one_to_one :measure_type, primary_key: :measure_type_id,
                             key: :measure_type_id,
-                            class_name: MeasureType do |ds|
+                            class_name: MeasureType,
+                            graph_use_association_block: true do |ds|
     ds.with_actual(MeasureType)
   end
 
@@ -43,7 +45,8 @@ class Measure < Sequel::Model
 
   one_to_one :geographical_area, key: :geographical_area_sid,
                                  primary_key: :geographical_area_sid,
-                                 class_name: GeographicalArea do |ds|
+                                 class_name: GeographicalArea,
+                                 graph_use_association_block: true do |ds|
     ds.with_actual(GeographicalArea)
   end
 
@@ -62,7 +65,8 @@ class Measure < Sequel::Model
                            order: [Sequel.asc(:footnote_type_id, nulls: :first),
                                    Sequel.asc(:footnote_id, nulls: :first)],
                            left_key: :measure_sid,
-                           right_key: %i[footnote_type_id footnote_id] do |ds|
+                           right_key: %i[footnote_type_id footnote_id],
+                           graph_use_association_block: true do |ds|
                              ds.with_actual(Footnote)
                            end
 
@@ -71,12 +75,14 @@ class Measure < Sequel::Model
   one_to_many :measure_components, key: :measure_sid, order: Sequel.asc(:duty_expression_id)
 
   one_to_one :additional_code, key: :additional_code_sid,
-                               primary_key: :additional_code_sid do |ds|
+                               primary_key: :additional_code_sid,
+                               graph_use_association_block: true do |ds|
     ds.with_actual(AdditionalCode)
   end
 
   one_to_one :meursing_additional_code, key: :meursing_additional_code_sid,
-                                        primary_key: :additional_code_sid do |ds|
+                                        primary_key: :additional_code_sid,
+                                        graph_use_association_block: true do |ds|
     ds.with_actual(MeursingAdditionalCode)
   end
 
@@ -85,12 +91,14 @@ class Measure < Sequel::Model
                                      primary_key: :additional_code_type_id
 
   one_to_one :quota_order_number, key: :quota_order_number_id,
-                                  primary_key: :ordernumber do |ds|
+                                  primary_key: :ordernumber,
+                                  graph_use_association_block: true do |ds|
     ds.with_actual(QuotaOrderNumber).order(Sequel.desc(:validity_start_date))
   end
 
   one_to_one :quota_definition, key: :quota_order_number_id,
-                                primary_key: :ordernumber do |ds|
+                                primary_key: :ordernumber,
+                                graph_use_association_block: true do |ds|
     ds.with_actual(QuotaDefinition).order(Sequel.desc(:validity_start_date))
   end
 
@@ -98,7 +106,8 @@ class Measure < Sequel::Model
                                                  left_primary_key: :measure_generating_regulation_id,
                                                  left_key: :stopped_regulation_id,
                                                  right_key: :fts_regulation_id,
-                                                 right_primary_key: :full_temporary_stop_regulation_id do |ds|
+                                                 right_primary_key: :full_temporary_stop_regulation_id,
+                                                 graph_use_association_block: true do |ds|
                                                    ds.with_actual(FullTemporaryStopRegulation)
                                                  end
 
@@ -131,7 +140,8 @@ class Measure < Sequel::Model
   end
 
   one_to_many :measure_partial_temporary_stops, primary_key: :measure_sid,
-                                                key: :measure_sid do |ds|
+                                                key: :measure_sid,
+                                                graph_use_association_block: true do |ds|
                                                   ds.with_actual(MeasurePartialTemporaryStop)
                                                 end
 
