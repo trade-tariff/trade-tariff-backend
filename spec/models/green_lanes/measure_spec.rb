@@ -119,7 +119,6 @@ RSpec.describe GreenLanes::Measure do
     it { is_expected.to have_attributes measure_conditions: [] }
     it { is_expected.to have_attributes footnotes: [] }
 
-    # rubocop:disable RSpec::EmptyExampleGroup
     context 'with expired goods_nomenclature' do
       subject { gl_measure.reload }
 
@@ -129,6 +128,5 @@ RSpec.describe GreenLanes::Measure do
         expect(gl_measure.reload).to have_attributes goods_nomenclature_sid: nil
       end
     end
-    # rubocop:enable RSpec::EmptyExampleGroup
   end
 end

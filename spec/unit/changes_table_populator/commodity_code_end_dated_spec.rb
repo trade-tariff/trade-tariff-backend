@@ -66,7 +66,6 @@ RSpec.describe ChangesTablePopulator::CommodityCodeEndDated do
       end
     end
 
-    # rubocop:disable RSpec::EmptyExampleGroup
     context 'when there are commodities with children that ended on the previous day' do
       before do
         commodity = create :commodity, :with_heading
@@ -90,6 +89,5 @@ RSpec.describe ChangesTablePopulator::CommodityCodeEndDated do
         expect(db[:changes].first[:end_line]).to be false
       end
     end
-    # rubocop:enable RSpec::EmptyExampleGroup
   end
 end
