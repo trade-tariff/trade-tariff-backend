@@ -10,7 +10,8 @@ class ExportRefundNomenclature < Sequel::Model
                                                          left_primary_key: :export_refund_nomenclature_sid,
                                                          left_key: :export_refund_nomenclature_sid,
                                                          right_key: %i[export_refund_nomenclature_description_period_sid export_refund_nomenclature_sid],
-                                                         right_primary_key: %i[export_refund_nomenclature_description_period_sid export_refund_nomenclature_sid] do |ds|
+                                                         right_primary_key: %i[export_refund_nomenclature_description_period_sid export_refund_nomenclature_sid],
+                                                         graph_use_association_block: true do |ds|
                                                            ds.with_actual(ExportRefundNomenclatureDescriptionPeriod)
                                                              .order(Sequel.desc(:export_refund_nomenclature_description_periods__validity_start_date))
                                                          end
@@ -20,7 +21,8 @@ class ExportRefundNomenclature < Sequel::Model
   end
 
   one_to_many :export_refund_nomenclature_indents, key: :export_refund_nomenclature_sid,
-                                                   primary_key: :export_refund_nomenclature_sid do |ds|
+                                                   primary_key: :export_refund_nomenclature_sid,
+                                                   graph_use_association_block: true do |ds|
     ds.with_actual(ExportRefundNomenclatureIndent)
       .order(Sequel.desc(:export_refund_nomenclature_indents__validity_start_date))
   end

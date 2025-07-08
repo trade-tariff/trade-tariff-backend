@@ -50,7 +50,8 @@ class GoodsNomenclature < Sequel::Model
                         join_table: :guides_goods_nomenclatures
 
   one_to_many :goods_nomenclature_indents, key: :goods_nomenclature_sid,
-                                           primary_key: :goods_nomenclature_sid do |ds|
+                                           primary_key: :goods_nomenclature_sid,
+                                           graph_use_association_block: true do |ds|
     ds.with_actual(GoodsNomenclatureIndent, self)
       .order(Sequel.desc(:goods_nomenclature_indents__validity_start_date))
   end
@@ -59,7 +60,8 @@ class GoodsNomenclature < Sequel::Model
                                                  left_primary_key: :goods_nomenclature_sid,
                                                  left_key: :goods_nomenclature_sid,
                                                  right_key: %i[goods_nomenclature_description_period_sid goods_nomenclature_sid],
-                                                 right_primary_key: %i[goods_nomenclature_description_period_sid goods_nomenclature_sid] do |ds|
+                                                 right_primary_key: %i[goods_nomenclature_description_period_sid goods_nomenclature_sid],
+                                                 graph_use_association_block: true do |ds|
     ds.with_actual(GoodsNomenclatureDescriptionPeriod, self)
       .order(Sequel.desc(:goods_nomenclature_description_periods__validity_start_date))
       .exclude(description: nil)
@@ -70,11 +72,15 @@ class GoodsNomenclature < Sequel::Model
                            left_key: :goods_nomenclature_sid,
                            right_key: %i[footnote_type footnote_id],
                            right_primary_key: %i[footnote_type_id footnote_id],
-                           order: %i[footnote_type_id footnote_id] do |ds|
+                           order: %i[footnote_type_id footnote_id],
+                           allow_eager_graph: true do |ds|
     ds.with_actual(FootnoteAssociationGoodsNomenclature)
   end
 
-  one_to_many :tradeset_descriptions, key: :goods_nomenclature_item_id, primary_key: :goods_nomenclature_item_id do |ds|
+  one_to_many :tradeset_descriptions,
+              key: :goods_nomenclature_item_id,
+              primary_key: :goods_nomenclature_item_id,
+              graph_use_association_block: true do |ds|
     ds.with_actual(TradesetDescription)
   end
 
@@ -111,7 +117,8 @@ class GoodsNomenclature < Sequel::Model
                                                               producline_suffix]
 
   one_to_many :export_refund_nomenclatures, key: :goods_nomenclature_sid,
-                                            primary_key: :goods_nomenclature_sid do |ds|
+                                            primary_key: :goods_nomenclature_sid,
+                                            graph_use_association_block: true do |ds|
     ds.with_actual(ExportRefundNomenclature)
   end
 

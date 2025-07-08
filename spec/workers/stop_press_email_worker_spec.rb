@@ -7,9 +7,9 @@ RSpec.describe StopPressEmailWorker, type: :worker do
   let(:email_address) { 'test@example.com' }
 
   before do
-    allow(instance).to receive(:client).and_return(client) # rubocop:disable RSpec/SubjectStub
+    allow(IdentityApiClient).to receive(:get_email).and_return(email_address)
+    allow(GovukNotifier).to receive(:new).and_return(client)
     allow(PublicUsers::User).to receive(:active).and_return(instance_double(Sequel::Dataset, :[] => user))
-    allow(user).to receive(:email).and_return(email_address)
     allow(client).to receive(:send_email)
   end
 
@@ -25,6 +25,7 @@ RSpec.describe StopPressEmailWorker, type: :worker do
     end
 
     it 'gets user email address' do
+      allow(user).to receive(:email).and_return(email_address)
       instance.perform(stop_press.id, user.id)
       expect(user).to have_received(:email).at_least(:once)
     end

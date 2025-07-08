@@ -63,7 +63,7 @@ module GreenLanes
     def declarable?
       gn = GoodsNomenclature
              .actual
-             .association_join(:goods_nomenclature_indents)
+             .association_inner_join(goods_nomenclature_indents: proc { |ds| ds.with_actual(GoodsNomenclatureIndent, self) })
              .where(Sequel[:goods_nomenclatures][:goods_nomenclature_item_id] => length_adjusted_digit_id)
              .order(Sequel[:goods_nomenclatures][:producline_suffix], Sequel[:goods_nomenclature_indents][:number_indents])
              .first

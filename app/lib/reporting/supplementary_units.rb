@@ -59,7 +59,7 @@ module Reporting
           .where(
             measure_type_id: MeasureType::SUPPLEMENTARY_TYPES,
           )
-          .association_join(:measure_components)
+          .association_inner_join(:measure_components)
           .select_append(
             :measure_components__measurement_unit_code,
             :measure_components__measurement_unit_qualifier_code,

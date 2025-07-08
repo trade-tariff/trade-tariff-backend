@@ -9,31 +9,15 @@ class Section < Sequel::Model
   plugin :nullable
   plugin :elasticsearch
 
-  many_to_many :chapters, dataset: lambda {
-    Chapter.join_table(:inner, :chapters_sections, chapters_sections__goods_nomenclature_sid: :goods_nomenclatures__goods_nomenclature_sid)
-           .join_table(:inner, :sections, chapters_sections__section_id: :sections__id)
-           .with_actual(Chapter)
-           .where(Sequel.~(goods_nomenclatures__goods_nomenclature_item_id: HiddenGoodsNomenclature.codes))
-           .where(sections__id: id)
-  }, eager_loader: (proc do |eo|
-    eo[:rows].each { |section| section.associations[:chapters] = [] }
-
-    id_map = eo[:id_map]
-
-    Chapter.join_table(:inner, :chapters_sections, chapters_sections__goods_nomenclature_sid: :goods_nomenclatures__goods_nomenclature_sid)
-           .join_table(:inner, :sections, chapters_sections__section_id: :sections__id)
-           .with_actual(Chapter)
-           .where(Sequel.~(goods_nomenclatures__goods_nomenclature_item_id: HiddenGoodsNomenclature.codes))
-           .where(sections__id: id_map.keys).all do |chapter|
-      sections = id_map[chapter[:section_id]]
-
-      if sections.present?
-        sections.each do |section|
-          section.associations[:chapters] << chapter
-        end
-      end
-    end
-  end)
+  many_to_many :chapters,
+               join_table: :chapters_sections,
+               left_key: :section_id,
+               right_key: :goods_nomenclature_sid,
+               right_primary_key: :goods_nomenclature_sid,
+               graph_use_association_block: true do |ds|
+    ds.with_actual(Chapter)
+      .where(Sequel.~(goods_nomenclatures__goods_nomenclature_item_id: HiddenGoodsNomenclature.codes))
+  end
 
   custom_format :description_plain, with: DescriptionTrimFormatter,
                                     using: :title

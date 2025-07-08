@@ -87,7 +87,7 @@ module Reporting
               .with_regulation_dates_query
               .exclude(ordernumber: nil)
               .exclude(ordernumber: /^0\d4/)
-              .association_join(:quota_order_number)
+              .association_inner_join(:quota_order_number)
               .eager(:measure_excluded_geographical_areas)
               .all
         end

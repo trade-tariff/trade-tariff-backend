@@ -33,7 +33,7 @@ module Reporting
                   { measure_conditions: { measure_action: :measure_action_description } },
                 ],
               )
-              .association_join(:measure_conditions)
+              .association_inner_join(:measure_conditions)
               .where(
                 Sequel.lit(
                   <<~SQL,

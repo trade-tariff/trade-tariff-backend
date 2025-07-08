@@ -104,7 +104,7 @@ module News
       def for_collection(collection_id)
         collection_id = collection_id.presence
 
-        scope = association_join(:published_collections).select_all(:news_items)
+        scope = association_inner_join(:published_collections).select_all(:news_items)
 
         if collection_id.to_s.match? %r{\A\d+\z}
           scope.where(collection_id: collection_id.to_i)

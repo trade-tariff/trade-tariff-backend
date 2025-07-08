@@ -11,11 +11,19 @@ module TenDigitGoodsNomenclature
 
     set_primary_key [:goods_nomenclature_sid]
 
-    one_to_one :heading, primary_key: :heading_short_code, key: :heading_short_code, foreign_key: :heading_short_code do |ds|
+    one_to_one :heading,
+               primary_key: :heading_short_code,
+               key: :heading_short_code,
+               foreign_key: :heading_short_code,
+               graph_use_association_block: true do |ds|
       ds.with_actual(Heading).non_grouping
     end
 
-    one_to_one :chapter, primary_key: :chapter_short_code, key: :chapter_short_code, foreign_key: :chapter_short_code do |ds|
+    one_to_one :chapter,
+               primary_key: :chapter_short_code,
+               key: :chapter_short_code,
+               foreign_key: :chapter_short_code,
+               graph_use_association_block: true do |ds|
       ds.with_actual(Chapter)
     end
 

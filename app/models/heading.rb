@@ -13,7 +13,11 @@ class Heading < GoodsNomenclature
 
   include SearchReferenceable
 
-  one_to_one :chapter, primary_key: :chapter_short_code, key: :chapter_short_code, foreign_key: :chapter_short_code do |ds|
+  one_to_one :chapter,
+             primary_key: :chapter_short_code,
+             key: :chapter_short_code,
+             foreign_key: :chapter_short_code,
+             graph_use_association_block: true do |ds|
     ds.with_actual(Chapter)
   end
 

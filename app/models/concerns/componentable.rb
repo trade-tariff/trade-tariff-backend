@@ -9,22 +9,26 @@ module Componentable
     plugin :time_machine
 
     one_to_one :duty_expression, key: :duty_expression_id,
-                                 primary_key: :duty_expression_id do |ds|
+                                 primary_key: :duty_expression_id,
+                                 graph_use_association_block: true do |ds|
       ds.with_actual(DutyExpression)
     end
 
     one_to_one :measurement_unit, key: :measurement_unit_code,
-                                  primary_key: :measurement_unit_code do |ds|
+                                  primary_key: :measurement_unit_code,
+                                  graph_use_association_block: true do |ds|
       ds.with_actual(MeasurementUnit)
     end
 
     one_to_one :measurement_unit_qualifier, key: :measurement_unit_qualifier_code,
-                                            primary_key: :measurement_unit_qualifier_code do |ds|
+                                            primary_key: :measurement_unit_qualifier_code,
+                                            graph_use_association_block: true do |ds|
       ds.with_actual(MeasurementUnitQualifier)
     end
 
     one_to_one :monetary_unit, key: :monetary_unit_code,
-                               primary_key: :monetary_unit_code do |ds|
+                               primary_key: :monetary_unit_code,
+                               graph_use_association_block: true do |ds|
       ds.with_actual(MonetaryUnit)
     end
 
