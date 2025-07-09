@@ -1,4 +1,6 @@
 RSpec.describe Api::User::SubscriptionsController do
+  routes { UserApi.routes }
+
   let(:subscription) { create(:user_subscription) }
   let(:valid_token) { subscription.uuid }
   let(:invalid_token) { 'invalid_token' }
