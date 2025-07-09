@@ -24,7 +24,6 @@ class TaricUpdatesSynchronizerWorker
     Sidekiq::Client.enqueue(ClearInvalidSearchReferences)
     Sidekiq::Client.enqueue(TreeIntegrityCheckWorker)
     Sidekiq::Client.enqueue(ClearCacheWorker)
-    Sidekiq::Client.enqueue(InvalidateCacheWorker)
   end
 
 private
