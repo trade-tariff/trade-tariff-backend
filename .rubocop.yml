@@ -18,6 +18,12 @@ AllCops:
     - "tmp/**/*"
     - "config/puma.rb"
 
+RSpec:
+  Language:
+    Examples:
+      Regular:
+        - it_with_refresh_materialized_view
+
 Layout/LineLength:
   Max: 120
 

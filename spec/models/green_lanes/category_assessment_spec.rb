@@ -132,7 +132,6 @@ RSpec.describe GreenLanes::CategoryAssessment do
         it { is_expected.not_to include second_measure.measure_type_id }
       end
 
-      # rubocop:disable RSpec/EmptyExampleGroup
       context 'for assessment with expired measures' do
         before do
           ca.measures.first.tap { |m| m.update(validity_end_date: 5.days.ago) }
@@ -143,7 +142,6 @@ RSpec.describe GreenLanes::CategoryAssessment do
           expect(measures).to be_empty
         end
       end
-      # rubocop:enable RSpec/EmptyExampleGroup
     end
 
     describe '#green_lanes_measures' do
@@ -310,7 +308,6 @@ RSpec.describe GreenLanes::CategoryAssessment do
 
     it { is_expected.to include gl_measure }
 
-    # rubocop:disable RSpec::EmptyExampleGroup
     context 'with expired goods_nomenclature' do
       before do
         gl_measure.goods_nomenclature.update validity_end_date: 2.days.ago
@@ -321,7 +318,6 @@ RSpec.describe GreenLanes::CategoryAssessment do
         expect(assessment.active_green_lanes_measures).not_to include gl_measure
       end
     end
-    # rubocop:enable RSpec::EmptyExampleGroup
   end
 
   describe '#latest' do

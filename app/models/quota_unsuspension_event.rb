@@ -1,6 +1,6 @@
 class QuotaUnsuspensionEvent < Sequel::Model
   plugin :oplog, primary_key: %i[quota_definition_sid
-                                 occurrence_timestamp]
+                                 occurrence_timestamp], materialized: true
 
   set_primary_key %i[quota_definition_sid occurrence_timestamp]
 

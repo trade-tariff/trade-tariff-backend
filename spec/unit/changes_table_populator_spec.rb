@@ -1,7 +1,6 @@
 RSpec.describe ChangesTablePopulator do
   let(:db) { Sequel::Model.db }
 
-  # rubocop:disable RSpec::EmptyExampleGroup
   describe '#populate' do
     context 'with an empty database' do
       before do
@@ -41,5 +40,4 @@ RSpec.describe ChangesTablePopulator do
       end
     end
   end
-  # rubocop:enable RSpec::EmptyExampleGroup
 end

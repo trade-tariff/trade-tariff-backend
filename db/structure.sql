@@ -853,10 +853,10 @@ CREATE TABLE uk.quota_definitions_oplog (
 
 
 --
--- Name: quota_definitions; Type: VIEW; Schema: uk; Owner: -
+-- Name: quota_definitions; Type: MATERIALIZED VIEW; Schema: uk; Owner: -
 --
 
-CREATE VIEW uk.quota_definitions AS
+CREATE MATERIALIZED VIEW uk.quota_definitions AS
  SELECT quota_definitions1.quota_definition_sid,
     quota_definitions1.quota_order_number_id,
     quota_definitions1.validity_start_date,
@@ -878,7 +878,8 @@ CREATE VIEW uk.quota_definitions AS
    FROM uk.quota_definitions_oplog quota_definitions1
   WHERE ((quota_definitions1.oid IN ( SELECT max(quota_definitions2.oid) AS max
            FROM uk.quota_definitions_oplog quota_definitions2
-          WHERE (quota_definitions1.quota_definition_sid = quota_definitions2.quota_definition_sid))) AND ((quota_definitions1.operation)::text <> 'D'::text));
+          WHERE (quota_definitions1.quota_definition_sid = quota_definitions2.quota_definition_sid))) AND ((quota_definitions1.operation)::text <> 'D'::text))
+  WITH NO DATA;
 
 
 --
@@ -958,10 +959,10 @@ CREATE VIEW uk.quota_order_numbers AS
 
 
 --
--- Name: bad_quota_associations; Type: VIEW; Schema: uk; Owner: -
+-- Name: bad_quota_associations; Type: MATERIALIZED VIEW; Schema: uk; Owner: -
 --
 
-CREATE VIEW uk.bad_quota_associations AS
+CREATE MATERIALIZED VIEW uk.bad_quota_associations AS
  SELECT qd_main.quota_order_number_id AS main_quota_order_number_id,
     qd_main.validity_start_date,
     qd_main.validity_end_date,
@@ -982,7 +983,8 @@ CREATE VIEW uk.bad_quota_associations AS
      JOIN uk.quota_order_number_origins qono_main ON ((qon_main.quota_order_number_sid = qono_main.quota_order_number_sid)))
      JOIN uk.quota_order_number_origins qono_sub ON ((qon_sub.quota_order_number_sid = qono_sub.quota_order_number_sid)))
   WHERE (qd_main.validity_start_date >= '2021-01-01 00:00:00'::timestamp without time zone)
-  ORDER BY qd_main.quota_order_number_id, qd_sub.quota_order_number_id, qd_main.validity_start_date;
+  ORDER BY qd_main.quota_order_number_id, qd_sub.quota_order_number_id, qd_main.validity_start_date
+  WITH NO DATA;
 
 
 --
@@ -6659,10 +6661,10 @@ CREATE TABLE uk.quota_balance_events_oplog (
 
 
 --
--- Name: quota_balance_events; Type: VIEW; Schema: uk; Owner: -
+-- Name: quota_balance_events; Type: MATERIALIZED VIEW; Schema: uk; Owner: -
 --
 
-CREATE VIEW uk.quota_balance_events AS
+CREATE MATERIALIZED VIEW uk.quota_balance_events AS
  SELECT quota_balance_events1.quota_definition_sid,
     quota_balance_events1.occurrence_timestamp,
     quota_balance_events1.last_import_date_in_allocation,
@@ -6676,7 +6678,8 @@ CREATE VIEW uk.quota_balance_events AS
    FROM uk.quota_balance_events_oplog quota_balance_events1
   WHERE ((quota_balance_events1.oid IN ( SELECT max(quota_balance_events2.oid) AS max
            FROM uk.quota_balance_events_oplog quota_balance_events2
-          WHERE ((quota_balance_events1.quota_definition_sid = quota_balance_events2.quota_definition_sid) AND (quota_balance_events1.occurrence_timestamp = quota_balance_events2.occurrence_timestamp)))) AND ((quota_balance_events1.operation)::text <> 'D'::text));
+          WHERE ((quota_balance_events1.quota_definition_sid = quota_balance_events2.quota_definition_sid) AND (quota_balance_events1.occurrence_timestamp = quota_balance_events2.occurrence_timestamp)))) AND ((quota_balance_events1.operation)::text <> 'D'::text))
+  WITH NO DATA;
 
 
 --
@@ -6828,10 +6831,10 @@ CREATE TABLE uk.quota_critical_events_oplog (
 
 
 --
--- Name: quota_critical_events; Type: VIEW; Schema: uk; Owner: -
+-- Name: quota_critical_events; Type: MATERIALIZED VIEW; Schema: uk; Owner: -
 --
 
-CREATE VIEW uk.quota_critical_events AS
+CREATE MATERIALIZED VIEW uk.quota_critical_events AS
  SELECT quota_critical_events1.quota_definition_sid,
     quota_critical_events1.occurrence_timestamp,
     quota_critical_events1.critical_state,
@@ -6843,7 +6846,8 @@ CREATE VIEW uk.quota_critical_events AS
    FROM uk.quota_critical_events_oplog quota_critical_events1
   WHERE ((quota_critical_events1.oid IN ( SELECT max(quota_critical_events2.oid) AS max
            FROM uk.quota_critical_events_oplog quota_critical_events2
-          WHERE ((quota_critical_events1.quota_definition_sid = quota_critical_events2.quota_definition_sid) AND (quota_critical_events1.occurrence_timestamp = quota_critical_events2.occurrence_timestamp)))) AND ((quota_critical_events1.operation)::text <> 'D'::text));
+          WHERE ((quota_critical_events1.quota_definition_sid = quota_critical_events2.quota_definition_sid) AND (quota_critical_events1.occurrence_timestamp = quota_critical_events2.occurrence_timestamp)))) AND ((quota_critical_events1.operation)::text <> 'D'::text))
+  WITH NO DATA;
 
 
 --
@@ -6901,10 +6905,10 @@ CREATE TABLE uk.quota_exhaustion_events_oplog (
 
 
 --
--- Name: quota_exhaustion_events; Type: VIEW; Schema: uk; Owner: -
+-- Name: quota_exhaustion_events; Type: MATERIALIZED VIEW; Schema: uk; Owner: -
 --
 
-CREATE VIEW uk.quota_exhaustion_events AS
+CREATE MATERIALIZED VIEW uk.quota_exhaustion_events AS
  SELECT quota_exhaustion_events1.quota_definition_sid,
     quota_exhaustion_events1.occurrence_timestamp,
     quota_exhaustion_events1.exhaustion_date,
@@ -6915,7 +6919,8 @@ CREATE VIEW uk.quota_exhaustion_events AS
    FROM uk.quota_exhaustion_events_oplog quota_exhaustion_events1
   WHERE ((quota_exhaustion_events1.oid IN ( SELECT max(quota_exhaustion_events2.oid) AS max
            FROM uk.quota_exhaustion_events_oplog quota_exhaustion_events2
-          WHERE ((quota_exhaustion_events1.quota_definition_sid = quota_exhaustion_events2.quota_definition_sid) AND (quota_exhaustion_events1.occurrence_timestamp = quota_exhaustion_events2.occurrence_timestamp)))) AND ((quota_exhaustion_events1.operation)::text <> 'D'::text));
+          WHERE ((quota_exhaustion_events1.quota_definition_sid = quota_exhaustion_events2.quota_definition_sid) AND (quota_exhaustion_events1.occurrence_timestamp = quota_exhaustion_events2.occurrence_timestamp)))) AND ((quota_exhaustion_events1.operation)::text <> 'D'::text))
+  WITH NO DATA;
 
 
 --
@@ -7043,10 +7048,10 @@ CREATE TABLE uk.quota_reopening_events_oplog (
 
 
 --
--- Name: quota_reopening_events; Type: VIEW; Schema: uk; Owner: -
+-- Name: quota_reopening_events; Type: MATERIALIZED VIEW; Schema: uk; Owner: -
 --
 
-CREATE VIEW uk.quota_reopening_events AS
+CREATE MATERIALIZED VIEW uk.quota_reopening_events AS
  SELECT quota_reopening_events1.quota_definition_sid,
     quota_reopening_events1.occurrence_timestamp,
     quota_reopening_events1.reopening_date,
@@ -7057,7 +7062,8 @@ CREATE VIEW uk.quota_reopening_events AS
    FROM uk.quota_reopening_events_oplog quota_reopening_events1
   WHERE ((quota_reopening_events1.oid IN ( SELECT max(quota_reopening_events2.oid) AS max
            FROM uk.quota_reopening_events_oplog quota_reopening_events2
-          WHERE ((quota_reopening_events1.quota_definition_sid = quota_reopening_events2.quota_definition_sid) AND (quota_reopening_events1.occurrence_timestamp = quota_reopening_events2.occurrence_timestamp)))) AND ((quota_reopening_events1.operation)::text <> 'D'::text));
+          WHERE ((quota_reopening_events1.quota_definition_sid = quota_reopening_events2.quota_definition_sid) AND (quota_reopening_events1.occurrence_timestamp = quota_reopening_events2.occurrence_timestamp)))) AND ((quota_reopening_events1.operation)::text <> 'D'::text))
+  WITH NO DATA;
 
 
 --
@@ -7153,10 +7159,10 @@ CREATE TABLE uk.quota_unblocking_events_oplog (
 
 
 --
--- Name: quota_unblocking_events; Type: VIEW; Schema: uk; Owner: -
+-- Name: quota_unblocking_events; Type: MATERIALIZED VIEW; Schema: uk; Owner: -
 --
 
-CREATE VIEW uk.quota_unblocking_events AS
+CREATE MATERIALIZED VIEW uk.quota_unblocking_events AS
  SELECT quota_unblocking_events1.quota_definition_sid,
     quota_unblocking_events1.occurrence_timestamp,
     quota_unblocking_events1.unblocking_date,
@@ -7167,7 +7173,8 @@ CREATE VIEW uk.quota_unblocking_events AS
    FROM uk.quota_unblocking_events_oplog quota_unblocking_events1
   WHERE ((quota_unblocking_events1.oid IN ( SELECT max(quota_unblocking_events2.oid) AS max
            FROM uk.quota_unblocking_events_oplog quota_unblocking_events2
-          WHERE (quota_unblocking_events1.quota_definition_sid = quota_unblocking_events2.quota_definition_sid))) AND ((quota_unblocking_events1.operation)::text <> 'D'::text));
+          WHERE (quota_unblocking_events1.quota_definition_sid = quota_unblocking_events2.quota_definition_sid))) AND ((quota_unblocking_events1.operation)::text <> 'D'::text))
+  WITH NO DATA;
 
 
 --
@@ -7206,10 +7213,10 @@ CREATE TABLE uk.quota_unsuspension_events_oplog (
 
 
 --
--- Name: quota_unsuspension_events; Type: VIEW; Schema: uk; Owner: -
+-- Name: quota_unsuspension_events; Type: MATERIALIZED VIEW; Schema: uk; Owner: -
 --
 
-CREATE VIEW uk.quota_unsuspension_events AS
+CREATE MATERIALIZED VIEW uk.quota_unsuspension_events AS
  SELECT quota_unsuspension_events1.quota_definition_sid,
     quota_unsuspension_events1.occurrence_timestamp,
     quota_unsuspension_events1.unsuspension_date,
@@ -7220,7 +7227,8 @@ CREATE VIEW uk.quota_unsuspension_events AS
    FROM uk.quota_unsuspension_events_oplog quota_unsuspension_events1
   WHERE ((quota_unsuspension_events1.oid IN ( SELECT max(quota_unsuspension_events2.oid) AS max
            FROM uk.quota_unsuspension_events_oplog quota_unsuspension_events2
-          WHERE ((quota_unsuspension_events1.quota_definition_sid = quota_unsuspension_events2.quota_definition_sid) AND (quota_unsuspension_events1.occurrence_timestamp = quota_unsuspension_events2.occurrence_timestamp)))) AND ((quota_unsuspension_events1.operation)::text <> 'D'::text));
+          WHERE ((quota_unsuspension_events1.quota_definition_sid = quota_unsuspension_events2.quota_definition_sid) AND (quota_unsuspension_events1.occurrence_timestamp = quota_unsuspension_events2.occurrence_timestamp)))) AND ((quota_unsuspension_events1.operation)::text <> 'D'::text))
+  WITH NO DATA;
 
 
 --
@@ -12994,6 +13002,27 @@ CREATE INDEX quota_assoc_pk ON uk.quota_associations_oplog USING btree (main_quo
 
 
 --
+-- Name: quota_balance_events_oid_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE UNIQUE INDEX quota_balance_events_oid_index ON uk.quota_balance_events USING btree (oid);
+
+
+--
+-- Name: quota_balance_events_operation_date_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX quota_balance_events_operation_date_index ON uk.quota_balance_events USING btree (operation_date);
+
+
+--
+-- Name: quota_balance_events_quota_definition_sid, occurrence_timestamp; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX "quota_balance_events_quota_definition_sid, occurrence_timestamp" ON uk.quota_balance_events USING btree (quota_definition_sid, occurrence_timestamp, oid DESC);
+
+
+--
 -- Name: quota_balance_evt_pk; Type: INDEX; Schema: uk; Owner: -
 --
 
@@ -13022,6 +13051,27 @@ CREATE INDEX quota_crit_evt_pk ON uk.quota_critical_events_oplog USING btree (qu
 
 
 --
+-- Name: quota_critical_events_oid_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE UNIQUE INDEX quota_critical_events_oid_index ON uk.quota_critical_events USING btree (oid);
+
+
+--
+-- Name: quota_critical_events_operation_date_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX quota_critical_events_operation_date_index ON uk.quota_critical_events USING btree (operation_date);
+
+
+--
+-- Name: quota_critical_events_quota_definition_sid_occurrence_timestamp; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX quota_critical_events_quota_definition_sid_occurrence_timestamp ON uk.quota_critical_events USING btree (quota_definition_sid, occurrence_timestamp);
+
+
+--
 -- Name: quota_def_pk; Type: INDEX; Schema: uk; Owner: -
 --
 
@@ -13029,10 +13079,80 @@ CREATE INDEX quota_def_pk ON uk.quota_definitions_oplog USING btree (quota_defin
 
 
 --
+-- Name: quota_definitions_measurement_unit_code_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX quota_definitions_measurement_unit_code_index ON uk.quota_definitions USING btree (measurement_unit_code);
+
+
+--
+-- Name: quota_definitions_measurement_unit_qualifier_code_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX quota_definitions_measurement_unit_qualifier_code_index ON uk.quota_definitions USING btree (measurement_unit_qualifier_code);
+
+
+--
+-- Name: quota_definitions_monetary_unit_code_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX quota_definitions_monetary_unit_code_index ON uk.quota_definitions USING btree (monetary_unit_code);
+
+
+--
+-- Name: quota_definitions_oid_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE UNIQUE INDEX quota_definitions_oid_index ON uk.quota_definitions USING btree (oid);
+
+
+--
+-- Name: quota_definitions_operation_date_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX quota_definitions_operation_date_index ON uk.quota_definitions USING btree (operation_date);
+
+
+--
+-- Name: quota_definitions_quota_definition_sid, oid DESC_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX "quota_definitions_quota_definition_sid, oid DESC_index" ON uk.quota_definitions USING btree (quota_definition_sid, oid DESC);
+
+
+--
+-- Name: quota_definitions_quota_order_number_id_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX quota_definitions_quota_order_number_id_index ON uk.quota_definitions USING btree (quota_order_number_id);
+
+
+--
 -- Name: quota_exhaus_evt_pk; Type: INDEX; Schema: uk; Owner: -
 --
 
 CREATE INDEX quota_exhaus_evt_pk ON uk.quota_exhaustion_events_oplog USING btree (quota_definition_sid, occurrence_timestamp);
+
+
+--
+-- Name: quota_exhaustion_events_oid_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE UNIQUE INDEX quota_exhaustion_events_oid_index ON uk.quota_exhaustion_events USING btree (oid);
+
+
+--
+-- Name: quota_exhaustion_events_operation_date_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX quota_exhaustion_events_operation_date_index ON uk.quota_exhaustion_events USING btree (operation_date);
+
+
+--
+-- Name: quota_exhaustion_events_quota_definition_sid_occurrence_timesta; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX quota_exhaustion_events_quota_definition_sid_occurrence_timesta ON uk.quota_exhaustion_events USING btree (quota_definition_sid, occurrence_timestamp);
 
 
 --
@@ -13064,6 +13184,27 @@ CREATE INDEX quota_reopen_evt_pk ON uk.quota_reopening_events_oplog USING btree 
 
 
 --
+-- Name: quota_reopening_events_oid_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE UNIQUE INDEX quota_reopening_events_oid_index ON uk.quota_reopening_events USING btree (oid);
+
+
+--
+-- Name: quota_reopening_events_operation_date_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX quota_reopening_events_operation_date_index ON uk.quota_reopening_events USING btree (operation_date);
+
+
+--
+-- Name: quota_reopening_events_quota_definition_sid_occurrence_timestam; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX quota_reopening_events_quota_definition_sid_occurrence_timestam ON uk.quota_reopening_events USING btree (quota_definition_sid, occurrence_timestamp);
+
+
+--
 -- Name: quota_susp_period_pk; Type: INDEX; Schema: uk; Owner: -
 --
 
@@ -13078,10 +13219,52 @@ CREATE INDEX quota_unblock_evt_pk ON uk.quota_unblocking_events_oplog USING btre
 
 
 --
+-- Name: quota_unblocking_events_oid_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE UNIQUE INDEX quota_unblocking_events_oid_index ON uk.quota_unblocking_events USING btree (oid);
+
+
+--
+-- Name: quota_unblocking_events_operation_date_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX quota_unblocking_events_operation_date_index ON uk.quota_unblocking_events USING btree (operation_date);
+
+
+--
+-- Name: quota_unblocking_events_quota_definition_sid_occurrence_timesta; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX quota_unblocking_events_quota_definition_sid_occurrence_timesta ON uk.quota_unblocking_events USING btree (quota_definition_sid, occurrence_timestamp);
+
+
+--
 -- Name: quota_unsusp_evt_pk; Type: INDEX; Schema: uk; Owner: -
 --
 
 CREATE INDEX quota_unsusp_evt_pk ON uk.quota_unsuspension_events_oplog USING btree (quota_definition_sid, occurrence_timestamp);
+
+
+--
+-- Name: quota_unsuspension_events_oid_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE UNIQUE INDEX quota_unsuspension_events_oid_index ON uk.quota_unsuspension_events USING btree (oid);
+
+
+--
+-- Name: quota_unsuspension_events_operation_date_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX quota_unsuspension_events_operation_date_index ON uk.quota_unsuspension_events USING btree (operation_date);
+
+
+--
+-- Name: quota_unsuspension_events_quota_definition_sid_occurrence_times; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX quota_unsuspension_events_quota_definition_sid_occurrence_times ON uk.quota_unsuspension_events USING btree (quota_definition_sid, occurrence_timestamp);
 
 
 --
@@ -13620,3 +13803,4 @@ INSERT INTO "schema_migrations" ("filename") VALUES ('20250623123926_add_additio
 INSERT INTO "schema_migrations" ("filename") VALUES ('20250625101149_add_measure_and_regulation_materialized_views.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20250701123907_add_materialized_view_indexes.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20250702142253_add_goods_nomenclatures_materialized_views.rb');
+INSERT INTO "schema_migrations" ("filename") VALUES ('20250708114111_add_quota_materialized_views.rb');

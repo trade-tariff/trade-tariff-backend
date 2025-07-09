@@ -2,7 +2,6 @@ RSpec.describe ChangesTablePopulator::CommodityCodeStarted do
   let(:db) { Sequel::Model.db }
 
   describe '#populate' do
-    # rubocop:disable RSpec::EmptyExampleGroup
     context 'when the database is empty' do
       before do
         db[:goods_nomenclatures_oplog].delete
@@ -12,7 +11,6 @@ RSpec.describe ChangesTablePopulator::CommodityCodeStarted do
         expect { described_class.populate }.not_to change(Change, :count)
       end
     end
-    # rubocop:enable RSpec::EmptyExampleGroup
 
     context 'when there are commodities but haven\'t changed' do
       before do
@@ -44,7 +42,6 @@ RSpec.describe ChangesTablePopulator::CommodityCodeStarted do
       end
     end
 
-    # rubocop:disable RSpec::EmptyExampleGroup
     context 'when there are commodities with children that started on the same day' do
       before do
         commodity = create :commodity, :with_heading
@@ -68,6 +65,5 @@ RSpec.describe ChangesTablePopulator::CommodityCodeStarted do
         expect(db[:changes].first[:end_line]).to be false
       end
     end
-    # rubocop:enable RSpec::EmptyExampleGroup
   end
 end

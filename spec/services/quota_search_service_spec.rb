@@ -83,7 +83,6 @@ RSpec.describe QuotaSearchService do
       end
     end
 
-    # rubocop:disable RSpec/EmptyExampleGroup
     context 'when filtering by the geographical_area_id' do
       let(:filter) { { 'geographical_area_id' => quota_order_number_origin1.geographical_area_id } }
 
@@ -99,7 +98,6 @@ RSpec.describe QuotaSearchService do
         expect(service.call).to eq([quota_definition2])
       end
     end
-    # rubocop:enable RSpec/EmptyExampleGroup
 
     context 'when filtering by the order number' do
       let(:filter) { { 'order_number' => quota_order_number1.quota_order_number_id } }
@@ -182,7 +180,9 @@ RSpec.describe QuotaSearchService do
 
       let(:filter) { {} }
 
-      it { expect(service.call).to be_empty }
+      it_with_refresh_materialized_view 'return empty' do
+        expect(service.call).to be_empty
+      end
     end
   end
 
@@ -204,7 +204,9 @@ RSpec.describe QuotaSearchService do
         end
       end
 
-      it { is_expected.to eq 0 }
+      it_with_refresh_materialized_view 'return zero' do
+        expect(service.tap(&:call).pagination_record_count).to eq 0
+      end
     end
   end
 end
