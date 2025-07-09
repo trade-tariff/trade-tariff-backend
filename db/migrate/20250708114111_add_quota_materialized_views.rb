@@ -131,7 +131,7 @@ Sequel.migration do
       WITH DATA
     EOVIEW
 
-    create_view :bad_quota_associations, <<~EOVIEW, materialized: true
+    create_view :bad_quota_associations, <<~EOVIEW
     SELECT qd_main.quota_order_number_id AS main_quota_order_number_id,
       qd_main.validity_start_date,
       qd_main.validity_end_date,
@@ -153,7 +153,6 @@ Sequel.migration do
      JOIN quota_order_number_origins qono_sub ON qon_sub.quota_order_number_sid = qono_sub.quota_order_number_sid
     WHERE qd_main.validity_start_date >= '2021-01-01 00:00:00'::timestamp without time zone
     ORDER BY qd_main.quota_order_number_id, qd_sub.quota_order_number_id, qd_main.validity_start_date
-      WITH DATA
     EOVIEW
 
     alter_table :quota_balance_events do
@@ -204,7 +203,7 @@ Sequel.migration do
   end
 
   down do
-    drop_view :bad_quota_associations, materialized: true
+    drop_view :bad_quota_associations
     drop_view :quota_balance_events, materialized: true
     drop_view :quota_critical_events, materialized: true
     drop_view :quota_definitions, materialized: true

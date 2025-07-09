@@ -308,7 +308,6 @@ RSpec.describe GreenLanes::CategoryAssessment do
 
     it { is_expected.to include gl_measure }
 
-    # ::EmptyExampleGroup
     context 'with expired goods_nomenclature' do
       before do
         gl_measure.goods_nomenclature.update validity_end_date: 2.days.ago

@@ -105,7 +105,6 @@ def refresh_materialized_view(concurrently: false)
   end
 
   GoodsNomenclatures::TreeNode.refresh!(concurrently:)
-  BadQuotaAssociation.refresh!(concurrently:)
 end
 
 # rubocop:disable RSpec/NoExpectationExample

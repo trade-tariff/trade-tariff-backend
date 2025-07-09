@@ -7,6 +7,5 @@ module MaterializeViewHelper
     end
 
     GoodsNomenclatures::TreeNode.refresh!(concurrently:)
-    BadQuotaAssociation.refresh!(concurrently:)
   end
 end
