@@ -1,6 +1,8 @@
 RSpec.describe Api::User::PublicUsersController do
   subject(:api_response) { make_request && response }
 
+  routes { UserApi.routes }
+
   before do
     request.headers['Authorization'] = "Bearer #{token}"
     allow(CognitoTokenVerifier).to receive(:verify_id_token).and_return(token)
