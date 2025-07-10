@@ -113,7 +113,7 @@ namespace :tariff do
     end
   end
 
-  desc "Refresh materialized views"
+  desc 'Refresh materialized views'
   task refresh: :environment do
     require_relative '../../app/helpers/materialize_view_helper'
 
