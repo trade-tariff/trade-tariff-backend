@@ -1,7 +1,7 @@
 class ClearInvalidSearchReferences
   include Sidekiq::Worker
 
-  sidekiq_options retry: false
+  sidekiq_options queue: :sync, retry: false
 
   def perform
     cleared = SearchReference.each_with_object({}) do |search_reference, acc|
