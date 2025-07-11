@@ -8,4 +8,6 @@ module MaterializeViewHelper
 
     GoodsNomenclatures::TreeNode.refresh!(concurrently:)
   end
+
+  module_function :refresh_materialized_view
 end

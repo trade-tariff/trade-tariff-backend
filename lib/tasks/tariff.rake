@@ -112,4 +112,14 @@ namespace :tariff do
       ChangesTablePopulator.populate_backlog
     end
   end
+
+  desc 'Refresh materialized views'
+  task refresh: :environment do
+    require_relative '../../app/helpers/materialize_view_helper'
+
+    concurrently = ENV['CONCURRENTLY'] == 'true'
+
+    puts "Refreshing materialized views#{' concurrently' if concurrently}..."
+    MaterializeViewHelper.refresh_materialized_view(concurrently: concurrently)
+  end
 end
