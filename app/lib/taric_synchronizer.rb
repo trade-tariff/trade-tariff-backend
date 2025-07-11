@@ -51,7 +51,6 @@ class TaricSynchronizer
       check_sequence
 
       applied_updates = []
-      import_warnings = []
 
       # The sync task is run on multiple machines to avoid more than one process
       # running the apply task it is wrapped with a redis lock
@@ -65,8 +64,9 @@ class TaricSynchronizer
         end
 
         applied_updates.flatten!
+
         if applied_updates.any? && BaseUpdate.pending_or_failed.none?
-          TariffLogger.apply(applied_updates.map(&:filename), import_warnings)
+          TariffLogger.apply(applied_updates.map(&:filename))
           true
         end
       end

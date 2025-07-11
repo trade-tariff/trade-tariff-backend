@@ -67,7 +67,7 @@ module Sequel
 
       module InstanceMethods
         def current?
-          now = Time.zone.now # This method will be called by a backgroung JOB, therefore it does not use TradeTariffRequest.time_machine_now
+          now = Time.zone.now # This method will be called by a background JOB, therefore it does not use TradeTariffRequest.time_machine_now
           period_end_date = self.class.period_end_date_column.column
           period_start_date = self.class.period_start_date_column.column
 
@@ -122,7 +122,6 @@ module Sequel
         def with_actual(assoc, parent = nil)
           klass = assoc.to_s.classify.constantize
 
-          # TODO: to review after sequel upgrade. code: !parent.instance_of?(Class)
           if parent && !parent.instance_of?(Class) && klass.relevant_query?
             filter { |o| o.<=(klass.period_start_date_column, parent.send(parent.class.period_start_date_column.column)) & (o.>=(klass.period_end_date_column, parent.send(parent.class.period_end_date_column.column)) | ({ klass.period_end_date_column => nil })) }
           elsif klass.point_in_time.present?

@@ -42,7 +42,7 @@ RSpec.describe TaricImporter::RecordProcessor::Record do
       end
     end
 
-    context 'when ovverriding mutated attributes' do
+    context 'when overriding mutated attributes' do
       before do
         ovverriding_mutator_class = Class.new do
           def self.mutate(attributes)

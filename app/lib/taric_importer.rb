@@ -40,7 +40,7 @@ class TaricImporter
 
     handler = XmlProcessor.new(@taric_update.issue_date)
     file = TariffSynchronizer::FileService.file_as_stringio(@taric_update)
-    XmlParser::Reader.new(file, 'record', handler).parse
+    TaricImporter::XmlParser::Reader.new(file, 'record', handler).parse
     post_import(file_path: @taric_update.file_path, filename:)
 
     @oplog_inserts

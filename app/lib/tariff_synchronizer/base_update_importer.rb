@@ -36,6 +36,8 @@ module TariffSynchronizer
 
     private
 
+    # Tracks the last 10 SQL queries executed during the import.
+    # These are logged if there is an exception.
     def track_latest_sql_queries
       @sql_subscriber = ActiveSupport::Notifications.subscribe(/sql\.sequel/) do |*args|
         event = ActiveSupport::Notifications::Event.new(*args)

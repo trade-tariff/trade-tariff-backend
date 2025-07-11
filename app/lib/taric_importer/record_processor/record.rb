@@ -1,6 +1,6 @@
 # Can also mutate attributes for all record operations, e.g.:
 #
-#  class LanguageAttributeMutator < AttributeMutator
+#  class LanguageAttributeMutator
 #    def self.mutate(attributes)
 #      attributes[:a] = 'b'
 #      attributes   # do not forget to return it
@@ -47,7 +47,7 @@ class TaricImporter
         if Object.const_defined?(mutator_class)
           mutator_class.constantize.mutate(attributes)
         else
-          TaricImporter::RecordProcessor::AttributeMutator.mutate(attributes)
+          attributes
         end
       end
     end
