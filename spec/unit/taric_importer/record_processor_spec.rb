@@ -73,39 +73,5 @@ RSpec.describe TaricImporter::RecordProcessor do
         expect(create_operation).to have_received(:call)
       end
     end
-
-    context 'with custom operation' do
-      before do
-        stub_const(
-          'TaricImporter::RecordProcessor::OperationOverrides::LanguageDescriptionCreateOperation',
-          create_operation_class,
-        )
-        allow(TaricImporter::RecordProcessor::OperationOverrides::LanguageDescriptionCreateOperation).to receive(:new).and_return(create_operation)
-      end
-
-      let(:create_operation_class) do
-        Class.new do
-          def initialize(_record, _operation_date); end
-
-          def call
-            true
-          end
-        end
-      end
-
-      let(:create_operation) do
-        instance_double(
-          create_operation_class,
-          call: true,
-          to_oplog_operation: :create,
-        )
-      end
-
-      it 'performs ovverriding create operation' do
-        record_processor.process!
-
-        expect(create_operation).to have_received :call
-      end
-    end
   end
 end

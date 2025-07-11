@@ -65,21 +65,10 @@ class TaricImporter
     end
 
     def process!
-      operation = processor_for(record.klass, operation_class).new(record, operation_date)
+      operation = operation_class.new(record, operation_date)
 
       instrument('taric_importer.import.operations', operation: operation.to_oplog_operation, count: 1, entity_class: record.klass) do
         operation.call
-      end
-    end
-
-  private
-
-    def processor_for(record_class, operation_class)
-      operation_override_class = "TaricImporter::RecordProcessor::OperationOverrides::#{record_class}#{operation_class.to_s.demodulize}"
-      if Object.const_defined?(operation_override_class)
-        operation_override_class.constantize
-      else
-        operation_class
       end
     end
   end

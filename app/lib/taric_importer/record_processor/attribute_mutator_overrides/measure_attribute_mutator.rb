@@ -1,7 +1,7 @@
 class TaricImporter
   class RecordProcessor
     module AttributeMutatorOverrides
-      class MeasureAttributeMutator < TaricImporter::RecordProcessor::AttributeMutator
+      class MeasureAttributeMutator
         # Avoid naming conflicts with associations.
         # Follow rails conventions where foreign keys are postfixed with '_id'
         def self.mutate(attributes)
