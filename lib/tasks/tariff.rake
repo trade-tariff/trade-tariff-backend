@@ -117,12 +117,9 @@ namespace :tariff do
   task refresh: :environment do
     require_relative '../../app/helpers/materialize_view_helper'
 
-    helper = Object.new
-    helper.extend(MaterializeViewHelper)
-
     concurrently = ENV['CONCURRENTLY'] == 'true'
 
     puts "Refreshing materialized views#{' concurrently' if concurrently}..."
-    helper.refresh_materialized_view(concurrently: concurrently)
+    MaterializeViewHelper.refresh_materialized_view(concurrently: concurrently)
   end
 end

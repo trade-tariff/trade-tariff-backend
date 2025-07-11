@@ -3,7 +3,7 @@ class ApplyWorker
   include Sidekiq::Worker
   include MaterializeViewHelper
 
-  sidekiq_options queue: :rollbacks, retry: false
+  sidekiq_options queue: :sync, retry: false
 
   def perform
     if TradeTariffBackend.uk?

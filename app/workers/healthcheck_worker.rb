@@ -1,5 +1,6 @@
 class HealthcheckWorker
   include Sidekiq::Worker
+
   sidekiq_options queue: :healthcheck, retry: 1
 
   def perform

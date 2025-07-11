@@ -1,11 +1,9 @@
 :verbose: false
 :concurrency: 10
 :queues:
-  - healthcheck
-  - rollbacks
   - sync
   - default
-  - bulk_search
+  - healthcheck
 :scheduler:
   :schedule:
     #
@@ -35,7 +33,7 @@
       cron: "30 10 * * *" # Needs to run even if the UpdatesSynchronizerWorker failed
       description: "Generates reports and persists them to S3"
     UKUpdatesSynchronizerWorker:
-      cron: "0 5 * * *"
+      cron: "30 0 * * *"
       description: "Runs ETL of CDS files and populates indexes"
       class: CdsUpdatesSynchronizerWorker
       enabled: <%= ENV.fetch('SERVICE', 'uk') == 'uk' %>
@@ -47,9 +45,6 @@
     HealthcheckWorker:
       every: 30.minutes
       description: Trigger the health check
-    PrecacheHeadingsWorker:
-      cron: "00 22 * * *"
-      description: Precaches all headings and subheadings ready for tomorrow
     OneWeekTreeIntegrityCheck:
       cron: '05 8 * * 1'
       class: TreeIntegrityCheckWorker

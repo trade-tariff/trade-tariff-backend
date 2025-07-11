@@ -3,7 +3,7 @@ class RollbackWorker
   include Sidekiq::Worker
   include MaterializeViewHelper
 
-  sidekiq_options queue: :rollbacks, retry: false
+  sidekiq_options queue: :sync, retry: false
 
   def perform(date, redownload = false)
     if TradeTariffBackend.uk?
