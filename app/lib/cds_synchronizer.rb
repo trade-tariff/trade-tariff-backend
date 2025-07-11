@@ -54,8 +54,7 @@ class CdsSynchronizer
         applied_updates.flatten!
 
         if applied_updates.any? && BaseUpdate.pending_or_failed.none?
-          TariffLogger.apply(applied_updates.map(&:filename))
-
+          TariffLogger.apply(applied_updates.map(&:filename), import_warnings)
           true
         end
       end
