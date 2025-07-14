@@ -1194,9 +1194,19 @@ RSpec.describe Measure do
   end
 
   describe '#supplementary_unit_duty_expression' do
-    subject(:supplementary_unit_duty_expression) { create(:measure, :supplementary, :with_measure_components).supplementary_unit_duty_expression }
+    subject(:supplementary_unit_duty_expression) { measure.supplementary_unit_duty_expression }
+
+    let(:measure) { create(:measure, :supplementary, :with_measure_components) }
 
     it { is_expected.to match(/\.* \(.*\)/) }
+
+    context 'when there are no measure components' do
+      before do
+        allow(measure).to receive(:measure_components).and_return([])
+      end
+
+      it { is_expected.to be_nil }
+    end
   end
 
   describe '.with_additional_code_sid' do
