@@ -72,8 +72,10 @@ module TariffSynchronizer
 
     def import!
       @oplog_inserts = TaricImporter.new(self).import
+
       mark_as_applied
       store_oplog_inserts
+
       Rails.logger.info "Applied TARIC update #{filename}"
     end
 
