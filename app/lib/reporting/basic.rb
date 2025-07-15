@@ -1,6 +1,7 @@
 module Reporting
   class Basic
     extend Reporting::Reportable
+    extend Reporting::Csvable
 
     MEASURE_EAGER = [
       { measure_type: :measure_type_description },
@@ -51,35 +52,19 @@ module Reporting
 
     class << self
       def generate
-        rows = []
-
-        TimeMachine.now do
-          goods_nomenclatures.each do |goods_nomenclature|
-            rows << build_row_for(goods_nomenclature)
-          end
-
-          csv_data = CSV.generate(write_headers: true, headers: HEADER_ROW) do |csv|
-            rows.each do |row|
-              csv << row
-            end
-          end
-
-          if rows.any?
-            File.write(File.basename(object_key), csv_data) if Rails.env.development?
-
-            if Rails.env.production?
-              object.put(
-                body: csv_data,
-                content_type: 'text/csv',
-              )
-            end
-          end
-
-          Rails.logger.debug("Query count: #{::SequelRails::Railties::LogSubscriber.count}")
-        end
+        save_document(object, object_key, csv_data)
+        log_query_count
       end
 
       private
+
+      def csv_data
+        CSV.generate(write_headers: true, headers: HEADER_ROW) do |csv|
+          goods_nomenclatures.each do |goods_nomenclature|
+            csv << build_row_for(goods_nomenclature)
+          end
+        end
+      end
 
       def build_row_for(goods_nomenclature)
         overview_measures = goods_nomenclature.applicable_overview_measures
@@ -104,17 +89,18 @@ module Reporting
       end
 
       def goods_nomenclatures
-        GoodsNomenclature
-          .actual
-          .declarable
-          .eager(GOODS_NOMENCLATURE_EAGER)
-          .non_hidden
-          .non_classifieds
-          .all
+        TimeMachine.now do
+          GoodsNomenclature
+            .actual
+            .declarable
+            .eager(GOODS_NOMENCLATURE_EAGER)
+            .non_hidden
+            .non_classifieds
+        end
       end
 
       def object_key
-        "#{service}/reporting/#{year}/#{month}/#{day}/tariff_data_basic_#{service}_#{now.strftime('%Y_%m_%d')}.csv"
+        "#{object_key_prefix}/tariff_data_basic_#{object_key_suffix}.csv"
       end
     end
   end

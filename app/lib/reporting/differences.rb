@@ -3,6 +3,9 @@ module Reporting
   # also relies on source date about supplementary units and commodities to compare
   # the uk and xi data.
   class Differences
+    extend Reporting::Reportable
+    extend Reporting::Spreadsheetable
+
     MEASURE_EAGER = [
       {
         measure_components: [
@@ -68,8 +71,6 @@ module Reporting
         descendants: [{ measures: MEASURE_UNIT_EAGER }],
       },
     ].freeze
-
-    extend Reporting::Reportable
 
     attr_reader :package,
                 :workbook,
@@ -343,16 +344,9 @@ module Reporting
 
         report = new
         package = report.generate(only:)
-        package.serialize('differences.xlsx') if Rails.env.development?
 
-        if Rails.env.production?
-          object.put(
-            body: package.to_stream.read,
-            content_type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-          )
-        end
-
-        Rails.logger.debug("Query count: #{::SequelRails::Railties::LogSubscriber.count}")
+        save_document(object, object_key, package)
+        log_query_count
 
         report
       end
@@ -360,7 +354,7 @@ module Reporting
       private
 
       def object_key
-        "#{service}/reporting/#{year}/#{month}/#{day}/differences_#{now.strftime('%Y-%m-%d')}.xlsx"
+        "#{object_key_prefix}/differences_#{now.strftime('%Y-%m-%d')}.xlsx"
       end
     end
   end
