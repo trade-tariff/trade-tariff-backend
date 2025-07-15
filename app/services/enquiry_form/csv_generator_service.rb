@@ -4,7 +4,20 @@ class EnquiryForm::CsvGeneratorService
   end
 
   def generate
+    headers = [
+      'Reference',
+     	'Submitted at',
+     	'Full name',
+     	'Company name',
+      'Job title',
+     	'Email address',
+     	'What do you need help with?',
+      'How can we help?'
+    ]
+
     keys = [
+          :reference_number,
+          :created_at,
           :name,
           :company_name,
           :job_title,
@@ -14,7 +27,7 @@ class EnquiryForm::CsvGeneratorService
         ]
 
     CSV.generate do |csv|
-      csv << keys.map { |key| key.to_s.humanize }
+      csv << headers
       csv << keys.map { |key| @enquiry_form_data[key] }
     end
   end
