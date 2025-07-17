@@ -29,6 +29,5 @@ Rails.application.routes.draw do
   mount V2Api => '/xi/api/v2', as: 'xi_v2_api' if TradeTariffBackend.xi?
   mount V2Api => '/uk/api/v2', as: 'uk_v2_api' if TradeTariffBackend.uk?
 
-  mount UserApi => '/uk', as: 'uk_user_api' if TradeTariffBackend.uk?
-  mount UserApi => '/', as: 'user' # TODO: Remove me
+  mount UserApi => '/api/uk/user', as: 'uk_user_api' if TradeTariffBackend.uk?
 end
