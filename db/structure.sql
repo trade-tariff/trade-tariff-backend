@@ -214,7 +214,7 @@ CREATE TABLE public.live_issues (
     id integer NOT NULL,
     title text NOT NULL,
     description text,
-    commodities text[] NOT NULL,
+    commodities text[],
     status text DEFAULT 'Active'::text NOT NULL,
     date_discovered date NOT NULL,
     date_resolved date,
@@ -13804,3 +13804,4 @@ INSERT INTO "schema_migrations" ("filename") VALUES ('20250701123907_add_materia
 INSERT INTO "schema_migrations" ("filename") VALUES ('20250702142253_add_goods_nomenclatures_materialized_views.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20250708114111_add_quota_materialized_views.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20250716082959_remove_char_limit_live_issues.rb');
+INSERT INTO "schema_migrations" ("filename") VALUES ('20250718101240_remove_null_validation_commodities_live_issues.rb');
