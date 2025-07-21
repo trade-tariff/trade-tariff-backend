@@ -1,4 +1,4 @@
-class Api::Admin::EnquiryForm::SubmissionsController < AdmimController
+class Api::Admin::EnquiryForm::SubmissionsController < AdminController
   before_action :authenticate_user!
 
   def index
