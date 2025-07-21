@@ -42,6 +42,6 @@ class EnquiryForm::Submission < Sequel::Model(Sequel[:enquiry_form_submissions].
   end
 
   def set_submitted_at_timestamp
-    self.submitted_at ||= Time.now
+    self.submitted_at ||= Time.zone.now
   end
 end
