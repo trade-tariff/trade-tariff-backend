@@ -3,7 +3,7 @@ class EnquiryForm::Submission < Sequel::Model(Sequel[:enquiry_form_submissions].
   plugin :auto_validations, not_null: :presence
 
   # Exlude O and I as they're usually avoided in GOV.UK reference numbers
-  CHARSET = ('A'..'Z').to_a + (0..9).to_a.map(&:to_s) - ['O', 'I']
+  CHARSET = ('A'..'Z').to_a + (0..9).to_a.map(&:to_s) - %w[O I]
 
   def before_validation
     super

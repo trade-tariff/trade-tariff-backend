@@ -6,7 +6,6 @@ class Api::V2::EnquiryForm::SubmissionsController < ApiController
     EnquiryForm::CsvUploaderService.new(@submission, csv_data).upload
     # EnquiryForm::SubmissionMailer.send_email(@submission).deliver_later
 
-
     if @submission.valid? && @submission.save
       render json: @submission.reference_number, status: :created
     else
