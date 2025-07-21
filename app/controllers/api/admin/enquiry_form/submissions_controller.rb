@@ -1,28 +1,21 @@
-class Api::Admin::EnquiryForm::SubmissionsController < AdminController
-  before_action :authenticate_user!
+module Api
+  module Admin
+    class EnquiryForm::SubmissionsController < AdminController
+      before_action :authenticate_user!
 
-  def index
-    @submissions = EnquiryForm::Submission.order(created_at: :desc)
-  end
+      def index
+        render json: serialize(enquiry_form_submissions)
+      end
 
-  def create
-    @submission = EnquiryForm::Submission.new(submission_params)
-    csv_data = EnquiryForm::CsvGeneratorService.new(submission_params).generate
+      private
 
-    EnquiryForm::CsvUploaderService.new(@submission, csv_data).upload
-    # EnquiryForm::SubmissionMailer.send_email(@submission).deliver_later
+      def enquiry_form_submissions
+        ::EnquiryForm::Submission.all
+      end
 
-
-    if @submission.valid? && @submission.save
-      render json: @submission.reference_number, status: :created
-    else
-      render json: @submission.errors, status: :unprocessable_entity
+      def serialize(*args)
+        Api::Admin::EnquiryForm::SubmissionSerializer.new(*args).serializable_hash
+      end
     end
   end
-
-  private
-
-    def submission_params
-      params.require(:submission).permit(:data)
-    end
 end
