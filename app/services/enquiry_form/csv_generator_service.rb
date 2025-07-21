@@ -1,12 +1,12 @@
 class EnquiryForm::CsvGeneratorService
   def initialize(enquiry_form_data)
-    @enquiry_form_data = enquiry_form_data.symbolize_keys!
+    @enquiry_form_data = enquiry_form_data.to_h.symbolize_keys
   end
 
   def generate
     headers = [
       'Reference',
-      'Submitted at',
+      'Submission date',
       'Full name',
       'Company name',
       'Job title',

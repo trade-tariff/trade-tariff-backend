@@ -1,21 +1,43 @@
-class Api::V2::EnquiryForm::SubmissionsController < ApiController
-  def create
-    @submission = EnquiryForm::Submission.new(submission_params)
-    csv_data = EnquiryForm::CsvGeneratorService.new(submission_params).generate
+module Api
+  module V2
+    class EnquiryForm::SubmissionsController < ApiController
+      def create
+        @submission = ::EnquiryForm::Submission.create
+        csv_data = ::EnquiryForm::CsvGeneratorService.new(enquiry_form_params(@submission)).generate
 
-    EnquiryForm::CsvUploaderService.new(@submission, csv_data).upload
-    # EnquiryForm::SubmissionMailer.send_email(@submission).deliver_later
+        ::EnquiryForm::CsvUploaderService.new(@submission, csv_data).upload
+        # EnquiryForm::SubmissionMailer.send_email(@submission).deliver_later
 
-    if @submission.valid? && @submission.save
-      render json: @submission.reference_number, status: :created
-    else
-      render json: @submission.errors, status: :unprocessable_entity
+        if @submission.valid? && @submission.save
+          render json: serialize(@submission), status: :created
+        else
+          render json: serialize_errors(@submission), status: :unprocessable_entity
+        end
+      end
+
+      private
+
+      def enquiry_form_params(submission)
+        params.require(:data).require(:attributes).permit(
+          :name,
+          :company_name,
+          :job_title,
+          :email,
+          :enquiry_category,
+          :enquiry_description,
+        ).merge(
+          reference_number: submission.reference_number,
+          created_at: submission.created_at.strftime('%d/%m/%Y'),
+        )
+      end
+
+      def serialize(*args)
+        Api::V2::EnquiryForm::SubmissionSerializer.new(*args).serializable_hash
+      end
+
+      def serialize_errors(*args)
+        Api::V2::ErrorSerializationService.new(*args).call
+      end
     end
-  end
-
-  private
-
-  def submission_params
-    params.require(:submission).permit(:data)
   end
 end
