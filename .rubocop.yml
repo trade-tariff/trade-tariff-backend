@@ -104,3 +104,6 @@ RSpec/IndexedLet:
 
 RSpec/MultipleExpectations:
   Enabled: false
+
+RSpec/NamedSubject:
+  Enabled: false

@@ -1,6 +1,8 @@
 require 'rails_helper'
 
 RSpec.describe EnquiryForm::CsvGeneratorService do
+  subject { described_class.new(enquiry_data).generate }
+
   let(:enquiry_data) do
     {
       reference_number: 'ABC123',
@@ -10,11 +12,9 @@ RSpec.describe EnquiryForm::CsvGeneratorService do
       job_title: 'Product Manager',
       email: 'jane@example.com',
       enquiry_category: 'Quotas',
-      enquiry_description: 'Need help with quotas.'
+      enquiry_description: 'Need help with quotas.',
     }
   end
-
-  subject { described_class.new(enquiry_data).generate }
 
   it 'generates a CSV with correct headers and data' do
     csv = CSV.parse(subject)
@@ -27,7 +27,7 @@ RSpec.describe EnquiryForm::CsvGeneratorService do
       'Job title',
       'Email address',
       'What do you need help with?',
-      'How can we help?'
+      'How can we help?',
     ])
 
     expect(csv.second).to eq([
@@ -38,7 +38,7 @@ RSpec.describe EnquiryForm::CsvGeneratorService do
       'Product Manager',
       'jane@example.com',
       'Quotas',
-      'Need help with quotas.'
+      'Need help with quotas.',
     ])
   end
 end
