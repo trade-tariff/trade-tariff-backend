@@ -1,7 +1,7 @@
 class PrewarmQuotaOrderNumbersWorker
   include Sidekiq::Worker
 
-  sidekiq_options queue: :default, retry: true
+  sidekiq_options queue: :sync, retry: true
 
   def perform
     TimeMachine.now do

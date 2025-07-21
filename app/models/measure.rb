@@ -514,7 +514,9 @@ class Measure < Sequel::Model
   end
 
   def supplementary_unit_duty_expression
-    measurement_unit = measure_components.first.measurement_unit
+    measurement_unit = measure_components.first&.measurement_unit
+    return nil unless measurement_unit
+
     "#{measurement_unit.description} (#{measurement_unit.abbreviation})"
   end
 

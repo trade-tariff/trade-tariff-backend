@@ -1,7 +1,7 @@
 class DownloadWorker
   include Sidekiq::Worker
 
-  sidekiq_options queue: :rollbacks, retry: false
+  sidekiq_options queue: :sync, retry: false
 
   def perform
     if TradeTariffBackend.uk?

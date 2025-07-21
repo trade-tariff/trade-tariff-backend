@@ -1,6 +1,8 @@
 module Api
   module V2
     class LiveIssuesController < ApiController
+      no_caching
+
       def index
         render json: serialize(filtered_live_issues), status: :ok
       rescue StandardError => e

@@ -1,6 +1,8 @@
 class TreeIntegrityCheckWorker
   include Sidekiq::Worker
 
+  sidekiq_options queue: :sync
+
   def perform
     check(7)
     check(14)
