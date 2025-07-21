@@ -44,6 +44,7 @@ RSpec/SpecFilePathFormat:
   Exclude:
     - spec/presenters/**/*
     - spec/serializers/**/*
+    - spec/requests/**/*
 
 RSpec/ContextWording:
   Prefixes:
