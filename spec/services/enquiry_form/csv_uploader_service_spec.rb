@@ -1,6 +1,8 @@
 require 'rails_helper'
 
 RSpec.describe EnquiryForm::CsvUploaderService do
+  subject { described_class.new(submission, csv_data) }
+
   let(:csv_data) { "CSV,Content,Here\nA,B,C" }
 
   let(:submission) do
@@ -8,14 +10,12 @@ RSpec.describe EnquiryForm::CsvUploaderService do
       :enquiry_form_submission,
       reference_number: 'XYZ123',
       created_at: Time.zone.parse('2025-07-21 12:34:56'),
-      csv_url: nil
+      csv_url: nil,
     )
   end
 
-  subject { described_class.new(submission, csv_data) }
-
   describe '#upload' do
-    let(:expected_path) { "uk/enquiry_forms/2025/7/XYZ123.csv" }
+    let(:expected_path) { 'uk/enquiry_forms/2025/7/XYZ123.csv' }
 
     before do
       allow(TariffSynchronizer::FileService).to receive(:write_file)
@@ -32,17 +32,19 @@ RSpec.describe EnquiryForm::CsvUploaderService do
       expect { subject.upload }.to change { submission.reload.csv_url }.to(expected_path)
     end
 
-    it 'logs the upload' do
-      expect(Rails.logger).to receive(:info)
-        .with("Uploaded enquiry form CSV for XYZ123 to #{expected_path}")
+    before do
+      allow(Rails.logger).to receive(:info)
+    end
 
+    it 'logs the upload' do
       subject.upload
+      expect(Rails.logger).to have_received(:info).with("Uploaded enquiry form CSV for XYZ123 to #{expected_path}")
     end
   end
 
   describe '#filepath_for' do
     it 'generates the correct path based on submission date and reference' do
-      expect(subject.filepath_for(submission)).to eq("uk/enquiry_forms/2025/7/XYZ123.csv")
+      expect(subject.filepath_for(submission)).to eq('uk/enquiry_forms/2025/7/XYZ123.csv')
     end
   end
 end
