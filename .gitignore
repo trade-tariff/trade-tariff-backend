@@ -55,3 +55,6 @@ searches_without_match_or_synonym.csv
 
 /config/master.key
 /ctrf
+
+# Ignore local enquiry form CSV uploads
+/uk/enquiry_forms/*
