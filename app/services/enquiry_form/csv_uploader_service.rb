@@ -12,8 +12,6 @@ class EnquiryForm::CsvUploaderService
     Rails.logger.info("Uploaded enquiry form CSV for #{form_submission.reference_number} to #{file_path}")
   end
 
-  private
-
   def self.filepath_for(form_submission)
     year = form_submission.created_at.year
     month = form_submission.created_at.month
