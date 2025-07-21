@@ -6,25 +6,25 @@ class EnquiryForm::CsvGeneratorService
   def generate
     headers = [
       'Reference',
-     	'Submitted at',
-     	'Full name',
-     	'Company name',
+      'Submitted at',
+      'Full name',
+      'Company name',
       'Job title',
-     	'Email address',
-     	'What do you need help with?',
-      'How can we help?'
+      'Email address',
+      'What do you need help with?',
+      'How can we help?',
     ]
 
-    keys = [
-          :reference_number,
-          :created_at,
-          :name,
-          :company_name,
-          :job_title,
-          :email,
-          :enquiry_category,
-          :enquiry_description
-        ]
+    keys = %i[
+      reference_number
+      created_at
+      name
+      company_name
+      job_title
+      email
+      enquiry_category
+      enquiry_description
+    ]
 
     CSV.generate do |csv|
       csv << headers
