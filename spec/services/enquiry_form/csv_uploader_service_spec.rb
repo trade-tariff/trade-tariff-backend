@@ -19,6 +19,8 @@ RSpec.describe EnquiryForm::CsvUploaderService do
 
     before do
       allow(TariffSynchronizer::FileService).to receive(:write_file)
+      allow(Rails.logger).to receive(:info)
+      allow(Rails.logger).to receive(:info)
     end
 
     it 'writes the CSV file with the correct path and data' do
@@ -30,10 +32,6 @@ RSpec.describe EnquiryForm::CsvUploaderService do
 
     it 'updates the submission with the csv_url' do
       expect { subject.upload }.to change { submission.reload.csv_url }.to(expected_path)
-    end
-
-    before do
-      allow(Rails.logger).to receive(:info)
     end
 
     it 'logs the upload' do
