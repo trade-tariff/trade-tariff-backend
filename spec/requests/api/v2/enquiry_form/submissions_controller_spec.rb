@@ -10,11 +10,27 @@ RSpec.describe Api::Admin::EnquiryForm::SubmissionsController, type: :request do
     }
   end
 
-  describe 'POST #create' do
-    it 'returns a successful 200 response' do
-      post '/api/v2/enquiry_form/submissions', params: form_submission_data
+  before do
+     allow(EnquiryForm::CsvGeneratorService).to receive_message_chain(:new, :generate).and_return("csv,data,here")
+     allow(EnquiryForm::CsvUploaderService).to receive_message_chain(:new, :upload)
+   end
 
-      expect(response).to have_http_status(:ok)
+  describe 'POST #create' do
+    context 'when the form submission is valid' do
+    it 'returns a successful 200 response' do
+      post '/api/v2/enquiry_form/submissions', params: { data: { attributes: form_submission_data }}
+
+      expect(response).to have_http_status(:created)
+      expect(JSON.parse(response.body)['data']['attributes']['reference_number']).not_to be_nil
+    end
+    end
+
+    context 'when the form submission is invalid' do
+      it 'returns an unprocessable entity response' do
+        post '/api/v2/enquiry_form/submissions', params: { data: { attributes: form_submission_data.merge(reference_number: nil) } }
+
+        expect(response).to have_http_status(:unprocessable_entity)
+      end
     end
   end
 end
