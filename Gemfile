@@ -67,12 +67,12 @@ group :development, :test do
   gem 'pry-rails'
   gem 'ruby-lsp-rails'
   gem 'ruby-lsp-rspec'
+  gem 'factory_bot_rails', require: false
 end
 
 group :test do
   gem 'brakeman'
   gem 'database_cleaner-sequel'
-  gem 'factory_bot_rails', require: false
   gem 'forgery'
   gem 'json_expressions'
   gem 'rspec-ctrf'
