@@ -1,7 +1,7 @@
 RSpec.describe Api::V2::ValidityPeriodsController, :v2 do
   shared_examples 'a correctly routing validity periods api request' do
     subject(:do_response) do
-      get validity_period_path
+      api_get validity_period_path
 
       response
     end

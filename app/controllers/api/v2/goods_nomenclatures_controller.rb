@@ -80,16 +80,16 @@ module Api
 
         case object
         when Chapter
-          "/#{service}/api/v2/chapters/#{gnid.first(2)}"
+          "/#{service}/api/chapters/#{gnid.first(2)}"
         when Heading
-          "/#{service}/api/v2/headings/#{gnid.first(4)}"
+          "/#{service}/api/headings/#{gnid.first(4)}"
         when Subheading
-          "/#{service}/api/v2/subheadings/#{object.to_param}"
+          "/#{service}/api/subheadings/#{object.to_param}"
         else
           if check_for_subheadings && !object.declarable?
-            "/#{service}/api/v2/subheadings/#{gnid.first(10)}-#{object.producline_suffix}"
+            "/#{service}/api/subheadings/#{gnid.first(10)}-#{object.producline_suffix}"
           else
-            "/#{service}/api/v2/commodities/#{gnid.first(10)}"
+            "/#{service}/api/commodities/#{gnid.first(10)}"
           end
         end
       end

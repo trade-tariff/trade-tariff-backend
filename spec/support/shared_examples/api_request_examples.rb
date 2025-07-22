@@ -11,7 +11,7 @@ end
 RSpec.shared_examples 'a successful csv response' do
   subject(:do_request) { make_request && response }
 
-  let(:make_request) { get "#{path}.csv" }
+  let(:make_request) { api_get "#{path}.csv" }
 
   it { expect(do_request.headers['Content-Disposition']).to eq("attachment; filename=#{expected_filename}") }
   it { is_expected.to have_http_status :success }

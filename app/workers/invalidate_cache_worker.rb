@@ -2,7 +2,7 @@ class InvalidateCacheWorker
   include Sidekiq::Worker
 
   SERVICES = ['/uk', '/xi', ''].freeze
-  PATHS = %w[/api/v1/* /api/v2/*].freeze
+  PATHS = %w[/api/*].freeze
 
   def perform(client = self.class.client)
     cdn = client.list_distributions.distribution_list.items.find do |d|

@@ -66,7 +66,6 @@ RSpec.describe Api::Admin::GreenLanes::ExemptingCertificateOverridesController, 
       let(:eco_attrs) { build(:exempting_certificate_override).to_hash }
 
       it { is_expected.to have_http_status :created }
-      it { is_expected.to have_attributes location: api_admin_green_lanes_exempting_certificate_override_url(GreenLanes::ExemptingCertificateOverride.last.id) }
       it { expect { page_response }.to change(GreenLanes::ExemptingCertificateOverride, :count).by(1) }
     end
 

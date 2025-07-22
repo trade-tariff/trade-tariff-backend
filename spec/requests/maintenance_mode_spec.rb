@@ -8,7 +8,7 @@ RSpec.describe 'Maintenance mode' do
     end
 
     context 'without bypass enabled' do
-      before { get '/api/v2/sections.json' }
+      before { api_get '/uk/api/sections.json' }
 
       it { is_expected.to have_http_status :service_unavailable }
     end
@@ -19,20 +19,20 @@ RSpec.describe 'Maintenance mode' do
       end
 
       context 'without bypass param' do
-        before { get '/api/v2/sections.json' }
+        before { api_get '/uk/api/sections.json' }
 
         it { is_expected.to have_http_status :service_unavailable }
       end
 
       context 'with wrong bypass param' do
-        before { get '/api/v2/sections.json?maintenance_bypass=something' }
+        before { api_get '/uk/api/sections.json?maintenance_bypass=something' }
 
         it { is_expected.to have_http_status :service_unavailable }
       end
 
       context 'with correct bypass param' do
         before do
-          get '/api/v2/sections.json?maintenance_bypass=bypass'
+          api_get '/uk/api/sections.json?maintenance_bypass=bypass'
         end
 
         it { is_expected.to have_http_status :success }

@@ -64,7 +64,6 @@ RSpec.describe Api::Admin::GreenLanes::MeasureTypeMappingsController, :admin do
       let(:ex_attrs) { build(:identified_measure_type_category_assessment).to_hash }
 
       it { is_expected.to have_http_status :created }
-      it { is_expected.to have_attributes location: api_admin_green_lanes_measure_type_mapping_url(GreenLanes::IdentifiedMeasureTypeCategoryAssessment.last.id) }
       it { expect { page_response }.to change(GreenLanes::IdentifiedMeasureTypeCategoryAssessment, :count).by(1) }
     end
 

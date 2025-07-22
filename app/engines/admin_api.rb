@@ -2,7 +2,7 @@ class AdminApi < ::Rails::Engine
 end
 
 AdminApi.routes.draw do
-  namespace :api, defaults: { format: 'json' }, path: '/admin' do
+  namespace :api, defaults: { format: 'json' }, path: '' do
     scope module: :admin do
       resources :sections, only: %i[index show] do
         scope module: 'sections', constraints: { id: /\d+/ } do

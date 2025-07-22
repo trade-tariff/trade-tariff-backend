@@ -75,7 +75,7 @@ RSpec.describe Api::Admin::UpdatesController do
       let(:pattern) do
         {
           error: 'not found',
-          url: 'http://test.host/admin/updates/foo',
+          url: 'http://test.host/uk/admin/updates/foo',
         }
       end
 

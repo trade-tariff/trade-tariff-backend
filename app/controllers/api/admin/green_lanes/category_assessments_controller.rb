@@ -32,7 +32,6 @@ module Api
 
           if ca.valid? && ca.save
             render json: serialize(ca),
-                   location: api_admin_green_lanes_category_assessment_url(ca.id),
                    status: :created
           else
             render json: serialize_errors(ca),
@@ -46,7 +45,6 @@ module Api
 
           if ca.valid? && ca.save
             render json: serialize(ca),
-                   location: api_admin_green_lanes_category_assessment_url(ca.id),
                    status: :ok
           else
             render json: serialize_errors(ca),
@@ -67,7 +65,6 @@ module Api
 
           if ca.add_exemption(exemption)
             render json: serialize(ca),
-                   location: api_admin_green_lanes_category_assessment_url(ca.id),
                    status: :ok
           else
             render json: serialize_errors(ca),
@@ -81,7 +78,6 @@ module Api
 
           if ca.remove_exemption(exemption)
             render json: serialize(ca),
-                   location: api_admin_green_lanes_category_assessment_url(ca.id),
                    status: :ok
           else
             render json: serialize_errors(ca),

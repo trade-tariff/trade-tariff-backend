@@ -8,12 +8,9 @@ module Api
           faq_feedback = ::GreenLanes::FaqFeedback.new(faq_feedback_params)
 
           if faq_feedback.valid? && faq_feedback.save
-            render json: serialize(faq_feedback),
-                   location: api_green_lanes_faq_feedback_url(faq_feedback.id),
-                   status: :created
+            render json: serialize(faq_feedback), status: :created
           else
-            render json: serialize_errors(faq_feedback),
-                   status: :unprocessable_entity
+            render json: serialize_errors(faq_feedback), status: :unprocessable_entity
           end
         end
 
