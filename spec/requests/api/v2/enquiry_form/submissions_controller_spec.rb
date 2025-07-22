@@ -27,7 +27,7 @@ RSpec.describe Api::Admin::EnquiryForm::SubmissionsController, type: :request do
 
     context 'when the form submission is invalid' do
       it 'returns an unprocessable entity response' do
-        post '/api/v2/enquiry_form/submissions', params: { data: { attributes: form_submission_data.merge(reference_number: nil) } }
+        post '/api/v2/enquiry_form/submissions', params: { data: { attributes: {} } }
 
         expect(response).to have_http_status(:unprocessable_entity)
       end
