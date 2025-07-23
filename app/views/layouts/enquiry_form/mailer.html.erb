@@ -3,14 +3,70 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <style>
-      /* Email styles need to be inline */
+      @font-face {
+        font-family: "GDS Transport";
+        src: url("https://assets.publishing.service.gov.uk/static/fonts/light-94a07e06a1-v2.woff2") format("woff2"), url("https://assets.publishing.service.gov.uk/static/fonts/light-f591b13f7d-v2.woff") format("woff");
+        font-weight: normal;
+      }
+
+      body {
+        font-family: "GDS Transport", Arial, sans-serif;
+      }
+
+      .govuk-header {
+        font-size: 1rem;
+        line-height: 1;
+        background: #1f70b8;
+        color: #ffffff;
+      }
+
+      .govuk-header__container {
+        position: relative;
+        margin-bottom: -10px;
+        padding-top: 10px;
+        border-bottom: 10px solid #1d70b8;
+      }
+
+      .govuk-header__link {
+        padding-left: 10px;
+        color: #ffffff;
+      }
+
+      .govuk-logo-dot {
+        fill: #00ffe0;
+      }
+
+      .govuk-header__logotype {
+        margin-right: 10px;
+      }
+
+      .govuk-inset-text {
+        font-weight: 400;
+        color: #0b0c0c;
+        padding: 15px;
+        clear: both;
+        border-left: 10px solid #b1b4b6;
+      }
+
+      .container {
+        max-width: 600px;
+        margin: 0 auto;
+        padding: 0 15px;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .divider{
+        border-bottom: 1px solid #b1b4b6;
+        padding-bottom: 10px;
+      }
     </style>
   </head>
 
   <header class="govuk-header" data-module="govuk-header">
-    <div class="govuk-header__container govuk-width-container">
-      <div class="govuk-header__logo">
-        <a href="https://www.gov.uk" class="govuk-header__link govuk-header__link--homepage">
+    <div class="govuk-header__container">
+      <div>
+        <a href="https://www.gov.uk" class="govuk-header__link">
           <svg
             focusable="false"
             role="img"

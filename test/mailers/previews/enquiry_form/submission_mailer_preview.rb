@@ -8,7 +8,7 @@ class EnquiryForm::SubmissionMailerPreview < ActionMailer::Preview
       name: 'John Doe',
       company_name: 'John Doe Ltd',
       job_title: 'Customs Officer',
-      email: 'john@acme.com',
+      email: 'john@example.com',
       enquiry_category: 'Quotas',
       enquiry_description: 'I need help with my quotas',
     }
