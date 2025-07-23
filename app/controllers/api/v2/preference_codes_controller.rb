@@ -2,23 +2,21 @@ module Api
   module V2
     class PreferenceCodesController < ApiController
       def index
-        respond_to do |format|
-          format.json do
-            render json: PreferenceCodeSerializer.new(
-              PreferenceCode.all,
-            ).serializable_hash
-          end
-        end
+        render json: preference_codes
       end
 
       def show
-        preference_code = PreferenceCode[params[:id]]
+        render json: preference_code
+      end
 
-        raise Sequel::RecordNotFound unless preference_code
+      private
 
-        serializer = Api::V2::PreferenceCodeSerializer.new(preference_code)
+      def preference_codes
+        PreferenceCodeSerializer.new(PreferenceCode.all).serializable_hash
+      end
 
-        render json: serializer.serializable_hash
+      def preference_code
+        Api::V2::PreferenceCodeSerializer.new(PreferenceCode.take(params[:id])).serializable_hash
       end
     end
   end

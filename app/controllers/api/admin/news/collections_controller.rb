@@ -22,7 +22,6 @@ module Api
 
           if news_collection.valid? && news_collection.save
             render json: serialize(news_collection),
-                   location: api_admin_news_collection_url(news_collection.id),
                    status: :created
           else
             render json: serialize_errors(news_collection),
@@ -36,7 +35,6 @@ module Api
 
           if news_collection.valid? && news_collection.save
             render json: serialize(news_collection),
-                   location: api_admin_news_collection_url(news_collection.id),
                    status: :ok
           else
             render json: serialize_errors(news_collection),

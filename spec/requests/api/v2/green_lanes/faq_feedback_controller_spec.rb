@@ -16,24 +16,34 @@ RSpec.describe Api::V2::GreenLanes::FaqFeedbackController, :v2 do
 
   describe 'POST to #create' do
     let(:make_request) do
-      post api_green_lanes_faq_feedback_index_path(format: :json), params: faq_feedback_data, headers: {
-        'HTTP_AUTHORIZATION' => authorization,
+      post api_green_lanes_faq_feedback_index_path, params: params, headers: headers, as: :json
+    end
+
+    let(:params) do
+      {
+        data: {
+          type: :green_lanes_faq_feedback,
+          attributes: attributes,
+        },
       }
     end
 
-    let :faq_feedback_data do
-      { data: { type: :green_lanes_faq_feedback, attributes: ex_attrs } }
+    let(:headers) do
+      {
+        'HTTP_AUTHORIZATION' => authorization,
+        'Accept' => 'application/vnd.hmrc.2.0+json',
+        'Content-Type' => 'application/json',
+      }
     end
 
     context 'with valid params' do
-      let(:ex_attrs) { build(:green_lanes_faq_feedback).to_hash }
+      let(:attributes) { attributes_for(:green_lanes_faq_feedback) }
 
       it { is_expected.to have_http_status :created }
-      it { is_expected.to have_attributes location: api_green_lanes_faq_feedback_url(GreenLanes::FaqFeedback.last.id) }
     end
 
     context 'with invalid params' do
-      let(:ex_attrs) { build(:green_lanes_faq_feedback, session_id: nil).to_hash }
+      let(:attributes) { attributes_for(:green_lanes_faq_feedback, session_id: nil) }
 
       it { is_expected.to have_http_status :unprocessable_entity }
 

@@ -19,7 +19,7 @@ Working from 'inside' out, we cache at multiple levels
   * by default this is set to cache for 2 minutes then revalidate for anything older.
   * A response is valid unless a backend Deployment or a Sync has happened
 * Frontend uses these cache headers to control how it caches responses in it API client
-* CDN ignores the cache headers and caches anything under `/api`, eg `/api/v2/sections.json` for 30 minutes
+* CDN ignores the cache headers and caches anything under `/uk/api`, eg `/uk/api/sections.json` for 30 minutes
 * CDN does not cache HTML pages from the frontend
 
 ## Rails.cache

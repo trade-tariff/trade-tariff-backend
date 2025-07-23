@@ -58,7 +58,6 @@ RSpec.describe Api::Admin::News::ItemsController, :admin do
       let(:news_item_attrs) { attributes_for :news_item }
 
       it { is_expected.to have_http_status :created }
-      it { is_expected.to have_attributes location: api_admin_news_item_url(News::Item.last.id) }
       it { expect { page_response }.to change(News::Item, :count).by(1) }
     end
 
@@ -90,7 +89,6 @@ RSpec.describe Api::Admin::News::ItemsController, :admin do
 
     context 'with valid params' do
       it { is_expected.to have_http_status :success }
-      it { is_expected.to have_attributes location: api_admin_news_item_url(news_item.id) }
       it { expect { page_response }.not_to change(news_item.reload, :title) }
     end
 

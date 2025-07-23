@@ -18,7 +18,7 @@ RSpec.describe Api::V2::ExchangeRates::PeriodListsController, :v2 do
       let(:year) { 2023 }
 
       let(:make_request) do
-        get api_exchange_rates_period_list_path(
+        api_get api_exchange_rates_period_list_path(
           year: '2023',
           filter: { type: 'monthly' },
           format: :json,
@@ -51,7 +51,7 @@ RSpec.describe Api::V2::ExchangeRates::PeriodListsController, :v2 do
       let(:year) { nil }
 
       let(:make_request) do
-        get api_exchange_rates_period_list_path(
+        api_get api_exchange_rates_period_list_path(
           filter: { type: 'monthly' },
           format: :json,
         )
@@ -83,7 +83,7 @@ RSpec.describe Api::V2::ExchangeRates::PeriodListsController, :v2 do
       let(:period_list) { build(:period_list, exchange_rate_periods: [], year: 1970) }
 
       let(:make_request) do
-        get api_exchange_rates_period_list_path(
+        api_get api_exchange_rates_period_list_path(
           year: '1970',
           filter: { type: 'monthly' },
           format: :json,
@@ -115,7 +115,7 @@ RSpec.describe Api::V2::ExchangeRates::PeriodListsController, :v2 do
       let(:year) { '2023idadas' }
 
       let(:make_request) do
-        get api_exchange_rates_period_list_path(
+        api_get api_exchange_rates_period_list_path(
           year: '2023idadas',
           filter: { type: 'monthly' },
           format: :json,
@@ -125,7 +125,7 @@ RSpec.describe Api::V2::ExchangeRates::PeriodListsController, :v2 do
       let(:pattern) do
         {
           error: 'not found',
-          url: 'http://www.example.com/uk/api/v2/exchange_rates/period_lists/2023idadas?filter%5Btype%5D=monthly',
+          url: 'http://www.example.com/uk/api/exchange_rates/period_lists/2023idadas?filter%5Btype%5D=monthly',
         }
       end
 
@@ -137,7 +137,7 @@ RSpec.describe Api::V2::ExchangeRates::PeriodListsController, :v2 do
       let(:year) { 2023 }
 
       let(:make_request) do
-        get api_exchange_rates_period_list_path(
+        api_get api_exchange_rates_period_list_path(
           year: '2023',
           filter: { type: 'invalid' },
           format: :json,
@@ -147,7 +147,7 @@ RSpec.describe Api::V2::ExchangeRates::PeriodListsController, :v2 do
       let(:pattern) do
         {
           error: 'invalid',
-          url: 'http://www.example.com/uk/api/v2/exchange_rates/period_lists/2023?filter%5Btype%5D=invalid',
+          url: 'http://www.example.com/uk/api/exchange_rates/period_lists/2023?filter%5Btype%5D=invalid',
         }
       end
 
