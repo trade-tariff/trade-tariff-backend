@@ -101,14 +101,6 @@ rake rules_of_origin:validate_mappings          # validate a CSV mappings file -
 rake rules_of_origin:validate_rules             #  file - CSVFILE=path/to/file.csv
 ```
 
-Additionally there are RSpec tests which can be run against the datasets, these are not part of the default test run but can be run as follows
-
-```bash
-bundle exec rspec --tag roo_data
-```
-
-These specs are run automatically by CI whenever there are any changes affecting the `/lib/rules_of_origin` folder
-
 ## Steps to update the RoO data files
 
 -[] copy the CSV, json, and md files in the relevant folders (see file structure above)
