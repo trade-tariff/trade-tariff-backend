@@ -1,11 +1,29 @@
-<h1>Enquiry Form Submission</h1>
+<div class="container">
+<p>This is an <strong>Online Tariff Tool - Enquiry form</strong> submission. </p>
+<p>This form was submitted at <%= @enquiry_form[:created_at].to_datetime.strftime("%-l:%M%P on %-d %B %Y") %>.</p>
+<p>Enquiry reference number: <strong><%= @enquiry_form[:reference_number] %></strong></p>
+<div class="govuk-inset-text">
+  Check that this data looks safe before you use it
+</div>
 
-<p>Reference number: <%= @enquiry_form[:reference_number] %></p>
-<p>Submission date: <%= @enquiry_form[:created_at] %></p>
+<p class="divider"></p>
+<h2>Full name</h2>
+<p class="divider" ><%= @enquiry_form[:name] %></p>
+<h2>Company name</h2>
+<p class="divider" ><%= @enquiry_form[:company_name] %></p>
+<h2>Job title</h2>
+<p class="divider" ><%= @enquiry_form[:job_title] %></p>
+<h2>Email address</h2>
+<p class="divider" ><%= @enquiry_form[:email] %></p>
+<h2>What do you need help with?</h2>
+<p class="divider" ><%= @enquiry_form[:enquiry_category] %></p>
+<h2>How can we help?</h2>
+<p class="divider" ><%= @enquiry_form[:enquiry_description] %></p>
+<h2>CSV file of these answers</h2>
+<p class="divider" ><i><%= @enquiry_form[:reference_number] %>.csv</i> (attached to this email)</p>
 
-<p>Name: <%= @enquiry_form[:name] %></p>
-<p>Company name: <%= @enquiry_form[:company_name] %></p>
-<p>Job title: <%= @enquiry_form[:job_title] %></p>
-<p>Email: <%= @enquiry_form[:email] %></p>
-<p>Enquiry category: <%= @enquiry_form[:enquiry_category] %></p>
-<p>Enquiry description: <%= @enquiry_form[:enquiry_description] %></p>
+<div class="govuk-inset-text">
+  <h2>You cannot reply to this email</h2>
+  If you need to contact the person who completed this form, you’ll need to contact them directly.
+</div>
+</div>
