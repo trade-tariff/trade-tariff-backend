@@ -2,7 +2,7 @@ RSpec.describe Api::V2::SubheadingsController, :v2 do
   describe 'GET #show' do
     subject(:rendered) { make_request && response } # Subheading api requires the producline suffix to identify the subheading
 
-    let(:make_request) { api_get api_subheading_path('0101210000-10') }
+    let(:make_request) { get api_subheading_path('0101210000-10') }
 
     context 'when the subheading has at least one child, a heading, a chapter and a section' do
       before do

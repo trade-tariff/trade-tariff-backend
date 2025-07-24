@@ -55,6 +55,7 @@ RSpec.describe Api::Admin::GreenLanes::UpdateNotificationsController, :admin do
 
     context 'with valid params' do
       it { is_expected.to have_http_status :success }
+      it { is_expected.to have_attributes location: api_admin_green_lanes_update_notification_url(update.id) }
       it { expect { page_response }.not_to change(update.reload, :status) }
     end
 

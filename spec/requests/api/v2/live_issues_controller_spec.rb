@@ -9,7 +9,7 @@ RSpec.describe Api::V2::LiveIssuesController, :v2 do
         active_live_issue
         resolved_live_issue
 
-        api_get api_live_issues_path, params: {}
+        get api_live_issues_path(format: :json), params: {}
 
         expect(response).to have_http_status(:success)
         expect(json_response).to include('data')
@@ -22,7 +22,7 @@ RSpec.describe Api::V2::LiveIssuesController, :v2 do
         active_live_issue
         resolved_live_issue
 
-        api_get api_live_issues_path(format: :json), params: { filter: { status: 'Active' } }
+        get api_live_issues_path(format: :json), params: { filter: { status: 'Active' } }
 
         expect(response).to have_http_status(:success)
         expect(json_response).to include('data')
@@ -34,7 +34,7 @@ RSpec.describe Api::V2::LiveIssuesController, :v2 do
         active_live_issue
         resolved_live_issue
 
-        api_get api_live_issues_path, params: { filter: { status: 'Resolved' } }
+        get api_live_issues_path(format: :json), params: { filter: { status: 'Resolved' } }
 
         expect(response).to have_http_status(:success)
         expect(json_response).to include('data')
@@ -49,7 +49,7 @@ RSpec.describe Api::V2::LiveIssuesController, :v2 do
       end
 
       it 'returns 400 if serialization fails' do
-        api_get api_live_issues_path
+        get api_live_issues_path(format: :json)
         expect(response).to have_http_status(:bad_request)
         expect(json_response['errors'].first['detail']).to include('Bad request')
       end

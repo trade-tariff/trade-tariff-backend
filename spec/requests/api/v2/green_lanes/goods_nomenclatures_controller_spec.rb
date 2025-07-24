@@ -17,9 +17,9 @@ RSpec.describe Api::V2::GreenLanes::GoodsNomenclaturesController, :v2 do
   end
 
   let :make_request do
-    api_get api_green_lanes_goods_nomenclature_path(request_item_id, format: :json),
-            headers: { 'HTTP_AUTHORIZATION' => authorization },
-            params:
+    get api_green_lanes_goods_nomenclature_path(request_item_id, format: :json),
+        headers: { 'HTTP_AUTHORIZATION' => authorization },
+        params:
   end
 
   let(:params) { {} }

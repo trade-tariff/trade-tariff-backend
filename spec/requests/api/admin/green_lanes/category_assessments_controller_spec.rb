@@ -178,6 +178,7 @@ RSpec.describe Api::Admin::GreenLanes::CategoryAssessmentsController, :admin do
       let(:ca_attrs) { build(:category_assessment).to_hash }
 
       it { is_expected.to have_http_status :created }
+      it { is_expected.to have_attributes location: api_admin_green_lanes_category_assessment_url(GreenLanes::CategoryAssessment.last.id) }
       it { expect { page_response }.to change(GreenLanes::CategoryAssessment, :count).by(1) }
     end
 
@@ -209,6 +210,7 @@ RSpec.describe Api::Admin::GreenLanes::CategoryAssessmentsController, :admin do
 
     context 'with valid params' do
       it { is_expected.to have_http_status :success }
+      it { is_expected.to have_attributes location: api_admin_green_lanes_category_assessment_url(category.id) }
       it { expect { page_response }.not_to change(category.reload, :regulation_role) }
     end
 
@@ -247,6 +249,7 @@ RSpec.describe Api::Admin::GreenLanes::CategoryAssessmentsController, :admin do
 
     context 'with valid params' do
       it { is_expected.to have_http_status :success }
+      it { is_expected.to have_attributes location: api_admin_green_lanes_category_assessment_url(category.id) }
       it { expect { page_response }.not_to change(category.reload, :regulation_role) }
     end
 

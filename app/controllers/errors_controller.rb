@@ -56,18 +56,14 @@ private
   end
 
   def serialize_errors(errors)
-    if version == '1.0'
-      Api::V1::ErrorSerializationService.new.serialized_errors(errors)
-    else
+    # TODO: Remove custom Accept header management
+    if request.headers['Accept'] == 'application/vnd.uktt.v2'
       Api::V2::ErrorSerializationService.new.serialized_errors(errors)
+    elsif request.url.include?('v2')
+      Api::V2::ErrorSerializationService.new.serialized_errors(errors)
+    else
+      Api::V1::ErrorSerializationService.new.serialized_errors(errors)
     end
-  end
-
-  def version
-    accept = request.headers['Accept'].to_s
-    match = accept.match(VersionedAcceptHeader::VERSION_REGEX)
-
-    match&.[](:version) || VersionedAcceptHeader::DEFAULT_VERSION
   end
 end
 # rubocop:enable Rails/ApplicationController

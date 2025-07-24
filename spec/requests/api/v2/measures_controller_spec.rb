@@ -5,7 +5,7 @@ RSpec.describe Api::V2::MeasuresController, :v2 do
     let(:measure) { create(:measure) }
 
     let :make_request do
-      api_get api_measure_path(id: measure.measure_sid)
+      get api_measure_path(id: measure.measure_sid, format: :json)
     end
 
     it_behaves_like 'a successful jsonapi response'

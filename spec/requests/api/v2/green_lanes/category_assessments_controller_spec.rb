@@ -7,8 +7,8 @@ RSpec.describe Api::V2::GreenLanes::CategoryAssessmentsController, :v2 do
     subject(:rendered) { make_request && response }
 
     let :make_request do
-      api_get api_green_lanes_category_assessments_path(format: :json),
-              headers: { 'HTTP_AUTHORIZATION' => authorization }
+      get api_green_lanes_category_assessments_path(format: :json),
+          headers: { 'HTTP_AUTHORIZATION' => authorization }
     end
 
     let :authorization do
@@ -56,8 +56,8 @@ RSpec.describe Api::V2::GreenLanes::CategoryAssessmentsController, :v2 do
     subject(:rendered) { make_request && response }
 
     let :make_request do
-      api_get api_green_lanes_category_assessments_path(format: :json),
-              headers: { 'HTTP_AUTHORIZATION' => authorization }
+      get api_green_lanes_category_assessments_path(format: :json),
+          headers: { 'HTTP_AUTHORIZATION' => authorization }
     end
 
     context 'when presence of incorrect bearer token' do

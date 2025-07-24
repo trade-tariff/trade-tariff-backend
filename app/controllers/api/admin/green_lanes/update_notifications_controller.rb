@@ -22,6 +22,7 @@ module Api
 
           if update.save
             render json: serialize(update),
+                   location: api_admin_green_lanes_update_notification_url(update.id),
                    status: :ok
           else
             render json: serialize_errors(update),

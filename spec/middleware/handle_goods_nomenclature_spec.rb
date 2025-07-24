@@ -5,15 +5,15 @@ RSpec.describe HandleGoodsNomenclature do
 
   describe '#call' do
     context 'when the request path matches a chapter commodity' do
-      let(:original_path) { '/xi/api/commodities/0100000000' }
+      let(:original_path) { '/xi/api/v2/commodities/0100000000' }
       let(:env) { Rack::MockRequest.env_for(original_path) }
 
       it 'transforms the path to chapters with the short code', :aggregate_failures do
         _, updated_env, _response = middleware.call(env)
 
         expect(updated_env['action_dispatch.old-path']).to eq(original_path)
-        expect(updated_env['action_dispatch.path-transformed']).to eq('/xi/api/chapters/01')
-        expect(updated_env['PATH_INFO']).to eq('/xi/api/chapters/01')
+        expect(updated_env['action_dispatch.path-transformed']).to eq('/xi/api/v2/chapters/01')
+        expect(updated_env['PATH_INFO']).to eq('/xi/api/v2/chapters/01')
       end
     end
 

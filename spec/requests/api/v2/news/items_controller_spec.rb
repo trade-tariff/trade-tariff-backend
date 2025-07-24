@@ -3,7 +3,7 @@ RSpec.describe Api::V2::News::ItemsController, :v2 do
     subject(:rendered) { make_request && response }
 
     let :make_request do
-      api_get api_news_items_path(request_params.merge(format: :json))
+      get api_news_items_path(request_params.merge(format: :json))
     end
 
     let(:request_params) { {} }
@@ -34,7 +34,7 @@ RSpec.describe Api::V2::News::ItemsController, :v2 do
       let(:collection) { item.collections.first }
 
       let :make_request do
-        api_get api_news_collection_items_path(collection_id:, format: :json)
+        get api_news_collection_items_path(collection_id:, format: :json)
       end
 
       context 'with known collection' do
@@ -93,14 +93,14 @@ RSpec.describe Api::V2::News::ItemsController, :v2 do
     let(:news_item) { create :news_item }
 
     let :make_request do
-      api_get api_news_item_path(news_item.id, format: :json)
+      get api_news_item_path(news_item.id, format: :json)
     end
 
     it_behaves_like 'a successful jsonapi response'
 
     context 'with unknown news item' do
       let :make_request do
-        api_get api_news_item_path(9999, format: :json)
+        get api_news_item_path(9999, format: :json)
       end
 
       it { is_expected.to have_http_status :not_found }
@@ -108,7 +108,7 @@ RSpec.describe Api::V2::News::ItemsController, :v2 do
 
     context 'with slug' do
       let :make_request do
-        api_get api_news_item_path(news_item.slug, format: :json)
+        get api_news_item_path(news_item.slug, format: :json)
       end
 
       it_behaves_like 'a successful jsonapi response'
@@ -116,7 +116,7 @@ RSpec.describe Api::V2::News::ItemsController, :v2 do
 
     context 'with an unknown slug' do
       let :make_request do
-        api_get api_news_item_path('something-unknown', format: :json)
+        get api_news_item_path('something-unknown', format: :json)
       end
 
       it { is_expected.to have_http_status :not_found }

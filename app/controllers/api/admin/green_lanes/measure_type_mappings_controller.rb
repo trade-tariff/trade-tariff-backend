@@ -24,6 +24,7 @@ module Api
 
           if ex.valid? && ex.save
             render json: serialize(ex),
+                   location: api_admin_green_lanes_measure_type_mapping_url(ex.id),
                    status: :created
           else
             render json: serialize_errors(ex),

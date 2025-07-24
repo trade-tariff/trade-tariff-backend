@@ -15,7 +15,7 @@ RSpec.describe Api::V2::ExchangeRatesController, :v2 do
 
     context 'when the year and month parameters are valid' do
       let(:make_request) do
-        api_get api_exchange_rate_path(
+        get api_exchange_rate_path(
           '2023-6',
           filter: { type: 'monthly' },
           format: :json,
@@ -49,7 +49,7 @@ RSpec.describe Api::V2::ExchangeRatesController, :v2 do
 
     context 'when the year and month parameters are invalid' do
       let(:make_request) do
-        api_get api_exchange_rate_path(
+        get api_exchange_rate_path(
           '2023idadas-6',
           filter: { type: 'monthly' },
           format: :json,
@@ -59,7 +59,7 @@ RSpec.describe Api::V2::ExchangeRatesController, :v2 do
       let(:pattern) do
         {
           error: 'not found',
-          url: 'http://www.example.com/uk/api/exchange_rates/2023idadas-6?filter%5Btype%5D=monthly',
+          url: 'http://www.example.com/uk/api/v2/exchange_rates/2023idadas-6?filter%5Btype%5D=monthly',
         }
       end
 
@@ -72,7 +72,7 @@ RSpec.describe Api::V2::ExchangeRatesController, :v2 do
 
     context 'when the type parameter is invalid' do
       let(:make_request) do
-        api_get api_exchange_rate_path(
+        get api_exchange_rate_path(
           '2023-6',
           filter: { type: 'invalid' },
           format: :json,
@@ -82,7 +82,7 @@ RSpec.describe Api::V2::ExchangeRatesController, :v2 do
       let(:pattern) do
         {
           'error' => 'invalid',
-          'url' => 'http://www.example.com/uk/api/exchange_rates/2023-6?filter%5Btype%5D=invalid',
+          'url' => 'http://www.example.com/uk/api/v2/exchange_rates/2023-6?filter%5Btype%5D=invalid',
         }
       end
 

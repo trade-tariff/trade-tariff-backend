@@ -8,7 +8,7 @@ RSpec.describe Api::V2::ChaptersController, :v2 do
 
   describe 'GET #index' do
     it 'caches the serialized chapters' do
-      api_get '/uk/api/chapters'
+      get '/api/v2/chapters'
 
       expect(Rails.cache)
         .to have_received(:fetch)
@@ -19,7 +19,7 @@ RSpec.describe Api::V2::ChaptersController, :v2 do
     end
 
     it_behaves_like 'a successful csv response' do
-      let(:path) { '/uk/api/chapters' }
+      let(:path) { '/api/v2/chapters' }
       let(:expected_filename) { "uk-chapters-#{Time.zone.today.iso8601}.csv" }
 
       before do
@@ -32,7 +32,7 @@ RSpec.describe Api::V2::ChaptersController, :v2 do
     let(:chapter) { create :chapter, :with_section }
 
     it 'caches the serialized chapters' do
-      api_get "/uk/api/chapters/#{chapter.short_code}"
+      get "/api/v2/chapters/#{chapter.short_code}"
 
       expect(Rails.cache)
         .to have_received(:fetch)
@@ -47,7 +47,7 @@ RSpec.describe Api::V2::ChaptersController, :v2 do
     let(:chapter) { create :chapter, :with_section }
 
     it 'caches the serialized chapter changes' do
-      api_get changes_api_chapter_path(chapter)
+      get changes_api_chapter_path(chapter)
 
       expect(Rails.cache)
         .to have_received(:fetch)
@@ -65,7 +65,7 @@ RSpec.describe Api::V2::ChaptersController, :v2 do
     let(:expected_filename) { "uk-chapter-#{chapter.short_code}-headings-#{Time.zone.today.iso8601}.csv" }
 
     it_behaves_like 'a successful csv response' do
-      let(:path) { "/uk/api/chapters/#{chapter.short_code}/headings" }
+      let(:path) { "/api/v2/chapters/#{chapter.short_code}/headings" }
     end
   end
 end

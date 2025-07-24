@@ -64,6 +64,7 @@ RSpec.describe Api::Admin::GreenLanes::MeasuresController, :admin do
       let(:measure_attrs) { build(:green_lanes_measure).to_hash }
 
       it { is_expected.to have_http_status :created }
+      it { is_expected.to have_attributes location: api_admin_green_lanes_measure_url(GreenLanes::Measure.last.id) }
       it { expect { page_response }.to change(GreenLanes::Measure, :count).by(1) }
     end
 
@@ -97,6 +98,7 @@ RSpec.describe Api::Admin::GreenLanes::MeasuresController, :admin do
       let(:new_category_assessment_id) { new_category_assessment.id }
 
       it { is_expected.to have_http_status :success }
+      it { is_expected.to have_attributes location: api_admin_green_lanes_measure_url(measure.id) }
       it { expect { page_response }.not_to change(measure.reload, :productline_suffix) }
     end
 

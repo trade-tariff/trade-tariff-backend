@@ -1,36 +1,28 @@
 module RequestSpecHelper
-  %i[head get post patch delete].each do |method|
-    define_method "api_#{method}" do |path, **kwargs|
-      public_send(method, path, **add_default_headers(**kwargs))
-    end
+  def authenticated_head(path, **kwargs)
+    head path, **add_authentication_header(**kwargs)
+  end
 
-    define_method "authenticated_#{method}" do |path, **kwargs|
-      public_send(method, path, **add_authentication_header(**kwargs))
-    end
+  def authenticated_get(path, **kwargs)
+    get path, **add_authentication_header(**kwargs)
+  end
+
+  def authenticated_post(path, **kwargs)
+    post path, **add_authentication_header(**kwargs)
+  end
+
+  def authenticated_patch(path, **kwargs)
+    patch path, **add_authentication_header(**kwargs)
+  end
+
+  def authenticated_delete(path, **kwargs)
+    delete path, **add_authentication_header(**kwargs)
   end
 
 private
 
-  def add_green_lanes_authentication_header(headers: {}, **kwargs)
-    allow(TradeTariffBackend).to receive_messages(
-      green_lanes_api_tokens: 'Trade-Tariff-Test',
-      uk?: false,
-    )
-
-    headers['HTTP_AUTHORIZATION'] ||= ActionController::HttpAuthentication::Token.encode_credentials('Trade-Tariff-Test')
-
-    kwargs.merge(headers:)
-  end
-
   def add_authentication_header(headers: {}, **kwargs)
     headers['HTTP_AUTHORIZATION'] ||= 'Bearer tariff-api-test-token'
-
-    kwargs.merge(headers:)
-  end
-
-  def add_default_headers(headers: {}, **kwargs)
-    headers['Accept'] ||= 'application/vnd.hmrc.2.0+json'
-    headers['Content-Type'] ||= 'application/json'
 
     kwargs.merge(headers:)
   end

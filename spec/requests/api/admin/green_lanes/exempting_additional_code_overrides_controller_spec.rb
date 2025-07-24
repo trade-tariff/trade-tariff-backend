@@ -66,6 +66,7 @@ RSpec.describe Api::Admin::GreenLanes::ExemptingAdditionalCodeOverridesControlle
       let(:eaco_attrs) { build(:exempting_additional_code_override).to_hash }
 
       it { is_expected.to have_http_status :created }
+      it { is_expected.to have_attributes location: api_admin_green_lanes_exempting_additional_code_override_url(GreenLanes::ExemptingAdditionalCodeOverride.last.id) }
       it { expect { page_response }.to change(GreenLanes::ExemptingAdditionalCodeOverride, :count).by(1) }
     end
 

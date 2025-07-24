@@ -91,14 +91,6 @@ class PreferenceCode
       preference_codes.values
     end
 
-    def take(code)
-      preference_code = self[code]
-
-      return preference_code if preference_code
-
-      raise Sequel::RecordNotFound
-    end
-
     def preference_codes
       @preference_codes ||= codes_from_file.each_with_object({}) do |preference_code, acc|
         code = preference_code['id']

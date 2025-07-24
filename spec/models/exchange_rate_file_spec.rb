@@ -2,7 +2,7 @@ RSpec.describe ExchangeRateFile, type: :model do
   describe '#file_path' do
     let(:exchange_rate_file) { build(:exchange_rate_file) }
 
-    it { expect(exchange_rate_file.file_path).to eq('/uk/api/exchange_rates/files/monthly_csv_2023-6.csv') }
+    it { expect(exchange_rate_file.file_path).to eq('/api/v2/exchange_rates/files/monthly_csv_2023-6.csv') }
   end
 
   describe '#id' do

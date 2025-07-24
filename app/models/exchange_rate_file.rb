@@ -13,7 +13,7 @@ class ExchangeRateFile < Sequel::Model
   content_addressable_fields :format, :type, :publication_date, :period_year, :period_month
 
   def file_path
-    "/uk/api/exchange_rates/files/#{filename}"
+    "/api/v2/exchange_rates/files/#{filename}"
   end
 
   def object_key

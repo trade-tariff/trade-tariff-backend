@@ -1,5 +1,6 @@
 RSpec.describe Api::V2::SectionsController do
   routes { V2Api.routes }
+  # GET /api/v2/sections/:id
 
   describe '#show' do
     let(:heading) { create :heading, :with_chapter }
@@ -88,6 +89,7 @@ RSpec.describe Api::V2::SectionsController do
     end
   end
 
+  # GET /api/v2/sections
   describe '#index' do
     before { create :section_note, section_id: section1.id }
 

@@ -1,6 +1,6 @@
 RSpec.describe ApplicationController, type: :request do
   describe 'GET #index' do
-    subject(:do_response) { api_get('/uk/api/healthcheck') && response }
+    subject(:do_response) { get('/api/v2/healthcheck') && response }
 
     context 'when the request propagates a handled error' do
       before do

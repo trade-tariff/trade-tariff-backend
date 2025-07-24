@@ -7,8 +7,8 @@ RSpec.describe Api::V2::RulesOfOrigin::SchemesController, :v2 do
     let(:first_scheme) { JSON.parse(rendered.body)['data'].first['attributes'] }
 
     let :make_request do
-      api_get api_rules_of_origin_schemes_path(format: :json),
-              params: { heading_code:, country_code: }
+      get api_rules_of_origin_schemes_path(format: :json),
+          params: { heading_code:, country_code: }
     end
 
     it_behaves_like 'a successful jsonapi response'
@@ -29,7 +29,7 @@ RSpec.describe Api::V2::RulesOfOrigin::SchemesController, :v2 do
 
     context 'with path params' do
       let :make_request do
-        api_get api_rules_of_origin_path(heading_code:, country_code:, format: :json)
+        get api_rules_of_origin_path(heading_code:, country_code:, format: :json)
       end
 
       it_behaves_like 'a successful jsonapi response'
@@ -37,7 +37,7 @@ RSpec.describe Api::V2::RulesOfOrigin::SchemesController, :v2 do
 
     context 'when listing all schemes' do
       let :make_request do
-        api_get api_rules_of_origin_schemes_path(format: :json)
+        get api_rules_of_origin_schemes_path(format: :json)
       end
 
       it_behaves_like 'a successful jsonapi response'
@@ -48,7 +48,7 @@ RSpec.describe Api::V2::RulesOfOrigin::SchemesController, :v2 do
         subject { JSON.parse(rendered.body)['included'] }
 
         let :make_request do
-          api_get api_rules_of_origin_schemes_path(include: 'proofs', format: :json)
+          get api_rules_of_origin_schemes_path(include: 'proofs', format: :json)
         end
 
         it { is_expected.to include include 'type' => 'rules_of_origin_proof' }
@@ -57,7 +57,7 @@ RSpec.describe Api::V2::RulesOfOrigin::SchemesController, :v2 do
 
     context 'with filtered list of schemes' do
       let :make_request do
-        api_get api_rules_of_origin_schemes_path(filter: { has_article: 'duty-drawback' }, format: :json)
+        get api_rules_of_origin_schemes_path(filter: { has_article: 'duty-drawback' }, format: :json)
       end
 
       it_behaves_like 'a successful jsonapi response'

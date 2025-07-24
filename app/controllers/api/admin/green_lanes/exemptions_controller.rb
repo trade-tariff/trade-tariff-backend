@@ -21,6 +21,7 @@ module Api
 
           if ex.valid? && ex.save
             render json: serialize(ex),
+                   location: api_admin_green_lanes_exemption_url(ex.id),
                    status: :created
           else
             render json: serialize_errors(ex),
@@ -34,6 +35,7 @@ module Api
 
           if ex.valid? && ex.save
             render json: serialize(ex),
+                   location: api_admin_green_lanes_exemption_url(ex.id),
                    status: :ok
           else
             render json: serialize_errors(ex),

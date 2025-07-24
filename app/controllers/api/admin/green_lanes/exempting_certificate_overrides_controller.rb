@@ -21,6 +21,7 @@ module Api
 
           if eco.valid? && eco.save
             render json: serialize(eco),
+                   location: api_admin_green_lanes_exempting_certificate_override_url(eco.id),
                    status: :created
           else
             render json: serialize_errors(eco),

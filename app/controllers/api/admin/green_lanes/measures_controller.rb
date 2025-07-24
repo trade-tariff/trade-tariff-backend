@@ -35,6 +35,7 @@ module Api
 
             if gn.present? && measure.valid? && measure.save
               render json: serialize(measure),
+                     location: api_admin_green_lanes_measure_url(measure.id),
                      status: :created
             else
               render json: serialize_errors(measure),
@@ -51,6 +52,7 @@ module Api
 
           if measure.valid? && measure.save
             render json: serialize(measure),
+                   location: api_admin_green_lanes_measure_url(measure.id),
                    status: :ok
           else
             render json: serialize_errors(measure),

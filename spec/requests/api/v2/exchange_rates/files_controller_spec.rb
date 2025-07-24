@@ -14,7 +14,7 @@ RSpec.describe Api::V2::ExchangeRates::FilesController, :v2 do
       let(:type) { 'monthly_csv' }
       let(:format) { 'csv' }
 
-      before { api_get api_exchange_rates_file_path("#{type}_#{year}-#{month}", format: :csv) }
+      before { get api_exchange_rates_file_path("#{type}_#{year}-#{month}", format: :csv) }
 
       it 'returns HTTP status :ok' do
         expect(response).to have_http_status(:ok)
@@ -37,7 +37,7 @@ RSpec.describe Api::V2::ExchangeRates::FilesController, :v2 do
       let(:type) { 'monthly_xml' }
       let(:format) { 'xml' }
 
-      before { api_get api_exchange_rates_file_path("#{type}_#{year}-#{month}", format: :xml) }
+      before { get api_exchange_rates_file_path("#{type}_#{year}-#{month}", format: :xml) }
 
       it 'returns HTTP status :ok' do
         expect(response).to have_http_status(:ok)
@@ -60,7 +60,7 @@ RSpec.describe Api::V2::ExchangeRates::FilesController, :v2 do
       let(:type) { 'monthly_csv_hmrc' }
       let(:format) { 'csv' }
 
-      before { api_get api_exchange_rates_file_path("#{type}_#{year}-#{month}", format: :csv) }
+      before { get api_exchange_rates_file_path("#{type}_#{year}-#{month}", format: :csv) }
 
       it 'returns HTTP status :ok' do
         expect(response).to have_http_status(:ok)
@@ -83,7 +83,7 @@ RSpec.describe Api::V2::ExchangeRates::FilesController, :v2 do
       let(:type) { 'non_existing_type' }
       let(:format) { 'csv' }
 
-      before { api_get api_exchange_rates_file_path("#{type}_#{year}-#{month}", format: :csv) }
+      before { get api_exchange_rates_file_path("#{type}_#{year}-#{month}", format: :csv) }
 
       it 'returns HTTP status :not_found' do
         expect(response).to have_http_status(:not_found)

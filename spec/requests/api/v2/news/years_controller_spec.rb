@@ -3,14 +3,14 @@ RSpec.describe Api::V2::News::YearsController, :v2 do
     subject(:rendered) { make_request && response }
 
     let :make_request do
-      api_get api_news_years_path
+      get api_news_years_path(format: :json)
     end
 
     it_behaves_like 'a successful jsonapi response'
 
     context 'with specific service' do
       let :make_request do
-        api_get api_news_years_path(service: 'uk')
+        get api_news_years_path(service: 'uk', format: :json)
       end
 
       it_behaves_like 'a successful jsonapi response'

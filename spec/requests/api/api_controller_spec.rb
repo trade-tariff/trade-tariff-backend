@@ -1,12 +1,12 @@
 RSpec.describe Api::ApiController, type: :request do
-  subject(:page_response) { api_get(testpath, headers:) && response }
+  subject(:page_response) { get(testpath, headers:) && response }
 
   let(:chapter) { create :chapter, :with_section }
 
   let(:headers) { { 'HTTP_USER_AGENT' => 'TradeTariffFrontend/2ebf4292' } }
 
   describe 'GET to #show' do
-    let(:testpath) { "/uk/api/chapters/#{chapter.short_code}" }
+    let(:testpath) { "/api/v2/chapters/#{chapter.short_code}" }
 
     it { is_expected.to have_http_status :success }
 
@@ -18,7 +18,7 @@ RSpec.describe Api::ApiController, type: :request do
           receive(:perform_caching).and_return(true)
       end
 
-      let(:earlier_request) { api_get(testpath, headers:) && response }
+      let(:earlier_request) { get(testpath, headers:) && response }
 
       it { is_expected.to include 'etag' }
       it { is_expected.to include 'cache-control' => /public/i }
@@ -58,7 +58,7 @@ RSpec.describe Api::ApiController, type: :request do
         end
 
         let :testpath do
-          "/uk/api/chapters/#{chapter.short_code}?as_of=#{Time.zone.today.to_fs :db}"
+          "/api/v2/chapters/#{chapter.short_code}?as_of=#{Time.zone.today.to_fs :db}"
         end
 
         it { is_expected.to include 'etag' => earlier_request.headers['ETag'] }
@@ -67,9 +67,9 @@ RSpec.describe Api::ApiController, type: :request do
       context 'when request originates not from the frontend' do
         subject { response.headers.to_h }
 
-        before { api_get testpath, headers: }
+        before { get testpath, headers: }
 
-        let(:testpath) { "/uk/api/chapters/#{chapter.short_code}" }
+        let(:testpath) { "/api/v2/chapters/#{chapter.short_code}" }
         let(:headers) { { 'HTTP_USER_AGENT' => 'curl/7.64.1' } }
 
         it { is_expected.to have_key('etag') }

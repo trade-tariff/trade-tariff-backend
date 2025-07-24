@@ -3,7 +3,7 @@ RSpec.describe Api::V2::RulesOfOrigin::ProductSpecificRulesController, :v2 do
     subject(:rendered) { make_request && response }
 
     let :make_request do
-      api_get api_product_specific_rules_path(commodity, format: :json)
+      get api_product_specific_rules_path(commodity, format: :json)
     end
     let(:commodity) { build :commodity }
 

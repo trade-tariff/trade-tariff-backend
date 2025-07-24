@@ -27,7 +27,7 @@ RSpec.describe Api::V2::GoodsNomenclatures::GoodsNomenclatureListSerializer do
       it { is_expected.to include producline_suffix: gn.producline_suffix }
       it { is_expected.to include description: gn.description }
       it { is_expected.to include number_indents: gn.number_indents }
-      it { is_expected.to include href: "/uk/api/commodities/#{gn.goods_nomenclature_item_id}" }
+      it { is_expected.to include href: "/uk/api/v2/commodities/#{gn.goods_nomenclature_item_id}" }
     end
   end
 end

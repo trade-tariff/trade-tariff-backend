@@ -64,6 +64,7 @@ RSpec.describe Api::Admin::GreenLanes::ExemptionsController, :admin do
       let(:ex_attrs) { build(:green_lanes_exemption).to_hash }
 
       it { is_expected.to have_http_status :created }
+      it { is_expected.to have_attributes location: api_admin_green_lanes_exemption_url(GreenLanes::Exemption.last.id) }
       it { expect { page_response }.to change(GreenLanes::Exemption, :count).by(1) }
     end
 
@@ -95,6 +96,7 @@ RSpec.describe Api::Admin::GreenLanes::ExemptionsController, :admin do
 
     context 'with valid params' do
       it { is_expected.to have_http_status :success }
+      it { is_expected.to have_attributes location: api_admin_green_lanes_exemption_url(exemption.id) }
       it { expect { page_response }.not_to change(exemption.reload, :description) }
     end
 

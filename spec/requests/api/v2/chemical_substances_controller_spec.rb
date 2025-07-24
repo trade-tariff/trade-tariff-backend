@@ -5,7 +5,7 @@ RSpec.describe Api::V2::ChemicalSubstancesController, :v2 do
     let(:make_request) do
       create(:full_chemical, cus: '1234567890')
 
-      api_get api_chemical_substances_path(params:, format: :json)
+      get api_chemical_substances_path(params:, format: :json)
     end
 
     context 'when no filter is provided' do
