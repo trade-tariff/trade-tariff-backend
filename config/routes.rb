@@ -30,6 +30,6 @@ Rails.application.routes.draw do
         to: VersionedForwarder.new,
         constraints: { service: /uk|xi/, version: /\d+/ }
 
-  match '/api/*path', via: :all, to: redirect('/uk/api/%{path}') if TradeTariffBackend.uk?
-  match '/api/*path', via: :all, to: redirect('/xi/api/%{path}') if TradeTariffBackend.xi?
+  match '/api/*path', via: :all, to: redirect { |params, request| "/uk/api/#{params[:path]}?#{request.query_string}" } if TradeTariffBackend.uk?
+  match '/api/*path', via: :all, to: redirect { |params, request| "/xi/api/#{params[:path]}?#{request.query_string}" } if TradeTariffBackend.xi?
 end
