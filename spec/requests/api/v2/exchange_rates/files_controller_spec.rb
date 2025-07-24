@@ -6,8 +6,9 @@ RSpec.describe Api::V2::ExchangeRates::FilesController, :v2 do
 
     before do
       create(:exchange_rate_file, type:, format:, period_year: year, period_month: month)
+
       allow(TariffSynchronizer::FileService).to receive(:get).and_call_original
-      allow(TariffSynchronizer::FileService).to receive(:get).with("data/exchange_rates/#{year}/#{month}/#{type}_#{year}-#{month}.#{format}").and_return(StringIO.new(data))
+      allow(TariffSynchronizer::FileService).to receive(:get).with("data/exchange_rates/#{year}/#{month.to_s.sub('0', '')}/#{type}_#{year}-#{month.to_s.sub('0', '')}.#{format}").and_return(StringIO.new(data))
     end
 
     context 'when requesting CSV format' do
@@ -30,6 +31,14 @@ RSpec.describe Api::V2::ExchangeRates::FilesController, :v2 do
 
       it 'returns the CSV data as the response body' do
         expect(response.body).to eq(data)
+      end
+
+      context 'when the month is prefixed with 0' do
+        let(:month) { '07' }
+
+        it 'returns HTTP status :ok' do
+          expect(response).to have_http_status(:ok)
+        end
       end
     end
 
@@ -54,6 +63,14 @@ RSpec.describe Api::V2::ExchangeRates::FilesController, :v2 do
       it 'returns the XML data as the response body' do
         expect(response.body).to eq(data)
       end
+
+      context 'when the month is prefixed with 0' do
+        let(:month) { '07' }
+
+        it 'returns HTTP status :ok' do
+          expect(response).to have_http_status(:ok)
+        end
+      end
     end
 
     context 'when requesting HMRC CSV format' do
@@ -76,6 +93,14 @@ RSpec.describe Api::V2::ExchangeRates::FilesController, :v2 do
 
       it 'returns the CSV data as the response body' do
         expect(response.body).to eq(data)
+      end
+
+      context 'when the month is prefixed with 0' do
+        let(:month) { '07' }
+
+        it 'returns HTTP status :ok' do
+          expect(response).to have_http_status(:ok)
+        end
       end
     end
 
