@@ -18,12 +18,6 @@ class EnquiryForm::Submission < Sequel::Model(Sequel[:enquiry_form_submissions].
     validates_includes %w[Pending Sent Failed], :email_status
   end
 
-  def before_save
-    super
-
-    set_submitted_at_timestamp if email_status_changed_to_sent?
-  end
-
   private
 
   def create_reference_number(length = 8)
@@ -35,13 +29,5 @@ class EnquiryForm::Submission < Sequel::Model(Sequel[:enquiry_form_submissions].
         return reference_number
       end
     end
-  end
-
-  def email_status_changed_to_sent?
-    email_status == 'Sent' && changed_columns.include?(:email_status)
-  end
-
-  def set_submitted_at_timestamp
-    self.submitted_at ||= Time.zone.now
   end
 end
