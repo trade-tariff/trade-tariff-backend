@@ -10,16 +10,17 @@ RSpec.describe Api::Admin::EnquiryForm::SubmissionsController, type: :request do
       enquiry_description: 'How much quota do you have left for this commodity code?',
     }
   end
-  let(:params) {
+  let(:params) do
     {
       data: {
         attributes: form_submission_data.merge(
-        id: submission.id,
-        reference_number: submission.reference_number,
-        created_at: submission.created_at.strftime('%d/%m/%Y'))
-      }
+          id: submission.id,
+          reference_number: submission.reference_number,
+          created_at: submission.created_at.strftime('%d/%m/%Y'),
+        ),
+      },
     }
-  }
+  end
 
   before do
     allow(EnquiryForm::CsvGeneratorService).to receive_message_chain(:new, :generate).and_return('csv,data,here')

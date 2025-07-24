@@ -4,16 +4,18 @@ class EnquiryForm::SendSubmissionEmailWorker
   sidekiq_options queue: :mailers, retry: 5
 
   def perform(enquiry_form_data)
-    submission = EnquiryForm::Submission.find(enquiry_form_data[:id]).first
+    parsed_data = JSON.parse(enquiry_form_data).symbolize_keys
+    submission = EnquiryForm::Submission.find(parsed_data[:id]).first
     submission.update(email_status: 'Pending') if submission.email_status == 'Failed'
-    message = ::EnquiryForm::SubmissionMailer.send_email(enquiry_form_data).deliver_now
 
-    if message.delivered?
+    begin
+      ::EnquiryForm::SubmissionMailer.send_email(parsed_data).deliver_now
       submission.update(email_status: 'Sent', submitted_at: Time.zone.now)
-    else
+      Rails.logger.info("Sent enquiry form email: #{parsed_data[:reference_number]}")
+    rescue StandardError => e
       submission.update(email_status: 'Failed')
-      Rails.logger.error("Failed to send enquiry form email: #{enquiry_form_data[:reference_number]}")
-      raise "Email not delivered"
+      Rails.logger.error("Failed to send enquiry form email: #{parsed_data[:reference_number]}")
+      raise "Email not delivered: #{e.message}"
     end
   end
 end
