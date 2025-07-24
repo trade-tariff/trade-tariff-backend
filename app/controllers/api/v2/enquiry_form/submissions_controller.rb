@@ -6,7 +6,7 @@ module Api
         csv_data = ::EnquiryForm::CsvGeneratorService.new(enquiry_form_params(@submission)).generate
 
         ::EnquiryForm::CsvUploaderService.new(@submission, csv_data).upload
-        ::EnquiryForm::SendSubmissionEmailWorker.perform_async(enquiry_form_params(@submission))
+        ::EnquiryForm::SendSubmissionEmailWorker.perform_async(enquiry_form_params(@submission).to_json)
 
         if @submission.valid? && @submission.save
           render json: serialize(@submission), status: :created
