@@ -6,7 +6,7 @@ module Api
         csv_data = ::EnquiryForm::CsvGeneratorService.new(enquiry_form_params(@submission)).generate
 
         ::EnquiryForm::CsvUploaderService.new(@submission, csv_data).upload
-        ::EnquiryForm::SubmissionMailer.send_email(enquiry_form_params(@submission)).deliver_later
+        ::EnquiryForm::SendSubmissionEmailWorker.perform_async(enquiry_form_params(@submission))
 
         if @submission.valid? && @submission.save
           render json: serialize(@submission), status: :created
@@ -26,6 +26,7 @@ module Api
           :enquiry_category,
           :enquiry_description,
         ).merge(
+          id: submission.id,
           reference_number: submission.reference_number,
           created_at: submission.created_at.strftime('%d/%m/%Y'),
         )
