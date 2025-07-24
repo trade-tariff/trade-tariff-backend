@@ -23,9 +23,17 @@ RSpec.describe VersionedAcceptHeader do
     end
 
     context 'when the Accept header is longer than 255 characters' do
+      let(:headers) do
+        { 'HTTP_ACCEPT' => 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7' }
+      end
+
+      it { is_expected.to be true }
+    end
+
+    context 'when the Accept header is a browser default Accept header' do
       let(:headers) { { 'HTTP_ACCEPT' => "#{'a' * 256}application/vnd.hmrc.2.0+json" } }
 
-      it { is_expected.to be false }
+      it { is_expected.to be true }
     end
 
     context 'when the Accept header is missing and the configured constraint version is the default' do
