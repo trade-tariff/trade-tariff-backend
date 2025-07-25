@@ -1,14 +1,14 @@
 RSpec.describe Api::V2::ExchangeRates::FilesController, :v2 do
   describe 'GET #index' do
     let(:year) { 2023 }
-    let(:month) { 7 }
+    let(:month) { 10 }
     let(:data) { 'foo,bar\nqux,qul' }
 
     before do
       create(:exchange_rate_file, type:, format:, period_year: year, period_month: month)
 
       allow(TariffSynchronizer::FileService).to receive(:get).and_call_original
-      allow(TariffSynchronizer::FileService).to receive(:get).with("data/exchange_rates/#{year}/#{month.to_s.sub('0', '')}/#{type}_#{year}-#{month.to_s.sub('0', '')}.#{format}").and_return(StringIO.new(data))
+      allow(TariffSynchronizer::FileService).to receive(:get).with("data/exchange_rates/#{year}/#{month.to_i}/#{type}_#{year}-#{month.to_i}.#{format}").and_return(StringIO.new(data))
     end
 
     context 'when requesting CSV format' do
@@ -26,7 +26,7 @@ RSpec.describe Api::V2::ExchangeRates::FilesController, :v2 do
       end
 
       it 'returns the correct Content-Disposition header' do
-        expect(response.headers['Content-Disposition']).to eq('attachment; filename=exrates-monthly-0723.csv')
+        expect(response.headers['Content-Disposition']).to eq('attachment; filename=exrates-monthly-1023.csv')
       end
 
       it 'returns the CSV data as the response body' do
@@ -57,7 +57,7 @@ RSpec.describe Api::V2::ExchangeRates::FilesController, :v2 do
       end
 
       it 'returns the correct Content-Disposition header' do
-        expect(response.headers['Content-Disposition']).to eq('attachment; filename=exrates-monthly-0723.xml')
+        expect(response.headers['Content-Disposition']).to eq('attachment; filename=exrates-monthly-1023.xml')
       end
 
       it 'returns the XML data as the response body' do
@@ -88,7 +88,7 @@ RSpec.describe Api::V2::ExchangeRates::FilesController, :v2 do
       end
 
       it 'returns the correct Content-Disposition header' do
-        expect(response.headers['Content-Disposition']).to eq('attachment; filename=202307MonthlyRates.csv')
+        expect(response.headers['Content-Disposition']).to eq('attachment; filename=202310MonthlyRates.csv')
       end
 
       it 'returns the CSV data as the response body' do

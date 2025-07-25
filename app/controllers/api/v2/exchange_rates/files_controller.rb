@@ -20,7 +20,7 @@ module Api
         end
 
         def month
-          @month ||= params[:id].split('-').last.sub('0', '')
+          @month ||= params[:id].split('-').last.to_i.to_s
         end
 
         def year
