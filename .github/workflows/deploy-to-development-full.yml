@@ -37,6 +37,11 @@ jobs:
             "name": "tariff-admin",
             "repo": "trade-tariff/trade-tariff-admin",
             "service-names": ["admin"]
+          },
+          {
+            "name": "tariff-identity",
+            "repo": "trade-tariff/identity",
+            "service-names": ["identity"]
           }
         ]
       test-flavour: tariff
