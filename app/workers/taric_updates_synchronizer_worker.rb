@@ -20,7 +20,9 @@ class TaricUpdatesSynchronizerWorker
     Sidekiq::Client.enqueue(ClearInvalidSearchReferences)
     Sidekiq::Client.enqueue(TreeIntegrityCheckWorker)
     Sidekiq::Client.enqueue(ClearCacheWorker)
-    Sidekiq::Client.enqueue(GreenLanesUpdatesWorker)
+
+    # NOTE: Delay for 5 minutes as some of the category assessment queries rely on materialized views that need to have refreshed before we try to enumerate new category assessments.
+    Sidekiq::Client.enqueue_in(5.minutes, GreenLanesUpdatesWorker)
   end
 
 private
