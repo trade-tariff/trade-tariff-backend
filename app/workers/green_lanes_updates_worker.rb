@@ -3,16 +3,20 @@ class GreenLanesUpdatesWorker
 
   sidekiq_options queue: :sync, retry: false
 
-  def perform
+  def perform(date = Time.zone.today.iso8601)
     return unless TradeTariffBackend.xi?
 
-    date = Time.zone.today
+    date = Date.parse(date)
+
     logger.info "Running GreenLanesUpdatesWorker: #{date}"
 
     logger.info 'Load updated data'
-    updates = ::GreenLanesUpdatesPublisher::DataUpdatesFinder.new(date).call
 
-    if updates.any?
+    (date..Time.zone.today).each do |day|
+      updates = ::GreenLanesUpdatesPublisher::DataUpdatesFinder.new(day).call
+
+      next unless updates.any?
+
       create_automated_ca(updates)
 
       if TradeTariffBackend.green_lanes_update_email.present?
