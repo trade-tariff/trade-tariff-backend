@@ -1,4 +1,3 @@
-require_relative '../helpers/materialize_view_helper'
 class CdsUpdatesSynchronizerWorker
   include Sidekiq::Worker
   include MaterializeViewHelper

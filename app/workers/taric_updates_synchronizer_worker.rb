@@ -1,10 +1,6 @@
-require_relative '../helpers/materialize_view_helper'
 class TaricUpdatesSynchronizerWorker
   include Sidekiq::Worker
   include MaterializeViewHelper
-
-  TRY_AGAIN_IN = 20.minutes
-  CUT_OFF_TIME = '10:00'.freeze
 
   sidekiq_options queue: :sync, retry: false
 
@@ -24,6 +20,7 @@ class TaricUpdatesSynchronizerWorker
     Sidekiq::Client.enqueue(ClearInvalidSearchReferences)
     Sidekiq::Client.enqueue(TreeIntegrityCheckWorker)
     Sidekiq::Client.enqueue(ClearCacheWorker)
+    Sidekiq::Client.enqueue(GreenLanesUpdatesWorker)
   end
 
 private

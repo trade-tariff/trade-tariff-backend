@@ -1,19 +1,15 @@
 RSpec.describe GreenLanesUpdatesWorker, type: :worker do
   subject(:worker) { described_class.new }
 
-  let(:measure) { create :measure, trade_movement_code: '1', generating_regulation: create(:base_regulation) }
-  let(:ca) { create :identified_measure_type_category_assessment, measure: measure }
+  let!(:measure) { create :measure, trade_movement_code: '1', generating_regulation: create(:base_regulation) }
+  let!(:ca) { create :identified_measure_type_category_assessment, measure: measure }
 
   before do
     allow(TradeTariffBackend).to receive(:service).and_return 'xi'
-    ca.reload
+    worker.perform
   end
 
   describe 'run green lanes updates worker' do
-    before do
-      worker.perform
-    end
-
     it 'creates CA with identified measure type' do
       category_assessments = GreenLanes::CategoryAssessment.all.pluck(:measure_type_id, :regulation_id, :regulation_role)
 

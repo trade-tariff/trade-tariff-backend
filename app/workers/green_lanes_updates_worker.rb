@@ -1,9 +1,6 @@
 class GreenLanesUpdatesWorker
   include Sidekiq::Worker
 
-  TRY_AGAIN_IN = 20.minutes
-  CUT_OFF_TIME = '10:00'.freeze
-
   sidekiq_options queue: :sync, retry: false
 
   def perform

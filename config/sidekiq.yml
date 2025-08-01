@@ -32,15 +32,13 @@
     ReportWorker:
       cron: "30 10 * * *" # Needs to run even if the UpdatesSynchronizerWorker failed
       description: "Generates reports and persists them to S3"
-    UKUpdatesSynchronizerWorker:
+    CdsUpdatesSynchronizerWorker:
       cron: "30 0 * * *"
       description: "Runs ETL of CDS files and populates indexes"
-      class: CdsUpdatesSynchronizerWorker
       enabled: <%= ENV.fetch('SERVICE', 'uk') == 'uk' %>
-    XIUpdatesSynchronizerWorker:
+    TaricUpdatesSynchronizerWorker:
       cron: "0 0 * * *"
       description: "Runs ETL of Taric files and populates indexes"
-      class: TaricUpdatesSynchronizerWorker
       enabled: <%= ENV.fetch('SERVICE', 'uk') == 'xi' %>
     HealthcheckWorker:
       every: 30.minutes
@@ -61,10 +59,6 @@
     SynchronizerCheckWorker:
       cron: "30 08 * * *"
       description: Checks we have recent Quota Balance Events - this is an early warning that our sync process has a potential issue
-    GreenLanesUpdatesWorker:
-      cron: "0 4 * * *"
-      description: "Runs green lanes related data updates worker that will create new category assessments and send notifications"
-      enabled: <%= ENV.fetch('SERVICE', 'uk') == 'xi' %>
     CheckDifferencesReportHasRun:
       cron: "0 1 * * 2"  # 1am every Tuesday
       description: "Checks if the differences report has run"
