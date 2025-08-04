@@ -8,7 +8,7 @@ module Api
         before_action :check_service, :authenticate_user!
 
         def index
-          render json: serialize(update_notifications.to_a, pagination_meta)
+          render json: serialize(update_notifications, pagination_meta)
         end
 
         def show
@@ -32,13 +32,14 @@ module Api
         private
 
         def record_count
-          @update_notifications.pagination_record_count
+          update_notifications.pagination_record_count
         end
 
         def update_notifications
           @update_notifications ||= ::GreenLanes::UpdateNotification
-                                      .where(Sequel.lit('status != ?', ::GreenLanes::UpdateNotification::NotificationStatus::INACTIVE))
-                                      .order(Sequel.asc(:id)).paginate(current_page, per_page)
+            .exclude(status: ::GreenLanes::UpdateNotification::NotificationStatus::INACTIVE)
+            .order(Sequel.asc(:id))
+            .paginate(current_page, per_page)
         end
 
         def serialize(*args)

@@ -14,7 +14,7 @@ module Api
                    :status
 
         attribute :measure_type_description do |update|
-          update.measure_type.description
+          update.measure_type&.description
         end
 
         attribute :regulation_description do |update|
