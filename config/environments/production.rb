@@ -46,8 +46,11 @@ Rails.application.configure do
   config.lograge.formatter = Lograge::Formatters::Logstash.new
   config.lograge.custom_options = lambda do |event|
     {
+      auth_type: event.payload[:auth_type],
+      client_id: event.payload[:client_id],
       params: event.payload[:params].except('controller', 'action', 'format', 'utf8'),
-    }
+      user_agent: event.payload[:user_agent],
+    }.compact
   end
 
   config.lograge.ignore_actions = [

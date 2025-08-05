@@ -2,7 +2,7 @@ if Rails.env.production?
   class Rack::Attack
     Rack::Attack.cache.store = ActiveSupport::Cache::RedisCacheStore.new(url: ENV['REDIS_URL'])
 
-    API_KEY_LIMITS = JSON.parse(ENV['GREEN_LANES_API_KEYS'])
+    API_KEY_LIMITS = JSON.parse(ENV.fetch('GREEN_LANES_API_KEYS', '{}'))
 
     if API_KEY_LIMITS.present?
       API_KEY_LIMITS['api_keys'].each do |api_key, config|
