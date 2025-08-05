@@ -209,7 +209,7 @@ module TradeTariffBackend
     end
 
     def green_lanes_api_keys
-      ENV['GREEN_LANES_API_KEYS']
+      ENV.fetch('GREEN_LANES_API_KEYS', '{}')
     end
 
     def green_lanes_update_email

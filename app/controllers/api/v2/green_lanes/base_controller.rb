@@ -8,6 +8,14 @@ module Api
 
         before_action :check_service, :authenticate, :set_request_scope
 
+        protected
+
+        def append_info_to_payload(payload)
+          super
+          payload[:client_id] = @client_id
+          payload[:auth_type] = @auth_type
+        end
+
         private
 
         def check_service
@@ -37,7 +45,12 @@ module Api
         def authenticate_with_api_tokens
           authenticate_or_request_with_http_token do |provided_token, _options|
             Rails.logger.debug "Provided token: #{provided_token}"
-            api_tokens.any? { |token| ActiveSupport::SecurityUtils.secure_compare(provided_token, token) }
+
+            api_tokens.any? { |token|
+              ActiveSupport::SecurityUtils.secure_compare(provided_token, token)
+            }.tap do |authenticated|
+              @auth_type = 'authorisation' if authenticated
+            end
           end
 
           true
@@ -49,9 +62,14 @@ module Api
 
           Rails.logger.debug "Provided key: #{provided_key}"
 
-          return false unless api_keys.any? { |api_key| ActiveSupport::SecurityUtils.secure_compare(provided_key, api_key) }
+          key, config = api_keys.find do |api_key, _config|
+            ActiveSupport::SecurityUtils.secure_compare(provided_key, api_key)
+          end
 
-          true
+          key.present?.tap do |authenticated|
+            @client_id = config['client_id'] if authenticated
+            @auth_type = 'x-api-key' if authenticated
+          end
         end
 
         def api_tokens
@@ -64,11 +82,7 @@ module Api
 
         def read_api_keys
           api_key_hash = JSON.parse(TradeTariffBackend.green_lanes_api_keys)
-          if api_key_hash.any?
-            api_key_hash['api_keys'].keys
-          else
-            []
-          end
+          api_key_hash['api_keys']
         end
 
         def read_tokens
