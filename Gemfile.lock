@@ -160,7 +160,8 @@ GEM
       logger
     faraday-net_http (3.4.0)
       net-http (>= 0.5.0)
-    foreman (0.88.1)
+    foreman (0.90.0)
+      thor (~> 1.4)
     forgery (0.8.1)
     fugit (1.11.1)
       et-orbi (~> 1, >= 1.2.11)
