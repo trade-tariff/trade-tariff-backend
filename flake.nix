@@ -9,8 +9,15 @@
     };
   };
 
-  outputs = { self, nixpkgs, flake-utils, nixpkgs-ruby }:
-    flake-utils.lib.eachDefaultSystem (system:
+  outputs =
+    {
+      self,
+      nixpkgs,
+      flake-utils,
+      nixpkgs-ruby,
+    }:
+    flake-utils.lib.eachDefaultSystem (
+      system:
       let
         pkgs = import nixpkgs {
           system = system;
@@ -43,7 +50,7 @@
             ${postgresql}/bin/initdb $PGDATA --auth=trust
           fi
 
-          ${postgresql}/bin/postgres -k $PGHOST -c listen_addresses=''' -c unix_socket_directories=$PGHOST
+          ${postgresql}/bin/postgres -k $PGHOST -c listen_addresses=''' -c unix_socket_directories=$PGHOST -c max_wal_size=16GB
         '';
 
         lint = pkgs.writeScriptBin "lint" ''
@@ -67,13 +74,9 @@
             export GEM_HOME=$PWD/.nix/ruby/$(${ruby}/bin/ruby -e "puts RUBY_VERSION")
             mkdir -p $GEM_HOME
 
-            export BUNDLE_BUILD__PG="${
-              builtins.concatStringsSep " " postgresqlBuildFlags
-            }"
+            export BUNDLE_BUILD__PG="${builtins.concatStringsSep " " postgresqlBuildFlags}"
 
-            export BUNDLE_BUILD__PSYCH="${
-              builtins.concatStringsSep " " psychBuildFlags
-            }"
+            export BUNDLE_BUILD__PSYCH="${builtins.concatStringsSep " " psychBuildFlags}"
 
             export GEM_PATH=$GEM_HOME
             export PATH=$GEM_HOME/bin:$PATH
@@ -84,7 +87,7 @@
           buildInputs = [
             init
             lint
-            pkgs.circleci-cli
+            pkgs.python3
             pkgs.socat
             postgresql
             postgresql-start
@@ -92,5 +95,6 @@
             update-providers
           ];
         };
-      });
+      }
+    );
 }
