@@ -2,7 +2,7 @@
 -- PostgreSQL database dump
 --
 
--- Dumped from database version 13.20 (Debian 13.20-1.pgdg120+1)
+-- Dumped from database version 13.21 (Debian 13.21-1.pgdg120+1)
 -- Dumped by pg_dump version 14.17 (Homebrew)
 
 SET statement_timeout = 0;
@@ -10239,13 +10239,6 @@ CREATE INDEX adco_types_pk ON uk.additional_code_types_oplog USING btree (additi
 
 
 --
--- Name: add_code_desc_description_trgm_idx; Type: INDEX; Schema: uk; Owner: -
---
-
-CREATE INDEX add_code_desc_description_trgm_idx ON uk.additional_code_descriptions_oplog USING gist (description public.gist_trgm_ops);
-
-
---
 -- Name: additional_code_description_periods_additional_code; Type: INDEX; Schema: uk; Owner: -
 --
 
@@ -10642,13 +10635,6 @@ CREATE INDEX cert_types_pk ON uk.certificate_types_oplog USING btree (certificat
 --
 
 CREATE INDEX certificate ON uk.certificate_description_periods_oplog USING btree (certificate_code, certificate_type_code);
-
-
---
--- Name: certificate_descriptions_description_trgm_idx; Type: INDEX; Schema: uk; Owner: -
---
-
-CREATE INDEX certificate_descriptions_description_trgm_idx ON uk.certificate_descriptions_oplog USING gist (description public.gist_trgm_ops);
 
 
 --
@@ -11076,13 +11062,6 @@ CREATE INDEX footnote_association_goods_nomenclatures_oplog_goods_nomenclatu ON 
 --
 
 CREATE INDEX footnote_association_measures_oplog_footnote_type_id_index ON uk.footnote_association_measures_oplog USING btree (footnote_type_id);
-
-
---
--- Name: footnote_descriptions_description_trgm_idx; Type: INDEX; Schema: uk; Owner: -
---
-
-CREATE INDEX footnote_descriptions_description_trgm_idx ON uk.footnote_descriptions_oplog USING gist (description public.gist_trgm_ops);
 
 
 --
@@ -11720,13 +11699,6 @@ CREATE INDEX guides_goods_nomenclatures_guide_id_index ON uk.guides_goods_nomenc
 --
 
 CREATE INDEX idx_search_suggestions_distinct ON uk.search_suggestions USING btree (value, priority);
-
-
---
--- Name: idx_search_suggestions_value_trgm; Type: INDEX; Schema: uk; Owner: -
---
-
-CREATE INDEX idx_search_suggestions_value_trgm ON uk.search_suggestions USING gin (value public.gin_trgm_ops);
 
 
 --
