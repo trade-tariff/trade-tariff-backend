@@ -64,10 +64,10 @@ end
 group :development, :test do
   gem 'awesome_print'
   gem 'dotenv-rails'
+  gem 'factory_bot_rails', require: false
   gem 'pry-rails'
   gem 'ruby-lsp-rails'
   gem 'ruby-lsp-rspec'
-  gem 'factory_bot_rails', require: false
 end
 
 group :test do
