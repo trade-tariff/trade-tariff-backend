@@ -1,7 +1,6 @@
 require 'factory_bot'
 require Rails.root.join('spec', 'factories', 'enquiry_form', 'submission_factory')
 
-
 class EnquiryForm::SubmissionMailerPreview < ActionMailer::Preview
   def send_email
     form_data = {

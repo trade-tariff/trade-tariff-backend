@@ -13,7 +13,7 @@ class EnquiryForm::SendSubmissionEmailWorker
     else
       submission.update(email_status: 'Failed')
       Rails.logger.error("Failed to send enquiry form email: #{enquiry_form_data[:reference_number]}")
-      raise "Email not delivered"
+      raise 'Email not delivered'
     end
   end
 end
