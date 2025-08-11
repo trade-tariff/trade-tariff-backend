@@ -7,8 +7,10 @@ module PublicUsers
     many_to_one :subscription_type, class: 'Subscriptions::Type'
 
     def unsubscribe
-      update(active: false)
-      PublicUsers::ActionLog.create(user_id: user.id, action: PublicUsers::ActionLog::UNSUBSCRIBED)
+      if active
+        update(active: false)
+        PublicUsers::ActionLog.create(user_id: user.id, action: PublicUsers::ActionLog::UNSUBSCRIBED)
+      end
       user.soft_delete!
     end
   end

@@ -31,5 +31,14 @@ RSpec.describe PublicUsers::Subscription do
       subscription.unsubscribe
       expect(user).to have_received(:soft_delete!)
     end
+
+    context 'when the subscription is already inactive' do
+      before { subscription.update(active: false) }
+
+      it 'does not log an unsubscribe action' do
+        subscription.unsubscribe
+        expect(PublicUsers::ActionLog).not_to have_received(:create).with(user_id: user.id, action: PublicUsers::ActionLog::UNSUBSCRIBED)
+      end
+    end
   end
 end
