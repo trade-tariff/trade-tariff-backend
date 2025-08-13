@@ -5,4 +5,8 @@ module EnquiryForm::SubmissionHelper
   def create_reference_number(length = 8)
     CHARSET.sample(length).join
   end
+
+  def set_reference_number
+    @reference_number ||= create_reference_number
+  end
 end
