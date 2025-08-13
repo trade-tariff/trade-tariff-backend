@@ -5,9 +5,7 @@ module Api
 
       set_type 'enquiry_form/submission'
 
-      set_id :id
-
-      attributes :reference_number
+      set_id :reference_number
     end
   end
 end

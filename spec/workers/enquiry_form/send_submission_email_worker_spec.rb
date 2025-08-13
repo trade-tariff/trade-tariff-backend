@@ -8,12 +8,12 @@ RSpec.describe EnquiryForm::SendSubmissionEmailWorker, type: :worker do
       {
         id: submission.id,
         reference_number: submission.reference_number,
-        name: 'John Doe',
-        company_name: 'John Doe Ltd',
-        job_title: 'Customs Officer',
-        email: 'john@exmaple.com',
-        enquiry_category: 'Quotas',
-        enquiry_description: 'I need help with my quotas',
+        name: "John Doe",
+        company_name: "John Doe Ltd",
+        job_title: "Customs Officer",
+        email: "john@exmaple.com",
+        enquiry_category: "Quotas",
+        enquiry_description: "I need help with my quotas"
       }
     end
 
@@ -44,11 +44,10 @@ RSpec.describe EnquiryForm::SendSubmissionEmailWorker, type: :worker do
       it 'sets email_status to Failed and raises an error' do
         expect {
           described_class.new.perform(form_data)
-        }.to raise_error('Email not delivered')
+        }.to raise_error("Email not delivered")
 
         expect(submission.reload.email_status).to eq('Failed')
       end
     end
   end
 end
-# rubocop:enable RSpec/VerifiedDoubles
