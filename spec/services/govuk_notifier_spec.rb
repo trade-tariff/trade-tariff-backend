@@ -8,32 +8,34 @@ RSpec.describe GovukNotifier do
 
   describe '#send_email' do
     let(:mocked_response) { build(:notifications_client_post_email_response) }
-
-    it 'sends an email' do
-      allow(notifier).to receive(:audit).and_return(nil)
-      notifier.send_email('test@example.com', 'b0f0c2b2-c5f5-4f3a-8d9c-f4c8e8ea1a7c', { foo: 'bar' }, 'f47ac10b-58cc-4372-a567-0e02b2c3d479')
-      expect(client).to have_received(:send_email).with(
+    let (:params) do
+      {
         email_address: 'test@example.com',
         email_reply_to_id: 'f47ac10b-58cc-4372-a567-0e02b2c3d479',
+
         template_id: 'b0f0c2b2-c5f5-4f3a-8d9c-f4c8e8ea1a7c',
         personalisation: {
           foo: 'bar',
         },
-      )
+        reference: 'ABC12345'
+      }
+    end
+
+    it 'sends an email' do
+      allow(notifier).to receive(:audit).and_return(nil)
+      notifier.send_email('test@example.com', 'b0f0c2b2-c5f5-4f3a-8d9c-f4c8e8ea1a7c', { foo: 'bar' }, 'f47ac10b-58cc-4372-a567-0e02b2c3d479' , 'ABC12345')
+
+      expect(client).to have_received(:send_email).with(params)
     end
 
     it 'uses the override email if set' do
       stub_const('ENV', ENV.to_hash.merge('OVERRIDE_NOTIFY_EMAIL' => 'foo@example.com'))
       allow(notifier).to receive(:audit).and_return(nil)
-      notifier.send_email('test@example.com', 'b0f0c2b2-c5f5-4f3a-8d9c-f4c8e8ea1a7c', { foo: 'bar' })
-      expect(client).to have_received(:send_email).with(
-        email_address: 'foo@example.com',
-        email_reply_to_id: nil,
-        template_id: 'b0f0c2b2-c5f5-4f3a-8d9c-f4c8e8ea1a7c',
-        personalisation: {
-          foo: 'bar',
-        },
-      )
+      notifier.send_email('test@example.com', 'b0f0c2b2-c5f5-4f3a-8d9c-f4c8e8ea1a7c', { foo: 'bar' }, 'f47ac10b-58cc-4372-a567-0e02b2c3d479', 'ABC12345')
+
+      params.merge!(email_address: 'foo@example.com')
+
+      expect(client).to have_received(:send_email).with(params)
     end
 
     it 'audits the email' do

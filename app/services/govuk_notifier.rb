@@ -15,8 +15,8 @@ class GovukNotifier
       personalisation:
     }
 
-    params.merge(email_reply_to_id:) if email_reply_to_id
-    params.merge(reference:) if reference
+    params.merge!(email_reply_to_id:) if email_reply_to_id
+    params.merge!(reference:) if reference
 
     email_response = @client.send_email(params)
 
