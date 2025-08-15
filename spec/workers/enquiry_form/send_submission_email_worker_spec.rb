@@ -1,53 +1,36 @@
-# rubocop:disable RSpec/VerifiedDoubles
-require 'rails_helper'
+# spec/workers/enquiry_form/send_submission_email_worker_spec.rb
+require "rails_helper"
+require "sidekiq/testing"
 
 RSpec.describe EnquiryForm::SendSubmissionEmailWorker, type: :worker do
-  describe '#perform' do
-    let(:submission) { create(:enquiry_form_submission) }
-    let(:form_data) do
+  describe ".perform_async" do
+    let(:enquiry_form_data) do
       {
-        id: submission.id,
-        reference_number: submission.reference_number,
         name: "John Doe",
-        company_name: "John Doe Ltd",
-        job_title: "Customs Officer",
-        email: "john@exmaple.com",
+        company_name: "Doe & Co Inc.",
+        job_title: "CEO",
+        email: "john@example.com",
         enquiry_category: "Quotas",
-        enquiry_description: "I need help with my quotas"
-      }
+        enquiry_description: "I have a question about quotas",
+        reference_number: "ABC123",
+        created_at: "2025-08-15 10:00"
+      }.to_json
     end
 
-    context 'when email is successfully delivered' do
-      before do
-        allow(EnquiryForm::SubmissionMailer)
-          .to receive(:send_email)
-          .with(form_data)
-          .and_return(double(deliver_now: double(delivered?: true)))
-      end
+    let(:csv_data) { "csv,data" }
 
-      it 'updates the submission with Sent status and sets submitted_at' do
-        expect {
-          described_class.new.perform(form_data)
-        }.to change { submission.reload.email_status }.from('Pending').to('Sent')
-         .and change { submission.reload.submitted_at }.from(nil)
-      end
+    before do
+      Sidekiq::Worker.clear_all
     end
 
-    context 'when email fails to deliver' do
-      before do
-        allow(EnquiryForm::SubmissionMailer)
-          .to receive(:send_email)
-          .with(form_data)
-          .and_return(double(deliver_now: double(delivered?: false)))
-      end
+    it "enqueues the job on the mailers queue with the correct args" do
+      expect {
+        described_class.perform_async(enquiry_form_data, csv_data)
+      }.to change(described_class.jobs, :size).by(1)
 
-      it 'sets email_status to Failed and raises an error' do
-        expect {
-          described_class.new.perform(form_data)
-        }.to raise_error("Email not delivered")
-
-        expect(submission.reload.email_status).to eq('Failed')
-      end
+      job = described_class.jobs.last
+      expect(job["queue"]).to eq("mailers")
+      expect(job["args"]).to eq([enquiry_form_data, csv_data])
     end
   end
 end
