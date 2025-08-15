@@ -1,3 +1,5 @@
+require 'notifications/client'
+
 class EnquiryForm::SendSubmissionEmailWorker
   include Sidekiq::Worker
 
