@@ -7,14 +7,19 @@ class GovukNotifier
     @client = client || Notifications::Client.new(api_key)
   end
 
-  def send_email(email, template_id, personalisation = {}, email_reply_to_id = nil)
-    # TODO: one_click_unsubscribe_url https://docs.notifications.service.gov.uk/ruby.html#one-click-unsubscribe-url-recommended
-    email_response = @client.send_email(
+  def send_email(email, template_id, personalisation = {}, email_reply_to_id = nil, reference = nil)
+    params = {
+      # TODO: one_click_unsubscribe_url https://docs.notifications.service.gov.uk/ruby.html#one-click-unsubscribe-url-recommended
       email_address: use_email(email),
       template_id:,
       personalisation:,
-      email_reply_to_id:,
-    )
+    }
+
+    params[:email_reply_to_id] = email_reply_to_id if email_reply_to_id
+    params[:reference] = reference if reference
+
+    email_response = @client.send_email(params)
+
     audit(email_response)
   rescue Notifications::Client::RequestError => e
     raise e

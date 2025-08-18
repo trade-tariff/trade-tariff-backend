@@ -20,7 +20,7 @@ class StopPressEmailWorker
       unsubscribe_url: URI.join(TradeTariffBackend.frontend_host, 'subscriptions/unsubscribe/', user.stop_press_subscription).to_s,
     }
 
-    client.send_email(user.email, TEMPLATE_ID, personalisation, REPLY_TO_ID)
+    client.send_email(user.email, TEMPLATE_ID, personalisation, REPLY_TO_ID, nil)
   end
 
   def client
