@@ -9,9 +9,9 @@ module Api
         ::EnquiryForm::SendSubmissionEmailWorker.perform_async(enquiry_form_data.to_json, @csv_data)
 
         begin
-          render json: serialize(OpenStruct.new(reference_number: @reference_number)), status: :created
-        rescue StandardError => e
-          render json: serialize_errors(e), status: :unprocessable_entity
+          render json: serialize(OpenStruct.new(reference_number: @set_reference_number)), status: :created
+        rescue ActionController::ParameterMissing => e
+          render json: { errors: [e.message] }, status: :unprocessable_content
         end
       end
 
@@ -30,8 +30,8 @@ module Api
 
       def enquiry_form_data
         enquiry_form_params.merge(
-          reference_number: @reference_number,
-          created_at: Time.zone.now.strftime("%Y-%m-%d %H:%M"),
+          reference_number: @set_reference_number,
+          created_at: Time.zone.now.strftime('%Y-%m-%d %H:%M'),
         )
       end
 

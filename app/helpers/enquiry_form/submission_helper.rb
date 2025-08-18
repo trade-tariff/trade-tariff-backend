@@ -7,6 +7,6 @@ module EnquiryForm::SubmissionHelper
   end
 
   def set_reference_number
-    @reference_number ||= create_reference_number
+    @set_reference_number ||= create_reference_number
   end
 end

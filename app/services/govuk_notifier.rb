@@ -12,11 +12,11 @@ class GovukNotifier
       # TODO: one_click_unsubscribe_url https://docs.notifications.service.gov.uk/ruby.html#one-click-unsubscribe-url-recommended
       email_address: use_email(email),
       template_id:,
-      personalisation:
+      personalisation:,
     }
 
-    params.merge!(email_reply_to_id:) if email_reply_to_id
-    params.merge!(reference:) if reference
+    params[:email_reply_to_id] = email_reply_to_id if email_reply_to_id
+    params[:reference] = reference if reference
 
     email_response = @client.send_email(params)
 

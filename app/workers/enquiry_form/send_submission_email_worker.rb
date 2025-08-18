@@ -5,7 +5,7 @@ class EnquiryForm::SendSubmissionEmailWorker
 
   sidekiq_options queue: :mailers, retry: 5
 
-  TEMPLATE_ID = "104e74e3-8f43-4642-a594-4d4ef931b121".freeze
+  TEMPLATE_ID = '104e74e3-8f43-4642-a594-4d4ef931b121'.freeze
 
   def perform(enquiry_form_data, csv_data)
     parsed_data = JSON.parse(enquiry_form_data).symbolize_keys
@@ -19,7 +19,7 @@ class EnquiryForm::SendSubmissionEmailWorker
       enquiry_description: parsed_data[:enquiry_description],
       reference_number: parsed_data[:reference_number],
       created_at: parsed_data[:created_at],
-      csv_file: Notifications.prepare_upload(StringIO.new(csv_data), filename: "enquiry_form_#{parsed_data[:reference_number]}.csv")
+      csv_file: Notifications.prepare_upload(StringIO.new(csv_data), filename: "enquiry_form_#{parsed_data[:reference_number]}.csv"),
     }
 
     reference = parsed_data[:reference_number]
