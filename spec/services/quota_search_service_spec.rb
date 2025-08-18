@@ -1,6 +1,6 @@
 # rubocop:disable RSpec/MultipleMemoizedHelpers
 RSpec.describe QuotaSearchService do
-  subject(:service) { described_class.new(filter, current_page, per_page) }
+  subject(:service) { described_class.new(filter, current_page, per_page, Time.zone.today) }
 
   around do |example|
     TimeMachine.now { example.run }

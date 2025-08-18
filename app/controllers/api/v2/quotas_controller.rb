@@ -46,7 +46,7 @@ module Api
       end
 
       def search_service
-        @search_service ||= QuotaSearchService.new(params, current_page, per_page)
+        @search_service ||= QuotaSearchService.new(params, current_page, per_page, actual_date)
       end
 
       def valid_includes
