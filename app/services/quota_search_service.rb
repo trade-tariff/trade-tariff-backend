@@ -29,9 +29,7 @@ class QuotaSearchService
   attr_reader :scope, :goods_nomenclature_item_id, :geographical_area_id, :order_number,
               :critical, :years, :status, :current_page, :per_page, :date
 
-  delegate :pagination_record_count, to: :scope
-
-  def initialize(attributes, current_page, per_page)
+  def initialize(attributes, current_page, per_page, date)
     @attributes = attributes
     status_value = attributes['status']&.gsub(/[+ ]/, '_')
     status_value = '' unless STATUS_VALUES.include?(status_value)
@@ -42,6 +40,7 @@ class QuotaSearchService
     @critical = attributes['critical']
     @current_page = current_page
     @per_page = per_page
+    @date = date
   end
 
   def call
@@ -63,6 +62,18 @@ class QuotaSearchService
     @scope = @scope.paginate(current_page, per_page)
 
     @scope.map(&:quota_definition)
+  end
+
+  def pagination_record_count
+    @scope = Measure.actual
+
+    apply_quota_definition
+
+    apply_goods_nomenclature_item_id_filter if goods_nomenclature_item_id.present?
+    apply_geographical_area_id_filter if geographical_area_id.present?
+    apply_order_number_filter if order_number.present?
+
+    @scope.count(Sequel.lit('DISTINCT ordernumber'))
   end
 
   private
@@ -102,12 +113,40 @@ class QuotaSearchService
     @scope = scope.where(quota_definitions__critical_state: critical)
   end
 
+  def apply_quota_definition
+    critical_condition = critical.present? ? 'AND quota_definitions."critical_state" = \'Y\'' : ''
+    args = [date, date]
+    if status.present?
+      status_filter = send("apply_#{status}_filter")
+      status_condition = "AND #{status_filter.str}"
+      args.push(*status_filter.args)
+    end
+
+    sql = Sequel.lit(
+      <<~SQL, *args
+        EXISTS (
+          SELECT 1
+          FROM "quota_definitions" quota_definitions
+          WHERE quota_definitions."quota_order_number_id" = "measures"."ordernumber"
+            AND quota_definitions."validity_start_date" <= ?
+            AND (quota_definitions."validity_end_date" >= ? OR quota_definitions."validity_end_date" IS NULL)
+            #{critical_condition}
+            #{status_condition}
+          LIMIT 1
+        )
+      SQL
+    )
+
+    @scope = scope.where(sql)
+  end
+
   def apply_status_filters
-    send("apply_#{status}_filter")
+    sql = send("apply_#{status}_filter")
+    @scope = scope.where(sql)
   end
 
   def apply_exhausted_filter
-    sql = Sequel.lit(
+    Sequel.lit(
       <<~SQL, QuotaDefinition.point_in_time
         EXISTS (
         SELECT *
@@ -118,12 +157,10 @@ class QuotaSearchService
         )
       SQL
     )
-
-    @scope = scope.where(sql)
   end
 
   def apply_not_exhausted_filter
-    sql = Sequel.lit(
+    Sequel.lit(
       <<~SQL, QuotaDefinition.point_in_time
         NOT EXISTS (
         SELECT *
@@ -134,12 +171,10 @@ class QuotaSearchService
         )
       SQL
     )
-
-    @scope = scope.where(sql)
   end
 
   def apply_blocked_filter
-    sql = Sequel.lit(
+    Sequel.lit(
       <<~SQL, QuotaDefinition.point_in_time, QuotaDefinition.point_in_time
         EXISTS (
         SELECT *
@@ -152,12 +187,10 @@ class QuotaSearchService
         )
       SQL
     )
-
-    @scope = scope.where(sql)
   end
 
   def apply_not_blocked_filter
-    sql = Sequel.lit(
+    Sequel.lit(
       <<~SQL, QuotaDefinition.point_in_time, QuotaDefinition.point_in_time
         NOT EXISTS (
         SELECT *
@@ -170,7 +203,5 @@ class QuotaSearchService
         )
       SQL
     )
-
-    @scope = scope.where(sql)
   end
 end
