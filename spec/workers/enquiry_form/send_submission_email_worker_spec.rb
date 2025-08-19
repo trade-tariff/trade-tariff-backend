@@ -29,7 +29,6 @@ RSpec.describe EnquiryForm::SendSubmissionEmailWorker, type: :worker do
       }.to change(described_class.jobs, :size).by(1)
 
       job = described_class.jobs.last
-      expect(job['queue']).to eq('mailers')
       expect(job['args']).to eq([enquiry_form_data, csv_data])
     end
   end

@@ -3,8 +3,6 @@ require 'notifications/client'
 class EnquiryForm::SendSubmissionEmailWorker
   include Sidekiq::Worker
 
-  sidekiq_options queue: :mailers, retry: 5
-
   TEMPLATE_ID = '104e74e3-8f43-4642-a594-4d4ef931b121'.freeze
 
   def perform(enquiry_form_data, csv_data)
