@@ -76,7 +76,6 @@ class QuotaSearchService
     @scope.count(Sequel.lit('DISTINCT ordernumber'))
   end
 
-
   private
 
   attr_reader :attributes
@@ -125,21 +124,22 @@ class QuotaSearchService
 
     sql = Sequel.lit(
       <<~SQL, *args
-      EXISTS (
-        SELECT 1
-        FROM "quota_definitions" quota_definitions
-        WHERE quota_definitions."quota_order_number_id" = "measures"."ordernumber"
-          AND quota_definitions."validity_start_date" <= ?
-          AND (quota_definitions."validity_end_date" >= ? OR quota_definitions."validity_end_date" IS NULL)
-          #{critical_condition}
-          #{status_condition}
-        LIMIT 1
-      )
-    SQL
+        EXISTS (
+          SELECT 1
+          FROM "quota_definitions" quota_definitions
+          WHERE quota_definitions."quota_order_number_id" = "measures"."ordernumber"
+            AND quota_definitions."validity_start_date" <= ?
+            AND (quota_definitions."validity_end_date" >= ? OR quota_definitions."validity_end_date" IS NULL)
+            #{critical_condition}
+            #{status_condition}
+          LIMIT 1
+        )
+      SQL
     )
 
     @scope = scope.where(sql)
   end
+
   def apply_status_filters
     sql = send("apply_#{status}_filter")
     @scope = scope.where(sql)
