@@ -18,7 +18,6 @@ class DeltaReportService
       package.use_shared_strings = true
       @workbook = package.workbook
 
-      # Define styles
       styles = excel_cell_styles
 
       workbook.add_worksheet(name: "Delta Report #{date.strftime('%Y-%m-%d')}") do |sheet|
@@ -49,11 +48,9 @@ class DeltaReportService
           )
         end
 
-        # Set column widths
         sheet.column_widths(*excel_column_widths)
       end
 
-      # Save locally in development
       package.serialize("delta_report_#{date.strftime('%Y_%m_%d')}.xlsx") if Rails.env.development?
 
       package

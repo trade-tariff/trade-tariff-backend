@@ -15,8 +15,8 @@ class DeltaReportService
     end
 
     def analyze
+      return if no_changes?
       return if record.operation == :create && record.measure.operation_date == record.operation_date
-      return if record.operation == :update && changes.empty?
 
       {
         type: 'MeasureCondition',

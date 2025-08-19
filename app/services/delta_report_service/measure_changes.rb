@@ -19,7 +19,7 @@ class DeltaReportService
     end
 
     def analyze
-      return if record.operation == :update && changes.empty?
+      return if no_changes?
 
       {
         type: 'Measure',

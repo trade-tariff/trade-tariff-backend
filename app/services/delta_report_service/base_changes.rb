@@ -16,6 +16,10 @@ class DeltaReportService
       %i[oid operation operation_date created_at updated_at filename]
     end
 
+    def no_changes?
+      record.operation == :update && changes.empty?
+    end
+
     def get_changes
       @changes = []
 
