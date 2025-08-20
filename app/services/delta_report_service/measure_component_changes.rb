@@ -24,7 +24,7 @@ class DeltaReportService
         measure_type: measure_type(record.measure),
         import_export: import_export(record.measure),
         geo_area: geo_area(record.measure.geographical_area),
-        additional_code: additional_code(record.measure),
+        additional_code: additional_code(record.measure.additional_code),
         duty_expression: duty_expression(record.measure),
         description:,
         date_of_effect:,

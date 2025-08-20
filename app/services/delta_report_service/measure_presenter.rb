@@ -25,10 +25,10 @@ class DeltaReportService
       end
     end
 
-    def additional_code(measure)
-      return nil if measure.additional_code.blank?
+    def additional_code(additional_code)
+      return nil if additional_code.blank?
 
-      "#{measure.additional_code.code}: #{measure.additional_code.description}"
+      "#{additional_code.code}: #{additional_code.description}"
     end
 
     def duty_expression(measure)

@@ -71,6 +71,7 @@ RSpec.describe DeltaReportService do
         measure_conditions: [],
         geographical_areas: [],
         certificates: [],
+        additional_codes: [],
       }
     end
 
@@ -99,6 +100,7 @@ RSpec.describe DeltaReportService do
       allow(DeltaReportService::MeasureConditionChanges).to receive(:collect).with(date).and_return(mock_changes[:measure_conditions])
       allow(DeltaReportService::GeographicalAreaChanges).to receive(:collect).with(date).and_return(mock_changes[:geographical_areas])
       allow(DeltaReportService::CertificateChanges).to receive(:collect).with(date).and_return(mock_changes[:certificates])
+      allow(DeltaReportService::AdditionalCodeChanges).to receive(:collect).with(date).and_return(mock_changes[:additional_codes])
       allow(DeltaReportService::ExcelGenerator).to receive(:call).and_return(instance_double(Axlsx::Package))
       allow(TimeMachine).to receive(:now).and_yield
 
@@ -123,6 +125,7 @@ RSpec.describe DeltaReportService do
       expect(DeltaReportService::MeasureConditionChanges).to have_received(:collect).with(date)
       expect(DeltaReportService::GeographicalAreaChanges).to have_received(:collect).with(date)
       expect(DeltaReportService::CertificateChanges).to have_received(:collect).with(date)
+      expect(DeltaReportService::AdditionalCodeChanges).to have_received(:collect).with(date)
     end
 
     it 'calls ExcelGenerator with commodity change records and date' do
@@ -147,6 +150,7 @@ RSpec.describe DeltaReportService do
           measure_conditions: [],
           geographical_areas: [],
           certificates: [],
+          additional_codes: [],
         }
       end
 
@@ -314,6 +318,37 @@ RSpec.describe DeltaReportService do
       end
     end
 
+    context 'when change type is AdditionalCode' do
+      let(:change) { { type: 'AdditionalCode', additional_code_sid: '12345' } }
+      let(:measure_records) { [{ goods_nomenclature_item_id: '0101000000' }] }
+      let(:declarable_commodity) { instance_double(Commodity, goods_nomenclature_item_id: '0101000000', declarable?: true) }
+
+      before do
+        db_double = instance_double(Sequel::Database)
+        measures_dataset = instance_double(Sequel::Dataset)
+        allow(Sequel::Model).to receive(:db).and_return(db_double)
+        allow(db_double).to receive(:[]).with(:measures).and_return(measures_dataset)
+
+        filtered_dataset = instance_double(Sequel::Dataset)
+        allow(measures_dataset).to receive(:where).with(additional_code_sid: '12345').and_return(filtered_dataset)
+        allow(filtered_dataset).to receive(:where).with(operation_date: date).and_return(filtered_dataset)
+        allow(filtered_dataset).to receive(:distinct).with(:goods_nomenclature_item_id).and_return(filtered_dataset)
+        allow(filtered_dataset).to receive(:map).and_yield(measure_records.first).and_return([declarable_commodity])
+
+        # Mock GoodsNomenclature lookup
+        actual_scope = instance_double(Sequel::Dataset)
+        allow(GoodsNomenclature).to receive(:actual).and_return(actual_scope)
+        allow(actual_scope).to receive(:where).with(goods_nomenclature_item_id: '0101000000').and_return(actual_scope)
+        allow(actual_scope).to receive(:first).and_return(declarable_commodity)
+        allow(declarable_commodity).to receive(:declarable?).and_return(true)
+      end
+
+      it 'finds measures for additional code and returns declarable goods' do
+        result = service.send(:find_affected_declarable_goods, change)
+        expect(result).to eq([declarable_commodity])
+      end
+    end
+
     context 'when change type is unknown' do
       let(:change) { { type: 'Unknown' } }
 
@@ -416,6 +451,59 @@ RSpec.describe DeltaReportService do
       it 'returns empty array' do
         result = service.send(:find_declarable_goods_for_measure_association, change)
         expect(result).to eq([])
+      end
+    end
+  end
+
+  describe '#find_declarable_goods_for_additional_code' do
+    let(:additional_code_sid) { '12345' }
+    let(:change) { { additional_code_sid: additional_code_sid } }
+    let(:measure_records) { [{ goods_nomenclature_item_id: '0101000000' }, { goods_nomenclature_item_id: '0102000000' }] }
+    let(:declarable_commodity1) { instance_double(Commodity, goods_nomenclature_item_id: '0101000000', declarable?: true) }
+    let(:declarable_commodity2) { instance_double(Commodity, goods_nomenclature_item_id: '0102000000', declarable?: true) }
+
+    before do
+      db_double = instance_double(Sequel::Database)
+      measures_dataset = instance_double(Sequel::Dataset)
+      allow(Sequel::Model).to receive(:db).and_return(db_double)
+      allow(db_double).to receive(:[]).with(:measures).and_return(measures_dataset)
+
+      filtered_dataset = instance_double(Sequel::Dataset)
+      allow(measures_dataset).to receive(:where).with(additional_code_sid: additional_code_sid).and_return(filtered_dataset)
+      allow(filtered_dataset).to receive(:where).with(operation_date: date).and_return(filtered_dataset)
+      allow(filtered_dataset).to receive(:distinct).with(:goods_nomenclature_item_id).and_return(filtered_dataset)
+      allow(filtered_dataset).to receive(:map).and_yield(measure_records[0]).and_yield(measure_records[1]).and_return([[declarable_commodity1], [declarable_commodity2]])
+
+      # Mock GoodsNomenclature lookups
+      actual_scope = instance_double(Sequel::Dataset)
+      allow(GoodsNomenclature).to receive(:actual).and_return(actual_scope)
+
+      allow(actual_scope).to receive(:where).with(goods_nomenclature_item_id: '0101000000').and_return(instance_double(Sequel::Dataset, first: declarable_commodity1))
+      allow(actual_scope).to receive(:where).with(goods_nomenclature_item_id: '0102000000').and_return(instance_double(Sequel::Dataset, first: declarable_commodity2))
+
+      allow(declarable_commodity1).to receive(:declarable?).and_return(true)
+      allow(declarable_commodity2).to receive(:declarable?).and_return(true)
+    end
+
+    it 'finds measures for additional code and returns unique declarable goods' do
+      result = service.send(:find_declarable_goods_for_additional_code, change)
+      expect(result).to eq([declarable_commodity1, declarable_commodity2])
+    end
+
+    context 'when there are duplicate goods nomenclature item ids' do
+      let(:measure_records) { [{ goods_nomenclature_item_id: '0101000000' }, { goods_nomenclature_item_id: '0101000000' }] }
+
+      before do
+        filtered_dataset = instance_double(Sequel::Dataset)
+        allow(Sequel::Model.db[:measures]).to receive(:where).with(additional_code_sid: additional_code_sid).and_return(filtered_dataset)
+        allow(filtered_dataset).to receive(:where).with(operation_date: date).and_return(filtered_dataset)
+        allow(filtered_dataset).to receive(:distinct).with(:goods_nomenclature_item_id).and_return(filtered_dataset)
+        allow(filtered_dataset).to receive(:map).and_yield(measure_records[0]).and_yield(measure_records[1]).and_return([[declarable_commodity1], [declarable_commodity1]])
+      end
+
+      it 'returns unique declarable goods' do
+        result = service.send(:find_declarable_goods_for_additional_code, change)
+        expect(result).to eq([declarable_commodity1])
       end
     end
   end
