@@ -67,7 +67,7 @@ class QuotaSearchService
   end
 
   def pagination_record_count
-    @record_count ||= count_total_records
+    @pagination_record_count ||= count_total_records
   end
 
   private
