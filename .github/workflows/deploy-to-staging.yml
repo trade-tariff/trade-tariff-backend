@@ -20,18 +20,3 @@ jobs:
       basic-password: ${{ secrets.BASIC_PASSWORD }}
       slack-webhook: ${{ secrets.SLACK_WEBHOOK }}
       ssh-key: ${{ secrets.PRIVATE_SSH_KEY }}
-
-  newrelic:
-    runs-on: ubuntu-latest
-    needs: deploy
-    steps:
-      - uses: actions/checkout@v5
-      - id: docker-tag
-        run: echo "DOCKER_TAG=$(git rev-parse --short HEAD)" >> "$GITHUB_OUTPUT"
-      - uses: newrelic/deployment-marker-action@v2.5.1
-        with:
-          apiKey: ${{ secrets.NEW_RELIC_API_KEY }}
-          region: "EU"
-          guid: ${{ secrets.NEW_RELIC_APPLICATION_GUID }}
-          version: ${{ steps.docker-tag.outputs.DOCKER_TAG }}
-          user: "${{ github.actor }}"
