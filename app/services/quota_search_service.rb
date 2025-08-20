@@ -48,18 +48,16 @@ class QuotaSearchService
 
     @scope = Measure
                .actual
-               .with_actual(QuotaDefinition)
-               .join(:quota_definitions, [%i[measures__ordernumber quota_definitions__quota_order_number_id]])
                .eager(eager_load_graph)
                .distinct(:measures__ordernumber)
                .select(Sequel.expr(:measures).*)
                .order(:measures__ordernumber)
 
+    apply_quota_definition
+
     apply_goods_nomenclature_item_id_filter if goods_nomenclature_item_id.present?
     apply_geographical_area_id_filter if geographical_area_id.present?
     apply_order_number_filter if order_number.present?
-    apply_critical_filter if critical.present?
-    apply_status_filters if status.present?
 
     @scope = @scope.paginate(current_page, per_page, record_count)
 
@@ -115,10 +113,6 @@ class QuotaSearchService
     @scope = scope.where(Sequel.like(:measures__ordernumber, "#{order_number}%"))
   end
 
-  def apply_critical_filter
-    @scope = scope.where(quota_definitions__critical_state: critical)
-  end
-
   def apply_quota_definition
     critical_condition = critical.present? ? 'AND quota_definitions."critical_state" = \'Y\'' : ''
     args = [date, date]
@@ -143,11 +137,6 @@ class QuotaSearchService
       SQL
     )
 
-    @scope = scope.where(sql)
-  end
-
-  def apply_status_filters
-    sql = send("apply_#{status}_filter")
     @scope = scope.where(sql)
   end
 
