@@ -44,14 +44,16 @@ class QuotaSearchService
   end
 
   def call
+    record_count = pagination_record_count
+
     @scope = Measure
-      .actual
-      .with_actual(QuotaDefinition)
-      .join(:quota_definitions, [%i[measures__ordernumber quota_definitions__quota_order_number_id]])
-      .eager(eager_load_graph)
-      .distinct(:measures__ordernumber)
-      .select(Sequel.expr(:measures).*)
-      .order(:measures__ordernumber)
+               .actual
+               .with_actual(QuotaDefinition)
+               .join(:quota_definitions, [%i[measures__ordernumber quota_definitions__quota_order_number_id]])
+               .eager(eager_load_graph)
+               .distinct(:measures__ordernumber)
+               .select(Sequel.expr(:measures).*)
+               .order(:measures__ordernumber)
 
     apply_goods_nomenclature_item_id_filter if goods_nomenclature_item_id.present?
     apply_geographical_area_id_filter if geographical_area_id.present?
@@ -59,12 +61,20 @@ class QuotaSearchService
     apply_critical_filter if critical.present?
     apply_status_filters if status.present?
 
-    @scope = @scope.paginate(current_page, per_page)
+    @scope = @scope.paginate(current_page, per_page, record_count)
 
     @scope.map(&:quota_definition)
   end
 
   def pagination_record_count
+    @pagination_record_count ||= count_total_records
+  end
+
+  private
+
+  attr_reader :attributes
+
+  def count_total_records
     @scope = Measure.actual
 
     apply_quota_definition
@@ -75,10 +85,6 @@ class QuotaSearchService
 
     @scope.count(Sequel.lit('DISTINCT ordernumber'))
   end
-
-  private
-
-  attr_reader :attributes
 
   def eager_load_graph
     eager_load = DEFAULT_EAGER_LOAD_GRAPH.dup
