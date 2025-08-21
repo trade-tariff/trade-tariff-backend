@@ -28,7 +28,7 @@ class DeltaReportService
         duty_expression: duty_expression(record.measure),
         description:,
         date_of_effect:,
-        change: change || duty_expression(record),
+        change: change || duty_expression(record.measure),
       }
     end
 
