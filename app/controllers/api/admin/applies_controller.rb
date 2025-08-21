@@ -2,11 +2,6 @@ module Api
   module Admin
     class AppliesController < AdminController
       before_action :authenticate_user!
-      before_action :collection, only: :index
-
-      def index
-        render json: Api::Admin::ApplySerializer.new(@collection.to_a, serialization_meta).serializable_hash
-      end
 
       def create
         apply = Apply.new(apply_params[:attributes])
