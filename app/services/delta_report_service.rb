@@ -36,6 +36,7 @@ class DeltaReportService
     @changes[:measure_conditions] = MeasureConditionChanges.collect(date)
     @changes[:geographical_areas] = GeographicalAreaChanges.collect(date)
     @changes[:certificates] = CertificateChanges.collect(date)
+    @changes[:additional_codes] = AdditionalCodeChanges.collect(date)
   end
 
   def generate_commodity_change_records
@@ -63,6 +64,7 @@ class DeltaReportService
       end
     end
 
+    @commodity_change_records.uniq!
     @commodity_change_records.sort_by! { |record| record[:commodity_code] }
   end
 
@@ -76,6 +78,8 @@ class DeltaReportService
       find_declarable_goods_for_geographical_area(change)
     when 'Certificate'
       find_declarable_goods_for_certificate(change)
+    when 'AdditionalCode'
+      find_declarable_goods_for_additional_code(change)
     else
       []
     end
@@ -130,6 +134,17 @@ class DeltaReportService
     end
 
     affected_goods.uniq
+  end
+
+  def find_declarable_goods_for_additional_code(change)
+    measures = Sequel::Model.db[:measures]
+      .where(additional_code_sid: change[:additional_code_sid])
+      .where(operation_date: date)
+      .distinct(:goods_nomenclature_item_id)
+
+    measures.map { |m| find_declarable_goods_under_code(m[:goods_nomenclature_item_id]) }
+           .flatten
+           .uniq
   end
 
   def find_declarable_goods_under_code(goods_nomenclature_item_id)

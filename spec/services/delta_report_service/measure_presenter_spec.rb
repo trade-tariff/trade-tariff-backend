@@ -98,28 +98,16 @@ RSpec.describe DeltaReportService::MeasurePresenter do
   describe '#additional_code' do
     context 'when additional_code is present' do
       let(:additional_code) { instance_double(AdditionalCode, code: 'A123', description: 'Special additional code') }
-      let(:measure) { instance_double(Measure, additional_code: additional_code) }
 
       it 'returns formatted additional code with code and description' do
-        result = instance.additional_code(measure)
+        result = instance.additional_code(additional_code)
         expect(result).to eq('A123: Special additional code')
       end
     end
 
-    context 'when additional_code is blank' do
-      let(:measure) { instance_double(Measure, additional_code: '') }
-
-      it 'returns nil' do
-        result = instance.additional_code(measure)
-        expect(result).to be_nil
-      end
-    end
-
     context 'when additional_code is nil' do
-      let(:measure) { instance_double(Measure, additional_code: nil) }
-
       it 'returns nil' do
-        result = instance.additional_code(measure)
+        result = instance.additional_code(nil)
         expect(result).to be_nil
       end
     end

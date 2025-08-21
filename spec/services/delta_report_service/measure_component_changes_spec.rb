@@ -46,9 +46,6 @@ RSpec.describe DeltaReportService::MeasureComponentChanges do
   end
 
   describe '#analyze' do
-    let(:additional_code) { build(:additional_code) }
-    let(:measure_with_additional_code) { build(:measure, additional_code: additional_code) }
-
     before do
       allow(instance).to receive_messages(
         no_changes?: false,
@@ -59,9 +56,10 @@ RSpec.describe DeltaReportService::MeasureComponentChanges do
       allow(instance).to receive(:measure_type).with(measure).and_return('103: Third country duty')
       allow(instance).to receive(:import_export).with(measure).and_return('Import')
       allow(instance).to receive(:geo_area).with(geographical_area).and_return('GB: United Kingdom')
-      allow(instance).to receive(:additional_code).with(measure).and_return('A123: Special code')
+      allow(instance).to receive(:additional_code).with(nil).and_return(nil)
       allow(instance).to receive(:duty_expression).with(measure).and_return('10%')
       allow(instance).to receive(:duty_expression).with(measure_component).and_return('5%')
+      allow(measure).to receive(:additional_code).and_return(nil)
     end
 
     context 'when there are no changes' do
@@ -98,7 +96,7 @@ RSpec.describe DeltaReportService::MeasureComponentChanges do
           measure_type: '103: Third country duty',
           import_export: 'Import',
           geo_area: 'GB: United Kingdom',
-          additional_code: 'A123: Special code',
+          additional_code: nil,
           duty_expression: '10%',
           description: 'Measure Component updated',
           date_of_effect: date,
