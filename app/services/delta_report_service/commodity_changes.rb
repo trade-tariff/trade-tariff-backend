@@ -12,6 +12,10 @@ class DeltaReportService
       'Commodity'
     end
 
+    def excluded_columns
+      super + %i[path heading_short_code chapter_short_code]
+    end
+
     def analyze
       return if no_changes?
 
