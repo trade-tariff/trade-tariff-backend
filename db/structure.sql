@@ -2,8 +2,8 @@
 -- PostgreSQL database dump
 --
 
--- Dumped from database version 13.16 (Debian 13.16-1.pgdg120+1)
--- Dumped by pg_dump version 14.15 (Homebrew)
+-- Dumped from database version 17.5
+-- Dumped by pg_dump version 17.5
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -7830,21 +7830,6 @@ CREATE TABLE uk.tariff_updates (
 
 
 --
--- Name: tradeset_descriptions; Type: TABLE; Schema: uk; Owner: -
---
-
-CREATE TABLE uk.tradeset_descriptions (
-    filename text NOT NULL,
-    classification_date date NOT NULL,
-    description text NOT NULL,
-    goods_nomenclature_item_id text NOT NULL,
-    created_at timestamp without time zone NOT NULL,
-    updated_at timestamp without time zone NOT NULL,
-    validity_start_date timestamp without time zone NOT NULL,
-    validity_end_date timestamp without time zone
-);
-
-
 --
 -- Name: transmission_comments_oplog; Type: TABLE; Schema: uk; Owner: -
 --
@@ -10056,13 +10041,6 @@ ALTER TABLE ONLY uk.tariff_updates
 
 
 --
--- Name: tradeset_descriptions tradeset_descriptions_filename_description_goods_nomenclatu_key; Type: CONSTRAINT; Schema: uk; Owner: -
---
-
-ALTER TABLE ONLY uk.tradeset_descriptions
-    ADD CONSTRAINT tradeset_descriptions_filename_description_goods_nomenclatu_key UNIQUE (filename, description, goods_nomenclature_item_id);
-
-
 --
 -- Name: transmission_comments_oplog transmission_comments_pkey; Type: CONSTRAINT; Schema: uk; Owner: -
 --
@@ -13421,13 +13399,6 @@ CREATE INDEX tco_tracomopl_ionntslog_operation_date ON uk.transmission_comments_
 
 
 --
--- Name: tradeset_descriptions_goods_nomenclature_item_id_index; Type: INDEX; Schema: uk; Owner: -
---
-
-CREATE INDEX tradeset_descriptions_goods_nomenclature_item_id_index ON uk.tradeset_descriptions USING btree (goods_nomenclature_item_id);
-
-
---
 -- Name: trans_comm_pk; Type: INDEX; Schema: uk; Owner: -
 --
 
@@ -13805,3 +13776,4 @@ INSERT INTO "schema_migrations" ("filename") VALUES ('20250702142253_add_goods_n
 INSERT INTO "schema_migrations" ("filename") VALUES ('20250708114111_add_quota_materialized_views.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20250716082959_remove_char_limit_live_issues.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20250718101240_remove_null_validation_commodities_live_issues.rb');
+INSERT INTO "schema_migrations" ("filename") VALUES ('20250821091408_drop_tradeset_description.rb');

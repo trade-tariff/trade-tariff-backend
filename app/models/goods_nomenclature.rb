@@ -77,13 +77,6 @@ class GoodsNomenclature < Sequel::Model
     ds.with_actual(FootnoteAssociationGoodsNomenclature)
   end
 
-  one_to_many :tradeset_descriptions,
-              key: :goods_nomenclature_item_id,
-              primary_key: :goods_nomenclature_item_id,
-              graph_use_association_block: true do |ds|
-    ds.with_actual(TradesetDescription)
-  end
-
   def number_indents
     if values.key?(:number_indents)
       values[:number_indents]
