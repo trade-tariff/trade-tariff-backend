@@ -303,9 +303,9 @@ RSpec.describe DeltaReportService::ExcelGenerator do
     context 'when type_of_change is unrecognized' do
       let(:record) { { type_of_change: 'Unknown change' } }
 
-      it 'uses text style for type of change column' do
+      it 'uses change updated style for type of change column' do
         result = instance.build_row_styles(styles, record)
-        expect(result[8]).to eq('text_style')
+        expect(result[8]).to eq('change_updated_style')
       end
     end
 

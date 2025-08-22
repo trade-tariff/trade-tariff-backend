@@ -3,6 +3,14 @@ RSpec.describe DeltaReportService do
 
   let(:date) { Date.parse('2024-08-11') }
 
+  def mock_goods_nomenclature_lookup(commodity)
+    actual_scope = instance_double(Sequel::Dataset)
+    allow(GoodsNomenclature).to receive(:actual).and_return(actual_scope)
+    allow(actual_scope).to receive(:where).with(goods_nomenclature_item_id: '0101000000').and_return(actual_scope)
+    allow(actual_scope).to receive(:first).and_return(commodity)
+    allow(commodity).to receive(:declarable?).and_return(true)
+  end
+
   describe '.generate' do
     subject(:result) { described_class.generate(date: date) }
 
@@ -69,6 +77,7 @@ RSpec.describe DeltaReportService do
         measures: [],
         measure_components: [],
         measure_conditions: [],
+        excluded_geographical_areas: [],
         geographical_areas: [],
         certificates: [],
         additional_codes: [],
@@ -98,17 +107,14 @@ RSpec.describe DeltaReportService do
       allow(DeltaReportService::MeasureChanges).to receive(:collect).with(date).and_return(mock_changes[:measures])
       allow(DeltaReportService::MeasureComponentChanges).to receive(:collect).with(date).and_return(mock_changes[:measure_components])
       allow(DeltaReportService::MeasureConditionChanges).to receive(:collect).with(date).and_return(mock_changes[:measure_conditions])
+      allow(DeltaReportService::ExcludedGeographicalAreaChanges).to receive(:collect).with(date).and_return(mock_changes[:excluded_geographical_areas])
       allow(DeltaReportService::GeographicalAreaChanges).to receive(:collect).with(date).and_return(mock_changes[:geographical_areas])
       allow(DeltaReportService::CertificateChanges).to receive(:collect).with(date).and_return(mock_changes[:certificates])
       allow(DeltaReportService::AdditionalCodeChanges).to receive(:collect).with(date).and_return(mock_changes[:additional_codes])
       allow(DeltaReportService::ExcelGenerator).to receive(:call).and_return(instance_double(Axlsx::Package))
       allow(TimeMachine).to receive(:now).and_yield
 
-      actual_scope = instance_double(Sequel::Dataset)
-      allow(GoodsNomenclature).to receive(:actual).and_return(actual_scope)
-      allow(actual_scope).to receive(:where).with(goods_nomenclature_item_id: commodity.goods_nomenclature_item_id).and_return(actual_scope)
-      allow(actual_scope).to receive(:first).and_return(commodity)
-      allow(commodity).to receive(:declarable?).and_return(true)
+      mock_goods_nomenclature_lookup(commodity)
     end
 
     it 'wraps the execution in TimeMachine.now block' do
@@ -167,11 +173,7 @@ RSpec.describe DeltaReportService do
       let(:declarable_commodity) { instance_double(Commodity, goods_nomenclature_item_id: '0101000000', declarable?: true) }
 
       before do
-        actual_scope = instance_double(Sequel::Dataset)
-        allow(GoodsNomenclature).to receive(:actual).and_return(actual_scope)
-        allow(actual_scope).to receive(:where).with(goods_nomenclature_item_id: '0101000000').and_return(actual_scope)
-        allow(actual_scope).to receive(:first).and_return(declarable_commodity)
-        allow(declarable_commodity).to receive(:declarable?).and_return(true)
+        mock_goods_nomenclature_lookup(declarable_commodity)
       end
 
       it 'returns declarable goods for the specified nomenclature item id' do
@@ -185,11 +187,7 @@ RSpec.describe DeltaReportService do
       let(:declarable_commodity) { instance_double(Commodity, goods_nomenclature_item_id: '0101000000', declarable?: true) }
 
       before do
-        actual_scope = instance_double(Sequel::Dataset)
-        allow(GoodsNomenclature).to receive(:actual).and_return(actual_scope)
-        allow(actual_scope).to receive(:where).with(goods_nomenclature_item_id: '0101000000').and_return(actual_scope)
-        allow(actual_scope).to receive(:first).and_return(declarable_commodity)
-        allow(declarable_commodity).to receive(:declarable?).and_return(true)
+        mock_goods_nomenclature_lookup(declarable_commodity)
       end
 
       it 'returns declarable goods for the specified nomenclature item id' do
@@ -210,11 +208,7 @@ RSpec.describe DeltaReportService do
         allow(db_double).to receive(:[]).with(:measures).and_return(measures_dataset)
         allow(measures_dataset).to receive(:where).with(measure_sid: 123).and_return(instance_double(Sequel::Dataset, first: measure_record))
 
-        actual_scope = instance_double(Sequel::Dataset)
-        allow(GoodsNomenclature).to receive(:actual).and_return(actual_scope)
-        allow(actual_scope).to receive(:where).with(goods_nomenclature_item_id: '0101000000').and_return(actual_scope)
-        allow(actual_scope).to receive(:first).and_return(declarable_commodity)
-        allow(declarable_commodity).to receive(:declarable?).and_return(true)
+        mock_goods_nomenclature_lookup(declarable_commodity)
       end
 
       it 'finds measure and returns declarable goods for its commodity code' do
@@ -235,12 +229,28 @@ RSpec.describe DeltaReportService do
         allow(db_double).to receive(:[]).with(:measures).and_return(measures_dataset)
         allow(measures_dataset).to receive(:where).with(measure_sid: 123).and_return(instance_double(Sequel::Dataset, first: measure_record))
 
-        # Mock GoodsNomenclature lookup
-        actual_scope = instance_double(Sequel::Dataset)
-        allow(GoodsNomenclature).to receive(:actual).and_return(actual_scope)
-        allow(actual_scope).to receive(:where).with(goods_nomenclature_item_id: '0101000000').and_return(actual_scope)
-        allow(actual_scope).to receive(:first).and_return(declarable_commodity)
-        allow(declarable_commodity).to receive(:declarable?).and_return(true)
+        mock_goods_nomenclature_lookup(declarable_commodity)
+      end
+
+      it 'finds measure and returns declarable goods for its commodity code' do
+        result = service.send(:find_affected_declarable_goods, change)
+        expect(result).to eq([declarable_commodity])
+      end
+    end
+
+    context 'when change type is ExcludedGeographicalArea' do
+      let(:change) { { type: 'ExcludedGeographicalArea', measure_sid: 123 } }
+      let(:measure_record) { { goods_nomenclature_item_id: '0101000000' } }
+      let(:declarable_commodity) { instance_double(Commodity, goods_nomenclature_item_id: '0101000000', declarable?: true) }
+
+      before do
+        db_double = instance_double(Sequel::Database)
+        measures_dataset = instance_double(Sequel::Dataset)
+        allow(Sequel::Model).to receive(:db).and_return(db_double)
+        allow(db_double).to receive(:[]).with(:measures).and_return(measures_dataset)
+        allow(measures_dataset).to receive(:where).with(measure_sid: 123).and_return(instance_double(Sequel::Dataset, first: measure_record))
+
+        mock_goods_nomenclature_lookup(declarable_commodity)
       end
 
       it 'finds measure and returns declarable goods for its commodity code' do
@@ -266,12 +276,7 @@ RSpec.describe DeltaReportService do
         allow(filtered_dataset).to receive(:distinct).with(:goods_nomenclature_item_id).and_return(filtered_dataset)
         allow(filtered_dataset).to receive(:map).and_yield(measure_records.first).and_return([declarable_commodity])
 
-        # Mock GoodsNomenclature lookup
-        actual_scope = instance_double(Sequel::Dataset)
-        allow(GoodsNomenclature).to receive(:actual).and_return(actual_scope)
-        allow(actual_scope).to receive(:where).with(goods_nomenclature_item_id: '0101000000').and_return(actual_scope)
-        allow(actual_scope).to receive(:first).and_return(declarable_commodity)
-        allow(declarable_commodity).to receive(:declarable?).and_return(true)
+        mock_goods_nomenclature_lookup(declarable_commodity)
       end
 
       it 'finds measures for geographical area and returns declarable goods' do
@@ -305,11 +310,7 @@ RSpec.describe DeltaReportService do
 
         allow(measures_dataset).to receive(:where).with(measure_sid: 123).and_return(instance_double(Sequel::Dataset, first: measure_record))
 
-        actual_scope = instance_double(Sequel::Dataset)
-        allow(GoodsNomenclature).to receive(:actual).and_return(actual_scope)
-        allow(actual_scope).to receive(:where).with(goods_nomenclature_item_id: '0101000000').and_return(actual_scope)
-        allow(actual_scope).to receive(:first).and_return(declarable_commodity)
-        allow(declarable_commodity).to receive(:declarable?).and_return(true)
+        mock_goods_nomenclature_lookup(declarable_commodity)
       end
 
       it 'finds measures for certificate and returns declarable goods' do
@@ -335,12 +336,7 @@ RSpec.describe DeltaReportService do
         allow(filtered_dataset).to receive(:distinct).with(:goods_nomenclature_item_id).and_return(filtered_dataset)
         allow(filtered_dataset).to receive(:map).and_yield(measure_records.first).and_return([declarable_commodity])
 
-        # Mock GoodsNomenclature lookup
-        actual_scope = instance_double(Sequel::Dataset)
-        allow(GoodsNomenclature).to receive(:actual).and_return(actual_scope)
-        allow(actual_scope).to receive(:where).with(goods_nomenclature_item_id: '0101000000').and_return(actual_scope)
-        allow(actual_scope).to receive(:first).and_return(declarable_commodity)
-        allow(declarable_commodity).to receive(:declarable?).and_return(true)
+        mock_goods_nomenclature_lookup(declarable_commodity)
       end
 
       it 'finds measures for additional code and returns declarable goods' do
@@ -366,11 +362,7 @@ RSpec.describe DeltaReportService do
 
     context 'when goods nomenclature is declarable' do
       before do
-        actual_scope = instance_double(Sequel::Dataset)
-        allow(GoodsNomenclature).to receive(:actual).and_return(actual_scope)
-        allow(actual_scope).to receive(:where).with(goods_nomenclature_item_id: '0101000000').and_return(actual_scope)
-        allow(actual_scope).to receive(:first).and_return(declarable_commodity)
-        allow(declarable_commodity).to receive(:declarable?).and_return(true)
+        mock_goods_nomenclature_lookup(declarable_commodity)
       end
 
       it 'returns the goods nomenclature itself' do
@@ -433,11 +425,7 @@ RSpec.describe DeltaReportService do
       allow(db_double).to receive(:[]).with(:measures).and_return(measures_dataset)
       allow(measures_dataset).to receive(:where).with(measure_sid: measure_sid).and_return(instance_double(Sequel::Dataset, first: measure_record))
 
-      actual_scope = instance_double(Sequel::Dataset)
-      allow(GoodsNomenclature).to receive(:actual).and_return(actual_scope)
-      allow(actual_scope).to receive(:where).with(goods_nomenclature_item_id: goods_nomenclature_item_id).and_return(actual_scope)
-      allow(actual_scope).to receive(:first).and_return(declarable_goods.first)
-      allow(declarable_goods.first).to receive(:declarable?).and_return(true)
+      mock_goods_nomenclature_lookup(declarable_goods.first)
     end
 
     it 'finds measure and returns declarable goods for its commodity code' do
@@ -474,7 +462,6 @@ RSpec.describe DeltaReportService do
       allow(filtered_dataset).to receive(:distinct).with(:goods_nomenclature_item_id).and_return(filtered_dataset)
       allow(filtered_dataset).to receive(:map).and_yield(measure_records[0]).and_yield(measure_records[1]).and_return([[declarable_commodity1], [declarable_commodity2]])
 
-      # Mock GoodsNomenclature lookups
       actual_scope = instance_double(Sequel::Dataset)
       allow(GoodsNomenclature).to receive(:actual).and_return(actual_scope)
 

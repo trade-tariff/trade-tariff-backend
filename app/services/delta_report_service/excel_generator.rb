@@ -191,10 +191,8 @@ class DeltaReportService
                        styles[:change_added]
                      when /removed/i
                        styles[:change_removed]
-                     when /updated/i
-                       styles[:change_updated]
                      else
-                       styles[:text]
+                       styles[:change_updated]
                      end
 
       [
