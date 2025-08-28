@@ -23,6 +23,7 @@ class Measure < Sequel::Model
   plugin :time_machine
   plugin :oplog, primary_key: :measure_sid, materialized: true
   plugin :national
+  plugin :optimized_many_to_many
 
   many_to_one :goods_nomenclature, key: :goods_nomenclature_sid,
                                    foreign_key: :goods_nomenclature_sid,
@@ -56,27 +57,11 @@ class Measure < Sequel::Model
   many_to_many :excluded_geographical_areas, join_table: :measure_excluded_geographical_areas,
                                              left_key: :measure_sid,
                                              left_primary_key: :measure_sid,
+                                             right_key: :excluded_geographical_area,
                                              right_primary_key: :geographical_area_id,
                                              order: Sequel.asc(:geographical_area_id),
                                              class_name: 'GeographicalArea',
-                                             right_key: :excluded_geographical_area,
-                                             eager_loader: proc { |ds|
-                                               measure_sids = ds[:id_map].keys
-
-                                               ga = GeographicalArea.with_sql(<<~SQL, Sequel.pg_array(measure_sids, :integer))
-                                                 WITH filter_measures AS (
-                                                   SELECT unnest(?) AS measure_sid
-                                                 )
-                                                 SELECT ga.*, mega.measure_sid AS x_foreign_key_x
-                                                 FROM geographical_areas ga
-                                                 JOIN measure_excluded_geographical_areas mega
-                                                   ON mega.excluded_geographical_area = ga.geographical_area_id
-                                                 JOIN filter_measures fm ON fm.measure_sid = mega.measure_sid
-                                                 ORDER BY ga.geographical_area_id
-                                               SQL
-
-                                               ds[:rows] = ga.all
-                                             }
+                                             use_optimized: true
 
   many_to_many :footnotes, join_table: :footnote_association_measures,
                            order: [Sequel.asc(:footnote_type_id, nulls: :first),
