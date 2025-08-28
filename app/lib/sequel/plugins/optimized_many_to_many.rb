@@ -39,17 +39,17 @@ module Sequel
               FROM #{target_table}
               JOIN #{join_table} ON #{join_table}.#{right_key} = #{target_table}.#{right_pk}
               WHERE #{join_table}.#{left_key} = ?
-              #{order ? "ORDER BY #{associated_class.dataset.literal(order)}" : ""}
+              #{order ? "ORDER BY #{associated_class.dataset.literal(order)}" : ''}
             SQL
 
-            associated_class.with_sql(sql, self.send(left_pk))
+            associated_class.with_sql(sql, send(left_pk))
           end
         end
 
         def pg_optimized_many_to_many_eager_loader_proc(assoc_name, model_class)
-        proc do |eo|
+          proc do |eo|
             refl = model_class.association_reflection(assoc_name)
-            associated_class  = refl.associated_class
+            associated_class = refl.associated_class
             left_pk = refl[:left_primary_key]
             ids = eo[:id_map].keys
             join_table = refl[:join_table]
@@ -68,7 +68,7 @@ module Sequel
               FROM #{target_table}
               JOIN #{join_table} ON #{join_table}.#{right_key} = #{target_table}.#{right_pk}
               JOIN #{cte_name} fm ON fm.#{left_pk} = #{join_table}.#{left_key}
-              #{order ? "ORDER BY #{associated_class.dataset.literal(order)}" : ""}
+              #{order ? "ORDER BY #{associated_class.dataset.literal(order)}" : ''}
             SQL
 
             dataset = associated_class.with_sql(sql, Sequel.pg_array(ids, :integer))

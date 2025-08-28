@@ -1,7 +1,7 @@
-# spec/sequel/plugins/optimized_many_to_many_spec.rb
-require "spec_helper"
-require "sequel"
-require "sequel/plugins/optimized_many_to_many"
+# rubocop:disable Style/InstanceVariable
+# rubocop:disable Style/ConstantDefinitionInBlock
+# rubocop:disable Style/BeforeAfterAll
+# rubocop:disable Style/LeakyConstantDeclaration
 
 RSpec.describe Sequel::Plugins::OptimizedManyToMany do
   before(:all) do
@@ -39,18 +39,17 @@ RSpec.describe Sequel::Plugins::OptimizedManyToMany do
       plugin :optimized_many_to_many
 
       many_to_many :children,
-                   class: "Child",
+                   class: 'Child',
                    join_table: :parents_children,
                    left_key: :parent_id,
                    left_primary_key: :id,
                    right_key: :child_id,
                    right_primary_key: :id
-
     end
 
     class Child < Sequel::Model(:children)
       many_to_many :parents,
-                   class: "Parent",
+                   class: 'Parent',
                    join_table: :parents_children,
                    left_key: :parent_id,
                    left_primary_key: :id,
@@ -71,31 +70,31 @@ RSpec.describe Sequel::Plugins::OptimizedManyToMany do
     Parent.dataset.delete
     Grandchild.dataset.delete
 
-    @p1 = Parent.create(name: "P1")
-    @p2 = Parent.create(name: "P2")
+    @p1 = Parent.create(name: 'P1')
+    @p2 = Parent.create(name: 'P2')
 
-    @c1 = Child.create(name: "C1")
-    @c2 = Child.create(name: "C2")
-    @c3 = Child.create(name: "C3")
+    @c1 = Child.create(name: 'C1')
+    @c2 = Child.create(name: 'C2')
+    @c3 = Child.create(name: 'C3')
 
     DB[:parents_children].insert(parent_id: @p1.id, child_id: @c1.id)
     DB[:parents_children].insert(parent_id: @p1.id, child_id: @c2.id)
     DB[:parents_children].insert(parent_id: @p2.id, child_id: @c3.id)
 
-    @g1 = Grandchild.create(name: "G1", child: @c1)
+    @g1 = Grandchild.create(name: 'G1', child: @c1)
   end
 
-  describe "default many_to_many" do
-    it "loads associated children normally" do
-      expect(@p1.children.map(&:name)).to contain_exactly("C1", "C2")
-      expect(@p2.children.map(&:name)).to contain_exactly("C3")
+  describe 'default many_to_many' do
+    it 'loads associated children normally' do
+      expect(@p1.children.map(&:name)).to contain_exactly('C1', 'C2')
+      expect(@p2.children.map(&:name)).to contain_exactly('C3')
     end
   end
 
-  describe "with use_optimized: true" do
+  describe 'with use_optimized: true' do
     before do
       Parent.many_to_many :optimized_children,
-                          class: "Child",
+                          class: 'Child',
                           join_table: :parents_children,
                           left_key: :parent_id,
                           left_primary_key: :id,
@@ -104,21 +103,21 @@ RSpec.describe Sequel::Plugins::OptimizedManyToMany do
                           use_optimized: true
     end
 
-    it "loads children with custom dataset" do
-      expect(@p1.optimized_children.map(&:name)).to contain_exactly("C1", "C2")
+    it 'loads children with custom dataset' do
+      expect(@p1.optimized_children.map(&:name)).to contain_exactly('C1', 'C2')
     end
 
-    it "eager loads children with optimized" do
+    it 'eager loads children with optimized' do
       parents = Parent.eager(:optimized_children).all
-      expect(parents.find { |p| p.id == @p1.id }.optimized_children.map(&:name)).to contain_exactly("C1", "C2")
-      expect(parents.find { |p| p.id == @p2.id }.optimized_children.map(&:name)).to contain_exactly("C3")
+      expect(parents.find { |p| p.id == @p1.id }.optimized_children.map(&:name)).to contain_exactly('C1', 'C2')
+      expect(parents.find { |p| p.id == @p2.id }.optimized_children.map(&:name)).to contain_exactly('C3')
     end
   end
 
-  describe "with order and use_optimized: true" do
+  describe 'with order and use_optimized: true' do
     before do
       Parent.many_to_many :optimized_children,
-                          class: "Child",
+                          class: 'Child',
                           join_table: :parents_children,
                           left_key: :parent_id,
                           left_primary_key: :id,
@@ -128,21 +127,21 @@ RSpec.describe Sequel::Plugins::OptimizedManyToMany do
                           use_optimized: true
     end
 
-    it "loads children with custom dataset" do
-      expect(@p1.optimized_children.map(&:name)).to eq(["C2", "C1"])
+    it 'loads children with custom dataset' do
+      expect(@p1.optimized_children.map(&:name)).to eq(%w[C2 C1])
     end
 
-    it "eager loads children with optimized" do
+    it 'eager loads children with optimized' do
       parents = Parent.eager(:optimized_children).all
-      expect(parents.find { |p| p.id == @p1.id }.optimized_children.map(&:name)).to eq(["C2", "C1"])
-      expect(parents.find { |p| p.id == @p2.id }.optimized_children.map(&:name)).to contain_exactly("C3")
+      expect(parents.find { |p| p.id == @p1.id }.optimized_children.map(&:name)).to eq(%w[C2 C1])
+      expect(parents.find { |p| p.id == @p2.id }.optimized_children.map(&:name)).to contain_exactly('C3')
     end
   end
 
-  describe "with use_optimized_eager_loader: true" do
+  describe 'with use_optimized_eager_loader: true' do
     before do
       Parent.many_to_many :cte_children,
-                          class: "Child",
+                          class: 'Child',
                           join_table: :parents_children,
                           left_key: :parent_id,
                           left_primary_key: :id,
@@ -151,24 +150,24 @@ RSpec.describe Sequel::Plugins::OptimizedManyToMany do
                           use_optimized_eager_loader: true
     end
 
-    it "uses normal dataset but optimized eager loader" do
+    it 'uses normal dataset but optimized eager loader' do
       parents = Parent.eager(:cte_children).all
-      expect(parents.find { |p| p.id == @p1.id }.cte_children.map(&:name)).to contain_exactly("C1", "C2")
-      expect(parents.find { |p| p.id == @p2.id }.cte_children.map(&:name)).to contain_exactly("C3")
+      expect(parents.find { |p| p.id == @p1.id }.cte_children.map(&:name)).to contain_exactly('C1', 'C2')
+      expect(parents.find { |p| p.id == @p2.id }.cte_children.map(&:name)).to contain_exactly('C3')
     end
   end
 
-  describe "with nested association" do
-    it "eager loads nested associations (children → grandchildren)" do
+  describe 'with nested association' do
+    it 'eager loads nested associations (children → grandchildren)' do
       parents = Parent.eager(children: :grandchildren).all
-      expect(parents.first.children.first.grandchildren.map(&:name)).to eq(["G1"])
+      expect(parents.first.children.first.grandchildren.map(&:name)).to eq(%w[G1])
     end
   end
 
-  describe "with nested association and use_optimized_eager_loader: true" do
+  describe 'with nested association and use_optimized_eager_loader: true' do
     before do
       Parent.many_to_many :cte_children,
-                          class: "Child",
+                          class: 'Child',
                           join_table: :parents_children,
                           left_key: :parent_id,
                           left_primary_key: :id,
@@ -177,9 +176,13 @@ RSpec.describe Sequel::Plugins::OptimizedManyToMany do
                           use_optimized_eager_loader: true
     end
 
-    it "eager loads nested associations (children → grandchildren)" do
+    it 'eager loads nested associations (children → grandchildren)' do
       parents = Parent.eager(cte_children: :grandchildren).all
-      expect(parents.first.children.first.grandchildren.map(&:name)).to eq(["G1"])
+      expect(parents.first.children.first.grandchildren.map(&:name)).to eq(%w[G1])
     end
   end
 end
+# rubocop:enable Style/InstanceVariable
+# rubocop:enable Style/ConstantDefinitionInBlock
+# rubocop:enable Style/BeforeAfterAll
+# rubocop:enable Style/LeakyConstantDeclaration
