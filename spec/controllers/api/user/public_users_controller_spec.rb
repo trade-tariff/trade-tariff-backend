@@ -116,7 +116,7 @@ RSpec.describe Api::User::PublicUsersController do
           expect(JSON.parse(api_response.body)).to eq expected
         end
 
-        it { is_expected.to have_http_status :unprocessable_entity }
+        it { is_expected.to have_http_status :unprocessable_content }
       end
 
       context 'when subscription is being updated' do
@@ -174,7 +174,7 @@ RSpec.describe Api::User::PublicUsersController do
             expect(JSON.parse(api_response.body)).to eq expected
           end
 
-          it { is_expected.to have_http_status :unprocessable_entity }
+          it { is_expected.to have_http_status :unprocessable_content }
         end
       end
     end

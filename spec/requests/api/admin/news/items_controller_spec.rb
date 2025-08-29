@@ -64,7 +64,7 @@ RSpec.describe Api::Admin::News::ItemsController, :admin do
     context 'with invalid params' do
       let(:news_item_attrs) { attributes_for :news_item, title: nil }
 
-      it { is_expected.to have_http_status :unprocessable_entity }
+      it { is_expected.to have_http_status :unprocessable_content }
 
       it 'returns errors for news item' do
         expect(json_response).to include('errors')
@@ -95,7 +95,7 @@ RSpec.describe Api::Admin::News::ItemsController, :admin do
     context 'with invalid params' do
       let(:updated_title) { '' }
 
-      it { is_expected.to have_http_status :unprocessable_entity }
+      it { is_expected.to have_http_status :unprocessable_content }
 
       it 'returns errors for news item' do
         expect(json_response).to include('errors')

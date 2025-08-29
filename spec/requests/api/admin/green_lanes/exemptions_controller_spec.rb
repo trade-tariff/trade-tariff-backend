@@ -70,7 +70,7 @@ RSpec.describe Api::Admin::GreenLanes::ExemptionsController, :admin do
     context 'with invalid params' do
       let(:ex_attrs) { build(:green_lanes_exemption, code: nil).to_hash }
 
-      it { is_expected.to have_http_status :unprocessable_entity }
+      it { is_expected.to have_http_status :unprocessable_content }
 
       it 'returns errors for exemption' do
         expect(json_response).to include('errors')
@@ -101,7 +101,7 @@ RSpec.describe Api::Admin::GreenLanes::ExemptionsController, :admin do
     context 'with invalid params' do
       let(:updated_description) { nil }
 
-      it { is_expected.to have_http_status :unprocessable_entity }
+      it { is_expected.to have_http_status :unprocessable_content }
 
       it 'returns errors for exemption' do
         expect(json_response).to include('errors')
