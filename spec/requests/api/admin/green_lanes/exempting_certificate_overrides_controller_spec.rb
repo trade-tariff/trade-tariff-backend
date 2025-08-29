@@ -72,7 +72,7 @@ RSpec.describe Api::Admin::GreenLanes::ExemptingCertificateOverridesController, 
     context 'with invalid params' do
       let(:eco_attrs) { build(:exempting_certificate_override, certificate_code: nil).to_hash }
 
-      it { is_expected.to have_http_status :unprocessable_entity }
+      it { is_expected.to have_http_status :unprocessable_content }
 
       it 'returns errors for overrides' do
         expect(json_response).to include('errors')

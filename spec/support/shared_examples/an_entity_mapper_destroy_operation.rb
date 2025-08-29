@@ -2,7 +2,7 @@ RSpec.shared_examples_for 'an entity mapper destroy operation' do |relation|
   it "inserts a soft delete record for #{relation}" do
     yielded_objects = []
 
-    entity_mapper.import do |entity|
+    entity_mapper.build do |entity|
       yielded_objects << entity
     end
 

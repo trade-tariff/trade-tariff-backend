@@ -70,7 +70,7 @@ RSpec.describe Api::Admin::GreenLanes::MeasuresController, :admin do
     context 'with invalid params' do
       let(:measure_attrs) { build(:green_lanes_measure, category_assessment_id: nil).to_hash }
 
-      it { is_expected.to have_http_status :unprocessable_entity }
+      it { is_expected.to have_http_status :unprocessable_content }
 
       it 'returns errors for exemption' do
         expect(json_response).to include('errors')
@@ -104,7 +104,7 @@ RSpec.describe Api::Admin::GreenLanes::MeasuresController, :admin do
       let(:id) { measure.id }
       let(:new_category_assessment_id) { nil }
 
-      it { is_expected.to have_http_status :unprocessable_entity }
+      it { is_expected.to have_http_status :unprocessable_content }
 
       it 'returns errors for exemption' do
         expect(json_response).to include('errors')

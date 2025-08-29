@@ -44,7 +44,7 @@ RSpec.describe Api::V2::FootnotesController, type: :controller do
       }
     end
 
-    it { is_expected.to have_http_status :unprocessable_entity }
+    it { is_expected.to have_http_status :unprocessable_content }
     it { expect(do_response.body).to match_json_expression pattern }
   end
 
@@ -63,7 +63,7 @@ RSpec.describe Api::V2::FootnotesController, type: :controller do
       }
     end
 
-    it { is_expected.to have_http_status :unprocessable_entity }
+    it { is_expected.to have_http_status :unprocessable_content }
     it { expect(do_response.body).to match_json_expression pattern }
   end
 
@@ -82,7 +82,7 @@ RSpec.describe Api::V2::FootnotesController, type: :controller do
       }
     end
 
-    it { is_expected.to have_http_status :unprocessable_entity }
+    it { is_expected.to have_http_status :unprocessable_content }
     it { expect(do_response.body).to match_json_expression pattern }
   end
 

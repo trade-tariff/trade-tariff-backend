@@ -12,7 +12,7 @@ class ErrorsController < ActionController::Base
 
   def unprocessable_entity
     respond_to_error \
-      :unprocessable_entity,
+      :unprocessable_content,
       'Unprocessable entity: API documentation is available at https://api.trade-tariff.service.gov.uk/'
   end
 

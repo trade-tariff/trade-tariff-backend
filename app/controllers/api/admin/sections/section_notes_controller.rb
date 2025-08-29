@@ -21,7 +21,7 @@ module Api
             response.headers['Location'] = api_section_section_note_url(section.id)
             render json: Api::Admin::Sections::SectionNoteSerializer.new(section_note, { is_collection: false }).serializable_hash, status: :created
           else
-            render json: Api::Admin::ErrorSerializationService.new(section_note).call, status: :unprocessable_entity
+            render json: Api::Admin::ErrorSerializationService.new(section_note).call, status: :unprocessable_content
           end
         end
 
@@ -32,7 +32,7 @@ module Api
           if section_note.save(raise_on_failure: false)
             render json: Api::Admin::Sections::SectionNoteSerializer.new(section_note, { is_collection: false }).serializable_hash, status: :ok
           else
-            render json: Api::Admin::ErrorSerializationService.new(section_note).call, status: :unprocessable_entity
+            render json: Api::Admin::ErrorSerializationService.new(section_note).call, status: :unprocessable_content
           end
         end
 

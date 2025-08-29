@@ -65,7 +65,7 @@ RSpec.describe CdsImporter::EntityMapper::GeographicalAreaMembershipMapper do
         }
       end
 
-      it { expect { entity_mapper.import }.not_to raise_error }
+      it { expect { entity_mapper.build }.not_to raise_error }
     end
 
     context 'when there are multiple geographicalAreaMembership nodes' do
@@ -136,7 +136,7 @@ RSpec.describe CdsImporter::EntityMapper::GeographicalAreaMembershipMapper do
       end
 
       it 'mutates the xml node to hold the correct geographical_area_sid and geographical_area_group_sid values' do
-        entity_mapper.import
+        entity_mapper.build
 
         expect(xml_node).to eq(expected_hash)
       end
@@ -144,7 +144,7 @@ RSpec.describe CdsImporter::EntityMapper::GeographicalAreaMembershipMapper do
       it 'creates the correct memberships' do
         yielded_objects = []
 
-        entity_mapper.import do |entity|
+        entity_mapper.build do |entity|
           yielded_objects << entity
         end
 
@@ -189,13 +189,13 @@ RSpec.describe CdsImporter::EntityMapper::GeographicalAreaMembershipMapper do
         let(:expected_message) { "Skipping membership import due to missing geographical area group sid. hjid is 25654\n" }
 
         it 'mutates the xml node to hold the correct geographical_area_sid and geographical_area_group_sid values' do
-          entity_mapper.import
+          entity_mapper.build
 
           expect(xml_node).to eq(expected_hash)
         end
 
         it 'instruments a message about the missing sid' do
-          entity_mapper.import
+          entity_mapper.build
 
           expect(ActiveSupport::Notifications).to have_received(:instrument).with(
             'apply.import_warnings',
@@ -246,7 +246,7 @@ RSpec.describe CdsImporter::EntityMapper::GeographicalAreaMembershipMapper do
       end
 
       it 'mutates the xml node to hold the correct geographical_area_sid and geographical_area_group_sid values' do
-        entity_mapper.import
+        entity_mapper.build
 
         expect(xml_node).to eq(expected_hash)
       end

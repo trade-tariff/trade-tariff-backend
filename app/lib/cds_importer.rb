@@ -62,7 +62,7 @@ class CdsImporter
     def process_xml_node(key, hash_from_node)
       hash_from_node['filename'] = @filename
 
-      CdsImporter::EntityMapper.new(key, hash_from_node).import do |cds_entity|
+      CdsImporter::EntityMapper.new(key, hash_from_node).build do |cds_entity|
         @batch << cds_entity
         @count += 1
 

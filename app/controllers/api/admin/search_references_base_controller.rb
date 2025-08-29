@@ -34,7 +34,7 @@ module Api
           render json: Api::Admin::SearchReferences::SearchReferenceSerializer.new(@search_reference, options).serializable_hash, status: :created
         else
           render json: Api::Admin::ErrorSerializationService.new(@search_reference).call,
-                 status: :unprocessable_entity
+                 status: :unprocessable_content
         end
       end
 
@@ -46,7 +46,7 @@ module Api
           respond_with @search_reference
         else
           render json: Api::Admin::ErrorSerializationService.new(@search_reference).call,
-                 status: :unprocessable_entity
+                 status: :unprocessable_content
         end
       end
 

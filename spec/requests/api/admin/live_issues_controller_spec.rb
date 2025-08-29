@@ -58,7 +58,7 @@ RSpec.describe Api::Admin::LiveIssuesController, :admin do
       it 'returns 422 if the live issue is invalid' do
         authenticated_post api_admin_live_issues_path(format: :json), params: { data: { type: 'live_issues', attributes: live_issue_data.merge(title: nil) } }
 
-        expect(response).to have_http_status(:unprocessable_entity)
+        expect(response).to have_http_status(:unprocessable_content)
         expect(json_response['errors'].first['detail']).to include('Title is not present')
       end
     end
@@ -95,7 +95,7 @@ RSpec.describe Api::Admin::LiveIssuesController, :admin do
       it 'returns 422 if the live issue is invalid' do
         authenticated_patch api_admin_live_issue_path(live_issue.id, format: :json), params: { data: { type: 'live_issues', attributes: live_issue_data.merge(title: nil) } }
 
-        expect(response).to have_http_status(:unprocessable_entity)
+        expect(response).to have_http_status(:unprocessable_content)
         expect(json_response['errors'].first['detail']).to include('Title is not present')
       end
     end

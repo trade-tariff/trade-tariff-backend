@@ -184,7 +184,7 @@ RSpec.describe Api::Admin::GreenLanes::CategoryAssessmentsController, :admin do
     context 'with invalid params' do
       let(:ca_attrs) { build(:category_assessment, regulation_role: nil).to_hash }
 
-      it { is_expected.to have_http_status :unprocessable_entity }
+      it { is_expected.to have_http_status :unprocessable_content }
 
       it 'returns errors for category assessment' do
         expect(json_response).to include('errors')
@@ -215,7 +215,7 @@ RSpec.describe Api::Admin::GreenLanes::CategoryAssessmentsController, :admin do
     context 'with invalid params' do
       let(:updated_regulation) { nil }
 
-      it { is_expected.to have_http_status :unprocessable_entity }
+      it { is_expected.to have_http_status :unprocessable_content }
 
       it 'returns errors for category assessment' do
         expect(json_response).to include('errors')

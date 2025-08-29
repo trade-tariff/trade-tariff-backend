@@ -38,7 +38,7 @@ module Api
                      status: :created
             else
               render json: serialize_errors(measure),
-                     status: :unprocessable_entity
+                     status: :unprocessable_content
             end
           else
             raise Sequel::RecordNotFound
@@ -54,7 +54,7 @@ module Api
                    status: :ok
           else
             render json: serialize_errors(measure),
-                   status: :unprocessable_entity
+                   status: :unprocessable_content
           end
         end
 

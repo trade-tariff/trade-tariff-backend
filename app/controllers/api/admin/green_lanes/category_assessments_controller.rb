@@ -35,7 +35,7 @@ module Api
                    status: :created
           else
             render json: serialize_errors(ca),
-                   status: :unprocessable_entity
+                   status: :unprocessable_content
           end
         end
 
@@ -48,7 +48,7 @@ module Api
                    status: :ok
           else
             render json: serialize_errors(ca),
-                   status: :unprocessable_entity
+                   status: :unprocessable_content
           end
         end
 
@@ -68,7 +68,7 @@ module Api
                    status: :ok
           else
             render json: serialize_errors(ca),
-                   status: :unprocessable_entity
+                   status: :unprocessable_content
           end
         end
 
@@ -81,7 +81,7 @@ module Api
                    status: :ok
           else
             render json: serialize_errors(ca),
-                   status: :unprocessable_entity
+                   status: :unprocessable_content
           end
         end
 

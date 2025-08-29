@@ -25,7 +25,7 @@ module Api
                    status: :ok
           else
             render json: serialize_errors(update),
-                   status: :unprocessable_entity
+                   status: :unprocessable_content
           end
         end
 

@@ -271,7 +271,7 @@ RSpec.describe CdsImporter::EntityMapper::QuotaDefinitionMapper do
       it 'imports the new event' do
         yielded_objects = []
 
-        entity_mapper.import do |entity|
+        entity_mapper.build do |entity|
           yielded_objects << entity
         end
 

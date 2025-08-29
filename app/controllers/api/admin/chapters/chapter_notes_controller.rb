@@ -20,7 +20,7 @@ module Api
             response.headers['Location'] = api_chapter_chapter_note_url(chapter)
             render json: Api::Admin::Chapters::ChapterNoteSerializer.new(chapter_note, { is_collection: false }).serializable_hash, status: :created
           else
-            render json: Api::Admin::ErrorSerializationService.new(chapter_note).call, status: :unprocessable_entity
+            render json: Api::Admin::ErrorSerializationService.new(chapter_note).call, status: :unprocessable_content
           end
         end
 
@@ -31,7 +31,7 @@ module Api
           if chapter_note.save(raise_on_failure: false)
             render json: Api::Admin::Chapters::ChapterNoteSerializer.new(chapter_note, { is_collection: false }).serializable_hash, status: :ok
           else
-            render json: Api::Admin::ErrorSerializationService.new(chapter_note).call, status: :unprocessable_entity
+            render json: Api::Admin::ErrorSerializationService.new(chapter_note).call, status: :unprocessable_content
           end
         end
 

@@ -19,7 +19,7 @@ RSpec.describe ApplicationController, type: :request do
         }.to_json
       end
 
-      it { is_expected.to have_http_status(:unprocessable_entity) }
+      it { is_expected.to have_http_status(:unprocessable_content) }
       it { expect(do_response.body).to eq(expected_error) }
     end
   end

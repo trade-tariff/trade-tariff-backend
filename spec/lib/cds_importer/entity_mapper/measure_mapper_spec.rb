@@ -187,13 +187,13 @@ RSpec.describe CdsImporter::EntityMapper::MeasureMapper do
 
       it 'removes the old footnote associations' do
         old = FootnoteAssociationMeasure.last.oid
-        entity_mapper.import
+        entity_mapper.build
         expect(FootnoteAssociationMeasure.pluck(:oid)).not_to include(old)
       end
 
       it 'removes the old measure excluded geographical areas' do
         old = MeasureExcludedGeographicalArea.last.oid
-        entity_mapper.import
+        entity_mapper.build
         MeasureExcludedGeographicalArea.refresh!
         expect(MeasureExcludedGeographicalArea.pluck(:oid)).not_to include(old)
       end
@@ -214,13 +214,13 @@ RSpec.describe CdsImporter::EntityMapper::MeasureMapper do
 
       it 'does not remove the old footnote associations' do
         old = FootnoteAssociationMeasure.last.oid
-        entity_mapper.import
+        entity_mapper.build
         expect(FootnoteAssociationMeasure.pluck(:oid)).to include(old)
       end
 
       it 'does not remove the old measure excluded geographical areas' do
         old = MeasureExcludedGeographicalArea.last.oid
-        entity_mapper.import
+        entity_mapper.build
         expect(MeasureExcludedGeographicalArea.pluck(:oid)).to include(old)
       end
     end

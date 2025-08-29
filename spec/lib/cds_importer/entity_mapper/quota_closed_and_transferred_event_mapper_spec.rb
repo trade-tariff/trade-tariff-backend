@@ -59,7 +59,7 @@ RSpec.describe CdsImporter::EntityMapper::QuotaClosedAndTransferredEventMapper d
       it 'imports the transfer event' do
         yielded_objects = []
 
-        entity_mapper.import do |entity|
+        entity_mapper.build do |entity|
           yielded_objects << entity
         end
 
@@ -91,7 +91,7 @@ RSpec.describe CdsImporter::EntityMapper::QuotaClosedAndTransferredEventMapper d
       it 'imports the transfer event' do
         yielded_objects = []
 
-        entity_mapper.import do |entity|
+        entity_mapper.build do |entity|
           yielded_objects << entity
         end
 

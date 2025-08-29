@@ -45,7 +45,7 @@ RSpec.describe Api::V2::GreenLanes::FaqFeedbackController, :v2 do
     context 'with invalid params' do
       let(:attributes) { attributes_for(:green_lanes_faq_feedback, session_id: nil) }
 
-      it { is_expected.to have_http_status :unprocessable_entity }
+      it { is_expected.to have_http_status :unprocessable_content }
 
       it 'returns errors for faq_feedback' do
         expect(json_response).to include('errors')

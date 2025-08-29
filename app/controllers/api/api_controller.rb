@@ -11,7 +11,7 @@ module Api
 
     rescue_from ActionController::ParameterMissing, NotImplementedError do |exception|
       serializer = TradeTariffBackend.error_serializer(request)
-      render json: serializer.serialized_errors({ error: exception.message, url: request.url }), status: :unprocessable_entity
+      render json: serializer.serialized_errors({ error: exception.message, url: request.url }), status: :unprocessable_content
     end
 
     protected

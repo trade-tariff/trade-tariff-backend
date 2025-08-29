@@ -86,7 +86,7 @@ RSpec.describe Api::V2::ExchangeRatesController, :v2 do
         }
       end
 
-      it { is_expected.to have_http_status(:unprocessable_entity) }
+      it { is_expected.to have_http_status(:unprocessable_content) }
 
       it { expect(response.body).to match_json_expression(pattern) }
 

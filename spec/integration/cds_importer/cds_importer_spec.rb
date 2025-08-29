@@ -4,7 +4,7 @@ RSpec.describe CdsImporter do
   # This xml file is empty
   let(:cds_update) { TariffSynchronizer::CdsUpdate.new(filename: 'tariff_dailyExtract_v1_20201004T235959.gzip') }
 
-  describe '#import' do
+  describe '#build' do
     it 'creates new instance of XmlProcessor' do
       allow(CdsImporter::XmlProcessor).to receive(:new).and_call_original
       importer.import
@@ -75,7 +75,7 @@ RSpec.describe CdsImporter do
     context 'when some error appears' do
       before do
         # rubocop:disable RSpec/AnyInstance
-        allow_any_instance_of(CdsImporter::EntityMapper).to receive(:import).and_raise(StandardError)
+        allow_any_instance_of(CdsImporter::EntityMapper).to receive(:build).and_raise(StandardError)
         # rubocop:enable RSpec/AnyInstance
       end
 
