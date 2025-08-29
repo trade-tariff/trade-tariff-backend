@@ -24,7 +24,7 @@ module Api
         if @description.save
           render json: Api::Admin::FootnoteSerializer.new(@footnote, { is_collection: false }).serializable_hash
         else
-          render json: Api::Admin::ErrorSerializationService.new(@description).call, status: :unprocessable_entity
+          render json: Api::Admin::ErrorSerializationService.new(@description).call, status: :unprocessable_content
         end
       end
 

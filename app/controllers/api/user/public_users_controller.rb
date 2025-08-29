@@ -22,7 +22,7 @@ module Api
 
         render json: serialize(@current_user)
       rescue Sequel::ValidationFailed => e
-        render json: serialize_errors({ error: e }), status: :unprocessable_entity
+        render json: serialize_errors({ error: e }), status: :unprocessable_content
       end
 
     private
