@@ -2,7 +2,7 @@ RSpec.shared_examples_for 'an entity mapper update operation' do |relation|
   it "changes the count of #{relation} with an update operation" do
     yielded_objects = []
 
-    entity_mapper.import do |entity|
+    entity_mapper.build do |entity|
       yielded_objects << entity
     end
 

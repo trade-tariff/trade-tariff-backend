@@ -5,7 +5,7 @@ module Api
         if search_validator.valid?
           render json: serialized_certificates
         else
-          render json: serialized_errors, status: :unprocessable_entity
+          render json: serialized_errors, status: :unprocessable_content
         end
       end
 
