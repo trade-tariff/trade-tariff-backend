@@ -36,8 +36,6 @@ RSpec.describe Sequel::Plugins::OptimizedManyToMany do
     end
 
     class Parent < Sequel::Model(DB[:parents])
-      plugin :optimized_many_to_many
-
       many_to_many :children,
                    class: 'Child',
                    join_table: :parents_children,
@@ -135,6 +133,25 @@ RSpec.describe Sequel::Plugins::OptimizedManyToMany do
       parents = Parent.eager(:optimized_children).all
       expect(parents.find { |p| p.id == @p1.id }.optimized_children.map(&:name)).to eq(%w[C2 C1])
       expect(parents.find { |p| p.id == @p2.id }.optimized_children.map(&:name)).to contain_exactly('C3')
+    end
+  end
+
+  describe 'with use_optimized_dataset: false' do
+    before do
+      Parent.many_to_many :cte_children,
+                          class: 'Child',
+                          join_table: :parents_children,
+                          left_key: :parent_id,
+                          left_primary_key: :id,
+                          right_key: :child_id,
+                          right_primary_key: :id,
+                          use_optimized_dataset: false
+    end
+
+    it 'uses normal dataset but optimized eager loader' do
+      parents = Parent.eager(:cte_children).all
+      expect(parents.find { |p| p.id == @p1.id }.cte_children.map(&:name)).to contain_exactly('C1', 'C2')
+      expect(parents.find { |p| p.id == @p2.id }.cte_children.map(&:name)).to contain_exactly('C3')
     end
   end
 

@@ -9,7 +9,7 @@ module Sequel
           assoc_name  = name.to_sym
 
           # Full optimization: dataset + eager loader
-          unless opts[:use_optimized] == false || opts.key?(:dataset)
+          unless opts[:use_optimized] == false || opts[:use_optimized_dataset] == false || opts.key?(:dataset)
             opts[:dataset] = pg_optimized_many_to_many_dataset_proc
           end
 
