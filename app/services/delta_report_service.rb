@@ -37,6 +37,7 @@ class DeltaReportService
     @changes[:geographical_areas] = GeographicalAreaChanges.collect(date)
     @changes[:certificates] = CertificateChanges.collect(date)
     @changes[:additional_codes] = AdditionalCodeChanges.collect(date)
+    @changes[:excluded_geographical_areas] = ExcludedGeographicalAreaChanges.collect(date)
   end
 
   def generate_commodity_change_records
@@ -72,7 +73,7 @@ class DeltaReportService
     case change[:type]
     when 'Measure', 'GoodsNomenclature'
       find_declarable_goods_for(change)
-    when 'MeasureComponent', 'MeasureCondition'
+    when 'MeasureComponent', 'MeasureCondition', 'ExcludedGeographicalArea'
       find_declarable_goods_for_measure_association(change)
     when 'GeographicalArea'
       find_declarable_goods_for_geographical_area(change)

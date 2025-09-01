@@ -1,0 +1,270 @@
+RSpec.describe DeltaReportService::ExcludedGeographicalAreaChanges do
+  let(:date) { Date.parse('2024-08-11') }
+  let(:geographical_area) { build(:geographical_area, :with_description, geographical_area_id: 'GB') }
+  let(:measure) { build(:measure, goods_nomenclature_item_id: '0101000000', operation_date: date) }
+  let(:excluded_geo_area) do
+    build(:measure_excluded_geographical_area,
+          measure_sid: measure.measure_sid,
+          excluded_geographical_area: 'IE',
+          operation_date: date)
+  end
+  let(:instance) { described_class.new(excluded_geo_area, date) }
+
+  before do
+    allow(excluded_geo_area).to receive_messages(
+      measure: measure,
+      geographical_area: geographical_area,
+    )
+    allow(instance).to receive(:get_changes)
+  end
+
+  describe '.collect' do
+    let(:excluded_geo_area1) { build(:measure_excluded_geographical_area, oid: 1, operation_date: date) }
+    let(:excluded_geo_area2) { build(:measure_excluded_geographical_area, oid: 2, operation_date: date) }
+    let(:excluded_geo_areas) { [excluded_geo_area1, excluded_geo_area2] }
+
+    before do
+      allow(MeasureExcludedGeographicalArea).to receive_message_chain(:where, :order).and_return(excluded_geo_areas)
+    end
+
+    it 'finds excluded geographical areas for the given date and returns analyzed changes' do
+      instance1 = described_class.new(excluded_geo_area1, date)
+      instance2 = described_class.new(excluded_geo_area2, date)
+
+      allow(described_class).to receive(:new).and_return(instance1, instance2)
+      allow(instance1).to receive(:analyze).and_return({ type: 'ExcludedGeographicalArea' })
+      allow(instance2).to receive(:analyze).and_return(nil)
+
+      result = described_class.collect(date)
+
+      expect(MeasureExcludedGeographicalArea).to have_received(:where).with(operation_date: date)
+      expect(result).to eq([{ type: 'ExcludedGeographicalArea' }])
+    end
+
+    it 'compacts the results to remove nil values' do
+      allow(described_class).to receive(:new).and_return(instance, instance)
+      allow(instance).to receive(:analyze).and_return(nil, { type: 'ExcludedGeographicalArea' })
+
+      result = described_class.collect(date)
+
+      expect(result).to eq([{ type: 'ExcludedGeographicalArea' }])
+    end
+  end
+
+  describe '#object_name' do
+    it 'returns the correct object name' do
+      expect(instance.object_name).to eq('Excluded Geo Area')
+    end
+  end
+
+  describe '#analyze' do
+    before do
+      allow(instance).to receive_messages(
+        measure_type: '103: Third country duty',
+        import_export: 'Import',
+        geo_area: 'GB: United Kingdom',
+        additional_code: nil,
+        duty_expression: '10%',
+      )
+    end
+
+    context 'when measure operation_date equals excluded geo area operation_date' do
+      before do
+        allow(measure).to receive(:operation_date).and_return(date)
+        allow(excluded_geo_area).to receive(:operation_date).and_return(date)
+      end
+
+      it 'returns nil (filters out matching dates)' do
+        expect(instance.analyze).to be_nil
+      end
+    end
+
+    context 'when measure operation_date differs from excluded geo area operation_date' do
+      let(:measure_date) { Date.parse('2024-08-15') }
+
+      before do
+        allow(measure).to receive_messages(
+          operation_date: measure_date,
+        )
+        allow(excluded_geo_area).to receive(:operation_date).and_return(date)
+      end
+
+      it 'returns the correct analysis hash' do
+        result = instance.analyze
+
+        expect(result).to eq({
+          type: 'ExcludedGeographicalArea',
+          measure_sid: excluded_geo_area.measure_sid,
+          measure_type: '103: Third country duty',
+          import_export: 'Import',
+          geo_area: 'GB: United Kingdom',
+          additional_code: nil,
+          duty_expression: '10%',
+          date_of_effect: date,
+          description: 'Excluded geo area',
+          change: 'Excluded IE',
+        })
+      end
+    end
+
+    context 'when measure is nil' do
+      before do
+        allow(excluded_geo_area).to receive(:measure).and_return(nil)
+      end
+
+      it 'raises an error when trying to access operation_date' do
+        expect { instance.analyze }.to raise_error(NoMethodError, /undefined method.*operation_date.*for nil/)
+      end
+    end
+
+    context 'when additional code is present' do
+      let(:additional_code) { build(:additional_code, additional_code: 'A123') }
+
+      before do
+        allow(measure).to receive_messages(
+          additional_code: additional_code,
+          operation_date: Date.parse('2024-08-15'),
+        )
+        allow(instance).to receive(:additional_code).with(additional_code).and_return('A123: Special code')
+      end
+
+      it 'includes the additional code in the result' do
+        result = instance.analyze
+        expect(result[:additional_code]).to eq('A123: Special code')
+      end
+    end
+
+    context 'with different excluded geographical area values' do
+      before do
+        allow(measure).to receive(:operation_date).and_return(Date.parse('2024-08-15'))
+      end
+
+      it 'includes the excluded geographical area in the change description' do
+        allow(excluded_geo_area).to receive(:excluded_geographical_area).and_return('FR')
+        result = instance.analyze
+        expect(result[:change]).to eq('Excluded FR')
+      end
+
+      it 'handles multi-character geographical area codes' do
+        allow(excluded_geo_area).to receive(:excluded_geographical_area).and_return('EU')
+        result = instance.analyze
+        expect(result[:change]).to eq('Excluded EU')
+      end
+    end
+  end
+
+  describe 'MeasurePresenter integration' do
+    let(:measure_type) { build(:measure_type, measure_type_id: '103') }
+    let(:measure_type_description) { build(:measure_type_description, measure_type_id: '103', description: 'Third country duty') }
+    let(:additional_code) { build(:additional_code, additional_code: 'A123') }
+
+    before do
+      allow(measure).to receive_messages(
+        measure_type: measure_type,
+        additional_code: additional_code,
+        operation_date: Date.parse('2024-08-15'),
+      )
+      allow(measure_type).to receive(:measure_type_description).and_return(measure_type_description)
+    end
+
+    it 'uses MeasurePresenter methods for formatting' do
+      allow(instance).to receive_messages(
+        get_changes: nil,
+        geo_area: 'GB: United Kingdom',
+        additional_code: 'A123: Special code',
+      )
+
+      result = instance.analyze
+
+      expect(result[:measure_type]).to include(measure_type.measure_type_id)
+      expect(result[:additional_code]).to include(additional_code.additional_code)
+      expect(result[:geo_area]).to include(geographical_area.geographical_area_id)
+    end
+  end
+
+  describe 'edge cases' do
+    context 'when excluded_geographical_area is nil' do
+      before do
+        allow(excluded_geo_area).to receive(:excluded_geographical_area).and_return(nil)
+        allow(measure).to receive(:operation_date).and_return(Date.parse('2024-08-15'))
+        allow(instance).to receive(:geo_area).and_return('GB: United Kingdom')
+      end
+
+      it 'handles nil geographical area gracefully' do
+        result = instance.analyze
+        expect(result[:change]).to eq('Excluded ')
+      end
+    end
+
+    context 'when measure has no measure_type' do
+      before do
+        allow(measure).to receive_messages(
+          measure_type: nil,
+          operation_date: Date.parse('2024-08-15'),
+        )
+        allow(instance).to receive_messages(
+          measure_type: nil,
+          geo_area: 'GB: United Kingdom',
+        )
+      end
+
+      it 'handles missing measure type gracefully' do
+        result = instance.analyze
+        expect(result[:measure_type]).to be_nil
+      end
+    end
+
+    context 'when geographical_area is nil' do
+      before do
+        allow(excluded_geo_area).to receive(:geographical_area).and_return(nil)
+        allow(measure).to receive(:operation_date).and_return(Date.parse('2024-08-15'))
+        allow(instance).to receive(:geo_area).with(nil).and_return(nil)
+      end
+
+      it 'handles missing geographical area gracefully' do
+        result = instance.analyze
+        expect(result[:geo_area]).to be_nil
+      end
+    end
+  end
+
+  describe 'business logic validation' do
+    context 'with real-world scenario data' do
+      let(:real_measure_date) { Date.parse('2025-07-15') }
+      let(:real_excluded_date) { Date.parse('2025-03-13') }
+
+      before do
+        allow(measure).to receive(:operation_date).and_return(real_measure_date)
+        allow(excluded_geo_area).to receive_messages(
+          operation_date: real_excluded_date,
+          excluded_geographical_area: 'RU',
+          measure_sid: '20260381',
+        )
+        allow(instance).to receive(:geo_area).and_return('GB: United Kingdom')
+      end
+
+      it 'captures the mismatched operation dates correctly' do
+        result = instance.analyze
+
+        expect(result).not_to be_nil
+        expect(result[:type]).to eq('ExcludedGeographicalArea')
+        expect(result[:measure_sid]).to eq('20260381')
+        expect(result[:change]).to eq('Excluded RU')
+        expect(result[:date_of_effect]).to eq(date)
+        expect(result[:description]).to eq('Excluded geo area')
+      end
+    end
+
+    context 'when dates match (common case)' do
+      before do
+        allow(measure).to receive(:operation_date).and_return(date)
+        allow(excluded_geo_area).to receive(:operation_date).and_return(date)
+      end
+
+      it 'filters out records with matching operation dates' do
+        result = instance.analyze
+        expect(result).to be_nil
+      end
+    end
+  end
+end
