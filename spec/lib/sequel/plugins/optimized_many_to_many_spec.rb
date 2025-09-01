@@ -44,7 +44,8 @@ RSpec.describe Sequel::Plugins::OptimizedManyToMany do
                    left_key: :parent_id,
                    left_primary_key: :id,
                    right_key: :child_id,
-                   right_primary_key: :id
+                   right_primary_key: :id,
+                   use_optimized: false
     end
 
     class Child < Sequel::Model(:children)
@@ -54,7 +55,8 @@ RSpec.describe Sequel::Plugins::OptimizedManyToMany do
                    left_key: :parent_id,
                    left_primary_key: :id,
                    right_key: :child_id,
-                   right_primary_key: :id
+                   right_primary_key: :id,
+                   use_optimized: false
 
       one_to_many :grandchildren, key: :child_id
     end
@@ -84,14 +86,14 @@ RSpec.describe Sequel::Plugins::OptimizedManyToMany do
     @g1 = Grandchild.create(name: 'G1', child: @c1)
   end
 
-  describe 'default many_to_many' do
+  describe 'inbuilt many_to_many load' do
     it 'loads associated children normally' do
       expect(@p1.children.map(&:name)).to contain_exactly('C1', 'C2')
       expect(@p2.children.map(&:name)).to contain_exactly('C3')
     end
   end
 
-  describe 'with use_optimized: true' do
+  describe 'with default use_optimized: true' do
     before do
       Parent.many_to_many :optimized_children,
                           class: 'Child',
@@ -99,8 +101,7 @@ RSpec.describe Sequel::Plugins::OptimizedManyToMany do
                           left_key: :parent_id,
                           left_primary_key: :id,
                           right_key: :child_id,
-                          right_primary_key: :id,
-                          use_optimized: true
+                          right_primary_key: :id
     end
 
     it 'loads children with custom dataset' do
@@ -123,8 +124,7 @@ RSpec.describe Sequel::Plugins::OptimizedManyToMany do
                           left_primary_key: :id,
                           right_key: :child_id,
                           right_primary_key: :id,
-                          order: Sequel.desc(:name),
-                          use_optimized: true
+                          order: Sequel.desc(:name)
     end
 
     it 'loads children with custom dataset' do
@@ -138,25 +138,6 @@ RSpec.describe Sequel::Plugins::OptimizedManyToMany do
     end
   end
 
-  describe 'with use_optimized_eager_loader: true' do
-    before do
-      Parent.many_to_many :cte_children,
-                          class: 'Child',
-                          join_table: :parents_children,
-                          left_key: :parent_id,
-                          left_primary_key: :id,
-                          right_key: :child_id,
-                          right_primary_key: :id,
-                          use_optimized_eager_loader: true
-    end
-
-    it 'uses normal dataset but optimized eager loader' do
-      parents = Parent.eager(:cte_children).all
-      expect(parents.find { |p| p.id == @p1.id }.cte_children.map(&:name)).to contain_exactly('C1', 'C2')
-      expect(parents.find { |p| p.id == @p2.id }.cte_children.map(&:name)).to contain_exactly('C3')
-    end
-  end
-
   describe 'with nested association' do
     it 'eager loads nested associations (children → grandchildren)' do
       parents = Parent.eager(children: :grandchildren).all
@@ -164,7 +145,7 @@ RSpec.describe Sequel::Plugins::OptimizedManyToMany do
     end
   end
 
-  describe 'with nested association and use_optimized_eager_loader: true' do
+  describe 'with nested association and use_optimized: true' do
     before do
       Parent.many_to_many :cte_children,
                           class: 'Child',
@@ -172,8 +153,7 @@ RSpec.describe Sequel::Plugins::OptimizedManyToMany do
                           left_key: :parent_id,
                           left_primary_key: :id,
                           right_key: :child_id,
-                          right_primary_key: :id,
-                          use_optimized_eager_loader: true
+                          right_primary_key: :id
     end
 
     it 'eager loads nested associations (children → grandchildren)' do
