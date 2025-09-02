@@ -81,6 +81,7 @@ RSpec.describe DeltaReportService do
         geographical_areas: [],
         certificates: [],
         additional_codes: [],
+        footnotes: [],
       }
     end
 
@@ -111,6 +112,7 @@ RSpec.describe DeltaReportService do
       allow(DeltaReportService::GeographicalAreaChanges).to receive(:collect).with(date).and_return(mock_changes[:geographical_areas])
       allow(DeltaReportService::CertificateChanges).to receive(:collect).with(date).and_return(mock_changes[:certificates])
       allow(DeltaReportService::AdditionalCodeChanges).to receive(:collect).with(date).and_return(mock_changes[:additional_codes])
+      allow(DeltaReportService::FootnoteChanges).to receive(:collect).with(date).and_return(mock_changes[:footnotes])
       allow(DeltaReportService::ExcelGenerator).to receive(:call).and_return(instance_double(Axlsx::Package))
       allow(TimeMachine).to receive(:now).and_yield
 
@@ -147,6 +149,76 @@ RSpec.describe DeltaReportService do
       )
     end
 
+    context 'when there are footnote changes' do
+      let(:footnote) { instance_double(Footnote, measures: nil, goods_nomenclatures: nil) }
+      let(:measure_object) { instance_double(Measure, goods_nomenclature_item_id: '0202000000') }
+      let(:footnote_commodity) do
+        instance_double(
+          Commodity,
+          goods_nomenclature_item_id: '0202000000',
+          chapter_short_code: '02',
+          goods_nomenclature_description: instance_double(GoodsNomenclatureDescription, description: 'Meat commodity'),
+          declarable?: true,
+        )
+      end
+
+      let(:mock_changes) do
+        {
+          goods_nomenclatures: [],
+          measures: [],
+          measure_components: [],
+          measure_conditions: [],
+          excluded_geographical_areas: [],
+          geographical_areas: [],
+          certificates: [],
+          additional_codes: [],
+          footnotes: [
+            {
+              type: 'Footnote',
+              footnote_oid: '12345',
+              description: 'Footnote description',
+              date_of_effect: date,
+              change: 'TN001: Product specific footnote',
+            },
+          ],
+        }
+      end
+
+      let(:expected_footnote_change) do
+        {
+          type: 'Footnote',
+          operation_date: date,
+          chapter: footnote_commodity.chapter_short_code,
+          commodity_code: footnote_commodity.goods_nomenclature_item_id,
+          commodity_code_description: footnote_commodity.goods_nomenclature_description.description,
+          import_export: nil,
+          geo_area: nil,
+          additional_code: nil,
+          duty_expression: nil,
+          measure_type: nil,
+          type_of_change: 'Footnote description',
+          date_of_effect: date,
+          change: 'TN001: Product specific footnote',
+        }
+      end
+
+      before do
+        allow(Footnote).to receive(:[]).with(oid: '12345').and_return(footnote)
+        allow(footnote).to receive_messages(measures: [measure_object], goods_nomenclatures: nil)
+
+        actual_scope = instance_double(Sequel::Dataset)
+        allow(GoodsNomenclature).to receive(:actual).and_return(actual_scope)
+        allow(actual_scope).to receive(:where).with(goods_nomenclature_item_id: '0202000000').and_return(actual_scope)
+        allow(actual_scope).to receive(:first).and_return(footnote_commodity)
+        allow(footnote_commodity).to receive(:declarable?).and_return(true)
+      end
+
+      it 'generates commodity changes for footnotes' do
+        expect(result[:commodity_changes]).to include(expected_footnote_change)
+        expect(result[:total_records]).to eq(1)
+      end
+    end
+
     context 'when there are no changes' do
       let(:mock_changes) do
         {
@@ -154,9 +226,11 @@ RSpec.describe DeltaReportService do
           measures: [],
           measure_components: [],
           measure_conditions: [],
+          excluded_geographical_areas: [],
           geographical_areas: [],
           certificates: [],
           additional_codes: [],
+          footnotes: [],
         }
       end
 
@@ -342,6 +416,80 @@ RSpec.describe DeltaReportService do
       it 'finds measures for additional code and returns declarable goods' do
         result = service.send(:find_affected_declarable_goods, change)
         expect(result).to eq([declarable_commodity])
+      end
+    end
+
+    context 'when change type is Footnote and footnote has measures' do
+      let(:change) { { type: 'Footnote', footnote_oid: '12345' } }
+      let(:footnote) { instance_double(Footnote) }
+      let(:measure_objects) { [instance_double(Measure, goods_nomenclature_item_id: '0101000000')] }
+      let(:declarable_commodity) { instance_double(Commodity, goods_nomenclature_item_id: '0101000000', declarable?: true) }
+
+      before do
+        allow(Footnote).to receive(:[]).with(oid: '12345').and_return(footnote)
+        allow(footnote).to receive(:measures).and_return(measure_objects)
+
+        actual_scope = instance_double(Sequel::Dataset)
+        allow(GoodsNomenclature).to receive(:actual).and_return(actual_scope)
+        allow(actual_scope).to receive(:where).with(goods_nomenclature_item_id: '0101000000').and_return(actual_scope)
+        allow(actual_scope).to receive(:first).and_return(declarable_commodity)
+        allow(declarable_commodity).to receive(:declarable?).and_return(true)
+      end
+
+      it 'finds measures for footnote and returns declarable goods' do
+        result = service.send(:find_affected_declarable_goods, change)
+        expect(result).to eq([declarable_commodity])
+      end
+    end
+
+    context 'when change type is Footnote and footnote has goods nomenclatures' do
+      let(:change) { { type: 'Footnote', footnote_oid: '12345' } }
+      let(:footnote) { instance_double(Footnote) }
+      let(:goods_nomenclature_records) { [instance_double(GoodsNomenclature, goods_nomenclature_item_id: '0101000000')] }
+      let(:declarable_commodity) { instance_double(Commodity, goods_nomenclature_item_id: '0101000000', declarable?: true) }
+
+      before do
+        allow(Footnote).to receive(:[]).with(oid: '12345').and_return(footnote)
+        allow(footnote).to receive_messages(measures: nil, goods_nomenclatures: goods_nomenclature_records)
+
+        actual_scope = instance_double(Sequel::Dataset)
+        allow(GoodsNomenclature).to receive(:actual).and_return(actual_scope)
+        allow(actual_scope).to receive(:where).with(goods_nomenclature_item_id: '0101000000').and_return(actual_scope)
+        allow(actual_scope).to receive(:first).and_return(declarable_commodity)
+        allow(declarable_commodity).to receive(:declarable?).and_return(true)
+      end
+
+      it 'finds goods nomenclatures for footnote and returns declarable goods' do
+        result = service.send(:find_affected_declarable_goods, change)
+        expect(result).to eq([declarable_commodity])
+      end
+    end
+
+    context 'when change type is Footnote and footnote has no associations' do
+      let(:change) { { type: 'Footnote', footnote_oid: '12345' } }
+      let(:footnote) { instance_double(Footnote) }
+
+      before do
+        allow(Footnote).to receive(:[]).with(oid: '12345').and_return(footnote)
+        allow(footnote).to receive_messages(measures: nil, goods_nomenclatures: nil)
+      end
+
+      it 'returns empty array when footnote has no associations' do
+        result = service.send(:find_affected_declarable_goods, change)
+        expect(result).to eq([])
+      end
+    end
+
+    context 'when change type is Footnote and footnote is not found' do
+      let(:change) { { type: 'Footnote', footnote_oid: '99999' } }
+
+      before do
+        allow(Footnote).to receive(:[]).with(oid: '99999').and_return(nil)
+      end
+
+      it 'returns empty array when footnote is not found' do
+        result = service.send(:find_affected_declarable_goods, change)
+        expect(result).to eq([])
       end
     end
 
