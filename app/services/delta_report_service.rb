@@ -38,6 +38,7 @@ class DeltaReportService
     @changes[:certificates] = CertificateChanges.collect(date)
     @changes[:additional_codes] = AdditionalCodeChanges.collect(date)
     @changes[:excluded_geographical_areas] = ExcludedGeographicalAreaChanges.collect(date)
+    @changes[:footnotes] = FootnoteChanges.collect(date)
   end
 
   def generate_commodity_change_records
@@ -81,6 +82,8 @@ class DeltaReportService
       find_declarable_goods_for_certificate(change)
     when 'AdditionalCode'
       find_declarable_goods_for_additional_code(change)
+    when 'Footnote'
+      find_declarable_goods_for_footnote(change)
     else
       []
     end
@@ -146,6 +149,21 @@ class DeltaReportService
     measures.map { |m| find_declarable_goods_under_code(m[:goods_nomenclature_item_id]) }
            .flatten
            .uniq
+  end
+
+  def find_declarable_goods_for_footnote(change)
+    footnote = Footnote[oid: change[:footnote_oid]]
+    if (measures = footnote&.measures)
+      measures.map { |m| find_declarable_goods_for({ goods_nomenclature_item_id: m.goods_nomenclature_item_id }) }
+              .flatten
+              .uniq
+    elsif (gns = footnote&.goods_nomenclatures)
+      gns.map { |gn| find_declarable_goods_under_code(gn.goods_nomenclature_item_id) }
+         .flatten
+         .uniq
+    else
+      []
+    end
   end
 
   def find_declarable_goods_under_code(goods_nomenclature_item_id)
