@@ -1,6 +1,7 @@
 module Reporting
   class GeographicalAreaGroups
     extend Reporting::Reportable
+    extend Reporting::Spreadsheetable
 
     HEADER_ROW = %w[
       parent_id
@@ -43,38 +44,15 @@ module Reporting
 
     class << self
       def generate
-        package = Axlsx::Package.new
-        package.use_shared_strings = true
-        workbook = package.workbook
-        bold_style = workbook.styles.add_style(b: true)
-
-        workbook.add_worksheet(name: Time.zone.today.iso8601) do |sheet|
-          sheet.add_row(HEADER_ROW, style: bold_style)
-          sheet.auto_filter = AUTOFILTER_CELL_RANGE
-          sheet.sheet_view.pane do |pane|
-            pane.top_left_cell = FROZEN_VIEW_STARTING_CELL
-            pane.state = :frozen
-            pane.y_split = 1
-          end
-
+        package = create_spreadsheet do |sheet|
           each_geographical_area_group_and_child do |group, child|
             row = build_row_for(group, child)
             sheet.add_row(row, types: CELL_TYPES)
           end
-
-          sheet.column_widths(*COLUMN_WIDTHS)
         end
 
-        package.serialize(File.basename(object_key)) if Rails.env.development?
-
-        if Rails.env.production?
-          object.put(
-            body: package.to_stream.read,
-            content_type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-          )
-        end
-
-        Rails.logger.debug("Query count: #{::SequelRails::Railties::LogSubscriber.count}")
+        save_document(object, object_key, package)
+        log_query_count
       end
 
       private
@@ -111,7 +89,7 @@ module Reporting
       end
 
       def object_key
-        "#{service}/reporting/#{year}/#{month}/#{day}/geographical_area_groups_#{service}_#{now.strftime('%Y_%m_%d')}.xlsx"
+        "#{object_key_prefix}/geographical_area_groups_#{object_key_suffix}.xlsx"
       end
     end
   end
