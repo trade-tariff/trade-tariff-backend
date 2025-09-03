@@ -63,7 +63,7 @@ RSpec.describe DeltaReportService::FootnoteAssociationGoodsNomenclatureChanges d
 
   describe '#object_name' do
     it 'returns the correct object name with footnote code' do
-      expect(instance.object_name).to eq("Footnote #{footnote.code}")
+      expect(instance.object_name).to eq('Footnote')
     end
   end
 
@@ -123,7 +123,7 @@ RSpec.describe DeltaReportService::FootnoteAssociationGoodsNomenclatureChanges d
           goods_nomenclature_item_id: goods_nomenclature.goods_nomenclature_item_id,
           description: 'Footnote TN001 updated',
           date_of_effect: date,
-          change: nil,
+          change: footnote.code,
         })
       end
     end
@@ -138,7 +138,7 @@ RSpec.describe DeltaReportService::FootnoteAssociationGoodsNomenclatureChanges d
 
       it 'includes the change value in the result' do
         result = instance.analyze
-        expect(result[:change]).to eq('validity_start_date updated')
+        expect(result[:change]).to eq("#{footnote.code}: validity_start_date updated")
       end
     end
 
@@ -157,7 +157,7 @@ RSpec.describe DeltaReportService::FootnoteAssociationGoodsNomenclatureChanges d
           goods_nomenclature_item_id: goods_nomenclature.goods_nomenclature_item_id,
           description: 'Footnote TN001 updated',
           date_of_effect: date,
-          change: nil,
+          change: footnote.code,
         })
       end
     end

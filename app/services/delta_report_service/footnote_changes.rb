@@ -9,7 +9,11 @@ class DeltaReportService
     end
 
     def object_name
-      "Footnote #{record.code}"
+      'Footnote'
+    end
+
+    def excluded_columns
+      super + %i[national]
     end
 
     def analyze
@@ -20,7 +24,7 @@ class DeltaReportService
         footnote_oid: record.oid,
         description:,
         date_of_effect:,
-        change: change || "#{record.code}: #{record.footnote_description.description}",
+        change: change.present? ? "#{record.code}: #{change}" : record.code,
       }
     end
 

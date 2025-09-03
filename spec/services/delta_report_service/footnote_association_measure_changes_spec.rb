@@ -62,7 +62,7 @@ RSpec.describe DeltaReportService::FootnoteAssociationMeasureChanges do
     let(:instance) { described_class.new(footnote_association, date) }
 
     it 'returns the correct object name with footnote code' do
-      expect(instance.object_name).to eq("Footnote #{footnote.code}")
+      expect(instance.object_name).to eq('Footnote')
     end
   end
 
@@ -144,7 +144,7 @@ RSpec.describe DeltaReportService::FootnoteAssociationMeasureChanges do
           duty_expression: '10%',
           description: 'Footnote TN001 updated',
           date_of_effect: date,
-          change: nil,
+          change: footnote.code,
         })
       end
     end
@@ -159,7 +159,7 @@ RSpec.describe DeltaReportService::FootnoteAssociationMeasureChanges do
 
       it 'includes the change value in the result' do
         result = instance.analyze
-        expect(result[:change]).to eq('national updated')
+        expect(result[:change]).to eq("#{footnote.code}: national updated")
       end
     end
 
@@ -183,7 +183,7 @@ RSpec.describe DeltaReportService::FootnoteAssociationMeasureChanges do
           duty_expression: '10%',
           description: 'Footnote TN001 updated',
           date_of_effect: date,
-          change: nil,
+          change: footnote.code,
         })
       end
     end

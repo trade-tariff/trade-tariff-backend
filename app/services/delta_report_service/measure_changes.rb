@@ -15,7 +15,7 @@ class DeltaReportService
     end
 
     def excluded_columns
-      super + %i[measure_generating_regulation_id justification_regulation_role justification_regulation_id]
+      super + %i[measure_generating_regulation_id justification_regulation_role justification_regulation_id national]
     end
 
     def analyze

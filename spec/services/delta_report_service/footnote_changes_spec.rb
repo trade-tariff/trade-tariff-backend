@@ -36,7 +36,7 @@ RSpec.describe DeltaReportService::FootnoteChanges do
 
   describe '#object_name' do
     it 'returns the correct object name' do
-      expect(instance.object_name).to eq("Footnote #{footnote.code}")
+      expect(instance.object_name).to eq('Footnote')
     end
   end
 
@@ -67,7 +67,7 @@ RSpec.describe DeltaReportService::FootnoteChanges do
           footnote_oid: 999,
           date_of_effect: date,
           description: 'Footnote updated',
-          change: "#{footnote.code}: Footnote description",
+          change: footnote.code,
         })
       end
     end
@@ -75,9 +75,9 @@ RSpec.describe DeltaReportService::FootnoteChanges do
     context 'when change is not nil' do
       before { allow(instance).to receive(:change).and_return('description updated') }
 
-      it 'uses the change value instead of footnote id' do
+      it 'uses the change value with the footnote code' do
         result = instance.analyze
-        expect(result[:change]).to eq('description updated')
+        expect(result[:change]).to eq("#{footnote.code}: description updated")
       end
     end
   end
