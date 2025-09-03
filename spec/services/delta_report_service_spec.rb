@@ -3,12 +3,39 @@ RSpec.describe DeltaReportService do
 
   let(:date) { Date.parse('2024-08-11') }
 
-  def mock_goods_nomenclature_lookup(commodity)
-    actual_scope = instance_double(Sequel::Dataset)
-    allow(GoodsNomenclature).to receive(:actual).and_return(actual_scope)
-    allow(actual_scope).to receive(:where).with(goods_nomenclature_item_id: '0101000000').and_return(actual_scope)
-    allow(actual_scope).to receive(:first).and_return(commodity)
+  def mock_goods_nomenclature_lookup(commodity, commodity_code = nil)
+    commodity_code ||= commodity.goods_nomenclature_item_id
+    scope = instance_double(Sequel::Dataset)
+    allow(GoodsNomenclature).to receive(:where).with(goods_nomenclature_item_id: commodity_code).and_return(scope)
+    allow(scope).to receive(:first).and_return(commodity)
     allow(commodity).to receive(:declarable?).and_return(true)
+  end
+
+  def mock_measure_lookup(measure_sid, measure_record)
+    dataset = mock_database_query(:measures)
+    allow(dataset).to receive(:where).with(measure_sid: measure_sid).and_return(instance_double(Sequel::Dataset, first: measure_record))
+  end
+
+  def mock_database_query(table_name)
+    db_double = instance_double(Sequel::Database)
+    dataset = instance_double(Sequel::Dataset)
+    allow(Sequel::Model).to receive(:db).and_return(db_double)
+    allow(db_double).to receive(:[]).with(table_name).and_return(dataset)
+    dataset
+  end
+
+  def mock_filtered_dataset(dataset, filters)
+    filtered_dataset = dataset
+    filters.each do |filter_method, filter_args|
+      new_dataset = instance_double(Sequel::Dataset)
+      if filter_args.is_a?(Array)
+        allow(filtered_dataset).to receive(filter_method).with(*filter_args).and_return(new_dataset)
+      else
+        allow(filtered_dataset).to receive(filter_method).with(filter_args).and_return(new_dataset)
+      end
+      filtered_dataset = new_dataset
+    end
+    filtered_dataset
   end
 
   describe '.generate' do
@@ -113,15 +140,17 @@ RSpec.describe DeltaReportService do
       allow(DeltaReportService::CertificateChanges).to receive(:collect).with(date).and_return(mock_changes[:certificates])
       allow(DeltaReportService::AdditionalCodeChanges).to receive(:collect).with(date).and_return(mock_changes[:additional_codes])
       allow(DeltaReportService::FootnoteChanges).to receive(:collect).with(date).and_return(mock_changes[:footnotes])
+      allow(DeltaReportService::FootnoteAssociationMeasureChanges).to receive(:collect).with(date).and_return(mock_changes[:footnote_association_measures] || [])
+      allow(DeltaReportService::FootnoteAssociationGoodsNomenclatureChanges).to receive(:collect).with(date).and_return(mock_changes[:footnote_association_goods_nomenclature] || [])
       allow(DeltaReportService::ExcelGenerator).to receive(:call).and_return(instance_double(Axlsx::Package))
-      allow(TimeMachine).to receive(:now).and_yield
+      allow(TimeMachine).to receive(:at).and_yield
 
       mock_goods_nomenclature_lookup(commodity)
     end
 
-    it 'wraps the execution in TimeMachine.now block' do
+    it 'wraps the execution in TimeMachine block' do
       result
-      expect(TimeMachine).to have_received(:now)
+      expect(TimeMachine).to have_received(:at).with(date).once
     end
 
     it 'collects all changes from various change classes' do
@@ -134,6 +163,9 @@ RSpec.describe DeltaReportService do
       expect(DeltaReportService::GeographicalAreaChanges).to have_received(:collect).with(date)
       expect(DeltaReportService::CertificateChanges).to have_received(:collect).with(date)
       expect(DeltaReportService::AdditionalCodeChanges).to have_received(:collect).with(date)
+      expect(DeltaReportService::FootnoteChanges).to have_received(:collect).with(date)
+      expect(DeltaReportService::FootnoteAssociationMeasureChanges).to have_received(:collect).with(date)
+      expect(DeltaReportService::FootnoteAssociationGoodsNomenclatureChanges).to have_received(:collect).with(date)
     end
 
     it 'calls ExcelGenerator with commodity change records and date' do
@@ -206,15 +238,144 @@ RSpec.describe DeltaReportService do
         allow(Footnote).to receive(:[]).with(oid: '12345').and_return(footnote)
         allow(footnote).to receive_messages(measures: [measure_object], goods_nomenclatures: nil)
 
-        actual_scope = instance_double(Sequel::Dataset)
-        allow(GoodsNomenclature).to receive(:actual).and_return(actual_scope)
-        allow(actual_scope).to receive(:where).with(goods_nomenclature_item_id: '0202000000').and_return(actual_scope)
-        allow(actual_scope).to receive(:first).and_return(footnote_commodity)
-        allow(footnote_commodity).to receive(:declarable?).and_return(true)
+        mock_goods_nomenclature_lookup(footnote_commodity, '0202000000')
       end
 
       it 'generates commodity changes for footnotes' do
         expect(result[:commodity_changes]).to include(expected_footnote_change)
+        expect(result[:total_records]).to eq(1)
+      end
+    end
+
+    context 'when there are footnote association measure changes' do
+      let(:mock_changes) do
+        {
+          goods_nomenclatures: [],
+          measures: [],
+          measure_components: [],
+          measure_conditions: [],
+          excluded_geographical_areas: [],
+          geographical_areas: [],
+          certificates: [],
+          additional_codes: [],
+          footnotes: [],
+          footnote_association_measures: [
+            {
+              type: 'FootnoteAssociationMeasure',
+              measure_sid: '12345',
+              measure_type: '103: Import duty',
+              import_export: 'Import',
+              geo_area: 'GB: United Kingdom',
+              additional_code: '1234: Additional code description',
+              duty_expression: '10%',
+              description: 'Footnote TN001 updated',
+              date_of_effect: date,
+              change: nil,
+            },
+          ],
+          footnote_association_goods_nomenclature: [],
+        }
+      end
+
+      let(:measure_record) { { goods_nomenclature_item_id: '0303000000' } }
+      let(:measure_commodity) do
+        instance_double(
+          Commodity,
+          goods_nomenclature_item_id: '0303000000',
+          chapter_short_code: '03',
+          goods_nomenclature_description: instance_double(GoodsNomenclatureDescription, description: 'Fish commodity'),
+          declarable?: true,
+        )
+      end
+
+      let(:expected_footnote_association_measure_change) do
+        {
+          type: 'FootnoteAssociationMeasure',
+          operation_date: date,
+          chapter: measure_commodity.chapter_short_code,
+          commodity_code: measure_commodity.goods_nomenclature_item_id,
+          commodity_code_description: measure_commodity.goods_nomenclature_description.description,
+          import_export: 'Import',
+          geo_area: 'GB: United Kingdom',
+          additional_code: '1234: Additional code description',
+          duty_expression: '10%',
+          measure_type: '103: Import duty',
+          type_of_change: 'Footnote TN001 updated',
+          date_of_effect: date,
+          change: nil,
+        }
+      end
+
+      before do
+        mock_measure_lookup('12345', measure_record)
+        mock_goods_nomenclature_lookup(measure_commodity, '0303000000')
+      end
+
+      it 'generates commodity changes for footnote association measure changes' do
+        expect(result[:commodity_changes]).to include(expected_footnote_association_measure_change)
+        expect(result[:total_records]).to eq(1)
+      end
+    end
+
+    context 'when there are footnote association goods nomenclature changes' do
+      let(:goods_nomenclature_commodity) do
+        instance_double(
+          Commodity,
+          goods_nomenclature_item_id: '0404000000',
+          chapter_short_code: '04',
+          goods_nomenclature_description: instance_double(GoodsNomenclatureDescription, description: 'Dairy commodity'),
+          declarable?: true,
+        )
+      end
+
+      let(:mock_changes) do
+        {
+          goods_nomenclatures: [],
+          measures: [],
+          measure_components: [],
+          measure_conditions: [],
+          excluded_geographical_areas: [],
+          geographical_areas: [],
+          certificates: [],
+          additional_codes: [],
+          footnotes: [],
+          footnote_association_measures: [],
+          footnote_association_goods_nomenclature: [
+            {
+              type: 'FootnoteAssociationGoodsNomenclature',
+              goods_nomenclature_item_id: '0404000000',
+              description: 'Footnote CD001 updated for goods nomenclature',
+              date_of_effect: date,
+              change: 'footnote association updated',
+            },
+          ],
+        }
+      end
+
+      let(:expected_footnote_association_goods_nomenclature_change) do
+        {
+          type: 'FootnoteAssociationGoodsNomenclature',
+          operation_date: date,
+          chapter: goods_nomenclature_commodity.chapter_short_code,
+          commodity_code: goods_nomenclature_commodity.goods_nomenclature_item_id,
+          commodity_code_description: goods_nomenclature_commodity.goods_nomenclature_description.description,
+          import_export: nil,
+          geo_area: nil,
+          additional_code: nil,
+          duty_expression: nil,
+          measure_type: nil,
+          type_of_change: 'Footnote CD001 updated for goods nomenclature',
+          date_of_effect: date,
+          change: 'footnote association updated',
+        }
+      end
+
+      before do
+        mock_goods_nomenclature_lookup(goods_nomenclature_commodity, '0404000000')
+      end
+
+      it 'generates commodity changes for footnote association goods nomenclature changes' do
+        expect(result[:commodity_changes]).to include(expected_footnote_association_goods_nomenclature_change)
         expect(result[:total_records]).to eq(1)
       end
     end
@@ -231,6 +392,8 @@ RSpec.describe DeltaReportService do
           certificates: [],
           additional_codes: [],
           footnotes: [],
+          footnote_association_measures: [],
+          footnote_association_goods_nomenclature: [],
         }
       end
 
@@ -276,12 +439,7 @@ RSpec.describe DeltaReportService do
       let(:declarable_commodity) { instance_double(Commodity, goods_nomenclature_item_id: '0101000000', declarable?: true) }
 
       before do
-        db_double = instance_double(Sequel::Database)
-        measures_dataset = instance_double(Sequel::Dataset)
-        allow(Sequel::Model).to receive(:db).and_return(db_double)
-        allow(db_double).to receive(:[]).with(:measures).and_return(measures_dataset)
-        allow(measures_dataset).to receive(:where).with(measure_sid: 123).and_return(instance_double(Sequel::Dataset, first: measure_record))
-
+        mock_measure_lookup(123, measure_record)
         mock_goods_nomenclature_lookup(declarable_commodity)
       end
 
@@ -297,12 +455,7 @@ RSpec.describe DeltaReportService do
       let(:declarable_commodity) { instance_double(Commodity, goods_nomenclature_item_id: '0101000000', declarable?: true) }
 
       before do
-        db_double = instance_double(Sequel::Database)
-        measures_dataset = instance_double(Sequel::Dataset)
-        allow(Sequel::Model).to receive(:db).and_return(db_double)
-        allow(db_double).to receive(:[]).with(:measures).and_return(measures_dataset)
-        allow(measures_dataset).to receive(:where).with(measure_sid: 123).and_return(instance_double(Sequel::Dataset, first: measure_record))
-
+        mock_measure_lookup(123, measure_record)
         mock_goods_nomenclature_lookup(declarable_commodity)
       end
 
@@ -318,16 +471,41 @@ RSpec.describe DeltaReportService do
       let(:declarable_commodity) { instance_double(Commodity, goods_nomenclature_item_id: '0101000000', declarable?: true) }
 
       before do
-        db_double = instance_double(Sequel::Database)
-        measures_dataset = instance_double(Sequel::Dataset)
-        allow(Sequel::Model).to receive(:db).and_return(db_double)
-        allow(db_double).to receive(:[]).with(:measures).and_return(measures_dataset)
-        allow(measures_dataset).to receive(:where).with(measure_sid: 123).and_return(instance_double(Sequel::Dataset, first: measure_record))
-
+        mock_measure_lookup(123, measure_record)
         mock_goods_nomenclature_lookup(declarable_commodity)
       end
 
       it 'finds measure and returns declarable goods for its commodity code' do
+        result = service.send(:find_affected_declarable_goods, change)
+        expect(result).to eq([declarable_commodity])
+      end
+    end
+
+    context 'when change type is FootnoteAssociationMeasure' do
+      let(:change) { { type: 'FootnoteAssociationMeasure', measure_sid: 123 } }
+      let(:measure_record) { { goods_nomenclature_item_id: '0101000000' } }
+      let(:declarable_commodity) { instance_double(Commodity, goods_nomenclature_item_id: '0101000000', declarable?: true) }
+
+      before do
+        mock_measure_lookup(123, measure_record)
+        mock_goods_nomenclature_lookup(declarable_commodity)
+      end
+
+      it 'finds measure and returns declarable goods for its commodity code' do
+        result = service.send(:find_affected_declarable_goods, change)
+        expect(result).to eq([declarable_commodity])
+      end
+    end
+
+    context 'when change type is FootnoteAssociationGoodsNomenclature' do
+      let(:change) { { type: 'FootnoteAssociationGoodsNomenclature', goods_nomenclature_item_id: '0101000000' } }
+      let(:declarable_commodity) { instance_double(Commodity, goods_nomenclature_item_id: '0101000000', declarable?: true) }
+
+      before do
+        mock_goods_nomenclature_lookup(declarable_commodity)
+      end
+
+      it 'returns declarable goods for the specified nomenclature item id' do
         result = service.send(:find_affected_declarable_goods, change)
         expect(result).to eq([declarable_commodity])
       end
@@ -339,15 +517,12 @@ RSpec.describe DeltaReportService do
       let(:declarable_commodity) { instance_double(Commodity, goods_nomenclature_item_id: '0101000000', declarable?: true) }
 
       before do
-        db_double = instance_double(Sequel::Database)
-        measures_dataset = instance_double(Sequel::Dataset)
-        allow(Sequel::Model).to receive(:db).and_return(db_double)
-        allow(db_double).to receive(:[]).with(:measures).and_return(measures_dataset)
-
-        filtered_dataset = instance_double(Sequel::Dataset)
-        allow(measures_dataset).to receive(:where).with(geographical_area_id: 'GB').and_return(filtered_dataset)
-        allow(filtered_dataset).to receive(:where).with(operation_date: date).and_return(filtered_dataset)
-        allow(filtered_dataset).to receive(:distinct).with(:goods_nomenclature_item_id).and_return(filtered_dataset)
+        measures_dataset = mock_database_query(:measures)
+        filtered_dataset = mock_filtered_dataset(measures_dataset, [
+          [:where, { geographical_area_id: 'GB' }],
+          [:where, { operation_date: date }],
+          %i[distinct goods_nomenclature_item_id],
+        ])
         allow(filtered_dataset).to receive(:map).and_yield(measure_records.first).and_return([declarable_commodity])
 
         mock_goods_nomenclature_lookup(declarable_commodity)
@@ -366,7 +541,6 @@ RSpec.describe DeltaReportService do
       let(:declarable_commodity) { instance_double(Commodity, goods_nomenclature_item_id: '0101000000', declarable?: true) }
 
       before do
-        # Mock database queries
         db_double = instance_double(Sequel::Database)
         conditions_dataset = instance_double(Sequel::Dataset)
         measures_dataset = instance_double(Sequel::Dataset)
@@ -375,11 +549,11 @@ RSpec.describe DeltaReportService do
         allow(db_double).to receive(:[]).with(:measure_conditions).and_return(conditions_dataset)
         allow(db_double).to receive(:[]).with(:measures).and_return(measures_dataset)
 
-        # Mock conditions lookup
-        filtered_conditions = instance_double(Sequel::Dataset)
-        allow(conditions_dataset).to receive(:where).with(certificate_type_code: 'Y').and_return(filtered_conditions)
-        allow(filtered_conditions).to receive(:where).with(certificate_code: '999').and_return(filtered_conditions)
-        allow(filtered_conditions).to receive(:distinct).with(:measure_sid).and_return(filtered_conditions)
+        filtered_conditions = mock_filtered_dataset(conditions_dataset, [
+          [:where, { certificate_type_code: 'Y' }],
+          [:where, { certificate_code: '999' }],
+          %i[distinct measure_sid],
+        ])
         allow(filtered_conditions).to receive(:each).and_yield(condition_records.first)
 
         allow(measures_dataset).to receive(:where).with(measure_sid: 123).and_return(instance_double(Sequel::Dataset, first: measure_record))
@@ -399,15 +573,12 @@ RSpec.describe DeltaReportService do
       let(:declarable_commodity) { instance_double(Commodity, goods_nomenclature_item_id: '0101000000', declarable?: true) }
 
       before do
-        db_double = instance_double(Sequel::Database)
-        measures_dataset = instance_double(Sequel::Dataset)
-        allow(Sequel::Model).to receive(:db).and_return(db_double)
-        allow(db_double).to receive(:[]).with(:measures).and_return(measures_dataset)
-
-        filtered_dataset = instance_double(Sequel::Dataset)
-        allow(measures_dataset).to receive(:where).with(additional_code_sid: '12345').and_return(filtered_dataset)
-        allow(filtered_dataset).to receive(:where).with(operation_date: date).and_return(filtered_dataset)
-        allow(filtered_dataset).to receive(:distinct).with(:goods_nomenclature_item_id).and_return(filtered_dataset)
+        measures_dataset = mock_database_query(:measures)
+        filtered_dataset = mock_filtered_dataset(measures_dataset, [
+          [:where, { additional_code_sid: '12345' }],
+          [:where, { operation_date: date }],
+          %i[distinct goods_nomenclature_item_id],
+        ])
         allow(filtered_dataset).to receive(:map).and_yield(measure_records.first).and_return([declarable_commodity])
 
         mock_goods_nomenclature_lookup(declarable_commodity)
@@ -428,12 +599,7 @@ RSpec.describe DeltaReportService do
       before do
         allow(Footnote).to receive(:[]).with(oid: '12345').and_return(footnote)
         allow(footnote).to receive(:measures).and_return(measure_objects)
-
-        actual_scope = instance_double(Sequel::Dataset)
-        allow(GoodsNomenclature).to receive(:actual).and_return(actual_scope)
-        allow(actual_scope).to receive(:where).with(goods_nomenclature_item_id: '0101000000').and_return(actual_scope)
-        allow(actual_scope).to receive(:first).and_return(declarable_commodity)
-        allow(declarable_commodity).to receive(:declarable?).and_return(true)
+        mock_goods_nomenclature_lookup(declarable_commodity)
       end
 
       it 'finds measures for footnote and returns declarable goods' do
@@ -451,12 +617,7 @@ RSpec.describe DeltaReportService do
       before do
         allow(Footnote).to receive(:[]).with(oid: '12345').and_return(footnote)
         allow(footnote).to receive_messages(measures: nil, goods_nomenclatures: goods_nomenclature_records)
-
-        actual_scope = instance_double(Sequel::Dataset)
-        allow(GoodsNomenclature).to receive(:actual).and_return(actual_scope)
-        allow(actual_scope).to receive(:where).with(goods_nomenclature_item_id: '0101000000').and_return(actual_scope)
-        allow(actual_scope).to receive(:first).and_return(declarable_commodity)
-        allow(declarable_commodity).to receive(:declarable?).and_return(true)
+        mock_goods_nomenclature_lookup(declarable_commodity)
       end
 
       it 'finds goods nomenclatures for footnote and returns declarable goods' do
@@ -521,10 +682,9 @@ RSpec.describe DeltaReportService do
 
     context 'when goods nomenclature is not declarable but has declarable descendants' do
       before do
-        actual_scope = instance_double(Sequel::Dataset)
-        allow(GoodsNomenclature).to receive(:actual).and_return(actual_scope)
-        allow(actual_scope).to receive(:where).with(goods_nomenclature_item_id: '0102000000').and_return(actual_scope)
-        allow(actual_scope).to receive(:first).and_return(non_declarable_commodity)
+        scope = instance_double(Sequel::Dataset)
+        allow(GoodsNomenclature).to receive(:where).with(goods_nomenclature_item_id: '0102000000').and_return(scope)
+        allow(scope).to receive(:first).and_return(non_declarable_commodity)
         allow(non_declarable_commodity).to receive_messages(
           declarable?: false,
           descendants: [descendant_commodity],
@@ -567,12 +727,7 @@ RSpec.describe DeltaReportService do
     let(:declarable_goods) { [instance_double(Commodity, goods_nomenclature_item_id: '0101000000')] }
 
     before do
-      db_double = instance_double(Sequel::Database)
-      measures_dataset = instance_double(Sequel::Dataset)
-      allow(Sequel::Model).to receive(:db).and_return(db_double)
-      allow(db_double).to receive(:[]).with(:measures).and_return(measures_dataset)
-      allow(measures_dataset).to receive(:where).with(measure_sid: measure_sid).and_return(instance_double(Sequel::Dataset, first: measure_record))
-
+      mock_measure_lookup(measure_sid, measure_record)
       mock_goods_nomenclature_lookup(declarable_goods.first)
     end
 
@@ -599,25 +754,16 @@ RSpec.describe DeltaReportService do
     let(:declarable_commodity2) { instance_double(Commodity, goods_nomenclature_item_id: '0102000000', declarable?: true) }
 
     before do
-      db_double = instance_double(Sequel::Database)
-      measures_dataset = instance_double(Sequel::Dataset)
-      allow(Sequel::Model).to receive(:db).and_return(db_double)
-      allow(db_double).to receive(:[]).with(:measures).and_return(measures_dataset)
-
-      filtered_dataset = instance_double(Sequel::Dataset)
-      allow(measures_dataset).to receive(:where).with(additional_code_sid: additional_code_sid).and_return(filtered_dataset)
-      allow(filtered_dataset).to receive(:where).with(operation_date: date).and_return(filtered_dataset)
-      allow(filtered_dataset).to receive(:distinct).with(:goods_nomenclature_item_id).and_return(filtered_dataset)
+      measures_dataset = mock_database_query(:measures)
+      filtered_dataset = mock_filtered_dataset(measures_dataset, [
+        [:where, { additional_code_sid: additional_code_sid }],
+        [:where, { operation_date: date }],
+        %i[distinct goods_nomenclature_item_id],
+      ])
       allow(filtered_dataset).to receive(:map).and_yield(measure_records[0]).and_yield(measure_records[1]).and_return([[declarable_commodity1], [declarable_commodity2]])
 
-      actual_scope = instance_double(Sequel::Dataset)
-      allow(GoodsNomenclature).to receive(:actual).and_return(actual_scope)
-
-      allow(actual_scope).to receive(:where).with(goods_nomenclature_item_id: '0101000000').and_return(instance_double(Sequel::Dataset, first: declarable_commodity1))
-      allow(actual_scope).to receive(:where).with(goods_nomenclature_item_id: '0102000000').and_return(instance_double(Sequel::Dataset, first: declarable_commodity2))
-
-      allow(declarable_commodity1).to receive(:declarable?).and_return(true)
-      allow(declarable_commodity2).to receive(:declarable?).and_return(true)
+      mock_goods_nomenclature_lookup(declarable_commodity1, '0101000000')
+      mock_goods_nomenclature_lookup(declarable_commodity2, '0102000000')
     end
 
     it 'finds measures for additional code and returns unique declarable goods' do

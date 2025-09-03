@@ -11,7 +11,7 @@ class DeltaReportService
   end
 
   def generate_report
-    TimeMachine.now do
+    TimeMachine.at(date) do
       collect_all_changes
       generate_commodity_change_records
     end
@@ -39,6 +39,8 @@ class DeltaReportService
     @changes[:additional_codes] = AdditionalCodeChanges.collect(date)
     @changes[:excluded_geographical_areas] = ExcludedGeographicalAreaChanges.collect(date)
     @changes[:footnotes] = FootnoteChanges.collect(date)
+    @changes[:footnote_association_measures] = FootnoteAssociationMeasureChanges.collect(date)
+    @changes[:footnote_association_goods_nomenclature] = FootnoteAssociationGoodsNomenclatureChanges.collect(date)
   end
 
   def generate_commodity_change_records
@@ -72,9 +74,9 @@ class DeltaReportService
 
   def find_affected_declarable_goods(change)
     case change[:type]
-    when 'Measure', 'GoodsNomenclature'
+    when 'Measure', 'GoodsNomenclature', 'FootnoteAssociationGoodsNomenclature'
       find_declarable_goods_for(change)
-    when 'MeasureComponent', 'MeasureCondition', 'ExcludedGeographicalArea'
+    when 'MeasureComponent', 'MeasureCondition', 'ExcludedGeographicalArea', 'FootnoteAssociationMeasure'
       find_declarable_goods_for_measure_association(change)
     when 'GeographicalArea'
       find_declarable_goods_for_geographical_area(change)
@@ -169,9 +171,7 @@ class DeltaReportService
   def find_declarable_goods_under_code(goods_nomenclature_item_id)
     return [] unless goods_nomenclature_item_id
 
-    gn = GoodsNomenclature.actual
-      .where(goods_nomenclature_item_id: goods_nomenclature_item_id)
-      .first
+    gn = GoodsNomenclature.where(goods_nomenclature_item_id: goods_nomenclature_item_id).first
 
     return [] unless gn
 
@@ -186,4 +186,4 @@ end
 # Example usage:
 #
 # Generate report for specific date
-# report = DeltaReportService.generate(date: Date.new(2024, 8, 11))
+# report = DeltaReportService.generate(date: Date.new(2025, 7, 24))
