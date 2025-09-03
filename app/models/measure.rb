@@ -59,8 +59,7 @@ class Measure < Sequel::Model
                                              right_key: :excluded_geographical_area,
                                              right_primary_key: :geographical_area_id,
                                              order: Sequel.asc(:geographical_area_id),
-                                             class_name: 'GeographicalArea',
-                                             use_optimized: true
+                                             class_name: 'GeographicalArea'
 
   many_to_many :footnotes, join_table: :footnote_association_measures,
                            order: [Sequel.asc(:footnote_type_id, nulls: :first),
