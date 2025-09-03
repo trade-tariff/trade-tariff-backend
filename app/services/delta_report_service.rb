@@ -1,25 +1,37 @@
 class DeltaReportService
-  def self.generate(date: Time.zone.today)
-    new(date).generate_report
+  def self.generate(start_date: Time.zone.today, end_date: nil)
+    new(start_date, end_date || start_date).generate_report
   end
 
-  attr_reader :commodity_change_records, :date
+  attr_reader :commodity_change_records, :start_date, :end_date, :date
 
-  def initialize(date)
-    @date = date
+  def initialize(start_date, end_date)
+    @commodity_change_records = []
+    @start_date = start_date
+    @end_date = end_date
     @changes = {}
   end
 
   def generate_report
-    TimeMachine.at(date) do
-      collect_all_changes
-      generate_commodity_change_records
+    start_date.upto(end_date).map do |date|
+      @date = date
+      Rails.logger.info "Processing changes for #{date}"
+      TimeMachine.at(date) do
+        collect_all_changes
+        @commodity_change_records << generate_commodity_change_records
+      end
     end
 
-    ExcelGenerator.call(commodity_change_records, date)
+    dates = if end_date == start_date
+              start_date.strftime('%Y_%m_%d')
+            else
+              "#{start_date.strftime('%Y_%m_%d')}_to_#{end_date.strftime('%Y_%m_%d')}"
+            end
+
+    ExcelGenerator.call(commodity_change_records, dates)
 
     {
-      date: date,
+      dates: dates,
       total_records: @commodity_change_records.size,
       commodity_changes: @commodity_change_records,
     }
@@ -44,13 +56,13 @@ class DeltaReportService
   end
 
   def generate_commodity_change_records
-    @commodity_change_records = []
+    change_records = []
 
     @changes.values.flatten.compact.each do |change|
       affected_goods = find_affected_declarable_goods(change)
 
       affected_goods.each do |commodity|
-        @commodity_change_records << {
+        change_records << {
           type: change[:type],
           operation_date: date,
           chapter: commodity.chapter_short_code,
@@ -68,8 +80,8 @@ class DeltaReportService
       end
     end
 
-    @commodity_change_records.uniq!
-    @commodity_change_records.sort_by! { |record| record[:commodity_code] }
+    change_records.uniq!
+    change_records.sort_by! { |record| record[:commodity_code] }
   end
 
   def find_affected_declarable_goods(change)
@@ -186,4 +198,7 @@ end
 # Example usage:
 #
 # Generate report for specific date
-# report = DeltaReportService.generate(date: Date.new(2025, 7, 24))
+# report = DeltaReportService.generate(start_date: Date.new(2025, 7, 24))
+#
+# Generate report for range of dates
+# report = DeltaReportService.generate(start_date: Date.new(2025, 1, 1), end_date: Date.new(2025, 1, 31))
