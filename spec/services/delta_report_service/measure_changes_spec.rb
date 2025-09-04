@@ -113,27 +113,4 @@ RSpec.describe DeltaReportService::MeasureChanges do
       end
     end
   end
-
-  describe '#previous_record' do
-    let(:previous_measure) { build(:measure) }
-
-    before do
-      allow(Measure).to receive(:operation_klass).and_return(Measure)
-      allow(Measure).to receive_message_chain(:where, :where, :order, :first)
-                     .and_return(previous_measure)
-    end
-
-    it 'queries for the previous record by measure_sid and oid' do
-      result = instance.previous_record
-
-      expect(result).to eq(previous_measure)
-    end
-
-    it 'memoizes the result' do
-      instance.previous_record
-      instance.previous_record
-
-      expect(Measure).to have_received(:operation_klass).once
-    end
-  end
 end

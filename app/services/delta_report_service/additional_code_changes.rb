@@ -26,13 +26,5 @@ class DeltaReportService
         change: change || '',
       }
     end
-
-    def previous_record
-      @previous_record ||= AdditionalCode.operation_klass
-                             .where(additional_code_sid: record.additional_code_sid)
-                             .where(Sequel.lit('oid < ?', record.oid))
-                             .order(Sequel.desc(:oid))
-                             .first
-    end
   end
 end

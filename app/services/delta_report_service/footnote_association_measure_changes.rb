@@ -36,13 +36,5 @@ class DeltaReportService
     def date_of_effect
       date
     end
-
-    def previous_record
-      @previous_record ||= FootnoteAssociationMeasure.operation_klass
-                             .where(measure_sid: record.measure_sid, footnote_id: record.footnote_id, footnote_type_id: record.footnote_type_id)
-                             .where(Sequel.lit('oid < ?', record.oid))
-                             .order(Sequel.desc(:oid))
-                             .first
-    end
   end
 end

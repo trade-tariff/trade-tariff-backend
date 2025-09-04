@@ -27,13 +27,5 @@ class DeltaReportService
         change: change.present? ? "#{record.footnote.code}: #{change}" : record.footnote.code,
       }
     end
-
-    def previous_record
-      @previous_record ||= FootnoteAssociationGoodsNomenclature.operation_klass
-                             .where(goods_nomenclature_sid: record.goods_nomenclature_sid, footnote_id: record.footnote_id, footnote_type: record.footnote_type)
-                             .where(Sequel.lit('oid < ?', record.oid))
-                             .order(Sequel.desc(:oid))
-                             .first
-    end
   end
 end

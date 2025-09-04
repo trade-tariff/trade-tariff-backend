@@ -25,7 +25,7 @@ class DeltaReportService
 
       return unless record.operation == :update
 
-      if previous_record
+      if (previous_record = record.previous_record)
         comparable_columns = record.values.keys - excluded_columns
 
         comparable_columns.each do |column|

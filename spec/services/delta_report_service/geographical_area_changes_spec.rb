@@ -80,27 +80,4 @@ RSpec.describe DeltaReportService::GeographicalAreaChanges do
       end
     end
   end
-
-  describe '#previous_record' do
-    let(:previous_geographical_area) { build(:geographical_area) }
-
-    before do
-      allow(GeographicalArea).to receive(:operation_klass).and_return(GeographicalArea)
-      allow(GeographicalArea).to receive_message_chain(:where, :where, :order, :first)
-                               .and_return(previous_geographical_area)
-    end
-
-    it 'queries for the previous record by geographical_area_id and oid' do
-      result = instance.previous_record
-
-      expect(result).to eq(previous_geographical_area)
-    end
-
-    it 'memoizes the result' do
-      instance.previous_record
-      instance.previous_record
-
-      expect(GeographicalArea).to have_received(:operation_klass).once
-    end
-  end
 end

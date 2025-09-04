@@ -79,27 +79,4 @@ RSpec.describe DeltaReportService::CommodityChanges do
       end
     end
   end
-
-  describe '#previous_record' do
-    let(:previous_goods_nomenclature) { build(:goods_nomenclature) }
-
-    before do
-      allow(GoodsNomenclature).to receive(:operation_klass).and_return(GoodsNomenclature)
-      allow(GoodsNomenclature).to receive_message_chain(:where, :where, :order, :first)
-                               .and_return(previous_goods_nomenclature)
-    end
-
-    it 'queries for the previous record by goods_nomenclature_sid and oid' do
-      result = instance.previous_record
-
-      expect(result).to eq(previous_goods_nomenclature)
-    end
-
-    it 'memoizes the result' do
-      instance.previous_record
-      instance.previous_record
-
-      expect(GoodsNomenclature).to have_received(:operation_klass).once
-    end
-  end
 end

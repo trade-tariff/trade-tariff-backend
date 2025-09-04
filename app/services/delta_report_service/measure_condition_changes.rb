@@ -39,13 +39,5 @@ class DeltaReportService
     def excluded_columns
       super + %i[component_sequence_number]
     end
-
-    def previous_record
-      @previous_record ||= MeasureCondition.operation_klass
-                             .where(measure_condition_sid: record.measure_condition_sid)
-                             .where(Sequel.lit('oid < ?', record.oid))
-                             .order(Sequel.desc(:oid))
-                             .first
-    end
   end
 end

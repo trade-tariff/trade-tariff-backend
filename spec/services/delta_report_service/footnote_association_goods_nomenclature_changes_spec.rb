@@ -162,28 +162,4 @@ RSpec.describe DeltaReportService::FootnoteAssociationGoodsNomenclatureChanges d
       end
     end
   end
-
-  describe '#previous_record' do
-    let(:instance) { described_class.new(footnote_association, date) }
-    let(:previous_footnote_association) { build(:footnote_association_goods_nomenclature) }
-
-    before do
-      allow(FootnoteAssociationGoodsNomenclature).to receive(:operation_klass).and_return(FootnoteAssociationGoodsNomenclature)
-      allow(FootnoteAssociationGoodsNomenclature).to receive_message_chain(:where, :where, :order, :first)
-                         .and_return(previous_footnote_association)
-    end
-
-    it 'queries for the previous record by goods_nomenclature_sid, footnote_id, footnote_type and oid' do
-      result = instance.previous_record
-
-      expect(result).to eq(previous_footnote_association)
-    end
-
-    it 'memoizes the result' do
-      instance.previous_record
-      instance.previous_record
-
-      expect(FootnoteAssociationGoodsNomenclature).to have_received(:operation_klass).once
-    end
-  end
 end

@@ -137,27 +137,4 @@ RSpec.describe DeltaReportService::MeasureConditionChanges do
       end
     end
   end
-
-  describe '#previous_record' do
-    let(:previous_measure_condition) { build(:measure_condition) }
-
-    before do
-      allow(MeasureCondition).to receive(:operation_klass).and_return(MeasureCondition)
-      allow(MeasureCondition).to receive_message_chain(:where, :where, :order, :first)
-                               .and_return(previous_measure_condition)
-    end
-
-    it 'queries for the previous record by measure_condition_sid and oid' do
-      result = instance.previous_record
-
-      expect(result).to eq(previous_measure_condition)
-    end
-
-    it 'memoizes the result' do
-      instance.previous_record
-      instance.previous_record
-
-      expect(MeasureCondition).to have_received(:operation_klass).once
-    end
-  end
 end

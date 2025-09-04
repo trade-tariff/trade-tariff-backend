@@ -27,13 +27,5 @@ class DeltaReportService
         change: change || record.code,
       }
     end
-
-    def previous_record
-      @previous_record ||= GoodsNomenclature.operation_klass
-                             .where(goods_nomenclature_sid: record.goods_nomenclature_sid)
-                             .where(Sequel.lit('oid < ?', record.oid))
-                             .order(Sequel.desc(:oid))
-                             .first
-    end
   end
 end

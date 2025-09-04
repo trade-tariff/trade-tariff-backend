@@ -35,14 +35,5 @@ class DeltaReportService
     def date_of_effect
       date
     end
-
-    def previous_record
-      @previous_record ||= MeasureComponent.operation_klass
-                             .where(measure_sid: record.measure_sid)
-                             .where(duty_expression_id: record.duty_expression_id)
-                             .where(Sequel.lit('oid < ?', record.oid))
-                             .order(Sequel.desc(:oid))
-                             .first
-    end
   end
 end

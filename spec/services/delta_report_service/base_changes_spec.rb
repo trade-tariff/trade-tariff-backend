@@ -91,7 +91,7 @@ RSpec.describe DeltaReportService::BaseChanges do
     let(:get_changes_instance) { test_class.new(get_changes_record, date) }
 
     before do
-      get_changes_instance.previous_record = previous_record
+      allow(get_changes_record).to receive(:previous_record).and_return(previous_record)
     end
 
     context 'when operation is update' do
@@ -125,8 +125,7 @@ RSpec.describe DeltaReportService::BaseChanges do
 
     context 'when no previous record exists' do
       before do
-        allow(get_changes_record).to receive(:operation).and_return(:update)
-        get_changes_instance.previous_record = nil
+        allow(get_changes_record).to receive_messages(operation: :update, previous_record: nil)
       end
 
       it 'does not set changes' do
