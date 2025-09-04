@@ -26,7 +26,7 @@ class DeltaReportService
     end
 
     def additional_code(additional_code)
-      return nil if additional_code.blank?
+      return nil if additional_code.blank? || additional_code.additional_code_description.blank?
 
       "#{additional_code.code}: #{additional_code.description}"
     end

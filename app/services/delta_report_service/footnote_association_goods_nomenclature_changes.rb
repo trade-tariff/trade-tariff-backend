@@ -11,7 +11,7 @@ class DeltaReportService
     end
 
     def object_name
-      "Footnote #{record.footnote.code}"
+      'Footnote'
     end
 
     def analyze
@@ -24,7 +24,7 @@ class DeltaReportService
         goods_nomenclature_item_id: record.goods_nomenclature.goods_nomenclature_item_id,
         description:,
         date_of_effect:,
-        change: change,
+        change: change.present? ? "#{record.footnote.code}: #{change}" : record.footnote.code,
       }
     end
 
