@@ -1,16 +1,16 @@
 class DeltaReportService
   class ExcelGenerator
-    def self.call(change_records, date)
+    def self.call(change_records, dates)
       return if change_records.empty?
 
-      new(change_records, date).call
+      new(change_records, dates).call
     end
 
-    attr_accessor :change_records, :date, :workbook
+    attr_accessor :change_records, :dates, :workbook
 
-    def initialize(change_records, date)
+    def initialize(change_records, dates)
       @change_records = change_records
-      @date = date
+      @dates = dates
     end
 
     def call
@@ -20,7 +20,7 @@ class DeltaReportService
 
       styles = excel_cell_styles
 
-      workbook.add_worksheet(name: "Delta Report #{date.strftime('%Y-%m-%d')}") do |sheet|
+      workbook.add_worksheet(name: 'Delta Report') do |sheet|
         # Add pre-header row
         pre_header_styles = [styles[:pre_header]] * 8 + [styles[:pre_header_detail]] * 4
         sheet.add_row(['Change Location', '', '', '', '', '', '', '', 'Change Detail', '', '', ''], style: pre_header_styles)
@@ -40,18 +40,20 @@ class DeltaReportService
           pane.y_split = 2
         end
 
-        @change_records.each do |record|
-          sheet.add_row(
-            build_excel_row(record),
-            types: excel_cell_types,
-            style: build_row_styles(styles, record),
-          )
+        @change_records.each do |date|
+          date.each do |record|
+            sheet.add_row(
+              build_excel_row(record),
+              types: excel_cell_types,
+              style: build_row_styles(styles, record),
+            )
+          end
         end
 
         sheet.column_widths(*excel_column_widths)
       end
 
-      package.serialize("delta_report_#{date.strftime('%Y_%m_%d')}.xlsx") if Rails.env.development?
+      package.serialize("delta_report_#{dates}.xlsx") if Rails.env.development?
 
       package
     end

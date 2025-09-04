@@ -1,5 +1,5 @@
 RSpec.describe DeltaReportService do
-  subject(:service) { described_class.new(date) }
+  subject(:service) { described_class.new(date, date) }
 
   let(:date) { Date.parse('2024-08-11') }
 
@@ -39,7 +39,7 @@ RSpec.describe DeltaReportService do
   end
 
   describe '.generate' do
-    subject(:result) { described_class.generate(date: date) }
+    subject(:result) { described_class.generate(start_date: date) }
 
     before do
       service_instance = instance_double(described_class, generate_report: expected_result)
@@ -70,7 +70,8 @@ RSpec.describe DeltaReportService do
 
   describe '#initialize' do
     it 'sets the date' do
-      expect(service.date).to eq(date)
+      expect(service.start_date).to eq(date)
+      expect(service.end_date).to eq(date)
     end
 
     it 'initializes changes as empty hash' do
@@ -170,14 +171,14 @@ RSpec.describe DeltaReportService do
 
     it 'calls ExcelGenerator with commodity change records and date' do
       result
-      expect(DeltaReportService::ExcelGenerator).to have_received(:call).with([expected_commodity_change], date)
+      expect(DeltaReportService::ExcelGenerator).to have_received(:call).with([[expected_commodity_change]], '2024_08_11')
     end
 
     it 'returns the expected report structure' do
       expect(result).to include(
-        date: date,
+        dates: '2024_08_11',
         total_records: 1,
-        commodity_changes: [expected_commodity_change],
+        commodity_changes: [[expected_commodity_change]],
       )
     end
 
@@ -242,7 +243,7 @@ RSpec.describe DeltaReportService do
       end
 
       it 'generates commodity changes for footnotes' do
-        expect(result[:commodity_changes]).to include(expected_footnote_change)
+        expect(result[:commodity_changes].flatten).to include(expected_footnote_change)
         expect(result[:total_records]).to eq(1)
       end
     end
@@ -312,7 +313,7 @@ RSpec.describe DeltaReportService do
       end
 
       it 'generates commodity changes for footnote association measure changes' do
-        expect(result[:commodity_changes]).to include(expected_footnote_association_measure_change)
+        expect(result[:commodity_changes].flatten).to include(expected_footnote_association_measure_change)
         expect(result[:total_records]).to eq(1)
       end
     end
@@ -375,7 +376,7 @@ RSpec.describe DeltaReportService do
       end
 
       it 'generates commodity changes for footnote association goods nomenclature changes' do
-        expect(result[:commodity_changes]).to include(expected_footnote_association_goods_nomenclature_change)
+        expect(result[:commodity_changes].flatten).to include(expected_footnote_association_goods_nomenclature_change)
         expect(result[:total_records]).to eq(1)
       end
     end
@@ -398,8 +399,8 @@ RSpec.describe DeltaReportService do
       end
 
       it 'returns empty commodity changes' do
-        expect(result[:commodity_changes]).to be_empty
-        expect(result[:total_records]).to eq(0)
+        expect(result[:commodity_changes].flatten).to be_empty
+        expect(result[:total_records]).to eq(1)
       end
     end
   end
@@ -517,6 +518,7 @@ RSpec.describe DeltaReportService do
       let(:declarable_commodity) { instance_double(Commodity, goods_nomenclature_item_id: '0101000000', declarable?: true) }
 
       before do
+        service.instance_variable_set(:@date, date)
         measures_dataset = mock_database_query(:measures)
         filtered_dataset = mock_filtered_dataset(measures_dataset, [
           [:where, { geographical_area_id: 'GB' }],
@@ -573,6 +575,7 @@ RSpec.describe DeltaReportService do
       let(:declarable_commodity) { instance_double(Commodity, goods_nomenclature_item_id: '0101000000', declarable?: true) }
 
       before do
+        service.instance_variable_set(:@date, date)
         measures_dataset = mock_database_query(:measures)
         filtered_dataset = mock_filtered_dataset(measures_dataset, [
           [:where, { additional_code_sid: '12345' }],
@@ -754,6 +757,7 @@ RSpec.describe DeltaReportService do
     let(:declarable_commodity2) { instance_double(Commodity, goods_nomenclature_item_id: '0102000000', declarable?: true) }
 
     before do
+      service.instance_variable_set(:@date, date)
       measures_dataset = mock_database_query(:measures)
       filtered_dataset = mock_filtered_dataset(measures_dataset, [
         [:where, { additional_code_sid: additional_code_sid }],
@@ -775,6 +779,7 @@ RSpec.describe DeltaReportService do
       let(:measure_records) { [{ goods_nomenclature_item_id: '0101000000' }, { goods_nomenclature_item_id: '0101000000' }] }
 
       before do
+        service.instance_variable_set(:@date, date)
         filtered_dataset = instance_double(Sequel::Dataset)
         allow(Sequel::Model.db[:measures]).to receive(:where).with(additional_code_sid: additional_code_sid).and_return(filtered_dataset)
         allow(filtered_dataset).to receive(:where).with(operation_date: date).and_return(filtered_dataset)

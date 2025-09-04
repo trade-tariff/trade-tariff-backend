@@ -2,34 +2,36 @@ RSpec.describe DeltaReportService::ExcelGenerator do
   let(:date) { Date.parse('2024-08-11') }
   let(:change_records) do
     [
-      {
-        chapter: '01',
-        commodity_code: '0101000000',
-        commodity_code_description: 'Live horses',
-        import_export: 'Import',
-        measure_type: '103: Third country duty',
-        geo_area: 'GB: United Kingdom',
-        additional_code: 'A123: Special code',
-        duty_expression: '10%',
-        type_of_change: 'Measure added',
-        change: 'new measure',
-        date_of_effect: date,
-        operation_date: date,
-      },
-      {
-        chapter: '02',
-        commodity_code: '0201000000',
-        commodity_code_description: 'Meat of bovine animals',
-        import_export: 'Export',
-        measure_type: '104: Export duty',
-        geo_area: 'US: United States',
-        additional_code: nil,
-        duty_expression: '5%',
-        type_of_change: 'Measure updated',
-        change: 'duty rate changed',
-        date_of_effect: date + 1.day,
-        operation_date: date,
-      },
+      [
+        {
+          chapter: '01',
+          commodity_code: '0101000000',
+          commodity_code_description: 'Live horses',
+          import_export: 'Import',
+          measure_type: '103: Third country duty',
+          geo_area: 'GB: United Kingdom',
+          additional_code: 'A123: Special code',
+          duty_expression: '10%',
+          type_of_change: 'Measure added',
+          change: 'new measure',
+          date_of_effect: date,
+          operation_date: date,
+        },
+        {
+          chapter: '02',
+          commodity_code: '0201000000',
+          commodity_code_description: 'Meat of bovine animals',
+          import_export: 'Export',
+          measure_type: '104: Export duty',
+          geo_area: 'US: United States',
+          additional_code: nil,
+          duty_expression: '5%',
+          type_of_change: 'Measure updated',
+          change: 'duty rate changed',
+          date_of_effect: date + 1.day,
+          operation_date: date,
+        },
+      ],
     ]
   end
 
@@ -59,7 +61,7 @@ RSpec.describe DeltaReportService::ExcelGenerator do
 
     it 'sets change_records and date' do
       expect(instance.change_records).to eq(change_records)
-      expect(instance.date).to eq(date)
+      expect(instance.dates).to eq(date)
     end
   end
 
@@ -103,7 +105,7 @@ RSpec.describe DeltaReportService::ExcelGenerator do
     it 'adds a worksheet with the correct name' do
       instance.call
 
-      expect(workbook).to have_received(:add_worksheet).with(name: 'Delta Report 2024-08-11')
+      expect(workbook).to have_received(:add_worksheet).with(name: 'Delta Report')
     end
 
     it 'adds pre-header and header rows' do
@@ -130,7 +132,7 @@ RSpec.describe DeltaReportService::ExcelGenerator do
       it 'serializes the package to a local file' do
         instance.call
 
-        expect(package).to have_received(:serialize).with('delta_report_2024_08_11.xlsx')
+        expect(package).to have_received(:serialize).with("delta_report_#{date}.xlsx")
       end
     end
 
@@ -199,7 +201,7 @@ RSpec.describe DeltaReportService::ExcelGenerator do
 
   describe '#build_excel_row' do
     let(:instance) { described_class.new(change_records, date) }
-    let(:record) { change_records.first }
+    let(:record) { change_records.first.first }
 
     it 'builds the correct row array from a record' do
       result = instance.build_excel_row(record)
@@ -221,7 +223,7 @@ RSpec.describe DeltaReportService::ExcelGenerator do
     end
 
     context 'when date_of_effect is nil' do
-      let(:record) { change_records.first.merge(date_of_effect: nil) }
+      let(:record) { change_records.first.first.merge(date_of_effect: nil) }
 
       it 'handles nil date_of_effect gracefully' do
         result = instance.build_excel_row(record)
