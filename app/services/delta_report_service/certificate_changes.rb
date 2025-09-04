@@ -26,13 +26,5 @@ class DeltaReportService
         change: change || record.id,
       }
     end
-
-    def previous_record
-      @previous_record ||= Certificate.operation_klass
-                             .where(certificate_code: record.certificate_code, certificate_type_code: record.certificate_type_code)
-                             .where(Sequel.lit('oid < ?', record.oid))
-                             .order(Sequel.desc(:oid))
-                             .first
-    end
   end
 end

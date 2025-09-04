@@ -128,29 +128,6 @@ RSpec.describe DeltaReportService::AdditionalCodeChanges do
     end
   end
 
-  describe '#previous_record' do
-    let(:previous_additional_code) { build(:additional_code) }
-
-    before do
-      allow(AdditionalCode).to receive(:operation_klass).and_return(AdditionalCode)
-      allow(AdditionalCode).to receive_message_chain(:where, :where, :order, :first)
-                         .and_return(previous_additional_code)
-    end
-
-    it 'queries for the previous record by additional_code_sid and oid' do
-      result = instance.previous_record
-
-      expect(result).to eq(previous_additional_code)
-    end
-
-    it 'memoizes the result' do
-      instance.previous_record
-      instance.previous_record
-
-      expect(AdditionalCode).to have_received(:operation_klass).once
-    end
-  end
-
   describe 'integration with BaseChanges' do
     it 'inherits from BaseChanges' do
       expect(described_class.superclass).to eq(DeltaReportService::BaseChanges)

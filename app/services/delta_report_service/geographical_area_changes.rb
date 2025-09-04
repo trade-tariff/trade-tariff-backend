@@ -25,13 +25,5 @@ class DeltaReportService
         change: change || geo_area(record),
       }
     end
-
-    def previous_record
-      @previous_record ||= GeographicalArea.operation_klass
-                             .where(geographical_area_id: record.geographical_area_id)
-                             .where(Sequel.lit('oid < ?', record.oid))
-                             .order(Sequel.desc(:oid))
-                             .first
-    end
   end
 end

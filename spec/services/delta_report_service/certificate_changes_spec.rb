@@ -82,27 +82,4 @@ RSpec.describe DeltaReportService::CertificateChanges do
       end
     end
   end
-
-  describe '#previous_record' do
-    let(:previous_certificate) { build(:certificate) }
-
-    before do
-      allow(Certificate).to receive(:operation_klass).and_return(Certificate)
-      allow(Certificate).to receive_message_chain(:where, :where, :order, :first)
-                         .and_return(previous_certificate)
-    end
-
-    it 'queries for the previous record by certificate_code, certificate_type_code and oid' do
-      result = instance.previous_record
-
-      expect(result).to eq(previous_certificate)
-    end
-
-    it 'memoizes the result' do
-      instance.previous_record
-      instance.previous_record
-
-      expect(Certificate).to have_received(:operation_klass).once
-    end
-  end
 end

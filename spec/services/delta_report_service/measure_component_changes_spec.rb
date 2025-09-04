@@ -119,27 +119,4 @@ RSpec.describe DeltaReportService::MeasureComponentChanges do
       expect(instance.date_of_effect).to eq(date)
     end
   end
-
-  describe '#previous_record' do
-    let(:previous_measure_component) { build(:measure_component) }
-
-    before do
-      allow(MeasureComponent).to receive(:operation_klass).and_return(MeasureComponent)
-      allow(MeasureComponent).to receive_message_chain(:where, :where, :where, :order, :first)
-                               .and_return(previous_measure_component)
-    end
-
-    it 'queries for the previous record by measure_sid, duty_expression_id and oid' do
-      result = instance.previous_record
-
-      expect(result).to eq(previous_measure_component)
-    end
-
-    it 'memoizes the result' do
-      instance.previous_record
-      instance.previous_record
-
-      expect(MeasureComponent).to have_received(:operation_klass).once
-    end
-  end
 end

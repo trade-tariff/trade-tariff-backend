@@ -196,28 +196,4 @@ RSpec.describe DeltaReportService::FootnoteAssociationMeasureChanges do
       expect(instance.date_of_effect).to eq(date)
     end
   end
-
-  describe '#previous_record' do
-    let(:instance) { described_class.new(footnote_association, date) }
-    let(:previous_footnote_association) { build(:footnote_association_measure) }
-
-    before do
-      allow(FootnoteAssociationMeasure).to receive(:operation_klass).and_return(FootnoteAssociationMeasure)
-      allow(FootnoteAssociationMeasure).to receive_message_chain(:where, :where, :order, :first)
-                         .and_return(previous_footnote_association)
-    end
-
-    it 'queries for the previous record by measure_sid, footnote_id, footnote_type_id and oid' do
-      result = instance.previous_record
-
-      expect(result).to eq(previous_footnote_association)
-    end
-
-    it 'memoizes the result' do
-      instance.previous_record
-      instance.previous_record
-
-      expect(FootnoteAssociationMeasure).to have_received(:operation_klass).once
-    end
-  end
 end

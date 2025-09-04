@@ -36,13 +36,5 @@ class DeltaReportService
         change: change || measure_type(record),
       }
     end
-
-    def previous_record
-      @previous_record ||= Measure.operation_klass
-                             .where(measure_sid: record.measure_sid)
-                             .where(Sequel.lit('oid < ?', record.oid))
-                             .order(Sequel.desc(:oid))
-                             .first
-    end
   end
 end

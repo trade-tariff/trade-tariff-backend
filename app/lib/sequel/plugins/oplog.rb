@@ -97,6 +97,19 @@ module Sequel
           end
         end
 
+        def previous_record
+          primary_keys = operation_klass.primary_key - [:oid]
+          return nil if primary_keys.empty?
+
+          primary_key_conditions = primary_keys.index_with { |key| self[key] }
+
+          operation_klass
+            .where(primary_key_conditions)
+            .where(Sequel.lit('oid < ?', oid))
+            .order(Sequel.desc(:oid))
+            .first
+        end
+
         ##
         # Will be called by https://github.com/jeremyevans/sequel/blob/5afb0d0e28a89e68f1823d77d23cfa57d6b88dad/lib/sequel/model/base.rb#L1549
         # @note fixes `NotImplementedError: You should be inserting model instances`
