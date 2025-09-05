@@ -2,7 +2,7 @@ RSpec.describe DeltaReportService::CertificateChanges do
   let(:date) { Date.parse('2024-08-11') }
 
   let(:certificate) do
-    build(:certificate, certificate_type_code: 'Y', certificate_code: '999')
+    create(:certificate, :with_description, certificate_type_code: 'Y', certificate_code: '999')
   end
   let(:instance) { described_class.new(certificate, date) }
 
