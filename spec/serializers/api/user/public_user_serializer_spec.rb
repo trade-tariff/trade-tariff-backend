@@ -12,6 +12,8 @@ RSpec.describe Api::User::PublicUserSerializer do
           chapter_ids: '01,99',
           email: 'oliver@email.com',
           stop_press_subscription: false,
+          commodity_delta_subscription: false,
+          commodity_codes: '1234567890, 1234567891',
         },
       },
     }
@@ -20,6 +22,8 @@ RSpec.describe Api::User::PublicUserSerializer do
   describe '#serializable_hash' do
     before do
       serializable.preferences.update(chapter_ids: '01,99')
+      serializable.add_delta_preference(PublicUsers::DeltaPreferences.new(commodity_code: '1234567890'))
+      serializable.add_delta_preference(PublicUsers::DeltaPreferences.new(commodity_code: '1234567891'))
     end
 
     it { expect(serialized).to eq(expected) }
