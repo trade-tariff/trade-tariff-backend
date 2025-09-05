@@ -135,13 +135,15 @@ class DeltaReportService
   end
 
   def find_declarable_goods_for_certificate(change)
-    conditions = Sequel::Model.db[:measure_conditions]
+    conditions = Sequel::Model.db[:measure_conditions_oplog]
       .where(certificate_type_code: change[:certificate_type_code])
       .where(certificate_code: change[:certificate_code])
       .distinct(:measure_sid)
 
     affected_goods = []
     conditions.each do |condition|
+      next if condition[:operation_date] == date
+
       measure = Sequel::Model.db[:measures]
         .where(measure_sid: condition[:measure_sid])
         .first

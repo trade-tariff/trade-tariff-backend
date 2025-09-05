@@ -41,14 +41,14 @@ class DeltaReportService
     end
 
     def date_of_effect
-      if changes.include?('validity_start_date')
+      if changes.include?('validity start date') && record.validity_start_date.present?
         record.validity_start_date
-      elsif changes.include?('validity_end_date')
-        record.validity_end_date
-      elsif record.validity_start_date > record.operation_date
-        record.validity_start_date
+      elsif changes.include?('validity end date') && record.validity_end_date.present?
+        record.validity_end_date + 1.day
+      elsif record.operation == :create && record.respond_to?(:validity_start_date)
+        record.validity_start_date + 1.day
       else
-        date
+        date + 1.day
       end
     end
 

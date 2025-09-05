@@ -157,10 +157,10 @@ RSpec.describe DeltaReportService::BaseChanges do
     end
 
     context 'when validity_end_date is in changes' do
-      before { date_instance.changes = %w[validity_end_date] }
+      before { date_instance.changes = ['validity end date'] }
 
       it 'returns validity_end_date' do
-        expect(date_instance.date_of_effect).to eq(validity_end_date)
+        expect(date_instance.date_of_effect).to eq(validity_end_date + 1.day)
       end
     end
 
@@ -168,17 +168,7 @@ RSpec.describe DeltaReportService::BaseChanges do
       before { date_instance.changes = [] }
 
       it 'returns validity_start_date' do
-        expect(date_instance.date_of_effect).to eq(validity_start_date)
-      end
-    end
-
-    context 'when validity_start_date is not after operation_date and no validity changes' do
-      let(:validity_start_date) { Date.parse('2024-08-05') }
-
-      before { date_instance.changes = [] }
-
-      it 'returns the date parameter' do
-        expect(date_instance.date_of_effect).to eq(date)
+        expect(date_instance.date_of_effect).to eq(validity_start_date + 1.day)
       end
     end
   end

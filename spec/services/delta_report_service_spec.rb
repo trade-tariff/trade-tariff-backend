@@ -538,7 +538,7 @@ RSpec.describe DeltaReportService do
 
     context 'when change type is Certificate' do
       let(:change) { { type: 'Certificate', certificate_type_code: 'Y', certificate_code: '999' } }
-      let(:condition_records) { [{ measure_sid: 123 }] }
+      let(:condition_records) { [{ measure_sid: 123, operation_date: Date.parse('2024-08-10') }] }
       let(:measure_record) { { goods_nomenclature_item_id: '0101000000' } }
       let(:declarable_commodity) { instance_double(Commodity, goods_nomenclature_item_id: '0101000000', declarable?: true) }
 
@@ -548,7 +548,7 @@ RSpec.describe DeltaReportService do
         measures_dataset = instance_double(Sequel::Dataset)
 
         allow(Sequel::Model).to receive(:db).and_return(db_double)
-        allow(db_double).to receive(:[]).with(:measure_conditions).and_return(conditions_dataset)
+        allow(db_double).to receive(:[]).with(:measure_conditions_oplog).and_return(conditions_dataset)
         allow(db_double).to receive(:[]).with(:measures).and_return(measures_dataset)
 
         filtered_conditions = mock_filtered_dataset(conditions_dataset, [
