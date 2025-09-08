@@ -11,12 +11,14 @@ class DeltaReportService
     end
 
     def object_name
-      'Measure Condition'
+      (record.requirement_type || 'Measure Condition').to_s.humanize&.capitalize
     end
 
     def analyze
       return if no_changes?
       return if record.operation == :create && record.measure.operation_date == record.operation_date
+
+      @changes = []
 
       {
         type: 'MeasureCondition',
@@ -28,8 +30,18 @@ class DeltaReportService
         duty_expression: duty_expression(record.measure),
         description:,
         date_of_effect:,
-        change: change || '',
+        change:,
       }
+    end
+
+    def change
+      if record.requirement_type == :document
+        "#{record.document_code}: #{record.certificate_description}: #{record.action}"
+      elsif record.requirement_type == :duty_expression
+        "#{record.last.requirement_duty_expression} : #{record.action}"
+      else
+        record.action
+      end
     end
 
     def date_of_effect

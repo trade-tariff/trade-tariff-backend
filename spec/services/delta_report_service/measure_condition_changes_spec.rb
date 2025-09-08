@@ -42,7 +42,7 @@ RSpec.describe DeltaReportService::MeasureConditionChanges do
 
   describe '#object_name' do
     it 'returns the correct object name' do
-      expect(instance.object_name).to eq('Measure Condition')
+      expect(instance.object_name).to eq('Document')
     end
   end
 
@@ -111,7 +111,7 @@ RSpec.describe DeltaReportService::MeasureConditionChanges do
 
       it 'sets change to empty string' do
         result = instance.analyze
-        expect(result[:change]).to eq('')
+        expect(result[:change]).to be_nil
       end
     end
   end
