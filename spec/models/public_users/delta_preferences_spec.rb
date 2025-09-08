@@ -1,5 +1,5 @@
 RSpec.describe PublicUsers::DeltaPreferences do
-  let!(:user) { create(:public_user, :with_active_commodity_delta_subscription) }
+  let!(:user) { create(:public_user) }
 
   describe 'associations' do
     it 'has a user association' do

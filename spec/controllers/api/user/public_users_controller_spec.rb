@@ -203,30 +203,10 @@ RSpec.describe Api::User::PublicUsersController do
           it 'activates the subscription' do
             api_response
             expect(user.stop_press_subscription).to be_a(String)
-            expect(user.commodity_delta_subscription).to be false
           end
 
           it 'responds with updated subscription details' do
             expect(JSON.parse(api_response.body)['data']['attributes']['stop_press_subscription']).to be_a(String)
-            expect(JSON.parse(api_response.body)['data']['attributes']['commodity_delta_subscription']).to be false
-          end
-
-          it { is_expected.to have_http_status :ok }
-        end
-
-        context 'when activating a commodity delta subscription' do
-          let(:make_request) { patch :update, params: { data: { attributes: { commodity_delta_subscription: active } } } }
-          let(:active) { true }
-
-          it 'activates the subscription' do
-            api_response
-            expect(user.commodity_delta_subscription).to be_a(String)
-            expect(user.stop_press_subscription).to be false
-          end
-
-          it 'responds with updated subscription details' do
-            expect(JSON.parse(api_response.body)['data']['attributes']['commodity_delta_subscription']).to be_a(String)
-            expect(JSON.parse(api_response.body)['data']['attributes']['stop_press_subscription']).to be false
           end
 
           it { is_expected.to have_http_status :ok }
@@ -242,21 +222,6 @@ RSpec.describe Api::User::PublicUsersController do
 
           it 'responds with updated subscription details' do
             expect(JSON.parse(api_response.body)['data']['attributes']['stop_press_subscription']).to be false
-          end
-
-          it { is_expected.to have_http_status :ok }
-        end
-
-        context 'when deactivating a commodity delta subscription' do
-          let(:active) { false }
-
-          it 'deactivates the subscription' do
-            api_response
-            expect(user.commodity_delta_subscription).to be false
-          end
-
-          it 'responds with updated subscription details' do
-            expect(JSON.parse(api_response.body)['data']['attributes']['commodity_delta_subscription']).to be false
           end
 
           it { is_expected.to have_http_status :ok }

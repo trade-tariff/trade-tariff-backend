@@ -100,22 +100,6 @@ RSpec.describe PublicUsers::User do
     end
   end
 
-  describe '#commodity_delta_subscription' do
-    it 'returns id when user has an active subscription' do
-      user.add_subscription(subscription_type_id: Subscriptions::Type.commodity_delta.id, active: true)
-      expect(user.commodity_delta_subscription).to be_a(String)
-    end
-
-    it 'returns false when user has an inactive subscription' do
-      user.add_subscription(subscription_type_id: Subscriptions::Type.commodity_delta.id, active: false)
-      expect(user.commodity_delta_subscription).to be false
-    end
-
-    it 'returns false when user does not have a subscription' do
-      expect(user.commodity_delta_subscription).to be false
-    end
-  end
-
   describe '#stop_press_subscription=' do
     context 'when user has subscription' do
       before do
@@ -159,49 +143,6 @@ RSpec.describe PublicUsers::User do
     end
   end
 
-  describe '#commodity_delta_subscription=' do
-    context 'when user has subscription' do
-      before do
-        user.add_subscription(subscription_type_id: Subscriptions::Type.commodity_delta.id, active: true)
-      end
-
-      context 'when value is true' do
-        it 'enables the subscription' do
-          user.commodity_delta_subscription = true
-          expect(user.subscriptions.first.active).to be true
-        end
-      end
-
-      context 'when value is false' do
-        it 'disables the subscription' do
-          user.commodity_delta_subscription = false
-          expect(user.subscriptions.first.active).to be false
-        end
-      end
-    end
-
-    context 'when user has no subscription' do
-      context 'when value is true' do
-        it 'enables the subscription' do
-          user.commodity_delta_subscription = true
-          expect(user.subscriptions.first.active).to be true
-        end
-
-        it 'adds an action log for subscribed' do
-          user.commodity_delta_subscription = true
-          expect(user.action_logs.last.action).to eq PublicUsers::ActionLog::SUBSCRIBED
-        end
-      end
-
-      context 'when value is false' do
-        it 'disables the subscription' do
-          user.commodity_delta_subscription = false
-          expect(user.subscriptions.first.active).to be false
-        end
-      end
-    end
-  end
-
   describe '#soft_delete!' do
     context 'when user has an active stop press subscription' do
       before do
@@ -214,23 +155,10 @@ RSpec.describe PublicUsers::User do
       end
     end
 
-    context 'when user has an inactive stop press subscription and has a commodity delta subscription' do
-      before do
-        user.add_subscription(subscription_type_id: Subscriptions::Type.stop_press.id, active: false)
-        user.add_subscription(subscription_type_id: Subscriptions::Type.commodity_delta.id, active: true)
-        user.soft_delete!
-      end
-
-      it 'user deleted should be false' do
-        expect(user.deleted).to be false
-      end
-    end
-
-    context 'when user has an inactive stop press and commodity delta subscription' do
+    context 'when user has an inactive stop press subscription' do
       before do
         allow(ExternalUserDeletionWorker).to receive(:perform_async)
         user.add_subscription(subscription_type_id: Subscriptions::Type.stop_press.id, active: false)
-        user.add_subscription(subscription_type_id: Subscriptions::Type.commodity_delta.id, active: false)
         user.soft_delete!
       end
 
@@ -271,60 +199,28 @@ RSpec.describe PublicUsers::User do
     describe '.with_active_stop_press_subscription' do
       subject(:dataset) { described_class.with_active_stop_press_subscription }
 
-      let!(:user_with_active_stop_press_subscription) { create(:public_user, :with_active_stop_press_subscription) }
-      let!(:another_user_with_active_stop_press_subscription) { create(:public_user, :with_active_stop_press_subscription) }
-      let!(:user_with_inactive_stop_press_subscription) { create(:public_user, :with_inactive_stop_press_subscription) }
+      let!(:user_with_active_subscription) { create(:public_user, :with_active_stop_press_subscription) }
+      let!(:another_user_with_active_subscription) { create(:public_user, :with_active_stop_press_subscription) }
+      let!(:user_with_inactive_subscription) { create(:public_user, :with_inactive_stop_press_subscription) }
       let!(:user_without_subscription) { create(:public_user) }
-      let!(:user_with_active_commodity_delta_subscription) { create(:public_user, :with_active_commodity_delta_subscription) }
+      let!(:user_with_different_active_subscription) { create(:public_user) }
       let!(:soft_deleted_user) { create(:public_user, :has_been_soft_deleted) }
 
       before do
-        user_with_active_stop_press_subscription
-        another_user_with_active_stop_press_subscription
-        user_with_inactive_stop_press_subscription
+        user_with_active_subscription
+        another_user_with_active_subscription
+        user_with_inactive_subscription
         user_without_subscription
         soft_deleted_user
-        create(:user_subscription, user_id: user_with_active_commodity_delta_subscription.id)
+        create(:user_subscription, user_id: user_with_different_active_subscription.id)
       end
 
       it 'returns expected users' do
-        expect(dataset).to contain_exactly(user_with_active_stop_press_subscription, another_user_with_active_stop_press_subscription)
+        expect(dataset).to contain_exactly(user_with_active_subscription, another_user_with_active_subscription)
       end
 
       it 'excludes soft deleted users' do
         expect(dataset).not_to include(soft_deleted_user)
-      end
-
-      it 'excludes users with active commodity delta subscriptions' do
-        expect(dataset).not_to include(user_with_active_commodity_delta_subscription)
-      end
-    end
-
-    describe '.with_active_commodity_delta_subscription' do
-      subject(:dataset) { described_class.with_active_commodity_delta_subscription }
-
-      let!(:user_with_active_stop_press_subscription) { create(:public_user, :with_active_stop_press_subscription) }
-      let!(:user_with_active_commodity_delta_subscription) { create(:public_user, :with_active_commodity_delta_subscription) }
-      let!(:user_with_inactive_commodity_delta_subscription) { create(:public_user, :with_inactive_commodity_delta_subscription) }
-      let!(:soft_deleted_user) { create(:public_user, :has_been_soft_deleted) }
-
-      before do
-        user_with_active_stop_press_subscription
-        user_with_active_commodity_delta_subscription
-        user_with_inactive_commodity_delta_subscription
-        soft_deleted_user
-      end
-
-      it 'returns expected user' do
-        expect(dataset).to contain_exactly(user_with_active_commodity_delta_subscription)
-      end
-
-      it 'excludes soft deleted users' do
-        expect(dataset).not_to include(soft_deleted_user)
-      end
-
-      it 'excludes users with active stop press subscriptions' do
-        expect(dataset).not_to include(user_with_active_stop_press_subscription)
       end
     end
 
@@ -440,7 +336,7 @@ RSpec.describe PublicUsers::User do
       end
     end
 
-    describe 'chain of scopes for stop press' do
+    describe 'chain of scopes' do
       subject(:dataset) { described_class.active.with_active_stop_press_subscription.matching_chapters(chapters) }
 
       let(:chapters) { '01' }
@@ -448,14 +344,12 @@ RSpec.describe PublicUsers::User do
       let(:inactive_user_with_subscription) { create(:public_user, :with_inactive_stop_press_subscription) }
       let(:active_user_without_subscription) { create(:public_user, deleted: false) }
       let(:deleted_user_with_subscription) { create(:public_user, :with_active_stop_press_subscription, deleted: true) }
-      let(:user_with_commodity_delta_subscription) { create(:public_user, :with_active_commodity_delta_subscription) }
 
       before do
         active_user_with_subscription
         inactive_user_with_subscription
         active_user_without_subscription
         deleted_user_with_subscription
-        user_with_commodity_delta_subscription
       end
 
       it 'returns only active users with active stop press subscriptions' do
@@ -463,35 +357,15 @@ RSpec.describe PublicUsers::User do
       end
     end
 
-    describe 'chain of scopes for commodity delta' do
-      subject(:dataset) { described_class.active.with_active_commodity_delta_subscription.matching_commodity_codes(commodity_codes) }
-
-      let(:commodity_codes) { '1234567890' }
-      let!(:commodity_delta_user) { create(:public_user, :with_active_commodity_delta_subscription, :with_commodity_codes, commodity_codes: '1234567890') }
-      let!(:inactive_delta_user) { create(:public_user, :with_inactive_commodity_delta_subscription, :with_commodity_codes, commodity_codes: '1234567890') }
-      let!(:deleted_delta_user) { create(:public_user, :with_active_commodity_delta_subscription, :with_commodity_codes, commodity_codes: '1234567890', deleted: true) }
-      let!(:stop_press_user) { create(:public_user, :with_active_stop_press_subscription, :with_chapters_preference, chapters: '01') }
-
-      it 'returns only active commodity delta users matching codes' do
-        expect(dataset).to contain_exactly(commodity_delta_user)
-      end
-
-      it 'excludes inactive commodity delta users' do
-        expect(dataset).not_to include(inactive_delta_user, deleted_delta_user, stop_press_user)
-      end
-    end
-
     describe '.failed_subscribers' do
       let!(:old_user_no_sub) { create(:public_user, created_at: 4.days.ago, deleted: false) }
-      let(:old_user_1_with_sub) { create(:public_user, :with_active_stop_press_subscription, created_at: 4.days.ago, deleted: false) }
-      let(:old_user_2_with_sub) { create(:public_user, :with_active_commodity_delta_subscription, created_at: 4.days.ago, deleted: false) }
+      let(:old_user_with_sub) { create(:public_user, :with_active_stop_press_subscription, created_at: 4.days.ago, deleted: false) }
       let(:recent_user_no_sub) { create(:public_user, created_at: 1.day.ago, deleted: false) }
       let(:recent_user_with_sub) { create(:public_user, :with_active_stop_press_subscription, created_at: 1.day.ago, deleted: false) }
       let(:deleted_user_no_sub) { create(:public_user, created_at: 4.days.ago, deleted: true) }
 
       it 'returns only users created more than 72 hours ago, not deleted, and without any subscription' do
-        old_user_1_with_sub
-        old_user_2_with_sub
+        old_user_with_sub
         recent_user_no_sub
         recent_user_with_sub
         deleted_user_no_sub

@@ -37,10 +37,6 @@ module PublicUsers
         with_active_subscription(Subscriptions::Type.stop_press)
       end
 
-      def with_active_commodity_delta_subscription
-        with_active_subscription(Subscriptions::Type.commodity_delta)
-      end
-
       def with_active_subscription(type)
         join(:public__user_subscriptions, Sequel[:user_subscriptions][:user_id] => Sequel[:users][:id])
           .where(
@@ -96,20 +92,12 @@ module PublicUsers
       subscription_for(Subscriptions::Type.stop_press)
     end
 
-    def commodity_delta_subscription
-      subscription_for(Subscriptions::Type.commodity_delta)
-    end
-
     def subscription_for(type)
       subscriptions_dataset.where(subscription_type: type, active: true).first&.uuid || false
     end
 
     def stop_press_subscription=(active)
       set_subscription(Subscriptions::Type.stop_press, active)
-    end
-
-    def commodity_delta_subscription=(active)
-      set_subscription(Subscriptions::Type.commodity_delta, active)
     end
 
     def set_subscription(type, active)

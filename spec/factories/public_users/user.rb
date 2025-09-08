@@ -30,18 +30,6 @@ FactoryBot.define do
       end
     end
 
-    trait :with_active_commodity_delta_subscription do
-      after(:create) do |user, _evaluator|
-        user.commodity_delta_subscription = true
-      end
-    end
-
-    trait :with_inactive_commodity_delta_subscription do
-      after(:create) do |user, _evaluator|
-        user.commodity_delta_subscription = false
-      end
-    end
-
     trait :with_commodity_codes do
       transient do
         commodity_codes { [] }
