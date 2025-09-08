@@ -31,7 +31,7 @@ module Api
       def enquiry_form_data
         enquiry_form_params.merge(
           reference_number: @set_reference_number,
-          created_at: Time.zone.now.strftime('%Y-%m-%d %H:%M'),
+          created_at: Time.zone.now.in_time_zone('London').strftime('%Y-%m-%d %H:%M'), # Gov uk Notify timezone is always BST
         )
       end
 
