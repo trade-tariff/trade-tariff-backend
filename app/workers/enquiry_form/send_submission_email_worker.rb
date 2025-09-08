@@ -16,7 +16,7 @@ class EnquiryForm::SendSubmissionEmailWorker
       enquiry_category: parsed_data[:enquiry_category],
       enquiry_description: parsed_data[:enquiry_description],
       reference_number: parsed_data[:reference_number],
-      created_at: parsed_data[:created_at],
+      created_at: Time.zone.parse(parsed_data[:created_at]).in_time_zone('London').strftime('%Y-%m-%d %H:%M'), # Gov UK Notify timezone
       csv_file: Notifications.prepare_upload(StringIO.new(csv_data), filename: "enquiry_form_#{parsed_data[:reference_number]}.csv"),
     }
 
