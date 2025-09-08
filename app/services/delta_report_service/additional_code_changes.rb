@@ -25,6 +25,9 @@ class DeltaReportService
         date_of_effect:,
         change: change || '',
       }
+    rescue StandardError => e
+      Rails.logger.error "Error with #{object_name} OID #{record.oid}"
+      raise e
     end
   end
 end

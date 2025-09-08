@@ -15,7 +15,7 @@ class DeltaReportService
     end
 
     def analyze
-      return if record.measure.operation_date == record.operation_date
+      return if Measure::Operation.where(measure_sid: record.measure_sid, operation_date: record.operation_date).any?
 
       {
         type: 'ExcludedGeographicalArea',
@@ -24,11 +24,13 @@ class DeltaReportService
         import_export: import_export(record.measure),
         geo_area: geo_area(record.geographical_area),
         additional_code: additional_code(record.measure.additional_code),
-        duty_expression: duty_expression(record.measure),
         date_of_effect: date,
-        description: 'Excluded geo area',
+        description:,
         change: "Excluded #{record.excluded_geographical_area}",
       }
+    rescue StandardError => e
+      Rails.logger.error "Error with #{object_name} OID #{record.oid}"
+      raise e
     end
   end
 end

@@ -61,6 +61,8 @@ RSpec.describe DeltaReportService::MeasureConditionChanges do
       allow(instance).to receive(:geo_area).with(geographical_area).and_return('GB: United Kingdom')
       allow(instance).to receive(:additional_code).with(nil).and_return(additional_code)
       allow(instance).to receive(:duty_expression).with(measure).and_return('10%')
+      # By default, don't filter out records (no matching operations found)
+      allow(Measure::Operation).to receive_message_chain(:where, :any?).and_return(false)
     end
 
     context 'when there are no changes' do
@@ -80,6 +82,8 @@ RSpec.describe DeltaReportService::MeasureConditionChanges do
         allow(measure_condition_create).to receive(:measure).and_return(measure_create)
         allow(instance_create).to receive(:get_changes)
         allow(instance_create).to receive(:no_changes?).and_return(false)
+        # Mock the Measure::Operation query to return true (measure found on same date)
+        allow(Measure::Operation).to receive_message_chain(:where, :any?).and_return(true)
       end
 
       it 'returns nil' do
@@ -98,7 +102,6 @@ RSpec.describe DeltaReportService::MeasureConditionChanges do
           import_export: 'Import',
           geo_area: 'GB: United Kingdom',
           additional_code: additional_code,
-          duty_expression: '10%',
           description: 'Measure Condition updated',
           date_of_effect: date,
           change: 'new condition',

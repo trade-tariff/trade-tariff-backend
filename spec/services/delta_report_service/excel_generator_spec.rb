@@ -11,7 +11,6 @@ RSpec.describe DeltaReportService::ExcelGenerator do
           measure_type: '103: Third country duty',
           geo_area: 'GB: United Kingdom',
           additional_code: 'A123: Special code',
-          duty_expression: '10%',
           type_of_change: 'Measure added',
           change: 'new measure',
           date_of_effect: date,
@@ -25,7 +24,6 @@ RSpec.describe DeltaReportService::ExcelGenerator do
           measure_type: '104: Export duty',
           geo_area: 'US: United States',
           additional_code: nil,
-          duty_expression: '5%',
           type_of_change: 'Measure updated',
           change: 'duty rate changed',
           date_of_effect: date + 1.day,
@@ -154,7 +152,6 @@ RSpec.describe DeltaReportService::ExcelGenerator do
         'Measure Type',
         'Measure Geo area',
         'Additional code',
-        'Duty Expression',
         'Type of change',
         'Updated code/data',
         'Date of effect',
@@ -169,7 +166,7 @@ RSpec.describe DeltaReportService::ExcelGenerator do
     let(:instance) { described_class.new(change_records, date) }
 
     it 'returns the correct autofilter range' do
-      expect(instance.excel_autofilter_range).to eq('A2:L2')
+      expect(instance.excel_autofilter_range).to eq('A2:K2')
     end
   end
 
@@ -180,7 +177,7 @@ RSpec.describe DeltaReportService::ExcelGenerator do
       widths = instance.excel_column_widths
 
       expect(widths).to be_an(Array)
-      expect(widths.size).to eq(12)
+      expect(widths.size).to eq(11)
       expect(widths[0]).to eq(15)  # Chapter
       expect(widths[1]).to eq(20)  # Commodity Code
       expect(widths[2]).to eq(50)  # Commodity Description
@@ -194,7 +191,7 @@ RSpec.describe DeltaReportService::ExcelGenerator do
       types = instance.excel_cell_types
 
       expect(types).to be_an(Array)
-      expect(types.size).to eq(12)
+      expect(types.size).to eq(11)
       expect(types).to all(eq(:string))
     end
   end
@@ -214,7 +211,6 @@ RSpec.describe DeltaReportService::ExcelGenerator do
         '103: Third country duty',
         'GB: United Kingdom',
         'A123: Special code',
-        '10%',
         'Measure added',
         'new measure',
         '2024-08-11',
@@ -227,7 +223,7 @@ RSpec.describe DeltaReportService::ExcelGenerator do
 
       it 'handles nil date_of_effect gracefully' do
         result = instance.build_excel_row(record)
-        expect(result[10]).to be_nil
+        expect(result[9]).to be_nil
       end
     end
   end
@@ -314,7 +310,7 @@ RSpec.describe DeltaReportService::ExcelGenerator do
     it 'returns the correct number of style elements' do
       record = { type_of_change: 'added' }
       result = instance.build_row_styles(styles, record)
-      expect(result.size).to eq(12)
+      expect(result.size).to eq(11)
     end
   end
 end

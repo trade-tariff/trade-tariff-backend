@@ -2,7 +2,7 @@ RSpec.describe DeltaReportService::FootnoteAssociationGoodsNomenclatureChanges d
   let(:date) { Date.parse('2024-08-11') }
 
   let(:goods_nomenclature) { build(:goods_nomenclature, goods_nomenclature_item_id: '0101000000') }
-  let(:footnote) { build(:footnote, footnote_id: '001', footnote_type_id: 'TN', oid: '999') }
+  let(:footnote) { create(:footnote, :with_description, footnote_id: '001', footnote_type_id: 'TN', oid: '999') }
   let(:footnote_association) do
     build(
       :footnote_association_goods_nomenclature,
@@ -75,6 +75,9 @@ RSpec.describe DeltaReportService::FootnoteAssociationGoodsNomenclatureChanges d
         description: 'Footnote TN001 updated',
         change: nil,
       )
+      # By default, don't filter out records (no matching operations found)
+      allow(GoodsNomenclature::Operation).to receive_message_chain(:where, :any?).and_return(false)
+      allow(Footnote::Operation).to receive_message_chain(:where, :any?).and_return(false)
     end
 
     context 'when there are no changes' do
@@ -89,6 +92,8 @@ RSpec.describe DeltaReportService::FootnoteAssociationGoodsNomenclatureChanges d
       before do
         allow(footnote_association).to receive(:operation).and_return(:create)
         allow(goods_nomenclature).to receive(:operation_date).and_return(date)
+        # Mock the GoodsNomenclature::Operation query to return true
+        allow(GoodsNomenclature::Operation).to receive_message_chain(:where, :any?).and_return(true)
       end
 
       it 'returns nil' do
@@ -101,6 +106,8 @@ RSpec.describe DeltaReportService::FootnoteAssociationGoodsNomenclatureChanges d
         allow(footnote_association).to receive(:operation).and_return(:create)
         allow(goods_nomenclature).to receive(:operation_date).and_return(date - 1)
         allow(footnote).to receive(:operation_date).and_return(date)
+        # Mock both possible Footnote::Operation queries to avoid the database column issue
+        allow(Footnote::Operation).to receive_message_chain(:where, :any?).and_return(true)
       end
 
       it 'returns nil' do
@@ -123,7 +130,7 @@ RSpec.describe DeltaReportService::FootnoteAssociationGoodsNomenclatureChanges d
           goods_nomenclature_item_id: goods_nomenclature.goods_nomenclature_item_id,
           description: 'Footnote TN001 updated',
           date_of_effect: date,
-          change: footnote.code,
+          change: "#{footnote.code}: #{footnote.description}",
         })
       end
     end
@@ -157,7 +164,7 @@ RSpec.describe DeltaReportService::FootnoteAssociationGoodsNomenclatureChanges d
           goods_nomenclature_item_id: goods_nomenclature.goods_nomenclature_item_id,
           description: 'Footnote TN001 updated',
           date_of_effect: date,
-          change: footnote.code,
+          change: "#{footnote.code}: #{footnote.description}",
         })
       end
     end

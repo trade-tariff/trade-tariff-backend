@@ -1,4 +1,6 @@
 class DeltaReportService
+  include MeasurePresenter
+
   def self.generate(start_date: Time.zone.today, end_date: nil)
     new(start_date, end_date || start_date).generate_report
   end
@@ -71,7 +73,6 @@ class DeltaReportService
           import_export: change[:import_export],
           geo_area: change[:geo_area],
           additional_code: change[:additional_code],
-          duty_expression: change[:duty_expression],
           measure_type: change[:measure_type],
           type_of_change: change[:description],
           date_of_effect: change[:date_of_effect],
@@ -144,13 +145,17 @@ class DeltaReportService
     conditions.each do |condition|
       next if condition[:operation_date] == date
 
-      measure = Sequel::Model.db[:measures]
+      measure = Measure
         .where(measure_sid: condition[:measure_sid])
         .first
 
-      if measure
-        affected_goods += find_declarable_goods_under_code(measure[:goods_nomenclature_item_id])
-      end
+      next unless measure
+
+      change[:measure_type] = measure_type(measure)
+      change[:import_export] = import_export(measure)
+      change[:geo_area] = geo_area(measure.geographical_area)
+      change[:additional_code] = additional_code(measure.additional_code)
+      affected_goods += find_declarable_goods_under_code(measure.goods_nomenclature_item_id)
     end
 
     affected_goods.uniq
