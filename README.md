@@ -1,4 +1,4 @@
-# Trade Tariff Backend
+# Trade Tariff Backend.
 
 The Trade Tariff Backend provides an API which allows to search commodity codes
 for import and export for tax, duty and licences that apply to goods, from and
