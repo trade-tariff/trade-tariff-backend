@@ -24,9 +24,6 @@ module Api
           @current_user.stop_press_subscription = user_params[:stop_press_subscription]
         end
 
-        if user_params[:commodity_delta_subscription]
-          @current_user.commodity_delta_subscription = user_params[:commodity_delta_subscription]
-        end
         render json: serialize(@current_user)
       rescue Sequel::ValidationFailed => e
         render json: serialize_errors({ error: e }), status: :unprocessable_content
@@ -38,7 +35,6 @@ module Api
         params.require(:data).require(:attributes).permit(
           :chapter_ids,
           :stop_press_subscription,
-          :commodity_delta_subscription,
           commodity_codes: [],
         )
       end
