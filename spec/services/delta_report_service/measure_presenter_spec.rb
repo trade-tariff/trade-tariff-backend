@@ -114,11 +114,22 @@ RSpec.describe DeltaReportService::MeasurePresenter do
   end
 
   describe '#duty_expression' do
-    let(:measure) { instance_double(Measure, duty_expression: '10.5% + €15.25 / 100 kg') }
+    context 'when there is a supplementary duty expression' do
+      let(:measure) { instance_double(Measure, supplementary_unit_duty_expression: '10%', duty_expression: '10.5% + €15.25 / 100 kg') }
 
-    it 'returns the duty expression from the measure' do
-      result = instance.duty_expression(measure)
-      expect(result).to eq('10.5% + €15.25 / 100 kg')
+      it 'returns the supplementary duty expression from the measure' do
+        result = instance.duty_expression(measure)
+        expect(result).to eq('10%')
+      end
+    end
+
+    context 'when there is no supplementary duty expression' do
+      let(:measure) { instance_double(Measure, supplementary_unit_duty_expression: nil, duty_expression: '10.5% + €15.25 / 100 kg') }
+
+      it 'returns the duty expression from the measure' do
+        result = instance.duty_expression(measure)
+        expect(result).to eq('10.5% + €15.25 / 100 kg')
+      end
     end
   end
 end

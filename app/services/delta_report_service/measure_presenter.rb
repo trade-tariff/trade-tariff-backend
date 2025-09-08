@@ -32,7 +32,7 @@ class DeltaReportService
     end
 
     def duty_expression(measure)
-      measure.duty_expression
+      measure.supplementary_unit_duty_expression || measure.duty_expression
     end
   end
 end

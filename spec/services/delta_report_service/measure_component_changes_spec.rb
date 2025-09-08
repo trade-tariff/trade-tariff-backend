@@ -40,8 +40,17 @@ RSpec.describe DeltaReportService::MeasureComponentChanges do
   end
 
   describe '#object_name' do
-    it 'returns the correct object name' do
-      expect(instance.object_name).to eq('Measure Component')
+    context 'when tariff duty' do
+      it 'returns the correct object name' do
+        expect(instance.object_name).to eq('Tariff Duty')
+      end
+    end
+
+    context 'when supplementary unit' do
+      it 'returns the correct object name' do
+        allow(measure).to receive(:supplementary?).and_return(true)
+        expect(instance.object_name).to eq('Supplementary Unit')
+      end
     end
   end
 

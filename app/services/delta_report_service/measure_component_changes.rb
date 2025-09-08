@@ -11,7 +11,7 @@ class DeltaReportService
     end
 
     def object_name
-      'Measure Component'
+      record.measure.supplementary? ? 'Supplementary Unit' : 'Tariff Duty'
     end
 
     def analyze
