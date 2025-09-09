@@ -16,6 +16,10 @@ module Api
           @current_user.preferences.update(chapter_ids: user_params[:chapter_ids])
         end
 
+        if user_params[:commodity_codes]
+          @current_user.commodity_codes = user_params[:commodity_codes]
+        end
+
         if user_params[:stop_press_subscription]
           @current_user.stop_press_subscription = user_params[:stop_press_subscription]
         end
@@ -31,6 +35,7 @@ module Api
         params.require(:data).require(:attributes).permit(
           :chapter_ids,
           :stop_press_subscription,
+          commodity_codes: [],
         )
       end
 

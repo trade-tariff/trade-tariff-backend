@@ -119,6 +119,73 @@ RSpec.describe Api::User::PublicUsersController do
         it { is_expected.to have_http_status :unprocessable_content }
       end
 
+      context 'when commodity_codes are being updated' do
+        let!(:user) { create(:public_user) }
+        let(:make_request) do
+          patch :update, params: { data: { attributes: { commodity_codes: %w[1234567890 1234567891] } } }
+        end
+
+        let(:token) do
+          {
+            'sub' => user.external_id,
+            'email' => 'alice@example.com',
+          }
+        end
+
+        it 'updates the commodity_codes' do
+          api_response
+          expect(user.commodity_codes).to eq '1234567890, 1234567891'
+        end
+      end
+
+      context 'when existing commodity_codes exist' do
+        let!(:user) { create(:public_user) }
+
+        let(:make_request) do
+          patch :update, params: { data: { attributes: { commodity_codes: %w[3333333333 4444444444] } } }
+        end
+
+        let(:token) do
+          {
+            'sub' => user.external_id,
+            'email' => 'alice@example.com',
+          }
+        end
+
+        before do
+          user.commodity_codes = %w[1111111111 2222222222]
+        end
+
+        it 'removes old codes and saves only the new ones' do
+          api_response
+          expect(user.reload.commodity_codes).to eq '3333333333, 4444444444'
+        end
+      end
+
+      context 'when invalid commodity codes are updated' do
+        let!(:user) { create(:public_user) }
+
+        let(:make_request) do
+          patch :update, params: { data: { attributes: { commodity_codes: %(foo bar) } } }
+        end
+
+        let(:token) do
+          {
+            'sub' => user.external_id,
+            'email' => 'alice@example.com',
+          }
+        end
+
+        before do
+          user.commodity_codes = %w[1111111111 2222222222]
+        end
+
+        it 'keeps the original codes' do
+          api_response
+          expect(user.reload.commodity_codes).to eq '1111111111, 2222222222'
+        end
+      end
+
       context 'when subscription is being updated' do
         let!(:user) { create(:public_user) }
         let(:make_request) { patch :update, params: { data: { attributes: { stop_press_subscription: active } } } }
@@ -130,7 +197,7 @@ RSpec.describe Api::User::PublicUsersController do
           }
         end
 
-        context 'when activating the subscription' do
+        context 'when activating a stop press subscription' do
           let(:active) { true }
 
           it 'activates the subscription' do
@@ -145,7 +212,7 @@ RSpec.describe Api::User::PublicUsersController do
           it { is_expected.to have_http_status :ok }
         end
 
-        context 'when deactivating the subscription' do
+        context 'when deactivating a stop press subscription' do
           let(:active) { false }
 
           it 'deactivates the subscription' do

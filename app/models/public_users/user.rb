@@ -6,8 +6,25 @@ module PublicUsers
     one_to_one :preferences, class: 'PublicUsers::Preferences', key: :user_id
     one_to_many :subscriptions, class: 'PublicUsers::Subscription', key: :user_id
     one_to_many :action_logs, class: 'PublicUsers::ActionLog', key: :user_id
+    one_to_many :delta_preferences, class: 'PublicUsers::DeltaPreferences', key: :user_id
 
     delegate :chapter_ids, to: :preferences
+
+    def commodity_codes
+      delta_preferences.map(&:commodity_code).join(', ') if delta_preferences.any?
+    end
+
+    def commodity_codes=(codes)
+      codes = Array(codes).reject(&:blank?)
+      existing_codes = delta_preferences_dataset.select_map(:commodity_code)
+      (codes - existing_codes).each do |code|
+        add_delta_preference(commodity_code: code)
+      end
+
+      (existing_codes - codes).each do |code|
+        delta_preferences_dataset.where(commodity_code: code).delete
+      end
+    end
 
     attr_writer :email
 
@@ -17,10 +34,14 @@ module PublicUsers
       end
 
       def with_active_stop_press_subscription
+        with_active_subscription(Subscriptions::Type.stop_press)
+      end
+
+      def with_active_subscription(type)
         join(:public__user_subscriptions, Sequel[:user_subscriptions][:user_id] => Sequel[:users][:id])
           .where(
             Sequel[:user_subscriptions][:active] => true,
-            Sequel[:user_subscriptions][:subscription_type_id] => Subscriptions::Type.stop_press.id,
+            Sequel[:user_subscriptions][:subscription_type_id] => type.id,
           )
           .select_all(:users)
           .distinct
@@ -41,6 +62,21 @@ module PublicUsers
           .distinct
       end
 
+      def matching_commodity_codes(commodity_codes)
+        return self if commodity_codes.blank?
+
+        commodity_code_conditions = Array(commodity_codes).map { |commodity_code|
+          Sequel.like(:user_delta_preferences__commodity_code, commodity_code)
+        }.inject(:|)
+
+        all_conditions = commodity_code_conditions | Sequel.expr(user_delta_preferences__commodity_code: nil) | Sequel.like(:user_delta_preferences__commodity_code, '')
+
+        join(:public__user_delta_preferences, Sequel[:user_delta_preferences][:user_id] => Sequel[:users][:id])
+          .where(all_conditions)
+          .select_all(:users)
+          .distinct
+      end
+
       def failed_subscribers
         active
           .exclude(Sequel[:users][:id] => PublicUsers::Subscription.select(:user_id))
@@ -53,19 +89,25 @@ module PublicUsers
     end
 
     def stop_press_subscription
-      subscriptions_dataset.where(subscription_type: Subscriptions::Type.stop_press, active: true).first&.uuid || false
+      subscription_for(Subscriptions::Type.stop_press)
+    end
+
+    def subscription_for(type)
+      subscriptions_dataset.where(subscription_type: type, active: true).first&.uuid || false
     end
 
     def stop_press_subscription=(active)
-      current = subscriptions_dataset.where(subscription_type: Subscriptions::Type.stop_press).first
+      set_subscription(Subscriptions::Type.stop_press, active)
+    end
+
+    def set_subscription(type, active)
+      current = subscriptions_dataset.where(subscription_type: type).first
 
       if current
         current.update(active:)
       else
-        add_subscription(subscription_type: Subscriptions::Type.stop_press, active:)
-        if active
-          PublicUsers::ActionLog.create(user_id: id, action: PublicUsers::ActionLog::SUBSCRIBED)
-        end
+        add_subscription(subscription_type: type, active:)
+        PublicUsers::ActionLog.create(user_id: id, action: PublicUsers::ActionLog::SUBSCRIBED) if active
       end
     end
 

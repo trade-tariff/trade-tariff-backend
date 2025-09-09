@@ -11,6 +11,52 @@ RSpec.describe PublicUsers::User do
       t = described_class.association_reflections[:preferences]
       expect(t[:type]).to eq(:one_to_one)
     end
+
+    it 'has a delta preferences association' do
+      t = described_class.association_reflections[:delta_preferences]
+      expect(t[:type]).to eq(:one_to_many)
+    end
+  end
+
+  describe '#commodity_codes' do
+    context 'when user has multiple delta preferences' do
+      before do
+        user.add_delta_preference(commodity_code: '1234567890')
+        user.add_delta_preference(commodity_code: '1234567891')
+      end
+
+      it 'returns a comma separated string of codes' do
+        expect(user.commodity_codes).to eq('1234567890, 1234567891')
+      end
+    end
+  end
+
+  describe '#commodity_codes=' do
+    context 'when adding new codes' do
+      it 'creates new delta preferences for each code' do
+        user.commodity_codes = %w[1234567890 1234567891]
+        expect(user.commodity_codes).to eq('1234567890, 1234567891')
+      end
+    end
+
+    context 'when replacing existing codes' do
+      before do
+        user.add_delta_preference(commodity_code: '1234567890')
+        user.add_delta_preference(commodity_code: '1234567891')
+      end
+
+      it 'removes codes not in the new list' do
+        user.commodity_codes = %w[1234567891 1234567892]
+        expect(user.commodity_codes).to eq('1234567891, 1234567892')
+      end
+    end
+
+    context 'when assigning a single string code' do
+      it 'creates a single delta preference' do
+        user.commodity_codes = '1234567890'
+        expect(user.commodity_codes).to eq('1234567890')
+      end
+    end
   end
 
   describe 'when creating' do
@@ -252,6 +298,40 @@ RSpec.describe PublicUsers::User do
 
         it 'returns expected users' do
           expect(dataset).to contain_exactly(user_with_chapter_1, user_with_chapter_2_3, user_with_chapter_1_2_3_4, user_with_nil_preference, user_with_empty_preference)
+        end
+      end
+    end
+
+    describe '.matching_commodity_codes' do
+      subject(:dataset) { described_class.matching_commodity_codes(commodity_codes) }
+
+      let!(:user_with_code_1) do
+        create(:public_user, :with_commodity_codes, commodity_codes: '1234567890')
+      end
+
+      let!(:user_with_code_2_3) do
+        create(:public_user, :with_commodity_codes, commodity_codes: %w[1234567891 1234567892])
+      end
+
+      context 'when a single commodity code is specified as string' do
+        let(:commodity_codes) { '1234567890' }
+
+        it 'returns users with that code' do
+          expect(dataset).to contain_exactly(
+            user_with_code_1,
+          )
+          expect(dataset).not_to include(user_with_code_2_3)
+        end
+      end
+
+      context 'when multiple commodity codes are specified' do
+        let(:commodity_codes) { %w[1234567890 1234567892] }
+
+        it 'returns all matching users' do
+          expect(dataset).to contain_exactly(
+            user_with_code_1,
+            user_with_code_2_3,
+          )
         end
       end
     end
