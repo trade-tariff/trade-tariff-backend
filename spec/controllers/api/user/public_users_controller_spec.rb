@@ -162,11 +162,11 @@ RSpec.describe Api::User::PublicUsersController do
         end
       end
 
-      context 'when invalid commodity codes are updated' do
+      context 'when there aren\'t any commodity codes updated' do
         let!(:user) { create(:public_user) }
 
         let(:make_request) do
-          patch :update, params: { data: { attributes: { commodity_codes: %(foo bar) } } }
+          patch :update, params: { data: { attributes: { commodity_codes: nil } } }
         end
 
         let(:token) do
