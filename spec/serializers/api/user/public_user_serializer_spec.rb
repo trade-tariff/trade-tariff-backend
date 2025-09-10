@@ -12,7 +12,7 @@ RSpec.describe Api::User::PublicUserSerializer do
           chapter_ids: '01,99',
           email: 'oliver@email.com',
           stop_press_subscription: false,
-          commodity_codes: '1234567890, 1234567891',
+          commodity_codes: %w[1234567890 1234567891],
         },
       },
     }

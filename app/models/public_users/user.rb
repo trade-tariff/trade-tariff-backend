@@ -11,7 +11,7 @@ module PublicUsers
     delegate :chapter_ids, to: :preferences
 
     def commodity_codes
-      delta_preferences.map(&:commodity_code).join(', ') if delta_preferences.any?
+      delta_preferences.map(&:commodity_code) if delta_preferences.any?
     end
 
     def commodity_codes=(codes)

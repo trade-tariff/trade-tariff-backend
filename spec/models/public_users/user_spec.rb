@@ -26,7 +26,7 @@ RSpec.describe PublicUsers::User do
       end
 
       it 'returns a comma separated string of codes' do
-        expect(user.commodity_codes).to eq('1234567890, 1234567891')
+        expect(user.commodity_codes).to eq(%w[1234567890 1234567891])
       end
     end
   end
@@ -35,7 +35,7 @@ RSpec.describe PublicUsers::User do
     context 'when adding new codes' do
       it 'creates new delta preferences for each code' do
         user.commodity_codes = %w[1234567890 1234567891]
-        expect(user.commodity_codes).to eq('1234567890, 1234567891')
+        expect(user.commodity_codes).to eq(%w[1234567890 1234567891])
       end
     end
 
@@ -47,14 +47,14 @@ RSpec.describe PublicUsers::User do
 
       it 'removes codes not in the new list' do
         user.commodity_codes = %w[1234567891 1234567892]
-        expect(user.commodity_codes).to eq('1234567891, 1234567892')
+        expect(user.commodity_codes).to eq(%w[1234567891 1234567892])
       end
     end
 
     context 'when assigning a single string code' do
       it 'creates a single delta preference' do
         user.commodity_codes = '1234567890'
-        expect(user.commodity_codes).to eq('1234567890')
+        expect(user.commodity_codes).to eq(%w[1234567890])
       end
     end
   end

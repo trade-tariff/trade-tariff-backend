@@ -134,7 +134,7 @@ RSpec.describe Api::User::PublicUsersController do
 
         it 'updates the commodity_codes' do
           api_response
-          expect(user.commodity_codes).to eq '1234567890, 1234567891'
+          expect(user.commodity_codes).to eq %w[1234567890 1234567891]
         end
       end
 
@@ -158,7 +158,7 @@ RSpec.describe Api::User::PublicUsersController do
 
         it 'removes old codes and saves only the new ones' do
           api_response
-          expect(user.reload.commodity_codes).to eq '3333333333, 4444444444'
+          expect(user.reload.commodity_codes).to eq %w[3333333333 4444444444]
         end
       end
 
@@ -182,7 +182,7 @@ RSpec.describe Api::User::PublicUsersController do
 
         it 'keeps the original codes' do
           api_response
-          expect(user.reload.commodity_codes).to eq '1111111111, 2222222222'
+          expect(user.reload.commodity_codes).to eq %w[1111111111 2222222222]
         end
       end
 
