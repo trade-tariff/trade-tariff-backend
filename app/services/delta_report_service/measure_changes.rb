@@ -30,11 +30,13 @@ class DeltaReportService
         import_export: import_export(record),
         geo_area: geo_area(record.geographical_area),
         additional_code: additional_code(record.additional_code),
-        duty_expression: duty_expression(record),
         description:,
         date_of_effect:,
         change: change || measure_type(record),
       }
+    rescue StandardError => e
+      Rails.logger.error "Error with #{object_name} OID #{record.oid}"
+      raise e
     end
   end
 end

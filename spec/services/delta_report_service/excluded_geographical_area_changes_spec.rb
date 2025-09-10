@@ -16,6 +16,7 @@ RSpec.describe DeltaReportService::ExcludedGeographicalAreaChanges do
       geographical_area: geographical_area,
     )
     allow(instance).to receive(:get_changes)
+    allow(Measure::Operation).to receive_message_chain(:where, :any?).and_return(false)
   end
 
   describe '.collect' do
@@ -64,7 +65,6 @@ RSpec.describe DeltaReportService::ExcludedGeographicalAreaChanges do
         import_export: 'Import',
         geo_area: 'GB: United Kingdom',
         additional_code: nil,
-        duty_expression: '10%',
       )
     end
 
@@ -72,6 +72,7 @@ RSpec.describe DeltaReportService::ExcludedGeographicalAreaChanges do
       before do
         allow(measure).to receive(:operation_date).and_return(date)
         allow(excluded_geo_area).to receive(:operation_date).and_return(date)
+        allow(Measure::Operation).to receive_message_chain(:where, :any?).and_return(true)
       end
 
       it 'returns nil (filters out matching dates)' do
@@ -99,9 +100,8 @@ RSpec.describe DeltaReportService::ExcludedGeographicalAreaChanges do
           import_export: 'Import',
           geo_area: 'GB: United Kingdom',
           additional_code: nil,
-          duty_expression: '10%',
           date_of_effect: date,
-          description: 'Excluded geo area',
+          description: 'Excluded Geo Area added',
           change: 'Excluded IE',
         })
       end
@@ -112,8 +112,8 @@ RSpec.describe DeltaReportService::ExcludedGeographicalAreaChanges do
         allow(excluded_geo_area).to receive(:measure).and_return(nil)
       end
 
-      it 'raises an error when trying to access operation_date' do
-        expect { instance.analyze }.to raise_error(NoMethodError, /undefined method.*operation_date.*for nil/)
+      it 'raises an error when trying to access additional_code' do
+        expect { instance.analyze }.to raise_error(NoMethodError, /undefined method.*additional_code.*for nil/)
       end
     end
 
@@ -251,7 +251,7 @@ RSpec.describe DeltaReportService::ExcludedGeographicalAreaChanges do
         expect(result[:measure_sid]).to eq('20260381')
         expect(result[:change]).to eq('Excluded RU')
         expect(result[:date_of_effect]).to eq(date)
-        expect(result[:description]).to eq('Excluded geo area')
+        expect(result[:description]).to eq('Excluded Geo Area added')
       end
     end
 
@@ -259,6 +259,7 @@ RSpec.describe DeltaReportService::ExcludedGeographicalAreaChanges do
       before do
         allow(measure).to receive(:operation_date).and_return(date)
         allow(excluded_geo_area).to receive(:operation_date).and_return(date)
+        allow(Measure::Operation).to receive_message_chain(:where, :any?).and_return(true)
       end
 
       it 'filters out records with matching operation dates' do

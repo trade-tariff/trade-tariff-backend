@@ -67,7 +67,6 @@ class DeltaReportService
         'Measure Type',
         'Measure Geo area',
         'Additional code',
-        'Duty Expression',
         'Type of change',
         'Updated code/data',
         'Date of effect',
@@ -88,7 +87,6 @@ class DeltaReportService
         30,  # Measure Type
         30,  # Geo Area
         30,  # Additional Code
-        30,  # Duty Expression
         30,  # Type of Change
         30,  # Updated code/data
         22,  # Date of effect
@@ -105,7 +103,6 @@ class DeltaReportService
         :string,  # Measure Type
         :string,  # Geo Area
         :string,  # Additional Code
-        :string,  # Duty Expression
         :string,  # Type of Change
         :string,  # Updated code/data
         :string,  # Date of effect
@@ -205,9 +202,8 @@ class DeltaReportService
         styles[:text],           # Measure Type
         styles[:text],           # Geo Area
         styles[:text],           # Additional Code
-        styles[:text],           # Duty Expression
-        change_style,            # Type of Change (conditional styling)
-        styles[:text],           # Updated code/data
+        styles[:text],           # Type of Change
+        change_style,            # Updated code/data (conditional styling)
         styles[:date],           # Date of effect
         styles[:date],           # Operation Date
       ]
@@ -222,7 +218,6 @@ class DeltaReportService
         record[:measure_type],
         record[:geo_area],
         record[:additional_code],
-        record[:duty_expression],
         record[:type_of_change],
         record[:change],
         record[:date_of_effect]&.strftime('%Y-%m-%d'),

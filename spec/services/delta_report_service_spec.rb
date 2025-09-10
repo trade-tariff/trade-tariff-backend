@@ -123,7 +123,6 @@ RSpec.describe DeltaReportService do
         import_export: nil,
         geo_area: nil,
         additional_code: nil,
-        duty_expression: nil,
         measure_type: nil,
         type_of_change: 'Commodity added',
         date_of_effect: date,
@@ -227,7 +226,6 @@ RSpec.describe DeltaReportService do
           import_export: nil,
           geo_area: nil,
           additional_code: nil,
-          duty_expression: nil,
           measure_type: nil,
           type_of_change: 'Footnote description',
           date_of_effect: date,
@@ -268,7 +266,6 @@ RSpec.describe DeltaReportService do
               import_export: 'Import',
               geo_area: 'GB: United Kingdom',
               additional_code: '1234: Additional code description',
-              duty_expression: '10%',
               description: 'Footnote TN001 updated',
               date_of_effect: date,
               change: nil,
@@ -299,7 +296,6 @@ RSpec.describe DeltaReportService do
           import_export: 'Import',
           geo_area: 'GB: United Kingdom',
           additional_code: '1234: Additional code description',
-          duty_expression: '10%',
           measure_type: '103: Import duty',
           type_of_change: 'Footnote TN001 updated',
           date_of_effect: date,
@@ -363,7 +359,6 @@ RSpec.describe DeltaReportService do
           import_export: nil,
           geo_area: nil,
           additional_code: nil,
-          duty_expression: nil,
           measure_type: nil,
           type_of_change: 'Footnote CD001 updated for goods nomenclature',
           date_of_effect: date,
@@ -546,6 +541,8 @@ RSpec.describe DeltaReportService do
         db_double = instance_double(Sequel::Database)
         conditions_dataset = instance_double(Sequel::Dataset)
         measures_dataset = instance_double(Sequel::Dataset)
+        measure_dataset = instance_double(Sequel::Dataset)
+        measure = build(:measure, goods_nomenclature_item_id: '0101000000')
 
         allow(Sequel::Model).to receive(:db).and_return(db_double)
         allow(db_double).to receive(:[]).with(:measure_conditions_oplog).and_return(conditions_dataset)
@@ -558,7 +555,8 @@ RSpec.describe DeltaReportService do
         ])
         allow(filtered_conditions).to receive(:each).and_yield(condition_records.first)
 
-        allow(measures_dataset).to receive(:where).with(measure_sid: 123).and_return(instance_double(Sequel::Dataset, first: measure_record))
+        allow(Measure).to receive(:where).with(measure_sid: 123).and_return(measure_dataset)
+        allow(measure_dataset).to receive(:first).and_return(measure)
 
         mock_goods_nomenclature_lookup(declarable_commodity)
       end

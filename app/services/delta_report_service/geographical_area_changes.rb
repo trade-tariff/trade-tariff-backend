@@ -24,6 +24,9 @@ class DeltaReportService
         description: description,
         change: change || geo_area(record),
       }
+    rescue StandardError => e
+      Rails.logger.error "Error with #{object_name} OID #{record.oid}"
+      raise e
     end
   end
 end

@@ -1,13 +1,11 @@
 RSpec.describe DeltaReportService::FootnoteChanges do
   let(:date) { Date.parse('2024-08-11') }
 
-  let(:footnote) { build(:footnote, oid: '999') }
-  let(:footnote_desc) { build(:footnote_description, description: 'Footnote description') }
+  let(:footnote) { create(:footnote, :with_description, oid: '999') }
   let(:instance) { described_class.new(footnote, date) }
 
   before do
     allow(instance).to receive(:get_changes)
-    allow(footnote).to receive(:footnote_description).and_return(footnote_desc)
   end
 
   describe '.collect' do
@@ -64,10 +62,10 @@ RSpec.describe DeltaReportService::FootnoteChanges do
 
         expect(result).to eq({
           type: 'Footnote',
-          footnote_oid: 999,
+          footnote_oid: footnote.oid,
           date_of_effect: date,
           description: 'Footnote updated',
-          change: footnote.code,
+          change: "#{footnote.code}: #{footnote.description}",
         })
       end
     end

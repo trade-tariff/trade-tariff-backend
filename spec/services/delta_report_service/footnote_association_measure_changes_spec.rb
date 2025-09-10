@@ -1,7 +1,7 @@
 RSpec.describe DeltaReportService::FootnoteAssociationMeasureChanges do
   let(:date) { Date.parse('2024-08-11') }
   let(:measure) { build(:measure, measure_sid: '12345') }
-  let(:footnote) { build(:footnote, footnote_id: '001', footnote_type_id: 'TN', oid: '999') }
+  let(:footnote) { create(:footnote, :with_description, footnote_id: '001', footnote_type_id: 'TN', oid: '999') }
   let(:footnote_association) do
     build(
       :footnote_association_measure,
@@ -81,7 +81,6 @@ RSpec.describe DeltaReportService::FootnoteAssociationMeasureChanges do
         geographical_area: geographical_area,
         additional_code: additional_code,
         measure_type: instance_double(MeasureType, id: '103', description: 'Import duty', trade_movement_code: 0),
-        duty_expression: '10%',
       )
       allow(additional_code).to receive_messages(
         additional_code_description: instance_double(AdditionalCodeDescription, description: '1234'),
@@ -91,6 +90,8 @@ RSpec.describe DeltaReportService::FootnoteAssociationMeasureChanges do
         geographical_area_description: instance_double(GeographicalAreaDescription, description: 'United Kingdom'),
         id: 'GB',
       )
+      allow(Measure::Operation).to receive_message_chain(:where, :any?).and_return(false)
+      allow(Footnote::Operation).to receive_message_chain(:where, :any?).and_return(false)
     end
 
     context 'when there are no changes' do
@@ -105,6 +106,7 @@ RSpec.describe DeltaReportService::FootnoteAssociationMeasureChanges do
       before do
         allow(footnote_association).to receive(:operation).and_return(:create)
         allow(measure).to receive(:operation_date).and_return(date)
+        allow(Measure::Operation).to receive_message_chain(:where, :any?).and_return(true)
       end
 
       it 'returns nil' do
@@ -117,6 +119,7 @@ RSpec.describe DeltaReportService::FootnoteAssociationMeasureChanges do
         allow(footnote_association).to receive(:operation).and_return(:create)
         allow(measure).to receive(:operation_date).and_return(date - 1)
         allow(footnote).to receive(:operation_date).and_return(date)
+        allow(Footnote::Operation).to receive_message_chain(:where, :any?).and_return(true)
       end
 
       it 'returns nil' do
@@ -141,10 +144,9 @@ RSpec.describe DeltaReportService::FootnoteAssociationMeasureChanges do
           import_export: 'Import',
           geo_area: 'GB: United Kingdom',
           additional_code: '1234: 1234',
-          duty_expression: '10%',
           description: 'Footnote TN001 updated',
           date_of_effect: date,
-          change: footnote.code,
+          change: "#{footnote.code}: #{footnote.description}",
         })
       end
     end
@@ -180,10 +182,9 @@ RSpec.describe DeltaReportService::FootnoteAssociationMeasureChanges do
           import_export: 'Import',
           geo_area: 'GB: United Kingdom',
           additional_code: '1234: 1234',
-          duty_expression: '10%',
           description: 'Footnote TN001 updated',
           date_of_effect: date,
-          change: footnote.code,
+          change: "#{footnote.code}: #{footnote.description}",
         })
       end
     end

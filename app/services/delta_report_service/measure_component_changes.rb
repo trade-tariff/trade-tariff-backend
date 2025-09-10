@@ -11,12 +11,12 @@ class DeltaReportService
     end
 
     def object_name
-      'Measure Component'
+      record.measure.supplementary? ? 'Supplementary Unit' : 'Tariff Duty'
     end
 
     def analyze
       return if no_changes?
-      return if record.operation == :create && record.measure.operation_date == record.operation_date
+      return if record.operation == :create && Measure::Operation.where(measure_sid: record.measure_sid, operation_date: record.operation_date).any?
 
       {
         type: 'MeasureComponent',
@@ -25,11 +25,13 @@ class DeltaReportService
         import_export: import_export(record.measure),
         geo_area: geo_area(record.measure.geographical_area),
         additional_code: additional_code(record.measure.additional_code),
-        duty_expression: duty_expression(record.measure),
         description:,
         date_of_effect:,
         change: change || duty_expression(record.measure),
       }
+    rescue StandardError => e
+      Rails.logger.error "Error with #{object_name} OID #{record.oid}"
+      raise e
     end
 
     def date_of_effect

@@ -34,7 +34,12 @@ class DeltaReportService
 
           next if current_value == previous_value
 
-          @change = current_value if change.blank?
+          @change ||= if %i[validity_start_date validity_end_date].include?(column)
+                        current_value&.to_date&.iso8601 || 'Removed'
+                      else
+                        current_value
+                      end
+
           @changes << column.to_s.humanize.downcase
         end
       end

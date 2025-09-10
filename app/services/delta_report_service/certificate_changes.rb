@@ -17,14 +17,19 @@ class DeltaReportService
     def analyze
       return if no_changes?
 
-      {
-        type: 'Certificate',
-        certificate_type_code: record.certificate_type_code,
-        certificate_code: record.certificate_code,
-        date_of_effect:,
-        description:,
-        change: change || record.id,
-      }
+      TimeMachine.at(record.validity_start_date) do
+        {
+          type: 'Certificate',
+          certificate_type_code: record.certificate_type_code,
+          certificate_code: record.certificate_code,
+          date_of_effect:,
+          description:,
+          change: change || record.id,
+        }
+      end
+    rescue StandardError => e
+      Rails.logger.error "Error with #{object_name} OID #{record.oid}"
+      raise e
     end
   end
 end

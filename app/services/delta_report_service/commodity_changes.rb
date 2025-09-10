@@ -26,6 +26,9 @@ class DeltaReportService
         description:,
         change: change || record.code,
       }
+    rescue StandardError => e
+      Rails.logger.error "Error with #{object_name} OID #{record.oid}"
+      raise e
     end
   end
 end
