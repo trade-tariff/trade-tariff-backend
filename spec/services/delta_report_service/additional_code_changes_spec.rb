@@ -84,6 +84,41 @@ RSpec.describe DeltaReportService::AdditionalCodeChanges do
       end
     end
 
+    context 'when record operation is create and measure operation exists' do
+      before do
+        allow(additional_code).to receive_messages(operation: :create, additional_code_sid: '12345', operation_date: date)
+        allow(Measure::Operation).to receive_message_chain(:where, :any?).and_return(true)
+      end
+
+      it 'returns nil when corresponding measure operation exists on same date' do
+        result = instance.analyze
+
+        expect(Measure::Operation).to have_received(:where).with(
+          additional_code_sid: '12345',
+          operation_date: date,
+        )
+        expect(result).to be_nil
+      end
+    end
+
+    context 'when record operation is create but no measure operation exists' do
+      before do
+        allow(additional_code).to receive_messages(operation: :create, additional_code_sid: '12345', operation_date: date, additional_code_description:)
+        allow(Measure::Operation).to receive_message_chain(:where, :any?).and_return(false)
+      end
+
+      it 'continues with analysis when no corresponding measure operation exists' do
+        result = instance.analyze
+
+        expect(Measure::Operation).to have_received(:where).with(
+          additional_code_sid: '12345',
+          operation_date: date,
+        )
+        expect(result).not_to be_nil
+        expect(result[:type]).to eq('AdditionalCode')
+      end
+    end
+
     context 'when changes should be included' do
       before do
         allow(additional_code).to receive_messages(operation: :update, additional_code_sid: '12345', additional_code_description:)
@@ -98,7 +133,7 @@ RSpec.describe DeltaReportService::AdditionalCodeChanges do
           additional_code: '8AAA: Additional Code updated',
           description: 'Additional Code updated',
           date_of_effect: date,
-          change: '',
+          change: '8AAA: Additional Code updated',
         })
       end
     end
