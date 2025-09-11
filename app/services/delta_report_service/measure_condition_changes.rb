@@ -11,11 +11,12 @@ class DeltaReportService
     end
 
     def object_name
-      (record.requirement_type || 'Measure Condition').to_s.titleize
+      'Measure Condition'
     end
 
     def analyze
       return if no_changes?
+      return if record.is_excluded_condition?
       return if record.operation == :create && Measure::Operation.where(measure_sid: record.measure_sid, operation_date: record.operation_date).any?
 
       @changes = []
@@ -38,11 +39,11 @@ class DeltaReportService
 
     def change
       if record.requirement_type == :document
-        "#{record.document_code}: #{record.certificate_description}"
-      elsif record.requirement_type == :duty_expression
-        "#{record.last.requirement_duty_expression}: #{record.action}"
+        TimeMachine.at(record.certificate&.validity_start_date || date) do
+          "#{record.document_code}: #{record.certificate_description}: #{record.measure_action_description}"
+        end
       else
-        "#{record.measure_condition_code_description}: #{record.action}"
+        "No document provided: #{record.measure_action_description} #{record.requirement_duty_expression}"
       end
     end
 
