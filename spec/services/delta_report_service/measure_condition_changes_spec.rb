@@ -42,7 +42,7 @@ RSpec.describe DeltaReportService::MeasureConditionChanges do
 
   describe '#object_name' do
     it 'returns the correct object name' do
-      expect(instance.object_name).to eq('Document')
+      expect(instance.object_name).to eq('Measure Condition')
     end
   end
 
@@ -61,7 +61,6 @@ RSpec.describe DeltaReportService::MeasureConditionChanges do
       allow(instance).to receive(:geo_area).with(geographical_area).and_return('GB: United Kingdom')
       allow(instance).to receive(:additional_code).with(nil).and_return(additional_code)
       allow(instance).to receive(:duty_expression).with(measure).and_return('10%')
-      # By default, don't filter out records (no matching operations found)
       allow(Measure::Operation).to receive_message_chain(:where, :any?).and_return(false)
     end
 
@@ -82,7 +81,6 @@ RSpec.describe DeltaReportService::MeasureConditionChanges do
         allow(measure_condition_create).to receive(:measure).and_return(measure_create)
         allow(instance_create).to receive(:get_changes)
         allow(instance_create).to receive(:no_changes?).and_return(false)
-        # Mock the Measure::Operation query to return true (measure found on same date)
         allow(Measure::Operation).to receive_message_chain(:where, :any?).and_return(true)
       end
 
@@ -122,6 +120,159 @@ RSpec.describe DeltaReportService::MeasureConditionChanges do
   describe '#date_of_effect' do
     it 'returns the date parameter' do
       expect(instance.date_of_effect).to eq(date)
+    end
+  end
+
+  describe '#change' do
+    let(:certificate) { build(:certificate, certificate_type_code: 'Y', certificate_code: '123') }
+    let(:measure_action) { build(:measure_action) }
+
+    before do
+      allow(measure_condition).to receive_messages(certificate: certificate, measure_action: measure_action, measure_action_description: 'Apply the amount of the action', document_code: 'Y123')
+    end
+
+    context 'when requirement_type is :document' do
+      before do
+        allow(measure_condition).to receive_messages(requirement_type: :document, certificate_description: 'Import licence')
+      end
+
+      context 'when certificate has validity_start_date' do
+        let(:certificate_validity_date) { Date.parse('2024-01-01') }
+
+        before do
+          allow(certificate).to receive(:validity_start_date).and_return(certificate_validity_date)
+        end
+
+        it 'uses TimeMachine at certificate validity_start_date' do
+          allow(TimeMachine).to receive(:at).with(certificate_validity_date).and_yield
+
+          instance.change
+
+          expect(TimeMachine).to have_received(:at).with(certificate_validity_date)
+        end
+
+        it 'returns formatted document change string' do
+          result = instance.change
+          expect(result).to eq('Y123: Import licence: Apply the amount of the action')
+        end
+      end
+
+      context 'when certificate has no validity_start_date' do
+        before do
+          allow(certificate).to receive(:validity_start_date).and_return(nil)
+        end
+
+        it 'uses TimeMachine at fallback date' do
+          allow(TimeMachine).to receive(:at).with(date).and_yield
+
+          instance.change
+
+          expect(TimeMachine).to have_received(:at).with(date)
+        end
+
+        it 'returns formatted document change string' do
+          result = instance.change
+          expect(result).to eq('Y123: Import licence: Apply the amount of the action')
+        end
+      end
+
+      context 'when certificate is nil' do
+        before do
+          allow(measure_condition).to receive_messages(certificate: nil, certificate_description: nil)
+        end
+
+        it 'uses TimeMachine at fallback date' do
+          allow(TimeMachine).to receive(:at).with(date).and_yield
+
+          instance.change
+
+          expect(TimeMachine).to have_received(:at).with(date)
+        end
+
+        it 'handles nil certificate gracefully' do
+          result = instance.change
+          expect(result).to eq('Y123: : Apply the amount of the action')
+        end
+      end
+
+      context 'when document_code is complex' do
+        before do
+          allow(measure_condition).to receive_messages(document_code: 'C644', certificate_description: 'Document code C644')
+        end
+
+        it 'formats correctly with different document codes' do
+          result = instance.change
+          expect(result).to eq('C644: Document code C644: Apply the amount of the action')
+        end
+      end
+    end
+
+    context 'when requirement_type is not :document' do
+      before do
+        allow(measure_condition).to receive_messages(requirement_type: :duty_expression, requirement_duty_expression: '12.50 EUR / 100 kg')
+      end
+
+      it 'does not use TimeMachine' do
+        allow(TimeMachine).to receive(:at)
+
+        instance.change
+
+        expect(TimeMachine).not_to have_received(:at)
+      end
+
+      it 'returns formatted duty expression change string' do
+        result = instance.change
+        expect(result).to eq('No document provided: Apply the amount of the action 12.50 EUR / 100 kg')
+      end
+
+      context 'when requirement_duty_expression is nil' do
+        before do
+          allow(measure_condition).to receive(:requirement_duty_expression).and_return(nil)
+        end
+
+        it 'handles nil duty expression' do
+          result = instance.change
+          expect(result).to eq('No document provided: Apply the amount of the action ')
+        end
+      end
+
+      context 'when requirement_type is nil' do
+        before do
+          allow(measure_condition).to receive_messages(requirement_type: nil, requirement_duty_expression: '5.00 GBP / 100 kg')
+        end
+
+        it 'falls through to duty expression path' do
+          result = instance.change
+          expect(result).to eq('No document provided: Apply the amount of the action 5.00 GBP / 100 kg')
+        end
+      end
+
+      context 'when measure_action_description is complex' do
+        before do
+          allow(measure_condition).to receive_messages(measure_action_description: 'The entry into free circulation is not allowed', requirement_duty_expression: '15.00%')
+        end
+
+        it 'formats correctly with longer action descriptions' do
+          result = instance.change
+          expect(result).to eq('No document provided: The entry into free circulation is not allowed 15.00%')
+        end
+      end
+    end
+
+    context 'with TimeMachine integration' do
+      let(:past_date) { Date.parse('2023-01-01') }
+
+      before do
+        allow(measure_condition).to receive_messages(requirement_type: :document, certificate_description: 'Original description')
+        allow(certificate).to receive(:validity_start_date).and_return(past_date)
+      end
+
+      it 'executes the block within TimeMachine context' do
+        allow(TimeMachine).to receive(:at).with(past_date).and_yield
+
+        result = instance.change
+        expect(result).to eq('Y123: Original description: Apply the amount of the action')
+      end
     end
   end
 
