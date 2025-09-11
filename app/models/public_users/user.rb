@@ -15,14 +15,22 @@ module PublicUsers
     end
 
     def commodity_codes=(codes)
-      codes = Array(codes).reject(&:blank?)
-      existing_codes = delta_preferences_dataset.select_map(:commodity_code)
-      (codes - existing_codes).each do |code|
-        add_delta_preference(commodity_code: code)
-      end
+      codes = Array(codes).reject(&:blank?).uniq
 
-      (existing_codes - codes).each do |code|
-        delta_preferences_dataset.where(commodity_code: code).delete
+      PublicUsers::User.db.transaction do
+        delta_preferences_dataset.delete
+
+        unless codes.empty?
+          values = codes.map do |code|
+            {
+              user_id: id,
+              commodity_code: code,
+              created_at: Time.zone.now,
+              updated_at: Time.zone.now,
+            }
+          end
+          PublicUsers::DeltaPreferences.multi_insert(values)
+        end
       end
     end
 
