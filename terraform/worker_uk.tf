@@ -20,7 +20,7 @@ module "worker_uk" {
   private_dns_namespace = "tariff.internal"
 
   cpu    = 2048
-  memory = 8192
+  memory = 4096
 
   task_role_policy_arns = [aws_iam_policy.task.arn]
 
