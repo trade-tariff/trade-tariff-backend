@@ -34,8 +34,8 @@ class DeltaReportService
 
     {
       dates: dates,
-      total_records: @commodity_change_records.size,
-      commodity_changes: @commodity_change_records,
+      total_records: @commodity_change_records.flatten.size,
+      commodity_changes: @commodity_change_records.flatten,
     }
   end
 
@@ -45,6 +45,7 @@ class DeltaReportService
 
   def collect_all_changes
     @changes[:goods_nomenclatures] = CommodityChanges.collect(date)
+    @changes[:goods_nomenclature_descriptions] = CommodityDescriptionChanges.collect(date)
     @changes[:measures] = MeasureChanges.collect(date)
     @changes[:measure_components] = MeasureComponentChanges.collect(date)
     @changes[:measure_conditions] = MeasureConditionChanges.collect(date)
@@ -88,7 +89,9 @@ class DeltaReportService
 
   def find_affected_declarable_goods(change)
     case change[:type]
-    when 'Measure', 'GoodsNomenclature', 'FootnoteAssociationGoodsNomenclature'
+    when 'GoodsNomenclature', 'GoodsNomenclatureDescription', 'FootnoteAssociationGoodsNomenclature'
+      find_declarable_goods_for_sid(change[:goods_nomenclature_sid])
+    when 'Measure'
       find_declarable_goods_for(change)
     when 'MeasureComponent', 'MeasureCondition', 'ExcludedGeographicalArea', 'FootnoteAssociationMeasure'
       find_declarable_goods_for_measure_association(change)
@@ -127,7 +130,7 @@ class DeltaReportService
 
   def find_declarable_goods_for_geographical_area(change)
     measures = Sequel::Model.db[:measures]
-      .where(geographical_area_id: change[:geographical_area_id])
+      .where(geographical_area_sid: change[:geographical_area_sid])
       .where(operation_date: date)
       .distinct(:goods_nomenclature_item_id)
 
@@ -191,6 +194,14 @@ class DeltaReportService
     return [] unless goods_nomenclature_item_id
 
     gn = GoodsNomenclature.where(goods_nomenclature_item_id: goods_nomenclature_item_id).first
+
+    find_declarable_goods_for_sid(gn&.goods_nomenclature_sid)
+  end
+
+  def find_declarable_goods_for_sid(sid)
+    return [] unless sid
+
+    gn = GoodsNomenclature.where(goods_nomenclature_sid: sid).first
 
     return [] unless gn
 

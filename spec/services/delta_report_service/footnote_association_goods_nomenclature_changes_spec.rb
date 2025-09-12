@@ -1,7 +1,7 @@
 RSpec.describe DeltaReportService::FootnoteAssociationGoodsNomenclatureChanges do
   let(:date) { Date.parse('2024-08-11') }
 
-  let(:goods_nomenclature) { build(:goods_nomenclature, goods_nomenclature_item_id: '0101000000') }
+  let(:goods_nomenclature) { build(:goods_nomenclature) }
   let(:footnote) { create(:footnote, :with_description, footnote_id: '001', footnote_type_id: 'TN', oid: '999') }
   let(:footnote_association) do
     build(
@@ -127,7 +127,7 @@ RSpec.describe DeltaReportService::FootnoteAssociationGoodsNomenclatureChanges d
 
         expect(result).to eq({
           type: 'FootnoteAssociationGoodsNomenclature',
-          goods_nomenclature_item_id: goods_nomenclature.goods_nomenclature_item_id,
+          goods_nomenclature_sid: goods_nomenclature.goods_nomenclature_sid,
           description: 'Footnote TN001 updated',
           date_of_effect: date,
           change: "#{footnote.code}: #{footnote.description}",
@@ -161,7 +161,7 @@ RSpec.describe DeltaReportService::FootnoteAssociationGoodsNomenclatureChanges d
 
         expect(result).to eq({
           type: 'FootnoteAssociationGoodsNomenclature',
-          goods_nomenclature_item_id: goods_nomenclature.goods_nomenclature_item_id,
+          goods_nomenclature_sid: goods_nomenclature.goods_nomenclature_sid,
           description: 'Footnote TN001 updated',
           date_of_effect: date,
           change: "#{footnote.code}: #{footnote.description}",

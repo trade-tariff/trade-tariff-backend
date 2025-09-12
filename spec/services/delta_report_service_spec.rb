@@ -3,12 +3,44 @@ RSpec.describe DeltaReportService do
 
   let(:date) { Date.parse('2024-08-11') }
 
+  def create_test_commodity(item_id:, sid:, declarable: true, description: 'Test commodity')
+    commodity = instance_double(Commodity,
+                                goods_nomenclature_item_id: item_id,
+                                goods_nomenclature_sid: sid,
+                                declarable?: declarable,
+                                chapter_short_code: item_id[0..1])
+    # rubocop:disable RSpec/VerifiedDoubles
+    description_double = double('GoodsNomenclatureDescription', description: description)
+    # rubocop:enable RSpec/VerifiedDoubles
+    allow(commodity).to receive(:goods_nomenclature_description).and_return(description_double)
+    commodity
+  end
+
   def mock_goods_nomenclature_lookup(commodity, commodity_code = nil)
     commodity_code ||= commodity.goods_nomenclature_item_id
     scope = instance_double(Sequel::Dataset)
+
     allow(GoodsNomenclature).to receive(:where).with(goods_nomenclature_item_id: commodity_code).and_return(scope)
-    allow(scope).to receive(:first).and_return(commodity)
-    allow(commodity).to receive(:declarable?).and_return(true)
+
+    goods_nomenclature = instance_double(GoodsNomenclature,
+                                         goods_nomenclature_sid: commodity.goods_nomenclature_sid)
+    allow(scope).to receive(:first).and_return(goods_nomenclature)
+
+    sid_scope = instance_double(Sequel::Dataset)
+    allow(GoodsNomenclature).to receive(:where).with(goods_nomenclature_sid: commodity.goods_nomenclature_sid).and_return(sid_scope)
+    allow(sid_scope).to receive(:first).and_return(commodity)
+
+    allow(commodity).to receive(:descendants).and_return([])
+  end
+
+  def mock_goods_nomenclature_lookup_by_sid(sid, goods_nomenclature)
+    dataset = instance_double(Sequel::Dataset, first: goods_nomenclature)
+    allow(GoodsNomenclature).to receive(:where).with(goods_nomenclature_sid: sid).and_return(dataset)
+  end
+
+  def mock_goods_nomenclature_lookup_by_item_id(item_id, goods_nomenclature)
+    dataset = instance_double(Sequel::Dataset, first: goods_nomenclature)
+    allow(GoodsNomenclature).to receive(:where).with(goods_nomenclature_item_id: item_id).and_return(dataset)
   end
 
   def mock_measure_lookup(measure_sid, measure_record)
@@ -82,21 +114,13 @@ RSpec.describe DeltaReportService do
   describe '#generate_report' do
     subject(:result) { service.generate_report }
 
-    let(:commodity) do
-      instance_double(
-        Commodity,
-        goods_nomenclature_item_id: '0101000000',
-        chapter_short_code: '01',
-        goods_nomenclature_description: instance_double(GoodsNomenclatureDescription, description: 'Test commodity'),
-        declarable?: true,
-      )
-    end
+    let(:commodity) { create_test_commodity(item_id: '0101000000', sid: 100) }
     let(:mock_changes) do
       {
         goods_nomenclatures: [
           {
             type: 'GoodsNomenclature',
-            goods_nomenclature_item_id: commodity.goods_nomenclature_item_id,
+            goods_nomenclature_sid: commodity.goods_nomenclature_sid,
             description: 'Commodity added',
             date_of_effect: date,
             change: 'new',
@@ -178,22 +202,14 @@ RSpec.describe DeltaReportService do
       expect(result).to include(
         dates: '2024_08_11',
         total_records: 1,
-        commodity_changes: [[expected_commodity_change]],
+        commodity_changes: [expected_commodity_change],
       )
     end
 
     context 'when there are footnote changes' do
       let(:footnote) { instance_double(Footnote, measures: nil, goods_nomenclatures: nil) }
       let(:measure_object) { instance_double(Measure, goods_nomenclature_item_id: '0202000000') }
-      let(:footnote_commodity) do
-        instance_double(
-          Commodity,
-          goods_nomenclature_item_id: '0202000000',
-          chapter_short_code: '02',
-          goods_nomenclature_description: instance_double(GoodsNomenclatureDescription, description: 'Meat commodity'),
-          declarable?: true,
-        )
-      end
+      let(:footnote_commodity) { create_test_commodity(item_id: '0202000000', sid: 200, description: 'Meat commodity') }
 
       let(:mock_changes) do
         {
@@ -278,15 +294,7 @@ RSpec.describe DeltaReportService do
       end
 
       let(:measure_record) { { goods_nomenclature_item_id: '0303000000' } }
-      let(:measure_commodity) do
-        instance_double(
-          Commodity,
-          goods_nomenclature_item_id: '0303000000',
-          chapter_short_code: '03',
-          goods_nomenclature_description: instance_double(GoodsNomenclatureDescription, description: 'Fish commodity'),
-          declarable?: true,
-        )
-      end
+      let(:measure_commodity) { create_test_commodity(item_id: '0303000000', sid: 300, description: 'Fish commodity') }
 
       let(:expected_footnote_association_measure_change) do
         {
@@ -318,15 +326,7 @@ RSpec.describe DeltaReportService do
     end
 
     context 'when there are footnote association goods nomenclature changes' do
-      let(:goods_nomenclature_commodity) do
-        instance_double(
-          Commodity,
-          goods_nomenclature_item_id: '0404000000',
-          chapter_short_code: '04',
-          goods_nomenclature_description: instance_double(GoodsNomenclatureDescription, description: 'Dairy commodity'),
-          declarable?: true,
-        )
-      end
+      let(:goods_nomenclature_commodity) { create_test_commodity(item_id: '0404000000', sid: 400, description: 'Dairy commodity') }
 
       let(:mock_changes) do
         {
@@ -343,7 +343,7 @@ RSpec.describe DeltaReportService do
           footnote_association_goods_nomenclature: [
             {
               type: 'FootnoteAssociationGoodsNomenclature',
-              goods_nomenclature_item_id: '0404000000',
+              goods_nomenclature_sid: 400,
               description: 'Footnote CD001 updated for goods nomenclature',
               date_of_effect: date,
               change: 'footnote association updated',
@@ -399,7 +399,7 @@ RSpec.describe DeltaReportService do
 
       it 'returns empty commodity changes' do
         expect(result[:commodity_changes].flatten).to be_empty
-        expect(result[:total_records]).to eq(1)
+        expect(result[:total_records]).to eq(0)
       end
     end
   end
@@ -407,7 +407,7 @@ RSpec.describe DeltaReportService do
   describe '#find_affected_declarable_goods' do
     context 'when change type is Measure' do
       let(:change) { { type: 'Measure', goods_nomenclature_item_id: '0101000000' } }
-      let(:declarable_commodity) { instance_double(Commodity, goods_nomenclature_item_id: '0101000000', declarable?: true) }
+      let(:declarable_commodity) { create_test_commodity(item_id: '0101000000', sid: 100) }
 
       before do
         mock_goods_nomenclature_lookup(declarable_commodity)
@@ -420,11 +420,11 @@ RSpec.describe DeltaReportService do
     end
 
     context 'when change type is GoodsNomenclature' do
-      let(:change) { { type: 'GoodsNomenclature', goods_nomenclature_item_id: '0101000000' } }
-      let(:declarable_commodity) { instance_double(Commodity, goods_nomenclature_item_id: '0101000000', declarable?: true) }
+      let(:change) { { type: 'GoodsNomenclature', goods_nomenclature_sid: 123 } }
+      let(:declarable_commodity) { create_test_commodity(item_id: '0101000000', sid: 123) }
 
       before do
-        mock_goods_nomenclature_lookup(declarable_commodity)
+        mock_goods_nomenclature_lookup_by_sid(declarable_commodity.goods_nomenclature_sid, declarable_commodity)
       end
 
       it 'returns declarable goods for the specified nomenclature item id' do
@@ -436,7 +436,7 @@ RSpec.describe DeltaReportService do
     context 'when change type is MeasureComponent' do
       let(:change) { { type: 'MeasureComponent', measure_sid: 123 } }
       let(:measure_record) { { goods_nomenclature_item_id: '0101000000' } }
-      let(:declarable_commodity) { instance_double(Commodity, goods_nomenclature_item_id: '0101000000', declarable?: true) }
+      let(:declarable_commodity) { create_test_commodity(item_id: '0101000000', sid: 100) }
 
       before do
         mock_measure_lookup(123, measure_record)
@@ -452,7 +452,7 @@ RSpec.describe DeltaReportService do
     context 'when change type is MeasureCondition' do
       let(:change) { { type: 'MeasureCondition', measure_sid: 123 } }
       let(:measure_record) { { goods_nomenclature_item_id: '0101000000' } }
-      let(:declarable_commodity) { instance_double(Commodity, goods_nomenclature_item_id: '0101000000', declarable?: true) }
+      let(:declarable_commodity) { create_test_commodity(item_id: '0101000000', sid: 100) }
 
       before do
         mock_measure_lookup(123, measure_record)
@@ -468,7 +468,7 @@ RSpec.describe DeltaReportService do
     context 'when change type is ExcludedGeographicalArea' do
       let(:change) { { type: 'ExcludedGeographicalArea', measure_sid: 123 } }
       let(:measure_record) { { goods_nomenclature_item_id: '0101000000' } }
-      let(:declarable_commodity) { instance_double(Commodity, goods_nomenclature_item_id: '0101000000', declarable?: true) }
+      let(:declarable_commodity) { create_test_commodity(item_id: '0101000000', sid: 100) }
 
       before do
         mock_measure_lookup(123, measure_record)
@@ -484,7 +484,7 @@ RSpec.describe DeltaReportService do
     context 'when change type is FootnoteAssociationMeasure' do
       let(:change) { { type: 'FootnoteAssociationMeasure', measure_sid: 123 } }
       let(:measure_record) { { goods_nomenclature_item_id: '0101000000' } }
-      let(:declarable_commodity) { instance_double(Commodity, goods_nomenclature_item_id: '0101000000', declarable?: true) }
+      let(:declarable_commodity) { create_test_commodity(item_id: '0101000000', sid: 100) }
 
       before do
         mock_measure_lookup(123, measure_record)
@@ -498,8 +498,8 @@ RSpec.describe DeltaReportService do
     end
 
     context 'when change type is FootnoteAssociationGoodsNomenclature' do
-      let(:change) { { type: 'FootnoteAssociationGoodsNomenclature', goods_nomenclature_item_id: '0101000000' } }
-      let(:declarable_commodity) { instance_double(Commodity, goods_nomenclature_item_id: '0101000000', declarable?: true) }
+      let(:change) { { type: 'FootnoteAssociationGoodsNomenclature', goods_nomenclature_sid: 100 } }
+      let(:declarable_commodity) { create_test_commodity(item_id: '0101000000', sid: 100) }
 
       before do
         mock_goods_nomenclature_lookup(declarable_commodity)
@@ -512,15 +512,15 @@ RSpec.describe DeltaReportService do
     end
 
     context 'when change type is GeographicalArea' do
-      let(:change) { { type: 'GeographicalArea', geographical_area_id: 'GB' } }
+      let(:change) { { type: 'GeographicalArea', geographical_area_sid: 123 } }
       let(:measure_records) { [{ goods_nomenclature_item_id: '0101000000' }] }
-      let(:declarable_commodity) { instance_double(Commodity, goods_nomenclature_item_id: '0101000000', declarable?: true) }
+      let(:declarable_commodity) { create_test_commodity(item_id: '0101000000', sid: 100) }
 
       before do
         service.instance_variable_set(:@date, date)
         measures_dataset = mock_database_query(:measures)
         filtered_dataset = mock_filtered_dataset(measures_dataset, [
-          [:where, { geographical_area_id: 'GB' }],
+          [:where, { geographical_area_sid: 123 }],
           [:where, { operation_date: date }],
           %i[distinct goods_nomenclature_item_id],
         ])
@@ -539,7 +539,7 @@ RSpec.describe DeltaReportService do
       let(:change) { { type: 'Certificate', certificate_type_code: 'Y', certificate_code: '999' } }
       let(:condition_records) { [{ measure_sid: 123, operation_date: Date.parse('2024-08-10') }] }
       let(:measure_record) { { goods_nomenclature_item_id: '0101000000' } }
-      let(:declarable_commodity) { instance_double(Commodity, goods_nomenclature_item_id: '0101000000', declarable?: true) }
+      let(:declarable_commodity) { create_test_commodity(item_id: '0101000000', sid: 100) }
 
       before do
         db_double = instance_double(Sequel::Database)
@@ -574,7 +574,7 @@ RSpec.describe DeltaReportService do
     context 'when change type is AdditionalCode' do
       let(:change) { { type: 'AdditionalCode', additional_code_sid: '12345' } }
       let(:measure_records) { [{ goods_nomenclature_item_id: '0101000000' }] }
-      let(:declarable_commodity) { instance_double(Commodity, goods_nomenclature_item_id: '0101000000', declarable?: true) }
+      let(:declarable_commodity) { create_test_commodity(item_id: '0101000000', sid: 100) }
 
       before do
         service.instance_variable_set(:@date, date)
@@ -599,7 +599,7 @@ RSpec.describe DeltaReportService do
       let(:change) { { type: 'Footnote', footnote_oid: '12345' } }
       let(:footnote) { instance_double(Footnote) }
       let(:measure_objects) { [instance_double(Measure, goods_nomenclature_item_id: '0101000000')] }
-      let(:declarable_commodity) { instance_double(Commodity, goods_nomenclature_item_id: '0101000000', declarable?: true) }
+      let(:declarable_commodity) { create_test_commodity(item_id: '0101000000', sid: 100) }
 
       before do
         allow(Footnote).to receive(:[]).with(oid: '12345').and_return(footnote)
@@ -617,7 +617,7 @@ RSpec.describe DeltaReportService do
       let(:change) { { type: 'Footnote', footnote_oid: '12345' } }
       let(:footnote) { instance_double(Footnote) }
       let(:goods_nomenclature_records) { [instance_double(GoodsNomenclature, goods_nomenclature_item_id: '0101000000')] }
-      let(:declarable_commodity) { instance_double(Commodity, goods_nomenclature_item_id: '0101000000', declarable?: true) }
+      let(:declarable_commodity) { create_test_commodity(item_id: '0101000000', sid: 100) }
 
       before do
         allow(Footnote).to receive(:[]).with(oid: '12345').and_return(footnote)
@@ -670,9 +670,9 @@ RSpec.describe DeltaReportService do
   end
 
   describe '#find_declarable_goods_under_code' do
-    let(:declarable_commodity) { instance_double(Commodity, goods_nomenclature_item_id: '0101000000', declarable?: true) }
-    let(:non_declarable_commodity) { instance_double(Commodity, goods_nomenclature_item_id: '0102000000', declarable?: false) }
-    let(:descendant_commodity) { instance_double(Commodity, goods_nomenclature_item_id: '0102100000', declarable?: true) }
+    let(:declarable_commodity) { create_test_commodity(item_id: '0101000000', sid: 100) }
+    let(:non_declarable_commodity) { create_test_commodity(item_id: '0102000000', sid: 102, declarable: false) }
+    let(:descendant_commodity) { create_test_commodity(item_id: '0102100000', sid: 103) }
 
     context 'when goods nomenclature is declarable' do
       before do
@@ -690,6 +690,11 @@ RSpec.describe DeltaReportService do
         scope = instance_double(Sequel::Dataset)
         allow(GoodsNomenclature).to receive(:where).with(goods_nomenclature_item_id: '0102000000').and_return(scope)
         allow(scope).to receive(:first).and_return(non_declarable_commodity)
+
+        scope_by_sid = instance_double(Sequel::Dataset)
+        allow(GoodsNomenclature).to receive(:where).with(goods_nomenclature_sid: 102).and_return(scope_by_sid)
+        allow(scope_by_sid).to receive(:first).and_return(non_declarable_commodity)
+
         allow(non_declarable_commodity).to receive_messages(
           declarable?: false,
           descendants: [descendant_commodity],
@@ -729,7 +734,7 @@ RSpec.describe DeltaReportService do
     let(:goods_nomenclature_item_id) { '0101000000' }
     let(:change) { { measure_sid: measure_sid } }
     let(:measure_record) { { goods_nomenclature_item_id: goods_nomenclature_item_id } }
-    let(:declarable_goods) { [instance_double(Commodity, goods_nomenclature_item_id: '0101000000')] }
+    let(:declarable_goods) { [create_test_commodity(item_id: '0101000000', sid: 100)] }
 
     before do
       mock_measure_lookup(measure_sid, measure_record)
@@ -755,8 +760,8 @@ RSpec.describe DeltaReportService do
     let(:additional_code_sid) { '12345' }
     let(:change) { { additional_code_sid: additional_code_sid } }
     let(:measure_records) { [{ goods_nomenclature_item_id: '0101000000' }, { goods_nomenclature_item_id: '0102000000' }] }
-    let(:declarable_commodity1) { instance_double(Commodity, goods_nomenclature_item_id: '0101000000', declarable?: true) }
-    let(:declarable_commodity2) { instance_double(Commodity, goods_nomenclature_item_id: '0102000000', declarable?: true) }
+    let(:declarable_commodity1) { create_test_commodity(item_id: '0101000000', sid: 100) }
+    let(:declarable_commodity2) { create_test_commodity(item_id: '0102000000', sid: 101) }
 
     before do
       service.instance_variable_set(:@date, date)
