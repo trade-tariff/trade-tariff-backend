@@ -63,7 +63,7 @@ RSpec.describe DeltaReportService::GeographicalAreaChanges do
 
         expect(result).to eq({
           type: 'GeographicalArea',
-          geographical_area_id: 'GB: United Kingdom',
+          geographical_area_sid: geographical_area.geographical_area_sid,
           date_of_effect: date,
           description: 'Geo Area updated',
           change: 'GB: United Kingdom',
