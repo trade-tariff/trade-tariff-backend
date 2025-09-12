@@ -25,7 +25,6 @@ class DeltaReportService
         measure_type: measure_type(record.measure),
         import_export: import_export(record.measure),
         geo_area: geo_area(record.measure.geographical_area),
-        additional_code: additional_code(record.measure.additional_code),
         description:,
         date_of_effect:,
         change: change.present? ? "#{record.footnote.code}: #{change}" : "#{record.footnote.code}: #{record.footnote.description}",

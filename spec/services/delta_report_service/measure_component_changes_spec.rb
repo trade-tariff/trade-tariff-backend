@@ -108,7 +108,6 @@ RSpec.describe DeltaReportService::MeasureComponentChanges do
           measure_type: '103: Third country duty',
           import_export: 'Import',
           geo_area: 'GB: United Kingdom',
-          additional_code: nil,
           description: 'Measure Component updated',
           date_of_effect: date,
           change: '5%',

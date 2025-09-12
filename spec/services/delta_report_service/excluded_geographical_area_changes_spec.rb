@@ -99,38 +99,10 @@ RSpec.describe DeltaReportService::ExcludedGeographicalAreaChanges do
           measure_type: '103: Third country duty',
           import_export: 'Import',
           geo_area: 'GB: United Kingdom',
-          additional_code: nil,
           date_of_effect: date,
           description: 'Excluded Geo Area added',
           change: 'Excluded IE',
         })
-      end
-    end
-
-    context 'when measure is nil' do
-      before do
-        allow(excluded_geo_area).to receive(:measure).and_return(nil)
-      end
-
-      it 'raises an error when trying to access additional_code' do
-        expect { instance.analyze }.to raise_error(NoMethodError, /undefined method.*additional_code.*for nil/)
-      end
-    end
-
-    context 'when additional code is present' do
-      let(:additional_code) { build(:additional_code, additional_code: 'A123') }
-
-      before do
-        allow(measure).to receive_messages(
-          additional_code: additional_code,
-          operation_date: Date.parse('2024-08-15'),
-        )
-        allow(instance).to receive(:additional_code).with(additional_code).and_return('A123: Special code')
-      end
-
-      it 'includes the additional code in the result' do
-        result = instance.analyze
-        expect(result[:additional_code]).to eq('A123: Special code')
       end
     end
 
@@ -171,13 +143,12 @@ RSpec.describe DeltaReportService::ExcludedGeographicalAreaChanges do
       allow(instance).to receive_messages(
         get_changes: nil,
         geo_area: 'GB: United Kingdom',
-        additional_code: 'A123: Special code',
       )
 
       result = instance.analyze
 
       expect(result[:measure_type]).to include(measure_type.measure_type_id)
-      expect(result[:additional_code]).to include(additional_code.additional_code)
+      expect(result[:additional_code]).to be_nil
       expect(result[:geo_area]).to include(geographical_area.geographical_area_id)
     end
   end
