@@ -120,12 +120,14 @@ RSpec.describe DeltaReportService do
         chapter: commodity.chapter_short_code,
         commodity_code: commodity.goods_nomenclature_item_id,
         commodity_code_description: commodity.goods_nomenclature_description.description,
-        import_export: nil,
-        geo_area: nil,
-        measure_type: nil,
+        import_export: 'n/a',
+        geo_area: 'n/a',
+        measure_type: 'n/a',
         type_of_change: 'Commodity added',
         date_of_effect: date,
         change: 'new',
+        ott_url: "https://www.trade-tariff.service.gov.uk/commodities/#{commodity.goods_nomenclature_item_id}?day=#{date.day}&month=#{date.month}&year=#{date.year}",
+        api_url: "https://www.trade-tariff.service.gov.uk/uk/api/commodities/#{commodity.goods_nomenclature_item_id}",
       }
     end
 
@@ -222,12 +224,14 @@ RSpec.describe DeltaReportService do
           chapter: footnote_commodity.chapter_short_code,
           commodity_code: footnote_commodity.goods_nomenclature_item_id,
           commodity_code_description: footnote_commodity.goods_nomenclature_description.description,
-          import_export: nil,
-          geo_area: nil,
-          measure_type: nil,
+          import_export: 'n/a',
+          geo_area: 'n/a',
+          measure_type: 'n/a',
           type_of_change: 'Footnote description',
           date_of_effect: date,
           change: 'TN001: Product specific footnote',
+          ott_url: "https://www.trade-tariff.service.gov.uk/commodities/#{footnote_commodity.goods_nomenclature_item_id}?day=#{date.day}&month=#{date.month}&year=#{date.year}",
+          api_url: "https://www.trade-tariff.service.gov.uk/uk/api/commodities/#{footnote_commodity.goods_nomenclature_item_id}",
         }
       end
 
@@ -297,6 +301,8 @@ RSpec.describe DeltaReportService do
           type_of_change: 'Footnote TN001 updated',
           date_of_effect: date,
           change: nil,
+          ott_url: "https://www.trade-tariff.service.gov.uk/commodities/#{measure_commodity.goods_nomenclature_item_id}?day=#{date.day}&month=#{date.month}&year=#{date.year}",
+          api_url: "https://www.trade-tariff.service.gov.uk/uk/api/commodities/#{measure_commodity.goods_nomenclature_item_id}",
         }
       end
 
@@ -353,12 +359,14 @@ RSpec.describe DeltaReportService do
           chapter: goods_nomenclature_commodity.chapter_short_code,
           commodity_code: goods_nomenclature_commodity.goods_nomenclature_item_id,
           commodity_code_description: goods_nomenclature_commodity.goods_nomenclature_description.description,
-          import_export: nil,
-          geo_area: nil,
-          measure_type: nil,
+          import_export: 'n/a',
+          geo_area: 'n/a',
+          measure_type: 'n/a',
           type_of_change: 'Footnote CD001 updated for goods nomenclature',
           date_of_effect: date,
           change: 'footnote association updated',
+          ott_url: "https://www.trade-tariff.service.gov.uk/commodities/#{goods_nomenclature_commodity.goods_nomenclature_item_id}?day=#{date.day}&month=#{date.month}&year=#{date.year}",
+          api_url: "https://www.trade-tariff.service.gov.uk/uk/api/commodities/#{goods_nomenclature_commodity.goods_nomenclature_item_id}",
         }
       end
 
