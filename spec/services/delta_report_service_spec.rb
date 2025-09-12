@@ -508,7 +508,7 @@ RSpec.describe DeltaReportService do
     end
 
     context 'when change type is GeographicalArea' do
-      let(:change) { { type: 'GeographicalArea', geographical_area_id: 'GB' } }
+      let(:change) { { type: 'GeographicalArea', geographical_area_sid: 123 } }
       let(:measure_records) { [{ goods_nomenclature_item_id: '0101000000' }] }
       let(:declarable_commodity) { instance_double(Commodity, goods_nomenclature_item_id: '0101000000', declarable?: true) }
 
@@ -516,7 +516,7 @@ RSpec.describe DeltaReportService do
         service.instance_variable_set(:@date, date)
         measures_dataset = mock_database_query(:measures)
         filtered_dataset = mock_filtered_dataset(measures_dataset, [
-          [:where, { geographical_area_id: 'GB' }],
+          [:where, { geographical_area_sid: 123 }],
           [:where, { operation_date: date }],
           %i[distinct goods_nomenclature_item_id],
         ])

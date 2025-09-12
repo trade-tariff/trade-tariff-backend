@@ -126,7 +126,7 @@ class DeltaReportService
 
   def find_declarable_goods_for_geographical_area(change)
     measures = Sequel::Model.db[:measures]
-      .where(geographical_area_id: change[:geographical_area_id])
+      .where(geographical_area_sid: change[:geographical_area_sid])
       .where(operation_date: date)
       .distinct(:goods_nomenclature_item_id)
 
