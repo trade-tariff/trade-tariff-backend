@@ -72,7 +72,6 @@ class DeltaReportService
           commodity_code_description: commodity.goods_nomenclature_description.description,
           import_export: change[:import_export],
           geo_area: change[:geo_area],
-          additional_code: change[:additional_code],
           measure_type: change[:measure_type],
           type_of_change: change[:description],
           date_of_effect: change[:date_of_effect],
@@ -154,7 +153,6 @@ class DeltaReportService
       change[:measure_type] = measure_type(measure)
       change[:import_export] = import_export(measure)
       change[:geo_area] = geo_area(measure.geographical_area)
-      change[:additional_code] = additional_code(measure.additional_code)
       affected_goods += find_declarable_goods_under_code(measure.goods_nomenclature_item_id)
     end
 

@@ -21,7 +21,6 @@ class DeltaReportService
       {
         type: 'AdditionalCode',
         additional_code_sid: record.additional_code_sid,
-        additional_code: additional_code(record),
         description:,
         date_of_effect:,
         change: change || additional_code(record),

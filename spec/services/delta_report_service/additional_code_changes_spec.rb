@@ -130,7 +130,6 @@ RSpec.describe DeltaReportService::AdditionalCodeChanges do
         expect(result).to eq({
           type: 'AdditionalCode',
           additional_code_sid: '12345',
-          additional_code: '8AAA: Additional Code updated',
           description: 'Additional Code updated',
           date_of_effect: date,
           change: '8AAA: Additional Code updated',
