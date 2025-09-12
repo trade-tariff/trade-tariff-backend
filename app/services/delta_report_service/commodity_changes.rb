@@ -21,7 +21,7 @@ class DeltaReportService
 
       {
         type: 'GoodsNomenclature',
-        goods_nomenclature_item_id: record.goods_nomenclature_item_id,
+        goods_nomenclature_sid: record.goods_nomenclature_sid,
         date_of_effect:,
         description:,
         change: change || record.code,

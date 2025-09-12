@@ -62,7 +62,7 @@ RSpec.describe DeltaReportService::CommodityChanges do
 
         expect(result).to eq({
           type: 'GoodsNomenclature',
-          goods_nomenclature_item_id: '0101000000',
+          goods_nomenclature_sid: goods_nomenclature.goods_nomenclature_sid,
           date_of_effect: date,
           description: 'Commodity added',
           change: '0101000000',

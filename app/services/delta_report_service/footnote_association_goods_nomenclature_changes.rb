@@ -21,7 +21,7 @@ class DeltaReportService
 
       {
         type: 'FootnoteAssociationGoodsNomenclature',
-        goods_nomenclature_item_id: record.goods_nomenclature.goods_nomenclature_item_id,
+        goods_nomenclature_sid: record.goods_nomenclature.goods_nomenclature_sid,
         description:,
         date_of_effect:,
         change: change.present? ? "#{record.footnote.code}: #{change}" : "#{record.footnote.code}: #{record.footnote.description}",
