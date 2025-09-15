@@ -28,6 +28,7 @@ module GoodsNomenclatures
                    class_name: '::GoodsNomenclature',
                    join_table: Sequel.as(:goods_nomenclature_tree_nodes, :ancestor_nodes),
                    after_load: :recursive_ancestor_populator,
+                   use_optimized: false,
                    read_only: true do |ds|
         raise DateNotSet unless TimeMachine.date_is_set?
 
@@ -77,6 +78,7 @@ module GoodsNomenclatures
                    class_name: '::GoodsNomenclature',
                    join_table: Sequel.as(:goods_nomenclature_tree_nodes, :descendant_nodes),
                    after_load: :recursive_descendant_populator,
+                   use_optimized: false,
                    read_only: true do |ds|
         raise DateNotSet unless TimeMachine.date_is_set?
 
@@ -101,6 +103,7 @@ module GoodsNomenclatures
                    right_key: :goods_nomenclature_sid,
                    class_name: '::GoodsNomenclature',
                    join_table: Sequel.as(:goods_nomenclature_tree_nodes, :child_nodes),
+                   use_optimized: false,
                    read_only: true do |ds|
         raise DateNotSet unless TimeMachine.date_is_set?
 

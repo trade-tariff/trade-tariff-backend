@@ -4,6 +4,7 @@ module News
     plugin :auto_validations, not_null: :presence
 
     many_to_many :items, join_table: :news_collections_news_items,
+                         use_optimized: false,
                          order: Sequel.desc(:start_date)
 
     set_dataset order(Sequel.desc(:priority), :name)

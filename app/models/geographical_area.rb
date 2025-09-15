@@ -14,6 +14,7 @@ class GeographicalArea < Sequel::Model
   set_primary_key :geographical_area_sid
 
   many_to_many :geographical_area_descriptions,
+               use_optimized: false,
                join_table: :geographical_area_description_periods,
                left_primary_key: :geographical_area_sid,
                left_key: :geographical_area_sid,
@@ -46,7 +47,9 @@ class GeographicalArea < Sequel::Model
   many_to_many :contained_geographical_areas, class_name: 'GeographicalArea',
                                               join_table: :geographical_area_memberships,
                                               left_key: :geographical_area_group_sid,
+                                              left_primary_key: :geographical_area_sid,
                                               right_key: :geographical_area_sid,
+                                              right_primary_key: :geographical_area_sid,
                                               class: self do |ds|
     ds.with_actual(GeographicalAreaMembership).order(Sequel.asc(:geographical_area_id))
   end
@@ -54,7 +57,9 @@ class GeographicalArea < Sequel::Model
   many_to_many :included_geographical_areas, class_name: 'GeographicalArea',
                                              join_table: :geographical_area_memberships,
                                              left_key: :geographical_area_sid,
+                                             left_primary_key: :geographical_area_sid,
                                              right_key: :geographical_area_group_sid,
+                                             right_primary_key: :geographical_area_sid,
                                              class: self do |ds|
     ds.with_actual(GeographicalAreaMembership).order(Sequel.asc(:geographical_area_id))
   end

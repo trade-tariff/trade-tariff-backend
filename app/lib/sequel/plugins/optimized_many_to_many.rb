@@ -2,6 +2,56 @@
 module Sequel
   module Plugins
     module OptimizedManyToMany
+
+      module_function
+      def join_conditions(right_key, right_pk, join_table, target_table, db = Sequel::Model.db)
+        join_table_name = extract_table_name(join_table)
+
+        Array(right_key).zip(Array(right_pk)).map do |join_key, pk|
+          left  = db.literal(Sequel.qualify(join_table_name, join_key))
+          right = db.literal(Sequel.qualify(target_table, pk))
+          "#{left} = #{right}"
+        end.join(" AND ")
+      end
+
+      def where_conditions(join_table, left_key, db = Sequel::Model.db)
+        join_table_name = extract_table_name(join_table)
+        db.literal(Sequel.qualify(join_table_name, left_key))
+      end
+
+      def qualify_order(order, target_table, associated_class)
+        return nil unless order
+
+        qualified_order = Array(order).map do |o|
+          if o.is_a?(Sequel::SQL::OrderedExpression)
+            Sequel::SQL::OrderedExpression.new(
+              Sequel.qualify(target_table, o.expression),
+              o.descending
+            )
+          else
+            Sequel.qualify(target_table, o)
+          end
+        end
+
+        qualified_order.map { |o| associated_class.dataset.literal(o) }.join(', ')
+      end
+
+      def table_ref(table, db = Sequel::Model.db)
+        # Handles Symbol, AliasedExpression, QualifiedIdentifier, etc.
+        db.literal(table)
+      end
+
+      def extract_table_name(table)
+        if table.is_a?(Sequel::SQL::AliasedExpression)
+          table.alias
+        elsif table.is_a?(Sequel::SQL::QualifiedIdentifier)
+          table.table
+        else
+          table
+        end
+      end
+
+
       module ClassMethods
         def many_to_many(name, opts = OPTS)
           opts = opts.dup
@@ -21,8 +71,6 @@ module Sequel
           super(name, opts)
         end
 
-        private
-
         def pg_optimized_many_to_many_dataset_proc
           proc do |r|
             associated_class = r.associated_class
@@ -30,16 +78,20 @@ module Sequel
             join_table = r[:join_table]
             left_key = r[:left_key]
             right_key = r[:right_key]
-            target_table = associated_class.table_name
             right_pk = r[:right_primary_key]
             order = r[:order]
+            target_table = associated_class.table_name
+
+            join_conditions = OptimizedManyToMany.join_conditions(right_key, right_pk,join_table, target_table)
+            order_sql = OptimizedManyToMany.qualify_order(order, target_table, associated_class)
+            where_sql  = OptimizedManyToMany.where_conditions(join_table, left_key)
 
             sql = <<~SQL.strip
               SELECT #{target_table}.*
               FROM #{target_table}
-              JOIN #{join_table} ON #{join_table}.#{right_key} = #{target_table}.#{right_pk}
-              WHERE #{join_table}.#{left_key} = ?
-              #{order ? "ORDER BY #{associated_class.dataset.literal(order)}" : ''}
+              JOIN #{OptimizedManyToMany.table_ref(join_table)} ON #{join_conditions}
+              WHERE #{where_sql} = ?
+              #{order_sql ? "ORDER BY #{order_sql}" : ''}
             SQL
 
             associated_class.with_sql(sql, send(left_pk))
@@ -58,17 +110,20 @@ module Sequel
             target_table = associated_class.table_name
             right_pk = refl[:right_primary_key]
             order = refl[:order]
-            cte_name = "filter_#{left_pk}s"
+            cte_name = "filter_ids"
+
+            join_conditions = OptimizedManyToMany.join_conditions(right_key, right_pk, join_table, target_table)
+            order_sql = OptimizedManyToMany.qualify_order(order, target_table, associated_class)
 
             sql = <<~SQL.strip
               WITH #{cte_name} AS (
-                SELECT unnest(?) AS #{left_pk}
+                SELECT unnest(?) AS filter_id
               )
               SELECT #{target_table}.*, #{join_table}.#{left_key} AS x_foreign_key_x
               FROM #{target_table}
-              JOIN #{join_table} ON #{join_table}.#{right_key} = #{target_table}.#{right_pk}
-              JOIN #{cte_name} fm ON fm.#{left_pk} = #{join_table}.#{left_key}
-              #{order ? "ORDER BY #{associated_class.dataset.literal(order)}" : ''}
+              JOIN #{OptimizedManyToMany.table_ref(join_table)} ON #{join_conditions}
+              JOIN #{cte_name} fm ON fm.filter_id = #{join_table}.#{left_key}
+              #{order_sql ? "ORDER BY #{order_sql}" : ''}
             SQL
 
             dataset = associated_class.with_sql(sql, Sequel.pg_array(ids, :integer))

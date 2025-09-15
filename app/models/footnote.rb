@@ -13,6 +13,7 @@ class Footnote < Sequel::Model
                                        right_primary_key: %i[footnote_description_period_sid
                                                              footnote_type_id
                                                              footnote_id],
+                                       use_optimized: false,
                                        graph_use_association_block: true do |ds|
     ds.with_actual(FootnoteDescriptionPeriod)
       .order(Sequel.desc(:footnote_description_periods__validity_start_date))
@@ -31,27 +32,32 @@ class Footnote < Sequel::Model
                                                      footnote_id]
   many_to_many :measures, join_table: :footnote_association_measures,
                           left_key: %i[footnote_type_id footnote_id],
-                          right_key: [:measure_sid]
+                          right_key: [:measure_sid],
+                          use_optimized: false
 
   one_to_many :footnote_association_goods_nomenclatures, key: %i[footnote_type footnote_id],
                                                          primary_key: %i[footnote_id footnote_type_id]
   many_to_many :goods_nomenclatures, join_table: :footnote_association_goods_nomenclatures,
                                      left_key: %i[footnote_type footnote_id],
-                                     right_key: [:goods_nomenclature_sid]
+                                     right_key: [:goods_nomenclature_sid],
+                                     use_optimized: false
 
   one_to_many :footnote_association_erns, key: %i[footnote_type footnote_id],
                                           primary_key: %i[footnote_type_id footnote_id]
   many_to_many :export_refund_nomenclatures, join_table: :footnote_association_erns,
                                              left_key: %i[footnote_type footnote_id],
-                                             right_key: [:export_refund_nomenclature_sid]
+                                             right_key: [:export_refund_nomenclature_sid],
+                                             use_optimized: false
   one_to_many :footnote_association_additional_codes, key: %i[footnote_type_id footnote_id],
                                                       primary_key: %i[footnote_id footnote_type_id]
   many_to_many :additional_codes, join_table: :footnote_association_additional_codes,
                                   left_key: %i[footnote_type_id footnote_id],
-                                  right_key: [:additional_code_sid]
+                                  right_key: [:additional_code_sid],
+                                  use_optimized: false
   many_to_many :meursing_headings, join_table: :footnote_association_meursing_headings,
                                    left_key: %i[footnote_type footnote_id],
-                                   right_key: %i[meursing_table_plan_id meursing_heading_number]
+                                   right_key: %i[meursing_table_plan_id meursing_heading_number],
+                                   use_optimized: false
 
   delegate :description, :formatted_description, to: :footnote_description
 

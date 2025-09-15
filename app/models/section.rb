@@ -14,6 +14,7 @@ class Section < Sequel::Model
                left_key: :section_id,
                right_key: :goods_nomenclature_sid,
                right_primary_key: :goods_nomenclature_sid,
+               use_optimized: false,
                graph_use_association_block: true do |ds|
     ds.with_actual(Chapter)
       .where(Sequel.~(goods_nomenclatures__goods_nomenclature_item_id: HiddenGoodsNomenclature.codes))

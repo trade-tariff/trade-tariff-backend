@@ -11,6 +11,9 @@ class Chapter < GoodsNomenclature
   set_primary_key [:goods_nomenclature_sid]
 
   many_to_many :sections, left_key: :goods_nomenclature_sid,
+                           left_primary_key: :goods_nomenclature_sid,
+                           right_primary_key: :id,
+                           right_key: :section_id,
                           join_table: :chapters_sections
 
   include SearchReferenceable

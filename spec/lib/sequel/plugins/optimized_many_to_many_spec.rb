@@ -12,6 +12,7 @@ RSpec.describe Sequel::Plugins::OptimizedManyToMany do
     DB.drop_table?(:children, cascade: true)
     DB.drop_table?(:grandchildren, cascade: true)
     DB.drop_table?(:parents_children, cascade: true)
+    DB.drop_table?(:address, cascade: true)
 
     DB.create_table!(:parents) do
       primary_key :id
@@ -33,6 +34,20 @@ RSpec.describe Sequel::Plugins::OptimizedManyToMany do
       primary_key :id
       foreign_key :child_id, :children, on_delete: :cascade
       String :name
+    end
+
+    DB.create_table!(:addresses) do
+      Integer :number, null: false
+      String  :postcode, null: false
+      String  :street
+
+      primary_key [:number, :postcode]
+    end
+
+    DB.create_table!(:parents_addresses) do
+      Integer :number, null: false
+      String  :postcode, null: false
+      foreign_key :parent_id, :parents, on_delete: :cascade
     end
 
     class Parent < Sequel::Model(DB[:parents])
@@ -61,6 +76,11 @@ RSpec.describe Sequel::Plugins::OptimizedManyToMany do
 
     class Grandchild < Sequel::Model(:grandchildren)
       many_to_one :child
+    end
+
+    class Address < Sequel::Model(:addresses)
+      unrestrict_primary_key
+      set_primary_key [:number, :postcode]
     end
   end
 
@@ -136,6 +156,29 @@ RSpec.describe Sequel::Plugins::OptimizedManyToMany do
     end
   end
 
+  describe 'with multiple order fields and use_optimized: true' do
+    before do
+      Parent.many_to_many :optimized_children,
+                          class: 'Child',
+                          join_table: :parents_children,
+                          left_key: :parent_id,
+                          left_primary_key: :id,
+                          right_key: :child_id,
+                          right_primary_key: :id,
+                          order: %i[name id]
+    end
+
+    it 'loads children with custom dataset' do
+      expect(@p1.optimized_children.map(&:name)).to eq(%w[C1 C2])
+    end
+
+    it 'eager loads children with optimized' do
+      parents = Parent.eager(:optimized_children).all
+      expect(parents.find { |p| p.id == @p1.id }.optimized_children.map(&:name)).to eq(%w[C1 C2])
+      expect(parents.find { |p| p.id == @p2.id }.optimized_children.map(&:name)).to contain_exactly('C3')
+    end
+  end
+
   describe 'with use_optimized_dataset: false' do
     before do
       Parent.many_to_many :cte_children,
@@ -176,6 +219,31 @@ RSpec.describe Sequel::Plugins::OptimizedManyToMany do
     it 'eager loads nested associations (children → grandchildren)' do
       parents = Parent.eager(cte_children: :grandchildren).all
       expect(parents.first.children.first.grandchildren.map(&:name)).to eq(%w[G1])
+    end
+  end
+
+  describe 'with composite primary key and use_optimized: true' do
+    before do
+      Parent.many_to_many :addresses,
+                          class: 'Address',
+                          join_table: :parents_addresses,
+                          left_key: :parent_id,
+                          left_primary_key: :id,
+                          right_key: [:number, :postcode],
+                          right_primary_key: [:number, :postcode]
+
+      @a1 = Address.create(number: 1, postcode: 'A1')
+      @a2 = Address.create(number: 2, postcode: 'A2')
+      @a3 = Address.create(number: 3, postcode: 'A3')
+
+      DB[:parents_addresses].insert(parent_id: @p1.id, number: @a1.number, postcode: @a1.postcode)
+      DB[:parents_addresses].insert(parent_id: @p1.id, number: @a2.number, postcode: @a2.postcode)
+      DB[:parents_addresses].insert(parent_id: @p2.id, number: @a3.number, postcode: @a3.postcode)
+    end
+
+    it 'eager loads nested associations (children → grandchildren)' do
+      parents = Parent.eager(:addresses).all
+      expect(parents.find { |p| p.id == @p1.id }.addresses.map(&:number)).to contain_exactly(1, 2)
     end
   end
 end
