@@ -16,7 +16,7 @@ RSpec.describe DeltaReportService::CertificateChanges do
     let(:certificates) { [certificate1, certificate2] }
 
     before do
-      allow(Certificate).to receive_message_chain(:where, :order).and_return(certificates)
+      allow(Certificate).to receive_message_chain(:where, :where, :order).and_return(certificates)
     end
 
     it 'finds certificates for the given date and returns analyzed changes' do
@@ -37,6 +37,22 @@ RSpec.describe DeltaReportService::CertificateChanges do
   describe '#object_name' do
     it 'returns the correct object name' do
       expect(instance.object_name).to eq('Certificate')
+    end
+  end
+
+  describe '#excluded_columns' do
+    it 'includes measure-specific excluded columns' do
+      expected = instance.send(:excluded_columns)
+      expect(expected).to include(:national)
+    end
+
+    it 'includes base excluded columns' do
+      base_excluded = %i[oid operation operation_date created_at updated_at filename]
+      expected = instance.send(:excluded_columns)
+
+      base_excluded.each do |column|
+        expect(expected).to include(column)
+      end
     end
   end
 

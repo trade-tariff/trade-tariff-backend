@@ -168,7 +168,7 @@ RSpec.describe DeltaReportService::BaseChanges do
       before { date_instance.changes = [] }
 
       it 'returns validity_start_date' do
-        expect(date_instance.date_of_effect).to eq(validity_start_date + 1.day)
+        expect(date_instance.date_of_effect).to eq(validity_start_date)
       end
     end
   end
