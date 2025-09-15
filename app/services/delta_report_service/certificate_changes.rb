@@ -5,6 +5,7 @@ class DeltaReportService
     def self.collect(date)
       Certificate
         .where(operation_date: date)
+        .where(operation: 'U')
         .order(:oid)
         .map { |record| new(record, date).analyze }
         .compact
@@ -12,6 +13,10 @@ class DeltaReportService
 
     def object_name
       'Certificate'
+    end
+
+    def excluded_columns
+      super + %i[national]
     end
 
     def analyze
