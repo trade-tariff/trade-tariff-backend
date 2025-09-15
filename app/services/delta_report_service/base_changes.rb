@@ -51,7 +51,7 @@ class DeltaReportService
       elsif changes.include?('validity end date') && record.validity_end_date.present?
         record.validity_end_date + 1.day
       elsif record.operation == :create && record.respond_to?(:validity_start_date)
-        record.validity_start_date + 1.day
+        record.validity_start_date
       else
         date + 1.day
       end
