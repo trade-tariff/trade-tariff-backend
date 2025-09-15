@@ -195,11 +195,11 @@ RSpec.describe DeltaReportService::ExcelGenerator do
         'View OTT for Change Date of Effect',
         'API call for the changed Commodity',
       ]
-      expect(generator.excel_header_row).to eq(expected_headers)
+      expect(generator.send(:excel_header_row)).to eq(expected_headers)
     end
 
     it 'has 11 columns' do
-      expect(generator.excel_header_row.size).to eq(11)
+      expect(generator.send(:excel_header_row).size).to eq(11)
     end
   end
 
@@ -207,7 +207,7 @@ RSpec.describe DeltaReportService::ExcelGenerator do
     let(:generator) { described_class.new(change_records, dates) }
 
     it 'returns the correct range for auto filter' do
-      expect(generator.excel_autofilter_range).to eq('A5:I5')
+      expect(generator.send(:excel_autofilter_range)).to eq('A5:I5')
     end
   end
 
@@ -216,11 +216,11 @@ RSpec.describe DeltaReportService::ExcelGenerator do
 
     it 'returns the correct column widths' do
       expected_widths = [20, 30, 30, 15, 20, 50, 30, 30, 22, 80, 60]
-      expect(generator.excel_column_widths).to eq(expected_widths)
+      expect(generator.send(:excel_column_widths)).to eq(expected_widths)
     end
 
     it 'has widths for all 11 columns' do
-      expect(generator.excel_column_widths.size).to eq(11)
+      expect(generator.send(:excel_column_widths).size).to eq(11)
     end
   end
 
@@ -232,7 +232,7 @@ RSpec.describe DeltaReportService::ExcelGenerator do
     end
 
     context 'without background color' do
-      let(:styles) { generator.cell_styles }
+      let(:styles) { generator.send(:cell_styles) }
 
       it 'returns a hash of styles' do
         expect(styles).to be_a(Hash)
@@ -245,7 +245,7 @@ RSpec.describe DeltaReportService::ExcelGenerator do
     end
 
     context 'with background color' do
-      let(:styles) { generator.cell_styles('F8F9FA') }
+      let(:styles) { generator.send(:cell_styles, 'F8F9FA') }
 
       it 'applies background color to styles' do
         expect(styles).to be_a(Hash)
@@ -255,7 +255,7 @@ RSpec.describe DeltaReportService::ExcelGenerator do
 
   describe '#build_row_styles' do
     let(:generator) { described_class.new(change_records, dates) }
-    let(:styles) { generator.build_row_styles(is_even_row: true) }
+    let(:styles) { generator.send(:build_row_styles, is_even_row: true) }
 
     before do
       generator.instance_variable_set(:@workbook, Axlsx::Package.new.workbook)
