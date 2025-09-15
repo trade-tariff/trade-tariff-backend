@@ -28,10 +28,10 @@ module GreenLanes
     add_association_dependencies green_lanes_measures: :delete
 
     many_to_many :exemptions, join_table: :green_lanes_category_assessments_exemptions,
-                 left_key: :category_assessment_id,
-                 left_primary_key: :id,
-                 right_key: :exemption_id,
-                 right_primary_key: :id
+                              left_key: :category_assessment_id,
+                              left_primary_key: :id,
+                              right_key: :exemption_id,
+                              right_primary_key: :id
     add_association_dependencies exemptions: :nullify
 
     dataset_module do

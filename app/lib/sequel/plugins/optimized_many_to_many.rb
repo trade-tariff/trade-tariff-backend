@@ -2,16 +2,16 @@
 module Sequel
   module Plugins
     module OptimizedManyToMany
-
       module_function
+
       def join_conditions(right_key, right_pk, join_table, target_table, db = Sequel::Model.db)
         join_table_name = extract_table_name(join_table)
 
-        Array(right_key).zip(Array(right_pk)).map do |join_key, pk|
+        Array(right_key).zip(Array(right_pk)).map { |join_key, pk|
           left  = db.literal(Sequel.qualify(join_table_name, join_key))
           right = db.literal(Sequel.qualify(target_table, pk))
           "#{left} = #{right}"
-        end.join(" AND ")
+        }.join(' AND ')
       end
 
       def where_conditions(join_table, left_key, db = Sequel::Model.db)
@@ -26,7 +26,7 @@ module Sequel
           if o.is_a?(Sequel::SQL::OrderedExpression)
             Sequel::SQL::OrderedExpression.new(
               Sequel.qualify(target_table, o.expression),
-              o.descending
+              o.descending,
             )
           else
             Sequel.qualify(target_table, o)
@@ -50,7 +50,6 @@ module Sequel
           table
         end
       end
-
 
       module ClassMethods
         def many_to_many(name, opts = OPTS)
@@ -82,9 +81,9 @@ module Sequel
             order = r[:order]
             target_table = associated_class.table_name
 
-            join_conditions = OptimizedManyToMany.join_conditions(right_key, right_pk,join_table, target_table)
+            join_conditions = OptimizedManyToMany.join_conditions(right_key, right_pk, join_table, target_table)
             order_sql = OptimizedManyToMany.qualify_order(order, target_table, associated_class)
-            where_sql  = OptimizedManyToMany.where_conditions(join_table, left_key)
+            where_sql = OptimizedManyToMany.where_conditions(join_table, left_key)
 
             sql = <<~SQL.strip
               SELECT #{target_table}.*
@@ -110,7 +109,7 @@ module Sequel
             target_table = associated_class.table_name
             right_pk = refl[:right_primary_key]
             order = refl[:order]
-            cte_name = "filter_ids"
+            cte_name = 'filter_ids'
 
             join_conditions = OptimizedManyToMany.join_conditions(right_key, right_pk, join_table, target_table)
             order_sql = OptimizedManyToMany.qualify_order(order, target_table, associated_class)

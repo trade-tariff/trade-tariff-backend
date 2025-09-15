@@ -41,7 +41,7 @@ RSpec.describe Sequel::Plugins::OptimizedManyToMany do
       String  :postcode, null: false
       String  :street
 
-      primary_key [:number, :postcode]
+      primary_key %i[number postcode]
     end
 
     DB.create_table!(:parents_addresses) do
@@ -80,7 +80,7 @@ RSpec.describe Sequel::Plugins::OptimizedManyToMany do
 
     class Address < Sequel::Model(:addresses)
       unrestrict_primary_key
-      set_primary_key [:number, :postcode]
+      set_primary_key %i[number postcode]
     end
   end
 
@@ -229,8 +229,8 @@ RSpec.describe Sequel::Plugins::OptimizedManyToMany do
                           join_table: :parents_addresses,
                           left_key: :parent_id,
                           left_primary_key: :id,
-                          right_key: [:number, :postcode],
-                          right_primary_key: [:number, :postcode]
+                          right_key: %i[number postcode],
+                          right_primary_key: %i[number postcode]
 
       @a1 = Address.create(number: 1, postcode: 'A1')
       @a2 = Address.create(number: 2, postcode: 'A2')
