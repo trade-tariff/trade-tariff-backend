@@ -699,6 +699,8 @@ RSpec.describe DeltaReportService do
           declarable?: false,
           descendants: [descendant_commodity],
         )
+
+        allow(descendant_commodity).to receive(:declarable?).and_return(true)
       end
 
       it 'returns declarable descendants' do
@@ -797,6 +799,56 @@ RSpec.describe DeltaReportService do
       it 'returns unique declarable goods' do
         result = service.send(:find_declarable_goods_for_additional_code, change)
         expect(result).to eq([declarable_commodity1])
+      end
+    end
+  end
+
+  describe 'caching functionality' do
+    let(:declarable_commodity) { create_test_commodity(item_id: '0101000000', sid: 100) }
+
+    describe '#find_declarable_goods_under_code caching' do
+      context 'when result is cached' do
+        before do
+          service.instance_variable_get(:@cache)[:declarable_goods]['item_0101000000'] = [declarable_commodity]
+          allow(GoodsNomenclature).to receive(:where)
+        end
+
+        it 'returns cached result without database query' do
+          result = service.send(:find_declarable_goods_under_code, '0101000000')
+          expect(result).to eq([declarable_commodity])
+          expect(GoodsNomenclature).not_to have_received(:where)
+        end
+      end
+    end
+
+    describe '#find_declarable_goods_for_sid caching' do
+      context 'when result is cached' do
+        before do
+          service.instance_variable_get(:@cache)[:declarable_goods]['sid_100'] = [declarable_commodity]
+          allow(GoodsNomenclature).to receive(:where)
+        end
+
+        it 'returns cached result without database query' do
+          result = service.send(:find_declarable_goods_for_sid, 100)
+          expect(result).to eq([declarable_commodity])
+          expect(GoodsNomenclature).not_to have_received(:where)
+        end
+      end
+    end
+
+    describe 'cache clearing' do
+      before do
+        # Populate cache
+        service.instance_variable_get(:@cache)[:declarable_goods]['sid_100'] = [declarable_commodity]
+        service.instance_variable_get(:@cache)[:declarable_goods]['item_0101000000'] = [declarable_commodity]
+      end
+
+      it 'clears all caches when clear_cache is called' do
+        expect(service.instance_variable_get(:@cache)[:declarable_goods]).not_to be_empty
+
+        service.send(:clear_cache)
+
+        expect(service.instance_variable_get(:@cache)[:declarable_goods]).to be_empty
       end
     end
   end
