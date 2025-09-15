@@ -71,13 +71,14 @@ class DeltaReportService
           chapter: commodity.chapter_short_code,
           commodity_code: commodity.goods_nomenclature_item_id,
           commodity_code_description: commodity.goods_nomenclature_description.description,
-          import_export: change[:import_export],
-          geo_area: change[:geo_area],
-          additional_code: change[:additional_code],
-          measure_type: change[:measure_type],
+          import_export: change[:import_export] || 'n/a',
+          geo_area: change[:geo_area] || 'n/a',
+          measure_type: change[:measure_type] || 'n/a',
           type_of_change: change[:description],
           date_of_effect: change[:date_of_effect],
           change: change[:change],
+          ott_url: "https://www.trade-tariff.service.gov.uk/commodities/#{commodity.goods_nomenclature_item_id}?day=#{date.day}&month=#{date.month}&year=#{date.year}",
+          api_url: "https://www.trade-tariff.service.gov.uk/uk/api/commodities/#{commodity.goods_nomenclature_item_id}",
         }
       end
     end
@@ -157,7 +158,6 @@ class DeltaReportService
       change[:measure_type] = measure_type(measure)
       change[:import_export] = import_export(measure)
       change[:geo_area] = geo_area(measure.geographical_area)
-      change[:additional_code] = additional_code(measure.additional_code)
       affected_goods += find_declarable_goods_under_code(measure.goods_nomenclature_item_id)
     end
 

@@ -95,7 +95,6 @@ RSpec.describe DeltaReportService::MeasureChanges do
           measure_type: '103: Third country duty',
           import_export: 'Import',
           geo_area: 'GB: United Kingdom',
-          additional_code: 'A123: Special code',
           description: 'Measure updated',
           date_of_effect: date,
           change: '103: Third country duty',
