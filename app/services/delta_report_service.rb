@@ -77,7 +77,7 @@ class DeltaReportService
           type_of_change: change[:description],
           date_of_effect: change[:date_of_effect],
           change: change[:change],
-          ott_url: "https://www.trade-tariff.service.gov.uk/commodities/#{commodity.goods_nomenclature_item_id}?day=#{date.day}&month=#{date.month}&year=#{date.year}",
+          ott_url: "https://www.trade-tariff.service.gov.uk/commodities/#{commodity.goods_nomenclature_item_id}?day=#{change[:date_of_effect].day}&month=#{change[:date_of_effect].month}&year=#{change[:date_of_effect].year}",
           api_url: "https://www.trade-tariff.service.gov.uk/uk/api/commodities/#{commodity.goods_nomenclature_item_id}",
         }
       end
