@@ -518,13 +518,18 @@ RSpec.describe DeltaReportService do
 
       before do
         service.instance_variable_set(:@date, date)
-        measures_dataset = mock_database_query(:measures)
-        filtered_dataset = mock_filtered_dataset(measures_dataset, [
-          [:where, { geographical_area_sid: 123 }],
-          [:where, { operation_date: date }],
-          %i[distinct goods_nomenclature_item_id],
-        ])
-        allow(filtered_dataset).to receive(:map).and_yield(measure_records.first).and_return([declarable_commodity])
+
+        # Mock the database chain: db[:measures].where().distinct().select_map()
+        measures_dataset = instance_double(Sequel::Dataset)
+        allow(Sequel::Model.db).to receive(:[]).with(:measures).and_return(measures_dataset)
+
+        after_where = instance_double(Sequel::Dataset)
+        allow(measures_dataset).to receive(:where).with(geographical_area_sid: 123).and_return(after_where)
+
+        after_distinct = instance_double(Sequel::Dataset)
+        allow(after_where).to receive(:distinct).with(:goods_nomenclature_item_id).and_return(after_distinct)
+
+        allow(after_distinct).to receive(:select_map).with([:goods_nomenclature_item_id]).and_return(%w[0101000000])
 
         mock_goods_nomenclature_lookup(declarable_commodity)
       end
@@ -578,13 +583,18 @@ RSpec.describe DeltaReportService do
 
       before do
         service.instance_variable_set(:@date, date)
-        measures_dataset = mock_database_query(:measures)
-        filtered_dataset = mock_filtered_dataset(measures_dataset, [
-          [:where, { additional_code_sid: '12345' }],
-          [:where, { operation_date: date }],
-          %i[distinct goods_nomenclature_item_id],
-        ])
-        allow(filtered_dataset).to receive(:map).and_yield(measure_records.first).and_return([declarable_commodity])
+
+        # Mock the database chain: db[:measures].where().distinct().select_map()
+        measures_dataset = instance_double(Sequel::Dataset)
+        allow(Sequel::Model.db).to receive(:[]).with(:measures).and_return(measures_dataset)
+
+        after_where = instance_double(Sequel::Dataset)
+        allow(measures_dataset).to receive(:where).with(additional_code_sid: '12345').and_return(after_where)
+
+        after_distinct = instance_double(Sequel::Dataset)
+        allow(after_where).to receive(:distinct).with(:goods_nomenclature_item_id).and_return(after_distinct)
+
+        allow(after_distinct).to receive(:select_map).with([:goods_nomenclature_item_id]).and_return(%w[0101000000])
 
         mock_goods_nomenclature_lookup(declarable_commodity)
       end
@@ -767,13 +777,18 @@ RSpec.describe DeltaReportService do
 
     before do
       service.instance_variable_set(:@date, date)
-      measures_dataset = mock_database_query(:measures)
-      filtered_dataset = mock_filtered_dataset(measures_dataset, [
-        [:where, { additional_code_sid: additional_code_sid }],
-        [:where, { operation_date: date }],
-        %i[distinct goods_nomenclature_item_id],
-      ])
-      allow(filtered_dataset).to receive(:map).and_yield(measure_records[0]).and_yield(measure_records[1]).and_return([[declarable_commodity1], [declarable_commodity2]])
+
+      # Mock the database chain: db[:measures].where().distinct().select_map()
+      measures_dataset = instance_double(Sequel::Dataset)
+      allow(Sequel::Model.db).to receive(:[]).with(:measures).and_return(measures_dataset)
+
+      after_where = instance_double(Sequel::Dataset)
+      allow(measures_dataset).to receive(:where).with(additional_code_sid: additional_code_sid).and_return(after_where)
+
+      after_distinct = instance_double(Sequel::Dataset)
+      allow(after_where).to receive(:distinct).with(:goods_nomenclature_item_id).and_return(after_distinct)
+
+      allow(after_distinct).to receive(:select_map).with([:goods_nomenclature_item_id]).and_return(%w[0101000000 0102000000])
 
       mock_goods_nomenclature_lookup(declarable_commodity1, '0101000000')
       mock_goods_nomenclature_lookup(declarable_commodity2, '0102000000')
@@ -789,11 +804,20 @@ RSpec.describe DeltaReportService do
 
       before do
         service.instance_variable_set(:@date, date)
-        filtered_dataset = instance_double(Sequel::Dataset)
-        allow(Sequel::Model.db[:measures]).to receive(:where).with(additional_code_sid: additional_code_sid).and_return(filtered_dataset)
-        allow(filtered_dataset).to receive(:where).with(operation_date: date).and_return(filtered_dataset)
-        allow(filtered_dataset).to receive(:distinct).with(:goods_nomenclature_item_id).and_return(filtered_dataset)
-        allow(filtered_dataset).to receive(:map).and_yield(measure_records[0]).and_yield(measure_records[1]).and_return([[declarable_commodity1], [declarable_commodity1]])
+
+        # Mock the database chain: db[:measures].where().distinct().select_map()
+        measures_dataset = instance_double(Sequel::Dataset)
+        allow(Sequel::Model.db).to receive(:[]).with(:measures).and_return(measures_dataset)
+
+        after_where = instance_double(Sequel::Dataset)
+        allow(measures_dataset).to receive(:where).with(additional_code_sid: additional_code_sid).and_return(after_where)
+
+        after_distinct = instance_double(Sequel::Dataset)
+        allow(after_where).to receive(:distinct).with(:goods_nomenclature_item_id).and_return(after_distinct)
+
+        allow(after_distinct).to receive(:select_map).with([:goods_nomenclature_item_id]).and_return(%w[0101000000 0101000000])
+
+        mock_goods_nomenclature_lookup(declarable_commodity1, '0101000000')
       end
 
       it 'returns unique declarable goods' do

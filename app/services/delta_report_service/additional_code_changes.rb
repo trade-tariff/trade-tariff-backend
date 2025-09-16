@@ -18,13 +18,15 @@ class DeltaReportService
       return if no_changes?
       return if record.operation == :create && Measure::Operation.where(additional_code_sid: record.additional_code_sid, operation_date: record.operation_date).any?
 
-      {
-        type: 'AdditionalCode',
-        additional_code_sid: record.additional_code_sid,
-        description:,
-        date_of_effect:,
-        change: change || additional_code(record),
-      }
+      TimeMachine.at(record.validity_start_date) do
+        {
+          type: 'AdditionalCode',
+          additional_code_sid: record.additional_code_sid,
+          description:,
+          date_of_effect:,
+          change: change || additional_code(record),
+        }
+      end
     rescue StandardError => e
       Rails.logger.error "Error with #{object_name} OID #{record.oid}"
       raise e
