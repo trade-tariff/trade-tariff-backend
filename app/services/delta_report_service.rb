@@ -12,12 +12,19 @@ class DeltaReportService
     @start_date = start_date
     @end_date = end_date
     @changes = {}
+    @cache = {
+      declarable_goods: {},
+    }
   end
 
   def generate_report
     start_date.upto(end_date).map do |date|
       @date = date
       Rails.logger.info "Processing changes for #{date}"
+
+      # Clear cache for each date to ensure TimeMachine integrity
+      clear_cache
+
       TimeMachine.at(date) do
         collect_all_changes
         @commodity_change_records << generate_commodity_change_records
@@ -41,7 +48,11 @@ class DeltaReportService
 
   private
 
-  attr_reader :changes
+  attr_reader :changes, :cache
+
+  def clear_cache
+    @cache[:declarable_goods].clear
+  end
 
   def collect_all_changes
     @changes[:goods_nomenclatures] = CommodityChanges.collect(date)
@@ -77,7 +88,7 @@ class DeltaReportService
           type_of_change: change[:description],
           date_of_effect: change[:date_of_effect],
           change: change[:change],
-          ott_url: "https://www.trade-tariff.service.gov.uk/commodities/#{commodity.goods_nomenclature_item_id}?day=#{date.day}&month=#{date.month}&year=#{date.year}",
+          ott_url: "https://www.trade-tariff.service.gov.uk/commodities/#{commodity.goods_nomenclature_item_id}?day=#{change[:date_of_effect].day}&month=#{change[:date_of_effect].month}&year=#{change[:date_of_effect].year}",
           api_url: "https://www.trade-tariff.service.gov.uk/uk/api/commodities/#{commodity.goods_nomenclature_item_id}",
         }
       end
@@ -193,23 +204,34 @@ class DeltaReportService
   def find_declarable_goods_under_code(goods_nomenclature_item_id)
     return [] unless goods_nomenclature_item_id
 
+    cache_key = "item_#{goods_nomenclature_item_id}"
+    return @cache[:declarable_goods][cache_key] if @cache[:declarable_goods].key?(cache_key)
+
     gn = GoodsNomenclature.where(goods_nomenclature_item_id: goods_nomenclature_item_id).first
 
-    find_declarable_goods_for_sid(gn&.goods_nomenclature_sid)
+    result = find_declarable_goods_for_sid(gn&.goods_nomenclature_sid)
+    @cache[:declarable_goods][cache_key] = result
+    result
   end
 
   def find_declarable_goods_for_sid(sid)
     return [] unless sid
 
+    cache_key = "sid_#{sid}"
+    return @cache[:declarable_goods][cache_key] if @cache[:declarable_goods].key?(cache_key)
+
     gn = GoodsNomenclature.where(goods_nomenclature_sid: sid).first
 
     return [] unless gn
 
-    if gn&.declarable?
-      [gn]
-    else
-      gn.descendants.select(&:declarable?)
-    end
+    result = if gn&.declarable?
+               [gn]
+             else
+               gn.descendants.select(&:declarable?)
+             end
+
+    @cache[:declarable_goods][cache_key] = result
+    result
   end
 end
 

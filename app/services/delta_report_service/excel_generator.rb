@@ -19,44 +19,62 @@ class DeltaReportService
       @workbook = package.workbook
 
       workbook.add_worksheet(name: 'Delta Report') do |sheet|
-        sheet.sheet_format_pr.default_row_height = 40.0
-        sheet.sheet_format_pr.custom_height = false
+        setup_sheet_formatting(sheet)
+        add_headers(sheet)
+        stream_data_rows(sheet)
+        configure_sheet_view(sheet)
+        set_column_widths(sheet)
+      end
 
-        sheet.add_row(['Changes to your Commodity Watchlist'], style: workbook.styles.add_style(b: true, sz: 24))
-        sheet.rows[0].height = 40
+      package.serialize("delta_report_#{dates}.xlsx") if Rails.env.development?
 
-        sheet.add_row(["Published #{dates}"], style: workbook.styles.add_style(b: false, sz: 16))
-        sheet.rows[1].height = 25
+      package
+    end
 
-        sheet.add_row([''])
-        sheet.rows[2].height = 20
+    private
 
-        # Add pre-header row
-        pre_header_styles = [cell_styles[:pre_header]] * 11
-        sheet.add_row(['Is this change relevant to your business (useful filters)', '', '', 'Impacted Commodity details', '', '', 'Change details', '', '', 'Useful Links', ''], style: pre_header_styles)
-        sheet.rows[3].height = 40
+    def setup_sheet_formatting(sheet)
+      sheet.sheet_format_pr.default_row_height = 40.0
+      sheet.sheet_format_pr.custom_height = false
+    end
 
-        sheet.merge_cells('A4:C4')
-        sheet.merge_cells('D4:F4')
-        sheet.merge_cells('G4:I4')
-        sheet.merge_cells('J4:K4')
+    def add_headers(sheet)
+      # Title row
+      sheet.add_row(['Changes to your Commodity Watchlist'], style: workbook.styles.add_style(b: true, sz: 24))
+      sheet.rows[0].height = 40
 
-        # Add header row
-        header_styles = [cell_styles[:header]] * 11
-        sheet.add_row(excel_header_row, style: header_styles)
-        sheet.rows[4].height = 60
+      # Subtitle row
+      sheet.add_row(["Published #{dates}"], style: workbook.styles.add_style(b: false, sz: 16))
+      sheet.rows[1].height = 25
 
-        # Configure sheet view
-        sheet.auto_filter = excel_autofilter_range
-        sheet.sheet_view.pane do |pane|
-          pane.top_left_cell = 'A6'
-          pane.state = :frozen
-          pane.y_split = 5
-        end
+      # Empty row
+      sheet.add_row([''])
+      sheet.rows[2].height = 20
 
-        index = 0
-        @change_records.each do |date|
-          date.each do |record|
+      # Pre-header row
+      pre_header_styles = [cell_styles[:pre_header]] * 11
+      sheet.add_row(['Is this change relevant to your business (useful filters)', '', '', 'Impacted Commodity details', '', '', 'Change details', '', '', 'Useful Links', ''], style: pre_header_styles)
+      sheet.rows[3].height = 40
+
+      # Merge pre-header cells
+      sheet.merge_cells('A4:C4')
+      sheet.merge_cells('D4:F4')
+      sheet.merge_cells('G4:I4')
+      sheet.merge_cells('J4:K4')
+
+      # Header row
+      header_styles = [cell_styles[:header]] * 11
+      sheet.add_row(excel_header_row, style: header_styles)
+      sheet.rows[4].height = 60
+    end
+
+    def stream_data_rows(sheet)
+      index = 0
+
+      @change_records.each do |date_records|
+        # Process in smaller batches to avoid memory issues
+        date_records.each_slice(100) do |batch|
+          batch.each do |record|
             sheet.add_row(
               build_excel_row(record),
               types: [:string] * 11,
@@ -65,13 +83,20 @@ class DeltaReportService
             index += 1
           end
         end
-
-        sheet.column_widths(*excel_column_widths)
       end
+    end
 
-      package.serialize("delta_report_#{dates}.xlsx") if Rails.env.development?
+    def configure_sheet_view(sheet)
+      sheet.auto_filter = excel_autofilter_range
+      sheet.sheet_view.pane do |pane|
+        pane.top_left_cell = 'A6'
+        pane.state = :frozen
+        pane.y_split = 5
+      end
+    end
 
-      package
+    def set_column_widths(sheet)
+      sheet.column_widths(*excel_column_widths)
     end
 
     def excel_header_row
@@ -111,7 +136,8 @@ class DeltaReportService
     end
 
     def cell_styles(bg_colour = nil)
-      {
+      @cell_styles ||= {}
+      @cell_styles[bg_colour] ||= {
         pre_header: workbook.styles.add_style(
           b: true,
           bg_color: '215c98',
@@ -176,14 +202,12 @@ class DeltaReportService
         cell_styles(bg_color)[:commodity_code], # Commodity Code
         cell_styles(bg_color)[:text],           # Commodity Description
         cell_styles(bg_color)[:bold_text],      # Type of Change
-        cell_styles(bg_color)[:text],           # Updated code/data (keeps original colors)
+        cell_styles(bg_color)[:text],           # Updated code/data
         cell_styles(bg_color)[:date],           # Date of effect
         cell_styles(bg_color)[:text],           # OTT Link
         cell_styles(bg_color)[:text],           # API Link
       ]
     end
-
-    private
 
     def build_excel_row(record)
       [
