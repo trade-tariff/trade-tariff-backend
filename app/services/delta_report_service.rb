@@ -140,14 +140,14 @@ class DeltaReportService
   end
 
   def find_declarable_goods_for_geographical_area(change)
-    measures = Sequel::Model.db[:measures]
+    item_ids = Sequel::Model.db[:measures]
       .where(geographical_area_sid: change[:geographical_area_sid])
-      .where(operation_date: date)
       .distinct(:goods_nomenclature_item_id)
+      .select_map([:goods_nomenclature_item_id])
 
-    measures.map { |m| find_declarable_goods_under_code(m[:goods_nomenclature_item_id]) }
-           .flatten
-           .uniq
+    item_ids.map { |id| find_declarable_goods_under_code(id) }
+            .flatten
+            .uniq
   end
 
   def find_declarable_goods_for_certificate(change)
@@ -176,14 +176,14 @@ class DeltaReportService
   end
 
   def find_declarable_goods_for_additional_code(change)
-    measures = Sequel::Model.db[:measures]
+    item_ids = Sequel::Model.db[:measures]
       .where(additional_code_sid: change[:additional_code_sid])
-      .where(operation_date: date)
       .distinct(:goods_nomenclature_item_id)
+      .select_map([:goods_nomenclature_item_id])
 
-    measures.map { |m| find_declarable_goods_under_code(m[:goods_nomenclature_item_id]) }
-           .flatten
-           .uniq
+    item_ids.map { |id| find_declarable_goods_under_code(id) }
+            .flatten
+            .uniq
   end
 
   def find_declarable_goods_for_footnote(change)
@@ -222,9 +222,9 @@ class DeltaReportService
 
     gn = GoodsNomenclature.where(goods_nomenclature_sid: sid).first
 
-    return [] unless gn
-
-    result = if gn&.declarable?
+    result = if gn.nil?
+               []
+             elsif gn&.declarable?
                [gn]
              else
                gn.descendants.select(&:declarable?)
