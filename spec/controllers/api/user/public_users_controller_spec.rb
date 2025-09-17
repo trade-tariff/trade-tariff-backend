@@ -122,27 +122,7 @@ RSpec.describe Api::User::PublicUsersController do
       context 'when commodity_codes are being updated' do
         let!(:user) { create(:public_user) }
         let(:make_request) do
-          patch :update, params: { data: { attributes: { commodity_codes: %w[1234567890 1234567891] } } }
-        end
-
-        let(:token) do
-          {
-            'sub' => user.external_id,
-            'email' => 'alice@example.com',
-          }
-        end
-
-        it 'updates the commodity_codes' do
-          api_response
-          expect(user.commodity_codes).to eq %w[1234567890 1234567891]
-        end
-      end
-
-      context 'when existing commodity_codes exist' do
-        let!(:user) { create(:public_user) }
-
-        let(:make_request) do
-          patch :update, params: { data: { attributes: { commodity_codes: %w[3333333333 4444444444] } } }
+          patch :update, params: { data: { attributes: { commodity_codes: %w[1234567890 1234567891 3333333333 4444444444 5555555555] } } }
         end
 
         let(:token) do
@@ -153,12 +133,45 @@ RSpec.describe Api::User::PublicUsersController do
         end
 
         before do
-          user.commodity_codes = %w[1111111111 2222222222]
+          create(:goods_nomenclature, goods_nomenclature_item_id: '3333333333', validity_start_date: Time.zone.now)
+          create(:goods_nomenclature, goods_nomenclature_item_id: '4444444444', validity_start_date: Time.zone.now)
+          create(:goods_nomenclature, goods_nomenclature_item_id: '5555555555', validity_start_date: Time.zone.now - 1.week, validity_end_date: Time.zone.now - 1.day)
+        end
+
+        it 'updates the commodity_codes' do
+          api_response
+          expect(user.erroneous_commodity_codes).to eq %w[1234567890 1234567891]
+          expect(user.active_commodity_codes).to eq %w[3333333333 4444444444]
+          expect(user.expired_commodity_codes).to eq %w[5555555555]
+        end
+      end
+
+      context 'when existing commodity_codes exist' do
+        let!(:user) { create(:public_user) }
+
+        let(:make_request) do
+          patch :update, params: { data: { attributes: { commodity_codes: %w[3333333333 4444444444 5555555555 7777777777] } } }
+        end
+
+        let(:token) do
+          {
+            'sub' => user.external_id,
+            'email' => 'alice@example.com',
+          }
+        end
+
+        before do
+          user.commodity_codes = %w[1111111111 2222222222 6666666666]
+          create(:goods_nomenclature, goods_nomenclature_item_id: '5555555555', validity_start_date: Time.zone.now)
+          create(:goods_nomenclature, goods_nomenclature_item_id: '6666666666', validity_start_date: Time.zone.now - 1.week, validity_end_date: Time.zone.now - 1.day)
+          create(:goods_nomenclature, goods_nomenclature_item_id: '7777777777', validity_start_date: Time.zone.now - 1.week, validity_end_date: Time.zone.now - 1.day)
         end
 
         it 'removes old codes and saves only the new ones' do
           api_response
-          expect(user.reload.commodity_codes).to eq %w[3333333333 4444444444]
+          expect(user.reload.erroneous_commodity_codes).to eq %w[3333333333 4444444444]
+          expect(user.reload.active_commodity_codes).to eq %w[5555555555]
+          expect(user.reload.expired_commodity_codes).to eq %w[7777777777]
         end
       end
 
@@ -178,11 +191,14 @@ RSpec.describe Api::User::PublicUsersController do
 
         before do
           user.commodity_codes = %w[1111111111 2222222222]
+          create(:goods_nomenclature, goods_nomenclature_item_id: '1111111111', validity_start_date: Time.zone.now)
+          create(:goods_nomenclature, goods_nomenclature_item_id: '2222222222', validity_start_date: Time.zone.now - 1.week, validity_end_date: Time.zone.now - 1.day)
         end
 
         it 'keeps the original codes' do
           api_response
-          expect(user.reload.commodity_codes).to eq %w[1111111111 2222222222]
+          expect(user.reload.active_commodity_codes).to eq %w[1111111111]
+          expect(user.reload.expired_commodity_codes).to eq %w[2222222222]
         end
       end
 

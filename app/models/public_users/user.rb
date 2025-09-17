@@ -10,8 +10,42 @@ module PublicUsers
 
     delegate :chapter_ids, to: :preferences
 
-    def commodity_codes
-      delta_preferences.map(&:commodity_code) if delta_preferences.any?
+    def active_commodity_codes
+      commodity_codes_grouped[:active]
+    end
+
+    def expired_commodity_codes
+      commodity_codes_grouped[:expired]
+    end
+
+    def erroneous_commodity_codes
+      commodity_codes_grouped[:erroneous]
+    end
+
+    def commodity_codes_grouped
+      codes = delta_preferences.map(&:commodity_code)
+
+      return { active: [], expired: [], erroneous: [] } if codes.empty?
+
+      gns = GoodsNomenclature.where(goods_nomenclature_item_id: codes).all
+      gns_by_code = gns.index_by(&:goods_nomenclature_item_id)
+
+      active = []
+      expired = []
+      erroneous = []
+
+      codes.each do |code|
+        gn = gns_by_code[code]
+        if gn.nil?
+          erroneous << code
+        elsif goods_nomenclature_active?(gn)
+          active << code
+        else
+          expired << code
+        end
+      end
+
+      { active:, expired:, erroneous: }
     end
 
     def commodity_codes=(codes)
@@ -136,6 +170,11 @@ module PublicUsers
       super
       PublicUsers::Preferences.create(user_id: id)
       PublicUsers::ActionLog.create(user_id: id, action: PublicUsers::ActionLog::REGISTERED)
+    end
+
+    def goods_nomenclature_active?(gn_code)
+      gn_code.validity_start_date <= Time.zone.now &&
+        (gn_code.validity_end_date.nil? || gn_code.validity_end_date >= Time.zone.now)
     end
   end
 end
