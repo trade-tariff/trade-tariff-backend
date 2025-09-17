@@ -279,7 +279,7 @@ RSpec.describe Sequel::Plugins::OptimizedManyToMany do
 
     it 'eager loads associations (address → people)' do
       addresses = Address.eager(:people).all
-      expect(addresses.find { |a| a.number == @a3.number &&  a.postcode == @a3.postcode}.people.map(&:id)).to contain_exactly(@p2.id, @p3.id)
+      expect(addresses.find { |a| a.number == @a3.number && a.postcode == @a3.postcode }.people.map(&:id)).to contain_exactly(@p2.id, @p3.id)
     end
   end
 end

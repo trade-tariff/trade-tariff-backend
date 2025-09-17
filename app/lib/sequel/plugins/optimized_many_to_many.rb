@@ -117,18 +117,18 @@ module Sequel
             target_table = associated_class.table_name
             right_pks = Array(refl[:right_primary_key])
             order = refl[:order]
-            cte_name = "filter_ids"
+            cte_name = 'filter_ids'
 
             # Build join conditions for right-hand side
             join_conditions = OptimizedManyToMany.join_conditions(right_keys, right_pks, join_table, target_table)
             order_sql = OptimizedManyToMany.qualify_order(order, target_table, associated_class)
 
             # Build the CTE for composite keys
-            cte_columns = left_pks.map(&:to_s).join(", ")
-            unnest_args = left_pks.each_with_index.map { |_, i| "unnest(?)" }.join(", ")
-            fk_selects = left_keys.each_with_index.map do |lk, i|
+            cte_columns = left_pks.map(&:to_s).join(', ')
+            unnest_args = left_pks.each_with_index.map { |_, _i| 'unnest(?)' }.join(', ')
+            fk_selects = left_keys.each_with_index.map { |lk, _i|
               "#{join_table}.#{lk} AS x_fk_#{lk}"
-            end.join(", ")
+            }.join(', ')
 
             sql = <<~SQL.strip
               WITH #{cte_name} (#{cte_columns}) AS (
@@ -137,12 +137,12 @@ module Sequel
               SELECT #{target_table}.*, #{fk_selects}
               FROM #{target_table}
               JOIN #{OptimizedManyToMany.table_ref(join_table)} ON #{join_conditions}
-              JOIN #{cte_name} fm ON #{left_keys.zip(left_pks).map { |lk, pk| "fm.#{pk} = #{join_table}.#{lk}" }.join(" AND ")}
+              JOIN #{cte_name} fm ON #{left_keys.zip(left_pks).map { |lk, pk| "fm.#{pk} = #{join_table}.#{lk}" }.join(' AND ')}
               #{order_sql ? "ORDER BY #{order_sql}" : ''}
             SQL
 
             # Build bind arguments for unnest
-            bind_args = left_pks.map.with_index do |pk, i|
+            bind_args = left_pks.map.with_index do |_pk, i|
               Sequel.pg_array(ids.map { |k| Array(k)[i] })
             end
 
