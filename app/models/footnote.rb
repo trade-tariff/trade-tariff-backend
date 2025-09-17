@@ -13,7 +13,6 @@ class Footnote < Sequel::Model
                                        right_primary_key: %i[footnote_description_period_sid
                                                              footnote_type_id
                                                              footnote_id],
-                                       use_optimized: false,
                                        graph_use_association_block: true do |ds|
     ds.with_actual(FootnoteDescriptionPeriod)
       .order(Sequel.desc(:footnote_description_periods__validity_start_date))

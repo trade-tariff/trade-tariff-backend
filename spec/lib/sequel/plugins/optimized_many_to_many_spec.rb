@@ -222,7 +222,7 @@ RSpec.describe Sequel::Plugins::OptimizedManyToMany do
     end
   end
 
-  describe 'with composite primary key and use_optimized: true' do
+  describe 'with composite right primary key and use_optimized: true' do
     before do
       Parent.many_to_many :addresses,
                           class: 'Address',
@@ -241,9 +241,45 @@ RSpec.describe Sequel::Plugins::OptimizedManyToMany do
       DB[:parents_addresses].insert(parent_id: @p2.id, number: @a3.number, postcode: @a3.postcode)
     end
 
-    it 'eager loads nested associations (children → grandchildren)' do
+    it 'loads address with custom dataset' do
+      expect(@p1.addresses.map(&:number)).to contain_exactly(1, 2)
+    end
+
+    it 'eager loads associations (parent → addresses)' do
       parents = Parent.eager(:addresses).all
       expect(parents.find { |p| p.id == @p1.id }.addresses.map(&:number)).to contain_exactly(1, 2)
+    end
+  end
+
+  describe 'with composite left primary key and use_optimized: true' do
+    before do
+      Address.many_to_many :people,
+                           class: 'Parent',
+                           join_table: :parents_addresses,
+                           right_key: :parent_id,
+                           right_primary_key: :id,
+                           left_key: %i[number postcode],
+                           left_primary_key: %i[number postcode]
+
+      @a1 = Address.create(number: 1, postcode: 'A1')
+      @a2 = Address.create(number: 2, postcode: 'A2')
+      @a3 = Address.create(number: 3, postcode: 'A3')
+
+      @p3 = Parent.create(name: 'P3')
+
+      DB[:parents_addresses].insert(parent_id: @p1.id, number: @a1.number, postcode: @a1.postcode)
+      DB[:parents_addresses].insert(parent_id: @p1.id, number: @a2.number, postcode: @a2.postcode)
+      DB[:parents_addresses].insert(parent_id: @p2.id, number: @a3.number, postcode: @a3.postcode)
+      DB[:parents_addresses].insert(parent_id: @p3.id, number: @a3.number, postcode: @a3.postcode)
+    end
+
+    it 'loads people with custom dataset' do
+      expect(@a3.people.map(&:id)).to eq([@p2.id, @p3.id])
+    end
+
+    it 'eager loads associations (address → people)' do
+      addresses = Address.eager(:people).all
+      expect(addresses.find { |a| a.number == @a3.number &&  a.postcode == @a3.postcode}.people.map(&:id)).to contain_exactly(@p2.id, @p3.id)
     end
   end
 end

@@ -11,7 +11,6 @@ class ExportRefundNomenclature < Sequel::Model
                                                          left_key: :export_refund_nomenclature_sid,
                                                          right_key: %i[export_refund_nomenclature_description_period_sid export_refund_nomenclature_sid],
                                                          right_primary_key: %i[export_refund_nomenclature_description_period_sid export_refund_nomenclature_sid],
-                                                         use_optimized: false,
                                                          graph_use_association_block: true do |ds|
                                                            ds.with_actual(ExportRefundNomenclatureDescriptionPeriod)
                                                              .order(Sequel.desc(:export_refund_nomenclature_description_periods__validity_start_date))

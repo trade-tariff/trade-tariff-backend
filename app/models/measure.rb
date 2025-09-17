@@ -65,8 +65,9 @@ class Measure < Sequel::Model
                            order: [Sequel.asc(:footnote_type_id, nulls: :first),
                                    Sequel.asc(:footnote_id, nulls: :first)],
                            left_key: :measure_sid,
+                           left_primary_key: :measure_sid,
                            right_key: %i[footnote_type_id footnote_id],
-                           use_optimized: false,
+                           right_primary_key: %i[footnote_type_id footnote_id],
                            graph_use_association_block: true do |ds|
                              ds.with_actual(Footnote)
                            end
@@ -108,7 +109,7 @@ class Measure < Sequel::Model
                                                  left_key: :stopped_regulation_id,
                                                  right_key: :fts_regulation_id,
                                                  right_primary_key: :full_temporary_stop_regulation_id,
-                                                 use_optimized: false,
+                                                 # use_optimized: false,
                                                  graph_use_association_block: true do |ds|
                                                    ds.with_actual(FullTemporaryStopRegulation)
                                                  end
