@@ -6,7 +6,6 @@ class DeltaReportService
       Certificate
         .where(operation_date: date)
         .where(operation: 'U')
-        .order(:oid)
         .map { |record| new(record, date).analyze }
         .compact
     end

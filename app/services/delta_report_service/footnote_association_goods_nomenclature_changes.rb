@@ -5,7 +5,6 @@ class DeltaReportService
     def self.collect(date)
       FootnoteAssociationGoodsNomenclature
         .where(operation_date: date)
-        .order(:oid)
         .map { |record| new(record, date).analyze }
         .compact
     end

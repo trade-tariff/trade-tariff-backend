@@ -44,7 +44,7 @@ RSpec.describe DeltaReportService::CommodityDescriptionChanges do
     let(:goods_nomenclature_descriptions) { [goods_nomenclature_description1, goods_nomenclature_description2] }
 
     before do
-      allow(GoodsNomenclatureDescription).to receive_message_chain(:where, :order).and_return(goods_nomenclature_descriptions)
+      allow(GoodsNomenclatureDescription).to receive(:where).and_return(goods_nomenclature_descriptions)
     end
 
     it 'finds goods nomenclatures for the given date and returns analyzed changes' do
@@ -78,7 +78,7 @@ RSpec.describe DeltaReportService::CommodityDescriptionChanges do
 
     context 'when no goods nomenclature descriptions exist for the date' do
       before do
-        allow(GoodsNomenclatureDescription).to receive_message_chain(:where, :order).and_return([])
+        allow(GoodsNomenclatureDescription).to receive(:where).and_return([])
       end
 
       it 'returns an empty array' do

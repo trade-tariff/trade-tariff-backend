@@ -5,7 +5,6 @@ class DeltaReportService
     def self.collect(date)
       AdditionalCode
         .where(operation_date: date)
-        .order(:oid)
         .map { |record| new(record, date).analyze }
         .compact
     end
@@ -16,7 +15,7 @@ class DeltaReportService
 
     def analyze
       return if no_changes?
-      return if record.operation == :create && Measure::Operation.where(additional_code_sid: record.additional_code_sid, operation_date: record.operation_date).any?
+      return if record.operation == :create
 
       {
         type: 'AdditionalCode',

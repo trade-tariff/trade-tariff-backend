@@ -3,7 +3,6 @@ class DeltaReportService
     def self.collect(date)
       Footnote
         .where(operation_date: date)
-        .order(:oid)
         .map { |record| new(record, date).analyze }
         .compact
     end
