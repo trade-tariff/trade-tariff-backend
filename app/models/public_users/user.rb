@@ -11,15 +11,15 @@ module PublicUsers
     delegate :chapter_ids, to: :preferences
 
     def active_commodity_codes
-      commodity_codes_grouped[:active]
+      @active_commodity_codes ||= commodity_codes_grouped[:active]
     end
 
     def expired_commodity_codes
-      commodity_codes_grouped[:expired]
+      @expired_commodity_codes ||= commodity_codes_grouped[:expired]
     end
 
     def erroneous_commodity_codes
-      commodity_codes_grouped[:erroneous]
+      @erroneous_commodity_codes ||= commodity_codes_grouped[:erroneous]
     end
 
     def commodity_codes_grouped
