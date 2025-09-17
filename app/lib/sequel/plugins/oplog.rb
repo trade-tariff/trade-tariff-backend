@@ -20,6 +20,12 @@ module Sequel
           def record_class
             self.class.to_s.chomp('::Operation').constantize
           end
+
+          # Instantiates a model record from the oplog entry
+          # Necessary when the record has been deleted
+          def record_from_oplog
+            record_class.from(model.table_name).where(oid: oid).first
+          end
         end
 
         operation_class.one_to_one(

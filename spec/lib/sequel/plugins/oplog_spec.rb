@@ -210,6 +210,180 @@ RSpec.describe Sequel::Plugins::Oplog do
       end
     end
   end
+
+  describe '#record_from_oplog' do
+    context 'when the operation record exists in the oplog table' do
+      let!(:operation_record) do
+        TestRecord::Operation.insert(
+          id: 1,
+          name: 'Test Record',
+          description: 'A test record',
+          operation: 'C',
+          operation_date: Time.zone.now,
+        )
+        TestRecord::Operation.where(id: 1).first
+      end
+
+      it 'returns a record instance from the oplog table' do
+        record = operation_record.record_from_oplog
+
+        expect(record).to be_a(TestRecord)
+        expect(record.oid).to eq(operation_record.oid)
+        expect(record.id).to eq(1)
+        expect(record.name).to eq('Test Record')
+        expect(record.description).to eq('A test record')
+      end
+
+      it 'queries the oplog table directly, not the materialized view' do
+        # Verify it's querying the oplog table by checking the dataset
+        allow(TestRecord).to receive(:from).with(:test_records_oplog).and_call_original
+
+        operation_record.record_from_oplog
+
+        expect(TestRecord).to have_received(:from).with(:test_records_oplog)
+      end
+    end
+
+    context 'when the operation record represents a deleted record' do
+      let!(:delete_operation) do
+        # Create a record first
+        TestRecord::Operation.insert(
+          id: 1,
+          name: 'To Be Deleted',
+          description: 'This will be deleted',
+          operation: 'C',
+          operation_date: Time.zone.now - 1.day,
+        )
+
+        # Then create a delete operation
+        TestRecord::Operation.insert(
+          id: 1,
+          name: 'To Be Deleted',
+          description: 'This will be deleted',
+          operation: 'D',
+          operation_date: Time.zone.now,
+        )
+
+        TestRecord::Operation.where(id: 1, operation: 'D').first
+      end
+
+      it 'can still instantiate the deleted record from oplog' do
+        record = delete_operation.record_from_oplog
+
+        expect(record).to be_a(TestRecord)
+        expect(record.oid).to eq(delete_operation.oid)
+        expect(record.id).to eq(1)
+        expect(record.name).to eq('To Be Deleted')
+        expect(record.operation).to eq(:destroy)
+      end
+
+      it 'shows the record as deleted' do
+        record = delete_operation.record_from_oplog
+
+        expect(record.operation).to eq(:destroy)
+      end
+    end
+
+    context 'with composite primary keys' do
+      let!(:composite_operation) do
+        CompositeTestRecord::Operation.insert(
+          part_a: 10,
+          part_b: 20,
+          data: 'Composite Data',
+          operation: 'C',
+          operation_date: Time.zone.now,
+        )
+        CompositeTestRecord::Operation.where(part_a: 10, part_b: 20).first
+      end
+
+      it 'works correctly with composite primary keys' do
+        record = composite_operation.record_from_oplog
+
+        expect(record).to be_a(CompositeTestRecord)
+        expect(record.oid).to eq(composite_operation.oid)
+        expect(record.part_a).to eq(10)
+        expect(record.part_b).to eq(20)
+        expect(record.data).to eq('Composite Data')
+      end
+    end
+
+    context 'when the oid does not exist in the oplog table' do
+      let(:non_existent_operation) do
+        # Create a mock operation with a non-existent oid
+        operation = TestRecord::Operation.new
+        operation.oid = 99_999
+        operation
+      end
+
+      it 'returns nil when the oid is not found' do
+        record = non_existent_operation.record_from_oplog
+
+        expect(record).to be_nil
+      end
+    end
+
+    context 'when testing the record_class method' do
+      let(:operation) { TestRecord::Operation.new }
+
+      it 'correctly determines the record class from the operation class name' do
+        expect(operation.record_class).to eq(TestRecord)
+      end
+
+      it 'works with composite record classes' do
+        composite_operation = CompositeTestRecord::Operation.new
+        expect(composite_operation.record_class).to eq(CompositeTestRecord)
+      end
+    end
+
+    context 'when testing integration with real workflow' do
+      it 'can retrieve a record that would not appear in the materialized view due to deletion' do
+        # Create a record
+        create_op = TestRecord::Operation.insert(
+          id: 1,
+          name: 'Will be deleted',
+          description: 'This record will be deleted',
+          operation: 'C',
+          operation_date: Time.zone.now - 2.days,
+        )
+
+        # Update the record
+        update_op = TestRecord::Operation.insert(
+          id: 1,
+          name: 'Updated name',
+          description: 'Updated description',
+          operation: 'U',
+          operation_date: Time.zone.now - 1.day,
+        )
+
+        # Delete the record
+        delete_op = TestRecord::Operation.insert(
+          id: 1,
+          name: 'Updated name',
+          description: 'Updated description',
+          operation: 'D',
+          operation_date: Time.zone.now,
+        )
+
+        # The record should not appear in a regular query (simulating materialized view behavior)
+        regular_record = TestRecord.where(id: 1).first
+        expect(regular_record).to be_nil
+
+        # But we should be able to get any version from the oplog
+        create_operation = TestRecord::Operation.where(oid: create_op).first
+        update_operation = TestRecord::Operation.where(oid: update_op).first
+        delete_operation = TestRecord::Operation.where(oid: delete_op).first
+
+        create_record = create_operation.record_from_oplog
+        update_record = update_operation.record_from_oplog
+        delete_record = delete_operation.record_from_oplog
+
+        expect(create_record.name).to eq('Will be deleted')
+        expect(update_record.name).to eq('Updated name')
+        expect(delete_record.name).to eq('Updated name')
+        expect(delete_record.operation).to eq(:destroy)
+      end
+    end
+  end
 end
 
 # rubocop:enable Style/ConstantDefinitionInBlock
