@@ -11,41 +11,43 @@ module PublicUsers
     delegate :chapter_ids, to: :preferences
 
     def active_commodity_codes
-      @active_commodity_codes ||= commodity_codes_grouped[:active]
+      commodity_codes_grouped[:active]
     end
 
     def expired_commodity_codes
-      @expired_commodity_codes ||= commodity_codes_grouped[:expired]
+      commodity_codes_grouped[:expired]
     end
 
     def erroneous_commodity_codes
-      @erroneous_commodity_codes ||= commodity_codes_grouped[:erroneous]
+      commodity_codes_grouped[:erroneous]
     end
 
     def commodity_codes_grouped
-      codes = delta_preferences.map(&:commodity_code)
+      @commodity_codes_grouped ||= begin
+        codes = delta_preferences.map(&:commodity_code)
 
-      return { active: [], expired: [], erroneous: [] } if codes.empty?
+        return { active: [], expired: [], erroneous: [] } if codes.empty?
 
-      gns = GoodsNomenclature.where(goods_nomenclature_item_id: codes).all
-      gns_by_code = gns.index_by(&:goods_nomenclature_item_id)
+        gns = GoodsNomenclature.where(goods_nomenclature_item_id: codes).all
+        gns_by_code = gns.index_by(&:goods_nomenclature_item_id)
 
-      active = []
-      expired = []
-      erroneous = []
+        active = []
+        expired = []
+        erroneous = []
 
-      codes.each do |code|
-        gn = gns_by_code[code]
-        if gn.nil?
-          erroneous << code
-        elsif goods_nomenclature_active?(gn)
-          active << code
-        else
-          expired << code
+        codes.each do |code|
+          gn = gns_by_code[code]
+          if gn.nil?
+            erroneous << code
+          elsif goods_nomenclature_active?(gn)
+            active << code
+          else
+            expired << code
+          end
         end
-      end
 
-      { active:, expired:, erroneous: }
+        { active:, expired:, erroneous: }
+      end
     end
 
     def commodity_codes=(codes)

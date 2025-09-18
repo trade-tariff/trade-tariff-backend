@@ -18,28 +18,31 @@ RSpec.describe PublicUsers::User do
     end
   end
 
-  describe '#commodity_codes' do
-    context 'when user has multiple delta preferences' do
-      before do
-        create(:goods_nomenclature, goods_nomenclature_item_id: '1905903000', validity_start_date: Time.zone.now)
-        create(:goods_nomenclature, goods_nomenclature_item_id: '0702009000', validity_start_date: Time.zone.now - 1.week, validity_end_date: Time.zone.now - 1.day)
-        user.add_delta_preference(commodity_code: '1905903000')
-        user.add_delta_preference(commodity_code: '0702009000')
-        user.add_delta_preference(commodity_code: '1234567890')
-        user.add_delta_preference(commodity_code: '1234567891')
-      end
+  describe '#commodity_codes_grouped' do
+    before do
+      create(:goods_nomenclature, goods_nomenclature_item_id: '1905903000', validity_start_date: Time.zone.now)
+      create(:goods_nomenclature, goods_nomenclature_item_id: '0702009000', validity_start_date: Time.zone.now - 1.week, validity_end_date: Time.zone.now - 1.day)
+      user.add_delta_preference(commodity_code: '1905903000')
+      user.add_delta_preference(commodity_code: '0702009000')
+      user.add_delta_preference(commodity_code: '1234567890')
+    end
 
-      it 'returns an array of active codes' do
-        expect(user.active_commodity_codes).to eq(%w[1905903000])
-      end
+    it 'returns grouped commodity codes' do
+      expect(user.commodity_codes_grouped).to eq(
+        active: %w[1905903000],
+        expired: %w[0702009000],
+        erroneous: %w[1234567890],
+      )
+    end
 
-      it 'returns an array of expired codes' do
-        expect(user.expired_commodity_codes).to eq(%w[0702009000])
-      end
+    it 'memoizes the result and avoids extra DB queries' do
+      allow(GoodsNomenclature).to receive(:where).and_call_original
 
-      it 'returns an array of erroneous codes' do
-        expect(user.erroneous_commodity_codes).to eq(%w[1234567890 1234567891])
-      end
+      first_result = user.commodity_codes_grouped
+      second_result = user.commodity_codes_grouped
+
+      expect(GoodsNomenclature).to have_received(:where).once
+      expect(second_result).to equal(first_result)
     end
   end
 
