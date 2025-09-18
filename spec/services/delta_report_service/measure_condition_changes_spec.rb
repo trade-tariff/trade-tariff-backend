@@ -17,25 +17,24 @@ RSpec.describe DeltaReportService::MeasureConditionChanges do
   end
 
   describe '.collect' do
-    let(:measure_condition1) { build(:measure_condition, oid: 1, operation_date: date) }
-    let(:measure_condition2) { build(:measure_condition, oid: 2, operation_date: date) }
-    let(:measure_conditions) { [measure_condition1, measure_condition2] }
+    let(:measure_condition_operation1) { instance_double(MeasureCondition::Operation, oid: 1, record_from_oplog: measure_condition) }
+    let(:measure_condition_operation2) { instance_double(MeasureCondition::Operation, oid: 2, record_from_oplog: measure_condition) }
+    let(:measure_condition_operations) { [measure_condition_operation1, measure_condition_operation2] }
 
     before do
-      allow(MeasureCondition).to receive_message_chain(:where, :order).and_return(measure_conditions)
+      allow(MeasureCondition::Operation).to receive(:where).with(operation_date: date).and_return(measure_condition_operations)
     end
 
-    it 'finds measure conditions for the given date and returns analyzed changes' do
-      instance1 = described_class.new(measure_condition1, date)
-      instance2 = described_class.new(measure_condition2, date)
-
-      allow(described_class).to receive(:new).and_return(instance1, instance2)
-      allow(instance1).to receive(:analyze).and_return({ type: 'MeasureCondition' })
-      allow(instance2).to receive(:analyze).and_return({ type: 'MeasureCondition' })
+    it 'finds measure condition operations for the given date and returns analyzed changes' do
+      # Mock the map behavior which creates instances and calls analyze
+      allow(measure_condition_operations).to receive_messages(
+        map: [{ type: 'MeasureCondition' }, { type: 'MeasureCondition' }],
+        compact: [{ type: 'MeasureCondition' }, { type: 'MeasureCondition' }],
+      )
 
       result = described_class.collect(date)
 
-      expect(MeasureCondition).to have_received(:where).with(operation_date: date)
+      expect(MeasureCondition::Operation).to have_received(:where).with(operation_date: date)
       expect(result).to eq([{ type: 'MeasureCondition' }, { type: 'MeasureCondition' }])
     end
   end
@@ -72,7 +71,7 @@ RSpec.describe DeltaReportService::MeasureConditionChanges do
       end
     end
 
-    context 'when record operation is create and measure operation_date equals record operation_date' do
+    context 'when record operation is create and measure was created at the same time' do
       let(:measure_condition_create) { build(:measure_condition, operation: :create, operation_date: date) }
       let(:measure_create) { build(:measure, operation_date: date) }
       let(:instance_create) { described_class.new(measure_condition_create, date) }
@@ -86,6 +85,23 @@ RSpec.describe DeltaReportService::MeasureConditionChanges do
 
       it 'returns nil' do
         expect(instance_create.analyze).to be_nil
+      end
+    end
+
+    context 'when record operation is create and existing measure was updated at the same time' do
+      let(:measure_condition_create) { build(:measure_condition, operation: :create, operation_date: date) }
+      let(:measure_create) { build(:measure, operation_date: date - 1.day) }
+      let(:instance_create) { described_class.new(measure_condition_create, date) }
+
+      before do
+        allow(measure_condition_create).to receive(:measure).and_return(measure_create)
+        allow(instance_create).to receive(:get_changes)
+        allow(instance_create).to receive(:no_changes?).and_return(false)
+        allow(Measure::Operation).to receive_message_chain(:where, :any?).and_return(false)
+      end
+
+      it 'returns changes' do
+        expect(instance_create.analyze).not_to be_nil
       end
     end
 

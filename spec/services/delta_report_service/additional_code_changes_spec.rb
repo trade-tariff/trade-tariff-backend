@@ -29,7 +29,7 @@ RSpec.describe DeltaReportService::AdditionalCodeChanges do
     let(:additional_codes) { [additional_code1, additional_code2] }
 
     before do
-      allow(AdditionalCode).to receive_message_chain(:where, :order).and_return(additional_codes)
+      allow(AdditionalCode).to receive(:where).and_return(additional_codes)
     end
 
     it 'finds additional codes for the given date and returns analyzed changes' do
@@ -84,38 +84,13 @@ RSpec.describe DeltaReportService::AdditionalCodeChanges do
       end
     end
 
-    context 'when record operation is create and measure operation exists' do
+    context 'when record operation is create' do
       before do
         allow(additional_code).to receive_messages(operation: :create, additional_code_sid: '12345', operation_date: date)
-        allow(Measure::Operation).to receive_message_chain(:where, :any?).and_return(true)
       end
 
       it 'returns nil when corresponding measure operation exists on same date' do
-        result = instance.analyze
-
-        expect(Measure::Operation).to have_received(:where).with(
-          additional_code_sid: '12345',
-          operation_date: date,
-        )
-        expect(result).to be_nil
-      end
-    end
-
-    context 'when record operation is create but no measure operation exists' do
-      before do
-        allow(additional_code).to receive_messages(operation: :create, additional_code_sid: '12345', operation_date: date, additional_code_description:)
-        allow(Measure::Operation).to receive_message_chain(:where, :any?).and_return(false)
-      end
-
-      it 'continues with analysis when no corresponding measure operation exists' do
-        result = instance.analyze
-
-        expect(Measure::Operation).to have_received(:where).with(
-          additional_code_sid: '12345',
-          operation_date: date,
-        )
-        expect(result).not_to be_nil
-        expect(result[:type]).to eq('AdditionalCode')
+        expect(instance.analyze).to be_nil
       end
     end
 

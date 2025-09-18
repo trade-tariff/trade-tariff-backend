@@ -205,7 +205,7 @@ RSpec.describe DeltaReportService::BaseChanges do
     end
 
     context 'when operation is delete' do
-      before { allow(record).to receive(:operation).and_return(:delete) }
+      before { allow(record).to receive(:operation).and_return(:destroy) }
 
       it 'returns correct description' do
         expect(instance.description).to eq('Test Object removed')

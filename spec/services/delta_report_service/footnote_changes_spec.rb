@@ -14,7 +14,7 @@ RSpec.describe DeltaReportService::FootnoteChanges do
     let(:footnotes) { [footnote1, footnote2] }
 
     before do
-      allow(Footnote).to receive_message_chain(:where, :order).and_return(footnotes)
+      allow(Footnote).to receive(:where).and_return(footnotes)
     end
 
     it 'finds footnotes for the given date and returns analyzed changes' do

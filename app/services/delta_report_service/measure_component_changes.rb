@@ -5,13 +5,12 @@ class DeltaReportService
     def self.collect(date)
       MeasureComponent
         .where(operation_date: date)
-        .order(:oid)
         .map { |record| new(record, date).analyze }
         .compact
     end
 
     def object_name
-      record.measure.supplementary? ? 'Supplementary Unit' : 'Tariff Duty'
+      record.measure.supplementary? ? 'Supplementary Unit' : 'Duty Expression'
     end
 
     def analyze

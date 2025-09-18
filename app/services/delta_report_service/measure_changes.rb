@@ -3,10 +3,10 @@ class DeltaReportService
     include MeasurePresenter
 
     def self.collect(date)
-      Measure
+      # Use Operation model so we can access deleted records
+      Measure::Operation
         .where(operation_date: date)
-        .order(:oid)
-        .map { |record| new(record, date).analyze }
+        .map { |record| new(record.record_from_oplog, date).analyze }
         .compact
     end
 

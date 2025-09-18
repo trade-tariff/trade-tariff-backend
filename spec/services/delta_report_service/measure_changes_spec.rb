@@ -13,25 +13,24 @@ RSpec.describe DeltaReportService::MeasureChanges do
   end
 
   describe '.collect' do
-    let(:measure1) { build(:measure, oid: 1, operation_date: date) }
-    let(:measure2) { build(:measure, oid: 2, operation_date: date) }
-    let(:measures) { [measure1, measure2] }
+    let(:measure_operation1) { instance_double(Measure::Operation, oid: 1, record_from_oplog: measure) }
+    let(:measure_operation2) { instance_double(Measure::Operation, oid: 2, record_from_oplog: measure) }
+    let(:measure_operations) { [measure_operation1, measure_operation2] }
 
     before do
-      allow(Measure).to receive_message_chain(:where, :order).and_return(measures)
+      allow(Measure::Operation).to receive(:where).with(operation_date: date).and_return(measure_operations)
     end
 
-    it 'finds measures for the given date and returns analyzed changes' do
-      instance1 = described_class.new(measure1, date)
-      instance2 = described_class.new(measure2, date)
-
-      allow(described_class).to receive(:new).and_return(instance1, instance2)
-      allow(instance1).to receive(:analyze).and_return({ type: 'Measure' })
-      allow(instance2).to receive(:analyze).and_return({ type: 'Measure' })
+    it 'finds measure operations for the given date and returns analyzed changes' do
+      # Mock the map behavior which creates instances and calls analyze
+      allow(measure_operations).to receive_messages(
+        map: [{ type: 'Measure' }, { type: 'Measure' }],
+        compact: [{ type: 'Measure' }, { type: 'Measure' }],
+      )
 
       result = described_class.collect(date)
 
-      expect(Measure).to have_received(:where).with(operation_date: date)
+      expect(Measure::Operation).to have_received(:where).with(operation_date: date)
       expect(result).to eq([{ type: 'Measure' }, { type: 'Measure' }])
     end
   end

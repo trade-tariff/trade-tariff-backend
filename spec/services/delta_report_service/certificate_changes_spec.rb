@@ -16,17 +16,10 @@ RSpec.describe DeltaReportService::CertificateChanges do
     let(:certificates) { [certificate1, certificate2] }
 
     before do
-      allow(Certificate).to receive_message_chain(:where, :where, :order).and_return(certificates)
+      allow(Certificate).to receive_message_chain(:where, :where, :map, :compact).and_return([{ type: 'Certificate' }, { type: 'Certificate' }])
     end
 
     it 'finds certificates for the given date and returns analyzed changes' do
-      instance1 = described_class.new(certificate1, date)
-      instance2 = described_class.new(certificate2, date)
-
-      allow(described_class).to receive(:new).and_return(instance1, instance2)
-      allow(instance1).to receive(:analyze).and_return({ type: 'Certificate' })
-      allow(instance2).to receive(:analyze).and_return({ type: 'Certificate' })
-
       result = described_class.collect(date)
 
       expect(Certificate).to have_received(:where).with(operation_date: date)

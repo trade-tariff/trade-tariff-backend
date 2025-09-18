@@ -157,6 +157,7 @@ RSpec.describe DeltaReportService do
 
     before do
       allow(DeltaReportService::CommodityChanges).to receive(:collect).with(date).and_return(mock_changes[:goods_nomenclatures])
+      allow(DeltaReportService::CommodityDescriptionChanges).to receive(:collect).with(date).and_return(mock_changes[:goods_nomenclature_descriptions] || [])
       allow(DeltaReportService::MeasureChanges).to receive(:collect).with(date).and_return(mock_changes[:measures])
       allow(DeltaReportService::MeasureComponentChanges).to receive(:collect).with(date).and_return(mock_changes[:measure_components])
       allow(DeltaReportService::MeasureConditionChanges).to receive(:collect).with(date).and_return(mock_changes[:measure_conditions])

@@ -3,7 +3,6 @@ class DeltaReportService
     def self.collect(date)
       GoodsNomenclature
         .where(operation_date: date)
-        .order(:oid)
         .map { |record| new(record, date).analyze }
         .compact
     end
@@ -18,6 +17,7 @@ class DeltaReportService
 
     def analyze
       return if no_changes?
+      return if record.operation == :create && !record.declarable? # new non-declarable commodities are not relevant
 
       {
         type: 'GoodsNomenclature',

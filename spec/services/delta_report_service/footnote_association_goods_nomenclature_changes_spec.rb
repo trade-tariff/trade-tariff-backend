@@ -30,7 +30,7 @@ RSpec.describe DeltaReportService::FootnoteAssociationGoodsNomenclatureChanges d
     let(:associations) { [association1, association2] }
 
     before do
-      allow(FootnoteAssociationGoodsNomenclature).to receive_message_chain(:where, :order).and_return(associations)
+      allow(FootnoteAssociationGoodsNomenclature).to receive(:where).and_return(associations)
     end
 
     it 'finds footnote association goods nomenclatures for the given date and returns analyzed changes' do

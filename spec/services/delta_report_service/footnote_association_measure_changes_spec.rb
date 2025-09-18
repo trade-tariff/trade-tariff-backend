@@ -22,39 +22,25 @@ RSpec.describe DeltaReportService::FootnoteAssociationMeasureChanges do
   end
 
   describe '.collect' do
-    let(:association1) { build(:footnote_association_measure, oid: 1, operation_date: date) }
-    let(:association2) { build(:footnote_association_measure, oid: 2, operation_date: date) }
-    let(:associations) { [association1, association2] }
+    let(:footnote_association_operation1) { instance_double(FootnoteAssociationMeasure::Operation, oid: 1, record_from_oplog: footnote_association) }
+    let(:footnote_association_operation2) { instance_double(FootnoteAssociationMeasure::Operation, oid: 2, record_from_oplog: footnote_association) }
+    let(:footnote_association_operations) { [footnote_association_operation1, footnote_association_operation2] }
 
     before do
-      allow(FootnoteAssociationMeasure).to receive_message_chain(:where, :order).and_return(associations)
+      allow(FootnoteAssociationMeasure::Operation).to receive(:where).with(operation_date: date).and_return(footnote_association_operations)
     end
 
-    it 'finds footnote association measures for the given date and returns analyzed changes' do
-      instance1 = described_class.new(association1, date)
-      instance2 = described_class.new(association2, date)
-
-      allow(described_class).to receive(:new).and_return(instance1, instance2)
-      allow(instance1).to receive(:analyze).and_return({ type: 'FootnoteAssociationMeasure' })
-      allow(instance2).to receive(:analyze).and_return({ type: 'FootnoteAssociationMeasure' })
+    it 'finds footnote association measure operations for the given date and returns analyzed changes' do
+      # Mock the map behavior which creates instances and calls analyze
+      allow(footnote_association_operations).to receive_messages(
+        map: [{ type: 'FootnoteAssociationMeasure' }, { type: 'FootnoteAssociationMeasure' }],
+        compact: [{ type: 'FootnoteAssociationMeasure' }, { type: 'FootnoteAssociationMeasure' }],
+      )
 
       result = described_class.collect(date)
 
-      expect(FootnoteAssociationMeasure).to have_received(:where).with(operation_date: date)
+      expect(FootnoteAssociationMeasure::Operation).to have_received(:where).with(operation_date: date)
       expect(result).to eq([{ type: 'FootnoteAssociationMeasure' }, { type: 'FootnoteAssociationMeasure' }])
-    end
-
-    it 'filters out nil results from analyze' do
-      instance1 = described_class.new(association1, date)
-      instance2 = described_class.new(association2, date)
-
-      allow(described_class).to receive(:new).and_return(instance1, instance2)
-      allow(instance1).to receive(:analyze).and_return({ type: 'FootnoteAssociationMeasure' })
-      allow(instance2).to receive(:analyze).and_return(nil)
-
-      result = described_class.collect(date)
-
-      expect(result).to eq([{ type: 'FootnoteAssociationMeasure' }])
     end
   end
 

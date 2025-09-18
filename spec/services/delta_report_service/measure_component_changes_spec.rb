@@ -21,7 +21,7 @@ RSpec.describe DeltaReportService::MeasureComponentChanges do
     let(:measure_components) { [measure_component1, measure_component2] }
 
     before do
-      allow(MeasureComponent).to receive_message_chain(:where, :order).and_return(measure_components)
+      allow(MeasureComponent).to receive(:where).and_return(measure_components)
     end
 
     it 'finds measure components for the given date and returns analyzed changes' do
@@ -42,7 +42,7 @@ RSpec.describe DeltaReportService::MeasureComponentChanges do
   describe '#object_name' do
     context 'when tariff duty' do
       it 'returns the correct object name' do
-        expect(instance.object_name).to eq('Tariff Duty')
+        expect(instance.object_name).to eq('Duty Expression')
       end
     end
 

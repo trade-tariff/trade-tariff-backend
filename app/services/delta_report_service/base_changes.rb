@@ -73,7 +73,7 @@ class DeltaReportService
         else
           "#{object_name} updated"
         end
-      when :delete
+      when :destroy
         "#{object_name} removed"
       end
     end

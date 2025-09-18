@@ -14,7 +14,7 @@ RSpec.describe DeltaReportService::GeographicalAreaChanges do
     let(:geographical_areas) { [geographical_area1, geographical_area2] }
 
     before do
-      allow(GeographicalArea).to receive_message_chain(:where, :order).and_return(geographical_areas)
+      allow(GeographicalArea).to receive(:where).and_return(geographical_areas)
     end
 
     it 'finds geographical areas for the given date and returns analyzed changes' do
