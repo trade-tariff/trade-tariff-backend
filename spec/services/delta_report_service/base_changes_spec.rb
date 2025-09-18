@@ -76,12 +76,13 @@ RSpec.describe DeltaReportService::BaseChanges do
       build(:measure,
             measure_sid: record.measure_sid,
             validity_start_date: Date.parse('2024-08-01'),
-            validity_end_date: Date.parse('2024-08-31'),
+            validity_end_date: nil,
             goods_nomenclature_item_id: '1000000000')
     end
 
     let(:get_changes_record) do
       build(:measure,
+            national: true,
             measure_sid: previous_record.measure_sid,
             validity_start_date: Date.parse('2024-08-15'),
             validity_end_date: Date.parse('2024-08-31'),
@@ -101,7 +102,7 @@ RSpec.describe DeltaReportService::BaseChanges do
 
       it 'identifies changed columns' do
         get_changes_instance.get_changes
-        expect(get_changes_instance.changes).to include('validity start date')
+        expect(get_changes_instance.changes).to include('start date')
         expect(get_changes_instance.changes).not_to include('measure sid')
       end
 
@@ -109,6 +110,20 @@ RSpec.describe DeltaReportService::BaseChanges do
         get_changes_instance.get_changes
         expect(get_changes_instance.change).not_to be_nil
         expect(get_changes_instance.change).not_to be_blank
+      end
+
+      context 'when validity_start_date changes' do
+        it "changes column name to 'start date'" do
+          get_changes_instance.get_changes
+          expect(get_changes_instance.changes).to include('start date')
+        end
+      end
+
+      context 'when validity_end_date changes' do
+        it "changes column name to 'end date'" do
+          get_changes_instance.get_changes
+          expect(get_changes_instance.changes).to include('end date')
+        end
       end
     end
 
@@ -149,7 +164,7 @@ RSpec.describe DeltaReportService::BaseChanges do
     let(:date_instance) { test_class.new(date_record, date) }
 
     context 'when validity_start_date is in changes' do
-      before { date_instance.changes = ['validity start date'] }
+      before { date_instance.changes = ['start date'] }
 
       it 'returns validity_start_date' do
         expect(date_instance.date_of_effect).to eq(validity_start_date)
@@ -157,7 +172,7 @@ RSpec.describe DeltaReportService::BaseChanges do
     end
 
     context 'when validity_end_date is in changes' do
-      before { date_instance.changes = ['validity end date'] }
+      before { date_instance.changes = ['end date'] }
 
       it 'returns validity_end_date' do
         expect(date_instance.date_of_effect).to eq(validity_end_date + 1.day)

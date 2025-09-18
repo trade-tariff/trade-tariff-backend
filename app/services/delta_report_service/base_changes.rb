@@ -34,9 +34,12 @@ class DeltaReportService
 
           next if current_value == previous_value
 
-          @change ||= if column == :validity_start_date
+          column = { validity_start_date: :start_date,
+                     validity_end_date: :end_date }[column] || column
+
+          @change ||= if column == :start_date
                         current_value.to_date.iso8601
-                      elsif column == :validity_end_date
+                      elsif column == :end_date
                         if current_value.nil?
                           'Removed'
                         else
@@ -52,9 +55,9 @@ class DeltaReportService
     end
 
     def date_of_effect
-      if changes.include?('validity start date') && record.validity_start_date.present?
+      if changes.include?('start date') && record.validity_start_date.present?
         record.validity_start_date
-      elsif changes.include?('validity end date') && record.validity_end_date.present?
+      elsif changes.include?('end date') && record.validity_end_date.present?
         record.validity_end_date + 1.day
       elsif record.operation == :create && record.respond_to?(:validity_start_date)
         record.validity_start_date
