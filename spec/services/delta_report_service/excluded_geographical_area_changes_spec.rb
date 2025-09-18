@@ -62,7 +62,7 @@ RSpec.describe DeltaReportService::ExcludedGeographicalAreaChanges do
   describe '#analyze' do
     before do
       allow(instance).to receive_messages(
-        measure_type: '103: Third country duty',
+        measure_type: 'Third country duty',
         import_export: 'Import',
         geo_area: 'United Kingdom (GB)',
         additional_code: nil,
@@ -91,7 +91,7 @@ RSpec.describe DeltaReportService::ExcludedGeographicalAreaChanges do
         expect(result).to eq({
           type: 'ExcludedGeographicalArea',
           measure_sid: excluded_geo_area.measure_sid,
-          measure_type: '103: Third country duty',
+          measure_type: 'Third country duty',
           import_export: 'Import',
           geo_area: 'United Kingdom (GB)',
           date_of_effect: date,
@@ -150,7 +150,7 @@ RSpec.describe DeltaReportService::ExcludedGeographicalAreaChanges do
 
       result = instance.analyze
 
-      expect(result[:measure_type]).to include(measure_type.measure_type_id)
+      expect(result[:measure_type]).to include(measure_type_description.description)
       expect(result[:additional_code]).to be_nil
       expect(result[:geo_area]).to include(geographical_area.geographical_area_id)
     end

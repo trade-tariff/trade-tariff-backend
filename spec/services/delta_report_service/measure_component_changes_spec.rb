@@ -62,7 +62,7 @@ RSpec.describe DeltaReportService::MeasureComponentChanges do
         date_of_effect: date,
         change: nil,
       )
-      allow(instance).to receive(:measure_type).with(measure).and_return('103: Third country duty')
+      allow(instance).to receive(:measure_type).with(measure).and_return('Third country duty')
       allow(instance).to receive(:import_export).with(measure).and_return('Import')
       allow(instance).to receive(:geo_area).with(geographical_area, []).and_return('United Kingdom (GB)')
       allow(instance).to receive(:additional_code).with(nil).and_return(nil)
@@ -105,7 +105,7 @@ RSpec.describe DeltaReportService::MeasureComponentChanges do
         expect(result).to eq({
           type: 'MeasureComponent',
           measure_sid: '12345',
-          measure_type: '103: Third country duty',
+          measure_type: 'Third country duty',
           import_export: 'Import',
           geo_area: 'United Kingdom (GB)',
           description: 'Measure Component updated',

@@ -1,7 +1,7 @@
 class DeltaReportService
   module MeasurePresenter
     def measure_type(measure)
-      "#{measure.measure_type.id}: #{measure.measure_type.description}"
+      measure.measure_type.description
     end
 
     def import_export(measure)

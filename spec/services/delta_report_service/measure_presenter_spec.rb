@@ -8,12 +8,12 @@ RSpec.describe DeltaReportService::MeasurePresenter do
   let(:instance) { test_class.new }
 
   describe '#measure_type' do
-    let(:measure_type) { instance_double(MeasureType, id: '103', description: 'Third country duty') }
+    let(:measure_type) { instance_double(MeasureType, description: 'Third country duty') }
     let(:measure) { instance_double(Measure, measure_type: measure_type) }
 
     it 'returns formatted measure type with id and description' do
       result = instance.measure_type(measure)
-      expect(result).to eq('103: Third country duty')
+      expect(result).to eq('Third country duty')
     end
   end
 
