@@ -168,7 +168,7 @@ class DeltaReportService
 
       change[:measure_type] = measure_type(measure)
       change[:import_export] = import_export(measure)
-      change[:geo_area] = geo_area(measure.geographical_area)
+      change[:geo_area] = geo_area(measure.geographical_area, measure.excluded_geographical_areas)
       affected_goods += find_declarable_goods_under_code(measure.goods_nomenclature_item_id)
     end
 

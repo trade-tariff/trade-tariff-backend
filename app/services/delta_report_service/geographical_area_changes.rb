@@ -22,7 +22,7 @@ class DeltaReportService
           geographical_area_sid: record.geographical_area_sid,
           date_of_effect: date_of_effect,
           description: description,
-          change: change || geo_area(record),
+          change: change || geo_area(record, []),
         }
       end
     rescue StandardError => e

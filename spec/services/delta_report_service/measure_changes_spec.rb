@@ -69,7 +69,7 @@ RSpec.describe DeltaReportService::MeasureChanges do
       )
       allow(instance).to receive(:measure_type).with(measure).and_return('103: Third country duty')
       allow(instance).to receive(:import_export).with(measure).and_return('Import')
-      allow(instance).to receive(:geo_area).with(geographical_area).and_return('GB: United Kingdom')
+      allow(instance).to receive(:geo_area).with(geographical_area, []).and_return('United Kingdom (GB)')
       allow(instance).to receive(:additional_code).with(nil).and_return('A123: Special code')
       allow(instance).to receive(:duty_expression).with(measure).and_return('10%')
     end
@@ -93,7 +93,7 @@ RSpec.describe DeltaReportService::MeasureChanges do
           validity_end_date: nil,
           measure_type: '103: Third country duty',
           import_export: 'Import',
-          geo_area: 'GB: United Kingdom',
+          geo_area: 'United Kingdom (GB)',
           description: 'Measure updated',
           date_of_effect: date,
           change: '103: Third country duty',

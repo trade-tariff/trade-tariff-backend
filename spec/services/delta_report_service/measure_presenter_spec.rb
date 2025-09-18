@@ -72,11 +72,40 @@ RSpec.describe DeltaReportService::MeasurePresenter do
 
   describe '#geo_area' do
     context 'when geo_area is present' do
-      let(:geo_area) { instance_double(GeographicalArea, id: 'GB', description: 'United Kingdom') }
+      let(:geo_area) { create(:geographical_area, geographical_area_id: 'EU') }
+
+      before do
+        allow(geo_area).to receive(:description).and_return('European Union')
+      end
 
       it 'returns formatted geo area with id and description' do
         result = instance.geo_area(geo_area)
-        expect(result).to eq('GB: United Kingdom')
+        expect(result).to eq('European Union (EU)')
+      end
+
+      context 'when geo_area is erga omnes' do
+        let(:geo_area) { create(:geographical_area, :erga_omnes) }
+
+        it 'returns "All countries" as description' do
+          result = instance.geo_area(geo_area)
+          expect(result).to eq('All countries (1011)')
+        end
+      end
+
+      context 'when excluded_geographical_areas is provided' do
+        let(:geo_area_france) { create(:geographical_area, geographical_area_id: 'FR') }
+        let(:geo_area_slovakia) { create(:geographical_area, geographical_area_id: 'SK') }
+        let(:excluded_geographical_areas) { [geo_area_slovakia, geo_area_france] }
+
+        before do
+          allow(geo_area_slovakia).to receive(:description).and_return('Slovakia')
+          allow(geo_area_france).to receive(:description).and_return('France')
+        end
+
+        it 'includes excluded countries in the output' do
+          result = instance.geo_area(geo_area, excluded_geographical_areas)
+          expect(result).to eq('European Union (EU) excluding Slovakia, France')
+        end
       end
     end
 

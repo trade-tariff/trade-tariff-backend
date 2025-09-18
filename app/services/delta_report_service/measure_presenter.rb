@@ -17,12 +17,20 @@ class DeltaReportService
       end
     end
 
-    def geo_area(geo_area)
+    def geo_area(geo_area, excluded_geographical_areas = nil)
+      geo_area_string = ''
+
       if geo_area.present?
-        "#{geo_area.id}: #{geo_area.description}"
-      else
-        ''
+        description = geo_area.erga_omnes? ? 'All countries' : geo_area.description
+        geo_area_string = "#{description} (#{geo_area.id})"
+
+        if excluded_geographical_areas.present?
+          excluded = excluded_geographical_areas.map(&:description).join(', ')
+          geo_area_string += " excluding #{excluded}"
+        end
       end
+
+      geo_area_string
     end
 
     def additional_code(additional_code)

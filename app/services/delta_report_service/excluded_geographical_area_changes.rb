@@ -25,7 +25,7 @@ class DeltaReportService
           measure_sid: record.measure_sid,
           measure_type: measure_type(record.measure),
           import_export: import_export(record.measure),
-          geo_area: geo_area(record.geographical_area),
+          geo_area: geo_area(record.geographical_area, record.measure.excluded_geographical_areas),
           date_of_effect: date,
           description:,
           change: "Excluded #{record.excluded_geographical_area}",
