@@ -18,24 +18,46 @@ RSpec.describe PublicUsers::User do
     end
   end
 
-  describe '#commodity_codes' do
-    context 'when user has multiple delta preferences' do
-      before do
-        user.add_delta_preference(commodity_code: '1234567890')
-        user.add_delta_preference(commodity_code: '1234567891')
-      end
+  describe '#commodity_codes_grouped' do
+    before do
+      create(:goods_nomenclature, goods_nomenclature_item_id: '1905903000', validity_start_date: Time.zone.now)
+      create(:goods_nomenclature, goods_nomenclature_item_id: '0702009000', validity_start_date: Time.zone.now - 1.week, validity_end_date: Time.zone.now - 1.day)
+      user.add_delta_preference(commodity_code: '1905903000')
+      user.add_delta_preference(commodity_code: '0702009000')
+      user.add_delta_preference(commodity_code: '1234567890')
+    end
 
-      it 'returns a comma separated string of codes' do
-        expect(user.commodity_codes).to eq(%w[1234567890 1234567891])
-      end
+    it 'returns grouped commodity codes' do
+      expect(user.commodity_codes_grouped).to eq(
+        active: %w[1905903000],
+        expired: %w[0702009000],
+        erroneous: %w[1234567890],
+      )
+    end
+
+    it 'memoizes the result and avoids extra DB queries' do
+      allow(GoodsNomenclature).to receive(:where).and_call_original
+
+      first_result = user.commodity_codes_grouped
+      second_result = user.commodity_codes_grouped
+
+      expect(GoodsNomenclature).to have_received(:where).once
+      expect(second_result).to equal(first_result)
     end
   end
 
   describe '#commodity_codes=' do
+    before do
+      create(:goods_nomenclature, goods_nomenclature_item_id: '1905903000', validity_start_date: Time.zone.now)
+      create(:goods_nomenclature, goods_nomenclature_item_id: '0702009000', validity_start_date: Time.zone.now - 1.week, validity_end_date: Time.zone.now - 1.day)
+    end
+
     context 'when adding new codes' do
       it 'creates new delta preferences for each code' do
-        user.commodity_codes = %w[1234567890 1234567891]
-        expect(user.commodity_codes).to eq(%w[1234567890 1234567891])
+        user.commodity_codes = %w[1234567890 1234567891 1905903000 0702009000]
+        expect(user.active_commodity_codes).to eq(%w[1905903000])
+        expect(user.expired_commodity_codes).to eq(%w[0702009000])
+        expect(user.erroneous_commodity_codes).to eq(%w[1234567890 1234567891])
       end
     end
 
@@ -43,18 +65,15 @@ RSpec.describe PublicUsers::User do
       before do
         user.add_delta_preference(commodity_code: '1234567890')
         user.add_delta_preference(commodity_code: '1234567891')
+        user.add_delta_preference(commodity_code: '1905903000')
+        create(:goods_nomenclature, goods_nomenclature_item_id: '1905903001', validity_start_date: Time.zone.now)
       end
 
       it 'removes codes not in the new list' do
-        user.commodity_codes = %w[1234567891 1234567892]
-        expect(user.commodity_codes).to eq(%w[1234567891 1234567892])
-      end
-    end
-
-    context 'when assigning a single string code' do
-      it 'creates a single delta preference' do
-        user.commodity_codes = '1234567890'
-        expect(user.commodity_codes).to eq(%w[1234567890])
+        user.commodity_codes = %w[1234567891 1234567892 1905903001 0702009000]
+        expect(user.erroneous_commodity_codes).to eq(%w[1234567891 1234567892])
+        expect(user.active_commodity_codes).to eq(%w[1905903001])
+        expect(user.expired_commodity_codes).to eq(%w[0702009000])
       end
     end
   end
