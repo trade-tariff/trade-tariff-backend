@@ -142,12 +142,12 @@ RSpec.describe DeltaReportService::AdditionalCodeChanges do
       expect(described_class.superclass).to eq(DeltaReportService::BaseChanges)
     end
 
-    it 'includes MeasurePresenter module' do
-      expect(described_class.included_modules).to include(DeltaReportService::MeasurePresenter)
+    it 'includes DeltaPresenter module' do
+      expect(described_class.included_modules).to include(DeltaReportService::DeltaPresenter)
     end
   end
 
-  describe 'MeasurePresenter integration' do
+  describe 'DeltaPresenter integration' do
     context 'when using additional_code helper' do
       let(:additional_code_with_description) do
         build(:additional_code, :with_description,
@@ -156,7 +156,7 @@ RSpec.describe DeltaReportService::AdditionalCodeChanges do
               additional_code_description: 'Test Description')
       end
 
-      it 'formats additional code using MeasurePresenter helper' do
+      it 'formats additional code using DeltaPresenter helper' do
         instance = described_class.new(additional_code_with_description, date)
         result = instance.send(:additional_code, additional_code_with_description)
 

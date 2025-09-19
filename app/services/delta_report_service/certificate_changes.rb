@@ -1,7 +1,5 @@
 class DeltaReportService
   class CertificateChanges < BaseChanges
-    include MeasurePresenter
-
     def self.collect(date)
       Certificate
         .where(operation_date: date)

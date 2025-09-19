@@ -1,11 +1,87 @@
-RSpec.describe DeltaReportService::MeasurePresenter do
+RSpec.describe DeltaReportService::DeltaPresenter do
   let(:test_class) do
     Class.new do
-      include DeltaReportService::MeasurePresenter
+      include DeltaReportService::DeltaPresenter
     end
   end
 
   let(:instance) { test_class.new }
+
+  describe '#commodity_description' do
+    let(:goods_nomenclature_description) { instance_double(GoodsNomenclatureDescription, csv_formatted_description: 'Formatted commodity description') }
+    let(:commodity) { instance_double(Commodity, goods_nomenclature_description: goods_nomenclature_description) }
+
+    it 'returns the csv formatted description from the commodity' do
+      result = instance.commodity_description(commodity)
+      expect(result).to eq('Formatted commodity description')
+    end
+
+    context 'when goods_nomenclature_description is nil' do
+      let(:commodity) { instance_double(Commodity, goods_nomenclature_description: nil) }
+
+      it 'raises an error' do
+        expect { instance.commodity_description(commodity) }.to raise_error(NoMethodError)
+      end
+    end
+  end
+
+  describe '#footnote_description' do
+    let(:footnote) { instance_double(Footnote, description: footnote_text) }
+
+    context 'when footnote has plain text description' do
+      let(:footnote_text) { 'This is a plain text footnote' }
+
+      it 'returns the plain text unchanged' do
+        result = instance.footnote_description(footnote)
+        expect(result).to eq('This is a plain text footnote')
+      end
+    end
+
+    context 'when footnote has HTML tags' do
+      let(:footnote_text) { '<p>This is a <strong>bold</strong> footnote with <em>emphasis</em></p>' }
+
+      it 'strips HTML tags and returns plain text' do
+        result = instance.footnote_description(footnote)
+        expect(result).to eq('This is a bold footnote with emphasis')
+      end
+    end
+
+    context 'when footnote has complex nested HTML' do
+      let(:footnote_text) { '<div><p>Nested <span class="highlight">HTML</span> content</p><ul><li>Item 1</li><li>Item 2</li></ul></div>' }
+
+      it 'strips all HTML tags and returns clean text' do
+        result = instance.footnote_description(footnote)
+        expect(result).to eq('Nested HTML contentItem 1Item 2')
+      end
+    end
+
+    context 'when footnote description is nil' do
+      let(:footnote_text) { nil }
+
+      it 'returns nil' do
+        result = instance.footnote_description(footnote)
+        expect(result).to be_nil
+      end
+    end
+
+    context 'when footnote description is blank' do
+      let(:footnote_text) { '' }
+
+      it 'returns empty string' do
+        result = instance.footnote_description(footnote)
+        expect(result).to eq('')
+      end
+    end
+
+    context 'when footnote description has only whitespace' do
+      let(:footnote_text) { '   ' }
+
+      it 'returns the whitespace unchanged (blank check fails)' do
+        result = instance.footnote_description(footnote)
+        expect(result).to eq('   ')
+      end
+    end
+  end
 
   describe '#measure_type' do
     let(:measure_type) { instance_double(MeasureType, description: 'Third country duty') }

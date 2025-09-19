@@ -1,5 +1,5 @@
 class DeltaReportService
-  include MeasurePresenter
+  include DeltaPresenter
 
   def self.generate(start_date: Time.zone.today, end_date: nil)
     new(start_date, end_date || start_date).generate_report
@@ -81,7 +81,7 @@ class DeltaReportService
           operation_date: date,
           chapter: commodity.chapter_short_code,
           commodity_code: commodity.goods_nomenclature_item_id,
-          commodity_code_description: commodity.goods_nomenclature_description.description,
+          commodity_code_description: commodity_description(commodity),
           import_export: change[:import_export] || 'n/a',
           geo_area: change[:geo_area] || 'n/a',
           measure_type: change[:measure_type] || 'n/a',

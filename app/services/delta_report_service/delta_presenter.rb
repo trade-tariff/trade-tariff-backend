@@ -1,5 +1,13 @@
 class DeltaReportService
-  module MeasurePresenter
+  module DeltaPresenter
+    def commodity_description(commodity)
+      commodity.goods_nomenclature_description.csv_formatted_description
+    end
+
+    def footnote_description(footnote)
+      strip_html_tags(footnote.description)
+    end
+
     def measure_type(measure)
       measure.measure_type.description
     end
@@ -41,6 +49,14 @@ class DeltaReportService
 
     def duty_expression(measure)
       measure.supplementary_unit_duty_expression || measure.duty_expression
+    end
+
+    private
+
+    def strip_html_tags(text)
+      return text if text.blank?
+
+      Nokogiri::HTML(text).text
     end
   end
 end

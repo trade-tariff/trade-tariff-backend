@@ -1,7 +1,5 @@
 class DeltaReportService
   class MeasureComponentChanges < BaseChanges
-    include MeasurePresenter
-
     def self.collect(date)
       MeasureComponent
         .where(operation_date: date)

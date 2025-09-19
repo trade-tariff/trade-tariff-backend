@@ -10,7 +10,9 @@ RSpec.describe DeltaReportService do
                                 declarable?: declarable,
                                 chapter_short_code: item_id[0..1])
     # rubocop:disable RSpec/VerifiedDoubles
-    description_double = double('GoodsNomenclatureDescription', description: description)
+    description_double = double('GoodsNomenclatureDescription',
+                                description: description,
+                                csv_formatted_description: description)
     # rubocop:enable RSpec/VerifiedDoubles
     allow(commodity).to receive(:goods_nomenclature_description).and_return(description_double)
     commodity

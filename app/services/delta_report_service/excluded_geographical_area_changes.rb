@@ -1,7 +1,5 @@
 class DeltaReportService
   class ExcludedGeographicalAreaChanges < BaseChanges
-    include MeasurePresenter
-
     def self.collect(date)
       # Use Operation model so we can access deleted records
       MeasureExcludedGeographicalArea::Operation

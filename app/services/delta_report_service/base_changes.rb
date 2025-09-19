@@ -1,5 +1,7 @@
 class DeltaReportService
   class BaseChanges
+    include DeltaPresenter
+
     attr_accessor :record, :changes, :change, :date
 
     def initialize(record, date)

@@ -1,7 +1,5 @@
 class DeltaReportService
   class GeographicalAreaChanges < BaseChanges
-    include MeasurePresenter
-
     def self.collect(date)
       GeographicalArea
         .where(operation_date: date)

@@ -24,7 +24,7 @@ class DeltaReportService
           footnote_oid: record.oid,
           description:,
           date_of_effect:,
-          change: change.present? ? "#{record.code}: #{change}" : "#{record.code}: #{record.description}",
+          change: change.present? ? "#{record.code}: #{change}" : "#{record.code}: #{footnote_description(record)}",
         }
       end
     rescue StandardError => e
