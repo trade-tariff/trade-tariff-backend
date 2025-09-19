@@ -1,7 +1,5 @@
 class DeltaReportService
   class FootnoteAssociationGoodsNomenclatureChanges < BaseChanges
-    include MeasurePresenter
-
     def self.collect(date)
       FootnoteAssociationGoodsNomenclature
         .where(operation_date: date)
@@ -23,7 +21,7 @@ class DeltaReportService
         goods_nomenclature_sid: record.goods_nomenclature.goods_nomenclature_sid,
         description:,
         date_of_effect:,
-        change: change.present? ? "#{record.footnote.code}: #{change}" : "#{record.footnote.code}: #{record.footnote.description}",
+        change: change.present? ? "#{record.footnote.code}: #{change}" : "#{record.footnote.code}: #{footnote_description(record.footnote)}",
       }
     rescue StandardError => e
       Rails.logger.error "Error with #{object_name} OID #{record.oid}"

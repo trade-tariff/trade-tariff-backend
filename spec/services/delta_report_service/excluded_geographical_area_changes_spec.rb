@@ -62,9 +62,9 @@ RSpec.describe DeltaReportService::ExcludedGeographicalAreaChanges do
   describe '#analyze' do
     before do
       allow(instance).to receive_messages(
-        measure_type: '103: Third country duty',
+        measure_type: 'Third country duty',
         import_export: 'Import',
-        geo_area: 'GB: United Kingdom',
+        geo_area: 'United Kingdom (GB)',
         additional_code: nil,
       )
     end
@@ -91,9 +91,9 @@ RSpec.describe DeltaReportService::ExcludedGeographicalAreaChanges do
         expect(result).to eq({
           type: 'ExcludedGeographicalArea',
           measure_sid: excluded_geo_area.measure_sid,
-          measure_type: '103: Third country duty',
+          measure_type: 'Third country duty',
           import_export: 'Import',
-          geo_area: 'GB: United Kingdom',
+          geo_area: 'United Kingdom (GB)',
           date_of_effect: date,
           description: 'Excluded Geo Area added',
           change: 'Excluded IE',
@@ -145,12 +145,12 @@ RSpec.describe DeltaReportService::ExcludedGeographicalAreaChanges do
     it 'uses MeasurePresenter methods for formatting' do
       allow(instance).to receive_messages(
         get_changes: nil,
-        geo_area: 'GB: United Kingdom',
+        geo_area: 'United Kingdom (GB)',
       )
 
       result = instance.analyze
 
-      expect(result[:measure_type]).to include(measure_type.measure_type_id)
+      expect(result[:measure_type]).to include(measure_type_description.description)
       expect(result[:additional_code]).to be_nil
       expect(result[:geo_area]).to include(geographical_area.geographical_area_id)
     end
@@ -165,7 +165,7 @@ RSpec.describe DeltaReportService::ExcludedGeographicalAreaChanges do
     context 'when excluded_geographical_area is nil' do
       before do
         allow(excluded_geo_area).to receive(:excluded_geographical_area).and_return(nil)
-        allow(instance).to receive(:geo_area).and_return('GB: United Kingdom')
+        allow(instance).to receive(:geo_area).and_return('United Kingdom (GB)')
       end
 
       it 'handles nil geographical area gracefully' do
@@ -179,7 +179,7 @@ RSpec.describe DeltaReportService::ExcludedGeographicalAreaChanges do
         allow(measure).to receive(:measure_type).and_return(nil)
         allow(instance).to receive_messages(
           measure_type: nil,
-          geo_area: 'GB: United Kingdom',
+          geo_area: 'United Kingdom (GB)',
         )
       end
 
@@ -192,7 +192,7 @@ RSpec.describe DeltaReportService::ExcludedGeographicalAreaChanges do
     context 'when geographical_area is nil' do
       before do
         allow(excluded_geo_area).to receive(:geographical_area).and_return(nil)
-        allow(instance).to receive(:geo_area).with(nil).and_return(nil)
+        allow(instance).to receive(:geo_area).with(nil, []).and_return(nil)
       end
 
       it 'handles missing geographical area gracefully' do
@@ -212,7 +212,7 @@ RSpec.describe DeltaReportService::ExcludedGeographicalAreaChanges do
           excluded_geographical_area: 'RU',
           measure_sid: '20260381',
         )
-        allow(instance).to receive(:geo_area).and_return('GB: United Kingdom')
+        allow(instance).to receive(:geo_area).and_return('United Kingdom (GB)')
         allow(Measure::Operation).to receive_message_chain(:where, :any?).and_return(true)
         allow(TimeMachine).to receive(:at).with(real_excluded_date).and_yield
       end

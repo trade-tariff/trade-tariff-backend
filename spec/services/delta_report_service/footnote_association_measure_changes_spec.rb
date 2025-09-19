@@ -66,7 +66,7 @@ RSpec.describe DeltaReportService::FootnoteAssociationMeasureChanges do
       allow(measure).to receive_messages(
         geographical_area: geographical_area,
         additional_code: additional_code,
-        measure_type: instance_double(MeasureType, id: '103', description: 'Import duty', trade_movement_code: 0),
+        measure_type: instance_double(MeasureType, description: 'Import duty', trade_movement_code: 0),
       )
       allow(additional_code).to receive_messages(
         additional_code_description: instance_double(AdditionalCodeDescription, description: '1234'),
@@ -126,9 +126,9 @@ RSpec.describe DeltaReportService::FootnoteAssociationMeasureChanges do
         expect(result).to eq({
           type: 'FootnoteAssociationMeasure',
           measure_sid: measure.measure_sid,
-          measure_type: '103: Import duty',
+          measure_type: 'Import duty',
           import_export: 'Import',
-          geo_area: 'GB: United Kingdom',
+          geo_area: 'United Kingdom (GB)',
           description: 'Footnote TN001 updated',
           date_of_effect: date,
           change: "#{footnote.code}: #{footnote.description}",
@@ -163,9 +163,9 @@ RSpec.describe DeltaReportService::FootnoteAssociationMeasureChanges do
         expect(result).to eq({
           type: 'FootnoteAssociationMeasure',
           measure_sid: measure.measure_sid,
-          measure_type: '103: Import duty',
+          measure_type: 'Import duty',
           import_export: 'Import',
-          geo_area: 'GB: United Kingdom',
+          geo_area: 'United Kingdom (GB)',
           description: 'Footnote TN001 updated',
           date_of_effect: date,
           change: "#{footnote.code}: #{footnote.description}",

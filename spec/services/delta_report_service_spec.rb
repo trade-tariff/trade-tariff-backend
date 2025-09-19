@@ -10,7 +10,9 @@ RSpec.describe DeltaReportService do
                                 declarable?: declarable,
                                 chapter_short_code: item_id[0..1])
     # rubocop:disable RSpec/VerifiedDoubles
-    description_double = double('GoodsNomenclatureDescription', description: description)
+    description_double = double('GoodsNomenclatureDescription',
+                                description: description,
+                                csv_formatted_description: description)
     # rubocop:enable RSpec/VerifiedDoubles
     allow(commodity).to receive(:goods_nomenclature_description).and_return(description_double)
     commodity
@@ -281,9 +283,9 @@ RSpec.describe DeltaReportService do
             {
               type: 'FootnoteAssociationMeasure',
               measure_sid: '12345',
-              measure_type: '103: Import duty',
+              measure_type: 'Import duty',
               import_export: 'Import',
-              geo_area: 'GB: United Kingdom',
+              geo_area: 'United Kingdom (GB)',
               additional_code: '1234: Additional code description',
               description: 'Footnote TN001 updated',
               date_of_effect: date,
@@ -305,8 +307,8 @@ RSpec.describe DeltaReportService do
           commodity_code: measure_commodity.goods_nomenclature_item_id,
           commodity_code_description: measure_commodity.goods_nomenclature_description.description,
           import_export: 'Import',
-          geo_area: 'GB: United Kingdom',
-          measure_type: '103: Import duty',
+          geo_area: 'United Kingdom (GB)',
+          measure_type: 'Import duty',
           type_of_change: 'Footnote TN001 updated',
           date_of_effect: date,
           change: nil,

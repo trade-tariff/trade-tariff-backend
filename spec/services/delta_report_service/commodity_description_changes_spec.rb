@@ -3,15 +3,19 @@ RSpec.describe DeltaReportService::CommodityDescriptionChanges do
 
   let(:goods_nomenclature) { instance_double(GoodsNomenclature, goods_nomenclature_sid: '12345', declarable?: true) }
   let(:goods_nomenclature_description) do
-    instance_double(
-      GoodsNomenclatureDescription,
+    # rubocop:disable RSpec/VerifiedDoubles
+    double(
+      'GoodsNomenclatureDescription',
       goods_nomenclature: goods_nomenclature,
       goods_nomenclature_sid: '12345',
       description: 'Test description',
+      csv_formatted_description: 'Test description',
+      goods_nomenclature_description: double('GoodsNomenclatureDescription', csv_formatted_description: 'Test description'),
       validity_start_date: date,
       operation: :create,
       operation_date: date,
     )
+    # rubocop:enable RSpec/VerifiedDoubles
   end
   let(:instance) { described_class.new(goods_nomenclature_description, date) }
 
@@ -24,22 +28,28 @@ RSpec.describe DeltaReportService::CommodityDescriptionChanges do
     let(:goods_nomenclature1) { instance_double(GoodsNomenclature, goods_nomenclature_sid: '11111', declarable?: true) }
     let(:goods_nomenclature2) { instance_double(GoodsNomenclature, goods_nomenclature_sid: '22222', declarable?: true) }
     let(:goods_nomenclature_description1) do
-      instance_double(
-        GoodsNomenclatureDescription,
+      # rubocop:disable RSpec/VerifiedDoubles
+      double(
+        'GoodsNomenclatureDescription',
         goods_nomenclature: goods_nomenclature1,
         goods_nomenclature_sid: '11111',
         operation: :create,
         validity_start_date: date,
+        goods_nomenclature_description: double('GoodsNomenclatureDescription', csv_formatted_description: 'Description 1'),
       )
+      # rubocop:enable RSpec/VerifiedDoubles
     end
     let(:goods_nomenclature_description2) do
-      instance_double(
-        GoodsNomenclatureDescription,
+      # rubocop:disable RSpec/VerifiedDoubles
+      double(
+        'GoodsNomenclatureDescription',
         goods_nomenclature: goods_nomenclature2,
         goods_nomenclature_sid: '22222',
         operation: :create,
         validity_start_date: date,
+        goods_nomenclature_description: double('GoodsNomenclatureDescription', csv_formatted_description: 'Description 2'),
       )
+      # rubocop:enable RSpec/VerifiedDoubles
     end
     let(:goods_nomenclature_descriptions) { [goods_nomenclature_description1, goods_nomenclature_description2] }
 

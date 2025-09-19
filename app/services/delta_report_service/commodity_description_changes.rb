@@ -26,7 +26,7 @@ class DeltaReportService
           goods_nomenclature_sid: record.goods_nomenclature_sid,
           date_of_effect:,
           description:,
-          change: change || record.description,
+          change: change || commodity_description(record),
         }
       end
     rescue StandardError => e

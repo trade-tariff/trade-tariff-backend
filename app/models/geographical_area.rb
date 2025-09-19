@@ -108,13 +108,13 @@ class GeographicalArea < Sequel::Model
     referenced.presence || self
   end
 
+  def erga_omnes?
+    id == ERGA_OMNES_ID
+  end
+
   private
 
   def referenced_id
     REFERENCED_GEOGRAPHICAL_AREAS[geographical_area_id]
-  end
-
-  def erga_omnes?
-    id == ERGA_OMNES_ID
   end
 end

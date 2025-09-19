@@ -1,7 +1,5 @@
 class DeltaReportService
   class MeasureChanges < BaseChanges
-    include MeasurePresenter
-
     def self.collect(date)
       # Use Operation model so we can access deleted records
       Measure::Operation
@@ -28,7 +26,7 @@ class DeltaReportService
         validity_end_date: record.validity_end_date,
         measure_type: measure_type(record),
         import_export: import_export(record),
-        geo_area: geo_area(record.geographical_area),
+        geo_area: geo_area(record.geographical_area, record.excluded_geographical_areas),
         description:,
         date_of_effect:,
         change: change || measure_type(record),

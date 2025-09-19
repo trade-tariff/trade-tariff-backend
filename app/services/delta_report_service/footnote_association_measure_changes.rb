@@ -1,7 +1,5 @@
 class DeltaReportService
   class FootnoteAssociationMeasureChanges < BaseChanges
-    include MeasurePresenter
-
     def self.collect(date)
       # Use Operation model so we can access deleted records
       FootnoteAssociationMeasure::Operation
@@ -25,10 +23,10 @@ class DeltaReportService
         measure_sid: record.measure_sid,
         measure_type: measure_type(record.measure),
         import_export: import_export(record.measure),
-        geo_area: geo_area(record.measure.geographical_area),
+        geo_area: geo_area(record.measure.geographical_area, record.measure.excluded_geographical_areas),
         description:,
         date_of_effect:,
-        change: change.present? ? "#{record.footnote.code}: #{change}" : "#{record.footnote.code}: #{record.footnote.description}",
+        change: change.present? ? "#{record.footnote.code}: #{change}" : "#{record.footnote.code}: #{footnote_description(record.footnote)}",
       }
     rescue StandardError => e
       Rails.logger.error "Error with #{object_name} OID #{record.oid}"

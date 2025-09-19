@@ -46,7 +46,7 @@ RSpec.describe DeltaReportService::GeographicalAreaChanges do
         description: 'Geo Area updated',
         change: nil,
       )
-      allow(instance).to receive(:geo_area).with(geographical_area).and_return('GB: United Kingdom')
+      allow(instance).to receive(:geo_area).with(geographical_area, []).and_return('United Kingdom (GB)')
     end
 
     context 'when there are no changes' do
@@ -66,7 +66,7 @@ RSpec.describe DeltaReportService::GeographicalAreaChanges do
           geographical_area_sid: geographical_area.geographical_area_sid,
           date_of_effect: date,
           description: 'Geo Area updated',
-          change: 'GB: United Kingdom',
+          change: 'United Kingdom (GB)',
         })
       end
     end

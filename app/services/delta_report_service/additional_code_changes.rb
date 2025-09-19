@@ -1,7 +1,5 @@
 class DeltaReportService
   class AdditionalCodeChanges < BaseChanges
-    include MeasurePresenter
-
     def self.collect(date)
       AdditionalCode
         .where(operation_date: date)
