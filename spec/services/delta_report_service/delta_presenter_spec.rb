@@ -9,7 +9,7 @@ RSpec.describe DeltaReportService::DeltaPresenter do
 
   describe '#commodity_description' do
     let(:goods_nomenclature_description) { instance_double(GoodsNomenclatureDescription, csv_formatted_description: 'Formatted commodity description') }
-    let(:commodity) { instance_double(Commodity, goods_nomenclature_description: goods_nomenclature_description) }
+    let(:commodity) { instance_double(Commodity, goods_nomenclature_description: goods_nomenclature_description, validity_start_date: Time.zone.today) }
 
     it 'returns the csv formatted description from the commodity' do
       result = instance.commodity_description(commodity)
@@ -17,7 +17,7 @@ RSpec.describe DeltaReportService::DeltaPresenter do
     end
 
     context 'when goods_nomenclature_description is nil' do
-      let(:commodity) { instance_double(Commodity, goods_nomenclature_description: nil) }
+      let(:commodity) { instance_double(Commodity, goods_nomenclature_description: nil, validity_start_date: Time.zone.today) }
 
       it 'raises an error' do
         expect { instance.commodity_description(commodity) }.to raise_error(NoMethodError)

@@ -1,7 +1,9 @@
 class DeltaReportService
   module DeltaPresenter
     def commodity_description(commodity)
-      commodity.goods_nomenclature_description.csv_formatted_description
+      TimeMachine.at(commodity.validity_start_date) do
+        commodity.goods_nomenclature_description.csv_formatted_description
+      end
     end
 
     def footnote_description(footnote)
