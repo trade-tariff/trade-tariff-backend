@@ -25,5 +25,17 @@ module Reporting
     def now
       Time.zone.today
     end
+
+    def object_key_prefix(tariff = service)
+      "#{tariff}/reporting/#{year}/#{month}/#{day}"
+    end
+
+    def object_key_suffix(tariff = service)
+      "#{tariff}_#{now.strftime('%Y_%m_%d')}"
+    end
+
+    def log_query_count
+      Rails.logger.debug("Query count: #{::SequelRails::Railties::LogSubscriber.count}")
+    end
   end
 end
