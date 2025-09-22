@@ -19,19 +19,6 @@
     #
     # Online converter: https://crontab.guru/#0_22_*_*_*
     #
-    RefreshAppendix5aGuidanceWorker:
-      # Runs workdays at 22:00
-      cron: "00 22 * * 1,2,3,4,5"
-      description: "Hot refreshes CDS Guidance"
-    PopulateChangesTableWorker:
-      cron: "30 4 * * *"
-      description: "Populates the changes table"
-    PopulateSearchSuggestionsWorker:
-      cron: "0 18 * * *"
-      description: "Populates search suggestions which are used in the frontend"
-    ReportWorker:
-      cron: "30 10 * * *" # Needs to run even if the UpdatesSynchronizerWorker failed
-      description: "Generates reports and persists them to S3"
     CdsUpdatesSynchronizerWorker:
       cron: "30 0 * * *"
       description: "Runs ETL of CDS files and populates indexes"
@@ -40,6 +27,16 @@
       cron: "0 0 * * *"
       description: "Runs ETL of Taric files and populates indexes"
       enabled: <%= ENV.fetch('SERVICE', 'uk') == 'xi' %>
+    RefreshAppendix5aGuidanceWorker:
+      # Runs workdays at 22:00
+      cron: "00 22 * * 1,2,3,4,5"
+      description: "Hot refreshes CDS Guidance"
+    PopulateSearchSuggestionsWorker:
+      cron: "0 18 * * *"
+      description: "Populates search suggestions which are used in the frontend"
+    ReportWorker:
+      cron: "30 10 * * *" # Needs to run even if the UpdatesSynchronizerWorker failed
+      description: "Generates reports and persists them to S3"
     HealthcheckWorker:
       every: 30.minutes
       description: Trigger the health check
