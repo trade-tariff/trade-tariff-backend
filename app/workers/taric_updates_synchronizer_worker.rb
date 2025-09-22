@@ -21,12 +21,18 @@ class TaricUpdatesSynchronizerWorker
 
     Sidekiq::Client.enqueue(ClearInvalidSearchReferences)
     Sidekiq::Client.enqueue(TreeIntegrityCheckWorker)
-    Sidekiq::Client.enqueue(ClearCacheWorker)
+    Sidekiq::Client.enqueue(PopulateChangesTableWorker)
 
     # NOTE: This will create some category assessments.
     #       - Delay for 5 minutes as some of the category assessment queries rely on materialized views
     #       - Pass the oldest pending date to process all changes inclusive of the oldest pending update
     Sidekiq::Client.enqueue_in(5.minutes, GreenLanesUpdatesWorker, oldest_pending_date.iso8601)
+
+    # NOTE: Make sure caches have been refreshed including the CDN
+    #       otherwise we serve up stale responses.
+    #
+    #       We let all of the other work complete off of the same queue first and whilst all items are dequeued in the correct order they have different runtimes so we add a further delay to be sure.
+    Sidekiq::Client.enqueue_in(10.minutes, ClearCacheWorker)
   end
 
 private
