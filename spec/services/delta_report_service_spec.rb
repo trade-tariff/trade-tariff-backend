@@ -8,6 +8,7 @@ RSpec.describe DeltaReportService do
                                 goods_nomenclature_item_id: item_id,
                                 goods_nomenclature_sid: sid,
                                 declarable?: declarable,
+                                validity_start_date: Time.zone.today,
                                 chapter_short_code: item_id[0..1])
     # rubocop:disable RSpec/VerifiedDoubles
     description_double = double('GoodsNomenclatureDescription',
