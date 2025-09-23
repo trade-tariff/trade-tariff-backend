@@ -137,6 +137,7 @@ RSpec.describe DeltaReportService do
         certificates: [],
         additional_codes: [],
         footnotes: [],
+        quota_events: [],
       }
     end
 
@@ -171,6 +172,7 @@ RSpec.describe DeltaReportService do
       allow(DeltaReportService::FootnoteChanges).to receive(:collect).with(date).and_return(mock_changes[:footnotes])
       allow(DeltaReportService::FootnoteAssociationMeasureChanges).to receive(:collect).with(date).and_return(mock_changes[:footnote_association_measures] || [])
       allow(DeltaReportService::FootnoteAssociationGoodsNomenclatureChanges).to receive(:collect).with(date).and_return(mock_changes[:footnote_association_goods_nomenclature] || [])
+      allow(DeltaReportService::QuotaEventChanges).to receive(:collect).with(date).and_return(mock_changes[:quota_events] || [])
       allow(DeltaReportService::ExcelGenerator).to receive(:call).and_return(instance_double(Axlsx::Package))
       allow(TimeMachine).to receive(:at).and_yield
 
@@ -195,6 +197,7 @@ RSpec.describe DeltaReportService do
       expect(DeltaReportService::FootnoteChanges).to have_received(:collect).with(date)
       expect(DeltaReportService::FootnoteAssociationMeasureChanges).to have_received(:collect).with(date)
       expect(DeltaReportService::FootnoteAssociationGoodsNomenclatureChanges).to have_received(:collect).with(date)
+      expect(DeltaReportService::QuotaEventChanges).to have_received(:collect).with(date)
     end
 
     it 'calls ExcelGenerator with commodity change records and date' do
@@ -234,6 +237,7 @@ RSpec.describe DeltaReportService do
               change: 'TN001: Product specific footnote',
             },
           ],
+          quota_events: [],
         }
       end
 
@@ -294,6 +298,7 @@ RSpec.describe DeltaReportService do
             },
           ],
           footnote_association_goods_nomenclature: [],
+          quota_events: [],
         }
       end
 
@@ -353,6 +358,7 @@ RSpec.describe DeltaReportService do
               change: 'footnote association updated',
             },
           ],
+          quota_events: [],
         }
       end
 
@@ -384,6 +390,80 @@ RSpec.describe DeltaReportService do
       end
     end
 
+    context 'when there are quota event changes' do
+      let(:quota_definition) { create_test_commodity(item_id: '0505000000', sid: 500, description: 'Quota commodity') }
+
+      let(:mock_changes) do
+        {
+          goods_nomenclatures: [],
+          measures: [],
+          measure_components: [],
+          measure_conditions: [],
+          excluded_geographical_areas: [],
+          geographical_areas: [],
+          certificates: [],
+          additional_codes: [],
+          footnotes: [],
+          footnote_association_measures: [],
+          footnote_association_goods_nomenclature: [],
+          quota_events: [
+            {
+              type: 'QuotaEvent',
+              quota_definition_sid: 500,
+              description: 'Quota Status: Exhausted',
+              date_of_effect: date,
+            },
+          ],
+        }
+      end
+
+      let(:expected_quota_event_change) do
+        {
+          type: 'QuotaEvent',
+          operation_date: date,
+          chapter: quota_definition.chapter_short_code,
+          commodity_code: quota_definition.goods_nomenclature_item_id,
+          commodity_code_description: quota_definition.goods_nomenclature_description.description,
+          import_export: 'Import',
+          geo_area: 'United Kingdom (GB)',
+          measure_type: 'Third country duty',
+          type_of_change: 'Quota Status: Exhausted',
+          date_of_effect: date,
+          change: 100,
+          ott_url: "https://www.trade-tariff.service.gov.uk/commodities/#{quota_definition.goods_nomenclature_item_id}?day=#{date.day}&month=#{date.month}&year=#{date.year}",
+          api_url: "https://www.trade-tariff.service.gov.uk/uk/api/commodities/#{quota_definition.goods_nomenclature_item_id}",
+        }
+      end
+
+      before do
+        quota_def_record = instance_double(QuotaDefinition,
+                                           quota_definition_sid: 500,
+                                           quota_order_number_id: '050001',
+                                           balance: 100)
+        allow(QuotaDefinition).to receive(:first).with(quota_definition_sid: 500).and_return(quota_def_record)
+
+        measure = instance_double(Measure, goods_nomenclature_item_id: '0505000000')
+        geographical_area = instance_double(GeographicalArea)
+        allow(quota_def_record).to receive(:measures).and_return([measure])
+        allow(measure).to receive_messages(
+          geographical_area: geographical_area,
+          excluded_geographical_areas: [],
+        )
+        # rubocop:disable RSpec/SubjectStub
+        allow(service).to receive(:measure_type).with(measure).and_return('Third country duty')
+        allow(service).to receive(:import_export).with(measure).and_return('Import')
+        allow(service).to receive(:geo_area).with(geographical_area, []).and_return('United Kingdom (GB)')
+        # rubocop:enable RSpec/SubjectStub
+
+        mock_goods_nomenclature_lookup(quota_definition, '0505000000')
+      end
+
+      it 'generates commodity changes for quota events' do
+        expect(result[:commodity_changes].flatten).to include(expected_quota_event_change)
+        expect(result[:total_records]).to eq(1)
+      end
+    end
+
     context 'when there are no changes' do
       let(:mock_changes) do
         {
@@ -398,12 +478,16 @@ RSpec.describe DeltaReportService do
           footnotes: [],
           footnote_association_measures: [],
           footnote_association_goods_nomenclature: [],
+          quota_events: [],
         }
       end
 
-      it 'returns empty commodity changes' do
-        expect(result[:commodity_changes].flatten).to be_empty
-        expect(result[:total_records]).to eq(0)
+      it 'returns empty commodity changes and zero total records' do
+        expect(result).to include(
+          dates: '2024_08_11',
+          total_records: 0,
+          commodity_changes: [],
+        )
       end
     end
   end
@@ -523,7 +607,6 @@ RSpec.describe DeltaReportService do
       before do
         service.instance_variable_set(:@date, date)
 
-        # Mock the database chain: db[:measures].where().distinct().select_map()
         measures_dataset = instance_double(Sequel::Dataset)
         allow(Sequel::Model.db).to receive(:[]).with(:measures).and_return(measures_dataset)
 
@@ -588,7 +671,6 @@ RSpec.describe DeltaReportService do
       before do
         service.instance_variable_set(:@date, date)
 
-        # Mock the database chain: db[:measures].where().distinct().select_map()
         measures_dataset = instance_double(Sequel::Dataset)
         allow(Sequel::Model.db).to receive(:[]).with(:measures).and_return(measures_dataset)
 
@@ -670,6 +752,35 @@ RSpec.describe DeltaReportService do
       it 'returns empty array when footnote is not found' do
         result = service.send(:find_affected_declarable_goods, change)
         expect(result).to eq([])
+      end
+    end
+
+    context 'when change type is QuotaEvent' do
+      let(:change) { { type: 'QuotaEvent', quota_definition_sid: 123 } }
+      let(:quota_definition) { instance_double(QuotaDefinition, quota_order_number_id: '050001', balance: 100) }
+      let(:measure) { instance_double(Measure, goods_nomenclature_item_id: '0505000000') }
+      let(:measures) { [measure] }
+      let(:geographical_area) { instance_double(GeographicalArea) }
+      let(:declarable_commodity) { create_test_commodity(item_id: '0505000000', sid: 100) }
+
+      before do
+        allow(QuotaDefinition).to receive(:first).with(quota_definition_sid: 123).and_return(quota_definition)
+        allow(quota_definition).to receive(:measures).and_return(measures)
+        allow(measure).to receive_messages(
+          geographical_area: geographical_area,
+          excluded_geographical_areas: [],
+        )
+        # rubocop:disable RSpec/SubjectStub
+        allow(service).to receive(:measure_type).with(measure).and_return('Third country duty')
+        allow(service).to receive(:import_export).with(measure).and_return('Import')
+        allow(service).to receive(:geo_area).with(geographical_area, []).and_return('United Kingdom (GB)')
+        # rubocop:enable RSpec/SubjectStub
+        mock_goods_nomenclature_lookup(declarable_commodity, '0505000000')
+      end
+
+      it 'finds quota definition and order number to get commodity code' do
+        result = service.send(:find_affected_declarable_goods, change)
+        expect(result).to eq([declarable_commodity])
       end
     end
 
@@ -782,7 +893,6 @@ RSpec.describe DeltaReportService do
     before do
       service.instance_variable_set(:@date, date)
 
-      # Mock the database chain: db[:measures].where().distinct().select_map()
       measures_dataset = instance_double(Sequel::Dataset)
       allow(Sequel::Model.db).to receive(:[]).with(:measures).and_return(measures_dataset)
 
@@ -809,7 +919,6 @@ RSpec.describe DeltaReportService do
       before do
         service.instance_variable_set(:@date, date)
 
-        # Mock the database chain: db[:measures].where().distinct().select_map()
         measures_dataset = instance_double(Sequel::Dataset)
         allow(Sequel::Model.db).to receive(:[]).with(:measures).and_return(measures_dataset)
 
