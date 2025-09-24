@@ -67,6 +67,7 @@ class DeltaReportService
     @changes[:footnotes] = FootnoteChanges.collect(date)
     @changes[:footnote_association_measures] = FootnoteAssociationMeasureChanges.collect(date)
     @changes[:footnote_association_goods_nomenclature] = FootnoteAssociationGoodsNomenclatureChanges.collect(date)
+    @changes[:quota_events] = QuotaEventChanges.collect(date)
   end
 
   def generate_commodity_change_records
@@ -114,6 +115,8 @@ class DeltaReportService
       find_declarable_goods_for_additional_code(change)
     when 'Footnote'
       find_declarable_goods_for_footnote(change)
+    when 'QuotaEvent'
+      find_declarable_goods_for_quota(change)
     else
       []
     end
@@ -199,6 +202,21 @@ class DeltaReportService
     else
       []
     end
+  end
+
+  def find_declarable_goods_for_quota(change)
+    quota_definition = QuotaDefinition.first(quota_definition_sid: change[:quota_definition_sid])
+    affected_goods = []
+
+    quota_definition.measures.each do |measure|
+      change[:measure_type] = measure_type(measure)
+      change[:import_export] = import_export(measure)
+      change[:geo_area] = geo_area(measure.geographical_area, measure.excluded_geographical_areas)
+      change[:change] = quota_definition.balance
+      affected_goods += find_declarable_goods_under_code(measure.goods_nomenclature_item_id)
+    end
+
+    affected_goods.uniq
   end
 
   def find_declarable_goods_under_code(goods_nomenclature_item_id)
