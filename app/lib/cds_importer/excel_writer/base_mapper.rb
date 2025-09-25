@@ -1,7 +1,6 @@
 class CdsImporter
   class ExcelWriter
     class BaseMapper
-
       def initialize(models)
         @models = models
       end
@@ -23,14 +22,16 @@ class CdsImporter
         text
       end
 
-      def format_date(d)
-        return "" if d.nil?
-        d.strftime("%d/%m/%Y")
+      def format_date(date)
+        return '' if date.nil?
+
+        date.strftime('%d/%m/%Y')
       end
 
-      def format_date_ymd(d)
-        return "" if d.nil?
-        d.strftime("%Y-%m-%d")
+      def format_date_ymd(date)
+        return '' if date.nil?
+
+        date.strftime('%Y-%m-%d')
       end
 
       def note

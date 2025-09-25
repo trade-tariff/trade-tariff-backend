@@ -43,9 +43,9 @@ class CdsImporter
 
         if note.present?
           sheet.add_row(note, style: bold_style)
-          sheet.merge_cells(merge_cells_length(update,1))
+          sheet.merge_cells(merge_cells_length(update, 1))
           sheet.add_row
-          sheet.merge_cells(merge_cells_length(update,2))
+          sheet.merge_cells(merge_cells_length(update, 2))
         end
 
         sheet.add_row(update.heading, style: bold_style)
@@ -63,8 +63,8 @@ class CdsImporter
         b: true,
         font_name: 'Calibri',
         sz: 11,
-        bg_color: "e3e5e6",
-        )
+        bg_color: 'e3e5e6',
+      )
       @regular_style = workbook.styles.add_style(
         alignment: {
           wrap_text: true,
@@ -73,11 +73,11 @@ class CdsImporter
         },
         font_name: 'Calibri',
         sz: 11,
-        )
+      )
     end
 
     def excel_filename
-      "CDS updates " + xml_to_file_date + ".xlsx"
+      "CDS updates #{xml_to_file_date}.xlsx"
     end
 
     def xml_to_file_date

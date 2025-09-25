@@ -4,12 +4,13 @@ RSpec.describe CdsImporter::RecordInserter do
 
   shared_examples_for 'a batch insert operation' do |measure, certificate|
     subject(:inserter) { described_class.new('new_filename.gzip') }
-    let(:do_insert) {
+
+    let(:do_insert) do
       batch.each do |record|
         inserter.insert_record(record)
       end
       inserter.process_batch
-    }
+    end
 
     it 'persists a new record with the correct filename and operation' do
       expect {
@@ -59,9 +60,9 @@ RSpec.describe CdsImporter::RecordInserter do
     describe '#save_batch' do
       let(:measure2) { create(:measure, filename: 'initial_filename.gzip', operation: 'C') }
       let(:batch) do
-        [CdsImporter::CdsEntity.new(1,'Measure', measure, measure_mapper),
-         CdsImporter::CdsEntity.new(2,'Certificate', certificate, certificate_mapper),
-         CdsImporter::CdsEntity.new(3,'Measure', measure2, measure_mapper)]
+        [CdsImporter::CdsEntity.new(1, 'Measure', measure, measure_mapper),
+         CdsImporter::CdsEntity.new(2, 'Certificate', certificate, certificate_mapper),
+         CdsImporter::CdsEntity.new(3, 'Measure', measure2, measure_mapper)]
       end
 
       it_behaves_like 'a batch insert operation', 2, 1
@@ -70,9 +71,9 @@ RSpec.describe CdsImporter::RecordInserter do
     describe '#save_batch with skip record' do
       let(:measure2) { create(:measure, :with_skip_import, filename: 'initial_filename.gzip', operation: 'C') }
       let(:batch) do
-        [CdsImporter::CdsEntity.new(1,'Measure', measure, measure_mapper),
-         CdsImporter::CdsEntity.new(2,'Certificate', certificate, certificate_mapper),
-         CdsImporter::CdsEntity.new(3,'Measure', measure2, measure_mapper)]
+        [CdsImporter::CdsEntity.new(1, 'Measure', measure, measure_mapper),
+         CdsImporter::CdsEntity.new(2, 'Certificate', certificate, certificate_mapper),
+         CdsImporter::CdsEntity.new(3, 'Measure', measure2, measure_mapper)]
       end
 
       it_behaves_like 'a batch insert operation', 1, 1
@@ -84,10 +85,10 @@ RSpec.describe CdsImporter::RecordInserter do
       let(:measure2) { create(:measure, filename: 'initial_filename.gzip', operation: 'C') }
       let(:certificate2) { create(:certificate, filename: 'initial_filename.gzip', operation: 'C') }
       let(:batch) do
-        [CdsImporter::CdsEntity.new(1,'Measure', measure, measure_mapper),
-         CdsImporter::CdsEntity.new(2,'Certificate', certificate, certificate_mapper),
-         CdsImporter::CdsEntity.new(3,'Certificate', certificate2, certificate_mapper),
-         CdsImporter::CdsEntity.new(4,'Measure', measure2, measure_mapper)]
+        [CdsImporter::CdsEntity.new(1, 'Measure', measure, measure_mapper),
+         CdsImporter::CdsEntity.new(2, 'Certificate', certificate, certificate_mapper),
+         CdsImporter::CdsEntity.new(3, 'Certificate', certificate2, certificate_mapper),
+         CdsImporter::CdsEntity.new(4, 'Measure', measure2, measure_mapper)]
       end
 
       before do
