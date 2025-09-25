@@ -36,7 +36,7 @@ class CdsImporter
           end
 
           if block_given?
-            yield CdsImporter::CdsEntity.new(@key, model_instance, mapper)
+            yield CdsImporter::CdsEntity.new(@xml_node['hjid'], @key, model_instance, mapper)
           end
         end
       end

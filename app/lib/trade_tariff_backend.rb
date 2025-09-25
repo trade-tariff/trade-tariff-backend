@@ -266,6 +266,10 @@ module TradeTariffBackend
       ENV.fetch('CDS_IMPORT_BATCH_SIZE', '100').to_i
     end
 
+    def cds_importer_write_update_excel
+      ENV.fetch('CDS_IMPORT_WRITE_UPDATE_EXCEL', 'false').to_s == 'true'
+    end
+
     def cupid_team_to_emails
       ENV['CUPID_TEAM_TO_EMAILS']
     end
