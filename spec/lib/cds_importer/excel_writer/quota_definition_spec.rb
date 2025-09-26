@@ -3,8 +3,8 @@ RSpec.describe CdsImporter::ExcelWriter::QuotaDefinition do
 
   let(:quota_definition) do
     instance_double(
-      :quota_definition,
-      class: instance_double(name: 'QuotaDefinition'),
+      QuotaDefinition,
+      class: instance_double(Class, name: 'QuotaDefinition'),
       quota_order_number_id: '123456',
       quota_definition_sid: 111,
       operation: 'C',
@@ -20,8 +20,8 @@ RSpec.describe CdsImporter::ExcelWriter::QuotaDefinition do
 
   let(:balance_event1) do
     instance_double(
-      :quota_balance_event,
-      class: instance_double(name: 'QuotaBalanceEvent'),
+      QuotaBalanceEvent,
+      class: instance_double(Class, name: 'QuotaBalanceEvent'),
       occurrence_timestamp: Time.utc(2025, 5, 27, 0, 0, 0),
       new_balance: 400,
       old_balance: 600,
@@ -30,8 +30,8 @@ RSpec.describe CdsImporter::ExcelWriter::QuotaDefinition do
 
   let(:balance_event2) do
     instance_double(
-      :quota_balance_event,
-      class: instance_double(name: 'QuotaBalanceEvent'),
+      QuotaBalanceEvent,
+      class: instance_double(Class, name: 'QuotaBalanceEvent'),
       occurrence_timestamp: Time.utc(2025, 5, 28, 0, 0, 0),
       new_balance: 300,
       old_balance: 400,

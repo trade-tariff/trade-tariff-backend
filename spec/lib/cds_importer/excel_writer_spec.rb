@@ -2,23 +2,36 @@ RSpec.describe CdsImporter::ExcelWriter do
   subject(:writer) { described_class.new(filename) }
 
   let(:filename) { 'test.xlsx' }
-
   let(:entity1) do
     instance_double(
-      :cds_entity,
-      key: 'K1',
+      CdsImporter::CdsEntity,
+      key: 'K',
       element_id: 'E1',
       instance: 'I1',
     )
   end
-
   let(:entity2) do
     instance_double(
-      :cds_entity,
-      key: 'K2',
+      CdsImporter::CdsEntity,
+      key: 'K',
       element_id: 'E2',
       instance: 'I2',
     )
+  end
+  let(:excel) do
+    instance_double(CdsImporter::ExcelWriter::QuotaDefinition,
+                    sheet_name: 'Sheet 1',
+                    note: [],
+                    heading: [],
+                    data_row: [],
+                    table_span: [],
+                    column_widths: [])
+  end
+
+  before do
+    allow(Module).to receive(:const_get)
+                       .with('CdsImporter::ExcelWriter::K')
+                       .and_return(class_double(CdsImporter::ExcelWriter::QuotaDefinition, new: excel))
   end
 
   describe '#initialize' do
@@ -36,7 +49,8 @@ RSpec.describe CdsImporter::ExcelWriter do
       it 'sets key, xml_element_id, and adds the instance' do
         writer.write_record(entity1)
 
-        expect(writer.instance_variable_get(:@key)).to eq('K1')
+        expect(excel).not_to have_received(:sheet_name)
+        expect(writer.instance_variable_get(:@key)).to eq('K')
         expect(writer.instance_variable_get(:@xml_element_id)).to eq('E1')
         expect(writer.instance_variable_get(:@instances)).to eq(%w[I1])
       end
@@ -44,13 +58,16 @@ RSpec.describe CdsImporter::ExcelWriter do
 
     context 'when xml_element_id changes' do
       it 'writes existing instances and resets before adding new one' do
-        allow(writer).to receive(:write)
-
         writer.write_record(entity1)
         writer.write_record(entity2)
 
-        expect(writer).to have_received(:write).with('K1', %w[I1])
-        expect(writer.instance_variable_get(:@key)).to eq('K2')
+        expect(excel).to have_received(:sheet_name)
+        expect(excel).to have_received(:note)
+        expect(excel).to have_received(:sheet_name)
+        expect(excel).to have_received(:heading)
+        expect(excel).to have_received(:column_widths).exactly(2).times
+        expect(excel).to have_received(:data_row)
+        expect(writer.instance_variable_get(:@key)).to eq('K')
         expect(writer.instance_variable_get(:@xml_element_id)).to eq('E2')
         expect(writer.instance_variable_get(:@instances)).to eq(%w[I2])
       end
@@ -58,12 +75,10 @@ RSpec.describe CdsImporter::ExcelWriter do
 
     context 'when xml_element_id stays the same' do
       it 'does not call write and accumulates instances' do
-        allow(writer).to receive(:write)
-
         writer.write_record(entity1)
         writer.write_record(entity1)
 
-        expect(writer).not_to have_received(:write)
+        expect(excel).not_to have_received(:sheet_name)
         expect(writer.instance_variable_get(:@instances)).to eq(%w[I1 I1])
       end
     end
