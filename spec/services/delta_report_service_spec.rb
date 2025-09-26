@@ -412,6 +412,7 @@ RSpec.describe DeltaReportService do
               quota_definition_sid: 500,
               description: 'Quota Status: Exhausted',
               date_of_effect: date,
+              change: 'Quota Exhausted',
             },
           ],
         }
@@ -429,7 +430,7 @@ RSpec.describe DeltaReportService do
           measure_type: 'Third country duty',
           type_of_change: 'Quota Status: Exhausted',
           date_of_effect: date,
-          change: 100,
+          change: 'Quota Exhausted',
           ott_url: "https://www.trade-tariff.service.gov.uk/commodities/#{quota_definition.goods_nomenclature_item_id}?day=#{date.day}&month=#{date.month}&year=#{date.year}",
           api_url: "https://www.trade-tariff.service.gov.uk/uk/api/commodities/#{quota_definition.goods_nomenclature_item_id}",
         }
@@ -439,7 +440,8 @@ RSpec.describe DeltaReportService do
         quota_def_record = instance_double(QuotaDefinition,
                                            quota_definition_sid: 500,
                                            quota_order_number_id: '050001',
-                                           balance: 100)
+                                           balance: 100,
+                                           measurement_unit: 'kg')
         allow(QuotaDefinition).to receive(:first).with(quota_definition_sid: 500).and_return(quota_def_record)
 
         measure = instance_double(Measure, goods_nomenclature_item_id: '0505000000')
@@ -757,7 +759,7 @@ RSpec.describe DeltaReportService do
 
     context 'when change type is QuotaEvent' do
       let(:change) { { type: 'QuotaEvent', quota_definition_sid: 123 } }
-      let(:quota_definition) { instance_double(QuotaDefinition, quota_order_number_id: '050001', balance: 100) }
+      let(:quota_definition) { instance_double(QuotaDefinition, quota_order_number_id: '050001', balance: 100, measurement_unit: 'kg') }
       let(:measure) { instance_double(Measure, goods_nomenclature_item_id: '0505000000') }
       let(:measures) { [measure] }
       let(:geographical_area) { instance_double(GeographicalArea) }
