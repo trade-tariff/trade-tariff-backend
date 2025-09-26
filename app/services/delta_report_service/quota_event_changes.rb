@@ -1,7 +1,7 @@
 class DeltaReportService
   class QuotaEventChanges < BaseChanges
     def self.collect(date)
-      event_models = [QuotaExhaustionEvent, QuotaCriticalEvent]
+      event_models = [QuotaExhaustionEvent, QuotaCriticalEvent, QuotaBalanceEvent]
 
       events = event_models.each_with_object([]) { |model, arr|
         model.where(operation_date: date).each do |event|
@@ -22,11 +22,12 @@ class DeltaReportService
     def analyze
       status = record.status
 
-      return unless status.in?(%w[Exhausted Critical])
+      return unless status.in?(%w[Exhausted Critical Open])
 
       TimeMachine.at(date - 1.day) do
         previous = QuotaDefinition.first(quota_definition_sid: record.quota_definition_sid)
         return if status == previous.status
+        return if status == 'Open' && previous.status == 'Critical'
       end
 
       {

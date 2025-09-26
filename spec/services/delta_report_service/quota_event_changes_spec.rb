@@ -11,20 +11,29 @@ RSpec.describe DeltaReportService::QuotaEventChanges do
           quota_definition_sid: 456,
           oid: 2)
   end
+  let(:quota_balance_event) do
+    build(:quota_balance_event,
+          quota_definition_sid: 789,
+          oid: 3)
+  end
   let(:instance) { described_class.new(quota_definition, date) }
 
   # rubocop:disable RSpec/MultipleMemoizedHelpers
   describe '.collect' do
     let(:exhaustion_events) { [quota_exhaustion_event] }
     let(:critical_events) { [quota_critical_event] }
+    let(:balance_events) { [quota_balance_event] }
     let(:exhaustion_instance) { instance_double(described_class) }
     let(:critical_instance) { instance_double(described_class) }
+    let(:balance_instance) { instance_double(described_class) }
     let(:quota_definition_exhausted) { instance_double(QuotaDefinition, quota_definition_sid: quota_exhaustion_event.quota_definition_sid, status: 'Exhausted') }
     let(:quota_definition_critical) { instance_double(QuotaDefinition, quota_definition_sid: quota_critical_event.quota_definition_sid, status: 'Critical') }
+    let(:quota_definition_balance) { instance_double(QuotaDefinition, quota_definition_sid: quota_balance_event.quota_definition_sid, status: 'Open') }
 
     before do
       allow(QuotaExhaustionEvent).to receive(:where).with(operation_date: date).and_return(exhaustion_events)
       allow(QuotaCriticalEvent).to receive(:where).with(operation_date: date).and_return(critical_events)
+      allow(QuotaBalanceEvent).to receive(:where).with(operation_date: date).and_return(balance_events)
 
       allow(QuotaDefinition).to receive(:first) do |args|
         case args[:quota_definition_sid]
@@ -32,25 +41,32 @@ RSpec.describe DeltaReportService::QuotaEventChanges do
           quota_definition_exhausted
         when quota_critical_event.quota_definition_sid
           quota_definition_critical
+        when quota_balance_event.quota_definition_sid
+          quota_definition_balance
         end
       end
     end
 
     context 'when there are quota events for the given date' do
-      it 'finds exhaustion and critical events and returns analyzed changes' do
+      it 'finds exhaustion, critical and balance events and returns analyzed changes' do
         allow(described_class).to receive(:new).with(quota_definition_exhausted, date).and_return(exhaustion_instance)
         allow(described_class).to receive(:new).with(quota_definition_critical, date).and_return(critical_instance)
+        allow(described_class).to receive(:new).with(quota_definition_balance, date).and_return(balance_instance)
         allow(exhaustion_instance).to receive(:analyze)
           .and_return({ type: 'QuotaEvent', description: 'Quota Status: Exhausted' })
         allow(critical_instance).to receive(:analyze)
           .and_return({ type: 'QuotaEvent', description: 'Quota Status: Critical' })
+        allow(balance_instance).to receive(:analyze)
+          .and_return({ type: 'QuotaEvent', description: 'Quota Status: Open' })
 
         result = described_class.collect(date)
 
         expect(QuotaExhaustionEvent).to have_received(:where).with(operation_date: date)
         expect(QuotaCriticalEvent).to have_received(:where).with(operation_date: date)
+        expect(QuotaBalanceEvent).to have_received(:where).with(operation_date: date)
         expect(result).to include({ type: 'QuotaEvent', description: 'Quota Status: Exhausted' })
         expect(result).to include({ type: 'QuotaEvent', description: 'Quota Status: Critical' })
+        expect(result).to include({ type: 'QuotaEvent', description: 'Quota Status: Open' })
       end
     end
 
@@ -58,10 +74,13 @@ RSpec.describe DeltaReportService::QuotaEventChanges do
       it 'removes nil values from the result' do
         allow(described_class).to receive(:new).with(quota_definition_exhausted, date).and_return(exhaustion_instance)
         allow(described_class).to receive(:new).with(quota_definition_critical, date).and_return(critical_instance)
+        allow(described_class).to receive(:new).with(quota_definition_balance, date).and_return(balance_instance)
         allow(exhaustion_instance).to receive(:analyze)
           .and_return(nil)
         allow(critical_instance).to receive(:analyze)
           .and_return({ type: 'QuotaCriticalEvent', description: 'Quota Status: Critical' })
+        allow(balance_instance).to receive(:analyze)
+          .and_return(nil)
 
         result = described_class.collect(date)
 
@@ -72,11 +91,28 @@ RSpec.describe DeltaReportService::QuotaEventChanges do
     context 'when there are no events for the given date' do
       let(:exhaustion_events) { [] }
       let(:critical_events) { [] }
+      let(:balance_events) { [] }
 
       it 'returns an empty array' do
         result = described_class.collect(date)
 
         expect(result).to eq([])
+      end
+    end
+
+    context 'when there are only balance events for the given date' do
+      let(:exhaustion_events) { [] }
+      let(:critical_events) { [] }
+
+      it 'finds and analyzes balance events correctly' do
+        allow(described_class).to receive(:new).with(quota_definition_balance, date).and_return(balance_instance)
+        allow(balance_instance).to receive(:analyze)
+          .and_return({ type: 'QuotaEvent', description: 'Quota Status: Open' })
+
+        result = described_class.collect(date)
+
+        expect(QuotaBalanceEvent).to have_received(:where).with(operation_date: date)
+        expect(result).to eq([{ type: 'QuotaEvent', description: 'Quota Status: Open' }])
       end
     end
   end
@@ -129,6 +165,45 @@ RSpec.describe DeltaReportService::QuotaEventChanges do
         result = instance.analyze
 
         expect(result[:description]).to eq('Quota Status: Exhausted')
+      end
+
+      it 'includes the status in the description for Open status' do
+        allow(quota_definition).to receive(:status).and_return('Open')
+        allow(previous_quota_definition).to receive(:status).and_return('Exhausted')
+
+        result = instance.analyze
+
+        expect(result[:description]).to eq('Quota Status: Open')
+      end
+    end
+
+    context 'when status transitions should be ignored' do
+      it 'returns nil when status has not changed from previous day' do
+        allow(quota_definition).to receive(:status).and_return('Critical')
+        allow(previous_quota_definition).to receive(:status).and_return('Critical')
+
+        result = instance.analyze
+
+        expect(result).to be_nil
+      end
+
+      it 'returns nil when status changes from Critical to Open' do
+        allow(quota_definition).to receive(:status).and_return('Open')
+        allow(previous_quota_definition).to receive(:status).and_return('Critical')
+
+        result = instance.analyze
+
+        expect(result).to be_nil
+      end
+
+      it 'returns result when status changes from Exhausted to Open' do
+        allow(quota_definition).to receive(:status).and_return('Open')
+        allow(previous_quota_definition).to receive(:status).and_return('Exhausted')
+
+        result = instance.analyze
+
+        expect(result).to be_a(Hash)
+        expect(result[:description]).to eq('Quota Status: Open')
       end
     end
 
@@ -196,6 +271,24 @@ RSpec.describe DeltaReportService::QuotaEventChanges do
         result = instance.change
 
         expect(result).to eq('Balance: 0.000 kg')
+      end
+    end
+
+    context 'when status is Open' do
+      it 'returns formatted balance with measurement unit' do
+        allow(quota_definition).to receive_messages(status: 'Open', balance: 2345.123, measurement_unit: 'units')
+
+        result = instance.change
+
+        expect(result).to eq('Balance: 2,345.123 units')
+      end
+
+      it 'formats balance correctly for Open status' do
+        allow(quota_definition).to receive_messages(status: 'Open', balance: 500.000, measurement_unit: 'kg')
+
+        result = instance.change
+
+        expect(result).to eq('Balance: 500.000 kg')
       end
     end
   end
