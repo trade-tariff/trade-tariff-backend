@@ -95,7 +95,7 @@ module Api
                 )
                 .all
 
-        @goods_nomenclatures = gns.flat_map { |gn| [gn] + gn.ancestors }
+        @goods_nomenclatures = gns.flat_map { |gn| [gn] }
         respond_with(@goods_nomenclatures)
       end
 
