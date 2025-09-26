@@ -1,5 +1,6 @@
 FactoryBot.define do
   sequence(:measure_sid) { |n| n }
+  sequence(:quota_definition_sid) { |n| n }
   # offset sequence id to avoid conflicting with special casing of certain measure
   # types in the code base
   sequence(:measure_type_id, 10_000) { |n| n }
@@ -591,11 +592,13 @@ FactoryBot.define do
 
       transient do
         initial_volume { 1000 }
+        quota_definition_sid { generate(:quota_definition_sid) }
       end
 
       after(:build) do |measure, evaluator|
         create(
           :quota_definition,
+          quota_definition_sid: evaluator.quota_definition_sid,
           quota_order_number_id: measure.ordernumber,
           initial_volume: evaluator.initial_volume,
         )

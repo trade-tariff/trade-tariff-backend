@@ -63,7 +63,7 @@ RSpec.describe CdsImporter do
         end
 
         it 'invokes RecordInserter' do
-          allow(CdsImporter::RecordInserter).to receive(:new).with(kind_of(Array), cds_update.filename).and_call_original
+          allow(CdsImporter::RecordInserter).to receive(:new).with(cds_update.filename).and_call_original
 
           processor.process_xml_node('AdditionalCode', {})
 
