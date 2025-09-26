@@ -23,30 +23,26 @@ module PublicUsers
     end
 
     def commodity_codes_grouped
-      @commodity_codes_grouped ||= begin
-        codes = delta_preferences.map(&:commodity_code)
+      TimeMachine.now do
+        @commodity_codes_grouped ||= begin
+          codes = delta_preferences.map(&:commodity_code)
 
-        return { active: [], expired: [], erroneous: [] } if codes.empty?
+          return { active: [], expired: [], erroneous: [] } if codes.empty?
 
-        gns = GoodsNomenclature.where(goods_nomenclature_item_id: codes).all
-        gns_by_code = gns.index_by(&:goods_nomenclature_item_id)
+          actual_gns = Commodity.actual.where(goods_nomenclature_item_id: codes).to_a
+          active_codes = actual_gns.map(&:goods_nomenclature_item_id).uniq
+          remaining_codes = codes - active_codes
 
-        active = []
-        expired = []
-        erroneous = []
+          expired_gns = Commodity.where(goods_nomenclature_item_id: remaining_codes).to_a
+          expired_codes = expired_gns.map(&:goods_nomenclature_item_id).uniq
 
-        codes.each do |code|
-          gn = gns_by_code[code]
-          if gn.nil?
-            erroneous << code
-          elsif goods_nomenclature_active?(gn)
-            active << code
-          else
-            expired << code
-          end
+          erroneous_codes = remaining_codes - expired_codes
+          {
+            active: active_codes,
+            expired: expired_codes,
+            erroneous: erroneous_codes,
+          }
         end
-
-        { active:, expired:, erroneous: }
       end
     end
 
@@ -172,11 +168,6 @@ module PublicUsers
       super
       PublicUsers::Preferences.create(user_id: id)
       PublicUsers::ActionLog.create(user_id: id, action: PublicUsers::ActionLog::REGISTERED)
-    end
-
-    def goods_nomenclature_active?(gn_code)
-      gn_code.validity_start_date <= Time.zone.now &&
-        (gn_code.validity_end_date.nil? || gn_code.validity_end_date >= Time.zone.now)
     end
   end
 end

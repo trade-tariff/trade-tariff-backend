@@ -20,8 +20,9 @@ RSpec.describe PublicUsers::User do
 
   describe '#commodity_codes_grouped' do
     before do
-      create(:goods_nomenclature, goods_nomenclature_item_id: '1905903000', validity_start_date: Time.zone.now)
-      create(:goods_nomenclature, goods_nomenclature_item_id: '0702009000', validity_start_date: Time.zone.now - 1.week, validity_end_date: Time.zone.now - 1.day)
+      TradeTariffRequest.time_machine_now = Time.current
+      create(:commodity, :actual, goods_nomenclature_item_id: '1905903000')
+      create(:commodity, :expired, goods_nomenclature_item_id: '0702009000')
       user.add_delta_preference(commodity_code: '1905903000')
       user.add_delta_preference(commodity_code: '0702009000')
       user.add_delta_preference(commodity_code: '1234567890')
@@ -36,20 +37,23 @@ RSpec.describe PublicUsers::User do
     end
 
     it 'memoizes the result and avoids extra DB queries' do
-      allow(GoodsNomenclature).to receive(:where).and_call_original
+      allow(Commodity).to receive(:where).and_call_original
+      allow(Commodity).to receive(:actual).and_call_original
 
       first_result = user.commodity_codes_grouped
       second_result = user.commodity_codes_grouped
 
-      expect(GoodsNomenclature).to have_received(:where).once
+      expect(Commodity).to have_received(:where).once
+      expect(Commodity).to have_received(:actual).once
       expect(second_result).to equal(first_result)
     end
   end
 
   describe '#commodity_codes=' do
     before do
-      create(:goods_nomenclature, goods_nomenclature_item_id: '1905903000', validity_start_date: Time.zone.now)
-      create(:goods_nomenclature, goods_nomenclature_item_id: '0702009000', validity_start_date: Time.zone.now - 1.week, validity_end_date: Time.zone.now - 1.day)
+      TradeTariffRequest.time_machine_now = Time.current
+      create(:commodity, :actual, goods_nomenclature_item_id: '1905903000')
+      create(:commodity, :expired, goods_nomenclature_item_id: '0702009000')
     end
 
     context 'when adding new codes' do
@@ -66,7 +70,7 @@ RSpec.describe PublicUsers::User do
         user.add_delta_preference(commodity_code: '1234567890')
         user.add_delta_preference(commodity_code: '1234567891')
         user.add_delta_preference(commodity_code: '1905903000')
-        create(:goods_nomenclature, goods_nomenclature_item_id: '1905903001', validity_start_date: Time.zone.now)
+        create(:commodity, :actual, goods_nomenclature_item_id: '1905903001')
       end
 
       it 'removes codes not in the new list' do
