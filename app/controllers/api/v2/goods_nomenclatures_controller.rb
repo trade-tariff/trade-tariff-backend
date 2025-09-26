@@ -73,6 +73,32 @@ module Api
         respond_with(@goods_nomenclatures)
       end
 
+      def show_by_batch
+        commodity_codes = bulk_commmodities_params[:commodity_codes]
+        include_expired = params[:include_expired] == 'true'
+
+        if commodity_codes.size > 10
+          render json: serialize_errors({ error: 'Maximum of 10 commodity codes allowed' }),
+                 status: :unprocessable_entity
+          return
+        end
+
+        scope = include_expired ? GoodsNomenclature : GoodsNomenclature.actual
+
+        gns = scope
+                .association_inner_join(:goods_nomenclature_indents)
+                .where(Sequel[:goods_nomenclatures][:goods_nomenclature_item_id] => commodity_codes)
+                .eager(ancestors: :goods_nomenclature_descriptions)
+                .order(
+                  Sequel[:goods_nomenclatures][:producline_suffix],
+                  Sequel[:goods_nomenclature_indents][:number_indents],
+                )
+                .all
+
+        @goods_nomenclatures = gns.flat_map { |gn| [gn] + gn.ancestors }
+        respond_with(@goods_nomenclatures)
+      end
+
       def self.api_path_builder(object, check_for_subheadings: false)
         service = TradeTariffBackend.service
         gnid = object.goods_nomenclature_item_id
@@ -127,6 +153,16 @@ module Api
 
       def set_request_format
         request.format = :csv if request.headers['CONTENT_TYPE'] == 'text/csv'
+      end
+
+      def bulk_commmodities_params
+        params.require(:data).require(:attributes).permit(
+          commodity_codes: [],
+        )
+      end
+
+      def serialize_errors(errors)
+        Api::User::ErrorSerializationService.new.serialized_errors(errors)
       end
     end
   end

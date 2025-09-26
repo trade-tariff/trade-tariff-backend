@@ -115,4 +115,67 @@ RSpec.describe Api::V2::GoodsNomenclaturesController do
                                                 .map(&:to_s)
     end
   end
+
+  context 'when GNs for a batch of commodity codes are requested' do
+    let(:make_request) do
+      post :show_by_batch, format: :json,
+                           params: request_params
+    end
+
+    before { make_request }
+
+    context 'with 10 or less commodity codes' do
+      let(:commodities) { create_list(:commodity, 10, :declarable) }
+      let(:attributes) { { commodity_codes: commodities.map(&:goods_nomenclature_item_id) } }
+      let(:request_params) { { data: { attributes: attributes } } }
+
+      it { is_expected.to have_http_status :success }
+
+      it 'returns declarable commodity codes as requested' do
+        parsed = JSON.parse(response.body)
+        response_codes = parsed['data']
+                       .select { |gn| gn['attributes']['declarable'] }
+                       .map { |gn| gn['attributes']['goods_nomenclature_item_id'] }
+        expect(response_codes).to match_array(attributes[:commodity_codes])
+      end
+    end
+
+    context 'with include_expired set to true' do
+      before do
+        TradeTariffRequest.time_machine_now = Time.current
+      end
+
+      let(:commodity) { create :commodity, :expired }
+      let(:attributes) { { commodity_codes: [commodity.goods_nomenclature_item_id] } }
+      let(:request_params) do
+        {
+          data: { attributes: attributes },
+          include_expired: 'true',
+        }
+      end
+
+      it { is_expected.to have_http_status :success }
+
+      it 'returns declarable commodity codes as requested' do
+        parsed = JSON.parse(response.body)
+        response_codes = parsed['data']
+                       .select { |gn| gn['attributes']['declarable'] }
+                       .map { |gn| gn['attributes']['goods_nomenclature_item_id'] }
+        expect(response_codes).to match_array(attributes[:commodity_codes])
+      end
+    end
+
+    context 'with more than 10 commodity codes' do
+      let(:commodities) { create_list(:commodity, 11) }
+      let(:attributes) { { commodity_codes: commodities.map(&:goods_nomenclature_item_id) } }
+      let(:request_params) { { data: { attributes: attributes } } }
+
+      it { is_expected.to have_http_status :unprocessable_entity }
+
+      it 'returns an error message' do
+        expect(JSON.parse(response.body)['errors'].first['detail']).to eq \
+          'Maximum of 10 commodity codes allowed'
+      end
+    end
+  end
 end

@@ -488,4 +488,10 @@ RSpec.describe GoodsNomenclature do
 
     it { is_expected.to include instance_of GreenLanes::Measure }
   end
+
+  describe '#hierarchical_description' do
+    subject(:hierarchical_description) { create(:goods_nomenclature, :with_ancestors, :with_description, description: 'bar').hierarchical_description }
+
+    it { is_expected.to eq('daddy > bar') }
+  end
 end

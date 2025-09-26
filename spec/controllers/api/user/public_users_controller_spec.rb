@@ -73,6 +73,10 @@ RSpec.describe Api::User::PublicUsersController do
   end
 
   describe 'PATCH #update' do
+    before do
+      TradeTariffRequest.time_machine_now = Time.current
+    end
+
     context 'when token is invalid' do
       let(:token) { nil }
       let(:make_request) { patch :update, params: { data: { attributes: { chapter_ids: '12,13,14' } } } }
@@ -133,9 +137,9 @@ RSpec.describe Api::User::PublicUsersController do
         end
 
         before do
-          create(:goods_nomenclature, goods_nomenclature_item_id: '3333333333', validity_start_date: Time.zone.now)
-          create(:goods_nomenclature, goods_nomenclature_item_id: '4444444444', validity_start_date: Time.zone.now)
-          create(:goods_nomenclature, goods_nomenclature_item_id: '5555555555', validity_start_date: Time.zone.now - 1.week, validity_end_date: Time.zone.now - 1.day)
+          create(:commodity, :actual, goods_nomenclature_item_id: '3333333333')
+          create(:commodity, :actual, goods_nomenclature_item_id: '4444444444')
+          create(:commodity, :expired, goods_nomenclature_item_id: '5555555555')
         end
 
         it 'updates the commodity_codes' do
@@ -162,9 +166,9 @@ RSpec.describe Api::User::PublicUsersController do
 
         before do
           user.commodity_codes = %w[1111111111 2222222222 6666666666]
-          create(:goods_nomenclature, goods_nomenclature_item_id: '5555555555', validity_start_date: Time.zone.now)
-          create(:goods_nomenclature, goods_nomenclature_item_id: '6666666666', validity_start_date: Time.zone.now - 1.week, validity_end_date: Time.zone.now - 1.day)
-          create(:goods_nomenclature, goods_nomenclature_item_id: '7777777777', validity_start_date: Time.zone.now - 1.week, validity_end_date: Time.zone.now - 1.day)
+          create(:commodity, :actual, goods_nomenclature_item_id: '5555555555')
+          create(:commodity, :expired, goods_nomenclature_item_id: '6666666666')
+          create(:commodity, :expired, goods_nomenclature_item_id: '7777777777')
         end
 
         it 'removes old codes and saves only the new ones' do
@@ -191,8 +195,8 @@ RSpec.describe Api::User::PublicUsersController do
 
         before do
           user.commodity_codes = %w[1111111111 2222222222]
-          create(:goods_nomenclature, goods_nomenclature_item_id: '1111111111', validity_start_date: Time.zone.now)
-          create(:goods_nomenclature, goods_nomenclature_item_id: '2222222222', validity_start_date: Time.zone.now - 1.week, validity_end_date: Time.zone.now - 1.day)
+          create(:commodity, :actual, goods_nomenclature_item_id: '1111111111')
+          create(:commodity, :expired, goods_nomenclature_item_id: '2222222222')
         end
 
         it 'keeps the original codes' do
