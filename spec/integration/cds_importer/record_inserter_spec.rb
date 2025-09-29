@@ -3,7 +3,14 @@ RSpec.describe CdsImporter::RecordInserter do
   let(:certificate_mapper) { CdsImporter::EntityMapper::CertificateMapper.new({}) }
 
   shared_examples_for 'a batch insert operation' do |measure, certificate|
-    subject(:do_insert) { described_class.new(batch, 'new_filename.gzip').save_batch }
+    subject(:inserter) { described_class.new('new_filename.gzip') }
+
+    let(:do_insert) do
+      batch.each do |record|
+        inserter.insert_record(record)
+      end
+      inserter.process_batch
+    end
 
     it 'persists a new record with the correct filename and operation' do
       expect {
@@ -53,9 +60,9 @@ RSpec.describe CdsImporter::RecordInserter do
     describe '#save_batch' do
       let(:measure2) { create(:measure, filename: 'initial_filename.gzip', operation: 'C') }
       let(:batch) do
-        [CdsImporter::CdsEntity.new('Measure', measure, measure_mapper),
-         CdsImporter::CdsEntity.new('Certificate', certificate, certificate_mapper),
-         CdsImporter::CdsEntity.new('Measure', measure2, measure_mapper)]
+        [CdsImporter::CdsEntity.new(1, 'Measure', measure, measure_mapper),
+         CdsImporter::CdsEntity.new(2, 'Certificate', certificate, certificate_mapper),
+         CdsImporter::CdsEntity.new(3, 'Measure', measure2, measure_mapper)]
       end
 
       it_behaves_like 'a batch insert operation', 2, 1
@@ -64,24 +71,24 @@ RSpec.describe CdsImporter::RecordInserter do
     describe '#save_batch with skip record' do
       let(:measure2) { create(:measure, :with_skip_import, filename: 'initial_filename.gzip', operation: 'C') }
       let(:batch) do
-        [CdsImporter::CdsEntity.new('Measure', measure, measure_mapper),
-         CdsImporter::CdsEntity.new('Certificate', certificate, certificate_mapper),
-         CdsImporter::CdsEntity.new('Measure', measure2, measure_mapper)]
+        [CdsImporter::CdsEntity.new(1, 'Measure', measure, measure_mapper),
+         CdsImporter::CdsEntity.new(2, 'Certificate', certificate, certificate_mapper),
+         CdsImporter::CdsEntity.new(3, 'Measure', measure2, measure_mapper)]
       end
 
       it_behaves_like 'a batch insert operation', 1, 1
     end
 
     describe '#save_batch error scenario' do
-      subject(:inserter) { described_class.new(batch, 'new_filename.gzip') }
+      subject(:inserter) { described_class.new('new_filename.gzip') }
 
       let(:measure2) { create(:measure, filename: 'initial_filename.gzip', operation: 'C') }
       let(:certificate2) { create(:certificate, filename: 'initial_filename.gzip', operation: 'C') }
       let(:batch) do
-        [CdsImporter::CdsEntity.new('Measure', measure, measure_mapper),
-         CdsImporter::CdsEntity.new('Certificate', certificate, certificate_mapper),
-         CdsImporter::CdsEntity.new('Certificate', certificate2, certificate_mapper),
-         CdsImporter::CdsEntity.new('Measure', measure2, measure_mapper)]
+        [CdsImporter::CdsEntity.new(1, 'Measure', measure, measure_mapper),
+         CdsImporter::CdsEntity.new(2, 'Certificate', certificate, certificate_mapper),
+         CdsImporter::CdsEntity.new(3, 'Certificate', certificate2, certificate_mapper),
+         CdsImporter::CdsEntity.new(4, 'Measure', measure2, measure_mapper)]
       end
 
       before do
@@ -89,7 +96,10 @@ RSpec.describe CdsImporter::RecordInserter do
       end
 
       it 'handles errors in save_group' do
-        inserter.save_batch
+        batch.each do |record|
+          inserter.insert_record(record)
+        end
+        inserter.process_batch
 
         expect(measure.class.operation_klass).to have_received(:multi_insert).at_least(:once)
       end

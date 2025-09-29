@@ -55,19 +55,17 @@ class CdsImporter
   class XmlProcessor
     def initialize(filename)
       @filename = filename
-      @count = 0
-      @batch = []
+      @excel_writer = CdsImporter::ExcelWriter.new(@filename)
+      @record_inserter = CdsImporter::RecordInserter.new(@filename)
     end
 
     def process_xml_node(key, hash_from_node)
       hash_from_node['filename'] = @filename
 
       CdsImporter::EntityMapper.new(key, hash_from_node).build do |cds_entity|
-        @batch << cds_entity
-        @count += 1
-
-        if @count >= batch_size
-          process_batch
+        @record_inserter.insert_record(cds_entity)
+        if TradeTariffBackend.cds_importer_write_update_excel
+          @excel_writer.write_record(cds_entity)
         end
       end
     rescue StandardError => e
@@ -75,14 +73,12 @@ class CdsImporter
       raise ImportException
     end
 
-    def process_batch
-      record_inserter = CdsImporter::RecordInserter.new(@batch, @filename)
-      record_inserter.save_batch
-      @batch.clear
-      @count = 0
+    def process_end
+      @record_inserter.process_batch
+      if TradeTariffBackend.cds_importer_write_update_excel
+        @excel_writer.save_file
+      end
     end
-
-    alias_method :process_end, :process_batch
 
     def cds_failed_log(exception, key, hash)
       "Cds import failed: #{exception}".tap do |message|
@@ -91,20 +87,17 @@ class CdsImporter
         Rails.logger.error message
       end
     end
-
-    def batch_size
-      TradeTariffBackend.cds_importer_batch_size
-    end
   end
 
   class CdsEntity
-    def initialize(key, instance, mapper)
+    def initialize(element_id, key, instance, mapper)
+      @element_id = element_id
       @key = key
       @instance = instance
       @mapper = mapper
     end
 
-    attr_reader :key, :instance, :mapper
+    attr_reader :key, :instance, :mapper, :element_id
   end
 
   private
