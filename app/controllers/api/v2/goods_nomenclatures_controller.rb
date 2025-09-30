@@ -83,17 +83,11 @@ module Api
           return
         end
 
-        scope = include_expired ? GoodsNomenclature : GoodsNomenclature.actual
-
-        gns = scope
-                .association_inner_join(:goods_nomenclature_indents)
-                .where(Sequel[:goods_nomenclatures][:goods_nomenclature_item_id] => commodity_codes)
-                .eager(ancestors: :goods_nomenclature_descriptions)
-                .order(
-                  Sequel[:goods_nomenclatures][:producline_suffix],
-                  Sequel[:goods_nomenclature_indents][:number_indents],
-                )
-                .all
+        gns = if include_expired
+                load_with_expired(commodity_codes)
+              else
+                load_actual(commodity_codes)
+              end
 
         @goods_nomenclatures = gns.flat_map { |gn| [gn] }
         respond_with(@goods_nomenclatures)
@@ -163,6 +157,40 @@ module Api
 
       def serialize_errors(errors)
         Api::User::ErrorSerializationService.new.serialized_errors(errors)
+      end
+
+      def scope(codes)
+        GoodsNomenclature.actual
+          .association_inner_join(:goods_nomenclature_indents)
+          .where(Sequel[:goods_nomenclatures][:goods_nomenclature_item_id] => codes)
+          .eager(:ancestors)
+          .order(
+            Sequel[:goods_nomenclatures][:producline_suffix],
+            Sequel[:goods_nomenclature_indents][:number_indents],
+            Sequel[:goods_nomenclatures][:validity_start_date].desc,
+          )
+      end
+
+      def load_with_expired(codes)
+        gns = []
+
+        codes.each do |code|
+          latest_gn = GoodsNomenclature
+                        .where(goods_nomenclature_item_id: code)
+                        .order(Sequel.desc(:validity_start_date))
+                        .first
+          next unless latest_gn
+
+          TimeMachine.at(latest_gn.validity_start_date) do
+            gns.concat(scope(code).all)
+          end
+        end
+
+        gns
+      end
+
+      def load_actual(codes)
+        scope(codes).all
       end
     end
   end
