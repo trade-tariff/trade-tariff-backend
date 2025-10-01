@@ -2,10 +2,10 @@ require 'data_migrator'
 
 RSpec.describe TaricUpdatesSynchronizerWorker, type: :worker do
   shared_examples_for 'a synchronizer worker that queues other workers' do
-    it { expect(Sidekiq::Client).to have_received(:enqueue).with(ClearInvalidSearchReferences) }
-    it { expect(Sidekiq::Client).to have_received(:enqueue).with(TreeIntegrityCheckWorker) }
-    it { expect(Sidekiq::Client).to have_received(:enqueue_in).with(5.minutes, GreenLanesUpdatesWorker, Time.zone.today.iso8601) }
-    it { expect(Sidekiq::Client).to have_received(:enqueue_in).with(10.minutes, ClearCacheWorker) }
+    it { expect(Sidekiq::Client).to have_received(:enqueue_in).with(5.minutes, ClearInvalidSearchReferences) }
+    it { expect(Sidekiq::Client).to have_received(:enqueue_in).with(10.minutes, TreeIntegrityCheckWorker) }
+    it { expect(Sidekiq::Client).to have_received(:enqueue_in).with(15.minutes, GreenLanesUpdatesWorker, Time.zone.today.iso8601) }
+    it { expect(Sidekiq::Client).to have_received(:enqueue_in).with(5.minutes, ClearCacheWorker) }
   end
 
   describe '#perform' do
