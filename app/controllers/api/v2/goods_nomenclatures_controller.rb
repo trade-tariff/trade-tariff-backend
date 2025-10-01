@@ -190,7 +190,11 @@ module Api
       end
 
       def load_actual(codes)
-        scope(codes).all
+        codes.filter_map do |code|
+          scope(code)
+            .order(Sequel.desc(:number_indents))
+            .first
+        end
       end
     end
   end
