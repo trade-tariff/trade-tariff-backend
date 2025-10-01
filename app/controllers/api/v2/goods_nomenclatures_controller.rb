@@ -167,7 +167,7 @@ module Api
           .order(
             Sequel[:goods_nomenclatures][:producline_suffix],
             Sequel[:goods_nomenclature_indents][:number_indents],
-            Sequel[:goods_nomenclatures][:validity_start_date].asc,
+            Sequel[:goods_nomenclatures][:validity_start_date].desc,
           )
       end
 
