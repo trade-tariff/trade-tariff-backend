@@ -185,10 +185,7 @@ module Api
 
       def load_actual(codes)
         codes.filter_map do |code|
-          scope(code)
-            .order(Sequel[:goods_nomenclature_indents][:number_indents].desc,
-                   Sequel[:goods_nomenclatures][:validity_start_date].desc)
-            .take
+          scope(code).last
         end
       end
     end
