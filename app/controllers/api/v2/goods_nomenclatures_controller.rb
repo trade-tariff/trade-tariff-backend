@@ -193,7 +193,7 @@ module Api
         codes.filter_map do |code|
           scope(code)
             .order(Sequel.desc(:number_indents))
-            .first
+            .take
         end
       end
     end
