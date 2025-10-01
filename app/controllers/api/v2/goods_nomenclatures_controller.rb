@@ -16,12 +16,7 @@ module Api
       end
 
       def show
-        gn = GoodsNomenclature
-               .actual
-               .association_inner_join(:goods_nomenclature_indents)
-               .where(Sequel[:goods_nomenclatures][:goods_nomenclature_item_id] => params[:id])
-               .order(Sequel[:goods_nomenclatures][:producline_suffix], Sequel[:goods_nomenclature_indents][:number_indents])
-               .last
+        gn = scope(params[:id]).last
 
         raise Sequel::RecordNotFound if gn.blank?
 
@@ -161,14 +156,10 @@ module Api
 
       def scope(codes)
         GoodsNomenclature.actual
-          .association_inner_join(:goods_nomenclature_indents)
-          .where(Sequel[:goods_nomenclatures][:goods_nomenclature_item_id] => codes)
-          .eager(:ancestors)
-          .order(
-            Sequel[:goods_nomenclatures][:producline_suffix],
-            Sequel[:goods_nomenclature_indents][:number_indents],
-            Sequel[:goods_nomenclatures][:validity_start_date].desc,
-          )
+               .association_inner_join(:goods_nomenclature_indents)
+               .where(Sequel[:goods_nomenclatures][:goods_nomenclature_item_id] => codes)
+               .order(Sequel[:goods_nomenclatures][:producline_suffix],
+                      Sequel[:goods_nomenclature_indents][:number_indents])
       end
 
       def load_with_expired(codes)
@@ -182,7 +173,10 @@ module Api
           next unless latest_gn
 
           TimeMachine.at(latest_gn.validity_start_date) do
-            gns << scope(code).take
+            gns << scope(code)
+            .eager(:ancestors)
+            .order(Sequel[:goods_nomenclatures][:validity_start_date])
+            .take
           end
         end
 
@@ -192,7 +186,8 @@ module Api
       def load_actual(codes)
         codes.filter_map do |code|
           scope(code)
-            .order(Sequel.desc(:number_indents))
+            .order(Sequel[:goods_nomenclature_indents][:number_indents].desc,
+                   Sequel[:goods_nomenclatures][:validity_start_date].desc)
             .take
         end
       end
