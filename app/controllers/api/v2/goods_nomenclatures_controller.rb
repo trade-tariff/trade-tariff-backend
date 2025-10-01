@@ -167,7 +167,7 @@ module Api
           .order(
             Sequel[:goods_nomenclatures][:producline_suffix],
             Sequel[:goods_nomenclature_indents][:number_indents],
-            Sequel[:goods_nomenclatures][:validity_start_date].desc,
+            Sequel[:goods_nomenclatures][:validity_start_date].asc,
           )
       end
 
@@ -182,7 +182,7 @@ module Api
           next unless latest_gn
 
           TimeMachine.at(latest_gn.validity_start_date) do
-            gns.concat(scope(code).all)
+            gns << scope(code).take
           end
         end
 
