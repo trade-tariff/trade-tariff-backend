@@ -66,6 +66,22 @@ RSpec.describe DeltaReportService::AdditionalCodeChanges do
     end
   end
 
+  describe '#excluded_columns' do
+    it 'includes measure-specific excluded columns' do
+      expected = instance.send(:excluded_columns)
+      expect(expected).to include(:national)
+    end
+
+    it 'includes base excluded columns' do
+      base_excluded = %i[oid operation operation_date created_at updated_at filename]
+      expected = instance.send(:excluded_columns)
+
+      base_excluded.each do |column|
+        expect(expected).to include(column)
+      end
+    end
+  end
+
   describe '#analyze' do
     before do
       allow(instance).to receive_messages(

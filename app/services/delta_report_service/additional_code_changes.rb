@@ -11,6 +11,10 @@ class DeltaReportService
       'Additional Code'
     end
 
+    def excluded_columns
+      super + %i[national]
+    end
+
     def analyze
       return if no_changes?
       return if record.operation == :create
