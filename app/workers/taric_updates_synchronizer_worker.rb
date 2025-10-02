@@ -30,7 +30,7 @@ class TaricUpdatesSynchronizerWorker
     Sidekiq::Client.enqueue_in(11.minutes, PopulateChangesTableWorker)
 
     # NOTE: This will create some category assessments.
-    #       - Delay for 5 minutes as some of the category assessment queries rely on materialized views
+    #       - Delay for 15 minutes as some of the category assessment queries rely on materialized views
     #       - Pass the oldest pending date to process all changes inclusive of the oldest pending update
     Sidekiq::Client.enqueue_in(15.minutes, GreenLanesUpdatesWorker, oldest_pending_date.iso8601)
   end
