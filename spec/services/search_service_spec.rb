@@ -40,7 +40,7 @@ RSpec.describe SearchService do
   # Searching in search suggestions or find historic goods nomenclature
   describe 'exact search' do
     subject(:result) do
-      described_class.new(data_serializer, q: query, as_of: Time.zone.today).to_json[:data][:attributes]
+      described_class.new(data_serializer, q: query).to_json[:data][:attributes]
     end
 
     around do |example|
@@ -314,7 +314,7 @@ RSpec.describe SearchService do
   describe 'fuzzy search' do
     context 'when filtering by date' do
       context 'when with goods codes that have bounded validity period' do
-        subject { described_class.new(data_serializer, q: 'water', as_of: date).to_json[:data][:attributes] }
+        subject { described_class.new(data_serializer, q: 'water').to_json[:data][:attributes] }
 
         before do
           create :heading, :with_description,
@@ -339,16 +339,12 @@ RSpec.describe SearchService do
         end
 
         context 'with search date within goods code validity period' do
-          let(:date) { '2007-01-01' }
-
           around { |example| TimeMachine.at('2005-01-01') { example.run } }
 
-          it { is_expected.not_to match_json_expression heading_pattern }
+          it { is_expected.to match_json_expression heading_pattern }
         end
 
         context 'with search date outside goods code validity period' do
-          let(:date) { '2005-01-01' }
-
           around { |example| TimeMachine.at('2007-01-01') { example.run } }
 
           it { is_expected.not_to match_json_expression heading_pattern }
@@ -356,7 +352,9 @@ RSpec.describe SearchService do
       end
 
       context 'when with goods codes that have unbounded validity period' do
-        subject(:result) { described_class.new(data_serializer, q: 'Live bovine animals', as_of: date).to_json[:data][:attributes] }
+        subject(:result) { described_class.new(data_serializer, q: 'Live bovine animals').to_json[:data][:attributes] }
+
+        around { |example| TimeMachine.at(date) { example.run } }
 
         before do
           create :heading, :with_description,

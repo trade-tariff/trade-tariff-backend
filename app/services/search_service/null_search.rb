@@ -1,6 +1,6 @@
 class SearchService
   class NullSearch < BaseSearch
-    def initialize(query_string, date)
+    def initialize(query_string)
       super
       @results = BLANK_RESULT
     end
