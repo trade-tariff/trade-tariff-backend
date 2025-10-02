@@ -2,9 +2,9 @@ require 'data_migrator'
 
 RSpec.describe CdsUpdatesSynchronizerWorker, type: :worker do
   shared_examples_for 'a synchronizer worker that queues other workers' do
-    it { expect(Sidekiq::Client).to have_received(:enqueue).with(ClearInvalidSearchReferences) }
-    it { expect(Sidekiq::Client).to have_received(:enqueue).with(PopulateChangesTableWorker) }
-    it { expect(Sidekiq::Client).to have_received(:enqueue_in).with(1.minute, ClearCacheWorker) }
+    it { expect(Sidekiq::Client).to have_received(:enqueue_in).with(5.minutes, ClearInvalidSearchReferences) }
+    it { expect(Sidekiq::Client).to have_received(:enqueue_in).with(11.minutes, PopulateChangesTableWorker) }
+    it { expect(Sidekiq::Client).to have_received(:enqueue_in).with(5.minutes, ClearCacheWorker) }
   end
 
   describe '#perform' do

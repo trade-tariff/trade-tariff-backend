@@ -27,10 +27,11 @@ class CdsUpdatesSynchronizerWorker
     migrate_data if reapply_data_migrations
     refresh_materialized_view
 
-    Sidekiq::Client.enqueue(ClearInvalidSearchReferences)
-    Sidekiq::Client.enqueue(TreeIntegrityCheckWorker)
-    Sidekiq::Client.enqueue(PopulateChangesTableWorker)
-    Sidekiq::Client.enqueue_in(1.minute, ClearCacheWorker)
+    Sidekiq::Client.enqueue_in(5.minutes, ClearCacheWorker)
+    Sidekiq::Client.enqueue_in(5.minutes, ClearInvalidSearchReferences)
+    Sidekiq::Client.enqueue_in(10.minutes, TreeIntegrityCheckWorker)
+    Sidekiq::Client.enqueue_in(11.minutes, PopulateChangesTableWorker)
+    Sidekiq::Client.enqueue_in(15.minutes, ClearCacheWorker)
   rescue TariffSynchronizer::CdsUpdateDownloader::ListDownloadFailedError
     attempt_reschedule!
   end
