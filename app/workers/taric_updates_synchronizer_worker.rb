@@ -33,6 +33,8 @@ class TaricUpdatesSynchronizerWorker
     #       - Delay for 15 minutes as some of the category assessment queries rely on materialized views
     #       - Pass the oldest pending date to process all changes inclusive of the oldest pending update
     Sidekiq::Client.enqueue_in(15.minutes, GreenLanesUpdatesWorker, oldest_pending_date.iso8601)
+
+    Sidekiq::Client.enqueue_in(20.minutes, ClearCacheWorker)
   end
 
 private
