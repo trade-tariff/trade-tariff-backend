@@ -49,8 +49,7 @@ class CdsImporter
          exclusion_string(excluded_geo_areas),
          footnote_string(footnotes),
          measure_condition_string(conditions),
-         measure.measure_sid
-         ]
+         measure.measure_sid]
       end
 
       private
@@ -60,28 +59,28 @@ class CdsImporter
         if mt
           "#{measure_type_id}(#{mt.description})"
         else
-          "#{measure_type_id}"
+          measure_type_id.to_s
         end
       end
 
       def geographical_area(geo_area_sid)
-        ga = ::GeographicalArea.
-          where(geographical_area_sid: geo_area_sid).
-          eager(:geographical_area_descriptions).first
+        ga = ::GeographicalArea
+          .where(geographical_area_sid: geo_area_sid)
+          .eager(:geographical_area_descriptions).first
 
         if ga
           "#{ga.geographical_area_id}(#{ga.description})"
         else
-          "#{geo_area_sid}"
+          geo_area_sid.to_s
         end
       end
 
       def measure_condition_string(conditions)
         conditions
-          .reject { |c| c.operation == "D" }
+          .reject { |c| c.operation == 'D' }
           .map    { |c| condition_string(c) }
           .reject(&:empty?)
-          .join(" ")
+          .join(' ')
       end
 
       def condition_code_description(condition_code)
@@ -98,9 +97,9 @@ class CdsImporter
 
       def condition_string(condition)
         certificate = "#{condition.certificate_type_code}#{condition.certificate_code}".strip
-        certificate = "n/a" if certificate.empty?
+        certificate = 'n/a' if certificate.empty?
 
-        output = ""
+        output = ''
         output << "Certificate: #{certificate}, "
         output << "Condition code: #{condition.condition_code} (#{condition_code_description(condition.condition_code)}), "
         output << "Action code: #{condition.action_code} (#{action_code_description(condition.action_code)})\n"
@@ -110,87 +109,87 @@ class CdsImporter
 
       def footnote_string(footnotes)
         footnotes
-          .reject { |c| c.operation == "D" }
+          .reject { |c| c.operation == 'D' }
           .map    { |c| "#{c.footnote_type_id}#{c.footnote_id}" }
-          .join(", ")
+          .join(', ')
       end
 
       def exclusion_string(excluded_geo_areas)
         excluded_geo_areas
-          .reject { |c| c.operation == "D" }
-          .map    { |c| c.excluded_geographical_area }
-          .join(", ")
+          .reject { |c| c.operation == 'D' }
+          .map(&:excluded_geographical_area)
+          .join(', ')
       end
 
       def combined_duty(measure_components)
         measure_components
-          .reject { |c| c.operation == "D" }
+          .reject { |c| c.operation == 'D' }
           .map    { |c| duty_string(c) }
           .reject(&:empty?)
-          .join(" ")
+          .join(' ')
       end
 
       def duty_string(measure_component)
         duty_string = ''
 
         case measure_component.duty_expression_id
-        when "01"
+        when '01'
           duty_string << build_duty_string(measure_component)
-        when "04", "19", "20"
-          duty_string << build_duty_string(measure_component, prefix: "+ ")
-        when "15"
-          duty_string << build_duty_string(measure_component, prefix: "MIN ")
-        when "17", "35"
-          duty_string << build_duty_string(measure_component, prefix: "MAX ")
-        when "12"
-          duty_string << " + AC"
-        when "14"
-          duty_string << " + ACR"
-        when "21"
-          duty_string << " + SD"
-        when "25"
-          duty_string << " + SDR"
-        when "27"
-          duty_string << " + FD"
-        when "29"
-          duty_string << " + FDR"
-        when "99"
+        when '04', '19', '20'
+          duty_string << build_duty_string(measure_component, prefix: '+ ')
+        when '15'
+          duty_string << build_duty_string(measure_component, prefix: 'MIN ')
+        when '17', '35'
+          duty_string << build_duty_string(measure_component, prefix: 'MAX ')
+        when '12'
+          duty_string << ' + AC'
+        when '14'
+          duty_string << ' + ACR'
+        when '21'
+          duty_string << ' + SD'
+        when '25'
+          duty_string << ' + SDR'
+        when '27'
+          duty_string << ' + FD'
+        when '29'
+          duty_string << ' + FDR'
+        when '99'
           duty_string << measure_component.measurement_unit_code
         else
           Rails.logger.warn "Unexpected duty expression found #{measure_component.duty_expression_id}"
         end
 
-        duty_string.squeeze!(" ")
+        duty_string.squeeze!(' ')
         duty_string
       end
 
       def get_qualifier(measurement_unit_qualifier_code)
         case measurement_unit_qualifier_code
-        when "A" then "tot alc"
-        when "C" then "1 000"
-        when "E" then "net drained wt"
-        when "G" then "gross"
-        when "I" then "biodiesel"
-        when "M" then "net dry"
-        when "P" then "lactic matter"
-        when "R" then "std qual"
-        when "S" then "raw sugar"
-        when "T" then "dry lactic matter"
-        when "X" then "hl"
-        when "Z" then "% sacchar."
-        else ""
+        when 'A' then 'tot alc'
+        when 'C' then '1 000'
+        when 'E' then 'net drained wt'
+        when 'G' then 'gross'
+        when 'I' then 'biodiesel'
+        when 'M' then 'net dry'
+        when 'P' then 'lactic matter'
+        when 'R' then 'std qual'
+        when 'S' then 'raw sugar'
+        when 'T' then 'dry lactic matter'
+        when 'X' then 'hl'
+        when 'Z' then '% sacchar.'
+        else ''
         end
       end
 
-      def build_duty_string(measure_component, prefix: "")
-        duty_string = ""
+      def build_duty_string(measure_component, prefix: '')
+        duty_string = ''
         if measure_component.monetary_unit_code.to_s.empty?
-          duty_string << "#{prefix}#{format('%.4f', measure_component.duty_amount)}%"
+          duty_string << "#{prefix}#{sprintf('%.4f', measure_component.duty_amount)}%"
         else
-          duty_string << "#{prefix}#{format('%.4f', measure_component.duty_amount)} #{measure_component.monetary_unit_code}"
-          if measure_component.measurement_unit_code.to_s != ""
+          duty_string << "#{prefix}#{sprintf('%.4f', measure_component.duty_amount)} #{measure_component.monetary_unit_code}"
+          if measure_component.measurement_unit_code.to_s != ''
             duty_string << " / #{get_measurement_unit(measure_component.measurement_unit_code)}"
-            if measure_component.measurement_unit_qualifier_code.to_s != ""
+            if measure_component.measurement_unit_qualifier_code.to_s != ''
               duty_string << " / #{get_qualifier(measure_component.measurement_unit_qualifier_code)}"
             end
           end

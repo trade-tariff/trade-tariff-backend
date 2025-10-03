@@ -24,7 +24,7 @@ RSpec.describe CdsImporter::ExcelWriter::GeographicalArea do
       operation: 'C',
       validity_start_date: nil,
       validity_end_date: nil,
-      )
+    )
   end
 
   let(:description_period) do
@@ -36,7 +36,7 @@ RSpec.describe CdsImporter::ExcelWriter::GeographicalArea do
       geographical_area_id: '3001',
       validity_start_date: Time.utc(2025, 1, 1, 0, 0, 0),
       validity_end_date: Time.utc(2025, 12, 31, 23, 59, 59),
-      )
+    )
   end
 
   let(:description_period2) do
@@ -48,7 +48,7 @@ RSpec.describe CdsImporter::ExcelWriter::GeographicalArea do
       geographical_area_id: '3001',
       validity_start_date: Time.utc(2023, 2, 2, 0, 0, 0),
       validity_end_date: Time.utc(2025, 12, 31, 23, 59, 59),
-      )
+    )
   end
 
   let(:description) do
@@ -70,7 +70,7 @@ RSpec.describe CdsImporter::ExcelWriter::GeographicalArea do
       geographical_area_sid: 1,
       geographical_area_id: '3001',
       description: 'Countries - export restriction protective equipment R 2020/568',
-      )
+    )
   end
 
   let(:geo_area_membership) do
@@ -81,8 +81,8 @@ RSpec.describe CdsImporter::ExcelWriter::GeographicalArea do
       geographical_area_sid: 1,
       operation: 'C',
       validity_start_date: Time.utc(2025, 1, 1, 0, 0, 0),
-      validity_end_date: Time.utc(2025, 06, 30, 23, 59, 59),
-      )
+      validity_end_date: Time.utc(2025, 0o6, 30, 23, 59, 59),
+    )
   end
 
   let(:geo_area_membership2) do
@@ -92,15 +92,13 @@ RSpec.describe CdsImporter::ExcelWriter::GeographicalArea do
       geographical_area_group_sid: 5,
       geographical_area_sid: 1,
       operation: 'C',
-      validity_start_date: Time.utc(2025, 07, 01, 0, 0, 0),
+      validity_start_date: Time.utc(2025, 0o7, 0o1, 0, 0, 0),
       validity_end_date: nil,
-      )
+    )
   end
 
-  let!(:membership) {create(:geographical_area, :with_description, geographical_area_sid: 4)}
-  let!(:membership2) {create(:geographical_area, :with_description, geographical_area_sid: 5)}
-
-
+  let!(:membership) { create(:geographical_area, :with_description, geographical_area_sid: 4) }
+  let!(:membership2) { create(:geographical_area, :with_description, geographical_area_sid: 5) }
 
   describe '#data_row' do
     context 'when all fields are valid' do

@@ -32,8 +32,7 @@ class CdsImporter
          footnote_type.application_code,
          format_date(footnote_type.validity_start_date),
          format_date(footnote_type.validity_end_date),
-         footnote_type_description&.description.to_s
-         ]
+         footnote_type_description&.description.to_s]
       end
     end
   end

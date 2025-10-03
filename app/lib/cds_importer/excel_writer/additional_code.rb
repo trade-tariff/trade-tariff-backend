@@ -33,8 +33,7 @@ class CdsImporter
          additional_code.additional_code,
          format_date(additional_code.validity_start_date),
          format_date(additional_code.validity_end_date),
-         periodic_description(additional_code_description_period, additional_code_description, &method(:period_matches?))
-         ]
+         periodic_description(additional_code_description_period, additional_code_description, &method(:period_matches?))]
       end
 
       private

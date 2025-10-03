@@ -30,8 +30,7 @@ class CdsImporter
          measurement_unit.measurement_unit_code,
          format_date(measurement_unit.validity_start_date),
          format_date(measurement_unit.validity_end_date),
-         measurement_unit_description&.description.to_s
-         ]
+         measurement_unit_description&.description.to_s]
       end
     end
   end

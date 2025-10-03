@@ -40,16 +40,15 @@ class CdsImporter
          periodic_description(geo_area_description_periods, geo_area_descriptions, &method(:period_matches?)),
          current_membership_string(geo_area_memberships),
          membership_string(geo_area_memberships),
-         geo_area.parent_geographical_area_group_sid
-         ]
+         geo_area.parent_geographical_area_group_sid]
       end
 
       private
 
       def geographical_area(geo_area_sid)
-        ga = ::GeographicalArea.
-          where(geographical_area_sid: geo_area_sid).
-          eager(:geographical_area_descriptions).first
+        ga = ::GeographicalArea
+          .where(geographical_area_sid: geo_area_sid)
+          .eager(:geographical_area_descriptions).first
 
         if ga
           ga.description
@@ -58,21 +57,20 @@ class CdsImporter
         end
       end
 
-
       def membership_string(geographical_area_memberships)
-        return "" unless geographical_area_memberships&.any?
+        return '' unless geographical_area_memberships&.any?
 
-        geographical_area_memberships.map do |membership|
+        geographical_area_memberships.map { |membership|
           if membership.validity_end_date.to_s.strip.empty?
             "#{format_date(membership.validity_start_date)} : #{geographical_area(membership.geographical_area_group_sid)}\n"
           else
             "#{format_date(membership.validity_start_date)} to #{format_date(membership.validity_end_date)} : #{geographical_area(membership.geographical_area_group_sid)}\n"
           end
-        end.join
+        }.join
       end
 
       def current_membership_string(geographical_area_memberships)
-        return "" unless geographical_area_memberships&.any?
+        return '' unless geographical_area_memberships&.any?
 
         geographical_area_memberships.each do |membership|
           if membership.validity_end_date.to_s.strip.empty?

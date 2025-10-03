@@ -31,8 +31,7 @@ class CdsImporter
          regulation.information_text,
          format_date(regulation.validity_start_date),
          regulation.regulation_group_id,
-         regulation.base_regulation_role
-         ]
+         regulation.base_regulation_role]
       end
     end
   end

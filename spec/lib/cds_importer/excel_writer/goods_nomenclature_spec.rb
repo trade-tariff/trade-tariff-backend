@@ -26,7 +26,7 @@ RSpec.describe CdsImporter::ExcelWriter::GoodsNomenclature do
       operation: 'C',
       validity_start_date: nil,
       validity_end_date: nil,
-      )
+    )
   end
 
   let(:description_period) do
@@ -39,7 +39,7 @@ RSpec.describe CdsImporter::ExcelWriter::GoodsNomenclature do
       goods_nomenclature_item_id: '0102901010',
       validity_start_date: Time.utc(2025, 1, 1, 0, 0, 0),
       validity_end_date: Time.utc(2025, 12, 31, 23, 59, 59),
-      )
+    )
   end
 
   let(:description_period2) do
@@ -52,7 +52,7 @@ RSpec.describe CdsImporter::ExcelWriter::GoodsNomenclature do
       goods_nomenclature_item_id: '0104108000',
       validity_start_date: Time.utc(2023, 2, 2, 0, 0, 0),
       validity_end_date: Time.utc(2025, 12, 31, 23, 59, 59),
-      )
+    )
   end
 
   let(:description) do
@@ -67,18 +67,17 @@ RSpec.describe CdsImporter::ExcelWriter::GoodsNomenclature do
     )
   end
 
-    let(:description2) do
-      instance_double(
-        GoodsNomenclatureDescription,
-        class: instance_double(Class, name: 'GoodsNomenclatureDescription'),
-        goods_nomenclature_description_period_sid: 2,
-        goods_nomenclature_sid: 2,
-        productline_suffix: '90',
-        goods_nomenclature_item_id: '0104108000',
-        description: 'Other',
-        )
+  let(:description2) do
+    instance_double(
+      GoodsNomenclatureDescription,
+      class: instance_double(Class, name: 'GoodsNomenclatureDescription'),
+      goods_nomenclature_description_period_sid: 2,
+      goods_nomenclature_sid: 2,
+      productline_suffix: '90',
+      goods_nomenclature_item_id: '0104108000',
+      description: 'Other',
+    )
   end
-
 
   describe '#data_row' do
     context 'when all fields are valid' do

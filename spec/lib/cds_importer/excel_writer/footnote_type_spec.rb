@@ -30,7 +30,7 @@ RSpec.describe CdsImporter::ExcelWriter::FootnoteType do
       operation: 'U',
       validity_start_date: nil,
       validity_end_date: nil,
-      )
+    )
   end
 
   let(:description2) do
@@ -38,7 +38,7 @@ RSpec.describe CdsImporter::ExcelWriter::FootnoteType do
       FootnoteTypeDescription,
       class: instance_double(Class, name: 'FootnoteTypeDescription'),
       description: nil,
-      )
+    )
   end
 
   describe '#data_row' do

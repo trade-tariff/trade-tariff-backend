@@ -22,7 +22,7 @@ RSpec.describe CdsImporter::ExcelWriter::AdditionalCode do
       operation: 'U',
       validity_start_date: nil,
       validity_end_date: nil,
-      )
+    )
   end
 
   let(:description_period) do
@@ -35,7 +35,7 @@ RSpec.describe CdsImporter::ExcelWriter::AdditionalCode do
       additional_code: '507',
       validity_start_date: Time.utc(2025, 1, 1, 0, 0, 0),
       validity_end_date: Time.utc(2025, 12, 31, 23, 59, 59),
-      )
+    )
   end
 
   let(:description) do
@@ -60,7 +60,7 @@ RSpec.describe CdsImporter::ExcelWriter::AdditionalCode do
       additional_code: '507',
       validity_start_date: Time.utc(2025, 1, 1, 0, 0, 0),
       validity_end_date: Time.utc(2025, 12, 31, 23, 59, 59),
-      )
+    )
   end
 
   let(:description2) do
@@ -72,9 +72,8 @@ RSpec.describe CdsImporter::ExcelWriter::AdditionalCode do
       additional_code_type_id: 'A',
       additional_code: '507',
       description: 'Brother Industries Ltd.',
-      )
+    )
   end
-
 
   describe '#data_row' do
     context 'when all fields are valid' do

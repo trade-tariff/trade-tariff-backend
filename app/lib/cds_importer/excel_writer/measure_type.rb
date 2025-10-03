@@ -42,8 +42,7 @@ class CdsImporter
          measure_type.measure_component_applicable_code,
          measure_type.order_number_capture_code,
          measure_type.measure_explosion_level,
-         measure_type.priority_code,
-         ]
+         measure_type.priority_code]
       end
     end
   end

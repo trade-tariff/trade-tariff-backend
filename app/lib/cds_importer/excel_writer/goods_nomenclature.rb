@@ -37,8 +37,7 @@ class CdsImporter
          format_date(gn.validity_start_date),
          format_date(gn.validity_end_date),
          gn.statistical_indicator,
-         gn.goods_nomenclature_sid
-         ]
+         gn.goods_nomenclature_sid]
       end
 
       private

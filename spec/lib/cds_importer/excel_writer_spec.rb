@@ -24,7 +24,7 @@ RSpec.describe CdsImporter::ExcelWriter do
       key: 'NotExist',
       element_id: 'E2',
       instance: 'I2',
-      )
+    )
   end
   let(:excel) do
     instance_double(CdsImporter::ExcelWriter::QuotaDefinition,
@@ -43,8 +43,6 @@ RSpec.describe CdsImporter::ExcelWriter do
 
     allow(Module).to receive(:const_get)
                        .with('CdsImporter::ExcelWriter::NotExist').and_raise(NameError)
-
-
   end
 
   describe '#initialize' do

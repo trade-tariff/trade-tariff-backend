@@ -22,7 +22,7 @@ RSpec.describe CdsImporter::ExcelWriter::Certificate do
       operation: 'C',
       validity_start_date: nil,
       validity_end_date: nil,
-      )
+    )
   end
 
   let(:description_period) do
@@ -34,7 +34,7 @@ RSpec.describe CdsImporter::ExcelWriter::Certificate do
       certificate_code: '121',
       validity_start_date: Time.utc(2025, 1, 1, 0, 0, 0),
       validity_end_date: Time.utc(2025, 12, 31, 23, 59, 59),
-      )
+    )
   end
 
   let(:description_period2) do
@@ -46,7 +46,7 @@ RSpec.describe CdsImporter::ExcelWriter::Certificate do
       certificate_code: '121',
       validity_start_date: Time.utc(2023, 2, 2, 0, 0, 0),
       validity_end_date: Time.utc(2025, 12, 31, 23, 59, 59),
-      )
+    )
   end
 
   let(:description) do
@@ -60,17 +60,16 @@ RSpec.describe CdsImporter::ExcelWriter::Certificate do
     )
   end
 
-    let(:description2) do
-      instance_double(
-        CertificateDescription,
-        class: instance_double(Class, name: 'CertificateDescription'),
-        certificate_description_period_sid: 2,
-        certificate_type_code: 'C',
-        certificate_code: '121',
-        description: 'T5 control copy',
-        )
+  let(:description2) do
+    instance_double(
+      CertificateDescription,
+      class: instance_double(Class, name: 'CertificateDescription'),
+      certificate_description_period_sid: 2,
+      certificate_type_code: 'C',
+      certificate_code: '121',
+      description: 'T5 control copy',
+    )
   end
-
 
   describe '#data_row' do
     context 'when all fields are valid' do
@@ -84,7 +83,7 @@ RSpec.describe CdsImporter::ExcelWriter::Certificate do
         expect(row[2]).to eq('121')
         expect(row[3]).to eq('01/01/2025')
         expect(row[4]).to eq('31/12/2025')
-        expect(row[5]).to eq( "01/01/2025\nInformation document\n02/02/2023\nT5 control copy\n")
+        expect(row[5]).to eq("01/01/2025\nInformation document\n02/02/2023\nT5 control copy\n")
       end
     end
 

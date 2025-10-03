@@ -33,8 +33,7 @@ class CdsImporter
          certificate.certificate_code,
          format_date(certificate.validity_start_date),
          format_date(certificate.validity_end_date),
-         periodic_description(certificate_description_periods, certificate_descriptions, &method(:period_matches?))
-         ]
+         periodic_description(certificate_description_periods, certificate_descriptions, &method(:period_matches?))]
       end
 
       private

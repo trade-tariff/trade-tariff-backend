@@ -22,7 +22,7 @@ RSpec.describe CdsImporter::ExcelWriter::QuotaOrderNumber do
       operation: 'U',
       validity_start_date: nil,
       validity_end_date: nil,
-      )
+    )
   end
 
   describe '#data_row' do

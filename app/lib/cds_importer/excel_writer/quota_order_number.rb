@@ -29,8 +29,7 @@ class CdsImporter
          qon.quota_order_number_sid,
          qon.quota_order_number_id,
          format_date(qon.validity_start_date),
-         format_date(qon.validity_end_date)
-         ]
+         format_date(qon.validity_end_date)]
       end
     end
   end

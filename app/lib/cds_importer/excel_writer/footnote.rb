@@ -35,8 +35,7 @@ class CdsImporter
          footnote.footnote_id,
          format_date(footnote.validity_start_date),
          format_date(footnote.validity_end_date),
-         periodic_description(footnote_description_periods, footnote_descriptions, &method(:period_matches?))
-         ]
+         periodic_description(footnote_description_periods, footnote_descriptions, &method(:period_matches?))]
       end
 
       private

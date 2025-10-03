@@ -22,7 +22,7 @@ RSpec.describe CdsImporter::ExcelWriter::Footnote do
       operation: 'C',
       validity_start_date: nil,
       validity_end_date: nil,
-      )
+    )
   end
 
   let(:description_period) do
@@ -34,7 +34,7 @@ RSpec.describe CdsImporter::ExcelWriter::Footnote do
       footnote_id: '2',
       validity_start_date: Time.utc(2025, 1, 1, 0, 0, 0),
       validity_end_date: Time.utc(2025, 12, 31, 23, 59, 59),
-      )
+    )
   end
 
   let(:description_period2) do
@@ -46,7 +46,7 @@ RSpec.describe CdsImporter::ExcelWriter::Footnote do
       footnote_id: '2',
       validity_start_date: Time.utc(2023, 2, 2, 0, 0, 0),
       validity_end_date: Time.utc(2025, 12, 31, 23, 59, 59),
-      )
+    )
   end
 
   let(:description) do
@@ -60,17 +60,16 @@ RSpec.describe CdsImporter::ExcelWriter::Footnote do
     )
   end
 
-    let(:description2) do
-      instance_double(
-        FootnoteDescription,
-        class: instance_double(Class, name: 'FootnoteDescription'),
-        footnote_description_period_sid: 2,
-        footnote_type_id: 'PN',
-        footnote_id: '2',
-        description: 'Per 1% by weight of sucrose.',
-        )
+  let(:description2) do
+    instance_double(
+      FootnoteDescription,
+      class: instance_double(Class, name: 'FootnoteDescription'),
+      footnote_description_period_sid: 2,
+      footnote_type_id: 'PN',
+      footnote_id: '2',
+      description: 'Per 1% by weight of sucrose.',
+    )
   end
-
 
   describe '#data_row' do
     context 'when all fields are valid' do
@@ -85,7 +84,7 @@ RSpec.describe CdsImporter::ExcelWriter::Footnote do
         expect(row[3]).to eq('2')
         expect(row[4]).to eq('01/01/2025')
         expect(row[5]).to eq('31/12/2025')
-        expect(row[6]).to eq( "01/01/2025\nWithin the limits of an annual Community ceiling.\n02/02/2023\nPer 1% by weight of sucrose.\n")
+        expect(row[6]).to eq("01/01/2025\nWithin the limits of an annual Community ceiling.\n02/02/2023\nPer 1% by weight of sucrose.\n")
       end
     end
 

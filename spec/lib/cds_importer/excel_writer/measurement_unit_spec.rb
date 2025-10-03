@@ -20,7 +20,7 @@ RSpec.describe CdsImporter::ExcelWriter::MeasurementUnit do
       operation: 'C',
       validity_start_date: nil,
       validity_end_date: nil,
-      )
+    )
   end
 
   let(:description) do
@@ -36,7 +36,7 @@ RSpec.describe CdsImporter::ExcelWriter::MeasurementUnit do
       MeasurementUnitDescription,
       class: instance_double(Class, name: 'MeasurementUnitDescription'),
       description: nil,
-      )
+    )
   end
 
   describe '#data_row' do

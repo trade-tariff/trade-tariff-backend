@@ -34,7 +34,7 @@ RSpec.describe CdsImporter::ExcelWriter::MeasureType do
       measure_type_series_id: nil,
       validity_start_date: nil,
       validity_end_date: nil,
-      )
+    )
   end
 
   let(:description) do
@@ -50,9 +50,8 @@ RSpec.describe CdsImporter::ExcelWriter::MeasureType do
       MeasureTypeDescription,
       class: instance_double(Class, name: 'MeasureTypeDescription'),
       description: nil,
-      )
+    )
   end
-
 
   describe '#data_row' do
     context 'when all fields are valid' do
