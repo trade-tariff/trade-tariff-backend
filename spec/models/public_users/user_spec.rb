@@ -18,7 +18,7 @@ RSpec.describe PublicUsers::User do
     end
   end
 
-  describe '#commodity_codes_grouped' do
+  describe '#active_commodity_codes' do
     before do
       TradeTariffRequest.time_machine_now = Time.current
       create(:commodity, :actual, goods_nomenclature_item_id: '1905903000')
@@ -29,7 +29,7 @@ RSpec.describe PublicUsers::User do
     end
 
     it 'returns grouped commodity codes' do
-      expect(user.commodity_codes_grouped).to eq(
+      expect(user.active_commodity_codes).to eq(
         active: %w[1905903000],
         expired: %w[0702009000],
         erroneous: %w[1234567890],
@@ -40,8 +40,8 @@ RSpec.describe PublicUsers::User do
       allow(Commodity).to receive(:where).and_call_original
       allow(Commodity).to receive(:actual).and_call_original
 
-      first_result = user.commodity_codes_grouped
-      second_result = user.commodity_codes_grouped
+      first_result = user.active_commodity_codes
+      second_result = user.active_commodity_codes
 
       expect(Commodity).to have_received(:where).once
       expect(Commodity).to have_received(:actual).once
