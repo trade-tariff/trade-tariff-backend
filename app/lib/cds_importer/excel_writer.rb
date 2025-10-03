@@ -54,6 +54,8 @@ class CdsImporter
 
       sheet.add_row(update.data_row, style: regular_style)
       sheet.column_widths(*update.column_widths)
+    rescue NameError
+      Rails.logger.info "#{key} element is not mapped into CDS Updates"
     end
 
     def create_excel_file

@@ -37,6 +37,16 @@ class CdsImporter
       def note
         nil
       end
+
+      def periodic_description(description_periods, descriptions)
+        return '' unless descriptions.present? && description_periods.present?
+
+        descriptions.map { |description|
+          period = description_periods.find { |p| yield(p, description) }
+
+          "#{format_date(period.validity_start_date)}\n#{description.description}\n" if period
+        }.compact.join
+      end
     end
   end
 end
