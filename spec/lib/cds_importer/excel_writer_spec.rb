@@ -18,6 +18,14 @@ RSpec.describe CdsImporter::ExcelWriter do
       instance: 'I2',
     )
   end
+  let(:entity3) do
+    instance_double(
+      CdsImporter::CdsEntity,
+      key: 'NotExist',
+      element_id: 'E2',
+      instance: 'I2',
+      )
+  end
   let(:excel) do
     instance_double(CdsImporter::ExcelWriter::QuotaDefinition,
                     sheet_name: 'Sheet 1',
@@ -32,6 +40,11 @@ RSpec.describe CdsImporter::ExcelWriter do
     allow(Module).to receive(:const_get)
                        .with('CdsImporter::ExcelWriter::K')
                        .and_return(class_double(CdsImporter::ExcelWriter::QuotaDefinition, new: excel))
+
+    allow(Module).to receive(:const_get)
+                       .with('CdsImporter::ExcelWriter::NotExist').and_raise(NameError)
+
+
   end
 
   describe '#initialize' do
@@ -81,6 +94,18 @@ RSpec.describe CdsImporter::ExcelWriter do
         expect(excel).not_to have_received(:sheet_name)
         expect(writer.instance_variable_get(:@instances)).to eq(%w[I1 I1])
       end
+    end
+  end
+
+  describe 'handle invalid cds entity' do
+    it 'handles key that not mapped' do
+      writer.write_record(entity3)
+      writer.write_record(entity1)
+
+      expect(excel).not_to have_received(:sheet_name)
+      expect(writer.instance_variable_get(:@key)).to eq('K')
+      expect(writer.instance_variable_get(:@xml_element_id)).to eq('E1')
+      expect(writer.instance_variable_get(:@instances)).to eq(%w[I1])
     end
   end
 end

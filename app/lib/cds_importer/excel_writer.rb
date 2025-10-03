@@ -33,27 +33,31 @@ class CdsImporter
     attr_reader :workbook, :filename, :package, :bold_style, :regular_style
 
     def write(key, instances)
-      update = Module.const_get("CdsImporter::ExcelWriter::#{key}").new(instances)
-      sheet_name = update.sheet_name
-      note = update.note
+      begin
+        update = Module.const_get("CdsImporter::ExcelWriter::#{key}").new(instances)
+        sheet_name = update.sheet_name
+        note = update.note
 
-      sheet = workbook.worksheets.find { |ws| ws.name == sheet_name }
-      unless sheet
-        sheet = workbook.add_worksheet(name: sheet_name)
+        sheet = workbook.worksheets.find { |ws| ws.name == sheet_name }
+        unless sheet
+          sheet = workbook.add_worksheet(name: sheet_name)
 
-        if note.present?
-          sheet.add_row(note, style: bold_style)
-          sheet.merge_cells(merge_cells_length(update, 1))
-          sheet.add_row
-          sheet.merge_cells(merge_cells_length(update, 2))
+          if note.present?
+            sheet.add_row(note, style: bold_style)
+            sheet.merge_cells(merge_cells_length(update, 1))
+            sheet.add_row
+            sheet.merge_cells(merge_cells_length(update, 2))
+          end
+
+          sheet.add_row(update.heading, style: bold_style)
+          sheet.column_widths(*update.column_widths)
         end
 
-        sheet.add_row(update.heading, style: bold_style)
+        sheet.add_row(update.data_row, style: regular_style)
         sheet.column_widths(*update.column_widths)
+      rescue NameError
+        Rails.logger.info "#{key} element is not mapped into CDS Updates"
       end
-
-      sheet.add_row(update.data_row, style: regular_style)
-      sheet.column_widths(*update.column_widths)
     end
 
     def create_excel_file
