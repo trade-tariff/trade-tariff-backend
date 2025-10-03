@@ -23,27 +23,7 @@ module PublicUsers
     end
 
     def commodity_codes_grouped
-      TimeMachine.now do
-        @commodity_codes_grouped ||= begin
-          codes = delta_preferences.map(&:commodity_code)
-
-          return { active: [], expired: [], erroneous: [] } if codes.empty?
-
-          actual_gns = Commodity.actual.where(producline_suffix: '80', goods_nomenclature_item_id: codes).to_a
-          active_codes = actual_gns.map(&:goods_nomenclature_item_id).uniq
-          remaining_codes = codes - active_codes
-
-          expired_gns = Commodity.where(producline_suffix: '80', goods_nomenclature_item_id: remaining_codes).to_a
-          expired_codes = expired_gns.map(&:goods_nomenclature_item_id).uniq
-
-          erroneous_codes = remaining_codes - expired_codes
-          {
-            active: active_codes,
-            expired: expired_codes,
-            erroneous: erroneous_codes,
-          }
-        end
-      end
+      Api::User::ActiveCommoditiesService.new(delta_preferences.pluck(:commodity_code)).call
     end
 
     def commodity_codes=(codes)

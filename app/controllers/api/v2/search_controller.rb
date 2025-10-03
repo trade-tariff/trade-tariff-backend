@@ -32,6 +32,11 @@ module Api
 
         []
       end
+
+      # https://www.trade-tariff.service.gov.uk/api/uk/suggestions?q="0101"&filter[type]=goods_nomenclature&filter[goods_nomenclature_class]=Heading,Commodity
+      def suggestion_params
+        params.permit(:q, :filter)
+      end
     end
   end
 end
