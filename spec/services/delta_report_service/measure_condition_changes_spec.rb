@@ -17,12 +17,12 @@ RSpec.describe DeltaReportService::MeasureConditionChanges do
   end
 
   describe '.collect' do
-    let(:measure_condition_operation1) { instance_double(MeasureCondition::Operation, oid: 1, record_from_oplog: measure_condition) }
-    let(:measure_condition_operation2) { instance_double(MeasureCondition::Operation, oid: 2, record_from_oplog: measure_condition) }
+    let(:measure_condition_operation1) { instance_double(MeasureCondition.operation_klass, oid: 1, record_from_oplog: measure_condition) }
+    let(:measure_condition_operation2) { instance_double(MeasureCondition.operation_klass, oid: 2, record_from_oplog: measure_condition) }
     let(:measure_condition_operations) { [measure_condition_operation1, measure_condition_operation2] }
 
     before do
-      allow(MeasureCondition::Operation).to receive(:where).with(operation_date: date).and_return(measure_condition_operations)
+      allow(MeasureCondition.operation_klass).to receive(:where).with(operation_date: date).and_return(measure_condition_operations)
     end
 
     it 'finds measure condition operations for the given date and returns analyzed changes' do
@@ -34,7 +34,7 @@ RSpec.describe DeltaReportService::MeasureConditionChanges do
 
       result = described_class.collect(date)
 
-      expect(MeasureCondition::Operation).to have_received(:where).with(operation_date: date)
+      expect(MeasureCondition.operation_klass).to have_received(:where).with(operation_date: date)
       expect(result).to eq([{ type: 'MeasureCondition' }, { type: 'MeasureCondition' }])
     end
   end
@@ -60,7 +60,7 @@ RSpec.describe DeltaReportService::MeasureConditionChanges do
       allow(instance).to receive(:geo_area).with(geographical_area, []).and_return('United Kingdom (GB)')
       allow(instance).to receive(:additional_code).with(nil).and_return(additional_code)
       allow(instance).to receive(:duty_expression).with(measure).and_return('10%')
-      allow(Measure::Operation).to receive_message_chain(:where, :any?).and_return(false)
+      allow(Measure.operation_klass).to receive_message_chain(:where, :any?).and_return(false)
     end
 
     context 'when there are no changes' do
@@ -80,7 +80,7 @@ RSpec.describe DeltaReportService::MeasureConditionChanges do
         allow(measure_condition_create).to receive(:measure).and_return(measure_create)
         allow(instance_create).to receive(:get_changes)
         allow(instance_create).to receive(:no_changes?).and_return(false)
-        allow(Measure::Operation).to receive_message_chain(:where, :any?).and_return(true)
+        allow(Measure.operation_klass).to receive_message_chain(:where, :any?).and_return(true)
       end
 
       it 'returns nil' do
@@ -97,7 +97,7 @@ RSpec.describe DeltaReportService::MeasureConditionChanges do
         allow(measure_condition_create).to receive(:measure).and_return(measure_create)
         allow(instance_create).to receive(:get_changes)
         allow(instance_create).to receive(:no_changes?).and_return(false)
-        allow(Measure::Operation).to receive_message_chain(:where, :any?).and_return(false)
+        allow(Measure.operation_klass).to receive_message_chain(:where, :any?).and_return(false)
       end
 
       it 'returns changes' do

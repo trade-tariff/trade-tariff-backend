@@ -76,8 +76,8 @@ RSpec.describe DeltaReportService::FootnoteAssociationGoodsNomenclatureChanges d
         change: nil,
       )
       # By default, don't filter out records (no matching operations found)
-      allow(GoodsNomenclature::Operation).to receive_message_chain(:where, :any?).and_return(false)
-      allow(Footnote::Operation).to receive_message_chain(:where, :any?).and_return(false)
+      allow(GoodsNomenclature.operation_klass).to receive_message_chain(:where, :any?).and_return(false)
+      allow(Footnote.operation_klass).to receive_message_chain(:where, :any?).and_return(false)
     end
 
     context 'when there are no changes' do
@@ -92,8 +92,8 @@ RSpec.describe DeltaReportService::FootnoteAssociationGoodsNomenclatureChanges d
       before do
         allow(footnote_association).to receive(:operation).and_return(:create)
         allow(goods_nomenclature).to receive(:operation_date).and_return(date)
-        # Mock the GoodsNomenclature::Operation query to return true
-        allow(GoodsNomenclature::Operation).to receive_message_chain(:where, :any?).and_return(true)
+        # Mock the GoodsNomenclature.operation_klass query to return true
+        allow(GoodsNomenclature.operation_klass).to receive_message_chain(:where, :any?).and_return(true)
       end
 
       it 'returns nil' do
@@ -106,8 +106,8 @@ RSpec.describe DeltaReportService::FootnoteAssociationGoodsNomenclatureChanges d
         allow(footnote_association).to receive(:operation).and_return(:create)
         allow(goods_nomenclature).to receive(:operation_date).and_return(date - 1)
         allow(footnote).to receive(:operation_date).and_return(date)
-        # Mock both possible Footnote::Operation queries to avoid the database column issue
-        allow(Footnote::Operation).to receive_message_chain(:where, :any?).and_return(true)
+        # Mock both possible Footnote.operation_klass queries to avoid the database column issue
+        allow(Footnote.operation_klass).to receive_message_chain(:where, :any?).and_return(true)
       end
 
       it 'returns nil' do

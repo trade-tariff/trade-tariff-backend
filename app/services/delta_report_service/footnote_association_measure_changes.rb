@@ -2,7 +2,7 @@ class DeltaReportService
   class FootnoteAssociationMeasureChanges < BaseChanges
     def self.collect(date)
       # Use Operation model so we can access deleted records
-      FootnoteAssociationMeasure::Operation
+      FootnoteAssociationMeasure.operation_klass
         .where(operation_date: date)
         .map { |record| new(record.record_from_oplog, date).analyze }
         .compact
@@ -14,8 +14,8 @@ class DeltaReportService
 
     def analyze
       return if no_changes?
-      return if record.operation == :create && Measure::Operation.where(measure_sid: record.measure_sid, operation_date: record.operation_date, operation: 'C').any?
-      return if record.operation == :create && Footnote::Operation.where(footnote_type_id: record.footnote_type_id, footnote_id: record.footnote_id, operation_date: record.operation_date).any?
+      return if record.operation == :create && Measure.operation_klass.where(measure_sid: record.measure_sid, operation_date: record.operation_date, operation: 'C').any?
+      return if record.operation == :create && Footnote.operation_klass.where(footnote_type_id: record.footnote_type_id, footnote_id: record.footnote_id, operation_date: record.operation_date).any?
       return if record.measure.nil? || record.footnote.footnote_description.nil?
 
       {

@@ -18,7 +18,7 @@ class DeltaReportService
     def analyze
       return if no_changes?
       return unless record.goods_nomenclature&.declarable?
-      return if record.operation == :create && GoodsNomenclature::Operation.where(goods_nomenclature_sid: record.goods_nomenclature_sid, operation_date: record.operation_date).any?
+      return if record.operation == :create && GoodsNomenclature.operation_klass.where(goods_nomenclature_sid: record.goods_nomenclature_sid, operation_date: record.operation_date).any?
 
       TimeMachine.at(record.validity_start_date) do
         {

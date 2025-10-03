@@ -13,7 +13,7 @@ class DeltaReportService
 
     def analyze
       return if no_changes?
-      return if record.operation == :create && Measure::Operation.where(measure_sid: record.measure_sid, operation_date: record.operation_date).any?
+      return if record.operation == :create && Measure.operation_klass.where(measure_sid: record.measure_sid, operation_date: record.operation_date).any?
 
       {
         type: 'MeasureComponent',

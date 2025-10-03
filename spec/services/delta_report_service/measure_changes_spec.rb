@@ -13,12 +13,12 @@ RSpec.describe DeltaReportService::MeasureChanges do
   end
 
   describe '.collect' do
-    let(:measure_operation1) { instance_double(Measure::Operation, oid: 1, record_from_oplog: measure) }
-    let(:measure_operation2) { instance_double(Measure::Operation, oid: 2, record_from_oplog: measure) }
+    let(:measure_operation1) { instance_double(Measure.operation_klass, oid: 1, record_from_oplog: measure) }
+    let(:measure_operation2) { instance_double(Measure.operation_klass, oid: 2, record_from_oplog: measure) }
     let(:measure_operations) { [measure_operation1, measure_operation2] }
 
     before do
-      allow(Measure::Operation).to receive(:where).with(operation_date: date).and_return(measure_operations)
+      allow(Measure.operation_klass).to receive(:where).with(operation_date: date).and_return(measure_operations)
     end
 
     it 'finds measure operations for the given date and returns analyzed changes' do
@@ -30,7 +30,7 @@ RSpec.describe DeltaReportService::MeasureChanges do
 
       result = described_class.collect(date)
 
-      expect(Measure::Operation).to have_received(:where).with(operation_date: date)
+      expect(Measure.operation_klass).to have_received(:where).with(operation_date: date)
       expect(result).to eq([{ type: 'Measure' }, { type: 'Measure' }])
     end
   end

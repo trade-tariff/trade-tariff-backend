@@ -2,7 +2,7 @@ class DeltaReportService
   class MeasureConditionChanges < BaseChanges
     def self.collect(date)
       # Use Operation model so we can access deleted records
-      MeasureCondition::Operation
+      MeasureCondition.operation_klass
         .where(operation_date: date)
         .map { |record| new(record.record_from_oplog, date).analyze }
         .compact
@@ -15,7 +15,7 @@ class DeltaReportService
     def analyze
       return if no_changes?
       return if record.is_excluded_condition?
-      return if record.operation == :create && Measure::Operation.where(measure_sid: record.measure_sid, operation_date: record.operation_date, operation: 'C').any?
+      return if record.operation == :create && Measure.operation_klass.where(measure_sid: record.measure_sid, operation_date: record.operation_date, operation: 'C').any?
       return if record.measure.nil?
 
       @changes = []
