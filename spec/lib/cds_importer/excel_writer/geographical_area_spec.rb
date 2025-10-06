@@ -14,19 +14,6 @@ RSpec.describe CdsImporter::ExcelWriter::GeographicalArea do
     )
   end
 
-  let(:geo_area2) do
-    instance_double(
-      GeographicalArea,
-      class: instance_double(Class, name: 'GeographicalArea'),
-      geographical_area_id: '1005',
-      geographical_area_sid: 2,
-      parent_geographical_area_group_sid: 3,
-      operation: 'C',
-      validity_start_date: nil,
-      validity_end_date: nil,
-    )
-  end
-
   let(:description_period) do
     instance_double(
       GeographicalAreaDescriptionPeriod,
@@ -97,12 +84,11 @@ RSpec.describe CdsImporter::ExcelWriter::GeographicalArea do
     )
   end
 
-  let!(:membership) { create(:geographical_area, :with_description, geographical_area_sid: 4) }
-  let!(:membership2) { create(:geographical_area, :with_description, geographical_area_sid: 5) }
-
   describe '#data_row' do
     context 'when all fields are valid' do
       let(:models) { [geo_area, description, description_period, description2, description_period2, geo_area_membership, geo_area_membership2] }
+      let!(:membership) { create(:geographical_area, :with_description, geographical_area_sid: 4) }
+      let!(:membership2) { create(:geographical_area, :with_description, geographical_area_sid: 5) }
 
       it 'returns a correctly formatted data row' do
         row = mapper.data_row
@@ -138,7 +124,18 @@ RSpec.describe CdsImporter::ExcelWriter::GeographicalArea do
     end
 
     context 'when there are empty fields' do
-      let(:models) { [geo_area2] }
+      let(:models) do
+        [instance_double(
+          GeographicalArea,
+          class: instance_double(Class, name: 'GeographicalArea'),
+          geographical_area_id: '1005',
+          geographical_area_sid: 2,
+          parent_geographical_area_group_sid: 3,
+          operation: 'C',
+          validity_start_date: nil,
+          validity_end_date: nil,
+        )]
+      end
 
       it 'returns a correctly formatted data row' do
         row = mapper.data_row
