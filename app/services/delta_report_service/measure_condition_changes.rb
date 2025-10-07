@@ -15,7 +15,7 @@ class DeltaReportService
     def analyze
       return if no_changes?
       return if record.is_excluded_condition?
-      return if record.operation == :create && Measure.operation_klass.where(measure_sid: record.measure_sid, operation_date: record.operation_date, operation: 'C').any?
+      return if Measure.operation_klass.where(measure_sid: record.measure_sid, operation_date: record.operation_date, operation: 'C').any?
       return if record.measure.nil?
 
       @changes = []
