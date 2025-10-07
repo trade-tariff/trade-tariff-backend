@@ -24,19 +24,20 @@ module Api
         erroneous_codes = original_codes - full_history
 
         active_codes = all_codes.select(&:declarable?)
+                                .pluck(:goods_nomenclature_item_id)
 
-        moved_codes = all_codes.select do |goods_nomenclature|
+        moved_codes = all_codes.select { |goods_nomenclature|
           !goods_nomenclature.declarable? && !goods_nomenclature.in?(active_codes)
-        end
+        }
+        .pluck(:goods_nomenclature_item_id)
 
         expired_codes = original_codes
           .reject { |code| code.in?(active_codes) }
           .reject { |code| code.in?(moved_codes) }
           .reject { |code| code.in?(erroneous_codes) }
         erroneous_codes += moved_codes
-
         {
-          active: active_codes.map(&:goods_nomenclature_item_id).sort.uniq,
+          active: active_codes.sort.uniq,
           expired: expired_codes.sort.uniq,
           erroneous: erroneous_codes.sort.uniq,
         }

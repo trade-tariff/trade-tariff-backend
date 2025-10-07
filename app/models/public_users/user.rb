@@ -11,7 +11,15 @@ module PublicUsers
     delegate :chapter_ids, to: :preferences
 
     def active_commodity_codes
-      @active_commodity_codes ||= Api::User::ActiveCommoditiesService.new(delta_preferences.pluck(:commodity_code)).call
+      commodity_code_statuses[:active]
+    end
+
+    def expired_commodity_codes
+      commodity_code_statuses[:expired]
+    end
+
+    def erroneous_commodity_codes
+      commodity_code_statuses[:erroneous]
     end
 
     def commodity_codes=(codes)
@@ -136,6 +144,10 @@ module PublicUsers
       super
       PublicUsers::Preferences.create(user_id: id)
       PublicUsers::ActionLog.create(user_id: id, action: PublicUsers::ActionLog::REGISTERED)
+    end
+
+    def commodity_code_statuses
+      @commodity_code_statuses ||= Api::User::ActiveCommoditiesService.new(delta_preferences.pluck(:commodity_code)).call
     end
   end
 end

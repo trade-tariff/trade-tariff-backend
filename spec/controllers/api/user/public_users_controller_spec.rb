@@ -73,8 +73,15 @@ RSpec.describe Api::User::PublicUsersController do
   end
 
   describe 'PATCH #update' do
+    let(:active_commodity_code_result) do
+      { active: %w[3333333333 4444444444], expired: %w[5555555555], erroneous: %w[1234567890 1234567891] }
+    end
+
     before do
       TradeTariffRequest.time_machine_now = Time.current
+      allow(Api::User::ActiveCommoditiesService).to receive(:new)
+      .and_return(instance_double(Api::User::ActiveCommoditiesService,
+                                  call: active_commodity_code_result))
     end
 
     context 'when token is invalid' do
@@ -136,12 +143,6 @@ RSpec.describe Api::User::PublicUsersController do
           }
         end
 
-        before do
-          create(:commodity, :actual, goods_nomenclature_item_id: '3333333333')
-          create(:commodity, :actual, goods_nomenclature_item_id: '4444444444')
-          create(:commodity, :expired, goods_nomenclature_item_id: '5555555555')
-        end
-
         it 'updates the commodity_codes' do
           api_response
           expect(user.erroneous_commodity_codes).to eq %w[1234567890 1234567891]
@@ -166,21 +167,19 @@ RSpec.describe Api::User::PublicUsersController do
 
         before do
           user.commodity_codes = %w[1111111111 2222222222 6666666666]
-          create(:commodity, :actual, goods_nomenclature_item_id: '5555555555')
-          create(:commodity, :expired, goods_nomenclature_item_id: '6666666666')
-          create(:commodity, :expired, goods_nomenclature_item_id: '7777777777')
         end
 
         it 'removes old codes and saves only the new ones' do
           api_response
-          expect(user.reload.erroneous_commodity_codes).to eq %w[3333333333 4444444444]
-          expect(user.reload.active_commodity_codes).to eq %w[5555555555]
-          expect(user.reload.expired_commodity_codes).to eq %w[7777777777]
+          expect(user.reload.erroneous_commodity_codes).to eq %w[1234567890 1234567891]
+          expect(user.reload.active_commodity_codes).to eq %w[3333333333 4444444444]
+          expect(user.reload.expired_commodity_codes).to eq %w[5555555555]
         end
       end
 
       context 'when there aren\'t any commodity codes updated' do
         let!(:user) { create(:public_user) }
+        let(:active_commodity_code_result) { { active: %w[1111111111], expired: %w[2222222222], erroneous: %w[] } }
 
         let(:make_request) do
           patch :update, params: { data: { attributes: { commodity_codes: nil } } }
@@ -195,8 +194,6 @@ RSpec.describe Api::User::PublicUsersController do
 
         before do
           user.commodity_codes = %w[1111111111 2222222222]
-          create(:commodity, :actual, goods_nomenclature_item_id: '1111111111')
-          create(:commodity, :expired, goods_nomenclature_item_id: '2222222222')
         end
 
         it 'keeps the original codes' do

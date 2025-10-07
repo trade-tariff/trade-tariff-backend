@@ -18,7 +18,7 @@ RSpec.describe PublicUsers::User do
     end
   end
 
-  describe '#active_commodity_codes' do
+  shared_examples 'commodity code status' do |status, expected_result|
     before do
       TradeTariffRequest.time_machine_now = Time.current
       create(:commodity, :actual, goods_nomenclature_item_id: '1905903000')
@@ -28,25 +28,31 @@ RSpec.describe PublicUsers::User do
       user.add_delta_preference(commodity_code: '1234567890')
     end
 
-    it 'returns grouped commodity codes' do
-      expect(user.active_commodity_codes).to eq(
-        active: %w[1905903000],
-        expired: %w[0702009000],
-        erroneous: %w[1234567890],
-      )
+    it "returns #{status} commodity codes" do
+      expect(user.public_send(status)).to eq(expected_result)
     end
 
     it 'memoizes the result and avoids extra DB queries' do
-      allow(Commodity).to receive(:where).and_call_original
-      allow(Commodity).to receive(:actual).and_call_original
+      allow(Api::User::ActiveCommoditiesService).to receive(:new).and_call_original
 
-      first_result = user.active_commodity_codes
-      second_result = user.active_commodity_codes
+      first_result = user.public_send(status)
+      second_result = user.public_send(status)
 
-      expect(Commodity).to have_received(:where).once
-      expect(Commodity).to have_received(:actual).once
+      expect(Api::User::ActiveCommoditiesService).to have_received(:new).once
       expect(second_result).to equal(first_result)
     end
+  end
+
+  describe '#active_commodity_codes' do
+    include_examples 'commodity code status', :active_commodity_codes, %w[1905903000]
+  end
+
+  describe '#expired_commodity_codes' do
+    include_examples 'commodity code status', :expired_commodity_codes, %w[0702009000]
+  end
+
+  describe '#erroneous_commodity_codes' do
+    include_examples 'commodity code status', :erroneous_commodity_codes, %w[1234567890]
   end
 
   describe '#commodity_codes=' do
