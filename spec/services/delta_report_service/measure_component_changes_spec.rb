@@ -69,7 +69,7 @@ RSpec.describe DeltaReportService::MeasureComponentChanges do
       allow(instance).to receive(:duty_expression).with(measure).and_return('5%')
       allow(measure).to receive(:additional_code).and_return(nil)
       # By default, don't filter out records (no matching operations found)
-      allow(Measure::Operation).to receive_message_chain(:where, :any?).and_return(false)
+      allow(Measure.operation_klass).to receive_message_chain(:where, :any?).and_return(false)
     end
 
     context 'when there are no changes' do
@@ -89,8 +89,8 @@ RSpec.describe DeltaReportService::MeasureComponentChanges do
         allow(measure_component_create).to receive(:measure).and_return(measure_create)
         allow(instance_create).to receive(:get_changes)
         allow(instance_create).to receive(:no_changes?).and_return(false)
-        # Mock the Measure::Operation query to return true (measure found on same date)
-        allow(Measure::Operation).to receive_message_chain(:where, :any?).and_return(true)
+        # Mock the Measure.operation_klass query to return true (measure found on same date)
+        allow(Measure.operation_klass).to receive_message_chain(:where, :any?).and_return(true)
       end
 
       it 'returns nil' do

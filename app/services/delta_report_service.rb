@@ -135,7 +135,7 @@ class DeltaReportService
       .where(measure_sid: change[:measure_sid])
       .first
 
-    if measure
+    if measure && Measure.operation_klass.where(measure_sid: change[:measure_sid], operation_date: date).none?
       find_declarable_goods_under_code(measure[:goods_nomenclature_item_id])
     else
       []
@@ -168,6 +168,8 @@ class DeltaReportService
         .first
 
       next unless measure
+
+      next if Measure.operation_klass.where(measure_sid: measure.measure_sid, operation_date: date).any?
 
       change[:measure_type] = measure_type(measure)
       change[:import_export] = import_export(measure)

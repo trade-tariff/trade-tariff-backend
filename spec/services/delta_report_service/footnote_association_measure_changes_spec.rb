@@ -22,12 +22,12 @@ RSpec.describe DeltaReportService::FootnoteAssociationMeasureChanges do
   end
 
   describe '.collect' do
-    let(:footnote_association_operation1) { instance_double(FootnoteAssociationMeasure::Operation, oid: 1, record_from_oplog: footnote_association) }
-    let(:footnote_association_operation2) { instance_double(FootnoteAssociationMeasure::Operation, oid: 2, record_from_oplog: footnote_association) }
+    let(:footnote_association_operation1) { instance_double(FootnoteAssociationMeasure.operation_klass, oid: 1, record_from_oplog: footnote_association) }
+    let(:footnote_association_operation2) { instance_double(FootnoteAssociationMeasure.operation_klass, oid: 2, record_from_oplog: footnote_association) }
     let(:footnote_association_operations) { [footnote_association_operation1, footnote_association_operation2] }
 
     before do
-      allow(FootnoteAssociationMeasure::Operation).to receive(:where).with(operation_date: date).and_return(footnote_association_operations)
+      allow(FootnoteAssociationMeasure.operation_klass).to receive(:where).with(operation_date: date).and_return(footnote_association_operations)
     end
 
     it 'finds footnote association measure operations for the given date and returns analyzed changes' do
@@ -39,7 +39,7 @@ RSpec.describe DeltaReportService::FootnoteAssociationMeasureChanges do
 
       result = described_class.collect(date)
 
-      expect(FootnoteAssociationMeasure::Operation).to have_received(:where).with(operation_date: date)
+      expect(FootnoteAssociationMeasure.operation_klass).to have_received(:where).with(operation_date: date)
       expect(result).to eq([{ type: 'FootnoteAssociationMeasure' }, { type: 'FootnoteAssociationMeasure' }])
     end
   end
@@ -76,8 +76,8 @@ RSpec.describe DeltaReportService::FootnoteAssociationMeasureChanges do
         geographical_area_description: instance_double(GeographicalAreaDescription, description: 'United Kingdom'),
         id: 'GB',
       )
-      allow(Measure::Operation).to receive_message_chain(:where, :any?).and_return(false)
-      allow(Footnote::Operation).to receive_message_chain(:where, :any?).and_return(false)
+      allow(Measure.operation_klass).to receive_message_chain(:where, :any?).and_return(false)
+      allow(Footnote.operation_klass).to receive_message_chain(:where, :any?).and_return(false)
     end
 
     context 'when there are no changes' do
@@ -92,7 +92,7 @@ RSpec.describe DeltaReportService::FootnoteAssociationMeasureChanges do
       before do
         allow(footnote_association).to receive(:operation).and_return(:create)
         allow(measure).to receive(:operation_date).and_return(date)
-        allow(Measure::Operation).to receive_message_chain(:where, :any?).and_return(true)
+        allow(Measure.operation_klass).to receive_message_chain(:where, :any?).and_return(true)
       end
 
       it 'returns nil' do
@@ -105,7 +105,7 @@ RSpec.describe DeltaReportService::FootnoteAssociationMeasureChanges do
         allow(footnote_association).to receive(:operation).and_return(:create)
         allow(measure).to receive(:operation_date).and_return(date - 1)
         allow(footnote).to receive(:operation_date).and_return(date)
-        allow(Footnote::Operation).to receive_message_chain(:where, :any?).and_return(true)
+        allow(Footnote.operation_klass).to receive_message_chain(:where, :any?).and_return(true)
       end
 
       it 'returns nil' do

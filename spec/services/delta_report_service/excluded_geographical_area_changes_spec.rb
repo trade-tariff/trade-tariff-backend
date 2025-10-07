@@ -16,16 +16,16 @@ RSpec.describe DeltaReportService::ExcludedGeographicalAreaChanges do
       geographical_area: geographical_area,
     )
     allow(instance).to receive(:get_changes)
-    allow(Measure::Operation).to receive_message_chain(:where, :any?).and_return(false)
+    allow(Measure.operation_klass).to receive_message_chain(:where, :any?).and_return(false)
   end
 
   describe '.collect' do
-    let(:excluded_geo_area_operation1) { instance_double(MeasureExcludedGeographicalArea::Operation, oid: 1, record_from_oplog: excluded_geo_area) }
-    let(:excluded_geo_area_operation2) { instance_double(MeasureExcludedGeographicalArea::Operation, oid: 2, record_from_oplog: excluded_geo_area) }
+    let(:excluded_geo_area_operation1) { instance_double(MeasureExcludedGeographicalArea.operation_klass, oid: 1, record_from_oplog: excluded_geo_area) }
+    let(:excluded_geo_area_operation2) { instance_double(MeasureExcludedGeographicalArea.operation_klass, oid: 2, record_from_oplog: excluded_geo_area) }
     let(:excluded_geo_area_operations) { [excluded_geo_area_operation1, excluded_geo_area_operation2] }
 
     before do
-      allow(MeasureExcludedGeographicalArea::Operation).to receive(:where).with(operation_date: date).and_return(excluded_geo_area_operations)
+      allow(MeasureExcludedGeographicalArea.operation_klass).to receive(:where).with(operation_date: date).and_return(excluded_geo_area_operations)
     end
 
     it 'finds excluded geographical area operations for the given date and returns analyzed changes' do
@@ -37,7 +37,7 @@ RSpec.describe DeltaReportService::ExcludedGeographicalAreaChanges do
 
       result = described_class.collect(date)
 
-      expect(MeasureExcludedGeographicalArea::Operation).to have_received(:where).with(operation_date: date)
+      expect(MeasureExcludedGeographicalArea.operation_klass).to have_received(:where).with(operation_date: date)
       expect(result).to eq([{ type: 'ExcludedGeographicalArea' }])
     end
 
@@ -71,7 +71,7 @@ RSpec.describe DeltaReportService::ExcludedGeographicalAreaChanges do
 
     context 'when no measure operations with operation U are found' do
       before do
-        allow(Measure::Operation).to receive_message_chain(:where, :any?).and_return(false)
+        allow(Measure.operation_klass).to receive_message_chain(:where, :any?).and_return(false)
       end
 
       it 'returns nil (filters out when no update operations found)' do
@@ -81,7 +81,7 @@ RSpec.describe DeltaReportService::ExcludedGeographicalAreaChanges do
 
     context 'when measure operations with operation U are found' do
       before do
-        allow(Measure::Operation).to receive_message_chain(:where, :any?).and_return(true)
+        allow(Measure.operation_klass).to receive_message_chain(:where, :any?).and_return(true)
         allow(TimeMachine).to receive(:at).with(excluded_geo_area.operation_date).and_yield
       end
 
@@ -109,7 +109,7 @@ RSpec.describe DeltaReportService::ExcludedGeographicalAreaChanges do
 
     context 'with different excluded geographical area values' do
       before do
-        allow(Measure::Operation).to receive_message_chain(:where, :any?).and_return(true)
+        allow(Measure.operation_klass).to receive_message_chain(:where, :any?).and_return(true)
         allow(TimeMachine).to receive(:at).with(excluded_geo_area.operation_date).and_yield
       end
 
@@ -138,7 +138,7 @@ RSpec.describe DeltaReportService::ExcludedGeographicalAreaChanges do
         additional_code: additional_code,
       )
       allow(measure_type).to receive(:measure_type_description).and_return(measure_type_description)
-      allow(Measure::Operation).to receive_message_chain(:where, :any?).and_return(true)
+      allow(Measure.operation_klass).to receive_message_chain(:where, :any?).and_return(true)
       allow(TimeMachine).to receive(:at).with(excluded_geo_area.operation_date).and_yield
     end
 
@@ -158,7 +158,7 @@ RSpec.describe DeltaReportService::ExcludedGeographicalAreaChanges do
 
   describe 'edge cases' do
     before do
-      allow(Measure::Operation).to receive_message_chain(:where, :any?).and_return(true)
+      allow(Measure.operation_klass).to receive_message_chain(:where, :any?).and_return(true)
       allow(TimeMachine).to receive(:at).with(excluded_geo_area.operation_date).and_yield
     end
 
@@ -213,7 +213,7 @@ RSpec.describe DeltaReportService::ExcludedGeographicalAreaChanges do
           measure_sid: '20260381',
         )
         allow(instance).to receive(:geo_area).and_return('United Kingdom (GB)')
-        allow(Measure::Operation).to receive_message_chain(:where, :any?).and_return(true)
+        allow(Measure.operation_klass).to receive_message_chain(:where, :any?).and_return(true)
         allow(TimeMachine).to receive(:at).with(real_excluded_date).and_yield
       end
 
@@ -231,7 +231,7 @@ RSpec.describe DeltaReportService::ExcludedGeographicalAreaChanges do
 
     context 'when no update measures are found (common filtering case)' do
       before do
-        allow(Measure::Operation).to receive_message_chain(:where, :any?).and_return(false)
+        allow(Measure.operation_klass).to receive_message_chain(:where, :any?).and_return(false)
       end
 
       it 'filters out records when no update operations are found' do

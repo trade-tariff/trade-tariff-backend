@@ -2,7 +2,7 @@ class DeltaReportService
   class ExcludedGeographicalAreaChanges < BaseChanges
     def self.collect(date)
       # Use Operation model so we can access deleted records
-      MeasureExcludedGeographicalArea::Operation
+      MeasureExcludedGeographicalArea.operation_klass
         .where(operation_date: date)
         .map { |record| new(record.record_from_oplog, date).analyze }
         .compact
@@ -13,7 +13,7 @@ class DeltaReportService
     end
 
     def analyze
-      measures = Measure::Operation.where(measure_sid: record.measure_sid, operation_date: record.operation_date, operation: 'U')
+      measures = Measure.operation_klass.where(measure_sid: record.measure_sid, operation_date: record.operation_date, operation: 'U')
 
       return unless measures.any?
 

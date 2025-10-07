@@ -2,7 +2,7 @@ class DeltaReportService
   class MeasureChanges < BaseChanges
     def self.collect(date)
       # Use Operation model so we can access deleted records
-      Measure::Operation
+      Measure.operation_klass
         .where(operation_date: date)
         .map { |record| new(record.record_from_oplog, date).analyze }
         .compact

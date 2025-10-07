@@ -21,7 +21,7 @@ RSpec.describe DeltaReportService::CommodityDescriptionChanges do
 
   before do
     allow(instance).to receive(:get_changes)
-    allow(GoodsNomenclature::Operation).to receive_message_chain(:where, :any?).and_return(false)
+    allow(GoodsNomenclature.operation_klass).to receive_message_chain(:where, :any?).and_return(false)
   end
 
   describe '.collect' do
@@ -151,9 +151,9 @@ RSpec.describe DeltaReportService::CommodityDescriptionChanges do
       end
     end
 
-    context 'when operation is create and GoodsNomenclature::Operation exists for same date' do
+    context 'when operation is create and GoodsNomenclature.operation_klass exists for same date' do
       before do
-        allow(GoodsNomenclature::Operation).to receive_message_chain(:where, :any?).and_return(true)
+        allow(GoodsNomenclature.operation_klass).to receive_message_chain(:where, :any?).and_return(true)
       end
 
       it 'returns nil' do
