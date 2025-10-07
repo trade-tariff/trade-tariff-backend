@@ -53,8 +53,8 @@ RSpec.describe CdsImporter do
   end
 
   describe 'XmlProcessor' do
-    let(:db_handler) { CdsImporter::RecordInserter.new(cds_update.filename)}
-    let(:excel_handler) { CdsImporter::ExcelWriter.new(cds_update.filename)}
+    let(:db_handler) { CdsImporter::RecordInserter.new(cds_update.filename) }
+    let(:excel_handler) { CdsImporter::ExcelWriter.new(cds_update.filename) }
     let(:processor) { CdsImporter::XmlProcessor.new(cds_update.filename, [db_handler, excel_handler]) }
 
     before do
@@ -89,7 +89,7 @@ RSpec.describe CdsImporter do
 
   describe 'Excel writer' do
     let(:cds_update) { TariffSynchronizer::CdsUpdate.new(filename: 'tariff_dailyExtract_v1_20251006T125959.gzip') }
-    let(:excel_filename) { "CDS updates 2025-10-06.xlsx"}
+    let(:excel_filename) { 'CDS updates 2025-10-06.xlsx' }
 
     it 'creates CDS updates file' do
       importer.import

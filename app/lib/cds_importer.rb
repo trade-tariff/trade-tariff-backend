@@ -35,7 +35,7 @@ class CdsImporter
     zip_file = TariffSynchronizer::FileService.file_as_stringio(@cds_update)
     handlers = [
       CdsImporter::RecordInserter.new(@cds_update.filename),
-      CdsImporter::ExcelWriter.new(@cds_update.filename)
+      CdsImporter::ExcelWriter.new(@cds_update.filename),
     ]
     handler = XmlProcessor.new(@cds_update.filename, handlers)
 
@@ -77,9 +77,7 @@ class CdsImporter
     end
 
     def after_parse
-      @handlers.each do |handler|
-        handler.after_parse
-      end
+      @handlers.each(&:after_parse)
     end
 
     def cds_failed_log(exception, key, hash)
