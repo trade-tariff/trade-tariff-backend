@@ -9,12 +9,18 @@ class CdsImporter
       @xml_element_id = nil
       @key = ''
       @instances = []
-      create_excel_file
+      @failed = false
+      initiate_excel_file
     end
 
-    def write_record(cds_entity)
+    def process_record(cds_entity)
       unless @xml_element_id.nil? || @xml_element_id == cds_entity.element_id
-        write(@key, @instances)
+        begin
+          write(@key, @instances)
+        rescue StandardError => e
+          Rails.logger.error "CDS Updates excel: write error #{@key} in #{@filename} - #{e.message}"
+          @failed = true
+        end
         @instances = []
       end
 
@@ -23,9 +29,13 @@ class CdsImporter
       @instances << cds_entity.instance
     end
 
-    def save_file
-      FileUtils.mkdir_p(File.join(TariffSynchronizer.root_path, 'cds_updates'))
-      package.serialize(File.join(TariffSynchronizer.root_path, 'cds_updates', excel_filename))
+    def after_parse
+      begin
+        FileUtils.mkdir_p(File.join(TariffSynchronizer.root_path, 'cds_updates'))
+        package.serialize(File.join(TariffSynchronizer.root_path, 'cds_updates', excel_filename))
+      rescue StandardError => e
+        Rails.logger.error "CDS Updates excel: save file error for #{@filename} - #{e.message}"
+      end
     end
 
     private
@@ -58,7 +68,7 @@ class CdsImporter
       Rails.logger.info "#{key} element is not mapped into CDS Updates"
     end
 
-    def create_excel_file
+    def initiate_excel_file
       @package = Axlsx::Package.new
       @workbook = package.workbook
       @bold_style = workbook.styles.add_style(

@@ -32,8 +32,12 @@ class CdsImporter
   end
 
   def import
-    handler = XmlProcessor.new(@cds_update.filename)
     zip_file = TariffSynchronizer::FileService.file_as_stringio(@cds_update)
+    handlers = [
+      CdsImporter::RecordInserter.new(@cds_update.filename),
+      CdsImporter::ExcelWriter.new(@cds_update.filename)
+    ]
+    handler = XmlProcessor.new(@cds_update.filename, handlers)
 
     subscribe_to_oplog_inserts
     Rails.logger.info "CDS Importer batch size: #{TradeTariffBackend.cds_importer_batch_size}"
@@ -44,7 +48,8 @@ class CdsImporter
         xml_stream = entry.get_input_stream
         # do the xml parsing depending on records root depth
         CdsImporter::XmlParser::Reader.new(xml_stream, handler).parse
-        handler.process_end
+
+        handler.after_parse
         Rails.logger.info "Successfully imported Cds file: #{@cds_update.filename}"
       end
     end
@@ -53,19 +58,17 @@ class CdsImporter
   end
 
   class XmlProcessor
-    def initialize(filename)
+    def initialize(filename, handlers = [])
       @filename = filename
-      @excel_writer = CdsImporter::ExcelWriter.new(@filename)
-      @record_inserter = CdsImporter::RecordInserter.new(@filename)
+      @handlers = handlers
     end
 
     def process_xml_node(key, hash_from_node)
       hash_from_node['filename'] = @filename
 
       CdsImporter::EntityMapper.new(key, hash_from_node).build do |cds_entity|
-        @record_inserter.insert_record(cds_entity)
-        if TradeTariffBackend.cds_importer_write_update_excel
-          @excel_writer.write_record(cds_entity)
+        @handlers.each do |handler|
+          handler.process_record(cds_entity)
         end
       end
     rescue StandardError => e
@@ -73,10 +76,9 @@ class CdsImporter
       raise ImportException
     end
 
-    def process_end
-      @record_inserter.process_batch
-      if TradeTariffBackend.cds_importer_write_update_excel
-        @excel_writer.save_file
+    def after_parse
+      @handlers.each do |handler|
+        handler.after_parse
       end
     end
 

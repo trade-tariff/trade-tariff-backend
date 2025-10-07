@@ -76,6 +76,8 @@ class CdsImporter
       end
 
       def measure_condition_string(conditions)
+        return '' if conditions.blank?
+
         conditions
           .reject { |c| c.operation == 'D' }
           .map    { |c| condition_string(c) }
@@ -108,6 +110,8 @@ class CdsImporter
       end
 
       def footnote_string(footnotes)
+        return '' if footnotes.blank?
+
         footnotes
           .reject { |c| c.operation == 'D' }
           .map    { |c| "#{c.footnote_type_id}#{c.footnote_id}" }
@@ -115,6 +119,8 @@ class CdsImporter
       end
 
       def exclusion_string(excluded_geo_areas)
+        return '' if excluded_geo_areas.blank?
+
         excluded_geo_areas
           .reject { |c| c.operation == 'D' }
           .map(&:excluded_geographical_area)
@@ -122,6 +128,8 @@ class CdsImporter
       end
 
       def combined_duty(measure_components)
+        return '' if measure_components.blank?
+
         measure_components
           .reject { |c| c.operation == 'D' }
           .map    { |c| duty_string(c) }
