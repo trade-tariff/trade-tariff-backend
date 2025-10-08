@@ -39,6 +39,18 @@ module TradeTariffBackend
       ENV.fetch('TARIFF_SYNC_EMAIL')
     end
 
+    def ccd_updates_send_email
+      ENV.fetch('CCD_UPDATES_SEND_MAIL', 'false').to_s == 'true'
+    end
+
+    def ccd_updates_to_email
+      ENV.fetch('CCD_UPDATES_TO_EMAILS')
+    end
+
+    def ccd_updates_cc_email
+      ENV.fetch('CCD_UPDATES_CC_EMAILS', '')
+    end
+
     def patch_broken_taric_downloads?
       ENV['PATCH_BROKEN_TARIC_DOWNLOADS'] == 'true'
     end
