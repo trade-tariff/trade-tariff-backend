@@ -73,8 +73,8 @@ module TariffSynchronizer
     def cds_updates(file_date, excel, file_name)
       @produced_date = file_date
       @loaded_date = (Date.parse(file_date) + 1).strftime('%Y-%m-%d')
-      @to_emails = TradeTariffBackend.ccd_updates_to_email.split(',')
-      @cc_emails = TradeTariffBackend.ccd_updates_cc_email.split(',')
+      @to_emails = TradeTariffBackend.cds_updates_to_email.split(',')
+      @cc_emails = TradeTariffBackend.cds_updates_cc_email.split(',')
 
       attachments[file_name] = excel.to_stream.read
 
