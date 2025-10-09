@@ -40,7 +40,7 @@ RSpec.describe CdsImporter::ExcelWriter::QuotaOrderNumber do
       end
     end
 
-    context 'when there are empty fields in foot note type' do
+    context 'when there are empty fields in quota order number' do
       let(:models) { [quota_order_number2] }
 
       it 'returns a correctly formatted data row' do

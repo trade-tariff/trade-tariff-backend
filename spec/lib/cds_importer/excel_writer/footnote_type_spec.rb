@@ -57,7 +57,7 @@ RSpec.describe CdsImporter::ExcelWriter::FootnoteType do
       end
     end
 
-    context 'when there are empty fields in foot note type' do
+    context 'when there are empty fields in footnote type' do
       let(:models) { [footnote_type2] }
 
       it 'returns a correctly formatted data row' do

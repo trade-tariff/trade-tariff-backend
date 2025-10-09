@@ -45,7 +45,7 @@ RSpec.describe CdsImporter::ExcelWriter::BaseRegulation do
       end
     end
 
-    context 'when there are empty fields in foot note type' do
+    context 'when there are empty fields in base regulation' do
       let(:models) { [base_regulation2] }
 
       it 'returns a correctly formatted data row' do
