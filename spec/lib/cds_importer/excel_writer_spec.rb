@@ -18,6 +18,14 @@ RSpec.describe CdsImporter::ExcelWriter do
       instance: 'I2',
     )
   end
+  let(:entity3) do
+    instance_double(
+      CdsImporter::CdsEntity,
+      key: 'NotExist',
+      element_id: 'E2',
+      instance: 'I2',
+    )
+  end
   let(:excel) do
     instance_double(CdsImporter::ExcelWriter::QuotaDefinition,
                     sheet_name: 'Sheet 1',
@@ -32,6 +40,9 @@ RSpec.describe CdsImporter::ExcelWriter do
     allow(Module).to receive(:const_get)
                        .with('CdsImporter::ExcelWriter::K')
                        .and_return(class_double(CdsImporter::ExcelWriter::QuotaDefinition, new: excel))
+
+    allow(Module).to receive(:const_get)
+                       .with('CdsImporter::ExcelWriter::NotExist').and_raise(NameError)
   end
 
   describe '#initialize' do
@@ -44,10 +55,10 @@ RSpec.describe CdsImporter::ExcelWriter do
     end
   end
 
-  describe 'write_record' do
+  describe 'process_record' do
     context 'when xml_element_id is nil' do
       it 'sets key, xml_element_id, and adds the instance' do
-        writer.write_record(entity1)
+        writer.process_record(entity1)
 
         expect(excel).not_to have_received(:sheet_name)
         expect(writer.instance_variable_get(:@key)).to eq('K')
@@ -58,8 +69,8 @@ RSpec.describe CdsImporter::ExcelWriter do
 
     context 'when xml_element_id changes' do
       it 'writes existing instances and resets before adding new one' do
-        writer.write_record(entity1)
-        writer.write_record(entity2)
+        writer.process_record(entity1)
+        writer.process_record(entity2)
 
         expect(excel).to have_received(:sheet_name)
         expect(excel).to have_received(:note)
@@ -75,12 +86,24 @@ RSpec.describe CdsImporter::ExcelWriter do
 
     context 'when xml_element_id stays the same' do
       it 'does not call write and accumulates instances' do
-        writer.write_record(entity1)
-        writer.write_record(entity1)
+        writer.process_record(entity1)
+        writer.process_record(entity1)
 
         expect(excel).not_to have_received(:sheet_name)
         expect(writer.instance_variable_get(:@instances)).to eq(%w[I1 I1])
       end
+    end
+  end
+
+  describe 'handle invalid cds entity' do
+    it 'handles key that not mapped' do
+      writer.process_record(entity3)
+      writer.process_record(entity1)
+
+      expect(excel).not_to have_received(:sheet_name)
+      expect(writer.instance_variable_get(:@key)).to eq('K')
+      expect(writer.instance_variable_get(:@xml_element_id)).to eq('E1')
+      expect(writer.instance_variable_get(:@instances)).to eq(%w[I1])
     end
   end
 end

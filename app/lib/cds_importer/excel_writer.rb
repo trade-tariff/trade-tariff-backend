@@ -9,12 +9,18 @@ class CdsImporter
       @xml_element_id = nil
       @key = ''
       @instances = []
-      create_excel_file
+      @failed = false
+      initiate_excel_file
     end
 
-    def write_record(cds_entity)
+    def process_record(cds_entity)
       unless @xml_element_id.nil? || @xml_element_id == cds_entity.element_id
-        write(@key, @instances)
+        begin
+          write(@key, @instances)
+        rescue StandardError => e
+          Rails.logger.error "CDS Updates excel: write error #{@key} in #{@filename} - #{e.message}"
+          @failed = true
+        end
         @instances = []
       end
 
@@ -23,9 +29,14 @@ class CdsImporter
       @instances << cds_entity.instance
     end
 
-    def save_file
+    def after_parse
       FileUtils.mkdir_p(File.join(TariffSynchronizer.root_path, 'cds_updates'))
       package.serialize(File.join(TariffSynchronizer.root_path, 'cds_updates', excel_filename))
+      if TradeTariffBackend.cds_updates_send_email && !@failed
+        TariffSynchronizer::Mailer.cds_updates(xml_to_file_date, package, excel_filename).deliver_now
+      end
+    rescue StandardError => e
+      Rails.logger.error "CDS Updates excel: save file error for #{@filename} - #{e.message}"
     end
 
     private
@@ -54,9 +65,11 @@ class CdsImporter
 
       sheet.add_row(update.data_row, style: regular_style)
       sheet.column_widths(*update.column_widths)
+    rescue NameError
+      Rails.logger.info "#{key} element is not mapped into CDS Updates"
     end
 
-    def create_excel_file
+    def initiate_excel_file
       @package = Axlsx::Package.new
       @workbook = package.workbook
       @bold_style = workbook.styles.add_style(
