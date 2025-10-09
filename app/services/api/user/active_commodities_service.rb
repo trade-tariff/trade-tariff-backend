@@ -19,6 +19,8 @@ module Api
           .where(goods_nomenclatures__goods_nomenclature_item_id: original_codes)
           .all
 
+        all_codes = all_codes.select(&:leaf?) # filters out the subheadings that are also commodities see 1905903000 (Bread)
+
         full_history = GoodsNomenclature::Operation.where(goods_nomenclature_item_id: original_codes).pluck(:goods_nomenclature_item_id)
 
         erroneous_codes = original_codes - full_history
@@ -35,6 +37,19 @@ module Api
           .reject { |code| code.in?(active_codes) }
           .reject { |code| code.in?(moved_codes) }
           .reject { |code| code.in?(erroneous_codes) }
+
+        # check that expired codes are not subheadings see 0406902100 (Cheese, a subheading (ie. erroneous) but was showing as expired)
+        expired_commodities = ::GoodsNomenclature
+        .with_leaf_column
+        .where(goods_nomenclatures__goods_nomenclature_item_id: expired_codes)
+        .all
+
+        # if it isn't a leaf its erroneous
+        erroneous_codes += expired_commodities.reject(&:leaf?).pluck(:goods_nomenclature_item_id)
+
+        # remove anything erroneous from expired
+        expired_codes -= erroneous_codes
+
         erroneous_codes += moved_codes
         {
           active: active_codes.sort.uniq,
