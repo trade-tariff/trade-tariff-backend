@@ -68,7 +68,7 @@ RSpec.describe CdsImporter::ExcelWriter::GeographicalArea do
       geographical_area_sid: 1,
       operation: 'C',
       validity_start_date: Time.utc(2025, 1, 1, 0, 0, 0),
-      validity_end_date: Time.utc(2025, 06, 30, 23, 59, 59),
+      validity_end_date: Time.utc(2025, 6, 30, 23, 59, 59),
     )
   end
 
@@ -79,7 +79,7 @@ RSpec.describe CdsImporter::ExcelWriter::GeographicalArea do
       geographical_area_group_sid: 5,
       geographical_area_sid: 1,
       operation: 'C',
-      validity_start_date: Time.utc(2025, 07, 01, 0, 0, 0),
+      validity_start_date: Time.utc(2025, 7, 1, 0, 0, 0),
       validity_end_date: nil,
     )
   end
