@@ -69,5 +69,16 @@ module TariffSynchronizer
 
       mail subject: "#{subject_prefix(:warn)} Missing #{count} #{update_type.upcase} updates in a row"
     end
+
+    def cds_updates(file_date, excel, file_name)
+      @produced_date = file_date
+      @loaded_date = (Date.parse(file_date) + 1).strftime('%Y-%m-%d')
+      @to_emails = TradeTariffBackend.cds_updates_to_email.split(',')
+      @cc_emails = TradeTariffBackend.cds_updates_cc_email.split(',')
+
+      attachments[file_name] = excel.to_stream.read
+
+      mail subject: "CDS data load #{@produced_date}", to: @to_emails, cc: @cc_emails
+    end
   end
 end

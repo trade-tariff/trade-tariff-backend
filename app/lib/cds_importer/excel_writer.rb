@@ -32,6 +32,9 @@ class CdsImporter
     def after_parse
       FileUtils.mkdir_p(File.join(TariffSynchronizer.root_path, 'cds_updates'))
       package.serialize(File.join(TariffSynchronizer.root_path, 'cds_updates', excel_filename))
+      if TradeTariffBackend.cds_updates_send_email && !@failed
+        TariffSynchronizer::Mailer.cds_updates(xml_to_file_date, package, excel_filename).deliver_now
+      end
     rescue StandardError => e
       Rails.logger.error "CDS Updates excel: save file error for #{@filename} - #{e.message}"
     end
