@@ -274,4 +274,8 @@ class GoodsNomenclature < Sequel::Model
   def to_admin_param
     to_param
   end
+
+  def hierarchical_description
+    (ancestors.drop(1).map(&:description) + [description]).join(' > ')
+  end
 end

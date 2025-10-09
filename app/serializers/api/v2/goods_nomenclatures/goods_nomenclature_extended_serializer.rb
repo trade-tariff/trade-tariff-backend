@@ -14,6 +14,7 @@ module Api
 
         attributes :formatted_description, :validity_start_date, :validity_end_date
         attribute :declarable, &:declarable?
+        attribute :hierarchical_description, &:hierarchical_description
 
         belongs_to :parent, record_type: :goods_nomenclature, &:parent
       end

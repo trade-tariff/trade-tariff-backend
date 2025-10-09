@@ -29,10 +29,10 @@ RSpec.describe Api::User::PublicUserSerializer do
       serializable.add_delta_preference(PublicUsers::DeltaPreferences.new(commodity_code: '2222222222'))
       serializable.add_delta_preference(PublicUsers::DeltaPreferences.new(commodity_code: '3333333333'))
       serializable.add_delta_preference(PublicUsers::DeltaPreferences.new(commodity_code: '4444444444'))
-      create(:goods_nomenclature, goods_nomenclature_item_id: '1111111111', validity_start_date: Time.zone.now)
-      create(:goods_nomenclature, goods_nomenclature_item_id: '2222222222', validity_start_date: Time.zone.now)
-      create(:goods_nomenclature, goods_nomenclature_item_id: '3333333333', validity_start_date: Time.zone.now - 1.week, validity_end_date: Time.zone.now - 1.day)
-      create(:goods_nomenclature, goods_nomenclature_item_id: '4444444444', validity_start_date: Time.zone.now - 1.week, validity_end_date: Time.zone.now - 1.day)
+      create(:commodity, :actual, goods_nomenclature_item_id: '1111111111')
+      create(:commodity, :actual, goods_nomenclature_item_id: '2222222222')
+      create(:commodity, :expired, goods_nomenclature_item_id: '3333333333')
+      create(:commodity, :expired, goods_nomenclature_item_id: '4444444444')
     end
 
     it { expect(serialized).to eq(expected) }

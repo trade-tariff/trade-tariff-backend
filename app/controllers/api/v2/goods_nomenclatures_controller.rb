@@ -16,12 +16,7 @@ module Api
       end
 
       def show
-        gn = GoodsNomenclature
-               .actual
-               .association_inner_join(:goods_nomenclature_indents)
-               .where(Sequel[:goods_nomenclatures][:goods_nomenclature_item_id] => params[:id])
-               .order(Sequel[:goods_nomenclatures][:producline_suffix], Sequel[:goods_nomenclature_indents][:number_indents])
-               .last
+        gn = scope(params[:id]).last
 
         raise Sequel::RecordNotFound if gn.blank?
 
@@ -70,6 +65,26 @@ module Api
           [heading] + heading.descendants
         end
 
+        respond_with(@goods_nomenclatures)
+      end
+
+      def show_by_batch
+        commodity_codes = bulk_commmodities_params[:commodity_codes]
+        include_expired = params[:include_expired] == 'true'
+
+        if commodity_codes.size > 10
+          render json: serialize_errors({ error: 'Maximum of 10 commodity codes allowed' }),
+                 status: :unprocessable_entity
+          return
+        end
+
+        gns = if include_expired
+                load_with_expired(commodity_codes)
+              else
+                load_actual(commodity_codes)
+              end
+
+        @goods_nomenclatures = gns.flat_map { |gn| [gn] }
         respond_with(@goods_nomenclatures)
       end
 
@@ -127,6 +142,51 @@ module Api
 
       def set_request_format
         request.format = :csv if request.headers['CONTENT_TYPE'] == 'text/csv'
+      end
+
+      def bulk_commmodities_params
+        params.require(:data).require(:attributes).permit(
+          commodity_codes: [],
+        )
+      end
+
+      def serialize_errors(errors)
+        Api::User::ErrorSerializationService.new.serialized_errors(errors)
+      end
+
+      def scope(codes)
+        GoodsNomenclature.actual
+               .association_inner_join(:goods_nomenclature_indents)
+               .where(Sequel[:goods_nomenclatures][:goods_nomenclature_item_id] => codes)
+               .order(Sequel[:goods_nomenclatures][:producline_suffix],
+                      Sequel[:goods_nomenclature_indents][:number_indents])
+      end
+
+      def load_with_expired(codes)
+        gns = []
+
+        codes.each do |code|
+          latest_gn = GoodsNomenclature
+                        .where(goods_nomenclature_item_id: code)
+                        .order(Sequel.desc(:validity_start_date))
+                        .first
+          next unless latest_gn
+
+          TimeMachine.at(latest_gn.validity_start_date) do
+            gns << scope(code)
+            .eager(:ancestors)
+            .order(Sequel[:goods_nomenclatures][:validity_start_date])
+            .take
+          end
+        end
+
+        gns
+      end
+
+      def load_actual(codes)
+        codes.filter_map do |code|
+          scope(code).last
+        end
       end
     end
   end

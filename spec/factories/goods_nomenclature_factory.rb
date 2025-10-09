@@ -68,10 +68,14 @@ FactoryBot.define do
       parent do
         first = create(:goods_nomenclature,
                        :chapter,
+                       :with_description,
+                       description: 'granddaddy',
                        goods_nomenclature_item_id: '0200000000')
 
         create(:goods_nomenclature,
                :heading,
+               :with_description,
+               description: 'daddy',
                parent: first,
                goods_nomenclature_item_id: '0201000000')
       end

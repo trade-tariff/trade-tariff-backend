@@ -27,6 +27,7 @@ RSpec.describe Api::V2::GoodsNomenclatures::GoodsNomenclatureExtendedSerializer 
           validity_start_date
           validity_end_date
           declarable
+          hierarchical_description
         ]
       end
 

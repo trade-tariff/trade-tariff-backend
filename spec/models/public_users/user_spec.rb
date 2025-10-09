@@ -18,38 +18,48 @@ RSpec.describe PublicUsers::User do
     end
   end
 
-  describe '#commodity_codes_grouped' do
+  shared_examples 'commodity code status' do |status, expected_result|
     before do
-      create(:goods_nomenclature, goods_nomenclature_item_id: '1905903000', validity_start_date: Time.zone.now)
-      create(:goods_nomenclature, goods_nomenclature_item_id: '0702009000', validity_start_date: Time.zone.now - 1.week, validity_end_date: Time.zone.now - 1.day)
+      TradeTariffRequest.time_machine_now = Time.current
+      create(:commodity, :actual, goods_nomenclature_item_id: '1905903000')
+      create(:commodity, :expired, goods_nomenclature_item_id: '0702009000')
       user.add_delta_preference(commodity_code: '1905903000')
       user.add_delta_preference(commodity_code: '0702009000')
       user.add_delta_preference(commodity_code: '1234567890')
     end
 
-    it 'returns grouped commodity codes' do
-      expect(user.commodity_codes_grouped).to eq(
-        active: %w[1905903000],
-        expired: %w[0702009000],
-        erroneous: %w[1234567890],
-      )
+    it "returns #{status} commodity codes" do
+      expect(user.public_send(status)).to eq(expected_result)
     end
 
     it 'memoizes the result and avoids extra DB queries' do
-      allow(GoodsNomenclature).to receive(:where).and_call_original
+      allow(Api::User::ActiveCommoditiesService).to receive(:new).and_call_original
 
-      first_result = user.commodity_codes_grouped
-      second_result = user.commodity_codes_grouped
+      first_result = user.public_send(status)
+      second_result = user.public_send(status)
 
-      expect(GoodsNomenclature).to have_received(:where).once
+      expect(Api::User::ActiveCommoditiesService).to have_received(:new).once
       expect(second_result).to equal(first_result)
     end
   end
 
+  describe '#active_commodity_codes' do
+    include_examples 'commodity code status', :active_commodity_codes, %w[1905903000]
+  end
+
+  describe '#expired_commodity_codes' do
+    include_examples 'commodity code status', :expired_commodity_codes, %w[0702009000]
+  end
+
+  describe '#erroneous_commodity_codes' do
+    include_examples 'commodity code status', :erroneous_commodity_codes, %w[1234567890]
+  end
+
   describe '#commodity_codes=' do
     before do
-      create(:goods_nomenclature, goods_nomenclature_item_id: '1905903000', validity_start_date: Time.zone.now)
-      create(:goods_nomenclature, goods_nomenclature_item_id: '0702009000', validity_start_date: Time.zone.now - 1.week, validity_end_date: Time.zone.now - 1.day)
+      TradeTariffRequest.time_machine_now = Time.current
+      create(:commodity, :actual, goods_nomenclature_item_id: '1905903000')
+      create(:commodity, :expired, goods_nomenclature_item_id: '0702009000')
     end
 
     context 'when adding new codes' do
@@ -66,7 +76,7 @@ RSpec.describe PublicUsers::User do
         user.add_delta_preference(commodity_code: '1234567890')
         user.add_delta_preference(commodity_code: '1234567891')
         user.add_delta_preference(commodity_code: '1905903000')
-        create(:goods_nomenclature, goods_nomenclature_item_id: '1905903001', validity_start_date: Time.zone.now)
+        create(:commodity, :actual, goods_nomenclature_item_id: '1905903001')
       end
 
       it 'removes codes not in the new list' do
