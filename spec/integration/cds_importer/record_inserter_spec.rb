@@ -7,9 +7,9 @@ RSpec.describe CdsImporter::RecordInserter do
 
     let(:do_insert) do
       batch.each do |record|
-        inserter.insert_record(record)
+        inserter.process_record(record)
       end
-      inserter.process_batch
+      inserter.after_parse
     end
 
     it 'persists a new record with the correct filename and operation' do
@@ -97,9 +97,9 @@ RSpec.describe CdsImporter::RecordInserter do
 
       it 'handles errors in save_group' do
         batch.each do |record|
-          inserter.insert_record(record)
+          inserter.process_record(record)
         end
-        inserter.process_batch
+        inserter.after_parse
 
         expect(measure.class.operation_klass).to have_received(:multi_insert).at_least(:once)
       end

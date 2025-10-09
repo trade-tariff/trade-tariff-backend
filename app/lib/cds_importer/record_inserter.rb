@@ -10,7 +10,7 @@ class CdsImporter
       @filename = filename
     end
 
-    def insert_record(cds_entity)
+    def process_record(cds_entity)
       @record_batch << cds_entity
       @count += 1
 
@@ -19,13 +19,17 @@ class CdsImporter
       end
     end
 
+    def after_parse
+      process_batch
+    end
+
+    private
+
     def process_batch
       save_batch
       @record_batch.clear
       @count = 0
     end
-
-    private
 
     def batch_size
       TradeTariffBackend.cds_importer_batch_size
