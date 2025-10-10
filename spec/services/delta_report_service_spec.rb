@@ -3,6 +3,14 @@ RSpec.describe DeltaReportService do
 
   let(:date) { Date.parse('2024-08-11') }
 
+  before do
+    # rubocop:disable RSpec/VerifiedDoubles
+    operation_klass_double = double(Class)
+    allow(operation_klass_double).to receive(:where).and_return(double('dataset', none?: true, any?: false))
+    # rubocop:enable RSpec/VerifiedDoubles
+    allow(Measure).to receive(:operation_klass).and_return(operation_klass_double)
+  end
+
   def create_test_commodity(item_id:, sid:, declarable: true, description: 'Test commodity')
     commodity = instance_double(Commodity,
                                 goods_nomenclature_item_id: item_id,
@@ -77,6 +85,8 @@ RSpec.describe DeltaReportService do
     subject(:result) { described_class.generate(start_date: date) }
 
     before do
+      allow(TradeTariffBackend).to receive(:xi?).and_return(false)
+      allow(ReportsMailer).to receive(:delta).and_return(double(deliver_now: true)) # rubocop:disable RSpec/VerifiedDoubles
       service_instance = instance_double(described_class, generate_report: expected_result)
       allow(described_class).to receive(:new).and_return(service_instance)
     end
@@ -89,6 +99,7 @@ RSpec.describe DeltaReportService do
           { commodity_code: '0101000000', type: 'Measure' },
           { commodity_code: '0102000000', type: 'GoodsNomenclature' },
         ],
+        package: instance_double(Axlsx::Package),
       }
     end
 

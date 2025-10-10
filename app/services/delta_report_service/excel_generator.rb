@@ -26,8 +26,6 @@ class DeltaReportService
         set_column_widths(sheet)
       end
 
-      package.serialize("delta_report_#{dates}.xlsx") if Rails.env.development?
-
       package
     end
 
