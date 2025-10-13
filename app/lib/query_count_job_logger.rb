@@ -1,3 +1,6 @@
+require 'sidekiq/component'
+require 'sidekiq/job_logger'
+
 class QueryCountJobLogger < ::Sidekiq::JobLogger
   SENSITIVE_KEYS = %w[
     email
