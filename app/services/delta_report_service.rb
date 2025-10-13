@@ -2,12 +2,23 @@ class DeltaReportService
   include DeltaPresenter
 
   def self.generate(start_date: Time.zone.today, end_date: nil)
-    new(start_date, end_date || start_date).generate_report
+    return if TradeTariffBackend.xi?
+
+    report = new(start_date, end_date || start_date).generate_report
+
+    if Rails.env.development?
+      report.delete(:package)&.serialize("delta_report_#{report[:dates]}.xlsx")
+    elsif report[:package].present?
+      ReportsMailer.delta(report).deliver_now
+    end
+
+    report
   end
 
-  attr_reader :commodity_change_records, :start_date, :end_date, :date
+  attr_reader :commodity_change_records, :start_date, :end_date, :date, :package
 
   def initialize(start_date, end_date)
+    @package = nil
     @commodity_change_records = []
     @start_date = start_date
     @end_date = end_date
@@ -31,24 +42,29 @@ class DeltaReportService
       end
     end
 
-    dates = if end_date == start_date
-              start_date.strftime('%Y_%m_%d')
-            else
-              "#{start_date.strftime('%Y_%m_%d')}_to_#{end_date.strftime('%Y_%m_%d')}"
-            end
-
-    ExcelGenerator.call(commodity_change_records, dates)
+    if @commodity_change_records.flatten.any?
+      @package = ExcelGenerator.call(commodity_change_records, dates)
+    end
 
     {
-      dates: dates,
+      dates:,
       total_records: @commodity_change_records.flatten.size,
       commodity_changes: @commodity_change_records.flatten,
+      package:,
     }
   end
 
   private
 
   attr_reader :changes, :cache
+
+  def dates
+    if end_date == start_date
+      start_date.strftime('%Y_%m_%d')
+    else
+      "#{start_date.strftime('%Y_%m_%d')}_to_#{end_date.strftime('%Y_%m_%d')}"
+    end
+  end
 
   def clear_cache
     @cache[:declarable_goods].clear
