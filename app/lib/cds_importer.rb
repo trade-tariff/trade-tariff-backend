@@ -18,7 +18,7 @@ class CdsImporter
 
   DEFAULT_HANDLER_CLASSES = [
     CdsImporter::RecordInserter,
-    CdsImporter::ExcelWriter
+    CdsImporter::ExcelWriter,
   ].freeze
 
   def initialize(cds_update, handler_classes: DEFAULT_HANDLER_CLASSES)

@@ -8,7 +8,6 @@ RSpec.describe Api::Admin::CdsUpdateNotificationsController do
 
     let(:cds_attributes) { attributes_for :cds_update_notification }
 
-
     context 'when cds_update_notification is valid' do
       it 'responds with success + redirect', :aggregate_failures do
         expect {

@@ -6,8 +6,8 @@ class CdsUpdateNotification < Sequel::Model
   end
 
   one_to_one :cds_update, primary_key: :filename,
-             key: :filename,
-             class_name: TariffSynchronizer::CdsUpdate
+                          key: :filename,
+                          class_name: TariffSynchronizer::CdsUpdate
 
   def validate
     super
