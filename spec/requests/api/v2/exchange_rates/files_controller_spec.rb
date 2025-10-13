@@ -115,4 +115,28 @@ RSpec.describe Api::V2::ExchangeRates::FilesController, :v2 do
       end
     end
   end
+
+  describe 'GET #index with malformed URL' do
+    context 'when requesting malformed URL' do
+      it 'returns 404 for missing year-month pattern' do
+        api_get api_exchange_rates_file_path('monthly_csv_', format: :csv)
+        expect(response).to have_http_status(:not_found)
+      end
+
+      it 'returns 404 for incomplete pattern' do
+        api_get api_exchange_rates_file_path('monthly_csv', format: :csv)
+        expect(response).to have_http_status(:not_found)
+      end
+
+      it 'returns 404 for invalid year format' do
+        api_get api_exchange_rates_file_path('monthly_csv_abc-10', format: :csv)
+        expect(response).to have_http_status(:not_found)
+      end
+
+      it 'returns 404 for XML with malformed URL' do
+        api_get api_exchange_rates_file_path('monthly_xml_', format: :xml)
+        expect(response).to have_http_status(:not_found)
+      end
+    end
+  end
 end
