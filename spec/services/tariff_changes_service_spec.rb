@@ -1,0 +1,395 @@
+RSpec.describe TariffChangesService do
+  let(:date) { Date.new(2025, 1, 15) }
+  let(:service) { described_class.new(date) }
+
+  describe '.generate' do
+    context 'when called without a date' do
+      it 'uses today as the default date' do
+        freeze_time do
+          allow(described_class).to receive(:new).with(Time.zone.today).and_call_original
+          instance_spy = instance_double(described_class)
+          allow(described_class).to receive(:new).and_return(instance_spy)
+          allow(instance_spy).to receive(:all_changes)
+
+          described_class.generate
+
+          expect(described_class).to have_received(:new).with(Time.zone.today)
+          expect(instance_spy).to have_received(:all_changes)
+        end
+      end
+    end
+
+    context 'when called with a specific date' do
+      it 'uses the provided date' do
+        instance_spy = instance_double(described_class)
+        allow(described_class).to receive(:new).with(date).and_return(instance_spy)
+        allow(instance_spy).to receive(:all_changes)
+
+        described_class.generate(date)
+
+        expect(described_class).to have_received(:new).with(date)
+        expect(instance_spy).to have_received(:all_changes)
+      end
+    end
+  end
+
+  describe '#initialize' do
+    it 'sets the date and initializes empty collections' do
+      expect(service.date).to eq(date)
+      expect(service.tariff_change_records).to eq([])
+      expect(service.instance_variable_get(:@changes)).to eq({})
+    end
+  end
+
+  describe '#all_changes' do
+    let(:commodity_changes) { [commodity_change] }
+    let(:measure_changes) { [measure_change] }
+    let(:commodity_change) do
+      {
+        type: 'Commodity',
+        goods_nomenclature_item_id: '0101010100',
+        object_sid: 12_345,
+        goods_nomenclature_sid: 12_345,
+        action: :creation,
+        date_of_effect: date,
+        validity_start_date: date,
+        validity_end_date: nil,
+      }
+    end
+    let(:measure_change) do
+      {
+        type: 'Measure',
+        object_sid: 54_321,
+        goods_nomenclature_sid: 67_890,
+        action: :creation,
+        date_of_effect: date,
+        validity_start_date: date,
+        validity_end_date: nil,
+      }
+    end
+
+    before do
+      allow(TariffChangesService::CommodityChanges).to receive(:collect).with(date).and_return(commodity_changes)
+      allow(TariffChangesService::MeasureChanges).to receive(:collect).with(date).and_return(measure_changes)
+    end
+
+    it 'executes within a TimeMachine context' do
+      allow(TimeMachine).to receive(:at).with(date).and_yield
+      other_service = described_class.new(date)
+
+      other_service.all_changes
+
+      expect(TimeMachine).to have_received(:at).with(date)
+    end
+
+    it 'collects commodity and measure changes' do
+      other_service = described_class.new(date)
+
+      other_service.all_changes
+
+      expect(TariffChangesService::CommodityChanges).to have_received(:collect).with(date)
+      expect(TariffChangesService::MeasureChanges).to have_received(:collect).with(date)
+    end
+
+    it 'generates commodity change records' do
+      other_service = described_class.new(date)
+      allow(other_service).to receive(:generate_commodity_change_records).and_return(spy)
+
+      other_service.all_changes
+
+      expect(other_service).to have_received(:generate_commodity_change_records)
+    end
+
+    it 'returns a formatted hash with date, count and changes' do
+      TimeMachine.at(date) do
+        allow(TariffChangesService::CommodityChanges).to receive(:collect).with(date).and_return([commodity_change])
+        allow(TariffChangesService::MeasureChanges).to receive(:collect).with(date).and_return([])
+        other_service = described_class.new(date)
+        allow(other_service).to receive(:add_change_record) do |change, item_id, sid|
+          other_service.tariff_change_records << {
+            type: change[:type],
+            goods_nomenclature_item_id: item_id,
+            goods_nomenclature_sid: sid,
+            action: change[:action],
+            operation_date: date,
+            date_of_effect: change[:date_of_effect],
+            validity_start_date: change[:validity_start_date],
+            validity_end_date: change[:validity_end_date],
+          }
+        end
+
+        result = other_service.all_changes
+
+        expect(result).to include(
+          date: date.strftime('%Y_%m_%d'),
+          count: 1,
+        )
+        expect(result[:changes]).to be_an(Array)
+      end
+    end
+
+    it 'sorts changes by goods nomenclature item id, type, and action' do
+      change_1 = { goods_nomenclature_item_id: '0102000000', type: 'Commodity', action: :creation }
+      change_2 = { goods_nomenclature_item_id: '0101000000', type: 'Measure', action: :update }
+      change_3 = { goods_nomenclature_item_id: '0101000000', type: 'Commodity', action: :creation }
+
+      other_service = described_class.new(date)
+      other_service.instance_variable_set(:@tariff_change_records, [change_1, change_2, change_3])
+      allow(other_service).to receive(:generate_commodity_change_records).and_return(spy)
+
+      result = other_service.all_changes
+
+      expect(result[:changes]).to eq([change_3, change_2, change_1])
+    end
+  end
+
+  describe '#generate_commodity_change_records' do
+    let(:commodity_change) do
+      {
+        type: 'Commodity',
+        goods_nomenclature_item_id: '0101010100',
+        object_sid: 12_345,
+      }
+    end
+    let(:measure_change) do
+      {
+        type: 'Measure',
+        object_sid: 54_321,
+        goods_nomenclature_sid: 67_890,
+      }
+    end
+    let(:goods_nomenclature) { create(:commodity, :declarable, goods_nomenclature_sid: 67_890) }
+    let(:descendant) { create(:commodity, :declarable) }
+
+    before do
+      service.instance_variable_set(:@changes, {
+        commodities: [commodity_change],
+        measures: [measure_change],
+      })
+    end
+
+    context 'when processing commodity changes' do
+      it 'adds change records for each commodity change' do
+        service.generate_commodity_change_records
+
+        expect(service.tariff_change_records).to include(
+          hash_including(
+            type: commodity_change[:type],
+            goods_nomenclature_item_id: commodity_change[:goods_nomenclature_item_id],
+            goods_nomenclature_sid: commodity_change[:object_sid],
+          ),
+        )
+      end
+    end
+
+    context 'when processing measure changes' do
+      context 'when goods nomenclature is not found' do
+        before do
+          query_result = double('QueryResult', first: nil) # rubocop:disable RSpec/VerifiedDoubles
+          allow(GoodsNomenclature).to receive(:where).with(goods_nomenclature_sid: 67_890).and_return(query_result)
+        end
+
+        it 'does not add any change records' do
+          initial_count = service.tariff_change_records.count
+          service.generate_commodity_change_records
+
+          expect(service.tariff_change_records.count).to eq(initial_count + 1)
+          expect(service.tariff_change_records.last[:type]).to eq('Commodity')
+        end
+      end
+
+      context 'when goods nomenclature is declarable' do
+        before do
+          query_result = double('QueryResult', first: goods_nomenclature) # rubocop:disable RSpec/VerifiedDoubles
+          allow(GoodsNomenclature).to receive(:where).with(goods_nomenclature_sid: 67_890).and_return(query_result)
+          allow(goods_nomenclature).to receive(:declarable?).and_return(true)
+        end
+
+        it 'adds change record for the declarable goods nomenclature' do
+          other_service = described_class.new(date)
+          allow(other_service).to receive(:matching_commodity_change?).with(goods_nomenclature, measure_change[:action]).and_return(false)
+
+          other_service.instance_variable_set(:@changes, service.instance_variable_get(:@changes))
+
+          other_service.generate_commodity_change_records
+
+          measure_records = other_service.tariff_change_records.select { |r| r[:type] == 'Measure' }
+          expect(measure_records).to include(
+            hash_including(
+              type: 'Measure',
+              goods_nomenclature_item_id: goods_nomenclature.goods_nomenclature_item_id,
+              goods_nomenclature_sid: goods_nomenclature.goods_nomenclature_sid,
+            ),
+          )
+        end
+      end
+
+      context 'when goods nomenclature is not declarable but has declarable descendants' do
+        before do
+          query_result = double('QueryResult', first: goods_nomenclature) # rubocop:disable RSpec/VerifiedDoubles
+          allow(GoodsNomenclature).to receive(:where).with(goods_nomenclature_sid: 67_890).and_return(query_result)
+          allow(goods_nomenclature).to receive_messages(declarable?: false, descendants: [descendant])
+          allow(descendant).to receive(:declarable?).and_return(true)
+        end
+
+        it 'adds change records for declarable descendants' do
+          other_service = described_class.new(date)
+          other_service.instance_variable_set(:@changes, service.instance_variable_get(:@changes))
+          allow(other_service).to receive(:matching_commodity_change?).with(descendant, measure_change[:action]).and_return(false)
+
+          other_service.generate_commodity_change_records
+
+          expect(other_service.tariff_change_records).to include(
+            hash_including(
+              type: 'Measure',
+              goods_nomenclature_item_id: descendant.goods_nomenclature_item_id,
+              goods_nomenclature_sid: descendant.goods_nomenclature_sid,
+            ),
+          )
+        end
+      end
+
+      context 'when there is a matching commodity change' do
+        before do
+          query_result = double('QueryResult', first: goods_nomenclature) # rubocop:disable RSpec/VerifiedDoubles
+          allow(GoodsNomenclature).to receive(:where).with(goods_nomenclature_sid: 67_890).and_return(query_result)
+          allow(goods_nomenclature).to receive(:declarable?).and_return(true)
+        end
+
+        it 'does not add a change record' do
+          other_service = described_class.new(date)
+          other_service.instance_variable_set(:@changes, service.instance_variable_get(:@changes))
+          allow(other_service).to receive(:matching_commodity_change?).with(goods_nomenclature, measure_change[:action]).and_return(true)
+
+          other_service.generate_commodity_change_records
+
+          expect(other_service.tariff_change_records).not_to include(hash_including(type: 'Measure', goods_nomenclature_sid: goods_nomenclature.goods_nomenclature_sid))
+        end
+      end
+    end
+  end
+
+  describe '#add_change_record' do
+    let(:change) do
+      {
+        type: 'Commodity',
+        action: :creation,
+        date_of_effect: date,
+        validity_start_date: date,
+        validity_end_date: nil,
+      }
+    end
+    let(:gn_item_id) { '0101010100' }
+    let(:gn_sid) { 12_345 }
+
+    it 'adds a properly formatted change record' do
+      service.add_change_record(change, gn_item_id, gn_sid)
+
+      expected_record = {
+        type: 'Commodity',
+        goods_nomenclature_item_id: '0101010100',
+        goods_nomenclature_sid: 12_345,
+        action: :creation,
+        operation_date: date,
+        date_of_effect: date,
+        validity_start_date: date,
+        validity_end_date: nil,
+      }
+
+      expect(service.tariff_change_records).to include(expected_record)
+    end
+
+    it 'appends to existing records' do
+      service.instance_variable_set(:@tariff_change_records, [{ existing: 'record' }])
+
+      service.add_change_record(change, gn_item_id, gn_sid)
+
+      expect(service.tariff_change_records.size).to eq(2)
+    end
+  end
+
+  describe '#matching_commodity_change?' do
+    let(:declarable) { create(:commodity, :declarable, goods_nomenclature_sid: 12_345) }
+
+    before do
+      service.instance_variable_set(:@tariff_change_records, [
+        {
+          goods_nomenclature_sid: 12_345,
+          type: 'Commodity',
+          action: :creation,
+        },
+        {
+          goods_nomenclature_sid: 67_890,
+          type: 'Measure',
+          action: :update,
+        },
+      ])
+    end
+
+    it 'returns true when there is a matching commodity change' do
+      result = service.matching_commodity_change?(declarable, :creation)
+
+      expect(result).to be true
+    end
+
+    it 'returns false when there is no matching commodity change' do
+      result = service.matching_commodity_change?(declarable, :deletion)
+
+      expect(result).to be false
+    end
+
+    it 'returns false when goods_nomenclature_sid does not match' do
+      different_declarable = create(:commodity, :declarable, goods_nomenclature_sid: 99_999)
+
+      result = service.matching_commodity_change?(different_declarable, :creation)
+
+      expect(result).to be false
+    end
+
+    it 'returns false when type is not Commodity' do
+      service.tariff_change_records.first[:type] = 'Measure'
+
+      result = service.matching_commodity_change?(declarable, :creation)
+
+      expect(result).to be false
+    end
+
+    it 'returns false when action does not match' do
+      result = service.matching_commodity_change?(declarable, :update)
+
+      expect(result).to be false
+    end
+  end
+
+  describe 'error handling' do
+    before do
+      allow(TariffChangesService::CommodityChanges).to receive(:collect).with(date).and_return([])
+      allow(TariffChangesService::MeasureChanges).to receive(:collect).with(date).and_return([])
+    end
+
+    it 'handles when CommodityChanges.collect returns nil' do
+      allow(TariffChangesService::CommodityChanges).to receive(:collect).with(date).and_return(nil)
+
+      expect { service.all_changes }.to raise_error(NoMethodError)
+    end
+
+    it 'handles when MeasureChanges.collect returns nil' do
+      allow(TariffChangesService::MeasureChanges).to receive(:collect).with(date).and_return(nil)
+
+      expect { service.all_changes }.to raise_error(NoMethodError)
+    end
+
+    it 'handles empty collections gracefully' do
+      allow(TariffChangesService::CommodityChanges).to receive(:collect).with(date).and_return([])
+      allow(TariffChangesService::MeasureChanges).to receive(:collect).with(date).and_return([])
+
+      result = service.all_changes
+
+      expect(result).to include(
+        date: date.strftime('%Y_%m_%d'),
+        count: 0,
+        changes: [],
+      )
+    end
+  end
+end
