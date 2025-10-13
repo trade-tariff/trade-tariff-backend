@@ -1,13 +1,26 @@
-require 'sidekiq/component'
-require 'sidekiq/job_logger'
-
 class QueryCountJobLogger < ::Sidekiq::JobLogger
+  SENSITIVE_KEYS = %w[
+    email
+    password
+    passw
+    token
+    secret
+    api_key
+    key
+    otp
+    ssn
+    cvc
+    cvv
+  ].freeze
+
   def call(item, queue)
-    super do
+    if args_have_sensitive_data?(item['args'])
+      item['args'] = ['[FILTERED]']
+    end
+
+    super(item, queue) do
       reset_query_count
-
       yield
-
       Sidekiq::Context.add(:queries, query_count)
     end
   end
@@ -20,5 +33,13 @@ class QueryCountJobLogger < ::Sidekiq::JobLogger
 
   def reset_query_count
     ::SequelRails::Railties::LogSubscriber.reset_count
+  end
+
+  def args_have_sensitive_data?(args)
+    return false unless args.is_a?(Array)
+
+    args.any? do |arg|
+      arg.is_a?(String) && SENSITIVE_KEYS.any? { |key| arg.downcase.include?(key) }
+    end
   end
 end

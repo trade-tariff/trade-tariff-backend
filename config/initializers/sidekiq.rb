@@ -12,7 +12,3 @@ end
 Sidekiq.configure_client do |config|
   config.redis = TradeTariffBackend.redis_config
 end
-
-Rails.application.config.filter_parameters += %i[
-  passw email secret token _key crypt salt certificate otp ssn cvv cvc
-]
