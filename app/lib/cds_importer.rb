@@ -16,8 +16,14 @@ class CdsImporter
   class UnknownOperationError < ImportException
   end
 
-  def initialize(cds_update)
+  DEFAULT_HANDLER_CLASSES = [
+    CdsImporter::RecordInserter,
+    CdsImporter::ExcelWriter
+  ].freeze
+
+  def initialize(cds_update, handler_classes: DEFAULT_HANDLER_CLASSES)
     @cds_update = cds_update
+    @handler_classes = handler_classes
     @oplog_inserts = {
       operations: {
         create: { count: 0, duration: 0 },
@@ -33,10 +39,7 @@ class CdsImporter
 
   def import
     zip_file = TariffSynchronizer::FileService.file_as_stringio(@cds_update)
-    handlers = [
-      CdsImporter::RecordInserter.new(@cds_update.filename),
-      CdsImporter::ExcelWriter.new(@cds_update.filename),
-    ]
+    handlers = @handler_classes.map { |klass| klass.new(@cds_update.filename) }
     handler = XmlProcessor.new(@cds_update.filename, handlers)
 
     subscribe_to_oplog_inserts
