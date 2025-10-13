@@ -3,32 +3,31 @@ RSpec.describe TariffChangesService do
   let(:service) { described_class.new(date) }
 
   describe '.generate' do
+    let(:service) { instance_double(described_class) }
+
     context 'when called without a date' do
       it 'uses today as the default date' do
         freeze_time do
-          allow(described_class).to receive(:new).with(Time.zone.today).and_call_original
-          instance_spy = instance_double(described_class)
-          allow(described_class).to receive(:new).and_return(instance_spy)
-          allow(instance_spy).to receive(:all_changes)
+          allow(described_class).to receive(:new).with(Time.zone.today).and_return(service)
+          allow(service).to receive(:all_changes)
 
           described_class.generate
 
           expect(described_class).to have_received(:new).with(Time.zone.today)
-          expect(instance_spy).to have_received(:all_changes)
+          expect(service).to have_received(:all_changes)
         end
       end
     end
 
     context 'when called with a specific date' do
       it 'uses the provided date' do
-        instance_spy = instance_double(described_class)
-        allow(described_class).to receive(:new).with(date).and_return(instance_spy)
-        allow(instance_spy).to receive(:all_changes)
+        allow(described_class).to receive(:new).with(date).and_return(service)
+        allow(service).to receive(:all_changes)
 
         described_class.generate(date)
 
         expect(described_class).to have_received(:new).with(date)
-        expect(instance_spy).to have_received(:all_changes)
+        expect(service).to have_received(:all_changes)
       end
     end
   end

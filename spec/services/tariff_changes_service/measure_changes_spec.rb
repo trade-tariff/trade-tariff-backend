@@ -1,4 +1,3 @@
-# Create a dummy operation class for testing
 DummyOperationKlass = Class.new do
   def self.where(*_args)
     []
@@ -9,10 +8,11 @@ RSpec.describe TariffChangesService::MeasureChanges do
   let(:date) { Date.new(2025, 1, 15) }
 
   describe '.collect' do
+    let(:operation_klass) { class_double(DummyOperationKlass) }
+
     it 'uses the Measure operation class to find records from the specified date' do
-      operation_klass_spy = class_double(DummyOperationKlass)
-      allow(Measure).to receive(:operation_klass).and_return(operation_klass_spy)
-      allow(operation_klass_spy).to receive(:where).and_return([])
+      allow(Measure).to receive(:operation_klass).and_return(operation_klass)
+      allow(operation_klass).to receive(:where).and_return([])
 
       described_class.collect(date)
 
@@ -20,9 +20,8 @@ RSpec.describe TariffChangesService::MeasureChanges do
     end
 
     it 'returns an array of analyzed results' do
-      mock_operation_klass = class_double(DummyOperationKlass)
-      allow(Measure).to receive(:operation_klass).and_return(mock_operation_klass)
-      allow(mock_operation_klass).to receive(:where).and_return([])
+      allow(Measure).to receive(:operation_klass).and_return(operation_klass)
+      allow(operation_klass).to receive(:where).and_return([])
 
       results = described_class.collect(date)
 

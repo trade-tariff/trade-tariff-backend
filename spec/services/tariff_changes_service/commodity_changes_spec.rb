@@ -5,7 +5,7 @@ RSpec.describe TariffChangesService::CommodityChanges do
     let!(:declarable_commodity) { create(:commodity, :declarable, operation_date: date) }
 
     it 'returns analyzed changes for declarable goods nomenclatures from the specified date' do
-      allow(described_class).to receive(:new).and_return(instance_spy(described_class, analyze: { type: 'Commodity' }))
+      allow(described_class).to receive(:new).and_return(instance_double(described_class, analyze: { type: 'Commodity' }))
 
       results = described_class.collect(date)
 
@@ -14,7 +14,7 @@ RSpec.describe TariffChangesService::CommodityChanges do
     end
 
     it 'filters out nil results from analyze' do
-      allow(described_class).to receive(:new).and_return(instance_spy(described_class, analyze: nil))
+      allow(described_class).to receive(:new).and_return(instance_double(described_class, analyze: nil))
 
       results = described_class.collect(date)
 

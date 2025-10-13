@@ -1,4 +1,3 @@
-# Dummy record class for testing
 DummyRecord = Struct.new(
   :goods_nomenclature_sid,
   :goods_nomenclature_item_id,
@@ -12,14 +11,6 @@ DummyRecord = Struct.new(
   :field2,
   keyword_init: true,
 ) do
-  def respond_to?(method_name, include_private = false) # rubocop:disable Style/OptionalBooleanParameter
-    super || %i[validity_start_date validity_end_date field1 field2].include?(method_name)
-  end
-
-  def try(method_name)
-    send(method_name) if respond_to?(method_name)
-  end
-
   def values
     record_values || {}
   end
