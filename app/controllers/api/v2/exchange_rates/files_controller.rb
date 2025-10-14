@@ -2,6 +2,8 @@ module Api
   module V2
     module ExchangeRates
       class FilesController < ApiController
+        before_action :validate_id
+
         def show
           filename = ExchangeRateFile.filename_for_download(type, format, year, month)
 
@@ -13,6 +15,10 @@ module Api
         end
 
         private
+
+        def validate_id
+          raise Sequel::RecordNotFound unless id.match?(/\A(monthly_csv_hmrc|monthly_csv|monthly_xml|average_csv|spot_csv)_\d{4}-\d{1,2}\z/)
+        end
 
         def type
           match_data = id.match(/^(monthly_csv_hmrc|monthly_csv|monthly_xml|average_csv|spot_csv)_/)
