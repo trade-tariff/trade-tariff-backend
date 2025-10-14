@@ -17,14 +17,15 @@ class QueryCountJobLogger < ::Sidekiq::JobLogger
   ].freeze
 
   def call(item, queue)
-    if args_have_sensitive_data?(item['args'])
-      item['args'] = ['[FILTERED]']
-    end
-
-    super(item, queue) do
+    super do
       reset_query_count
+
       yield
+
       Sidekiq::Context.add(:queries, query_count)
+    rescue StandardError
+      item.replace(redact_if_sensitive(item))
+      raise
     end
   end
 
@@ -38,7 +39,15 @@ class QueryCountJobLogger < ::Sidekiq::JobLogger
     ::SequelRails::Railties::LogSubscriber.reset_count
   end
 
-  def args_have_sensitive_data?(args)
+  def redact_if_sensitive(item)
+    return item unless sensitive_args?(item['args'])
+
+    item.dup.tap do |copy|
+      copy['args'] = ['[FILTERED]']
+    end
+  end
+
+  def sensitive_args?(args)
     return false unless args.is_a?(Array)
 
     args.any? do |arg|
