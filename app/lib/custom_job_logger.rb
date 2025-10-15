@@ -1,7 +1,7 @@
 require 'sidekiq/component'
 require 'sidekiq/job_logger'
 
-class QueryCountJobLogger < ::Sidekiq::JobLogger
+class CustomJobLogger < ::Sidekiq::JobLogger
   SENSITIVE_KEYS = %w[
     email
     password
