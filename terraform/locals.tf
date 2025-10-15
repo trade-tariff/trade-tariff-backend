@@ -41,10 +41,10 @@ locals {
     }
   ]
 
-  db_replicate_secret_value = try(data.aws_secretsmanager_secret_version.db_replicate_configuration.secret_string, "{}")
-  db_replicate_secret_map   = jsondecode(local.db_replicate_secret_value)
-  db_replicate_secret_env_vars = [
-    for key, value in local.db_replicate_secret_map : {
+  backend_job_secret_value = try(data.aws_secretsmanager_secret_version.backend_job_configuration.secret_string, "{}")
+  backend_job_secret_map   = jsondecode(local.backend_job_secret_value)
+  backend_job_secret_env_vars = [
+    for key, value in local.backend_job_secret_map : {
       name  = key
       value = value
     }
