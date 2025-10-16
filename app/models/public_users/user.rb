@@ -6,69 +6,8 @@ module PublicUsers
     one_to_one :preferences, class: 'PublicUsers::Preferences', key: :user_id
     one_to_many :subscriptions, class: 'PublicUsers::Subscription', key: :user_id
     one_to_many :action_logs, class: 'PublicUsers::ActionLog', key: :user_id
-    one_to_many :delta_preferences, class: 'PublicUsers::DeltaPreferences', key: :user_id
 
     delegate :chapter_ids, to: :preferences
-
-    def active_commodity_codes
-      commodity_codes_grouped[:active]
-    end
-
-    def expired_commodity_codes
-      commodity_codes_grouped[:expired]
-    end
-
-    def erroneous_commodity_codes
-      commodity_codes_grouped[:erroneous]
-    end
-
-    def commodity_codes_grouped
-      @commodity_codes_grouped ||= begin
-        codes = delta_preferences.map(&:commodity_code)
-
-        return { active: [], expired: [], erroneous: [] } if codes.empty?
-
-        gns = GoodsNomenclature.where(goods_nomenclature_item_id: codes).all
-        gns_by_code = gns.index_by(&:goods_nomenclature_item_id)
-
-        active = []
-        expired = []
-        erroneous = []
-
-        codes.each do |code|
-          gn = gns_by_code[code]
-          if gn.nil?
-            erroneous << code
-          elsif goods_nomenclature_active?(gn)
-            active << code
-          else
-            expired << code
-          end
-        end
-
-        { active:, expired:, erroneous: }
-      end
-    end
-
-    def commodity_codes=(codes)
-      codes = Array(codes).reject(&:blank?).uniq
-
-      PublicUsers::User.db.transaction do
-        delta_preferences_dataset.delete
-
-        unless codes.empty?
-          values = codes.map do |code|
-            {
-              user_id: id,
-              commodity_code: code,
-              created_at: Time.zone.now,
-              updated_at: Time.zone.now,
-            }
-          end
-          PublicUsers::DeltaPreferences.multi_insert(values)
-        end
-      end
-    end
 
     attr_writer :email
 
@@ -101,21 +40,6 @@ module PublicUsers
         all_conditions = chapter_conditions | Sequel.expr(user_preferences__chapter_ids: nil) | Sequel.like(:user_preferences__chapter_ids, '')
 
         join(:public__user_preferences, Sequel[:user_preferences][:user_id] => Sequel[:users][:id])
-          .where(all_conditions)
-          .select_all(:users)
-          .distinct
-      end
-
-      def matching_commodity_codes(commodity_codes)
-        return self if commodity_codes.blank?
-
-        commodity_code_conditions = Array(commodity_codes).map { |commodity_code|
-          Sequel.like(:user_delta_preferences__commodity_code, commodity_code)
-        }.inject(:|)
-
-        all_conditions = commodity_code_conditions | Sequel.expr(user_delta_preferences__commodity_code: nil) | Sequel.like(:user_delta_preferences__commodity_code, '')
-
-        join(:public__user_delta_preferences, Sequel[:user_delta_preferences][:user_id] => Sequel[:users][:id])
           .where(all_conditions)
           .select_all(:users)
           .distinct
@@ -172,11 +96,6 @@ module PublicUsers
       super
       PublicUsers::Preferences.create(user_id: id)
       PublicUsers::ActionLog.create(user_id: id, action: PublicUsers::ActionLog::REGISTERED)
-    end
-
-    def goods_nomenclature_active?(gn_code)
-      gn_code.validity_start_date <= Time.zone.now &&
-        (gn_code.validity_end_date.nil? || gn_code.validity_end_date >= Time.zone.now)
     end
   end
 end
