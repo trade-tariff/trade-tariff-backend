@@ -29,17 +29,5 @@ FactoryBot.define do
         user.soft_delete!
       end
     end
-
-    trait :with_commodity_codes do
-      transient do
-        commodity_codes { [] }
-      end
-
-      after(:create) do |user, evaluator|
-        Array(evaluator.commodity_codes).each do |code|
-          create(:user_delta_preference, user: user, commodity_code: code)
-        end
-      end
-    end
   end
 end
