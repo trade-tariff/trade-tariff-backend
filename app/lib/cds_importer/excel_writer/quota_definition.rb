@@ -54,7 +54,7 @@ class CdsImporter
       private
 
       def quota_balance_event_string(quota_balance_events)
-        if quota_balance_events.empty?
+        if quota_balance_events.blank?
           ''
         else
           quota_balance_events.sort_by!(&:occurrence_timestamp)

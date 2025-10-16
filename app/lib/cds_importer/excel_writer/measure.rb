@@ -39,7 +39,7 @@ class CdsImporter
 
         ["#{expand_operation(measure)} measure",
          measure.goods_nomenclature_item_id,
-         measure.additional_code_type_id + measure.additional_code_id,
+         measure.additional_code_type_id.to_s + measure.additional_code_id.to_s,
          measure_type(measure.measure_type_id),
          geographical_area(measure.geographical_area_sid),
          measure.ordernumber,
@@ -99,7 +99,7 @@ class CdsImporter
 
       def condition_string(condition)
         certificate = "#{condition.certificate_type_code}#{condition.certificate_code}".strip
-        certificate = 'n/a' if certificate.empty?
+        certificate = 'n/a' if certificate.blank?
 
         output = ''
         output << "Certificate: #{certificate}, "
