@@ -242,6 +242,7 @@ class DeltaReportService
     cache_key = "item_#{goods_nomenclature_item_id}"
     return @cache[:declarable_goods][cache_key] if @cache[:declarable_goods].key?(cache_key)
 
+    # Bug exists here that matches to a non-declarable code if the CC is shared
     gn = GoodsNomenclature.where(goods_nomenclature_item_id: goods_nomenclature_item_id).first
 
     result = find_declarable_goods_for_sid(gn&.goods_nomenclature_sid)
