@@ -15,6 +15,7 @@ class TariffChangesService
   def all_changes
     TimeMachine.at(date) do
       @changes[:commodities] = CommodityChanges.collect(date)
+      @changes[:commodity_descriptions] = CommodityDescriptionChanges.collect(date)
       @changes[:measures] = MeasureChanges.collect(date)
       generate_commodity_change_records
     end
@@ -31,6 +32,12 @@ class TariffChangesService
       add_change_record(change, change[:goods_nomenclature_item_id], change[:object_sid])
     end
 
+    @changes[:commodity_descriptions].each do |change|
+      next if matching_commodity_change?(change[:goods_nomenclature_sid], change[:action])
+
+      add_change_record(change, change[:goods_nomenclature_item_id], change[:goods_nomenclature_sid])
+    end
+
     @changes[:measures].each do |change|
       gn = GoodsNomenclature.where(goods_nomenclature_sid: change[:goods_nomenclature_sid]).first
 
@@ -43,16 +50,16 @@ class TariffChangesService
                     end
 
       declarables.each do |declarable|
-        next if matching_commodity_change?(declarable, change[:action])
+        next if matching_commodity_change?(declarable.goods_nomenclature_sid, change[:action])
 
         add_change_record(change, declarable.goods_nomenclature_item_id, declarable.goods_nomenclature_sid)
       end
     end
   end
 
-  def matching_commodity_change?(declarable, action)
+  def matching_commodity_change?(goods_nomenclature_sid, action)
     @tariff_change_records.any? do |record|
-      record[:goods_nomenclature_sid] == declarable.goods_nomenclature_sid &&
+      record[:goods_nomenclature_sid] == goods_nomenclature_sid &&
         record[:type] == 'Commodity' &&
         record[:action] == action
     end
@@ -61,6 +68,7 @@ class TariffChangesService
   def add_change_record(change, gn_item_id, gn_sid)
     @tariff_change_records << {
       type: change[:type],
+      object_sid: change[:object_sid],
       goods_nomenclature_item_id: gn_item_id,
       goods_nomenclature_sid: gn_sid,
       action: change[:action],
