@@ -66,3 +66,7 @@ data "aws_secretsmanager_secret" "backend_job_configuration" {
 data "aws_secretsmanager_secret_version" "backend_job_configuration" {
   secret_id = data.aws_secretsmanager_secret.backend_job_configuration.id
 }
+
+data "aws_sns_topic" "slack_topic" {
+  name = "slack-topic"
+}
