@@ -1,5 +1,10 @@
 class TariffChangesService
   class BaseChanges
+    CREATION = 'creation'.freeze
+    ENDING = 'ending'.freeze
+    UPDATE = 'update'.freeze
+    DELETION = 'deletion'.freeze
+
     attr_accessor :record, :changes, :change, :date
 
     def initialize(record, date)
@@ -30,7 +35,7 @@ class TariffChangesService
         goods_nomenclature_item_id: record.goods_nomenclature_item_id,
         action:,
         date_of_effect:,
-        validity_start_date: record.validity_start_date.to_date,
+        validity_start_date: record.validity_start_date&.to_date,
         validity_end_date: record.validity_end_date&.to_date,
       }
     rescue StandardError => e
@@ -66,7 +71,7 @@ class TariffChangesService
         record.validity_start_date.to_date
       elsif changes.include?('validity_end_date') && record.validity_end_date.present?
         (record.validity_end_date + 1.day).to_date
-      elsif record.operation == :create && record.respond_to?(:validity_start_date)
+      elsif record.operation == :create && record.respond_to?(:validity_start_date) && record.validity_start_date.present?
         record.validity_start_date.to_date
       else
         date + 1.day
@@ -76,15 +81,15 @@ class TariffChangesService
     def action
       case record.operation
       when :create
-        :creation
+        CREATION
       when :update
         if changes.include?('validity_end_date')
-          :ending
+          ENDING
         else
-          :update
+          UPDATE
         end
       when :destroy
-        :deletion
+        DELETION
       end
     end
   end

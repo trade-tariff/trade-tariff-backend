@@ -206,8 +206,8 @@ RSpec.describe TariffChangesService::BaseChanges do
         DummyRecord.new(operation: :create, previous_record: nil, record_values: {})
       end
 
-      it 'returns :creation' do
-        expect(instance.action).to eq(:creation)
+      it 'returns creation' do
+        expect(instance.action).to eq('creation')
       end
     end
 
@@ -221,8 +221,8 @@ RSpec.describe TariffChangesService::BaseChanges do
           instance.changes = %w[validity_end_date]
         end
 
-        it 'returns :ending' do
-          expect(instance.action).to eq(:ending)
+        it 'returns ending' do
+          expect(instance.action).to eq('ending')
         end
       end
 
@@ -231,8 +231,8 @@ RSpec.describe TariffChangesService::BaseChanges do
           instance.changes = %w[some_other_field]
         end
 
-        it 'returns :update' do
-          expect(instance.action).to eq(:update)
+        it 'returns update' do
+          expect(instance.action).to eq('update')
         end
       end
     end
@@ -242,8 +242,8 @@ RSpec.describe TariffChangesService::BaseChanges do
         DummyRecord.new(operation: :destroy, previous_record: nil, record_values: {})
       end
 
-      it 'returns :deletion' do
-        expect(instance.action).to eq(:deletion)
+      it 'returns deletion' do
+        expect(instance.action).to eq('deletion')
       end
     end
   end
@@ -275,7 +275,7 @@ RSpec.describe TariffChangesService::BaseChanges do
         object_sid: 12_345,
         goods_nomenclature_sid: 12_345,
         goods_nomenclature_item_id: '0101010100',
-        action: :creation,
+        action: 'creation',
         date_of_effect: date,
         validity_start_date: date,
         validity_end_date: nil,
