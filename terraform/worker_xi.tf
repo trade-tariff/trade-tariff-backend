@@ -1,5 +1,5 @@
 module "worker_xi" {
-  source = "git@github.com:trade-tariff/trade-tariff-platform-terraform-modules.git//aws/ecs-service?ref=aws/ecs-service-v1.18.1"
+  source = "git@github.com:trade-tariff/trade-tariff-platform-terraform-modules.git//aws/ecs-service?ref=aws/ecs-service-v1.18.2"
 
   service_name              = "worker-xi"
   container_definition_kind = "db-backed"
@@ -37,4 +37,6 @@ module "worker_xi" {
   has_autoscaler = local.has_autoscaler
   min_capacity   = 1
   max_capacity   = var.max_capacity
+
+  sns_topic_arns = [data.aws_sns_topic.slack_topic.arn]
 }
