@@ -41,4 +41,14 @@ RSpec.describe PublicUsers::Subscription do
       end
     end
   end
+
+  describe 'metadata accessors' do
+    let(:subscription) { create(:user_subscription) }
+    let(:metadata) { { commodity_codes: %w[1234567890 1234567891] } }
+
+    it 'allows setting and getting metadata' do
+      subscription.metadata = metadata
+      expect(subscription.metadata).to eq(metadata.stringify_keys)
+    end
+  end
 end

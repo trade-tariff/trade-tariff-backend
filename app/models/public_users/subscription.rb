@@ -13,5 +13,14 @@ module PublicUsers
       end
       user.soft_delete!
     end
+
+    def metadata
+      value = self[:metadata]
+      value.is_a?(String) ? JSON.parse(value) : value
+    end
+
+    def metadata=(value)
+      self[:metadata] = value.is_a?(String) ? value : value.to_json
+    end
   end
 end

@@ -4,5 +4,6 @@ FactoryBot.define do
     subscription_type_id { create(:subscription_type).id }
     active { true }
     email { true }
+    metadata { { commodity_codes: %w[1234567890 1234567891] } }
   end
 end
