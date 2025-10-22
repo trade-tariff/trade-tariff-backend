@@ -13,7 +13,7 @@ module Subscriptions
     end
 
     def self.my_commodities
-      find(name: MY_COMMODITIES) || create(name: MY_COMMODITIES, description: 'My commodities watchlistsubscription')
+      find(name: MY_COMMODITIES) || create(name: MY_COMMODITIES, description: 'My commodities watchlist subscription')
     end
   end
 end
