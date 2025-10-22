@@ -81,8 +81,8 @@ GEM
       aws-sdk-ses (~> 1, >= 1.50.0)
       aws-sdk-sesv2 (~> 1, >= 1.34.0)
     aws-eventstream (1.4.0)
-    aws-partitions (1.1167.0)
-    aws-sdk-cloudfront (1.129.0)
+    aws-partitions (1.1174.0)
+    aws-sdk-cloudfront (1.131.0)
       aws-sdk-core (~> 3, >= 3.231.0)
       aws-sigv4 (~> 1.5)
     aws-sdk-core (3.233.0)
@@ -113,7 +113,7 @@ GEM
       aws-eventstream (~> 1, >= 1.0.2)
     base64 (0.3.0)
     benchmark (0.4.1)
-    bigdecimal (3.2.3)
+    bigdecimal (3.3.1)
     bootsnap (1.18.6)
       msgpack (~> 1.2)
     brakeman (7.1.0)
@@ -237,7 +237,7 @@ GEM
       timeout
     net-smtp (0.5.1)
       net-protocol
-    newrelic_rpm (9.21.0)
+    newrelic_rpm (9.22.0)
     nio4r (2.7.4)
     nokogiri (1.18.10)
       mini_portile2 (~> 2.8.2)
@@ -291,7 +291,7 @@ GEM
     rabl (0.17.0)
       activesupport (>= 2.3.14)
     racc (1.8.1)
-    rack (3.2.2)
+    rack (3.2.3)
     rack-attack (6.7.0)
       rack (>= 1.0, < 4)
     rack-protection (4.1.1)
@@ -490,7 +490,7 @@ PLATFORMS
 DEPENDENCIES
   awesome_print
   aws-actionmailer-ses
-  aws-sdk-cloudfront (~> 1.129)
+  aws-sdk-cloudfront (~> 1.131)
   aws-sdk-rails
   aws-sdk-s3
   bootsnap
