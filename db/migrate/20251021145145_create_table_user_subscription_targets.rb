@@ -3,7 +3,7 @@ Sequel.migration do
   up do
     if TradeTariffBackend.uk?
       unless Sequel::Model.db.table_exists?(Sequel[:user_subscription_targets].qualify(:public))
-        create_table Sequel[:user_subscription_targets].qualify(:public), id: :uuid do
+        create_table Sequel[:user_subscription_targets].qualify(:public) do
           primary_key :id
           foreign_key :user_subscriptions_uuid, Sequel[:user_subscriptions].qualify(:public), type: :uuid, key: :uuid, null: false
           Integer :target_id, null: false
