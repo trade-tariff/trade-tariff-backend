@@ -11,9 +11,9 @@ RSpec.describe Api::V2::NotificationsController, :v2 do
         data: {
           attributes: {
             email: 'foo@bar.com',
-            template_id: 'template_123',
+            template_id: 'ce2a0b59-b35b-4f1a-b338-aca0e2ba6f3c',
             personalisation: { name: 'Foo' },
-            email_reply_to_id: 'reply_456',
+            email_reply_to_id: '64494090-e536-4f1d-8525-53c0eabf8f2c',
             reference: 'ref_789',
           },
         },
@@ -49,6 +49,44 @@ RSpec.describe Api::V2::NotificationsController, :v2 do
       response_data = JSON.parse(response.body)['data']
       expect(response_data['id']).to be_a_uuid
       expect(response_data['type']).to eq('notifications')
+    end
+
+    context 'when the request is invalid' do
+      let(:params) do
+        {
+          data: {
+            attributes: {
+              email: 'invalid-email',
+              template_id: 'invalid-uuid',
+            },
+          },
+        }
+      end
+
+      let(:expected_errors) do
+        {
+          'errors' => [
+            {
+              'status' => 422,
+              'title' => 'must be a valid e-mail address',
+              'detail' => 'Email must be a valid e-mail address',
+              'source' => { 'pointer' => '/data/attributes/email' },
+            },
+            {
+              'status' => 422,
+              'title' => 'must be a valid UUID',
+              'detail' => 'Template must be a valid UUID',
+              'source' => { 'pointer' => '/data/attributes/template_id' },
+            },
+          ],
+        }
+      end
+
+      it 'returns a 422 Unprocessable Entity response with validation errors' do
+        do_request
+        expect(response).to have_http_status(:unprocessable_entity)
+        expect(JSON.parse(response.body)).to eq(expected_errors)
+      end
     end
   end
 end

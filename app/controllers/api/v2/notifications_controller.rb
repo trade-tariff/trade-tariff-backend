@@ -6,20 +6,27 @@ module Api
       before_action :authenticate!
 
       def create
-        store_notification.tap do |notification_id|
-          NotificationsWorker.perform_async(notification_id)
+        if notification.valid?
+          store_notification.tap do |notification|
+            NotificationsWorker.perform_async(notification.id)
 
-          render json: { data: { id: notification_id, type: 'notifications' } }, status: :accepted
+            render json: { data: { id: notification.id, type: 'notifications' } }, status: :accepted
+          end
+        else
+          render json: Api::V2::ActiveModelErrorSerializationService.new(notification).call, status: :unprocessable_entity
         end
       end
 
       private
 
-      def store_notification
-        notification_id = SecureRandom.uuid
-        Rails.cache.write("notification_#{notification_id}", notification_params.to_json, expires_in: 1.hour)
+      def notification
+        @notification ||= Notification.new(notification_params)
+      end
 
-        notification_id
+      def store_notification
+        Rails.cache.write("notification_#{notification.id}", notification.to_json, expires_in: 1.hour)
+
+        notification
       end
 
       def notification_params
