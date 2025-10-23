@@ -21,8 +21,8 @@ class NotificationsWorker
 
       Rails.cache.delete("notification_#{notification_id}")
     end
-  rescue StandardError
-    Rails.logger.error("Failed to process notification with ID: #{notification_id}")
+  rescue StandardError => e
+    Rails.logger.error("Failed to process notification with ID: #{notification_id}: #{e.message}\n#{e.backtrace.join("\n")}")
     raise
   end
 

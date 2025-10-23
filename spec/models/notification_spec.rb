@@ -36,4 +36,20 @@ RSpec.describe Notification do
 
     it { is_expected.to be_a_uuid }
   end
+
+  describe '#as_json' do
+    subject { described_class.new(attributes).as_json }
+
+    let(:attributes) do
+      {
+        email: 'foo@bar.com',
+        template_id: 'b0f0c2b2-c5f5-4f3a-8d9c-f4c8e8ea1a7c',
+        email_reply_to_id: 'f47ac10b-58cc-4372-a567-0e02b2c3d479',
+        reference: 'REF123',
+        personalisation: { name: 'John', age: 30, subscribed: true, victory: nil },
+      }
+    end
+
+    it { is_expected.to eq(attributes.deep_stringify_keys) }
+  end
 end

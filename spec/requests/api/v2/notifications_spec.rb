@@ -1,11 +1,7 @@
 RSpec.describe Api::V2::NotificationsController, :v2 do
-  subject(:do_request) { make_request && response }
+  subject(:do_request) { post api_notifications_path, params: params, headers: headers, as: :json }
 
   describe 'POST #create' do
-    subject(:do_request) { post api_notifications_path, params: params, headers: headers, as: :json }
-
-    let(:make_request) { post :create, params: params, headers: headers }
-
     let(:params) do
       {
         data: {

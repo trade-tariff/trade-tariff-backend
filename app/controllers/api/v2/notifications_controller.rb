@@ -1,6 +1,8 @@
 module Api
   module V2
     class NotificationsController < ApplicationController
+      CACHE_DURATION = 1.hour
+
       include ApiTokenAuthenticatable
 
       before_action :authenticate!
@@ -24,7 +26,11 @@ module Api
       end
 
       def store_notification
-        Rails.cache.write("notification_#{notification.id}", notification.to_json, expires_in: 1.hour)
+        Rails.cache.write(
+          "notification_#{notification.id}",
+          notification.to_json,
+          expires_in: CACHE_DURATION,
+        )
 
         notification
       end
