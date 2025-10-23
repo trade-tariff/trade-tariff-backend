@@ -11,7 +11,6 @@ RSpec.describe ReportWorker, type: :worker do
       allow(Reporting::DeclarableDuties).to receive(:generate)
       allow(Reporting::GeographicalAreaGroups).to receive(:generate)
       allow(Reporting::Prohibitions).to receive(:generate)
-      allow(DeltaReportService).to receive(:generate)
       allow(DifferencesReportWorker).to receive(:perform_in).and_call_original
       allow(TradeTariffBackend).to receive(:service).and_return(service)
       travel_to Date.parse(date).beginning_of_day
@@ -34,7 +33,6 @@ RSpec.describe ReportWorker, type: :worker do
 
         it_behaves_like 'all reports are generated'
         it { expect(DifferencesReportWorker).not_to have_received(:perform_in) }
-        it { expect(DeltaReportService).not_to have_received(:generate) }
       end
 
       context 'when on the uk service and the day is a monday' do
@@ -42,7 +40,6 @@ RSpec.describe ReportWorker, type: :worker do
 
         it_behaves_like 'all reports are generated'
         it { expect(DifferencesReportWorker).to have_received(:perform_in) }
-        it { expect(DeltaReportService).to have_received(:generate) }
       end
 
       context 'when on the uk service and the day is not a monday' do
@@ -51,7 +48,6 @@ RSpec.describe ReportWorker, type: :worker do
 
         it_behaves_like 'all reports are generated'
         it { expect(DifferencesReportWorker).not_to have_received(:perform_in) }
-        it { expect(DeltaReportService).to have_received(:generate) }
       end
     end
 
