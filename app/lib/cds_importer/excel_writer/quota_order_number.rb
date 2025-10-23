@@ -1,24 +1,26 @@
 class CdsImporter
   class ExcelWriter
     class QuotaOrderNumber < BaseMapper
-      def sheet_name
-        'Quota order numbers'
-      end
+      class << self
+        def sheet_name
+          'Quota order numbers'
+        end
 
-      def table_span
-        %w[A E]
-      end
+        def table_span
+          %w[A E]
+        end
 
-      def column_widths
-        [40, 20, 20, 20, 20]
-      end
+        def column_widths
+          [40, 20, 20, 20, 20]
+        end
 
-      def heading
-        ['Action',
-         'SID',
-         'Order number',
-         'Start date',
-         'End date']
+        def heading
+          ['Action',
+           'SID',
+           'Order number',
+           'Start date',
+           'End date']
+        end
       end
 
       def data_row

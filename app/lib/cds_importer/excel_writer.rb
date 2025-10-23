@@ -30,6 +30,8 @@ class CdsImporter
     end
 
     def after_parse
+      write(@key, @instances)
+      sort_worksheets
       FileUtils.mkdir_p(File.join(TariffSynchronizer.root_path, 'cds_updates'))
       package.serialize(File.join(TariffSynchronizer.root_path, 'cds_updates', excel_filename))
       if TradeTariffBackend.cds_updates_send_email && !@failed
@@ -43,10 +45,42 @@ class CdsImporter
 
     attr_reader :workbook, :filename, :package, :bold_style, :regular_style
 
+    def sort_worksheets
+      CdsImporter::ExcelWriter.constants.each do |const|
+        klass = CdsImporter::ExcelWriter.const_get(const)
+        next unless klass.is_a?(Class)
+
+        worksheet = workbook.worksheets.find { |ws| ws.name == klass.sheet_name }
+        sort_columns = klass.sort_columns
+        next unless sort_columns.present? && worksheet
+
+        start_index = klass.start_index
+        row_count = worksheet.rows.count
+
+        rows = worksheet.rows.map { |r| r.cells.map(&:value) }[start_index..]
+        rows.sort_by! do |r|
+          sort_columns.map { |col| r[col] }
+        end
+
+        row_count.downto(start_index) do |index|
+          worksheet.rows.delete_at(index)
+        end
+
+        rows.each { |r| worksheet.add_row r }
+      end
+    end
+
     def write(key, instances)
-      update = Module.const_get("CdsImporter::ExcelWriter::#{key}").new(instances)
-      sheet_name = update.sheet_name
-      note = update.note
+      klass = Module.const_get("CdsImporter::ExcelWriter::#{key}")
+
+      update = klass.new(instances)
+      return unless update.valid?
+
+      sheet_name = klass.sheet_name
+      note = klass.note
+      heading = klass.heading
+      column_widths = klass.column_widths
+
 
       sheet = workbook.worksheets.find { |ws| ws.name == sheet_name }
       unless sheet
@@ -54,19 +88,19 @@ class CdsImporter
 
         if note.present?
           sheet.add_row(note, style: bold_style)
-          sheet.merge_cells(merge_cells_length(update, 1))
+          sheet.merge_cells(merge_cells_length(klass, 1))
           sheet.add_row
-          sheet.merge_cells(merge_cells_length(update, 2))
+          sheet.merge_cells(merge_cells_length(klass, 2))
         end
 
-        sheet.add_row(update.heading, style: bold_style)
-        sheet.column_widths(*update.column_widths)
+        sheet.add_row(heading, style: bold_style)
+        sheet.column_widths(*column_widths)
       end
 
       sheet.add_row(update.data_row, style: regular_style)
-      sheet.column_widths(*update.column_widths)
-    rescue NameError
-      Rails.logger.info "#{key} element is not mapped into CDS Updates"
+      sheet.column_widths(*column_widths)
+    rescue StandardError => e
+      Rails.logger.info "Write record error on #{key} - #{e.message}"
     end
 
     def initiate_excel_file
@@ -106,8 +140,8 @@ class CdsImporter
       end
     end
 
-    def merge_cells_length(update, row)
-      "#{update.table_span[0]}#{row}:#{update.table_span[1]}#{row}"
+    def merge_cells_length(klass, row)
+      "#{klass.table_span[0]}#{row}:#{klass.table_span[1]}#{row}"
     end
   end
 end

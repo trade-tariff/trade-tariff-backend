@@ -1,25 +1,27 @@
 class CdsImporter
   class ExcelWriter
     class Certificate < BaseMapper
-      def sheet_name
-        'Certificates'
-      end
+      class << self
+        def sheet_name
+          'Certificates'
+        end
 
-      def table_span
-        %w[A F]
-      end
+        def table_span
+          %w[A F]
+        end
 
-      def column_widths
-        [30, 20, 20, 20, 20, 50]
-      end
+        def column_widths
+          [30, 20, 20, 20, 20, 50]
+        end
 
-      def heading
-        ['Action',
-         'Certificate code type',
-         'Certificate code',
-         'Start date',
-         'End date',
-         'Description']
+        def heading
+          ['Action',
+           'Certificate code type',
+           'Certificate code',
+           'Start date',
+           'End date',
+           'Description']
+        end
       end
 
       def data_row

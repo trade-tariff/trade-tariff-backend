@@ -1,26 +1,28 @@
 class CdsImporter
   class ExcelWriter
     class Footnote < BaseMapper
-      def sheet_name
-        'Footnotes'
-      end
+      class << self
+        def sheet_name
+          'Footnotes'
+        end
 
-      def table_span
-        %w[A G]
-      end
+        def table_span
+          %w[A G]
+        end
 
-      def column_widths
-        [20, 20, 20, 20, 20, 20, 50]
-      end
+        def column_widths
+          [20, 20, 20, 20, 20, 20, 50]
+        end
 
-      def heading
-        ['Action',
-         'Combined',
-         'Footnote type ID',
-         'Footnote ID',
-         'Start date',
-         'End date',
-         'Description']
+        def heading
+          ['Action',
+           'Combined',
+           'Footnote type ID',
+           'Footnote ID',
+           'Start date',
+           'End date',
+           'Description']
+        end
       end
 
       def data_row

@@ -1,35 +1,46 @@
 class CdsImporter
   class ExcelWriter
     class QuotaDefinition < BaseMapper
-      def sheet_name
-        'Quota definitions'
-      end
+      class << self
+        def sheet_name
+          'Quota definitions'
+        end
 
-      def note
-        ['Please be careful when checking quota balances - each file may contains multiple updates on the same quota definition']
-      end
+        def note
+          ['Please be careful when checking quota balances - each file may contains multiple updates on the same quota definition']
+        end
 
-      def table_span
-        %w[A L]
-      end
+        def table_span
+          %w[A L]
+        end
 
-      def column_widths
-        [30, 20, 50, 70, 20, 20, 20, 20, 20, 20, 20, 20]
-      end
+        def column_widths
+          [30, 20, 50, 70, 20, 20, 20, 20, 20, 20, 20, 20]
+        end
 
-      def heading
-        ['Action',
-         'Quota order number',
-         'Balance updates',
-         'Sample commodities',
-         'SID',
-         'Critical state',
-         'Critical threshold',
-         'Initial volume',
-         'Volume',
-         'Maximum precision',
-         'Start date',
-         'End date']
+        def heading
+          ['Action',
+           'Quota order number',
+           'Balance updates',
+           'Sample commodities',
+           'SID',
+           'Critical state',
+           'Critical threshold',
+           'Initial volume',
+           'Volume',
+           'Maximum precision',
+           'Start date',
+           'End date']
+        end
+
+        def sort_columns
+          [1]
+        end
+
+        def start_index
+          3
+        end
+
       end
 
       def data_row
