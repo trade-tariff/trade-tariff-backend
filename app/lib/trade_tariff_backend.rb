@@ -220,7 +220,7 @@ module TradeTariffBackend
       ENV.fetch('OPENSEARCH_DEBUG', 'false') == 'true'
     end
 
-    def green_lanes_api_tokens
+    def api_tokens
       ENV['GREEN_LANES_API_TOKENS']
     end
 

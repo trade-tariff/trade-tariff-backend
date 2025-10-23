@@ -15,10 +15,6 @@ RSpec.describe Api::V2::GreenLanes::ThemesController, :v2 do
       ActionController::HttpAuthentication::Token.encode_credentials('Trade-Tariff-Test')
     end
 
-    before do
-      allow(TradeTariffBackend).to receive(:green_lanes_api_tokens).and_return 'Trade-Tariff-Test'
-    end
-
     context 'when theme data is found' do
       it_behaves_like 'a successful jsonapi response'
     end

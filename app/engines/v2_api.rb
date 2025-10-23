@@ -6,6 +6,8 @@ V2Api.routes.draw do
 
   namespace :api, defaults: { format: 'json' }, path: '/' do
     scope module: :v2 do
+      resources :notifications, only: %i[create]
+
       resources :sections, only: %i[index show] do
         collection do
           get :tree
