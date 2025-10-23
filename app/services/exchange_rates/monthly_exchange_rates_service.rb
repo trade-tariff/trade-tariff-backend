@@ -9,8 +9,6 @@ module ExchangeRates
     end
 
     def call
-      return if TradeTariffBackend.xi?
-
       ExchangeRates::UpdateCurrencyRatesService.new(date, sample_date, ExchangeRateCurrencyRate::MONTHLY_RATE_TYPE).call if download
 
       if rates.empty?
