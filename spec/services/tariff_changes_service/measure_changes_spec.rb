@@ -61,7 +61,7 @@ RSpec.describe TariffChangesService::MeasureChanges do
       end
 
       it 'can call inherited methods' do
-        allow(measure_changes).to receive_messages(no_changes?: false, action: :creation, date_of_effect: date)
+        allow(measure_changes).to receive_messages(no_changes?: false, action: 'creation', date_of_effect: date)
 
         expect { measure_changes.analyze }.not_to raise_error
       end
@@ -87,7 +87,7 @@ RSpec.describe TariffChangesService::MeasureChanges do
         expect(result[:type]).to eq('Measure')
         expect(result[:object_sid]).to eq(record.measure_sid)
         expect(result[:goods_nomenclature_sid]).to eq(record.goods_nomenclature_sid)
-        expect(result[:action]).to eq(:creation)
+        expect(result[:action]).to eq('creation')
         expect(result[:validity_start_date]).to eq(date)
         expect(result[:validity_end_date]).to be_nil
       end

@@ -82,7 +82,7 @@ RSpec.describe TariffChangesService::CommodityChanges do
       end
 
       it 'can call inherited methods' do
-        allow(commodity_changes).to receive_messages(no_changes?: false, action: :creation, date_of_effect: date)
+        allow(commodity_changes).to receive_messages(no_changes?: false, action: 'creation', date_of_effect: date)
 
         expect { commodity_changes.analyze }.not_to raise_error
       end
@@ -111,7 +111,7 @@ RSpec.describe TariffChangesService::CommodityChanges do
           object_sid: record.goods_nomenclature_sid,
           goods_nomenclature_sid: record.goods_nomenclature_sid,
           goods_nomenclature_item_id: record.goods_nomenclature_item_id,
-          action: :creation,
+          action: 'creation',
           validity_start_date: date,
           validity_end_date: nil,
         )

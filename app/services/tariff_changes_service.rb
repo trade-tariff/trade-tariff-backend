@@ -20,6 +20,9 @@ class TariffChangesService
       generate_commodity_change_records
     end
 
+    TariffChange.delete_for(operation_date: date)
+    TariffChange.multi_insert(tariff_change_records) if tariff_change_records.any?
+
     {
       date: date.strftime('%Y_%m_%d'),
       count: tariff_change_records.count,
