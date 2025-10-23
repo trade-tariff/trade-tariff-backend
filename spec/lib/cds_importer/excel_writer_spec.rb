@@ -28,18 +28,24 @@ RSpec.describe CdsImporter::ExcelWriter do
   end
   let(:excel) do
     instance_double(CdsImporter::ExcelWriter::QuotaDefinition,
-                    sheet_name: 'Sheet 1',
-                    note: [],
-                    heading: [],
-                    data_row: [],
-                    table_span: [],
-                    column_widths: [])
+                    valid?: true,
+                    data_row: [])
+  end
+
+  let(:excel_class) do
+    class_double(CdsImporter::ExcelWriter::QuotaDefinition,
+                 sheet_name: 'Sheet 1',
+                 note: [],
+                 heading: [],
+                 table_span: [],
+                 column_widths: [],
+                 new: excel)
   end
 
   before do
     allow(Module).to receive(:const_get)
                        .with('CdsImporter::ExcelWriter::K')
-                       .and_return(class_double(CdsImporter::ExcelWriter::QuotaDefinition, new: excel))
+                       .and_return(excel_class)
 
     allow(Module).to receive(:const_get)
                        .with('CdsImporter::ExcelWriter::NotExist').and_raise(NameError)
@@ -60,7 +66,7 @@ RSpec.describe CdsImporter::ExcelWriter do
       it 'sets key, xml_element_id, and adds the instance' do
         writer.process_record(entity1)
 
-        expect(excel).not_to have_received(:sheet_name)
+        expect(excel_class).not_to have_received(:sheet_name)
         expect(writer.instance_variable_get(:@key)).to eq('K')
         expect(writer.instance_variable_get(:@xml_element_id)).to eq('E1')
         expect(writer.instance_variable_get(:@instances)).to eq(%w[I1])
@@ -72,11 +78,10 @@ RSpec.describe CdsImporter::ExcelWriter do
         writer.process_record(entity1)
         writer.process_record(entity2)
 
-        expect(excel).to have_received(:sheet_name)
-        expect(excel).to have_received(:note)
-        expect(excel).to have_received(:sheet_name)
-        expect(excel).to have_received(:heading)
-        expect(excel).to have_received(:column_widths).exactly(2).times
+        expect(excel_class).to have_received(:sheet_name)
+        expect(excel_class).to have_received(:note)
+        expect(excel_class).to have_received(:heading)
+        expect(excel_class).to have_received(:column_widths)
         expect(excel).to have_received(:data_row)
         expect(writer.instance_variable_get(:@key)).to eq('K')
         expect(writer.instance_variable_get(:@xml_element_id)).to eq('E2')
@@ -89,7 +94,7 @@ RSpec.describe CdsImporter::ExcelWriter do
         writer.process_record(entity1)
         writer.process_record(entity1)
 
-        expect(excel).not_to have_received(:sheet_name)
+        expect(excel_class).not_to have_received(:sheet_name)
         expect(writer.instance_variable_get(:@instances)).to eq(%w[I1 I1])
       end
     end
@@ -100,7 +105,7 @@ RSpec.describe CdsImporter::ExcelWriter do
       writer.process_record(entity3)
       writer.process_record(entity1)
 
-      expect(excel).not_to have_received(:sheet_name)
+      expect(excel_class).not_to have_received(:sheet_name)
       expect(writer.instance_variable_get(:@key)).to eq('K')
       expect(writer.instance_variable_get(:@xml_element_id)).to eq('E1')
       expect(writer.instance_variable_get(:@instances)).to eq(%w[I1])

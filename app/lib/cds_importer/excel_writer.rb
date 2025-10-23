@@ -81,7 +81,6 @@ class CdsImporter
       heading = klass.heading
       column_widths = klass.column_widths
 
-
       sheet = workbook.worksheets.find { |ws| ws.name == sheet_name }
       unless sheet
         sheet = workbook.add_worksheet(name: sheet_name)

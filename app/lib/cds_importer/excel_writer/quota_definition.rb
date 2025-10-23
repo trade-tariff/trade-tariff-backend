@@ -40,7 +40,6 @@ class CdsImporter
         def start_index
           3
         end
-
       end
 
       def data_row
