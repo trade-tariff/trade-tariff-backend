@@ -6,5 +6,8 @@ class PopulateChangesTableWorker
   def perform
     ChangesTablePopulator.populate
     ChangesTablePopulator.cleanup_outdated
+
+    TariffChangesService.generate
+    DeltaReportService.generate
   end
 end

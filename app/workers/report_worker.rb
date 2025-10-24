@@ -13,8 +13,6 @@ class ReportWorker
     Reporting::Prohibitions.generate
     Reporting::GeographicalAreaGroups.generate
 
-    DeltaReportService.generate if generate_delta?
-
     schedule_differences_generation if trigger_differences_report
   end
 
@@ -22,10 +20,6 @@ class ReportWorker
 
   def generate_differences?
     TradeTariffBackend.uk? && monday?
-  end
-
-  def generate_delta?
-    TradeTariffBackend.uk?
   end
 
   def schedule_differences_generation
