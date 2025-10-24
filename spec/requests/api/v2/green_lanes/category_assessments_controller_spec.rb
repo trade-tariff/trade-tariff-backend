@@ -16,8 +16,6 @@ RSpec.describe Api::V2::GreenLanes::CategoryAssessmentsController, :v2 do
     end
 
     before do
-      allow(TradeTariffBackend).to receive(:green_lanes_api_tokens).and_return 'Trade-Tariff-Test'
-
       category_assessments
     end
 
@@ -65,39 +63,11 @@ RSpec.describe Api::V2::GreenLanes::CategoryAssessmentsController, :v2 do
         ActionController::HttpAuthentication::Token.encode_credentials('incorrect token')
       end
 
-      before do
-        allow(TradeTariffBackend).to receive(:green_lanes_api_tokens).and_return 'Trade-Tariff-Test'
-      end
-
       it_behaves_like 'a unauthorised response for invalid bearer token'
     end
 
     context 'when absence of bearer token' do
       let(:authorization) { nil }
-
-      before do
-        allow(TradeTariffBackend).to receive(:green_lanes_api_tokens).and_return 'Trade-Tariff-Test'
-      end
-
-      it_behaves_like 'a unauthorised response for invalid bearer token'
-    end
-
-    context 'when presence of incorrect ENV VAR' do
-      let :authorization do
-        ActionController::HttpAuthentication::Token.encode_credentials('Trade-Tariff-Test')
-      end
-
-      before do
-        allow(TradeTariffBackend).to receive(:green_lanes_api_tokens).and_return 'incorrect'
-      end
-
-      it_behaves_like 'a unauthorised response for invalid bearer token'
-    end
-
-    context 'when absence of ENV VAR' do
-      let :authorization do
-        ActionController::HttpAuthentication::Token.encode_credentials('Trade-Tariff-Test')
-      end
 
       it_behaves_like 'a unauthorised response for invalid bearer token'
     end
@@ -105,10 +75,6 @@ RSpec.describe Api::V2::GreenLanes::CategoryAssessmentsController, :v2 do
     context 'when valid ENV VAR' do
       let :authorization do
         ActionController::HttpAuthentication::Token.encode_credentials('Trade-Tariff-Test')
-      end
-
-      before do
-        allow(TradeTariffBackend).to receive(:green_lanes_api_tokens).and_return 'Trade-Tariff-Test'
       end
 
       it { is_expected.to have_http_status :success }
@@ -120,7 +86,7 @@ RSpec.describe Api::V2::GreenLanes::CategoryAssessmentsController, :v2 do
       end
 
       before do
-        allow(TradeTariffBackend).to receive(:green_lanes_api_tokens).and_return 'Trade-Tariff-Test, second-token'
+        allow(TradeTariffBackend).to receive(:api_tokens).and_return 'Trade-Tariff-Test, second-token'
       end
 
       it { is_expected.to have_http_status :success }

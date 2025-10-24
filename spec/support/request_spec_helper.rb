@@ -12,10 +12,7 @@ module RequestSpecHelper
 private
 
   def add_green_lanes_authentication_header(headers: {}, **kwargs)
-    allow(TradeTariffBackend).to receive_messages(
-      green_lanes_api_tokens: 'Trade-Tariff-Test',
-      uk?: false,
-    )
+    allow(TradeTariffBackend).to receive(:uk?).and_return(false)
 
     headers['HTTP_AUTHORIZATION'] ||= ActionController::HttpAuthentication::Token.encode_credentials('Trade-Tariff-Test')
 
