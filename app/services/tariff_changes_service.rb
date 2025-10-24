@@ -1,7 +1,21 @@
+# frozen_string_literal: true
+
+# Service to generate TariffChange records for a given date
+# This differs from the ChangesTablePopulator in that it collects changes based
+# on the operation date rather than the validity_start_date
+# It is used for the myott Commodity Watchlist feature
 class TariffChangesService
   def self.generate(date = Time.zone.today)
     service = new(date)
     service.all_changes
+  end
+
+  def self.populate_backlog(from: Time.zone.today - 1.year, to: Time.zone.today)
+    from = from.to_date
+    to = to.to_date
+    (from..to).each do |day|
+      new(day).all_changes
+    end
   end
 
   attr_reader :tariff_change_records, :date

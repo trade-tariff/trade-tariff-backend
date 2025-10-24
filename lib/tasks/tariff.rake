@@ -96,6 +96,11 @@ namespace :tariff do
     end
   end
 
+  desc 'Populate tariff changes for the past year'
+  task populate_tariff_changes: %w[environment] do
+    TariffChangesService.populate_backlog(from: Time.zone.today - 1.year)
+  end
+
   desc 'Refresh materialized views'
   task refresh: :environment do
     require_relative '../../app/helpers/materialize_view_helper'
