@@ -1,30 +1,32 @@
 class CdsImporter
   class ExcelWriter
     class MeasureType < BaseMapper
-      def sheet_name
-        'Measure Type'
-      end
+      class << self
+        def sheet_name
+          'Measure Type'
+        end
 
-      def table_span
-        %w[A L]
-      end
+        def table_span
+          %w[A L]
+        end
 
-      def column_widths
-        [30, 20, 20, 20, 50, 20, 20, 20, 20, 20, 20, 20]
-      end
+        def column_widths
+          [30, 20, 20, 20, 50, 20, 20, 20, 20, 20, 20, 20]
+        end
 
-      def heading
-        ['Action',
-         'Measure type ID',
-         'Start date',
-         'End date',
-         'Description',
-         'Trade movement code',
-         'Origin dest code',
-         'Measure component applicable code',
-         'Order number capture code',
-         'Measure explosion level',
-         'Priority code']
+        def heading
+          ['Action',
+           'Measure type ID',
+           'Start date',
+           'End date',
+           'Description',
+           'Trade movement code',
+           'Origin dest code',
+           'Measure component applicable code',
+           'Order number capture code',
+           'Measure explosion level',
+           'Priority code']
+        end
       end
 
       def data_row

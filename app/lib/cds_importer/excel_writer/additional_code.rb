@@ -1,25 +1,27 @@
 class CdsImporter
   class ExcelWriter
     class AdditionalCode < BaseMapper
-      def sheet_name
-        'Additional codes'
-      end
+      class << self
+        def sheet_name
+          'Additional codes'
+        end
 
-      def table_span
-        %w[A F]
-      end
+        def table_span
+          %w[A F]
+        end
 
-      def column_widths
-        [30, 20, 20, 20, 20, 50]
-      end
+        def column_widths
+          [30, 20, 20, 20, 20, 50]
+        end
 
-      def heading
-        ['Action',
-         'Additional code type',
-         'Additional code ID',
-         'Start date',
-         'End date',
-         'Description']
+        def heading
+          ['Action',
+           'Additional code type',
+           'Additional code ID',
+           'Start date',
+           'End date',
+           'Description']
+        end
       end
 
       def data_row

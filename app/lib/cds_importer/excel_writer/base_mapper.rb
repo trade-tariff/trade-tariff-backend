@@ -5,6 +5,28 @@ class CdsImporter
         @models = models
       end
 
+      class << self
+        def sort_columns
+          []
+        end
+
+        def note
+          nil
+        end
+
+        def sheet_name
+          ''
+        end
+
+        def start_index
+          1
+        end
+      end
+
+      def valid?
+        true
+      end
+
       attr_reader :models
 
       def expand_operation(model)
@@ -32,10 +54,6 @@ class CdsImporter
         return '' if date.nil?
 
         date.strftime('%Y-%m-%d')
-      end
-
-      def note
-        nil
       end
 
       def periodic_description(description_periods, descriptions)

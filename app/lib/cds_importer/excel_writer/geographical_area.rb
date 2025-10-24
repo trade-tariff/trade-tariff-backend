@@ -1,28 +1,34 @@
 class CdsImporter
   class ExcelWriter
     class GeographicalArea < BaseMapper
-      def sheet_name
-        'Geographical areas'
-      end
+      class << self
+        def sheet_name
+          'Geographical areas'
+        end
 
-      def table_span
-        %w[A I]
-      end
+        def table_span
+          %w[A I]
+        end
 
-      def column_widths
-        [30, 20, 15, 15, 20, 50, 70, 70, 15]
-      end
+        def column_widths
+          [30, 20, 15, 15, 20, 50, 70, 70, 15]
+        end
 
-      def heading
-        ['Action',
-         'Geographical area ID',
-         'SID',
-         'Start date',
-         'End date',
-         'Description(s)',
-         'Current memberships',
-         'All memberships',
-         'Parent group SID']
+        def heading
+          ['Action',
+           'Geographical area ID',
+           'SID',
+           'Start date',
+           'End date',
+           'Description(s)',
+           'Current memberships',
+           'All memberships',
+           'Parent group SID']
+        end
+
+        def sort_columns
+          [1]
+        end
       end
 
       def data_row
@@ -47,8 +53,8 @@ class CdsImporter
 
       def geographical_area(geo_area_sid)
         ga = ::GeographicalArea
-          .where(geographical_area_sid: geo_area_sid)
-          .eager(:geographical_area_descriptions).first
+               .where(geographical_area_sid: geo_area_sid)
+               .eager(:geographical_area_descriptions).first
 
         if ga
           ga.description

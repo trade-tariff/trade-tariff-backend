@@ -1,32 +1,38 @@
 class CdsImporter
   class ExcelWriter
     class Measure < BaseMapper
-      def sheet_name
-        'Measures'
-      end
+      class << self
+        def sheet_name
+          'Measures'
+        end
 
-      def table_span
-        %w[A M]
-      end
+        def table_span
+          %w[A M]
+        end
 
-      def column_widths
-        [30, 20, 20, 40, 40, 20, 20, 20, 40, 30, 30, 100, 30]
-      end
+        def column_widths
+          [30, 20, 20, 40, 40, 20, 20, 20, 40, 30, 30, 100, 30]
+        end
 
-      def heading
-        ['Action',
-         'Commodity code',
-         'Additional code',
-         'Measure type',
-         'Geographical area',
-         'Quota order number',
-         'Start date',
-         'End date',
-         'Duty',
-         'Excluded areas',
-         'Footnotes',
-         'Conditions',
-         'SID']
+        def heading
+          ['Action',
+           'Commodity code',
+           'Additional code',
+           'Measure type',
+           'Geographical area',
+           'Quota order number',
+           'Start date',
+           'End date',
+           'Duty',
+           'Excluded areas',
+           'Footnotes',
+           'Conditions',
+           'SID']
+        end
+
+        def sort_columns
+          [3, 1, 0]
+        end
       end
 
       def data_row
@@ -65,8 +71,8 @@ class CdsImporter
 
       def geographical_area(geo_area_sid)
         ga = ::GeographicalArea
-          .where(geographical_area_sid: geo_area_sid)
-          .eager(:geographical_area_descriptions).first
+               .where(geographical_area_sid: geo_area_sid)
+               .eager(:geographical_area_descriptions).first
 
         if ga
           "#{ga.geographical_area_id}(#{ga.description})"
@@ -80,7 +86,7 @@ class CdsImporter
 
         conditions
           .reject { |c| c.operation == 'D' }
-          .map    { |c| condition_string(c) }
+          .map { |c| condition_string(c) }
           .reject(&:empty?)
           .join(' ')
       end
@@ -114,7 +120,7 @@ class CdsImporter
 
         footnotes
           .reject { |c| c.operation == 'D' }
-          .map    { |c| "#{c.footnote_type_id}#{c.footnote_id}" }
+          .map { |c| "#{c.footnote_type_id}#{c.footnote_id}" }
           .join(', ')
       end
 
@@ -132,7 +138,7 @@ class CdsImporter
 
         measure_components
           .reject { |c| c.operation == 'D' }
-          .map    { |c| duty_string(c) }
+          .map { |c| duty_string(c) }
           .reject(&:empty?)
           .join(' ')
       end

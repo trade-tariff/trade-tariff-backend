@@ -1,24 +1,26 @@
 class CdsImporter
   class ExcelWriter
     class MeasurementUnit < BaseMapper
-      def sheet_name
-        'Measurement Unit'
-      end
+      class << self
+        def sheet_name
+          'Measurement Unit'
+        end
 
-      def table_span
-        %w[A E]
-      end
+        def table_span
+          %w[A E]
+        end
 
-      def column_widths
-        [30, 30, 30, 30, 50]
-      end
+        def column_widths
+          [30, 30, 30, 30, 50]
+        end
 
-      def heading
-        ['Action',
-         'Measurement unit code',
-         'Start date',
-         'End date',
-         'Description']
+        def heading
+          ['Action',
+           'Measurement unit code',
+           'Start date',
+           'End date',
+           'Description']
+        end
       end
 
       def data_row

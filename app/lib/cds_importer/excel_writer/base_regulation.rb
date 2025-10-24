@@ -1,25 +1,27 @@
 class CdsImporter
   class ExcelWriter
     class BaseRegulation < BaseMapper
-      def sheet_name
-        'Base regulations'
-      end
+      class << self
+        def sheet_name
+          'Base regulations'
+        end
 
-      def table_span
-        %w[A F]
-      end
+        def table_span
+          %w[A F]
+        end
 
-      def column_widths
-        [30, 20, 40, 20, 20, 20]
-      end
+        def column_widths
+          [30, 20, 40, 20, 20, 20]
+        end
 
-      def heading
-        ['Action',
-         'Regulation ID',
-         'Information text',
-         'Start date',
-         'Regulation group',
-         'Regulation role type']
+        def heading
+          ['Action',
+           'Regulation ID',
+           'Information text',
+           'Start date',
+           'Regulation group',
+           'Regulation role type']
+        end
       end
 
       def data_row
