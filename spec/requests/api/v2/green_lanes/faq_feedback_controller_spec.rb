@@ -8,10 +8,7 @@ RSpec.describe Api::V2::GreenLanes::FaqFeedbackController, :v2 do
   end
 
   before do
-    allow(TradeTariffBackend).to receive_messages(
-      green_lanes_api_tokens: 'Trade-Tariff-Test',
-      uk?: false,
-    )
+    allow(TradeTariffBackend).to receive(:uk?).and_return(false)
   end
 
   describe 'POST to #create' do

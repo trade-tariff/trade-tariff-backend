@@ -2,7 +2,7 @@ RSpec.describe Api::V2::GreenLanes::GoodsNomenclaturesController, :v2 do
   before do
     TradeTariffRequest.time_machine_now = Time.current
     create :category_assessment, measure: gn.measures.first
-    allow(TradeTariffBackend).to receive_messages(service: 'xi', green_lanes_api_tokens: 'Trade-Tariff-Test')
+    allow(TradeTariffBackend).to receive(:service).and_return('xi')
   end
 
   let :gn do
@@ -87,7 +87,7 @@ RSpec.describe Api::V2::GreenLanes::GoodsNomenclaturesController, :v2 do
 
     context 'when presence of incorrect ENV VAR' do
       before do
-        allow(TradeTariffBackend).to receive(:green_lanes_api_tokens).and_return 'incorrect'
+        allow(TradeTariffBackend).to receive(:api_tokens).and_return 'incorrect'
       end
 
       it_behaves_like 'a unauthorised response for invalid bearer token'
@@ -95,7 +95,7 @@ RSpec.describe Api::V2::GreenLanes::GoodsNomenclaturesController, :v2 do
 
     context 'when absence of ENV VAR' do
       before do
-        allow(TradeTariffBackend).to receive(:green_lanes_api_tokens).and_return nil
+        allow(TradeTariffBackend).to receive(:api_tokens).and_return nil
       end
 
       it_behaves_like 'a unauthorised response for invalid bearer token'
@@ -111,7 +111,7 @@ RSpec.describe Api::V2::GreenLanes::GoodsNomenclaturesController, :v2 do
       end
 
       before do
-        allow(TradeTariffBackend).to receive(:green_lanes_api_tokens).and_return 'Trade-Tariff-Test, second-token'
+        allow(TradeTariffBackend).to receive(:api_tokens).and_return 'Trade-Tariff-Test, second-token'
       end
 
       it { is_expected.to have_http_status :success }
