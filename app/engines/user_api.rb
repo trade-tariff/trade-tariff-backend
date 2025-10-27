@@ -6,6 +6,7 @@ UserApi.routes.draw do
     scope module: :user do
       resource :users, only: %i[show update], controller: 'public_users'
       resources :subscriptions, only: %i[show destroy]
+      post 'subscriptions/batch', to: 'subscriptions#create_batch'
     end
   end
 end

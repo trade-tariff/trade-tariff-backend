@@ -51,4 +51,17 @@ RSpec.describe PublicUsers::Subscription do
       expect(subscription.metadata).to eq(metadata.stringify_keys)
     end
   end
+
+  describe '.scope' do
+    describe '.with_my_commodities_subscription' do
+      before do
+        create(:public_user, :with_my_commodities_subscription)
+        create(:public_user, :with_active_stop_press_subscription)
+      end
+
+      it 'returns subscriptions of type my_commodities' do
+        expect(described_class.with_my_commodities_subscription.count).to eq(1)
+      end
+    end
+  end
 end

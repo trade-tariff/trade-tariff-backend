@@ -54,6 +54,22 @@ RSpec.describe PublicUsers::User do
     end
   end
 
+  describe '#my_commodities_subscription' do
+    it 'returns id when user has an active subscription' do
+      user.add_subscription(subscription_type_id: Subscriptions::Type.my_commodities.id, active: true)
+      expect(user.my_commodities_subscription).to be_a(String)
+    end
+
+    it 'returns false when user has an inactive subscription' do
+      user.add_subscription(subscription_type_id: Subscriptions::Type.my_commodities.id, active: false)
+      expect(user.my_commodities_subscription).to be false
+    end
+
+    it 'returns false when user does not have a subscription' do
+      expect(user.my_commodities_subscription).to be false
+    end
+  end
+
   describe '#stop_press_subscription=' do
     context 'when user has subscription' do
       before do
@@ -91,6 +107,49 @@ RSpec.describe PublicUsers::User do
       context 'when value is false' do
         it 'disables the subscription' do
           user.stop_press_subscription = false
+          expect(user.subscriptions.first.active).to be false
+        end
+      end
+    end
+  end
+
+  describe '#my_commdities_subscription=' do
+    context 'when user has subscription' do
+      before do
+        user.add_subscription(subscription_type_id: Subscriptions::Type.my_commodities.id, active: true)
+      end
+
+      context 'when value is true' do
+        it 'enables the subscription' do
+          user.my_commodities_subscription = true
+          expect(user.subscriptions.first.active).to be true
+        end
+      end
+
+      context 'when value is false' do
+        it 'disables the subscription' do
+          user.my_commodities_subscription = false
+          expect(user.subscriptions.first.active).to be false
+        end
+      end
+    end
+
+    context 'when user has no subscription' do
+      context 'when value is true' do
+        it 'enables the subscription' do
+          user.my_commodities_subscription = true
+          expect(user.subscriptions.first.active).to be true
+        end
+
+        it 'adds an action log for subscribed' do
+          user.my_commodities_subscription = true
+          expect(user.action_logs.last.action).to eq PublicUsers::ActionLog::SUBSCRIBED
+        end
+      end
+
+      context 'when value is false' do
+        it 'disables the subscription' do
+          user.my_commodities_subscription = false
           expect(user.subscriptions.first.active).to be false
         end
       end

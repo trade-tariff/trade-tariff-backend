@@ -5,6 +5,13 @@ module PublicUsers
 
     many_to_one :user, class: 'PublicUsers::User'
     many_to_one :subscription_type, class: 'Subscriptions::Type'
+    one_to_many :subscription_targets, class: 'PublicUsers::SubscriptionTarget', key: :user_subscriptions_uuid, primary_key: :uuid
+
+    dataset_module do
+      def with_my_commodities_subscription
+        where(subscription_type: Subscriptions::Type.my_commodities)
+      end
+    end
 
     def unsubscribe
       if active
