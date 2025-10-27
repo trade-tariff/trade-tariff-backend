@@ -85,9 +85,9 @@ RSpec.describe Api::User::SubscriptionsController do
         expect(response).to have_http_status(:ok)
       end
 
-      it 'updates the subscription metadata' do
+      it 'updates the subscription metadata for commodity_codes' do
         subscription.reload
-        expect(subscription.metadata).to eq(targets)
+        expect(subscription.metadata['commodity_codes']).to eq(targets)
       end
 
       it 'updates subscription targets with a commodity and ignores the other two' do

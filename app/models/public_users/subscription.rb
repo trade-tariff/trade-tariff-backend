@@ -8,8 +8,8 @@ module PublicUsers
     one_to_many :subscription_targets, class: 'PublicUsers::SubscriptionTarget', key: :user_subscriptions_uuid, primary_key: :uuid
 
     dataset_module do
-      def with_my_commodities_subscription
-        where(subscription_type: Subscriptions::Type.my_commodities)
+      def with_subscription_type(type)
+        where(subscription_type: type)
       end
     end
 
@@ -28,6 +28,23 @@ module PublicUsers
 
     def metadata=(value)
       self[:metadata] = value.is_a?(String) ? value : value.to_json
+    end
+
+    def add_targets(targets:, target_type:)
+      return if targets.blank?
+
+      target_dataset = subscription_targets_dataset.where(target_type: target_type, user_subscriptions_uuid: uuid)
+      PublicUsers::SubscriptionTarget.db.transaction do
+        target_dataset.delete
+        rows = targets.map do |target|
+          {
+            user_subscriptions_uuid: uuid,
+            target_id: target[:goods_nomenclature_sid],
+            target_type: target_type,
+          }
+        end
+        target_dataset.multi_insert(rows)
+      end
     end
   end
 end
