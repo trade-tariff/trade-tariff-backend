@@ -17,6 +17,7 @@ module Api
 
       def create_batch
         batcher.new.call(subscription_params[:targets], @current_user)
+        @subscription.refresh
         render json: serialize(@subscription), status: :ok
       rescue ArgumentError => e
         render json: serialize_errors({ error: e.message }), status: :bad_request
