@@ -9,6 +9,8 @@ module "worker_uk" {
   subnet_ids                = data.aws_subnets.private.ids
   security_groups           = [data.aws_security_group.this.id]
   cloudwatch_log_group_name = "platform-logs-${var.environment}"
+  
+  cloudwatch_log_group_retention_in_days = 14
 
   service_count = 1
 
