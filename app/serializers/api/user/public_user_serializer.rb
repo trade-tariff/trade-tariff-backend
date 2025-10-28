@@ -13,7 +13,7 @@ module Api
         user.subscriptions_dataset.map do |subscription|
           {
             id: subscription.uuid,
-            subscription_type: subscription.subscription_type.name, # or .to_s depending on your model
+            subscription_type: subscription.subscription_type.name,
             active: subscription.active,
           }
         end
