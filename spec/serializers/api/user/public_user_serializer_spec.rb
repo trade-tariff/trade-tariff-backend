@@ -1,7 +1,7 @@
 RSpec.describe Api::User::PublicUserSerializer do
   subject(:serialized) { described_class.new(serializable).serializable_hash }
 
-  let(:serializable) { create(:public_user, email: 'oliver@email.com') }
+  let(:serializable) { create(:public_user, :with_my_commodities_subscription, email: 'oliver@email.com') }
 
   let(:expected) do
     {
@@ -12,6 +12,14 @@ RSpec.describe Api::User::PublicUserSerializer do
           chapter_ids: '01,99',
           email: 'oliver@email.com',
           stop_press_subscription: false,
+          my_commodities_subscription: serializable.my_commodities_subscription,
+          subscriptions: [
+            {
+              id: serializable.subscriptions_dataset.first.uuid,
+              subscription_type: 'my_commodities',
+              active: true,
+            },
+          ],
         },
       },
     }
