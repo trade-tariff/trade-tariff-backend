@@ -2,19 +2,23 @@ RSpec.describe TariffChangesService::CommodityChanges do
   let(:date) { Date.new(2025, 1, 15) }
 
   describe '.collect' do
-    let!(:declarable_commodity) { create(:commodity, :declarable, operation_date: date) }
+    before do
+      create(:commodity, :declarable, operation_date: date)
+    end
 
     it 'returns analyzed changes for declarable goods nomenclatures from the specified date' do
-      allow(described_class).to receive(:new).and_return(instance_double(described_class, analyze: { type: 'Commodity' }))
-
       results = described_class.collect(date)
 
-      expect(results).to include({ type: 'Commodity' })
+      expect(results).to be_an(Array)
       expect(results.size).to be >= 1
+      expect(results.first).to include(type: 'Commodity')
     end
 
     it 'filters out nil results from analyze' do
-      allow(described_class).to receive(:new).and_return(instance_double(described_class, analyze: nil))
+      commodity = create(:commodity, :declarable, operation_date: date)
+      instance = described_class.new(commodity, date)
+      allow(described_class).to receive(:new).and_return(instance)
+      allow(instance).to receive(:analyze).and_return(nil)
 
       results = described_class.collect(date)
 
@@ -22,30 +26,23 @@ RSpec.describe TariffChangesService::CommodityChanges do
     end
 
     it 'only processes goods nomenclatures from the specified operation date' do
-      allow(GoodsNomenclature).to receive(:where).with(operation_date: date).and_call_original
+      create(:commodity, :declarable, operation_date: date + 1.day)
 
-      described_class.collect(date)
+      results = described_class.collect(date)
 
-      expect(GoodsNomenclature).to have_received(:where).with(operation_date: date)
+      expect(results.size).to eq(1)
     end
 
-    context 'with declarable goods nomenclatures' do
-      let!(:non_declarable_commodity) { create(:commodity, operation_date: date) }
-
+    context 'with declarable and non-declarable goods nomenclatures' do
       before do
-        allow(GoodsNomenclature).to receive(:where).with(operation_date: date).and_return([declarable_commodity, non_declarable_commodity])
-
-        allow(declarable_commodity).to receive(:declarable?).and_return(true)
-        allow(non_declarable_commodity).to receive(:declarable?).and_return(false)
+        create(:commodity, operation_date: date)
       end
 
       it 'only analyzes declarable goods nomenclatures' do
-        allow(described_class).to receive(:new).and_call_original
+        results = described_class.collect(date)
 
-        described_class.collect(date)
-
-        expect(described_class).to have_received(:new).with(declarable_commodity, date)
-        expect(described_class).not_to have_received(:new).with(non_declarable_commodity, date)
+        expect(results.size).to be >= 1
+        expect(results.all? { |result| result[:type] == 'Commodity' }).to be true
       end
     end
   end

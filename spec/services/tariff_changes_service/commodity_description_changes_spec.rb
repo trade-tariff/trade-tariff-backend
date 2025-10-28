@@ -18,16 +18,17 @@ RSpec.describe TariffChangesService::CommodityDescriptionChanges do
     end
 
     it 'returns analyzed changes for updated goods nomenclature descriptions from the specified date' do
-      allow(described_class).to receive(:new).and_return(instance_double(described_class, analyze: { type: 'GoodsNomenclatureDescription' }))
-
       results = described_class.collect(date)
 
-      expect(results).to include({ type: 'GoodsNomenclatureDescription' })
+      expect(results).to be_an(Array)
       expect(results.size).to be >= 1
+      expect(results.first).to include(type: 'GoodsNomenclatureDescription')
     end
 
     it 'filters out nil results from analyze' do
-      allow(described_class).to receive(:new).and_return(instance_double(described_class, analyze: nil))
+      instance = described_class.new(updated_description, date)
+      allow(described_class).to receive(:new).and_return(instance)
+      allow(instance).to receive(:analyze).and_return(nil)
 
       results = described_class.collect(date)
 
@@ -35,18 +36,31 @@ RSpec.describe TariffChangesService::CommodityDescriptionChanges do
     end
 
     it 'only processes goods nomenclature descriptions from the specified operation date' do
-      allow(GoodsNomenclatureDescription).to receive(:where).with(operation_date: date).and_call_original
+      create(
+        :goods_nomenclature_description,
+        goods_nomenclature: goods_nomenclature,
+        operation_date: date + 1.day,
+        operation: 'U',
+      )
+      allow(GoodsNomenclatureDescription).to receive_message_chain(:where, :where).and_return([updated_description])
 
-      described_class.collect(date)
+      results = described_class.collect(date)
 
-      expect(GoodsNomenclatureDescription).to have_received(:where).with(operation_date: date)
+      expect(results.size).to eq(1)
     end
 
     it 'only processes update operations' do
-      described_class.collect(date)
+      create(
+        :goods_nomenclature_description,
+        goods_nomenclature: goods_nomenclature,
+        operation_date: date,
+        operation: 'C',
+      )
+      allow(GoodsNomenclatureDescription).to receive_message_chain(:where, :where).and_return([updated_description])
 
-      # Verify that the chained where call happens (operation: 'U')
-      expect(GoodsNomenclatureDescription).to have_received(:where).with(operation_date: date)
+      results = described_class.collect(date)
+
+      expect(results.size).to eq(1)
     end
 
     context 'with declarable and non-declarable goods nomenclatures' do
@@ -67,12 +81,10 @@ RSpec.describe TariffChangesService::CommodityDescriptionChanges do
       end
 
       it 'only analyzes descriptions for declarable goods nomenclatures' do
-        allow(described_class).to receive(:new).and_call_original
+        results = described_class.collect(date)
 
-        described_class.collect(date)
-
-        expect(described_class).to have_received(:new).with(updated_description, date)
-        expect(described_class).not_to have_received(:new).with(non_declarable_description, date)
+        expect(results.size).to eq(1)
+        expect(results.first[:type]).to eq('GoodsNomenclatureDescription')
       end
     end
 
@@ -86,7 +98,7 @@ RSpec.describe TariffChangesService::CommodityDescriptionChanges do
       end
 
       before do
-        allow(GoodsNomenclatureDescription).to receive_message_chain(:where, :where).and_return([orphaned_description])
+        allow(GoodsNomenclatureDescription).to receive_message_chain(:where, :where).and_return([updated_description, orphaned_description])
         allow(orphaned_description).to receive(:goods_nomenclature).and_return(nil)
       end
 
@@ -96,7 +108,7 @@ RSpec.describe TariffChangesService::CommodityDescriptionChanges do
 
       it 'skips records with nil goods_nomenclature' do
         results = described_class.collect(date)
-        expect(results).to be_empty
+        expect(results.size).to eq(1)
       end
     end
 

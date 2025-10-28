@@ -317,12 +317,18 @@ RSpec.describe TariffChangesService do
 
     context 'when processing measure changes' do
       context 'when goods nomenclature is not found' do
-        before do
-          query_result = double('QueryResult', first: nil) # rubocop:disable RSpec/VerifiedDoubles
-          allow(GoodsNomenclature).to receive(:where).with(goods_nomenclature_sid: 67_890).and_return(query_result)
-        end
-
         it 'does not add measure change records but processes other changes' do
+          # Create a measure change that references a non-existent goods_nomenclature_sid
+          service.instance_variable_set(:@changes, {
+            commodities: [commodity_change],
+            commodity_descriptions: [commodity_description_change],
+            measures: [{
+              type: 'Measure',
+              object_sid: 54_321,
+              goods_nomenclature_sid: 99_999,
+            }],
+          })
+
           initial_count = service.tariff_change_records.count
           service.generate_commodity_change_records
 
@@ -333,9 +339,7 @@ RSpec.describe TariffChangesService do
 
       context 'when goods nomenclature is declarable' do
         before do
-          query_result = double('QueryResult', first: goods_nomenclature) # rubocop:disable RSpec/VerifiedDoubles
-          allow(GoodsNomenclature).to receive(:where).with(goods_nomenclature_sid: 67_890).and_return(query_result)
-          allow(goods_nomenclature).to receive(:declarable?).and_return(true)
+          goods_nomenclature
         end
 
         it 'adds change record for the declarable goods nomenclature' do
@@ -358,11 +362,12 @@ RSpec.describe TariffChangesService do
       end
 
       context 'when goods nomenclature is not declarable but has declarable descendants' do
+        let(:non_declarable_parent) { create(:heading, goods_nomenclature_sid: 67_890) }
+        let(:declarable_child) { create(:commodity, :declarable, parent: non_declarable_parent) }
+
         before do
-          query_result = double('QueryResult', first: goods_nomenclature) # rubocop:disable RSpec/VerifiedDoubles
-          allow(GoodsNomenclature).to receive(:where).with(goods_nomenclature_sid: 67_890).and_return(query_result)
-          allow(goods_nomenclature).to receive_messages(declarable?: false, descendants: [descendant])
-          allow(descendant).to receive(:declarable?).and_return(true)
+          non_declarable_parent
+          declarable_child
         end
 
         it 'adds change records for declarable descendants' do
@@ -375,8 +380,8 @@ RSpec.describe TariffChangesService do
           expect(other_service.tariff_change_records).to include(
             hash_including(
               type: 'Measure',
-              goods_nomenclature_item_id: descendant.goods_nomenclature_item_id,
-              goods_nomenclature_sid: descendant.goods_nomenclature_sid,
+              goods_nomenclature_item_id: declarable_child.goods_nomenclature_item_id,
+              goods_nomenclature_sid: declarable_child.goods_nomenclature_sid,
             ),
           )
         end
@@ -384,9 +389,7 @@ RSpec.describe TariffChangesService do
 
       context 'when there is a matching commodity change' do
         before do
-          query_result = double('QueryResult', first: goods_nomenclature) # rubocop:disable RSpec/VerifiedDoubles
-          allow(GoodsNomenclature).to receive(:where).with(goods_nomenclature_sid: 67_890).and_return(query_result)
-          allow(goods_nomenclature).to receive(:declarable?).and_return(true)
+          goods_nomenclature
         end
 
         it 'does not add a change record' do
