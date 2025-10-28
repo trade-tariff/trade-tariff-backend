@@ -1,18 +1,11 @@
-DummyOperationKlass = Class.new do
-  def self.where(*_args)
-    []
-  end
-end
-
 RSpec.describe TariffChangesService::MeasureChanges do
   let(:date) { Date.new(2025, 1, 15) }
 
   describe '.collect' do
-    let(:operation_klass) { class_double(DummyOperationKlass) }
+    before { create(:measure, operation_date: date) }
 
     it 'uses the Measure operation class to find records from the specified date' do
-      allow(Measure).to receive(:operation_klass).and_return(operation_klass)
-      allow(operation_klass).to receive(:where).and_return([])
+      allow(Measure).to receive(:operation_klass).and_call_original
 
       described_class.collect(date)
 
@@ -20,12 +13,18 @@ RSpec.describe TariffChangesService::MeasureChanges do
     end
 
     it 'returns an array of analyzed results' do
-      allow(Measure).to receive(:operation_klass).and_return(operation_klass)
-      allow(operation_klass).to receive(:where).and_return([])
-
       results = described_class.collect(date)
 
       expect(results).to be_an(Array)
+      expect(results).not_to be_empty
+    end
+
+    it 'filters records by the specified date' do
+      create(:measure, operation_date: date + 1.day)
+
+      results = described_class.collect(date)
+
+      expect(results.size).to eq(1)
     end
   end
 
