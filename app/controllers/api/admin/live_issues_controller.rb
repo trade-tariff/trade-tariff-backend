@@ -15,7 +15,7 @@ module Api
         if live_issue.valid? && live_issue.save
           render json: serialize(live_issue), status: :created
         else
-          render json: serialize_errors(live_issue), status: :unprocessable_entity
+          render json: serialize_errors(live_issue), status: :unprocessable_content
         end
       end
 
@@ -26,7 +26,7 @@ module Api
           live_issue.update(live_issue_params)
           render json: serialize(live_issue), status: :ok
         rescue StandardError
-          render json: serialize_errors(live_issue), status: :unprocessable_entity
+          render json: serialize_errors(live_issue), status: :unprocessable_content
         end
       end
 

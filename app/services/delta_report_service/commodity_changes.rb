@@ -3,7 +3,6 @@ class DeltaReportService
     def self.collect(date)
       GoodsNomenclature
         .where(operation_date: date)
-        .order(:oid)
         .map { |record| new(record, date).analyze }
         .compact
     end
@@ -18,22 +17,18 @@ class DeltaReportService
 
     def analyze
       return if no_changes?
+      return if record.operation == :create && !record.declarable? # new non-declarable commodities are not relevant
 
       {
         type: 'GoodsNomenclature',
-        goods_nomenclature_item_id: record.goods_nomenclature_item_id,
+        goods_nomenclature_sid: record.goods_nomenclature_sid,
         date_of_effect:,
         description:,
         change: change || record.code,
       }
-    end
-
-    def previous_record
-      @previous_record ||= GoodsNomenclature.operation_klass
-                             .where(goods_nomenclature_sid: record.goods_nomenclature_sid)
-                             .where(Sequel.lit('oid < ?', record.oid))
-                             .order(Sequel.desc(:oid))
-                             .first
+    rescue StandardError => e
+      Rails.logger.error "Error with #{object_name} OID #{record.oid}"
+      raise e
     end
   end
 end

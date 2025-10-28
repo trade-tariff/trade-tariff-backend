@@ -1,16 +1,16 @@
 class DeltaReportService
   class ExcelGenerator
-    def self.call(change_records, date)
+    def self.call(change_records, dates)
       return if change_records.empty?
 
-      new(change_records, date).call
+      new(change_records, dates).call
     end
 
-    attr_accessor :change_records, :date, :workbook
+    attr_accessor :change_records, :dates, :workbook
 
-    def initialize(change_records, date)
+    def initialize(change_records, dates)
       @change_records = change_records
-      @date = date
+      @dates = dates
     end
 
     def call
@@ -18,213 +18,208 @@ class DeltaReportService
       package.use_shared_strings = true
       @workbook = package.workbook
 
-      styles = excel_cell_styles
-
-      workbook.add_worksheet(name: "Delta Report #{date.strftime('%Y-%m-%d')}") do |sheet|
-        # Add pre-header row
-        pre_header_styles = [styles[:pre_header]] * 8 + [styles[:pre_header_detail]] * 4
-        sheet.add_row(['Change Location', '', '', '', '', '', '', '', 'Change Detail', '', '', ''], style: pre_header_styles)
-        sheet.rows[0].height = 25
-        sheet.merge_cells('A1:H1')
-        sheet.merge_cells('I1:L1')
-
-        # Add header row
-        header_styles = [styles[:header]] * 8 + [styles[:header_detail]] * 4
-        sheet.add_row(excel_header_row, style: header_styles)
-
-        # Configure sheet view
-        sheet.auto_filter = excel_autofilter_range
-        sheet.sheet_view.pane do |pane|
-          pane.top_left_cell = 'A3'
-          pane.state = :frozen
-          pane.y_split = 2
-        end
-
-        @change_records.each do |record|
-          sheet.add_row(
-            build_excel_row(record),
-            types: excel_cell_types,
-            style: build_row_styles(styles, record),
-          )
-        end
-
-        sheet.column_widths(*excel_column_widths)
+      workbook.add_worksheet(name: 'Delta Report') do |sheet|
+        setup_sheet_formatting(sheet)
+        add_headers(sheet)
+        stream_data_rows(sheet)
+        configure_sheet_view(sheet)
+        set_column_widths(sheet)
       end
-
-      package.serialize("delta_report_#{date.strftime('%Y_%m_%d')}.xlsx") if Rails.env.development?
 
       package
     end
 
+    private
+
+    def setup_sheet_formatting(sheet)
+      sheet.sheet_format_pr.default_row_height = 40.0
+      sheet.sheet_format_pr.custom_height = false
+    end
+
+    def add_headers(sheet)
+      # Title row
+      sheet.add_row(['Changes to your Commodity Watchlist'], style: workbook.styles.add_style(b: true, sz: 24))
+      sheet.rows[0].height = 40
+
+      # Subtitle row
+      sheet.add_row(["Published #{dates}"], style: workbook.styles.add_style(b: false, sz: 16))
+      sheet.rows[1].height = 25
+
+      # Empty row
+      sheet.add_row([''])
+      sheet.rows[2].height = 20
+
+      # Pre-header row
+      pre_header_styles = [cell_styles[:pre_header]] * 11
+      sheet.add_row(['Is this change relevant to your business (useful filters)', '', '', 'Impacted Commodity details', '', '', 'Change details', '', '', 'Useful Links', ''], style: pre_header_styles)
+      sheet.rows[3].height = 40
+
+      # Merge pre-header cells
+      sheet.merge_cells('A4:C4')
+      sheet.merge_cells('D4:F4')
+      sheet.merge_cells('G4:I4')
+      sheet.merge_cells('J4:K4')
+
+      # Header row
+      header_styles = [cell_styles[:header]] * 11
+      sheet.add_row(excel_header_row, style: header_styles)
+      sheet.rows[4].height = 60
+    end
+
+    def stream_data_rows(sheet)
+      index = 0
+
+      @change_records.each do |date_records|
+        # Process in smaller batches to avoid memory issues
+        date_records.each_slice(100) do |batch|
+          batch.each do |record|
+            sheet.add_row(
+              build_excel_row(record),
+              types: [:string] * 11,
+              style: build_row_styles(is_even_row: index.even?),
+            )
+            index += 1
+          end
+        end
+      end
+    end
+
+    def configure_sheet_view(sheet)
+      sheet.auto_filter = excel_autofilter_range
+      sheet.sheet_view.pane do |pane|
+        pane.top_left_cell = 'A6'
+        pane.state = :frozen
+        pane.y_split = 5
+      end
+    end
+
+    def set_column_widths(sheet)
+      sheet.column_widths(*excel_column_widths)
+    end
+
     def excel_header_row
       [
+        "Import/Export\n(if applicable)",
+        "Impacted Geographical area\n(if applicable)",
+        "Impacted Measure\n(if applicable)",
         'Chapter',
         'Commodity Code',
-        'Commodity description',
-        'Import/Export',
-        'Measure Type',
-        'Measure Geo area',
-        'Additional code',
-        'Duty Expression',
-        'Type of change',
-        'Updated code/data',
-        'Date of effect',
-        'Operation Date',
+        'Commodity Code description',
+        'Change Type',
+        'New / Impacted Detail',
+        'Change Date of Effect',
+        'View OTT for Change Date of Effect',
+        'API call for the changed Commodity',
       ]
     end
 
     def excel_autofilter_range
-      "A2:#{('A'.ord + excel_header_row.size - 1).chr}2"
+      "A5:#{('A'.ord + excel_header_row.size - 3).chr}5"
     end
 
     def excel_column_widths
       [
+        20,  # Import/Export
+        30,  # Geo Area
+        30,  # Measure
         15,  # Chapter
         20,  # Commodity Code
         50,  # Commodity Description
-        20,  # Import/Export
-        30,  # Measure Type
-        30,  # Geo Area
-        30,  # Additional Code
-        30,  # Duty Expression
-        30,  # Type of Change
+        30,  # Change type
         30,  # Updated code/data
         22,  # Date of effect
-        20,  # Operation Date
+        80,  # OTT Link
+        60,  # API Link
       ]
     end
 
-    def excel_cell_types
-      [
-        :string,  # Chapter (for number formatting)
-        :string,  # Commodity Code (for number formatting)
-        :string,  # Commodity Description
-        :string,  # Import/Export
-        :string,  # Measure Type
-        :string,  # Geo Area
-        :string,  # Additional Code
-        :string,  # Duty Expression
-        :string,  # Type of Change
-        :string,  # Updated code/data
-        :string,  # Date of effect
-        :string,  # Operation Date
-      ]
-    end
-
-    def excel_cell_styles
-      {
+    def cell_styles(bg_colour = nil)
+      @cell_styles ||= {}
+      @cell_styles[bg_colour] ||= {
         pre_header: workbook.styles.add_style(
           b: true,
-          bg_color: 'A6A6A6',
-          fg_color: '000000',
-          border: { style: :thin, color: '000000' },
-          alignment: { horizontal: :left, vertical: :center, wrap_text: true },
-          sz: 16,
-        ),
-        pre_header_detail: workbook.styles.add_style(
-          b: true,
-          bg_color: 'F1A983',
-          fg_color: '000000',
+          bg_color: '215c98',
+          fg_color: 'ffffff',
           border: { style: :thin, color: '000000' },
           alignment: { horizontal: :left, vertical: :center, wrap_text: true },
           sz: 16,
         ),
         header: workbook.styles.add_style(
           b: true,
-          bg_color: 'D9D9D9',
-          fg_color: '000000',
+          bg_color: '0e769e',
+          fg_color: 'ffffff',
           border: { style: :thin, color: 'D3D3D3' },
-          alignment: { horizontal: :center, vertical: :center, wrap_text: true },
-        ),
-        header_detail: workbook.styles.add_style(
-          b: true,
-          bg_color: 'FBE2D5',
-          fg_color: '000000',
-          border: { style: :thin, color: 'D3D3D3' },
-          alignment: { horizontal: :center, vertical: :center, wrap_text: true },
+          alignment: { horizontal: :left, vertical: :center, wrap_text: true },
         ),
         date: workbook.styles.add_style(
+          bg_color: bg_colour,
           num_fmt: 14,
           border: { style: :thin, color: 'D3D3D3' },
           alignment: { horizontal: :center, vertical: :center },
         ),
         commodity_code: workbook.styles.add_style(
+          bg_color: bg_colour,
           format_code: '0000000000',
           border: { style: :thin, color: 'D3D3D3' },
           alignment: { horizontal: :center, vertical: :center },
         ),
         chapter: workbook.styles.add_style(
+          bg_color: bg_colour,
           format_code: '00',
           border: { style: :thin, color: 'D3D3D3' },
           alignment: { horizontal: :center, vertical: :center },
         ),
         text: workbook.styles.add_style(
+          bg_color: bg_colour,
           border: { style: :thin, color: 'D3D3D3' },
           alignment: { horizontal: :left, vertical: :center, wrap_text: true },
         ),
         center_text: workbook.styles.add_style(
+          bg_color: bg_colour,
           border: { style: :thin, color: 'D3D3D3' },
           alignment: { horizontal: :center, vertical: :center },
         ),
-        change_added: workbook.styles.add_style(
-          bg_color: 'D5F4E6',
-          border: { style: :thin, color: 'D3D3D3' },
-          alignment: { horizontal: :left, vertical: :center, wrap_text: true },
-        ),
-        change_removed: workbook.styles.add_style(
-          bg_color: 'FADAD7',
-          border: { style: :thin, color: 'D3D3D3' },
-          alignment: { horizontal: :left, vertical: :center, wrap_text: true },
-        ),
-        change_updated: workbook.styles.add_style(
-          bg_color: 'FFF2CC',
+        bold_text: workbook.styles.add_style(
+          bg_color: bg_colour,
+          b: true,
           border: { style: :thin, color: 'D3D3D3' },
           alignment: { horizontal: :left, vertical: :center, wrap_text: true },
         ),
       }
     end
 
-    def build_row_styles(styles, record)
-      # Determine the change type style based on the type of change
-      change_style = case record[:type_of_change]
-                     when /added/i
-                       styles[:change_added]
-                     when /removed/i
-                       styles[:change_removed]
-                     else
-                       styles[:change_updated]
-                     end
+    def build_row_styles(is_even_row: true)
+      # Background color for alternating rows
+      bg_color = is_even_row ? nil : 'd9d9d9'
 
       [
-        styles[:chapter],        # Chapter
-        styles[:commodity_code], # Commodity Code
-        styles[:text],           # Commodity Description
-        styles[:text],           # Import/Export
-        styles[:text],           # Measure Type
-        styles[:text],           # Geo Area
-        styles[:text],           # Additional Code
-        styles[:text],           # Duty Expression
-        change_style,            # Type of Change (conditional styling)
-        styles[:text],           # Updated code/data
-        styles[:date],           # Date of effect
-        styles[:date],           # Operation Date
+        cell_styles(bg_color)[:text],           # Import/Export
+        cell_styles(bg_color)[:text],           # Geo Area
+        cell_styles(bg_color)[:text],           # Measure Type
+        cell_styles(bg_color)[:chapter],        # Chapter
+        cell_styles(bg_color)[:commodity_code], # Commodity Code
+        cell_styles(bg_color)[:text],           # Commodity Description
+        cell_styles(bg_color)[:bold_text],      # Type of Change
+        cell_styles(bg_color)[:text],           # Updated code/data
+        cell_styles(bg_color)[:date],           # Date of effect
+        cell_styles(bg_color)[:text],           # OTT Link
+        cell_styles(bg_color)[:text],           # API Link
       ]
     end
 
     def build_excel_row(record)
       [
+        record[:import_export],
+        record[:geo_area],
+        record[:measure_type],
         record[:chapter],
         record[:commodity_code],
         record[:commodity_code_description],
-        record[:import_export],
-        record[:measure_type],
-        record[:geo_area],
-        record[:additional_code],
-        record[:duty_expression],
         record[:type_of_change],
         record[:change],
         record[:date_of_effect]&.strftime('%Y-%m-%d'),
-        record[:operation_date],
+        record[:ott_url],
+        record[:api_url],
       ]
     end
   end

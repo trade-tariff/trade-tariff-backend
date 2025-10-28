@@ -11,9 +11,9 @@ class SearchService
 
     attr_reader :query_string, :results, :date, :resource_id
 
-    def initialize(query_string, date, resource_id = nil)
+    def initialize(query_string, resource_id = nil)
       @query_string = query_string.to_s.squish.downcase
-      @date = date
+      @date = TradeTariffRequest.time_machine_now
       @resource_id = resource_id
     end
 

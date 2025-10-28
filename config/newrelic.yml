@@ -21,6 +21,15 @@ common:
   distributed_tracing:
     enabled: true
 
+  # Transaction tracing settings for slow requests and errors
+  transaction_tracer:
+    enabled: true
+    transaction_threshold: <%= ENV['NEW_RELIC_TRANSACTION_THRESHOLD'] || 0.400 %>
+    record_sql: obfuscated
+  span_events:
+    enabled: <%= ENV['NEW_RELIC_SPAN_EVENTS_ENABLED'] || true %>
+    max_samples_stored: <%= ENV['NEW_RELIC_MAX_SPAN_SAMPLES'] || 1000 %>
+
   # To disable the agent regardless of other settings, uncomment the following:
 
   # agent_enabled: false

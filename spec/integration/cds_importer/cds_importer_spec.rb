@@ -4,11 +4,18 @@ RSpec.describe CdsImporter do
   # This xml file is empty
   let(:cds_update) { TariffSynchronizer::CdsUpdate.new(filename: 'tariff_dailyExtract_v1_20201004T235959.gzip') }
 
-  describe '#import' do
+  after { FileUtils.rm_rf(File.join(TariffSynchronizer.root_path, 'cds_updates')) }
+
+  describe '#build' do
     it 'creates new instance of XmlProcessor' do
       allow(CdsImporter::XmlProcessor).to receive(:new).and_call_original
+      allow(CdsImporter::ExcelWriter).to receive(:new).with(cds_update.filename).and_call_original
+      allow(CdsImporter::RecordInserter).to receive(:new).with(cds_update.filename).and_call_original
+
       importer.import
-      expect(CdsImporter::XmlProcessor).to have_received(:new).with(cds_update.filename)
+      expect(CdsImporter::XmlProcessor).to have_received(:new).with(cds_update.filename, kind_of(Array))
+      expect(CdsImporter::RecordInserter).to have_received(:new)
+      expect(CdsImporter::ExcelWriter).to have_received(:new)
     end
 
     it 'returns hash of inserted records' do
@@ -46,7 +53,14 @@ RSpec.describe CdsImporter do
   end
 
   describe 'XmlProcessor' do
-    let(:processor) { CdsImporter::XmlProcessor.new(cds_update.filename) }
+    let(:db_handler) { CdsImporter::RecordInserter.new(cds_update.filename) }
+    let(:excel_handler) { CdsImporter::ExcelWriter.new(cds_update.filename) }
+    let(:processor) { CdsImporter::XmlProcessor.new(cds_update.filename, [db_handler, excel_handler]) }
+
+    before do
+      allow(db_handler).to receive(:process_record).and_call_original
+      allow(excel_handler).to receive(:process_record).and_call_original
+    end
 
     context 'with valid import file' do
       it 'invokes EntityMapper' do
@@ -55,33 +69,53 @@ RSpec.describe CdsImporter do
         processor.process_xml_node('AdditionalCode', {})
 
         expect(CdsImporter::EntityMapper).to have_received(:new)
-      end
-
-      context 'when batch size is reached' do
-        before do
-          allow(TradeTariffBackend).to receive(:cds_importer_batch_size).and_return(1)
-        end
-
-        it 'invokes RecordInserter' do
-          allow(CdsImporter::RecordInserter).to receive(:new).with(kind_of(Array), cds_update.filename).and_call_original
-
-          processor.process_xml_node('AdditionalCode', {})
-
-          expect(CdsImporter::RecordInserter).to have_received(:new)
-        end
+        expect(db_handler).to have_received(:process_record)
+        expect(excel_handler).to have_received(:process_record)
       end
     end
 
     context 'when some error appears' do
       before do
         # rubocop:disable RSpec/AnyInstance
-        allow_any_instance_of(CdsImporter::EntityMapper).to receive(:import).and_raise(StandardError)
+        allow_any_instance_of(CdsImporter::EntityMapper).to receive(:build).and_raise(StandardError)
         # rubocop:enable RSpec/AnyInstance
       end
 
       it 'raises ImportException' do
         expect { processor.process_xml_node('AdditionalCode', {}) }.to raise_error(CdsImporter::ImportException)
       end
+    end
+  end
+
+  describe 'Excel writer' do
+    let(:cds_update) { TariffSynchronizer::CdsUpdate.new(filename: 'tariff_dailyExtract_v1_20251006T125959.gzip') }
+    let(:excel_filename) { 'CDS updates 2025-10-06.xlsx' }
+
+    it 'creates CDS updates file' do
+      importer.import
+      expect(File).to exist(File.join(TariffSynchronizer.root_path, 'cds_updates', excel_filename))
+    end
+  end
+
+  describe 'Excel writer errors handled and does not stop db updates' do
+    let(:record_inserter) { instance_spy(CdsImporter::RecordInserter) }
+    let(:excel_writer) { instance_spy(CdsImporter::ExcelWriter) }
+
+    let(:processor) { CdsImporter::XmlProcessor.new(cds_update.filename, [excel_writer, record_inserter]) }
+
+    before do
+      # Excel writer fails when writing records
+      allow(excel_writer).to receive(:write).and_raise(StandardError, 'Excel failed')
+
+      allow(CdsImporter::EntityMapper).to receive(:new).with('AdditionalCode', { 'filename' => cds_update.filename }).and_call_original
+    end
+
+    it 'continues DB updates even if Excel writer raises error' do
+      expect {
+        processor.process_xml_node('AdditionalCode', {})
+      }.not_to raise_error
+
+      expect(record_inserter).to have_received(:process_record)
     end
   end
 end

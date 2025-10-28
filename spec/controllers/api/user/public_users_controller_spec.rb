@@ -116,7 +116,7 @@ RSpec.describe Api::User::PublicUsersController do
           expect(JSON.parse(api_response.body)).to eq expected
         end
 
-        it { is_expected.to have_http_status :unprocessable_entity }
+        it { is_expected.to have_http_status :unprocessable_content }
       end
 
       context 'when subscription is being updated' do
@@ -130,7 +130,7 @@ RSpec.describe Api::User::PublicUsersController do
           }
         end
 
-        context 'when activating the subscription' do
+        context 'when activating a stop press subscription' do
           let(:active) { true }
 
           it 'activates the subscription' do
@@ -145,7 +145,7 @@ RSpec.describe Api::User::PublicUsersController do
           it { is_expected.to have_http_status :ok }
         end
 
-        context 'when deactivating the subscription' do
+        context 'when deactivating a stop press subscription' do
           let(:active) { false }
 
           it 'deactivates the subscription' do
@@ -174,7 +174,7 @@ RSpec.describe Api::User::PublicUsersController do
             expect(JSON.parse(api_response.body)).to eq expected
           end
 
-          it { is_expected.to have_http_status :unprocessable_entity }
+          it { is_expected.to have_http_status :unprocessable_content }
         end
       end
     end

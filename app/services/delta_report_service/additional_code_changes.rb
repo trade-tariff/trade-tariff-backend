@@ -1,11 +1,8 @@
 class DeltaReportService
   class AdditionalCodeChanges < BaseChanges
-    include MeasurePresenter
-
     def self.collect(date)
       AdditionalCode
         .where(operation_date: date)
-        .order(:oid)
         .map { |record| new(record, date).analyze }
         .compact
     end
@@ -14,25 +11,26 @@ class DeltaReportService
       'Additional Code'
     end
 
-    def analyze
-      return if no_changes?
-
-      {
-        type: 'AdditionalCode',
-        additional_code_sid: record.additional_code_sid,
-        additional_code: additional_code(record),
-        description:,
-        date_of_effect:,
-        change: change || '',
-      }
+    def excluded_columns
+      super + %i[national]
     end
 
-    def previous_record
-      @previous_record ||= AdditionalCode.operation_klass
-                             .where(additional_code_sid: record.additional_code_sid)
-                             .where(Sequel.lit('oid < ?', record.oid))
-                             .order(Sequel.desc(:oid))
-                             .first
+    def analyze
+      return if no_changes?
+      return if record.operation == :create
+
+      TimeMachine.at(record.validity_start_date) do
+        {
+          type: 'AdditionalCode',
+          additional_code_sid: record.additional_code_sid,
+          description:,
+          date_of_effect:,
+          change: change || additional_code(record),
+        }
+      end
+    rescue StandardError => e
+      Rails.logger.error "Error with #{object_name} OID #{record.oid}"
+      raise e
     end
   end
 end

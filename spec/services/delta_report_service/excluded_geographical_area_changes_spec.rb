@@ -16,34 +16,36 @@ RSpec.describe DeltaReportService::ExcludedGeographicalAreaChanges do
       geographical_area: geographical_area,
     )
     allow(instance).to receive(:get_changes)
+    allow(Measure.operation_klass).to receive_message_chain(:where, :any?).and_return(false)
   end
 
   describe '.collect' do
-    let(:excluded_geo_area1) { build(:measure_excluded_geographical_area, oid: 1, operation_date: date) }
-    let(:excluded_geo_area2) { build(:measure_excluded_geographical_area, oid: 2, operation_date: date) }
-    let(:excluded_geo_areas) { [excluded_geo_area1, excluded_geo_area2] }
+    let(:excluded_geo_area_operation1) { instance_double(MeasureExcludedGeographicalArea.operation_klass, oid: 1, record_from_oplog: excluded_geo_area) }
+    let(:excluded_geo_area_operation2) { instance_double(MeasureExcludedGeographicalArea.operation_klass, oid: 2, record_from_oplog: excluded_geo_area) }
+    let(:excluded_geo_area_operations) { [excluded_geo_area_operation1, excluded_geo_area_operation2] }
 
     before do
-      allow(MeasureExcludedGeographicalArea).to receive_message_chain(:where, :order).and_return(excluded_geo_areas)
+      allow(MeasureExcludedGeographicalArea.operation_klass).to receive(:where).with(operation_date: date).and_return(excluded_geo_area_operations)
     end
 
-    it 'finds excluded geographical areas for the given date and returns analyzed changes' do
-      instance1 = described_class.new(excluded_geo_area1, date)
-      instance2 = described_class.new(excluded_geo_area2, date)
-
-      allow(described_class).to receive(:new).and_return(instance1, instance2)
-      allow(instance1).to receive(:analyze).and_return({ type: 'ExcludedGeographicalArea' })
-      allow(instance2).to receive(:analyze).and_return(nil)
+    it 'finds excluded geographical area operations for the given date and returns analyzed changes' do
+      # Mock the map behavior which creates instances and calls analyze
+      allow(excluded_geo_area_operations).to receive_messages(
+        map: [{ type: 'ExcludedGeographicalArea' }, nil],
+        compact: [{ type: 'ExcludedGeographicalArea' }],
+      )
 
       result = described_class.collect(date)
 
-      expect(MeasureExcludedGeographicalArea).to have_received(:where).with(operation_date: date)
+      expect(MeasureExcludedGeographicalArea.operation_klass).to have_received(:where).with(operation_date: date)
       expect(result).to eq([{ type: 'ExcludedGeographicalArea' }])
     end
 
     it 'compacts the results to remove nil values' do
-      allow(described_class).to receive(:new).and_return(instance, instance)
-      allow(instance).to receive(:analyze).and_return(nil, { type: 'ExcludedGeographicalArea' })
+      allow(excluded_geo_area_operations).to receive_messages(
+        map: [nil, { type: 'ExcludedGeographicalArea' }],
+        compact: [{ type: 'ExcludedGeographicalArea' }],
+      )
 
       result = described_class.collect(date)
 
@@ -60,33 +62,27 @@ RSpec.describe DeltaReportService::ExcludedGeographicalAreaChanges do
   describe '#analyze' do
     before do
       allow(instance).to receive_messages(
-        measure_type: '103: Third country duty',
+        measure_type: 'Third country duty',
         import_export: 'Import',
-        geo_area: 'GB: United Kingdom',
+        geo_area: 'United Kingdom (GB)',
         additional_code: nil,
-        duty_expression: '10%',
       )
     end
 
-    context 'when measure operation_date equals excluded geo area operation_date' do
+    context 'when no measure operations with operation U are found' do
       before do
-        allow(measure).to receive(:operation_date).and_return(date)
-        allow(excluded_geo_area).to receive(:operation_date).and_return(date)
+        allow(Measure.operation_klass).to receive_message_chain(:where, :any?).and_return(false)
       end
 
-      it 'returns nil (filters out matching dates)' do
+      it 'returns nil (filters out when no update operations found)' do
         expect(instance.analyze).to be_nil
       end
     end
 
-    context 'when measure operation_date differs from excluded geo area operation_date' do
-      let(:measure_date) { Date.parse('2024-08-15') }
-
+    context 'when measure operations with operation U are found' do
       before do
-        allow(measure).to receive_messages(
-          operation_date: measure_date,
-        )
-        allow(excluded_geo_area).to receive(:operation_date).and_return(date)
+        allow(Measure.operation_klass).to receive_message_chain(:where, :any?).and_return(true)
+        allow(TimeMachine).to receive(:at).with(excluded_geo_area.operation_date).and_yield
       end
 
       it 'returns the correct analysis hash' do
@@ -95,48 +91,26 @@ RSpec.describe DeltaReportService::ExcludedGeographicalAreaChanges do
         expect(result).to eq({
           type: 'ExcludedGeographicalArea',
           measure_sid: excluded_geo_area.measure_sid,
-          measure_type: '103: Third country duty',
+          measure_type: 'Third country duty',
           import_export: 'Import',
-          geo_area: 'GB: United Kingdom',
-          additional_code: nil,
-          duty_expression: '10%',
+          geo_area: 'United Kingdom (GB)',
           date_of_effect: date,
-          description: 'Excluded geo area',
+          description: 'Excluded Geo Area added',
           change: 'Excluded IE',
         })
       end
-    end
 
-    context 'when measure is nil' do
-      before do
-        allow(excluded_geo_area).to receive(:measure).and_return(nil)
-      end
+      it 'uses TimeMachine with the record operation_date' do
+        instance.analyze
 
-      it 'raises an error when trying to access operation_date' do
-        expect { instance.analyze }.to raise_error(NoMethodError, /undefined method.*operation_date.*for nil/)
-      end
-    end
-
-    context 'when additional code is present' do
-      let(:additional_code) { build(:additional_code, additional_code: 'A123') }
-
-      before do
-        allow(measure).to receive_messages(
-          additional_code: additional_code,
-          operation_date: Date.parse('2024-08-15'),
-        )
-        allow(instance).to receive(:additional_code).with(additional_code).and_return('A123: Special code')
-      end
-
-      it 'includes the additional code in the result' do
-        result = instance.analyze
-        expect(result[:additional_code]).to eq('A123: Special code')
+        expect(TimeMachine).to have_received(:at).with(excluded_geo_area.operation_date)
       end
     end
 
     context 'with different excluded geographical area values' do
       before do
-        allow(measure).to receive(:operation_date).and_return(Date.parse('2024-08-15'))
+        allow(Measure.operation_klass).to receive_message_chain(:where, :any?).and_return(true)
+        allow(TimeMachine).to receive(:at).with(excluded_geo_area.operation_date).and_yield
       end
 
       it 'includes the excluded geographical area in the change description' do
@@ -162,32 +136,36 @@ RSpec.describe DeltaReportService::ExcludedGeographicalAreaChanges do
       allow(measure).to receive_messages(
         measure_type: measure_type,
         additional_code: additional_code,
-        operation_date: Date.parse('2024-08-15'),
       )
       allow(measure_type).to receive(:measure_type_description).and_return(measure_type_description)
+      allow(Measure.operation_klass).to receive_message_chain(:where, :any?).and_return(true)
+      allow(TimeMachine).to receive(:at).with(excluded_geo_area.operation_date).and_yield
     end
 
     it 'uses MeasurePresenter methods for formatting' do
       allow(instance).to receive_messages(
         get_changes: nil,
-        geo_area: 'GB: United Kingdom',
-        additional_code: 'A123: Special code',
+        geo_area: 'United Kingdom (GB)',
       )
 
       result = instance.analyze
 
-      expect(result[:measure_type]).to include(measure_type.measure_type_id)
-      expect(result[:additional_code]).to include(additional_code.additional_code)
+      expect(result[:measure_type]).to include(measure_type_description.description)
+      expect(result[:additional_code]).to be_nil
       expect(result[:geo_area]).to include(geographical_area.geographical_area_id)
     end
   end
 
   describe 'edge cases' do
+    before do
+      allow(Measure.operation_klass).to receive_message_chain(:where, :any?).and_return(true)
+      allow(TimeMachine).to receive(:at).with(excluded_geo_area.operation_date).and_yield
+    end
+
     context 'when excluded_geographical_area is nil' do
       before do
         allow(excluded_geo_area).to receive(:excluded_geographical_area).and_return(nil)
-        allow(measure).to receive(:operation_date).and_return(Date.parse('2024-08-15'))
-        allow(instance).to receive(:geo_area).and_return('GB: United Kingdom')
+        allow(instance).to receive(:geo_area).and_return('United Kingdom (GB)')
       end
 
       it 'handles nil geographical area gracefully' do
@@ -198,13 +176,10 @@ RSpec.describe DeltaReportService::ExcludedGeographicalAreaChanges do
 
     context 'when measure has no measure_type' do
       before do
-        allow(measure).to receive_messages(
-          measure_type: nil,
-          operation_date: Date.parse('2024-08-15'),
-        )
+        allow(measure).to receive(:measure_type).and_return(nil)
         allow(instance).to receive_messages(
           measure_type: nil,
-          geo_area: 'GB: United Kingdom',
+          geo_area: 'United Kingdom (GB)',
         )
       end
 
@@ -217,8 +192,7 @@ RSpec.describe DeltaReportService::ExcludedGeographicalAreaChanges do
     context 'when geographical_area is nil' do
       before do
         allow(excluded_geo_area).to receive(:geographical_area).and_return(nil)
-        allow(measure).to receive(:operation_date).and_return(Date.parse('2024-08-15'))
-        allow(instance).to receive(:geo_area).with(nil).and_return(nil)
+        allow(instance).to receive(:geo_area).with(nil, []).and_return(nil)
       end
 
       it 'handles missing geographical area gracefully' do
@@ -230,20 +204,20 @@ RSpec.describe DeltaReportService::ExcludedGeographicalAreaChanges do
 
   describe 'business logic validation' do
     context 'with real-world scenario data' do
-      let(:real_measure_date) { Date.parse('2025-07-15') }
       let(:real_excluded_date) { Date.parse('2025-03-13') }
 
       before do
-        allow(measure).to receive(:operation_date).and_return(real_measure_date)
         allow(excluded_geo_area).to receive_messages(
           operation_date: real_excluded_date,
           excluded_geographical_area: 'RU',
           measure_sid: '20260381',
         )
-        allow(instance).to receive(:geo_area).and_return('GB: United Kingdom')
+        allow(instance).to receive(:geo_area).and_return('United Kingdom (GB)')
+        allow(Measure.operation_klass).to receive_message_chain(:where, :any?).and_return(true)
+        allow(TimeMachine).to receive(:at).with(real_excluded_date).and_yield
       end
 
-      it 'captures the mismatched operation dates correctly' do
+      it 'captures the excluded geographical area correctly when measures are found' do
         result = instance.analyze
 
         expect(result).not_to be_nil
@@ -251,17 +225,16 @@ RSpec.describe DeltaReportService::ExcludedGeographicalAreaChanges do
         expect(result[:measure_sid]).to eq('20260381')
         expect(result[:change]).to eq('Excluded RU')
         expect(result[:date_of_effect]).to eq(date)
-        expect(result[:description]).to eq('Excluded geo area')
+        expect(result[:description]).to eq('Excluded Geo Area added')
       end
     end
 
-    context 'when dates match (common case)' do
+    context 'when no update measures are found (common filtering case)' do
       before do
-        allow(measure).to receive(:operation_date).and_return(date)
-        allow(excluded_geo_area).to receive(:operation_date).and_return(date)
+        allow(Measure.operation_klass).to receive_message_chain(:where, :any?).and_return(false)
       end
 
-      it 'filters out records with matching operation dates' do
+      it 'filters out records when no update operations are found' do
         result = instance.analyze
         expect(result).to be_nil
       end

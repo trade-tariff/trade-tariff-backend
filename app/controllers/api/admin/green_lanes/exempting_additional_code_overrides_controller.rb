@@ -24,7 +24,7 @@ module Api
                    status: :created
           else
             render json: serialize_errors(eco),
-                   status: :unprocessable_entity
+                   status: :unprocessable_content
           end
         end
 

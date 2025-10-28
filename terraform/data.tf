@@ -59,10 +59,14 @@ data "aws_secretsmanager_secret_version" "backend_xi_api_configuration" {
   secret_id = data.aws_secretsmanager_secret.backend_xi_api_configuration.id
 }
 
-data "aws_secretsmanager_secret" "db_replicate_configuration" {
-  name = "db-replicate-configuration"
+data "aws_secretsmanager_secret" "backend_job_configuration" {
+  name = "backend-job-configuration"
 }
 
-data "aws_secretsmanager_secret_version" "db_replicate_configuration" {
-  secret_id = data.aws_secretsmanager_secret.db_replicate_configuration.id
+data "aws_secretsmanager_secret_version" "backend_job_configuration" {
+  secret_id = data.aws_secretsmanager_secret.backend_job_configuration.id
+}
+
+data "aws_sns_topic" "slack_topic" {
+  name = "slack-topic"
 }

@@ -29,7 +29,7 @@ RSpec.describe DeltaReportService::AdditionalCodeChanges do
     let(:additional_codes) { [additional_code1, additional_code2] }
 
     before do
-      allow(AdditionalCode).to receive_message_chain(:where, :order).and_return(additional_codes)
+      allow(AdditionalCode).to receive(:where).and_return(additional_codes)
     end
 
     it 'finds additional codes for the given date and returns analyzed changes' do
@@ -66,6 +66,22 @@ RSpec.describe DeltaReportService::AdditionalCodeChanges do
     end
   end
 
+  describe '#excluded_columns' do
+    it 'includes measure-specific excluded columns' do
+      expected = instance.send(:excluded_columns)
+      expect(expected).to include(:national)
+    end
+
+    it 'includes base excluded columns' do
+      base_excluded = %i[oid operation operation_date created_at updated_at filename]
+      expected = instance.send(:excluded_columns)
+
+      base_excluded.each do |column|
+        expect(expected).to include(column)
+      end
+    end
+  end
+
   describe '#analyze' do
     before do
       allow(instance).to receive_messages(
@@ -84,6 +100,16 @@ RSpec.describe DeltaReportService::AdditionalCodeChanges do
       end
     end
 
+    context 'when record operation is create' do
+      before do
+        allow(additional_code).to receive_messages(operation: :create, additional_code_sid: '12345', operation_date: date)
+      end
+
+      it 'returns nil when corresponding measure operation exists on same date' do
+        expect(instance.analyze).to be_nil
+      end
+    end
+
     context 'when changes should be included' do
       before do
         allow(additional_code).to receive_messages(operation: :update, additional_code_sid: '12345', additional_code_description:)
@@ -95,10 +121,9 @@ RSpec.describe DeltaReportService::AdditionalCodeChanges do
         expect(result).to eq({
           type: 'AdditionalCode',
           additional_code_sid: '12345',
-          additional_code: '8AAA: Additional Code updated',
           description: 'Additional Code updated',
           date_of_effect: date,
-          change: '',
+          change: '8AAA: Additional Code updated',
         })
       end
     end
@@ -128,40 +153,17 @@ RSpec.describe DeltaReportService::AdditionalCodeChanges do
     end
   end
 
-  describe '#previous_record' do
-    let(:previous_additional_code) { build(:additional_code) }
-
-    before do
-      allow(AdditionalCode).to receive(:operation_klass).and_return(AdditionalCode)
-      allow(AdditionalCode).to receive_message_chain(:where, :where, :order, :first)
-                         .and_return(previous_additional_code)
-    end
-
-    it 'queries for the previous record by additional_code_sid and oid' do
-      result = instance.previous_record
-
-      expect(result).to eq(previous_additional_code)
-    end
-
-    it 'memoizes the result' do
-      instance.previous_record
-      instance.previous_record
-
-      expect(AdditionalCode).to have_received(:operation_klass).once
-    end
-  end
-
   describe 'integration with BaseChanges' do
     it 'inherits from BaseChanges' do
       expect(described_class.superclass).to eq(DeltaReportService::BaseChanges)
     end
 
-    it 'includes MeasurePresenter module' do
-      expect(described_class.included_modules).to include(DeltaReportService::MeasurePresenter)
+    it 'includes DeltaPresenter module' do
+      expect(described_class.included_modules).to include(DeltaReportService::DeltaPresenter)
     end
   end
 
-  describe 'MeasurePresenter integration' do
+  describe 'DeltaPresenter integration' do
     context 'when using additional_code helper' do
       let(:additional_code_with_description) do
         build(:additional_code, :with_description,
@@ -170,7 +172,7 @@ RSpec.describe DeltaReportService::AdditionalCodeChanges do
               additional_code_description: 'Test Description')
       end
 
-      it 'formats additional code using MeasurePresenter helper' do
+      it 'formats additional code using DeltaPresenter helper' do
         instance = described_class.new(additional_code_with_description, date)
         result = instance.send(:additional_code, additional_code_with_description)
 

@@ -70,7 +70,7 @@ RSpec.describe Api::Admin::GreenLanes::MeasureTypeMappingsController, :admin do
     context 'with invalid params' do
       let(:ex_attrs) { build(:identified_measure_type_category_assessment, theme_id: nil).to_hash }
 
-      it { is_expected.to have_http_status :unprocessable_entity }
+      it { is_expected.to have_http_status :unprocessable_content }
 
       it 'returns errors for mapping' do
         expect(json_response).to include('errors')

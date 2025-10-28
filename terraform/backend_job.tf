@@ -1,5 +1,5 @@
 module "backend-job" {
-  source = "git@github.com:trade-tariff/trade-tariff-platform-terraform-modules.git//aws/ecs-service?ref=aws/ecs-service-v1.17.0"
+  source = "git@github.com:trade-tariff/trade-tariff-platform-terraform-modules.git//aws/ecs-service?ref=aws/ecs-service-v1.18.2"
 
   region = var.region
 
@@ -20,11 +20,13 @@ module "backend-job" {
 
   task_role_policy_arns = [aws_iam_policy.task.arn]
 
-  service_environment_config = local.db_replicate_secret_env_vars
+  service_environment_config = local.backend_job_secret_env_vars
 
   enable_ecs_exec = true
 
   has_autoscaler = false
   max_capacity   = 1
   min_capacity   = 0
+
+  sns_topic_arns = [data.aws_sns_topic.slack_topic.arn]
 }

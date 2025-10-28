@@ -1,12 +1,10 @@
 class DeltaReportService
   class MeasureChanges < BaseChanges
-    include MeasurePresenter
-
     def self.collect(date)
-      Measure
+      # Use Operation model so we can access deleted records
+      Measure.operation_klass
         .where(operation_date: date)
-        .order(:oid)
-        .map { |record| new(record, date).analyze }
+        .map { |record| new(record.record_from_oplog, date).analyze }
         .compact
     end
 
@@ -15,7 +13,7 @@ class DeltaReportService
     end
 
     def excluded_columns
-      super + %i[measure_generating_regulation_id justification_regulation_role justification_regulation_id]
+      super + %i[measure_generating_regulation_id justification_regulation_role justification_regulation_id national]
     end
 
     def analyze
@@ -28,21 +26,14 @@ class DeltaReportService
         validity_end_date: record.validity_end_date,
         measure_type: measure_type(record),
         import_export: import_export(record),
-        geo_area: geo_area(record.geographical_area),
-        additional_code: additional_code(record.additional_code),
-        duty_expression: duty_expression(record),
+        geo_area: geo_area(record.geographical_area, record.excluded_geographical_areas),
         description:,
         date_of_effect:,
         change: change || measure_type(record),
       }
-    end
-
-    def previous_record
-      @previous_record ||= Measure.operation_klass
-                             .where(measure_sid: record.measure_sid)
-                             .where(Sequel.lit('oid < ?', record.oid))
-                             .order(Sequel.desc(:oid))
-                             .first
+    rescue StandardError => e
+      Rails.logger.error "Error with #{object_name} OID #{record.oid}"
+      raise e
     end
   end
 end

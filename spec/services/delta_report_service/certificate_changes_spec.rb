@@ -2,7 +2,7 @@ RSpec.describe DeltaReportService::CertificateChanges do
   let(:date) { Date.parse('2024-08-11') }
 
   let(:certificate) do
-    build(:certificate, certificate_type_code: 'Y', certificate_code: '999')
+    create(:certificate, :with_description, certificate_type_code: 'Y', certificate_code: '999')
   end
   let(:instance) { described_class.new(certificate, date) }
 
@@ -16,17 +16,10 @@ RSpec.describe DeltaReportService::CertificateChanges do
     let(:certificates) { [certificate1, certificate2] }
 
     before do
-      allow(Certificate).to receive_message_chain(:where, :order).and_return(certificates)
+      allow(Certificate).to receive_message_chain(:where, :where, :map, :compact).and_return([{ type: 'Certificate' }, { type: 'Certificate' }])
     end
 
     it 'finds certificates for the given date and returns analyzed changes' do
-      instance1 = described_class.new(certificate1, date)
-      instance2 = described_class.new(certificate2, date)
-
-      allow(described_class).to receive(:new).and_return(instance1, instance2)
-      allow(instance1).to receive(:analyze).and_return({ type: 'Certificate' })
-      allow(instance2).to receive(:analyze).and_return({ type: 'Certificate' })
-
       result = described_class.collect(date)
 
       expect(Certificate).to have_received(:where).with(operation_date: date)
@@ -37,6 +30,22 @@ RSpec.describe DeltaReportService::CertificateChanges do
   describe '#object_name' do
     it 'returns the correct object name' do
       expect(instance.object_name).to eq('Certificate')
+    end
+  end
+
+  describe '#excluded_columns' do
+    it 'includes measure-specific excluded columns' do
+      expected = instance.send(:excluded_columns)
+      expect(expected).to include(:national)
+    end
+
+    it 'includes base excluded columns' do
+      base_excluded = %i[oid operation operation_date created_at updated_at filename]
+      expected = instance.send(:excluded_columns)
+
+      base_excluded.each do |column|
+        expect(expected).to include(column)
+      end
     end
   end
 
@@ -80,29 +89,6 @@ RSpec.describe DeltaReportService::CertificateChanges do
         result = instance.analyze
         expect(result[:change]).to eq('description updated')
       end
-    end
-  end
-
-  describe '#previous_record' do
-    let(:previous_certificate) { build(:certificate) }
-
-    before do
-      allow(Certificate).to receive(:operation_klass).and_return(Certificate)
-      allow(Certificate).to receive_message_chain(:where, :where, :order, :first)
-                         .and_return(previous_certificate)
-    end
-
-    it 'queries for the previous record by certificate_code, certificate_type_code and oid' do
-      result = instance.previous_record
-
-      expect(result).to eq(previous_certificate)
-    end
-
-    it 'memoizes the result' do
-      instance.previous_record
-      instance.previous_record
-
-      expect(Certificate).to have_received(:operation_klass).once
     end
   end
 end

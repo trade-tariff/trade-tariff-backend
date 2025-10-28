@@ -14,7 +14,7 @@ RSpec.describe DeltaReportService::GeographicalAreaChanges do
     let(:geographical_areas) { [geographical_area1, geographical_area2] }
 
     before do
-      allow(GeographicalArea).to receive_message_chain(:where, :order).and_return(geographical_areas)
+      allow(GeographicalArea).to receive(:where).and_return(geographical_areas)
     end
 
     it 'finds geographical areas for the given date and returns analyzed changes' do
@@ -46,7 +46,7 @@ RSpec.describe DeltaReportService::GeographicalAreaChanges do
         description: 'Geo Area updated',
         change: nil,
       )
-      allow(instance).to receive(:geo_area).with(geographical_area).and_return('GB: United Kingdom')
+      allow(instance).to receive(:geo_area).with(geographical_area, []).and_return('United Kingdom (GB)')
     end
 
     context 'when there are no changes' do
@@ -63,10 +63,10 @@ RSpec.describe DeltaReportService::GeographicalAreaChanges do
 
         expect(result).to eq({
           type: 'GeographicalArea',
-          geographical_area_id: 'GB: United Kingdom',
+          geographical_area_sid: geographical_area.geographical_area_sid,
           date_of_effect: date,
           description: 'Geo Area updated',
-          change: 'GB: United Kingdom',
+          change: 'United Kingdom (GB)',
         })
       end
     end
@@ -78,29 +78,6 @@ RSpec.describe DeltaReportService::GeographicalAreaChanges do
         result = instance.analyze
         expect(result[:change]).to eq('description updated')
       end
-    end
-  end
-
-  describe '#previous_record' do
-    let(:previous_geographical_area) { build(:geographical_area) }
-
-    before do
-      allow(GeographicalArea).to receive(:operation_klass).and_return(GeographicalArea)
-      allow(GeographicalArea).to receive_message_chain(:where, :where, :order, :first)
-                               .and_return(previous_geographical_area)
-    end
-
-    it 'queries for the previous record by geographical_area_id and oid' do
-      result = instance.previous_record
-
-      expect(result).to eq(previous_geographical_area)
-    end
-
-    it 'memoizes the result' do
-      instance.previous_record
-      instance.previous_record
-
-      expect(GeographicalArea).to have_received(:operation_klass).once
     end
   end
 end

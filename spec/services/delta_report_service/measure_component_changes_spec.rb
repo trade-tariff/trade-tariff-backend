@@ -21,7 +21,7 @@ RSpec.describe DeltaReportService::MeasureComponentChanges do
     let(:measure_components) { [measure_component1, measure_component2] }
 
     before do
-      allow(MeasureComponent).to receive_message_chain(:where, :order).and_return(measure_components)
+      allow(MeasureComponent).to receive(:where).and_return(measure_components)
     end
 
     it 'finds measure components for the given date and returns analyzed changes' do
@@ -40,8 +40,17 @@ RSpec.describe DeltaReportService::MeasureComponentChanges do
   end
 
   describe '#object_name' do
-    it 'returns the correct object name' do
-      expect(instance.object_name).to eq('Measure Component')
+    context 'when tariff duty' do
+      it 'returns the correct object name' do
+        expect(instance.object_name).to eq('Duty Expression')
+      end
+    end
+
+    context 'when supplementary unit' do
+      it 'returns the correct object name' do
+        allow(measure).to receive(:supplementary?).and_return(true)
+        expect(instance.object_name).to eq('Supplementary Unit')
+      end
     end
   end
 
@@ -53,12 +62,14 @@ RSpec.describe DeltaReportService::MeasureComponentChanges do
         date_of_effect: date,
         change: nil,
       )
-      allow(instance).to receive(:measure_type).with(measure).and_return('103: Third country duty')
+      allow(instance).to receive(:measure_type).with(measure).and_return('Third country duty')
       allow(instance).to receive(:import_export).with(measure).and_return('Import')
-      allow(instance).to receive(:geo_area).with(geographical_area).and_return('GB: United Kingdom')
+      allow(instance).to receive(:geo_area).with(geographical_area, []).and_return('United Kingdom (GB)')
       allow(instance).to receive(:additional_code).with(nil).and_return(nil)
       allow(instance).to receive(:duty_expression).with(measure).and_return('5%')
       allow(measure).to receive(:additional_code).and_return(nil)
+      # By default, don't filter out records (no matching operations found)
+      allow(Measure.operation_klass).to receive_message_chain(:where, :any?).and_return(false)
     end
 
     context 'when there are no changes' do
@@ -78,6 +89,8 @@ RSpec.describe DeltaReportService::MeasureComponentChanges do
         allow(measure_component_create).to receive(:measure).and_return(measure_create)
         allow(instance_create).to receive(:get_changes)
         allow(instance_create).to receive(:no_changes?).and_return(false)
+        # Mock the Measure.operation_klass query to return true (measure found on same date)
+        allow(Measure.operation_klass).to receive_message_chain(:where, :any?).and_return(true)
       end
 
       it 'returns nil' do
@@ -92,11 +105,9 @@ RSpec.describe DeltaReportService::MeasureComponentChanges do
         expect(result).to eq({
           type: 'MeasureComponent',
           measure_sid: '12345',
-          measure_type: '103: Third country duty',
+          measure_type: 'Third country duty',
           import_export: 'Import',
-          geo_area: 'GB: United Kingdom',
-          additional_code: nil,
-          duty_expression: '5%',
+          geo_area: 'United Kingdom (GB)',
           description: 'Measure Component updated',
           date_of_effect: date,
           change: '5%',
@@ -117,29 +128,6 @@ RSpec.describe DeltaReportService::MeasureComponentChanges do
   describe '#date_of_effect' do
     it 'returns the date parameter' do
       expect(instance.date_of_effect).to eq(date)
-    end
-  end
-
-  describe '#previous_record' do
-    let(:previous_measure_component) { build(:measure_component) }
-
-    before do
-      allow(MeasureComponent).to receive(:operation_klass).and_return(MeasureComponent)
-      allow(MeasureComponent).to receive_message_chain(:where, :where, :where, :order, :first)
-                               .and_return(previous_measure_component)
-    end
-
-    it 'queries for the previous record by measure_sid, duty_expression_id and oid' do
-      result = instance.previous_record
-
-      expect(result).to eq(previous_measure_component)
-    end
-
-    it 'memoizes the result' do
-      instance.previous_record
-      instance.previous_record
-
-      expect(MeasureComponent).to have_received(:operation_klass).once
     end
   end
 end

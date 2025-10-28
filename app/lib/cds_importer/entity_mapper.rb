@@ -13,9 +13,9 @@ class CdsImporter
       @filename = xml_node.delete('filename')
     end
 
-    def import
+    def build(apply_callbacks: true)
       applicable_mappers_for(@key, @xml_node).each do |mapper|
-        mapper.before_building_model_callbacks.each { |callback| callback.call(xml_node) }
+        mapper.before_building_model_callbacks.each { |callback| callback.call(xml_node) } if apply_callbacks
 
         instances = mapper.parse
 
@@ -23,16 +23,21 @@ class CdsImporter
           model_instance = model_configuration[:instance]
           expanded_model_values = model_configuration[:expanded_attributes]
 
-          mapper.before_oplog_inserts_callbacks.each do |callback|
-            callback.call(
-              xml_node,
-              mapper,
-              model_instance,
-              expanded_model_values,
-              implicit_deletes_enabled?,
-            )
+          if apply_callbacks
+            mapper.before_oplog_inserts_callbacks.each do |callback|
+              callback.call(
+                xml_node,
+                mapper,
+                model_instance,
+                expanded_model_values,
+                implicit_deletes_enabled?,
+              )
+            end
           end
-          yield CdsImporter::CdsEntity.new(@key, model_instance, mapper) if block_given?
+
+          if block_given?
+            yield CdsImporter::CdsEntity.new(@xml_node['hjid'], @key, model_instance, mapper)
+          end
         end
       end
     end

@@ -25,7 +25,7 @@ module Api
                    status: :created
           else
             render json: serialize_errors(news_collection),
-                   status: :unprocessable_entity
+                   status: :unprocessable_content
           end
         end
 
@@ -38,7 +38,7 @@ module Api
                    status: :ok
           else
             render json: serialize_errors(news_collection),
-                   status: :unprocessable_entity
+                   status: :unprocessable_content
           end
         end
 

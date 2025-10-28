@@ -16,8 +16,14 @@ class CdsImporter
   class UnknownOperationError < ImportException
   end
 
-  def initialize(cds_update)
+  DEFAULT_HANDLER_CLASSES = [
+    CdsImporter::RecordInserter,
+    CdsImporter::ExcelWriter,
+  ].freeze
+
+  def initialize(cds_update, handler_classes: DEFAULT_HANDLER_CLASSES)
     @cds_update = cds_update
+    @handler_classes = handler_classes
     @oplog_inserts = {
       operations: {
         create: { count: 0, duration: 0 },
@@ -32,8 +38,9 @@ class CdsImporter
   end
 
   def import
-    handler = XmlProcessor.new(@cds_update.filename)
     zip_file = TariffSynchronizer::FileService.file_as_stringio(@cds_update)
+    handlers = @handler_classes.map { |klass| klass.new(@cds_update.filename) }
+    handler = XmlProcessor.new(@cds_update.filename, handlers)
 
     subscribe_to_oplog_inserts
     Rails.logger.info "CDS Importer batch size: #{TradeTariffBackend.cds_importer_batch_size}"
@@ -44,7 +51,8 @@ class CdsImporter
         xml_stream = entry.get_input_stream
         # do the xml parsing depending on records root depth
         CdsImporter::XmlParser::Reader.new(xml_stream, handler).parse
-        handler.process_end
+
+        handler.after_parse
         Rails.logger.info "Successfully imported Cds file: #{@cds_update.filename}"
       end
     end
@@ -53,21 +61,17 @@ class CdsImporter
   end
 
   class XmlProcessor
-    def initialize(filename)
+    def initialize(filename, handlers = [])
       @filename = filename
-      @count = 0
-      @batch = []
+      @handlers = handlers
     end
 
     def process_xml_node(key, hash_from_node)
       hash_from_node['filename'] = @filename
 
-      CdsImporter::EntityMapper.new(key, hash_from_node).import do |cds_entity|
-        @batch << cds_entity
-        @count += 1
-
-        if @count >= batch_size
-          process_batch
+      CdsImporter::EntityMapper.new(key, hash_from_node).build do |cds_entity|
+        @handlers.each do |handler|
+          handler.process_record(cds_entity)
         end
       end
     rescue StandardError => e
@@ -75,14 +79,9 @@ class CdsImporter
       raise ImportException
     end
 
-    def process_batch
-      record_inserter = CdsImporter::RecordInserter.new(@batch, @filename)
-      record_inserter.save_batch
-      @batch.clear
-      @count = 0
+    def after_parse
+      @handlers.each(&:after_parse)
     end
-
-    alias_method :process_end, :process_batch
 
     def cds_failed_log(exception, key, hash)
       "Cds import failed: #{exception}".tap do |message|
@@ -91,20 +90,17 @@ class CdsImporter
         Rails.logger.error message
       end
     end
-
-    def batch_size
-      TradeTariffBackend.cds_importer_batch_size
-    end
   end
 
   class CdsEntity
-    def initialize(key, instance, mapper)
+    def initialize(element_id, key, instance, mapper)
+      @element_id = element_id
       @key = key
       @instance = instance
       @mapper = mapper
     end
 
-    attr_reader :key, :instance, :mapper
+    attr_reader :key, :instance, :mapper, :element_id
   end
 
   private

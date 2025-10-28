@@ -1,5 +1,7 @@
 class DeltaReportService
   class BaseChanges
+    include DeltaPresenter
+
     attr_accessor :record, :changes, :change, :date
 
     def initialize(record, date)
@@ -25,7 +27,7 @@ class DeltaReportService
 
       return unless record.operation == :update
 
-      if previous_record
+      if (previous_record = record.previous_record)
         comparable_columns = record.values.keys - excluded_columns
 
         comparable_columns.each do |column|
@@ -34,21 +36,35 @@ class DeltaReportService
 
           next if current_value == previous_value
 
-          @change = current_value if change.blank?
+          column = { validity_start_date: :start_date,
+                     validity_end_date: :end_date }[column] || column
+
+          @change ||= if column == :start_date
+                        current_value.to_date.iso8601
+                      elsif column == :end_date
+                        if current_value.nil?
+                          'Removed'
+                        else
+                          (current_value.to_date + 1.day)&.iso8601
+                        end
+                      else
+                        current_value
+                      end
+
           @changes << column.to_s.humanize.downcase
         end
       end
     end
 
     def date_of_effect
-      if changes.include?('validity_start_date')
+      if changes.include?('start date') && record.validity_start_date.present?
         record.validity_start_date
-      elsif changes.include?('validity_end_date')
-        record.validity_end_date
-      elsif record.validity_start_date > record.operation_date
+      elsif changes.include?('end date') && record.validity_end_date.present?
+        record.validity_end_date + 1.day
+      elsif record.operation == :create && record.respond_to?(:validity_start_date)
         record.validity_start_date
       else
-        date
+        date + 1.day
       end
     end
 
@@ -62,7 +78,7 @@ class DeltaReportService
         else
           "#{object_name} updated"
         end
-      when :delete
+      when :destroy
         "#{object_name} removed"
       end
     end

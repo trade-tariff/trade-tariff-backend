@@ -39,6 +39,18 @@ module TradeTariffBackend
       ENV.fetch('TARIFF_SYNC_EMAIL')
     end
 
+    def cds_updates_send_email
+      ENV.fetch('CDS_UPDATES_SEND_MAIL', 'false').to_s == 'true'
+    end
+
+    def cds_updates_to_email
+      ENV.fetch('CDS_UPDATES_TO_EMAILS')
+    end
+
+    def cds_updates_cc_email
+      ENV.fetch('CDS_UPDATES_CC_EMAILS', '')
+    end
+
     def patch_broken_taric_downloads?
       ENV['PATCH_BROKEN_TARIC_DOWNLOADS'] == 'true'
     end
@@ -192,6 +204,10 @@ module TradeTariffBackend
       ENV['DIFFERENCES_TO_EMAILS']
     end
 
+    def delta_report_to_emails
+      ENV['DELTA_TO_EMAILS']
+    end
+
     def support_email
       ENV['TARIFF_SUPPORT_EMAIL']
     end
@@ -204,7 +220,7 @@ module TradeTariffBackend
       ENV.fetch('OPENSEARCH_DEBUG', 'false') == 'true'
     end
 
-    def green_lanes_api_tokens
+    def api_tokens
       ENV['GREEN_LANES_API_TOKENS']
     end
 
@@ -264,6 +280,10 @@ module TradeTariffBackend
 
     def cds_importer_batch_size
       ENV.fetch('CDS_IMPORT_BATCH_SIZE', '100').to_i
+    end
+
+    def cds_importer_write_update_excel
+      ENV.fetch('CDS_IMPORT_WRITE_UPDATE_EXCEL', 'false').to_s == 'true'
     end
 
     def cupid_team_to_emails

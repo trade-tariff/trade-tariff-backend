@@ -17,10 +17,14 @@ module PublicUsers
       end
 
       def with_active_stop_press_subscription
+        with_active_subscription(Subscriptions::Type.stop_press)
+      end
+
+      def with_active_subscription(type)
         join(:public__user_subscriptions, Sequel[:user_subscriptions][:user_id] => Sequel[:users][:id])
           .where(
             Sequel[:user_subscriptions][:active] => true,
-            Sequel[:user_subscriptions][:subscription_type_id] => Subscriptions::Type.stop_press.id,
+            Sequel[:user_subscriptions][:subscription_type_id] => type.id,
           )
           .select_all(:users)
           .distinct
@@ -53,19 +57,25 @@ module PublicUsers
     end
 
     def stop_press_subscription
-      subscriptions_dataset.where(subscription_type: Subscriptions::Type.stop_press, active: true).first&.uuid || false
+      subscription_for(Subscriptions::Type.stop_press)
+    end
+
+    def subscription_for(type)
+      subscriptions_dataset.where(subscription_type: type, active: true).first&.uuid || false
     end
 
     def stop_press_subscription=(active)
-      current = subscriptions_dataset.where(subscription_type: Subscriptions::Type.stop_press).first
+      set_subscription(Subscriptions::Type.stop_press, active)
+    end
+
+    def set_subscription(type, active)
+      current = subscriptions_dataset.where(subscription_type: type).first
 
       if current
         current.update(active:)
       else
-        add_subscription(subscription_type: Subscriptions::Type.stop_press, active:)
-        if active
-          PublicUsers::ActionLog.create(user_id: id, action: PublicUsers::ActionLog::SUBSCRIBED)
-        end
+        add_subscription(subscription_type: type, active:)
+        PublicUsers::ActionLog.create(user_id: id, action: PublicUsers::ActionLog::SUBSCRIBED) if active
       end
     end
 

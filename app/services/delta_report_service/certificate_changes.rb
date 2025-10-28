@@ -1,11 +1,9 @@
 class DeltaReportService
   class CertificateChanges < BaseChanges
-    include MeasurePresenter
-
     def self.collect(date)
       Certificate
         .where(operation_date: date)
-        .order(:oid)
+        .where(operation: 'U')
         .map { |record| new(record, date).analyze }
         .compact
     end
@@ -14,25 +12,26 @@ class DeltaReportService
       'Certificate'
     end
 
+    def excluded_columns
+      super + %i[national]
+    end
+
     def analyze
       return if no_changes?
 
-      {
-        type: 'Certificate',
-        certificate_type_code: record.certificate_type_code,
-        certificate_code: record.certificate_code,
-        date_of_effect:,
-        description:,
-        change: change || record.id,
-      }
-    end
-
-    def previous_record
-      @previous_record ||= Certificate.operation_klass
-                             .where(certificate_code: record.certificate_code, certificate_type_code: record.certificate_type_code)
-                             .where(Sequel.lit('oid < ?', record.oid))
-                             .order(Sequel.desc(:oid))
-                             .first
+      TimeMachine.at(record.validity_start_date) do
+        {
+          type: 'Certificate',
+          certificate_type_code: record.certificate_type_code,
+          certificate_code: record.certificate_code,
+          date_of_effect:,
+          description:,
+          change: change || record.id,
+        }
+      end
+    rescue StandardError => e
+      Rails.logger.error "Error with #{object_name} OID #{record.oid}"
+      raise e
     end
   end
 end

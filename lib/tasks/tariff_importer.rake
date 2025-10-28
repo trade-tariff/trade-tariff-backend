@@ -4,8 +4,6 @@ namespace :importer do
     desc 'Import TARIC file'
     task import: %i[environment class_eager_load] do
       if ENV['TARGET'] && TariffSynchronizer::FileService.file_exists?(ENV['TARGET'])
-        # We will be fetching updates from Taric and modifying primary keys
-        # so unrestrict it for all models.
         Sequel::Model.subclasses.each(&:unrestrict_primary_key)
         Sequel::Model.plugin :skip_create_refresh
         dummy_update = OpenStruct.new(file_path: ENV['TARGET'], issue_date: nil)
@@ -20,8 +18,6 @@ namespace :importer do
     desc 'Import CDS file'
     task import: %i[environment class_eager_load] do
       if ENV['TARGET'] && TariffSynchronizer::FileService.file_exists?(ENV['TARGET'])
-        # We will be fetching updates from Taric and modifying primary keys
-        # so unrestrict it for all models.
         Sequel::Model.subclasses.each(&:unrestrict_primary_key)
         Sequel::Model.plugin :skip_create_refresh
         dummy_update = OpenStruct.new(file_path: ENV['TARGET'], issue_date: nil)

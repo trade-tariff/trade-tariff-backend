@@ -76,12 +76,13 @@ RSpec.describe DeltaReportService::BaseChanges do
       build(:measure,
             measure_sid: record.measure_sid,
             validity_start_date: Date.parse('2024-08-01'),
-            validity_end_date: Date.parse('2024-08-31'),
+            validity_end_date: nil,
             goods_nomenclature_item_id: '1000000000')
     end
 
     let(:get_changes_record) do
       build(:measure,
+            national: true,
             measure_sid: previous_record.measure_sid,
             validity_start_date: Date.parse('2024-08-15'),
             validity_end_date: Date.parse('2024-08-31'),
@@ -91,7 +92,7 @@ RSpec.describe DeltaReportService::BaseChanges do
     let(:get_changes_instance) { test_class.new(get_changes_record, date) }
 
     before do
-      get_changes_instance.previous_record = previous_record
+      allow(get_changes_record).to receive(:previous_record).and_return(previous_record)
     end
 
     context 'when operation is update' do
@@ -101,7 +102,7 @@ RSpec.describe DeltaReportService::BaseChanges do
 
       it 'identifies changed columns' do
         get_changes_instance.get_changes
-        expect(get_changes_instance.changes).to include('validity start date')
+        expect(get_changes_instance.changes).to include('start date')
         expect(get_changes_instance.changes).not_to include('measure sid')
       end
 
@@ -109,6 +110,20 @@ RSpec.describe DeltaReportService::BaseChanges do
         get_changes_instance.get_changes
         expect(get_changes_instance.change).not_to be_nil
         expect(get_changes_instance.change).not_to be_blank
+      end
+
+      context 'when validity_start_date changes' do
+        it "changes column name to 'start date'" do
+          get_changes_instance.get_changes
+          expect(get_changes_instance.changes).to include('start date')
+        end
+      end
+
+      context 'when validity_end_date changes' do
+        it "changes column name to 'end date'" do
+          get_changes_instance.get_changes
+          expect(get_changes_instance.changes).to include('end date')
+        end
       end
     end
 
@@ -125,8 +140,7 @@ RSpec.describe DeltaReportService::BaseChanges do
 
     context 'when no previous record exists' do
       before do
-        allow(get_changes_record).to receive(:operation).and_return(:update)
-        get_changes_instance.previous_record = nil
+        allow(get_changes_record).to receive_messages(operation: :update, previous_record: nil)
       end
 
       it 'does not set changes' do
@@ -150,7 +164,7 @@ RSpec.describe DeltaReportService::BaseChanges do
     let(:date_instance) { test_class.new(date_record, date) }
 
     context 'when validity_start_date is in changes' do
-      before { date_instance.changes = ['validity start date'] }
+      before { date_instance.changes = ['start date'] }
 
       it 'returns validity_start_date' do
         expect(date_instance.date_of_effect).to eq(validity_start_date)
@@ -158,10 +172,10 @@ RSpec.describe DeltaReportService::BaseChanges do
     end
 
     context 'when validity_end_date is in changes' do
-      before { date_instance.changes = %w[validity_end_date] }
+      before { date_instance.changes = ['end date'] }
 
       it 'returns validity_end_date' do
-        expect(date_instance.date_of_effect).to eq(validity_end_date)
+        expect(date_instance.date_of_effect).to eq(validity_end_date + 1.day)
       end
     end
 
@@ -170,16 +184,6 @@ RSpec.describe DeltaReportService::BaseChanges do
 
       it 'returns validity_start_date' do
         expect(date_instance.date_of_effect).to eq(validity_start_date)
-      end
-    end
-
-    context 'when validity_start_date is not after operation_date and no validity changes' do
-      let(:validity_start_date) { Date.parse('2024-08-05') }
-
-      before { date_instance.changes = [] }
-
-      it 'returns the date parameter' do
-        expect(date_instance.date_of_effect).to eq(date)
       end
     end
   end
@@ -216,7 +220,7 @@ RSpec.describe DeltaReportService::BaseChanges do
     end
 
     context 'when operation is delete' do
-      before { allow(record).to receive(:operation).and_return(:delete) }
+      before { allow(record).to receive(:operation).and_return(:destroy) }
 
       it 'returns correct description' do
         expect(instance.description).to eq('Test Object removed')

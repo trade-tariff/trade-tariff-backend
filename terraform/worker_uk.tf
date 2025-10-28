@@ -1,5 +1,5 @@
 module "worker_uk" {
-  source = "git@github.com:trade-tariff/trade-tariff-platform-terraform-modules.git//aws/ecs-service?ref=aws/ecs-service-v1.17.0"
+  source = "git@github.com:trade-tariff/trade-tariff-platform-terraform-modules.git//aws/ecs-service?ref=aws/ecs-service-v1.18.2"
 
   service_name              = "worker-uk"
   container_definition_kind = "db-backed"
@@ -20,7 +20,7 @@ module "worker_uk" {
   private_dns_namespace = "tariff.internal"
 
   cpu    = 2048
-  memory = 8192
+  memory = 4096
 
   task_role_policy_arns = [aws_iam_policy.task.arn]
 
@@ -37,4 +37,6 @@ module "worker_uk" {
   has_autoscaler = local.has_autoscaler
   min_capacity   = 1
   max_capacity   = var.max_capacity
+
+  sns_topic_arns = [data.aws_sns_topic.slack_topic.arn]
 }

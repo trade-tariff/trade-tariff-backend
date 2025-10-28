@@ -14,7 +14,7 @@ RSpec.describe DeltaReportService::CommodityChanges do
     let(:goods_nomenclatures) { [goods_nomenclature1, goods_nomenclature2] }
 
     before do
-      allow(GoodsNomenclature).to receive_message_chain(:where, :order).and_return(goods_nomenclatures)
+      allow(GoodsNomenclature).to receive(:where).and_return(goods_nomenclatures)
     end
 
     it 'finds goods nomenclatures for the given date and returns analyzed changes' do
@@ -62,7 +62,7 @@ RSpec.describe DeltaReportService::CommodityChanges do
 
         expect(result).to eq({
           type: 'GoodsNomenclature',
-          goods_nomenclature_item_id: '0101000000',
+          goods_nomenclature_sid: goods_nomenclature.goods_nomenclature_sid,
           date_of_effect: date,
           description: 'Commodity added',
           change: '0101000000',
@@ -78,28 +78,52 @@ RSpec.describe DeltaReportService::CommodityChanges do
         expect(result[:change]).to eq('updated description')
       end
     end
-  end
 
-  describe '#previous_record' do
-    let(:previous_goods_nomenclature) { build(:goods_nomenclature) }
+    context 'when record is a create operation for a non-declarable commodity' do
+      before do
+        allow(goods_nomenclature).to receive_messages(operation: :create, declarable?: false)
+      end
 
-    before do
-      allow(GoodsNomenclature).to receive(:operation_klass).and_return(GoodsNomenclature)
-      allow(GoodsNomenclature).to receive_message_chain(:where, :where, :order, :first)
-                               .and_return(previous_goods_nomenclature)
+      it 'returns nil for non-declarable commodities on create' do
+        result = instance.analyze
+        expect(result).to be_nil
+      end
     end
 
-    it 'queries for the previous record by goods_nomenclature_sid and oid' do
-      result = instance.previous_record
+    context 'when record is a create operation for a declarable commodity' do
+      before do
+        allow(goods_nomenclature).to receive_messages(operation: :create, declarable?: true)
+      end
 
-      expect(result).to eq(previous_goods_nomenclature)
+      it 'returns analysis for declarable commodities on create' do
+        result = instance.analyze
+
+        expect(result).to eq({
+          type: 'GoodsNomenclature',
+          goods_nomenclature_sid: goods_nomenclature.goods_nomenclature_sid,
+          date_of_effect: date,
+          description: 'Commodity added',
+          change: '0101000000',
+        })
+      end
     end
 
-    it 'memoizes the result' do
-      instance.previous_record
-      instance.previous_record
+    context 'when record is an update operation for a non-declarable commodity' do
+      before do
+        allow(goods_nomenclature).to receive_messages(operation: :update, declarable?: false)
+      end
 
-      expect(GoodsNomenclature).to have_received(:operation_klass).once
+      it 'returns analysis for non-declarable commodities on update' do
+        result = instance.analyze
+
+        expect(result).to eq({
+          type: 'GoodsNomenclature',
+          goods_nomenclature_sid: goods_nomenclature.goods_nomenclature_sid,
+          date_of_effect: date,
+          description: 'Commodity added',
+          change: '0101000000',
+        })
+      end
     end
   end
 end

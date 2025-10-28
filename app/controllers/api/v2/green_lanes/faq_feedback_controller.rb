@@ -10,7 +10,7 @@ module Api
           if faq_feedback.valid? && faq_feedback.save
             render json: serialize(faq_feedback), status: :created
           else
-            render json: serialize_errors(faq_feedback), status: :unprocessable_entity
+            render json: serialize_errors(faq_feedback), status: :unprocessable_content
           end
         end
 

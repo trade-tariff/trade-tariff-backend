@@ -13,25 +13,24 @@ RSpec.describe DeltaReportService::MeasureChanges do
   end
 
   describe '.collect' do
-    let(:measure1) { build(:measure, oid: 1, operation_date: date) }
-    let(:measure2) { build(:measure, oid: 2, operation_date: date) }
-    let(:measures) { [measure1, measure2] }
+    let(:measure_operation1) { instance_double(Measure.operation_klass, oid: 1, record_from_oplog: measure) }
+    let(:measure_operation2) { instance_double(Measure.operation_klass, oid: 2, record_from_oplog: measure) }
+    let(:measure_operations) { [measure_operation1, measure_operation2] }
 
     before do
-      allow(Measure).to receive_message_chain(:where, :order).and_return(measures)
+      allow(Measure.operation_klass).to receive(:where).with(operation_date: date).and_return(measure_operations)
     end
 
-    it 'finds measures for the given date and returns analyzed changes' do
-      instance1 = described_class.new(measure1, date)
-      instance2 = described_class.new(measure2, date)
-
-      allow(described_class).to receive(:new).and_return(instance1, instance2)
-      allow(instance1).to receive(:analyze).and_return({ type: 'Measure' })
-      allow(instance2).to receive(:analyze).and_return({ type: 'Measure' })
+    it 'finds measure operations for the given date and returns analyzed changes' do
+      # Mock the map behavior which creates instances and calls analyze
+      allow(measure_operations).to receive_messages(
+        map: [{ type: 'Measure' }, { type: 'Measure' }],
+        compact: [{ type: 'Measure' }, { type: 'Measure' }],
+      )
 
       result = described_class.collect(date)
 
-      expect(Measure).to have_received(:where).with(operation_date: date)
+      expect(Measure.operation_klass).to have_received(:where).with(operation_date: date)
       expect(result).to eq([{ type: 'Measure' }, { type: 'Measure' }])
     end
   end
@@ -68,9 +67,9 @@ RSpec.describe DeltaReportService::MeasureChanges do
         date_of_effect: date,
         change: nil,
       )
-      allow(instance).to receive(:measure_type).with(measure).and_return('103: Third country duty')
+      allow(instance).to receive(:measure_type).with(measure).and_return('Third country duty')
       allow(instance).to receive(:import_export).with(measure).and_return('Import')
-      allow(instance).to receive(:geo_area).with(geographical_area).and_return('GB: United Kingdom')
+      allow(instance).to receive(:geo_area).with(geographical_area, []).and_return('United Kingdom (GB)')
       allow(instance).to receive(:additional_code).with(nil).and_return('A123: Special code')
       allow(instance).to receive(:duty_expression).with(measure).and_return('10%')
     end
@@ -92,14 +91,12 @@ RSpec.describe DeltaReportService::MeasureChanges do
           goods_nomenclature_item_id: '0101000000',
           validity_start_date: date,
           validity_end_date: nil,
-          measure_type: '103: Third country duty',
+          measure_type: 'Third country duty',
           import_export: 'Import',
-          geo_area: 'GB: United Kingdom',
-          additional_code: 'A123: Special code',
-          duty_expression: '10%',
+          geo_area: 'United Kingdom (GB)',
           description: 'Measure updated',
           date_of_effect: date,
-          change: '103: Third country duty',
+          change: 'Third country duty',
         })
       end
     end
@@ -111,29 +108,6 @@ RSpec.describe DeltaReportService::MeasureChanges do
         result = instance.analyze
         expect(result[:change]).to eq('duty rate changed')
       end
-    end
-  end
-
-  describe '#previous_record' do
-    let(:previous_measure) { build(:measure) }
-
-    before do
-      allow(Measure).to receive(:operation_klass).and_return(Measure)
-      allow(Measure).to receive_message_chain(:where, :where, :order, :first)
-                     .and_return(previous_measure)
-    end
-
-    it 'queries for the previous record by measure_sid and oid' do
-      result = instance.previous_record
-
-      expect(result).to eq(previous_measure)
-    end
-
-    it 'memoizes the result' do
-      instance.previous_record
-      instance.previous_record
-
-      expect(Measure).to have_received(:operation_klass).once
     end
   end
 end

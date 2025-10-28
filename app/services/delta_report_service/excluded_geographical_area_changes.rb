@@ -1,12 +1,10 @@
 class DeltaReportService
   class ExcludedGeographicalAreaChanges < BaseChanges
-    include MeasurePresenter
-
     def self.collect(date)
-      MeasureExcludedGeographicalArea
+      # Use Operation model so we can access deleted records
+      MeasureExcludedGeographicalArea.operation_klass
         .where(operation_date: date)
-        .order(:oid)
-        .map { |record| new(record, date).analyze }
+        .map { |record| new(record.record_from_oplog, date).analyze }
         .compact
     end
 
@@ -15,20 +13,25 @@ class DeltaReportService
     end
 
     def analyze
-      return if record.measure.operation_date == record.operation_date
+      measures = Measure.operation_klass.where(measure_sid: record.measure_sid, operation_date: record.operation_date, operation: 'U')
 
-      {
-        type: 'ExcludedGeographicalArea',
-        measure_sid: record.measure_sid,
-        measure_type: measure_type(record.measure),
-        import_export: import_export(record.measure),
-        geo_area: geo_area(record.geographical_area),
-        additional_code: additional_code(record.measure.additional_code),
-        duty_expression: duty_expression(record.measure),
-        date_of_effect: date,
-        description: 'Excluded geo area',
-        change: "Excluded #{record.excluded_geographical_area}",
-      }
+      return unless measures.any?
+
+      TimeMachine.at(record.operation_date) do
+        {
+          type: 'ExcludedGeographicalArea',
+          measure_sid: record.measure_sid,
+          measure_type: measure_type(record.measure),
+          import_export: import_export(record.measure),
+          geo_area: geo_area(record.geographical_area, record.measure.excluded_geographical_areas),
+          date_of_effect: date,
+          description:,
+          change: "Excluded #{record.excluded_geographical_area}",
+        }
+      end
+    rescue StandardError => e
+      Rails.logger.error "Error with #{object_name} OID #{record.oid}"
+      raise e
     end
   end
 end

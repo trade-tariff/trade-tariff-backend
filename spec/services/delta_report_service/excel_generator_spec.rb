@@ -1,318 +1,307 @@
 RSpec.describe DeltaReportService::ExcelGenerator do
-  let(:date) { Date.parse('2024-08-11') }
+  let(:dates) { '2024-08-11' }
   let(:change_records) do
     [
-      {
-        chapter: '01',
-        commodity_code: '0101000000',
-        commodity_code_description: 'Live horses',
-        import_export: 'Import',
-        measure_type: '103: Third country duty',
-        geo_area: 'GB: United Kingdom',
-        additional_code: 'A123: Special code',
-        duty_expression: '10%',
-        type_of_change: 'Measure added',
-        change: 'new measure',
-        date_of_effect: date,
-        operation_date: date,
-      },
-      {
-        chapter: '02',
-        commodity_code: '0201000000',
-        commodity_code_description: 'Meat of bovine animals',
-        import_export: 'Export',
-        measure_type: '104: Export duty',
-        geo_area: 'US: United States',
-        additional_code: nil,
-        duty_expression: '5%',
-        type_of_change: 'Measure updated',
-        change: 'duty rate changed',
-        date_of_effect: date + 1.day,
-        operation_date: date,
-      },
+      [
+        {
+          import_export: 'Import',
+          geo_area: 'United Kingdom',
+          measure_type: 'Third country duty',
+          chapter: '01',
+          commodity_code: '0101000000',
+          commodity_code_description: 'Live horses, asses, mules and hinnies',
+          type_of_change: 'Added',
+          change: 'New measure added',
+          date_of_effect: Date.parse('2024-08-11'),
+          ott_url: 'https://www.trade-tariff.service.gov.uk/commodities/0101000000',
+          api_url: 'https://www.trade-tariff.service.gov.uk/api/v2/commodities/0101000000',
+        },
+        {
+          import_export: 'Export',
+          geo_area: 'European Union',
+          measure_type: 'Export licence',
+          chapter: '02',
+          commodity_code: '0202000000',
+          commodity_code_description: 'Meat of bovine animals, frozen',
+          type_of_change: 'Updated',
+          change: 'Rate changed from 5% to 7%',
+          date_of_effect: Date.parse('2024-08-12'),
+          ott_url: 'https://www.trade-tariff.service.gov.uk/commodities/0202000000',
+          api_url: 'https://www.trade-tariff.service.gov.uk/api/v2/commodities/0202000000',
+        },
+      ],
     ]
   end
 
   describe '.call' do
     context 'when change_records is empty' do
-      it 'returns early without creating a package' do
-        result = described_class.call([], date)
+      it 'returns nil' do
+        result = described_class.call([], dates)
         expect(result).to be_nil
       end
     end
 
     context 'when change_records has data' do
-      it 'creates a new instance and calls call method' do
-        generator_instance = instance_double(described_class)
-        allow(described_class).to receive(:new).with(change_records, date).and_return(generator_instance)
-        allow(generator_instance).to receive(:call).and_return(instance_double(Axlsx::Package))
-
-        result = described_class.call(change_records, date)
-
-        expect(result).not_to be_nil
+      it 'creates a new instance and calls #call' do
+        instance = instance_double(described_class, call: 'package')
+        allow(described_class).to receive(:new).and_return(instance)
+        result = described_class.call(change_records, dates)
+        expect(result).to eq('package')
       end
     end
   end
 
   describe '#initialize' do
-    let(:instance) { described_class.new(change_records, date) }
+    let(:generator) { described_class.new(change_records, dates) }
 
-    it 'sets change_records and date' do
-      expect(instance.change_records).to eq(change_records)
-      expect(instance.date).to eq(date)
+    it 'sets change_records' do
+      expect(generator.change_records).to eq(change_records)
+    end
+
+    it 'sets dates' do
+      expect(generator.dates).to eq(dates)
     end
   end
 
   describe '#call' do
-    let(:instance) { described_class.new(change_records, date) }
-    let(:package) { instance_double(Axlsx::Package, serialize: true) }
-    let(:workbook) { instance_double(Axlsx::Workbook) }
-    let(:worksheet) { instance_double(Axlsx::Worksheet) }
-    let(:styles) { instance_double(Axlsx::Styles) }
+    let(:generator) { described_class.new(change_records, dates) }
+    let(:package) { generator.call }
+    let(:workbook) { package.workbook }
+    let(:worksheet) { workbook.worksheets.first }
 
     before do
-      allow(Axlsx::Package).to receive(:new).and_return(package)
-      allow(package).to receive(:use_shared_strings=)
-      allow(package).to receive(:workbook).and_return(workbook)
-      allow(workbook).to receive(:styles).and_return(styles)
-      allow(workbook).to receive(:add_worksheet).and_yield(worksheet)
-      allow(worksheet).to receive_messages(
-        add_row: nil,
-        column_widths: nil,
-        rows: [instance_double(Axlsx::Row, height: nil, 'height=' => nil)],
-        merge_cells: nil,
-        sheet_view: instance_double(Axlsx::SheetView, pane: nil),
-      )
-      allow(worksheet).to receive(:auto_filter=)
-      allow(instance).to receive(:excel_cell_styles).and_return({
-        pre_header: instance_double(Axlsx::Styles),
-        pre_header_detail: instance_double(Axlsx::Styles),
-        header: instance_double(Axlsx::Styles),
-        header_detail: instance_double(Axlsx::Styles),
-      })
       allow(Rails.env).to receive(:development?).and_return(false)
     end
 
-    it 'creates an Axlsx package with shared strings enabled' do
-      instance.call
-
-      expect(Axlsx::Package).to have_received(:new)
-      expect(package).to have_received(:use_shared_strings=).with(true)
+    it 'creates an Axlsx package' do
+      expect(package).to be_a(Axlsx::Package)
     end
 
-    it 'adds a worksheet with the correct name' do
-      instance.call
-
-      expect(workbook).to have_received(:add_worksheet).with(name: 'Delta Report 2024-08-11')
+    it 'uses shared strings' do
+      expect(package.use_shared_strings).to be true
     end
 
-    it 'adds pre-header and header rows' do
-      instance.call
-
-      expect(worksheet).to have_received(:add_row).at_least(2).times
+    it 'creates a worksheet named "Delta Report"' do
+      expect(worksheet.name).to eq('Delta Report')
     end
 
-    it 'adds rows for each change record' do
-      instance.call
-
-      expect(worksheet).to have_received(:add_row).at_least(change_records.size).times
+    it 'sets default row height' do
+      expect(worksheet.sheet_format_pr.default_row_height).to eq(40.0)
+      expect(worksheet.sheet_format_pr.custom_height).to be false
     end
 
-    it 'sets column widths' do
-      instance.call
+    describe 'worksheet structure' do
+      it 'has the correct number of rows' do
+        # 5 header rows + 2 data rows
+        expect(worksheet.rows.size).to eq(7)
+      end
 
-      expect(worksheet).to have_received(:column_widths)
-    end
+      it 'sets the title row correctly' do
+        title_row = worksheet.rows[0]
+        expect(title_row.cells[0].value).to eq('Changes to your Commodity Watchlist')
+        expect(title_row.height).to eq(40)
+      end
 
-    context 'when in development environment' do
-      before { allow(Rails.env).to receive(:development?).and_return(true) }
+      it 'sets the subtitle row correctly' do
+        subtitle_row = worksheet.rows[1]
+        expect(subtitle_row.cells[0].value).to eq("Published #{dates}")
+        expect(subtitle_row.height).to eq(25)
+      end
 
-      it 'serializes the package to a local file' do
-        instance.call
+      it 'has an empty row' do
+        empty_row = worksheet.rows[2]
+        expect(empty_row.cells[0].value).to eq('')
+        expect(empty_row.height).to eq(20)
+      end
 
-        expect(package).to have_received(:serialize).with('delta_report_2024_08_11.xlsx')
+      it 'sets the pre-header row correctly' do
+        pre_header_row = worksheet.rows[3]
+        expect(pre_header_row.cells[0].value).to eq('Is this change relevant to your business (useful filters)')
+        expect(pre_header_row.height).to eq(40)
+      end
+
+      it 'sets the header row correctly' do
+        header_row = worksheet.rows[4]
+        expect(header_row.cells[0].value).to eq("Import/Export\n(if applicable)")
+        expect(header_row.height).to eq(60)
       end
     end
 
-    it 'returns the package' do
-      result = instance.call
-      expect(result).to eq(package)
+    describe 'cell merging' do
+      it 'merges the pre-header cells correctly' do
+        merged_cells = worksheet.instance_variable_get(:@merged_cells)
+        expect(merged_cells).to include('A4:C4', 'D4:F4', 'G4:I4', 'J4:K4')
+      end
+    end
+
+    describe 'auto filter' do
+      it 'sets auto filter on header row' do
+        expect(worksheet.auto_filter.range).to eq('A5:I5')
+      end
+    end
+
+    describe 'frozen panes' do
+      let(:pane) { worksheet.sheet_view.pane }
+
+      it 'freezes the header rows' do
+        expect(pane.top_left_cell).to eq('A6')
+        expect(pane.state).to eq('frozen')
+        expect(pane.y_split).to eq(5)
+      end
+    end
+
+    describe 'data rows' do
+      it 'adds data rows for each record' do
+        data_rows = worksheet.rows[5..]
+        expect(data_rows.size).to eq(2)
+      end
+
+      it 'populates data correctly' do
+        first_data_row = worksheet.rows[5]
+        expect(first_data_row.cells[0].value).to eq('Import')
+        expect(first_data_row.cells[4].value).to eq('0101000000')
+        expect(first_data_row.cells[6].value).to eq('Added')
+      end
+
+      it 'applies alternating row styles' do
+        first_row_styles = worksheet.rows[5].cells.map(&:style)
+        second_row_styles = worksheet.rows[6].cells.map(&:style)
+        expect(first_row_styles).not_to eq(second_row_styles)
+      end
+    end
+
+    describe 'column widths' do
+      it 'sets column widths correctly' do
+        expected_widths = [20, 30, 30, 15, 20, 50, 30, 30, 22, 80, 60]
+        expect(worksheet.column_info.map(&:width)).to eq(expected_widths)
+      end
     end
   end
 
   describe '#excel_header_row' do
-    let(:instance) { described_class.new(change_records, date) }
+    let(:generator) { described_class.new(change_records, dates) }
 
-    it 'returns the correct header row' do
+    it 'returns the correct header array' do
       expected_headers = [
+        "Import/Export\n(if applicable)",
+        "Impacted Geographical area\n(if applicable)",
+        "Impacted Measure\n(if applicable)",
         'Chapter',
         'Commodity Code',
-        'Commodity description',
-        'Import/Export',
-        'Measure Type',
-        'Measure Geo area',
-        'Additional code',
-        'Duty Expression',
-        'Type of change',
-        'Updated code/data',
-        'Date of effect',
-        'Operation Date',
+        'Commodity Code description',
+        'Change Type',
+        'New / Impacted Detail',
+        'Change Date of Effect',
+        'View OTT for Change Date of Effect',
+        'API call for the changed Commodity',
       ]
+      expect(generator.send(:excel_header_row)).to eq(expected_headers)
+    end
 
-      expect(instance.excel_header_row).to eq(expected_headers)
+    it 'has 11 columns' do
+      expect(generator.send(:excel_header_row).size).to eq(11)
     end
   end
 
   describe '#excel_autofilter_range' do
-    let(:instance) { described_class.new(change_records, date) }
+    let(:generator) { described_class.new(change_records, dates) }
 
-    it 'returns the correct autofilter range' do
-      expect(instance.excel_autofilter_range).to eq('A2:L2')
+    it 'returns the correct range for auto filter' do
+      expect(generator.send(:excel_autofilter_range)).to eq('A5:I5')
     end
   end
 
   describe '#excel_column_widths' do
-    let(:instance) { described_class.new(change_records, date) }
+    let(:generator) { described_class.new(change_records, dates) }
 
-    it 'returns an array of column widths' do
-      widths = instance.excel_column_widths
+    it 'returns the correct column widths' do
+      expected_widths = [20, 30, 30, 15, 20, 50, 30, 30, 22, 80, 60]
+      expect(generator.send(:excel_column_widths)).to eq(expected_widths)
+    end
 
-      expect(widths).to be_an(Array)
-      expect(widths.size).to eq(12)
-      expect(widths[0]).to eq(15)  # Chapter
-      expect(widths[1]).to eq(20)  # Commodity Code
-      expect(widths[2]).to eq(50)  # Commodity Description
+    it 'has widths for all 11 columns' do
+      expect(generator.send(:excel_column_widths).size).to eq(11)
     end
   end
 
-  describe '#excel_cell_types' do
-    let(:instance) { described_class.new(change_records, date) }
-
-    it 'returns an array of cell types' do
-      types = instance.excel_cell_types
-
-      expect(types).to be_an(Array)
-      expect(types.size).to eq(12)
-      expect(types).to all(eq(:string))
-    end
-  end
-
-  describe '#build_excel_row' do
-    let(:instance) { described_class.new(change_records, date) }
-    let(:record) { change_records.first }
-
-    it 'builds the correct row array from a record' do
-      result = instance.build_excel_row(record)
-
-      expect(result).to eq([
-        '01',
-        '0101000000',
-        'Live horses',
-        'Import',
-        '103: Third country duty',
-        'GB: United Kingdom',
-        'A123: Special code',
-        '10%',
-        'Measure added',
-        'new measure',
-        '2024-08-11',
-        date,
-      ])
-    end
-
-    context 'when date_of_effect is nil' do
-      let(:record) { change_records.first.merge(date_of_effect: nil) }
-
-      it 'handles nil date_of_effect gracefully' do
-        result = instance.build_excel_row(record)
-        expect(result[10]).to be_nil
-      end
-    end
-  end
-
-  describe '#excel_cell_styles' do
-    let(:instance) { described_class.new(change_records, date) }
-    let(:workbook) { instance_double(Axlsx::Workbook) }
-    let(:styles) { instance_double(Axlsx::Styles) }
+  describe '#cell_styles' do
+    let(:generator) { described_class.new(change_records, dates) }
 
     before do
-      instance.workbook = workbook
-      allow(workbook).to receive(:styles).and_return(styles)
-      allow(styles).to receive(:add_style).and_return(instance_double(Axlsx::Styles))
+      generator.instance_variable_set(:@workbook, Axlsx::Package.new.workbook)
     end
 
-    it 'creates all necessary styles' do
-      result = instance.excel_cell_styles
+    context 'without background color' do
+      let(:styles) { generator.send(:cell_styles) }
 
-      expect(result).to have_key(:pre_header)
-      expect(result).to have_key(:pre_header_detail)
-      expect(result).to have_key(:header)
-      expect(result).to have_key(:header_detail)
-      expect(result).to have_key(:date)
-      expect(result).to have_key(:commodity_code)
-      expect(result).to have_key(:chapter)
-      expect(result).to have_key(:text)
-      expect(result).to have_key(:center_text)
-      expect(result).to have_key(:change_added)
-      expect(result).to have_key(:change_removed)
-      expect(result).to have_key(:change_updated)
+      it 'returns a hash of styles' do
+        expect(styles).to be_a(Hash)
+        expect(styles.keys).to include(:pre_header, :header, :date, :commodity_code, :chapter, :text, :center_text, :bold_text)
+      end
+
+      it 'creates Axlsx styles' do
+        expect(styles[:text]).to be_a(Integer)
+      end
+    end
+
+    context 'with background color' do
+      let(:styles) { generator.send(:cell_styles, 'F8F9FA') }
+
+      it 'applies background color to styles' do
+        expect(styles).to be_a(Hash)
+      end
     end
   end
 
   describe '#build_row_styles' do
-    let(:instance) { described_class.new(change_records, date) }
-    let(:styles) do
-      {
-        chapter: 'chapter_style',
-        commodity_code: 'commodity_code_style',
-        text: 'text_style',
-        date: 'date_style',
-        change_added: 'change_added_style',
-        change_removed: 'change_removed_style',
-        change_updated: 'change_updated_style',
-      }
+    let(:generator) { described_class.new(change_records, dates) }
+    let(:styles) { generator.send(:build_row_styles, is_even_row: true) }
+
+    before do
+      generator.instance_variable_set(:@workbook, Axlsx::Package.new.workbook)
     end
 
-    context 'when type_of_change contains "added"' do
-      let(:record) { { type_of_change: 'Measure added' } }
+    it 'returns an array of 11 styles' do
+      expect(styles.size).to eq(11)
+    end
+  end
 
-      it 'uses change_added style for type of change column' do
-        result = instance.build_row_styles(styles, record)
-        expect(result[8]).to eq('change_added_style')
-      end
+  describe '#build_excel_row' do
+    let(:generator) { described_class.new(change_records, dates) }
+    let(:record) { change_records.first.first }
+
+    it 'builds a row array from a record hash' do
+      row = generator.send(:build_excel_row, record)
+
+      expect(row).to eq([
+        'Import',
+        'United Kingdom',
+        'Third country duty',
+        '01',
+        '0101000000',
+        'Live horses, asses, mules and hinnies',
+        'Added',
+        'New measure added',
+        '2024-08-11',
+        'https://www.trade-tariff.service.gov.uk/commodities/0101000000',
+        'https://www.trade-tariff.service.gov.uk/api/v2/commodities/0101000000',
+      ])
     end
 
-    context 'when type_of_change contains "removed"' do
-      let(:record) { { type_of_change: 'Measure removed' } }
-
-      it 'uses change_removed style for type of change column' do
-        result = instance.build_row_styles(styles, record)
-        expect(result[8]).to eq('change_removed_style')
-      end
+    it 'formats dates correctly' do
+      row = generator.send(:build_excel_row, record)
+      expect(row[8]).to eq('2024-08-11')
     end
 
-    context 'when type_of_change contains "updated"' do
-      let(:record) { { type_of_change: 'Measure updated' } }
-
-      it 'uses change_updated style for type of change column' do
-        result = instance.build_row_styles(styles, record)
-        expect(result[8]).to eq('change_updated_style')
-      end
+    it 'handles nil dates' do
+      record_with_nil_date = record.merge(date_of_effect: nil)
+      row = generator.send(:build_excel_row, record_with_nil_date)
+      expect(row[8]).to be_nil
     end
 
-    context 'when type_of_change is unrecognized' do
-      let(:record) { { type_of_change: 'Unknown change' } }
-
-      it 'uses change updated style for type of change column' do
-        result = instance.build_row_styles(styles, record)
-        expect(result[8]).to eq('change_updated_style')
-      end
-    end
-
-    it 'returns the correct number of style elements' do
-      record = { type_of_change: 'added' }
-      result = instance.build_row_styles(styles, record)
-      expect(result.size).to eq(12)
+    it 'returns an array with 11 elements' do
+      row = generator.send(:build_excel_row, record)
+      expect(row.size).to eq(11)
     end
   end
 end

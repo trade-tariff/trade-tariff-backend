@@ -17,25 +17,24 @@ RSpec.describe DeltaReportService::MeasureConditionChanges do
   end
 
   describe '.collect' do
-    let(:measure_condition1) { build(:measure_condition, oid: 1, operation_date: date) }
-    let(:measure_condition2) { build(:measure_condition, oid: 2, operation_date: date) }
-    let(:measure_conditions) { [measure_condition1, measure_condition2] }
+    let(:measure_condition_operation1) { instance_double(MeasureCondition.operation_klass, oid: 1, record_from_oplog: measure_condition) }
+    let(:measure_condition_operation2) { instance_double(MeasureCondition.operation_klass, oid: 2, record_from_oplog: measure_condition) }
+    let(:measure_condition_operations) { [measure_condition_operation1, measure_condition_operation2] }
 
     before do
-      allow(MeasureCondition).to receive_message_chain(:where, :order).and_return(measure_conditions)
+      allow(MeasureCondition.operation_klass).to receive(:where).with(operation_date: date).and_return(measure_condition_operations)
     end
 
-    it 'finds measure conditions for the given date and returns analyzed changes' do
-      instance1 = described_class.new(measure_condition1, date)
-      instance2 = described_class.new(measure_condition2, date)
-
-      allow(described_class).to receive(:new).and_return(instance1, instance2)
-      allow(instance1).to receive(:analyze).and_return({ type: 'MeasureCondition' })
-      allow(instance2).to receive(:analyze).and_return({ type: 'MeasureCondition' })
+    it 'finds measure condition operations for the given date and returns analyzed changes' do
+      # Mock the map behavior which creates instances and calls analyze
+      allow(measure_condition_operations).to receive_messages(
+        map: [{ type: 'MeasureCondition' }, { type: 'MeasureCondition' }],
+        compact: [{ type: 'MeasureCondition' }, { type: 'MeasureCondition' }],
+      )
 
       result = described_class.collect(date)
 
-      expect(MeasureCondition).to have_received(:where).with(operation_date: date)
+      expect(MeasureCondition.operation_klass).to have_received(:where).with(operation_date: date)
       expect(result).to eq([{ type: 'MeasureCondition' }, { type: 'MeasureCondition' }])
     end
   end
@@ -56,11 +55,12 @@ RSpec.describe DeltaReportService::MeasureConditionChanges do
         date_of_effect: date,
         change: 'new condition',
       )
-      allow(instance).to receive(:measure_type).with(measure).and_return('103: Third country duty')
+      allow(instance).to receive(:measure_type).with(measure).and_return('Third country duty')
       allow(instance).to receive(:import_export).with(measure).and_return('Import')
-      allow(instance).to receive(:geo_area).with(geographical_area).and_return('GB: United Kingdom')
+      allow(instance).to receive(:geo_area).with(geographical_area, []).and_return('United Kingdom (GB)')
       allow(instance).to receive(:additional_code).with(nil).and_return(additional_code)
       allow(instance).to receive(:duty_expression).with(measure).and_return('10%')
+      allow(Measure.operation_klass).to receive_message_chain(:where, :any?).and_return(false)
     end
 
     context 'when there are no changes' do
@@ -71,7 +71,7 @@ RSpec.describe DeltaReportService::MeasureConditionChanges do
       end
     end
 
-    context 'when record operation is create and measure operation_date equals record operation_date' do
+    context 'when record operation is create and measure was created at the same time' do
       let(:measure_condition_create) { build(:measure_condition, operation: :create, operation_date: date) }
       let(:measure_create) { build(:measure, operation_date: date) }
       let(:instance_create) { described_class.new(measure_condition_create, date) }
@@ -80,10 +80,28 @@ RSpec.describe DeltaReportService::MeasureConditionChanges do
         allow(measure_condition_create).to receive(:measure).and_return(measure_create)
         allow(instance_create).to receive(:get_changes)
         allow(instance_create).to receive(:no_changes?).and_return(false)
+        allow(Measure.operation_klass).to receive_message_chain(:where, :any?).and_return(true)
       end
 
       it 'returns nil' do
         expect(instance_create.analyze).to be_nil
+      end
+    end
+
+    context 'when record operation is create and existing measure was updated at the same time' do
+      let(:measure_condition_create) { build(:measure_condition, operation: :create, operation_date: date) }
+      let(:measure_create) { build(:measure, operation_date: date - 1.day) }
+      let(:instance_create) { described_class.new(measure_condition_create, date) }
+
+      before do
+        allow(measure_condition_create).to receive(:measure).and_return(measure_create)
+        allow(instance_create).to receive(:get_changes)
+        allow(instance_create).to receive(:no_changes?).and_return(false)
+        allow(Measure.operation_klass).to receive_message_chain(:where, :any?).and_return(false)
+      end
+
+      it 'returns changes' do
+        expect(instance_create.analyze).not_to be_nil
       end
     end
 
@@ -94,11 +112,9 @@ RSpec.describe DeltaReportService::MeasureConditionChanges do
         expect(result).to eq({
           type: 'MeasureCondition',
           measure_sid: '12345',
-          measure_type: '103: Third country duty',
+          measure_type: 'Third country duty',
           import_export: 'Import',
-          geo_area: 'GB: United Kingdom',
-          additional_code: additional_code,
-          duty_expression: '10%',
+          geo_area: 'United Kingdom (GB)',
           description: 'Measure Condition updated',
           date_of_effect: date,
           change: 'new condition',
@@ -111,7 +127,7 @@ RSpec.describe DeltaReportService::MeasureConditionChanges do
 
       it 'sets change to empty string' do
         result = instance.analyze
-        expect(result[:change]).to eq('')
+        expect(result[:change]).to be_nil
       end
     end
   end
@@ -119,6 +135,159 @@ RSpec.describe DeltaReportService::MeasureConditionChanges do
   describe '#date_of_effect' do
     it 'returns the date parameter' do
       expect(instance.date_of_effect).to eq(date)
+    end
+  end
+
+  describe '#change' do
+    let(:certificate) { build(:certificate, certificate_type_code: 'Y', certificate_code: '123') }
+    let(:measure_action) { build(:measure_action) }
+
+    before do
+      allow(measure_condition).to receive_messages(certificate: certificate, measure_action: measure_action, measure_action_description: 'Apply the amount of the action', document_code: 'Y123')
+    end
+
+    context 'when requirement_type is :document' do
+      before do
+        allow(measure_condition).to receive_messages(requirement_type: :document, certificate_description: 'Import licence')
+      end
+
+      context 'when certificate has validity_start_date' do
+        let(:certificate_validity_date) { Date.parse('2024-01-01') }
+
+        before do
+          allow(certificate).to receive(:validity_start_date).and_return(certificate_validity_date)
+        end
+
+        it 'uses TimeMachine at certificate validity_start_date' do
+          allow(TimeMachine).to receive(:at).with(certificate_validity_date).and_yield
+
+          instance.change
+
+          expect(TimeMachine).to have_received(:at).with(certificate_validity_date)
+        end
+
+        it 'returns formatted document change string' do
+          result = instance.change
+          expect(result).to eq('Y123: Import licence: Apply the amount of the action')
+        end
+      end
+
+      context 'when certificate has no validity_start_date' do
+        before do
+          allow(certificate).to receive(:validity_start_date).and_return(nil)
+        end
+
+        it 'uses TimeMachine at fallback date' do
+          allow(TimeMachine).to receive(:at).with(date).and_yield
+
+          instance.change
+
+          expect(TimeMachine).to have_received(:at).with(date)
+        end
+
+        it 'returns formatted document change string' do
+          result = instance.change
+          expect(result).to eq('Y123: Import licence: Apply the amount of the action')
+        end
+      end
+
+      context 'when certificate is nil' do
+        before do
+          allow(measure_condition).to receive_messages(certificate: nil, certificate_description: nil)
+        end
+
+        it 'uses TimeMachine at fallback date' do
+          allow(TimeMachine).to receive(:at).with(date).and_yield
+
+          instance.change
+
+          expect(TimeMachine).to have_received(:at).with(date)
+        end
+
+        it 'handles nil certificate gracefully' do
+          result = instance.change
+          expect(result).to eq('Y123: : Apply the amount of the action')
+        end
+      end
+
+      context 'when document_code is complex' do
+        before do
+          allow(measure_condition).to receive_messages(document_code: 'C644', certificate_description: 'Document code C644')
+        end
+
+        it 'formats correctly with different document codes' do
+          result = instance.change
+          expect(result).to eq('C644: Document code C644: Apply the amount of the action')
+        end
+      end
+    end
+
+    context 'when requirement_type is not :document' do
+      before do
+        allow(measure_condition).to receive_messages(requirement_type: :duty_expression, requirement_duty_expression: '12.50 EUR / 100 kg')
+      end
+
+      it 'does not use TimeMachine' do
+        allow(TimeMachine).to receive(:at)
+
+        instance.change
+
+        expect(TimeMachine).not_to have_received(:at)
+      end
+
+      it 'returns formatted duty expression change string' do
+        result = instance.change
+        expect(result).to eq('No document provided: Apply the amount of the action 12.50 EUR / 100 kg')
+      end
+
+      context 'when requirement_duty_expression is nil' do
+        before do
+          allow(measure_condition).to receive(:requirement_duty_expression).and_return(nil)
+        end
+
+        it 'handles nil duty expression' do
+          result = instance.change
+          expect(result).to eq('No document provided: Apply the amount of the action ')
+        end
+      end
+
+      context 'when requirement_type is nil' do
+        before do
+          allow(measure_condition).to receive_messages(requirement_type: nil, requirement_duty_expression: '5.00 GBP / 100 kg')
+        end
+
+        it 'falls through to duty expression path' do
+          result = instance.change
+          expect(result).to eq('No document provided: Apply the amount of the action 5.00 GBP / 100 kg')
+        end
+      end
+
+      context 'when measure_action_description is complex' do
+        before do
+          allow(measure_condition).to receive_messages(measure_action_description: 'The entry into free circulation is not allowed', requirement_duty_expression: '15.00%')
+        end
+
+        it 'formats correctly with longer action descriptions' do
+          result = instance.change
+          expect(result).to eq('No document provided: The entry into free circulation is not allowed 15.00%')
+        end
+      end
+    end
+
+    context 'with TimeMachine integration' do
+      let(:past_date) { Date.parse('2023-01-01') }
+
+      before do
+        allow(measure_condition).to receive_messages(requirement_type: :document, certificate_description: 'Original description')
+        allow(certificate).to receive(:validity_start_date).and_return(past_date)
+      end
+
+      it 'executes the block within TimeMachine context' do
+        allow(TimeMachine).to receive(:at).with(past_date).and_yield
+
+        result = instance.change
+        expect(result).to eq('Y123: Original description: Apply the amount of the action')
+      end
     end
   end
 
@@ -135,29 +304,6 @@ RSpec.describe DeltaReportService::MeasureConditionChanges do
       base_excluded.each do |column|
         expect(expected).to include(column)
       end
-    end
-  end
-
-  describe '#previous_record' do
-    let(:previous_measure_condition) { build(:measure_condition) }
-
-    before do
-      allow(MeasureCondition).to receive(:operation_klass).and_return(MeasureCondition)
-      allow(MeasureCondition).to receive_message_chain(:where, :where, :order, :first)
-                               .and_return(previous_measure_condition)
-    end
-
-    it 'queries for the previous record by measure_condition_sid and oid' do
-      result = instance.previous_record
-
-      expect(result).to eq(previous_measure_condition)
-    end
-
-    it 'memoizes the result' do
-      instance.previous_record
-      instance.previous_record
-
-      expect(MeasureCondition).to have_received(:operation_klass).once
     end
   end
 end

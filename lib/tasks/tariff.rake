@@ -72,23 +72,6 @@ namespace :tariff do
     end
   end
 
-  desc 'Import TARGET file'
-  task import: %i[environment class_eager_load] do
-    if ENV['TARGET'] && TariffSynchronizer::FileService.file_exists?(ENV['TARGET'])
-      Sequel::Model.subclasses.each(&:unrestrict_primary_key)
-      Sequel::Model.plugin :skip_create_refresh
-      dummy_update = OpenStruct.new(file_path: ENV['TARGET'], issue_date: nil)
-
-      if TradeTariffBackend.uk?
-        CdsImporter.new(dummy_update).import
-      else
-        TaricImporter.new(dummy_update).import(validate: false)
-      end
-    else
-      puts 'Please provide TARGET environment variable pointing to Tariff file to import'
-    end
-  end
-
   desc 'Check tree integrity - optionally for DATE'
   task check_integrity: %w[environment] do
     date = ENV['DATE'].presence ? Time.zone.parse(ENV['DATE']).to_day : Time.zone.today
@@ -111,6 +94,11 @@ namespace :tariff do
       Change.dataset.delete
       ChangesTablePopulator.populate_backlog
     end
+  end
+
+  desc 'Populate tariff changes for the past year'
+  task populate_tariff_changes: %w[environment] do
+    TariffChangesService.populate_backlog(from: Time.zone.today - 1.year)
   end
 
   desc 'Refresh materialized views'

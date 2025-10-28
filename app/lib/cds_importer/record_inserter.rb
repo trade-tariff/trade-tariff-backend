@@ -4,9 +4,35 @@ class CdsImporter
 
     delegate :instrument, to: ActiveSupport::Notifications
 
-    def initialize(record_batch, filename)
-      @record_batch = record_batch
+    def initialize(filename)
+      @count = 0
+      @record_batch = []
       @filename = filename
+    end
+
+    def process_record(cds_entity)
+      @record_batch << cds_entity
+      @count += 1
+
+      if @count >= batch_size
+        process_batch
+      end
+    end
+
+    def after_parse
+      process_batch
+    end
+
+    private
+
+    def process_batch
+      save_batch
+      @record_batch.clear
+      @count = 0
+    end
+
+    def batch_size
+      TradeTariffBackend.cds_importer_batch_size
     end
 
     def save_batch
@@ -49,9 +75,7 @@ class CdsImporter
       instrument('cds_importer.import.operations', mapper:, operation: SKIPPED_OPERATION, count: 1, record:)
     end
 
-    private
-
-    attr_reader :record_batch, :mapper, :filename
+    attr_reader :record_batch, :filename
 
     def logger_enabled?
       CdsSynchronizer.cds_logger_enabled

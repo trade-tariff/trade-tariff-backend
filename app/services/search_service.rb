@@ -22,7 +22,7 @@ class SearchService
   class EmptyQuery < StandardError
   end
 
-  attr_reader :q, :result, :as_of, :data_serializer
+  attr_reader :q, :result, :data_serializer
   attr_accessor :resource_id
 
   delegate :serializable_hash, to: :result
@@ -36,15 +36,6 @@ class SearchService
       end
     end
     @data_serializer = data_serializer
-  end
-
-  def as_of=(date)
-    date ||= Time.zone.today.to_s
-    @as_of = begin
-      Date.parse(date)
-    rescue StandardError
-      Time.zone.today
-    end
   end
 
   def q=(term)
@@ -83,21 +74,21 @@ class SearchService
 
   def perform
     @result = if SearchService::RogueSearchService.call(q)
-                NullSearch.new(q, as_of)
+                NullSearch.new(q)
               else
                 if q.present?
                   exact_search.presence || fuzzy_search.presence
-                end || NullSearch.new(q, as_of)
+                end || NullSearch.new(q)
               end
 
     @result
   end
 
   def exact_search
-    ExactSearch.new(q, as_of, resource_id).search!
+    ExactSearch.new(q, resource_id).search!
   end
 
   def fuzzy_search
-    FuzzySearch.new(q, as_of).search!
+    FuzzySearch.new(q).search!
   end
 end

@@ -20,6 +20,12 @@ module Sequel
           def record_class
             self.class.to_s.chomp('::Operation').constantize
           end
+
+          # Instantiates a model record from the oplog entry
+          # Necessary when the record has been deleted
+          def record_from_oplog
+            record_class.from(model.table_name).where(oid: oid).first
+          end
         end
 
         operation_class.one_to_one(
@@ -95,6 +101,19 @@ module Sequel
           else
             :create
           end
+        end
+
+        def previous_record
+          primary_keys = operation_klass.primary_key - [:oid]
+          return nil if primary_keys.empty?
+
+          primary_key_conditions = primary_keys.index_with { |key| self[key] }
+
+          operation_klass
+            .where(primary_key_conditions)
+            .where(Sequel.lit('oid < ?', oid))
+            .order(Sequel.desc(:oid))
+            .first
         end
 
         ##

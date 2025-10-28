@@ -6,6 +6,8 @@ V2Api.routes.draw do
 
   namespace :api, defaults: { format: 'json' }, path: '/' do
     scope module: :v2 do
+      resources :notifications, only: %i[create]
+
       resources :sections, only: %i[index show] do
         collection do
           get :tree
@@ -16,12 +18,14 @@ V2Api.routes.draw do
         end
       end
 
-      namespace :exchange_rates do
-        get 'period_lists(/:year)', to: 'period_lists#show', as: :period_list
-        resources :files, only: [:show]
-      end
+      if TradeTariffBackend.uk?
+        namespace :exchange_rates do
+          get 'period_lists(/:year)', to: 'period_lists#show', as: :period_list
+          resources :files, only: [:show]
+        end
 
-      resources :exchange_rates, only: [:show]
+        resources :exchange_rates, only: [:show]
+      end
 
       resources :chapters, only: %i[index show], constraints: { id: /\d{1,2}/ } do
         member do

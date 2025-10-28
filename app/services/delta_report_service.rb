@@ -1,36 +1,78 @@
 class DeltaReportService
-  def self.generate(date: Time.zone.today)
-    new(date).generate_report
+  include DeltaPresenter
+
+  def self.generate(start_date: Time.zone.today, end_date: nil)
+    return if TradeTariffBackend.xi?
+
+    report = new(start_date, end_date || start_date).generate_report
+
+    if Rails.env.development?
+      report.delete(:package)&.serialize("delta_report_#{report[:dates]}.xlsx")
+    elsif report[:package].present?
+      ReportsMailer.delta(report).deliver_now
+    end
+
+    report
   end
 
-  attr_reader :commodity_change_records, :date
+  attr_reader :commodity_change_records, :start_date, :end_date, :date, :package
 
-  def initialize(date)
-    @date = date
+  def initialize(start_date, end_date)
+    @package = nil
+    @commodity_change_records = []
+    @start_date = start_date
+    @end_date = end_date
     @changes = {}
+    @cache = {
+      declarable_goods: {},
+    }
   end
 
   def generate_report
-    TimeMachine.now do
-      collect_all_changes
-      generate_commodity_change_records
+    start_date.upto(end_date).map do |date|
+      @date = date
+      Rails.logger.info "Processing changes for #{date}"
+
+      # Clear cache for each date to ensure TimeMachine integrity
+      clear_cache
+
+      TimeMachine.at(date) do
+        collect_all_changes
+        @commodity_change_records << generate_commodity_change_records
+      end
     end
 
-    ExcelGenerator.call(commodity_change_records, date)
+    if @commodity_change_records.flatten.any?
+      @package = ExcelGenerator.call(commodity_change_records, dates)
+    end
 
     {
-      date: date,
-      total_records: @commodity_change_records.size,
-      commodity_changes: @commodity_change_records,
+      dates:,
+      total_records: @commodity_change_records.flatten.size,
+      commodity_changes: @commodity_change_records.flatten,
+      package:,
     }
   end
 
   private
 
-  attr_reader :changes
+  attr_reader :changes, :cache
+
+  def dates
+    if end_date == start_date
+      start_date.strftime('%Y_%m_%d')
+    else
+      "#{start_date.strftime('%Y_%m_%d')}_to_#{end_date.strftime('%Y_%m_%d')}"
+    end
+  end
+
+  def clear_cache
+    @cache[:declarable_goods].clear
+  end
 
   def collect_all_changes
     @changes[:goods_nomenclatures] = CommodityChanges.collect(date)
+    @changes[:goods_nomenclature_descriptions] = CommodityDescriptionChanges.collect(date)
     @changes[:measures] = MeasureChanges.collect(date)
     @changes[:measure_components] = MeasureComponentChanges.collect(date)
     @changes[:measure_conditions] = MeasureConditionChanges.collect(date)
@@ -38,42 +80,48 @@ class DeltaReportService
     @changes[:certificates] = CertificateChanges.collect(date)
     @changes[:additional_codes] = AdditionalCodeChanges.collect(date)
     @changes[:excluded_geographical_areas] = ExcludedGeographicalAreaChanges.collect(date)
+    @changes[:footnotes] = FootnoteChanges.collect(date)
+    @changes[:footnote_association_measures] = FootnoteAssociationMeasureChanges.collect(date)
+    @changes[:footnote_association_goods_nomenclature] = FootnoteAssociationGoodsNomenclatureChanges.collect(date)
+    @changes[:quota_events] = QuotaEventChanges.collect(date)
   end
 
   def generate_commodity_change_records
-    @commodity_change_records = []
+    change_records = []
 
     @changes.values.flatten.compact.each do |change|
       affected_goods = find_affected_declarable_goods(change)
 
       affected_goods.each do |commodity|
-        @commodity_change_records << {
+        change_records << {
           type: change[:type],
           operation_date: date,
           chapter: commodity.chapter_short_code,
           commodity_code: commodity.goods_nomenclature_item_id,
-          commodity_code_description: commodity.goods_nomenclature_description.description,
-          import_export: change[:import_export],
-          geo_area: change[:geo_area],
-          additional_code: change[:additional_code],
-          duty_expression: change[:duty_expression],
-          measure_type: change[:measure_type],
+          commodity_code_description: commodity_description(commodity),
+          import_export: change[:import_export] || 'n/a',
+          geo_area: change[:geo_area] || 'n/a',
+          measure_type: change[:measure_type] || 'n/a',
           type_of_change: change[:description],
           date_of_effect: change[:date_of_effect],
           change: change[:change],
+          ott_url: "https://www.trade-tariff.service.gov.uk/commodities/#{commodity.goods_nomenclature_item_id}?day=#{change[:date_of_effect].day}&month=#{change[:date_of_effect].month}&year=#{change[:date_of_effect].year}",
+          api_url: "https://www.trade-tariff.service.gov.uk/uk/api/commodities/#{commodity.goods_nomenclature_item_id}",
         }
       end
     end
 
-    @commodity_change_records.uniq!
-    @commodity_change_records.sort_by! { |record| record[:commodity_code] }
+    change_records.uniq!
+    change_records.sort_by! { |record| record[:commodity_code] }
   end
 
   def find_affected_declarable_goods(change)
     case change[:type]
-    when 'Measure', 'GoodsNomenclature'
+    when 'GoodsNomenclature', 'GoodsNomenclatureDescription', 'FootnoteAssociationGoodsNomenclature'
+      find_declarable_goods_for_sid(change[:goods_nomenclature_sid])
+    when 'Measure'
       find_declarable_goods_for(change)
-    when 'MeasureComponent', 'MeasureCondition', 'ExcludedGeographicalArea'
+    when 'MeasureComponent', 'MeasureCondition', 'ExcludedGeographicalArea', 'FootnoteAssociationMeasure'
       find_declarable_goods_for_measure_association(change)
     when 'GeographicalArea'
       find_declarable_goods_for_geographical_area(change)
@@ -81,6 +129,10 @@ class DeltaReportService
       find_declarable_goods_for_certificate(change)
     when 'AdditionalCode'
       find_declarable_goods_for_additional_code(change)
+    when 'Footnote'
+      find_declarable_goods_for_footnote(change)
+    when 'QuotaEvent'
+      find_declarable_goods_for_quota(change)
     else
       []
     end
@@ -99,7 +151,7 @@ class DeltaReportService
       .where(measure_sid: change[:measure_sid])
       .first
 
-    if measure
+    if measure && Measure.operation_klass.where(measure_sid: change[:measure_sid], operation_date: date).none?
       find_declarable_goods_under_code(measure[:goods_nomenclature_item_id])
     else
       []
@@ -107,65 +159,122 @@ class DeltaReportService
   end
 
   def find_declarable_goods_for_geographical_area(change)
-    measures = Sequel::Model.db[:measures]
-      .where(geographical_area_id: change[:geographical_area_id])
-      .where(operation_date: date)
+    item_ids = Sequel::Model.db[:measures]
+      .where(geographical_area_sid: change[:geographical_area_sid])
       .distinct(:goods_nomenclature_item_id)
+      .select_map([:goods_nomenclature_item_id])
 
-    measures.map { |m| find_declarable_goods_under_code(m[:goods_nomenclature_item_id]) }
-           .flatten
-           .uniq
+    item_ids.map { |id| find_declarable_goods_under_code(id) }
+            .flatten
+            .uniq
   end
 
   def find_declarable_goods_for_certificate(change)
-    conditions = Sequel::Model.db[:measure_conditions]
+    conditions = Sequel::Model.db[:measure_conditions_oplog]
       .where(certificate_type_code: change[:certificate_type_code])
       .where(certificate_code: change[:certificate_code])
       .distinct(:measure_sid)
 
     affected_goods = []
     conditions.each do |condition|
-      measure = Sequel::Model.db[:measures]
+      next if condition[:operation_date] == date
+
+      measure = Measure
         .where(measure_sid: condition[:measure_sid])
         .first
 
-      if measure
-        affected_goods += find_declarable_goods_under_code(measure[:goods_nomenclature_item_id])
-      end
+      next unless measure
+
+      next if Measure.operation_klass.where(measure_sid: measure.measure_sid, operation_date: date).any?
+
+      change[:measure_type] = measure_type(measure)
+      change[:import_export] = import_export(measure)
+      change[:geo_area] = geo_area(measure.geographical_area, measure.excluded_geographical_areas)
+      affected_goods += find_declarable_goods_under_code(measure.goods_nomenclature_item_id)
     end
 
     affected_goods.uniq
   end
 
   def find_declarable_goods_for_additional_code(change)
-    measures = Sequel::Model.db[:measures]
+    item_ids = Sequel::Model.db[:measures]
       .where(additional_code_sid: change[:additional_code_sid])
-      .where(operation_date: date)
       .distinct(:goods_nomenclature_item_id)
+      .select_map([:goods_nomenclature_item_id])
 
-    measures.map { |m| find_declarable_goods_under_code(m[:goods_nomenclature_item_id]) }
-           .flatten
-           .uniq
+    item_ids.map { |id| find_declarable_goods_under_code(id) }
+            .flatten
+            .uniq
+  end
+
+  def find_declarable_goods_for_footnote(change)
+    footnote = Footnote[oid: change[:footnote_oid]]
+    if (measures = footnote&.measures)
+      measures.map { |m| find_declarable_goods_for({ goods_nomenclature_item_id: m.goods_nomenclature_item_id }) }
+              .flatten
+              .uniq
+    elsif (gns = footnote&.goods_nomenclatures)
+      gns.map { |gn| find_declarable_goods_under_code(gn.goods_nomenclature_item_id) }
+         .flatten
+         .uniq
+    else
+      []
+    end
+  end
+
+  def find_declarable_goods_for_quota(change)
+    quota_definition = QuotaDefinition.first(quota_definition_sid: change[:quota_definition_sid])
+    affected_goods = []
+
+    quota_definition.measures.each do |measure|
+      change[:measure_type] = measure_type(measure)
+      change[:import_export] = import_export(measure)
+      change[:geo_area] = geo_area(measure.geographical_area, measure.excluded_geographical_areas)
+      affected_goods += find_declarable_goods_under_code(measure.goods_nomenclature_item_id)
+    end
+
+    affected_goods.uniq
   end
 
   def find_declarable_goods_under_code(goods_nomenclature_item_id)
     return [] unless goods_nomenclature_item_id
 
-    gn = GoodsNomenclature.actual
-      .where(goods_nomenclature_item_id: goods_nomenclature_item_id)
-      .first
+    cache_key = "item_#{goods_nomenclature_item_id}"
+    return @cache[:declarable_goods][cache_key] if @cache[:declarable_goods].key?(cache_key)
 
-    return [] unless gn
+    # Bug exists here that matches to a non-declarable code if the CC is shared
+    gn = GoodsNomenclature.where(goods_nomenclature_item_id: goods_nomenclature_item_id).first
 
-    if gn&.declarable?
-      [gn]
-    else
-      gn.descendants.select(&:declarable?)
-    end
+    result = find_declarable_goods_for_sid(gn&.goods_nomenclature_sid)
+    @cache[:declarable_goods][cache_key] = result
+    result
+  end
+
+  def find_declarable_goods_for_sid(sid)
+    return [] unless sid
+
+    cache_key = "sid_#{sid}"
+    return @cache[:declarable_goods][cache_key] if @cache[:declarable_goods].key?(cache_key)
+
+    gn = GoodsNomenclature.where(goods_nomenclature_sid: sid).first
+
+    result = if gn.nil?
+               []
+             elsif gn&.declarable?
+               [gn]
+             else
+               gn.descendants.select(&:declarable?)
+             end
+
+    @cache[:declarable_goods][cache_key] = result
+    result
   end
 end
 
 # Example usage:
 #
 # Generate report for specific date
-# report = DeltaReportService.generate(date: Date.new(2024, 8, 11))
+# report = DeltaReportService.generate(start_date: Date.new(2025, 7, 24))
+#
+# Generate report for range of dates
+# report = DeltaReportService.generate(start_date: Date.new(2025, 1, 1), end_date: Date.new(2025, 1, 31))

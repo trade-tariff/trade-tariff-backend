@@ -2,8 +2,9 @@ require 'data_migrator'
 
 RSpec.describe CdsUpdatesSynchronizerWorker, type: :worker do
   shared_examples_for 'a synchronizer worker that queues other workers' do
-    it { expect(Sidekiq::Client).to have_received(:enqueue).with(ClearCacheWorker) }
-    it { expect(Sidekiq::Client).to have_received(:enqueue).with(ClearInvalidSearchReferences) }
+    it { expect(Sidekiq::Client).to have_received(:enqueue_in).with(5.minutes, ClearInvalidSearchReferences) }
+    it { expect(Sidekiq::Client).to have_received(:enqueue_in).with(11.minutes, PopulateChangesTableWorker) }
+    it { expect(Sidekiq::Client).to have_received(:enqueue_in).with(5.minutes, ClearCacheWorker) }
   end
 
   describe '#perform' do
@@ -18,6 +19,7 @@ RSpec.describe CdsUpdatesSynchronizerWorker, type: :worker do
       allow(TradeTariffBackend).to receive(:service).and_return(service)
 
       allow(Sidekiq::Client).to receive(:enqueue)
+      allow(Sidekiq::Client).to receive(:enqueue_in)
 
       migrations_dir = Rails.root.join(file_fixture_path).join('data_migrations')
       allow(DataMigrator).to receive_messages(migrations_dir:, migrate_up!: true)
