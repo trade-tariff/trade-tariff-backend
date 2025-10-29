@@ -7,7 +7,11 @@ module Api
 
       set_id :uuid
 
-      attributes :active
+      attributes :active, :metadata
+
+      attribute :subscription_type do |subscription|
+        subscription.subscription_type.name
+      end
     end
   end
 end

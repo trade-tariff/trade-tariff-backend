@@ -29,5 +29,11 @@ FactoryBot.define do
         user.soft_delete!
       end
     end
+
+    trait :with_my_commodities_subscription do
+      after(:create) do |user, _evaluator|
+        user.my_commodities_subscription = true
+      end
+    end
   end
 end

@@ -20,6 +20,10 @@ module Api
           @current_user.stop_press_subscription = user_params[:stop_press_subscription]
         end
 
+        if user_params[:my_commodities_subscription]
+          @current_user.my_commodities_subscription = user_params[:my_commodities_subscription]
+        end
+
         render json: serialize(@current_user)
       rescue Sequel::ValidationFailed => e
         render json: serialize_errors({ error: e }), status: :unprocessable_content
@@ -31,6 +35,7 @@ module Api
         params.require(:data).require(:attributes).permit(
           :chapter_ids,
           :stop_press_subscription,
+          :my_commodities_subscription,
         )
       end
 

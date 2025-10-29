@@ -3,7 +3,12 @@ module PublicUsers
     plugin :auto_validations
     plugin :timestamps, update_on_create: true
 
-    many_to_many :subscription, class: 'PublicUsers::Subscription'
-    many_to_many :subscription_type, class: 'Subscriptions::Type'
+    many_to_one :subscription, class: 'PublicUsers::Subscription', key: :user_subscriptions_uuid, primary_key: :uuid
+
+    dataset_module do
+      def commodities
+        where(target_type: 'commodity')
+      end
+    end
   end
 end
