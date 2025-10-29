@@ -7,12 +7,7 @@ class PopulateChangesTableWorker
     ChangesTablePopulator.populate
     ChangesTablePopulator.cleanup_outdated
 
-    if TariffChange.count.zero?
-      TariffChangesService.populate_backlog
-    else
-      TariffChangesService.generate
-    end
-
-    DeltaReportService.generate
+    TariffChangesService.generate
+    TariffChangesService.generate_report_for(Time.zone.today)
   end
 end

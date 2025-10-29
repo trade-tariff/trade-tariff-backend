@@ -4,23 +4,66 @@ RSpec.describe TariffChangesService do
 
   describe '.generate' do
     let(:service) { instance_double(described_class) }
+    let(:last_change_date) { Time.zone.today - 5.days }
 
     context 'when called without a date' do
-      it 'uses today as the default date' do
-        freeze_time do
-          allow(described_class).to receive(:new).with(Time.zone.today).and_return(service)
-          allow(service).to receive(:all_changes)
+      context 'when there are existing TariffChange records' do
+        before do
+          allow(TariffChange).to receive(:max).with(:operation_date).and_return(last_change_date)
+        end
 
-          described_class.generate
+        context 'when last change date is before today' do
+          it 'populates backlog from day after last change to today' do
+            freeze_time do
+              allow(described_class).to receive(:populate_backlog)
 
-          expect(described_class).to have_received(:new).with(Time.zone.today)
-          expect(service).to have_received(:all_changes)
+              described_class.generate
+
+              expect(described_class).to have_received(:populate_backlog).with(
+                from: last_change_date + 1.day,
+                to: Time.zone.today,
+              )
+            end
+          end
+        end
+
+        context 'when last change date is today' do
+          let(:last_change_date) { Time.zone.today }
+
+          it 'does not populate backlog' do
+            freeze_time do
+              allow(described_class).to receive(:populate_backlog)
+
+              described_class.generate
+
+              expect(described_class).not_to have_received(:populate_backlog)
+            end
+          end
+        end
+      end
+
+      context 'when there are no existing TariffChange records' do
+        before do
+          allow(TariffChange).to receive(:max).with(:operation_date).and_return(nil)
+        end
+
+        it 'populates backlog from one year ago to today' do
+          freeze_time do
+            allow(described_class).to receive(:populate_backlog)
+
+            described_class.generate
+
+            expect(described_class).to have_received(:populate_backlog).with(
+              from: Time.zone.today - 1.year + 1.day,
+              to: Time.zone.today,
+            )
+          end
         end
       end
     end
 
     context 'when called with a specific date' do
-      it 'uses the provided date' do
+      it 'creates a new service instance and calls all_changes' do
         allow(described_class).to receive(:new).with(date).and_return(service)
         allow(service).to receive(:all_changes)
 

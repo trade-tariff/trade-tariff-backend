@@ -5,9 +5,18 @@
 # on the operation date rather than the validity_start_date
 # It is used for the myott Commodity Watchlist feature
 class TariffChangesService
-  def self.generate(date = Time.zone.today)
-    service = new(date)
-    service.all_changes
+  # Generates TariffChange records for the given date.
+  # If no date is provided, it generates for all dates since the last change
+  def self.generate(date = nil)
+    if date.nil?
+      last_change_date = TariffChange.max(:operation_date) || (Time.zone.today - 1.year)
+      if last_change_date < Time.zone.today
+        populate_backlog(from: last_change_date + 1.day, to: Time.zone.today)
+      end
+    else
+      service = new(date)
+      service.all_changes
+    end
   end
 
   def self.populate_backlog(from: Time.zone.today - 1.year, to: Time.zone.today)
