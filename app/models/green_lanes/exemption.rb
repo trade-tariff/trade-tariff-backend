@@ -10,7 +10,8 @@ module GreenLanes
                  right_key: :category_assessment_id,
                  right_primary_key: :id,
                  left_key: :exemption_id,
-                 left_primary_key: :id
+                 left_primary_key: :id,
+                 use_optimized: true
     add_association_dependencies category_assessments: :nullify
     plugin :touch, associations: %i[category_assessments]
   end

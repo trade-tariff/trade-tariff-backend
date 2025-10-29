@@ -31,7 +31,8 @@ module GreenLanes
                               left_key: :category_assessment_id,
                               left_primary_key: :id,
                               right_key: :exemption_id,
-                              right_primary_key: :id
+                              right_primary_key: :id,
+                              use_optimized: true
     add_association_dependencies exemptions: :nullify
 
     dataset_module do

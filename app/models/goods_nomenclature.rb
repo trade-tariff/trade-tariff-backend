@@ -50,7 +50,8 @@ class GoodsNomenclature < Sequel::Model
                         left_primary_key: :goods_nomenclature_sid,
                         right_key: :guide_id,
                         right_primary_key: :id,
-                        join_table: :guides_goods_nomenclatures
+                        join_table: :guides_goods_nomenclatures,
+                        use_optimized: true
 
   one_to_many :goods_nomenclature_indents, key: :goods_nomenclature_sid,
                                            primary_key: :goods_nomenclature_sid,

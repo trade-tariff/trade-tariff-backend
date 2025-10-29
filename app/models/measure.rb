@@ -59,7 +59,8 @@ class Measure < Sequel::Model
                                              right_key: :excluded_geographical_area,
                                              right_primary_key: :geographical_area_id,
                                              order: Sequel.asc(:geographical_area_id),
-                                             class_name: 'GeographicalArea'
+                                             class_name: 'GeographicalArea',
+                                             use_optimized: true
 
   many_to_many :footnotes, join_table: :footnote_association_measures,
                            order: [Sequel.asc(:footnote_type_id, nulls: :first),
@@ -109,7 +110,6 @@ class Measure < Sequel::Model
                                                  left_key: :stopped_regulation_id,
                                                  right_key: :fts_regulation_id,
                                                  right_primary_key: :full_temporary_stop_regulation_id,
-                                                 # use_optimized: false,
                                                  graph_use_association_block: true do |ds|
                                                    ds.with_actual(FullTemporaryStopRegulation)
                                                  end

@@ -119,7 +119,8 @@ RSpec.describe Sequel::Plugins::OptimizedManyToMany do
                           left_key: :parent_id,
                           left_primary_key: :id,
                           right_key: :child_id,
-                          right_primary_key: :id
+                          right_primary_key: :id,
+                          use_optimized: true
     end
 
     it 'loads children with custom dataset' do
@@ -142,6 +143,7 @@ RSpec.describe Sequel::Plugins::OptimizedManyToMany do
                           left_primary_key: :id,
                           right_key: :child_id,
                           right_primary_key: :id,
+                          use_optimized: true,
                           order: Sequel.desc(:name)
     end
 
@@ -165,6 +167,7 @@ RSpec.describe Sequel::Plugins::OptimizedManyToMany do
                           left_primary_key: :id,
                           right_key: :child_id,
                           right_primary_key: :id,
+                          use_optimized: true,
                           order: %i[name id]
     end
 
@@ -188,6 +191,7 @@ RSpec.describe Sequel::Plugins::OptimizedManyToMany do
                           left_primary_key: :id,
                           right_key: :child_id,
                           right_primary_key: :id,
+                          use_optimized: true,
                           use_optimized_dataset: false
     end
 
@@ -213,7 +217,8 @@ RSpec.describe Sequel::Plugins::OptimizedManyToMany do
                           left_key: :parent_id,
                           left_primary_key: :id,
                           right_key: :child_id,
-                          right_primary_key: :id
+                          right_primary_key: :id,
+                          use_optimized: true
     end
 
     it 'eager loads nested associations (children → grandchildren)' do
@@ -230,7 +235,8 @@ RSpec.describe Sequel::Plugins::OptimizedManyToMany do
                           left_key: :parent_id,
                           left_primary_key: :id,
                           right_key: %i[number postcode],
-                          right_primary_key: %i[number postcode]
+                          right_primary_key: %i[number postcode],
+                          use_optimized: true
 
       @a1 = Address.create(number: 1, postcode: 'A1')
       @a2 = Address.create(number: 2, postcode: 'A2')
@@ -259,7 +265,8 @@ RSpec.describe Sequel::Plugins::OptimizedManyToMany do
                            right_key: :parent_id,
                            right_primary_key: :id,
                            left_key: %i[number postcode],
-                           left_primary_key: %i[number postcode]
+                           left_primary_key: %i[number postcode],
+                           use_optimized: true
 
       @a1 = Address.create(number: 1, postcode: 'A1')
       @a2 = Address.create(number: 2, postcode: 'A2')

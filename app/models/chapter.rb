@@ -14,7 +14,8 @@ class Chapter < GoodsNomenclature
                           left_primary_key: :goods_nomenclature_sid,
                           right_primary_key: :id,
                           right_key: :section_id,
-                          join_table: :chapters_sections
+                          join_table: :chapters_sections,
+                          use_optimized: true
 
   include SearchReferenceable
 

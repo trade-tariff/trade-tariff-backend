@@ -63,14 +63,16 @@ module Sequel
           model_class = self
           assoc_name = name.to_sym
 
-          # Full optimization: dataset + eager loader
-          unless opts[:use_optimized] == false || opts[:use_optimized_dataset] == false || opts.key?(:dataset) || block
-            opts[:dataset] = pg_optimized_many_to_many_dataset_proc
-          end
+          if opts[:use_optimized]
+            # Full optimization: dataset + eager loader
+            unless opts[:use_optimized_dataset] == false || opts.key?(:dataset) || block
+              opts[:dataset] = pg_optimized_many_to_many_dataset_proc
+            end
 
-          # Eager loader optimization can be toggled independently
-          unless opts[:use_optimized] == false || opts.key?(:eager_loader)
-            opts[:eager_loader] = pg_optimized_many_to_many_eager_loader_proc(assoc_name, model_class)
+            # Eager loader optimization can be toggled independently
+            unless opts.key?(:eager_loader)
+              opts[:eager_loader] = pg_optimized_many_to_many_eager_loader_proc(assoc_name, model_class)
+            end
           end
 
           super(name, opts, &block)

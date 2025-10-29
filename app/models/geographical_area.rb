@@ -14,7 +14,6 @@ class GeographicalArea < Sequel::Model
   set_primary_key :geographical_area_sid
 
   many_to_many :geographical_area_descriptions,
-               use_optimized: false,
                join_table: :geographical_area_description_periods,
                left_primary_key: :geographical_area_sid,
                left_key: :geographical_area_sid,

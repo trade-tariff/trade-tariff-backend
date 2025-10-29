@@ -3,5 +3,6 @@ class Guide < Sequel::Model
                                      right_key: :goods_nomenclature_sid,
                                      right_primary_key: :goods_nomenclature_sid,
                                      left_primary_key: :id,
-                                     join_table: :guides_goods_nomenclatures
+                                     join_table: :guides_goods_nomenclatures,
+                                     use_optimized: true
 end

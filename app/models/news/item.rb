@@ -6,13 +6,12 @@ module News
     DISPLAY_REGULAR = 0
     MAX_SLUG_LENGTH = 254
 
-    many_to_many :collections, join_table: :news_collections_news_items, use_optimized: false
+    many_to_many :collections, join_table: :news_collections_news_items
     plugin :association_dependencies, collections: :nullify
 
     many_to_many :published_collections, join_table: :news_collections_news_items,
                                          conditions: { published: true },
                                          right_key: :collection_id,
-                                         use_optimized: false,
                                          class_name: '::News::Collection'
 
     def collection_ids=(ids)

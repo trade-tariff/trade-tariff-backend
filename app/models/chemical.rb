@@ -3,7 +3,8 @@ class Chemical < Sequel::Model
                                      right_key: :goods_nomenclature_sid,
                                      right_primary_key: :goods_nomenclature_sid,
                                      left_key: :chemical_id,
-                                     left_primary_key: :id
+                                     left_primary_key: :id,
+                                     use_optimized: true
   one_to_many :chemical_names
 
   def name

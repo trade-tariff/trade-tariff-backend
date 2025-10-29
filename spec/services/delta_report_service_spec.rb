@@ -647,7 +647,7 @@ RSpec.describe DeltaReportService do
       let(:declarable_commodity) { create_test_commodity(item_id: '0101000000', sid: 100) }
 
       before do
-        db_double = instance_double(Sequel::Database)
+        db_double = Sequel::Model.db
         conditions_dataset = instance_double(Sequel::Dataset)
         measures_dataset = instance_double(Sequel::Dataset)
         measure_dataset = instance_double(Sequel::Dataset)
