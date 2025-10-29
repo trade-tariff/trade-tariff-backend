@@ -18,6 +18,17 @@ class TariffChangesService
     end
   end
 
+  def self.generate_report_for(date)
+    change_records = TransformRecords.call(date)
+    package = ExcelGenerator.call(change_records, date)
+
+    if Rails.env.development?
+      package.serialize("commodity_watchlist_#{date.strftime('%Y_%m_%d')}.xlsx")
+    else
+      ReportsMailer.commodity_watchlist(date, package).deliver_now
+    end
+  end
+
   attr_reader :tariff_change_records, :date
 
   def initialize(date)

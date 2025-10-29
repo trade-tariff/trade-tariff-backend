@@ -32,6 +32,87 @@ RSpec.describe TariffChangesService do
     end
   end
 
+  describe '.generate_report_for' do
+    let(:date) { Date.new(2024, 8, 11) }
+    let(:change_records) { [{ dummy: 'data' }] }
+    let(:package) { instance_double(Axlsx::Package) }
+    let(:mailer_double) { instance_double(ActionMailer::MessageDelivery) }
+
+    before do
+      allow(TariffChangesService::TransformRecords).to receive(:call).with(date).and_return(change_records)
+      allow(TariffChangesService::ExcelGenerator).to receive(:call).with(change_records, date).and_return(package)
+    end
+
+    context 'when in development environment' do
+      before do
+        allow(Rails.env).to receive(:development?).and_return(true)
+        allow(package).to receive(:serialize)
+      end
+
+      it 'transforms records for the given date' do
+        described_class.generate_report_for(date)
+
+        expect(TariffChangesService::TransformRecords).to have_received(:call).with(date)
+      end
+
+      it 'generates Excel package with the transformed records' do
+        described_class.generate_report_for(date)
+
+        expect(TariffChangesService::ExcelGenerator).to have_received(:call).with(change_records, date)
+      end
+
+      it 'serializes the package to a file with correct filename' do
+        described_class.generate_report_for(date)
+
+        expected_filename = "commodity_watchlist_#{date.strftime('%Y_%m_%d')}.xlsx"
+        expect(package).to have_received(:serialize).with(expected_filename)
+      end
+
+      it 'does not send an email' do
+        allow(ReportsMailer).to receive(:commodity_watchlist)
+
+        described_class.generate_report_for(date)
+
+        expect(ReportsMailer).not_to have_received(:commodity_watchlist)
+      end
+    end
+
+    context 'when in non-development environment' do
+      before do
+        allow(Rails.env).to receive(:development?).and_return(false)
+        allow(ReportsMailer).to receive(:commodity_watchlist).with(date, package).and_return(mailer_double)
+        allow(mailer_double).to receive(:deliver_now)
+      end
+
+      it 'transforms records for the given date' do
+        described_class.generate_report_for(date)
+
+        expect(TariffChangesService::TransformRecords).to have_received(:call).with(date)
+      end
+
+      it 'generates Excel package with the transformed records' do
+        described_class.generate_report_for(date)
+
+        expect(TariffChangesService::ExcelGenerator).to have_received(:call).with(change_records, date)
+      end
+
+      it 'sends email with the package' do
+        described_class.generate_report_for(date)
+
+        expect(ReportsMailer).to have_received(:commodity_watchlist).with(date, package)
+        expect(mailer_double).to have_received(:deliver_now)
+      end
+
+      it 'does not serialize the package to a file' do
+        allow(package).to receive(:serialize)
+
+        described_class.generate_report_for(date)
+
+        expect(package).not_to have_received(:serialize)
+      end
+    end
+  end
+
   describe '#initialize' do
     it 'sets the date and initializes empty collections' do
       expect(service.date).to eq(date)
