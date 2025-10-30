@@ -1,9 +1,11 @@
 module Api
   module User
     class PublicUsersController < ApiController
+      include PublicUserAuthenticatable
+
       no_caching
 
-      before_action :authenticate_token!
+      before_action :authenticate_user!
 
       attr_reader :current_user
 
@@ -45,33 +47,6 @@ module Api
 
       def serialize_errors(errors)
         Api::User::ErrorSerializationService.new.serialized_errors(errors)
-      end
-
-      def authenticate_token!
-        if token.present?
-          payload = CognitoTokenVerifier.verify_id_token(token)
-          if payload
-            @current_user = PublicUsers::User.active[external_id: payload['sub']]
-            @current_user ||= PublicUsers::User.create(external_id: payload['sub'])
-            @current_user.email = payload['email']
-          end
-        end
-
-        if Rails.env.development? && @current_user.nil?
-          @current_user = PublicUsers::User.active[external_id: 'dummy_user']
-          @current_user ||= PublicUsers::User.create(external_id: 'dummy_user')
-          @current_user.email = 'dummy@user.com'
-        end
-
-        if @current_user.nil?
-          render json: { message: 'No bearer token was provided' }, status: :unauthorized
-        end
-      end
-
-      def token
-        pattern = /^Bearer /
-        header = request.headers['Authorization']
-        header.gsub(pattern, '') if header&.match(pattern)
       end
     end
   end
