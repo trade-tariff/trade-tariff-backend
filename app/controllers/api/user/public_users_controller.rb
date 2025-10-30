@@ -3,7 +3,7 @@ module Api
     class PublicUsersController < ApiController
       no_caching
 
-      before_action :authenticate_token!
+      before_action :authenticate_user!
 
       attr_reader :current_user
 
@@ -47,20 +47,13 @@ module Api
         Api::User::ErrorSerializationService.new.serialized_errors(errors)
       end
 
-      def authenticate_token!
+      def authenticate_user!
         if token.present?
-          payload = CognitoTokenVerifier.verify_id_token(token)
-          if payload
-            @current_user = PublicUsers::User.active[external_id: payload['sub']]
-            @current_user ||= PublicUsers::User.create(external_id: payload['sub'])
-            @current_user.email = payload['email']
-          end
+          @current_user = Api::User::UserService.find_or_create(token)
         end
 
-        if Rails.env.development? && @current_user.nil?
-          @current_user = PublicUsers::User.active[external_id: 'dummy_user']
-          @current_user ||= PublicUsers::User.create(external_id: 'dummy_user')
-          @current_user.email = 'dummy@user.com'
+        if Rails.env.development?
+          @current_user ||= Api::User::DummyUserService.find_or_create
         end
 
         if @current_user.nil?

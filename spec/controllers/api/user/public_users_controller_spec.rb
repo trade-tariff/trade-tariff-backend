@@ -70,6 +70,32 @@ RSpec.describe Api::User::PublicUsersController do
 
       it { is_expected.to have_http_status :ok }
     end
+
+    context 'when in development environment without valid token' do
+      let(:token) { nil }
+
+      before do
+        allow(Rails).to receive(:env).and_return(ActiveSupport::StringInquirer.new('development'))
+        allow(CognitoTokenVerifier).to receive(:verify_id_token).and_return(nil)
+        allow(IdentityApiClient).to receive(:get_email).and_return('dummy@user.com')
+      end
+
+      it 'uses dummy user service to create/find dummy user' do
+        allow(Api::User::DummyUserService).to receive(:find_or_create).and_call_original
+
+        expect {
+          get :show
+        }.to change(PublicUsers::User, :count).by(1)
+
+        expect(Api::User::DummyUserService).to have_received(:find_or_create)
+
+        dummy_user = PublicUsers::User.last
+        expect(dummy_user.external_id).to eq('dummy_user')
+        expect(dummy_user.email).to eq('dummy@user.com')
+      end
+
+      it { is_expected.to have_http_status :ok }
+    end
   end
 
   describe 'PATCH #update' do
