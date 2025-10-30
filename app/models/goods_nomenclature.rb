@@ -47,7 +47,11 @@ class GoodsNomenclature < Sequel::Model
   one_to_many :full_chemicals, key: :goods_nomenclature_sid
 
   many_to_many :guides, left_key: :goods_nomenclature_sid,
-                        join_table: :guides_goods_nomenclatures
+                        left_primary_key: :goods_nomenclature_sid,
+                        right_key: :guide_id,
+                        right_primary_key: :id,
+                        join_table: :guides_goods_nomenclatures,
+                        use_optimized: true
 
   one_to_many :goods_nomenclature_indents, key: :goods_nomenclature_sid,
                                            primary_key: :goods_nomenclature_sid,

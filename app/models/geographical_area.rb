@@ -46,7 +46,9 @@ class GeographicalArea < Sequel::Model
   many_to_many :contained_geographical_areas, class_name: 'GeographicalArea',
                                               join_table: :geographical_area_memberships,
                                               left_key: :geographical_area_group_sid,
+                                              left_primary_key: :geographical_area_sid,
                                               right_key: :geographical_area_sid,
+                                              right_primary_key: :geographical_area_sid,
                                               class: self do |ds|
     ds.with_actual(GeographicalAreaMembership).order(Sequel.asc(:geographical_area_id))
   end
@@ -54,7 +56,9 @@ class GeographicalArea < Sequel::Model
   many_to_many :included_geographical_areas, class_name: 'GeographicalArea',
                                              join_table: :geographical_area_memberships,
                                              left_key: :geographical_area_sid,
+                                             left_primary_key: :geographical_area_sid,
                                              right_key: :geographical_area_group_sid,
+                                             right_primary_key: :geographical_area_sid,
                                              class: self do |ds|
     ds.with_actual(GeographicalAreaMembership).order(Sequel.asc(:geographical_area_id))
   end

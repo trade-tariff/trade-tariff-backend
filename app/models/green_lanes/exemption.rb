@@ -6,7 +6,12 @@ module GreenLanes
     plugin :association_dependencies
 
     many_to_many :category_assessments,
-                 join_table: :green_lanes_category_assessments_exemptions
+                 join_table: :green_lanes_category_assessments_exemptions,
+                 right_key: :category_assessment_id,
+                 right_primary_key: :id,
+                 left_key: :exemption_id,
+                 left_primary_key: :id,
+                 use_optimized: true
     add_association_dependencies category_assessments: :nullify
     plugin :touch, associations: %i[category_assessments]
   end

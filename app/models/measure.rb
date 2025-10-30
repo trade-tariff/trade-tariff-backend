@@ -66,7 +66,9 @@ class Measure < Sequel::Model
                            order: [Sequel.asc(:footnote_type_id, nulls: :first),
                                    Sequel.asc(:footnote_id, nulls: :first)],
                            left_key: :measure_sid,
+                           left_primary_key: :measure_sid,
                            right_key: %i[footnote_type_id footnote_id],
+                           right_primary_key: %i[footnote_type_id footnote_id],
                            graph_use_association_block: true do |ds|
                              ds.with_actual(Footnote)
                            end

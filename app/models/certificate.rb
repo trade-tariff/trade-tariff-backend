@@ -30,7 +30,8 @@ class Certificate < Sequel::Model
 
   many_to_many :measures, join_table: :measure_conditions,
                           left_key: %i[certificate_code certificate_type_code],
-                          right_key: :measure_sid
+                          right_key: :measure_sid,
+                          use_optimized: false
 
   one_to_many :certificate_types, key: :certificate_type_code,
                                   primary_key: :certificate_type_code do |ds|
