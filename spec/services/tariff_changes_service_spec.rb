@@ -86,6 +86,16 @@ RSpec.describe TariffChangesService do
       allow(TariffChangesService::ExcelGenerator).to receive(:call).with(change_records, date).and_return(package)
     end
 
+    context 'when there are no records' do
+      let(:change_records) { [] }
+
+      it 'returns early' do
+        described_class.generate_report_for(date)
+
+        expect(TariffChangesService::ExcelGenerator).not_to have_received(:call)
+      end
+    end
+
     context 'when in development environment' do
       before do
         allow(Rails.env).to receive(:development?).and_return(true)

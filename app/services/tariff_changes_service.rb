@@ -29,6 +29,9 @@ class TariffChangesService
 
   def self.generate_report_for(date)
     change_records = TransformRecords.call(date)
+
+    return if change_records.empty?
+
     package = ExcelGenerator.call(change_records, date)
 
     if Rails.env.development?
