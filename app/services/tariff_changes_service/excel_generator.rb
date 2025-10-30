@@ -70,15 +70,13 @@ class TariffChangesService
       index = 0
 
       @change_records.each_slice(100) do |batch|
-        batch.each do |records_array|
-          records_array.each do |record|
-            sheet.add_row(
-              build_excel_row(record),
-              types: [:string] * 11,
-              style: build_row_styles(is_even_row: index.even?),
-            )
-            index += 1
-          end
+        batch.each do |record|
+          sheet.add_row(
+            build_excel_row(record),
+            types: [:string] * 11,
+            style: build_row_styles(is_even_row: index.even?),
+          )
+          index += 1
         end
       end
     end

@@ -2,34 +2,32 @@ RSpec.describe TariffChangesService::ExcelGenerator do
   let(:date) { '2024-08-11' }
   let(:change_records) do
     [
-      [
-        {
-          import_export: 'Import',
-          geo_area: 'United Kingdom',
-          measure_type: 'Third country duty',
-          chapter: '01',
-          commodity_code: '0101000000',
-          commodity_code_description: 'Live horses, asses, mules and hinnies',
-          type_of_change: 'Added',
-          change: 'New measure added',
-          date_of_effect: '2024-08-11',
-          ott_url: 'https://www.trade-tariff.service.gov.uk/commodities/0101000000',
-          api_url: 'https://www.trade-tariff.service.gov.uk/api/v2/commodities/0101000000',
-        },
-        {
-          import_export: 'Export',
-          geo_area: 'European Union',
-          measure_type: 'Export licence',
-          chapter: '02',
-          commodity_code: '0202000000',
-          commodity_code_description: 'Meat of bovine animals, frozen',
-          type_of_change: 'Updated',
-          change: 'Rate changed from 5% to 7%',
-          date_of_effect: '2024-08-12',
-          ott_url: 'https://www.trade-tariff.service.gov.uk/commodities/0202000000',
-          api_url: 'https://www.trade-tariff.service.gov.uk/api/v2/commodities/0202000000',
-        },
-      ],
+      {
+        import_export: 'Import',
+        geo_area: 'United Kingdom',
+        measure_type: 'Third country duty',
+        chapter: '01',
+        commodity_code: '0101000000',
+        commodity_code_description: 'Live horses, asses, mules and hinnies',
+        type_of_change: 'Added',
+        change: 'New measure added',
+        date_of_effect: '2024-08-11',
+        ott_url: 'https://www.trade-tariff.service.gov.uk/commodities/0101000000',
+        api_url: 'https://www.trade-tariff.service.gov.uk/api/v2/commodities/0101000000',
+      },
+      {
+        import_export: 'Export',
+        geo_area: 'European Union',
+        measure_type: 'Export licence',
+        chapter: '02',
+        commodity_code: '0202000000',
+        commodity_code_description: 'Meat of bovine animals, frozen',
+        type_of_change: 'Updated',
+        change: 'Rate changed from 5% to 7%',
+        date_of_effect: '2024-08-12',
+        ott_url: 'https://www.trade-tariff.service.gov.uk/commodities/0202000000',
+        api_url: 'https://www.trade-tariff.service.gov.uk/api/v2/commodities/0202000000',
+      },
     ]
   end
 
@@ -268,7 +266,7 @@ RSpec.describe TariffChangesService::ExcelGenerator do
 
   describe '#build_excel_row' do
     let(:generator) { described_class.new(change_records, date) }
-    let(:record) { change_records.first.first }
+    let(:record) { change_records.first }
 
     it 'builds a row array from a record hash' do
       row = generator.send(:build_excel_row, record)
