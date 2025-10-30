@@ -27,7 +27,7 @@ class TariffChangesService
     end
   end
 
-  def self.generate_report_for(date)
+  def self.generate_report_for(date = Time.zone.yesterday)
     change_records = TransformRecords.call(date)
 
     return if change_records.empty?

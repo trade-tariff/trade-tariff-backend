@@ -1,7 +1,7 @@
 class DeltaReportService
   include DeltaPresenter
 
-  def self.generate(start_date: Time.zone.today, end_date: nil)
+  def self.generate(start_date: Time.zone.yesterday, end_date: nil)
     return if TradeTariffBackend.xi?
 
     report = new(start_date, end_date || start_date).generate_report
