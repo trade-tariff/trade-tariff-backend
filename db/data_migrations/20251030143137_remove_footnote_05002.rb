@@ -12,7 +12,7 @@ Sequel.migration do
                    .where(
                      footnote_type: FOOTNOTE_TYPE_ID,
                      footnote_id: FOOTNOTE_ID,
-                     ).delete
+                   ).delete
 
     end
   end
