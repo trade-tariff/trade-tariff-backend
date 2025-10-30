@@ -1,10 +1,10 @@
 class TariffChangesService
   class CommodityChanges < BaseChanges
     def self.collect(date)
-      GoodsNomenclature
+      GoodsNomenclature.operation_klass
         .where(operation_date: date)
-        .map { |record|
-          new(record, date).analyze if record.declarable?
+        .map { |op_record|
+          new(op_record.record, date).analyze if op_record.record.declarable?
         }
         .compact
     end

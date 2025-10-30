@@ -8,6 +8,7 @@ class PopulateChangesTableWorker
     ChangesTablePopulator.cleanup_outdated
 
     TariffChangesService.generate
-    TariffChangesService.generate_report_for(Time.zone.today)
+    TariffChangesService.generate_report_for(Time.zone.yesterday)
+    DeltaReportService.generate
   end
 end

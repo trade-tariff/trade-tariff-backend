@@ -1,12 +1,12 @@
 class TariffChangesService
   class CommodityDescriptionChanges < BaseChanges
     def self.collect(date)
-      # Collect updated commodity descriptions only
-      GoodsNomenclatureDescription
+      # Collect updated descriptions for declarable commodities only
+      GoodsNomenclatureDescription.operation_klass
         .where(operation_date: date)
         .where(operation: 'U')
-        .map { |record|
-          new(record, date).analyze if record.goods_nomenclature&.declarable?
+        .map { |op_record|
+          new(op_record.record, date).analyze if op_record.record.goods_nomenclature&.declarable?
         }
         .compact
     end
