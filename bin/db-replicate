@@ -91,13 +91,13 @@ echo "SQL backup restored successfully"
 echo "Starting services  $SERVICES"
 start_services
 
-END_TIME=$(date +%s)
-ELAPSED_TIME=$((END_TIME - START_TIME))
-
-echo "Database replication complete. Time: ${ELAPSED_TIME}s"
-
 echo "Syncing exchange rates"
 
 sync_buckets "production" "$ENVIRONMENT"
 
 echo "Exchange rates synced successfully"
+
+END_TIME=$(date +%s)
+ELAPSED_TIME=$((END_TIME - START_TIME))
+
+echo "Database replication and exchange rate syncing complete. Time: ${ELAPSED_TIME}s"
