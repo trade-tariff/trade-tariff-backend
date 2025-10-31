@@ -9,6 +9,11 @@ set -o noclobber
 START_TIME=$(date +%s)
 
 declare -A SERVICE_COUNTS
+declare -A ACCOUNT_IDS=(
+    ["development"]="844815912454"
+    ["staging"]="451934005581"
+    ["production"]="382373577178"
+)
 
 if [ -z "$ENVIRONMENT" ]; then
   echo "You need to set the ENVIRONMENT environment variable."
@@ -60,6 +65,22 @@ start_services() {
   done
 }
 
+lookup_persistence_bucket() {
+  local environment=$1
+  local account_id=${ACCOUNT_IDS[$environment]}
+
+  echo "s3://trade-tariff-persistence-$account_id"
+}
+
+sync_buckets() {
+  local source_bucket
+  local target_bucket
+  source_bucket="$(lookup_persistence_bucket "$1")"
+  target_bucket="$(lookup_persistence_bucket "$2")"
+
+  aws s3 sync "$source_bucket/data/exchange_rates/" "$target_bucket/data/exchange_rates/"
+}
+
 echo "Stopping services $SERVICES"
 stop_services
 
@@ -70,7 +91,13 @@ echo "SQL backup restored successfully"
 echo "Starting services  $SERVICES"
 start_services
 
+echo "Syncing exchange rates"
+
+sync_buckets "production" "$ENVIRONMENT"
+
+echo "Exchange rates synced successfully"
+
 END_TIME=$(date +%s)
 ELAPSED_TIME=$((END_TIME - START_TIME))
 
-echo "Database replication complete. Time: ${ELAPSED_TIME}s"
+echo "Database replication and exchange rate syncing complete. Time: ${ELAPSED_TIME}s"
