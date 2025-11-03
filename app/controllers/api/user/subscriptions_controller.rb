@@ -26,7 +26,7 @@ module Api
     private
 
       def serialize(subscription)
-        Api::User::SubscriptionSerializer.new(subscription).serializable_hash
+        Api::User::SubscriptionSerializer.new(subscription, include: [:subscription_type]).serializable_hash
       end
 
       def authenticate_token!
@@ -40,7 +40,9 @@ module Api
           @current_user ||= PublicUsers::User.create(external_id: 'dummy_user')
           @current_user.email = 'dummy@user.com'
           @subscription ||= PublicUsers::Subscription.find(user_id: @current_user.id)
-          @subscription.update(subscription_type_id: Subscriptions::Type.my_commodities.id, active: true)
+          if @subscription.nil?
+            @subscription = PublicUsers::Subscription.create(user_id: @current_user.id)
+          end
         end
 
         if @subscription.nil?
