@@ -39,7 +39,7 @@ repos:
     rev: v1.3.6
     hooks:
       - id: rubocop
-        args: ["--auto-correct"]
+        args: ["--autocorrect"]
 
 
   - repo: https://github.com/rhysd/actionlint.git
