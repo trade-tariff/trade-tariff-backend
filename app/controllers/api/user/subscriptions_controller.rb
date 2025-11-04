@@ -1,9 +1,12 @@
 module Api
   module User
     class SubscriptionsController < ApiController
+      include PublicUserAuthenticatable
+
       no_caching
 
-      before_action :authenticate_token!
+      before_action :authenticate_user!, except: %i[destroy]
+      before_action :find_subscription
 
       def show
         render json: serialize(@subscription)
@@ -29,28 +32,21 @@ module Api
         Api::User::SubscriptionSerializer.new(subscription, include: [:subscription_type]).serializable_hash
       end
 
-      def authenticate_token!
-        if token.present?
-          @subscription = PublicUsers::Subscription.find(uuid: token)
-          @current_user = @subscription&.user
-        end
-
-        if Rails.env.development? && @current_user.nil?
-          @current_user = PublicUsers::User.active[external_id: 'dummy_user']
-          @current_user ||= PublicUsers::User.create(external_id: 'dummy_user')
-          @current_user.email = 'dummy@user.com'
-          @subscription ||= PublicUsers::Subscription.find(user_id: @current_user.id)
-          if @subscription.nil?
-            @subscription = PublicUsers::Subscription.create(user_id: @current_user.id)
-          end
+      def find_subscription
+        if subscription_id.present?
+          @subscription = if @current_user.present?
+                            @current_user.subscriptions_dataset.where(uuid: subscription_id).first
+                          else
+                            PublicUsers::Subscription.find(uuid: subscription_id)
+                          end
         end
 
         if @subscription.nil?
-          render json: { message: 'No token was provided' }, status: :unauthorized
+          render json: { message: 'No subscription ID was provided' }, status: :unauthorized
         end
       end
 
-      def token
+      def subscription_id
         params[:id]
       end
 
