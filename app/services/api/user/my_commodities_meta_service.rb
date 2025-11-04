@@ -1,9 +1,9 @@
 module Api
   module User
     class MyCommoditiesMetaService
-      def initialize(commodity_codes, subscription_target_ids)
-        @commodity_codes = commodity_codes
-        @subscription_target_ids = subscription_target_ids
+      def initialize(subscription)
+        @commodity_codes = subscription.metadata['commodity_codes']
+        @subscription_target_ids = subscription.subscription_targets_dataset.commodities.map(&:target_id)
       end
 
       def call

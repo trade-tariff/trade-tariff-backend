@@ -5,7 +5,29 @@ RSpec.describe Api::User::MyCommoditiesMetaService do
            metadata: { 'commodity_codes' => %w[1234567890 1234567891 9999999999] })
   end
 
-  let(:targets) { %w[1234567890 1234567891 1234567892] }
+  let!(:commodity_active) do
+    create(:commodity, :actual,
+           goods_nomenclature_item_id: '1234567890')
+  end
+
+  let!(:commodity_expired) do
+    create(:commodity, :expired,
+           goods_nomenclature_item_id: '1234567891')
+  end
+
+  let!(:targets) do
+    [
+      create(:subscription_target,
+             user_subscriptions_uuid: subscription.uuid,
+             target_id: commodity_active.goods_nomenclature_sid,
+             target_type: 'commodity'),
+      create(:subscription_target,
+             user_subscriptions_uuid: subscription.uuid,
+             target_id: commodity_expired.goods_nomenclature_sid,
+             target_type: 'commodity'),
+
+    ]
+  end
 
   let(:expected) do
     {
@@ -16,9 +38,10 @@ RSpec.describe Api::User::MyCommoditiesMetaService do
     }
   end
 
-  let(:service) { described_class.new(subscription.metadata['commodity_codes'], targets) }
+  let(:service) { described_class.new(subscription) }
 
   before do
+    targets
     service_double = instance_double(Api::User::ActiveCommoditiesService, call: expected)
     allow(Api::User::ActiveCommoditiesService)
       .to receive(:new)
