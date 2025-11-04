@@ -20,6 +20,7 @@ class ApplicationController < ActionController::API
   def append_info_to_payload(payload)
     super
     payload[:user_agent] = request.headers['HTTP_X_ORIGINAL_USER_AGENT'].presence || request.env['HTTP_USER_AGENT']
+    payload[:client_id] = request.headers['HTTP_X_CLIENT_ID']
   end
 
   private
