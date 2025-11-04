@@ -12,6 +12,15 @@ module Api
       attribute :subscription_type do |subscription|
         subscription.subscription_type.name
       end
+
+      attribute :meta do |subscription|
+        service_class = "Api::User::#{subscription.subscription_type.name.camelize}MetaService".safe_constantize
+        if service_class
+          service_class.new(subscription).call
+        end
+      end
+
+      has_one :subscription_type, serializer: Api::User::SubscriptionTypeSerializer
     end
   end
 end
