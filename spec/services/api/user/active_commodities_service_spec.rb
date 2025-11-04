@@ -1,8 +1,9 @@
 RSpec.describe Api::User::ActiveCommoditiesService do
-  subject(:service) { described_class.new(commodity_codes, target_ids) }
+  subject(:service) { described_class.new(subscription) }
 
   let(:target_ids) { [123, 456, 789, 321, 654] }
   let(:commodity_codes) { %w[1234567890 1234567891 1234567892 1234567893 1234567894 1234567895 1234567896] }
+  let(:subscription) { create(:user_subscription, metadata: { commodity_codes: commodity_codes }) }
 
   let(:expected_active_codes) { %w[1234567890] }
   let(:expected_expired_codes) { %w[1234567891 1234567896] }
@@ -12,6 +13,15 @@ RSpec.describe Api::User::ActiveCommoditiesService do
   describe '#call' do
     before do
       TradeTariffRequest.time_machine_now = Time.current
+
+      # Create subscription targets for each target_id
+      target_ids.each do |target_id|
+        create(:subscription_target,
+               user_subscriptions_uuid: subscription.uuid,
+               target_id: target_id,
+               target_type: 'commodity')
+      end
+
       create(:commodity, :actual, goods_nomenclature_item_id: '1234567890', goods_nomenclature_sid: 123)
       create(:commodity, :expired, goods_nomenclature_item_id: '1234567891', goods_nomenclature_sid: 456)
       create(:commodity, :actual, :non_declarable, goods_nomenclature_item_id: '1234567894', goods_nomenclature_sid: 789)
