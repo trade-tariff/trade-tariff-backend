@@ -5,13 +5,14 @@ module Api
 
       no_caching
 
-      before_action :authenticate_user!, except: %i[destroy]
+      before_action :authenticate!, except: %i[destroy]
       before_action :find_subscription
 
       def show
         render json: serialize(@subscription)
       end
 
+      # subscriptions are deleted without a user being authenticated
       def destroy
         @subscription.unsubscribe
 

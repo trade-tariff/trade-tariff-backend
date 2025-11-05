@@ -4,7 +4,7 @@ module PublicUserAuthenticatable
   included do
     private
 
-    def authenticate_user!
+    def authenticate!
       if user_token.present?
         @current_user = Api::User::UserService.find_or_create(user_token)
       end

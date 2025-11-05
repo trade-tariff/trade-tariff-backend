@@ -5,7 +5,7 @@ module Api
 
       no_caching
 
-      before_action :authenticate_user!
+      before_action :authenticate!
 
       attr_reader :current_user
 
