@@ -61,15 +61,15 @@ module PublicUsers
     end
 
     def stop_press_subscription
-      subscription_for(Subscriptions::Type.stop_press)
+      subscription_for(Subscriptions::Type.stop_press)&.uuid || false
     end
 
     def my_commodities_subscription
-      subscription_for(Subscriptions::Type.my_commodities)
+      subscription_for(Subscriptions::Type.my_commodities)&.uuid || false
     end
 
     def subscription_for(type)
-      subscriptions_dataset.where(subscription_type: type, active: true).first&.uuid || false
+      subscriptions_dataset.where(subscription_type: type, active: true).first
     end
 
     def stop_press_subscription=(active)
@@ -89,6 +89,11 @@ module PublicUsers
         add_subscription(subscription_type: type, active:)
         PublicUsers::ActionLog.create(user_id: id, action: PublicUsers::ActionLog::SUBSCRIBED) if active
       end
+    end
+
+    def target_ids_for_my_commodities
+      subscription = subscription_for(Subscriptions::Type.my_commodities)
+      subscription&.subscription_targets_dataset&.map(&:target_id) || []
     end
 
     def soft_delete!

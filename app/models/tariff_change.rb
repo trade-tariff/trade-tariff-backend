@@ -4,6 +4,12 @@ class TariffChange < Sequel::Model
 
   many_to_one :goods_nomenclature, key: :goods_nomenclature_sid
 
+  dataset_module do
+    def measures
+      where(type: 'Measure')
+    end
+  end
+
   def self.delete_for(operation_date:)
     TariffChange.where(operation_date: operation_date).delete
   end
