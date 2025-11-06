@@ -20,11 +20,11 @@ module Api
       private
 
       def targets
-        filter_params = subscription_params[:filter] || {}
-
         if filter_params[:active_commodities_type].present?
           TimeMachine.now do
-            codes = Api::User::ActiveCommoditiesService.new(@subscription).call[filter_params[:active_commodities_type]]
+            codes = Api::User::ActiveCommoditiesService.new(@subscription).call[filter_params[:active_commodities_type].to_sym]
+            return [] if codes.nil?
+
             @subscription.subscription_targets.select do |sub_target|
               obj = sub_target.target
               obj && obj.respond_to?(:goods_nomenclature_item_id) && codes.include?(obj.goods_nomenclature_item_id)
@@ -35,10 +35,8 @@ module Api
         end
       end
 
-      def subscription_params
-        params.require(:data).require(:attributes).permit(
-          filter: {},
-        )
+      def filter_params
+        params.fetch(:filter, {}).permit(:active_commodities_type)
       end
 
       def serialize(targets)
