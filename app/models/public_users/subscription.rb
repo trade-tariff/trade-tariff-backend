@@ -21,13 +21,15 @@ module PublicUsers
       user.soft_delete!
     end
 
-    def metadata
-      value = self[:metadata]
-      value.is_a?(String) ? JSON.parse(value) : value
+    def get_metadata_key(key)
+      current_metadata = metadata || {}
+      current_metadata[key]
     end
 
-    def metadata=(value)
-      self[:metadata] = value.is_a?(String) ? value : value.to_json
+    def set_metadata_key(key, value)
+      current_metadata = metadata || {}
+      updated_metadata = current_metadata.merge(key => value)
+      update(metadata: updated_metadata)
     end
 
     def add_targets(targets:, target_type:)

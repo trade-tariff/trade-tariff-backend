@@ -58,6 +58,7 @@ module TradeTariffBackend
       Sequel::Model.db.extension :auto_literal_strings
       Sequel::Model.db.extension :pg_array
       Sequel::Model.db.extension :null_dataset
+      Sequel::Model.db.extension :pg_json
     end
 
     # Tells Rails to serve error pages from the app itself, rather than using static error pages in public/

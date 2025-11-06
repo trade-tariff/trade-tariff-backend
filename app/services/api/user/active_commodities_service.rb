@@ -9,11 +9,13 @@ module Api
 
     class ActiveCommoditiesService
       def initialize(subscription)
-        @uploaded_commodity_codes = subscription.metadata['commodity_codes']
+        @uploaded_commodity_codes = subscription.get_metadata_key('commodity_codes')
         @subscription_target_ids = subscription.subscription_targets_dataset.commodities.map(&:target_id)
       end
 
       def call
+        return {} if uploaded_commodity_codes.blank?
+
         # load the current candidate commodities
         active_candidates = ::GoodsNomenclature
           .actual
