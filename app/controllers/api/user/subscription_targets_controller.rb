@@ -8,7 +8,7 @@ module Api
       before_action :authenticate!
       before_action :find_subscription
 
-      def index
+      def show
         if @subscription.nil?
           render json: { message: 'No token was provided' }, status: :unauthorized
           return
@@ -52,7 +52,7 @@ module Api
       end
 
       def subscription_id
-        params[:subscription_id]
+        params[:id]
       end
     end
   end

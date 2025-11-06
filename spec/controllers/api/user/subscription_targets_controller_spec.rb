@@ -32,8 +32,8 @@ RSpec.describe Api::User::SubscriptionTargetsController do
 
       context 'without filter parameter' do
         before do
-          get :index, params: {
-            subscription_id: valid_subscription_id,
+          get :show, params: {
+            id: valid_subscription_id,
           }
         end
 
@@ -74,8 +74,8 @@ RSpec.describe Api::User::SubscriptionTargetsController do
             .and_return(active_commodities_service)
           allow(active_commodities_service).to receive(:call).and_return(service_response)
 
-          get :index, params: {
-            subscription_id: valid_subscription_id,
+          get :show, params: {
+            id: valid_subscription_id,
             filter: { active_commodities_type: 'active' },
           }
         end
@@ -110,8 +110,8 @@ RSpec.describe Api::User::SubscriptionTargetsController do
             .and_return(active_commodities_service)
           allow(active_commodities_service).to receive(:call).and_return({})
 
-          get :index, params: {
-            subscription_id: valid_subscription_id,
+          get :show, params: {
+            id: valid_subscription_id,
             filter: { active_commodities_type: 'inactive' },
           }
         end
@@ -132,8 +132,8 @@ RSpec.describe Api::User::SubscriptionTargetsController do
 
     context 'when an invalid subscription id is provided' do
       before do
-        get :index, params: {
-          subscription_id: invalid_subscription_id,
+        get :show, params: {
+          id: invalid_subscription_id,
         }
       end
 
@@ -149,8 +149,8 @@ RSpec.describe Api::User::SubscriptionTargetsController do
     context 'when no authorization token is provided' do
       before do
         request.headers['Authorization'] = nil
-        get :index, params: {
-          subscription_id: valid_subscription_id,
+        get :show, params: {
+          id: valid_subscription_id,
         }
       end
 
