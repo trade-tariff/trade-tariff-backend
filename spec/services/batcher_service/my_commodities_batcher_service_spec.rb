@@ -18,7 +18,8 @@ RSpec.describe BatcherService::MyCommoditiesBatcherService do
 
       before do
         existing_targets
-        subscription.update(metadata: { 'commodity_codes' => %w[0987654321 1987654321], 'measures' => %w[1234567890 1234567891] })
+        subscription.set_metadata_key('commodity_codes', %w[0987654321 1987654321])
+        subscription.set_metadata_key('measures', %w[1234567890 1234567891])
 
         create(:commodity, goods_nomenclature_item_id: '1234567890', goods_nomenclature_sid: 123)
         create(:commodity, goods_nomenclature_item_id: '1234567891', goods_nomenclature_sid: 456)
@@ -28,7 +29,6 @@ RSpec.describe BatcherService::MyCommoditiesBatcherService do
       end
 
       it 'updates only the commodity_codes key in metadata' do
-        subscription.refresh
         expect(subscription.metadata['commodity_codes']).to match_array(my_targets)
         expect(subscription.metadata['measures']).to match_array(%w[1234567890 1234567891])
       end

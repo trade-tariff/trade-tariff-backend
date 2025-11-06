@@ -8,6 +8,7 @@ UserApi.routes.draw do
       resources :subscriptions, only: %i[show destroy] do
         post :batch, on: :member, action: :create_batch
       end
+      resources :subscription_targets, only: %i[show]
     end
   end
 end

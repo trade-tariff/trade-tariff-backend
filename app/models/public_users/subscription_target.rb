@@ -10,5 +10,12 @@ module PublicUsers
         where(target_type: 'commodity')
       end
     end
+
+    def target
+      case target_type
+      when 'commodity'
+        Commodity.find(goods_nomenclature_sid: target_id)
+      end
+    end
   end
 end

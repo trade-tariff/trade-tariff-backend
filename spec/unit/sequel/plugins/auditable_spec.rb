@@ -10,7 +10,7 @@ RSpec.describe Sequel::Plugins::Auditable do
 
     it 'the new audit record created keeps the record of the changes', :aggregate_failures do
       model_with_plugin.update(content: 'second content')
-      result = JSON.parse(model_with_plugin.audits.last.changes)
+      result = model_with_plugin.audits.last.changes
 
       expect(result['content'][0]).to eq('first content')
       expect(result['content'][1]).to eq('second content')

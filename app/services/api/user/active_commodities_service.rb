@@ -2,21 +2,20 @@ module Api
   module User
     # Service to determine the status of commodity codes submitted by the user
     #
-    # uploaded_commodity_codes are in user_subscription.metadata
-    # subscription_target_ids are the goods_nomenclature_sids of the batched commodity codes in subscription_targets
-    #
     # Active - An active code is one that is current for today's date and is declarable (i.e., has no children). End date is in the future or null and start date is in the past
     # Moved - A moved code is one that is active but not declarable (i.e., now has children) and also has no ancestors that share the same code and are still active
     # Expired - An expired code is a declarable code that is not active today
     # Invalid - the code never existed
 
     class ActiveCommoditiesService
-      def initialize(uploaded_commodity_codes, subscription_target_ids)
-        @uploaded_commodity_codes = uploaded_commodity_codes
-        @subscription_target_ids = subscription_target_ids
+      def initialize(subscription)
+        @uploaded_commodity_codes = subscription.get_metadata_key('commodity_codes')
+        @subscription_target_ids = subscription.subscription_targets_dataset.commodities.map(&:target_id)
       end
 
       def call
+        return {} if uploaded_commodity_codes.blank?
+
         # load the current candidate commodities
         active_candidates = ::GoodsNomenclature
           .actual

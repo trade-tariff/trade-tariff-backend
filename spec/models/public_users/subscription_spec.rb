@@ -46,9 +46,106 @@ RSpec.describe PublicUsers::Subscription do
     let(:subscription) { create(:user_subscription) }
     let(:metadata) { { commodity_codes: %w[1234567890 1234567891] } }
 
-    it 'allows setting and getting metadata' do
-      subscription.metadata = metadata
-      expect(subscription.metadata).to eq(metadata.stringify_keys)
+    describe '#set_metadata_key' do
+      context 'when metadata is nil' do
+        let(:subscription) { create(:user_subscription, metadata: nil) }
+
+        it 'creates new metadata with the key-value pair' do
+          subscription.set_metadata_key('new_key', 'new_value')
+          subscription.refresh
+
+          expect(subscription.metadata).to eq({ 'new_key' => 'new_value' })
+        end
+
+        it 'handles array values' do
+          subscription.set_metadata_key('codes', %w[123 456 789])
+          subscription.refresh
+
+          expect(subscription.metadata).to eq({ 'codes' => %w[123 456 789] })
+        end
+      end
+
+      context 'when metadata already exists' do
+        let(:initial_metadata) { { 'existing_key' => 'existing_value', 'array_key' => %w[1 2 3] } }
+        let(:subscription) { create(:user_subscription, metadata: initial_metadata) }
+
+        it 'updates the specified key without affecting other keys' do
+          subscription.set_metadata_key('existing_key', 'updated_value')
+          subscription.refresh
+
+          expect(subscription.metadata).to eq({
+            'existing_key' => 'updated_value',
+            'array_key' => %w[1 2 3],
+          })
+        end
+
+        it 'adds new keys while preserving existing ones' do
+          subscription.set_metadata_key('new_key', 'new_value')
+          subscription.refresh
+
+          expect(subscription.metadata).to eq({
+            'existing_key' => 'existing_value',
+            'array_key' => %w[1 2 3],
+            'new_key' => 'new_value',
+          })
+        end
+
+        it 'can update array values' do
+          subscription.set_metadata_key('array_key', %w[4 5 6])
+          subscription.refresh
+
+          expect(subscription.metadata).to eq({
+            'existing_key' => 'existing_value',
+            'array_key' => %w[4 5 6],
+          })
+        end
+
+        it 'can set complex nested values' do
+          complex_value = { 'nested' => { 'deep' => 'value' }, 'array' => [1, 2, 3] }
+          subscription.set_metadata_key('complex_key', complex_value)
+          subscription.refresh
+
+          expect(subscription.metadata['complex_key']).to eq(complex_value)
+        end
+      end
+    end
+
+    describe '#get_metadata_key' do
+      let(:metadata) { { 'string_key' => 'string_value', 'array_key' => %w[1 2 3], 'nil_key' => nil } }
+      let(:subscription) { create(:user_subscription, metadata: metadata) }
+
+      it 'returns the value for an existing key' do
+        p subscription.metadata
+        expect(subscription.get_metadata_key('string_key')).to eq('string_value')
+      end
+
+      it 'returns array values correctly' do
+        expect(subscription.get_metadata_key('array_key')).to eq(%w[1 2 3])
+      end
+
+      it 'returns nil for non-existent keys' do
+        expect(subscription.get_metadata_key('non_existent_key')).to be_nil
+      end
+
+      it 'returns nil for keys explicitly set to nil' do
+        expect(subscription.get_metadata_key('nil_key')).to be_nil
+      end
+
+      context 'when metadata is nil' do
+        let(:subscription) { create(:user_subscription, metadata: nil) }
+
+        it 'returns nil for any key' do
+          expect(subscription.get_metadata_key('any_key')).to be_nil
+        end
+      end
+
+      context 'when metadata is empty' do
+        let(:subscription) { create(:user_subscription, metadata: {}) }
+
+        it 'returns nil for any key' do
+          expect(subscription.get_metadata_key('any_key')).to be_nil
+        end
+      end
     end
   end
 

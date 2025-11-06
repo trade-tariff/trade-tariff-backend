@@ -488,4 +488,18 @@ RSpec.describe GoodsNomenclature do
 
     it { is_expected.to include instance_of GreenLanes::Measure }
   end
+
+  describe '#hierarchical_description' do
+    subject(:hierarchical_description) { goods_nomenclature.hierarchical_description }
+
+    let(:goods_nomenclature) { create(:goods_nomenclature, :with_description, description: 'bar') }
+    let(:ancestor1) { OpenStruct.new(description: 'root') }
+    let(:ancestor2) { OpenStruct.new(description: 'foo') }
+
+    before do
+      allow(goods_nomenclature).to receive(:ancestors).and_return([ancestor1, ancestor2])
+    end
+
+    it { is_expected.to eq('foo > bar') }
+  end
 end

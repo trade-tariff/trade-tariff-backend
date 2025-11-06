@@ -2,21 +2,20 @@ module Api
   module User
     class MyCommoditiesMetaService
       def initialize(subscription)
-        @commodity_codes = subscription.metadata['commodity_codes']
-        @subscription_target_ids = subscription.subscription_targets_dataset.commodities.map(&:target_id)
+        @subscription = subscription
       end
 
       def call
         TimeMachine.now do
           Api::User::ActiveCommoditiesService
-            .new(commodity_codes, subscription_target_ids)
+            .new(subscription)
             .call
         end
       end
 
       private
 
-      attr_reader :commodity_codes, :subscription_target_ids
+      attr_reader :subscription
     end
   end
 end
