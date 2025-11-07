@@ -1,4 +1,5 @@
 class TreeIntegrityCheckingService
+  EXCLUDED_CHAPTER = '99'.freeze
   attr_reader :failures
 
   def initialize
@@ -6,7 +7,7 @@ class TreeIntegrityCheckingService
   end
 
   def check!
-    Chapter.actual.all.each do |chapter|
+    Chapter.actual.exclude(chapter_short_code: EXCLUDED_CHAPTER).all.each do |chapter|
       check_for_tree_break!(chapter)
     end
 
