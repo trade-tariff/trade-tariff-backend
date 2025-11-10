@@ -9,6 +9,5 @@ class PopulateChangesTableWorker
 
     TariffChangesService.generate
     TariffChangesService.generate_report_for(Time.zone.yesterday)
-    DeltaReportService.generate
   end
 end
