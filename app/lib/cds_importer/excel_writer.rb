@@ -30,6 +30,8 @@ class CdsImporter
     end
 
     def after_parse
+      return if @key.blank?
+
       write(@key, @instances)
       sort_worksheets
       FileUtils.mkdir_p(File.join(TariffSynchronizer.root_path, 'cds_updates'))
