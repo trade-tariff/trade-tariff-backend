@@ -50,7 +50,7 @@ module Reporting
       duration = end_time - start_time
       Rails.logger.info("#{label} Total Time: #{duration.round(2)} seconds")
       Rails.logger.info("#{label} SQL Queries: #{::SequelRails::Railties::LogSubscriber.count}, Total SQL Time: #{::SequelRails::Railties::LogSubscriber.runtime.round(2)} ms")
-      Rails.logger.info("#{label} SQL Tables: #{::SequelRails::Railties::LogSubscriber.tables}")
+      Rails.logger.info("#{label} SQL Tables: #{::SequelRails::Railties::LogSubscriber.tables_pretty}")
     end
   end
 end

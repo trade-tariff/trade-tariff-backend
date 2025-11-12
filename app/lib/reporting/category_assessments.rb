@@ -27,7 +27,8 @@ module Reporting
             json = instrument("#{name}#serializable_hash") { serialized_assessments.serializable_hash.to_json }
 
             instrument("#{name}#upload") do
-              zipped = zip(json, File.basename(object_key))
+              basename = File.basename(object_key)
+              zipped = zip(json, basename.gsub('.zip', '.json'))
 
               if Rails.env.development?
                 File.write(zipped[:filename], zipped[:data], mode: 'wb')
@@ -46,12 +47,10 @@ module Reporting
       private
 
       def serialized_assessments
-        instrument do
-          Api::V2::GreenLanes::CategoryAssessmentSerializer.new(
-            category_assessments,
-            include: %w[geographical_area excluded_geographical_areas exemptions theme regulation measure_type],
-          )
-        end
+        Api::V2::GreenLanes::CategoryAssessmentSerializer.new(
+          category_assessments,
+          include: %w[geographical_area excluded_geographical_areas exemptions theme regulation measure_type],
+        )
       end
 
       def category_assessments
