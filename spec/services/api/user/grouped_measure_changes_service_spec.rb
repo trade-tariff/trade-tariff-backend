@@ -1,5 +1,5 @@
 RSpec.describe Api::User::GroupedMeasureChangesService do
-  subject(:service) { described_class.new(user, date) }
+  subject(:service) { described_class.new(user, nil, date) }
 
   let(:user) { create(:public_user) }
   let(:date) { Date.current }
@@ -31,9 +31,58 @@ RSpec.describe Api::User::GroupedMeasureChangesService do
         expect(result).to eq([])
       end
     end
+
+    context 'when id is provided' do
+      subject(:service) { described_class.new(user, 'import_GB_FR-DE', date) }
+
+      let(:eu_area) { create(:geographical_area, :with_description, geographical_area_id: 'GB') }
+      let(:france) { create(:geographical_area, :with_description, geographical_area_id: 'FR') }
+      let(:germany) { create(:geographical_area, :with_description, geographical_area_id: 'DE') }
+      let(:import_measure_type) { create(:measure_type, :import) }
+      let(:measure) { create(:measure, measure_sid: 100, for_geo_area: eu_area, measure_type_id: import_measure_type.measure_type_id) }
+
+      before do
+        create(:measure_excluded_geographical_area, measure: measure, excluded_geographical_area: france.geographical_area_id)
+        create(:measure_excluded_geographical_area, measure: measure, excluded_geographical_area: germany.geographical_area_id)
+        create(:tariff_change, type: 'Measure', object_sid: 100, operation_date: date, goods_nomenclature_sid: 123_456, goods_nomenclature_item_id: '1234567890')
+        create(:tariff_change, type: 'Measure', object_sid: 100, operation_date: date, goods_nomenclature_sid: 987_654, goods_nomenclature_item_id: '9876543210')
+      end
+
+      it 'returns a single GroupedMeasureChange with commodity changes' do
+        result = service.call
+
+        expect(result).to be_a(TariffChanges::GroupedMeasureChange)
+        expect(result.trade_direction).to eq('import')
+        expect(result.geographical_area_id).to eq('GB')
+        expect(result.excluded_geographical_area_ids).to eq(%w[FR DE])
+        expect(result.grouped_measure_commodity_changes.length).to eq(2)
+      end
+
+      it 'adds correct commodity changes with counts' do
+        result = service.call
+
+        commodity_changes = result.grouped_measure_commodity_changes
+        expect(commodity_changes.map(&:goods_nomenclature_item_id)).to contain_exactly('1234567890', '9876543210')
+        expect(commodity_changes.map(&:count)).to all(eq(1))
+      end
+    end
+
+    context 'when id is provided but no matching measures exist' do
+      subject(:service) { described_class.new(user, 'export_US_', date) }
+
+      it 'returns a GroupedMeasureChange with no commodity changes' do
+        result = service.call
+
+        expect(result).to be_a(TariffChanges::GroupedMeasureChange)
+        expect(result.trade_direction).to eq('export')
+        expect(result.geographical_area_id).to eq('US')
+        expect(result.excluded_geographical_area_ids).to eq([])
+        expect(result.grouped_measure_commodity_changes).to eq([])
+      end
+    end
   end
 
-  describe '#measures_grouped' do
+  describe 'measures_grouped behavior' do
     context 'when measures exist for user commodity codes' do
       let(:eu_area) { create(:geographical_area, :with_description) }
       let(:import_measure_type) { create(:measure_type, :import) }
@@ -47,7 +96,7 @@ RSpec.describe Api::User::GroupedMeasureChangesService do
       end
 
       it 'returns array of TariffChanges::GroupedMeasureChange objects' do
-        result = service.measures_grouped
+        result = service.call
 
         expect(result).to be_an(Array)
         expect(result.length).to eq(2)
@@ -74,7 +123,7 @@ RSpec.describe Api::User::GroupedMeasureChangesService do
       end
 
       it 'returns TariffChanges::GroupedMeasureChange object with null geographical area' do
-        result = service.measures_grouped
+        result = service.call
         expect(result).to be_an(Array)
         expect(result.first).to be_a(TariffChanges::GroupedMeasureChange)
         expect(result.first.trade_direction).to eq('import')
@@ -85,41 +134,8 @@ RSpec.describe Api::User::GroupedMeasureChangesService do
 
     context 'when no measures are returned' do
       it 'returns an empty array' do
-        result = service.measures_grouped
+        result = service.call
         expect(result).to eq([])
-      end
-    end
-  end
-
-  describe '#changedmeasures' do
-    context 'when tariff changes and measures exist for user commodity codes' do
-      let(:measure1) { create(:measure, measure_sid: 123, geographical_area: create(:geographical_area, :with_description)) }
-      let(:measure2) { create(:measure, measure_sid: 456, geographical_area: create(:geographical_area, :with_description)) }
-
-      before do
-        create(:tariff_change, type: 'Measure', object_sid: 123, operation_date: date, goods_nomenclature_sid: 123_456)
-        create(:tariff_change, type: 'Measure', object_sid: 456, operation_date: date, goods_nomenclature_sid: 987_654)
-        measure1
-        measure2
-      end
-
-      it 'returns measures that match tariff changes for user commodity codes' do
-        result = service.changed_measures
-        expect(result).to contain_exactly(measure1, measure2)
-      end
-    end
-
-    context 'when no matching data exists' do
-      it 'returns empty dataset when user has no commodity codes' do
-        allow(user).to receive(:target_ids_for_my_commodities).and_return([])
-        result = service.changed_measures
-        expect(result).to be_empty
-      end
-
-      it 'returns empty dataset when user commodity codes is nil' do
-        allow(user).to receive(:target_ids_for_my_commodities).and_return(nil)
-        result = service.changed_measures
-        expect(result).to be_empty
       end
     end
   end

@@ -1,12 +1,12 @@
 module Api
   module User
     class GroupedMeasureChangesService
-      attr_reader :user, :date, :id
+      attr_reader :user, :id, :date
 
       def initialize(user, id = nil, date = Time.zone.yesterday)
         @user = user
-        @date = date
         @id = id
+        @date = date
       end
 
       def call
