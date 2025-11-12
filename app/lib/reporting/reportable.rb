@@ -42,7 +42,6 @@ module Reporting
     def instrument(label = "#{self.class.name}##{__method__}")
       ::SequelRails::Railties::LogSubscriber.reset_runtime
       ::SequelRails::Railties::LogSubscriber.reset_count
-      ::SequelRails::Railties::LogSubscriber.reset_tables
       start_time = Time.zone.now
       yield if block_given?
     ensure
@@ -50,7 +49,6 @@ module Reporting
       duration = end_time - start_time
       Rails.logger.info("#{label} Total Time: #{duration.round(2)} seconds")
       Rails.logger.info("#{label} SQL Queries: #{::SequelRails::Railties::LogSubscriber.count}, Total SQL Time: #{::SequelRails::Railties::LogSubscriber.runtime.round(2)} ms")
-      Rails.logger.info("#{label} SQL Tables: #{::SequelRails::Railties::LogSubscriber.tables_pretty}")
     end
   end
 end
