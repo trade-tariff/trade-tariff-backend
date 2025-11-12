@@ -25,5 +25,30 @@ module Reporting
     def now
       Time.zone.today
     end
+
+    def zip(data, filename)
+      buffer = Zip::OutputStream.write_buffer { |out|
+        out.put_next_entry(filename)
+        out.write data
+      }.tap(&:rewind)
+
+      {
+        data: buffer.read,
+        filename: filename.gsub(File.extname(filename), '.zip'),
+        content_type: 'application/zip',
+      }
+    end
+
+    def instrument(label = "#{self.class.name}##{__method__}")
+      ::SequelRails::Railties::LogSubscriber.reset_runtime
+      ::SequelRails::Railties::LogSubscriber.reset_count
+      start_time = Time.zone.now
+      yield if block_given?
+    ensure
+      end_time = Time.zone.now
+      duration = end_time - start_time
+      Rails.logger.info("#{label} Total Time: #{duration.round(2)} seconds")
+      Rails.logger.info("#{label} SQL Queries: #{::SequelRails::Railties::LogSubscriber.count}, Total SQL Time: #{::SequelRails::Railties::LogSubscriber.runtime.round(2)} ms")
+    end
   end
 end

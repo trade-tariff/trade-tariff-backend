@@ -55,3 +55,8 @@ searches_without_match_or_synonym.csv
 
 /config/master.key
 /ctrf
+
+# Reporting ignores
+
+category_assessments_*.json
+category_assessments_*.zip
