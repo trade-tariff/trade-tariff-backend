@@ -87,12 +87,6 @@ class MeasurementUnit < Sequel::Model
                          ''
                        end
 
-      if unit.present?
-        NewRelic::Agent.notice_warn("Missing measurement unit in measurement_units.json: #{unit_key}")
-      else
-        NewRelic::Agent.notice_warn("Missing measurement unit in database for measurement unit key: #{unit_key}")
-      end
-
       {
         'measurement_unit_code' => unit&.measurement_unit_code || unit_code,
         'measurement_unit_qualifier_code' => qualifier_code,
