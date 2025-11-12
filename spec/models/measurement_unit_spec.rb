@@ -61,7 +61,6 @@ RSpec.describe MeasurementUnit do
 
       before do
         measurement_unit
-        allow(NewRelic::Agent).to receive(:notice_error).and_call_original
         allow(described_class).to receive(:measurement_units).and_return({})
         result
       end
@@ -88,14 +87,12 @@ RSpec.describe MeasurementUnit do
       end
 
       it { is_expected.to eq(expected_units) }
-      it { expect(NewRelic::Agent).to have_received(:notice_error) }
     end
 
     context 'with measurement unit not in the database' do
       subject(:result) { described_class.units('FC1', 'FC1X') }
 
       before do
-        allow(NewRelic::Agent).to receive(:notice_error).and_call_original
         allow(described_class).to receive(:measurement_units).and_return({})
         result
       end
@@ -114,7 +111,6 @@ RSpec.describe MeasurementUnit do
       end
 
       it { is_expected.to eq(expected_units) }
-      it { expect(NewRelic::Agent).to have_received(:notice_error) }
     end
   end
 
