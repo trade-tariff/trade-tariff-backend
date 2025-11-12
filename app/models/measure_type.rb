@@ -50,6 +50,12 @@ class MeasureType < Sequel::Model
     'Q', # Excise
   ].freeze
 
+  TRADE_DIRECTION = {
+    0 => 'import',
+    1 => 'export',
+    2 => 'both',
+  }.freeze
+
   UNIT_EXPRESSABLE_MEASURES.freeze
 
   plugin :time_machine

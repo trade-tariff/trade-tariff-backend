@@ -156,6 +156,26 @@ RSpec.describe PublicUsers::User do
     end
   end
 
+  describe '#target_ids_for_my_commodities' do
+    context 'when user has my commodities subscription' do
+      before do
+        subscription = user.add_subscription(subscription_type_id: Subscriptions::Type.my_commodities.id, active: true)
+        create(:subscription_target, user_subscriptions_uuid: subscription.uuid, target_id: 1_234_567_890, target_type: 'commodity')
+        create(:subscription_target, user_subscriptions_uuid: subscription.uuid, target_id: 987_654_321, target_type: 'commodity')
+      end
+
+      it 'returns array of target ids' do
+        expect(user.target_ids_for_my_commodities).to contain_exactly(1_234_567_890, 987_654_321)
+      end
+    end
+
+    context 'when user has no my commodities subscription' do
+      it 'returns empty array' do
+        expect(user.target_ids_for_my_commodities).to eq []
+      end
+    end
+  end
+
   describe '#soft_delete!' do
     context 'when user has an active stop press subscription' do
       before do

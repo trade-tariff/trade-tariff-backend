@@ -86,4 +86,39 @@ RSpec.describe TariffChange do
         .to raise_error(Sequel::ValidationFailed, /date_of_effect is not present/)
     end
   end
+
+  describe '.measures' do
+    let!(:measure_change1) { create(:tariff_change, type: 'Measure') }
+    let!(:measure_change2) { create(:tariff_change, type: 'Measure') }
+    let!(:commodity_change) { create(:tariff_change, type: 'Commodity') }
+    let!(:other_change) { create(:tariff_change, type: 'SomeOtherType') }
+
+    it 'returns only tariff changes with type Measure' do
+      result = described_class.measures.all
+
+      expect(result).to contain_exactly(measure_change1, measure_change2)
+      expect(result).not_to include(commodity_change, other_change)
+    end
+
+    it 'returns an empty dataset when no measures exist' do
+      described_class.where(type: 'Measure').delete
+
+      result = described_class.measures.all
+
+      expect(result).to be_empty
+    end
+
+    it 'can be chained with other dataset methods' do
+      operation_date = Date.current
+      different_date = Date.current + 1.day
+
+      measure_change1.update(operation_date: operation_date)
+      measure_change2.update(operation_date: different_date)
+
+      result = described_class.measures.where(operation_date: operation_date).all
+
+      expect(result).to contain_exactly(measure_change1)
+      expect(result).not_to include(measure_change2)
+    end
+  end
 end
