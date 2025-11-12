@@ -1,13 +1,49 @@
 module Api
   module User
     class GroupedMeasureChangesService
-      def initialize(user, date = Time.zone.yesterday)
+      attr_reader :user, :date, :id
+
+      def initialize(user, id = nil, date = Time.zone.yesterday)
         @user = user
         @date = date
+        @id = id
       end
 
       def call
-        measures_grouped
+        if id.present?
+          measures
+        else
+          measures_grouped
+        end
+      end
+
+      private
+
+      def measures
+        grouped_measure_change = TariffChanges::GroupedMeasureChange.from_id(id)
+
+        measure_sids = changed_measures
+          .join(:measure_types, measure_type_id: :measure_type_id)
+          .where(Sequel[:measure_types][:trade_movement_code] => grouped_measure_change.trade_direction_code)
+          .where(Sequel[:measures][:geographical_area_id] => grouped_measure_change.geographical_area_id)
+          .select(:measure_sid)
+
+        TariffChange.measures
+                    .where(operation_date: date)
+                    .where(object_sid: measure_sids)
+                    .group(:goods_nomenclature_item_id)
+                    .order(:goods_nomenclature_item_id)
+                    .select(
+                      :goods_nomenclature_item_id,
+                      Sequel.lit('COUNT(*)').as(:count),
+                    ).map do |row|
+                      grouped_measure_change.add_commodity_change(
+                        goods_nomenclature_item_id: row.values[:goods_nomenclature_item_id],
+                        count: row.values[:count],
+                      )
+                    end
+
+        grouped_measure_change
       end
 
       # Group changed measures by trade direction, geographical area and excluded area
@@ -53,6 +89,10 @@ module Api
 
         Measure.where(Sequel[:measures][:measure_sid] => tariff_change_measure_sids)
                .eager(:geographical_area, :measure_type)
+      end
+
+      def user_commodity_codes
+        @user_commodity_codes ||= user.commodity_codes
       end
     end
   end

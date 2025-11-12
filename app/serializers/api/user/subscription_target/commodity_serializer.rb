@@ -6,7 +6,7 @@ module Api
 
         set_type :commodity
         set_id :id
-        attributes :hierarchical_description
+        attributes :hierarchical_description, :goods_nomenclature_item_id
       end
     end
   end
