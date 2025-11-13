@@ -23,6 +23,8 @@ module Api
     end
 
     def per_page
+      Integer(params[:per_page] || 20)
+    rescue ArgumentError
       20
     end
     helper_method :current_page, :per_page

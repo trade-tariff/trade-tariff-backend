@@ -25,7 +25,7 @@ module Api
           service = Api::User::ActiveCommoditiesService.new(@subscription)
           commodities, total =
             if service.respond_to?("#{type}_commodities")
-              service.public_send("#{type}_commodities", page: page, per_page: per_page)
+              service.public_send("#{type}_commodities", page: current_page, per_page: per_page)
             else
               [[], 0]
             end
@@ -56,14 +56,6 @@ module Api
         params.fetch(:filter, {}).permit(:active_commodities_type)
       end
 
-      def page
-        params[:page].presence&.to_i || 1
-      end
-
-      def per_page
-        params[:per_page].presence&.to_i || 20
-      end
-
       def serialize(targets_and_total)
         targets, total = targets_and_total
 
@@ -73,7 +65,7 @@ module Api
           data: serialized_targets[:data],
           meta: {
             pagination: {
-              page: page,
+              page: current_page,
               per_page: per_page,
               total_count: total,
             },

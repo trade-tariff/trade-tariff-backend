@@ -18,9 +18,9 @@ module Api
         return {} if uploaded_commodity_codes.blank?
 
         {
-          active: active_commodity_codes.sort.uniq,
-          expired: expired_commodity_codes.sort.uniq,
-          invalid: invalid_commodity_codes.sort.uniq,
+          active: active_commodity_codes.sort,
+          expired: expired_commodity_codes.sort,
+          invalid: invalid_commodity_codes.sort,
         }
       end
 
