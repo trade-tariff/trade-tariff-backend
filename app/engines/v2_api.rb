@@ -153,10 +153,10 @@ V2Api.routes.draw do
           resources :goods_nomenclatures, only: %i[show], constraints: { id: /\d{4,10}/ }
 
           resources :themes, only: %i[index]
-
-          resources :faq_feedback, only: %i[create index show]
         end
       end
+
+      resources :faq_feedback, only: %i[create index show]
 
       match '/400', to: 'errors#bad_request', via: :all
       match '/404', to: 'errors#not_found', via: :all
