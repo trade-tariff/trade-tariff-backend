@@ -1,19 +1,28 @@
 module Api
   module User
     class SubscriptionTargetSerializer
-      def initialize(subscription_targets, options = {})
-        @subscription_targets = subscription_targets
-        @options = options
+      include JSONAPI::Serializer
+
+      set_type :subscription_target
+
+      set_id :id
+
+      attribute :target_type
+
+      attribute :chapter_short_code do |sub_target|
+        sub_target.commodity&.chapter_short_code
       end
 
-      def serializable_hash
-        targets_array = @subscription_targets.map do |sub_target|
-          "Api::User::SubscriptionTarget::#{sub_target.target_type.camelize}Serializer".constantize.new(sub_target.target).serializable_hash
-        end
+      attribute :goods_nomenclature_item_id do |sub_target|
+        sub_target.commodity&.goods_nomenclature_item_id
+      end
 
-        {
-          data: targets_array,
-        }
+      attribute :hierarchical_description do |sub_target|
+        sub_target.commodity&.hierarchical_description
+      end
+
+      attribute :producline_suffix do |sub_target|
+        sub_target.commodity&.producline_suffix
       end
     end
   end
