@@ -90,10 +90,6 @@ module Api
         Measure.where(Sequel[:measures][:measure_sid] => tariff_change_measure_sids)
                .eager(:geographical_area, :measure_type)
       end
-
-      def user_commodity_codes
-        @user_commodity_codes ||= user.commodity_codes
-      end
     end
   end
 end

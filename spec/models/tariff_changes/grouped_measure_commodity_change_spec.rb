@@ -58,16 +58,16 @@ RSpec.describe TariffChanges::GroupedMeasureCommodityChange do
 
   describe '#commodity' do
     context 'when goods nomenclature exists' do
-      let(:goods_nomenclature) { create(:goods_nomenclature, goods_nomenclature_item_id: '1234567890') }
+      before do
+        create(:goods_nomenclature, goods_nomenclature_item_id: '1234567890')
+      end
 
       it 'returns the corresponding Commodity' do
-        goods_nomenclature # Ensure it's created
         expect(grouped_commodity_change.commodity).to be_a(Commodity)
         expect(grouped_commodity_change.commodity.goods_nomenclature_item_id).to eq('1234567890')
       end
 
       it 'memoizes the result' do
-        goods_nomenclature # Ensure it's created
         allow(GoodsNomenclature).to receive(:find).and_call_original
 
         2.times { grouped_commodity_change.commodity }
@@ -177,7 +177,6 @@ RSpec.describe TariffChanges::GroupedMeasureCommodityChange do
 
   describe 'associations' do
     it 'establishes the bidirectional relationship correctly' do
-      # Create a grouped measure change and add a commodity change
       grouped_measure_change = TariffChanges::GroupedMeasureChange.new(
         trade_direction: 'import',
         geographical_area_id: 'GB',
@@ -189,7 +188,6 @@ RSpec.describe TariffChanges::GroupedMeasureCommodityChange do
         count: 3,
       )
 
-      # Test the bidirectional relationship
       expect(commodity_change.grouped_measure_change_id).to eq(grouped_measure_change.id)
       expect(commodity_change.grouped_measure_change).to be_a(TariffChanges::GroupedMeasureChange)
       expect(commodity_change.grouped_measure_change.trade_direction).to eq('import')
