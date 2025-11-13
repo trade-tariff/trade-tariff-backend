@@ -80,5 +80,6 @@ Rails.application.configure do
   # Raise error when a before_action's only/except options reference missing actions
   config.action_controller.raise_on_missing_callback_actions = true
 
-  config.logger = SchemaQueryFilterLogger.new(Logger.new('/dev/null'))
+  # NOTE: We must output to STDOUT to give visibility to N+1s. You can configure a higher RAILS_LOG_LEVEL in .env.development or in .env if you want to reduce the verbosity.
+  config.logger = SchemaQueryFilterLogger.new(Logger.new($stdout))
 end

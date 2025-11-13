@@ -148,14 +148,14 @@ V2Api.routes.draw do
       get 'goods_nomenclatures/heading/:heading_id', to: 'goods_nomenclatures#show_by_heading', constraints: { heading_id: /\d{4}/ }
       get 'goods_nomenclatures/:id', to: 'goods_nomenclatures#show', constraints: { id: /\d{4,10}/ }
 
-      namespace :green_lanes do
-        resources :goods_nomenclatures, only: %i[show], constraints: { id: /\d{4,10}/ }
+      if TradeTariffBackend.xi? || Rails.env.test?
+        namespace :green_lanes do
+          resources :goods_nomenclatures, only: %i[show], constraints: { id: /\d{4,10}/ }
 
-        resources :category_assessments, only: %i[index]
+          resources :themes, only: %i[index]
 
-        resources :themes, only: %i[index]
-
-        resources :faq_feedback, only: %i[create index show]
+          resources :faq_feedback, only: %i[create index show]
+        end
       end
 
       match '/400', to: 'errors#bad_request', via: :all

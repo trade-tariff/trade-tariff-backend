@@ -11,6 +11,7 @@ RSpec.describe ReportWorker, type: :worker do
       allow(Reporting::DeclarableDuties).to receive(:generate)
       allow(Reporting::GeographicalAreaGroups).to receive(:generate)
       allow(Reporting::Prohibitions).to receive(:generate)
+      allow(Reporting::CategoryAssessments).to receive(:generate).and_call_original
       allow(DifferencesReportWorker).to receive(:perform_in).and_call_original
       allow(TradeTariffBackend).to receive(:service).and_return(service)
       travel_to Date.parse(date).beginning_of_day
@@ -23,6 +24,7 @@ RSpec.describe ReportWorker, type: :worker do
       it { expect(Reporting::DeclarableDuties).to have_received(:generate) }
       it { expect(Reporting::GeographicalAreaGroups).to have_received(:generate) }
       it { expect(Reporting::Prohibitions).to have_received(:generate) }
+      it { expect(Reporting::CategoryAssessments).to have_received(:generate) }
     end
 
     context 'with default behaviour' do

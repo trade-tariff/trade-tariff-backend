@@ -65,6 +65,8 @@ module Api
               disposition: "attachment; filename=#{filename}",
             )
           end
+
+          format.any { head :not_acceptable }
         end
       end
 

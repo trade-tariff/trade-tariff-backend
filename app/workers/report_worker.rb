@@ -12,6 +12,7 @@ class ReportWorker
     Reporting::DeclarableDuties.generate
     Reporting::Prohibitions.generate
     Reporting::GeographicalAreaGroups.generate
+    Reporting::CategoryAssessments.generate
 
     schedule_differences_generation if trigger_differences_report
   end
