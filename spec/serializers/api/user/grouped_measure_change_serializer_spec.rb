@@ -3,12 +3,6 @@ require 'rails_helper'
 RSpec.describe Api::User::GroupedMeasureChangeSerializer do
   subject(:serialized) { described_class.new(serializable, serializer_options).serializable_hash }
 
-  let(:geographical_area) { create(:geographical_area, :with_description, geographical_area_id: 'GB') }
-  let(:excluded_area_1) { create(:geographical_area, :with_description, geographical_area_id: 'FR') }
-  let(:excluded_area_2) { create(:geographical_area, :with_description, geographical_area_id: 'DE') }
-  let(:commodity_1) { create(:goods_nomenclature, goods_nomenclature_item_id: '1234567890') }
-  let(:commodity_2) { create(:goods_nomenclature, goods_nomenclature_item_id: '9876543210') }
-
   let(:serializable) do
     TariffChanges::GroupedMeasureChange.new(
       trade_direction: 'import',
@@ -63,8 +57,13 @@ RSpec.describe Api::User::GroupedMeasureChangeSerializer do
         }
       end
 
+      before do
+        create(:geographical_area, :with_description, geographical_area_id: 'GB')
+        create(:geographical_area, :with_description, geographical_area_id: 'FR')
+        create(:geographical_area, :with_description, geographical_area_id: 'DE')
+      end
+
       it 'includes geographical area relationship' do
-        geographical_area # Ensure it's created
         expect(serialized[:data][:relationships]).to have_key(:geographical_area)
         expect(serialized[:data][:relationships][:geographical_area]).to eq(
           data: {
@@ -75,8 +74,6 @@ RSpec.describe Api::User::GroupedMeasureChangeSerializer do
       end
 
       it 'includes excluded countries relationship' do
-        excluded_area_1 # Ensure they're created
-        excluded_area_2
         expect(serialized[:data][:relationships]).to have_key(:excluded_countries)
         excluded_countries_data = serialized[:data][:relationships][:excluded_countries][:data]
         expect(excluded_countries_data).to contain_exactly(
@@ -96,7 +93,6 @@ RSpec.describe Api::User::GroupedMeasureChangeSerializer do
       end
 
       it 'includes the related geographical area data' do
-        geographical_area # Ensure it's created
         expect(serialized[:included]).to include(
           id: 'GB',
           type: :geographical_area,
@@ -107,8 +103,6 @@ RSpec.describe Api::User::GroupedMeasureChangeSerializer do
       end
 
       it 'includes the excluded countries data' do
-        excluded_area_1 # Ensure they're created
-        excluded_area_2
         excluded_countries = serialized[:included].select { |item| item[:type] == :geographical_area && %w[FR DE].include?(item[:id]) }
         expect(excluded_countries.length).to eq(2)
 
@@ -131,8 +125,8 @@ RSpec.describe Api::User::GroupedMeasureChangeSerializer do
       end
 
       it 'includes the commodity data' do
-        commodity_1 # Ensure they're created
-        commodity_2
+        create(:goods_nomenclature, goods_nomenclature_item_id: '1234567890')
+        create(:goods_nomenclature, goods_nomenclature_item_id: '9876543210')
         commodities = serialized[:included].select { |item| item[:type] == :commodity }
         expect(commodities.length).to eq(2)
 
