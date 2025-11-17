@@ -125,9 +125,20 @@ RSpec.describe Api::User::GroupedMeasureChangeSerializer do
       end
 
       it 'includes the commodity data' do
-        create(:goods_nomenclature, goods_nomenclature_item_id: '1234567890')
-        create(:goods_nomenclature, goods_nomenclature_item_id: '9876543210')
-        commodities = serialized[:included].select { |item| item[:type] == :commodity }
+        commodity1 = create(:goods_nomenclature, goods_nomenclature_item_id: '1234567890')
+        commodity2 = create(:goods_nomenclature, goods_nomenclature_item_id: '9876543210')
+
+        serializable.grouped_measure_commodity_changes.each do |change|
+          if change.goods_nomenclature_item_id == '1234567890'
+            change.commodity = commodity1
+          elsif change.goods_nomenclature_item_id == '9876543210'
+            change.commodity = commodity2
+          end
+        end
+
+        serialized_with_commodities = described_class.new(serializable, serializer_options).serializable_hash
+
+        commodities = serialized_with_commodities[:included].select { |item| item[:type] == :commodity }
         expect(commodities.length).to eq(2)
 
         first_commodity = commodities.find { |item| item[:attributes][:goods_nomenclature_item_id] == '1234567890' }
