@@ -22,6 +22,7 @@ gem 'rubyzip'
 
 # Background jobs
 gem 'connection_pool'
+gem 'get_process_mem'
 gem 'redis'
 gem 'redis-client'
 gem 'redlock'
