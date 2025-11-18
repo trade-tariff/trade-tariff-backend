@@ -42,7 +42,7 @@ module Api
       end
 
       def expired_commodities(page: nil, per_page: nil)
-        codes = expired_commodity_codes.uniq
+        codes = expired_commodity_codes
         total = codes.size
         paginated_codes = paginate_codes(codes, page, per_page)
 
@@ -59,15 +59,14 @@ module Api
         existing_codes = all_candidate_codes
         missing_codes = invalid_commodity_codes - existing_codes
 
-        existing_invalid = Commodity.where(goods_nomenclature_item_id: invalid_commodity_codes).all # & existing_codes).all
+        existing_invalid = Commodity.where(goods_nomenclature_item_id: invalid_commodity_codes).all.uniq(&:goods_nomenclature_item_id)
         existing_invalid_ids = existing_invalid.map(&:goods_nomenclature_item_id)
         missing_codes -= existing_invalid_ids
-        missing_invalid = missing_codes.map do |code|
+        missing_invalid = missing_codes.uniq.map do |code|
           NullCommodity.new(goods_nomenclature_item_id: code)
         end
         combined = existing_invalid + missing_invalid
         total = combined.size
-
         if page && per_page
           offset = (page - 1) * per_page
           combined = combined.slice(offset, per_page) || []
@@ -97,7 +96,7 @@ module Api
             .where(goods_nomenclatures__goods_nomenclature_item_id: codes)
             .all
           non_leaf_expired = expired_candidates.reject(&:leaf?).map(&:goods_nomenclature_item_id)
-          codes - invalid_commodity_codes(non_leaf_expired)
+          (codes - invalid_commodity_codes(non_leaf_expired)).uniq
         end
       end
 
