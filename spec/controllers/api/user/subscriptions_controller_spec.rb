@@ -139,7 +139,7 @@ RSpec.describe Api::User::SubscriptionsController do
 
       before do
         create(:commodity, goods_nomenclature_item_id: '1234567890', goods_nomenclature_sid: 123)
-        post :create_batch, params: { id: valid_id, data: { attributes: { subscription_type: 'my_commodities', targets: targets } } }
+        post :create_batch, params: { id: valid_id, data: { attributes: { targets: targets } } }
       end
 
       it 'returns a successful response' do
@@ -162,7 +162,7 @@ RSpec.describe Api::User::SubscriptionsController do
     context 'when an invalid token is provided' do
       before do
         allow(PublicUsers::Subscription).to receive(:find).with(uuid: invalid_id).and_return(nil)
-        post :create_batch, params: { id: invalid_id, data: { attributes: { subscription_type: 'my_commodities', targets: targets } } }
+        post :create_batch, params: { id: invalid_id, data: { attributes: { targets: targets } } }
       end
 
       it 'returns an unauthorized response' do
@@ -178,7 +178,8 @@ RSpec.describe Api::User::SubscriptionsController do
       let(:subscription) { create(:user_subscription, subscription_type_id: Subscriptions::Type.stop_press.id, user: user) }
 
       before do
-        post :create_batch, params: { id: valid_id, data: { attributes: { subscription_type: 'stop_press', targets: targets } } }
+        allow(PublicUsers::Subscription).to receive(:find).with(uuid: valid_id).and_return(subscription)
+        post :create_batch, params: { id: valid_id, data: { attributes: { targets: targets } } }
       end
 
       it 'returns a bad request response' do
@@ -187,23 +188,6 @@ RSpec.describe Api::User::SubscriptionsController do
 
       it 'renders an error message' do
         expect(response.body).to eq({ errors: [{ detail: 'Unsupported subscription type for batching: stop_press' }] }.to_json)
-      end
-    end
-
-    context 'when the user attempts to batch my commodities but does not have a subscription' do
-      let(:subscription) { create(:user_subscription, subscription_type_id: Subscriptions::Type.stop_press.id, user: user) }
-
-      before do
-        allow(PublicUsers::Subscription).to receive(:find).with(uuid: valid_id).and_return(subscription)
-        post :create_batch, params: { id: valid_id, data: { attributes: { subscription_type: 'my_commodities', targets: targets } } }
-      end
-
-      it 'returns a bad request response' do
-        expect(response).to have_http_status(:bad_request)
-      end
-
-      it 'renders an error message' do
-        expect(response.body).to eq({ errors: [{ detail: 'Unsupported subscription type for batching: my_commodities' }] }.to_json)
       end
     end
 
@@ -217,7 +201,7 @@ RSpec.describe Api::User::SubscriptionsController do
       end
 
       it 'renders an error message' do
-        expect(response.body).to eq({ errors: [{ detail: 'Unsupported subscription type for batching: ' }] }.to_json)
+        expect(response.body).to eq({ errors: [{ detail: 'Unsupported subscription type for batching: test' }] }.to_json)
       end
     end
   end

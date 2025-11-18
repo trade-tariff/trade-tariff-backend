@@ -53,7 +53,6 @@ module Api
 
       def subscription_params
         params.require(:data).require(:attributes).permit(
-          :subscription_type,
           targets: [],
         )
       end
@@ -62,14 +61,11 @@ module Api
         Api::User::ErrorSerializationService.new.serialized_errors(errors)
       end
 
-      def subscription_type
-        @subscription_type ||= Subscriptions::Type.find(name: subscription_params[:subscription_type])
-      end
-
       def batcher
-        "BatcherService::#{subscription_type.name.camelize}BatcherService".constantize
+        subscription_type_name = @subscription.subscription_type.name
+        "BatcherService::#{subscription_type_name.camelize}BatcherService".constantize
       rescue NameError
-        raise ArgumentError, "Unsupported subscription type for batching: #{subscription_params[:subscription_type]}"
+        raise ArgumentError, "Unsupported subscription type for batching: #{subscription_type_name}"
       end
     end
   end
