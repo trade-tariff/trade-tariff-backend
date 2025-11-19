@@ -17,8 +17,8 @@ module Api
         sub_target.commodity&.goods_nomenclature_item_id
       end
 
-      attribute :hierarchical_description do |sub_target|
-        sub_target.commodity&.hierarchical_description
+      attribute :classification_description do |sub_target|
+        sub_target.commodity&.classification_description
       end
 
       attribute :producline_suffix do |sub_target|

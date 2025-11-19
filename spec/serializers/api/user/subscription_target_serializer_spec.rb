@@ -25,7 +25,7 @@ RSpec.describe Api::User::SubscriptionTargetSerializer do
                 target_type: 'commodity',
                 chapter_short_code: commodity.chapter_short_code,
                 goods_nomenclature_item_id: commodity.goods_nomenclature_item_id,
-                hierarchical_description: commodity.hierarchical_description,
+                classification_description: commodity.classification_description,
                 producline_suffix: commodity.producline_suffix,
               },
             },

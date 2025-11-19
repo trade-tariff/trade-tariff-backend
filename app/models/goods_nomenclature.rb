@@ -4,6 +4,7 @@ class GoodsNomenclature < Sequel::Model
 
   extend ActiveModel::Naming
   include Formatter
+  include ClassificationDescriptionHelper
 
   set_dataset order(Sequel.asc(:goods_nomenclatures__goods_nomenclature_item_id), Sequel.asc(:goods_nomenclatures__producline_suffix))
   set_primary_key [:goods_nomenclature_sid]
@@ -279,7 +280,11 @@ class GoodsNomenclature < Sequel::Model
     to_param
   end
 
-  def hierarchical_description
-    (ancestors.drop(1).map(&:description) + [description]).join(' > ')
+  def classification_description
+    if is_other?(formatted_description)
+      descriptions_with_other_handling(formatted_description).join(' > ')
+    else
+      formatted_description
+    end
   end
 end
