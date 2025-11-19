@@ -115,7 +115,6 @@ RSpec.describe PublicUsers::Subscription do
       let(:subscription) { create(:user_subscription, metadata: metadata) }
 
       it 'returns the value for an existing key' do
-        p subscription.metadata
         expect(subscription.get_metadata_key('string_key')).to eq('string_value')
       end
 

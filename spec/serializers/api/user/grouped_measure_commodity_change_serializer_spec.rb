@@ -22,6 +22,7 @@ RSpec.describe Api::User::GroupedMeasureCommodityChangeSerializer do
         type: :grouped_measure_commodity_change,
         attributes: {
           count: 3,
+          impacted_measures: nil,
         },
       )
     end
@@ -37,10 +38,21 @@ RSpec.describe Api::User::GroupedMeasureCommodityChangeSerializer do
     it 'has the correct attributes' do
       expect(serialized[:data][:attributes]).to eq(
         count: 3,
+        impacted_measures: nil,
       )
     end
 
     context 'with commodity relationship included' do
+      let(:serializable) do
+        commodity_change = TariffChanges::GroupedMeasureCommodityChange.new(
+          goods_nomenclature_item_id: '1234567890',
+          count: 3,
+          grouped_measure_change_id: 'import_GB_FR-DE',
+        )
+        commodity_change.commodity = commodity
+        commodity_change
+      end
+
       let(:serializer_options) do
         { include: %w[commodity] }
       end
@@ -87,6 +99,7 @@ RSpec.describe Api::User::GroupedMeasureCommodityChangeSerializer do
       it 'handles nil count correctly' do
         expect(serialized[:data][:attributes]).to eq(
           count: nil,
+          impacted_measures: nil,
         )
       end
     end
@@ -103,6 +116,7 @@ RSpec.describe Api::User::GroupedMeasureCommodityChangeSerializer do
       it 'handles zero count correctly' do
         expect(serialized[:data][:attributes]).to eq(
           count: 0,
+          impacted_measures: nil,
         )
       end
     end
@@ -135,7 +149,7 @@ RSpec.describe Api::User::GroupedMeasureCommodityChangeSerializer do
       end
 
       it 'handles non-existent commodity gracefully' do
-        expect(serialized[:data][:attributes]).to eq(count: 5)
+        expect(serialized[:data][:attributes]).to eq(count: 5, impacted_measures: nil)
         expect(serialized[:data][:relationships][:commodity][:data]).to be_nil
       end
     end
