@@ -7788,8 +7788,9 @@ CREATE TABLE uk.tariff_changes (
     date_of_effect date NOT NULL,
     validity_start_date timestamp without time zone,
     validity_end_date timestamp without time zone,
+    updated_at timestamp without time zone,
     created_at timestamp without time zone,
-    updated_at timestamp without time zone
+    metadata jsonb DEFAULT '{}'::jsonb
 );
 
 
@@ -11807,6 +11808,13 @@ CREATE INDEX idx_search_suggestions_value_trgm ON uk.search_suggestions USING gi
 
 
 --
+-- Name: idx_tariff_changes_measure_metadata; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX idx_tariff_changes_measure_metadata ON uk.tariff_changes USING gin (((metadata -> 'measure'::text))) WHERE (type = 'Measure'::text);
+
+
+--
 -- Name: index_additional_code_type_descriptions_on_language_id; Type: INDEX; Schema: uk; Owner: -
 --
 
@@ -13501,6 +13509,13 @@ CREATE INDEX tariff_changes_goods_nomenclature_item_id_index ON uk.tariff_change
 
 
 --
+-- Name: tariff_changes_metadata_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX tariff_changes_metadata_index ON uk.tariff_changes USING gin (metadata);
+
+
+--
 -- Name: tariff_update_cds_errors_tariff_update_filename_index; Type: INDEX; Schema: uk; Owner: -
 --
 
@@ -13948,5 +13963,6 @@ INSERT INTO "schema_migrations" ("filename") VALUES ('20250902151220_create_user
 INSERT INTO "schema_migrations" ("filename") VALUES ('20251010130950_add_cds_update_notifications_table.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20251016115024_drop_user_delta_preferences.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20251016144135_add_column_metadata_to_user_subscriptions.rb');
-INSERT INTO "schema_migrations" ("filename") VALUES ('20251020111455_create_tariff_changes.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20251021145145_create_table_user_subscription_targets.rb');
+INSERT INTO "schema_migrations" ("filename") VALUES ('20251020111455_create_tariff_changes.rb');
+INSERT INTO "schema_migrations" ("filename") VALUES ('20251117120000_add_metadata_to_tariff_changes.rb');

@@ -5,7 +5,6 @@ RSpec.describe Api::User::SubscriptionTarget::CommoditySerializer do
     build_stubbed(:commodity, goods_nomenclature_sid: 123, goods_nomenclature_item_id: '1234567890').tap do |commodity|
       allow(commodity).to receive_messages(
         id: 123,
-        hierarchical_description: 'Live animals; animal products > Live animals > Live horses, asses, mules and hinnies',
       )
     end
   end
@@ -17,7 +16,7 @@ RSpec.describe Api::User::SubscriptionTarget::CommoditySerializer do
         type: :commodity,
         attributes: {
           goods_nomenclature_item_id: '1234567890',
-          hierarchical_description: 'Live animals; animal products > Live animals > Live horses, asses, mules and hinnies',
+          hierarchical_description: 'placeholder hierarchical description',
         },
       },
     }
