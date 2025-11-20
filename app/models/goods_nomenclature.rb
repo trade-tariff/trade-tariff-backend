@@ -4,7 +4,7 @@ class GoodsNomenclature < Sequel::Model
 
   extend ActiveModel::Naming
   include Formatter
-  include ClassificationDescriptionHelper
+  include ClassificationDescription
 
   set_dataset order(Sequel.asc(:goods_nomenclatures__goods_nomenclature_item_id), Sequel.asc(:goods_nomenclatures__producline_suffix))
   set_primary_key [:goods_nomenclature_sid]

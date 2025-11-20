@@ -1,9 +1,9 @@
 require 'spec_helper'
 
-RSpec.describe ClassificationDescriptionHelper do
+RSpec.describe ClassificationDescription do
   let(:dummy_class) do
     Class.new do
-      include ClassificationDescriptionHelper
+      include ClassificationDescription
 
       attr_accessor :formatted_description, :ancestors, :heading
     end
