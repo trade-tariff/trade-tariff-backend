@@ -6,8 +6,7 @@ module Api
 
         set_type :commodity
         set_id :id
-        attribute :hierarchical_description, -> { 'placeholder hierarchical description' }
-        attribute :goods_nomenclature_item_id
+        attributes :classification_description, :goods_nomenclature_item_id
       end
     end
   end

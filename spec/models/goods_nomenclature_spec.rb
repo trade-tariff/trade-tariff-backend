@@ -489,17 +489,31 @@ RSpec.describe GoodsNomenclature do
     it { is_expected.to include instance_of GreenLanes::Measure }
   end
 
-  describe '#hierarchical_description' do
-    subject(:hierarchical_description) { goods_nomenclature.hierarchical_description }
+  describe '#classification_description' do
+    subject(:classification_description) { goods_nomenclature.classification_description }
 
-    let(:goods_nomenclature) { create(:goods_nomenclature, :with_description, description: 'bar') }
-    let(:ancestor1) { OpenStruct.new(description: 'root') }
-    let(:ancestor2) { OpenStruct.new(description: 'foo') }
+    context 'when the description is not "other"' do
+      let(:goods_nomenclature) { create(:goods_nomenclature, :with_description, description: 'bar') }
+      let(:ancestor1) {  create(:goods_nomenclature, :with_description, description: 'foo') }
+      let(:ancestor2) {  create(:goods_nomenclature, :with_description, description: 'bar') }
 
-    before do
-      allow(goods_nomenclature).to receive(:ancestors).and_return([ancestor1, ancestor2])
+      before do
+        allow(goods_nomenclature).to receive(:ancestors).and_return([ancestor1, ancestor2])
+      end
+
+      it { is_expected.to eq('Bar') }
     end
 
-    it { is_expected.to eq('foo > bar') }
+    context 'when the description is "other"' do
+      let(:goods_nomenclature) { create(:goods_nomenclature, :with_description, description: 'other') }
+      let(:ancestor1) {  create(:goods_nomenclature, :with_description, description: 'foo') }
+      let(:ancestor2) {  create(:goods_nomenclature, :with_description, description: 'bar') }
+
+      before do
+        allow(goods_nomenclature).to receive(:ancestors).and_return([ancestor1, ancestor2])
+      end
+
+      it { is_expected.to eq('Bar > Other') }
+    end
   end
 end
