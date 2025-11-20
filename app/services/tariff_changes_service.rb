@@ -108,7 +108,7 @@ class TariffChangesService
   end
 
   def add_change_record(change, gn_item_id, gn_sid)
-    @tariff_change_records << {
+    record = {
       type: change[:type],
       object_sid: change[:object_sid],
       goods_nomenclature_item_id: gn_item_id,
@@ -119,5 +119,36 @@ class TariffChangesService
       validity_start_date: change[:validity_start_date],
       validity_end_date: change[:validity_end_date],
     }
+
+    # Add JSONB metadata for measure changes
+    if change[:type] == 'Measure' && change[:object_sid]
+      record[:metadata] = generate_measure_metadata(change[:object_sid])
+    end
+
+    @tariff_change_records << record
+  end
+
+  private
+
+  def generate_measure_metadata(measure_sid)
+    measure = Measure.find(measure_sid: measure_sid)
+    return {} unless measure
+
+    excluded_areas = measure.measure_excluded_geographical_areas_dataset
+                           .select(:excluded_geographical_area)
+                           .map(:excluded_geographical_area)
+                           .sort
+
+    {
+      'measure' => {
+        'measure_type_id' => measure.measure_type_id,
+        'trade_movement_code' => measure.measure_type.trade_movement_code,
+        'geographical_area_id' => measure.geographical_area_id,
+        'excluded_geographical_area_ids' => excluded_areas,
+      },
+    }
+  rescue Sequel::NoMatchingRow
+    # Handle case where measure doesn't exist
+    {}
   end
 end

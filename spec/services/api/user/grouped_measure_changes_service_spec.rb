@@ -44,8 +44,22 @@ RSpec.describe Api::User::GroupedMeasureChangesService do
       before do
         create(:measure_excluded_geographical_area, measure: measure, excluded_geographical_area: france.geographical_area_id)
         create(:measure_excluded_geographical_area, measure: measure, excluded_geographical_area: germany.geographical_area_id)
-        create(:tariff_change, type: 'Measure', object_sid: 100, operation_date: date, goods_nomenclature_sid: 123_456, goods_nomenclature_item_id: '1234567890')
-        create(:tariff_change, type: 'Measure', object_sid: 100, operation_date: date, goods_nomenclature_sid: 987_654, goods_nomenclature_item_id: '9876543210')
+
+        tc1 = create(:tariff_change, type: 'Measure', object_sid: 100, operation_date: date, goods_nomenclature_sid: 123_456, goods_nomenclature_item_id: '1234567890')
+        tc2 = create(:tariff_change, type: 'Measure', object_sid: 100, operation_date: date, goods_nomenclature_sid: 987_654, goods_nomenclature_item_id: '9876543210')
+
+        [tc1, tc2].each do |tc|
+          metadata = {
+            'measure' => {
+              'measure_type_id' => import_measure_type.measure_type_id,
+              'trade_movement_code' => 0,
+              'geographical_area_id' => 'GB',
+              'excluded_geographical_area_ids' => %w[DE FR],
+            },
+          }
+
+          tc.update(metadata: metadata)
+        end
       end
 
       it 'returns a single GroupedMeasureChange with commodity changes' do

@@ -10,6 +10,7 @@ UserApi.routes.draw do
       end
       resources :subscription_targets, only: %i[show]
       resources :grouped_measure_changes, only: %i[index show]
+      resources :grouped_measure_commodity_changes, only: %i[show]
     end
   end
 end

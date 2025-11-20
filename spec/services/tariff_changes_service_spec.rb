@@ -580,6 +580,53 @@ RSpec.describe TariffChangesService do
 
       expect(service.tariff_change_records.size).to eq(2)
     end
+
+    context 'when change type is Measure' do
+      let(:measure) { create(:measure) }
+      let(:measure_change) do
+        {
+          type: 'Measure',
+          object_sid: measure.measure_sid,
+          action: 'creation',
+          date_of_effect: date,
+          validity_start_date: date,
+          validity_end_date: nil,
+        }
+      end
+
+      it 'includes JSONB metadata for measure changes' do
+        service.add_change_record(measure_change, gn_item_id, gn_sid)
+
+        measure_record = service.tariff_change_records.find { |r| r[:type] == 'Measure' }
+        expect(measure_record[:metadata]).to be_present
+        expect(measure_record[:metadata]['measure']).to include(
+          'measure_type_id' => measure.measure_type_id,
+          'trade_movement_code' => measure.measure_type.trade_movement_code,
+          'geographical_area_id' => measure.geographical_area_id,
+        )
+        expect(measure_record[:metadata]['measure']).to have_key('excluded_geographical_area_ids')
+      end
+
+      context 'when measure is not found' do
+        let(:measure_change) do
+          {
+            type: 'Measure',
+            object_sid: 99_999,
+            action: 'creation',
+            date_of_effect: date,
+            validity_start_date: date,
+            validity_end_date: nil,
+          }
+        end
+
+        it 'includes empty metadata' do
+          service.add_change_record(measure_change, gn_item_id, gn_sid)
+
+          measure_record = service.tariff_change_records.find { |r| r[:type] == 'Measure' }
+          expect(measure_record[:metadata]).to eq({})
+        end
+      end
+    end
   end
 
   describe '#matching_commodity_change?' do
