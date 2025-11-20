@@ -1,4 +1,5 @@
 module ClassificationDescriptionHelper
+  extend ActiveSupport::Concern
   def descriptions_with_other_handling(description)
     all_other = true
     descriptions = [description]
