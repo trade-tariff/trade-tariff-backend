@@ -26,6 +26,8 @@ module Api
           include: %w[
             commodity
             grouped_measure_change
+            grouped_measure_change.geographical_area
+            grouped_measure_change.excluded_countries
           ],
           params: { date: as_of },
         }
