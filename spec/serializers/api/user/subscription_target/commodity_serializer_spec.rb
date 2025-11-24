@@ -5,6 +5,8 @@ RSpec.describe Api::User::SubscriptionTarget::CommoditySerializer do
     build_stubbed(:commodity, goods_nomenclature_sid: 123, goods_nomenclature_item_id: '1234567890').tap do |commodity|
       allow(commodity).to receive_messages(
         id: 123,
+        chapter_short_code: '12',
+        heading: nil,
         classification_description: 'Live animals; animal products > Live animals > Live horses, asses, mules and hinnies',
       )
     end
@@ -16,6 +18,8 @@ RSpec.describe Api::User::SubscriptionTarget::CommoditySerializer do
         id: '123',
         type: :commodity,
         attributes: {
+          chapter: '12',
+          heading: nil,
           goods_nomenclature_item_id: '1234567890',
           classification_description: 'Live animals; animal products > Live animals > Live horses, asses, mules and hinnies',
         },
