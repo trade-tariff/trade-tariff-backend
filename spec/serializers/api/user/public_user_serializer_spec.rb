@@ -11,8 +11,6 @@ RSpec.describe Api::User::PublicUserSerializer do
         attributes: {
           chapter_ids: '01,99',
           email: 'oliver@email.com',
-          stop_press_subscription: false,
-          my_commodities_subscription: serializable.my_commodities_subscription,
           subscriptions: [
             {
               id: serializable.subscriptions_dataset.first.uuid,

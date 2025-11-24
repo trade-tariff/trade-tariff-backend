@@ -7,7 +7,7 @@ module Api
 
       set_id :external_id
 
-      attributes :email, :chapter_ids, :stop_press_subscription, :my_commodities_subscription
+      attributes :email, :chapter_ids
 
       attribute :subscriptions do |user|
         user.subscriptions_dataset.map do |subscription|

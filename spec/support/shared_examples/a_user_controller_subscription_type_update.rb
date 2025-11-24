@@ -25,9 +25,12 @@ RSpec.shared_examples_for 'a user controller subscription type update' do |subsc
       end
 
       it 'responds with updated subscription details' do
-        expect(
-          JSON.parse(api_response.body)['data']['attributes'][subscription_type.to_s],
-        ).to be_a(String)
+        body = JSON.parse(api_response.body)
+        response = body['data']['attributes']['subscriptions'][0]
+
+        expect(response['active']).to be(true)
+        expect(response['subscription_type']).to eq(subscription_type.to_s.sub('_subscription', ''))
+        expect(response['id']).to be_a(String)
       end
 
       it { is_expected.to have_http_status :ok }
@@ -42,9 +45,12 @@ RSpec.shared_examples_for 'a user controller subscription type update' do |subsc
       end
 
       it 'responds with updated subscription details' do
-        expect(
-          JSON.parse(api_response.body)['data']['attributes'][subscription_type.to_s],
-        ).to be(false)
+        body = JSON.parse(api_response.body)
+        response = body['data']['attributes']['subscriptions'][0]
+
+        expect(response['active']).to be(false)
+        expect(response['subscription_type']).to eq(subscription_type.to_s.sub('_subscription', ''))
+        expect(response['id']).to be_a(String)
       end
 
       it { is_expected.to have_http_status :ok }
