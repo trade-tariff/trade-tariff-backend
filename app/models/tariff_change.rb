@@ -13,6 +13,14 @@ class TariffChange < Sequel::Model
       where(type: 'Measure')
     end
 
+    def commodities
+      where(type: 'Commodity')
+    end
+
+    def commodity_descriptions
+      where(type: 'GoodsNomenclatureDescription')
+    end
+
     def with_measure_criteria(trade_direction:, geographical_area:, excluded_areas: [])
       jsonb_condition = Sequel.lit("metadata IS NOT NULL AND metadata != '{}' AND metadata @> ?",
                                    Sequel.pg_jsonb({
