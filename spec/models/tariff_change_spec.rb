@@ -121,4 +121,62 @@ RSpec.describe TariffChange do
       expect(result).not_to include(measure_change2)
     end
   end
+
+  describe '.commodities' do
+    let!(:commodity_change) { create(:tariff_change, type: 'Commodity') }
+    let!(:measure_change) { create(:tariff_change, type: 'Measure') }
+
+    it 'returns only tariff changes with type Commodity' do
+      result = described_class.commodities.all
+      expect(result).to contain_exactly(commodity_change)
+      expect(result).not_to include(measure_change)
+    end
+  end
+
+  describe '.commodity_descriptions' do
+    let!(:description_change) { create(:tariff_change, type: 'GoodsNomenclatureDescription') }
+    let!(:measure_change) { create(:tariff_change, type: 'Measure') }
+
+    it 'returns only tariff changes with type GoodsNomenclatureDescription' do
+      result = described_class.commodity_descriptions.all
+      expect(result).to contain_exactly(description_change)
+      expect(result).not_to include(measure_change)
+    end
+  end
+
+  describe '#description' do
+    let(:tariff_change) { described_class.new(type: 'Commodity', action: action) }
+
+    context 'when action is CREATION' do
+      let(:action) { TariffChangesService::BaseChanges::CREATION }
+
+      it 'returns begin description' do
+        expect(tariff_change.description).to eq('Commodity will begin')
+      end
+    end
+
+    context 'when action is ENDING' do
+      let(:action) { TariffChangesService::BaseChanges::ENDING }
+
+      it 'returns end description' do
+        expect(tariff_change.description).to eq('Commodity will end')
+      end
+    end
+
+    context 'when action is UPDATE' do
+      let(:action) { TariffChangesService::BaseChanges::UPDATE }
+
+      it 'returns update description' do
+        expect(tariff_change.description).to eq('Commodity will be updated')
+      end
+    end
+
+    context 'when action is DELETION' do
+      let(:action) { TariffChangesService::BaseChanges::DELETION }
+
+      it 'returns delete description' do
+        expect(tariff_change.description).to eq('Commodity will be deleted')
+      end
+    end
+  end
 end

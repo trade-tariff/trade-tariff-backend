@@ -9,6 +9,7 @@ UserApi.routes.draw do
         post :batch, on: :member, action: :create_batch
       end
       resources :subscription_targets, only: %i[show]
+      resources :commodity_changes, only: %i[index]
       resources :grouped_measure_changes, only: %i[index show]
       resources :grouped_measure_commodity_changes, only: %i[show]
     end
