@@ -28,6 +28,28 @@ RSpec.describe Api::User::CommodityChangesService do
       expect(result.last.id).to eq('classification_changes')
       expect(result.last.count).to eq(3)
     end
+
+    context 'when there are no commodity endings' do
+      before do
+        allow(TariffChange).to receive_message_chain(:commodities, :where, :where, :where, :count).and_return(0)
+      end
+
+      it 'omits commodity endings from the result' do
+        result = service.call
+        expect(result).not_to(be_any { |change| change.id == 'commodity_endings' })
+      end
+    end
+
+    context 'when there are no classification changes' do
+      before do
+        allow(TariffChange).to receive_message_chain(:commodity_descriptions, :where, :where, :where, :count).and_return(0)
+      end
+
+      it 'omits classification changes from the result' do
+        result = service.call
+        expect(result).not_to(be_any { |change| change.id == 'classification_changes' })
+      end
+    end
   end
 
   describe '#user_commodity_code_sids' do

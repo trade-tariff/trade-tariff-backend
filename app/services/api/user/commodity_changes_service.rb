@@ -10,35 +10,43 @@ module Api
 
       def call
         [
-          OpenStruct.new({
-            id: 'commodity_endings',
-            description: 'Changes to end date',
-            count: count_commodity_endings,
-          }),
-          OpenStruct.new({
-            id: 'classification_changes',
-            description: 'Changes to classification',
-            count: count_classification_changes,
-          }),
-        ]
+          commodity_endings,
+          classification_changes,
+        ].compact
       end
 
       private
 
-      def count_commodity_endings
-        TariffChange.commodities
-                     .where(operation_date: date)
-                     .where(goods_nomenclature_sid: user_commodity_code_sids)
-                     .where(action: TariffChangesService::BaseChanges::ENDING)
-                     .count
+      def commodity_endings
+        count = TariffChange.commodities
+                            .where(operation_date: date)
+                            .where(goods_nomenclature_sid: user_commodity_code_sids)
+                            .where(action: TariffChangesService::BaseChanges::ENDING)
+                            .count
+
+        return if count.zero?
+
+        OpenStruct.new({
+          id: 'commodity_endings',
+          description: 'Changes to end date',
+          count: count,
+        })
       end
 
-      def count_classification_changes
-        TariffChange.commodity_descriptions
-                     .where(operation_date: date)
-                     .where(goods_nomenclature_sid: user_commodity_code_sids)
-                     .where(action: TariffChangesService::BaseChanges::UPDATE)
-                     .count
+      def classification_changes
+        count = TariffChange.commodity_descriptions
+                            .where(operation_date: date)
+                            .where(goods_nomenclature_sid: user_commodity_code_sids)
+                            .where(action: TariffChangesService::BaseChanges::UPDATE)
+                            .count
+
+        return if count.zero?
+
+        OpenStruct.new({
+          id: 'classification_changes',
+          description: 'Changes to classification',
+          count: count,
+        })
       end
 
       def user_commodity_code_sids
