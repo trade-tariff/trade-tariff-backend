@@ -24,6 +24,10 @@ module Api
       attribute :producline_suffix do |sub_target|
         sub_target.commodity&.producline_suffix
       end
+
+      attribute :validity_end_date do |sub_target|
+        sub_target.commodity&.validity_end_date
+      end
     end
   end
 end

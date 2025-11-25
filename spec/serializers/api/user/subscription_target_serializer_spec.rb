@@ -27,6 +27,7 @@ RSpec.describe Api::User::SubscriptionTargetSerializer do
                 goods_nomenclature_item_id: commodity.goods_nomenclature_item_id,
                 classification_description: commodity.classification_description,
                 producline_suffix: commodity.producline_suffix,
+                validity_end_date: commodity.validity_end_date,
               },
             },
           ],

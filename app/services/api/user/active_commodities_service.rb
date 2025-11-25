@@ -128,9 +128,9 @@ module Api
         Commodity.where(goods_nomenclature_item_id: codes).all
       end
 
-      NullCommodity = Struct.new(:goods_nomenclature_sid, :goods_nomenclature_item_id, :chapter_short_code, :classification_description, :producline_suffix, :invalid) do
+      NullCommodity = Struct.new(:goods_nomenclature_sid, :goods_nomenclature_item_id, :chapter_short_code, :classification_description, :producline_suffix, :invalid, :validity_end_date) do
         def initialize(goods_nomenclature_item_id:, invalid: true)
-          super(nil, goods_nomenclature_item_id, nil, nil, nil, invalid)
+          super(nil, goods_nomenclature_item_id, nil, nil, nil, invalid, nil)
         end
       end
     end
