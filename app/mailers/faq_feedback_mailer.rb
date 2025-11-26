@@ -4,7 +4,7 @@ class FaqFeedbackMailer < ApplicationMailer
   def faq_feedback_message
     mail subject: "[HMRC Online Trade Tariff Support] UK tariff - Green Lanes FAQ Feedback Report - #{TradeTariffBackend.service == 'uk' ? 'UK' : 'Northern Ireland'}",
          content_type: 'text/html',
-         body: faq_feedback_statistics_body(GreenLanes::FaqFeedback.statistics)
+         body: faq_feedback_statistics_body(FaqFeedback.statistics)
   end
 
   def faq_feedback_statistics_body(results)
