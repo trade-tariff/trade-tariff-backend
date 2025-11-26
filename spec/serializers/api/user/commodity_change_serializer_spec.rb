@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-require 'rails_helper'
-
 RSpec.describe Api::User::CommodityChangeSerializer do
   let(:object) { OpenStruct.new(id: 'commodity_endings', description: 'desc', count: 2) }
   let(:serializer) { described_class.new([object]) }

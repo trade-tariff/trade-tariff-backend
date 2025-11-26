@@ -1,5 +1,3 @@
-require 'rails_helper'
-
 RSpec.describe Api::V2::EnquiryForm::SubmissionsController, :v2 do
   describe 'POST #create' do
     let(:params) do

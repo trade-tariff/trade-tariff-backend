@@ -1,5 +1,3 @@
-require 'rails_helper'
-
 RSpec.describe TariffChanges::GroupedMeasureCommodityChange do
   subject(:grouped_commodity_change) do
     described_class.new(
