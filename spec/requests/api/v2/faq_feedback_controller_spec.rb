@@ -1,4 +1,4 @@
-RSpec.describe Api::V2::GreenLanes::FaqFeedbackController, :v2 do
+RSpec.describe Api::V2::FaqFeedbackController, :v2 do
   subject(:api_response) { make_request && response }
 
   let(:json_response) { JSON.parse(api_response.body) }
@@ -13,7 +13,7 @@ RSpec.describe Api::V2::GreenLanes::FaqFeedbackController, :v2 do
 
   describe 'POST to #create' do
     let(:make_request) do
-      post api_green_lanes_faq_feedback_index_path, params: params, headers: headers, as: :json
+      post api_faq_feedback_index_path, params: params, headers: headers, as: :json
     end
 
     let(:params) do

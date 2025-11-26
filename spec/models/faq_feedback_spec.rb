@@ -1,4 +1,4 @@
-RSpec.describe GreenLanes::FaqFeedback do
+RSpec.describe FaqFeedback do
   describe 'attributes' do
     it { is_expected.to respond_to :session_id }
     it { is_expected.to respond_to :category_id }
