@@ -439,7 +439,7 @@ GEM
     rufus-scheduler (3.9.2)
       fugit (~> 1.1, >= 1.11.1)
     securerandom (0.4.1)
-    sequel (5.97.0)
+    sequel (5.98.0)
       bigdecimal
     sequel-rails (1.2.4)
       actionpack (>= 4.0.0)
