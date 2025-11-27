@@ -3,8 +3,6 @@ module Api
     class CommodityChangesService
       attr_reader :user, :id, :date
 
-      ALLOWED_IDS = %w[ending classification].freeze
-
       def initialize(user, id = nil, date = Time.zone.yesterday)
         @user = user
         @id = id
@@ -12,8 +10,11 @@ module Api
       end
 
       def call
-        if id.present? && ALLOWED_IDS.include?(id)
-          send(id, with_records: true)
+        case id
+        when 'ending'
+          ending(with_records: true)
+        when 'classification'
+          classification(with_records: true)
         else
           all_changes
         end
