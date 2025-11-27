@@ -1,5 +1,4 @@
 # spec/workers/enquiry_form/send_submission_email_worker_spec.rb
-require 'rails_helper'
 require 'sidekiq/testing'
 
 RSpec.describe EnquiryForm::SendSubmissionEmailWorker, type: :worker do

@@ -8,15 +8,21 @@ module Api
       before_action :authenticate!
 
       def index
-        render json: serialize(tariff_changes)
+        render json: Api::User::CommodityChangesSerializer.new(tariff_changes).serializable_hash
+      end
+
+      def show
+        render json: Api::User::CommodityChangesSerializer.new(tariff_changes, serializer_options).serializable_hash
+      end
+
+      def serializer_options
+        {
+          include: %w[tariff_changes],
+        }
       end
 
       def tariff_changes
-        Api::User::CommodityChangesService.new(@current_user, as_of).call
-      end
-
-      def serialize(tariff_changes)
-        Api::User::CommodityChangeSerializer.new(tariff_changes).serializable_hash
+        Api::User::CommodityChangesService.new(@current_user, params[:id], as_of).call
       end
 
       def as_of

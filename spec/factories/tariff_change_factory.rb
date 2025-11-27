@@ -25,7 +25,7 @@ FactoryBot.define do
           metadata = {
             'measure' => {
               'measure_type_id' => measure.measure_type_id,
-              'trade_movement_code' => measure.measure_type.trade_movement_code,
+              'trade_movement_code' => measure.measure_type&.trade_movement_code,
               'geographical_area_id' => measure.geographical_area_id,
               'excluded_geographical_area_ids' => excluded_areas,
             },

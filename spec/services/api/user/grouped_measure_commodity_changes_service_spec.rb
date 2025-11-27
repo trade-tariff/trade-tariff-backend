@@ -1,5 +1,3 @@
-require 'rails_helper'
-
 RSpec.describe Api::User::GroupedMeasureCommodityChangesService do
   subject(:service) { described_class.new(grouped_measure_change_id, id, date) }
 
