@@ -221,7 +221,10 @@ module TradeTariffBackend
     end
 
     def api_tokens
-      ENV['GREEN_LANES_API_TOKENS']
+      @api_tokens ||= [
+        ENV['GREEN_LANES_API_TOKENS'],
+        ENV['BACKEND_API_TOKEN'],
+      ].join(',')
     end
 
     def green_lanes_api_keys
