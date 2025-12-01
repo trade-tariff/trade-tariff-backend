@@ -1,5 +1,3 @@
-require 'rails_helper'
-
 RSpec.describe Api::User::GroupedMeasureCommodityChangeSerializer do
   subject(:serialized) { described_class.new(serializable, serializer_options).serializable_hash }
 

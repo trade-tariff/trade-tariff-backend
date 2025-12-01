@@ -1,5 +1,3 @@
-require 'rails_helper'
-
 RSpec.describe EnquiryForm::CsvGeneratorService do
   subject(:csv_content) { described_class.new(enquiry_data).generate }
 
