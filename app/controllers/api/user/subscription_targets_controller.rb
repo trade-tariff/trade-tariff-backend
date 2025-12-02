@@ -13,9 +13,10 @@ module Api
 
         case @subscription.subscription_type.name
         when 'my_commodities'
-          filtered_targets = targets_filter_service.new(@subscription,
-                                                        filter_params[:active_commodities_type]&.to_sym,
-                                                        current_page, per_page).call
+          filter_service = "Api::User::TargetsFilterService::#{@subscription.subscription_type.name.camelize}TargetsFilterService".constantize
+          filtered_targets = filter_service.new(@subscription,
+                                                filter_params[:active_commodities_type]&.to_sym,
+                                                current_page, per_page).call
         else
           raise ArgumentError, "Unsupported subscription type for targets filtering: #{@subscription.subscription_type.name}"
         end
@@ -59,13 +60,6 @@ module Api
 
       def subscription_id
         params[:subscription_id]
-      end
-
-      def targets_filter_service
-        subscription_type_name = @subscription.subscription_type.name
-        "Api::User::TargetsFilterService::#{subscription_type_name.camelize}TargetsFilterService".constantize
-      rescue NameError
-        raise ArgumentError, "Unsupported subscription type for targets filtering: #{subscription_type_name}"
       end
     end
   end
