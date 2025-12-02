@@ -1,5 +1,3 @@
-require 'rails_helper'
-
 RSpec.describe EnquiryForm::SubmissionHelper, type: :helper do
   describe '#create_reference_number' do
     let(:charset) { described_class::CHARSET }

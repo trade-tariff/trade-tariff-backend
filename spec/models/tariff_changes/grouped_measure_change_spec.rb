@@ -1,5 +1,3 @@
-require 'rails_helper'
-
 RSpec.describe TariffChanges::GroupedMeasureChange do
   subject(:grouped_measure_change) do
     described_class.new(
