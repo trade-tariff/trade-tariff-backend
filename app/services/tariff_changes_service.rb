@@ -146,7 +146,7 @@ class TariffChangesService
         'geographical_area_id' => measure.geographical_area_id,
         'excluded_geographical_area_ids' => excluded_areas,
       },
-    }
+    }.to_json
   rescue Sequel::NoMatchingRow
     # Handle case where measure doesn't exist
     {}
