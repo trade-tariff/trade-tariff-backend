@@ -36,11 +36,6 @@ module Api
             target
           end
         end
-
-        def find_target_id_by_goods_nomenclature_sid(sid)
-          subscription_target = subscription.subscription_targets_dataset.where(target_id: sid).first
-          subscription_target&.id
-        end
       end
     end
   end
