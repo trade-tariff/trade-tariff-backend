@@ -599,12 +599,14 @@ RSpec.describe TariffChangesService do
 
         measure_record = service.tariff_change_records.find { |r| r[:type] == 'Measure' }
         expect(measure_record[:metadata]).to be_present
-        expect(measure_record[:metadata]['measure']).to include(
+        metadata = measure_record[:metadata]
+        metadata = JSON.parse(metadata) if metadata.is_a?(String)
+        expect(metadata['measure']).to include(
           'measure_type_id' => measure.measure_type_id,
           'trade_movement_code' => measure.measure_type.trade_movement_code,
           'geographical_area_id' => measure.geographical_area_id,
         )
-        expect(measure_record[:metadata]['measure']).to have_key('excluded_geographical_area_ids')
+        expect(metadata['measure']).to have_key('excluded_geographical_area_ids')
       end
 
       context 'when measure is not found' do

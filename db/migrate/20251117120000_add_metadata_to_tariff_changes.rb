@@ -2,20 +2,20 @@
 
 Sequel.migration do
   change do
-    return unless TradeTariffBackend.uk?
+    if TradeTariffBackend.uk?
+      alter_table :tariff_changes do
+        add_column :metadata, :jsonb, default: '{}'
+      end
 
-    alter_table :tariff_changes do
-      add_column :metadata, :jsonb, default: '{}'
+      # Add GIN index for efficient JSONB queries
+      add_index :tariff_changes, :metadata, type: :gin
+
+      # Add specific index for common measure queries
+      execute <<-SQL
+        CREATE INDEX idx_tariff_changes_measure_metadata
+        ON tariff_changes USING GIN ((metadata->'measure'))
+        WHERE type = 'Measure'
+      SQL
     end
-
-    # Add GIN index for efficient JSONB queries
-    add_index :tariff_changes, :metadata, type: :gin
-
-    # Add specific index for common measure queries
-    execute <<-SQL
-      CREATE INDEX idx_tariff_changes_measure_metadata
-      ON tariff_changes USING GIN ((metadata->'measure'))
-      WHERE type = 'Measure'
-    SQL
   end
 end
