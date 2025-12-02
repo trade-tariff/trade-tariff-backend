@@ -3,12 +3,12 @@ module PublicUsers
     plugin :auto_validations
     plugin :timestamps, update_on_create: true
 
-    attr_accessor :commodity, :virtual_id # for representing NullCommodities
+    attr_accessor :commodity
 
     many_to_one :subscription, class: 'PublicUsers::Subscription', key: :user_subscriptions_uuid, primary_key: :uuid
 
-    def id
-      super || virtual_id
+    def commodity_id
+      @commodity&.id
     end
 
     dataset_module do

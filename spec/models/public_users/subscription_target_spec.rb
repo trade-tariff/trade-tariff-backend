@@ -14,4 +14,22 @@ RSpec.describe PublicUsers::SubscriptionTarget do
       end
     end
   end
+
+  describe '#commodity_id' do
+    let(:subscription_target) { described_class.new }
+    let(:commodity) { create(:commodity, :actual, goods_nomenclature_sid: 444) }
+
+    before do
+      subscription_target.commodity = commodity
+    end
+
+    it 'returns the id of the associated commodity' do
+      expect(subscription_target.commodity_id).to eq(444)
+    end
+
+    it 'returns nil if no commodity is associated' do
+      subscription_target.commodity = nil
+      expect(subscription_target.commodity_id).to be_nil
+    end
+  end
 end

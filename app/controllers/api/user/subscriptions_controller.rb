@@ -63,7 +63,7 @@ module Api
 
       def batcher
         subscription_type_name = @subscription.subscription_type.name
-        "BatcherService::#{subscription_type_name.camelize}BatcherService".constantize
+        "Api::User::BatcherService::#{subscription_type_name.camelize}BatcherService".constantize
       rescue NameError
         raise ArgumentError, "Unsupported subscription type for batching: #{subscription_type_name}"
       end

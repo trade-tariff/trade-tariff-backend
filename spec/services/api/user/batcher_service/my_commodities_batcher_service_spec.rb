@@ -1,4 +1,4 @@
-RSpec.describe BatcherService::MyCommoditiesBatcherService do
+RSpec.describe Api::User::BatcherService::MyCommoditiesBatcherService do
   let(:my_targets) { %w[1234567890 1234567891 1234567892] }
 
   let(:existing_targets) do

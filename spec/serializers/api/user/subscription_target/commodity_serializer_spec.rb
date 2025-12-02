@@ -8,6 +8,7 @@ RSpec.describe Api::User::SubscriptionTarget::CommoditySerializer do
         chapter_short_code: '12',
         heading: nil,
         classification_description: 'Live animals; animal products > Live animals > Live horses, asses, mules and hinnies',
+        validity_end_date: '2025-12-31',
       )
     end
   end
@@ -22,6 +23,7 @@ RSpec.describe Api::User::SubscriptionTarget::CommoditySerializer do
           heading: nil,
           goods_nomenclature_item_id: '1234567890',
           classification_description: 'Live animals; animal products > Live animals > Live horses, asses, mules and hinnies',
+          validity_end_date: '2025-12-31',
         },
       },
     }
@@ -42,6 +44,10 @@ RSpec.describe Api::User::SubscriptionTarget::CommoditySerializer do
 
     it 'uses id as the identifier' do
       expect(serialized[:data][:id]).to eq('123')
+    end
+
+    it 'includes validity_end_date attribute' do
+      expect(serialized[:data][:attributes]).to include(:validity_end_date)
     end
   end
 end
