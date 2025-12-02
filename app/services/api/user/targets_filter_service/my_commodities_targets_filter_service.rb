@@ -29,11 +29,8 @@ module Api
 
         def apply_commodities_to_subscription_targets(commodities)
           commodities.map do |commodity|
-            subscription_target_id =
-              find_target_id_by_goods_nomenclature_sid(commodity.goods_nomenclature_sid)
-
             target = PublicUsers::SubscriptionTarget.new
-            target.virtual_id = subscription_target_id
+            target.id = commodity.goods_nomenclature_item_id
             target.target_type = 'commodity'
             target.commodity = commodity
             target

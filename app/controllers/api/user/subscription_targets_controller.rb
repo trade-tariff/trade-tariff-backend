@@ -11,9 +11,14 @@ module Api
       def index
         return render json: { message: 'No token was provided' }, status: :unauthorized if @subscription.nil?
 
-        filtered_targets = targets_filter_service.new(@subscription,
-                                                      filter_params[:active_commodities_type]&.to_sym,
-                                                      current_page, per_page).call
+        case @subscription.subscription_type.name
+        when 'my_commodities'
+          filtered_targets = targets_filter_service.new(@subscription,
+                                                        filter_params[:active_commodities_type]&.to_sym,
+                                                        current_page, per_page).call
+        else
+          raise ArgumentError, "Unsupported subscription type for targets filtering: #{@subscription.subscription_type.name}"
+        end
 
         render json: serialize(filtered_targets)
       rescue ArgumentError => e
@@ -28,10 +33,11 @@ module Api
 
       def serialize(targets_and_total)
         targets, total = targets_and_total
-        serialized_targets = Api::User::SubscriptionTargetSerializer.new(targets).serializable_hash
+        serialized_targets = Api::User::SubscriptionTargetSerializer.new(targets, include: [:target_object]).serializable_hash
 
         {
           data: serialized_targets[:data],
+          included: serialized_targets[:included],
           meta: {
             pagination: {
               page: current_page,

@@ -6,7 +6,7 @@ module Api
 
         set_type :commodity
         set_id :id
-        attributes :classification_description, :goods_nomenclature_item_id
+        attributes :classification_description, :goods_nomenclature_item_id, :validity_end_date
         attribute :chapter, &:chapter_short_code
         attribute :heading, ->(commodity) { commodity.heading&.description }
       end
