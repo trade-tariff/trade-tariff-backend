@@ -59,6 +59,7 @@ class TariffChangesService
 
     Sequel::Model.db.transaction do
       TariffChange.delete_for(operation_date: date)
+      Rails.logger.info("Inserting #{tariff_change_records.count} records for #{date}")
       TariffChange.multi_insert(tariff_change_records) if tariff_change_records.any?
     end
 
@@ -132,7 +133,7 @@ class TariffChangesService
 
   def generate_measure_metadata(measure_sid)
     measure = Measure.find(measure_sid: measure_sid)
-    return {} unless measure
+    return nil unless measure
 
     excluded_areas = measure.measure_excluded_geographical_areas_dataset
                            .select(:excluded_geographical_area)
