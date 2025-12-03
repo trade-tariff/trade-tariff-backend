@@ -375,6 +375,37 @@ RSpec.describe TariffChangesService do
 
       expect(result[:changes]).to eq([change_3, change_2, change_1])
     end
+
+    it 'successfully persists measure changes with metadata using multi_insert' do
+      measure = create(:measure)
+      create(:commodity, :declarable, goods_nomenclature_sid: measure.goods_nomenclature_sid)
+
+      measure_change = {
+        type: 'Measure',
+        object_sid: measure.measure_sid,
+        goods_nomenclature_sid: measure.goods_nomenclature_sid,
+        action: 'creation',
+        date_of_effect: date,
+        validity_start_date: date,
+        validity_end_date: nil,
+      }
+
+      allow(TariffChangesService::CommodityChanges).to receive(:collect).with(date).and_return([])
+      allow(TariffChangesService::CommodityDescriptionChanges).to receive(:collect).with(date).and_return([])
+      allow(TariffChangesService::MeasureChanges).to receive(:collect).with(date).and_return([measure_change])
+      allow(TariffChange).to receive(:delete_for)
+      allow(TariffChange).to receive(:multi_insert).and_call_original
+
+      expect {
+        service.all_changes
+      }.not_to raise_error
+
+      expect(TariffChange).to have_received(:multi_insert) do |records|
+        expect(records).to be_an(Array)
+        expect(records.first[:type]).to eq('Measure')
+        expect(records.first[:metadata]).to be_present
+      end
+    end
   end
 
   describe '#generate_commodity_change_records' do
@@ -625,7 +656,7 @@ RSpec.describe TariffChangesService do
           service.add_change_record(measure_change, gn_item_id, gn_sid)
 
           measure_record = service.tariff_change_records.find { |r| r[:type] == 'Measure' }
-          expect(measure_record[:metadata]).to eq({})
+          expect(measure_record[:metadata]).to be_nil
         end
       end
     end
