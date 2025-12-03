@@ -10,6 +10,7 @@ class HealthcheckController < ApplicationController
   end
 
   def checkz
+    NewRelic::Agent.ignore_transaction
     render json: resultz
   end
 
