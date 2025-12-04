@@ -79,10 +79,9 @@ RSpec.describe TariffChangesService do
     let(:date) { Date.new(2024, 8, 11) }
     let(:change_records) { [{ dummy: 'data' }] }
     let(:package) { instance_double(Axlsx::Package) }
-    let(:mailer_double) { instance_double(ActionMailer::MessageDelivery) }
 
     before do
-      allow(TariffChangesService::TransformRecords).to receive(:call).with(date).and_return(change_records)
+      allow(TariffChangesService::TransformRecords).to receive(:call).with(date, nil).and_return(change_records)
       allow(TariffChangesService::ExcelGenerator).to receive(:call).with(change_records, date).and_return(package)
     end
 
@@ -96,16 +95,11 @@ RSpec.describe TariffChangesService do
       end
     end
 
-    context 'when in development environment' do
-      before do
-        allow(Rails.env).to receive(:development?).and_return(true)
-        allow(package).to receive(:serialize)
-      end
-
+    context 'when there are records' do
       it 'transforms records for the given date' do
         described_class.generate_report_for(date)
 
-        expect(TariffChangesService::TransformRecords).to have_received(:call).with(date)
+        expect(TariffChangesService::TransformRecords).to have_received(:call).with(date, nil)
       end
 
       it 'generates Excel package with the transformed records' do
@@ -114,54 +108,34 @@ RSpec.describe TariffChangesService do
         expect(TariffChangesService::ExcelGenerator).to have_received(:call).with(change_records, date)
       end
 
-      it 'serializes the package to a file with correct filename' do
-        described_class.generate_report_for(date)
+      it 'returns the Excel package' do
+        result = described_class.generate_report_for(date)
 
-        expected_filename = "commodity_watchlist_#{date.strftime('%Y_%m_%d')}.xlsx"
-        expect(package).to have_received(:serialize).with(expected_filename)
-      end
-
-      it 'does not send an email' do
-        allow(ReportsMailer).to receive(:commodity_watchlist)
-
-        described_class.generate_report_for(date)
-
-        expect(ReportsMailer).not_to have_received(:commodity_watchlist)
+        expect(result).to eq(package)
       end
     end
 
-    context 'when in non-development environment' do
+    context 'when user is provided' do
+      let(:user) { create(:public_user) }
+      let(:commodity_ids) { [12_345, 67_890] }
+      let(:user_change_records) { [{ dummy: 'user_data' }] }
+
       before do
-        allow(Rails.env).to receive(:development?).and_return(false)
-        allow(ReportsMailer).to receive(:commodity_watchlist).with(date, package).and_return(mailer_double)
-        allow(mailer_double).to receive(:deliver_now)
+        allow(user).to receive(:target_ids_for_my_commodities).and_return(commodity_ids)
+        allow(TariffChangesService::TransformRecords).to receive(:call).with(date, commodity_ids).and_return(user_change_records)
+        allow(TariffChangesService::ExcelGenerator).to receive(:call).with(user_change_records, date).and_return(package)
       end
 
-      it 'transforms records for the given date' do
-        described_class.generate_report_for(date)
+      it 'transforms records with user commodity ids' do
+        described_class.generate_report_for(date, user)
 
-        expect(TariffChangesService::TransformRecords).to have_received(:call).with(date)
+        expect(TariffChangesService::TransformRecords).to have_received(:call).with(date, commodity_ids)
       end
 
-      it 'generates Excel package with the transformed records' do
-        described_class.generate_report_for(date)
+      it 'generates Excel package with the user-filtered records' do
+        described_class.generate_report_for(date, user)
 
-        expect(TariffChangesService::ExcelGenerator).to have_received(:call).with(change_records, date)
-      end
-
-      it 'sends email with the package' do
-        described_class.generate_report_for(date)
-
-        expect(ReportsMailer).to have_received(:commodity_watchlist).with(date, package)
-        expect(mailer_double).to have_received(:deliver_now)
-      end
-
-      it 'does not serialize the package to a file' do
-        allow(package).to receive(:serialize)
-
-        described_class.generate_report_for(date)
-
-        expect(package).not_to have_received(:serialize)
+        expect(TariffChangesService::ExcelGenerator).to have_received(:call).with(user_change_records, date)
       end
     end
   end
@@ -658,6 +632,100 @@ RSpec.describe TariffChangesService do
           measure_record = service.tariff_change_records.find { |r| r[:type] == 'Measure' }
           expect(measure_record[:metadata]).to be_nil
         end
+      end
+    end
+  end
+
+  describe '#generate_measure_metadata' do
+    let(:measure) { create(:measure) }
+    let(:geographical_area) { create(:geographical_area) }
+
+    context 'when measure exists' do
+      it 'returns JSON with measure metadata' do
+        metadata_json = service.send(:generate_measure_metadata, measure.measure_sid)
+        metadata = JSON.parse(metadata_json)
+
+        expect(metadata['measure']).to include(
+          'measure_type_id' => measure.measure_type_id,
+          'trade_movement_code' => measure.measure_type.trade_movement_code,
+          'geographical_area_id' => measure.geographical_area_id,
+        )
+      end
+
+      it 'includes excluded_geographical_area_ids key' do
+        metadata_json = service.send(:generate_measure_metadata, measure.measure_sid)
+        metadata = JSON.parse(metadata_json)
+
+        expect(metadata['measure']).to have_key('excluded_geographical_area_ids')
+      end
+
+      context 'when measure has no excluded geographical areas' do
+        it 'returns empty array for excluded_geographical_area_ids' do
+          metadata_json = service.send(:generate_measure_metadata, measure.measure_sid)
+          metadata = JSON.parse(metadata_json)
+
+          expect(metadata['measure']['excluded_geographical_area_ids']).to eq([])
+        end
+      end
+
+      context 'when measure has excluded geographical areas' do
+        let(:excluded_area1) { create(:geographical_area) }
+        let(:excluded_area2) { create(:geographical_area) }
+        let(:excluded_area3) { create(:geographical_area) }
+
+        before do
+          create(:measure_excluded_geographical_area,
+                 measure_sid: measure.measure_sid,
+                 excluded_geographical_area: excluded_area2.geographical_area_id,
+                 geographical_area_sid: excluded_area2.geographical_area_sid)
+          create(:measure_excluded_geographical_area,
+                 measure_sid: measure.measure_sid,
+                 excluded_geographical_area: excluded_area1.geographical_area_id,
+                 geographical_area_sid: excluded_area1.geographical_area_sid)
+          create(:measure_excluded_geographical_area,
+                 measure_sid: measure.measure_sid,
+                 excluded_geographical_area: excluded_area3.geographical_area_id,
+                 geographical_area_sid: excluded_area3.geographical_area_sid)
+        end
+
+        it 'includes all excluded geographical area ids' do
+          metadata_json = service.send(:generate_measure_metadata, measure.measure_sid)
+          metadata = JSON.parse(metadata_json)
+
+          expect(metadata['measure']['excluded_geographical_area_ids']).to include(
+            excluded_area1.geographical_area_id,
+            excluded_area2.geographical_area_id,
+            excluded_area3.geographical_area_id,
+          )
+        end
+
+        it 'sorts excluded geographical area ids' do
+          metadata_json = service.send(:generate_measure_metadata, measure.measure_sid)
+          metadata = JSON.parse(metadata_json)
+          excluded_ids = metadata['measure']['excluded_geographical_area_ids']
+
+          expect(excluded_ids).to eq(excluded_ids.sort)
+        end
+      end
+    end
+
+    context 'when measure does not exist' do
+      it 'returns nil' do
+        result = service.send(:generate_measure_metadata, 99_999)
+
+        expect(result).to be_nil
+      end
+    end
+
+    context 'when Sequel::NoMatchingRow is raised' do
+      before do
+        allow(Measure).to receive(:find).and_raise(Sequel::NoMatchingRow)
+      end
+
+      it 'rescues exception and returns empty hash' do
+        result = service.send(:generate_measure_metadata, 12_345)
+
+        expect(result).to eq({})
       end
     end
   end

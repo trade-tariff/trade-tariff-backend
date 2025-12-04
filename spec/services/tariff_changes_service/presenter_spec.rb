@@ -1,13 +1,34 @@
 RSpec.describe TariffChangesService::Presenter do
-  let(:test_class) do
-    Class.new do
-      include TariffChangesService::Presenter
-    end
+  let(:goods_nomenclature) { create(:commodity, :declarable, validity_start_date: Date.new(2024, 1, 1)) }
+  let!(:measure_type) { create(:measure_type, trade_movement_code: 0) }
+  let!(:measure) { create(:measure, measure_type:, measure_type_id: measure_type.measure_type_id, goods_nomenclature:) }
+  let(:geo_area) { create(:geographical_area, :with_description, geographical_area_id: 'FR') }
+  let(:tariff_change) do
+    create(:tariff_change,
+           type: 'Measure',
+           object_sid: measure.measure_sid,
+           goods_nomenclature_sid: goods_nomenclature.goods_nomenclature_sid,
+           goods_nomenclature_item_id: goods_nomenclature.goods_nomenclature_item_id,
+           metadata: {
+             'measure' => {
+               'measure_type_id' => measure_type.measure_type_id,
+               'trade_movement_code' => measure_type.trade_movement_code,
+               'geographical_area_id' => geo_area.geographical_area_id,
+               'excluded_geographical_area_ids' => [],
+             },
+           })
   end
-  let(:instance) { test_class.new }
+  let(:geo_area_cache) { { geo_area.geographical_area_id => geo_area } }
+  let(:presenter) { described_class.new(tariff_change, geo_area_cache) }
+
+  before do
+    allow(tariff_change).to receive_messages(
+      goods_nomenclature: goods_nomenclature,
+      measure: measure,
+    )
+  end
 
   describe '#commodity_description' do
-    let(:goods_nomenclature) { create(:commodity, :declarable, validity_start_date: Date.new(2024, 1, 1)) }
     let(:goods_nomenclature_description) { instance_double(GoodsNomenclatureDescription, csv_formatted_description: 'Live horses, asses, mules and hinnies') }
 
     before do
@@ -16,12 +37,12 @@ RSpec.describe TariffChangesService::Presenter do
     end
 
     it 'returns the CSV formatted description' do
-      result = instance.commodity_description(goods_nomenclature)
+      result = presenter.commodity_description
       expect(result).to eq('Live horses, asses, mules and hinnies')
     end
 
     it 'calls TimeMachine with the commodity validity_start_date' do
-      instance.commodity_description(goods_nomenclature)
+      presenter.commodity_description
       expect(TimeMachine).to have_received(:at).with(goods_nomenclature.validity_start_date)
     end
 
@@ -31,160 +52,243 @@ RSpec.describe TariffChangesService::Presenter do
       end
 
       it 'raises an error when trying to call csv_formatted_description on nil' do
-        expect { instance.commodity_description(goods_nomenclature) }.to raise_error(NoMethodError)
+        expect { presenter.commodity_description }.to raise_error(NoMethodError)
       end
     end
   end
 
   describe '#measure_type' do
-    context 'when measure is blank' do
+    context 'when measure_type_id is blank' do
+      let(:tariff_change) do
+        create(:tariff_change,
+               type: 'Measure',
+               goods_nomenclature_sid: goods_nomenclature.goods_nomenclature_sid,
+               goods_nomenclature_item_id: goods_nomenclature.goods_nomenclature_item_id,
+               metadata: { 'measure' => {} })
+      end
+
       it 'returns N/A' do
-        result = instance.measure_type(nil)
+        result = presenter.measure_type
         expect(result).to eq('N/A')
+      end
+    end
+
+    context 'when measure_type_id is empty string' do
+      let(:tariff_change) do
+        create(:tariff_change,
+               type: 'Measure',
+               goods_nomenclature_sid: goods_nomenclature.goods_nomenclature_sid,
+               goods_nomenclature_item_id: goods_nomenclature.goods_nomenclature_item_id,
+               metadata: { 'measure' => { 'measure_type_id' => '' } })
       end
 
       it 'returns N/A for empty string' do
-        result = instance.measure_type('')
+        result = presenter.measure_type
         expect(result).to eq('N/A')
       end
     end
 
     context 'when measure is present' do
-      let(:measure_type) { create(:measure_type) }
-      let(:measure) { create(:measure, measure_type: measure_type) }
+      let(:tariff_change) do
+        create(:tariff_change,
+               type: 'Measure',
+               object_sid: measure.measure_sid,
+               goods_nomenclature_sid: goods_nomenclature.goods_nomenclature_sid,
+               goods_nomenclature_item_id: goods_nomenclature.goods_nomenclature_item_id,
+               metadata: {
+                 'measure' => {
+                   'measure_type_id' => measure_type.measure_type_id,
+                   'trade_movement_code' => measure_type.trade_movement_code,
+                   'geographical_area_id' => measure.geographical_area_id,
+                   'excluded_geographical_area_ids' => [],
+                 },
+               })
+      end
+      let(:presenter) { described_class.new(tariff_change, geo_area_cache) }
 
       before do
+        allow(measure).to receive(:measure_type).and_return(measure_type)
         allow(measure_type).to receive(:description).and_return('Third country duty')
+        allow(tariff_change).to receive(:measure).and_return(measure)
       end
 
       it 'returns the measure type description' do
-        result = instance.measure_type(measure)
+        result = presenter.measure_type
         expect(result).to eq('Third country duty')
       end
     end
 
     context 'when measure type has no description' do
-      let(:measure_type) { create(:measure_type) }
-      let(:measure) { create(:measure, measure_type: measure_type) }
+      let(:tariff_change) do
+        create(:tariff_change,
+               type: 'Measure',
+               object_sid: measure.measure_sid,
+               goods_nomenclature_sid: goods_nomenclature.goods_nomenclature_sid,
+               goods_nomenclature_item_id: goods_nomenclature.goods_nomenclature_item_id,
+               metadata: {
+                 'measure' => {
+                   'measure_type_id' => measure_type.measure_type_id,
+                   'trade_movement_code' => measure_type.trade_movement_code,
+                   'geographical_area_id' => measure.geographical_area_id,
+                   'excluded_geographical_area_ids' => [],
+                 },
+               })
+      end
+      let(:presenter) { described_class.new(tariff_change, geo_area_cache) }
 
       before do
-        allow(measure.measure_type).to receive(:description).and_return(nil)
+        allow(measure).to receive(:measure_type).and_return(measure_type)
+        allow(measure_type).to receive(:description).and_return(nil)
+        allow(tariff_change).to receive(:measure).and_return(measure)
       end
 
       it 'returns nil' do
-        result = instance.measure_type(measure)
+        result = presenter.measure_type
         expect(result).to be_nil
       end
     end
   end
 
   describe '#import_export' do
-    context 'when measure is blank' do
-      it 'returns N/A for nil' do
-        result = instance.import_export(nil)
-        expect(result).to eq('N/A')
+    context 'when trade_movement_code is nil' do
+      let(:tariff_change) do
+        create(:tariff_change,
+               type: 'Measure',
+               goods_nomenclature_sid: goods_nomenclature.goods_nomenclature_sid,
+               goods_nomenclature_item_id: goods_nomenclature.goods_nomenclature_item_id,
+               metadata: { 'measure' => {} })
       end
 
-      it 'returns N/A for empty string' do
-        result = instance.import_export('')
+      it 'returns N/A for nil' do
+        result = presenter.import_export
         expect(result).to eq('N/A')
       end
     end
 
     context 'when measure has trade_movement_code 0 (Import)' do
-      let(:measure_type) { create(:measure_type, trade_movement_code: 0) }
-      let(:measure) { create(:measure, measure_type: measure_type) }
+      let(:tariff_change) do
+        create(:tariff_change,
+               type: 'Measure',
+               goods_nomenclature_sid: goods_nomenclature.goods_nomenclature_sid,
+               goods_nomenclature_item_id: goods_nomenclature.goods_nomenclature_item_id,
+               metadata: { 'measure' => { 'trade_movement_code' => 0 } })
+      end
 
       it 'returns Import' do
-        result = instance.import_export(measure)
+        result = presenter.import_export
         expect(result).to eq('Import')
       end
     end
 
     context 'when measure has trade_movement_code 1 (Export)' do
-      let(:measure_type) { create(:measure_type, trade_movement_code: 1) }
-      let(:measure) { create(:measure, measure_type: measure_type) }
+      let(:tariff_change) do
+        create(:tariff_change,
+               type: 'Measure',
+               goods_nomenclature_sid: goods_nomenclature.goods_nomenclature_sid,
+               goods_nomenclature_item_id: goods_nomenclature.goods_nomenclature_item_id,
+               metadata: { 'measure' => { 'trade_movement_code' => 1 } })
+      end
 
       it 'returns Export' do
-        result = instance.import_export(measure)
+        result = presenter.import_export
         expect(result).to eq('Export')
       end
     end
 
     context 'when measure has trade_movement_code 2 (Both)' do
-      let(:measure_type) { create(:measure_type, trade_movement_code: 2) }
-      let(:measure) { create(:measure, measure_type: measure_type) }
+      let(:tariff_change) do
+        create(:tariff_change,
+               type: 'Measure',
+               goods_nomenclature_sid: goods_nomenclature.goods_nomenclature_sid,
+               goods_nomenclature_item_id: goods_nomenclature.goods_nomenclature_item_id,
+               metadata: { 'measure' => { 'trade_movement_code' => 2 } })
+      end
 
       it 'returns Both' do
-        result = instance.import_export(measure)
+        result = presenter.import_export
         expect(result).to eq('Both')
       end
     end
 
     context 'when measure has unknown trade_movement_code' do
-      let(:measure_type) { create(:measure_type, trade_movement_code: 99) }
-      let(:measure) { create(:measure, measure_type: measure_type) }
-
-      it 'returns empty string' do
-        result = instance.import_export(measure)
-        expect(result).to eq('')
+      let(:tariff_change) do
+        create(:tariff_change,
+               type: 'Measure',
+               goods_nomenclature_sid: goods_nomenclature.goods_nomenclature_sid,
+               goods_nomenclature_item_id: goods_nomenclature.goods_nomenclature_item_id,
+               metadata: { 'measure' => { 'trade_movement_code' => 99 } })
       end
-    end
-
-    context 'when measure_type is nil' do
-      let(:measure) { create(:measure, measure_type: nil) }
 
       it 'returns empty string' do
-        result = instance.import_export(measure)
-        expect(result).to eq('')
-      end
-    end
-
-    context 'when trade_movement_code is nil' do
-      let(:measure_type) { create(:measure_type, trade_movement_code: nil) }
-      let(:measure) { create(:measure, measure_type: measure_type) }
-
-      it 'returns empty string' do
-        result = instance.import_export(measure)
+        result = presenter.import_export
         expect(result).to eq('')
       end
     end
   end
 
   describe '#geo_area' do
-    context 'when geo_area is blank' do
+    context 'when geographical_area_id is blank' do
+      let(:tariff_change) do
+        create(:tariff_change,
+               type: 'Measure',
+               goods_nomenclature_sid: goods_nomenclature.goods_nomenclature_sid,
+               goods_nomenclature_item_id: goods_nomenclature.goods_nomenclature_item_id,
+               metadata: { 'measure' => {} })
+      end
+
       it 'returns N/A for nil' do
-        result = instance.geo_area(nil)
+        result = presenter.geo_area
         expect(result).to eq('N/A')
+      end
+    end
+
+    context 'when geographical_area_id is empty string' do
+      let(:tariff_change) do
+        create(:tariff_change,
+               type: 'Measure',
+               goods_nomenclature_sid: goods_nomenclature.goods_nomenclature_sid,
+               goods_nomenclature_item_id: goods_nomenclature.goods_nomenclature_item_id,
+               metadata: { 'measure' => { 'geographical_area_id' => '' } })
       end
 
       it 'returns N/A for empty string' do
-        result = instance.geo_area('')
+        result = presenter.geo_area
         expect(result).to eq('N/A')
       end
     end
 
     context 'when geo_area is present' do
-      let(:geo_area) { create(:geographical_area, :with_description, geographical_area_id: 'FR') }
-
       before do
         allow(geo_area.geographical_area_description).to receive(:description).and_return('France')
       end
 
       it 'returns formatted geo area with description and id' do
-        result = instance.geo_area(geo_area)
+        result = presenter.geo_area
         expect(result).to eq('France (FR)')
       end
 
       context 'when geo_area is erga_omnes' do
         let(:geo_area) { create(:geographical_area, :erga_omnes, :with_description) }
+        let(:tariff_change) do
+          create(:tariff_change,
+                 type: 'Measure',
+                 goods_nomenclature_sid: goods_nomenclature.goods_nomenclature_sid,
+                 goods_nomenclature_item_id: goods_nomenclature.goods_nomenclature_item_id,
+                 metadata: {
+                   'measure' => {
+                     'geographical_area_id' => geo_area.geographical_area_id,
+                     'excluded_geographical_area_ids' => [],
+                   },
+                 })
+        end
+        let(:geo_area_cache) { { geo_area.geographical_area_id => geo_area } }
 
         before do
           allow(geo_area).to receive(:erga_omnes?).and_return(true)
         end
 
         it 'returns All countries with the id' do
-          result = instance.geo_area(geo_area)
+          result = presenter.geo_area
           expect(result).to eq("All countries (#{geo_area.id})")
         end
       end
@@ -192,7 +296,25 @@ RSpec.describe TariffChangesService::Presenter do
       context 'when excluded_geographical_areas are provided' do
         let(:excluded_area_1) { create(:geographical_area, :with_description, geographical_area_id: 'DE') }
         let(:excluded_area_2) { create(:geographical_area, :with_description, geographical_area_id: 'IT') }
-        let(:excluded_geographical_areas) { [excluded_area_1, excluded_area_2] }
+        let(:tariff_change) do
+          create(:tariff_change,
+                 type: 'Measure',
+                 goods_nomenclature_sid: goods_nomenclature.goods_nomenclature_sid,
+                 goods_nomenclature_item_id: goods_nomenclature.goods_nomenclature_item_id,
+                 metadata: {
+                   'measure' => {
+                     'geographical_area_id' => geo_area.geographical_area_id,
+                     'excluded_geographical_area_ids' => [excluded_area_1.geographical_area_id, excluded_area_2.geographical_area_id],
+                   },
+                 })
+        end
+        let(:geo_area_cache) do
+          {
+            geo_area.geographical_area_id => geo_area,
+            excluded_area_1.geographical_area_id => excluded_area_1,
+            excluded_area_2.geographical_area_id => excluded_area_2,
+          }
+        end
 
         before do
           allow(excluded_area_1.geographical_area_description).to receive(:description).and_return('Germany')
@@ -200,16 +322,27 @@ RSpec.describe TariffChangesService::Presenter do
         end
 
         it 'includes excluded areas in the result' do
-          result = instance.geo_area(geo_area, excluded_geographical_areas)
+          result = presenter.geo_area
           expect(result).to eq('France (FR) excluding Germany, Italy')
         end
       end
 
       context 'when excluded_geographical_areas is empty' do
-        let(:excluded_geographical_areas) { [] }
+        let(:tariff_change) do
+          create(:tariff_change,
+                 type: 'Measure',
+                 goods_nomenclature_sid: goods_nomenclature.goods_nomenclature_sid,
+                 goods_nomenclature_item_id: goods_nomenclature.goods_nomenclature_item_id,
+                 metadata: {
+                   'measure' => {
+                     'geographical_area_id' => geo_area.geographical_area_id,
+                     'excluded_geographical_area_ids' => [],
+                   },
+                 })
+        end
 
         it 'does not include excluding clause' do
-          result = instance.geo_area(geo_area, excluded_geographical_areas)
+          result = presenter.geo_area
           expect(result).to eq('France (FR)')
         end
       end
@@ -218,7 +351,24 @@ RSpec.describe TariffChangesService::Presenter do
     context 'with complex scenario: erga_omnes with exclusions' do
       let(:geo_area) { create(:geographical_area, :erga_omnes, :with_description) }
       let(:excluded_area) { create(:geographical_area, :with_description, geographical_area_id: 'US') }
-      let(:excluded_geographical_areas) { [excluded_area] }
+      let(:tariff_change) do
+        create(:tariff_change,
+               type: 'Measure',
+               goods_nomenclature_sid: goods_nomenclature.goods_nomenclature_sid,
+               goods_nomenclature_item_id: goods_nomenclature.goods_nomenclature_item_id,
+               metadata: {
+                 'measure' => {
+                   'geographical_area_id' => geo_area.geographical_area_id,
+                   'excluded_geographical_area_ids' => [excluded_area.geographical_area_id],
+                 },
+               })
+      end
+      let(:geo_area_cache) do
+        {
+          geo_area.geographical_area_id => geo_area,
+          excluded_area.geographical_area_id => excluded_area,
+        }
+      end
 
       before do
         allow(geo_area).to receive(:erga_omnes?).and_return(true)
@@ -226,47 +376,9 @@ RSpec.describe TariffChangesService::Presenter do
       end
 
       it 'returns All countries with exclusions' do
-        result = instance.geo_area(geo_area, excluded_geographical_areas)
+        result = presenter.geo_area
         expect(result).to eq("All countries (#{geo_area.id}) excluding United States")
       end
-    end
-  end
-
-  describe 'integration test with real objects' do
-    it 'can be included in other classes and used' do
-      test_service = Class.new do
-        include TariffChangesService::Presenter
-
-        def format_data(commodity, measure, geo_area)
-          {
-            description: commodity_description(commodity),
-            measure_type: measure_type(measure),
-            import_export: import_export(measure),
-            geo_area: geo_area(geo_area),
-          }
-        end
-      end
-
-      service = test_service.new
-      commodity = create(:commodity, :declarable, validity_start_date: Date.new(2024, 1, 1))
-      measure_type = create(:measure_type, trade_movement_code: 0)
-      measure = create(:measure, measure_type: measure_type)
-      geo_area = create(:geographical_area, :with_description, geographical_area_id: 'GB')
-
-      goods_nomenclature_description = instance_double(GoodsNomenclatureDescription, csv_formatted_description: 'Test product')
-      allow(TimeMachine).to receive(:at).and_yield
-      allow(commodity).to receive(:goods_nomenclature_description).and_return(goods_nomenclature_description)
-      allow(geo_area.geographical_area_description).to receive(:description).and_return('United Kingdom')
-      allow(measure_type).to receive(:description).and_return('Standard rate')
-
-      result = service.format_data(commodity, measure, geo_area)
-
-      expect(result).to eq({
-        description: 'Test product',
-        measure_type: 'Standard rate',
-        import_export: 'Import',
-        geo_area: 'United Kingdom (GB)',
-      })
     end
   end
 end

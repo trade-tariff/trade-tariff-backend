@@ -5,6 +5,49 @@ RSpec.describe TariffChange do
     it { is_expected.to respond_to(:goods_nomenclature) }
   end
 
+  describe '#measure' do
+    context 'when type is Measure and a measure exists' do
+      let(:measure) { create(:measure) }
+      let(:tariff_change) { create(:tariff_change, type: 'Measure', object_sid: measure.measure_sid) }
+
+      it 'returns the associated measure' do
+        expect(tariff_change.measure).to eq(measure)
+      end
+
+      it 'memoizes the result' do
+        first_call = tariff_change.measure
+        allow(Measure).to receive(:find)
+        second_call = tariff_change.measure
+
+        expect(Measure).not_to have_received(:find)
+        expect(second_call).to eq(first_call)
+      end
+    end
+
+    context 'when type is Measure but measure does not exist' do
+      let(:tariff_change) { create(:tariff_change, type: 'Measure', object_sid: 999_999) }
+
+      it 'returns nil' do
+        expect(tariff_change.measure).to be_nil
+      end
+    end
+
+    context 'when type is not Measure' do
+      let(:tariff_change) { create(:tariff_change, type: 'Commodity', object_sid: 123) }
+
+      it 'returns nil' do
+        expect(tariff_change.measure).to be_nil
+      end
+
+      it 'does not query for a measure' do
+        allow(Measure).to receive(:find)
+        tariff_change.measure
+
+        expect(Measure).not_to have_received(:find)
+      end
+    end
+  end
+
   describe '.delete_for' do
     let(:operation_date) { Date.new(2025, 1, 15) }
 

@@ -12,6 +12,9 @@ UserApi.routes.draw do
       resources :commodity_changes, only: %i[index show]
       resources :grouped_measure_changes, only: %i[index show]
       resources :grouped_measure_commodity_changes, only: %i[show]
+      resources :tariff_changes, only: [] do
+        get :download, on: :collection
+      end
     end
   end
 end

@@ -27,18 +27,18 @@ class TariffChangesService
     end
   end
 
-  def self.generate_report_for(date = Time.zone.yesterday)
-    change_records = TransformRecords.call(date)
+  def self.generate_report_for(date = Time.zone.yesterday, user = nil)
+    goods_nomenclature_sids = nil
+
+    if user.present?
+      goods_nomenclature_sids = user.target_ids_for_my_commodities
+    end
+
+    change_records = TransformRecords.call(date, goods_nomenclature_sids)
 
     return if change_records.empty?
 
-    package = ExcelGenerator.call(change_records, date)
-
-    if Rails.env.development?
-      package.serialize("commodity_watchlist_#{date.strftime('%Y_%m_%d')}.xlsx")
-    else
-      ReportsMailer.commodity_watchlist(date, package).deliver_now
-    end
+    ExcelGenerator.call(change_records, date)
   end
 
   attr_reader :tariff_change_records, :date

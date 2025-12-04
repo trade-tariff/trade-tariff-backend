@@ -8,6 +8,7 @@ FactoryBot.define do
     operation_date { Date.current }
     date_of_effect { Time.zone.now.to_date }
     validity_start_date { Time.zone.now }
+    metadata { {} }
 
     # Automatically populate JSONB metadata for Measure-type tariff changes
     after(:create) do |tariff_change|
