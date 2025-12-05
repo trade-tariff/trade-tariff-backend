@@ -4,6 +4,12 @@ class TariffChange < Sequel::Model
 
   many_to_one :goods_nomenclature, key: :goods_nomenclature_sid
 
+  def measure
+    return nil unless type == 'Measure'
+
+    @measure ||= Measure.find(measure_sid: object_sid)
+  end
+
   def self.delete_for(operation_date:)
     TariffChange.where(operation_date: operation_date).delete
   end

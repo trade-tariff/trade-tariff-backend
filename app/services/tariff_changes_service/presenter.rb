@@ -1,21 +1,28 @@
 class TariffChangesService
-  module Presenter
-    def commodity_description(commodity)
-      TimeMachine.at(commodity.validity_start_date) do
-        commodity.goods_nomenclature_description.csv_formatted_description
+  class Presenter < SimpleDelegator
+    attr_reader :geo_area_cache
+
+    def initialize(tariff_change, geo_area_cache = {})
+      super(tariff_change)
+      @geo_area_cache = geo_area_cache
+    end
+
+    def commodity_description
+      TimeMachine.at(goods_nomenclature.validity_start_date) do
+        goods_nomenclature.goods_nomenclature_description.csv_formatted_description
       end
     end
 
-    def measure_type(measure)
-      return 'N/A' if measure.blank?
+    def measure_type
+      return 'N/A' if measure_type_id.blank?
 
       measure.measure_type.description
     end
 
-    def import_export(measure)
-      return 'N/A' if measure.blank?
+    def import_export
+      return 'N/A' if trade_movement_code.nil?
 
-      case measure.measure_type&.trade_movement_code
+      case trade_movement_code
       when 0
         'Import'
       when 1
@@ -27,15 +34,18 @@ class TariffChangesService
       end
     end
 
-    def geo_area(geo_area, excluded_geographical_areas = nil)
-      return 'N/A' if geo_area.blank?
+    def geo_area
+      return 'N/A' if geographical_area_id.blank?
+
+      geo_area = @geo_area_cache[geographical_area_id]
+      return 'N/A' unless geo_area
 
       description = geo_area.erga_omnes? ? 'All countries' : geo_area.description
       geo_area_string = "#{description} (#{geo_area.id})"
 
-      if excluded_geographical_areas.present?
-        excluded = excluded_geographical_areas.map(&:description).join(', ')
-        geo_area_string += " excluding #{excluded}"
+      if excluded_geographical_area_ids.present?
+        excluded = excluded_geographical_area_ids.map { |id| @geo_area_cache[id]&.description }.compact.join(', ')
+        geo_area_string += " excluding #{excluded}" if excluded.present?
       end
 
       geo_area_string
