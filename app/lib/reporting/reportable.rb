@@ -2,6 +2,46 @@ module Reporting
   module Reportable
     extend ActiveSupport::Concern
 
+    def mem
+      @mem ||= GetProcessMem.new
+    end
+
+    def baseline
+      @baseline ||= mem.mb
+    end
+
+    def baseline=(value)
+      @baseline = value
+    end
+
+    def profile_mem_report(name)
+      mem = GetProcessMem.new
+
+      baseline ||= mem.mb
+
+      before = mem.mb
+      gc_start
+
+      yield if block_given?
+
+      gc_start
+      after = mem.mb
+
+      peak_during = [after, before].max
+      delta = peak_during - baseline
+
+      Rails.logger.info "[MEMORY] #{name.ljust(30)} → " \
+                        "Peak: #{peak_during.round(2)} MB | " \
+                        "Delta: +#{delta.round(2)} MB | " \
+                        "Growth from prev: +#{(after - before).round(2)} MB"
+
+      self.baseline = peak_during
+    end
+
+    def gc_start
+      GC.start(full_mark: true, immediate_sweep: true)
+    end
+
     def object(key = object_key)
       bucket.object(key)
     end
