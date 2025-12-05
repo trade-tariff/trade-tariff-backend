@@ -1,9 +1,6 @@
 RSpec.describe Api::User::CommodityChangesController do
-  routes { UserApi.routes }
-  let(:user_token) { 'Bearer tariff-api-test-token' }
-  let(:user_id) { 'user123' }
-  let(:user) { create(:public_user, external_id: user_id) }
-  let(:user_hash) { { 'sub' => user_id, 'email' => 'test@example.com' } }
+  include_context 'with user API authentication'
+
   let(:service_instance) { instance_double(Api::User::CommodityChangesService) }
   let(:grouped_change) do
     instance_double(
@@ -18,8 +15,6 @@ RSpec.describe Api::User::CommodityChangesController do
   let(:changes) { [grouped_change] }
 
   before do
-    request.headers['Authorization'] = user_token
-    allow(CognitoTokenVerifier).to receive(:verify_id_token).and_return(user_hash)
     allow(Api::User::CommodityChangesService).to receive(:new).and_return(service_instance)
     allow(service_instance).to receive(:call).and_return(changes)
     allow(Api::User::CommodityChangesSerializer).to receive(:new).and_call_original
