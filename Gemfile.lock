@@ -74,8 +74,8 @@ GEM
       uri (>= 0.13.1)
     addressable (2.8.7)
       public_suffix (>= 2.0.2, < 7.0)
+    amazing_print (2.0.0)
     ast (2.4.3)
-    awesome_print (1.9.2)
     aws-actionmailer-ses (1.0.0)
       actionmailer (>= 7.1.0)
       aws-sdk-ses (~> 1, >= 1.50.0)
@@ -160,6 +160,9 @@ GEM
       logger
     faraday-net_http (3.4.0)
       net-http (>= 0.5.0)
+    fast_excel (0.5.0)
+      ffi (> 1.9, < 2)
+    ffi (1.17.2)
     foreman (0.90.0)
       thor (~> 1.4)
     forgery (0.8.1)
@@ -174,6 +177,9 @@ GEM
       rails (>= 7)
       warden (~> 1.2)
       warden-oauth2 (~> 0.0.1)
+    get_process_mem (1.0.0)
+      bigdecimal (>= 2.0)
+      ffi (~> 1.0)
     globalid (1.2.1)
       activesupport (>= 6.1)
     hashdiff (1.2.1)
@@ -490,7 +496,7 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
-  awesome_print
+  amazing_print
   aws-actionmailer-ses
   aws-sdk-cloudfront (~> 1.136)
   aws-sdk-rails
@@ -503,9 +509,11 @@ DEPENDENCIES
   database_cleaner-sequel
   dotenv-rails
   factory_bot_rails
+  fast_excel
   foreman
   forgery
   gds-sso
+  get_process_mem
   hashie
   holidays
   json_expressions
