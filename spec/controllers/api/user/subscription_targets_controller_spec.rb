@@ -1,16 +1,8 @@
 RSpec.describe Api::User::SubscriptionTargetsController do
-  routes { UserApi.routes }
+  include_context 'with user API authentication'
 
-  let(:user) { create(:public_user) }
-  let(:user_hash) { { 'sub' => user.external_id } }
   let(:subscription) { create(:user_subscription, user: user, subscription_type: Subscriptions::Type.my_commodities) }
-
   let(:valid_subscription_id) { subscription.uuid }
-
-  before do
-    request.headers['Authorization'] = 'Bearer token'
-    allow(CognitoTokenVerifier).to receive(:verify_id_token).and_return(user_hash)
-  end
 
   describe 'GET #index' do
     context 'when service returns targets' do

@@ -1,18 +1,9 @@
 RSpec.describe Api::User::SubscriptionsController do
-  routes { UserApi.routes }
+  include_context 'with user API authentication'
 
   let(:subscription) { create(:user_subscription, user: user) }
   let(:valid_id) { subscription.uuid }
   let(:invalid_id) { '00000000-0000-0000-0000-000000000000' }
-  let(:user_token) { 'Bearer tariff-api-test-token' }
-  let(:user_id) { 'user123' }
-  let(:user) { create(:public_user, external_id: user_id) }
-  let(:user_hash) { { 'sub' => user_id, 'email' => 'test@example.com' } }
-
-  before do
-    request.headers['Authorization'] = user_token
-    allow(CognitoTokenVerifier).to receive(:verify_id_token).and_return(user_hash)
-  end
 
   describe '#show' do
     let(:subscription) do

@@ -1,14 +1,7 @@
 RSpec.describe Api::User::GroupedMeasureChangesController do
-  routes { UserApi.routes }
-
-  let(:user_token) { 'Bearer tariff-api-test-token' }
-  let(:user_id) { 'user123' }
-  let(:user) { create(:public_user, external_id: user_id) }
-  let(:user_hash) { { 'sub' => user_id, 'email' => 'test@example.com' } }
+  include_context 'with user API authentication'
 
   before do
-    request.headers['Authorization'] = user_token
-    allow(CognitoTokenVerifier).to receive(:verify_id_token).and_return(user_hash)
     allow(Api::User::GroupedMeasureChangesService).to receive(:new).and_return(measure_changes_service)
     allow(measure_changes_service).to receive(:call).and_return(expected_response)
   end
