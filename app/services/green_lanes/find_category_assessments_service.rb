@@ -13,11 +13,13 @@ module GreenLanes
 
     def call
       @measures
-        .select(&:category_assessment)
+        .select(&method(:filter_by_category_assessments))
         .select(&method(:filter_by_geographical_area))
-        .group_by(&:category_assessment)
-        .flat_map do |assessment, measures_for_assessment|
-          compute_assessment_permutations(assessment, measures_for_assessment)
+        .group_by(&method(:category_assessments))
+        .flat_map do |assessments, measures_for_assessment|
+          assessments.flat_map do |assessment|
+            compute_assessment_permutations(assessment, measures_for_assessment)
+          end
         end
     end
 
@@ -37,6 +39,16 @@ module GreenLanes
     def present_assessment(assessment, key, measure_permutation)
       ::Api::V2::GreenLanes::CategoryAssessmentPresenter
         .new(assessment, key, measure_permutation)
+    end
+
+    def category_assessments(measure)
+      assessments = measure.try(:category_assessment).presence || measure.try(:category_assessments)
+
+      Array.wrap(assessments)
+    end
+
+    def filter_by_category_assessments(measure)
+      category_assessments(measure).any?
     end
 
     def filter_by_geographical_area(measure)
