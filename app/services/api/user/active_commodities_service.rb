@@ -154,23 +154,14 @@ module Api
       end
 
       def get_descendants_end_date(commodity)
-        # Use the tree structure: find descendants (children at any depth) of this
-        # commodity's tree_node and get the earliest validity_start_date among them.
-        return nil if commodity.tree_node.blank?
+        return nil if commodity.children.blank?
 
         begin
-          # Get all descendants (children at any depth) of this node
-          earliest_child = GoodsNomenclatures::TreeNode
-            .where(Sequel.lit('position > ?', commodity.tree_node.position))
-            .where(Sequel.lit('position < ?', GoodsNomenclatures::TreeNode.next_sibling_or_end(commodity.tree_node.position, commodity.tree_node.depth)))
-            .order(:validity_start_date)
-            .first
+          end_date = commodity.children.minimum(:validity_start_date)
+          return nil if end_date.blank?
 
-          return nil if earliest_child.blank?
-
-          # Subtract one day to make the parent's end date the day before
-          # the first child became valid.
-          (earliest_child.validity_start_date.to_date - 1).to_date
+          # Subtract one day before the first active child started to give us an expired commodity's validity end date
+          end_date.to_date - 1
         rescue StandardError
           nil
         end
