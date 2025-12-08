@@ -3,30 +3,40 @@ require 'sidekiq/job_logger'
 
 class CustomJobLogger < ::Sidekiq::JobLogger
   SENSITIVE_KEYS = %w[
-    email
-    password
-    passw
-    token
-    secret
-    api_key
-    key
-    otp
-    ssn
-    cvc
-    cvv
+    email password passw token secret api_key key otp ssn cvc cvv
   ].freeze
 
   def call(item, queue)
-    super do
-      reset_query_count
+    start = ::Process.clock_gettime(::Process::CLOCK_MONOTONIC)
+    reset_query_count
+    yield
+    duration = ::Process.clock_gettime(::Process::CLOCK_MONOTONIC) - start
 
-      yield
+    Sidekiq.logger.info(
+      'class' => item['class'],
+      'jid' => item['jid'],
+      'queue' => queue,
+      'args' => redact_args(item['args']),
+      'duration' => duration,
+      'queries' => query_count,
+      'status' => 'done',
+    )
+  rescue StandardError => e
+    duration = ::Process.clock_gettime(::Process::CLOCK_MONOTONIC) - start
 
-      Sidekiq::Context.add(:queries, query_count)
-    rescue StandardError
-      item.replace(redact_if_sensitive(item))
-      raise
-    end
+    Sidekiq.logger.warn(
+      'class' => item['class'],
+      'jid' => item['jid'],
+      'queue' => queue,
+      'args' => redact_args(item['args']),
+      'duration' => duration,
+      'queries' => query_count,
+      'status' => 'fail',
+      'error_class' => e.class.name,
+      'error_message' => e.message,
+    )
+
+    raise e
   end
 
   private
@@ -39,12 +49,10 @@ class CustomJobLogger < ::Sidekiq::JobLogger
     ::SequelRails::Railties::LogSubscriber.reset_count
   end
 
-  def redact_if_sensitive(item)
-    return item unless sensitive_args?(item['args'])
+  def redact_args(args)
+    return args unless sensitive_args?(args)
 
-    item.dup.tap do |copy|
-      copy['args'] = ['[FILTERED]']
-    end
+    ['[FILTERED]']
   end
 
   def sensitive_args?(args)
