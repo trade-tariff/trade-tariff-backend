@@ -1,12 +1,12 @@
 RSpec.describe Api::User::ActiveCommoditiesService do
   subject(:service) { described_class.new(subscription) }
 
-  let(:target_ids) { [123, 456, 789, 321, 654] }
-  let(:commodity_codes) { %w[1234567890 1234567891 1234567892 1234567893 1234567894] }
+  let(:target_ids) { [123, 456, 789, 321, 654, 655] }
+  let(:commodity_codes) { %w[1234567890 1234567891 1234567892 1234567893 1234567894 1234560000] }
   let(:subscription) { create(:user_subscription, metadata: { commodity_codes: commodity_codes }) }
 
   let(:expected_active_codes) { %w[1234567890] }
-  let(:expected_expired_codes) { %w[1234567891 1234567894] }
+  let(:expected_expired_codes) { %w[1234560000 1234567891 1234567894] }
   let(:expected_invalid_codes) { %w[1234567892 1234567893] }
 
   before do
@@ -22,6 +22,7 @@ RSpec.describe Api::User::ActiveCommoditiesService do
     create(:commodity, :actual, goods_nomenclature_item_id: '1234567890', goods_nomenclature_sid: 123)
     create(:commodity, :expired, goods_nomenclature_item_id: '1234567891', goods_nomenclature_sid: 456)
     create(:subheading, :expired, :with_children, goods_nomenclature_item_id: '1234567894', goods_nomenclature_sid: 654)
+    create(:commodity,  :expired, :non_declarable, :with_children, goods_nomenclature_item_id: '1234560000', goods_nomenclature_sid: 655)
   end
 
   describe '#call' do
@@ -47,7 +48,7 @@ RSpec.describe Api::User::ActiveCommoditiesService do
 
     it 'returns paginated expired commodities with correct total' do
       commodities, total = service.expired_commodities(page: 1, per_page: 10)
-      expect(total).to eq(2)
+      expect(total).to eq(3)
       expect(commodities.map(&:goods_nomenclature_item_id)).to eq(expected_expired_codes)
     end
 
