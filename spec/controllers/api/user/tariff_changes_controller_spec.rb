@@ -1,18 +1,9 @@
 RSpec.describe Api::User::TariffChangesController do
-  routes { UserApi.routes }
-  let(:user_token) { 'Bearer tariff-api-test-token' }
-  let(:user_id) { 'user123' }
-  let(:user) { create(:public_user, external_id: user_id) }
-  let(:user_hash) { { 'sub' => user_id, 'email' => 'test@example.com' } }
+  include_context 'with user API authentication'
+
   let(:date) { Date.parse('2025-10-28') }
   let(:package) { instance_double(Axlsx::Package) }
   let(:stream) { StringIO.new('mock excel data') }
-
-  before do
-    request.headers['Authorization'] = user_token
-    allow(CognitoTokenVerifier).to receive(:verify_id_token).and_return(user_hash)
-    allow(Api::User::UserService).to receive(:find_or_create).and_return(user)
-  end
 
   describe '#download' do
     context 'when there are changes' do
