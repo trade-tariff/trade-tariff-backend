@@ -309,5 +309,13 @@ module TradeTariffBackend
     def myott_report_email
       ENV['MYOTT_REPORT_EMAIL']
     end
+
+    def slack_failures_enabled
+      ENV.fetch('SLACK_FAILURES_ENABLED', 'false').to_s == 'true'
+    end
+
+    def slack_failures_channel
+      ENV.fetch('SLACK_FAILURES_CHANNEL', '#production-alerts')
+    end
   end
 end

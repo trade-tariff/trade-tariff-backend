@@ -36,10 +36,23 @@ class CustomJobLogger < ::Sidekiq::JobLogger
       'error_message' => e.message,
     )
 
+    alert_slack(e, item) if TradeTariffBackend.slack_failures_enabled?
+
     raise e
   end
 
   private
+
+  def alert_slack(error, item)
+    text = "Job Failed: #{item['class']} (JID: #{item['jid']})\n" \
+           "Error: #{error.class.name} - #{error.message}\n" \
+           "Args: #{redact_args(item['args']).inspect}"
+
+    SlackNotifierService.call(
+      text: text,
+      channel: TradeTariffBackend.slack_failures_channel,
+    )
+  end
 
   def query_count
     ::SequelRails::Railties::LogSubscriber.count
