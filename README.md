@@ -14,11 +14,12 @@ Projects using the Trade Tariff (TT) API:
 
 > Make sure you install and enable all pre-commit hooks https://pre-commit.com/
 
-Before setup you will need your backing services:
+Before setup you will need your backing services and header files/libs:
 
-- Postgresql v13
-- OpenSearch v2
+- Postgresql
+- OpenSearch
 - Redis
+- `libpq`, `libyaml`, `zlib`  (`brew install libpq libyaml zlib` on MacOS)
 
 These can be configured by following the instructions here:
 
