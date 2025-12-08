@@ -22,7 +22,7 @@ module GreenLanes
           { referenced: :contained_geographical_areas },
         ],
         measure_conditions: { certificate: %i[certificate_descriptions exempting_certificate_override] },
-        category_assessment: ASSESSMENT_EAGER,
+        category_assessments: ASSESSMENT_EAGER,
         base_regulation: [],
         modification_regulation: [],
         measure_type: %i[measure_type_description measure_type_series_description],

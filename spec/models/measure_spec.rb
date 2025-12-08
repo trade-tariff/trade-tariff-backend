@@ -1517,26 +1517,28 @@ RSpec.describe Measure do
     it { expect(described_class.national.all).to eq([national_measure]) }
   end
 
-  describe '#category_assessment' do
-    subject { measure.reload.category_assessment }
+  describe '#category_assessments' do
+    subject { measure.reload.category_assessments }
 
     let(:measure) { create :measure, :with_base_regulation, :with_measure_type }
 
-    context 'with matching category_assessment' do
-      before { category_assessment }
-
-      let :category_assessment do
+    context 'with matching category_assessments' do
+      before do
         create :category_assessment, measure_type: measure.measure_type,
                                      regulation: measure.generating_regulation
       end
 
-      it { is_expected.to eq_pk category_assessment }
+      let!(:category_assessment) do
+        create :category_assessment, measure_type: measure.measure_type,
+                                     regulation: measure.generating_regulation
+      end
+
+      it { is_expected.to include(eq_pk(category_assessment)) }
+      it { is_expected.to have_attributes size: 2 }
     end
 
-    context 'without matching category_assessment' do
-      let(:measure) { create :measure }
-
-      it { is_expected.to be_nil }
+    context 'without matching category_assessments' do
+      it { is_expected.to be_blank }
     end
   end
 end

@@ -20,7 +20,9 @@ module Api
                  to: :first_measure
 
         content_addressable_fields do |ca|
-          ca.permutation_key.map(&:to_s).join("\n")
+          content_addressable = ca.permutation_key.map(&:to_s)
+          content_addressable << ca.theme_id.to_s
+          content_addressable.join("\n")
         end
 
         class << self
