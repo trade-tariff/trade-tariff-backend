@@ -154,17 +154,10 @@ module Api
       end
 
       def get_descendants_end_date(commodity)
-        return nil if commodity.children.blank?
+        end_date = commodity.children.minimum(:validity_start_date)
+        return nil if end_date.blank?
 
-        begin
-          end_date = commodity.children.minimum(:validity_start_date)
-          return nil if end_date.blank?
-
-          # Subtract one day before the first active child started to give us an expired commodity's validity end date
-          end_date.to_date - 1
-        rescue StandardError
-          nil
-        end
+        end_date.to_date - 1
       end
     end
   end
