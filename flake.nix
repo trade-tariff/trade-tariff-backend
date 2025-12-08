@@ -34,6 +34,10 @@
           "--with-libyaml-include=${libyaml.dev}/include"
           "--with-libyaml-lib=${libyaml.out}/lib"
         ];
+        zlibBuildFlags = with pkgs; [
+          "--with-zlib-include=${zlib.dev}/include"
+          "--with-zlib-lib=${zlib.out}/lib"
+        ];
         postgresql = pkgs.postgresql_18;
         pg-environment-variables = ''
           export PGDATA=$PWD/.nix/postgres/data
@@ -71,12 +75,17 @@
       {
         devShells.default = pkgs.mkShell {
           shellHook = ''
+            # For misbehaving gems that don't pick up the flags from BUNDLE_BUILD_*
+            export CPATH="/nix/store/hwqbid7b85dfdvyj0ckgi2c6a4ir653q-zlib-1.3.1-dev/include:$CPATH"
+            export LIBRARY_PATH="/nix/store/z55x0q74zldi64iwamqf8wgrm2iza5rk-zlib-1.3.1/lib:$LIBRARY_PATH"
+
             export GEM_HOME=$PWD/.nix/ruby/$(${ruby}/bin/ruby -e "puts RUBY_VERSION")
             mkdir -p $GEM_HOME
 
             export BUNDLE_BUILD__PG="${builtins.concatStringsSep " " postgresqlBuildFlags}"
 
             export BUNDLE_BUILD__PSYCH="${builtins.concatStringsSep " " psychBuildFlags}"
+            export BUNDLE_BUILD__ZLIB="${builtins.concatStringsSep " " zlibBuildFlags}"
 
             export GEM_PATH=$GEM_HOME
             export PATH=$GEM_HOME/bin:$PATH

@@ -7,6 +7,7 @@ gem 'puma'
 gem 'rails'
 
 # DB
+gem 'get_process_mem'
 gem 'pg'
 gem 'sequel'
 gem 'sequel-rails'
@@ -31,9 +32,12 @@ gem 'sidekiq-scheduler'
 # Elasticsearch
 gem 'opensearch-ruby'
 
+# Reporting
+gem 'caxlsx'
+gem 'fast_excel'
+
 # Helpers
 gem 'bootsnap', require: false
-gem 'caxlsx'
 gem 'csv'
 gem 'gds-sso'
 gem 'hashie'
@@ -62,7 +66,7 @@ group :development do
 end
 
 group :development, :test do
-  gem 'awesome_print'
+  gem 'amazing_print'
   gem 'dotenv-rails'
   gem 'factory_bot_rails', require: false
   gem 'pry-rails'
