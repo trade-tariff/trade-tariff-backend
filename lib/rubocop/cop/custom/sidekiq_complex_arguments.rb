@@ -1,3 +1,5 @@
+return unless defined?(RuboCop)
+
 require 'rubocop'
 
 module RuboCop

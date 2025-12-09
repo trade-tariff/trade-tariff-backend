@@ -20,5 +20,4 @@ ActiveSupport::Inflector.inflections(:en) do |inflect|
   inflect.plural %r{([a-zA-Z]+[a-rt-z])s?_of_origin}, '\1s_of_origin'
   inflect.singular %r{([a-zA-Z]+[a-rt-z])s?OfOrigin}, '\1OfOrigin'
   inflect.singular %r{([a-zA-Z]+[a-rt-z])s?_of_origin}, '\1_of_origin'
-  inflect.acronym 'RuboCop'
 end
