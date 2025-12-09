@@ -7,6 +7,8 @@ plugins:
   - rubocop-rspec
   - rubocop-performance
 
+require:
+  - ./lib/rubocop/cop/custom/sidekiq_complex_arguments.rb
 
 AllCops:
   Exclude:
@@ -104,3 +106,9 @@ RSpec/IndexedLet:
 
 RSpec/MultipleExpectations:
   Enabled: false
+
+Custom/SidekiqComplexArguments:
+  Enabled: true
+  Description: 'Enforces scalar arguments (Integer, String, Boolean) for Sidekiq jobs.'
+  Include:
+    - 'app/workers/**/*.rb'
