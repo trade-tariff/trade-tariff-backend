@@ -111,4 +111,4 @@ Custom/SidekiqComplexArguments:
   Enabled: true
   Description: 'Enforces scalar arguments (Integer, String, Boolean) for Sidekiq jobs.'
   Include:
-    - 'app/workers/**/*.rb'
+    - 'app/**/*.rb'
