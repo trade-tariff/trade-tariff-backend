@@ -19,7 +19,7 @@ module Api
 
       def store_enquiry_form_data
         Rails.cache.write(
-          EnquiryForm::SendSubmissionEmailWorker.cache_key(reference_number),
+          ::EnquiryForm::SendSubmissionEmailWorker.cache_key(reference_number),
           enquiry_form_data.to_json,
           expires_in: CACHE_DURATION,
         )
