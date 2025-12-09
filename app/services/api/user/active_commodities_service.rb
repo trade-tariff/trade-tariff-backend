@@ -3,7 +3,7 @@ module Api
     # Service to determine the status of commodity codes submitted by the user
     #
     # Active - An active code is one that is current for today's date and is declarable (i.e., has no children). End date is in the future or null and start date is in the past
-    # Expired - An expired code is a declarable code that is not active today
+    # Expired - An expired code is a declarable code that is not active today, or had descendants that are now expired (ie became a subheading)
     # Invalid - the code never existed
 
     class ActiveCommoditiesService
@@ -52,6 +52,8 @@ module Api
                       .all
                       .uniq(&:goods_nomenclature_item_id)
 
+        paginated = paginated.map { |commodity| commodity_with_validity_end_date(commodity) }
+
         [paginated, total]
       end
 
@@ -90,18 +92,31 @@ module Api
       end
 
       def expired_commodity_codes
-        @expired_commodity_codes ||= begin
-          codes = historical_commodity_codes - active_commodity_codes
-          expired_candidates = ::GoodsNomenclature.with_leaf_column
-            .where(goods_nomenclatures__goods_nomenclature_item_id: codes)
-            .all
-          non_leaf_expired = expired_candidates.reject(&:leaf?).map(&:goods_nomenclature_item_id)
-          (codes - invalid_commodity_codes(non_leaf_expired)).uniq
+        # Expired should include only codes that were historically declarable
+        # but are not active today. Codes that existed historically but were
+        # never declarable (i.e. always grouping/subheadings) should be
+        # treated as invalid instead.
+        @expired_commodity_codes ||= (historically_declarable_commodity_codes - active_commodity_codes).uniq
+      end
+
+      def invalid_commodity_codes
+        @invalid_commodity_codes ||= begin
+          # Invalid codes are those uploaded by the user that were never seen
+          # in the historical operations (never existed) PLUS historical codes
+          # that were never declarable (always grouping/subheadings).
+          never_existed = uploaded_commodity_codes - historical_commodity_codes
+          historical_non_declarable = historical_commodity_codes - historically_declarable_commodity_codes
+
+          (never_existed + historical_non_declarable).uniq
         end
       end
 
-      def invalid_commodity_codes(non_leaf_expired_codes = [])
-        @invalid_commodity_codes ||= ((uploaded_commodity_codes - historical_commodity_codes) + non_leaf_expired_codes).uniq
+      def historically_declarable_commodity_codes
+        @historically_declarable_commodity_codes ||= GoodsNomenclature::Operation
+          .where(goods_nomenclature_sid: subscription_target_ids,
+                 producline_suffix: GoodsNomenclatureIndent::NON_GROUPING_PRODUCTLINE_SUFFIX)
+          .pluck(:goods_nomenclature_item_id)
+          .uniq
       end
 
       def all_candidate_codes
@@ -126,6 +141,23 @@ module Api
 
       def load_commodities(codes)
         Commodity.where(goods_nomenclature_item_id: codes).all
+      end
+
+      def commodity_with_validity_end_date(commodity)
+        return commodity if commodity.values[:validity_end_date].present?
+
+        end_date = get_descendants_end_date(commodity)
+
+        commodity.values[:validity_end_date] = end_date if end_date
+
+        commodity
+      end
+
+      def get_descendants_end_date(commodity)
+        end_date = commodity.children.minimum(:validity_start_date)
+        return nil if end_date.blank?
+
+        end_date.to_date - 1
       end
     end
   end
