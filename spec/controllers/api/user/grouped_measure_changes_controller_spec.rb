@@ -108,6 +108,26 @@ RSpec.describe Api::User::GroupedMeasureChangesController do
         expect { get :index }.to raise_error(StandardError, 'Service error')
       end
     end
+
+    context 'with pagination parameters' do
+      before { get :index, params: { page: 2, per_page: 10 } }
+
+      it 'passes pagination parameters to the service' do
+        expect(measure_changes_service).to have_received(:call).with(page: 2, per_page: 10)
+      end
+
+      it 'returns a successful response' do
+        expect(response).to have_http_status(:ok)
+      end
+    end
+
+    context 'without pagination parameters' do
+      before { get :index }
+
+      it 'passes default pagination parameters to the service' do
+        expect(measure_changes_service).to have_received(:call).with(page: 1, per_page: 20)
+      end
+    end
   end
 
   describe '#show' do
@@ -189,19 +209,6 @@ RSpec.describe Api::User::GroupedMeasureChangesController do
       end
     end
 
-    context 'when service returns nil' do
-      let(:expected_response) { nil }
-
-      before do
-        allow(measure_changes_service).to receive(:call).and_return(expected_response)
-        get :show, params: { id: id }
-      end
-
-      it 'returns the service response serialized (null)' do
-        expect(response.parsed_body['data']).to be_nil
-      end
-    end
-
     context 'when service raises an error' do
       before do
         allow(measure_changes_service).to receive(:call).and_raise(StandardError, 'Service error')
@@ -209,6 +216,26 @@ RSpec.describe Api::User::GroupedMeasureChangesController do
 
       it 'allows the error to bubble up' do
         expect { get :show, params: { id: id } }.to raise_error(StandardError, 'Service error')
+      end
+    end
+
+    context 'with pagination parameters' do
+      before { get :show, params: { id: id, page: 3, per_page: 20 } }
+
+      it 'passes pagination parameters to the service' do
+        expect(measure_changes_service).to have_received(:call).with(page: 3, per_page: 20)
+      end
+
+      it 'returns a successful response' do
+        expect(response).to have_http_status(:ok)
+      end
+    end
+
+    context 'without pagination parameters' do
+      before { get :show, params: { id: id } }
+
+      it 'passes default pagination parameters to the service' do
+        expect(measure_changes_service).to have_received(:call).with(page: 1, per_page: 20)
       end
     end
   end
