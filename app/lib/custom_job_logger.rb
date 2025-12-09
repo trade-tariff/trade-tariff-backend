@@ -2,10 +2,6 @@ require 'sidekiq/component'
 require 'sidekiq/job_logger'
 
 class CustomJobLogger < ::Sidekiq::JobLogger
-  SENSITIVE_KEYS = %w[
-    email password passw token secret api_key key otp ssn cvc cvv
-  ].freeze
-
   def call(item, queue)
     start = ::Process.clock_gettime(::Process::CLOCK_MONOTONIC)
     reset_query_count
@@ -16,7 +12,7 @@ class CustomJobLogger < ::Sidekiq::JobLogger
       'class' => item['class'],
       'jid' => item['jid'],
       'queue' => queue,
-      'args' => redact_args(item['args']),
+      'args' => item['args'],
       'duration' => duration,
       'queries' => query_count,
       'status' => 'done',
@@ -28,7 +24,7 @@ class CustomJobLogger < ::Sidekiq::JobLogger
       'class' => item['class'],
       'jid' => item['jid'],
       'queue' => queue,
-      'args' => redact_args(item['args']),
+      'args' => item['args'],
       'duration' => duration,
       'queries' => query_count,
       'status' => 'fail',
@@ -36,7 +32,11 @@ class CustomJobLogger < ::Sidekiq::JobLogger
       'error_message' => e.message,
     )
 
-    alert_slack(e, item) if TradeTariffBackend.slack_failures_enabled?
+    begin
+      alert_slack(e, item) if TradeTariffBackend.slack_failures_enabled?
+    rescue StandardError => slack_error
+      Sidekiq.logger.error("Failed to send Slack alert: #{slack_error.class.name} - #{slack_error.message}")
+    end
 
     raise e
   end
@@ -46,7 +46,7 @@ class CustomJobLogger < ::Sidekiq::JobLogger
   def alert_slack(error, item)
     text = "Job Failed: #{item['class']} (JID: #{item['jid']})\n" \
            "Error: #{error.class.name} - #{error.message}\n" \
-           "Args: #{redact_args(item['args']).inspect}"
+           "Args: #{item['args'].inspect}"
 
     SlackNotifierService.call(
       text: text,
@@ -60,19 +60,5 @@ class CustomJobLogger < ::Sidekiq::JobLogger
 
   def reset_query_count
     ::SequelRails::Railties::LogSubscriber.reset_count
-  end
-
-  def redact_args(args)
-    return args unless sensitive_args?(args)
-
-    ['[FILTERED]']
-  end
-
-  def sensitive_args?(args)
-    return false unless args.is_a?(Array)
-
-    args.any? do |arg|
-      arg.is_a?(String) && SENSITIVE_KEYS.any? { |key| arg.downcase.include?(key) }
-    end
   end
 end

@@ -12,25 +12,25 @@ RSpec.describe Api::V2::EnquiryForm::SubmissionsController, :v2 do
     end
 
     let(:headers) { { 'Content-Type' => 'application/json' } }
-
-    let(:csv_data) { 'csv,data' }
     let(:reference_number) { 'ABC12345' }
 
+    let(:frozen_time) { Time.zone.parse('2025-12-08 12:00:00') }
+
     before do
-      allow(controller).to receive(:set_reference_number) do
-        controller.instance_variable_set(:@set_reference_number, reference_number)
-      end
+      travel_to frozen_time
 
-      csv_service = instance_double(EnquiryForm::CsvGeneratorService, generate: csv_data)
-      allow(EnquiryForm::CsvGeneratorService).to receive(:new).and_return(csv_service)
-
-      allow(EnquiryForm::SendSubmissionEmailWorker).to receive(:perform_async)
-
-      serializer_double = instance_double(
-        Api::V2::EnquiryForm::SubmissionSerializer,
-        serializable_hash: { data: { id: reference_number, type: :"enquiry_form/submission" } },
+      allow(CreateReferenceNumberService).to receive(:new).and_return(
+        instance_double(CreateReferenceNumberService, call: reference_number),
       )
-      allow(Api::V2::EnquiryForm::SubmissionSerializer).to receive(:new).and_return(serializer_double)
+
+      allow(Api::V2::EnquiryForm::SubmissionSerializer).to receive(:new).and_call_original
+
+      allow(::EnquiryForm::SendSubmissionEmailWorker).to receive(:perform_async)
+      allow(Rails.cache).to receive(:write)
+    end
+
+    after do
+      travel_back
     end
 
     it 'returns 201 created with reference number' do
@@ -43,26 +43,28 @@ RSpec.describe Api::V2::EnquiryForm::SubmissionsController, :v2 do
       expect(JSON.parse(response.body)['data']['id']).to eq(reference_number)
     end
 
-    it 'generates CSV and enqueues email worker' do
-      expect(::EnquiryForm::CsvGeneratorService).to receive(:new).and_call_original # rubocop:disable RSpec/MessageSpies
-
-      expect(::EnquiryForm::SendSubmissionEmailWorker).to receive(:perform_async) do |json_data, csv| # rubocop:disable RSpec/MessageSpies
-        parsed = JSON.parse(json_data)
-        expect(parsed['name']).to eq('John Doe')
-        expect(parsed['company_name']).to eq('Doe & Co Inc.')
-        expect(parsed['reference_number']).to eq(reference_number)
-        expect(parsed).to have_key('created_at')
-        expect(csv).to eq(csv_data)
-      end
-
+    it 'caches the data and enqueues the email worker with the reference only' do
       post api_enquiry_form_submissions_path,
            params: { data: { attributes: params } },
            headers: headers,
            as: :json
+
+      expected_payload = params.merge(
+        reference_number: reference_number,
+        created_at: frozen_time.strftime('%Y-%m-%d %H:%M'),
+      ).to_json
+
+      expect(Rails.cache).to have_received(:write).with(
+        "enquiry_form_#{reference_number}",
+        expected_payload,
+        expires_in: 1.hour,
+      )
+
+      expect(::EnquiryForm::SendSubmissionEmailWorker).to have_received(:perform_async).with(reference_number)
     end
 
     context 'when required params are missing' do
-      it 'returns a 422 Unporcessable Content with errors' do
+      it 'returns a 422 Unprocessable Content with errors' do
         post api_enquiry_form_submissions_path,
              params: { data: nil },
              headers: headers,
