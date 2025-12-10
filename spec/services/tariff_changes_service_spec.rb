@@ -630,7 +630,7 @@ RSpec.describe TariffChangesService do
           service.add_change_record(measure_change, gn_item_id, gn_sid)
 
           measure_record = service.tariff_change_records.find { |r| r[:type] == 'Measure' }
-          expect(measure_record[:metadata]).to be_nil
+          expect(JSON.parse(measure_record[:metadata])).to eq({})
         end
       end
     end
@@ -642,8 +642,7 @@ RSpec.describe TariffChangesService do
 
     context 'when measure exists' do
       it 'returns JSON with measure metadata' do
-        metadata_json = service.send(:generate_measure_metadata, measure.measure_sid)
-        metadata = JSON.parse(metadata_json)
+        metadata = service.send(:generate_measure_metadata, measure.measure_sid)
 
         expect(metadata['measure']).to include(
           'measure_type_id' => measure.measure_type_id,
@@ -653,16 +652,14 @@ RSpec.describe TariffChangesService do
       end
 
       it 'includes excluded_geographical_area_ids key' do
-        metadata_json = service.send(:generate_measure_metadata, measure.measure_sid)
-        metadata = JSON.parse(metadata_json)
+        metadata = service.send(:generate_measure_metadata, measure.measure_sid)
 
         expect(metadata['measure']).to have_key('excluded_geographical_area_ids')
       end
 
       context 'when measure has no excluded geographical areas' do
         it 'returns empty array for excluded_geographical_area_ids' do
-          metadata_json = service.send(:generate_measure_metadata, measure.measure_sid)
-          metadata = JSON.parse(metadata_json)
+          metadata = service.send(:generate_measure_metadata, measure.measure_sid)
 
           expect(metadata['measure']['excluded_geographical_area_ids']).to eq([])
         end
@@ -689,8 +686,7 @@ RSpec.describe TariffChangesService do
         end
 
         it 'includes all excluded geographical area ids' do
-          metadata_json = service.send(:generate_measure_metadata, measure.measure_sid)
-          metadata = JSON.parse(metadata_json)
+          metadata = service.send(:generate_measure_metadata, measure.measure_sid)
 
           expect(metadata['measure']['excluded_geographical_area_ids']).to include(
             excluded_area1.geographical_area_id,
@@ -700,8 +696,7 @@ RSpec.describe TariffChangesService do
         end
 
         it 'sorts excluded geographical area ids' do
-          metadata_json = service.send(:generate_measure_metadata, measure.measure_sid)
-          metadata = JSON.parse(metadata_json)
+          metadata = service.send(:generate_measure_metadata, measure.measure_sid)
           excluded_ids = metadata['measure']['excluded_geographical_area_ids']
 
           expect(excluded_ids).to eq(excluded_ids.sort)
@@ -710,20 +705,8 @@ RSpec.describe TariffChangesService do
     end
 
     context 'when measure does not exist' do
-      it 'returns nil' do
+      it 'returns empty hash' do
         result = service.send(:generate_measure_metadata, 99_999)
-
-        expect(result).to be_nil
-      end
-    end
-
-    context 'when Sequel::NoMatchingRow is raised' do
-      before do
-        allow(Measure).to receive(:find).and_raise(Sequel::NoMatchingRow)
-      end
-
-      it 'rescues exception and returns empty hash' do
-        result = service.send(:generate_measure_metadata, 12_345)
 
         expect(result).to eq({})
       end
