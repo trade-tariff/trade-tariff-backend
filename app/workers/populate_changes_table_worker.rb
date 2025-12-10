@@ -8,6 +8,7 @@ class PopulateChangesTableWorker
     ChangesTablePopulator.cleanup_outdated
 
     TariffChangesService.generate
+    MyCommoditiesSubscriptionWorker.perform_async
 
     date = Time.zone.yesterday
     package = TariffChangesService.generate_report_for(date)
