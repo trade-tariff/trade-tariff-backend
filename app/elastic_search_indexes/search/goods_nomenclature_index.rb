@@ -119,13 +119,12 @@ module Search
 
     def eager_load
       [{
-          goods_nomenclature_indents: [],
-          goods_nomenclature_descriptions: [],
-          search_references: [:referenced],
-          full_chemicals: [],
-        },
-       :children
-      ]
+        goods_nomenclature_indents: [],
+        goods_nomenclature_descriptions: [],
+        search_references: [:referenced],
+        full_chemicals: [],
+      },
+       :children]
     end
 
     def dataset_page(page_number)

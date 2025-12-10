@@ -22,6 +22,12 @@ module Search
       record.class.name
     end
 
+    def declarable?
+      TimeMachine.now do
+        super
+      end
+    end
+
     def search_references_part
       return if search_references.empty?
 
