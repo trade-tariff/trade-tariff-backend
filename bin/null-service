@@ -6,8 +6,7 @@ set -o nounset
 set -o pipefail
 set -o noclobber
 
-PORT=$(grep PORT= Dockerfile | awk -F= '{print $2}')
-
+PORT=8080
 
 echo "Starting null service on port $PORT..."
 while true; do
