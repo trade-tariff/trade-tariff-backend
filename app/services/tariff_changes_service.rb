@@ -123,7 +123,7 @@ class TariffChangesService
 
     # Add JSONB metadata for measure changes
     if change[:type] == 'Measure' && change[:object_sid]
-      record[:metadata] = generate_measure_metadata(change[:object_sid])
+      record[:metadata] = generate_measure_metadata(change[:object_sid]).to_json
     end
 
     @tariff_change_records << record
@@ -132,8 +132,16 @@ class TariffChangesService
   private
 
   def generate_measure_metadata(measure_sid)
-    measure = Measure.find(measure_sid: measure_sid)
-    return nil unless measure
+    operation_record = Measure.operation_klass
+                              .where(measure_sid: measure_sid)
+                              .exclude(operation: 'D')
+                              .order(:oid)
+                              .last
+
+    return {} unless operation_record
+
+    measure = operation_record.record_from_oplog
+    return {} unless measure
 
     excluded_areas = measure.measure_excluded_geographical_areas_dataset
                            .select(:excluded_geographical_area)
@@ -147,9 +155,6 @@ class TariffChangesService
         'geographical_area_id' => measure.geographical_area_id,
         'excluded_geographical_area_ids' => excluded_areas,
       },
-    }.to_json
-  rescue Sequel::NoMatchingRow
-    # Handle case where measure doesn't exist
-    {}
+    }
   end
 end
