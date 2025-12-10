@@ -1,34 +1,78 @@
-# spec/workers/enquiry_form/send_submission_email_worker_spec.rb
-require 'sidekiq/testing'
-
 RSpec.describe EnquiryForm::SendSubmissionEmailWorker, type: :worker do
-  describe '.perform_async' do
-    let(:enquiry_form_data) do
-      {
-        name: 'John Doe',
-        company_name: 'Doe & Co Inc.',
-        job_title: 'CEO',
-        email: 'john@example.com',
-        enquiry_category: 'Quotas',
-        enquiry_description: 'I have a question about quotas',
-        reference_number: 'ABC123',
-        created_at: '2025-08-15 10:00',
-      }.to_json
+  subject(:worker) { described_class.new }
+
+  let(:reference) { 'ABC12345' }
+
+  let(:cached_data) do
+    {
+      name: 'John Doe',
+      company_name: 'Doe & Co Inc.',
+      job_title: 'CEO',
+      email: 'john@example.com',
+      enquiry_category: 'Quotas',
+      enquiry_description: 'I have a question about quotas',
+      reference_number: reference,
+      created_at: '2025-08-15 10:00',
+    }.to_json
+  end
+
+  let(:csv_content) { "name,email\nJohn,john@example.com" }
+  let(:notifier_client) { instance_double(GovukNotifier, send_email: true) }
+
+  before do
+    allow(Rails.cache).to receive(:read).with("enquiry_form_#{reference}").and_return(cached_data)
+    allow(EnquiryForm::CsvGeneratorService).to receive(:new).and_call_original
+    allow(Notifications).to receive(:prepare_upload).and_call_original
+    allow(GovukNotifier).to receive(:new).and_return(notifier_client)
+    allow(StringIO).to receive(:new).and_call_original
+  end
+
+  describe '#perform' do
+    it 'fetches data from cache, generates CSV, and sends email' do
+      worker.perform(reference)
+
+      expect(notifier_client).to have_received(:send_email).with(
+        'support@example.com',
+        '104e74e3-8f43-4642-a594-4d4ef931b121',
+        {
+          company_name: 'Doe & Co Inc.',
+          created_at: '2025-08-15 11:00',
+          csv_file: {
+            confirm_email_before_download: nil,
+            file: be_a(String),
+            filename: 'enquiry_form_ABC12345.csv',
+            retention_period: nil,
+          },
+          email: 'john@example.com',
+          enquiry_category: 'Quotas',
+          enquiry_description: 'I have a question about quotas',
+          job_title: 'CEO',
+          name: 'John Doe',
+          reference_number: 'ABC12345',
+        },
+        nil,
+        'ABC12345',
+      )
     end
 
-    let(:csv_data) { 'csv,data' }
+    it 'generates the correct CSV content' do
+      worker.perform(reference)
 
-    before do
-      Sidekiq::Worker.clear_all
+      expect(StringIO).to have_received(:new).with("Reference,Submission date,Full name,Company name,Job title,Email address,What do you need help with?,How can we help?\nABC12345,2025-08-15 10:00,John Doe,Doe & Co Inc.,CEO,john@example.com,Quotas,I have a question about quotas\n").twice
     end
 
-    it 'enqueues the job on the mailers queue with the correct args' do
-      expect {
-        described_class.perform_async(enquiry_form_data, csv_data)
-      }.to change(described_class.jobs, :size).by(1)
+    context 'when the cache key has expired or is missing' do
+      before do
+        allow(Rails.cache).to receive(:read).with("enquiry_form_#{reference}").and_return(nil)
+        allow(Rails.logger).to receive(:error).and_call_original
+      end
 
-      job = described_class.jobs.last
-      expect(job['args']).to eq([enquiry_form_data, csv_data])
+      it 'triggers an error message' do
+        worker.perform(reference)
+
+        expect(Rails.logger).to have_received(:error).with("EnquiryForm::SendSubmissionEmailWorker: No data found in cache for reference #{reference}")
+        expect(notifier_client).not_to have_received(:send_email)
+      end
     end
   end
 end
