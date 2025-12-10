@@ -118,11 +118,20 @@ module Search
     end
 
     def eager_load
-      {
-        goods_nomenclature_indents: [],
-        goods_nomenclature_descriptions: [],
-        search_references: [],
-      }
+      [{
+          goods_nomenclature_indents: [],
+          goods_nomenclature_descriptions: [],
+          search_references: [:referenced],
+          full_chemicals: [],
+        },
+       :children
+      ]
+    end
+
+    def dataset_page(page_number)
+      TimeMachine.now do
+        super(page_number)
+      end
     end
   end
 end
