@@ -79,6 +79,33 @@ RSpec.describe Api::User::GroupedMeasureChangesService do
         expect(commodity_changes.map(&:goods_nomenclature_item_id)).to contain_exactly('1234567890', '9876543210')
         expect(commodity_changes.map(&:count)).to all(eq(1))
       end
+
+      context 'with pagination' do
+        it 'returns paginated results while maintaining total count' do
+          result = service.call(page: 1, per_page: 1)
+
+          expect(result).to be_a(TariffChanges::GroupedMeasureChange)
+          expect(result.count).to eq(2) # Total count should be 2
+          expect(result.grouped_measure_commodity_changes.length).to eq(1) # But only 1 item on this page
+        end
+
+        it 'returns correct page 2 results' do
+          result = service.call(page: 2, per_page: 1)
+
+          expect(result).to be_a(TariffChanges::GroupedMeasureChange)
+          expect(result.count).to eq(2)
+          expect(result.grouped_measure_commodity_changes.length).to eq(1)
+          expect(result.grouped_measure_commodity_changes.first.goods_nomenclature_item_id).to eq('9876543210')
+        end
+
+        it 'returns all results without pagination parameters' do
+          result = service.call(page: nil, per_page: nil)
+
+          expect(result).to be_a(TariffChanges::GroupedMeasureChange)
+          expect(result.count).to eq(2)
+          expect(result.grouped_measure_commodity_changes.length).to eq(2)
+        end
+      end
     end
 
     context 'when id is provided but no matching measures exist' do
@@ -192,6 +219,92 @@ RSpec.describe Api::User::GroupedMeasureChangesService do
       expect(both_result.trade_direction).to eq('both')
       expect(both_result.count).to eq(1)
       expect(both_result.geographical_area_id).to eq(eu_area.geographical_area_id)
+    end
+  end
+
+  describe 'private helper methods' do
+    subject(:service) { described_class.new(user, 'import_GB_', date) }
+
+    let(:eu_area) { create(:geographical_area, :with_description, geographical_area_id: 'GB') }
+    let(:import_measure_type) { create(:measure_type, :import) }
+    let(:measure) { create(:measure, measure_sid: 100, for_geo_area: eu_area, measure_type_id: import_measure_type.measure_type_id) }
+
+    before do
+      3.times do |i|
+        create(:tariff_change, type: 'Measure', object_sid: 100, operation_date: date, goods_nomenclature_sid: 123_456, goods_nomenclature_item_id: "123456789#{i}")
+      end
+    end
+
+    describe '#build_commodity_changes_query' do
+      it 'returns a query object with correct filters applied' do
+        grouped_measure_change = TariffChanges::GroupedMeasureChange.from_id('import_GB_')
+        query = service.send(:build_commodity_changes_query, grouped_measure_change)
+
+        expect(query.respond_to?(:all)).to be true
+        expect(query.respond_to?(:count)).to be true
+      end
+    end
+
+    describe '#apply_pagination' do
+      it 'applies pagination when both page and per_page are provided' do
+        query = double
+        paginated_query = double
+
+        allow(query).to receive(:paginate).with(1, 10).and_return(paginated_query)
+
+        result = service.send(:apply_pagination, query, 1, 10)
+
+        expect(result).to eq(paginated_query)
+        expect(query).to have_received(:paginate).with(1, 10)
+      end
+
+      it 'returns the original query when page is missing' do
+        query = double
+        result = service.send(:apply_pagination, query, nil, 10)
+        expect(result).to eq(query)
+      end
+
+      it 'returns the original query when per_page is missing' do
+        query = double
+        result = service.send(:apply_pagination, query, 1, nil)
+        expect(result).to eq(query)
+      end
+    end
+
+    describe '#load_commodities' do
+      it 'loads commodities by IDs and indexes them' do
+        gn1 = create(:commodity, goods_nomenclature_item_id: '1234567890')
+        gn2 = create(:commodity, goods_nomenclature_item_id: '9876543210')
+
+        result = service.send(:load_commodities, %w[1234567890 9876543210])
+
+        expect(result).to be_a(Hash)
+        expect(result['1234567890']).to eq(gn1)
+        expect(result['9876543210']).to eq(gn2)
+      end
+
+      it 'returns empty hash when no commodity IDs provided' do
+        result = service.send(:load_commodities, [])
+        expect(result).to eq({})
+      end
+    end
+
+    describe '#attach_commodities_to_changes' do
+      it 'attaches loaded commodities to commodity changes' do
+        gn = create(:goods_nomenclature, goods_nomenclature_item_id: '1234567890')
+        grouped_measure_change = TariffChanges::GroupedMeasureChange.from_id('import_GB_')
+
+        grouped_measure_change.add_commodity_change(
+          goods_nomenclature_item_id: '1234567890',
+          count: 1,
+        )
+
+        commodities_by_id = { '1234567890' => gn }
+
+        service.send(:attach_commodities_to_changes, grouped_measure_change, commodities_by_id)
+
+        expect(grouped_measure_change.grouped_measure_commodity_changes.first.commodity).to eq(gn)
+      end
     end
   end
 end

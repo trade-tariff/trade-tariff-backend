@@ -9,9 +9,9 @@ module Api
         @date = date
       end
 
-      def call
+      def call(page: nil, per_page: nil)
         if id.present?
-          measures
+          measures(page, per_page)
         else
           measures_grouped
         end
@@ -19,35 +19,47 @@ module Api
 
       private
 
-      def measures
+      def measures(page, per_page)
         grouped_measure_change = TariffChanges::GroupedMeasureChange.from_id(id)
+        query = build_commodity_changes_query(grouped_measure_change)
+        grouped_measure_change.count = query.count
 
+        commodity_changes_data = apply_pagination(query, page, per_page).all
+        load_commodities_and_attach(grouped_measure_change, commodity_changes_data)
+
+        grouped_measure_change
+      end
+
+      def build_commodity_changes_query(grouped_measure_change)
         excluded_areas_sorted = (grouped_measure_change.excluded_geographical_area_ids || []).sort
 
-        commodity_changes_data = TariffChange.measures
-                                             .with_measure_criteria(
-                                               trade_direction: grouped_measure_change.trade_direction_code,
-                                               geographical_area: grouped_measure_change.geographical_area_id,
-                                               excluded_areas: excluded_areas_sorted,
-                                             )
-                                             .where(operation_date: date)
-                                             .where(goods_nomenclature_sid: user_commodity_code_sids)
-                                             .group(:goods_nomenclature_item_id)
-                                             .order(:goods_nomenclature_item_id)
-                                             .select(
-                                               :goods_nomenclature_item_id,
-                                               Sequel.lit('COUNT(*)').as(:count),
-                                             )
-                                             .all
+        TariffChange.measures
+                    .with_measure_criteria(
+                      trade_direction: grouped_measure_change.trade_direction_code,
+                      geographical_area: grouped_measure_change.geographical_area_id,
+                      excluded_areas: excluded_areas_sorted,
+                    )
+                    .where(operation_date: date)
+                    .where(goods_nomenclature_sid: user_commodity_code_sids)
+                    .group(:goods_nomenclature_item_id)
+                    .order(:goods_nomenclature_item_id)
+                    .select(
+                      :goods_nomenclature_item_id,
+                      Sequel.lit('COUNT(*)').as(:count),
+                    )
+      end
 
-        # Batch load all commodities to avoid N+1 queries
+      def apply_pagination(query, page, per_page)
+        if page.present? && per_page.present?
+          query.paginate(page, per_page)
+        else
+          query
+        end
+      end
+
+      def load_commodities_and_attach(grouped_measure_change, commodity_changes_data)
         commodity_ids = commodity_changes_data.map { |row| row.values[:goods_nomenclature_item_id] }
-        commodities_by_id = if commodity_ids.any?
-                              GoodsNomenclature.where(goods_nomenclature_item_id: commodity_ids)
-                                               .index_by(&:goods_nomenclature_item_id)
-                            else
-                              {}
-                            end
+        commodities_by_id = load_commodities(commodity_ids)
 
         commodity_changes_data.each do |row|
           gn_item_id = row.values[:goods_nomenclature_item_id]
@@ -57,12 +69,23 @@ module Api
           )
         end
 
+        attach_commodities_to_changes(grouped_measure_change, commodities_by_id)
+      end
+
+      def load_commodities(commodity_ids)
+        if commodity_ids.any?
+          GoodsNomenclature.where(goods_nomenclature_item_id: commodity_ids)
+                           .index_by(&:goods_nomenclature_item_id)
+        else
+          {}
+        end
+      end
+
+      def attach_commodities_to_changes(grouped_measure_change, commodities_by_id)
         grouped_measure_change.grouped_measure_commodity_changes.each do |commodity_change|
           goods_nomenclature_item_id = commodity_change.goods_nomenclature_item_id
           commodity_change.commodity = commodities_by_id[goods_nomenclature_item_id]
         end
-
-        grouped_measure_change
       end
 
       # Group changed measures by trade direction, geographical area and excluded area
