@@ -7,11 +7,13 @@ class PopulateChangesTableWorker
     ChangesTablePopulator.populate
     ChangesTablePopulator.cleanup_outdated
 
-    TariffChangesService.generate
-    MyCommoditiesSubscriptionWorker.perform_async
+    if TradeTariffBackend.uk?
+      TariffChangesService.generate
+      MyCommoditiesSubscriptionWorker.perform_async
 
-    date = Time.zone.yesterday
-    package = TariffChangesService.generate_report_for(date)
-    ReportsMailer.commodity_watchlist(date, package).deliver_now
+      date = Time.zone.yesterday
+      package = TariffChangesService.generate_report_for(date)
+      ReportsMailer.commodity_watchlist(date, package).deliver_now if package.present?
+    end
   end
 end
