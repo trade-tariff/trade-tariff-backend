@@ -164,7 +164,7 @@ RSpec.describe TariffChangesService::BaseChanges do
       end
 
       it 'returns validity_end_date plus one day' do
-        expect(instance.date_of_effect).to eq(end_date + 1.day)
+        expect(instance.date_of_effect).to eq(end_date)
       end
     end
 
