@@ -22,7 +22,7 @@ RSpec.describe Api::User::ActiveCommoditiesService do
     create(:commodity, :actual, goods_nomenclature_item_id: '1234567890', goods_nomenclature_sid: 123)
     create(:commodity, :expired, goods_nomenclature_item_id: '1234567891', goods_nomenclature_sid: 456)
     create(:subheading, :expired, :with_children, goods_nomenclature_item_id: '1234567894', goods_nomenclature_sid: 654)
-    create(:commodity,  :expired, :non_declarable, :with_children, goods_nomenclature_item_id: '1234560000', goods_nomenclature_sid: 655)
+    create(:subheading, :expired, :non_declarable, :with_children, goods_nomenclature_item_id: '1234560000', goods_nomenclature_sid: 655)
   end
 
   describe '#call' do

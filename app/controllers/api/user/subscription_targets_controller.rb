@@ -2,6 +2,7 @@ module Api
   module User
     class SubscriptionTargetsController < ApiController
       include PublicUserAuthenticatable
+      include Pageable
 
       no_caching
 
@@ -35,18 +36,15 @@ module Api
       def serialize(targets_and_total)
         targets, total = targets_and_total
         serialized_targets = Api::User::SubscriptionTargetSerializer.new(targets, include: [:target_object]).serializable_hash
-
+        @total = total
         {
           data: serialized_targets[:data],
           included: serialized_targets[:included],
-          meta: {
-            pagination: {
-              page: current_page,
-              per_page: per_page,
-              total_count: total,
-            },
-          },
-        }
+        }.merge(pagination_meta)
+      end
+
+      def record_count
+        @total
       end
 
       def serialize_errors(errors)
