@@ -53,13 +53,22 @@ module Search
       }
     end
 
+    def dataset_page(page_number)
+      TimeMachine.now do
+        super(page_number)
+      end
+    end
+
     def eager_load
-      {
+      [{
         goods_nomenclature_indents: [],
         goods_nomenclature_descriptions: [],
         heading: %i[goods_nomenclature_indents goods_nomenclature_descriptions],
         chapter: %i[goods_nomenclature_descriptions guides sections],
-      }
+      },
+       ancestors: {goods_nomenclature_descriptions:[]},
+       descendants: { },
+      ]
     end
   end
 end
