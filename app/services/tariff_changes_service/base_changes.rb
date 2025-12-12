@@ -70,7 +70,7 @@ class TariffChangesService
       if changes.include?('validity_start_date') && record.validity_start_date.present?
         record.validity_start_date.to_date
       elsif changes.include?('validity_end_date') && record.validity_end_date.present?
-        (record.validity_end_date + 1.day).to_date
+        record.validity_end_date.to_date
       elsif record.operation == :create && record.respond_to?(:validity_start_date) && record.validity_start_date.present?
         record.validity_start_date.to_date
       else
