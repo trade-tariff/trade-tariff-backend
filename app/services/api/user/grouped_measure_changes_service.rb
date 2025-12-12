@@ -45,7 +45,8 @@ module Api
                     .order(:goods_nomenclature_item_id)
                     .select(
                       :goods_nomenclature_item_id,
-                      Sequel.lit('COUNT(*)').as(:count),
+                      Sequel.function(:COUNT, Sequel.lit('DISTINCT goods_nomenclature_item_id')).as(:count),
+                      Sequel.lit('COUNT(*)').as(:tariff_changes_count),
                     )
       end
 
@@ -65,7 +66,7 @@ module Api
           gn_item_id = row.values[:goods_nomenclature_item_id]
           grouped_measure_change.add_commodity_change(
             goods_nomenclature_item_id: gn_item_id,
-            count: row.values[:count],
+            count: row.values[:tariff_changes_count],
           )
         end
 
@@ -106,7 +107,7 @@ module Api
                       Sequel.lit("metadata->'measure'->>'trade_movement_code'").as(:trade_movement_code),
                       Sequel.lit("metadata->'measure'->>'geographical_area_id'").as(:geographical_area_id),
                       Sequel.lit("metadata->'measure'->'excluded_geographical_area_ids'").as(:excluded_geographical_area_ids),
-                      Sequel.lit('COUNT(*)').as(:count),
+                      Sequel.function(:COUNT, Sequel.lit('DISTINCT goods_nomenclature_item_id')).as(:count),
                     )
                     .map do |row|
                       TariffChanges::GroupedMeasureChange.new(
