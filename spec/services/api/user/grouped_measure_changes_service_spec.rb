@@ -85,7 +85,7 @@ RSpec.describe Api::User::GroupedMeasureChangesService do
           result = service.call(page: 1, per_page: 1)
 
           expect(result).to be_a(TariffChanges::GroupedMeasureChange)
-          expect(result.count).to eq(2) # Total count should be 2
+          expect(result.count).to eq(2)
           expect(result.grouped_measure_commodity_changes.length).to eq(1) # But only 1 item on this page
         end
 
@@ -105,6 +105,43 @@ RSpec.describe Api::User::GroupedMeasureChangesService do
           expect(result.count).to eq(2)
           expect(result.grouped_measure_commodity_changes.length).to eq(2)
         end
+      end
+    end
+
+    context 'when id is provided with duplicate tariff changes for the same commodity' do
+      subject(:service) { described_class.new(user, 'import_GB_', date) }
+
+      let(:eu_area) { create(:geographical_area, :with_description, geographical_area_id: 'GB') }
+      let(:import_measure_type) { create(:measure_type, :import) }
+      let(:measure) { create(:measure, measure_sid: 200, for_geo_area: eu_area, measure_type_id: import_measure_type.measure_type_id) }
+
+      before do
+        2.times do
+          create(
+            :tariff_change,
+            type: 'Measure',
+            object_sid: measure.measure_sid,
+            operation_date: date,
+            goods_nomenclature_sid: user_commodity_code_sids.first,
+            goods_nomenclature_item_id: '1234567890',
+            metadata: {
+              'measure' => {
+                'measure_type_id' => import_measure_type.measure_type_id,
+                'trade_movement_code' => 0,
+                'geographical_area_id' => 'GB',
+                'excluded_geographical_area_ids' => [],
+              },
+            },
+          )
+        end
+      end
+
+      it 'counts the commodity once' do
+        result = service.call
+
+        expect(result.count).to eq(1)
+        expect(result.grouped_measure_commodity_changes.length).to eq(1)
+        expect(result.grouped_measure_commodity_changes.first.count).to eq(2)
       end
     end
 
@@ -152,6 +189,41 @@ RSpec.describe Api::User::GroupedMeasureChangesService do
 
         expect(export_result.trade_direction).to eq('export')
         expect(export_result.count).to eq(1)
+      end
+    end
+
+    context 'when multiple tariff changes share a goods_nomenclature_sid' do
+      let(:eu_area) { create(:geographical_area, :with_description, geographical_area_id: 'GB') }
+      let(:import_measure_type) { create(:measure_type, :import) }
+
+      before do
+        create(:measure, measure_sid: 400, for_geo_area: eu_area, measure_type_id: import_measure_type.measure_type_id)
+
+        2.times do
+          create(
+            :tariff_change,
+            type: 'Measure',
+            object_sid: 400,
+            operation_date: date,
+            goods_nomenclature_sid: user_commodity_code_sids.first,
+            goods_nomenclature_item_id: '1234567890',
+            metadata: {
+              'measure' => {
+                'measure_type_id' => import_measure_type.measure_type_id,
+                'trade_movement_code' => 0,
+                'geographical_area_id' => 'GB',
+                'excluded_geographical_area_ids' => [],
+              },
+            },
+          )
+        end
+      end
+
+      it 'counts distinct goods_nomenclature_sids' do
+        result = service.call
+
+        expect(result.length).to eq(1)
+        expect(result.first.count).to eq(1)
       end
     end
 
