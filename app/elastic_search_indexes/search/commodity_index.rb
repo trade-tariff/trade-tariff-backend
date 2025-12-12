@@ -66,9 +66,8 @@ module Search
         heading: %i[goods_nomenclature_indents goods_nomenclature_descriptions],
         chapter: %i[goods_nomenclature_descriptions guides sections],
       },
-       ancestors: {goods_nomenclature_descriptions:[]},
-       descendants: { },
-      ]
+       ancestors: { goods_nomenclature_descriptions: [] },
+       descendants: {}]
     end
   end
 end
