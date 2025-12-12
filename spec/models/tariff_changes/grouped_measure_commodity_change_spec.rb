@@ -283,7 +283,7 @@ RSpec.describe TariffChanges::GroupedMeasureCommodityChange do
           expect(result).to be_a(Hash)
           expect(result.keys).to contain_exactly(import_measure_type.description)
           expect(result[import_measure_type.description]).to all(be_a(Hash))
-          expect(result[import_measure_type.description]).to all(include(:date_of_effect, :change_type))
+          expect(result[import_measure_type.description]).to all(include(:date_of_effect, :change_type, :additional_code))
         end
 
         it 'does not include export measures' do
@@ -296,7 +296,7 @@ RSpec.describe TariffChanges::GroupedMeasureCommodityChange do
           result = grouped_commodity_change.measure_changes(date)
 
           expect(result).to be_a(Hash)
-          expect(result.values.flatten).to all(be_a(Hash).and(include(:date_of_effect, :change_type)))
+          expect(result.values.flatten).to all(be_a(Hash).and(include(:date_of_effect, :change_type, :additional_code)))
         end
       end
 
