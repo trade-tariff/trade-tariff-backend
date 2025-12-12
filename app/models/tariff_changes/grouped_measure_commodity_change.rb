@@ -57,6 +57,7 @@ module TariffChanges
           {
             date_of_effect: change.date_of_effect,
             change_type: change.description,
+            additional_code: change.measure_metadata['additional_code'],
           }
         end
       end
