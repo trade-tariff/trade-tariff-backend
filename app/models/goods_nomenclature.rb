@@ -35,12 +35,16 @@ class GoodsNomenclature < Sequel::Model
 
   include GoodsNomenclatures::NestedSet
 
-  one_to_one :chapter, class_name: name, class: self do |_ds|
-    Chapter.actual.where(goods_nomenclature_item_id: chapter_code)
+  one_to_one :chapter,
+             key: :goods_nomenclature_item_id,
+             primary_key: :chapter_code do |ds|
+    ds.with_actual(Chapter)
   end
 
-  one_to_one :heading, class_name: name, class: self do |_ds|
-    Heading.actual.where(goods_nomenclature_item_id: heading_code)
+  one_to_one :heading,
+             key: :goods_nomenclature_item_id,
+             primary_key: :heading_code do |ds|
+    ds.with_actual(Heading)
   end
 
   one_to_many :search_references, key: :goods_nomenclature_sid

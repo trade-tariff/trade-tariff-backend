@@ -57,9 +57,20 @@ module Search
       }
     end
 
+    def dataset_page(page_number)
+      TimeMachine.now do
+        super(page_number)
+      end
+    end
+
     def eager_load
       {
-        referenced: %i[goods_nomenclature_indents goods_nomenclature_descriptions],
+        referenced: {
+          goods_nomenclature_indents: [],
+          goods_nomenclature_descriptions: [],
+          heading: %i[goods_nomenclature_indents goods_nomenclature_descriptions],
+          chapter: %i[guides sections goods_nomenclature_descriptions],
+        },
       }
     end
   end
