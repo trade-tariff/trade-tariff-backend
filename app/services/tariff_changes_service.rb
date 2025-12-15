@@ -5,11 +5,13 @@
 # on the operation date rather than the validity_start_date
 # It is used for the myott Commodity Watchlist feature
 class TariffChangesService
+  FALLBACK_START_DATE = Date.new(2024, 12, 31).freeze
+
   # Generates TariffChange records for the given date.
   # If no date is provided, it generates for all dates since the last change
   def self.generate(date = nil)
     if date.nil?
-      last_change_date = TariffChange.max(:operation_date) || (Time.zone.today - 1.year)
+      last_change_date = TariffChange.max(:operation_date) || FALLBACK_START_DATE
       if last_change_date < Time.zone.today
         populate_backlog(from: last_change_date + 1.day, to: Time.zone.today)
       end

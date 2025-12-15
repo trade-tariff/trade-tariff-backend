@@ -47,17 +47,15 @@ RSpec.describe TariffChangesService do
           allow(TariffChange).to receive(:max).with(:operation_date).and_return(nil)
         end
 
-        it 'populates backlog from start of 2025 to today' do
-          freeze_time do
-            allow(described_class).to receive(:populate_backlog)
+        it 'populates backlog from after fallback start date to today' do
+          allow(described_class).to receive(:populate_backlog)
 
-            described_class.generate
+          described_class.generate
 
-            expect(described_class).to have_received(:populate_backlog).with(
-              from: Time.zone.today - 1.year + 1.day,
-              to: Time.zone.today,
-            )
-          end
+          expect(described_class).to have_received(:populate_backlog).with(
+            from: described_class::FALLBACK_START_DATE + 1.day,
+            to: Time.zone.today,
+          )
         end
       end
     end
