@@ -47,7 +47,7 @@ RSpec.describe TariffChangesService do
           allow(TariffChange).to receive(:max).with(:operation_date).and_return(nil)
         end
 
-        it 'populates backlog from one year ago to today' do
+        it 'populates backlog from start of 2025 to today' do
           freeze_time do
             allow(described_class).to receive(:populate_backlog)
 
@@ -224,7 +224,7 @@ RSpec.describe TariffChangesService do
 
     it 'deletes existing tariff changes for the operation date' do
       allow(TariffChange).to receive(:delete_for).with(operation_date: date)
-      allow(TariffChange).to receive(:multi_insert)
+      allow(TariffChange).to receive(:create)
 
       service.all_changes
 
@@ -250,25 +250,25 @@ RSpec.describe TariffChangesService do
       other_service = described_class.new(date)
       other_service.instance_variable_set(:@tariff_change_records, [test_record])
       allow(TariffChange).to receive(:delete_for)
-      allow(TariffChange).to receive(:multi_insert)
+      allow(TariffChange).to receive(:create)
 
       other_service.all_changes
 
-      expect(TariffChange).to have_received(:multi_insert).with([test_record])
+      expect(TariffChange).to have_received(:create).with(test_record)
     end
 
-    it 'does not call multi_insert when no records exist' do
+    it 'does not call create when no records exist' do
       allow(TariffChangesService::CommodityChanges).to receive(:collect).with(date).and_return([])
       allow(TariffChangesService::CommodityDescriptionChanges).to receive(:collect).with(date).and_return([])
       allow(TariffChangesService::MeasureChanges).to receive(:collect).with(date).and_return([])
 
       other_service = described_class.new(date)
       allow(TariffChange).to receive(:delete_for)
-      allow(TariffChange).to receive(:multi_insert)
+      allow(TariffChange).to receive(:create)
 
       other_service.all_changes
 
-      expect(TariffChange).not_to have_received(:multi_insert)
+      expect(TariffChange).not_to have_received(:create)
     end
 
     it 'returns a formatted hash with date, count and changes' do
@@ -343,14 +343,14 @@ RSpec.describe TariffChangesService do
       other_service = described_class.new(date)
       other_service.instance_variable_set(:@tariff_change_records, [change_1, change_2, change_3])
       allow(TariffChange).to receive(:delete_for)
-      allow(TariffChange).to receive(:multi_insert)
+      allow(TariffChange).to receive(:create)
 
       result = other_service.all_changes
 
       expect(result[:changes]).to eq([change_3, change_2, change_1])
     end
 
-    it 'successfully persists measure changes with metadata using multi_insert' do
+    it 'successfully persists measure changes with metadata using individual creates' do
       measure = create(:measure)
       create(:commodity, :declarable, goods_nomenclature_sid: measure.goods_nomenclature_sid)
 
@@ -368,16 +368,15 @@ RSpec.describe TariffChangesService do
       allow(TariffChangesService::CommodityDescriptionChanges).to receive(:collect).with(date).and_return([])
       allow(TariffChangesService::MeasureChanges).to receive(:collect).with(date).and_return([measure_change])
       allow(TariffChange).to receive(:delete_for)
-      allow(TariffChange).to receive(:multi_insert).and_call_original
+      allow(TariffChange).to receive(:create).and_call_original
 
       expect {
         service.all_changes
       }.not_to raise_error
 
-      expect(TariffChange).to have_received(:multi_insert) do |records|
-        expect(records).to be_an(Array)
-        expect(records.first[:type]).to eq('Measure')
-        expect(records.first[:metadata]).to be_present
+      expect(TariffChange).to have_received(:create) do |record|
+        expect(record[:type]).to eq('Measure')
+        expect(record[:metadata]).to be_present
       end
     end
   end
@@ -630,7 +629,7 @@ RSpec.describe TariffChangesService do
           service.add_change_record(measure_change, gn_item_id, gn_sid)
 
           measure_record = service.tariff_change_records.find { |r| r[:type] == 'Measure' }
-          expect(JSON.parse(measure_record[:metadata])).to eq({})
+          expect(measure_record[:metadata]).to eq({})
         end
       end
     end
