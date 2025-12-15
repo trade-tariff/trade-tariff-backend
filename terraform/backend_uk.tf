@@ -1,5 +1,5 @@
 module "backend_uk" {
-  source = "git@github.com:trade-tariff/trade-tariff-platform-terraform-modules.git//aws/ecs-service?ref=aws/ecs-service-snapshot-v1.19.0"
+  source = "git@github.com:trade-tariff/trade-tariff-platform-terraform-modules.git//aws/ecs-service?ref=aws/ecs-service-snapshot-v1.19.1"
 
   region = var.region
 
