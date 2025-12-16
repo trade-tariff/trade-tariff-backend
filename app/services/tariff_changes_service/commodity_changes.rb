@@ -4,7 +4,7 @@ class TariffChangesService
       GoodsNomenclature.operation_klass
         .where(operation_date: date)
         .map { |op_record|
-          new(op_record.record, date).analyze if op_record.record.declarable?
+          new(op_record.record, date).analyze if op_record.record&.declarable?
         }
         .compact
     end
