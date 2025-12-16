@@ -381,4 +381,36 @@ RSpec.describe TariffChangesService::Presenter do
       end
     end
   end
+
+  describe '#additional_code' do
+    context 'when additional_code is present' do
+      let(:tariff_change) do
+        create(:tariff_change,
+               type: 'Measure',
+               goods_nomenclature_sid: goods_nomenclature.goods_nomenclature_sid,
+               goods_nomenclature_item_id: goods_nomenclature.goods_nomenclature_item_id,
+               metadata: { 'measure' => { 'additional_code' => 'A123: Test additional code' } })
+      end
+
+      it 'returns the additional code' do
+        result = presenter.additional_code
+        expect(result).to eq('A123: Test additional code')
+      end
+    end
+
+    context 'when additional_code is blank' do
+      let(:tariff_change) do
+        create(:tariff_change,
+               type: 'Measure',
+               goods_nomenclature_sid: goods_nomenclature.goods_nomenclature_sid,
+               goods_nomenclature_item_id: goods_nomenclature.goods_nomenclature_item_id,
+               metadata: { 'measure' => { 'additional_code' => '' } })
+      end
+
+      it 'returns N/A' do
+        result = presenter.additional_code
+        expect(result).to eq('N/A')
+      end
+    end
+  end
 end

@@ -50,18 +50,18 @@ class TariffChangesService
       sheet.rows[2].height = 20
 
       # Pre-header row
-      pre_header_styles = [cell_styles[:pre_header]] * 11
-      sheet.add_row(['Is this change relevant to your business (useful filters)', '', '', 'Impacted Commodity details', '', '', 'Change details', '', '', 'Useful Links', ''], style: pre_header_styles)
+      pre_header_styles = [cell_styles[:pre_header]] * 12
+      sheet.add_row(['Is this change relevant to your business (useful filters)', '', '', '', 'Impacted Commodity details', '', '', 'Change details', '', '', 'Useful Links', ''], style: pre_header_styles)
       sheet.rows[3].height = 40
 
       # Merge pre-header cells
-      sheet.merge_cells('A4:C4')
-      sheet.merge_cells('D4:F4')
-      sheet.merge_cells('G4:I4')
-      sheet.merge_cells('J4:K4')
+      sheet.merge_cells('A4:D4')
+      sheet.merge_cells('E4:G4')
+      sheet.merge_cells('H4:J4')
+      sheet.merge_cells('K4:L4')
 
       # Header row
-      header_styles = [cell_styles[:header]] * 11
+      header_styles = [cell_styles[:header]] * 12
       sheet.add_row(excel_header_row, style: header_styles)
       sheet.rows[4].height = 60
     end
@@ -73,7 +73,7 @@ class TariffChangesService
         batch.each do |record|
           sheet.add_row(
             build_excel_row(record),
-            types: [:string] * 11,
+            types: [:string] * 12,
             style: build_row_styles(is_even_row: index.even?),
           )
           index += 1
@@ -99,6 +99,7 @@ class TariffChangesService
         "Import/Export\n(if applicable)",
         "Impacted Geographical area\n(if applicable)",
         "Impacted Measure\n(if applicable)",
+        "Additional Code\n(if applicable)",
         'Chapter',
         'Commodity Code',
         'Commodity Code description',
@@ -119,6 +120,7 @@ class TariffChangesService
         20,  # Import/Export
         30,  # Geo Area
         30,  # Measure
+        30,  # Additional Code
         15,  # Chapter
         20,  # Commodity Code
         50,  # Commodity Description
@@ -193,6 +195,7 @@ class TariffChangesService
         cell_styles(bg_color)[:text],           # Import/Export
         cell_styles(bg_color)[:text],           # Geo Area
         cell_styles(bg_color)[:text],           # Measure Type
+        cell_styles(bg_color)[:text],           # Additional Code
         cell_styles(bg_color)[:chapter],        # Chapter
         cell_styles(bg_color)[:commodity_code], # Commodity Code
         cell_styles(bg_color)[:text],           # Commodity Description
@@ -209,6 +212,7 @@ class TariffChangesService
         record[:import_export],
         record[:geo_area],
         record[:measure_type],
+        record[:additional_code],
         record[:chapter],
         record[:commodity_code],
         record[:commodity_code_description],

@@ -187,6 +187,248 @@ RSpec.describe TariffChange do
     end
   end
 
+  describe 'metadata methods' do
+    describe '#measure_metadata' do
+      context 'when metadata contains measure data' do
+        let(:metadata) do
+          {
+            'measure' => {
+              'measure_type_id' => '123',
+              'trade_movement_code' => 1,
+              'geographical_area_id' => 'GB',
+              'excluded_geographical_area_ids' => %w[FR DE],
+              'additional_code' => 'A123: Test code',
+            },
+          }
+        end
+        let(:tariff_change) { create(:tariff_change, metadata: metadata) }
+
+        it 'returns the measure metadata hash' do
+          expect(tariff_change.measure_metadata).to eq(metadata['measure'])
+        end
+      end
+
+      context 'when metadata is nil' do
+        let(:tariff_change) { create(:tariff_change, metadata: nil) }
+
+        it 'returns empty hash' do
+          expect(tariff_change.measure_metadata).to eq({})
+        end
+      end
+
+      context 'when metadata does not contain measure key' do
+        let(:tariff_change) { create(:tariff_change, metadata: { 'other' => 'data' }) }
+
+        it 'returns empty hash' do
+          expect(tariff_change.measure_metadata).to eq({})
+        end
+      end
+
+      context 'when metadata is empty hash' do
+        let(:tariff_change) { create(:tariff_change, metadata: {}) }
+
+        it 'returns empty hash' do
+          expect(tariff_change.measure_metadata).to eq({})
+        end
+      end
+    end
+
+    describe '#measure_type_id' do
+      context 'when measure metadata contains measure_type_id' do
+        let(:metadata) { { 'measure' => { 'measure_type_id' => '456' } } }
+        let(:tariff_change) { create(:tariff_change, metadata: metadata) }
+
+        it 'returns the measure type id' do
+          expect(tariff_change.measure_type_id).to eq('456')
+        end
+      end
+
+      context 'when measure_type_id is numeric' do
+        let(:metadata) { { 'measure' => { 'measure_type_id' => 789 } } }
+        let(:tariff_change) { create(:tariff_change, metadata: metadata) }
+
+        it 'returns the numeric measure type id' do
+          expect(tariff_change.measure_type_id).to eq(789)
+        end
+      end
+
+      context 'when measure metadata does not contain measure_type_id' do
+        let(:tariff_change) { create(:tariff_change, metadata: {}) }
+
+        it 'returns nil' do
+          expect(tariff_change.measure_type_id).to be_nil
+        end
+      end
+    end
+
+    describe '#trade_movement_code' do
+      context 'when measure metadata contains trade_movement_code' do
+        let(:metadata) { { 'measure' => { 'trade_movement_code' => 2 } } }
+        let(:tariff_change) { create(:tariff_change, metadata: metadata) }
+
+        it 'returns the trade movement code' do
+          expect(tariff_change.trade_movement_code).to eq(2)
+        end
+      end
+
+      context 'when trade_movement_code is zero' do
+        let(:metadata) { { 'measure' => { 'trade_movement_code' => 0 } } }
+        let(:tariff_change) { create(:tariff_change, metadata: metadata) }
+
+        it 'returns zero' do
+          expect(tariff_change.trade_movement_code).to eq(0)
+        end
+      end
+
+      context 'when measure metadata does not contain trade_movement_code' do
+        let(:tariff_change) { create(:tariff_change, metadata: {}) }
+
+        it 'returns nil' do
+          expect(tariff_change.trade_movement_code).to be_nil
+        end
+      end
+    end
+
+    describe '#geographical_area_id' do
+      context 'when measure metadata contains geographical_area_id' do
+        let(:metadata) { { 'measure' => { 'geographical_area_id' => 'US' } } }
+        let(:tariff_change) { create(:tariff_change, metadata: metadata) }
+
+        it 'returns the geographical area id' do
+          expect(tariff_change.geographical_area_id).to eq('US')
+        end
+      end
+
+      context 'when geographical_area_id is numeric' do
+        let(:metadata) { { 'measure' => { 'geographical_area_id' => 1011 } } }
+        let(:tariff_change) { create(:tariff_change, metadata: metadata) }
+
+        it 'returns the numeric geographical area id' do
+          expect(tariff_change.geographical_area_id).to eq(1011)
+        end
+      end
+
+      context 'when measure metadata does not contain geographical_area_id' do
+        let(:tariff_change) { create(:tariff_change, metadata: {}) }
+
+        it 'returns nil' do
+          expect(tariff_change.geographical_area_id).to be_nil
+        end
+      end
+    end
+
+    describe '#excluded_geographical_area_ids' do
+      context 'when measure metadata contains excluded_geographical_area_ids' do
+        let(:metadata) { { 'measure' => { 'excluded_geographical_area_ids' => %w[CN IN] } } }
+        let(:tariff_change) { create(:tariff_change, metadata: metadata) }
+
+        it 'returns the excluded geographical area ids' do
+          expect(tariff_change.excluded_geographical_area_ids).to eq(%w[CN IN])
+        end
+      end
+
+      context 'when excluded_geographical_area_ids contains numeric values' do
+        let(:metadata) { { 'measure' => { 'excluded_geographical_area_ids' => [1001, 1002] } } }
+        let(:tariff_change) { create(:tariff_change, metadata: metadata) }
+
+        it 'returns the numeric excluded geographical area ids' do
+          expect(tariff_change.excluded_geographical_area_ids).to eq([1001, 1002])
+        end
+      end
+
+      context 'when excluded_geographical_area_ids is empty array' do
+        let(:metadata) { { 'measure' => { 'excluded_geographical_area_ids' => [] } } }
+        let(:tariff_change) { create(:tariff_change, metadata: metadata) }
+
+        it 'returns empty array' do
+          expect(tariff_change.excluded_geographical_area_ids).to eq([])
+        end
+      end
+
+      context 'when measure metadata does not contain excluded_geographical_area_ids' do
+        let(:tariff_change) { create(:tariff_change, metadata: {}) }
+
+        it 'returns empty array' do
+          expect(tariff_change.excluded_geographical_area_ids).to eq([])
+        end
+      end
+
+      context 'when excluded_geographical_area_ids is nil in metadata' do
+        let(:metadata) { { 'measure' => { 'excluded_geographical_area_ids' => nil } } }
+        let(:tariff_change) { create(:tariff_change, metadata: metadata) }
+
+        it 'returns empty array' do
+          expect(tariff_change.excluded_geographical_area_ids).to eq([])
+        end
+      end
+    end
+
+    describe '#additional_code' do
+      context 'when measure metadata contains additional_code' do
+        let(:metadata) { { 'measure' => { 'additional_code' => 'B456: Special code' } } }
+        let(:tariff_change) { create(:tariff_change, metadata: metadata) }
+
+        it 'returns the additional code' do
+          expect(tariff_change.additional_code).to eq('B456: Special code')
+        end
+      end
+
+      context 'when measure metadata does not contain additional_code' do
+        let(:tariff_change) { create(:tariff_change, metadata: {}) }
+
+        it 'returns nil' do
+          expect(tariff_change.additional_code).to be_nil
+        end
+      end
+
+      context 'when additional_code is empty string in metadata' do
+        let(:metadata) { { 'measure' => { 'additional_code' => '' } } }
+        let(:tariff_change) { create(:tariff_change, metadata: metadata) }
+
+        it 'returns empty string' do
+          expect(tariff_change.additional_code).to eq('')
+        end
+      end
+    end
+
+    describe 'metadata method integration' do
+      context 'with a fully populated metadata object' do
+        let(:metadata) do
+          {
+            'measure' => {
+              'measure_type_id' => '103',
+              'trade_movement_code' => 1,
+              'geographical_area_id' => 'GB',
+              'excluded_geographical_area_ids' => %w[FR DE IT],
+              'additional_code' => 'X123: Export restriction',
+            },
+          }
+        end
+        let(:tariff_change) { create(:tariff_change, type: 'Measure', metadata: metadata) }
+
+        it 'all metadata methods work together correctly' do
+          expect(tariff_change.measure_type_id).to eq('103')
+          expect(tariff_change.trade_movement_code).to eq(1)
+          expect(tariff_change.geographical_area_id).to eq('GB')
+          expect(tariff_change.excluded_geographical_area_ids).to eq(%w[FR DE IT])
+          expect(tariff_change.additional_code).to eq('X123: Export restriction')
+        end
+      end
+
+      context 'with a non-measure type tariff change' do
+        let(:tariff_change) { create(:tariff_change, type: 'Commodity', metadata: {}) }
+
+        it 'metadata methods still work correctly' do
+          expect(tariff_change.measure_type_id).to be_nil
+          expect(tariff_change.trade_movement_code).to be_nil
+          expect(tariff_change.geographical_area_id).to be_nil
+          expect(tariff_change.excluded_geographical_area_ids).to eq([])
+          expect(tariff_change.additional_code).to be_nil
+        end
+      end
+    end
+  end
+
   describe '#description' do
     let(:tariff_change) { described_class.new(type: 'Commodity', action: action) }
 

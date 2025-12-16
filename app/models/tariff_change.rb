@@ -68,6 +68,10 @@ class TariffChange < Sequel::Model
     measure_metadata['excluded_geographical_area_ids'] || []
   end
 
+  def additional_code
+    measure_metadata['additional_code']
+  end
+
   def description
     case action
     when TariffChangesService::BaseChanges::CREATION

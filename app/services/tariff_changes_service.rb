@@ -5,11 +5,13 @@
 # on the operation date rather than the validity_start_date
 # It is used for the myott Commodity Watchlist feature
 class TariffChangesService
+  FALLBACK_START_DATE = Date.new(2024, 12, 31).freeze
+
   # Generates TariffChange records for the given date.
   # If no date is provided, it generates for all dates since the last change
   def self.generate(date = nil)
     if date.nil?
-      last_change_date = TariffChange.max(:operation_date) || (Time.zone.today - 1.year)
+      last_change_date = TariffChange.max(:operation_date) || FALLBACK_START_DATE
       if last_change_date < Time.zone.today
         populate_backlog(from: last_change_date + 1.day, to: Time.zone.today)
       end
@@ -60,7 +62,11 @@ class TariffChangesService
     Sequel::Model.db.transaction do
       TariffChange.delete_for(operation_date: date)
       Rails.logger.info("Inserting #{tariff_change_records.count} records for #{date}")
-      TariffChange.multi_insert(tariff_change_records) if tariff_change_records.any?
+
+      # Use individual inserts for proper JSONB handling
+      tariff_change_records.each do |record|
+        TariffChange.create(record)
+      end
     end
 
     {
@@ -122,7 +128,7 @@ class TariffChangesService
     }
 
     if change[:type] == 'Measure' && change[:object_sid]
-      record[:metadata] = MeasureMetadataGenerator.call(change[:object_sid]).to_json
+      record[:metadata] = MeasureMetadataGenerator.call(change[:object_sid])
     end
 
     @tariff_change_records << record
