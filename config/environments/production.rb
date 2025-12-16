@@ -94,8 +94,7 @@ Rails.application.configure do
 
   # Send deprecation notices to registered listeners.
   config.active_support.deprecation = :notify
-  # NOTE: Warden::Manager incorrectly sets the WWW-AUTHENTICATE header to Bearer instead of Basic leading to inability to authenticate in a browser so we want to return before that
-  config.middleware.insert_before(Warden::Manager, SidekiqBasicAuth) do |username, password|
+  config.middleware.use(SidekiqBasicAuth) do |username, password|
     ActiveSupport::SecurityUtils.secure_compare(
       ::Digest::SHA256.hexdigest(username),
       ::Digest::SHA256.hexdigest(Rails.application.credentials.dig(:sidekiq, :username)),
