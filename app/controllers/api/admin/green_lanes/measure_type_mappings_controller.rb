@@ -5,8 +5,6 @@ module Api
         include Pageable
         include XiOnly
 
-        before_action :check_service, :authenticate_user!
-
         def index
           options = { is_collection: true }
           options[:include] = %i[theme]

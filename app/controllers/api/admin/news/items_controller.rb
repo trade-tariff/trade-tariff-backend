@@ -2,8 +2,6 @@ module Api
   module Admin
     module News
       class ItemsController < AdminController
-        before_action :authenticate_user!
-
         def index
           render json: serialize(news_items.to_a, pagination_meta)
         end

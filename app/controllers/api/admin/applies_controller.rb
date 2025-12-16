@@ -1,8 +1,6 @@
 module Api
   module Admin
     class AppliesController < AdminController
-      before_action :authenticate_user!
-
       def create
         apply = Apply.new(apply_params[:attributes])
 

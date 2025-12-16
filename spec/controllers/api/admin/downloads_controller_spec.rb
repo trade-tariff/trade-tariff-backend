@@ -3,8 +3,6 @@ RSpec.describe Api::Admin::DownloadsController do
 
   describe 'POST to #create' do
     before do
-      login_as_api_user
-
       allow(DownloadWorker).to receive(:perform_async)
 
       post :create, params: { data: { type: :download, attributes: download_attributes } }

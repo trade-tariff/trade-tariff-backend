@@ -169,14 +169,6 @@ GEM
     fugit (1.11.1)
       et-orbi (~> 1, >= 1.2.11)
       raabro (~> 1.4)
-    gds-sso (20.0.0)
-      oauth2 (~> 2.0)
-      omniauth (~> 2.1)
-      omniauth-oauth2 (~> 1.8)
-      plek (>= 5)
-      rails (>= 7)
-      warden (~> 1.2)
-      warden-oauth2 (~> 0.0.1)
     get_process_mem (1.0.0)
       bigdecimal (>= 2.0)
       ffi (~> 1.0)
@@ -230,8 +222,6 @@ GEM
     minitest (5.27.0)
     msgpack (1.8.0)
     multi_json (1.15.0)
-    multi_xml (0.7.1)
-      bigdecimal (~> 3.1)
     net-http (0.6.0)
       uri
     net-imap (0.5.7)
@@ -250,22 +240,11 @@ GEM
       racc (~> 1.4)
     notifications-ruby-client (6.3.0)
       jwt (>= 1.5, < 4)
-    oauth2 (2.0.17)
-      faraday (>= 0.17.3, < 4.0)
-      jwt (>= 1.0, < 4.0)
-      logger (~> 1.2)
-      multi_xml (~> 0.5)
-      rack (>= 1.2, < 4)
-      snaky_hash (~> 2.0, >= 2.0.3)
-      version_gem (~> 1.1, >= 1.1.9)
     omniauth (2.1.4)
       hashie (>= 3.4.6)
       logger
       rack (>= 2.2.3)
       rack-protection
-    omniauth-oauth2 (1.8.0)
-      oauth2 (>= 1.4, < 3)
-      omniauth (~> 2.0)
     omniauth-rails_csrf_protection (2.0.1)
       actionpack (>= 4.2)
       omniauth (~> 2.0)
@@ -463,9 +442,6 @@ GEM
       rufus-scheduler (~> 3.2)
       sidekiq (>= 7.3, < 9)
     slack-notifier (2.4.0)
-    snaky_hash (2.0.3)
-      hashie (>= 0.1.0, < 6)
-      version_gem (>= 1.1.8, < 3)
     stringio (3.1.9)
     thor (1.4.0)
     tilt (2.6.1)
@@ -478,11 +454,6 @@ GEM
     unicode-emoji (4.1.0)
     uri (1.1.1)
     useragent (0.16.11)
-    version_gem (1.1.9)
-    warden (1.2.9)
-      rack (>= 2.0.9)
-    warden-oauth2 (0.0.1)
-      warden
     webmock (3.26.1)
       addressable (>= 2.8.0)
       crack (>= 0.3.2)
@@ -513,7 +484,6 @@ DEPENDENCIES
   fast_excel
   foreman
   forgery
-  gds-sso
   get_process_mem
   hashie
   holidays

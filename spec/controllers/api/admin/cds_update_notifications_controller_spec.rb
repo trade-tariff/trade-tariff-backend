@@ -2,10 +2,6 @@ RSpec.describe Api::Admin::CdsUpdateNotificationsController do
   routes { AdminApi.routes }
 
   describe 'POST to #create' do
-    before do
-      login_as_api_user
-    end
-
     let(:cds_attributes) { attributes_for :cds_update_notification }
 
     context 'when cds_update_notification is valid' do

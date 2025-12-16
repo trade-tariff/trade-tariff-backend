@@ -2,9 +2,6 @@ module Api
   module Admin
     module Chapters
       class ChapterNotesController < AdminController
-        before_action :authenticate_user!
-        skip_before_action :authenticate_user!, only: [:show]
-
         def show
           chapter_note = chapter.chapter_note
 

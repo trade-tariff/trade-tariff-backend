@@ -1,6 +1,5 @@
 RSpec.shared_examples_for 'v2 search references controller' do
   before do
-    login_as_api_user
     search_reference
   end
 

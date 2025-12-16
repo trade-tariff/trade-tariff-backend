@@ -4,8 +4,6 @@ module Api
       class ThemesController < AdminController
         include XiOnly
 
-        before_action :check_service, :authenticate_user!
-
         def index
           render json: serialize(themes.to_a)
         end
