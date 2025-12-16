@@ -22,8 +22,6 @@ RSpec.describe Api::Admin::Commodities::SearchReferencesController do
   describe 'POST to #create' do
     subject(:do_post) { post :create, params: }
 
-    before { login_as_api_user }
-
     let(:referenced) { create(:commodity, :with_heading, goods_nomenclature_item_id: '0101110000', producline_suffix: '80') }
 
     context 'when passing a productline suffix' do

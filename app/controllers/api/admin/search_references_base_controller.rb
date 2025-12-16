@@ -8,8 +8,6 @@
 module Api
   module Admin
     class SearchReferencesBaseController < AdminController
-      before_action :authenticate_user!
-
       def index
         render json: Api::Admin::SearchReferences::SearchReferenceListSerializer.new(search_references).serializable_hash
       end

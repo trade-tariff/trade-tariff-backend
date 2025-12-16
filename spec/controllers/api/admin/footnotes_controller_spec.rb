@@ -22,8 +22,6 @@ RSpec.describe Api::Admin::FootnotesController do
       JSON.parse(response.body)['data']
     end
 
-    before { login_as_api_user }
-
     specify 'returns national footnote', :aggregate_failures do
       get :index, format: :json
 
@@ -39,8 +37,6 @@ RSpec.describe Api::Admin::FootnotesController do
   end
 
   describe 'GET to #show' do
-    before { login_as_api_user }
-
     let!(:non_national_footnote) { create(:footnote, :non_national, :with_description) }
     let!(:national_footnote) { create(:footnote, :national, :with_description) }
 
@@ -73,8 +69,6 @@ RSpec.describe Api::Admin::FootnotesController do
   end
 
   describe 'PUT to #update' do
-    before { login_as_api_user }
-
     let!(:non_national_footnote) { create(:footnote, :non_national, :with_description) }
     let!(:national_footnote) { create(:footnote, :national, :with_description) }
 

@@ -3,8 +3,6 @@ RSpec.describe Api::Admin::AppliesController do
 
   describe 'POST to #create' do
     before do
-      login_as_api_user
-
       allow(ApplyWorker).to receive(:perform_async)
 
       post :create, params: { data: { type: :apply, attributes: apply_attributes } }

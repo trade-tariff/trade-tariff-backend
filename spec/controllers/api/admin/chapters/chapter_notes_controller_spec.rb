@@ -16,8 +16,6 @@ RSpec.describe Api::Admin::Chapters::ChapterNotesController do
       }
     end
 
-    before { login_as_api_user }
-
     context 'when chapter note is present' do
       let(:chapter) { create :chapter, :with_note }
 
@@ -41,8 +39,6 @@ RSpec.describe Api::Admin::Chapters::ChapterNotesController do
 
   describe '#create' do
     let(:chapter) { create :chapter }
-
-    before { login_as_api_user }
 
     context 'when save succeeded' do
       before do
@@ -100,8 +96,6 @@ RSpec.describe Api::Admin::Chapters::ChapterNotesController do
   describe '#update' do
     let(:chapter) { create :chapter, :with_note }
 
-    before { login_as_api_user }
-
     context 'when save succeeded' do
       it 'responds with success' do
         put :update, params: { chapter_id: chapter.to_param, data: { type: 'chapter_note', attributes: { content: 'test string' } } }, format: :json
@@ -142,8 +136,6 @@ RSpec.describe Api::Admin::Chapters::ChapterNotesController do
   end
 
   describe '#destroy' do
-    before { login_as_api_user }
-
     context 'when deletiong succeeded' do
       let(:chapter) { create :chapter, :with_note }
 

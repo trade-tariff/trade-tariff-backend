@@ -270,10 +270,6 @@ module TradeTariffBackend
       ENV.fetch('DISABLE_ADMIN_API_AUTHENTICATION', 'false').to_s == 'true'
     end
 
-    def admin_api_bearer_token
-      ENV['ADMIN_API_BEARER_TOKEN']
-    end
-
     def implicit_deletion_cutoff
       Date.parse(ENV.fetch('IMPLICIT_DELETION_CUTOFF', '2024-03-25'))
     end

@@ -13,7 +13,7 @@ module ApiTokenAuthenticatable
     end
 
     def authenticate_with_api_tokens
-      authenticate_or_request_with_http_token do |provided_token, _options|
+      authenticate_or_request_with_http_token('Application', unauthenticated_message) do |provided_token, _options|
         Rails.logger.debug "Provided token: #{provided_token}"
 
         api_tokens.any? { |token|
@@ -39,6 +39,10 @@ module ApiTokenAuthenticatable
       else
         []
       end
+    end
+
+    def unauthenticated_message
+      { message: 'No bearer token was provided' }.to_json
     end
   end
 end

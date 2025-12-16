@@ -10,8 +10,6 @@ module Api
           goods_nomenclature: :goods_nomenclature_descriptions,
         }.freeze
 
-        before_action :check_service, :authenticate_user!
-
         def index
           options = { is_collection: true }
           options[:include] = %i[category_assessment category_assessment.theme goods_nomenclature]

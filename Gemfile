@@ -39,7 +39,6 @@ gem 'fast_excel'
 # Helpers
 gem 'bootsnap', require: false
 gem 'csv'
-gem 'gds-sso'
 gem 'hashie'
 gem 'holidays'
 gem 'lograge'

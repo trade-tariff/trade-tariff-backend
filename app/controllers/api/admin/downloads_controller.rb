@@ -1,8 +1,6 @@
 module Api
   module Admin
     class DownloadsController < AdminController
-      before_action :authenticate_user!
-
       def create
         download = Download.new(download_params[:attributes])
 
