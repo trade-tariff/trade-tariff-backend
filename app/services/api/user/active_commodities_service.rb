@@ -47,8 +47,8 @@ module Api
         paginated_codes = paginate_codes(codes, page, per_page)
 
         # Load and de-duplicate by goods_nomenclature_item_id
-        paginated = Commodity
-                      .where(goods_nomenclature_item_id: paginated_codes, producline_suffix: '80')
+        paginated = GoodsNomenclature
+                      .where(goods_nomenclature_item_id: paginated_codes)
                       .all
                       .uniq(&:goods_nomenclature_item_id)
 
