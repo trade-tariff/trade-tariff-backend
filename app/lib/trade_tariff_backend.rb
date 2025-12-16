@@ -84,7 +84,7 @@ module TradeTariffBackend
     end
 
     def with_redis_lock(lock_name = db_lock_key, &block)
-      lock = Redlock::Client.new([RedisLockDb.redis])
+      lock = Redlock::Client.new([redis_config])
       lock.lock!(lock_name, MAX_LOCK_LIFETIME, &block)
     end
 
