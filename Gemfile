@@ -22,7 +22,7 @@ gem 'aws-sdk-s3'
 gem 'rubyzip'
 
 # Background jobs
-gem 'connection_pool'
+gem 'connection_pool', '~> 3.0'
 gem 'redis'
 gem 'redis-client'
 gem 'redlock'
