@@ -11,7 +11,7 @@ RSpec.describe TariffChange do
       let(:tariff_change) { create(:tariff_change, type: 'Measure', object_sid: measure.measure_sid) }
 
       it 'returns the associated measure' do
-        expect(tariff_change.measure).to eq(measure)
+        expect(tariff_change.measure.values.except(:created_at)).to eq(measure.values.except(:created_at))
       end
 
       it 'memoizes the result' do

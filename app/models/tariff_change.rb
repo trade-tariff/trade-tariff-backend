@@ -7,7 +7,11 @@ class TariffChange < Sequel::Model
   def measure
     return nil unless type == 'Measure'
 
-    @measure ||= Measure.find(measure_sid: object_sid)
+    @measure ||= Measure.operation_klass
+                        .where(measure_sid: object_sid)
+                        .order(:oid)
+                        .last
+                        &.record_from_oplog
   end
 
   def self.delete_for(operation_date:)
