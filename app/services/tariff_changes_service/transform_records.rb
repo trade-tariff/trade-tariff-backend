@@ -55,7 +55,7 @@ class TariffChangesService
       end
 
       # Batch load GoodsNomenclatureDescription for commodity description changes
-      gn_desc_period_sids = tariff_changes.select { |tc| tc.type == 'CommodityDescription' }.map(&:object_sid).uniq
+      gn_desc_period_sids = tariff_changes.select { |tc| tc.type == 'GoodsNomenclatureDescription' }.map(&:object_sid).uniq
       if gn_desc_period_sids.any?
         descriptions = GoodsNomenclatureDescription
           .where(goods_nomenclature_description_period_sid: gn_desc_period_sids)
@@ -79,7 +79,7 @@ class TariffChangesService
           commodity_code: tariff_change.goods_nomenclature.goods_nomenclature_item_id,
           commodity_code_description: presented_change.commodity_description,
           type_of_change: format_change_type(presented_change),
-          change: describe_change(presented_change),
+          change_detail: describe_change(presented_change),
           date_of_effect: presented_change.date_of_effect.to_s,
           ott_url: ott_url(presented_change),
           api_url: api_url(presented_change),
@@ -103,7 +103,7 @@ class TariffChangesService
       when 'update'
         "#{tariff_change.type} Updated"
       when 'ending'
-        "#{tariff_change.type} Ending"
+        "#{tariff_change.type} End Date Updated"
       when 'deletion'
         "#{tariff_change.type} Deleted"
       else
@@ -115,7 +115,7 @@ class TariffChangesService
       case tariff_change.type
       when 'Commodity'
         describe_commodity_change(tariff_change)
-      when 'CommodityDescription'
+      when 'Commodity Description'
         describe_commodity_description_change(tariff_change)
       when 'Measure'
         describe_measure_change(tariff_change)
@@ -125,29 +125,24 @@ class TariffChangesService
     end
 
     def describe_commodity_change(tariff_change)
-      if tariff_change.action == 'update'
-        get_changes(tariff_change.goods_nomenclature).first
-      else
-        tariff_change.goods_nomenclature.code
-      end
+      {
+        creation: 'New declarable commodity will begin',
+        ending: 'Commodity will stop being declarable',
+      }[tariff_change.action.to_sym] || 'Commodity change'
     end
 
     def describe_commodity_description_change(tariff_change)
       description = @gn_descriptions_cache&.fetch(tariff_change.object_sid)
-
-      if tariff_change.action == 'update' && description
-        get_changes(description).first
-      else
-        commodity_description(tariff_change.goods_nomenclature)
-      end
+      "New description: #{description.csv_formatted_description}"
     end
 
     def describe_measure_change(tariff_change)
-      if tariff_change.action == 'update'
-        get_changes(tariff_change.measure).first
-      else
-        tariff_change.measure_type
-      end
+      {
+        creation: 'Measure will begin',
+        ending: 'Measure will end',
+        update: 'Measure has been updated other than a change to end date',
+        deletion: 'Measure will no longer begin',
+      }[tariff_change.action.to_sym] || 'Measure change'
     end
 
     def get_changes(record)

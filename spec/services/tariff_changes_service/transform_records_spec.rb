@@ -85,6 +85,7 @@ RSpec.describe TariffChangesService::TransformRecords do
           geo_area: 'N/A',
           measure_type: 'N/A',
           additional_code: 'N/A',
+          change_detail: 'New declarable commodity will begin',
         )
       end
 
@@ -101,7 +102,7 @@ RSpec.describe TariffChangesService::TransformRecords do
           commodity_code
           commodity_code_description
           type_of_change
-          change
+          change_detail
           date_of_effect
           ott_url
           api_url
@@ -155,6 +156,70 @@ RSpec.describe TariffChangesService::TransformRecords do
 
         expect(result.size).to eq(1)
         expect(result.first[:commodity_code]).to eq('0101010100')
+      end
+    end
+
+    context 'when tariff change is commodity ending' do
+      let(:goods_nomenclature) do
+        create(:goods_nomenclature,
+               goods_nomenclature_item_id: '0303030300',
+               validity_start_date: 1.year.ago,
+               validity_end_date: operation_date)
+      end
+
+      before do
+        goods_nomenclature
+        create(:goods_nomenclature_description, goods_nomenclature_sid: goods_nomenclature.goods_nomenclature_sid)
+        create(:tariff_change,
+               operation_date: operation_date,
+               type: 'Commodity',
+               action: 'ending',
+               goods_nomenclature_sid: goods_nomenclature.goods_nomenclature_sid,
+               goods_nomenclature_item_id: goods_nomenclature.goods_nomenclature_item_id)
+      end
+
+      it 'includes the correct change_detail for ending' do
+        result = service.call
+        record = result.first
+
+        expect(record[:type_of_change]).to eq('Commodity End Date Updated')
+        expect(record[:change_detail]).to eq('Commodity will stop being declarable')
+      end
+    end
+
+    context 'when tariff change is commodity description update' do
+      let(:goods_nomenclature) { create(:goods_nomenclature, goods_nomenclature_item_id: '0404040400') }
+      let(:description_period) do
+        create(:goods_nomenclature_description_period,
+               goods_nomenclature_sid: goods_nomenclature.goods_nomenclature_sid,
+               goods_nomenclature_description_period_sid: 789)
+      end
+      let(:description) do
+        create(:goods_nomenclature_description,
+               goods_nomenclature_description_period_sid: 789,
+               goods_nomenclature_sid: goods_nomenclature.goods_nomenclature_sid,
+               description: 'Updated commodity description')
+      end
+
+      before do
+        goods_nomenclature
+        description_period
+        description
+        create(:tariff_change,
+               operation_date: operation_date,
+               type: 'GoodsNomenclatureDescription',
+               action: 'update',
+               object_sid: 789,
+               goods_nomenclature_sid: goods_nomenclature.goods_nomenclature_sid,
+               goods_nomenclature_item_id: goods_nomenclature.goods_nomenclature_item_id)
+      end
+
+      it 'includes the new description in change_detail' do
+        result = service.call
+        record = result.first
+
+        expect(record[:type_of_change]).to eq('Commodity Description Updated')
+        expect(record[:change_detail]).to eq('New description: Updated commodity description')
       end
     end
 
@@ -215,6 +280,91 @@ RSpec.describe TariffChangesService::TransformRecords do
         expect(cache).to be_a(Hash)
         expect(cache[geographical_area.geographical_area_id]).to eq(geographical_area)
       end
+
+      it 'includes correct change_detail for measure creation' do
+        result = service.call
+        record = result.first
+
+        expect(record[:change_detail]).to eq('Measure will begin')
+      end
+    end
+
+    context 'when tariff change is measure ending' do
+      let(:measure_type) { create(:measure_type, trade_movement_code: 1) }
+      let(:measure) { create(:measure, measure_type: measure_type) }
+      let(:goods_nomenclature) { create(:goods_nomenclature, goods_nomenclature_sid: measure.goods_nomenclature_sid) }
+
+      before do
+        goods_nomenclature
+        create(:goods_nomenclature_description, goods_nomenclature_sid: goods_nomenclature.goods_nomenclature_sid)
+        create(:tariff_change,
+               operation_date: operation_date,
+               type: 'Measure',
+               action: 'ending',
+               object_sid: measure.measure_sid,
+               goods_nomenclature_sid: goods_nomenclature.goods_nomenclature_sid,
+               goods_nomenclature_item_id: goods_nomenclature.goods_nomenclature_item_id)
+      end
+
+      it 'includes correct change_detail for measure ending' do
+        result = service.call
+        record = result.first
+
+        expect(record[:type_of_change]).to eq('Measure End Date Updated')
+        expect(record[:change_detail]).to eq('Measure will end')
+      end
+    end
+
+    context 'when tariff change is measure update' do
+      let(:measure_type) { create(:measure_type, trade_movement_code: 0) }
+      let(:measure) { create(:measure, measure_type: measure_type) }
+      let(:goods_nomenclature) { create(:goods_nomenclature, goods_nomenclature_sid: measure.goods_nomenclature_sid) }
+
+      before do
+        goods_nomenclature
+        create(:goods_nomenclature_description, goods_nomenclature_sid: goods_nomenclature.goods_nomenclature_sid)
+        create(:tariff_change,
+               operation_date: operation_date,
+               type: 'Measure',
+               action: 'update',
+               object_sid: measure.measure_sid,
+               goods_nomenclature_sid: goods_nomenclature.goods_nomenclature_sid,
+               goods_nomenclature_item_id: goods_nomenclature.goods_nomenclature_item_id)
+      end
+
+      it 'includes correct change_detail for measure update' do
+        result = service.call
+        record = result.first
+
+        expect(record[:type_of_change]).to eq('Measure Updated')
+        expect(record[:change_detail]).to eq('Measure has been updated other than a change to end date')
+      end
+    end
+
+    context 'when tariff change is measure deletion' do
+      let(:measure_type) { create(:measure_type, trade_movement_code: 0) }
+      let(:measure) { create(:measure, measure_type: measure_type) }
+      let(:goods_nomenclature) { create(:goods_nomenclature, goods_nomenclature_sid: measure.goods_nomenclature_sid) }
+
+      before do
+        goods_nomenclature
+        create(:goods_nomenclature_description, goods_nomenclature_sid: goods_nomenclature.goods_nomenclature_sid)
+        create(:tariff_change,
+               operation_date: operation_date,
+               type: 'Measure',
+               action: 'deletion',
+               object_sid: measure.measure_sid,
+               goods_nomenclature_sid: goods_nomenclature.goods_nomenclature_sid,
+               goods_nomenclature_item_id: goods_nomenclature.goods_nomenclature_item_id)
+      end
+
+      it 'includes correct change_detail for measure deletion' do
+        result = service.call
+        record = result.first
+
+        expect(record[:type_of_change]).to eq('Measure Deleted')
+        expect(record[:change_detail]).to eq('Measure will no longer begin')
+      end
     end
   end
 
@@ -243,9 +393,9 @@ RSpec.describe TariffChangesService::TransformRecords do
       context 'when action is ending' do
         let(:action) { 'ending' }
 
-        it 'returns Type Ending' do
+        it 'returns Type End Date Updated' do
           result = service.send(:format_change_type, tariff_change)
-          expect(result).to eq('Commodity Ending')
+          expect(result).to eq('Commodity End Date Updated')
         end
       end
 
@@ -291,6 +441,193 @@ RSpec.describe TariffChangesService::TransformRecords do
         result = service.send(:api_url, tariff_change)
         expected_url = 'https://www.trade-tariff.service.gov.uk/uk/api/commodities/0202000000'
         expect(result).to eq(expected_url)
+      end
+    end
+
+    describe '#describe_change' do
+      let(:presented_change) { TariffChangesService::Presenter.new(tariff_change) }
+
+      context 'when type is Commodity' do
+        let(:tariff_change) { build(:tariff_change, type: 'Commodity', action: 'creation') }
+
+        it 'delegates to describe_commodity_change' do
+          result = service.send(:describe_change, presented_change)
+          expect(result).to eq('New declarable commodity will begin')
+        end
+      end
+
+      context 'when type is GoodsNomenclatureDescription' do
+        let(:goods_nomenclature) { create(:goods_nomenclature) }
+        let(:tariff_change) do
+          build(:tariff_change,
+                type: 'GoodsNomenclatureDescription',
+                action: 'update',
+                object_sid: 123,
+                goods_nomenclature_sid: goods_nomenclature.goods_nomenclature_sid)
+        end
+        let(:description) { instance_double(GoodsNomenclatureDescription, csv_formatted_description: 'Test description') }
+
+        before do
+          service.instance_variable_set(:@gn_descriptions_cache, { 123 => description })
+        end
+
+        it 'delegates to describe_commodity_description_change' do
+          result = service.send(:describe_change, presented_change)
+          expect(result).to eq('New description: Test description')
+        end
+      end
+
+      context 'when type is Measure' do
+        let(:tariff_change) { build(:tariff_change, type: 'Measure', action: 'creation') }
+
+        it 'delegates to describe_measure_change' do
+          result = service.send(:describe_change, presented_change)
+          expect(result).to eq('Measure will begin')
+        end
+      end
+
+      context 'when type is unknown' do
+        let(:tariff_change) { build(:tariff_change, type: 'UnknownType', action: 'creation') }
+
+        it 'returns a generic description' do
+          result = service.send(:describe_change, presented_change)
+          expect(result).to eq('UnknownType creation')
+        end
+      end
+    end
+
+    describe '#describe_commodity_change' do
+      let(:presented_change) { TariffChangesService::Presenter.new(tariff_change) }
+
+      context 'when action is creation' do
+        let(:tariff_change) { build(:tariff_change, type: 'Commodity', action: 'creation') }
+
+        it 'returns creation message' do
+          result = service.send(:describe_commodity_change, presented_change)
+          expect(result).to eq('New declarable commodity will begin')
+        end
+      end
+
+      context 'when action is ending' do
+        let(:tariff_change) { build(:tariff_change, type: 'Commodity', action: 'ending') }
+
+        it 'returns ending message' do
+          result = service.send(:describe_commodity_change, presented_change)
+          expect(result).to eq('Commodity will stop being declarable')
+        end
+      end
+
+      context 'when action is update' do
+        let(:tariff_change) { build(:tariff_change, type: 'Commodity', action: 'update') }
+
+        it 'returns generic message' do
+          result = service.send(:describe_commodity_change, presented_change)
+          expect(result).to eq('Commodity change')
+        end
+      end
+
+      context 'when action is deletion' do
+        let(:tariff_change) { build(:tariff_change, type: 'Commodity', action: 'deletion') }
+
+        it 'returns generic message' do
+          result = service.send(:describe_commodity_change, presented_change)
+          expect(result).to eq('Commodity change')
+        end
+      end
+    end
+
+    describe '#describe_commodity_description_change' do
+      let(:goods_nomenclature) { create(:goods_nomenclature) }
+      let(:tariff_change) do
+        build(:tariff_change,
+              type: 'GoodsNomenclatureDescription',
+              action: 'update',
+              object_sid: 456,
+              goods_nomenclature_sid: goods_nomenclature.goods_nomenclature_sid)
+      end
+      let(:presented_change) { TariffChangesService::Presenter.new(tariff_change) }
+      let(:description) { instance_double(GoodsNomenclatureDescription, csv_formatted_description: 'Live animals; horses') }
+
+      before do
+        service.instance_variable_set(:@gn_descriptions_cache, { 456 => description })
+      end
+
+      it 'returns the new description with prefix' do
+        result = service.send(:describe_commodity_description_change, presented_change)
+        expect(result).to eq('New description: Live animals; horses')
+      end
+
+      context 'when description is not in cache' do
+        before do
+          service.instance_variable_set(:@gn_descriptions_cache, {})
+        end
+
+        it 'handles missing description gracefully' do
+          expect {
+            service.send(:describe_commodity_description_change, presented_change)
+          }.to raise_error(KeyError)
+        end
+      end
+
+      context 'when cache is nil' do
+        before do
+          service.instance_variable_set(:@gn_descriptions_cache, nil)
+        end
+
+        it 'raises an error when trying to fetch from nil cache' do
+          expect {
+            service.send(:describe_commodity_description_change, presented_change)
+          }.to raise_error(NoMethodError)
+        end
+      end
+    end
+
+    describe '#describe_measure_change' do
+      let(:presented_change) { TariffChangesService::Presenter.new(tariff_change) }
+
+      context 'when action is creation' do
+        let(:tariff_change) { build(:tariff_change, type: 'Measure', action: 'creation') }
+
+        it 'returns creation message' do
+          result = service.send(:describe_measure_change, presented_change)
+          expect(result).to eq('Measure will begin')
+        end
+      end
+
+      context 'when action is ending' do
+        let(:tariff_change) { build(:tariff_change, type: 'Measure', action: 'ending') }
+
+        it 'returns ending message' do
+          result = service.send(:describe_measure_change, presented_change)
+          expect(result).to eq('Measure will end')
+        end
+      end
+
+      context 'when action is update' do
+        let(:tariff_change) { build(:tariff_change, type: 'Measure', action: 'update') }
+
+        it 'returns update message' do
+          result = service.send(:describe_measure_change, presented_change)
+          expect(result).to eq('Measure has been updated other than a change to end date')
+        end
+      end
+
+      context 'when action is deletion' do
+        let(:tariff_change) { build(:tariff_change, type: 'Measure', action: 'deletion') }
+
+        it 'returns deletion message' do
+          result = service.send(:describe_measure_change, presented_change)
+          expect(result).to eq('Measure will no longer begin')
+        end
+      end
+
+      context 'when action is unknown' do
+        let(:tariff_change) { build(:tariff_change, type: 'Measure', action: 'unknown') }
+
+        it 'returns generic message' do
+          result = service.send(:describe_measure_change, presented_change)
+          expect(result).to eq('Measure change')
+        end
       end
     end
   end

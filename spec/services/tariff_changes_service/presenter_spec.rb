@@ -28,6 +28,24 @@ RSpec.describe TariffChangesService::Presenter do
     )
   end
 
+  describe '#type' do
+    it 'returns the type of the tariff change' do
+      result = presenter.type
+      expect(result).to eq('Measure')
+    end
+
+    context 'when type is GoodsNomenclatureDescription' do
+      before do
+        allow(tariff_change).to receive_messages(type: 'GoodsNomenclatureDescription')
+      end
+
+      it 'modifies the type' do
+        result = presenter.type
+        expect(result).to eq('Commodity Description')
+      end
+    end
+  end
+
   describe '#commodity_description' do
     let(:goods_nomenclature_description) { instance_double(GoodsNomenclatureDescription, csv_formatted_description: 'Live horses, asses, mules and hinnies') }
 
