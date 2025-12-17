@@ -1,5 +1,5 @@
 module "worker_xi" {
-  source = "git@github.com:trade-tariff/trade-tariff-platform-terraform-modules.git//aws/ecs-service?ref=aws/ecs-service-v1.18.2"
+  source = "git@github.com:trade-tariff/trade-tariff-platform-terraform-modules.git//aws/ecs-service?ref=aws/ecs-service-v1.19.1"
 
   service_name              = "worker-xi"
   container_definition_kind = "db-backed"
