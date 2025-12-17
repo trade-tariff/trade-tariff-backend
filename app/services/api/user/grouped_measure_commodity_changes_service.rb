@@ -10,14 +10,7 @@ module Api
       end
 
       def call
-        commodity_change = TariffChanges::GroupedMeasureCommodityChange.from_id(grouped_measure_change_id)
-
-        if commodity_change.goods_nomenclature_item_id
-          commodity = GoodsNomenclature.find(goods_nomenclature_item_id: commodity_change.goods_nomenclature_item_id)
-          commodity_change.commodity = commodity
-        end
-
-        commodity_change
+        TariffChanges::GroupedMeasureCommodityChange.from_id(grouped_measure_change_id)
       end
     end
   end
