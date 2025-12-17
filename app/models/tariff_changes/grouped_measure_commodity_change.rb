@@ -9,16 +9,18 @@ module TariffChanges
 
     attr_accessor :commodity
 
-    def commodity_id
-      @commodity&.id
-    end
-
     def self.from_id(id)
       parts = id.rpartition('_')
-      new(
+      change = new(
         grouped_measure_change_id: parts[0],
         goods_nomenclature_item_id: parts[2],
       )
+      change.set_commodity
+      change
+    end
+
+    def commodity_id
+      @commodity&.id
     end
 
     def id
@@ -61,6 +63,12 @@ module TariffChanges
           }
         end
       end
+    end
+
+    def set_commodity
+      @commodity = Commodity.where(goods_nomenclature_item_id: goods_nomenclature_item_id)
+                            .where(producline_suffix: '80')
+                            .last
     end
   end
 end

@@ -72,6 +72,39 @@ RSpec.describe TariffChanges::GroupedMeasureCommodityChange do
       end
     end
 
+    context 'when commodity is set via set_commodity' do
+      let!(:declarable_commodity) do
+        create(:commodity,
+               goods_nomenclature_item_id: '1234567890',
+               producline_suffix: '80')
+      end
+
+      let!(:non_declarable_commodity) do
+        create(:commodity,
+               goods_nomenclature_item_id: '1234567890',
+               producline_suffix: '10')
+      end
+
+      it 'sets only the declarable commodity (producline_suffix 80)' do
+        change = described_class.from_id('import_GB_FR-DE_1234567890')
+
+        expect(change.commodity).to eq(declarable_commodity)
+        expect(change.commodity.producline_suffix).to eq('80')
+      end
+
+      it 'does not set non-declarable commodities' do
+        change = described_class.from_id('import_GB_FR-DE_1234567890')
+
+        expect(change.commodity).not_to eq(non_declarable_commodity)
+      end
+
+      it 'returns the commodity_id for the declarable commodity' do
+        change = described_class.from_id('import_GB_FR-DE_1234567890')
+
+        expect(change.commodity_id).to eq(declarable_commodity.id)
+      end
+    end
+
     context 'when goods nomenclature does not exist' do
       it 'returns nil for non-existent commodity' do
         expect(grouped_commodity_change.commodity).to be_nil
@@ -95,6 +128,20 @@ RSpec.describe TariffChanges::GroupedMeasureCommodityChange do
 
       it 'returns nil when goods_nomenclature_item_id is blank' do
         expect(grouped_commodity_change.commodity).to be_nil
+      end
+    end
+
+    context 'when only non-declarable commodities exist' do
+      before do
+        create(:commodity,
+               goods_nomenclature_item_id: '1234567890',
+               producline_suffix: '10')
+      end
+
+      it 'returns nil when no declarable commodity exists' do
+        change = described_class.from_id('import_GB_FR-DE_1234567890')
+
+        expect(change.commodity).to be_nil
       end
     end
   end
