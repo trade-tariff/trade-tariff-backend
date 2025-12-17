@@ -50,5 +50,11 @@ class TariffChangesService
 
       geo_area_string
     end
+
+    def additional_code
+      return 'N/A' if super.blank?
+
+      super
+    end
   end
 end

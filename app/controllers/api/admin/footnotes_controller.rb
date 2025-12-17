@@ -1,8 +1,6 @@
 module Api
   module Admin
     class FootnotesController < AdminController
-      before_action :authenticate_user!
-
       def index
         @footnotes = Footnote.actual.national.eager(:footnote_descriptions).all
 

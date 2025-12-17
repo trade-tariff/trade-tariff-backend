@@ -2,8 +2,6 @@ module Api
   module Admin
     module News
       class CollectionsController < AdminController
-        before_action :authenticate_user!
-
         def index
           collections = ::News::Collection.all
 

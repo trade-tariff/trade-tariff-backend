@@ -2,10 +2,6 @@ RSpec.describe Api::Admin::RollbacksController do
   routes { AdminApi.routes }
 
   describe 'POST to #create' do
-    before do
-      login_as_api_user
-    end
-
     let(:rollback_attributes) { attributes_for :rollback }
     let(:record) do
       create :measure, operation_date: Time.zone.yesterday.to_date
@@ -40,10 +36,6 @@ RSpec.describe Api::Admin::RollbacksController do
   end
 
   describe 'GET to #index' do
-    before do
-      login_as_api_user
-    end
-
     let!(:rollback) { create :rollback }
 
     let(:response_pattern) do

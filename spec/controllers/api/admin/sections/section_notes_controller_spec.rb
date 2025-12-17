@@ -15,8 +15,6 @@ RSpec.describe Api::Admin::Sections::SectionNotesController do
       }
     end
 
-    before { login_as_api_user }
-
     context 'when section note is present' do
       let(:section) { create :section, :with_note }
 
@@ -40,8 +38,6 @@ RSpec.describe Api::Admin::Sections::SectionNotesController do
 
   describe 'POST to #create' do
     let(:section) { create :section }
-
-    before { login_as_api_user }
 
     context 'when save succeeded' do
       before do
@@ -98,8 +94,6 @@ RSpec.describe Api::Admin::Sections::SectionNotesController do
   describe 'PUT to #update' do
     let(:section) { create :section, :with_note }
 
-    before { login_as_api_user }
-
     context 'when save succeeded' do
       it 'responds with success' do
         put :update, params: { section_id: section.id, data: { type: 'section_note', attributes: { content: 'test string' } } }, format: :json
@@ -140,8 +134,6 @@ RSpec.describe Api::Admin::Sections::SectionNotesController do
   end
 
   describe 'DELETE to #destroy' do
-    before { login_as_api_user }
-
     context 'when deleting succeeds' do
       let(:section) { create :section, :with_note }
 

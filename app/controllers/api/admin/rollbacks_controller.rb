@@ -1,7 +1,6 @@
 module Api
   module Admin
     class RollbacksController < AdminController
-      before_action :authenticate_user!
       before_action :collection, only: :index
 
       def index

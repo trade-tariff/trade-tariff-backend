@@ -2,8 +2,6 @@ module Api
   module Admin
     module QuotaOrderNumbers
       class QuotaDefinitionsController < AdminController
-        before_action :authenticate_user!
-
         DEFAULT_EAGER_LOAD_GRAPH = [
           { measurement_unit: %i[measurement_unit_description measurement_unit_abbreviations] },
           :quota_balance_events,

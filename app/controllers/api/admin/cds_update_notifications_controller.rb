@@ -1,8 +1,6 @@
 module Api
   module Admin
     class CdsUpdateNotificationsController < AdminController
-      before_action :authenticate_user!
-
       def create
         notification = CdsUpdateNotification.new(cds_update_notification_params[:attributes])
 

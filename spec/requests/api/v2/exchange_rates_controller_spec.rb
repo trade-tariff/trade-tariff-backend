@@ -13,6 +13,18 @@ RSpec.describe Api::V2::ExchangeRatesController, :v2 do
       make_request
     end
 
+    context 'when the type parameter is dot-separated' do
+      let(:make_request) do
+        api_get api_exchange_rate_path(
+          '2023-6',
+          'filter.type' => 'monthly',
+          format: :json,
+        )
+      end
+
+      it { expect(ExchangeRates::ExchangeRateCollection).to have_received(:build).with('6', '2023', 'monthly') }
+    end
+
     context 'when the year and month parameters are valid' do
       let(:make_request) do
         api_get api_exchange_rate_path(

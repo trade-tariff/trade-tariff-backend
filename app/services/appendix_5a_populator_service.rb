@@ -1,6 +1,6 @@
 class Appendix5aPopulatorService
   def call
-    logger.info 'Populating Appendix 5a'
+    Rails.logger.info 'Populating Appendix 5a'
 
     Appendix5a.unrestrict_primary_key
     Appendix5a.db.transaction do
@@ -12,7 +12,7 @@ class Appendix5aPopulatorService
 
     notify
 
-    logger.info 'Finished populating Appendix 5a'
+    Rails.logger.info 'Finished populating Appendix 5a'
   end
 
   private
@@ -84,7 +84,7 @@ class Appendix5aPopulatorService
     message += "#{changed_guidance.count} changed and "
     message += "#{removed_guidance.count} removed guidance documents"
 
-    logger.info message
+    Rails.logger.info message
 
     SlackNotifierService.call(message)
     Appendix5aMailer.appendix5a_notify_message(added_guidance.count,
