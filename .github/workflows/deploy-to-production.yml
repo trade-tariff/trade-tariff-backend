@@ -17,7 +17,7 @@ permissions:
 jobs:
   deploy:
     if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch' }}
-    uses: trade-tariff/trade-tariff-tools/.github/workflows/deploy-ecs.yml@deploy_sha
+    uses: trade-tariff/trade-tariff-tools/.github/workflows/deploy-ecs.yml@main
     with:
       app-name: tariff-backend
       environment: production
