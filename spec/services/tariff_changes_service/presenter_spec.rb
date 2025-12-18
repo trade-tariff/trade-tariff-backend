@@ -28,31 +28,29 @@ RSpec.describe TariffChangesService::Presenter do
     )
   end
 
-  describe '#commodity_description' do
-    let(:goods_nomenclature_description) { instance_double(GoodsNomenclatureDescription, csv_formatted_description: 'Live horses, asses, mules and hinnies') }
-
+  describe '#classification_description' do
     before do
       allow(TimeMachine).to receive(:at).and_yield
-      allow(goods_nomenclature).to receive(:goods_nomenclature_description).and_return(goods_nomenclature_description)
+      allow(goods_nomenclature).to receive(:classification_description).and_return('Live horses, asses, mules and hinnies')
     end
 
-    it 'returns the CSV formatted description' do
-      result = presenter.commodity_description
+    it 'returns the classification description' do
+      result = presenter.classification_description
       expect(result).to eq('Live horses, asses, mules and hinnies')
     end
 
     it 'calls TimeMachine with the commodity validity_start_date' do
-      presenter.commodity_description
+      presenter.classification_description
       expect(TimeMachine).to have_received(:at).with(goods_nomenclature.validity_start_date)
     end
 
-    context 'when goods_nomenclature_description is not available' do
+    context 'when classification description is nil' do
       before do
-        allow(goods_nomenclature).to receive(:goods_nomenclature_description).and_return(nil)
+        allow(goods_nomenclature).to receive(:classification_description).and_return(nil)
       end
 
-      it 'raises an error when trying to call csv_formatted_description on nil' do
-        expect { presenter.commodity_description }.to raise_error(NoMethodError)
+      it 'returns nil' do
+        expect(presenter.classification_description).to be_nil
       end
     end
   end

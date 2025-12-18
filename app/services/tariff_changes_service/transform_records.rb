@@ -77,7 +77,7 @@ class TariffChangesService
           additional_code: presented_change.additional_code,
           chapter: tariff_change.goods_nomenclature.chapter_short_code,
           commodity_code: tariff_change.goods_nomenclature.goods_nomenclature_item_id,
-          commodity_code_description: presented_change.commodity_description,
+          commodity_code_description: presented_change.classification_description,
           type_of_change: format_change_type(presented_change),
           change: describe_change(presented_change),
           date_of_effect: presented_change.date_of_effect,

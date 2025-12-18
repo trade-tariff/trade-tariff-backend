@@ -7,9 +7,9 @@ class TariffChangesService
       @geo_area_cache = geo_area_cache
     end
 
-    def commodity_description
+    def classification_description
       TimeMachine.at(goods_nomenclature.validity_start_date) do
-        goods_nomenclature.goods_nomenclature_description.csv_formatted_description
+        goods_nomenclature.classification_description
       end
     end
 
