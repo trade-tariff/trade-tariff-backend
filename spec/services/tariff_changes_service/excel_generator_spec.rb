@@ -81,8 +81,8 @@ RSpec.describe TariffChangesService::ExcelGenerator do
       expect(package.use_shared_strings).to be true
     end
 
-    it 'creates a worksheet named "Commodity Watchlist"' do
-      expect(worksheet.name).to eq('Commodity Watchlist')
+    it 'creates a worksheet named "Commodity watch list"' do
+      expect(worksheet.name).to eq('Commodity watch list')
     end
 
     it 'sets default row height' do
@@ -98,7 +98,7 @@ RSpec.describe TariffChangesService::ExcelGenerator do
 
       it 'sets the title row correctly' do
         title_row = worksheet.rows[0]
-        expect(title_row.cells[0].value).to eq('Changes to your Commodity Watchlist')
+        expect(title_row.cells[0].value).to eq('Changes to your commodity watch list')
         expect(title_row.height).to eq(40)
       end
 
