@@ -22,7 +22,7 @@ class TariffChangesService
         setup_sheet_formatting(sheet)
         add_headers(sheet)
         stream_data_rows(sheet)
-        configure_sheet_view(sheet)
+        add_table_styling(sheet)
         set_column_widths(sheet)
       end
 
@@ -63,32 +63,20 @@ class TariffChangesService
       # Header row
       header_styles = [cell_styles[:header]] * 12
       sheet.add_row(excel_header_row, style: header_styles)
-      sheet.rows[4].height = 60
+      sheet.rows[4].height = 40
     end
 
     def stream_data_rows(sheet)
-      index = 0
-
       @change_records.each_slice(100) do |batch|
         batch.each do |record|
           row = sheet.add_row(
             build_excel_row(record),
             types: [:string] * 12,
-            style: build_row_styles(is_even_row: index.even?),
+            style: build_row_styles,
           )
 
           add_hyperlinks(sheet, row, record)
-          index += 1
         end
-      end
-    end
-
-    def configure_sheet_view(sheet)
-      sheet.auto_filter = excel_autofilter_range
-      sheet.sheet_view.pane do |pane|
-        pane.top_left_cell = 'A6'
-        pane.state = :frozen
-        pane.y_split = 5
       end
     end
 
@@ -98,10 +86,10 @@ class TariffChangesService
 
     def excel_header_row
       [
-        "Import/Export\n(if applicable)",
-        "Impacted Geographical area\n(if applicable)",
-        "Impacted Measure\n(if applicable)",
-        "Additional Code\n(if applicable)",
+        'Import/Export (if applicable)',
+        'Impacted Geographical area (if applicable)',
+        'Impacted Measure (if applicable)',
+        'Additional Code (if applicable)',
         'Chapter',
         'Commodity Code',
         'Commodity Code description',
@@ -111,10 +99,6 @@ class TariffChangesService
         'View OTT for Change Date of Effect',
         'API call for the changed Commodity',
       ]
-    end
-
-    def excel_autofilter_range
-      "A5:#{('A'.ord + excel_header_row.size - 3).chr}5"
     end
 
     def excel_column_widths
@@ -134,9 +118,8 @@ class TariffChangesService
       ]
     end
 
-    def cell_styles(bg_colour = nil)
-      @cell_styles ||= {}
-      @cell_styles[bg_colour] ||= {
+    def cell_styles
+      @cell_styles ||= {
         pre_header: workbook.styles.add_style(
           b: true,
           bg_color: '215c98',
@@ -147,48 +130,38 @@ class TariffChangesService
         ),
         header: workbook.styles.add_style(
           b: true,
-          bg_color: '0e769e',
-          fg_color: 'ffffff',
-          border: { style: :thin, color: 'D3D3D3' },
           alignment: { horizontal: :left, vertical: :center, wrap_text: true },
         ),
         date: workbook.styles.add_style(
-          bg_color: bg_colour,
           num_fmt: 14,
           border: { style: :thin, color: 'D3D3D3' },
           alignment: { horizontal: :center, vertical: :center },
         ),
         commodity_code: workbook.styles.add_style(
-          bg_color: bg_colour,
           format_code: '0000000000',
           border: { style: :thin, color: 'D3D3D3' },
           alignment: { horizontal: :center, vertical: :center },
         ),
         chapter: workbook.styles.add_style(
-          bg_color: bg_colour,
           format_code: '00',
           border: { style: :thin, color: 'D3D3D3' },
           alignment: { horizontal: :center, vertical: :center },
         ),
         text: workbook.styles.add_style(
-          bg_color: bg_colour,
           border: { style: :thin, color: 'D3D3D3' },
           alignment: { horizontal: :left, vertical: :center, wrap_text: true },
         ),
         center_text: workbook.styles.add_style(
-          bg_color: bg_colour,
           border: { style: :thin, color: 'D3D3D3' },
           alignment: { horizontal: :center, vertical: :center },
         ),
         hyperlink: workbook.styles.add_style(
-          bg_color: bg_colour,
           fg_color: '0563C1',
           u: true,
           border: { style: :thin, color: 'D3D3D3' },
           alignment: { horizontal: :left, vertical: :center, wrap_text: true },
         ),
         bold_text: workbook.styles.add_style(
-          bg_color: bg_colour,
           b: true,
           border: { style: :thin, color: 'D3D3D3' },
           alignment: { horizontal: :left, vertical: :center, wrap_text: true },
@@ -196,23 +169,20 @@ class TariffChangesService
       }
     end
 
-    def build_row_styles(is_even_row: true)
-      # Background color for alternating rows
-      bg_color = is_even_row ? nil : 'd9d9d9'
-
+    def build_row_styles
       [
-        cell_styles(bg_color)[:text],           # Import/Export
-        cell_styles(bg_color)[:text],           # Geo Area
-        cell_styles(bg_color)[:text],           # Measure Type
-        cell_styles(bg_color)[:text],           # Additional Code
-        cell_styles(bg_color)[:chapter],        # Chapter
-        cell_styles(bg_color)[:commodity_code], # Commodity Code
-        cell_styles(bg_color)[:text],           # Commodity Description
-        cell_styles(bg_color)[:bold_text],      # Type of Change
-        cell_styles(bg_color)[:text],           # Change detail
-        cell_styles(bg_color)[:date],           # Date of effect
-        cell_styles(bg_color)[:hyperlink],      # OTT Link
-        cell_styles(bg_color)[:hyperlink],      # API Link
+        cell_styles[:text],           # Import/Export
+        cell_styles[:text],           # Geo Area
+        cell_styles[:text],           # Measure Type
+        cell_styles[:text],           # Additional Code
+        cell_styles[:chapter],        # Chapter
+        cell_styles[:commodity_code], # Commodity Code
+        cell_styles[:text],           # Commodity Description
+        cell_styles[:bold_text],      # Type of Change
+        cell_styles[:text],           # Change detail
+        cell_styles[:date],           # Date of effect
+        cell_styles[:hyperlink],      # OTT Link
+        cell_styles[:hyperlink],      # API Link
       ]
     end
 
@@ -239,6 +209,23 @@ class TariffChangesService
 
       sheet.add_hyperlink(location: record[:ott_url], ref: ott_cell) if record[:ott_url]
       sheet.add_hyperlink(location: record[:api_url], ref: api_cell) if record[:api_url]
+    end
+
+    def add_table_styling(sheet)
+      return if @change_records.empty?
+
+      header_row = 5
+      last_data_row = header_row + @change_records.length
+      last_col_letter = ('A'.ord + excel_header_row.size - 1).chr
+      table_range = "A#{header_row}:#{last_col_letter}#{last_data_row}"
+
+      sheet.add_table table_range, style_info: {
+        name: 'TableStyleMedium2',
+        show_first_column: false,
+        show_last_column: false,
+        show_row_stripes: true,
+        show_column_stripes: false,
+      }
     end
   end
 end
