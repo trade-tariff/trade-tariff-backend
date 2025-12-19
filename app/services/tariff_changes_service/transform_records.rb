@@ -82,7 +82,6 @@ class TariffChangesService
           change: describe_change(presented_change),
           date_of_effect: presented_change.date_of_effect,
           change_detail: describe_change(presented_change),
-          date_of_effect: presented_change.date_of_effect,
           ott_url: presented_change.ott_url,
           api_url: presented_change.api_url,
         }
