@@ -13,9 +13,9 @@ class TariffChangesService
       }[super] || super
     end
 
-    def commodity_description
+    def classification_description
       TimeMachine.at(goods_nomenclature.validity_start_date) do
-        goods_nomenclature.goods_nomenclature_description.csv_formatted_description
+        goods_nomenclature.classification_description
       end
     end
 
@@ -61,6 +61,19 @@ class TariffChangesService
       return 'N/A' if super.blank?
 
       super
+    end
+
+    def date_of_effect
+      super.strftime('%d/%m/%Y')
+    end
+
+    def ott_url
+      date = __getobj__.date_of_effect
+      "https://www.trade-tariff.service.gov.uk/commodities/#{goods_nomenclature_item_id}?day=#{date.day}&month=#{date.month}&year=#{date.year}"
+    end
+
+    def api_url
+      "https://www.trade-tariff.service.gov.uk/uk/api/commodities/#{goods_nomenclature_item_id}"
     end
   end
 end

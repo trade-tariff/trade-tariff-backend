@@ -18,7 +18,7 @@ class TariffChangesService
       package.use_shared_strings = true
       @workbook = package.workbook
 
-      workbook.add_worksheet(name: 'Commodity Watchlist') do |sheet|
+      workbook.add_worksheet(name: 'Commodity watch list') do |sheet|
         setup_sheet_formatting(sheet)
         add_headers(sheet)
         stream_data_rows(sheet)
@@ -38,7 +38,7 @@ class TariffChangesService
 
     def add_headers(sheet)
       # Title row
-      sheet.add_row(['Changes to your Commodity Watchlist'], style: workbook.styles.add_style(b: true, sz: 24))
+      sheet.add_row(['Changes to your commodity watch list'], style: workbook.styles.add_style(b: true, sz: 24))
       sheet.rows[0].height = 40
 
       # Subtitle row

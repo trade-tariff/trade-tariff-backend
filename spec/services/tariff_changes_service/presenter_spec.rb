@@ -46,31 +46,31 @@ RSpec.describe TariffChangesService::Presenter do
     end
   end
 
-  describe '#commodity_description' do
+  describe '#classification_description' do
     let(:goods_nomenclature_description) { instance_double(GoodsNomenclatureDescription, csv_formatted_description: 'Live horses, asses, mules and hinnies') }
 
     before do
       allow(TimeMachine).to receive(:at).and_yield
-      allow(goods_nomenclature).to receive(:goods_nomenclature_description).and_return(goods_nomenclature_description)
+      allow(goods_nomenclature).to receive(:classification_description).and_return('Live horses, asses, mules and hinnies')
     end
 
-    it 'returns the CSV formatted description' do
-      result = presenter.commodity_description
+    it 'returns the classification description' do
+      result = presenter.classification_description
       expect(result).to eq('Live horses, asses, mules and hinnies')
     end
 
     it 'calls TimeMachine with the commodity validity_start_date' do
-      presenter.commodity_description
+      presenter.classification_description
       expect(TimeMachine).to have_received(:at).with(goods_nomenclature.validity_start_date)
     end
 
-    context 'when goods_nomenclature_description is not available' do
+    context 'when classification description is nil' do
       before do
-        allow(goods_nomenclature).to receive(:goods_nomenclature_description).and_return(nil)
+        allow(goods_nomenclature).to receive(:classification_description).and_return(nil)
       end
 
-      it 'raises an error when trying to call csv_formatted_description on nil' do
-        expect { presenter.commodity_description }.to raise_error(NoMethodError)
+      it 'returns nil' do
+        expect(presenter.classification_description).to be_nil
       end
     end
   end
@@ -429,6 +429,56 @@ RSpec.describe TariffChangesService::Presenter do
         result = presenter.additional_code
         expect(result).to eq('N/A')
       end
+    end
+  end
+
+  describe '#date_of_effect' do
+    let(:tariff_change) do
+      create(:tariff_change,
+             goods_nomenclature_sid: goods_nomenclature.goods_nomenclature_sid,
+             goods_nomenclature_item_id: goods_nomenclature.goods_nomenclature_item_id,
+             date_of_effect: Date.parse('2024-08-15'))
+    end
+
+    it 'formats the date as dd/mm/yyyy' do
+      result = presenter.date_of_effect
+      expect(result).to eq('15/08/2024')
+    end
+  end
+
+  describe '#ott_url' do
+    let(:tariff_change) do
+      create(:tariff_change,
+             goods_nomenclature_item_id: '0202000000',
+             goods_nomenclature_sid: goods_nomenclature.goods_nomenclature_sid,
+             date_of_effect: Date.parse('2024-08-15'))
+    end
+
+    it 'builds the correct OTT URL with date parameters' do
+      result = presenter.ott_url
+      expected_url = 'https://www.trade-tariff.service.gov.uk/commodities/0202000000?day=15&month=8&year=2024'
+      expect(result).to eq(expected_url)
+    end
+
+    it 'uses the underlying date_of_effect from the wrapped object' do
+      # Verify it doesn't use the formatted string version
+      allow(presenter).to receive(:date_of_effect).and_return('15/08/2024')
+      result = presenter.ott_url
+      expect(result).to include('day=15&month=8&year=2024')
+    end
+  end
+
+  describe '#api_url' do
+    let(:tariff_change) do
+      create(:tariff_change,
+             goods_nomenclature_item_id: '0202000000',
+             goods_nomenclature_sid: goods_nomenclature.goods_nomenclature_sid)
+    end
+
+    it 'builds the correct API URL' do
+      result = presenter.api_url
+      expected_url = 'https://www.trade-tariff.service.gov.uk/uk/api/commodities/0202000000'
+      expect(result).to eq(expected_url)
     end
   end
 end

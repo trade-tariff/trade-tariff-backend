@@ -77,23 +77,15 @@ class TariffChangesService
           additional_code: presented_change.additional_code,
           chapter: tariff_change.goods_nomenclature.chapter_short_code,
           commodity_code: tariff_change.goods_nomenclature.goods_nomenclature_item_id,
-          commodity_code_description: presented_change.commodity_description,
+          commodity_code_description: presented_change.classification_description,
           type_of_change: format_change_type(presented_change),
+          change: describe_change(presented_change),
+          date_of_effect: presented_change.date_of_effect,
           change_detail: describe_change(presented_change),
-          date_of_effect: presented_change.date_of_effect.to_s,
-          ott_url: ott_url(presented_change),
-          api_url: api_url(presented_change),
+          ott_url: presented_change.ott_url,
+          api_url: presented_change.api_url,
         }
       end
-    end
-
-    def ott_url(tariff_change)
-      date = tariff_change.date_of_effect
-      "https://www.trade-tariff.service.gov.uk/commodities/#{tariff_change.goods_nomenclature_item_id}?day=#{date.day}&month=#{date.month}&year=#{date.year}"
-    end
-
-    def api_url(tariff_change)
-      "https://www.trade-tariff.service.gov.uk/uk/api/commodities/#{tariff_change.goods_nomenclature_item_id}"
     end
 
     def format_change_type(tariff_change)

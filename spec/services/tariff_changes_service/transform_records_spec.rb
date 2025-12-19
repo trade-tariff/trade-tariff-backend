@@ -80,7 +80,7 @@ RSpec.describe TariffChangesService::TransformRecords do
           commodity_code: '0101010100',
           chapter: '01',
           type_of_change: 'Commodity Added',
-          date_of_effect: '2024-08-15',
+          date_of_effect: '15/08/2024',
           import_export: 'N/A',
           geo_area: 'N/A',
           measure_type: 'N/A',
@@ -102,6 +102,7 @@ RSpec.describe TariffChangesService::TransformRecords do
           commodity_code
           commodity_code_description
           type_of_change
+          change
           change_detail
           date_of_effect
           ott_url
@@ -426,7 +427,8 @@ RSpec.describe TariffChangesService::TransformRecords do
       end
 
       it 'builds the correct OTT URL with date parameters' do
-        result = service.send(:ott_url, tariff_change)
+        presenter = TariffChangesService::Presenter.new(tariff_change)
+        result = presenter.ott_url
         expected_url = 'https://www.trade-tariff.service.gov.uk/commodities/0202000000?day=15&month=8&year=2024'
         expect(result).to eq(expected_url)
       end
@@ -438,7 +440,8 @@ RSpec.describe TariffChangesService::TransformRecords do
       end
 
       it 'builds the correct API URL' do
-        result = service.send(:api_url, tariff_change)
+        presenter = TariffChangesService::Presenter.new(tariff_change)
+        result = presenter.api_url
         expected_url = 'https://www.trade-tariff.service.gov.uk/uk/api/commodities/0202000000'
         expect(result).to eq(expected_url)
       end
