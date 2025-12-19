@@ -7,6 +7,12 @@ class TariffChangesService
       @geo_area_cache = geo_area_cache
     end
 
+    def type
+      {
+        'GoodsNomenclatureDescription' => 'Commodity Description',
+      }[super] || super
+    end
+
     def classification_description
       TimeMachine.at(goods_nomenclature.validity_start_date) do
         goods_nomenclature.classification_description

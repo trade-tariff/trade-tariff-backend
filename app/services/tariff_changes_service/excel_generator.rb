@@ -104,7 +104,7 @@ class TariffChangesService
         'Commodity Code',
         'Commodity Code description',
         'Change Type',
-        'New / Impacted Detail',
+        'Change Detail',
         'Change Date of Effect',
         'View OTT for Change Date of Effect',
         'API call for the changed Commodity',
@@ -125,7 +125,7 @@ class TariffChangesService
         20,  # Commodity Code
         50,  # Commodity Description
         30,  # Change type
-        30,  # Updated code/data
+        30,  # Change detail
         22,  # Date of effect
         80,  # OTT Link
         60,  # API Link
@@ -200,7 +200,7 @@ class TariffChangesService
         cell_styles(bg_color)[:commodity_code], # Commodity Code
         cell_styles(bg_color)[:text],           # Commodity Description
         cell_styles(bg_color)[:bold_text],      # Type of Change
-        cell_styles(bg_color)[:text],           # Updated code/data
+        cell_styles(bg_color)[:text],           # Change detail
         cell_styles(bg_color)[:date],           # Date of effect
         cell_styles(bg_color)[:text],           # OTT Link
         cell_styles(bg_color)[:text],           # API Link
@@ -217,7 +217,7 @@ class TariffChangesService
         record[:commodity_code],
         record[:commodity_code_description],
         record[:type_of_change],
-        record[:change],
+        record[:change_detail],
         record[:date_of_effect],
         record[:ott_url],
         record[:api_url],
