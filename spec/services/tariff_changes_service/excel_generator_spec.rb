@@ -168,6 +168,19 @@ RSpec.describe TariffChangesService::ExcelGenerator do
         second_row_styles = worksheet.rows[6].cells.map(&:style)
         expect(first_row_styles).not_to eq(second_row_styles)
       end
+
+      it 'adds hyperlinks for OTT and API columns' do
+        hyperlinks = worksheet.hyperlinks
+
+        expect(hyperlinks.map(&:location)).to contain_exactly(
+          change_records[0][:ott_url],
+          change_records[0][:api_url],
+          change_records[1][:ott_url],
+          change_records[1][:api_url],
+        )
+
+        expect(hyperlinks.map(&:ref)).to include('K6', 'L6', 'K7', 'L7')
+      end
     end
 
     describe 'column widths' do
@@ -237,7 +250,7 @@ RSpec.describe TariffChangesService::ExcelGenerator do
 
       it 'returns a hash of styles' do
         expect(styles).to be_a(Hash)
-        expect(styles.keys).to include(:pre_header, :header, :date, :commodity_code, :chapter, :text, :center_text, :bold_text)
+        expect(styles.keys).to include(:pre_header, :header, :date, :commodity_code, :chapter, :text, :center_text, :hyperlink, :bold_text)
       end
 
       it 'creates Axlsx styles' do

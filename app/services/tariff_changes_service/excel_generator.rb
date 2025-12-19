@@ -71,11 +71,13 @@ class TariffChangesService
 
       @change_records.each_slice(100) do |batch|
         batch.each do |record|
-          sheet.add_row(
+          row = sheet.add_row(
             build_excel_row(record),
             types: [:string] * 12,
             style: build_row_styles(is_even_row: index.even?),
           )
+
+          add_hyperlinks(sheet, row, record)
           index += 1
         end
       end
@@ -178,6 +180,13 @@ class TariffChangesService
           border: { style: :thin, color: 'D3D3D3' },
           alignment: { horizontal: :center, vertical: :center },
         ),
+        hyperlink: workbook.styles.add_style(
+          bg_color: bg_colour,
+          fg_color: '0563C1',
+          u: true,
+          border: { style: :thin, color: 'D3D3D3' },
+          alignment: { horizontal: :left, vertical: :center, wrap_text: true },
+        ),
         bold_text: workbook.styles.add_style(
           bg_color: bg_colour,
           b: true,
@@ -202,8 +211,8 @@ class TariffChangesService
         cell_styles(bg_color)[:bold_text],      # Type of Change
         cell_styles(bg_color)[:text],           # Change detail
         cell_styles(bg_color)[:date],           # Date of effect
-        cell_styles(bg_color)[:text],           # OTT Link
-        cell_styles(bg_color)[:text],           # API Link
+        cell_styles(bg_color)[:hyperlink],      # OTT Link
+        cell_styles(bg_color)[:hyperlink],      # API Link
       ]
     end
 
@@ -222,6 +231,14 @@ class TariffChangesService
         record[:ott_url],
         record[:api_url],
       ]
+    end
+
+    def add_hyperlinks(sheet, row, record)
+      ott_cell = row.cells[10]
+      api_cell = row.cells[11]
+
+      sheet.add_hyperlink(location: record[:ott_url], ref: ott_cell) if record[:ott_url]
+      sheet.add_hyperlink(location: record[:api_url], ref: api_cell) if record[:api_url]
     end
   end
 end
