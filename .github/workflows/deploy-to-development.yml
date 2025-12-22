@@ -19,7 +19,7 @@ jobs:
     if: >
       github.event_name == 'workflow_dispatch' ||
       contains(github.event.pull_request.labels.*.name, 'needs-deployment')
-    uses: trade-tariff/trade-tariff-tools/.github/workflows/deploy-ecs.yml@main
+    uses: trade-tariff/trade-tariff-tools/.github/workflows/deploy-ecs.yml@deploy_sha
     with:
       app-name: tariff-backend
       environment: development
