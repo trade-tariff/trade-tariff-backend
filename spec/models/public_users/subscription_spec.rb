@@ -10,7 +10,7 @@ RSpec.describe PublicUsers::Subscription do
   end
 
   describe '#unsubscribe' do
-    let(:subscription) { create(:user_subscription) }
+    let(:subscription) { create(:user_subscription, subscription_type_id: Subscriptions::Type.stop_press.id) }
     let(:user) { subscription.user }
 
     before do
@@ -24,7 +24,7 @@ RSpec.describe PublicUsers::Subscription do
 
     it 'logs the unsubscribe action' do
       subscription.unsubscribe
-      expect(PublicUsers::ActionLog).to have_received(:create).with(user_id: user.id, action: PublicUsers::ActionLog::UNSUBSCRIBED)
+      expect(PublicUsers::ActionLog).to have_received(:create).with(user_id: user.id, action: PublicUsers::ActionLog::UNSUBSCRIBED_STOP_PRESS)
     end
 
     it 'soft deletes the user' do
@@ -37,7 +37,7 @@ RSpec.describe PublicUsers::Subscription do
 
       it 'does not log an unsubscribe action' do
         subscription.unsubscribe
-        expect(PublicUsers::ActionLog).not_to have_received(:create).with(user_id: user.id, action: PublicUsers::ActionLog::UNSUBSCRIBED)
+        expect(PublicUsers::ActionLog).not_to have_received(:create).with(user_id: user.id, action: PublicUsers::ActionLog::UNSUBSCRIBED_STOP_PRESS)
       end
     end
   end

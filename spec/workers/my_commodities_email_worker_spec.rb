@@ -1,7 +1,7 @@
 RSpec.describe MyCommoditiesEmailWorker, type: :worker do
   subject(:worker) { described_class.new }
 
-  let(:user) { create(:public_user) }
+  let(:user) { create(:public_user, :with_my_commodities_subscription) }
   let(:date) { Date.new(2025, 12, 8) }
   let(:count) { 5 }
   let(:mock_notifier) { instance_double(GovukNotifier) }
@@ -9,6 +9,7 @@ RSpec.describe MyCommoditiesEmailWorker, type: :worker do
   before do
     allow(IdentityApiClient).to receive(:get_email).and_return('test@example.com')
     allow(GovukNotifier).to receive(:new).and_return(mock_notifier)
+    allow(PublicUsers::User).to receive(:active).and_return(instance_double(Sequel::Dataset, :[] => user))
     allow(mock_notifier).to receive(:send_email)
   end
 
@@ -24,6 +25,7 @@ RSpec.describe MyCommoditiesEmailWorker, type: :worker do
             changes_count: count,
             published_date: date,
             site_url: "#{TradeTariffBackend.frontend_host}/subscriptions/mycommodities",
+            unsubscribe_url: URI.join(TradeTariffBackend.frontend_host, 'subscriptions/unsubscribe/', user.my_commodities_subscription).to_s,
           },
           described_class::REPLY_TO_ID,
           nil,
@@ -42,6 +44,8 @@ RSpec.describe MyCommoditiesEmailWorker, type: :worker do
     end
 
     context 'when user does not exist' do
+      let(:user) { nil }
+
       it 'does not send an email' do
         worker.perform(999_999, date, count)
 

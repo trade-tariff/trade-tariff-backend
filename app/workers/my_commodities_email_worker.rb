@@ -10,11 +10,13 @@ class MyCommoditiesEmailWorker
     return if date.nil?
     return if user.nil?
     return if user.email.blank?
+    return if user.deleted
 
     personalisation = {
       changes_count:,
       published_date: date,
       site_url: URI.join(TradeTariffBackend.frontend_host, 'subscriptions/mycommodities').to_s,
+      unsubscribe_url: URI.join(TradeTariffBackend.frontend_host, 'subscriptions/unsubscribe/', user.my_commodities_subscription).to_s,
     }
 
     client.send_email(user.email, TEMPLATE_ID, personalisation, REPLY_TO_ID, nil)

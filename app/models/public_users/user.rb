@@ -87,7 +87,12 @@ module PublicUsers
         current.update(active:)
       else
         add_subscription(subscription_type: type, active:)
-        PublicUsers::ActionLog.create(user_id: id, action: PublicUsers::ActionLog::SUBSCRIBED) if active
+        case type
+        when Subscriptions::Type.stop_press
+          PublicUsers::ActionLog.create(user_id: id, action: PublicUsers::ActionLog::SUBSCRIBED_STOP_PRESS)
+        when Subscriptions::Type.my_commodities
+          PublicUsers::ActionLog.create(user_id: id, action: PublicUsers::ActionLog::SUBSCRIBED_MY_COMMODITIES)
+        end
       end
     end
 

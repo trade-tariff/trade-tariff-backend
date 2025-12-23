@@ -13,7 +13,9 @@ RSpec.describe ActionLogReportWorker do
       before do
         # Create action logs within the time range
         create(:action_log, user: user, action: PublicUsers::ActionLog::REGISTERED, created_at: start_date + 2.hours)
-        create(:action_log, user: user, action: PublicUsers::ActionLog::SUBSCRIBED, created_at: start_date + 4.hours)
+        create(:action_log, user: user, action: PublicUsers::ActionLog::SUBSCRIBED_STOP_PRESS, created_at: start_date + 4.hours)
+        create(:action_log, user: user, action: PublicUsers::ActionLog::SUBSCRIBED_MY_COMMODITIES, created_at: start_date + 5.hours)
+        create(:action_log, user: user, action: PublicUsers::ActionLog::UNSUBSCRIBED_MY_COMMODITIES, created_at: start_date + 7.hours)
 
         # Create an action log outside of the time range
         create(:action_log, user: user, action: PublicUsers::ActionLog::DELETED, created_at: start_date - 1.day)
@@ -28,7 +30,9 @@ RSpec.describe ActionLogReportWorker do
           expect(date).to eq(yesterday.strftime('%Y-%m-%d'))
           expect(csv_data).to include('ID,User ID,Action,Created At')
           expect(csv_data).to include(PublicUsers::ActionLog::REGISTERED)
-          expect(csv_data).to include(PublicUsers::ActionLog::SUBSCRIBED)
+          expect(csv_data).to include(PublicUsers::ActionLog::SUBSCRIBED_STOP_PRESS)
+          expect(csv_data).to include(PublicUsers::ActionLog::SUBSCRIBED_MY_COMMODITIES)
+          expect(csv_data).to include(PublicUsers::ActionLog::UNSUBSCRIBED_MY_COMMODITIES)
           expect(csv_data).not_to include(PublicUsers::ActionLog::DELETED)
         end
 
