@@ -44,9 +44,11 @@ RSpec.describe ExchangeRateCurrencyRate do
     before do
       create(:exchange_rate_currency_rate, :monthly_rate, currency_code: 'YYY', validity_start_date: '2020-01-01')
       create(:exchange_rate_currency_rate, :monthly_rate, currency_code: 'XXX', validity_start_date: '2020-01-31')
+      create(:exchange_rate_currency_rate, :monthly_rate, currency_code: 'ZZZ', validity_start_date: '2020-01-31')
       create(:exchange_rate_currency_rate, :spot_rate, validity_start_date: '2020-02-02')
       create(:exchange_rate_country_currency, currency_code: 'XXX', validity_start_date: '2020-01-01')
       create(:exchange_rate_country_currency, currency_code: 'YYY', validity_start_date: '2020-01-01')
+      create(:exchange_rate_country_currency, currency_code: 'ZZZ', validity_start_date: '2019-12-01', validity_end_date: '2019-12-31')
       create(:exchange_rate_country_currency, currency_code: 'AED', validity_start_date: '2020-01-01')
     end
 
