@@ -6,7 +6,7 @@ class InvalidateCacheWorker
 
   def perform(client = self.class.client)
     cdn = client.list_distributions.distribution_list.items.find do |d|
-      d.comment == "#{ENV.fetch('ENVIRONMENT', '').capitalize} CDN"
+      d.comment == "#{TradeTariffBackend.environment.capitalize} CDN"
     end
 
     if cdn
