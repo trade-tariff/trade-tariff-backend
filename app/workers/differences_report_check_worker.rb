@@ -9,10 +9,16 @@ class DifferencesReportCheckWorker
 
     last_log = DifferencesLog.max(:date)
 
-    if last_log.present? && last_log < 7.days.ago
-      SlackNotifierService.call(
-        'The differences report has not run this week. Please check the differences report and run it.',
-      )
-    end
+    return notify if last_log.blank?
+
+    notify if last_log < 7.days.ago
+  end
+
+  private
+
+  def notify
+    SlackNotifierService.call(
+      'The differences report has not run this week. Please check the differences report and run it.',
+    )
   end
 end
