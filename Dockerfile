@@ -64,7 +64,8 @@ RUN bundle config set without 'development test'
 WORKDIR /app
 
 ENV RAILS_ENV=production \
-  PORT=8080
+  PORT=8080 \
+  RUBYOPT="--enable-yjit"
 
 # Copy files generated in the builder image
 COPY --from=builder /app/ /app
