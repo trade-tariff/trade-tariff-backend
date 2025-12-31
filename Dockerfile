@@ -65,7 +65,8 @@ WORKDIR /app
 
 ENV RAILS_ENV=production \
   PORT=8080 \
-  RUBYOPT="--enable-yjit"
+  RUBYOPT="--enable-yjit" \
+  MALLOC_ARENA_MAX="2"
 
 # Copy files generated in the builder image
 COPY --from=builder /app/ /app
