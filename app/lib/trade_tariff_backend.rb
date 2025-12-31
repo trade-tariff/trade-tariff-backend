@@ -81,7 +81,7 @@ module TradeTariffBackend
     end
 
     def slack_failures_channel
-      slack_channel
+      ENV.fetch('SLACK_FAILURES_CHANNEL', '#production-alerts')
     end
 
     def cognito_user_pool_id
