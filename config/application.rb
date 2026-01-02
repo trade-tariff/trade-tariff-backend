@@ -3,6 +3,7 @@ require_relative '../lib/core_ext/object'
 require_relative '../app/middleware/handle_goods_nomenclature'
 require_relative '../app/middleware/handle_api_gateway_params'
 require_relative '../app/middleware/clear_cache_control'
+require_relative '../app/lib/trade_tariff_backend'
 
 require 'action_controller/railtie'
 require 'action_mailer/railtie'
@@ -65,7 +66,7 @@ module TradeTariffBackend
     # Tells Rails to serve error pages from the app itself, rather than using static error pages in public/
     config.exceptions_app = routes
 
-    config.sequel.allow_missing_migration_files = ENV['ALLOW_MISSING_MIGRATION_FILES'].to_s == 'true'
+    config.sequel.allow_missing_migration_files = TradeTariffBackend.allow_missing_migration_files
 
     config.middleware.use ::HandleGoodsNomenclature
     config.middleware.use ::HandleApiGatewayParams

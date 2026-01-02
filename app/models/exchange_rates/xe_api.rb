@@ -17,7 +17,10 @@ module ExchangeRates
 
     def self.client
       @client ||= Faraday.new(TradeTariffBackend.xe_api_url) do |conn|
-        conn.set_basic_auth(TradeTariffBackend.xe_api_username, TradeTariffBackend.xe_api_password)
+        conn.set_basic_auth(
+          TradeTariffBackend.xe_api_username,
+          TradeTariffBackend.xe_api_password,
+        )
       end
     end
 

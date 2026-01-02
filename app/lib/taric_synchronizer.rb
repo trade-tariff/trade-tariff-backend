@@ -5,16 +5,16 @@ class TaricSynchronizer
   #   - does not raise an exception when record does not exist on TARIC UPDATE operation
   #   - creates new record when record does not exist on TARIC UPDATE operation
   cattr_accessor :ignore_presence_errors
-  self.ignore_presence_errors = (ENV['TARIFF_IGNORE_PRESENCE_ERRORS'].to_i == 1)
+  self.ignore_presence_errors = TradeTariffBackend.tariff_ignore_presence_errors
 
   cattr_accessor :username
-  self.username = ENV['TARIFF_SYNC_USERNAME']
+  self.username = TradeTariffBackend.tariff_sync_username
 
   cattr_accessor :password
-  self.password = ENV['TARIFF_SYNC_PASSWORD']
+  self.password = TradeTariffBackend.tariff_sync_password
 
   cattr_accessor :host
-  self.host = ENV['TARIFF_SYNC_HOST']
+  self.host = TradeTariffBackend.tariff_sync_host
 
   # Initial dump date + 1 day
   cattr_accessor :initial_update_date

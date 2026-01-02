@@ -44,6 +44,19 @@ data "aws_iam_policy_document" "task" {
   }
 
   statement {
+    effect = "Allow"
+    actions = [
+      "s3:ListBucket",
+      "s3:GetObject",
+    ]
+    # NOTE: READONLY access to production exchange rates for replication
+    resources = [
+      "arn:aws:s3:::trade-tariff-persistence-382373577178",
+      "arn:aws:s3:::trade-tariff-persistence-382373577178/data/exchange_rates/*",
+    ]
+  }
+
+  statement {
     effect  = "Allow"
     actions = ["s3:DeleteObject"]
     resources = [
