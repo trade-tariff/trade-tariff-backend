@@ -71,6 +71,10 @@ module TradeTariffBackend
       ENV.fetch('SERVICE', 'uk')
     end
 
+    def environment
+      ActiveSupport::StringInquirer.new(ENV.fetch('ENVIRONMENT', 'local'))
+    end
+
     def deployed_environment
       ENV.fetch('ENVIRONMENT', Rails.env)
     end
