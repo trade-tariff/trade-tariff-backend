@@ -2,7 +2,7 @@ require 'opensearch/version'
 
 module TradeTariffBackend
   MAX_LOCK_LIFETIME = 600_000
-  REVISION_FILE = Rails.root.join('REVISION').to_s.freeze
+  REVISION_FILE = 'REVISION'.freeze
 
   class << self
     SERVICE_CURRENCIES = {
@@ -14,19 +14,78 @@ module TradeTariffBackend
       yield self
     end
 
-    # URL used to specify the location of the search query parser application
-    def search_query_parser_url
-      ENV['TARIFF_QUERY_SEARCH_PARSER_URL']
+    def tariff_sync_username
+      ENV['TARIFF_SYNC_USERNAME']
     end
 
-    # Lock key used for DB locks to keep just one instance of synchronizer
-    # running in cluster environment
-    def db_lock_key
-      'tariff-lock'
+    def tariff_sync_password
+      ENV['TARIFF_SYNC_PASSWORD']
     end
 
-    def log_formatter
-      proc { |severity, time, _progname, msg| "#{time.strftime('%Y-%m-%dT%H:%M:%S.%L %z')} #{sprintf('%5s', severity)} #{msg}\n" }
+    def tariff_sync_host
+      ENV['TARIFF_SYNC_HOST']
+    end
+
+    def tariff_ignore_presence_errors
+      ENV.fetch('TARIFF_IGNORE_PRESENCE_ERRORS', '1') == '1'
+    end
+
+    def max_threads
+      ENV.fetch('MAX_THREADS', '6').to_i
+    end
+
+    def aws_region
+      ENV.fetch('AWS_REGION', 'eu-west-2')
+    end
+
+    def allow_missing_migration_files
+      ENV.fetch('ALLOW_MISSING_MIGRATION_FILES', 'true') == 'true'
+    end
+
+    def alcohol_coercian_starts_from
+      ENV.fetch('ALCOHOL_COERCIAN_STARTS_FROM', '2022-01-01')
+    end
+
+    def excise_alcohol_coercian_starts_from
+      @excise_alcohol_coercian_starts_from ||= Date.parse(
+        alcohol_coercian_starts_from,
+      )
+    end
+
+    def xe_api_url
+      ENV.fetch('XE_API_URL', 'https://xecdapi.xe.com')
+    end
+
+    def xe_api_username
+      ENV['XE_API_USERNAME']
+    end
+
+    def xe_api_password
+      ENV['XE_API_PASSWORD']
+    end
+
+    def slack_web_hook_url
+      ENV['SLACK_WEB_HOOK_URL']
+    end
+
+    def slack_channel
+      ENV.fetch('SLACK_CHANNEL', '#tariffs-etl')
+    end
+
+    def slack_username
+      ENV.fetch('SLACK_USERNAME', 'Trade Tariff Backend')
+    end
+
+    def slack_failures_enabled?
+      ENV.fetch('SLACK_FAILURES_ENABLED', 'false').to_s == 'true'
+    end
+
+    def slack_failures_channel
+      ENV.fetch('SLACK_FAILURES_CHANNEL', '#production-alerts')
+    end
+
+    def cognito_user_pool_id
+      ENV['COGNITO_USER_POOL_ID']
     end
 
     # Email of the user who receives all info/error notifications
@@ -87,7 +146,7 @@ module TradeTariffBackend
       Rails.root.join('db/data_migrations')
     end
 
-    def with_redis_lock(lock_name = db_lock_key, &block)
+    def with_redis_lock(lock_name = 'tariff-lock', &block)
       lock = Redlock::Client.new([RedisLockDb.redis])
       lock.lock!(lock_name, MAX_LOCK_LIFETIME, &block)
     end
@@ -165,10 +224,6 @@ module TradeTariffBackend
       Rails.root.join('db/stop_words.yml')
     end
 
-    def handle_missing_soft_deletes?
-      ENV['SOFT_DELETES_MISSING'].to_s == 'true'
-    end
-
     def frontend_host
       ENV['FRONTEND_HOST']
     end
@@ -190,18 +245,6 @@ module TradeTariffBackend
 
     def opensearch_host
       ENV.fetch('ELASTICSEARCH_URL', 'http://host.docker.internal:9200')
-    end
-
-    def xe_api_url
-      ENV['XE_API_URL']
-    end
-
-    def xe_api_username
-      ENV['XE_API_USERNAME']
-    end
-
-    def xe_api_password
-      ENV['XE_API_PASSWORD']
     end
 
     def differences_report_to_emails
@@ -240,15 +283,6 @@ module TradeTariffBackend
       ENV.fetch('GREEN_LANES_NOTIFY_MEASURE_UPDATES', 'false') == 'true'
     end
 
-    def excise_alcohol_coercian_starts_from
-      @excise_alcohol_coercian_starts_from ||= Date.parse(
-        ENV.fetch(
-          'ALCOHOL_COERCIAN_STARTS_FROM',
-          '2023-08-01',
-        ),
-      )
-    end
-
     def revision
       @revision ||= begin
         File.read(REVISION_FILE).chomp if File.file?(REVISION_FILE)
@@ -267,11 +301,7 @@ module TradeTariffBackend
     end
 
     def optimised_search_enabled?
-      ENV['OPTIMISED_SEARCH_ENABLED'].to_s == 'true'
-    end
-
-    def disable_admin_api_authentication?
-      ENV.fetch('DISABLE_ADMIN_API_AUTHENTICATION', 'false').to_s == 'true'
+      ENV.fetch('OPTIMISED_SEARCH_ENABLED', 'false') == 'true'
     end
 
     def implicit_deletion_cutoff
@@ -280,10 +310,6 @@ module TradeTariffBackend
 
     def cds_importer_batch_size
       ENV.fetch('CDS_IMPORT_BATCH_SIZE', '100').to_i
-    end
-
-    def cds_importer_write_update_excel
-      ENV.fetch('CDS_IMPORT_WRITE_UPDATE_EXCEL', 'false').to_s == 'true'
     end
 
     def cupid_team_to_emails
@@ -303,19 +329,11 @@ module TradeTariffBackend
     end
 
     def myott?
-      ENV['MYOTT_ENABLED'].to_s == 'true'
+      ENV.fetch('MYOTT_ENABLED', 'true') == 'true'
     end
 
     def myott_report_email
       ENV['MYOTT_REPORT_EMAIL']
-    end
-
-    def slack_failures_enabled?
-      ENV.fetch('SLACK_FAILURES_ENABLED', 'false').to_s == 'true'
-    end
-
-    def slack_failures_channel
-      ENV.fetch('SLACK_FAILURES_CHANNEL', '#production-alerts')
     end
   end
 end

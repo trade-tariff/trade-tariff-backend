@@ -63,7 +63,7 @@ Rails.application.configure do
                        TradeTariffBackend.redis_config.merge({
                          expires_in: 1.day,
                          namespace: "rails-cache-#{ENV['SERVICE'].presence || 'uk'}",
-                         pool: { size: Integer(ENV['MAX_THREADS'] || 5) },
+                         pool: { size: TradeTariffBackend.max_threads },
                        })
 
   # Prepend all log lines with the following tags.
