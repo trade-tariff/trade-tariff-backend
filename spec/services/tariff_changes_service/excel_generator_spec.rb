@@ -122,8 +122,8 @@ RSpec.describe TariffChangesService::ExcelGenerator do
 
       it 'sets the header row correctly' do
         header_row = worksheet.rows[4]
-        expect(header_row.cells[0].value).to eq("Import/Export\n(if applicable)")
-        expect(header_row.height).to eq(60)
+        expect(header_row.cells[0].value).to eq('Import/Export (if applicable)')
+        expect(header_row.height).to eq(40)
       end
     end
 
@@ -131,22 +131,6 @@ RSpec.describe TariffChangesService::ExcelGenerator do
       it 'merges the pre-header cells correctly' do
         merged_cells = worksheet.instance_variable_get(:@merged_cells)
         expect(merged_cells).to include('A4:D4', 'E4:G4', 'H4:J4', 'K4:L4')
-      end
-    end
-
-    describe 'auto filter' do
-      it 'sets auto filter on header row' do
-        expect(worksheet.auto_filter.range).to eq('A5:J5')
-      end
-    end
-
-    describe 'frozen panes' do
-      let(:pane) { worksheet.sheet_view.pane }
-
-      it 'freezes the header rows' do
-        expect(pane.top_left_cell).to eq('A6')
-        expect(pane.state).to eq('frozen')
-        expect(pane.y_split).to eq(5)
       end
     end
 
@@ -163,12 +147,6 @@ RSpec.describe TariffChangesService::ExcelGenerator do
         expect(first_data_row.cells[7].value).to eq('Added')
       end
 
-      it 'applies alternating row styles' do
-        first_row_styles = worksheet.rows[5].cells.map(&:style)
-        second_row_styles = worksheet.rows[6].cells.map(&:style)
-        expect(first_row_styles).not_to eq(second_row_styles)
-      end
-
       it 'adds hyperlinks for OTT and API columns' do
         hyperlinks = worksheet.hyperlinks
 
@@ -180,6 +158,24 @@ RSpec.describe TariffChangesService::ExcelGenerator do
         )
 
         expect(hyperlinks.map(&:ref)).to include('K6', 'L6', 'K7', 'L7')
+      end
+    end
+
+    describe 'table styling' do
+      it 'creates a styled table over the data range' do
+        table = worksheet.tables.first
+
+        expect(table).not_to be_nil
+        style_name = if table.respond_to?(:table_style_info)
+                       table.table_style_info&.name
+                     elsif table.respond_to?(:style)
+                       table.style
+                     end
+
+        style_name ||= table.to_xml_string
+
+        expect(style_name).to include('TableStyleMedium2')
+        expect(table.ref).to eq('A5:L7')
       end
     end
 
@@ -196,10 +192,10 @@ RSpec.describe TariffChangesService::ExcelGenerator do
 
     it 'returns the correct header array' do
       expected_headers = [
-        "Import/Export\n(if applicable)",
-        "Impacted Geographical area\n(if applicable)",
-        "Impacted Measure\n(if applicable)",
-        "Additional Code\n(if applicable)",
+        'Import/Export (if applicable)',
+        'Impacted Geographical area (if applicable)',
+        'Impacted Measure (if applicable)',
+        'Additional Code (if applicable)',
         'Chapter',
         'Commodity Code',
         'Commodity Code description',
@@ -214,14 +210,6 @@ RSpec.describe TariffChangesService::ExcelGenerator do
 
     it 'has 12 columns' do
       expect(generator.send(:excel_header_row).size).to eq(12)
-    end
-  end
-
-  describe '#excel_autofilter_range' do
-    let(:generator) { described_class.new(change_records, date) }
-
-    it 'returns the correct range for auto filter' do
-      expect(generator.send(:excel_autofilter_range)).to eq('A5:J5')
     end
   end
 
@@ -257,19 +245,11 @@ RSpec.describe TariffChangesService::ExcelGenerator do
         expect(styles[:text]).to be_a(Integer)
       end
     end
-
-    context 'with background color' do
-      let(:styles) { generator.send(:cell_styles, 'F8F9FA') }
-
-      it 'applies background color to styles' do
-        expect(styles).to be_a(Hash)
-      end
-    end
   end
 
   describe '#build_row_styles' do
     let(:generator) { described_class.new(change_records, date) }
-    let(:styles) { generator.send(:build_row_styles, is_even_row: true) }
+    let(:styles) { generator.send(:build_row_styles) }
 
     before do
       generator.instance_variable_set(:@workbook, Axlsx::Package.new.workbook)
