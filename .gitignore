@@ -60,12 +60,14 @@ searches_without_match_or_synonym.csv
 
 category_assessments_*.json
 category_assessments_*.zip
-tariff_data_basic_*.csv
 commodities_*.csv
 declarable_commodities_with_duty_measures_*.xlsx
 declarable_commodities_with_prohibition_measures_*.xlsx
-supplementary_units_*.csv
-geographical_area_groups_*.xlsx
+delta_report_*.xlsx
 differences.xlsx
 differences_*.xlsx
-delta_report_*.xlsx
+geographical_area_groups_*.xlsx
+supplementary_units_*.csv
+tariff_data_basic_*.csv
+
+.claude/
