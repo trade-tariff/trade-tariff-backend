@@ -2,7 +2,7 @@ RSpec.describe MyCommoditiesEmailWorker, type: :worker do
   subject(:worker) { described_class.new }
 
   let(:user) { create(:public_user, :with_my_commodities_subscription) }
-  let(:date) { Date.new(2025, 12, 8) }
+  let(:date) { '08/12/2025' }
   let(:count) { 5 }
   let(:mock_notifier) { instance_double(GovukNotifier) }
 
@@ -24,7 +24,7 @@ RSpec.describe MyCommoditiesEmailWorker, type: :worker do
           {
             changes_count: count,
             published_date: date,
-            site_url: "#{TradeTariffBackend.frontend_host}/subscriptions/mycommodities",
+            site_url: "#{TradeTariffBackend.frontend_host}/subscriptions/mycommodities?as_of=2025-12-08",
             unsubscribe_url: URI.join(TradeTariffBackend.frontend_host, 'subscriptions/unsubscribe/', user.my_commodities_subscription).to_s,
           },
           described_class::REPLY_TO_ID,
@@ -98,7 +98,7 @@ RSpec.describe MyCommoditiesEmailWorker, type: :worker do
     end
 
     context 'with different dates' do
-      let(:date) { Date.new(2024, 1, 15) }
+      let(:date) { '15/01/2024' }
 
       it 'formats the date correctly' do
         worker.perform(user.id, date, count)
