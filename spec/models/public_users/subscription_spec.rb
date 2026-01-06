@@ -10,35 +10,48 @@ RSpec.describe PublicUsers::Subscription do
   end
 
   describe '#unsubscribe' do
-    let(:subscription) { create(:user_subscription) }
     let(:user) { subscription.user }
 
-    before do
-      allow(PublicUsers::ActionLog).to receive(:create)
-      allow(user).to receive(:soft_delete!)
-    end
-
-    it 'deactivates the subscription' do
-      expect { subscription.unsubscribe }.to change { subscription.reload.active }.from(true).to(false)
-    end
-
-    it 'logs the unsubscribe action' do
-      subscription.unsubscribe
-      expect(PublicUsers::ActionLog).to have_received(:create).with(user_id: user.id, action: PublicUsers::ActionLog::UNSUBSCRIBED)
-    end
-
-    it 'soft deletes the user' do
-      subscription.unsubscribe
-      expect(user).to have_received(:soft_delete!)
-    end
-
-    context 'when the subscription is already inactive' do
-      before { subscription.update(active: false) }
-
-      it 'does not log an unsubscribe action' do
-        subscription.unsubscribe
-        expect(PublicUsers::ActionLog).not_to have_received(:create).with(user_id: user.id, action: PublicUsers::ActionLog::UNSUBSCRIBED)
+    shared_examples 'unsubscribe behavior' do |_subscription_type_method, action_constant|
+      before do
+        allow(PublicUsers::ActionLog).to receive(:create)
+        allow(user).to receive(:soft_delete!)
       end
+
+      it 'deactivates the subscription' do
+        expect { subscription.unsubscribe }.to change { subscription.reload.active }.from(true).to(false)
+      end
+
+      it 'logs the unsubscribe action' do
+        subscription.unsubscribe
+        expect(PublicUsers::ActionLog).to have_received(:create).with(user_id: user.id, action: action_constant)
+      end
+
+      it 'soft deletes the user' do
+        subscription.unsubscribe
+        expect(user).to have_received(:soft_delete!)
+      end
+
+      context 'when the subscription is already inactive' do
+        before { subscription.update(active: false) }
+
+        it 'does not log an unsubscribe action' do
+          subscription.unsubscribe
+          expect(PublicUsers::ActionLog).not_to have_received(:create).with(user_id: user.id, action: action_constant)
+        end
+      end
+    end
+
+    context 'when the subscription is stop press' do
+      let(:subscription) { create(:user_subscription, subscription_type_id: Subscriptions::Type.stop_press.id) }
+
+      include_examples 'unsubscribe behavior', :stop_press, PublicUsers::ActionLog::UNSUBSCRIBED_STOP_PRESS
+    end
+
+    context 'when the subscription is my commodities' do
+      let(:subscription) { create(:user_subscription, subscription_type_id: Subscriptions::Type.my_commodities.id) }
+
+      include_examples 'unsubscribe behavior', :my_commodities, PublicUsers::ActionLog::UNSUBSCRIBED_MY_COMMODITIES
     end
   end
 

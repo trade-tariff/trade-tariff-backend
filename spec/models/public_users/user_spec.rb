@@ -100,7 +100,7 @@ RSpec.describe PublicUsers::User do
 
         it 'adds an action log for subscribed' do
           user.stop_press_subscription = true
-          expect(user.action_logs.last.action).to eq PublicUsers::ActionLog::SUBSCRIBED
+          expect(user.action_logs.last.action).to eq PublicUsers::ActionLog::SUBSCRIBED_STOP_PRESS
         end
       end
 
@@ -143,7 +143,7 @@ RSpec.describe PublicUsers::User do
 
         it 'adds an action log for subscribed' do
           user.my_commodities_subscription = true
-          expect(user.action_logs.last.action).to eq PublicUsers::ActionLog::SUBSCRIBED
+          expect(user.action_logs.last.action).to eq PublicUsers::ActionLog::SUBSCRIBED_MY_COMMODITIES
         end
       end
 
