@@ -67,6 +67,8 @@ RSpec.describe Api::V2::Measures::MeasureConditionComponentPresenter do
           :asvx,
           :with_duty_expression,
           measure_condition:,
+          duty_expression_id: '01',
+          monetary_unit_code: 'ZZZ',
           duty_amount: 100.0,
         )
       end
@@ -80,6 +82,8 @@ RSpec.describe Api::V2::Measures::MeasureConditionComponentPresenter do
           :measure_condition_component,
           :with_duty_expression,
           measure_condition:,
+          duty_expression_id: '01',
+          monetary_unit_code: 'ZZZ',
           duty_amount: 100.0,
         )
       end
@@ -114,6 +118,8 @@ RSpec.describe Api::V2::Measures::MeasureConditionComponentPresenter do
           :asvx,
           :with_duty_expression,
           measure_condition:,
+          duty_expression_id: '01',
+          monetary_unit_code: 'ZZZ',
           duty_amount: 100.0,
         )
       end
@@ -127,6 +133,8 @@ RSpec.describe Api::V2::Measures::MeasureConditionComponentPresenter do
           :measure_condition_component,
           :with_duty_expression,
           measure_condition:,
+          duty_expression_id: '01',
+          monetary_unit_code: 'ZZZ',
           duty_amount: 100.0,
         )
       end
@@ -161,6 +169,8 @@ RSpec.describe Api::V2::Measures::MeasureConditionComponentPresenter do
           :asvx,
           :with_duty_expression,
           measure_condition:,
+          duty_expression_id: '01',
+          monetary_unit_code: 'ZZZ',
           duty_amount: 100.0,
         )
       end
@@ -174,6 +184,8 @@ RSpec.describe Api::V2::Measures::MeasureConditionComponentPresenter do
           :measure_condition_component,
           :with_duty_expression,
           measure_condition:,
+          duty_expression_id: '01',
+          monetary_unit_code: 'ZZZ',
           duty_amount: 100.0,
         )
       end
