@@ -9,17 +9,12 @@ module Reporting
       child_description
     ].freeze
 
-    CELL_TYPES = Array.new(HEADER_ROW.size, :string).freeze
-
     COLUMN_WIDTHS = [
       20, # parent_id
       75, # parent_description
       20, # child_id
       75, # child_description
     ].freeze
-
-    AUTOFILTER_CELL_RANGE = 'A1:D1'.freeze
-    FROZEN_VIEW_STARTING_CELL = 'A2'.freeze
 
     class PresentedGroup < WrapDelegator
       def parent_id
@@ -69,7 +64,7 @@ module Reporting
 
         each_geographical_area_group_and_child do |group, child|
           row = build_row_for(group, child)
-          worksheet.append_row(row, types: CELL_TYPES)
+          worksheet.append_row(row)
         end
 
         workbook.close
