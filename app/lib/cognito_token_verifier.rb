@@ -1,5 +1,5 @@
 class CognitoTokenVerifier
-  ISSUER = "https://cognito-idp.#{ENV['AWS_REGION']}.amazonaws.com/#{ENV['COGNITO_USER_POOL_ID']}".freeze
+  ISSUER = "https://cognito-idp.#{TradeTariffBackend.aws_region}.amazonaws.com/#{TradeTariffBackend.cognito_user_pool_id}".freeze
   JWKS_URL = "#{ISSUER}/.well-known/jwks.json".freeze
 
   def self.verify_id_token(token)

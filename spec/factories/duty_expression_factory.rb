@@ -3,7 +3,7 @@ FactoryBot.define do
 
   factory :duty_expression do
     duty_expression_id  { generate(:duty_expression_description) }
-    validity_start_date { 3.years.ago.beginning_of_day }
+    validity_start_date { '2020-12-31'.to_date.beginning_of_day }
     validity_end_date   { nil }
 
     trait :with_description do

@@ -5,7 +5,7 @@ RSpec.describe Api::V2::Measures::MeasureConditionComponentPresenter do
     shared_examples 'a measure condition presented duty amount' do |coerced_amount, uncoerced_amount|
       context 'when the coercian date starts' do
         around do |example|
-          TimeMachine.at('2023-08-01') { example.run }
+          TimeMachine.at(TradeTariffBackend.excise_alcohol_coercian_starts_from) { example.run }
         end
 
         it { expect(presenter.duty_amount).to eq(coerced_amount) }
@@ -13,7 +13,7 @@ RSpec.describe Api::V2::Measures::MeasureConditionComponentPresenter do
 
       context 'when before the coercian date starts' do
         around do |example|
-          TimeMachine.at('2023-07-28') { example.run }
+          TimeMachine.at(TradeTariffBackend.excise_alcohol_coercian_starts_from - 1.day) { example.run }
         end
 
         it { expect(presenter.duty_amount).to eq(uncoerced_amount) }
@@ -43,7 +43,7 @@ RSpec.describe Api::V2::Measures::MeasureConditionComponentPresenter do
     shared_examples 'a presented formatted duty expression' do |coerced_amount, uncoerced_amount|
       context 'when the coercian date starts' do
         around do |example|
-          TimeMachine.at('2023-08-01') { example.run }
+          TimeMachine.at(TradeTariffBackend.excise_alcohol_coercian_starts_from) { example.run }
         end
 
         it { expect(presenter.formatted_duty_expression).to match(coerced_amount) }
@@ -51,7 +51,7 @@ RSpec.describe Api::V2::Measures::MeasureConditionComponentPresenter do
 
       context 'when before the coercian date starts' do
         around do |example|
-          TimeMachine.at('2023-07-28') { example.run }
+          TimeMachine.at(TradeTariffBackend.excise_alcohol_coercian_starts_from - 1.day) { example.run }
         end
 
         it { expect(presenter.formatted_duty_expression).to match(uncoerced_amount) }
@@ -90,7 +90,7 @@ RSpec.describe Api::V2::Measures::MeasureConditionComponentPresenter do
     shared_examples 'a presented verbose duty expression' do |coerced_amount, uncoerced_amount|
       context 'when the coercian date starts' do
         around do |example|
-          TimeMachine.at('2023-08-01') { example.run }
+          TimeMachine.at(TradeTariffBackend.excise_alcohol_coercian_starts_from) { example.run }
         end
 
         it { expect(presenter.verbose_duty_expression).to match(coerced_amount) }
@@ -98,7 +98,7 @@ RSpec.describe Api::V2::Measures::MeasureConditionComponentPresenter do
 
       context 'when before the coercian date starts' do
         around do |example|
-          TimeMachine.at('2023-07-28') { example.run }
+          TimeMachine.at(TradeTariffBackend.excise_alcohol_coercian_starts_from - 1.day) { example.run }
         end
 
         it { expect(presenter.verbose_duty_expression).to match(uncoerced_amount) }
@@ -137,7 +137,7 @@ RSpec.describe Api::V2::Measures::MeasureConditionComponentPresenter do
     shared_examples 'a presented duty expression string' do |coerced_amount, uncoerced_amount|
       context 'when the coercian date starts' do
         around do |example|
-          TimeMachine.at('2023-08-01') { example.run }
+          TimeMachine.at(TradeTariffBackend.excise_alcohol_coercian_starts_from) { example.run }
         end
 
         it { expect(presenter.duty_expression_str).to match(coerced_amount) }
@@ -145,7 +145,7 @@ RSpec.describe Api::V2::Measures::MeasureConditionComponentPresenter do
 
       context 'when before the coercian date starts' do
         around do |example|
-          TimeMachine.at('2023-07-28') { example.run }
+          TimeMachine.at(TradeTariffBackend.excise_alcohol_coercian_starts_from - 1.day) { example.run }
         end
 
         it { expect(presenter.duty_expression_str).to match(uncoerced_amount) }
