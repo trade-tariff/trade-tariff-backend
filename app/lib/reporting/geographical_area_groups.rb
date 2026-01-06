@@ -43,33 +43,40 @@ module Reporting
 
     class << self
       def generate
-        package = Axlsx::Package.new
-        package.use_shared_strings = true
-        workbook = package.workbook
-        bold_style = workbook.styles.add_style(b: true)
+        workbook = if Rails.env.development?
+                     FileUtils.rm(filename) if File.exist?(filename)
 
-        workbook.add_worksheet(name: Time.zone.today.iso8601) do |sheet|
-          sheet.add_row(HEADER_ROW, style: bold_style)
-          sheet.auto_filter = AUTOFILTER_CELL_RANGE
-          sheet.sheet_view.pane do |pane|
-            pane.top_left_cell = FROZEN_VIEW_STARTING_CELL
-            pane.state = :frozen
-            pane.y_split = 1
-          end
+                     FastExcel.open(
+                       filename,
+                       constant_memory: true,
+                     )
+                   else
+                     FastExcel.open(
+                       constant_memory: true,
+                     )
+                   end
+        bold_format = workbook.add_format(bold: true)
 
-          each_geographical_area_group_and_child do |group, child|
-            row = build_row_for(group, child)
-            sheet.add_row(row, types: CELL_TYPES)
-          end
+        worksheet = workbook.add_worksheet(Time.zone.today.iso8601)
 
-          sheet.column_widths(*COLUMN_WIDTHS)
+        COLUMN_WIDTHS.each_with_index do |width, index|
+          worksheet.set_column_width(index, width)
         end
 
-        package.serialize(File.basename(object_key)) if Rails.env.development?
+        worksheet.append_row(HEADER_ROW, bold_format)
+        worksheet.freeze_panes(1, 0)
+        worksheet.autofilter(0, 1, 1, 4)
+
+        each_geographical_area_group_and_child do |group, child|
+          row = build_row_for(group, child)
+          worksheet.append_row(row, types: CELL_TYPES)
+        end
+
+        workbook.close
 
         if Rails.env.production?
           object.put(
-            body: package.to_stream.read,
+            body: workbook.read_string,
             content_type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
           )
         end
@@ -112,6 +119,10 @@ module Reporting
 
       def object_key
         "#{service}/reporting/#{year}/#{month}/#{day}/geographical_area_groups_#{service}_#{now.strftime('%Y_%m_%d')}.xlsx"
+      end
+
+      def filename
+        File.basename(object_key)
       end
     end
   end
