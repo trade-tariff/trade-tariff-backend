@@ -4,6 +4,7 @@ class MyCommoditiesSubscriptionWorker
   def perform(date = Time.zone.yesterday.iso8601)
     @date = Date.parse(date)
     queue
+    TariffChangesJobStatus.for_date(@date).mark_emails_sent!
   end
 
   def queue
