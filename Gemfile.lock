@@ -82,8 +82,8 @@ GEM
       aws-sdk-sesv2 (~> 1, >= 1.34.0)
     aws-eventstream (1.4.0)
     aws-partitions (1.1200.0)
-    aws-sdk-cloudfront (1.136.0)
-      aws-sdk-core (~> 3, >= 3.239.1)
+    aws-sdk-cloudfront (1.137.0)
+      aws-sdk-core (~> 3, >= 3.241.0)
       aws-sigv4 (~> 1.5)
     aws-sdk-core (3.241.1)
       aws-eventstream (~> 1, >= 1.3.0)
@@ -128,7 +128,7 @@ GEM
       logger (~> 1.5)
     coderay (1.1.3)
     concurrent-ruby (1.3.6)
-    connection_pool (2.5.4)
+    connection_pool (3.0.2)
     crack (1.0.1)
       bigdecimal
       rexml
@@ -187,7 +187,7 @@ GEM
       rdoc (>= 4.0.0)
       reline (>= 0.4.2)
     jmespath (1.6.2)
-    json (2.16.0)
+    json (2.18.0)
     json_expressions (0.9.0)
     jsonapi-serializer (2.2.0)
       activesupport (>= 4.2)
@@ -236,7 +236,7 @@ GEM
       net-protocol
     newrelic_rpm (9.24.0)
     nio4r (2.7.4)
-    nokogiri (1.18.10)
+    nokogiri (1.19.0)
       mini_portile2 (~> 2.8.2)
       racc (~> 1.4)
     notifications-ruby-client (6.3.0)
@@ -433,12 +433,12 @@ GEM
       activemodel (>= 4.0.0)
       railties (>= 4.0.0)
       sequel (>= 3.28, < 6.0)
-    sidekiq (8.0.9)
-      connection_pool (>= 2.5.0)
-      json (>= 2.9.0)
-      logger (>= 1.6.2)
-      rack (>= 3.1.0)
-      redis-client (>= 0.23.2)
+    sidekiq (8.1.0)
+      connection_pool (>= 3.0.0)
+      json (>= 2.16.0)
+      logger (>= 1.7.0)
+      rack (>= 3.2.0)
+      redis-client (>= 0.26.0)
     sidekiq-scheduler (6.0.1)
       rufus-scheduler (~> 3.2)
       sidekiq (>= 7.3, < 9)
@@ -471,7 +471,7 @@ PLATFORMS
 DEPENDENCIES
   amazing_print
   aws-actionmailer-ses
-  aws-sdk-cloudfront (~> 1.136)
+  aws-sdk-cloudfront (~> 1.137)
   aws-sdk-rails
   aws-sdk-s3
   bootsnap
