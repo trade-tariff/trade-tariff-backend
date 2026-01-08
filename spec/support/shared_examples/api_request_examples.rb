@@ -24,3 +24,13 @@ RSpec.shared_examples 'a unauthorised response for invalid bearer token' do
   it { is_expected.to have_attributes message: 'Unauthorized' }
   it { expect(subject.body).to eq('{"message":"No bearer token was provided"}') }
 end
+
+RSpec.shared_examples 'a unauthorised public user response for invalid bearer token' do
+  it { is_expected.to have_http_status :unauthorized }
+  it { is_expected.to have_attributes message: 'Unauthorized' }
+
+  it 'returns JSON:API error response' do
+    subject
+    expect(response.parsed_body).to eq({ 'errors' => [{ 'code' => 'missing_token', 'detail' => 'No bearer token was provided' }] })
+  end
+end

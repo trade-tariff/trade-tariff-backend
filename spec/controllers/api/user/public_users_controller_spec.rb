@@ -18,7 +18,7 @@ RSpec.describe Api::User::PublicUsersController do
         allow(CognitoTokenVerifier).to receive(:verify_id_token).and_return(verify_result)
       end
 
-      it_behaves_like 'a unauthorised response for invalid bearer token'
+      it_behaves_like 'a unauthorised public user response for invalid bearer token'
     end
 
     describe 'when token is for existing user' do
@@ -131,7 +131,7 @@ RSpec.describe Api::User::PublicUsersController do
         allow(CognitoTokenVerifier).to receive(:verify_id_token).and_return(verify_result)
       end
 
-      it_behaves_like 'a unauthorised response for invalid bearer token'
+      it_behaves_like 'a unauthorised public user response for invalid bearer token'
     end
 
     context 'when chapter_ids are being updated' do
