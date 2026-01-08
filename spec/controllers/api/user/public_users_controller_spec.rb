@@ -5,7 +5,6 @@ RSpec.describe Api::User::PublicUsersController do
 
   before do
     request.headers['Authorization'] = "Bearer #{token}"
-    allow(CognitoTokenVerifier).to receive(:verify_id_token).and_return(token)
   end
 
   describe 'GET #show' do
@@ -13,6 +12,11 @@ RSpec.describe Api::User::PublicUsersController do
 
     context 'when token is invalid' do
       let(:token) { nil }
+      let(:verify_result) { CognitoTokenVerifier::Result.new(valid: false, payload: nil, reason: :missing_token) }
+
+      before do
+        allow(CognitoTokenVerifier).to receive(:verify_id_token).and_return(verify_result)
+      end
 
       it_behaves_like 'a unauthorised response for invalid bearer token'
     end
@@ -25,6 +29,12 @@ RSpec.describe Api::User::PublicUsersController do
           'sub' => user.external_id,
           'email' => 'alice@example.com',
         }
+      end
+
+      let(:verify_result) { CognitoTokenVerifier::Result.new(valid: true, payload: token, reason: nil) }
+
+      before do
+        allow(CognitoTokenVerifier).to receive(:verify_id_token).and_return(verify_result)
       end
 
       it 'does not create a user' do
@@ -42,6 +52,12 @@ RSpec.describe Api::User::PublicUsersController do
           'sub' => '0d6ed044-ab69-43ef-b69a-be84da6eabfc',
           'email' => 'alice@example.com',
         }
+      end
+
+      let(:verify_result) { CognitoTokenVerifier::Result.new(valid: true, payload: token, reason: nil) }
+
+      before do
+        allow(CognitoTokenVerifier).to receive(:verify_id_token).and_return(verify_result)
       end
 
       it 'creates a user' do
@@ -62,6 +78,12 @@ RSpec.describe Api::User::PublicUsersController do
         }
       end
 
+      let(:verify_result) { CognitoTokenVerifier::Result.new(valid: true, payload: token, reason: nil) }
+
+      before do
+        allow(CognitoTokenVerifier).to receive(:verify_id_token).and_return(verify_result)
+      end
+
       it 'creates a user' do
         expect {
           get :show
@@ -73,10 +95,11 @@ RSpec.describe Api::User::PublicUsersController do
 
     context 'when in development environment without valid token' do
       let(:token) { nil }
+      let(:verify_result) { CognitoTokenVerifier::Result.new(valid: false, payload: nil, reason: :missing_token) }
 
       before do
         allow(Rails).to receive(:env).and_return(ActiveSupport::StringInquirer.new('development'))
-        allow(CognitoTokenVerifier).to receive(:verify_id_token).and_return(nil)
+        allow(CognitoTokenVerifier).to receive(:verify_id_token).and_return(verify_result)
         allow(IdentityApiClient).to receive(:get_email).and_return('dummy@user.com')
       end
 
@@ -102,6 +125,11 @@ RSpec.describe Api::User::PublicUsersController do
     context 'when token is invalid' do
       let(:token) { nil }
       let(:make_request) { patch :update, params: { data: { attributes: { chapter_ids: '12,13,14' } } } }
+      let(:verify_result) { CognitoTokenVerifier::Result.new(valid: false, payload: nil, reason: :missing_token) }
+
+      before do
+        allow(CognitoTokenVerifier).to receive(:verify_id_token).and_return(verify_result)
+      end
 
       it_behaves_like 'a unauthorised response for invalid bearer token'
     end
@@ -115,6 +143,12 @@ RSpec.describe Api::User::PublicUsersController do
           'sub' => user.external_id,
           'email' => 'alice@example.com',
         }
+      end
+
+      let(:verify_result) { CognitoTokenVerifier::Result.new(valid: true, payload: token, reason: nil) }
+
+      before do
+        allow(CognitoTokenVerifier).to receive(:verify_id_token).and_return(verify_result)
       end
 
       it 'updates the chapter_ids' do
