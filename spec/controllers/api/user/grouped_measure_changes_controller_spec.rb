@@ -67,7 +67,7 @@ RSpec.describe Api::User::GroupedMeasureChangesController do
       end
 
       it 'returns proper error message' do
-        expect(response.parsed_body).to eq({ 'message' => 'No bearer token was provided' })
+        expect(response.parsed_body).to eq({ 'errors' => [{ 'code' => 'missing_token', 'detail' => 'No bearer token was provided' }] })
       end
     end
 
@@ -82,7 +82,7 @@ RSpec.describe Api::User::GroupedMeasureChangesController do
       end
 
       it 'returns proper error message' do
-        expect(response.parsed_body).to eq({ 'message' => 'No bearer token was provided' })
+        expect(response.parsed_body).to eq({ 'errors' => [{ 'code' => 'missing_token', 'detail' => 'No bearer token was provided' }] })
       end
     end
 
@@ -205,7 +205,7 @@ RSpec.describe Api::User::GroupedMeasureChangesController do
       end
 
       it 'returns proper error message' do
-        expect(response.parsed_body).to eq({ 'message' => 'No bearer token was provided' })
+        expect(response.parsed_body).to eq({ 'errors' => [{ 'code' => 'missing_token', 'detail' => 'No bearer token was provided' }] })
       end
     end
 
