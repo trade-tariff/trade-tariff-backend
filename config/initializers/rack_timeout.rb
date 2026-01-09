@@ -17,3 +17,7 @@ ENV['RACK_TIMEOUT_SERVICE_TIMEOUT'] ||= '50'
 # - RACK_TIMEOUT_WAIT_OVERTIME: Additional wait time for requests with a body (POST, PUT, etc.) (default: 60)
 # - RACK_TIMEOUT_SERVICE_PAST_WAIT: Whether to use full service_timeout even after wait_timeout (default: false)
 # - RACK_TIMEOUT_TERM_ON_TIMEOUT: Send SIGTERM when timeout occurs (default: 0/false)
+
+# Disable verbose logging - only log when timeouts actually occur
+# Timeout exceptions will still be raised and logged by Rails as 503 errors
+Rack::Timeout::Logger.disable if Rails.env.production?
