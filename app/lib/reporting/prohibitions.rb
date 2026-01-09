@@ -11,7 +11,7 @@ module Reporting
         measure_components: [
           { duty_expression: :duty_expression_description },
           { measurement_unit: %i[measurement_unit_description measurement_unit_abbreviations] },
-          :monetary_unit,
+          { monetary_unit: :monetary_unit_description },
           :measurement_unit_qualifier,
         ],
       },
@@ -64,8 +64,6 @@ module Reporting
       measure__regulation__url
     ].freeze
 
-    CELL_TYPES = Array.new(HEADER_ROW.size, :string).freeze
-
     COLUMN_WIDTHS = [
       20,  # trackedmodel_ptr_id
       20,  # commodity__sid
@@ -94,38 +92,37 @@ module Reporting
       30,  # measure__regulation__url
     ].freeze
 
-    AUTOFILTER_CELL_RANGE = 'A1:Y1'.freeze
-    FROZEN_VIEW_STARTING_CELL = 'A2'.freeze # A1 breaks opening the file in Excel
-
     class << self
       def generate
-        package = Axlsx::Package.new
-        package.use_shared_strings = true
-        workbook = package.workbook
-        bold_style = workbook.styles.add_style(b: true)
+        workbook = if Rails.env.development?
+                     FileUtils.rm(filename) if File.exist?(filename)
+                     FastExcel.open(filename, constant_memory: true)
+                   else
+                     FastExcel.open(constant_memory: true)
+                   end
 
-        workbook.add_worksheet(name: Time.zone.today.iso8601) do |sheet|
-          sheet.add_row(HEADER_ROW, style: bold_style)
-          sheet.auto_filter = AUTOFILTER_CELL_RANGE
-          sheet.sheet_view.pane do |pane|
-            pane.top_left_cell = FROZEN_VIEW_STARTING_CELL
-            pane.state = :frozen
-            pane.y_split = 1
-          end
+        bold_format = workbook.add_format(bold: true)
 
-          each_declarable_and_measure do |declarable, measure|
-            row = build_row_for(declarable, measure)
-            sheet.add_row(row, types: CELL_TYPES)
-          end
+        worksheet = workbook.add_worksheet(Time.zone.today.iso8601)
 
-          sheet.column_widths(*COLUMN_WIDTHS) # Set this after the rows have been added, otherwise it won't work
+        COLUMN_WIDTHS.each_with_index do |width, index|
+          worksheet.set_column_width(index, width)
         end
 
-        package.serialize(File.basename(object_key)) if Rails.env.development?
+        worksheet.append_row(HEADER_ROW, bold_format)
+        worksheet.freeze_panes(1, 0)
+        worksheet.autofilter(0, 1, 1, 25)
+
+        each_declarable_and_measure do |declarable, measure|
+          row = build_row_for(declarable, measure)
+          worksheet.append_row(row)
+        end
+
+        workbook.close
 
         if Rails.env.production?
           object.put(
-            body: package.to_stream.read,
+            body: workbook.read_string,
             content_type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
           )
         end
@@ -149,14 +146,12 @@ module Reporting
         index = 1
         TimeMachine.now do
           each_declarable do |declarable|
-            measures = declarable.applicable_measures.select do |measure|
-              measure.measure_type&.measure_type_series_id&.in?(RELEVANT_MEASURE_TYPE_SERIES_IDS)
-            end
-
-            measures = DeclarableDuties::PresentedMeasure.wrap(measures)
+            measures = DeclarableDuties::PresentedMeasure.wrap(declarable.applicable_measures)
             measures = measures.sort
 
             measures.each do |measure|
+              next unless measure.measure_type.measure_type_series_id.in?(RELEVANT_MEASURE_TYPE_SERIES_IDS)
+
               measure.trackedmodel_ptr_id = index
 
               yield declarable, measure
@@ -195,6 +190,10 @@ module Reporting
 
       def object_key
         "#{service}/reporting/#{year}/#{month}/#{day}/declarable_commodities_with_prohibition_measures_#{service}_#{now.strftime('%Y_%m_%d')}.xlsx"
+      end
+
+      def filename
+        File.basename(object_key)
       end
     end
   end
