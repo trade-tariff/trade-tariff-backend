@@ -1,7 +1,7 @@
 module Reporting
-  # Generates a report which highlights anomolies in the uk Tariff data and
-  # also relies on source date about supplementary units and commodities to compare
-  # the uk and xi data.
+  # Generates a report which highlights anomalies in the UK Tariff data and also
+  # relies on source date about supplementary units and commodities to compare
+  # the UK and XI data.
   class Differences
     MEASURE_EAGER = [
       {
@@ -80,41 +80,40 @@ module Reporting
                 :as_of
 
     def initialize
-      @package = Axlsx::Package.new
-      Axlsx.escape_formulas = false
-      @package.use_shared_strings = true
-      @workbook = package.workbook
-      @bold_style = workbook.styles.add_style(
-        b: true,
+      @workbook = if Rails.env.development?
+                    FileUtils.rm(filename) if File.exist?(filename)
+                    FastExcel.open(filename, constant_memory: true)
+                  else
+                    FastExcel.open(constant_memory: true)
+                  end
+
+      @bold_style = workbook.add_format(
+        bold: true,
         font_name: 'Calibri',
-        sz: 11,
+        font_size: 11,
       )
-      @regular_style = workbook.styles.add_style(
-        alignment: {
-          wrap_text: true,
-          horizontal: :left,
-          vertical: :top,
-        },
+
+      @regular_style = workbook.add_format(
+        align: { h: :left, v: :top },
         font_name: 'Calibri',
-        sz: 11,
+        font_size: 11,
+        text_wrap: true,
       )
-      @centered_style = workbook.styles.add_style(
-        alignment: {
-          horizontal: :center,
-          wrap_text: true,
-        },
+
+      @centered_style = workbook.add_format(
+        align: { h: :center },
         font_name: 'Calibri',
-        sz: 11,
+        font_size: 11,
+        text_wrap: true,
       )
-      @print_style = workbook.styles.add_style(
-        alignment: {
-          wrap_text: true,
-          horizontal: :left,
-          vertical: :top,
-        },
+
+      @print_style = workbook.add_format(
+        align: { h: :left, v: :top },
         font_name: 'Courier New',
-        sz: 11,
+        font_size: 11,
+        text_wrap: true,
       )
+
       @as_of = Time.zone.today.iso8601
     end
 
@@ -342,12 +341,12 @@ module Reporting
         return if TradeTariffBackend.xi?
 
         report = new
-        package = report.generate(only:)
-        package.serialize('differences.xlsx') if Rails.env.development?
+        workbook = report.generate(only:)
+        workbook.close
 
         if Rails.env.production?
           object.put(
-            body: package.to_stream.read,
+            body: workbook.read_string,
             content_type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
           )
         end
@@ -361,6 +360,10 @@ module Reporting
 
       def object_key
         "#{service}/reporting/#{year}/#{month}/#{day}/differences_#{now.strftime('%Y-%m-%d')}.xlsx"
+      end
+
+      def filename
+        File.basename(object_key)
       end
     end
   end

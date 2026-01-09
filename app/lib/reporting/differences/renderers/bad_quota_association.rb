@@ -26,11 +26,7 @@ module Reporting
 
         TAB_COLOR = 'cccc00'.freeze
 
-        CELL_TYPES = Array.new(HEADER_ROW.size, :string).freeze
-
         COLUMN_WIDTHS = [20] * HEADER_ROW.size
-
-        FROZEN_VIEW_STARTING_CELL = 'A2'.freeze
 
         def initialize(report)
           @report = report
@@ -40,19 +36,17 @@ module Reporting
 
         def add_worksheet(rows)
           workbook.add_worksheet(name:) do |sheet|
-            sheet.sheet_pr.tab_color = TAB_COLOR
-            sheet.add_row(HEADER_ROW, style: bold_style)
-            sheet.sheet_view.pane do |pane|
-              pane.top_left_cell = FROZEN_VIEW_STARTING_CELL
-              pane.state = :frozen
-              pane.y_split = 1
-            end
+            sheet.set_tab_color = TAB_COLOR
+            sheet.append_row(HEADER_ROW, bold_style)
+            sheet.freeze_panes(1, 0)
 
             (rows || []).compact.each do |row|
-              sheet.add_row(row, types: CELL_TYPES, style: regular_style)
+              sheet.append_row(row, format: regular_style)
             end
 
-            sheet.column_widths(*COLUMN_WIDTHS)
+            COLUMN_WIDTHS.each_with_index do |width, index|
+              sheet.set_column_width(index, width)
+            end
           end
         end
 
