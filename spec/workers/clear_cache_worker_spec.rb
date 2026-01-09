@@ -3,6 +3,7 @@ RSpec.describe ClearCacheWorker, type: :worker do
 
   before do
     allow(Rails.cache).to receive(:clear)
+    allow(TradeTariffBackend.frontend_redis).to receive(:flushdb)
     allow(Sidekiq::Client).to receive(:enqueue)
     allow(Sidekiq::Client).to receive(:enqueue_in)
 
@@ -12,6 +13,7 @@ RSpec.describe ClearCacheWorker, type: :worker do
   end
 
   it { expect(Rails.cache).to have_received(:clear) }
+  it { expect(TradeTariffBackend.frontend_redis).to have_received(:flushdb) }
   it { expect(Sidekiq::Client).to have_received(:enqueue).with(PrecacheHeadingsWorker, Time.zone.today.to_s) }
   it { expect(Sidekiq::Client).to have_received(:enqueue).with(PrewarmQuotaOrderNumbersWorker) }
   it { expect(Sidekiq::Client).to have_received(:enqueue).with(ReindexModelsWorker) }

@@ -11,6 +11,8 @@ require 'rspec/rails'
 require 'json_expressions/rspec'
 require 'sidekiq/testing'
 
+require_relative '../app/helpers/materialize_view_helper'
+
 Rails.application.load_tasks
 
 Dir[Rails.root.join('spec/support/**/*.rb')].sort.each { |f| require f }
@@ -51,7 +53,7 @@ RSpec.configure do |config|
     # Materialized Views need populating after a schema load before concurrent
     # refresh can be used. Doing a blocking refresh to ensure the View is in a
     # usable state. This is very fast since there is no data
-    refresh_materialized_view
+    MaterializeViewHelper.refresh_materialized_view
 
     TradeTariffBackend.redis.flushdb
 
@@ -97,20 +99,10 @@ def silence
   @original_stdout = nil
 end
 
-def refresh_materialized_view(concurrently: false)
-  Sequel::Plugins::Oplog.models.each do |model|
-    if model.materialized?
-      model.refresh!(concurrently:)
-    end
-  end
-
-  GoodsNomenclatures::TreeNode.refresh!(concurrently:)
-end
-
 # rubocop:disable RSpec/NoExpectationExample
 def it_with_refresh_materialized_view(description, &block)
   it(description) do
-    refresh_materialized_view
+    MaterializeViewHelper.refresh_materialized_view
     instance_exec(&block)
   end
 end
