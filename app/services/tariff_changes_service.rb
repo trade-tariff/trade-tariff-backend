@@ -67,6 +67,8 @@ class TariffChangesService
       tariff_change_records.each do |record|
         TariffChange.create(record)
       end
+
+      TariffChangesJobStatus.for_date(date).mark_changes_generated!
     end
 
     {

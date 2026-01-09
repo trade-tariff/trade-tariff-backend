@@ -9,7 +9,10 @@ class PopulateChangesTableWorker
 
     if TradeTariffBackend.uk?
       TariffChangesService.generate
-      MyCommoditiesSubscriptionWorker.perform_async
+
+      TariffChangesJobStatus.pending_emails.each do |date|
+        MyCommoditiesSubscriptionWorker.perform_async(date.to_s)
+      end
 
       date = Time.zone.yesterday
       package = TariffChangesService.generate_report_for(date)

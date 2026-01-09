@@ -2,6 +2,7 @@ RSpec.describe MyCommoditiesSubscriptionWorker, type: :worker do
   subject(:instance) { described_class.new }
 
   let(:date) { '2025-12-08' }
+  let(:status) { instance_double(TariffChangesJobStatus, mark_emails_sent!: true) }
 
   describe '#perform' do
     context 'when users have tariff changes on the date' do
@@ -9,6 +10,7 @@ RSpec.describe MyCommoditiesSubscriptionWorker, type: :worker do
       let(:user2) { create(:public_user, :with_my_commodities_subscription) }
 
       before do
+        allow(TariffChangesJobStatus).to receive(:for_date).and_return(status)
         # Create subscription targets for user1
         subscription1 = PublicUsers::Subscription.where(user_id: user1.id, subscription_type_id: Subscriptions::Type.my_commodities.id).first
         create(:subscription_target, user_subscriptions_uuid: subscription1.uuid, target_id: '1000')
@@ -31,6 +33,7 @@ RSpec.describe MyCommoditiesSubscriptionWorker, type: :worker do
 
         expect(MyCommoditiesEmailWorker).to have_received(:perform_async).with(user1.id, '08/12/2025', 2)
         expect(MyCommoditiesEmailWorker).to have_received(:perform_async).with(user2.id, '08/12/2025', 1)
+        expect(status).to have_received(:mark_emails_sent!)
       end
     end
 
@@ -38,6 +41,7 @@ RSpec.describe MyCommoditiesSubscriptionWorker, type: :worker do
       let(:user) { create(:public_user, :with_my_commodities_subscription) }
 
       before do
+        allow(TariffChangesJobStatus).to receive(:for_date).and_return(status)
         user
         create(:tariff_change, operation_date: date, goods_nomenclature_sid: 1000)
         allow(MyCommoditiesEmailWorker).to receive(:perform_async)
@@ -47,6 +51,7 @@ RSpec.describe MyCommoditiesSubscriptionWorker, type: :worker do
         instance.perform(date)
 
         expect(MyCommoditiesEmailWorker).not_to have_received(:perform_async)
+        expect(status).to have_received(:mark_emails_sent!)
       end
     end
 
@@ -54,6 +59,7 @@ RSpec.describe MyCommoditiesSubscriptionWorker, type: :worker do
       let(:user) { create(:public_user, :with_my_commodities_subscription) }
 
       before do
+        allow(TariffChangesJobStatus).to receive(:for_date).and_return(status)
         subscription = PublicUsers::Subscription.where(user_id: user.id, subscription_type_id: Subscriptions::Type.my_commodities.id).first
         create(:subscription_target, user_subscriptions_uuid: subscription.uuid, target_id: '1000')
         allow(MyCommoditiesEmailWorker).to receive(:perform_async)
@@ -63,6 +69,7 @@ RSpec.describe MyCommoditiesSubscriptionWorker, type: :worker do
         instance.perform(date)
 
         expect(MyCommoditiesEmailWorker).not_to have_received(:perform_async)
+        expect(status).to have_received(:mark_emails_sent!)
       end
     end
 
@@ -70,6 +77,7 @@ RSpec.describe MyCommoditiesSubscriptionWorker, type: :worker do
       let(:user) { create(:public_user, :with_my_commodities_subscription) }
 
       before do
+        allow(TariffChangesJobStatus).to receive(:for_date).and_return(status)
         subscription = PublicUsers::Subscription.where(user_id: user.id, subscription_type_id: Subscriptions::Type.my_commodities.id).first
         create(:subscription_target, user_subscriptions_uuid: subscription.uuid, target_id: '1000')
 
@@ -85,6 +93,7 @@ RSpec.describe MyCommoditiesSubscriptionWorker, type: :worker do
         instance.perform(date)
 
         expect(MyCommoditiesEmailWorker).to have_received(:perform_async).with(user.id, '08/12/2025', 3)
+        expect(status).to have_received(:mark_emails_sent!)
       end
     end
 
@@ -92,6 +101,7 @@ RSpec.describe MyCommoditiesSubscriptionWorker, type: :worker do
       let(:user) { create(:public_user) }
 
       before do
+        allow(TariffChangesJobStatus).to receive(:for_date).and_return(status)
         allow(MyCommoditiesEmailWorker).to receive(:perform_async)
       end
 
@@ -99,6 +109,7 @@ RSpec.describe MyCommoditiesSubscriptionWorker, type: :worker do
         instance.perform(date)
 
         expect(MyCommoditiesEmailWorker).not_to have_received(:perform_async)
+        expect(status).to have_received(:mark_emails_sent!)
       end
     end
   end
