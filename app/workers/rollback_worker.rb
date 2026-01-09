@@ -1,7 +1,5 @@
-require_relative '../helpers/materialize_view_helper'
 class RollbackWorker
   include Sidekiq::Worker
-  include MaterializeViewHelper
 
   sidekiq_options queue: :sync, retry: false
 
@@ -12,6 +10,6 @@ class RollbackWorker
       TaricSynchronizer.rollback(date, keep: redownload)
     end
 
-    refresh_materialized_view
+    MaterializeViewHelper.refresh_materialized_view
   end
 end

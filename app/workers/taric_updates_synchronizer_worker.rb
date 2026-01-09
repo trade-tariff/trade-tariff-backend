@@ -1,6 +1,5 @@
 class TaricUpdatesSynchronizerWorker
   include Sidekiq::Worker
-  include MaterializeViewHelper
 
   sidekiq_options queue: :sync, retry: false
 
@@ -17,7 +16,8 @@ class TaricUpdatesSynchronizerWorker
     return unless TaricSynchronizer.apply # return if nothing changed
 
     migrate_data if reapply_data_migrations
-    refresh_materialized_view
+
+    MaterializeViewHelper.refresh_materialized_view
 
     # NOTE: Make sure caches have been refreshed including the CDN
     #       otherwise we serve up stale responses.

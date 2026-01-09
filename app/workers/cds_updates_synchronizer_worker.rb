@@ -1,6 +1,5 @@
 class CdsUpdatesSynchronizerWorker
   include Sidekiq::Worker
-  include MaterializeViewHelper
 
   TRY_AGAIN_IN = 20.minutes
   CUT_OFF_TIME = '10:00'.freeze
@@ -25,7 +24,7 @@ class CdsUpdatesSynchronizerWorker
     return unless CdsSynchronizer.apply # return if nothing changed
 
     migrate_data if reapply_data_migrations
-    refresh_materialized_view
+    MaterializeViewHelper.refresh_materialized_view
 
     Sidekiq::Client.enqueue_in(5.minutes, ClearCacheWorker)
     Sidekiq::Client.enqueue_in(5.minutes, ClearInvalidSearchReferences)
