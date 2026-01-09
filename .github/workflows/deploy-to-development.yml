@@ -36,5 +36,5 @@ jobs:
     steps:
       - uses: trade-tariff/trade-tariff-tools/.github/actions/start-services@main
         with:
-          service-names: backend-uk backend-xi worker-uk worker-xi backend-job
+          service-names: backend-uk backend-xi worker-uk worker-xi
           environment: development
