@@ -2,17 +2,27 @@ class CognitoTokenVerifier
   ISSUER = "https://cognito-idp.#{TradeTariffBackend.aws_region}.amazonaws.com/#{TradeTariffBackend.cognito_user_pool_id}".freeze
   JWKS_URL = "#{ISSUER}/.well-known/jwks.json".freeze
 
+  Result = Struct.new(:valid, :payload, :reason, keyword_init: true) do
+    def valid?
+      valid
+    end
+
+    def expired?
+      reason == :expired
+    end
+  end
+
   def self.verify_id_token(token)
-    return nil if token.blank?
-    return nil if jwks_keys.nil? && !Rails.env.development?
+    return Result.new(valid: false, payload: nil, reason: :missing_token) if token.blank?
+    return Result.new(valid: false, payload: nil, reason: :missing_jwks_keys) if jwks_keys.nil? && !Rails.env.development?
 
     new(token).verify
   rescue JWT::ExpiredSignature
     Rails.logger.info('Cognito JWT::ExpiredSignature')
-    nil
+    Result.new(valid: false, payload: nil, reason: :expired)
   rescue JWT::DecodeError
     Rails.logger.info('Cognito JWT::DecodeError')
-    nil
+    Result.new(valid: false, payload: nil, reason: :invalid_token)
   end
 
   def self.jwks_keys
@@ -30,7 +40,11 @@ class CognitoTokenVerifier
 
   def verify
     verified = decrypt.decode.token[0]
-    in_group?(verified) ? verified : nil
+    if in_group?(verified)
+      Result.new(valid: true, payload: verified, reason: nil)
+    else
+      Result.new(valid: false, payload: nil, reason: :not_in_group)
+    end
   end
 
   def decrypt

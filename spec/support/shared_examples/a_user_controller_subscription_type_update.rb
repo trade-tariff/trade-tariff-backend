@@ -16,6 +16,13 @@ RSpec.shared_examples_for 'a user controller subscription type update' do |subsc
       }
     end
 
+    let(:verify_result) { CognitoTokenVerifier::Result.new(valid: true, payload: token, reason: nil) }
+
+    before do
+      request.headers['Authorization'] = 'Bearer test-token'
+      allow(CognitoTokenVerifier).to receive(:verify_id_token).and_return(verify_result)
+    end
+
     context 'when activating the subscription' do
       let(:active) { true }
 
