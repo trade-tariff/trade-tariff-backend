@@ -1,12 +1,12 @@
 RSpec.describe Api::User::ActiveCommoditiesService do
   subject(:service) { described_class.new(subscription) }
 
-  let(:target_ids) { [123, 456, 789, 321, 654, 655] }
-  let(:commodity_codes) { %w[1234567890 1234567891 1234567892 1234567893 1234567894 1234560000] }
+  let(:target_ids) { [123, 456, 789, 321] }
+  let(:commodity_codes) { %w[1234567890 1234567891 1234567892 1234567893 1234567894 1234567896] }
   let(:subscription) { create(:user_subscription, metadata: { commodity_codes: commodity_codes }) }
 
-  let(:expected_active_codes) { %w[1234567890] }
-  let(:expected_expired_codes) { %w[1234560000 1234567891 1234567894] }
+  let(:expected_active_codes) { %w[1234567890 1234567896] }
+  let(:expected_expired_codes) { %w[1234567891 1234567894] }
   let(:expected_invalid_codes) { %w[1234567892 1234567893] }
 
   before do
@@ -19,10 +19,10 @@ RSpec.describe Api::User::ActiveCommoditiesService do
              target_type: 'commodity')
     end
 
-    create(:commodity, :actual, goods_nomenclature_item_id: '1234567890', goods_nomenclature_sid: 123)
-    create(:commodity, :expired, goods_nomenclature_item_id: '1234567891', goods_nomenclature_sid: 456)
-    create(:subheading, :expired, :with_children, goods_nomenclature_item_id: '1234567894', goods_nomenclature_sid: 654)
-    create(:subheading, :expired, :non_declarable, :with_children, goods_nomenclature_item_id: '1234560000', goods_nomenclature_sid: 655)
+    create(:goods_nomenclature, :commodity, :actual, goods_nomenclature_item_id: '1234567890', goods_nomenclature_sid: 123)
+    create(:goods_nomenclature, :commodity, :expired, goods_nomenclature_item_id: '1234567891', goods_nomenclature_sid: 456)
+    create(:goods_nomenclature, :subheading, :expired, :with_children, goods_nomenclature_item_id: '1234567894', goods_nomenclature_sid: 789)
+    create(:goods_nomenclature, :heading, :declarable, goods_nomenclature_item_id: '1234567896', goods_nomenclature_sid: 321)
   end
 
   describe '#call' do
@@ -42,13 +42,13 @@ RSpec.describe Api::User::ActiveCommoditiesService do
   describe 'paginated commodity loaders' do
     it 'returns paginated active commodities with correct total' do
       commodities, total = service.active_commodities(page: 1, per_page: 10)
-      expect(total).to eq(1)
+      expect(total).to eq(2)
       expect(commodities.map(&:goods_nomenclature_item_id)).to eq(expected_active_codes)
     end
 
     it 'returns paginated expired commodities with correct total' do
       commodities, total = service.expired_commodities(page: 1, per_page: 10)
-      expect(total).to eq(3)
+      expect(total).to eq(2)
       expect(commodities.map(&:goods_nomenclature_item_id)).to eq(expected_expired_codes)
     end
 

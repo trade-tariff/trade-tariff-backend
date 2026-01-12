@@ -2,6 +2,7 @@ FactoryBot.define do
   sequence(:goods_nomenclature_sid, 100) # Some factories hard code SIDs, so avoid clashing
   sequence(:chapter_short_code, 10) { |n| sprintf '%02d', n }
   sequence(:heading_short_code, 10) { |n| sprintf '01%02d', n }
+  sequence(:subheading_short_code, 10) { |n| sprintf '%01%02%02d', n }
   sequence(:commodity_short_code) { |n| sprintf '%06d', n }
 
   factory :goods_nomenclature do
@@ -127,6 +128,11 @@ FactoryBot.define do
 
     trait :heading do
       goods_nomenclature_item_id { sprintf '%s000000', generate(:heading_short_code) }
+      indents { 0 }
+    end
+
+    trait :subheading do
+      goods_nomenclature_item_id { sprintf '%s0000', generate(:subheading_short_code) }
       indents { 0 }
     end
 

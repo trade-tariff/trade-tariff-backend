@@ -109,13 +109,32 @@ module Api
       end
 
       def historically_declarable_commodity_codes
-        @historically_declarable_commodity_codes ||= GoodsNomenclature::Operation
-          .where(
-            goods_nomenclature_sid: subscription_target_ids,
-            producline_suffix: GoodsNomenclatureIndent::NON_GROUPING_PRODUCTLINE_SUFFIX,
-          )
-          .pluck(:goods_nomenclature_item_id)
-          .uniq
+        @historically_declarable_commodity_codes ||= begin
+          operations = GoodsNomenclature::Operation
+            .where(goods_nomenclature_sid: subscription_target_ids)
+            .all
+
+          ever_declarables(operations)
+        end
+      end
+
+      def ever_declarables(operations)
+        item_ids = operations.map(&:goods_nomenclature_item_id).uniq
+
+        all_candidates = GoodsNomenclature
+          .where(goods_nomenclatures__goods_nomenclature_item_id: item_ids)
+          .all
+
+        item_ids.select { |item_id|
+          versions = all_candidates.select { |gn| gn.goods_nomenclature_item_id == item_id }
+          versions.any? do |version|
+            next false if version.instance_of?(Chapter) ||
+              (version.instance_of?(Heading) && !version.declarable?) ||
+              (version.instance_of?(Subheading) && !version.declarable?)
+
+            true
+          end
+        }.uniq
       end
 
       def historical_commodity_codes
@@ -150,7 +169,7 @@ module Api
         earliest_child_start = commodity.children.minimum(:validity_start_date)
         return nil if earliest_child_start.blank?
 
-        earliest_child_start.to_date - 1
+        earliest_child_start.to_date
       end
     end
   end
