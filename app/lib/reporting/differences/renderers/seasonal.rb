@@ -36,7 +36,7 @@ module Reporting
         end
 
         def add_worksheet(rows)
-          workbook.add_worksheet(name:) do |sheet|
+          workbook.add_worksheet(name) do |sheet|
             sheet.set_tab_color = TAB_COLOR
             sheet.append_row([METRIC], bold_style)
             sheet.append_row([SUBTEXT], regular_style)
@@ -44,7 +44,7 @@ module Reporting
             sheet.merge_range(0, 1, 4, 1)
 
             sheet.append_row([FastExcel::URL.new('internal:Overview!A1')])
-            sheet.write_string(2, 0, 'Back to overview', nil)
+            sheet.write_string(sheet.last_row_number, 0, 'Back to overview', nil)
 
             sheet.add_row([])
 

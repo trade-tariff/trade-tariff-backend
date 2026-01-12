@@ -79,12 +79,7 @@ module Reporting
                 :as_of
 
     def initialize
-      @workbook = if Rails.env.development?
-                    FileUtils.rm(filename) if File.exist?(filename)
-                    FastExcel.open(filename, constant_memory: true)
-                  else
-                    FastExcel.open(constant_memory: true)
-                  end
+      @workbook = FastExcel.open(constant_memory: true)
 
       @bold_style = workbook.add_format(
         bold: true,
@@ -359,10 +354,6 @@ module Reporting
 
       def object_key
         "#{service}/reporting/#{year}/#{month}/#{day}/differences_#{now.strftime('%Y-%m-%d')}.xlsx"
-      end
-
-      def filename
-        File.basename(object_key)
       end
     end
   end

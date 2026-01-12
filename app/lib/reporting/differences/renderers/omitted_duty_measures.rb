@@ -38,7 +38,7 @@ module Reporting
         attr_reader :report
 
         def add_worksheet(rows)
-          workbook.add_worksheet(name:) do |sheet|
+          workbook.add_worksheet(name) do |sheet|
             sheet.set_tab_color = TAB_COLOR
             sheet.append_row([METRIC], bold_style)
             sheet.autofilter(0, 0, 5, 0)

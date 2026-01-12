@@ -30,7 +30,7 @@ module Reporting
         end
 
         def add_worksheet(rows)
-          workbook.add_worksheet(name:) do |sheet|
+          workbook.add_worksheet(name) do |sheet|
             sheet.set_tab_color = TAB_COLOR
             sheet.append_row(HEADER_ROW, bold_style)
             sheet.freeze_panes(1, 0)

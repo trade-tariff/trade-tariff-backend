@@ -217,7 +217,7 @@ module Reporting
             ),
           }
 
-          workbook.add_worksheet(name:) do |sheet|
+          workbook.add_worksheet(name) do |sheet|
             OVERVIEW_SECTION_CONFIG.each do |section, config|
               colour = config[:section_colour]
 
@@ -277,7 +277,7 @@ module Reporting
             end
           end
 
-          workbook.worksheets.rotate!(-1)
+          # workbook.worksheets.rotate!(-1)
         end
 
         private
