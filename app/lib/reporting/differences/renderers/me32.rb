@@ -40,12 +40,12 @@ module Reporting
           workbook.add_worksheet(name:) do |sheet|
             sheet.set_tab_color = TAB_COLOR
             sheet.append_row([METRIC], bold_style)
-            subtext_row = sheet.append_row([SUBTEXT], regular_style)
-            subtext_row.height = 30
+            sheet.append_row([SUBTEXT], regular_style)
+            sheet.set_row(sheet.last_row_number, height: 30)
             sheet.merge_range(0, 1, 4, 1)
 
             sheet.append_row([FastExcel::URL.new('internal:Overview!A1')])
-            sheet.write_string(2, 0, 'Back to overview')
+            sheet.write_string(2, 0, 'Back to overview', nil)
 
             sheet.append_row([])
 

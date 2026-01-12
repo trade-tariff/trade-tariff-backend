@@ -36,12 +36,9 @@ module Reporting
             sheet.append_row([METRIC], bold_style)
             sheet.merge_range(0, 1, 4, 1)
             sheet.append_row([SUBTEXT], regular_style)
-            sheet.append_row(['Back to overview'])
-            sheet.add_hyperlink(
-              location: "'Overview'!A1",
-              target: :sheet,
-              ref: sheet.rows.last[0].r,
-            )
+            sheet.append_row([FastExcel::URL.new('internal:Overview!A1')])
+            sheet.write_string(2, 0, 'Back to overview', nil)
+
             sheet.append_row([])
             sheet.append_row(HEADER_ROW, bold_style)
             sheet.freeze_panes(1, 0)

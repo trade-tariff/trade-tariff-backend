@@ -37,32 +37,28 @@ module Reporting
 
         def add_worksheet(rows)
           workbook.add_worksheet(name:) do |sheet|
-            sheet.sheet_pr.tab_color = TAB_COLOR
-            sheet.add_row([METRIC], style: bold_style)
-            subtext_row = sheet.add_row([SUBTEXT], style: regular_style)
-            subtext_row.height = 30
-            sheet.merge_cells('A2:E2')
-            sheet.add_row(['Back to overview'])
-            sheet.add_hyperlink(
-              location: "'Overview'!A1",
-              target: :sheet,
-              ref: sheet.rows.last[0].r,
-            )
+            sheet.set_tab_color = TAB_COLOR
+            sheet.append_row([METRIC], bold_style)
+            sheet.append_row([SUBTEXT], regular_style)
+            sheet.set_row(sheet.last_row_number, height: 30)
+            sheet.merge_range(0, 1, 4, 1)
+
+            sheet.append_row([FastExcel::URL.new('internal:Overview!A1')])
+            sheet.write_string(2, 0, 'Back to overview', nil)
+
             sheet.add_row([])
 
-            sheet.add_row(HEADER_ROW, style: bold_style)
-            sheet.auto_filter = AUTOFILTER_CELL_RANGE
-            sheet.sheet_view.pane do |pane|
-              pane.top_left_cell = FROZEN_VIEW_STARTING_CELL
-              pane.state = :frozen
-              pane.y_split = 1
-            end
+            sheet.add_row(HEADER_ROW, bold_style)
+            sheet.autofilter(0, 4, 5, 4)
+            sheet.freeze_panes(5, 0)
 
             (rows || []).compact.each do |row|
-              sheet.add_row(row, types: CELL_TYPES, style: regular_style)
+              sheet.add_row(row, regular_style)
             end
 
-            sheet.column_widths(*COLUMN_WIDTHS)
+            COLUMN_WIDTHS.each_with_index do |width, index|
+              sheet.set_column_width(index, width)
+            end
           end
 
           Rails.logger.debug("Query count: #{::SequelRails::Railties::LogSubscriber.count}")

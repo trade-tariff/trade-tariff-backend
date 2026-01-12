@@ -167,8 +167,6 @@ module Reporting
           },
         }.freeze
 
-        CELL_TYPES = Array.new(4, :string).freeze
-
         COLUMN_WIDTHS = [
           4,  # Section square
           90, # Dashboard section/worksheet
@@ -184,102 +182,99 @@ module Reporting
 
         def add_worksheet(data) # rubocop:disable Lint/UnusedMethodArgument
           dashboard_styles = {
-            'C02814' => workbook.styles.add_style(bg_color: 'C02814', fg_color: 'FFFFFF'),
-            '48C83F' => workbook.styles.add_style(bg_color: '48C83F', fg_color: 'FFFFFF'),
-            '666666' => workbook.styles.add_style(bg_color: '666666', fg_color: 'FFFFFF'),
-            '311493' => workbook.styles.add_style(bg_color: '311493', fg_color: 'FFFFFF'),
-            'CACC43' => workbook.styles.add_style(bg_color: 'CACC43', fg_color: 'FFFFFF'),
-            '611062' => workbook.styles.add_style(bg_color: '611062', fg_color: 'FFFFFF'),
-            '000000' => workbook.styles.add_style(bg_color: '000000', fg_color: 'FFFFFF'),
-            'header_section' => workbook.styles.add_style(
-              b: true,
-              alignment: {
-                horizontal: :left,
-                vertical: :top,
-                wrap_text: true,
-              },
-              sz: 14,
+            'C02814' => workbook.add_format(bg_color: 'C02814', fg_color: 'FFFFFF'),
+            '48C83F' => workbook.add_format(bg_color: '48C83F', fg_color: 'FFFFFF'),
+            '666666' => workbook.add_format(bg_color: '666666', fg_color: 'FFFFFF'),
+            '311493' => workbook.add_format(bg_color: '311493', fg_color: 'FFFFFF'),
+            'CACC43' => workbook.add_format(bg_color: 'CACC43', fg_color: 'FFFFFF'),
+            '611062' => workbook.add_format(bg_color: '611062', fg_color: 'FFFFFF'),
+            '000000' => workbook.add_format(bg_color: '000000', fg_color: 'FFFFFF'),
+            'header_section' => workbook.add_format(
+              align: { h: :left, v: :top },
+              bold: true,
               font_name: 'Calibri',
+              font_size: 14,
+              text_wrap: true,
             ),
-            'header_count' => workbook.styles.add_style(
-              b: true,
-              alignment: {
-                horizontal: :center,
-                vertical: :top,
-              },
-              sz: 14,
+            'header_count' => workbook.add_format(
+              align: { h: :center, v: :top },
+              bold: true,
               font_name: 'Calibri',
+              font_size: 14,
             ),
-            'header_about' => workbook.styles.add_style(
-              b: true,
-              alignment: {
-                horizontal: :left,
-                vertical: :top,
-                wrap_text: true,
-              },
-              sz: 14,
+            'header_about' => workbook.add_format(
+              align: { h: :left, v: :top },
+              bold: true,
               font_name: 'Calibri',
+              font_size: 14,
+              text_wrap: true,
             ),
-            'header_view' => workbook.styles.add_style(
-              b: true,
-              alignment: {
-                horizontal: :center,
-                vertical: :top,
-              },
-              sz: 11,
+            'header_view' => workbook.add_format(
+              align: { h: :center, v: :top },
+              bold: true,
               font_name: 'Calibri',
+              font_size: 11,
             ),
           }
 
           workbook.add_worksheet(name:) do |sheet|
             OVERVIEW_SECTION_CONFIG.each do |section, config|
-              sheet.add_row([nil, section, 'Count', 'New Items', 'About this metric', nil])
               colour = config[:section_colour]
 
-              section_header_row = sheet.rows.last
-              section_header_row[0].style = dashboard_styles[colour]
-              section_header_row[1].style = dashboard_styles['header_section']
-              section_header_row[2].style = dashboard_styles['header_count']
-              section_header_row[3].style = dashboard_styles['header_count']
-              section_header_row[4].style = dashboard_styles['header_about']
-              section_header_row[5].style = dashboard_styles['header_view']
+              sheet.append_row(
+                [
+                  nil,
+                  section,
+                  'Count',
+                  'New Items',
+                  'About this metric',
+                  nil,
+                ],
+                [
+                  dashboard_styles[colour],
+                  dashboard_styles['header_section'],
+                  dashboard_styles['header_count'],
+                  dashboard_styles['header_count'],
+                  dashboard_styles['header_about'],
+                  dashboard_styles['header_view'],
+                ],
+              )
 
               config[:worksheets].each do |worksheet, worksheet_config|
                 report_date = report.as_of.to_date.to_fs(:govuk)
                 worksheet_description = worksheet_config[:description].sub('as_of', report_date)
                 worksheet_name = worksheet_config[:worksheet_name]
 
-                sheet.add_row(
+                sheet.append_row(
                   [
                     nil,
                     worksheet,
                     "=COUNTA('#{worksheet_name}'!A2:A1048576)",
                     worksheet_config.fetch(:new_items_formula, nil),
                     worksheet_description,
-                    'View issues',
+                    FastExcel::URL.new("internal:#{worksheet_name}!A1"),
                     nil,
                   ],
-                  types: CELL_TYPES,
+                  [
+                    nil,
+                    regular_style,
+                    centered_style,
+                    centered_style,
+                    regular_style,
+                    centered_style,
+                    nil,
+                  ],
                 )
-                worksheet_row = sheet.rows.last
 
-                worksheet_row[1].style = regular_style
-                worksheet_row[2].style = centered_style
-                worksheet_row[3].style = centered_style
-                worksheet_row[4].style = regular_style
-                worksheet_row[5].style = centered_style
-
-                sheet.add_hyperlink(
-                  location: "'#{worksheet_name}'!A1",
-                  target: :sheet,
-                  ref: worksheet_row[5].r,
-                )
+                sheet.write_string(5, 1, 'View issues', nil)
               end
 
               sheet.add_row([])
             end
 
-            sheet.column_widths(*COLUMN_WIDTHS)
+            COLUMN_WIDTHS.each_with_index do |width, index|
+              sheet.set_column_width(index, width)
+            end
           end
 
           workbook.worksheets.rotate!(-1)

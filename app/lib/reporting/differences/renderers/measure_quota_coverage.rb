@@ -5,7 +5,10 @@ module Reporting
         # Find all measures that have quota definitions
         #
         # Checks to see if there is at least one definition within each measures validity window
-        delegate :workbook, :bold_style, :regular_style, to: :report
+        delegate :workbook,
+                 :bold_style,
+                 :regular_style,
+                 to: :report
 
         WORKSHEET_NAME = 'Measure quot def coverage'.freeze
 
@@ -20,9 +23,8 @@ module Reporting
         ].freeze
 
         TAB_COLOR = 'cccc00'.freeze
-        CELL_TYPES = Array.new(HEADER_ROW.size, :string).freeze
+
         COLUMN_WIDTHS = [20] * HEADER_ROW.size
-        FROZEN_VIEW_STARTING_CELL = 'A2'.freeze
 
         def initialize(report)
           @report = report
@@ -30,23 +32,17 @@ module Reporting
 
         def add_worksheet(rows)
           workbook.add_worksheet(name:) do |sheet|
-            sheet.sheet_pr.tab_color = TAB_COLOR
-            sheet.add_row(HEADER_ROW, style: bold_style)
-            sheet.sheet_view.pane do |pane|
-              pane.top_left_cell = FROZEN_VIEW_STARTING_CELL
-              pane.state = :frozen
-              pane.y_split = 1
+            sheet.set_tab_color = TAB_COLOR
+            sheet.add_row(HEADER_ROW, bold_style)
+            sheet.freeze_panes(1, 0)
+
+            (rows || []).compact.each do |row|
+              sheet.append_row(row, regular_style)
             end
 
-            (rows || []).each do |row|
-              sheet.add_row(
-                row,
-                types: CELL_TYPES,
-                style: regular_style,
-              )
+            COLUMN_WIDTHS.each_with_index do |width, index|
+              sheet.set_column_width(index, width)
             end
-
-            sheet.column_widths(*COLUMN_WIDTHS)
           end
         end
 

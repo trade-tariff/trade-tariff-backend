@@ -21,8 +21,6 @@ module Reporting
 
         TAB_COLOR = '00ff00'.freeze
 
-        CELL_TYPES = Array.new(HEADER_ROW.size, :string).freeze
-
         COLUMN_WIDTHS = [
           30, # Commodity code
           20, # Geographical area id
@@ -33,9 +31,6 @@ module Reporting
           12, # New
         ].freeze
 
-        AUTOFILTER_CELL_RANGE = 'A1:F1'.freeze
-        FROZEN_VIEW_STARTING_CELL = 'A2'.freeze
-
         def initialize(report)
           @report = report
         end
@@ -44,20 +39,18 @@ module Reporting
 
         def add_worksheet(rows)
           workbook.add_worksheet(name:) do |sheet|
-            sheet.sheet_pr.tab_color = TAB_COLOR
-            sheet.add_row(HEADER_ROW, style: bold_style)
-            sheet.auto_filter = AUTOFILTER_CELL_RANGE
-            sheet.sheet_view.pane do |pane|
-              pane.top_left_cell = FROZEN_VIEW_STARTING_CELL
-              pane.state = :frozen
-              pane.y_split = 1
-            end
+            sheet.set_tab_color = TAB_COLOR
+            sheet.append_row([METRIC], bold_style)
+            sheet.autofilter(0, 0, 5, 0)
+            sheet.freeze_panes(1, 0)
 
             (rows || []).compact.each do |row|
-              sheet.add_row(row, types: CELL_TYPES, style: regular_style)
+              sheet.append_row(row, regular_style)
             end
 
-            sheet.column_widths(*COLUMN_WIDTHS)
+            COLUMN_WIDTHS.each_with_index do |width, index|
+              sheet.set_column_width(index, width)
+            end
           end
 
           Rails.logger.debug("Query count: #{::SequelRails::Railties::LogSubscriber.count}")
