@@ -71,8 +71,7 @@ module Reporting
 
     extend Reporting::Reportable
 
-    attr_reader :package,
-                :workbook,
+    attr_reader :workbook,
                 :regular_style,
                 :bold_style,
                 :centered_style,
@@ -159,7 +158,7 @@ module Reporting
       total_finish = Time.zone.now
       Rails.logger.info("Finished generating worksheets (Total Duration: #{total_finish - total_start} seconds)")
 
-      package
+      workbook
     end
 
     def add_overview_worksheet

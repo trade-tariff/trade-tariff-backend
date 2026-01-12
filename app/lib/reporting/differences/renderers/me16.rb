@@ -34,10 +34,8 @@ module Reporting
             sheet.append_row([METRIC], bold_style)
             subtext_row = sheet.append_row([SUBTEXT], regular_style)
             subtext_row.height = 30
-            sheet.merge_cells('A2:E2')
+            sheet.merge_range(0, 1, 4, 1)
 
-            # in FastExcel (libxlsxwriter) we add the hyperlink
-            # then overwrite with custom text
             sheet.append_row([FastExcel::URL.new('internal:Overview!A1')])
             sheet.write_string(2, 0, 'Back to overview')
 

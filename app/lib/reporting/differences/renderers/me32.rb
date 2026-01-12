@@ -20,8 +20,6 @@ module Reporting
 
         TAB_COLOR = '00ff00'.freeze
 
-        CELL_TYPES = Array.new(HEADER_ROW.size, :string).freeze
-
         COLUMN_WIDTHS = [
           30, # Commodity code
           20, # Measure type
@@ -30,9 +28,6 @@ module Reporting
           20, # Geography
           12, # New
         ].freeze
-
-        AUTOFILTER_CELL_RANGE = 'A5:E5'.freeze
-        FROZEN_VIEW_STARTING_CELL = 'A5'.freeze
 
         METRIC = 'ME32 candidates'.freeze
         SUBTEXT = 'There may be no overlap in time with other measure occurrences with a goods code in the same nomenclature hierarchy which references the same measure type, geo area, order number and additional code.'.freeze
@@ -43,32 +38,28 @@ module Reporting
 
         def add_worksheet(rows)
           workbook.add_worksheet(name:) do |sheet|
-            sheet.sheet_pr.tab_color = TAB_COLOR
-            sheet.add_row([METRIC], style: bold_style)
-            subtext_row = sheet.add_row([SUBTEXT], style: regular_style)
+            sheet.set_tab_color = TAB_COLOR
+            sheet.append_row([METRIC], bold_style)
+            subtext_row = sheet.append_row([SUBTEXT], regular_style)
             subtext_row.height = 30
-            sheet.merge_cells('A2:E2')
-            sheet.add_row(['Back to overview'])
-            sheet.add_hyperlink(
-              location: "'Overview'!A1",
-              target: :sheet,
-              ref: sheet.rows.last[0].r,
-            )
-            sheet.add_row([])
+            sheet.merge_range(0, 1, 4, 1)
 
-            sheet.add_row(HEADER_ROW, style: bold_style)
-            sheet.auto_filter = AUTOFILTER_CELL_RANGE
-            sheet.sheet_view.pane do |pane|
-              pane.top_left_cell = FROZEN_VIEW_STARTING_CELL
-              pane.state = :frozen
-              pane.y_split = 1
-            end
+            sheet.append_row([FastExcel::URL.new('internal:Overview!A1')])
+            sheet.write_string(2, 0, 'Back to overview')
+
+            sheet.append_row([])
+
+            sheet.append_row(HEADER_ROW, bold_style)
+            sheet.autofilter(0, 4, 4, 4)
+            sheet.freeze_panes(4, 0)
 
             (rows || []).compact.each do |row|
-              sheet.add_row(row, types: CELL_TYPES, style: regular_style)
+              sheet.append_row(row, regular_style)
             end
 
-            sheet.column_widths(*COLUMN_WIDTHS)
+            COLUMN_WIDTHS.each_with_index do |width, index|
+              sheet.set_column_width(index, width)
+            end
           end
 
           Rails.logger.debug("Query count: #{::SequelRails::Railties::LogSubscriber.count}")
