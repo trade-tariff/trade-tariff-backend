@@ -11,9 +11,7 @@ RSpec.describe Api::User::SubscriptionSerializer do
         type: :subscription,
         attributes: {
           active: true,
-          metadata: { 'commodity_codes' => %w[1234567890 1234567891] },
-          subscription_type: 'my_commodities',
-          meta: { active: [], expired: [], invalid: %w[1234567890 1234567891] },
+          meta: { active: 0, expired: 0, invalid: 2 },
         },
         relationships: {
           subscription_type: {
