@@ -14,7 +14,7 @@ gem 'sequel-rails'
 
 # File uploads and AWS
 gem 'aws-actionmailer-ses'
-gem 'aws-sdk-cloudfront', '~> 1.137'
+gem 'aws-sdk-cloudfront', '~> 1.139'
 gem 'aws-sdk-rails'
 gem 'aws-sdk-s3'
 
