@@ -8,12 +8,9 @@ class TariffChangesJobStatus < Sequel::Model(Sequel[:tariff_changes_job_statuses
     find_or_create(operation_date: date.to_date)
   end
 
-  def mark_changes_generated!
-    update(changes_generated_at: Time.zone.now)
-  end
-
-  def mark_emails_sent!
-    update(emails_sent_at: Time.zone.now)
+  def self.last_change_date
+    where { changes_generated_at !~ nil }
+      .order(Sequel.desc(:operation_date)).first&.operation_date
   end
 
   dataset_module do
@@ -23,5 +20,13 @@ class TariffChangesJobStatus < Sequel::Model(Sequel[:tariff_changes_job_statuses
         .order(:operation_date)
         .select_map(:operation_date)
     end
+  end
+
+  def mark_changes_generated!
+    update(changes_generated_at: Time.zone.now)
+  end
+
+  def mark_emails_sent!
+    update(emails_sent_at: Time.zone.now)
   end
 end
