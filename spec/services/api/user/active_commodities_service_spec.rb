@@ -64,6 +64,11 @@ RSpec.describe Api::User::ActiveCommoditiesService do
       expect(result).to be_an(Array)
     end
 
+    it 'returns expired commodities with target_sids filtering' do
+      result = described_class.all_expired_commodities(target_sids: [456, 654])
+      expect(result).to be_an(Array)
+    end
+
     it 'returns empty array when no expired candidates exist' do
       Rails.cache.delete('myott_all_expired_commodities')
       described_class.instance_variable_set(:@all_expired_commodities, nil)
@@ -71,6 +76,13 @@ RSpec.describe Api::User::ActiveCommoditiesService do
       allow(GoodsNomenclature).to receive_message_chain(:where, :pluck).and_return([])
 
       result = described_class.all_expired_commodities
+      expect(result).to eq([])
+    end
+
+    it 'returns empty array when no expired candidates exist with target filtering' do
+      allow(GoodsNomenclature).to receive_message_chain(:where, :where, :pluck).and_return([])
+
+      result = described_class.all_expired_commodities(target_sids: [999])
       expect(result).to eq([])
     end
 
@@ -96,6 +108,27 @@ RSpec.describe Api::User::ActiveCommoditiesService do
       expect(expired_sids).to include(999)
     end
 
+    it 'includes commodities that are expired with target filtering' do
+      parent_commodity = create(:commodity, :non_grouping,
+                                goods_nomenclature_item_id: '8876543210',
+                                goods_nomenclature_sid: 888,
+                                validity_start_date: 2.years.ago.beginning_of_day,
+                                validity_end_date: nil)
+
+      create(:commodity, :non_grouping,
+             goods_nomenclature_item_id: '8876543211',
+             goods_nomenclature_sid: 887,
+             validity_start_date: 6.months.ago.beginning_of_day,
+             validity_end_date: nil,
+             parent: parent_commodity)
+
+      result = described_class.all_expired_commodities(target_sids: [888])
+
+      # The parent should be included when specifically targeted
+      expired_sids = result.map(&:first)
+      expect(expired_sids).to include(888)
+    end
+
     it 'excludes commodities that were never declarable (child has same validity_start_date)' do
       start_date = 2.years.ago.beginning_of_day
 
@@ -118,6 +151,29 @@ RSpec.describe Api::User::ActiveCommoditiesService do
       # has the same validity_start_date, meaning it was never declarable
       expired_sids = result.map(&:first)
       expect(expired_sids).not_to include(888)
+    end
+
+    it 'excludes commodities that were never declarable with target filtering' do
+      start_date = 2.years.ago.beginning_of_day
+
+      parent_commodity = create(:commodity, :non_grouping,
+                                goods_nomenclature_item_id: '2222222222',
+                                goods_nomenclature_sid: 666,
+                                validity_start_date: start_date,
+                                validity_end_date: nil)
+
+      create(:commodity, :non_grouping,
+             goods_nomenclature_item_id: '2222222223',
+             goods_nomenclature_sid: 665,
+             validity_start_date: start_date,
+             validity_end_date: nil,
+             parent: parent_commodity)
+
+      result = described_class.all_expired_commodities(target_sids: [666])
+
+      # Should still exclude subdivided commodities even with target filtering
+      expired_sids = result.map(&:first)
+      expect(expired_sids).not_to include(666)
     end
   end
 

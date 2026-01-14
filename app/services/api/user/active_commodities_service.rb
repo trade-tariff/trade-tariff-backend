@@ -21,12 +21,18 @@ module Api
         end
       end
 
-      def self.all_expired_commodities
-        @all_expired_commodities ||= Rails.cache.fetch('myott_all_expired_commodities', expires_at: 2.days.from_now) do
+      # Optimized to accept target_sids to limit the scope of the query when caching is disabled (e.g. in tests/development)
+      def self.all_expired_commodities(target_sids: nil)
+        cache_key = target_sids ? "myott_expired_commodities_#{target_sids.hash}" : 'myott_all_expired_commodities'
+
+        @all_expired_commodities ||= Rails.cache.fetch(cache_key, expires_at: 2.days.from_now) do
           expired_candidates = TimeMachine.no_time_machine do
-            GoodsNomenclature
+            query = GoodsNomenclature
               .where(producline_suffix: GoodsNomenclatureIndent::NON_GROUPING_PRODUCTLINE_SUFFIX)
-              .pluck(:goods_nomenclature_sid, :goods_nomenclature_item_id)
+
+            query = query.where(goods_nomenclature_sid: target_sids) if target_sids
+
+            query.pluck(:goods_nomenclature_sid, :goods_nomenclature_item_id)
               .reject { |sid, _| all_active_commodities.any? { |active_sid, _| active_sid == sid } }
           end
 
@@ -150,7 +156,12 @@ module Api
 
       def expired_commodity_codes
         @expired_commodity_codes ||= begin
-          sid_to_code = self.class.all_expired_commodities.to_h { |sid, code| [sid, code] }
+          sid_to_code = if Rails.application.config.action_controller.perform_caching
+                          self.class.all_expired_commodities.to_h { |sid, code| [sid, code] }
+                        else
+                          self.class.all_expired_commodities(target_sids: subscription_target_ids).to_h { |sid, code| [sid, code] }
+                        end
+
           codes = subscription_target_ids.map { |sid| sid_to_code[sid] }.compact
 
           Set.new(codes) - active_commodity_codes
