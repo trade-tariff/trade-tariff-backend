@@ -119,6 +119,10 @@ module Reporting
     def generate(only: [])
       total_start = Time.zone.now
 
+      # fast_excel cannot rotate sheets. as Overview must come first, create a
+      # blank sheet to position it correctly, then populate it last
+      workbook.add_worksheet('Overview')
+
       methods = %i[
         add_missing_from_uk_worksheet
         add_missing_from_xi_worksheet

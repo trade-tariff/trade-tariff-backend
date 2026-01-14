@@ -101,14 +101,6 @@ module Reporting
               },
             },
           },
-          # 'Commodity code description-related anomalies' => {
-          #   section_colour: '311493',
-          #   worksheets: {
-          #     # 'Total number of differences in commodity code descriptions' => 'Covers all difference types - does not imply there is an issue',
-          #     # 'Descriptions - UK description is missing' => 'Indentation is crucial to get right to avoid measures being unexpectedly assigned or omitted.',
-          #     # 'Descriptions - Typo or small difference' => 'This tends to be linked to or caused by missing or unwanted codes or indentation issues.',
-          #   },
-          # },
           'Quota-related anomalies' => {
             section_colour: 'CACC43',
             worksheets: {
@@ -157,7 +149,6 @@ module Reporting
           'Suspension-related anomalies' => {
             section_colour: '000000',
             worksheets: {
-              # 'Unpaired additional codes' => 'This indicates that there is a single additional code, not an MFN plus a suspension additional code on a commodity. It's not certain if this will cause an issue, but it creates additional trader effort for no reason.',
               'ME16 candidates' => {
                 description: 'This indicates that there are comm codes where a duty exists both with and without additional codes, which breaks ME16',
                 worksheet_name: 'ME16 candidates',
@@ -182,13 +173,13 @@ module Reporting
 
         def add_worksheet(data) # rubocop:disable Lint/UnusedMethodArgument
           dashboard_styles = {
-            'C02814' => workbook.add_format(bg_color: 0xC02814, fg_color: 0xFFFFFF),
-            '48C83F' => workbook.add_format(bg_color: 0x48C83F, fg_color: 0xFFFFFF),
-            '666666' => workbook.add_format(bg_color: 0x666666, fg_color: 0xFFFFFF),
-            '311493' => workbook.add_format(bg_color: 0x311493, fg_color: 0xFFFFFF),
-            'CACC43' => workbook.add_format(bg_color: 0xCACC43, fg_color: 0xFFFFFF),
-            '611062' => workbook.add_format(bg_color: 0x611062, fg_color: 0xFFFFFF),
-            '000000' => workbook.add_format(bg_color: 0x000000, fg_color: 0xFFFFFF),
+            'C02814' => workbook.add_format(bg_color: 0xC02814, font_color: 0xFFFFFF),
+            '48C83F' => workbook.add_format(bg_color: 0x48C83F, font_color: 0xFFFFFF),
+            '666666' => workbook.add_format(bg_color: 0x666666, font_color: 0xFFFFFF),
+            '311493' => workbook.add_format(bg_color: 0x311493, font_color: 0xFFFFFF),
+            'CACC43' => workbook.add_format(bg_color: 0xCACC43, font_color: 0xFFFFFF),
+            '611062' => workbook.add_format(bg_color: 0x611062, font_color: 0xFFFFFF),
+            '000000' => workbook.add_format(bg_color: 0x000000, font_color: 0xFFFFFF),
             'header_section' => workbook.add_format(
               align: { h: :left, v: :top },
               bold: true,
@@ -217,7 +208,7 @@ module Reporting
             ),
           }
 
-          worksheet = workbook.add_worksheet(name)
+          worksheet = workbook.get_worksheet_by_name(name)
           OVERVIEW_SECTION_CONFIG.each do |section, config|
             colour = config[:section_colour]
 
@@ -267,7 +258,7 @@ module Reporting
               worksheet.write_url_opt(
                 worksheet.last_row_number,
                 5,
-                "internal:'#{worksheet_name}!A1",
+                "internal:'#{worksheet_name}'!A1",
                 nil,
                 'View issues',
                 nil,
@@ -280,8 +271,6 @@ module Reporting
           COLUMN_WIDTHS.each_with_index do |width, index|
             worksheet.set_column_width(index, width)
           end
-
-          # workbook.worksheets.rotate!(-1)
         end
 
         private
