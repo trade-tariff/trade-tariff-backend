@@ -3,8 +3,8 @@ module Api
     # Service to determine the status of commodity codes submitted by the user
     #
     # Active - An active code is one that is current for today's date and is declarable (i.e., has no children)
-    # Expired - An expired code is a declarable code that is not active today, or had descendants that are now expired
-    # Invalid - The code never existed or was never declarable (always a grouping/subheading)
+    # Expired - An expired code is a declarable code that is not active today, or has had children added later
+    # Invalid - The code never existed or was never declarable
     class ActiveCommoditiesService
       attr_reader :uploaded_commodity_codes, :subscription_target_ids
 

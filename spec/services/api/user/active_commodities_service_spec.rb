@@ -73,6 +73,52 @@ RSpec.describe Api::User::ActiveCommoditiesService do
       result = described_class.all_expired_commodities
       expect(result).to eq([])
     end
+
+    it 'includes commodities that are expired because children have later validity_start_date' do
+      parent_commodity = create(:commodity, :non_grouping,
+                                goods_nomenclature_item_id: '9876543210',
+                                goods_nomenclature_sid: 999,
+                                validity_start_date: 2.years.ago.beginning_of_day,
+                                validity_end_date: nil)
+
+      create(:commodity, :non_grouping,
+             goods_nomenclature_item_id: '9876543211',
+             goods_nomenclature_sid: 998,
+             validity_start_date: 6.months.ago.beginning_of_day,
+             validity_end_date: nil,
+             parent: parent_commodity)
+
+      result = described_class.all_expired_commodities
+
+      # The parent should be included in expired commodities because its child's
+      # validity_start_date is later, making the parent effectively expired
+      expired_sids = result.map(&:first)
+      expect(expired_sids).to include(999)
+    end
+
+    it 'excludes commodities that were never declarable (child has same validity_start_date)' do
+      start_date = 2.years.ago.beginning_of_day
+
+      parent_commodity = create(:commodity, :non_grouping,
+                                goods_nomenclature_item_id: '1111111111',
+                                goods_nomenclature_sid: 888,
+                                validity_start_date: start_date,
+                                validity_end_date: nil)
+
+      create(:commodity, :non_grouping,
+             goods_nomenclature_item_id: '1111111112',
+             goods_nomenclature_sid: 777,
+             validity_start_date: start_date,
+             validity_end_date: nil,
+             parent: parent_commodity)
+
+      result = described_class.all_expired_commodities
+
+      # The parent should NOT be included in expired commodities because its child
+      # has the same validity_start_date, meaning it was never declarable
+      expired_sids = result.map(&:first)
+      expect(expired_sids).not_to include(888)
+    end
   end
 
   describe '#initialize' do
@@ -113,6 +159,35 @@ RSpec.describe Api::User::ActiveCommoditiesService do
 
       it 'returns empty hash' do
         expect(nil_service.call).to eq({})
+      end
+    end
+
+    context 'when subscription has no targets' do
+      let(:no_target_subscription) { create(:user_subscription, metadata: { commodity_codes: commodity_codes }) }
+      let(:no_target_service) { described_class.new(no_target_subscription) }
+
+      it 'returns zero counts for active and expired, all invalid' do
+        result = no_target_service.call
+        expect(result).to eq({
+          active: 0,
+          expired: 0,
+          invalid: commodity_codes.count,
+        })
+      end
+    end
+
+    context 'when subscription has no commodity codes' do
+      let(:empty_codes_subscription) { create(:user_subscription, metadata: { commodity_codes: [] }) }
+      let(:empty_codes_service) { described_class.new(empty_codes_subscription) }
+
+      it 'returns empty hash from call method' do
+        expect(empty_codes_service.call).to eq({})
+      end
+
+      it 'returns empty arrays from paginated methods' do
+        expect(empty_codes_service.active_commodities).to eq([[], 0])
+        expect(empty_codes_service.expired_commodities).to eq([[], 0])
+        expect(empty_codes_service.invalid_commodities).to eq([[], 0])
       end
     end
   end
@@ -171,37 +246,6 @@ RSpec.describe Api::User::ActiveCommoditiesService do
         commodities, total = service.active_commodities
         expect(total).to eq(1)
         expect(commodities.size).to eq(1)
-      end
-    end
-  end
-
-  describe 'edge cases' do
-    context 'when subscription has no targets' do
-      let(:no_target_subscription) { create(:user_subscription, metadata: { commodity_codes: commodity_codes }) }
-      let(:no_target_service) { described_class.new(no_target_subscription) }
-
-      it 'returns zero counts for active and expired, all invalid' do
-        result = no_target_service.call
-        expect(result).to eq({
-          active: 0,
-          expired: 0,
-          invalid: commodity_codes.count,
-        })
-      end
-    end
-
-    context 'when subscription has no commodity codes' do
-      let(:empty_codes_subscription) { create(:user_subscription, metadata: { commodity_codes: [] }) }
-      let(:empty_codes_service) { described_class.new(empty_codes_subscription) }
-
-      it 'returns empty hash from call method' do
-        expect(empty_codes_service.call).to eq({})
-      end
-
-      it 'returns empty arrays from paginated methods' do
-        expect(empty_codes_service.active_commodities).to eq([[], 0])
-        expect(empty_codes_service.expired_commodities).to eq([[], 0])
-        expect(empty_codes_service.invalid_commodities).to eq([[], 0])
       end
     end
   end
