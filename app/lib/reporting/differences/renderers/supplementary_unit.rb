@@ -48,14 +48,22 @@ module Reporting
           worksheet = workbook.add_worksheet(name)
           worksheet.set_tab_color(TAB_COLOR)
           worksheet.append_row([rendered_metric], bold_style)
+          worksheet.append_row([])
           worksheet.merge_range(1, 0, 1, 4, SUBTEXT, regular_style)
 
-          worksheet.append_row([FastExcel::URL.new("internal:'Overview'!A1")])
-          worksheet.write_string(worksheet.last_row_number, 0, 'Back to overview', nil)
-
           worksheet.append_row([])
+          worksheet.write_url_opt(
+            worksheet.last_row_number,
+            0,
+            "internal:'Overview'!A1",
+            nil,
+            'Back to overview',
+            nil,
+          )
+          worksheet.append_row([])
+
           worksheet.append_row(HEADER_ROW, bold_style)
-          worksheet.autofilter(4, 0, 4, 1)
+          worksheet.autofilter(4, 0, 4, 4)
           worksheet.freeze_panes(5, 0)
 
           (rows || []).each do |row|

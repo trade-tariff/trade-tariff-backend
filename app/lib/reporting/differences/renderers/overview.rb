@@ -182,13 +182,13 @@ module Reporting
 
         def add_worksheet(data) # rubocop:disable Lint/UnusedMethodArgument
           dashboard_styles = {
-            'C02814' => workbook.add_format(bg_color: 'C02814', fg_color: 'FFFFFF'),
-            '48C83F' => workbook.add_format(bg_color: '48C83F', fg_color: 'FFFFFF'),
-            '666666' => workbook.add_format(bg_color: '666666', fg_color: 'FFFFFF'),
-            '311493' => workbook.add_format(bg_color: '311493', fg_color: 'FFFFFF'),
-            'CACC43' => workbook.add_format(bg_color: 'CACC43', fg_color: 'FFFFFF'),
-            '611062' => workbook.add_format(bg_color: '611062', fg_color: 'FFFFFF'),
-            '000000' => workbook.add_format(bg_color: '000000', fg_color: 'FFFFFF'),
+            'C02814' => workbook.add_format(bg_color: 0xC02814, fg_color: 0xFFFFFF),
+            '48C83F' => workbook.add_format(bg_color: 0x48C83F, fg_color: 0xFFFFFF),
+            '666666' => workbook.add_format(bg_color: 0x666666, fg_color: 0xFFFFFF),
+            '311493' => workbook.add_format(bg_color: 0x311493, fg_color: 0xFFFFFF),
+            'CACC43' => workbook.add_format(bg_color: 0xCACC43, fg_color: 0xFFFFFF),
+            '611062' => workbook.add_format(bg_color: 0x611062, fg_color: 0xFFFFFF),
+            '000000' => workbook.add_format(bg_color: 0x000000, fg_color: 0xFFFFFF),
             'header_section' => workbook.add_format(
               align: { h: :left, v: :top },
               bold: true,
@@ -252,7 +252,6 @@ module Reporting
                   FastExcel::Formula.new("=COUNTA('#{worksheet_name}'!A2:A1048576)"),
                   FastExcel::Formula.new(worksheet_config.fetch(:new_items_formula, nil)),
                   worksheet_description,
-                  FastExcel::URL.new("internal:'#{worksheet_name}'!A1"),
                   nil,
                 ],
                 [
@@ -262,11 +261,17 @@ module Reporting
                   centered_style,
                   regular_style,
                   centered_style,
-                  nil,
                 ],
               )
 
-              worksheet.write_string(worksheet.last_row_number, 5, 'View issues', nil)
+              worksheet.write_url_opt(
+                worksheet.last_row_number,
+                5,
+                "internal:'#{worksheet_name}!A1",
+                nil,
+                'View issues',
+                nil,
+              )
             end
 
             worksheet.append_row([])

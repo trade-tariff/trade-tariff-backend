@@ -53,11 +53,20 @@ module Reporting
           worksheet.freeze_panes(1, 0)
 
           (rows || []).each do |row|
-            worksheet.append_row(row, regular_style)
-            # worksheet.rows.last.tap do |last_row|
-            #   last_row.cells[5].format = centered_style # Indentation
-            #   last_row.cells[6].format = centered_style # End line
-            # end
+            worksheet.append_row(
+              row,
+              [
+                regular_style,
+                regular_style,
+                regular_style,
+                regular_style,
+                regular_style,
+                centered_style,
+                centered_style,
+                regular_style,
+                regular_style,
+              ],
+            )
           end
 
           COLUMN_WIDTHS.each_with_index do |width, index|

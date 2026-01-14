@@ -42,13 +42,16 @@ module Reporting
           worksheet.freeze_panes(1, 0)
 
           (rows || []).compact.each do |row|
-            worksheet.append_row(row)
-
-            # worksheet.rows.last.tap do |last_row|
-            #   last_row.cells[1].style = centered_style
-            #   last_row.cells[2].style = centered_style
-            #   last_row.cells[3].style = print_style
-            # end
+            worksheet.append_row(
+              row,
+              [
+                regular_style,
+                centered_style,
+                centered_style,
+                print_style,
+                regular_style,
+              ],
+            )
           end
 
           COLUMN_WIDTHS.each_with_index do |width, index|
