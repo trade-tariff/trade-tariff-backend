@@ -19,14 +19,9 @@ module Reporting
           'New?',
         ].freeze
 
-        TAB_COLOR = '00ff00'.freeze
-
-        CELL_TYPES = Array.new(HEADER_ROW.size, :string).freeze
+        TAB_COLOR = 0x00FF00
 
         COLUMN_WIDTHS = ([20] * 5 + [40]).freeze
-
-        AUTOFILTER_CELL_RANGE = 'A5:F5'.freeze
-        FROZEN_VIEW_STARTING_CELL = 'A6'.freeze
 
         METRIC = 'Seasonal duties'.freeze
         SUBTEXT = 'Seasonal duties that should be in place (according to the reference documents) but cannot be found'.freeze
@@ -36,29 +31,27 @@ module Reporting
         end
 
         def add_worksheet(rows)
-          workbook.add_worksheet(name) do |sheet|
-            sheet.set_tab_color = TAB_COLOR
-            sheet.append_row([METRIC], bold_style)
-            sheet.append_row([SUBTEXT], regular_style)
-            sheet.set_row(sheet.last_row_number, height: 30)
-            sheet.merge_range(0, 1, 4, 1)
+          worksheet = workbook.add_worksheet(name)
+          worksheet.set_tab_color(TAB_COLOR)
+          worksheet.append_row([METRIC], bold_style)
+          worksheet.merge_range(1, 0, 1, 4, SUBTEXT, regular_style)
+          # worksheet.set_row(worksheet.last_row_number, height: 30, nil)
 
-            sheet.append_row([FastExcel::URL.new('internal:Overview!A1')])
-            sheet.write_string(sheet.last_row_number, 0, 'Back to overview', nil)
+          worksheet.append_row([FastExcel::URL.new("internal:'Overview'!A1")])
+          worksheet.write_string(worksheet.last_row_number, 0, 'Back to overview', nil)
 
-            sheet.add_row([])
+          worksheet.append_row([])
 
-            sheet.add_row(HEADER_ROW, bold_style)
-            sheet.autofilter(0, 4, 5, 4)
-            sheet.freeze_panes(5, 0)
+          worksheet.append_row(HEADER_ROW, bold_style)
+          worksheet.autofilter(0, 4, 5, 4)
+          worksheet.freeze_panes(5, 0)
 
-            (rows || []).compact.each do |row|
-              sheet.add_row(row, regular_style)
-            end
+          (rows || []).compact.each do |row|
+            worksheet.append_row(row, regular_style)
+          end
 
-            COLUMN_WIDTHS.each_with_index do |width, index|
-              sheet.set_column_width(index, width)
-            end
+          COLUMN_WIDTHS.each_with_index do |width, index|
+            worksheet.set_column_width(index, width)
           end
 
           Rails.logger.debug("Query count: #{::SequelRails::Railties::LogSubscriber.count}")

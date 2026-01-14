@@ -217,64 +217,63 @@ module Reporting
             ),
           }
 
-          workbook.add_worksheet(name) do |sheet|
-            OVERVIEW_SECTION_CONFIG.each do |section, config|
-              colour = config[:section_colour]
+          worksheet = workbook.add_worksheet(name)
+          OVERVIEW_SECTION_CONFIG.each do |section, config|
+            colour = config[:section_colour]
 
-              sheet.append_row(
+            worksheet.append_row(
+              [
+                nil,
+                section,
+                'Count',
+                'New Items',
+                'About this metric',
+                nil,
+              ],
+              [
+                dashboard_styles[colour],
+                dashboard_styles['header_section'],
+                dashboard_styles['header_count'],
+                dashboard_styles['header_count'],
+                dashboard_styles['header_about'],
+                dashboard_styles['header_view'],
+              ],
+            )
+
+            config[:worksheets].each do |sheet, worksheet_config|
+              report_date = report.as_of.to_date.to_fs(:govuk)
+              worksheet_description = worksheet_config[:description].sub('as_of', report_date)
+              worksheet_name = worksheet_config[:worksheet_name]
+
+              worksheet.append_row(
                 [
                   nil,
-                  section,
-                  'Count',
-                  'New Items',
-                  'About this metric',
+                  sheet,
+                  FastExcel::Formula.new("=COUNTA('#{worksheet_name}'!A2:A1048576)"),
+                  FastExcel::Formula.new(worksheet_config.fetch(:new_items_formula, nil)),
+                  worksheet_description,
+                  FastExcel::URL.new("internal:'#{worksheet_name}'!A1"),
                   nil,
                 ],
                 [
-                  dashboard_styles[colour],
-                  dashboard_styles['header_section'],
-                  dashboard_styles['header_count'],
-                  dashboard_styles['header_count'],
-                  dashboard_styles['header_about'],
-                  dashboard_styles['header_view'],
+                  nil,
+                  regular_style,
+                  centered_style,
+                  centered_style,
+                  regular_style,
+                  centered_style,
+                  nil,
                 ],
               )
 
-              config[:worksheets].each do |worksheet, worksheet_config|
-                report_date = report.as_of.to_date.to_fs(:govuk)
-                worksheet_description = worksheet_config[:description].sub('as_of', report_date)
-                worksheet_name = worksheet_config[:worksheet_name]
-
-                sheet.append_row(
-                  [
-                    nil,
-                    worksheet,
-                    "=COUNTA('#{worksheet_name}'!A2:A1048576)",
-                    worksheet_config.fetch(:new_items_formula, nil),
-                    worksheet_description,
-                    FastExcel::URL.new("internal:#{worksheet_name}!A1"),
-                    nil,
-                  ],
-                  [
-                    nil,
-                    regular_style,
-                    centered_style,
-                    centered_style,
-                    regular_style,
-                    centered_style,
-                    nil,
-                  ],
-                )
-
-                sheet.write_string(5, 1, 'View issues', nil)
-              end
-
-              sheet.add_row([])
+              worksheet.write_string(worksheet.last_row_number, 5, 'View issues', nil)
             end
 
-            COLUMN_WIDTHS.each_with_index do |width, index|
-              sheet.set_column_width(index, width)
-            end
+            worksheet.append_row([])
+          end
+
+          COLUMN_WIDTHS.each_with_index do |width, index|
+            worksheet.set_column_width(index, width)
           end
 
           # workbook.worksheets.rotate!(-1)

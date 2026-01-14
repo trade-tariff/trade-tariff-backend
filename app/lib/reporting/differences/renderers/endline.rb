@@ -19,7 +19,7 @@ module Reporting
           'New?',
         ].freeze
 
-        TAB_COLOR = 'cc0000'.freeze
+        TAB_COLOR = 0xCC0000
 
         COLUMN_WIDTHS = [
           20, # Commodity code (PLS)
@@ -37,22 +37,21 @@ module Reporting
         attr_reader :report
 
         def add_worksheet(rows)
-          workbook.add_worksheet(name) do |sheet|
-            sheet.set_tab_color = TAB_COLOR
-            sheet.append_row(HEADER_ROW, bold_style)
-            sheet.freeze_panes(1, 0)
+          worksheet = workbook.add_worksheet(name)
+          worksheet.set_tab_color(TAB_COLOR)
+          worksheet.append_row(HEADER_ROW, bold_style)
+          worksheet.freeze_panes(1, 0)
 
-            (rows || []).compact.each do |row|
-              sheet.append_row(row, regular_style)
-              sheet.rows.last.tap do |last_row|
-                last_row.cells[1].format = centered_style # UK endline status
-                last_row.cells[2].format = centered_style # EU endline status
-              end
-            end
+          (rows || []).compact.each do |row|
+            worksheet.append_row(row, regular_style)
+            # worksheet.rows.last.tap do |last_row|
+            #   last_row.cells[1].format = centered_style # UK endline status
+            #   last_row.cells[2].format = centered_style # EU endline status
+            # end
+          end
 
-            COLUMN_WIDTHS.each_with_index do |width, index|
-              sheet.set_column_width(index, width)
-            end
+          COLUMN_WIDTHS.each_with_index do |width, index|
+            worksheet.set_column_width(index, width)
           end
         end
 

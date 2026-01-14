@@ -16,7 +16,7 @@ module Reporting
           'Unit(s)',
         ].freeze
 
-        TAB_COLOR = '660066'.freeze
+        TAB_COLOR = 0x660066
 
         COLUMN_WIDTHS = [
           20, # Commodity code
@@ -31,27 +31,26 @@ module Reporting
         end
 
         def add_worksheet(rows)
-          workbook.add_worksheet(name) do |sheet|
-            sheet.set_tab_color = TAB_COLOR
-            sheet.append_row([METRIC], bold_style)
-            sheet.merge_range(0, 1, 4, 1)
-            sheet.append_row([SUBTEXT], regular_style)
-            sheet.append_row([FastExcel::URL.new('internal:Overview!A1')])
-            sheet.write_string(sheet.last_row_number, 0, 'Back to overview', nil)
+          worksheet = workbook.add_worksheet(name)
+          worksheet.set_tab_color(TAB_COLOR)
+          worksheet.append_row([METRIC], bold_style)
+          worksheet.merge_range(0, 1, 4, 1, SUBTEXT, regular_style)
 
-            sheet.append_row([])
-            sheet.append_row(HEADER_ROW, bold_style)
-            sheet.freeze_panes(1, 0)
-            sheet.autofilter(0, 4, 1, 4)
+          worksheet.append_row([FastExcel::URL.new("internal:'Overview'!A1")])
+          worksheet.write_string(worksheet.last_row_number, 0, 'Back to overview', nil)
 
-            (rows || []).each do |row|
-              sheet.append_row(row, regular_style)
-              sheet.rows.last[1].format = centered_style
-            end
+          worksheet.append_row([])
+          worksheet.append_row(HEADER_ROW, bold_style)
+          worksheet.freeze_panes(1, 0)
+          worksheet.autofilter(4, 0, 4, 1)
 
-            COLUMN_WIDTHS.each_with_index do |width, index|
-              sheet.set_column_width(index, width)
-            end
+          (rows || []).each do |row|
+            worksheet.append_row(row, regular_style)
+            # worksheet.rows.last[1].format = centered_style
+          end
+
+          COLUMN_WIDTHS.each_with_index do |width, index|
+            worksheet.set_column_width(index, width)
           end
         end
 

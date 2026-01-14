@@ -78,8 +78,13 @@ module Reporting
                 :print_style,
                 :as_of
 
-    def initialize
-      @workbook = FastExcel.open(constant_memory: true)
+    def initialize(filename = nil)
+      @workbook = if filename
+                    FileUtils.rm(filename) if File.exist?(filename)
+                    FastExcel.open(filename, constant_memory: true)
+                  else
+                    FastExcel.open(constant_memory: true)
+                  end
 
       @bold_style = workbook.add_format(
         bold: true,
@@ -153,7 +158,7 @@ module Reporting
       total_finish = Time.zone.now
       Rails.logger.info("Finished generating worksheets (Total Duration: #{total_finish - total_start} seconds)")
 
-      workbook
+      workbook.close
     end
 
     def add_overview_worksheet
@@ -334,9 +339,8 @@ module Reporting
       def generate(only: [])
         return if TradeTariffBackend.xi?
 
-        report = new
+        report = new(File.basename(object_key))
         workbook = report.generate(only:)
-        workbook.close
 
         if Rails.env.production?
           object.put(

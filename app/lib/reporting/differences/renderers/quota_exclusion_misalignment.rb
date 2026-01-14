@@ -21,7 +21,7 @@ module Reporting
           'New?',
         ].freeze
 
-        TAB_COLOR = 'cccc00'.freeze
+        TAB_COLOR = 0xCCCC00
 
         COLUMN_WIDTHS = [
           20,  # "Measure SID"
@@ -36,24 +36,23 @@ module Reporting
         end
 
         def add_worksheet(rows)
-          workbook.add_worksheet(name) do |sheet|
-            sheet.set_tab_color = TAB_COLOR
-            sheet.append_row([METRIC], bold_style)
-            sheet.freeze_panes(1, 0)
+          worksheet = workbook.add_worksheet(name)
+          worksheet.set_tab_color(TAB_COLOR)
+          worksheet.append_row(HEADER_ROW, bold_style)
+          worksheet.freeze_panes(1, 0)
 
-            (rows || []).compact.each do |row|
-              sheet.append_row(row)
+          (rows || []).compact.each do |row|
+            worksheet.append_row(row)
 
-              sheet.rows.last.tap do |last_row|
-                last_row.cells[1].style = centered_style
-                last_row.cells[2].style = centered_style
-                last_row.cells[3].style = print_style
-              end
-            end
+            # worksheet.rows.last.tap do |last_row|
+            #   last_row.cells[1].style = centered_style
+            #   last_row.cells[2].style = centered_style
+            #   last_row.cells[3].style = print_style
+            # end
+          end
 
-            COLUMN_WIDTHS.each_with_index do |width, index|
-              sheet.set_column_width(index, width)
-            end
+          COLUMN_WIDTHS.each_with_index do |width, index|
+            worksheet.set_column_width(index, width)
           end
         end
 
