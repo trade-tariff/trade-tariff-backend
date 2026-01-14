@@ -11,9 +11,9 @@ class TariffChangesService
   # If no date is provided, it generates for all dates since the last change
   def self.generate(date = nil)
     if date.nil?
-      last_change_date = TariffChange.max(:operation_date) || FALLBACK_START_DATE
-      if last_change_date < Time.zone.today
-        populate_backlog(from: last_change_date + 1.day, to: Time.zone.today)
+      last_change_date = TariffChangesJobStatus.last_change_date || FALLBACK_START_DATE
+      if last_change_date < Time.zone.yesterday
+        populate_backlog(from: last_change_date + 1.day, to: Time.zone.yesterday)
       end
     else
       service = new(date)

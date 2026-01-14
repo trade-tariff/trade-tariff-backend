@@ -7,13 +7,13 @@ RSpec.describe TariffChangesService do
     let(:last_change_date) { Time.zone.today - 5.days }
 
     context 'when called without a date' do
-      context 'when there are existing TariffChange records' do
+      context 'when there are existing TariffChangesJobStatus records' do
         before do
-          allow(TariffChange).to receive(:max).with(:operation_date).and_return(last_change_date)
+          allow(TariffChangesJobStatus).to receive(:last_change_date).and_return(last_change_date)
         end
 
-        context 'when last change date is before today' do
-          it 'populates backlog from day after last change to today' do
+        context 'when last change date is before yesterday' do
+          it 'populates backlog from day after last change to yesterday' do
             freeze_time do
               allow(described_class).to receive(:populate_backlog)
 
@@ -21,14 +21,14 @@ RSpec.describe TariffChangesService do
 
               expect(described_class).to have_received(:populate_backlog).with(
                 from: last_change_date + 1.day,
-                to: Time.zone.today,
+                to: Time.zone.yesterday,
               )
             end
           end
         end
 
-        context 'when last change date is today' do
-          let(:last_change_date) { Time.zone.today }
+        context 'when last change date is yesterday or later' do
+          let(:last_change_date) { Time.zone.yesterday }
 
           it 'does not populate backlog' do
             freeze_time do
@@ -42,19 +42,19 @@ RSpec.describe TariffChangesService do
         end
       end
 
-      context 'when there are no existing TariffChange records' do
+      context 'when there are no existing TariffChangesJobStatus records' do
         before do
-          allow(TariffChange).to receive(:max).with(:operation_date).and_return(nil)
+          allow(TariffChangesJobStatus).to receive(:last_change_date).and_return(nil)
         end
 
-        it 'populates backlog from after fallback start date to today' do
+        it 'populates backlog from after fallback start date to yesterday' do
           allow(described_class).to receive(:populate_backlog)
 
           described_class.generate
 
           expect(described_class).to have_received(:populate_backlog).with(
             from: described_class::FALLBACK_START_DATE + 1.day,
-            to: Time.zone.today,
+            to: Time.zone.yesterday,
           )
         end
       end
@@ -267,6 +267,22 @@ RSpec.describe TariffChangesService do
       other_service.all_changes
 
       expect(TariffChange).not_to have_received(:create)
+    end
+
+    it 'marks changes as generated for the operation date' do
+      allow(TariffChangesService::CommodityChanges).to receive(:collect).with(date).and_return([])
+      allow(TariffChangesService::CommodityDescriptionChanges).to receive(:collect).with(date).and_return([])
+      allow(TariffChangesService::MeasureChanges).to receive(:collect).with(date).and_return([])
+
+      job_status = instance_double(TariffChangesJobStatus)
+      allow(TariffChangesJobStatus).to receive(:for_date).with(date).and_return(job_status)
+      allow(job_status).to receive(:mark_changes_generated!)
+      allow(TariffChange).to receive(:delete_for)
+
+      service.all_changes
+
+      expect(TariffChangesJobStatus).to have_received(:for_date).with(date)
+      expect(job_status).to have_received(:mark_changes_generated!)
     end
 
     it 'returns a formatted hash with date, count and changes' do
