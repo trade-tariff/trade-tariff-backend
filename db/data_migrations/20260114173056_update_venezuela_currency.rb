@@ -5,9 +5,9 @@ Sequel.migration do
     ved_currency.save
 
     ExchangeRateCountryCurrency.create(country_description: 'Venezuela',
-                                         currency_code: 'VEF',
+                                         currency_code: 'VES',
                                          country_code:'VE',
-                                         currency_description: 'Bolivar Fuerte',
+                                         currency_description: 'Venezuelan Bolivar',
                                          validity_start_date: Date.new(2026,01,16),
                                          validity_end_date: nil,)
 
