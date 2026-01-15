@@ -13,10 +13,11 @@ module Sequel
         primary_key = [:oid, model_primary_key].flatten
         operation_class_name = :"#{model}::Operation"
         materialized = options.fetch(:materialized, false)
+        oplog_table = options.fetch(:oplog_table, :"#{model.table_name}_oplog")
 
         # Define ModelClass::Operation
         # e.g. Measure::Operation for measure oplog table
-        operation_class = Class.new(Sequel::Model(:"#{model.table_name}_oplog")) do
+        operation_class = Class.new(Sequel::Model(oplog_table)) do
           def record_class
             self.class.to_s.chomp('::Operation').constantize
           end

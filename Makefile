@@ -13,7 +13,7 @@ COMMON_ENV := --env-file ".env.development" \
 default: build run
 
 build:
-	docker build -t $(IMAGE_NAME) .
+	docker build -t $(IMAGE_NAME) . --no-cache
 
 run:
 	docker run \

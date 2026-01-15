@@ -516,4 +516,29 @@ RSpec.describe GoodsNomenclature do
       it { is_expected.to eq('Bar > Other') }
     end
   end
+
+  describe '#goods_nomenclature_label' do
+    subject(:label) { goods_nomenclature.goods_nomenclature_label }
+
+    let(:goods_nomenclature) { create(:commodity) }
+
+    context 'when there are no label' do
+      it { is_expected.to be_nil }
+    end
+
+    context 'when there is a label associated' do
+      before do
+        create(:goods_nomenclature_label,
+               goods_nomenclature: goods_nomenclature,
+               labels: {
+                 'descriptions' => ['Natural honey'],
+                 'colloquialisms' => ['bee honey'],
+               })
+      end
+
+      it { expect(label).to be_a(GoodsNomenclatureLabel) }
+      it { expect(label.labels['descriptions']).to include('Natural honey') }
+      it { expect(label.labels['colloquialisms']).to include('bee honey') }
+    end
+  end
 end
