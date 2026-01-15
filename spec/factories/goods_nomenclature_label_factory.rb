@@ -1,8 +1,6 @@
 FactoryBot.define do
   factory :goods_nomenclature_label do
-    transient do
-      goods_nomenclature { nil }
-    end
+    goods_nomenclature
 
     goods_nomenclature_sid do
       goods_nomenclature&.goods_nomenclature_sid || generate(:goods_nomenclature_sid)
@@ -42,24 +40,6 @@ FactoryBot.define do
           'synonyms' => [],
           'search_references' => [],
         }
-      end
-    end
-
-    trait :with_commodity do
-      after(:build) do |label, _evaluator|
-        label.goods_nomenclature = create(:commodity)
-      end
-    end
-
-    trait :with_heading do
-      after(:build) do |label, _evaluator|
-        label.goods_nomenclature = create(:heading)
-      end
-    end
-
-    trait :with_chapter do
-      after(:build) do |label, _evaluator|
-        label.goods_nomenclature = create(:chapter)
       end
     end
 
