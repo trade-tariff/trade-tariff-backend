@@ -19,8 +19,8 @@ RSpec.describe StopPressEmailWorker, type: :worker do
         stop_press_title: stop_press.title,
         stop_press_link: stop_press.public_url,
         subscription_reason: 'This is a non-chapter specific update from the UK Trade Tariff Service',
-        site_url: URI.join(TradeTariffBackend.frontend_host, 'subscriptions/').to_s,
-        unsubscribe_url: URI.join(TradeTariffBackend.frontend_host, 'subscriptions/unsubscribe/', user.stop_press_subscription).to_s,
+        site_url: "#{URI.join(TradeTariffBackend.frontend_host, 'subscriptions/')}?utm_source=private+beta&utm_medium=email&utm_campaign=stop+press+notification",
+        unsubscribe_url: "#{URI.join(TradeTariffBackend.frontend_host, 'subscriptions/unsubscribe/', user.stop_press_subscription)}?utm_source=private+beta&utm_medium=email&utm_campaign=stop+press+notification",
       }
     end
 
@@ -50,6 +50,15 @@ RSpec.describe StopPressEmailWorker, type: :worker do
       it 'does not send email' do
         instance.perform(stop_press.id, 'invalid_user_id')
         expect(client).not_to have_received(:send_email)
+      end
+    end
+
+    it 'includes tracking parameters in URLs' do
+      instance.perform(stop_press.id, user.id)
+
+      expect(client).to have_received(:send_email) do |_email, _template, personalisation, _reply_to, _reference|
+        expect(personalisation[:site_url]).to include('utm_source=private+beta&utm_medium=email&utm_campaign=stop+press+notification')
+        expect(personalisation[:unsubscribe_url]).to include('utm_source=private+beta&utm_medium=email&utm_campaign=stop+press+notification')
       end
     end
   end

@@ -13,12 +13,13 @@ class MyCommoditiesEmailWorker
     return if user.deleted
 
     as_of_date = Date.parse(date).strftime('%Y-%m-%d')
+    tracking_params = 'utm_source=private+beta&utm_medium=email&utm_campaign=commodity+watchlist'
 
     personalisation = {
       changes_count:,
       published_date: date,
-      site_url: "#{URI.join(TradeTariffBackend.frontend_host, 'subscriptions/mycommodities')}?as_of=#{as_of_date}",
-      unsubscribe_url: URI.join(TradeTariffBackend.frontend_host, 'subscriptions/unsubscribe/', user.my_commodities_subscription).to_s,
+      site_url: "#{URI.join(TradeTariffBackend.frontend_host, 'subscriptions/mycommodities')}?as_of=#{as_of_date}&#{tracking_params}",
+      unsubscribe_url: "#{URI.join(TradeTariffBackend.frontend_host, 'subscriptions/unsubscribe/', user.my_commodities_subscription)}?#{tracking_params}",
     }
 
     client.send_email(user.email, TEMPLATE_ID, personalisation, REPLY_TO_ID, nil)
