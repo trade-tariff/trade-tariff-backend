@@ -24,8 +24,8 @@ RSpec.describe MyCommoditiesEmailWorker, type: :worker do
           {
             changes_count: count,
             published_date: date,
-            site_url: "#{TradeTariffBackend.frontend_host}/subscriptions/mycommodities?as_of=2025-12-08",
-            unsubscribe_url: URI.join(TradeTariffBackend.frontend_host, 'subscriptions/unsubscribe/', user.my_commodities_subscription).to_s,
+            site_url: "#{TradeTariffBackend.frontend_host}/subscriptions/mycommodities?as_of=2025-12-08&utm_source=private+beta&utm_medium=email&utm_campaign=commodity+watchlist",
+            unsubscribe_url: "#{URI.join(TradeTariffBackend.frontend_host, 'subscriptions/unsubscribe/', user.my_commodities_subscription)}?utm_source=private+beta&utm_medium=email&utm_campaign=commodity+watchlist",
           },
           described_class::REPLY_TO_ID,
           nil,
@@ -106,6 +106,15 @@ RSpec.describe MyCommoditiesEmailWorker, type: :worker do
         expect(mock_notifier).to have_received(:send_email) do |_email, _template_id, personalisation, _reply_to, _reference|
           expect(personalisation[:published_date]).to eq(date)
         end
+      end
+    end
+
+    it 'includes tracking parameters in URLs' do
+      worker.perform(user.id, date, count)
+
+      expect(mock_notifier).to have_received(:send_email) do |_email, _template_id, personalisation, _reply_to, _reference|
+        expect(personalisation[:site_url]).to include('utm_source=private+beta&utm_medium=email&utm_campaign=commodity+watchlist')
+        expect(personalisation[:unsubscribe_url]).to include('utm_source=private+beta&utm_medium=email&utm_campaign=commodity+watchlist')
       end
     end
   end
