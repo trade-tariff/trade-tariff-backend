@@ -87,31 +87,8 @@ RSpec.describe GoodsNomenclatureLabel do
     end
   end
 
-  describe '#goods_nomenclature' do
-    context 'when associated with a Commodity' do
-      subject(:label) { create(:goods_nomenclature_label, :with_commodity) }
-
-      it { expect(label.goods_nomenclature).to be_a(Commodity) }
-      it { expect(label.goods_nomenclature_type).to eq('Commodity') }
-    end
-
-    context 'when associated with a Heading' do
-      subject(:label) { create(:goods_nomenclature_label, :with_heading) }
-
-      it { expect(label.goods_nomenclature).to be_a(Heading) }
-      it { expect(label.goods_nomenclature_type).to eq('Heading') }
-    end
-
-    context 'when associated with a Chapter' do
-      subject(:label) { create(:goods_nomenclature_label, :with_chapter) }
-
-      it { expect(label.goods_nomenclature).to be_a(Chapter) }
-      it { expect(label.goods_nomenclature_type).to eq('Chapter') }
-    end
-  end
-
   describe '#labels' do
-    subject(:labels) { create(:goods_nomenclature_label, :with_commodity, :with_labels).labels }
+    subject(:labels) { create(:goods_nomenclature_label, :with_labels).labels }
 
     it { is_expected.to be_a(Sequel::Postgres::JSONBHash) }
     it { expect(labels.keys).to include('brands', 'colloquialisms', 'descriptions', 'search_references', 'synonyms') }

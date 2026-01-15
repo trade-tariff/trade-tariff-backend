@@ -5,10 +5,7 @@ class GoodsNomenclatureLabel < Sequel::Model(Sequel[:goods_nomenclature_labels].
 
   set_primary_key [:goods_nomenclature_sid]
 
-  many_to_one :goods_nomenclature,
-              polymorphic: true,
-              key: :goods_nomenclature_sid,
-              poly_type: :goods_nomenclature_type
+  attr_accessor :goods_nomenclature
 
   def validate
     super
