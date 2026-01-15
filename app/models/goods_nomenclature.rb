@@ -58,6 +58,12 @@ class GoodsNomenclature < Sequel::Model
                         join_table: :guides_goods_nomenclatures,
                         use_optimized: true
 
+  one_to_one :goods_nomenclature_label,
+             key: :goods_nomenclature_sid,
+             primary_key: :goods_nomenclature_sid do |ds|
+               ds.with_actual(GoodsNomenclatureLabel, self)
+             end
+
   one_to_many :goods_nomenclature_indents, key: :goods_nomenclature_sid,
                                            primary_key: :goods_nomenclature_sid,
                                            graph_use_association_block: true do |ds|
