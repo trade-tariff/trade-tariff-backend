@@ -7,11 +7,7 @@ module Api
 
       set_id :uuid
 
-      attributes :active, :metadata
-
-      attribute :subscription_type do |subscription|
-        subscription.subscription_type.name
-      end
+      attributes :active
 
       attribute :meta do |subscription|
         service_class = "Api::User::#{subscription.subscription_type.name.camelize}MetaService".safe_constantize
