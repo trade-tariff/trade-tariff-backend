@@ -30,6 +30,18 @@ FactoryBot.define do
       type { 'full_chemical_cas' }
     end
 
+    trait :with_search_reference do
+      before(:create) do |search_suggestion, _evaluator|
+        if search_suggestion.type == 'search_reference'
+          create(
+            :search_reference,
+            referenced: search_suggestion.goods_nomenclature,
+            title: search_suggestion.value,
+          )
+        end
+      end
+    end
+
     initialize_with do
       SearchSuggestion.unrestrict_primary_key
       SearchSuggestion.build(attributes)
