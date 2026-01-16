@@ -4,17 +4,12 @@
 # Heading or Commodity code and redirect the user straight there.
 #
 # Otherwise it issues FuzzySearch that searches for results inside
-# green pages (synonyms) index as well as the main goods nomenclature
+# green pages (search references) index as well as the main goods nomenclature
 # index and persents those results in single response. Fuzzy searching
 # functionality is split into ReferenceMatch and GoodsNomenclatureMatch
 # classes respectively.
 
 class SearchService
-  INDEX_SIZE_MAX = 10_000 # ElasticSearch does default pagination for 10 entries
-  # per page. We do not do pagination when displaying
-  # results so have a constant much bigger than possible
-  # index size for size value.
-
   include ActiveModel::Validations
   include ActiveModel::Conversion
   include CustomRegex
