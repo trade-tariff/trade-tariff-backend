@@ -40,13 +40,17 @@ RSpec.describe Api::User::ActiveCommoditiesService do
   end
 
   describe '.refresh_caches' do
-    it 'clears and rebuilds all caches' do
-      allow(Rails.cache).to receive(:delete)
+    it 'atomically writes fresh cache data' do
+      allow(Rails.cache).to receive(:write)
+      allow(described_class).to receive_messages(
+        generate_fresh_active_commodities: [[123, '1234567890']],
+        generate_fresh_expired_commodities: [[456, '1234567891']],
+      )
 
       described_class.refresh_caches
 
-      expect(Rails.cache).to have_received(:delete).with('myott_all_active_commodities')
-      expect(Rails.cache).to have_received(:delete).with('myott_all_expired_commodities')
+      expect(Rails.cache).to have_received(:write).with('myott_all_active_commodities', [[123, '1234567890']])
+      expect(Rails.cache).to have_received(:write).with('myott_all_expired_commodities', [[456, '1234567891']])
     end
   end
 

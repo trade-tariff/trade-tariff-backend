@@ -9,15 +9,16 @@ module Api
       attr_reader :uploaded_commodity_codes, :subscription_target_ids
 
       def self.refresh_caches
-        Rails.cache.delete('myott_all_active_commodities')
-        all_active_commodities
-        Rails.cache.delete('myott_all_expired_commodities')
-        all_expired_commodities
+        Rails.cache.write('myott_all_active_commodities', generate_fresh_active_commodities)
+        Rails.cache.write('myott_all_expired_commodities', generate_fresh_expired_commodities)
+
+        @all_active_commodities = nil
+        @all_expired_commodities = nil
       end
 
       def self.all_active_commodities
-        @all_active_commodities ||= Rails.cache.fetch('myott_all_active_commodities', expires_at: 2.days.from_now) do
-          TimeMachine.now { GoodsNomenclature.actual.declarable.pluck(:goods_nomenclature_sid, :goods_nomenclature_item_id) }
+        @all_active_commodities ||= Rails.cache.fetch('myott_all_active_commodities') do
+          generate_fresh_active_commodities
         end
       end
 
@@ -26,40 +27,71 @@ module Api
         cache_key = target_sids ? "myott_expired_commodities_#{target_sids.hash}" : 'myott_all_expired_commodities'
 
         @all_expired_commodities ||= Rails.cache.fetch(cache_key, expires_at: 2.days.from_now) do
-          expired_candidates = TimeMachine.no_time_machine do
-            query = GoodsNomenclature
-              .where(producline_suffix: GoodsNomenclatureIndent::NON_GROUPING_PRODUCTLINE_SUFFIX)
-
-            query = query.where(goods_nomenclature_sid: target_sids) if target_sids
-
-            query.pluck(:goods_nomenclature_sid, :goods_nomenclature_item_id)
-              .reject { |sid, _| all_active_commodities.any? { |active_sid, _| active_sid == sid } }
-          end
-
-          return [] if expired_candidates.empty?
-
-          expired_sids = expired_candidates.map(&:first)
-
-          # Find commodities that have children within a day of the same validity_start_date
-          commodities_with_same_date_children = TimeMachine.now do
-            GoodsNomenclature
-              .where(goods_nomenclatures__goods_nomenclature_sid: expired_sids)
-              .eager(:children)
-              .all
-              .select { |commodity|
-                commodity.children.any? do |child|
-                  child.validity_start_date && commodity.validity_start_date &&
-                    child.validity_start_date <= commodity.validity_start_date + 1.day
-                end
-              }
-              .map(&:goods_nomenclature_sid)
-              .to_set
-          end
-
-          expired_candidates
-            .reject { |sid, _| commodities_with_same_date_children.include?(sid) }
-            .map { |sid, code| [sid, code] }
+          generate_fresh_expired_commodities(target_sids: target_sids)
         end
+      end
+
+      def self.generate_fresh_active_commodities
+        TimeMachine.now do
+          GoodsNomenclature.actual.declarable.pluck(:goods_nomenclature_sid, :goods_nomenclature_item_id)
+        end
+      end
+
+      def self.generate_fresh_expired_commodities(target_sids: nil)
+        expired_candidates = TimeMachine.no_time_machine do
+          query = GoodsNomenclature
+            .where(producline_suffix: GoodsNomenclatureIndent::NON_GROUPING_PRODUCTLINE_SUFFIX)
+
+          query = query.where(goods_nomenclature_sid: target_sids) if target_sids
+
+          active_sids = generate_fresh_active_commodities.map(&:first).to_set
+
+          query.pluck(:goods_nomenclature_sid, :goods_nomenclature_item_id)
+            .reject { |sid, _| active_sids.include?(sid) }
+        end
+
+        return [] if expired_candidates.empty?
+
+        expired_sids = expired_candidates.map(&:first)
+
+        # Find commodities that had children at their creation date
+        commodities_with_creation_children = had_children_at_creation(expired_sids)
+
+        expired_candidates
+          .reject { |sid, _| commodities_with_creation_children[sid] }
+          .map { |sid, code| [sid, code] }
+      end
+
+      def self.had_children_at_creation(goods_nomenclature_sids)
+        return {} if goods_nomenclature_sids.empty?
+
+        creation_data = GoodsNomenclature
+          .where(goods_nomenclature_sid: goods_nomenclature_sids)
+          .select(:goods_nomenclature_sid, :validity_start_date)
+          .all
+          .map { |gn| [gn.goods_nomenclature_sid, gn.validity_start_date] }
+
+        results = {}
+
+        # Group by creation date to minimize TimeMachine context switches
+        creation_data.group_by(&:second).each do |creation_date, sids_and_dates|
+          sids = sids_and_dates.map(&:first)
+
+          # Allow an extra day as there are some instances where a child was created the next day
+          TimeMachine.at(creation_date + 1.day) do
+            leaf_data = GoodsNomenclature
+              .actual
+              .with_leaf_column
+              .where(Sequel.qualify(:goods_nomenclatures, :goods_nomenclature_sid) => sids)
+              .all
+
+            leaf_data.each do |record|
+              results[record.goods_nomenclature_sid] = !record.values[:leaf]
+            end
+          end
+        end
+
+        results
       end
 
       def initialize(subscription)
