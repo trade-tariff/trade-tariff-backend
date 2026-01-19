@@ -64,11 +64,19 @@ module Reporting
       end
 
       def xi_object_key
-        "xi/reporting/#{year}/#{month}/#{day}/commodities_xi_#{now.strftime('%Y_%m_%d')}.csv"
+        if Rails.env.development?
+          "commodities_xi_#{now.strftime('%Y_%m_%d')}.csv"
+        else
+          "xi/reporting/#{year}/#{month}/#{day}/commodities_xi_#{now.strftime('%Y_%m_%d')}.csv"
+        end
       end
 
       def uk_object_key
-        "uk/reporting/#{year}/#{month}/#{day}/commodities_uk_#{now.strftime('%Y_%m_%d')}.csv"
+        if Rails.env.development?
+          "commodities_uk_#{now.strftime('%Y_%m_%d')}.csv"
+        else
+          "uk/reporting/#{year}/#{month}/#{day}/commodities_uk_#{now.strftime('%Y_%m_%d')}.csv"
+        end
       end
     end
   end
