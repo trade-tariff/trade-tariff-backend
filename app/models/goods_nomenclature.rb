@@ -2,10 +2,6 @@ class GoodsNomenclature < Sequel::Model
   VALID_GOODS_NOMENCLATURE_ITEM_ID_LENGTH = 10
   CLASSIFICATION_CHAPTER = '98'.freeze
 
-  extend ActiveModel::Naming
-  include Formatter
-  include ClassificationDescription
-
   set_dataset order(Sequel.asc(:goods_nomenclatures__goods_nomenclature_item_id), Sequel.asc(:goods_nomenclatures__producline_suffix))
   set_primary_key [:goods_nomenclature_sid]
 
@@ -33,6 +29,10 @@ class GoodsNomenclature < Sequel::Model
     end
   }
 
+  extend ActiveModel::Naming
+
+  include ClassificationDescription
+  include Formatter
   include GoodsNomenclatures::NestedSet
 
   one_to_one :chapter,

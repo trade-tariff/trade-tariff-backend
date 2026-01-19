@@ -37,6 +37,17 @@ module TimeMachine
     at(Time.current, &block)
   end
 
+  # Enables "relevant validity periods" mode for querying associated records.
+  #
+  # In this mode, when fetching associations via with_actual(), the query will filter
+  # based on the parent record's validity period instead of using the global point_in_time.
+  #
+  # Example: When indexing a Commodity valid from 2015-2018, we want to include
+  # Descriptions, Footnotes, etc. that were valid during 2015-2018, not what's valid
+  # at today's date or some other arbitrary timestamp.
+  #
+  # This ensures historical data is indexed with its contemporaneous associations,
+  # preserving the correct temporal relationships between records.
   def self.with_relevant_validity_periods
     raise ArgumentError, 'requires a block' unless block_given?
 

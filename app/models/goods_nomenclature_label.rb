@@ -18,9 +18,50 @@ class GoodsNomenclatureLabel < Sequel::Model(Sequel[:goods_nomenclature_labels].
     validate_uniqueness_of_sid
   end
 
+  def merge!(existing)
+    return self unless existing
+
+    self.labels = existing.labels.merge(labels) do |_key, old_val, new_val|
+      if old_val.is_a?(Array) && new_val.is_a?(Array)
+        (old_val + new_val).uniq
+      else
+        new_val.presence || old_val
+      end
+    end
+    self.operation = 'U'
+
+    self
+  end
+
   dataset_module do
     def by_sid(sid)
       where(goods_nomenclature_sid: sid).actual
+    end
+  end
+
+  class << self
+    def build(goods_nomenclature, item)
+      labels = {
+        'original_description' => goods_nomenclature.classification_description,
+        'description' => item.fetch('description', ''),
+        'known_brands' => item.fetch('known_brands', []),
+        'colloquial_terms' => item.fetch('colloquial_terms', []),
+        'synonyms' => item.fetch('synonyms', []),
+      }
+
+      new(goods_nomenclature: goods_nomenclature, labels: labels).tap do |new_label|
+        existing = goods_nomenclature.goods_nomenclature_label
+
+        new_label.merge!(existing)
+      end
+    end
+
+    def goods_nomenclature_label_total_pages
+      (goods_nomenclatures_dataset.count / TradeTariffBackend.goods_nomenclature_label_page_size.to_f).ceil
+    end
+
+    def goods_nomenclatures_dataset
+      GoodsNomenclature.actual.with_leaf_column.declarable
     end
   end
 
@@ -32,6 +73,8 @@ class GoodsNomenclatureLabel < Sequel::Model(Sequel[:goods_nomenclature_labels].
     self.goods_nomenclature_item_id = goods_nomenclature.goods_nomenclature_item_id
     self.producline_suffix = goods_nomenclature.producline_suffix
     self.goods_nomenclature_type = goods_nomenclature.class.name
+    self.operation ||= 'C'
+    self.operation_date ||= Time.zone.today
     super
   end
 

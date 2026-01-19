@@ -42,6 +42,8 @@ module Sequel
           TradeTariffRequest.time_machine_now
         end
 
+        # Returns true when associations should be filtered based on parent record validity
+        # instead of the global point_in_time. See TimeMachine.with_relevant_validity_periods
         def relevant_query?
           TradeTariffRequest.time_machine_relevant
         end
@@ -119,11 +121,18 @@ module Sequel
         #
         # Useful for forming time bound associations.
         #
+        # Filtering behavior depends on the relevant_query? flag:
+        # - When relevant_query? is true (and parent provided): filters by parent's validity period
+        # - When relevant_query? is false/nil: filters by global point_in_time
+        #
         def with_actual(assoc, parent = nil)
           klass = assoc.to_s.classify.constantize
 
+          # When relevant_query? is true, use parent's validity period to filter associations.
+          # This ensures we get associations that were valid during the parent record's lifetime.
           if parent && !parent.instance_of?(Class) && klass.relevant_query?
             filter { |o| o.<=(klass.period_start_date_column, parent.send(parent.class.period_start_date_column.column)) & (o.>=(klass.period_end_date_column, parent.send(parent.class.period_end_date_column.column)) | ({ klass.period_end_date_column => nil })) }
+          # Otherwise, use the global point_in_time if set
           elsif klass.point_in_time.present?
             filter { |o| o.<=(klass.period_start_date_column, klass.point_in_time) & (o.>=(klass.period_end_date_column, klass.point_in_time) | ({ klass.period_end_date_column => nil })) }
           else

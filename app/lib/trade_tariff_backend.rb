@@ -335,5 +335,45 @@ module TradeTariffBackend
     def myott_report_email
       ENV['MYOTT_REPORT_EMAIL']
     end
+
+    def ai_model
+      ENV.fetch('AI_MODEL', 'gpt-5.1-2025-11-13')
+    end
+
+    def ai_client
+      @ai_client ||= OpenaiClient.new
+    end
+
+    def openai_user
+      ENV['OPENAI_USER']
+    end
+
+    def openai_api_key
+      ENV['OPENAI_API_KEY']
+    end
+
+    def openai_api_base_url
+      ENV.fetch('OPENAI_API_BASE_URL', 'https://api.openai.com/v1')
+    end
+
+    def openai_api_timeout
+      ENV.fetch('OPENAI_API_TIMEOUT', '180').to_i
+    end
+
+    def openai_api_open_timeout
+      ENV.fetch('OPENAI_API_OPEN_TIMEOUT', '60').to_i
+    end
+
+    def user_agent
+      "TradeTariffBackend/#{revision}"
+    end
+
+    def interactive_search_max_attempts
+      @interactive_search_max_attempts ||= ENV.fetch('INTERACTIVE_SEARCH_MAX_ATTEMPTS', 2).to_i
+    end
+
+    def goods_nomenclature_label_page_size
+      ENV.fetch('GOODS_NOMENCLATURE_LABEL_PAGE_SIZE', '10').to_i
+    end
   end
 end
