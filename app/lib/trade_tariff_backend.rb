@@ -337,7 +337,7 @@ module TradeTariffBackend
     end
 
     def ai_model
-      ENV.fetch('AI_MODEL', 'gpt-5.1-2025-11-13')
+      ENV.fetch('AI_MODEL', 'gpt-5.2')
     end
 
     def ai_client
@@ -345,7 +345,7 @@ module TradeTariffBackend
     end
 
     def openai_user
-      ENV['OPENAI_USER']
+      ENV.fetch('OPENAI_USER', 'hmrc-ott')
     end
 
     def openai_api_key

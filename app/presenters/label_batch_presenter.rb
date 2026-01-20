@@ -11,8 +11,8 @@ class LabelBatchPresenter < SimpleDelegator
     end
   end
 
-  def as_json(_options = {})
-    map do |goods_nomenclature|
+  def to_json(*_args)
+    map { |goods_nomenclature|
       description = goods_nomenclature.classification_description
 
       presented = goods_nomenclature.as_json(
@@ -23,6 +23,6 @@ class LabelBatchPresenter < SimpleDelegator
       presented['original_description'] = description
 
       presented
-    end
+    }.to_json
   end
 end

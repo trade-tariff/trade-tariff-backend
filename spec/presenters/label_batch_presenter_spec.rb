@@ -36,23 +36,23 @@ RSpec.describe LabelBatchPresenter do
     end
   end
 
-  describe '#as_json' do
-    it 'returns an array of presented goods nomenclatures' do
-      result = presenter.as_json
+  describe '#to_json' do
+    it 'returns a JSON array of presented goods nomenclatures' do
+      result = JSON.parse(presenter.to_json)
 
       expect(result).to be_an(Array)
       expect(result.length).to eq(2)
     end
 
     it 'includes goods_nomenclature_item_id for each item' do
-      result = presenter.as_json
+      result = JSON.parse(presenter.to_json)
 
       expect(result[0]['goods_nomenclature_item_id']).to eq('0101210000')
       expect(result[1]['goods_nomenclature_item_id']).to eq('0101290000')
     end
 
     it 'includes original_description for each item' do
-      result = presenter.as_json
+      result = JSON.parse(presenter.to_json)
 
       expect(result[0]['original_description']).to eq('Pure-bred breeding animals - Horses')
       expect(result[1]['original_description']).to eq('Other horses')

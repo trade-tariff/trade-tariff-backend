@@ -63,27 +63,23 @@ class OpenaiClient
   end
 
   MODEL_CONFIGS = {
-    # GPT-5 Series (flagship, adaptive reasoning)
-    'gpt-5.1-2025-11-13' => { reasoning_effort: 'none' }, # Latest flagship with extended caching & coding
-    'gpt-5-2025-10-03' => { reasoning_effort: 'high' }, # Updated base GPT-5 for general tasks
+    # GPT-5 Series (flagship models)
+    'gpt-5.2' => { reasoning_effort: 'high' },             # Latest flagship model
+    'gpt-5.1-2025-11-13' => { reasoning_effort: 'none' },  # Extended caching & coding
+    'gpt-5-2025-08-07' => { reasoning_effort: 'high' },    # Base GPT-5
 
-    # o-Series (advanced reasoning previews)
-    'o3-pro-2025-06-10' => { reasoning_effort: 'high' },   # Pro version of o3 for complex reasoning
-    'o1-pro' => { reasoning_effort: 'high' },              # o1 Pro for agentic tasks
-    'o1-preview' => { reasoning_effort: 'high' },          # Original o1 preview
-    'o1-mini' => { reasoning_effort: 'high' },             # Lightweight o1 variant
+    # o-Series (reasoning models)
+    'o4-mini-2025-04-16' => { reasoning_effort: 'high' },  # Latest small reasoning model
+    'o3-2025-04-16' => { reasoning_effort: 'high' },       # Full o3 reasoning model
+    'o3-pro' => { reasoning_effort: 'high' },              # Pro version for complex reasoning
 
-    # GPT-5-Codex (coding-focused)
-    'gpt-5-codex-max-2025-11-19' => { reasoning_effort: 'high' }, # Max version for heavy coding/reasoning
-    'gpt-5-codex-mini' => { reasoning_effort: 'medium' }, # Mini for balanced speed/coding
+    # GPT-4.1 Series (1M token context)
+    'gpt-4.1-2025-04-14' => {},      # Improved instruction following, 1M context
+    'gpt-4.1-mini-2025-04-14' => {}, # Mini variant, 1M context
+    'gpt-4.1-nano-2025-04-14' => {}, # Nano variant, 1M context
 
-    # GPT-4 Series (legacy, no full reasoning support)
-    'gpt-4o-2024-08-06' => {},     # Multimodal GPT-4o
+    # GPT-4 Series (legacy)
+    'gpt-4o' => {},                # Multimodal GPT-4o
     'gpt-4o-mini' => {},           # Efficient mini variant
-    'gpt-4.5' => {},               # Transitional model
-
-    # Specialized (realtime/audio, limited reasoning)
-    'gpt-realtime' => {},          # Realtime text/audio I/O
-    'gpt-audio' => {},             # Audio-focused completions
   }.freeze
 end

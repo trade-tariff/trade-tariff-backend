@@ -1,3 +1,6 @@
+require_relative '../lib/label_generator/instrumentation'
+require_relative '../lib/label_generator/logger'
+
 class RelabelGoodsNomenclatureWorker
   include Sidekiq::Worker
 
@@ -6,15 +9,39 @@ class RelabelGoodsNomenclatureWorker
   PAGE_SIZE = TradeTariffBackend.goods_nomenclature_label_page_size
 
   def perform
-    total_pages = goods_nomenclature_label_total_pages
+    # Refresh materialized view to get accurate counts
+    refresh_materialized_view!
 
-    total_pages.times do |page_index|
-      page_number = page_index + 1
-      RelabelGoodsNomenclaturePageWorker.perform_async(page_number)
+    total_records = GoodsNomenclatureLabel.goods_nomenclatures_dataset.count
+    total_pages = GoodsNomenclatureLabel.goods_nomenclature_label_total_pages
+    total_labels = GoodsNomenclatureLabel.count
+
+    LabelGenerator::Instrumentation.coverage_snapshot(
+      total_goods_nomenclatures: total_records,
+      total_labels:,
+    )
+
+    LabelGenerator::Instrumentation.generation_started(
+      total_pages:,
+      page_size: PAGE_SIZE,
+      total_records:,
+    )
+
+    LabelGenerator::Instrumentation.generation_completed(total_pages:) do
+      total_pages.times do |page_index|
+        page_number = page_index + 1
+        RelabelGoodsNomenclaturePageWorker.perform_async(page_number)
+      end
     end
-
-    Rails.logger.info "Enqueued #{total_pages} relabelling jobs"
   end
 
-  delegate :goods_nomenclature_label_total_pages, to: GoodsNomenclatureLabel
+  private
+
+  def refresh_materialized_view!
+    return if Rails.env.test?
+
+    GoodsNomenclatureLabel.refresh!(concurrently: false)
+  rescue StandardError => e
+    Rails.logger.warn "Failed to refresh materialized view: #{e.message}"
+  end
 end

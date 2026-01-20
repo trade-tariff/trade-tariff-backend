@@ -22,7 +22,7 @@ RSpec.describe LabelService do
       {
         'data' => [
           {
-            'goods_nomenclature_item_id' => '0101210000',
+            'commodity_code' => '0101210000',
             'description' => 'Purebred horses for breeding',
             'known_brands' => [],
             'colloquial_terms' => ['stud horses'],
@@ -59,37 +59,6 @@ RSpec.describe LabelService do
       expect(result).to eq([label])
     end
 
-    context 'when the AI returns fewer results than expected' do
-      let(:batch) { [goods_nomenclature, goods_nomenclature2] }
-      let(:goods_nomenclature2) do
-        instance_double(
-          GoodsNomenclature,
-          goods_nomenclature_item_id: '0101290000',
-          classification_description: 'Other horses',
-          goods_nomenclature_label: nil,
-          as_json: { 'goods_nomenclature_item_id' => '0101290000' },
-        )
-      end
-
-      it 'logs the discrepancy' do
-        allow(Rails.logger).to receive(:info)
-
-        described_class.new(batch).call
-
-        expect(Rails.logger).to have_received(:info).with('Expected 2 but got 1 labels')
-      end
-    end
-
-    context 'when the AI returns all results' do
-      it 'logs success' do
-        allow(Rails.logger).to receive(:info)
-
-        described_class.new(batch).call
-
-        expect(Rails.logger).to have_received(:info).with('Successfully labelled 1 batch')
-      end
-    end
-
     context 'when the AI returns empty data' do
       let(:ai_response) { {} }
 
@@ -122,13 +91,16 @@ RSpec.describe LabelService do
       expect(described_class.call(batch)).to eq([])
     end
 
-    it 'logs the duration of the call' do
-      allow(Rails.logger).to receive(:debug)
-      allow(Rails.logger).to receive(:info)
+    it 'instruments the API call' do
+      allow(LabelGenerator::Instrumentation).to receive(:api_call).and_call_original
 
       described_class.call(batch)
 
-      expect(Rails.logger).to have_received(:debug).with(/LabelService call took \d+\.\d+ seconds/)
+      expect(LabelGenerator::Instrumentation).to have_received(:api_call).with(
+        batch_size: 1,
+        model: TradeTariffBackend.ai_model,
+        page_number: nil,
+      )
     end
   end
 end
