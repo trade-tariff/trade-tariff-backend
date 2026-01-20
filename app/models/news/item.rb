@@ -42,7 +42,7 @@ module News
       to_remove = collections.pluck(:id) - collection_ids
       to_remove.each(&method(:remove_collection))
 
-      StopPressSubscriptionWorker.perform_async(id) if TradeTariffBackend.myott? && emailable?
+      Sidekiq::Client.enqueue_in(1.minute, StopPressSubscriptionWorker, id) if TradeTariffBackend.myott? && emailable?
     end
 
     def validate

@@ -520,7 +520,7 @@ RSpec.describe News::Item do
     let(:news_item) { create :news_item, notify_subscribers: true, collection_ids: collection.id }
 
     before do
-      allow(StopPressSubscriptionWorker).to receive(:perform_async)
+      allow(Sidekiq::Client).to receive(:enqueue_in)
       # disable calling worker initially
       allow(TradeTariffBackend).to receive(:myott?).and_return(false)
       news_item.save
@@ -529,18 +529,18 @@ RSpec.describe News::Item do
     it 'calls worker when saved' do
       allow(TradeTariffBackend).to receive(:myott?).and_return(true)
       news_item.update(precis: 'Updated precis')
-      expect(StopPressSubscriptionWorker).to have_received(:perform_async).with(news_item.id)
+      expect(Sidekiq::Client).to have_received(:enqueue_in).with(1.minute, StopPressSubscriptionWorker, news_item.id)
     end
 
     it 'does not call worker when feature flag is off' do
       news_item.update(precis: 'Updated precis')
-      expect(StopPressSubscriptionWorker).not_to have_received(:perform_async).with(news_item.id)
+      expect(Sidekiq::Client).not_to have_received(:enqueue_in)
     end
 
     it 'does not call worker when notify_subscribers is false' do
       allow(TradeTariffBackend).to receive(:myott?).and_return(true)
       news_item.update(notify_subscribers: false)
-      expect(StopPressSubscriptionWorker).not_to have_received(:perform_async).with(news_item.id)
+      expect(Sidekiq::Client).not_to have_received(:enqueue_in)
     end
   end
 end
