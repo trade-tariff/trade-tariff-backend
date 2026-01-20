@@ -150,7 +150,7 @@ module Reporting
             measures = measures.sort
 
             measures.each do |measure|
-              next unless measure.measure_type.measure_type_series_id.in?(RELEVANT_MEASURE_TYPE_SERIES_IDS)
+              next unless measure.measure_type&.measure_type_series_id&.in?(RELEVANT_MEASURE_TYPE_SERIES_IDS)
 
               measure.trackedmodel_ptr_id = index
 
