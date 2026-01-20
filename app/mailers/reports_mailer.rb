@@ -6,7 +6,7 @@ class ReportsMailer < ApplicationMailer
     @sections = report.sections
     @report_date = report.as_of.to_date.to_fs(:govuk)
 
-    attachments["differences_#{report.as_of}.xlsx"] = report.package.to_stream.read
+    attachments["differences_#{report.as_of}.xlsx"] = report.workbook.read_string
 
     mail subject: "[HMRC Online Trade Tariff Support] UK tariff - potential issues report #{report.as_of}"
   end

@@ -1,7 +1,7 @@
 module Reporting
-  # Generates a report which highlights anomolies in the uk Tariff data and
-  # also relies on source date about supplementary units and commodities to compare
-  # the uk and xi data.
+  # Generates a report which highlights anomalies in the UK Tariff data and also
+  # relies on source date about supplementary units and commodities to compare
+  # the UK and XI data.
   class Differences
     MEASURE_EAGER = [
       {
@@ -71,55 +71,57 @@ module Reporting
 
     extend Reporting::Reportable
 
-    attr_reader :package,
-                :workbook,
+    attr_reader :workbook,
                 :regular_style,
                 :bold_style,
                 :centered_style,
                 :print_style,
                 :as_of
 
-    def initialize
-      @package = Axlsx::Package.new
-      Axlsx.escape_formulas = false
-      @package.use_shared_strings = true
-      @workbook = package.workbook
-      @bold_style = workbook.styles.add_style(
-        b: true,
+    def initialize(filename = nil)
+      @workbook = if filename
+                    FileUtils.rm(filename) if File.exist?(filename)
+                    FastExcel.open(filename, constant_memory: true)
+                  else
+                    FastExcel.open(constant_memory: true)
+                  end
+
+      @bold_style = workbook.add_format(
+        bold: true,
         font_name: 'Calibri',
-        sz: 11,
+        font_size: 11,
       )
-      @regular_style = workbook.styles.add_style(
-        alignment: {
-          wrap_text: true,
-          horizontal: :left,
-          vertical: :top,
-        },
+
+      @regular_style = workbook.add_format(
+        align: { h: :left, v: :top },
         font_name: 'Calibri',
-        sz: 11,
+        font_size: 11,
+        text_wrap: true,
       )
-      @centered_style = workbook.styles.add_style(
-        alignment: {
-          horizontal: :center,
-          wrap_text: true,
-        },
+
+      @centered_style = workbook.add_format(
+        align: { h: :center },
         font_name: 'Calibri',
-        sz: 11,
+        font_size: 11,
+        text_wrap: true,
       )
-      @print_style = workbook.styles.add_style(
-        alignment: {
-          wrap_text: true,
-          horizontal: :left,
-          vertical: :top,
-        },
+
+      @print_style = workbook.add_format(
+        align: { h: :left, v: :top },
         font_name: 'Courier New',
-        sz: 11,
+        font_size: 11,
+        text_wrap: true,
       )
+
       @as_of = Time.zone.today.iso8601
     end
 
     def generate(only: [])
       total_start = Time.zone.now
+
+      # fast_excel cannot rotate sheets. as Overview must come first, create a
+      # blank sheet to position it correctly, then populate it last
+      workbook.add_worksheet('Overview')
 
       methods = %i[
         add_missing_from_uk_worksheet
@@ -160,7 +162,7 @@ module Reporting
       total_finish = Time.zone.now
       Rails.logger.info("Finished generating worksheets (Total Duration: #{total_finish - total_start} seconds)")
 
-      package
+      workbook.close
     end
 
     def add_overview_worksheet
@@ -341,13 +343,12 @@ module Reporting
       def generate(only: [])
         return if TradeTariffBackend.xi?
 
-        report = new
-        package = report.generate(only:)
-        package.serialize('differences.xlsx') if Rails.env.development?
+        report = new(File.basename(object_key))
+        workbook = report.generate(only:)
 
         if Rails.env.production?
           object.put(
-            body: package.to_stream.read,
+            body: workbook.read_string,
             content_type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
           )
         end

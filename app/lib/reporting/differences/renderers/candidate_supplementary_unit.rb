@@ -16,17 +16,12 @@ module Reporting
           'Unit(s)',
         ].freeze
 
-        TAB_COLOR = '660066'.freeze
-
-        CELL_TYPES = Array.new(HEADER_ROW.size, :string).freeze
+        TAB_COLOR = 0x660066
 
         COLUMN_WIDTHS = [
           20, # Commodity code
           20, # Unit(s)
         ].freeze
-
-        AUTOFILTER_CELL_RANGE = 'A5:B5'.freeze
-        FROZEN_VIEW_STARTING_CELL = 'A5'.freeze
 
         METRIC = 'Supplementary units that should be present'.freeze
         SUBTEXT = 'Excise etc. may require a supp unit that is not provided'.freeze
@@ -36,32 +31,40 @@ module Reporting
         end
 
         def add_worksheet(rows)
-          workbook.add_worksheet(name:) do |sheet|
-            sheet.sheet_pr.tab_color = TAB_COLOR
-            sheet.add_row([METRIC], style: bold_style)
-            sheet.merge_cells('A2:E2')
-            sheet.add_row([SUBTEXT], style: regular_style)
-            sheet.add_row(['Back to overview'])
-            sheet.add_hyperlink(
-              location: "'Overview'!A1",
-              target: :sheet,
-              ref: sheet.rows.last[0].r,
+          worksheet = workbook.add_worksheet(name)
+          worksheet.set_tab_color(TAB_COLOR)
+          worksheet.append_row([METRIC], bold_style)
+          worksheet.append_row([])
+          worksheet.merge_range(1, 0, 1, 4, SUBTEXT, regular_style)
+
+          worksheet.append_row([])
+          worksheet.write_url_opt(
+            worksheet.last_row_number,
+            0,
+            "internal:'Overview'!A1",
+            nil,
+            'Back to overview',
+            nil,
+          )
+          worksheet.append_row([])
+
+          worksheet.append_row(HEADER_ROW, bold_style)
+          worksheet.autofilter(4, 0, 4, 1)
+          worksheet.freeze_panes(5, 0)
+
+          (rows || []).compact.each do |row|
+            worksheet.append_row(
+              row,
+              [
+                regular_style,
+                centered_style,
+                regular_style,
+              ],
             )
-            sheet.add_row([])
-            sheet.add_row(HEADER_ROW, style: bold_style)
-            sheet.auto_filter = AUTOFILTER_CELL_RANGE
-            sheet.sheet_view.pane do |pane|
-              pane.top_left_cell = FROZEN_VIEW_STARTING_CELL
-              pane.state = :frozen
-              pane.y_split = 1
-            end
+          end
 
-            (rows || []).each do |row|
-              sheet.add_row(row, types: CELL_TYPES, style: regular_style)
-              sheet.rows.last[1].style = centered_style
-            end
-
-            sheet.column_widths(*COLUMN_WIDTHS)
+          COLUMN_WIDTHS.each_with_index do |width, index|
+            worksheet.set_column_width(index, width)
           end
         end
 

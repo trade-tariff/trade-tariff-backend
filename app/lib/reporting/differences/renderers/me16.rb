@@ -14,17 +14,12 @@ module Reporting
           'Measure type',
         ].freeze
 
-        TAB_COLOR = '000000'.freeze
-
-        CELL_TYPES = Array.new(HEADER_ROW.size, :string).freeze
+        TAB_COLOR = 0x000000
 
         COLUMN_WIDTHS = [
           30, # Commodity code
           20, # Measure type
         ].freeze
-
-        AUTOFILTER_CELL_RANGE = 'A5:B5'.freeze
-        FROZEN_VIEW_STARTING_CELL = 'A5'.freeze
 
         METRIC = 'ME16 candidates'.freeze
         SUBTEXT = 'This indicates that there are comm codes where a duty exists both with and without additional codes, which breaks ME16'.freeze
@@ -34,33 +29,34 @@ module Reporting
         end
 
         def add_worksheet(rows)
-          workbook.add_worksheet(name:) do |sheet|
-            sheet.sheet_pr.tab_color = TAB_COLOR
-            sheet.add_row([METRIC], style: bold_style)
-            subtext_row = sheet.add_row([SUBTEXT], style: regular_style)
-            subtext_row.height = 30
-            sheet.merge_cells('A2:E2')
-            sheet.add_row(['Back to overview'])
-            sheet.add_hyperlink(
-              location: "'Overview'!A1",
-              target: :sheet,
-              ref: sheet.rows.last[0].r,
-            )
-            sheet.add_row([])
+          worksheet = workbook.add_worksheet(name)
+          worksheet.set_tab_color(TAB_COLOR)
+          worksheet.append_row([METRIC], bold_style)
+          worksheet.append_row([])
+          worksheet.merge_range(1, 0, 1, 4, SUBTEXT, regular_style)
+          worksheet.set_row(worksheet.last_row_number, 30, nil)
 
-            sheet.add_row(HEADER_ROW, style: bold_style)
-            sheet.auto_filter = AUTOFILTER_CELL_RANGE
-            sheet.sheet_view.pane do |pane|
-              pane.top_left_cell = FROZEN_VIEW_STARTING_CELL
-              pane.state = :frozen
-              pane.y_split = 1
-            end
+          worksheet.append_row([])
+          worksheet.write_url_opt(
+            worksheet.last_row_number,
+            0,
+            "internal:'Overview'!A1",
+            nil,
+            'Back to overview',
+            nil,
+          )
+          worksheet.append_row([])
 
-            (rows || []).compact.each do |row|
-              sheet.add_row(row, types: CELL_TYPES, style: regular_style)
-            end
+          worksheet.append_row(HEADER_ROW, bold_style)
+          worksheet.autofilter(4, 0, 4, 4)
+          worksheet.freeze_panes(5, 0)
 
-            sheet.column_widths(*COLUMN_WIDTHS)
+          (rows || []).compact.each do |row|
+            worksheet.append_row(row, regular_style)
+          end
+
+          COLUMN_WIDTHS.each_with_index do |width, index|
+            worksheet.set_column_width(index, width)
           end
 
           Rails.logger.debug("Query count: #{::SequelRails::Railties::LogSubscriber.count}")

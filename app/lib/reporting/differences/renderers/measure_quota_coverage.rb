@@ -5,7 +5,10 @@ module Reporting
         # Find all measures that have quota definitions
         #
         # Checks to see if there is at least one definition within each measures validity window
-        delegate :workbook, :bold_style, :regular_style, to: :report
+        delegate :workbook,
+                 :bold_style,
+                 :regular_style,
+                 to: :report
 
         WORKSHEET_NAME = 'Measure quot def coverage'.freeze
 
@@ -19,35 +22,29 @@ module Reporting
           'New?',
         ].freeze
 
-        TAB_COLOR = 'cccc00'.freeze
-        CELL_TYPES = Array.new(HEADER_ROW.size, :string).freeze
+        TAB_COLOR = 0xCCCC00
+
         COLUMN_WIDTHS = [20] * HEADER_ROW.size
-        FROZEN_VIEW_STARTING_CELL = 'A2'.freeze
 
         def initialize(report)
           @report = report
         end
 
         def add_worksheet(rows)
-          workbook.add_worksheet(name:) do |sheet|
-            sheet.sheet_pr.tab_color = TAB_COLOR
-            sheet.add_row(HEADER_ROW, style: bold_style)
-            sheet.sheet_view.pane do |pane|
-              pane.top_left_cell = FROZEN_VIEW_STARTING_CELL
-              pane.state = :frozen
-              pane.y_split = 1
-            end
+          worksheet = workbook.add_worksheet(name)
+          worksheet.set_tab_color(TAB_COLOR)
+          worksheet.append_row(HEADER_ROW, bold_style)
+          worksheet.freeze_panes(1, 0)
 
-            (rows || []).each do |row|
-              sheet.add_row(
-                row,
-                types: CELL_TYPES,
-                style: regular_style,
-              )
-            end
-
-            sheet.column_widths(*COLUMN_WIDTHS)
+          (rows || []).each do |row|
+            worksheet.append_row(row, regular_style)
           end
+
+          COLUMN_WIDTHS.each_with_index do |width, index|
+            worksheet.set_column_width(index, width)
+          end
+
+          Rails.logger.debug("Query count: #{::SequelRails::Railties::LogSubscriber.count}")
         end
 
         def name

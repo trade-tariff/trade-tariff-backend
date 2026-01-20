@@ -21,9 +21,7 @@ module Reporting
           'New?',
         ].freeze
 
-        TAB_COLOR = 'cccc00'.freeze
-
-        CELL_TYPES = Array.new(HEADER_ROW.size, :string).freeze
+        TAB_COLOR = 0xCCCC00
 
         COLUMN_WIDTHS = [
           20,  # "Measure SID"
@@ -33,33 +31,31 @@ module Reporting
           12, # New
         ].freeze
 
-        FROZEN_VIEW_STARTING_CELL = 'A2'.freeze
-
         def initialize(report)
           @report = report
         end
 
         def add_worksheet(rows)
-          workbook.add_worksheet(name:) do |sheet|
-            sheet.sheet_pr.tab_color = TAB_COLOR
-            sheet.add_row(HEADER_ROW, style: bold_style)
-            sheet.sheet_view.pane do |pane|
-              pane.top_left_cell = FROZEN_VIEW_STARTING_CELL
-              pane.state = :frozen
-              pane.y_split = 1
-            end
+          worksheet = workbook.add_worksheet(name)
+          worksheet.set_tab_color(TAB_COLOR)
+          worksheet.append_row(HEADER_ROW, bold_style)
+          worksheet.freeze_panes(1, 0)
 
-            (rows || []).compact.each do |row|
-              sheet.add_row(row, types: CELL_TYPES)
+          (rows || []).compact.each do |row|
+            worksheet.append_row(
+              row,
+              [
+                regular_style,
+                centered_style,
+                centered_style,
+                print_style,
+                regular_style,
+              ],
+            )
+          end
 
-              sheet.rows.last.tap do |last_row|
-                last_row.cells[1].style = centered_style
-                last_row.cells[2].style = centered_style
-                last_row.cells[3].style = print_style
-              end
-            end
-
-            sheet.column_widths(*COLUMN_WIDTHS)
+          COLUMN_WIDTHS.each_with_index do |width, index|
+            worksheet.set_column_width(index, width)
           end
         end
 

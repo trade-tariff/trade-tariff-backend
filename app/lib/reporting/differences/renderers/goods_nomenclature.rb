@@ -23,9 +23,7 @@ module Reporting
           'New?',
         ].freeze
 
-        TAB_COLOR = 'cc0000'.freeze
-
-        CELL_TYPES = Array.new(HEADER_ROW.size, :string).freeze
+        TAB_COLOR = 0xCC0000
 
         COLUMN_WIDTHS = [
           12, # SID
@@ -39,8 +37,6 @@ module Reporting
           12, # New
         ].freeze
 
-        FROZEN_VIEW_STARTING_CELL = 'A2'.freeze
-
         def initialize(source, target, report)
           @source = source
           @target = target
@@ -51,24 +47,30 @@ module Reporting
         attr_reader :source, :target, :report
 
         def add_worksheet(rows)
-          workbook.add_worksheet(name:) do |sheet|
-            sheet.sheet_pr.tab_color = TAB_COLOR
-            sheet.add_row(HEADER_ROW, style: bold_style)
-            sheet.sheet_view.pane do |pane|
-              pane.top_left_cell = FROZEN_VIEW_STARTING_CELL
-              pane.state = :frozen
-              pane.y_split = 1
-            end
+          worksheet = workbook.add_worksheet(name)
+          worksheet.set_tab_color(TAB_COLOR)
+          worksheet.append_row(HEADER_ROW, bold_style)
+          worksheet.freeze_panes(1, 0)
 
-            (rows || []).each do |row|
-              sheet.add_row(row, types: CELL_TYPES, style: regular_style)
-              sheet.rows.last.tap do |last_row|
-                last_row.cells[5].style = centered_style # Indentation
-                last_row.cells[6].style = centered_style # End line
-              end
-            end
+          (rows || []).each do |row|
+            worksheet.append_row(
+              row,
+              [
+                regular_style,
+                regular_style,
+                regular_style,
+                regular_style,
+                regular_style,
+                centered_style,
+                centered_style,
+                regular_style,
+                regular_style,
+              ],
+            )
+          end
 
-            sheet.column_widths(*COLUMN_WIDTHS)
+          COLUMN_WIDTHS.each_with_index do |width, index|
+            worksheet.set_column_width(index, width)
           end
         end
 
