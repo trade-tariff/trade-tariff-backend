@@ -26,7 +26,7 @@ module Api
       def self.all_expired_commodities(target_sids: nil)
         cache_key = target_sids ? "myott_expired_commodities_#{target_sids.hash}" : 'myott_all_expired_commodities'
 
-        @all_expired_commodities ||= Rails.cache.fetch(cache_key, expires_at: 2.days.from_now) do
+        @all_expired_commodities ||= Rails.cache.fetch(cache_key) do
           generate_fresh_expired_commodities(target_sids: target_sids)
         end
       end
