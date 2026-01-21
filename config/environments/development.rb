@@ -81,5 +81,7 @@ Rails.application.configure do
   config.action_controller.raise_on_missing_callback_actions = true
 
   # NOTE: We must output to STDOUT to give visibility to N+1s. You can configure a higher RAILS_LOG_LEVEL in .env.development or in .env if you want to reduce the verbosity.
-  config.logger = SchemaQueryFilterLogger.new(Logger.new($stdout))
+  config.after_initialize do
+    Rails.logger = SchemaQueryFilterLogger.new(Rails.logger)
+  end
 end
