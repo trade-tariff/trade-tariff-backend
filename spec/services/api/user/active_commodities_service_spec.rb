@@ -197,6 +197,7 @@ RSpec.describe Api::User::ActiveCommoditiesService do
         active: expected_active_codes.count,
         expired: expected_expired_codes.count,
         invalid: expected_invalid_codes.count,
+        total: expected_active_codes.count + expected_expired_codes.count + expected_invalid_codes.count,
       }
     end
 
@@ -209,7 +210,7 @@ RSpec.describe Api::User::ActiveCommoditiesService do
       let(:empty_service) { described_class.new(empty_subscription) }
 
       it 'returns empty hash' do
-        expect(empty_service.call).to eq({})
+        expect(empty_service.call).to eq({ active: 0, expired: 0, invalid: 0, total: 0 })
       end
     end
 
@@ -218,7 +219,7 @@ RSpec.describe Api::User::ActiveCommoditiesService do
       let(:nil_service) { described_class.new(nil_subscription) }
 
       it 'returns empty hash' do
-        expect(nil_service.call).to eq({})
+        expect(nil_service.call).to eq({ active: 0, expired: 0, invalid: 0, total: 0 })
       end
     end
 
@@ -232,6 +233,7 @@ RSpec.describe Api::User::ActiveCommoditiesService do
           active: 0,
           expired: 0,
           invalid: commodity_codes.count,
+          total: commodity_codes.count,
         })
       end
     end
@@ -241,7 +243,7 @@ RSpec.describe Api::User::ActiveCommoditiesService do
       let(:empty_codes_service) { described_class.new(empty_codes_subscription) }
 
       it 'returns empty hash from call method' do
-        expect(empty_codes_service.call).to eq({})
+        expect(empty_codes_service.call).to eq({ active: 0, expired: 0, invalid: 0, total: 0 })
       end
 
       it 'returns empty arrays from paginated methods' do
