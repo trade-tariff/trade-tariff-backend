@@ -1,4 +1,4 @@
-NOTIFY_CONFIGURATION = if Rails.env.production?
+NOTIFY_CONFIGURATION = if ENV['ENVIRONMENT'] == 'production'
   { # rubocop:disable Layout/IndentationWidth
     templates: {
       enquiry_form: {
