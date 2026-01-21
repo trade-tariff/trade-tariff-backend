@@ -14,6 +14,7 @@ class ActionLogReportWorker
 
     action_logs = PublicUsers::ActionLog
                     .where(Sequel.lit('created_at >= ? AND created_at <= ?', start_date, end_date))
+                    .order(:id)
                     .all
 
     return if action_logs.empty?
