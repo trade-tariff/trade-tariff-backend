@@ -13,7 +13,7 @@ namespace :labels do
 
   desc 'Show label coverage statistics'
   task coverage: :environment do
-    GoodsNomenclatureLabel.refresh!(concurrently: true) if GoodsNomenclatureLabel.actually_materialized?
+    GoodsNomenclatureLabel.refresh!(concurrently: false)
 
     TimeMachine.now do
       total_gn = GoodsNomenclature.actual.with_leaf_column.declarable.count

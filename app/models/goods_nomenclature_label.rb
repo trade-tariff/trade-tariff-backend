@@ -18,21 +18,6 @@ class GoodsNomenclatureLabel < Sequel::Model(Sequel[:goods_nomenclature_labels].
     validate_uniqueness_of_sid
   end
 
-  def merge!(existing)
-    return self unless existing
-
-    self.labels = existing.labels.merge(labels) do |_key, old_val, new_val|
-      if old_val.is_a?(Array) && new_val.is_a?(Array)
-        (old_val + new_val).uniq
-      else
-        new_val.presence || old_val
-      end
-    end
-    self.operation = 'U'
-
-    self
-  end
-
   dataset_module do
     def by_sid(sid)
       where(goods_nomenclature_sid: sid).actual
@@ -48,12 +33,7 @@ class GoodsNomenclatureLabel < Sequel::Model(Sequel[:goods_nomenclature_labels].
         'colloquial_terms' => item.fetch('colloquial_terms', []),
         'synonyms' => item.fetch('synonyms', []),
       }
-
-      new(goods_nomenclature: goods_nomenclature, labels: labels).tap do |new_label|
-        existing = goods_nomenclature.goods_nomenclature_label
-
-        new_label.merge!(existing)
-      end
+      new(goods_nomenclature: goods_nomenclature, labels: labels)
     end
 
     def goods_nomenclature_label_total_pages

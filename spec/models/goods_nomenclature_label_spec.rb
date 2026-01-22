@@ -143,26 +143,6 @@ RSpec.describe GoodsNomenclatureLabel do
       expect(label.producline_suffix).to eq(goods_nomenclature.producline_suffix)
       expect(label.goods_nomenclature_type).to eq('Commodity')
     end
-
-    context 'when an existing label exists' do
-      before do
-        create(
-          :goods_nomenclature_label,
-          goods_nomenclature_sid: goods_nomenclature.goods_nomenclature_sid,
-          goods_nomenclature: goods_nomenclature,
-          labels: { 'known_brands' => ['Existing Brand'], 'synonyms' => ['existing synonym'] },
-        )
-      end
-
-      it 'merges with existing label data' do
-        expect(label.labels['known_brands']).to contain_exactly('Existing Brand', 'Brand A')
-        expect(label.labels['synonyms']).to contain_exactly('existing synonym', 'synonym')
-      end
-
-      it 'sets operation to U for update' do
-        expect(label[:operation]).to eq('U')
-      end
-    end
   end
 
   describe '#labels' do

@@ -58,7 +58,26 @@ resource "aws_cloudwatch_dashboard" "label_generator" {
         }
       ],
 
+      # Row 2: Processing metrics
       [
+        {
+          type   = "log"
+          x      = 0
+          y      = 6
+          width  = 12
+          height = 6
+          properties = {
+            title  = "Page Processing Times (ms)"
+            region = var.region
+            query  = <<-EOT
+              SOURCE '${var.log_group_name}'
+              | filter service = "label_generator" and event = "page_completed"
+              | fields @timestamp, page_number, duration_ms, labels_created, labels_failed
+              | sort @timestamp desc
+              | limit 50
+            EOT
+          }
+        },
         {
           type   = "log"
           x      = 12
@@ -76,33 +95,16 @@ resource "aws_cloudwatch_dashboard" "label_generator" {
               | limit 50
             EOT
           }
-        },
+        }
+      ],
+
+      # Row 3: Mismatches
+      [
         {
           type   = "log"
           x      = 0
           y      = 12
-          width  = 12
-          height = 6
-          properties = {
-            title  = "Page Processing Times (ms)"
-            region = var.region
-            query  = <<-EOT
-              SOURCE '${var.log_group_name}'
-              | filter service = "label_generator" and event = "page_completed"
-              | fields @timestamp, page_number, duration_ms, labels_created, labels_failed
-              | sort @timestamp desc
-              | limit 50
-            EOT
-          }
-        },
-      ],
-
-      [
-        {
-          type   = "log"
-          x      = 12
-          y      = 12
-          width  = 12
+          width  = 24
           height = 6
           properties = {
             title  = "AI Result Mismatches"
