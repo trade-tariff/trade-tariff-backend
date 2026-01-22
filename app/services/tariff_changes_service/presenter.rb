@@ -73,7 +73,8 @@ class TariffChangesService
     end
 
     def api_url
-      "https://www.trade-tariff.service.gov.uk/uk/api/commodities/#{goods_nomenclature_item_id}"
+      date = __getobj__.date_of_effect.strftime('%Y-%m-%d')
+      "https://www.trade-tariff.service.gov.uk/uk/api/commodities/#{goods_nomenclature_item_id}?as_of=#{date}"
     end
   end
 end
