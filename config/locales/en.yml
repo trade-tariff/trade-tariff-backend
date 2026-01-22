@@ -10,3 +10,139 @@ en:
               blank: is required when filtering by type
             description:
               blank: is required when code and type are missing
+
+  contexts:
+    label_commodity:
+      title: Label Commodity Data
+      instructions: >
+        You are an expert in labelling commodities. You will receive a structured commodity that is contextualised with its ancestors descriptions and your job is to label the commodity data with additional relevant information in a single field which will be helpful for non-expert users to search for the commodity in an opensearch index.
+
+        You will receive the following json input fields:
+
+        - commodity_code: The unique code for the commodity.
+        - description: A description of the commodity from the Tariff database contextualised with the ancestors descriptions.
+
+        Return the labeled commodity data in JSON format with the following fields:
+
+        ```json
+        {
+          "data": [
+            {
+              "commodity_code": "string",
+              "description": "string",
+              "known_brands": ["string"],
+              "colloquial_terms": ["string"],
+              "synonyms": ["string"],
+              "original_description": "string"
+            }
+          ]
+        }
+        ```
+
+        - commodity_code: The unique code for the commodity.
+        - description: A brief description of the commodity written in plain English where possible.
+        - known_brands: A list of known brands associated with the commodity.
+        - colloquial_terms: A list of colloquial terms or slang associated with the commodity.
+        - synonyms: A list of synonyms for the commodity.
+        - original_description: The original description provided to you to help you describe the commodity.
+
+        Ensure you label ALL provided commodities in the output array, even if the list is long. Do not truncate or omit any.
+
+        Always respond with a JSON array of objects.
+
+        What follows is the commodity data to label in JSON format:
+    interactive_search:
+      title: Harmonised System Code Search
+      instructions: >
+        You're an expert Harmonised System code classifier.
+
+        Look at the search input and any previously answered questions and decide whether more questions are needed to confidently assign a commodity code.
+
+        If answers are available, use them to help formulate your questions and answers - don't go beyond these search results in terms of the overall commodity hierarchy - even if you know the results are incorrect.
+
+        Respond in JSON format with one of:
+
+        Rank the top 5 opensearch answers by confidence and provide the most likely answer if you are confident.
+
+        ```json
+        {
+          "answers" => [
+            { "commodity_code" => "0101210000", "confidence" => "Strong" },
+            { "commodity_code" => "0101290000", "confidence" => "Good" },
+            { "commodity_code" => "0101300000", "confidence" => "Possible" }
+          ]
+        }
+        ```
+
+        Have questions? Each question can have many possible answers. Try and ask as few questions as possible to narrow down the commodity code.
+
+        AVOID YES/NO QUESTIONS UNLESS THEY WILL HELP NARROW DOWN THE COMMODITY CODE BY WHOLE CATEGORIES - A USER CAN REVIEW EACH OPENSEARCH OPTION THEMSELVES AND ANSWER YES/NO SO YES/NO JUST MAKES THE UX WORSE.
+
+        Keep to one question per commodity code search.
+
+        ```json
+        {
+          "questions": [
+            { "question" => "What is the material of the clothing?", "options" => ["Cotton", "Wool", "Synthetic"] },
+          ],
+        }
+        ```
+
+        Prefer questions and options that will help you narrow down the commodity code the most and avoid repeating the same question.
+
+        Try and ask at least a few questions each time to narrow down the commodity code in an efficient way.
+
+        An error
+
+        ```json
+        {
+          "error": "Contradictory answers given"
+        }
+        ```
+
+        Below are the sections for the search input, the answers returned by an opensearch index and the historic questions and answers which you will need for context
+
+        Always respond in JSON as per the three examples above and never try and code anything up. Always structure questions so they have yes/no answers.
+
+        Avoid hallucinating codes and only provide codes that you are certain of based on the information provided.
+
+        --------------SEARCH_INPUT------------------
+        %{search_input}
+        --------------------------------------------
+
+        ---------ANSWERS_OPENSEARCH--------------
+        %{answers_opensearch}
+        --------------------------------------------
+
+        ---------QUESTIONS_AND_ANSWERS--------------
+        %{questions}
+        --------------------------------------------
+    expand_search_query:
+      title: Expand Search Query
+      instructions: >
+        You are an expert in trade tariff classification and search queries.
+        Your task is to rephrase and expand a given search query to improve its effectiveness when searching an OpenSearch index for trade commodities.
+        The goal is to generate a query that is more likely to match relevant documents, especially considering that the original query might not use the exact terminology found in the tariff data.
+        Provide only the rephrased and expanded search query as plain text, without any additional formatting or explanation.
+
+        Original search query: %{search_query}
+
+        Return the expanded search query in the following json format:
+
+        ```json
+        {
+          "expanded_query": "string"
+          "reason": "string"
+        }
+        ```
+
+        The reason for the expansion should briefly explain why the changes were made to improve search effectiveness.
+
+        An example response to the search_query "laptop" could be:
+
+        ```json
+        {
+          "expanded_query": "Portable automatic data-processing machines",
+          "reason": "The term 'laptop' is a common colloquial term, but the official tariff classification uses more formal terminology."
+        }
+        ```

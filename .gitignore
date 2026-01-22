@@ -71,3 +71,4 @@ supplementary_units_*.csv
 tariff_data_basic_*.csv
 
 .claude/
+terraform/modules/*/.terraform.lock.hcl

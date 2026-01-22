@@ -1,6 +1,6 @@
 FactoryBot.define do
   factory :goods_nomenclature_label do
-    goods_nomenclature
+    goods_nomenclature { build(:commodity) }
 
     goods_nomenclature_sid do
       goods_nomenclature&.goods_nomenclature_sid || generate(:goods_nomenclature_sid)

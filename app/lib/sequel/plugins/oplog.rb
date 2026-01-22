@@ -45,7 +45,9 @@ module Sequel
         end
 
         model.define_singleton_method(:actually_materialized?) do
-          result = db.fetch(<<~SQL, table_name.to_s).first
+          unqualified_name = table_name.respond_to?(:column) ? table_name.column.to_s : table_name.to_s
+
+          result = db.fetch(<<~SQL, unqualified_name).first
             SELECT relkind = 'm' as is_materialized
             FROM pg_class
             WHERE relname = ?
@@ -191,7 +193,7 @@ module Sequel
         end
 
         def refresh!(concurrently: false)
-          if materialized?
+          if materialized? && actually_materialized?
             db.refresh_view(table_name, concurrently:)
           else
             raise NotImplementedError
