@@ -20,8 +20,8 @@ module LabelGenerator
       instrument('page_started', page_number:, batch_size:)
     end
 
-    def page_completed(page_number:, labels_created:, labels_failed:, &block)
-      instrument('page_completed', page_number:, labels_created:, labels_failed:, &block)
+    def page_completed(page_number:, &block)
+      instrument('page_completed', page_number:, labels_created: 0, labels_failed: 0, &block)
     end
 
     def page_failed(page_number:, error:, ai_response: nil, &block)

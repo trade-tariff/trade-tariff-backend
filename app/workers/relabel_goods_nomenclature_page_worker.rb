@@ -27,18 +27,15 @@ class RelabelGoodsNomenclaturePageWorker
 
       LabelGenerator::Instrumentation.page_started(page_number:, batch_size: batch.size)
 
-      labels_created = 0
-      labels_failed = 0
-
-      LabelGenerator::Instrumentation.page_completed(page_number:, labels_created:, labels_failed:) do
+      LabelGenerator::Instrumentation.page_completed(page_number:) do |payload|
         @label_service = LabelService.new(batch, page_number:)
         labels = @label_service.call
 
         labels.each do |label|
           if save_label(label, page_number:)
-            labels_created += 1
+            payload[:labels_created] += 1
           else
-            labels_failed += 1
+            payload[:labels_failed] += 1
           end
         end
       end
