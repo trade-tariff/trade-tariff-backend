@@ -14,12 +14,6 @@ class RelabelGoodsNomenclatureWorker
 
     total_records = GoodsNomenclatureLabel.goods_nomenclatures_dataset.count
     total_pages = GoodsNomenclatureLabel.goods_nomenclature_label_total_pages
-    total_labels = GoodsNomenclatureLabel.count
-
-    LabelGenerator::Instrumentation.coverage_snapshot(
-      total_goods_nomenclatures: total_records,
-      total_labels:,
-    )
 
     LabelGenerator::Instrumentation.generation_started(
       total_pages:,

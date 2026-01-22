@@ -93,39 +93,5 @@ module LabelGenerator
     def label_not_found(commodity_code:, page_number:)
       instrument('label_not_found', commodity_code:, page_number:)
     end
-
-    def coverage_snapshot(total_goods_nomenclatures:, total_labels:)
-      missing_labels = total_goods_nomenclatures - total_labels
-      coverage_percent = total_goods_nomenclatures.positive? ? (total_labels * 100.0 / total_goods_nomenclatures).round(2) : 0.0
-
-      instrument(
-        'coverage_snapshot',
-        total_goods_nomenclatures:,
-        total_labels:,
-        coverage_percent:,
-        missing_labels:,
-      )
-
-      publish_coverage_metrics(total_labels:, missing_labels:, coverage_percent:)
-    end
-
-    def publish_coverage_metrics(total_labels:, missing_labels:, coverage_percent:)
-      return if Rails.env.test?
-      return unless defined?(Aws::CloudWatch::Client)
-
-      client = Aws::CloudWatch::Client.new
-      namespace = "LabelGenerator/#{Rails.env}"
-
-      client.put_metric_data(
-        namespace:,
-        metric_data: [
-          { metric_name: 'TotalLabels', value: total_labels, unit: 'Count' },
-          { metric_name: 'MissingLabels', value: missing_labels, unit: 'Count' },
-          { metric_name: 'CoveragePercent', value: coverage_percent, unit: 'Percent' },
-        ],
-      )
-    rescue StandardError => e
-      Rails.logger.warn "Failed to publish coverage metrics: #{e.message}"
-    end
   end
 end

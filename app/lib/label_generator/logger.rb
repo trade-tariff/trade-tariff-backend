@@ -110,16 +110,6 @@ module LabelGenerator
       )
     end
 
-    def coverage_snapshot(event)
-      info log_entry(
-        event: 'coverage_snapshot',
-        total_goods_nomenclatures: event.payload[:total_goods_nomenclatures],
-        total_labels: event.payload[:total_labels],
-        coverage_percent: event.payload[:coverage_percent],
-        missing_labels: event.payload[:missing_labels],
-      )
-    end
-
     private
 
     def log_entry(data)

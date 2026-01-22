@@ -1,5 +1,5 @@
 locals {
-  dashboard_name = var.dashboard_name != null ? var.dashboard_name : "label-generator-${var.environment}"
+  dashboard_name = var.dashboard_name != null ? var.dashboard_name : "LabelGenerator-${var.environment}"
 }
 
 resource "aws_cloudwatch_dashboard" "label_generator" {
@@ -7,7 +7,6 @@ resource "aws_cloudwatch_dashboard" "label_generator" {
 
   dashboard_body = jsonencode({
     widgets = concat(
-      # Row 1: Overview stats
       [
         {
           type   = "log"
@@ -59,20 +58,7 @@ resource "aws_cloudwatch_dashboard" "label_generator" {
         }
       ],
 
-      # Row 2: Label Coverage
       [
-        {
-          type   = "log"
-          x      = 0
-          y      = 6
-          width  = 12
-          height = 6
-          properties = {
-            title  = "Label Coverage (Latest)"
-            region = var.region
-            query  = "SOURCE '${var.log_group_name}' | filter service = 'label_generator' and event = 'coverage_snapshot' | fields @timestamp, total_labels, total_goods_nomenclatures, coverage_percent, missing_labels | sort @timestamp desc | limit 1"
-          }
-        },
         {
           type   = "log"
           x      = 12
@@ -90,11 +76,7 @@ resource "aws_cloudwatch_dashboard" "label_generator" {
               | limit 50
             EOT
           }
-        }
-      ],
-
-      # Row 3: Page Processing
-      [
+        },
         {
           type   = "log"
           x      = 0
@@ -113,6 +95,9 @@ resource "aws_cloudwatch_dashboard" "label_generator" {
             EOT
           }
         },
+      ],
+
+      [
         {
           type   = "log"
           x      = 12
@@ -192,70 +177,4 @@ resource "aws_cloudwatch_dashboard" "label_generator" {
       ]
     )
   })
-}
-
-# Metric filters for alarms
-resource "aws_cloudwatch_log_metric_filter" "api_failures" {
-  name           = "label-generator-api-failures-${var.environment}"
-  pattern        = "{ $.service = \"label_generator\" && $.event = \"api_call_failed\" }"
-  log_group_name = var.log_group_name
-
-  metric_transformation {
-    name          = "LabelGeneratorAPIFailures"
-    namespace     = "LabelGenerator/${var.environment}"
-    value         = "1"
-    default_value = "0"
-  }
-}
-
-resource "aws_cloudwatch_log_metric_filter" "page_failures" {
-  name           = "label-generator-page-failures-${var.environment}"
-  pattern        = "{ $.service = \"label_generator\" && $.event = \"page_failed\" }"
-  log_group_name = var.log_group_name
-
-  metric_transformation {
-    name          = "LabelGeneratorPageFailures"
-    namespace     = "LabelGenerator/${var.environment}"
-    value         = "1"
-    default_value = "0"
-  }
-}
-
-resource "aws_cloudwatch_log_metric_filter" "label_save_failures" {
-  name           = "label-generator-label-save-failures-${var.environment}"
-  pattern        = "{ $.service = \"label_generator\" && $.event = \"label_save_failed\" }"
-  log_group_name = var.log_group_name
-
-  metric_transformation {
-    name          = "LabelGeneratorSaveFailures"
-    namespace     = "LabelGenerator/${var.environment}"
-    value         = "1"
-    default_value = "0"
-  }
-}
-
-resource "aws_cloudwatch_log_metric_filter" "labels_created" {
-  name           = "label-generator-labels-created-${var.environment}"
-  pattern        = "{ $.service = \"label_generator\" && $.event = \"page_completed\" }"
-  log_group_name = var.log_group_name
-
-  metric_transformation {
-    name          = "LabelGeneratorLabelsCreated"
-    namespace     = "LabelGenerator/${var.environment}"
-    value         = "$.labels_created"
-    default_value = "0"
-  }
-}
-
-resource "aws_cloudwatch_log_metric_filter" "api_latency" {
-  name           = "label-generator-api-latency-${var.environment}"
-  pattern        = "{ $.service = \"label_generator\" && $.event = \"api_call_completed\" }"
-  log_group_name = var.log_group_name
-
-  metric_transformation {
-    name          = "LabelGeneratorAPILatency"
-    namespace     = "LabelGenerator/${var.environment}"
-    value         = "$.duration_ms"
-    default_value = "0"
-  }
 }
