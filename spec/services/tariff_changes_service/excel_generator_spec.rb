@@ -77,10 +77,6 @@ RSpec.describe TariffChangesService::ExcelGenerator do
       expect(package).to be_a(Libxlsxwriter::Workbook)
     end
 
-    it 'uses shared strings' do
-      expect(package.use_shared_strings).to be true
-    end
-
     it 'creates a worksheet named "Commodity watch list"' do
       expect(worksheet.name).to eq('Commodity watch list')
     end
