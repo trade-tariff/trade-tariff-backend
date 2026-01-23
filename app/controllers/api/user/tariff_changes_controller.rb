@@ -8,12 +8,12 @@ module Api
       before_action :authenticate!
 
       def download
-        package = TariffChangesService.generate_report_for(as_of, @current_user)
+        workbook = TariffChangesService.generate_report_for(as_of, @current_user)
 
-        return render json: { error: 'No changes found' }, status: :not_found if package.nil?
+        return render json: { error: 'No changes found' }, status: :not_found if workbook.nil?
 
         filename = "commodity_watch_list_changes_#{as_of.strftime('%Y_%m_%d')}.xlsx"
-        send_data package.to_stream.read,
+        send_data workbook.read_string,
                   type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
                   disposition: "attachment; filename=#{filename}"
       end
