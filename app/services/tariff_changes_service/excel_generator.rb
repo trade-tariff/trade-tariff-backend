@@ -1,6 +1,6 @@
 class TariffChangesService
   class ExcelGenerator
-    def self.call
+    def self.call(change_records, date)
       return if change_records.empty?
 
       new(change_records, date).call
@@ -25,7 +25,6 @@ class TariffChangesService
       add_headers(worksheet)
       stream_data_rows(worksheet)
       set_column_widths(worksheet)
-      add_table_styling(worksheet)
 
       workbook.close
     end
