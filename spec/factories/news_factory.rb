@@ -12,6 +12,10 @@ FactoryBot.define do
     trait :unpublished do
       published { false }
     end
+
+    trait :subscribable do
+      subscribable { true }
+    end
   end
 
   factory :news_item, class: 'News::Item' do
@@ -62,6 +66,14 @@ FactoryBot.define do
 
     trait :banner do
       show_on_banner { true }
+    end
+
+    trait :with_subscribable_collection do
+      collection_traits { :subscribable }
+    end
+
+    trait :with_non_subscribable_collection do
+      collection_traits { nil } # default subscribable is false
     end
   end
 end

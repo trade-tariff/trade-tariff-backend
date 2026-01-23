@@ -29,12 +29,28 @@ RSpec.describe Api::User::MyCommoditiesMetaService do
     ]
   end
 
-  let(:expected) do
+  let(:active_commodities_result) do
     {
       active: %w[1234567890],
       moved: [],
       expired: %w[1234567891],
       invalid: %w[9999999999],
+      total: 3,
+    }
+  end
+
+  let(:expected) do
+    {
+      counts: {
+        active: %w[1234567890],
+        moved: [],
+        expired: %w[1234567891],
+        invalid: %w[9999999999],
+        total: 3,
+      },
+      published: {
+        yesterday: 0,
+      },
     }
   end
 
@@ -42,7 +58,7 @@ RSpec.describe Api::User::MyCommoditiesMetaService do
 
   before do
     targets
-    service_double = instance_double(Api::User::ActiveCommoditiesService, call: expected)
+    service_double = instance_double(Api::User::ActiveCommoditiesService, call: active_commodities_result)
     allow(Api::User::ActiveCommoditiesService)
       .to receive(:new)
       .and_return(service_double)

@@ -76,6 +76,21 @@ module News
         .where { (end_date >= Time.zone.today) | { end_date: nil } }
       end
 
+      def for_chapters(chapters)
+        return self if chapters.blank?
+
+        chapters_array = chapters.split(',').map(&:strip).reject(&:blank?)
+        return self if chapters_array.empty?
+
+        chapter_conditions = chapters_array.map { |chapter|
+          Sequel.like(:chapters, "%#{chapter}%")
+        }.inject(:|)
+
+        all_conditions = chapter_conditions | Sequel.expr(chapters: nil) | Sequel.like(:chapters, '')
+
+        where(all_conditions)
+      end
+
       def for_service(service_name)
         case service_name.to_s
         when 'uk' then where(show_on_uk: true)

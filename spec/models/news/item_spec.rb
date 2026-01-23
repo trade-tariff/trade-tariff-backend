@@ -298,6 +298,99 @@ RSpec.describe News::Item do
       end
     end
 
+    describe '.for_chapters' do
+      subject(:result) { described_class.for_chapters(chapters) }
+
+      let(:item_with_chapters_01) { create(:news_item, chapters: '01') }
+      let(:item_with_chapters_02) { create(:news_item, chapters: '02') }
+      let(:item_with_chapters_01_02) { create(:news_item, chapters: '01,02') }
+      let(:item_with_chapters_03_04) { create(:news_item, chapters: '03,04') }
+      let(:item_with_nil_chapters) { create(:news_item, chapters: nil) }
+      let(:item_with_empty_chapters) { create(:news_item, chapters: '') }
+
+      before do
+        item_with_chapters_01
+        item_with_chapters_02
+        item_with_chapters_01_02
+        item_with_chapters_03_04
+        item_with_nil_chapters
+        item_with_empty_chapters
+      end
+
+      context 'when chapters parameter is blank' do
+        let(:chapters) { nil }
+
+        it 'returns all items' do
+          expect(result.count).to eq(6)
+          expect(result).to include(item_with_chapters_01, item_with_chapters_02, item_with_chapters_01_02,
+                                    item_with_chapters_03_04, item_with_nil_chapters, item_with_empty_chapters)
+        end
+      end
+
+      context 'when chapters parameter is empty string' do
+        let(:chapters) { '' }
+
+        it 'returns all items' do
+          expect(result.count).to eq(6)
+          expect(result).to include(item_with_chapters_01, item_with_chapters_02, item_with_chapters_01_02,
+                                    item_with_chapters_03_04, item_with_nil_chapters, item_with_empty_chapters)
+        end
+      end
+
+      context 'when chapters parameter is a single chapter' do
+        let(:chapters) { '01' }
+
+        it 'returns items that include that chapter' do
+          expect(result).to include(item_with_chapters_01, item_with_chapters_01_02)
+          expect(result).not_to include(item_with_chapters_02, item_with_chapters_03_04)
+        end
+
+        it 'includes items with nil chapters' do
+          expect(result).to include(item_with_nil_chapters)
+        end
+
+        it 'includes items with empty chapters' do
+          expect(result).to include(item_with_empty_chapters)
+        end
+      end
+
+      context 'when chapters parameter is multiple chapters' do
+        let(:chapters) { '01,02' }
+
+        it 'returns items that include any of those chapters' do
+          expect(result).to include(item_with_chapters_01, item_with_chapters_02, item_with_chapters_01_02)
+          expect(result).not_to include(item_with_chapters_03_04)
+        end
+
+        it 'includes items with nil chapters' do
+          expect(result).to include(item_with_nil_chapters)
+        end
+
+        it 'includes items with empty chapters' do
+          expect(result).to include(item_with_empty_chapters)
+        end
+      end
+
+      context 'when chapters parameter contains non-matching chapters' do
+        let(:chapters) { '05,06' }
+
+        it 'returns only items with nil or empty chapters' do
+          expect(result).to include(item_with_nil_chapters, item_with_empty_chapters)
+          expect(result).not_to include(item_with_chapters_01, item_with_chapters_02,
+                                        item_with_chapters_01_02, item_with_chapters_03_04)
+        end
+      end
+
+      context 'when chapters parameter has spaces' do
+        let(:chapters) { ' 01 , 02 ' }
+
+        it 'trims spaces and returns items that include any of those chapters' do
+          expect(result).to include(item_with_chapters_01, item_with_chapters_02, item_with_chapters_01_02)
+          expect(result).not_to include(item_with_chapters_03_04)
+        end
+      end
+    end
+
     describe '.for_collection' do
       before do
         with_mixed_collections

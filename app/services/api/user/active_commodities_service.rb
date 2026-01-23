@@ -100,13 +100,21 @@ module Api
       end
 
       def call
-        return {} if uploaded_commodity_codes.blank?
-
-        {
-          active: active_commodity_codes.count,
-          expired: expired_commodity_codes.count,
-          invalid: invalid_commodity_codes.count,
-        }
+        if uploaded_commodity_codes.blank?
+          {
+            active: 0,
+            expired: 0,
+            invalid: 0,
+            total: 0,
+          }
+        else
+          {
+            active: active_commodity_codes.count,
+            expired: expired_commodity_codes.count,
+            invalid: invalid_commodity_codes.count,
+            total: active_commodity_codes.count + expired_commodity_codes.count + invalid_commodity_codes.count,
+          }
+        end
       end
 
       # --- Public paginated loaders ---
