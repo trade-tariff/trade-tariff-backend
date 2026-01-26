@@ -162,7 +162,9 @@ module Reporting
       total_finish = Time.zone.now
       Rails.logger.info("Finished generating worksheets (Total Duration: #{total_finish - total_start} seconds)")
 
-      workbook.close
+      workbook.close if Rails.env.development?
+
+      workbook
     end
 
     def add_overview_worksheet
