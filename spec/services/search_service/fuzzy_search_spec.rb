@@ -12,7 +12,6 @@ RSpec.describe SearchService::FuzzySearch do
     context 'when searching across multiple indexes' do
       before do
         # Create multiple goods nomenclature items with matching descriptions
-        section = create :section, title: 'Fresh apples and fruits', numeral: 'I'
         chapter = create :chapter, :with_description,
                          goods_nomenclature_item_id: '0800000000',
                          description: 'Apples, pears and quinces'
@@ -24,7 +23,6 @@ RSpec.describe SearchService::FuzzySearch do
                            description: 'Cider apples, fresh'
 
         # Explicitly index test data
-        index_model(section)
         index_model(chapter)
         index_model(heading)
         index_model(commodity)
@@ -38,20 +36,9 @@ RSpec.describe SearchService::FuzzySearch do
 
         match_data = results[:goods_nomenclature_match]
 
-        expect(match_data['sections']).not_to be_empty
         expect(match_data['chapters']).not_to be_empty
         expect(match_data['headings']).not_to be_empty
         expect(match_data['commodities']).not_to be_empty
-      end
-
-      it 'returns correct section data' do
-        results = fuzzy_search.serializable_hash
-        sections = results.dig(:goods_nomenclature_match, 'sections')
-
-        expect(sections.size).to be >= 1
-        section = sections.find { |s| s.dig('_source', 'title')&.include?('apples') }
-        expect(section).to be_present
-        expect(section['_source']['title']).to include('apples')
       end
 
       it 'returns correct chapter data' do
@@ -140,7 +127,7 @@ RSpec.describe SearchService::FuzzySearch do
         expect(results[:reference_match]).to be_present
 
         # All index types should have empty arrays
-        %w[sections chapters headings commodities].each do |index_type|
+        %w[chapters headings commodities].each do |index_type|
           expect(results.dig(:goods_nomenclature_match, index_type)).to eq([])
           expect(results.dig(:reference_match, index_type)).to eq([])
         end

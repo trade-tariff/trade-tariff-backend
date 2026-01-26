@@ -2,10 +2,10 @@ class SearchService
   class BaseSearch
     BLANK_RESULT = {
       goods_nomenclature_match: {
-        sections: [], chapters: [], headings: [], commodities: []
+        chapters: [], headings: [], commodities: []
       },
       reference_match: {
-        sections: [], chapters: [], headings: [], commodities: []
+        chapters: [], headings: [], commodities: []
       },
     }.freeze
 

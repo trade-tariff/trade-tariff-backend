@@ -24,26 +24,22 @@ class SearchService
 
     private
 
-    # We craft Elasticsearch queries in streamlined way, but
-    # certain queries need additional query details to be provided.
-    # These details can be specified in query_options
     def query_options
-      {
-        goods_nomenclature_match: {
-          Search::SectionIndex.new.name => { fields: %w[title] },
-        },
-      }
+      {}
     end
 
     def build_queries
-      @build_queries ||= TradeTariffBackend.search_indexes
-        .reject(&:exclude_from_search_results?)
-        .flat_map do |search_index|
-          [
-            GoodsNomenclatureQuery.new(query_string, date, search_index),
-            ReferenceQuery.new(query_string, date, search_index),
-          ]
-        end
+      @build_queries ||= [
+        # Direct goods nomenclature queries
+        GoodsNomenclatureQuery.new(query_string, date, Search::ChapterIndex.new),
+        GoodsNomenclatureQuery.new(query_string, date, Search::HeadingIndex.new),
+        GoodsNomenclatureQuery.new(query_string, date, Search::CommodityIndex.new),
+
+        # Reference queries (all query SearchReferenceIndex, filtered by type)
+        ReferenceQuery.new(query_string, date, Search::ChapterIndex.new),
+        ReferenceQuery.new(query_string, date, Search::HeadingIndex.new),
+        ReferenceQuery.new(query_string, date, Search::CommodityIndex.new),
+      ]
     end
 
     def execute_msearch(queries)
