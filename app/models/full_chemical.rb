@@ -2,7 +2,6 @@ class FullChemical < Sequel::Model
   plugin :identification
   plugin :timestamps
   plugin :auto_validations, not_null: :presence
-  plugin :elasticsearch, index: ''
 
   many_to_one :goods_nomenclature, key: :goods_nomenclature_sid,
                                    foreign_key: :goods_nomenclature_sid,

@@ -317,11 +317,12 @@ RSpec.describe SearchService do
         subject { described_class.new(data_serializer, q: 'water').to_json[:data][:attributes] }
 
         before do
-          create :heading, :with_description,
-                 goods_nomenclature_item_id: '2851000000',
-                 validity_start_date: Date.new(1972, 1, 1),
-                 validity_end_date: Date.new(2006, 12, 31),
-                 description: 'Other inorganic compounds (including distilled or conductivity water and water of similar purity);'
+          heading = create :heading, :with_description,
+                           goods_nomenclature_item_id: '2851000000',
+                           validity_start_date: Date.new(1972, 1, 1),
+                           validity_end_date: Date.new(2006, 12, 31),
+                           description: 'Other inorganic compounds (including distilled or conductivity water and water of similar purity);'
+          index_model(heading)
         end
 
         # heading that has validity period of 1972-01-01 to 2006-12-31
@@ -357,11 +358,12 @@ RSpec.describe SearchService do
         around { |example| TimeMachine.at(date) { example.run } }
 
         before do
-          create :heading, :with_description,
-                 goods_nomenclature_item_id: '0102000000',
-                 validity_start_date: Date.new(1972, 1, 1),
-                 validity_end_date: nil,
-                 description: 'Live bovine animals'
+          heading = create :heading, :with_description,
+                           goods_nomenclature_item_id: '0102000000',
+                           validity_start_date: Date.new(1972, 1, 1),
+                           validity_end_date: nil,
+                           description: 'Live bovine animals'
+          index_model(heading)
         end
 
         # heading that has validity period starting from 1972-01-01
@@ -418,7 +420,8 @@ RSpec.describe SearchService do
       subject(:result) { described_class.new(data_serializer, q: 'example title', as_of: '1970-01-01').to_json[:data][:attributes] }
 
       before do
-        create :section, title: 'example title'
+        section = create :section, title: 'example title'
+        index_model(section)
       end
 
       let(:response_pattern) do

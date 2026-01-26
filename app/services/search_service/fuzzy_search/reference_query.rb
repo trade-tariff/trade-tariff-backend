@@ -3,7 +3,7 @@ class SearchService
     class ReferenceQuery < FuzzyQuery
       def query(*)
         {
-          index: SearchReference.elasticsearch_index.name,
+          index: Search::SearchReferenceIndex.new.name,
           search: {
             query: {
               bool: {

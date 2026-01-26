@@ -7,7 +7,6 @@ class Section < Sequel::Model
   plugin :timestamps
   plugin :active_model
   plugin :nullable
-  plugin :elasticsearch
 
   many_to_many :chapters,
                join_table: :chapters_sections,
