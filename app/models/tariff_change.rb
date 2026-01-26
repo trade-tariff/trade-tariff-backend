@@ -88,4 +88,10 @@ class TariffChange < Sequel::Model
       "#{type} will be deleted"
     end
   end
+
+  # When this change becomes effective to the public.
+  # e.g. for ENDING measures, it is no longer visible the day after its end date
+  def date_of_effect_visible
+    action == TariffChangesService::BaseChanges::ENDING ? date_of_effect + 1.day : date_of_effect
+  end
 end
