@@ -76,11 +76,11 @@ RSpec.describe TariffChangesService do
   describe '.generate_report_for' do
     let(:date) { Date.new(2024, 8, 11) }
     let(:change_records) { [{ dummy: 'data' }] }
-    let(:package) { instance_double(Axlsx::Package) }
+    let(:workbook) { instance_double(Libxlsxwriter::Workbook) }
 
     before do
       allow(TariffChangesService::TransformRecords).to receive(:call).with(date, nil).and_return(change_records)
-      allow(TariffChangesService::ExcelGenerator).to receive(:call).with(change_records, date).and_return(package)
+      allow(TariffChangesService::ExcelGenerator).to receive(:call).with(change_records, date).and_return(workbook)
     end
 
     context 'when there are no records' do
@@ -100,16 +100,16 @@ RSpec.describe TariffChangesService do
         expect(TariffChangesService::TransformRecords).to have_received(:call).with(date, nil)
       end
 
-      it 'generates Excel package with the transformed records' do
+      it 'generates Excel workbook with the transformed records' do
         described_class.generate_report_for(date)
 
         expect(TariffChangesService::ExcelGenerator).to have_received(:call).with(change_records, date)
       end
 
-      it 'returns the Excel package' do
+      it 'returns the Excel workbook' do
         result = described_class.generate_report_for(date)
 
-        expect(result).to eq(package)
+        expect(result).to eq(workbook)
       end
     end
 
@@ -121,7 +121,7 @@ RSpec.describe TariffChangesService do
       before do
         allow(user).to receive(:target_ids_for_my_commodities).and_return(commodity_ids)
         allow(TariffChangesService::TransformRecords).to receive(:call).with(date, commodity_ids).and_return(user_change_records)
-        allow(TariffChangesService::ExcelGenerator).to receive(:call).with(user_change_records, date).and_return(package)
+        allow(TariffChangesService::ExcelGenerator).to receive(:call).with(user_change_records, date).and_return(workbook)
       end
 
       it 'transforms records with user commodity ids' do
@@ -130,7 +130,7 @@ RSpec.describe TariffChangesService do
         expect(TariffChangesService::TransformRecords).to have_received(:call).with(date, commodity_ids)
       end
 
-      it 'generates Excel package with the user-filtered records' do
+      it 'generates Excel workbook with the user-filtered records' do
         described_class.generate_report_for(date, user)
 
         expect(TariffChangesService::ExcelGenerator).to have_received(:call).with(user_change_records, date)

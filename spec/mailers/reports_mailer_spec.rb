@@ -11,10 +11,10 @@ RSpec.describe ReportsMailer, type: :mailer do
   end
 
   describe '#commodity_watchlist' do
-    subject(:mail) { described_class.commodity_watchlist(date, package).tap(&:deliver_now) }
+    subject(:mail) { described_class.commodity_watchlist(date, workbook).tap(&:deliver_now) }
 
     let(:date) { '2024_08_11' }
-    let(:package) { Axlsx::Package.new }
+    let(:workbook) { FastExcel.open(constant_memory: true) }
 
     before do
       allow(TradeTariffBackend).to receive(:delta_report_to_emails).and_return('watchlist@example.com')
