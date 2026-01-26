@@ -191,7 +191,7 @@ module TradeTariffBackend
         Search::CommodityIndex,
         Search::HeadingIndex,
         Search::SearchReferenceIndex,
-        Search::GoodsNomenclatureIndex,
+        Search::SearchSuggestionsIndex,
       ].map(&:new)
     end
 

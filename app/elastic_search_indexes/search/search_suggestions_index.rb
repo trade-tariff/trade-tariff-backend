@@ -1,6 +1,6 @@
 module Search
-  class GoodsNomenclatureIndex < ::SearchIndex
-    INDEX_NAME = 'goods_nomenclatures'.freeze
+  class SearchSuggestionsIndex < ::SearchIndex
+    INDEX_NAME = 'search_suggestions'.freeze
 
     def name
       [TradeTariffBackend::SearchClient.server_namespace, INDEX_NAME, TradeTariffBackend.service].join('-')
@@ -14,10 +14,10 @@ module Search
             description: { type: 'text', analyzer: 'snowball' },
             goods_nomenclature_item_id: {
               type: 'text',
-              "fields": {
-                "keyword": {
-                  "type": 'keyword',
-                  "ignore_above": 256,
+              fields: {
+                keyword: {
+                  type: 'keyword',
+                  ignore_above: 256,
                 },
               },
               analyzer: 'ngram_analyzer',
@@ -30,10 +30,10 @@ module Search
               properties: {
                 title: {
                   type: 'text',
-                  "fields": {
-                    "keyword": {
-                      "type": 'keyword',
-                      "ignore_above": 256,
+                  fields: {
+                    keyword: {
+                      type: 'keyword',
+                      ignore_above: 256,
                     },
                   },
                   analyzer: 'ngram_analyzer',
@@ -46,10 +46,10 @@ module Search
               properties: {
                 cus: {
                   type: 'text',
-                  "fields": {
-                    "keyword": {
-                      "type": 'keyword',
-                      "ignore_above": 256,
+                  fields: {
+                    keyword: {
+                      type: 'keyword',
+                      ignore_above: 256,
                     },
                   },
                   analyzer: 'ngram_analyzer',
@@ -57,10 +57,10 @@ module Search
                 },
                 cas_rn: {
                   type: 'text',
-                  "fields": {
-                    "keyword": {
-                      "type": 'keyword',
-                      "ignore_above": 256,
+                  fields: {
+                    keyword: {
+                      type: 'keyword',
+                      ignore_above: 256,
                     },
                   },
                   analyzer: 'ngram_analyzer',
@@ -68,13 +68,54 @@ module Search
                 },
                 name: {
                   type: 'text',
-                  "fields": {
-                    "keyword": {
-                      "type": 'keyword',
-                      "ignore_above": 256,
+                  fields: {
+                    keyword: {
+                      type: 'keyword',
+                      ignore_above: 256,
                     },
                   },
                   analyzer: 'big_ngram_analyzer',
+                  search_analyzer: 'lowercase_analyzer',
+                },
+              },
+            },
+            labels: {
+              properties: {
+                description: {
+                  type: 'text',
+                  analyzer: 'snowball',
+                },
+                known_brands: {
+                  type: 'text',
+                  fields: {
+                    keyword: {
+                      type: 'keyword',
+                      ignore_above: 256,
+                    },
+                  },
+                  analyzer: 'ngram_analyzer',
+                  search_analyzer: 'lowercase_analyzer',
+                },
+                colloquial_terms: {
+                  type: 'text',
+                  fields: {
+                    keyword: {
+                      type: 'keyword',
+                      ignore_above: 256,
+                    },
+                  },
+                  analyzer: 'ngram_analyzer',
+                  search_analyzer: 'lowercase_analyzer',
+                },
+                synonyms: {
+                  type: 'text',
+                  fields: {
+                    keyword: {
+                      type: 'keyword',
+                      ignore_above: 256,
+                    },
+                  },
+                  analyzer: 'ngram_analyzer',
                   search_analyzer: 'lowercase_analyzer',
                 },
               },
@@ -121,10 +162,15 @@ module Search
       [{
         goods_nomenclature_indents: [],
         goods_nomenclature_descriptions: [],
+        goods_nomenclature_label: [],
         search_references: [:referenced],
         full_chemicals: [],
       },
        :children]
+    end
+
+    def model_class
+      GoodsNomenclature
     end
 
     def dataset_page(page_number)

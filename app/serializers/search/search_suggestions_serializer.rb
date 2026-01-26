@@ -1,7 +1,7 @@
 module Search
-  class GoodsNomenclatureSerializer < ::Serializer
+  class SearchSuggestionsSerializer < ::Serializer
     def serializable_hash(_opts = {})
-      commodity_attributes = {
+      attributes = {
         id: goods_nomenclature_sid,
         description: formatted_description,
         goods_nomenclature_item_id:,
@@ -13,9 +13,10 @@ module Search
         type: name,
       }
 
-      commodity_attributes[:search_references] = search_references_part if search_references.present?
-      commodity_attributes[:chemicals] = chemicals_part if full_chemicals.present?
-      commodity_attributes
+      attributes[:search_references] = search_references_part if search_references.present?
+      attributes[:chemicals] = chemicals_part if full_chemicals.present?
+      attributes[:labels] = labels_part if goods_nomenclature_label.present?
+      attributes
     end
 
     def name
@@ -49,6 +50,20 @@ module Search
           name: chemical.name,
         }
       end
+    end
+
+    def labels_part
+      return unless goods_nomenclature_label
+
+      labels = goods_nomenclature_label.labels
+      return if labels.blank?
+
+      {
+        description: labels['description'],
+        known_brands: labels['known_brands'],
+        colloquial_terms: labels['colloquial_terms'],
+        synonyms: labels['synonyms'],
+      }.compact_blank
     end
   end
 end
