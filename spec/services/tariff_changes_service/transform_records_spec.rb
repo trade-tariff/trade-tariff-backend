@@ -117,7 +117,7 @@ RSpec.describe TariffChangesService::TransformRecords do
         record = result.first
 
         expected_ott_url = 'https://www.trade-tariff.service.gov.uk/commodities/0101010100?day=15&month=8&year=2024'
-        expected_api_url = 'https://www.trade-tariff.service.gov.uk/uk/api/commodities/0101010100'
+        expected_api_url = 'https://www.trade-tariff.service.gov.uk/uk/api/commodities/0101010100?as_of=2024-08-15'
 
         expect(record[:ott_url]).to eq(expected_ott_url)
         expect(record[:api_url]).to eq(expected_api_url)
@@ -436,13 +436,13 @@ RSpec.describe TariffChangesService::TransformRecords do
 
     describe '#api_url' do
       let(:tariff_change) do
-        build(:tariff_change, goods_nomenclature_item_id: '0202000000')
+        build(:tariff_change, goods_nomenclature_item_id: '0202000000', date_of_effect: Date.parse('2024-08-15'))
       end
 
       it 'builds the correct API URL' do
         presenter = TariffChangesService::Presenter.new(tariff_change)
         result = presenter.api_url
-        expected_url = 'https://www.trade-tariff.service.gov.uk/uk/api/commodities/0202000000'
+        expected_url = 'https://www.trade-tariff.service.gov.uk/uk/api/commodities/0202000000?as_of=2024-08-15'
         expect(result).to eq(expected_url)
       end
     end
