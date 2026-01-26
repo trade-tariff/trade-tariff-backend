@@ -12,7 +12,6 @@ module ElasticsearchHelpers
     'Commodity' => Search::CommodityIndex,
     'Chapter' => Search::ChapterIndex,
     'Heading' => Search::HeadingIndex,
-    'Section' => Search::SectionIndex,
     'SearchReference' => Search::SearchReferenceIndex,
   }.freeze
 

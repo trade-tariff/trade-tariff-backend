@@ -412,35 +412,6 @@ RSpec.describe SearchService do
         expect(result).to match_json_expression SearchService::BaseSearch::BLANK_RESULT.merge(type: 'fuzzy_match')
       end
     end
-
-    context 'when searching for sections' do
-      # Sections do not have validity periods
-      # We have to ensure there is special clause in Elasticsearch
-      # query that takes that into account and they get found
-      subject(:result) { described_class.new(data_serializer, q: 'example title', as_of: '1970-01-01').to_json[:data][:attributes] }
-
-      before do
-        section = create :section, title: 'example title'
-        index_model(section)
-      end
-
-      let(:response_pattern) do
-        {
-          type: 'fuzzy_match',
-          goods_nomenclature_match: {
-            sections: [
-              { '_source' => {
-                'title' => 'example title',
-              }.ignore_extra_keys! }.ignore_extra_keys!,
-            ].ignore_extra_values!,
-          }.ignore_extra_keys!,
-        }.ignore_extra_keys!
-      end
-
-      it 'finds relevant sections' do
-        expect(result).to match_json_expression response_pattern
-      end
-    end
   end
 
   context 'when reference search' do
