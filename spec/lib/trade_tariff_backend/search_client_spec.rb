@@ -26,10 +26,12 @@ RSpec.describe TradeTariffBackend::SearchClient do
 
   describe '#search' do
     let(:commodity) do
-      create(:commodity, :with_description, description: 'test description')
+      create(:commodity, :with_description, description: 'test description').tap do |model|
+        index_model(model)
+      end
     end
 
-    let(:index) { Commodity.elasticsearch_index }
+    let(:index) { Search::CommodityIndex.new }
 
     let(:search_result) do
       TradeTariffBackend.search_client.search q: 'test', index: index.name

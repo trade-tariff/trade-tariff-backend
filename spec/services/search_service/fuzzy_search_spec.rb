@@ -11,20 +11,23 @@ RSpec.describe SearchService::FuzzySearch do
 
     context 'when searching across multiple indexes' do
       before do
-        # Create multiple goods nomenclature items with matching descriptions and implicitly created index documents
-        create :section, title: 'Fresh apples and fruits', numeral: 'I'
+        # Create multiple goods nomenclature items with matching descriptions
+        section = create :section, title: 'Fresh apples and fruits', numeral: 'I'
+        chapter = create :chapter, :with_description,
+                         goods_nomenclature_item_id: '0800000000',
+                         description: 'Apples, pears and quinces'
+        heading = create :heading, :with_description,
+                         goods_nomenclature_item_id: '0808000000',
+                         description: 'Apples, fresh'
+        commodity = create :commodity, :with_description,
+                           goods_nomenclature_item_id: '0808101000',
+                           description: 'Cider apples, fresh'
 
-        create :chapter, :with_description,
-               goods_nomenclature_item_id: '0800000000',
-               description: 'Apples, pears and quinces'
-
-        create :heading, :with_description,
-               goods_nomenclature_item_id: '0808000000',
-               description: 'Apples, fresh'
-
-        create :commodity, :with_description,
-               goods_nomenclature_item_id: '0808101000',
-               description: 'Cider apples, fresh'
+        # Explicitly index test data
+        index_model(section)
+        index_model(chapter)
+        index_model(heading)
+        index_model(commodity)
       end
 
       it 'returns results from multiple indexes' do
@@ -105,6 +108,11 @@ RSpec.describe SearchService::FuzzySearch do
                :with_search_reference,
                goods_nomenclature: heading,
                value: 'tropical fruit imports'
+
+        # Explicitly index test data
+        index_model(chapter)
+        index_model(heading)
+        SearchReference.all.each { |sr| index_model(sr) }
       end
 
       it 'returns reference matches' do

@@ -9,7 +9,6 @@ class SearchReference < Sequel::Model
   extend ActiveModel::Naming
 
   plugin :active_model
-  plugin :elasticsearch
   plugin :auditable
 
   referenced_setter = proc do |referenced|

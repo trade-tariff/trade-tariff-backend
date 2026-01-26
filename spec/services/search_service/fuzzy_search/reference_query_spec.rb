@@ -4,7 +4,7 @@ RSpec.describe SearchService::FuzzySearch::ReferenceQuery do
 
     let(:query_string) { 'foo' }
     let(:date) { Time.zone.today }
-    let(:index) { SearchReference.elasticsearch_index }
+    let(:index) { Search::SearchReferenceIndex.new }
 
     let(:pattern) do
       {

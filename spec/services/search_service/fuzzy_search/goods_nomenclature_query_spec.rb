@@ -4,7 +4,7 @@ RSpec.describe SearchService::FuzzySearch::GoodsNomenclatureQuery do
 
     let(:query_string) { 'foo' }
     let(:date) { Time.zone.today }
-    let(:index) { Commodity.elasticsearch_index }
+    let(:index) { Search::CommodityIndex.new }
 
     let(:pattern) do
       {

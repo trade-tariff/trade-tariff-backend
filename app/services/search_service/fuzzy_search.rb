@@ -30,7 +30,7 @@ class SearchService
     def query_options
       {
         goods_nomenclature_match: {
-          Section.elasticsearch_index.name => { fields: %w[title] },
+          Search::SectionIndex.new.name => { fields: %w[title] },
         },
       }
     end

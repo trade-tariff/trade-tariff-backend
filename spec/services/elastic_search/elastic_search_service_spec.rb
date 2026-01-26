@@ -1,6 +1,8 @@
 RSpec.describe ElasticSearch::ElasticSearchService do
   before do
-    TradeTariffBackend.search_client.drop_index(Search::GoodsNomenclatureIndex.new)
+    index = Search::GoodsNomenclatureIndex.new
+    TradeTariffBackend.search_client.drop_index(index)
+    TradeTariffBackend.search_client.create_index(index)
   end
 
   describe 'initialization' do
@@ -51,8 +53,7 @@ RSpec.describe ElasticSearch::ElasticSearchService do
                            validity_start_date: Date.new(1972, 1, 1),
                            validity_end_date: Date.new(2006, 12, 31),
                            description: 'Other inorganic compounds (including distilled or conductivity water and water of similar purity);'
-
-          heading.save
+          index_model(heading)
         end
 
         # heading that has validity period of 1972-01-01 to 2006-12-31
@@ -90,8 +91,7 @@ RSpec.describe ElasticSearch::ElasticSearchService do
                            validity_start_date: Date.new(1972, 1, 1),
                            validity_end_date: nil,
                            description: 'Live bovine animals'
-
-          heading.save
+          index_model(heading)
         end
 
         # heading that has validity period starting from 1972-01-01
@@ -133,8 +133,7 @@ RSpec.describe ElasticSearch::ElasticSearchService do
                          validity_start_date: Date.new(1972, 1, 1),
                          validity_end_date: nil,
                          description: 'Live bovine animals'
-
-        heading.save
+        index_model(heading)
       end
 
       let(:heading_pattern) do
@@ -162,8 +161,7 @@ RSpec.describe ElasticSearch::ElasticSearchService do
       before do
         ref = create :search_reference, :with_commodity,
                      title: 'tea'
-
-        ref.save
+        index_model(ref)
       end
 
       let(:heading_pattern) do
@@ -190,7 +188,7 @@ RSpec.describe ElasticSearch::ElasticSearchService do
     describe 'with search date falls within validity period' do
       before do
         chem = create :full_chemical
-        chem.save
+        index_model(chem)
       end
 
       let(:date) { '2005-01-01' }
