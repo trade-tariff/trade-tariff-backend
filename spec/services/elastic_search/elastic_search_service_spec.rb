@@ -1,6 +1,6 @@
 RSpec.describe ElasticSearch::ElasticSearchService do
   before do
-    index = Search::GoodsNomenclatureIndex.new
+    index = Search::SearchSuggestionsIndex.new
     TradeTariffBackend.search_client.drop_index(index)
     TradeTariffBackend.search_client.create_index(index)
   end

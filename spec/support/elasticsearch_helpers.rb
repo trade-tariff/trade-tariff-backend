@@ -47,31 +47,31 @@ module ElasticsearchHelpers
   private
 
   def index_goods_nomenclature(model)
-    index_name = Search::GoodsNomenclatureIndex.new.name
+    index_name = Search::SearchSuggestionsIndex.new.name
 
     if model.is_a?(GoodsNomenclature)
       TradeTariffBackend.search_client.index_by_name(
         index_name,
         model.id,
-        Search::GoodsNomenclatureSerializer.new(model).as_json,
+        Search::SearchSuggestionsSerializer.new(model).as_json,
       )
     elsif model.instance_of?(SearchReference)
       TradeTariffBackend.search_client.index_by_name(
         index_name,
         model.referenced.id,
-        Search::GoodsNomenclatureSerializer.new(model.referenced.reload).as_json,
+        Search::SearchSuggestionsSerializer.new(model.referenced.reload).as_json,
       )
     elsif model.instance_of?(FullChemical) && model.goods_nomenclature.present?
       TradeTariffBackend.search_client.index_by_name(
         index_name,
         model.goods_nomenclature.id,
-        Search::GoodsNomenclatureSerializer.new(model.goods_nomenclature.reload).as_json,
+        Search::SearchSuggestionsSerializer.new(model.goods_nomenclature.reload).as_json,
       )
     end
   end
 
   def delete_goods_nomenclature(model)
-    index_name = Search::GoodsNomenclatureIndex.new.name
+    index_name = Search::SearchSuggestionsIndex.new.name
 
     if model.is_a?(GoodsNomenclature)
       TradeTariffBackend.search_client.delete_by_name(index_name, model.id)
@@ -79,13 +79,13 @@ module ElasticsearchHelpers
       TradeTariffBackend.search_client.index_by_name(
         index_name,
         model.referenced.id,
-        Search::GoodsNomenclatureSerializer.new(model.referenced.reload).as_json,
+        Search::SearchSuggestionsSerializer.new(model.referenced.reload).as_json,
       )
     elsif model.instance_of?(FullChemical) && model.goods_nomenclature.present?
       TradeTariffBackend.search_client.index_by_name(
         index_name,
         model.goods_nomenclature.id,
-        Search::GoodsNomenclatureSerializer.new(model.goods_nomenclature.reload).as_json,
+        Search::SearchSuggestionsSerializer.new(model.goods_nomenclature.reload).as_json,
       )
     end
   end

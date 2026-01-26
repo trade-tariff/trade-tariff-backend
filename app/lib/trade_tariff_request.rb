@@ -7,5 +7,8 @@ class TradeTariffRequest < ActiveSupport::CurrentAttributes
             # This is critical for indexing - when indexing historical records, we want
             # associations that were valid during that record's lifetime, not at an arbitrary point in time
             :time_machine_relevant,
-            :meursing_additional_code_id
+            :meursing_additional_code_id,
+            # Controls whether label fields (known_brands, colloquial_terms, synonyms)
+            # are included in search suggestion queries
+            :search_labels_enabled
 end
