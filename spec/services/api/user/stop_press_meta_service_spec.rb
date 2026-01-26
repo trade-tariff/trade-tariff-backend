@@ -72,7 +72,7 @@ RSpec.describe Api::User::StopPressMetaService, type: :service do
       let(:user_chapters) { '' }
 
       it 'returns "all" for chapters' do
-        expect(service[:chapters]).to eq('all')
+        expect(service[:chapters]).to eq(described_class::ALL)
       end
 
       context 'with emailable news items from yesterday' do
@@ -90,6 +90,18 @@ RSpec.describe Api::User::StopPressMetaService, type: :service do
         it 'returns count of all emailable news items when chapter filter is empty' do
           expect(service[:published][:yesterday]).to eq(1)
         end
+      end
+    end
+
+    context 'when user has manually selected all chapters' do
+      let(:user_chapters) { (1..98).map { |n| n.to_s.rjust(2, '0') }.join(',') }
+
+      before do
+        allow(Chapter).to receive(:count).and_return(98)
+      end
+
+      it 'returns "all" for chapters' do
+        expect(service[:chapters]).to eq(described_class::ALL)
       end
     end
 
