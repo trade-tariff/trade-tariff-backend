@@ -3,6 +3,7 @@ RSpec.configure do |config|
     connection_attempts ||= 0
 
     GoodsNomenclature.refresh!(concurrently: false)
+    GoodsNomenclatures::TreeNode.refresh!(concurrently: false)
     TradeTariffBackend.search_client.reindex_all
   rescue Faraday::ConnectionFailed => e
     connection_attempts += 1
