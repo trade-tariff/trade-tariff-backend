@@ -33,6 +33,10 @@ class SearchIndex
     serializer.new(record).as_json
   end
 
+  def document_id(model)
+    model.id
+  end
+
   def goods_nomenclature?
     false
   end

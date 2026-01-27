@@ -1,111 +1,56 @@
 RSpec.describe Search::SearchSuggestionQuery do
-  subject(:query_instance) { described_class.new(query_string, date, index) }
+  subject(:query_instance) { described_class.new(query_string, date) }
 
   let(:query_string) { 'test query' }
   let(:date) { Time.zone.today }
-  let(:index) { Search::SearchSuggestionsIndex.new }
 
   describe '#query' do
     subject(:query) { query_instance.query }
 
     it 'returns a hash with index and body' do
       expect(query).to include(:index, :body)
-      expect(query[:index]).to eq(index.name)
+      expect(query[:index]).to eq(Search::SearchSuggestionsIndex.new.name)
     end
 
-    it 'includes wildcard clauses for standard fields' do
-      wildcards = query.dig(:body, :query, :bool, :should)
-      wildcard_fields = wildcards.flat_map { |w| w[:wildcard].keys }
+    it 'includes a wildcard clause on value.keyword' do
+      should_clauses = query.dig(:body, :query, :bool, :should)
+      wildcard = should_clauses.find { |c| c.key?(:wildcard) }
 
-      expect(wildcard_fields).to include(
-        'goods_nomenclature_item_id.keyword',
-        'search_references.title.keyword',
-        'chemicals.cus.keyword',
-        'chemicals.cas_rn.keyword',
-        'chemicals.name.keyword',
-      )
+      expect(wildcard).to be_present
+      expect(wildcard.dig(:wildcard, :'value.keyword', :value)).to eq('test query*')
+      expect(wildcard.dig(:wildcard, :'value.keyword', :boost)).to eq(20)
     end
 
-    it 'includes multi_match with standard fields' do
+    it 'requires a match clause on value' do
       must_clauses = query.dig(:body, :query, :bool, :must)
-      multi_match = must_clauses.find { |c| c.key?(:multi_match) }
+      match = must_clauses.find { |c| c.key?(:match) }
 
-      expect(multi_match[:multi_match][:fields]).to include(
-        'goods_nomenclature_item_id^5',
-        'chemicals.cus^0.5',
-        'chemicals.cas_rn^0.5',
-        'search_references.title',
-        'chemicals.name^0.1',
-      )
+      expect(match).to be_present
+      expect(match.dig(:match, :value, :query)).to eq('test query')
+      expect(match.dig(:match, :value, :fuzziness)).to eq('AUTO')
     end
 
-    context 'when SearchLabels is disabled (default)' do
-      it 'does not include label fields in wildcards' do
-        wildcards = query.dig(:body, :query, :bool, :should)
-        wildcard_fields = wildcards.flat_map { |w| w[:wildcard].keys }
-
-        expect(wildcard_fields).not_to include(
-          'labels.known_brands.keyword',
-          'labels.colloquial_terms.keyword',
-          'labels.synonyms.keyword',
-        )
-      end
-
-      it 'does not include label fields in multi_match' do
-        must_clauses = query.dig(:body, :query, :bool, :must)
-        multi_match = must_clauses.find { |c| c.key?(:multi_match) }
-
-        expect(multi_match[:multi_match][:fields]).not_to include(
-          'labels.description^0.5',
-          'labels.known_brands^2',
-          'labels.colloquial_terms^2',
-          'labels.synonyms^1.5',
-        )
-      end
+    it 'sorts by score desc then priority asc' do
+      sort = query.dig(:body, :sort)
+      expect(sort).to eq([
+        { _score: { order: 'desc' } },
+        { priority: { order: 'asc' } },
+      ])
     end
 
-    context 'when SearchLabels is enabled' do
-      around do |example|
-        SearchLabels.with_labels { example.run }
-      end
-
-      it 'includes label fields in wildcards' do
-        wildcards = query.dig(:body, :query, :bool, :should)
-        wildcard_fields = wildcards.flat_map { |w| w[:wildcard].keys }
-
-        expect(wildcard_fields).to include(
-          'labels.known_brands.keyword',
-          'labels.colloquial_terms.keyword',
-          'labels.synonyms.keyword',
-        )
-      end
-
-      it 'includes label fields in multi_match' do
-        must_clauses = query.dig(:body, :query, :bool, :must)
-        multi_match = must_clauses.find { |c| c.key?(:multi_match) }
-
-        expect(multi_match[:multi_match][:fields]).to include(
-          'labels.description^0.5',
-          'labels.known_brands^2',
-          'labels.colloquial_terms^2',
-          'labels.synonyms^1.5',
-        )
-      end
+    it 'does not include validity date filter' do
+      body = query[:body]
+      expect(body.to_s).not_to include('validity_start_date')
+      expect(body.to_s).not_to include('validity_end_date')
     end
 
-    it 'filters out hidden goods nomenclatures' do
-      must_clauses = query.dig(:body, :query, :bool, :must)
-      hidden_filter = must_clauses.find { |c| c.dig(:bool, :must_not) }
-
-      expect(hidden_filter).to be_present
-      expect(hidden_filter.dig(:bool, :must_not, :terms, :goods_nomenclature_item_id)).to eq(HiddenGoodsNomenclature.codes)
+    it 'does not include hidden goods nomenclature filter' do
+      body = query[:body]
+      expect(body.to_s).not_to include('must_not')
     end
 
-    it 'includes validity date filter' do
-      must_clauses = query.dig(:body, :query, :bool, :must)
-      validity_filter = must_clauses.find { |c| c.dig(:bool, :should)&.any? { |s| s.dig(:bool, :must)&.any? { |m| m.key?(:range) } } }
-
-      expect(validity_filter).to be_present
+    it 'does not include highlight' do
+      expect(query[:body]).not_to have_key(:highlight)
     end
   end
 end

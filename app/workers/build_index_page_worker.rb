@@ -31,7 +31,7 @@ class BuildIndexPageWorker
       memo.push(
         operation => {
           _index: index.name,
-          _id: model.id,
+          _id: index.document_id(model),
           data: index.serialize_record(model),
         },
       )
