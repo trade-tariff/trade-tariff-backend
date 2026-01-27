@@ -464,4 +464,51 @@ RSpec.describe TariffChange do
       end
     end
   end
+
+  describe '#date_of_effect_visible' do
+    let(:date_of_effect) { Date.parse('2024-08-15') }
+    let(:tariff_change) { create(:tariff_change, date_of_effect:, action:) }
+
+    context 'when action is ENDING' do
+      let(:action) { TariffChangesService::BaseChanges::ENDING }
+
+      it 'returns date_of_effect plus one day' do
+        expect(tariff_change.date_of_effect_visible).to eq(date_of_effect + 1.day)
+      end
+
+      it 'returns the date when the change becomes invisible to the public' do
+        result = tariff_change.date_of_effect_visible
+        expect(result).to eq(Date.parse('2024-08-16'))
+      end
+    end
+
+    context 'when action is CREATION' do
+      let(:action) { TariffChangesService::BaseChanges::CREATION }
+
+      it 'returns the same date_of_effect' do
+        expect(tariff_change.date_of_effect_visible).to eq(date_of_effect)
+      end
+
+      it 'returns the date when the change becomes visible to the public' do
+        result = tariff_change.date_of_effect_visible
+        expect(result).to eq(Date.parse('2024-08-15'))
+      end
+    end
+
+    context 'when action is UPDATE' do
+      let(:action) { TariffChangesService::BaseChanges::UPDATE }
+
+      it 'returns the same date_of_effect' do
+        expect(tariff_change.date_of_effect_visible).to eq(date_of_effect)
+      end
+    end
+
+    context 'when action is DELETION' do
+      let(:action) { TariffChangesService::BaseChanges::DELETION }
+
+      it 'returns the same date_of_effect' do
+        expect(tariff_change.date_of_effect_visible).to eq(date_of_effect)
+      end
+    end
+  end
 end

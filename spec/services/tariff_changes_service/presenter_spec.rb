@@ -459,13 +459,6 @@ RSpec.describe TariffChangesService::Presenter do
       expected_url = 'https://www.trade-tariff.service.gov.uk/commodities/0202000000?day=15&month=8&year=2024'
       expect(result).to eq(expected_url)
     end
-
-    it 'uses the underlying date_of_effect from the wrapped object' do
-      # Verify it doesn't use the formatted string version
-      allow(tariff_change).to receive(:date_of_effect).and_return(Date.parse('2025-07-10'))
-      result = presenter.ott_url
-      expect(result).to include('day=10&month=7&year=2025')
-    end
   end
 
   describe '#api_url' do
@@ -480,13 +473,6 @@ RSpec.describe TariffChangesService::Presenter do
       result = presenter.api_url
       expected_url = 'https://www.trade-tariff.service.gov.uk/uk/api/commodities/0202000000?as_of=2024-08-15'
       expect(result).to eq(expected_url)
-    end
-
-    it 'uses the underlying date_of_effect from the wrapped object' do
-      # Verify it doesn't use the formatted string version
-      allow(tariff_change).to receive(:date_of_effect).and_return(Date.parse('2025-07-10'))
-      result = presenter.api_url
-      expect(result).to include('as_of=2025-07-10')
     end
   end
 end

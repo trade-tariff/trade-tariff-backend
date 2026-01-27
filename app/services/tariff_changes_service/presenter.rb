@@ -68,13 +68,11 @@ class TariffChangesService
     end
 
     def ott_url
-      date = __getobj__.date_of_effect
-      "https://www.trade-tariff.service.gov.uk/commodities/#{goods_nomenclature_item_id}?day=#{date.day}&month=#{date.month}&year=#{date.year}"
+      "https://www.trade-tariff.service.gov.uk/commodities/#{goods_nomenclature_item_id}?day=#{date_of_effect_visible.day}&month=#{date_of_effect_visible.month}&year=#{date_of_effect_visible.year}"
     end
 
     def api_url
-      date = __getobj__.date_of_effect.strftime('%Y-%m-%d')
-      "https://www.trade-tariff.service.gov.uk/uk/api/commodities/#{goods_nomenclature_item_id}?as_of=#{date}"
+      "https://www.trade-tariff.service.gov.uk/uk/api/commodities/#{goods_nomenclature_item_id}?as_of=#{date_of_effect_visible.strftime('%Y-%m-%d')}"
     end
   end
 end

@@ -58,6 +58,7 @@ module TariffChanges
         changes.map do |change|
           {
             date_of_effect: change.date_of_effect,
+            date_of_effect_visible: change.date_of_effect_visible,
             change_type: change.description,
             additional_code: change.additional_code,
           }
