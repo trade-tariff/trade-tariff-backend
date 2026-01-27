@@ -21,17 +21,13 @@ RSpec.describe Search::SearchSuggestionQuery do
       expect(wildcard.dig(:wildcard, :'value.keyword', :boost)).to eq(20)
     end
 
-    it 'includes a match clause on value' do
-      should_clauses = query.dig(:body, :query, :bool, :should)
-      match = should_clauses.find { |c| c.key?(:match) }
+    it 'requires a match clause on value' do
+      must_clauses = query.dig(:body, :query, :bool, :must)
+      match = must_clauses.find { |c| c.key?(:match) }
 
       expect(match).to be_present
       expect(match.dig(:match, :value, :query)).to eq('test query')
       expect(match.dig(:match, :value, :fuzziness)).to eq('AUTO')
-    end
-
-    it 'uses minimum_should_match of 1' do
-      expect(query.dig(:body, :query, :bool, :minimum_should_match)).to eq(1)
     end
 
     it 'sorts by score desc then priority asc' do

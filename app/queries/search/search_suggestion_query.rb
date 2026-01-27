@@ -13,13 +13,12 @@ module Search
         body: {
           query: {
             bool: {
-              should: [
-                wildcard_clause,
-                match_clause,
-              ],
-              minimum_should_match: 1,
+              must: [match_clause],
+              should: [wildcard_clause],
             },
           },
+          # Best matches first, then by priority (chapter > heading > commodity)
+          # as a tiebreaker.
           sort: [
             { _score: { order: 'desc' } },
             { priority: { order: 'asc' } },
@@ -30,6 +29,8 @@ module Search
 
     private
 
+    # Boosts documents whose value starts with the exact query string.
+    # Optional — only affects ranking, not inclusion.
     def wildcard_clause
       {
         wildcard: {
@@ -41,6 +42,8 @@ module Search
       }
     end
 
+    # Requires documents to match the search term against the ngram-analyzed
+    # value field with fuzzy matching. This is a relevance gate and documents that don't match are excluded entirely.
     def match_clause
       {
         match: {
