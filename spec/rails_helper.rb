@@ -76,6 +76,7 @@ RSpec.configure do |config|
   config.after { travel_back }
 
   config.include AdminApi.routes.url_helpers, admin: true
+  config.include InternalApi.routes.url_helpers, internal: true
   config.include V2Api.routes.url_helpers, v2: true
 
   config.verbose_retry = true
