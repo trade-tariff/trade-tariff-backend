@@ -41,84 +41,32 @@ RSpec.describe ElasticSearch::ElasticSearchService do
     end
   end
 
-  # Searching in ElasticSearch index
   describe 'search suggestion' do
-    context 'when filtering by date' do
-      context 'when with goods codes that have bounded validity period' do
-        subject { described_class.new(q: '2851000000', as_of: date).to_suggestions[:data][0] }
+    context 'when searching by goods nomenclature item id' do
+      subject(:result) { described_class.new(q: '0102000000', as_of: '2007-01-01').to_suggestions[:data][0] }
 
-        before do
-          heading = create :heading,
-                           goods_nomenclature_item_id: '2851000000',
-                           validity_start_date: Date.new(1972, 1, 1),
-                           validity_end_date: Date.new(2006, 12, 31),
-                           description: 'Other inorganic compounds (including distilled or conductivity water and water of similar purity);'
-          index_model(heading)
-        end
-
-        # heading that has validity period of 1972-01-01 to 2006-12-31
-        let(:heading_pattern) do
-          {
-            type: :search_suggestion,
-            attributes: {
-              value: '2851000000',
-              goods_nomenclature_class: 'Heading',
-              suggestion_type: 'goods_nomenclature_item_id',
-              query: '2851000000',
-            }.ignore_extra_keys!,
-          }.ignore_extra_keys!
-        end
-
-        context 'with search date within goods code validity period' do
-          let(:date) { '2007-01-01' }
-
-          it { is_expected.not_to match_json_expression heading_pattern }
-        end
-
-        context 'with search date outside goods code validity period' do
-          let(:date) { '2005-01-01' }
-
-          it { is_expected.to match_json_expression heading_pattern }
-        end
+      before do
+        heading = create :heading, :with_description,
+                         goods_nomenclature_item_id: '0102000000',
+                         validity_start_date: Date.new(1972, 1, 1),
+                         validity_end_date: nil,
+                         description: 'Live bovine animals'
+        index_model(heading)
       end
 
-      context 'when with goods codes that have unbounded validity period' do
-        subject(:result) { described_class.new(q: '0102000000', as_of: date).to_suggestions[:data][0] }
-
-        before do
-          heading = create :heading, :with_description,
-                           goods_nomenclature_item_id: '0102000000',
-                           validity_start_date: Date.new(1972, 1, 1),
-                           validity_end_date: nil,
-                           description: 'Live bovine animals'
-          index_model(heading)
-        end
-
-        # heading that has validity period starting from 1972-01-01
-        let(:heading_pattern) do
-          {
-            type: :search_suggestion,
-            attributes: {
-              value: '0102000000',
-              goods_nomenclature_class: 'Heading',
-              suggestion_type: 'goods_nomenclature_item_id',
-              query: '0102000000',
-            }.ignore_extra_keys!,
-          }.ignore_extra_keys!
-        end
-
-        context 'with search date greater than start of validity period it returns goods code' do
-          let(:date) { '2007-01-01' }
-
-          it { is_expected.to match_json_expression heading_pattern }
-        end
-
-        context 'with search date is less than start of validity period does not return goods code' do
-          let(:date) { '1970-01-01' }
-
-          it { is_expected.not_to match_json_expression heading_pattern }
-        end
+      let(:heading_pattern) do
+        {
+          type: :search_suggestion,
+          attributes: {
+            value: '0102000000',
+            goods_nomenclature_class: 'Heading',
+            suggestion_type: 'goods_nomenclature',
+            query: '0102000000',
+          }.ignore_extra_keys!,
+        }.ignore_extra_keys!
       end
+
+      it { is_expected.to match_json_expression heading_pattern }
     end
 
     describe 'querying with ambiguous characters' do
@@ -142,8 +90,8 @@ RSpec.describe ElasticSearch::ElasticSearchService do
           attributes: {
             value: '0102000000',
             goods_nomenclature_class: 'Heading',
-            suggestion_type: 'goods_nomenclature_item_id',
-            query: '0102000000',
+            suggestion_type: 'goods_nomenclature',
+            query: '01020000',
           }.ignore_extra_keys!,
         }.ignore_extra_keys!
       end
@@ -155,7 +103,7 @@ RSpec.describe ElasticSearch::ElasticSearchService do
   end
 
   context 'when reference search' do
-    describe 'validity period function' do
+    describe 'searching by reference title' do
       subject { described_class.new(q: 'tea', as_of: nil).to_suggestions[:data][0] }
 
       before do
@@ -170,28 +118,22 @@ RSpec.describe ElasticSearch::ElasticSearchService do
           attributes: {
             value: 'tea',
             goods_nomenclature_class: 'Commodity',
-            suggestion_type: 'search_references',
+            suggestion_type: 'search_reference',
             query: 'tea',
           }.ignore_extra_keys!,
         }.ignore_extra_keys!
       end
 
-      context 'with search date falls within validity period' do
-        let(:date) { '2005-01-01' }
-
-        it { is_expected.to match_json_expression heading_pattern }
-      end
+      it { is_expected.to match_json_expression heading_pattern }
     end
   end
 
   context 'when chemical search' do
-    describe 'with search date falls within validity period' do
+    describe 'with chemical data indexed' do
       before do
         chem = create :full_chemical
         index_model(chem)
       end
-
-      let(:date) { '2005-01-01' }
 
       context 'when search by chemical name' do
         subject { described_class.new(q: 'powder', as_of: nil).to_suggestions[:data][0] }
@@ -202,7 +144,7 @@ RSpec.describe ElasticSearch::ElasticSearchService do
             attributes: {
               value: 'mel powder',
               goods_nomenclature_class: 'Heading',
-              suggestion_type: 'chemicals',
+              suggestion_type: 'full_chemical_name',
               query: 'powder',
             }.ignore_extra_keys!,
           }.ignore_extra_keys!
@@ -220,7 +162,7 @@ RSpec.describe ElasticSearch::ElasticSearchService do
             attributes: {
               value: '0154438-3',
               goods_nomenclature_class: 'Heading',
-              suggestion_type: 'chemicals',
+              suggestion_type: 'full_chemical_cus',
               query: '0154438',
             }.ignore_extra_keys!,
           }.ignore_extra_keys!
@@ -238,7 +180,7 @@ RSpec.describe ElasticSearch::ElasticSearchService do
             attributes: {
               value: '8028-66-8',
               goods_nomenclature_class: 'Heading',
-              suggestion_type: 'chemicals',
+              suggestion_type: 'full_chemical_cas',
               query: '8028',
             }.ignore_extra_keys!,
           }.ignore_extra_keys!

@@ -55,43 +55,26 @@ module ElasticSearch
 
     def perform
       results = TradeTariffBackend.search_client.search(
-        Search::SearchSuggestionQuery.new(q, as_of, Search::SearchSuggestionsIndex.new).query,
+        Search::SearchSuggestionQuery.new(q, as_of).query,
       )
 
-      Api::V2::SearchSuggestionSerializer.new(map_search_results(results, q)).serializable_hash
-    end
-
-    def map_search_results(response, query)
-      response.dig('hits', 'hits')&.map { |hit|
+      suggestions = results.dig('hits', 'hits')&.map { |hit|
         source = hit['_source']
-        selected_field, selected_value, selected_query = extract_highlight(hit['highlight'])
 
         SearchSuggestion.unrestrict_primary_key
         SearchSuggestion.new.tap do |suggestion|
-          suggestion.id = source['id']
-          suggestion.value = selected_value || source['goods_nomenclature_item_id']
-          suggestion.type = selected_field || 'goods_nomenclature_item_id'
-          suggestion.priority = ''
-          suggestion.goods_nomenclature_sid = source['id']
-          suggestion.goods_nomenclature_class = source['type']
+          suggestion.id = source['goods_nomenclature_sid']
+          suggestion.value = source['value']
+          suggestion.type = source['suggestion_type']
+          suggestion.priority = source['priority']
+          suggestion.goods_nomenclature_sid = source['goods_nomenclature_sid']
+          suggestion.goods_nomenclature_class = source['goods_nomenclature_class']
           suggestion[:score] = hit['_score']
-          suggestion[:query] = selected_query.presence || query
+          suggestion[:query] = q
         end
       }&.compact
-    end
 
-    def extract_highlight(highlight)
-      return [nil, nil, nil] unless highlight
-
-      highlight.each do |field, texts|
-        Array(texts).each do |text|
-          if (match = text.match(/<em>(.*?)<\/em>/))
-            return [field.split('.').first, text.gsub(/<\/?em>/, ''), match[1]]
-          end
-        end
-      end
-
-      [nil, nil, nil]
+      Api::V2::SearchSuggestionSerializer.new(suggestions).serializable_hash
     end
   end
 end

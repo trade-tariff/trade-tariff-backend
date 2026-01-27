@@ -16,7 +16,7 @@ RSpec.describe ReindexModelsWorker, type: :worker do
     end
 
     it 'queues workers to build the index' do
-      expect(BuildIndexPageWorker).to have_received(:perform_async).exactly(3).times
+      expect(BuildIndexPageWorker).to have_received(:perform_async).exactly(2).times
     end
   end
 end
