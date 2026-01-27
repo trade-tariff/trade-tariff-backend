@@ -1,4 +1,4 @@
-RSpec.describe SearchService::FuzzySearch::GoodsNomenclatureQuery do
+RSpec.describe Search::Fuzzy::GoodsNomenclatureQuery do
   describe '#query' do
     subject(:query) { described_class.new(query_string, date, index).query }
 
@@ -23,5 +23,12 @@ RSpec.describe SearchService::FuzzySearch::GoodsNomenclatureQuery do
     end
 
     it { is_expected.to include_json pattern }
+  end
+
+  describe '#match_type' do
+    it 'returns :goods_nomenclature_match' do
+      instance = described_class.new('test', Time.zone.today, Search::CommodityIndex.new)
+      expect(instance.match_type).to eq(:goods_nomenclature_match)
+    end
   end
 end

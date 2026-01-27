@@ -55,7 +55,7 @@ module ElasticSearch
 
     def perform
       results = TradeTariffBackend.search_client.search(
-        ElasticSearch::Query::SearchSuggestionQuery.new(q, as_of, Search::SearchSuggestionsIndex.new).query,
+        Search::SearchSuggestionQuery.new(q, as_of, Search::SearchSuggestionsIndex.new).query,
       )
 
       Api::V2::SearchSuggestionSerializer.new(map_search_results(results, q)).serializable_hash
