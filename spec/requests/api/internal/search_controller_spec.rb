@@ -49,6 +49,84 @@ RSpec.describe Api::Internal::SearchController, :internal do
       end
     end
 
+    context 'when exact match via search_reference suggestion' do
+      before do
+        heading = create(:heading, :with_description,
+                         goods_nomenclature_item_id: '0101000000',
+                         description: 'live horses')
+
+        create(:search_suggestion, :search_reference,
+               goods_nomenclature: heading,
+               value: 'horse')
+      end
+
+      let(:pattern) do
+        {
+          'data' => [
+            {
+              'id' => be_present,
+              'type' => 'heading',
+              'attributes' => {
+                'goods_nomenclature_item_id' => '0101000000',
+                'description' => 'live horses',
+                'formatted_description' => 'Live horses',
+                'declarable' => be_in([true, false]),
+                'score' => nil,
+                'producline_suffix' => '80',
+                'goods_nomenclature_class' => 'Heading',
+              },
+            },
+          ],
+        }
+      end
+
+      it 'returns the exact match with null score' do
+        post api_search_path(format: :json), params: { q: 'horse', as_of: Time.zone.today.iso8601 }
+
+        expect(response).to have_http_status(:ok)
+        expect(response.body).to match_json_expression(pattern)
+      end
+    end
+
+    context 'when exact match via padded numeric code' do
+      before do
+        chapter = create(:chapter, :with_description,
+                         goods_nomenclature_item_id: '0100000000',
+                         description: 'live animals')
+
+        create(:search_suggestion, :goods_nomenclature,
+               goods_nomenclature: chapter,
+               value: '0100000000')
+      end
+
+      let(:pattern) do
+        {
+          'data' => [
+            {
+              'id' => be_present,
+              'type' => 'chapter',
+              'attributes' => {
+                'goods_nomenclature_item_id' => '0100000000',
+                'description' => 'live animals',
+                'formatted_description' => 'Live animals',
+                'declarable' => be_in([true, false]),
+                'score' => nil,
+                'producline_suffix' => '80',
+                'goods_nomenclature_class' => 'Chapter',
+              },
+            },
+          ],
+        }
+      end
+
+      it 'returns the exact match with null score' do
+        post api_search_path(format: :json), params: { q: '01', as_of: Time.zone.today.iso8601 }
+
+        expect(response).to have_http_status(:ok)
+        expect(response.body).to match_json_expression(pattern)
+      end
+    end
+
     context 'when empty query' do
       let(:pattern) do
         { 'data' => [] }
