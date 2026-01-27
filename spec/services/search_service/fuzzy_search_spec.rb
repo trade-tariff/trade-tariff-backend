@@ -167,11 +167,11 @@ RSpec.describe SearchService::FuzzySearch do
       queries = fuzzy_search.send(:build_queries)
 
       goods_nomenclature_queries = queries.select do |q|
-        q.is_a?(SearchService::FuzzySearch::GoodsNomenclatureQuery)
+        q.is_a?(Search::Fuzzy::GoodsNomenclatureQuery)
       end
 
       reference_queries = queries.select do |q|
-        q.is_a?(SearchService::FuzzySearch::ReferenceQuery)
+        q.is_a?(Search::Fuzzy::ReferenceQuery)
       end
 
       non_excluded_indexes = TradeTariffBackend.search_indexes.reject(&:exclude_from_search_results?)

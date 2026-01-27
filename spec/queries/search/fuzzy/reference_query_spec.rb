@@ -1,4 +1,4 @@
-RSpec.describe SearchService::FuzzySearch::ReferenceQuery do
+RSpec.describe Search::Fuzzy::ReferenceQuery do
   describe '#query' do
     subject(:query) { described_class.new(query_string, date, index).query }
 
@@ -21,5 +21,12 @@ RSpec.describe SearchService::FuzzySearch::ReferenceQuery do
     end
 
     it { is_expected.to include_json pattern }
+  end
+
+  describe '#match_type' do
+    it 'returns :reference_match' do
+      instance = described_class.new('test', Time.zone.today, Search::SearchReferenceIndex.new)
+      expect(instance.match_type).to eq(:reference_match)
+    end
   end
 end

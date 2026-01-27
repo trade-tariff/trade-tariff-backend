@@ -1,7 +1,5 @@
 class SearchService
   class FuzzySearch < BaseSearch
-    INDEX_SIZE_MAX = 10_000 # OpenSearch default pagination limit
-
     def search!
       @results ||= begin
         queries = build_queries
@@ -31,14 +29,14 @@ class SearchService
     def build_queries
       @build_queries ||= [
         # Direct goods nomenclature queries
-        GoodsNomenclatureQuery.new(query_string, date, Search::ChapterIndex.new),
-        GoodsNomenclatureQuery.new(query_string, date, Search::HeadingIndex.new),
-        GoodsNomenclatureQuery.new(query_string, date, Search::CommodityIndex.new),
+        Search::Fuzzy::GoodsNomenclatureQuery.new(query_string, date, Search::ChapterIndex.new),
+        Search::Fuzzy::GoodsNomenclatureQuery.new(query_string, date, Search::HeadingIndex.new),
+        Search::Fuzzy::GoodsNomenclatureQuery.new(query_string, date, Search::CommodityIndex.new),
 
         # Reference queries (all query SearchReferenceIndex, filtered by type)
-        ReferenceQuery.new(query_string, date, Search::ChapterIndex.new),
-        ReferenceQuery.new(query_string, date, Search::HeadingIndex.new),
-        ReferenceQuery.new(query_string, date, Search::CommodityIndex.new),
+        Search::Fuzzy::ReferenceQuery.new(query_string, date, Search::ChapterIndex.new),
+        Search::Fuzzy::ReferenceQuery.new(query_string, date, Search::HeadingIndex.new),
+        Search::Fuzzy::ReferenceQuery.new(query_string, date, Search::CommodityIndex.new),
       ]
     end
 
