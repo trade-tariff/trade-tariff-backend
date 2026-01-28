@@ -10,6 +10,7 @@ module Api
           goods_nomenclature_label.set(label_params)
 
           if goods_nomenclature_label.save_update
+            reindex_goods_nomenclature
             render json: serialize(goods_nomenclature_label.reload, serializer_options), status: :ok
           else
             render json: Api::Admin::ErrorSerializationService.new(goods_nomenclature_label).call,
@@ -139,6 +140,14 @@ module Api
 
         def filter_oid
           params.dig(:filter, :oid)&.to_i
+        end
+
+        def reindex_goods_nomenclature
+          GoodsNomenclatureLabel.refresh!(concurrently: false)
+          TradeTariffBackend.search_client.index(
+            ::Search::GoodsNomenclatureIndex,
+            goods_nomenclature.reload,
+          )
         end
 
         def label_params

@@ -44,6 +44,10 @@ AdminApi.routes.draw do
         end
       end
 
+      namespace :goods_nomenclature_labels do
+        resource :stats, only: [:show]
+      end
+
       resources :quota_order_numbers, module: 'quota_order_numbers', only: %i[] do
         resources :quota_definitions, only: %i[index show]
       end
