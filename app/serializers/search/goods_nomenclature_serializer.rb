@@ -26,7 +26,7 @@ module Search
     private
 
     def description
-      SearchNegationService.new(classification_description.to_s.downcase).call
+      SearchNegationService.new(classification_description.to_s).call
     end
 
     def ancestor_descriptions

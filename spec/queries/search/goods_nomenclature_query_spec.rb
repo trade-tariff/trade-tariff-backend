@@ -39,7 +39,7 @@ RSpec.describe Search::GoodsNomenclatureQuery do
       end
 
       it 'boosts search references above ancestor descriptions' do
-        expect(multi_match[:fields]).to include('search_references^2')
+        expect(multi_match[:fields]).to include('search_references^5')
         expect(multi_match[:fields]).to include('ancestor_descriptions')
       end
     end

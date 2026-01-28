@@ -14,7 +14,10 @@ module Search
           query: {
             bool: {
               must: [match_clause],
-              should: [wildcard_clause],
+              should: [
+                exact_match_clause, # Exact matches boosted highest
+                wildcard_clause, # Prefix matches boosted moderately
+              ],
             },
           },
           # Best matches first, then by priority (chapter > heading > commodity)
@@ -28,6 +31,20 @@ module Search
     end
 
     private
+
+    # Boosts documents whose value exactly matches the query string (case-insensitive).
+    # This ensures 100% character matches always rank first.
+    def exact_match_clause
+      {
+        term: {
+          'value.keyword': {
+            value: query_string,
+            boost: 100,
+            case_insensitive: true,
+          },
+        },
+      }
+    end
 
     # Boosts documents whose value starts with the exact query string.
     # Optional — only affects ranking, not inclusion.

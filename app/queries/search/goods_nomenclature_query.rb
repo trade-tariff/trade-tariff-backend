@@ -46,17 +46,17 @@ module Search
 
     def search_fields
       fields = %w[
+        search_references^5
         description^3
-        search_references^2
         ancestor_descriptions
       ]
 
       if SearchLabels.enabled?
         fields += %w[
-          labels.description
           labels.known_brands^2
           labels.colloquial_terms^2
           labels.synonyms^1.5
+          labels.description
         ]
       end
 

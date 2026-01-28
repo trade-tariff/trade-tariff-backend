@@ -14,6 +14,10 @@ Rails.application.routes.draw do
   mount AdminApi => '/uk/admin', as: 'uk_admin_api' if TradeTariffBackend.uk?
   mount AdminApi => '/xi/admin', as: 'xi_admin_api' if TradeTariffBackend.xi?
 
+  # Internal routes
+  mount InternalApi => '/uk/internal', as: 'uk_internal_api' if TradeTariffBackend.uk?
+  mount InternalApi => '/xi/internal', as: 'xi_internal_api' if TradeTariffBackend.xi?
+
   # User routes
   mount UserApi => '/uk/user', as: 'uk_user_api' if TradeTariffBackend.uk?
 
