@@ -12,6 +12,16 @@ RSpec.describe Search::SearchSuggestionQuery do
       expect(query[:index]).to eq(Search::SearchSuggestionsIndex.new.name)
     end
 
+    it 'includes an exact match term clause on value.keyword' do
+      should_clauses = query.dig(:body, :query, :bool, :should)
+      term = should_clauses.find { |c| c.key?(:term) }
+
+      expect(term).to be_present
+      expect(term.dig(:term, :'value.keyword', :value)).to eq('test query')
+      expect(term.dig(:term, :'value.keyword', :boost)).to eq(100)
+      expect(term.dig(:term, :'value.keyword', :case_insensitive)).to be true
+    end
+
     it 'includes a wildcard clause on value.keyword' do
       should_clauses = query.dig(:body, :query, :bool, :should)
       wildcard = should_clauses.find { |c| c.key?(:wildcard) }

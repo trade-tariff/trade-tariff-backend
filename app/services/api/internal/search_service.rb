@@ -18,9 +18,11 @@ module Api
         exact = find_exact_match
         return GoodsNomenclatureSearchSerializer.serialize([exact]) if exact
 
-        results = TradeTariffBackend.search_client.search(
-          ::Search::GoodsNomenclatureQuery.new(q, as_of).query,
-        )
+        results = SearchLabels.with_labels do
+          TradeTariffBackend.search_client.search(
+            ::Search::GoodsNomenclatureQuery.new(q, as_of).query,
+          )
+        end
 
         hits = results.dig('hits', 'hits') || []
         goods_nomenclatures = hits.map { |hit| build_result(hit) }
