@@ -15,13 +15,18 @@ class GoodsNomenclatureLabel < Sequel::Model(Sequel[:goods_nomenclature_labels].
     validates_presence :goods_nomenclature_item_id
     validates_presence :producline_suffix
     validates_presence :labels
-    validate_uniqueness_of_sid
+    validate_uniqueness_of_sid if new?
   end
 
   dataset_module do
     def by_sid(sid)
       where(goods_nomenclature_sid: sid).actual
     end
+  end
+
+  def save_update
+    self.operation_date = Time.zone.today
+    save(raise_on_failure: false)
   end
 
   class << self
