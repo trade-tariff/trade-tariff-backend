@@ -32,10 +32,10 @@ class CdsImporter
     def after_parse
       write(@key, @instances)
       sort_worksheets
-      FileUtils.mkdir_p(File.join(TariffSynchronizer.root_path, 'cds_updates'))
-      package.serialize(File.join(TariffSynchronizer.root_path, 'cds_updates', excel_filename))
+      workbook.close
+
       if TradeTariffBackend.cds_updates_send_email && !@failed
-        TariffSynchronizer::Mailer.cds_updates(xml_to_file_date, package, excel_filename).deliver_now
+        TariffSynchronizer::Mailer.cds_updates(xml_to_file_date, workbook, excel_filename).deliver_now
       end
     rescue StandardError => e
       Rails.logger.error "CDS Updates excel: save file error for #{@filename} - #{e.message}"
@@ -50,7 +50,7 @@ class CdsImporter
         klass = CdsImporter::ExcelWriter.const_get(const)
         next unless klass.is_a?(Class)
 
-        worksheet = workbook.worksheets.find { |ws| ws.name == klass.sheet_name }
+        worksheet = workbook.get_worksheet_by_name(klass.sheet_name)
         sort_columns = klass.sort_columns
         next unless sort_columns.present? && worksheet
 
@@ -66,7 +66,7 @@ class CdsImporter
           worksheet.rows.delete_at(index)
         end
 
-        rows.each { |r| worksheet.add_row r }
+        rows.each { |r| worksheet.append_row r }
       end
     end
 
@@ -81,49 +81,60 @@ class CdsImporter
       heading = klass.heading
       column_widths = klass.column_widths
 
-      sheet = workbook.worksheets.find { |ws| ws.name == sheet_name }
+      sheet = workbook.get_worksheet_by_name(sheet_name)
       unless sheet
-        sheet = workbook.add_worksheet(name: sheet_name)
+        sheet = workbook.add_worksheet(sheet_name)
 
         if note.present?
-          sheet.add_row(note, style: bold_style)
-          sheet.merge_cells(merge_cells_length(klass, 1))
-          sheet.add_row
-          sheet.merge_cells(merge_cells_length(klass, 2))
+          sheet.append_row(note, bold_style)
+          sheet.merge_range(*merge_cells_length(klass, 1))
+          sheet.append_row([])
+          sheet.merge_range(*merge_cells_length(klass, 2))
         end
 
-        sheet.add_row(heading, style: bold_style)
-        sheet.column_widths(*column_widths)
+        sheet.append_row(heading, bold_style)
+
+        column_widths.each_with_index do |width, index|
+          sheet.set_column_width(index, width)
+        end
       end
 
-      sheet.add_row(update.data_row, style: regular_style)
+      sheet.append_row(update.data_row, regular_style)
       sheet.column_widths(*column_widths)
     rescue StandardError => e
       Rails.logger.info "Write record error on #{key} - #{e.message}"
     end
 
     def initiate_excel_file
-      @package = Axlsx::Package.new
-      @workbook = package.workbook
-      @bold_style = workbook.styles.add_style(
-        b: true,
+      @workbook = if Rails.env.development?
+                    FileUtils.rm(excel_filename) if File.exist?(excel_filename)
+                    FileUtils.mkdir_p(File.join(TariffSynchronizer.root_path, 'cds_updates'))
+                    FastExcel.open(excel_filename, constant_memory: true)
+                  else
+                    FastExcel.open(constant_memory: true)
+                  end
+
+      @bold_style = workbook.add_format(
+        bg_color: 0xE3E5E6,
+        bold: true,
         font_name: 'Calibri',
-        sz: 11,
-        bg_color: 'e3e5e6',
+        font_size: 11,
       )
-      @regular_style = workbook.styles.add_style(
-        alignment: {
-          wrap_text: true,
-          horizontal: :left,
-          vertical: :top,
-        },
+
+      @regular_style = workbook.add_format(
+        align: { h: :left, v: :top },
         font_name: 'Calibri',
-        sz: 11,
+        font_size: 11,
+        text_wrap: true,
       )
     end
 
     def excel_filename
-      "CDS updates #{xml_to_file_date}.xlsx"
+      if Rails.env.production?
+        File.join(TariffSynchronizer.root_path, 'cds_updates', "CDS updates #{xml_to_file_date}.xlsx")
+      else
+        "CDS updates #{xml_to_file_date}.xlsx"
+      end
     end
 
     def xml_to_file_date
@@ -140,7 +151,11 @@ class CdsImporter
     end
 
     def merge_cells_length(klass, row)
-      "#{klass.table_span[0]}#{row}:#{klass.table_span[1]}#{row}"
+      [col(klass.table_span[0]), row, col(klass.table_span[1]), row]
+    end
+
+    def col(cell)
+      cell.ord - 'A'.ord
     end
   end
 end
