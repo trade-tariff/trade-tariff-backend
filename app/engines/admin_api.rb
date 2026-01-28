@@ -38,6 +38,12 @@ AdminApi.routes.draw do
         end
       end
 
+      resources :goods_nomenclatures, only: %i[], constraints: { id: /\d{10}/ } do
+        scope module: 'goods_nomenclatures' do
+          resource :goods_nomenclature_label, only: %i[show update]
+        end
+      end
+
       resources :quota_order_numbers, module: 'quota_order_numbers', only: %i[] do
         resources :quota_definitions, only: %i[index show]
       end
