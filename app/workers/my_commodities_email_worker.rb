@@ -1,8 +1,8 @@
 class MyCommoditiesEmailWorker
   include Sidekiq::Worker
 
-  TEMPLATE_ID = '5db33f13-7235-4ed8-b704-e3fddc01ee09'.freeze
-  REPLY_TO_ID = '61e19d5e-4fae-4b7e-aa2e-cd05a87f4cf8'.freeze
+  TEMPLATE_ID = NOTIFY_CONFIGURATION.dig(:templates, :myott, :tariff_change)
+  REPLY_TO_ID = NOTIFY_CONFIGURATION.dig(:reply_to, :tariff_management)
 
   def perform(user_id, date, changes_count)
     user = PublicUsers::User.active[id: user_id]

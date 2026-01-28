@@ -33,7 +33,7 @@ RSpec.describe EnquiryForm::SendSubmissionEmailWorker, type: :worker do
 
       expect(notifier_client).to have_received(:send_email).with(
         'support@example.com',
-        '104e74e3-8f43-4642-a594-4d4ef931b121',
+        NOTIFY_CONFIGURATION.dig(:templates, :enquiry_form, :submission),
         {
           company_name: 'Doe & Co Inc.',
           created_at: '2025-08-15 11:00',

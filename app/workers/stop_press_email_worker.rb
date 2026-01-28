@@ -1,8 +1,8 @@
 class StopPressEmailWorker
   include Sidekiq::Worker
 
-  TEMPLATE_ID = '3295f0bf-c75f-4202-8dcf-703e4564b932'.freeze
-  REPLY_TO_ID = '61e19d5e-4fae-4b7e-aa2e-cd05a87f4cf8'.freeze
+  TEMPLATE_ID = NOTIFY_CONFIGURATION.dig(:templates, :myott, :stop_press)
+  REPLY_TO_ID = NOTIFY_CONFIGURATION.dig(:reply_to, :tariff_management)
 
   def perform(stop_press_id, user_id)
     stop_press = News::Item.find(id: stop_press_id)
