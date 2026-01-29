@@ -15,6 +15,7 @@ RSpec.describe Api::Admin::GoodsNomenclatureLabels::StatsController do
             synonyms_count: Integer,
             ai_created_only: Integer,
             human_edited: Integer,
+            coverage_by_chapter: Array,
           },
         },
       }

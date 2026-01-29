@@ -14,6 +14,7 @@ RSpec.describe Api::Admin::GoodsNomenclatureLabels::StatsService do
           synonyms_count: 0,
           ai_created_only: 0,
           human_edited: 0,
+          coverage_by_chapter: [],
         )
       end
     end

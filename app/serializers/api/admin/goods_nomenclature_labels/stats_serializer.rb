@@ -13,7 +13,8 @@ module Api
                    :colloquial_terms_count,
                    :synonyms_count,
                    :ai_created_only,
-                   :human_edited
+                   :human_edited,
+                   :coverage_by_chapter
       end
     end
   end

@@ -3,6 +3,8 @@ module Api
     module GoodsNomenclatureLabels
       class StatsService
         def call
+          GoodsNomenclatureLabel.refresh!(concurrently: false)
+
           {
             total_goods_nomenclatures: total_goods_nomenclatures,
             descriptions_count: descriptions_count,
@@ -11,6 +13,7 @@ module Api
             synonyms_count: jsonb_array_sum('synonyms'),
             ai_created_only: ai_created_only,
             human_edited: human_edited,
+            coverage_by_chapter: coverage_by_chapter,
           }
         end
 
@@ -42,6 +45,15 @@ module Api
           base_dataset.where(
             goods_nomenclature_sid: human_edited_sids_dataset,
           ).count
+        end
+
+        def coverage_by_chapter
+          base_dataset
+            .select_group(Sequel.lit('LEFT(goods_nomenclature_item_id, 2)').as(:chapter))
+            .select_append(Sequel.function(:count, Sequel.lit('*')).as(:count))
+            .order(Sequel.asc(:chapter))
+            .all
+            .map { |r| { chapter: r[:chapter], count: r[:count] } }
         end
 
         def human_edited_sids_dataset
