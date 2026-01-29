@@ -4,11 +4,11 @@ module Api
       class StatsService
         def call
           {
-            total_labels: total_labels,
-            with_description: with_description,
-            with_known_brands: with_known_brands,
-            with_colloquial_terms: with_colloquial_terms,
-            with_synonyms: with_synonyms,
+            total_goods_nomenclatures: total_goods_nomenclatures,
+            descriptions_count: descriptions_count,
+            known_brands_count: jsonb_array_sum('known_brands'),
+            colloquial_terms_count: jsonb_array_sum('colloquial_terms'),
+            synonyms_count: jsonb_array_sum('synonyms'),
             ai_created_only: ai_created_only,
             human_edited: human_edited,
           }
@@ -16,32 +16,20 @@ module Api
 
         private
 
-        def total_labels
+        def total_goods_nomenclatures
           base_dataset.count
         end
 
-        def with_description
+        def descriptions_count
           base_dataset.where(
             Sequel.lit("(labels->>'description') IS NOT NULL AND (labels->>'description') != ''"),
           ).count
         end
 
-        def with_known_brands
-          base_dataset.where(
-            Sequel.lit("(labels->'known_brands')::text != '[]' AND (labels->'known_brands')::text != 'null' AND (labels->'known_brands') IS NOT NULL"),
-          ).count
-        end
-
-        def with_colloquial_terms
-          base_dataset.where(
-            Sequel.lit("(labels->'colloquial_terms')::text != '[]' AND (labels->'colloquial_terms')::text != 'null' AND (labels->'colloquial_terms') IS NOT NULL"),
-          ).count
-        end
-
-        def with_synonyms
-          base_dataset.where(
-            Sequel.lit("(labels->'synonyms')::text != '[]' AND (labels->'synonyms')::text != 'null' AND (labels->'synonyms') IS NOT NULL"),
-          ).count
+        def jsonb_array_sum(key)
+          base_dataset
+            .where(Sequel.lit("jsonb_typeof(labels->?) = 'array'", key))
+            .sum(Sequel.lit('jsonb_array_length(labels->?)', key)) || 0
         end
 
         def ai_created_only

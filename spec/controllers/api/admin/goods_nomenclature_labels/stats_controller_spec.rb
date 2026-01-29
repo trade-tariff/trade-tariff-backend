@@ -8,11 +8,11 @@ RSpec.describe Api::Admin::GoodsNomenclatureLabels::StatsController do
           id: 'stats',
           type: 'goods_nomenclature_label_stats',
           attributes: {
-            total_labels: Integer,
-            with_description: Integer,
-            with_known_brands: Integer,
-            with_colloquial_terms: Integer,
-            with_synonyms: Integer,
+            total_goods_nomenclatures: Integer,
+            descriptions_count: Integer,
+            known_brands_count: Integer,
+            colloquial_terms_count: Integer,
+            synonyms_count: Integer,
             ai_created_only: Integer,
             human_edited: Integer,
           },
@@ -35,9 +35,9 @@ RSpec.describe Api::Admin::GoodsNomenclatureLabels::StatsController do
                goods_nomenclature: commodity,
                labels: {
                  'description' => 'Test description',
-                 'known_brands' => %w[BrandA],
+                 'known_brands' => %w[BrandA BrandB],
                  'colloquial_terms' => [],
-                 'synonyms' => [],
+                 'synonyms' => %w[syn1],
                }
       end
 
@@ -47,11 +47,11 @@ RSpec.describe Api::Admin::GoodsNomenclatureLabels::StatsController do
         json = JSON.parse(response.body)
         attributes = json.dig('data', 'attributes')
 
-        expect(attributes['total_labels']).to eq(1)
-        expect(attributes['with_description']).to eq(1)
-        expect(attributes['with_known_brands']).to eq(1)
-        expect(attributes['with_colloquial_terms']).to eq(0)
-        expect(attributes['with_synonyms']).to eq(0)
+        expect(attributes['total_goods_nomenclatures']).to eq(1)
+        expect(attributes['descriptions_count']).to eq(1)
+        expect(attributes['known_brands_count']).to eq(2)
+        expect(attributes['colloquial_terms_count']).to eq(0)
+        expect(attributes['synonyms_count']).to eq(1)
         expect(attributes['ai_created_only']).to eq(1)
         expect(attributes['human_edited']).to eq(0)
       end
