@@ -31,7 +31,7 @@ class CdsImporter
 
     def after_parse
       write(@key, @instances)
-      sort_worksheets
+      # sort_worksheets
       workbook.close
 
       if TradeTariffBackend.cds_updates_send_email && !@failed
@@ -81,22 +81,19 @@ class CdsImporter
       heading = klass.heading
       column_widths = klass.column_widths
 
-      sheet = workbook.get_worksheet_by_name(sheet_name)
-      unless sheet
-        sheet = workbook.add_worksheet(sheet_name)
+      sheet = workbook.add_worksheet(sheet_name)
 
-        if note.present?
-          sheet.append_row(note, bold_style)
-          sheet.merge_range(*merge_cells_length(klass, 1))
-          sheet.append_row([])
-          sheet.merge_range(*merge_cells_length(klass, 2))
-        end
+      if note.present?
+        sheet.append_row(note, bold_style)
+        sheet.merge_range(*merge_cells_length(klass, 1))
+        sheet.append_row([])
+        sheet.merge_range(*merge_cells_length(klass, 2))
+      end
 
-        sheet.append_row(heading, bold_style)
+      sheet.append_row(heading, bold_style)
 
-        column_widths.each_with_index do |width, index|
-          sheet.set_column_width(index, width)
-        end
+      column_widths.each_with_index do |width, index|
+        sheet.set_column_width(index, width)
       end
 
       sheet.append_row(update.data_row, regular_style)
