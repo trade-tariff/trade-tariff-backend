@@ -300,10 +300,6 @@ module TradeTariffBackend
       end
     end
 
-    def optimised_search_enabled?
-      ENV.fetch('OPTIMISED_SEARCH_ENABLED', 'false') == 'true'
-    end
-
     def implicit_deletion_cutoff
       Date.parse(ENV.fetch('IMPLICIT_DELETION_CUTOFF', '2024-03-25'))
     end

@@ -10,11 +10,7 @@ module Api
       end
 
       def suggestions
-        results = if TradeTariffBackend.optimised_search_enabled?
-                    ElasticSearch::ElasticSearchService.new(params).to_suggestions
-                  else
-                    Api::V2::SearchSuggestionSerializer.new(matching_suggestions).serializable_hash
-                  end
+        results = Api::V2::SearchSuggestionSerializer.new(matching_suggestions).serializable_hash
         instrumentation_service.log_search_suggestions_results(results)
         render json: results
       end

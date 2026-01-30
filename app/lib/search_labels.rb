@@ -10,12 +10,10 @@
 #
 #   SearchLabels.with_labels do
 #     # Searches in this block will include label fields
-#     ElasticSearchService.new(q: 'iPhone').to_suggestions
 #   end
 #
 #   SearchLabels.without_labels do
 #     # Searches in this block will NOT include label fields
-#     ElasticSearchService.new(q: 'iPhone').to_suggestions
 #   end
 #
 #   # Check current state

@@ -33,19 +33,14 @@ class SearchService
     private
 
     def find_search_suggestion(query)
-      if TradeTariffBackend.optimised_search_enabled? && resource_id.present? && resource_id != 'undefined'
-        gn = GoodsNomenclature.find(goods_nomenclature_sid: resource_id)
-        gn&.sti_cast
-      else
-        filter = { value: singular_and_plural(query) }
-        if resource_id.present? && resource_id != 'undefined'
-          filter[:id] = resource_id
-        end
-
-        suggestion = SearchSuggestion.find(filter)
-
-        suggestion&.goods_nomenclature&.sti_cast
+      filter = { value: singular_and_plural(query) }
+      if resource_id.present? && resource_id != 'undefined'
+        filter[:id] = resource_id
       end
+
+      suggestion = SearchSuggestion.find(filter)
+
+      suggestion&.goods_nomenclature&.sti_cast
     end
 
     def find_historic_goods_nomenclature(query)
