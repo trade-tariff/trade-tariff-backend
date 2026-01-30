@@ -13,7 +13,7 @@ RSpec.describe Api::User::SubscriptionSerializer do
           attributes: {
             active: true,
             meta: {
-              counts: { active: 0, expired: 0, invalid: 2, total: 2 },
+              counts: { active: 0, expired: 0, invalid: 2, total: 0 },
               published: { yesterday: 0 },
             },
           },

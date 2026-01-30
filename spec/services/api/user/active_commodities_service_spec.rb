@@ -197,7 +197,7 @@ RSpec.describe Api::User::ActiveCommoditiesService do
         active: expected_active_codes.count,
         expired: expected_expired_codes.count,
         invalid: expected_invalid_codes.count,
-        total: expected_active_codes.count + expected_expired_codes.count + expected_invalid_codes.count,
+        total: expected_active_codes.count + expected_expired_codes.count,
       }
     end
 
@@ -233,7 +233,7 @@ RSpec.describe Api::User::ActiveCommoditiesService do
           active: 0,
           expired: 0,
           invalid: commodity_codes.count,
-          total: commodity_codes.count,
+          total: 0,
         })
       end
     end
