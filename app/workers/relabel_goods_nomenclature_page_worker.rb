@@ -15,13 +15,11 @@ class RelabelGoodsNomenclaturePageWorker
 
   sidekiq_options queue: :sync, retry: 3
 
-  PAGE_SIZE = TradeTariffBackend.goods_nomenclature_label_page_size
-
   def perform(page_number)
     @label_service = nil
 
     TimeMachine.now do
-      batch = GoodsNomenclatureLabel.goods_nomenclatures_dataset.paginate(page_number, PAGE_SIZE).eager(EAGER).all
+      batch = GoodsNomenclatureLabel.goods_nomenclatures_dataset.paginate(page_number, configured_page_size).eager(EAGER).all
 
       return if batch.empty?
 
@@ -50,6 +48,11 @@ class RelabelGoodsNomenclaturePageWorker
   end
 
   private
+
+  def configured_page_size
+    config = AdminConfiguration.classification.by_name('label_page_size')
+    (config&.value || TradeTariffBackend.goods_nomenclature_label_page_size).to_i
+  end
 
   def save_label(label, page_number:)
     unless label.valid?

@@ -1,12 +1,12 @@
 class OpenaiClient
-  def call(context)
+  def call(context, model: nil)
     messages = if context.is_a?(Array)
                  context
                else
                  [{ role: 'user', content: context.to_s }]
                end
 
-    model = TradeTariffBackend.ai_model
+    model ||= TradeTariffBackend.ai_model
     config = MODEL_CONFIGS[model] || {}
 
     body = {
@@ -33,9 +33,9 @@ class OpenaiClient
   end
 
   class << self
-    def call(context)
+    def call(context, model: nil)
       instrument do
-        new.call(context)
+        new.call(context, model: model)
       end
     end
 
