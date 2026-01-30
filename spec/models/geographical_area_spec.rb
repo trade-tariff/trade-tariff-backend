@@ -127,4 +127,54 @@ RSpec.describe GeographicalArea do
       it { is_expected.to have_attributes(count: 2) }
     end
   end
+
+  describe '.european_union_member_ids' do
+    context 'when EU and its members exist' do
+      subject(:member_ids) { described_class.european_union_member_ids }
+
+      before do
+        create(:geographical_area, geographical_area_id: 'EU')
+
+        eu_group = create(:geographical_area, :group, geographical_area_id: '1013')
+
+        fr = create(:geographical_area, :country, geographical_area_id: 'FR')
+        de = create(:geographical_area, :country, geographical_area_id: 'DE')
+        es = create(:geographical_area, :country, geographical_area_id: 'ES')
+
+        create(:geographical_area_membership,
+               geographical_area_sid: fr.geographical_area_sid,
+               geographical_area_group_sid: eu_group.geographical_area_sid)
+        create(:geographical_area_membership,
+               geographical_area_sid: de.geographical_area_sid,
+               geographical_area_group_sid: eu_group.geographical_area_sid)
+        create(:geographical_area_membership,
+               geographical_area_sid: es.geographical_area_sid,
+               geographical_area_group_sid: eu_group.geographical_area_sid)
+      end
+
+      it 'returns the geographical_area_ids of all EU members' do
+        expect(member_ids).to contain_exactly('FR', 'DE', 'ES')
+      end
+    end
+
+    context 'when EU does not exist' do
+      subject(:member_ids) { described_class.european_union_member_ids }
+
+      it 'returns an empty array' do
+        expect(member_ids).to eq([])
+      end
+    end
+
+    context 'when EU exists but has no referenced area' do
+      subject(:member_ids) { described_class.european_union_member_ids }
+
+      before do
+        create(:geographical_area, geographical_area_id: 'EU')
+      end
+
+      it 'returns an empty array' do
+        expect(member_ids).to eq([])
+      end
+    end
+  end
 end

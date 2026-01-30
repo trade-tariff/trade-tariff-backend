@@ -52,6 +52,7 @@ class TariffChangesService
       if all_geo_ids.any?
         geo_areas = GeographicalArea.where(geographical_area_id: all_geo_ids).all.index_by(&:geographical_area_id)
         @geo_area_cache = geo_areas
+        @european_union_member_ids = GeographicalArea.european_union_member_ids
       end
 
       # Batch load GoodsNomenclatureDescription for commodity description changes
@@ -69,7 +70,7 @@ class TariffChangesService
 
     def transform_records(tariff_changes)
       tariff_changes.map do |tariff_change|
-        presented_change = Presenter.new(tariff_change, @geo_area_cache)
+        presented_change = Presenter.new(tariff_change, @geo_area_cache, @european_union_member_ids)
         {
           import_export: presented_change.import_export,
           geo_area: presented_change.geo_area,

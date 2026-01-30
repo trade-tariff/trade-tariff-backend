@@ -116,6 +116,16 @@ class GeographicalArea < Sequel::Model
     id == ERGA_OMNES_ID
   end
 
+  def self.european_union_member_ids
+    eu = find(geographical_area_id: 'EU')
+    return [] unless eu
+
+    actual_eu = eu.referenced
+    return [] unless actual_eu
+
+    actual_eu.contained_geographical_areas.map(&:geographical_area_id)
+  end
+
   private
 
   def referenced_id
