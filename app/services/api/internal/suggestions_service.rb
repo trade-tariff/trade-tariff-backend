@@ -15,9 +15,8 @@ module Api
           return { data: [] }
         end
 
-        results = TradeTariffBackend.search_client.search(
-          ::Search::SearchSuggestionQuery.new(q, as_of).query,
-        )
+        query = ::Search::SearchSuggestionQuery.new(q, as_of, allowed_types: allowed_suggestion_types).query
+        results = TradeTariffBackend.search_client.search(query)
 
         suggestions = results.dig('hits', 'hits')&.map { |hit| build_suggestion(hit) }&.compact || []
 
@@ -25,6 +24,29 @@ module Api
       end
 
       private
+
+      CONFIGURABLE_SUGGESTION_TYPES = {
+        'suggest_chemical_names' => ::SearchSuggestion::TYPE_FULL_CHEMICAL_NAME,
+        'suggest_chemical_cas' => ::SearchSuggestion::TYPE_FULL_CHEMICAL_CAS,
+        'suggest_chemical_cus' => ::SearchSuggestion::TYPE_FULL_CHEMICAL_CUS,
+        'suggest_known_brands' => ::SearchSuggestion::TYPE_KNOWN_BRAND,
+        'suggest_colloquial_terms' => ::SearchSuggestion::TYPE_COLLOQUIAL_TERM,
+        'suggest_synonyms' => ::SearchSuggestion::TYPE_SYNONYM,
+      }.freeze
+
+      def allowed_suggestion_types
+        types = [
+          ::SearchSuggestion::TYPE_SEARCH_REFERENCE,
+          ::SearchSuggestion::TYPE_GOODS_NOMENCLATURE,
+        ]
+
+        CONFIGURABLE_SUGGESTION_TYPES.each do |config_name, type|
+          config = AdminConfiguration.classification.by_name(config_name)
+          types << type if config.nil? || config.value == true
+        end
+
+        types
+      end
 
       def build_suggestion(hit)
         source = hit['_source']

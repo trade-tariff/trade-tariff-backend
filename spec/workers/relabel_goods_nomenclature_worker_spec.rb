@@ -24,7 +24,7 @@ RSpec.describe RelabelGoodsNomenclatureWorker, type: :worker do
 
         expect(LabelGenerator::Instrumentation).to have_received(:generation_started).with(
           total_pages: 3,
-          page_size: described_class::PAGE_SIZE,
+          page_size: TradeTariffBackend.goods_nomenclature_label_page_size,
           total_records: 25,
         )
       end

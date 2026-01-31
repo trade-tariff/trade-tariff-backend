@@ -6,8 +6,6 @@ class RelabelGoodsNomenclatureWorker
 
   sidekiq_options queue: :sync, retry: false
 
-  PAGE_SIZE = TradeTariffBackend.goods_nomenclature_label_page_size
-
   def perform
     # Refresh materialized view to get accurate counts
     refresh_materialized_view!
@@ -17,7 +15,7 @@ class RelabelGoodsNomenclatureWorker
 
     LabelGenerator::Instrumentation.generation_started(
       total_pages:,
-      page_size: PAGE_SIZE,
+      page_size: configured_page_size,
       total_records:,
     )
 
@@ -30,6 +28,11 @@ class RelabelGoodsNomenclatureWorker
   end
 
   private
+
+  def configured_page_size
+    config = AdminConfiguration.classification.by_name('label_page_size')
+    (config&.value || TradeTariffBackend.goods_nomenclature_label_page_size).to_i
+  end
 
   def refresh_materialized_view!
     return if Rails.env.test?

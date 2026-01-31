@@ -1,10 +1,11 @@
 module Search
   class SearchSuggestionQuery
-    attr_reader :query_string, :date
+    attr_reader :query_string, :date, :allowed_types
 
-    def initialize(query_string, date)
+    def initialize(query_string, date, allowed_types: nil)
       @query_string = query_string
       @date = date
+      @allowed_types = allowed_types
     end
 
     def query
@@ -14,6 +15,7 @@ module Search
           query: {
             bool: {
               must: [match_clause],
+              filter: type_filter,
               should: [
                 exact_match_clause, # Exact matches boosted highest
                 wildcard_clause, # Prefix matches boosted moderately
@@ -57,6 +59,14 @@ module Search
           },
         },
       }
+    end
+
+    # Restricts results to allowed suggestion types when specified.
+    # Returns an empty array (no filter) when all types are allowed.
+    def type_filter
+      return [] if allowed_types.blank?
+
+      [{ terms: { suggestion_type: allowed_types } }]
     end
 
     # Requires documents to match the search term against the ngram-analyzed

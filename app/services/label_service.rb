@@ -8,11 +8,11 @@ class LabelService
   end
 
   def call
-    model = TradeTariffBackend.ai_model
+    model = configured_model
     result = nil
 
     LabelGenerator::Instrumentation.api_call(batch_size: batch.size, model:, page_number:) do
-      result = TradeTariffBackend.ai_client.call(context_for(batch))
+      result = TradeTariffBackend.ai_client.call(context_for(batch), model: model)
       result
     end
 
@@ -41,8 +41,20 @@ class LabelService
 
   attr_reader :batch, :page_number
 
+  def configured_model
+    config = AdminConfiguration.classification.by_name('label_model')
+    return TradeTariffBackend.ai_model if config.nil?
+
+    config.value.is_a?(Hash) ? config.value['selected'] : TradeTariffBackend.ai_model
+  end
+
+  def configured_context
+    config = AdminConfiguration.classification.by_name('label_context')
+    config&.value.presence || I18n.t('contexts.label_commodity.instructions')
+  end
+
   def context_for(batch)
-    "#{I18n.t('contexts.label_commodity.instructions')}\n\n#{batch.to_json}"
+    "#{configured_context}\n\n#{batch.to_json}"
   end
 
   class << self
