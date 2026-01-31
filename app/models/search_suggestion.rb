@@ -6,6 +6,9 @@ class SearchSuggestion < Sequel::Model
   TYPE_FULL_CHEMICAL_CAS = 'full_chemical_cas'.freeze
   TYPE_FULL_CHEMICAL_CUS = 'full_chemical_cus'.freeze
   TYPE_FULL_CHEMICAL_NAME = 'full_chemical_name'.freeze
+  TYPE_KNOWN_BRAND = 'known_brand'.freeze
+  TYPE_COLLOQUIAL_TERM = 'colloquial_term'.freeze
+  TYPE_SYNONYM = 'synonym'.freeze
 
   plugin :timestamps, update_on_create: true
 
@@ -136,6 +139,9 @@ class SearchSuggestion < Sequel::Model
     PRIORITIES = {
       TYPE_SEARCH_REFERENCE => 1,
       TYPE_FULL_CHEMICAL_NAME => 2,
+      TYPE_KNOWN_BRAND => 3,
+      TYPE_COLLOQUIAL_TERM => 3,
+      TYPE_SYNONYM => 3,
       TYPE_GOODS_NOMENCLATURE => proc do |suggestion|
         case suggestion[:goods_nomenclature_class]
         when 'Chapter' then 1
