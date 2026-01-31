@@ -8,6 +8,9 @@ class SuggestionsService
         build_full_chemicals_search_suggestions,
         build_full_chemicals_cas_search_suggestions,
         build_full_chemicals_cus_search_suggestions,
+        build_known_brands_search_suggestions,
+        build_colloquial_terms_search_suggestions,
+        build_synonyms_search_suggestions,
       ].flatten.compact
     end
     SearchSuggestion.restrict_primary_key
@@ -119,6 +122,42 @@ class SuggestionsService
       created_at: now,
       updated_at: now,
     )
+  end
+
+  def build_known_brands_search_suggestions
+    build_label_suggestions('known_brands', SearchSuggestion::TYPE_KNOWN_BRAND)
+  end
+
+  def build_colloquial_terms_search_suggestions
+    build_label_suggestions('colloquial_terms', SearchSuggestion::TYPE_COLLOQUIAL_TERM)
+  end
+
+  def build_synonyms_search_suggestions
+    build_label_suggestions('synonyms', SearchSuggestion::TYPE_SYNONYM)
+  end
+
+  def build_label_suggestions(field, type)
+    goods_nomenclature_labels.flat_map do |label|
+      terms = (label.labels&.dig(field) || [])
+        .filter_map { |t| t.to_s.downcase.strip.presence }
+        .uniq
+
+      terms.map do |term|
+        SearchSuggestion.build(
+          id: "#{label.goods_nomenclature_sid}_#{type}_#{Digest::MD5.hexdigest(term)}",
+          value: term,
+          type: type,
+          goods_nomenclature_sid: label.goods_nomenclature_sid,
+          goods_nomenclature_class: label.goods_nomenclature_type,
+          created_at: now,
+          updated_at: now,
+        )
+      end
+    end
+  end
+
+  def goods_nomenclature_labels
+    @goods_nomenclature_labels ||= GoodsNomenclatureLabel.all
   end
 
   def now

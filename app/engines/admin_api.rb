@@ -65,6 +65,7 @@ AdminApi.routes.draw do
                                controller: 'news/items'
 
         resources :live_issues, only: %i[index show create update destroy]
+        resources :admin_configurations, only: %i[index show update]
       end
 
       namespace :green_lanes do
