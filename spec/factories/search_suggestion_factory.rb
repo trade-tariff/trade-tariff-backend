@@ -30,6 +30,21 @@ FactoryBot.define do
       type { 'full_chemical_cas' }
     end
 
+    trait :known_brand do
+      type { 'known_brand' }
+      value { 'Samsung' }
+    end
+
+    trait :colloquial_term do
+      type { 'colloquial_term' }
+      value { 'laptop' }
+    end
+
+    trait :synonym do
+      type { 'synonym' }
+      value { 'portable computer' }
+    end
+
     trait :with_search_reference do
       before(:create) do |search_suggestion, _evaluator|
         if search_suggestion.type == 'search_reference'

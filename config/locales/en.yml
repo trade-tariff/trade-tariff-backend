@@ -11,6 +11,21 @@ en:
             description:
               blank: is required when code and type are missing
 
+  sequel:
+    errors:
+      models:
+        admin_configuration:
+          name:
+            already_taken: is already taken
+          description:
+            blank: must not be blank
+          value:
+            blank: must not be blank
+            invalid_boolean: must be true or false
+            invalid_integer: "must be a whole number"
+            invalid_options: must be a hash with selected and options keys
+            no_options: must include an options array
+
   contexts:
     label_commodity:
       title: Label Commodity Data
