@@ -1,4 +1,10 @@
 RSpec.describe Api::Internal::SearchService do
+  before do
+    allow(ExpandSearchQueryService).to receive(:call).and_wrap_original do |_method, query|
+      ExpandSearchQueryService::Result.new(expanded_query: query, reason: nil)
+    end
+  end
+
   describe '#call' do
     context 'when blank query' do
       it 'returns empty data' do
@@ -281,6 +287,44 @@ RSpec.describe Api::Internal::SearchService do
 
         types = result[:data].map { |d| d[:type] }
         expect(types).to eq(%i[chapter heading commodity])
+      end
+    end
+
+    context 'when expand_search_enabled is false' do
+      let(:opensearch_response) { { 'hits' => { 'hits' => [] } } }
+      let(:classification_scope) { double('classification_scope') } # rubocop:disable RSpec/VerifiedDoubles
+
+      before do
+        allow(AdminConfiguration).to receive(:classification).and_return(classification_scope)
+        allow(classification_scope).to receive(:by_name).and_return(nil)
+        allow(classification_scope).to receive(:by_name)
+          .with('expand_search_enabled').and_return(instance_double(AdminConfiguration, value: false))
+        allow(TradeTariffBackend.search_client).to receive(:search).and_return(opensearch_response)
+      end
+
+      it 'does not call ExpandSearchQueryService' do
+        described_class.new(q: 'laptop').call
+
+        expect(ExpandSearchQueryService).not_to have_received(:call)
+      end
+    end
+
+    context 'when expand_search_enabled is true' do
+      let(:opensearch_response) { { 'hits' => { 'hits' => [] } } }
+      let(:classification_scope) { double('classification_scope') } # rubocop:disable RSpec/VerifiedDoubles
+
+      before do
+        allow(AdminConfiguration).to receive(:classification).and_return(classification_scope)
+        allow(classification_scope).to receive(:by_name).and_return(nil)
+        allow(classification_scope).to receive(:by_name)
+          .with('expand_search_enabled').and_return(instance_double(AdminConfiguration, value: true))
+        allow(TradeTariffBackend.search_client).to receive(:search).and_return(opensearch_response)
+      end
+
+      it 'calls ExpandSearchQueryService' do
+        described_class.new(q: 'laptop').call
+
+        expect(ExpandSearchQueryService).to have_received(:call).with('laptop')
       end
     end
   end

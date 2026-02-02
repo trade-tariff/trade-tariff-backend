@@ -182,6 +182,12 @@ namespace :admin_configurations do
 
     configs = [
       {
+        name: 'expand_search_enabled',
+        config_type: 'boolean',
+        description: 'Expand search queries using AI to translate everyday language into tariff terminology before searching',
+        value: 'true',
+      },
+      {
         name: 'expand_model',
         config_type: 'options',
         description: 'AI model used for search query expansion',

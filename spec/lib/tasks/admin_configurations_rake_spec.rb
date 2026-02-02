@@ -6,13 +6,14 @@ RSpec.describe 'admin_configurations:seed' do
     Rake::Task['admin_configurations:seed'].reenable
   end
 
-  it 'creates all 14 admin configurations', :aggregate_failures do
-    expect { seed }.to change(AdminConfiguration, :count).by(14)
+  it 'creates all 15 admin configurations', :aggregate_failures do
+    expect { seed }.to change(AdminConfiguration, :count).by(15)
 
     names = AdminConfiguration.order(:name).select_map(:name)
     expect(names).to eq(%w[
       expand_model
       expand_query_context
+      expand_search_enabled
       label_context
       label_model
       label_page_size
@@ -83,6 +84,15 @@ RSpec.describe 'admin_configurations:seed' do
     expect(config.value).to be true
   end
 
+  it 'seeds expand_search_enabled as a boolean config', :aggregate_failures do
+    seed
+
+    config = AdminConfiguration.where(name: 'expand_search_enabled').first
+    expect(config.config_type).to eq('boolean')
+    expect(config.area).to eq('classification')
+    expect(config.value).to be true
+  end
+
   it 'seeds suggestion toggle configs as booleans defaulting to true', :aggregate_failures do
     seed
 
@@ -124,8 +134,8 @@ RSpec.describe 'admin_configurations:seed' do
     seed
 
     # The oplog plugin also calls refresh! in test mode after each create,
-    # so total calls = 14 (oplog) + 1 (rake task) = 15
-    expect(AdminConfiguration).to have_received(:refresh!).with(concurrently: false).exactly(15).times
+    # so total calls = 15 (oplog) + 1 (rake task) = 16
+    expect(AdminConfiguration).to have_received(:refresh!).with(concurrently: false).exactly(16).times
   end
 
   it 'does not refresh when nothing is created' do
