@@ -18,7 +18,7 @@ module Api
         exact = find_exact_match
         return GoodsNomenclatureSearchSerializer.serialize([exact]) if exact
 
-        results = SearchLabels.with_labels do
+        results = search_with_configured_labels do
           TradeTariffBackend.search_client.search(
             ::Search::GoodsNomenclatureQuery.new(q, as_of).query,
           )
@@ -31,6 +31,17 @@ module Api
       end
 
       private
+
+      def search_with_configured_labels(&block)
+        config = AdminConfiguration.classification.by_name('search_labels_enabled')
+        labels_enabled = config.nil? || config.value == true
+
+        if labels_enabled
+          SearchLabels.with_labels(&block)
+        else
+          SearchLabels.without_labels(&block)
+        end
+      end
 
       def find_exact_match
         gn = find_by_suggestion(q) ||
