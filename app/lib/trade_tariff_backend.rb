@@ -251,10 +251,6 @@ module TradeTariffBackend
       ENV['DIFFERENCES_TO_EMAILS']
     end
 
-    def delta_report_to_emails
-      ENV['DELTA_TO_EMAILS']
-    end
-
     def support_email
       ENV['TARIFF_SUPPORT_EMAIL']
     end

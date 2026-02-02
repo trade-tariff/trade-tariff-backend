@@ -15,10 +15,6 @@ class PopulateChangesTableWorker
       end
 
       RefreshActiveCommoditiesCacheWorker.perform_async
-
-      date = Time.zone.yesterday
-      package = TariffChangesService.generate_report_for(date)
-      ReportsMailer.commodity_watchlist(date, package).deliver_now if package.present?
     end
   end
 end
