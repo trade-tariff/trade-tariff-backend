@@ -6,20 +6,13 @@
 # - labels.colloquial_terms (common names)
 # - labels.synonyms (alternative terms)
 #
-# Usage:
+# Used by the internal search API to enrich OpenSearch queries with label data:
 #
-#   SearchLabels.with_labels do
-#     # Searches in this block will include label fields
-#     ElasticSearchService.new(q: 'iPhone').to_suggestions
+#   results = SearchLabels.with_labels do
+#     TradeTariffBackend.search_client.search(
+#       Search::GoodsNomenclatureQuery.new(q, as_of).query,
+#     )
 #   end
-#
-#   SearchLabels.without_labels do
-#     # Searches in this block will NOT include label fields
-#     ElasticSearchService.new(q: 'iPhone').to_suggestions
-#   end
-#
-#   # Check current state
-#   SearchLabels.enabled? # => true/false
 #
 module SearchLabels
   class << self
