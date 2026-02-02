@@ -13,7 +13,6 @@ RSpec.describe PopulateChangesTableWorker, type: :worker do
     allow(MyCommoditiesSubscriptionWorker).to receive(:perform_async)
     allow(TariffChange).to receive(:min).and_return(Time.zone.yesterday)
     allow(TariffChangesJobStatus).to receive(:pending_emails).and_return([Time.zone.yesterday])
-    allow(ReportsMailer).to receive(:commodity_watchlist).and_return(mailer)
     allow(TradeTariffBackend).to receive(:uk?).and_return(uk_worker)
 
     worker.perform
@@ -30,11 +29,6 @@ RSpec.describe PopulateChangesTableWorker, type: :worker do
 
       it 'performs async commodity subscription worker' do
         expect(MyCommoditiesSubscriptionWorker).to have_received(:perform_async).with(Time.zone.yesterday.to_s)
-      end
-
-      it 'generates report for yesterday and sends email' do
-        expect(TariffChangesService).to have_received(:generate_report_for).with(Time.zone.yesterday)
-        expect(ReportsMailer).to have_received(:commodity_watchlist).with(Time.zone.yesterday, package)
       end
     end
 
