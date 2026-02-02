@@ -345,6 +345,62 @@ RSpec.describe TariffChangesService::Presenter do
         end
       end
 
+      context 'when measure applies to all countries apart from ALL excluded_geographical_areas in the EU and some that are not EU' do
+        let(:geo_area) { create(:geographical_area, :with_description, geographical_area_id: '1011') }
+        let(:excluded_areas) do
+          {
+            'DE' => 'Germany',
+            'IT' => 'Italy',
+            'UK' => 'United Kingdom',
+            'CH' => 'Switzerland',
+            'NO' => 'Norway',
+          }
+        end
+
+        let(:excluded_area_ids) { excluded_areas.keys }
+        let(:eu_member_ids) { %w[DE IT] }
+
+        let(:tariff_change) do
+          create(:tariff_change,
+                 type: 'Measure',
+                 goods_nomenclature_sid: goods_nomenclature.goods_nomenclature_sid,
+                 goods_nomenclature_item_id: goods_nomenclature.goods_nomenclature_item_id,
+                 metadata: {
+                   'measure' => {
+                     'geographical_area_id' => geo_area.geographical_area_id,
+                     'excluded_geographical_area_ids' => excluded_area_ids,
+                   },
+                 })
+        end
+
+        let(:geo_area_cache) do
+          excluded_areas.each_with_object({ geo_area.geographical_area_id => geo_area }) do |(id, description), cache|
+            area = create(:geographical_area, :with_description, geographical_area_id: id)
+            allow(area.geographical_area_description).to receive(:description).and_return(description)
+            cache[id] = area
+          end
+        end
+
+        let(:presenter) { described_class.new(tariff_change, geo_area_cache, eu_member_ids) }
+
+        before do
+          eu_group = create(:geographical_area, :group, geographical_area_id: '1013')
+
+          # pseudo EU with just DE and IT as members for testing
+          %w[DE IT].each do |country_id|
+            area = geo_area_cache[country_id]
+            create(:geographical_area_membership,
+                   geographical_area_sid: area.geographical_area_sid,
+                   geographical_area_group_sid: eu_group.geographical_area_sid)
+          end
+        end
+
+        it 'groups the excluded areas into European Union and adds excluded non-EU countries separately' do
+          result = presenter.geo_area
+          expect(result).to eq('All countries (1011) excluding European Union, United Kingdom, Switzerland, Norway')
+        end
+      end
+
       context 'when excluded_geographical_areas is empty' do
         let(:tariff_change) do
           create(:tariff_change,

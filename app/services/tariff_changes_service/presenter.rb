@@ -1,10 +1,11 @@
 class TariffChangesService
   class Presenter < SimpleDelegator
-    attr_reader :geo_area_cache
+    attr_reader :geo_area_cache, :eu_member_ids
 
-    def initialize(tariff_change, geo_area_cache = {})
+    def initialize(tariff_change, geo_area_cache = {}, eu_member_ids = [])
       super(tariff_change)
       @geo_area_cache = geo_area_cache
+      @eu_member_ids = eu_member_ids
     end
 
     def type
@@ -50,8 +51,7 @@ class TariffChangesService
       geo_area_string = "#{description} (#{geo_area.id})"
 
       if excluded_geographical_area_ids.present?
-        excluded = excluded_geographical_area_ids.map { |id| @geo_area_cache[id]&.description }.compact.join(', ')
-        geo_area_string += " excluding #{excluded}" if excluded.present?
+        geo_area_string += format_excluded_areas
       end
 
       geo_area_string
@@ -73,6 +73,43 @@ class TariffChangesService
 
     def api_url
       "https://www.trade-tariff.service.gov.uk/uk/api/commodities/#{goods_nomenclature_item_id}?as_of=#{date_of_effect_visible.strftime('%Y-%m-%d')}"
+    end
+
+    private
+
+    def format_excluded_areas
+      return '' if excluded_geographical_area_ids.empty?
+
+      eu_excluded = []
+      non_eu_excluded = []
+
+      excluded_geographical_area_ids.each do |id|
+        if id == 'EU' || @eu_member_ids.include?(id)
+          eu_excluded << id
+        else
+          non_eu_excluded << id
+        end
+      end
+
+      excluded_parts = []
+
+      # If all EU members are excluded or 'EU' is in the list, show "European Union"
+      if eu_excluded.include?('EU') || (eu_excluded.any? && eu_excluded.sort == @eu_member_ids.sort)
+        excluded_parts << 'European Union'
+      else
+        # Otherwise, list individual EU countries
+        eu_excluded.each do |id|
+          excluded_parts << @geo_area_cache[id]&.description
+        end
+      end
+
+      # Add non-EU countries
+      non_eu_excluded.each do |id|
+        excluded_parts << @geo_area_cache[id]&.description
+      end
+
+      excluded_descriptions = excluded_parts.compact.join(', ')
+      excluded_descriptions.present? ? " excluding #{excluded_descriptions}" : ''
     end
   end
 end
