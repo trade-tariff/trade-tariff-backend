@@ -112,7 +112,7 @@ module Api
             active: active_commodity_codes.count,
             expired: expired_commodity_codes.count,
             invalid: invalid_commodity_codes.count,
-            total: active_commodity_codes.count + expired_commodity_codes.count + invalid_commodity_codes.count,
+            total: active_commodity_codes.count + expired_commodity_codes.count, # we don't count invalid towards total
           }
         end
       end
