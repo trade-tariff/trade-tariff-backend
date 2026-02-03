@@ -188,15 +188,16 @@ RSpec.describe Api::Internal::SearchController, :internal do
           'data' => Array,
           'meta' => {
             'interactive_search' => {
+              'query' => 'handbag',
+              'request_id' => String,
+              'attempt' => 1,
+              'model' => 'gpt-5.2',
+              'result_limit' => 5,
               'question' => {
                 'question' => 'What is the material?',
                 'options' => %w[Leather Synthetic],
                 'answer' => nil,
               },
-              'request_id' => String,
-              'attempt' => 1,
-              'model' => 'gpt-5.2',
-              'result_limit' => 5,
             },
           },
         }

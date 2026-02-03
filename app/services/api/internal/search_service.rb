@@ -191,17 +191,18 @@ module Api
       def build_meta(interactive_result)
         meta = {}
 
-        if @expanded_query.present? && @expanded_query != q
-          meta[:expanded_query] = @expanded_query
-        end
-
         if interactive_result
           interactive_meta = {
+            query: q,
             request_id: request_id,
             attempt: interactive_result.attempt,
             model: interactive_result.model,
             result_limit: interactive_result.result_limit,
           }
+
+          if @expanded_query.present? && @expanded_query != q
+            interactive_meta[:expanded_query] = @expanded_query
+          end
 
           if interactive_result.type == :questions
             question_data = interactive_result.data.first
