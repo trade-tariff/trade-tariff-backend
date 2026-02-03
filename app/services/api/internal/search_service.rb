@@ -216,11 +216,11 @@ module Api
       end
 
       def build_answers_list(interactive_result)
-        # Start with previously answered questions
+        # Start with previously answered questions (preserve options if frontend sent them)
         answered = answers.map do |qa|
           {
             question: qa[:question] || qa['question'],
-            options: nil,
+            options: qa[:options] || qa['options'],
             answer: qa[:answer] || qa['answer'],
           }
         end
