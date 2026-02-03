@@ -193,6 +193,7 @@ RSpec.describe Api::Internal::SearchController, :internal do
               'attempt' => 1,
               'model' => 'gpt-5.2',
               'result_limit' => 5,
+              'answers' => [],
               'question' => {
                 'question' => 'What is the material?',
                 'options' => %w[Leather Synthetic],

@@ -198,6 +198,7 @@ module Api
             attempt: interactive_result.attempt,
             model: interactive_result.model,
             result_limit: interactive_result.result_limit,
+            answers: answers,
           }
 
           if @expanded_query.present? && @expanded_query != q
