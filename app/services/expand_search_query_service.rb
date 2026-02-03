@@ -35,7 +35,7 @@ class ExpandSearchQueryService
 
   def expand_query
     cached = Rails.cache.read(cache_key)
-    return Result.new(**cached) if cached
+    return Result.new(**cached.symbolize_keys) if cached
 
     response = OpenaiClient.call(context_for(query), model: configured_model)
 
