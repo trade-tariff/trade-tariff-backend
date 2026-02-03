@@ -1,5 +1,6 @@
 class ExpandSearchQueryService
   NUMERIC_CODE_PATTERN = /\A\d+\z/
+  CACHE_TTL = 7.days
 
   Result = Struct.new(:expanded_query, :reason, keyword_init: true)
 
@@ -18,6 +19,10 @@ class ExpandSearchQueryService
     def call(query)
       new(query).call
     end
+
+    def clear_cache!
+      Rails.cache.delete_matched('expand_search_query/*')
+    end
   end
 
   private
@@ -29,13 +34,15 @@ class ExpandSearchQueryService
   end
 
   def expand_query
+    cached = Rails.cache.read(cache_key)
+    return Result.new(**cached.symbolize_keys) if cached
+
     response = OpenaiClient.call(context_for(query), model: configured_model)
 
     if response.is_a?(Hash) && response['expanded_query'].present?
-      Result.new(
-        expanded_query: response['expanded_query'],
-        reason: response['reason'],
-      )
+      result_hash = { expanded_query: response['expanded_query'], reason: response['reason'] }
+      Rails.cache.write(cache_key, result_hash, expires_in: CACHE_TTL)
+      Result.new(**result_hash)
     else
       unchanged_result
     end
@@ -44,11 +51,17 @@ class ExpandSearchQueryService
     unchanged_result
   end
 
+  def cache_key
+    @cache_key ||= "expand_search_query/#{configured_model}/#{context_digest}/#{query.downcase}"
+  end
+
+  def context_digest
+    Digest::MD5.hexdigest(configured_context)[0, 8]
+  end
+
   def configured_model
     config = AdminConfiguration.classification.by_name('expand_model')
-    return TradeTariffBackend.ai_model if config.nil?
-
-    config.value.is_a?(Hash) ? config.value['selected'] : TradeTariffBackend.ai_model
+    config&.selected_option(default: TradeTariffBackend.ai_model) || TradeTariffBackend.ai_model
   end
 
   def configured_context

@@ -200,6 +200,12 @@ namespace :admin_configurations do
         value: AdminConfigurationSeeder.expand_query_context_markdown,
       },
       {
+        name: 'interactive_search_enabled',
+        config_type: 'boolean',
+        description: 'Enable interactive Q&A to help traders narrow down commodity codes through clarifying questions',
+        value: 'false',
+      },
+      {
         name: 'label_context',
         config_type: 'markdown',
         description: 'System prompt sent to the AI model when labelling commodities',
@@ -234,6 +240,12 @@ namespace :admin_configurations do
         config_type: 'options',
         description: 'AI model used for interactive Q&A search',
         value: { 'selected' => default_model, 'options' => model_options },
+      },
+      {
+        name: 'search_result_limit',
+        config_type: 'integer',
+        description: 'Maximum number of commodity code suggestions shown during interactive Q&A. The frontend uses this to decide how to display results (e.g. as a shortlist or expanded view).',
+        value: '5',
       },
       {
         name: 'suggest_chemical_cas',

@@ -3,6 +3,7 @@ RSpec.describe Api::Internal::SearchController, :internal do
     allow(ExpandSearchQueryService).to receive(:call).and_wrap_original do |_method, query|
       ExpandSearchQueryService::Result.new(expanded_query: query, reason: nil)
     end
+    allow(InteractiveSearchService).to receive(:call).and_return(nil)
   end
 
   describe 'POST /search' do
@@ -41,6 +42,7 @@ RSpec.describe Api::Internal::SearchController, :internal do
                 'score' => Numeric,
                 'producline_suffix' => String,
                 'goods_nomenclature_class' => 'Chapter',
+                'confidence' => nil,
               },
             },
           ],
@@ -80,6 +82,7 @@ RSpec.describe Api::Internal::SearchController, :internal do
                 'score' => nil,
                 'producline_suffix' => '80',
                 'goods_nomenclature_class' => 'Heading',
+                'confidence' => nil,
               },
             },
           ],
@@ -119,6 +122,7 @@ RSpec.describe Api::Internal::SearchController, :internal do
                 'score' => nil,
                 'producline_suffix' => '80',
                 'goods_nomenclature_class' => 'Chapter',
+                'confidence' => nil,
               },
             },
           ],
@@ -165,6 +169,126 @@ RSpec.describe Api::Internal::SearchController, :internal do
 
         expect(response).to have_http_status(:ok)
         expect(response.parsed_body).to have_key('data')
+      end
+    end
+
+    context 'when interactive search returns questions' do
+      let(:interactive_result) do
+        InteractiveSearchService::Result.new(
+          type: :questions,
+          data: [{ question: 'What is the material?', options: %w[Leather Synthetic] }],
+          attempt: 1,
+          model: 'gpt-5.2',
+          result_limit: 5,
+        )
+      end
+
+      let(:pattern) do
+        {
+          'data' => Array,
+          'meta' => {
+            'interactive_search' => {
+              'query' => 'handbag',
+              'request_id' => String,
+              'attempt' => 1,
+              'model' => 'gpt-5.2',
+              'result_limit' => 5,
+              'answers' => [
+                {
+                  'question' => 'What is the material?',
+                  'options' => %w[Leather Synthetic],
+                  'answer' => nil,
+                },
+              ],
+            },
+          },
+        }
+      end
+
+      before do
+        index = Search::GoodsNomenclatureIndex.new
+
+        TradeTariffBackend.search_client.index_by_name(
+          index.name,
+          1,
+          {
+            goods_nomenclature_sid: 1,
+            goods_nomenclature_item_id: '4202210000',
+            producline_suffix: '80',
+            goods_nomenclature_class: 'Commodity',
+            description: 'leather handbag',
+            formatted_description: 'Leather handbag',
+            declarable: true,
+            validity_start_date: Time.zone.today.iso8601,
+          },
+        )
+        TradeTariffBackend.search_client.index_by_name(
+          index.name,
+          2,
+          {
+            goods_nomenclature_sid: 2,
+            goods_nomenclature_item_id: '4202220000',
+            producline_suffix: '80',
+            goods_nomenclature_class: 'Commodity',
+            description: 'synthetic handbag',
+            formatted_description: 'Synthetic handbag',
+            declarable: true,
+            validity_start_date: Time.zone.today.iso8601,
+          },
+        )
+        TradeTariffBackend.search_client.indices.refresh(index: '_all')
+
+        allow(InteractiveSearchService).to receive(:call).and_return(interactive_result)
+      end
+
+      it 'returns meta with interactive_search questions' do
+        post api_search_path(format: :json), params: { q: 'handbag', as_of: Time.zone.today.iso8601 }
+
+        expect(response).to have_http_status(:ok)
+        expect(response.body).to match_json_expression(pattern)
+      end
+    end
+
+    context 'when search includes answers from previous round' do
+      before do
+        index = Search::GoodsNomenclatureIndex.new
+
+        TradeTariffBackend.search_client.index_by_name(
+          index.name,
+          1,
+          {
+            goods_nomenclature_sid: 1,
+            goods_nomenclature_item_id: '4202210000',
+            producline_suffix: '80',
+            goods_nomenclature_class: 'Commodity',
+            description: 'leather handbag',
+            formatted_description: 'Leather handbag',
+            declarable: true,
+            validity_start_date: Time.zone.today.iso8601,
+          },
+        )
+        TradeTariffBackend.search_client.indices.refresh(index: '_all')
+
+        allow(InteractiveSearchService).to receive(:call).and_return(
+          InteractiveSearchService::Result.new(
+            type: :answers,
+            data: [{ commodity_code: '4202210000', confidence: 'strong' }],
+            attempt: 2,
+            model: 'gpt-5.2',
+            result_limit: 5,
+          ),
+        )
+      end
+
+      it 'accepts answers parameter and responds successfully' do
+        post api_search_path(format: :json), params: {
+          q: 'handbag',
+          request_id: 'test-123',
+          answers: [{ question: 'Material?', answer: 'Leather' }],
+        }
+
+        expect(response).to have_http_status(:ok)
+        expect(InteractiveSearchService).to have_received(:call)
       end
     end
   end

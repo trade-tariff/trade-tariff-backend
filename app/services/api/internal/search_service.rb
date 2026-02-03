@@ -3,11 +3,13 @@ module Api
     class SearchService
       include QueryProcessing
 
-      attr_reader :q, :as_of
+      attr_reader :q, :as_of, :answers, :request_id
 
       def initialize(params = {})
         @q = process_query(params[:q])
         @as_of = parse_date(params[:as_of])
+        @answers = params[:answers] || []
+        @request_id = params[:request_id] || SecureRandom.uuid
       end
 
       def call
@@ -18,18 +20,20 @@ module Api
         exact = find_exact_match
         return GoodsNomenclatureSearchSerializer.serialize([exact]) if exact
 
-        search_query = expand_query(q)
+        @expanded_query = expand_query(q)
 
         results = search_with_configured_labels do
           TradeTariffBackend.search_client.search(
-            ::Search::GoodsNomenclatureQuery.new(search_query, as_of).query,
+            ::Search::GoodsNomenclatureQuery.new(@expanded_query, as_of).query,
           )
         end
 
         hits = results.dig('hits', 'hits') || []
         goods_nomenclatures = hits.map { |hit| build_result(hit) }
 
-        GoodsNomenclatureSearchSerializer.serialize(goods_nomenclatures)
+        interactive_result = run_interactive_search(goods_nomenclatures)
+
+        build_response(goods_nomenclatures, interactive_result)
       end
 
       private
@@ -42,12 +46,12 @@ module Api
 
       def expand_search_enabled?
         config = AdminConfiguration.classification.by_name('expand_search_enabled')
-        config.nil? || config.value == true
+        config.nil? || config.enabled?
       end
 
       def search_with_configured_labels(&block)
         config = AdminConfiguration.classification.by_name('search_labels_enabled')
-        labels_enabled = config.nil? || config.value == true
+        labels_enabled = config.nil? || config.enabled?
 
         if labels_enabled
           SearchLabels.with_labels(&block)
@@ -133,6 +137,7 @@ module Api
           formatted_description: goods_nomenclature.formatted_description,
           declarable: goods_nomenclature.respond_to?(:declarable?) ? goods_nomenclature.declarable? : false,
           score: nil,
+          confidence: nil,
         )
       end
 
@@ -148,7 +153,89 @@ module Api
           formatted_description: source['formatted_description'],
           declarable: source['declarable'],
           score: hit['_score'],
+          confidence: nil,
         )
+      end
+
+      def run_interactive_search(goods_nomenclatures)
+        InteractiveSearchService.call(
+          query: q,
+          expanded_query: @expanded_query,
+          opensearch_results: goods_nomenclatures,
+          answers: answers,
+          request_id: request_id,
+        )
+      end
+
+      def build_response(goods_nomenclatures, interactive_result)
+        results_with_confidence = apply_confidence(goods_nomenclatures, interactive_result)
+        response = GoodsNomenclatureSearchSerializer.serialize(results_with_confidence)
+        meta = build_meta(interactive_result)
+        response[:meta] = meta if meta.present?
+        response
+      end
+
+      def apply_confidence(goods_nomenclatures, interactive_result)
+        return goods_nomenclatures unless interactive_result&.type == :answers
+
+        confidence_map = interactive_result.data.each_with_object({}) do |answer, hash|
+          hash[answer[:commodity_code]] = answer[:confidence]
+        end
+
+        goods_nomenclatures.map do |gn|
+          gn.confidence = confidence_map[gn.goods_nomenclature_item_id]
+          gn
+        end
+      end
+
+      def build_meta(interactive_result)
+        meta = {}
+
+        if interactive_result
+          interactive_meta = {
+            query: q,
+            request_id: request_id,
+            attempt: interactive_result.attempt,
+            model: interactive_result.model,
+            result_limit: interactive_result.result_limit,
+            answers: build_answers_list(interactive_result),
+          }
+
+          if @expanded_query.present? && @expanded_query != q
+            interactive_meta[:expanded_query] = @expanded_query
+          end
+
+          if interactive_result.type == :error
+            interactive_meta[:error] = interactive_result.data[:message]
+          end
+
+          meta[:interactive_search] = interactive_meta
+        end
+
+        meta.presence
+      end
+
+      def build_answers_list(interactive_result)
+        # Start with previously answered questions (preserve options if frontend sent them)
+        answered = answers.map do |qa|
+          {
+            question: qa[:question] || qa['question'],
+            options: qa[:options] || qa['options'],
+            answer: qa[:answer] || qa['answer'],
+          }
+        end
+
+        # Add current unanswered question if present
+        if interactive_result.type == :questions
+          question_data = interactive_result.data.first
+          answered << {
+            question: question_data[:question],
+            options: question_data[:options],
+            answer: nil,
+          }
+        end
+
+        answered
       end
     end
   end
