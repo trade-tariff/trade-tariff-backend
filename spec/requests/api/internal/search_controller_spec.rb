@@ -1,4 +1,10 @@
 RSpec.describe Api::Internal::SearchController, :internal do
+  before do
+    allow(ExpandSearchQueryService).to receive(:call).and_wrap_original do |_method, query|
+      ExpandSearchQueryService::Result.new(expanded_query: query, reason: nil)
+    end
+  end
+
   describe 'POST /search' do
     context 'when text query with results' do
       before do
