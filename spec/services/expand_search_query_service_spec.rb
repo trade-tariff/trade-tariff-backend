@@ -227,4 +227,79 @@ RSpec.describe ExpandSearchQueryService do
       expect(result).to respond_to(:reason)
     end
   end
+
+  describe 'caching' do
+    let(:query) { 'laptop' }
+    let(:memory_store) { ActiveSupport::Cache::MemoryStore.new }
+
+    before do
+      allow(Rails).to receive(:cache).and_return(memory_store)
+    end
+
+    it 'caches successful expansions' do
+      described_class.call(query)
+      described_class.call(query)
+
+      expect(OpenaiClient).to have_received(:call).once
+    end
+
+    it 'returns cached result on subsequent calls' do
+      first_result = described_class.call(query)
+      second_result = described_class.call(query)
+
+      expect(second_result.expanded_query).to eq(first_result.expanded_query)
+      expect(second_result.reason).to eq(first_result.reason)
+    end
+
+    it 'treats queries case-insensitively' do
+      described_class.call('Laptop')
+      described_class.call('laptop')
+      described_class.call('LAPTOP')
+
+      expect(OpenaiClient).to have_received(:call).once
+    end
+
+    context 'when the AI returns an error' do
+      let(:ai_response) { nil }
+
+      it 'does not cache the failure' do
+        described_class.call(query)
+
+        allow(OpenaiClient).to receive(:call).and_return(
+          'expanded_query' => 'Portable computers',
+          'reason' => 'test',
+        )
+
+        described_class.call(query)
+
+        expect(OpenaiClient).to have_received(:call).twice
+      end
+    end
+
+    context 'when the AI raises an exception' do
+      before do
+        allow(OpenaiClient).to receive(:call).and_raise(Faraday::TimeoutError)
+      end
+
+      it 'does not cache the failure' do
+        described_class.call(query)
+
+        allow(OpenaiClient).to receive(:call).and_return(ai_response)
+
+        described_class.call(query)
+
+        expect(OpenaiClient).to have_received(:call).twice
+      end
+    end
+
+    describe '.clear_cache!' do
+      it 'clears cached expansions' do
+        described_class.call(query)
+        described_class.clear_cache!
+        described_class.call(query)
+
+        expect(OpenaiClient).to have_received(:call).twice
+      end
+    end
+  end
 end

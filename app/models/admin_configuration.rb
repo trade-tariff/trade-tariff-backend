@@ -54,6 +54,11 @@ class AdminConfiguration < Sequel::Model(Sequel[:admin_configurations].qualify(:
     end
   end
 
+  def after_save
+    super
+    clear_expand_search_cache_if_needed
+  end
+
   # Returns the selected value for 'options' type configs
   # Falls back to default if value is nil or not hash-like
   def selected_option(default: nil)
@@ -171,5 +176,11 @@ class AdminConfiguration < Sequel::Model(Sequel[:admin_configurations].qualify(:
     end
   rescue JSON::ParserError
     { 'selected' => '', 'options' => [] }
+  end
+
+  def clear_expand_search_cache_if_needed
+    return unless %w[expand_query_context expand_model].include?(name)
+
+    ExpandSearchQueryService.clear_cache!
   end
 end

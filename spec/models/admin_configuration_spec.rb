@@ -334,4 +334,42 @@ RSpec.describe AdminConfiguration do
       end
     end
   end
+
+  describe 'expand search cache invalidation' do
+    context 'when saving expand_query_context config' do
+      let!(:config) { create(:admin_configuration, :markdown, name: 'expand_query_context') }
+
+      it 'clears the expand search cache' do
+        allow(ExpandSearchQueryService).to receive(:clear_cache!)
+
+        config.update(value: 'new context')
+
+        expect(ExpandSearchQueryService).to have_received(:clear_cache!).once
+      end
+    end
+
+    context 'when saving expand_model config' do
+      let!(:config) { create(:admin_configuration, :options, name: 'expand_model') }
+
+      it 'clears the expand search cache' do
+        allow(ExpandSearchQueryService).to receive(:clear_cache!)
+
+        config.update(value: { 'selected' => 'gpt-4o', 'options' => [{ 'key' => 'gpt-4o' }] })
+
+        expect(ExpandSearchQueryService).to have_received(:clear_cache!).once
+      end
+    end
+
+    context 'when saving an unrelated config' do
+      let!(:config) { create(:admin_configuration, :boolean, name: 'other_config') }
+
+      it 'does not clear the expand search cache' do
+        allow(ExpandSearchQueryService).to receive(:clear_cache!)
+
+        config.update(value: true)
+
+        expect(ExpandSearchQueryService).not_to have_received(:clear_cache!)
+      end
+    end
+  end
 end
