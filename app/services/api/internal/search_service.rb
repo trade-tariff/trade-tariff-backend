@@ -198,21 +198,14 @@ module Api
             attempt: interactive_result.attempt,
             model: interactive_result.model,
             result_limit: interactive_result.result_limit,
-            answers: answers,
+            answers: build_answers_list(interactive_result),
           }
 
           if @expanded_query.present? && @expanded_query != q
             interactive_meta[:expanded_query] = @expanded_query
           end
 
-          if interactive_result.type == :questions
-            question_data = interactive_result.data.first
-            interactive_meta[:question] = {
-              question: question_data[:question],
-              options: question_data[:options],
-              answer: nil,
-            }
-          elsif interactive_result.type == :error
+          if interactive_result.type == :error
             interactive_meta[:error] = interactive_result.data[:message]
           end
 
@@ -220,6 +213,29 @@ module Api
         end
 
         meta.presence
+      end
+
+      def build_answers_list(interactive_result)
+        # Start with previously answered questions
+        answered = answers.map do |qa|
+          {
+            question: qa[:question] || qa['question'],
+            options: nil,
+            answer: qa[:answer] || qa['answer'],
+          }
+        end
+
+        # Add current unanswered question if present
+        if interactive_result.type == :questions
+          question_data = interactive_result.data.first
+          answered << {
+            question: question_data[:question],
+            options: question_data[:options],
+            answer: nil,
+          }
+        end
+
+        answered
       end
     end
   end
