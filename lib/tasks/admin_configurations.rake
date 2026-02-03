@@ -117,7 +117,7 @@ module AdminConfigurationSeeder
       ## Rules
 
       - Always respond in JSON as per the three examples above and never try and code anything up.
-      - Always structure questions so they have yes/no answers.
+      - Prefer multi-option questions over yes/no questions to narrow down categories efficiently.
       - Avoid hallucinating codes and only provide codes that you are certain of based on the information provided.
 
       ## Context sections
@@ -299,6 +299,41 @@ namespace :admin_configurations do
     end
 
     if created.positive?
+      AdminConfiguration.refresh!(concurrently: false)
+      puts '  refreshed materialized view'
+    end
+  end
+
+  desc 'Reseed admin configurations (updates existing values from seed definitions)'
+  task reseed: :environment do
+    OpenaiClient::MODEL_CONFIGS.keys.sort.map do |key|
+      { 'key' => key, 'label' => AdminConfigurationSeeder.model_label(key) }
+    end
+
+    TradeTariffBackend.ai_model
+
+    updates = {
+      'expand_query_context' => AdminConfigurationSeeder.expand_query_context_markdown,
+      'label_context' => AdminConfigurationSeeder.label_context_markdown,
+      'search_context' => AdminConfigurationSeeder.search_context_markdown,
+    }
+
+    updated = 0
+
+    updates.each do |name, value|
+      config = AdminConfiguration.where(name: name).first
+
+      if config.nil?
+        puts "  skip: #{name} (does not exist, run seed first)"
+        next
+      end
+
+      config.update(value: value)
+      puts "  updated: #{name}"
+      updated += 1
+    end
+
+    if updated.positive?
       AdminConfiguration.refresh!(concurrently: false)
       puts '  refreshed materialized view'
     end

@@ -73,7 +73,7 @@ class InteractiveSearchService
 
   def configured_context
     config = AdminConfiguration.classification.by_name('search_context')
-    config&.value.presence || I18n.t('contexts.interactive_search.instructions')
+    config&.value&.to_s
   end
 
   def configured_result_limit
@@ -82,10 +82,11 @@ class InteractiveSearchService
   end
 
   def build_context
-    configured_context
+    context = configured_context.to_s
+    context
       .gsub('%{search_input}', query.to_s)
-      .gsub('%{answers_opensearch}', format_opensearch_results)
-      .gsub('%{questions}', format_questions_and_answers)
+      .gsub('%{answers_opensearch}', format_opensearch_results.to_s)
+      .gsub('%{questions}', format_questions_and_answers.to_s)
   end
 
   def format_opensearch_results

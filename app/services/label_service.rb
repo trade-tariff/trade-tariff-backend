@@ -48,7 +48,7 @@ class LabelService
 
   def configured_context
     config = AdminConfiguration.classification.by_name('label_context')
-    config&.value.presence || I18n.t('contexts.label_commodity.instructions')
+    config&.value&.to_s
   end
 
   def context_for(batch)
