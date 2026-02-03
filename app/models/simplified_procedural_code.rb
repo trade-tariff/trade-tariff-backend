@@ -11,7 +11,7 @@ class SimplifiedProceduralCode < Sequel::Model
       )
                                .group(:simplified_procedural_code, :goods_nomenclature_label)
                                .map do |record|
-        to_null_measure(record)
+                                 to_null_measure(record)
       end
     end
 

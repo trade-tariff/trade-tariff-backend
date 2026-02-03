@@ -33,24 +33,24 @@ class GreenLanesUpdatesWorker
     updates
       .select { |update| update.status == ::GreenLanes::UpdateNotification::NotificationStatus::CREATED }
       .each do |update|
-      identified_ca = GreenLanes::IdentifiedMeasureTypeCategoryAssessment.where(measure_type_id: update.measure_type_id).first
+        identified_ca = GreenLanes::IdentifiedMeasureTypeCategoryAssessment.where(measure_type_id: update.measure_type_id).first
 
-      next unless identified_ca
+        next unless identified_ca
 
-      next if GreenLanes::CategoryAssessment[regulation_id: update.regulation_id,
-                                             regulation_role: update.regulation_role,
-                                             measure_type_id: update.measure_type_id]
+        next if GreenLanes::CategoryAssessment[regulation_id: update.regulation_id,
+                                               regulation_role: update.regulation_role,
+                                               measure_type_id: update.measure_type_id]
 
-      logger.info "Creating category assessment for #{update.measure_type_id}"
+        logger.info "Creating category assessment for #{update.measure_type_id}"
 
-      assessment = GreenLanes::CategoryAssessment.new(regulation_id: update.regulation_id,
-                                                      regulation_role: update.regulation_role,
-                                                      measure_type_id: update.measure_type_id,
-                                                      theme_id: identified_ca.theme_id)
-      assessment.save(validate: true)
-      update.status = ::GreenLanes::UpdateNotification::NotificationStatus::CA_CREATED
-      update.theme_id = identified_ca.theme_id
-      update.theme = ::GreenLanes::Theme.find(id: identified_ca.theme_id)&.to_s
+        assessment = GreenLanes::CategoryAssessment.new(regulation_id: update.regulation_id,
+                                                        regulation_role: update.regulation_role,
+                                                        measure_type_id: update.measure_type_id,
+                                                        theme_id: identified_ca.theme_id)
+        assessment.save(validate: true)
+        update.status = ::GreenLanes::UpdateNotification::NotificationStatus::CA_CREATED
+        update.theme_id = identified_ca.theme_id
+        update.theme = ::GreenLanes::Theme.find(id: identified_ca.theme_id)&.to_s
     end
   end
 
