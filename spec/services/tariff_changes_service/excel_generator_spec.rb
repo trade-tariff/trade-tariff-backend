@@ -66,15 +66,15 @@ RSpec.describe TariffChangesService::ExcelGenerator do
   describe '#call' do
     let(:generator) { described_class.new(change_records, date) }
     let(:package) { generator.call }
-    let(:workbook) { workbook }
-    let(:worksheet) { workbook.get_worksheet_by_name('Commodity watch list') }
+    let(:workbook) { package.workbook }
+    let(:worksheet) { workbook.worksheets.first }
 
     before do
       allow(Rails.env).to receive(:development?).and_return(false)
     end
 
-    it 'creates a FastExcel workbook' do
-      expect(package).to be_a(Libxlsxwriter::Workbook)
+    it 'creates an Axlsx package' do
+      expect(package).to be_a(Axlsx::Package)
     end
 
     it 'creates a worksheet named "Commodity watch list"' do
@@ -226,7 +226,7 @@ RSpec.describe TariffChangesService::ExcelGenerator do
     let(:generator) { described_class.new(change_records, date) }
 
     before do
-      generator.instance_variable_set(:@workbook, Libxlsxwriter::Workbook)
+      generator.instance_variable_set(:@workbook, Axlsx::Package.new.workbook)
     end
 
     context 'without background color' do
@@ -237,7 +237,7 @@ RSpec.describe TariffChangesService::ExcelGenerator do
         expect(styles.keys).to include(:pre_header, :header, :date, :commodity_code, :chapter, :text, :center_text, :hyperlink, :bold_text)
       end
 
-      it 'creates styles' do
+      it 'creates Axlsx styles' do
         expect(styles[:text]).to be_a(Integer)
       end
     end
@@ -248,7 +248,7 @@ RSpec.describe TariffChangesService::ExcelGenerator do
     let(:styles) { generator.send(:build_row_styles) }
 
     before do
-      generator.instance_variable_set(:@workbook, Libxlsxwriter::Workbook)
+      generator.instance_variable_set(:@workbook, Axlsx::Package.new.workbook)
     end
 
     it 'returns an array of 12 styles' do
