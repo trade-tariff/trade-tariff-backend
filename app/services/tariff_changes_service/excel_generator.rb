@@ -120,71 +120,88 @@ class TariffChangesService
     end
 
     def cell_styles
-      @cell_styles ||= begin
-        # Common attributes for data cells
-        base_cell = {
+      @cell_styles ||= {
+        title: workbook.add_format(
+          bold: true,
+          font_size: 24,
+        ),
+        subtitle: workbook.add_format(
+          font_size: 16,
+        ),
+        pre_header: workbook.add_format(
+          align: { h: :left, v: :center },
+          bg_color: 0x215C98,
+          bold: true,
+          border: :border_thin,
+          font_color: 0xFFFFFF,
+          font_size: 16,
+          text_wrap: true,
+        ),
+        header: workbook.add_format(
+          align: { h: :left, v: :center },
+          bg_color: 0x4F81BD,
+          bold: true,
+          font_color: 0xFFFFFF,
+          text_wrap: true,
+        ),
+        date: workbook.add_format(
+          align: { h: :center, v: :center },
           border: :border_thin,
           top_color: 0xD3D3D3,
           bottom_color: 0xD3D3D3,
           left_color: 0xD3D3D3,
           right_color: 0xD3D3D3,
-        }
-
-        left_aligned_cell = base_cell.merge(
-          align: { h: :left, v: :center },
-          text_wrap: true,
-        )
-
-        center_aligned_cell = base_cell.merge(
+          num_format: '14',
+        ),
+        commodity_code: workbook.add_format(
           align: { h: :center, v: :center },
-        )
-
-        {
-          title: workbook.add_format(
-            bold: true,
-            font_size: 24,
-          ),
-          subtitle: workbook.add_format(
-            font_size: 16,
-          ),
-          pre_header: workbook.add_format(
-            align: { h: :left, v: :center },
-            bg_color: 0x215C98,
-            bold: true,
-            border: :border_thin,
-            font_color: 0xFFFFFF,
-            font_size: 16,
-            text_wrap: true,
-          ),
-          header: workbook.add_format(
-            align: { h: :left, v: :center },
-            bg_color: 0x4F81BD,
-            bold: true,
-            font_color: 0xFFFFFF,
-            text_wrap: true,
-          ),
-          date: workbook.add_format(
-            center_aligned_cell.merge(num_format: '14'),
-          ),
-          commodity_code: workbook.add_format(
-            center_aligned_cell.merge(num_format: '0000000000'),
-          ),
-          chapter: workbook.add_format(
-            center_aligned_cell.merge(num_format: '00'),
-          ),
-          text: workbook.add_format(left_aligned_cell),
-          center_text: workbook.add_format(center_aligned_cell),
-          hyperlink: workbook.add_format(
-            left_aligned_cell.merge(
-              font_color: 0x0563C1,
-              underline: :underline_single,
-            ),
-          ),
-          bold_text: workbook.add_format(
-            left_aligned_cell.merge(bold: true),
-          ),
-        }
-      end
+          border: :border_thin,
+          top_color: 0xD3D3D3,
+          bottom_color: 0xD3D3D3,
+          left_color: 0xD3D3D3,
+          right_color: 0xD3D3D3,
+          num_format: '0000000000',
+        ),
+        chapter: workbook.add_format(
+          align: { h: :center, v: :center },
+          border: :border_thin,
+          top_color: 0xD3D3D3,
+          bottom_color: 0xD3D3D3,
+          left_color: 0xD3D3D3,
+          right_color: 0xD3D3D3,
+          num_format: '00',
+        ),
+        text: workbook.add_format(
+          align: { h: :left, v: :center },
+          border: :border_thin,
+          top_color: 0xD3D3D3,
+          bottom_color: 0xD3D3D3,
+          left_color: 0xD3D3D3,
+          right_color: 0xD3D3D3,
+          text_wrap: true,
+        ),
+        center_text: workbook.add_format(
+          align: { h: :center, v: :center },
+          border: :border_thin,
+          top_color: 0xD3D3D3,
+          bottom_color: 0xD3D3D3,
+          left_color: 0xD3D3D3,
+          right_color: 0xD3D3D3,
+        ),
+        hyperlink: workbook.add_format(
+          align: { h: :left, v: :center },
+          border: :border_thin,
+          font_color: 0x0563C1,
+          text_wrap: true,
+          underline: :underline_single,
+        ),
+        bold_text: workbook.add_format(
+          align: { h: :left, v: :center },
+          bold: true,
+          border: :border_thin,
+          text_wrap: true,
+        ),
+      }
     end
 
     def build_row_styles
