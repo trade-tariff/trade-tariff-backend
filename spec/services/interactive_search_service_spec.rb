@@ -286,30 +286,9 @@ RSpec.describe InteractiveSearchService do
     end
   end
 
-  describe 'question extraction with alternative keys' do
+  describe 'question extraction' do
     before do
       allow(OpenaiClient).to receive(:call).and_return(ai_response)
-    end
-
-    context 'when AI uses extra_questions key' do
-      let(:ai_response) do
-        '{"extra_questions": [{"text": "Is it for travel?", "choices": ["Yes", "No"]}]}'
-      end
-
-      it 'extracts questions using alternative keys' do
-        expect(result.type).to eq(:questions)
-        expect(result.data.first[:question]).to eq('Is it for travel?')
-      end
-    end
-
-    context 'when AI uses option_choices key' do
-      let(:ai_response) do
-        '{"questions": [{"question": "Type?", "option_choices": ["A", "B", "C"]}]}'
-      end
-
-      it 'extracts options using alternative keys' do
-        expect(result.data.first[:options]).to eq(%w[A B C])
-      end
     end
 
     context 'when AI returns plain string questions' do

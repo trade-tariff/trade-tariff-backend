@@ -2,9 +2,6 @@ class InteractiveSearchService
   Result = Struct.new(:type, :data, :attempt, :model, keyword_init: true)
 
   CONFIDENCE_ORDER = %w[strong good possible].freeze
-  QUESTIONS_ALIASES = %w[questions extra_questions].freeze
-  QUESTION_ALIASES = %w[question extra_question text].freeze
-  OPTIONS_ALIASES = %w[options option_choices choices].freeze
 
   def initialize(query:, expanded_query:, opensearch_results:, answers: [], request_id: nil)
     @query = query
@@ -192,7 +189,7 @@ class InteractiveSearchService
   end
 
   def has_questions?(parsed)
-    QUESTIONS_ALIASES.any? { |key| parsed[key].is_a?(Array) && parsed[key].any? }
+    parsed['questions'].is_a?(Array) && parsed['questions'].any?
   end
 
   def questions_result(parsed)
@@ -208,39 +205,17 @@ class InteractiveSearchService
   end
 
   def extract_questions(parsed)
-    questions = []
+    return [] unless parsed['questions'].is_a?(Array)
 
-    QUESTIONS_ALIASES.each do |questions_key|
-      next unless parsed[questions_key].is_a?(Array)
-
-      parsed[questions_key].each do |q|
-        case q
-        when Hash
-          text = extract_question_text(q)
-          options = extract_options(q)
-          questions << { question: text, options: options } if text.present?
-        when String
-          questions << { question: q, options: %w[Yes No] }
-        end
+    parsed['questions'].filter_map do |q|
+      case q
+      when Hash
+        text = q['question']
+        options = q['options'].is_a?(Array) ? q['options'].map(&:to_s) : %w[Yes No]
+        { question: text, options: options } if text.present?
+      when String
+        { question: q, options: %w[Yes No] }
       end
     end
-
-    questions
-  end
-
-  def extract_question_text(question_hash)
-    QUESTION_ALIASES.each do |key|
-      return question_hash[key] if question_hash[key].present?
-    end
-    nil
-  end
-
-  def extract_options(question_hash)
-    OPTIONS_ALIASES.each do |key|
-      if question_hash[key].is_a?(Array) && question_hash[key].any?
-        return question_hash[key].map(&:to_s)
-      end
-    end
-    %w[Yes No]
   end
 end
