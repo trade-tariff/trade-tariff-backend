@@ -3,6 +3,7 @@ RSpec.describe Api::Internal::SearchService do
     allow(ExpandSearchQueryService).to receive(:call).and_wrap_original do |_method, query|
       ExpandSearchQueryService::Result.new(expanded_query: query, reason: nil)
     end
+    allow(InteractiveSearchService).to receive(:call).and_return(nil)
   end
 
   describe '#call' do
@@ -325,6 +326,175 @@ RSpec.describe Api::Internal::SearchService do
         described_class.new(q: 'laptop').call
 
         expect(ExpandSearchQueryService).to have_received(:call).with('laptop')
+      end
+    end
+
+    context 'when interactive search returns questions' do
+      let(:opensearch_response) do
+        {
+          'hits' => {
+            'hits' => [
+              {
+                '_score' => 10.0,
+                '_source' => {
+                  'goods_nomenclature_sid' => 1,
+                  'goods_nomenclature_item_id' => '4202210000',
+                  'producline_suffix' => '80',
+                  'goods_nomenclature_class' => 'Commodity',
+                  'description' => 'leather handbags',
+                  'formatted_description' => 'Leather handbags',
+                  'declarable' => true,
+                },
+              },
+              {
+                '_score' => 8.0,
+                '_source' => {
+                  'goods_nomenclature_sid' => 2,
+                  'goods_nomenclature_item_id' => '4202220000',
+                  'producline_suffix' => '80',
+                  'goods_nomenclature_class' => 'Commodity',
+                  'description' => 'plastic handbags',
+                  'formatted_description' => 'Plastic handbags',
+                  'declarable' => true,
+                },
+              },
+            ],
+          },
+        }
+      end
+
+      let(:interactive_result) do
+        InteractiveSearchService::Result.new(
+          type: :questions,
+          data: [{ question: 'What material?', options: %w[Leather Plastic] }],
+          attempt: 1,
+          model: 'gpt-5.2',
+        )
+      end
+
+      before do
+        allow(TradeTariffBackend.search_client).to receive(:search).and_return(opensearch_response)
+        allow(InteractiveSearchService).to receive(:call).and_return(interactive_result)
+      end
+
+      it 'includes interactive_search in meta' do
+        result = described_class.new(q: 'handbag').call
+
+        expect(result[:meta]).to include(:interactive_search)
+        expect(result[:meta][:interactive_search][:type]).to eq(:questions)
+      end
+
+      it 'includes request_id in the response' do
+        result = described_class.new(q: 'handbag', request_id: 'abc-123').call
+
+        expect(result[:meta][:interactive_search][:request_id]).to eq('abc-123')
+      end
+    end
+
+    context 'when interactive search returns answers' do
+      let(:opensearch_response) do
+        {
+          'hits' => {
+            'hits' => [
+              {
+                '_score' => 10.0,
+                '_source' => {
+                  'goods_nomenclature_sid' => 1,
+                  'goods_nomenclature_item_id' => '4202210000',
+                  'producline_suffix' => '80',
+                  'goods_nomenclature_class' => 'Commodity',
+                  'description' => 'leather handbags',
+                  'formatted_description' => 'Leather handbags',
+                  'declarable' => true,
+                },
+              },
+            ],
+          },
+        }
+      end
+
+      let(:interactive_result) do
+        InteractiveSearchService::Result.new(
+          type: :answers,
+          data: [{ commodity_code: '4202210000', confidence: 'strong' }],
+          attempt: 2,
+          model: 'gpt-5.2',
+        )
+      end
+
+      before do
+        allow(TradeTariffBackend.search_client).to receive(:search).and_return(opensearch_response)
+        allow(InteractiveSearchService).to receive(:call).and_return(interactive_result)
+      end
+
+      it 'passes answers to InteractiveSearchService' do
+        answers = [{ question: 'Material?', answer: 'Leather' }]
+        described_class.new(q: 'handbag', answers: answers).call
+
+        expect(InteractiveSearchService).to have_received(:call).with(
+          hash_including(answers: answers),
+        )
+      end
+
+      it 'includes answers in the response meta' do
+        result = described_class.new(q: 'handbag').call
+
+        expect(result[:meta][:interactive_search][:type]).to eq(:answers)
+        expect(result[:meta][:interactive_search][:attempt]).to eq(2)
+      end
+    end
+
+    context 'when interactive search returns nil (disabled or error)' do
+      let(:opensearch_response) do
+        {
+          'hits' => {
+            'hits' => [
+              {
+                '_score' => 10.0,
+                '_source' => {
+                  'goods_nomenclature_sid' => 1,
+                  'goods_nomenclature_item_id' => '4202210000',
+                  'producline_suffix' => '80',
+                  'goods_nomenclature_class' => 'Commodity',
+                  'description' => 'leather handbags',
+                  'formatted_description' => 'Leather handbags',
+                  'declarable' => true,
+                },
+              },
+            ],
+          },
+        }
+      end
+
+      before do
+        allow(TradeTariffBackend.search_client).to receive(:search).and_return(opensearch_response)
+        allow(InteractiveSearchService).to receive(:call).and_return(nil)
+      end
+
+      it 'does not include interactive_search in meta' do
+        result = described_class.new(q: 'handbag').call
+
+        expect(result[:meta]).to be_nil
+      end
+    end
+
+    context 'when expanded_query differs from original' do
+      let(:opensearch_response) { { 'hits' => { 'hits' => [] } } }
+
+      before do
+        allow(ExpandSearchQueryService).to receive(:call)
+          .and_return(ExpandSearchQueryService::Result.new(
+                        expanded_query: 'portable data processing machine',
+                        reason: 'laptop is colloquial',
+                      ))
+        allow(TradeTariffBackend.search_client).to receive(:search).and_return(opensearch_response)
+        allow(InteractiveSearchService).to receive(:call).and_return(nil)
+      end
+
+      it 'includes expanded_query in meta' do
+        result = described_class.new(q: 'laptop').call
+
+        expect(result[:meta]).to include(expanded_query: 'portable data processing machine')
       end
     end
   end

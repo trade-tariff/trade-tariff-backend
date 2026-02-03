@@ -200,6 +200,12 @@ namespace :admin_configurations do
         value: AdminConfigurationSeeder.expand_query_context_markdown,
       },
       {
+        name: 'interactive_search_enabled',
+        config_type: 'boolean',
+        description: 'Enable interactive Q&A to help traders narrow down commodity codes through clarifying questions',
+        value: 'false',
+      },
+      {
         name: 'label_context',
         config_type: 'markdown',
         description: 'System prompt sent to the AI model when labelling commodities',

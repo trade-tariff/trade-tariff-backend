@@ -3,11 +3,13 @@ module Api
     class SearchService
       include QueryProcessing
 
-      attr_reader :q, :as_of
+      attr_reader :q, :as_of, :answers, :request_id
 
       def initialize(params = {})
         @q = process_query(params[:q])
         @as_of = parse_date(params[:as_of])
+        @answers = params[:answers] || []
+        @request_id = params[:request_id] || SecureRandom.uuid
       end
 
       def call
@@ -18,18 +20,20 @@ module Api
         exact = find_exact_match
         return GoodsNomenclatureSearchSerializer.serialize([exact]) if exact
 
-        search_query = expand_query(q)
+        @expanded_query = expand_query(q)
 
         results = search_with_configured_labels do
           TradeTariffBackend.search_client.search(
-            ::Search::GoodsNomenclatureQuery.new(search_query, as_of).query,
+            ::Search::GoodsNomenclatureQuery.new(@expanded_query, as_of).query,
           )
         end
 
         hits = results.dig('hits', 'hits') || []
         goods_nomenclatures = hits.map { |hit| build_result(hit) }
 
-        GoodsNomenclatureSearchSerializer.serialize(goods_nomenclatures)
+        interactive_result = run_interactive_search(goods_nomenclatures)
+
+        build_response(goods_nomenclatures, interactive_result)
       end
 
       private
@@ -149,6 +153,43 @@ module Api
           declarable: source['declarable'],
           score: hit['_score'],
         )
+      end
+
+      def run_interactive_search(goods_nomenclatures)
+        InteractiveSearchService.call(
+          query: q,
+          expanded_query: @expanded_query,
+          opensearch_results: goods_nomenclatures,
+          answers: answers,
+          request_id: request_id,
+        )
+      end
+
+      def build_response(goods_nomenclatures, interactive_result)
+        response = GoodsNomenclatureSearchSerializer.serialize(goods_nomenclatures)
+        meta = build_meta(interactive_result)
+        response[:meta] = meta if meta.present?
+        response
+      end
+
+      def build_meta(interactive_result)
+        meta = {}
+
+        if @expanded_query.present? && @expanded_query != q
+          meta[:expanded_query] = @expanded_query
+        end
+
+        if interactive_result
+          meta[:interactive_search] = {
+            type: interactive_result.type,
+            data: interactive_result.data,
+            request_id: request_id,
+            attempt: interactive_result.attempt,
+            model: interactive_result.model,
+          }
+        end
+
+        meta.presence
       end
     end
   end
