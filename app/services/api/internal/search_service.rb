@@ -46,12 +46,12 @@ module Api
 
       def expand_search_enabled?
         config = AdminConfiguration.classification.by_name('expand_search_enabled')
-        config.nil? || config.value == true
+        config.nil? || config.enabled?
       end
 
       def search_with_configured_labels(&block)
         config = AdminConfiguration.classification.by_name('search_labels_enabled')
-        labels_enabled = config.nil? || config.value == true
+        labels_enabled = config.nil? || config.enabled?
 
         if labels_enabled
           SearchLabels.with_labels(&block)

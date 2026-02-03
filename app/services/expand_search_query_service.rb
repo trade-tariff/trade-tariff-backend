@@ -46,9 +46,7 @@ class ExpandSearchQueryService
 
   def configured_model
     config = AdminConfiguration.classification.by_name('expand_model')
-    return TradeTariffBackend.ai_model if config.nil?
-
-    config.value.is_a?(Hash) ? config.value['selected'] : TradeTariffBackend.ai_model
+    config&.selected_option(default: TradeTariffBackend.ai_model) || TradeTariffBackend.ai_model
   end
 
   def configured_context

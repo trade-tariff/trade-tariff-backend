@@ -50,7 +50,7 @@ class InteractiveSearchService
 
   def disabled?
     config = AdminConfiguration.classification.by_name('interactive_search_enabled')
-    config.present? && config.value == false
+    config.present? && !config.enabled?(default: false)
   end
 
   def single_result?
@@ -71,9 +71,7 @@ class InteractiveSearchService
 
   def configured_model
     config = AdminConfiguration.classification.by_name('search_model')
-    return TradeTariffBackend.ai_model if config.nil?
-
-    config.value.is_a?(Hash) ? config.value['selected'] : config.value.presence || TradeTariffBackend.ai_model
+    config&.selected_option(default: TradeTariffBackend.ai_model) || TradeTariffBackend.ai_model
   end
 
   def configured_context

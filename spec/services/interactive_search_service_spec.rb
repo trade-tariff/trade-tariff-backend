@@ -42,7 +42,7 @@ RSpec.describe InteractiveSearchService do
 
   describe '.call' do
     context 'when feature is disabled' do
-      let(:config) { instance_double(AdminConfiguration, value: false) }
+      let(:config) { instance_double(AdminConfiguration, value: false, enabled?: false) }
 
       before do
         allow(classification_scope).to receive(:by_name)
@@ -357,7 +357,7 @@ RSpec.describe InteractiveSearchService do
 
     context 'when search_model config exists' do
       let(:model_config) do
-        instance_double(AdminConfiguration, value: { 'selected' => 'gpt-4.1-mini-2025-04-14' })
+        instance_double(AdminConfiguration, selected_option: 'gpt-4.1-mini-2025-04-14')
       end
 
       before do

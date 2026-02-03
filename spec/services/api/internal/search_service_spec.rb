@@ -299,7 +299,7 @@ RSpec.describe Api::Internal::SearchService do
         allow(AdminConfiguration).to receive(:classification).and_return(classification_scope)
         allow(classification_scope).to receive(:by_name).and_return(nil)
         allow(classification_scope).to receive(:by_name)
-          .with('expand_search_enabled').and_return(instance_double(AdminConfiguration, value: false))
+          .with('expand_search_enabled').and_return(instance_double(AdminConfiguration, enabled?: false))
         allow(TradeTariffBackend.search_client).to receive(:search).and_return(opensearch_response)
       end
 
@@ -318,7 +318,7 @@ RSpec.describe Api::Internal::SearchService do
         allow(AdminConfiguration).to receive(:classification).and_return(classification_scope)
         allow(classification_scope).to receive(:by_name).and_return(nil)
         allow(classification_scope).to receive(:by_name)
-          .with('expand_search_enabled').and_return(instance_double(AdminConfiguration, value: true))
+          .with('expand_search_enabled').and_return(instance_double(AdminConfiguration, enabled?: true))
         allow(TradeTariffBackend.search_client).to receive(:search).and_return(opensearch_response)
       end
 

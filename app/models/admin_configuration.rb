@@ -54,6 +54,30 @@ class AdminConfiguration < Sequel::Model(Sequel[:admin_configurations].qualify(:
     end
   end
 
+  # Returns the selected value for 'options' type configs
+  # Falls back to default if value is nil or not hash-like
+  def selected_option(default: nil)
+    val = self[:value]
+    return default if val.blank?
+
+    hash = case val
+           when Hash then val
+           when Sequel::Postgres::JSONBHash then val
+           else return default
+           end
+
+    hash['selected'].presence || default
+  end
+
+  # Returns boolean value for 'boolean' type configs
+  # Falls back to default if value is nil
+  def enabled?(default: true)
+    val = self[:value]
+    return default if val.nil?
+
+    val == true
+  end
+
   private
 
   def validate_value_for_type

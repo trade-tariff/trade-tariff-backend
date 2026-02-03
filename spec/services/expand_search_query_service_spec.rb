@@ -161,10 +161,7 @@ RSpec.describe ExpandSearchQueryService do
 
     context 'when expand_model config exists' do
       let(:model_config) do
-        instance_double(
-          AdminConfiguration,
-          value: { 'selected' => 'gpt-4.1-mini-2025-04-14', 'options' => [] },
-        )
+        instance_double(AdminConfiguration, selected_option: 'gpt-4.1-mini-2025-04-14')
       end
 
       before do
