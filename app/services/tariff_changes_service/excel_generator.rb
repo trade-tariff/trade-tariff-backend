@@ -26,7 +26,7 @@ class TariffChangesService
       stream_data_rows(worksheet)
       set_column_widths(worksheet)
 
-      workbook
+      workbook.close
     end
 
     private
