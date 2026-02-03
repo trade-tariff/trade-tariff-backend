@@ -377,11 +377,12 @@ RSpec.describe Api::Internal::SearchService do
         allow(InteractiveSearchService).to receive(:call).and_return(interactive_result)
       end
 
-      it 'includes interactive_search in meta' do
+      it 'includes interactive_search in meta with pending question' do
         result = described_class.new(q: 'handbag').call
 
         expect(result[:meta]).to include(:interactive_search)
-        expect(result[:meta][:interactive_search][:type]).to eq(:questions)
+        answers = result[:meta][:interactive_search][:answers]
+        expect(answers.last[:answer]).to be_nil
       end
 
       it 'includes request_id in the response' do
@@ -439,8 +440,10 @@ RSpec.describe Api::Internal::SearchService do
       it 'includes answers in the response meta' do
         result = described_class.new(q: 'handbag').call
 
-        expect(result[:meta][:interactive_search][:type]).to eq(:answers)
         expect(result[:meta][:interactive_search][:attempt]).to eq(2)
+        # No pending question means all questions are answered
+        answers = result[:meta][:interactive_search][:answers]
+        expect(answers).to be_empty.or(all(satisfy { |a| a[:answer].present? }))
       end
     end
 
@@ -480,6 +483,14 @@ RSpec.describe Api::Internal::SearchService do
 
     context 'when expanded_query differs from original' do
       let(:opensearch_response) { { 'hits' => { 'hits' => [] } } }
+      let(:interactive_result) do
+        InteractiveSearchService::Result.new(
+          type: :error,
+          data: { message: 'No search results found' },
+          attempt: 1,
+          model: 'gpt-5.2',
+        )
+      end
 
       before do
         allow(ExpandSearchQueryService).to receive(:call)
@@ -488,13 +499,13 @@ RSpec.describe Api::Internal::SearchService do
                         reason: 'laptop is colloquial',
                       ))
         allow(TradeTariffBackend.search_client).to receive(:search).and_return(opensearch_response)
-        allow(InteractiveSearchService).to receive(:call).and_return(nil)
+        allow(InteractiveSearchService).to receive(:call).and_return(interactive_result)
       end
 
-      it 'includes expanded_query in meta' do
+      it 'includes expanded_query in interactive_search meta' do
         result = described_class.new(q: 'laptop').call
 
-        expect(result[:meta]).to include(expanded_query: 'portable data processing machine')
+        expect(result[:meta][:interactive_search]).to include(expanded_query: 'portable data processing machine')
       end
     end
   end
