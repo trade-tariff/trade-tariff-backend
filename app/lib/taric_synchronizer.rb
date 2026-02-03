@@ -93,24 +93,24 @@ class TaricSynchronizer
               TariffSynchronizer::TaricUpdate.applied_or_failed
                                              .where(Sequel.lit('issue_date > ?', date_for_rollback))
                                              .each do |taric_update|
-                Rails.logger.info "Rolling back Taric file: #{taric_update.filename}"
+                                               Rails.logger.info "Rolling back Taric file: #{taric_update.filename}"
 
-                taric_update.mark_as_pending
-                taric_update.clear_applied_at
+                                               taric_update.mark_as_pending
+                                               taric_update.clear_applied_at
 
-                # delete presence errors
-                taric_update.presence_errors_dataset.destroy
+                                               # delete presence errors
+                                               taric_update.presence_errors_dataset.destroy
               end
             else
               # Rollback TARIC
               TariffSynchronizer::TaricUpdate
                 .where(Sequel.lit('issue_date > ?', date_for_rollback))
                 .each do |taric_update|
-                Rails.logger.info "Rolling back Taric file: #{taric_update.filename}"
+                  Rails.logger.info "Rolling back Taric file: #{taric_update.filename}"
 
-                # delete presence errors
-                taric_update.presence_errors_dataset.destroy
-                taric_update.delete
+                  # delete presence errors
+                  taric_update.presence_errors_dataset.destroy
+                  taric_update.delete
               end
             end
 
