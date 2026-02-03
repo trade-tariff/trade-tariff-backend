@@ -403,5 +403,53 @@ RSpec.describe InteractiveSearchService do
     it 'responds to model' do
       expect(result).to respond_to(:model)
     end
+
+    it 'responds to result_limit' do
+      expect(result).to respond_to(:result_limit)
+    end
+
+    it 'includes the configured result limit' do
+      expect(result.result_limit).to eq(5)
+    end
+  end
+
+  describe 'search_result_limit configuration' do
+    let(:ai_response) do
+      <<~JSON
+        {"answers": [
+          {"commodity_code": "4202210000", "confidence": "Strong"},
+          {"commodity_code": "4202220000", "confidence": "Good"},
+          {"commodity_code": "4202290000", "confidence": "Possible"}
+        ]}
+      JSON
+    end
+
+    before do
+      allow(OpenaiClient).to receive(:call).and_return(ai_response)
+    end
+
+    context 'when search_result_limit config exists' do
+      let(:limit_config) { instance_double(AdminConfiguration, value: '3') }
+
+      before do
+        allow(classification_scope).to receive(:by_name)
+          .with('search_result_limit')
+          .and_return(limit_config)
+      end
+
+      it 'uses the configured limit' do
+        expect(result.result_limit).to eq(3)
+      end
+
+      it 'limits the number of answers returned' do
+        expect(result.data.size).to be <= 3
+      end
+    end
+
+    context 'when search_result_limit config is not set' do
+      it 'defaults to 5' do
+        expect(result.result_limit).to eq(5)
+      end
+    end
   end
 end

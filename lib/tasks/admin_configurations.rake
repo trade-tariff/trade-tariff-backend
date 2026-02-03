@@ -242,6 +242,12 @@ namespace :admin_configurations do
         value: { 'selected' => default_model, 'options' => model_options },
       },
       {
+        name: 'search_result_limit',
+        config_type: 'integer',
+        description: 'Maximum number of commodity code suggestions shown during interactive Q&A. The frontend uses this to decide how to display results (e.g. as a shortlist or expanded view).',
+        value: '5',
+      },
+      {
         name: 'suggest_chemical_cas',
         config_type: 'boolean',
         description: 'Show CAS Registry Number suggestions in internal search',

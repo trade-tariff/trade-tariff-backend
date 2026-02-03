@@ -137,6 +137,7 @@ module Api
           formatted_description: goods_nomenclature.formatted_description,
           declarable: goods_nomenclature.respond_to?(:declarable?) ? goods_nomenclature.declarable? : false,
           score: nil,
+          confidence: nil,
         )
       end
 
@@ -152,6 +153,7 @@ module Api
           formatted_description: source['formatted_description'],
           declarable: source['declarable'],
           score: hit['_score'],
+          confidence: nil,
         )
       end
 
@@ -166,10 +168,24 @@ module Api
       end
 
       def build_response(goods_nomenclatures, interactive_result)
-        response = GoodsNomenclatureSearchSerializer.serialize(goods_nomenclatures)
+        results_with_confidence = apply_confidence(goods_nomenclatures, interactive_result)
+        response = GoodsNomenclatureSearchSerializer.serialize(results_with_confidence)
         meta = build_meta(interactive_result)
         response[:meta] = meta if meta.present?
         response
+      end
+
+      def apply_confidence(goods_nomenclatures, interactive_result)
+        return goods_nomenclatures unless interactive_result&.type == :answers
+
+        confidence_map = interactive_result.data.each_with_object({}) do |answer, hash|
+          hash[answer[:commodity_code]] = answer[:confidence]
+        end
+
+        goods_nomenclatures.map do |gn|
+          gn.confidence = confidence_map[gn.goods_nomenclature_item_id]
+          gn
+        end
       end
 
       def build_meta(interactive_result)
@@ -180,13 +196,25 @@ module Api
         end
 
         if interactive_result
-          meta[:interactive_search] = {
-            type: interactive_result.type,
-            data: interactive_result.data,
+          interactive_meta = {
             request_id: request_id,
             attempt: interactive_result.attempt,
             model: interactive_result.model,
+            result_limit: interactive_result.result_limit,
           }
+
+          if interactive_result.type == :questions
+            question_data = interactive_result.data.first
+            interactive_meta[:question] = {
+              question: question_data[:question],
+              options: question_data[:options],
+              answer: nil,
+            }
+          elsif interactive_result.type == :error
+            interactive_meta[:error] = interactive_result.data[:message]
+          end
+
+          meta[:interactive_search] = interactive_meta
         end
 
         meta.presence

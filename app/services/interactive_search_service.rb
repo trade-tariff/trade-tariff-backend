@@ -1,5 +1,5 @@
 class InteractiveSearchService
-  Result = Struct.new(:type, :data, :attempt, :model, keyword_init: true)
+  Result = Struct.new(:type, :data, :attempt, :model, :result_limit, keyword_init: true)
 
   CONFIDENCE_ORDER = %w[strong good possible].freeze
 
@@ -76,6 +76,11 @@ class InteractiveSearchService
     config&.value.presence || I18n.t('contexts.interactive_search.instructions')
   end
 
+  def configured_result_limit
+    config = AdminConfiguration.classification.by_name('search_result_limit')
+    config&.value&.to_i || 5
+  end
+
   def build_context
     configured_context
       .gsub('%{search_input}', query.to_s)
@@ -125,6 +130,7 @@ class InteractiveSearchService
       data: [{ commodity_code: result.goods_nomenclature_item_id, confidence: 'strong' }],
       attempt: attempt,
       model: configured_model,
+      result_limit: configured_result_limit,
     )
   end
 
@@ -134,11 +140,13 @@ class InteractiveSearchService
       data: { message: 'No search results found' },
       attempt: attempt,
       model: configured_model,
+      result_limit: configured_result_limit,
     )
   end
 
   def best_available_answers
-    top_results = opensearch_results.first(5).map.with_index do |result, index|
+    limit = configured_result_limit
+    top_results = opensearch_results.first(limit).map.with_index do |result, index|
       confidence = index < 2 ? 'good' : 'possible'
       { commodity_code: result.goods_nomenclature_item_id, confidence: confidence }
     end
@@ -148,6 +156,7 @@ class InteractiveSearchService
       data: top_results,
       attempt: attempt,
       model: configured_model,
+      result_limit: limit,
     )
   end
 
@@ -157,6 +166,7 @@ class InteractiveSearchService
       data: { message: message },
       attempt: attempt,
       model: configured_model,
+      result_limit: configured_result_limit,
     )
   end
 
@@ -164,6 +174,7 @@ class InteractiveSearchService
     filtered = filter_hallucinated_codes(ai_answers)
     return best_available_answers if filtered.empty?
 
+    limit = configured_result_limit
     normalized = filtered.map do |answer|
       {
         commodity_code: answer['commodity_code'] || answer[:commodity_code],
@@ -175,9 +186,10 @@ class InteractiveSearchService
 
     Result.new(
       type: :answers,
-      data: sorted.first(5),
+      data: sorted.first(limit),
       attempt: attempt,
       model: configured_model,
+      result_limit: limit,
     )
   end
 
@@ -201,6 +213,7 @@ class InteractiveSearchService
       data: questions.first(1),
       attempt: attempt,
       model: configured_model,
+      result_limit: configured_result_limit,
     )
   end
 

@@ -42,6 +42,7 @@ RSpec.describe Api::Internal::SearchController, :internal do
                 'score' => Numeric,
                 'producline_suffix' => String,
                 'goods_nomenclature_class' => 'Chapter',
+                'confidence' => nil,
               },
             },
           ],
@@ -81,6 +82,7 @@ RSpec.describe Api::Internal::SearchController, :internal do
                 'score' => nil,
                 'producline_suffix' => '80',
                 'goods_nomenclature_class' => 'Heading',
+                'confidence' => nil,
               },
             },
           ],
@@ -120,6 +122,7 @@ RSpec.describe Api::Internal::SearchController, :internal do
                 'score' => nil,
                 'producline_suffix' => '80',
                 'goods_nomenclature_class' => 'Chapter',
+                'confidence' => nil,
               },
             },
           ],
@@ -176,6 +179,7 @@ RSpec.describe Api::Internal::SearchController, :internal do
           data: [{ question: 'What is the material?', options: %w[Leather Synthetic] }],
           attempt: 1,
           model: 'gpt-5.2',
+          result_limit: 5,
         )
       end
 
@@ -184,11 +188,15 @@ RSpec.describe Api::Internal::SearchController, :internal do
           'data' => Array,
           'meta' => {
             'interactive_search' => {
-              'type' => 'questions',
-              'data' => Array,
+              'question' => {
+                'question' => 'What is the material?',
+                'options' => %w[Leather Synthetic],
+                'answer' => nil,
+              },
               'request_id' => String,
               'attempt' => 1,
               'model' => 'gpt-5.2',
+              'result_limit' => 5,
             },
           },
         }
@@ -264,6 +272,7 @@ RSpec.describe Api::Internal::SearchController, :internal do
             data: [{ commodity_code: '4202210000', confidence: 'strong' }],
             attempt: 2,
             model: 'gpt-5.2',
+            result_limit: 5,
           ),
         )
       end
