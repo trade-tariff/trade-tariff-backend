@@ -1,32 +1,24 @@
 module Api
   module User
-    class PublicUsersController < ApiController
-      include PublicUserAuthenticatable
-
-      no_caching
-
-      before_action :authenticate!
-
-      attr_reader :current_user
-
+    class PublicUsersController < UserController
       def show
-        render json: serialize(@current_user)
+        render json: serialize
       end
 
       def update
         if user_params[:chapter_ids]
-          @current_user.preferences.update(chapter_ids: user_params[:chapter_ids])
+          current_user.preferences.update(chapter_ids: user_params[:chapter_ids])
         end
 
         if user_params[:stop_press_subscription]
-          @current_user.stop_press_subscription = user_params[:stop_press_subscription]
+          current_user.stop_press_subscription = user_params[:stop_press_subscription]
         end
 
         if user_params[:my_commodities_subscription]
-          @current_user.my_commodities_subscription = user_params[:my_commodities_subscription]
+          current_user.my_commodities_subscription = user_params[:my_commodities_subscription]
         end
 
-        render json: serialize(@current_user)
+        render json: serialize
       rescue Sequel::ValidationFailed => e
         render json: serialize_errors({ error: e }), status: :unprocessable_content
       end
@@ -41,8 +33,8 @@ module Api
         )
       end
 
-      def serialize(user)
-        Api::User::PublicUserSerializer.new(user).serializable_hash
+      def serialize
+        Api::User::PublicUserSerializer.new(current_user).serializable_hash
       end
 
       def serialize_errors(errors)

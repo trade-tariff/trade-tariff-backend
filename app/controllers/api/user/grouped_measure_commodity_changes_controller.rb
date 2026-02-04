@@ -1,24 +1,14 @@
 module Api
   module User
-    class GroupedMeasureCommodityChangesController < ApiController
-      include PublicUserAuthenticatable
-
-      no_caching
-
-      before_action :authenticate!
-
+    class GroupedMeasureCommodityChangesController < UserController
       def show
-        render json: serialize(tariff_changes)
+        render json: Api::User::GroupedMeasureCommodityChangeSerializer.new(tariff_changes, serializer_options).serializable_hash
       end
 
       private
 
       def tariff_changes
-        Api::User::GroupedMeasureCommodityChangesService.new(id, as_of).call
-      end
-
-      def serialize(tariff_changes)
-        Api::User::GroupedMeasureCommodityChangeSerializer.new(tariff_changes, serializer_options).serializable_hash
+        TariffChanges::GroupedMeasureCommodityChange.from_id(id)
       end
 
       def serializer_options
@@ -29,12 +19,8 @@ module Api
             grouped_measure_change.geographical_area
             grouped_measure_change.excluded_countries
           ],
-          params: { date: as_of },
+          params: { date: actual_date.to_s },
         }
-      end
-
-      def as_of
-        params[:as_of] || Time.zone.yesterday.to_date.to_s
       end
 
       def id

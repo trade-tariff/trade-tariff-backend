@@ -1,12 +1,8 @@
 module Api
   module User
-    class SubscriptionTargetsController < ApiController
-      include PublicUserAuthenticatable
+    class SubscriptionTargetsController < UserController
       include Pageable
 
-      no_caching
-
-      before_action :authenticate!
       before_action :find_subscription
 
       def index
@@ -52,8 +48,10 @@ module Api
       end
 
       def find_subscription
-        @subscription = @current_user.subscriptions_dataset.where(uuid: subscription_id).first
-        render json: { message: 'No subscription ID was provided' }, status: :unauthorized if @subscription.nil?
+        @subscription = current_user.subscriptions_dataset.where(uuid: subscription_id).first
+        if @subscription.nil?
+          render json: { message: 'No subscription ID was provided' }, status: :unauthorized and return
+        end
       end
 
       def subscription_id

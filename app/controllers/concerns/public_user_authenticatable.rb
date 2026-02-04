@@ -12,6 +12,8 @@ module PublicUserAuthenticatable
   included do
     private
 
+    attr_reader :current_user
+
     def authenticate!
       if user_token.present?
         result = Api::User::UserService.find_or_create(user_token)

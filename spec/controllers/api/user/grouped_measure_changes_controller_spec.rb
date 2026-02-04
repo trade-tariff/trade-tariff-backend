@@ -32,7 +32,7 @@ RSpec.describe Api::User::GroupedMeasureChangesController do
         expect(Api::User::GroupedMeasureChangesService).to have_received(:new).with(
           an_instance_of(PublicUsers::User),
           nil,
-          Time.zone.yesterday.to_date.to_s,
+          Time.zone.yesterday,
         )
         expect(measure_changes_service).to have_received(:call)
       end
@@ -159,7 +159,7 @@ RSpec.describe Api::User::GroupedMeasureChangesController do
         expect(Api::User::GroupedMeasureChangesService).to have_received(:new).with(
           an_instance_of(PublicUsers::User),
           id,
-          Time.zone.yesterday.to_date.to_s,
+          Time.zone.yesterday,
         )
         expect(measure_changes_service).to have_received(:call)
       end
@@ -189,7 +189,7 @@ RSpec.describe Api::User::GroupedMeasureChangesController do
         expect(Api::User::GroupedMeasureChangesService).to have_received(:new).with(
           an_instance_of(PublicUsers::User),
           id,
-          custom_date,
+          Date.parse(custom_date),
         )
       end
     end
