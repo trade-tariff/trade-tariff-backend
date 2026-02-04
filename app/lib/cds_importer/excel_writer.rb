@@ -31,7 +31,6 @@ class CdsImporter
 
     def after_parse
       write(@key, @instances)
-      # sort_worksheets
       workbook.close
 
       if TradeTariffBackend.cds_updates_send_email && !@failed
@@ -45,31 +44,6 @@ class CdsImporter
 
     attr_reader :workbook, :filename, :package, :bold_style, :regular_style
 
-    def sort_worksheets
-      CdsImporter::ExcelWriter.constants.each do |const|
-        klass = CdsImporter::ExcelWriter.const_get(const)
-        next unless klass.is_a?(Class)
-
-        worksheet = workbook.get_worksheet_by_name(klass.sheet_name)
-        sort_columns = klass.sort_columns
-        next unless sort_columns.present? && worksheet
-
-        start_index = klass.start_index
-        row_count = worksheet.rows.count
-
-        rows = worksheet.rows.map { |r| r.cells.map(&:value) }[start_index..]
-        rows.sort_by! do |r|
-          sort_columns.map { |col| r[col] }
-        end
-
-        row_count.downto(start_index) do |index|
-          worksheet.rows.delete_at(index)
-        end
-
-        rows.each { |r| worksheet.append_row r }
-      end
-    end
-
     def write(key, instances)
       klass = Module.const_get("CdsImporter::ExcelWriter::#{key}")
 
@@ -80,14 +54,22 @@ class CdsImporter
       note = klass.note
       heading = klass.heading
       column_widths = klass.column_widths
+      sort_columns = klass.sort_columns
+      row = update.data_row
 
       sheet = workbook.add_worksheet(sheet_name)
 
       if note.present?
         sheet.append_row(note, bold_style)
-        sheet.merge_range(*merge_cells_length(klass, 1))
+        sheet.merge_range(
+          col(klass.table_span[0]), 1,
+          col(klass.table_span[1]), 1
+        )
         sheet.append_row([])
-        sheet.merge_range(*merge_cells_length(klass, 2))
+        sheet.merge_range(
+          col(klass.table_span[0]), 2,
+          col(klass.table_span[1]), 2
+        )
       end
 
       sheet.append_row(heading, bold_style)
@@ -96,8 +78,13 @@ class CdsImporter
         sheet.set_column_width(index, width)
       end
 
-      sheet.append_row(update.data_row, regular_style)
-      sheet.column_widths(*column_widths)
+      if sort_columns.present?
+        row.sort_by! do |r|
+          sort_columns.map { |col| r[col] }
+        end
+      end
+
+      sheet.append_row(row, regular_style)
     rescue StandardError => e
       Rails.logger.info "Write record error on #{key} - #{e.message}"
     end
@@ -145,10 +132,6 @@ class CdsImporter
       else
         ''
       end
-    end
-
-    def merge_cells_length(klass, row)
-      [col(klass.table_span[0]), row, col(klass.table_span[1]), row]
     end
 
     def col(cell)
