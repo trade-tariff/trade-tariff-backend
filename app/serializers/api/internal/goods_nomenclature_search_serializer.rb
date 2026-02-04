@@ -12,7 +12,8 @@ module Api
                  :description,
                  :formatted_description,
                  :declarable,
-                 :score
+                 :score,
+                 :confidence
 
       def self.serialize(collection)
         data = collection.map do |record|

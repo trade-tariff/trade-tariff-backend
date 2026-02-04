@@ -256,4 +256,120 @@ RSpec.describe AdminConfiguration do
       end
     end
   end
+
+  describe '#selected_option' do
+    subject(:config) { create(:admin_configuration, :options, value: value) }
+
+    context 'with hash containing selected value' do
+      let(:value) { { 'selected' => 'gpt-4', 'options' => [{ 'key' => 'gpt-4' }] } }
+
+      it 'returns the selected value' do
+        expect(config.selected_option).to eq('gpt-4')
+      end
+    end
+
+    context 'with hash containing blank selected value' do
+      let(:value) { { 'selected' => '', 'options' => [{ 'key' => 'gpt-4' }] } }
+
+      it 'returns the default' do
+        expect(config.selected_option(default: 'fallback')).to eq('fallback')
+      end
+    end
+
+    context 'with nil value' do
+      let(:config) { build(:admin_configuration, :options, value: nil) }
+
+      it 'returns the default' do
+        expect(config.selected_option(default: 'fallback')).to eq('fallback')
+      end
+    end
+
+    context 'when reloaded from database (JSONBHash)' do
+      let(:value) { { 'selected' => 'gpt-4o', 'options' => [{ 'key' => 'gpt-4o' }] } }
+
+      it 'returns the selected value from JSONBHash' do
+        config.reload
+        expect(config.selected_option).to eq('gpt-4o')
+      end
+    end
+  end
+
+  describe '#enabled?' do
+    subject(:config) { create(:admin_configuration, :boolean, value: value) }
+
+    context 'when value is true' do
+      let(:value) { true }
+
+      it 'returns true' do
+        expect(config.enabled?).to be true
+      end
+    end
+
+    context 'when value is false' do
+      let(:value) { false }
+
+      it 'returns false' do
+        expect(config.enabled?).to be false
+      end
+    end
+
+    context 'when value is nil' do
+      let(:config) { build(:admin_configuration, :boolean, value: nil) }
+
+      it 'returns the default (true by default)' do
+        expect(config.enabled?).to be true
+      end
+
+      it 'returns the specified default when false' do
+        expect(config.enabled?(default: false)).to be false
+      end
+    end
+
+    context 'when reloaded from database' do
+      let(:value) { false }
+
+      it 'returns the correct value from database' do
+        config.reload
+        expect(config.enabled?).to be false
+      end
+    end
+  end
+
+  describe 'expand search cache invalidation' do
+    context 'when saving expand_query_context config' do
+      let!(:config) { create(:admin_configuration, :markdown, name: 'expand_query_context') }
+
+      it 'clears the expand search cache' do
+        allow(ExpandSearchQueryService).to receive(:clear_cache!)
+
+        config.update(value: 'new context')
+
+        expect(ExpandSearchQueryService).to have_received(:clear_cache!).once
+      end
+    end
+
+    context 'when saving expand_model config' do
+      let!(:config) { create(:admin_configuration, :options, name: 'expand_model') }
+
+      it 'clears the expand search cache' do
+        allow(ExpandSearchQueryService).to receive(:clear_cache!)
+
+        config.update(value: { 'selected' => 'gpt-4o', 'options' => [{ 'key' => 'gpt-4o' }] })
+
+        expect(ExpandSearchQueryService).to have_received(:clear_cache!).once
+      end
+    end
+
+    context 'when saving an unrelated config' do
+      let!(:config) { create(:admin_configuration, :boolean, name: 'other_config') }
+
+      it 'does not clear the expand search cache' do
+        allow(ExpandSearchQueryService).to receive(:clear_cache!)
+
+        config.update(value: true)
+
+        expect(ExpandSearchQueryService).not_to have_received(:clear_cache!)
+      end
+    end
+  end
 end

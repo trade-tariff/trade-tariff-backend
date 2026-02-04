@@ -1,7 +1,7 @@
 class SlackNotifierService
   class << self
     def call(message)
-      notifier.ping(message) if notifier.present?
+      notifier.presence&.ping(message)
     end
 
     private

@@ -13,7 +13,7 @@ class FullTemporaryStopRegulation < Sequel::Model
   end
 
   def effective_end_date
-    effective_enddate.to_date if effective_enddate.present?
+    effective_enddate.presence&.to_date
   end
 
   def effective_start_date

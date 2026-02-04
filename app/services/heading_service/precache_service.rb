@@ -32,9 +32,9 @@ module HeadingService
                .take
                .children
                .each do |heading|
-          next if heading.declarable?
+                 next if heading.declarable?
 
-          yield heading
+                 yield heading
         end
       end
     end

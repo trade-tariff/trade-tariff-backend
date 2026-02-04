@@ -13,7 +13,7 @@ class MeasurePartialTemporaryStop < Sequel::Model
   end
 
   def effective_end_date
-    validity_end_date.to_date if validity_end_date.present?
+    validity_end_date.presence&.to_date
   end
 
   def effective_start_date

@@ -59,9 +59,9 @@ class Heading < GoodsNomenclature
      .from_self
      .where(Sequel.~(operation_date: nil))
      .tap! { |criteria|
-      # if Heading did not come from initial seed, filter by its
-      # create/update date
-      criteria.where { |o| o.>=(:operation_date, operation_date) } if operation_date.present?
+       # if Heading did not come from initial seed, filter by its
+       # create/update date
+       criteria.where { |o| o.>=(:operation_date, operation_date) } if operation_date.present?
     }
      .limit(TradeTariffBackend.change_count)
      .order(Sequel.desc(:operation_date, nulls: :last), Sequel.desc(:depth))
