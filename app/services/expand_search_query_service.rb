@@ -66,7 +66,7 @@ class ExpandSearchQueryService
 
   def configured_context
     config = AdminConfiguration.classification.by_name('expand_query_context')
-    config&.value.presence || I18n.t('contexts.expand_search_query.instructions')
+    config&.value.to_s
   end
 
   def context_for(search_query)

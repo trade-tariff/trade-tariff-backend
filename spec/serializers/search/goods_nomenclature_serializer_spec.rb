@@ -94,5 +94,65 @@ RSpec.describe Search::GoodsNomenclatureSerializer do
         expect(result[:labels]).to be_nil
       end
     end
+
+    describe '#full_description' do
+      before do
+        SelfTextLookupService.instance_variable_set(:@self_texts, nil)
+      end
+
+      context 'when self-text is available' do
+        before do
+          allow(SelfTextLookupService).to receive(:lookup)
+            .with(commodity.goods_nomenclature_item_id)
+            .and_return('CN2026 self-text for horses')
+        end
+
+        it 'uses self-text for full_description' do
+          expect(result[:full_description]).to eq('CN2026 self-text for horses')
+        end
+
+        it 'passes self-text through SearchNegationService for description' do
+          expect(result[:description]).to eq('CN2026 self-text for horses')
+        end
+      end
+
+      context 'when self-text is not available' do
+        before do
+          allow(SelfTextLookupService).to receive(:lookup).and_return(nil)
+        end
+
+        it 'uses classification_description for full_description' do
+          expect(result[:full_description]).to eq(commodity.classification_description)
+        end
+      end
+
+      context 'when self-text is blank' do
+        before do
+          allow(SelfTextLookupService).to receive(:lookup).and_return('')
+        end
+
+        it 'falls back to classification_description' do
+          expect(result[:full_description]).to eq(commodity.classification_description)
+        end
+      end
+    end
+
+    describe '#heading_description' do
+      it 'returns the heading formatted_description' do
+        expect(result[:heading_description]).to eq(commodity.heading&.formatted_description)
+      end
+
+      context 'when commodity has no heading' do
+        let(:commodity) do
+          create(:chapter, :with_description,
+                 goods_nomenclature_item_id: '0100000000',
+                 description: 'Live animals')
+        end
+
+        it 'returns nil' do
+          expect(result[:heading_description]).to be_nil
+        end
+      end
+    end
   end
 end

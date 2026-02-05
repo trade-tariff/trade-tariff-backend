@@ -9,7 +9,7 @@ class InteractiveSearchService
     @opensearch_results = opensearch_results
     @answers = answers || []
     @request_id = request_id
-    @attempt = answers.size + 1
+    @attempt = @answers.size + 1
   end
 
   def call
@@ -73,7 +73,7 @@ class InteractiveSearchService
 
   def configured_context
     config = AdminConfiguration.classification.by_name('search_context')
-    config&.value.presence || I18n.t('contexts.interactive_search.instructions')
+    config&.value.to_s
   end
 
   def configured_result_limit
@@ -82,10 +82,11 @@ class InteractiveSearchService
   end
 
   def build_context
-    configured_context
+    context = configured_context.to_s
+    context
       .gsub('%{search_input}', query.to_s)
-      .gsub('%{answers_opensearch}', format_opensearch_results)
-      .gsub('%{questions}', format_questions_and_answers)
+      .gsub('%{answers_opensearch}', format_opensearch_results.to_s)
+      .gsub('%{questions}', format_questions_and_answers.to_s)
   end
 
   def format_opensearch_results
@@ -146,7 +147,8 @@ class InteractiveSearchService
 
   def best_available_answers
     limit = configured_result_limit
-    top_results = opensearch_results.first(limit).map.with_index do |result, index|
+    results_to_process = limit.zero? ? opensearch_results : opensearch_results.first(limit)
+    top_results = results_to_process.map.with_index do |result, index|
       confidence = index < 2 ? 'good' : 'possible'
       { commodity_code: result.goods_nomenclature_item_id, confidence: confidence }
     end
@@ -183,10 +185,11 @@ class InteractiveSearchService
     end
 
     sorted = normalized.sort_by { |a| CONFIDENCE_ORDER.index(a[:confidence]) || 99 }
+    final_results = limit.zero? ? sorted : sorted.first(limit)
 
     Result.new(
       type: :answers,
-      data: sorted.first(limit),
+      data: final_results,
       attempt: attempt,
       model: configured_model,
       result_limit: limit,

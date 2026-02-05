@@ -4,17 +4,22 @@ RSpec.describe LabelService do
     instance_double(
       GoodsNomenclature,
       goods_nomenclature_item_id: '0101210000',
-      classification_description: 'Pure-bred breeding animals - Horses',
+      ancestor_chain_description: 'Live animals > Horses > Pure-bred breeding animals',
       goods_nomenclature_label: nil,
       as_json: { 'goods_nomenclature_item_id' => '0101210000' },
     )
   end
   let(:ai_client) { instance_double(OpenaiClient) }
   let(:label) { instance_double(GoodsNomenclatureLabel) }
+  let(:label_context) do
+    'Generate labels for the following UK trade tariff commodities. Return JSON with a "data" array.'
+  end
 
   before do
     allow(TradeTariffBackend).to receive(:ai_client).and_return(ai_client)
     allow(GoodsNomenclatureLabel).to receive(:build).and_return(label)
+    allow(SelfTextLookupService).to receive(:lookup).and_return(nil)
+    create(:admin_configuration, name: 'label_context', value: label_context, area: 'classification')
   end
 
   describe '#call' do
@@ -40,7 +45,7 @@ RSpec.describe LabelService do
       described_class.new(batch).call
 
       expect(ai_client).to have_received(:call) do |context|
-        expect(context).to include(I18n.t('contexts.label_commodity.instructions'))
+        expect(context).to include('Generate labels for the following UK trade tariff commodities')
       end
     end
 
@@ -50,6 +55,7 @@ RSpec.describe LabelService do
       expect(GoodsNomenclatureLabel).to have_received(:build).with(
         goods_nomenclature,
         ai_response['data'].first,
+        contextual_description: 'Live animals > Horses > Pure-bred breeding animals',
       )
     end
 
@@ -76,6 +82,48 @@ RSpec.describe LabelService do
         result = described_class.new(batch).call
 
         expect(result).to eq([])
+      end
+    end
+
+    context 'when the AI returns a string with embedded JSON' do
+      let(:ai_response) do
+        'Here is the response: {"data": [{"commodity_code": "0101210000", "description": "Horses"}]}'
+      end
+
+      it 'extracts the JSON and builds labels' do
+        described_class.new(batch).call
+
+        expect(GoodsNomenclatureLabel).to have_received(:build)
+      end
+    end
+
+    context 'when the AI returns an Array directly' do
+      let(:ai_response) do
+        [{ 'commodity_code' => '0101210000', 'description' => 'Horses' }]
+      end
+
+      it 'uses the array as data and builds labels' do
+        described_class.new(batch).call
+
+        expect(GoodsNomenclatureLabel).to have_received(:build)
+      end
+    end
+
+    context 'when the AI returns a non-parseable string' do
+      let(:ai_response) { 'Unparseable' }
+
+      it 'returns an empty array' do
+        result = described_class.new(batch).call
+
+        expect(result).to eq([])
+      end
+
+      it 'logs an error' do
+        allow(Rails.logger).to receive(:error)
+
+        described_class.new(batch).call
+
+        expect(Rails.logger).to have_received(:error).with(/unexpected response type/)
       end
     end
   end

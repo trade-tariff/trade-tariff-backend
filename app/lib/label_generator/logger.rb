@@ -121,4 +121,4 @@ module LabelGenerator
   end
 end
 
-LabelGenerator::Logger.attach_to :label_generator
+LabelGenerator::Logger.attach_to :label_generator unless Rails.env.test?

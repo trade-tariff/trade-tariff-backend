@@ -1,33 +1,19 @@
 RSpec.describe LabelBatchPresenter do
-  subject(:presenter) { described_class.new(batch) }
+  around { |example| TimeMachine.now { example.run } }
 
-  let(:batch) { [goods_nomenclature1, goods_nomenclature2] }
-  let(:goods_nomenclature1) do
-    instance_double(
-      GoodsNomenclature,
-      goods_nomenclature_item_id: '0101210000',
-      classification_description: 'Pure-bred breeding animals - Horses',
-      as_json: { 'goods_nomenclature_item_id' => '0101210000' },
-    )
-  end
-  let(:goods_nomenclature2) do
-    instance_double(
-      GoodsNomenclature,
-      goods_nomenclature_item_id: '0101290000',
-      classification_description: 'Other horses',
-      as_json: { 'goods_nomenclature_item_id' => '0101290000' },
-    )
+  let(:presenter) { described_class.new(batch) }
+  let(:batch) { [commodity] }
+  let(:commodity) { create(:commodity, :with_description, :with_ancestors) }
+
+  before do
+    SelfTextLookupService.instance_variable_set(:@self_texts, nil)
+    SelfTextLookupService.instance_variable_set(:@csv_path, nil)
   end
 
   describe '#goods_nomenclature_for' do
-    it 'returns the goods nomenclature matching the item id' do
-      result = presenter.goods_nomenclature_for('0101210000')
-      expect(result).to eq(goods_nomenclature1)
-    end
-
-    it 'returns the second goods nomenclature when searching for its id' do
-      result = presenter.goods_nomenclature_for('0101290000')
-      expect(result).to eq(goods_nomenclature2)
+    it 'returns the goods nomenclature matching the item_id' do
+      result = presenter.goods_nomenclature_for(commodity.goods_nomenclature_item_id)
+      expect(result).to eq(commodity)
     end
 
     it 'returns nil when no match is found' do
@@ -37,37 +23,75 @@ RSpec.describe LabelBatchPresenter do
   end
 
   describe '#to_json' do
-    it 'returns a JSON array of presented goods nomenclatures' do
-      result = JSON.parse(presenter.to_json)
+    subject(:json) { JSON.parse(presenter.to_json) }
 
-      expect(result).to be_an(Array)
-      expect(result.length).to eq(2)
+    it 'returns an array of presented goods nomenclatures' do
+      expect(json).to be_an(Array)
+      expect(json.size).to eq(1)
     end
 
-    it 'includes goods_nomenclature_item_id for each item' do
-      result = JSON.parse(presenter.to_json)
-
-      expect(result[0]['goods_nomenclature_item_id']).to eq('0101210000')
-      expect(result[1]['goods_nomenclature_item_id']).to eq('0101290000')
+    it 'includes commodity_code' do
+      expect(json.first['commodity_code']).to eq(commodity.goods_nomenclature_item_id)
     end
 
-    it 'includes original_description for each item' do
-      result = JSON.parse(presenter.to_json)
+    it 'includes description' do
+      expect(json.first['description']).to be_present
+    end
 
-      expect(result[0]['original_description']).to eq('Pure-bred breeding animals - Horses')
-      expect(result[1]['original_description']).to eq('Other horses')
+    context 'when self-text is available' do
+      before do
+        allow(SelfTextLookupService).to receive(:lookup)
+          .with(commodity.goods_nomenclature_item_id)
+          .and_return('Self-text description from CN2026')
+      end
+
+      it 'uses the self-text as description' do
+        expect(json.first['description']).to eq('Self-text description from CN2026')
+      end
+    end
+
+    context 'when no self-text is available' do
+      before do
+        allow(SelfTextLookupService).to receive(:lookup).and_return(nil)
+      end
+
+      it 'uses ancestor_chain_description' do
+        expect(json.first['description']).to eq(commodity.ancestor_chain_description)
+      end
     end
   end
 
-  describe 'delegation' do
-    it 'delegates array methods to the batch' do
-      expect(presenter.size).to eq(2)
-      expect(presenter.first).to eq(goods_nomenclature1)
-      expect(presenter.last).to eq(goods_nomenclature2)
+  describe '#contextual_description_for' do
+    context 'when self-text is available' do
+      before do
+        allow(SelfTextLookupService).to receive(:lookup)
+          .with(commodity.goods_nomenclature_item_id)
+          .and_return('CN2026 self-text')
+      end
+
+      it 'returns the self-text' do
+        expect(presenter.contextual_description_for(commodity)).to eq('CN2026 self-text')
+      end
     end
 
-    it 'is enumerable' do
-      expect(presenter.map(&:goods_nomenclature_item_id)).to eq(%w[0101210000 0101290000])
+    context 'when self-text is blank' do
+      before do
+        allow(SelfTextLookupService).to receive(:lookup).and_return('')
+      end
+
+      it 'falls back to ancestor_chain_description' do
+        expect(presenter.contextual_description_for(commodity)).to eq(commodity.ancestor_chain_description)
+      end
+    end
+
+    context 'when self-text is nil' do
+      before do
+        allow(SelfTextLookupService).to receive(:lookup).and_return(nil)
+      end
+
+      it 'falls back to ancestor_chain_description' do
+        expect(presenter.contextual_description_for(commodity)).to eq(commodity.ancestor_chain_description)
+      end
     end
   end
 end

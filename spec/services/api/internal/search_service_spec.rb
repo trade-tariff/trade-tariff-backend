@@ -329,6 +329,56 @@ RSpec.describe Api::Internal::SearchService do
       end
     end
 
+    context 'when pos_search_enabled is false' do
+      let(:opensearch_response) { { 'hits' => { 'hits' => [] } } }
+      let(:classification_scope) { double('classification_scope') } # rubocop:disable RSpec/VerifiedDoubles
+
+      before do
+        allow(AdminConfiguration).to receive(:classification).and_return(classification_scope)
+        allow(classification_scope).to receive(:by_name).and_return(nil)
+        allow(classification_scope).to receive(:by_name)
+          .with('pos_search_enabled').and_return(instance_double(AdminConfiguration, enabled?: false))
+        allow(TradeTariffBackend.search_client).to receive(:search).and_return(opensearch_response)
+      end
+
+      it 'passes pos_search: false to GoodsNomenclatureQuery' do
+        allow(Search::GoodsNomenclatureQuery).to receive(:new).and_call_original
+
+        described_class.new(q: 'live horses').call
+
+        expect(Search::GoodsNomenclatureQuery).to have_received(:new).with(
+          'live horses',
+          anything,
+          hash_including(pos_search: false),
+        )
+      end
+    end
+
+    context 'when opensearch_result_limit is configured' do
+      let(:opensearch_response) { { 'hits' => { 'hits' => [] } } }
+      let(:classification_scope) { double('classification_scope') } # rubocop:disable RSpec/VerifiedDoubles
+
+      before do
+        allow(AdminConfiguration).to receive(:classification).and_return(classification_scope)
+        allow(classification_scope).to receive(:by_name).and_return(nil)
+        allow(classification_scope).to receive(:by_name)
+          .with('opensearch_result_limit').and_return(instance_double(AdminConfiguration, value: 50))
+        allow(TradeTariffBackend.search_client).to receive(:search).and_return(opensearch_response)
+      end
+
+      it 'passes configured size to GoodsNomenclatureQuery' do
+        allow(Search::GoodsNomenclatureQuery).to receive(:new).and_call_original
+
+        described_class.new(q: 'horses').call
+
+        expect(Search::GoodsNomenclatureQuery).to have_received(:new).with(
+          'horses',
+          anything,
+          hash_including(size: 50),
+        )
+      end
+    end
+
     context 'when interactive search returns questions' do
       let(:opensearch_response) do
         {
@@ -428,12 +478,12 @@ RSpec.describe Api::Internal::SearchService do
         allow(InteractiveSearchService).to receive(:call).and_return(interactive_result)
       end
 
-      it 'passes answers to InteractiveSearchService' do
+      it 'passes normalized answers to InteractiveSearchService' do
         answers = [{ question: 'Material?', answer: 'Leather' }]
         described_class.new(q: 'handbag', answers: answers).call
 
         expect(InteractiveSearchService).to have_received(:call).with(
-          hash_including(answers: answers),
+          hash_including(answers: [{ question: 'Material?', options: [], answer: 'Leather' }]),
         )
       end
 

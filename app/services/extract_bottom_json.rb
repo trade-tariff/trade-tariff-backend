@@ -2,6 +2,9 @@ class ExtractBottomJson
   def self.call(text)
     return {} if text.to_s.blank?
 
+    # If already a Hash or Array (pre-parsed JSON), return as-is
+    return text if text.is_a?(Hash) || text.is_a?(Array)
+
     # Try direct parse first (clean JSON response)
     JSON.parse(text)
   rescue JSON::ParserError

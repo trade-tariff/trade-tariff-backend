@@ -85,6 +85,18 @@ RSpec.describe CustomJobLogger do
           ),
         )
       end
+
+      context 'when the job has slack_alerts: false' do
+        let(:item) { super().merge('slack_alerts' => false) }
+
+        it 'does not send a Slack alert' do
+          expect {
+            logger.call(item, queue) { raise error }
+          }.to raise_error(StandardError, 'Something went wrong')
+
+          expect(SlackNotifierService).not_to have_received(:call)
+        end
+      end
     end
   end
 end

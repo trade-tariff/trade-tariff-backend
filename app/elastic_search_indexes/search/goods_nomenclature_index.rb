@@ -38,6 +38,8 @@ module Search
                 synonyms: { type: 'text', analyzer: 'snowball' },
               },
             },
+            full_description: { type: 'keyword', index: false },
+            heading_description: { type: 'keyword', index: false },
           },
         },
       }
@@ -54,6 +56,7 @@ module Search
         :goods_nomenclature_label,
         :search_references,
         { ancestors: [:goods_nomenclature_descriptions] },
+        { heading: [:goods_nomenclature_descriptions] },
       ]
     end
 

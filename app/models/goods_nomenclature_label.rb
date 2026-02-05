@@ -30,9 +30,9 @@ class GoodsNomenclatureLabel < Sequel::Model(Sequel[:goods_nomenclature_labels].
   end
 
   class << self
-    def build(goods_nomenclature, item)
+    def build(goods_nomenclature, item, contextual_description: nil)
       labels = {
-        'original_description' => goods_nomenclature.classification_description,
+        'original_description' => contextual_description || goods_nomenclature.classification_description,
         'description' => item.fetch('description', ''),
         'known_brands' => item.fetch('known_brands', []),
         'colloquial_terms' => item.fetch('colloquial_terms', []),

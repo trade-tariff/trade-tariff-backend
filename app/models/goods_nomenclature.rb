@@ -31,6 +31,7 @@ class GoodsNomenclature < Sequel::Model
 
   extend ActiveModel::Naming
 
+  include AncestorChainDescription
   include ClassificationDescription
   include Formatter
   include GoodsNomenclatures::NestedSet

@@ -1,4 +1,13 @@
 class OpenaiClient
+  MAX_RETRIES = 3
+  RETRY_DELAY = 2 # seconds
+  RETRYABLE_ERRORS = [
+    Faraday::TimeoutError,
+    Faraday::ConnectionFailed,
+    Net::ReadTimeout,
+    Net::OpenTimeout,
+  ].freeze
+
   def call(context, model: nil)
     messages = if context.is_a?(Array)
                  context
@@ -16,7 +25,7 @@ class OpenaiClient
       response_format: { type: 'json_object' },
     }.merge(config).to_json
 
-    response = self.class.client.post('chat/completions', body)
+    response = with_retry { self.class.client.post('chat/completions', body) }
 
     if response.success?
       json = response.body.dig('choices', 0, 'message', 'content') || ''
@@ -29,6 +38,27 @@ class OpenaiClient
     else
       Rails.logger.error "OpenAIClient error: #{response.body}"
       ''
+    end
+  end
+
+  private
+
+  def with_retry
+    attempts = 0
+
+    begin
+      attempts += 1
+      yield
+    rescue *RETRYABLE_ERRORS => e
+      if attempts < MAX_RETRIES
+        delay = RETRY_DELAY * (2**(attempts - 1)) # exponential backoff: 2s, 4s, 8s
+        Rails.logger.warn "OpenaiClient: #{e.class} on attempt #{attempts}, retrying in #{delay}s..."
+        sleep delay
+        retry
+      else
+        Rails.logger.error "OpenaiClient: #{e.class} after #{attempts} attempts, giving up"
+        raise
+      end
     end
   end
 
