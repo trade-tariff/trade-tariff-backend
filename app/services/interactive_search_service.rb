@@ -22,7 +22,11 @@ class InteractiveSearchService
     return no_results_error if no_results?
     return final_answer if max_questions_reached?
 
-    response = OpenaiClient.call(build_context, model: configured_model)
+    response = Search::Instrumentation.api_call(
+      request_id: request_id,
+      model: configured_model,
+      attempt_number: attempt,
+    ) { OpenaiClient.call(build_context, model: configured_model) }
     parsed = ExtractBottomJson.call(response)
 
     if parsed['error'].present?
@@ -35,7 +39,12 @@ class InteractiveSearchService
       best_available_answers
     end
   rescue StandardError => e
-    Rails.logger.error("InteractiveSearchService error: #{e.message}")
+    Search::Instrumentation.search_failed(
+      request_id: request_id,
+      error_type: e.class.name,
+      error_message: e.message,
+      search_type: 'interactive',
+    )
     nil
   end
 
@@ -127,9 +136,13 @@ class InteractiveSearchService
 
   def single_result_answer
     result = opensearch_results.first
+    data = [{ commodity_code: result.goods_nomenclature_item_id, confidence: 'strong' }]
+
+    emit_answer_returned(data)
+
     Result.new(
       type: :answers,
-      data: [{ commodity_code: result.goods_nomenclature_item_id, confidence: 'strong' }],
+      data: data,
       attempt: attempt,
       model: configured_model,
       result_limit: configured_result_limit,
@@ -166,6 +179,8 @@ class InteractiveSearchService
       { commodity_code: result.goods_nomenclature_item_id, confidence: confidence }
     end
 
+    emit_answer_returned(top_results)
+
     Result.new(
       type: :answers,
       data: top_results,
@@ -200,6 +215,8 @@ class InteractiveSearchService
     sorted = normalized.sort_by { |a| CONFIDENCE_ORDER.index(a[:confidence]) || 99 }
     final_results = limit.zero? ? sorted : sorted.first(limit)
 
+    emit_answer_returned(final_results)
+
     Result.new(
       type: :answers,
       data: final_results,
@@ -224,6 +241,12 @@ class InteractiveSearchService
     questions = extract_questions(parsed)
     return best_available_answers if questions.empty?
 
+    Search::Instrumentation.question_returned(
+      request_id: request_id,
+      question_count: questions.size,
+      attempt_number: attempt,
+    )
+
     Result.new(
       type: :questions,
       data: questions.first(1),
@@ -246,5 +269,15 @@ class InteractiveSearchService
         { question: q, options: %w[Yes No] }
       end
     end
+  end
+
+  def emit_answer_returned(answers_data)
+    confidence_levels = answers_data.map { |a| a[:confidence] }.tally
+    Search::Instrumentation.answer_returned(
+      request_id: request_id,
+      answer_count: answers_data.size,
+      confidence_levels: confidence_levels,
+      attempt_number: attempt,
+    )
   end
 end
