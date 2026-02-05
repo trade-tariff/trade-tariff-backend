@@ -1,8 +1,13 @@
 module Search
   class GoodsNomenclatureQuery
     DEFAULT_SIZE = 30
+    NOUN_BOOST = 10
+    QUALIFIER_BOOST = 3
 
-    attr_reader :query_string, :date, :expanded_query, :pos_search, :size
+    NOISE_TAGS = %w[cc dt det in to prp prp$ md ex pdt wp wp$ wdt wrb].freeze
+
+    attr_reader :query_string, :date, :expanded_query, :pos_search, :size,
+                :noun_boost, :qualifier_boost
 
     class << self
       def tagger
@@ -10,12 +15,15 @@ module Search
       end
     end
 
-    def initialize(query_string, date, expanded_query: nil, pos_search: true, size: DEFAULT_SIZE)
+    def initialize(query_string, date, expanded_query: nil, pos_search: true, size: DEFAULT_SIZE,
+                   noun_boost: NOUN_BOOST, qualifier_boost: QUALIFIER_BOOST)
       @query_string = query_string
       @date = date
       @expanded_query = expanded_query
       @pos_search = pos_search
       @size = size
+      @noun_boost = noun_boost
+      @qualifier_boost = qualifier_boost
     end
 
     def query
@@ -62,21 +70,14 @@ module Search
 
     def pos_aware_clause
       tagged = tag_words(query_string)
-      nouns, modifiers = tagged.partition { |_word, tag| noun_tag?(tag) }
+      significant = tagged.reject { |_word, tag| noise_tag?(tag) }
+      significant = tagged if significant.empty?
 
-      if nouns.empty?
-        nouns = tagged
-        modifiers = []
-      end
-
-      clause = { bool: {} }
-
-      clause[:bool][:must] = nouns.map do |word, _|
-        { multi_match: { query: word, fields: search_fields, type: 'best_fields' } }
-      end
-
-      should_clauses = modifiers.map do |word, _|
-        { multi_match: { query: word, fields: search_fields, type: 'best_fields' } }
+      should_clauses = significant.map do |word, tag|
+        boost = boost_for_tag(tag)
+        clause = { query: word, fields: search_fields, type: 'best_fields' }
+        clause[:boost] = boost if boost
+        { multi_match: clause }
       end
 
       if sanitized_expanded_query.present? && sanitized_expanded_query != query_string
@@ -85,9 +86,7 @@ module Search
         }
       end
 
-      clause[:bool][:should] = should_clauses if should_clauses.any?
-
-      clause
+      { bool: { should: should_clauses } }
     end
 
     def tag_words(text)
@@ -97,8 +96,25 @@ module Search
       end
     end
 
+    def boost_for_tag(tag)
+      return noun_boost if noun_tag?(tag)
+      return qualifier_boost if qualifier_tag?(tag)
+
+      nil
+    end
+
     def noun_tag?(tag)
       tag&.start_with?('nn') # nn, nns, nnp, nnps
+    end
+
+    def qualifier_tag?(tag)
+      tag&.start_with?('jj') || # jj, jjr, jjs (adjectives)
+        tag == 'vbn' ||          # past participle (dried, chilled, frozen)
+        tag == 'vbg'             # gerund (running, cutting)
+    end
+
+    def noise_tag?(tag)
+      NOISE_TAGS.include?(tag)
     end
 
     def sanitized_expanded_query
