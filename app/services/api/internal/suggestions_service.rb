@@ -41,8 +41,7 @@ module Api
         ]
 
         CONFIGURABLE_SUGGESTION_TYPES.each do |config_name, type|
-          config = AdminConfiguration.classification.by_name(config_name)
-          types << type if config.nil? || config.enabled?
+          types << type if AdminConfiguration.enabled?(config_name)
         end
 
         types

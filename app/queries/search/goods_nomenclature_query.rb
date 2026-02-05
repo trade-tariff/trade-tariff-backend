@@ -1,9 +1,5 @@
 module Search
   class GoodsNomenclatureQuery
-    DEFAULT_SIZE = 30
-    NOUN_BOOST = 10
-    QUALIFIER_BOOST = 3
-
     NOISE_TAGS = %w[cc dt det in to prp prp$ md ex pdt wp wp$ wdt wrb].freeze
 
     attr_reader :query_string, :date, :expanded_query, :pos_search, :size,
@@ -15,8 +11,7 @@ module Search
       end
     end
 
-    def initialize(query_string, date, expanded_query: nil, pos_search: true, size: DEFAULT_SIZE,
-                   noun_boost: NOUN_BOOST, qualifier_boost: QUALIFIER_BOOST)
+    def initialize(query_string, date, size:, noun_boost:, qualifier_boost:, expanded_query: nil, pos_search: true)
       @query_string = query_string
       @date = date
       @expanded_query = expanded_query

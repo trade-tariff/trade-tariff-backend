@@ -8,6 +8,27 @@ class AdminConfiguration < Sequel::Model(Sequel[:admin_configurations].qualify(:
 
   CACHE_TTL = 150.seconds
 
+  DEFAULTS = {
+    'expand_search_enabled' => true,
+    'expand_model' => -> { TradeTariffBackend.ai_model },
+    'interactive_search_enabled' => false,
+    'label_model' => -> { TradeTariffBackend.ai_model },
+    'label_page_size' => -> { TradeTariffBackend.goods_nomenclature_label_page_size },
+    'opensearch_result_limit' => 30,
+    'pos_noun_boost' => 10,
+    'pos_qualifier_boost' => 3,
+    'pos_search_enabled' => true,
+    'search_labels_enabled' => true,
+    'search_model' => -> { TradeTariffBackend.ai_model },
+    'search_result_limit' => 5,
+    'suggest_chemical_cas' => true,
+    'suggest_chemical_cus' => true,
+    'suggest_chemical_names' => true,
+    'suggest_colloquial_terms' => true,
+    'suggest_known_brands' => true,
+    'suggest_synonyms' => true,
+  }.freeze
+
   dataset_module do
     def classification
       where(area: 'classification')
@@ -18,6 +39,34 @@ class AdminConfiguration < Sequel::Model(Sequel[:admin_configurations].qualify(:
         where(name: config_name).first
       end
     end
+  end
+
+  def self.default_for(name)
+    name = name.to_s
+    value = DEFAULTS.fetch(name)
+    value.respond_to?(:call) ? value.call : value
+  end
+
+  def self.enabled?(name)
+    config = classification.by_name(name.to_s)
+    return default_for(name) if config.nil?
+
+    config.enabled?(default: default_for(name))
+  end
+
+  def self.integer_value(name)
+    config = classification.by_name(name.to_s)
+    return default_for(name).to_i if config.nil?
+
+    config.value&.to_i || default_for(name).to_i
+  end
+
+  def self.option_value(name)
+    config = classification.by_name(name.to_s)
+    default = default_for(name)
+    return default if config.nil?
+
+    config.selected_option(default: default) || default
   end
 
   def self.schema_type_class(column)

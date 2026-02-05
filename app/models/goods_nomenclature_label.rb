@@ -42,8 +42,7 @@ class GoodsNomenclatureLabel < Sequel::Model(Sequel[:goods_nomenclature_labels].
     end
 
     def goods_nomenclature_label_total_pages
-      config = AdminConfiguration.classification.by_name('label_page_size')
-      page_size = (config&.value || TradeTariffBackend.goods_nomenclature_label_page_size).to_i
+      page_size = AdminConfiguration.integer_value('label_page_size')
       (goods_nomenclatures_dataset.count / page_size.to_f).ceil
     end
 

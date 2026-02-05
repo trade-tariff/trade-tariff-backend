@@ -3,7 +3,10 @@ RSpec.describe Search::GoodsNomenclatureQuery do
 
   let(:query_string) { 'horses' }
   let(:date) { Time.zone.today.iso8601 }
-  let(:query_options) { {} }
+  let(:default_size) { AdminConfiguration.integer_value('opensearch_result_limit') }
+  let(:default_noun_boost) { AdminConfiguration.integer_value('pos_noun_boost') }
+  let(:default_qualifier_boost) { AdminConfiguration.integer_value('pos_qualifier_boost') }
+  let(:query_options) { { size: default_size, noun_boost: default_noun_boost, qualifier_boost: default_qualifier_boost } }
 
   describe '#query' do
     subject(:query) { query_instance.query }
@@ -17,7 +20,7 @@ RSpec.describe Search::GoodsNomenclatureQuery do
     end
 
     it 'limits results to DEFAULT_SIZE' do
-      expect(query.dig(:body, :size)).to eq(described_class::DEFAULT_SIZE)
+      expect(query.dig(:body, :size)).to eq(default_size)
     end
 
     context 'with single-word query' do
@@ -50,7 +53,7 @@ RSpec.describe Search::GoodsNomenclatureQuery do
 
     context 'with single-word query and expanded_query provided' do
       let(:query_string) { 'horses' }
-      let(:query_options) { { expanded_query: 'horses OR horse OR equine OR ponies' } }
+      let(:query_options) { { expanded_query: 'horses OR horse OR equine OR ponies', size: default_size, noun_boost: default_noun_boost, qualifier_boost: default_qualifier_boost } }
 
       describe 'multi_match clause' do
         subject(:multi_match) do
@@ -92,11 +95,11 @@ RSpec.describe Search::GoodsNomenclatureQuery do
       let(:query_string) { 'live horses' }
 
       it 'boosts the noun with NOUN_BOOST' do
-        expect(boost_for('horses')).to eq(described_class::NOUN_BOOST)
+        expect(boost_for('horses')).to eq(default_noun_boost)
       end
 
       it 'boosts the adjective with QUALIFIER_BOOST' do
-        expect(boost_for('live')).to eq(described_class::QUALIFIER_BOOST)
+        expect(boost_for('live')).to eq(default_qualifier_boost)
       end
 
       it 'includes both terms' do
@@ -113,8 +116,8 @@ RSpec.describe Search::GoodsNomenclatureQuery do
       let(:query_string) { 'steel pipe' }
 
       it 'boosts both nouns with NOUN_BOOST' do
-        expect(boost_for('steel')).to eq(described_class::NOUN_BOOST)
-        expect(boost_for('pipe')).to eq(described_class::NOUN_BOOST)
+        expect(boost_for('steel')).to eq(default_noun_boost)
+        expect(boost_for('pipe')).to eq(default_noun_boost)
       end
 
       it 'includes both terms' do
@@ -127,11 +130,11 @@ RSpec.describe Search::GoodsNomenclatureQuery do
       let(:query_string) { 'dried fruit' }
 
       it 'boosts the noun with NOUN_BOOST' do
-        expect(boost_for('fruit')).to eq(described_class::NOUN_BOOST)
+        expect(boost_for('fruit')).to eq(default_noun_boost)
       end
 
       it 'boosts the past participle (VBN) with QUALIFIER_BOOST' do
-        expect(boost_for('dried')).to eq(described_class::QUALIFIER_BOOST)
+        expect(boost_for('dried')).to eq(default_qualifier_boost)
       end
     end
 
@@ -140,11 +143,11 @@ RSpec.describe Search::GoodsNomenclatureQuery do
       let(:query_string) { 'running shoes' }
 
       it 'boosts the noun with NOUN_BOOST' do
-        expect(boost_for('shoes')).to eq(described_class::NOUN_BOOST)
+        expect(boost_for('shoes')).to eq(default_noun_boost)
       end
 
       it 'boosts the gerund (VBG) with QUALIFIER_BOOST' do
-        expect(boost_for('running')).to eq(described_class::QUALIFIER_BOOST)
+        expect(boost_for('running')).to eq(default_qualifier_boost)
       end
     end
 
@@ -153,11 +156,11 @@ RSpec.describe Search::GoodsNomenclatureQuery do
       let(:query_string) { 'cutting tools' }
 
       it 'boosts the noun with NOUN_BOOST' do
-        expect(boost_for('tools')).to eq(described_class::NOUN_BOOST)
+        expect(boost_for('tools')).to eq(default_noun_boost)
       end
 
       it 'boosts the gerund (VBG) with QUALIFIER_BOOST' do
-        expect(boost_for('cutting')).to eq(described_class::QUALIFIER_BOOST)
+        expect(boost_for('cutting')).to eq(default_qualifier_boost)
       end
     end
 
@@ -166,12 +169,12 @@ RSpec.describe Search::GoodsNomenclatureQuery do
       let(:query_string) { 'organic cotton fabric' }
 
       it 'boosts nouns with NOUN_BOOST' do
-        expect(boost_for('cotton')).to eq(described_class::NOUN_BOOST)
-        expect(boost_for('fabric')).to eq(described_class::NOUN_BOOST)
+        expect(boost_for('cotton')).to eq(default_noun_boost)
+        expect(boost_for('fabric')).to eq(default_noun_boost)
       end
 
       it 'boosts the adjective with QUALIFIER_BOOST' do
-        expect(boost_for('organic')).to eq(described_class::QUALIFIER_BOOST)
+        expect(boost_for('organic')).to eq(default_qualifier_boost)
       end
     end
 
@@ -184,12 +187,12 @@ RSpec.describe Search::GoodsNomenclatureQuery do
       end
 
       it 'boosts the noun with NOUN_BOOST' do
-        expect(boost_for('beef')).to eq(described_class::NOUN_BOOST)
+        expect(boost_for('beef')).to eq(default_noun_boost)
       end
 
       it 'boosts qualifiers with QUALIFIER_BOOST' do
-        expect(boost_for('fresh')).to eq(described_class::QUALIFIER_BOOST)
-        expect(boost_for('chilled')).to eq(described_class::QUALIFIER_BOOST)
+        expect(boost_for('fresh')).to eq(default_qualifier_boost)
+        expect(boost_for('chilled')).to eq(default_qualifier_boost)
       end
 
       it 'includes only significant terms' do
@@ -206,8 +209,8 @@ RSpec.describe Search::GoodsNomenclatureQuery do
       end
 
       it 'boosts nouns with NOUN_BOOST' do
-        expect(boost_for('engine')).to eq(described_class::NOUN_BOOST)
-        expect(boost_for('parts')).to eq(described_class::NOUN_BOOST)
+        expect(boost_for('engine')).to eq(default_noun_boost)
+        expect(boost_for('parts')).to eq(default_noun_boost)
       end
 
       it 'includes only significant terms' do
@@ -220,12 +223,12 @@ RSpec.describe Search::GoodsNomenclatureQuery do
       let(:query_string) { 'stainless steel bolts' }
 
       it 'boosts nouns with NOUN_BOOST' do
-        expect(boost_for('steel')).to eq(described_class::NOUN_BOOST)
-        expect(boost_for('bolts')).to eq(described_class::NOUN_BOOST)
+        expect(boost_for('steel')).to eq(default_noun_boost)
+        expect(boost_for('bolts')).to eq(default_noun_boost)
       end
 
       it 'boosts the adjective with QUALIFIER_BOOST' do
-        expect(boost_for('stainless')).to eq(described_class::QUALIFIER_BOOST)
+        expect(boost_for('stainless')).to eq(default_qualifier_boost)
       end
     end
 
@@ -234,12 +237,12 @@ RSpec.describe Search::GoodsNomenclatureQuery do
       let(:query_string) { 'frozen chicken breast' }
 
       it 'boosts nouns with NOUN_BOOST' do
-        expect(boost_for('chicken')).to eq(described_class::NOUN_BOOST)
-        expect(boost_for('breast')).to eq(described_class::NOUN_BOOST)
+        expect(boost_for('chicken')).to eq(default_noun_boost)
+        expect(boost_for('breast')).to eq(default_noun_boost)
       end
 
       it 'boosts the adjective with QUALIFIER_BOOST' do
-        expect(boost_for('frozen')).to eq(described_class::QUALIFIER_BOOST)
+        expect(boost_for('frozen')).to eq(default_qualifier_boost)
       end
     end
 
@@ -252,8 +255,8 @@ RSpec.describe Search::GoodsNomenclatureQuery do
       end
 
       it 'boosts both nouns with NOUN_BOOST' do
-        expect(boost_for('parts')).to eq(described_class::NOUN_BOOST)
-        expect(boost_for('engines')).to eq(described_class::NOUN_BOOST)
+        expect(boost_for('parts')).to eq(default_noun_boost)
+        expect(boost_for('engines')).to eq(default_noun_boost)
       end
 
       it 'includes only significant terms' do
@@ -270,8 +273,8 @@ RSpec.describe Search::GoodsNomenclatureQuery do
       end
 
       it 'boosts both nouns with NOUN_BOOST' do
-        expect(boost_for('oil')).to eq(described_class::NOUN_BOOST)
-        expect(boost_for('engines')).to eq(described_class::NOUN_BOOST)
+        expect(boost_for('oil')).to eq(default_noun_boost)
+        expect(boost_for('engines')).to eq(default_noun_boost)
       end
     end
 
@@ -284,9 +287,9 @@ RSpec.describe Search::GoodsNomenclatureQuery do
       end
 
       it 'boosts all nouns with NOUN_BOOST' do
-        expect(boost_for('iron')).to eq(described_class::NOUN_BOOST)
-        expect(boost_for('steel')).to eq(described_class::NOUN_BOOST)
-        expect(boost_for('bars')).to eq(described_class::NOUN_BOOST)
+        expect(boost_for('iron')).to eq(default_noun_boost)
+        expect(boost_for('steel')).to eq(default_noun_boost)
+        expect(boost_for('bars')).to eq(default_noun_boost)
       end
 
       it 'includes only significant terms' do
@@ -299,11 +302,11 @@ RSpec.describe Search::GoodsNomenclatureQuery do
       let(:query_string) { 'stainless-steel bolts' }
 
       it 'treats the hyphenated compound as a single qualifier' do
-        expect(boost_for('stainless-steel')).to eq(described_class::QUALIFIER_BOOST)
+        expect(boost_for('stainless-steel')).to eq(default_qualifier_boost)
       end
 
       it 'boosts the noun with NOUN_BOOST' do
-        expect(boost_for('bolts')).to eq(described_class::NOUN_BOOST)
+        expect(boost_for('bolts')).to eq(default_noun_boost)
       end
     end
 
@@ -312,11 +315,11 @@ RSpec.describe Search::GoodsNomenclatureQuery do
       let(:query_string) { 'non-alcoholic beer' }
 
       it 'treats the hyphenated compound as a single qualifier' do
-        expect(boost_for('non-alcoholic')).to eq(described_class::QUALIFIER_BOOST)
+        expect(boost_for('non-alcoholic')).to eq(default_qualifier_boost)
       end
 
       it 'boosts the noun with NOUN_BOOST' do
-        expect(boost_for('beer')).to eq(described_class::NOUN_BOOST)
+        expect(boost_for('beer')).to eq(default_noun_boost)
       end
     end
 
@@ -325,11 +328,11 @@ RSpec.describe Search::GoodsNomenclatureQuery do
       let(:query_string) { 'HDPE containers' }
 
       it 'boosts the acronym as a noun with NOUN_BOOST' do
-        expect(boost_for('HDPE')).to eq(described_class::NOUN_BOOST)
+        expect(boost_for('HDPE')).to eq(default_noun_boost)
       end
 
       it 'boosts the noun with NOUN_BOOST' do
-        expect(boost_for('containers')).to eq(described_class::NOUN_BOOST)
+        expect(boost_for('containers')).to eq(default_noun_boost)
       end
     end
 
@@ -338,11 +341,11 @@ RSpec.describe Search::GoodsNomenclatureQuery do
       let(:query_string) { '10mm bolts' }
 
       it 'treats the joined number-unit as a noun' do
-        expect(boost_for('10mm')).to eq(described_class::NOUN_BOOST)
+        expect(boost_for('10mm')).to eq(default_noun_boost)
       end
 
       it 'boosts the noun with NOUN_BOOST' do
-        expect(boost_for('bolts')).to eq(described_class::NOUN_BOOST)
+        expect(boost_for('bolts')).to eq(default_noun_boost)
       end
     end
 
@@ -359,11 +362,11 @@ RSpec.describe Search::GoodsNomenclatureQuery do
       end
 
       it 'boosts the unit as a noun' do
-        expect(boost_for('mm')).to eq(described_class::NOUN_BOOST)
+        expect(boost_for('mm')).to eq(default_noun_boost)
       end
 
       it 'boosts the noun with NOUN_BOOST' do
-        expect(boost_for('bolts')).to eq(described_class::NOUN_BOOST)
+        expect(boost_for('bolts')).to eq(default_noun_boost)
       end
     end
 
@@ -372,8 +375,8 @@ RSpec.describe Search::GoodsNomenclatureQuery do
       let(:query_string) { 'car seat covers' }
 
       it 'boosts recognised nouns with NOUN_BOOST' do
-        expect(boost_for('car')).to eq(described_class::NOUN_BOOST)
-        expect(boost_for('seat')).to eq(described_class::NOUN_BOOST)
+        expect(boost_for('car')).to eq(default_noun_boost)
+        expect(boost_for('seat')).to eq(default_noun_boost)
       end
 
       it 'assigns no boost to the mistagged verb' do
@@ -388,14 +391,14 @@ RSpec.describe Search::GoodsNomenclatureQuery do
     context 'with expanded_query provided (live horses + synonyms)' do
       include_context 'with POS bool clause'
       let(:query_string) { 'live horses' }
-      let(:query_options) { { expanded_query: 'horses OR horse OR equine OR ponies' } }
+      let(:query_options) { { expanded_query: 'horses OR horse OR equine OR ponies', size: default_size, noun_boost: default_noun_boost, qualifier_boost: default_qualifier_boost } }
 
       it 'boosts the noun from the original query' do
-        expect(boost_for('horses')).to eq(described_class::NOUN_BOOST)
+        expect(boost_for('horses')).to eq(default_noun_boost)
       end
 
       it 'boosts the adjective from the original query' do
-        expect(boost_for('live')).to eq(described_class::QUALIFIER_BOOST)
+        expect(boost_for('live')).to eq(default_qualifier_boost)
       end
 
       it 'includes the sanitized expanded query without boost' do
@@ -414,7 +417,7 @@ RSpec.describe Search::GoodsNomenclatureQuery do
 
     context 'with pos_search disabled' do
       let(:query_string) { 'live horses' }
-      let(:query_options) { { pos_search: false, expanded_query: 'horses OR horse OR equine' } }
+      let(:query_options) { { pos_search: false, expanded_query: 'horses OR horse OR equine', size: default_size, noun_boost: default_noun_boost, qualifier_boost: default_qualifier_boost } }
 
       describe 'multi_match clause' do
         subject(:multi_match) do
@@ -433,7 +436,7 @@ RSpec.describe Search::GoodsNomenclatureQuery do
     end
 
     context 'with custom size' do
-      let(:query_options) { { size: 50 } }
+      let(:query_options) { { size: 50, noun_boost: default_noun_boost, qualifier_boost: default_qualifier_boost } }
 
       it 'uses the custom size' do
         expect(query.dig(:body, :size)).to eq(50)
@@ -443,7 +446,7 @@ RSpec.describe Search::GoodsNomenclatureQuery do
     context 'with custom boost values' do
       include_context 'with POS bool clause'
       let(:query_string) { 'live horses' }
-      let(:query_options) { { noun_boost: 20, qualifier_boost: 5 } }
+      let(:query_options) { { size: default_size, noun_boost: 20, qualifier_boost: 5 } }
 
       it 'uses the custom noun boost' do
         expect(boost_for('horses')).to eq(20)

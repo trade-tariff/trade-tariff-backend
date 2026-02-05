@@ -53,8 +53,7 @@ class LabelService
   attr_reader :batch, :page_number
 
   def configured_model
-    config = AdminConfiguration.classification.by_name('label_model')
-    config&.selected_option(default: TradeTariffBackend.ai_model) || TradeTariffBackend.ai_model
+    AdminConfiguration.option_value('label_model')
   end
 
   def configured_context
