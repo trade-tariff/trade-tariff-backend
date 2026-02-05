@@ -9,7 +9,7 @@ class WatchListInvitationEmailWorker
 
     return if user&.email.blank?
 
-    client.send_email(user.email, TEMPLATE_ID, nil, REPLY_TO_ID, nil)
+    client.send_email(user.email, TEMPLATE_ID, {}, REPLY_TO_ID, nil)
   end
 
   def client
