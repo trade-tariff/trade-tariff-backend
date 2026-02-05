@@ -2,7 +2,7 @@ require 'notifications/client'
 
 class EnquiryForm::SendSubmissionEmailWorker
   CACHE_KEY_PREFIX = 'enquiry_form'.freeze
-  TEMPLATE_ID = '104e74e3-8f43-4642-a594-4d4ef931b121'.freeze
+  TEMPLATE_ID = NOTIFY_CONFIGURATION.dig(:templates, :enquiry_form, :submission)
 
   def self.cache_key(reference)
     "#{CACHE_KEY_PREFIX}_#{reference}"
