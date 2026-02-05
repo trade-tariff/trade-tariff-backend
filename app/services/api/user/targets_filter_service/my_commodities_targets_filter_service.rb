@@ -2,16 +2,13 @@ module Api
   module User
     module TargetsFilterService
       class MyCommoditiesTargetsFilterService
-        attr_reader :subscription, :filter_type, :current_page, :per_page
+        attr_reader :subscription
 
-        def initialize(subscription, filter_type, current_page, per_page)
+        def initialize(subscription)
           @subscription = subscription
-          @filter_type = filter_type
-          @current_page = current_page
-          @per_page = per_page
         end
 
-        def call
+        def call(filter_type, current_page, per_page)
           return [subscription.subscription_targets.map, subscription.subscription_targets.size] if filter_type.blank?
 
           TimeMachine.now do

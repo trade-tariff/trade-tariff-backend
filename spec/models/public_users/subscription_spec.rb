@@ -238,4 +238,31 @@ RSpec.describe PublicUsers::Subscription do
       end
     end
   end
+
+  describe '#filter' do
+    context 'when the subscription type is my_commodities' do
+      let(:subscription) { create(:user_subscription, subscription_type_id: Subscriptions::Type.my_commodities.id) }
+      let(:filter_service) { instance_double(Api::User::TargetsFilterService::MyCommoditiesTargetsFilterService) }
+
+      before do
+        allow(Api::User::TargetsFilterService::MyCommoditiesTargetsFilterService)
+          .to receive(:new)
+          .with(subscription)
+          .and_return(filter_service)
+      end
+
+      it 'returns the my commodities filter service' do
+        expect(subscription.filter).to eq(filter_service)
+      end
+    end
+
+    context 'when the subscription type is unsupported' do
+      let(:subscription) { create(:user_subscription, subscription_type_id: Subscriptions::Type.stop_press.id) }
+
+      it 'raises an unsupported filter service error' do
+        expect { subscription.filter }
+          .to raise_error(PublicUsers::UnsupportedFilterServiceError, /Unsupported subscription type for targets filtering/)
+      end
+    end
+  end
 end

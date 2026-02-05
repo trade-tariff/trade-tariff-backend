@@ -15,9 +15,9 @@ RSpec.describe Api::User::SubscriptionTargetsController do
       let(:service_instance) { instance_double(Api::User::TargetsFilterService::MyCommoditiesTargetsFilterService) }
 
       before do
-        allow(Api::User::TargetsFilterService::MyCommoditiesTargetsFilterService)
-          .to receive(:new)
-          .with(subscription, nil, 1, 10)
+        allow(subscription.filter)
+          .to receive(:call)
+          .with(nil, 1, 10)
           .and_return(service_instance)
 
         allow(service_instance)
