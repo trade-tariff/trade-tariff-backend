@@ -40,6 +40,29 @@ RSpec.describe Search::Instrumentation do
       )
     end
 
+    it 'emits search_failed and re-raises on error' do
+      allow(ActiveSupport::Notifications).to receive(:instrument)
+
+      expect {
+        described_class.search(request_id: 'req-1', query: 'horses', search_type: 'classic') do
+          raise Faraday::TimeoutError
+        end
+      }.to raise_error(Faraday::TimeoutError)
+
+      expect(ActiveSupport::Notifications).to have_received(:instrument).with(
+        'search_started.search',
+        hash_including(request_id: 'req-1'),
+      )
+      expect(ActiveSupport::Notifications).to have_received(:instrument).with(
+        'search_failed.search',
+        hash_including(
+          request_id: 'req-1',
+          error_type: 'Faraday::TimeoutError',
+          search_type: 'classic',
+        ),
+      )
+    end
+
     it 'passes completion payload through to search_completed' do
       allow(ActiveSupport::Notifications).to receive(:instrument)
 

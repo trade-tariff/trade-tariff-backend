@@ -19,7 +19,10 @@ module Api
 
         ::Search::Instrumentation.search(request_id:, query: q, search_type: 'interactive') do
           exact = find_exact_match
-          next [GoodsNomenclatureSearchSerializer.serialize([exact]), { result_count: 1 }] if exact
+          if exact
+            next [GoodsNomenclatureSearchSerializer.serialize([exact]),
+                  { result_count: 1, results_type: 'exact_match' }]
+          end
 
           @expanded_query = expand_query(q)
 
@@ -42,12 +45,16 @@ module Api
 
           interactive_result = run_interactive_search(goods_nomenclatures)
 
+          max_score = hits.map { |hit| hit['_score'] }.compact.max
+
           response = build_response(goods_nomenclatures, interactive_result)
           completion = {
             result_count: response[:data]&.size || 0,
             total_attempts: interactive_result&.attempt,
             total_questions: answers.size,
             final_result_type: interactive_result&.type&.to_s,
+            results_type: 'opensearch',
+            max_score: max_score,
           }
 
           [response, completion]

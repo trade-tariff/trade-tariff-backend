@@ -22,6 +22,9 @@ module Search
       search_completed(request_id:, search_type:, total_duration_ms: duration_ms, **(completion_payload || {}))
 
       result
+    rescue StandardError => e
+      search_failed(request_id:, error_type: e.class.name, error_message: e.message, search_type:)
+      raise
     end
 
     def query_expanded(request_id:, original_query:)
