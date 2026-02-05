@@ -1,4 +1,6 @@
 module PublicUsers
+  class UnsupportedBatcherServiceError < StandardError; end
+
   class Subscription < Sequel::Model(Sequel[:user_subscriptions].qualify(:public))
     plugin :auto_validations
     plugin :timestamps, update_on_create: true
@@ -52,6 +54,14 @@ module PublicUsers
           }
         end
         target_dataset.multi_insert(rows)
+      end
+    end
+
+    def batcher
+      if subscription_type == Subscriptions::Type.my_commodities
+        @batcher ||= Api::User::BatcherService::MyCommoditiesBatcherService
+      else
+        raise UnsupportedBatcherServiceError, "Unsupported subscription type for batching: #{subscription_type.name}"
       end
     end
   end

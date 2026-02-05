@@ -219,4 +219,23 @@ RSpec.describe PublicUsers::Subscription do
       end
     end
   end
+
+  describe '#batcher' do
+    context 'when the subscription type is my_commodities' do
+      let(:subscription) { create(:user_subscription, subscription_type_id: Subscriptions::Type.my_commodities.id) }
+
+      it 'returns the my commodities batcher service' do
+        expect(subscription.batcher).to eq(Api::User::BatcherService::MyCommoditiesBatcherService)
+      end
+    end
+
+    context 'when the subscription type is unsupported' do
+      let(:subscription) { create(:user_subscription, subscription_type_id: Subscriptions::Type.stop_press.id) }
+
+      it 'raises an unsupported batcher service error' do
+        expect { subscription.batcher }
+          .to raise_error(PublicUsers::UnsupportedBatcherServiceError, /Unsupported subscription type for batching/)
+      end
+    end
+  end
 end

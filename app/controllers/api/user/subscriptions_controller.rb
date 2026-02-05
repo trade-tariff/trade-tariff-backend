@@ -16,10 +16,10 @@ module Api
       end
 
       def create_batch
-        batcher.new.call(subscription_params[:targets], current_user)
+        @subscription.batcher.call(subscription_params[:targets], current_user)
         @subscription.refresh
         render json: serialize, status: :ok
-      rescue ArgumentError => e
+      rescue PublicUsers::UnsupportedBatcherServiceError, ArgumentError => e
         render json: serialize_errors({ error: e.message }), status: :bad_request
       end
 
@@ -55,13 +55,6 @@ module Api
 
       def serialize_errors(errors)
         Api::User::ErrorSerializationService.new.serialized_errors(errors)
-      end
-
-      def batcher
-        subscription_type_name = @subscription.subscription_type.name
-        "Api::User::BatcherService::#{subscription_type_name.camelize}BatcherService".constantize
-      rescue NameError
-        raise ArgumentError, "Unsupported subscription type for batching: #{subscription_type_name}"
       end
     end
   end

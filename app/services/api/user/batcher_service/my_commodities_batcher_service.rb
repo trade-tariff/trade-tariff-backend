@@ -2,7 +2,7 @@ module Api
   module User
     module BatcherService
       class MyCommoditiesBatcherService
-        def call(targets, user)
+        def self.call(targets, user)
           raise ArgumentError, 'my commodities subscription must be present' unless user.my_commodities_subscription
 
           user_subscription = user.subscriptions_dataset.with_subscription_type(Subscriptions::Type.my_commodities).first
