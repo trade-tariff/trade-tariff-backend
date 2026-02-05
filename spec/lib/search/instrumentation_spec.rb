@@ -14,6 +14,49 @@ RSpec.describe Search::Instrumentation do
     end
   end
 
+  describe '.search' do
+    it 'fires search_started and search_completed around the block' do
+      allow(ActiveSupport::Notifications).to receive(:instrument)
+
+      result = described_class.search(request_id: 'req-1', query: 'horses', search_type: 'interactive') do
+        ['the result', { result_count: 5 }]
+      end
+
+      expect(result).to eq('the result')
+      expect(ActiveSupport::Notifications).to have_received(:instrument).with(
+        'search_started.search',
+        request_id: 'req-1',
+        query: 'horses',
+        search_type: 'interactive',
+      )
+      expect(ActiveSupport::Notifications).to have_received(:instrument).with(
+        'search_completed.search',
+        hash_including(
+          request_id: 'req-1',
+          search_type: 'interactive',
+          result_count: 5,
+          total_duration_ms: a_kind_of(Float),
+        ),
+      )
+    end
+
+    it 'passes completion payload through to search_completed' do
+      allow(ActiveSupport::Notifications).to receive(:instrument)
+
+      described_class.search(request_id: 'req-1', query: 'q', search_type: 'classic') do
+        ['result', { result_count: 3, results_type: :fuzzy_search, max_score: 12.5 }]
+      end
+
+      expect(ActiveSupport::Notifications).to have_received(:instrument).with(
+        'search_completed.search',
+        hash_including(
+          results_type: :fuzzy_search,
+          max_score: 12.5,
+        ),
+      )
+    end
+  end
+
   describe '.query_expanded' do
     it 'instruments the query_expanded event with timing' do
       allow(ActiveSupport::Notifications).to receive(:instrument)

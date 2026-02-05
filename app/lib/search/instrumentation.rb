@@ -12,6 +12,18 @@ module Search
       instrument('search_started', request_id:, query:, search_type:)
     end
 
+    def search(request_id:, query:, search_type:)
+      search_started(request_id:, query:, search_type:)
+      start_time = Process.clock_gettime(Process::CLOCK_MONOTONIC)
+
+      result, completion_payload = yield
+
+      duration_ms = ((Process.clock_gettime(Process::CLOCK_MONOTONIC) - start_time) * 1000).round(2)
+      search_completed(request_id:, search_type:, total_duration_ms: duration_ms, **(completion_payload || {}))
+
+      result
+    end
+
     def query_expanded(request_id:, original_query:)
       start_time = Process.clock_gettime(Process::CLOCK_MONOTONIC)
       result = yield

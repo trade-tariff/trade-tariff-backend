@@ -8,19 +8,11 @@ module Api
 
       def search
         request_id = params[:request_id] || SecureRandom.uuid
-        search_start_time = Process.clock_gettime(Process::CLOCK_MONOTONIC)
 
-        ::Search::Instrumentation.search_started(request_id:, query: params[:q], search_type: 'classic')
-
-        results = SearchService.new(Api::V2::SearchSerializationService.new, params).to_json
-
-        duration = Process.clock_gettime(Process::CLOCK_MONOTONIC) - search_start_time
-        ::Search::Instrumentation.search_completed(
-          request_id:,
-          search_type: 'classic',
-          total_duration_ms: (duration * 1000).round(2),
-          **classic_result_metrics(results),
-        )
+        results = ::Search::Instrumentation.search(request_id:, query: params[:q], search_type: 'classic') do
+          res = SearchService.new(Api::V2::SearchSerializationService.new, params).to_json
+          [res, classic_result_metrics(res)]
+        end
 
         render json: results
       end

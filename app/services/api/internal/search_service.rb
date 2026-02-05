@@ -17,39 +17,41 @@ module Api
           return { data: [] }
         end
 
-        @search_start_time = Process.clock_gettime(Process::CLOCK_MONOTONIC)
-        ::Search::Instrumentation.search_started(request_id:, query: q, search_type: 'interactive')
+        ::Search::Instrumentation.search(request_id:, query: q, search_type: 'interactive') do
+          exact = find_exact_match
+          next [GoodsNomenclatureSearchSerializer.serialize([exact]), { result_count: 1 }] if exact
 
-        exact = find_exact_match
-        if exact
-          emit_search_completed(1, nil)
-          return GoodsNomenclatureSearchSerializer.serialize([exact])
+          @expanded_query = expand_query(q)
+
+          results = search_with_configured_labels do
+            TradeTariffBackend.search_client.search(
+              ::Search::GoodsNomenclatureQuery.new(
+                q,
+                as_of,
+                expanded_query: @expanded_query,
+                pos_search: pos_search_enabled?,
+                size: opensearch_result_limit,
+                noun_boost: pos_noun_boost,
+                qualifier_boost: pos_qualifier_boost,
+              ).query,
+            )
+          end
+
+          hits = results.dig('hits', 'hits') || []
+          goods_nomenclatures = hits.map { |hit| build_result_from_hit(hit) }
+
+          interactive_result = run_interactive_search(goods_nomenclatures)
+
+          response = build_response(goods_nomenclatures, interactive_result)
+          completion = {
+            result_count: response[:data]&.size || 0,
+            total_attempts: interactive_result&.attempt,
+            total_questions: answers.size,
+            final_result_type: interactive_result&.type&.to_s,
+          }
+
+          [response, completion]
         end
-
-        @expanded_query = expand_query(q)
-
-        results = search_with_configured_labels do
-          TradeTariffBackend.search_client.search(
-            ::Search::GoodsNomenclatureQuery.new(
-              q,
-              as_of,
-              expanded_query: @expanded_query,
-              pos_search: pos_search_enabled?,
-              size: opensearch_result_limit,
-              noun_boost: pos_noun_boost,
-              qualifier_boost: pos_qualifier_boost,
-            ).query,
-          )
-        end
-
-        hits = results.dig('hits', 'hits') || []
-        goods_nomenclatures = hits.map { |hit| build_result_from_hit(hit) }
-
-        interactive_result = run_interactive_search(goods_nomenclatures)
-
-        response = build_response(goods_nomenclatures, interactive_result)
-        emit_search_completed(response[:data]&.size || 0, interactive_result)
-        response
       end
 
       private
@@ -307,20 +309,6 @@ module Api
         end
 
         answered
-      end
-
-      def emit_search_completed(result_count, interactive_result)
-        duration = Process.clock_gettime(Process::CLOCK_MONOTONIC) - @search_start_time
-
-        ::Search::Instrumentation.search_completed(
-          request_id:,
-          search_type: 'interactive',
-          total_attempts: interactive_result&.attempt,
-          total_questions: answers.size,
-          final_result_type: interactive_result&.type&.to_s,
-          total_duration_ms: (duration * 1000).round(2),
-          result_count:,
-        )
       end
     end
   end
