@@ -141,7 +141,17 @@ RSpec.describe TariffChanges::GroupedMeasureCommodityChange do
       it 'returns nil when no declarable commodity exists' do
         change = described_class.from_id('import_GB_FR-DE_1234567890')
 
-        expect(change.commodity).to be_nil
+        expect(change).to be_nil
+      end
+    end
+  end
+
+  describe '.from_id' do
+    context 'when no declarable commodity exists' do
+      it 'returns nil' do
+        change = described_class.from_id('import_GB_FR-DE_1234567890')
+
+        expect(change).to be_nil
       end
     end
   end

@@ -16,7 +16,12 @@ module TariffChanges
         goods_nomenclature_item_id: parts[2],
       )
       change.set_commodity
-      change
+
+      if change.commodity.nil? || change.grouped_measure_change.nil?
+        nil
+      else
+        change
+      end
     end
 
     def commodity_id

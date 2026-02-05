@@ -2,12 +2,16 @@ module Api
   module User
     class GroupedMeasureCommodityChangesController < UserController
       def show
-        render json: Api::User::GroupedMeasureCommodityChangeSerializer.new(tariff_changes, serializer_options).serializable_hash
+        if grouped_measure_commodity_change.nil?
+          render json: { error: 'No changes found' }, status: :not_found and return
+        end
+
+        render json: Api::User::GroupedMeasureCommodityChangeSerializer.new(grouped_measure_commodity_change, serializer_options).serializable_hash
       end
 
       private
 
-      def tariff_changes
+      def grouped_measure_commodity_change
         TariffChanges::GroupedMeasureCommodityChange.from_id(id)
       end
 
