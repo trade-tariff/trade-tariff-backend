@@ -47,7 +47,12 @@ class ExpandSearchQueryService
       unchanged_result
     end
   rescue StandardError => e
-    Rails.logger.error("ExpandSearchQueryService error: #{e.message}")
+    Search::Instrumentation.search_failed(
+      request_id: nil,
+      error_type: e.class.name,
+      error_message: e.message,
+      search_type: 'expand_query',
+    )
     unchanged_result
   end
 

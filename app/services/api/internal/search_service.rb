@@ -17,8 +17,14 @@ module Api
           return { data: [] }
         end
 
+        @search_start_time = Process.clock_gettime(Process::CLOCK_MONOTONIC)
+        ::Search::Instrumentation.search_started(request_id:, query: q, search_type: 'interactive')
+
         exact = find_exact_match
-        return GoodsNomenclatureSearchSerializer.serialize([exact]) if exact
+        if exact
+          emit_search_completed(1, nil)
+          return GoodsNomenclatureSearchSerializer.serialize([exact])
+        end
 
         @expanded_query = expand_query(q)
 
@@ -41,7 +47,9 @@ module Api
 
         interactive_result = run_interactive_search(goods_nomenclatures)
 
-        build_response(goods_nomenclatures, interactive_result)
+        response = build_response(goods_nomenclatures, interactive_result)
+        emit_search_completed(response[:data]&.size || 0, interactive_result)
+        response
       end
 
       private
@@ -49,7 +57,12 @@ module Api
       def expand_query(query)
         return query unless expand_search_enabled?
 
-        ExpandSearchQueryService.call(query).expanded_query
+        result = ::Search::Instrumentation.query_expanded(
+          request_id:,
+          original_query: query,
+        ) { ExpandSearchQueryService.call(query) }
+
+        result.expanded_query
       end
 
       def expand_search_enabled?
@@ -294,6 +307,20 @@ module Api
         end
 
         answered
+      end
+
+      def emit_search_completed(result_count, interactive_result)
+        duration = Process.clock_gettime(Process::CLOCK_MONOTONIC) - @search_start_time
+
+        ::Search::Instrumentation.search_completed(
+          request_id:,
+          search_type: 'interactive',
+          total_attempts: interactive_result&.attempt,
+          total_questions: answers.size,
+          final_result_type: interactive_result&.type&.to_s,
+          total_duration_ms: (duration * 1000).round(2),
+          result_count:,
+        )
       end
     end
   end
