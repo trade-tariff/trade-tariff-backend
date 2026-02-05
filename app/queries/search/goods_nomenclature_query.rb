@@ -4,7 +4,7 @@ module Search
     NOUN_BOOST = 10
     QUALIFIER_BOOST = 3
 
-    NOISE_TAGS = %w[cc dt in to prp prp$ md ex pdt wp wp$ wdt wrb].freeze
+    NOISE_TAGS = %w[cc dt det in to prp prp$ md ex pdt wp wp$ wdt wrb].freeze
 
     attr_reader :query_string, :date, :expanded_query, :pos_search, :size,
                 :noun_boost, :qualifier_boost

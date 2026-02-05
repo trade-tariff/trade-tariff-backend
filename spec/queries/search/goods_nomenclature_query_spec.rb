@@ -197,6 +197,24 @@ RSpec.describe Search::GoodsNomenclatureQuery do
       end
     end
 
+    context 'with determiner noise word (the engine parts)' do
+      include_context 'with POS bool clause'
+      let(:query_string) { 'the engine parts' }
+
+      it 'excludes the determiner "the"' do
+        expect(all_queries).not_to include('the')
+      end
+
+      it 'boosts nouns with NOUN_BOOST' do
+        expect(boost_for('engine')).to eq(described_class::NOUN_BOOST)
+        expect(boost_for('parts')).to eq(described_class::NOUN_BOOST)
+      end
+
+      it 'includes only significant terms' do
+        expect(all_queries).to contain_exactly('engine', 'parts')
+      end
+    end
+
     context 'with adjective + adjective + noun query (stainless steel bolts)' do
       include_context 'with POS bool clause'
       let(:query_string) { 'stainless steel bolts' }
@@ -222,6 +240,148 @@ RSpec.describe Search::GoodsNomenclatureQuery do
 
       it 'boosts the adjective with QUALIFIER_BOOST' do
         expect(boost_for('frozen')).to eq(described_class::QUALIFIER_BOOST)
+      end
+    end
+
+    context 'with preposition noise word (parts of engines)' do
+      include_context 'with POS bool clause'
+      let(:query_string) { 'parts of engines' }
+
+      it 'excludes the preposition "of"' do
+        expect(all_queries).not_to include('of')
+      end
+
+      it 'boosts both nouns with NOUN_BOOST' do
+        expect(boost_for('parts')).to eq(described_class::NOUN_BOOST)
+        expect(boost_for('engines')).to eq(described_class::NOUN_BOOST)
+      end
+
+      it 'includes only significant terms' do
+        expect(all_queries).to contain_exactly('parts', 'engines')
+      end
+    end
+
+    context 'with preposition noise word (oil for engines)' do
+      include_context 'with POS bool clause'
+      let(:query_string) { 'oil for engines' }
+
+      it 'excludes the preposition "for"' do
+        expect(all_queries).not_to include('for')
+      end
+
+      it 'boosts both nouns with NOUN_BOOST' do
+        expect(boost_for('oil')).to eq(described_class::NOUN_BOOST)
+        expect(boost_for('engines')).to eq(described_class::NOUN_BOOST)
+      end
+    end
+
+    context 'with conjunction and multiple nouns (iron and steel bars)' do
+      include_context 'with POS bool clause'
+      let(:query_string) { 'iron and steel bars' }
+
+      it 'excludes the conjunction "and"' do
+        expect(all_queries).not_to include('and')
+      end
+
+      it 'boosts all nouns with NOUN_BOOST' do
+        expect(boost_for('iron')).to eq(described_class::NOUN_BOOST)
+        expect(boost_for('steel')).to eq(described_class::NOUN_BOOST)
+        expect(boost_for('bars')).to eq(described_class::NOUN_BOOST)
+      end
+
+      it 'includes only significant terms' do
+        expect(all_queries).to contain_exactly('iron', 'steel', 'bars')
+      end
+    end
+
+    context 'with hyphenated adjective (stainless-steel bolts)' do
+      include_context 'with POS bool clause'
+      let(:query_string) { 'stainless-steel bolts' }
+
+      it 'treats the hyphenated compound as a single qualifier' do
+        expect(boost_for('stainless-steel')).to eq(described_class::QUALIFIER_BOOST)
+      end
+
+      it 'boosts the noun with NOUN_BOOST' do
+        expect(boost_for('bolts')).to eq(described_class::NOUN_BOOST)
+      end
+    end
+
+    context 'with hyphenated adjective (non-alcoholic beer)' do
+      include_context 'with POS bool clause'
+      let(:query_string) { 'non-alcoholic beer' }
+
+      it 'treats the hyphenated compound as a single qualifier' do
+        expect(boost_for('non-alcoholic')).to eq(described_class::QUALIFIER_BOOST)
+      end
+
+      it 'boosts the noun with NOUN_BOOST' do
+        expect(boost_for('beer')).to eq(described_class::NOUN_BOOST)
+      end
+    end
+
+    context 'with acronym + noun (HDPE containers)' do
+      include_context 'with POS bool clause'
+      let(:query_string) { 'HDPE containers' }
+
+      it 'boosts the acronym as a noun with NOUN_BOOST' do
+        expect(boost_for('HDPE')).to eq(described_class::NOUN_BOOST)
+      end
+
+      it 'boosts the noun with NOUN_BOOST' do
+        expect(boost_for('containers')).to eq(described_class::NOUN_BOOST)
+      end
+    end
+
+    context 'with number joined to unit (10mm bolts)' do
+      include_context 'with POS bool clause'
+      let(:query_string) { '10mm bolts' }
+
+      it 'treats the joined number-unit as a noun' do
+        expect(boost_for('10mm')).to eq(described_class::NOUN_BOOST)
+      end
+
+      it 'boosts the noun with NOUN_BOOST' do
+        expect(boost_for('bolts')).to eq(described_class::NOUN_BOOST)
+      end
+    end
+
+    context 'with number separated from unit (10 mm bolts)' do
+      include_context 'with POS bool clause'
+      let(:query_string) { '10 mm bolts' }
+
+      it 'assigns no boost to the cardinal number' do
+        expect(boost_for('10')).to be_nil
+      end
+
+      it 'still includes the number in the query' do
+        expect(all_queries).to include('10')
+      end
+
+      it 'boosts the unit as a noun' do
+        expect(boost_for('mm')).to eq(described_class::NOUN_BOOST)
+      end
+
+      it 'boosts the noun with NOUN_BOOST' do
+        expect(boost_for('bolts')).to eq(described_class::NOUN_BOOST)
+      end
+    end
+
+    context 'with verb mistagged as non-noun (car seat covers)' do
+      include_context 'with POS bool clause'
+      let(:query_string) { 'car seat covers' }
+
+      it 'boosts recognised nouns with NOUN_BOOST' do
+        expect(boost_for('car')).to eq(described_class::NOUN_BOOST)
+        expect(boost_for('seat')).to eq(described_class::NOUN_BOOST)
+      end
+
+      it 'assigns no boost to the mistagged verb' do
+        expect(boost_for('covers')).to be_nil
+      end
+
+      it 'still includes the mistagged word in the query' do
+        expect(all_queries).to include('covers')
       end
     end
 
