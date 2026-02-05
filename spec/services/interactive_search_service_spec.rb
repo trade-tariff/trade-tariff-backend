@@ -24,12 +24,19 @@ RSpec.describe InteractiveSearchService do
     ]
   end
 
-  let(:classification_scope) { double('classification_scope') } # rubocop:disable RSpec/VerifiedDoubles
+  let(:default_search_context) do
+    <<~CONTEXT
+      You are a UK trade tariff classification assistant.
+      Search query: %{search_input}
+      OpenSearch results: %{answers_opensearch}
+      Previous Q&A: %{questions}
+      Respond with JSON containing either "questions" or "answers".
+    CONTEXT
+  end
 
   before do
-    allow(AdminConfiguration).to receive(:classification).and_return(classification_scope)
-    allow(classification_scope).to receive(:by_name).and_return(nil)
     allow(TradeTariffBackend).to receive_messages(interactive_search_max_attempts: 3, ai_model: 'gpt-5.2')
+    create(:admin_configuration, name: 'search_context', value: default_search_context, area: 'classification')
   end
 
   def build_result(code, description, score)
@@ -42,12 +49,8 @@ RSpec.describe InteractiveSearchService do
 
   describe '.call' do
     context 'when feature is disabled' do
-      let(:config) { instance_double(AdminConfiguration, value: false, enabled?: false) }
-
       before do
-        allow(classification_scope).to receive(:by_name)
-          .with('interactive_search_enabled')
-          .and_return(config)
+        create(:admin_configuration, :boolean, name: 'interactive_search_enabled', value: false, area: 'classification')
       end
 
       it 'returns nil' do
@@ -335,14 +338,16 @@ RSpec.describe InteractiveSearchService do
     end
 
     context 'when search_model config exists' do
-      let(:model_config) do
-        instance_double(AdminConfiguration, selected_option: 'gpt-4.1-mini-2025-04-14')
-      end
-
       before do
-        allow(classification_scope).to receive(:by_name)
-          .with('search_model')
-          .and_return(model_config)
+        create(:admin_configuration, :options,
+               name: 'search_model',
+               area: 'classification',
+               value: {
+                 'selected' => 'gpt-4.1-mini-2025-04-14',
+                 'options' => [
+                   { 'key' => 'gpt-4.1-mini-2025-04-14', 'label' => 'GPT-4.1 Mini' },
+                 ],
+               })
       end
 
       it 'uses the configured model' do
@@ -356,14 +361,9 @@ RSpec.describe InteractiveSearchService do
     end
 
     context 'when search_context config exists' do
-      let(:context_config) do
-        instance_double(AdminConfiguration, value: 'Custom prompt: %{search_input}')
-      end
-
       before do
-        allow(classification_scope).to receive(:by_name)
-          .with('search_context')
-          .and_return(context_config)
+        AdminConfiguration.where(name: 'search_context').first.update(value: Sequel.pg_jsonb_wrap('Custom prompt: %{search_input}'))
+        AdminConfiguration.refresh!(concurrently: false)
       end
 
       it 'uses the configured context' do
@@ -429,12 +429,8 @@ RSpec.describe InteractiveSearchService do
     end
 
     context 'when search_result_limit config exists' do
-      let(:limit_config) { instance_double(AdminConfiguration, value: '3') }
-
       before do
-        allow(classification_scope).to receive(:by_name)
-          .with('search_result_limit')
-          .and_return(limit_config)
+        create(:admin_configuration, :integer, name: 'search_result_limit', value: 3, area: 'classification')
       end
 
       it 'uses the configured limit' do

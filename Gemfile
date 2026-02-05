@@ -40,6 +40,7 @@ gem 'fast_excel'
 # Helpers
 gem 'bootsnap', require: false
 gem 'csv'
+gem 'engtagger'
 gem 'hashie'
 gem 'holidays'
 gem 'lograge'

@@ -224,6 +224,18 @@ namespace :admin_configurations do
         value: TradeTariffBackend.goods_nomenclature_label_page_size.to_s,
       },
       {
+        name: 'opensearch_result_limit',
+        config_type: 'integer',
+        description: 'Maximum number of OpenSearch results fetched for AI processing during interactive search',
+        value: '30',
+      },
+      {
+        name: 'pos_search_enabled',
+        config_type: 'boolean',
+        description: 'Use part-of-speech tagging to structure search queries. Nouns become required terms, modifiers become optional. When disabled, falls back to a single multi-match query.',
+        value: 'true',
+      },
+      {
         name: 'search_context',
         config_type: 'markdown',
         description: 'System prompt sent to the AI model during interactive search',

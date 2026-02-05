@@ -150,6 +150,8 @@ GEM
       dotenv (= 3.2.0)
       railties (>= 6.1)
     drb (2.2.3)
+    engtagger (0.4.2)
+      sin_lru_redux
     erb (6.0.1)
     erubi (1.13.1)
     et-orbi (1.2.11)
@@ -451,6 +453,7 @@ GEM
     sidekiq-scheduler (6.0.1)
       rufus-scheduler (~> 3.2)
       sidekiq (>= 7.3, < 9)
+    sin_lru_redux (2.5.2)
     slack-notifier (2.4.0)
     stringio (3.2.0)
     thor (1.5.0)
@@ -491,6 +494,7 @@ DEPENDENCIES
   csv
   database_cleaner-sequel
   dotenv-rails
+  engtagger
   factory_bot_rails
   fast_excel
   foreman

@@ -36,4 +36,60 @@ namespace :labels do
     RelabelGoodsNomenclatureWorker.perform_async
     puts 'Done. Check Sidekiq for progress.'
   end
+
+  desc 'Load and verify CN2026 self-texts'
+  task load_self_texts: :environment do
+    csv_path = ENV['CSV_PATH']
+    SelfTextLookupService.csv_path = csv_path if csv_path.present?
+
+    puts "Loading self-texts from #{SelfTextLookupService.csv_path}..."
+    SelfTextLookupService.reload!
+    puts "Loaded #{SelfTextLookupService.count} self-texts"
+
+    # Show a few examples
+    puts "\nSample lookups:"
+    %w[0101210000 0102292100 8471300000].each do |code|
+      text = SelfTextLookupService.lookup(code)
+      puts "  #{code}: #{text || '(not found)'}"
+    end
+  end
+
+  desc 'Delete all labels and regenerate with contextual descriptions'
+  task nuke_and_regenerate: :environment do
+    csv_path = ENV['CSV_PATH']
+
+    # Pre-load self-texts
+    SelfTextLookupService.csv_path = csv_path if csv_path.present?
+    puts "Loading self-texts from #{SelfTextLookupService.csv_path}..."
+
+    unless File.exist?(SelfTextLookupService.csv_path)
+      puts "ERROR: Self-texts CSV not found at #{SelfTextLookupService.csv_path}"
+      puts 'Set CSV_PATH environment variable or place file at data/CN2026_SelfText_EN_DE_FR.csv'
+      exit 1
+    end
+
+    SelfTextLookupService.reload!
+    puts "Loaded #{SelfTextLookupService.count} self-texts"
+
+    # Confirm before proceeding
+    unless ENV['CONFIRM'] == 'true'
+      puts "\nWARNING: This will delete ALL existing labels and regenerate them."
+      puts 'Set CONFIRM=true to proceed.'
+      exit 1
+    end
+
+    puts "\nDeleting all labels from oplog..."
+    # Delete from oplog table directly (materialized view is read-only)
+    deleted_count = GoodsNomenclatureLabel::Operation.count
+    GoodsNomenclatureLabel::Operation.truncate
+    puts "Deleted #{deleted_count} oplog entries"
+
+    puts "\nRefreshing materialized view..."
+    GoodsNomenclatureLabel.refresh!(concurrently: false)
+    puts "Labels count after refresh: #{GoodsNomenclatureLabel.count}"
+
+    puts "\nEnqueuing label generation..."
+    RelabelGoodsNomenclatureWorker.perform_async
+    puts 'Done. Check Sidekiq for progress.'
+  end
 end

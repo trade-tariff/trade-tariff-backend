@@ -8,7 +8,7 @@ module Api
       def initialize(params = {})
         @q = process_query(params[:q])
         @as_of = parse_date(params[:as_of])
-        @answers = params[:answers] || []
+        @answers = normalize_answers(params[:answers])
         @request_id = params[:request_id] || SecureRandom.uuid
       end
 
@@ -24,12 +24,18 @@ module Api
 
         results = search_with_configured_labels do
           TradeTariffBackend.search_client.search(
-            ::Search::GoodsNomenclatureQuery.new(@expanded_query, as_of).query,
+            ::Search::GoodsNomenclatureQuery.new(
+              q,
+              as_of,
+              expanded_query: @expanded_query,
+              pos_search: pos_search_enabled?,
+              size: opensearch_result_limit,
+            ).query,
           )
         end
 
         hits = results.dig('hits', 'hits') || []
-        goods_nomenclatures = hits.map { |hit| build_result(hit) }
+        goods_nomenclatures = hits.map { |hit| build_result_from_hit(hit) }
 
         interactive_result = run_interactive_search(goods_nomenclatures)
 
@@ -47,6 +53,16 @@ module Api
       def expand_search_enabled?
         config = AdminConfiguration.classification.by_name('expand_search_enabled')
         config.nil? || config.enabled?
+      end
+
+      def pos_search_enabled?
+        config = AdminConfiguration.classification.by_name('pos_search_enabled')
+        config.nil? || config.enabled?
+      end
+
+      def opensearch_result_limit
+        config = AdminConfiguration.classification.by_name('opensearch_result_limit')
+        config&.value&.to_i || ::Search::GoodsNomenclatureQuery::DEFAULT_SIZE
       end
 
       def search_with_configured_labels(&block)
@@ -135,13 +151,15 @@ module Api
           goods_nomenclature_class: goods_nomenclature.goods_nomenclature_class,
           description: goods_nomenclature.description,
           formatted_description: goods_nomenclature.formatted_description,
+          full_description: SelfTextLookupService.lookup(goods_nomenclature.goods_nomenclature_item_id).presence || goods_nomenclature.classification_description,
+          heading_description: goods_nomenclature.heading&.formatted_description,
           declarable: goods_nomenclature.respond_to?(:declarable?) ? goods_nomenclature.declarable? : false,
           score: nil,
           confidence: nil,
         )
       end
 
-      def build_result(hit)
+      def build_result_from_hit(hit)
         source = hit['_source']
         OpenStruct.new(
           id: source['goods_nomenclature_sid'],
@@ -151,6 +169,8 @@ module Api
           goods_nomenclature_class: source['goods_nomenclature_class'],
           description: source['description'],
           formatted_description: source['formatted_description'],
+          full_description: source['full_description'],
+          heading_description: source['heading_description'],
           declarable: source['declarable'],
           score: hit['_score'],
           confidence: nil,
@@ -168,24 +188,41 @@ module Api
       end
 
       def build_response(goods_nomenclatures, interactive_result)
-        results_with_confidence = apply_confidence(goods_nomenclatures, interactive_result)
-        response = GoodsNomenclatureSearchSerializer.serialize(results_with_confidence)
+        results = build_results_with_confidence(goods_nomenclatures, interactive_result)
+        response = GoodsNomenclatureSearchSerializer.serialize(results)
         meta = build_meta(interactive_result)
         response[:meta] = meta if meta.present?
         response
       end
 
-      def apply_confidence(goods_nomenclatures, interactive_result)
+      def build_results_with_confidence(goods_nomenclatures, interactive_result)
         return goods_nomenclatures unless interactive_result&.type == :answers
 
-        confidence_map = interactive_result.data.each_with_object({}) do |answer, hash|
-          hash[answer[:commodity_code]] = answer[:confidence]
-        end
+        results_by_code = goods_nomenclatures.index_by(&:goods_nomenclature_item_id)
 
-        goods_nomenclatures.map do |gn|
-          gn.confidence = confidence_map[gn.goods_nomenclature_item_id]
-          gn
+        interactive_result.data.filter_map do |answer|
+          result = results_by_code[answer[:commodity_code]]
+          next unless result
+
+          build_result(result, answer[:confidence])
         end
+      end
+
+      def build_result(result, confidence)
+        OpenStruct.new(
+          id: result.id,
+          goods_nomenclature_item_id: result.goods_nomenclature_item_id,
+          goods_nomenclature_sid: result.goods_nomenclature_sid,
+          producline_suffix: result.producline_suffix,
+          goods_nomenclature_class: result.goods_nomenclature_class,
+          description: result.description,
+          formatted_description: result.formatted_description,
+          full_description: result.full_description,
+          heading_description: result.heading_description,
+          declarable: result.declarable,
+          score: result.score,
+          confidence: confidence,
+        )
       end
 
       def build_meta(interactive_result)
@@ -215,17 +252,34 @@ module Api
         meta.presence
       end
 
-      def build_answers_list(interactive_result)
-        # Start with previously answered questions (preserve options if frontend sent them)
-        answered = answers.map do |qa|
+      def normalize_answers(answers_param)
+        return [] if answers_param.blank?
+
+        answers_param.map do |qa|
+          qa = qa.to_h.symbolize_keys
           {
-            question: qa[:question] || qa['question'],
-            options: qa[:options] || qa['options'],
-            answer: qa[:answer] || qa['answer'],
+            question: qa[:question],
+            options: normalize_options(qa[:options]),
+            answer: qa[:answer],
           }
         end
+      end
 
-        # Add current unanswered question if present
+      def normalize_options(options)
+        return options if options.is_a?(Array)
+        return [] if options.blank?
+
+        parsed = JSON.parse(options)
+        parsed.is_a?(Array) ? parsed : []
+      rescue JSON::ParserError
+        []
+      end
+
+      def build_answers_list(interactive_result)
+        answered = answers.map do |qa|
+          { question: qa[:question], options: qa[:options], answer: qa[:answer] }
+        end
+
         if interactive_result.type == :questions
           question_data = interactive_result.data.first
           answered << {

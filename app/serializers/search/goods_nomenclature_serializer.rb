@@ -14,6 +14,8 @@ module Search
         formatted_description:,
         validity_start_date:,
         validity_end_date:,
+        full_description:,
+        heading_description:,
 
         # Searchable fields
         description:,
@@ -26,7 +28,17 @@ module Search
     private
 
     def description
-      SearchNegationService.new(classification_description.to_s).call
+      SearchNegationService.new(full_description).call
+    end
+
+    def full_description
+      @full_description ||=
+        SelfTextLookupService.lookup(goods_nomenclature_item_id).presence ||
+        record.classification_description
+    end
+
+    def heading_description
+      record.heading&.formatted_description
     end
 
     def ancestor_descriptions

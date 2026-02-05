@@ -33,7 +33,7 @@ class CustomJobLogger < ::Sidekiq::JobLogger
     )
 
     begin
-      alert_slack(e, item) if TradeTariffBackend.slack_failures_enabled?
+      alert_slack(e, item) if should_alert_slack?(item)
     rescue StandardError => slack_error
       Sidekiq.logger.error("Failed to send Slack alert: #{slack_error.class.name} - #{slack_error.message}")
     end
@@ -42,6 +42,13 @@ class CustomJobLogger < ::Sidekiq::JobLogger
   end
 
   private
+
+  def should_alert_slack?(item)
+    return false unless TradeTariffBackend.slack_failures_enabled?
+
+    # Allow workers to opt-out of Slack alerts via sidekiq_options
+    item.fetch('slack_alerts', true)
+  end
 
   def alert_slack(error, item)
     text = "Job Failed: #{item['class']} (JID: #{item['jid']})\n" \

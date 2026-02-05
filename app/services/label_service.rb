@@ -18,20 +18,31 @@ class LabelService
 
     @last_ai_response = result
     result = AiResponseSanitizer.call(result)
-    data = Array.wrap(result.fetch('data', []))
+    result = ExtractBottomJson.call(result) unless result.is_a?(Hash) || result.is_a?(Array)
+
+    data = extract_data(result)
+
+    # Filter to only Hash items - AI sometimes returns malformed data
+    data = data.select { |item| item.is_a?(Hash) }
+
+    if data.empty? && result.present?
+      Rails.logger.warn("LabelService: AI returned no valid items. Response sample: #{result.to_s[0..200]}")
+    end
 
     data.filter_map do |item|
-      goods_nomenclature = batch.goods_nomenclature_for(item['commodity_code'])
+      commodity_code = item['commodity_code'] || item['goods_nomenclature_item_id']
+      goods_nomenclature = batch.goods_nomenclature_for(commodity_code)
 
       if goods_nomenclature.nil?
         LabelGenerator::Instrumentation.label_not_found(
-          commodity_code: item['commodity_code'],
+          commodity_code:,
           page_number:,
         )
         next
       end
 
-      GoodsNomenclatureLabel.build(goods_nomenclature, item)
+      contextual_description = batch.contextual_description_for(goods_nomenclature)
+      GoodsNomenclatureLabel.build(goods_nomenclature, item, contextual_description:)
     end
   end
 
@@ -48,11 +59,25 @@ class LabelService
 
   def configured_context
     config = AdminConfiguration.classification.by_name('label_context')
-    config&.value.presence || I18n.t('contexts.label_commodity.instructions')
+    config&.value.to_s
   end
 
   def context_for(batch)
     "#{configured_context}\n\n#{batch.to_json}"
+  end
+
+  def extract_data(result)
+    if result.blank?
+      Rails.logger.error("LabelService: AI returned unexpected response type: #{result.class}")
+      return []
+    end
+
+    case result
+    when Hash
+      Array.wrap(result['data'])
+    when Array
+      result
+    end
   end
 
   class << self

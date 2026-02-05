@@ -73,6 +73,22 @@ RSpec.describe ExtractBottomJson do
       end
     end
 
+    context 'when input is already a Hash (pre-parsed JSON)' do
+      let(:text) { { 'answers' => [{ 'commodity_code' => '123' }] } }
+
+      it 'returns the hash as-is' do
+        expect(result).to eq({ 'answers' => [{ 'commodity_code' => '123' }] })
+      end
+    end
+
+    context 'when input is already an Array (pre-parsed JSON)' do
+      let(:text) { [{ 'code' => '123' }, { 'code' => '456' }] }
+
+      it 'returns the array as-is' do
+        expect(result).to eq([{ 'code' => '123' }, { 'code' => '456' }])
+      end
+    end
+
     context 'when text is blank' do
       let(:text) { '' }
 

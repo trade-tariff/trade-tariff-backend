@@ -131,8 +131,24 @@ RSpec.describe GoodsNomenclatureLabel do
       )
     end
 
-    it 'includes original_description from classification_description' do
+    it 'includes original_description from classification_description by default' do
       expect(label.labels['original_description']).to eq(goods_nomenclature.classification_description)
+    end
+
+    context 'with contextual_description provided' do
+      subject(:label) { described_class.build(goods_nomenclature, item, contextual_description: 'Full contextual description') }
+
+      it 'uses the provided contextual_description as original_description' do
+        expect(label.labels['original_description']).to eq('Full contextual description')
+      end
+    end
+
+    context 'with nil contextual_description' do
+      subject(:label) { described_class.build(goods_nomenclature, item, contextual_description: nil) }
+
+      it 'falls back to classification_description' do
+        expect(label.labels['original_description']).to eq(goods_nomenclature.classification_description)
+      end
     end
 
     it 'can be saved and populates all fields from before_create hook' do

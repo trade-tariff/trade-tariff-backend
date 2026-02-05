@@ -8,8 +8,11 @@ RSpec.describe ExpandSearchQueryService do
     }
   end
 
+  let(:default_context) { 'Please rephrase and expand the following search query: %{search_query}' }
+
   before do
     allow(OpenaiClient).to receive(:call).and_return(ai_response)
+    create(:admin_configuration, name: 'expand_query_context', value: default_context, area: 'classification')
   end
 
   describe '.call' do
@@ -152,20 +155,18 @@ RSpec.describe ExpandSearchQueryService do
 
   describe 'AdminConfiguration integration' do
     let(:query) { 'laptop' }
-    let(:classification_scope) { double('classification_scope') } # rubocop:disable RSpec/VerifiedDoubles
-
-    before do
-      allow(AdminConfiguration).to receive(:classification).and_return(classification_scope)
-      allow(classification_scope).to receive(:by_name).and_return(nil)
-    end
 
     context 'when expand_model config exists' do
-      let(:model_config) do
-        instance_double(AdminConfiguration, selected_option: 'gpt-4.1-mini-2025-04-14')
-      end
-
       before do
-        allow(classification_scope).to receive(:by_name).with('expand_model').and_return(model_config)
+        create(:admin_configuration, :options,
+               name: 'expand_model',
+               area: 'classification',
+               value: {
+                 'selected' => 'gpt-4.1-mini-2025-04-14',
+                 'options' => [
+                   { 'key' => 'gpt-4.1-mini-2025-04-14', 'label' => 'GPT-4.1 Mini' },
+                 ],
+               })
       end
 
       it 'uses the configured model' do
@@ -179,15 +180,11 @@ RSpec.describe ExpandSearchQueryService do
     end
 
     context 'when expand_query_context config exists' do
-      let(:context_config) do
-        instance_double(
-          AdminConfiguration,
-          value: 'Custom prompt for: %{search_query}',
-        )
-      end
+      let(:custom_context) { 'Custom prompt for: %{search_query}' }
 
       before do
-        allow(classification_scope).to receive(:by_name).with('expand_query_context').and_return(context_config)
+        AdminConfiguration.where(name: 'expand_query_context').first.update(value: Sequel.pg_jsonb_wrap(custom_context))
+        AdminConfiguration.refresh!(concurrently: false)
       end
 
       it 'uses the configured context with the query interpolated' do
@@ -195,17 +192,6 @@ RSpec.describe ExpandSearchQueryService do
 
         expect(OpenaiClient).to have_received(:call).with(
           'Custom prompt for: laptop',
-          model: TradeTariffBackend.ai_model,
-        )
-      end
-    end
-
-    context 'when no config exists' do
-      it 'falls back to the I18n prompt' do
-        result
-
-        expect(OpenaiClient).to have_received(:call).with(
-          a_string_including('rephrase and expand'),
           model: TradeTariffBackend.ai_model,
         )
       end

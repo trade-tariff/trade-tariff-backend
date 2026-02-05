@@ -13,16 +13,15 @@ class LabelBatchPresenter < SimpleDelegator
 
   def to_json(*_args)
     map { |goods_nomenclature|
-      description = goods_nomenclature.classification_description
-
-      presented = goods_nomenclature.as_json(
-        only: [
-          :goods_nomenclature_item_id,
-        ],
-      )
-      presented['original_description'] = description
-
-      presented
+      {
+        'commodity_code' => goods_nomenclature.goods_nomenclature_item_id,
+        'description' => contextual_description_for(goods_nomenclature),
+      }
     }.to_json
+  end
+
+  def contextual_description_for(goods_nomenclature)
+    SelfTextLookupService.lookup(goods_nomenclature.goods_nomenclature_item_id).presence ||
+      goods_nomenclature.ancestor_chain_description
   end
 end

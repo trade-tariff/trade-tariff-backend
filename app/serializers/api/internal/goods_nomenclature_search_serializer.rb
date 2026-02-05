@@ -11,6 +11,8 @@ module Api
                  :goods_nomenclature_class,
                  :description,
                  :formatted_description,
+                 :full_description,
+                 :heading_description,
                  :declarable,
                  :score,
                  :confidence

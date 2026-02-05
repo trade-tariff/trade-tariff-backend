@@ -30,4 +30,4 @@ module ChangesTablePopulator
   end
 end
 
-ChangesTablePopulator::Logger.attach_to :changes_table_populator
+ChangesTablePopulator::Logger.attach_to :changes_table_populator unless Rails.env.test?

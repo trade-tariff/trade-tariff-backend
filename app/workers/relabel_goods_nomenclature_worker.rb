@@ -4,7 +4,7 @@ require_relative '../lib/label_generator/logger'
 class RelabelGoodsNomenclatureWorker
   include Sidekiq::Worker
 
-  sidekiq_options queue: :sync, retry: false
+  sidekiq_options queue: :sync, retry: false, slack_alerts: false
 
   def perform
     # Refresh materialized view to get accurate counts
