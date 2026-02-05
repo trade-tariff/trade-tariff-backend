@@ -1,6 +1,9 @@
 module Api
   module V2
     class CommoditiesController < ApiController
+      include SearchResultTracking
+
+      before_action :track_result_selected, only: :show
       before_action :find_commodity, only: %i[show changes]
       around_action :configure_meursing_additional_code, only: :show
 

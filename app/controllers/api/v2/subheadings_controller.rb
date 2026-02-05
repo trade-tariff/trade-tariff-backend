@@ -1,6 +1,10 @@
 module Api
   module V2
     class SubheadingsController < ApiController
+      include SearchResultTracking
+
+      before_action :track_result_selected, only: :show
+
       def show
         render json: cached_subheading
       end
