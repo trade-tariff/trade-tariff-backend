@@ -30,6 +30,8 @@ module Api
               expanded_query: @expanded_query,
               pos_search: pos_search_enabled?,
               size: opensearch_result_limit,
+              noun_boost: pos_noun_boost,
+              qualifier_boost: pos_qualifier_boost,
             ).query,
           )
         end
@@ -63,6 +65,16 @@ module Api
       def opensearch_result_limit
         config = AdminConfiguration.classification.by_name('opensearch_result_limit')
         config&.value&.to_i || ::Search::GoodsNomenclatureQuery::DEFAULT_SIZE
+      end
+
+      def pos_noun_boost
+        config = AdminConfiguration.classification.by_name('pos_noun_boost')
+        config&.value&.to_i || ::Search::GoodsNomenclatureQuery::NOUN_BOOST
+      end
+
+      def pos_qualifier_boost
+        config = AdminConfiguration.classification.by_name('pos_qualifier_boost')
+        config&.value&.to_i || ::Search::GoodsNomenclatureQuery::QUALIFIER_BOOST
       end
 
       def search_with_configured_labels(&block)

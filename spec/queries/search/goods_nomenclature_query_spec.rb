@@ -280,6 +280,20 @@ RSpec.describe Search::GoodsNomenclatureQuery do
       end
     end
 
+    context 'with custom boost values' do
+      include_context 'with POS bool clause'
+      let(:query_string) { 'live horses' }
+      let(:query_options) { { noun_boost: 20, qualifier_boost: 5 } }
+
+      it 'uses the custom noun boost' do
+        expect(boost_for('horses')).to eq(20)
+      end
+
+      it 'uses the custom qualifier boost' do
+        expect(boost_for('live')).to eq(5)
+      end
+    end
+
     # -- Structural filters --------------------------------------------------
 
     it 'filters out hidden goods nomenclatures' do

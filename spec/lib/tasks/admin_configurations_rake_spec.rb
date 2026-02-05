@@ -8,8 +8,8 @@ RSpec.describe 'admin_configurations:seed' do
     Rake::Task['admin_configurations:seed'].reenable
   end
 
-  it 'creates all 19 admin configurations', :aggregate_failures do
-    expect { seed }.to change(AdminConfiguration, :count).by(19)
+  it 'creates all 21 admin configurations', :aggregate_failures do
+    expect { seed }.to change(AdminConfiguration, :count).by(21)
 
     names = AdminConfiguration.order(:name).select_map(:name)
     expect(names).to eq(%w[
@@ -21,6 +21,8 @@ RSpec.describe 'admin_configurations:seed' do
       label_model
       label_page_size
       opensearch_result_limit
+      pos_noun_boost
+      pos_qualifier_boost
       pos_search_enabled
       search_context
       search_labels_enabled
@@ -126,6 +128,24 @@ RSpec.describe 'admin_configurations:seed' do
     expect(config.value).to eq(30)
   end
 
+  it 'seeds pos_noun_boost as an integer config defaulting to 10', :aggregate_failures do
+    seed
+
+    config = AdminConfiguration.where(name: 'pos_noun_boost').first
+    expect(config.config_type).to eq('integer')
+    expect(config.area).to eq('classification')
+    expect(config.value).to eq(10)
+  end
+
+  it 'seeds pos_qualifier_boost as an integer config defaulting to 3', :aggregate_failures do
+    seed
+
+    config = AdminConfiguration.where(name: 'pos_qualifier_boost').first
+    expect(config.config_type).to eq('integer')
+    expect(config.area).to eq('classification')
+    expect(config.value).to eq(3)
+  end
+
   it 'seeds pos_search_enabled as a boolean config defaulting to true', :aggregate_failures do
     seed
 
@@ -176,8 +196,8 @@ RSpec.describe 'admin_configurations:seed' do
     seed
 
     # The oplog plugin also calls refresh! in test mode after each create,
-    # so total calls = 19 (oplog) + 1 (rake task) = 20
-    expect(AdminConfiguration).to have_received(:refresh!).with(concurrently: false).exactly(20).times
+    # so total calls = 21 (oplog) + 1 (rake task) = 22
+    expect(AdminConfiguration).to have_received(:refresh!).with(concurrently: false).exactly(22).times
   end
 
   it 'does not refresh when nothing is created' do

@@ -230,6 +230,18 @@ namespace :admin_configurations do
         value: '30',
       },
       {
+        name: 'pos_noun_boost',
+        config_type: 'integer',
+        description: 'Boost factor for nouns in POS-tagged search queries. Higher values make noun matches dominate scoring.',
+        value: '10',
+      },
+      {
+        name: 'pos_qualifier_boost',
+        config_type: 'integer',
+        description: 'Boost factor for qualifiers (adjectives, past participles, gerunds) in POS-tagged search queries.',
+        value: '3',
+      },
+      {
         name: 'pos_search_enabled',
         config_type: 'boolean',
         description: 'Use part-of-speech tagging to structure search queries. Nouns become required terms, modifiers become optional. When disabled, falls back to a single multi-match query.',

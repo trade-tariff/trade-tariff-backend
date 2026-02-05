@@ -6,7 +6,8 @@ module Search
 
     NOISE_TAGS = %w[cc dt in to prp prp$ md ex pdt wp wp$ wdt wrb].freeze
 
-    attr_reader :query_string, :date, :expanded_query, :pos_search, :size
+    attr_reader :query_string, :date, :expanded_query, :pos_search, :size,
+                :noun_boost, :qualifier_boost
 
     class << self
       def tagger
@@ -14,12 +15,15 @@ module Search
       end
     end
 
-    def initialize(query_string, date, expanded_query: nil, pos_search: true, size: DEFAULT_SIZE)
+    def initialize(query_string, date, expanded_query: nil, pos_search: true, size: DEFAULT_SIZE,
+                   noun_boost: NOUN_BOOST, qualifier_boost: QUALIFIER_BOOST)
       @query_string = query_string
       @date = date
       @expanded_query = expanded_query
       @pos_search = pos_search
       @size = size
+      @noun_boost = noun_boost
+      @qualifier_boost = qualifier_boost
     end
 
     def query
@@ -93,8 +97,8 @@ module Search
     end
 
     def boost_for_tag(tag)
-      return NOUN_BOOST if noun_tag?(tag)
-      return QUALIFIER_BOOST if qualifier_tag?(tag)
+      return noun_boost if noun_tag?(tag)
+      return qualifier_boost if qualifier_tag?(tag)
 
       nil
     end
