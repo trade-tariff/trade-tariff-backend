@@ -1,12 +1,6 @@
 module Api
   module User
-    class CommodityChangesController < ApiController
-      include PublicUserAuthenticatable
-
-      no_caching
-
-      before_action :authenticate!
-
+    class CommodityChangesController < UserController
       def index
         render json: Api::User::CommodityChangesSerializer.new(tariff_changes).serializable_hash
       end
@@ -22,11 +16,7 @@ module Api
       end
 
       def tariff_changes
-        Api::User::CommodityChangesService.new(@current_user, params[:id], as_of).call
-      end
-
-      def as_of
-        params[:as_of] || Time.zone.yesterday.to_date.to_s
+        Api::User::CommodityChangesService.new(current_user, params[:id], actual_date).call
       end
     end
   end

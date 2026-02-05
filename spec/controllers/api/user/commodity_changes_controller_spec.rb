@@ -13,6 +13,7 @@ RSpec.describe Api::User::CommodityChangesController do
     )
   end
   let(:changes) { [grouped_change] }
+  let(:as_of) { '2025-11-24' }
 
   before do
     allow(Api::User::CommodityChangesService).to receive(:new).and_return(service_instance)
@@ -34,16 +35,16 @@ RSpec.describe Api::User::CommodityChangesController do
 
   describe 'as_of param' do
     it 'uses param if present' do
-      allow(Api::User::CommodityChangesService).to receive(:new).with(user, nil, '2025-11-24').and_return(service_instance)
-      get :index, params: { as_of: '2025-11-24' }
-      expect(Api::User::CommodityChangesService).to have_received(:new).with(user, nil, '2025-11-24')
+      allow(Api::User::CommodityChangesService).to receive(:new).with(user, nil, Date.parse(as_of)).and_return(service_instance)
+      get :index, params: { as_of: }
+      expect(Api::User::CommodityChangesService).to have_received(:new).with(user, nil, Date.parse(as_of))
       expect(response).to have_http_status(:ok)
     end
 
     it 'uses yesterday as date if param missing' do
-      allow(Api::User::CommodityChangesService).to receive(:new).with(user, nil, Time.zone.yesterday.to_date.to_s).and_return(service_instance)
+      allow(Api::User::CommodityChangesService).to receive(:new).with(user, nil, Time.zone.yesterday).and_return(service_instance)
       get :index
-      expect(Api::User::CommodityChangesService).to have_received(:new).with(user, nil, Time.zone.yesterday.to_date.to_s)
+      expect(Api::User::CommodityChangesService).to have_received(:new).with(user, nil, Time.zone.yesterday)
       expect(response).to have_http_status(:ok)
     end
   end
@@ -65,9 +66,9 @@ RSpec.describe Api::User::CommodityChangesController do
     end
 
     it 'uses as_of param if present' do
-      allow(Api::User::CommodityChangesService).to receive(:new).with(user, '2', '2025-10-17').and_return(service_instance)
-      get :show, params: { id: '2', as_of: '2025-10-17' }
-      expect(Api::User::CommodityChangesService).to have_received(:new).with(user, '2', '2025-10-17')
+      allow(Api::User::CommodityChangesService).to receive(:new).with(user, '2', Date.parse(as_of)).and_return(service_instance)
+      get :show, params: { id: '2', as_of: }
+      expect(Api::User::CommodityChangesService).to have_received(:new).with(user, '2', Date.parse(as_of))
       expect(response).to have_http_status(:ok)
     end
   end

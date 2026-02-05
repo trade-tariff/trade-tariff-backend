@@ -1,31 +1,27 @@
 module Api
   module User
-    class GroupedMeasureChangesController < ApiController
-      include PublicUserAuthenticatable
+    class GroupedMeasureChangesController < UserController
       include Pageable
 
-      no_caching
-
-      before_action :authenticate!
-
       def index
-        render json: serialize(tariff_changes)
+        render json: serialize
       end
 
       def show
-        render json: serialize(tariff_changes)
+        render json: serialize
       end
 
       private
 
       def tariff_changes
-        @tariff_changes ||= Api::User::GroupedMeasureChangesService.new(@current_user, id, as_of).call(page: current_page, per_page:)
+        @tariff_changes ||= Api::User::GroupedMeasureChangesService.new(current_user, id, actual_date).call(page: current_page, per_page:)
       end
 
-      def serialize(tariff_changes)
+      def serialize
         Api::User::GroupedMeasureChangeSerializer.new(tariff_changes, serializer_options).serializable_hash
       end
 
+      # Required for Pageable module
       def record_count
         tariff_changes.count
       end
@@ -39,10 +35,6 @@ module Api
             grouped_measure_commodity_changes.commodity
           ],
         )
-      end
-
-      def as_of
-        params[:as_of] || Time.zone.yesterday.to_date.to_s
       end
 
       def id

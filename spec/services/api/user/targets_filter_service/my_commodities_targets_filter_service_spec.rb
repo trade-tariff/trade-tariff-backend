@@ -1,6 +1,6 @@
 RSpec.describe Api::User::TargetsFilterService::MyCommoditiesTargetsFilterService do
   let(:subscription) { create(:user_subscription, subscription_type: Subscriptions::Type.my_commodities) }
-  let(:service) { described_class.new(subscription, filter_type, 1, 20) }
+  let(:service) { described_class.new(subscription) }
 
   let(:commodity1) { create(:commodity, goods_nomenclature_sid: 123) }
   let(:commodity2) { create(:commodity, goods_nomenclature_sid: 456) }
@@ -26,7 +26,7 @@ RSpec.describe Api::User::TargetsFilterService::MyCommoditiesTargetsFilterServic
       end
 
       it 'returns existing subscription targets' do
-        targets, total = service.call
+        targets, total = service.call(filter_type, 1, 20)
         expect(targets.map(&:id)).to match_array(subscription_targets.map(&:id))
         expect(total).to eq(2)
       end
@@ -47,7 +47,7 @@ RSpec.describe Api::User::TargetsFilterService::MyCommoditiesTargetsFilterServic
       end
 
       it 'maps commodities into subscription targets' do
-        targets, total = service.call
+        targets, total = service.call(filter_type, 1, 20)
 
         expect(total).to eq(2)
         expect(targets.first.target_type).to eq('commodity')
@@ -64,7 +64,7 @@ RSpec.describe Api::User::TargetsFilterService::MyCommoditiesTargetsFilterServic
       end
 
       it 'returns empty results' do
-        targets, total = service.call
+        targets, total = service.call(filter_type, 1, 20)
         expect(targets).to eq([])
         expect(total).to eq(0)
       end

@@ -24,7 +24,7 @@ RSpec.describe Api::User::BatcherService::MyCommoditiesBatcherService do
         create(:commodity, goods_nomenclature_item_id: '1234567890', goods_nomenclature_sid: 123)
         create(:commodity, goods_nomenclature_item_id: '1234567891', goods_nomenclature_sid: 456)
         create(:measure, goods_nomenclature_item_id: '1234567892', goods_nomenclature_sid: 789)
-        described_class.new.call(my_targets, user)
+        described_class.call(my_targets, user)
         subscription.refresh
       end
 
@@ -53,7 +53,7 @@ RSpec.describe Api::User::BatcherService::MyCommoditiesBatcherService do
 
       it 'raises an error' do
         expect {
-          described_class.new.call(my_targets, user)
+          described_class.call(my_targets, user)
         }.to raise_error(ArgumentError, 'my commodities subscription must be present')
       end
 

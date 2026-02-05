@@ -1,15 +1,11 @@
 module Api
   module User
-    class SubscriptionsController < ApiController
-      include PublicUserAuthenticatable
-
-      no_caching
-
-      before_action :authenticate!, except: %i[destroy]
+    class SubscriptionsController < UserController
+      skip_before_action :authenticate!, only: %i[destroy]
       before_action :find_subscription
 
       def show
-        render json: serialize(@subscription)
+        render json: serialize
       end
 
       # subscriptions are deleted without a user being authenticated
@@ -20,30 +16,30 @@ module Api
       end
 
       def create_batch
-        batcher.new.call(subscription_params[:targets], @current_user)
+        @subscription.batcher.call(subscription_params[:targets], current_user)
         @subscription.refresh
-        render json: serialize(@subscription), status: :ok
-      rescue ArgumentError => e
+        render json: serialize, status: :ok
+      rescue PublicUsers::UnsupportedBatcherServiceError, ArgumentError => e
         render json: serialize_errors({ error: e.message }), status: :bad_request
       end
 
     private
 
-      def serialize(subscription)
-        Api::User::SubscriptionSerializer.new(subscription, include: [:subscription_type]).serializable_hash
+      def serialize
+        Api::User::SubscriptionSerializer.new(@subscription, include: [:subscription_type]).serializable_hash
       end
 
       def find_subscription
         if subscription_id.present?
-          @subscription = if @current_user.present?
-                            @current_user.subscriptions_dataset.where(uuid: subscription_id).first
+          @subscription = if current_user.present?
+                            current_user.subscriptions_dataset.where(uuid: subscription_id).first
                           else
                             PublicUsers::Subscription.find(uuid: subscription_id)
                           end
         end
 
         if @subscription.nil?
-          render json: { message: 'No subscription ID was provided' }, status: :unauthorized
+          render json: { message: 'No subscription ID was provided' }, status: :unauthorized and return
         end
       end
 
@@ -59,13 +55,6 @@ module Api
 
       def serialize_errors(errors)
         Api::User::ErrorSerializationService.new.serialized_errors(errors)
-      end
-
-      def batcher
-        subscription_type_name = @subscription.subscription_type.name
-        "Api::User::BatcherService::#{subscription_type_name.camelize}BatcherService".constantize
-      rescue NameError
-        raise ArgumentError, "Unsupported subscription type for batching: #{subscription_type_name}"
       end
     end
   end

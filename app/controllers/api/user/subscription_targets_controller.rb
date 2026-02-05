@@ -1,29 +1,13 @@
 module Api
   module User
-    class SubscriptionTargetsController < ApiController
-      include PublicUserAuthenticatable
+    class SubscriptionTargetsController < UserController
       include Pageable
 
-      no_caching
-
-      before_action :authenticate!
       before_action :find_subscription
 
       def index
-        return render json: { message: 'No token was provided' }, status: :unauthorized if @subscription.nil?
-
-        case @subscription.subscription_type.name
-        when 'my_commodities'
-          filter_service = "Api::User::TargetsFilterService::#{@subscription.subscription_type.name.camelize}TargetsFilterService".constantize
-          filtered_targets = filter_service.new(@subscription,
-                                                filter_params[:active_commodities_type]&.to_sym,
-                                                current_page, per_page).call
-        else
-          raise ArgumentError, "Unsupported subscription type for targets filtering: #{@subscription.subscription_type.name}"
-        end
-
-        render json: serialize(filtered_targets)
-      rescue ArgumentError => e
+        render json: serialize
+      rescue PublicUsers::UnsupportedFilterServiceError, ArgumentError => e
         render json: serialize_errors({ error: e.message }), status: :bad_request
       end
 
@@ -33,10 +17,18 @@ module Api
         params.fetch(:filter, {}).permit(:active_commodities_type)
       end
 
-      def serialize(targets_and_total)
-        targets, total = targets_and_total
+      def filtered_targets
+        @filtered_targets ||= @subscription.filter.call(
+          filter_params[:active_commodities_type]&.to_sym,
+          current_page,
+          per_page,
+        )
+      end
+
+      def serialize
+        targets, @total = filtered_targets
         serialized_targets = Api::User::SubscriptionTargetSerializer.new(targets, include: [:target_object]).serializable_hash
-        @total = total
+
         {
           data: serialized_targets[:data],
           included: serialized_targets[:included],
@@ -52,8 +44,11 @@ module Api
       end
 
       def find_subscription
-        @subscription = @current_user.subscriptions_dataset.where(uuid: subscription_id).first
-        render json: { message: 'No subscription ID was provided' }, status: :unauthorized if @subscription.nil?
+        @subscription = current_user.subscriptions_dataset.where(uuid: subscription_id).first
+
+        if @subscription.nil?
+          render json: { message: 'No subscription ID was provided' }, status: :unauthorized and return
+        end
       end
 
       def subscription_id
