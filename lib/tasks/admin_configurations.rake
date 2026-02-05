@@ -172,6 +172,7 @@ end
 # rubocop:enable Metrics/ModuleLength
 
 namespace :admin_configurations do
+  # Seed values should align with AdminConfiguration::DEFAULTS
   desc 'Seed initial admin configurations'
   task seed: :environment do
     model_options = OpenaiClient::MODEL_CONFIGS.keys.sort.map do |key|

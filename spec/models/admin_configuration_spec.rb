@@ -335,6 +335,89 @@ RSpec.describe AdminConfiguration do
     end
   end
 
+  describe '.default_for' do
+    it 'returns static values directly' do
+      expect(described_class.default_for('opensearch_result_limit')).to eq(30)
+    end
+
+    it 'resolves lambda values' do
+      allow(TradeTariffBackend).to receive(:ai_model).and_return('gpt-5.2')
+      expect(described_class.default_for('search_model')).to eq('gpt-5.2')
+    end
+
+    it 'raises KeyError for unknown names' do
+      expect { described_class.default_for('nonexistent') }.to raise_error(KeyError)
+    end
+
+    it 'accepts symbol keys' do
+      expect(described_class.default_for(:pos_noun_boost)).to eq(10)
+    end
+  end
+
+  describe '.enabled?' do
+    context 'when config record is missing' do
+      it 'returns the default value' do
+        expect(described_class.enabled?('expand_search_enabled')).to be true
+        expect(described_class.enabled?('interactive_search_enabled')).to be false
+      end
+    end
+
+    context 'when config record exists' do
+      before do
+        create(:admin_configuration, :boolean, name: 'expand_search_enabled', value: false, area: 'classification')
+      end
+
+      it 'returns the config value' do
+        expect(described_class.enabled?('expand_search_enabled')).to be false
+      end
+    end
+  end
+
+  describe '.integer_value' do
+    context 'when config record is missing' do
+      it 'returns the default value' do
+        expect(described_class.integer_value('opensearch_result_limit')).to eq(30)
+        expect(described_class.integer_value('pos_noun_boost')).to eq(10)
+        expect(described_class.integer_value('search_result_limit')).to eq(5)
+      end
+    end
+
+    context 'when config record exists' do
+      before do
+        create(:admin_configuration, :integer, name: 'opensearch_result_limit', value: 50, area: 'classification')
+      end
+
+      it 'returns the configured integer value' do
+        expect(described_class.integer_value('opensearch_result_limit')).to eq(50)
+      end
+    end
+  end
+
+  describe '.option_value' do
+    context 'when config record is missing' do
+      it 'returns the default value' do
+        allow(TradeTariffBackend).to receive(:ai_model).and_return('gpt-5.2')
+        expect(described_class.option_value('search_model')).to eq('gpt-5.2')
+      end
+    end
+
+    context 'when config record exists' do
+      before do
+        create(:admin_configuration, :options,
+               name: 'search_model',
+               area: 'classification',
+               value: {
+                 'selected' => 'gpt-4.1-mini-2025-04-14',
+                 'options' => [{ 'key' => 'gpt-4.1-mini-2025-04-14', 'label' => 'GPT-4.1 Mini' }],
+               })
+      end
+
+      it 'returns the selected option' do
+        expect(described_class.option_value('search_model')).to eq('gpt-4.1-mini-2025-04-14')
+      end
+    end
+  end
+
   describe 'expand search cache invalidation' do
     context 'when saving expand_query_context config' do
       let!(:config) { create(:admin_configuration, :markdown, name: 'expand_query_context') }

@@ -36,6 +36,7 @@ RSpec.describe InteractiveSearchService do
 
   before do
     allow(TradeTariffBackend).to receive_messages(interactive_search_max_attempts: 3, ai_model: 'gpt-5.2')
+    create(:admin_configuration, :boolean, name: 'interactive_search_enabled', value: true, area: 'classification')
     create(:admin_configuration, name: 'search_context', value: default_search_context, area: 'classification')
   end
 
@@ -50,7 +51,9 @@ RSpec.describe InteractiveSearchService do
   describe '.call' do
     context 'when feature is disabled' do
       before do
-        create(:admin_configuration, :boolean, name: 'interactive_search_enabled', value: false, area: 'classification')
+        config = AdminConfiguration.where(name: 'interactive_search_enabled').first
+        config.update(value: Sequel.pg_jsonb_wrap(false))
+        AdminConfiguration.refresh!(concurrently: false)
       end
 
       it 'returns nil' do

@@ -53,35 +53,27 @@ module Api
       end
 
       def expand_search_enabled?
-        config = AdminConfiguration.classification.by_name('expand_search_enabled')
-        config.nil? || config.enabled?
+        AdminConfiguration.enabled?('expand_search_enabled')
       end
 
       def pos_search_enabled?
-        config = AdminConfiguration.classification.by_name('pos_search_enabled')
-        config.nil? || config.enabled?
+        AdminConfiguration.enabled?('pos_search_enabled')
       end
 
       def opensearch_result_limit
-        config = AdminConfiguration.classification.by_name('opensearch_result_limit')
-        config&.value&.to_i || ::Search::GoodsNomenclatureQuery::DEFAULT_SIZE
+        AdminConfiguration.integer_value('opensearch_result_limit')
       end
 
       def pos_noun_boost
-        config = AdminConfiguration.classification.by_name('pos_noun_boost')
-        config&.value&.to_i || ::Search::GoodsNomenclatureQuery::NOUN_BOOST
+        AdminConfiguration.integer_value('pos_noun_boost')
       end
 
       def pos_qualifier_boost
-        config = AdminConfiguration.classification.by_name('pos_qualifier_boost')
-        config&.value&.to_i || ::Search::GoodsNomenclatureQuery::QUALIFIER_BOOST
+        AdminConfiguration.integer_value('pos_qualifier_boost')
       end
 
       def search_with_configured_labels(&block)
-        config = AdminConfiguration.classification.by_name('search_labels_enabled')
-        labels_enabled = config.nil? || config.enabled?
-
-        if labels_enabled
+        if AdminConfiguration.enabled?('search_labels_enabled')
           SearchLabels.with_labels(&block)
         else
           SearchLabels.without_labels(&block)

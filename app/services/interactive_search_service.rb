@@ -46,8 +46,7 @@ class InteractiveSearchService
   attr_reader :query, :expanded_query, :opensearch_results, :answers, :request_id, :attempt
 
   def disabled?
-    config = AdminConfiguration.classification.by_name('interactive_search_enabled')
-    config.present? && !config.enabled?(default: false)
+    !AdminConfiguration.enabled?('interactive_search_enabled')
   end
 
   def single_result?
@@ -67,8 +66,7 @@ class InteractiveSearchService
   end
 
   def configured_model
-    config = AdminConfiguration.classification.by_name('search_model')
-    config&.selected_option(default: TradeTariffBackend.ai_model) || TradeTariffBackend.ai_model
+    AdminConfiguration.option_value('search_model')
   end
 
   def configured_context
@@ -77,8 +75,7 @@ class InteractiveSearchService
   end
 
   def configured_result_limit
-    config = AdminConfiguration.classification.by_name('search_result_limit')
-    config&.value&.to_i || 5
+    AdminConfiguration.integer_value('search_result_limit')
   end
 
   def build_context

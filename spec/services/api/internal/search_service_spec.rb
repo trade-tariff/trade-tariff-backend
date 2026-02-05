@@ -293,13 +293,10 @@ RSpec.describe Api::Internal::SearchService do
 
     context 'when expand_search_enabled is false' do
       let(:opensearch_response) { { 'hits' => { 'hits' => [] } } }
-      let(:classification_scope) { double('classification_scope') } # rubocop:disable RSpec/VerifiedDoubles
 
       before do
-        allow(AdminConfiguration).to receive(:classification).and_return(classification_scope)
-        allow(classification_scope).to receive(:by_name).and_return(nil)
-        allow(classification_scope).to receive(:by_name)
-          .with('expand_search_enabled').and_return(instance_double(AdminConfiguration, enabled?: false))
+        allow(AdminConfiguration).to receive(:enabled?).and_call_original
+        allow(AdminConfiguration).to receive(:enabled?).with('expand_search_enabled').and_return(false)
         allow(TradeTariffBackend.search_client).to receive(:search).and_return(opensearch_response)
       end
 
@@ -312,13 +309,10 @@ RSpec.describe Api::Internal::SearchService do
 
     context 'when expand_search_enabled is true' do
       let(:opensearch_response) { { 'hits' => { 'hits' => [] } } }
-      let(:classification_scope) { double('classification_scope') } # rubocop:disable RSpec/VerifiedDoubles
 
       before do
-        allow(AdminConfiguration).to receive(:classification).and_return(classification_scope)
-        allow(classification_scope).to receive(:by_name).and_return(nil)
-        allow(classification_scope).to receive(:by_name)
-          .with('expand_search_enabled').and_return(instance_double(AdminConfiguration, enabled?: true))
+        allow(AdminConfiguration).to receive(:enabled?).and_call_original
+        allow(AdminConfiguration).to receive(:enabled?).with('expand_search_enabled').and_return(true)
         allow(TradeTariffBackend.search_client).to receive(:search).and_return(opensearch_response)
       end
 
@@ -331,13 +325,10 @@ RSpec.describe Api::Internal::SearchService do
 
     context 'when pos_search_enabled is false' do
       let(:opensearch_response) { { 'hits' => { 'hits' => [] } } }
-      let(:classification_scope) { double('classification_scope') } # rubocop:disable RSpec/VerifiedDoubles
 
       before do
-        allow(AdminConfiguration).to receive(:classification).and_return(classification_scope)
-        allow(classification_scope).to receive(:by_name).and_return(nil)
-        allow(classification_scope).to receive(:by_name)
-          .with('pos_search_enabled').and_return(instance_double(AdminConfiguration, enabled?: false))
+        allow(AdminConfiguration).to receive(:enabled?).and_call_original
+        allow(AdminConfiguration).to receive(:enabled?).with('pos_search_enabled').and_return(false)
         allow(TradeTariffBackend.search_client).to receive(:search).and_return(opensearch_response)
       end
 
@@ -356,13 +347,10 @@ RSpec.describe Api::Internal::SearchService do
 
     context 'when opensearch_result_limit is configured' do
       let(:opensearch_response) { { 'hits' => { 'hits' => [] } } }
-      let(:classification_scope) { double('classification_scope') } # rubocop:disable RSpec/VerifiedDoubles
 
       before do
-        allow(AdminConfiguration).to receive(:classification).and_return(classification_scope)
-        allow(classification_scope).to receive(:by_name).and_return(nil)
-        allow(classification_scope).to receive(:by_name)
-          .with('opensearch_result_limit').and_return(instance_double(AdminConfiguration, value: 50))
+        allow(AdminConfiguration).to receive(:integer_value).and_call_original
+        allow(AdminConfiguration).to receive(:integer_value).with('opensearch_result_limit').and_return(50)
         allow(TradeTariffBackend.search_client).to receive(:search).and_return(opensearch_response)
       end
 
