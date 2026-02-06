@@ -143,12 +143,17 @@ RSpec.describe ExpandSearchQueryService do
         expect(result.reason).to be_nil
       end
 
-      it 'logs the error' do
-        allow(Rails.logger).to receive(:error)
+      it 'emits a search_failed event' do
+        allow(Search::Instrumentation).to receive(:search_failed)
 
         result
 
-        expect(Rails.logger).to have_received(:error).with(/ExpandSearchQueryService error/)
+        expect(Search::Instrumentation).to have_received(:search_failed).with(
+          request_id: nil,
+          error_type: 'Faraday::TimeoutError',
+          error_message: anything,
+          search_type: 'expand_query',
+        )
       end
     end
   end

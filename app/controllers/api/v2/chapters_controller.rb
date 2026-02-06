@@ -1,6 +1,10 @@
 module Api
   module V2
     class ChaptersController < ApiController
+      include SearchResultTracking
+
+      before_action :track_result_selected, only: :show
+
       CACHE_VERSION = 2
 
       def index

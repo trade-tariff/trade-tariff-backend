@@ -1,6 +1,10 @@
 module Api
   module V2
     class HeadingsController < ApiController
+      include SearchResultTracking
+
+      before_action :track_result_selected, only: :show
+
       def show
         service = ::HeadingService::HeadingSerializationService.new(heading, actual_date, filter_params)
         render json: service.serializable_hash

@@ -17,31 +17,48 @@ module Api
           return { data: [] }
         end
 
-        exact = find_exact_match
-        return GoodsNomenclatureSearchSerializer.serialize([exact]) if exact
+        ::Search::Instrumentation.search(request_id:, query: q, search_type: 'interactive') do
+          exact = find_exact_match
+          if exact
+            next [GoodsNomenclatureSearchSerializer.serialize([exact]),
+                  { result_count: 1, results_type: 'exact_match' }]
+          end
 
-        @expanded_query = expand_query(q)
+          @expanded_query = expand_query(q)
 
-        results = search_with_configured_labels do
-          TradeTariffBackend.search_client.search(
-            ::Search::GoodsNomenclatureQuery.new(
-              q,
-              as_of,
-              expanded_query: @expanded_query,
-              pos_search: pos_search_enabled?,
-              size: opensearch_result_limit,
-              noun_boost: pos_noun_boost,
-              qualifier_boost: pos_qualifier_boost,
-            ).query,
-          )
+          results = search_with_configured_labels do
+            TradeTariffBackend.search_client.search(
+              ::Search::GoodsNomenclatureQuery.new(
+                q,
+                as_of,
+                expanded_query: @expanded_query,
+                pos_search: pos_search_enabled?,
+                size: opensearch_result_limit,
+                noun_boost: pos_noun_boost,
+                qualifier_boost: pos_qualifier_boost,
+              ).query,
+            )
+          end
+
+          hits = results.dig('hits', 'hits') || []
+          goods_nomenclatures = hits.map { |hit| build_result_from_hit(hit) }
+
+          interactive_result = run_interactive_search(goods_nomenclatures)
+
+          max_score = hits.map { |hit| hit['_score'] }.compact.max
+
+          response = build_response(goods_nomenclatures, interactive_result)
+          completion = {
+            result_count: response[:data]&.size || 0,
+            total_attempts: interactive_result&.attempt,
+            total_questions: answers.size,
+            final_result_type: interactive_result&.type&.to_s,
+            results_type: 'opensearch',
+            max_score: max_score,
+          }
+
+          [response, completion]
         end
-
-        hits = results.dig('hits', 'hits') || []
-        goods_nomenclatures = hits.map { |hit| build_result_from_hit(hit) }
-
-        interactive_result = run_interactive_search(goods_nomenclatures)
-
-        build_response(goods_nomenclatures, interactive_result)
       end
 
       private
@@ -49,7 +66,12 @@ module Api
       def expand_query(query)
         return query unless expand_search_enabled?
 
-        ExpandSearchQueryService.call(query).expanded_query
+        result = ::Search::Instrumentation.query_expanded(
+          request_id:,
+          original_query: query,
+        ) { ExpandSearchQueryService.call(query) }
+
+        result.expanded_query
       end
 
       def expand_search_enabled?

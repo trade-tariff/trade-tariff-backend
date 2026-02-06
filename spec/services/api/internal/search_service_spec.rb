@@ -4,6 +4,8 @@ RSpec.describe Api::Internal::SearchService do
       ExpandSearchQueryService::Result.new(expanded_query: query, reason: nil)
     end
     allow(InteractiveSearchService).to receive(:call).and_return(nil)
+    allow(Search::Instrumentation).to receive(:search) { |**_kwargs, &block| block.call&.first }
+    allow(Search::Instrumentation).to receive(:query_expanded).and_yield
   end
 
   describe '#call' do

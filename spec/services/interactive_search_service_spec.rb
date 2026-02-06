@@ -36,6 +36,10 @@ RSpec.describe InteractiveSearchService do
 
   before do
     allow(TradeTariffBackend).to receive(:ai_model).and_return('gpt-5.2')
+    allow(Search::Instrumentation).to receive(:api_call).and_yield
+    allow(Search::Instrumentation).to receive(:question_returned)
+    allow(Search::Instrumentation).to receive(:answer_returned)
+    allow(Search::Instrumentation).to receive(:search_failed)
     create(:admin_configuration, :boolean, name: 'interactive_search_enabled', value: true, area: 'classification')
     create(:admin_configuration, :integer, name: 'interactive_search_max_questions', value: 3, area: 'classification')
     create(:admin_configuration, name: 'search_context', value: default_search_context, area: 'classification')
@@ -260,17 +264,18 @@ RSpec.describe InteractiveSearchService do
 
     context 'when AI client raises an error' do
       before do
-        allow(OpenaiClient).to receive(:call).and_raise(Faraday::TimeoutError)
-        allow(Rails.logger).to receive(:error)
+        allow(Search::Instrumentation).to receive(:api_call).and_raise(Faraday::TimeoutError)
       end
 
       it 'returns nil for graceful degradation' do
         expect(result).to be_nil
       end
 
-      it 'logs the error' do
+      it 'emits a search_failed event' do
         result
-        expect(Rails.logger).to have_received(:error).with(/InteractiveSearchService error/)
+        expect(Search::Instrumentation).to have_received(:search_failed).with(
+          hash_including(error_type: 'Faraday::TimeoutError', search_type: 'interactive'),
+        )
       end
     end
 
