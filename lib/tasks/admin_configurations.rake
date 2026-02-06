@@ -117,7 +117,7 @@ module AdminConfigurationSeeder
       ## Rules
 
       - Always respond in JSON as per the three examples above and never try and code anything up.
-      - Always structure questions so they have yes/no answers.
+      - Always structure questions so they have multiple meaningful options, not just yes/no.
       - Avoid hallucinating codes and only provide codes that you are certain of based on the information provided.
 
       ## Context sections
