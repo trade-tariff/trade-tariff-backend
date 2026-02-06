@@ -334,4 +334,15 @@ namespace :admin_configurations do
       puts '  refreshed materialized view'
     end
   end
+
+  desc 'Reset and reseed all admin configurations'
+  task reseed: :environment do
+    AdminConfiguration::Operation.truncate
+    puts '  truncated admin configurations'
+
+    AdminConfiguration.refresh!(concurrently: false)
+    puts '  refreshed materialized view'
+
+    Rake::Task['admin_configurations:seed'].invoke
+  end
 end
