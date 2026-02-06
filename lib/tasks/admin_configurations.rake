@@ -279,6 +279,12 @@ namespace :admin_configurations do
         value: '0',
       },
       {
+        name: 'suggest_results_limit',
+        config_type: 'integer',
+        description: 'Maximum number of search suggestions returned by the internal suggestions endpoint',
+        value: '10',
+      },
+      {
         name: 'suggest_chemical_cas',
         config_type: 'boolean',
         description: 'Show CAS Registry Number suggestions in internal search',

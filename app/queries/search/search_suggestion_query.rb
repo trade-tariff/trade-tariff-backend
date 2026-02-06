@@ -1,17 +1,19 @@
 module Search
   class SearchSuggestionQuery
-    attr_reader :query_string, :date, :allowed_types
+    attr_reader :query_string, :date, :allowed_types, :size
 
-    def initialize(query_string, date, allowed_types: nil)
+    def initialize(query_string, date, allowed_types: nil, size: 10)
       @query_string = query_string
       @date = date
       @allowed_types = allowed_types
+      @size = size
     end
 
     def query
       {
         index: Search::SearchSuggestionsIndex.new.name,
         body: {
+          size: size,
           query: {
             bool: {
               must: [match_clause],
@@ -22,6 +24,7 @@ module Search
               ],
             },
           },
+          collapse: { field: 'value.keyword' },
           # Best matches first, then by priority (chapter > heading > commodity)
           # as a tiebreaker.
           sort: [

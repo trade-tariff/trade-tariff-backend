@@ -22,6 +22,7 @@ class AdminConfiguration < Sequel::Model(Sequel[:admin_configurations].qualify(:
     'search_labels_enabled' => true,
     'search_model' => -> { TradeTariffBackend.ai_model },
     'search_result_limit' => 0,
+    'suggest_results_limit' => 10,
     'suggest_chemical_cas' => false,
     'suggest_chemical_cus' => false,
     'suggest_chemical_names' => false,

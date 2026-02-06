@@ -15,7 +15,7 @@ module Api
           return { data: [] }
         end
 
-        query = ::Search::SearchSuggestionQuery.new(q, as_of, allowed_types: allowed_suggestion_types).query
+        query = ::Search::SearchSuggestionQuery.new(q, as_of, allowed_types: allowed_suggestion_types, size: suggest_results_limit).query
         results = TradeTariffBackend.search_client.search(query)
 
         suggestions = results.dig('hits', 'hits')&.map { |hit| build_suggestion(hit) }&.compact || []
@@ -33,6 +33,10 @@ module Api
         'suggest_colloquial_terms' => ::SearchSuggestion::TYPE_COLLOQUIAL_TERM,
         'suggest_synonyms' => ::SearchSuggestion::TYPE_SYNONYM,
       }.freeze
+
+      def suggest_results_limit
+        AdminConfiguration.integer_value('suggest_results_limit')
+      end
 
       def allowed_suggestion_types
         types = [

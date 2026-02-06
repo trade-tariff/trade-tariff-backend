@@ -62,5 +62,21 @@ RSpec.describe Search::SearchSuggestionQuery do
     it 'does not include highlight' do
       expect(query[:body]).not_to have_key(:highlight)
     end
+
+    it 'defaults size to 10' do
+      expect(query.dig(:body, :size)).to eq(10)
+    end
+
+    it 'collapses on value.keyword to deduplicate suggestions' do
+      expect(query.dig(:body, :collapse)).to eq(field: 'value.keyword')
+    end
+
+    context 'with custom size' do
+      subject(:query_instance) { described_class.new(query_string, date, size: 5) }
+
+      it 'uses the given size' do
+        expect(query.dig(:body, :size)).to eq(5)
+      end
+    end
   end
 end
