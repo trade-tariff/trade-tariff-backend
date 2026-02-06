@@ -345,7 +345,7 @@ GEM
       redis-client (>= 0.22.0)
     redis-client (0.26.4)
       connection_pool
-    redlock (2.0.6)
+    redlock (2.1.0)
       redis-client (>= 0.14.1, < 1.0.0)
     regexp_parser (2.11.3)
     reline (0.6.3)
