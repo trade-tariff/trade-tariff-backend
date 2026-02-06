@@ -204,7 +204,13 @@ namespace :admin_configurations do
         name: 'interactive_search_enabled',
         config_type: 'boolean',
         description: 'Enable interactive Q&A to help traders narrow down commodity codes through clarifying questions',
-        value: 'false',
+        value: 'true',
+      },
+      {
+        name: 'interactive_search_max_questions',
+        config_type: 'integer',
+        description: 'Maximum number of clarifying questions to ask before forcing a best-guess answer from the AI',
+        value: '3',
       },
       {
         name: 'label_context',
@@ -228,7 +234,7 @@ namespace :admin_configurations do
         name: 'opensearch_result_limit',
         config_type: 'integer',
         description: 'Maximum number of OpenSearch results fetched for AI processing during interactive search',
-        value: '30',
+        value: '80',
       },
       {
         name: 'pos_noun_boost',
@@ -270,25 +276,25 @@ namespace :admin_configurations do
         name: 'search_result_limit',
         config_type: 'integer',
         description: 'Maximum number of commodity code suggestions shown during interactive Q&A. The frontend uses this to decide how to display results (e.g. as a shortlist or expanded view).',
-        value: '5',
+        value: '0',
       },
       {
         name: 'suggest_chemical_cas',
         config_type: 'boolean',
         description: 'Show CAS Registry Number suggestions in internal search',
-        value: 'true',
+        value: 'false',
       },
       {
         name: 'suggest_chemical_cus',
         config_type: 'boolean',
         description: 'Show CUS identifier suggestions in internal search',
-        value: 'true',
+        value: 'false',
       },
       {
         name: 'suggest_chemical_names',
         config_type: 'boolean',
         description: 'Show chemical substance name suggestions in internal search',
-        value: 'true',
+        value: 'false',
       },
       {
         name: 'suggest_colloquial_terms',
@@ -300,13 +306,13 @@ namespace :admin_configurations do
         name: 'suggest_known_brands',
         config_type: 'boolean',
         description: 'Show AI-generated known brand suggestions in internal search',
-        value: 'true',
+        value: 'false',
       },
       {
         name: 'suggest_synonyms',
         config_type: 'boolean',
         description: 'Show AI-generated synonym suggestions in internal search',
-        value: 'true',
+        value: 'false',
       },
     ]
 

@@ -29,6 +29,7 @@ module Search
             bool: {
               must: [
                 hidden_goods_nomenclature_filter,
+                declarable_filter,
                 multi_match_clause,
                 validity_date_filter,
               ],
@@ -147,6 +148,10 @@ module Search
           },
         },
       }
+    end
+
+    def declarable_filter
+      { term: { declarable: true } }
     end
 
     def validity_date_filter

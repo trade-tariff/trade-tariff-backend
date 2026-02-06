@@ -467,6 +467,14 @@ RSpec.describe Search::GoodsNomenclatureQuery do
       expect(hidden_filter.dig(:bool, :must_not, :terms, :goods_nomenclature_item_id)).to eq(HiddenGoodsNomenclature.codes)
     end
 
+    it 'filters to only declarable goods nomenclatures' do
+      must_clauses = query.dig(:body, :query, :bool, :must)
+      declarable_filter = must_clauses.find { |c| c.dig(:term, :declarable) }
+
+      expect(declarable_filter).to be_present
+      expect(declarable_filter).to eq({ term: { declarable: true } })
+    end
+
     it 'includes validity date filter' do
       must_clauses = query.dig(:body, :query, :bool, :must)
       validity_filter = must_clauses.find do |c|

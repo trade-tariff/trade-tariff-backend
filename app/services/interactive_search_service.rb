@@ -2,6 +2,10 @@ class InteractiveSearchService
   Result = Struct.new(:type, :data, :attempt, :model, :result_limit, keyword_init: true)
 
   CONFIDENCE_ORDER = %w[strong good possible].freeze
+  FINAL_ANSWER_INSTRUCTION = <<~INSTRUCTION.freeze
+
+    IMPORTANT: You have asked the maximum number of questions allowed. Based on the search input, OpenSearch results, and the answers provided so far, you MUST now provide your best answer. Do not ask any more questions. Rank the opensearch results by confidence using the information you have.
+  INSTRUCTION
 
   def initialize(query:, expanded_query:, opensearch_results:, answers: [], request_id: nil)
     @query = query
@@ -16,7 +20,7 @@ class InteractiveSearchService
     return nil if disabled?
     return single_result_answer if single_result?
     return no_results_error if no_results?
-    return best_available_answers if max_attempts_reached?
+    return final_answer if max_questions_reached?
 
     response = OpenaiClient.call(build_context, model: configured_model)
     parsed = ExtractBottomJson.call(response)
@@ -57,12 +61,12 @@ class InteractiveSearchService
     opensearch_results.empty?
   end
 
-  def max_attempts_reached?
-    attempt > max_attempts
+  def max_questions_reached?
+    answers.size > max_questions
   end
 
-  def max_attempts
-    TradeTariffBackend.interactive_search_max_attempts
+  def max_questions
+    AdminConfiguration.integer_value('interactive_search_max_questions')
   end
 
   def configured_model
@@ -140,6 +144,18 @@ class InteractiveSearchService
       model: configured_model,
       result_limit: configured_result_limit,
     )
+  end
+
+  def final_answer
+    context = build_context + FINAL_ANSWER_INSTRUCTION
+    response = OpenaiClient.call(context, model: configured_model)
+    parsed = ExtractBottomJson.call(response)
+
+    if parsed['answers'].present?
+      answers_result(parsed['answers'])
+    else
+      best_available_answers
+    end
   end
 
   def best_available_answers

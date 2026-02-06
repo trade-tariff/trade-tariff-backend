@@ -8,8 +8,8 @@ RSpec.describe 'admin_configurations:seed' do
     Rake::Task['admin_configurations:seed'].reenable
   end
 
-  it 'creates all 21 admin configurations', :aggregate_failures do
-    expect { seed }.to change(AdminConfiguration, :count).by(21)
+  it 'creates all 22 admin configurations', :aggregate_failures do
+    expect { seed }.to change(AdminConfiguration, :count).by(22)
 
     names = AdminConfiguration.order(:name).select_map(:name)
     expect(names).to eq(%w[
@@ -17,6 +17,7 @@ RSpec.describe 'admin_configurations:seed' do
       expand_query_context
       expand_search_enabled
       interactive_search_enabled
+      interactive_search_max_questions
       label_context
       label_model
       label_page_size
@@ -101,31 +102,31 @@ RSpec.describe 'admin_configurations:seed' do
     expect(config.value).to be true
   end
 
-  it 'seeds interactive_search_enabled as a boolean config defaulting to false', :aggregate_failures do
+  it 'seeds interactive_search_enabled as a boolean config defaulting to true', :aggregate_failures do
     seed
 
     config = AdminConfiguration.where(name: 'interactive_search_enabled').first
     expect(config.config_type).to eq('boolean')
     expect(config.area).to eq('classification')
-    expect(config.value).to be false
+    expect(config.value).to be true
   end
 
-  it 'seeds search_result_limit as an integer config defaulting to 5', :aggregate_failures do
+  it 'seeds search_result_limit as an integer config defaulting to 0', :aggregate_failures do
     seed
 
     config = AdminConfiguration.where(name: 'search_result_limit').first
     expect(config.config_type).to eq('integer')
     expect(config.area).to eq('classification')
-    expect(config.value).to eq(5)
+    expect(config.value).to eq(0)
   end
 
-  it 'seeds opensearch_result_limit as an integer config defaulting to 30', :aggregate_failures do
+  it 'seeds opensearch_result_limit as an integer config defaulting to 80', :aggregate_failures do
     seed
 
     config = AdminConfiguration.where(name: 'opensearch_result_limit').first
     expect(config.config_type).to eq('integer')
     expect(config.area).to eq('classification')
-    expect(config.value).to eq(30)
+    expect(config.value).to eq(80)
   end
 
   it 'seeds pos_noun_boost as an integer config defaulting to 10', :aggregate_failures do
@@ -155,21 +156,23 @@ RSpec.describe 'admin_configurations:seed' do
     expect(config.value).to be true
   end
 
-  it 'seeds suggestion toggle configs as booleans defaulting to true', :aggregate_failures do
+  it 'seeds suggestion toggle configs as booleans', :aggregate_failures do
     seed
 
-    %w[
-      suggest_chemical_cas
-      suggest_chemical_cus
-      suggest_chemical_names
-      suggest_colloquial_terms
-      suggest_known_brands
-      suggest_synonyms
-    ].each do |name|
+    expected_defaults = {
+      'suggest_chemical_cas' => false,
+      'suggest_chemical_cus' => false,
+      'suggest_chemical_names' => false,
+      'suggest_colloquial_terms' => true,
+      'suggest_known_brands' => false,
+      'suggest_synonyms' => false,
+    }
+
+    expected_defaults.each do |name, expected_value|
       config = AdminConfiguration.where(name:).first
       expect(config.config_type).to eq('boolean'), "#{name} should be boolean"
       expect(config.area).to eq('classification'), "#{name} should be classification area"
-      expect(config.value).to be(true), "#{name} should default to true"
+      expect(config.value).to be(expected_value), "#{name} should default to #{expected_value}"
     end
   end
 
@@ -196,8 +199,8 @@ RSpec.describe 'admin_configurations:seed' do
     seed
 
     # The oplog plugin also calls refresh! in test mode after each create,
-    # so total calls = 21 (oplog) + 1 (rake task) = 22
-    expect(AdminConfiguration).to have_received(:refresh!).with(concurrently: false).exactly(22).times
+    # so total calls = 22 (oplog) + 1 (rake task) = 23
+    expect(AdminConfiguration).to have_received(:refresh!).with(concurrently: false).exactly(23).times
   end
 
   it 'does not refresh when nothing is created' do

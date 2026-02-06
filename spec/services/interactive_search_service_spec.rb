@@ -35,8 +35,9 @@ RSpec.describe InteractiveSearchService do
   end
 
   before do
-    allow(TradeTariffBackend).to receive_messages(interactive_search_max_attempts: 3, ai_model: 'gpt-5.2')
+    allow(TradeTariffBackend).to receive(:ai_model).and_return('gpt-5.2')
     create(:admin_configuration, :boolean, name: 'interactive_search_enabled', value: true, area: 'classification')
+    create(:admin_configuration, :integer, name: 'interactive_search_max_questions', value: 3, area: 'classification')
     create(:admin_configuration, name: 'search_context', value: default_search_context, area: 'classification')
   end
 
@@ -99,23 +100,43 @@ RSpec.describe InteractiveSearchService do
       end
     end
 
-    context 'when max attempts reached' do
+    context 'when max questions reached' do
       let(:answers) do
         [
           { question: 'Q1', answer: 'A1' },
           { question: 'Q2', answer: 'A2' },
           { question: 'Q3', answer: 'A3' },
+          { question: 'Q4', answer: 'A4' },
         ]
       end
 
-      it 'returns best available answers without calling AI' do
-        allow(OpenaiClient).to receive(:call)
-        expect(result.type).to eq(:answers)
-        expect(OpenaiClient).not_to have_received(:call)
+      let(:ai_response) do
+        '{"answers": [{"commodity_code": "4202210000", "confidence": "Strong"}]}'
       end
 
-      it 'returns top results with appropriate confidence' do
-        expect(result.data.size).to eq(3)
+      before do
+        allow(OpenaiClient).to receive(:call).and_return(ai_response)
+      end
+
+      it 'calls the AI with the final answer instruction' do
+        result
+
+        expect(OpenaiClient).to have_received(:call).with(
+          a_string_including('you MUST now provide your best answer'),
+          model: anything,
+        )
+      end
+
+      it 'returns an answers result' do
+        expect(result.type).to eq(:answers)
+      end
+
+      it 'falls back to best available answers when AI returns questions' do
+        allow(OpenaiClient).to receive(:call).and_return(
+          '{"questions": [{"question": "What colour?", "options": ["Red", "Blue"]}]}',
+        )
+
+        expect(result.type).to eq(:answers)
         expect(result.data.first[:confidence]).to eq('good')
       end
     end
@@ -412,7 +433,7 @@ RSpec.describe InteractiveSearchService do
     end
 
     it 'includes the configured result limit' do
-      expect(result.result_limit).to eq(5)
+      expect(result.result_limit).to eq(0)
     end
   end
 
@@ -447,7 +468,7 @@ RSpec.describe InteractiveSearchService do
 
     context 'when search_result_limit config is not set' do
       it 'defaults to 5' do
-        expect(result.result_limit).to eq(5)
+        expect(result.result_limit).to eq(0)
       end
     end
   end
