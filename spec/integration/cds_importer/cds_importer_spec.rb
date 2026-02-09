@@ -105,7 +105,7 @@ RSpec.describe CdsImporter do
 
     before do
       # Excel writer fails when writing records
-      allow(excel_writer).to receive(:write).and_raise(StandardError, 'Excel failed')
+      allow(excel_writer).to receive(:write_data).and_raise(StandardError, 'Excel failed')
 
       allow(CdsImporter::EntityMapper).to receive(:new).with('AdditionalCode', { 'filename' => cds_update.filename }).and_call_original
     end

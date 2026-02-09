@@ -33,6 +33,7 @@ class CdsImporter
     def after_parse
       write_data(@key, @instances)
       build_worksheets(@data)
+
       workbook.close
 
       if TradeTariffBackend.cds_updates_send_email && !@failed
@@ -98,13 +99,11 @@ class CdsImporter
     end
 
     def initiate_excel_file
-      @workbook = if Rails.env.development?
-                    FileUtils.rm(excel_filename) if File.exist?(excel_filename)
-                    FileUtils.mkdir_p(File.join(TariffSynchronizer.root_path, 'cds_updates'))
-                    FastExcel.open(excel_filename, constant_memory: true)
-                  else
-                    FastExcel.open(constant_memory: true)
-                  end
+      if File.exist?(excel_filename)
+        FileUtils.rm(excel_filename)
+      end
+      FileUtils.mkdir_p(File.join(TariffSynchronizer.root_path, 'cds_updates'))
+      @workbook = FastExcel.open(excel_filename, constant_memory: true)
 
       @bold_style = workbook.add_format(
         bg_color: 0xE3E5E6,
@@ -122,11 +121,7 @@ class CdsImporter
     end
 
     def excel_filename
-      if Rails.env.production?
-        File.join(TariffSynchronizer.root_path, 'cds_updates', "CDS updates #{xml_to_file_date}.xlsx")
-      else
-        "CDS updates #{xml_to_file_date}.xlsx"
-      end
+      File.join(TariffSynchronizer.root_path, 'cds_updates', "CDS updates #{xml_to_file_date}.xlsx")
     end
 
     def xml_to_file_date

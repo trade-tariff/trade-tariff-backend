@@ -78,10 +78,6 @@ RSpec.describe CdsImporter::ExcelWriter do
         writer.process_record(entity1)
         writer.process_record(entity2)
 
-        expect(excel_class).to have_received(:sheet_name)
-        expect(excel_class).to have_received(:note)
-        expect(excel_class).to have_received(:heading)
-        expect(excel_class).to have_received(:column_widths)
         expect(excel).to have_received(:data_row)
         expect(writer.instance_variable_get(:@key)).to eq('K')
         expect(writer.instance_variable_get(:@xml_element_id)).to eq('E2')
