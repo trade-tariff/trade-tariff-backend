@@ -9,6 +9,7 @@ class CdsImporter
       @xml_element_id = nil
       @key = ''
       @instances = []
+      @data = {}
       @failed = false
       initiate_excel_file
     end
@@ -16,7 +17,7 @@ class CdsImporter
     def process_record(cds_entity)
       unless @xml_element_id.nil? || @xml_element_id == cds_entity.element_id
         begin
-          write(@key, @instances)
+          write_data(@key, @instances)
         rescue StandardError => e
           Rails.logger.error "CDS Updates excel: write error #{@key} in #{@filename} - #{e.message}"
           @failed = true
@@ -30,7 +31,8 @@ class CdsImporter
     end
 
     def after_parse
-      write(@key, @instances)
+      write_data(@key, @instances)
+      build_worksheets(@data)
       workbook.close
 
       if TradeTariffBackend.cds_updates_send_email && !@failed
@@ -44,49 +46,55 @@ class CdsImporter
 
     attr_reader :workbook, :filename, :package, :bold_style, :regular_style
 
-    def write(key, instances)
+    def write_data(key, instances)
       klass = Module.const_get("CdsImporter::ExcelWriter::#{key}")
 
       update = klass.new(instances)
+
       return unless update.valid?
 
-      sheet_name = klass.sheet_name
-      note = klass.note
-      heading = klass.heading
-      column_widths = klass.column_widths
-      sort_columns = klass.sort_columns
-      row = update.data_row
-
-      sheet = workbook.add_worksheet(sheet_name)
-
-      if note.present?
-        sheet.append_row(note, bold_style)
-        sheet.merge_range(
-          col(klass.table_span[0]), 1,
-          col(klass.table_span[1]), 1
-        )
-        sheet.append_row([])
-        sheet.merge_range(
-          col(klass.table_span[0]), 2,
-          col(klass.table_span[1]), 2
-        )
+      unless @data.include?(key)
+        @data[key] = []
       end
 
-      sheet.append_row(heading, bold_style)
+      @data[key].push(update.data_row)
+    end
 
-      column_widths.each_with_index do |width, index|
-        sheet.set_column_width(index, width)
-      end
+    def build_worksheets(data)
+      data.each do |key, values|
+        klass = Module.const_get("CdsImporter::ExcelWriter::#{key}")
 
-      if sort_columns.present?
-        row.sort_by! do |r|
-          sort_columns.map { |col| r[col] }
+        column_widths = klass.column_widths
+        heading = klass.heading
+        merge_range = klass.table_span
+        note = klass.note
+        sheet_name = klass.sheet_name
+        sort_columns = klass.sort_columns
+
+        sheet = workbook.add_worksheet(sheet_name)
+
+        if note.present?
+          sheet.append_row([])
+          sheet.merge_range(0, 0, 0, column_index(merge_range[1]), note, bold_style)
+          sheet.append_row([])
+        end
+
+        sheet.append_row(heading, bold_style)
+
+        if sort_columns.present?
+          values.sort_by! do |r|
+            sort_columns.map { |col| r[col] }
+          end
+        end
+
+        values.each do |row|
+          sheet.append_row(row, regular_style)
+        end
+
+        column_widths.each_with_index do |width, index|
+          sheet.set_column_width(index, width)
         end
       end
-
-      sheet.append_row(row, regular_style)
-    rescue StandardError => e
-      Rails.logger.info "Write record error on #{key} - #{e.message}"
     end
 
     def initiate_excel_file
@@ -107,7 +115,7 @@ class CdsImporter
 
       @regular_style = workbook.add_format(
         align: { h: :left, v: :top },
-        font_name: 'Calibri',
+        font_name: 'Arial',
         font_size: 11,
         text_wrap: true,
       )
@@ -134,8 +142,8 @@ class CdsImporter
       end
     end
 
-    def col(cell)
-      cell.ord - 'A'.ord
+    def column_index(col)
+      (col.ord - 'A'.ord).to_i
     end
   end
 end
