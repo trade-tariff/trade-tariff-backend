@@ -25,11 +25,12 @@ RSpec.describe AdminConfiguration do
       expect(result).to be_nil
     end
 
-    context 'with memory cache store' do
+    context 'when in production environment' do
       let(:memory_store) { ActiveSupport::Cache::MemoryStore.new }
 
       before do
         allow(Rails).to receive(:cache).and_return(memory_store)
+        allow(TradeTariffBackend).to receive(:environment).and_return(ActiveSupport::StringInquirer.new('production'))
       end
 
       it 'caches the result for subsequent calls' do
@@ -49,6 +50,22 @@ RSpec.describe AdminConfiguration do
         described_class.refresh!(concurrently: false)
 
         memory_store.delete('admin_configurations/test_lookup')
+
+        fresh = described_class.classification.by_name('test_lookup')
+        expect(fresh.value).to eq('updated')
+      end
+    end
+
+    context 'when in non-production environment' do
+      before do
+        allow(TradeTariffBackend).to receive(:environment).and_return(ActiveSupport::StringInquirer.new('staging'))
+      end
+
+      it 'returns fresh data without caching' do
+        described_class.classification.by_name('test_lookup')
+
+        config.update(value: 'updated')
+        described_class.refresh!(concurrently: false)
 
         fresh = described_class.classification.by_name('test_lookup')
         expect(fresh.value).to eq('updated')

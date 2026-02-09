@@ -37,7 +37,11 @@ class AdminConfiguration < Sequel::Model(Sequel[:admin_configurations].qualify(:
     end
 
     def by_name(config_name)
-      Rails.cache.fetch("admin_configurations/#{config_name}", expires_in: CACHE_TTL) do
+      if TradeTariffBackend.environment.production?
+        Rails.cache.fetch("admin_configurations/#{config_name}", expires_in: CACHE_TTL) do
+          where(name: config_name).first
+        end
+      else
         where(name: config_name).first
       end
     end
