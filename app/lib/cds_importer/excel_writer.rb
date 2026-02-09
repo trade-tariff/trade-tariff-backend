@@ -37,7 +37,7 @@ class CdsImporter
       workbook.close
 
       if TradeTariffBackend.cds_updates_send_email && !@failed
-        TariffSynchronizer::Mailer.cds_updates(xml_to_file_date, workbook, excel_filename).deliver_now
+        TariffSynchronizer::Mailer.cds_updates(xml_to_file_date, workbook.read_string, excel_filename).deliver_now
       end
     rescue StandardError => e
       Rails.logger.error "CDS Updates excel: save file error for #{@filename} - #{e.message}"
