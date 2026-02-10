@@ -73,28 +73,28 @@ RSpec.describe TariffChangesJobStatus do
   end
 
   describe '.pending_emails dataset method' do
+    let(:date_5_days_ago) { 5.days.ago.to_date }
+    let(:date_4_days_ago) { 4.days.ago.to_date }
+    let(:date_3_days_ago) { 3.days.ago.to_date }
+    let(:date_2_days_ago) { 2.days.ago.to_date }
+
     before do
-      create :tariff_changes_job_status, operation_date: 5.days.ago
-      create :tariff_changes_job_status, :pending_email, operation_date: 3.days.ago
-      create :tariff_changes_job_status, :with_emails_sent, operation_date: 2.days.ago
-      create :tariff_changes_job_status, :pending_email, operation_date: 4.days.ago
+      create :tariff_changes_job_status, operation_date: date_5_days_ago
+      create :tariff_changes_job_status, :pending_email, operation_date: date_3_days_ago
+      create :tariff_changes_job_status, :with_emails_sent, operation_date: date_2_days_ago
+      create :tariff_changes_job_status, :pending_email, operation_date: date_4_days_ago
     end
 
     it 'returns operation dates with changes generated but no emails sent' do
       pending_dates = described_class.pending_emails
-      expected_dates = described_class.where { changes_generated_at !~ nil }
-                                      .where { emails_sent_at =~ nil }
-                                      .select_map(:operation_date)
+      expected_dates = [date_4_days_ago, date_3_days_ago]
 
       expect(pending_dates).to match_array(expected_dates)
     end
 
     it 'returns dates in ascending order' do
       pending_dates = described_class.pending_emails
-      expected_dates = described_class.where { changes_generated_at !~ nil }
-                                      .where { emails_sent_at =~ nil }
-                                      .order(:operation_date)
-                                      .select_map(:operation_date)
+      expected_dates = [date_4_days_ago, date_3_days_ago]
 
       expect(pending_dates).to eq([
         *expected_dates,
@@ -105,6 +105,42 @@ RSpec.describe TariffChangesJobStatus do
       described_class.where(changes_generated_at: nil).or(emails_sent_at: nil).delete
 
       expect(described_class.pending_emails).to be_empty
+    end
+  end
+
+  describe '.pending_changes dataset method' do
+    let(:date_5_days_ago) { 5.days.ago.to_date }
+    let(:date_4_days_ago) { 4.days.ago.to_date }
+    let(:date_3_days_ago) { 3.days.ago.to_date }
+    let(:date_2_days_ago) { 2.days.ago.to_date }
+
+    before do
+      create :tariff_changes_job_status, :with_changes_generated, operation_date: date_5_days_ago
+      create :tariff_changes_job_status, operation_date: date_3_days_ago
+      create :tariff_changes_job_status, :with_emails_sent, operation_date: date_2_days_ago
+      create :tariff_changes_job_status, operation_date: date_4_days_ago
+    end
+
+    it 'returns operation dates with changes not generated' do
+      pending_dates = described_class.pending_changes
+      expected_dates = [date_4_days_ago, date_3_days_ago]
+
+      expect(pending_dates).to match_array(expected_dates)
+    end
+
+    it 'returns dates in ascending order' do
+      pending_dates = described_class.pending_changes
+      expected_dates = [date_4_days_ago, date_3_days_ago]
+
+      expect(pending_dates).to eq([
+        *expected_dates,
+      ])
+    end
+
+    it 'returns empty array when no pending changes' do
+      described_class.where { changes_generated_at =~ nil }.delete
+
+      expect(described_class.pending_changes).to be_empty
     end
   end
 

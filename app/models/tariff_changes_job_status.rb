@@ -20,13 +20,27 @@ class TariffChangesJobStatus < Sequel::Model(Sequel[:tariff_changes_job_statuses
         .order(:operation_date)
         .select_map(:operation_date)
     end
+
+    def pending_changes
+      where { changes_generated_at =~ nil }
+        .order(:operation_date)
+        .select_map(:operation_date)
+    end
   end
 
   def mark_changes_generated!
     update(changes_generated_at: Time.zone.now)
   end
 
+  def mark_changes_pending!
+    update(changes_generated_at: nil)
+  end
+
   def mark_emails_sent!
     update(emails_sent_at: Time.zone.now)
+  end
+
+  def changes_pending?
+    changes_generated_at.nil?
   end
 end
