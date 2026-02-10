@@ -125,6 +125,17 @@ RSpec.describe CdsSynchronizer, :truncation do
         }.to change(Measure, :count).from(2).to(1)
       end
     end
+
+    it 'marks tariff changes as pending' do
+      tariff_change_job = TariffChangesJobStatus.create(operation_date: Date.yesterday)
+      tariff_change_job.mark_changes_generated!
+
+      Sidekiq::Testing.inline! do
+        create(:rollback, date: Date.yesterday.beginning_of_day)
+      end
+
+      expect(tariff_change_job.reload).to be_changes_pending
+    end
   end
 
   describe 'check sequence of CDS daily updates' do

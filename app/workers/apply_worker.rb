@@ -6,8 +6,9 @@ class ApplyWorker
   def perform
     TradeTariffBackend.uk? ? CdsSynchronizer.apply : TaricSynchronizer.apply
 
-    MaterializedViewHelper.refresh_materialized_view
+    MaterializeViewHelper.refresh_materialized_view
 
+    PopulateTariffChangesWorker.perform_async
     ClearCacheWorker.perform_async
   end
 end

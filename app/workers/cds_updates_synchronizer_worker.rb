@@ -30,6 +30,7 @@ class CdsUpdatesSynchronizerWorker
     Sidekiq::Client.enqueue_in(5.minutes, ClearInvalidSearchReferences)
     Sidekiq::Client.enqueue_in(10.minutes, TreeIntegrityCheckWorker)
     Sidekiq::Client.enqueue_in(11.minutes, PopulateChangesTableWorker)
+    Sidekiq::Client.enqueue_in(12.minutes, PopulateTariffChangesWorker)
     Sidekiq::Client.enqueue_in(15.minutes, ClearCacheWorker)
   rescue TariffSynchronizer::CdsUpdateDownloader::ListDownloadFailedError
     attempt_reschedule!

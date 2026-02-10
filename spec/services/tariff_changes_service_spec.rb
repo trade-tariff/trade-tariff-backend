@@ -7,6 +7,27 @@ RSpec.describe TariffChangesService do
     let(:last_change_date) { Time.zone.today - 5.days }
 
     context 'when called without a date' do
+      it 'generates changes for each pending date' do
+        pending_dates = [Date.new(2025, 1, 10), Date.new(2025, 1, 12)]
+        service_1 = instance_double(described_class)
+        service_2 = instance_double(described_class)
+
+        allow(TariffChangesJobStatus).to receive_messages(
+          pending_changes: pending_dates,
+          last_change_date: Time.zone.yesterday,
+        )
+        allow(described_class).to receive(:new).with(pending_dates[0]).and_return(service_1)
+        allow(described_class).to receive(:new).with(pending_dates[1]).and_return(service_2)
+        allow(service_1).to receive(:all_changes)
+        allow(service_2).to receive(:all_changes)
+        allow(described_class).to receive(:populate_backlog)
+
+        described_class.generate
+
+        expect(service_1).to have_received(:all_changes)
+        expect(service_2).to have_received(:all_changes)
+      end
+
       context 'when there are existing TariffChangesJobStatus records' do
         before do
           allow(TariffChangesJobStatus).to receive(:last_change_date).and_return(last_change_date)
