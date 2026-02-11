@@ -70,7 +70,7 @@ resource "aws_cloudwatch_dashboard" "search" {
           width  = 6
           height = 6
           properties = {
-            title  = "Error Rate"
+            title  = "Search Volume by Outcome"
             region = var.region
             view   = "timeSeries"
             query  = <<-EOT
@@ -347,10 +347,27 @@ resource "aws_cloudwatch_dashboard" "search" {
           type   = "log"
           x      = 0
           y      = 36
-          width  = 8
+          width  = 6
           height = 6
           properties = {
-            title  = "Errors Over Time"
+            title  = "Interactive Search Errors"
+            region = var.region
+            view   = "timeSeries"
+            query  = <<-EOT
+              ${local.source}
+              | ${local.service_filter} and event = "search_completed" and search_type = "interactive" and final_result_type = "error"
+              | stats count(*) as errors by bin(1h)
+            EOT
+          }
+        },
+        {
+          type   = "log"
+          x      = 6
+          y      = 36
+          width  = 6
+          height = 6
+          properties = {
+            title  = "Hard Errors Over Time"
             region = var.region
             view   = "timeSeries"
             query  = <<-EOT
@@ -362,12 +379,12 @@ resource "aws_cloudwatch_dashboard" "search" {
         },
         {
           type   = "log"
-          x      = 8
+          x      = 12
           y      = 36
-          width  = 8
+          width  = 6
           height = 6
           properties = {
-            title  = "Errors by Type"
+            title  = "Hard Errors by Type"
             region = var.region
             view   = "pie"
             query  = <<-EOT
@@ -379,17 +396,18 @@ resource "aws_cloudwatch_dashboard" "search" {
         },
         {
           type   = "log"
-          x      = 16
+          x      = 18
           y      = 36
-          width  = 8
+          width  = 6
           height = 6
           properties = {
             title  = "Recent Error Log"
             region = var.region
             query  = <<-EOT
               ${local.source}
-              | ${local.service_filter} and event = "search_failed"
-              | fields @timestamp, search_type, error_type, error_message, request_id
+              | ${local.service_filter} and event in ["search_failed", "search_completed"]
+              | filter event = "search_failed" or final_result_type = "error"
+              | fields @timestamp, event, search_type, error_type, final_result_type, error_message, request_id
               | sort @timestamp desc
               | limit 20
             EOT
