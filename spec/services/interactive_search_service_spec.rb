@@ -404,6 +404,64 @@ RSpec.describe InteractiveSearchService do
         )
       end
     end
+
+    context 'when search_context includes %{expanded_query} placeholder' do
+      before do
+        AdminConfiguration.where(name: 'search_context').first.update(
+          value: Sequel.pg_jsonb_wrap('Query: %{search_input} Expanded: %{expanded_query}'),
+        )
+        AdminConfiguration.refresh!(concurrently: false)
+      end
+
+      it 'substitutes both the original and expanded query' do
+        result
+
+        expect(OpenaiClient).to have_received(:call).with(
+          a_string_including('Query: leather handbag Expanded: leather handbag travel bag accessory'),
+          anything,
+        )
+      end
+    end
+
+    context 'when expanded_query is the same as the original query' do
+      let(:expanded_query) { 'leather handbag' }
+
+      before do
+        AdminConfiguration.where(name: 'search_context').first.update(
+          value: Sequel.pg_jsonb_wrap('Query: %{search_input} Expanded: %{expanded_query}'),
+        )
+        AdminConfiguration.refresh!(concurrently: false)
+      end
+
+      it 'substitutes both with the same value' do
+        result
+
+        expect(OpenaiClient).to have_received(:call).with(
+          a_string_including('Query: leather handbag Expanded: leather handbag'),
+          anything,
+        )
+      end
+    end
+
+    context 'when expanded_query is nil' do
+      let(:expanded_query) { nil }
+
+      before do
+        AdminConfiguration.where(name: 'search_context').first.update(
+          value: Sequel.pg_jsonb_wrap('Query: %{search_input} Expanded: %{expanded_query}'),
+        )
+        AdminConfiguration.refresh!(concurrently: false)
+      end
+
+      it 'substitutes expanded_query with empty string' do
+        result
+
+        expect(OpenaiClient).to have_received(:call).with(
+          a_string_including('Query: leather handbag Expanded: '),
+          anything,
+        )
+      end
+    end
   end
 
   describe 'Result struct' do
