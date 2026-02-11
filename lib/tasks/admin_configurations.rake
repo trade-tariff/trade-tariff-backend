@@ -126,6 +126,10 @@ module AdminConfigurationSeeder
       %{search_input}
       -----------END SEARCH_INPUT--------------
 
+      -----------EXPANDED_QUERY-----------------
+      %{expanded_query}
+      -----------END EXPANDED_QUERY-------------
+
       -----------ANSWERS_OPENSEARCH-------------
       %{answers_opensearch}
       -----------END ANSWERS_OPENSEARCH---------
