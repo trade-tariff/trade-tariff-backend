@@ -10,6 +10,30 @@ class SearchSuggestion < Sequel::Model
   TYPE_COLLOQUIAL_TERM = 'colloquial_term'.freeze
   TYPE_SYNONYM = 'synonym'.freeze
 
+  ALWAYS_ALLOWED_TYPES = [
+    TYPE_SEARCH_REFERENCE,
+    TYPE_GOODS_NOMENCLATURE,
+  ].freeze
+
+  CONFIGURABLE_TYPES = {
+    'suggest_chemical_names' => TYPE_FULL_CHEMICAL_NAME,
+    'suggest_chemical_cas' => TYPE_FULL_CHEMICAL_CAS,
+    'suggest_chemical_cus' => TYPE_FULL_CHEMICAL_CUS,
+    'suggest_known_brands' => TYPE_KNOWN_BRAND,
+    'suggest_colloquial_terms' => TYPE_COLLOQUIAL_TERM,
+    'suggest_synonyms' => TYPE_SYNONYM,
+  }.freeze
+
+  def self.allowed_types
+    types = ALWAYS_ALLOWED_TYPES.dup
+
+    CONFIGURABLE_TYPES.each do |config_name, type|
+      types << type if AdminConfiguration.enabled?(config_name)
+    end
+
+    types
+  end
+
   plugin :timestamps, update_on_create: true
 
   set_primary_key %i[id value]
