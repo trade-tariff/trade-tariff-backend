@@ -512,7 +512,7 @@ RSpec.describe TariffChangesService::Presenter do
 
     it 'builds the correct OTT URL with date parameters' do
       result = presenter.ott_url
-      expected_url = 'https://www.trade-tariff.service.gov.uk/commodities/0202000000?day=15&month=8&year=2024'
+      expected_url = 'https://www.trade-tariff.service.gov.uk/commodities/0202000000?day=15&month=8&year=2024&utm_source=offline&utm_medium=excel&utm_campaign=change_data'
       expect(result).to eq(expected_url)
     end
   end
@@ -527,7 +527,7 @@ RSpec.describe TariffChangesService::Presenter do
 
     it 'builds the correct API URL' do
       result = presenter.api_url
-      expected_url = 'https://www.trade-tariff.service.gov.uk/uk/api/commodities/0202000000?as_of=2024-08-15'
+      expected_url = 'https://www.trade-tariff.service.gov.uk/uk/api/commodities/0202000000?as_of=2024-08-15&utm_source=offline&utm_medium=excel&utm_campaign=change_data'
       expect(result).to eq(expected_url)
     end
   end
