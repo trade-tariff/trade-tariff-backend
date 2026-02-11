@@ -165,6 +165,59 @@ RSpec.describe Api::Admin::GoodsNomenclatures::GoodsNomenclatureLabelsController
       end
     end
 
+    context 'when updating label suggestions' do
+      let(:new_labels) do
+        {
+          description: 'Updated description',
+          known_brands: [],
+          colloquial_terms: [],
+          synonyms: %w[synonym1 synonym2],
+        }
+      end
+
+      it 'creates search suggestions for label terms' do
+        expect {
+          put :update, params: {
+            goods_nomenclature_id: commodity.goods_nomenclature_item_id,
+            data: { type: 'goods_nomenclature_label', attributes: { labels: new_labels } },
+          }, format: :json
+        }.to change {
+          SearchSuggestion
+            .where(goods_nomenclature_sid: commodity.goods_nomenclature_sid)
+            .where(type: LabelSuggestionsUpdaterService::LABEL_TYPES)
+            .count
+        }.by(2)
+      end
+
+      it 'removes old label suggestions when terms are deleted' do
+        # First update: add synonyms
+        put :update, params: {
+          goods_nomenclature_id: commodity.goods_nomenclature_item_id,
+          data: { type: 'goods_nomenclature_label', attributes: { labels: new_labels } },
+        }, format: :json
+
+        expect(
+          SearchSuggestion
+            .where(goods_nomenclature_sid: commodity.goods_nomenclature_sid, type: 'synonym')
+            .count,
+        ).to eq(2)
+
+        # Second update: remove all synonyms
+        empty_labels = { description: 'Updated again', known_brands: [], colloquial_terms: [], synonyms: [] }
+
+        put :update, params: {
+          goods_nomenclature_id: commodity.goods_nomenclature_item_id,
+          data: { type: 'goods_nomenclature_label', attributes: { labels: empty_labels } },
+        }, format: :json
+
+        expect(
+          SearchSuggestion
+            .where(goods_nomenclature_sid: commodity.goods_nomenclature_sid, type: 'synonym')
+            .count,
+        ).to eq(0)
+      end
+    end
+
     context 'when goods nomenclature does not exist' do
       it 'returns 404' do
         put :update, params: {

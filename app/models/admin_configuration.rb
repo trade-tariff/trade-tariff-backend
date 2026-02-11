@@ -26,7 +26,7 @@ class AdminConfiguration < Sequel::Model(Sequel[:admin_configurations].qualify(:
     'suggest_chemical_cas' => false,
     'suggest_chemical_cus' => false,
     'suggest_chemical_names' => false,
-    'suggest_colloquial_terms' => true,
+    'suggest_colloquial_terms' => false,
     'suggest_known_brands' => false,
     'suggest_synonyms' => false,
   }.freeze

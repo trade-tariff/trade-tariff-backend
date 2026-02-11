@@ -25,30 +25,12 @@ module Api
 
       private
 
-      CONFIGURABLE_SUGGESTION_TYPES = {
-        'suggest_chemical_names' => ::SearchSuggestion::TYPE_FULL_CHEMICAL_NAME,
-        'suggest_chemical_cas' => ::SearchSuggestion::TYPE_FULL_CHEMICAL_CAS,
-        'suggest_chemical_cus' => ::SearchSuggestion::TYPE_FULL_CHEMICAL_CUS,
-        'suggest_known_brands' => ::SearchSuggestion::TYPE_KNOWN_BRAND,
-        'suggest_colloquial_terms' => ::SearchSuggestion::TYPE_COLLOQUIAL_TERM,
-        'suggest_synonyms' => ::SearchSuggestion::TYPE_SYNONYM,
-      }.freeze
-
       def suggest_results_limit
         AdminConfiguration.integer_value('suggest_results_limit')
       end
 
       def allowed_suggestion_types
-        types = [
-          ::SearchSuggestion::TYPE_SEARCH_REFERENCE,
-          ::SearchSuggestion::TYPE_GOODS_NOMENCLATURE,
-        ]
-
-        CONFIGURABLE_SUGGESTION_TYPES.each do |config_name, type|
-          types << type if AdminConfiguration.enabled?(config_name)
-        end
-
-        types
+        ::SearchSuggestion.allowed_types
       end
 
       def build_suggestion(hit)
