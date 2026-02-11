@@ -95,6 +95,7 @@ class InteractiveSearchService
     context = configured_context.to_s
     context
       .gsub('%{search_input}', query.to_s)
+      .gsub('%{expanded_query}', expanded_query.to_s)
       .gsub('%{answers_opensearch}', format_opensearch_results.to_s)
       .gsub('%{questions}', format_questions_and_answers.to_s)
   end
