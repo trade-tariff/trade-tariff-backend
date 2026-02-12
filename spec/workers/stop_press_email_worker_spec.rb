@@ -17,7 +17,7 @@ RSpec.describe StopPressEmailWorker, type: :worker do
     let(:expected_personalisation) do
       {
         stop_press_title: stop_press.title,
-        stop_press_link: stop_press.public_url,
+        stop_press_link: "#{stop_press.public_url}?utm_source=private+beta&utm_medium=email&utm_campaign=stop+press+notification",
         subscription_reason: 'This is a non-chapter specific update from the UK Trade Tariff Service',
         site_url: "#{URI.join(TradeTariffBackend.frontend_host, 'subscriptions/')}?utm_source=private+beta&utm_medium=email&utm_campaign=stop+press+notification",
         unsubscribe_url: "#{URI.join(TradeTariffBackend.frontend_host, 'subscriptions/unsubscribe/', user.stop_press_subscription)}?utm_source=private+beta&utm_medium=email&utm_campaign=stop+press+notification",
