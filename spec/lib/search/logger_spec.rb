@@ -139,6 +139,7 @@ RSpec.describe Search::Logger do
   describe '#search_completed' do
     let(:payload) do
       { request_id: 'req-1',
+        query: 'horses',
         search_type: 'interactive',
         total_attempts: 2,
         total_questions: 1,
@@ -149,6 +150,7 @@ RSpec.describe Search::Logger do
 
     it_behaves_like 'a search log entry', :search_completed, 'search_completed',
                     { request_id: 'req-1',
+                      query: 'horses',
                       search_type: 'interactive',
                       total_attempts: 2,
                       total_questions: 1,
@@ -160,6 +162,7 @@ RSpec.describe Search::Logger do
       logger_instance.search_completed(build_event('search_completed', payload))
       json = parsed_log_output
       expect(json['event']).to eq('search_completed')
+      expect(json['query']).to eq('horses')
       expect(json['search_type']).to eq('interactive')
       expect(json['total_duration_ms']).to eq(3000.0)
       expect(json['result_count']).to eq(5)
