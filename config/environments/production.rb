@@ -58,6 +58,8 @@ Rails.application.configure do
     'HealthcheckController#checkz',
   ]
 
+  config.silence_healthcheck_path = '/healthcheckz'
+
   # Rails cache store
   config.cache_store = :redis_cache_store,
                        TradeTariffBackend.redis_config.merge({
