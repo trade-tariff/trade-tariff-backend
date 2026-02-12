@@ -16,7 +16,7 @@ class StopPressEmailWorker
 
     personalisation = {
       stop_press_title: stop_press.title,
-      stop_press_link: stop_press.public_url,
+      stop_press_link: "#{stop_press.public_url}?#{tracking_params}",
       subscription_reason: subscription_reason(stop_press, user),
       site_url: "#{URI.join(TradeTariffBackend.frontend_host, 'subscriptions/')}?#{tracking_params}",
       unsubscribe_url: "#{URI.join(TradeTariffBackend.frontend_host, 'subscriptions/unsubscribe/', user.stop_press_subscription)}?#{tracking_params}",
