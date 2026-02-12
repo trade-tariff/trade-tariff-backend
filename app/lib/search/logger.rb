@@ -56,6 +56,7 @@ module Search
       data = {
         event: 'search_completed',
         request_id: event.payload[:request_id],
+        query: event.payload[:query],
         search_type: event.payload[:search_type],
         total_attempts: event.payload[:total_attempts],
         total_questions: event.payload[:total_questions],

@@ -19,7 +19,7 @@ module Search
       result, completion_payload = yield
 
       duration_ms = ((Process.clock_gettime(Process::CLOCK_MONOTONIC) - start_time) * 1000).round(2)
-      search_completed(request_id:, search_type:, total_duration_ms: duration_ms, **(completion_payload || {}))
+      search_completed(request_id:, query:, search_type:, total_duration_ms: duration_ms, **(completion_payload || {}))
 
       result
     rescue StandardError => e
@@ -81,9 +81,10 @@ module Search
       instrument('answer_returned', request_id:, answer_count:, confidence_levels:, attempt_number:)
     end
 
-    def search_completed(request_id:, search_type:, total_duration_ms:, result_count:, total_attempts: nil, total_questions: nil, final_result_type: nil, results_type: nil, max_score: nil)
+    def search_completed(request_id:, search_type:, total_duration_ms:, result_count:, query: nil, total_attempts: nil, total_questions: nil, final_result_type: nil, results_type: nil, max_score: nil)
       payload = {
         request_id:,
+        query:,
         search_type:,
         total_attempts:,
         total_questions:,
