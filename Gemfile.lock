@@ -169,7 +169,7 @@ GEM
       net-http (~> 0.5)
     fast_excel (0.5.0)
       ffi (> 1.9, < 2)
-    ffi (1.17.2)
+    ffi (1.17.3)
     foreman (0.90.0)
       thor (~> 1.4)
     forgery (0.8.1)
@@ -544,7 +544,7 @@ DEPENDENCIES
   webmock
 
 RUBY VERSION
-   ruby 3.4.7p58
+   ruby 4.0.1p0
 
 BUNDLED WITH
    2.6.6
