@@ -76,17 +76,19 @@ RSpec.describe Api::V2::GreenLanes::CategoryAssessmentPresenter do
       let(:certificate) { create :certificate, :exemption }
       let(:measure_sid) { assessment.measures.first.measure_sid }
 
-      before do
-        create(:measure_condition, measure_sid:,
-                                   certificate:,
-                                   condition_code: 'AB')
-
-        create(:measure_condition, measure_sid:,
-                                   certificate:,
-                                   condition_code: 'CD')
-      end
-
       context 'with singular exemptions' do
+        before do
+          create(:measure_condition, measure_sid:,
+                                     certificate:,
+                                     condition_code: 'AB',
+                                     condition_duty_amount: nil)
+
+          create(:measure_condition, measure_sid:,
+                                     certificate:,
+                                     condition_code: 'CD',
+                                     condition_duty_amount: nil)
+        end
+
         it { is_expected.to include certificate }
       end
 
