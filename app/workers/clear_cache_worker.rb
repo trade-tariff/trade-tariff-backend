@@ -3,18 +3,10 @@ class ClearCacheWorker
 
   sidekiq_options queue: :sync, retry: false
 
-  PRESERVED_CACHE_KEYS = %w[
-    myott_all_active_commodities
-    myott_all_expired_commodities
-  ].freeze
-
   def perform
     clear_backend_cache
 
-    # Clear frontend cache
-    Rails.logger.info 'Clearing frontend cache'
-    TradeTariffBackend.frontend_redis.flushdb
-    Rails.logger.info 'Frontend cache cleared'
+    clear_frontend_cache
 
     Sidekiq::Client.enqueue(PrecacheHeadingsWorker, Time.zone.today.to_formatted_s(:db))
     Sidekiq::Client.enqueue(PrewarmQuotaOrderNumbersWorker)
@@ -27,8 +19,16 @@ class ClearCacheWorker
 
   private
 
+  def clear_frontend_cache
+    Rails.logger.info 'Clearing frontend cache'
+    TradeTariffBackend.frontend_redis.flushdb
+    Rails.logger.info 'Frontend cache cleared'
+  end
+
   def clear_backend_cache
-    preserved = Rails.cache.read_multi(*PRESERVED_CACHE_KEYS)
+    preserved_keys = Api::User::ActiveCommoditiesService::MYOTT_ALL_ACTIVE_COMMODITIES_CACHE_KEY,
+                     Api::User::ActiveCommoditiesService::MYOTT_ALL_EXPIRED_COMMODITIES_CACHE_KEY
+    preserved = Rails.cache.read_multi(*preserved_keys)
 
     logger.info 'Clearing Rails cache'
     Rails.cache.clear

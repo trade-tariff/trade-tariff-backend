@@ -1,7 +1,13 @@
 RSpec.describe ClearCacheWorker, type: :worker do
   subject(:worker) { described_class.new }
 
-  let(:preserved_keys) { described_class::PRESERVED_CACHE_KEYS }
+  let(:preserved_keys) do
+    [
+      Api::User::ActiveCommoditiesService::MYOTT_ALL_ACTIVE_COMMODITIES_CACHE_KEY,
+      Api::User::ActiveCommoditiesService::MYOTT_ALL_EXPIRED_COMMODITIES_CACHE_KEY,
+    ]
+  end
+
   let(:preserved_values) do
     {
       'myott_all_active_commodities' => %w[a b],
