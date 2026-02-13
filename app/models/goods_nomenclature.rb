@@ -137,6 +137,9 @@ class GoodsNomenclature < Sequel::Model
                           foreign_key: :goods_nomenclature_sid,
                           order: Sequel.desc(:created_at)
 
+  one_to_one :goods_nomenclature_self_text, key: :goods_nomenclature_sid,
+                                            primary_key: :goods_nomenclature_sid
+
   one_to_many :green_lanes_measures, class: 'Measure',
                                      class_namespace: 'GreenLanes',
                                      key: %i[goods_nomenclature_item_id productline_suffix],
