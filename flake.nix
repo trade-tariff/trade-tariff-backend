@@ -45,7 +45,7 @@
           export DB_USER=""
         '';
 
-        postgresql-start = pkgs.writeScriptBin "pg-start" ''
+        postgresql-start = pkgs.writeShellScriptBin "pg-start" ''
           ${pg-environment-variables}
 
           if [ ! -d $PGDATA ]; then
@@ -57,17 +57,17 @@
           ${postgresql}/bin/postgres -k $PGHOST -c listen_addresses=''' -c unix_socket_directories=$PGHOST -c max_wal_size=16GB
         '';
 
-        lint = pkgs.writeScriptBin "lint" ''
+        lint = pkgs.writeShellScriptBin "lint" ''
           changed_files=$(git diff --name-only --diff-filter=ACM --merge-base main)
 
           bundle exec rubocop --autocorrect-all --force-exclusion $changed_files Gemfile
         '';
 
-        init = pkgs.writeScriptBin "init" ''
+        init = pkgs.writeShellScriptBin "init" ''
           cd terraform && terraform init -input=false -no-color -backend=false
         '';
 
-        update-providers = pkgs.writeScriptBin "update-providers" ''
+        update-providers = pkgs.writeShellScriptBin "update-providers" ''
           cd terraform
           terraform init -backend=false -reconfigure -upgrade
         '';
@@ -76,8 +76,8 @@
         devShells.default = pkgs.mkShell {
           shellHook = ''
             # For misbehaving gems that don't pick up the flags from BUNDLE_BUILD_*
-            export CPATH="/nix/store/hwqbid7b85dfdvyj0ckgi2c6a4ir653q-zlib-1.3.1-dev/include:$CPATH"
-            export LIBRARY_PATH="/nix/store/z55x0q74zldi64iwamqf8wgrm2iza5rk-zlib-1.3.1/lib:$LIBRARY_PATH"
+            export CPATH="${pkgs.zlib.dev}/include:$CPATH"
+            export LIBRARY_PATH="${pkgs.zlib.out}/lib:$LIBRARY_PATH"
 
             export GEM_HOME=$PWD/.nix/ruby/$(${ruby}/bin/ruby -e "puts RUBY_VERSION")
             mkdir -p $GEM_HOME
@@ -98,6 +98,7 @@
             lint
             pkgs.python3
             pkgs.socat
+            pkgs.zlib
             postgresql
             postgresql-start
             ruby
