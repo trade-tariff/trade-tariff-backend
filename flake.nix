@@ -45,7 +45,7 @@
           export DB_USER=""
         '';
 
-        postgresql-start = pkgs.writeScriptBin "pg-start" ''
+        postgresql-start = pkgs.writeShellScriptBin "pg-start" ''
           ${pg-environment-variables}
 
           if [ ! -d $PGDATA ]; then
@@ -57,17 +57,17 @@
           ${postgresql}/bin/postgres -k $PGHOST -c listen_addresses=''' -c unix_socket_directories=$PGHOST -c max_wal_size=16GB
         '';
 
-        lint = pkgs.writeScriptBin "lint" ''
+        lint = pkgs.writeShellScriptBin "lint" ''
           changed_files=$(git diff --name-only --diff-filter=ACM --merge-base main)
 
           bundle exec rubocop --autocorrect-all --force-exclusion $changed_files Gemfile
         '';
 
-        init = pkgs.writeScriptBin "init" ''
+        init = pkgs.writeShellScriptBin "init" ''
           cd terraform && terraform init -input=false -no-color -backend=false
         '';
 
-        update-providers = pkgs.writeScriptBin "update-providers" ''
+        update-providers = pkgs.writeShellScriptBin "update-providers" ''
           cd terraform
           terraform init -backend=false -reconfigure -upgrade
         '';
