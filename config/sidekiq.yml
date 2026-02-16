@@ -3,6 +3,7 @@
 :queues:
   - sync
   - default
+  - within_1_day
   - healthcheck
 :scheduler:
   :schedule:

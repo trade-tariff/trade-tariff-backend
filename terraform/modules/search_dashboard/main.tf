@@ -2,6 +2,9 @@ locals {
   dashboard_name = var.dashboard_name != null ? var.dashboard_name : "Search-${var.environment}"
   source         = "SOURCE '${var.log_group_name}'"
   service_filter = "filter service = \"search\""
+
+  label_dashboard_url     = "https://${var.region}.console.aws.amazon.com/cloudwatch/home?region=${var.region}#dashboards:name=LabelGenerator-${var.environment}"
+  self_text_dashboard_url = "https://${var.region}.console.aws.amazon.com/cloudwatch/home?region=${var.region}#dashboards:name=SelfTextGenerator-${var.environment}"
 }
 
 resource "aws_cloudwatch_dashboard" "search" {
@@ -10,12 +13,32 @@ resource "aws_cloudwatch_dashboard" "search" {
   dashboard_body = jsonencode({
     widgets = concat(
 
-      # Row 0 (y=0): Hero KPI Strip
+      # Row 0 (y=0): Documentation
+      [
+        {
+          type   = "text"
+          x      = 0
+          y      = 0
+          width  = 24
+          height = 2
+          properties = {
+            markdown = join("\n", [
+              "## Trade Tariff Search",
+              "Monitors keyword, interactive AI, and reference searches. Follows the RED method (Rate, Errors, Duration).",
+              "**Healthy:** p90 latency < 5s, error rate < 1%, zero-result rate < 10%.",
+              "**Start here:** check latency and error trends in the top row, then drill into search quality and zero-result terms below.",
+              "**Related:** [Label Generator](${local.label_dashboard_url}) | [Self-Text Generator](${local.self_text_dashboard_url})",
+            ])
+          }
+        }
+      ],
+
+      # Row 1 (y=2): Hero KPI Strip
       [
         {
           type   = "log"
           x      = 0
-          y      = 0
+          y      = 2
           width  = 6
           height = 6
           properties = {
@@ -32,7 +55,7 @@ resource "aws_cloudwatch_dashboard" "search" {
         {
           type   = "log"
           x      = 6
-          y      = 0
+          y      = 2
           width  = 6
           height = 6
           properties = {
@@ -49,7 +72,7 @@ resource "aws_cloudwatch_dashboard" "search" {
         {
           type   = "log"
           x      = 12
-          y      = 0
+          y      = 2
           width  = 6
           height = 6
           properties = {
@@ -66,7 +89,7 @@ resource "aws_cloudwatch_dashboard" "search" {
         {
           type   = "log"
           x      = 18
-          y      = 0
+          y      = 2
           width  = 6
           height = 6
           properties = {
@@ -82,12 +105,12 @@ resource "aws_cloudwatch_dashboard" "search" {
         },
       ],
 
-      # Row 1 (y=6): Performance Deep Dive
+      # Row 2 (y=8): Performance Deep Dive
       [
         {
           type   = "log"
           x      = 0
-          y      = 6
+          y      = 8
           width  = 12
           height = 6
           properties = {
@@ -104,7 +127,7 @@ resource "aws_cloudwatch_dashboard" "search" {
         {
           type   = "log"
           x      = 12
-          y      = 6
+          y      = 8
           width  = 12
           height = 6
           properties = {
@@ -120,12 +143,12 @@ resource "aws_cloudwatch_dashboard" "search" {
         },
       ],
 
-      # Row 2 (y=12): Performance by Type + Query Expansion
+      # Row 3 (y=14): Performance by Type + Query Expansion
       [
         {
           type   = "log"
           x      = 0
-          y      = 12
+          y      = 14
           width  = 8
           height = 6
           properties = {
@@ -142,7 +165,7 @@ resource "aws_cloudwatch_dashboard" "search" {
         {
           type   = "log"
           x      = 8
-          y      = 12
+          y      = 14
           width  = 8
           height = 6
           properties = {
@@ -159,7 +182,7 @@ resource "aws_cloudwatch_dashboard" "search" {
         {
           type   = "log"
           x      = 16
-          y      = 12
+          y      = 14
           width  = 8
           height = 6
           properties = {
@@ -175,12 +198,12 @@ resource "aws_cloudwatch_dashboard" "search" {
         },
       ],
 
-      # Row 3 (y=18): Search Quality - Outcomes
+      # Row 4 (y=20): Search Quality - Outcomes
       [
         {
           type   = "log"
           x      = 0
-          y      = 18
+          y      = 20
           width  = 8
           height = 6
           properties = {
@@ -197,7 +220,7 @@ resource "aws_cloudwatch_dashboard" "search" {
         {
           type   = "log"
           x      = 8
-          y      = 18
+          y      = 20
           width  = 8
           height = 6
           properties = {
@@ -214,7 +237,7 @@ resource "aws_cloudwatch_dashboard" "search" {
         {
           type   = "log"
           x      = 16
-          y      = 18
+          y      = 20
           width  = 8
           height = 6
           properties = {
@@ -230,12 +253,12 @@ resource "aws_cloudwatch_dashboard" "search" {
         },
       ],
 
-      # Row 4 (y=24): Zero-Result Searches
+      # Row 5 (y=26): Zero-Result Searches
       [
         {
           type   = "log"
           x      = 0
-          y      = 24
+          y      = 26
           width  = 8
           height = 6
           properties = {
@@ -252,7 +275,7 @@ resource "aws_cloudwatch_dashboard" "search" {
         {
           type   = "log"
           x      = 8
-          y      = 24
+          y      = 26
           width  = 8
           height = 6
           properties = {
@@ -270,7 +293,7 @@ resource "aws_cloudwatch_dashboard" "search" {
         {
           type   = "log"
           x      = 16
-          y      = 24
+          y      = 26
           width  = 8
           height = 6
           properties = {
@@ -287,12 +310,12 @@ resource "aws_cloudwatch_dashboard" "search" {
         },
       ],
 
-      # Row 5 (y=30): Interactive Search - The AI Story
+      # Row 6 (y=32): Interactive Search - The AI Story
       [
         {
           type   = "log"
           x      = 0
-          y      = 30
+          y      = 32
           width  = 12
           height = 6
           properties = {
@@ -309,7 +332,7 @@ resource "aws_cloudwatch_dashboard" "search" {
         {
           type   = "log"
           x      = 12
-          y      = 30
+          y      = 32
           width  = 6
           height = 6
           properties = {
@@ -326,7 +349,7 @@ resource "aws_cloudwatch_dashboard" "search" {
         {
           type   = "log"
           x      = 18
-          y      = 30
+          y      = 32
           width  = 6
           height = 6
           properties = {
@@ -342,12 +365,12 @@ resource "aws_cloudwatch_dashboard" "search" {
         },
       ],
 
-      # Row 6 (y=36): User Journey - Result Selection
+      # Row 7 (y=38): User Journey - Result Selection
       [
         {
           type   = "log"
           x      = 0
-          y      = 36
+          y      = 38
           width  = 8
           height = 6
           properties = {
@@ -364,7 +387,7 @@ resource "aws_cloudwatch_dashboard" "search" {
         {
           type   = "log"
           x      = 8
-          y      = 36
+          y      = 38
           width  = 8
           height = 6
           properties = {
@@ -381,7 +404,7 @@ resource "aws_cloudwatch_dashboard" "search" {
         {
           type   = "log"
           x      = 16
-          y      = 36
+          y      = 38
           width  = 8
           height = 6
           properties = {
@@ -398,12 +421,12 @@ resource "aws_cloudwatch_dashboard" "search" {
         },
       ],
 
-      # Row 7 (y=42): Errors and Reliability
+      # Row 8 (y=44): Errors and Reliability
       [
         {
           type   = "log"
           x      = 0
-          y      = 42
+          y      = 44
           width  = 6
           height = 6
           properties = {
@@ -420,7 +443,7 @@ resource "aws_cloudwatch_dashboard" "search" {
         {
           type   = "log"
           x      = 6
-          y      = 42
+          y      = 44
           width  = 6
           height = 6
           properties = {
@@ -437,7 +460,7 @@ resource "aws_cloudwatch_dashboard" "search" {
         {
           type   = "log"
           x      = 12
-          y      = 42
+          y      = 44
           width  = 6
           height = 6
           properties = {
@@ -454,7 +477,7 @@ resource "aws_cloudwatch_dashboard" "search" {
         {
           type   = "log"
           x      = 18
-          y      = 42
+          y      = 44
           width  = 6
           height = 6
           properties = {
@@ -472,12 +495,12 @@ resource "aws_cloudwatch_dashboard" "search" {
         },
       ],
 
-      # Row 8 (y=48): Live Feed
+      # Row 9 (y=50): Live Feed
       [
         {
           type   = "log"
           x      = 0
-          y      = 48
+          y      = 50
           width  = 12
           height = 6
           properties = {
@@ -495,7 +518,7 @@ resource "aws_cloudwatch_dashboard" "search" {
         {
           type   = "log"
           x      = 12
-          y      = 48
+          y      = 50
           width  = 12
           height = 6
           properties = {

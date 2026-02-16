@@ -25,6 +25,7 @@ Terraform to deploy the service into AWS.
 | <a name="module_backend_xi"></a> [backend\_xi](#module\_backend\_xi) | git@github.com:trade-tariff/trade-tariff-platform-terraform-modules.git//aws/ecs-service | aws/ecs-service-v1.19.2 |
 | <a name="module_label_generator_dashboard"></a> [label\_generator\_dashboard](#module\_label\_generator\_dashboard) | ./modules/label_generator_dashboard | n/a |
 | <a name="module_search_dashboard"></a> [search\_dashboard](#module\_search\_dashboard) | ./modules/search_dashboard | n/a |
+| <a name="module_self_text_generator_dashboard"></a> [self\_text\_generator\_dashboard](#module\_self\_text\_generator\_dashboard) | ./modules/self_text_generator_dashboard | n/a |
 | <a name="module_worker_uk"></a> [worker\_uk](#module\_worker\_uk) | git@github.com:trade-tariff/trade-tariff-platform-terraform-modules.git//aws/ecs-service | aws/ecs-service-v1.19.2 |
 | <a name="module_worker_xi"></a> [worker\_xi](#module\_worker\_xi) | git@github.com:trade-tariff/trade-tariff-platform-terraform-modules.git//aws/ecs-service | aws/ecs-service-v1.19.2 |
 
@@ -71,4 +72,5 @@ Terraform to deploy the service into AWS.
 |------|-------------|
 | <a name="output_label_generator_dashboard_url"></a> [label\_generator\_dashboard\_url](#output\_label\_generator\_dashboard\_url) | URL to the Label Generator CloudWatch dashboard |
 | <a name="output_search_dashboard_url"></a> [search\_dashboard\_url](#output\_search\_dashboard\_url) | URL to the Search CloudWatch dashboard |
+| <a name="output_self_text_generator_dashboard_url"></a> [self\_text\_generator\_dashboard\_url](#output\_self\_text\_generator\_dashboard\_url) | URL to the Self-Text Generator CloudWatch dashboard |
 <!-- END_TF_DOCS -->

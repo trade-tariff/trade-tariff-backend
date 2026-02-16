@@ -39,7 +39,11 @@ module GenerateSelfText
 
     def process_batch(batch, stats)
       messages = build_messages(batch)
-      response = TradeTariffBackend.ai_client.call(messages, model: model)
+      response = SelfTextGenerator::Instrumentation.api_call(
+        batch_size: batch.size,
+        model: model,
+        chapter_code: chapter.short_code,
+      ) { TradeTariffBackend.ai_client.call(messages, model: model) }
 
       descriptions = parse_response(response)
 

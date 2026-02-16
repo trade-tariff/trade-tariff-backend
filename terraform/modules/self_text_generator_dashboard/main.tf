@@ -1,13 +1,13 @@
 locals {
-  dashboard_name = var.dashboard_name != null ? var.dashboard_name : "LabelGenerator-${var.environment}"
+  dashboard_name = var.dashboard_name != null ? var.dashboard_name : "SelfTextGenerator-${var.environment}"
   source         = "SOURCE '${var.log_group_name}'"
-  service_filter = "filter service = \"label_generator\""
+  service_filter = "filter service = \"self_text_generator\""
 
-  self_text_dashboard_url = "https://${var.region}.console.aws.amazon.com/cloudwatch/home?region=${var.region}#dashboards:name=SelfTextGenerator-${var.environment}"
-  search_dashboard_url    = "https://${var.region}.console.aws.amazon.com/cloudwatch/home?region=${var.region}#dashboards:name=Search-${var.environment}"
+  label_dashboard_url  = "https://${var.region}.console.aws.amazon.com/cloudwatch/home?region=${var.region}#dashboards:name=LabelGenerator-${var.environment}"
+  search_dashboard_url = "https://${var.region}.console.aws.amazon.com/cloudwatch/home?region=${var.region}#dashboards:name=Search-${var.environment}"
 }
 
-resource "aws_cloudwatch_dashboard" "label_generator" {
+resource "aws_cloudwatch_dashboard" "self_text_generator" {
   dashboard_name = local.dashboard_name
 
   dashboard_body = jsonencode({
@@ -23,11 +23,11 @@ resource "aws_cloudwatch_dashboard" "label_generator" {
           height = 2
           properties = {
             markdown = join("\n", [
-              "## Label Generator",
-              "AI-powered contextual label generation for goods nomenclatures. Runs as paginated Sidekiq jobs on the sync queue.",
-              "**Healthy:** all pages succeed, API latency p90 < 30s, no label save failures.",
-              "**Start here:** check Page Success vs Failure trend and API Latency, then drill into failure tables below.",
-              "**Related:** [Self-Text Generator](${local.self_text_dashboard_url}) | [Search](${local.search_dashboard_url})",
+              "## Self-Text Generator",
+              "Batch self-text generation across 98 chapters. Each chapter runs MechanicalBuilder then AiBuilder on the within_1_day queue.",
+              "**Healthy:** all chapters succeed, API latency p90 < 30s, reindex completes after each batch.",
+              "**Start here:** check Chapter Success vs Failure trend, then drill into failure tables below.",
+              "**Related:** [Label Generator](${local.label_dashboard_url}) | [Search](${local.search_dashboard_url})",
             ])
           }
         }
@@ -42,12 +42,12 @@ resource "aws_cloudwatch_dashboard" "label_generator" {
           width  = 6
           height = 6
           properties = {
-            title  = "Page Success vs Failure"
+            title  = "Chapter Success vs Failure"
             region = var.region
             view   = "timeSeries"
             query  = <<-EOT
               ${local.source}
-              | ${local.service_filter} and event in ["page_completed", "page_failed"]
+              | ${local.service_filter} and event in ["chapter_completed", "chapter_failed"]
               | stats count(*) as count by event, bin(1h)
             EOT
           }
@@ -76,13 +76,13 @@ resource "aws_cloudwatch_dashboard" "label_generator" {
           width  = 6
           height = 6
           properties = {
-            title  = "Labels Created vs Failed"
+            title  = "Error Rate by Type"
             region = var.region
             view   = "timeSeries"
             query  = <<-EOT
               ${local.source}
-              | ${local.service_filter} and event = "page_completed"
-              | stats sum(labels_created) as created, sum(labels_failed) as failed by bin(1h)
+              | ${local.service_filter} and event in ["chapter_failed", "api_call_failed"]
+              | stats count(*) as errors by event, bin(1h)
             EOT
           }
         },
@@ -93,13 +93,13 @@ resource "aws_cloudwatch_dashboard" "label_generator" {
           width  = 6
           height = 6
           properties = {
-            title  = "Error Rate by Type"
+            title  = "Nodes Processed vs Failed"
             region = var.region
             view   = "timeSeries"
             query  = <<-EOT
               ${local.source}
-              | ${local.service_filter} and event in ["page_failed", "api_call_failed", "label_save_failed"]
-              | stats count(*) as errors by event, bin(1h)
+              | ${local.service_filter} and event = "chapter_completed"
+              | stats sum(ai.processed) as processed, sum(ai.failed) as failed by bin(1h)
             EOT
           }
         }
@@ -114,12 +114,12 @@ resource "aws_cloudwatch_dashboard" "label_generator" {
           width  = 12
           height = 6
           properties = {
-            title  = "Page Processing Percentiles (ms)"
+            title  = "Chapter Processing Percentiles (ms)"
             region = var.region
             view   = "timeSeries"
             query  = <<-EOT
               ${local.source}
-              | ${local.service_filter} and event = "page_completed"
+              | ${local.service_filter} and event = "chapter_completed"
               | stats pct(duration_ms, 50) as p50, pct(duration_ms, 90) as p90, pct(duration_ms, 99) as p99 by bin(1h)
             EOT
           }
@@ -143,21 +143,39 @@ resource "aws_cloudwatch_dashboard" "label_generator" {
         }
       ],
 
-      # Row 3 (y=14): Quality - mismatches and generation history
+      # Row 3 (y=14): Generation history and reindex
       [
         {
           type   = "log"
           x      = 0
           y      = 14
-          width  = 12
+          width  = 8
           height = 6
           properties = {
-            title  = "AI Result Mismatches"
+            title  = "Recent Generation Runs"
             region = var.region
             query  = <<-EOT
               ${local.source}
-              | ${local.service_filter} and event = "api_call_completed" and batch_size != results_count
-              | fields @timestamp, page_number, batch_size, results_count, model
+              | ${local.service_filter} and event = "generation_started"
+              | fields @timestamp, total_chapters
+              | sort @timestamp desc
+              | limit 20
+            EOT
+          }
+        },
+        {
+          type   = "log"
+          x      = 8
+          y      = 14
+          width  = 8
+          height = 6
+          properties = {
+            title  = "Chapter Detail"
+            region = var.region
+            query  = <<-EOT
+              ${local.source}
+              | ${local.service_filter} and event = "chapter_completed"
+              | fields @timestamp, chapter_code, duration_ms, mechanical.processed, ai.processed, ai.failed
               | sort @timestamp desc
               | limit 50
             EOT
@@ -165,17 +183,17 @@ resource "aws_cloudwatch_dashboard" "label_generator" {
         },
         {
           type   = "log"
-          x      = 12
+          x      = 16
           y      = 14
-          width  = 12
+          width  = 8
           height = 6
           properties = {
-            title  = "Recent Generation Runs"
+            title  = "Reindex Events"
             region = var.region
             query  = <<-EOT
               ${local.source}
-              | ${local.service_filter} and event = "generation_completed"
-              | fields @timestamp, total_pages, duration_ms
+              | ${local.service_filter} and event in ["reindex_started", "reindex_completed"]
+              | fields @timestamp, event
               | sort @timestamp desc
               | limit 20
             EOT
@@ -189,15 +207,15 @@ resource "aws_cloudwatch_dashboard" "label_generator" {
           type   = "log"
           x      = 0
           y      = 20
-          width  = 8
+          width  = 12
           height = 6
           properties = {
-            title  = "API Failures"
+            title  = "API Failures (incl. 429s)"
             region = var.region
             query  = <<-EOT
               ${local.source}
               | ${local.service_filter} and event = "api_call_failed"
-              | fields @timestamp, page_number, model, error_class, error_message, duration_ms
+              | fields @timestamp, chapter_code, model, error_class, error_message, duration_ms, http_status
               | sort @timestamp desc
               | limit 20
             EOT
@@ -205,35 +223,17 @@ resource "aws_cloudwatch_dashboard" "label_generator" {
         },
         {
           type   = "log"
-          x      = 8
+          x      = 12
           y      = 20
-          width  = 8
+          width  = 12
           height = 6
           properties = {
-            title  = "Page Failures"
+            title  = "Chapter Failures"
             region = var.region
             query  = <<-EOT
               ${local.source}
-              | ${local.service_filter} and event = "page_failed"
-              | fields @timestamp, page_number, error_class, error_message, ai_response
-              | sort @timestamp desc
-              | limit 20
-            EOT
-          }
-        },
-        {
-          type   = "log"
-          x      = 16
-          y      = 20
-          width  = 8
-          height = 6
-          properties = {
-            title  = "Label Save Failures"
-            region = var.region
-            query  = <<-EOT
-              ${local.source}
-              | ${local.service_filter} and event = "label_save_failed"
-              | fields @timestamp, page_number, goods_nomenclature_item_id, error_class, error_message, validation_errors
+              | ${local.service_filter} and event = "chapter_failed"
+              | fields @timestamp, chapter_code, chapter_sid, error_class, error_message
               | sort @timestamp desc
               | limit 20
             EOT
