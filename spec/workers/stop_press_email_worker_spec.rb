@@ -5,12 +5,15 @@ RSpec.describe StopPressEmailWorker, type: :worker do
   let(:user) { create(:public_user, :with_active_stop_press_subscription) }
   let(:client) { instance_double(GovukNotifier) }
   let(:email_address) { 'test@example.com' }
+  let(:notification_id) { SecureRandom.uuid }
+  let(:notify_response) { instance_double(GovukNotifierAudit, notification_uuid: notification_id) }
 
   before do
     allow(IdentityApiClient).to receive(:get_email).and_return(email_address)
     allow(GovukNotifier).to receive(:new).and_return(client)
     allow(PublicUsers::User).to receive(:active).and_return(instance_double(Sequel::Dataset, :[] => user))
-    allow(client).to receive(:send_email)
+    allow(client).to receive(:send_email).and_return(notify_response)
+    allow(client).to receive(:schedule_status_check)
   end
 
   describe '#perform' do
@@ -34,6 +37,7 @@ RSpec.describe StopPressEmailWorker, type: :worker do
       instance.perform(stop_press.id, user.id)
 
       expect(client).to have_received(:send_email).with(email_address, StopPressEmailWorker::TEMPLATE_ID, expected_personalisation, StopPressEmailWorker::REPLY_TO_ID, nil)
+      expect(client).to have_received(:schedule_status_check).with(user, notify_response)
     end
 
     it 'returns if stop press is nil' do

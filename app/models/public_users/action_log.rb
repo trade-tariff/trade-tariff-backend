@@ -1,14 +1,26 @@
 module PublicUsers
   class ActionLog < Sequel::Model(Sequel[:user_action_logs].qualify(:public))
-    REGISTERED = 'registered'.freeze
-    SUBSCRIBED_STOP_PRESS = 'subscribed stop_press'.freeze
-    SUBSCRIBED_MY_COMMODITIES = 'subscribed my_commodities'.freeze
-    UNSUBSCRIBED_STOP_PRESS = 'unsubscribed stop_press'.freeze
-    UNSUBSCRIBED_MY_COMMODITIES = 'unsubscribed my_commodities'.freeze
     DELETED = 'deleted'.freeze
     FAILED_SUBSCRIBER = 'failed subscriber'.freeze
+    INVALIDATED_MY_COMMODITIES = 'invalidated my_commodities'.freeze
+    INVALIDATED_STOP_PRESS = 'invalidated stop_press'.freeze
+    REGISTERED = 'registered'.freeze
+    SUBSCRIBED_MY_COMMODITIES = 'subscribed my_commodities'.freeze
+    SUBSCRIBED_STOP_PRESS = 'subscribed stop_press'.freeze
+    UNSUBSCRIBED_MY_COMMODITIES = 'unsubscribed my_commodities'.freeze
+    UNSUBSCRIBED_STOP_PRESS = 'unsubscribed stop_press'.freeze
 
-    ALLOWED_ACTIONS = [REGISTERED, SUBSCRIBED_STOP_PRESS, SUBSCRIBED_MY_COMMODITIES, UNSUBSCRIBED_STOP_PRESS, UNSUBSCRIBED_MY_COMMODITIES, DELETED, FAILED_SUBSCRIBER].freeze
+    ALLOWED_ACTIONS = [
+      DELETED,
+      FAILED_SUBSCRIBER,
+      INVALIDATED_MY_COMMODITIES,
+      INVALIDATED_STOP_PRESS,
+      REGISTERED,
+      SUBSCRIBED_MY_COMMODITIES,
+      SUBSCRIBED_STOP_PRESS,
+      UNSUBSCRIBED_MY_COMMODITIES,
+      UNSUBSCRIBED_STOP_PRESS,
+    ].freeze
 
     plugin :auto_validations
     plugin :timestamps, update_on_create: true

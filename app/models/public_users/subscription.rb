@@ -30,6 +30,18 @@ module PublicUsers
       user.soft_delete!
     end
 
+    def invalidate
+      if active
+        update(active: false)
+        case subscription_type
+        when Subscriptions::Type.stop_press
+          PublicUsers::ActionLog.create(user_id: user.id, action: PublicUsers::ActionLog::INVALIDATED_STOP_PRESS)
+        when Subscriptions::Type.my_commodities
+          PublicUsers::ActionLog.create(user_id: user.id, action: PublicUsers::ActionLog::INVALIDATED_MY_COMMODITIES)
+        end
+      end
+    end
+
     def get_metadata_key(key)
       current_metadata = metadata || {}
       current_metadata[key]

@@ -101,6 +101,11 @@ module PublicUsers
       subscription&.subscription_targets_dataset&.map(&:target_id) || []
     end
 
+    def invalidate!
+      subscriptions_dataset.where(active: true).each(&:invalidate)
+      soft_delete!
+    end
+
     def soft_delete!
       return if deleted
       return if subscriptions_dataset.where(active: true).any?

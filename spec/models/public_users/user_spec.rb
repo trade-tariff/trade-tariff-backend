@@ -228,6 +228,39 @@ RSpec.describe PublicUsers::User do
     end
   end
 
+  describe '#invalidate!' do
+    let!(:stop_press_subscription) do
+      create(:user_subscription, user_id: user.id, subscription_type_id: Subscriptions::Type.stop_press.id, active: true)
+    end
+    let!(:my_commodities_subscription) do
+      create(:user_subscription, user_id: user.id, subscription_type_id: Subscriptions::Type.my_commodities.id, active: true)
+    end
+
+    before do
+      allow(ExternalUserDeletionWorker).to receive(:perform_async)
+    end
+
+    it 'invalidates all active subscriptions' do
+      user.invalidate!
+
+      expect(stop_press_subscription.refresh.active).to be(false)
+      expect(my_commodities_subscription.refresh.active).to be(false)
+    end
+
+    it 'creates invalidation logs and soft deletes the user' do
+      user.invalidate!
+
+      actions = user.action_logs.map(&:action)
+      expect(actions).to include(
+        PublicUsers::ActionLog::INVALIDATED_STOP_PRESS,
+        PublicUsers::ActionLog::INVALIDATED_MY_COMMODITIES,
+        PublicUsers::ActionLog::DELETED,
+      )
+      expect(user.refresh.deleted).to be(true)
+      expect(ExternalUserDeletionWorker).to have_received(:perform_async).with(user.id)
+    end
+  end
+
   describe 'scopes' do
     describe '.with_active_stop_press_subscription' do
       subject(:dataset) { described_class.with_active_stop_press_subscription }

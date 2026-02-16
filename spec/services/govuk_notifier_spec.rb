@@ -52,4 +52,46 @@ RSpec.describe GovukNotifier do
       )
     end
   end
+
+  describe '#get_email_status' do
+    let(:notification_id) { SecureRandom.uuid }
+    let(:response) { instance_double(Notifications::Client::Notification, status: 'delivered') }
+
+    it 'returns the notification status' do
+      allow(client).to receive(:get_notification).with(notification_id).and_return(response)
+
+      expect(notifier.get_email_status(notification_id)).to eq('delivered')
+    end
+  end
+
+  describe '#schedule_status_check' do
+    let(:user) { create(:public_user) }
+    let(:notification) { instance_double(GovukNotifierAudit, notification_uuid: SecureRandom.uuid) }
+
+    before do
+      allow(GovukNotifierStatusCheckWorker).to receive(:perform_in)
+    end
+
+    it 'enqueues a status check with the notification uuid' do
+      notifier.schedule_status_check(user, notification)
+
+      expect(GovukNotifierStatusCheckWorker).to have_received(:perform_in).with(
+        GovukNotifierStatusCheckWorker::CHECK_DELAY,
+        user.id,
+        notification.notification_uuid,
+      )
+    end
+
+    it 'does nothing when the user is blank' do
+      notifier.schedule_status_check(nil, notification)
+
+      expect(GovukNotifierStatusCheckWorker).not_to have_received(:perform_in)
+    end
+
+    it 'does nothing when the notification is blank' do
+      notifier.schedule_status_check(user, nil)
+
+      expect(GovukNotifierStatusCheckWorker).not_to have_received(:perform_in)
+    end
+  end
 end
