@@ -2,7 +2,13 @@ module Api
   module Internal
     class SearchController < InternalController
       def search
-        render json: Api::Internal::SearchService.new(search_params).call
+        result = Api::Internal::SearchService.new(search_params).call
+
+        if result.is_a?(Hash) && result[:errors]
+          render json: result, status: :unprocessable_content
+        else
+          render json: result
+        end
       end
 
       def suggestions

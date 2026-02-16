@@ -6,13 +6,23 @@ module Api
       attr_reader :q, :as_of, :answers, :request_id
 
       def initialize(params = {})
-        @q = process_query(params[:q])
+        sanitiser_result = InputSanitiser.new(params[:q]).call
+
+        if sanitiser_result[:errors]
+          @sanitiser_errors = sanitiser_result
+          @q = ''
+        else
+          @q = process_query(sanitiser_result[:query])
+        end
+
         @as_of = parse_date(params[:as_of])
         @answers = normalize_answers(params[:answers])
         @request_id = params[:request_id] || SecureRandom.uuid
       end
 
       def call
+        return @sanitiser_errors if @sanitiser_errors
+
         if q.blank? || ::SearchService::RogueSearchService.call(q)
           return { data: [] }
         end

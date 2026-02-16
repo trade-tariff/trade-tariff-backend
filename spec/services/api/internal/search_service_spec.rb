@@ -343,6 +343,60 @@ RSpec.describe Api::Internal::SearchService do
       end
     end
 
+    context 'when query contains HTML tags' do
+      let(:opensearch_response) { { 'hits' => { 'hits' => [] } } }
+
+      before do
+        allow(TradeTariffBackend.search_client).to receive(:search).and_return(opensearch_response)
+      end
+
+      it 'sanitises the query before searching' do
+        allow(Search::GoodsNomenclatureQuery).to receive(:new).and_call_original
+
+        described_class.new(q: '<b>shoes</b>').call
+
+        expect(Search::GoodsNomenclatureQuery).to have_received(:new).with(
+          'shoes',
+          anything,
+          anything,
+        )
+      end
+    end
+
+    context 'when query exceeds max length' do
+      it 'returns errors hash without searching' do
+        allow(TradeTariffBackend.search_client).to receive(:search)
+
+        result = described_class.new(q: 'a' * 201).call
+
+        expect(result[:errors]).to be_present
+        expect(result[:errors].first[:status]).to eq('422')
+        expect(TradeTariffBackend.search_client).not_to have_received(:search)
+      end
+    end
+
+    context 'when input_sanitiser_enabled is false' do
+      let(:opensearch_response) { { 'hits' => { 'hits' => [] } } }
+
+      before do
+        allow(AdminConfiguration).to receive(:enabled?).and_call_original
+        allow(AdminConfiguration).to receive(:enabled?).with('input_sanitiser_enabled').and_return(false)
+        allow(TradeTariffBackend.search_client).to receive(:search).and_return(opensearch_response)
+      end
+
+      it 'skips sanitisation and passes query directly to process_query' do
+        allow(Search::GoodsNomenclatureQuery).to receive(:new).and_call_original
+
+        described_class.new(q: 'red shoes').call
+
+        expect(Search::GoodsNomenclatureQuery).to have_received(:new).with(
+          'red shoes',
+          anything,
+          anything,
+        )
+      end
+    end
+
     context 'when expand_search_enabled is false' do
       let(:opensearch_response) { { 'hits' => { 'hits' => [] } } }
 
