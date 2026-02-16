@@ -97,14 +97,14 @@ RSpec.describe GenerateSelfText::SegmentExtractor do
         end
       end
 
-      context 'when description contains "Other" as part of a phrase' do
+      context 'when description is "Other than horses"' do
         let(:commodity_b) do
           create(:commodity, :with_description,
                  description: 'Other than horses',
                  parent: heading)
         end
 
-        it 'does not match multi-word descriptions' do
+        it 'does not match "Other than" exclusion phrases' do
           segment = segment_for_sid(commodity_b.goods_nomenclature_sid)
 
           expect(segment[:node][:is_other]).to be false
@@ -166,7 +166,27 @@ RSpec.describe GenerateSelfText::SegmentExtractor do
                  parent: heading)
         end
 
-        it 'does not match Other followed by a noun' do
+        it 'matches residual Other with noun phrase' do
+          segment = segment_for_sid(commodity_b.goods_nomenclature_sid)
+
+          expect(segment[:node][:is_other]).to be true
+        end
+
+        it 'populates siblings' do
+          segment = segment_for_sid(commodity_b.goods_nomenclature_sid)
+
+          expect(segment[:siblings].size).to eq(1)
+        end
+      end
+
+      context 'when description is "Other than for use in manufacturing"' do
+        let(:commodity_b) do
+          create(:commodity, :with_description,
+                 description: 'Other than for use in manufacturing',
+                 parent: heading)
+        end
+
+        it 'does not match "Other than" exclusion phrases' do
           segment = segment_for_sid(commodity_b.goods_nomenclature_sid)
 
           expect(segment[:node][:is_other]).to be false

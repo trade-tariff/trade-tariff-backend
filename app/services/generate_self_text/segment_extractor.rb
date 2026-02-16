@@ -1,22 +1,25 @@
 module GenerateSelfText
   class SegmentExtractor
     # Matches tariff descriptions that are residual "Other" catch-all categories.
-    # These need AI contextualisation because "Other" alone is meaningless to traders.
+    # These need AI contextualisation to replace "Other" with parent context and
+    # sibling exclusions.
     #
-    # Matches:
+    # Matches (7,210 nodes):
     #   "Other"                              - bare residual (7,003 nodes)
     #   "Other, fresh or chilled"            - residual with comma qualifier (201 nodes)
     #   "Other (including factory rejects)"  - residual with parenthetical (2 nodes)
+    #   "Other live animals"                 - residual with noun phrase (542 nodes)
+    #   "Other cuts with bone in"            - residual with noun phrase
     #   "Of pine (pinus spp.), other"        - trailing residual marker (4 nodes)
     #
-    # Does NOT match (these are already self-describing):
-    #   "Other live animals"                 - named category starting with "Other"
-    #   "Other than for use in..."           - exclusion phrase
-    #   "...other than for slaughter"        - mid-sentence plain English "other"
+    # Does NOT match:
+    #   "Other than for use in..."           - "Other than" is an exclusion phrase (2 nodes)
+    #   "Camels and other camelids"          - mid-sentence plain English "other" (1,349 nodes)
+    #   "...other than for slaughter"        - mid-sentence exclusion phrase
     OTHER_PATTERN = /
-      \Aother(\z|\s*[,(])  # starts with "Other" followed by end, comma, or paren
-      |                     # OR
-      ,\s*other\s*\z        # ends with ", other"
+      \Aother\b(?!\s+than\b)  # starts with "Other" (but not "Other than")
+      |                        # OR
+      ,\s*other\s*\z           # ends with ", other"
     /ix
 
     def self.call(chapter, self_texts: {})

@@ -192,8 +192,11 @@ module AdminConfigurationSeeder
 
       ## Qualified Other patterns
 
-      Not all nodes are bare "Other". Some include a qualifier that must be preserved:
+      Not all nodes are bare "Other". Some include additional words that must be handled:
 
+      - **"Other noun-phrase"** (e.g. "Other live animals", "Other cuts with bone in"): Drop "Other" and rephrase using the parent context and sibling exclusions.
+        - Example: description "Other live animals", parent "Live animals", siblings ["Live horses", "Live bovine animals", "Live swine", "Live sheep and goats", "Live poultry"]
+          -> "Live animals (excl. horses, bovine, swine, sheep, goats, poultry)"
       - **"Other, qualifier"** (e.g. "Other, fresh or chilled"): Replace "Other" with parent context, keep the qualifier.
         - Example: description "Other, fresh or chilled", parent "Edible offal of bovine animals", siblings ["Tongues", "Livers"]
           -> "Edible offal of bovine animals, fresh or chilled (excl. tongues, livers)"
