@@ -22,7 +22,8 @@ class MyCommoditiesEmailWorker
       unsubscribe_url: "#{URI.join(TradeTariffBackend.frontend_host, 'subscriptions/unsubscribe/', user.my_commodities_subscription)}?#{tracking_params}",
     }
 
-    client.send_email(user.email, TEMPLATE_ID, personalisation, REPLY_TO_ID, nil)
+    response = client.send_email(user.email, TEMPLATE_ID, personalisation, REPLY_TO_ID, nil)
+    client.schedule_status_check(user, response)
   end
 
   def client

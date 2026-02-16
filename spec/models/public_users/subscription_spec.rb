@@ -55,6 +55,46 @@ RSpec.describe PublicUsers::Subscription do
     end
   end
 
+  describe '#invalidate' do
+    let(:user) { subscription.user }
+
+    shared_examples 'invalidate behavior' do |_subscription_type_method, action_constant|
+      before do
+        allow(PublicUsers::ActionLog).to receive(:create)
+      end
+
+      it 'deactivates the subscription' do
+        expect { subscription.invalidate }.to change { subscription.reload.active }.from(true).to(false)
+      end
+
+      it 'logs the invalidation action' do
+        subscription.invalidate
+        expect(PublicUsers::ActionLog).to have_received(:create).with(user_id: user.id, action: action_constant)
+      end
+
+      context 'when the subscription is already inactive' do
+        before { subscription.update(active: false) }
+
+        it 'does not log an invalidation action' do
+          subscription.invalidate
+          expect(PublicUsers::ActionLog).not_to have_received(:create).with(user_id: user.id, action: action_constant)
+        end
+      end
+    end
+
+    context 'when the subscription is stop press' do
+      let(:subscription) { create(:user_subscription, subscription_type_id: Subscriptions::Type.stop_press.id) }
+
+      include_examples 'invalidate behavior', :stop_press, PublicUsers::ActionLog::INVALIDATED_STOP_PRESS
+    end
+
+    context 'when the subscription is my commodities' do
+      let(:subscription) { create(:user_subscription, subscription_type_id: Subscriptions::Type.my_commodities.id) }
+
+      include_examples 'invalidate behavior', :my_commodities, PublicUsers::ActionLog::INVALIDATED_MY_COMMODITIES
+    end
+  end
+
   describe 'metadata accessors' do
     let(:subscription) { create(:user_subscription) }
     let(:metadata) { { commodity_codes: %w[1234567890 1234567891] } }

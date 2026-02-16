@@ -3,6 +3,8 @@ require 'notifications/client'
 class GovukNotifier
   class NoTemplateFoundError < StandardError; end
 
+  PERMANENT_FAILURE = 'permanent-failure'.freeze
+
   def initialize(client: nil)
     @client = client || Notifications::Client.new(api_key)
   end
@@ -23,6 +25,21 @@ class GovukNotifier
     audit(email_response)
   rescue Notifications::Client::RequestError => e
     raise e
+  end
+
+  def get_email_status(notification_id)
+    response = @client.get_notification(notification_id)
+    response.status
+  end
+
+  def schedule_status_check(user, notification)
+    return if user.blank? || notification.blank?
+
+    GovukNotifierStatusCheckWorker.perform_in(
+      GovukNotifierStatusCheckWorker::CHECK_DELAY,
+      user.id,
+      notification.notification_uuid,
+    )
   end
 
   private

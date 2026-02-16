@@ -5,12 +5,15 @@ RSpec.describe MyCommoditiesEmailWorker, type: :worker do
   let(:date) { '08/12/2025' }
   let(:count) { 5 }
   let(:mock_notifier) { instance_double(GovukNotifier) }
+  let(:notification_id) { SecureRandom.uuid }
+  let(:notify_response) { instance_double(GovukNotifierAudit, notification_uuid: notification_id) }
 
   before do
     allow(IdentityApiClient).to receive(:get_email).and_return('test@example.com')
     allow(GovukNotifier).to receive(:new).and_return(mock_notifier)
     allow(PublicUsers::User).to receive(:active).and_return(instance_double(Sequel::Dataset, :[] => user))
-    allow(mock_notifier).to receive(:send_email)
+    allow(mock_notifier).to receive(:send_email).and_return(notify_response)
+    allow(mock_notifier).to receive(:schedule_status_check)
   end
 
   describe '#perform' do
@@ -30,6 +33,7 @@ RSpec.describe MyCommoditiesEmailWorker, type: :worker do
           described_class::REPLY_TO_ID,
           nil,
         )
+        expect(mock_notifier).to have_received(:schedule_status_check).with(user, notify_response)
       end
     end
 
