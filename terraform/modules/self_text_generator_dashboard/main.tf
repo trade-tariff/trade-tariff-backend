@@ -24,7 +24,7 @@ resource "aws_cloudwatch_dashboard" "self_text_generator" {
           properties = {
             markdown = join("\n", [
               "## Self-Text Generator",
-              "Batch self-text generation across 98 chapters. Each chapter runs MechanicalBuilder then AiBuilder on the long_running queue.",
+              "Batch self-text generation across 98 chapters. Each chapter runs MechanicalBuilder then AiBuilder on the within_1_day queue.",
               "**Healthy:** all chapters succeed, API latency p90 < 30s, reindex completes after each batch.",
               "**Start here:** check Chapter Success vs Failure trend, then drill into failure tables below.",
               "**Related:** [Label Generator](${local.label_dashboard_url}) | [Search](${local.search_dashboard_url})",

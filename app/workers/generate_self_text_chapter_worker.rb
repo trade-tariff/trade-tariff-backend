@@ -4,7 +4,7 @@ require_relative '../lib/self_text_generator/logger'
 class GenerateSelfTextChapterWorker
   include Sidekiq::Worker
 
-  sidekiq_options queue: :long_running, retry: 2, slack_alerts: false
+  sidekiq_options queue: :within_1_day, retry: 2, slack_alerts: false
 
   sidekiq_retries_exhausted do |_job, _exception|
     remaining = TradeTariffBackend.redis.decr(GenerateSelfTextWorker::REDIS_KEY)

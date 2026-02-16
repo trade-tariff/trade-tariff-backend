@@ -118,8 +118,8 @@ RSpec.describe GenerateSelfTextChapterWorker, type: :worker do
   end
 
   describe 'sidekiq options' do
-    it 'uses the long_running queue' do
-      expect(described_class.sidekiq_options['queue']).to eq(:long_running)
+    it 'uses the within_1_day queue' do
+      expect(described_class.sidekiq_options['queue']).to eq(:within_1_day)
     end
 
     it 'retries twice' do
