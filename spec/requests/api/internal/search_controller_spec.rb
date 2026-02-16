@@ -173,7 +173,7 @@ RSpec.describe Api::Internal::SearchController, :internal do
 
     context 'when query exceeds max length' do
       it 'returns 422 with JSON:API errors' do
-        post api_search_path(format: :json), params: { q: 'a' * 201 }
+        post api_search_path(format: :json), params: { q: 'a' * 501 }
 
         expect(response).to have_http_status(:unprocessable_content)
         body = response.parsed_body

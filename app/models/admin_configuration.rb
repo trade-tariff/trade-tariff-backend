@@ -30,7 +30,7 @@ class AdminConfiguration < Sequel::Model(Sequel[:admin_configurations].qualify(:
     'suggest_known_brands' => false,
     'suggest_synonyms' => false,
     'input_sanitiser_enabled' => true,
-    'input_sanitiser_max_length' => 200,
+    'input_sanitiser_max_length' => 500,
   }.freeze
 
   dataset_module do

@@ -367,7 +367,7 @@ RSpec.describe Api::Internal::SearchService do
       it 'returns errors hash without searching' do
         allow(TradeTariffBackend.search_client).to receive(:search)
 
-        result = described_class.new(q: 'a' * 201).call
+        result = described_class.new(q: 'a' * 501).call
 
         expect(result[:errors]).to be_present
         expect(result[:errors].first[:status]).to eq('422')

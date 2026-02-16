@@ -67,7 +67,7 @@ RSpec.describe Api::Internal::InputSanitiser do
     end
 
     context 'when input exceeds max length' do
-      let(:query) { 'a' * 201 }
+      let(:query) { 'a' * 501 }
 
       it 'returns an error' do
         expect(result[:errors]).to be_present
