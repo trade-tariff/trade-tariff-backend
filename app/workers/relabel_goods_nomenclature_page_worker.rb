@@ -13,7 +13,7 @@ class RelabelGoodsNomenclaturePageWorker
     :goods_nomenclature_descriptions,
   ].freeze
 
-  sidekiq_options queue: :sync, retry: 3, slack_alerts: false
+  sidekiq_options queue: :within_1_day, retry: 3, slack_alerts: false
 
   def perform(page_number)
     @label_service = nil
