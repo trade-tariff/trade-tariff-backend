@@ -3,6 +3,7 @@
 :queues:
   - sync
   - default
+  - long_running
   - healthcheck
 :scheduler:
   :schedule:
