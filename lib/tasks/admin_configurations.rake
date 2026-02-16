@@ -140,6 +140,63 @@ module AdminConfigurationSeeder
     MARKDOWN
   end
 
+  def self_text_context_markdown
+    <<~MARKDOWN.strip
+      You are an expert in the UK Trade Tariff - a hierarchical classification system for goods.
+
+      The tariff is a tree. Each node has a description. Some nodes are described as "Other" - this is a residual catch-all category meaning "everything classified under the parent that is not specifically named by a sibling node."
+
+      You will receive a JSON array of segments. Each segment contains:
+
+      - **sid**: the goods_nomenclature_sid (unique identifier)
+      - **code**: the goods_nomenclature_item_id (10-digit commodity code)
+      - **parent**: the parent node's description (already contextualised if it was previously "Other")
+      - **ancestor_chain**: the full path from the chapter root to this node's parent, joined with " > "
+      - **siblings**: array of sibling node descriptions (the named categories at the same level)
+
+      For each segment, produce a contextualised description that replaces "Other".
+
+      ## Output format
+
+      Return JSON with the following structure:
+
+          {
+            "descriptions": [
+              {
+                "sid": 12345,
+                "contextualised_description": "Live horses (excl. pure-bred for breeding)",
+                "excluded_siblings": ["Pure-bred breeding animals"]
+              }
+            ]
+          }
+
+      - **sid**: must match the input sid exactly
+      - **contextualised_description**: your generated description
+      - **excluded_siblings**: the sibling descriptions you excluded (should match the input siblings)
+
+      ## Style rules
+
+      - Use the pattern: "<parent category> (excl. <named siblings>)"
+      - Example: parent "Horses", siblings ["Pure-bred breeding animals"]
+        -> "Live horses (excl. pure-bred for breeding)"
+      - Example: parent "Mammals", siblings ["Primates", "Whales, dolphins", "Rabbits and hares"]
+        -> "Live mammals (excl. primates, whales, dolphins, rabbits and hares)"
+      - Keep descriptions concise and terse - avoid verbose explanations
+      - Summarise long sibling lists rather than listing every one verbatim
+      - Do NOT include the commodity code in the description
+      - Do NOT start with "Other" - give the positive category name first
+
+      ## Critical rules
+
+      - Read the ancestor_chain carefully to understand cumulative context. Each "Other" in the chain already excludes what its siblings named. Your description should reflect the FULL accumulated exclusions from the ancestor chain, not just immediate siblings.
+      - "Other" means "NOT the named siblings within THIS parent". Do not positively identify it as one of the named siblings.
+      - When the parent itself was "Other" (and has been contextualised), use that contextualised description to understand what this sub-branch covers.
+      - When the parent description is very long, summarise it concisely.
+      - Produce a description for EVERY segment in the input.
+      - Do not invent classification detail - only use what the sibling context provides.
+    MARKDOWN
+  end
+
   def expand_query_context_markdown
     <<~MARKDOWN.strip
       You are an expert in trade tariff classification and search queries.
@@ -269,6 +326,24 @@ namespace :admin_configurations do
         config_type: 'boolean',
         description: 'Use part-of-speech tagging to structure search queries. Nouns become required terms, modifiers become optional. When disabled, falls back to a single multi-match query.',
         value: 'true',
+      },
+      {
+        name: 'self_text_batch_size',
+        config_type: 'integer',
+        description: 'Number of Other nodes processed per batch during AI self-text generation',
+        value: '5',
+      },
+      {
+        name: 'self_text_context',
+        config_type: 'markdown',
+        description: 'System prompt sent to the AI model when generating self-texts for Other nodes',
+        value: AdminConfigurationSeeder.self_text_context_markdown,
+      },
+      {
+        name: 'self_text_model',
+        config_type: 'options',
+        description: 'AI model used for generating self-texts for Other nodes',
+        value: { 'selected' => default_model, 'options' => model_options },
       },
       {
         name: 'search_context',
