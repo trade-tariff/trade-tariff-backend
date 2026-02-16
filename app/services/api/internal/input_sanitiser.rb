@@ -52,6 +52,7 @@ module Api
               status: '422',
               title: 'Invalid query',
               detail: detail,
+              source: { pointer: '/data/attributes/q' },
             },
           ],
         }

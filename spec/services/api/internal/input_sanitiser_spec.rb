@@ -42,10 +42,11 @@ RSpec.describe Api::Internal::InputSanitiser do
     context 'when input contains non-printable characters' do
       let(:query) { "shoes\x00boots" }
 
-      it 'returns an error' do
+      it 'returns an error with source pointer' do
         expect(result[:errors]).to be_present
         expect(result[:errors].first[:status]).to eq('422')
         expect(result[:errors].first[:detail]).to eq('Query contains invalid characters')
+        expect(result[:errors].first[:source]).to eq(pointer: '/data/attributes/q')
       end
     end
 
