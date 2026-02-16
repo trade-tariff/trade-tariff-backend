@@ -97,14 +97,96 @@ RSpec.describe GenerateSelfText::SegmentExtractor do
         end
       end
 
-      context 'when description contains "Other" as part of a phrase' do
+      context 'when description is "Other than horses"' do
         let(:commodity_b) do
           create(:commodity, :with_description,
                  description: 'Other than horses',
                  parent: heading)
         end
 
-        it 'does not match multi-word descriptions' do
+        it 'does not match "Other than" exclusion phrases' do
+          segment = segment_for_sid(commodity_b.goods_nomenclature_sid)
+
+          expect(segment[:node][:is_other]).to be false
+        end
+      end
+
+      context 'when description is "Other, fresh or chilled"' do
+        let(:commodity_b) do
+          create(:commodity, :with_description,
+                 description: 'Other, fresh or chilled',
+                 parent: heading)
+        end
+
+        it 'matches qualified Other with comma' do
+          segment = segment_for_sid(commodity_b.goods_nomenclature_sid)
+
+          expect(segment[:node][:is_other]).to be true
+        end
+
+        it 'populates siblings' do
+          segment = segment_for_sid(commodity_b.goods_nomenclature_sid)
+
+          expect(segment[:siblings].size).to eq(1)
+        end
+      end
+
+      context 'when description is "Other (including factory rejects)"' do
+        let(:commodity_b) do
+          create(:commodity, :with_description,
+                 description: 'Other (including factory rejects)',
+                 parent: heading)
+        end
+
+        it 'matches qualified Other with parenthetical' do
+          segment = segment_for_sid(commodity_b.goods_nomenclature_sid)
+
+          expect(segment[:node][:is_other]).to be true
+        end
+      end
+
+      context 'when description ends with ", other"' do
+        let(:commodity_b) do
+          create(:commodity, :with_description,
+                 description: 'Of pine (pinus spp.), other',
+                 parent: heading)
+        end
+
+        it 'matches trailing other' do
+          segment = segment_for_sid(commodity_b.goods_nomenclature_sid)
+
+          expect(segment[:node][:is_other]).to be true
+        end
+      end
+
+      context 'when description is "Other live animals"' do
+        let(:commodity_b) do
+          create(:commodity, :with_description,
+                 description: 'Other live animals',
+                 parent: heading)
+        end
+
+        it 'matches residual Other with noun phrase' do
+          segment = segment_for_sid(commodity_b.goods_nomenclature_sid)
+
+          expect(segment[:node][:is_other]).to be true
+        end
+
+        it 'populates siblings' do
+          segment = segment_for_sid(commodity_b.goods_nomenclature_sid)
+
+          expect(segment[:siblings].size).to eq(1)
+        end
+      end
+
+      context 'when description is "Other than for use in manufacturing"' do
+        let(:commodity_b) do
+          create(:commodity, :with_description,
+                 description: 'Other than for use in manufacturing',
+                 parent: heading)
+        end
+
+        it 'does not match "Other than" exclusion phrases' do
           segment = segment_for_sid(commodity_b.goods_nomenclature_sid)
 
           expect(segment[:node][:is_other]).to be false
