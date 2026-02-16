@@ -59,9 +59,9 @@ RSpec.describe TariffSynchronizer::BaseUpdate do
 
       context 'when choosing a pending update older than the default download from date' do
         before do
-          create(update_factory, :pending, issue_date: pending_issue_date)
-          create(update_factory, :applied, issue_date: applied_issue_date)
-          create(update_factory, :failed, issue_date: failed_issue_date)
+          create(update_factory, :pending, example_date: pending_issue_date)
+          create(update_factory, :applied, example_date: applied_issue_date)
+          create(update_factory, :failed, example_date: failed_issue_date)
         end
 
         it { is_expected.to eq(pending_issue_date..today) }
@@ -69,8 +69,8 @@ RSpec.describe TariffSynchronizer::BaseUpdate do
 
       context 'when choosing a applied update older than the default download from date' do
         before do
-          create(update_factory, :applied, issue_date: applied_issue_date)
-          create(update_factory, :failed, issue_date: failed_issue_date)
+          create(update_factory, :applied, example_date: applied_issue_date)
+          create(update_factory, :failed, example_date: failed_issue_date)
         end
 
         it { is_expected.to eq(applied_issue_date..today) }
@@ -78,7 +78,7 @@ RSpec.describe TariffSynchronizer::BaseUpdate do
 
       context 'when choosing a failed update older than the default download from date' do
         before do
-          create(update_factory, :failed, issue_date: failed_issue_date)
+          create(update_factory, :failed, example_date: failed_issue_date)
         end
 
         it { is_expected.to eq(failed_issue_date..today) }
@@ -88,7 +88,7 @@ RSpec.describe TariffSynchronizer::BaseUpdate do
         let(:pending_issue_date) { today - 20.days }
 
         before do
-          create(update_factory, :pending, issue_date: pending_issue_date)
+          create(update_factory, :pending, example_date: pending_issue_date)
         end
 
         it { is_expected.to eq(pending_issue_date..today) }
