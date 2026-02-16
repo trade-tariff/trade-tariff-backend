@@ -217,6 +217,18 @@ namespace :admin_configurations do
         value: '3',
       },
       {
+        name: 'input_sanitiser_enabled',
+        config_type: 'boolean',
+        description: 'Sanitise and validate search queries before AI processing. Strips HTML, rejects non-printable characters, and enforces a maximum query length.',
+        value: 'true',
+      },
+      {
+        name: 'input_sanitiser_max_length',
+        config_type: 'integer',
+        description: 'Maximum allowed character length for search queries when input sanitiser is enabled',
+        value: '500',
+      },
+      {
         name: 'label_context',
         config_type: 'markdown',
         description: 'System prompt sent to the AI model when labelling commodities',

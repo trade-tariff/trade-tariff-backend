@@ -171,6 +171,49 @@ RSpec.describe Api::Internal::SearchController, :internal do
       end
     end
 
+    context 'when query exceeds max length' do
+      it 'returns 422 with JSON:API errors' do
+        post api_search_path(format: :json), params: { q: 'a' * 501 }
+
+        expect(response).to have_http_status(:unprocessable_content)
+        body = response.parsed_body
+        expect(body['errors']).to be_present
+        expect(body['errors'].first['status']).to eq('422')
+        expect(body['errors'].first['detail']).to include('exceeds maximum length')
+      end
+    end
+
+    context 'when query contains HTML tags' do
+      before do
+        index = Search::GoodsNomenclatureIndex.new
+
+        TradeTariffBackend.search_client.index_by_name(
+          index.name,
+          1,
+          {
+            goods_nomenclature_sid: 1,
+            goods_nomenclature_item_id: '0101210000',
+            producline_suffix: '80',
+            goods_nomenclature_class: 'Commodity',
+            description: 'horse',
+            formatted_description: 'Horse',
+            full_description: 'Horse',
+            heading_description: 'Live horses, asses, mules and hinnies',
+            declarable: true,
+            validity_start_date: Time.zone.today.iso8601,
+          },
+        )
+        TradeTariffBackend.search_client.indices.refresh(index: '_all')
+      end
+
+      it 'returns 200 with cleaned results' do
+        post api_search_path(format: :json), params: { q: '<b>horse</b>' }
+
+        expect(response).to have_http_status(:ok)
+        expect(response.parsed_body['data']).to be_present
+      end
+    end
+
     context 'when ambiguous characters in query' do
       it 'handles the query without error' do
         post api_search_path(format: :json), params: { q: '! 0102' }
