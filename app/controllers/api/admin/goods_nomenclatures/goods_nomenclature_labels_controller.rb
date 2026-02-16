@@ -148,6 +148,11 @@ module Api
             ::Search::GoodsNomenclatureIndex,
             goods_nomenclature.reload,
           )
+          update_label_suggestions
+        end
+
+        def update_label_suggestions
+          LabelSuggestionsUpdaterService.new(goods_nomenclature).call
         end
 
         def label_params

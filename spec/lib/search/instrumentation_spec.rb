@@ -33,6 +33,7 @@ RSpec.describe Search::Instrumentation do
         'search_completed.search',
         hash_including(
           request_id: 'req-1',
+          query: 'horses',
           search_type: 'interactive',
           result_count: 5,
           total_duration_ms: a_kind_of(Float),
@@ -190,6 +191,7 @@ RSpec.describe Search::Instrumentation do
 
       described_class.search_completed(
         request_id: 'req-1',
+        query: 'horses',
         search_type: 'interactive',
         total_attempts: 2,
         total_questions: 1,
@@ -201,6 +203,7 @@ RSpec.describe Search::Instrumentation do
       expect(ActiveSupport::Notifications).to have_received(:instrument).with(
         'search_completed.search',
         request_id: 'req-1',
+        query: 'horses',
         search_type: 'interactive',
         total_attempts: 2,
         total_questions: 1,

@@ -79,6 +79,8 @@ class CdsSynchronizer
                  .delete
           end
 
+          TariffChangesJobStatus.find(operation_date: date)&.mark_changes_pending!
+
           update_filenames.each do |filename|
             Rails.logger.info "Rolling back CDS file: #{filename}"
           end

@@ -8,9 +8,13 @@ class TariffChangesService
   FALLBACK_START_DATE = Date.new(2024, 12, 31).freeze
 
   # Generates TariffChange records for the given date.
-  # If no date is provided, it generates for all dates since the last change
+  # If no date is provided, it generates for all pending changes and all dates since the last change
   def self.generate(date = nil)
     if date.nil?
+      TariffChangesJobStatus.pending_changes.each do |pending_date|
+        new(pending_date).all_changes
+      end
+
       last_change_date = TariffChangesJobStatus.last_change_date || FALLBACK_START_DATE
       if last_change_date < Time.zone.yesterday
         populate_backlog(from: last_change_date + 1.day, to: Time.zone.yesterday)

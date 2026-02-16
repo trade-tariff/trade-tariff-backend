@@ -84,7 +84,7 @@ GEM
       aws-sdk-ses (~> 1, >= 1.50.0)
       aws-sdk-sesv2 (~> 1, >= 1.34.0)
     aws-eventstream (1.4.0)
-    aws-partitions (1.1212.0)
+    aws-partitions (1.1213.0)
     aws-sdk-cloudfront (1.141.0)
       aws-sdk-core (~> 3, >= 3.241.4)
       aws-sigv4 (~> 1.5)
@@ -105,7 +105,7 @@ GEM
     aws-sdk-rails (5.1.0)
       aws-sdk-core (~> 3)
       railties (>= 7.1.0)
-    aws-sdk-s3 (1.212.0)
+    aws-sdk-s3 (1.213.0)
       aws-sdk-core (~> 3, >= 3.241.4)
       aws-sdk-kms (~> 1)
       aws-sigv4 (~> 1.5)
@@ -119,9 +119,9 @@ GEM
       aws-eventstream (~> 1, >= 1.0.2)
     base64 (0.3.0)
     bigdecimal (4.0.1)
-    bootsnap (1.21.1)
+    bootsnap (1.22.0)
       msgpack (~> 1.2)
-    brakeman (8.0.1)
+    brakeman (8.0.2)
       racc
     builder (3.3.0)
     caxlsx (4.4.1)
@@ -161,15 +161,15 @@ GEM
     factory_bot_rails (6.5.0)
       factory_bot (~> 6.5)
       railties (>= 6.1.0)
-    faraday (2.12.2)
+    faraday (2.14.1)
       faraday-net_http (>= 2.0, < 3.5)
       json
       logger
-    faraday-net_http (3.4.0)
-      net-http (>= 0.5.0)
+    faraday-net_http (3.4.2)
+      net-http (~> 0.5)
     fast_excel (0.5.0)
       ffi (> 1.9, < 2)
-    ffi (1.17.2)
+    ffi (1.17.3)
     foreman (0.90.0)
       thor (~> 1.4)
     forgery (0.8.1)
@@ -194,7 +194,7 @@ GEM
       rdoc (>= 4.0.0)
       reline (>= 0.4.2)
     jmespath (1.6.2)
-    json (2.18.0)
+    json (2.18.1)
     json_expressions (0.9.0)
     jsonapi-serializer (2.2.0)
       activesupport (>= 4.2)
@@ -232,8 +232,8 @@ GEM
       prism (~> 1.5)
     msgpack (1.8.0)
     multi_json (1.15.0)
-    net-http (0.6.0)
-      uri
+    net-http (0.9.1)
+      uri (>= 0.11.1)
     net-imap (0.6.2)
       date
       net-protocol
@@ -243,7 +243,7 @@ GEM
       timeout
     net-smtp (0.5.1)
       net-protocol
-    newrelic_rpm (10.0.0)
+    newrelic_rpm (10.1.0)
       logger
     nio4r (2.7.5)
     nokogiri (1.19.0)
@@ -273,9 +273,10 @@ GEM
       prettyprint
     prettyprint (0.2.0)
     prism (1.9.0)
-    pry (0.14.2)
+    pry (0.16.0)
       coderay (~> 1.1)
       method_source (~> 1.0)
+      reline (>= 0.6.0)
     pry-rails (0.3.11)
       pry (>= 0.13.0)
     psych (5.3.1)
@@ -544,7 +545,7 @@ DEPENDENCIES
   webmock
 
 RUBY VERSION
-   ruby 3.4.7p58
+  ruby 4.0.1p0
 
 BUNDLED WITH
-   2.6.6
+  4.0.3

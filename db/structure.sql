@@ -2,7 +2,7 @@
 -- PostgreSQL database dump
 --
 
-\restrict e5DtPWRYRYSDtIYDhsiSiLoUndFy3Qqg7bSdJX1lhMCVdXNaKsRzl6ly7DPB4ib
+\restrict wSKBjOhraNrh5eFNgyevuPmCdjVCVIyiTUxWLutlPzeC6XNetuTHms7md6JfMzE
 
 -- Dumped from database version 18.0
 -- Dumped by pg_dump version 18.0
@@ -4098,6 +4098,26 @@ CREATE SEQUENCE uk.goods_nomenclature_origins_oid_seq
 --
 
 ALTER SEQUENCE uk.goods_nomenclature_origins_oid_seq OWNED BY uk.goods_nomenclature_origins_oplog.oid;
+
+
+--
+-- Name: goods_nomenclature_self_texts; Type: TABLE; Schema: uk; Owner: -
+--
+
+CREATE TABLE uk.goods_nomenclature_self_texts (
+    goods_nomenclature_sid integer NOT NULL,
+    goods_nomenclature_item_id character varying(10) CONSTRAINT goods_nomenclature_self_tex_goods_nomenclature_item_id_not_null NOT NULL,
+    self_text text NOT NULL,
+    generation_type text NOT NULL,
+    input_context jsonb NOT NULL,
+    context_hash character varying(64) NOT NULL,
+    needs_review boolean DEFAULT false,
+    manually_edited boolean DEFAULT false,
+    stale boolean DEFAULT false,
+    generated_at timestamp without time zone NOT NULL,
+    created_at timestamp without time zone NOT NULL,
+    updated_at timestamp without time zone NOT NULL
+);
 
 
 --
@@ -9620,6 +9640,14 @@ ALTER TABLE ONLY uk.goods_nomenclature_origins_oplog
 
 
 --
+-- Name: goods_nomenclature_self_texts goods_nomenclature_self_texts_pkey; Type: CONSTRAINT; Schema: uk; Owner: -
+--
+
+ALTER TABLE ONLY uk.goods_nomenclature_self_texts
+    ADD CONSTRAINT goods_nomenclature_self_texts_pkey PRIMARY KEY (goods_nomenclature_sid);
+
+
+--
 -- Name: goods_nomenclature_successors_oplog goods_nomenclature_successors_pkey; Type: CONSTRAINT; Schema: uk; Owner: -
 --
 
@@ -11781,6 +11809,20 @@ CREATE INDEX gono_succ_pk ON uk.goods_nomenclature_successors_oplog USING btree 
 
 
 --
+-- Name: goods_nomenclature_self_texts_generation_type_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX goods_nomenclature_self_texts_generation_type_index ON uk.goods_nomenclature_self_texts USING btree (generation_type);
+
+
+--
+-- Name: goods_nomenclature_self_texts_goods_nomenclature_item_id_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX goods_nomenclature_self_texts_goods_nomenclature_item_id_index ON uk.goods_nomenclature_self_texts USING btree (goods_nomenclature_item_id);
+
+
+--
 -- Name: goods_nomenclature_sid; Type: INDEX; Schema: uk; Owner: -
 --
 
@@ -12009,6 +12051,20 @@ CREATE INDEX idx_search_suggestions_distinct ON uk.search_suggestions USING btre
 --
 
 CREATE INDEX idx_search_suggestions_value_trgm ON uk.search_suggestions USING gin (value public.gin_trgm_ops);
+
+
+--
+-- Name: idx_self_texts_needs_review; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX idx_self_texts_needs_review ON uk.goods_nomenclature_self_texts USING btree (needs_review) WHERE (needs_review = true);
+
+
+--
+-- Name: idx_self_texts_stale; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX idx_self_texts_stale ON uk.goods_nomenclature_self_texts USING btree (stale) WHERE (stale = true);
 
 
 --
@@ -13982,7 +14038,7 @@ ALTER TABLE ONLY uk.news_collections_news_items
 -- PostgreSQL database dump complete
 --
 
-\unrestrict e5DtPWRYRYSDtIYDhsiSiLoUndFy3Qqg7bSdJX1lhMCVdXNaKsRzl6ly7DPB4ib
+\unrestrict wSKBjOhraNrh5eFNgyevuPmCdjVCVIyiTUxWLutlPzeC6XNetuTHms7md6JfMzE
 
 --
 -- Name: citext; Type: EXTENSION; Schema: -; Owner: -
@@ -14231,3 +14287,4 @@ INSERT INTO "schema_migrations" ("filename") VALUES ('20251117120000_add_metadat
 INSERT INTO "schema_migrations" ("filename") VALUES ('20260108120000_create_tariff_changes_job_status.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20260113104016_adds_goods_nomenclature_labels_oplog.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20260130120000_adds_admin_configurations_oplog.rb');
+INSERT INTO "schema_migrations" ("filename") VALUES ('20260211120000_create_goods_nomenclature_self_texts.rb');

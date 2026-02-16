@@ -102,6 +102,10 @@ module Api
         end
       end
 
+      def allowed_suggestion_types
+        ::SearchSuggestion.allowed_types
+      end
+
       def find_exact_match
         gn = find_by_suggestion(q) ||
           find_by_padded_code(q) ||
@@ -116,6 +120,7 @@ module Api
       def find_by_suggestion(query)
         ::SearchSuggestion
           .where(value: singular_and_plural(query))
+          .where(type: allowed_suggestion_types)
           .eager(:goods_nomenclature)
           .first
           &.goods_nomenclature

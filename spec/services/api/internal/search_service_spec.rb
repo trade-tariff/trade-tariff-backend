@@ -293,6 +293,56 @@ RSpec.describe Api::Internal::SearchService do
       end
     end
 
+    context 'when exact match via synonym suggestion with suggest_synonyms enabled' do
+      let!(:heading) do
+        create(:heading, :with_description,
+               goods_nomenclature_item_id: '1006000000',
+               description: 'rice')
+      end
+
+      before do
+        create(:search_suggestion, :synonym,
+               goods_nomenclature: heading,
+               value: 'rice')
+
+        allow(AdminConfiguration).to receive(:enabled?).and_call_original
+        allow(AdminConfiguration).to receive(:enabled?).with('suggest_synonyms').and_return(true)
+        allow(TradeTariffBackend.search_client).to receive(:search)
+      end
+
+      it 'returns the exact match without querying OpenSearch' do
+        result = described_class.new(q: 'rice').call
+
+        expect(result[:data].length).to eq(1)
+        expect(result[:data][0][:attributes][:goods_nomenclature_item_id]).to eq('1006000000')
+        expect(TradeTariffBackend.search_client).not_to have_received(:search)
+      end
+    end
+
+    context 'when exact match via synonym suggestion with suggest_synonyms disabled' do
+      let(:opensearch_response) { { 'hits' => { 'hits' => [] } } }
+
+      before do
+        heading = create(:heading, :with_description,
+                         goods_nomenclature_item_id: '1006000000',
+                         description: 'rice')
+
+        create(:search_suggestion, :synonym,
+               goods_nomenclature: heading,
+               value: 'rice')
+
+        allow(AdminConfiguration).to receive(:enabled?).and_call_original
+        allow(AdminConfiguration).to receive(:enabled?).with('suggest_synonyms').and_return(false)
+        allow(TradeTariffBackend.search_client).to receive(:search).and_return(opensearch_response)
+      end
+
+      it 'skips the synonym and falls through to OpenSearch' do
+        described_class.new(q: 'rice').call
+
+        expect(TradeTariffBackend.search_client).to have_received(:search)
+      end
+    end
+
     context 'when expand_search_enabled is false' do
       let(:opensearch_response) { { 'hits' => { 'hits' => [] } } }
 

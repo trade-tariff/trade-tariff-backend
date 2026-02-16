@@ -1,8 +1,8 @@
 class StopPressEmailWorker
   include Sidekiq::Worker
 
-  TEMPLATE_ID = '3295f0bf-c75f-4202-8dcf-703e4564b932'.freeze
-  REPLY_TO_ID = '61e19d5e-4fae-4b7e-aa2e-cd05a87f4cf8'.freeze
+  TEMPLATE_ID = NOTIFY_CONFIGURATION.dig(:templates, :myott, :stop_press)
+  REPLY_TO_ID = NOTIFY_CONFIGURATION.dig(:reply_to, :tariff_management)
 
   def perform(stop_press_id, user_id)
     stop_press = News::Item.find(id: stop_press_id)
@@ -16,7 +16,7 @@ class StopPressEmailWorker
 
     personalisation = {
       stop_press_title: stop_press.title,
-      stop_press_link: stop_press.public_url,
+      stop_press_link: "#{stop_press.public_url}?#{tracking_params}",
       subscription_reason: subscription_reason(stop_press, user),
       site_url: "#{URI.join(TradeTariffBackend.frontend_host, 'subscriptions/')}?#{tracking_params}",
       unsubscribe_url: "#{URI.join(TradeTariffBackend.frontend_host, 'subscriptions/unsubscribe/', user.stop_press_subscription)}?#{tracking_params}",

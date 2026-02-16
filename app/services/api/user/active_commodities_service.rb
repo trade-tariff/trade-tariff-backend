@@ -6,25 +6,28 @@ module Api
     # Expired - An expired code is a declarable code that is not active today, or has had children added later
     # Invalid - The code never existed or was never declarable
     class ActiveCommoditiesService
+      MYOTT_ALL_ACTIVE_COMMODITIES_CACHE_KEY = 'myott_all_active_commodities'.freeze
+      MYOTT_ALL_EXPIRED_COMMODITIES_CACHE_KEY = 'myott_all_expired_commodities'.freeze
+
       attr_reader :uploaded_commodity_codes, :subscription_target_ids
 
       def self.refresh_caches
-        Rails.cache.write('myott_all_active_commodities', generate_fresh_active_commodities)
-        Rails.cache.write('myott_all_expired_commodities', generate_fresh_expired_commodities)
+        Rails.cache.write(MYOTT_ALL_ACTIVE_COMMODITIES_CACHE_KEY, generate_fresh_active_commodities)
+        Rails.cache.write(MYOTT_ALL_EXPIRED_COMMODITIES_CACHE_KEY, generate_fresh_expired_commodities)
 
         @all_active_commodities = nil
         @all_expired_commodities = nil
       end
 
       def self.all_active_commodities
-        @all_active_commodities ||= Rails.cache.fetch('myott_all_active_commodities') do
+        @all_active_commodities ||= Rails.cache.fetch(MYOTT_ALL_ACTIVE_COMMODITIES_CACHE_KEY) do
           generate_fresh_active_commodities
         end
       end
 
       # Optimized to accept target_sids to limit the scope of the query when caching is disabled (e.g. in tests/development)
       def self.all_expired_commodities(target_sids: nil)
-        cache_key = target_sids ? "myott_expired_commodities_#{target_sids.hash}" : 'myott_all_expired_commodities'
+        cache_key = target_sids ? "myott_expired_commodities_#{target_sids.hash}" : MYOTT_ALL_EXPIRED_COMMODITIES_CACHE_KEY
 
         @all_expired_commodities ||= Rails.cache.fetch(cache_key) do
           generate_fresh_expired_commodities(target_sids: target_sids)

@@ -2,6 +2,8 @@ class TariffChangesService
   class Presenter < SimpleDelegator
     attr_reader :geo_area_cache, :eu_member_ids
 
+    UTM_TAGS = 'utm_source=offline&utm_medium=excel&utm_campaign=change_data'.freeze
+
     def initialize(tariff_change, geo_area_cache = {}, eu_member_ids = [])
       super(tariff_change)
       @geo_area_cache = geo_area_cache
@@ -68,11 +70,11 @@ class TariffChangesService
     end
 
     def ott_url
-      "https://www.trade-tariff.service.gov.uk/commodities/#{goods_nomenclature_item_id}?day=#{date_of_effect_visible.day}&month=#{date_of_effect_visible.month}&year=#{date_of_effect_visible.year}"
+      "https://www.trade-tariff.service.gov.uk/commodities/#{goods_nomenclature_item_id}?day=#{date_of_effect_visible.day}&month=#{date_of_effect_visible.month}&year=#{date_of_effect_visible.year}&#{UTM_TAGS}"
     end
 
     def api_url
-      "https://www.trade-tariff.service.gov.uk/uk/api/commodities/#{goods_nomenclature_item_id}?as_of=#{date_of_effect_visible.strftime('%Y-%m-%d')}"
+      "https://www.trade-tariff.service.gov.uk/uk/api/commodities/#{goods_nomenclature_item_id}?as_of=#{date_of_effect_visible.strftime('%Y-%m-%d')}&#{UTM_TAGS}"
     end
 
     private
