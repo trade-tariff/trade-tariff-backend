@@ -101,6 +101,8 @@ module GenerateSelfText
         parent: parent_text,
         ancestor_chain: ancestor_chain,
         siblings: siblings,
+        goods_nomenclature_class: node[:goods_nomenclature_class],
+        declarable: node[:declarable],
       }
     end
 
@@ -140,6 +142,8 @@ module GenerateSelfText
         'ancestors' => ancestors,
         'description' => segment[:node][:description],
         'siblings' => siblings,
+        'goods_nomenclature_class' => segment[:node][:goods_nomenclature_class],
+        'declarable' => segment[:node][:declarable],
       }
     end
 

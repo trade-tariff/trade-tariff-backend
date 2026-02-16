@@ -153,6 +153,8 @@ module AdminConfigurationSeeder
       - **parent**: the parent node's description (already contextualised if it was previously "Other")
       - **ancestor_chain**: the full path from the chapter root to this node's parent, joined with " > "
       - **siblings**: array of sibling node descriptions (the named categories at the same level)
+      - **goods_nomenclature_class**: the type of node - "Chapter", "Heading", "Subheading", or "Commodity"
+      - **declarable**: true if traders can declare goods against this code, false if it is a grouping node
 
       For each segment, produce a contextualised description that replaces "Other".
 
@@ -164,7 +166,7 @@ module AdminConfigurationSeeder
             "descriptions": [
               {
                 "sid": 12345,
-                "contextualised_description": "Live horses (excl. pure-bred for breeding)",
+                "contextualised_description": "Reeds, rushes, osier, raffia, cereal straw and lime bark for plaiting (excl. bamboos, rattans)",
                 "excluded_siblings": ["Pure-bred breeding animals"]
               }
             ]
@@ -176,15 +178,22 @@ module AdminConfigurationSeeder
 
       ## Style rules
 
-      - Use the pattern: "<parent category> (excl. <named siblings>)"
-      - Example: parent "Horses", siblings ["Pure-bred breeding animals"]
+      - When the parent description contains examples (e.g. "for example, bamboos, rattans, reeds, rushes"), extract the examples that are NOT named as siblings and include them in your description. This tells traders what the "Other" category actually contains.
+      - Example: parent "Vegetable materials of a kind used primarily for plaiting (for example, bamboos, rattans, reeds, rushes, osier, raffia, cleaned, bleached or dyed cereal straw, and lime bark)", siblings ["Bamboos", "Rattans"]
+        -> "Reeds, rushes, osier, raffia, cereal straw and lime bark for plaiting (excl. bamboos, rattans)"
+      - When the parent description has no examples, use the pattern: "<parent category> (excl. <named siblings>)"
+      - Example: parent "Live horses", siblings ["Pure-bred breeding animals"]
         -> "Live horses (excl. pure-bred for breeding)"
-      - Example: parent "Mammals", siblings ["Primates", "Whales, dolphins", "Rabbits and hares"]
-        -> "Live mammals (excl. primates, whales, dolphins, rabbits and hares)"
-      - Keep descriptions concise and terse - avoid verbose explanations
       - Summarise long sibling lists rather than listing every one verbatim
+      - Keep descriptions concise and terse - avoid verbose explanations
       - Do NOT include the commodity code in the description
       - Do NOT start with "Other" - give the positive category name first
+
+      ## Node type guidance
+
+      - **Commodity** (declarable: true): This is the final code traders declare against. Be specific - traders need to know exactly what this covers.
+      - **Subheading** (declarable: false): This is a grouping node with children beneath it. Traders navigate through it. Include enough detail to help them decide whether to look further.
+      - **Heading** / **Chapter**: Broader groupings. Keep descriptions correspondingly broad.
 
       ## Critical rules
 
@@ -193,7 +202,7 @@ module AdminConfigurationSeeder
       - When the parent itself was "Other" (and has been contextualised), use that contextualised description to understand what this sub-branch covers.
       - When the parent description is very long, summarise it concisely.
       - Produce a description for EVERY segment in the input.
-      - Do not invent classification detail - only use what the sibling context provides.
+      - Do not invent classification detail - only use what the sibling and parent context provides.
     MARKDOWN
   end
 

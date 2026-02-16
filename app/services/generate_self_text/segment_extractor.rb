@@ -50,6 +50,8 @@ module GenerateSelfText
           code: node.goods_nomenclature_item_id,
           description: node.formatted_description,
           is_other: is_other,
+          goods_nomenclature_class: node.goods_nomenclature_class,
+          declarable: node.declarable?,
         },
         ancestor_chain: ancestor_chain_for(node),
         siblings: is_other ? siblings_for(node) : [],
