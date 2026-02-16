@@ -9,6 +9,7 @@ class CdsImporter
       @xml_element_id = nil
       @key = ''
       @instances = []
+      @data = {}
       @failed = false
       initiate_excel_file
     end
@@ -16,7 +17,7 @@ class CdsImporter
     def process_record(cds_entity)
       unless @xml_element_id.nil? || @xml_element_id == cds_entity.element_id
         begin
-          write(@key, @instances)
+          write_data(@key, @instances)
         rescue StandardError => e
           Rails.logger.error "CDS Updates excel: write error #{@key} in #{@filename} - #{e.message}"
           @failed = true
@@ -30,12 +31,13 @@ class CdsImporter
     end
 
     def after_parse
-      write(@key, @instances)
-      sort_worksheets
-      FileUtils.mkdir_p(File.join(TariffSynchronizer.root_path, 'cds_updates'))
-      package.serialize(File.join(TariffSynchronizer.root_path, 'cds_updates', excel_filename))
+      write_data(@key, @instances)
+      build_worksheets(@data)
+
+      workbook.close
+
       if TradeTariffBackend.cds_updates_send_email && !@failed
-        TariffSynchronizer::Mailer.cds_updates(xml_to_file_date, package, excel_filename).deliver_now
+        TariffSynchronizer::Mailer.cds_updates(xml_to_file_date, workbook.read_string, excel_filename).deliver_now
       end
     rescue StandardError => e
       Rails.logger.error "CDS Updates excel: save file error for #{@filename} - #{e.message}"
@@ -45,85 +47,81 @@ class CdsImporter
 
     attr_reader :workbook, :filename, :package, :bold_style, :regular_style
 
-    def sort_worksheets
-      CdsImporter::ExcelWriter.constants.each do |const|
-        klass = CdsImporter::ExcelWriter.const_get(const)
-        next unless klass.is_a?(Class)
-
-        worksheet = workbook.worksheets.find { |ws| ws.name == klass.sheet_name }
-        sort_columns = klass.sort_columns
-        next unless sort_columns.present? && worksheet
-
-        start_index = klass.start_index
-        row_count = worksheet.rows.count
-
-        rows = worksheet.rows.map { |r| r.cells.map(&:value) }[start_index..]
-        rows.sort_by! do |r|
-          sort_columns.map { |col| r[col] }
-        end
-
-        row_count.downto(start_index) do |index|
-          worksheet.rows.delete_at(index)
-        end
-
-        rows.each { |r| worksheet.add_row r }
-      end
-    end
-
-    def write(key, instances)
+    def write_data(key, instances)
       klass = Module.const_get("CdsImporter::ExcelWriter::#{key}")
 
       update = klass.new(instances)
+
       return unless update.valid?
 
-      sheet_name = klass.sheet_name
-      note = klass.note
-      heading = klass.heading
-      column_widths = klass.column_widths
-
-      sheet = workbook.worksheets.find { |ws| ws.name == sheet_name }
-      unless sheet
-        sheet = workbook.add_worksheet(name: sheet_name)
-
-        if note.present?
-          sheet.add_row(note, style: bold_style)
-          sheet.merge_cells(merge_cells_length(klass, 1))
-          sheet.add_row
-          sheet.merge_cells(merge_cells_length(klass, 2))
-        end
-
-        sheet.add_row(heading, style: bold_style)
-        sheet.column_widths(*column_widths)
+      unless @data.include?(key)
+        @data[key] = []
       end
 
-      sheet.add_row(update.data_row, style: regular_style)
-      sheet.column_widths(*column_widths)
-    rescue StandardError => e
-      Rails.logger.info "Write record error on #{key} - #{e.message}"
+      @data[key].push(update.data_row)
+    end
+
+    def build_worksheets(data)
+      data.each do |key, values|
+        klass = Module.const_get("CdsImporter::ExcelWriter::#{key}")
+
+        column_widths = klass.column_widths
+        heading = klass.heading
+        merge_range = klass.table_span
+        note = klass.note
+        sheet_name = klass.sheet_name
+        sort_columns = klass.sort_columns
+
+        sheet = workbook.add_worksheet(sheet_name)
+
+        if note.present?
+          sheet.append_row([])
+          sheet.merge_range(0, 0, 0, column_index(merge_range[1]), note, bold_style)
+          sheet.append_row([])
+        end
+
+        sheet.append_row(heading, bold_style)
+
+        if sort_columns.present?
+          values.sort_by! do |r|
+            sort_columns.map { |col| r[col] }
+          end
+        end
+
+        values.each do |row|
+          sheet.append_row(row, regular_style)
+        end
+
+        column_widths.each_with_index do |width, index|
+          sheet.set_column_width(index, width)
+        end
+      end
     end
 
     def initiate_excel_file
-      @package = Axlsx::Package.new
-      @workbook = package.workbook
-      @bold_style = workbook.styles.add_style(
-        b: true,
+      if File.exist?(excel_filename)
+        FileUtils.rm(excel_filename)
+      end
+      FileUtils.mkdir_p(File.join(TariffSynchronizer.root_path, 'cds_updates'))
+      @workbook = FastExcel.open(excel_filename, constant_memory: true)
+
+      @bold_style = workbook.add_format(
+        bg_color: 0xE3E5E6,
+        bold: true,
         font_name: 'Calibri',
-        sz: 11,
-        bg_color: 'e3e5e6',
+        font_size: 11,
       )
-      @regular_style = workbook.styles.add_style(
-        alignment: {
-          wrap_text: true,
-          horizontal: :left,
-          vertical: :top,
-        },
-        font_name: 'Calibri',
-        sz: 11,
+
+      @regular_style = workbook.add_format(
+        align: { h: :left, v: :top },
+        font_name: 'Arial',
+        font_size: 11,
+        text_wrap: true,
       )
     end
 
     def excel_filename
-      "CDS updates #{xml_to_file_date}.xlsx"
+      File.join(TariffSynchronizer.root_path, 'cds_updates', "CDS updates #{xml_to_file_date}.xlsx")
     end
 
     def xml_to_file_date
@@ -139,8 +137,8 @@ class CdsImporter
       end
     end
 
-    def merge_cells_length(klass, row)
-      "#{klass.table_span[0]}#{row}:#{klass.table_span[1]}#{row}"
+    def column_index(col)
+      (col.ord - 'A'.ord).to_i
     end
   end
 end

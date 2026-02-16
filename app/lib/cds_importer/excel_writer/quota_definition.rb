@@ -7,7 +7,7 @@ class CdsImporter
         end
 
         def note
-          ['Please be careful when checking quota balances - each file may contains multiple updates on the same quota definition']
+          'Please be careful when checking quota balances - each file may contain multiple updates on the same quota definition'
         end
 
         def table_span
@@ -35,10 +35,6 @@ class CdsImporter
 
         def sort_columns
           [1]
-        end
-
-        def start_index
-          3
         end
       end
 

@@ -76,7 +76,7 @@ module TariffSynchronizer
       @to_emails = TradeTariffBackend.cds_updates_to_email.split(',')
       @cc_emails = TradeTariffBackend.cds_updates_cc_email.split(',')
 
-      attachments[file_name] = excel.to_stream.read
+      attachments[file_name] = excel
 
       mail subject: "CDS data load #{@produced_date}", to: @to_emails, cc: @cc_emails
     end

@@ -17,10 +17,6 @@ class CdsImporter
         def sheet_name
           ''
         end
-
-        def start_index
-          1
-        end
       end
 
       def valid?
