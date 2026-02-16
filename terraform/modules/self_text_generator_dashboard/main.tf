@@ -1,5 +1,10 @@
 locals {
   dashboard_name = var.dashboard_name != null ? var.dashboard_name : "SelfTextGenerator-${var.environment}"
+  source         = "SOURCE '${var.log_group_name}'"
+  service_filter = "filter service = \"self_text_generator\""
+
+  label_dashboard_url  = "https://${var.region}.console.aws.amazon.com/cloudwatch/home?region=${var.region}#dashboards:name=LabelGenerator-${var.environment}"
+  search_dashboard_url = "https://${var.region}.console.aws.amazon.com/cloudwatch/home?region=${var.region}#dashboards:name=Search-${var.environment}"
 }
 
 resource "aws_cloudwatch_dashboard" "self_text_generator" {
@@ -7,21 +12,152 @@ resource "aws_cloudwatch_dashboard" "self_text_generator" {
 
   dashboard_body = jsonencode({
     widgets = concat(
-      # Row 1: Overview
+
+      # Row 0 (y=0): Documentation
+      [
+        {
+          type   = "text"
+          x      = 0
+          y      = 0
+          width  = 24
+          height = 2
+          properties = {
+            markdown = join("\n", [
+              "## Self-Text Generator",
+              "Batch self-text generation across 98 chapters. Each chapter runs MechanicalBuilder then AiBuilder on the long_running queue.",
+              "**Healthy:** all chapters succeed, API latency p90 < 30s, reindex completes after each batch.",
+              "**Start here:** check Chapter Success vs Failure trend, then drill into failure tables below.",
+              "**Related:** [Label Generator](${local.label_dashboard_url}) | [Search](${local.search_dashboard_url})",
+            ])
+          }
+        }
+      ],
+
+      # Row 1 (y=2): KPI Strip - trends at a glance
       [
         {
           type   = "log"
           x      = 0
-          y      = 0
+          y      = 2
+          width  = 6
+          height = 6
+          properties = {
+            title  = "Chapter Success vs Failure"
+            region = var.region
+            view   = "timeSeries"
+            query  = <<-EOT
+              ${local.source}
+              | ${local.service_filter} and event in ["chapter_completed", "chapter_failed"]
+              | stats count(*) as count by event, bin(1h)
+            EOT
+          }
+        },
+        {
+          type   = "log"
+          x      = 6
+          y      = 2
+          width  = 6
+          height = 6
+          properties = {
+            title  = "API Latency (p50/p90)"
+            region = var.region
+            view   = "timeSeries"
+            query  = <<-EOT
+              ${local.source}
+              | ${local.service_filter} and event = "api_call_completed"
+              | stats pct(duration_ms, 50) as p50, pct(duration_ms, 90) as p90 by bin(1h)
+            EOT
+          }
+        },
+        {
+          type   = "log"
+          x      = 12
+          y      = 2
+          width  = 6
+          height = 6
+          properties = {
+            title  = "Error Rate by Type"
+            region = var.region
+            view   = "timeSeries"
+            query  = <<-EOT
+              ${local.source}
+              | ${local.service_filter} and event in ["chapter_failed", "api_call_failed"]
+              | stats count(*) as errors by event, bin(1h)
+            EOT
+          }
+        },
+        {
+          type   = "log"
+          x      = 18
+          y      = 2
+          width  = 6
+          height = 6
+          properties = {
+            title  = "Nodes Processed vs Failed"
+            region = var.region
+            view   = "timeSeries"
+            query  = <<-EOT
+              ${local.source}
+              | ${local.service_filter} and event = "chapter_completed"
+              | stats sum(ai.processed) as processed, sum(ai.failed) as failed by bin(1h)
+            EOT
+          }
+        }
+      ],
+
+      # Row 2 (y=8): Performance deep dive
+      [
+        {
+          type   = "log"
+          x      = 0
+          y      = 8
+          width  = 12
+          height = 6
+          properties = {
+            title  = "Chapter Processing Percentiles (ms)"
+            region = var.region
+            view   = "timeSeries"
+            query  = <<-EOT
+              ${local.source}
+              | ${local.service_filter} and event = "chapter_completed"
+              | stats pct(duration_ms, 50) as p50, pct(duration_ms, 90) as p90, pct(duration_ms, 99) as p99 by bin(1h)
+            EOT
+          }
+        },
+        {
+          type   = "log"
+          x      = 12
+          y      = 8
+          width  = 12
+          height = 6
+          properties = {
+            title  = "API Latency Percentiles (ms)"
+            region = var.region
+            view   = "timeSeries"
+            query  = <<-EOT
+              ${local.source}
+              | ${local.service_filter} and event = "api_call_completed"
+              | stats pct(duration_ms, 50) as p50, pct(duration_ms, 90) as p90, pct(duration_ms, 99) as p99 by bin(1h)
+            EOT
+          }
+        }
+      ],
+
+      # Row 3 (y=14): Generation history and reindex
+      [
+        {
+          type   = "log"
+          x      = 0
+          y      = 14
           width  = 8
           height = 6
           properties = {
-            title  = "Generation Runs"
+            title  = "Recent Generation Runs"
             region = var.region
             query  = <<-EOT
-              SOURCE '${var.log_group_name}'
+              ${local.source}
+              | ${local.service_filter} and event = "generation_started"
               | fields @timestamp, total_chapters
-              | filter service = "self_text_generator" and event = "generation_started"
               | sort @timestamp desc
               | limit 20
             EOT
@@ -30,89 +166,55 @@ resource "aws_cloudwatch_dashboard" "self_text_generator" {
         {
           type   = "log"
           x      = 8
-          y      = 0
+          y      = 14
           width  = 8
           height = 6
           properties = {
-            title  = "Chapter Success/Failure"
+            title  = "Chapter Detail"
             region = var.region
-            query  = "SOURCE '${var.log_group_name}' | filter service = 'self_text_generator' and event in ['chapter_completed', 'chapter_failed'] | stats count(*) as count by event"
-            view   = "pie"
+            query  = <<-EOT
+              ${local.source}
+              | ${local.service_filter} and event = "chapter_completed"
+              | fields @timestamp, chapter_code, duration_ms, mechanical.processed, ai.processed, ai.failed
+              | sort @timestamp desc
+              | limit 50
+            EOT
           }
         },
         {
           type   = "log"
           x      = 16
-          y      = 0
+          y      = 14
           width  = 8
           height = 6
           properties = {
-            title  = "Error Summary"
+            title  = "Reindex Events"
             region = var.region
             query  = <<-EOT
-              SOURCE '${var.log_group_name}'
-              | filter service = "self_text_generator" and event in ["chapter_failed", "api_call_failed"]
-              | stats count(*) as count by event, error_class
-              | sort count desc
+              ${local.source}
+              | ${local.service_filter} and event in ["reindex_started", "reindex_completed"]
+              | fields @timestamp, event
+              | sort @timestamp desc
+              | limit 20
             EOT
           }
         }
       ],
 
-      # Row 2: Chapter processing metrics
+      # Row 4 (y=20): Drill-down - failure details
       [
         {
           type   = "log"
           x      = 0
-          y      = 6
-          width  = 12
-          height = 6
-          properties = {
-            title  = "Chapter Processing Times (ms)"
-            region = var.region
-            query  = <<-EOT
-              SOURCE '${var.log_group_name}'
-              | filter service = "self_text_generator" and event = "chapter_completed"
-              | fields @timestamp, chapter_code, duration_ms, mechanical.processed, ai.processed, ai.failed
-              | sort @timestamp desc
-              | limit 100
-            EOT
-          }
-        },
-        {
-          type   = "log"
-          x      = 12
-          y      = 6
-          width  = 12
-          height = 6
-          properties = {
-            title  = "API Call Latency (ms)"
-            region = var.region
-            query  = <<-EOT
-              SOURCE '${var.log_group_name}'
-              | filter service = "self_text_generator" and event = "api_call_completed"
-              | fields @timestamp, duration_ms, chapter_code, batch_size, model
-              | sort @timestamp desc
-              | limit 50
-            EOT
-          }
-        }
-      ],
-
-      # Row 3: Failures
-      [
-        {
-          type   = "log"
-          x      = 0
-          y      = 12
+          y      = 20
           width  = 12
           height = 6
           properties = {
             title  = "API Failures (incl. 429s)"
             region = var.region
             query  = <<-EOT
-              SOURCE '${var.log_group_name}'
-              | filter service = "self_text_generator" and event = "api_call_failed"
+              ${local.source}
+              | ${local.service_filter} and event = "api_call_failed"
               | fields @timestamp, chapter_code, model, error_class, error_message, duration_ms, http_status
               | sort @timestamp desc
               | limit 20
@@ -122,38 +224,16 @@ resource "aws_cloudwatch_dashboard" "self_text_generator" {
         {
           type   = "log"
           x      = 12
-          y      = 12
+          y      = 20
           width  = 12
           height = 6
           properties = {
             title  = "Chapter Failures"
             region = var.region
             query  = <<-EOT
-              SOURCE '${var.log_group_name}'
-              | filter service = "self_text_generator" and event = "chapter_failed"
+              ${local.source}
+              | ${local.service_filter} and event = "chapter_failed"
               | fields @timestamp, chapter_code, chapter_sid, error_class, error_message
-              | sort @timestamp desc
-              | limit 20
-            EOT
-          }
-        }
-      ],
-
-      # Row 4: Reindexing
-      [
-        {
-          type   = "log"
-          x      = 0
-          y      = 18
-          width  = 24
-          height = 6
-          properties = {
-            title  = "Reindex Events"
-            region = var.region
-            query  = <<-EOT
-              SOURCE '${var.log_group_name}'
-              | filter service = "self_text_generator" and event in ["reindex_started", "reindex_completed"]
-              | fields @timestamp, event
               | sort @timestamp desc
               | limit 20
             EOT
