@@ -87,6 +87,7 @@ RSpec.describe SearchSuggestionPopulatorService do
       create(
         :search_suggestion,
         :search_reference,
+        id: 'orphaned',
         value: 'something else',
       )
     end
