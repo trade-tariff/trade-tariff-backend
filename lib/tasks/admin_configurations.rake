@@ -144,19 +144,20 @@ module AdminConfigurationSeeder
     <<~MARKDOWN.strip
       You are an expert in the UK Trade Tariff - a hierarchical classification system for goods.
 
-      The tariff is a tree. Each node has a description. Some nodes are described as "Other" - this is a residual catch-all category meaning "everything classified under the parent that is not specifically named by a sibling node."
+      The tariff is a tree. Each node has a description. Some nodes are described as "Other" or contain "Other" with a qualifier - these are residual catch-all categories meaning "everything classified under the parent that is not specifically named by a sibling node."
 
       You will receive a JSON array of segments. Each segment contains:
 
       - **sid**: the goods_nomenclature_sid (unique identifier)
       - **code**: the goods_nomenclature_item_id (10-digit commodity code)
+      - **description**: the node's original description (e.g. "Other", "Other, fresh or chilled", "Of pine (pinus spp.), other")
       - **parent**: the parent node's description (already contextualised if it was previously "Other")
       - **ancestor_chain**: the full path from the chapter root to this node's parent, joined with " > "
       - **siblings**: array of sibling node descriptions (the named categories at the same level)
       - **goods_nomenclature_class**: the type of node - "Chapter", "Heading", "Subheading", or "Commodity"
       - **declarable**: true if traders can declare goods against this code, false if it is a grouping node
 
-      For each segment, produce a contextualised description that replaces "Other".
+      For each segment, produce a contextualised description that replaces the "Other" element while preserving any qualifier.
 
       ## Output format
 
@@ -188,6 +189,21 @@ module AdminConfigurationSeeder
       - Keep descriptions concise and terse - avoid verbose explanations
       - Do NOT include the commodity code in the description
       - Do NOT start with "Other" - give the positive category name first
+
+      ## Qualified Other patterns
+
+      Not all nodes are bare "Other". Some include a qualifier that must be preserved:
+
+      - **"Other, qualifier"** (e.g. "Other, fresh or chilled"): Replace "Other" with parent context, keep the qualifier.
+        - Example: description "Other, fresh or chilled", parent "Edible offal of bovine animals", siblings ["Tongues", "Livers"]
+          -> "Edible offal of bovine animals, fresh or chilled (excl. tongues, livers)"
+      - **"Other (qualifier)"** (e.g. "Other (including factory rejects)"): Replace "Other" with parent context, keep the parenthetical.
+        - Example: description "Other (including factory rejects)", parent "Aluminium waste and scrap", siblings ["Turnings, shavings, chips"]
+          -> "Aluminium waste and scrap (including factory rejects) (excl. turnings, shavings, chips)"
+      - **"description, other"** (e.g. "Of pine (pinus spp.), other"): The ", other" is the residual marker. Keep the preceding description and add sibling exclusions.
+        - Example: description "Of pine (pinus spp.), other", siblings ["Treated with paint, stains, creosote"]
+          -> "Of pine (pinus spp.) (excl. treated with paint, stains, creosote)"
+      - **Bare "Other"**: Handled by the standard rules above - replace entirely with parent context and sibling exclusions.
 
       ## Node type guidance
 

@@ -98,6 +98,7 @@ module GenerateSelfText
       {
         sid: node[:sid],
         code: node[:code],
+        description: node[:description],
         parent: parent_text,
         ancestor_chain: ancestor_chain,
         siblings: siblings,

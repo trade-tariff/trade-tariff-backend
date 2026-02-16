@@ -84,6 +84,7 @@ RSpec.describe 'admin_configurations:seed' do
     expect(self_text_context.config_type).to eq('markdown')
     expect(self_text_context.value).to include('## Output format')
     expect(self_text_context.value).to include('excluded_siblings')
+    expect(self_text_context.value).to include('## Qualified Other patterns')
   end
 
   it 'seeds self_text_batch_size as an integer config defaulting to 5', :aggregate_failures do

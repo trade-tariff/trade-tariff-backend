@@ -389,6 +389,43 @@ RSpec.describe GenerateSelfText::AiBuilder do
       end
     end
 
+    context 'with a qualified Other node' do
+      let(:other_commodity) do
+        create(:commodity, :with_description,
+               description: 'Other, fresh or chilled',
+               parent: heading)
+      end
+
+      let(:successful_response) do
+        {
+          'descriptions' => [
+            {
+              'sid' => other_commodity.goods_nomenclature_sid,
+              'contextualised_description' => 'Live horses, fresh or chilled (excl. pure-bred for breeding)',
+              'excluded_siblings' => ['Pure-bred breeding animals'],
+            },
+          ],
+        }.to_json
+      end
+
+      it 'sends qualified Other nodes to AI' do
+        result
+
+        record = GoodsNomenclatureSelfText[other_commodity.goods_nomenclature_sid]
+        expect(record.self_text).to eq('Live horses, fresh or chilled (excl. pure-bred for breeding)')
+      end
+
+      it 'includes the node description in the segment JSON' do
+        result
+
+        expect(ai_client).to have_received(:call) do |messages, **_opts|
+          user_content = JSON.parse(messages.last[:content])
+          segment = user_content.first
+          expect(segment['description']).to eq('Other, fresh or chilled')
+        end
+      end
+    end
+
     def self_text_for_sid(sid)
       GoodsNomenclatureSelfText[sid]&.self_text
     end
