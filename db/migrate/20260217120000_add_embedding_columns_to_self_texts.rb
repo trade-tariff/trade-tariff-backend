@@ -1,6 +1,6 @@
 Sequel.migration do
   up do
-    run 'CREATE EXTENSION IF NOT EXISTS vector'
+    run 'CREATE EXTENSION IF NOT EXISTS vector SCHEMA public'
 
     alter_table :goods_nomenclature_self_texts do
       add_column :embedding, 'vector(1536)'
