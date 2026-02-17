@@ -1,0 +1,133 @@
+RSpec.describe Api::Admin::GoodsNomenclatures::GoodsNomenclatureSelfTextsController do
+  routes { AdminApi.routes }
+
+  describe '#show' do
+    let(:pattern) do
+      {
+        data: {
+          id: String,
+          type: 'goods_nomenclature_self_text',
+          attributes: {
+            goods_nomenclature_sid: Integer,
+            goods_nomenclature_item_id: String,
+            self_text: String,
+            generation_type: String,
+            needs_review: wildcard_matcher,
+            manually_edited: wildcard_matcher,
+            stale: wildcard_matcher,
+            generated_at: String,
+            eu_self_text: wildcard_matcher,
+            similarity_score: wildcard_matcher,
+            coherence_score: wildcard_matcher,
+            input_context: Hash,
+            nomenclature_type: wildcard_matcher,
+            score: wildcard_matcher,
+          },
+        },
+      }
+    end
+
+    context 'when self text record exists' do
+      let!(:self_text) { create :goods_nomenclature_self_text }
+
+      it 'returns rendered record' do
+        get :show, params: { goods_nomenclature_id: self_text.goods_nomenclature_item_id }, format: :json
+
+        expect(response).to have_http_status(:ok)
+        expect(response.body).to match_json_expression pattern
+      end
+    end
+
+    context 'when self text record does not exist' do
+      it 'returns not found' do
+        get :show, params: { goods_nomenclature_id: '9999999999' }, format: :json
+
+        expect(response).to have_http_status(:not_found)
+      end
+    end
+  end
+
+  describe '#update' do
+    let!(:self_text) { create :goods_nomenclature_self_text }
+
+    context 'when save succeeds' do
+      let(:new_text) { 'Updated self text content' }
+
+      it 'responds with success' do
+        put :update, params: {
+          goods_nomenclature_id: self_text.goods_nomenclature_item_id,
+          data: { type: 'goods_nomenclature_self_text', attributes: { self_text: new_text } },
+        }, format: :json
+
+        expect(response).to have_http_status(:ok)
+      end
+
+      it 'updates the self text' do
+        put :update, params: {
+          goods_nomenclature_id: self_text.goods_nomenclature_item_id,
+          data: { type: 'goods_nomenclature_self_text', attributes: { self_text: new_text } },
+        }, format: :json
+
+        json = JSON.parse(response.body)
+        expect(json.dig('data', 'attributes', 'self_text')).to eq(new_text)
+      end
+
+      it 'sets manually_edited to true' do
+        put :update, params: {
+          goods_nomenclature_id: self_text.goods_nomenclature_item_id,
+          data: { type: 'goods_nomenclature_self_text', attributes: { self_text: new_text } },
+        }, format: :json
+
+        json = JSON.parse(response.body)
+        expect(json.dig('data', 'attributes', 'manually_edited')).to be true
+      end
+
+      it 'clears needs_review flag' do
+        self_text.update(needs_review: true)
+
+        put :update, params: {
+          goods_nomenclature_id: self_text.goods_nomenclature_item_id,
+          data: { type: 'goods_nomenclature_self_text', attributes: { self_text: new_text } },
+        }, format: :json
+
+        json = JSON.parse(response.body)
+        expect(json.dig('data', 'attributes', 'needs_review')).to be false
+      end
+    end
+
+    context 'when self text record does not exist' do
+      it 'returns 404' do
+        put :update, params: {
+          goods_nomenclature_id: '9999999999',
+          data: { type: 'goods_nomenclature_self_text', attributes: { self_text: 'test' } },
+        }, format: :json
+
+        expect(response).to have_http_status(:not_found)
+      end
+    end
+  end
+
+  describe '#score' do
+    let!(:self_text) { create :goods_nomenclature_self_text }
+    let(:scorer) { instance_double(SelfTextConfidenceScorer, score: nil) }
+
+    before do
+      allow(SelfTextConfidenceScorer).to receive(:new).and_return(scorer)
+    end
+
+    it 'triggers scoring and returns success' do
+      post :score, params: { goods_nomenclature_id: self_text.goods_nomenclature_item_id }, format: :json
+
+      expect(response).to have_http_status(:ok)
+      expect(scorer).to have_received(:score).with([self_text.goods_nomenclature_sid])
+    end
+
+    context 'when self text record does not exist' do
+      it 'returns 404' do
+        post :score, params: { goods_nomenclature_id: '9999999999' }, format: :json
+
+        expect(response).to have_http_status(:not_found)
+      end
+    end
+  end
+end
