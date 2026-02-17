@@ -2,10 +2,10 @@
 -- PostgreSQL database dump
 --
 
-\restrict wSKBjOhraNrh5eFNgyevuPmCdjVCVIyiTUxWLutlPzeC6XNetuTHms7md6JfMzE
+\restrict VECQKRpYUc1OvbtLMH9BOteBxbOIwpnAGPR3rbf9gvKmK6zuA2zoL9lf9DgcL9y
 
--- Dumped from database version 18.0
--- Dumped by pg_dump version 18.0
+-- Dumped from database version 18.2
+-- Dumped by pg_dump version 18.2
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -4116,7 +4116,12 @@ CREATE TABLE uk.goods_nomenclature_self_texts (
     stale boolean DEFAULT false,
     generated_at timestamp without time zone NOT NULL,
     created_at timestamp without time zone NOT NULL,
-    updated_at timestamp without time zone NOT NULL
+    updated_at timestamp without time zone NOT NULL,
+    eu_self_text text,
+    similarity_score double precision,
+    coherence_score double precision,
+    embedding public.vector(1536),
+    eu_embedding public.vector(1536)
 );
 
 
@@ -8086,22 +8091,6 @@ CREATE TABLE uk.tariff_updates (
 
 
 --
--- Name: tradeset_descriptions; Type: TABLE; Schema: uk; Owner: -
---
-
-CREATE TABLE uk.tradeset_descriptions (
-    filename text NOT NULL,
-    classification_date date NOT NULL,
-    description text NOT NULL,
-    goods_nomenclature_item_id text NOT NULL,
-    created_at timestamp without time zone NOT NULL,
-    updated_at timestamp without time zone NOT NULL,
-    validity_start_date timestamp without time zone NOT NULL,
-    validity_end_date timestamp without time zone
-);
-
-
---
 -- Name: transmission_comments_oplog; Type: TABLE; Schema: uk; Owner: -
 --
 
@@ -10373,14 +10362,6 @@ ALTER TABLE ONLY uk.tariff_update_presence_errors
 
 ALTER TABLE ONLY uk.tariff_updates
     ADD CONSTRAINT tariff_updates_pkey PRIMARY KEY (filename);
-
-
---
--- Name: tradeset_descriptions tradeset_descriptions_filename_description_goods_nomenclatu_key; Type: CONSTRAINT; Schema: uk; Owner: -
---
-
-ALTER TABLE ONLY uk.tradeset_descriptions
-    ADD CONSTRAINT tradeset_descriptions_filename_description_goods_nomenclatu_key UNIQUE (filename, description, goods_nomenclature_item_id);
 
 
 --
@@ -13832,13 +13813,6 @@ CREATE INDEX tco_tracomopl_ionntslog_operation_date ON uk.transmission_comments_
 
 
 --
--- Name: tradeset_descriptions_goods_nomenclature_item_id_index; Type: INDEX; Schema: uk; Owner: -
---
-
-CREATE INDEX tradeset_descriptions_goods_nomenclature_item_id_index ON uk.tradeset_descriptions USING btree (goods_nomenclature_item_id);
-
-
---
 -- Name: trans_comm_pk; Type: INDEX; Schema: uk; Owner: -
 --
 
@@ -14038,7 +14012,7 @@ ALTER TABLE ONLY uk.news_collections_news_items
 -- PostgreSQL database dump complete
 --
 
-\unrestrict wSKBjOhraNrh5eFNgyevuPmCdjVCVIyiTUxWLutlPzeC6XNetuTHms7md6JfMzE
+\unrestrict VECQKRpYUc1OvbtLMH9BOteBxbOIwpnAGPR3rbf9gvKmK6zuA2zoL9lf9DgcL9y
 
 --
 -- Name: citext; Type: EXTENSION; Schema: -; Owner: -
@@ -14080,6 +14054,20 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp" WITH SCHEMA public;
 --
 
 COMMENT ON EXTENSION "uuid-ossp" IS 'generate universally unique identifiers (UUIDs)';
+
+
+--
+-- Name: vector; Type: EXTENSION; Schema: -; Owner: -
+--
+
+CREATE EXTENSION IF NOT EXISTS vector WITH SCHEMA public;
+
+
+--
+-- Name: EXTENSION vector; Type: COMMENT; Schema: -; Owner: -
+--
+
+COMMENT ON EXTENSION vector IS 'vector data type and ivfflat and hnsw access methods';
 SET search_path TO uk, public;
 INSERT INTO "schema_migrations" ("filename") VALUES ('1342519058_create_schema.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20120726092749_duty_amount_expressed_in_float.rb');
@@ -14288,3 +14276,4 @@ INSERT INTO "schema_migrations" ("filename") VALUES ('20260108120000_create_tari
 INSERT INTO "schema_migrations" ("filename") VALUES ('20260113104016_adds_goods_nomenclature_labels_oplog.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20260130120000_adds_admin_configurations_oplog.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20260211120000_create_goods_nomenclature_self_texts.rb');
+INSERT INTO "schema_migrations" ("filename") VALUES ('20260217120000_add_embedding_columns_to_self_texts.rb');
