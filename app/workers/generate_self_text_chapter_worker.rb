@@ -36,6 +36,12 @@ class GenerateSelfTextChapterWorker
 
       payload[:mechanical] = mechanical_stats
       payload[:ai] = ai_stats
+
+      chapter_sids = GoodsNomenclatureSelfText
+        .where(Sequel.like(:goods_nomenclature_item_id, "#{chapter_code}%"))
+        .select_map(:goods_nomenclature_sid)
+
+      SelfTextConfidenceScorer.new.score(chapter_sids) if chapter_sids.any?
     end
 
     remaining = TradeTariffBackend.redis.decr(GenerateSelfTextWorker::REDIS_KEY)
