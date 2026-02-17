@@ -41,7 +41,7 @@ class GenerateSelfTextChapterWorker
         .where(Sequel.like(:goods_nomenclature_item_id, "#{chapter_code}%"))
         .select_map(:goods_nomenclature_sid)
 
-      SelfTextConfidenceScorer.new.score(chapter_sids) if chapter_sids.any?
+      SelfTextConfidenceScorer.new.score(chapter_sids, chapter_code:) if chapter_sids.any?
     end
 
     remaining = TradeTariffBackend.redis.decr(GenerateSelfTextWorker::REDIS_KEY)

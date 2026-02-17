@@ -25,8 +25,8 @@ resource "aws_cloudwatch_dashboard" "self_text_generator" {
             markdown = join("\n", [
               "## Self-Text Generator",
               "Batch self-text generation across 98 chapters. Each chapter runs MechanicalBuilder then AiBuilder on the within_1_day queue.",
-              "**Healthy:** all chapters succeed, API latency p90 < 30s, reindex completes after each batch.",
-              "**Start here:** check Chapter Success vs Failure trend, then drill into failure tables below.",
+              "**Healthy:** all chapters succeed, API latency p90 < 30s, reindex completes after each batch. Scoring: mean similarity > 0.7, embedding API p90 < 5s.",
+              "**Start here:** check Chapter Success vs Failure trend, then drill into failure tables and scoring metrics below.",
               "**Related:** [Label Generator](${local.label_dashboard_url}) | [Search](${local.search_dashboard_url})",
             ])
           }
@@ -234,6 +234,62 @@ resource "aws_cloudwatch_dashboard" "self_text_generator" {
               ${local.source}
               | ${local.service_filter} and event = "chapter_failed"
               | fields @timestamp, chapter_code, chapter_sid, error_class, error_message
+              | sort @timestamp desc
+              | limit 20
+            EOT
+          }
+        }
+      ],
+
+      # Row 5 (y=26): Confidence Scoring
+      [
+        {
+          type   = "log"
+          x      = 0
+          y      = 26
+          width  = 8
+          height = 6
+          properties = {
+            title  = "Embedding API Latency (p50/p90)"
+            region = var.region
+            view   = "timeSeries"
+            query  = <<-EOT
+              ${local.source}
+              | ${local.service_filter} and event = "embedding_api_call_completed"
+              | stats pct(duration_ms, 50) as p50, pct(duration_ms, 90) as p90 by bin(1h)
+            EOT
+          }
+        },
+        {
+          type   = "log"
+          x      = 8
+          y      = 26
+          width  = 8
+          height = 6
+          properties = {
+            title  = "Similarity Score Distribution"
+            region = var.region
+            view   = "timeSeries"
+            query  = <<-EOT
+              ${local.source}
+              | ${local.service_filter} and event = "scoring_completed"
+              | stats avg(mean_similarity) as avg_similarity, min(mean_similarity) as min_similarity by bin(1h)
+            EOT
+          }
+        },
+        {
+          type   = "log"
+          x      = 16
+          y      = 26
+          width  = 8
+          height = 6
+          properties = {
+            title  = "Scoring Failures"
+            region = var.region
+            query  = <<-EOT
+              ${local.source}
+              | ${local.service_filter} and event in ["scoring_failed", "embedding_api_call_failed"]
+              | fields @timestamp, chapter_code, event, error_class, error_message
               | sort @timestamp desc
               | limit 20
             EOT

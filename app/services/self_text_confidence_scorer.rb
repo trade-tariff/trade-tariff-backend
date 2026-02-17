@@ -5,19 +5,35 @@ class SelfTextConfidenceScorer
 
   # Score a set of self-text records by SID.
   # Populates EU references, generates embeddings, and computes confidence scores.
-  def score(sids)
+  def score(sids, chapter_code: nil)
     return if sids.empty?
+
+    @chapter_code = chapter_code
 
     records = GoodsNomenclatureSelfText.where(goods_nomenclature_sid: sids).all
     return if records.empty?
 
-    populate_eu_references(records)
-    generate_embeddings(records)
-    compute_similarity_scores(sids)
-    compute_coherence_scores(records.select do |r|
-      r.reload
-      r.eu_self_text.nil? && r.embedding
-    end)
+    SelfTextGenerator::Instrumentation.scoring_started(
+      chapter_code: @chapter_code,
+      total_records: records.size,
+    )
+
+    SelfTextGenerator::Instrumentation.scoring_completed(chapter_code: @chapter_code) do |payload|
+      populate_eu_references(records)
+      generate_embeddings(records)
+      compute_similarity_scores(sids)
+
+      gap_records = records.select do |r|
+        r.reload
+        r.eu_self_text.nil? && r.embedding
+      end
+      compute_coherence_scores(gap_records)
+
+      populate_scoring_payload(payload, sids, gap_records)
+    end
+  rescue StandardError => e
+    SelfTextGenerator::Instrumentation.scoring_failed(chapter_code: @chapter_code, error: e)
+    raise
   end
 
   private
@@ -59,7 +75,12 @@ class SelfTextConfidenceScorer
   def embed_column(records, text_column, embedding_column)
     records.each_slice(EmbeddingService::BATCH_SIZE) do |batch|
       texts = batch.map(&text_column)
-      embeddings = embedding_service.embed_batch(texts)
+
+      embeddings = SelfTextGenerator::Instrumentation.embedding_api_call(
+        batch_size: texts.size,
+        model: EmbeddingService::MODEL,
+        chapter_code: @chapter_code,
+      ) { embedding_service.embed_batch(texts) }
 
       batch.zip(embeddings).each do |record, embedding|
         GoodsNomenclatureSelfText
@@ -84,7 +105,12 @@ class SelfTextConfidenceScorer
 
     gap_records.each_slice(EmbeddingService::BATCH_SIZE) do |batch|
       ancestor_texts = batch.map { |record| ancestor_chain_text(record) }
-      ancestor_embeddings = embedding_service.embed_batch(ancestor_texts)
+
+      ancestor_embeddings = SelfTextGenerator::Instrumentation.embedding_api_call(
+        batch_size: ancestor_texts.size,
+        model: EmbeddingService::MODEL,
+        chapter_code: @chapter_code,
+      ) { embedding_service.embed_batch(ancestor_texts) }
 
       batch.zip(ancestor_embeddings).each do |record, ancestor_embedding|
         gen_embedding_str = Sequel::Model.db[<<~SQL, record.goods_nomenclature_sid].first[:embedding_arr]
@@ -101,6 +127,24 @@ class SelfTextConfidenceScorer
           .update(coherence_score: score)
       end
     end
+  end
+
+  def populate_scoring_payload(payload, sids, gap_records)
+    scored = GoodsNomenclatureSelfText.where(goods_nomenclature_sid: sids)
+
+    eu_matched = scored.exclude(eu_self_text: nil).count
+    with_embedding = scored.exclude(embedding: nil).count
+
+    similarity_scores = scored.exclude(similarity_score: nil).select_map(:similarity_score)
+    coherence_scores = gap_records.map { |r|
+      r.reload
+      r.coherence_score
+    }.compact
+
+    payload[:eu_matched] = eu_matched
+    payload[:embeddings_generated] = with_embedding
+    payload[:mean_similarity] = similarity_scores.any? ? (similarity_scores.sum / similarity_scores.size).round(4) : nil
+    payload[:mean_coherence] = coherence_scores.any? ? (coherence_scores.sum / coherence_scores.size).round(4) : nil
   end
 
   def ancestor_chain_text(record)

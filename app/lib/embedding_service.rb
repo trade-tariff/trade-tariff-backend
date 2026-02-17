@@ -25,7 +25,6 @@ class EmbeddingService
           .sort_by { |d| d['index'] }
           .map { |d| d['embedding'] }
       else
-        Rails.logger.error "EmbeddingService error: #{response.status} #{response.body}"
         raise "EmbeddingService API error: #{response.status}"
       end
     end
@@ -42,11 +41,10 @@ class EmbeddingService
     rescue *RETRYABLE_ERRORS => e
       if attempts < MAX_RETRIES
         delay = RETRY_DELAY * (2**(attempts - 1))
-        Rails.logger.warn "EmbeddingService: #{e.class} on attempt #{attempts}, retrying in #{delay}s..."
+        SelfTextGenerator::Instrumentation.embedding_api_retry(attempt: attempts, delay:, error: e)
         sleep delay
         retry
       else
-        Rails.logger.error "EmbeddingService: #{e.class} after #{attempts} attempts, giving up"
         raise
       end
     end
