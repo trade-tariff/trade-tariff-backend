@@ -30,6 +30,7 @@ class TaricImporter
       total_count: 0,
       total_duration: 0,
     }
+    @all_sqls = []
   end
 
   def import
@@ -38,11 +39,11 @@ class TaricImporter
 
     subscribe_to_oplog_inserts
 
-    handler = XmlProcessor.new(@taric_update.issue_date)
+    processor = XmlProcessor.new(@taric_update.issue_date)
     file = TariffSynchronizer::FileService.file_as_stringio(@taric_update)
-    TaricImporter::XmlParser::Reader.new(file, 'record', handler).parse
+    TaricImporter::XmlParser::Reader.new(file, 'record', processor).parse
     post_import(file_path: @taric_update.file_path, filename:)
-
+    write_sql_to_file(filename:)
     @oplog_inserts
   end
 
@@ -72,7 +73,7 @@ class TaricImporter
 
   private
 
-  attr_reader :oplog_inserts
+  attr_reader :oplog_inserts, :all_sqls
 
   def subscribe_to_oplog_inserts
     ActiveSupport::Notifications.subscribe('taric_importer.import.operations') do |*args|
@@ -96,7 +97,21 @@ class TaricImporter
         oplog_inserts[:total_count] += count
         oplog_inserts[:total_duration] += duration
       end
+
+      sql = oplog_event.payload[:sql]
+      if sql.present?
+        all_sqls << sql
+      end
     end
+  end
+
+  def write_sql_to_file(filename:)
+    sql_body = @all_sqls.map { |sql| "#{sql};" }.join("\n") + "\n"
+    issue_date = filename.split('_').first
+    sql_filename = "taric_#{issue_date}.sql"
+    file_path = File.join(TariffSynchronizer.root_path, 'XI_CDS_Test', sql_filename)
+
+    TariffSynchronizer::FileService.write_file(file_path, sql_body)
   end
 
   def proceed_with_import?(filename)

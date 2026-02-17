@@ -4,10 +4,10 @@ class CdsImporter
       EXTRA_CONTENT = /^\n\s+/
       CONTENT_KEY = :__content__
 
-      def initialize(stringio, target_handler)
+      def initialize(stringio, target_processor)
         @stringio = stringio
         @targets = CdsImporter::EntityMapper.all_mapping_roots
-        @target_handler = target_handler
+        @target_processor = target_processor
         @target_depth = 3
         @in_target = false
         @stack = []
@@ -43,7 +43,7 @@ class CdsImporter
       def end_element(key)
         @depth -= 1
         if @depth == @target_depth && @targets.include?(key)
-          @target_handler.process_xml_node(key, @stack.pop)
+          @target_processor.process_xml_node(key, @stack.pop)
           @in_target = false
         end
 

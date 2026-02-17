@@ -16,12 +16,7 @@ class CdsImporter
   class UnknownOperationError < ImportException
   end
 
-  DEFAULT_HANDLER_CLASSES = [
-    CdsImporter::RecordInserter,
-    CdsImporter::ExcelWriter,
-  ].freeze
-
-  def initialize(cds_update, handler_classes: DEFAULT_HANDLER_CLASSES)
+  def initialize(cds_update, handler_classes)
     @cds_update = cds_update
     @handler_classes = handler_classes
     @oplog_inserts = {
@@ -40,7 +35,7 @@ class CdsImporter
   def import
     zip_file = TariffSynchronizer::FileService.file_as_stringio(@cds_update)
     handlers = @handler_classes.map { |klass| klass.new(@cds_update.filename) }
-    handler = XmlProcessor.new(@cds_update.filename, handlers)
+    xml_processor = XmlProcessor.new(@cds_update.filename, handlers)
 
     subscribe_to_oplog_inserts
     Rails.logger.info "CDS Importer batch size: #{TradeTariffBackend.cds_importer_batch_size}"
@@ -50,9 +45,9 @@ class CdsImporter
         # Read into memory
         xml_stream = entry.get_input_stream
         # do the xml parsing depending on records root depth
-        CdsImporter::XmlParser::Reader.new(xml_stream, handler).parse
+        CdsImporter::XmlParser::Reader.new(xml_stream, xml_processor).parse
 
-        handler.after_parse
+        xml_processor.after_parse
         Rails.logger.info "Successfully imported Cds file: #{@cds_update.filename}"
       end
     end

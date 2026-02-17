@@ -4,10 +4,10 @@ class TaricImporter
       EXTRA_CONTENT = /^\n\s+/
       CONTENT_KEY = :__content__
 
-      def initialize(stringio, target, target_handler)
+      def initialize(stringio, target, target_processor)
         @stringio = stringio
         @target = target
-        @target_handler = target_handler
+        @target_processor = target_processor
         @in_target = false
         @stack = []
 
@@ -43,7 +43,7 @@ class TaricImporter
         key = strip_namespace(key)
 
         if key == @target
-          @target_handler.process_xml_node @stack.pop
+          @target_processor.process_xml_node @stack.pop
           @in_target = false
         end
 

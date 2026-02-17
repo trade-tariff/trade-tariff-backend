@@ -27,7 +27,15 @@ module TariffSynchronizer
     end
 
     def import!
-      @oplog_inserts = CdsImporter.new(self).import
+      handlers = []
+
+      if TradeTariffBackend.uk?
+        handlers << [CdsImporter::RecordInserter, CdsImporter::ExcelWriter]
+      else
+        handlers << [CdsImporter::RecordLogger]
+      end
+
+      @oplog_inserts = CdsImporter.new(self, handlers).import
 
       check_oplog_inserts
       mark_as_applied

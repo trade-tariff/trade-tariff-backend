@@ -67,7 +67,9 @@ class TaricImporter
     def process!
       operation = operation_class.new(record, operation_date)
 
-      instrument('taric_importer.import.operations', operation: operation.to_oplog_operation, count: 1, entity_class: record.klass) do
+      sql = operation.klass.dataset.insert_sql(operation.attributes)
+
+      instrument('taric_importer.import.operations', operation: operation.to_oplog_operation, count: 1, entity_class: record.klass, sql: sql) do
         operation.call
       end
     end
