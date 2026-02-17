@@ -47,7 +47,7 @@ resource "aws_cloudwatch_dashboard" "self_text_generator" {
             view   = "timeSeries"
             query  = <<-EOT
               ${local.source}
-              | ${local.service_filter} and event in ["chapter_completed", "chapter_failed"]
+              | ${local.service_filter} and ((event = "chapter_completed" and not ispresent(exception)) or event = "chapter_failed")
               | stats count(*) as count by event, bin(1h)
             EOT
           }
@@ -98,7 +98,7 @@ resource "aws_cloudwatch_dashboard" "self_text_generator" {
             view   = "timeSeries"
             query  = <<-EOT
               ${local.source}
-              | ${local.service_filter} and event = "chapter_completed"
+              | ${local.service_filter} and event = "chapter_completed" and not ispresent(exception)
               | stats sum(ai.processed) as processed, sum(ai.failed) as failed by bin(1h)
             EOT
           }
@@ -119,7 +119,7 @@ resource "aws_cloudwatch_dashboard" "self_text_generator" {
             view   = "timeSeries"
             query  = <<-EOT
               ${local.source}
-              | ${local.service_filter} and event = "chapter_completed"
+              | ${local.service_filter} and event = "chapter_completed" and not ispresent(exception)
               | stats pct(duration_ms, 50) as p50, pct(duration_ms, 90) as p90, pct(duration_ms, 99) as p99 by bin(1h)
             EOT
           }
@@ -174,7 +174,7 @@ resource "aws_cloudwatch_dashboard" "self_text_generator" {
             region = var.region
             query  = <<-EOT
               ${local.source}
-              | ${local.service_filter} and event = "chapter_completed"
+              | ${local.service_filter} and event = "chapter_completed" and not ispresent(exception)
               | fields @timestamp, chapter_code, duration_ms, mechanical.processed, ai.processed, ai.failed
               | sort @timestamp desc
               | limit 50
@@ -272,7 +272,7 @@ resource "aws_cloudwatch_dashboard" "self_text_generator" {
             view   = "timeSeries"
             query  = <<-EOT
               ${local.source}
-              | ${local.service_filter} and event = "scoring_completed"
+              | ${local.service_filter} and event = "scoring_completed" and ispresent(mean_similarity)
               | stats avg(mean_similarity) as avg_similarity, min(mean_similarity) as min_similarity by bin(1h)
             EOT
           }
