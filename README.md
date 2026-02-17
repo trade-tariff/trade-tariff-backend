@@ -16,10 +16,10 @@ Projects using the Trade Tariff (TT) API:
 
 Before setup you will need your backing services and header files/libs:
 
-- Postgresql
+- PostgreSQL (with [pgvector](https://github.com/pgvector/pgvector) extension)
 - OpenSearch
 - Redis
-- `libpq`, `libyaml`, `zlib`  (`brew install libpq libyaml zlib` on MacOS)
+- `libpq`, `libyaml`, `zlib`  (`brew install libpq libyaml zlib` on macOS)
 
 These can be configured by following the instructions here:
 
@@ -49,6 +49,8 @@ Should you *not* want to use DevContainers, you can setup this up manually:
 #### Dependencies
 
 - Ruby [v3.3](https://github.com/trade-tariff/trade-tariff-frontend/blob/main/.ruby-version#L1)
+- PostgreSQL 15+ with pgvector ([Postgres.app](https://postgresapp.com/) includes it, or `brew install pgvector` on macOS)
+- `postgresql-dev` / `libpq-dev` header files for compiling the `pg` gem
 
 #### Setup
 
