@@ -81,7 +81,7 @@ RSpec.describe GenerateSelfText::AiBuilder do
     end
 
     it 'returns correct stats for a successful run' do
-      expect(result).to eq({ processed: 1, failed: 0, needs_review: 0 })
+      expect(result).to eq({ processed: 1, failed: 0, needs_review: 0, skipped: 0 })
     end
 
     context 'when non-Other nodes exist' do
@@ -423,6 +423,37 @@ RSpec.describe GenerateSelfText::AiBuilder do
           segment = user_content.first
           expect(segment['description']).to eq('Other, fresh or chilled')
         end
+      end
+    end
+
+    context 'when records already exist with matching context' do
+      it 'skips unchanged records on second run' do
+        described_class.call(chapter)
+
+        # Reset call count so we can assert zero calls on the second run
+        RSpec::Mocks.space.proxy_for(ai_client).reset
+
+        allow(TradeTariffBackend).to receive(:ai_client).and_return(ai_client)
+        allow(ai_client).to receive(:call)
+
+        second_result = described_class.call(chapter)
+
+        expect(second_result[:skipped]).to eq(1)
+        expect(second_result[:processed]).to eq(0)
+        expect(ai_client).not_to have_received(:call)
+      end
+    end
+
+    context 'when an existing record is stale' do
+      it 'reprocesses stale records' do
+        described_class.call(chapter)
+
+        record = GoodsNomenclatureSelfText[other_commodity.goods_nomenclature_sid]
+        record.update(stale: true)
+
+        second_result = described_class.call(chapter)
+        expect(second_result[:processed]).to eq(1)
+        expect(second_result[:skipped]).to eq(0)
       end
     end
 

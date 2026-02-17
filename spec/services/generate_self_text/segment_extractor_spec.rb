@@ -240,6 +240,21 @@ RSpec.describe GenerateSelfText::SegmentExtractor do
       end
     end
 
+    context 'with null bytes in descriptions' do
+      it 'strips null bytes from descriptions' do
+        extractor = described_class.new(chapter)
+        result = extractor.send(:sanitise, "Live horses\u0000with nulls\u0000")
+
+        expect(result).to eq('Live horseswith nulls')
+      end
+
+      it 'handles nil descriptions' do
+        extractor = described_class.new(chapter)
+
+        expect(extractor.send(:sanitise, nil)).to be_nil
+      end
+    end
+
     context 'with a chapter that has no descendants' do
       let(:chapter) { create(:chapter, :with_description, description: 'Empty chapter') }
       let(:heading) { nil }

@@ -62,13 +62,14 @@ module GenerateSelfText
     end
 
     def segment_for(node)
-      is_other = other?(node.formatted_description)
+      description = sanitise(node.formatted_description)
+      is_other = other?(description)
 
       {
         node: {
           sid: node.goods_nomenclature_sid,
           code: node.goods_nomenclature_item_id,
-          description: node.formatted_description,
+          description: description,
           is_other: is_other,
           goods_nomenclature_class: node.goods_nomenclature_class,
           declarable: node.declarable?,
@@ -85,7 +86,7 @@ module GenerateSelfText
       while (parent = current.associations[:parent])
         chain.unshift({
           sid: parent.goods_nomenclature_sid,
-          description: parent.formatted_description,
+          description: sanitise(parent.formatted_description),
           self_text: self_texts[parent.goods_nomenclature_sid],
         })
         current = parent
@@ -105,9 +106,13 @@ module GenerateSelfText
           {
             sid: sibling.goods_nomenclature_sid,
             code: sibling.goods_nomenclature_item_id,
-            description: sibling.formatted_description,
+            description: sanitise(sibling.formatted_description),
           }
         end
+    end
+
+    def sanitise(str)
+      str&.delete("\u0000")
     end
 
     def other?(description)
