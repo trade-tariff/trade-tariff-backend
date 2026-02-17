@@ -147,6 +147,11 @@ module GenerateSelfText
 
       return nil unless response.is_a?(Hash)
 
+      # Sanitise again after JSON parsing - \u0000 escape sequences in the raw
+      # JSON survive the initial string sanitisation but become real null bytes
+      # after JSON.parse, which PostgreSQL rejects.
+      response = AiResponseSanitizer.call(response)
+
       response['descriptions']
     end
 
