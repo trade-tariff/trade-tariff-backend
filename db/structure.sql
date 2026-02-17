@@ -2,7 +2,7 @@
 -- PostgreSQL database dump
 --
 
-\restrict VECQKRpYUc1OvbtLMH9BOteBxbOIwpnAGPR3rbf9gvKmK6zuA2zoL9lf9DgcL9y
+\restrict WB96oVpVI0nPeZgiyy26B3O9FJwAONtV549SgZHPS7GjP7COtNrlYHgKCvW9hxn
 
 -- Dumped from database version 18.2
 -- Dumped by pg_dump version 18.2
@@ -38,6 +38,62 @@ COMMENT ON SCHEMA public IS 'standard public schema';
 --
 
 CREATE SCHEMA uk;
+
+
+--
+-- Name: citext; Type: EXTENSION; Schema: -; Owner: -
+--
+
+CREATE EXTENSION IF NOT EXISTS citext WITH SCHEMA public;
+
+
+--
+-- Name: EXTENSION citext; Type: COMMENT; Schema: -; Owner: -
+--
+
+COMMENT ON EXTENSION citext IS 'data type for case-insensitive character strings';
+
+
+--
+-- Name: pg_trgm; Type: EXTENSION; Schema: -; Owner: -
+--
+
+CREATE EXTENSION IF NOT EXISTS pg_trgm WITH SCHEMA public;
+
+
+--
+-- Name: EXTENSION pg_trgm; Type: COMMENT; Schema: -; Owner: -
+--
+
+COMMENT ON EXTENSION pg_trgm IS 'text similarity measurement and index searching based on trigrams';
+
+
+--
+-- Name: uuid-ossp; Type: EXTENSION; Schema: -; Owner: -
+--
+
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp" WITH SCHEMA public;
+
+
+--
+-- Name: EXTENSION "uuid-ossp"; Type: COMMENT; Schema: -; Owner: -
+--
+
+COMMENT ON EXTENSION "uuid-ossp" IS 'generate universally unique identifiers (UUIDs)';
+
+
+--
+-- Name: vector; Type: EXTENSION; Schema: -; Owner: -
+--
+
+CREATE EXTENSION IF NOT EXISTS vector WITH SCHEMA public;
+
+
+--
+-- Name: EXTENSION vector; Type: COMMENT; Schema: -; Owner: -
+--
+
+COMMENT ON EXTENSION vector IS 'vector data type and ivfflat and hnsw access methods';
 
 
 --
@@ -14012,62 +14068,8 @@ ALTER TABLE ONLY uk.news_collections_news_items
 -- PostgreSQL database dump complete
 --
 
-\unrestrict VECQKRpYUc1OvbtLMH9BOteBxbOIwpnAGPR3rbf9gvKmK6zuA2zoL9lf9DgcL9y
+\unrestrict WB96oVpVI0nPeZgiyy26B3O9FJwAONtV549SgZHPS7GjP7COtNrlYHgKCvW9hxn
 
---
--- Name: citext; Type: EXTENSION; Schema: -; Owner: -
---
-
-CREATE EXTENSION IF NOT EXISTS citext WITH SCHEMA public;
-
-
---
--- Name: EXTENSION citext; Type: COMMENT; Schema: -; Owner: -
---
-
-COMMENT ON EXTENSION citext IS 'data type for case-insensitive character strings';
-
-
---
--- Name: pg_trgm; Type: EXTENSION; Schema: -; Owner: -
---
-
-CREATE EXTENSION IF NOT EXISTS pg_trgm WITH SCHEMA public;
-
-
---
--- Name: EXTENSION pg_trgm; Type: COMMENT; Schema: -; Owner: -
---
-
-COMMENT ON EXTENSION pg_trgm IS 'text similarity measurement and index searching based on trigrams';
-
-
---
--- Name: uuid-ossp; Type: EXTENSION; Schema: -; Owner: -
---
-
-CREATE EXTENSION IF NOT EXISTS "uuid-ossp" WITH SCHEMA public;
-
-
---
--- Name: EXTENSION "uuid-ossp"; Type: COMMENT; Schema: -; Owner: -
---
-
-COMMENT ON EXTENSION "uuid-ossp" IS 'generate universally unique identifiers (UUIDs)';
-
-
---
--- Name: vector; Type: EXTENSION; Schema: -; Owner: -
---
-
-CREATE EXTENSION IF NOT EXISTS vector WITH SCHEMA public;
-
-
---
--- Name: EXTENSION vector; Type: COMMENT; Schema: -; Owner: -
---
-
-COMMENT ON EXTENSION vector IS 'vector data type and ivfflat and hnsw access methods';
 SET search_path TO uk, public;
 INSERT INTO "schema_migrations" ("filename") VALUES ('1342519058_create_schema.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20120726092749_duty_amount_expressed_in_float.rb');
