@@ -23,13 +23,14 @@ class SelfTextConfidenceScorer
       generate_embeddings(records)
       compute_similarity_scores(sids)
 
-      gap_records = records.select do |r|
-        r.reload
-        r.eu_self_text.nil? && r.embedding
-      end
-      compute_coherence_scores(gap_records)
+      gap_records = GoodsNomenclatureSelfText
+        .where(goods_nomenclature_sid: sids)
+        .where(eu_self_text: nil)
+        .exclude(embedding: nil)
+        .all
 
-      populate_scoring_payload(payload, sids, gap_records)
+      compute_coherence_scores(gap_records)
+      populate_scoring_payload(payload, sids)
     end
   rescue StandardError => e
     SelfTextGenerator::Instrumentation.scoring_failed(chapter_code: @chapter_code, error: e)
@@ -41,30 +42,42 @@ class SelfTextConfidenceScorer
   attr_reader :embedding_service
 
   def populate_eu_references(records)
-    records.each do |record|
+    pairs = records.filter_map do |record|
       eu_text = SelfTextLookupService.lookup(record.goods_nomenclature_item_id)
       next if eu_text.blank?
 
-      GoodsNomenclatureSelfText
-        .where(goods_nomenclature_sid: record.goods_nomenclature_sid)
-        .where(Sequel.|({ eu_self_text: nil }, Sequel.~(eu_self_text: eu_text)))
-        .update(eu_self_text: eu_text, eu_embedding: nil)
+      [record.goods_nomenclature_sid, eu_text]
     end
+
+    return if pairs.empty?
+
+    values = pairs.map { |sid, text|
+      "(#{sid}, #{db.literal(text)})"
+    }.join(', ')
+
+    db.run(<<~SQL)
+      UPDATE goods_nomenclature_self_texts t
+      SET eu_self_text = v.eu_text,
+          eu_embedding = NULL
+      FROM (VALUES #{values}) AS v(goods_nomenclature_sid, eu_text)
+      WHERE t.goods_nomenclature_sid = v.goods_nomenclature_sid
+        AND (t.eu_self_text IS NULL OR t.eu_self_text != v.eu_text)
+    SQL
   end
 
   def generate_embeddings(records)
-    # Generated text embeddings
+    sids = records.map(&:goods_nomenclature_sid)
+
     needs_gen = GoodsNomenclatureSelfText
-      .where(goods_nomenclature_sid: records.map(&:goods_nomenclature_sid))
+      .where(goods_nomenclature_sid: sids)
       .where(embedding: nil)
       .exclude(self_text: nil)
       .all
 
     embed_column(needs_gen, :self_text, :embedding) if needs_gen.any?
 
-    # EU reference embeddings
     needs_eu = GoodsNomenclatureSelfText
-      .where(goods_nomenclature_sid: records.map(&:goods_nomenclature_sid))
+      .where(goods_nomenclature_sid: sids)
       .where(eu_embedding: nil)
       .exclude(eu_self_text: nil)
       .all
@@ -82,16 +95,21 @@ class SelfTextConfidenceScorer
         chapter_code: @chapter_code,
       ) { embedding_service.embed_batch(texts) }
 
-      batch.zip(embeddings).each do |record, embedding|
-        GoodsNomenclatureSelfText
-          .where(goods_nomenclature_sid: record.goods_nomenclature_sid)
-          .update(embedding_column => Sequel.lit("'[#{embedding.join(',')}]'::vector"))
-      end
+      values = batch.zip(embeddings).map { |record, embedding|
+        "(#{record.goods_nomenclature_sid}, '[#{embedding.join(',')}]'::vector)"
+      }.join(', ')
+
+      db.run(<<~SQL)
+        UPDATE goods_nomenclature_self_texts t
+        SET #{embedding_column} = v.embedding
+        FROM (VALUES #{values}) AS v(goods_nomenclature_sid, embedding)
+        WHERE t.goods_nomenclature_sid = v.goods_nomenclature_sid
+      SQL
     end
   end
 
   def compute_similarity_scores(sids)
-    Sequel::Model.db.run(<<~SQL)
+    db.run(<<~SQL)
       UPDATE goods_nomenclature_self_texts
       SET similarity_score = 1 - (embedding <=> eu_embedding)
       WHERE goods_nomenclature_sid IN (#{sids.join(',')})
@@ -112,39 +130,34 @@ class SelfTextConfidenceScorer
         chapter_code: @chapter_code,
       ) { embedding_service.embed_batch(ancestor_texts) }
 
-      batch.zip(ancestor_embeddings).each do |record, ancestor_embedding|
-        gen_embedding_str = Sequel::Model.db[<<~SQL, record.goods_nomenclature_sid].first[:embedding_arr]
-          SELECT embedding::text AS embedding_arr
-          FROM goods_nomenclature_self_texts
-          WHERE goods_nomenclature_sid = ?
-        SQL
+      values = batch.zip(ancestor_embeddings).map { |record, embedding|
+        "(#{record.goods_nomenclature_sid}, '[#{embedding.join(',')}]'::vector)"
+      }.join(', ')
 
-        gen_vec = gen_embedding_str.tr('[]', '').split(',').map(&:to_f)
-        score = cosine_similarity(gen_vec, ancestor_embedding)
-
-        GoodsNomenclatureSelfText
-          .where(goods_nomenclature_sid: record.goods_nomenclature_sid)
-          .update(coherence_score: score)
-      end
+      db.run(<<~SQL)
+        UPDATE goods_nomenclature_self_texts t
+        SET coherence_score = 1 - (t.embedding <=> v.ancestor_embedding)
+        FROM (VALUES #{values}) AS v(goods_nomenclature_sid, ancestor_embedding)
+        WHERE t.goods_nomenclature_sid = v.goods_nomenclature_sid
+      SQL
     end
   end
 
-  def populate_scoring_payload(payload, sids, gap_records)
-    scored = GoodsNomenclatureSelfText.where(goods_nomenclature_sid: sids)
+  def populate_scoring_payload(payload, sids)
+    stats = db[<<~SQL].first
+      SELECT
+        COUNT(*) FILTER (WHERE eu_self_text IS NOT NULL) AS eu_matched,
+        COUNT(*) FILTER (WHERE embedding IS NOT NULL) AS embeddings_generated,
+        AVG(similarity_score) AS mean_similarity,
+        AVG(coherence_score) AS mean_coherence
+      FROM goods_nomenclature_self_texts
+      WHERE goods_nomenclature_sid IN (#{sids.join(',')})
+    SQL
 
-    eu_matched = scored.exclude(eu_self_text: nil).count
-    with_embedding = scored.exclude(embedding: nil).count
-
-    similarity_scores = scored.exclude(similarity_score: nil).select_map(:similarity_score)
-    coherence_scores = gap_records.map { |r|
-      r.reload
-      r.coherence_score
-    }.compact
-
-    payload[:eu_matched] = eu_matched
-    payload[:embeddings_generated] = with_embedding
-    payload[:mean_similarity] = similarity_scores.any? ? (similarity_scores.sum / similarity_scores.size).round(4) : nil
-    payload[:mean_coherence] = coherence_scores.any? ? (coherence_scores.sum / coherence_scores.size).round(4) : nil
+    payload[:eu_matched] = stats[:eu_matched]
+    payload[:embeddings_generated] = stats[:embeddings_generated]
+    payload[:mean_similarity] = stats[:mean_similarity]&.to_f&.round(4)
+    payload[:mean_coherence] = stats[:mean_coherence]&.to_f&.round(4)
   end
 
   def ancestor_chain_text(record)
@@ -155,13 +168,7 @@ class SelfTextConfidenceScorer
     descriptions.compact.join(' > ')
   end
 
-  def cosine_similarity(vec_a, vec_b)
-    dot = vec_a.zip(vec_b).sum { |a, b| a * b }
-    mag_a = Math.sqrt(vec_a.sum { |a| a**2 })
-    mag_b = Math.sqrt(vec_b.sum { |b| b**2 })
-
-    return 0.0 if mag_a.zero? || mag_b.zero?
-
-    dot / (mag_a * mag_b)
+  def db
+    Sequel::Model.db
   end
 end
