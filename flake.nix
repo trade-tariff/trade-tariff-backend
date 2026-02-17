@@ -38,7 +38,7 @@
           "--with-zlib-include=${zlib.dev}/include"
           "--with-zlib-lib=${zlib.out}/lib"
         ];
-        postgresql = pkgs.postgresql_18;
+        postgresql = pkgs.postgresql_18.withPackages (ps: [ ps.pgvector ]);
         pg-environment-variables = ''
           export PGDATA=$PWD/.nix/postgres/data
           export PGHOST=$PWD/.nix/postgres

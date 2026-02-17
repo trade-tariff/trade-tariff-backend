@@ -71,8 +71,8 @@ RSpec.describe GenerateSelfText::MechanicalBuilder do
       expect(record.context_hash).to eq(expected_hash)
     end
 
-    it 'returns processed and skipped_other counts' do
-      expect(result).to eq({ processed: 3, skipped_other: 0 })
+    it 'returns processed, skipped_other, and skipped counts' do
+      expect(result).to eq({ processed: 3, skipped_other: 0, skipped: 0 })
     end
 
     context 'with a chapter that has no descendants' do
@@ -89,7 +89,7 @@ RSpec.describe GenerateSelfText::MechanicalBuilder do
       end
 
       it 'returns correct stats' do
-        expect(result).to eq({ processed: 1, skipped_other: 0 })
+        expect(result).to eq({ processed: 1, skipped_other: 0, skipped: 0 })
       end
     end
 
@@ -111,7 +111,7 @@ RSpec.describe GenerateSelfText::MechanicalBuilder do
       end
 
       it 'includes skipped_other in stats' do
-        expect(result).to eq({ processed: 3, skipped_other: 1 })
+        expect(result).to eq({ processed: 3, skipped_other: 1, skipped: 0 })
       end
     end
 
@@ -185,6 +185,40 @@ RSpec.describe GenerateSelfText::MechanicalBuilder do
 
         record.refresh
         expect(record.stale).to be false
+      end
+    end
+
+    context 'when records already exist with matching context' do
+      it 'skips unchanged records on second run' do
+        first_result = described_class.call(chapter)
+        expect(first_result[:processed]).to eq(3)
+
+        second_result = described_class.call(chapter)
+        expect(second_result[:skipped]).to eq(3)
+        expect(second_result[:processed]).to eq(0)
+      end
+
+      it 'still populates generated_texts for downstream nodes' do
+        described_class.call(chapter)
+
+        # Second run should still produce the same self_text values
+        second_result = described_class.call(chapter)
+        expect(second_result[:skipped]).to eq(3)
+
+        expect(GoodsNomenclatureSelfText[commodity.goods_nomenclature_sid].self_text)
+          .to eq('Live animals > Live horses > Pure-bred breeding animals')
+      end
+    end
+
+    context 'when an existing record is stale' do
+      it 'reprocesses stale records' do
+        described_class.call(chapter)
+
+        record = GoodsNomenclatureSelfText[commodity.goods_nomenclature_sid]
+        record.update(stale: true)
+
+        second_result = described_class.call(chapter)
+        expect(second_result[:processed]).to be >= 1
       end
     end
 

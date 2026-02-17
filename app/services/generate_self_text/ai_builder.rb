@@ -14,12 +14,27 @@ module GenerateSelfText
 
     def call
       segments = SegmentExtractor.call(chapter, self_texts: generated_texts)
-      preload_existing_self_texts(segments)
+      existing = preload_existing(segments)
 
       other_segments = segments.select { |s| s[:node][:is_other] }
-      stats = { processed: 0, failed: 0, needs_review: 0 }
+      stats = { processed: 0, failed: 0, needs_review: 0, skipped: 0 }
 
-      other_segments.each_slice(batch_size) do |batch|
+      segments_to_process = other_segments.reject do |segment|
+        node = segment[:node]
+        input_context = build_input_context(segment)
+        context_hash = Digest::SHA256.hexdigest(JSON.generate(input_context))
+        record = existing[node[:sid]]
+
+        if skip?(record, context_hash)
+          generated_texts[node[:sid]] = record[:self_text]
+          stats[:skipped] += 1
+          true
+        else
+          false
+        end
+      end
+
+      segments_to_process.each_slice(batch_size) do |batch|
         process_batch(batch, stats)
       end
 
@@ -30,11 +45,24 @@ module GenerateSelfText
 
     attr_reader :chapter, :generated_texts
 
-    def preload_existing_self_texts(segments)
+    def preload_existing(segments)
       sids = segments.map { |s| s[:node][:sid] }
-      GoodsNomenclatureSelfText.where(goods_nomenclature_sid: sids).each do |record|
+      GoodsNomenclatureSelfText.where(goods_nomenclature_sid: sids).each_with_object({}) do |record, hash|
         generated_texts[record.goods_nomenclature_sid] = record.self_text
+        hash[record.goods_nomenclature_sid] = {
+          context_hash: record.context_hash,
+          self_text: record.self_text,
+          stale: record.stale,
+          manually_edited: record.manually_edited,
+        }
       end
+    end
+
+    def skip?(existing, context_hash)
+      existing &&
+        existing[:context_hash] == context_hash &&
+        !existing[:stale] &&
+        !existing[:manually_edited]
     end
 
     def process_batch(batch, stats)
@@ -118,6 +146,11 @@ module GenerateSelfText
       response = ExtractBottomJson.call(response) unless response.is_a?(Hash) || response.is_a?(Array)
 
       return nil unless response.is_a?(Hash)
+
+      # Sanitise again after JSON parsing - \u0000 escape sequences in the raw
+      # JSON survive the initial string sanitisation but become real null bytes
+      # after JSON.parse, which PostgreSQL rejects.
+      response = AiResponseSanitizer.call(response)
 
       response['descriptions']
     end

@@ -14,7 +14,8 @@ module GenerateSelfText
 
     def call
       segments = SegmentExtractor.call(chapter, self_texts: generated_texts)
-      stats = { processed: 0, skipped_other: 0 }
+      existing = preload_existing(segments)
+      stats = { processed: 0, skipped_other: 0, skipped: 0 }
 
       segments.each do |segment|
         node = segment[:node]
@@ -26,7 +27,15 @@ module GenerateSelfText
 
         self_text = build_self_text(segment)
         input_context = build_input_context(segment)
-        upsert_record(node, self_text, input_context)
+        context_hash = Digest::SHA256.hexdigest(JSON.generate(input_context))
+
+        if skip?(existing[node[:sid]], context_hash)
+          generated_texts[node[:sid]] = existing[node[:sid]][:self_text]
+          stats[:skipped] += 1
+          next
+        end
+
+        upsert_record(node, self_text, input_context, context_hash)
         generated_texts[node[:sid]] = self_text
         stats[:processed] += 1
       end
@@ -37,6 +46,25 @@ module GenerateSelfText
     private
 
     attr_reader :chapter, :generated_texts
+
+    def preload_existing(segments)
+      sids = segments.map { |s| s[:node][:sid] }
+      GoodsNomenclatureSelfText.where(goods_nomenclature_sid: sids).each_with_object({}) do |record, hash|
+        hash[record.goods_nomenclature_sid] = {
+          context_hash: record.context_hash,
+          self_text: record.self_text,
+          stale: record.stale,
+          manually_edited: record.manually_edited,
+        }
+      end
+    end
+
+    def skip?(existing, context_hash)
+      existing &&
+        existing[:context_hash] == context_hash &&
+        !existing[:stale] &&
+        !existing[:manually_edited]
+    end
 
     def build_self_text(segment)
       parts = []
@@ -67,8 +95,7 @@ module GenerateSelfText
       { 'ancestors' => ancestors, 'description' => segment[:node][:description] }
     end
 
-    def upsert_record(node, self_text, input_context)
-      context_hash = Digest::SHA256.hexdigest(JSON.generate(input_context))
+    def upsert_record(node, self_text, input_context, context_hash)
       now = Time.zone.now
 
       values = {

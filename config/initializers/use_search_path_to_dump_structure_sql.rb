@@ -41,10 +41,21 @@ if Rails.env.development?
         end
 
         def _dump_extensions(filename)
-          extension_file = 'db/extensions.sql'
-          File.open(filename, 'a') do |file|
-            file.write(File.read(extension_file))
+          extension_content = File.read('db/extensions.sql')
+          structure = File.read(filename)
+
+          # Insert extensions after schema creation but before table/function
+          # definitions so types like vector() are available during structure:load
+          insert_pos = structure.rindex('CREATE SCHEMA')
+          insert_pos = structure.index("\n\n", insert_pos) + 2 if insert_pos
+
+          if insert_pos
+            structure.insert(insert_pos, "\n#{extension_content}\n")
+          else
+            structure << "\n#{extension_content}"
           end
+
+          File.write(filename, structure)
         end
       end
     end
