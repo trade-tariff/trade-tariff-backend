@@ -43,8 +43,8 @@ module Api
           chapter = TimeMachine.now { Chapter.actual.by_code(gn.goods_nomenclature_item_id[0..1]).take }
           raise Sequel::RecordNotFound unless chapter
 
-          # Force regeneration by clearing context hash so skip? returns false
-          self_text_record.update(context_hash: nil, stale: true)
+          # Force regeneration by invalidating context hash so context_stale? returns true
+          self_text_record.update(context_hash: 'invalidated', stale: true)
 
           GenerateSelfText::AiBuilder.call(chapter)
 
