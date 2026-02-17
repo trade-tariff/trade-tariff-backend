@@ -43,6 +43,7 @@ RSpec.describe CertificateFinderService do
     end
 
     context 'when no measures are associated with the certificate' do
+      let(:certificate) { create(:certificate, :with_description, certificate_type_code: 'X') }
       let(:code) { certificate.certificate_code }
       let(:type) { 'Y' }
 
