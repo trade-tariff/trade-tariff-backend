@@ -46,6 +46,9 @@ class AiResponseSanitizer
       result.gsub!(pattern, '')
     end
 
+    # Strip C0 control characters (U+0001-U+001F) except tab, newline, carriage return
+    result.gsub!(/[\x01-\x08\x0B\x0C\x0E-\x1F]/, '')
+
     # Ensure valid UTF-8 encoding
     unless result.valid_encoding?
       result = result.encode('UTF-8', invalid: :replace, undef: :replace, replace: '')
