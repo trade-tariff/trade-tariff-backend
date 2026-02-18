@@ -53,10 +53,30 @@ module Api
           )
           .where(st[:generation_type] => 'ai')
 
+        dataset = apply_search(dataset)
         dataset = apply_type_filter(dataset)
         dataset = apply_status_filter(dataset)
         dataset = apply_score_filter(dataset)
         apply_sorting(dataset)
+      end
+
+      def apply_search(dataset)
+        return dataset if params[:q].blank?
+
+        q = params[:q].strip
+        st = Sequel[:goods_nomenclature_self_texts]
+
+        if q.match?(/\A\d{2,10}\z/)
+          dataset.where(Sequel.like(st[:goods_nomenclature_item_id], "#{q}%"))
+        elsif q.length >= 2
+          term = "%#{q}%"
+          dataset.where(
+            Sequel.ilike(st[:self_text], term) |
+            Sequel.ilike(Sequel.cast(st[:input_context], String), term),
+          )
+        else
+          dataset
+        end
       end
 
       def apply_type_filter(dataset)

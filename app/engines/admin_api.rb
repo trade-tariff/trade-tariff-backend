@@ -54,6 +54,7 @@ AdminApi.routes.draw do
         resource :stats, only: [:show]
       end
 
+      resources :goods_nomenclature_labels, only: [:index]
       resources :goods_nomenclature_self_texts, only: [:index]
 
       resources :quota_order_numbers, module: 'quota_order_numbers', only: %i[] do
