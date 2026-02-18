@@ -2,7 +2,7 @@ RSpec.describe Api::Admin::GoodsNomenclatureSelfTextsController do
   routes { AdminApi.routes }
 
   describe '#index' do
-    let!(:commodity) do # rubocop:disable RSpec/LetSetup
+    let!(:commodity) do
       create(:goods_nomenclature, producline_suffix: '80').tap do |gn|
         create(:goods_nomenclature_self_text,
                goods_nomenclature: gn,
@@ -231,6 +231,51 @@ RSpec.describe Api::Admin::GoodsNomenclatureSelfTextsController do
         json = JSON.parse(response.body)
         expect(json['data'].length).to eq(1)
         expect(json.dig('meta', 'pagination', 'page')).to eq(2)
+      end
+    end
+
+    context 'with q param searching by commodity code prefix' do
+      it 'returns self texts matching the code prefix' do
+        get :index, params: { q: commodity.goods_nomenclature_item_id[0..3] }, format: :json
+
+        json = JSON.parse(response.body)
+        item_ids = json['data'].map { |d| d.dig('attributes', 'goods_nomenclature_item_id') }
+        expect(item_ids).to all(start_with(commodity.goods_nomenclature_item_id[0..3]))
+      end
+    end
+
+    context 'with q param searching by text' do
+      it 'matches self_text content case-insensitively' do
+        get :index, params: { q: 'widgets' }, format: :json
+
+        json = JSON.parse(response.body)
+        expect(json['data']).not_to be_empty
+        texts = json['data'].map { |d| d.dig('attributes', 'self_text') }
+        expect(texts).to all(match(/widget/i))
+      end
+
+      it 'matches input_context content' do
+        get :index, params: { q: 'Widgets' }, format: :json
+
+        json = JSON.parse(response.body)
+        expect(json['data']).not_to be_empty
+      end
+
+      it 'returns empty results for non-matching text' do
+        get :index, params: { q: 'zznonexistentzz' }, format: :json
+
+        json = JSON.parse(response.body)
+        expect(json['data']).to be_empty
+      end
+    end
+
+    context 'with q param too short' do
+      it 'ignores single character non-numeric queries' do
+        get :index, params: { q: 'a' }, format: :json
+
+        json = JSON.parse(response.body)
+        # Single char text is ignored, returns all results
+        expect(json['data'].length).to eq(2)
       end
     end
 
