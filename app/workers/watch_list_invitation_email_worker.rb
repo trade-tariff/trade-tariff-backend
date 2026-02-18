@@ -2,7 +2,7 @@ class WatchListInvitationEmailWorker
   include Sidekiq::Worker
 
   TEMPLATE_ID = '50b0bce2-3116-46dd-a2b2-2ba253534f01'.freeze
-  REPLY_TO_ID = '61e19d5e-4fae-4b7e-aa2e-cd05a87f4cf8'.freeze
+  REPLY_TO_ID = 'a208a7ea-41d3-48dd-8bf7-24d4be1f4832'.freeze # Indu
 
   def perform(user_id)
     user = PublicUsers::User[user_id]

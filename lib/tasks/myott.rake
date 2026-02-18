@@ -1,9 +1,7 @@
 namespace :myott do
-  desc 'Send watch list invitation emails to users with active stop press subscriptions'
-  task send_reminder_watchlist_invitations: %w[environment] do
-    PublicUsers::User.with_active_stop_press_subscription.each do |user|
-      next if user.action_logs_dataset.where(action: PublicUsers::ActionLog::SUBSCRIBED_MY_COMMODITIES).any?
-
+  desc 'Send watch list research invitation emails to users with active my commodities subscriptions'
+  task send_watchlist_research_invitations: %w[environment] do
+    PublicUsers::User.with_active_my_commodities_subscription.each do |user|
       WatchListInvitationEmailWorker.perform_async(user.id)
     end
   end
