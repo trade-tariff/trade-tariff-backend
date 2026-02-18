@@ -1,6 +1,7 @@
 class LabelBatchPresenter < SimpleDelegator
   def initialize(batch)
     @batch = batch
+    @self_texts = load_self_texts(batch)
 
     super
   end
@@ -21,7 +22,17 @@ class LabelBatchPresenter < SimpleDelegator
   end
 
   def contextual_description_for(goods_nomenclature)
-    SelfTextLookupService.lookup(goods_nomenclature.goods_nomenclature_item_id).presence ||
+    @self_texts[goods_nomenclature.goods_nomenclature_sid].presence ||
       DescriptionNormaliser.call(goods_nomenclature.ancestor_chain_description)
+  end
+
+  private
+
+  def load_self_texts(batch)
+    sids = batch.map(&:goods_nomenclature_sid)
+    GoodsNomenclatureSelfText
+      .where(goods_nomenclature_sid: sids)
+      .select_map(%i[goods_nomenclature_sid self_text])
+      .to_h
   end
 end

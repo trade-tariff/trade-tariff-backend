@@ -3,6 +3,7 @@ RSpec.describe LabelService do
   let(:goods_nomenclature) do
     instance_double(
       GoodsNomenclature,
+      goods_nomenclature_sid: 1,
       goods_nomenclature_item_id: '0101210000',
       ancestor_chain_description: 'Live animals > Horses > Pure-bred breeding animals',
       goods_nomenclature_label: nil,
@@ -18,7 +19,9 @@ RSpec.describe LabelService do
   before do
     allow(TradeTariffBackend).to receive(:ai_client).and_return(ai_client)
     allow(GoodsNomenclatureLabel).to receive(:build).and_return(label)
-    allow(SelfTextLookupService).to receive(:lookup).and_return(nil)
+    allow(GoodsNomenclatureSelfText).to receive(:where).and_return(
+      instance_double(Sequel::Dataset, select_map: []),
+    )
     create(:admin_configuration, name: 'label_context', value: label_context, area: 'classification')
   end
 
