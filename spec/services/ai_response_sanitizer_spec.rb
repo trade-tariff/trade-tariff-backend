@@ -125,6 +125,56 @@ RSpec.describe AiResponseSanitizer do
       expect(result['text']).to eq('Valid text  more valid café  end')
     end
 
+    context 'with Unicode characters from LLM output' do
+      it 'normalizes smart single quotes' do
+        response = { 'text' => "\u2018quoted\u2019" }
+
+        result = described_class.call(response)
+
+        expect(result['text']).to eq("'quoted'")
+      end
+
+      it 'normalizes smart double quotes' do
+        response = { 'text' => "\u201Cquoted\u201D" }
+
+        result = described_class.call(response)
+
+        expect(result['text']).to eq('"quoted"')
+      end
+
+      it 'normalizes en-dashes' do
+        response = { 'text' => "5\u201310 kg" }
+
+        result = described_class.call(response)
+
+        expect(result['text']).to eq('5-10 kg')
+      end
+
+      it 'normalizes comparison operators' do
+        response = { 'text' => "weight \u2265 5 kg and \u2264 10 kg" }
+
+        result = described_class.call(response)
+
+        expect(result['text']).to eq('weight >= 5 kg and <= 10 kg')
+      end
+
+      it 'normalizes multiplication sign' do
+        response = { 'text' => "2 \u00D7 3" }
+
+        result = described_class.call(response)
+
+        expect(result['text']).to eq('2 x 3')
+      end
+
+      it 'normalizes minus sign' do
+        response = { 'text' => "5 \u2212 3" }
+
+        result = described_class.call(response)
+
+        expect(result['text']).to eq('5 - 3')
+      end
+    end
+
     context 'with realistic AI response structure' do
       let(:response) do
         {

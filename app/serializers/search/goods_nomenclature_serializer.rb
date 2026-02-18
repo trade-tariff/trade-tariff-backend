@@ -34,18 +34,22 @@ module Search
     def full_description
       @full_description ||=
         SelfTextLookupService.lookup(goods_nomenclature_item_id).presence ||
-        record.classification_description
+        DescriptionNormaliser.call(record.classification_description)
     end
 
     def heading_description
-      record.heading&.formatted_description
+      desc = record.heading&.formatted_description
+      return if desc.nil?
+
+      DescriptionNormaliser.call(desc)
     end
 
     def ancestor_descriptions
       ancestors.filter_map { |ancestor|
-        next if ancestor.description_indexed.blank?
+        desc = ancestor.description_indexed
+        next if desc.blank?
 
-        ancestor.description_indexed
+        DescriptionNormaliser.call(desc)
       }.join(' ')
     end
 

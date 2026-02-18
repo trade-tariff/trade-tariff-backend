@@ -121,8 +121,10 @@ RSpec.describe Search::GoodsNomenclatureSerializer do
           allow(SelfTextLookupService).to receive(:lookup).and_return(nil)
         end
 
-        it 'uses classification_description for full_description' do
-          expect(result[:full_description]).to eq(commodity.classification_description)
+        it 'uses normalised classification_description for full_description' do
+          expect(result[:full_description]).to eq(
+            DescriptionNormaliser.call(commodity.classification_description),
+          )
         end
       end
 
@@ -131,15 +133,19 @@ RSpec.describe Search::GoodsNomenclatureSerializer do
           allow(SelfTextLookupService).to receive(:lookup).and_return('')
         end
 
-        it 'falls back to classification_description' do
-          expect(result[:full_description]).to eq(commodity.classification_description)
+        it 'falls back to normalised classification_description' do
+          expect(result[:full_description]).to eq(
+            DescriptionNormaliser.call(commodity.classification_description),
+          )
         end
       end
     end
 
     describe '#heading_description' do
-      it 'returns the heading formatted_description' do
-        expect(result[:heading_description]).to eq(commodity.heading&.formatted_description)
+      it 'returns the normalised heading formatted_description' do
+        expect(result[:heading_description]).to eq(
+          DescriptionNormaliser.call(commodity.heading&.formatted_description),
+        )
       end
 
       context 'when commodity has no heading' do
@@ -151,6 +157,19 @@ RSpec.describe Search::GoodsNomenclatureSerializer do
 
         it 'returns nil' do
           expect(result[:heading_description]).to be_nil
+        end
+      end
+    end
+
+    describe '#ancestor_descriptions' do
+      context 'when ancestors have HTML in descriptions' do
+        before do
+          allow(SelfTextLookupService).to receive(:lookup).and_return(nil)
+        end
+
+        it 'normalises ancestor descriptions' do
+          expect(result[:ancestor_descriptions]).not_to include('<br>')
+          expect(result[:ancestor_descriptions]).not_to include('&')
         end
       end
     end
