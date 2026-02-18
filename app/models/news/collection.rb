@@ -15,10 +15,11 @@ module News
     end
 
     def validate
-      super
-
       validates_presence :slug
+      validates_unique :slug, :name
       validates_format %r{\A[a-z0-9\-_]+\z}, :slug if slug.present?
+
+      super
     end
   end
 end
