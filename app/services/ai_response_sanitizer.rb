@@ -50,7 +50,7 @@ class AiResponseSanitizer
     result.gsub!(/[\x01-\x08\x0B\x0C\x0E-\x1F]/, '')
 
     # Normalize common Unicode that LLMs produce
-    DescriptionNormaliser::UNICODE_TO_ASCII.each do |char, replacement|
+    DescriptionHtmlFormatter::UNICODE_TO_ASCII.each do |char, replacement|
       result.gsub!(char, replacement)
     end
 

@@ -5,7 +5,7 @@ RSpec.describe ClassificationDescription do
     Class.new do
       include ClassificationDescription
 
-      attr_accessor :formatted_description, :ancestors, :heading
+      attr_accessor :description, :formatted_description, :ancestors, :heading
     end
   end
 
@@ -53,6 +53,47 @@ RSpec.describe ClassificationDescription do
 
       it 'prepends heading as fallback' do
         expect(descriptions).to eq(%w[Heading Other Other Other])
+      end
+    end
+  end
+
+  describe '#raw_classification_description' do
+    subject(:raw_desc) { helper.raw_classification_description }
+
+    before do
+      helper.description = description
+      helper.ancestors = ancestors
+      helper.heading = heading
+    end
+
+    let(:heading) { instance_double(GoodsNomenclature, description: 'Heading') }
+
+    context 'when description is not "other"' do
+      let(:description) { 'Live horses' }
+      let(:ancestors) { [] }
+
+      it 'returns the description as-is' do
+        expect(raw_desc).to eq('Live horses')
+      end
+    end
+
+    context 'when description is "other" with a non-other ancestor' do
+      let(:description) { 'Other' }
+      let(:ancestor1) { instance_double(GoodsNomenclature, description: 'Live horses') }
+      let(:ancestors) { [ancestor1] }
+
+      it 'chains ancestor > Other' do
+        expect(raw_desc).to eq('Live horses > Other')
+      end
+    end
+
+    context 'when all ancestors are "other"' do
+      let(:description) { 'Other' }
+      let(:ancestor1) { instance_double(GoodsNomenclature, description: 'Other') }
+      let(:ancestors) { [ancestor1] }
+
+      it 'prepends heading as fallback' do
+        expect(raw_desc).to eq('Heading > Other > Other')
       end
     end
   end

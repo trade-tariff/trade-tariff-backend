@@ -30,6 +30,10 @@ class GoodsNomenclatureDescription < Sequel::Model
     super.try(:gsub, %r/( ?<br> ?){2,}/, '<br>') || ''
   end
 
+  def description_html
+    DescriptionHtmlFormatter.call(description)
+  end
+
   def description_indexed
     SearchNegationService.new(description.downcase).call
   end

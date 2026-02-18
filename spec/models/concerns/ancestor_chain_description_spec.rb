@@ -17,7 +17,7 @@ RSpec.describe AncestorChainDescription do
     end
 
     context 'when an ancestor has blank description' do
-      let(:blank_ancestor) { instance_double(GoodsNomenclature, formatted_description: '') }
+      let(:blank_ancestor) { instance_double(GoodsNomenclature, description_html: '') }
 
       let(:commodity) do
         create(:commodity, :with_description, description: 'Pure-bred breeding animals').tap do |c|
