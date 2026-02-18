@@ -55,8 +55,10 @@ RSpec.describe LabelBatchPresenter do
         allow(SelfTextLookupService).to receive(:lookup).and_return(nil)
       end
 
-      it 'uses ancestor_chain_description' do
-        expect(json.first['description']).to eq(commodity.ancestor_chain_description)
+      it 'uses normalised ancestor_chain_description' do
+        expect(json.first['description']).to eq(
+          DescriptionNormaliser.call(commodity.ancestor_chain_description),
+        )
       end
     end
   end
@@ -79,8 +81,10 @@ RSpec.describe LabelBatchPresenter do
         allow(SelfTextLookupService).to receive(:lookup).and_return('')
       end
 
-      it 'falls back to ancestor_chain_description' do
-        expect(presenter.contextual_description_for(commodity)).to eq(commodity.ancestor_chain_description)
+      it 'falls back to normalised ancestor_chain_description' do
+        expect(presenter.contextual_description_for(commodity)).to eq(
+          DescriptionNormaliser.call(commodity.ancestor_chain_description),
+        )
       end
     end
 
@@ -89,8 +93,27 @@ RSpec.describe LabelBatchPresenter do
         allow(SelfTextLookupService).to receive(:lookup).and_return(nil)
       end
 
-      it 'falls back to ancestor_chain_description' do
-        expect(presenter.contextual_description_for(commodity)).to eq(commodity.ancestor_chain_description)
+      it 'falls back to normalised ancestor_chain_description' do
+        expect(presenter.contextual_description_for(commodity)).to eq(
+          DescriptionNormaliser.call(commodity.ancestor_chain_description),
+        )
+      end
+    end
+
+    context 'when ancestor_chain_description contains HTML' do
+      before do
+        allow(SelfTextLookupService).to receive(:lookup).and_return(nil)
+        allow(commodity).to receive(:ancestor_chain_description)
+          .and_return('Live animals &ge; Horses<br>pure-bred &times; 2')
+      end
+
+      it 'normalises HTML in the fallback description' do
+        result = presenter.contextual_description_for(commodity)
+
+        expect(result).not_to include('<br>')
+        expect(result).not_to include('&ge;')
+        expect(result).not_to include('&times;')
+        expect(result).to eq('Live animals >= Horses pure-bred x 2')
       end
     end
   end

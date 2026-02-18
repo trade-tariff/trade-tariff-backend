@@ -22,6 +22,6 @@ class LabelBatchPresenter < SimpleDelegator
 
   def contextual_description_for(goods_nomenclature)
     SelfTextLookupService.lookup(goods_nomenclature.goods_nomenclature_item_id).presence ||
-      goods_nomenclature.ancestor_chain_description
+      DescriptionNormaliser.call(goods_nomenclature.ancestor_chain_description)
   end
 end

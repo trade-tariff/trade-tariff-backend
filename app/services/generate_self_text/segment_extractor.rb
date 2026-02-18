@@ -112,7 +112,7 @@ module GenerateSelfText
     end
 
     def sanitise(str)
-      str&.delete("\u0000")
+      DescriptionNormaliser.call(str)
     end
 
     def other?(description)
