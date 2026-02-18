@@ -54,6 +54,7 @@ module Search
         :goods_nomenclature_indents,
         :goods_nomenclature_descriptions,
         :goods_nomenclature_label,
+        :goods_nomenclature_self_text,
         :search_references,
         { ancestors: [:goods_nomenclature_descriptions] },
         { heading: [:goods_nomenclature_descriptions] },
