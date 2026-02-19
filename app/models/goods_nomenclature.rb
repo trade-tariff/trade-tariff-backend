@@ -104,6 +104,7 @@ class GoodsNomenclature < Sequel::Model
   end
 
   delegate :description,
+           :description_html,
            :description_indexed,
            :description_plain,
            :formatted_description,

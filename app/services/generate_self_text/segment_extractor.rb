@@ -62,7 +62,7 @@ module GenerateSelfText
     end
 
     def segment_for(node)
-      description = sanitise(node.formatted_description)
+      description = node.description_html
       is_other = other?(description)
 
       {
@@ -86,7 +86,7 @@ module GenerateSelfText
       while (parent = current.associations[:parent])
         chain.unshift({
           sid: parent.goods_nomenclature_sid,
-          description: sanitise(parent.formatted_description),
+          description: parent.description_html,
           self_text: self_texts[parent.goods_nomenclature_sid],
         })
         current = parent
@@ -106,13 +106,9 @@ module GenerateSelfText
           {
             sid: sibling.goods_nomenclature_sid,
             code: sibling.goods_nomenclature_item_id,
-            description: sanitise(sibling.formatted_description),
+            description: sibling.description_html,
           }
         end
-    end
-
-    def sanitise(str)
-      DescriptionNormaliser.call(str)
     end
 
     def other?(description)

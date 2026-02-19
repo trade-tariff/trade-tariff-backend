@@ -222,6 +222,7 @@ module AdminConfigurationSeeder
       - When the parent description is very long, summarise it concisely.
       - Produce a description for EVERY segment in the input.
       - Do not invent classification detail - only use what the sibling and parent context provides.
+      - Input descriptions may contain HTML tags (<sup>, <sub>, <br>). Preserve <sup> and <sub> when referencing terms that contain them (e.g. if a sibling is "CO<sub>2</sub> cartridges", write "CO<sub>2</sub> cartridges" in the exclusion). Do not add HTML tags yourself.
       - Use only printable UTF-8 characters. For mathematical comparisons use ASCII: <=, >=, <, >. For currencies write the code: EUR, GBP. Never output control characters.
     MARKDOWN
   end

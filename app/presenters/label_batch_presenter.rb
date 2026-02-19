@@ -23,7 +23,7 @@ class LabelBatchPresenter < SimpleDelegator
 
   def contextual_description_for(goods_nomenclature)
     @self_texts[goods_nomenclature.goods_nomenclature_sid].presence ||
-      DescriptionNormaliser.call(goods_nomenclature.ancestor_chain_description)
+      DescriptionHtmlFormatter.call(goods_nomenclature.ancestor_chain_description)
   end
 
   private

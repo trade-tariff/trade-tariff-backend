@@ -1,4 +1,13 @@
 namespace :self_texts do
+  desc 'Regenerate all self-texts by marking them stale and re-enqueuing'
+  task regenerate: :environment do
+    count = GoodsNomenclatureSelfText.where(stale: false, manually_edited: false).update(stale: true)
+    puts "Marked #{count} self-texts as stale."
+
+    GenerateSelfTextWorker.perform_async
+    puts 'Enqueued regeneration. Check Sidekiq for progress.'
+  end
+
   desc 'Generate self-texts for all chapters (background) or a single chapter (inline with CHAPTER=XX)'
   task generate: :environment do
     if ENV['CHAPTER']

@@ -34,22 +34,16 @@ module Search
     def full_description
       @full_description ||=
         goods_nomenclature_self_text&.self_text.presence ||
-        DescriptionNormaliser.call(record.classification_description)
+        DescriptionHtmlFormatter.call(record.raw_classification_description)
     end
 
     def heading_description
-      desc = record.heading&.formatted_description
-      return if desc.nil?
-
-      DescriptionNormaliser.call(desc)
+      record.heading&.description_html
     end
 
     def ancestor_descriptions
       ancestors.filter_map { |ancestor|
-        desc = ancestor.description_indexed
-        next if desc.blank?
-
-        DescriptionNormaliser.call(desc)
+        ancestor.description_html.presence
       }.join(' ')
     end
 

@@ -117,16 +117,16 @@ RSpec.describe Search::GoodsNomenclatureSerializer do
       context 'when no self-text record exists' do
         it 'uses normalised classification_description for full_description' do
           expect(result[:full_description]).to eq(
-            DescriptionNormaliser.call(commodity.classification_description),
+            DescriptionHtmlFormatter.call(commodity.classification_description),
           )
         end
       end
     end
 
     describe '#heading_description' do
-      it 'returns the normalised heading formatted_description' do
+      it 'returns the heading description_html' do
         expect(result[:heading_description]).to eq(
-          DescriptionNormaliser.call(commodity.heading&.formatted_description),
+          commodity.heading&.description_html,
         )
       end
 

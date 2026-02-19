@@ -240,32 +240,17 @@ RSpec.describe GenerateSelfText::SegmentExtractor do
       end
     end
 
-    context 'with description normalisation' do
-      it 'strips null bytes from descriptions' do
-        extractor = described_class.new(chapter)
-        result = extractor.send(:sanitise, "Live horses\u0000with nulls\u0000")
+    context 'with description formatting' do
+      it 'uses description_html for node descriptions' do
+        segment = segment_for_sid(commodity_a.goods_nomenclature_sid)
 
-        expect(result).to eq('Live horseswith nulls')
+        expect(segment[:node][:description]).to eq(commodity_a.description_html)
       end
 
-      it 'returns empty string for nil descriptions' do
-        extractor = described_class.new(chapter)
+      it 'uses description_html for ancestor descriptions' do
+        segment = segment_for_sid(commodity_a.goods_nomenclature_sid)
 
-        expect(extractor.send(:sanitise, nil)).to eq('')
-      end
-
-      it 'strips HTML tags and decodes entities' do
-        extractor = described_class.new(chapter)
-        result = extractor.send(:sanitise, 'Milk &amp; cream<br>fat &le; 1%<sup>2</sup>')
-
-        expect(result).to eq('Milk & cream fat <= 1%2')
-      end
-
-      it 'normalises Unicode operators' do
-        extractor = described_class.new(chapter)
-        result = extractor.send(:sanitise, "Weight \u2265 5 kg")
-
-        expect(result).to eq('Weight >= 5 kg')
+        expect(segment[:ancestor_chain].first[:description]).to eq(chapter.description_html)
       end
     end
 
