@@ -79,7 +79,8 @@ class VectorRetrievalService
 
   def build_result(goods_nomenclature, score)
     self_text = SelfTextLookupService.lookup(goods_nomenclature.goods_nomenclature_item_id)
-    full_desc = self_text.presence || goods_nomenclature.classification_description
+    full_desc = self_text.presence ||
+      DescriptionHtmlFormatter.call(goods_nomenclature.raw_classification_description)
 
     OpenStruct.new(
       id: goods_nomenclature.goods_nomenclature_sid,
@@ -87,10 +88,10 @@ class VectorRetrievalService
       goods_nomenclature_sid: goods_nomenclature.goods_nomenclature_sid,
       producline_suffix: goods_nomenclature.producline_suffix,
       goods_nomenclature_class: goods_nomenclature.goods_nomenclature_class,
-      description: goods_nomenclature.description,
-      formatted_description: goods_nomenclature.formatted_description,
+      description: goods_nomenclature.description_html,
+      formatted_description: goods_nomenclature.description_html,
       full_description: full_desc,
-      heading_description: goods_nomenclature.heading&.formatted_description,
+      heading_description: goods_nomenclature.heading&.description_html,
       declarable: goods_nomenclature.respond_to?(:declarable?) ? goods_nomenclature.declarable? : false,
       score: score,
       confidence: nil,
