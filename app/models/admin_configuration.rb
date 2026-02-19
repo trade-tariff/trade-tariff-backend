@@ -10,7 +10,7 @@ class AdminConfiguration < Sequel::Model(Sequel[:admin_configurations].qualify(:
 
   DEFAULTS = {
     'expand_search_enabled' => true,
-    'expand_model' => -> { TradeTariffBackend.ai_model },
+    'expand_model' => 'gpt-4.1-mini-2025-04-14',
     'interactive_search_enabled' => true,
     'interactive_search_max_questions' => 3,
     'label_model' => -> { TradeTariffBackend.ai_model },

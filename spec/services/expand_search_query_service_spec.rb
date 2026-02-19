@@ -32,7 +32,7 @@ RSpec.describe ExpandSearchQueryService do
 
         expect(OpenaiClient).to have_received(:call).with(
           a_string_including('laptop'),
-          model: TradeTariffBackend.ai_model,
+          model: 'gpt-4.1-mini-2025-04-14',
         )
       end
     end
@@ -197,7 +197,7 @@ RSpec.describe ExpandSearchQueryService do
 
         expect(OpenaiClient).to have_received(:call).with(
           'Custom prompt for: laptop',
-          model: TradeTariffBackend.ai_model,
+          model: 'gpt-4.1-mini-2025-04-14',
         )
       end
     end

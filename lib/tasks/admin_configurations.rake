@@ -282,7 +282,7 @@ namespace :admin_configurations do
         name: 'expand_model',
         config_type: 'options',
         description: 'AI model used for search query expansion',
-        value: { 'selected' => default_model, 'options' => model_options },
+        value: { 'selected' => 'gpt-4.1-mini-2025-04-14', 'options' => model_options },
       },
       {
         name: 'expand_query_context',
