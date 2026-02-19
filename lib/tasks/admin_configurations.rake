@@ -326,6 +326,12 @@ namespace :admin_configurations do
                  ] },
       },
       {
+        name: 'vector_ef_search',
+        config_type: 'integer',
+        description: 'HNSW ef_search parameter for pgvector queries. Controls the recall/speed tradeoff: higher values search more candidates and improve recall at the cost of latency. Typical range 40-200. Only applies when retrieval_method is vector.',
+        value: '100',
+      },
+      {
         name: 'label_context',
         config_type: 'markdown',
         description: 'System prompt sent to the AI model when labelling commodities',

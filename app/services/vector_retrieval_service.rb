@@ -13,8 +13,10 @@ class VectorRetrievalService
     query_embedding = embedding_service.embed(@query)
     vector_literal = "'[#{query_embedding.join(',')}]'::vector"
 
+    ef_search = AdminConfiguration.integer_value('vector_ef_search')
+
     db.transaction do
-      db.run('SET LOCAL hnsw.ef_search = 100')
+      db.run("SET LOCAL hnsw.ef_search = #{ef_search.to_i}")
 
       results = db.fetch(
         search_sql(vector_literal),
