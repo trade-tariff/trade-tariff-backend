@@ -33,7 +33,7 @@ module Search
 
     def full_description
       @full_description ||=
-        SelfTextLookupService.lookup(goods_nomenclature_item_id).presence ||
+        goods_nomenclature_self_text&.self_text.presence ||
         DescriptionNormaliser.call(record.classification_description)
     end
 

@@ -96,44 +96,26 @@ RSpec.describe Search::GoodsNomenclatureSerializer do
     end
 
     describe '#full_description' do
-      before do
-        SelfTextLookupService.instance_variable_set(:@self_texts, nil)
-      end
-
-      context 'when self-text is available' do
+      context 'when self-text is available in DB' do
         before do
-          allow(SelfTextLookupService).to receive(:lookup)
-            .with(commodity.goods_nomenclature_item_id)
-            .and_return('CN2026 self-text for horses')
+          create(:goods_nomenclature_self_text,
+                 goods_nomenclature_sid: commodity.goods_nomenclature_sid,
+                 goods_nomenclature_item_id: commodity.goods_nomenclature_item_id,
+                 self_text: 'DB self-text for horses')
+          commodity.reload
         end
 
         it 'uses self-text for full_description' do
-          expect(result[:full_description]).to eq('CN2026 self-text for horses')
+          expect(result[:full_description]).to eq('DB self-text for horses')
         end
 
         it 'passes self-text through SearchNegationService for description' do
-          expect(result[:description]).to eq('CN2026 self-text for horses')
+          expect(result[:description]).to eq('DB self-text for horses')
         end
       end
 
-      context 'when self-text is not available' do
-        before do
-          allow(SelfTextLookupService).to receive(:lookup).and_return(nil)
-        end
-
+      context 'when no self-text record exists' do
         it 'uses normalised classification_description for full_description' do
-          expect(result[:full_description]).to eq(
-            DescriptionNormaliser.call(commodity.classification_description),
-          )
-        end
-      end
-
-      context 'when self-text is blank' do
-        before do
-          allow(SelfTextLookupService).to receive(:lookup).and_return('')
-        end
-
-        it 'falls back to normalised classification_description' do
           expect(result[:full_description]).to eq(
             DescriptionNormaliser.call(commodity.classification_description),
           )
@@ -163,10 +145,6 @@ RSpec.describe Search::GoodsNomenclatureSerializer do
 
     describe '#ancestor_descriptions' do
       context 'when ancestors have HTML in descriptions' do
-        before do
-          allow(SelfTextLookupService).to receive(:lookup).and_return(nil)
-        end
-
         it 'normalises ancestor descriptions' do
           expect(result[:ancestor_descriptions]).not_to include('<br>')
           expect(result[:ancestor_descriptions]).not_to include('&')
