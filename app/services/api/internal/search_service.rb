@@ -34,28 +34,38 @@ module Api
                   { result_count: 1, results_type: 'exact_match' }]
           end
 
-          @expanded_query = expand_query(q)
-
-          results = search_with_configured_labels do
-            TradeTariffBackend.search_client.search(
-              ::Search::GoodsNomenclatureQuery.new(
-                q,
-                as_of,
-                expanded_query: @expanded_query,
-                pos_search: pos_search_enabled?,
-                size: opensearch_result_limit,
-                noun_boost: pos_noun_boost,
-                qualifier_boost: pos_qualifier_boost,
-              ).query,
+          if vector_retrieval?
+            goods_nomenclatures = VectorRetrievalService.call(
+              query: q,
+              as_of: as_of,
+              limit: opensearch_result_limit,
             )
+
+            interactive_result = run_interactive_search(goods_nomenclatures)
+            max_score = goods_nomenclatures.map(&:score).compact.max
+          else
+            @expanded_query = expand_query(q)
+
+            results = search_with_configured_labels do
+              TradeTariffBackend.search_client.search(
+                ::Search::GoodsNomenclatureQuery.new(
+                  q,
+                  as_of,
+                  expanded_query: @expanded_query,
+                  pos_search: pos_search_enabled?,
+                  size: opensearch_result_limit,
+                  noun_boost: pos_noun_boost,
+                  qualifier_boost: pos_qualifier_boost,
+                ).query,
+              )
+            end
+
+            hits = results.dig('hits', 'hits') || []
+            goods_nomenclatures = hits.map { |hit| build_result_from_hit(hit) }
+
+            interactive_result = run_interactive_search(goods_nomenclatures)
+            max_score = hits.map { |hit| hit['_score'] }.compact.max
           end
-
-          hits = results.dig('hits', 'hits') || []
-          goods_nomenclatures = hits.map { |hit| build_result_from_hit(hit) }
-
-          interactive_result = run_interactive_search(goods_nomenclatures)
-
-          max_score = hits.map { |hit| hit['_score'] }.compact.max
 
           response = build_response(goods_nomenclatures, interactive_result)
           completion = {
@@ -63,7 +73,7 @@ module Api
             total_attempts: interactive_result&.attempt,
             total_questions: answers.size,
             final_result_type: interactive_result&.type&.to_s,
-            results_type: 'opensearch',
+            results_type: vector_retrieval? ? 'vector' : 'opensearch',
             max_score: max_score,
           }
 
@@ -72,6 +82,10 @@ module Api
       end
 
       private
+
+      def vector_retrieval?
+        AdminConfiguration.option_value('retrieval_method') == 'vector'
+      end
 
       def expand_query(query)
         return query unless expand_search_enabled?
