@@ -31,6 +31,8 @@ class AdminConfiguration < Sequel::Model(Sequel[:admin_configurations].qualify(:
     'suggest_synonyms' => false,
     'input_sanitiser_enabled' => true,
     'input_sanitiser_max_length' => 500,
+    'retrieval_method' => 'opensearch',
+    'vector_ef_search' => 100,
     'self_text_model' => -> { TradeTariffBackend.ai_model },
     'self_text_batch_size' => 5,
   }.freeze

@@ -3,6 +3,8 @@ module Api
     class SearchService
       include QueryProcessing
 
+      RetrievalResult = Struct.new(:goods_nomenclatures, :max_score, :expanded_query, :results_type, keyword_init: true)
+
       attr_reader :q, :as_of, :answers, :request_id
 
       def initialize(params = {})
@@ -34,37 +36,25 @@ module Api
                   { result_count: 1, results_type: 'exact_match' }]
           end
 
-          @expanded_query = expand_query(q)
+          retrieval = retrieve_short_list
 
-          results = search_with_configured_labels do
-            TradeTariffBackend.search_client.search(
-              ::Search::GoodsNomenclatureQuery.new(
-                q,
-                as_of,
-                expanded_query: @expanded_query,
-                pos_search: pos_search_enabled?,
-                size: opensearch_result_limit,
-                noun_boost: pos_noun_boost,
-                qualifier_boost: pos_qualifier_boost,
-              ).query,
-            )
-          end
+          interactive_result = run_interactive_search(
+            retrieval.goods_nomenclatures,
+            retrieval.expanded_query,
+          )
 
-          hits = results.dig('hits', 'hits') || []
-          goods_nomenclatures = hits.map { |hit| build_result_from_hit(hit) }
-
-          interactive_result = run_interactive_search(goods_nomenclatures)
-
-          max_score = hits.map { |hit| hit['_score'] }.compact.max
-
-          response = build_response(goods_nomenclatures, interactive_result)
+          response = build_response(
+            retrieval.goods_nomenclatures,
+            interactive_result,
+            retrieval.expanded_query,
+          )
           completion = {
             result_count: response[:data]&.size || 0,
             total_attempts: interactive_result&.attempt,
             total_questions: answers.size,
             final_result_type: interactive_result&.type&.to_s,
-            results_type: 'opensearch',
-            max_score: max_score,
+            results_type: retrieval.results_type,
+            max_score: retrieval.max_score,
           }
 
           [response, completion]
@@ -72,6 +62,59 @@ module Api
       end
 
       private
+
+      def retrieve_short_list
+        if vector_retrieval?
+          vector_short_list
+        else
+          opensearch_short_list
+        end
+      end
+
+      def vector_retrieval?
+        AdminConfiguration.option_value('retrieval_method') == 'vector'
+      end
+
+      def vector_short_list
+        goods_nomenclatures = VectorRetrievalService.call(
+          query: q,
+          limit: opensearch_result_limit,
+        )
+
+        RetrievalResult.new(
+          goods_nomenclatures: goods_nomenclatures,
+          max_score: goods_nomenclatures.map(&:score).compact.max,
+          results_type: 'vector',
+        )
+      end
+
+      def opensearch_short_list
+        expanded_query = expand_query(q)
+
+        results = search_with_configured_labels do
+          TradeTariffBackend.search_client.search(
+            ::Search::GoodsNomenclatureQuery.new(
+              q,
+              as_of,
+              expanded_query: expanded_query,
+              pos_search: pos_search_enabled?,
+              size: opensearch_result_limit,
+              noun_boost: pos_noun_boost,
+              qualifier_boost: pos_qualifier_boost,
+            ).query,
+          )
+        end
+
+        hits = results.dig('hits', 'hits') || []
+        goods_nomenclatures = hits.map { |hit| build_result_from_hit(hit) }
+
+        RetrievalResult.new(
+          goods_nomenclatures: goods_nomenclatures,
+          max_score: hits.map { |hit| hit['_score'] }.compact.max,
+          expanded_query: expanded_query,
+          results_type: 'opensearch',
+        )
+      end
 
       def expand_query(query)
         return query unless expand_search_enabled?
@@ -218,20 +261,20 @@ module Api
         )
       end
 
-      def run_interactive_search(goods_nomenclatures)
+      def run_interactive_search(goods_nomenclatures, expanded_query)
         InteractiveSearchService.call(
           query: q,
-          expanded_query: @expanded_query,
+          expanded_query: expanded_query,
           opensearch_results: goods_nomenclatures,
           answers: answers,
           request_id: request_id,
         )
       end
 
-      def build_response(goods_nomenclatures, interactive_result)
+      def build_response(goods_nomenclatures, interactive_result, expanded_query)
         results = build_results_with_confidence(goods_nomenclatures, interactive_result)
         response = GoodsNomenclatureSearchSerializer.serialize(results)
-        meta = build_meta(interactive_result)
+        meta = build_meta(interactive_result, expanded_query)
         response[:meta] = meta if meta.present?
         response
       end
@@ -266,7 +309,7 @@ module Api
         )
       end
 
-      def build_meta(interactive_result)
+      def build_meta(interactive_result, expanded_query)
         meta = {}
 
         if interactive_result
@@ -279,8 +322,8 @@ module Api
             answers: build_answers_list(interactive_result),
           }
 
-          if @expanded_query.present? && @expanded_query != q
-            interactive_meta[:expanded_query] = @expanded_query
+          if expanded_query.present? && expanded_query != q
+            interactive_meta[:expanded_query] = expanded_query
           end
 
           if interactive_result.type == :error

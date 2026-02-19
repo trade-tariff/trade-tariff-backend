@@ -316,6 +316,22 @@ namespace :admin_configurations do
         value: '500',
       },
       {
+        name: 'retrieval_method',
+        config_type: 'options',
+        description: 'Search retrieval method: opensearch uses traditional text search with query expansion, vector uses pgvector cosine similarity and skips query expansion',
+        value: { 'selected' => 'opensearch',
+                 'options' => [
+                   { 'key' => 'opensearch', 'label' => 'OpenSearch (text search + query expansion)' },
+                   { 'key' => 'vector', 'label' => 'pgvector (cosine similarity)' },
+                 ] },
+      },
+      {
+        name: 'vector_ef_search',
+        config_type: 'integer',
+        description: 'HNSW ef_search parameter for pgvector queries. Controls the recall/speed tradeoff: higher values search more candidates and improve recall at the cost of latency. Typical range 40-200. Only applies when retrieval_method is vector.',
+        value: '100',
+      },
+      {
         name: 'label_context',
         config_type: 'markdown',
         description: 'System prompt sent to the AI model when labelling commodities',

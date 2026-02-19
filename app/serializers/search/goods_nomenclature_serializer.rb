@@ -48,11 +48,16 @@ module Search
     end
 
     def search_references_part
-      return if search_references.empty?
+      all_refs = search_references + ancestor_search_references
+      return if all_refs.empty?
 
-      search_references.map do |ref|
+      all_refs.map { |ref|
         SearchNegationService.new(ref.title).call
-      end
+      }.uniq
+    end
+
+    def ancestor_search_references
+      ancestors.flat_map(&:search_references)
     end
 
     def labels_part

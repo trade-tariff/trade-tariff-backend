@@ -2,7 +2,7 @@
 -- PostgreSQL database dump
 --
 
-\restrict WB96oVpVI0nPeZgiyy26B3O9FJwAONtV549SgZHPS7GjP7COtNrlYHgKCvW9hxn
+\restrict K4mhVezhN5nTRuts2vThLzBcy4o2wzgyuuMgXi5hh8yz4cDzZ1EMTcACDMoHRpo
 
 -- Dumped from database version 18.2
 -- Dumped by pg_dump version 18.2
@@ -4173,11 +4173,13 @@ CREATE TABLE uk.goods_nomenclature_self_texts (
     generated_at timestamp without time zone NOT NULL,
     created_at timestamp without time zone NOT NULL,
     updated_at timestamp without time zone NOT NULL,
+    embedding public.vector(1536),
     eu_self_text text,
+    eu_embedding public.vector(1536),
     similarity_score double precision,
     coherence_score double precision,
-    embedding public.vector(1536),
-    eu_embedding public.vector(1536)
+    search_embedding public.vector(1536),
+    search_text text
 );
 
 
@@ -11860,6 +11862,13 @@ CREATE INDEX goods_nomenclature_self_texts_goods_nomenclature_item_id_index ON u
 
 
 --
+-- Name: goods_nomenclature_self_texts_search_embedding_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX goods_nomenclature_self_texts_search_embedding_index ON uk.goods_nomenclature_self_texts USING hnsw (search_embedding public.vector_cosine_ops) WITH (m='16', ef_construction='64');
+
+
+--
 -- Name: goods_nomenclature_sid; Type: INDEX; Schema: uk; Owner: -
 --
 
@@ -14068,7 +14077,7 @@ ALTER TABLE ONLY uk.news_collections_news_items
 -- PostgreSQL database dump complete
 --
 
-\unrestrict WB96oVpVI0nPeZgiyy26B3O9FJwAONtV549SgZHPS7GjP7COtNrlYHgKCvW9hxn
+\unrestrict K4mhVezhN5nTRuts2vThLzBcy4o2wzgyuuMgXi5hh8yz4cDzZ1EMTcACDMoHRpo
 
 SET search_path TO uk, public;
 INSERT INTO "schema_migrations" ("filename") VALUES ('1342519058_create_schema.rb');
@@ -14279,3 +14288,4 @@ INSERT INTO "schema_migrations" ("filename") VALUES ('20260113104016_adds_goods_
 INSERT INTO "schema_migrations" ("filename") VALUES ('20260130120000_adds_admin_configurations_oplog.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20260211120000_create_goods_nomenclature_self_texts.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20260217120000_add_embedding_columns_to_self_texts.rb');
+INSERT INTO "schema_migrations" ("filename") VALUES ('20260219120000_add_search_embedding_to_self_texts.rb');

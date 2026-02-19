@@ -625,6 +625,62 @@ RSpec.describe Api::Internal::SearchService do
       end
     end
 
+    context 'when retrieval_method is vector' do
+      let(:vector_results) do
+        [
+          OpenStruct.new(
+            id: 1,
+            goods_nomenclature_item_id: '0101210000',
+            goods_nomenclature_sid: 1,
+            producline_suffix: '80',
+            goods_nomenclature_class: 'Commodity',
+            description: 'pure-bred breeding horses',
+            formatted_description: 'Pure-bred breeding horses',
+            full_description: 'Pure-bred breeding horses',
+            heading_description: nil,
+            declarable: true,
+            score: 0.95,
+            confidence: nil,
+          ),
+        ]
+      end
+
+      before do
+        allow(AdminConfiguration).to receive(:option_value).and_call_original
+        allow(AdminConfiguration).to receive(:option_value).with('retrieval_method').and_return('vector')
+        allow(VectorRetrievalService).to receive(:call).and_return(vector_results)
+      end
+
+      it 'skips query expansion' do
+        described_class.new(q: 'horses').call
+
+        expect(ExpandSearchQueryService).not_to have_received(:call)
+      end
+
+      it 'calls VectorRetrievalService with query' do
+        described_class.new(q: 'horses').call
+
+        expect(VectorRetrievalService).to have_received(:call).with(
+          hash_including(query: 'horses'),
+        )
+      end
+
+      it 'does not call OpenSearch' do
+        allow(TradeTariffBackend.search_client).to receive(:search)
+
+        described_class.new(q: 'horses').call
+
+        expect(TradeTariffBackend.search_client).not_to have_received(:search)
+      end
+
+      it 'returns serialized results' do
+        result = described_class.new(q: 'horses').call
+
+        expect(result[:data].length).to eq(1)
+        expect(result[:data][0][:attributes][:goods_nomenclature_item_id]).to eq('0101210000')
+      end
+    end
+
     context 'when expanded_query differs from original' do
       let(:opensearch_response) { { 'hits' => { 'hits' => [] } } }
       let(:interactive_result) do
