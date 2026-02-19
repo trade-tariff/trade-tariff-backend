@@ -1,13 +1,14 @@
 # Processes goods nomenclature changes for a single chapter after a
 # CDS/TARIC import cycle. Enqueued by GoodsNomenclatureChangeAccumulator.
 #
-# Three responsibilities:
+# Four responsibilities:
 # 1. Mark affected self-texts stale and clear their search embeddings so
 #    stale content is excluded from vector search until regenerated.
-# 2. Re-run MechanicalBuilder for the chapter to regenerate self-texts
-#    with updated ancestor chains and descriptions.
+# 2. Re-run MechanicalBuilder and AiBuilder for the chapter to regenerate
+#    self-texts with updated ancestor chains and descriptions.
 # 3. Destroy labels for SIDs whose descriptions changed, so the labelling
 #    pipeline regenerates them with the new description text.
+# 4. Enqueue RelabelGoodsNomenclatureWorker to recreate destroyed labels.
 class GoodsNomenclatureChangeWorker
   include Sidekiq::Worker
 
@@ -17,7 +18,7 @@ class GoodsNomenclatureChangeWorker
     affected_sids = sid_change_map.keys.map(&:to_i)
 
     mark_self_texts_stale(affected_sids)
-    regenerate_mechanical_self_texts(chapter_code)
+    regenerate_self_texts(chapter_code)
     invalidate_labels(sid_change_map)
   end
 
@@ -30,16 +31,12 @@ class GoodsNomenclatureChangeWorker
       .update(stale: true, search_embedding: nil, updated_at: Time.zone.now)
   end
 
-  def regenerate_mechanical_self_texts(chapter_code)
-    chapter = TimeMachine.now do
-      Chapter.actual
-        .where(Sequel.like(:goods_nomenclature_item_id, "#{chapter_code}%"))
-        .eager(:goods_nomenclature_descriptions)
-        .first
-    end
+  def regenerate_self_texts(chapter_code)
+    chapter = TimeMachine.now { Chapter.actual.by_code(chapter_code).first }
     return unless chapter
 
     GenerateSelfText::MechanicalBuilder.call(chapter)
+    GenerateSelfText::AiBuilder.call(chapter)
   end
 
   def invalidate_labels(sid_change_map)
@@ -55,5 +52,7 @@ class GoodsNomenclatureChangeWorker
         .actual
         .each(&:destroy)
     end
+
+    RelabelGoodsNomenclatureWorker.perform_async
   end
 end

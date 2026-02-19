@@ -4,6 +4,8 @@ RSpec.describe GoodsNomenclatureChangeWorker, type: :worker do
 
     before do
       allow(GenerateSelfText::MechanicalBuilder).to receive(:call)
+      allow(GenerateSelfText::AiBuilder).to receive(:call)
+      allow(RelabelGoodsNomenclatureWorker).to receive(:perform_async)
     end
 
     describe 'marking self-texts stale' do
@@ -32,7 +34,7 @@ RSpec.describe GoodsNomenclatureChangeWorker, type: :worker do
       end
     end
 
-    describe 'mechanical self-text regeneration' do
+    describe 'self-text regeneration' do
       let(:sid_change_map) { { '100' => %w[structure_changed] } }
 
       it 'calls MechanicalBuilder for the chapter' do
@@ -46,9 +48,22 @@ RSpec.describe GoodsNomenclatureChangeWorker, type: :worker do
         )
       end
 
-      it 'does nothing when chapter does not exist' do
+      it 'calls AiBuilder for the chapter' do
+        create(:goods_nomenclature, :chapter,
+               goods_nomenclature_item_id: '0100000000')
+
+        described_class.new.perform(chapter_code, sid_change_map)
+
+        expect(GenerateSelfText::AiBuilder).to have_received(:call).with(
+          an_instance_of(Chapter),
+        )
+      end
+
+      it 'does not call builders when chapter does not exist' do
         described_class.new.perform('99', sid_change_map)
+
         expect(GenerateSelfText::MechanicalBuilder).not_to have_received(:call)
+        expect(GenerateSelfText::AiBuilder).not_to have_received(:call)
       end
     end
 
@@ -79,6 +94,22 @@ RSpec.describe GoodsNomenclatureChangeWorker, type: :worker do
           .order(Sequel.desc(:oid))
           .first
         expect(last_op[:operation]).not_to eq('D')
+      end
+
+      it 'enqueues RelabelGoodsNomenclatureWorker after destroying labels' do
+        create(:goods_nomenclature_label, goods_nomenclature_sid: 100)
+
+        described_class.new.perform(chapter_code, sid_change_map)
+
+        expect(RelabelGoodsNomenclatureWorker).to have_received(:perform_async)
+      end
+
+      it 'does not enqueue relabeling when no description changes' do
+        sid_change_map_no_desc = { '200' => %w[structure_changed] }
+
+        described_class.new.perform(chapter_code, sid_change_map_no_desc)
+
+        expect(RelabelGoodsNomenclatureWorker).not_to have_received(:perform_async)
       end
     end
   end
