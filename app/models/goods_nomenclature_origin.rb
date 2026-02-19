@@ -18,4 +18,15 @@ class GoodsNomenclatureOrigin < Sequel::Model
   many_to_one :derived_goods_nomenclature, primary_key: %i[goods_nomenclature_item_id producline_suffix],
                                            key: %i[derived_goods_nomenclature_item_id derived_productline_suffix],
                                            class: 'GoodsNomenclature'
+
+private
+
+  def after_create
+    super
+    GoodsNomenclatureChangeAccumulator.push!(
+      sid: goods_nomenclature_sid,
+      change_type: :moved,
+      item_id: goods_nomenclature_item_id,
+    )
+  end
 end

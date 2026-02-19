@@ -302,4 +302,24 @@ class GoodsNomenclature < Sequel::Model
       formatted_description
     end
   end
+
+private
+
+  def after_create
+    super
+    GoodsNomenclatureChangeAccumulator.push!(
+      sid: goods_nomenclature_sid,
+      change_type: :structure_changed,
+      item_id: goods_nomenclature_item_id,
+    )
+  end
+
+  def after_update
+    super
+    GoodsNomenclatureChangeAccumulator.push!(
+      sid: goods_nomenclature_sid,
+      change_type: :structure_changed,
+      item_id: goods_nomenclature_item_id,
+    )
+  end
 end

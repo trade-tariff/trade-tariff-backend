@@ -26,6 +26,7 @@ RSpec.describe TaricUpdatesSynchronizerWorker, type: :worker do
       allow(DataMigrator).to receive_messages(migrations_dir:, migrate_up!: true)
 
       allow(GoodsNomenclatures::TreeNode).to receive(:refresh!).and_call_original
+      allow(GoodsNomenclatureChangeAccumulator).to receive(:flush!)
     end
 
     let(:changes_applied) { true }

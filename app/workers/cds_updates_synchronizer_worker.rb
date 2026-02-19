@@ -25,6 +25,7 @@ class CdsUpdatesSynchronizerWorker
 
     migrate_data if reapply_data_migrations
     MaterializeViewHelper.refresh_materialized_view
+    GoodsNomenclatureChangeAccumulator.flush!
 
     Sidekiq::Client.enqueue_in(5.minutes, ClearCacheWorker)
     Sidekiq::Client.enqueue_in(5.minutes, ClearInvalidSearchReferences)
