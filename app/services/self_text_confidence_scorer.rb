@@ -165,7 +165,7 @@ class SelfTextConfidenceScorer
     ancestors = context['ancestors'] || []
     descriptions = ancestors.map { |a| a['self_text'] || a['description'] }
     descriptions << context['description']
-    descriptions.compact.join(' > ')
+    descriptions.compact.join(' >> ')
   end
 
   def db

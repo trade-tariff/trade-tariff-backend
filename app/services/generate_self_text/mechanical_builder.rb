@@ -1,6 +1,6 @@
 module GenerateSelfText
   class MechanicalBuilder
-    SEPARATOR = ' > '.freeze
+    SEPARATOR = ' >> '.freeze
     OTHER_PATTERN = SegmentExtractor::OTHER_PATTERN
 
     def self.call(chapter)
