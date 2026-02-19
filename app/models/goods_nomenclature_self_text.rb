@@ -18,6 +18,20 @@ class GoodsNomenclatureSelfText < Sequel::Model
     def needs_review
       where(needs_review: true)
     end
+
+    def vector_search(vector_literal, limit:)
+      distance_expr = Sequel.lit("goods_nomenclature_self_texts.search_embedding <=> #{vector_literal}")
+
+      exclude(search_embedding: nil)
+        .association_join(:goods_nomenclature)
+        .where(goods_nomenclature__producline_suffix: GoodsNomenclatureIndent::NON_GROUPING_PRODUCTLINE_SUFFIX)
+        .where { GoodsNomenclature.validity_dates_filter(:goods_nomenclature) }
+        .exclude(goods_nomenclature__goods_nomenclature_item_id: HiddenGoodsNomenclature.codes)
+        .select(Sequel[:goods_nomenclature][:goods_nomenclature_sid])
+        .select_append(Sequel.as(Sequel.lit("1 - (#{distance_expr})"), :score))
+        .order(distance_expr)
+        .limit(limit)
+    end
   end
 
   def validate

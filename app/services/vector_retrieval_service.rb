@@ -37,32 +37,12 @@ class VectorRetrievalService
     db.transaction do
       db.run("SET LOCAL hnsw.ef_search = #{ef_search.to_i}")
 
-      db.fetch(
-        search_sql(vector_literal),
-        as_of: @as_of,
-        limit: @limit,
-      ).all
+      TimeMachine.at(@as_of) do
+        GoodsNomenclatureSelfText
+          .vector_search(vector_literal, limit: @limit)
+          .all
+      end
     end
-  end
-
-  def search_sql(vector_literal)
-    # vector_literal is safe - it contains only numeric values from the embedding API
-    <<~SQL
-      SELECT gn.goods_nomenclature_sid,
-             1 - (st.search_embedding <=> #{vector_literal}) AS score
-      FROM goods_nomenclature_self_texts st
-      JOIN goods_nomenclatures gn
-        ON gn.goods_nomenclature_sid = st.goods_nomenclature_sid
-      WHERE st.search_embedding IS NOT NULL
-        AND gn.producline_suffix = '80'
-        AND gn.goods_nomenclature_item_id NOT IN (
-          SELECT goods_nomenclature_item_id FROM hidden_goods_nomenclatures
-        )
-        AND (gn.validity_start_date IS NULL OR gn.validity_start_date <= :as_of)
-        AND (gn.validity_end_date IS NULL OR gn.validity_end_date >= :as_of)
-      ORDER BY st.search_embedding <=> #{vector_literal}
-      LIMIT :limit
-    SQL
   end
 
   def load_goods_nomenclatures(sids)
