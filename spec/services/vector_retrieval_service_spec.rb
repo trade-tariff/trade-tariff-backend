@@ -1,7 +1,6 @@
 RSpec.describe VectorRetrievalService do
-  subject(:service) { described_class.new(query: 'live horses', as_of: as_of, limit: 10) }
+  subject(:service) { described_class.new(query: 'live horses', limit: 10) }
 
-  let(:as_of) { Time.zone.today }
   let(:embedding_service) { instance_double(EmbeddingService) }
   let(:query_embedding) { Array.new(1536) { rand(-1.0..1.0) } }
 
@@ -111,7 +110,7 @@ RSpec.describe VectorRetrievalService do
         populate_search_embedding(commodity.goods_nomenclature_sid, query_embedding)
       end
 
-      limited_service = described_class.new(query: 'live horses', as_of: as_of, limit: 2)
+      limited_service = described_class.new(query: 'live horses', limit: 2)
       results = limited_service.call
 
       expect(results.size).to eq(2)

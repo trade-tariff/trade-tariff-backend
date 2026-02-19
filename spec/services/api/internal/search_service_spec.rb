@@ -657,8 +657,8 @@ RSpec.describe Api::Internal::SearchService do
         expect(ExpandSearchQueryService).not_to have_received(:call)
       end
 
-      it 'calls VectorRetrievalService with query and date' do
-        described_class.new(q: 'horses', as_of: Time.zone.today.iso8601).call
+      it 'calls VectorRetrievalService with query' do
+        described_class.new(q: 'horses').call
 
         expect(VectorRetrievalService).to have_received(:call).with(
           hash_including(query: 'horses'),

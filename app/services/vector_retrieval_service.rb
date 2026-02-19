@@ -1,11 +1,10 @@
 class VectorRetrievalService
-  def self.call(query:, as_of:, limit: 80)
-    new(query:, as_of:, limit:).call
+  def self.call(query:, limit: 80)
+    new(query:, limit:).call
   end
 
-  def initialize(query:, as_of:, limit: 80)
+  def initialize(query:, limit: 80)
     @query = query
-    @as_of = as_of
     @limit = limit
   end
 
@@ -37,24 +36,20 @@ class VectorRetrievalService
     db.transaction do
       db.run("SET LOCAL hnsw.ef_search = #{ef_search.to_i}")
 
-      TimeMachine.at(@as_of) do
-        GoodsNomenclatureSelfText
-          .vector_search(vector_literal, limit: @limit)
-          .all
-      end
+      GoodsNomenclatureSelfText
+        .vector_search(vector_literal, limit: @limit)
+        .all
     end
   end
 
   def load_goods_nomenclatures(sids)
-    TimeMachine.at(@as_of) do
-      GoodsNomenclature
-        .actual
-        .with_leaf_column
-        .where(goods_nomenclatures__goods_nomenclature_sid: sids)
-        .eager(:goods_nomenclature_descriptions, :heading)
-        .all
-        .index_by(&:goods_nomenclature_sid)
-    end
+    GoodsNomenclature
+      .actual
+      .with_leaf_column
+      .where(goods_nomenclatures__goods_nomenclature_sid: sids)
+      .eager(:goods_nomenclature_descriptions, :heading)
+      .all
+      .index_by(&:goods_nomenclature_sid)
   end
 
   def build_result(goods_nomenclature, score)

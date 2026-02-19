@@ -78,7 +78,6 @@ module Api
       def vector_short_list
         goods_nomenclatures = VectorRetrievalService.call(
           query: q,
-          as_of: as_of,
           limit: opensearch_result_limit,
         )
 
