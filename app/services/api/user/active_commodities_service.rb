@@ -120,6 +120,14 @@ module Api
         end
       end
 
+      def generate_report
+        Api::User::ActiveCommoditiesReportService.call(
+          active_commodity_codes,
+          expired_commodity_codes,
+          invalid_commodity_codes,
+        )
+      end
+
       # --- Public paginated loaders ---
       # Each returns [array_of_commodities, total_count]
 
