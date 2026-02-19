@@ -54,6 +54,31 @@ namespace :labels do
     end
   end
 
+  desc 'Re-label nodes that have generated self-texts (CHAPTER=02 to scope by chapter)'
+  task relabel: :environment do
+    sids = GoodsNomenclatureSelfText.select(:goods_nomenclature_sid)
+
+    if ENV['CHAPTER'].present?
+      chapter_code = ENV['CHAPTER'].ljust(10, '0')
+      sids = sids.where(Sequel.like(:goods_nomenclature_item_id, "#{chapter_code[0..1]}%"))
+    end
+
+    sid_values = sids.select_map(:goods_nomenclature_sid)
+    puts "Found #{sid_values.size} nodes with self-texts"
+
+    deleted = GoodsNomenclatureLabel::Operation.where(goods_nomenclature_sid: sid_values).delete
+    puts "Deleted #{deleted} existing label oplog entries"
+
+    puts 'Refreshing materialized view...'
+    GoodsNomenclatureLabel.refresh!(concurrently: false)
+
+    unlabeled = GoodsNomenclatureLabel.goods_nomenclatures_dataset.count
+    puts "#{unlabeled} nodes now unlabeled, enqueuing generation..."
+
+    RelabelGoodsNomenclatureWorker.perform_async
+    puts 'Done. Check Sidekiq for progress.'
+  end
+
   desc 'Delete all labels and regenerate with contextual descriptions'
   task nuke_and_regenerate: :environment do
     csv_path = ENV['CSV_PATH']

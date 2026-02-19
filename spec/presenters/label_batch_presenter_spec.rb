@@ -5,11 +5,6 @@ RSpec.describe LabelBatchPresenter do
   let(:batch) { [commodity] }
   let(:commodity) { create(:commodity, :with_description, :with_ancestors) }
 
-  before do
-    SelfTextLookupService.instance_variable_set(:@self_texts, nil)
-    SelfTextLookupService.instance_variable_set(:@csv_path, nil)
-  end
-
   describe '#goods_nomenclature_for' do
     it 'returns the goods nomenclature matching the item_id' do
       result = presenter.goods_nomenclature_for(commodity.goods_nomenclature_item_id)
@@ -38,23 +33,20 @@ RSpec.describe LabelBatchPresenter do
       expect(json.first['description']).to be_present
     end
 
-    context 'when self-text is available' do
+    context 'when self-text is available in DB' do
       before do
-        allow(SelfTextLookupService).to receive(:lookup)
-          .with(commodity.goods_nomenclature_item_id)
-          .and_return('Self-text description from CN2026')
+        create(:goods_nomenclature_self_text,
+               goods_nomenclature_sid: commodity.goods_nomenclature_sid,
+               goods_nomenclature_item_id: commodity.goods_nomenclature_item_id,
+               self_text: 'DB self-text description')
       end
 
       it 'uses the self-text as description' do
-        expect(json.first['description']).to eq('Self-text description from CN2026')
+        expect(json.first['description']).to eq('DB self-text description')
       end
     end
 
     context 'when no self-text is available' do
-      before do
-        allow(SelfTextLookupService).to receive(:lookup).and_return(nil)
-      end
-
       it 'uses normalised ancestor_chain_description' do
         expect(json.first['description']).to eq(
           DescriptionNormaliser.call(commodity.ancestor_chain_description),
@@ -64,35 +56,20 @@ RSpec.describe LabelBatchPresenter do
   end
 
   describe '#contextual_description_for' do
-    context 'when self-text is available' do
+    context 'when self-text is available in DB' do
       before do
-        allow(SelfTextLookupService).to receive(:lookup)
-          .with(commodity.goods_nomenclature_item_id)
-          .and_return('CN2026 self-text')
+        create(:goods_nomenclature_self_text,
+               goods_nomenclature_sid: commodity.goods_nomenclature_sid,
+               goods_nomenclature_item_id: commodity.goods_nomenclature_item_id,
+               self_text: 'DB self-text for commodity')
       end
 
       it 'returns the self-text' do
-        expect(presenter.contextual_description_for(commodity)).to eq('CN2026 self-text')
+        expect(presenter.contextual_description_for(commodity)).to eq('DB self-text for commodity')
       end
     end
 
-    context 'when self-text is blank' do
-      before do
-        allow(SelfTextLookupService).to receive(:lookup).and_return('')
-      end
-
-      it 'falls back to normalised ancestor_chain_description' do
-        expect(presenter.contextual_description_for(commodity)).to eq(
-          DescriptionNormaliser.call(commodity.ancestor_chain_description),
-        )
-      end
-    end
-
-    context 'when self-text is nil' do
-      before do
-        allow(SelfTextLookupService).to receive(:lookup).and_return(nil)
-      end
-
+    context 'when no self-text record exists' do
       it 'falls back to normalised ancestor_chain_description' do
         expect(presenter.contextual_description_for(commodity)).to eq(
           DescriptionNormaliser.call(commodity.ancestor_chain_description),
@@ -102,7 +79,6 @@ RSpec.describe LabelBatchPresenter do
 
     context 'when ancestor_chain_description contains HTML' do
       before do
-        allow(SelfTextLookupService).to receive(:lookup).and_return(nil)
         allow(commodity).to receive(:ancestor_chain_description)
           .and_return('Live animals &ge; Horses<br>pure-bred &times; 2')
       end
@@ -114,6 +90,27 @@ RSpec.describe LabelBatchPresenter do
         expect(result).not_to include('&ge;')
         expect(result).not_to include('&times;')
         expect(result).to eq('Live animals >= Horses pure-bred x 2')
+      end
+    end
+
+    context 'with multiple commodities in a batch' do
+      let(:commodity2) { create(:commodity, :with_description) }
+      let(:batch) { [commodity, commodity2] }
+
+      before do
+        create(:goods_nomenclature_self_text,
+               goods_nomenclature_sid: commodity.goods_nomenclature_sid,
+               goods_nomenclature_item_id: commodity.goods_nomenclature_item_id,
+               self_text: 'First self-text')
+        create(:goods_nomenclature_self_text,
+               goods_nomenclature_sid: commodity2.goods_nomenclature_sid,
+               goods_nomenclature_item_id: commodity2.goods_nomenclature_item_id,
+               self_text: 'Second self-text')
+      end
+
+      it 'batch-loads all self-texts' do
+        expect(presenter.contextual_description_for(commodity)).to eq('First self-text')
+        expect(presenter.contextual_description_for(commodity2)).to eq('Second self-text')
       end
     end
   end
