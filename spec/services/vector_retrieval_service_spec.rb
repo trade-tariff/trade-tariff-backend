@@ -17,7 +17,7 @@ RSpec.describe VectorRetrievalService do
       expect(embedding_service).to have_received(:embed).with('live horses')
     end
 
-    it 'returns results matching the OpenStruct shape' do
+    it 'returns results with ORM-derived fields', :aggregate_failures do
       commodity = create(:commodity, :with_description, :declarable,
                          goods_nomenclature_item_id: '0101210000',
                          producline_suffix: '80')
@@ -34,14 +34,16 @@ RSpec.describe VectorRetrievalService do
       expect(results).not_to be_empty
 
       result = results.first
-      expect(result).to respond_to(:goods_nomenclature_item_id)
-      expect(result).to respond_to(:goods_nomenclature_sid)
-      expect(result).to respond_to(:producline_suffix)
-      expect(result).to respond_to(:full_description)
-      expect(result).to respond_to(:score)
-      expect(result).to respond_to(:confidence)
-      expect(result.confidence).to be_nil
+      expect(result.goods_nomenclature_item_id).to eq('0101210000')
+      expect(result.goods_nomenclature_sid).to eq(commodity.goods_nomenclature_sid)
+      expect(result.producline_suffix).to eq('80')
+      expect(result.goods_nomenclature_class).to eq('Commodity')
+      expect(result.declarable).to be true
       expect(result.score).to be_a(Float)
+      expect(result.confidence).to be_nil
+      expect(result.description).to be_present
+      expect(result.formatted_description).to be_present
+      expect(result.full_description).to be_present
     end
 
     it 'excludes hidden goods nomenclatures' do

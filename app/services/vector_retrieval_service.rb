@@ -13,30 +13,42 @@ class VectorRetrievalService
     query_embedding = embedding_service.embed(@query)
     vector_literal = "'[#{query_embedding.join(',')}]'::vector"
 
-    ef_search = AdminConfiguration.integer_value('vector_ef_search')
+    ranked_rows = fetch_ranked_sids(vector_literal)
+    return [] if ranked_rows.empty?
 
-    db.transaction do
-      db.run("SET LOCAL hnsw.ef_search = #{ef_search.to_i}")
+    scores_by_sid = ranked_rows.each_with_object({}) { |r, h| h[r[:goods_nomenclature_sid]] = r[:score]&.to_f }
+    ordered_sids = ranked_rows.map { |r| r[:goods_nomenclature_sid] }
 
-      results = db.fetch(
-        search_sql(vector_literal),
-        as_of: @as_of,
-        limit: @limit,
-      ).all
+    gn_by_sid = load_goods_nomenclatures(ordered_sids)
 
-      results.map { |row| build_result(row) }
+    ordered_sids.filter_map do |sid|
+      gn = gn_by_sid[sid]
+      next unless gn
+
+      build_result(gn, scores_by_sid[sid])
     end
   end
 
   private
 
+  def fetch_ranked_sids(vector_literal)
+    ef_search = AdminConfiguration.integer_value('vector_ef_search')
+
+    db.transaction do
+      db.run("SET LOCAL hnsw.ef_search = #{ef_search.to_i}")
+
+      db.fetch(
+        search_sql(vector_literal),
+        as_of: @as_of,
+        limit: @limit,
+      ).all
+    end
+  end
+
   def search_sql(vector_literal)
     # vector_literal is safe - it contains only numeric values from the embedding API
     <<~SQL
       SELECT gn.goods_nomenclature_sid,
-             gn.goods_nomenclature_item_id,
-             gn.producline_suffix,
-             st.self_text AS full_description,
              1 - (st.search_embedding <=> #{vector_literal}) AS score
       FROM goods_nomenclature_self_texts st
       JOIN goods_nomenclatures gn
@@ -53,32 +65,36 @@ class VectorRetrievalService
     SQL
   end
 
-  def build_result(row)
-    item_id = row[:goods_nomenclature_item_id]
-
-    OpenStruct.new(
-      id: row[:goods_nomenclature_sid],
-      goods_nomenclature_item_id: item_id,
-      goods_nomenclature_sid: row[:goods_nomenclature_sid],
-      producline_suffix: row[:producline_suffix],
-      goods_nomenclature_class: classify(item_id),
-      description: row[:full_description],
-      formatted_description: row[:full_description],
-      full_description: row[:full_description],
-      heading_description: nil,
-      declarable: row[:producline_suffix] == '80',
-      score: row[:score]&.to_f,
-      confidence: nil,
-    )
+  def load_goods_nomenclatures(sids)
+    TimeMachine.at(@as_of) do
+      GoodsNomenclature
+        .actual
+        .with_leaf_column
+        .where(goods_nomenclatures__goods_nomenclature_sid: sids)
+        .eager(:goods_nomenclature_descriptions, :heading)
+        .all
+        .index_by(&:goods_nomenclature_sid)
+    end
   end
 
-  def classify(item_id)
-    case item_id
-    when /\A\d{2}00000000\z/ then 'Chapter'
-    when /\A\d{4}000000\z/ then 'Heading'
-    when /\A\d{10}\z/ then 'Commodity'
-    else 'Subheading'
-    end
+  def build_result(goods_nomenclature, score)
+    self_text = SelfTextLookupService.lookup(goods_nomenclature.goods_nomenclature_item_id)
+    full_desc = self_text.presence || goods_nomenclature.classification_description
+
+    OpenStruct.new(
+      id: goods_nomenclature.goods_nomenclature_sid,
+      goods_nomenclature_item_id: goods_nomenclature.goods_nomenclature_item_id,
+      goods_nomenclature_sid: goods_nomenclature.goods_nomenclature_sid,
+      producline_suffix: goods_nomenclature.producline_suffix,
+      goods_nomenclature_class: goods_nomenclature.goods_nomenclature_class,
+      description: goods_nomenclature.description,
+      formatted_description: goods_nomenclature.formatted_description,
+      full_description: full_desc,
+      heading_description: goods_nomenclature.heading&.formatted_description,
+      declarable: goods_nomenclature.respond_to?(:declarable?) ? goods_nomenclature.declarable? : false,
+      score: score,
+      confidence: nil,
+    )
   end
 
   def embedding_service
