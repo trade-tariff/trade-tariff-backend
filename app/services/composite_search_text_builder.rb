@@ -26,17 +26,29 @@ class CompositeSearchTextBuilder
       .where(goods_nomenclature_sid: sids)
       .as_hash(:goods_nomenclature_sid)
 
-    refs_by_sid = SearchReference
+    direct_refs_by_sid = SearchReference
       .where(goods_nomenclature_sid: sids)
       .all
       .group_by(&:goods_nomenclature_sid)
 
+    item_ids = self_text_records.map(&:goods_nomenclature_item_id)
+    ancestor_refs = SearchReference.for_ancestors(item_ids).all
+
+    # Map ancestor refs to each commodity whose item_id they're an ancestor of
+    ancestor_refs_by_sid = {}
+    self_text_records.each do |record|
+      ancestors = SearchReference.ancestor_item_ids(record.goods_nomenclature_item_id)
+      matching = ancestor_refs.select { |r| ancestors.include?(r.goods_nomenclature_item_id) }
+      ancestor_refs_by_sid[record.goods_nomenclature_sid] = matching if matching.any?
+    end
+
     self_text_records.each_with_object({}) do |record, hash|
       sid = record.goods_nomenclature_sid
+      all_refs = (direct_refs_by_sid[sid] || []) + (ancestor_refs_by_sid[sid] || [])
       builder = new(
         record,
         labels: labels_by_sid[sid],
-        search_references: refs_by_sid[sid],
+        search_references: all_refs,
       )
       hash[sid] = builder.call
     end
@@ -83,6 +95,6 @@ class CompositeSearchTextBuilder
   end
 
   def reference_titles
-    @reference_titles ||= (search_references || []).filter_map { |r| r.title.presence }
+    @reference_titles ||= (search_references || []).filter_map { |r| r.title.presence }.uniq
   end
 end

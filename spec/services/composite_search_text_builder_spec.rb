@@ -160,5 +160,23 @@ RSpec.describe CompositeSearchTextBuilder do
     it 'returns empty hash for empty input' do
       expect(described_class.batch([])).to eq({})
     end
+
+    it 'includes ancestor search references' do
+      # Commodity with a known item_id so we can create a matching ancestor
+      commodity = create(:commodity, :with_description, :declarable,
+                         goods_nomenclature_item_id: '8418215190')
+      self_text = create(:goods_nomenclature_self_text,
+                         goods_nomenclature_sid: commodity.goods_nomenclature_sid,
+                         goods_nomenclature_item_id: commodity.goods_nomenclature_item_id,
+                         self_text: 'A fridge commodity')
+
+      # Heading-level search reference (ancestor of 8418215190)
+      heading = create(:heading, goods_nomenclature_item_id: '8418000000')
+      create(:search_reference, title: 'fridges', referenced: heading)
+
+      result = described_class.batch([self_text])
+
+      expect(result[commodity.goods_nomenclature_sid]).to include('References: fridges')
+    end
   end
 end
