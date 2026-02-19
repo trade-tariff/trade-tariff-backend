@@ -97,7 +97,7 @@ See `app/lib/label_generator/logger.rb` for the full list of events and fields.
 
 | Name | Version |
 |------|---------|
-| <a name="provider_aws"></a> [aws](#provider\_aws) | 5.100.0 |
+| <a name="provider_aws"></a> [aws](#provider\_aws) | ~> 5 |
 
 ## Modules
 
