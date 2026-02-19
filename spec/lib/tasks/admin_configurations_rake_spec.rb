@@ -51,7 +51,13 @@ RSpec.describe 'admin_configurations:seed' do
       config = AdminConfiguration.where(name:).first
       expect(config.config_type).to eq('options')
       expect(config.area).to eq('classification')
-      expect(config.value['selected']).to eq(TradeTariffBackend.ai_model)
+
+      expected_selected = if name == 'expand_model'
+                            'gpt-4.1-mini-2025-04-14'
+                          else
+                            TradeTariffBackend.ai_model
+                          end
+      expect(config.value['selected']).to eq(expected_selected)
 
       option_keys = config.value['options'].map { |o| o['key'] }
       expect(option_keys).to eq(option_keys.sort)
