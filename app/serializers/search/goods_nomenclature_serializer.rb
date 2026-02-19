@@ -25,16 +25,6 @@ module Search
       }.compact
     end
 
-    class << self
-      def ancestor_search_reference_cache
-        @ancestor_search_reference_cache ||= SearchReference.exclude(productline_suffix: '80').all
-      end
-
-      def reset_ancestor_search_reference_cache!
-        @ancestor_search_reference_cache = nil
-      end
-    end
-
     private
 
     def description
@@ -67,8 +57,7 @@ module Search
     end
 
     def ancestor_search_references
-      ancestors = SearchReference.ancestor_item_ids(goods_nomenclature_item_id)
-      self.class.ancestor_search_reference_cache.select { |r| ancestors.include?(r.goods_nomenclature_item_id) }
+      ancestors.flat_map(&:search_references)
     end
 
     def labels_part

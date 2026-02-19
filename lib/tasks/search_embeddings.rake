@@ -15,7 +15,7 @@ namespace :search_embeddings do
     puts "Generating search embeddings for #{total} self-text records..."
 
     records.each_slice(EmbeddingService::BATCH_SIZE) do |batch|
-      composite_texts = CompositeSearchTextBuilder.batch(batch)
+      composite_texts = TimeMachine.now { CompositeSearchTextBuilder.batch(batch) }
 
       texts_to_embed = batch.map { |r| composite_texts[r.goods_nomenclature_sid] }
       embeddings = embedding_service.embed_batch(texts_to_embed)

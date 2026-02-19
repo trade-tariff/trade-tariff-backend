@@ -14,7 +14,7 @@ class CompositeSearchTextBuilder
   end
 
   # Batch mode: preloads labels and search_references for a set of SIDs
-  # to avoid N+1 queries.
+  # to avoid N+1 queries. Caller must ensure TimeMachine is set.
   #
   # Returns a hash of { sid => composite_text }
   def self.batch(self_text_records)
@@ -26,25 +26,16 @@ class CompositeSearchTextBuilder
       .where(goods_nomenclature_sid: sids)
       .as_hash(:goods_nomenclature_sid)
 
-    direct_refs_by_sid = SearchReference
+    gns_by_sid = GoodsNomenclature
       .where(goods_nomenclature_sid: sids)
+      .eager(:search_references, ancestors: [:search_references])
       .all
-      .group_by(&:goods_nomenclature_sid)
-
-    item_ids = self_text_records.map(&:goods_nomenclature_item_id)
-    ancestor_refs = SearchReference.for_ancestors(item_ids).all
-
-    # Map ancestor refs to each commodity whose item_id they're an ancestor of
-    ancestor_refs_by_sid = {}
-    self_text_records.each do |record|
-      ancestors = SearchReference.ancestor_item_ids(record.goods_nomenclature_item_id)
-      matching = ancestor_refs.select { |r| ancestors.include?(r.goods_nomenclature_item_id) }
-      ancestor_refs_by_sid[record.goods_nomenclature_sid] = matching if matching.any?
-    end
+      .index_by(&:goods_nomenclature_sid)
 
     self_text_records.each_with_object({}) do |record, hash|
       sid = record.goods_nomenclature_sid
-      all_refs = (direct_refs_by_sid[sid] || []) + (ancestor_refs_by_sid[sid] || [])
+      gn = gns_by_sid[sid]
+      all_refs = (gn&.search_references || []) + (gn&.ancestors&.flat_map(&:search_references) || [])
       builder = new(
         record,
         labels: labels_by_sid[sid],

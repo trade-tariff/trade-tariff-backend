@@ -43,20 +43,9 @@ class SearchReference < Sequel::Model
       where(Sequel.ilike(:title, "#{letter}%")).by_title
     end
 
-    def for_ancestors(item_ids)
-      all_ancestor_ids = item_ids.flat_map { |id| SearchReference.ancestor_item_ids(id) }.uniq
-      where(Sequel[:search_references][:goods_nomenclature_item_id] => all_ancestor_ids)
-    end
-
     def indexable
       self
     end
-  end
-
-  # Returns ancestor goods_nomenclature_item_ids for a given item_id.
-  # E.g. '8418219910' => ['8400000000', '8418000000', '8418210000', '8418219900']
-  def self.ancestor_item_ids(item_id)
-    (2..8).step(2).map { |n| item_id[0...n].ljust(10, '0') }
   end
 
   def referenced_id
