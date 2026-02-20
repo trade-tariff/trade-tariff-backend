@@ -73,6 +73,8 @@ private
 
   def after_create
     super
+    return unless current?
+
     GoodsNomenclatureChangeAccumulator.push!(
       sid: goods_nomenclature_sid,
       change_type: :description_changed,
@@ -82,6 +84,8 @@ private
 
   def after_update
     super
+    return unless current?
+
     GoodsNomenclatureChangeAccumulator.push!(
       sid: goods_nomenclature_sid,
       change_type: :description_changed,
