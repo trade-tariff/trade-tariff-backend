@@ -68,28 +68,4 @@ class GoodsNomenclatureDescription < Sequel::Model
         .join(', ')
     end
   end
-
-private
-
-  def after_create
-    super
-    return unless current?
-
-    GoodsNomenclatureChangeAccumulator.push!(
-      sid: goods_nomenclature_sid,
-      change_type: :description_changed,
-      item_id: goods_nomenclature_item_id,
-    )
-  end
-
-  def after_update
-    super
-    return unless current?
-
-    GoodsNomenclatureChangeAccumulator.push!(
-      sid: goods_nomenclature_sid,
-      change_type: :description_changed,
-      item_id: goods_nomenclature_item_id,
-    )
-  end
 end

@@ -18,7 +18,7 @@ class TaricUpdatesSynchronizerWorker
     migrate_data if reapply_data_migrations
 
     MaterializeViewHelper.refresh_materialized_view
-    GoodsNomenclatureChangeAccumulator.flush!
+    GoodsNomenclatureReconciliationWorker.perform_async
 
     # NOTE: Make sure caches have been refreshed including the CDN
     #       otherwise we serve up stale responses.
