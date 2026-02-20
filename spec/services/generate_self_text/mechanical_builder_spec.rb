@@ -140,6 +140,87 @@ RSpec.describe GenerateSelfText::MechanicalBuilder do
       end
     end
 
+    context 'with an "Other" ancestor that has a generated self-text' do
+      let(:other_heading) do
+        create(:heading, :with_description,
+               description: 'Other',
+               parent: chapter)
+      end
+
+      let(:commodity_under_other) do
+        create(:commodity, :with_description,
+               description: 'Widgets',
+               parent: other_heading)
+      end
+
+      before do
+        create(:goods_nomenclature_self_text,
+               goods_nomenclature: other_heading,
+               self_text: 'Live animals >> Other live animals',
+               generation_type: 'ai')
+
+        commodity_under_other
+      end
+
+      it 'uses the Other ancestor self-text in the chain' do
+        result
+
+        expect(self_text_for_sid(commodity_under_other.goods_nomenclature_sid))
+          .to eq('Live animals >> Other live animals >> Widgets')
+      end
+
+      it 'includes the Other self-text in input_context' do
+        result
+
+        record = GoodsNomenclatureSelfText[commodity_under_other.goods_nomenclature_sid]
+        other_ancestor = record.input_context['ancestors'].find { |a| a['sid'] == other_heading.goods_nomenclature_sid }
+
+        expect(other_ancestor['self_text']).to eq('Live animals >> Other live animals')
+      end
+    end
+
+    context 'with nested "Other" ancestors' do
+      let(:other_heading) do
+        create(:heading, :with_description,
+               description: 'Other',
+               parent: chapter)
+      end
+
+      let(:other_subheading) do
+        create(:commodity, :with_description,
+               description: 'Other',
+               parent: other_heading,
+               producline_suffix: '10')
+      end
+
+      let(:leaf_commodity) do
+        create(:commodity, :with_description,
+               description: 'Gadgets',
+               parent: other_subheading)
+      end
+
+      before do
+        create(:goods_nomenclature_self_text,
+               goods_nomenclature: other_heading,
+               self_text: 'Live animals >> Other live animals',
+               generation_type: 'ai')
+
+        create(:goods_nomenclature_self_text,
+               goods_nomenclature: other_subheading,
+               self_text: 'Live animals >> Other live animals >> Other gadgets',
+               generation_type: 'ai')
+
+        leaf_commodity
+      end
+
+      it 'uses the nearest Other ancestor self-text' do
+        result
+
+        expect(self_text_for_sid(leaf_commodity.goods_nomenclature_sid))
+          .to eq('Live animals >> Other live animals >> Other gadgets >> Gadgets')
+      end
+    end
+
     context 'with idempotent runs' do
       it 'does not update records when context is unchanged' do
         described_class.call(chapter)

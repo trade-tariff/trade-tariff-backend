@@ -56,6 +56,7 @@ module GenerateSelfText
           stale: record.stale,
           manually_edited: record.manually_edited,
         }
+        generated_texts[record.goods_nomenclature_sid] = record.self_text
       end
     end
 
@@ -67,14 +68,31 @@ module GenerateSelfText
     end
 
     def build_self_text(segment)
+      ancestors = segment[:ancestor_chain]
+      nearest_other_idx = ancestors.rindex { |a| OTHER_PATTERN.match?(a[:description].to_s) }
+
       parts = []
 
-      segment[:ancestor_chain].each do |ancestor|
-        if OTHER_PATTERN.match?(ancestor[:description].to_s)
-          parts << generated_texts[ancestor[:sid]] if generated_texts[ancestor[:sid]]
+      if nearest_other_idx
+        other_text = generated_texts[ancestors[nearest_other_idx][:sid]]
+
+        if other_text
+          parts << other_text
+
+          ((nearest_other_idx + 1)...ancestors.size).each do |i|
+            parts << ancestors[i][:description]
+          end
         else
-          parts << ancestor[:description]
+          # No AI text for the Other ancestor yet - fall back to including
+          # non-Other ancestors and skipping the bare Other
+          ancestors.each do |a|
+            next if OTHER_PATTERN.match?(a[:description].to_s)
+
+            parts << a[:description]
+          end
         end
+      else
+        ancestors.each { |a| parts << a[:description] }
       end
 
       parts << segment[:node][:description]

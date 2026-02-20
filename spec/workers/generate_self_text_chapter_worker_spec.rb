@@ -17,11 +17,11 @@ RSpec.describe GenerateSelfTextChapterWorker, type: :worker do
       allow(GenerateSelfTextReindexWorker).to receive(:perform_async)
     end
 
-    it 'calls MechanicalBuilder then AiBuilder' do
+    it 'calls AiBuilder then MechanicalBuilder' do
       described_class.new.perform(chapter_sid)
 
-      expect(GenerateSelfText::MechanicalBuilder).to have_received(:call).with(chapter)
-      expect(GenerateSelfText::AiBuilder).to have_received(:call).with(chapter)
+      expect(GenerateSelfText::AiBuilder).to have_received(:call).with(chapter).ordered
+      expect(GenerateSelfText::MechanicalBuilder).to have_received(:call).with(chapter).ordered
     end
 
     it 'instruments chapter_started' do
