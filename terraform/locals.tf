@@ -5,20 +5,23 @@ locals {
   init_command   = ["/bin/sh", "-c", "bundle exec rails db:migrate && bundle exec rails data:migrate"]
   job_command    = ["/bin/sh", "-c", "bin/null-service"]
 
+  tls_secret = jsondecode(data.aws_secretsmanager_secret_version.ecs_tls_certificate.secret_string)
+
   ecs_tls_env_vars = [
     {
-      name      = "SSL_KEY_PEM"
-      valueFrom = "${data.aws_secretsmanager_secret.ecs_tls_certificate.arn}:private_key::"
+      name  = "SSL_KEY_PEM"
+      value = local.tls_secret.private_key
     },
     {
-      name      = "SSL_CERT_PEM"
-      valueFrom = "${data.aws_secretsmanager_secret.ecs_tls_certificate.arn}:certificate::"
+      name  = "SSL_CERT_PEM"
+      value = local.tls_secret.certificate
     },
     {
       name  = "SSL_PORT"
       value = "8443"
     }
   ]
+
 
   worker_uk_secret_value = try(data.aws_secretsmanager_secret_version.backend_uk_worker_configuration.secret_string, "{}")
   worker_uk_secret_map   = jsondecode(local.worker_uk_secret_value)
