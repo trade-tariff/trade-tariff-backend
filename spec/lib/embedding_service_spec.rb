@@ -107,14 +107,51 @@ RSpec.describe EmbeddingService do
       end
     end
 
-    context 'when the API returns an error' do
+    context 'when the API returns a retryable error then succeeds' do
+      let(:embedding) { Array.new(1536) { 0.1 } }
+      let(:success_body) do
+        { 'data' => [{ 'index' => 0, 'embedding' => embedding }] }
+      end
+
       before do
         stub_request(:post, "#{api_base_url}/embeddings")
           .to_return(status: 500, body: { error: 'Internal Server Error' }.to_json, headers: { 'Content-Type' => 'application/json' })
+          .then
+          .to_return(status: 200, body: success_body.to_json, headers: { 'Content-Type' => 'application/json' })
+
+        allow(Kernel).to receive(:sleep)
       end
 
-      it 'raises an error' do
-        expect { service.embed_batch(%w[test]) }.to raise_error(/EmbeddingService API error: 500/)
+      it 'retries and returns the embedding' do
+        result = service.embed_batch(%w[test])
+        expect(result).to eq([embedding])
+        expect(WebMock).to have_requested(:post, "#{api_base_url}/embeddings").times(2)
+      end
+    end
+
+    context 'when the API returns a retryable error repeatedly' do
+      before do
+        stub_request(:post, "#{api_base_url}/embeddings")
+          .to_return(status: 500, body: { error: 'Internal Server Error' }.to_json, headers: { 'Content-Type' => 'application/json' })
+
+        allow(Kernel).to receive(:sleep)
+      end
+
+      it 'raises after exhausting retries' do
+        expect { service.embed_batch(%w[test]) }.to raise_error(EmbeddingService::ServerError, /500/)
+        expect(WebMock).to have_requested(:post, "#{api_base_url}/embeddings").times(3)
+      end
+    end
+
+    context 'when the API returns a non-retryable error' do
+      before do
+        stub_request(:post, "#{api_base_url}/embeddings")
+          .to_return(status: 400, body: { error: 'Bad Request' }.to_json, headers: { 'Content-Type' => 'application/json' })
+      end
+
+      it 'raises immediately without retrying' do
+        expect { service.embed_batch(%w[test]) }.to raise_error(/EmbeddingService API error: 400/)
+        expect(WebMock).to have_requested(:post, "#{api_base_url}/embeddings").times(1)
       end
     end
   end

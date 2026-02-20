@@ -12,13 +12,25 @@ class EmbeddingService
     Net::OpenTimeout,
   ].freeze
 
+  RETRYABLE_HTTP_STATUSES = [429, 500, 502, 503, 504].freeze
+
+  class ServerError < StandardError; end
+
   def embed(text)
     embed_batch([text]).first
   end
 
   def embed_batch(texts)
     texts.each_slice(BATCH_SIZE).flat_map do |batch|
-      response = with_retry { client.post('embeddings', { model: MODEL, input: batch }.to_json) }
+      response = with_retry do
+        resp = client.post('embeddings', { model: MODEL, input: batch }.to_json)
+
+        if RETRYABLE_HTTP_STATUSES.include?(resp.status)
+          raise ServerError, "EmbeddingService API error: #{resp.status}"
+        end
+
+        resp
+      end
 
       if response.success?
         response.body['data']
@@ -38,7 +50,7 @@ class EmbeddingService
     begin
       attempts += 1
       yield
-    rescue *RETRYABLE_ERRORS => e
+    rescue *RETRYABLE_ERRORS, ServerError => e
       if attempts < MAX_RETRIES
         delay = RETRY_DELAY * (2**(attempts - 1))
         SelfTextGenerator::Instrumentation.embedding_api_retry(attempt: attempts, delay:, error: e)
