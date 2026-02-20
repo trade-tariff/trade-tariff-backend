@@ -84,6 +84,37 @@ RSpec.describe GoodsNomenclatureSelfText do
     end
   end
 
+  describe '.regenerate_search_embeddings' do
+    let(:embedding_service) { instance_double(EmbeddingService) }
+
+    before do
+      allow(EmbeddingService).to receive(:new).and_return(embedding_service)
+      allow(embedding_service).to receive(:embed_batch) { |texts| texts.map { Array.new(1536, 0.0) } }
+    end
+
+    it 'updates search_text and search_embedding for records with self_text' do
+      record = create(:goods_nomenclature_self_text, self_text: 'Widgets for manufacturing')
+
+      described_class.regenerate_search_embeddings([record.goods_nomenclature_sid])
+
+      record.reload
+      expect(record.search_text).to be_present
+      expect(record.search_embedding).to be_present
+    end
+
+    it 'skips SIDs with no self-text records' do
+      described_class.regenerate_search_embeddings([-999])
+
+      expect(embedding_service).not_to have_received(:embed_batch)
+    end
+
+    it 'does nothing for empty SID list' do
+      described_class.regenerate_search_embeddings([])
+
+      expect(embedding_service).not_to have_received(:embed_batch)
+    end
+  end
+
   describe '#context_stale?' do
     it 'returns true when hash differs from stored hash' do
       record = build(:goods_nomenclature_self_text, context_hash: 'abc123')

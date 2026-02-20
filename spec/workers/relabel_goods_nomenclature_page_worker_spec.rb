@@ -37,6 +37,7 @@ RSpec.describe RelabelGoodsNomenclaturePageWorker, type: :worker do
       TradeTariffRequest.time_machine_now = Time.current
 
       allow(LabelService).to receive(:new).and_return(label_service)
+      allow(GoodsNomenclatureSelfText).to receive(:regenerate_search_embeddings)
     end
 
     it 'calls LabelService with the batch and page number' do
@@ -46,6 +47,13 @@ RSpec.describe RelabelGoodsNomenclaturePageWorker, type: :worker do
         expect(batch.size).to eq(1)
         expect(options[:page_number]).to eq(page_number)
       end
+    end
+
+    it 'regenerates search embeddings for the batch' do
+      described_class.new.perform(page_number)
+
+      expect(GoodsNomenclatureSelfText).to have_received(:regenerate_search_embeddings)
+        .with([commodity.goods_nomenclature_sid])
     end
 
     context 'when label is valid' do

@@ -267,7 +267,7 @@ RSpec.describe GoodsNomenclatureReconciliationWorker, type: :worker do
     end
 
     describe 'search embedding regeneration' do
-      it 'regenerates search embeddings for affected self-texts' do
+      it 'regenerates search embeddings for structure-only changes' do
         gn = create(:goods_nomenclature,
                     goods_nomenclature_item_id: '1200000000',
                     validity_start_date: Date.current)
@@ -276,9 +276,6 @@ RSpec.describe GoodsNomenclatureReconciliationWorker, type: :worker do
                goods_nomenclature_sid: gn.goods_nomenclature_sid,
                self_text: 'Widgets for manufacturing',
                stale: false)
-
-        fake_embedding = Array.new(1536) { rand(-1.0..1.0) }
-        allow(embedding_service).to receive(:embed_batch).and_return([fake_embedding])
 
         described_class.new.perform
 
@@ -289,6 +286,30 @@ RSpec.describe GoodsNomenclatureReconciliationWorker, type: :worker do
         expect(self_text.search_text).to be_present
         expect(self_text.search_embedding).to be_present
         expect(embedding_service).to have_received(:embed_batch)
+      end
+
+      it 'defers search embedding regeneration for description changes' do
+        gn = create(:goods_nomenclature,
+                    goods_nomenclature_item_id: '1400000000',
+                    validity_start_date: 1.year.ago)
+
+        create(:goods_nomenclature_description_period,
+               goods_nomenclature_sid: gn.goods_nomenclature_sid,
+               goods_nomenclature_item_id: gn.goods_nomenclature_item_id,
+               validity_start_date: Date.current)
+
+        create(:goods_nomenclature_self_text,
+               goods_nomenclature_sid: gn.goods_nomenclature_sid,
+               self_text: 'Widgets for manufacturing',
+               stale: false)
+
+        described_class.new.perform
+
+        self_text = GoodsNomenclatureSelfText
+          .where(goods_nomenclature_sid: gn.goods_nomenclature_sid)
+          .first
+
+        expect(self_text.search_embedding).to be_nil
       end
 
       it 'does not call embedding service when no self-texts exist' do

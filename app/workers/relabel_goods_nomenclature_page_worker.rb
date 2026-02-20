@@ -37,6 +37,9 @@ class RelabelGoodsNomenclaturePageWorker
           end
         end
       end
+
+      sids = batch.map(&:goods_nomenclature_sid)
+      GoodsNomenclatureSelfText.regenerate_search_embeddings(sids)
     end
   rescue StandardError => e
     LabelGenerator::Instrumentation.page_failed(
