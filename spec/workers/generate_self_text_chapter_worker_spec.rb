@@ -3,7 +3,7 @@ RSpec.describe GenerateSelfTextChapterWorker, type: :worker do
     let(:chapter) { create(:chapter, :with_description) }
     let(:chapter_sid) { chapter.goods_nomenclature_sid }
     let(:mechanical_stats) { { processed: 5, skipped_other: 2 } }
-    let(:ai_stats) { { processed: 2, failed: 0, needs_review: 0 } }
+    let(:ai_stats) { { processed: 2, failed: 0 } }
 
     before do
       TradeTariffRequest.time_machine_now = Time.current

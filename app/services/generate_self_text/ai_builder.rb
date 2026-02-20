@@ -17,7 +17,7 @@ module GenerateSelfText
       existing = preload_existing(segments)
 
       other_segments = segments.select { |s| s[:node][:is_other] }
-      stats = { processed: 0, failed: 0, needs_review: 0, skipped: 0 }
+      stats = { processed: 0, failed: 0, skipped: 0 }
 
       segments_to_process = other_segments.reject do |segment|
         node = segment[:node]
@@ -93,13 +93,11 @@ module GenerateSelfText
           next
         end
 
-        needs_review = validate_siblings(desc, segment)
         input_context = build_input_context(segment)
-        upsert_record(node, desc['contextualised_description'], input_context, needs_review)
+        upsert_record(node, desc['contextualised_description'], input_context)
         generated_texts[node[:sid]] = desc['contextualised_description']
 
         stats[:processed] += 1
-        stats[:needs_review] += 1 if needs_review
       end
     end
 
@@ -155,14 +153,6 @@ module GenerateSelfText
       response['descriptions']
     end
 
-    def validate_siblings(desc, segment)
-      excluded = desc['excluded_siblings']
-      return true unless excluded.is_a?(Array)
-
-      actual_siblings = segment[:siblings]
-      excluded.size != actual_siblings.size
-    end
-
     def build_input_context(segment)
       ancestors = segment[:ancestor_chain].map do |ancestor|
         entry = { 'sid' => ancestor[:sid], 'description' => ancestor[:description] }
@@ -185,7 +175,7 @@ module GenerateSelfText
       }
     end
 
-    def upsert_record(node, self_text, input_context, needs_review)
+    def upsert_record(node, self_text, input_context)
       context_hash = Digest::SHA256.hexdigest(JSON.generate(input_context))
       now = Time.zone.now
 
@@ -196,7 +186,7 @@ module GenerateSelfText
         generation_type: 'ai',
         input_context: Sequel.pg_jsonb_wrap(input_context),
         context_hash: context_hash,
-        needs_review: needs_review,
+        needs_review: false,
         manually_edited: false,
         stale: false,
         generated_at: now,
@@ -211,7 +201,6 @@ module GenerateSelfText
           generation_type: Sequel[:excluded][:generation_type],
           input_context: Sequel[:excluded][:input_context],
           context_hash: Sequel[:excluded][:context_hash],
-          needs_review: Sequel[:excluded][:needs_review],
           stale: false,
           generated_at: Sequel[:excluded][:generated_at],
           updated_at: Sequel[:excluded][:updated_at],

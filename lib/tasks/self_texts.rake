@@ -166,10 +166,7 @@ namespace :self_texts do
       end
 
       if flag_below
-        flagged = GoodsNomenclatureSelfText
-          .where { similarity_score < threshold }
-          .update(needs_review: true)
-        puts "Flagged #{flagged} records with needs_review=true (similarity below #{threshold})"
+        puts "Below threshold: #{similarities.count { |s| s < threshold }} records"
       end
     else
       puts 'No similarity scores found. Run self_texts:score first.'
