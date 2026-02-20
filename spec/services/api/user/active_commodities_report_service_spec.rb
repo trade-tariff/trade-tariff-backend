@@ -5,22 +5,6 @@ RSpec.describe Api::User::ActiveCommoditiesReportService do
 
   before do
     create(
-      :heading,
-      :with_description,
-      goods_nomenclature_item_id: '1111000000',
-      goods_nomenclature_sid: 1001,
-      description: 'Heading 1111',
-    )
-
-    create(
-      :heading,
-      :with_description,
-      goods_nomenclature_item_id: '2222000000',
-      goods_nomenclature_sid: 1002,
-      description: 'Heading 2222',
-    )
-
-    create(
       :commodity,
       :expired,
       :with_description,
@@ -112,9 +96,9 @@ RSpec.describe Api::User::ActiveCommoditiesReportService do
       end
 
       expect(data_rows).to eq([
-        ['1111111111', "Heading 1111\nExpired commodity description\n", 'Expired'],
-        ['2222222222', "Heading 2222\nActive commodity\ndescription\n", 'Active'],
-        ['3333333333', "Not applicable\n", 'Error from upload'],
+        ["1111111111\n ", 'Expired commodity description', 'Expired'],
+        ["2222222222\n ", "Active commodity\ndescription", 'Active'],
+        ["3333333333\n ", 'Not applicable', 'Error from upload'],
       ])
     end
 
@@ -125,14 +109,10 @@ RSpec.describe Api::User::ActiveCommoditiesReportService do
       expect(font.b).to be true
     end
 
-    it 'uses bold styling for heading text at the start of the description cell' do
+    it 'renders description values as plain text' do
       description_cell = worksheet.rows[7].cells[1]
-      rich_text = description_cell.value
-      first_run = rich_text.first
 
-      expect(rich_text).to be_a(Axlsx::RichText)
-      expect(first_run.value).to eq('Heading 1111')
-      expect(first_run.b).to be true
+      expect(description_cell.value).to be_a(String)
     end
 
     it 'enables table built-in row striping' do

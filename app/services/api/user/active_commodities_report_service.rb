@@ -106,7 +106,7 @@ module Api
       def add_rows(sheet, workbook)
         report_rows.each do |row|
           sheet.add_row(
-            [row[:code], description_cell_value(row), row[:status]],
+            ["#{row[:code]}\n ", description_cell_value(row), row[:status]],
             types: [:string, nil, :string],
             style: row_styles(workbook, row[:status]),
           )
@@ -139,7 +139,6 @@ module Api
           all_codes = (active_codes + expired_codes + invalid_codes).uniq.sort
           valid_codes = all_codes - invalid_codes
           descriptions = load_classification_descriptions(valid_codes)
-          heading_descriptions = load_heading_descriptions(valid_codes)
           statuses = status_by_code
 
           all_codes.map do |code|
@@ -148,7 +147,6 @@ module Api
             {
               code: code,
               description: descriptions[code].to_s,
-              heading_description: heading_descriptions[code].to_s,
               status: status,
             }
           end
@@ -178,7 +176,7 @@ module Api
           commodity_code: workbook.styles.add_style(
             b: true,
             sz: ROW_FONT_SIZE,
-            alignment: { horizontal: :left, vertical: :top, indent: CELL_INDENT },
+            alignment: { horizontal: :left, vertical: :top, indent: CELL_INDENT, wrap_text: true },
           ),
           description: workbook.styles.add_style(
             sz: ROW_FONT_SIZE,
@@ -213,13 +211,9 @@ module Api
       end
 
       def description_cell_value(row)
-        return "Not applicable\n" if row[:status] == ERROR_FROM_UPLOAD
-        return "#{row[:description]}\n" if row[:heading_description].blank?
+        return 'Not applicable' if row[:status] == ERROR_FROM_UPLOAD
 
-        rich_text = Axlsx::RichText.new
-        rich_text.add_run(row[:heading_description], b: true)
-        rich_text.add_run("\n#{row[:description]}") if row[:description].present?
-        rich_text
+        row[:description]
       end
 
       def load_classification_descriptions(codes)
@@ -252,13 +246,6 @@ module Api
         end
       end
 
-      def load_heading_descriptions(codes)
-        heading_codes = codes.map { |code| heading_code_for(code) }.uniq
-        descriptions_by_heading_code = load_latest_formatted_descriptions(heading_codes)
-
-        codes.index_with { |code| descriptions_by_heading_code[heading_code_for(code)].to_s }
-      end
-
       def load_latest_formatted_descriptions(codes)
         return {} if codes.empty?
 
@@ -271,10 +258,6 @@ module Api
 
             descriptions[record.goods_nomenclature_item_id] = html_to_plain_text(record.formatted_description.to_s)
           end
-      end
-
-      def heading_code_for(commodity_code)
-        "#{commodity_code.to_s.first(4)}000000"
       end
 
       def html_to_plain_text(text)
