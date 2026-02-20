@@ -15,9 +15,14 @@ RSpec.describe SelfTextConfidenceScorer do
     end
 
     context 'with a record that has an EU reference' do
+      let(:commodity) do
+        create(:commodity, :actual, :with_description,
+               goods_nomenclature_item_id: '0101210000')
+      end
+
       let!(:record) do
         create(:goods_nomenclature_self_text,
-               goods_nomenclature_item_id: '0101210000',
+               goods_nomenclature: commodity,
                self_text: 'Pure-bred breeding horses')
       end
 
@@ -48,6 +53,50 @@ RSpec.describe SelfTextConfidenceScorer do
 
         record.reload
         expect(record.similarity_score).not_to be_nil
+      end
+    end
+
+    context 'with a non-declarable record that shares item_id with a commodity' do
+      let(:subheading) do
+        create(:goods_nomenclature,
+               :actual,
+               goods_nomenclature_item_id: '2710123100',
+               producline_suffix: '10')
+      end
+
+      let(:commodity) do
+        create(:goods_nomenclature,
+               :actual,
+               goods_nomenclature_item_id: '2710123100',
+               producline_suffix: '80',
+               parent: subheading)
+      end
+
+      let!(:record) do
+        create(:goods_nomenclature_self_text,
+               goods_nomenclature: subheading,
+               self_text: 'Motor spirit for other purposes')
+      end
+
+      before do
+        commodity
+        allow(SelfTextLookupService).to receive(:lookup)
+          .with('2710123100')
+          .and_return('Aviation spirit')
+      end
+
+      it 'does not populate the EU self-text for the non-declarable node' do
+        scorer.score([record.goods_nomenclature_sid])
+
+        record.reload
+        expect(record.eu_self_text).to be_nil
+      end
+
+      it 'does not compute similarity_score' do
+        scorer.score([record.goods_nomenclature_sid])
+
+        record.reload
+        expect(record.similarity_score).to be_nil
       end
     end
 

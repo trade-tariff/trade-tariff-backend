@@ -42,7 +42,11 @@ class SelfTextConfidenceScorer
   attr_reader :embedding_service
 
   def populate_eu_references(records)
+    non_declarable = non_declarable_sids_for(records)
+
     pairs = records.filter_map do |record|
+      next if non_declarable.include?(record.goods_nomenclature_sid)
+
       eu_text = SelfTextLookupService.lookup(record.goods_nomenclature_item_id)
       next if eu_text.blank?
 
@@ -166,6 +170,21 @@ class SelfTextConfidenceScorer
     descriptions = ancestors.map { |a| a['self_text'] || a['description'] }
     descriptions << context['description']
     descriptions.compact.join(' >> ')
+  end
+
+  def non_declarable_sids_for(records)
+    sids = records.map(&:goods_nomenclature_sid)
+    return Set.new if sids.empty?
+
+    declarable_sids = TimeMachine.now do
+      GoodsNomenclature
+        .actual
+        .declarable
+        .where(Sequel[:goods_nomenclatures][:goods_nomenclature_sid] => sids)
+        .unordered
+        .select_map(Sequel[:goods_nomenclatures][:goods_nomenclature_sid])
+    end
+    (sids - declarable_sids).to_set
   end
 
   def db
