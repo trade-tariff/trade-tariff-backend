@@ -1,7 +1,7 @@
 module GenerateSelfText
   class AiBuilder
     OTHER_PATTERN = SegmentExtractor::OTHER_PATTERN
-    SEPARATOR = ' > '.freeze
+    SEPARATOR = ' >> '.freeze
 
     def self.call(chapter)
       new(chapter).call

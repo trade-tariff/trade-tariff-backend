@@ -24,14 +24,14 @@ RSpec.describe GenerateSelfText::MechanicalBuilder do
       result
 
       expect(self_text_for_sid(commodity.goods_nomenclature_sid))
-        .to eq('Live animals > Live horses > Pure-bred breeding animals')
+        .to eq('Live animals >> Live horses >> Pure-bred breeding animals')
     end
 
     it 'builds self-text for the heading' do
       result
 
       expect(self_text_for_sid(heading.goods_nomenclature_sid))
-        .to eq('Live animals > Live horses')
+        .to eq('Live animals >> Live horses')
     end
 
     it 'builds self-text for the chapter as its own description' do
@@ -136,7 +136,7 @@ RSpec.describe GenerateSelfText::MechanicalBuilder do
         result
 
         expect(self_text_for_sid(commodity_under_other.goods_nomenclature_sid))
-          .to eq('Live animals > Widgets')
+          .to eq('Live animals >> Widgets')
       end
     end
 
@@ -206,7 +206,7 @@ RSpec.describe GenerateSelfText::MechanicalBuilder do
         expect(second_result[:skipped]).to eq(3)
 
         expect(GoodsNomenclatureSelfText[commodity.goods_nomenclature_sid].self_text)
-          .to eq('Live animals > Live horses > Pure-bred breeding animals')
+          .to eq('Live animals >> Live horses >> Pure-bred breeding animals')
       end
     end
 

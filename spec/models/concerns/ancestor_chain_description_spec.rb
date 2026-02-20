@@ -12,8 +12,8 @@ RSpec.describe AncestorChainDescription do
       end
     end
 
-    it 'joins ancestor descriptions with current description using " > "' do
-      expect(ancestor_chain_description).to eq('Live animals > Live horses > Pure-bred breeding animals')
+    it 'joins ancestor descriptions with current description using " >> "' do
+      expect(ancestor_chain_description).to eq('Live animals >> Live horses >> Pure-bred breeding animals')
     end
 
     context 'when an ancestor has blank description' do
@@ -26,8 +26,8 @@ RSpec.describe AncestorChainDescription do
       end
 
       it 'filters out blank descriptions' do
-        expect(ancestor_chain_description).to eq('Live animals > Live horses > Pure-bred breeding animals')
-        expect(ancestor_chain_description).not_to include(' >  > ')
+        expect(ancestor_chain_description).to eq('Live animals >> Live horses >> Pure-bred breeding animals')
+        expect(ancestor_chain_description).not_to include(' >>  >> ')
       end
     end
 

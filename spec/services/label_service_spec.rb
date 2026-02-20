@@ -5,7 +5,7 @@ RSpec.describe LabelService do
       GoodsNomenclature,
       goods_nomenclature_sid: 1,
       goods_nomenclature_item_id: '0101210000',
-      ancestor_chain_description: 'Live animals > Horses > Pure-bred breeding animals',
+      ancestor_chain_description: 'Live animals >> Horses >> Pure-bred breeding animals',
       goods_nomenclature_label: nil,
       as_json: { 'goods_nomenclature_item_id' => '0101210000' },
     )
@@ -58,7 +58,7 @@ RSpec.describe LabelService do
       expect(GoodsNomenclatureLabel).to have_received(:build).with(
         goods_nomenclature,
         ai_response['data'].first,
-        contextual_description: 'Live animals > Horses > Pure-bred breeding animals',
+        contextual_description: 'Live animals >> Horses >> Pure-bred breeding animals',
       )
     end
 
