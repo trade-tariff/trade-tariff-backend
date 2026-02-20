@@ -9,7 +9,7 @@ class EncryptionService
 
   def crypt
     secret = TradeTariffBackend.identity_encryption_secret
-    key = ActiveSupport::KeyGenerator.new(secret).generate_key('salt', 32)
+    key = ActiveSupport::KeyGenerator.new(secret).generate_key('identity_token_encryption_v1', 32)
     ActiveSupport::MessageEncryptor.new(key)
   end
 end
