@@ -11,6 +11,18 @@ module Api
         render json: serialize_errors({ error: e.message }), status: :bad_request
       end
 
+      def download
+        package = TimeMachine.now do
+          Api::User::ActiveCommoditiesService.new(@subscription).generate_report
+        end
+
+        filename_date = TimeMachine.now { Time.zone.today.strftime('%Y-%m-%d') }
+
+        send_data package.to_stream.read,
+                  type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                  disposition: "attachment; filename=commodity_watch_list-your_codes_#{filename_date}.xlsx"
+      end
+
       private
 
       def filter_params
