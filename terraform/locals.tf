@@ -15,8 +15,8 @@ locals {
       valueFrom = "${data.aws_secretsmanager_secret.ecs_tls_certificate.arn}:certificate::"
     },
     {
-      name      = "SSL_PORT"
-      value     = "8443"
+      name  = "SSL_PORT"
+      value = "8443"
     }
   ]
 
