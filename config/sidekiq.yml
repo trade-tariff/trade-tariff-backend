@@ -28,6 +28,15 @@
       cron: "0 0 * * *"
       description: "Runs ETL of Taric files and populates indexes"
       enabled: <%= ENV.fetch('SERVICE', 'uk') == 'xi' %>
+    GoodsNomenclatureReconciliationWorker:
+      cron: "0 11 * * *"
+      description: "Detects goods nomenclature changes and regenerates self-texts, labels, and search embeddings"
+      enabled: <%= ENV.fetch('SERVICE', 'uk') == 'uk' %>
+    GoodsNomenclatureReconciliationWorkerXI:
+      cron: "0 2 * * *"
+      class: GoodsNomenclatureReconciliationWorker
+      description: "Detects goods nomenclature changes and regenerates self-texts, labels, and search embeddings"
+      enabled: <%= ENV.fetch('SERVICE', 'uk') == 'xi' %>
     RefreshAppendix5aGuidanceWorker:
       # Runs workdays at 22:00
       cron: "00 22 * * 1,2,3,4,5"
