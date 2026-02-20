@@ -246,12 +246,12 @@ RSpec.describe GoodsNomenclatureReconciliationWorker, type: :worker do
 
         expect(self_text.stale).to be true
         expect(self_text.search_embedding).to be_present
-        expect(GenerateSelfText::MechanicalBuilder).to have_received(:call).with(
-          an_instance_of(Chapter),
-        )
         expect(GenerateSelfText::AiBuilder).to have_received(:call).with(
           an_instance_of(Chapter),
-        )
+        ).ordered
+        expect(GenerateSelfText::MechanicalBuilder).to have_received(:call).with(
+          an_instance_of(Chapter),
+        ).ordered
       end
 
       it 'does not call builders when chapter does not exist' do

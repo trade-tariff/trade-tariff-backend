@@ -81,7 +81,7 @@ RSpec.describe GenerateSelfText::AiBuilder do
     end
 
     it 'returns correct stats for a successful run' do
-      expect(result).to eq({ processed: 1, failed: 0, needs_review: 0, skipped: 0 })
+      expect(result).to eq({ processed: 1, failed: 0, skipped: 0 })
     end
 
     context 'when non-Other nodes exist' do
@@ -136,41 +136,6 @@ RSpec.describe GenerateSelfText::AiBuilder do
       end
     end
 
-    context 'when AI response has correct excluded_siblings count' do
-      it 'sets needs_review to false' do
-        result
-
-        record = GoodsNomenclatureSelfText[other_commodity.goods_nomenclature_sid]
-        expect(record.needs_review).to be false
-      end
-    end
-
-    context 'when AI response has wrong sibling count' do
-      let(:successful_response) do
-        {
-          'descriptions' => [
-            {
-              'sid' => other_commodity.goods_nomenclature_sid,
-              'contextualised_description' => 'Live horses (excl. pure-bred for breeding, donkeys)',
-              'excluded_siblings' => ['Pure-bred breeding animals', 'Donkeys'],
-            },
-          ],
-        }.to_json
-      end
-
-      it 'sets needs_review to true but still stores the self-text' do
-        result
-
-        record = GoodsNomenclatureSelfText[other_commodity.goods_nomenclature_sid]
-        expect(record.needs_review).to be true
-        expect(record.self_text).to eq('Live horses (excl. pure-bred for breeding, donkeys)')
-      end
-
-      it 'increments needs_review count' do
-        expect(result[:needs_review]).to eq(1)
-      end
-    end
-
     context 'when AI returns empty response' do
       before do
         allow(ai_client).to receive(:call).and_return('')
@@ -222,8 +187,6 @@ RSpec.describe GenerateSelfText::AiBuilder do
       end
 
       it 'counts missing targets as failed' do
-        # other_commodity has 2 siblings (named_sibling + other_commodity2) but
-        # response only lists 1 excluded_sibling, so needs_review is set
         expect(result).to include(processed: 1, failed: 1)
       end
     end

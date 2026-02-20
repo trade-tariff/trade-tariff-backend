@@ -47,6 +47,35 @@ RSpec.describe Api::Admin::GoodsNomenclatures::GoodsNomenclatureSelfTextsControl
     end
   end
 
+  describe '#show input_context enrichment' do
+    let(:parent_sid) { 12_345 }
+    let!(:parent_self_text) do # rubocop:disable RSpec/LetSetup
+      create(:goods_nomenclature_self_text,
+             goods_nomenclature_sid: parent_sid,
+             self_text: 'Live animals >> Other live animals',
+             generation_type: 'ai')
+    end
+
+    let!(:self_text) do
+      create(:goods_nomenclature_self_text,
+             input_context: {
+               'ancestors' => [
+                 { 'sid' => parent_sid, 'description' => 'Other' },
+               ],
+               'description' => 'Widgets',
+             })
+    end
+
+    it 'enriches ancestors with current self_texts' do
+      get :show, params: { goods_nomenclature_id: self_text.goods_nomenclature_item_id }, format: :json
+
+      json = JSON.parse(response.body)
+      ancestors = json.dig('data', 'attributes', 'input_context', 'ancestors')
+
+      expect(ancestors.first['self_text']).to eq('Live animals >> Other live animals')
+    end
+  end
+
   describe '#update' do
     let!(:self_text) { create :goods_nomenclature_self_text }
 

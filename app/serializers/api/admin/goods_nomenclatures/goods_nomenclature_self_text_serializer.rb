@@ -20,7 +20,22 @@ module Api
                    :coherence_score
 
         attribute :input_context do |record|
-          record.input_context || {}
+          context = record.input_context || {}
+          ancestors = context['ancestors']
+          next context if ancestors.blank?
+
+          sids = ancestors.map { |a| a['sid'] }.compact
+          texts = GoodsNomenclatureSelfText
+            .where(goods_nomenclature_sid: sids)
+            .select_map(%i[goods_nomenclature_sid self_text])
+            .to_h
+
+          enriched = ancestors.map do |ancestor|
+            st = texts[ancestor['sid']]
+            st ? ancestor.merge('self_text' => st) : ancestor
+          end
+
+          context.merge('ancestors' => enriched)
         end
 
         attribute :nomenclature_type do |record|

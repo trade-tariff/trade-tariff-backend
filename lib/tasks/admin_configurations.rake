@@ -190,6 +190,31 @@ module AdminConfigurationSeeder
       - Do NOT include the commodity code in the description
       - Do NOT start with "Other" - give the positive category name first
 
+      ## Positive identification
+
+      When the exclusion list is short (1-3 siblings) AND the remaining items can be positively identified from the parent category, name the remaining items directly instead of using an exclusion pattern. This applies when the parent category is a well-defined, closed set (e.g. "Rare gases" has exactly 6 members: helium, neon, argon, krypton, xenon, radon) and subtracting the siblings leaves a small, enumerable remainder. List what the code COVERS rather than what it EXCLUDES.
+
+      - Example: parent "Rare gases", siblings ["Argon", "Helium"]
+        Bad:  "Rare gases (excl. argon, helium)"
+        Good: "Neon, krypton, xenon and radon"
+      - Example: parent "Baths", siblings ["Of cast iron, whether or not enamelled"]
+        Bad:  "Baths (excl. of cast iron, whether or not enamelled)"
+        Good: "Baths of stainless steel, steel sheet or other non-cast-iron materials"
+
+      If the remaining items cannot be confidently enumerated (the parent category is open-ended), fall back to the standard exclusion pattern.
+
+      ## Describe then exclude
+
+      Lead with the most specific positive description available from the context, following this priority order:
+
+      1. If the node's own description contains a qualifier beyond "Other" (e.g. "Other harvesting machinery; threshing machinery"), preserve that qualifier as the primary descriptor.
+      2. If the parent provides examples or the ancestor chain narrows the category, use those to build a positive lead-in. Do not simply repeat the parent's full description with exclusions bolted on.
+      3. Only add exclusions in parentheses if they genuinely add clarity for a trader. If the positive description is already specific enough (e.g. "Neon, krypton and xenon"), exclusions are redundant.
+
+      For declarable commodities (declarable: true), be as specific as the context allows. Traders declaring against this code need to know what it covers, not just what it doesn't cover. A description that is merely "Parent category (excl. long list)" forces the trader to mentally subtract - give them the answer directly when you can.
+
+      When the description says "Other" but there is a well-known industry term for the remainder (e.g. "waste and scrap" for recovered paper residuals), prefer the industry term over a mechanical exclusion list.
+
       ## Qualified Other patterns
 
       Not all nodes are bare "Other". Some include additional words that must be handled:

@@ -15,10 +15,10 @@ namespace :self_texts do
       raise "Chapter #{ENV['CHAPTER']} not found" unless chapter
 
       puts "Generating self-texts for chapter #{ENV['CHAPTER']}..."
-      mechanical = GenerateSelfText::MechanicalBuilder.call(chapter)
       ai = GenerateSelfText::AiBuilder.call(chapter)
-      puts "Mechanical: #{mechanical.inspect}"
+      mechanical = GenerateSelfText::MechanicalBuilder.call(chapter)
       puts "AI: #{ai.inspect}"
+      puts "Mechanical: #{mechanical.inspect}"
     else
       puts 'Enqueuing self-text generation for all chapters...'
       GenerateSelfTextWorker.perform_async
@@ -166,10 +166,7 @@ namespace :self_texts do
       end
 
       if flag_below
-        flagged = GoodsNomenclatureSelfText
-          .where { similarity_score < threshold }
-          .update(needs_review: true)
-        puts "Flagged #{flagged} records with needs_review=true (similarity below #{threshold})"
+        puts "Below threshold: #{similarities.count { |s| s < threshold }} records"
       end
     else
       puts 'No similarity scores found. Run self_texts:score first.'

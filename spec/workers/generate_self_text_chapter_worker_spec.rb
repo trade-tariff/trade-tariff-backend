@@ -3,7 +3,7 @@ RSpec.describe GenerateSelfTextChapterWorker, type: :worker do
     let(:chapter) { create(:chapter, :with_description) }
     let(:chapter_sid) { chapter.goods_nomenclature_sid }
     let(:mechanical_stats) { { processed: 5, skipped_other: 2 } }
-    let(:ai_stats) { { processed: 2, failed: 0, needs_review: 0 } }
+    let(:ai_stats) { { processed: 2, failed: 0 } }
 
     before do
       TradeTariffRequest.time_machine_now = Time.current
@@ -17,11 +17,11 @@ RSpec.describe GenerateSelfTextChapterWorker, type: :worker do
       allow(GenerateSelfTextReindexWorker).to receive(:perform_async)
     end
 
-    it 'calls MechanicalBuilder then AiBuilder' do
+    it 'calls AiBuilder then MechanicalBuilder' do
       described_class.new.perform(chapter_sid)
 
-      expect(GenerateSelfText::MechanicalBuilder).to have_received(:call).with(chapter)
-      expect(GenerateSelfText::AiBuilder).to have_received(:call).with(chapter)
+      expect(GenerateSelfText::AiBuilder).to have_received(:call).with(chapter).ordered
+      expect(GenerateSelfText::MechanicalBuilder).to have_received(:call).with(chapter).ordered
     end
 
     it 'instruments chapter_started' do
