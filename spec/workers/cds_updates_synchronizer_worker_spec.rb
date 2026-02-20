@@ -26,7 +26,6 @@ RSpec.describe CdsUpdatesSynchronizerWorker, type: :worker do
       allow(DataMigrator).to receive_messages(migrations_dir:, migrate_up!: true)
 
       allow(GoodsNomenclatures::TreeNode).to receive(:refresh!).and_call_original
-      allow(GoodsNomenclatureReconciliationWorker).to receive(:perform_async)
       stub_const 'CdsUpdatesSynchronizerWorker::CUT_OFF_TIME',
                  cut_off_time.strftime('%H:%M')
 

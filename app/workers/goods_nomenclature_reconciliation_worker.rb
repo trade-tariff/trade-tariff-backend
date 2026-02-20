@@ -1,7 +1,6 @@
-# Detects goods nomenclature changes after a CDS/TARIC import cycle and
-# triggers downstream regeneration of self-texts and labels.
+# Detects goods nomenclature changes and triggers downstream regeneration
+# of self-texts, search embeddings, and labels.
 #
-# Enqueued by synchronizer workers after materialized views are refreshed.
 # Two queries cover all cases:
 #
 # 1. "Going live today" - records whose validity_start_date is today
@@ -22,11 +21,16 @@ class GoodsNomenclatureReconciliationWorker
 
     chapters = affected.group_by { |_sid, _type, item_id| item_id[0, 2] }
 
+    all_sids = []
+
     chapters.each do |chapter_code, entries|
       sids = entries.map(&:first).uniq
+      all_sids.concat(sids)
       mark_self_texts_stale(sids)
       regenerate_self_texts(chapter_code)
     end
+
+    regenerate_search_embeddings(all_sids.uniq)
 
     description_sids = affected
       .select { |_sid, type, _item_id| type == :description_changed }
@@ -121,6 +125,40 @@ class GoodsNomenclatureReconciliationWorker
 
     GenerateSelfText::MechanicalBuilder.call(chapter)
     GenerateSelfText::AiBuilder.call(chapter)
+  end
+
+  def regenerate_search_embeddings(sids)
+    records = GoodsNomenclatureSelfText
+      .where(goods_nomenclature_sid: sids)
+      .exclude(self_text: nil)
+      .all
+
+    return if records.empty?
+
+    embedding_service = EmbeddingService.new
+    db = Sequel::Model.db
+
+    records.each_slice(EmbeddingService::BATCH_SIZE) do |batch|
+      composite_texts = TimeMachine.now { CompositeSearchTextBuilder.batch(batch) }
+      texts_to_embed = batch.map { |r| composite_texts[r.goods_nomenclature_sid] }
+      embeddings = embedding_service.embed_batch(texts_to_embed)
+
+      values = batch.zip(embeddings).map { |record, embedding|
+        sid = record.goods_nomenclature_sid
+        text = composite_texts[sid]
+        vector = "'[#{embedding.join(',')}]'::vector"
+
+        "(#{sid}, #{db.literal(text)}, #{vector})"
+      }.join(', ')
+
+      db.run(<<~SQL)
+        UPDATE goods_nomenclature_self_texts t
+        SET search_text = v.search_text,
+            search_embedding = v.search_embedding
+        FROM (VALUES #{values}) AS v(goods_nomenclature_sid, search_text, search_embedding)
+        WHERE t.goods_nomenclature_sid = v.goods_nomenclature_sid
+      SQL
+    end
   end
 
   def invalidate_labels(sids)

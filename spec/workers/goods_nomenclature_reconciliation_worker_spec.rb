@@ -1,9 +1,13 @@
 RSpec.describe GoodsNomenclatureReconciliationWorker, type: :worker do
   describe '#perform' do
+    let(:embedding_service) { instance_double(EmbeddingService) }
+
     before do
       allow(GenerateSelfText::MechanicalBuilder).to receive(:call)
       allow(GenerateSelfText::AiBuilder).to receive(:call)
       allow(RelabelGoodsNomenclatureWorker).to receive(:perform_async)
+      allow(EmbeddingService).to receive(:new).and_return(embedding_service)
+      allow(embedding_service).to receive(:embed_batch) { |texts| texts.map { Array.new(1536, 0.0) } }
     end
 
     context 'when there are no changes' do
@@ -241,7 +245,7 @@ RSpec.describe GoodsNomenclatureReconciliationWorker, type: :worker do
           .first
 
         expect(self_text.stale).to be true
-        expect(self_text.search_embedding).to be_nil
+        expect(self_text.search_embedding).to be_present
         expect(GenerateSelfText::MechanicalBuilder).to have_received(:call).with(
           an_instance_of(Chapter),
         )
@@ -259,6 +263,42 @@ RSpec.describe GoodsNomenclatureReconciliationWorker, type: :worker do
 
         expect(GenerateSelfText::MechanicalBuilder).not_to have_received(:call)
         expect(GenerateSelfText::AiBuilder).not_to have_received(:call)
+      end
+    end
+
+    describe 'search embedding regeneration' do
+      it 'regenerates search embeddings for affected self-texts' do
+        gn = create(:goods_nomenclature,
+                    goods_nomenclature_item_id: '1200000000',
+                    validity_start_date: Date.current)
+
+        create(:goods_nomenclature_self_text,
+               goods_nomenclature_sid: gn.goods_nomenclature_sid,
+               self_text: 'Widgets for manufacturing',
+               stale: false)
+
+        fake_embedding = Array.new(1536) { rand(-1.0..1.0) }
+        allow(embedding_service).to receive(:embed_batch).and_return([fake_embedding])
+
+        described_class.new.perform
+
+        self_text = GoodsNomenclatureSelfText
+          .where(goods_nomenclature_sid: gn.goods_nomenclature_sid)
+          .first
+
+        expect(self_text.search_text).to be_present
+        expect(self_text.search_embedding).to be_present
+        expect(embedding_service).to have_received(:embed_batch)
+      end
+
+      it 'does not call embedding service when no self-texts exist' do
+        create(:goods_nomenclature,
+               goods_nomenclature_item_id: '1300000000',
+               validity_start_date: Date.current)
+
+        described_class.new.perform
+
+        expect(embedding_service).not_to have_received(:embed_batch)
       end
     end
 
