@@ -163,8 +163,8 @@ RSpec.describe CachedCommodityService do
         ).permit!
       end
 
-      it 'uses a cache key with an area filter in it' do
-        expected_key = "_commodity-v3-#{commodity.goods_nomenclature_sid}-#{actual_date}-#{TradeTariffBackend.currency}-RO-"
+      it 'does not include geographical_area_id in the cache key' do
+        expected_key = "_commodity-v4-#{commodity.goods_nomenclature_sid}-#{actual_date}-#{TradeTariffBackend.currency}-"
         service.call
         expect(Rails.cache).to have_received(:fetch).with(expected_key, expires_in: 24.hours)
       end
@@ -173,8 +173,8 @@ RSpec.describe CachedCommodityService do
     context 'when the filter does not specify a geographical area' do
       let(:filter_params) { ActionController::Parameters.new.permit! }
 
-      it 'uses a cache key with an area filter in it' do
-        expected_key = "_commodity-v3-#{commodity.goods_nomenclature_sid}-#{actual_date}-#{TradeTariffBackend.currency}--"
+      it 'uses the same cache key format' do
+        expected_key = "_commodity-v4-#{commodity.goods_nomenclature_sid}-#{actual_date}-#{TradeTariffBackend.currency}-"
         service.call
         expect(Rails.cache).to have_received(:fetch).with(expected_key, expires_in: 24.hours)
       end
@@ -183,10 +183,25 @@ RSpec.describe CachedCommodityService do
     context 'when the current Thread specifies a meursing_additional_code_id' do
       include_context 'with meursing additional code id', 'foo'
 
-      it 'uses a cache key with an area filter in it' do
-        expected_key = "_commodity-v3-#{commodity.goods_nomenclature_sid}-#{actual_date}-#{TradeTariffBackend.currency}-RO-foo"
+      it 'includes meursing code in the cache key' do
+        expected_key = "_commodity-v4-#{commodity.goods_nomenclature_sid}-#{actual_date}-#{TradeTariffBackend.currency}-foo"
         service.call
         expect(Rails.cache).to have_received(:fetch).with(expected_key, expires_in: 24.hours)
+      end
+    end
+
+    context 'when two requests use different geographical areas' do
+      let(:other_area) { create(:geographical_area, :country, :with_description, geographical_area_id: 'DE') }
+
+      it 'hits the same cache entry' do
+        service_ro = described_class.new(commodity.reload, actual_date, ActionController::Parameters.new(geographical_area_id: 'RO').permit!)
+        service_de = described_class.new(commodity.reload, actual_date, ActionController::Parameters.new(geographical_area_id: 'DE').permit!)
+
+        service_ro.call
+        service_de.call
+
+        expected_key = "_commodity-v4-#{commodity.goods_nomenclature_sid}-#{actual_date}-#{TradeTariffBackend.currency}-"
+        expect(Rails.cache).to have_received(:fetch).with(expected_key, expires_in: 24.hours).twice
       end
     end
   end

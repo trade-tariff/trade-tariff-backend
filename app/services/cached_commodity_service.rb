@@ -1,7 +1,7 @@
 class CachedCommodityService
   include DeclarableSerialization
 
-  CACHE_VERSION = 3
+  CACHE_VERSION = 4
 
   DEFAULT_INCLUDES = (DECLARABLE_INCLUDES + %w[
     heading
@@ -73,9 +73,15 @@ class CachedCommodityService
   end
 
   def call
-    Rails.cache.fetch(cache_key, expires_in: TTL) do
-      Api::V2::Commodities::CommoditySerializer.new(presented_commodity, options).serializable_hash
+    cached_data = Rails.cache.fetch(cache_key, expires_in: TTL) do
+      presenter = presented_commodity
+      hash = Api::V2::Commodities::CommoditySerializer.new(presenter, options).serializable_hash
+      measure_meta = MeasureMetadataBuilder.new(presenter).build
+
+      { v: CACHE_VERSION, hash: hash, measure_meta: measure_meta }
     end
+
+    ResponseFilter.new(cached_data, geographical_area_id).call
   end
 
   private
@@ -83,11 +89,11 @@ class CachedCommodityService
   attr_reader :actual_date, :filters
 
   def presented_commodity
-    Api::V2::Commodities::CommodityPresenter.new(commodity, filtered_measures)
+    Api::V2::Commodities::CommodityPresenter.new(commodity, excise_filtered_measures)
   end
 
-  def filtered_measures
-    MeasureCollection.new(measures, filters).filter
+  def excise_filtered_measures
+    MeasureCollection.new(measures, {}).apply_excise_filter
   end
 
   def options
@@ -120,6 +126,6 @@ class CachedCommodityService
   end
 
   def cache_key
-    "_commodity-v#{CACHE_VERSION}-#{@commodity_sid}-#{actual_date}-#{TradeTariffBackend.currency}-#{geographical_area_id}-#{meursing_additional_code_id}"
+    "_commodity-v#{CACHE_VERSION}-#{@commodity_sid}-#{actual_date}-#{TradeTariffBackend.currency}-#{meursing_additional_code_id}"
   end
 end
