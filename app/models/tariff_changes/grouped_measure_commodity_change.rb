@@ -60,13 +60,14 @@ module TariffChanges
         measure_type = measure_types_by_id[measure_type_id]
         measure_type&.description
       }.transform_values do |changes|
-        changes.map do |change|
-          {
-            date_of_effect: change.date_of_effect,
-            date_of_effect_visible: change.date_of_effect_visible,
-            change_type: change.description,
-            additional_code: change.additional_code,
-          }
+        changes.sort_by(&:date_of_effect)
+               .map do |change|
+                 {
+                   date_of_effect: change.date_of_effect,
+                   date_of_effect_visible: change.date_of_effect_visible,
+                   change_type: change.description,
+                   additional_code: change.additional_code,
+                 }
         end
       end
     end

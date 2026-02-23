@@ -355,6 +355,36 @@ RSpec.describe TariffChanges::GroupedMeasureCommodityChange do
           expect(result).to be_a(Hash)
           expect(result.values.flatten).to all(be_a(Hash).and(include(:date_of_effect, :change_type, :additional_code)))
         end
+
+        it 'orders changes by date_of_effect ascending' do
+          additional_measure = create(:measure,
+                                      measure_sid: 101,
+                                      measure_type_id: import_measure_type.measure_type_id,
+                                      geographical_area_id: 'GB',
+                                      geographical_area_sid: geographical_area.geographical_area_sid)
+
+          create(:measure_excluded_geographical_area,
+                 measure_sid: additional_measure.measure_sid,
+                 excluded_geographical_area: 'FR')
+          create(:measure_excluded_geographical_area,
+                 measure_sid: additional_measure.measure_sid,
+                 excluded_geographical_area: 'DE')
+
+          create(:tariff_change,
+                 type: 'Measure',
+                 object_sid: additional_measure.measure_sid,
+                 operation_date: date,
+                 date_of_effect: Date.parse('2023-01-10'),
+                 goods_nomenclature_item_id: '1234567890')
+
+          late_change = TariffChange.find(type: 'Measure', object_sid: measure_1.measure_sid, operation_date: date)
+          late_change.update(date_of_effect: Date.parse('2023-01-20'))
+
+          result = grouped_commodity_change.measure_changes(date)
+          date_of_effects = result.fetch(import_measure_type.description).map { |change| change[:date_of_effect] }
+
+          expect(date_of_effects).to eq([Date.parse('2023-01-10'), Date.parse('2023-01-20')])
+        end
       end
 
       context 'for export measures' do
