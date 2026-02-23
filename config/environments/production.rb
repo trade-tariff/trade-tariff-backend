@@ -66,6 +66,8 @@ Rails.application.configure do
                          expires_in: 1.day,
                          namespace: "rails-cache-#{ENV['SERVICE'].presence || 'uk'}",
                          pool: { size: TradeTariffBackend.max_threads },
+                         compress: true,
+                         compress_threshold: 1024,
                        })
 
   # Prepend all log lines with the following tags.
