@@ -26,7 +26,7 @@ RSpec.describe Api::V2::EnquiryForm::SubmissionsController, :v2 do
       allow(Api::V2::EnquiryForm::SubmissionSerializer).to receive(:new).and_call_original
 
       allow(::EnquiryForm::SendSubmissionEmailWorker).to receive(:perform_async)
-      allow(Rails.cache).to receive(:write)
+      allow(TradeTariffBackend.redis).to receive(:set)
     end
 
     after do
@@ -54,10 +54,10 @@ RSpec.describe Api::V2::EnquiryForm::SubmissionsController, :v2 do
         created_at: frozen_time.strftime('%Y-%m-%d %H:%M'),
       ).to_json
 
-      expect(Rails.cache).to have_received(:write).with(
+      expect(TradeTariffBackend.redis).to have_received(:set).with(
         "enquiry_form_#{reference_number}",
         expected_payload,
-        expires_in: 1.hour,
+        ex: 3600,
       )
 
       expect(::EnquiryForm::SendSubmissionEmailWorker).to have_received(:perform_async).with(reference_number)

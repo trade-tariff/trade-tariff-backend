@@ -23,6 +23,26 @@ RSpec.describe TradeTariffBackend do
     end
   end
 
+  describe '.sidekiq_redis_config' do
+    after { described_class.instance_variable_set(:@redis, nil) }
+
+    context 'when SIDEKIQ_REDIS_URL is set' do
+      before { stub_const('ENV', ENV.to_hash.merge('SIDEKIQ_REDIS_URL' => 'redis://sidekiq-host:6379')) }
+
+      it 'returns the SIDEKIQ_REDIS_URL' do
+        expect(described_class.sidekiq_redis_config[:url]).to eq('redis://sidekiq-host:6379')
+      end
+    end
+
+    context 'when SIDEKIQ_REDIS_URL is not set' do
+      before { stub_const('ENV', ENV.to_hash.except('SIDEKIQ_REDIS_URL').merge('REDIS_URL' => 'redis://default-host:6379')) }
+
+      it 'falls back to REDIS_URL' do
+        expect(described_class.sidekiq_redis_config[:url]).to eq('redis://default-host:6379')
+      end
+    end
+  end
+
   describe '.currency' do
     before do
       allow(described_class).to receive(:service).and_return(choice)

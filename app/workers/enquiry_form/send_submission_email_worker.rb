@@ -42,7 +42,7 @@ class EnquiryForm::SendSubmissionEmailWorker
   private
 
   def enquiry_form_data(reference)
-    data = Rails.cache.read(self.class.cache_key(reference))
+    data = TradeTariffBackend.redis.get(self.class.cache_key(reference))
 
     JSON.parse(data).symbolize_keys if data.present?
   end
