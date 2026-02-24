@@ -274,6 +274,16 @@ RSpec.describe CachedCommodityService do
 
           expect(types).to include('chapter', 'heading', 'section')
         end
+
+        it 'does not leak orphaned included entries from filtered-out measures' do
+          result = service.call
+          ref = reference_response(commodity, filter_params.to_h.symbolize_keys)
+
+          result_entries = result[:included].map { |e| [e[:type].to_s, e[:id].to_s] }.sort
+          ref_entries = ref[:included].map { |e| [e[:type].to_s, e[:id].to_s] }.sort
+
+          expect(result_entries).to eq(ref_entries)
+        end
       end
     end
 
@@ -311,6 +321,16 @@ RSpec.describe CachedCommodityService do
           ref = reference_response(commodity, filter_params.to_h.symbolize_keys)
 
           expect(result[:data][:attributes][:basic_duty_rate]).to eq(ref[:data][:attributes][:basic_duty_rate])
+        end
+
+        it "includes only reachable entries (no orphans from other countries) for #{country_id || 'no filter'}" do
+          result = service.call
+          ref = reference_response(commodity, filter_params.to_h.symbolize_keys)
+
+          result_entries = result[:included].map { |e| [e[:type].to_s, e[:id].to_s] }.sort
+          ref_entries = ref[:included].map { |e| [e[:type].to_s, e[:id].to_s] }.sort
+
+          expect(result_entries).to eq(ref_entries)
         end
       end
 

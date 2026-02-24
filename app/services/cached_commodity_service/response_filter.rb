@@ -1,22 +1,5 @@
 class CachedCommodityService
   class ResponseFilter
-    MEASURE_RELATED_TYPES = %w[
-      measure
-      duty_expression
-      measure_type
-      legal_act
-      suspension_legal_act
-      measure_condition
-      measure_condition_component
-      measure_condition_permutation_group
-      measure_condition_permutation
-      measure_component
-      additional_code
-      order_number
-      quota_order_number
-      definition
-    ].to_set.freeze
-
     def initialize(cached_data, geographical_area_id)
       @hash = deep_dup(cached_data[:hash])
       @measure_meta = cached_data[:measure_meta]
@@ -252,7 +235,7 @@ class CachedCommodityService
     def clean_up_included
       return unless @hash[:included]
 
-      # First remove non-surviving measures from included
+      # Remove non-surviving measures
       @hash[:included].select! do |entry|
         if entry[:type].to_s == 'measure'
           @surviving_sids.include?(entry[:id].to_i)
@@ -261,46 +244,53 @@ class CachedCommodityService
         end
       end
 
-      # Now build set of referenced ids from surviving relationships
-      referenced = collect_referenced_ids
+      # BFS from root data relationships to find all reachable included entries.
+      # This removes orphaned measure children (conditions, footnotes, geo areas, etc.)
+      # that were only referenced by filtered-out measures.
+      reachable = compute_reachable_ids
 
       @hash[:included].select! do |entry|
-        type_s = entry[:type].to_s
-        if MEASURE_RELATED_TYPES.include?(type_s)
-          referenced.include?([type_s, entry[:id].to_s])
-        else
-          true
-        end
+        reachable.include?([entry[:type].to_s, entry[:id].to_s])
       end
     end
 
-    def collect_referenced_ids
-      refs = Set.new
-
-      # Collect from data relationships
-      collect_from_relationships(@hash[:data][:relationships], refs)
-
-      # Collect from included entries (only surviving ones)
-      @hash[:included]&.each do |entry|
-        next unless entry[:relationships]
-
-        collect_from_relationships(entry[:relationships], refs)
+    def compute_reachable_ids
+      by_key = {}
+      @hash[:included].each do |entry|
+        by_key[[entry[:type].to_s, entry[:id].to_s]] = entry
       end
 
-      refs
+      reachable = Set.new
+      queue = []
+
+      # Seed from top-level data relationships
+      enqueue_relationships(@hash[:data][:relationships], reachable, queue, by_key)
+
+      # BFS: each reachable entry's relationships can reach further entries
+      while (key = queue.shift)
+        entry = by_key[key]
+        next unless entry&.dig(:relationships)
+
+        enqueue_relationships(entry[:relationships], reachable, queue, by_key)
+      end
+
+      reachable
     end
 
-    def collect_from_relationships(relationships, refs)
+    def enqueue_relationships(relationships, reachable, queue, by_key)
       return unless relationships
 
       relationships.each_value do |rel|
         rel_data = rel[:data]
         next unless rel_data
 
-        if rel_data.is_a?(Array)
-          rel_data.each { |d| refs.add([d[:type].to_s, d[:id].to_s]) }
-        elsif rel_data.is_a?(Hash)
-          refs.add([rel_data[:type].to_s, rel_data[:id].to_s])
+        refs = rel_data.is_a?(Array) ? rel_data : [rel_data]
+        refs.each do |d|
+          key = [d[:type].to_s, d[:id].to_s]
+          next if reachable.include?(key)
+
+          reachable.add(key)
+          queue << key if by_key.key?(key)
         end
       end
     end
