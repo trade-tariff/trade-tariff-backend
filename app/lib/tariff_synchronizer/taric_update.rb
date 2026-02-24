@@ -144,7 +144,7 @@ module TariffSynchronizer
     end
 
     def store_oplog_inserts
-      self.inserts = @oplog_inserts.to_json
+      # self.inserts = @oplog_inserts.to_json
 
       save
     end
