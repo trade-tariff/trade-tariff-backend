@@ -31,11 +31,12 @@ RSpec.describe Api::V2::NotificationsController, :v2 do
     end
 
     it 'stores the correct data in the cache' do
-      allow(Rails.cache).to receive(:write).and_call_original
+      allow(TradeTariffBackend.redis).to receive(:set).and_return('OK')
       do_request
-      expect(Rails.cache).to have_received(:write) do |key, value, _options|
+      expect(TradeTariffBackend.redis).to have_received(:set) do |key, value, **options|
         expect(key).to match(/^notification_/)
         expect(JSON.parse(value, symbolize_names: true)).to eq(params[:data][:attributes])
+        expect(options).to eq(ex: 3600)
       end
     end
 

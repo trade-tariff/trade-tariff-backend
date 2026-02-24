@@ -157,8 +157,14 @@ module TradeTariffBackend
       { url: ENV['REDIS_URL'], db:, id: nil }
     end
 
+    def sidekiq_redis_config
+      db = Rails.env.test? ? 1 : 0
+
+      { url: ENV.fetch('SIDEKIQ_REDIS_URL', ENV['REDIS_URL']), db:, id: nil }
+    end
+
     def redis
-      @redis ||= Redis.new(redis_config)
+      @redis ||= Redis.new(sidekiq_redis_config)
     end
 
     def reindex(indexer = search_client)

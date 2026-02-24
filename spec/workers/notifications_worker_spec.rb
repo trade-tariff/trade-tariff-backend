@@ -5,14 +5,14 @@ RSpec.describe NotificationsWorker, type: :worker do
     let(:notification_id) { SecureRandom.uuid }
 
     before do
-      allow(Rails.cache).to receive(:read).and_return(notification_data.to_json)
+      allow(TradeTariffBackend.redis).to receive(:get).and_return(notification_data&.to_json)
     end
 
     context 'when notification data is found in the cache' do
       before do
         allow(GovukNotifier).to receive(:new).and_return(notifier)
         allow(notifier).to receive(:send_email)
-        allow(Rails.cache).to receive(:delete)
+        allow(TradeTariffBackend.redis).to receive(:del)
         worker.perform(notification_id)
       end
 
@@ -38,7 +38,7 @@ RSpec.describe NotificationsWorker, type: :worker do
       end
 
       it 'deletes the notification data from the cache' do
-        expect(Rails.cache).to have_received(:delete).with("notification_#{notification_id}")
+        expect(TradeTariffBackend.redis).to have_received(:del).with("notification_#{notification_id}")
       end
     end
 

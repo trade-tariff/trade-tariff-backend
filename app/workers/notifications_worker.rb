@@ -19,7 +19,7 @@ class NotificationsWorker
         notification_data['reference'],
       )
 
-      Rails.cache.delete("notification_#{notification_id}")
+      TradeTariffBackend.redis.del("notification_#{notification_id}")
     end
   rescue StandardError => e
     Rails.logger.error("Failed to process notification with ID: #{notification_id}: #{e.message}\n#{e.backtrace.join("\n")}")
@@ -29,7 +29,7 @@ class NotificationsWorker
   private
 
   def notification_data(notification_id)
-    data = Rails.cache.read("notification_#{notification_id}")
+    data = TradeTariffBackend.redis.get("notification_#{notification_id}")
 
     JSON.parse(data) if data.present?
   end

@@ -18,10 +18,10 @@ module Api
       private
 
       def store_enquiry_form_data
-        Rails.cache.write(
+        TradeTariffBackend.redis.set(
           ::EnquiryForm::SendSubmissionEmailWorker.cache_key(reference_number),
           enquiry_form_data.to_json,
-          expires_in: CACHE_DURATION,
+          ex: CACHE_DURATION.to_i,
         )
       end
 

@@ -26,10 +26,10 @@ module Api
       end
 
       def store_notification
-        Rails.cache.write(
+        TradeTariffBackend.redis.set(
           "notification_#{notification.id}",
           notification.to_json,
-          expires_in: CACHE_DURATION,
+          ex: CACHE_DURATION.to_i,
         )
 
         notification

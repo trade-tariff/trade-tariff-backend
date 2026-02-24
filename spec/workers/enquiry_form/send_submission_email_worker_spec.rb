@@ -20,7 +20,7 @@ RSpec.describe EnquiryForm::SendSubmissionEmailWorker, type: :worker do
   let(:notifier_client) { instance_double(GovukNotifier, send_email: true) }
 
   before do
-    allow(Rails.cache).to receive(:read).with("enquiry_form_#{reference}").and_return(cached_data)
+    allow(TradeTariffBackend.redis).to receive(:get).with("enquiry_form_#{reference}").and_return(cached_data)
     allow(EnquiryForm::CsvGeneratorService).to receive(:new).and_call_original
     allow(Notifications).to receive(:prepare_upload).and_call_original
     allow(GovukNotifier).to receive(:new).and_return(notifier_client)
@@ -63,7 +63,7 @@ RSpec.describe EnquiryForm::SendSubmissionEmailWorker, type: :worker do
 
     context 'when the cache key has expired or is missing' do
       before do
-        allow(Rails.cache).to receive(:read).with("enquiry_form_#{reference}").and_return(nil)
+        allow(TradeTariffBackend.redis).to receive(:get).with("enquiry_form_#{reference}").and_return(nil)
         allow(Rails.logger).to receive(:error).and_call_original
       end
 
