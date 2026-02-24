@@ -6,6 +6,7 @@ preload_app!
 
 rackup      Puma::Configuration::DEFAULTS[:rackup]
 # port        ENV['PORT']     || 8080
+bind "tcp://0.0.0.0:#{ENV.fetch('PORT', 3000)}"
 environment ENV['RACK_ENV'] || 'development'
 
 cert = ENV['SSL_CERT_PEM']&.gsub("\\n", "\n")
@@ -16,11 +17,9 @@ puts "SSL_KEY present? #{ENV['SSL_KEY_PEM'].present?}"
 puts "SSL_PORT: #{ENV['SSL_PORT']}"
 
 if cert.present? && key.present?
-  ssl_bind "0.0.0.0", ssl_port,
+  ssl_bind "0.0.0.0", ENV.fetch('SSL_PORT', 8443),
            cert_pem: cert,
            key_pem: key
-else
-  port ENV.fetch("PORT", 8080)
 end
 
 on_worker_boot do
