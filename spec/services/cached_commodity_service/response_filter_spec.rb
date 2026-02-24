@@ -13,6 +13,7 @@ RSpec.describe CachedCommodityService::ResponseFilter do
             meursing_code: false,
           },
           relationships: {
+            chapter: { data: { id: '1', type: :chapter } },
             import_measures: { data: [
               { id: measure_sid, type: :measure },
               { id: other_measure_sid, type: :measure },
