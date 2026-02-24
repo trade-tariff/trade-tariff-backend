@@ -71,7 +71,7 @@ class CachedCommodityService
       ga = measure.geographical_area
       return [] if ga.blank?
 
-      (ga.referenced.presence || ga).contained_geographical_areas.pluck(:geographical_area_id)
+      (ga.referenced.presence || ga).contained_geographical_areas.map(&:geographical_area_id)
     end
 
     def additional_code_contribution(measure)

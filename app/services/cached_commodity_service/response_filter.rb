@@ -1,13 +1,15 @@
 class CachedCommodityService
   class ResponseFilter
     def initialize(cached_data, geographical_area_id)
-      @hash = deep_dup(cached_data[:hash])
+      @cached_hash = cached_data[:hash]
       @measure_meta = cached_data[:measure_meta]
       @geographical_area_id = geographical_area_id
     end
 
     def call
-      return @hash if @geographical_area_id.blank?
+      return @cached_hash if @geographical_area_id.blank?
+
+      @hash = deep_dup(@cached_hash)
 
       filter_measures
       update_relationship_arrays
@@ -30,10 +32,6 @@ class CachedCommodityService
 
       @surviving_import_meta = measure_meta.select do |sid, meta|
         @surviving_sids.include?(sid) && meta[:import]
-      end
-
-      @surviving_export_meta = measure_meta.select do |sid, meta|
-        @surviving_sids.include?(sid) && meta[:export]
       end
     end
 
