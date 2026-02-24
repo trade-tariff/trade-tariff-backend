@@ -27,10 +27,11 @@ RSpec.describe TariffSynchronizer::SyncLogger do
   end
 
   shared_examples 'a tariff_sync log entry' do |method_name, event_name, payload|
-    it 'includes timestamp' do
+    it 'includes timestamp and service' do
       logger_instance.public_send(method_name, build_event(event_name, payload))
       json = parsed_log_output
       expect(json['timestamp']).to be_present
+      expect(json['service']).to eq('tariff_sync')
     end
   end
 
@@ -44,7 +45,7 @@ RSpec.describe TariffSynchronizer::SyncLogger do
       logger_instance.sync_run_started(build_event('sync_run_started', payload))
       json = parsed_log_output
       expect(json['event']).to eq('sync_run_started')
-      expect(json['service']).to eq('uk')
+      expect(json['trade_service']).to eq('uk')
       expect(json['run_id']).to eq('run-1')
       expect(json['triggered_by']).to eq('CdsUpdatesSynchronizerWorker')
     end
@@ -83,7 +84,7 @@ RSpec.describe TariffSynchronizer::SyncLogger do
       logger_instance.download_started(build_event('download_started', payload))
       json = parsed_log_output
       expect(json['event']).to eq('download_started')
-      expect(json['service']).to eq('uk')
+      expect(json['trade_service']).to eq('uk')
     end
   end
 

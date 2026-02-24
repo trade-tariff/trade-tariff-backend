@@ -7,7 +7,7 @@ module TariffSynchronizer
     def sync_run_started(event)
       info log_entry(
         event: 'sync_run_started',
-        service: event.payload[:service],
+        trade_service: event.payload[:service],
         run_id: event.payload[:run_id],
         triggered_by: event.payload[:triggered_by],
       )
@@ -16,7 +16,7 @@ module TariffSynchronizer
     def sync_run_completed(event)
       info log_entry(
         event: 'sync_run_completed',
-        service: event.payload[:service],
+        trade_service: event.payload[:service],
         run_id: event.payload[:run_id],
         duration_ms: event.payload[:duration_ms],
         files_downloaded: event.payload[:files_downloaded],
@@ -27,7 +27,7 @@ module TariffSynchronizer
     def sync_run_failed(event)
       error log_entry(
         event: 'sync_run_failed',
-        service: event.payload[:service],
+        trade_service: event.payload[:service],
         run_id: event.payload[:run_id],
         phase: event.payload[:phase],
         error_class: event.payload[:error_class],
@@ -40,7 +40,7 @@ module TariffSynchronizer
     def download_started(event)
       info log_entry(
         event: 'download_started',
-        service: event.payload[:service],
+        trade_service: event.payload[:service],
         run_id: event.payload[:run_id],
       )
     end
@@ -48,7 +48,7 @@ module TariffSynchronizer
     def download_completed(event)
       info log_entry(
         event: 'download_completed',
-        service: event.payload[:service],
+        trade_service: event.payload[:service],
         run_id: event.payload[:run_id],
         duration_ms: event.payload[:duration_ms],
         files_count: event.payload[:files_count],
@@ -58,7 +58,7 @@ module TariffSynchronizer
     def file_downloaded(event)
       info log_entry(
         event: 'file_downloaded',
-        service: event.payload[:service],
+        trade_service: event.payload[:service],
         run_id: event.payload[:run_id],
         filename: event.payload[:filename],
         filesize: event.payload[:filesize],
@@ -68,7 +68,7 @@ module TariffSynchronizer
     def download_failed(event)
       error log_entry(
         event: 'download_failed',
-        service: event.payload[:service],
+        trade_service: event.payload[:service],
         run_id: event.payload[:run_id],
         url: event.payload[:url],
         error_type: event.payload[:error_type],
@@ -78,7 +78,7 @@ module TariffSynchronizer
     def download_retried(event)
       warn log_entry(
         event: 'download_retried',
-        service: event.payload[:service],
+        trade_service: event.payload[:service],
         run_id: event.payload[:run_id],
         url: event.payload[:url],
         attempt: event.payload[:attempt],
@@ -89,7 +89,7 @@ module TariffSynchronizer
     def download_retry_exhausted(event)
       warn log_entry(
         event: 'download_retry_exhausted',
-        service: event.payload[:service],
+        trade_service: event.payload[:service],
         run_id: event.payload[:run_id],
         url: event.payload[:url],
       )
@@ -98,7 +98,7 @@ module TariffSynchronizer
     def download_delayed(event)
       info log_entry(
         event: 'download_delayed',
-        service: event.payload[:service],
+        trade_service: event.payload[:service],
         run_id: event.payload[:run_id],
         retry_at: event.payload[:retry_at],
       )
@@ -109,7 +109,7 @@ module TariffSynchronizer
     def apply_started(event)
       info log_entry(
         event: 'apply_started',
-        service: event.payload[:service],
+        trade_service: event.payload[:service],
         run_id: event.payload[:run_id],
         pending_count: event.payload[:pending_count],
       )
@@ -118,7 +118,7 @@ module TariffSynchronizer
     def apply_completed(event)
       info log_entry(
         event: 'apply_completed',
-        service: event.payload[:service],
+        trade_service: event.payload[:service],
         run_id: event.payload[:run_id],
         duration_ms: event.payload[:duration_ms],
         files_applied: event.payload[:files_applied],
@@ -128,7 +128,7 @@ module TariffSynchronizer
     def file_import_started(event)
       info log_entry(
         event: 'file_import_started',
-        service: event.payload[:service],
+        trade_service: event.payload[:service],
         run_id: event.payload[:run_id],
         filename: event.payload[:filename],
       )
@@ -137,7 +137,7 @@ module TariffSynchronizer
     def file_import_completed(event)
       info log_entry(
         event: 'file_import_completed',
-        service: event.payload[:service],
+        trade_service: event.payload[:service],
         run_id: event.payload[:run_id],
         filename: event.payload[:filename],
         duration_ms: event.payload[:duration_ms],
@@ -150,7 +150,7 @@ module TariffSynchronizer
     def file_import_failed(event)
       error log_entry(
         event: 'file_import_failed',
-        service: event.payload[:service],
+        trade_service: event.payload[:service],
         run_id: event.payload[:run_id],
         filename: event.payload[:filename],
         error_class: event.payload[:error_class],
@@ -163,7 +163,7 @@ module TariffSynchronizer
     def lock_acquired(event)
       debug log_entry(
         event: 'lock_acquired',
-        service: event.payload[:service],
+        trade_service: event.payload[:service],
         run_id: event.payload[:run_id],
         phase: event.payload[:phase],
       )
@@ -172,7 +172,7 @@ module TariffSynchronizer
     def lock_failed(event)
       warn log_entry(
         event: 'lock_failed',
-        service: event.payload[:service],
+        trade_service: event.payload[:service],
         run_id: event.payload[:run_id],
         phase: event.payload[:phase],
       )
@@ -181,7 +181,7 @@ module TariffSynchronizer
     def sequence_check_passed(event)
       debug log_entry(
         event: 'sequence_check_passed',
-        service: event.payload[:service],
+        trade_service: event.payload[:service],
         run_id: event.payload[:run_id],
       )
     end
@@ -189,7 +189,7 @@ module TariffSynchronizer
     def sequence_check_failed(event)
       error log_entry(
         event: 'sequence_check_failed',
-        service: event.payload[:service],
+        trade_service: event.payload[:service],
         run_id: event.payload[:run_id],
         details: event.payload[:details],
       )
@@ -198,7 +198,7 @@ module TariffSynchronizer
     def failed_updates_detected(event)
       error log_entry(
         event: 'failed_updates_detected',
-        service: event.payload[:service],
+        trade_service: event.payload[:service],
         run_id: event.payload[:run_id],
         filenames: event.payload[:filenames],
       )
@@ -209,7 +209,7 @@ module TariffSynchronizer
     def rollback_started(event)
       info log_entry(
         event: 'rollback_started',
-        service: event.payload[:service],
+        trade_service: event.payload[:service],
         run_id: event.payload[:run_id],
         rollback_date: event.payload[:rollback_date],
         keep: event.payload[:keep],
@@ -219,7 +219,7 @@ module TariffSynchronizer
     def rollback_completed(event)
       info log_entry(
         event: 'rollback_completed',
-        service: event.payload[:service],
+        trade_service: event.payload[:service],
         run_id: event.payload[:run_id],
         rollback_date: event.payload[:rollback_date],
         duration_ms: event.payload[:duration_ms],
@@ -231,6 +231,7 @@ module TariffSynchronizer
 
     def log_entry(data)
       data.merge(
+        service: 'tariff_sync',
         timestamp: Time.current.iso8601,
       ).to_json
     end

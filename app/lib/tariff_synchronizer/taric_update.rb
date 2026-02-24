@@ -71,12 +71,15 @@ module TariffSynchronizer
     end
 
     def import!
+      started_at = Process.clock_gettime(Process::CLOCK_MONOTONIC)
+
       @oplog_inserts = TaricImporter.new(self).import
 
       mark_as_applied
       store_oplog_inserts
 
-      Instrumentation.file_import_completed(filename:, duration_ms: 0)
+      duration_ms = (Process.clock_gettime(Process::CLOCK_MONOTONIC) - started_at) * 1000
+      Instrumentation.file_import_completed(filename:, duration_ms:)
     end
 
     def filename_sequence
