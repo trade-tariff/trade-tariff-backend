@@ -53,20 +53,14 @@ RSpec.describe TariffSynchronizer::TaricUpdate do
       expect(taric_update.reload).to be_applied
     end
 
-    it 'logs an info event' do
-      allow(Rails.logger).to receive(:info)
+    it 'emits a file_import_completed instrumentation event' do
+      allow(TariffSynchronizer::Instrumentation).to receive(:file_import_completed)
 
       taric_update.import!
 
-      expect(Rails.logger).to have_received(:info)
-    end
-
-    it 'logs an info message' do
-      allow(Rails.logger).to receive(:info)
-
-      taric_update.import!
-
-      expect(Rails.logger).to have_received(:info).with(include('Applied TARIC update'))
+      expect(TariffSynchronizer::Instrumentation).to have_received(:file_import_completed).with(
+        hash_including(filename: taric_update.filename),
+      )
     end
   end
 

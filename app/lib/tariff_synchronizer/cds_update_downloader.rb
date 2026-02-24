@@ -12,7 +12,7 @@ module TariffSynchronizer
     end
 
     def perform
-      log_request_to_cds_daily_updates
+      Instrumentation.file_import_started(filename: "cds_daily_list_#{request_date.iso8601}")
 
       # CDS updates are published with a few days delay so we should check past dates.
       range = ((request_date - 5.days)..request_date).to_a
@@ -52,10 +52,6 @@ module TariffSynchronizer
       else
         raise ListDownloadFailedError, @response.code
       end
-    end
-
-    def log_request_to_cds_daily_updates
-      Rails.logger.info "Checking for CDS daily updates for #{request_date}"
     end
 
     def access_token

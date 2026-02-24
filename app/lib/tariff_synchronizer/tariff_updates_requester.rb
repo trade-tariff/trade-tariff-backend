@@ -34,13 +34,21 @@ module TariffSynchronizer
           return response
         else
           @retry_count -= 1
-          Rails.logger.info "Delaying update fetching: #{@url} (response code: #{response.response_code})"
+          Instrumentation.download_retried(
+            url: @url,
+            attempt: TariffSynchronizer.retry_count - @retry_count,
+            reason: "response_code_#{response.response_code}",
+          )
           sleep TariffSynchronizer.request_throttle
         end
       rescue DownloadException => e
-        Rails.logger.info "Delaying update fetching: #{@url} (reason: #{e.original.class})"
+        Instrumentation.download_retried(
+          url: @url,
+          attempt: TariffSynchronizer.exception_retry_count - @exception_retry_count,
+          reason: e.original.class.name,
+        )
         if @exception_retry_count.zero?
-          Rails.logger.info "Giving up fetching: #{@url}, too many DownloadExceptions"
+          Instrumentation.download_retry_exhausted(url: @url)
           raise
         else
           @exception_retry_count -= 1

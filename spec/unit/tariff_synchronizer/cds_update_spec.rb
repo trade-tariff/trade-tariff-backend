@@ -62,10 +62,10 @@ RSpec.describe TariffSynchronizer::CdsUpdate do
       cds_importer = instance_double(CdsImporter)
       allow(CdsImporter).to receive(:new).with(cds_update).and_return(cds_importer)
       allow(cds_importer).to receive(:import).and_return inserted_oplog_records
-      allow(Rails.logger).to receive(:info)
+      allow(TariffSynchronizer::Instrumentation).to receive(:file_import_completed)
       cds_update.import!
 
-      expect(Rails.logger).to have_received(:info)
+      expect(TariffSynchronizer::Instrumentation).to have_received(:file_import_completed)
       expect(CdsImporter).to have_received(:new).with(cds_update)
       expect(cds_importer).to have_received(:import)
     end

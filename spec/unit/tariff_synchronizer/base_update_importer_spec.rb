@@ -51,12 +51,11 @@ RSpec.describe TariffSynchronizer::BaseUpdateImporter do
       expect(ActiveSupport::Notifications).to have_received(:subscribe).with(/cds_error/)
     end
 
-    it 'logs error message and sends an email' do
-      allow(Rails.logger).to receive(:error)
+    it 'emits instrumentation event and sends an email' do
+      allow(TariffSynchronizer::Instrumentation).to receive(:file_import_failed)
       expect { base_update_importer.apply }.to raise_error(Sequel::Error)
 
-      expect(Rails.logger).to have_received(:error)
-      expect(Rails.logger).to have_received(:error).with(include('Update failed: '))
+      expect(TariffSynchronizer::Instrumentation).to have_received(:file_import_failed)
 
       expect(ActionMailer::Base.deliveries).not_to be_empty
       email = ActionMailer::Base.deliveries.last

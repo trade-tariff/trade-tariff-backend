@@ -13,7 +13,7 @@ module TariffSynchronizer
     def perform
       return if check_date_already_downloaded?
 
-      Rails.logger.info("Checking for TARIC update for #{date} at #{url}")
+      Instrumentation.file_import_started(filename: "taric_check_#{date.iso8601}")
       send("create_record_for_#{response.state}_response")
     end
 
@@ -54,10 +54,6 @@ module TariffSynchronizer
       TariffSynchronizer::TaricUpdate.find_or_create(filename: file_name,
                                                      issue_date: date)
         .update(state:)
-    end
-
-    def log_request_to_taric_update
-      Rails.logger.info "Checking for TARIC update for #{date} at #{url}"
     end
 
     def date_api_url

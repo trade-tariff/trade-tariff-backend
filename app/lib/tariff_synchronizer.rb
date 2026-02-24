@@ -32,7 +32,7 @@ module TariffSynchronizer
   def perform_update(update_type, day)
     updates = update_type.pending_at(day).to_a
     updates.map do |update|
-      Rails.logger.info "Processing #{update_type} file: #{update.filename}"
+      Instrumentation.file_import_started(filename: update.filename)
 
       BaseUpdateImporter.perform(update)
     end
@@ -41,7 +41,7 @@ module TariffSynchronizer
 
   def check_tariff_updates_failures
     if BaseUpdate.failed.any?
-      Rails.logger.error "TariffSynchronizer found failed updates that need to be fixed before running: #{BaseUpdate.failed.map(&:filename)}"
+      Instrumentation.failed_updates_detected(filenames: BaseUpdate.failed.map(&:filename))
       raise FailedUpdatesError
     end
   rescue FailedUpdatesError => e
@@ -55,7 +55,12 @@ module TariffSynchronizer
   end
 
   def check_sequence
-    unless update_type.correct_filename_sequence?
+    if update_type.correct_filename_sequence?
+      Instrumentation.sequence_check_passed
+    else
+      Instrumentation.sequence_check_failed(
+        details: 'Wrong sequence between the pending and applied files. Check the admin updates UI.',
+      )
       raise FailedUpdatesError, 'Wrong sequence between the pending and applied files. Check the admin updates UI.'
     end
   rescue FailedUpdatesError => e

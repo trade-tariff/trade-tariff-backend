@@ -6,13 +6,17 @@ class TaricUpdatesSynchronizerWorker
   def perform(reapply_data_migrations = false)
     return unless TradeTariffBackend.xi?
 
+    Thread.current[:tariff_sync_run_id] = SecureRandom.uuid
+    start_time = Process.clock_gettime(Process::CLOCK_MONOTONIC)
+
     oldest_pending_date = TariffSynchronizer::BaseUpdate.oldest_pending&.issue_date || Time.zone.today
 
-    logger.info 'Running TaricUpdatesSynchronizerWorker'
-    logger.info 'Downloading...'
+    TariffSynchronizer::Instrumentation.sync_run_started(triggered_by: self.class.name)
+    TariffSynchronizer::Instrumentation.download_started
 
     TaricSynchronizer.download
-    logger.info 'Applying...'
+
+    TariffSynchronizer::Instrumentation.apply_started(pending_count: TariffSynchronizer::BaseUpdate.pending.count)
     return unless TaricSynchronizer.apply # return if nothing changed
 
     migrate_data if reapply_data_migrations
@@ -35,6 +39,11 @@ class TaricUpdatesSynchronizerWorker
     Sidekiq::Client.enqueue_in(15.minutes, GreenLanesUpdatesWorker, oldest_pending_date.iso8601)
 
     Sidekiq::Client.enqueue_in(20.minutes, ClearCacheWorker)
+
+    duration_ms = ((Process.clock_gettime(Process::CLOCK_MONOTONIC) - start_time) * 1000).round(2)
+    TariffSynchronizer::Instrumentation.sync_run_completed(duration_ms:)
+  ensure
+    Thread.current[:tariff_sync_run_id] = nil
   end
 
 private

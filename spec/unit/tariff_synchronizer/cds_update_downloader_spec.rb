@@ -31,10 +31,10 @@ RSpec.describe TariffSynchronizer::CdsUpdateDownloader do
       # rubocop:enable RSpec/AnyInstance
     end
 
-    it 'logs request to cds daily updates' do
-      allow(downloader).to receive(:log_request_to_cds_daily_updates)
+    it 'emits a file_import_started instrumentation event' do
+      allow(TariffSynchronizer::Instrumentation).to receive(:file_import_started)
       downloader.perform
-      expect(downloader).to have_received(:log_request_to_cds_daily_updates)
+      expect(TariffSynchronizer::Instrumentation).to have_received(:file_import_started)
     end
 
     context 'when response contains example_date' do

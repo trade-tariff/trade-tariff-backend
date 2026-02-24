@@ -76,7 +76,7 @@ module TariffSynchronizer
       mark_as_applied
       store_oplog_inserts
 
-      Rails.logger.info "Applied TARIC update #{filename}"
+      Instrumentation.file_import_completed(filename:, duration_ms: 0)
     end
 
     def filename_sequence

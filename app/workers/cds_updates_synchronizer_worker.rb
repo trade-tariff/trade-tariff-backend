@@ -9,8 +9,11 @@ class CdsUpdatesSynchronizerWorker
   def perform(check_for_todays_file = true, reapply_data_migrations = false)
     return unless TradeTariffBackend.uk?
 
-    logger.info 'Running CdsUpdatesSynchronizerWorker'
-    logger.info 'Downloading...'
+    Thread.current[:tariff_sync_run_id] = SecureRandom.uuid
+    start_time = Process.clock_gettime(Process::CLOCK_MONOTONIC)
+
+    TariffSynchronizer::Instrumentation.sync_run_started(triggered_by: self.class.name)
+    TariffSynchronizer::Instrumentation.download_started
 
     CdsSynchronizer.download
 
@@ -20,7 +23,7 @@ class CdsUpdatesSynchronizerWorker
       return
     end
 
-    logger.info 'Applying...'
+    TariffSynchronizer::Instrumentation.apply_started(pending_count: TariffSynchronizer::BaseUpdate.pending.count)
     return unless CdsSynchronizer.apply # return if nothing changed
 
     migrate_data if reapply_data_migrations
@@ -32,8 +35,18 @@ class CdsUpdatesSynchronizerWorker
     Sidekiq::Client.enqueue_in(11.minutes, PopulateChangesTableWorker)
     Sidekiq::Client.enqueue_in(12.minutes, PopulateTariffChangesWorker)
     Sidekiq::Client.enqueue_in(15.minutes, ClearCacheWorker)
-  rescue TariffSynchronizer::CdsUpdateDownloader::ListDownloadFailedError
+
+    duration_ms = ((Process.clock_gettime(Process::CLOCK_MONOTONIC) - start_time) * 1000).round(2)
+    TariffSynchronizer::Instrumentation.sync_run_completed(duration_ms:)
+  rescue TariffSynchronizer::CdsUpdateDownloader::ListDownloadFailedError => e
+    TariffSynchronizer::Instrumentation.sync_run_failed(
+      phase: 'download',
+      error_class: e.class.name,
+      error_message: e.message,
+    )
     attempt_reschedule!
+  ensure
+    Thread.current[:tariff_sync_run_id] = nil
   end
 
 private
@@ -64,7 +77,7 @@ private
   def attempt_reschedule!
     if still_time_to_reschedule?
       self.class.perform_in(TRY_AGAIN_IN, true)
-      logger.info "Daily file missing, retrying at #{TRY_AGAIN_IN.from_now}"
+      TariffSynchronizer::Instrumentation.download_delayed(retry_at: TRY_AGAIN_IN.from_now.iso8601)
       true
     else
       SlackNotifierService.call \

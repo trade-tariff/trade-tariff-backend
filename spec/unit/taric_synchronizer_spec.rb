@@ -20,13 +20,13 @@ RSpec.describe TaricSynchronizer, :truncation do
         expect(TariffSynchronizer::TaricUpdate).to have_received(:sync)
       end
 
-      it 'logs an info event' do
+      it 'emits a download_completed instrumentation event' do
         allow(TariffSynchronizer::TaricUpdate).to receive(:sync).and_return(true)
-        allow(Rails.logger).to receive(:info)
+        allow(TariffSynchronizer::Instrumentation).to receive(:download_completed)
 
         described_class.download
 
-        expect(Rails.logger).to have_received(:info)
+        expect(TariffSynchronizer::Instrumentation).to have_received(:download_completed)
       end
 
       context 'when patch_broken_taric_downloads is set to true' do
@@ -57,12 +57,12 @@ RSpec.describe TaricSynchronizer, :truncation do
         expect(TariffSynchronizer::TaricUpdate).not_to have_received(:sync)
       end
 
-      it 'logs an error event' do
-        allow(Rails.logger).to receive(:error)
+      it 'emits a sync_run_failed instrumentation event' do
+        allow(TariffSynchronizer::Instrumentation).to receive(:sync_run_failed)
 
         described_class.download
 
-        expect(Rails.logger).to have_received(:error)
+        expect(TariffSynchronizer::Instrumentation).to have_received(:sync_run_failed)
       end
     end
 
@@ -72,12 +72,11 @@ RSpec.describe TaricSynchronizer, :truncation do
         allow_any_instance_of(Faraday::Connection).to receive(:get).and_raise(Faraday::Error, 'Foo')
       end
 
-      it 'raises original exception ending the process and logs an error event' do
-        allow(Rails.logger).to receive(:error)
+      it 'raises original exception ending the process and emits a download_failed event' do
+        allow(TariffSynchronizer::Instrumentation).to receive(:download_failed)
 
         expect { described_class.download }.to raise_error Faraday::Error
-        expect(Rails.logger).to have_received(:error)
-        expect(Rails.logger).to have_received(:error).with(include('Download failed'))
+        expect(TariffSynchronizer::Instrumentation).to have_received(:download_failed)
       end
 
       it 'sends an email with the exception error' do
@@ -157,11 +156,11 @@ RSpec.describe TaricSynchronizer, :truncation do
         expect(TariffSynchronizer::TaricUpdate).not_to have_received(:pending_at)
       end
 
-      it 'logs the error event' do
-        allow(Rails.logger).to receive(:error)
+      it 'emits a failed_updates_detected instrumentation event' do
+        allow(TariffSynchronizer::Instrumentation).to receive(:failed_updates_detected)
         expect { described_class.apply }.to raise_error(TariffSynchronizer::FailedUpdatesError)
 
-        expect(Rails.logger).to have_received(:error)
+        expect(TariffSynchronizer::Instrumentation).to have_received(:failed_updates_detected)
       end
 
       it 'sends email with the error' do
