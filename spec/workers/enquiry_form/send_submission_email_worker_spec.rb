@@ -19,8 +19,10 @@ RSpec.describe EnquiryForm::SendSubmissionEmailWorker, type: :worker do
   let(:csv_content) { "name,email\nJohn,john@example.com" }
   let(:notifier_client) { instance_double(GovukNotifier, send_email: true) }
 
+  let(:redis_mock) { instance_double(Redis, get: cached_data) }
+
   before do
-    allow(TradeTariffBackend.redis).to receive(:get).with("enquiry_form_#{reference}").and_return(cached_data)
+    allow(Sidekiq).to receive(:redis).and_yield(redis_mock)
     allow(EnquiryForm::CsvGeneratorService).to receive(:new).and_call_original
     allow(Notifications).to receive(:prepare_upload).and_call_original
     allow(GovukNotifier).to receive(:new).and_return(notifier_client)
@@ -62,8 +64,9 @@ RSpec.describe EnquiryForm::SendSubmissionEmailWorker, type: :worker do
     end
 
     context 'when the cache key has expired or is missing' do
+      let(:redis_mock) { instance_double(Redis, get: nil) }
+
       before do
-        allow(TradeTariffBackend.redis).to receive(:get).with("enquiry_form_#{reference}").and_return(nil)
         allow(Rails.logger).to receive(:error).and_call_original
       end
 

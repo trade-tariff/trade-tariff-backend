@@ -15,6 +15,7 @@ RSpec.describe Api::V2::EnquiryForm::SubmissionsController, :v2 do
     let(:reference_number) { 'ABC12345' }
 
     let(:frozen_time) { Time.zone.parse('2025-12-08 12:00:00') }
+    let(:redis_mock) { instance_double(Redis, set: nil) }
 
     before do
       travel_to frozen_time
@@ -26,7 +27,7 @@ RSpec.describe Api::V2::EnquiryForm::SubmissionsController, :v2 do
       allow(Api::V2::EnquiryForm::SubmissionSerializer).to receive(:new).and_call_original
 
       allow(::EnquiryForm::SendSubmissionEmailWorker).to receive(:perform_async)
-      allow(TradeTariffBackend.redis).to receive(:set)
+      allow(Sidekiq).to receive(:redis).and_yield(redis_mock)
     end
 
     after do
@@ -54,7 +55,7 @@ RSpec.describe Api::V2::EnquiryForm::SubmissionsController, :v2 do
         created_at: frozen_time.strftime('%Y-%m-%d %H:%M'),
       ).to_json
 
-      expect(TradeTariffBackend.redis).to have_received(:set).with(
+      expect(redis_mock).to have_received(:set).with(
         "enquiry_form_#{reference_number}",
         expected_payload,
         ex: 3600,
