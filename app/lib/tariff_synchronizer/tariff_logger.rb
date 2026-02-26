@@ -11,7 +11,7 @@ module TariffSynchronizer
       # Update failed to be applied
       def failed_update(exception:, update:, database_queries:)
         Instrumentation.file_import_failed(
-          filename: update.to_s,
+          filename: update.filename,
           error_class: exception.class.name,
           error_message: exception.message,
         )
