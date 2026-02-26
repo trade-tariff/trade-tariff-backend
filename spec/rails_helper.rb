@@ -9,7 +9,6 @@ require File.expand_path('../config/environment', __dir__)
 
 require 'rspec/rails'
 require 'json_expressions/rspec'
-require 'sidekiq/testing'
 
 require_relative '../app/helpers/materialize_view_helper'
 
