@@ -95,51 +95,69 @@ resource "aws_cloudwatch_dashboard" "tariff_sync" {
           width  = 6
           height = 6
           properties = {
-            title  = "Apply Duration (p50/p90)"
+            title  = "Apply Duration (ms)"
             region = var.region
             view   = "timeSeries"
             query  = <<-EOT
               ${local.source}
               | ${local.service_filter} and event = "apply_completed"
-              | stats pct(duration_ms, 50) as p50, pct(duration_ms, 90) as p90 by bin(1h)
+              | stats max(duration_ms) as max, avg(duration_ms) as avg by bin(1d)
             EOT
           }
         }
       ],
 
-      # Row 2 (y=8): Performance deep dive
+      # Row 2 (y=8): Performance and recent files
       [
         {
           type   = "log"
           x      = 0
           y      = 8
-          width  = 12
+          width  = 8
           height = 6
           properties = {
-            title  = "Download Duration Percentiles (ms)"
+            title  = "Download Duration (ms)"
             region = var.region
             view   = "timeSeries"
             query  = <<-EOT
               ${local.source}
               | ${local.service_filter} and event = "download_completed"
-              | stats pct(duration_ms, 50) as p50, pct(duration_ms, 90) as p90, pct(duration_ms, 99) as p99 by bin(1h)
+              | stats max(duration_ms) as max, avg(duration_ms) as avg by bin(1d)
             EOT
           }
         },
         {
           type   = "log"
-          x      = 12
+          x      = 8
           y      = 8
-          width  = 12
+          width  = 8
           height = 6
           properties = {
-            title  = "Per-File Import Duration Percentiles (ms)"
+            title  = "File Import Duration (ms)"
             region = var.region
             view   = "timeSeries"
             query  = <<-EOT
               ${local.source}
               | ${local.service_filter} and event = "file_import_completed"
-              | stats pct(duration_ms, 50) as p50, pct(duration_ms, 90) as p90, pct(duration_ms, 99) as p99 by bin(1h)
+              | stats max(duration_ms) as max, avg(duration_ms) as avg by bin(1d)
+            EOT
+          }
+        },
+        {
+          type   = "log"
+          x      = 16
+          y      = 8
+          width  = 8
+          height = 6
+          properties = {
+            title  = "Recent Files Applied"
+            region = var.region
+            query  = <<-EOT
+              ${local.source}
+              | ${local.service_filter} and event = "file_import_completed"
+              | fields @timestamp, trade_service, filename, duration_ms
+              | sort @timestamp desc
+              | limit 20
             EOT
           }
         }
