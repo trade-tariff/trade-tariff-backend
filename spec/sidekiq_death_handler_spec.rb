@@ -1,14 +1,10 @@
-RSpec.describe 'Sidekiq death handler' do
-  let(:death_handler) do
-    Sidekiq.default_configuration.death_handlers.last
-  end
-
+RSpec.describe SidekiqDeathHandler do
   let(:job) do
     {
       'class' => 'EnquiryForm::SendSubmissionEmailWorker',
       'jid' => '93ce163da1a9f7052e55d7c6',
       'queue' => 'default',
-      'args' => ['TVUZGFEA'],
+      'args' => %w[TVUZGFEA],
       'error_class' => 'Redis::CannotConnectError',
       'error_message' => 'user specified timeout for redis-production:6379',
       'retry_count' => 25,
@@ -23,7 +19,7 @@ RSpec.describe 'Sidekiq death handler' do
   end
 
   it 'sends a Slack alert with structured error details' do
-    death_handler.call(job, exception)
+    described_class.call(job, exception)
 
     expect(SlackNotifierService).to have_received(:call).with(
       channel: TradeTariffBackend.slack_failures_channel,
@@ -49,7 +45,7 @@ RSpec.describe 'Sidekiq death handler' do
     end
 
     it 'does not send a Slack alert' do
-      death_handler.call(job, exception)
+      described_class.call(job, exception)
 
       expect(SlackNotifierService).not_to have_received(:call)
     end
@@ -59,7 +55,7 @@ RSpec.describe 'Sidekiq death handler' do
     let(:job) { super().merge('slack_alerts' => false) }
 
     it 'does not send a Slack alert' do
-      death_handler.call(job, exception)
+      described_class.call(job, exception)
 
       expect(SlackNotifierService).not_to have_received(:call)
     end
