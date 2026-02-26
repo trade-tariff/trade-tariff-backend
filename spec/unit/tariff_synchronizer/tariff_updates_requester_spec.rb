@@ -29,12 +29,12 @@ RSpec.describe TariffSynchronizer::TariffUpdatesRequester do
 
         it { expect(response).to be_retry_count_exceeded }
 
-        it 'logs an info event' do
-          allow(Rails.logger).to receive(:info)
+        it 'emits a download_retried instrumentation event' do
+          allow(TariffSynchronizer::Instrumentation).to receive(:download_retried)
 
           response
 
-          expect(Rails.logger).to have_received(:info).with(include('Delaying update fetching'))
+          expect(TariffSynchronizer::Instrumentation).to have_received(:download_retried)
         end
       end
     end

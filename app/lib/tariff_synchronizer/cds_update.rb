@@ -27,13 +27,16 @@ module TariffSynchronizer
     end
 
     def import!
+      started_at = Process.clock_gettime(Process::CLOCK_MONOTONIC)
+
       @oplog_inserts = CdsImporter.new(self).import
 
       check_oplog_inserts
       mark_as_applied
       store_oplog_inserts
 
-      Rails.logger.info "Applied CDS update #{filename}"
+      duration_ms = (Process.clock_gettime(Process::CLOCK_MONOTONIC) - started_at) * 1000
+      Instrumentation.file_import_completed(filename:, duration_ms:)
     end
 
     # Extract Date from filename

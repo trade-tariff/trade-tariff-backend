@@ -19,13 +19,13 @@ RSpec.describe CdsSynchronizer, :truncation do
         expect(TariffSynchronizer::CdsUpdate).to have_received(:sync)
       end
 
-      it 'logs an info event' do
+      it 'emits a download_completed instrumentation event' do
         allow(TariffSynchronizer::CdsUpdate).to receive(:sync).and_return(true)
-        allow(Rails.logger).to receive(:info)
+        allow(TariffSynchronizer::Instrumentation).to receive(:download_completed)
 
         described_class.download
 
-        expect(Rails.logger).to have_received(:info)
+        expect(TariffSynchronizer::Instrumentation).to have_received(:download_completed)
       end
     end
 
@@ -42,12 +42,12 @@ RSpec.describe CdsSynchronizer, :truncation do
         expect(TariffSynchronizer::CdsUpdate).not_to have_received(:sync)
       end
 
-      it 'logs an error event' do
-        allow(Rails.logger).to receive(:error)
+      it 'emits a sync_run_failed instrumentation event' do
+        allow(TariffSynchronizer::Instrumentation).to receive(:sync_run_failed)
 
         described_class.download
 
-        expect(Rails.logger).to have_received(:error)
+        expect(TariffSynchronizer::Instrumentation).to have_received(:sync_run_failed)
       end
     end
 
@@ -95,12 +95,12 @@ RSpec.describe CdsSynchronizer, :truncation do
         expect(TariffSynchronizer::CdsUpdate).not_to have_received(:pending_at)
       end
 
-      it 'logs the error event', :aggregate_failures do
-        allow(Rails.logger).to receive(:error)
+      it 'emits a failed_updates_detected instrumentation event', :aggregate_failures do
+        allow(TariffSynchronizer::Instrumentation).to receive(:failed_updates_detected)
 
         expect { described_class.apply }.to raise_error(TariffSynchronizer::FailedUpdatesError)
 
-        expect(Rails.logger).to have_received(:error)
+        expect(TariffSynchronizer::Instrumentation).to have_received(:failed_updates_detected)
       end
 
       it 'sends email with the error' do

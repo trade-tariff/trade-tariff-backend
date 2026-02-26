@@ -36,7 +36,7 @@ module TariffSynchronizer
       @success = true
 
       update_or_create(filename, BaseUpdate::PENDING_STATE, filesize)
-      Rails.logger.info("Created/Updated #{update_klass.update_type.upcase} entry for #{date} and #{filename}")
+      Instrumentation.file_downloaded(filename:, filesize:)
     end
 
     def file_already_downloaded?
@@ -88,7 +88,7 @@ module TariffSynchronizer
       if should_write_file?(response_body)
         FileService.write_file(file_path, response_body)
 
-        Rails.logger.info("#{update_type.upcase} update for #{date} downloaded from #{url}, to #{file_path} (size: #{response_body.size})")
+        Instrumentation.file_downloaded(filename:, filesize: response_body.size)
       else
         persist_exception_for_review(TariffDownloaderZipError.new('Response was not a zip file. Skipping persistence'))
       end

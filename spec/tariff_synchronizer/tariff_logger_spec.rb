@@ -10,13 +10,13 @@ RSpec.describe TariffSynchronizer::TariffLogger, :truncation do
       allow(TradeTariffBackend).to receive(
         :with_redis_lock,
       ).and_raise(Redlock::LockError, 'foo')
-      allow(Rails.logger).to receive(:warn)
+      allow(TariffSynchronizer::Instrumentation).to receive(:lock_failed)
     end
 
-    it 'logs a warn event message' do
+    it 'emits a lock_failed instrumentation event' do
       TaricSynchronizer.rollback(Time.zone.today, keep: true)
 
-      expect(Rails.logger).to have_received(:warn).with(include('Failed to acquire Redis lock for rollback'))
+      expect(TariffSynchronizer::Instrumentation).to have_received(:lock_failed).with(phase: 'rollback')
     end
   end
 
@@ -26,12 +26,12 @@ RSpec.describe TariffSynchronizer::TariffLogger, :truncation do
       create(:taric_update, :pending, example_date: Time.zone.today)
 
       allow(TradeTariffBackend).to receive(:with_redis_lock).and_raise(Redlock::LockError, 'foo')
-      allow(Rails.logger).to receive(:warn)
+      allow(TariffSynchronizer::Instrumentation).to receive(:lock_failed)
     end
 
-    it 'logs warn event message' do
+    it 'emits a lock_failed instrumentation event' do
       TaricSynchronizer.apply
-      expect(Rails.logger).to have_received(:warn).with(include('Failed to acquire Redis lock for update application'))
+      expect(TariffSynchronizer::Instrumentation).to have_received(:lock_failed).with(phase: 'apply')
     end
   end
 end

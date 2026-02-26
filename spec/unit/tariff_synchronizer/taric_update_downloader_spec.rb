@@ -2,14 +2,14 @@ RSpec.describe TariffSynchronizer::TaricUpdateDownloader do
   let(:example_date) { Date.new(2010, 1, 1) }
 
   describe '#perform' do
-    it 'Logs the request for the TaricUpdate file' do
+    it 'emits a download_started instrumentation event' do
       allow(TariffSynchronizer::TariffUpdatesRequester).to receive(:perform)
         .with('http://example.com/taric/TARIC320100101').and_return(build(:response, :not_found))
 
-      allow(Rails.logger).to receive(:info)
+      allow(TariffSynchronizer::Instrumentation).to receive(:download_started)
 
       described_class.new(example_date).perform
-      expect(Rails.logger).to have_received(:info).with("Checking for TARIC update for #{example_date} at http://example.com/taric/TARIC320100101")
+      expect(TariffSynchronizer::Instrumentation).to have_received(:download_started)
     end
 
     it 'Calls the external server to download file' do
@@ -96,12 +96,12 @@ RSpec.describe TariffSynchronizer::TaricUpdateDownloader do
                                                                .with('http://example.com/taric/TARIC320100101').and_return(build(:response, :retry_exceeded))
       end
 
-      it 'Logs the creating of the TaricUpdate record with failed state' do
-        allow(Rails.logger).to receive(:warn)
+      it 'emits a download_retry_exhausted instrumentation event' do
+        allow(TariffSynchronizer::Instrumentation).to receive(:download_retry_exhausted)
 
         described_class.new(example_date).perform
 
-        expect(Rails.logger).to have_received(:warn).with('Download retry count exceeded for http://example.com/taric/TARIC320100101')
+        expect(TariffSynchronizer::Instrumentation).to have_received(:download_retry_exhausted)
       end
 
       it 'Sends a warning email' do
@@ -151,12 +151,12 @@ RSpec.describe TariffSynchronizer::TaricUpdateDownloader do
                                                                .with('http://example.com/taric/TARIC320100101').and_return(build(:response, :blank))
       end
 
-      it 'Logs the creating of the TaricUpdate record with failed state' do
-        allow(Rails.logger).to receive(:error)
+      it 'emits a download_failed instrumentation event' do
+        allow(TariffSynchronizer::Instrumentation).to receive(:download_failed)
 
         described_class.new(example_date).perform
 
-        expect(Rails.logger).to have_received(:error).with('Blank update content received for 2010-01-01: http://example.com/taric/TARIC320100101')
+        expect(TariffSynchronizer::Instrumentation).to have_received(:download_failed)
       end
 
       it 'Sends a warning email' do
