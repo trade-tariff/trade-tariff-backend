@@ -144,13 +144,13 @@ resource "aws_cloudwatch_dashboard" "tariff_sync" {
         }
       ],
 
-      # Row 3 (y=14): Error breakdown + operations
+      # Row 3 (y=14): Error breakdown
       [
         {
           type   = "log"
           x      = 0
           y      = 14
-          width  = 12
+          width  = 24
           height = 6
           properties = {
             title  = "Errors by Type"
@@ -160,23 +160,6 @@ resource "aws_cloudwatch_dashboard" "tariff_sync" {
               ${local.source}
               | ${local.service_filter} and event in ["sync_run_failed", "download_failed", "file_import_failed", "sequence_check_failed", "failed_updates_detected"]
               | stats count(*) as errors by event, bin(1h)
-            EOT
-          }
-        },
-        {
-          type   = "log"
-          x      = 12
-          y      = 14
-          width  = 12
-          height = 6
-          properties = {
-            title  = "Records by Operation"
-            region = var.region
-            view   = "timeSeries"
-            query  = <<-EOT
-              ${local.source}
-              | ${local.service_filter} and event = "file_import_completed"
-              | stats sum(creates) as creates, sum(updates) as updates, sum(destroys) as destroys by bin(1h)
             EOT
           }
         }

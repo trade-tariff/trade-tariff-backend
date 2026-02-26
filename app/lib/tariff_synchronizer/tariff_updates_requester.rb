@@ -42,16 +42,16 @@ module TariffSynchronizer
           sleep TariffSynchronizer.request_throttle
         end
       rescue DownloadException => e
-        Instrumentation.download_retried(
-          url: @url,
-          attempt: TariffSynchronizer.exception_retry_count - @exception_retry_count,
-          reason: e.original.class.name,
-        )
         if @exception_retry_count.zero?
           Instrumentation.download_retry_exhausted(url: @url)
           raise
         else
           @exception_retry_count -= 1
+          Instrumentation.download_retried(
+            url: @url,
+            attempt: TariffSynchronizer.exception_retry_count - @exception_retry_count,
+            reason: e.original.class.name,
+          )
           sleep TariffSynchronizer.request_throttle
         end
       end

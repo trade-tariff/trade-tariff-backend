@@ -78,13 +78,20 @@ RSpec.describe TariffSynchronizer::SyncLogger do
   end
 
   describe '#download_started' do
-    let(:payload) { { service: 'uk', run_id: 'run-1' } }
+    let(:payload) { { service: 'uk', run_id: 'run-1', filename: nil } }
 
     it 'logs correct fields' do
       logger_instance.download_started(build_event('download_started', payload))
       json = parsed_log_output
       expect(json['event']).to eq('download_started')
       expect(json['trade_service']).to eq('uk')
+    end
+
+    it 'includes filename when provided' do
+      payload_with_filename = payload.merge(filename: 'cds_daily_list_2024-01-01')
+      logger_instance.download_started(build_event('download_started', payload_with_filename))
+      json = parsed_log_output
+      expect(json['filename']).to eq('cds_daily_list_2024-01-01')
     end
   end
 

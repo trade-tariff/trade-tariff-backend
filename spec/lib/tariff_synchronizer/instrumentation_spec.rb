@@ -82,6 +82,17 @@ RSpec.describe TariffSynchronizer::Instrumentation do
         hash_including(service: 'uk'),
       )
     end
+
+    it 'accepts an optional filename' do
+      allow(ActiveSupport::Notifications).to receive(:instrument)
+
+      described_class.download_started(filename: 'cds_daily_list_2024-01-01')
+
+      expect(ActiveSupport::Notifications).to have_received(:instrument).with(
+        'download_started.tariff_sync',
+        hash_including(filename: 'cds_daily_list_2024-01-01'),
+      )
+    end
   end
 
   describe '.download_completed' do

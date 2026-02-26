@@ -12,8 +12,3 @@ output "dashboard_url" {
   description = "URL to the CloudWatch dashboard"
   value       = "https://${var.region}.console.aws.amazon.com/cloudwatch/home?region=${var.region}#dashboards:name=${local.dashboard_name}"
 }
-
-output "metric_namespace" {
-  description = "CloudWatch metric namespace for tariff sync metrics"
-  value       = "TariffSync/${var.environment}"
-}

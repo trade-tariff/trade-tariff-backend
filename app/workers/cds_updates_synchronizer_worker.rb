@@ -20,11 +20,15 @@ class CdsUpdatesSynchronizerWorker
     if check_for_todays_file &&
         todays_file_has_not_yet_arrived? &&
         attempt_reschedule!
+      emit_sync_run_completed(start_time)
       return
     end
 
     TariffSynchronizer::Instrumentation.apply_started(pending_count: TariffSynchronizer::BaseUpdate.pending.count)
-    return unless CdsSynchronizer.apply # return if nothing changed
+    unless CdsSynchronizer.apply # return if nothing changed
+      emit_sync_run_completed(start_time)
+      return
+    end
 
     migrate_data if reapply_data_migrations
     MaterializeViewHelper.refresh_materialized_view
@@ -36,8 +40,7 @@ class CdsUpdatesSynchronizerWorker
     Sidekiq::Client.enqueue_in(12.minutes, PopulateTariffChangesWorker)
     Sidekiq::Client.enqueue_in(15.minutes, ClearCacheWorker)
 
-    duration_ms = ((Process.clock_gettime(Process::CLOCK_MONOTONIC) - start_time) * 1000).round(2)
-    TariffSynchronizer::Instrumentation.sync_run_completed(duration_ms:)
+    emit_sync_run_completed(start_time)
   rescue TariffSynchronizer::CdsUpdateDownloader::ListDownloadFailedError => e
     TariffSynchronizer::Instrumentation.sync_run_failed(
       phase: 'download',
@@ -72,6 +75,11 @@ private
 
     require 'data_migrator' unless defined?(DataMigrator)
     DataMigrator.migrate_up!(nil)
+  end
+
+  def emit_sync_run_completed(start_time)
+    duration_ms = ((Process.clock_gettime(Process::CLOCK_MONOTONIC) - start_time) * 1000).round(2)
+    TariffSynchronizer::Instrumentation.sync_run_completed(duration_ms:)
   end
 
   def attempt_reschedule!

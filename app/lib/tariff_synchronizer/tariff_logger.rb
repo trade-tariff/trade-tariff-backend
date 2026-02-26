@@ -5,8 +5,6 @@ module TariffSynchronizer
     class << self
       # All pending updates applied
       def apply(update_names, import_warnings = [])
-        Instrumentation.apply_completed(duration_ms: 0, files_applied: update_names.size)
-
         Mailer.applied(update_names, import_warnings).deliver_now
       end
 

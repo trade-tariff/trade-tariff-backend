@@ -42,6 +42,7 @@ module TariffSynchronizer
         event: 'download_started',
         trade_service: event.payload[:service],
         run_id: event.payload[:run_id],
+        filename: event.payload[:filename],
       )
     end
 

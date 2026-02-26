@@ -17,7 +17,10 @@ class TaricUpdatesSynchronizerWorker
     TaricSynchronizer.download
 
     TariffSynchronizer::Instrumentation.apply_started(pending_count: TariffSynchronizer::BaseUpdate.pending.count)
-    return unless TaricSynchronizer.apply # return if nothing changed
+    unless TaricSynchronizer.apply # return if nothing changed
+      emit_sync_run_completed(start_time)
+      return
+    end
 
     migrate_data if reapply_data_migrations
 
@@ -40,13 +43,24 @@ class TaricUpdatesSynchronizerWorker
 
     Sidekiq::Client.enqueue_in(20.minutes, ClearCacheWorker)
 
-    duration_ms = ((Process.clock_gettime(Process::CLOCK_MONOTONIC) - start_time) * 1000).round(2)
-    TariffSynchronizer::Instrumentation.sync_run_completed(duration_ms:)
+    emit_sync_run_completed(start_time)
+  rescue StandardError => e
+    TariffSynchronizer::Instrumentation.sync_run_failed(
+      phase: 'sync',
+      error_class: e.class.name,
+      error_message: e.message,
+    )
+    raise
   ensure
     Thread.current[:tariff_sync_run_id] = nil
   end
 
 private
+
+  def emit_sync_run_completed(start_time)
+    duration_ms = ((Process.clock_gettime(Process::CLOCK_MONOTONIC) - start_time) * 1000).round(2)
+    TariffSynchronizer::Instrumentation.sync_run_completed(duration_ms:)
+  end
 
   def migrate_data
     logger.info 'Re-applying data migrations...'

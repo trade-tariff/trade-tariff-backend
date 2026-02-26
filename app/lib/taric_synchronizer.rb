@@ -67,6 +67,8 @@ class TaricSynchronizer
 
       applied_updates = []
 
+      start_time = Process.clock_gettime(Process::CLOCK_MONOTONIC)
+
       # The sync task is run on multiple machines to avoid more than one process
       # running the apply task it is wrapped with a redis lock
       TradeTariffBackend.with_redis_lock do
@@ -83,8 +85,9 @@ class TaricSynchronizer
         applied_updates.flatten!
 
         if applied_updates.any? && BaseUpdate.pending_or_failed.none?
+          duration_ms = ((Process.clock_gettime(Process::CLOCK_MONOTONIC) - start_time) * 1000).round(2)
           TariffSynchronizer::Instrumentation.apply_completed(
-            duration_ms: 0,
+            duration_ms:,
             files_applied: applied_updates.size,
           )
           TariffLogger.apply(applied_updates.map(&:filename))

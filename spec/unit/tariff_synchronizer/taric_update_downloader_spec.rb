@@ -2,14 +2,14 @@ RSpec.describe TariffSynchronizer::TaricUpdateDownloader do
   let(:example_date) { Date.new(2010, 1, 1) }
 
   describe '#perform' do
-    it 'emits a file_import_started instrumentation event' do
+    it 'emits a download_started instrumentation event' do
       allow(TariffSynchronizer::TariffUpdatesRequester).to receive(:perform)
         .with('http://example.com/taric/TARIC320100101').and_return(build(:response, :not_found))
 
-      allow(TariffSynchronizer::Instrumentation).to receive(:file_import_started)
+      allow(TariffSynchronizer::Instrumentation).to receive(:download_started)
 
       described_class.new(example_date).perform
-      expect(TariffSynchronizer::Instrumentation).to have_received(:file_import_started)
+      expect(TariffSynchronizer::Instrumentation).to have_received(:download_started)
     end
 
     it 'Calls the external server to download file' do

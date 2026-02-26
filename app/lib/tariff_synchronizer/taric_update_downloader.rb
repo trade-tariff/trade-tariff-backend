@@ -13,7 +13,7 @@ module TariffSynchronizer
     def perform
       return if check_date_already_downloaded?
 
-      Instrumentation.file_import_started(filename: "taric_check_#{date.iso8601}")
+      Instrumentation.download_started(filename: "taric_check_#{date.iso8601}")
       send("create_record_for_#{response.state}_response")
     end
 

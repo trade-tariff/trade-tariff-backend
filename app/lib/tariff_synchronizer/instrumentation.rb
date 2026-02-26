@@ -26,8 +26,8 @@ module TariffSynchronizer
 
     # Download phase
 
-    def download_started
-      instrument('download_started')
+    def download_started(filename: nil)
+      instrument('download_started', filename:)
     end
 
     def download_completed(duration_ms:, files_count:)
