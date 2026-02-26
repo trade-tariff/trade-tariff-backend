@@ -3,7 +3,7 @@ RSpec.describe EnquiryForm::SendSubmissionEmailWorker, type: :worker do
 
   let(:reference) { 'ABC12345' }
 
-  let(:cached_data) do
+  let(:form_data) do
     {
       name: 'John Doe',
       company_name: 'Doe & Co Inc.',
@@ -13,20 +13,19 @@ RSpec.describe EnquiryForm::SendSubmissionEmailWorker, type: :worker do
       enquiry_description: 'I have a question about quotas',
       reference_number: reference,
       created_at: '2025-08-15 10:00',
-    }.to_json
+    }
   end
 
-  let(:csv_content) { "name,email\nJohn,john@example.com" }
   let(:notifier_client) { instance_double(GovukNotifier, send_email: true) }
 
-  let(:redis_mock) { instance_double(Redis, get: cached_data) }
-
   before do
-    allow(Sidekiq).to receive(:redis).and_yield(redis_mock)
-    allow(EnquiryForm::CsvGeneratorService).to receive(:new).and_call_original
-    allow(Notifications).to receive(:prepare_upload).and_call_original
+    Sidekiq.redis { |conn| conn.set(described_class.cache_key(reference), form_data.to_json, ex: 3600) }
+
     allow(GovukNotifier).to receive(:new).and_return(notifier_client)
-    allow(StringIO).to receive(:new).and_call_original
+  end
+
+  after do
+    Sidekiq.redis { |conn| conn.del(described_class.cache_key(reference)) }
   end
 
   describe '#perform' do
@@ -58,15 +57,16 @@ RSpec.describe EnquiryForm::SendSubmissionEmailWorker, type: :worker do
     end
 
     it 'generates the correct CSV content' do
+      allow(StringIO).to receive(:new).and_call_original
+
       worker.perform(reference)
 
       expect(StringIO).to have_received(:new).with("Reference,Submission date,Full name,Company name,Job title,Email address,What do you need help with?,How can we help?\nABC12345,2025-08-15 10:00,John Doe,Doe & Co Inc.,CEO,john@example.com,Quotas,I have a question about quotas\n").twice
     end
 
     context 'when the cache key has expired or is missing' do
-      let(:redis_mock) { instance_double(Redis, get: nil) }
-
       before do
+        Sidekiq.redis { |conn| conn.del(described_class.cache_key(reference)) }
         allow(Rails.logger).to receive(:error).and_call_original
       end
 
