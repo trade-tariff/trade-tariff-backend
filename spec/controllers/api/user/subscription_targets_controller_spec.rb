@@ -82,4 +82,50 @@ RSpec.describe Api::User::SubscriptionTargetsController do
       end
     end
   end
+
+  describe 'GET #download' do
+    let(:package) { instance_double(Axlsx::Package) }
+    let(:stream) { StringIO.new('mock excel data') }
+    let(:service) { instance_double(Api::User::ActiveCommoditiesService) }
+
+    before do
+      allow(Api::User::ActiveCommoditiesService).to receive(:new).with(subscription).and_return(service)
+      allow(service).to receive(:generate_report).and_return(package)
+      allow(package).to receive(:to_stream).and_return(stream)
+    end
+
+    it 'returns an Excel file with expected headers and body' do
+      freeze_time do
+        get :download, params: { subscription_id: valid_subscription_id }
+
+        expect(response).to have_http_status(:ok)
+        expect(response.content_type).to eq('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+        expect(response.headers['Content-Disposition']).to include('attachment')
+        expect(response.headers['Content-Disposition']).to include('commodity_watch_list-your_codes_')
+        expect(response.body).to eq('mock excel data')
+      end
+    end
+
+    it 'builds the report from the current subscription' do
+      get :download, params: { subscription_id: valid_subscription_id }
+
+      expect(Api::User::ActiveCommoditiesService).to have_received(:new).with(subscription)
+      expect(service).to have_received(:generate_report)
+    end
+
+    context 'when subscription is missing' do
+      it 'returns unauthorized' do
+        get :download, params: { subscription_id: SecureRandom.uuid }
+        expect(response).to have_http_status(:unauthorized)
+      end
+    end
+
+    context 'when no auth token provided' do
+      it 'returns unauthorized' do
+        request.headers['Authorization'] = nil
+        get :download, params: { subscription_id: valid_subscription_id }
+        expect(response).to have_http_status(:unauthorized)
+      end
+    end
+  end
 end
