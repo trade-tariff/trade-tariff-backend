@@ -15,7 +15,6 @@ RSpec.describe Api::V2::EnquiryForm::SubmissionsController, :v2 do
     let(:reference_number) { 'ABC12345' }
 
     let(:frozen_time) { Time.zone.parse('2025-12-08 12:00:00') }
-    let(:redis_mock) { instance_double(Redis, set: nil) }
 
     before do
       travel_to frozen_time
@@ -27,11 +26,11 @@ RSpec.describe Api::V2::EnquiryForm::SubmissionsController, :v2 do
       allow(Api::V2::EnquiryForm::SubmissionSerializer).to receive(:new).and_call_original
 
       allow(::EnquiryForm::SendSubmissionEmailWorker).to receive(:perform_async)
-      allow(Sidekiq).to receive(:redis).and_yield(redis_mock)
     end
 
     after do
       travel_back
+      Sidekiq.redis { |conn| conn.del(::EnquiryForm::SendSubmissionEmailWorker.cache_key(reference_number)) }
     end
 
     it 'returns 201 created with reference number' do
@@ -53,13 +52,10 @@ RSpec.describe Api::V2::EnquiryForm::SubmissionsController, :v2 do
       expected_payload = params.merge(
         reference_number: reference_number,
         created_at: frozen_time.strftime('%Y-%m-%d %H:%M'),
-      ).to_json
-
-      expect(redis_mock).to have_received(:set).with(
-        "enquiry_form_#{reference_number}",
-        expected_payload,
-        ex: 3600,
       )
+
+      cached = Sidekiq.redis { |conn| conn.get("enquiry_form_#{reference_number}") }
+      expect(JSON.parse(cached, symbolize_names: true)).to eq(expected_payload)
 
       expect(::EnquiryForm::SendSubmissionEmailWorker).to have_received(:perform_async).with(reference_number)
     end
