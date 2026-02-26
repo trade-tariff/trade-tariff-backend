@@ -60,13 +60,14 @@ resource "aws_cloudwatch_dashboard" "tariff_sync" {
           width  = 6
           height = 6
           properties = {
-            title  = "Files Applied"
+            title  = "Recent Applies"
             region = var.region
-            view   = "timeSeries"
             query  = <<-EOT
               ${local.source}
               | ${local.service_filter} and event = "apply_completed"
-              | stats sum(files_applied) as files_applied by bin(1h)
+              | fields @timestamp, trade_service, files_applied, duration_ms
+              | sort @timestamp desc
+              | limit 10
             EOT
           }
         },
@@ -179,7 +180,7 @@ resource "aws_cloudwatch_dashboard" "tariff_sync" {
             query  = <<-EOT
               ${local.source}
               | ${local.service_filter} and event = "sync_run_completed"
-              | fields @timestamp, trade_service, run_id, duration_ms, files_downloaded, files_applied
+              | fields @timestamp, trade_service, run_id, duration_ms
               | sort @timestamp desc
               | limit 20
             EOT
