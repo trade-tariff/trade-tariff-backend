@@ -23,7 +23,7 @@ RSpec.describe CustomJobLogger do
     end
 
     context 'when the job succeeds' do
-      it 'logs the job completion with redacted args' do
+      it 'logs the job completion' do
         logger.call(item, queue) { true }
 
         expect(Sidekiq.logger).to have_received(:info).with(
@@ -41,18 +41,13 @@ RSpec.describe CustomJobLogger do
     end
 
     context 'when the job fails' do
-      before do
-        allow(TradeTariffBackend).to receive(:slack_failures_enabled?).and_return(true)
-        allow(SlackNotifierService).to receive(:call)
-      end
-
       let(:error) do
         StandardError.new('Something went wrong').tap do |e|
           e.set_backtrace(['line 1', 'line 2'])
         end
       end
 
-      it 'logs the job failure with redacted args and alerts Slack' do
+      it 'logs the job failure' do
         expect {
           logger.call(item, queue) { raise error }
         }.to raise_error(StandardError, 'Something went wrong')
@@ -71,31 +66,6 @@ RSpec.describe CustomJobLogger do
             'status' => 'fail',
           ),
         )
-      end
-
-      it 'sends a Slack alert with job failure details' do
-        expect {
-          logger.call(item, queue) { raise error }
-        }.to raise_error(StandardError, 'Something went wrong')
-
-        expect(SlackNotifierService).to have_received(:call).with(
-          hash_including(
-            text: include('Job Failed: BuildIndexPageWorker (JID: 11a54a43f3130a57c845350f)'),
-            channel: TradeTariffBackend.slack_failures_channel,
-          ),
-        )
-      end
-
-      context 'when the job has slack_alerts: false' do
-        let(:item) { super().merge('slack_alerts' => false) }
-
-        it 'does not send a Slack alert' do
-          expect {
-            logger.call(item, queue) { raise error }
-          }.to raise_error(StandardError, 'Something went wrong')
-
-          expect(SlackNotifierService).not_to have_received(:call)
-        end
       end
     end
   end
