@@ -99,7 +99,7 @@ resource "aws_cloudwatch_dashboard" "self_text_generator" {
             query  = <<-EOT
               ${local.source}
               | ${local.service_filter} and event = "chapter_completed" and not ispresent(exception)
-              | stats sum(ai.processed) as processed, sum(ai.failed) as failed by bin(1h)
+              | stats sum(ai.processed) + sum(non_other_ai.processed) as processed, sum(ai.failed) + sum(non_other_ai.failed) as failed by bin(1h)
             EOT
           }
         }
@@ -175,7 +175,7 @@ resource "aws_cloudwatch_dashboard" "self_text_generator" {
             query  = <<-EOT
               ${local.source}
               | ${local.service_filter} and event = "chapter_completed" and not ispresent(exception)
-              | fields @timestamp, chapter_code, duration_ms, mechanical.processed, ai.processed, ai.failed
+              | fields @timestamp, chapter_code, duration_ms, ai.processed, ai.failed, non_other_ai.processed, non_other_ai.failed
               | sort @timestamp desc
               | limit 50
             EOT

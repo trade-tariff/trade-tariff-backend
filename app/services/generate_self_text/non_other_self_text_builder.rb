@@ -53,7 +53,6 @@ module GenerateSelfText
           self_text: record.self_text,
           stale: record.stale,
           manually_edited: record.manually_edited,
-          generation_type: record.generation_type,
         }
       end
     end
