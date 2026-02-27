@@ -1,20 +1,6 @@
 namespace :labels do
-  desc 'Refresh the goods_nomenclature_labels materialized view'
-  task refresh: :environment do
-    puts 'Refreshing goods_nomenclature_labels materialized view...'
-
-    start_time = Time.current
-    GoodsNomenclatureLabel.refresh!(concurrently: false)
-    duration = (Time.current - start_time).round(2)
-
-    puts "Refreshed in #{duration}s"
-    puts "Total labels: #{GoodsNomenclatureLabel.count}"
-  end
-
   desc 'Show label coverage statistics'
   task coverage: :environment do
-    GoodsNomenclatureLabel.refresh!(concurrently: false)
-
     TimeMachine.now do
       total_gn = GoodsNomenclature.actual.with_leaf_column.declarable.count
       total_labels = GoodsNomenclatureLabel.count
@@ -54,26 +40,19 @@ namespace :labels do
     end
   end
 
-  desc 'Re-label nodes that have generated self-texts (CHAPTER=02 to scope by chapter)'
+  desc 'Mark all labels stale and re-label (CHAPTER=02 to scope by chapter)'
   task relabel: :environment do
-    sids = GoodsNomenclatureSelfText.select(:goods_nomenclature_sid)
+    scope = GoodsNomenclatureLabel.dataset
 
     if ENV['CHAPTER'].present?
-      chapter_code = ENV['CHAPTER'].ljust(10, '0')
-      sids = sids.where(Sequel.like(:goods_nomenclature_item_id, "#{chapter_code[0..1]}%"))
+      scope = scope.where(Sequel.like(:goods_nomenclature_item_id, "#{ENV['CHAPTER']}%"))
     end
 
-    sid_values = sids.select_map(:goods_nomenclature_sid)
-    puts "Found #{sid_values.size} nodes with self-texts"
-
-    deleted = GoodsNomenclatureLabel::Operation.where(goods_nomenclature_sid: sid_values).delete
-    puts "Deleted #{deleted} existing label oplog entries"
-
-    puts 'Refreshing materialized view...'
-    GoodsNomenclatureLabel.refresh!(concurrently: false)
+    updated = scope.update(stale: true, updated_at: Time.zone.now)
+    puts "Marked #{updated} labels as stale"
 
     unlabeled = GoodsNomenclatureLabel.goods_nomenclatures_dataset.count
-    puts "#{unlabeled} nodes now unlabeled, enqueuing generation..."
+    puts "#{unlabeled} nodes now need relabeling, enqueuing generation..."
 
     RelabelGoodsNomenclatureWorker.perform_async
     puts 'Done. Check Sidekiq for progress.'
@@ -103,15 +82,10 @@ namespace :labels do
       exit 1
     end
 
-    puts "\nDeleting all labels from oplog..."
-    # Delete from oplog table directly (materialized view is read-only)
-    deleted_count = GoodsNomenclatureLabel::Operation.count
-    GoodsNomenclatureLabel::Operation.truncate
-    puts "Deleted #{deleted_count} oplog entries"
-
-    puts "\nRefreshing materialized view..."
-    GoodsNomenclatureLabel.refresh!(concurrently: false)
-    puts "Labels count after refresh: #{GoodsNomenclatureLabel.count}"
+    puts "\nDeleting all labels..."
+    deleted_count = GoodsNomenclatureLabel.count
+    GoodsNomenclatureLabel.dataset.delete
+    puts "Deleted #{deleted_count} labels"
 
     puts "\nEnqueuing label generation..."
     RelabelGoodsNomenclatureWorker.perform_async

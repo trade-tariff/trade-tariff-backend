@@ -83,12 +83,10 @@ RSpec.describe Api::Admin::GoodsNomenclatureLabels::StatsService do
                goods_nomenclature: commodity1,
                labels: { 'description' => 'AI description' }
 
-        label = create :goods_nomenclature_label,
-                       goods_nomenclature: commodity2,
-                       labels: { 'description' => 'Original' }
-        label.set(labels: { 'description' => 'Human edited' })
-        label.save_update
-        GoodsNomenclatureLabel.refresh!(concurrently: false)
+        create :goods_nomenclature_label,
+               goods_nomenclature: commodity2,
+               labels: { 'description' => 'Human edited' },
+               manually_edited: true
       end
 
       it 'counts AI-created labels' do

@@ -8,8 +8,9 @@
 #    import run. On UK, matched by filename from the tariff_updates table.
 #    On XI, matched by operation_date (the file's issue_date, indexed).
 #
-# Structure/indent changes regenerate self-texts for the affected chapter.
-# Description changes additionally invalidate labels for relabelling.
+# All changes regenerate self-texts for the affected chapter and mark
+# labels stale for relabelling. Search embeddings are deferred to the
+# relabel page worker so they include fresh label data.
 class GoodsNomenclatureReconciliationWorker
   include Sidekiq::Worker
 
@@ -27,15 +28,8 @@ class GoodsNomenclatureReconciliationWorker
       regenerate_self_texts(chapter_code)
     end
 
-    description_sids = affected
-      .select { |_sid, type, _item_id| type == :description_changed }
-      .map(&:first)
-      .uniq
-
-    structure_only_sids = affected.map(&:first).uniq - description_sids
-    GoodsNomenclatureSelfText.regenerate_search_embeddings(structure_only_sids)
-
-    invalidate_labels(description_sids)
+    all_sids = affected.map(&:first).uniq
+    mark_labels_stale(all_sids)
   end
 
   private
@@ -114,7 +108,7 @@ class GoodsNomenclatureReconciliationWorker
     GoodsNomenclatureSelfText
       .where(goods_nomenclature_sid: sids)
       .where(stale: false)
-      .update(stale: true, search_embedding: nil, updated_at: Time.zone.now)
+      .update(stale: true, search_embedding_stale: true, updated_at: Time.zone.now)
   end
 
   def regenerate_self_texts(chapter_code)
@@ -125,15 +119,13 @@ class GoodsNomenclatureReconciliationWorker
     GenerateSelfText::MechanicalBuilder.call(chapter)
   end
 
-  def invalidate_labels(sids)
+  def mark_labels_stale(sids)
     return if sids.empty?
 
-    TimeMachine.now do
-      GoodsNomenclatureLabel
-        .where(goods_nomenclature_sid: sids)
-        .actual
-        .each(&:destroy)
-    end
+    GoodsNomenclatureLabel
+      .where(goods_nomenclature_sid: sids)
+      .where(stale: false)
+      .update(stale: true, updated_at: Time.zone.now)
 
     RelabelGoodsNomenclatureWorker.perform_async
   end

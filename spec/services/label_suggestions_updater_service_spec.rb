@@ -64,17 +64,15 @@ RSpec.describe LabelSuggestionsUpdaterService do
             .select_map(:value),
         ).to eq(%w[old-synonym])
 
-        # Update the label via the oplog table directly
+        # Update the label directly
         label = GoodsNomenclatureLabel
           .where(goods_nomenclature_sid: commodity.goods_nomenclature_sid)
           .first
-        label.set(labels: {
+        label.update(labels: Sequel.pg_jsonb({
           'known_brands' => [],
           'colloquial_terms' => [],
           'synonyms' => %w[new-synonym],
-        })
-        label.save_update
-        GoodsNomenclatureLabel.refresh!(concurrently: false)
+        }))
 
         described_class.new(commodity).call
 

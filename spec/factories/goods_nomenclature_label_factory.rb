@@ -8,14 +8,6 @@ FactoryBot.define do
 
     labels { { description: 'Flibble' } }
 
-    validity_start_date do
-      goods_nomenclature&.validity_start_date || 2.years.ago.beginning_of_day
-    end
-
-    validity_end_date do
-      goods_nomenclature&.validity_end_date
-    end
-
     goods_nomenclature_item_id do
       goods_nomenclature&.goods_nomenclature_item_id || "0101#{generate(:commodity_short_code)}"
     end
@@ -28,8 +20,9 @@ FactoryBot.define do
       goods_nomenclature&.class&.name || 'Commodity'
     end
 
-    operation { 'C' }
-    operation_date { Time.zone.now.utc }
+    stale { false }
+    manually_edited { false }
+    context_hash { nil }
 
     trait :with_labels do
       labels do
@@ -43,8 +36,12 @@ FactoryBot.define do
       end
     end
 
-    after(:create) do |_label, _evaluator|
-      GoodsNomenclatureLabel.refresh!(concurrently: false) if Rails.env.test?
+    trait :stale do
+      stale { true }
+    end
+
+    trait :manually_edited do
+      manually_edited { true }
     end
   end
 end

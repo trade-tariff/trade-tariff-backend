@@ -12,13 +12,11 @@ RSpec.describe Api::Admin::GoodsNomenclatures::GoodsNomenclatureLabelsController
             goods_nomenclature_item_id: String,
             goods_nomenclature_type: String,
             producline_suffix: String,
-            validity_start_date: String,
-            validity_end_date: wildcard_matcher,
+            stale: wildcard_matcher,
+            manually_edited: wildcard_matcher,
+            context_hash: wildcard_matcher,
             labels: Hash,
           },
-        },
-        meta: {
-          version: Hash,
         },
       }
     end
@@ -32,14 +30,6 @@ RSpec.describe Api::Admin::GoodsNomenclatures::GoodsNomenclatureLabelsController
         get :show, params: { goods_nomenclature_id: commodity.goods_nomenclature_item_id }, format: :json
 
         expect(response.body).to match_json_expression pattern
-      end
-
-      it 'returns current version meta' do
-        get :show, params: { goods_nomenclature_id: commodity.goods_nomenclature_item_id }, format: :json
-
-        json = JSON.parse(response.body)
-        expect(json.dig('meta', 'version', 'current')).to be true
-        expect(json.dig('meta', 'version', 'has_previous_version')).to be false
       end
     end
 
@@ -56,46 +46,6 @@ RSpec.describe Api::Admin::GoodsNomenclatures::GoodsNomenclatureLabelsController
     context 'when goods nomenclature does not exist' do
       it 'returns not found' do
         get :show, params: { goods_nomenclature_id: '9999999999' }, format: :json
-
-        expect(response.status).to eq 404
-      end
-    end
-
-    context 'when filtering by oid for historical version' do
-      let(:commodity) { create :commodity }
-      let!(:goods_nomenclature_label) { create :goods_nomenclature_label, goods_nomenclature: commodity }
-
-      before do
-        goods_nomenclature_label.set(labels: { 'description' => 'Updated description' })
-        goods_nomenclature_label.save_update
-        GoodsNomenclatureLabel.refresh!(concurrently: false)
-      end
-
-      it 'returns the previous version' do
-        current_oid = goods_nomenclature_label.reload.oid
-
-        get :show, params: {
-          goods_nomenclature_id: commodity.goods_nomenclature_item_id,
-          filter: { oid: current_oid },
-        }, format: :json
-
-        expect(response.status).to eq 200
-        json = JSON.parse(response.body)
-        expect(json.dig('meta', 'version', 'current')).to be false
-        expect(json.dig('data', 'attributes', 'labels', 'description')).to eq 'Flibble'
-      end
-
-      it 'returns 404 when no previous version exists' do
-        first_oid = GoodsNomenclatureLabel::Operation
-          .where(goods_nomenclature_sid: commodity.goods_nomenclature_sid)
-          .order(:oid)
-          .first
-          .oid
-
-        get :show, params: {
-          goods_nomenclature_id: commodity.goods_nomenclature_item_id,
-          filter: { oid: first_oid },
-        }, format: :json
 
         expect(response.status).to eq 404
       end
@@ -126,42 +76,30 @@ RSpec.describe Api::Admin::GoodsNomenclatures::GoodsNomenclatureLabelsController
         expect(response.status).to eq 200
       end
 
-      it 'inserts a new row with U operation' do
-        expect {
-          put :update, params: {
-            goods_nomenclature_id: commodity.goods_nomenclature_item_id,
-            data: { type: 'goods_nomenclature_label', attributes: { labels: new_labels } },
-          }, format: :json
-        }.to change {
-          GoodsNomenclatureLabel::Operation
-            .where(goods_nomenclature_sid: commodity.goods_nomenclature_sid)
-            .count
-        }.by(1)
-      end
-
-      it 'creates an update operation' do
+      it 'updates the label in place' do
         put :update, params: {
           goods_nomenclature_id: commodity.goods_nomenclature_item_id,
           data: { type: 'goods_nomenclature_label', attributes: { labels: new_labels } },
         }, format: :json
 
-        latest_operation = GoodsNomenclatureLabel::Operation
+        label = GoodsNomenclatureLabel
           .where(goods_nomenclature_sid: commodity.goods_nomenclature_sid)
-          .order(Sequel.desc(:oid))
           .first
 
-        expect(latest_operation.operation).to eq 'U'
+        expect(label.labels['description']).to eq 'Updated description'
       end
 
-      it 'returns version meta indicating previous version exists' do
+      it 'marks the label as manually edited' do
         put :update, params: {
           goods_nomenclature_id: commodity.goods_nomenclature_item_id,
           data: { type: 'goods_nomenclature_label', attributes: { labels: new_labels } },
         }, format: :json
 
-        json = JSON.parse(response.body)
-        expect(json.dig('meta', 'version', 'has_previous_version')).to be true
-        expect(json.dig('meta', 'version', 'previous_oid')).to be_present
+        label = GoodsNomenclatureLabel
+          .where(goods_nomenclature_sid: commodity.goods_nomenclature_sid)
+          .first
+
+        expect(label.manually_edited).to be true
       end
     end
 
