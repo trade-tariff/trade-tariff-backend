@@ -87,8 +87,16 @@ RSpec.describe GoodsNomenclatureLabel do
       )
     end
 
+    it 'populates structured columns from the item' do
+      expect(label.description).to eq('A test description')
+      expect(label.known_brands.to_a).to eq(['Brand A'])
+      expect(label.colloquial_terms.to_a).to eq(['slang term'])
+      expect(label.synonyms.to_a).to eq(%w[synonym])
+    end
+
     it 'includes original_description from classification_description by default' do
       expect(label.labels['original_description']).to eq(goods_nomenclature.classification_description)
+      expect(label.original_description).to eq(goods_nomenclature.classification_description)
     end
 
     it 'computes context_hash from the description' do
@@ -101,6 +109,7 @@ RSpec.describe GoodsNomenclatureLabel do
 
       it 'uses the provided contextual_description as original_description' do
         expect(label.labels['original_description']).to eq('Full contextual description')
+        expect(label.original_description).to eq('Full contextual description')
       end
 
       it 'computes context_hash from the contextual_description' do
@@ -170,7 +179,7 @@ RSpec.describe GoodsNomenclatureLabel do
     subject(:labels) { create(:goods_nomenclature_label, :with_labels).labels }
 
     it { is_expected.to be_a(Sequel::Postgres::JSONBHash) }
-    it { expect(labels.keys).to include('brands', 'colloquialisms', 'descriptions', 'search_references', 'synonyms') }
+    it { expect(labels.keys).to include('description', 'colloquial_terms', 'known_brands', 'synonyms') }
   end
 
   describe '.goods_nomenclatures_dataset' do

@@ -110,6 +110,69 @@ module LabelGenerator
       )
     end
 
+    def scoring_started(event)
+      info log_entry(
+        event: 'scoring_started',
+        total_records: event.payload[:total_records],
+      )
+    end
+
+    def scoring_completed(event)
+      info log_entry(
+        event: 'scoring_completed',
+        scored: event.payload[:scored],
+        mean_description_score: event.payload[:mean_description_score],
+        duration_ms: event.duration.round(2),
+      )
+    end
+
+    def scoring_failed(event)
+      error log_entry(
+        event: 'scoring_failed',
+        error_class: event.payload[:error_class],
+        error_message: event.payload[:error_message],
+      )
+    end
+
+    def embedding_api_call_started(event)
+      debug log_entry(
+        event: 'embedding_api_call_started',
+        batch_size: event.payload[:batch_size],
+        model: event.payload[:model],
+      )
+    end
+
+    def embedding_api_call_completed(event)
+      info log_entry(
+        event: 'embedding_api_call_completed',
+        batch_size: event.payload[:batch_size],
+        model: event.payload[:model],
+        duration_ms: event.payload[:duration_ms],
+      )
+    end
+
+    def embedding_api_call_failed(event)
+      error log_entry(
+        event: 'embedding_api_call_failed',
+        batch_size: event.payload[:batch_size],
+        model: event.payload[:model],
+        error_class: event.payload[:error_class],
+        error_message: event.payload[:error_message],
+        duration_ms: event.payload[:duration_ms],
+        http_status: event.payload[:http_status],
+      )
+    end
+
+    def embedding_api_retry(event)
+      warn log_entry(
+        event: 'embedding_api_retry',
+        attempt: event.payload[:attempt],
+        delay: event.payload[:delay],
+        error_class: event.payload[:error_class],
+        error_message: event.payload[:error_message],
+      )
+    end
+
     private
 
     def log_entry(data)

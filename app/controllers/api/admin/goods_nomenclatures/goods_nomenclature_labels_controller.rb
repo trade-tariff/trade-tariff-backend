@@ -75,17 +75,21 @@ module Api
 
         def label_params
           attributes = params.require(:data).require(:attributes)
-          labels = attributes[:labels]
+          labels_data = attributes[:labels]
 
-          return {} if labels.blank?
+          return {} if labels_data.blank?
 
           {
+            description: labels_data[:description],
+            known_brands: Sequel.pg_array(Array(labels_data[:known_brands]), :text),
+            colloquial_terms: Sequel.pg_array(Array(labels_data[:colloquial_terms]), :text),
+            synonyms: Sequel.pg_array(Array(labels_data[:synonyms]), :text),
             labels: {
-              'original_description' => goods_nomenclature_label.labels&.dig('original_description'),
-              'description' => labels[:description],
-              'known_brands' => Array(labels[:known_brands]),
-              'colloquial_terms' => Array(labels[:colloquial_terms]),
-              'synonyms' => Array(labels[:synonyms]),
+              'original_description' => goods_nomenclature_label.original_description,
+              'description' => labels_data[:description],
+              'known_brands' => Array(labels_data[:known_brands]),
+              'colloquial_terms' => Array(labels_data[:colloquial_terms]),
+              'synonyms' => Array(labels_data[:synonyms]),
             },
           }
         end

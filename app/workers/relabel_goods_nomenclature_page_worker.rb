@@ -40,6 +40,7 @@ class RelabelGoodsNomenclaturePageWorker
 
       sids = batch.map(&:goods_nomenclature_sid)
       GoodsNomenclatureSelfText.regenerate_search_embeddings(sids)
+      LabelConfidenceScorer.new.score(sids)
     end
   rescue StandardError => e
     LabelGenerator::Instrumentation.page_failed(
@@ -78,6 +79,11 @@ class RelabelGoodsNomenclaturePageWorker
       target: :goods_nomenclature_sid,
       update: {
         labels: label.labels,
+        description: label.description,
+        original_description: label.original_description,
+        synonyms: label.synonyms,
+        colloquial_terms: label.colloquial_terms,
+        known_brands: label.known_brands,
         context_hash: label.context_hash,
         stale: false,
         updated_at: now,
@@ -89,6 +95,11 @@ class RelabelGoodsNomenclaturePageWorker
       goods_nomenclature_item_id: label.goods_nomenclature_item_id,
       producline_suffix: label.producline_suffix,
       labels: label.labels,
+      description: label.description,
+      original_description: label.original_description,
+      synonyms: label.synonyms,
+      colloquial_terms: label.colloquial_terms,
+      known_brands: label.known_brands,
       context_hash: label.context_hash,
       stale: false,
       manually_edited: false,
