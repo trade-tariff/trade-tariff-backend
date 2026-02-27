@@ -245,7 +245,7 @@ RSpec.describe GoodsNomenclatureReconciliationWorker, type: :worker do
           .first
 
         expect(self_text.stale).to be true
-        expect(self_text.search_embedding).to be_present
+        expect(self_text.search_embedding_stale).to be true
         expect(GenerateSelfText::AiBuilder).to have_received(:call).with(
           an_instance_of(Chapter),
         ).ordered
