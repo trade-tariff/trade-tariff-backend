@@ -51,6 +51,34 @@ RSpec.describe SidekiqDeathHandler do
     end
   end
 
+  context 'when the job has no error fields (retry: false)' do
+    let(:job) do
+      {
+        'class' => 'RefreshAppendix5aGuidanceWorker',
+        'jid' => 'abc123',
+        'queue' => 'default',
+        'args' => [],
+      }
+    end
+
+    let(:exception) { RuntimeError.new('SMTP connection timed out') }
+
+    it 'falls back to the exception object for error details' do
+      described_class.call(job, exception)
+
+      expect(SlackNotifierService).to have_received(:call).with(
+        channel: TradeTariffBackend.slack_failures_channel,
+        attachments: [
+          hash_including(
+            fields: include(
+              hash_including(title: 'Error', value: include('RuntimeError', 'SMTP connection timed out')),
+            ),
+          ),
+        ],
+      )
+    end
+  end
+
   context 'when the job has slack_alerts: false' do
     let(:job) { super().merge('slack_alerts' => false) }
 
