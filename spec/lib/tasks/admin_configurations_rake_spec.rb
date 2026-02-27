@@ -8,8 +8,8 @@ RSpec.describe 'admin_configurations:seed' do
     Rake::Task['admin_configurations:seed'].reenable
   end
 
-  it 'creates all 30 admin configurations', :aggregate_failures do
-    expect { seed }.to change(AdminConfiguration, :count).by(30)
+  it 'creates all 33 admin configurations', :aggregate_failures do
+    expect { seed }.to change(AdminConfiguration, :count).by(33)
 
     names = AdminConfiguration.order(:name).select_map(:name)
     expect(names).to eq(%w[
@@ -23,7 +23,13 @@ RSpec.describe 'admin_configurations:seed' do
       label_context
       label_model
       label_page_size
+      non_other_self_text_batch_size
+      non_other_self_text_context
+      non_other_self_text_model
       opensearch_result_limit
+      other_self_text_batch_size
+      other_self_text_context
+      other_self_text_model
       pos_noun_boost
       pos_qualifier_boost
       pos_search_enabled
@@ -32,9 +38,6 @@ RSpec.describe 'admin_configurations:seed' do
       search_labels_enabled
       search_model
       search_result_limit
-      self_text_batch_size
-      self_text_context
-      self_text_model
       suggest_chemical_cas
       suggest_chemical_cus
       suggest_chemical_names
@@ -49,7 +52,7 @@ RSpec.describe 'admin_configurations:seed' do
   it 'seeds options configs with sorted model options', :aggregate_failures do
     seed
 
-    %w[label_model search_model expand_model self_text_model].each do |name|
+    %w[label_model search_model expand_model other_self_text_model non_other_self_text_model].each do |name|
       config = AdminConfiguration.where(name:).first
       expect(config.config_type).to eq('options')
       expect(config.area).to eq('classification')
@@ -88,20 +91,34 @@ RSpec.describe 'admin_configurations:seed' do
     expect(expand_query.value).to include('## Output format')
     expect(expand_query.value).to include('## Example')
 
-    self_text_context = AdminConfiguration.where(name: 'self_text_context').first
-    expect(self_text_context.config_type).to eq('markdown')
-    expect(self_text_context.value).to include('## Output format')
-    expect(self_text_context.value).to include('excluded_siblings')
-    expect(self_text_context.value).to include('## Qualified Other patterns')
+    other_self_text_context = AdminConfiguration.where(name: 'other_self_text_context').first
+    expect(other_self_text_context.config_type).to eq('markdown')
+    expect(other_self_text_context.value).to include('## Output format')
+    expect(other_self_text_context.value).to include('excluded_siblings')
+    expect(other_self_text_context.value).to include('## Qualified Other patterns')
+
+    non_other_self_text_context = AdminConfiguration.where(name: 'non_other_self_text_context').first
+    expect(non_other_self_text_context.config_type).to eq('markdown')
+    expect(non_other_self_text_context.value).to include('## Output format')
+    expect(non_other_self_text_context.value).to include('## Style rules')
   end
 
-  it 'seeds self_text_batch_size as an integer config defaulting to 5', :aggregate_failures do
+  it 'seeds other_self_text_batch_size as an integer config defaulting to 5', :aggregate_failures do
     seed
 
-    config = AdminConfiguration.where(name: 'self_text_batch_size').first
+    config = AdminConfiguration.where(name: 'other_self_text_batch_size').first
     expect(config.config_type).to eq('integer')
     expect(config.area).to eq('classification')
     expect(config.value).to eq(5)
+  end
+
+  it 'seeds non_other_self_text_batch_size as an integer config defaulting to 15', :aggregate_failures do
+    seed
+
+    config = AdminConfiguration.where(name: 'non_other_self_text_batch_size').first
+    expect(config.config_type).to eq('integer')
+    expect(config.area).to eq('classification')
+    expect(config.value).to eq(15)
   end
 
   it 'seeds label_page_size as an integer config with the current page size', :aggregate_failures do
@@ -229,7 +246,7 @@ RSpec.describe 'admin_configurations:seed' do
   it 'uses indented code blocks instead of fenced blocks for Govspeak compatibility', :aggregate_failures do
     seed
 
-    %w[label_context search_context expand_query_context self_text_context].each do |name|
+    %w[label_context search_context expand_query_context other_self_text_context non_other_self_text_context].each do |name|
       config = AdminConfiguration.where(name:).first
       expect(config.value).not_to include('```'), "#{name} should not contain fenced code blocks"
     end
@@ -249,8 +266,8 @@ RSpec.describe 'admin_configurations:seed' do
     seed
 
     # The oplog plugin also calls refresh! in test mode after each create,
-    # so total calls = 30 (oplog) + 1 (rake task) = 31
-    expect(AdminConfiguration).to have_received(:refresh!).with(concurrently: false).exactly(31).times
+    # so total calls = 33 (oplog) + 1 (rake task) = 34
+    expect(AdminConfiguration).to have_received(:refresh!).with(concurrently: false).exactly(34).times
   end
 
   it 'does not refresh when nothing is created' do

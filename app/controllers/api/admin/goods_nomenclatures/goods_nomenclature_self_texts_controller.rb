@@ -46,7 +46,8 @@ module Api
           # Force regeneration by invalidating context hash so context_stale? returns true
           self_text_record.update(context_hash: 'invalidated', stale: true)
 
-          GenerateSelfText::AiBuilder.call(chapter)
+          GenerateSelfText::OtherSelfTextBuilder.call(chapter)
+          GenerateSelfText::NonOtherSelfTextBuilder.call(chapter)
 
           render json: serialize(self_text_record.reload), status: :ok
         end

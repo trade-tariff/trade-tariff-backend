@@ -229,16 +229,18 @@ RSpec.describe Api::Admin::GoodsNomenclatures::GoodsNomenclatureSelfTextsControl
     end
 
     before do
-      allow(GenerateSelfText::AiBuilder).to receive(:call)
+      allow(GenerateSelfText::OtherSelfTextBuilder).to receive(:call)
+      allow(GenerateSelfText::NonOtherSelfTextBuilder).to receive(:call)
     end
 
-    it 'invalidates context_hash, marks stale, and calls the builder' do
+    it 'invalidates context_hash, marks stale, and calls the builders' do
       post :regenerate, params: { goods_nomenclature_id: self_text.goods_nomenclature_item_id }, format: :json
 
       expect(response).to have_http_status(:ok)
       expect(self_text.reload.context_hash).to eq('invalidated')
       expect(self_text.reload.stale).to be true
-      expect(GenerateSelfText::AiBuilder).to have_received(:call)
+      expect(GenerateSelfText::OtherSelfTextBuilder).to have_received(:call)
+      expect(GenerateSelfText::NonOtherSelfTextBuilder).to have_received(:call)
     end
 
     context 'when self text record does not exist' do

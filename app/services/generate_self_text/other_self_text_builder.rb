@@ -1,5 +1,5 @@
 module GenerateSelfText
-  class AiBuilder
+  class OtherSelfTextBuilder
     OTHER_PATTERN = SegmentExtractor::OTHER_PATTERN
     SEPARATOR = ' >> '.freeze
 
@@ -214,19 +214,19 @@ module GenerateSelfText
 
     def system_prompt
       @system_prompt ||= begin
-        prompt = AdminConfiguration.classification.by_name('self_text_context')&.value
-        raise 'self_text_context admin configuration not found - run rake admin_configurations:seed' unless prompt
+        prompt = AdminConfiguration.classification.by_name('other_self_text_context')&.value
+        raise 'other_self_text_context admin configuration not found - run rake admin_configurations:seed' unless prompt
 
         prompt
       end
     end
 
     def model
-      @model ||= AdminConfiguration.option_value('self_text_model')
+      @model ||= AdminConfiguration.option_value('other_self_text_model')
     end
 
     def batch_size
-      @batch_size ||= AdminConfiguration.integer_value('self_text_batch_size')
+      @batch_size ||= AdminConfiguration.integer_value('other_self_text_batch_size')
     end
   end
 end

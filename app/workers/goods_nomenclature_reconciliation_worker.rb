@@ -115,8 +115,8 @@ class GoodsNomenclatureReconciliationWorker
     chapter = TimeMachine.now { Chapter.actual.by_code(chapter_code).first }
     return unless chapter
 
-    GenerateSelfText::AiBuilder.call(chapter)
-    GenerateSelfText::MechanicalBuilder.call(chapter)
+    GenerateSelfText::OtherSelfTextBuilder.call(chapter)
+    GenerateSelfText::NonOtherSelfTextBuilder.call(chapter)
   end
 
   def mark_labels_stale(sids)

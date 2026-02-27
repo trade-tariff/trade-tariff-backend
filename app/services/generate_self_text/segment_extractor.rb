@@ -71,6 +71,7 @@ module GenerateSelfText
           code: node.goods_nomenclature_item_id,
           description: description,
           is_other: is_other,
+          eu_self_text: SelfTextLookupService.lookup(node.goods_nomenclature_item_id),
           goods_nomenclature_class: node.goods_nomenclature_class,
           declarable: node.declarable?,
         },

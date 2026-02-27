@@ -24,7 +24,7 @@ resource "aws_cloudwatch_dashboard" "self_text_generator" {
           properties = {
             markdown = join("\n", [
               "## Self-Text Generator",
-              "Batch self-text generation across 98 chapters. Each chapter runs MechanicalBuilder then AiBuilder on the within_1_day queue.",
+              "Batch self-text generation across 98 chapters. Each chapter runs OtherSelfTextBuilder then NonOtherSelfTextBuilder on the within_1_day queue.",
               "**Healthy:** all chapters succeed, API latency p90 < 30s, reindex completes after each batch. Scoring: mean similarity > 0.7, embedding API p90 < 5s.",
               "**Start here:** check Chapter Success vs Failure trend, then drill into failure tables and scoring metrics below.",
               "**Related:** [Label Generator](${local.label_dashboard_url}) | [Search](${local.search_dashboard_url})",
@@ -99,7 +99,7 @@ resource "aws_cloudwatch_dashboard" "self_text_generator" {
             query  = <<-EOT
               ${local.source}
               | ${local.service_filter} and event = "chapter_completed" and not ispresent(exception)
-              | stats sum(ai.processed) as processed, sum(ai.failed) as failed by bin(1h)
+              | stats sum(ai.processed) + sum(non_other_ai.processed) as processed, sum(ai.failed) + sum(non_other_ai.failed) as failed by bin(1h)
             EOT
           }
         }
@@ -175,7 +175,7 @@ resource "aws_cloudwatch_dashboard" "self_text_generator" {
             query  = <<-EOT
               ${local.source}
               | ${local.service_filter} and event = "chapter_completed" and not ispresent(exception)
-              | fields @timestamp, chapter_code, duration_ms, mechanical.processed, ai.processed, ai.failed
+              | fields @timestamp, chapter_code, duration_ms, ai.processed, ai.failed, non_other_ai.processed, non_other_ai.failed
               | sort @timestamp desc
               | limit 50
             EOT

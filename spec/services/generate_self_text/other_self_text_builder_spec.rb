@@ -1,4 +1,4 @@
-RSpec.describe GenerateSelfText::AiBuilder do
+RSpec.describe GenerateSelfText::OtherSelfTextBuilder do
   describe '.call' do
     subject(:result) { described_class.call(chapter) }
 
@@ -44,20 +44,20 @@ RSpec.describe GenerateSelfText::AiBuilder do
 
       if seed_self_text_context
         create(:admin_configuration,
-               name: 'self_text_context',
+               name: 'other_self_text_context',
                config_type: 'markdown',
                description: 'System prompt for self-text generation',
                value: system_prompt_text)
       end
 
       create(:admin_configuration,
-             name: 'self_text_model',
+             name: 'other_self_text_model',
              config_type: 'options',
              description: 'AI model for self-text generation',
              value: { 'selected' => 'gpt-4.1-mini-2025-04-14', 'options' => [{ 'key' => 'gpt-4.1-mini-2025-04-14' }] })
 
       create(:admin_configuration,
-             name: 'self_text_batch_size',
+             name: 'other_self_text_batch_size',
              config_type: 'integer',
              description: 'Batch size for AI self-text generation',
              value: '5')
@@ -108,7 +108,7 @@ RSpec.describe GenerateSelfText::AiBuilder do
 
       before do
         allow(AdminConfiguration).to receive(:integer_value)
-          .with('self_text_batch_size').and_return(3)
+          .with('other_self_text_batch_size').and_return(3)
 
         other_commodities
 
@@ -330,18 +330,18 @@ RSpec.describe GenerateSelfText::AiBuilder do
       end
     end
 
-    context 'when self_text_context config is missing' do
+    context 'when other_self_text_context config is missing' do
       let(:seed_self_text_context) { false }
 
       it 'raises an error with a helpful message' do
-        expect { result }.to raise_error(RuntimeError, /self_text_context admin configuration not found/)
+        expect { result }.to raise_error(RuntimeError, /other_self_text_context admin configuration not found/)
       end
     end
 
-    context 'when self_text_model and batch_size configs use defaults' do
+    context 'when other_self_text_model and batch_size configs use defaults' do
       it 'falls back to default model' do
         allow(AdminConfiguration).to receive(:option_value)
-          .with('self_text_model').and_return(TradeTariffBackend.ai_model)
+          .with('other_self_text_model').and_return(TradeTariffBackend.ai_model)
 
         result
 
