@@ -43,7 +43,7 @@ class GoodsNomenclatureLabel < Sequel::Model
     def build(goods_nomenclature, item, contextual_description: nil)
       description_text = contextual_description || goods_nomenclature.classification_description
 
-      labels = {
+      labels_hash = {
         'original_description' => description_text,
         'description' => item.fetch('description', ''),
         'known_brands' => item.fetch('known_brands', []),
@@ -51,7 +51,15 @@ class GoodsNomenclatureLabel < Sequel::Model
         'synonyms' => item.fetch('synonyms', []),
       }
 
-      new(goods_nomenclature: goods_nomenclature, labels: labels).tap do |label|
+      new(
+        goods_nomenclature: goods_nomenclature,
+        labels: labels_hash,
+        original_description: description_text,
+        description: item.fetch('description', ''),
+        known_brands: Sequel.pg_array(item.fetch('known_brands', []), :text),
+        colloquial_terms: Sequel.pg_array(item.fetch('colloquial_terms', []), :text),
+        synonyms: Sequel.pg_array(item.fetch('synonyms', []), :text),
+      ).tap do |label|
         label.context_hash = Digest::SHA256.hexdigest(description_text.to_s)
       end
     end

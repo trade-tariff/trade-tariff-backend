@@ -93,5 +93,67 @@ module LabelGenerator
     def label_not_found(commodity_code:, page_number:)
       instrument('label_not_found', commodity_code:, page_number:)
     end
+
+    def scoring_started(total_records:)
+      instrument('scoring_started', total_records:)
+    end
+
+    def scoring_completed(&block)
+      instrument(
+        'scoring_completed',
+        scored: nil,
+        mean_description_score: nil,
+        &block
+      )
+    end
+
+    def scoring_failed(error:)
+      instrument(
+        'scoring_failed',
+        error_class: error.class.name,
+        error_message: error.message,
+      )
+    end
+
+    def embedding_api_call(batch_size:, model:)
+      instrument('embedding_api_call_started', batch_size:, model:)
+
+      start_time = Process.clock_gettime(Process::CLOCK_MONOTONIC)
+      result = yield
+      duration = Process.clock_gettime(Process::CLOCK_MONOTONIC) - start_time
+
+      instrument(
+        'embedding_api_call_completed',
+        batch_size:,
+        model:,
+        duration_ms: (duration * 1000).round(2),
+      )
+
+      result
+    rescue StandardError => e
+      duration = Process.clock_gettime(Process::CLOCK_MONOTONIC) - start_time
+      http_status = e.respond_to?(:response) ? e.response&.dig(:status) : nil
+
+      instrument(
+        'embedding_api_call_failed',
+        batch_size:,
+        model:,
+        error_class: e.class.name,
+        error_message: e.message,
+        duration_ms: (duration * 1000).round(2),
+        http_status:,
+      )
+      raise
+    end
+
+    def embedding_api_retry(attempt:, delay:, error:)
+      instrument(
+        'embedding_api_retry',
+        attempt:,
+        delay:,
+        error_class: error.class.name,
+        error_message: error.message,
+      )
+    end
   end
 end

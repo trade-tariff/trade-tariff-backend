@@ -41,7 +41,12 @@ module Api
         else
           term = "%#{q}%"
           dataset.where(
-            Sequel.ilike(Sequel.lit('labels::text'), term),
+            Sequel.|(
+              Sequel.ilike(:description, term),
+              Sequel.ilike(Sequel.function(:array_to_string, :synonyms, ' '), term),
+              Sequel.ilike(Sequel.function(:array_to_string, :colloquial_terms, ' '), term),
+              Sequel.ilike(Sequel.function(:array_to_string, :known_brands, ' '), term),
+            ),
           ).order(:goods_nomenclature_item_id)
         end
       end

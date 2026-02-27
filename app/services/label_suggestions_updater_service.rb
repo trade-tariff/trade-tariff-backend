@@ -59,7 +59,7 @@ class LabelSuggestionsUpdaterService
     now = Time.zone.now
 
     LABEL_FIELDS.flat_map do |field, type|
-      terms = (label.labels&.dig(field) || [])
+      terms = (label.send(field) || [])
         .filter_map { |t| t.to_s.downcase.strip.presence }
         .uniq
 

@@ -14,7 +14,15 @@ module Api
                    :producline_suffix,
                    :stale,
                    :manually_edited,
-                   :context_hash
+                   :context_hash,
+                   :description,
+                   :original_description,
+                   :synonyms,
+                   :colloquial_terms,
+                   :known_brands,
+                   :description_score,
+                   :synonym_scores,
+                   :colloquial_term_scores
 
         attribute :labels do |label|
           label.labels || {}
