@@ -44,7 +44,10 @@ class GoodsNomenclatureSelfText < Sequel::Model
   end
 
   def self.regenerate_search_embeddings(sids)
-    records = where(goods_nomenclature_sid: sids).exclude(self_text: nil).where(search_embedding: nil).all
+    records = where(goods_nomenclature_sid: sids)
+      .exclude(self_text: nil)
+      .where(Sequel.expr(search_embedding_stale: true) | Sequel.expr(search_embedding: nil))
+      .all
     return if records.empty?
 
     embedding_service = EmbeddingService.new
@@ -66,7 +69,8 @@ class GoodsNomenclatureSelfText < Sequel::Model
       db.run(<<~SQL)
         UPDATE goods_nomenclature_self_texts t
         SET search_text = v.search_text,
-            search_embedding = v.search_embedding
+            search_embedding = v.search_embedding,
+            search_embedding_stale = false
         FROM (VALUES #{values}) AS v(goods_nomenclature_sid, search_text, search_embedding)
         WHERE t.goods_nomenclature_sid = v.goods_nomenclature_sid
       SQL

@@ -288,7 +288,7 @@ RSpec.describe GoodsNomenclatureReconciliationWorker, type: :worker do
         expect(embedding_service).to have_received(:embed_batch)
       end
 
-      it 'defers search embedding regeneration for description changes' do
+      it 'marks search embeddings stale for description changes' do
         gn = create(:goods_nomenclature,
                     goods_nomenclature_item_id: '1400000000',
                     validity_start_date: 1.year.ago)
@@ -309,7 +309,7 @@ RSpec.describe GoodsNomenclatureReconciliationWorker, type: :worker do
           .where(goods_nomenclature_sid: gn.goods_nomenclature_sid)
           .first
 
-        expect(self_text.search_embedding).to be_nil
+        expect(self_text.search_embedding_stale).to be true
       end
 
       it 'does not call embedding service when no self-texts exist' do
@@ -323,8 +323,8 @@ RSpec.describe GoodsNomenclatureReconciliationWorker, type: :worker do
       end
     end
 
-    describe 'label invalidation' do
-      it 'invalidates labels for description changes' do
+    describe 'label staleness' do
+      it 'marks labels stale for description changes' do
         gn = create(:goods_nomenclature,
                     goods_nomenclature_item_id: '0800000000',
                     validity_start_date: 1.year.ago)
@@ -338,12 +338,11 @@ RSpec.describe GoodsNomenclatureReconciliationWorker, type: :worker do
 
         described_class.new.perform
 
-        last_op = GoodsNomenclatureLabel::Operation
+        label = GoodsNomenclatureLabel
           .where(goods_nomenclature_sid: gn.goods_nomenclature_sid)
-          .order(Sequel.desc(:oid))
           .first
 
-        expect(last_op[:operation]).to eq('D')
+        expect(label.stale).to be true
         expect(RelabelGoodsNomenclatureWorker).to have_received(:perform_async)
       end
 
@@ -357,7 +356,7 @@ RSpec.describe GoodsNomenclatureReconciliationWorker, type: :worker do
         expect(RelabelGoodsNomenclatureWorker).not_to have_received(:perform_async)
       end
 
-      it 'does not destroy labels for structure-only changes' do
+      it 'does not mark labels stale for structure-only changes' do
         gn = create(:goods_nomenclature,
                     goods_nomenclature_item_id: '1000000000',
                     validity_start_date: Date.current)
@@ -366,12 +365,11 @@ RSpec.describe GoodsNomenclatureReconciliationWorker, type: :worker do
 
         described_class.new.perform
 
-        last_op = GoodsNomenclatureLabel::Operation
+        label = GoodsNomenclatureLabel
           .where(goods_nomenclature_sid: gn.goods_nomenclature_sid)
-          .order(Sequel.desc(:oid))
           .first
 
-        expect(last_op[:operation]).not_to eq('D')
+        expect(label.stale).to be false
       end
     end
 

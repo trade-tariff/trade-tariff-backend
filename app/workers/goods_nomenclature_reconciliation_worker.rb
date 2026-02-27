@@ -35,7 +35,7 @@ class GoodsNomenclatureReconciliationWorker
     structure_only_sids = affected.map(&:first).uniq - description_sids
     GoodsNomenclatureSelfText.regenerate_search_embeddings(structure_only_sids)
 
-    invalidate_labels(description_sids)
+    mark_labels_stale(description_sids)
   end
 
   private
@@ -114,7 +114,7 @@ class GoodsNomenclatureReconciliationWorker
     GoodsNomenclatureSelfText
       .where(goods_nomenclature_sid: sids)
       .where(stale: false)
-      .update(stale: true, search_embedding: nil, updated_at: Time.zone.now)
+      .update(stale: true, search_embedding_stale: true, updated_at: Time.zone.now)
   end
 
   def regenerate_self_texts(chapter_code)
@@ -125,15 +125,13 @@ class GoodsNomenclatureReconciliationWorker
     GenerateSelfText::MechanicalBuilder.call(chapter)
   end
 
-  def invalidate_labels(sids)
+  def mark_labels_stale(sids)
     return if sids.empty?
 
-    TimeMachine.now do
-      GoodsNomenclatureLabel
-        .where(goods_nomenclature_sid: sids)
-        .actual
-        .each(&:destroy)
-    end
+    GoodsNomenclatureLabel
+      .where(goods_nomenclature_sid: sids)
+      .where(stale: false)
+      .update(stale: true, updated_at: Time.zone.now)
 
     RelabelGoodsNomenclatureWorker.perform_async
   end

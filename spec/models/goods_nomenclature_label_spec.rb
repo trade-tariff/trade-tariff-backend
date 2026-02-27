@@ -6,8 +6,6 @@ RSpec.describe GoodsNomenclatureLabel do
   describe 'validations' do
     subject(:label) { build(:goods_nomenclature_label, attributes) }
 
-    let(:commodity) { create(:commodity) }
-
     before { label.valid? }
 
     context 'when all required fields are present' do
@@ -29,28 +27,6 @@ RSpec.describe GoodsNomenclatureLabel do
 
       it { expect(label.errors).to include(:labels) }
     end
-
-    context 'when the label already exists for the same goods_nomenclature_sid and overlapping validity period' do
-      let(:attributes) do
-        {
-          goods_nomenclature_sid: commodity.goods_nomenclature_sid,
-          validity_start_date: 1.month.ago,
-          validity_end_date: 1.month.from_now,
-        }
-      end
-
-      before do
-        create(
-          :goods_nomenclature_label,
-          goods_nomenclature_sid: commodity.goods_nomenclature_sid,
-          validity_start_date: 2.months.ago,
-          validity_end_date: 2.months.from_now,
-        )
-        label.valid?
-      end
-
-      it { expect(label.errors[:goods_nomenclature_sid]).to eq(['A label for this goods_nomenclature_sid already exists for the specified validity period']) }
-    end
   end
 
   describe '#before_validation' do
@@ -61,16 +37,6 @@ RSpec.describe GoodsNomenclatureLabel do
     it 'sets goods_nomenclature_sid from goods_nomenclature' do
       label.save
       expect(label.goods_nomenclature_sid).to eq(goods_nomenclature.goods_nomenclature_sid)
-    end
-
-    it 'sets validity_start_date from goods_nomenclature' do
-      label.save
-      expect(label.validity_start_date).to eq(goods_nomenclature.validity_start_date)
-    end
-
-    it 'sets validity_end_date from goods_nomenclature' do
-      label.save
-      expect(label.validity_end_date).to eq(goods_nomenclature.validity_end_date)
     end
 
     it 'sets goods_nomenclature_item_id from goods_nomenclature' do
@@ -86,16 +52,6 @@ RSpec.describe GoodsNomenclatureLabel do
     it 'sets goods_nomenclature_type from goods_nomenclature class name' do
       label.save
       expect(label.goods_nomenclature_type).to eq('Commodity')
-    end
-
-    it 'sets operation to C by default' do
-      label.save
-      expect(label[:operation]).to eq('C')
-    end
-
-    it 'sets operation_date to today by default' do
-      label.save
-      expect(label.operation_date).to eq(Time.zone.today)
     end
 
     it 'does not override explicitly set values' do
@@ -135,11 +91,21 @@ RSpec.describe GoodsNomenclatureLabel do
       expect(label.labels['original_description']).to eq(goods_nomenclature.classification_description)
     end
 
+    it 'computes context_hash from the description' do
+      expected = Digest::SHA256.hexdigest(goods_nomenclature.classification_description.to_s)
+      expect(label.context_hash).to eq(expected)
+    end
+
     context 'with contextual_description provided' do
       subject(:label) { described_class.build(goods_nomenclature, item, contextual_description: 'Full contextual description') }
 
       it 'uses the provided contextual_description as original_description' do
         expect(label.labels['original_description']).to eq('Full contextual description')
+      end
+
+      it 'computes context_hash from the contextual_description' do
+        expected = Digest::SHA256.hexdigest('Full contextual description')
+        expect(label.context_hash).to eq(expected)
       end
     end
 
@@ -151,13 +117,52 @@ RSpec.describe GoodsNomenclatureLabel do
       end
     end
 
-    it 'can be saved and populates all fields from before_create hook' do
+    it 'can be saved and populates all fields from before_validation hook' do
       label.save
 
       expect(label.goods_nomenclature_sid).to eq(goods_nomenclature.goods_nomenclature_sid)
       expect(label.goods_nomenclature_item_id).to eq(goods_nomenclature.goods_nomenclature_item_id)
       expect(label.producline_suffix).to eq(goods_nomenclature.producline_suffix)
       expect(label.goods_nomenclature_type).to eq('Commodity')
+    end
+  end
+
+  describe '#mark_stale!' do
+    it 'sets stale to true' do
+      label = create(:goods_nomenclature_label)
+      label.mark_stale!
+      expect(label.reload.stale).to be true
+    end
+  end
+
+  describe '#context_stale?' do
+    it 'returns true when hash differs' do
+      label = create(:goods_nomenclature_label, context_hash: 'abc')
+      expect(label.context_stale?('xyz')).to be true
+    end
+
+    it 'returns false when hash matches' do
+      label = create(:goods_nomenclature_label, context_hash: 'abc')
+      expect(label.context_stale?('abc')).to be false
+    end
+  end
+
+  describe '.stale' do
+    it 'returns only stale labels' do
+      stale_label = create(:goods_nomenclature_label, :stale)
+      create(:goods_nomenclature_label)
+
+      expect(described_class.stale.all).to eq([stale_label])
+    end
+  end
+
+  describe '.needing_relabel' do
+    it 'returns stale non-manually-edited labels' do
+      relabel_label = create(:goods_nomenclature_label, :stale)
+      create(:goods_nomenclature_label, :stale, :manually_edited)
+      create(:goods_nomenclature_label)
+
+      expect(described_class.needing_relabel.all).to eq([relabel_label])
     end
   end
 
@@ -180,11 +185,32 @@ RSpec.describe GoodsNomenclatureLabel do
       expect(dataset.sql).to include(expected_filter)
     end
 
-    it 'filters out goods nomenclatures that already have labels' do
+    it 'includes goods nomenclatures without labels' do
       create(:goods_nomenclature_label, goods_nomenclature: create(:commodity))
       missing_label = create(:commodity)
 
-      expect(dataset.map(&:goods_nomenclature_sid)).to eq([missing_label.goods_nomenclature_sid])
+      expect(dataset.map(&:goods_nomenclature_sid)).to include(missing_label.goods_nomenclature_sid)
+    end
+
+    it 'includes goods nomenclatures with stale non-manually-edited labels' do
+      commodity = create(:commodity)
+      create(:goods_nomenclature_label, :stale, goods_nomenclature: commodity)
+
+      expect(dataset.map(&:goods_nomenclature_sid)).to include(commodity.goods_nomenclature_sid)
+    end
+
+    it 'excludes goods nomenclatures with stale manually-edited labels' do
+      commodity = create(:commodity)
+      create(:goods_nomenclature_label, :stale, :manually_edited, goods_nomenclature: commodity)
+
+      expect(dataset.map(&:goods_nomenclature_sid)).not_to include(commodity.goods_nomenclature_sid)
+    end
+
+    it 'excludes goods nomenclatures with fresh labels' do
+      commodity = create(:commodity)
+      create(:goods_nomenclature_label, goods_nomenclature: commodity)
+
+      expect(dataset.map(&:goods_nomenclature_sid)).not_to include(commodity.goods_nomenclature_sid)
     end
   end
 end

@@ -33,7 +33,7 @@ module Api
         q = params[:q].to_s.strip
         return empty_dataset if q.length < 2
 
-        dataset = TimeMachine.now { GoodsNomenclatureLabel.actual }
+        dataset = GoodsNomenclatureLabel.dataset
 
         if q.match?(/\A\d{2,10}\z/)
           dataset.where(Sequel.like(:goods_nomenclature_item_id, "#{q}%"))
@@ -47,7 +47,7 @@ module Api
       end
 
       def empty_dataset
-        TimeMachine.now { GoodsNomenclatureLabel.actual.where(Sequel.lit('1=0')) }
+        GoodsNomenclatureLabel.where(Sequel.lit('1=0'))
       end
     end
   end
