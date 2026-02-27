@@ -267,7 +267,7 @@ RSpec.describe GoodsNomenclatureReconciliationWorker, type: :worker do
     end
 
     describe 'search embedding regeneration' do
-      it 'regenerates search embeddings for structure-only changes' do
+      it 'defers search embedding regeneration to the relabel page worker' do
         gn = create(:goods_nomenclature,
                     goods_nomenclature_item_id: '1200000000',
                     validity_start_date: Date.current)
@@ -283,9 +283,8 @@ RSpec.describe GoodsNomenclatureReconciliationWorker, type: :worker do
           .where(goods_nomenclature_sid: gn.goods_nomenclature_sid)
           .first
 
-        expect(self_text.search_text).to be_present
-        expect(self_text.search_embedding).to be_present
-        expect(embedding_service).to have_received(:embed_batch)
+        expect(self_text.search_embedding_stale).to be true
+        expect(embedding_service).not_to have_received(:embed_batch)
       end
 
       it 'marks search embeddings stale for description changes' do
@@ -346,17 +345,7 @@ RSpec.describe GoodsNomenclatureReconciliationWorker, type: :worker do
         expect(RelabelGoodsNomenclatureWorker).to have_received(:perform_async)
       end
 
-      it 'does not enqueue relabeling when no description changes' do
-        create(:goods_nomenclature,
-               goods_nomenclature_item_id: '0900000000',
-               validity_start_date: Date.current)
-
-        described_class.new.perform
-
-        expect(RelabelGoodsNomenclatureWorker).not_to have_received(:perform_async)
-      end
-
-      it 'does not mark labels stale for structure-only changes' do
+      it 'marks labels stale for structure-only changes' do
         gn = create(:goods_nomenclature,
                     goods_nomenclature_item_id: '1000000000',
                     validity_start_date: Date.current)
@@ -369,7 +358,8 @@ RSpec.describe GoodsNomenclatureReconciliationWorker, type: :worker do
           .where(goods_nomenclature_sid: gn.goods_nomenclature_sid)
           .first
 
-        expect(label.stale).to be false
+        expect(label.stale).to be true
+        expect(RelabelGoodsNomenclatureWorker).to have_received(:perform_async)
       end
     end
 
