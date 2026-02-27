@@ -79,10 +79,10 @@ class CompositeSearchTextBuilder
   def label_field(field)
     return [] unless labels
 
-    values = labels.labels&.dig(field)
-    return [] unless values.is_a?(Array)
+    values = labels.send(field)
+    return [] if values.nil?
 
-    values.reject(&:blank?)
+    Array(values).reject(&:blank?)
   end
 
   def reference_titles

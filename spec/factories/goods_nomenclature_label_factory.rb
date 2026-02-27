@@ -6,7 +6,11 @@ FactoryBot.define do
       goods_nomenclature&.goods_nomenclature_sid || generate(:goods_nomenclature_sid)
     end
 
-    labels { { description: 'Flibble' } }
+    labels { { 'description' => 'Flibble' } }
+    description { 'Flibble' }
+    synonyms { Sequel.pg_array([], :text) }
+    colloquial_terms { Sequel.pg_array([], :text) }
+    known_brands { Sequel.pg_array([], :text) }
 
     goods_nomenclature_item_id do
       goods_nomenclature&.goods_nomenclature_item_id || "0101#{generate(:commodity_short_code)}"
@@ -27,13 +31,16 @@ FactoryBot.define do
     trait :with_labels do
       labels do
         {
-          'descriptions' => ['Natural honey'],
-          'colloquialisms' => ['bee honey'],
-          'brands' => [],
+          'description' => 'Natural honey',
+          'colloquial_terms' => ['bee honey'],
+          'known_brands' => [],
           'synonyms' => [],
-          'search_references' => [],
         }
       end
+      description { 'Natural honey' }
+      colloquial_terms { Sequel.pg_array(['bee honey'], :text) }
+      known_brands { Sequel.pg_array([], :text) }
+      synonyms { Sequel.pg_array([], :text) }
     end
 
     trait :stale do
