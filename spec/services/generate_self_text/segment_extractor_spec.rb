@@ -240,6 +240,27 @@ RSpec.describe GenerateSelfText::SegmentExtractor do
       end
     end
 
+    context 'with eu_self_text from SelfTextLookupService' do
+      before do
+        allow(SelfTextLookupService).to receive(:lookup).and_return(nil)
+        allow(SelfTextLookupService).to receive(:lookup)
+          .with(commodity_a.goods_nomenclature_item_id)
+          .and_return('Pure-bred breeding horses')
+      end
+
+      it 'populates eu_self_text when CSV has a match' do
+        segment = segment_for_sid(commodity_a.goods_nomenclature_sid)
+
+        expect(segment[:node][:eu_self_text]).to eq('Pure-bred breeding horses')
+      end
+
+      it 'returns nil eu_self_text when no match' do
+        segment = segment_for_sid(commodity_b.goods_nomenclature_sid)
+
+        expect(segment[:node][:eu_self_text]).to be_nil
+      end
+    end
+
     context 'with description formatting' do
       it 'uses description_html for node descriptions' do
         segment = segment_for_sid(commodity_a.goods_nomenclature_sid)

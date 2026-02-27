@@ -71,8 +71,8 @@ RSpec.describe GenerateSelfText::MechanicalBuilder do
       expect(record.context_hash).to eq(expected_hash)
     end
 
-    it 'returns processed, skipped_other, and skipped counts' do
-      expect(result).to eq({ processed: 3, skipped_other: 0, skipped: 0 })
+    it 'returns processed, skipped_other, skipped_ai_non_other, and skipped counts' do
+      expect(result).to eq({ processed: 3, skipped_other: 0, skipped_ai_non_other: 0, skipped: 0 })
     end
 
     context 'with a chapter that has no descendants' do
@@ -89,7 +89,7 @@ RSpec.describe GenerateSelfText::MechanicalBuilder do
       end
 
       it 'returns correct stats' do
-        expect(result).to eq({ processed: 1, skipped_other: 0, skipped: 0 })
+        expect(result).to eq({ processed: 1, skipped_other: 0, skipped_ai_non_other: 0, skipped: 0 })
       end
     end
 
@@ -111,7 +111,7 @@ RSpec.describe GenerateSelfText::MechanicalBuilder do
       end
 
       it 'includes skipped_other in stats' do
-        expect(result).to eq({ processed: 3, skipped_other: 1, skipped: 0 })
+        expect(result).to eq({ processed: 3, skipped_other: 1, skipped_ai_non_other: 0, skipped: 0 })
       end
     end
 
@@ -300,6 +300,27 @@ RSpec.describe GenerateSelfText::MechanicalBuilder do
 
         second_result = described_class.call(chapter)
         expect(second_result[:processed]).to be >= 1
+      end
+    end
+
+    context 'with an existing ai_non_other record' do
+      before do
+        create(:goods_nomenclature_self_text,
+               goods_nomenclature: commodity,
+               self_text: 'AI-generated pure-bred breeding horses',
+               generation_type: 'ai_non_other')
+      end
+
+      it 'skips nodes with ai_non_other generation_type' do
+        expect(result[:skipped_ai_non_other]).to be >= 1
+      end
+
+      it 'does not overwrite the ai_non_other record' do
+        result
+
+        record = GoodsNomenclatureSelfText[commodity.goods_nomenclature_sid]
+        expect(record.generation_type).to eq('ai_non_other')
+        expect(record.self_text).to eq('AI-generated pure-bred breeding horses')
       end
     end
 

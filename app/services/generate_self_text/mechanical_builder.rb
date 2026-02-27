@@ -15,7 +15,7 @@ module GenerateSelfText
     def call
       segments = SegmentExtractor.call(chapter, self_texts: generated_texts)
       existing = preload_existing(segments)
-      stats = { processed: 0, skipped_other: 0, skipped: 0 }
+      stats = { processed: 0, skipped_other: 0, skipped_ai_non_other: 0, skipped: 0 }
 
       segments.each do |segment|
         node = segment[:node]
@@ -25,12 +25,18 @@ module GenerateSelfText
           next
         end
 
+        existing_record = existing[node[:sid]]
+        if existing_record && existing_record[:generation_type] == 'ai_non_other'
+          stats[:skipped_ai_non_other] += 1
+          next
+        end
+
         self_text = build_self_text(segment)
         input_context = build_input_context(segment)
         context_hash = Digest::SHA256.hexdigest(JSON.generate(input_context))
 
-        if skip?(existing[node[:sid]], context_hash)
-          generated_texts[node[:sid]] = existing[node[:sid]][:self_text]
+        if skip?(existing_record, context_hash)
+          generated_texts[node[:sid]] = existing_record[:self_text]
           stats[:skipped] += 1
           next
         end
@@ -55,6 +61,7 @@ module GenerateSelfText
           self_text: record.self_text,
           stale: record.stale,
           manually_edited: record.manually_edited,
+          generation_type: record.generation_type,
         }
         generated_texts[record.goods_nomenclature_sid] = record.self_text
       end

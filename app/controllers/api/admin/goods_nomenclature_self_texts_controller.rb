@@ -51,7 +51,7 @@ module Api
             Sequel.lit("CASE WHEN \"goods_nomenclatures\".\"producline_suffix\" = '80' THEN 'commodity' ELSE 'subheading' END").as(:nomenclature_type),
             Sequel.lit(SCORE_SQL).as(:score),
           )
-          .where(st[:generation_type] => 'ai')
+          .where(st[:generation_type] => %w[ai ai_non_other])
 
         dataset = apply_search(dataset)
         dataset = apply_type_filter(dataset)

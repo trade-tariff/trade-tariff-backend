@@ -4,7 +4,8 @@ RSpec.describe GoodsNomenclatureReconciliationWorker, type: :worker do
 
     before do
       allow(GenerateSelfText::MechanicalBuilder).to receive(:call)
-      allow(GenerateSelfText::AiBuilder).to receive(:call)
+      allow(GenerateSelfText::OtherSelfTextBuilder).to receive(:call)
+      allow(GenerateSelfText::NonOtherSelfTextBuilder).to receive(:call)
       allow(RelabelGoodsNomenclatureWorker).to receive(:perform_async)
       allow(EmbeddingService).to receive(:new).and_return(embedding_service)
       allow(embedding_service).to receive(:embed_batch) { |texts| texts.map { Array.new(1536, 0.0) } }
@@ -246,7 +247,10 @@ RSpec.describe GoodsNomenclatureReconciliationWorker, type: :worker do
 
         expect(self_text.stale).to be true
         expect(self_text.search_embedding_stale).to be true
-        expect(GenerateSelfText::AiBuilder).to have_received(:call).with(
+        expect(GenerateSelfText::OtherSelfTextBuilder).to have_received(:call).with(
+          an_instance_of(Chapter),
+        ).ordered
+        expect(GenerateSelfText::NonOtherSelfTextBuilder).to have_received(:call).with(
           an_instance_of(Chapter),
         ).ordered
         expect(GenerateSelfText::MechanicalBuilder).to have_received(:call).with(
@@ -262,7 +266,8 @@ RSpec.describe GoodsNomenclatureReconciliationWorker, type: :worker do
         described_class.new.perform
 
         expect(GenerateSelfText::MechanicalBuilder).not_to have_received(:call)
-        expect(GenerateSelfText::AiBuilder).not_to have_received(:call)
+        expect(GenerateSelfText::OtherSelfTextBuilder).not_to have_received(:call)
+        expect(GenerateSelfText::NonOtherSelfTextBuilder).not_to have_received(:call)
       end
     end
 

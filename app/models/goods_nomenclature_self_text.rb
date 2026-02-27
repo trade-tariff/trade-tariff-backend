@@ -5,7 +5,7 @@ class GoodsNomenclatureSelfText < Sequel::Model
   set_primary_key [:goods_nomenclature_sid]
   unrestrict_primary_key # PK is a natural key (FK to goods_nomenclatures), not auto-increment
 
-  GENERATION_TYPES = %w[mechanical ai].freeze
+  GENERATION_TYPES = %w[mechanical ai ai_non_other].freeze
 
   many_to_one :goods_nomenclature, key: :goods_nomenclature_sid,
                                    primary_key: :goods_nomenclature_sid

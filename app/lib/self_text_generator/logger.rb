@@ -30,6 +30,7 @@ module SelfTextGenerator
         chapter_code: event.payload[:chapter_code],
         mechanical: event.payload[:mechanical],
         ai: event.payload[:ai],
+        non_other_ai: event.payload[:non_other_ai],
         duration_ms: event.duration.round(2),
       )
     end
