@@ -3,7 +3,6 @@ RSpec.describe GoodsNomenclatureReconciliationWorker, type: :worker do
     let(:embedding_service) { instance_double(EmbeddingService) }
 
     before do
-      allow(GenerateSelfText::MechanicalBuilder).to receive(:call)
       allow(GenerateSelfText::OtherSelfTextBuilder).to receive(:call)
       allow(GenerateSelfText::NonOtherSelfTextBuilder).to receive(:call)
       allow(RelabelGoodsNomenclatureWorker).to receive(:perform_async)
@@ -15,7 +14,7 @@ RSpec.describe GoodsNomenclatureReconciliationWorker, type: :worker do
       it 'does nothing' do
         described_class.new.perform
 
-        expect(GenerateSelfText::MechanicalBuilder).not_to have_received(:call)
+        expect(GenerateSelfText::OtherSelfTextBuilder).not_to have_received(:call)
       end
     end
 
@@ -253,9 +252,6 @@ RSpec.describe GoodsNomenclatureReconciliationWorker, type: :worker do
         expect(GenerateSelfText::NonOtherSelfTextBuilder).to have_received(:call).with(
           an_instance_of(Chapter),
         ).ordered
-        expect(GenerateSelfText::MechanicalBuilder).to have_received(:call).with(
-          an_instance_of(Chapter),
-        ).ordered
       end
 
       it 'does not call builders when chapter does not exist' do
@@ -265,7 +261,6 @@ RSpec.describe GoodsNomenclatureReconciliationWorker, type: :worker do
 
         described_class.new.perform
 
-        expect(GenerateSelfText::MechanicalBuilder).not_to have_received(:call)
         expect(GenerateSelfText::OtherSelfTextBuilder).not_to have_received(:call)
         expect(GenerateSelfText::NonOtherSelfTextBuilder).not_to have_received(:call)
       end

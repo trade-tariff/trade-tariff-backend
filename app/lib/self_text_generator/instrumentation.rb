@@ -21,7 +21,7 @@ module SelfTextGenerator
     end
 
     def chapter_completed(chapter_sid:, chapter_code:, &block)
-      instrument('chapter_completed', chapter_sid:, chapter_code:, mechanical: nil, ai: nil, non_other_ai: nil, &block)
+      instrument('chapter_completed', chapter_sid:, chapter_code:, ai: nil, non_other_ai: nil, &block)
     end
 
     def chapter_failed(chapter_sid:, chapter_code:, error:)

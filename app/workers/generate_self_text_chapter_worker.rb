@@ -33,9 +33,7 @@ class GenerateSelfTextChapterWorker
     SelfTextGenerator::Instrumentation.chapter_completed(chapter_sid:, chapter_code:) do |payload|
       ai_stats = GenerateSelfText::OtherSelfTextBuilder.call(chapter)
       non_other_ai_stats = GenerateSelfText::NonOtherSelfTextBuilder.call(chapter)
-      mechanical_stats = GenerateSelfText::MechanicalBuilder.call(chapter)
 
-      payload[:mechanical] = mechanical_stats
       payload[:ai] = ai_stats
       payload[:non_other_ai] = non_other_ai_stats
 

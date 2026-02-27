@@ -117,7 +117,6 @@ class GoodsNomenclatureReconciliationWorker
 
     GenerateSelfText::OtherSelfTextBuilder.call(chapter)
     GenerateSelfText::NonOtherSelfTextBuilder.call(chapter)
-    GenerateSelfText::MechanicalBuilder.call(chapter)
   end
 
   def mark_labels_stale(sids)

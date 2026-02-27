@@ -88,8 +88,14 @@ RSpec.describe GenerateSelfText::NonOtherSelfTextBuilder do
       expect(GoodsNomenclatureSelfText[other_commodity.goods_nomenclature_sid]).to be_nil
     end
 
-    it 'processes chapter, heading, and commodity (3 non-Other nodes)' do
-      expect(result[:processed]).to eq(3)
+    it 'skips chapters' do
+      result
+
+      expect(GoodsNomenclatureSelfText[chapter.goods_nomenclature_sid]).to be_nil
+    end
+
+    it 'processes heading and commodity (2 non-Other, non-chapter nodes)' do
+      expect(result[:processed]).to eq(2)
     end
 
     context 'when eu_self_text is available' do
@@ -132,7 +138,7 @@ RSpec.describe GenerateSelfText::NonOtherSelfTextBuilder do
       end
 
       it 'increments failed count' do
-        expect(result[:failed]).to eq(3)
+        expect(result[:failed]).to eq(2)
       end
     end
 
@@ -177,7 +183,7 @@ RSpec.describe GenerateSelfText::NonOtherSelfTextBuilder do
 
         second_result = described_class.call(chapter)
 
-        expect(second_result[:skipped]).to eq(3)
+        expect(second_result[:skipped]).to eq(2)
         expect(second_result[:processed]).to eq(0)
         expect(ai_client).not_to have_received(:call)
       end

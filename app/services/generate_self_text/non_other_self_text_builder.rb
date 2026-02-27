@@ -15,7 +15,7 @@ module GenerateSelfText
       segments = SegmentExtractor.call(chapter, self_texts: generated_texts)
       existing = preload_existing(segments)
 
-      non_other_segments = segments.reject { |s| s[:node][:is_other] }
+      non_other_segments = segments.reject { |s| s[:node][:is_other] || s[:node][:goods_nomenclature_class] == 'Chapter' }
       stats = { processed: 0, failed: 0, skipped: 0 }
 
       segments_to_process = non_other_segments.reject do |segment|
