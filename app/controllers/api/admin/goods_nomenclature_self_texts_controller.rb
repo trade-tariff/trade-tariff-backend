@@ -41,14 +41,24 @@ module Api
         END
       SQL
 
+      NOMENCLATURE_TYPE_SQL = <<~SQL.squish
+        CASE
+          WHEN "gn"."goods_nomenclature_item_id" LIKE '__00000000' THEN 'chapter'
+          WHEN "gn"."goods_nomenclature_item_id" LIKE '____000000' THEN 'heading'
+          WHEN "gn"."producline_suffix" != '80' OR "gn"."leaf" = false THEN 'subheading'
+          ELSE 'commodity'
+        END
+      SQL
+
       def filtered_dataset
         st = Sequel[:goods_nomenclature_self_texts]
+        gn_with_leaf = GoodsNomenclature.with_leaf_column
 
         dataset = GoodsNomenclatureSelfText.dataset
-          .join(:goods_nomenclatures, goods_nomenclature_sid: :goods_nomenclature_sid)
+          .join(gn_with_leaf, { Sequel[:gn][:goods_nomenclature_sid] => st[:goods_nomenclature_sid] }, table_alias: :gn)
           .select_all(:goods_nomenclature_self_texts)
           .select_append(
-            Sequel.lit("CASE WHEN \"goods_nomenclatures\".\"producline_suffix\" = '80' THEN 'commodity' ELSE 'subheading' END").as(:nomenclature_type),
+            Sequel.lit(NOMENCLATURE_TYPE_SQL).as(:nomenclature_type),
             Sequel.lit(SCORE_SQL).as(:score),
           )
           .where(st[:generation_type] => %w[ai ai_non_other])
@@ -80,16 +90,9 @@ module Api
       end
 
       def apply_type_filter(dataset)
-        gn = Sequel[:goods_nomenclatures]
+        return dataset unless %w[commodity heading subheading].include?(params[:type])
 
-        case params[:type]
-        when 'commodity'
-          dataset.where(gn[:producline_suffix] => '80')
-        when 'subheading'
-          dataset.exclude(gn[:producline_suffix] => '80')
-        else
-          dataset
-        end
+        dataset.where(Sequel.lit("(#{NOMENCLATURE_TYPE_SQL}) = ?", params[:type]))
       end
 
       def apply_status_filter(dataset)
