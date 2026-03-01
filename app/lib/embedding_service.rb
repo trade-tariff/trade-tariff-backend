@@ -8,6 +8,7 @@ class EmbeddingService
   RETRYABLE_ERRORS = [
     Faraday::TimeoutError,
     Faraday::ConnectionFailed,
+    Faraday::SSLError,
     Net::ReadTimeout,
     Net::OpenTimeout,
   ].freeze
