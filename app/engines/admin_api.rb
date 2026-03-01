@@ -38,7 +38,7 @@ AdminApi.routes.draw do
         end
       end
 
-      resources :goods_nomenclatures, only: %i[], constraints: { id: /\d{10}/ } do
+      resources :goods_nomenclatures, only: %i[], constraints: { id: /\d+/ } do
         scope module: 'goods_nomenclatures' do
           resource :goods_nomenclature_label, only: %i[show update]
           resource :goods_nomenclature_self_text, only: %i[show update] do

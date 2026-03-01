@@ -31,7 +31,7 @@ RSpec.describe Api::Admin::GoodsNomenclatures::GoodsNomenclatureSelfTextsControl
       let!(:self_text) { create :goods_nomenclature_self_text }
 
       it 'returns rendered record' do
-        get :show, params: { goods_nomenclature_id: self_text.goods_nomenclature_item_id }, format: :json
+        get :show, params: { goods_nomenclature_id: self_text.goods_nomenclature_sid }, format: :json
 
         expect(response).to have_http_status(:ok)
         expect(response.body).to match_json_expression pattern
@@ -67,7 +67,7 @@ RSpec.describe Api::Admin::GoodsNomenclatures::GoodsNomenclatureSelfTextsControl
     end
 
     it 'enriches ancestors with current self_texts' do
-      get :show, params: { goods_nomenclature_id: self_text.goods_nomenclature_item_id }, format: :json
+      get :show, params: { goods_nomenclature_id: self_text.goods_nomenclature_sid }, format: :json
 
       json = JSON.parse(response.body)
       ancestors = json.dig('data', 'attributes', 'input_context', 'ancestors')
@@ -84,7 +84,7 @@ RSpec.describe Api::Admin::GoodsNomenclatures::GoodsNomenclatureSelfTextsControl
 
       it 'responds with success' do
         put :update, params: {
-          goods_nomenclature_id: self_text.goods_nomenclature_item_id,
+          goods_nomenclature_id: self_text.goods_nomenclature_sid,
           data: { type: 'goods_nomenclature_self_text', attributes: { self_text: new_text } },
         }, format: :json
 
@@ -93,7 +93,7 @@ RSpec.describe Api::Admin::GoodsNomenclatures::GoodsNomenclatureSelfTextsControl
 
       it 'updates the self text' do
         put :update, params: {
-          goods_nomenclature_id: self_text.goods_nomenclature_item_id,
+          goods_nomenclature_id: self_text.goods_nomenclature_sid,
           data: { type: 'goods_nomenclature_self_text', attributes: { self_text: new_text } },
         }, format: :json
 
@@ -103,7 +103,7 @@ RSpec.describe Api::Admin::GoodsNomenclatures::GoodsNomenclatureSelfTextsControl
 
       it 'sets manually_edited to true' do
         put :update, params: {
-          goods_nomenclature_id: self_text.goods_nomenclature_item_id,
+          goods_nomenclature_id: self_text.goods_nomenclature_sid,
           data: { type: 'goods_nomenclature_self_text', attributes: { self_text: new_text } },
         }, format: :json
 
@@ -115,7 +115,7 @@ RSpec.describe Api::Admin::GoodsNomenclatures::GoodsNomenclatureSelfTextsControl
         self_text.update(needs_review: true)
 
         put :update, params: {
-          goods_nomenclature_id: self_text.goods_nomenclature_item_id,
+          goods_nomenclature_id: self_text.goods_nomenclature_sid,
           data: { type: 'goods_nomenclature_self_text', attributes: { self_text: new_text } },
         }, format: :json
 
@@ -145,7 +145,7 @@ RSpec.describe Api::Admin::GoodsNomenclatures::GoodsNomenclatureSelfTextsControl
     end
 
     it 'triggers scoring and returns success' do
-      post :score, params: { goods_nomenclature_id: self_text.goods_nomenclature_item_id }, format: :json
+      post :score, params: { goods_nomenclature_id: self_text.goods_nomenclature_sid }, format: :json
 
       expect(response).to have_http_status(:ok)
       expect(scorer).to have_received(:score).with([self_text.goods_nomenclature_sid])
@@ -164,7 +164,7 @@ RSpec.describe Api::Admin::GoodsNomenclatures::GoodsNomenclatureSelfTextsControl
     let!(:self_text) { create :goods_nomenclature_self_text, needs_review: true, manually_edited: false }
 
     it 'clears needs_review' do
-      post :approve, params: { goods_nomenclature_id: self_text.goods_nomenclature_item_id }, format: :json
+      post :approve, params: { goods_nomenclature_id: self_text.goods_nomenclature_sid }, format: :json
 
       expect(response).to have_http_status(:ok)
 
@@ -173,7 +173,7 @@ RSpec.describe Api::Admin::GoodsNomenclatures::GoodsNomenclatureSelfTextsControl
     end
 
     it 'does not set manually_edited' do
-      post :approve, params: { goods_nomenclature_id: self_text.goods_nomenclature_item_id }, format: :json
+      post :approve, params: { goods_nomenclature_id: self_text.goods_nomenclature_sid }, format: :json
 
       json = JSON.parse(response.body)
       expect(json.dig('data', 'attributes', 'manually_edited')).to be false
@@ -192,7 +192,7 @@ RSpec.describe Api::Admin::GoodsNomenclatures::GoodsNomenclatureSelfTextsControl
     let!(:self_text) { create :goods_nomenclature_self_text, needs_review: false }
 
     it 'sets needs_review to true' do
-      post :reject, params: { goods_nomenclature_id: self_text.goods_nomenclature_item_id }, format: :json
+      post :reject, params: { goods_nomenclature_id: self_text.goods_nomenclature_sid }, format: :json
 
       expect(response).to have_http_status(:ok)
 
@@ -234,7 +234,7 @@ RSpec.describe Api::Admin::GoodsNomenclatures::GoodsNomenclatureSelfTextsControl
     end
 
     it 'invalidates context_hash, marks stale, and calls the builders' do
-      post :regenerate, params: { goods_nomenclature_id: self_text.goods_nomenclature_item_id }, format: :json
+      post :regenerate, params: { goods_nomenclature_id: self_text.goods_nomenclature_sid }, format: :json
 
       expect(response).to have_http_status(:ok)
       expect(self_text.reload.context_hash).to eq('invalidated')

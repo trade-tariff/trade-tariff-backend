@@ -167,8 +167,20 @@ class SelfTextConfidenceScorer
   def ancestor_chain_text(record)
     context = record.input_context
     ancestors = context['ancestors'] || []
-    descriptions = ancestors.map { |a| a['self_text'] || a['description'] }
-    descriptions << context['description']
+    ancestor_sids = ancestors.filter_map { |a| a['sid'] }
+
+    current_texts = if ancestor_sids.any?
+                      GoodsNomenclatureSelfText
+                        .where(goods_nomenclature_sid: ancestor_sids)
+                        .select_hash(:goods_nomenclature_sid, :self_text)
+                    else
+                      {}
+                    end
+
+    descriptions = ancestors.map do |a|
+      current_texts[a['sid']] || a['self_text'] || a['description']
+    end
+
     descriptions.compact.join(' >> ')
   end
 
