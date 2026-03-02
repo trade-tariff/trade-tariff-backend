@@ -163,16 +163,6 @@ module LabelGenerator
       )
     end
 
-    def embedding_api_retry(event)
-      warn log_entry(
-        event: 'embedding_api_retry',
-        attempt: event.payload[:attempt],
-        delay: event.payload[:delay],
-        error_class: event.payload[:error_class],
-        error_message: event.payload[:error_message],
-      )
-    end
-
     private
 
     def log_entry(data)

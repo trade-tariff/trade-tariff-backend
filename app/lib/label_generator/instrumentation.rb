@@ -145,15 +145,5 @@ module LabelGenerator
       )
       raise
     end
-
-    def embedding_api_retry(attempt:, delay:, error:)
-      instrument(
-        'embedding_api_retry',
-        attempt:,
-        delay:,
-        error_class: error.class.name,
-        error_message: error.message,
-      )
-    end
   end
 end

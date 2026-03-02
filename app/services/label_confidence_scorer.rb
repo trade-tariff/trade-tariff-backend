@@ -30,15 +30,16 @@ class LabelConfidenceScorer
 
   attr_reader :embedding_service
 
+  # Uses the generation embedding (not search_embedding) because search_embedding
+  # incorporates label text, which would make the comparison circular.
   def load_self_text_embeddings(sids)
-    rows = db[<<~SQL].all
-      SELECT goods_nomenclature_sid, embedding
-      FROM goods_nomenclature_self_texts
-      WHERE goods_nomenclature_sid IN (#{sids.join(',')})
-        AND embedding IS NOT NULL
-    SQL
+    rows = GoodsNomenclatureSelfText
+      .where(goods_nomenclature_sid: sids)
+      .exclude(embedding: nil)
+      .select(:goods_nomenclature_sid, :embedding)
+      .all
 
-    rows.to_h { |r| [r[:goods_nomenclature_sid], parse_vector(r[:embedding])] }
+    rows.to_h { |r| [r.goods_nomenclature_sid, parse_vector(r.embedding)] }
   end
 
   def score_labels(labels, self_text_embeddings)
@@ -140,25 +141,16 @@ class LabelConfidenceScorer
   end
 
   def populate_scoring_payload(payload, sids)
-    stats = db[<<~SQL].first
-      SELECT
-        COUNT(*) FILTER (WHERE description_score IS NOT NULL) AS scored,
-        AVG(description_score) AS mean_description_score
-      FROM goods_nomenclature_labels
-      WHERE goods_nomenclature_sid IN (#{sids.join(',')})
-    SQL
+    dataset = GoodsNomenclatureLabel.where(goods_nomenclature_sid: sids)
 
-    payload[:scored] = stats[:scored]
-    payload[:mean_description_score] = stats[:mean_description_score]&.to_f&.round(4)
+    payload[:scored] = dataset.exclude(description_score: nil).count
+    payload[:mean_description_score] = dataset.exclude(description_score: nil)
+      .avg(:description_score)&.to_f&.round(4)
   end
 
   def parse_vector(value)
     return value if value.is_a?(Array)
 
     value.to_s.delete('[]').split(',').map(&:to_f)
-  end
-
-  def db
-    Sequel::Model.db
   end
 end
