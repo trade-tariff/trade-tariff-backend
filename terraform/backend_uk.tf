@@ -1,5 +1,5 @@
 module "backend_uk" {
-  source = "git@github.com:trade-tariff/trade-tariff-platform-terraform-modules.git//aws/ecs-service?ref=aws/ecs-service-v1.19.2"
+  source = "git@github.com:trade-tariff/trade-tariff-platform-terraform-modules.git//aws/ecs-service?ref=aws/ecs-service-v1.21.0"
 
   region = var.region
 
@@ -7,17 +7,26 @@ module "backend_uk" {
   container_definition_kind = "web"
   service_count             = var.service_count
 
-  cluster_name              = "trade-tariff-cluster-${var.environment}"
-  subnet_ids                = data.aws_subnets.private.ids
-  security_groups           = [data.aws_security_group.this.id]
-  target_group_arn          = data.aws_lb_target_group.backend_uk.arn
+  cluster_name    = "trade-tariff-cluster-${var.environment}"
+  subnet_ids      = data.aws_subnets.private.ids
+  security_groups = [data.aws_security_group.this.id]
+
+  target_group_mappings = [
+    {
+      target_group_arn = data.aws_lb_target_group.backend_uk.arn,
+      container_port   = 8080
+    },
+    {
+      target_group_arn = data.aws_lb_target_group.backend_uk_https.arn,
+      container_port   = 8443
+    },
+  ]
   cloudwatch_log_group_name = "platform-logs-${var.environment}"
 
   docker_image = local.ecr_repo
   docker_tag   = var.docker_tag
   skip_destroy = true
 
-  container_port        = 8080
   private_dns_namespace = "tariff.internal"
 
   cpu    = var.cpu
