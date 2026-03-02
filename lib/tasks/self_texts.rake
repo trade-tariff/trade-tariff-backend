@@ -15,10 +15,10 @@ namespace :self_texts do
       raise "Chapter #{ENV['CHAPTER']} not found" unless chapter
 
       puts "Generating self-texts for chapter #{ENV['CHAPTER']}..."
-      ai = GenerateSelfText::AiBuilder.call(chapter)
-      mechanical = GenerateSelfText::MechanicalBuilder.call(chapter)
-      puts "AI: #{ai.inspect}"
-      puts "Mechanical: #{mechanical.inspect}"
+      ai = GenerateSelfText::OtherSelfTextBuilder.call(chapter)
+      non_other_ai = GenerateSelfText::NonOtherSelfTextBuilder.call(chapter)
+      puts "Other AI: #{ai.inspect}"
+      puts "Non-Other AI: #{non_other_ai.inspect}"
     else
       puts 'Enqueuing self-text generation for all chapters...'
       GenerateSelfTextWorker.perform_async

@@ -10,7 +10,10 @@ RSpec.describe LabelSuggestionsUpdaterService do
                  'known_brands' => %w[Acme Globex],
                  'colloquial_terms' => %w[widget],
                  'synonyms' => %w[gadget],
-               })
+               },
+               known_brands: Sequel.pg_array(%w[Acme Globex], :text),
+               colloquial_terms: Sequel.pg_array(%w[widget], :text),
+               synonyms: Sequel.pg_array(%w[gadget], :text))
       end
 
       it 'creates search suggestions for all label terms' do
@@ -52,7 +55,10 @@ RSpec.describe LabelSuggestionsUpdaterService do
                  'known_brands' => [],
                  'colloquial_terms' => [],
                  'synonyms' => %w[old-synonym],
-               })
+               },
+               known_brands: Sequel.pg_array([], :text),
+               colloquial_terms: Sequel.pg_array([], :text),
+               synonyms: Sequel.pg_array(%w[old-synonym], :text))
 
         described_class.new(commodity).call
       end
@@ -64,17 +70,18 @@ RSpec.describe LabelSuggestionsUpdaterService do
             .select_map(:value),
         ).to eq(%w[old-synonym])
 
-        # Update the label via the oplog table directly
+        # Update the label directly
         label = GoodsNomenclatureLabel
           .where(goods_nomenclature_sid: commodity.goods_nomenclature_sid)
           .first
-        label.set(labels: {
-          'known_brands' => [],
-          'colloquial_terms' => [],
-          'synonyms' => %w[new-synonym],
-        })
-        label.save_update
-        GoodsNomenclatureLabel.refresh!(concurrently: false)
+        label.update(
+          labels: Sequel.pg_jsonb({
+            'known_brands' => [],
+            'colloquial_terms' => [],
+            'synonyms' => %w[new-synonym],
+          }),
+          synonyms: Sequel.pg_array(%w[new-synonym], :text),
+        )
 
         described_class.new(commodity).call
 
@@ -117,7 +124,10 @@ RSpec.describe LabelSuggestionsUpdaterService do
                  'known_brands' => [],
                  'colloquial_terms' => [],
                  'synonyms' => [],
-               })
+               },
+               known_brands: Sequel.pg_array([], :text),
+               colloquial_terms: Sequel.pg_array([], :text),
+               synonyms: Sequel.pg_array([], :text))
       end
 
       it 'does not create any suggestions' do
@@ -138,7 +148,10 @@ RSpec.describe LabelSuggestionsUpdaterService do
                'known_brands' => [],
                'colloquial_terms' => [],
                'synonyms' => %w[test],
-             })
+             },
+             known_brands: Sequel.pg_array([], :text),
+             colloquial_terms: Sequel.pg_array([], :text),
+             synonyms: Sequel.pg_array(%w[test], :text))
 
       described_class.new(commodity).call
 

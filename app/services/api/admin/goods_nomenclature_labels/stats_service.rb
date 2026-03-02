@@ -3,8 +3,6 @@ module Api
     module GoodsNomenclatureLabels
       class StatsService
         def call
-          GoodsNomenclatureLabel.refresh!(concurrently: false)
-
           {
             total_goods_nomenclatures: total_goods_nomenclatures,
             descriptions_count: descriptions_count,
@@ -36,15 +34,11 @@ module Api
         end
 
         def ai_created_only
-          base_dataset.exclude(
-            goods_nomenclature_sid: human_edited_sids_dataset,
-          ).count
+          base_dataset.where(manually_edited: false).count
         end
 
         def human_edited
-          base_dataset.where(
-            goods_nomenclature_sid: human_edited_sids_dataset,
-          ).count
+          base_dataset.where(manually_edited: true).count
         end
 
         def coverage_by_chapter
@@ -56,15 +50,8 @@ module Api
             .map { |r| { chapter: r[:chapter], count: r[:count] } }
         end
 
-        def human_edited_sids_dataset
-          GoodsNomenclatureLabel::Operation
-            .where(operation: 'U')
-            .select(:goods_nomenclature_sid)
-            .distinct
-        end
-
         def base_dataset
-          TimeMachine.now { GoodsNomenclatureLabel.actual }
+          GoodsNomenclatureLabel.dataset
         end
       end
     end

@@ -124,6 +124,42 @@ RSpec.describe OpenaiClient do
     end
   end
 
+  describe 'retry behaviour' do
+    subject(:client) { described_class.new }
+
+    before { allow(Kernel).to receive(:sleep) }
+
+    context 'when a transient SSL error occurs then succeeds' do
+      before do
+        call_count = 0
+        stub_request(:post, "#{api_base_url}/chat/completions").to_return do
+          call_count += 1
+          if call_count == 1
+            raise Faraday::SSLError, 'SSL_connect returned=1 errno=0 state=error: unexpected eof while reading'
+          else
+            { status: 200, body: response_body.to_json, headers: { 'Content-Type' => 'application/json' } }
+          end
+        end
+      end
+
+      it 'retries and returns the response' do
+        result = client.call('test')
+        expect(result).to eq('capital' => 'Paris')
+      end
+    end
+
+    context 'when SSL errors persist' do
+      before do
+        stub_request(:post, "#{api_base_url}/chat/completions")
+          .to_raise(Faraday::SSLError.new('SSL_connect returned=1 errno=0 state=error: unexpected eof while reading'))
+      end
+
+      it 'raises after exhausting retries' do
+        expect { client.call('test') }.to raise_error(Faraday::SSLError)
+      end
+    end
+  end
+
   describe '.call' do
     let(:context) { 'What is the capital of France?' }
 

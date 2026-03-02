@@ -160,7 +160,7 @@ module TradeTariffBackend
     def sidekiq_redis_config
       db = Rails.env.test? ? 1 : 0
 
-      { url: ENV.fetch('SIDEKIQ_REDIS_URL', ENV['REDIS_URL']), db:, id: nil }
+      { url: ENV.fetch('SIDEKIQ_REDIS_URL', ENV['REDIS_URL']), db:, id: nil, timeout: 5 }
     end
 
     def redis

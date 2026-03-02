@@ -44,6 +44,11 @@ RSpec.describe GoodsNomenclatureSelfText do
       self_text.generation_type = 'ai'
       expect(self_text).to be_valid
     end
+
+    it 'accepts ai_non_other generation_type' do
+      self_text.generation_type = 'ai_non_other'
+      expect(self_text).to be_valid
+    end
   end
 
   describe '.lookup' do

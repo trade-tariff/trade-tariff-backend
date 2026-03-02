@@ -6,15 +6,11 @@ FactoryBot.define do
       goods_nomenclature&.goods_nomenclature_sid || generate(:goods_nomenclature_sid)
     end
 
-    labels { { description: 'Flibble' } }
-
-    validity_start_date do
-      goods_nomenclature&.validity_start_date || 2.years.ago.beginning_of_day
-    end
-
-    validity_end_date do
-      goods_nomenclature&.validity_end_date
-    end
+    labels { { 'description' => 'Flibble' } }
+    description { 'Flibble' }
+    synonyms { Sequel.pg_array([], :text) }
+    colloquial_terms { Sequel.pg_array([], :text) }
+    known_brands { Sequel.pg_array([], :text) }
 
     goods_nomenclature_item_id do
       goods_nomenclature&.goods_nomenclature_item_id || "0101#{generate(:commodity_short_code)}"
@@ -28,23 +24,31 @@ FactoryBot.define do
       goods_nomenclature&.class&.name || 'Commodity'
     end
 
-    operation { 'C' }
-    operation_date { Time.zone.now.utc }
+    stale { false }
+    manually_edited { false }
+    context_hash { nil }
 
     trait :with_labels do
       labels do
         {
-          'descriptions' => ['Natural honey'],
-          'colloquialisms' => ['bee honey'],
-          'brands' => [],
+          'description' => 'Natural honey',
+          'colloquial_terms' => ['bee honey'],
+          'known_brands' => [],
           'synonyms' => [],
-          'search_references' => [],
         }
       end
+      description { 'Natural honey' }
+      colloquial_terms { Sequel.pg_array(['bee honey'], :text) }
+      known_brands { Sequel.pg_array([], :text) }
+      synonyms { Sequel.pg_array([], :text) }
     end
 
-    after(:create) do |_label, _evaluator|
-      GoodsNomenclatureLabel.refresh!(concurrently: false) if Rails.env.test?
+    trait :stale do
+      stale { true }
+    end
+
+    trait :manually_edited do
+      manually_edited { true }
     end
   end
 end

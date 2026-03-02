@@ -33,7 +33,7 @@ module Api
         q = params[:q].to_s.strip
         return empty_dataset if q.length < 2
 
-        dataset = TimeMachine.now { GoodsNomenclatureLabel.actual }
+        dataset = GoodsNomenclatureLabel.dataset
 
         if q.match?(/\A\d{2,10}\z/)
           dataset.where(Sequel.like(:goods_nomenclature_item_id, "#{q}%"))
@@ -41,13 +41,18 @@ module Api
         else
           term = "%#{q}%"
           dataset.where(
-            Sequel.ilike(Sequel.lit('labels::text'), term),
+            Sequel.|(
+              Sequel.ilike(:description, term),
+              Sequel.ilike(Sequel.function(:array_to_string, :synonyms, ' '), term),
+              Sequel.ilike(Sequel.function(:array_to_string, :colloquial_terms, ' '), term),
+              Sequel.ilike(Sequel.function(:array_to_string, :known_brands, ' '), term),
+            ),
           ).order(:goods_nomenclature_item_id)
         end
       end
 
       def empty_dataset
-        TimeMachine.now { GoodsNomenclatureLabel.actual.where(Sequel.lit('1=0')) }
+        GoodsNomenclatureLabel.where(Sequel.lit('1=0'))
       end
     end
   end

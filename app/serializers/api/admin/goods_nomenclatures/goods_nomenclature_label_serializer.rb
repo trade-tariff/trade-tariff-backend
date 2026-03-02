@@ -12,8 +12,17 @@ module Api
                    :goods_nomenclature_item_id,
                    :goods_nomenclature_type,
                    :producline_suffix,
-                   :validity_start_date,
-                   :validity_end_date
+                   :stale,
+                   :manually_edited,
+                   :context_hash,
+                   :description,
+                   :original_description,
+                   :synonyms,
+                   :colloquial_terms,
+                   :known_brands,
+                   :description_score,
+                   :synonym_scores,
+                   :colloquial_term_scores
 
         attribute :labels do |label|
           label.labels || {}

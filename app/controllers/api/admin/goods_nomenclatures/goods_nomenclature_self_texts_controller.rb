@@ -34,7 +34,7 @@ module Api
         def regenerate
           gn = TimeMachine.now do
             GoodsNomenclature.actual
-              .where(goods_nomenclature_item_id: params[:goods_nomenclature_id])
+              .where(Sequel[:goods_nomenclatures][:goods_nomenclature_sid] => params[:goods_nomenclature_id].to_i)
               .first
           end
 
@@ -46,7 +46,8 @@ module Api
           # Force regeneration by invalidating context hash so context_stale? returns true
           self_text_record.update(context_hash: 'invalidated', stale: true)
 
-          GenerateSelfText::AiBuilder.call(chapter)
+          GenerateSelfText::OtherSelfTextBuilder.call(chapter)
+          GenerateSelfText::NonOtherSelfTextBuilder.call(chapter)
 
           render json: serialize(self_text_record.reload), status: :ok
         end
@@ -59,7 +60,7 @@ module Api
 
         def self_text_record
           @self_text_record ||= GoodsNomenclatureSelfText
-            .where(goods_nomenclature_item_id: params[:goods_nomenclature_id])
+            .where(goods_nomenclature_sid: params[:goods_nomenclature_id].to_i)
             .first || raise(Sequel::RecordNotFound)
         end
 

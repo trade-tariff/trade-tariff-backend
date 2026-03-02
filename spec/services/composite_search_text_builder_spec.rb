@@ -25,7 +25,10 @@ RSpec.describe CompositeSearchTextBuilder do
                 'colloquial_terms' => %w[ponies equines],
                 'synonyms' => %w[stallions],
                 'known_brands' => [],
-              })
+              },
+              colloquial_terms: Sequel.pg_array(%w[ponies equines], :text),
+              synonyms: Sequel.pg_array(%w[stallions], :text),
+              known_brands: Sequel.pg_array([], :text))
       end
 
       it 'includes also known as section' do
@@ -43,7 +46,10 @@ RSpec.describe CompositeSearchTextBuilder do
                 'colloquial_terms' => [],
                 'synonyms' => [],
                 'known_brands' => %w[BrandA BrandB],
-              })
+              },
+              colloquial_terms: Sequel.pg_array([], :text),
+              synonyms: Sequel.pg_array([], :text),
+              known_brands: Sequel.pg_array(%w[BrandA BrandB], :text))
       end
 
       it 'includes brands section' do
@@ -74,7 +80,10 @@ RSpec.describe CompositeSearchTextBuilder do
                 'colloquial_terms' => %w[ponies],
                 'synonyms' => %w[equines],
                 'known_brands' => %w[Thoroughbred],
-              })
+              },
+              colloquial_terms: Sequel.pg_array(%w[ponies], :text),
+              synonyms: Sequel.pg_array(%w[equines], :text),
+              known_brands: Sequel.pg_array(%w[Thoroughbred], :text))
       end
 
       let(:refs) do
@@ -100,7 +109,10 @@ RSpec.describe CompositeSearchTextBuilder do
                 'colloquial_terms' => ['ponies', '', nil],
                 'synonyms' => [],
                 'known_brands' => ['', nil],
-              })
+              },
+              colloquial_terms: Sequel.pg_array(['ponies', '', nil], :text),
+              synonyms: Sequel.pg_array([], :text),
+              known_brands: Sequel.pg_array(['', nil], :text))
       end
 
       it 'filters out blank values' do
@@ -118,7 +130,10 @@ RSpec.describe CompositeSearchTextBuilder do
                 'colloquial_terms' => nil,
                 'synonyms' => nil,
                 'known_brands' => nil,
-              })
+              },
+              colloquial_terms: nil,
+              synonyms: nil,
+              known_brands: nil)
       end
 
       it 'returns just the description' do

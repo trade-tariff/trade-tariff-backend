@@ -9,13 +9,25 @@ RSpec.describe Api::Admin::GoodsNomenclatureLabelsController do
     before do
       create(:goods_nomenclature_label,
              goods_nomenclature: commodity_0101,
-             labels: { 'description' => 'Live horses', 'known_brands' => %w[Thoroughbred], 'synonyms' => [], 'colloquial_terms' => [] })
+             labels: { 'description' => 'Live horses', 'known_brands' => %w[Thoroughbred], 'synonyms' => [], 'colloquial_terms' => [] },
+             description: 'Live horses',
+             known_brands: Sequel.pg_array(%w[Thoroughbred], :text),
+             synonyms: Sequel.pg_array([], :text),
+             colloquial_terms: Sequel.pg_array([], :text))
       create(:goods_nomenclature_label,
              goods_nomenclature: commodity_0201,
-             labels: { 'description' => 'Fresh beef carcasses', 'known_brands' => [], 'synonyms' => ['bovine meat'], 'colloquial_terms' => [] })
+             labels: { 'description' => 'Fresh beef carcasses', 'known_brands' => [], 'synonyms' => ['bovine meat'], 'colloquial_terms' => [] },
+             description: 'Fresh beef carcasses',
+             known_brands: Sequel.pg_array([], :text),
+             synonyms: Sequel.pg_array(['bovine meat'], :text),
+             colloquial_terms: Sequel.pg_array([], :text))
       create(:goods_nomenclature_label,
              goods_nomenclature: commodity_0301,
-             labels: { 'description' => 'Ornamental fish', 'known_brands' => [], 'synonyms' => [], 'colloquial_terms' => ['tropical fish'] })
+             labels: { 'description' => 'Ornamental fish', 'known_brands' => [], 'synonyms' => [], 'colloquial_terms' => ['tropical fish'] },
+             description: 'Ornamental fish',
+             known_brands: Sequel.pg_array([], :text),
+             synonyms: Sequel.pg_array([], :text),
+             colloquial_terms: Sequel.pg_array(['tropical fish'], :text))
     end
 
     context 'when searching by commodity code prefix' do

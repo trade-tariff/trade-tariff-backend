@@ -7,9 +7,6 @@ class RelabelGoodsNomenclatureWorker
   sidekiq_options queue: :sync, retry: false, slack_alerts: false
 
   def perform
-    # Refresh materialized view to get accurate counts
-    refresh_materialized_view!
-
     total_records = GoodsNomenclatureLabel.goods_nomenclatures_dataset.count
     total_pages = GoodsNomenclatureLabel.goods_nomenclature_label_total_pages
 
@@ -32,13 +29,5 @@ class RelabelGoodsNomenclatureWorker
   def configured_page_size
     config = AdminConfiguration.classification.by_name('label_page_size')
     (config&.value || TradeTariffBackend.goods_nomenclature_label_page_size).to_i
-  end
-
-  def refresh_materialized_view!
-    return if Rails.env.test?
-
-    GoodsNomenclatureLabel.refresh!(concurrently: false)
-  rescue StandardError => e
-    Rails.logger.warn "Failed to refresh materialized view: #{e.message}"
   end
 end

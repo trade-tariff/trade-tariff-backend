@@ -40,6 +40,7 @@ class RelabelGoodsNomenclaturePageWorker
 
       sids = batch.map(&:goods_nomenclature_sid)
       GoodsNomenclatureSelfText.regenerate_search_embeddings(sids)
+      LabelConfidenceScorer.new.score(sids)
     end
   rescue StandardError => e
     LabelGenerator::Instrumentation.page_failed(
@@ -64,11 +65,46 @@ class RelabelGoodsNomenclaturePageWorker
       return false
     end
 
-    label.save
+    upsert_label(label)
     LabelGenerator::Instrumentation.label_saved(label, page_number:)
     true
   rescue Sequel::Error => e
     LabelGenerator::Instrumentation.label_save_failed(label, e, page_number:)
     false
+  end
+
+  def upsert_label(label)
+    now = Time.zone.now
+    GoodsNomenclatureLabel.dataset.insert_conflict(
+      target: :goods_nomenclature_sid,
+      update: {
+        labels: label.labels,
+        description: label.description,
+        original_description: label.original_description,
+        synonyms: label.synonyms,
+        colloquial_terms: label.colloquial_terms,
+        known_brands: label.known_brands,
+        context_hash: label.context_hash,
+        stale: false,
+        updated_at: now,
+      },
+      update_where: { Sequel[:goods_nomenclature_labels][:manually_edited] => false },
+    ).insert(
+      goods_nomenclature_sid: label.goods_nomenclature_sid,
+      goods_nomenclature_type: label.goods_nomenclature_type,
+      goods_nomenclature_item_id: label.goods_nomenclature_item_id,
+      producline_suffix: label.producline_suffix,
+      labels: label.labels,
+      description: label.description,
+      original_description: label.original_description,
+      synonyms: label.synonyms,
+      colloquial_terms: label.colloquial_terms,
+      known_brands: label.known_brands,
+      context_hash: label.context_hash,
+      stale: false,
+      manually_edited: false,
+      created_at: now,
+      updated_at: now,
+    )
   end
 end

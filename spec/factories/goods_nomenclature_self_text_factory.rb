@@ -25,6 +25,10 @@ FactoryBot.define do
       generation_type { 'ai' }
     end
 
+    trait :ai_non_other_generated do
+      generation_type { 'ai_non_other' }
+    end
+
     trait :stale do
       stale { true }
     end
