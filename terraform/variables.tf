@@ -40,3 +40,9 @@ variable "memory" {
   description = "Memory to allocate in MB. Powers of 2 only."
   type        = number
 }
+
+variable "container_port" {
+  description = "Listening port."
+  type        = number
+  default     = 8080
+}

@@ -17,7 +17,7 @@ module "backend_uk" {
   docker_tag   = var.docker_tag
   skip_destroy = true
 
-  container_port        = 8080
+  container_port        = var.container_port
   private_dns_namespace = "tariff.internal"
 
   cpu    = var.cpu
