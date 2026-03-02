@@ -143,6 +143,47 @@ RSpec.describe EmbeddingService do
       end
     end
 
+    context 'when a transient SSL error occurs then succeeds' do
+      let(:embedding) { Array.new(1536) { 0.1 } }
+      let(:success_body) do
+        { 'data' => [{ 'index' => 0, 'embedding' => embedding }] }
+      end
+
+      before do
+        call_count = 0
+        stub_request(:post, "#{api_base_url}/embeddings").to_return do
+          call_count += 1
+          if call_count == 1
+            raise Faraday::SSLError, 'SSL_connect returned=1 errno=0 state=error: unexpected eof while reading'
+          else
+            { status: 200, body: success_body.to_json, headers: { 'Content-Type' => 'application/json' } }
+          end
+        end
+
+        allow(Kernel).to receive(:sleep)
+      end
+
+      it 'retries and returns the embedding' do
+        result = service.embed_batch(%w[test])
+        expect(result).to eq([embedding])
+        expect(WebMock).to have_requested(:post, "#{api_base_url}/embeddings").times(2)
+      end
+    end
+
+    context 'when SSL errors persist' do
+      before do
+        stub_request(:post, "#{api_base_url}/embeddings")
+          .to_raise(Faraday::SSLError.new('SSL_connect returned=1 errno=0 state=error: unexpected eof while reading'))
+
+        allow(Kernel).to receive(:sleep)
+      end
+
+      it 'raises after exhausting retries' do
+        expect { service.embed_batch(%w[test]) }.to raise_error(Faraday::SSLError)
+        expect(WebMock).to have_requested(:post, "#{api_base_url}/embeddings").times(3)
+      end
+    end
+
     context 'when the API returns a non-retryable error' do
       before do
         stub_request(:post, "#{api_base_url}/embeddings")
