@@ -45,17 +45,35 @@ module Api
         CASE
           WHEN "gn"."goods_nomenclature_item_id" LIKE '__00000000' THEN 'chapter'
           WHEN "gn"."goods_nomenclature_item_id" LIKE '____000000' THEN 'heading'
-          WHEN "gn"."producline_suffix" != '80' OR "gn"."leaf" = false THEN 'subheading'
+          WHEN "gn"."producline_suffix" != '80' OR EXISTS (
+            SELECT 1
+            FROM goods_nomenclature_tree_nodes parent
+            JOIN goods_nomenclature_tree_nodes child
+              ON child.depth = parent.depth + 1
+              AND child.position > parent.position
+              AND child.validity_start_date <= CURRENT_DATE
+              AND (child.validity_end_date >= CURRENT_DATE OR child.validity_end_date IS NULL)
+              AND child.position < COALESCE(
+                (SELECT MIN(siblings.position)
+                 FROM goods_nomenclature_tree_nodes siblings
+                 WHERE siblings.depth = parent.depth
+                   AND siblings.position > parent.position
+                   AND siblings.validity_start_date <= CURRENT_DATE
+                   AND (siblings.validity_end_date >= CURRENT_DATE OR siblings.validity_end_date IS NULL)
+                ), 1000000000000)
+            WHERE parent.goods_nomenclature_sid = "gn"."goods_nomenclature_sid"
+              AND parent.validity_start_date <= CURRENT_DATE
+              AND (parent.validity_end_date >= CURRENT_DATE OR parent.validity_end_date IS NULL)
+          ) THEN 'subheading'
           ELSE 'commodity'
         END
       SQL
 
       def filtered_dataset
         st = Sequel[:goods_nomenclature_self_texts]
-        gn_with_leaf = GoodsNomenclature.with_leaf_column
 
         dataset = GoodsNomenclatureSelfText.dataset
-          .join(gn_with_leaf, { Sequel[:gn][:goods_nomenclature_sid] => st[:goods_nomenclature_sid] }, table_alias: :gn)
+          .join(:goods_nomenclatures, { Sequel[:gn][:goods_nomenclature_sid] => st[:goods_nomenclature_sid] }, table_alias: :gn)
           .select_all(:goods_nomenclature_self_texts)
           .select_append(
             Sequel.lit(NOMENCLATURE_TYPE_SQL).as(:nomenclature_type),
