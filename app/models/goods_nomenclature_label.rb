@@ -18,6 +18,8 @@ class GoodsNomenclatureLabel < Sequel::Model
   end
 
   dataset_module do
+    include AdminListingDataset
+
     def by_sid(sid)
       where(goods_nomenclature_sid: sid)
     end
@@ -28,6 +30,57 @@ class GoodsNomenclatureLabel < Sequel::Model
 
     def needing_relabel
       where(stale: true, manually_edited: false)
+    end
+
+    def admin_listing
+      lbl = Sequel[:goods_nomenclature_labels]
+
+      join(:goods_nomenclatures, { Sequel[:gn][:goods_nomenclature_sid] => lbl[:goods_nomenclature_sid] }, table_alias: :gn)
+        .select_all(:goods_nomenclature_labels)
+        .select_append(
+          nomenclature_type_expression.as(:nomenclature_type),
+          score_expression.as(:score),
+        )
+    end
+
+    def search(query)
+      return self if query.blank?
+
+      q = query.strip
+      lbl = Sequel[:goods_nomenclature_labels]
+
+      if q.match?(/\A\d{2,10}\z/)
+        where(Sequel.like(lbl[:goods_nomenclature_item_id], "#{q}%"))
+      elsif q.length >= 2
+        term = "%#{q}%"
+        where(
+          Sequel.ilike(lbl[:description], term) |
+          Sequel.ilike(Sequel.function(:array_to_string, lbl[:synonyms], ' '), term) |
+          Sequel.ilike(Sequel.function(:array_to_string, lbl[:colloquial_terms], ' '), term) |
+          Sequel.ilike(Sequel.function(:array_to_string, lbl[:known_brands], ' '), term),
+        )
+      else
+        self
+      end
+    end
+
+    def for_status(status)
+      lbl = Sequel[:goods_nomenclature_labels]
+
+      case status
+      when 'stale'
+        where(lbl[:stale] => true)
+      when 'manually_edited'
+        where(lbl[:manually_edited] => true)
+      else
+        self
+      end
+    end
+
+    private
+
+    def score_sql
+      '"goods_nomenclature_labels"."description_score"'
     end
   end
 
@@ -88,8 +141,6 @@ class GoodsNomenclatureLabel < Sequel::Model
       end
     end
   end
-
-  private
 
   def before_validation
     return super unless goods_nomenclature

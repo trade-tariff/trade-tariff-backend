@@ -26,33 +26,38 @@ module Api
       end
 
       def paginated_dataset
-        @paginated_dataset ||= search_dataset.paginate(current_page, per_page)
+        @paginated_dataset ||= filtered_dataset.paginate(current_page, per_page)
       end
 
-      def search_dataset
-        q = params[:q].to_s.strip
-        return empty_dataset if q.length < 2
+      def filtered_dataset
+        dataset = GoodsNomenclatureLabel
+          .admin_listing
+          .search(params[:q])
+          .for_nomenclature_type(params[:type])
+          .for_status(params[:status])
+          .for_score_category(params[:score_category])
 
-        dataset = GoodsNomenclatureLabel.dataset
-
-        if q.match?(/\A\d{2,10}\z/)
-          dataset.where(Sequel.like(:goods_nomenclature_item_id, "#{q}%"))
-                 .order(:goods_nomenclature_item_id)
-        else
-          term = "%#{q}%"
-          dataset.where(
-            Sequel.|(
-              Sequel.ilike(:description, term),
-              Sequel.ilike(Sequel.function(:array_to_string, :synonyms, ' '), term),
-              Sequel.ilike(Sequel.function(:array_to_string, :colloquial_terms, ' '), term),
-              Sequel.ilike(Sequel.function(:array_to_string, :known_brands, ' '), term),
-            ),
-          ).order(:goods_nomenclature_item_id)
-        end
+        apply_sorting(dataset)
       end
 
-      def empty_dataset
-        GoodsNomenclatureLabel.where(Sequel.lit('1=0'))
+      def apply_sorting(dataset)
+        col = sort_column
+        dir = sort_direction == 'desc' ? :desc : :asc
+
+        dataset.order(Sequel.public_send(dir, col, nulls: :last))
+      end
+
+      def sort_column
+        allowed = {
+          'score' => Sequel.lit('score'),
+          'goods_nomenclature_item_id' => Sequel[:goods_nomenclature_labels][:goods_nomenclature_item_id],
+        }
+
+        allowed[params[:sort]] || Sequel.lit('score')
+      end
+
+      def sort_direction
+        %w[asc desc].include?(params[:direction]) ? params[:direction] : 'asc'
       end
     end
   end
