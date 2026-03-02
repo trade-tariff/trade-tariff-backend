@@ -29,122 +29,15 @@ module Api
         @paginated_dataset ||= filtered_dataset.paginate(current_page, per_page)
       end
 
-      SCORE_SQL = <<~SQL.squish
-        CASE
-          WHEN "goods_nomenclature_self_texts"."similarity_score" IS NOT NULL
-           AND "goods_nomenclature_self_texts"."coherence_score" IS NOT NULL
-          THEN ("goods_nomenclature_self_texts"."similarity_score" + "goods_nomenclature_self_texts"."coherence_score") / 2.0
-          WHEN "goods_nomenclature_self_texts"."similarity_score" IS NOT NULL
-          THEN "goods_nomenclature_self_texts"."similarity_score"
-          WHEN "goods_nomenclature_self_texts"."coherence_score" IS NOT NULL
-          THEN "goods_nomenclature_self_texts"."coherence_score"
-        END
-      SQL
-
-      NOMENCLATURE_TYPE_SQL = <<~SQL.squish
-        CASE
-          WHEN "gn"."goods_nomenclature_item_id" LIKE '__00000000' THEN 'chapter'
-          WHEN "gn"."goods_nomenclature_item_id" LIKE '____000000' THEN 'heading'
-          WHEN "gn"."producline_suffix" != '80' OR EXISTS (
-            SELECT 1
-            FROM goods_nomenclature_tree_nodes parent
-            JOIN goods_nomenclature_tree_nodes child
-              ON child.depth = parent.depth + 1
-              AND child.position > parent.position
-              AND child.validity_start_date <= CURRENT_DATE
-              AND (child.validity_end_date >= CURRENT_DATE OR child.validity_end_date IS NULL)
-              AND child.position < COALESCE(
-                (SELECT MIN(siblings.position)
-                 FROM goods_nomenclature_tree_nodes siblings
-                 WHERE siblings.depth = parent.depth
-                   AND siblings.position > parent.position
-                   AND siblings.validity_start_date <= CURRENT_DATE
-                   AND (siblings.validity_end_date >= CURRENT_DATE OR siblings.validity_end_date IS NULL)
-                ), 1000000000000)
-            WHERE parent.goods_nomenclature_sid = "gn"."goods_nomenclature_sid"
-              AND parent.validity_start_date <= CURRENT_DATE
-              AND (parent.validity_end_date >= CURRENT_DATE OR parent.validity_end_date IS NULL)
-          ) THEN 'subheading'
-          ELSE 'commodity'
-        END
-      SQL
-
       def filtered_dataset
-        st = Sequel[:goods_nomenclature_self_texts]
+        dataset = GoodsNomenclatureSelfText
+          .admin_listing
+          .search(params[:q])
+          .for_nomenclature_type(params[:type])
+          .for_status(params[:status])
+          .for_score_category(params[:score_category])
 
-        dataset = GoodsNomenclatureSelfText.dataset
-          .join(:goods_nomenclatures, { Sequel[:gn][:goods_nomenclature_sid] => st[:goods_nomenclature_sid] }, table_alias: :gn)
-          .select_all(:goods_nomenclature_self_texts)
-          .select_append(
-            Sequel.lit(NOMENCLATURE_TYPE_SQL).as(:nomenclature_type),
-            Sequel.lit(SCORE_SQL).as(:score),
-          )
-          .where(st[:generation_type] => %w[ai ai_non_other])
-
-        dataset = apply_search(dataset)
-        dataset = apply_type_filter(dataset)
-        dataset = apply_status_filter(dataset)
-        dataset = apply_score_filter(dataset)
         apply_sorting(dataset)
-      end
-
-      def apply_search(dataset)
-        return dataset if params[:q].blank?
-
-        q = params[:q].strip
-        st = Sequel[:goods_nomenclature_self_texts]
-
-        if q.match?(/\A\d{2,10}\z/)
-          dataset.where(Sequel.like(st[:goods_nomenclature_item_id], "#{q}%"))
-        elsif q.length >= 2
-          term = "%#{q}%"
-          dataset.where(
-            Sequel.ilike(st[:self_text], term) |
-            Sequel.ilike(Sequel.cast(st[:input_context], String), term),
-          )
-        else
-          dataset
-        end
-      end
-
-      def apply_type_filter(dataset)
-        return dataset unless %w[commodity heading subheading].include?(params[:type])
-
-        dataset.where(Sequel.lit("(#{NOMENCLATURE_TYPE_SQL}) = ?", params[:type]))
-      end
-
-      def apply_status_filter(dataset)
-        st = Sequel[:goods_nomenclature_self_texts]
-
-        case params[:status]
-        when 'needs_review'
-          dataset.where(st[:needs_review] => true)
-        when 'stale'
-          dataset.where(st[:stale] => true)
-        when 'manually_edited'
-          dataset.where(st[:manually_edited] => true)
-        else
-          dataset
-        end
-      end
-
-      def apply_score_filter(dataset)
-        score = Sequel.lit("(#{SCORE_SQL})")
-
-        case params[:score_category]
-        when 'bad'
-          dataset.where(score < 0.3)
-        when 'okay'
-          dataset.where(score >= 0.3).where(score < 0.5)
-        when 'good'
-          dataset.where(score >= 0.5).where(score < 0.85)
-        when 'amazing'
-          dataset.where(score >= 0.85)
-        when 'no_score'
-          dataset.where(Sequel.lit("(#{SCORE_SQL}) IS NULL"))
-        else
-          dataset
-        end
       end
 
       def apply_sorting(dataset)
