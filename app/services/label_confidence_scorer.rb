@@ -9,16 +9,21 @@ class LabelConfidenceScorer
     labels = GoodsNomenclatureLabel.where(goods_nomenclature_sid: sids).all
     return if labels.empty?
 
-    self_text_embeddings = load_self_text_embeddings(sids)
-    return if self_text_embeddings.empty?
+    scorable_sids = GoodsNomenclatureSelfText
+      .where(goods_nomenclature_sid: sids)
+      .exclude(embedding: nil)
+      .select_map(:goods_nomenclature_sid)
+      .to_set
 
-    scorable = labels.select { |l| self_text_embeddings.key?(l.goods_nomenclature_sid) }
+    return if scorable_sids.empty?
+
+    scorable = labels.select { |l| scorable_sids.include?(l.goods_nomenclature_sid) }
     return if scorable.empty?
 
     LabelGenerator::Instrumentation.scoring_started(total_records: scorable.size)
 
     LabelGenerator::Instrumentation.scoring_completed do |payload|
-      score_labels(scorable, self_text_embeddings)
+      score_labels(scorable)
       populate_scoring_payload(payload, sids)
     end
   rescue StandardError => e
@@ -30,19 +35,7 @@ class LabelConfidenceScorer
 
   attr_reader :embedding_service
 
-  # Uses the generation embedding (not search_embedding) because search_embedding
-  # incorporates label text, which would make the comparison circular.
-  def load_self_text_embeddings(sids)
-    rows = GoodsNomenclatureSelfText
-      .where(goods_nomenclature_sid: sids)
-      .exclude(embedding: nil)
-      .select(:goods_nomenclature_sid, :embedding)
-      .all
-
-    rows.to_h { |r| [r.goods_nomenclature_sid, parse_vector(r.embedding)] }
-  end
-
-  def score_labels(labels, self_text_embeddings)
+  def score_labels(labels)
     all_texts = []
     text_map = []
 
@@ -79,21 +72,40 @@ class LabelConfidenceScorer
       results[sid][:colloquial_term_scores] = Array.new(Array(label.colloquial_terms).size)
     end
 
-    text_map.each_with_index do |entry, i|
-      st_embedding = self_text_embeddings[entry[:sid]]
-      similarity = cosine_similarity(embeddings[i], st_embedding)
+    rows = compute_similarities(text_map, embeddings)
 
-      case entry[:field]
-      when :description
-        results[entry[:sid]][:description_score] = similarity
-      when :synonyms
-        results[entry[:sid]][:synonym_scores][entry[:index]] = similarity
-      when :colloquial_terms
-        results[entry[:sid]][:colloquial_term_scores][entry[:index]] = similarity
+    rows.each do |row|
+      sid = row[:goods_nomenclature_sid]
+      score = row[:score].to_f
+
+      case row[:field]
+      when 'description'
+        results[sid][:description_score] = score
+      when 'synonyms'
+        results[sid][:synonym_scores][row[:idx]] = score
+      when 'colloquial_terms'
+        results[sid][:colloquial_term_scores][row[:idx]] = score
       end
     end
 
     persist_scores(results)
+  end
+
+  # Uses the generation embedding (not search_embedding) because search_embedding
+  # incorporates label text, which would make the comparison circular.
+  def compute_similarities(text_map, embeddings)
+    values = text_map.each_with_index.map { |entry, i|
+      vector = "'[#{embeddings[i].join(',')}]'::vector"
+      "(#{entry[:sid]}, #{db.literal(entry[:field].to_s)}, #{entry[:index] || 0}, #{vector})"
+    }.join(', ')
+
+    db[<<~SQL].all
+      SELECT v.goods_nomenclature_sid, v.field, v.idx,
+             ROUND((1 - (v.term_embedding <=> st.embedding))::numeric, 4) AS score
+      FROM (VALUES #{values}) AS v(goods_nomenclature_sid, field, idx, term_embedding)
+      JOIN goods_nomenclature_self_texts st
+        ON st.goods_nomenclature_sid = v.goods_nomenclature_sid
+    SQL
   end
 
   def embed_all(texts)
@@ -109,23 +121,6 @@ class LabelConfidenceScorer
     end
 
     all_embeddings
-  end
-
-  def cosine_similarity(vec_a, vec_b)
-    dot = 0.0
-    norm_a = 0.0
-    norm_b = 0.0
-
-    vec_a.zip(vec_b).each do |a, b|
-      dot += a * b
-      norm_a += a * a
-      norm_b += b * b
-    end
-
-    denominator = Math.sqrt(norm_a) * Math.sqrt(norm_b)
-    return 0.0 if denominator.zero?
-
-    (dot / denominator).round(4)
   end
 
   def persist_scores(results)
@@ -148,9 +143,7 @@ class LabelConfidenceScorer
       .avg(:description_score)&.to_f&.round(4)
   end
 
-  def parse_vector(value)
-    return value if value.is_a?(Array)
-
-    value.to_s.delete('[]').split(',').map(&:to_f)
+  def db
+    Sequel::Model.db
   end
 end
