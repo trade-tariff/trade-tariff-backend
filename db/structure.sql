@@ -2,7 +2,7 @@
 -- PostgreSQL database dump
 --
 
-\restrict 8WydvQagsAofAt7D0ahpMPmdowLWyoKafcmSLNZl99Gn1vBpNukf7wZZDaZdqHO
+\restrict l2P6MPOoXD6vvsqaQRa6oWjbqthdKjvq1mV9zCWi3nEcOc34efY0TX9gzLc23sP
 
 -- Dumped from database version 18.2
 -- Dumped by pg_dump version 18.2
@@ -4053,7 +4053,15 @@ CREATE TABLE uk.goods_nomenclature_labels (
     manually_edited boolean DEFAULT false NOT NULL,
     context_hash character varying(64),
     created_at timestamp without time zone NOT NULL,
-    updated_at timestamp without time zone NOT NULL
+    updated_at timestamp without time zone NOT NULL,
+    description text,
+    original_description text,
+    synonyms text[] DEFAULT '{}'::text[],
+    colloquial_terms text[] DEFAULT '{}'::text[],
+    known_brands text[] DEFAULT '{}'::text[],
+    description_score double precision,
+    synonym_scores double precision[] DEFAULT '{}'::double precision[],
+    colloquial_term_scores double precision[] DEFAULT '{}'::double precision[]
 );
 
 
@@ -14029,7 +14037,7 @@ ALTER TABLE ONLY uk.news_collections_news_items
 -- PostgreSQL database dump complete
 --
 
-\unrestrict 8WydvQagsAofAt7D0ahpMPmdowLWyoKafcmSLNZl99Gn1vBpNukf7wZZDaZdqHO
+\unrestrict l2P6MPOoXD6vvsqaQRa6oWjbqthdKjvq1mV9zCWi3nEcOc34efY0TX9gzLc23sP
 
 SET search_path TO uk, public;
 INSERT INTO "schema_migrations" ("filename") VALUES ('1342519058_create_schema.rb');
@@ -14242,3 +14250,5 @@ INSERT INTO "schema_migrations" ("filename") VALUES ('20260211120000_create_good
 INSERT INTO "schema_migrations" ("filename") VALUES ('20260217120000_add_embedding_columns_to_self_texts.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20260219120000_add_search_embedding_to_self_texts.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20260226120000_replace_labels_oplog_with_plain_table.rb');
+INSERT INTO "schema_migrations" ("filename") VALUES ('20260227120000_rename_self_text_admin_configurations.rb');
+INSERT INTO "schema_migrations" ("filename") VALUES ('20260228120000_denest_label_columns.rb');

@@ -33,11 +33,14 @@ RSpec.describe RelabelGoodsNomenclaturePageWorker, type: :worker do
       )
     end
 
+    let(:label_confidence_scorer) { instance_double(LabelConfidenceScorer, score: nil) }
+
     before do
       TradeTariffRequest.time_machine_now = Time.current
 
       allow(LabelService).to receive(:new).and_return(label_service)
       allow(GoodsNomenclatureSelfText).to receive(:regenerate_search_embeddings)
+      allow(LabelConfidenceScorer).to receive(:new).and_return(label_confidence_scorer)
     end
 
     it 'calls LabelService with the batch and page number' do
@@ -53,6 +56,13 @@ RSpec.describe RelabelGoodsNomenclaturePageWorker, type: :worker do
       described_class.new.perform(page_number)
 
       expect(GoodsNomenclatureSelfText).to have_received(:regenerate_search_embeddings)
+        .with([commodity.goods_nomenclature_sid])
+    end
+
+    it 'scores labels for the batch' do
+      described_class.new.perform(page_number)
+
+      expect(label_confidence_scorer).to have_received(:score)
         .with([commodity.goods_nomenclature_sid])
     end
 
