@@ -78,3 +78,12 @@ data "aws_secretsmanager_secret_version" "ecs_tls_certificate" {
 data "aws_sns_topic" "slack_topic" {
   name = "slack-topic"
 }
+
+data "aws_ecs_cluster" "this" {
+  cluster_name = "trade-tariff-cluster-${var.environment}"
+}
+
+data "aws_ecs_task_definition" "backend_job" {
+  task_definition = "backend-job-${local.account_id}"
+  depends_on      = [module.backend-job]
+}

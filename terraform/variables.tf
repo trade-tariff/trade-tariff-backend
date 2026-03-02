@@ -40,3 +40,8 @@ variable "memory" {
   description = "Memory to allocate in MB. Powers of 2 only."
   type        = number
 }
+
+variable "database_backup_secret_name" {
+  description = "Secrets Manager secret name containing the database URL for backups."
+  type        = string
+}

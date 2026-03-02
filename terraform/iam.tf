@@ -75,6 +75,32 @@ data "aws_iam_policy_document" "task" {
     actions   = ["cloudfront:ListDistributions"]
     resources = ["*"]
   }
+
+  statement {
+    effect = "Allow"
+    actions = [
+      "s3:ListBucket",
+      "s3:GetObject",
+      "s3:PutObject",
+      "s3:DeleteObject",
+    ]
+    resources = [
+      "arn:aws:s3:::trade-tariff-database-backups-${local.account_id}",
+      "arn:aws:s3:::trade-tariff-database-backups-${local.account_id}/*",
+    ]
+  }
+
+  statement {
+    effect = "Allow"
+    actions = [
+      "secretsmanager:GetSecretValue",
+      "secretsmanager:DescribeSecret",
+    ]
+    resources = [
+      "arn:aws:secretsmanager:${var.region}:${local.account_id}:secret:aurora-postgres-rw-connection-string-*",
+      "arn:aws:secretsmanager:${var.region}:${local.account_id}:secret:*-postgres-database-url-*",
+    ]
+  }
 }
 
 resource "aws_iam_policy" "task" {
