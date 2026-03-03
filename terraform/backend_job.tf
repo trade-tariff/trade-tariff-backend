@@ -31,8 +31,6 @@ module "backend-job" {
   sns_topic_arns = [data.aws_sns_topic.slack_topic.arn]
 }
 
-# Database backup - daily at 9 AM UTC (all environments)
-
 resource "aws_cloudwatch_event_rule" "database_backup" {
   name                = "backend-database-backup-${var.environment}"
   description         = "Triggers daily database backup for ${var.environment}"
@@ -68,8 +66,6 @@ resource "aws_cloudwatch_event_target" "database_backup" {
   }
 }
 
-# Database replication - weekdays at 9:25 AM UTC (dev + staging only)
-
 resource "aws_cloudwatch_event_rule" "database_replication" {
   count = var.environment != "production" ? 1 : 0
 
@@ -103,8 +99,6 @@ resource "aws_cloudwatch_event_target" "database_replication" {
     }
   }
 }
-
-# EventBridge IAM - allows EventBridge to run ECS tasks
 
 data "aws_iam_policy_document" "eventbridge_assume_role" {
   statement {
