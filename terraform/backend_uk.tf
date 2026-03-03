@@ -33,5 +33,7 @@ module "backend_uk" {
   min_capacity   = var.min_capacity
   max_capacity   = var.max_capacity
 
+  enable_service_count_alarm = var.enable_service_count_alarm
+
   sns_topic_arns = [data.aws_sns_topic.slack_topic.arn]
 }
