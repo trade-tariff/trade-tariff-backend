@@ -38,5 +38,7 @@ module "worker_xi" {
   min_capacity   = 1
   max_capacity   = var.max_capacity
 
+  enable_service_count_alarm = var.enable_service_count_alarm
+
   sns_topic_arns = [data.aws_sns_topic.slack_topic.arn]
 }
