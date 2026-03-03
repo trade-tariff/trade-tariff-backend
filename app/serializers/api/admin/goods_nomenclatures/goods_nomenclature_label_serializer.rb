@@ -28,6 +28,10 @@ module Api
         attribute :labels do |label|
           label.labels || {}
         end
+
+        attribute :has_self_text do |label|
+          GoodsNomenclatureSelfText.where(goods_nomenclature_sid: label.goods_nomenclature_sid).any?
+        end
       end
     end
   end

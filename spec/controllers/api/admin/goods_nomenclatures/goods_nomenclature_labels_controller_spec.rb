@@ -25,6 +25,7 @@ RSpec.describe Api::Admin::GoodsNomenclatures::GoodsNomenclatureLabelsController
             synonym_scores: wildcard_matcher,
             colloquial_term_scores: wildcard_matcher,
             score: wildcard_matcher,
+            has_self_text: wildcard_matcher,
           },
         },
       }
