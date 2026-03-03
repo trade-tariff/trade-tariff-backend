@@ -1,5 +1,8 @@
+# Skipped in development so backend Terraform completes without requiring ALB target groups.
 module "backend_xi" {
   source = "git@github.com:trade-tariff/trade-tariff-platform-terraform-modules.git//aws/ecs-service?ref=aws/ecs-service-v1.19.2"
+
+  count = var.environment != "development" ? 1 : 0
 
   region = var.region
 
@@ -10,7 +13,7 @@ module "backend_xi" {
   cluster_name              = "trade-tariff-cluster-${var.environment}"
   subnet_ids                = data.aws_subnets.private.ids
   security_groups           = [data.aws_security_group.this.id]
-  target_group_arn          = data.aws_lb_target_group.backend_xi.arn
+  target_group_arn          = try(data.aws_lb_target_group.backend_xi[0].arn, "")
   cloudwatch_log_group_name = "platform-logs-${var.environment}"
 
   docker_image = local.ecr_repo

@@ -19,12 +19,16 @@ data "aws_security_group" "this" {
   name = "trade-tariff-ecs-security-group-${var.environment}"
 }
 
+# Only look up when ALB target groups exist (e.g. after platform apply). In development
+# we skip so the backend Terraform plan/apply can complete without requiring backend ECS.
 data "aws_lb_target_group" "backend_uk" {
-  name = "backend-uk"
+  count  = var.environment != "development" ? 1 : 0
+  name   = "backend-uk"
 }
 
 data "aws_lb_target_group" "backend_xi" {
-  name = "backend-xi"
+  count  = var.environment != "development" ? 1 : 0
+  name   = "backend-xi"
 }
 
 data "aws_secretsmanager_secret" "backend_uk_worker_configuration" {
