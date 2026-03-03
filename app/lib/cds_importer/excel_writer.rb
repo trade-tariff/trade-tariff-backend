@@ -31,7 +31,7 @@ class CdsImporter
     end
 
     def after_parse
-      write_data(@key, @instances)
+      write_data(@key, @instances) unless @key.empty?
       build_worksheets(@data) unless @data.empty?
 
       workbook.close
