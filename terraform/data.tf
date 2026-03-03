@@ -20,11 +20,11 @@ data "aws_security_group" "this" {
 }
 
 data "aws_lb_target_group" "backend_uk" {
-  name = "backend-uk-tls"
+  name = "backend-uk"
 }
 
 data "aws_lb_target_group" "backend_xi" {
-  name = "backend-xi-tls"
+  name = "backend-xi"
 }
 
 data "aws_secretsmanager_secret" "backend_uk_worker_configuration" {
