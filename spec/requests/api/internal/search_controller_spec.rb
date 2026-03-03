@@ -27,7 +27,7 @@ RSpec.describe Api::Internal::SearchController, :internal do
             validity_start_date: Time.zone.today.iso8601,
           },
         )
-        TradeTariffBackend.search_client.indices.refresh(index: '_all')
+        TradeTariffBackend.search_client.indices.refresh(index: 'tariff-test-*')
       end
 
       let(:pattern) do
@@ -203,7 +203,7 @@ RSpec.describe Api::Internal::SearchController, :internal do
             validity_start_date: Time.zone.today.iso8601,
           },
         )
-        TradeTariffBackend.search_client.indices.refresh(index: '_all')
+        TradeTariffBackend.search_client.indices.refresh(index: 'tariff-test-*')
       end
 
       it 'returns 200 with cleaned results' do
@@ -287,7 +287,7 @@ RSpec.describe Api::Internal::SearchController, :internal do
             validity_start_date: Time.zone.today.iso8601,
           },
         )
-        TradeTariffBackend.search_client.indices.refresh(index: '_all')
+        TradeTariffBackend.search_client.indices.refresh(index: 'tariff-test-*')
 
         allow(InteractiveSearchService).to receive(:call).and_return(interactive_result)
       end
@@ -318,7 +318,7 @@ RSpec.describe Api::Internal::SearchController, :internal do
             validity_start_date: Time.zone.today.iso8601,
           },
         )
-        TradeTariffBackend.search_client.indices.refresh(index: '_all')
+        TradeTariffBackend.search_client.indices.refresh(index: 'tariff-test-*')
 
         allow(InteractiveSearchService).to receive(:call).and_return(
           InteractiveSearchService::Result.new(
@@ -353,7 +353,7 @@ RSpec.describe Api::Internal::SearchController, :internal do
         other = create(:search_suggestion, :search_reference, value: 'but different')
         index_model(other)
 
-        TradeTariffBackend.search_client.indices.refresh(index: '_all')
+        TradeTariffBackend.search_client.indices.refresh(index: 'tariff-test-*')
       end
 
       let(:pattern) do
