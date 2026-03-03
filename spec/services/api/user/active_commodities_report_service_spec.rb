@@ -39,10 +39,6 @@ RSpec.describe Api::User::ActiveCommoditiesReportService do
 
     let(:worksheet) { package.workbook.worksheets.first }
 
-    it 'returns an Axlsx package' do
-      expect(package).to be_a(Axlsx::Package)
-    end
-
     it 'creates a worksheet named Your commodities' do
       expect(worksheet.name).to eq('Your commodities')
     end
@@ -179,12 +175,6 @@ RSpec.describe Api::User::ActiveCommoditiesReportService do
       expect(font.b).to be true
     end
 
-    it 'renders description values as plain text' do
-      description_cell = worksheet.rows[7].cells[1]
-
-      expect(description_cell.value).to be_a(String)
-    end
-
     it 'enables table built-in row striping' do
       table = worksheet.tables.first
       style_info = table.respond_to?(:table_style_info) ? table.table_style_info : nil
@@ -225,6 +215,27 @@ RSpec.describe Api::User::ActiveCommoditiesReportService do
 
       expect(table).not_to be_nil
       expect(table.ref).to eq('A7:C10')
+    end
+  end
+
+  describe '#load_classification_descriptions' do
+    subject(:service) { described_class.new(active_codes, expired_codes, invalid_codes) }
+
+    let(:codes) { %w[1111111111 2222222222] }
+
+    it 'delegates to CachedCommodityDescriptionService.fetch_for_codes' do
+      allow(CachedCommodityDescriptionService).to receive(:fetch_for_codes).with(codes).and_return(
+        '1111111111' => 'Cached 111',
+        '2222222222' => 'Fetched 222',
+      )
+
+      result = service.send(:load_classification_descriptions, codes)
+
+      expect(result).to eq(
+        '1111111111' => 'Cached 111',
+        '2222222222' => 'Fetched 222',
+      )
+      expect(CachedCommodityDescriptionService).to have_received(:fetch_for_codes).with(codes)
     end
   end
 

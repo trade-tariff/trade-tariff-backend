@@ -30,3 +30,112 @@ module "backend-job" {
 
   sns_topic_arns = [data.aws_sns_topic.slack_topic.arn]
 }
+
+resource "aws_cloudwatch_event_rule" "database_backup" {
+  name                = "backend-database-backup-${var.environment}"
+  description         = "Triggers daily database backup for ${var.environment}"
+  schedule_expression = "cron(0 9 * * ? *)"
+}
+
+resource "aws_cloudwatch_event_target" "database_backup" {
+  rule     = aws_cloudwatch_event_rule.database_backup.name
+  arn      = data.aws_ecs_cluster.this.arn
+  role_arn = aws_iam_role.eventbridge_ecs.arn
+
+  input = jsonencode({
+    containerOverrides = [{
+      name    = "backend-job"
+      command = ["/bin/sh", "-c", "./bin/backup-database"]
+      environment = [
+        { name = "ENVIRONMENT", value = var.environment },
+        { name = "S3_BUCKET", value = "trade-tariff-database-backups-${local.account_id}" },
+        { name = "DATABASE_SECRET", value = var.database_backup_secret_name },
+      ]
+    }]
+  })
+
+  ecs_target {
+    task_count          = 1
+    task_definition_arn = data.aws_ecs_task_definition.backend_job.arn
+    launch_type         = "FARGATE"
+    network_configuration {
+      subnets          = data.aws_subnets.private.ids
+      security_groups  = [data.aws_security_group.this.id]
+      assign_public_ip = false
+    }
+  }
+}
+
+resource "aws_cloudwatch_event_rule" "database_replication" {
+  count = var.environment != "production" ? 1 : 0
+
+  name                = "backend-database-replication-${var.environment}"
+  description         = "Triggers weekday database replication for ${var.environment}"
+  schedule_expression = "cron(30 9 ? * MON-FRI *)"
+}
+
+resource "aws_cloudwatch_event_target" "database_replication" {
+  count = var.environment != "production" ? 1 : 0
+
+  rule     = aws_cloudwatch_event_rule.database_replication[0].name
+  arn      = data.aws_ecs_cluster.this.arn
+  role_arn = aws_iam_role.eventbridge_ecs.arn
+
+  input = jsonencode({
+    containerOverrides = [{
+      name    = "backend-job"
+      command = ["/bin/sh", "-c", "./bin/db-replicate"]
+    }]
+  })
+
+  ecs_target {
+    task_count          = 1
+    task_definition_arn = data.aws_ecs_task_definition.backend_job.arn
+    launch_type         = "FARGATE"
+    network_configuration {
+      subnets          = data.aws_subnets.private.ids
+      security_groups  = [data.aws_security_group.this.id]
+      assign_public_ip = false
+    }
+  }
+}
+
+data "aws_iam_policy_document" "eventbridge_assume_role" {
+  statement {
+    actions = ["sts:AssumeRole"]
+    principals {
+      type        = "Service"
+      identifiers = ["events.amazonaws.com"]
+    }
+  }
+}
+
+resource "aws_iam_role" "eventbridge_ecs" {
+  name               = "backend-eventbridge-ecs-${var.environment}"
+  assume_role_policy = data.aws_iam_policy_document.eventbridge_assume_role.json
+}
+
+resource "aws_iam_role_policy_attachment" "eventbridge_run_task" {
+  role       = aws_iam_role.eventbridge_ecs.name
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonEC2ContainerServiceEventsRole"
+}
+
+data "aws_iam_policy_document" "eventbridge_pass_role" {
+  statement {
+    actions = ["iam:PassRole"]
+    resources = [
+      module.backend-job.task_execution_role_arn,
+      module.backend-job.task_role_arn,
+    ]
+  }
+}
+
+resource "aws_iam_policy" "eventbridge_pass_role" {
+  name   = "backend-eventbridge-pass-role-${var.environment}"
+  policy = data.aws_iam_policy_document.eventbridge_pass_role.json
+}
+
+resource "aws_iam_role_policy_attachment" "eventbridge_pass_role" {
+  role       = aws_iam_role.eventbridge_ecs.name
+  policy_arn = aws_iam_policy.eventbridge_pass_role.arn
+}
