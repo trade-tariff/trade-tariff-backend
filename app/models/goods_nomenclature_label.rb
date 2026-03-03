@@ -34,17 +34,16 @@ class GoodsNomenclatureLabel < Sequel::Model
 
     def admin_listing
       lbl = Sequel[:goods_nomenclature_labels]
-      gn = Sequel[:gn]
-      current_date = Sequel.lit('CURRENT_DATE')
 
-      join(:goods_nomenclatures, { gn[:goods_nomenclature_sid] => lbl[:goods_nomenclature_sid] }, table_alias: :gn)
-        .where(gn[:validity_start_date] <= current_date)
-        .where(Sequel.|({ gn[:validity_end_date] => nil }, gn[:validity_end_date] >= current_date))
-        .select_all(:goods_nomenclature_labels)
-        .select_append(
-          nomenclature_type_expression.as(:nomenclature_type),
-          score_expression.as(:score),
-        )
+      TimeMachine.now do
+        join(:goods_nomenclatures, { Sequel[:gn][:goods_nomenclature_sid] => lbl[:goods_nomenclature_sid] }, table_alias: :gn)
+          .where(GoodsNomenclature.validity_dates_filter(:gn))
+          .select_all(:goods_nomenclature_labels)
+          .select_append(
+            nomenclature_type_expression.as(:nomenclature_type),
+            score_expression.as(:score),
+          )
+      end
     end
 
     def search(query)
