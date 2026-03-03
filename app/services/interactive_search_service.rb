@@ -104,7 +104,7 @@ class InteractiveSearchService
     results = opensearch_results.map do |result|
       {
         commodity_code: result.goods_nomenclature_item_id,
-        description: result.description,
+        description: result.full_description.presence || result.description,
         score: result.score,
       }
     end

@@ -45,10 +45,11 @@ RSpec.describe InteractiveSearchService do
     create(:admin_configuration, name: 'search_context', value: default_search_context, area: 'classification')
   end
 
-  def build_result(code, description, score)
+  def build_result(code, description, score, full_description: nil)
     OpenStruct.new(
       goods_nomenclature_item_id: code,
       description: description,
+      full_description: full_description,
       score: score,
     )
   end
@@ -356,6 +357,63 @@ RSpec.describe InteractiveSearchService do
     it 'defaults unknown confidence to possible' do
       unknown_code = result.data.find { |a| a[:commodity_code] == '4202290000' }
       expect(unknown_code[:confidence]).to eq('possible')
+    end
+  end
+
+  describe 'context formatting' do
+    let(:ai_response) { '{"answers": [{"commodity_code": "4202210000", "confidence": "Strong"}]}' }
+
+    before do
+      allow(OpenaiClient).to receive(:call).and_return(ai_response)
+    end
+
+    context 'when results have full_description' do
+      let(:opensearch_results) do
+        [
+          build_result('4202210000', 'Other', 10.5, full_description: 'Handbags - Of leather or composition leather'),
+          build_result('4202220000', 'Other', 8.3, full_description: 'Handbags - Of plastic sheeting or textile materials'),
+        ]
+      end
+
+      it 'uses full_description in the context sent to the AI' do
+        result
+
+        expect(OpenaiClient).to have_received(:call).with(
+          a_string_including('Handbags - Of leather or composition leather'),
+          anything,
+        )
+      end
+
+      it 'does not use the bare description' do
+        result
+
+        context_arg = nil
+        expect(OpenaiClient).to have_received(:call) do |context, **_opts|
+          context_arg = context
+        end
+
+        parsed_results = JSON.parse(context_arg.match(/OpenSearch results: (.+?)Previous/m)[1])
+        descriptions = parsed_results.map { |r| r['description'] }
+        expect(descriptions).not_to include('Other')
+      end
+    end
+
+    context 'when results have no full_description' do
+      let(:opensearch_results) do
+        [
+          build_result('4202210000', 'Handbags with outer surface of leather', 10.5),
+          build_result('4202220000', 'Handbags with outer surface of plastic', 8.3),
+        ]
+      end
+
+      it 'falls back to description' do
+        result
+
+        expect(OpenaiClient).to have_received(:call).with(
+          a_string_including('Handbags with outer surface of leather'),
+          anything,
+        )
+      end
     end
   end
 
