@@ -136,6 +136,27 @@ RSpec.describe GenerateSelfText::OtherSelfTextBuilder do
       end
     end
 
+    context 'when AI response contains encoding artefacts' do
+      let(:successful_response) do
+        {
+          'descriptions' => [
+            {
+              'sid' => other_commodity.goods_nomenclature_sid,
+              'contextualised_description' => 'Fruit pure9e (excl. concentrate)',
+              'excluded_siblings' => ['Pure-bred breeding animals'],
+            },
+          ],
+        }.to_json
+      end
+
+      it 'sanitises encoding artefacts before storing' do
+        result
+
+        record = GoodsNomenclatureSelfText[other_commodity.goods_nomenclature_sid]
+        expect(record.self_text).to eq('Fruit puree (excl. concentrate)')
+      end
+    end
+
     context 'when AI returns empty response' do
       before do
         allow(ai_client).to receive(:call).and_return('')

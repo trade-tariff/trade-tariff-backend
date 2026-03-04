@@ -94,8 +94,9 @@ module GenerateSelfText
         end
 
         input_context = build_input_context(segment)
-        upsert_record(node, desc['contextualised_description'], input_context)
-        generated_texts[node[:sid]] = desc['contextualised_description']
+        sanitised_text = EncodingArtefactSanitiser.call(desc['contextualised_description'])
+        upsert_record(node, sanitised_text, input_context)
+        generated_texts[node[:sid]] = sanitised_text
 
         stats[:processed] += 1
       end
