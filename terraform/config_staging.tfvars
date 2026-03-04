@@ -5,4 +5,5 @@ memory                      = 2048
 service_count               = 4
 min_capacity                = 2
 max_capacity                = 8
+container_port              = "8443"
 database_backup_secret_name = "aurora-postgres-rw-connection-string"
