@@ -32,7 +32,7 @@ module Api
 
         def find_goods_nomenclature_label
           label = GoodsNomenclatureLabel
-            .where(goods_nomenclature_sid: goods_nomenclature.goods_nomenclature_sid)
+            .where(goods_nomenclature_item_id: goods_nomenclature_item_id)
             .first
 
           raise Sequel::RecordNotFound if label.blank?
@@ -41,20 +41,18 @@ module Api
         end
 
         def goods_nomenclature
-          @goods_nomenclature ||= find_goods_nomenclature
-        end
+          @goods_nomenclature ||= begin
+            gn = TimeMachine.now do
+              GoodsNomenclature
+                .actual
+                .where(goods_nomenclature_sid: goods_nomenclature_label.goods_nomenclature_sid)
+                .first
+            end
 
-        def find_goods_nomenclature
-          gn = TimeMachine.now do
-            GoodsNomenclature
-              .actual
-              .where(goods_nomenclature_item_id: goods_nomenclature_item_id)
-              .first
+            raise Sequel::RecordNotFound if gn.blank?
+
+            gn
           end
-
-          raise Sequel::RecordNotFound if gn.blank?
-
-          gn
         end
 
         def goods_nomenclature_item_id

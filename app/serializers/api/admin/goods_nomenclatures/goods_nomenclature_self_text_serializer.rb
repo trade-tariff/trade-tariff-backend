@@ -45,6 +45,10 @@ module Api
         attribute :score do |record|
           record.values.key?(:score) ? record[:score]&.to_f&.round(4) : nil
         end
+
+        attribute :has_label do |record|
+          GoodsNomenclatureLabel.where(goods_nomenclature_sid: record.goods_nomenclature_sid).any?
+        end
       end
     end
   end

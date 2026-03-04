@@ -22,10 +22,15 @@ module Api
                    :known_brands,
                    :description_score,
                    :synonym_scores,
-                   :colloquial_term_scores
+                   :colloquial_term_scores,
+                   :score
 
         attribute :labels do |label|
           label.labels || {}
+        end
+
+        attribute :has_self_text do |label|
+          GoodsNomenclatureSelfText.where(goods_nomenclature_sid: label.goods_nomenclature_sid).any?
         end
       end
     end

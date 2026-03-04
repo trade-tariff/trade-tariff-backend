@@ -11,6 +11,8 @@ class GoodsNomenclatureSelfText < Sequel::Model
                                    primary_key: :goods_nomenclature_sid
 
   dataset_module do
+    include AdminListingDataset
+
     def stale
       where(stale: true)
     end
@@ -50,12 +52,6 @@ class GoodsNomenclatureSelfText < Sequel::Model
       end
     end
 
-    def for_nomenclature_type(type)
-      return self unless %w[commodity heading subheading].include?(type)
-
-      where(Sequel.lit("(#{nomenclature_type_sql}) = ?", type))
-    end
-
     def for_status(status)
       st = Sequel[:goods_nomenclature_self_texts]
 
@@ -66,25 +62,6 @@ class GoodsNomenclatureSelfText < Sequel::Model
         where(st[:stale] => true)
       when 'manually_edited'
         where(st[:manually_edited] => true)
-      else
-        self
-      end
-    end
-
-    def for_score_category(category)
-      score = Sequel.lit("(#{score_sql})")
-
-      case category
-      when 'bad'
-        where(score < 0.3)
-      when 'okay'
-        where(score >= 0.3).where(score < 0.5)
-      when 'good'
-        where(score >= 0.5).where(score < 0.85)
-      when 'amazing'
-        where(score >= 0.85)
-      when 'no_score'
-        where(Sequel.lit("(#{score_sql}) IS NULL"))
       else
         self
       end
@@ -106,14 +83,6 @@ class GoodsNomenclatureSelfText < Sequel::Model
 
     private
 
-    def score_expression
-      Sequel.lit(score_sql)
-    end
-
-    def nomenclature_type_expression
-      Sequel.lit(nomenclature_type_sql)
-    end
-
     def score_sql
       <<~SQL.squish
         CASE
@@ -124,36 +93,6 @@ class GoodsNomenclatureSelfText < Sequel::Model
           THEN "goods_nomenclature_self_texts"."similarity_score"
           WHEN "goods_nomenclature_self_texts"."coherence_score" IS NOT NULL
           THEN "goods_nomenclature_self_texts"."coherence_score"
-        END
-      SQL
-    end
-
-    def nomenclature_type_sql
-      <<~SQL.squish
-        CASE
-          WHEN "gn"."goods_nomenclature_item_id" LIKE '__00000000' THEN 'chapter'
-          WHEN "gn"."goods_nomenclature_item_id" LIKE '____000000' THEN 'heading'
-          WHEN "gn"."producline_suffix" != '80' OR EXISTS (
-            SELECT 1
-            FROM goods_nomenclature_tree_nodes parent
-            JOIN goods_nomenclature_tree_nodes child
-              ON child.depth = parent.depth + 1
-              AND child.position > parent.position
-              AND child.validity_start_date <= CURRENT_DATE
-              AND (child.validity_end_date >= CURRENT_DATE OR child.validity_end_date IS NULL)
-              AND child.position < COALESCE(
-                (SELECT MIN(siblings.position)
-                 FROM goods_nomenclature_tree_nodes siblings
-                 WHERE siblings.depth = parent.depth
-                   AND siblings.position > parent.position
-                   AND siblings.validity_start_date <= CURRENT_DATE
-                   AND (siblings.validity_end_date >= CURRENT_DATE OR siblings.validity_end_date IS NULL)
-                ), 1000000000000)
-            WHERE parent.goods_nomenclature_sid = "gn"."goods_nomenclature_sid"
-              AND parent.validity_start_date <= CURRENT_DATE
-              AND (parent.validity_end_date >= CURRENT_DATE OR parent.validity_end_date IS NULL)
-          ) THEN 'subheading'
-          ELSE 'commodity'
         END
       SQL
     end
