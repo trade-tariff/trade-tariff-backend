@@ -132,6 +132,32 @@ RSpec.describe GenerateSelfText::NonOtherSelfTextBuilder do
       end
     end
 
+    context 'when AI response contains encoding artefacts' do
+      let(:successful_response) do
+        proc { |messages, **_opts|
+          user_content = JSON.parse(messages.last[:content])
+          sids = user_content.map { |s| s['sid'] }
+
+          {
+            'descriptions' => sids.map do |sid|
+              {
+                'sid' => sid,
+                'contextualised_description' => "Fruit pure9e for #{sid}",
+              }
+            end,
+          }.to_json
+        }
+      end
+
+      it 'sanitises encoding artefacts before storing' do
+        result
+
+        record = GoodsNomenclatureSelfText[commodity.goods_nomenclature_sid]
+        expect(record.self_text).to start_with('Fruit puree for ')
+        expect(record.self_text).not_to include('pure9e')
+      end
+    end
+
     context 'when AI returns empty response' do
       before do
         allow(ai_client).to receive(:call).and_return('')
