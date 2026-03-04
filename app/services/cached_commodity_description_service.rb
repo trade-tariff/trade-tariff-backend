@@ -22,7 +22,9 @@ class CachedCommodityDescriptionService
     return descriptions if missing_codes.empty?
 
     resolver = new(cache: false)
-    resolved_descriptions = resolver.send(:resolve_descriptions_for_codes, missing_codes)
+    resolved_descriptions = TimeMachine.now do
+      resolver.send(:resolve_descriptions_for_codes, missing_codes)
+    end
     fetched_descriptions = missing_codes.index_with { |code| resolved_descriptions[code].to_s }
 
     Rails.cache.write_multi(
@@ -61,7 +63,9 @@ class CachedCommodityDescriptionService
   end
 
   def resolve_description
-    resolve_descriptions_for_codes([code])[code].to_s
+    TimeMachine.now do
+      resolve_descriptions_for_codes([code])[code].to_s
+    end
   end
 
   def resolve_descriptions_for_codes(codes)

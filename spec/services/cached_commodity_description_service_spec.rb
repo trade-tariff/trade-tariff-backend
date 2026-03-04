@@ -39,6 +39,28 @@ RSpec.describe CachedCommodityDescriptionService do
       expect(described_class.new('9999999999').call).to eq('')
     end
 
+    it 'resolves other descriptions to the current day even outside TimeMachine.now' do
+      create(
+        :commodity,
+        :actual,
+        :with_ancestors,
+        :with_description,
+        goods_nomenclature_item_id: '3333333333',
+        goods_nomenclature_sid: 333,
+        description: 'other',
+      )
+
+      result = nil
+
+      expect {
+        TimeMachine.no_time_machine do
+          result = described_class.new('3333333333').call
+        end
+      }.not_to raise_error
+
+      expect(result).to be_a(String)
+    end
+
     context 'when initialized with cache enabled' do
       let(:cache_enabled) { true }
 
@@ -55,6 +77,28 @@ RSpec.describe CachedCommodityDescriptionService do
   end
 
   describe '.fetch_for_codes' do
+    it 'resolves other descriptions to the current day even outside TimeMachine.now' do
+      create(
+        :commodity,
+        :actual,
+        :with_ancestors,
+        :with_description,
+        goods_nomenclature_item_id: '3333333333',
+        goods_nomenclature_sid: 333,
+        description: 'other',
+      )
+
+      result = nil
+
+      expect {
+        TimeMachine.no_time_machine do
+          result = described_class.fetch_for_codes(%w[3333333333])
+        end
+      }.not_to raise_error
+
+      expect(result).to include('3333333333' => a_kind_of(String))
+    end
+
     it 'returns cached descriptions without calling single-code resolver when all are cached' do
       cache_key_for_111 = described_class.send(:cache_key, '1111111111')
       cache_key_for_222 = described_class.send(:cache_key, '2222222222')
