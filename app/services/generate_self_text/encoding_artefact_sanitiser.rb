@@ -13,10 +13,10 @@ module GenerateSelfText
       # a-tilde (U+00E3)
       'De3o' => 'Dao',
       # NBSP (U+00A0) + degree (U+00B0) - must precede b0C
-      'a0b0C' => " \u00B0C",
-      # NBSP (U+00A0) before units
-      'a0mm' => ' mm',
-      'a0kg' => ' kg',
+      'a0b0C' => "\u00A0\u00B0C",
+      # NBSP (U+00A0) before units - preserved per DescriptionHtmlFormatter
+      'a0mm' => "\u00A0mm",
+      'a0kg' => "\u00A0kg",
       # degree sign (U+00B0)
       'b0C' => "\u00B0C",
       # micro sign (U+00B5)

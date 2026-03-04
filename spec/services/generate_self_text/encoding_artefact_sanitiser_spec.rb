@@ -47,27 +47,27 @@ RSpec.describe GenerateSelfText::EncodingArtefactSanitiser do
     end
 
     context 'with NBSP artefacts (U+00A0)' do
-      it 'corrects a0mm to space-mm' do
-        expect(described_class.call('width not exceeding 10250a0mm')).to eq('width not exceeding 10250 mm')
+      it 'corrects a0mm to NBSP + mm' do
+        expect(described_class.call('width not exceeding 10250a0mm')).to eq("width not exceeding 10250\u00A0mm")
       end
 
-      it 'corrects a0kg to space-kg' do
-        expect(described_class.call('not exceeding 1a0kg')).to eq('not exceeding 1 kg')
+      it 'corrects a0kg to NBSP + kg' do
+        expect(described_class.call('not exceeding 1a0kg')).to eq("not exceeding 1\u00A0kg")
       end
     end
 
     context 'with degree sign artefacts (U+00B0)' do
-      it 'corrects b0C to degree-C' do
+      it 'corrects b0C to degree sign + C' do
         expect(described_class.call('heat resistance 200-250 b0C')).to eq("heat resistance 200-250 \u00B0C")
       end
 
-      it 'corrects combined a0b0C to space-degree-C' do
-        expect(described_class.call('temperature >= 1370a0b0C')).to eq("temperature >= 1370 \u00B0C")
+      it 'corrects combined a0b0C to NBSP + degree sign + C' do
+        expect(described_class.call('temperature >= 1370a0b0C')).to eq("temperature >= 1370\u00A0\u00B0C")
       end
     end
 
     context 'with micro sign artefacts (U+00B5)' do
-      it 'corrects b5m to micrometre' do
+      it 'corrects b5m to micro sign + m' do
         expect(described_class.call('particle size <= 25 b5m')).to eq("particle size <= 25 \u00B5m")
       end
     end
