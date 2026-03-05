@@ -26,5 +26,14 @@ RSpec.describe RefreshActiveCommoditiesCacheWorker, type: :worker do
       expect(CachedCommodityDescriptionService).to have_received(:fetch_for_codes)
         .with(%w[0101210000 0101290000 0201100000])
     end
+
+    it 'wraps fetch_for_codes call with TimeMachine.now' do
+      original_now = TimeMachine.method(:now)
+      allow(TimeMachine).to(receive(:now).and_wrap_original { |_m, *args, &block| original_now.call(*args, &block) })
+
+      worker.perform
+
+      expect(TimeMachine).to have_received(:now)
+    end
   end
 end
