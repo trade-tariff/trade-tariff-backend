@@ -13,6 +13,7 @@ class VectorRetrievalService
     vector_literal = "'[#{query_embedding.join(',')}]'::vector"
 
     ranked_rows = fetch_ranked_sids(vector_literal)
+    ranked_rows = apply_score_threshold(ranked_rows)
     return [] if ranked_rows.empty?
 
     scores_by_sid = ranked_rows.each_with_object({}) { |r, h| h[r[:goods_nomenclature_sid]] = r[:score]&.to_f }
@@ -30,6 +31,11 @@ class VectorRetrievalService
   end
 
   private
+
+  def apply_score_threshold(rows)
+    threshold = AdminConfiguration.integer_value('vector_score_threshold') / 100.0
+    rows.select { |r| r[:score].to_f >= threshold }
+  end
 
   def fetch_ranked_sids(vector_literal)
     ef_search = AdminConfiguration.integer_value('vector_ef_search')

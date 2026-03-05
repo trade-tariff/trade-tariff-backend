@@ -8,8 +8,8 @@ RSpec.describe 'admin_configurations:seed' do
     Rake::Task['admin_configurations:seed'].reenable
   end
 
-  it 'creates all 33 admin configurations', :aggregate_failures do
-    expect { seed }.to change(AdminConfiguration, :count).by(33)
+  it 'creates all 34 admin configurations', :aggregate_failures do
+    expect { seed }.to change(AdminConfiguration, :count).by(34)
 
     names = AdminConfiguration.order(:name).select_map(:name)
     expect(names).to eq(%w[
@@ -46,6 +46,7 @@ RSpec.describe 'admin_configurations:seed' do
       suggest_results_limit
       suggest_synonyms
       vector_ef_search
+      vector_score_threshold
     ])
   end
 
@@ -266,8 +267,8 @@ RSpec.describe 'admin_configurations:seed' do
     seed
 
     # The oplog plugin also calls refresh! in test mode after each create,
-    # so total calls = 33 (oplog) + 1 (rake task) = 34
-    expect(AdminConfiguration).to have_received(:refresh!).with(concurrently: false).exactly(34).times
+    # so total calls = 34 (oplog) + 1 (rake task) = 35
+    expect(AdminConfiguration).to have_received(:refresh!).with(concurrently: false).exactly(35).times
   end
 
   it 'does not refresh when nothing is created' do

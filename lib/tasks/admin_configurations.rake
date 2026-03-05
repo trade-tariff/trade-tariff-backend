@@ -431,6 +431,12 @@ namespace :admin_configurations do
         value: '100',
       },
       {
+        name: 'vector_score_threshold',
+        config_type: 'integer',
+        description: 'Minimum cosine similarity score (0-100) for vector search results. Results below this threshold are discarded before AI processing. Based on empirical analysis: good queries score 47-70, junk queries score 13-25. Default 30 provides clean separation.',
+        value: '30',
+      },
+      {
         name: 'label_context',
         config_type: 'markdown',
         description: 'System prompt sent to the AI model when labelling commodities',
