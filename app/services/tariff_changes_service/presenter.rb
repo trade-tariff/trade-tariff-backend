@@ -70,7 +70,10 @@ class TariffChangesService
     end
 
     def ott_url
-      "https://www.trade-tariff.service.gov.uk/commodities/#{goods_nomenclature_item_id}?day=#{date_of_effect_visible.day}&month=#{date_of_effect_visible.month}&year=#{date_of_effect_visible.year}&#{UTM_TAGS}"
+      url = "https://www.trade-tariff.service.gov.uk/commodities/#{goods_nomenclature_item_id}?day=#{date_of_effect_visible.day}&month=#{date_of_effect_visible.month}&year=#{date_of_effect_visible.year}&#{UTM_TAGS}"
+      url += '#export' if trade_movement_code == 1
+
+      url
     end
 
     def api_url
