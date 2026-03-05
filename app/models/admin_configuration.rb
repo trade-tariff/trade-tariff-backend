@@ -20,6 +20,7 @@ class AdminConfiguration < Sequel::Model(Sequel[:admin_configurations].qualify(:
     'pos_qualifier_boost' => 3,
     'pos_search_enabled' => true,
     'search_labels_enabled' => true,
+    'search_non_declarables' => false,
     'search_model' => -> { TradeTariffBackend.ai_model },
     'search_result_limit' => 0,
     'suggest_results_limit' => 10,

@@ -23,6 +23,7 @@ class VectorRetrievalService
     ordered_sids.filter_map do |sid|
       gn = gn_by_sid[sid]
       next unless gn
+      next if !search_non_declarables? && !gn.declarable?
 
       build_result(gn, scores_by_sid[sid])
     end
@@ -72,6 +73,10 @@ class VectorRetrievalService
       score: score,
       confidence: nil,
     )
+  end
+
+  def search_non_declarables?
+    AdminConfiguration.enabled?('search_non_declarables')
   end
 
   def embedding_service
