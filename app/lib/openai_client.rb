@@ -95,7 +95,7 @@ class OpenaiClient
 
   MODEL_CONFIGS = {
     # GPT-5 Series (flagship models)
-    'gpt-5.2' => { reasoning_effort: 'high' },             # Latest flagship model
+    'gpt-5.2' => { reasoning_effort: 'low' },              # Latest flagship model
     'gpt-5.1-2025-11-13' => { reasoning_effort: 'none' },  # Extended caching & coding
     'gpt-5-2025-08-07' => { reasoning_effort: 'high' },    # Base GPT-5
 
