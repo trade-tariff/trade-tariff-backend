@@ -11,6 +11,7 @@ RSpec.shared_examples_for 'a serialized goods nomenclature search result' do |ty
       description: 'live animals',
       formatted_description: 'Live animals',
       self_text: nil,
+      classification_description: nil,
       declarable: false,
       score: 12.5,
     )

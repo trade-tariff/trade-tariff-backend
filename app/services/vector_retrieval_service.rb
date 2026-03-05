@@ -67,6 +67,7 @@ class VectorRetrievalService
       description: goods_nomenclature.description_html,
       formatted_description: goods_nomenclature.description_html,
       self_text: self_text,
+      classification_description: goods_nomenclature.classification_description,
       full_description: full_desc,
       heading_description: goods_nomenclature.heading&.description_html,
       declarable: goods_nomenclature.respond_to?(:declarable?) ? goods_nomenclature.declarable? : false,

@@ -12,6 +12,7 @@ module Api
                  :description,
                  :formatted_description,
                  :self_text,
+                 :classification_description,
                  :full_description,
                  :heading_description,
                  :declarable,

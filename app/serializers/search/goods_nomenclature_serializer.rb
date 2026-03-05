@@ -15,6 +15,7 @@ module Search
         validity_start_date:,
         validity_end_date:,
         self_text: goods_nomenclature_self_text&.self_text,
+        classification_description: record.classification_description,
         full_description:,
         heading_description:,
 
