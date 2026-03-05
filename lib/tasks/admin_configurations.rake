@@ -365,8 +365,12 @@ namespace :admin_configurations do
   # Seed values should align with AdminConfiguration::DEFAULTS
   desc 'Seed initial admin configurations'
   task seed: :environment do
-    model_options = OpenaiClient::MODEL_CONFIGS.keys.sort.map do |key|
-      { 'key' => key, 'label' => AdminConfigurationSeeder.model_label(key) }
+    model_options_with_reasoning = OpenaiClient::MODEL_CONFIGS.keys.sort.map do |key|
+      {
+        'key' => key,
+        'label' => AdminConfigurationSeeder.model_label(key),
+        'reasoning_levels' => OpenaiClient::MODEL_CONFIGS[key][:reasoning_levels],
+      }
     end
 
     default_model = TradeTariffBackend.ai_model
@@ -380,9 +384,9 @@ namespace :admin_configurations do
       },
       {
         name: 'expand_model',
-        config_type: 'options',
+        config_type: 'model_config',
         description: 'AI model used for search query expansion',
-        value: { 'selected' => 'gpt-4.1-mini-2025-04-14', 'options' => model_options },
+        value: { 'selected_model' => 'gpt-4.1-mini-2025-04-14', 'reasoning_effort' => nil, 'models' => model_options_with_reasoning },
       },
       {
         name: 'expand_query_context',
@@ -438,9 +442,9 @@ namespace :admin_configurations do
       },
       {
         name: 'label_model',
-        config_type: 'options',
+        config_type: 'model_config',
         description: 'AI model used for commodity labelling',
-        value: { 'selected' => default_model, 'options' => model_options },
+        value: { 'selected_model' => default_model, 'reasoning_effort' => 'low', 'models' => model_options_with_reasoning },
       },
       {
         name: 'label_page_size',
@@ -486,9 +490,9 @@ namespace :admin_configurations do
       },
       {
         name: 'other_self_text_model',
-        config_type: 'options',
+        config_type: 'model_config',
         description: 'AI model used for generating self-texts for Other nodes',
-        value: { 'selected' => default_model, 'options' => model_options },
+        value: { 'selected_model' => default_model, 'reasoning_effort' => 'low', 'models' => model_options_with_reasoning },
       },
       {
         name: 'non_other_self_text_batch_size',
@@ -504,9 +508,9 @@ namespace :admin_configurations do
       },
       {
         name: 'non_other_self_text_model',
-        config_type: 'options',
+        config_type: 'model_config',
         description: 'AI model used for generating self-texts for non-Other nodes',
-        value: { 'selected' => default_model, 'options' => model_options },
+        value: { 'selected_model' => default_model, 'reasoning_effort' => 'low', 'models' => model_options_with_reasoning },
       },
       {
         name: 'search_context',
@@ -522,9 +526,9 @@ namespace :admin_configurations do
       },
       {
         name: 'search_model',
-        config_type: 'options',
+        config_type: 'model_config',
         description: 'AI model used for interactive Q&A search',
-        value: { 'selected' => default_model, 'options' => model_options },
+        value: { 'selected_model' => default_model, 'reasoning_effort' => 'low', 'models' => model_options_with_reasoning },
       },
       {
         name: 'search_result_limit',

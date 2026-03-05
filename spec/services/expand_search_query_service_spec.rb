@@ -33,6 +33,7 @@ RSpec.describe ExpandSearchQueryService do
         expect(OpenaiClient).to have_received(:call).with(
           a_string_including('laptop'),
           model: 'gpt-4.1-mini-2025-04-14',
+          reasoning_effort: nil,
         )
       end
     end
@@ -163,13 +164,14 @@ RSpec.describe ExpandSearchQueryService do
 
     context 'when expand_model config exists' do
       before do
-        create(:admin_configuration, :options,
+        create(:admin_configuration, :model_config,
                name: 'expand_model',
                area: 'classification',
                value: {
-                 'selected' => 'gpt-4.1-mini-2025-04-14',
-                 'options' => [
-                   { 'key' => 'gpt-4.1-mini-2025-04-14', 'label' => 'GPT-4.1 Mini' },
+                 'selected_model' => 'gpt-4.1-mini-2025-04-14',
+                 'reasoning_effort' => nil,
+                 'models' => [
+                   { 'key' => 'gpt-4.1-mini-2025-04-14', 'label' => 'GPT-4.1 Mini', 'reasoning_levels' => [] },
                  ],
                })
       end
@@ -180,6 +182,7 @@ RSpec.describe ExpandSearchQueryService do
         expect(OpenaiClient).to have_received(:call).with(
           anything,
           model: 'gpt-4.1-mini-2025-04-14',
+          reasoning_effort: nil,
         )
       end
     end
@@ -198,6 +201,7 @@ RSpec.describe ExpandSearchQueryService do
         expect(OpenaiClient).to have_received(:call).with(
           'Custom prompt for: laptop',
           model: 'gpt-4.1-mini-2025-04-14',
+          reasoning_effort: nil,
         )
       end
     end

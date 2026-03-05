@@ -435,6 +435,164 @@ RSpec.describe AdminConfiguration do
     end
   end
 
+  describe 'model_config value validation' do
+    subject(:config) { build(:admin_configuration, :model_config, **attrs) }
+
+    let(:attrs) { {} }
+
+    context 'with valid model_config' do
+      it 'is valid' do
+        expect(config).to be_valid
+      end
+    end
+
+    context 'with empty models array' do
+      let(:attrs) do
+        {
+          value: {
+            'selected_model' => 'gpt-5.2',
+            'reasoning_effort' => 'low',
+            'models' => [],
+          },
+        }
+      end
+
+      it 'is invalid' do
+        expect(config).not_to be_valid
+        expect(config.errors[:value]).to be_present
+      end
+    end
+
+    context 'with missing selected_model' do
+      let(:attrs) do
+        {
+          value: {
+            'selected_model' => '',
+            'reasoning_effort' => 'low',
+            'models' => [{ 'key' => 'gpt-5.2', 'label' => 'GPT-5.2', 'reasoning_levels' => [] }],
+          },
+        }
+      end
+
+      it 'is invalid' do
+        expect(config).not_to be_valid
+        expect(config.errors[:value]).to be_present
+      end
+    end
+
+    context 'with invalid reasoning_effort' do
+      let(:attrs) do
+        {
+          value: {
+            'selected_model' => 'gpt-5.2',
+            'reasoning_effort' => 'turbo',
+            'models' => [{ 'key' => 'gpt-5.2', 'label' => 'GPT-5.2', 'reasoning_levels' => [] }],
+          },
+        }
+      end
+
+      it 'is invalid' do
+        expect(config).not_to be_valid
+        expect(config.errors[:value]).to be_present
+      end
+    end
+
+    context 'with nil reasoning_effort' do
+      let(:attrs) do
+        {
+          value: {
+            'selected_model' => 'gpt-5.2',
+            'reasoning_effort' => nil,
+            'models' => [{ 'key' => 'gpt-5.2', 'label' => 'GPT-5.2', 'reasoning_levels' => [] }],
+          },
+        }
+      end
+
+      it 'is valid' do
+        expect(config).to be_valid
+      end
+    end
+
+    context 'with non-hash value' do
+      let(:attrs) do
+        { value: 'not a hash' }
+      end
+
+      it 'is invalid' do
+        expect(config).not_to be_valid
+        expect(config.errors[:value]).to be_present
+      end
+    end
+  end
+
+  describe '.model_config_value' do
+    context 'when config record is missing' do
+      it 'returns the default model with nil reasoning_effort' do
+        allow(TradeTariffBackend).to receive(:ai_model).and_return('gpt-5.2')
+        result = described_class.model_config_value('search_model')
+        expect(result).to eq({ model: 'gpt-5.2', reasoning_effort: nil })
+      end
+    end
+
+    context 'when config record exists' do
+      before do
+        create(:admin_configuration, :model_config,
+               name: 'search_model',
+               area: 'classification',
+               value: {
+                 'selected_model' => 'gpt-4.1-mini-2025-04-14',
+                 'reasoning_effort' => 'high',
+                 'models' => [
+                   { 'key' => 'gpt-4.1-mini-2025-04-14', 'label' => 'GPT-4.1 Mini', 'reasoning_levels' => [] },
+                 ],
+               })
+      end
+
+      it 'returns the selected model and reasoning effort' do
+        result = described_class.model_config_value('search_model')
+        expect(result).to eq({ model: 'gpt-4.1-mini-2025-04-14', reasoning_effort: 'high' })
+      end
+    end
+
+    context 'when config has blank selected_model' do
+      before do
+        create(:admin_configuration, :model_config,
+               name: 'search_model',
+               area: 'classification',
+               value: {
+                 'selected_model' => 'gpt-5.2',
+                 'reasoning_effort' => nil,
+                 'models' => [{ 'key' => 'gpt-5.2', 'label' => 'GPT-5.2', 'reasoning_levels' => [] }],
+               })
+      end
+
+      it 'returns the stored model' do
+        result = described_class.model_config_value('search_model')
+        expect(result[:model]).to eq('gpt-5.2')
+      end
+    end
+
+    context 'when reloaded from database (JSONBHash)' do
+      before do
+        create(:admin_configuration, :model_config,
+               name: 'search_model',
+               area: 'classification',
+               value: {
+                 'selected_model' => 'o3-2025-04-16',
+                 'reasoning_effort' => 'medium',
+                 'models' => [
+                   { 'key' => 'o3-2025-04-16', 'label' => 'o3', 'reasoning_levels' => %w[low medium high] },
+                 ],
+               })
+      end
+
+      it 'returns the correct values from JSONBHash' do
+        result = described_class.model_config_value('search_model')
+        expect(result).to eq({ model: 'o3-2025-04-16', reasoning_effort: 'medium' })
+      end
+    end
+  end
+
   describe 'expand search cache invalidation' do
     context 'when saving expand_query_context config' do
       let!(:config) { create(:admin_configuration, :markdown, name: 'expand_query_context') }

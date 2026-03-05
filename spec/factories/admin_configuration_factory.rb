@@ -36,6 +36,20 @@ FactoryBot.define do
       end
     end
 
+    trait :model_config do
+      config_type { 'model_config' }
+      value do
+        {
+          'selected_model' => 'gpt-5.2',
+          'reasoning_effort' => 'low',
+          'models' => [
+            { 'key' => 'gpt-5.2', 'label' => 'GPT-5.2 (latest flagship)', 'reasoning_levels' => %w[none low medium high] },
+            { 'key' => 'gpt-4.1-2025-04-14', 'label' => 'GPT-4.1 (1M context)', 'reasoning_levels' => [] },
+          ],
+        }
+      end
+    end
+
     after(:create) do |_config, _evaluator|
       AdminConfiguration.refresh!(concurrently: false) if Rails.env.test?
     end

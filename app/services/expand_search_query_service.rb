@@ -37,7 +37,7 @@ class ExpandSearchQueryService
     cached = Rails.cache.read(cache_key)
     return Result.new(**cached.symbolize_keys) if cached
 
-    response = OpenaiClient.call(context_for(query), model: configured_model)
+    response = OpenaiClient.call(context_for(query), model: configured_model, reasoning_effort: configured_reasoning_effort)
 
     if response.is_a?(Hash) && response['expanded_query'].present?
       result_hash = { expanded_query: response['expanded_query'], reason: response['reason'] }
@@ -64,8 +64,16 @@ class ExpandSearchQueryService
     Digest::MD5.hexdigest(configured_context)[0, 8]
   end
 
+  def model_config
+    @model_config ||= AdminConfiguration.model_config_value('expand_model')
+  end
+
   def configured_model
-    AdminConfiguration.option_value('expand_model')
+    model_config[:model]
+  end
+
+  def configured_reasoning_effort
+    model_config[:reasoning_effort]
   end
 
   def configured_context

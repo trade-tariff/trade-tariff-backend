@@ -52,9 +52,9 @@ RSpec.describe GenerateSelfText::OtherSelfTextBuilder do
 
       create(:admin_configuration,
              name: 'other_self_text_model',
-             config_type: 'options',
+             config_type: 'model_config',
              description: 'AI model for self-text generation',
-             value: { 'selected' => 'gpt-4.1-mini-2025-04-14', 'options' => [{ 'key' => 'gpt-4.1-mini-2025-04-14' }] })
+             value: { 'selected_model' => 'gpt-4.1-mini-2025-04-14', 'reasoning_effort' => nil, 'models' => [{ 'key' => 'gpt-4.1-mini-2025-04-14', 'reasoning_levels' => [] }] })
 
       create(:admin_configuration,
              name: 'other_self_text_batch_size',
@@ -338,6 +338,7 @@ RSpec.describe GenerateSelfText::OtherSelfTextBuilder do
         expect(ai_client).to have_received(:call).with(
           anything,
           model: 'gpt-4.1-mini-2025-04-14',
+          reasoning_effort: nil,
         )
       end
 
@@ -361,14 +362,15 @@ RSpec.describe GenerateSelfText::OtherSelfTextBuilder do
 
     context 'when other_self_text_model and batch_size configs use defaults' do
       it 'falls back to default model' do
-        allow(AdminConfiguration).to receive(:option_value)
-          .with('other_self_text_model').and_return(TradeTariffBackend.ai_model)
+        allow(AdminConfiguration).to receive(:model_config_value)
+          .with('other_self_text_model').and_return({ model: TradeTariffBackend.ai_model, reasoning_effort: nil })
 
         result
 
         expect(ai_client).to have_received(:call).with(
           anything,
           model: TradeTariffBackend.ai_model,
+          reasoning_effort: nil,
         )
       end
     end
