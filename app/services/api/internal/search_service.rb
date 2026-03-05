@@ -227,7 +227,7 @@ module Api
       end
 
       def build_exact_result(goods_nomenclature)
-        self_text = SelfTextLookupService.lookup(goods_nomenclature.goods_nomenclature_item_id)
+        self_text = goods_nomenclature.goods_nomenclature_self_text&.self_text
 
         OpenStruct.new(
           id: goods_nomenclature.goods_nomenclature_sid,

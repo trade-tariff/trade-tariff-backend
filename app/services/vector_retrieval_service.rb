@@ -48,13 +48,13 @@ class VectorRetrievalService
       .actual
       .with_leaf_column
       .where(goods_nomenclatures__goods_nomenclature_sid: sids)
-      .eager(:goods_nomenclature_descriptions, :heading)
+      .eager(:goods_nomenclature_descriptions, :goods_nomenclature_self_text, :heading)
       .all
       .index_by(&:goods_nomenclature_sid)
   end
 
   def build_result(goods_nomenclature, score)
-    self_text = SelfTextLookupService.lookup(goods_nomenclature.goods_nomenclature_item_id)
+    self_text = goods_nomenclature.goods_nomenclature_self_text&.self_text
     full_desc = self_text.presence ||
       DescriptionHtmlFormatter.call(goods_nomenclature.raw_classification_description)
 
