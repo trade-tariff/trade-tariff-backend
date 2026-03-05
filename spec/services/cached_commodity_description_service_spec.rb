@@ -39,28 +39,6 @@ RSpec.describe CachedCommodityDescriptionService do
       expect(described_class.new('9999999999').call).to eq('')
     end
 
-    it 'resolves other descriptions to the current day even outside TimeMachine.now' do
-      create(
-        :commodity,
-        :actual,
-        :with_ancestors,
-        :with_description,
-        goods_nomenclature_item_id: '3333333333',
-        goods_nomenclature_sid: 333,
-        description: 'other',
-      )
-
-      result = nil
-
-      expect {
-        TimeMachine.no_time_machine do
-          result = described_class.new('3333333333').call
-        end
-      }.not_to raise_error
-
-      expect(result).to be_a(String)
-    end
-
     context 'when initialized with cache enabled' do
       let(:cache_enabled) { true }
 
@@ -77,28 +55,6 @@ RSpec.describe CachedCommodityDescriptionService do
   end
 
   describe '.fetch_for_codes' do
-    it 'resolves other descriptions to the current day even outside TimeMachine.now' do
-      create(
-        :commodity,
-        :actual,
-        :with_ancestors,
-        :with_description,
-        goods_nomenclature_item_id: '3333333333',
-        goods_nomenclature_sid: 333,
-        description: 'other',
-      )
-
-      result = nil
-
-      expect {
-        TimeMachine.no_time_machine do
-          result = described_class.fetch_for_codes(%w[3333333333])
-        end
-      }.not_to raise_error
-
-      expect(result).to include('3333333333' => a_kind_of(String))
-    end
-
     it 'returns cached descriptions without calling single-code resolver when all are cached' do
       cache_key_for_111 = described_class.send(:cache_key, '1111111111')
       cache_key_for_222 = described_class.send(:cache_key, '2222222222')
@@ -148,6 +104,68 @@ RSpec.describe CachedCommodityDescriptionService do
           cache_key_for_222 => "Active commodity\ndescription",
         },
       )
+    end
+  end
+
+  describe '#get_commodity_description' do
+    context 'when commodity.classification_description raises MissingHeadingError' do
+      let(:commodity) do
+        build_stubbed(:commodity, goods_nomenclature_item_id: '1234567890', validity_start_date: Date.new(2020, 1, 1))
+      end
+
+      before do
+        allow(commodity).to receive(:classification_description)
+          .and_raise(ClassificationDescription::MissingHeadingError, 'Heading is missing')
+      end
+
+      it 'catches the exception and retries with TimeMachine' do
+        fresh_commodity = build_stubbed(:commodity, goods_nomenclature_item_id: '1234567890')
+        fresh_description = 'Retrieved description'
+
+        allow(GoodsNomenclature).to receive(:find)
+          .and_return(fresh_commodity)
+        allow(fresh_commodity).to receive(:classification_description)
+          .and_return(fresh_description)
+
+        result = service.send(:get_commodity_description, commodity)
+
+        expect(result).to eq(fresh_description)
+        expect(GoodsNomenclature).to have_received(:find)
+          .with(goods_nomenclature_item_id: '1234567890')
+      end
+
+      it 'uses TimeMachine.at with the commodity validity_start_date for the retry' do
+        fresh_commodity = build_stubbed(:commodity, goods_nomenclature_item_id: '1234567890')
+        fresh_description = 'Retrieved description'
+
+        allow(GoodsNomenclature).to receive(:find)
+          .and_return(fresh_commodity)
+        allow(fresh_commodity).to receive(:classification_description)
+          .and_return(fresh_description)
+
+        original_at = TimeMachine.method(:at)
+        allow(TimeMachine).to(receive(:at).and_wrap_original { |_m, *args, &block| original_at.call(*args, &block) })
+
+        service.send(:get_commodity_description, commodity)
+
+        expect(TimeMachine).to have_received(:at).with(Date.new(2020, 1, 1))
+      end
+    end
+
+    context 'when commodity.classification_description succeeds' do
+      let(:commodity) do
+        build_stubbed(:commodity, goods_nomenclature_item_id: '1234567890')
+      end
+
+      it 'returns the classification_description without exception handling' do
+        description = 'Normal description'
+        allow(commodity).to receive(:classification_description)
+          .and_return(description)
+
+        result = service.send(:get_commodity_description, commodity)
+
+        expect(result).to eq(description)
+      end
     end
   end
 end

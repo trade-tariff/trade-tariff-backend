@@ -5,7 +5,7 @@ RSpec.describe ClassificationDescription do
     Class.new do
       include ClassificationDescription
 
-      attr_accessor :description, :formatted_description, :ancestors, :heading
+      attr_accessor :description, :formatted_description, :ancestors, :heading, :goods_nomenclature_item_id
     end
   end
 
@@ -53,6 +53,28 @@ RSpec.describe ClassificationDescription do
 
       it 'prepends heading as fallback' do
         expect(descriptions).to eq(%w[Heading Other Other Other])
+      end
+    end
+
+    context 'when ALL ancestors are "other" and heading is nil' do
+      let(:description) { 'Other' }
+
+      let(:ancestor1) { instance_double(GoodsNomenclature, formatted_description: 'Other') }
+      let(:ancestor2) { instance_double(GoodsNomenclature, formatted_description: 'Other') }
+
+      let(:ancestors) { [ancestor1, ancestor2] }
+      let(:heading) { nil }
+
+      before do
+        helper.goods_nomenclature_item_id = '1234567890'
+      end
+
+      it 'raises MissingHeadingError' do
+        expect { descriptions }.to raise_error(ClassificationDescription::MissingHeadingError)
+      end
+
+      it 'includes commodity id in error message' do
+        expect { descriptions }.to raise_error(ClassificationDescription::MissingHeadingError, /1234567890/)
       end
     end
   end

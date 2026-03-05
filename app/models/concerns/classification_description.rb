@@ -1,6 +1,8 @@
 module ClassificationDescription
   extend ActiveSupport::Concern
 
+  class MissingHeadingError < StandardError; end
+
   def descriptions_with_other_handling(description)
     collect_other_chain(description, &:formatted_description)
   end
@@ -32,7 +34,8 @@ module ClassificationDescription
       end
     end
 
-    descriptions.unshift(yield(heading)) if all_other
+    descriptions.unshift(yield(heading)) if all_other && heading.present?
+    raise MissingHeadingError, "Heading is missing for commodity #{goods_nomenclature_item_id} but all ancestors have 'other' description" if all_other && heading.nil?
 
     descriptions
   end

@@ -22,9 +22,7 @@ class CachedCommodityDescriptionService
     return descriptions if missing_codes.empty?
 
     resolver = new(cache: false)
-    resolved_descriptions = TimeMachine.now do
-      resolver.send(:resolve_descriptions_for_codes, missing_codes)
-    end
+    resolved_descriptions = resolver.send(:resolve_descriptions_for_codes, missing_codes)
     fetched_descriptions = missing_codes.index_with { |code| resolved_descriptions[code].to_s }
 
     Rails.cache.write_multi(
@@ -63,9 +61,7 @@ class CachedCommodityDescriptionService
   end
 
   def resolve_description
-    TimeMachine.now do
-      resolve_descriptions_for_codes([code])[code].to_s
-    end
+    resolve_descriptions_for_codes([code])[code].to_s
   end
 
   def resolve_descriptions_for_codes(codes)
@@ -96,7 +92,18 @@ class CachedCommodityDescriptionService
       .all
 
     latest_commodities.each_with_object({}) do |commodity, descriptions|
-      descriptions[commodity.goods_nomenclature_item_id] = html_to_plain_text(commodity.classification_description.to_s)
+      desc = get_commodity_description(commodity)
+      descriptions[commodity.goods_nomenclature_item_id] = html_to_plain_text(desc)
+    end
+  end
+
+  def get_commodity_description(commodity)
+    commodity.classification_description.to_s
+  rescue ClassificationDescription::MissingHeadingError
+    # Retry at the commodity's validity_start_date
+    TimeMachine.at(commodity.validity_start_date) do
+      fresh_commodity = GoodsNomenclature.find(goods_nomenclature_item_id: commodity.goods_nomenclature_item_id)
+      fresh_commodity.classification_description.to_s
     end
   end
 
