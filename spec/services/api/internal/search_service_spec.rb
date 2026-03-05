@@ -636,6 +636,7 @@ RSpec.describe Api::Internal::SearchService do
             goods_nomenclature_class: 'Commodity',
             description: 'pure-bred breeding horses',
             formatted_description: 'Pure-bred breeding horses',
+            self_text: 'Pure-bred breeding horses',
             full_description: 'Pure-bred breeding horses',
             heading_description: nil,
             declarable: true,

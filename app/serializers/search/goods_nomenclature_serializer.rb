@@ -14,6 +14,7 @@ module Search
         formatted_description:,
         validity_start_date:,
         validity_end_date:,
+        self_text: goods_nomenclature_self_text&.self_text,
         full_description:,
         heading_description:,
 
