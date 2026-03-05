@@ -354,7 +354,7 @@ RSpec.describe AdminConfiguration do
 
   describe '.default_for' do
     it 'returns static values directly' do
-      expect(described_class.default_for('opensearch_result_limit')).to eq(80)
+      expect(described_class.default_for('opensearch_result_limit')).to eq(30)
     end
 
     it 'resolves lambda values' do
@@ -393,7 +393,7 @@ RSpec.describe AdminConfiguration do
   describe '.integer_value' do
     context 'when config record is missing' do
       it 'returns the default value' do
-        expect(described_class.integer_value('opensearch_result_limit')).to eq(80)
+        expect(described_class.integer_value('opensearch_result_limit')).to eq(30)
         expect(described_class.integer_value('pos_noun_boost')).to eq(10)
         expect(described_class.integer_value('search_result_limit')).to eq(0)
       end

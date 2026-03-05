@@ -418,7 +418,7 @@ namespace :admin_configurations do
         name: 'retrieval_method',
         config_type: 'options',
         description: 'Search retrieval method: opensearch uses traditional text search with query expansion, vector uses pgvector cosine similarity and skips query expansion',
-        value: { 'selected' => 'opensearch',
+        value: { 'selected' => 'vector',
                  'options' => [
                    { 'key' => 'opensearch', 'label' => 'OpenSearch (text search + query expansion)' },
                    { 'key' => 'vector', 'label' => 'pgvector (cosine similarity)' },
@@ -458,7 +458,7 @@ namespace :admin_configurations do
         name: 'opensearch_result_limit',
         config_type: 'integer',
         description: 'Maximum number of OpenSearch results fetched for AI processing during interactive search',
-        value: '80',
+        value: '30',
       },
       {
         name: 'pos_noun_boost',

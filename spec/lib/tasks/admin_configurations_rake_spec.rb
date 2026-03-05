@@ -167,13 +167,13 @@ RSpec.describe 'admin_configurations:seed' do
     expect(config.value).to eq(0)
   end
 
-  it 'seeds opensearch_result_limit as an integer config defaulting to 80', :aggregate_failures do
+  it 'seeds opensearch_result_limit as an integer config defaulting to 30', :aggregate_failures do
     seed
 
     config = AdminConfiguration.where(name: 'opensearch_result_limit').first
     expect(config.config_type).to eq('integer')
     expect(config.area).to eq('classification')
-    expect(config.value).to eq(80)
+    expect(config.value).to eq(30)
   end
 
   it 'seeds pos_noun_boost as an integer config defaulting to 10', :aggregate_failures do
@@ -203,13 +203,13 @@ RSpec.describe 'admin_configurations:seed' do
     expect(config.value).to be true
   end
 
-  it 'seeds retrieval_method as an options config defaulting to opensearch', :aggregate_failures do
+  it 'seeds retrieval_method as an options config defaulting to vector', :aggregate_failures do
     seed
 
     config = AdminConfiguration.where(name: 'retrieval_method').first
     expect(config.config_type).to eq('options')
     expect(config.area).to eq('classification')
-    expect(config.value['selected']).to eq('opensearch')
+    expect(config.value['selected']).to eq('vector')
 
     option_keys = config.value['options'].map { |o| o['key'] }
     expect(option_keys).to contain_exactly('opensearch', 'vector')
