@@ -1,5 +1,7 @@
 RSpec.describe Api::Internal::SearchService do
   before do
+    allow(AdminConfiguration).to receive(:option_value).and_call_original
+    allow(AdminConfiguration).to receive(:option_value).with('retrieval_method').and_return('opensearch')
     allow(ExpandSearchQueryService).to receive(:call).and_wrap_original do |_method, query|
       ExpandSearchQueryService::Result.new(expanded_query: query, reason: nil)
     end
@@ -684,13 +686,34 @@ RSpec.describe Api::Internal::SearchService do
     end
 
     context 'when expanded_query differs from original' do
-      let(:opensearch_response) { { 'hits' => { 'hits' => [] } } }
+      let(:opensearch_response) do
+        {
+          'hits' => {
+            'hits' => [
+              {
+                '_score' => 10.0,
+                '_source' => {
+                  'goods_nomenclature_sid' => 1,
+                  'goods_nomenclature_item_id' => '8471300000',
+                  'producline_suffix' => '80',
+                  'goods_nomenclature_class' => 'Commodity',
+                  'description' => 'portable data processing machine',
+                  'formatted_description' => 'Portable data processing machine',
+                  'declarable' => true,
+                },
+              },
+            ],
+          },
+        }
+      end
+
       let(:interactive_result) do
         InteractiveSearchService::Result.new(
-          type: :error,
-          data: { message: 'No search results found' },
+          type: :questions,
+          data: [{ question: 'What type of laptop?', options: %w[Personal Business] }],
           attempt: 1,
           model: 'gpt-5.2',
+          result_limit: 5,
         )
       end
 

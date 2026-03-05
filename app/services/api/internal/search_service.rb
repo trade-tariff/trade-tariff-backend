@@ -38,6 +38,10 @@ module Api
 
           retrieval = retrieve_short_list
 
+          if retrieval.goods_nomenclatures.empty?
+            next [{ data: [] }, { result_count: 0, results_type: retrieval.results_type }]
+          end
+
           interactive_result = run_interactive_search(
             retrieval.goods_nomenclatures,
             retrieval.expanded_query,
