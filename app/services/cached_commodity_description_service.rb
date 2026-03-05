@@ -92,7 +92,18 @@ class CachedCommodityDescriptionService
       .all
 
     latest_commodities.each_with_object({}) do |commodity, descriptions|
-      descriptions[commodity.goods_nomenclature_item_id] = html_to_plain_text(commodity.classification_description.to_s)
+      desc = get_commodity_description(commodity)
+      descriptions[commodity.goods_nomenclature_item_id] = html_to_plain_text(desc)
+    end
+  end
+
+  def get_commodity_description(commodity)
+    commodity.classification_description.to_s
+  rescue ClassificationDescription::MissingHeadingError
+    # Retry at the commodity's validity_start_date
+    TimeMachine.at(commodity.validity_start_date) do
+      fresh_commodity = GoodsNomenclature.find(goods_nomenclature_item_id: commodity.goods_nomenclature_item_id)
+      fresh_commodity.classification_description.to_s
     end
   end
 
