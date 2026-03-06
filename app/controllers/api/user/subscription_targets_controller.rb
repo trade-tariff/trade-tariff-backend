@@ -16,7 +16,7 @@ module Api
           Api::User::ActiveCommoditiesService.new(@subscription).generate_report
         end
 
-        filename_date = TimeMachine.now { Time.zone.today.strftime('%Y-%m-%d') }
+        filename_date = Time.zone.today.strftime('%Y-%m-%d')
 
         send_data package.to_stream.read,
                   type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
