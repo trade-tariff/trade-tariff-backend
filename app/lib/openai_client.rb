@@ -9,7 +9,7 @@ class OpenaiClient
     Net::OpenTimeout,
   ].freeze
 
-  def call(context, model: nil)
+  def call(context, model: nil, reasoning_effort: nil)
     messages = if context.is_a?(Array)
                  context
                else
@@ -17,14 +17,15 @@ class OpenaiClient
                end
 
     model ||= TradeTariffBackend.ai_model
-    config = MODEL_CONFIGS[model] || {}
 
     body = {
       model: model,
       messages: messages,
       user: TradeTariffBackend.openai_user,
       response_format: { type: 'json_object' },
-    }.merge(config).to_json
+    }
+    body[:reasoning_effort] = reasoning_effort if reasoning_effort.present?
+    body = body.to_json
 
     response = with_retry { self.class.client.post('chat/completions', body) }
 
@@ -64,9 +65,9 @@ class OpenaiClient
   end
 
   class << self
-    def call(context, model: nil)
+    def call(context, model: nil, reasoning_effort: nil)
       instrument do
-        new.call(context, model: model)
+        new.call(context, model: model, reasoning_effort: reasoning_effort)
       end
     end
 
@@ -94,23 +95,28 @@ class OpenaiClient
   end
 
   MODEL_CONFIGS = {
-    # GPT-5 Series (flagship models)
-    'gpt-5.2' => { reasoning_effort: 'high' },             # Latest flagship model
-    'gpt-5.1-2025-11-13' => { reasoning_effort: 'none' },  # Extended caching & coding
-    'gpt-5-2025-08-07' => { reasoning_effort: 'high' },    # Base GPT-5
+    # GPT-5.4 (latest flagship, 1M context)
+    'gpt-5.4' => { reasoning_levels: %w[none low medium high xhigh] },
+
+    # GPT-5 Series
+    'gpt-5.2' => { reasoning_levels: %w[none low medium high] },
+    'gpt-5.1-2025-11-13' => { reasoning_levels: %w[none low medium high] },
+    'gpt-5-2025-08-07' => { reasoning_levels: %w[minimal low medium high] },
+    'gpt-5-mini-2025-08-07' => { reasoning_levels: %w[minimal low medium high] },
+    'gpt-5-nano-2025-08-07' => { reasoning_levels: %w[minimal low medium high] },
 
     # o-Series (reasoning models)
-    'o4-mini-2025-04-16' => { reasoning_effort: 'high' },  # Latest small reasoning model
-    'o3-2025-04-16' => { reasoning_effort: 'high' },       # Full o3 reasoning model
-    'o3-pro' => { reasoning_effort: 'high' },              # Pro version for complex reasoning
+    'o4-mini-2025-04-16' => { reasoning_levels: %w[low medium high] },
+    'o3-2025-04-16' => { reasoning_levels: %w[low medium high] },
+    'o3-pro' => { reasoning_levels: %w[low medium high] },
 
     # GPT-4.1 Series (1M token context)
-    'gpt-4.1-2025-04-14' => {},      # Improved instruction following, 1M context
-    'gpt-4.1-mini-2025-04-14' => {}, # Mini variant, 1M context
-    'gpt-4.1-nano-2025-04-14' => {}, # Nano variant, 1M context
+    'gpt-4.1-2025-04-14' => { reasoning_levels: [] },
+    'gpt-4.1-mini-2025-04-14' => { reasoning_levels: [] },
+    'gpt-4.1-nano-2025-04-14' => { reasoning_levels: [] },
 
     # GPT-4 Series (legacy)
-    'gpt-4o' => {},                # Multimodal GPT-4o
-    'gpt-4o-mini' => {},           # Efficient mini variant
+    'gpt-4o' => { reasoning_levels: [] },
+    'gpt-4o-mini' => { reasoning_levels: [] },
   }.freeze
 end

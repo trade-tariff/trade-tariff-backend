@@ -26,7 +26,7 @@ class InteractiveSearchService
       request_id: request_id,
       model: configured_model,
       attempt_number: attempt,
-    ) { OpenaiClient.call(build_context, model: configured_model) }
+    ) { OpenaiClient.call(build_context, model: configured_model, reasoning_effort: configured_reasoning_effort) }
     parsed = ExtractBottomJson.call(response)
 
     if parsed['error'].present?
@@ -78,8 +78,16 @@ class InteractiveSearchService
     AdminConfiguration.integer_value('interactive_search_max_questions')
   end
 
+  def model_config
+    @model_config ||= AdminConfiguration.nested_options_value('search_model')
+  end
+
   def configured_model
-    AdminConfiguration.option_value('search_model')
+    model_config[:selected]
+  end
+
+  def configured_reasoning_effort
+    model_config[:sub_values]['reasoning_effort']
   end
 
   def configured_context
@@ -162,7 +170,7 @@ class InteractiveSearchService
 
   def final_answer
     context = build_context + FINAL_ANSWER_INSTRUCTION
-    response = OpenaiClient.call(context, model: configured_model)
+    response = OpenaiClient.call(context, model: configured_model, reasoning_effort: configured_reasoning_effort)
     parsed = ExtractBottomJson.call(response)
 
     if parsed['answers'].present?

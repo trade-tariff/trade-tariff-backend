@@ -38,6 +38,36 @@ RSpec.describe OpenaiClient do
       end
     end
 
+    context 'when given a reasoning_effort parameter' do
+      let(:context) { 'What is the capital of France?' }
+
+      before do
+        stub_request(:post, "#{api_base_url}/chat/completions")
+          .to_return(status: 200, body: response_body.to_json, headers: { 'Content-Type' => 'application/json' })
+      end
+
+      it 'includes reasoning_effort in the request body when present' do
+        client.call(context, reasoning_effort: 'low')
+
+        expect(WebMock).to have_requested(:post, "#{api_base_url}/chat/completions")
+          .with(body: hash_including('reasoning_effort' => 'low'))
+      end
+
+      it 'omits reasoning_effort from the request body when nil' do
+        client.call(context)
+
+        expect(WebMock).to(have_requested(:post, "#{api_base_url}/chat/completions")
+          .with { |req| !JSON.parse(req.body).key?('reasoning_effort') })
+      end
+
+      it 'omits reasoning_effort from the request body when blank' do
+        client.call(context, reasoning_effort: '')
+
+        expect(WebMock).to(have_requested(:post, "#{api_base_url}/chat/completions")
+          .with { |req| !JSON.parse(req.body).key?('reasoning_effort') })
+      end
+    end
+
     context 'when given an array of messages' do
       let(:messages) do
         [

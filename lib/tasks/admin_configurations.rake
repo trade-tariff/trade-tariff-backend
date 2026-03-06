@@ -9,8 +9,11 @@ module AdminConfigurationSeeder
       'gpt-4o' => 'GPT-4o (multimodal)',
       'gpt-4o-mini' => 'GPT-4o mini',
       'gpt-5-2025-08-07' => 'GPT-5 (base)',
+      'gpt-5-mini-2025-08-07' => 'GPT-5 mini (fast)',
+      'gpt-5-nano-2025-08-07' => 'GPT-5 nano (fastest)',
       'gpt-5.1-2025-11-13' => 'GPT-5.1 (extended caching & coding)',
-      'gpt-5.2' => 'GPT-5.2 (latest flagship)',
+      'gpt-5.2' => 'GPT-5.2',
+      'gpt-5.4' => 'GPT-5.4 (latest flagship)',
       'o3-2025-04-16' => 'o3 (full reasoning)',
       'o3-pro' => 'o3-pro (complex reasoning)',
       'o4-mini-2025-04-16' => 'o4-mini (small reasoning)',
@@ -365,8 +368,13 @@ namespace :admin_configurations do
   # Seed values should align with AdminConfiguration::DEFAULTS
   desc 'Seed initial admin configurations'
   task seed: :environment do
-    model_options = OpenaiClient::MODEL_CONFIGS.keys.sort.map do |key|
-      { 'key' => key, 'label' => AdminConfigurationSeeder.model_label(key) }
+    model_options_with_reasoning = OpenaiClient::MODEL_CONFIGS.keys.sort.map do |key|
+      levels = OpenaiClient::MODEL_CONFIGS[key][:reasoning_levels]
+      {
+        'key' => key,
+        'label' => AdminConfigurationSeeder.model_label(key),
+        'sub_options' => levels.any? ? { 'reasoning_effort' => levels } : {},
+      }
     end
 
     default_model = TradeTariffBackend.ai_model
@@ -380,9 +388,9 @@ namespace :admin_configurations do
       },
       {
         name: 'expand_model',
-        config_type: 'options',
+        config_type: 'nested_options',
         description: 'AI model used for search query expansion',
-        value: { 'selected' => 'gpt-4.1-mini-2025-04-14', 'options' => model_options },
+        value: { 'selected' => 'gpt-4.1-mini-2025-04-14', 'sub_values' => {}, 'options' => model_options_with_reasoning },
       },
       {
         name: 'expand_query_context',
@@ -444,9 +452,9 @@ namespace :admin_configurations do
       },
       {
         name: 'label_model',
-        config_type: 'options',
+        config_type: 'nested_options',
         description: 'AI model used for commodity labelling',
-        value: { 'selected' => default_model, 'options' => model_options },
+        value: { 'selected' => default_model, 'sub_values' => { 'reasoning_effort' => 'low' }, 'options' => model_options_with_reasoning },
       },
       {
         name: 'label_page_size',
@@ -492,9 +500,9 @@ namespace :admin_configurations do
       },
       {
         name: 'other_self_text_model',
-        config_type: 'options',
+        config_type: 'nested_options',
         description: 'AI model used for generating self-texts for Other nodes',
-        value: { 'selected' => default_model, 'options' => model_options },
+        value: { 'selected' => default_model, 'sub_values' => { 'reasoning_effort' => 'low' }, 'options' => model_options_with_reasoning },
       },
       {
         name: 'non_other_self_text_batch_size',
@@ -510,9 +518,9 @@ namespace :admin_configurations do
       },
       {
         name: 'non_other_self_text_model',
-        config_type: 'options',
+        config_type: 'nested_options',
         description: 'AI model used for generating self-texts for non-Other nodes',
-        value: { 'selected' => default_model, 'options' => model_options },
+        value: { 'selected' => default_model, 'sub_values' => { 'reasoning_effort' => 'low' }, 'options' => model_options_with_reasoning },
       },
       {
         name: 'search_context',
@@ -528,9 +536,9 @@ namespace :admin_configurations do
       },
       {
         name: 'search_model',
-        config_type: 'options',
+        config_type: 'nested_options',
         description: 'AI model used for interactive Q&A search',
-        value: { 'selected' => default_model, 'options' => model_options },
+        value: { 'selected' => default_model, 'sub_values' => { 'reasoning_effort' => 'low' }, 'options' => model_options_with_reasoning },
       },
       {
         name: 'search_result_limit',

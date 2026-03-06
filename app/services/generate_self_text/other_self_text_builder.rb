@@ -71,7 +71,7 @@ module GenerateSelfText
         batch_size: batch.size,
         model: model,
         chapter_code: chapter.short_code,
-      ) { TradeTariffBackend.ai_client.call(messages, model: model) }
+      ) { TradeTariffBackend.ai_client.call(messages, model: model, reasoning_effort: reasoning_effort) }
 
       descriptions = parse_response(response)
 
@@ -222,8 +222,16 @@ module GenerateSelfText
       end
     end
 
+    def model_config
+      @model_config ||= AdminConfiguration.nested_options_value('other_self_text_model')
+    end
+
     def model
-      @model ||= AdminConfiguration.option_value('other_self_text_model')
+      model_config[:selected]
+    end
+
+    def reasoning_effort
+      model_config[:sub_values]['reasoning_effort']
     end
 
     def batch_size

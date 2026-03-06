@@ -50,12 +50,12 @@ RSpec.describe 'admin_configurations:seed' do
     ])
   end
 
-  it 'seeds options configs with sorted model options', :aggregate_failures do
+  it 'seeds nested_options configs with sorted model options', :aggregate_failures do
     seed
 
     %w[label_model search_model expand_model other_self_text_model non_other_self_text_model].each do |name|
       config = AdminConfiguration.where(name:).first
-      expect(config.config_type).to eq('options')
+      expect(config.config_type).to eq('nested_options')
       expect(config.area).to eq('classification')
 
       expected_selected = if name == 'expand_model'

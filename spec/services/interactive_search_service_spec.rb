@@ -129,6 +129,7 @@ RSpec.describe InteractiveSearchService do
         expect(OpenaiClient).to have_received(:call).with(
           a_string_including('you MUST now provide your best answer'),
           model: anything,
+          reasoning_effort: anything,
         )
       end
 
@@ -310,6 +311,7 @@ RSpec.describe InteractiveSearchService do
         expect(OpenaiClient).to have_received(:call).with(
           a_string_including('Leather'),
           model: 'gpt-5.2',
+          reasoning_effort: nil,
         )
       end
 
@@ -426,13 +428,14 @@ RSpec.describe InteractiveSearchService do
 
     context 'when search_model config exists' do
       before do
-        create(:admin_configuration, :options,
+        create(:admin_configuration, :nested_options,
                name: 'search_model',
                area: 'classification',
                value: {
                  'selected' => 'gpt-4.1-mini-2025-04-14',
+                 'sub_values' => {},
                  'options' => [
-                   { 'key' => 'gpt-4.1-mini-2025-04-14', 'label' => 'GPT-4.1 Mini' },
+                   { 'key' => 'gpt-4.1-mini-2025-04-14', 'label' => 'GPT-4.1 Mini', 'sub_options' => {} },
                  ],
                })
       end
@@ -443,6 +446,7 @@ RSpec.describe InteractiveSearchService do
         expect(OpenaiClient).to have_received(:call).with(
           anything,
           model: 'gpt-4.1-mini-2025-04-14',
+          reasoning_effort: nil,
         )
       end
     end
