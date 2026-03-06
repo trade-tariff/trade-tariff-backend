@@ -81,7 +81,7 @@ RSpec.describe CachedCommodityDescriptionService do
       expect(Rails.cache).not_to have_received(:write_multi)
     end
 
-    it 'calls single-code resolver for missing codes and writes misses to cache' do
+    it 'calls cache_for_codes for missing codes' do
       cache_key_for_111 = described_class.send(:cache_key, '1111111111')
       cache_key_for_222 = described_class.send(:cache_key, '2222222222')
 
@@ -89,6 +89,7 @@ RSpec.describe CachedCommodityDescriptionService do
         .with(cache_key_for_111, cache_key_for_222)
         .and_return(cache_key_for_111 => 'Cached 111')
 
+      allow(described_class).to receive(:cache_for_codes).and_call_original
       allow(GoodsNomenclatureDescription).to receive(:where).and_call_original
       allow(Rails.cache).to receive(:write_multi)
 
@@ -98,12 +99,43 @@ RSpec.describe CachedCommodityDescriptionService do
         '1111111111' => 'Cached 111',
         '2222222222' => "Active commodity\ndescription",
       )
+      expect(described_class).to have_received(:cache_for_codes).with(%w[2222222222])
       expect(GoodsNomenclatureDescription).to have_received(:where).with(goods_nomenclature_item_id: %w[2222222222])
       expect(Rails.cache).to have_received(:write_multi).with(
         {
           cache_key_for_222 => "Active commodity\ndescription",
         },
+        expires_in: CachedCommodityDescriptionService::CACHE_EXPIRY,
       )
+    end
+  end
+
+  describe '.cache_for_codes' do
+    it 'resolves descriptions and writes them to cache with expiry' do
+      cache_key_for_111 = described_class.send(:cache_key, '1111111111')
+      cache_key_for_222 = described_class.send(:cache_key, '2222222222')
+
+      allow(Rails.cache).to receive(:write_multi)
+
+      result = described_class.cache_for_codes(codes)
+
+      expect(result).to eq(
+        '1111111111' => 'Expired commodity description',
+        '2222222222' => "Active commodity\ndescription",
+      )
+      expect(Rails.cache).to have_received(:write_multi).with(
+        {
+          cache_key_for_111 => 'Expired commodity description',
+          cache_key_for_222 => "Active commodity\ndescription",
+        },
+        expires_in: CachedCommodityDescriptionService::CACHE_EXPIRY,
+      )
+    end
+
+    it 'returns empty hash for empty codes array' do
+      result = described_class.cache_for_codes([])
+
+      expect(result).to eq({})
     end
   end
 end
