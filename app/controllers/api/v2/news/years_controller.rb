@@ -2,6 +2,8 @@ module Api
   module V2
     module News
       class YearsController < ApiController
+        include UkOnly
+
         def index
           years = ::News::Item.for_target('updates')
                               .for_service(params[:service])

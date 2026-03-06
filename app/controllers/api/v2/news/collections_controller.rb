@@ -2,6 +2,8 @@ module Api
   module V2
     module News
       class CollectionsController < ApiController
+        include UkOnly
+
         def index
           collections = ::News::Collection.published.all
           serializer = Api::V2::News::CollectionSerializer.new(collections)

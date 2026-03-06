@@ -2,6 +2,8 @@ module Api
   module Admin
     module News
       class CollectionsController < AdminController
+        include UkOnly
+
         def index
           collections = ::News::Collection.all
 
