@@ -1,6 +1,8 @@
 module Api
   module Admin
     class LiveIssuesController < AdminController
+      include UkOnly
+
       def index
         render json: serialize(live_issues)
       end

@@ -10,5 +10,8 @@ class TradeTariffRequest < ActiveSupport::CurrentAttributes
             :meursing_additional_code_id,
             # Controls whether label fields (known_brands, colloquial_terms, synonyms)
             # are included in search suggestion queries
-            :search_labels_enabled
+            :search_labels_enabled,
+            # Holds the service ('uk' or 'xi') derived from the request URL prefix.
+            # When set, TradeTariffBackend.service reads this instead of ENV['SERVICE'].
+            :service
 end

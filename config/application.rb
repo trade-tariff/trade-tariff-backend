@@ -3,6 +3,7 @@ require_relative '../lib/core_ext/object'
 require_relative '../app/middleware/handle_goods_nomenclature'
 require_relative '../app/middleware/handle_api_gateway_params'
 require_relative '../app/middleware/clear_cache_control'
+require_relative '../app/middleware/set_requested_service'
 require_relative '../app/lib/trade_tariff_backend'
 
 require 'action_controller/railtie'
@@ -68,6 +69,7 @@ module TradeTariffBackend
 
     config.sequel.allow_missing_migration_files = TradeTariffBackend.allow_missing_migration_files
 
+    config.middleware.use ::SetRequestedService
     config.middleware.use ::HandleGoodsNomenclature
     config.middleware.use ::HandleApiGatewayParams
     config.middleware.insert_before Rack::ETag, ::ClearCacheControl

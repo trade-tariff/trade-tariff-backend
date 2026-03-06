@@ -1,10 +1,9 @@
 RSpec.describe MeasureTypeExclusion do
-  before do
-    allow(described_class).to receive(:exclusions).and_return(test_exclusions)
-  end
-
-  let(:test_exclusions) { {} }
   let(:test_csv_file) { file_fixture('measure_type_exclusions.csv') }
+
+  before { described_class.reset_data }
+
+  after { described_class.reset_data }
 
   describe '.load_from_file' do
     subject { described_class.load_from_file(test_csv_file).exclusions }

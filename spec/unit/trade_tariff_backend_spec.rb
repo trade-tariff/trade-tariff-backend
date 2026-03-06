@@ -1,4 +1,43 @@
 RSpec.describe TradeTariffBackend do
+  describe '.service' do
+    after { TradeTariffRequest.reset }
+
+    context 'when TradeTariffRequest.service is set' do
+      before { TradeTariffRequest.service = 'xi' }
+
+      it 'returns the request-scoped service' do
+        expect(described_class.service).to eq('xi')
+      end
+    end
+
+    context 'when TradeTariffRequest.service is nil' do
+      before { TradeTariffRequest.service = nil }
+
+      it 'falls back to ENV["SERVICE"]' do
+        stub_const('ENV', ENV.to_hash.merge('SERVICE' => 'uk'))
+        expect(described_class.service).to eq('uk')
+      end
+    end
+  end
+
+  describe '.uk?' do
+    after { TradeTariffRequest.reset }
+
+    context 'when service is uk' do
+      before { TradeTariffRequest.service = 'uk' }
+
+      it { expect(described_class.uk?).to be true }
+      it { expect(described_class.xi?).to be false }
+    end
+
+    context 'when service is xi' do
+      before { TradeTariffRequest.service = 'xi' }
+
+      it { expect(described_class.uk?).to be false }
+      it { expect(described_class.xi?).to be true }
+    end
+  end
+
   describe '.reindex_all' do
     let(:indexer) { double }
 

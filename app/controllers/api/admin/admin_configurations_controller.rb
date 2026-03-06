@@ -1,6 +1,8 @@
 module Api
   module Admin
     class AdminConfigurationsController < AdminController
+      include UkOnly
+
       def index
         render json: serialize(configurations)
       end

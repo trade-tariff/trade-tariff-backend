@@ -127,7 +127,7 @@ module TradeTariffBackend
     end
 
     def service
-      ENV.fetch('SERVICE', 'uk')
+      TradeTariffRequest.service.presence || ENV.fetch('SERVICE', 'uk')
     end
 
     def environment
@@ -219,7 +219,8 @@ module TradeTariffBackend
     end
 
     def rules_of_origin
-      @rules_of_origin ||= RulesOfOrigin::DataSet.load_default
+      @rules_of_origin ||= {}
+      @rules_of_origin[service] ||= RulesOfOrigin::DataSet.load_default
     end
 
     def stop_words
