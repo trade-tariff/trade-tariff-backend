@@ -80,8 +80,6 @@ module Api
       end
 
       def vector_short_list
-        expanded_query = expand_query(q)
-
         goods_nomenclatures = VectorRetrievalService.call(
           query: q,
           limit: opensearch_result_limit,
@@ -90,7 +88,6 @@ module Api
         RetrievalResult.new(
           goods_nomenclatures: goods_nomenclatures,
           max_score: goods_nomenclatures.map(&:score).compact.max,
-          expanded_query: expanded_query,
           results_type: 'vector',
         )
       end
