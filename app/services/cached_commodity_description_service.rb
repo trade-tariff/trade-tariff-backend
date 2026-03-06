@@ -1,5 +1,21 @@
 class CachedCommodityDescriptionService
   CACHE_VERSION = '1'.freeze
+  CACHE_PREFIX = "_commodity-description-v#{CACHE_VERSION}".freeze
+  CACHE_EXPIRY = 30.days.freeze
+
+  def self.cache_for_codes(codes)
+    return {} if codes.empty?
+
+    resolver = new(cache: false)
+    resolved_descriptions = resolver.send(:resolve_descriptions_for_codes, codes)
+
+    Rails.cache.write_multi(
+      resolved_descriptions.transform_keys { |code| cache_key(code) },
+      expires_in: CACHE_EXPIRY,
+    )
+
+    resolved_descriptions
+  end
 
   def self.fetch_for_codes(codes)
     return {} if codes.empty?
@@ -21,13 +37,7 @@ class CachedCommodityDescriptionService
 
     return descriptions if missing_codes.empty?
 
-    resolver = new(cache: false)
-    resolved_descriptions = resolver.send(:resolve_descriptions_for_codes, missing_codes)
-    fetched_descriptions = missing_codes.index_with { |code| resolved_descriptions[code].to_s }
-
-    Rails.cache.write_multi(
-      fetched_descriptions.transform_keys { |code| cache_keys_by_code.fetch(code) },
-    )
+    fetched_descriptions = cache_for_codes(missing_codes)
 
     descriptions.merge(fetched_descriptions)
   end
@@ -48,7 +58,7 @@ class CachedCommodityDescriptionService
   end
 
   def self.cache_key(code)
-    "_commodity-description-v#{CACHE_VERSION}-#{code}"
+    "#{CACHE_PREFIX}-#{code}"
   end
   private_class_method :cache_key
 
