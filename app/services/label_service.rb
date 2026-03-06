@@ -9,8 +9,8 @@ class LabelService
 
   def call
     config = model_config
-    model = config[:model]
-    reasoning_effort = config[:reasoning_effort]
+    model = config[:selected]
+    reasoning_effort = config[:sub_values]['reasoning_effort']
     result = nil
 
     LabelGenerator::Instrumentation.api_call(batch_size: batch.size, model:, page_number:) do
@@ -55,7 +55,7 @@ class LabelService
   attr_reader :batch, :page_number
 
   def model_config
-    @model_config ||= AdminConfiguration.model_config_value('label_model')
+    @model_config ||= AdminConfiguration.nested_options_value('label_model')
   end
 
   def configured_context

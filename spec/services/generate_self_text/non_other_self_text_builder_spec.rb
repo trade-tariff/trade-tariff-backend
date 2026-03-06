@@ -53,9 +53,9 @@ RSpec.describe GenerateSelfText::NonOtherSelfTextBuilder do
 
       create(:admin_configuration,
              name: 'non_other_self_text_model',
-             config_type: 'model_config',
+             config_type: 'nested_options',
              description: 'AI model for non-Other self-text generation',
-             value: { 'selected_model' => 'gpt-5.2', 'reasoning_effort' => 'low', 'models' => [{ 'key' => 'gpt-5.2', 'reasoning_levels' => %w[none low medium high] }] })
+             value: { 'selected' => 'gpt-5.2', 'sub_values' => { 'reasoning_effort' => 'low' }, 'options' => [{ 'key' => 'gpt-5.2', 'sub_options' => { 'reasoning_effort' => %w[none low medium high] } }] })
 
       create(:admin_configuration,
              name: 'non_other_self_text_batch_size',

@@ -428,14 +428,14 @@ RSpec.describe InteractiveSearchService do
 
     context 'when search_model config exists' do
       before do
-        create(:admin_configuration, :model_config,
+        create(:admin_configuration, :nested_options,
                name: 'search_model',
                area: 'classification',
                value: {
-                 'selected_model' => 'gpt-4.1-mini-2025-04-14',
-                 'reasoning_effort' => nil,
-                 'models' => [
-                   { 'key' => 'gpt-4.1-mini-2025-04-14', 'label' => 'GPT-4.1 Mini', 'reasoning_levels' => [] },
+                 'selected' => 'gpt-4.1-mini-2025-04-14',
+                 'sub_values' => {},
+                 'options' => [
+                   { 'key' => 'gpt-4.1-mini-2025-04-14', 'label' => 'GPT-4.1 Mini', 'sub_options' => {} },
                  ],
                })
       end

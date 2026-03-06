@@ -79,15 +79,15 @@ class InteractiveSearchService
   end
 
   def model_config
-    @model_config ||= AdminConfiguration.model_config_value('search_model')
+    @model_config ||= AdminConfiguration.nested_options_value('search_model')
   end
 
   def configured_model
-    model_config[:model]
+    model_config[:selected]
   end
 
   def configured_reasoning_effort
-    model_config[:reasoning_effort]
+    model_config[:sub_values]['reasoning_effort']
   end
 
   def configured_context

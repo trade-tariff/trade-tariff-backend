@@ -219,15 +219,15 @@ module GenerateSelfText
     end
 
     def model_config
-      @model_config ||= AdminConfiguration.model_config_value('non_other_self_text_model')
+      @model_config ||= AdminConfiguration.nested_options_value('non_other_self_text_model')
     end
 
     def model
-      model_config[:model]
+      model_config[:selected]
     end
 
     def reasoning_effort
-      model_config[:reasoning_effort]
+      model_config[:sub_values]['reasoning_effort']
     end
 
     def batch_size

@@ -36,15 +36,15 @@ FactoryBot.define do
       end
     end
 
-    trait :model_config do
-      config_type { 'model_config' }
+    trait :nested_options do
+      config_type { 'nested_options' }
       value do
         {
-          'selected_model' => 'gpt-5.2',
-          'reasoning_effort' => 'low',
-          'models' => [
-            { 'key' => 'gpt-5.2', 'label' => 'GPT-5.2 (latest flagship)', 'reasoning_levels' => %w[none low medium high] },
-            { 'key' => 'gpt-4.1-2025-04-14', 'label' => 'GPT-4.1 (1M context)', 'reasoning_levels' => [] },
+          'selected' => 'gpt-5.2',
+          'sub_values' => { 'reasoning_effort' => 'low' },
+          'options' => [
+            { 'key' => 'gpt-5.2', 'label' => 'GPT-5.2 (latest flagship)', 'sub_options' => { 'reasoning_effort' => %w[none low medium high] } },
+            { 'key' => 'gpt-4.1-2025-04-14', 'label' => 'GPT-4.1 (1M context)', 'sub_options' => {} },
           ],
         }
       end

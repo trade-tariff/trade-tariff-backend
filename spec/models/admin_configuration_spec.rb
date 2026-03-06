@@ -435,24 +435,24 @@ RSpec.describe AdminConfiguration do
     end
   end
 
-  describe 'model_config value validation' do
-    subject(:config) { build(:admin_configuration, :model_config, **attrs) }
+  describe 'nested_options value validation' do
+    subject(:config) { build(:admin_configuration, :nested_options, **attrs) }
 
     let(:attrs) { {} }
 
-    context 'with valid model_config' do
+    context 'with valid nested_options' do
       it 'is valid' do
         expect(config).to be_valid
       end
     end
 
-    context 'with empty models array' do
+    context 'with empty options array' do
       let(:attrs) do
         {
           value: {
-            'selected_model' => 'gpt-5.2',
-            'reasoning_effort' => 'low',
-            'models' => [],
+            'selected' => 'gpt-5.2',
+            'sub_values' => { 'reasoning_effort' => 'low' },
+            'options' => [],
           },
         }
       end
@@ -463,13 +463,13 @@ RSpec.describe AdminConfiguration do
       end
     end
 
-    context 'with missing selected_model' do
+    context 'with missing selected' do
       let(:attrs) do
         {
           value: {
-            'selected_model' => '',
-            'reasoning_effort' => 'low',
-            'models' => [{ 'key' => 'gpt-5.2', 'label' => 'GPT-5.2', 'reasoning_levels' => [] }],
+            'selected' => '',
+            'sub_values' => {},
+            'options' => [{ 'key' => 'gpt-5.2', 'label' => 'GPT-5.2', 'sub_options' => {} }],
           },
         }
       end
@@ -477,39 +477,6 @@ RSpec.describe AdminConfiguration do
       it 'is invalid' do
         expect(config).not_to be_valid
         expect(config.errors[:value]).to be_present
-      end
-    end
-
-    context 'with invalid reasoning_effort' do
-      let(:attrs) do
-        {
-          value: {
-            'selected_model' => 'gpt-5.2',
-            'reasoning_effort' => 'turbo',
-            'models' => [{ 'key' => 'gpt-5.2', 'label' => 'GPT-5.2', 'reasoning_levels' => [] }],
-          },
-        }
-      end
-
-      it 'is invalid' do
-        expect(config).not_to be_valid
-        expect(config.errors[:value]).to be_present
-      end
-    end
-
-    context 'with nil reasoning_effort' do
-      let(:attrs) do
-        {
-          value: {
-            'selected_model' => 'gpt-5.2',
-            'reasoning_effort' => nil,
-            'models' => [{ 'key' => 'gpt-5.2', 'label' => 'GPT-5.2', 'reasoning_levels' => [] }],
-          },
-        }
-      end
-
-      it 'is valid' do
-        expect(config).to be_valid
       end
     end
 
@@ -525,70 +492,69 @@ RSpec.describe AdminConfiguration do
     end
   end
 
-  describe '.model_config_value' do
+  describe '.nested_options_value' do
     context 'when config record is missing' do
-      it 'returns the default model with nil reasoning_effort' do
+      it 'returns the default value with empty sub_values' do
         allow(TradeTariffBackend).to receive(:ai_model).and_return('gpt-5.2')
-        result = described_class.model_config_value('search_model')
-        expect(result).to eq({ model: 'gpt-5.2', reasoning_effort: nil })
+        result = described_class.nested_options_value('search_model')
+        expect(result).to eq({ selected: 'gpt-5.2', sub_values: {} })
       end
     end
 
     context 'when config record exists' do
       before do
-        create(:admin_configuration, :model_config,
+        create(:admin_configuration, :nested_options,
                name: 'search_model',
                area: 'classification',
                value: {
-                 'selected_model' => 'gpt-4.1-mini-2025-04-14',
-                 'reasoning_effort' => 'high',
-                 'models' => [
-                   { 'key' => 'gpt-4.1-mini-2025-04-14', 'label' => 'GPT-4.1 Mini', 'reasoning_levels' => [] },
+                 'selected' => 'gpt-4.1-mini-2025-04-14',
+                 'sub_values' => { 'reasoning_effort' => 'high' },
+                 'options' => [
+                   { 'key' => 'gpt-4.1-mini-2025-04-14', 'label' => 'GPT-4.1 Mini', 'sub_options' => {} },
                  ],
                })
       end
 
-      it 'returns the selected model and reasoning effort' do
-        result = described_class.model_config_value('search_model')
-        expect(result).to eq({ model: 'gpt-4.1-mini-2025-04-14', reasoning_effort: 'high' })
+      it 'returns the selected value and sub_values' do
+        result = described_class.nested_options_value('search_model')
+        expect(result).to eq({ selected: 'gpt-4.1-mini-2025-04-14', sub_values: { 'reasoning_effort' => 'high' } })
       end
     end
 
-    context 'when config has blank selected_model' do
+    context 'when config has no sub_values' do
       before do
-        create(:admin_configuration, :model_config,
+        create(:admin_configuration, :nested_options,
                name: 'search_model',
                area: 'classification',
                value: {
-                 'selected_model' => 'gpt-5.2',
-                 'reasoning_effort' => nil,
-                 'models' => [{ 'key' => 'gpt-5.2', 'label' => 'GPT-5.2', 'reasoning_levels' => [] }],
+                 'selected' => 'gpt-5.2',
+                 'options' => [{ 'key' => 'gpt-5.2', 'label' => 'GPT-5.2', 'sub_options' => {} }],
                })
       end
 
-      it 'returns the stored model' do
-        result = described_class.model_config_value('search_model')
-        expect(result[:model]).to eq('gpt-5.2')
+      it 'returns empty sub_values hash' do
+        result = described_class.nested_options_value('search_model')
+        expect(result[:sub_values]).to eq({})
       end
     end
 
     context 'when reloaded from database (JSONBHash)' do
       before do
-        create(:admin_configuration, :model_config,
+        create(:admin_configuration, :nested_options,
                name: 'search_model',
                area: 'classification',
                value: {
-                 'selected_model' => 'o3-2025-04-16',
-                 'reasoning_effort' => 'medium',
-                 'models' => [
-                   { 'key' => 'o3-2025-04-16', 'label' => 'o3', 'reasoning_levels' => %w[low medium high] },
+                 'selected' => 'o3-2025-04-16',
+                 'sub_values' => { 'reasoning_effort' => 'medium' },
+                 'options' => [
+                   { 'key' => 'o3-2025-04-16', 'label' => 'o3', 'sub_options' => { 'reasoning_effort' => %w[low medium high] } },
                  ],
                })
       end
 
       it 'returns the correct values from JSONBHash' do
-        result = described_class.model_config_value('search_model')
-        expect(result).to eq({ model: 'o3-2025-04-16', reasoning_effort: 'medium' })
+        result = described_class.nested_options_value('search_model')
+        expect(result).to eq({ selected: 'o3-2025-04-16', sub_values: { 'reasoning_effort' => 'medium' } })
       end
     end
   end

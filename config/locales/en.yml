@@ -25,7 +25,5 @@ en:
             invalid_integer: "must be a whole number"
             invalid_options: must be a hash with selected and options keys
             no_options: must include an options array
-            invalid_model_config: must be a hash with selected_model and models keys
-            no_models: must include a models array
-            no_selected_model: must include a selected_model
-            invalid_reasoning_effort: must be one of none, low, medium, or high
+            invalid_nested_options: must be a hash with selected and options keys
+            no_selected: must include a selected value

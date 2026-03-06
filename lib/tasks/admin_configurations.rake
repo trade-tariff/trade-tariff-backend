@@ -366,10 +366,11 @@ namespace :admin_configurations do
   desc 'Seed initial admin configurations'
   task seed: :environment do
     model_options_with_reasoning = OpenaiClient::MODEL_CONFIGS.keys.sort.map do |key|
+      levels = OpenaiClient::MODEL_CONFIGS[key][:reasoning_levels]
       {
         'key' => key,
         'label' => AdminConfigurationSeeder.model_label(key),
-        'reasoning_levels' => OpenaiClient::MODEL_CONFIGS[key][:reasoning_levels],
+        'sub_options' => levels.any? ? { 'reasoning_effort' => levels } : {},
       }
     end
 
@@ -384,9 +385,9 @@ namespace :admin_configurations do
       },
       {
         name: 'expand_model',
-        config_type: 'model_config',
+        config_type: 'nested_options',
         description: 'AI model used for search query expansion',
-        value: { 'selected_model' => 'gpt-4.1-mini-2025-04-14', 'reasoning_effort' => nil, 'models' => model_options_with_reasoning },
+        value: { 'selected' => 'gpt-4.1-mini-2025-04-14', 'sub_values' => {}, 'options' => model_options_with_reasoning },
       },
       {
         name: 'expand_query_context',
@@ -442,9 +443,9 @@ namespace :admin_configurations do
       },
       {
         name: 'label_model',
-        config_type: 'model_config',
+        config_type: 'nested_options',
         description: 'AI model used for commodity labelling',
-        value: { 'selected_model' => default_model, 'reasoning_effort' => 'low', 'models' => model_options_with_reasoning },
+        value: { 'selected' => default_model, 'sub_values' => { 'reasoning_effort' => 'low' }, 'options' => model_options_with_reasoning },
       },
       {
         name: 'label_page_size',
@@ -490,9 +491,9 @@ namespace :admin_configurations do
       },
       {
         name: 'other_self_text_model',
-        config_type: 'model_config',
+        config_type: 'nested_options',
         description: 'AI model used for generating self-texts for Other nodes',
-        value: { 'selected_model' => default_model, 'reasoning_effort' => 'low', 'models' => model_options_with_reasoning },
+        value: { 'selected' => default_model, 'sub_values' => { 'reasoning_effort' => 'low' }, 'options' => model_options_with_reasoning },
       },
       {
         name: 'non_other_self_text_batch_size',
@@ -508,9 +509,9 @@ namespace :admin_configurations do
       },
       {
         name: 'non_other_self_text_model',
-        config_type: 'model_config',
+        config_type: 'nested_options',
         description: 'AI model used for generating self-texts for non-Other nodes',
-        value: { 'selected_model' => default_model, 'reasoning_effort' => 'low', 'models' => model_options_with_reasoning },
+        value: { 'selected' => default_model, 'sub_values' => { 'reasoning_effort' => 'low' }, 'options' => model_options_with_reasoning },
       },
       {
         name: 'search_context',
@@ -526,9 +527,9 @@ namespace :admin_configurations do
       },
       {
         name: 'search_model',
-        config_type: 'model_config',
+        config_type: 'nested_options',
         description: 'AI model used for interactive Q&A search',
-        value: { 'selected_model' => default_model, 'reasoning_effort' => 'low', 'models' => model_options_with_reasoning },
+        value: { 'selected' => default_model, 'sub_values' => { 'reasoning_effort' => 'low' }, 'options' => model_options_with_reasoning },
       },
       {
         name: 'search_result_limit',

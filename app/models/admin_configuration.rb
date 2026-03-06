@@ -83,12 +83,12 @@ class AdminConfiguration < Sequel::Model(Sequel[:admin_configurations].qualify(:
     config.selected_option(default: default) || default
   end
 
-  def self.model_config_value(name)
+  def self.nested_options_value(name)
     config = classification.by_name(name.to_s)
-    default_model = default_for(name)
+    default_value = default_for(name)
 
     if config.nil?
-      return { model: default_model, reasoning_effort: nil }
+      return { selected: default_value, sub_values: {} }
     end
 
     val = config[:value]
@@ -99,8 +99,8 @@ class AdminConfiguration < Sequel::Model(Sequel[:admin_configurations].qualify(:
            end
 
     {
-      model: hash['selected_model'].presence || default_model,
-      reasoning_effort: hash['reasoning_effort'].presence,
+      selected: hash['selected'].presence || default_value,
+      sub_values: hash['sub_values'].is_a?(Hash) ? hash['sub_values'] : {},
     }
   end
 
@@ -116,7 +116,7 @@ class AdminConfiguration < Sequel::Model(Sequel[:admin_configurations].qualify(:
     validates_presence :config_type
     validates_presence :area
     validates_presence :description
-    validates_includes %w[string markdown boolean options integer model_config], :config_type
+    validates_includes %w[string markdown boolean options integer nested_options], :config_type
     validate_unique_name if new?
     validate_value_for_type
   end
@@ -179,8 +179,8 @@ class AdminConfiguration < Sequel::Model(Sequel[:admin_configurations].qualify(:
       validate_integer_value
     when 'options'
       validate_options_value
-    when 'model_config'
-      validate_model_config_value
+    when 'nested_options'
+      validate_nested_options_value
     when 'string', 'markdown'
       validate_text_value
     end
@@ -224,7 +224,7 @@ class AdminConfiguration < Sequel::Model(Sequel[:admin_configurations].qualify(:
     errors.add(:value, t('value.no_options')) unless options.is_a?(Array) && options.any?
   end
 
-  def validate_model_config_value
+  def validate_nested_options_value
     val = self[:value]
     return if val.nil?
 
@@ -232,20 +232,14 @@ class AdminConfiguration < Sequel::Model(Sequel[:admin_configurations].qualify(:
            when Hash then val
            when Sequel::Postgres::JSONBHash then val.to_hash
            when Sequel::Postgres::JSONBObject then return
-           else return errors.add(:value, t('value.invalid_model_config'))
+           else return errors.add(:value, t('value.invalid_nested_options'))
            end
 
-    models = hash['models']
-    errors.add(:value, t('value.no_models')) unless models.is_a?(Array) && models.any?
+    options = hash['options']
+    errors.add(:value, t('value.no_options')) unless options.is_a?(Array) && options.any?
 
-    selected = hash['selected_model']
-    errors.add(:value, t('value.no_selected_model')) if selected.blank?
-
-    reasoning = hash['reasoning_effort']
-    return if reasoning.blank?
-
-    valid_levels = %w[none low medium high]
-    errors.add(:value, t('value.invalid_reasoning_effort')) unless valid_levels.include?(reasoning)
+    selected = hash['selected']
+    errors.add(:value, t('value.no_selected')) if selected.blank?
   end
 
   def validate_unique_name
@@ -268,7 +262,7 @@ class AdminConfiguration < Sequel::Model(Sequel[:admin_configurations].qualify(:
                 val.to_s.downcase == 'true'
               when 'integer'
                 val.to_i
-              when 'options', 'model_config'
+              when 'options', 'nested_options'
                 coerce_json_object(val)
               else # string, markdown
                 val.to_s
