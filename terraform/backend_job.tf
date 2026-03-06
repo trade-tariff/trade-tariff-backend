@@ -34,7 +34,7 @@ module "backend-job" {
 resource "aws_cloudwatch_event_rule" "database_backup" {
   name                = "backend-database-backup-${var.environment}"
   description         = "Triggers daily database backup for ${var.environment}"
-  schedule_expression = "cron(0 9 * * ? *)"
+  schedule_expression = "cron(0 23 * * ? *)"
 }
 
 resource "aws_cloudwatch_event_target" "database_backup" {
@@ -71,7 +71,7 @@ resource "aws_cloudwatch_event_rule" "database_replication" {
 
   name                = "backend-database-replication-${var.environment}"
   description         = "Triggers weekday database replication for ${var.environment}"
-  schedule_expression = "cron(30 9 ? * MON-FRI *)"
+  schedule_expression = "cron(30 23 ? * MON-FRI *)"
 }
 
 resource "aws_cloudwatch_event_target" "database_replication" {
