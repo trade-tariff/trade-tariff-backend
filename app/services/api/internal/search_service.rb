@@ -38,6 +38,10 @@ module Api
 
           retrieval = retrieve_short_list
 
+          if retrieval.goods_nomenclatures.empty?
+            next [{ data: [] }, { result_count: 0, results_type: retrieval.results_type }]
+          end
+
           interactive_result = run_interactive_search(
             retrieval.goods_nomenclatures,
             retrieval.expanded_query,
@@ -227,6 +231,8 @@ module Api
       end
 
       def build_exact_result(goods_nomenclature)
+        self_text = goods_nomenclature.goods_nomenclature_self_text&.self_text
+
         OpenStruct.new(
           id: goods_nomenclature.goods_nomenclature_sid,
           goods_nomenclature_item_id: goods_nomenclature.goods_nomenclature_item_id,
@@ -235,7 +241,9 @@ module Api
           goods_nomenclature_class: goods_nomenclature.goods_nomenclature_class,
           description: goods_nomenclature.description,
           formatted_description: goods_nomenclature.formatted_description,
-          full_description: SelfTextLookupService.lookup(goods_nomenclature.goods_nomenclature_item_id).presence || goods_nomenclature.classification_description,
+          self_text: self_text,
+          classification_description: goods_nomenclature.classification_description,
+          full_description: self_text.presence || goods_nomenclature.classification_description,
           heading_description: goods_nomenclature.heading&.formatted_description,
           declarable: goods_nomenclature.respond_to?(:declarable?) ? goods_nomenclature.declarable? : false,
           score: nil,
@@ -253,6 +261,8 @@ module Api
           goods_nomenclature_class: source['goods_nomenclature_class'],
           description: source['description'],
           formatted_description: source['formatted_description'],
+          self_text: source['self_text'],
+          classification_description: source['classification_description'],
           full_description: source['full_description'],
           heading_description: source['heading_description'],
           declarable: source['declarable'],
@@ -301,6 +311,8 @@ module Api
           goods_nomenclature_class: result.goods_nomenclature_class,
           description: result.description,
           formatted_description: result.formatted_description,
+          self_text: result.self_text,
+          classification_description: result.classification_description,
           full_description: result.full_description,
           heading_description: result.heading_description,
           declarable: result.declarable,

@@ -418,7 +418,7 @@ namespace :admin_configurations do
         name: 'retrieval_method',
         config_type: 'options',
         description: 'Search retrieval method: opensearch uses traditional text search with query expansion, vector uses pgvector cosine similarity and skips query expansion',
-        value: { 'selected' => 'opensearch',
+        value: { 'selected' => 'vector',
                  'options' => [
                    { 'key' => 'opensearch', 'label' => 'OpenSearch (text search + query expansion)' },
                    { 'key' => 'vector', 'label' => 'pgvector (cosine similarity)' },
@@ -429,6 +429,12 @@ namespace :admin_configurations do
         config_type: 'integer',
         description: 'HNSW ef_search parameter for pgvector queries. Controls the recall/speed tradeoff: higher values search more candidates and improve recall at the cost of latency. Typical range 40-200. Only applies when retrieval_method is vector.',
         value: '100',
+      },
+      {
+        name: 'vector_score_threshold',
+        config_type: 'integer',
+        description: 'Minimum cosine similarity score (0-100) for vector search results. Results below this threshold are discarded before AI processing. Based on empirical analysis: good queries score 47-70, junk queries score 13-35. Default 35 provides clean separation.',
+        value: '35',
       },
       {
         name: 'label_context',
@@ -452,7 +458,7 @@ namespace :admin_configurations do
         name: 'opensearch_result_limit',
         config_type: 'integer',
         description: 'Maximum number of OpenSearch results fetched for AI processing during interactive search',
-        value: '80',
+        value: '30',
       },
       {
         name: 'pos_noun_boost',

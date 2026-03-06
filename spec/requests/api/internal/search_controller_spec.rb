@@ -1,5 +1,7 @@
 RSpec.describe Api::Internal::SearchController, :internal do
   before do
+    allow(AdminConfiguration).to receive(:option_value).and_call_original
+    allow(AdminConfiguration).to receive(:option_value).with('retrieval_method').and_return('opensearch')
     allow(ExpandSearchQueryService).to receive(:call).and_wrap_original do |_method, query|
       ExpandSearchQueryService::Result.new(expanded_query: query, reason: nil)
     end
@@ -40,6 +42,8 @@ RSpec.describe Api::Internal::SearchController, :internal do
                 'goods_nomenclature_item_id' => '0101210000',
                 'description' => String,
                 'formatted_description' => String,
+                'self_text' => wildcard_matcher,
+                'classification_description' => wildcard_matcher,
                 'full_description' => wildcard_matcher,
                 'heading_description' => wildcard_matcher,
                 'declarable' => true,
@@ -82,6 +86,8 @@ RSpec.describe Api::Internal::SearchController, :internal do
                 'goods_nomenclature_item_id' => '0101000000',
                 'description' => 'live horses',
                 'formatted_description' => 'Live horses',
+                'self_text' => wildcard_matcher,
+                'classification_description' => wildcard_matcher,
                 'full_description' => wildcard_matcher,
                 'heading_description' => wildcard_matcher,
                 'declarable' => be_in([true, false]),
@@ -124,6 +130,8 @@ RSpec.describe Api::Internal::SearchController, :internal do
                 'goods_nomenclature_item_id' => '0100000000',
                 'description' => 'live animals',
                 'formatted_description' => 'Live animals',
+                'self_text' => wildcard_matcher,
+                'classification_description' => wildcard_matcher,
                 'full_description' => wildcard_matcher,
                 'heading_description' => wildcard_matcher,
                 'declarable' => be_in([true, false]),
