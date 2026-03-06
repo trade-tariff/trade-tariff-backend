@@ -20,6 +20,7 @@ class CdsImporter
           write_data(@key, @instances)
         rescue StandardError => e
           Rails.logger.error "CDS Updates excel: write error #{@key} in #{@filename} - #{e.message}"
+          notify_slack_app(e, @filename)
           @failed = true
         end
         @instances = []
@@ -41,6 +42,7 @@ class CdsImporter
       end
     rescue StandardError => e
       Rails.logger.error "CDS Updates excel: save file error for #{@filename} - #{e.message}"
+      notify_slack_app(e, @filename)
     end
 
     private
@@ -139,6 +141,10 @@ class CdsImporter
 
     def column_index(col)
       (col.ord - 'A'.ord).to_i
+    end
+
+    def notify_slack_app(exception, filename)
+      SlackNotifierService.call("Warn: CDS Updates report failed for #{filename} - #{exception.message}")
     end
   end
 end
