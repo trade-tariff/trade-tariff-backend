@@ -95,10 +95,15 @@ class OpenaiClient
   end
 
   MODEL_CONFIGS = {
-    # GPT-5 Series (flagship models)
+    # GPT-5.4 (latest flagship, 1M context)
+    'gpt-5.4' => { reasoning_levels: %w[none low medium high xhigh] },
+
+    # GPT-5 Series
     'gpt-5.2' => { reasoning_levels: %w[none low medium high] },
     'gpt-5.1-2025-11-13' => { reasoning_levels: %w[none low medium high] },
-    'gpt-5-2025-08-07' => { reasoning_levels: %w[none low medium high] },
+    'gpt-5-2025-08-07' => { reasoning_levels: %w[minimal low medium high] },
+    'gpt-5-mini-2025-08-07' => { reasoning_levels: %w[minimal low medium high] },
+    'gpt-5-nano-2025-08-07' => { reasoning_levels: %w[minimal low medium high] },
 
     # o-Series (reasoning models)
     'o4-mini-2025-04-16' => { reasoning_levels: %w[low medium high] },
