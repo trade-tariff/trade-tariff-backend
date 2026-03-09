@@ -33,6 +33,7 @@ class AdminConfiguration < Sequel::Model(Sequel[:admin_configurations].qualify(:
     'input_sanitiser_enabled' => true,
     'input_sanitiser_max_length' => 500,
     'retrieval_method' => 'vector',
+    'rrf_k' => 60,
     'vector_ef_search' => 100,
     'vector_score_threshold' => 35,
     'other_self_text_model' => -> { TradeTariffBackend.ai_model },

@@ -69,6 +69,17 @@ module Search
       info log_entry(data)
     end
 
+    def retrieval_leg_completed(event)
+      info log_entry(
+        event: 'retrieval_leg_completed',
+        request_id: event.payload[:request_id],
+        leg: event.payload[:leg],
+        duration_ms: event.payload[:duration_ms],
+        result_count: event.payload[:result_count],
+        status: event.payload[:status],
+      )
+    end
+
     def result_selected(event)
       info log_entry(
         event: 'result_selected',

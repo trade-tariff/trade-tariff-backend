@@ -425,12 +425,19 @@ namespace :admin_configurations do
       {
         name: 'retrieval_method',
         config_type: 'options',
-        description: 'Search retrieval method: opensearch uses traditional text search with query expansion, vector uses pgvector cosine similarity and skips query expansion',
+        description: 'Search retrieval method: opensearch uses traditional text search with query expansion, vector uses pgvector cosine similarity and skips query expansion, hybrid runs both and fuses with RRF',
         value: { 'selected' => 'vector',
                  'options' => [
                    { 'key' => 'opensearch', 'label' => 'OpenSearch (text search + query expansion)' },
                    { 'key' => 'vector', 'label' => 'pgvector (cosine similarity)' },
+                   { 'key' => 'hybrid', 'label' => 'Hybrid (opensearch + vector with RRF fusion)' },
                  ] },
+      },
+      {
+        name: 'rrf_k',
+        config_type: 'integer',
+        description: 'Reciprocal Rank Fusion constant (k). Controls how much lower-ranked results are penalised: score = 1/(rank + k). Higher k flattens rank differences. Typical range 1-100. Only applies when retrieval_method is hybrid.',
+        value: '60',
       },
       {
         name: 'vector_ef_search',
@@ -601,6 +608,18 @@ namespace :admin_configurations do
       AdminConfiguration.create(attrs.merge(area: 'classification'))
       puts "  created: #{attrs[:name]}"
       created += 1
+    end
+
+    # Patch existing retrieval_method to include hybrid option if missing
+    retrieval = AdminConfiguration.where(name: 'retrieval_method').first
+    if retrieval
+      options = retrieval.value['options'] || []
+      unless options.any? { |o| o['key'] == 'hybrid' }
+        options << { 'key' => 'hybrid', 'label' => 'Hybrid (opensearch + vector with RRF fusion)' }
+        retrieval.update(value: Sequel.pg_jsonb_wrap(retrieval.value.to_hash.merge('options' => options)))
+        puts '  patched: retrieval_method (added hybrid option)'
+        created += 1
+      end
     end
 
     if created.positive?
