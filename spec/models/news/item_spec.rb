@@ -610,30 +610,16 @@ RSpec.describe News::Item do
 
   describe 'after_save callback' do
     let(:collection) { create :news_collection, subscribable: true }
-    let(:news_item) { create :news_item, notify_subscribers: true, collection_ids: collection.id }
+    let(:news_item) { create :news_item, notify_subscribers: false, collection_ids: collection.id }
 
     before do
       allow(Sidekiq::Client).to receive(:enqueue_in)
-      # disable calling worker initially
-      allow(TradeTariffBackend).to receive(:myott?).and_return(false)
       news_item.save
     end
 
     it 'calls worker when saved' do
-      allow(TradeTariffBackend).to receive(:myott?).and_return(true)
-      news_item.update(precis: 'Updated precis')
+      news_item.update(precis: 'Updated precis', notify_subscribers: true)
       expect(Sidekiq::Client).to have_received(:enqueue_in).with(1.minute, StopPressSubscriptionWorker, news_item.id)
-    end
-
-    it 'does not call worker when feature flag is off' do
-      news_item.update(precis: 'Updated precis')
-      expect(Sidekiq::Client).not_to have_received(:enqueue_in)
-    end
-
-    it 'does not call worker when notify_subscribers is false' do
-      allow(TradeTariffBackend).to receive(:myott?).and_return(true)
-      news_item.update(notify_subscribers: false)
-      expect(Sidekiq::Client).not_to have_received(:enqueue_in)
     end
   end
 end

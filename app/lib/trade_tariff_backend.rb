@@ -326,10 +326,6 @@ module TradeTariffBackend
       ENV['IDENTITY_API_KEY']
     end
 
-    def myott?
-      ENV.fetch('MYOTT_ENABLED', 'true') == 'true'
-    end
-
     def myott_report_email
       ENV['MYOTT_REPORT_EMAIL']
     end
