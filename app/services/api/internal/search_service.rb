@@ -68,15 +68,15 @@ module Api
       private
 
       def retrieve_short_list
-        if vector_retrieval?
-          vector_short_list
-        else
-          opensearch_short_list
+        case retrieval_method
+        when 'vector' then vector_short_list
+        when 'hybrid' then hybrid_short_list
+        else opensearch_short_list
         end
       end
 
-      def vector_retrieval?
-        AdminConfiguration.option_value('retrieval_method') == 'vector'
+      def retrieval_method
+        AdminConfiguration.option_value('retrieval_method')
       end
 
       def vector_short_list
@@ -93,70 +93,33 @@ module Api
       end
 
       def opensearch_short_list
-        expanded_query = expand_query(q)
-
-        results = search_with_configured_labels do
-          TradeTariffBackend.search_client.search(
-            ::Search::GoodsNomenclatureQuery.new(
-              q,
-              as_of,
-              expanded_query: expanded_query,
-              pos_search: pos_search_enabled?,
-              size: opensearch_result_limit,
-              noun_boost: pos_noun_boost,
-              qualifier_boost: pos_qualifier_boost,
-            ).query,
-          )
-        end
-
-        hits = results.dig('hits', 'hits') || []
-        goods_nomenclatures = hits.map { |hit| build_result_from_hit(hit) }
+        result = OpensearchRetrievalService.call(
+          query: q, as_of: as_of, request_id: request_id, limit: opensearch_result_limit,
+        )
 
         RetrievalResult.new(
-          goods_nomenclatures: goods_nomenclatures,
-          max_score: hits.map { |hit| hit['_score'] }.compact.max,
-          expanded_query: expanded_query,
+          goods_nomenclatures: result.results,
+          max_score: result.results.map(&:score).compact.max,
+          expanded_query: result.expanded_query,
           results_type: 'opensearch',
         )
       end
 
-      def expand_query(query)
-        return query unless expand_search_enabled?
+      def hybrid_short_list
+        result = HybridRetrievalService.call(
+          query: q, as_of: as_of, request_id: request_id, limit: opensearch_result_limit,
+        )
 
-        result = ::Search::Instrumentation.query_expanded(
-          request_id:,
-          original_query: query,
-        ) { ExpandSearchQueryService.call(query) }
-
-        result.expanded_query
-      end
-
-      def expand_search_enabled?
-        AdminConfiguration.enabled?('expand_search_enabled')
-      end
-
-      def pos_search_enabled?
-        AdminConfiguration.enabled?('pos_search_enabled')
+        RetrievalResult.new(
+          goods_nomenclatures: result.results,
+          max_score: result.results.map(&:score).compact.max,
+          expanded_query: result.expanded_query,
+          results_type: 'hybrid',
+        )
       end
 
       def opensearch_result_limit
         AdminConfiguration.integer_value('opensearch_result_limit')
-      end
-
-      def pos_noun_boost
-        AdminConfiguration.integer_value('pos_noun_boost')
-      end
-
-      def pos_qualifier_boost
-        AdminConfiguration.integer_value('pos_qualifier_boost')
-      end
-
-      def search_with_configured_labels(&block)
-        if AdminConfiguration.enabled?('search_labels_enabled')
-          SearchLabels.with_labels(&block)
-        else
-          SearchLabels.without_labels(&block)
-        end
       end
 
       def allowed_suggestion_types
@@ -247,26 +210,6 @@ module Api
           heading_description: goods_nomenclature.heading&.formatted_description,
           declarable: goods_nomenclature.respond_to?(:declarable?) ? goods_nomenclature.declarable? : false,
           score: nil,
-          confidence: nil,
-        )
-      end
-
-      def build_result_from_hit(hit)
-        source = hit['_source']
-        OpenStruct.new(
-          id: source['goods_nomenclature_sid'],
-          goods_nomenclature_item_id: source['goods_nomenclature_item_id'],
-          goods_nomenclature_sid: source['goods_nomenclature_sid'],
-          producline_suffix: source['producline_suffix'],
-          goods_nomenclature_class: source['goods_nomenclature_class'],
-          description: source['description'],
-          formatted_description: source['formatted_description'],
-          self_text: source['self_text'],
-          classification_description: source['classification_description'],
-          full_description: source['full_description'],
-          heading_description: source['heading_description'],
-          declarable: source['declarable'],
-          score: hit['_score'],
           confidence: nil,
         )
       end

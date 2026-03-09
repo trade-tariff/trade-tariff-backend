@@ -8,8 +8,8 @@ RSpec.describe 'admin_configurations:seed' do
     Rake::Task['admin_configurations:seed'].reenable
   end
 
-  it 'creates all 34 admin configurations', :aggregate_failures do
-    expect { seed }.to change(AdminConfiguration, :count).by(34)
+  it 'creates all 35 admin configurations', :aggregate_failures do
+    expect { seed }.to change(AdminConfiguration, :count).by(35)
 
     names = AdminConfiguration.order(:name).select_map(:name)
     expect(names).to eq(%w[
@@ -34,6 +34,7 @@ RSpec.describe 'admin_configurations:seed' do
       pos_qualifier_boost
       pos_search_enabled
       retrieval_method
+      rrf_k
       search_context
       search_labels_enabled
       search_model
@@ -212,7 +213,7 @@ RSpec.describe 'admin_configurations:seed' do
     expect(config.value['selected']).to eq('vector')
 
     option_keys = config.value['options'].map { |o| o['key'] }
-    expect(option_keys).to contain_exactly('opensearch', 'vector')
+    expect(option_keys).to contain_exactly('opensearch', 'vector', 'hybrid')
   end
 
   it 'seeds vector_ef_search as an integer config defaulting to 100', :aggregate_failures do
@@ -222,6 +223,15 @@ RSpec.describe 'admin_configurations:seed' do
     expect(config.config_type).to eq('integer')
     expect(config.area).to eq('classification')
     expect(config.value).to eq(100)
+  end
+
+  it 'seeds rrf_k as an integer config defaulting to 60', :aggregate_failures do
+    seed
+
+    config = AdminConfiguration.where(name: 'rrf_k').first
+    expect(config.config_type).to eq('integer')
+    expect(config.area).to eq('classification')
+    expect(config.value).to eq(60)
   end
 
   it 'seeds suggestion toggle configs as booleans', :aggregate_failures do
@@ -267,8 +277,8 @@ RSpec.describe 'admin_configurations:seed' do
     seed
 
     # The oplog plugin also calls refresh! in test mode after each create,
-    # so total calls = 34 (oplog) + 1 (rake task) = 35
-    expect(AdminConfiguration).to have_received(:refresh!).with(concurrently: false).exactly(35).times
+    # so total calls = 35 (oplog) + 1 (rake task) = 36
+    expect(AdminConfiguration).to have_received(:refresh!).with(concurrently: false).exactly(36).times
   end
 
   it 'does not refresh when nothing is created' do
