@@ -10,7 +10,7 @@ class RefreshActiveCommoditiesCacheWorker
     expired_codes = Api::User::ActiveCommoditiesService.all_expired_commodities.map(&:second)
 
     TimeMachine.now do
-      CachedCommodityDescriptionService.fetch_for_codes((active_codes + expired_codes).uniq)
+      CachedCommodityDescriptionService.cache_for_codes((active_codes + expired_codes).uniq)
     end
 
     nil

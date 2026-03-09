@@ -11,7 +11,7 @@ RSpec.describe RefreshActiveCommoditiesCacheWorker, type: :worker do
         all_active_commodities: active,
         all_expired_commodities: expired,
       )
-      allow(CachedCommodityDescriptionService).to receive(:fetch_for_codes)
+      allow(CachedCommodityDescriptionService).to receive(:cache_for_codes)
     end
 
     it 'refreshes active commodities caches first' do
@@ -23,7 +23,7 @@ RSpec.describe RefreshActiveCommoditiesCacheWorker, type: :worker do
     it 'fetches and caches descriptions for all active and expired codes' do
       worker.perform
 
-      expect(CachedCommodityDescriptionService).to have_received(:fetch_for_codes)
+      expect(CachedCommodityDescriptionService).to have_received(:cache_for_codes)
         .with(%w[0101210000 0101290000 0201100000])
     end
 
