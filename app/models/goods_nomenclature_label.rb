@@ -18,6 +18,8 @@ class GoodsNomenclatureLabel < Sequel::Model
   end
 
   dataset_module do
+    include AdminListingDataset
+
     def by_sid(sid)
       where(goods_nomenclature_sid: sid)
     end
@@ -29,6 +31,91 @@ class GoodsNomenclatureLabel < Sequel::Model
     def needing_relabel
       where(stale: true, manually_edited: false)
     end
+
+    def admin_listing
+      lbl = Sequel[:goods_nomenclature_labels]
+
+      TimeMachine.now do
+        join(:goods_nomenclatures, { Sequel[:gn][:goods_nomenclature_sid] => lbl[:goods_nomenclature_sid] }, table_alias: :gn)
+          .where(GoodsNomenclature.validity_dates_filter(:gn))
+          .select_all(:goods_nomenclature_labels)
+          .select_append(
+            nomenclature_type_expression.as(:nomenclature_type),
+            score_expression.as(:score),
+          )
+      end
+    end
+
+    def search(query)
+      return self if query.blank?
+
+      q = query.strip
+      lbl = Sequel[:goods_nomenclature_labels]
+
+      if q.match?(/\A\d{2,10}\z/)
+        where(Sequel.like(lbl[:goods_nomenclature_item_id], "#{q}%"))
+      elsif q.length >= 2
+        term = "%#{q}%"
+        where(
+          Sequel.ilike(lbl[:description], term) |
+          Sequel.ilike(Sequel.function(:array_to_string, lbl[:synonyms], ' '), term) |
+          Sequel.ilike(Sequel.function(:array_to_string, lbl[:colloquial_terms], ' '), term) |
+          Sequel.ilike(Sequel.function(:array_to_string, lbl[:known_brands], ' '), term),
+        )
+      else
+        self
+      end
+    end
+
+    def for_status(status)
+      lbl = Sequel[:goods_nomenclature_labels]
+
+      case status
+      when 'stale'
+        where(lbl[:stale] => true)
+      when 'manually_edited'
+        where(lbl[:manually_edited] => true)
+      else
+        self
+      end
+    end
+
+    private
+
+    def score_sql
+      lbl = '"goods_nomenclature_labels"'
+
+      <<~SQL.squish
+        CASE WHEN #{lbl}."description_score" IS NULL
+                  AND (#{lbl}."synonym_scores" IS NULL OR array_length(#{lbl}."synonym_scores", 1) IS NULL)
+                  AND (#{lbl}."colloquial_term_scores" IS NULL OR array_length(#{lbl}."colloquial_term_scores", 1) IS NULL)
+          THEN NULL
+          ELSE (
+            COALESCE(#{lbl}."description_score", 0) +
+            COALESCE((SELECT AVG(s) FROM UNNEST(#{lbl}."synonym_scores") s), 0) +
+            COALESCE((SELECT AVG(s) FROM UNNEST(#{lbl}."colloquial_term_scores") s), 0)
+          ) / (
+            CASE WHEN #{lbl}."description_score" IS NOT NULL THEN 1 ELSE 0 END +
+            CASE WHEN #{lbl}."synonym_scores" IS NOT NULL AND array_length(#{lbl}."synonym_scores", 1) > 0 THEN 1 ELSE 0 END +
+            CASE WHEN #{lbl}."colloquial_term_scores" IS NOT NULL AND array_length(#{lbl}."colloquial_term_scores", 1) > 0 THEN 1 ELSE 0 END
+          )
+        END
+      SQL
+    end
+  end
+
+  def score
+    self[:score] || computed_score
+  end
+
+  def computed_score
+    components = []
+    components << description_score if description_score
+    syn = Array(synonym_scores).compact
+    components << (syn.sum / syn.size) if syn.any?
+    col = Array(colloquial_term_scores).compact
+    components << (col.sum / col.size) if col.any?
+    components.any? ? (components.sum / components.size).round(4) : nil
   end
 
   def mark_stale!
@@ -88,8 +175,6 @@ class GoodsNomenclatureLabel < Sequel::Model
       end
     end
   end
-
-  private
 
   def before_validation
     return super unless goods_nomenclature

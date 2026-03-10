@@ -58,6 +58,23 @@ namespace :labels do
     puts 'Done. Check Sidekiq for progress.'
   end
 
+  desc 'Score all labels (embed label terms and compare against self-text embeddings)'
+  task score: :environment do
+    sids = GoodsNomenclatureLabel.select_map(:goods_nomenclature_sid)
+    puts "Scoring #{sids.size} labels..."
+
+    scorer = LabelConfidenceScorer.new
+    batch_size = ENV.fetch('BATCH_SIZE', 500).to_i
+
+    sids.each_slice(batch_size).with_index do |batch, i|
+      scorer.score(batch)
+      processed = [(i + 1) * batch_size, sids.size].min
+      puts "  #{processed}/#{sids.size} scored"
+    end
+
+    puts 'Scoring complete.'
+  end
+
   desc 'Delete all labels and regenerate with contextual descriptions'
   task nuke_and_regenerate: :environment do
     csv_path = ENV['CSV_PATH']

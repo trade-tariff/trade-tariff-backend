@@ -53,9 +53,9 @@ RSpec.describe GenerateSelfText::NonOtherSelfTextBuilder do
 
       create(:admin_configuration,
              name: 'non_other_self_text_model',
-             config_type: 'options',
+             config_type: 'nested_options',
              description: 'AI model for non-Other self-text generation',
-             value: { 'selected' => 'gpt-5.2', 'options' => [{ 'key' => 'gpt-5.2' }] })
+             value: { 'selected' => 'gpt-5.2', 'sub_values' => { 'reasoning_effort' => 'low' }, 'options' => [{ 'key' => 'gpt-5.2', 'sub_options' => { 'reasoning_effort' => %w[none low medium high] } }] })
 
       create(:admin_configuration,
              name: 'non_other_self_text_batch_size',
@@ -129,6 +129,32 @@ RSpec.describe GenerateSelfText::NonOtherSelfTextBuilder do
 
         record = GoodsNomenclatureSelfText[commodity.goods_nomenclature_sid]
         expect(record.input_context).not_to have_key('eu_self_text')
+      end
+    end
+
+    context 'when AI response contains encoding artefacts' do
+      let(:successful_response) do
+        proc { |messages, **_opts|
+          user_content = JSON.parse(messages.last[:content])
+          sids = user_content.map { |s| s['sid'] }
+
+          {
+            'descriptions' => sids.map do |sid|
+              {
+                'sid' => sid,
+                'contextualised_description' => "Fruit pure9e for #{sid}",
+              }
+            end,
+          }.to_json
+        }
+      end
+
+      it 'sanitises encoding artefacts before storing' do
+        result
+
+        record = GoodsNomenclatureSelfText[commodity.goods_nomenclature_sid]
+        expect(record.self_text).to start_with('Fruit puree for ')
+        expect(record.self_text).not_to include('pure9e')
       end
     end
 

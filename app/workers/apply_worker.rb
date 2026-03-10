@@ -14,8 +14,10 @@ class ApplyWorker
 
     MaterializeViewHelper.refresh_materialized_view
 
-    PopulateTariffChangesWorker.perform_async
     ClearCacheWorker.perform_async
+
+    # After cache is cleared
+    PopulateTariffChangesWorker.perform_in(2.minutes) if TradeTariffBackend.uk?
 
     duration_ms = ((Process.clock_gettime(Process::CLOCK_MONOTONIC) - start_time) * 1000).round(2)
     TariffSynchronizer::Instrumentation.sync_run_completed(duration_ms:)

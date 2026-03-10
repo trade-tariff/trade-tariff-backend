@@ -22,6 +22,7 @@ RSpec.describe Api::Admin::GoodsNomenclatures::GoodsNomenclatureSelfTextsControl
             input_context: Hash,
             nomenclature_type: wildcard_matcher,
             score: wildcard_matcher,
+            has_label: wildcard_matcher,
           },
         },
       }

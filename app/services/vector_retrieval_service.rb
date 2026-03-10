@@ -13,6 +13,7 @@ class VectorRetrievalService
     vector_literal = "'[#{query_embedding.join(',')}]'::vector"
 
     ranked_rows = fetch_ranked_sids(vector_literal)
+    ranked_rows = apply_score_threshold(ranked_rows)
     return [] if ranked_rows.empty?
 
     scores_by_sid = ranked_rows.each_with_object({}) { |r, h| h[r[:goods_nomenclature_sid]] = r[:score]&.to_f }
@@ -23,12 +24,18 @@ class VectorRetrievalService
     ordered_sids.filter_map do |sid|
       gn = gn_by_sid[sid]
       next unless gn
+      next if !search_non_declarables? && !gn.declarable?
 
       build_result(gn, scores_by_sid[sid])
     end
   end
 
   private
+
+  def apply_score_threshold(rows)
+    threshold = AdminConfiguration.integer_value('vector_score_threshold') / 100.0
+    rows.select { |r| r[:score].to_f >= threshold }
+  end
 
   def fetch_ranked_sids(vector_literal)
     ef_search = AdminConfiguration.integer_value('vector_ef_search')
@@ -47,13 +54,13 @@ class VectorRetrievalService
       .actual
       .with_leaf_column
       .where(goods_nomenclatures__goods_nomenclature_sid: sids)
-      .eager(:goods_nomenclature_descriptions, :heading)
+      .eager(:goods_nomenclature_descriptions, :goods_nomenclature_self_text, :heading)
       .all
       .index_by(&:goods_nomenclature_sid)
   end
 
   def build_result(goods_nomenclature, score)
-    self_text = SelfTextLookupService.lookup(goods_nomenclature.goods_nomenclature_item_id)
+    self_text = goods_nomenclature.goods_nomenclature_self_text&.self_text
     full_desc = self_text.presence ||
       DescriptionHtmlFormatter.call(goods_nomenclature.raw_classification_description)
 
@@ -65,12 +72,18 @@ class VectorRetrievalService
       goods_nomenclature_class: goods_nomenclature.goods_nomenclature_class,
       description: goods_nomenclature.description_html,
       formatted_description: goods_nomenclature.description_html,
+      self_text: self_text,
+      classification_description: goods_nomenclature.classification_description,
       full_description: full_desc,
       heading_description: goods_nomenclature.heading&.description_html,
       declarable: goods_nomenclature.respond_to?(:declarable?) ? goods_nomenclature.declarable? : false,
       score: score,
       confidence: nil,
     )
+  end
+
+  def search_non_declarables?
+    AdminConfiguration.enabled?('search_non_declarables')
   end
 
   def embedding_service

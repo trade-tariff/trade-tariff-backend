@@ -25,3 +25,5 @@ en:
             invalid_integer: "must be a whole number"
             invalid_options: must be a hash with selected and options keys
             no_options: must include an options array
+            invalid_nested_options: must be a hash with selected and options keys
+            no_selected: must include a selected value

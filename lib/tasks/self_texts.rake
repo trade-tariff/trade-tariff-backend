@@ -119,6 +119,28 @@ namespace :self_texts do
     puts 'Embedding generation complete.'
   end
 
+  desc 'Fix encoding artefacts (e.g. pure9e -> puree) in existing AI-generated self-texts'
+  task fix_encoding_artefacts: :environment do
+    sanitiser = GenerateSelfText::EncodingArtefactSanitiser
+    fixed = 0
+
+    GoodsNomenclatureSelfText.where(generation_type: %w[ai ai_non_other]).each do |record|
+      sanitised = sanitiser.call(record.self_text)
+      next if sanitised == record.self_text
+
+      record.update(
+        self_text: sanitised,
+        embedding: nil,
+        search_embedding: nil,
+        search_embedding_stale: true,
+      )
+      fixed += 1
+      puts "Fixed [#{record.goods_nomenclature_item_id}] sid=#{record.goods_nomenclature_sid}: #{record.self_text.truncate(80)}"
+    end
+
+    puts "Done. Fixed #{fixed} records."
+  end
+
   desc 'Score all self-texts (populate EU refs, generate embeddings, compute confidence)'
   task score: :environment do
     sids = GoodsNomenclatureSelfText.select_map(:goods_nomenclature_sid)

@@ -15,11 +15,12 @@ class AdminConfiguration < Sequel::Model(Sequel[:admin_configurations].qualify(:
     'interactive_search_max_questions' => 3,
     'label_model' => -> { TradeTariffBackend.ai_model },
     'label_page_size' => -> { TradeTariffBackend.goods_nomenclature_label_page_size },
-    'opensearch_result_limit' => 80,
+    'opensearch_result_limit' => 30,
     'pos_noun_boost' => 10,
     'pos_qualifier_boost' => 3,
     'pos_search_enabled' => true,
     'search_labels_enabled' => true,
+    'search_non_declarables' => false,
     'search_model' => -> { TradeTariffBackend.ai_model },
     'search_result_limit' => 0,
     'suggest_results_limit' => 10,
@@ -31,8 +32,10 @@ class AdminConfiguration < Sequel::Model(Sequel[:admin_configurations].qualify(:
     'suggest_synonyms' => false,
     'input_sanitiser_enabled' => true,
     'input_sanitiser_max_length' => 500,
-    'retrieval_method' => 'opensearch',
+    'retrieval_method' => 'vector',
+    'rrf_k' => 60,
     'vector_ef_search' => 100,
+    'vector_score_threshold' => 35,
     'other_self_text_model' => -> { TradeTariffBackend.ai_model },
     'other_self_text_batch_size' => 5,
     'non_other_self_text_model' => -> { TradeTariffBackend.ai_model },
@@ -83,6 +86,27 @@ class AdminConfiguration < Sequel::Model(Sequel[:admin_configurations].qualify(:
     config.selected_option(default: default) || default
   end
 
+  def self.nested_options_value(name)
+    config = classification.by_name(name.to_s)
+    default_value = default_for(name)
+
+    if config.nil?
+      return { selected: default_value, sub_values: {} }
+    end
+
+    val = config[:value]
+    hash = case val
+           when Hash then val
+           when Sequel::Postgres::JSONBHash then val.to_hash
+           else {}
+           end
+
+    {
+      selected: hash['selected'].presence || default_value,
+      sub_values: hash['sub_values'].is_a?(Hash) ? hash['sub_values'] : {},
+    }
+  end
+
   def self.schema_type_class(column)
     return nil if column == :value
 
@@ -95,7 +119,7 @@ class AdminConfiguration < Sequel::Model(Sequel[:admin_configurations].qualify(:
     validates_presence :config_type
     validates_presence :area
     validates_presence :description
-    validates_includes %w[string markdown boolean options integer], :config_type
+    validates_includes %w[string markdown boolean options integer nested_options], :config_type
     validate_unique_name if new?
     validate_value_for_type
   end
@@ -158,6 +182,8 @@ class AdminConfiguration < Sequel::Model(Sequel[:admin_configurations].qualify(:
       validate_integer_value
     when 'options'
       validate_options_value
+    when 'nested_options'
+      validate_nested_options_value
     when 'string', 'markdown'
       validate_text_value
     end
@@ -201,6 +227,24 @@ class AdminConfiguration < Sequel::Model(Sequel[:admin_configurations].qualify(:
     errors.add(:value, t('value.no_options')) unless options.is_a?(Array) && options.any?
   end
 
+  def validate_nested_options_value
+    val = self[:value]
+    return if val.nil?
+
+    hash = case val
+           when Hash then val
+           when Sequel::Postgres::JSONBHash then val.to_hash
+           when Sequel::Postgres::JSONBObject then return
+           else return errors.add(:value, t('value.invalid_nested_options'))
+           end
+
+    options = hash['options']
+    errors.add(:value, t('value.no_options')) unless options.is_a?(Array) && options.any?
+
+    selected = hash['selected']
+    errors.add(:value, t('value.no_selected')) if selected.blank?
+  end
+
   def validate_unique_name
     if self.class.where(name: name).any?
       errors.add(:name, t('name.already_taken'))
@@ -221,7 +265,7 @@ class AdminConfiguration < Sequel::Model(Sequel[:admin_configurations].qualify(:
                 val.to_s.downcase == 'true'
               when 'integer'
                 val.to_i
-              when 'options'
+              when 'options', 'nested_options'
                 coerce_json_object(val)
               else # string, markdown
                 val.to_s

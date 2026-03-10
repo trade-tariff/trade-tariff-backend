@@ -256,57 +256,7 @@ module Api
       end
 
       def load_classification_descriptions(codes)
-        return {} if codes.empty?
-
-        descriptions = load_latest_formatted_descriptions(codes)
-        other_codes = descriptions.select { |_code, description| other_description?(description) }.keys
-
-        return descriptions if other_codes.empty?
-
-        descriptions.merge(load_other_classification_descriptions(other_codes))
-      end
-
-      def load_other_classification_descriptions(codes)
-        latest_commodities = GoodsNomenclature
-          .where(goods_nomenclatures__goods_nomenclature_item_id: codes)
-          .eager(
-            :goods_nomenclature_descriptions,
-            { ancestors: :goods_nomenclature_descriptions },
-            { heading: :goods_nomenclature_descriptions },
-          )
-          .all
-          .group_by(&:goods_nomenclature_item_id)
-          .transform_values do |records|
-            records.max_by { |record| [record.validity_start_date.to_s, record.goods_nomenclature_sid] }
-          end
-
-        latest_commodities.transform_values do |commodity|
-          html_to_plain_text(commodity.classification_description.to_s)
-        end
-      end
-
-      def load_latest_formatted_descriptions(codes)
-        return {} if codes.empty?
-
-        GoodsNomenclatureDescription
-          .where(goods_nomenclature_item_id: codes)
-          .order(Sequel.desc(:goods_nomenclature_description_period_sid))
-          .all
-          .each_with_object({}) do |record, descriptions|
-            next if descriptions.key?(record.goods_nomenclature_item_id)
-
-            descriptions[record.goods_nomenclature_item_id] = html_to_plain_text(record.formatted_description.to_s)
-          end
-      end
-
-      def html_to_plain_text(text)
-        with_line_breaks = text.to_s.gsub(%r{<br\s*/?>}i, "\n")
-        sanitized_text = Rails::HTML5::FullSanitizer.new.sanitize(with_line_breaks)
-        CGI.unescapeHTML(sanitized_text)
-      end
-
-      def other_description?(description)
-        description.to_s.match?(/^other$/i)
+        CachedCommodityDescriptionService.fetch_for_codes(codes)
       end
     end
   end
