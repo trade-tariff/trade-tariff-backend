@@ -5,8 +5,6 @@ FactoryBot.define do
     config_type { 'string' }
     area { 'classification' }
     description { 'A test configuration' }
-    operation { 'C' }
-    operation_date { Time.zone.today }
 
     trait :markdown do
       config_type { 'markdown' }
@@ -48,10 +46,6 @@ FactoryBot.define do
           ],
         }
       end
-    end
-
-    after(:create) do |_config, _evaluator|
-      AdminConfiguration.refresh!(concurrently: false) if Rails.env.test?
     end
   end
 end

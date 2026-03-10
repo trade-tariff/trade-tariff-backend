@@ -25,6 +25,15 @@ RSpec.describe Api::Admin::GoodsNomenclatures::GoodsNomenclatureSelfTextsControl
             has_label: wildcard_matcher,
           },
         },
+        meta: {
+          version: {
+            current: wildcard_matcher,
+            oid: wildcard_matcher,
+            previous_oid: wildcard_matcher,
+            has_previous_version: wildcard_matcher,
+            latest_event: wildcard_matcher,
+          },
+        },
       }
     end
 
@@ -74,6 +83,66 @@ RSpec.describe Api::Admin::GoodsNomenclatures::GoodsNomenclatureSelfTextsControl
       ancestors = json.dig('data', 'attributes', 'input_context', 'ancestors')
 
       expect(ancestors.first['self_text']).to eq('Live animals >> Other live animals')
+    end
+  end
+
+  describe '#show with version browsing' do
+    let!(:self_text) { create :goods_nomenclature_self_text, self_text: 'original text' }
+
+    it 'includes version meta in the response' do
+      get :show, params: { goods_nomenclature_id: self_text.goods_nomenclature_sid }, format: :json
+
+      json = JSON.parse(response.body)
+      version_meta = json.dig('meta', 'version')
+
+      expect(version_meta['current']).to be true
+      expect(version_meta['oid']).to be_present
+    end
+
+    context 'when viewing a historical version via filter[oid]' do
+      before { self_text.update(self_text: 'changed text') }
+
+      it 'returns the historical version data' do
+        version = self_text.versions.order(:id).first
+
+        get :show, params: {
+          goods_nomenclature_id: self_text.goods_nomenclature_sid,
+          filter: { oid: version.id },
+        }, format: :json
+
+        expect(response).to have_http_status(:ok)
+
+        json = JSON.parse(response.body)
+        expect(json.dig('data', 'attributes', 'self_text')).to eq('original text')
+        expect(json.dig('meta', 'version', 'current')).to be false
+      end
+    end
+
+    context 'when viewing the latest version via filter[oid]' do
+      before { self_text.update(self_text: 'changed text') }
+
+      it 'returns current=true' do
+        version = self_text.versions.order(Sequel.desc(:id)).first
+
+        get :show, params: {
+          goods_nomenclature_id: self_text.goods_nomenclature_sid,
+          filter: { oid: version.id },
+        }, format: :json
+
+        json = JSON.parse(response.body)
+        expect(json.dig('meta', 'version', 'current')).to be true
+      end
+    end
+
+    context 'when version does not exist' do
+      it 'returns 404' do
+        get :show, params: {
+          goods_nomenclature_id: self_text.goods_nomenclature_sid,
+          filter: { oid: 999_999 },
+        }, format: :json
+
+        expect(response).to have_http_status(:not_found)
+      end
     end
   end
 
@@ -204,6 +273,30 @@ RSpec.describe Api::Admin::GoodsNomenclatures::GoodsNomenclatureSelfTextsControl
     context 'when self text record does not exist' do
       it 'returns 404' do
         post :reject, params: { goods_nomenclature_id: '9999999999' }, format: :json
+
+        expect(response).to have_http_status(:not_found)
+      end
+    end
+  end
+
+  describe '#versions' do
+    let!(:self_text) { create :goods_nomenclature_self_text }
+
+    it 'returns versions for the self text' do
+      self_text.update(self_text: 'changed text')
+
+      get :versions, params: { goods_nomenclature_id: self_text.goods_nomenclature_sid }, format: :json
+
+      expect(response).to have_http_status(:ok)
+
+      json = JSON.parse(response.body)
+      expect(json['data']).to be_present
+      expect(json['data'].first['type']).to eq('version')
+    end
+
+    context 'when self text record does not exist' do
+      it 'returns 404' do
+        get :versions, params: { goods_nomenclature_id: '9999999999' }, format: :json
 
         expect(response).to have_http_status(:not_found)
       end

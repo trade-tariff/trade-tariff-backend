@@ -622,19 +622,14 @@ namespace :admin_configurations do
       end
     end
 
-    if created.positive?
-      AdminConfiguration.refresh!(concurrently: false)
-      puts '  refreshed materialized view'
-    end
+    puts "  created #{created} configuration(s)" if created.positive?
   end
 
   desc 'Reset and reseed all admin configurations'
   task reseed: :environment do
-    AdminConfiguration::Operation.truncate
+    Version.where(item_type: 'AdminConfiguration').delete
+    AdminConfiguration.truncate
     puts '  truncated admin configurations'
-
-    AdminConfiguration.refresh!(concurrently: false)
-    puts '  refreshed materialized view'
 
     Rake::Task['admin_configurations:seed'].invoke
   end

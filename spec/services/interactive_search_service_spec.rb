@@ -59,7 +59,6 @@ RSpec.describe InteractiveSearchService do
       before do
         config = AdminConfiguration.where(name: 'interactive_search_enabled').first
         config.update(value: Sequel.pg_jsonb_wrap(false))
-        AdminConfiguration.refresh!(concurrently: false)
       end
 
       it 'returns nil' do
@@ -454,7 +453,6 @@ RSpec.describe InteractiveSearchService do
     context 'when search_context config exists' do
       before do
         AdminConfiguration.where(name: 'search_context').first.update(value: Sequel.pg_jsonb_wrap('Custom prompt: %{search_input}'))
-        AdminConfiguration.refresh!(concurrently: false)
       end
 
       it 'uses the configured context' do
@@ -472,7 +470,6 @@ RSpec.describe InteractiveSearchService do
         AdminConfiguration.where(name: 'search_context').first.update(
           value: Sequel.pg_jsonb_wrap('Query: %{search_input} Expanded: %{expanded_query}'),
         )
-        AdminConfiguration.refresh!(concurrently: false)
       end
 
       it 'substitutes both the original and expanded query' do
@@ -492,7 +489,6 @@ RSpec.describe InteractiveSearchService do
         AdminConfiguration.where(name: 'search_context').first.update(
           value: Sequel.pg_jsonb_wrap('Query: %{search_input} Expanded: %{expanded_query}'),
         )
-        AdminConfiguration.refresh!(concurrently: false)
       end
 
       it 'substitutes both with the same value' do
@@ -512,7 +508,6 @@ RSpec.describe InteractiveSearchService do
         AdminConfiguration.where(name: 'search_context').first.update(
           value: Sequel.pg_jsonb_wrap('Query: %{search_input} Expanded: %{expanded_query}'),
         )
-        AdminConfiguration.refresh!(concurrently: false)
       end
 
       it 'substitutes expanded_query with empty string' do
