@@ -18,14 +18,12 @@ V2Api.routes.draw do
         end
       end
 
-      if TradeTariffBackend.uk?
-        namespace :exchange_rates do
-          get 'period_lists(/:year)', to: 'period_lists#show', as: :period_list
-          resources :files, only: [:show]
-        end
-
-        resources :exchange_rates, only: [:show]
+      namespace :exchange_rates do
+        get 'period_lists(/:year)', to: 'period_lists#show', as: :period_list
+        resources :files, only: [:show]
       end
+
+      resources :exchange_rates, only: [:show]
 
       resources :chapters, only: %i[index show], constraints: { id: /\d{1,2}/ } do
         member do
@@ -116,18 +114,16 @@ V2Api.routes.draw do
             as: :product_specific_rules
       end
 
-      if Rails.env.development? || TradeTariffBackend.uk?
-        namespace :news do
-          resources :items, only: %i[index show]
-          resources :years, only: %i[index]
-          resources :collections, only: %i[index] do
-            resources :items, only: %i[index], shallow: true
-          end
+      namespace :news do
+        resources :items, only: %i[index show]
+        resources :years, only: %i[index]
+        resources :collections, only: %i[index] do
+          resources :items, only: %i[index], shallow: true
         end
-
-        get '/news_items/:id', to: 'news/items#show', as: nil
-        get '/news_items', to: 'news/items#index', as: nil
       end
+
+      get '/news_items/:id', to: 'news/items#show', as: nil
+      get '/news_items', to: 'news/items#index', as: nil
 
       get 'live_issues', to: 'live_issues#index'
 

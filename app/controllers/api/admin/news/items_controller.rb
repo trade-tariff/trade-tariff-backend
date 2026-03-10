@@ -2,6 +2,8 @@ module Api
   module Admin
     module News
       class ItemsController < AdminController
+        include UkOnly
+
         def index
           render json: serialize(news_items.to_a, pagination_meta)
         end

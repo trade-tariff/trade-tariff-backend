@@ -1,36 +1,40 @@
 require 'csv'
 
 class MeasureTypeExclusion
-  DEFAULT_SOURCE = Rails.root.join(
-    "db/#{TradeTariffBackend.service}_measure_type_exclusions.csv",
-  ).freeze
-
-  class_attribute :exclusions
-  self.exclusions = nil
+  class_attribute :exclusions_by_service
+  self.exclusions_by_service = {}
 
   class << self
-    def load_from_file(file = DEFAULT_SOURCE)
-      init_data
+    def source_for(service)
+      Rails.root.join("db/#{service}_measure_type_exclusions.csv")
+    end
 
-      CSV.foreach(file, headers: true, &method(:load_row))
+    def exclusions
+      exclusions_by_service[TradeTariffBackend.service]
+    end
+
+    def load_from_file(file = source_for(TradeTariffBackend.service))
+      service = TradeTariffBackend.service
+      exclusions_by_service[service] = {}
+
+      CSV.foreach(file, headers: true) do |row|
+        load_row(row, service)
+      end
 
       self
     end
 
-    def init_data
-      self.exclusions ||= {}
-    end
-
     def reset_data
-      self.exclusions = nil
+      self.exclusions_by_service = {}
 
       self
     end
 
     def find(measure_type_id, geographical_area_id)
-      load_from_file if exclusions.nil?
+      service = TradeTariffBackend.service
+      load_from_file unless exclusions_by_service.key?(service)
 
-      exclusions[[measure_type_id.to_s, geographical_area_id.to_s]] || []
+      exclusions_by_service[service][[measure_type_id.to_s, geographical_area_id.to_s]] || []
     end
 
     def find_geographical_areas(measure_type_id, geographical_area_id)
@@ -42,11 +46,11 @@ class MeasureTypeExclusion
 
   private
 
-    def load_row(row)
+    def load_row(row, service)
       row_key = row.values_at('measure_type_id', 'geographical_area_id')
 
-      self.exclusions[row_key] ||= []
-      self.exclusions[row_key] << row['excluded_country']
+      exclusions_by_service[service][row_key] ||= []
+      exclusions_by_service[service][row_key] << row['excluded_country']
     end
   end
 end
