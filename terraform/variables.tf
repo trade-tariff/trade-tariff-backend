@@ -47,6 +47,12 @@ variable "container_port" {
   default     = 8080
 }
 
+variable "container_protocol" {
+  description = "Protocol the application exposes."
+  type        = string
+  default     = "http"
+}
+
 variable "database_backup_secret_name" {
   description = "Secrets Manager secret name containing the database URL for backups."
   type        = string
