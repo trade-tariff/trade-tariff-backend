@@ -7,11 +7,15 @@ Sequel.migration do
     models = {
       'GoodsNomenclatureLabel' => { table: :goods_nomenclature_labels, pk: :goods_nomenclature_sid },
       'GoodsNomenclatureSelfText' => { table: :goods_nomenclature_self_texts, pk: :goods_nomenclature_sid },
-      'AdminConfiguration' => { table: Sequel[:admin_configurations].qualify(:uk), pk: :name },
       'ChapterNote' => { table: :chapter_notes, pk: :id },
       'SectionNote' => { table: :section_notes, pk: :id },
       'SearchReference' => { table: :search_references, pk: :id },
     }
+
+    # AdminConfiguration only exists in the uk schema
+    if TradeTariffBackend.uk?
+      models['AdminConfiguration'] = { table: Sequel[:admin_configurations].qualify(:uk), pk: :name }
+    end
 
     models.each do |item_type, config|
       from(config[:table]).each do |record|
@@ -32,6 +36,9 @@ Sequel.migration do
     # Step 2: Migrate old audit data for models that previously used plugin :auditable.
     # Old audits store column diffs { "col" => [old_val, new_val] }. We reconstruct
     # full snapshots by starting from the current record state and reversing each diff.
+    # Audits table only exists in the uk schema.
+    next unless TradeTariffBackend.uk?
+
     audit_table = Sequel[:audits].qualify(:uk)
 
     begin
