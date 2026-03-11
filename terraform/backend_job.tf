@@ -35,7 +35,7 @@ resource "aws_cloudwatch_event_rule" "database_backup" {
   name                = "backend-database-backup-${var.environment}"
   description         = "Triggers daily database backup for ${var.environment}"
   schedule_expression = "cron(0 23 * * ? *)"
-  state               = "DISABLED"
+  state               = "ENABLED"
 }
 
 resource "aws_cloudwatch_event_target" "database_backup" {
