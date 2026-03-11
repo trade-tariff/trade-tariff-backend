@@ -6,6 +6,8 @@ Sequel.migration do
   table = Sequel[:admin_configurations].qualify(:uk)
 
   up do
+    next unless TradeTariffBackend.uk?
+
     # 1. Drop the materialized view
     drop_view view, materialized: true
 
@@ -43,6 +45,8 @@ Sequel.migration do
   end
 
   down do
+    next unless TradeTariffBackend.uk?
+
     # Recreate oplog table and materialized view
     create_table oplog do
       primary_key :oid
