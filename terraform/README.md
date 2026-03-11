@@ -73,6 +73,7 @@ Terraform to deploy the service into AWS.
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
 | <a name="input_container_port"></a> [container\_port](#input\_container\_port) | Listening port. | `number` | `8080` | no |
+| <a name="input_container_protocol"></a> [container\_protocol](#input\_container\_protocol) | Protocol the application exposes. | `string` | `"http"` | no |
 | <a name="input_cpu"></a> [cpu](#input\_cpu) | CPU units to use. | `number` | n/a | yes |
 | <a name="input_database_backup_secret_name"></a> [database\_backup\_secret\_name](#input\_database\_backup\_secret\_name) | Secrets Manager secret name containing the database URL for backups. | `string` | n/a | yes |
 | <a name="input_docker_tag"></a> [docker\_tag](#input\_docker\_tag) | Image tag to use. | `string` | n/a | yes |
