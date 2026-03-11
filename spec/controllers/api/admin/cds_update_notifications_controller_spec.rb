@@ -2,12 +2,14 @@ RSpec.describe Api::Admin::CdsUpdateNotificationsController do
   routes { AdminApi.routes }
 
   describe 'POST to #create' do
-    let(:cds_attributes) { attributes_for :cds_update_notification }
-
     context 'when cds_update_notification is valid' do
+      let(:cds_update) { create(:cds_update) }
+
       it 'responds with success + redirect', :aggregate_failures do
+        request.headers['X-Whodunnit'] = 'test-user-uid'
+
         expect {
-          post :create, params: { data: { type: :cds_update_notification, attributes: cds_attributes } }
+          post :create, params: { data: { type: :cds_update_notification, attributes: { filename: cds_update.filename } } }
         }.to change(CdsUpdateNotification, :count).by(1)
         expect(response.status).to eq 201
         expect(response.location).to eq api_cds_update_notifications_url

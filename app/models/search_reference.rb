@@ -9,7 +9,7 @@ class SearchReference < Sequel::Model
   extend ActiveModel::Naming
 
   plugin :active_model
-  plugin :auditable
+  plugin :has_paper_trail
 
   referenced_setter = proc do |referenced|
     if referenced.present?

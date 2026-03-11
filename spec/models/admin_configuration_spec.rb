@@ -37,7 +37,6 @@ RSpec.describe AdminConfiguration do
         described_class.classification.by_name('test_lookup')
 
         config.update(value: 'updated')
-        described_class.refresh!(concurrently: false)
 
         cached = described_class.classification.by_name('test_lookup')
         expect(cached.value).to eq('found')
@@ -47,7 +46,6 @@ RSpec.describe AdminConfiguration do
         described_class.classification.by_name('test_lookup')
 
         config.update(value: 'updated')
-        described_class.refresh!(concurrently: false)
 
         memory_store.delete('admin_configurations/test_lookup')
 
@@ -65,7 +63,6 @@ RSpec.describe AdminConfiguration do
         described_class.classification.by_name('test_lookup')
 
         config.update(value: 'updated')
-        described_class.refresh!(concurrently: false)
 
         fresh = described_class.classification.by_name('test_lookup')
         expect(fresh.value).to eq('updated')

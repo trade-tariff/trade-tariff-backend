@@ -1,6 +1,7 @@
 class GoodsNomenclatureSelfText < Sequel::Model
   plugin :timestamps, update_on_create: true
   plugin :auto_validations, not_null: :presence
+  plugin :has_paper_trail
 
   set_primary_key [:goods_nomenclature_sid]
   unrestrict_primary_key # PK is a natural key (FK to goods_nomenclatures), not auto-increment

@@ -7,7 +7,7 @@ module Api
 
       set_id :id
 
-      attributes :user_id, :reason, :date, :keep, :enqueued_at
+      attributes :whodunnit, :reason, :date, :keep, :enqueued_at
     end
   end
 end

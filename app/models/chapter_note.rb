@@ -1,7 +1,7 @@
 class ChapterNote < Sequel::Model
   plugin :json_serializer
   plugin :active_model
-  plugin :auditable
+  plugin :has_paper_trail
 
   many_to_one :chapter, dataset: lambda {
     Chapter.where(goods_nomenclature_item_id: chapter_goods_id)

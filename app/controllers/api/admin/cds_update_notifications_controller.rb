@@ -15,7 +15,7 @@ module Api
       private
 
       def cds_update_notification_params
-        params.require(:data).permit(:type, attributes: %i[filename user_id])
+        params.require(:data).permit(:type, attributes: %i[filename])
       end
     end
   end
