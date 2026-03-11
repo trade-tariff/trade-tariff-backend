@@ -1,7 +1,7 @@
 class AdminConfiguration < Sequel::Model(Sequel[:admin_configurations].qualify(:uk))
-  plugin :oplog, primary_key: :name, materialized: true,
-                 oplog_table: Sequel[:admin_configurations_oplog].qualify(:uk)
   plugin :auto_validations, not_null: :presence
+  plugin :has_paper_trail
+  plugin :timestamps, update_on_create: true
 
   set_primary_key [:name]
   unrestrict_primary_key
@@ -125,20 +125,10 @@ class AdminConfiguration < Sequel::Model(Sequel[:admin_configurations].qualify(:
   end
 
   def before_validation
-    self.operation_date ||= Time.zone.today
     self.area ||= 'classification'
     @raw_value = self[:value]
     normalize_value!
     super
-  end
-
-  def save_with_refresh
-    if save(raise_on_failure: false)
-      self.class.refresh!(concurrently: false)
-      true
-    else
-      false
-    end
   end
 
   def after_save

@@ -28,6 +28,15 @@ RSpec.describe Api::Admin::GoodsNomenclatures::GoodsNomenclatureLabelsController
             has_self_text: wildcard_matcher,
           },
         },
+        meta: {
+          version: {
+            current: wildcard_matcher,
+            oid: wildcard_matcher,
+            previous_oid: wildcard_matcher,
+            has_previous_version: wildcard_matcher,
+            latest_event: wildcard_matcher,
+          },
+        },
       }
     end
 
@@ -187,6 +196,92 @@ RSpec.describe Api::Admin::GoodsNomenclatures::GoodsNomenclatureLabelsController
         }, format: :json
 
         expect(response.status).to eq 404
+      end
+    end
+  end
+
+  describe '#show with version browsing' do
+    let(:commodity) { create :commodity }
+    let!(:label) { create :goods_nomenclature_label, goods_nomenclature: commodity, description: 'original' }
+
+    it 'includes version meta in the response' do
+      get :show, params: { goods_nomenclature_id: commodity.goods_nomenclature_item_id }, format: :json
+
+      json = JSON.parse(response.body)
+      version_meta = json.dig('meta', 'version')
+
+      expect(version_meta['current']).to be true
+      expect(version_meta['oid']).to be_present
+    end
+
+    context 'when viewing a historical version via filter[oid]' do
+      before { label.update(description: 'changed') }
+
+      it 'returns the historical version data' do
+        version = label.versions.order(:id).first
+
+        get :show, params: {
+          goods_nomenclature_id: commodity.goods_nomenclature_item_id,
+          filter: { oid: version.id },
+        }, format: :json
+
+        expect(response).to have_http_status(:ok)
+
+        json = JSON.parse(response.body)
+        expect(json.dig('data', 'attributes', 'description')).to eq('original')
+        expect(json.dig('meta', 'version', 'current')).to be false
+      end
+    end
+
+    context 'when viewing the latest version via filter[oid]' do
+      before { label.update(description: 'changed') }
+
+      it 'returns current=true' do
+        version = label.versions.order(Sequel.desc(:id)).first
+
+        get :show, params: {
+          goods_nomenclature_id: commodity.goods_nomenclature_item_id,
+          filter: { oid: version.id },
+        }, format: :json
+
+        json = JSON.parse(response.body)
+        expect(json.dig('meta', 'version', 'current')).to be true
+      end
+    end
+
+    context 'when version does not exist' do
+      it 'returns 404' do
+        get :show, params: {
+          goods_nomenclature_id: commodity.goods_nomenclature_item_id,
+          filter: { oid: 999_999 },
+        }, format: :json
+
+        expect(response).to have_http_status(:not_found)
+      end
+    end
+  end
+
+  describe '#versions' do
+    let(:commodity) { create :commodity }
+    let!(:label) { create :goods_nomenclature_label, goods_nomenclature: commodity }
+
+    it 'returns versions for the label' do
+      label.update(description: 'changed')
+
+      get :versions, params: { goods_nomenclature_id: commodity.goods_nomenclature_item_id }, format: :json
+
+      expect(response).to have_http_status(:ok)
+
+      json = JSON.parse(response.body)
+      expect(json['data']).to be_present
+      expect(json['data'].first['type']).to eq('version')
+    end
+
+    context 'when label does not exist' do
+      it 'returns 404' do
+        get :versions, params: { goods_nomenclature_id: '9999999999' }, format: :json
+
+        expect(response).to have_http_status(:not_found)
       end
     end
   end

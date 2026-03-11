@@ -496,6 +496,7 @@ DEPENDENCIES
   connection_pool
   csv
   database_cleaner-sequel
+  diff-lcs
   dotenv-rails
   engtagger
   factory_bot_rails

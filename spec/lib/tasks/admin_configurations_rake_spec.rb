@@ -270,25 +270,5 @@ RSpec.describe 'admin_configurations:seed' do
     expect { suppress_output { Rake::Task['admin_configurations:seed'].invoke } }
       .not_to change(AdminConfiguration, :count)
   end
-
-  it 'refreshes the materialized view after creating records' do
-    allow(AdminConfiguration).to receive(:refresh!).and_call_original
-
-    seed
-
-    # The oplog plugin also calls refresh! in test mode after each create,
-    # so total calls = 35 (oplog) + 1 (rake task) = 36
-    expect(AdminConfiguration).to have_received(:refresh!).with(concurrently: false).exactly(36).times
-  end
-
-  it 'does not refresh when nothing is created' do
-    seed
-    Rake::Task['admin_configurations:seed'].reenable
-    allow(AdminConfiguration).to receive(:refresh!)
-
-    suppress_output { Rake::Task['admin_configurations:seed'].invoke }
-
-    expect(AdminConfiguration).not_to have_received(:refresh!)
-  end
 end
 # rubocop:enable RSpec/DescribeClass

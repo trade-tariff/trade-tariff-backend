@@ -192,7 +192,6 @@ RSpec.describe ExpandSearchQueryService do
 
       before do
         AdminConfiguration.where(name: 'expand_query_context').first.update(value: Sequel.pg_jsonb_wrap(custom_context))
-        AdminConfiguration.refresh!(concurrently: false)
       end
 
       it 'uses the configured context with the query interpolated' do
