@@ -57,17 +57,17 @@ RSpec.describe Sequel::Plugins::HasPaperTrail do
   end
 
   describe 'whodunnit tracking' do
-    it 'stores whodunnit from thread local' do
-      Thread.current[:paper_trail_whodunnit] = 'user-123'
+    it 'stores whodunnit from TradeTariffRequest' do
+      TradeTariffRequest.whodunnit = 'user-123'
       model_with_plugin.update(content: 'tracked change')
-      Thread.current[:paper_trail_whodunnit] = nil
+      TradeTariffRequest.whodunnit = nil
 
       version = Version.last
       expect(version.whodunnit).to eq('user-123')
     end
 
     it 'stores nil whodunnit when not set' do
-      Thread.current[:paper_trail_whodunnit] = nil
+      TradeTariffRequest.whodunnit = nil
       model_with_plugin.update(content: 'untracked change')
 
       version = Version.last

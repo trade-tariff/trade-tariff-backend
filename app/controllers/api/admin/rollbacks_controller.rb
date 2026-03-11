@@ -21,7 +21,7 @@ module Api
       private
 
       def rollback_params
-        params.require(:data).permit(:type, attributes: %i[date keep reason user_id])
+        params.require(:data).permit(:type, attributes: %i[date keep reason])
       end
 
       def collection

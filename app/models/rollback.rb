@@ -8,8 +8,9 @@ class Rollback < Sequel::Model
   private
 
   def validate
+    self.whodunnit ||= TradeTariffRequest.whodunnit
     must_have :reason
-    must_have :user_id
+    must_have :whodunnit
     must_have_correct_date
   end
 

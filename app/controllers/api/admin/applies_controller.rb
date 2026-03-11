@@ -2,7 +2,7 @@ module Api
   module Admin
     class AppliesController < AdminController
       def create
-        apply = Apply.new(apply_params[:attributes])
+        apply = Apply.new
 
         if apply.valid?
           apply.save
@@ -10,12 +10,6 @@ module Api
         else
           render json: Api::Admin::ErrorSerializationService.new(apply).call, status: :unprocessable_content
         end
-      end
-
-      private
-
-      def apply_params
-        params.require(:data).permit(:type, attributes: %i[user_id])
       end
     end
   end

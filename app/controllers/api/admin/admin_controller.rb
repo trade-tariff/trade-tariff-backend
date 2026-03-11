@@ -10,7 +10,7 @@ module Api
       private
 
       def set_paper_trail_whodunnit
-        Thread.current[:paper_trail_whodunnit] = request.headers['X-Whodunnit']
+        TradeTariffRequest.whodunnit = request.headers['X-Whodunnit']
       end
     end
   end

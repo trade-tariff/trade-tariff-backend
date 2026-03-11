@@ -1,5 +1,6 @@
 class TradeTariffRequest < ActiveSupport::CurrentAttributes
-  attribute :green_lanes,
+  attribute :whodunnit,
+            :green_lanes,
             :time_machine_now,
             # Controls how TimeMachine filters associated records in queries.
             # When false/nil: associations use the global time_machine_now timestamp
