@@ -52,7 +52,7 @@ module Sequel
             item_id: item_id_for_version,
             event: event,
             object: Sequel.pg_jsonb_wrap(values_for_version),
-            whodunnit: Thread.current[:paper_trail_whodunnit],
+            whodunnit: TradeTariffRequest.whodunnit,
             created_at: Time.current,
           )
         end

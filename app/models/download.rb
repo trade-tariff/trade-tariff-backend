@@ -2,7 +2,8 @@ class Download < Sequel::Model
   private
 
   def validate
-    must_have :user_id
+    self.whodunnit ||= TradeTariffRequest.whodunnit
+    must_have :whodunnit
   end
 
   def must_have(attribute)

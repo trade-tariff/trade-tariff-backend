@@ -2,6 +2,6 @@ FactoryBot.define do
   factory :rollback do
     date { Time.zone.today }
     reason { SecureRandom.hex }
-    user_id { generate(:user_id) }
+    whodunnit { "user-#{SecureRandom.hex(4)}" }
   end
 end

@@ -4,19 +4,22 @@ RSpec.describe Api::Admin::AppliesController do
   describe 'POST to #create' do
     before do
       allow(ApplyWorker).to receive(:perform_async)
-
-      post :create, params: { data: { type: :apply, attributes: apply_attributes } }
     end
 
     context 'when apply is valid' do
-      let(:apply_attributes) { attributes_for :apply }
+      before do
+        request.headers['X-Whodunnit'] = 'test-user-uid'
+        post :create
+      end
 
       it { expect(response.status).to eq 201 }
       it { expect(ApplyWorker).to have_received(:perform_async) }
     end
 
     context 'when apply is not valid' do
-      let(:apply_attributes) { { data: { type: :apply, attributes: {} } } }
+      before do
+        post :create
+      end
 
       let(:response_pattern) do
         {

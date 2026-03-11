@@ -11,8 +11,9 @@ class CdsUpdateNotification < Sequel::Model
 
   def validate
     super
+    self.whodunnit ||= TradeTariffRequest.whodunnit
     must_have :filename
-    must_have :user_id
+    must_have :whodunnit
 
     errors.add(:filename, 'must refer to an existing CDS update') unless TariffSynchronizer::CdsUpdate.where(filename: filename).count.positive?
   end
