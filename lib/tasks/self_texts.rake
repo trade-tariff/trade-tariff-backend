@@ -175,6 +175,120 @@ namespace :self_texts do
     puts 'Scoring complete.'
   end
 
+  desc 'Show missing self-texts grouped by chapter and heading (CHAPTER=XX to filter)'
+  task gaps: :environment do
+    TimeMachine.now do
+      gn = Sequel[:goods_nomenclatures]
+      st = Sequel[:goods_nomenclature_self_texts]
+
+      # All actual non-chapter GN items left-joined to self_texts
+      base = GoodsNomenclature.actual
+        .exclude(gn[:goods_nomenclature_item_id] => Chapter.actual.select(:goods_nomenclature_item_id))
+        .left_join(:goods_nomenclature_self_texts, { st[:goods_nomenclature_sid] => gn[:goods_nomenclature_sid] })
+
+      if ENV['CHAPTER']
+        base = base.where(Sequel.like(gn[:goods_nomenclature_item_id], "#{ENV['CHAPTER'].ljust(2, '0')}%"))
+      end
+
+      missing_ds = base.where(st[:goods_nomenclature_sid] => nil)
+
+      # --- Chapter summary ---
+      chapter_stats = base
+        .select_group(Sequel.function(:substr, gn[:goods_nomenclature_item_id], 1, 2).as(:ch))
+        .select_append { count(Sequel.lit('*')).as(total) }
+        .select_append { count(Sequel.case([[{ st[:goods_nomenclature_sid] => nil }, 1]], nil)).as(missing) }
+        .order(:ch)
+        .all
+
+      # Load chapter descriptions for display
+      chapter_descs = Chapter.actual
+        .eager(:goods_nomenclature_descriptions)
+        .all
+        .to_h { |c| [c.goods_nomenclature_item_id.first(2), c.description&.truncate(60)] }
+
+      puts 'Self-Text Gaps by Chapter'
+      puts '=' * 90
+      printf "%-4s %-60s %6s %6s %7s\n", 'Ch', 'Description', 'Total', 'Miss', 'Cov %'
+      puts '-' * 90
+
+      chapter_stats.each do |row|
+        ch = row[:ch]
+        total = row[:total]
+        miss = row[:missing]
+        cov = total.positive? ? ((total - miss) * 100.0 / total).round(1) : 0
+        printf "%-4s %-60s %6d %6d %6.1f%%\n", ch, chapter_descs[ch] || '?', total, miss, cov
+      end
+
+      total_all = chapter_stats.sum { |r| r[:total] }
+      miss_all = chapter_stats.sum { |r| r[:missing] }
+      cov_all = total_all.positive? ? ((total_all - miss_all) * 100.0 / total_all).round(1) : 0
+      puts '-' * 90
+      printf "%-65s %6d %6d %6.1f%%\n", 'TOTAL', total_all, miss_all, cov_all
+      puts
+
+      # --- Heading detail (only chapters with gaps) ---
+      gap_chapters = chapter_stats.select { |r| r[:missing].positive? }.map { |r| r[:ch] }
+
+      if gap_chapters.any?
+        heading_stats = missing_ds
+          .select_group(
+            Sequel.function(:substr, gn[:goods_nomenclature_item_id], 1, 2).as(:ch),
+            Sequel.function(:substr, gn[:goods_nomenclature_item_id], 1, 4).as(:hd),
+          )
+          .select_append { count(Sequel.lit('*')).as(missing) }
+          .order(:ch, :hd)
+          .all
+
+        heading_descs = Heading.actual
+          .eager(:goods_nomenclature_descriptions)
+          .all
+          .to_h { |h| [h.goods_nomenclature_item_id.first(4), h.description&.truncate(60)] }
+
+        puts 'Missing Self-Texts by Heading (chapters with gaps only)'
+        puts '=' * 80
+        printf "%-6s %-60s %6s\n", 'Head', 'Description', 'Miss'
+        puts '-' * 80
+
+        current_ch = nil
+        heading_stats.each do |row|
+          if row[:ch] != current_ch
+            current_ch = row[:ch]
+            puts "-- Chapter #{current_ch}: #{chapter_descs[current_ch] || '?'} --"
+          end
+          printf "  %-4s %-58s %6d\n", row[:hd], heading_descs[row[:hd]] || '?', row[:missing]
+        end
+        puts
+
+        # --- Full list of missing GN items ---
+        puts 'All Missing Goods Nomenclatures (ordered by item_id, producline_suffix)'
+        puts '=' * 100
+        printf "%-12s %-4s %-80s\n", 'Item ID', 'PLS', 'Description'
+        puts '-' * 100
+
+        missing_gn_sids = missing_ds.select_map(gn[:goods_nomenclature_sid])
+
+        if missing_gn_sids.any?
+          GoodsNomenclature.actual
+            .where(goods_nomenclature_sid: missing_gn_sids)
+            .eager(:goods_nomenclature_descriptions)
+            .order(gn[:goods_nomenclature_item_id], gn[:producline_suffix])
+            .all
+            .each do |item|
+              printf "%-12s %-4s %-80s\n",
+                     item.goods_nomenclature_item_id,
+                     item.producline_suffix,
+                     item.description&.truncate(80) || '?'
+            end
+        end
+
+        puts '-' * 100
+        puts "Total missing: #{missing_gn_sids.size}"
+      else
+        puts 'No gaps found - full coverage!'
+      end
+    end
+  end
+
   desc 'Validate generated self-texts - report similarity and coherence scores'
   task validate: :environment do
     threshold = ENV.fetch('THRESHOLD', '0.7').to_f
