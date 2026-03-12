@@ -171,7 +171,7 @@ namespace :labels do
         printf "%-12s %-4s %-80s\n", 'Item ID', 'PLS', 'Description'
         puts '-' * 100
 
-        missing_gn_sids = missing_ds.select_map(gn[:goods_nomenclature_sid])
+        missing_gn_sids = missing_ds.unordered.select_map(gn[:goods_nomenclature_sid])
 
         if missing_gn_sids.any?
           GoodsNomenclature.actual
