@@ -15,8 +15,17 @@ class EmbeddingService
 
   RETRYABLE_HTTP_STATUSES = [429, 500, 502, 503, 504].freeze
 
-  class ServerError < StandardError; end
-  class ClientError < StandardError; end
+  class ApiError < StandardError
+    attr_reader :http_status
+
+    def initialize(message, http_status: nil)
+      @http_status = http_status
+      super(message)
+    end
+  end
+
+  class ServerError < ApiError; end
+  class ClientError < ApiError; end
 
   def embed(text)
     embed_batch([text]).first
@@ -42,7 +51,7 @@ class EmbeddingService
         resp = client.post('embeddings', { model: MODEL, input: batch }.to_json)
 
         if RETRYABLE_HTTP_STATUSES.include?(resp.status)
-          raise ServerError, "EmbeddingService API error: #{resp.status}"
+          raise ServerError.new("EmbeddingService API error: #{resp.status}", http_status: resp.status)
         end
 
         resp
@@ -58,7 +67,7 @@ class EmbeddingService
           embeddings[original_index] = embedding
         end
       else
-        raise ClientError, "EmbeddingService API error: #{response.status} - #{response.body}"
+        raise ClientError.new("EmbeddingService API error: #{response.status} - #{response.body}", http_status: response.status)
       end
     end
 

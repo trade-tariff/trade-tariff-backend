@@ -141,6 +141,12 @@ RSpec.describe EmbeddingService do
         expect { service.embed_batch(%w[test]) }.to raise_error(EmbeddingService::ServerError, /500/)
         expect(WebMock).to have_requested(:post, "#{api_base_url}/embeddings").times(3)
       end
+
+      it 'includes the http_status on the error' do
+        service.embed_batch(%w[test])
+      rescue EmbeddingService::ServerError => e
+        expect(e.http_status).to eq(500)
+      end
     end
 
     context 'when a transient SSL error occurs then succeeds' do
@@ -193,6 +199,12 @@ RSpec.describe EmbeddingService do
       it 'raises a ClientError immediately without retrying' do
         expect { service.embed_batch(%w[test]) }.to raise_error(EmbeddingService::ClientError, /400/)
         expect(WebMock).to have_requested(:post, "#{api_base_url}/embeddings").times(1)
+      end
+
+      it 'includes the http_status on the error' do
+        service.embed_batch(%w[test])
+      rescue EmbeddingService::ClientError => e
+        expect(e.http_status).to eq(400)
       end
     end
 
