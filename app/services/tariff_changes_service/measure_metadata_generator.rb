@@ -18,6 +18,7 @@ class TariffChangesService
           'geographical_area_id' => measure.geographical_area_id,
           'excluded_geographical_area_ids' => excluded_areas,
           'additional_code' => formatted_additional_code,
+          'quota_order_number' => measure.ordernumber,
         },
       }
     end
