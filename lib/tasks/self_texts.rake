@@ -1,4 +1,28 @@
 namespace :self_texts do
+  desc 'Show self-text coverage statistics'
+  task coverage: :environment do
+    TimeMachine.now do
+      total_gn = GoodsNomenclature.actual.count - Chapter.actual.count
+      total_self_texts = GoodsNomenclatureSelfText.count
+      coverage = total_gn.positive? ? (total_self_texts * 100.0 / total_gn).round(2) : 0
+
+      by_type = GoodsNomenclatureSelfText
+        .group_and_count(:generation_type)
+        .order(:generation_type)
+        .all
+
+      puts 'Self-Text Coverage Statistics'
+      puts '-' * 30
+      puts "Total GN (excl. chapters): #{total_gn}"
+      puts "With self-text:            #{total_self_texts}"
+      puts "Missing:                   #{total_gn - total_self_texts}"
+      puts "Coverage:                  #{coverage}%"
+      puts
+      puts 'By generation type:'
+      by_type.each { |row| puts "  #{row[:generation_type]}: #{row[:count]}" }
+    end
+  end
+
   desc 'Regenerate all self-texts by marking them stale and re-enqueuing'
   task regenerate: :environment do
     count = GoodsNomenclatureSelfText.where(stale: false, manually_edited: false).update(stale: true)
