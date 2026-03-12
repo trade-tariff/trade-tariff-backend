@@ -175,6 +175,37 @@ namespace :self_texts do
     puts 'Scoring complete.'
   end
 
+  desc 'Show busy and queued self-text generation workers with chapter details'
+  task status: :environment do
+    require 'json'
+
+    TimeMachine.now do
+      puts 'BUSY:'
+      Sidekiq::Workers.new.each do |_pid, _tid, work|
+        payload = JSON.parse(work.payload)
+        next unless payload['class'].include?('SelfText')
+
+        sid = payload['args']&.first
+        ch = Chapter.where(goods_nomenclature_sid: sid).first
+        label = ch ? "#{ch.goods_nomenclature_item_id.first(2)} - #{ch.description}" : "sid=#{sid}"
+        puts "  #{label} (running since #{Time.zone.at(work.run_at)})"
+      end
+
+      puts
+      queued = Sidekiq::Queue.all.flat_map do |q|
+        q.select { |j| j.klass.include?('SelfText') }
+      end
+
+      puts "QUEUED (#{queued.size}):"
+      queued.each do |job|
+        sid = job.args&.first
+        ch = Chapter.where(goods_nomenclature_sid: sid).first
+        label = ch ? "#{ch.goods_nomenclature_item_id.first(2)} - #{ch.description}" : "sid=#{sid}"
+        puts "  #{label} (enqueued #{Time.zone.at(job.enqueued_at)}) [#{job.queue}]"
+      end
+    end
+  end
+
   desc 'Show missing self-texts grouped by chapter and heading (CHAPTER=XX to filter)'
   task gaps: :environment do
     TimeMachine.now do
