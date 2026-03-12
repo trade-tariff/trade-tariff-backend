@@ -6,10 +6,16 @@ RSpec.describe ScoreSelfTextBatchWorker, type: :worker do
       allow(SelfTextConfidenceScorer).to receive(:new).and_return(scorer)
     end
 
-    it 'scores the given SIDs' do
+    it 'scores the given SIDs with chapter_code' do
+      described_class.new.perform([1, 2, 3], '44')
+
+      expect(scorer).to have_received(:score).with([1, 2, 3], chapter_code: '44')
+    end
+
+    it 'scores without chapter_code when not provided' do
       described_class.new.perform([1, 2, 3])
 
-      expect(scorer).to have_received(:score).with([1, 2, 3])
+      expect(scorer).to have_received(:score).with([1, 2, 3], chapter_code: nil)
     end
 
     it 'does nothing for empty SIDs' do
