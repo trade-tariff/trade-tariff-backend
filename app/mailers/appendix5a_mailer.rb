@@ -1,5 +1,5 @@
 class Appendix5aMailer < ApplicationMailer
-  default to: TradeTariffBackend.cupid_team_to_emails
+  default to: -> { Array(TradeTariffBackend.cupid_team_to_emails) }
 
   def appendix5a_notify_message(new, changed, removed)
     mail subject: "[OTT has made updates from appendix 5a: #{new} new, #{changed} changed, #{removed} removed CDS guidance documents]",

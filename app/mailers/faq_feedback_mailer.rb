@@ -1,5 +1,5 @@
 class FaqFeedbackMailer < ApplicationMailer
-  default to: TradeTariffBackend.support_email
+  default to: -> { Array(TradeTariffBackend.support_email) }
 
   def faq_feedback_message
     mail subject: "[HMRC Online Trade Tariff Support] UK tariff - Green Lanes FAQ Feedback Report - #{TradeTariffBackend.service == 'uk' ? 'UK' : 'Northern Ireland'}",

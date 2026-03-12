@@ -12,7 +12,7 @@ class ActionLogMailer < ApplicationMailer
     }
 
     mail(
-      to: TradeTariffBackend.myott_report_email,
+      to: Array(TradeTariffBackend.myott_report_email),
       subject: "[HMRC Online Trade Tariff] User Action Logs Report #{@date}",
     )
   end

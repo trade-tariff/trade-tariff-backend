@@ -1,5 +1,6 @@
 class ReportsMailer < ApplicationMailer
-  default to: TradeTariffBackend.differences_report_to_emails, bcc: TradeTariffBackend.support_email
+  default to: -> { Array(TradeTariffBackend.differences_report_to_emails) },
+          bcc: -> { Array(TradeTariffBackend.support_email) }
 
   def differences(report)
     @report = report
