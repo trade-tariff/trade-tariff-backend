@@ -1,5 +1,6 @@
 class ExchangeRatesMailer < ApplicationMailer
-  default to: TradeTariffBackend.management_email, bcc: TradeTariffBackend.support_email
+  default to: -> { Array(TradeTariffBackend.management_email) },
+          bcc: -> { Array(TradeTariffBackend.support_email) }
 
   attr_reader :date
 
