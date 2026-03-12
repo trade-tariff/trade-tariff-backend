@@ -6,8 +6,9 @@ class CachedCommodityDescriptionService
   def self.cache_for_codes(codes)
     return {} if codes.empty?
 
+    normalized_codes = codes.uniq.map(&:to_s)
     resolver = new(cache: false)
-    resolved_descriptions = resolver.send(:resolve_descriptions_for_codes, codes)
+    resolved_descriptions = resolver.send(:resolve_descriptions_for_codes, normalized_codes)
 
     Rails.cache.write_multi(
       resolved_descriptions.transform_keys { |code| cache_key(code) },
@@ -20,7 +21,7 @@ class CachedCommodityDescriptionService
   def self.fetch_for_codes(codes)
     return {} if codes.empty?
 
-    normalized_codes = codes.uniq
+    normalized_codes = codes.uniq.map(&:to_s)
     cache_keys_by_code = normalized_codes.index_with { |code| cache_key(code) }
     cached_descriptions_by_key = Rails.cache.read_multi(*cache_keys_by_code.values)
 
