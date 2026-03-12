@@ -99,7 +99,10 @@ class SelfTextConfidenceScorer
         chapter_code: @chapter_code,
       ) { embedding_service.embed_batch(texts) }
 
-      values = batch.zip(embeddings).map { |record, embedding|
+      pairs = batch.zip(embeddings).select { |_record, embedding| embedding }
+      next if pairs.empty?
+
+      values = pairs.map { |record, embedding|
         "(#{record.goods_nomenclature_sid}, '[#{embedding.join(',')}]'::vector)"
       }.join(', ')
 
@@ -134,7 +137,10 @@ class SelfTextConfidenceScorer
         chapter_code: @chapter_code,
       ) { embedding_service.embed_batch(ancestor_texts) }
 
-      values = batch.zip(ancestor_embeddings).map { |record, embedding|
+      pairs = batch.zip(ancestor_embeddings).select { |_record, embedding| embedding }
+      next if pairs.empty?
+
+      values = pairs.map { |record, embedding|
         "(#{record.goods_nomenclature_sid}, '[#{embedding.join(',')}]'::vector)"
       }.join(', ')
 
