@@ -25,7 +25,6 @@ resource "aws_cloudwatch_dashboard" "self_text_generator" {
             markdown = join("\n", [
               "## Self-Text Generator",
               "Batch self-text generation across 98 chapters. Each chapter runs OtherSelfTextBuilder then NonOtherSelfTextBuilder on the within_1_day queue.",
-              "**Healthy:** all chapters succeed, API latency p90 < 30s, reindex completes after each batch. Scoring: mean similarity > 0.7, embedding API p90 < 5s.",
               "**Start here:** check Chapter Success vs Failure trend, then drill into failure tables and scoring metrics below.",
               "**Related:** [Label Generator](${local.label_dashboard_url}) | [Search](${local.search_dashboard_url})",
             ])
@@ -59,13 +58,13 @@ resource "aws_cloudwatch_dashboard" "self_text_generator" {
           width  = 6
           height = 6
           properties = {
-            title  = "API Latency (p50/p90)"
+            title  = "API Latency (p50/p90) (min)"
             region = var.region
             view   = "timeSeries"
             query  = <<-EOT
               ${local.source}
               | ${local.service_filter} and event = "api_call_completed"
-              | stats pct(duration_ms, 50) as p50, pct(duration_ms, 90) as p90 by bin(1h)
+              | stats pct(duration_ms / 60000, 50) as p50, pct(duration_ms / 60000, 90) as p90 by bin(1h)
             EOT
           }
         },
@@ -114,13 +113,13 @@ resource "aws_cloudwatch_dashboard" "self_text_generator" {
           width  = 12
           height = 6
           properties = {
-            title  = "Chapter Processing Percentiles (ms)"
+            title  = "Chapter Processing Percentiles (min)"
             region = var.region
             view   = "timeSeries"
             query  = <<-EOT
               ${local.source}
               | ${local.service_filter} and event = "chapter_completed" and not ispresent(exception)
-              | stats pct(duration_ms, 50) as p50, pct(duration_ms, 90) as p90, pct(duration_ms, 99) as p99 by bin(1h)
+              | stats pct(duration_ms / 60000, 50) as p50, pct(duration_ms / 60000, 90) as p90, pct(duration_ms / 60000, 99) as p99 by bin(1h)
             EOT
           }
         },
@@ -131,13 +130,13 @@ resource "aws_cloudwatch_dashboard" "self_text_generator" {
           width  = 12
           height = 6
           properties = {
-            title  = "API Latency Percentiles (ms)"
+            title  = "API Latency Percentiles (min)"
             region = var.region
             view   = "timeSeries"
             query  = <<-EOT
               ${local.source}
               | ${local.service_filter} and event = "api_call_completed"
-              | stats pct(duration_ms, 50) as p50, pct(duration_ms, 90) as p90, pct(duration_ms, 99) as p99 by bin(1h)
+              | stats pct(duration_ms / 60000, 50) as p50, pct(duration_ms / 60000, 90) as p90, pct(duration_ms / 60000, 99) as p99 by bin(1h)
             EOT
           }
         }
@@ -175,7 +174,7 @@ resource "aws_cloudwatch_dashboard" "self_text_generator" {
             query  = <<-EOT
               ${local.source}
               | ${local.service_filter} and event = "chapter_completed" and not ispresent(exception)
-              | fields @timestamp, chapter_code, duration_ms, ai.processed, ai.failed, non_other_ai.processed, non_other_ai.failed
+              | fields @timestamp, chapter_code, duration_ms / 60000 as duration_min, ai.processed, ai.failed, non_other_ai.processed, non_other_ai.failed
               | sort @timestamp desc
               | limit 50
             EOT
@@ -215,7 +214,7 @@ resource "aws_cloudwatch_dashboard" "self_text_generator" {
             query  = <<-EOT
               ${local.source}
               | ${local.service_filter} and event = "api_call_failed"
-              | fields @timestamp, chapter_code, model, error_class, error_message, duration_ms, http_status
+              | fields @timestamp, chapter_code, model, error_class, error_message, duration_ms / 60000 as duration_min, http_status
               | sort @timestamp desc
               | limit 20
             EOT
@@ -250,13 +249,13 @@ resource "aws_cloudwatch_dashboard" "self_text_generator" {
           width  = 8
           height = 6
           properties = {
-            title  = "Embedding API Latency (p50/p90)"
+            title  = "Embedding API Latency (p50/p90) (s)"
             region = var.region
             view   = "timeSeries"
             query  = <<-EOT
               ${local.source}
               | ${local.service_filter} and event = "embedding_api_call_completed"
-              | stats pct(duration_ms, 50) as p50, pct(duration_ms, 90) as p90 by bin(1h)
+              | stats pct(duration_ms / 1000, 50) as p50, pct(duration_ms / 1000, 90) as p90 by bin(1h)
             EOT
           }
         },
