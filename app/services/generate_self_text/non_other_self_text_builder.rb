@@ -83,6 +83,8 @@ module GenerateSelfText
         hash[desc['sid']] = desc if desc.is_a?(Hash) && desc['sid']
       end
 
+      batch_sids = []
+
       batch.each do |segment|
         node = segment[:node]
         desc = descriptions_by_sid[node[:sid]]
@@ -97,8 +99,11 @@ module GenerateSelfText
         upsert_record(node, sanitised_text, input_context)
         generated_texts[node[:sid]] = sanitised_text
 
+        batch_sids << node[:sid]
         stats[:processed] += 1
       end
+
+      ScoreSelfTextBatchWorker.perform_async(batch_sids) if batch_sids.any?
     end
 
     def build_messages(batch)

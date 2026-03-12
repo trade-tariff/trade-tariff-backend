@@ -39,8 +39,7 @@ class RelabelGoodsNomenclaturePageWorker
       end
 
       sids = batch.map(&:goods_nomenclature_sid)
-      GoodsNomenclatureSelfText.regenerate_search_embeddings(sids)
-      LabelConfidenceScorer.new.score(sids)
+      ScoreLabelBatchWorker.perform_async(sids)
     end
   rescue StandardError => e
     LabelGenerator::Instrumentation.page_failed(
