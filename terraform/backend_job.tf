@@ -73,7 +73,7 @@ resource "aws_cloudwatch_event_rule" "database_replication" {
   name                = "backend-database-replication-${var.environment}"
   description         = "Triggers weekday database replication for ${var.environment}"
   schedule_expression = "cron(30 23 ? * MON-FRI *)"
-  state               = "DISABLED"
+  state               = "ENABLED"
 }
 
 resource "aws_cloudwatch_event_target" "database_replication" {
