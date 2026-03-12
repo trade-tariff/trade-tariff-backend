@@ -22,6 +22,7 @@ class CachedCommodityDescriptionService
     return {} if codes.empty?
 
     normalized_codes = codes.uniq.map(&:to_s)
+    Rails.logger.info "Fetching descriptions for #{normalized_codes.size} codes from cache"
     cache_keys_by_code = normalized_codes.index_with { |code| cache_key(code) }
     cached_descriptions_by_key = Rails.cache.read_multi(*cache_keys_by_code.values)
 
@@ -38,6 +39,7 @@ class CachedCommodityDescriptionService
 
     return descriptions if missing_codes.empty?
 
+    Rails.logger.info "Fetching descriptions for #{missing_codes.size} codes not in cache"
     fetched_descriptions = cache_for_codes(missing_codes)
 
     descriptions.merge(fetched_descriptions)

@@ -8,9 +8,12 @@ class RefreshActiveCommoditiesCacheWorker
 
     active_codes = Api::User::ActiveCommoditiesService.all_active_commodities.map(&:second)
     expired_codes = Api::User::ActiveCommoditiesService.all_expired_commodities.map(&:second)
+    codes = (active_codes + expired_codes).uniq
 
     TimeMachine.now do
-      CachedCommodityDescriptionService.cache_for_codes((active_codes + expired_codes).uniq)
+      Rails.logger.info "Caching #{codes.size} commodity code descriptions"
+      CachedCommodityDescriptionService.cache_for_codes(codes)
+      Rails.logger.info 'Caching commodity code descriptions completed'
     end
 
     nil

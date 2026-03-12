@@ -28,13 +28,12 @@ class ClearCacheWorker
   def clear_backend_cache
     preserved = preserve_keys
 
-    logger.info 'Clearing Rails cache'
+    Rails.logger.info 'Clearing Rails cache'
     Rails.cache.clear
-    logger.info 'Clearing Rails cache completed'
+    Rails.logger.info 'Clearing Rails cache completed'
 
-    logger.info 'Restoring preserved keys'
+    Rails.logger.info 'Restoring preserved keys'
     restore_keys(preserved)
-    logger.info 'Restoring preserved keys completed'
   end
 
   def preserve_keys
@@ -71,5 +70,7 @@ class ClearCacheWorker
         end
       end
     end
+
+    Rails.logger.info "Restored #{preserved.size} preserved keys"
   end
 end
