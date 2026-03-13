@@ -85,6 +85,7 @@ RSpec.describe TariffChangesService::TransformRecords do
           geo_area: 'N/A',
           measure_type: 'N/A',
           additional_code: 'N/A',
+          quota_order_number: 'N/A',
           change_detail: 'New declarable commodity will begin',
         )
       end
@@ -98,6 +99,7 @@ RSpec.describe TariffChangesService::TransformRecords do
           geo_area
           measure_type
           additional_code
+          quota_order_number
           chapter
           commodity_code
           commodity_code_description
@@ -270,6 +272,7 @@ RSpec.describe TariffChangesService::TransformRecords do
         expect(record[:geo_area]).to match(/\(FR\)/)
         expect(record[:type_of_change]).to eq('Measure Added')
         expect(record[:additional_code]).to eq('A123')
+        expect(record[:quota_order_number]).to eq('N/A')
       end
 
       it 'caches geographical areas to avoid N+1 queries' do
@@ -304,7 +307,17 @@ RSpec.describe TariffChangesService::TransformRecords do
                action: 'ending',
                object_sid: measure.measure_sid,
                goods_nomenclature_sid: goods_nomenclature.goods_nomenclature_sid,
-               goods_nomenclature_item_id: goods_nomenclature.goods_nomenclature_item_id)
+               goods_nomenclature_item_id: goods_nomenclature.goods_nomenclature_item_id,
+               metadata: {
+                 'measure' => {
+                   'measure_type_id' => measure.measure_type_id,
+                   'trade_movement_code' => measure_type.trade_movement_code,
+                   'geographical_area_id' => measure.geographical_area_id,
+                   'excluded_geographical_area_ids' => [],
+                   'additional_code' => '',
+                   'quota_order_number' => nil,
+                 },
+               })
       end
 
       it 'includes correct change_detail for measure ending' do
@@ -330,7 +343,17 @@ RSpec.describe TariffChangesService::TransformRecords do
                action: 'update',
                object_sid: measure.measure_sid,
                goods_nomenclature_sid: goods_nomenclature.goods_nomenclature_sid,
-               goods_nomenclature_item_id: goods_nomenclature.goods_nomenclature_item_id)
+               goods_nomenclature_item_id: goods_nomenclature.goods_nomenclature_item_id,
+               metadata: {
+                 'measure' => {
+                   'measure_type_id' => measure.measure_type_id,
+                   'trade_movement_code' => measure_type.trade_movement_code,
+                   'geographical_area_id' => measure.geographical_area_id,
+                   'excluded_geographical_area_ids' => [],
+                   'additional_code' => '',
+                   'quota_order_number' => nil,
+                 },
+               })
       end
 
       it 'includes correct change_detail for measure update' do
@@ -356,7 +379,17 @@ RSpec.describe TariffChangesService::TransformRecords do
                action: 'deletion',
                object_sid: measure.measure_sid,
                goods_nomenclature_sid: goods_nomenclature.goods_nomenclature_sid,
-               goods_nomenclature_item_id: goods_nomenclature.goods_nomenclature_item_id)
+               goods_nomenclature_item_id: goods_nomenclature.goods_nomenclature_item_id,
+               metadata: {
+                 'measure' => {
+                   'measure_type_id' => measure.measure_type_id,
+                   'trade_movement_code' => measure_type.trade_movement_code,
+                   'geographical_area_id' => measure.geographical_area_id,
+                   'excluded_geographical_area_ids' => [],
+                   'additional_code' => '',
+                   'quota_order_number' => nil,
+                 },
+               })
       end
 
       it 'includes correct change_detail for measure deletion' do

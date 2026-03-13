@@ -244,6 +244,36 @@ RSpec.describe TariffChangesService::Presenter do
     end
   end
 
+  describe '#quota_order_number' do
+    context 'when quota_order_number is not present' do
+      let(:tariff_change) do
+        create(:tariff_change,
+               type: 'Measure',
+               goods_nomenclature_sid: goods_nomenclature.goods_nomenclature_sid,
+               goods_nomenclature_item_id: goods_nomenclature.goods_nomenclature_item_id,
+               metadata: { 'measure' => {} })
+      end
+
+      it 'returns N/A' do
+        expect(presenter.quota_order_number).to eq('N/A')
+      end
+    end
+
+    context 'when quota_order_number is present' do
+      let(:tariff_change) do
+        create(:tariff_change,
+               type: 'Measure',
+               goods_nomenclature_sid: goods_nomenclature.goods_nomenclature_sid,
+               goods_nomenclature_item_id: goods_nomenclature.goods_nomenclature_item_id,
+               metadata: { 'measure' => { 'quota_order_number' => '055001' } })
+      end
+
+      it 'returns the quota order number' do
+        expect(presenter.quota_order_number).to eq('055001')
+      end
+    end
+  end
+
   describe '#geo_area' do
     context 'when geographical_area_id is blank' do
       let(:tariff_change) do

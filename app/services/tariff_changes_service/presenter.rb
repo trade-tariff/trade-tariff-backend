@@ -65,6 +65,12 @@ class TariffChangesService
       super
     end
 
+    def quota_order_number
+      return 'N/A' if super.blank?
+
+      super
+    end
+
     def date_of_effect
       super.strftime('%d/%m/%Y')
     end
