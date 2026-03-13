@@ -1,7 +1,8 @@
 RSpec.describe RelabelGoodsNomenclaturePageWorker, type: :worker do
   describe '#perform' do
-    let(:page_number) { 1 }
     let!(:commodity) { create(:commodity) }
+    let(:sids) { [commodity.goods_nomenclature_sid] }
+    let(:batch_index) { 1 }
 
     let(:ai_response) do
       {
@@ -40,24 +41,24 @@ RSpec.describe RelabelGoodsNomenclaturePageWorker, type: :worker do
     end
 
     it 'calls LabelService with the batch and page number' do
-      described_class.new.perform(page_number)
+      described_class.new.perform(sids, batch_index)
 
       expect(LabelService).to have_received(:new) do |batch, **options|
         expect(batch.size).to eq(1)
-        expect(options[:page_number]).to eq(page_number)
+        expect(options[:page_number]).to eq(batch_index)
       end
     end
 
     it 'enqueues scoring for the batch' do
-      described_class.new.perform(page_number)
+      described_class.new.perform(sids, batch_index)
 
       expect(ScoreLabelBatchWorker.jobs.size).to eq(1)
-      expect(ScoreLabelBatchWorker.jobs.first['args']).to eq([[commodity.goods_nomenclature_sid]])
+      expect(ScoreLabelBatchWorker.jobs.first['args']).to eq([sids])
     end
 
     context 'when label is valid' do
       it 'saves the label to the database' do
-        expect { described_class.new.perform(page_number) }
+        expect { described_class.new.perform(sids, batch_index) }
           .to change(GoodsNomenclatureLabel, :count).by(1)
       end
 
@@ -66,11 +67,11 @@ RSpec.describe RelabelGoodsNomenclaturePageWorker, type: :worker do
         allow(LabelGenerator::Instrumentation).to receive(:page_completed).and_call_original
         allow(LabelGenerator::Instrumentation).to receive(:label_saved)
 
-        described_class.new.perform(page_number)
+        described_class.new.perform(sids, batch_index)
 
         expect(LabelGenerator::Instrumentation).to have_received(:label_saved).with(
           label,
-          page_number:,
+          page_number: batch_index,
         )
       end
 
@@ -79,10 +80,10 @@ RSpec.describe RelabelGoodsNomenclaturePageWorker, type: :worker do
         allow(LabelGenerator::Instrumentation).to receive(:page_completed).and_call_original
         allow(LabelGenerator::Instrumentation).to receive(:label_saved)
 
-        described_class.new.perform(page_number)
+        described_class.new.perform(sids, batch_index)
 
         expect(LabelGenerator::Instrumentation).to have_received(:page_completed) do |**args, &_block|
-          expect(args[:page_number]).to eq(page_number)
+          expect(args[:page_number]).to eq(batch_index)
         end
       end
     end
@@ -104,7 +105,7 @@ RSpec.describe RelabelGoodsNomenclaturePageWorker, type: :worker do
       end
 
       it 'does not save the label' do
-        expect { described_class.new.perform(page_number) }
+        expect { described_class.new.perform(sids, batch_index) }
           .not_to change(GoodsNomenclatureLabel, :count)
       end
 
@@ -113,34 +114,17 @@ RSpec.describe RelabelGoodsNomenclaturePageWorker, type: :worker do
         allow(LabelGenerator::Instrumentation).to receive(:page_completed).and_call_original
         allow(LabelGenerator::Instrumentation).to receive(:label_save_failed)
 
-        described_class.new.perform(page_number)
+        described_class.new.perform(sids, batch_index)
 
         expect(LabelGenerator::Instrumentation).to have_received(:label_save_failed) do |failed_label, error, **options|
           expect(failed_label).to eq(invalid_label)
           expect(error).to be_a(Sequel::ValidationFailed)
-          expect(options[:page_number]).to eq(page_number)
+          expect(options[:page_number]).to eq(batch_index)
         end
       end
 
       it 'does not raise an exception' do
-        expect { described_class.new.perform(page_number) }.not_to raise_error
-      end
-    end
-
-    context 'when label already exists' do
-      before do
-        create(:goods_nomenclature_label, goods_nomenclature: commodity)
-      end
-
-      it 'excludes the commodity from the batch (already labeled)' do
-        described_class.new.perform(page_number)
-
-        expect(LabelService).not_to have_received(:new)
-      end
-
-      it 'does not create any new labels' do
-        expect { described_class.new.perform(page_number) }
-          .not_to change(GoodsNomenclatureLabel, :count)
+        expect { described_class.new.perform(sids, batch_index) }.not_to raise_error
       end
     end
 
@@ -155,10 +139,10 @@ RSpec.describe RelabelGoodsNomenclaturePageWorker, type: :worker do
         allow(LabelGenerator::Instrumentation).to receive(:page_started)
         allow(LabelGenerator::Instrumentation).to receive(:page_failed)
 
-        expect { described_class.new.perform(page_number) }.to raise_error(StandardError, 'API timeout')
+        expect { described_class.new.perform(sids, batch_index) }.to raise_error(StandardError, 'API timeout')
 
         expect(LabelGenerator::Instrumentation).to have_received(:page_failed).with(
-          page_number:,
+          page_number: batch_index,
           error: an_instance_of(StandardError),
           ai_response:,
         )
@@ -168,18 +152,25 @@ RSpec.describe RelabelGoodsNomenclaturePageWorker, type: :worker do
         allow(LabelGenerator::Instrumentation).to receive(:page_started)
         allow(LabelGenerator::Instrumentation).to receive(:page_failed)
 
-        expect { described_class.new.perform(page_number) }.to raise_error(StandardError)
+        expect { described_class.new.perform(sids, batch_index) }.to raise_error(StandardError)
       end
     end
 
-    context 'with empty batch' do
-      before do
-        allow(GoodsNomenclatureLabel).to receive(:goods_nomenclatures_dataset)
-          .and_return(GoodsNomenclature.where(Sequel.lit('1=0')))
-      end
+    context 'with empty SID array' do
+      let(:sids) { [] }
 
       it 'returns early without processing' do
-        described_class.new.perform(page_number)
+        described_class.new.perform(sids, batch_index)
+
+        expect(LabelService).not_to have_received(:new)
+      end
+    end
+
+    context 'with SIDs for items that no longer exist' do
+      let(:sids) { [999_999_999] }
+
+      it 'returns early without processing' do
+        described_class.new.perform(sids, batch_index)
 
         expect(LabelService).not_to have_received(:new)
       end
@@ -187,6 +178,7 @@ RSpec.describe RelabelGoodsNomenclaturePageWorker, type: :worker do
 
     context 'with multiple labels (mixed success and failure)' do
       let(:commodity2) { create(:commodity) }
+      let(:sids) { [commodity.goods_nomenclature_sid, commodity2.goods_nomenclature_sid] }
 
       let(:valid_label) do
         GoodsNomenclatureLabel.build(commodity, ai_response['data'].first)
@@ -208,7 +200,7 @@ RSpec.describe RelabelGoodsNomenclaturePageWorker, type: :worker do
       end
 
       it 'saves valid labels and skips invalid ones' do
-        expect { described_class.new.perform(page_number) }
+        expect { described_class.new.perform(sids, batch_index) }
           .to change(GoodsNomenclatureLabel, :count).by(1)
       end
 
@@ -218,10 +210,23 @@ RSpec.describe RelabelGoodsNomenclaturePageWorker, type: :worker do
         allow(LabelGenerator::Instrumentation).to receive(:label_saved)
         allow(LabelGenerator::Instrumentation).to receive(:label_save_failed)
 
-        described_class.new.perform(page_number)
+        described_class.new.perform(sids, batch_index)
 
         expect(LabelGenerator::Instrumentation).to have_received(:label_saved).once
         expect(LabelGenerator::Instrumentation).to have_received(:label_save_failed).once
+      end
+    end
+
+    context 'with legacy Integer page_number argument (backwards compat)' do
+      let(:page_number) { 1 }
+
+      it 'falls back to pagination-based fetching' do
+        described_class.new.perform(page_number)
+
+        expect(LabelService).to have_received(:new) do |batch, **options|
+          expect(batch.size).to eq(1)
+          expect(options[:page_number]).to eq(page_number)
+        end
       end
     end
   end

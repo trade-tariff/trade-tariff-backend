@@ -15,11 +15,63 @@ class RelabelGoodsNomenclaturePageWorker
 
   sidekiq_options queue: :within_1_day, retry: 3, slack_alerts: false
 
-  def perform(page_number)
+  def perform(sids_or_page_number, batch_index = nil)
     @label_service = nil
 
+    # Backwards compat: legacy jobs pass a single Integer page_number
+    if sids_or_page_number.is_a?(Integer)
+      return perform_legacy(sids_or_page_number)
+    end
+
+    sids = sids_or_page_number
+    page_number = batch_index || 1
+
     TimeMachine.now do
-      batch = GoodsNomenclatureLabel.goods_nomenclatures_dataset.paginate(page_number, configured_page_size).eager(EAGER).all
+      batch = GoodsNomenclature.actual
+                .with_leaf_column
+                .declarable
+                .where(Sequel[:goods_nomenclatures][:goods_nomenclature_sid] => sids)
+                .eager(EAGER)
+                .all
+
+      return if batch.empty?
+
+      LabelGenerator::Instrumentation.page_started(page_number:, batch_size: batch.size)
+
+      LabelGenerator::Instrumentation.page_completed(page_number:) do |payload|
+        @label_service = LabelService.new(batch, page_number:)
+        labels = @label_service.call
+
+        labels.each do |label|
+          if save_label(label, page_number:)
+            payload[:labels_created] += 1
+          else
+            payload[:labels_failed] += 1
+          end
+        end
+      end
+
+      batch_sids = batch.map(&:goods_nomenclature_sid)
+      ScoreLabelBatchWorker.perform_async(batch_sids)
+    end
+  rescue StandardError => e
+    page_number ||= batch_index || 1
+    LabelGenerator::Instrumentation.page_failed(
+      page_number:,
+      error: e,
+      ai_response: @label_service&.last_ai_response,
+    )
+    raise
+  end
+
+  private
+
+  def perform_legacy(page_number)
+    TimeMachine.now do
+      batch = GoodsNomenclatureLabel.goods_nomenclatures_dataset
+                .paginate(page_number, configured_page_size)
+                .eager(EAGER)
+                .all
 
       return if batch.empty?
 
@@ -49,8 +101,6 @@ class RelabelGoodsNomenclaturePageWorker
     )
     raise
   end
-
-  private
 
   def configured_page_size
     config = AdminConfiguration.classification.by_name('label_page_size')
