@@ -1,7 +1,28 @@
 class OpenaiClient
+  class ApiError < StandardError
+    attr_reader :status, :body
+
+    def initialize(status:, body:)
+      @status = status
+      @body = body
+      super("OpenAI API error (HTTP #{status}): #{body}")
+    end
+  end
+
+  class RateLimitError < ApiError
+    attr_reader :retry_after
+
+    def initialize(status:, body:, retry_after: nil)
+      @retry_after = retry_after&.to_f
+      super(status: status, body: body)
+    end
+  end
+
   MAX_RETRIES = 3
+  MAX_RETRY_DELAY = 60 # seconds
   RETRY_DELAY = 2 # seconds
   RETRYABLE_ERRORS = [
+    ApiError,
     Faraday::TimeoutError,
     Faraday::ConnectionFailed,
     Faraday::SSLError,
@@ -27,9 +48,11 @@ class OpenaiClient
     body[:reasoning_effort] = reasoning_effort if reasoning_effort.present?
     body = body.to_json
 
-    response = with_retry { self.class.client.post('chat/completions', body) }
+    with_retry do
+      response = self.class.client.post('chat/completions', body)
 
-    if response.success?
+      raise_on_error!(response) unless response.success?
+
       json = response.body.dig('choices', 0, 'message', 'content') || ''
 
       begin
@@ -37,13 +60,19 @@ class OpenaiClient
       rescue StandardError
         json
       end
-    else
-      Rails.logger.error "OpenAIClient error: #{response.body}"
-      ''
     end
   end
 
   private
+
+  def raise_on_error!(response)
+    if response.status == 429
+      retry_after = response.headers['Retry-After'] || response.headers['retry-after']
+      raise RateLimitError.new(status: response.status, body: response.body, retry_after: retry_after)
+    end
+
+    raise ApiError.new(status: response.status, body: response.body)
+  end
 
   def with_retry
     attempts = 0
@@ -53,7 +82,7 @@ class OpenaiClient
       yield
     rescue *RETRYABLE_ERRORS => e
       if attempts < MAX_RETRIES
-        delay = RETRY_DELAY * (2**(attempts - 1)) # exponential backoff: 2s, 4s, 8s
+        delay = calculate_retry_delay(attempts, e)
         Rails.logger.warn "OpenaiClient: #{e.class} on attempt #{attempts}, retrying in #{delay}s..."
         sleep delay
         retry
@@ -61,6 +90,16 @@ class OpenaiClient
         Rails.logger.error "OpenaiClient: #{e.class} after #{attempts} attempts, giving up"
         raise
       end
+    end
+  end
+
+  def calculate_retry_delay(attempts, error)
+    base_delay = RETRY_DELAY * (2**(attempts - 1))
+
+    if error.is_a?(RateLimitError) && error.retry_after
+      [error.retry_after, MAX_RETRY_DELAY].min
+    else
+      [base_delay, MAX_RETRY_DELAY].min
     end
   end
 
