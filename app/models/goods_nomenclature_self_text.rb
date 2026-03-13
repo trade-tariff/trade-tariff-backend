@@ -84,18 +84,21 @@ class GoodsNomenclatureSelfText < Sequel::Model
 
     private
 
-    def score_sql
-      <<~SQL.squish
-        CASE
-          WHEN "goods_nomenclature_self_texts"."similarity_score" IS NOT NULL
-           AND "goods_nomenclature_self_texts"."coherence_score" IS NOT NULL
-          THEN ("goods_nomenclature_self_texts"."similarity_score" + "goods_nomenclature_self_texts"."coherence_score") / 2.0
-          WHEN "goods_nomenclature_self_texts"."similarity_score" IS NOT NULL
-          THEN "goods_nomenclature_self_texts"."similarity_score"
-          WHEN "goods_nomenclature_self_texts"."coherence_score" IS NOT NULL
-          THEN "goods_nomenclature_self_texts"."coherence_score"
-        END
-      SQL
+    def score_expression
+      st = Sequel[:goods_nomenclature_self_texts]
+      similarity = st[:similarity_score]
+      coherence = st[:coherence_score]
+      similarity_present = ~Sequel.expr(similarity => nil)
+      coherence_present = ~Sequel.expr(coherence => nil)
+
+      Sequel.case(
+        [
+          [similarity_present & coherence_present, (similarity + coherence) / 2.0],
+          [similarity_present, similarity],
+          [coherence_present, coherence],
+        ],
+        nil,
+      )
     end
   end
 
@@ -104,24 +107,48 @@ class GoodsNomenclatureSelfText < Sequel::Model
     validates_includes GENERATION_TYPES, :generation_type
   end
 
-  def self.lookup(sid)
-    self[sid]&.self_text
-  end
+  class << self
+    def lookup(sid)
+      self[sid]&.self_text
+    end
 
-  def self.regenerate_search_embeddings(sids)
-    records = where(goods_nomenclature_sid: sids)
-      .exclude(self_text: nil)
-      .where(Sequel.expr(search_embedding_stale: true) | Sequel.expr(search_embedding: nil))
-      .all
-    return if records.empty?
+    def regenerate_search_embeddings(sids)
+      candidates = with_self_text(sids)
+      return if candidates.empty?
 
-    embedding_service = EmbeddingService.new
-    db = Sequel::Model.db
+      composite_texts = TimeMachine.now { CompositeSearchTextBuilder.batch(candidates) }
+      stale_records = needing_embedding(candidates, composite_texts)
+      return if stale_records.empty?
 
-    records.each_slice(EmbeddingService::BATCH_SIZE) do |batch|
-      composite_texts = TimeMachine.now { CompositeSearchTextBuilder.batch(batch) }
-      texts_to_embed = batch.map { |r| composite_texts[r.goods_nomenclature_sid] }
-      embeddings = embedding_service.embed_batch(texts_to_embed)
+      embed_in_batches(stale_records, composite_texts)
+    end
+
+    private
+
+    def with_self_text(sids)
+      where(goods_nomenclature_sid: sids)
+        .exclude(self_text: nil)
+        .all
+    end
+
+    def needing_embedding(candidates, composite_texts)
+      candidates.select do |r|
+        r.search_embedding.nil? || composite_texts[r.goods_nomenclature_sid] != r.search_text
+      end
+    end
+
+    def embed_in_batches(records, composite_texts)
+      embedding_service = EmbeddingService.new
+
+      records.each_slice(EmbeddingService::BATCH_SIZE) do |batch|
+        texts = batch.map { |r| composite_texts[r.goods_nomenclature_sid] }
+        embeddings = embedding_service.embed_batch(texts)
+        bulk_update_embeddings(batch, composite_texts, embeddings)
+      end
+    end
+
+    def bulk_update_embeddings(batch, composite_texts, embeddings)
+      db = Sequel::Model.db
 
       values = batch.zip(embeddings).map { |record, embedding|
         sid = record.goods_nomenclature_sid

@@ -107,6 +107,47 @@ RSpec.describe GoodsNomenclatureSelfText do
       expect(record.search_embedding).to be_present
     end
 
+    it 'skips embedding when composite text matches stored search_text' do
+      record = create(:goods_nomenclature_self_text, self_text: 'Widgets for manufacturing')
+
+      # First call to populate search_text and embedding
+      described_class.regenerate_search_embeddings([record.goods_nomenclature_sid])
+      expect(embedding_service).to have_received(:embed_batch).once
+
+      # Second call should skip because text hasn't changed
+      described_class.regenerate_search_embeddings([record.goods_nomenclature_sid])
+      expect(embedding_service).to have_received(:embed_batch).once
+    end
+
+    it 're-embeds when composite text differs from stored search_text' do
+      record = create(:goods_nomenclature_self_text, self_text: 'Widgets for manufacturing')
+
+      described_class.regenerate_search_embeddings([record.goods_nomenclature_sid])
+      expect(embedding_service).to have_received(:embed_batch).once
+
+      # Simulate text change by updating search_text to something different
+      record.update(search_text: 'outdated text')
+
+      described_class.regenerate_search_embeddings([record.goods_nomenclature_sid])
+      expect(embedding_service).to have_received(:embed_batch).twice
+    end
+
+    it 're-embeds when search_embedding is nil even if search_text matches' do
+      record = create(:goods_nomenclature_self_text, self_text: 'Widgets for manufacturing')
+
+      # First call populates search_text and search_embedding
+      described_class.regenerate_search_embeddings([record.goods_nomenclature_sid])
+      expect(embedding_service).to have_received(:embed_batch).once
+
+      # Clear embedding via SQL (keeping search_text intact)
+      Sequel::Model.db.run(
+        "UPDATE goods_nomenclature_self_texts SET search_embedding = NULL WHERE goods_nomenclature_sid = #{record.goods_nomenclature_sid}",
+      )
+
+      described_class.regenerate_search_embeddings([record.goods_nomenclature_sid])
+      expect(embedding_service).to have_received(:embed_batch).twice
+    end
+
     it 'skips SIDs with no self-text records' do
       described_class.regenerate_search_embeddings([-999])
 

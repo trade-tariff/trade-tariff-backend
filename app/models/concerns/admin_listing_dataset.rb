@@ -6,7 +6,7 @@ module AdminListingDataset
   end
 
   def for_score_category(category)
-    score = Sequel.lit("(#{score_sql})")
+    score = score_expression
 
     case category
     when 'bad'
@@ -18,7 +18,7 @@ module AdminListingDataset
     when 'amazing'
       where(score >= 0.85)
     when 'no_score'
-      where(Sequel.lit("(#{score_sql}) IS NULL"))
+      where(score => nil)
     else
       self
     end
