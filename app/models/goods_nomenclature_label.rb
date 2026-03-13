@@ -164,8 +164,6 @@ class GoodsNomenclatureLabel < Sequel::Model
       end
     end
 
-    private
-
     def declarable_nomenclatures
       gn = Sequel[:goods_nomenclatures]
       st = Sequel[:goods_nomenclature_self_texts]
