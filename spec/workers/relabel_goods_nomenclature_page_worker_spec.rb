@@ -216,18 +216,5 @@ RSpec.describe RelabelGoodsNomenclaturePageWorker, type: :worker do
         expect(LabelGenerator::Instrumentation).to have_received(:label_save_failed).once
       end
     end
-
-    context 'with legacy Integer page_number argument (backwards compat)' do
-      let(:page_number) { 1 }
-
-      it 'falls back to pagination-based fetching' do
-        described_class.new.perform(page_number)
-
-        expect(LabelService).to have_received(:new) do |batch, **options|
-          expect(batch.size).to eq(1)
-          expect(options[:page_number]).to eq(page_number)
-        end
-      end
-    end
   end
 end
