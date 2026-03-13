@@ -360,5 +360,32 @@ RSpec.describe GoodsNomenclatureLabel do
 
       expect(dataset.map(&:goods_nomenclature_sid)).not_to include(commodity.goods_nomenclature_sid)
     end
+
+    it 'includes goods nomenclatures whose label context_hash does not match the current self-text' do
+      commodity = create(:commodity)
+      self_text = 'Updated self-text description'
+      create(:goods_nomenclature_label, goods_nomenclature: commodity, context_hash: 'stale_hash')
+      create(:goods_nomenclature_self_text, goods_nomenclature: commodity, self_text: self_text)
+
+      expect(dataset.map(&:goods_nomenclature_sid)).to include(commodity.goods_nomenclature_sid)
+    end
+
+    it 'excludes goods nomenclatures whose label context_hash matches the current self-text' do
+      commodity = create(:commodity)
+      self_text = 'Matching self-text description'
+      matching_hash = Digest::SHA256.hexdigest(self_text)
+      create(:goods_nomenclature_label, goods_nomenclature: commodity, context_hash: matching_hash)
+      create(:goods_nomenclature_self_text, goods_nomenclature: commodity, self_text: self_text)
+
+      expect(dataset.map(&:goods_nomenclature_sid)).not_to include(commodity.goods_nomenclature_sid)
+    end
+
+    it 'excludes manually-edited labels even when context_hash is stale' do
+      commodity = create(:commodity)
+      create(:goods_nomenclature_label, :manually_edited, goods_nomenclature: commodity, context_hash: 'stale_hash')
+      create(:goods_nomenclature_self_text, goods_nomenclature: commodity, self_text: 'Changed text')
+
+      expect(dataset.map(&:goods_nomenclature_sid)).not_to include(commodity.goods_nomenclature_sid)
+    end
   end
 end
