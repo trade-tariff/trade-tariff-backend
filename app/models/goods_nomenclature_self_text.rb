@@ -114,13 +114,14 @@ class GoodsNomenclatureSelfText < Sequel::Model
 
     def regenerate_search_embeddings(sids)
       candidates = with_self_text(sids)
-      return if candidates.empty?
+      return 0 if candidates.empty?
 
       composite_texts = TimeMachine.now { CompositeSearchTextBuilder.batch(candidates) }
       stale_records = needing_embedding(candidates, composite_texts)
-      return if stale_records.empty?
+      return 0 if stale_records.empty?
 
       embed_in_batches(stale_records, composite_texts)
+      stale_records.size
     end
 
     private

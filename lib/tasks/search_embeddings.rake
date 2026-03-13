@@ -7,21 +7,22 @@ namespace :search_embeddings do
       .select_map(:goods_nomenclature_sid)
 
     total = sids.size
-    puts "Processing #{total} self-text records (skipping unchanged)..."
+    puts "Checking #{total} self-text records for stale embeddings..."
 
     batch_size = ENV.fetch('BATCH_SIZE', 500).to_i
-    processed = 0
+    checked = 0
+    embedded = 0
 
     sids.each_slice(batch_size) do |batch|
-      GoodsNomenclatureSelfText.regenerate_search_embeddings(batch)
+      embedded += GoodsNomenclatureSelfText.regenerate_search_embeddings(batch)
 
-      processed += batch.size
-      if (processed % 500).zero? || processed >= total
-        puts "  #{processed}/#{total} records processed"
+      checked += batch.size
+      if (checked % 500).zero? || checked >= total
+        puts "  #{checked}/#{total} checked, #{embedded} embedded"
       end
     end
 
-    puts 'Done.'
+    puts "Done. #{embedded}/#{total} records needed re-embedding."
   end
 
   desc 'Show search embedding coverage statistics (computes stale count via composite text comparison)'
