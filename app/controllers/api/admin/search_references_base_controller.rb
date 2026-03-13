@@ -27,6 +27,7 @@ module Api
         )
 
         if @search_reference.save
+          enqueue_embedding_refresh
           options = { is_collection: false }
           options[:include] = [:referenced, 'referenced.chapter', 'referenced.chapter.guides', 'referenced.section']
           render json: Api::Admin::SearchReferences::SearchReferenceSerializer.new(@search_reference, options).serializable_hash, status: :created
@@ -41,6 +42,7 @@ module Api
         @search_reference.set(title: sanitized_title)
 
         if @search_reference.save
+          enqueue_embedding_refresh
           respond_with @search_reference
         else
           render json: Api::Admin::ErrorSerializationService.new(@search_reference).call,
@@ -51,6 +53,7 @@ module Api
       def destroy
         @search_reference = search_reference_resource
         @search_reference.destroy
+        enqueue_embedding_refresh
 
         respond_with @search_reference
       end
@@ -86,6 +89,11 @@ module Api
             per_page:,
           },
         }.to_json
+      end
+
+      def enqueue_embedding_refresh
+        sid = @search_reference.goods_nomenclature_sid
+        ScoreLabelBatchWorker.perform_async(sid) if sid
       end
 
       def sanitized_title
