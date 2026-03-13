@@ -11,24 +11,19 @@ RSpec.describe GenerateSelfTextWorker, type: :worker do
       let!(:chapter_with_work) do
         create(:chapter, :actual, goods_nomenclature_item_id: '0100000000')
       end
-      let!(:gn_stale) do
-        create(:goods_nomenclature, :actual,
-               goods_nomenclature_item_id: '0101210000',
-               producline_suffix: '80')
-      end
-      let!(:stale_self_text) do # rubocop:disable RSpec/LetSetup
-        create(:goods_nomenclature_self_text, :stale, goods_nomenclature: gn_stale)
-      end
-
       let!(:chapter_without_work) do
         create(:chapter, :actual, goods_nomenclature_item_id: '0200000000')
       end
-      let!(:gn_fresh) do
-        create(:goods_nomenclature, :actual,
-               goods_nomenclature_item_id: '0201210000',
-               producline_suffix: '80')
-      end
-      let!(:fresh_self_text) do # rubocop:disable RSpec/LetSetup
+
+      before do
+        gn_stale = create(:goods_nomenclature, :actual,
+                          goods_nomenclature_item_id: '0101210000',
+                          producline_suffix: '80')
+        create(:goods_nomenclature_self_text, :stale, goods_nomenclature: gn_stale)
+
+        gn_fresh = create(:goods_nomenclature, :actual,
+                          goods_nomenclature_item_id: '0201210000',
+                          producline_suffix: '80')
         create(:goods_nomenclature_self_text, goods_nomenclature: gn_fresh)
       end
 
@@ -59,7 +54,8 @@ RSpec.describe GenerateSelfTextWorker, type: :worker do
       let!(:chapter) do
         create(:chapter, :actual, goods_nomenclature_item_id: '0300000000')
       end
-      let!(:gn_without_self_text) do # rubocop:disable RSpec/LetSetup
+
+      before do
         create(:goods_nomenclature, :actual,
                goods_nomenclature_item_id: '0301210000',
                producline_suffix: '80')
@@ -74,15 +70,11 @@ RSpec.describe GenerateSelfTextWorker, type: :worker do
     end
 
     context 'when no chapters need work' do
-      let!(:chapter) do # rubocop:disable RSpec/LetSetup
+      before do
         create(:chapter, :actual, goods_nomenclature_item_id: '0400000000')
-      end
-      let!(:gn) do
-        create(:goods_nomenclature, :actual,
-               goods_nomenclature_item_id: '0401210000',
-               producline_suffix: '80')
-      end
-      let!(:self_text) do # rubocop:disable RSpec/LetSetup
+        gn = create(:goods_nomenclature, :actual,
+                    goods_nomenclature_item_id: '0401210000',
+                    producline_suffix: '80')
         create(:goods_nomenclature_self_text, goods_nomenclature: gn)
       end
 
