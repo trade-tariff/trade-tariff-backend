@@ -62,9 +62,6 @@ class TaricSynchronizer
     end
 
     def apply
-      check_tariff_updates_failures
-      check_sequence
-
       applied_updates = []
 
       start_time = Process.clock_gettime(Process::CLOCK_MONOTONIC)
@@ -73,6 +70,9 @@ class TaricSynchronizer
       # running the apply task it is wrapped with a redis lock
       TradeTariffBackend.with_redis_lock do
         TariffSynchronizer::Instrumentation.lock_acquired(phase: 'apply')
+
+        check_tariff_updates_failures
+        check_sequence
 
         # Updates could be modifying primary keys so unrestricted it for all models.
         sequel_models.each(&:unrestrict_primary_key)
