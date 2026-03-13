@@ -164,7 +164,10 @@ RSpec.describe CdsSynchronizer, :truncation do
     context 'when pending CDS update does not respect the sequence' do
       let(:pending_date) { applied_date + 2.days }
 
-      before { allow(SlackNotifierService).to receive(:call) }
+      before do
+        allow(SlackNotifierService).to receive(:call)
+        allow(TradeTariffBackend).to receive(:with_redis_lock).and_yield
+      end
 
       it 'raises wrong sequence error and notifies Slack app', :aggregate_failures do
         expect { described_class.apply }.to raise_error(TariffSynchronizer::FailedUpdatesError)
