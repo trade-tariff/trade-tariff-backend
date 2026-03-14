@@ -76,6 +76,7 @@ class TariffChangesService
           geo_area: presented_change.geo_area,
           measure_type: presented_change.measure_type,
           additional_code: presented_change.additional_code,
+          quota_order_number: presented_change.quota_order_number,
           chapter: tariff_change.goods_nomenclature.chapter_short_code,
           commodity_code: tariff_change.goods_nomenclature.goods_nomenclature_item_id,
           commodity_code_description: presented_change.classification_description,
