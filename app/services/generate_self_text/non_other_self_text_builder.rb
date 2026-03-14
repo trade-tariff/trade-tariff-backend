@@ -103,7 +103,7 @@ module GenerateSelfText
         stats[:processed] += 1
       end
 
-      ScoreSelfTextBatchWorker.perform_async(batch_sids) if batch_sids.any?
+      ScoreSelfTextBatchWorker.perform_async(batch_sids, chapter.short_code) if batch_sids.any?
     end
 
     def build_messages(batch)
