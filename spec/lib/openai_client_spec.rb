@@ -254,11 +254,19 @@ RSpec.describe OpenaiClient do
   end
 
   describe '.client' do
+    before do
+      described_class.instance_variable_set(:@client, nil)
+    end
+
+    after do
+      described_class.instance_variable_set(:@client, nil)
+    end
+
     it 'creates a Faraday client with correct configuration' do
       client = described_class.client
 
       expect(client).to be_a(Faraday::Connection)
-      expect(client.headers['Authorization']).to eq('Bearer test-api-key')
+      expect(client.headers['Authorization']).to eq("Bearer #{TradeTariffBackend.openai_api_key}")
       expect(client.headers['Content-Type']).to eq('application/json')
       expect(client.headers['User-Agent']).to eq('TradeTariffBackend/')
     end

@@ -34,7 +34,7 @@ RSpec.describe CdsUpdatesSynchronizerWorker, type: :worker do
 
     let(:changes_applied) { true }
     let(:service) { 'uk' }
-    let(:cut_off_time) { 1.hour.from_now }
+    let(:cut_off_time) { Time.zone.now.end_of_day }
 
     context 'with todays file missing' do
       before do
