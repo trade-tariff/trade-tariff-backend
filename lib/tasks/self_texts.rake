@@ -4,6 +4,9 @@ namespace :self_texts do
     TimeMachine.now do
       total_gn = GoodsNomenclature.actual.count - Chapter.actual.count
       total_self_texts = GoodsNomenclatureSelfText.count
+      missing = total_gn - total_self_texts
+      stale = GoodsNomenclatureSelfText.where(stale: true).count
+      needing_work = missing + stale
       coverage = total_gn.positive? ? (total_self_texts * 100.0 / total_gn).round(2) : 0
 
       by_type = GoodsNomenclatureSelfText
@@ -15,8 +18,10 @@ namespace :self_texts do
       puts '-' * 30
       puts "Total GN (excl. chapters): #{total_gn}"
       puts "With self-text:            #{total_self_texts}"
-      puts "Missing:                   #{total_gn - total_self_texts}"
+      puts "Missing:                   #{missing}"
       puts "Coverage:                  #{coverage}%"
+      puts "Stale:                     #{stale}"
+      puts "Needing work:              #{needing_work}"
       puts
       puts 'By generation type:'
       by_type.each { |row| puts "  #{row[:generation_type]}: #{row[:count]}" }
@@ -206,7 +211,7 @@ namespace :self_texts do
     end
   end
 
-  desc 'Show missing self-texts grouped by chapter and heading (CHAPTER=XX to filter)'
+  desc 'Show self-text gaps and stale records grouped by chapter and heading (CHAPTER=XX to filter)'
   task gaps: :environment do
     TimeMachine.now do
       gn = Sequel[:goods_nomenclatures]
@@ -221,13 +226,14 @@ namespace :self_texts do
         base = base.where(Sequel.like(gn[:goods_nomenclature_item_id], "#{ENV['CHAPTER'].ljust(2, '0')}%"))
       end
 
-      missing_ds = base.where(st[:goods_nomenclature_sid] => nil)
+      needing_work_ds = base.where(Sequel.expr(st[:goods_nomenclature_sid] => nil) | Sequel.expr(st[:stale] => true))
 
       # --- Chapter summary ---
       chapter_stats = base
         .select_group(Sequel.function(:substr, gn[:goods_nomenclature_item_id], 1, 2).as(:ch))
         .select_append { count(Sequel.lit('*')).as(total) }
         .select_append { count(Sequel.case([[{ st[:goods_nomenclature_sid] => nil }, 1]], nil)).as(missing) }
+        .select_append { count(Sequel.case([[{ st[:stale] => true }, 1]], nil)).as(stale) }
         .order(:ch)
         .all
 
@@ -235,50 +241,55 @@ namespace :self_texts do
       chapter_descs = Chapter.actual
         .eager(:goods_nomenclature_descriptions)
         .all
-        .to_h { |c| [c.goods_nomenclature_item_id.first(2), c.description&.truncate(60)] }
+        .to_h { |c| [c.goods_nomenclature_item_id.first(2), c.description&.truncate(50)] }
 
-      puts 'Self-Text Gaps by Chapter'
-      puts '=' * 90
-      printf "%-4s %-60s %6s %6s %7s\n", 'Ch', 'Description', 'Total', 'Miss', 'Cov %'
-      puts '-' * 90
+      puts 'Self-Text Gaps and Stale Records by Chapter'
+      puts '=' * 100
+      printf "%-4s %-50s %6s %6s %6s %6s %7s\n", 'Ch', 'Description', 'Total', 'Miss', 'Stale', 'Work', 'Cov %'
+      puts '-' * 100
 
       chapter_stats.each do |row|
         ch = row[:ch]
         total = row[:total]
         miss = row[:missing]
+        stale = row[:stale]
+        work = miss + stale
         cov = total.positive? ? ((total - miss) * 100.0 / total).round(1) : 0
-        printf "%-4s %-60s %6d %6d %6.1f%%\n", ch, chapter_descs[ch] || '?', total, miss, cov
+        printf "%-4s %-50s %6d %6d %6d %6d %6.1f%%\n", ch, chapter_descs[ch] || '?', total, miss, stale, work, cov
       end
 
       total_all = chapter_stats.sum { |r| r[:total] }
       miss_all = chapter_stats.sum { |r| r[:missing] }
+      stale_all = chapter_stats.sum { |r| r[:stale] }
+      work_all = miss_all + stale_all
       cov_all = total_all.positive? ? ((total_all - miss_all) * 100.0 / total_all).round(1) : 0
-      puts '-' * 90
-      printf "%-65s %6d %6d %6.1f%%\n", 'TOTAL', total_all, miss_all, cov_all
+      puts '-' * 100
+      printf "%-55s %6d %6d %6d %6d %6.1f%%\n", 'TOTAL', total_all, miss_all, stale_all, work_all, cov_all
       puts
 
-      # --- Heading detail (only chapters with gaps) ---
-      gap_chapters = chapter_stats.select { |r| r[:missing].positive? }.map { |r| r[:ch] }
+      # --- Heading detail (only chapters with work needed) ---
+      gap_chapters = chapter_stats.select { |r| r[:missing].positive? || r[:stale].positive? }.map { |r| r[:ch] }
 
       if gap_chapters.any?
-        heading_stats = missing_ds
+        heading_stats = needing_work_ds
           .select_group(
             Sequel.function(:substr, gn[:goods_nomenclature_item_id], 1, 2).as(:ch),
             Sequel.function(:substr, gn[:goods_nomenclature_item_id], 1, 4).as(:hd),
           )
-          .select_append { count(Sequel.lit('*')).as(missing) }
+          .select_append { count(Sequel.case([[{ st[:goods_nomenclature_sid] => nil }, 1]], nil)).as(missing) }
+          .select_append { count(Sequel.case([[{ st[:stale] => true }, 1]], nil)).as(stale) }
           .order(:ch, :hd)
           .all
 
         heading_descs = Heading.actual
           .eager(:goods_nomenclature_descriptions)
           .all
-          .to_h { |h| [h.goods_nomenclature_item_id.first(4), h.description&.truncate(60)] }
+          .to_h { |h| [h.goods_nomenclature_item_id.first(4), h.description&.truncate(50)] }
 
-        puts 'Missing Self-Texts by Heading (chapters with gaps only)'
-        puts '=' * 80
-        printf "%-6s %-60s %6s\n", 'Head', 'Description', 'Miss'
-        puts '-' * 80
+        puts 'Self-Texts Needing Work by Heading'
+        puts '=' * 90
+        printf "%-6s %-50s %6s %6s %6s\n", 'Head', 'Description', 'Miss', 'Stale', 'Work'
+        puts '-' * 90
 
         current_ch = nil
         heading_stats.each do |row|
@@ -286,36 +297,48 @@ namespace :self_texts do
             current_ch = row[:ch]
             puts "-- Chapter #{current_ch}: #{chapter_descs[current_ch] || '?'} --"
           end
-          printf "  %-4s %-58s %6d\n", row[:hd], heading_descs[row[:hd]] || '?', row[:missing]
+          work = row[:missing] + row[:stale]
+          printf "  %-4s %-48s %6d %6d %6d\n", row[:hd], heading_descs[row[:hd]] || '?', row[:missing], row[:stale], work
         end
         puts
 
-        # --- Full list of missing GN items ---
-        puts 'All Missing Goods Nomenclatures (ordered by item_id, producline_suffix)'
-        puts '=' * 100
-        printf "%-12s %-4s %-80s\n", 'Item ID', 'PLS', 'Description'
-        puts '-' * 100
+        # --- Full list of GN items needing work ---
+        puts 'All Goods Nomenclatures Needing Work (ordered by item_id, producline_suffix)'
+        puts '=' * 110
+        printf "%-12s %-4s %-7s %-80s\n", 'Item ID', 'PLS', 'Reason', 'Description'
+        puts '-' * 110
 
-        missing_gn_sids = missing_ds.select_map(gn[:goods_nomenclature_sid])
+        work_rows = needing_work_ds
+          .select(
+            gn[:goods_nomenclature_sid],
+            gn[:goods_nomenclature_item_id],
+            gn[:producline_suffix],
+            Sequel.case([[{ st[:goods_nomenclature_sid] => nil }, 'missing']], 'stale').as(:reason),
+          )
+          .order(gn[:goods_nomenclature_item_id], gn[:producline_suffix])
+          .all
 
-        if missing_gn_sids.any?
-          GoodsNomenclature.actual
-            .where(goods_nomenclature_sid: missing_gn_sids)
+        if work_rows.any?
+          work_sids = work_rows.map { |r| r[:goods_nomenclature_sid] }
+          descriptions = GoodsNomenclature.actual
+            .where(goods_nomenclature_sid: work_sids)
             .eager(:goods_nomenclature_descriptions)
-            .order(gn[:goods_nomenclature_item_id], gn[:producline_suffix])
             .all
-            .each do |item|
-              printf "%-12s %-4s %-80s\n",
-                     item.goods_nomenclature_item_id,
-                     item.producline_suffix,
-                     item.description&.truncate(80) || '?'
-            end
+            .to_h { |item| [item.goods_nomenclature_sid, item.description&.truncate(80) || '?'] }
+
+          work_rows.each do |row|
+            printf "%-12s %-4s %-7s %-80s\n",
+                   row[:goods_nomenclature_item_id],
+                   row[:producline_suffix],
+                   row[:reason],
+                   descriptions[row[:goods_nomenclature_sid]] || '?'
+          end
         end
 
-        puts '-' * 100
-        puts "Total missing: #{missing_gn_sids.size}"
+        puts '-' * 110
+        puts "Total needing work: #{work_rows.size}"
       else
-        puts 'No gaps found - full coverage!'
+        puts 'No gaps found - full coverage, nothing stale!'
       end
     end
   end

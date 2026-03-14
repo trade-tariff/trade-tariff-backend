@@ -1,19 +1,20 @@
 RSpec.describe RelabelGoodsNomenclatureWorker, type: :worker do
   describe '#perform' do
     before do
-      allow(GoodsNomenclatureLabel).to receive_messages(goods_nomenclatures_dataset: instance_double(Sequel::Dataset, count: record_count), goods_nomenclature_label_total_pages: (record_count / 10.0).ceil)
+      dataset = instance_double(Sequel::Dataset, map: sids)
+      allow(GoodsNomenclatureLabel).to receive(:goods_nomenclatures_dataset).and_return(dataset)
       allow(RelabelGoodsNomenclaturePageWorker).to receive(:perform_async).and_call_original
     end
 
     context 'when there are 25 records' do
-      let(:record_count) { 25 }
+      let(:sids) { (1..25).to_a }
 
-      it 'enqueues 3 page workers' do
+      it 'enqueues 3 page workers with SID arrays and batch indices' do
         described_class.new.perform
 
-        expect(RelabelGoodsNomenclaturePageWorker).to have_received(:perform_async).with(1)
-        expect(RelabelGoodsNomenclaturePageWorker).to have_received(:perform_async).with(2)
-        expect(RelabelGoodsNomenclaturePageWorker).to have_received(:perform_async).with(3)
+        expect(RelabelGoodsNomenclaturePageWorker).to have_received(:perform_async).with(sids[0..9], 1)
+        expect(RelabelGoodsNomenclaturePageWorker).to have_received(:perform_async).with(sids[10..19], 2)
+        expect(RelabelGoodsNomenclaturePageWorker).to have_received(:perform_async).with(sids[20..24], 3)
       end
 
       it 'instruments generation started' do
@@ -31,18 +32,18 @@ RSpec.describe RelabelGoodsNomenclatureWorker, type: :worker do
     end
 
     context 'when there are exactly 10 records' do
-      let(:record_count) { 10 }
+      let(:sids) { (1..10).to_a }
 
       it 'enqueues 1 page worker' do
         described_class.new.perform
 
-        expect(RelabelGoodsNomenclaturePageWorker).to have_received(:perform_async).with(1)
+        expect(RelabelGoodsNomenclaturePageWorker).to have_received(:perform_async).with(sids, 1)
         expect(RelabelGoodsNomenclaturePageWorker).to have_received(:perform_async).once
       end
     end
 
     context 'when there are no records' do
-      let(:record_count) { 0 }
+      let(:sids) { [] }
 
       it 'does not enqueue any page workers' do
         described_class.new.perform

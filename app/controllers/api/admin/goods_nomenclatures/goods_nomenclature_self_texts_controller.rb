@@ -11,6 +11,7 @@ module Api
         def update
           self_text_record.set(update_params)
           self_text_record.save_changes
+          ScoreLabelBatchWorker.perform_async(self_text_record.goods_nomenclature_sid)
 
           render json: serialize(self_text_record.reload, serializer_options), status: :ok
         end
@@ -54,6 +55,7 @@ module Api
 
           GenerateSelfText::OtherSelfTextBuilder.call(chapter)
           GenerateSelfText::NonOtherSelfTextBuilder.call(chapter)
+          ScoreLabelBatchWorker.perform_async(self_text_record.goods_nomenclature_sid)
 
           render json: serialize(self_text_record.reload), status: :ok
         end

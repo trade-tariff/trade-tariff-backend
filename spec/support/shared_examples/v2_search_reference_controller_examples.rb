@@ -1,5 +1,6 @@
 RSpec.shared_examples_for 'v2 search references controller' do
   before do
+    allow(ScoreLabelBatchWorker).to receive(:perform_async)
     search_reference
   end
 
@@ -116,6 +117,10 @@ RSpec.shared_examples_for 'v2 search references controller' do
       it 'returns persisted record' do
         expect(response.body).to match_json_expression pattern
       end
+
+      it 'enqueues ScoreLabelBatchWorker' do
+        expect(ScoreLabelBatchWorker).to have_received(:perform_async)
+      end
     end
 
     context 'with invalid params provided' do
@@ -190,6 +195,14 @@ RSpec.shared_examples_for 'v2 search references controller' do
           }.merge(resource_query)
         }.to change(SearchReference, :count).by(-1)
       end
+
+      it 'enqueues ScoreLabelBatchWorker' do
+        delete :destroy, params: {
+          format: :json,
+        }.merge(resource_query)
+
+        expect(ScoreLabelBatchWorker).to have_received(:perform_async).at_least(:once)
+      end
     end
 
     context 'with non-existant search reference' do
@@ -236,6 +249,10 @@ RSpec.shared_examples_for 'v2 search references controller' do
 
       it 'returns no content' do
         expect(response.body).to be_blank
+      end
+
+      it 'enqueues ScoreLabelBatchWorker' do
+        expect(ScoreLabelBatchWorker).to have_received(:perform_async).at_least(:once)
       end
     end
 

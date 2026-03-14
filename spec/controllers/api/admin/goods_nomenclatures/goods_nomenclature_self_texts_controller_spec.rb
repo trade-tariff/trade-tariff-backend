@@ -161,6 +161,17 @@ RSpec.describe Api::Admin::GoodsNomenclatures::GoodsNomenclatureSelfTextsControl
         expect(response).to have_http_status(:ok)
       end
 
+      it 'enqueues ScoreLabelBatchWorker' do
+        allow(ScoreLabelBatchWorker).to receive(:perform_async)
+
+        put :update, params: {
+          goods_nomenclature_id: self_text.goods_nomenclature_sid,
+          data: { type: 'goods_nomenclature_self_text', attributes: { self_text: new_text } },
+        }, format: :json
+
+        expect(ScoreLabelBatchWorker).to have_received(:perform_async).with(self_text.goods_nomenclature_sid)
+      end
+
       it 'updates the self text' do
         put :update, params: {
           goods_nomenclature_id: self_text.goods_nomenclature_sid,
@@ -335,6 +346,14 @@ RSpec.describe Api::Admin::GoodsNomenclatures::GoodsNomenclatureSelfTextsControl
       expect(self_text.reload.stale).to be true
       expect(GenerateSelfText::OtherSelfTextBuilder).to have_received(:call)
       expect(GenerateSelfText::NonOtherSelfTextBuilder).to have_received(:call)
+    end
+
+    it 'enqueues ScoreLabelBatchWorker' do
+      allow(ScoreLabelBatchWorker).to receive(:perform_async)
+
+      post :regenerate, params: { goods_nomenclature_id: self_text.goods_nomenclature_sid }, format: :json
+
+      expect(ScoreLabelBatchWorker).to have_received(:perform_async).with(self_text.goods_nomenclature_sid)
     end
 
     context 'when self text record does not exist' do

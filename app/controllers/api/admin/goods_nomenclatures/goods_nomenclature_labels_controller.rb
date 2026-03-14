@@ -13,6 +13,7 @@ module Api
 
           if goods_nomenclature_label.save(raise_on_failure: false)
             reindex_goods_nomenclature
+            ScoreLabelBatchWorker.perform_async(goods_nomenclature_label.goods_nomenclature_sid)
             render json: serialize(goods_nomenclature_label.reload, serializer_options), status: :ok
           else
             render json: Api::Admin::ErrorSerializationService.new(goods_nomenclature_label).call,

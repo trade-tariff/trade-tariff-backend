@@ -1,41 +1,94 @@
 RSpec.describe GenerateSelfTextWorker, type: :worker do
   describe '#perform' do
-    let(:chapters) do
-      [
-        instance_double(Chapter, goods_nomenclature_sid: 1),
-        instance_double(Chapter, goods_nomenclature_sid: 2),
-        instance_double(Chapter, goods_nomenclature_sid: 3),
-      ]
-    end
-
     before do
       TradeTariffRequest.time_machine_now = Time.current
 
-      allow(Chapter).to receive_message_chain(:actual, :all).and_return(chapters)
       allow(GenerateSelfTextChapterWorker).to receive(:perform_async)
       allow(SelfTextGenerator::Instrumentation).to receive(:generation_started)
     end
 
-    it 'sets the Redis counter to the number of chapters' do
-      described_class.new.perform
+    context 'when chapters have stale self-texts' do
+      let!(:chapter_with_work) do
+        create(:chapter, :actual, goods_nomenclature_item_id: '0100000000')
+      end
+      let!(:chapter_without_work) do
+        create(:chapter, :actual, goods_nomenclature_item_id: '0200000000')
+      end
 
-      expect(TradeTariffBackend.redis.get(described_class::REDIS_KEY).to_i).to eq(3)
+      before do
+        gn_stale = create(:goods_nomenclature, :actual,
+                          goods_nomenclature_item_id: '0101210000',
+                          producline_suffix: '80')
+        create(:goods_nomenclature_self_text, :stale, goods_nomenclature: gn_stale)
+
+        gn_fresh = create(:goods_nomenclature, :actual,
+                          goods_nomenclature_item_id: '0201210000',
+                          producline_suffix: '80')
+        create(:goods_nomenclature_self_text, goods_nomenclature: gn_fresh)
+      end
+
+      it 'only enqueues chapters with stale self-texts' do
+        described_class.new.perform
+
+        expect(GenerateSelfTextChapterWorker).to have_received(:perform_async)
+          .with(chapter_with_work.goods_nomenclature_sid)
+        expect(GenerateSelfTextChapterWorker).not_to have_received(:perform_async)
+          .with(chapter_without_work.goods_nomenclature_sid)
+      end
+
+      it 'sets the Redis counter to the number of chapters needing work' do
+        described_class.new.perform
+
+        expect(TradeTariffBackend.redis.get(described_class::REDIS_KEY).to_i).to eq(1)
+      end
+
+      it 'instruments generation_started with filtered count' do
+        described_class.new.perform
+
+        expect(SelfTextGenerator::Instrumentation).to have_received(:generation_started)
+          .with(total_chapters: 1)
+      end
     end
 
-    it 'enqueues a chapter worker for each chapter' do
-      described_class.new.perform
+    context 'when chapters have missing self-texts' do
+      let!(:chapter) do
+        create(:chapter, :actual, goods_nomenclature_item_id: '0300000000')
+      end
 
-      chapters.each do |chapter|
+      before do
+        create(:goods_nomenclature, :actual,
+               goods_nomenclature_item_id: '0301210000',
+               producline_suffix: '80')
+      end
+
+      it 'enqueues the chapter' do
+        described_class.new.perform
+
         expect(GenerateSelfTextChapterWorker).to have_received(:perform_async)
           .with(chapter.goods_nomenclature_sid)
       end
     end
 
-    it 'instruments generation_started' do
-      described_class.new.perform
+    context 'when no chapters need work' do
+      before do
+        create(:chapter, :actual, goods_nomenclature_item_id: '0400000000')
+        gn = create(:goods_nomenclature, :actual,
+                    goods_nomenclature_item_id: '0401210000',
+                    producline_suffix: '80')
+        create(:goods_nomenclature_self_text, goods_nomenclature: gn)
+      end
 
-      expect(SelfTextGenerator::Instrumentation).to have_received(:generation_started)
-        .with(total_chapters: 3)
+      it 'does not enqueue any chapter workers' do
+        described_class.new.perform
+
+        expect(GenerateSelfTextChapterWorker).not_to have_received(:perform_async)
+      end
+
+      it 'sets the Redis counter to zero' do
+        described_class.new.perform
+
+        expect(TradeTariffBackend.redis.get(described_class::REDIS_KEY).to_i).to eq(0)
+      end
     end
   end
 

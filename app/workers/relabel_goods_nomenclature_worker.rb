@@ -7,19 +7,25 @@ class RelabelGoodsNomenclatureWorker
   sidekiq_options queue: :sync, retry: false, slack_alerts: false
 
   def perform
-    total_records = GoodsNomenclatureLabel.goods_nomenclatures_dataset.count
-    total_pages = GoodsNomenclatureLabel.goods_nomenclature_label_total_pages
+    sids = TimeMachine.now do
+      GoodsNomenclatureLabel.goods_nomenclatures_dataset
+        .map(Sequel[:goods_nomenclatures][:goods_nomenclature_sid])
+    end
+
+    page_size = configured_page_size
+    batches = sids.each_slice(page_size).to_a
+    total_pages = batches.size
 
     LabelGenerator::Instrumentation.generation_started(
       total_pages:,
-      page_size: configured_page_size,
-      total_records:,
+      page_size:,
+      total_records: sids.size,
     )
 
     LabelGenerator::Instrumentation.generation_completed(total_pages:) do
-      total_pages.times do |page_index|
-        page_number = page_index + 1
-        RelabelGoodsNomenclaturePageWorker.perform_async(page_number)
+      batches.each_with_index do |sid_batch, index|
+        batch_index = index + 1
+        RelabelGoodsNomenclaturePageWorker.perform_async(sid_batch, batch_index)
       end
     end
   end

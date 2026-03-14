@@ -159,21 +159,53 @@ class GoodsNomenclatureLabel < Sequel::Model
 
     def goods_nomenclatures_dataset
       TimeMachine.now do
-        GoodsNomenclature
-          .actual
-          .with_leaf_column
-          .declarable
-          .association_left_join(:goods_nomenclature_label)
-          .where(
-            Sequel.|(
-              { Sequel[:goods_nomenclature_label][:goods_nomenclature_sid] => nil },
-              Sequel.&(
-                { Sequel[:goods_nomenclature_label][:stale] => true },
-                { Sequel[:goods_nomenclature_label][:manually_edited] => false },
-              ),
-            ),
-          )
+        declarable_nomenclatures
+          .where(unlabeled | stale_label | self_text_context_changed)
       end
+    end
+
+    def declarable_nomenclatures
+      gn = Sequel[:goods_nomenclatures]
+      st = Sequel[:goods_nomenclature_self_texts]
+
+      GoodsNomenclature
+        .actual
+        .with_leaf_column
+        .declarable
+        .association_left_join(:goods_nomenclature_label)
+        .left_join(:goods_nomenclature_self_texts, { st[:goods_nomenclature_sid] => gn[:goods_nomenclature_sid] })
+    end
+
+    def unlabeled
+      Sequel[:goods_nomenclature_label][:goods_nomenclature_sid] =~ nil
+    end
+
+    def stale_label
+      lbl = Sequel[:goods_nomenclature_label]
+
+      Sequel.&(
+        { lbl[:stale] => true },
+        { lbl[:manually_edited] => false },
+      )
+    end
+
+    def self_text_context_changed
+      lbl = Sequel[:goods_nomenclature_label]
+      st = Sequel[:goods_nomenclature_self_texts]
+
+      Sequel.&(
+        { lbl[:manually_edited] => false },
+        Sequel.~(st[:self_text] => nil),
+        Sequel.~(lbl[:context_hash] => self_text_hash(st)),
+      )
+    end
+
+    def self_text_hash(self_text_alias)
+      Sequel.function(
+        :encode,
+        Sequel.function(:digest, Sequel.cast(self_text_alias[:self_text], String), 'sha256'),
+        'hex',
+      )
     end
   end
 

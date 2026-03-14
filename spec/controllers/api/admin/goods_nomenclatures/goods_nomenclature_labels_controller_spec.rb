@@ -120,6 +120,17 @@ RSpec.describe Api::Admin::GoodsNomenclatures::GoodsNomenclatureLabelsController
 
         expect(label.manually_edited).to be true
       end
+
+      it 'enqueues ScoreLabelBatchWorker' do
+        allow(ScoreLabelBatchWorker).to receive(:perform_async)
+
+        put :update, params: {
+          goods_nomenclature_id: commodity.goods_nomenclature_item_id,
+          data: { type: 'goods_nomenclature_label', attributes: { labels: new_labels } },
+        }, format: :json
+
+        expect(ScoreLabelBatchWorker).to have_received(:perform_async).with(commodity.goods_nomenclature_sid)
+      end
     end
 
     context 'when updating label suggestions' do

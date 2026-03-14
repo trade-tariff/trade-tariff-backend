@@ -15,11 +15,18 @@ class RelabelGoodsNomenclaturePageWorker
 
   sidekiq_options queue: :within_1_day, retry: 3, slack_alerts: false
 
-  def perform(page_number)
+  def perform(sids, batch_index = 1)
     @label_service = nil
 
+    page_number = batch_index
+
     TimeMachine.now do
-      batch = GoodsNomenclatureLabel.goods_nomenclatures_dataset.paginate(page_number, configured_page_size).eager(EAGER).all
+      batch = GoodsNomenclature.actual
+                .with_leaf_column
+                .declarable
+                .where(Sequel[:goods_nomenclatures][:goods_nomenclature_sid] => sids)
+                .eager(EAGER)
+                .all
 
       return if batch.empty?
 
@@ -38,8 +45,8 @@ class RelabelGoodsNomenclaturePageWorker
         end
       end
 
-      sids = batch.map(&:goods_nomenclature_sid)
-      ScoreLabelBatchWorker.perform_async(sids)
+      batch_sids = batch.map(&:goods_nomenclature_sid)
+      ScoreLabelBatchWorker.perform_async(batch_sids)
     end
   rescue StandardError => e
     LabelGenerator::Instrumentation.page_failed(
@@ -51,11 +58,6 @@ class RelabelGoodsNomenclaturePageWorker
   end
 
   private
-
-  def configured_page_size
-    config = AdminConfiguration.classification.by_name('label_page_size')
-    (config&.value || TradeTariffBackend.goods_nomenclature_label_page_size).to_i
-  end
 
   def save_label(label, page_number:)
     unless label.valid?
