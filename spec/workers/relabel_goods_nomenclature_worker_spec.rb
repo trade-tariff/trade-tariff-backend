@@ -1,7 +1,9 @@
 RSpec.describe RelabelGoodsNomenclatureWorker, type: :worker do
   describe '#perform' do
     before do
-      dataset = instance_double(Sequel::Dataset, map: sids)
+      rows = sids.map { |sid| { goods_nomenclature_sid: sid } }
+      dataset = instance_double(Sequel::Dataset)
+      allow(dataset).to receive(:map) { |col| rows.map { |r| r[col] } }
       allow(GoodsNomenclatureLabel).to receive(:goods_nomenclatures_dataset).and_return(dataset)
       allow(RelabelGoodsNomenclaturePageWorker).to receive(:perform_async).and_call_original
     end

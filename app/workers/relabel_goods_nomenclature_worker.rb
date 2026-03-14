@@ -9,7 +9,7 @@ class RelabelGoodsNomenclatureWorker
   def perform
     sids = TimeMachine.now do
       GoodsNomenclatureLabel.goods_nomenclatures_dataset
-        .map(Sequel[:goods_nomenclatures][:goods_nomenclature_sid])
+        .map(:goods_nomenclature_sid)
     end
 
     page_size = configured_page_size
