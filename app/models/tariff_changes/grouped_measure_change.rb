@@ -34,7 +34,9 @@ module TariffChanges
       ids = Array(excluded_geographical_area_ids).compact
       return [] if ids.empty?
 
-      @excluded_geographical_areas ||= GeographicalArea.where(geographical_area_id: ids).all
+      @excluded_geographical_areas ||= GeographicalArea.where(geographical_area_id: ids)
+                                                        .order(:geographical_area_id)
+                                                        .all
     end
 
     def trade_direction_code
