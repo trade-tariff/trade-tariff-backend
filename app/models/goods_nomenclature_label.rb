@@ -170,6 +170,7 @@ class GoodsNomenclatureLabel < Sequel::Model
 
       GoodsNomenclature
         .actual
+        .non_hidden
         .with_leaf_column
         .declarable
         .association_left_join(:goods_nomenclature_label)

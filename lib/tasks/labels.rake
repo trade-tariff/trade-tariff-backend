@@ -2,7 +2,7 @@ namespace :labels do
   desc 'Show label coverage statistics'
   task coverage: :environment do
     TimeMachine.now do
-      total_gn = GoodsNomenclature.actual.with_leaf_column.declarable.count
+      total_gn = GoodsNomenclature.actual.non_hidden.with_leaf_column.declarable.count
       total_labels = GoodsNomenclatureLabel.count
       coverage = total_gn.positive? ? (total_labels * 100.0 / total_gn).round(2) : 0
 
@@ -98,6 +98,7 @@ namespace :labels do
 
       # All actual declarable commodities left-joined to labels and self_texts
       base = GoodsNomenclature.actual
+        .non_hidden
         .with_leaf_column
         .declarable
         .left_join(:goods_nomenclature_labels, { lbl[:goods_nomenclature_sid] => gn[:goods_nomenclature_sid] })

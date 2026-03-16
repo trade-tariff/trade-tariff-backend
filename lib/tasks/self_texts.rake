@@ -2,7 +2,7 @@ namespace :self_texts do
   desc 'Show self-text coverage statistics'
   task coverage: :environment do
     TimeMachine.now do
-      total_gn = GoodsNomenclature.actual.count - Chapter.actual.count
+      total_gn = GoodsNomenclature.actual.non_hidden.count - Chapter.actual.count
       total_self_texts = GoodsNomenclatureSelfText.count
       missing = total_gn - total_self_texts
       stale = GoodsNomenclatureSelfText.where(stale: true).count
@@ -219,6 +219,7 @@ namespace :self_texts do
 
       # All actual non-chapter GN items left-joined to self_texts
       base = GoodsNomenclature.actual
+        .non_hidden
         .exclude(gn[:goods_nomenclature_item_id] => Chapter.actual.select(:goods_nomenclature_item_id))
         .left_join(:goods_nomenclature_self_texts, { st[:goods_nomenclature_sid] => gn[:goods_nomenclature_sid] })
 

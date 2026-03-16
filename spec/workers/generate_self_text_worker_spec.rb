@@ -69,6 +69,23 @@ RSpec.describe GenerateSelfTextWorker, type: :worker do
       end
     end
 
+    context 'when goods nomenclature is hidden' do
+      before do
+        create(:chapter, :actual, goods_nomenclature_item_id: '0500000000')
+        gn = create(:goods_nomenclature, :actual,
+                    goods_nomenclature_item_id: '0501210000',
+                    producline_suffix: '80')
+        create(:hidden_goods_nomenclature,
+               goods_nomenclature_item_id: gn.goods_nomenclature_item_id)
+      end
+
+      it 'does not enqueue the chapter' do
+        described_class.new.perform
+
+        expect(GenerateSelfTextChapterWorker).not_to have_received(:perform_async)
+      end
+    end
+
     context 'when no chapters need work' do
       before do
         create(:chapter, :actual, goods_nomenclature_item_id: '0400000000')
