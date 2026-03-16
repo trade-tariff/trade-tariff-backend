@@ -387,5 +387,14 @@ RSpec.describe GoodsNomenclatureLabel do
 
       expect(dataset.map(&:goods_nomenclature_sid)).not_to include(commodity.goods_nomenclature_sid)
     end
+
+    it 'excludes hidden goods nomenclatures' do
+      commodity = create(:commodity)
+      create(:hidden_goods_nomenclature,
+             goods_nomenclature_item_id: commodity.goods_nomenclature_item_id)
+
+      expect(dataset.map(&:goods_nomenclature_sid))
+        .not_to include(commodity.goods_nomenclature_sid)
+    end
   end
 end

@@ -31,6 +31,7 @@ class GenerateSelfTextWorker
 
     chapter_codes_with_work = GoodsNomenclature
       .actual
+      .non_hidden
       .exclude(gn[:goods_nomenclature_item_id] => Chapter.actual.select(:goods_nomenclature_item_id))
       .left_join(:goods_nomenclature_self_texts, st[:goods_nomenclature_sid] => gn[:goods_nomenclature_sid])
       .where(Sequel.expr(st[:goods_nomenclature_sid] => nil) | Sequel.expr(st[:stale] => true))
