@@ -7,6 +7,7 @@ RSpec.describe TariffChangesService::ExcelGenerator do
         geo_area: 'United Kingdom',
         measure_type: 'Third country duty',
         additional_code: 'N/A',
+        quota_order_number: 'N/A',
         chapter: '01',
         commodity_code: '0101000000',
         commodity_code_description: 'Live horses, asses, mules and hinnies',
@@ -21,6 +22,7 @@ RSpec.describe TariffChangesService::ExcelGenerator do
         geo_area: 'European Union',
         measure_type: 'Export licence',
         additional_code: '1AAA: Export permit',
+        quota_order_number: '055001',
         chapter: '02',
         commodity_code: '0202000000',
         commodity_code_description: 'Meat of bovine animals, frozen',
@@ -126,7 +128,7 @@ RSpec.describe TariffChangesService::ExcelGenerator do
     describe 'cell merging' do
       it 'merges the pre-header cells correctly' do
         merged_cells = worksheet.instance_variable_get(:@merged_cells)
-        expect(merged_cells).to include('A4:D4', 'E4:G4', 'H4:J4', 'K4:L4')
+        expect(merged_cells).to include('A4:E4', 'F4:H4', 'I4:K4', 'L4:M4')
       end
     end
 
@@ -139,8 +141,8 @@ RSpec.describe TariffChangesService::ExcelGenerator do
       it 'populates data correctly' do
         first_data_row = worksheet.rows[5]
         expect(first_data_row.cells[0].value).to eq('Import')
-        expect(first_data_row.cells[5].value).to eq('0101000000')
-        expect(first_data_row.cells[7].value).to eq('Added')
+        expect(first_data_row.cells[6].value).to eq('0101000000')
+        expect(first_data_row.cells[8].value).to eq('Added')
       end
 
       it 'adds hyperlinks for OTT and API columns' do
@@ -153,7 +155,7 @@ RSpec.describe TariffChangesService::ExcelGenerator do
           change_records[1][:api_url],
         )
 
-        expect(hyperlinks.map(&:ref)).to include('K6', 'L6', 'K7', 'L7')
+        expect(hyperlinks.map(&:ref)).to include('L6', 'M6', 'L7', 'M7')
       end
     end
 
@@ -171,13 +173,13 @@ RSpec.describe TariffChangesService::ExcelGenerator do
         style_name ||= table.to_xml_string
 
         expect(style_name).to include('TableStyleMedium2')
-        expect(table.ref).to eq('A5:L7')
+        expect(table.ref).to eq('A5:M7')
       end
     end
 
     describe 'column widths' do
       it 'sets column widths correctly' do
-        expected_widths = [20, 30, 30, 30, 15, 20, 50, 30, 30, 22, 80, 60]
+        expected_widths = [20, 30, 30, 30, 25, 15, 20, 50, 30, 30, 22, 80, 60]
         expect(worksheet.column_info.map(&:width)).to eq(expected_widths)
       end
     end
@@ -192,6 +194,7 @@ RSpec.describe TariffChangesService::ExcelGenerator do
         'Impacted Geographical area (if applicable)',
         'Impacted Measure (if applicable)',
         'Additional Code (if applicable)',
+        'Quota order number (if applicable)',
         'Chapter',
         'Commodity Code',
         'Commodity Code description',
@@ -204,8 +207,8 @@ RSpec.describe TariffChangesService::ExcelGenerator do
       expect(generator.send(:excel_header_row)).to eq(expected_headers)
     end
 
-    it 'has 12 columns' do
-      expect(generator.send(:excel_header_row).size).to eq(12)
+    it 'has 13 columns' do
+      expect(generator.send(:excel_header_row).size).to eq(13)
     end
   end
 
@@ -213,12 +216,12 @@ RSpec.describe TariffChangesService::ExcelGenerator do
     let(:generator) { described_class.new(change_records, date) }
 
     it 'returns the correct column widths' do
-      expected_widths = [20, 30, 30, 30, 15, 20, 50, 30, 30, 22, 80, 60]
+      expected_widths = [20, 30, 30, 30, 25, 15, 20, 50, 30, 30, 22, 80, 60]
       expect(generator.send(:excel_column_widths)).to eq(expected_widths)
     end
 
-    it 'has widths for all 12 columns' do
-      expect(generator.send(:excel_column_widths).size).to eq(12)
+    it 'has widths for all 13 columns' do
+      expect(generator.send(:excel_column_widths).size).to eq(13)
     end
   end
 
@@ -251,8 +254,8 @@ RSpec.describe TariffChangesService::ExcelGenerator do
       generator.instance_variable_set(:@workbook, Axlsx::Package.new.workbook)
     end
 
-    it 'returns an array of 12 styles' do
-      expect(styles.size).to eq(12)
+    it 'returns an array of 13 styles' do
+      expect(styles.size).to eq(13)
     end
   end
 
@@ -268,6 +271,7 @@ RSpec.describe TariffChangesService::ExcelGenerator do
         'United Kingdom',
         'Third country duty',
         'N/A',
+        'N/A',
         '01',
         '0101000000',
         'Live horses, asses, mules and hinnies',
@@ -281,18 +285,18 @@ RSpec.describe TariffChangesService::ExcelGenerator do
 
     it 'formats date correctly' do
       row = generator.send(:build_excel_row, record)
-      expect(row[9]).to eq('2024-08-11')
+      expect(row[10]).to eq('2024-08-11')
     end
 
     it 'handles nil date' do
       record_with_nil_date = record.merge(date_of_effect: nil)
       row = generator.send(:build_excel_row, record_with_nil_date)
-      expect(row[9]).to be_nil
+      expect(row[10]).to be_nil
     end
 
-    it 'returns an array with 12 elements' do
+    it 'returns an array with 13 elements' do
       row = generator.send(:build_excel_row, record)
-      expect(row.size).to eq(12)
+      expect(row.size).to eq(13)
     end
   end
 end
