@@ -156,6 +156,19 @@ RSpec.describe SearchSuggestion do
     end
   end
 
+  describe '.declarable' do
+    subject(:declarable) { described_class.declarable }
+
+    before do
+      create(:search_suggestion, :search_reference, value: 'gold ore', declarable: true)
+      create(:search_suggestion, :search_reference, value: 'iron ore', declarable: false)
+    end
+
+    it 'returns only declarable search suggestions' do
+      expect(declarable.select_map(:value)).to eq(['gold ore'])
+    end
+  end
+
   describe '.goods_nomenclature_type' do
     subject(:goods_nomenclature_type) { described_class.goods_nomenclature_type.sql }
 

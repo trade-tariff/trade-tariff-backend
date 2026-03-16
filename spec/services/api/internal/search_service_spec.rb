@@ -42,7 +42,8 @@ RSpec.describe Api::Internal::SearchService do
       before do
         create(:search_suggestion, :search_reference,
                goods_nomenclature: heading,
-               value: 'horse')
+               value: 'horse',
+               declarable: true)
 
         allow(TradeTariffBackend.search_client).to receive(:search)
       end
@@ -68,7 +69,8 @@ RSpec.describe Api::Internal::SearchService do
       before do
         create(:search_suggestion, :search_reference,
                goods_nomenclature: heading,
-               value: 'horse')
+               value: 'horse',
+               declarable: true)
         allow(TradeTariffBackend.search_client).to receive(:search)
       end
 
@@ -91,7 +93,8 @@ RSpec.describe Api::Internal::SearchService do
       before do
         create(:search_suggestion, :goods_nomenclature,
                goods_nomenclature: chapter,
-               value: '0100000000')
+               value: '0100000000',
+               declarable: true)
 
         allow(TradeTariffBackend.search_client).to receive(:search)
       end
@@ -137,7 +140,8 @@ RSpec.describe Api::Internal::SearchService do
       before do
         create(:search_suggestion, :goods_nomenclature,
                goods_nomenclature: chapter,
-               value: '0100000000')
+               value: '0100000000',
+               declarable: true)
 
         allow(TradeTariffBackend.search_client).to receive(:search).and_return(opensearch_response)
       end
@@ -155,7 +159,8 @@ RSpec.describe Api::Internal::SearchService do
       before do
         create(:search_suggestion, :goods_nomenclature,
                value: '9999000000',
-               goods_nomenclature_sid: 999_999)
+               goods_nomenclature_sid: 999_999,
+               declarable: true)
         allow(TradeTariffBackend.search_client).to receive(:search).and_return(opensearch_response)
       end
 
@@ -305,7 +310,8 @@ RSpec.describe Api::Internal::SearchService do
       before do
         create(:search_suggestion, :synonym,
                goods_nomenclature: heading,
-               value: 'rice')
+               value: 'rice',
+               declarable: true)
 
         allow(AdminConfiguration).to receive(:enabled?).and_call_original
         allow(AdminConfiguration).to receive(:enabled?).with('suggest_synonyms').and_return(true)
@@ -331,7 +337,8 @@ RSpec.describe Api::Internal::SearchService do
 
         create(:search_suggestion, :synonym,
                goods_nomenclature: heading,
-               value: 'rice')
+               value: 'rice',
+               declarable: true)
 
         allow(AdminConfiguration).to receive(:enabled?).and_call_original
         allow(AdminConfiguration).to receive(:enabled?).with('suggest_synonyms').and_return(false)
@@ -341,6 +348,32 @@ RSpec.describe Api::Internal::SearchService do
       it 'skips the synonym and falls through to OpenSearch' do
         described_class.new(q: 'rice').call
 
+        expect(TradeTariffBackend.search_client).to have_received(:search)
+      end
+    end
+
+    context 'when exact match suggestion is non-declarable' do
+      let!(:heading) do
+        create(:heading, :with_description,
+               goods_nomenclature_item_id: '0101000000',
+               description: 'live horses')
+      end
+
+      let(:opensearch_response) { { 'hits' => { 'hits' => [] } } }
+
+      before do
+        create(:search_suggestion, :search_reference,
+               goods_nomenclature: heading,
+               value: 'horse',
+               declarable: false)
+
+        allow(TradeTariffBackend.search_client).to receive(:search).and_return(opensearch_response)
+      end
+
+      it 'falls through to OpenSearch instead of returning an exact match' do
+        result = described_class.new(q: 'horse').call
+
+        expect(result).to eq(data: [])
         expect(TradeTariffBackend.search_client).to have_received(:search)
       end
     end

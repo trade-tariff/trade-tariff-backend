@@ -73,7 +73,8 @@ RSpec.describe Api::Internal::SearchController, :internal do
 
         create(:search_suggestion, :search_reference,
                goods_nomenclature: heading,
-               value: 'horse')
+               value: 'horse',
+               declarable: true)
       end
 
       let(:pattern) do
@@ -117,7 +118,8 @@ RSpec.describe Api::Internal::SearchController, :internal do
 
         create(:search_suggestion, :goods_nomenclature,
                goods_nomenclature: chapter,
-               value: '0100000000')
+               value: '0100000000',
+               declarable: true)
       end
 
       let(:pattern) do

@@ -2,7 +2,7 @@
 -- PostgreSQL database dump
 --
 
-\restrict fndeYh6CfOxSSZvYcqWfFo48WpwrU6GXxXqGrBxulgYTXImo7avp5kBTh9Gn6EC
+\restrict mrimPeQnY6mrf8cJ8bgcyeJVjCr29K792LA6YowzrEkrZvKrpXkj1QrCJJQKUm8
 
 -- Dumped from database version 18.2
 -- Dumped by pg_dump version 18.2
@@ -7857,7 +7857,8 @@ CREATE TABLE uk.search_suggestions (
     type text NOT NULL,
     priority integer,
     goods_nomenclature_sid integer,
-    goods_nomenclature_class text
+    goods_nomenclature_class text,
+    declarable boolean DEFAULT false NOT NULL
 );
 
 
@@ -13810,6 +13811,13 @@ CREATE INDEX search_suggestions_goods_nomenclature_sid_index ON uk.search_sugges
 
 
 --
+-- Name: search_suggestions_declarable_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX search_suggestions_declarable_index ON uk.search_suggestions USING btree (declarable);
+
+
+--
 -- Name: search_suggestions_type_index; Type: INDEX; Schema: uk; Owner: -
 --
 
@@ -14051,7 +14059,7 @@ ALTER TABLE ONLY uk.news_collections_news_items
 -- PostgreSQL database dump complete
 --
 
-\unrestrict fndeYh6CfOxSSZvYcqWfFo48WpwrU6GXxXqGrBxulgYTXImo7avp5kBTh9Gn6EC
+\unrestrict mrimPeQnY6mrf8cJ8bgcyeJVjCr29K792LA6YowzrEkrZvKrpXkj1QrCJJQKUm8
 
 SET search_path TO uk, public;
 INSERT INTO "schema_migrations" ("filename") VALUES ('1342519058_create_schema.rb');
@@ -14268,6 +14276,7 @@ INSERT INTO "schema_migrations" ("filename") VALUES ('20260227120000_rename_self
 INSERT INTO "schema_migrations" ("filename") VALUES ('20260228120000_denest_label_columns.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20260310120000_enable_pgcrypto.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20260311120000_create_versions.rb');
-INSERT INTO "schema_migrations" ("filename") VALUES ('20260312120000_convert_admin_configurations_to_table.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20260311120001_backfill_initial_versions.rb');
+INSERT INTO "schema_migrations" ("filename") VALUES ('20260312120000_convert_admin_configurations_to_table.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20260312120001_rename_user_id_to_whodunnit.rb');
+INSERT INTO "schema_migrations" ("filename") VALUES ('20260316163507_adds_declarable_flag_to_search_suggestions.rb');
