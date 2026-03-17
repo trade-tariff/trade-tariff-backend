@@ -2,29 +2,15 @@
 
 Sequel.migration do
   up do
-    tables_by_schema = {
-      uk: %w[
-        chapters_guides
-        clear_caches
-        exchange_rate_countries
-        exchange_rate_currencies
-        tariff_update_conformance_errors
-        users
-      ],
-      xi: %w[
-        chapters_guides
-        clear_caches
-        exchange_rate_countries
-        exchange_rate_currencies
-        tariff_update_conformance_errors
-        users
-      ],
-    }
-
-    tables_by_schema.each do |schema, tables|
-      tables.each do |table|
-        run "DROP TABLE IF EXISTS #{schema}.#{table} CASCADE"
-      end
+    %i[
+      chapters_guides
+      clear_caches
+      exchange_rate_countries
+      exchange_rate_currencies
+      tariff_update_conformance_errors
+      users
+    ].each do |table|
+      drop_table?(table, cascade: true)
     end
   end
 
