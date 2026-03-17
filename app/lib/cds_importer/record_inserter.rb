@@ -52,7 +52,7 @@ class CdsImporter
         end
       rescue StandardError => e
         instrument('cds_error.cds_importer', type: operation_klass, exception: e)
-        nil
+        raise
       end
     end
 
