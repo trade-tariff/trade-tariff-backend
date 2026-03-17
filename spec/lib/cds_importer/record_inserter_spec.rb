@@ -19,6 +19,7 @@ RSpec.describe CdsImporter::RecordInserter do
   describe '#after_parse' do
     context 'when a batch insert fails' do
       before do
+        allow(ActiveSupport::Notifications).to receive(:instrument) { |_event, **_opts, &block| block&.call }
         allow(operation_klass).to receive(:multi_insert).and_raise(StandardError, 'constraint violation')
       end
 
