@@ -14,7 +14,7 @@ RSpec.describe Api::User::SubscriptionSerializer do
             active: true,
             meta: {
               counts: { active: 0, expired: 0, invalid: 2, total: 0 },
-              published: { yesterday: 0 },
+              published: { yesterday: 0, last_change_date: nil },
             },
           },
           relationships: {

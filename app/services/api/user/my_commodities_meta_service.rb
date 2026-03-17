@@ -25,12 +25,14 @@ module Api
       end
 
       def published
-        query = TariffChange
+        yesterday_count = TariffChange
           .where(operation_date: Date.yesterday)
           .where(goods_nomenclature_sid: subscription.user.target_ids_for_my_commodities)
+          .count
 
         {
-          yesterday: query.count,
+          yesterday: yesterday_count,
+          last_change_date: TariffChangesJobStatus.last_change_date,
         }
       end
     end
