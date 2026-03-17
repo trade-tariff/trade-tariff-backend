@@ -45,6 +45,10 @@ class SearchSuggestion < Sequel::Model
                                    end
 
   dataset_module do
+    def declarable
+      where(declarable: true)
+    end
+
     def fuzzy_search(query)
       case query
       when nil, ''
