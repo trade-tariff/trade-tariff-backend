@@ -85,5 +85,14 @@ module PublicUsers
         raise UnsupportedFilterServiceError, "Unsupported subscription type for targets filtering: #{subscription_type.name}"
       end
     end
+
+    def data_export_service_for(export_type)
+      case export_type
+      when PublicUsers::DataExport::CCWL
+        Api::User::DataExportService::SubscriptionTargetsDownloadService
+      else
+        raise PublicUsers::UnsupportedFilterServiceError, "Unsupported export type: #{export_type}"
+      end
+    end
   end
 end
