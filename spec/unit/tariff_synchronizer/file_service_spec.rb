@@ -5,7 +5,7 @@ RSpec.describe TariffSynchronizer::FileService do
     describe '.write_file' do
       it 'Saves the file in the local filesystem', :aggregate_failures do
         prepare_synchronizer_folders
-        file_path = File.join(TariffSynchronizer.root_path, 'chief', 'hello.txt')
+        file_path = File.join(TariffSynchronizer.root_path, 'taric', 'hello.txt')
 
         described_class.write_file(file_path, 'Hello World')
 

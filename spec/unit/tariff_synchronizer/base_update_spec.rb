@@ -23,7 +23,7 @@ RSpec.describe TariffSynchronizer::BaseUpdate do
 
   describe '.latest_applied_of_both_kinds' do
     it 'makes the right sql query' do
-      expected_sql = %{SELECT DISTINCT ON ("update_type") "tariff_updates".* FROM "tariff_updates" WHERE (("update_type" != 'TariffSynchronizer::ChiefUpdate') AND ("state" = 'A')) ORDER BY "update_type", "issue_date" DESC}
+      expected_sql = %{SELECT DISTINCT ON ("update_type") "tariff_updates".* FROM "tariff_updates" WHERE ("state" = 'A') ORDER BY "update_type", "issue_date" DESC}
       expect(described_class.latest_applied_of_both_kinds.sql).to eq(expected_sql)
     end
 

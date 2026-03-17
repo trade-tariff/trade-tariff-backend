@@ -100,8 +100,7 @@ module TariffSynchronizer
       end
 
       def latest_applied_of_both_kinds
-        exclude(update_type: 'TariffSynchronizer::ChiefUpdate')
-          .distinct(:update_type)
+        distinct(:update_type)
           .select(Sequel.expr(:tariff_updates).*)
           .descending.applied.order_prepend(:update_type)
       end
