@@ -95,16 +95,13 @@ RSpec.describe CdsImporter::RecordInserter do
         allow(measure.class.operation_klass).to receive(:multi_insert).and_raise(StandardError, 'Simulated error')
       end
 
-      it 'handles errors in save_group' do
+      it 'raises the error from save_group' do
         batch.each do |record|
           inserter.process_record(record)
         end
-        inserter.after_parse
 
-        expect(measure.class.operation_klass).to have_received(:multi_insert).at_least(:once)
+        expect { inserter.after_parse }.to raise_error(StandardError, 'Simulated error')
       end
-
-      it_behaves_like 'a batch insert operation', 0, 2
     end
   end
 end
