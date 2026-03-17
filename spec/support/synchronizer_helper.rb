@@ -32,7 +32,6 @@ module SynchronizerHelper
   def prepare_synchronizer_folders
     FileUtils.mkdir_p File.join(TariffSynchronizer.root_path)
     FileUtils.mkdir_p File.join(TariffSynchronizer.root_path, 'taric')
-    FileUtils.mkdir_p File.join(TariffSynchronizer.root_path, 'chief')
   end
 
   def purge_synchronizer_folders
