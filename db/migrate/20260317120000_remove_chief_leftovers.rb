@@ -2,6 +2,8 @@
 
 Sequel.migration do
   up do
+    return if TradeTariffBackend.xi?
+
     chief_tables = %w[
       chief_comm
       chief_country_code
