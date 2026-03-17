@@ -10,7 +10,7 @@ Sequel.migration do
       .where(goods_nomenclature_class: "Commodity")
       .update(declarable: true)
 
-    declarable_heading_sids = Heading.declarable.select(:goods_nomenclature_sid)
+    declarable_heading_sids = Heading.declarable.map(:goods_nomenclatures__goods_nomenclature_sid)
 
     from(:search_suggestions)
       .where(goods_nomenclature_class: "Heading", goods_nomenclature_sid: declarable_heading_sids)
