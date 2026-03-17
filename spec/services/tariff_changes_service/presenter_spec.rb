@@ -244,6 +244,36 @@ RSpec.describe TariffChangesService::Presenter do
     end
   end
 
+  describe '#quota_order_number' do
+    context 'when quota_order_number is not present' do
+      let(:tariff_change) do
+        create(:tariff_change,
+               type: 'Measure',
+               goods_nomenclature_sid: goods_nomenclature.goods_nomenclature_sid,
+               goods_nomenclature_item_id: goods_nomenclature.goods_nomenclature_item_id,
+               metadata: { 'measure' => {} })
+      end
+
+      it 'returns N/A' do
+        expect(presenter.quota_order_number).to eq('N/A')
+      end
+    end
+
+    context 'when quota_order_number is present' do
+      let(:tariff_change) do
+        create(:tariff_change,
+               type: 'Measure',
+               goods_nomenclature_sid: goods_nomenclature.goods_nomenclature_sid,
+               goods_nomenclature_item_id: goods_nomenclature.goods_nomenclature_item_id,
+               metadata: { 'measure' => { 'quota_order_number' => '055001' } })
+      end
+
+      it 'returns the quota order number' do
+        expect(presenter.quota_order_number).to eq('055001')
+      end
+    end
+  end
+
   describe '#geo_area' do
     context 'when geographical_area_id is blank' do
       let(:tariff_change) do
@@ -514,6 +544,57 @@ RSpec.describe TariffChangesService::Presenter do
       result = presenter.ott_url
       expected_url = 'https://www.trade-tariff.service.gov.uk/commodities/0202000000?day=15&month=8&year=2024&utm_source=offline&utm_medium=excel&utm_campaign=change_data'
       expect(result).to eq(expected_url)
+    end
+
+    context 'when measure is export' do
+      let(:tariff_change) do
+        create(:tariff_change,
+               type: 'Measure',
+               goods_nomenclature_item_id: '0202000000',
+               goods_nomenclature_sid: goods_nomenclature.goods_nomenclature_sid,
+               date_of_effect: Date.parse('2024-08-15'),
+               metadata: { 'measure' => { 'trade_movement_code' => 1 } })
+      end
+
+      it 'appends the export fragment to the OTT URL' do
+        result = presenter.ott_url
+        expected_url = 'https://www.trade-tariff.service.gov.uk/commodities/0202000000?day=15&month=8&year=2024&utm_source=offline&utm_medium=excel&utm_campaign=change_data#export'
+        expect(result).to eq(expected_url)
+      end
+    end
+
+    context 'when measure is import' do
+      let(:tariff_change) do
+        create(:tariff_change,
+               type: 'Measure',
+               goods_nomenclature_item_id: '0202000000',
+               goods_nomenclature_sid: goods_nomenclature.goods_nomenclature_sid,
+               date_of_effect: Date.parse('2024-08-15'),
+               metadata: { 'measure' => { 'trade_movement_code' => 0 } })
+      end
+
+      it 'appends the import fragment to the OTT URL' do
+        result = presenter.ott_url
+        expected_url = 'https://www.trade-tariff.service.gov.uk/commodities/0202000000?day=15&month=8&year=2024&utm_source=offline&utm_medium=excel&utm_campaign=change_data#import'
+        expect(result).to eq(expected_url)
+      end
+    end
+
+    context 'when measure is both import and export' do
+      let(:tariff_change) do
+        create(:tariff_change,
+               type: 'Measure',
+               goods_nomenclature_item_id: '0202000000',
+               goods_nomenclature_sid: goods_nomenclature.goods_nomenclature_sid,
+               date_of_effect: Date.parse('2024-08-15'),
+               metadata: { 'measure' => { 'trade_movement_code' => 2 } })
+      end
+
+      it 'appends the import fragment to the OTT URL' do
+        result = presenter.ott_url
+        expected_url = 'https://www.trade-tariff.service.gov.uk/commodities/0202000000?day=15&month=8&year=2024&utm_source=offline&utm_medium=excel&utm_campaign=change_data#import'
+        expect(result).to eq(expected_url)
+      end
     end
   end
 

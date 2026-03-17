@@ -182,6 +182,145 @@ RSpec.describe GoodsNomenclatureLabel do
     it { expect(labels.keys).to include('description', 'colloquial_terms', 'known_brands', 'synonyms') }
   end
 
+  describe '.admin_listing' do
+    let(:commodity) { create(:goods_nomenclature, producline_suffix: '80') }
+
+    before do
+      create(:goods_nomenclature_label,
+             goods_nomenclature: commodity,
+             description_score: 0.75)
+    end
+
+    it 'returns labels joined with goods_nomenclatures' do
+      results = described_class.admin_listing.all
+      expect(results.length).to eq(1)
+    end
+
+    it 'includes a computed score from description_score' do
+      result = described_class.admin_listing.first
+      expect(result[:score]).to eq(0.75)
+    end
+
+    it 'includes a computed nomenclature_type' do
+      result = described_class.admin_listing.first
+      expect(result[:nomenclature_type]).to be_present
+    end
+
+    it 'returns nil score when description_score is nil' do
+      described_class.dataset.update(description_score: nil)
+      result = described_class.admin_listing.first
+      expect(result[:score]).to be_nil
+    end
+  end
+
+  describe '.search' do
+    let(:commodity) { create(:goods_nomenclature, goods_nomenclature_item_id: '0201100000', producline_suffix: '80') }
+
+    before do
+      create(:goods_nomenclature_label,
+             goods_nomenclature: commodity,
+             description: 'Fresh beef carcasses',
+             synonyms: Sequel.pg_array(['bovine meat'], :text),
+             colloquial_terms: Sequel.pg_array(['beef cuts'], :text),
+             known_brands: Sequel.pg_array(%w[Angus], :text),
+             labels: { 'description' => 'Fresh beef carcasses' })
+    end
+
+    it 'searches by commodity code prefix' do
+      results = described_class.admin_listing.search('0201').all
+      expect(results.length).to eq(1)
+    end
+
+    it 'searches by description text' do
+      results = described_class.admin_listing.search('beef').all
+      expect(results.length).to eq(1)
+    end
+
+    it 'searches by synonyms' do
+      results = described_class.admin_listing.search('bovine').all
+      expect(results.length).to eq(1)
+    end
+
+    it 'searches by colloquial terms' do
+      results = described_class.admin_listing.search('beef cuts').all
+      expect(results.length).to eq(1)
+    end
+
+    it 'searches by known brands' do
+      results = described_class.admin_listing.search('Angus').all
+      expect(results.length).to eq(1)
+    end
+
+    it 'returns all when query is blank' do
+      results = described_class.admin_listing.search('').all
+      expect(results.length).to eq(1)
+    end
+
+    it 'returns all when query is a single non-numeric character' do
+      results = described_class.admin_listing.search('a').all
+      expect(results.length).to eq(1)
+    end
+  end
+
+  describe '.for_status' do
+    let(:commodity_a) { create(:goods_nomenclature, producline_suffix: '80') }
+    let(:commodity_b) { create(:goods_nomenclature, producline_suffix: '80') }
+
+    before do
+      create(:goods_nomenclature_label, :stale, goods_nomenclature: commodity_a)
+      create(:goods_nomenclature_label, :manually_edited, goods_nomenclature: commodity_b)
+    end
+
+    it 'filters to stale labels' do
+      results = described_class.admin_listing.for_status('stale').all
+      expect(results.length).to eq(1)
+      expect(results.first.stale).to be true
+    end
+
+    it 'filters to manually edited labels' do
+      results = described_class.admin_listing.for_status('manually_edited').all
+      expect(results.length).to eq(1)
+      expect(results.first.manually_edited).to be true
+    end
+
+    it 'returns all for unrecognised status' do
+      results = described_class.admin_listing.for_status('unknown').all
+      expect(results.length).to eq(2)
+    end
+  end
+
+  describe '.for_score_category' do
+    let(:commodity_bad) { create(:goods_nomenclature, producline_suffix: '80') }
+    let(:commodity_good) { create(:goods_nomenclature, producline_suffix: '80') }
+    let(:commodity_nil) { create(:goods_nomenclature, producline_suffix: '80') }
+
+    before do
+      create(:goods_nomenclature_label, goods_nomenclature: commodity_bad, description_score: 0.2)
+      create(:goods_nomenclature_label, goods_nomenclature: commodity_good, description_score: 0.6)
+      create(:goods_nomenclature_label, goods_nomenclature: commodity_nil, description_score: nil)
+    end
+
+    it 'filters bad scores (below 0.3)' do
+      results = described_class.admin_listing.for_score_category('bad').all
+      expect(results.map { |r| r[:score] }).to all(be < 0.3)
+    end
+
+    it 'filters good scores (0.5 to 0.85)' do
+      results = described_class.admin_listing.for_score_category('good').all
+      expect(results.map { |r| r[:score] }).to all(be >= 0.5)
+    end
+
+    it 'filters no_score' do
+      results = described_class.admin_listing.for_score_category('no_score').all
+      expect(results.map { |r| r[:score] }).to all(be_nil)
+    end
+
+    it 'returns all for unrecognised category' do
+      results = described_class.admin_listing.for_score_category('unknown').all
+      expect(results.length).to eq(3)
+    end
+  end
+
   describe '.goods_nomenclatures_dataset' do
     subject(:dataset) { described_class.goods_nomenclatures_dataset }
 
@@ -220,6 +359,42 @@ RSpec.describe GoodsNomenclatureLabel do
       create(:goods_nomenclature_label, goods_nomenclature: commodity)
 
       expect(dataset.map(&:goods_nomenclature_sid)).not_to include(commodity.goods_nomenclature_sid)
+    end
+
+    it 'includes goods nomenclatures whose label context_hash does not match the current self-text' do
+      commodity = create(:commodity)
+      self_text = 'Updated self-text description'
+      create(:goods_nomenclature_label, goods_nomenclature: commodity, context_hash: 'stale_hash')
+      create(:goods_nomenclature_self_text, goods_nomenclature: commodity, self_text: self_text)
+
+      expect(dataset.map(&:goods_nomenclature_sid)).to include(commodity.goods_nomenclature_sid)
+    end
+
+    it 'excludes goods nomenclatures whose label context_hash matches the current self-text' do
+      commodity = create(:commodity)
+      self_text = 'Matching self-text description'
+      matching_hash = Digest::SHA256.hexdigest(self_text)
+      create(:goods_nomenclature_label, goods_nomenclature: commodity, context_hash: matching_hash)
+      create(:goods_nomenclature_self_text, goods_nomenclature: commodity, self_text: self_text)
+
+      expect(dataset.map(&:goods_nomenclature_sid)).not_to include(commodity.goods_nomenclature_sid)
+    end
+
+    it 'excludes manually-edited labels even when context_hash is stale' do
+      commodity = create(:commodity)
+      create(:goods_nomenclature_label, :manually_edited, goods_nomenclature: commodity, context_hash: 'stale_hash')
+      create(:goods_nomenclature_self_text, goods_nomenclature: commodity, self_text: 'Changed text')
+
+      expect(dataset.map(&:goods_nomenclature_sid)).not_to include(commodity.goods_nomenclature_sid)
+    end
+
+    it 'excludes hidden goods nomenclatures' do
+      commodity = create(:commodity)
+      create(:hidden_goods_nomenclature,
+             goods_nomenclature_item_id: commodity.goods_nomenclature_item_id)
+
+      expect(dataset.map(&:goods_nomenclature_sid))
+        .not_to include(commodity.goods_nomenclature_sid)
     end
   end
 end

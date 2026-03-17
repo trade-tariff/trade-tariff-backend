@@ -141,6 +141,12 @@ RSpec.describe EmbeddingService do
         expect { service.embed_batch(%w[test]) }.to raise_error(EmbeddingService::ServerError, /500/)
         expect(WebMock).to have_requested(:post, "#{api_base_url}/embeddings").times(3)
       end
+
+      it 'includes the http_status on the error' do
+        service.embed_batch(%w[test])
+      rescue EmbeddingService::ServerError => e
+        expect(e.http_status).to eq(500)
+      end
     end
 
     context 'when a transient SSL error occurs then succeeds' do
@@ -190,9 +196,53 @@ RSpec.describe EmbeddingService do
           .to_return(status: 400, body: { error: 'Bad Request' }.to_json, headers: { 'Content-Type' => 'application/json' })
       end
 
-      it 'raises immediately without retrying' do
-        expect { service.embed_batch(%w[test]) }.to raise_error(/EmbeddingService API error: 400/)
+      it 'raises a ClientError immediately without retrying' do
+        expect { service.embed_batch(%w[test]) }.to raise_error(EmbeddingService::ClientError, /400/)
         expect(WebMock).to have_requested(:post, "#{api_base_url}/embeddings").times(1)
+      end
+
+      it 'includes the http_status on the error' do
+        service.embed_batch(%w[test])
+      rescue EmbeddingService::ClientError => e
+        expect(e.http_status).to eq(400)
+      end
+    end
+
+    context 'when batch contains blank texts' do
+      let(:embedding) { Array.new(1536) { 0.1 } }
+
+      before do
+        stub_request(:post, "#{api_base_url}/embeddings")
+          .to_return do |request|
+            body = JSON.parse(request.body)
+            count = body['input'].size
+            data = Array.new(count) { |i| { 'index' => i, 'embedding' => embedding } }
+            { status: 200, body: { 'data' => data }.to_json, headers: { 'Content-Type' => 'application/json' } }
+          end
+      end
+
+      it 'skips blank texts and returns nil for their positions' do
+        result = service.embed_batch(['hello', '', nil, 'world'])
+        expect(result.size).to eq(4)
+        expect(result[0]).to be_a(Array)
+        expect(result[1]).to be_nil
+        expect(result[2]).to be_nil
+        expect(result[3]).to be_a(Array)
+      end
+
+      it 'only sends present texts to the API' do
+        service.embed_batch(['hello', '', nil])
+
+        expect(WebMock).to have_requested(:post, "#{api_base_url}/embeddings")
+          .with(body: hash_including('input' => %w[hello]))
+      end
+    end
+
+    context 'when all texts are blank' do
+      it 'returns all nils without calling the API' do
+        result = service.embed_batch(['', nil, ''])
+        expect(result).to eq([nil, nil, nil])
+        expect(WebMock).not_to have_requested(:post, "#{api_base_url}/embeddings")
       end
     end
   end

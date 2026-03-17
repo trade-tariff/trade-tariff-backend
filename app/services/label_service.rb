@@ -8,11 +8,13 @@ class LabelService
   end
 
   def call
-    model = configured_model
+    config = model_config
+    model = config[:selected]
+    reasoning_effort = config[:sub_values]['reasoning_effort']
     result = nil
 
     LabelGenerator::Instrumentation.api_call(batch_size: batch.size, model:, page_number:) do
-      result = TradeTariffBackend.ai_client.call(context_for(batch), model: model)
+      result = TradeTariffBackend.ai_client.call(context_for(batch), model: model, reasoning_effort: reasoning_effort)
       result
     end
 
@@ -52,8 +54,8 @@ class LabelService
 
   attr_reader :batch, :page_number
 
-  def configured_model
-    AdminConfiguration.option_value('label_model')
+  def model_config
+    @model_config ||= AdminConfiguration.nested_options_value('label_model')
   end
 
   def configured_context

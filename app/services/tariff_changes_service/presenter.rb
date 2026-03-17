@@ -65,12 +65,22 @@ class TariffChangesService
       super
     end
 
+    def quota_order_number
+      return 'N/A' if super.blank?
+
+      super
+    end
+
     def date_of_effect
       super.strftime('%d/%m/%Y')
     end
 
     def ott_url
-      "https://www.trade-tariff.service.gov.uk/commodities/#{goods_nomenclature_item_id}?day=#{date_of_effect_visible.day}&month=#{date_of_effect_visible.month}&year=#{date_of_effect_visible.year}&#{UTM_TAGS}"
+      url = "https://www.trade-tariff.service.gov.uk/commodities/#{goods_nomenclature_item_id}?day=#{date_of_effect_visible.day}&month=#{date_of_effect_visible.month}&year=#{date_of_effect_visible.year}&#{UTM_TAGS}"
+      url += '#export' if trade_movement_code == 1
+      url += '#import' if trade_movement_code.in?([0, 2])
+
+      url
     end
 
     def api_url

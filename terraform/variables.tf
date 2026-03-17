@@ -45,3 +45,9 @@ variable "database_backup_secret_name" {
   description = "Secrets Manager secret name containing the database URL for backups."
   type        = string
 }
+
+variable "enable_service_count_alarm" {
+  description = "Whether to enable an alarm that triggers when the service count is below the desired count."
+  type        = bool
+  default     = true
+}

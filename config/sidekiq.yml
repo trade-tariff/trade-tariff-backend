@@ -1,5 +1,5 @@
 :verbose: false
-:concurrency: 10
+:concurrency: <%= ENV.fetch('SIDEKIQ_CONCURRENCY', 10) %>
 :queues:
   - sync
   - default

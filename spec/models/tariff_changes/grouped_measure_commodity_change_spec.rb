@@ -340,7 +340,9 @@ RSpec.describe TariffChanges::GroupedMeasureCommodityChange do
           expect(result).to be_a(Hash)
           expect(result.keys).to contain_exactly(import_measure_type.description)
           expect(result[import_measure_type.description]).to all(be_a(Hash))
-          expect(result[import_measure_type.description]).to all(include(:date_of_effect, :change_type, :additional_code))
+          expect(result[import_measure_type.description]).to all(
+            include(:measure_sid, :date_of_effect, :change_type, :additional_code, :quota_order_number),
+          )
         end
 
         it 'does not include export measures' do
@@ -353,7 +355,9 @@ RSpec.describe TariffChanges::GroupedMeasureCommodityChange do
           result = grouped_commodity_change.measure_changes(date)
 
           expect(result).to be_a(Hash)
-          expect(result.values.flatten).to all(be_a(Hash).and(include(:date_of_effect, :change_type, :additional_code)))
+          expect(result.values.flatten).to all(
+            be_a(Hash).and(include(:measure_sid, :date_of_effect, :change_type, :additional_code, :quota_order_number)),
+          )
         end
 
         it 'orders changes by date_of_effect ascending' do
@@ -400,7 +404,9 @@ RSpec.describe TariffChanges::GroupedMeasureCommodityChange do
 
           expect(result.keys).to contain_exactly(export_measure_type.description)
           expect(result[export_measure_type.description]).to all(be_a(Hash))
-          expect(result[export_measure_type.description]).to all(include(:date_of_effect, :change_type))
+          expect(result[export_measure_type.description]).to all(
+            include(:measure_sid, :date_of_effect, :change_type, :additional_code, :quota_order_number),
+          )
         end
       end
 
@@ -433,7 +439,9 @@ RSpec.describe TariffChanges::GroupedMeasureCommodityChange do
           expect(result).to be_a(Hash)
           expect(result.keys).to contain_exactly(import_measure_type.description)
           expect(result[import_measure_type.description]).to all(be_a(Hash))
-          expect(result[import_measure_type.description]).to all(include(:date_of_effect, :change_type))
+          expect(result[import_measure_type.description]).to all(
+            include(:measure_sid, :date_of_effect, :change_type, :additional_code, :quota_order_number),
+          )
         end
       end
 
@@ -496,7 +504,15 @@ RSpec.describe TariffChanges::GroupedMeasureCommodityChange do
                type: 'Measure',
                object_sid: measure_4.measure_sid,
                operation_date: date,
-               goods_nomenclature_item_id: '1234567890')
+               goods_nomenclature_item_id: '1234567890',
+               metadata: {
+                 'measure' => {
+                   'measure_type_id' => measure_4.measure_type_id,
+                   'trade_movement_code' => import_measure_type_2.trade_movement_code,
+                   'geographical_area_id' => measure_4.geographical_area_id,
+                   'excluded_geographical_area_ids' => [],
+                 },
+               })
 
         measure_without_exclusions = create(:measure,
                                             measure_sid: 500,
@@ -508,7 +524,15 @@ RSpec.describe TariffChanges::GroupedMeasureCommodityChange do
                type: 'Measure',
                object_sid: measure_without_exclusions.measure_sid,
                operation_date: date,
-               goods_nomenclature_item_id: '1234567890')
+               goods_nomenclature_item_id: '1234567890',
+               metadata: {
+                 'measure' => {
+                   'measure_type_id' => measure_without_exclusions.measure_type_id,
+                   'trade_movement_code' => import_measure_type.trade_movement_code,
+                   'geographical_area_id' => measure_without_exclusions.geographical_area_id,
+                   'excluded_geographical_area_ids' => [],
+                 },
+               })
       end
 
       it 'groups measures correctly by measure type' do
@@ -520,7 +544,9 @@ RSpec.describe TariffChanges::GroupedMeasureCommodityChange do
         expect(result[import_measure_type.description]).to all(be_a(Hash))
         expect(result[import_measure_type_2.description]).to all(be_a(Hash))
 
-        expect(result.values.flatten).to all(include(:date_of_effect, :change_type))
+        expect(result.values.flatten).to all(
+          include(:measure_sid, :date_of_effect, :change_type, :additional_code, :quota_order_number),
+        )
       end
     end
   end

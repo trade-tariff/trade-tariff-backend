@@ -193,6 +193,10 @@ RSpec.describe TaricSynchronizer, :truncation do
     context 'when sequence is NOT correct' do
       let(:pending_sequence_number) { applied_sequence_number + 2 }
 
+      before do
+        allow(TradeTariffBackend).to receive(:with_redis_lock).and_yield
+      end
+
       it 'raises a wrong sequence error and notifies Slack app' do
         allow(SlackNotifierService).to receive(:call)
 

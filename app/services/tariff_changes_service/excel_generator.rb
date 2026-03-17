@@ -50,18 +50,18 @@ class TariffChangesService
       sheet.rows[2].height = 20
 
       # Pre-header row
-      pre_header_styles = [cell_styles[:pre_header]] * 12
-      sheet.add_row(['Is this change relevant to your business (useful filters)', '', '', '', 'Impacted Commodity details', '', '', 'Change details', '', '', 'Useful Links', ''], style: pre_header_styles)
+      pre_header_styles = [cell_styles[:pre_header]] * 13
+      sheet.add_row(['Is this change relevant to your business (useful filters)', '', '', '', '', 'Impacted Commodity details', '', '', 'Change details', '', '', 'Useful Links', ''], style: pre_header_styles)
       sheet.rows[3].height = 40
 
       # Merge pre-header cells
-      sheet.merge_cells('A4:D4')
-      sheet.merge_cells('E4:G4')
-      sheet.merge_cells('H4:J4')
-      sheet.merge_cells('K4:L4')
+      sheet.merge_cells('A4:E4')
+      sheet.merge_cells('F4:H4')
+      sheet.merge_cells('I4:K4')
+      sheet.merge_cells('L4:M4')
 
       # Header row
-      header_styles = [cell_styles[:header]] * 12
+      header_styles = [cell_styles[:header]] * 13
       sheet.add_row(excel_header_row, style: header_styles)
       sheet.rows[4].height = 40
     end
@@ -71,7 +71,7 @@ class TariffChangesService
         batch.each do |record|
           row = sheet.add_row(
             build_excel_row(record),
-            types: [:string] * 12,
+            types: [:string] * 13,
             style: build_row_styles,
           )
 
@@ -90,6 +90,7 @@ class TariffChangesService
         'Impacted Geographical area (if applicable)',
         'Impacted Measure (if applicable)',
         'Additional Code (if applicable)',
+        'Quota order number (if applicable)',
         'Chapter',
         'Commodity Code',
         'Commodity Code description',
@@ -107,6 +108,7 @@ class TariffChangesService
         30,  # Geo Area
         30,  # Measure
         30,  # Additional Code
+        25,  # Quota order number
         15,  # Chapter
         20,  # Commodity Code
         50,  # Commodity Description
@@ -175,6 +177,7 @@ class TariffChangesService
         cell_styles[:text],           # Geo Area
         cell_styles[:text],           # Measure Type
         cell_styles[:text],           # Additional Code
+        cell_styles[:text],           # Quota order number
         cell_styles[:chapter],        # Chapter
         cell_styles[:commodity_code], # Commodity Code
         cell_styles[:text],           # Commodity Description
@@ -192,6 +195,7 @@ class TariffChangesService
         record[:geo_area],
         record[:measure_type],
         record[:additional_code],
+        record[:quota_order_number],
         record[:chapter],
         record[:commodity_code],
         record[:commodity_code_description],
@@ -204,8 +208,8 @@ class TariffChangesService
     end
 
     def add_hyperlinks(sheet, row, record)
-      ott_cell = row.cells[10]
-      api_cell = row.cells[11]
+      ott_cell = row.cells[11]
+      api_cell = row.cells[12]
 
       sheet.add_hyperlink(location: record[:ott_url], ref: ott_cell) if record[:ott_url]
       sheet.add_hyperlink(location: record[:api_url], ref: api_cell) if record[:api_url]

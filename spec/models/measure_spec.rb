@@ -989,6 +989,7 @@ RSpec.describe Measure do
         :measure_component,
         :ad_valorem,
         :with_duty_expression,
+        duty_expression_id: 'ZZ',
         duty_amount: 28,
         measure_sid: measure.measure_sid,
       )

@@ -76,6 +76,10 @@ class TariffChange < Sequel::Model
     measure_metadata['additional_code']
   end
 
+  def quota_order_number
+    measure_metadata['quota_order_number']
+  end
+
   def description
     case action
     when TariffChangesService::BaseChanges::CREATION

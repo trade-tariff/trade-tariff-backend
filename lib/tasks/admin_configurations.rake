@@ -9,8 +9,11 @@ module AdminConfigurationSeeder
       'gpt-4o' => 'GPT-4o (multimodal)',
       'gpt-4o-mini' => 'GPT-4o mini',
       'gpt-5-2025-08-07' => 'GPT-5 (base)',
+      'gpt-5-mini-2025-08-07' => 'GPT-5 mini (fast)',
+      'gpt-5-nano-2025-08-07' => 'GPT-5 nano (fastest)',
       'gpt-5.1-2025-11-13' => 'GPT-5.1 (extended caching & coding)',
-      'gpt-5.2' => 'GPT-5.2 (latest flagship)',
+      'gpt-5.2' => 'GPT-5.2',
+      'gpt-5.4' => 'GPT-5.4 (latest flagship)',
       'o3-2025-04-16' => 'o3 (full reasoning)',
       'o3-pro' => 'o3-pro (complex reasoning)',
       'o4-mini-2025-04-16' => 'o4-mini (small reasoning)',
@@ -365,8 +368,13 @@ namespace :admin_configurations do
   # Seed values should align with AdminConfiguration::DEFAULTS
   desc 'Seed initial admin configurations'
   task seed: :environment do
-    model_options = OpenaiClient::MODEL_CONFIGS.keys.sort.map do |key|
-      { 'key' => key, 'label' => AdminConfigurationSeeder.model_label(key) }
+    model_options_with_reasoning = OpenaiClient::MODEL_CONFIGS.keys.sort.map do |key|
+      levels = OpenaiClient::MODEL_CONFIGS[key][:reasoning_levels]
+      {
+        'key' => key,
+        'label' => AdminConfigurationSeeder.model_label(key),
+        'sub_options' => levels.any? ? { 'reasoning_effort' => levels } : {},
+      }
     end
 
     default_model = TradeTariffBackend.ai_model
@@ -380,9 +388,9 @@ namespace :admin_configurations do
       },
       {
         name: 'expand_model',
-        config_type: 'options',
+        config_type: 'nested_options',
         description: 'AI model used for search query expansion',
-        value: { 'selected' => 'gpt-4.1-mini-2025-04-14', 'options' => model_options },
+        value: { 'selected' => 'gpt-4.1-mini-2025-04-14', 'sub_values' => {}, 'options' => model_options_with_reasoning },
       },
       {
         name: 'expand_query_context',
@@ -417,18 +425,31 @@ namespace :admin_configurations do
       {
         name: 'retrieval_method',
         config_type: 'options',
-        description: 'Search retrieval method: opensearch uses traditional text search with query expansion, vector uses pgvector cosine similarity and skips query expansion',
-        value: { 'selected' => 'opensearch',
+        description: 'Search retrieval method: opensearch uses traditional text search with query expansion, vector uses pgvector cosine similarity and skips query expansion, hybrid runs both and fuses with RRF',
+        value: { 'selected' => 'vector',
                  'options' => [
                    { 'key' => 'opensearch', 'label' => 'OpenSearch (text search + query expansion)' },
                    { 'key' => 'vector', 'label' => 'pgvector (cosine similarity)' },
+                   { 'key' => 'hybrid', 'label' => 'Hybrid (opensearch + vector with RRF fusion)' },
                  ] },
+      },
+      {
+        name: 'rrf_k',
+        config_type: 'integer',
+        description: 'Reciprocal Rank Fusion constant (k). Controls how much lower-ranked results are penalised: score = 1/(rank + k). Higher k flattens rank differences. Typical range 1-100. Only applies when retrieval_method is hybrid.',
+        value: '60',
       },
       {
         name: 'vector_ef_search',
         config_type: 'integer',
         description: 'HNSW ef_search parameter for pgvector queries. Controls the recall/speed tradeoff: higher values search more candidates and improve recall at the cost of latency. Typical range 40-200. Only applies when retrieval_method is vector.',
         value: '100',
+      },
+      {
+        name: 'vector_score_threshold',
+        config_type: 'integer',
+        description: 'Minimum cosine similarity score (0-100) for vector search results. Results below this threshold are discarded before AI processing. Based on empirical analysis: good queries score 47-70, junk queries score 13-35. Default 35 provides clean separation.',
+        value: '35',
       },
       {
         name: 'label_context',
@@ -438,9 +459,9 @@ namespace :admin_configurations do
       },
       {
         name: 'label_model',
-        config_type: 'options',
+        config_type: 'nested_options',
         description: 'AI model used for commodity labelling',
-        value: { 'selected' => default_model, 'options' => model_options },
+        value: { 'selected' => default_model, 'sub_values' => { 'reasoning_effort' => 'low' }, 'options' => model_options_with_reasoning },
       },
       {
         name: 'label_page_size',
@@ -452,7 +473,7 @@ namespace :admin_configurations do
         name: 'opensearch_result_limit',
         config_type: 'integer',
         description: 'Maximum number of OpenSearch results fetched for AI processing during interactive search',
-        value: '80',
+        value: '30',
       },
       {
         name: 'pos_noun_boost',
@@ -486,9 +507,9 @@ namespace :admin_configurations do
       },
       {
         name: 'other_self_text_model',
-        config_type: 'options',
+        config_type: 'nested_options',
         description: 'AI model used for generating self-texts for Other nodes',
-        value: { 'selected' => default_model, 'options' => model_options },
+        value: { 'selected' => default_model, 'sub_values' => { 'reasoning_effort' => 'low' }, 'options' => model_options_with_reasoning },
       },
       {
         name: 'non_other_self_text_batch_size',
@@ -504,9 +525,9 @@ namespace :admin_configurations do
       },
       {
         name: 'non_other_self_text_model',
-        config_type: 'options',
+        config_type: 'nested_options',
         description: 'AI model used for generating self-texts for non-Other nodes',
-        value: { 'selected' => default_model, 'options' => model_options },
+        value: { 'selected' => default_model, 'sub_values' => { 'reasoning_effort' => 'low' }, 'options' => model_options_with_reasoning },
       },
       {
         name: 'search_context',
@@ -522,9 +543,9 @@ namespace :admin_configurations do
       },
       {
         name: 'search_model',
-        config_type: 'options',
+        config_type: 'nested_options',
         description: 'AI model used for interactive Q&A search',
-        value: { 'selected' => default_model, 'options' => model_options },
+        value: { 'selected' => default_model, 'sub_values' => { 'reasoning_effort' => 'low' }, 'options' => model_options_with_reasoning },
       },
       {
         name: 'search_result_limit',
@@ -589,19 +610,26 @@ namespace :admin_configurations do
       created += 1
     end
 
-    if created.positive?
-      AdminConfiguration.refresh!(concurrently: false)
-      puts '  refreshed materialized view'
+    # Patch existing retrieval_method to include hybrid option if missing
+    retrieval = AdminConfiguration.where(name: 'retrieval_method').first
+    if retrieval
+      options = retrieval.value['options'] || []
+      unless options.any? { |o| o['key'] == 'hybrid' }
+        options << { 'key' => 'hybrid', 'label' => 'Hybrid (opensearch + vector with RRF fusion)' }
+        retrieval.update(value: Sequel.pg_jsonb_wrap(retrieval.value.to_hash.merge('options' => options)))
+        puts '  patched: retrieval_method (added hybrid option)'
+        created += 1
+      end
     end
+
+    puts "  created #{created} configuration(s)" if created.positive?
   end
 
   desc 'Reset and reseed all admin configurations'
   task reseed: :environment do
-    AdminConfiguration::Operation.truncate
+    Version.where(item_type: 'AdminConfiguration').delete
+    AdminConfiguration.truncate
     puts '  truncated admin configurations'
-
-    AdminConfiguration.refresh!(concurrently: false)
-    puts '  refreshed materialized view'
 
     Rake::Task['admin_configurations:seed'].invoke
   end

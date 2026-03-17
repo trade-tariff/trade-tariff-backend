@@ -2,7 +2,7 @@ RSpec.describe Api::Admin::RollbacksController do
   routes { AdminApi.routes }
 
   describe 'POST to #create' do
-    let(:rollback_attributes) { attributes_for :rollback }
+    let(:rollback_attributes) { attributes_for(:rollback).except(:whodunnit) }
     let(:record) do
       create :measure, operation_date: Time.zone.yesterday.to_date
     end
@@ -11,6 +11,8 @@ RSpec.describe Api::Admin::RollbacksController do
       before { record }
 
       it 'responds with success + redirect', :aggregate_failures do
+        request.headers['X-Whodunnit'] = 'test-user-uid'
+
         expect {
           post :create, params: { data: { type: :rollback, attributes: rollback_attributes } }
         }.to change(Rollback, :count).by(1)
@@ -45,7 +47,7 @@ RSpec.describe Api::Admin::RollbacksController do
             id: rollback.id.to_s,
             type: 'rollback',
             attributes: {
-              user_id: rollback.user_id,
+              whodunnit: rollback.whodunnit,
               reason: rollback.reason,
               enqueued_at: wildcard_matcher,
               date: rollback.date.to_s,

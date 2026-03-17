@@ -7,7 +7,7 @@ module Api
 
       set_id :id
 
-      attributes :filename, :user_id, :enqueued_at
+      attributes :filename, :whodunnit, :enqueued_at
     end
   end
 end

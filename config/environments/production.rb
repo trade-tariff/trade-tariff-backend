@@ -4,6 +4,9 @@ require_relative '../../app/lib/trade_tariff_backend'
 require_relative '../../app/middleware/sidekiq_basic_auth'
 
 Rails.application.configure do
+  force_ssl_enabled = ENV.fetch('RAILS_FORCE_SSL', 'false') == 'true'
+  assume_ssl_enabled = force_ssl_enabled && ENV.fetch('RAILS_ASSUME_SSL', 'true') == 'true'
+
   # Settings specified here will take precedence over those in config/application.rb.
 
   # Code is not reloaded between requests.
@@ -37,8 +40,8 @@ Rails.application.configure do
   # config.assume_ssl = true
 
   # Force all access to the app over SSL, use Strict-Transport-Security, and use secure cookies.
-  config.force_ssl = false
-  config.assume_ssl = ENV.fetch('RAILS_ASSUME_SSL', 'true') == 'true'
+  config.force_ssl = force_ssl_enabled
+  config.assume_ssl = assume_ssl_enabled
 
   # Log to STDOUT by default
   config.logger = ActiveSupport::Logger.new($stdout)

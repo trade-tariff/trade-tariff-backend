@@ -4,19 +4,22 @@ RSpec.describe Api::Admin::DownloadsController do
   describe 'POST to #create' do
     before do
       allow(DownloadWorker).to receive(:perform_async)
-
-      post :create, params: { data: { type: :download, attributes: download_attributes } }
     end
 
-    context 'when apply is valid' do
-      let(:download_attributes) { attributes_for :download }
+    context 'when download is valid' do
+      before do
+        request.headers['X-Whodunnit'] = 'test-user-uid'
+        post :create
+      end
 
       it { expect(response.status).to eq 201 }
       it { expect(DownloadWorker).to have_received(:perform_async) }
     end
 
-    context 'when apply is not valid' do
-      let(:download_attributes) { { data: { type: :download, attributes: {} } } }
+    context 'when download is not valid' do
+      before do
+        post :create
+      end
 
       let(:response_pattern) do
         {

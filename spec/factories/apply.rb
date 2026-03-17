@@ -1,5 +1,5 @@
 FactoryBot.define do
   factory :apply do
-    user_id { generate(:user_id) }
+    whodunnit { "user-#{SecureRandom.hex(4)}" }
   end
 end

@@ -11,9 +11,9 @@ RSpec.describe Api::V2::GeographicalAreasController do
     globally_excluded_area
   end
 
-  let(:country_geographical_area) { create(:geographical_area, :with_description, :country) }
+  let(:country_geographical_area) { create(:geographical_area, :with_description, :country, geographical_area_id: 'SB') }
   let(:group_geographical_area) { create(:geographical_area, :with_description, :group) }
-  let(:region_geographical_area) { create(:geographical_area, :with_description, :region) }
+  let(:region_geographical_area) { create(:geographical_area, :with_description, :region, geographical_area_id: 'AF') }
   let(:globally_excluded_area) { create(:geographical_area, :with_description, :globally_excluded) }
 
   let(:actual_date) { Time.zone.today }

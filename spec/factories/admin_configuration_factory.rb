@@ -5,8 +5,6 @@ FactoryBot.define do
     config_type { 'string' }
     area { 'classification' }
     description { 'A test configuration' }
-    operation { 'C' }
-    operation_date { Time.zone.today }
 
     trait :markdown do
       config_type { 'markdown' }
@@ -36,8 +34,18 @@ FactoryBot.define do
       end
     end
 
-    after(:create) do |_config, _evaluator|
-      AdminConfiguration.refresh!(concurrently: false) if Rails.env.test?
+    trait :nested_options do
+      config_type { 'nested_options' }
+      value do
+        {
+          'selected' => 'gpt-5.2',
+          'sub_values' => { 'reasoning_effort' => 'low' },
+          'options' => [
+            { 'key' => 'gpt-5.2', 'label' => 'GPT-5.2 (latest flagship)', 'sub_options' => { 'reasoning_effort' => %w[none low medium high] } },
+            { 'key' => 'gpt-4.1-2025-04-14', 'label' => 'GPT-4.1 (1M context)', 'sub_options' => {} },
+          ],
+        }
+      end
     end
   end
 end

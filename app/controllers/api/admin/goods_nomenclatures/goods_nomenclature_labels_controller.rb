@@ -2,8 +2,10 @@ module Api
   module Admin
     module GoodsNomenclatures
       class GoodsNomenclatureLabelsController < AdminController
+        include Api::Admin::VersionBrowsing
+
         def show
-          render json: serialize(goods_nomenclature_label)
+          render json: serialize(goods_nomenclature_label, serializer_options)
         end
 
         def update
@@ -11,19 +13,29 @@ module Api
 
           if goods_nomenclature_label.save(raise_on_failure: false)
             reindex_goods_nomenclature
-            render json: serialize(goods_nomenclature_label.reload), status: :ok
+            ScoreLabelBatchWorker.perform_async(goods_nomenclature_label.goods_nomenclature_sid)
+            render json: serialize(goods_nomenclature_label.reload, serializer_options), status: :ok
           else
             render json: Api::Admin::ErrorSerializationService.new(goods_nomenclature_label).call,
                    status: :unprocessable_content
           end
         end
 
+        def versions
+          render json: serialize_versions(goods_nomenclature_label.versions.all)
+        end
+
         private
 
-        def serialize(label)
+        def serialize(label, options = {})
           Api::Admin::GoodsNomenclatures::GoodsNomenclatureLabelSerializer
-            .new(label)
+            .new(label, options)
             .serializable_hash
+        end
+
+        def serialize_versions(versions)
+          Version.preload_predecessors(versions)
+          Api::Admin::VersionSerializer.new(versions).serializable_hash
         end
 
         def goods_nomenclature_label
@@ -31,8 +43,16 @@ module Api
         end
 
         def find_goods_nomenclature_label
+          if filter_version_id.present? && !current_version?
+            find_historical_label
+          else
+            find_current_label
+          end
+        end
+
+        def find_current_label
           label = GoodsNomenclatureLabel
-            .where(goods_nomenclature_sid: goods_nomenclature.goods_nomenclature_sid)
+            .where(goods_nomenclature_item_id: goods_nomenclature_item_id)
             .first
 
           raise Sequel::RecordNotFound if label.blank?
@@ -40,21 +60,40 @@ module Api
           label
         end
 
-        def goods_nomenclature
-          @goods_nomenclature ||= find_goods_nomenclature
+        def find_historical_label
+          version = versions_for_item
+            .where(id: filter_version_id)
+            .first
+
+          raise Sequel::RecordNotFound if version.blank?
+
+          version.reify
         end
 
-        def find_goods_nomenclature
-          gn = TimeMachine.now do
-            GoodsNomenclature
-              .actual
-              .where(goods_nomenclature_item_id: goods_nomenclature_item_id)
-              .first
+        def versions_for_item
+          Version.where(item_type: 'GoodsNomenclatureLabel', item_id: label_sid_for_versions)
+        end
+
+        def label_sid_for_versions
+          @label_sid_for_versions ||= GoodsNomenclatureLabel
+            .where(goods_nomenclature_item_id: goods_nomenclature_item_id)
+            .get(:goods_nomenclature_sid)
+            &.to_s
+        end
+
+        def goods_nomenclature
+          @goods_nomenclature ||= begin
+            gn = TimeMachine.now do
+              GoodsNomenclature
+                .actual
+                .where(goods_nomenclature_sid: goods_nomenclature_label.goods_nomenclature_sid)
+                .first
+            end
+
+            raise Sequel::RecordNotFound if gn.blank?
+
+            gn
           end
-
-          raise Sequel::RecordNotFound if gn.blank?
-
-          gn
         end
 
         def goods_nomenclature_item_id

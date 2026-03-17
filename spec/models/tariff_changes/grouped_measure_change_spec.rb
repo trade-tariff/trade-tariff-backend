@@ -64,6 +64,11 @@ RSpec.describe TariffChanges::GroupedMeasureChange do
         expect(result).to contain_exactly(excluded_area_1, excluded_area_2)
       end
 
+      it 'returns areas ordered by geographical_area_id' do
+        result = grouped_measure_change.excluded_geographical_areas
+        expect(result.map(&:geographical_area_id)).to eq(%w[DE FR])
+      end
+
       it 'memoizes the result' do
         allow(GeographicalArea).to receive(:where).and_call_original
         2.times { grouped_measure_change.excluded_geographical_areas }

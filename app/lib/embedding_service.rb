@@ -15,32 +15,63 @@ class EmbeddingService
 
   RETRYABLE_HTTP_STATUSES = [429, 500, 502, 503, 504].freeze
 
-  class ServerError < StandardError; end
+  class ApiError < StandardError
+    attr_reader :http_status
+
+    def initialize(message, http_status: nil)
+      @http_status = http_status
+      super(message)
+    end
+  end
+
+  class ServerError < ApiError; end
+  class ClientError < ApiError; end
 
   def embed(text)
     embed_batch([text]).first
   end
 
   def embed_batch(texts)
-    texts.each_slice(BATCH_SIZE).flat_map do |batch|
+    present_indices = []
+    filtered_texts = []
+
+    texts.each_with_index do |text, i|
+      if text.present?
+        present_indices << i
+        filtered_texts << text
+      end
+    end
+
+    return Array.new(texts.size) if filtered_texts.empty?
+
+    embeddings = Array.new(texts.size)
+
+    filtered_texts.each_slice(BATCH_SIZE).each_with_index do |batch, slice_index|
       response = with_retry do
         resp = client.post('embeddings', { model: MODEL, input: batch }.to_json)
 
         if RETRYABLE_HTTP_STATUSES.include?(resp.status)
-          raise ServerError, "EmbeddingService API error: #{resp.status}"
+          raise ServerError.new("EmbeddingService API error: #{resp.status}", http_status: resp.status)
         end
 
         resp
       end
 
       if response.success?
-        response.body['data']
+        batch_embeddings = response.body['data']
           .sort_by { |d| d['index'] }
           .map { |d| d['embedding'] }
+
+        batch_embeddings.each_with_index do |embedding, i|
+          original_index = present_indices[slice_index * BATCH_SIZE + i]
+          embeddings[original_index] = embedding
+        end
       else
-        raise "EmbeddingService API error: #{response.status}"
+        raise ClientError.new("EmbeddingService API error: #{response.status} - #{response.body}", http_status: response.status)
       end
     end
+
+    embeddings
   end
 
   private

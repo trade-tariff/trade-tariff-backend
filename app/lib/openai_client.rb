@@ -1,7 +1,28 @@
 class OpenaiClient
+  class ApiError < StandardError
+    attr_reader :status, :body
+
+    def initialize(status:, body:)
+      @status = status
+      @body = body
+      super("OpenAI API error (HTTP #{status}): #{body}")
+    end
+  end
+
+  class RateLimitError < ApiError
+    attr_reader :retry_after
+
+    def initialize(status:, body:, retry_after: nil)
+      @retry_after = retry_after&.to_f
+      super(status: status, body: body)
+    end
+  end
+
   MAX_RETRIES = 3
+  MAX_RETRY_DELAY = 60 # seconds
   RETRY_DELAY = 2 # seconds
   RETRYABLE_ERRORS = [
+    ApiError,
     Faraday::TimeoutError,
     Faraday::ConnectionFailed,
     Faraday::SSLError,
@@ -9,7 +30,7 @@ class OpenaiClient
     Net::OpenTimeout,
   ].freeze
 
-  def call(context, model: nil)
+  def call(context, model: nil, reasoning_effort: nil)
     messages = if context.is_a?(Array)
                  context
                else
@@ -17,18 +38,21 @@ class OpenaiClient
                end
 
     model ||= TradeTariffBackend.ai_model
-    config = MODEL_CONFIGS[model] || {}
 
     body = {
       model: model,
       messages: messages,
       user: TradeTariffBackend.openai_user,
       response_format: { type: 'json_object' },
-    }.merge(config).to_json
+    }
+    body[:reasoning_effort] = reasoning_effort if reasoning_effort.present?
+    body = body.to_json
 
-    response = with_retry { self.class.client.post('chat/completions', body) }
+    with_retry do
+      response = self.class.client.post('chat/completions', body)
 
-    if response.success?
+      raise_on_error!(response) unless response.success?
+
       json = response.body.dig('choices', 0, 'message', 'content') || ''
 
       begin
@@ -36,13 +60,19 @@ class OpenaiClient
       rescue StandardError
         json
       end
-    else
-      Rails.logger.error "OpenAIClient error: #{response.body}"
-      ''
     end
   end
 
   private
+
+  def raise_on_error!(response)
+    if response.status == 429
+      retry_after = response.headers['Retry-After'] || response.headers['retry-after']
+      raise RateLimitError.new(status: response.status, body: response.body, retry_after: retry_after)
+    end
+
+    raise ApiError.new(status: response.status, body: response.body)
+  end
 
   def with_retry
     attempts = 0
@@ -52,7 +82,7 @@ class OpenaiClient
       yield
     rescue *RETRYABLE_ERRORS => e
       if attempts < MAX_RETRIES
-        delay = RETRY_DELAY * (2**(attempts - 1)) # exponential backoff: 2s, 4s, 8s
+        delay = calculate_retry_delay(attempts, e)
         Rails.logger.warn "OpenaiClient: #{e.class} on attempt #{attempts}, retrying in #{delay}s..."
         sleep delay
         retry
@@ -63,10 +93,20 @@ class OpenaiClient
     end
   end
 
+  def calculate_retry_delay(attempts, error)
+    base_delay = RETRY_DELAY * (2**(attempts - 1))
+
+    if error.is_a?(RateLimitError) && error.retry_after
+      [error.retry_after, MAX_RETRY_DELAY].min
+    else
+      [base_delay, MAX_RETRY_DELAY].min
+    end
+  end
+
   class << self
-    def call(context, model: nil)
+    def call(context, model: nil, reasoning_effort: nil)
       instrument do
-        new.call(context, model: model)
+        new.call(context, model: model, reasoning_effort: reasoning_effort)
       end
     end
 
@@ -94,23 +134,28 @@ class OpenaiClient
   end
 
   MODEL_CONFIGS = {
-    # GPT-5 Series (flagship models)
-    'gpt-5.2' => { reasoning_effort: 'high' },             # Latest flagship model
-    'gpt-5.1-2025-11-13' => { reasoning_effort: 'none' },  # Extended caching & coding
-    'gpt-5-2025-08-07' => { reasoning_effort: 'high' },    # Base GPT-5
+    # GPT-5.4 (latest flagship, 1M context)
+    'gpt-5.4' => { reasoning_levels: %w[none low medium high xhigh] },
+
+    # GPT-5 Series
+    'gpt-5.2' => { reasoning_levels: %w[none low medium high] },
+    'gpt-5.1-2025-11-13' => { reasoning_levels: %w[none low medium high] },
+    'gpt-5-2025-08-07' => { reasoning_levels: %w[minimal low medium high] },
+    'gpt-5-mini-2025-08-07' => { reasoning_levels: %w[minimal low medium high] },
+    'gpt-5-nano-2025-08-07' => { reasoning_levels: %w[minimal low medium high] },
 
     # o-Series (reasoning models)
-    'o4-mini-2025-04-16' => { reasoning_effort: 'high' },  # Latest small reasoning model
-    'o3-2025-04-16' => { reasoning_effort: 'high' },       # Full o3 reasoning model
-    'o3-pro' => { reasoning_effort: 'high' },              # Pro version for complex reasoning
+    'o4-mini-2025-04-16' => { reasoning_levels: %w[low medium high] },
+    'o3-2025-04-16' => { reasoning_levels: %w[low medium high] },
+    'o3-pro' => { reasoning_levels: %w[low medium high] },
 
     # GPT-4.1 Series (1M token context)
-    'gpt-4.1-2025-04-14' => {},      # Improved instruction following, 1M context
-    'gpt-4.1-mini-2025-04-14' => {}, # Mini variant, 1M context
-    'gpt-4.1-nano-2025-04-14' => {}, # Nano variant, 1M context
+    'gpt-4.1-2025-04-14' => { reasoning_levels: [] },
+    'gpt-4.1-mini-2025-04-14' => { reasoning_levels: [] },
+    'gpt-4.1-nano-2025-04-14' => { reasoning_levels: [] },
 
     # GPT-4 Series (legacy)
-    'gpt-4o' => {},                # Multimodal GPT-4o
-    'gpt-4o-mini' => {},           # Efficient mini variant
+    'gpt-4o' => { reasoning_levels: [] },
+    'gpt-4o-mini' => { reasoning_levels: [] },
   }.freeze
 end

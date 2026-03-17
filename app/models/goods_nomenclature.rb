@@ -299,5 +299,11 @@ class GoodsNomenclature < Sequel::Model
     else
       formatted_description
     end
+  rescue ClassificationDescription::MissingHeadingError
+    # Retry at the commodity's validity_start_date
+    TimeMachine.at(validity_start_date) do
+      reload
+      descriptions_with_other_handling(formatted_description).join(' > ')
+    end
   end
 end

@@ -37,6 +37,9 @@ gem 'opensearch-ruby'
 gem 'caxlsx'
 gem 'fast_excel'
 
+# Diffing
+gem 'diff-lcs'
+
 # Helpers
 gem 'bootsnap', require: false
 gem 'csv'

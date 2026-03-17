@@ -32,17 +32,18 @@ RSpec.describe Api::Admin::AdminConfigurationsController, :admin do
     it 'returns a historical version with filter[oid]' do
       config = create(:admin_configuration, name: 'history_config', value: 'original')
 
-      # Create a second version
-      config.set(value: 'updated', operation_date: Time.zone.today)
-      config.save_with_refresh
+      # Update to create a second paper trail version
+      config.set(value: 'updated')
+      config.save
 
-      latest_oid = AdminConfiguration::Operation
-        .where(name: 'history_config')
-        .order(Sequel.desc(:oid))
-        .get(:oid)
+      # The create version has the original values
+      first_version_id = Version
+        .where(item_type: 'AdminConfiguration', item_id: 'history_config')
+        .order(Sequel.asc(:id))
+        .get(:id)
 
       authenticated_get api_admin_admin_configuration_path('history_config', format: :json),
-                        params: { filter: { oid: latest_oid } }
+                        params: { filter: { oid: first_version_id } }
 
       expect(response).to have_http_status(:ok)
       expect(json_response['data']['attributes']['value']).to eq('original')
@@ -75,6 +76,13 @@ RSpec.describe Api::Admin::AdminConfigurationsController, :admin do
         expect(json_response['data']['attributes']['value']).to eq('updated value')
         expect(json_response['data']['attributes']['description']).to eq('Updated description')
         expect(json_response['meta']['version']).to be_present
+      end
+
+      it 'creates a paper trail version' do
+        expect {
+          authenticated_patch api_admin_admin_configuration_path('update_config', format: :json),
+                              params: { data: { type: 'admin_configurations', attributes: update_data } }
+        }.to change { Version.where(item_type: 'AdminConfiguration', item_id: 'update_config').count }.by(1)
       end
     end
   end

@@ -71,7 +71,7 @@ module GenerateSelfText
         batch_size: batch.size,
         model: model,
         chapter_code: chapter.short_code,
-      ) { TradeTariffBackend.ai_client.call(messages, model: model) }
+      ) { TradeTariffBackend.ai_client.call(messages, model: model, reasoning_effort: reasoning_effort) }
 
       descriptions = parse_response(response)
 
@@ -84,6 +84,8 @@ module GenerateSelfText
         hash[desc['sid']] = desc if desc.is_a?(Hash) && desc['sid']
       end
 
+      batch_sids = []
+
       batch.each do |segment|
         node = segment[:node]
         desc = descriptions_by_sid[node[:sid]]
@@ -94,11 +96,15 @@ module GenerateSelfText
         end
 
         input_context = build_input_context(segment)
-        upsert_record(node, desc['contextualised_description'], input_context)
-        generated_texts[node[:sid]] = desc['contextualised_description']
+        sanitised_text = EncodingArtefactSanitiser.call(desc['contextualised_description'])
+        upsert_record(node, sanitised_text, input_context)
+        generated_texts[node[:sid]] = sanitised_text
 
+        batch_sids << node[:sid]
         stats[:processed] += 1
       end
+
+      ScoreSelfTextBatchWorker.perform_async(batch_sids, chapter.short_code) if batch_sids.any?
     end
 
     def build_messages(batch)
@@ -221,8 +227,16 @@ module GenerateSelfText
       end
     end
 
+    def model_config
+      @model_config ||= AdminConfiguration.nested_options_value('other_self_text_model')
+    end
+
     def model
-      @model ||= AdminConfiguration.option_value('other_self_text_model')
+      model_config[:selected]
+    end
+
+    def reasoning_effort
+      model_config[:sub_values]['reasoning_effort']
     end
 
     def batch_size

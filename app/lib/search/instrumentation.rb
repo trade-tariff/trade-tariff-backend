@@ -97,6 +97,10 @@ module Search
       instrument('search_completed', payload)
     end
 
+    def retrieval_leg_completed(request_id:, leg:, duration_ms:, result_count:, status:)
+      instrument('retrieval_leg_completed', request_id:, leg:, duration_ms:, result_count:, status:)
+    end
+
     def result_selected(request_id:, goods_nomenclature_item_id:, goods_nomenclature_class:)
       instrument('result_selected', request_id:, goods_nomenclature_item_id:, goods_nomenclature_class:)
     end

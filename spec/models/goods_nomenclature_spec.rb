@@ -515,6 +515,43 @@ RSpec.describe GoodsNomenclature do
 
       it { is_expected.to eq('Bar > Other') }
     end
+
+    context 'when MissingHeadingError is raised' do
+      let(:goods_nomenclature) do
+        create(
+          :goods_nomenclature,
+          :with_description,
+          goods_nomenclature_item_id: '1234567890',
+          description: 'other',
+          validity_start_date: Date.new(2020, 1, 1),
+        )
+      end
+
+      before do
+        allow(goods_nomenclature).to receive_messages(
+          formatted_description: 'Other',
+          descriptions_with_other_handling: %w[Bar Other],
+        )
+        allow(goods_nomenclature).to receive(:is_other?)
+          .and_raise(ClassificationDescription::MissingHeadingError, 'Heading is missing')
+      end
+
+      it 'retries within TimeMachine.at using validity_start_date' do
+        original_at = TimeMachine.method(:at)
+        allow(TimeMachine).to(receive(:at).and_wrap_original { |_m, *args, &block| original_at.call(*args, &block) })
+
+        expect(classification_description).to eq('Bar > Other')
+        expect(TimeMachine).to have_received(:at).with(Date.new(2020, 1, 1))
+      end
+
+      it 'reloads the model before retrying' do
+        allow(goods_nomenclature).to receive(:reload).and_call_original
+
+        classification_description
+
+        expect(goods_nomenclature).to have_received(:reload)
+      end
+    end
   end
 
   describe '#goods_nomenclature_label' do

@@ -1,6 +1,7 @@
 class GoodsNomenclatureSelfText < Sequel::Model
   plugin :timestamps, update_on_create: true
   plugin :auto_validations, not_null: :presence
+  plugin :has_paper_trail
 
   set_primary_key [:goods_nomenclature_sid]
   unrestrict_primary_key # PK is a natural key (FK to goods_nomenclatures), not auto-increment
@@ -11,6 +12,8 @@ class GoodsNomenclatureSelfText < Sequel::Model
                                    primary_key: :goods_nomenclature_sid
 
   dataset_module do
+    include AdminListingDataset
+
     def stale
       where(stale: true)
     end
@@ -50,12 +53,6 @@ class GoodsNomenclatureSelfText < Sequel::Model
       end
     end
 
-    def for_nomenclature_type(type)
-      return self unless %w[commodity heading subheading].include?(type)
-
-      where(Sequel.lit("(#{nomenclature_type_sql}) = ?", type))
-    end
-
     def for_status(status)
       st = Sequel[:goods_nomenclature_self_texts]
 
@@ -66,25 +63,6 @@ class GoodsNomenclatureSelfText < Sequel::Model
         where(st[:stale] => true)
       when 'manually_edited'
         where(st[:manually_edited] => true)
-      else
-        self
-      end
-    end
-
-    def for_score_category(category)
-      score = Sequel.lit("(#{score_sql})")
-
-      case category
-      when 'bad'
-        where(score < 0.3)
-      when 'okay'
-        where(score >= 0.3).where(score < 0.5)
-      when 'good'
-        where(score >= 0.5).where(score < 0.85)
-      when 'amazing'
-        where(score >= 0.85)
-      when 'no_score'
-        where(Sequel.lit("(#{score_sql}) IS NULL"))
       else
         self
       end
@@ -107,55 +85,20 @@ class GoodsNomenclatureSelfText < Sequel::Model
     private
 
     def score_expression
-      Sequel.lit(score_sql)
-    end
+      st = Sequel[:goods_nomenclature_self_texts]
+      similarity = st[:similarity_score]
+      coherence = st[:coherence_score]
+      similarity_present = ~Sequel.expr(similarity => nil)
+      coherence_present = ~Sequel.expr(coherence => nil)
 
-    def nomenclature_type_expression
-      Sequel.lit(nomenclature_type_sql)
-    end
-
-    def score_sql
-      <<~SQL.squish
-        CASE
-          WHEN "goods_nomenclature_self_texts"."similarity_score" IS NOT NULL
-           AND "goods_nomenclature_self_texts"."coherence_score" IS NOT NULL
-          THEN ("goods_nomenclature_self_texts"."similarity_score" + "goods_nomenclature_self_texts"."coherence_score") / 2.0
-          WHEN "goods_nomenclature_self_texts"."similarity_score" IS NOT NULL
-          THEN "goods_nomenclature_self_texts"."similarity_score"
-          WHEN "goods_nomenclature_self_texts"."coherence_score" IS NOT NULL
-          THEN "goods_nomenclature_self_texts"."coherence_score"
-        END
-      SQL
-    end
-
-    def nomenclature_type_sql
-      <<~SQL.squish
-        CASE
-          WHEN "gn"."goods_nomenclature_item_id" LIKE '__00000000' THEN 'chapter'
-          WHEN "gn"."goods_nomenclature_item_id" LIKE '____000000' THEN 'heading'
-          WHEN "gn"."producline_suffix" != '80' OR EXISTS (
-            SELECT 1
-            FROM goods_nomenclature_tree_nodes parent
-            JOIN goods_nomenclature_tree_nodes child
-              ON child.depth = parent.depth + 1
-              AND child.position > parent.position
-              AND child.validity_start_date <= CURRENT_DATE
-              AND (child.validity_end_date >= CURRENT_DATE OR child.validity_end_date IS NULL)
-              AND child.position < COALESCE(
-                (SELECT MIN(siblings.position)
-                 FROM goods_nomenclature_tree_nodes siblings
-                 WHERE siblings.depth = parent.depth
-                   AND siblings.position > parent.position
-                   AND siblings.validity_start_date <= CURRENT_DATE
-                   AND (siblings.validity_end_date >= CURRENT_DATE OR siblings.validity_end_date IS NULL)
-                ), 1000000000000)
-            WHERE parent.goods_nomenclature_sid = "gn"."goods_nomenclature_sid"
-              AND parent.validity_start_date <= CURRENT_DATE
-              AND (parent.validity_end_date >= CURRENT_DATE OR parent.validity_end_date IS NULL)
-          ) THEN 'subheading'
-          ELSE 'commodity'
-        END
-      SQL
+      Sequel.case(
+        [
+          [similarity_present & coherence_present, (similarity + coherence) / 2.0],
+          [similarity_present, similarity],
+          [coherence_present, coherence],
+        ],
+        nil,
+      )
     end
   end
 
@@ -164,24 +107,49 @@ class GoodsNomenclatureSelfText < Sequel::Model
     validates_includes GENERATION_TYPES, :generation_type
   end
 
-  def self.lookup(sid)
-    self[sid]&.self_text
-  end
+  class << self
+    def lookup(sid)
+      self[sid]&.self_text
+    end
 
-  def self.regenerate_search_embeddings(sids)
-    records = where(goods_nomenclature_sid: sids)
-      .exclude(self_text: nil)
-      .where(Sequel.expr(search_embedding_stale: true) | Sequel.expr(search_embedding: nil))
-      .all
-    return if records.empty?
+    def regenerate_search_embeddings(sids)
+      candidates = with_self_text(sids)
+      return 0 if candidates.empty?
 
-    embedding_service = EmbeddingService.new
-    db = Sequel::Model.db
+      composite_texts = TimeMachine.now { CompositeSearchTextBuilder.batch(candidates) }
+      stale_records = needing_embedding(candidates, composite_texts)
+      return 0 if stale_records.empty?
 
-    records.each_slice(EmbeddingService::BATCH_SIZE) do |batch|
-      composite_texts = TimeMachine.now { CompositeSearchTextBuilder.batch(batch) }
-      texts_to_embed = batch.map { |r| composite_texts[r.goods_nomenclature_sid] }
-      embeddings = embedding_service.embed_batch(texts_to_embed)
+      embed_in_batches(stale_records, composite_texts)
+      stale_records.size
+    end
+
+    private
+
+    def with_self_text(sids)
+      where(goods_nomenclature_sid: sids)
+        .exclude(self_text: nil)
+        .all
+    end
+
+    def needing_embedding(candidates, composite_texts)
+      candidates.select do |r|
+        r.search_embedding.nil? || composite_texts[r.goods_nomenclature_sid] != r.search_text
+      end
+    end
+
+    def embed_in_batches(records, composite_texts)
+      embedding_service = EmbeddingService.new
+
+      records.each_slice(EmbeddingService::BATCH_SIZE) do |batch|
+        texts = batch.map { |r| composite_texts[r.goods_nomenclature_sid] }
+        embeddings = embedding_service.embed_batch(texts)
+        bulk_update_embeddings(batch, composite_texts, embeddings)
+      end
+    end
+
+    def bulk_update_embeddings(batch, composite_texts, embeddings)
+      db = Sequel::Model.db
 
       values = batch.zip(embeddings).map { |record, embedding|
         sid = record.goods_nomenclature_sid

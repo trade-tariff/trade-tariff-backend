@@ -40,12 +40,15 @@ AdminApi.routes.draw do
 
       resources :goods_nomenclatures, only: %i[], constraints: { id: /\d+/ } do
         scope module: 'goods_nomenclatures' do
-          resource :goods_nomenclature_label, only: %i[show update]
+          resource :goods_nomenclature_label, only: %i[show update] do
+            get :versions
+          end
           resource :goods_nomenclature_self_text, only: %i[show update] do
             post :score
             post :regenerate
             post :approve
             post :reject
+            get :versions
           end
         end
       end
@@ -56,6 +59,11 @@ AdminApi.routes.draw do
 
       resources :goods_nomenclature_labels, only: [:index]
       resources :goods_nomenclature_self_texts, only: [:index]
+      resources :versions, only: [:index] do
+        member do
+          post :restore
+        end
+      end
 
       resources :quota_order_numbers, module: 'quota_order_numbers', only: %i[] do
         resources :quota_definitions, only: %i[index show]

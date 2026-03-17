@@ -8,8 +8,8 @@ RSpec.describe 'admin_configurations:seed' do
     Rake::Task['admin_configurations:seed'].reenable
   end
 
-  it 'creates all 33 admin configurations', :aggregate_failures do
-    expect { seed }.to change(AdminConfiguration, :count).by(33)
+  it 'creates all 35 admin configurations', :aggregate_failures do
+    expect { seed }.to change(AdminConfiguration, :count).by(35)
 
     names = AdminConfiguration.order(:name).select_map(:name)
     expect(names).to eq(%w[
@@ -34,6 +34,7 @@ RSpec.describe 'admin_configurations:seed' do
       pos_qualifier_boost
       pos_search_enabled
       retrieval_method
+      rrf_k
       search_context
       search_labels_enabled
       search_model
@@ -46,15 +47,16 @@ RSpec.describe 'admin_configurations:seed' do
       suggest_results_limit
       suggest_synonyms
       vector_ef_search
+      vector_score_threshold
     ])
   end
 
-  it 'seeds options configs with sorted model options', :aggregate_failures do
+  it 'seeds nested_options configs with sorted model options', :aggregate_failures do
     seed
 
     %w[label_model search_model expand_model other_self_text_model non_other_self_text_model].each do |name|
       config = AdminConfiguration.where(name:).first
-      expect(config.config_type).to eq('options')
+      expect(config.config_type).to eq('nested_options')
       expect(config.area).to eq('classification')
 
       expected_selected = if name == 'expand_model'
@@ -166,13 +168,13 @@ RSpec.describe 'admin_configurations:seed' do
     expect(config.value).to eq(0)
   end
 
-  it 'seeds opensearch_result_limit as an integer config defaulting to 80', :aggregate_failures do
+  it 'seeds opensearch_result_limit as an integer config defaulting to 30', :aggregate_failures do
     seed
 
     config = AdminConfiguration.where(name: 'opensearch_result_limit').first
     expect(config.config_type).to eq('integer')
     expect(config.area).to eq('classification')
-    expect(config.value).to eq(80)
+    expect(config.value).to eq(30)
   end
 
   it 'seeds pos_noun_boost as an integer config defaulting to 10', :aggregate_failures do
@@ -202,16 +204,16 @@ RSpec.describe 'admin_configurations:seed' do
     expect(config.value).to be true
   end
 
-  it 'seeds retrieval_method as an options config defaulting to opensearch', :aggregate_failures do
+  it 'seeds retrieval_method as an options config defaulting to vector', :aggregate_failures do
     seed
 
     config = AdminConfiguration.where(name: 'retrieval_method').first
     expect(config.config_type).to eq('options')
     expect(config.area).to eq('classification')
-    expect(config.value['selected']).to eq('opensearch')
+    expect(config.value['selected']).to eq('vector')
 
     option_keys = config.value['options'].map { |o| o['key'] }
-    expect(option_keys).to contain_exactly('opensearch', 'vector')
+    expect(option_keys).to contain_exactly('opensearch', 'vector', 'hybrid')
   end
 
   it 'seeds vector_ef_search as an integer config defaulting to 100', :aggregate_failures do
@@ -221,6 +223,15 @@ RSpec.describe 'admin_configurations:seed' do
     expect(config.config_type).to eq('integer')
     expect(config.area).to eq('classification')
     expect(config.value).to eq(100)
+  end
+
+  it 'seeds rrf_k as an integer config defaulting to 60', :aggregate_failures do
+    seed
+
+    config = AdminConfiguration.where(name: 'rrf_k').first
+    expect(config.config_type).to eq('integer')
+    expect(config.area).to eq('classification')
+    expect(config.value).to eq(60)
   end
 
   it 'seeds suggestion toggle configs as booleans', :aggregate_failures do
@@ -258,26 +269,6 @@ RSpec.describe 'admin_configurations:seed' do
 
     expect { suppress_output { Rake::Task['admin_configurations:seed'].invoke } }
       .not_to change(AdminConfiguration, :count)
-  end
-
-  it 'refreshes the materialized view after creating records' do
-    allow(AdminConfiguration).to receive(:refresh!).and_call_original
-
-    seed
-
-    # The oplog plugin also calls refresh! in test mode after each create,
-    # so total calls = 33 (oplog) + 1 (rake task) = 34
-    expect(AdminConfiguration).to have_received(:refresh!).with(concurrently: false).exactly(34).times
-  end
-
-  it 'does not refresh when nothing is created' do
-    seed
-    Rake::Task['admin_configurations:seed'].reenable
-    allow(AdminConfiguration).to receive(:refresh!)
-
-    suppress_output { Rake::Task['admin_configurations:seed'].invoke }
-
-    expect(AdminConfiguration).not_to have_received(:refresh!)
   end
 end
 # rubocop:enable RSpec/DescribeClass

@@ -52,7 +52,11 @@ module SelfTextGenerator
       result
     rescue StandardError => e
       duration = Process.clock_gettime(Process::CLOCK_MONOTONIC) - start_time
-      http_status = e.respond_to?(:response) ? e.response&.dig(:status) : nil
+      http_status = if e.respond_to?(:http_status)
+                      e.http_status
+                    else
+                      e.respond_to?(:response) ? e.response&.dig(:status) : nil
+                    end
 
       instrument(
         'api_call_failed',
@@ -110,7 +114,11 @@ module SelfTextGenerator
       result
     rescue StandardError => e
       duration = Process.clock_gettime(Process::CLOCK_MONOTONIC) - start_time
-      http_status = e.respond_to?(:response) ? e.response&.dig(:status) : nil
+      http_status = if e.respond_to?(:http_status)
+                      e.http_status
+                    else
+                      e.respond_to?(:response) ? e.response&.dig(:status) : nil
+                    end
 
       instrument(
         'embedding_api_call_failed',

@@ -38,6 +38,36 @@ RSpec.describe OpenaiClient do
       end
     end
 
+    context 'when given a reasoning_effort parameter' do
+      let(:context) { 'What is the capital of France?' }
+
+      before do
+        stub_request(:post, "#{api_base_url}/chat/completions")
+          .to_return(status: 200, body: response_body.to_json, headers: { 'Content-Type' => 'application/json' })
+      end
+
+      it 'includes reasoning_effort in the request body when present' do
+        client.call(context, reasoning_effort: 'low')
+
+        expect(WebMock).to have_requested(:post, "#{api_base_url}/chat/completions")
+          .with(body: hash_including('reasoning_effort' => 'low'))
+      end
+
+      it 'omits reasoning_effort from the request body when nil' do
+        client.call(context)
+
+        expect(WebMock).to(have_requested(:post, "#{api_base_url}/chat/completions")
+          .with { |req| !JSON.parse(req.body).key?('reasoning_effort') })
+      end
+
+      it 'omits reasoning_effort from the request body when blank' do
+        client.call(context, reasoning_effort: '')
+
+        expect(WebMock).to(have_requested(:post, "#{api_base_url}/chat/completions")
+          .with { |req| !JSON.parse(req.body).key?('reasoning_effort') })
+      end
+    end
+
     context 'when given an array of messages' do
       let(:messages) do
         [
@@ -59,21 +89,34 @@ RSpec.describe OpenaiClient do
       end
     end
 
-    context 'when the API returns an error response' do
+    context 'when the API returns a 500 error response' do
       before do
+        allow(Kernel).to receive(:sleep)
+
         stub_request(:post, "#{api_base_url}/chat/completions")
           .to_return(status: 500, body: { error: 'Internal Server Error' }.to_json, headers: { 'Content-Type' => 'application/json' })
       end
 
-      it 'returns an empty string' do
-        result = client.call('test')
-        expect(result).to eq('')
+      it 'raises an ApiError' do
+        expect { client.call('test') }.to raise_error(OpenaiClient::ApiError) do |error|
+          expect(error.status).to eq(500)
+        end
+      end
+    end
+
+    context 'when the API returns a 429 rate limit response' do
+      before do
+        allow(Kernel).to receive(:sleep)
+
+        stub_request(:post, "#{api_base_url}/chat/completions")
+          .to_return(status: 429, body: { error: 'Rate limit exceeded' }.to_json, headers: { 'Content-Type' => 'application/json', 'Retry-After' => '5' })
       end
 
-      it 'logs the error' do
-        allow(Rails.logger).to receive(:error)
-        client.call('test')
-        expect(Rails.logger).to have_received(:error).with(/OpenAIClient error/)
+      it 'raises a RateLimitError with retry_after' do
+        expect { client.call('test') }.to raise_error(OpenaiClient::RateLimitError) do |error|
+          expect(error.status).to eq(429)
+          expect(error.retry_after).to eq(5.0)
+        end
       end
     end
 
@@ -158,6 +201,36 @@ RSpec.describe OpenaiClient do
         expect { client.call('test') }.to raise_error(Faraday::SSLError)
       end
     end
+
+    context 'when a transient HTTP error occurs then succeeds' do
+      before do
+        call_count = 0
+        stub_request(:post, "#{api_base_url}/chat/completions").to_return do
+          call_count += 1
+          if call_count == 1
+            { status: 500, body: { error: 'Server Error' }.to_json, headers: { 'Content-Type' => 'application/json' } }
+          else
+            { status: 200, body: response_body.to_json, headers: { 'Content-Type' => 'application/json' } }
+          end
+        end
+      end
+
+      it 'retries and returns the response' do
+        result = client.call('test')
+        expect(result).to eq('capital' => 'Paris')
+      end
+    end
+
+    context 'when HTTP errors persist' do
+      before do
+        stub_request(:post, "#{api_base_url}/chat/completions")
+          .to_return(status: 500, body: { error: 'Server Error' }.to_json, headers: { 'Content-Type' => 'application/json' })
+      end
+
+      it 'raises ApiError after exhausting retries' do
+        expect { client.call('test') }.to raise_error(OpenaiClient::ApiError)
+      end
+    end
   end
 
   describe '.call' do
@@ -181,11 +254,19 @@ RSpec.describe OpenaiClient do
   end
 
   describe '.client' do
+    before do
+      described_class.instance_variable_set(:@client, nil)
+    end
+
+    after do
+      described_class.instance_variable_set(:@client, nil)
+    end
+
     it 'creates a Faraday client with correct configuration' do
       client = described_class.client
 
       expect(client).to be_a(Faraday::Connection)
-      expect(client.headers['Authorization']).to eq('Bearer test-api-key')
+      expect(client.headers['Authorization']).to eq("Bearer #{TradeTariffBackend.openai_api_key}")
       expect(client.headers['Content-Type']).to eq('application/json')
       expect(client.headers['User-Agent']).to eq('TradeTariffBackend/')
     end

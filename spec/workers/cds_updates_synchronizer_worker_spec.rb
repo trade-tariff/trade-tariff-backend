@@ -4,7 +4,7 @@ RSpec.describe CdsUpdatesSynchronizerWorker, type: :worker do
   shared_examples_for 'a synchronizer worker that queues other workers' do
     it { expect(Sidekiq::Client).to have_received(:enqueue_in).with(5.minutes, ClearInvalidSearchReferences) }
     it { expect(Sidekiq::Client).to have_received(:enqueue_in).with(11.minutes, PopulateChangesTableWorker) }
-    it { expect(Sidekiq::Client).to have_received(:enqueue_in).with(12.minutes, PopulateTariffChangesWorker) }
+    it { expect(Sidekiq::Client).to have_received(:enqueue_in).with(15.minutes, PopulateTariffChangesWorker) }
     it { expect(Sidekiq::Client).to have_received(:enqueue_in).with(5.minutes, ClearCacheWorker) }
   end
 
@@ -34,7 +34,7 @@ RSpec.describe CdsUpdatesSynchronizerWorker, type: :worker do
 
     let(:changes_applied) { true }
     let(:service) { 'uk' }
-    let(:cut_off_time) { 1.hour.from_now }
+    let(:cut_off_time) { Time.zone.now.end_of_day }
 
     context 'with todays file missing' do
       before do

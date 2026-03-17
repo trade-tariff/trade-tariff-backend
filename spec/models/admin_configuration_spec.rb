@@ -37,7 +37,6 @@ RSpec.describe AdminConfiguration do
         described_class.classification.by_name('test_lookup')
 
         config.update(value: 'updated')
-        described_class.refresh!(concurrently: false)
 
         cached = described_class.classification.by_name('test_lookup')
         expect(cached.value).to eq('found')
@@ -47,7 +46,6 @@ RSpec.describe AdminConfiguration do
         described_class.classification.by_name('test_lookup')
 
         config.update(value: 'updated')
-        described_class.refresh!(concurrently: false)
 
         memory_store.delete('admin_configurations/test_lookup')
 
@@ -65,7 +63,6 @@ RSpec.describe AdminConfiguration do
         described_class.classification.by_name('test_lookup')
 
         config.update(value: 'updated')
-        described_class.refresh!(concurrently: false)
 
         fresh = described_class.classification.by_name('test_lookup')
         expect(fresh.value).to eq('updated')
@@ -354,7 +351,7 @@ RSpec.describe AdminConfiguration do
 
   describe '.default_for' do
     it 'returns static values directly' do
-      expect(described_class.default_for('opensearch_result_limit')).to eq(80)
+      expect(described_class.default_for('opensearch_result_limit')).to eq(30)
     end
 
     it 'resolves lambda values' do
@@ -393,7 +390,7 @@ RSpec.describe AdminConfiguration do
   describe '.integer_value' do
     context 'when config record is missing' do
       it 'returns the default value' do
-        expect(described_class.integer_value('opensearch_result_limit')).to eq(80)
+        expect(described_class.integer_value('opensearch_result_limit')).to eq(30)
         expect(described_class.integer_value('pos_noun_boost')).to eq(10)
         expect(described_class.integer_value('search_result_limit')).to eq(0)
       end
@@ -431,6 +428,130 @@ RSpec.describe AdminConfiguration do
 
       it 'returns the selected option' do
         expect(described_class.option_value('search_model')).to eq('gpt-4.1-mini-2025-04-14')
+      end
+    end
+  end
+
+  describe 'nested_options value validation' do
+    subject(:config) { build(:admin_configuration, :nested_options, **attrs) }
+
+    let(:attrs) { {} }
+
+    context 'with valid nested_options' do
+      it 'is valid' do
+        expect(config).to be_valid
+      end
+    end
+
+    context 'with empty options array' do
+      let(:attrs) do
+        {
+          value: {
+            'selected' => 'gpt-5.2',
+            'sub_values' => { 'reasoning_effort' => 'low' },
+            'options' => [],
+          },
+        }
+      end
+
+      it 'is invalid' do
+        expect(config).not_to be_valid
+        expect(config.errors[:value]).to be_present
+      end
+    end
+
+    context 'with missing selected' do
+      let(:attrs) do
+        {
+          value: {
+            'selected' => '',
+            'sub_values' => {},
+            'options' => [{ 'key' => 'gpt-5.2', 'label' => 'GPT-5.2', 'sub_options' => {} }],
+          },
+        }
+      end
+
+      it 'is invalid' do
+        expect(config).not_to be_valid
+        expect(config.errors[:value]).to be_present
+      end
+    end
+
+    context 'with non-hash value' do
+      let(:attrs) do
+        { value: 'not a hash' }
+      end
+
+      it 'is invalid' do
+        expect(config).not_to be_valid
+        expect(config.errors[:value]).to be_present
+      end
+    end
+  end
+
+  describe '.nested_options_value' do
+    context 'when config record is missing' do
+      it 'returns the default value with empty sub_values' do
+        allow(TradeTariffBackend).to receive(:ai_model).and_return('gpt-5.2')
+        result = described_class.nested_options_value('search_model')
+        expect(result).to eq({ selected: 'gpt-5.2', sub_values: {} })
+      end
+    end
+
+    context 'when config record exists' do
+      before do
+        create(:admin_configuration, :nested_options,
+               name: 'search_model',
+               area: 'classification',
+               value: {
+                 'selected' => 'gpt-4.1-mini-2025-04-14',
+                 'sub_values' => { 'reasoning_effort' => 'high' },
+                 'options' => [
+                   { 'key' => 'gpt-4.1-mini-2025-04-14', 'label' => 'GPT-4.1 Mini', 'sub_options' => {} },
+                 ],
+               })
+      end
+
+      it 'returns the selected value and sub_values' do
+        result = described_class.nested_options_value('search_model')
+        expect(result).to eq({ selected: 'gpt-4.1-mini-2025-04-14', sub_values: { 'reasoning_effort' => 'high' } })
+      end
+    end
+
+    context 'when config has no sub_values' do
+      before do
+        create(:admin_configuration, :nested_options,
+               name: 'search_model',
+               area: 'classification',
+               value: {
+                 'selected' => 'gpt-5.2',
+                 'options' => [{ 'key' => 'gpt-5.2', 'label' => 'GPT-5.2', 'sub_options' => {} }],
+               })
+      end
+
+      it 'returns empty sub_values hash' do
+        result = described_class.nested_options_value('search_model')
+        expect(result[:sub_values]).to eq({})
+      end
+    end
+
+    context 'when reloaded from database (JSONBHash)' do
+      before do
+        create(:admin_configuration, :nested_options,
+               name: 'search_model',
+               area: 'classification',
+               value: {
+                 'selected' => 'o3-2025-04-16',
+                 'sub_values' => { 'reasoning_effort' => 'medium' },
+                 'options' => [
+                   { 'key' => 'o3-2025-04-16', 'label' => 'o3', 'sub_options' => { 'reasoning_effort' => %w[low medium high] } },
+                 ],
+               })
+      end
+
+      it 'returns the correct values from JSONBHash' do
+        result = described_class.nested_options_value('search_model')
+        expect(result).to eq({ selected: 'o3-2025-04-16', sub_values: { 'reasoning_effort' => 'medium' } })
       end
     end
   end

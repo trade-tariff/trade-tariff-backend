@@ -1,6 +1,8 @@
 module Api
   module Admin
     class AdminConfigurationsController < AdminController
+      include Api::Admin::VersionBrowsing
+
       def index
         render json: serialize(configurations)
       end
@@ -11,10 +13,8 @@ module Api
 
       def update
         configuration.set(update_params)
-        configuration.operation = 'U'
-        configuration.operation_date = Time.zone.today
 
-        if configuration.save_with_refresh
+        if configuration.save(raise_on_failure: false)
           render json: serialize(configuration.reload, serializer_options), status: :ok
         else
           render json: serialize_errors(configuration), status: :unprocessable_content
@@ -32,7 +32,7 @@ module Api
       end
 
       def find_configuration
-        if filter_oid.present?
+        if filter_version_id.present? && !current_version?
           find_historical_configuration
         else
           find_current_configuration
@@ -47,70 +47,17 @@ module Api
       end
 
       def find_historical_configuration
-        operation = AdminConfiguration::Operation
-          .where(name: params[:id])
-          .where(Sequel.lit('oid < ?', filter_oid))
-          .order(Sequel.desc(:oid))
+        version = versions_for_item
+          .where(id: filter_version_id)
           .first
 
-        raise Sequel::RecordNotFound if operation.blank?
+        raise Sequel::RecordNotFound if version.blank?
 
-        operation.record_from_oplog
+        version.reify
       end
 
-      def serializer_options
-        { meta: version_meta }
-      end
-
-      def version_meta
-        {
-          version: {
-            current: current_version?,
-            oid: current_oid,
-            previous_oid: previous_oid,
-            has_previous_version: previous_oid.present?,
-          },
-        }
-      end
-
-      def current_oid
-        @current_oid ||= viewed_operation&.oid
-      end
-
-      def previous_oid
-        return @previous_oid if defined?(@previous_oid)
-
-        viewed_oid = viewed_operation&.oid
-        return @previous_oid = nil if viewed_oid.blank?
-
-        @previous_oid = AdminConfiguration::Operation
-          .where(name: params[:id])
-          .where(Sequel.lit('oid < ?', viewed_oid))
-          .order(Sequel.desc(:oid))
-          .get(:oid)
-      end
-
-      def viewed_operation
-        @viewed_operation ||= if filter_oid.present?
-                                AdminConfiguration::Operation
-                                  .where(name: params[:id])
-                                  .where(Sequel.lit('oid < ?', filter_oid))
-                                  .order(Sequel.desc(:oid))
-                                  .first
-                              else
-                                AdminConfiguration::Operation
-                                  .where(name: params[:id])
-                                  .order(Sequel.desc(:oid))
-                                  .first
-                              end
-      end
-
-      def current_version?
-        filter_oid.blank?
-      end
-
-      def filter_oid
-        params.dig(:filter, :oid)&.to_i
+      def versions_for_item
+        Version.where(item_type: 'AdminConfiguration', item_id: params[:id])
       end
 
       def update_params

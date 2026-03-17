@@ -45,10 +45,11 @@ RSpec.describe InteractiveSearchService do
     create(:admin_configuration, name: 'search_context', value: default_search_context, area: 'classification')
   end
 
-  def build_result(code, description, score)
+  def build_result(code, description, score, full_description: nil)
     OpenStruct.new(
       goods_nomenclature_item_id: code,
       description: description,
+      full_description: full_description,
       score: score,
     )
   end
@@ -58,7 +59,6 @@ RSpec.describe InteractiveSearchService do
       before do
         config = AdminConfiguration.where(name: 'interactive_search_enabled').first
         config.update(value: Sequel.pg_jsonb_wrap(false))
-        AdminConfiguration.refresh!(concurrently: false)
       end
 
       it 'returns nil' do
@@ -128,6 +128,7 @@ RSpec.describe InteractiveSearchService do
         expect(OpenaiClient).to have_received(:call).with(
           a_string_including('you MUST now provide your best answer'),
           model: anything,
+          reasoning_effort: anything,
         )
       end
 
@@ -309,6 +310,7 @@ RSpec.describe InteractiveSearchService do
         expect(OpenaiClient).to have_received(:call).with(
           a_string_including('Leather'),
           model: 'gpt-5.2',
+          reasoning_effort: nil,
         )
       end
 
@@ -359,6 +361,63 @@ RSpec.describe InteractiveSearchService do
     end
   end
 
+  describe 'context formatting' do
+    let(:ai_response) { '{"answers": [{"commodity_code": "4202210000", "confidence": "Strong"}]}' }
+
+    before do
+      allow(OpenaiClient).to receive(:call).and_return(ai_response)
+    end
+
+    context 'when results have full_description' do
+      let(:opensearch_results) do
+        [
+          build_result('4202210000', 'Other', 10.5, full_description: 'Handbags - Of leather or composition leather'),
+          build_result('4202220000', 'Other', 8.3, full_description: 'Handbags - Of plastic sheeting or textile materials'),
+        ]
+      end
+
+      it 'uses full_description in the context sent to the AI' do
+        result
+
+        expect(OpenaiClient).to have_received(:call).with(
+          a_string_including('Handbags - Of leather or composition leather'),
+          anything,
+        )
+      end
+
+      it 'does not use the bare description' do
+        result
+
+        context_arg = nil
+        expect(OpenaiClient).to have_received(:call) do |context, **_opts|
+          context_arg = context
+        end
+
+        parsed_results = JSON.parse(context_arg.match(/OpenSearch results: (.+?)Previous/m)[1])
+        descriptions = parsed_results.map { |r| r['description'] }
+        expect(descriptions).not_to include('Other')
+      end
+    end
+
+    context 'when results have no full_description' do
+      let(:opensearch_results) do
+        [
+          build_result('4202210000', 'Handbags with outer surface of leather', 10.5),
+          build_result('4202220000', 'Handbags with outer surface of plastic', 8.3),
+        ]
+      end
+
+      it 'falls back to description' do
+        result
+
+        expect(OpenaiClient).to have_received(:call).with(
+          a_string_including('Handbags with outer surface of leather'),
+          anything,
+        )
+      end
+    end
+  end
+
   describe 'AdminConfiguration integration' do
     let(:ai_response) { '{"answers": [{"commodity_code": "4202210000", "confidence": "Strong"}]}' }
 
@@ -368,13 +427,14 @@ RSpec.describe InteractiveSearchService do
 
     context 'when search_model config exists' do
       before do
-        create(:admin_configuration, :options,
+        create(:admin_configuration, :nested_options,
                name: 'search_model',
                area: 'classification',
                value: {
                  'selected' => 'gpt-4.1-mini-2025-04-14',
+                 'sub_values' => {},
                  'options' => [
-                   { 'key' => 'gpt-4.1-mini-2025-04-14', 'label' => 'GPT-4.1 Mini' },
+                   { 'key' => 'gpt-4.1-mini-2025-04-14', 'label' => 'GPT-4.1 Mini', 'sub_options' => {} },
                  ],
                })
       end
@@ -385,6 +445,7 @@ RSpec.describe InteractiveSearchService do
         expect(OpenaiClient).to have_received(:call).with(
           anything,
           model: 'gpt-4.1-mini-2025-04-14',
+          reasoning_effort: nil,
         )
       end
     end
@@ -392,7 +453,6 @@ RSpec.describe InteractiveSearchService do
     context 'when search_context config exists' do
       before do
         AdminConfiguration.where(name: 'search_context').first.update(value: Sequel.pg_jsonb_wrap('Custom prompt: %{search_input}'))
-        AdminConfiguration.refresh!(concurrently: false)
       end
 
       it 'uses the configured context' do
@@ -410,7 +470,6 @@ RSpec.describe InteractiveSearchService do
         AdminConfiguration.where(name: 'search_context').first.update(
           value: Sequel.pg_jsonb_wrap('Query: %{search_input} Expanded: %{expanded_query}'),
         )
-        AdminConfiguration.refresh!(concurrently: false)
       end
 
       it 'substitutes both the original and expanded query' do
@@ -430,7 +489,6 @@ RSpec.describe InteractiveSearchService do
         AdminConfiguration.where(name: 'search_context').first.update(
           value: Sequel.pg_jsonb_wrap('Query: %{search_input} Expanded: %{expanded_query}'),
         )
-        AdminConfiguration.refresh!(concurrently: false)
       end
 
       it 'substitutes both with the same value' do
@@ -450,7 +508,6 @@ RSpec.describe InteractiveSearchService do
         AdminConfiguration.where(name: 'search_context').first.update(
           value: Sequel.pg_jsonb_wrap('Query: %{search_input} Expanded: %{expanded_query}'),
         )
-        AdminConfiguration.refresh!(concurrently: false)
       end
 
       it 'substitutes expanded_query with empty string' do
