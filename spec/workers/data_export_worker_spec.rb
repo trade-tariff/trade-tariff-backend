@@ -4,8 +4,7 @@ RSpec.describe DataExportWorker, type: :worker do
   let(:subscription) { create(:user_subscription, subscription_type: Subscriptions::Type.my_commodities) }
   let(:data_export) { create(:data_export, user_subscription: subscription) }
 
-  let(:service_class) { class_double(Api::User::DataExportService::SubscriptionTargetsDownloadService) }
-  let(:service) { instance_double(Api::User::DataExportService::SubscriptionTargetsDownloadService) }
+  let(:exporter) { instance_double(Api::User::ActiveCommoditiesService) }
 
   let(:storage_service) { instance_double(Api::User::DataExportService::StorageService) }
 
@@ -22,17 +21,10 @@ RSpec.describe DataExportWorker, type: :worker do
   end
 
   before do
-    allow(Rails).to receive(:env).and_return(ActiveSupport::StringInquirer.new('production'))
-
     allow(PublicUsers::DataExport).to receive(:[]).with(data_export.id).and_return(data_export)
-    allow(data_export).to receive(:user_subscription).and_return(subscription)
-
-    allow(subscription).to receive(:data_export_service_for)
-      .with(data_export.export_type)
-      .and_return(service_class)
-
-    allow(service_class).to receive(:new).with(subscription).and_return(service)
-    allow(service).to receive(:call).and_return(result)
+    allow(data_export).to receive_messages(user_subscription: subscription, exporter_class: 'Api::User::ActiveCommoditiesService')
+    allow(Api::User::ActiveCommoditiesService).to receive(:new).with(subscription).and_return(exporter)
+    allow(exporter).to receive(:download_payload).and_return(result)
 
     allow(Api::User::DataExportService::StorageService).to receive(:new).and_return(storage_service)
     allow(storage_service).to receive(:upload)
@@ -56,7 +48,7 @@ RSpec.describe DataExportWorker, type: :worker do
     context 'when export generation errors' do
       before do
         allow(Sidekiq.logger).to receive(:error)
-        allow(service).to receive(:call).and_raise(StandardError, 'boom')
+        allow(exporter).to receive(:download_payload).and_raise(StandardError, 'boom')
       end
 
       it 'marks export failed and re-raises' do

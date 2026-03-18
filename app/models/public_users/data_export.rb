@@ -7,6 +7,10 @@ module PublicUsers
 
     CCWL = 'ccwl'.freeze
 
+    EXPORTER_CLASSES = {
+      CCWL => 'Api::User::ActiveCommoditiesService',
+    }.freeze
+
     ALLOWED_STATUSES = [
       QUEUED,
       PROCESSING,
@@ -34,6 +38,14 @@ module PublicUsers
       def for_subscription(subscription_uuid)
         where(user_subscriptions_uuid: subscription_uuid)
       end
+    end
+
+    def exporter_class
+      EXPORTER_CLASSES.fetch(export_type)
+    end
+
+    def exporter_klass
+      exporter_class.constantize
     end
   end
 end

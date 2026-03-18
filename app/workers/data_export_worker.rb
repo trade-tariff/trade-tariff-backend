@@ -14,8 +14,8 @@ class DataExportWorker
 
     data_export.update(status: PublicUsers::DataExport::PROCESSING)
 
-    service_class = subscription.data_export_service_for(data_export.export_type)
-    result = service_class.new(subscription).call
+    klass = data_export.exporter_klass
+    result = klass.new(subscription).download_payload
     date = Time.zone.today
 
     key = "#{DATA_EXPORT_OBJECT_KEY}#{date.strftime('%Y')}/#{date.strftime('%m')}/#{date.strftime('%d')}/#{data_export.export_type}/#{data_export.id}_#{result[:file_name]}"
