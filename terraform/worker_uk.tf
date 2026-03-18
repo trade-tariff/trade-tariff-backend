@@ -1,5 +1,5 @@
 module "worker_uk" {
-  source = "git@github.com:trade-tariff/trade-tariff-platform-terraform-modules.git//aws/ecs-service?ref=aws/ecs-service-v1.19.2"
+  source = "git@github.com:trade-tariff/trade-tariff-platform-terraform-modules.git//aws/ecs-service?ref=aws/ecs-service-v1.21.0"
 
   service_name              = "worker-uk"
   container_definition_kind = "db-backed"
@@ -16,7 +16,6 @@ module "worker_uk" {
   docker_tag   = var.docker_tag
   skip_destroy = true
 
-  container_port        = 8080
   private_dns_namespace = "tariff.internal"
 
   cpu    = 2048

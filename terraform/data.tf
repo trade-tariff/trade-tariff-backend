@@ -27,6 +27,14 @@ data "aws_lb_target_group" "backend_xi" {
   name = "backend-xi"
 }
 
+data "aws_lb_target_group" "backend_uk_https" {
+  name = "backend-uk-https"
+}
+
+data "aws_lb_target_group" "backend_xi_https" {
+  name = "backend-xi-https"
+}
+
 data "aws_secretsmanager_secret" "backend_uk_worker_configuration" {
   name = "backend-uk-worker-configuration"
 }
