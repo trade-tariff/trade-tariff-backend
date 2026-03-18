@@ -50,6 +50,7 @@ RSpec.describe Api::User::MyCommoditiesMetaService do
       },
       published: {
         yesterday: 0,
+        last_change_date: nil,
       },
     }
   end
