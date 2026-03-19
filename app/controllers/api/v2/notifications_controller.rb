@@ -15,7 +15,7 @@ module Api
             render json: { data: { id: notification.id, type: 'notifications' } }, status: :accepted
           end
         else
-          render json: Api::V2::ActiveModelErrorSerializationService.new(notification).call, status: :unprocessable_entity
+          render json: Api::V2::ActiveModelErrorSerializationService.new(notification).call, status: :unprocessable_content
         end
       end
 
