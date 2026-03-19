@@ -38,6 +38,12 @@ RSpec.describe Api::Admin::ReportsController do
 
         expect(differences.dig('attributes', 'download_url')).to be_nil
       end
+
+      it 'still exposes email support for differences' do
+        differences = response.parsed_body['data'].find { |item| item['id'] == 'differences' }
+
+        expect(differences.dig('attributes', 'supports_email')).to be(true)
+      end
     end
 
     context 'when on the XI service' do
@@ -61,6 +67,18 @@ RSpec.describe Api::Admin::ReportsController do
     it { expect(response).to have_http_status(:ok) }
     it { expect(response.parsed_body.dig('data', 'id')).to eq('differences') }
     it { expect(response.parsed_body.dig('data', 'attributes', 'download_url')).to eq(Reporting::Differences.download_link_today) }
+    it { expect(response.parsed_body.dig('data', 'attributes', 'supports_email')).to be(true) }
+  end
+
+  describe 'POST #send_email' do
+    before do
+      allow(TradeTariffBackend).to receive_messages(service: 'uk', reporting_cdn_host: nil)
+      allow(DifferencesReportWorker).to receive(:perform_async)
+      post :send_email, params: { id: 'differences' }
+    end
+
+    it { expect(response).to have_http_status(:accepted) }
+    it { expect(DifferencesReportWorker).to have_received(:perform_async).with(true) }
   end
 
   describe 'POST #run' do

@@ -1,6 +1,6 @@
 module Reporting
   class AdminReportRegistry
-    ReportDefinition = Data.define(:id, :name, :description, :generator, :services, :dependencies) do
+    ReportDefinition = Data.define(:id, :name, :description, :generator, :services, :dependencies, :email_generator) do
       def available_for_service?
         services.include?(TradeTariffBackend.service)
       end
@@ -11,6 +11,14 @@ module Reporting
 
       delegate :available_today?, to: :report_class
       delegate :download_link_today, to: :report_class
+
+      def supports_email?
+        email_generator.present?
+      end
+
+      def send_email!
+        email_generator.call
+      end
 
       def dependency_labels
         dependencies.to_h { |dependency| [dependency[:id], dependency[:label]] }
@@ -51,6 +59,7 @@ module Reporting
             generator: -> { Reporting::Commodities },
             services: %w[uk xi],
             dependencies: [],
+            email_generator: nil,
           ),
           ReportDefinition.new(
             id: 'basic',
@@ -59,6 +68,7 @@ module Reporting
             generator: -> { Reporting::Basic },
             services: %w[uk xi],
             dependencies: [],
+            email_generator: nil,
           ),
           ReportDefinition.new(
             id: 'supplementary_units',
@@ -67,6 +77,7 @@ module Reporting
             generator: -> { Reporting::SupplementaryUnits },
             services: %w[uk xi],
             dependencies: [],
+            email_generator: nil,
           ),
           ReportDefinition.new(
             id: 'declarable_duties',
@@ -75,6 +86,7 @@ module Reporting
             generator: -> { Reporting::DeclarableDuties },
             services: %w[uk xi],
             dependencies: [],
+            email_generator: nil,
           ),
           ReportDefinition.new(
             id: 'prohibitions',
@@ -83,6 +95,7 @@ module Reporting
             generator: -> { Reporting::Prohibitions },
             services: %w[uk xi],
             dependencies: [],
+            email_generator: nil,
           ),
           ReportDefinition.new(
             id: 'geographical_area_groups',
@@ -91,6 +104,7 @@ module Reporting
             generator: -> { Reporting::GeographicalAreaGroups },
             services: %w[uk xi],
             dependencies: [],
+            email_generator: nil,
           ),
           ReportDefinition.new(
             id: 'differences',
@@ -104,6 +118,7 @@ module Reporting
               { id: 'uk_supplementary_units', label: 'UK supplementary units report', report: Reporting::SupplementaryUnits },
               { id: 'xi_supplementary_units', label: 'XI supplementary units report', report: Reporting::SupplementaryUnits },
             ],
+            email_generator: -> { DifferencesReportWorker.perform_async(true) },
           ),
           ReportDefinition.new(
             id: 'category_assessments',
@@ -112,6 +127,7 @@ module Reporting
             generator: -> { Reporting::CategoryAssessments },
             services: %w[xi],
             dependencies: [],
+            email_generator: nil,
           ),
         ]
       end

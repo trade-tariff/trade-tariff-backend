@@ -17,6 +17,14 @@ module Api
         head :accepted
       end
 
+      def send_email
+        return head :not_found unless report.supports_email?
+
+        report.send_email!
+
+        head :accepted
+      end
+
       private
 
       def report
