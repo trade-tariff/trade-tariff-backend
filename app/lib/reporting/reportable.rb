@@ -30,10 +30,7 @@ module Reporting
       peak_during = [after, before].max
       delta = peak_during - baseline
 
-      Rails.logger.info "[MEMORY] #{name.ljust(30)} → " \
-                        "Peak: #{peak_during.round(2)} MB | " \
-                        "Delta: +#{delta.round(2)} MB | " \
-                        "Growth from prev: +#{(after - before).round(2)} MB"
+      Rails.logger.info "[MEMORY] #{name.ljust(30)} -> " + "Peak: #{peak_during.round(2)} MB | " + "Delta: +#{delta.round(2)} MB | " + "Growth from prev: +#{(after - before).round(2)} MB"
 
       self.baseline = peak_during
     end
@@ -64,6 +61,18 @@ module Reporting
 
     def now
       Time.zone.today
+    end
+
+    def today_object_key
+      object_key
+    end
+
+    def available_today?
+      Reporting.exist?(today_object_key)
+    end
+
+    def download_link_today
+      Reporting.get_link(today_object_key)
     end
 
     def zip(data, filename)
