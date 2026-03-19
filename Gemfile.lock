@@ -195,7 +195,7 @@ GEM
       rdoc (>= 4.0.0)
       reline (>= 0.4.2)
     jmespath (1.6.2)
-    json (2.19.1)
+    json (2.19.2)
     json_expressions (0.9.0)
     jsonapi-serializer (2.2.0)
       activesupport (>= 4.2)
