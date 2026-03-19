@@ -32,6 +32,12 @@ RSpec.describe Api::Admin::ReportsController do
         expect(differences.dig('attributes', 'dependencies_missing')).to be(true)
         expect(differences.dig('attributes', 'missing_dependencies')).to include('UK commodities report', 'XI commodities report')
       end
+
+      it 'does not return a download URL when the report is unavailable' do
+        differences = response.parsed_body['data'].find { |item| item['id'] == 'differences' }
+
+        expect(differences.dig('attributes', 'download_url')).to be_nil
+      end
     end
 
     context 'when on the XI service' do
@@ -54,6 +60,7 @@ RSpec.describe Api::Admin::ReportsController do
 
     it { expect(response).to have_http_status(:ok) }
     it { expect(response.parsed_body.dig('data', 'id')).to eq('differences') }
+    it { expect(response.parsed_body.dig('data', 'attributes', 'download_url')).to eq(Reporting::Differences.download_link_today) }
   end
 
   describe 'POST #run' do
@@ -65,29 +72,5 @@ RSpec.describe Api::Admin::ReportsController do
 
     it { expect(response).to have_http_status(:accepted) }
     it { expect(ReportTriggerWorker).to have_received(:perform_async).with('commodities') }
-  end
-
-  describe 'GET #download' do
-    before do
-      allow(TradeTariffBackend).to receive_messages(service: 'uk', reporting_cdn_host: nil)
-    end
-
-    context 'when the report is available' do
-      before do
-        allow(Reporting::Commodities).to receive_messages(available_today?: true, download_link_today: 'https://reporting.example/uk/report.csv')
-        get :download, params: { id: 'commodities' }
-      end
-
-      it { expect(response).to redirect_to('https://reporting.example/uk/report.csv') }
-    end
-
-    context 'when the report is not available' do
-      before do
-        allow(Reporting::Commodities).to receive(:available_today?).and_return(false)
-        get :download, params: { id: 'commodities' }
-      end
-
-      it { expect(response).to have_http_status(:not_found) }
-    end
   end
 end

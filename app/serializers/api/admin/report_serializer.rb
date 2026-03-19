@@ -10,6 +10,9 @@ module Api
 
       attribute :available, &:available_today?
       attribute :dependencies_missing, &:dependencies_missing?
+      attribute :download_url do |report|
+        report.available_today? ? report.download_link_today : nil
+      end
     end
   end
 end

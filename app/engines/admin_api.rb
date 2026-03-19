@@ -21,7 +21,6 @@ AdminApi.routes.draw do
       resources :reports, only: %i[index show], constraints: { id: /[a-z_]+/ } do
         member do
           post :run
-          get :download
         end
       end
 
