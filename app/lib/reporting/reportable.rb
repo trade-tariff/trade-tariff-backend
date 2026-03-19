@@ -68,11 +68,11 @@ module Reporting
     end
 
     def available_today?
-      Reporting.exist?(today_object_key)
+      Reporting.published_exist?(today_object_key)
     end
 
     def download_link_today
-      Reporting.get_link(today_object_key)
+      Reporting.published_link(today_object_key)
     end
 
     def zip(data, filename)
