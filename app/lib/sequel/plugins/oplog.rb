@@ -45,12 +45,12 @@ module Sequel
         end
 
         model.define_singleton_method(:actually_materialized?) do
-          unqualified_name = table_name.respond_to?(:column) ? table_name.column.to_s : table_name.to_s
+          relation_name = table_name.respond_to?(:column) ? table_name.column.to_s : table_name.to_s
 
-          result = db.fetch(<<~SQL, unqualified_name).first
-            SELECT relkind = 'm' as is_materialized
+          result = db.fetch(<<~SQL, relation_name).first
+            SELECT relkind = 'm' AS is_materialized
             FROM pg_class
-            WHERE relname = ?
+            WHERE oid = to_regclass(?)
           SQL
           result && result[:is_materialized]
         end

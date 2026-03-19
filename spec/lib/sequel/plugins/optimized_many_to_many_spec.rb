@@ -5,38 +5,39 @@
 
 RSpec.describe Sequel::Plugins::OptimizedManyToMany do
   before(:all) do
-    DB = Sequel::Model.db
-    DB.extension :pg_array
+    db = Sequel::Model.db
+    db.extension :pg_array
 
-    DB.drop_table?(:parents, cascade: true)
-    DB.drop_table?(:children, cascade: true)
-    DB.drop_table?(:grandchildren, cascade: true)
-    DB.drop_table?(:parents_children, cascade: true)
-    DB.drop_table?(:address, cascade: true)
+    db.drop_table?(:parents, cascade: true)
+    db.drop_table?(:children, cascade: true)
+    db.drop_table?(:grandchildren, cascade: true)
+    db.drop_table?(:parents_children, cascade: true)
+    db.drop_table?(:addresses, cascade: true)
+    db.drop_table?(:parents_addresses, cascade: true)
 
-    DB.create_table!(:parents) do
+    db.create_table!(:parents) do
       primary_key :id
       String :name
     end
 
-    DB.create_table!(:children) do
+    db.create_table!(:children) do
       primary_key :id
       String :name
     end
 
-    DB.create_table!(:parents_children) do
+    db.create_table!(:parents_children) do
       primary_key :id
       foreign_key :parent_id, :parents, on_delete: :cascade
       foreign_key :child_id, :children, on_delete: :cascade
     end
 
-    DB.create_table!(:grandchildren) do
+    db.create_table!(:grandchildren) do
       primary_key :id
       foreign_key :child_id, :children, on_delete: :cascade
       String :name
     end
 
-    DB.create_table!(:addresses) do
+    db.create_table!(:addresses) do
       Integer :number, null: false
       String  :postcode, null: false
       String  :street
@@ -44,13 +45,13 @@ RSpec.describe Sequel::Plugins::OptimizedManyToMany do
       primary_key %i[number postcode]
     end
 
-    DB.create_table!(:parents_addresses) do
+    db.create_table!(:parents_addresses) do
       Integer :number, null: false
       String  :postcode, null: false
       foreign_key :parent_id, :parents, on_delete: :cascade
     end
 
-    class Parent < Sequel::Model(DB[:parents])
+    class Parent < Sequel::Model(:parents)
       many_to_many :children,
                    class: 'Child',
                    join_table: :parents_children,
@@ -85,7 +86,7 @@ RSpec.describe Sequel::Plugins::OptimizedManyToMany do
   end
 
   before do
-    DB[:parents_children].delete
+    Sequel::Model.db[:parents_children].delete
     Child.dataset.delete
     Parent.dataset.delete
     Grandchild.dataset.delete
@@ -97,9 +98,9 @@ RSpec.describe Sequel::Plugins::OptimizedManyToMany do
     @c2 = Child.create(name: 'C2')
     @c3 = Child.create(name: 'C3')
 
-    DB[:parents_children].insert(parent_id: @p1.id, child_id: @c1.id)
-    DB[:parents_children].insert(parent_id: @p1.id, child_id: @c2.id)
-    DB[:parents_children].insert(parent_id: @p2.id, child_id: @c3.id)
+    Sequel::Model.db[:parents_children].insert(parent_id: @p1.id, child_id: @c1.id)
+    Sequel::Model.db[:parents_children].insert(parent_id: @p1.id, child_id: @c2.id)
+    Sequel::Model.db[:parents_children].insert(parent_id: @p2.id, child_id: @c3.id)
 
     @g1 = Grandchild.create(name: 'G1', child: @c1)
   end
@@ -242,9 +243,9 @@ RSpec.describe Sequel::Plugins::OptimizedManyToMany do
       @a2 = Address.create(number: 2, postcode: 'A2')
       @a3 = Address.create(number: 3, postcode: 'A3')
 
-      DB[:parents_addresses].insert(parent_id: @p1.id, number: @a1.number, postcode: @a1.postcode)
-      DB[:parents_addresses].insert(parent_id: @p1.id, number: @a2.number, postcode: @a2.postcode)
-      DB[:parents_addresses].insert(parent_id: @p2.id, number: @a3.number, postcode: @a3.postcode)
+      Sequel::Model.db[:parents_addresses].insert(parent_id: @p1.id, number: @a1.number, postcode: @a1.postcode)
+      Sequel::Model.db[:parents_addresses].insert(parent_id: @p1.id, number: @a2.number, postcode: @a2.postcode)
+      Sequel::Model.db[:parents_addresses].insert(parent_id: @p2.id, number: @a3.number, postcode: @a3.postcode)
     end
 
     it 'loads address with custom dataset' do
@@ -274,10 +275,10 @@ RSpec.describe Sequel::Plugins::OptimizedManyToMany do
 
       @p3 = Parent.create(name: 'P3')
 
-      DB[:parents_addresses].insert(parent_id: @p1.id, number: @a1.number, postcode: @a1.postcode)
-      DB[:parents_addresses].insert(parent_id: @p1.id, number: @a2.number, postcode: @a2.postcode)
-      DB[:parents_addresses].insert(parent_id: @p2.id, number: @a3.number, postcode: @a3.postcode)
-      DB[:parents_addresses].insert(parent_id: @p3.id, number: @a3.number, postcode: @a3.postcode)
+      Sequel::Model.db[:parents_addresses].insert(parent_id: @p1.id, number: @a1.number, postcode: @a1.postcode)
+      Sequel::Model.db[:parents_addresses].insert(parent_id: @p1.id, number: @a2.number, postcode: @a2.postcode)
+      Sequel::Model.db[:parents_addresses].insert(parent_id: @p2.id, number: @a3.number, postcode: @a3.postcode)
+      Sequel::Model.db[:parents_addresses].insert(parent_id: @p3.id, number: @a3.number, postcode: @a3.postcode)
     end
 
     it 'loads people with custom dataset' do

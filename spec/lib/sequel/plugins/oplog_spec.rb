@@ -4,14 +4,14 @@
 
 RSpec.describe Sequel::Plugins::Oplog do
   before(:all) do
-    DB = Sequel::Model.db
+    db = Sequel::Model.db
 
-    DB.drop_table?(:test_records_oplog, cascade: true)
-    DB.drop_table?(:test_records, cascade: true)
-    DB.drop_table?(:composite_test_records_oplog, cascade: true)
-    DB.drop_table?(:composite_test_records, cascade: true)
+    db.drop_table?(:test_records_oplog, cascade: true)
+    db.drop_table?(:test_records, cascade: true)
+    db.drop_table?(:composite_test_records_oplog, cascade: true)
+    db.drop_table?(:composite_test_records, cascade: true)
 
-    DB.create_table!(:test_records) do
+    db.create_table!(:test_records) do
       primary_key :id
       String :name
       String :description
@@ -20,7 +20,7 @@ RSpec.describe Sequel::Plugins::Oplog do
       Integer :oid
     end
 
-    DB.create_table!(:test_records_oplog) do
+    db.create_table!(:test_records_oplog) do
       primary_key :oid
       Integer :id
       String :name
@@ -31,7 +31,7 @@ RSpec.describe Sequel::Plugins::Oplog do
       DateTime :operation_date
     end
 
-    DB.create_table!(:composite_test_records) do
+    db.create_table!(:composite_test_records) do
       Integer :part_a
       Integer :part_b
       String :data
@@ -39,7 +39,7 @@ RSpec.describe Sequel::Plugins::Oplog do
       primary_key %i[part_a part_b]
     end
 
-    DB.create_table!(:composite_test_records_oplog) do
+    db.create_table!(:composite_test_records_oplog) do
       primary_key :oid
       Integer :part_a
       Integer :part_b
@@ -48,22 +48,22 @@ RSpec.describe Sequel::Plugins::Oplog do
       DateTime :operation_date
     end
 
-    class TestRecord < Sequel::Model(DB[:test_records])
+    class TestRecord < Sequel::Model(:test_records)
       plugin :oplog, primary_key: :id
       unrestrict_primary_key
     end
 
-    class CompositeTestRecord < Sequel::Model(DB[:composite_test_records])
+    class CompositeTestRecord < Sequel::Model(:composite_test_records)
       plugin :oplog, primary_key: %i[part_a part_b]
       unrestrict_primary_key
     end
   end
 
   before do
-    DB[:test_records_oplog].truncate(restart: true, cascade: true)
-    DB[:test_records].truncate(restart: true, cascade: true)
-    DB[:composite_test_records_oplog].truncate(restart: true, cascade: true)
-    DB[:composite_test_records].truncate(restart: true, cascade: true)
+    Sequel::Model.db[:test_records_oplog].truncate(restart: true, cascade: true)
+    Sequel::Model.db[:test_records].truncate(restart: true, cascade: true)
+    Sequel::Model.db[:composite_test_records_oplog].truncate(restart: true, cascade: true)
+    Sequel::Model.db[:composite_test_records].truncate(restart: true, cascade: true)
   end
 
   describe '#previous_record' do
