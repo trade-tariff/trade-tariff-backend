@@ -73,7 +73,7 @@ class CdsImporter
       def comm_code_string(definition_id)
         definition = ::QuotaDefinition.where(quota_definition_sid: definition_id).eager(measures: []).first
         if definition.present?
-          goods_nomenclature_item_ids = definition.measures.map(&:goods_nomenclature_item_id).uniq
+          goods_nomenclature_item_ids = definition.measures.map(&:goods_nomenclature_item_id).uniq.sort
           goods_nomenclature_item_ids.join(',')
         else
           ''
