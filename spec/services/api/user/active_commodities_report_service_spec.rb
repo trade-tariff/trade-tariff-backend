@@ -5,6 +5,22 @@ RSpec.describe Api::User::ActiveCommoditiesReportService do
 
   before do
     create(
+      :chapter,
+      :with_description,
+      goods_nomenclature_item_id: '1100000000',
+      goods_nomenclature_sid: 11,
+      description: 'Chapter Eleven',
+    )
+
+    create(
+      :chapter,
+      :with_description,
+      goods_nomenclature_item_id: '2200000000',
+      goods_nomenclature_sid: 22,
+      description: 'Chapter Twenty Two',
+    )
+
+    create(
       :commodity,
       :expired,
       :with_description,
@@ -53,6 +69,8 @@ RSpec.describe Api::User::ActiveCommoditiesReportService do
 
       expect(instructions_row[0]).to eq('Instructions:')
       expect(instructions_row[1]).to eq(described_class::INSTRUCTIONS_TEXT)
+      expect(worksheet.rows[1].height).to eq(described_class::INSTRUCTIONS_ROW_HEIGHT)
+      expect(worksheet.instance_variable_get(:@merged_cells)).to include(described_class::INSTRUCTIONS_MERGE_RANGE)
     end
 
     it 'adds the date downloaded row in dd/mm/yyyy format' do
@@ -104,7 +122,7 @@ RSpec.describe Api::User::ActiveCommoditiesReportService do
     it 'adds the expected header row' do
       header_row = worksheet.rows[6]
       headers = header_row.cells.map(&:value)
-      expect(headers).to eq(%w[Commodity Description Status])
+      expect(headers).to eq(%w[Commodity Chapter Description Status])
       expect(header_row.height).to eq(34)
     end
 
@@ -152,19 +170,20 @@ RSpec.describe Api::User::ActiveCommoditiesReportService do
       expect(data_alignment).to include('indent="1"')
     end
 
-    it 'adds rows ordered by commodity code with status and description' do
+    it 'adds rows ordered by commodity code with chapter, description and status' do
       data_rows = worksheet.rows[7..].map do |row|
         [
           row.cells[0].value.to_s,
           extract_cell_text(row.cells[1].value),
-          row.cells[2].value.to_s,
+          extract_cell_text(row.cells[2].value),
+          row.cells[3].value.to_s,
         ]
       end
 
       expect(data_rows).to eq([
-        ["1111111111\n ", 'Expired commodity description', 'Expired'],
-        ["2222222222\n ", "Active commodity\ndescription", 'Active'],
-        ["3333333333\n ", 'Not applicable', 'Error from upload'],
+        ["1111111111\n ", '11: Chapter eleven', 'Expired commodity description', 'Expired'],
+        ["2222222222\n ", '22: Chapter twenty two', "Active commodity\ndescription", 'Active'],
+        ["3333333333\n ", 'Not applicable', 'Not applicable', 'Error from upload'],
       ])
     end
 
@@ -190,7 +209,7 @@ RSpec.describe Api::User::ActiveCommoditiesReportService do
 
     it 'applies requested status colors and bold 12pt text' do
       styles = package.workbook.styles
-      status_cells = worksheet.rows[7..9].map { |row| row.cells[2] }
+      status_cells = worksheet.rows[7..9].map { |row| row.cells[3] }
 
       style_data = status_cells.map do |cell|
         xf = styles.cellXfs[cell.style]
@@ -214,7 +233,7 @@ RSpec.describe Api::User::ActiveCommoditiesReportService do
       table = worksheet.tables.first
 
       expect(table).not_to be_nil
-      expect(table.ref).to eq('A7:C10')
+      expect(table.ref).to eq('A7:D10')
     end
   end
 
