@@ -61,5 +61,28 @@ RSpec.describe ReportWorker, type: :worker do
       it_behaves_like 'all reports are generated'
       it { expect(DifferencesReportWorker).not_to have_received(:perform_in) }
     end
+
+    context 'when a report fails' do
+      let(:service) { 'uk' }
+
+      before do
+        allow(Reporting::DeclarableDuties).to receive(:generate).and_raise(Sequel::DatabaseConnectionError)
+      end
+
+      it 'still generates subsequent reports' do
+        expect { worker.perform }.to raise_error(Sequel::DatabaseConnectionError)
+
+        expect(Reporting::GeographicalAreaGroups).to have_received(:generate)
+        expect(Reporting::CategoryAssessments).to have_received(:generate)
+      end
+
+      it 'logs the failure' do
+        allow(Rails.logger).to receive(:error)
+
+        expect { worker.perform }.to raise_error(Sequel::DatabaseConnectionError)
+
+        expect(Rails.logger).to have_received(:error).with(/DeclarableDuties.*failed/)
+      end
+    end
   end
 end
