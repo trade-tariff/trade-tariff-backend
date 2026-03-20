@@ -6,6 +6,8 @@ module Api
     # Expired - An expired code is a declarable code that is not active today, or has had children added later
     # Invalid - The code never existed or was never declarable
     class ActiveCommoditiesService
+      include Downloadable
+
       MYOTT_ALL_ACTIVE_COMMODITIES_CACHE_KEY = 'myott_all_active_commodities'.freeze
       MYOTT_ALL_EXPIRED_COMMODITIES_CACHE_KEY = 'myott_all_expired_commodities'.freeze
 
@@ -158,6 +160,17 @@ module Api
         paginated_codes = paginate_codes(codes, page, per_page)
 
         [materialize_with_nulls(paginated_codes), total]
+      end
+
+      def download_payload
+        package = TimeMachine.now { generate_report }
+        filename_date = TimeMachine.now { Time.zone.today.strftime('%Y-%m-%d') }
+
+        {
+          file_name: "commodity_watch_list-your_codes_#{filename_date}.xlsx",
+          content_type: Downloadable::CONTENT_TYPE_XLSX,
+          body: package.to_stream.read,
+        }
       end
 
       private
