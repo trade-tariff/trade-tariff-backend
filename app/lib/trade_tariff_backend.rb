@@ -235,7 +235,13 @@ module TradeTariffBackend
     end
 
     def reporting_cdn_host
-      ENV['REPORTING_CDN_HOST']
+      return ENV['REPORTING_CDN_HOST'] if ENV['REPORTING_CDN_HOST'].present?
+
+      {
+        'production' => 'https://reporting.trade-tariff.service.gov.uk',
+        'staging' => 'https://reporting.staging.trade-tariff.service.gov.uk',
+        'development' => 'https://reporting.dev.trade-tariff.service.gov.uk',
+      }[environment.to_s]
     end
 
     def opensearch_client

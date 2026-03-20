@@ -23,23 +23,23 @@ module Reporting
       end
 
       def get_today
-        Reporting.get(object_key)
+        Reporting.get_published(object_key)
       end
 
       def get_xi_today
-        Reporting.get(xi_object_key)
+        Reporting.get_published(xi_object_key)
       end
 
       def get_uk_today
-        Reporting.get(uk_object_key)
+        Reporting.get_published(uk_object_key)
       end
 
       def get_uk_link_today
-        Reporting.get_link(uk_object_key)
+        Reporting.published_link(uk_object_key)
       end
 
       def get_xi_link_today
-        Reporting.get_link(xi_object_key)
+        Reporting.published_link(xi_object_key)
       end
 
       private

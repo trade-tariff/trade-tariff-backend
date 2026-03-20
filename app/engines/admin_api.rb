@@ -18,6 +18,12 @@ AdminApi.routes.draw do
       resources :footnotes, only: %i[index show update]
       resources :search_references, only: [:index]
       resources :cds_update_notifications, only: [:create]
+      resources :reports, only: %i[index show], constraints: { id: /[a-z_]+/ } do
+        member do
+          post :run
+          post :send_email
+        end
+      end
 
       resources :chapters, only: %i[index show], constraints: { id: /\d{2}/ } do
         scope module: 'chapters', constraints: { chapter_id: /\d{2}/, id: /\d+/ } do
