@@ -67,7 +67,7 @@ RSpec.describe CdsImporter::ExcelWriter::QuotaDefinition do
 
     it 'joins comm codes into a comma-separated string' do
       row = mapper.data_row
-      expect(row[3]).to eq(measures.map(&:goods_nomenclature_item_id).join(','))
+      expect(row[3]).to eq(measures.map(&:goods_nomenclature_item_id).uniq.sort.join(','))
     end
   end
 end
