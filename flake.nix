@@ -54,7 +54,12 @@
             ${postgresql}/bin/initdb $PGDATA --auth=trust
           fi
 
-          ${postgresql}/bin/postgres -k $PGHOST -c listen_addresses=''' -c unix_socket_directories=$PGHOST -c max_wal_size=16GB
+          ${postgresql}/bin/postgres \
+            -k $PGHOST \
+            -c listen_addresses=''' \
+            -c unix_socket_directories=$PGHOST \
+            -c max_wal_size=16GB \
+            -c maintenance_work_mem=8GB
         '';
 
         lint = pkgs.writeShellScriptBin "lint" ''
