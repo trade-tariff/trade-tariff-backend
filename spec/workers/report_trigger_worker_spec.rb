@@ -5,6 +5,10 @@ RSpec.describe ReportTriggerWorker, type: :worker do
     it 'uses the within_1_hour queue' do
       expect(described_class.get_sidekiq_options['queue']).to eq(:within_1_hour)
     end
+
+    it 'retries transient failures' do
+      expect(described_class.get_sidekiq_options['retry']).to eq(3)
+    end
   end
 
   describe '#perform' do
