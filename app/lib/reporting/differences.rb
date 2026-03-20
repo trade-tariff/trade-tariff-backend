@@ -117,54 +117,19 @@ module Reporting
     end
 
     def generate(only: [])
-      total_start = Time.zone.now
+      instrument_report_step('generate_workbook', worksheet_count: worksheet_methods(only).size) do
+        # fast_excel cannot rotate sheets. as Overview must come first, create a
+        # blank sheet to position it correctly, then populate it last
+        workbook.add_worksheet('Overview')
 
-      # fast_excel cannot rotate sheets. as Overview must come first, create a
-      # blank sheet to position it correctly, then populate it last
-      workbook.add_worksheet('Overview')
+        worksheet_methods(only).each do |method|
+          instrument_report_step(method.to_s) { public_send(method) }
+        end
 
-      methods = %i[
-        add_missing_from_uk_worksheet
-        add_missing_from_xi_worksheet
-        add_indentation_worksheet
-        add_hierarchy_worksheet
-        add_endline_worksheet
-        add_start_date_worksheet
-        add_end_date_worksheet
-        add_mfn_missing_worksheet
-        add_mfn_duplicated_worksheet
-        add_misapplied_action_code_worksheet
-        add_incomplete_measure_condition_worksheet
-        add_me32_worksheet
-        add_seasonal_worksheet
-        add_omitted_duty_measures_worksheet
-        add_missing_vat_measure_worksheet
-        add_missing_quota_origins_worksheet
-        add_measure_quota_coverage_worksheet
-        add_bad_quota_association_worksheet
-        add_quota_exclusion_misalignment_worksheet
-        add_missing_supplementary_units_from_uk_worksheet
-        add_missing_supplementary_units_from_xi_worksheet
-        add_candidate_supplementary_units
-        add_me16_worksheet
-        add_overview_worksheet
-      ]
+        workbook.close if Rails.env.development?
 
-      methods = (methods & only) if only.any?
-
-      methods.each do |method|
-        start = Time.zone.now
-        public_send(method)
-        finish = Time.zone.now
-        Rails.logger.info("Finished method '#{method}' (Duration: #{finish - start} seconds)")
+        workbook
       end
-
-      total_finish = Time.zone.now
-      Rails.logger.info("Finished generating worksheets (Total Duration: #{total_finish - total_start} seconds)")
-
-      workbook.close if Rails.env.development?
-
-      workbook
     end
 
     def add_overview_worksheet
@@ -345,19 +310,24 @@ module Reporting
       def generate(only: [])
         return if TradeTariffBackend.xi?
 
-        report = new(File.basename(object_key))
-        workbook = report.generate(only:)
+        with_report_logging do
+          report = instrument_report_step('open_workbook') { new(File.basename(object_key)) }
+          workbook = instrument_report_step('render_workbook') { report.generate(only:) }
 
-        if Rails.env.production?
-          object.put(
-            body: workbook.read_string,
-            content_type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-          )
+          if Rails.env.production?
+            workbook_data = instrument_report_step('serialize_workbook') { workbook.read_string }
+            log_report_metric('output_bytes', workbook_data.bytesize)
+
+            instrument_report_step('upload', output_bytes: workbook_data.bytesize) do
+              object.put(
+                body: workbook_data,
+                content_type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+              )
+            end
+          end
+
+          report
         end
-
-        Rails.logger.debug("Query count: #{::SequelRails::Railties::LogSubscriber.count}")
-
-        report
       end
 
       private
@@ -365,6 +335,37 @@ module Reporting
       def object_key
         "#{service}/reporting/#{year}/#{month}/#{day}/differences_#{now.strftime('%Y-%m-%d')}.xlsx"
       end
+    end
+
+    def worksheet_methods(only)
+      methods = %i[
+        add_missing_from_uk_worksheet
+        add_missing_from_xi_worksheet
+        add_indentation_worksheet
+        add_hierarchy_worksheet
+        add_endline_worksheet
+        add_start_date_worksheet
+        add_end_date_worksheet
+        add_mfn_missing_worksheet
+        add_mfn_duplicated_worksheet
+        add_misapplied_action_code_worksheet
+        add_incomplete_measure_condition_worksheet
+        add_me32_worksheet
+        add_seasonal_worksheet
+        add_omitted_duty_measures_worksheet
+        add_missing_vat_measure_worksheet
+        add_missing_quota_origins_worksheet
+        add_measure_quota_coverage_worksheet
+        add_bad_quota_association_worksheet
+        add_quota_exclusion_misalignment_worksheet
+        add_missing_supplementary_units_from_uk_worksheet
+        add_missing_supplementary_units_from_xi_worksheet
+        add_candidate_supplementary_units
+        add_me16_worksheet
+        add_overview_worksheet
+      ]
+
+      only.any? ? (methods & only) : methods
     end
   end
 end

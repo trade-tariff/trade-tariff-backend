@@ -13,25 +13,39 @@ module Reporting
 
     class << self
       def generate
-        TimeMachine.now do
-          csv_data = CSV.generate(write_headers: true, headers: HEADER_ROW) do |csv|
-            rows.each do |row|
-              csv << row
+        with_report_logging do
+          report_rows = instrument_report_step('load_rows') do
+            TimeMachine.now { rows }
+          end
+
+          log_report_metric('rows_written', report_rows.size)
+
+          csv_data = instrument_report_step('serialize_csv', rows_written: report_rows.size) do
+            CSV.generate(write_headers: true, headers: HEADER_ROW) do |csv|
+              report_rows.each do |row|
+                csv << row
+              end
             end
           end
 
-          if rows.any?
-            File.write(File.basename(object_key), csv_data) if Rails.env.development?
+          return if report_rows.empty?
 
-            if Rails.env.production?
+          log_report_metric('output_bytes', csv_data.bytesize)
+
+          if Rails.env.development?
+            instrument_report_step('write_local_file', output_bytes: csv_data.bytesize) do
+              File.write(File.basename(object_key), csv_data)
+            end
+          end
+
+          if Rails.env.production?
+            instrument_report_step('upload', output_bytes: csv_data.bytesize) do
               object.put(
                 body: csv_data,
                 content_type: 'text/csv',
               )
             end
           end
-
-          Rails.logger.debug("Query count: #{::SequelRails::Railties::LogSubscriber.count}")
         end
       end
 

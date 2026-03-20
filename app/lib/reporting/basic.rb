@@ -51,31 +51,43 @@ module Reporting
 
     class << self
       def generate
-        rows = []
-
-        TimeMachine.now do
-          goods_nomenclatures.each do |goods_nomenclature|
-            rows << build_row_for(goods_nomenclature)
+        with_report_logging do
+          goods = instrument_report_step('load_rows') do
+            TimeMachine.now { goods_nomenclatures }
           end
 
-          csv_data = CSV.generate(write_headers: true, headers: HEADER_ROW) do |csv|
-            rows.each do |row|
-              csv << row
+          rows = instrument_report_step('build_rows') do
+            goods.map { |goods_nomenclature| build_row_for(goods_nomenclature) }
+          end
+
+          log_report_metric('rows_written', rows.size)
+
+          csv_data = instrument_report_step('serialize_csv', rows_written: rows.size) do
+            CSV.generate(write_headers: true, headers: HEADER_ROW) do |csv|
+              rows.each do |row|
+                csv << row
+              end
             end
           end
 
-          if rows.any?
-            File.write(File.basename(object_key), csv_data) if Rails.env.development?
+          return if rows.empty?
 
-            if Rails.env.production?
+          log_report_metric('output_bytes', csv_data.bytesize)
+
+          if Rails.env.development?
+            instrument_report_step('write_local_file', output_bytes: csv_data.bytesize) do
+              File.write(File.basename(object_key), csv_data)
+            end
+          end
+
+          if Rails.env.production?
+            instrument_report_step('upload', output_bytes: csv_data.bytesize) do
               object.put(
                 body: csv_data,
                 content_type: 'text/csv',
               )
             end
           end
-
-          Rails.logger.debug("Query count: #{::SequelRails::Railties::LogSubscriber.count}")
         end
       end
 

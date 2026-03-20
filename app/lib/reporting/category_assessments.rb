@@ -22,24 +22,32 @@ module Reporting
       def generate
         return unless TradeTariffBackend.xi?
 
-        instrument("#{name}#generate") do
+        with_report_logging do
           if category_assessments.any?
-            json = instrument("#{name}#serializable_hash") { serialized_assessments.serializable_hash.to_json }
+            log_report_metric('rows_written', category_assessments.size)
 
-            instrument("#{name}#upload") do
+            json = instrument_report_step('serialize_json', rows_written: category_assessments.size) do
+              serialized_assessments.serializable_hash.to_json
+            end
+
+            instrument_report_step('package_output') do
               basename = File.basename(object_key)
               zipped = zip(json, basename.gsub('.zip', '.json'))
+
+              log_report_metric('output_bytes', zipped[:data].bytesize)
 
               if Rails.env.development?
                 File.write(zipped[:filename], zipped[:data], mode: 'wb')
               end
 
               if Rails.env.production?
-                object.put(body: zipped[:data], content_type: zipped[:content_type])
+                instrument_report_step('upload', output_bytes: zipped[:data].bytesize) do
+                  object.put(body: zipped[:data], content_type: zipped[:content_type])
+                end
               end
             end
           else
-            Rails.logger.info('No Category Assessments found; report not generated.')
+            log_report_metric('rows_written', 0)
           end
         end
       end
@@ -55,11 +63,11 @@ module Reporting
 
       def category_assessments
         @category_assessments ||= begin
-          cas = instrument("#{name}#category_assessments") do
+          cas = instrument_report_step('load_rows') do
             GreenLanes::CategoryAssessment.eager(CATEGORY_ASSESSMENTS_EAGER).all
           end
 
-          instrument("#{name}#presenters") do
+          instrument_report_step('build_presenters') do
             Api::V2::GreenLanes::CategoryAssessmentPresenter.wrap(cas)
           end
         end
