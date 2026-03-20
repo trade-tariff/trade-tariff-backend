@@ -181,10 +181,20 @@ RSpec.describe Api::User::ActiveCommoditiesReportService do
       end
 
       expect(data_rows).to eq([
-        ["1111111111\n ", '11: Chapter eleven', 'Expired commodity description', 'Expired'],
-        ["2222222222\n ", '22: Chapter twenty two', "Active commodity\ndescription", 'Active'],
+        ["1111111111\n ", '11: Chapter eleven', "Expired commodity description\n", 'Expired'],
+        ["2222222222\n ", '22: Chapter twenty two', "Active commodity\ndescription\n", 'Active'],
         ["3333333333\n ", 'Not applicable', 'Not applicable', 'Error from upload'],
       ])
+    end
+
+    it 'renders the final description level in bold rich text for valid rows' do
+      expired_description = worksheet.rows[7].cells[2].value
+      active_description = worksheet.rows[8].cells[2].value
+
+      expect(expired_description).to be_a(Axlsx::RichText)
+      expect(active_description).to be_a(Axlsx::RichText)
+      expect(expired_description.first.b).to be true
+      expect(active_description.first.b).to be true
     end
 
     it 'uses bold styling for values in the first table column' do
@@ -243,18 +253,18 @@ RSpec.describe Api::User::ActiveCommoditiesReportService do
     let(:codes) { %w[1111111111 2222222222] }
 
     it 'delegates to CachedCommodityDescriptionService.fetch_for_codes' do
-      allow(CachedCommodityDescriptionService).to receive(:fetch_for_codes).with(codes).and_return(
-        '1111111111' => 'Cached 111',
-        '2222222222' => 'Fetched 222',
+      allow(CachedCommodityDescriptionService).to receive(:fetch_for_codes).with(codes, include_hierarchy: true).and_return(
+        '1111111111' => { plain_description: 'Cached 111', hierarchy_levels: ['Cached 111'], has_heading: false },
+        '2222222222' => { plain_description: 'Fetched 222', hierarchy_levels: ['Fetched 222'], has_heading: false },
       )
 
       result = service.send(:load_classification_descriptions, codes)
 
       expect(result).to eq(
-        '1111111111' => 'Cached 111',
-        '2222222222' => 'Fetched 222',
+        '1111111111' => { plain_description: 'Cached 111', hierarchy_levels: ['Cached 111'], has_heading: false },
+        '2222222222' => { plain_description: 'Fetched 222', hierarchy_levels: ['Fetched 222'], has_heading: false },
       )
-      expect(CachedCommodityDescriptionService).to have_received(:fetch_for_codes).with(codes)
+      expect(CachedCommodityDescriptionService).to have_received(:fetch_for_codes).with(codes, include_hierarchy: true)
     end
   end
 

@@ -8,6 +8,7 @@ module Api
       EXPIRED = 'Expired'.freeze
       ERROR_FROM_UPLOAD = 'Error from upload'.freeze
       NOT_APPLICABLE = 'Not applicable'.freeze
+      BULLET_PREFIX = '• '.freeze
       INSTRUCTIONS_TEXT = "All your active and expired codes, as well as errors are listed on this spreadsheet.\n\nYou can edit, add and remove codes from this spreadsheet.\n\nThis spreadsheet is designed with the codes in column A, so you can upload it to update your commodity watch list.\n".freeze
       ACTIVE_BACKGROUND_COLOR = 'FFCFE4DC'.freeze
       ACTIVE_FONT_COLOR = 'FF083D29'.freeze
@@ -153,7 +154,7 @@ module Api
       def add_rows(sheet, workbook)
         report_rows.each do |row|
           sheet.add_row(
-            ["#{row[:code]}\n ", row[:chapter], row[:description], row[:status]],
+            ["#{row[:code]}\n ", row[:chapter], description_cell_value(row[:description], row[:status]), row[:status]],
             types: [:string, :string, nil, :string],
             style: row_styles(workbook, row[:status]),
           )
@@ -262,7 +263,35 @@ module Api
       def description_display_value(code, descriptions, status)
         return NOT_APPLICABLE if status == ERROR_FROM_UPLOAD
 
-        descriptions[code].to_s
+        descriptions.fetch(code, {})
+      end
+
+      def description_cell_value(description_payload, status)
+        return NOT_APPLICABLE if status == ERROR_FROM_UPLOAD
+        return description_payload.to_s unless description_payload.is_a?(Hash)
+
+        hierarchy_levels = Array(description_payload[:hierarchy_levels] || description_payload['hierarchy_levels'])
+        has_heading = description_payload[:has_heading] || description_payload['has_heading']
+        plain_description = description_payload[:plain_description] || description_payload['plain_description']
+        return plain_description.to_s if hierarchy_levels.empty?
+
+        build_hierarchy_rich_text(hierarchy_levels, has_heading: has_heading)
+      end
+
+      def build_hierarchy_rich_text(hierarchy_levels, has_heading:)
+        last_level = hierarchy_levels.last.to_s
+        rich_text = Axlsx::RichText.new
+
+        if has_heading
+          hierarchy_levels[0...-1].each do |level|
+            rich_text.add_run("#{BULLET_PREFIX}#{level}\n")
+          end
+          rich_text.add_run("\n")
+        end
+
+        rich_text.add_run(last_level, b: true)
+        rich_text.add_run("\n")
+        rich_text
       end
 
       def chapter_number_for(code)
@@ -311,7 +340,7 @@ module Api
       end
 
       def load_classification_descriptions(codes)
-        CachedCommodityDescriptionService.fetch_for_codes(codes)
+        CachedCommodityDescriptionService.fetch_for_codes(codes, include_hierarchy: true)
       end
     end
   end
