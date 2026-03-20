@@ -99,13 +99,72 @@ RSpec.describe CachedCommodityDescriptionService do
         '1111111111' => 'Cached 111',
         '2222222222' => "Active commodity\ndescription",
       )
-      expect(described_class).to have_received(:cache_for_codes).with(%w[2222222222])
+      expect(described_class).to have_received(:cache_for_codes).with(%w[2222222222], include_hierarchy: false)
       expect(GoodsNomenclatureDescription).to have_received(:where).with(goods_nomenclature_item_id: %w[2222222222])
       expect(Rails.cache).to have_received(:write_multi).with(
         {
           cache_key_for_222 => "Active commodity\ndescription",
         },
         expires_in: CachedCommodityDescriptionService::CACHE_EXPIRY,
+      )
+    end
+
+    it 'returns hierarchy payloads when include_hierarchy is true' do
+      chapter = create(
+        :chapter,
+        :with_description,
+        goods_nomenclature_item_id: '4400000000',
+        goods_nomenclature_sid: 440,
+        description: 'Chapter Forty Four',
+      )
+      heading = create(
+        :heading,
+        :with_description,
+        parent: chapter,
+        goods_nomenclature_item_id: '4401000000',
+        goods_nomenclature_sid: 441,
+        description: 'Heading level',
+      )
+      subheading = create(
+        :subheading,
+        :with_description,
+        parent: heading,
+        goods_nomenclature_item_id: '4401100000',
+        goods_nomenclature_sid: 442,
+        description: 'Subheading level',
+      )
+      with_heading = create(
+        :commodity,
+        :actual,
+        :with_description,
+        parent: subheading,
+        goods_nomenclature_item_id: '4401100010',
+        goods_nomenclature_sid: 443,
+        description: 'Declarable with heading',
+      )
+      without_heading = create(
+        :commodity,
+        :actual,
+        :with_description,
+        goods_nomenclature_item_id: '5500000001',
+        goods_nomenclature_sid: 551,
+        description: 'Declarable without heading',
+      )
+
+      result = described_class.fetch_for_codes(
+        [with_heading.goods_nomenclature_item_id, without_heading.goods_nomenclature_item_id],
+        include_hierarchy: true,
+      )
+
+      expect(result[with_heading.goods_nomenclature_item_id]).to eq(
+        plain_description: 'Declarable with heading',
+        hierarchy_levels: ['Heading level', 'Subheading level', 'Declarable with heading'],
+        has_heading: true,
+      )
+      expect(result[without_heading.goods_nomenclature_item_id]).to eq(
+        plain_description: 'Declarable without heading',
+        hierarchy_levels: ['Declarable without heading'],
+        has_heading: false,
       )
     end
   end

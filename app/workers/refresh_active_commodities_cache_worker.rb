@@ -12,7 +12,7 @@ class RefreshActiveCommoditiesCacheWorker
 
     TimeMachine.now do
       Rails.logger.info "Caching #{codes.size} commodity code descriptions"
-      CachedCommodityDescriptionService.cache_for_codes(codes)
+      CachedCommodityDescriptionService.cache_for_codes(codes, include_hierarchy: true)
       Rails.logger.info 'Caching commodity code descriptions completed'
     end
 
