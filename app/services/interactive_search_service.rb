@@ -71,7 +71,7 @@ class InteractiveSearchService
   end
 
   def max_questions_reached?
-    answers.size > max_questions
+    answers.size >= max_questions
   end
 
   def max_questions

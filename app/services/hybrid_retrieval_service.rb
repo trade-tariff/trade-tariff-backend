@@ -36,14 +36,16 @@ class HybridRetrievalService
   def run_leg(leg)
     start = Process.clock_gettime(Process::CLOCK_MONOTONIC)
 
-    result = case leg
-             when :opensearch
-               OpensearchRetrievalService.call(
-                 query: @query, as_of: @as_of, request_id: @request_id, limit: @limit,
-               )
-             when :vector
-               VectorRetrievalService.call(query: @query, limit: @limit)
-             end
+    result = TimeMachine.at(@as_of) do
+      case leg
+      when :opensearch
+        OpensearchRetrievalService.call(
+          query: @query, as_of: @as_of, request_id: @request_id, limit: @limit,
+        )
+      when :vector
+        VectorRetrievalService.call(query: @query, limit: @limit)
+      end
+    end
 
     duration_ms = ((Process.clock_gettime(Process::CLOCK_MONOTONIC) - start) * 1000).round(2)
     count = leg == :opensearch ? result&.results&.size || 0 : result&.size || 0
