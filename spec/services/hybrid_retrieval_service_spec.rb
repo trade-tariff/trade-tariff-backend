@@ -50,6 +50,19 @@ RSpec.describe HybridRetrievalService do
   end
 
   describe '#call' do
+    it 'runs both retrieval legs inside TimeMachine.at(as_of)' do
+      as_of = Time.zone.today
+      allow(TimeMachine).to receive(:at).with(as_of).and_yield
+
+      described_class.call(query: 'horses', as_of: as_of)
+
+      expect(TimeMachine).to have_received(:at).with(as_of).at_least(:twice)
+      expect(OpensearchRetrievalService).to have_received(:call).with(
+        query: 'horses', as_of: as_of, request_id: nil, limit: 30,
+      )
+      expect(VectorRetrievalService).to have_received(:call).with(query: 'horses', limit: 30)
+    end
+
     it 'returns items from both lists ranked by RRF score' do
       result = described_class.call(query: 'horses', as_of: Time.zone.today)
 
