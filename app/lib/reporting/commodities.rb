@@ -4,21 +4,35 @@ module Reporting
 
     class << self
       def generate
-        TimeMachine.now do
-          csv_data = Api::Admin::Csv::GoodsNomenclatureSerializer
-              .new(goods_nomenclatures)
-              .serialized_csv
-
-          File.write(File.basename(object_key), csv_data) if Rails.env.development?
-
-          if Rails.env.production?
-            object.put(
-              body: csv_data,
-              content_type: 'text/csv',
-            )
+        with_report_logging do
+          records = instrument_report_step('load_rows') do
+            TimeMachine.now { goods_nomenclatures }
           end
 
-          Rails.logger.debug("Query count: #{::SequelRails::Railties::LogSubscriber.count}")
+          log_report_metric('rows_written', records.size)
+
+          csv_data = instrument_report_step('serialize_csv', rows_written: records.size) do
+            Api::Admin::Csv::GoodsNomenclatureSerializer
+              .new(records)
+              .serialized_csv
+          end
+
+          log_report_metric('output_bytes', csv_data.bytesize)
+
+          if Rails.env.development?
+            instrument_report_step('write_local_file', output_bytes: csv_data.bytesize) do
+              File.write(File.basename(object_key), csv_data)
+            end
+          end
+
+          if Rails.env.production?
+            instrument_report_step('upload', output_bytes: csv_data.bytesize) do
+              object.put(
+                body: csv_data,
+                content_type: 'text/csv',
+              )
+            end
+          end
         end
       end
 

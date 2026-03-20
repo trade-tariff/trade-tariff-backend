@@ -94,40 +94,61 @@ module Reporting
 
     class << self
       def generate
-        workbook = if Rails.env.development?
-                     FileUtils.rm(filename) if File.exist?(filename)
-                     FastExcel.open(filename, constant_memory: true)
-                   else
-                     FastExcel.open(constant_memory: true)
-                   end
+        with_report_logging do
+          workbook = instrument_report_step('open_workbook') do
+            if Rails.env.development?
+              FileUtils.rm(filename) if File.exist?(filename)
+              FastExcel.open(filename, constant_memory: true)
+            else
+              FastExcel.open(constant_memory: true)
+            end
+          end
 
-        bold_format = workbook.add_format(bold: true)
+          bold_format = instrument_report_step('add_format') { workbook.add_format(bold: true) }
 
-        worksheet = workbook.add_worksheet(Time.zone.today.iso8601)
+          worksheet = instrument_report_step('setup_worksheet') do
+            sheet = workbook.add_worksheet(Time.zone.today.iso8601)
 
-        COLUMN_WIDTHS.each_with_index do |width, index|
-          worksheet.set_column_width(index, width)
+            COLUMN_WIDTHS.each_with_index do |width, index|
+              sheet.set_column_width(index, width)
+            end
+
+            sheet.append_row(HEADER_ROW, bold_format)
+            sheet.freeze_panes(1, 0)
+            sheet.autofilter(0, 1, 1, 25)
+            sheet
+          end
+
+          rows_written = instrument_report_step('append_rows') do
+            count = 0
+
+            each_declarable_and_measure do |declarable, measure|
+              row = build_row_for(declarable, measure)
+              worksheet.append_row(row)
+              count += 1
+            end
+
+            count
+          end
+
+          log_report_metric('rows_written', rows_written)
+
+          workbook_data = instrument_report_step('close_workbook', rows_written:) do
+            workbook.close
+            Rails.env.production? ? workbook.read_string : nil
+          end
+
+          if workbook_data
+            log_report_metric('output_bytes', workbook_data.bytesize)
+
+            instrument_report_step('upload', rows_written:, output_bytes: workbook_data.bytesize) do
+              object.put(
+                body: workbook_data,
+                content_type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+              )
+            end
+          end
         end
-
-        worksheet.append_row(HEADER_ROW, bold_format)
-        worksheet.freeze_panes(1, 0)
-        worksheet.autofilter(0, 1, 1, 25)
-
-        each_declarable_and_measure do |declarable, measure|
-          row = build_row_for(declarable, measure)
-          worksheet.append_row(row)
-        end
-
-        workbook.close
-
-        if Rails.env.production?
-          object.put(
-            body: workbook.read_string,
-            content_type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-          )
-        end
-
-        Rails.logger.debug("Query count: #{::SequelRails::Railties::LogSubscriber.count}")
       end
 
       private
