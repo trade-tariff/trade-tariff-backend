@@ -2,10 +2,10 @@
 -- PostgreSQL database dump
 --
 
-\restrict M1a7LovgqTh4BEBdbXJmHyFJwraUJmuk5jIM2q0M9wejCU3tTuAhrqEyaYUGzcX
+\restrict cVqFIOg5P27oSRqqHOdceT8xh1CtO7zKGPe22COl4klc5ExbkyRn0PaaAMmx4N0
 
 -- Dumped from database version 18.2
--- Dumped by pg_dump version 18.2
+-- Dumped by pg_dump version 18.3
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -13375,7 +13375,7 @@ ALTER TABLE ONLY uk.news_collections_news_items
 -- PostgreSQL database dump complete
 --
 
-\unrestrict M1a7LovgqTh4BEBdbXJmHyFJwraUJmuk5jIM2q0M9wejCU3tTuAhrqEyaYUGzcX
+\unrestrict cVqFIOg5P27oSRqqHOdceT8xh1CtO7zKGPe22COl4klc5ExbkyRn0PaaAMmx4N0
 
 SET search_path TO uk, public;
 INSERT INTO "schema_migrations" ("filename") VALUES ('1342519058_create_schema.rb');
