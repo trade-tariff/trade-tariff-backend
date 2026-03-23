@@ -42,7 +42,7 @@ module Reporting
           next
         end
 
-        mailer.differences(latest_email_report).deliver_now
+        mailer.differences(email_report_for(monday)).deliver_now
         summary[:emailed] << monday
       end
 
@@ -129,8 +129,8 @@ module Reporting
                               end
     end
 
-    def latest_email_report
-      @latest_email_report ||= EmailReport.new(as_of: latest_report.date, workbook_data: latest_report_body)
+    def email_report_for(date)
+      EmailReport.new(as_of: date, workbook_data: latest_report_body)
     end
 
     def existing_report_dates
