@@ -1,8 +1,13 @@
 FactoryBot.define do
+  sequence(:cds_update_time_suffix) { |n| sprintf('%06d', n) }
+
   factory :cds_update, parent: :base_update, class: 'TariffSynchronizer::CdsUpdate' do
     issue_date { example_date }
 
-    filename { "tariff_dailyExtract_v1_#{example_date.strftime('%Y%m%d')}T235959.gzip" }
+    filename do
+      time_suffix = generate(:cds_update_time_suffix)
+      "tariff_dailyExtract_v1_#{example_date.strftime('%Y%m%d')}T#{time_suffix}.gzip"
+    end
     filesize { 10 } # below threshold for oplog inserts check
 
     update_type { 'TariffSynchronizer::CdsUpdate' }
