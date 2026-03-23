@@ -1,6 +1,6 @@
 module Reporting
   class Commodities
-    extend Reporting::Reportable
+    include Reporting::Reportable
 
     class << self
       def generate

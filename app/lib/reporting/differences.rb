@@ -70,7 +70,6 @@ module Reporting
     ].freeze
 
     include Reporting::Reportable
-    extend Reporting::Reportable
 
     attr_reader :workbook,
                 :regular_style,
@@ -304,10 +303,6 @@ module Reporting
 
     def object_key
       self.class.send(:object_key)
-    end
-
-    def report_name
-      self.class.name
     end
 
     def generate_sheet(klass, *args)
