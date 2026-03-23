@@ -59,10 +59,36 @@ RSpec.describe Reporting::BackfillDifferencesReports do
       service.call
 
       expect(mailer).to have_received(:differences) do |report|
-        expect(report.as_of).to eq('2026-03-19')
+        expect(report.as_of).to eq('2026-02-23')
         expect(report.workbook.read_string).to eq(latest_body)
       end
       expect(message).to have_received(:deliver_now)
+    end
+
+    it 'emails each missing Monday using that Monday as the report date' do
+      latest_key = 'uk/reporting/2026/03/19/differences_2026-03-19.xlsx'
+      latest_body = 'latest-xlsx-data'
+      message = instance_double(ActionMailer::MessageDelivery, deliver_now: true)
+      emailed_reports = []
+      mailer = class_double(ReportsMailer)
+      allow(mailer).to receive(:differences) do |report|
+        emailed_reports << report
+        message
+      end
+      service = build_service(
+        today: Date.new(2026, 3, 20),
+        existing_reports: [
+          { date: Date.new(2026, 3, 9), key: 'uk/reporting/2026/03/09/differences_2026-03-09.xlsx' },
+          { date: Date.new(2026, 3, 19), key: latest_key },
+        ],
+        fetched_bodies: { latest_key => latest_body },
+        mailer:,
+      )
+
+      service.call
+
+      expect(mailer).to have_received(:differences).exactly(2).times
+      expect(emailed_reports.map(&:as_of)).to eq(%w[2026-02-23 2026-03-02])
     end
 
     it 'uploads but skips email when a nearby off-day rerun exists' do
