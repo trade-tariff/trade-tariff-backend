@@ -69,6 +69,7 @@ module Reporting
       },
     ].freeze
 
+    include Reporting::Reportable
     extend Reporting::Reportable
 
     attr_reader :workbook,
@@ -300,6 +301,14 @@ module Reporting
     end
 
     private
+
+    def object_key
+      self.class.send(:object_key)
+    end
+
+    def report_name
+      self.class.name
+    end
 
     def generate_sheet(klass, *args)
       data = Module.const_get("Reporting::Differences::Loaders::#{klass}").new(*args).get
