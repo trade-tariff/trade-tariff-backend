@@ -1,7 +1,7 @@
 FactoryBot.define do
   factory :tariff_change do
     sequence(:object_sid) { |n| n }
-    sequence(:goods_nomenclature_sid) { |n| n }
+    goods_nomenclature_sid { generate(:goods_nomenclature_sid) }
     goods_nomenclature_item_id { goods_nomenclature_sid ? sprintf('%010d', goods_nomenclature_sid) : '0000000001' }
     type { 'Commodity' }
     action { 'creation' }

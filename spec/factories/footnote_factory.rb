@@ -1,6 +1,4 @@
 FactoryBot.define do
-  sequence(:footnote_sid) { |n| n }
-
   factory :footnote do
     transient do
       valid_at { 2.years.ago.beginning_of_day }

@@ -1,4 +1,26 @@
 FactoryBot.define do
-  sequence(:measurement_unit_qualifier_code, LoopingSequence.lower_a_to_upper_z, &:value)
+  sequence(:additional_code_sid, &:itself)
+  sequence(:additional_code_description_period_sid, &:itself)
   sequence(:additional_code_type_id, LoopingSequence.lower_a_to_upper_z, &:value)
+  sequence(:base_regulation_sid, &:itself)
+  sequence(:certificate_sid, &:itself)
+  sequence(:certificate_type_code, LoopingSequence.lower_a_to_upper_z, &:value)
+  sequence(:condition_code, LoopingSequence.lower_a_to_upper_z, &:value)
+  sequence(:export_refund_nomenclature_sid, &:itself)
+  sequence(:footnote_sid, &:itself)
+  sequence(:geographical_area_sid, &:itself)
+  sequence(:geographical_area_id, &:itself)
+  sequence(:goods_nomenclature_sid, 100, &:itself) # Some factories hard code SIDs, so avoid clashing
+  sequence(:language_id, &:itself)
+  sequence(:measure_condition_sid, &:itself)
+  sequence(:measure_sid, &:itself)
+  sequence(:measure_type_id, 10_000, &:itself) # offset to avoid special casing collisions
+  sequence(:measure_type_series_id, LoopingSequence.lower_a_to_upper_z, &:value)
+  sequence(:measurement_unit_code, LoopingSequence.lower_a_to_upper_z, &:value)
+  sequence(:measurement_unit_qualifier_code, LoopingSequence.lower_a_to_upper_z, &:value)
+  sequence(:modification_regulation_sid, &:itself)
+  sequence(:national_measure_sid, &:-@)
+  sequence(:monetary_exchange_sid, &:itself)
+  sequence(:quota_definition_sid, &:itself)
+  sequence(:quota_order_number_sid, &:itself)
 end

@@ -1,6 +1,4 @@
 FactoryBot.define do
-  sequence(:additional_code_sid) { |n| n }
-  sequence(:additional_code_description_period_sid) { |n| n }
   sequence(:additional_code_id) { |n| 'AAA'.tap { |ac| n.times { ac.next! } } }
   sequence(:meursing_additional_code_sid) { |n| n }
 

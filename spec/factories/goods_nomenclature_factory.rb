@@ -1,5 +1,4 @@
 FactoryBot.define do
-  sequence(:goods_nomenclature_sid, 100) # Some factories hard code SIDs, so avoid clashing
   sequence(:chapter_short_code, 10) { |n| sprintf '%02d', n }
   sequence(:heading_short_code, 10) { |n| sprintf '01%02d', n }
   sequence(:commodity_short_code) { |n| sprintf '%06d', n }

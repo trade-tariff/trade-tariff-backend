@@ -1,6 +1,4 @@
 FactoryBot.define do
-  sequence(:measure_type_series_id, LoopingSequence.lower_a_to_upper_z, &:value)
-
   factory :measure_type_series do
     measure_type_series_id   { generate(:measure_type_series_id) }
     validity_start_date      { 3.years.ago.beginning_of_day }
