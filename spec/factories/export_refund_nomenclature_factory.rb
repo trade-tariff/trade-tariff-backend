@@ -1,6 +1,4 @@
 FactoryBot.define do
-  sequence(:export_refund_nomenclature_sid) { |n| n }
-
   factory :export_refund_nomenclature do
     transient do
       indents { 1 }

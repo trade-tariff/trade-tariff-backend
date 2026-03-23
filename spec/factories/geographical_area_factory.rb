@@ -1,7 +1,4 @@
 FactoryBot.define do
-  sequence(:geographical_area_sid) { |n| n }
-  sequence(:geographical_area_id)  { |n| n }
-
   factory :geographical_area do
     transient do
       members { [] }
