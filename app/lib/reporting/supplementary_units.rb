@@ -1,6 +1,6 @@
 module Reporting
   class SupplementaryUnits
-    extend Reporting::Reportable
+    include Reporting::Reportable
 
     HEADER_ROW = %w[
       goods_nomenclature_item_id

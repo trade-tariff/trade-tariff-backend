@@ -1,6 +1,6 @@
 module Reporting
   class GeographicalAreaGroups
-    extend Reporting::Reportable
+    include Reporting::Reportable
 
     HEADER_ROW = %w[
       parent_id

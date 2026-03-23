@@ -1,6 +1,6 @@
 module Reporting
   class DeclarableDuties
-    extend Reporting::Reportable
+    include Reporting::Reportable
 
     MEASURE_EAGER = [
       :base_regulation,

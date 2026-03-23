@@ -1,6 +1,6 @@
 module Reporting
   class CategoryAssessments
-    extend Reporting::Reportable
+    include Reporting::Reportable
 
     CATEGORY_ASSESSMENTS_EAGER = {
       theme: [],

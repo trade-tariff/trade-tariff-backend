@@ -1,6 +1,6 @@
 module Reporting
   class Basic
-    extend Reporting::Reportable
+    include Reporting::Reportable
 
     MEASURE_EAGER = [
       { measure_type: :measure_type_description },
