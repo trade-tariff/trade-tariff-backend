@@ -5,6 +5,10 @@ class Measure < Sequel::Model
   MODIFICATION_REGULATION_ROLE = 4
   AUTHORISED_USE_PROVISIONS_SUBMISSION = '464'.freeze
 
+  # Number of days in a standard year and a leap year — used to exclude
+  # year-long measures from the seasonal measures query.
+  ANNUAL_DURATION_DAYS = [364, 365].freeze
+
   DEDUPE_SORT_ORDER = [
     Sequel.desc(:measures__measure_generating_regulation_id),
     Sequel.desc(:measures__measure_generating_regulation_role),
@@ -168,16 +172,7 @@ class Measure < Sequel::Model
   end
 
   def validity_end_date
-    if national
-      self[:validity_end_date]
-    elsif self[:validity_end_date].present? && generating_regulation.present? && generating_regulation.effective_end_date.present?
-      self[:validity_end_date] > generating_regulation.effective_end_date ? generating_regulation.effective_end_date : self[:validity_end_date]
-    elsif self[:validity_end_date].present? && justification_regulation_present?
-
-      self[:validity_end_date]
-    elsif generating_regulation.present?
-      generating_regulation.effective_end_date
-    end
+    Measure::ValidityPeriod.new(self).end_date
   end
 
   def generating_regulation
@@ -245,14 +240,11 @@ class Measure < Sequel::Model
     end
 
     def with_certificate_types_and_codes(certificate_types_and_codes)
-      return self if certificate_types_and_codes.none?
-
-      conditions = certificate_types_and_codes.map do |type, code|
-        Sequel.expr(measure_conditions__certificate_type_code: type) & Sequel.expr(measure_conditions__certificate_code: code)
-      end
-      combined_conditions = conditions.reduce(:|)
-
-      where(combined_conditions)
+      combine_pair_conditions(
+        certificate_types_and_codes,
+        :measure_conditions__certificate_type_code,
+        :measure_conditions__certificate_code,
+      )
     end
 
     def join_footnotes
@@ -273,14 +265,23 @@ class Measure < Sequel::Model
     end
 
     def with_footnote_types_and_ids(footnote_types_and_ids)
-      return self if footnote_types_and_ids.none?
+      combine_pair_conditions(
+        footnote_types_and_ids,
+        :footnotes__footnote_type_id,
+        :footnotes__footnote_id,
+      )
+    end
 
-      conditions = footnote_types_and_ids.map do |type, id|
-        Sequel.expr(footnotes__footnote_type_id: type) & Sequel.expr(footnotes__footnote_id: id)
-      end
-      combined_conditions = conditions.reduce(:|)
+    private
 
-      where(combined_conditions)
+    # Builds an OR-combined Sequel condition from a collection of [col_a, col_b]
+    # value pairs and applies it as a WHERE clause. Returns the dataset unchanged
+    # if the pairs collection is empty.
+    def combine_pair_conditions(pairs, col_a, col_b)
+      return self if pairs.none?
+
+      conditions = pairs.map { |a, b| Sequel.expr(col_a => a) & Sequel.expr(col_b => b) }
+      where(conditions.reduce(:|))
     end
 
     def with_measure_type(condition_measure_type)
@@ -392,7 +393,7 @@ class Measure < Sequel::Model
         .exclude(validity_end_date: nil)
         .where('validity_start_date >= ?', start_of_range)
         .where('validity_end_date <= ?', end_of_range)
-        .where(Sequel.lit('(validity_end_date::date - validity_start_date::date) NOT IN (364, 365)'))
+        .where(Sequel.lit('(validity_end_date::date - validity_start_date::date) NOT IN ?', ANNUAL_DURATION_DAYS))
     end
 
     def dedupe_similar
@@ -512,25 +513,19 @@ class Measure < Sequel::Model
   end
 
   def duty_expression
-    measure_components.map(&:duty_expression_str).join(' ')
+    duty_expression_presenter.plain
   end
 
   def supplementary_unit_duty_expression
-    measurement_unit = measure_components.first&.measurement_unit
-    return nil unless measurement_unit
-
-    "#{measurement_unit.description} (#{measurement_unit.abbreviation})"
+    duty_expression_presenter.supplementary_unit
   end
 
   def formatted_duty_expression
-    measure_components.map(&:formatted_duty_expression).join(' ')
+    duty_expression_presenter.formatted
   end
 
   def verbose_duty_expression
-    expression = measure_components.map(&:verbose_duty_expression).join(' ')
-    expression
-      .gsub(/\s\s/, ' ') # Replace double spaces with single space
-      .gsub(/(\d)\s+%/, '\1%') # Remove space between number and percentage
+    duty_expression_presenter.verbose
   end
 
   def order_number
@@ -545,12 +540,7 @@ class Measure < Sequel::Model
   end
 
   def relevant_for_country?(country_id)
-    return false if excluded_country?(country_id)
-    return true if erga_omnes? && national?
-    return true if erga_omnes? && measure_type.meursing?
-    return true if geographical_area_id.blank? || geographical_area_id == country_id
-
-    (geographical_area.referenced.presence || geographical_area).contained_geographical_areas.pluck(:geographical_area_id).include?(country_id)
+    Measure::GeographicalRelevance.new(self).relevant_for?(country_id)
   end
 
   def erga_omnes?
@@ -584,20 +574,15 @@ class Measure < Sequel::Model
   end
 
   def expresses_unit?
-    measure_type.expresses_unit? && components_express_unit?
+    component_resolver.expresses_unit?
   end
 
   def ad_valorem?
-    ad_valorem_resource?(:measure_components) || ad_valorem_resource?(:measure_conditions) || ad_valorem_resource?(:resolved_measure_components)
+    component_resolver.ad_valorem?
   end
 
   def units
-    all_unit_components.each_with_object(Set.new) { |component, acc|
-      next unless component.expresses_unit?
-
-      unit = component.unit_for(self)
-      acc << unit if unit.present?
-    }.to_a
+    component_resolver.units
   end
 
   def entry_price_system?
@@ -605,23 +590,15 @@ class Measure < Sequel::Model
   end
 
   def resolved_duty_expression
-    if resolves_meursing_measures?
-      resolved_measure_components.map(&:formatted_duty_expression).join(' ')
-    else
-      ''
-    end
+    duty_expression_presenter.resolved
   end
 
   def resolved_measure_components
-    @resolved_measure_components ||= if resolves_meursing_measures?
-                                       MeursingMeasureComponentResolverService.new(self, meursing_measures).call
-                                     else
-                                       []
-                                     end
+    component_resolver.resolved_components
   end
 
   def meursing_measures
-    @meursing_measures ||= MeursingMeasureFinderService.new(self, meursing_additional_code_id).call
+    component_resolver.send(:meursing_measures)
   end
 
   def sort_key
@@ -656,47 +633,20 @@ class Measure < Sequel::Model
   end
 
   def all_components
-    all_condition_components + measure_components + resolved_measure_components
+    component_resolver.all_components
   end
 
   private
 
-  def all_unit_components
-    return all_components if point_in_time.present? && point_in_time < TradeTariffBackend.excise_alcohol_coercian_starts_from
-
-    all_components + measure_conditions
-  end
-
-  def excluded_country?(country_id)
-    country_id.in?(measure_excluded_geographical_area_ids)
-  end
-
-  def measure_excluded_geographical_area_ids
-    excluded_geographical_areas
-      .map(&:referenced_or_self)
-      .uniq
-      .flat_map(&:candidate_excluded_geographical_area_ids)
-      .uniq
-  end
-
   def resolves_meursing_measures?
-    meursing? && meursing_additional_code_id.present? && meursing_measures.present?
+    component_resolver.resolves_meursing?
   end
 
-  def components_express_unit?
-    measure_components.any?(&:expresses_unit?) || measure_conditions.any?(&:expresses_unit?) || measure_conditions.flat_map(&:measure_condition_components).any?(&:expresses_unit?) || resolved_measure_components.any?(&:expresses_unit?)
+  def duty_expression_presenter
+    @duty_expression_presenter ||= Measure::DutyExpressionPresenter.new(self)
   end
 
-  def meursing_additional_code_id
-    TradeTariffRequest.meursing_additional_code_id
-  end
-
-  def all_condition_components
-    measure_conditions.flat_map(&:measure_condition_components)
-  end
-
-  def ad_valorem_resource?(resource)
-    public_send(resource).count == 1 &&
-      public_send(resource).first.ad_valorem?
+  def component_resolver
+    @component_resolver ||= Measure::ComponentResolver.new(self)
   end
 end
