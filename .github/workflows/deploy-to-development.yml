@@ -19,11 +19,12 @@ jobs:
     if: >
       github.event_name == 'workflow_dispatch' ||
       contains(github.event.pull_request.labels.*.name, 'needs-deployment')
-    uses: trade-tariff/trade-tariff-tools/.github/workflows/deploy-ecs.yml@main
+    uses: trade-tariff/trade-tariff-tools/.github/workflows/deploy-ecs.yml@hmrc-2110-run-db-migrations
     with:
       app-name: tariff-backend
       environment: development
       test-flavour: none
+      migrate: 'true'
     secrets:
       slack-webhook: ${{ secrets.SLACK_WEBHOOK }}
       ssh-key: ${{ secrets.PRIVATE_SSH_KEY }}
