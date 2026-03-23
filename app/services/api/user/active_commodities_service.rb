@@ -162,7 +162,14 @@ module Api
         [materialize_with_nulls(paginated_codes), total]
       end
 
-      def download_payload
+      def self.export_payload(args)
+        subscription = PublicUsers::Subscription.where(uuid: args.fetch('subscription_id')).first
+        raise ArgumentError, 'Subscription not found' unless subscription
+
+        new(subscription).create_payload
+      end
+
+      def create_payload
         package = TimeMachine.now { generate_report }
         filename_date = TimeMachine.now { Time.zone.today.strftime('%Y-%m-%d') }
 

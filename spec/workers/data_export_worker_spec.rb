@@ -1,10 +1,18 @@
 RSpec.describe DataExportWorker, type: :worker do
   subject(:perform_worker) { described_class.new.perform(data_export.id) }
 
-  let(:subscription) { create(:user_subscription, subscription_type: Subscriptions::Type.my_commodities) }
-  let(:data_export) { create(:data_export, user_subscription: subscription) }
+  let(:user) { create(:public_user) }
+  let(:subscription) { create(:user_subscription, user_id: user.id, subscription_type: Subscriptions::Type.my_commodities) }
 
-  let(:exporter) { instance_double(Api::User::ActiveCommoditiesService) }
+  let(:data_export) do
+    create(
+      :data_export,
+      user: user,
+      export_type: PublicUsers::DataExport::CCWL,
+      status: PublicUsers::DataExport::QUEUED,
+      exporter_args: { 'subscription_id' => subscription.uuid },
+    )
+  end
 
   let(:storage_service) { instance_double(Api::User::DataExportService::StorageService) }
 
@@ -22,9 +30,11 @@ RSpec.describe DataExportWorker, type: :worker do
 
   before do
     allow(PublicUsers::DataExport).to receive(:[]).with(data_export.id).and_return(data_export)
-    allow(data_export).to receive_messages(user_subscription: subscription, exporter_class: 'Api::User::ActiveCommoditiesService')
-    allow(Api::User::ActiveCommoditiesService).to receive(:new).with(subscription).and_return(exporter)
-    allow(exporter).to receive(:download_payload).and_return(result)
+
+    allow(data_export).to receive(:exporter_klass).and_return(Api::User::ActiveCommoditiesService)
+    allow(Api::User::ActiveCommoditiesService).to receive(:export_payload)
+      .with(data_export.exporter_args)
+      .and_return(result)
 
     allow(Api::User::DataExportService::StorageService).to receive(:new).and_return(storage_service)
     allow(storage_service).to receive(:upload)
@@ -48,7 +58,9 @@ RSpec.describe DataExportWorker, type: :worker do
     context 'when export generation errors' do
       before do
         allow(Sidekiq.logger).to receive(:error)
-        allow(exporter).to receive(:download_payload).and_raise(StandardError, 'boom')
+        allow(Api::User::ActiveCommoditiesService).to receive(:export_payload)
+              .with(data_export.exporter_args)
+              .and_raise(StandardError, 'boom')
       end
 
       it 'marks export failed and re-raises' do

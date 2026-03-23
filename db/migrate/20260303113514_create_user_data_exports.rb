@@ -5,8 +5,10 @@ Sequel.migration do
     unless Sequel::Model.db.table_exists?(Sequel[:user_data_exports].qualify(:public))
       create_table Sequel[:user_data_exports].qualify(:public) do
         primary_key :id
-        foreign_key :user_subscriptions_uuid, Sequel[:user_subscriptions].qualify(:public), type: :uuid, key: :uuid
+        foreign_key :user_id, Sequel[:users].qualify(:public), null: false
         String :export_type
+        String :exporter_class
+        jsonb :exporter_args, default: '{}'
         String :s3_key
         String :file_name
         String :status

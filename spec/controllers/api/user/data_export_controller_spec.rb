@@ -28,9 +28,10 @@ RSpec.describe Api::User::DataExportController do
       export = PublicUsers::DataExport.order(:id).last
 
       expect(response).to have_http_status(:accepted)
-      expect(export.user_subscriptions_uuid).to eq(subscription.uuid)
+      expect(export.user_id).to eq(user.id)
       expect(export.export_type).to eq(PublicUsers::DataExport::CCWL)
       expect(export.status).to eq(PublicUsers::DataExport::QUEUED)
+      expect(export.exporter_args).to eq({ 'subscription_id' => valid_subscription_id })
       expect(DataExportWorker).to have_received(:perform_async).with(export.id)
     end
 
@@ -54,13 +55,13 @@ RSpec.describe Api::User::DataExportController do
     let(:data_export) do
       create(
         :data_export,
-        user_subscription: subscription,
+        user: user,
         export_type: PublicUsers::DataExport::CCWL,
         status: PublicUsers::DataExport::PROCESSING,
       )
     end
 
-    it 'returns a successful response for matching subscription + export id' do
+    it 'returns a successful response for matching user + export id' do
       get :show, params: { subscription_id: valid_subscription_id, id: data_export.id }
 
       expect(response).to have_http_status(:ok)
@@ -75,13 +76,23 @@ RSpec.describe Api::User::DataExportController do
         expect(response).to have_http_status(:not_found)
       end
     end
+
+    context 'when export belongs to another user' do
+      let(:other_user) { create(:public_user) }
+      let(:other_export) { create(:data_export, user: other_user) }
+
+      it 'returns not found' do
+        get :show, params: { subscription_id: valid_subscription_id, id: other_export.id }
+        expect(response).to have_http_status(:not_found)
+      end
+    end
   end
 
   describe 'GET #download' do
     let(:data_export) do
       create(
         :data_export,
-        user_subscription: subscription,
+        user: user,
         export_type: PublicUsers::DataExport::CCWL,
         status: PublicUsers::DataExport::COMPLETED,
         s3_key: 'data/export/2026-03-09/ccwl/1_test.xlsx',

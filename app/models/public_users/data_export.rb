@@ -23,10 +23,12 @@ module PublicUsers
     plugin :auto_validations
     plugin :timestamps, update_on_create: true
 
-    many_to_one :user_subscription,
-                class: 'PublicUsers::Subscription',
-                key: :user_subscriptions_uuid,
-                primary_key: :uuid
+    many_to_one :user, class: 'PublicUsers::User'
+
+    def before_validation
+      super
+      self.exporter_class = EXPORTER_CLASSES[export_type]
+    end
 
     def validate
       super
@@ -35,13 +37,9 @@ module PublicUsers
     end
 
     dataset_module do
-      def for_subscription(subscription_uuid)
-        where(user_subscriptions_uuid: subscription_uuid)
+      def for_user(user_id)
+        where(user_id: user_id)
       end
-    end
-
-    def exporter_class
-      EXPORTER_CLASSES.fetch(export_type)
     end
 
     def exporter_klass

@@ -1,7 +1,13 @@
 module Downloadable
   CONTENT_TYPE_XLSX = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'.freeze
 
-  def download_payload
-    raise NotImplementedError, "#{self.class.name} must implement #download_payload"
+  module ClassMethods
+    def export_payload(args)
+      raise NotImplementedError, "#{self} must implement .export_payload(args)"
+    end
+  end
+
+  def create_payload
+    raise NotImplementedError, "#{self.class.name} must implement #create_payload"
   end
 end

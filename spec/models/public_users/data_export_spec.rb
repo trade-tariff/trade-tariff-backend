@@ -1,12 +1,12 @@
 RSpec.describe PublicUsers::DataExport do
-  subject(:data_export) { described_class.new(user_subscription: subscription) }
+  subject(:data_export) { described_class.new(user: user) }
 
-  let(:subscription) { create(:user_subscription) }
+  let(:user) { create(:public_user) }
 
   describe 'associations' do
-    it 'has a subscription association' do
-      t = described_class.association_reflections[:user_subscription]
-      expect(t[:type]).to eq(:many_to_one)
+    it 'has a user association' do
+      association = described_class.association_reflections[:user]
+      expect(association[:type]).to eq(:many_to_one)
     end
   end
 

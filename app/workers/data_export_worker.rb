@@ -8,14 +8,10 @@ class DataExportWorker
     data_export = PublicUsers::DataExport[data_export_id]
     return unless data_export
 
-    subscription = data_export.user_subscription
-
-    raise 'Subscription not found' unless subscription
-
     data_export.update(status: PublicUsers::DataExport::PROCESSING)
 
     klass = data_export.exporter_klass
-    result = klass.new(subscription).download_payload
+    result = klass.export_payload(data_export.exporter_args)
     date = Time.zone.today
 
     key = "#{DATA_EXPORT_OBJECT_KEY}#{date.strftime('%Y')}/#{date.strftime('%m')}/#{date.strftime('%d')}/#{data_export.export_type}/#{data_export.id}_#{result[:file_name]}"

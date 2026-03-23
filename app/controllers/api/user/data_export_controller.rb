@@ -10,9 +10,12 @@ module Api
 
       def create
         data_export = PublicUsers::DataExport.create(
-          user_subscriptions_uuid: @subscription.uuid,
+          user_id: current_user.id,
           export_type: data_export_params[:export_type],
           status: PublicUsers::DataExport::QUEUED,
+          exporter_args: {
+            'subscription_id' => subscription_id,
+          },
         )
 
         DataExportWorker.perform_async(data_export.id)
@@ -50,7 +53,7 @@ module Api
 
       def find_data_export
         @data_export = PublicUsers::DataExport.dataset
-                      .for_subscription(subscription_id)
+                      .for_user(current_user.id)
                       .where(id: params[:id])
                       .first
 

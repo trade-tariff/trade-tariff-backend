@@ -1,12 +1,12 @@
 RSpec.describe Api::User::DataExportSerializer do
   subject(:serialized) { described_class.new(data_export).serializable_hash }
 
-  let(:subscription) { create(:user_subscription, subscription_type: Subscriptions::Type.my_commodities) }
+  let(:user) { create(:public_user) }
 
   let(:data_export) do
     create(
       :data_export,
-      user_subscription: subscription,
+      user: user,
       export_type: PublicUsers::DataExport::CCWL,
       status: PublicUsers::DataExport::COMPLETED,
       s3_key: 'data/export/2026/03/09/ccwl/1_test.xlsx',
@@ -21,7 +21,6 @@ RSpec.describe Api::User::DataExportSerializer do
           id: data_export.id.to_s,
           type: :data_export,
           attributes: {
-            uuid: data_export.user_subscription.uuid,
             status: data_export.status,
             export_type: data_export.export_type,
             file_name: data_export.file_name,
@@ -31,7 +30,6 @@ RSpec.describe Api::User::DataExportSerializer do
           },
         },
       }
-
       expect(serialized).to eq(expected)
     end
   end
