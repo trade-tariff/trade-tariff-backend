@@ -3,18 +3,31 @@ class ReportWorker
 
   sidekiq_options retry: false
 
+  REPORTS = [
+    Reporting::Commodities,
+    Reporting::Basic,
+    Reporting::SupplementaryUnits,
+    Reporting::DeclarableDuties,
+    Reporting::Prohibitions,
+    Reporting::GeographicalAreaGroups,
+    Reporting::CategoryAssessments,
+  ].freeze
+
   def perform(trigger_differences_report = true)
     return if Rails.env.development?
 
-    Reporting::Commodities.generate
-    Reporting::Basic.generate
-    Reporting::SupplementaryUnits.generate
-    Reporting::DeclarableDuties.generate
-    Reporting::Prohibitions.generate
-    Reporting::GeographicalAreaGroups.generate
-    Reporting::CategoryAssessments.generate
+    failures = []
+
+    REPORTS.each do |report|
+      report.generate
+    rescue StandardError => e
+      failures << { report: report.name, error: e }
+      Rails.logger.error("ReportWorker: #{report.name} failed: #{e.class} - #{e.message}")
+    end
 
     schedule_differences_generation if trigger_differences_report
+
+    raise failures.first[:error] if failures.any?
   end
 
   private
