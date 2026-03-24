@@ -9,7 +9,6 @@ module Api
       ERROR_FROM_UPLOAD = 'Error from upload'.freeze
       NOT_APPLICABLE = 'Not applicable'.freeze
       BULLET_PREFIX = '• '.freeze
-      INSTRUCTIONS_TEXT = "All your active and expired codes, as well as errors are listed on this spreadsheet.\n\nYou can edit, add and remove codes from this spreadsheet.\n\nThis spreadsheet is designed with the codes in column A, so you can upload it to update your commodity watch list.\n".freeze
       ACTIVE_BACKGROUND_COLOR = 'FFCFE4DC'.freeze
       ACTIVE_FONT_COLOR = 'FF083D29'.freeze
       EXPIRED_BACKGROUND_COLOR = 'FFFFEE80'.freeze
@@ -22,14 +21,14 @@ module Api
       DEFAULT_DARK_COLOR = 'FF0B0C0C'.freeze
       HEADER_FONT_SIZE = 14
       ROW_FONT_SIZE = 12
-      TITLE_ROW_HEIGHT = 54
-      INSTRUCTIONS_ROW_HEIGHT = 115
-      DATE_ROW_HEIGHT = 54
+      TITLE_ROW_HEIGHT = 35
+      INSTRUCTIONS_ROW_HEIGHT = 110
+      BLANK_ROW_HEIGHT = 25
       TABLE_HEADER_ROW_HEIGHT = 34
       REPLACE_LINK_ROW_HEIGHT = 54
       CELL_INDENT = 1
-      TABLE_START_ROW = 7
-      INSTRUCTIONS_MERGE_RANGE = 'B2:C2'.freeze
+      TABLE_START_ROW = 6
+      INSTRUCTIONS_MERGE_RANGE = 'A3:D3'.freeze
       COLUMN_WIDTHS = [36, 28, 90, 24].freeze
       REPLACE_ALL_COMMODITIES_UPLOAD_URL = 'https://www.trade-tariff.service.gov.uk/subscriptions/mycommodities/new?utm_source=watch%2Blists&utm_medium=excel&utm_campaign=ccwl%2Bdata'.freeze
 
@@ -85,26 +84,19 @@ module Api
           sz: 24,
           fg_color: DEFAULT_DARK_COLOR,
           bg_color: WHITE_COLOR,
+          border: { style: :medium, color: DEFAULT_DARK_COLOR, edges: [:bottom] },
           alignment: { vertical: :top },
         )
         base_intro_row_style_options = {
           sz: ROW_FONT_SIZE,
           fg_color: DEFAULT_DARK_COLOR,
           bg_color: WHITE_COLOR,
-          border: { style: :medium, color: DEFAULT_DARK_COLOR, edges: [:bottom] },
         }
 
         intro_text_style_options = base_intro_row_style_options.merge(
           alignment: { wrap_text: true, vertical: :top },
         )
-        intro_body_style = workbook.styles.add_style(intro_text_style_options)
-        intro_label_style = workbook.styles.add_style(intro_text_style_options.merge(b: true))
-
-        date_text_style_options = base_intro_row_style_options.merge(
-          alignment: { vertical: :center },
-        )
-        date_value_style = workbook.styles.add_style(date_text_style_options)
-        date_label_style = workbook.styles.add_style(date_text_style_options.merge(b: true))
+        intro_text_style = workbook.styles.add_style(intro_text_style_options)
         intro_blank_style = workbook.styles.add_style(bg_color: WHITE_COLOR)
         upload_link_style = workbook.styles.add_style(
           b: true,
@@ -119,27 +111,25 @@ module Api
           },
         )
 
+        downloaded_on = TimeMachine.now { Time.zone.today.strftime('%d/%m/%Y') }
+
         title_row = sheet.add_row(
-          intro_row_values('Your commodities'),
-          style: [title_style, intro_blank_style, intro_blank_style, intro_blank_style],
+          intro_row_values("Your commodities (#{downloaded_on})"),
+          style: [title_style, title_style, title_style, title_style],
         )
         title_row.height = TITLE_ROW_HEIGHT
+        sheet.merge_cells('A1:D1')
+
+        blank_top_row = sheet.add_row(blank_intro_row_values, style: [intro_blank_style] * 4)
+        blank_top_row.height = BLANK_ROW_HEIGHT
+        sheet.merge_cells('A2:D2')
 
         instruction_row = sheet.add_row(
-          intro_row_values('Instructions:', INSTRUCTIONS_TEXT),
-          style: [intro_label_style, intro_body_style, intro_body_style, intro_blank_style],
+          intro_row_values(build_instructions_rich_text),
+          style: [intro_text_style, intro_blank_style, intro_blank_style, intro_blank_style],
         )
         sheet.merge_cells(INSTRUCTIONS_MERGE_RANGE)
         instruction_row.height = INSTRUCTIONS_ROW_HEIGHT
-
-        downloaded_on = TimeMachine.now { Time.zone.today.strftime('%d/%m/%Y') }
-        date_row = sheet.add_row(
-          intro_row_values('Date downloaded:', downloaded_on),
-          style: [date_label_style, date_value_style, intro_body_style, intro_blank_style],
-        )
-        date_row.height = DATE_ROW_HEIGHT
-
-        sheet.add_row(blank_intro_row_values, style: [intro_blank_style, intro_blank_style, intro_blank_style, intro_blank_style])
 
         upload_row = sheet.add_row(
           intro_row_values('Replace all commodities (upload)'),
@@ -148,7 +138,9 @@ module Api
         upload_row.height = REPLACE_LINK_ROW_HEIGHT
         sheet.add_hyperlink(location: REPLACE_ALL_COMMODITIES_UPLOAD_URL, ref: upload_row.cells[0])
 
-        sheet.add_row(blank_intro_row_values, style: [intro_blank_style, intro_blank_style, intro_blank_style, intro_blank_style])
+        blank_bottom_row = sheet.add_row(blank_intro_row_values, style: [intro_blank_style] * 4)
+        blank_bottom_row.height = BLANK_ROW_HEIGHT
+        sheet.merge_cells('A5:D5')
       end
 
       def add_rows(sheet, workbook)
@@ -276,6 +268,16 @@ module Api
         return plain_description.to_s if hierarchy_levels.empty?
 
         build_hierarchy_rich_text(hierarchy_levels, has_heading: has_heading)
+      end
+
+      def build_instructions_rich_text
+        rich_text = Axlsx::RichText.new
+        rich_text.add_run("Updating your commodity watch list:\n", b: true)
+        rich_text.add_run("All your active and expired codes, as well as errors, are listed on this spreadsheet.\n\n")
+        rich_text.add_run("You can edit, add and remove codes from this spreadsheet or your own.\n\n")
+        rich_text.add_run('You can then upload it to update your commodity watchlist. ')
+        rich_text.add_run('Ensure all codes are listed in column A.', b: true)
+        rich_text
       end
 
       def build_hierarchy_rich_text(hierarchy_levels, has_heading:)
