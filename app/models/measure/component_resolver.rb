@@ -46,12 +46,12 @@ class Measure
 
     # Returns all unique units expressed by any component.
     def units
-      all_unit_components.each_with_object(Set.new) do |component, acc|
+      all_unit_components.each_with_object(Set.new) { |component, acc|
         next unless component.expresses_unit?
 
         unit = component.unit_for(measure)
         acc << unit if unit.present?
-      end.to_a
+      }.to_a
     end
 
     def ad_valorem?
