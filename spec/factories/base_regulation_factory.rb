@@ -1,6 +1,4 @@
 FactoryBot.define do
-  sequence(:base_regulation_sid) { |n| n }
-
   factory :base_regulation do
     transient do
       created_at    { Time.zone.now }

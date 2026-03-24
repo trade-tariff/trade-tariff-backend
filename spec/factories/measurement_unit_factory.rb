@@ -1,6 +1,4 @@
 FactoryBot.define do
-  sequence(:measurement_unit_code, LoopingSequence.lower_a_to_upper_z, &:value)
-
   factory :measurement_unit do
     transient do
       description { Forgery(:basic).text }

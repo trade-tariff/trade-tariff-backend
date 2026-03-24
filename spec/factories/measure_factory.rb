@@ -1,10 +1,4 @@
 FactoryBot.define do
-  sequence(:measure_sid) { |n| n }
-  sequence(:quota_definition_sid) { |n| n }
-  # offset sequence id to avoid conflicting with special casing of certain measure
-  # types in the code base
-  sequence(:measure_type_id, 10_000) { |n| n }
-
   factory :measure do
     transient do
       type_explosion_level { 10 }
@@ -158,7 +152,7 @@ FactoryBot.define do
     end
 
     trait :national do
-      sequence(:measure_sid) { |n| -1 * n }
+      measure_sid { generate(:national_measure_sid) }
       national { true }
     end
 
@@ -612,7 +606,7 @@ FactoryBot.define do
     end
 
     measure_type_id { generate(:measure_type_id) }
-    sequence(:measure_type_series_id, LoopingSequence.lower_a_to_upper_z, &:value)
+    measure_type_series_id { generate(:measure_type_series_id) }
     validity_start_date    { 3.years.ago.beginning_of_day }
     validity_end_date      { nil }
     measure_explosion_level { 10 }
