@@ -4,45 +4,20 @@ module Api
       class MeasureTypeMappingsController < AdminController
         include Pageable
         include XiOnly
+        include Api::Admin::ResourceActions
 
         def index
-          options = { is_collection: true }
-          options[:include] = %i[theme]
-          options[:meta] = pagination_meta(measure_type_mappings)
-          render json: serialize(measure_type_mappings.to_a, options)
-        end
-
-        def show
-          ex = ::GreenLanes::IdentifiedMeasureTypeCategoryAssessment.with_pk!(params[:id])
-          render json: serialize(ex)
-        end
-
-        def create
-          ex = ::GreenLanes::IdentifiedMeasureTypeCategoryAssessment.new(measure_type_mapping_params)
-
-          if ex.valid? && ex.save
-            render json: serialize(ex),
-                   status: :created
-          else
-            render json: serialize_errors(ex),
-                   status: :unprocessable_content
-          end
-        end
-
-        def destroy
-          ex = ::GreenLanes::IdentifiedMeasureTypeCategoryAssessment.with_pk!(params[:id])
-          ex.destroy
-
-          head :no_content
+          options = { is_collection: true, include: %i[theme], meta: pagination_meta(collection) }
+          render json: serialize(collection.to_a, options)
         end
 
         private
 
-        def measure_type_mapping_params
-          params.require(:data).require(:attributes).permit(
-            :measure_type_id,
-            :theme_id,
-          )
+        def serializer_class = Api::Admin::GreenLanes::MeasureTypeMappingSerializer
+        def resource_class = ::GreenLanes::IdentifiedMeasureTypeCategoryAssessment
+
+        def resource_params
+          params.require(:data).require(:attributes).permit(:measure_type_id, :theme_id)
         end
 
         def pagination_meta(data_set)
@@ -55,19 +30,11 @@ module Api
           }
         end
 
-        def measure_type_mappings
-          @measure_type_mappings ||= ::GreenLanes::IdentifiedMeasureTypeCategoryAssessment
-                                       .eager(:theme)
-                                       .order(Sequel.asc(:measure_type_id))
-                                       .paginate(current_page, per_page)
-        end
-
-        def serialize(*args)
-          Api::Admin::GreenLanes::MeasureTypeMappingSerializer.new(*args).serializable_hash
-        end
-
-        def serialize_errors(measure_type_mapping)
-          Api::Admin::ErrorSerializationService.new(measure_type_mapping).call
+        def collection
+          @collection ||= ::GreenLanes::IdentifiedMeasureTypeCategoryAssessment
+            .eager(:theme)
+            .order(Sequel.asc(:measure_type_id))
+            .paginate(current_page, per_page)
         end
       end
     end

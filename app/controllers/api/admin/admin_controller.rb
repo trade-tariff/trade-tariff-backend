@@ -2,6 +2,7 @@ module Api
   module Admin
     class AdminController < ApiController
       include AdminApi.routes.url_helpers
+      include Api::Admin::Serializable
 
       before_action :set_paper_trail_whodunnit
 
