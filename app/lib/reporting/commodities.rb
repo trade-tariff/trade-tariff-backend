@@ -12,9 +12,11 @@ module Reporting
           log_report_metric('rows_written', records.size)
 
           csv_data = instrument_report_step('serialize_csv', rows_written: records.size) do
-            Api::Admin::Csv::GoodsNomenclatureSerializer
-              .new(records)
-              .serialized_csv
+            TimeMachine.now do
+              Api::Admin::Csv::GoodsNomenclatureSerializer
+                .new(records)
+                .serialized_csv
+            end
           end
 
           log_report_metric('output_bytes', csv_data.bytesize)
