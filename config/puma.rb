@@ -5,7 +5,6 @@ threads threads_count, threads_count
 preload_app!
 
 rackup      Puma::Configuration::DEFAULTS[:rackup]
-# port        ENV['PORT']     || 8080
 environment ENV['RACK_ENV'] || 'development'
 
 # Explicit HTTP bind,  default is 8080.

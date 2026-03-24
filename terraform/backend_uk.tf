@@ -11,16 +11,9 @@ module "backend_uk" {
   subnet_ids      = data.aws_subnets.private.ids
   security_groups = [data.aws_security_group.this.id]
 
-  target_group_mappings = [
-    {
-      target_group_arn = data.aws_lb_target_group.backend_uk.arn,
-      container_port   = 8080
-    },
-    {
-      target_group_arn = data.aws_lb_target_group.backend_uk_https.arn,
-      container_port   = 8443
-    },
-  ]
+  target_group_arn = data.aws_lb_target_group.backend_uk_https.arn
+  container_port   = 8443
+
   cloudwatch_log_group_name = "platform-logs-${var.environment}"
 
   docker_image = local.ecr_repo
