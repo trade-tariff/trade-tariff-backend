@@ -38,7 +38,10 @@ class SearchService
         filter[:id] = resource_id
       end
 
-      suggestion = SearchSuggestion.find(filter)
+      suggestion = SearchSuggestion
+        .without_labels
+        .where(filter)
+        .first
 
       suggestion&.goods_nomenclature&.sti_cast
     end
