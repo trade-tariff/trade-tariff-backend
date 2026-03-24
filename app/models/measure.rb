@@ -623,7 +623,6 @@ class Measure < Sequel::Model
   end
 
   delegate :all_components, to: :component_resolver
-  private
 
   def resolves_meursing_measures?
     component_resolver.resolves_meursing?
