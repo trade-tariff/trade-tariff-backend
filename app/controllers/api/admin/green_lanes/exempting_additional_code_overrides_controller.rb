@@ -4,38 +4,18 @@ module Api
       class ExemptingAdditionalCodeOverridesController < AdminController
         include Pageable
         include XiOnly
+        include Api::Admin::ResourceActions
 
         def index
-          render json: serialize(exempting_additional_code_override.to_a, pagination_meta)
-        end
-
-        def show
-          eco = ::GreenLanes::ExemptingAdditionalCodeOverride.with_pk!(params[:id])
-          render json: serialize(eco)
-        end
-
-        def create
-          eco = ::GreenLanes::ExemptingAdditionalCodeOverride.new(eco_params)
-
-          if eco.valid? && eco.save
-            render json: serialize(eco),
-                   status: :created
-          else
-            render json: serialize_errors(eco),
-                   status: :unprocessable_content
-          end
-        end
-
-        def destroy
-          eco = ::GreenLanes::ExemptingAdditionalCodeOverride.with_pk!(params[:id])
-          eco.destroy
-
-          head :no_content
+          render json: serialize(collection.to_a, pagination_meta)
         end
 
         private
 
-        def eco_params
+        def serializer_class = Api::Admin::GreenLanes::ExemptingAdditionalCodeOverrideSerializer
+        def resource_class = ::GreenLanes::ExemptingAdditionalCodeOverride
+
+        def resource_params
           params.require(:data).require(:attributes).permit(
             :additional_code_type_id,
             :additional_code,
@@ -43,19 +23,13 @@ module Api
         end
 
         def record_count
-          @exempting_additional_code_override.pagination_record_count
+          collection.pagination_record_count
         end
 
-        def exempting_additional_code_override
-          @exempting_additional_code_override ||= ::GreenLanes::ExemptingAdditionalCodeOverride.order(Sequel.asc(:additional_code_type_id), Sequel.asc(:additional_code)).paginate(current_page, per_page)
-        end
-
-        def serialize(*args)
-          Api::Admin::GreenLanes::ExemptingAdditionalCodeOverrideSerializer.new(*args).serializable_hash
-        end
-
-        def serialize_errors(exempting_additional_code_override)
-          Api::Admin::ErrorSerializationService.new(exempting_additional_code_override).call
+        def collection
+          @collection ||= ::GreenLanes::ExemptingAdditionalCodeOverride
+            .order(Sequel.asc(:additional_code_type_id), Sequel.asc(:additional_code))
+            .paginate(current_page, per_page)
         end
       end
     end
