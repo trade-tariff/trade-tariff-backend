@@ -272,18 +272,6 @@ class Measure < Sequel::Model
       )
     end
 
-    private
-
-    # Builds an OR-combined Sequel condition from a collection of [col_a, col_b]
-    # value pairs and applies it as a WHERE clause. Returns the dataset unchanged
-    # if the pairs collection is empty.
-    def combine_pair_conditions(pairs, col_a, col_b)
-      return self if pairs.none?
-
-      conditions = pairs.map { |a, b| Sequel.expr(col_a => a) & Sequel.expr(col_b => b) }
-      where(conditions.reduce(:|))
-    end
-
     def with_measure_type(condition_measure_type)
       where(measures__measure_type_id: condition_measure_type.to_s)
     end
@@ -451,6 +439,18 @@ class Measure < Sequel::Model
       )
 
       exclude(exclusion_criteria)
+    end
+
+    private
+
+    # Builds an OR-combined Sequel condition from a collection of [col_a, col_b]
+    # value pairs and applies it as a WHERE clause. Returns the dataset unchanged
+    # if the pairs collection is empty.
+    def combine_pair_conditions(pairs, col_a, col_b)
+      return self if pairs.none?
+
+      conditions = pairs.map { |a, b| Sequel.expr(col_a => a) & Sequel.expr(col_b => b) }
+      where(conditions.reduce(:|))
     end
   end
 
