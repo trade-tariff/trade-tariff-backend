@@ -24,7 +24,7 @@ jobs:
       app-name: tariff-backend
       environment: development
       test-flavour: none
-      migrate: 'true'
+      migrate: true
     secrets:
       slack-webhook: ${{ secrets.SLACK_WEBHOOK }}
       ssh-key: ${{ secrets.PRIVATE_SSH_KEY }}
