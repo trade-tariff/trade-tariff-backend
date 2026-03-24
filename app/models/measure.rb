@@ -573,17 +573,7 @@ class Measure < Sequel::Model
     measure_components.first.zero_duty?
   end
 
-  def expresses_unit?
-    component_resolver.expresses_unit?
-  end
-
-  def ad_valorem?
-    component_resolver.ad_valorem?
-  end
-
-  def units
-    component_resolver.units
-  end
+  delegate :expresses_unit?, :ad_valorem?, :units, to: :component_resolver
 
   def entry_price_system?
     measure_conditions && measure_conditions.any?(&:entry_price_system?)
@@ -632,9 +622,7 @@ class Measure < Sequel::Model
     0
   end
 
-  def all_components
-    component_resolver.all_components
-  end
+  delegate :all_components, to: :component_resolver
 
   private
 
