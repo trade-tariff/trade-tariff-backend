@@ -53,6 +53,7 @@ RSpec.describe Api::User::ActiveCommoditiesReportService do
   describe '#call' do
     subject(:package) { described_class.new(active_codes, expired_codes, invalid_codes).call }
 
+    let(:builder_class) { Api::User::ActiveCommoditiesReportWorksheetBuilder }
     let(:worksheet) { package.workbook.worksheets.first }
 
     it 'creates a worksheet named Your commodities' do
@@ -67,7 +68,7 @@ RSpec.describe Api::User::ActiveCommoditiesReportService do
 
         expect(dated_sheet.rows[0].cells[0].value).to eq('Your commodities')
         expect(dated_sheet.rows[0].cells[1].value).to eq("(#{expected_date})")
-        expect(dated_sheet.rows[0].height).to eq(described_class::TITLE_ROW_HEIGHT)
+        expect(dated_sheet.rows[0].height).to eq(builder_class::TITLE_ROW_HEIGHT)
       end
     end
 
@@ -75,7 +76,6 @@ RSpec.describe Api::User::ActiveCommoditiesReportService do
       merged_cells = Array(worksheet.instance_variable_get(:@merged_cells))
       final_instruction = worksheet.rows[4].cells[0].value
 
-      # Instruction rows are 1-4
       expect(worksheet.rows[1].cells[0].value).to eq('Updating your commodity watch list:')
       expect(worksheet.rows[2].cells[0].value).to eq('All your active and expired codes, as well as errors, are listed on this spreadsheet.')
       expect(worksheet.rows[3].cells[0].value).to eq('You can edit, add and remove codes from this spreadsheet or your own.')
@@ -83,7 +83,7 @@ RSpec.describe Api::User::ActiveCommoditiesReportService do
       expect(final_instruction.map(&:value).join).to eq('You can then upload it to update your commodity watchlist. Ensure all codes are listed in column A.')
       expect(final_instruction.last.value).to eq('Ensure all codes are listed in column A.')
       expect(final_instruction.last.b).to be true
-      expect(merged_cells).not_to include(described_class::INSTRUCTIONS_MERGE_RANGE)
+      expect(merged_cells).to be_empty
     end
 
     it 'uses 14pt font in instruction rows and 16pt bold for the first line' do
@@ -105,7 +105,7 @@ RSpec.describe Api::User::ActiveCommoditiesReportService do
 
       expect(link_row.cells[0].value).to eq('Replace all commodities (upload)')
       expect(worksheet.hyperlinks.map(&:location)).to include(
-        Api::User::ActiveCommoditiesReportService::REPLACE_ALL_COMMODITIES_UPLOAD_URL,
+        builder_class::REPLACE_ALL_COMMODITIES_UPLOAD_URL,
       )
       expect(worksheet.hyperlinks.map(&:ref)).to include('A6')
       expect(merged_cells).not_to include('A6:D6')
@@ -119,14 +119,12 @@ RSpec.describe Api::User::ActiveCommoditiesReportService do
     end
 
     it 'uses double-height blank rows for the spacer rows' do
-      expect(worksheet.rows[6].height).to eq(described_class::BLANK_ROW_HEIGHT)
+      expect(worksheet.rows[6].height).to eq(builder_class::BLANK_ROW_HEIGHT)
     end
 
     it 'does not apply a bottom border to the title row' do
       styles = package.workbook.styles
-      bordered_cells = [
-        worksheet.rows[0].cells[0],
-      ]
+      bordered_cells = [worksheet.rows[0].cells[0]]
 
       bordered_cells.each do |cell|
         xf = styles.cellXfs[cell.style]
@@ -139,9 +137,7 @@ RSpec.describe Api::User::ActiveCommoditiesReportService do
 
     it 'does not apply a bottom border to intro rows' do
       styles = package.workbook.styles
-      unbordered_cells = [
-        worksheet.rows[1].cells[0],
-      ]
+      unbordered_cells = [worksheet.rows[1].cells[0]]
 
       unbordered_cells.each do |cell|
         xf = styles.cellXfs[cell.style]
