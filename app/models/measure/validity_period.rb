@@ -13,7 +13,8 @@ class Measure
       return measure[:validity_end_date] if measure.national?
       return regulation_capped_end_date if measure_and_regulation_dates_present?
       return measure[:validity_end_date] if measure[:validity_end_date].present? && measure.justification_regulation_present?
-      return generating_regulation.effective_end_date if generating_regulation.present?
+
+      generating_regulation.presence&.effective_end_date
     end
 
     private

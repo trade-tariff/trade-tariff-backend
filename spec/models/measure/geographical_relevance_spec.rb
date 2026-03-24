@@ -31,7 +31,7 @@ RSpec.describe Measure::GeographicalRelevance do
 
   describe '#relevant_for?' do
     context 'when the country is explicitly excluded' do
-      let(:measure) { measure_double(geo_id: erga_omnes_id, excluded_ids: ['FR']) }
+      let(:measure) { measure_double(geo_id: erga_omnes_id, excluded_ids: %w[FR]) }
 
       it 'returns false' do
         expect(relevance.relevant_for?('FR')).to be false
@@ -71,7 +71,7 @@ RSpec.describe Measure::GeographicalRelevance do
     end
 
     context 'when the country is in the measure geographical area group' do
-      let(:measure) { measure_double(geo_id: 'EU', contained_ids: ['FR', 'DE', 'IT']) }
+      let(:measure) { measure_double(geo_id: 'EU', contained_ids: %w[FR DE IT]) }
 
       it 'returns true for a contained country' do
         expect(relevance.relevant_for?('FR')).to be true
@@ -83,7 +83,7 @@ RSpec.describe Measure::GeographicalRelevance do
     end
 
     context 'when the geographical area has a referenced group with members' do
-      let(:measure) { measure_double(geo_id: 'EU', referenced_ids: ['FR', 'DE']) }
+      let(:measure) { measure_double(geo_id: 'EU', referenced_ids: %w[FR DE]) }
 
       it 'returns true for a member of the referenced group' do
         expect(relevance.relevant_for?('DE')).to be true
