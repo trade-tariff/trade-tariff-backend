@@ -9,7 +9,6 @@ module Api
       ERROR_FROM_UPLOAD = 'Error from upload'.freeze
       NOT_APPLICABLE = 'Not applicable'.freeze
       BULLET_PREFIX = '• '.freeze
-      INSTRUCTIONS_TEXT = "All your active and expired codes, as well as errors are listed on this spreadsheet.\n\nYou can edit, add and remove codes from this spreadsheet.\n\nThis spreadsheet is designed with the codes in column A, so you can upload it to update your commodity watch list.\n".freeze
       ACTIVE_BACKGROUND_COLOR = 'FFCFE4DC'.freeze
       ACTIVE_FONT_COLOR = 'FF083D29'.freeze
       EXPIRED_BACKGROUND_COLOR = 'FFFFEE80'.freeze
@@ -22,14 +21,15 @@ module Api
       DEFAULT_DARK_COLOR = 'FF0B0C0C'.freeze
       HEADER_FONT_SIZE = 14
       ROW_FONT_SIZE = 12
-      TITLE_ROW_HEIGHT = 54
-      INSTRUCTIONS_ROW_HEIGHT = 115
-      DATE_ROW_HEIGHT = 54
+      TITLE_ROW_HEIGHT = 40
+      FIRST_INSTRUCTION_ROW_HEIGHT = 40
+      INSTRUCTION_LINE_HEIGHT = 30
+      BLANK_ROW_HEIGHT = 40
       TABLE_HEADER_ROW_HEIGHT = 34
-      REPLACE_LINK_ROW_HEIGHT = 54
+      REPLACE_LINK_ROW_HEIGHT = 60
       CELL_INDENT = 1
-      TABLE_START_ROW = 7
-      INSTRUCTIONS_MERGE_RANGE = 'B2:C2'.freeze
+      TABLE_START_ROW = 8
+      INSTRUCTIONS_MERGE_RANGE = 'A3:D3'.freeze
       COLUMN_WIDTHS = [36, 28, 90, 24].freeze
       REPLACE_ALL_COMMODITIES_UPLOAD_URL = 'https://www.trade-tariff.service.gov.uk/subscriptions/mycommodities/new?utm_source=watch%2Blists&utm_medium=excel&utm_campaign=ccwl%2Bdata'.freeze
 
@@ -80,75 +80,87 @@ module Api
       end
 
       def add_intro_rows(sheet, workbook)
-        title_style = workbook.styles.add_style(
-          b: true,
-          sz: 24,
-          fg_color: DEFAULT_DARK_COLOR,
-          bg_color: WHITE_COLOR,
-          alignment: { vertical: :top },
-        )
+        styles = intro_styles(workbook)
+
+        add_title_intro_row(sheet, styles.fetch(:title))
+        add_instruction_intro_rows(sheet, styles)
+        add_upload_intro_row(sheet, styles)
+        add_blank_intro_bottom_row(sheet, styles.fetch(:blank))
+      end
+
+      def intro_styles(workbook)
         base_intro_row_style_options = {
           sz: ROW_FONT_SIZE,
           fg_color: DEFAULT_DARK_COLOR,
           bg_color: WHITE_COLOR,
-          border: { style: :medium, color: DEFAULT_DARK_COLOR, edges: [:bottom] },
         }
 
         intro_text_style_options = base_intro_row_style_options.merge(
-          alignment: { wrap_text: true, vertical: :top },
-        )
-        intro_body_style = workbook.styles.add_style(intro_text_style_options)
-        intro_label_style = workbook.styles.add_style(intro_text_style_options.merge(b: true))
-
-        date_text_style_options = base_intro_row_style_options.merge(
-          alignment: { vertical: :center },
-        )
-        date_value_style = workbook.styles.add_style(date_text_style_options)
-        date_label_style = workbook.styles.add_style(date_text_style_options.merge(b: true))
-        intro_blank_style = workbook.styles.add_style(bg_color: WHITE_COLOR)
-        upload_link_style = workbook.styles.add_style(
-          b: true,
-          sz: ROW_FONT_SIZE,
-          u: true,
-          fg_color: WHITE_COLOR,
-          bg_color: UPLOAD_LINK_BACKGROUND_COLOR,
-          alignment: {
-            horizontal: :center,
-            vertical: :center,
-            indent: 1,
-          },
+          alignment: { vertical: :top },
         )
 
+        {
+          title: workbook.styles.add_style(
+            b: true,
+            sz: 24,
+            fg_color: DEFAULT_DARK_COLOR,
+            bg_color: WHITE_COLOR,
+            alignment: { vertical: :top },
+          ),
+          instruction: workbook.styles.add_style(
+            intro_text_style_options.merge(sz: 14),
+          ),
+          instruction_first: workbook.styles.add_style(
+            intro_text_style_options.merge(sz: 16, b: true, alignment: { vertical: :bottom }),
+          ),
+          blank: workbook.styles.add_style(bg_color: WHITE_COLOR),
+          upload_link: workbook.styles.add_style(
+            b: true,
+            sz: ROW_FONT_SIZE,
+            u: true,
+            fg_color: WHITE_COLOR,
+            bg_color: UPLOAD_LINK_BACKGROUND_COLOR,
+            alignment: {
+              horizontal: :center,
+              vertical: :center,
+              indent: 1,
+            },
+          ),
+        }
+      end
+
+      def add_title_intro_row(sheet, title_style)
+        downloaded_on = TimeMachine.now { Time.zone.today.strftime('%d/%m/%Y') }
         title_row = sheet.add_row(
-          intro_row_values('Your commodities'),
-          style: [title_style, intro_blank_style, intro_blank_style, intro_blank_style],
+          intro_row_values('Your commodities', "(#{downloaded_on})"),
+          style: [title_style, title_style, title_style, title_style],
         )
         title_row.height = TITLE_ROW_HEIGHT
+      end
 
-        instruction_row = sheet.add_row(
-          intro_row_values('Instructions:', INSTRUCTIONS_TEXT),
-          style: [intro_label_style, intro_body_style, intro_body_style, intro_blank_style],
-        )
-        sheet.merge_cells(INSTRUCTIONS_MERGE_RANGE)
-        instruction_row.height = INSTRUCTIONS_ROW_HEIGHT
+      def add_instruction_intro_rows(sheet, styles)
+        instruction_rows_data.each_with_index do |row_data, index|
+          style = index.zero? ? styles.fetch(:instruction_first) : styles.fetch(:instruction)
+          row = sheet.add_row(
+            [row_data[:text], nil, nil, nil],
+            style: [style, styles.fetch(:blank), styles.fetch(:blank), styles.fetch(:blank)],
+          )
+          row.height = index.zero? ? FIRST_INSTRUCTION_ROW_HEIGHT : INSTRUCTION_LINE_HEIGHT
+        end
+      end
 
-        downloaded_on = TimeMachine.now { Time.zone.today.strftime('%d/%m/%Y') }
-        date_row = sheet.add_row(
-          intro_row_values('Date downloaded:', downloaded_on),
-          style: [date_label_style, date_value_style, intro_body_style, intro_blank_style],
-        )
-        date_row.height = DATE_ROW_HEIGHT
-
-        sheet.add_row(blank_intro_row_values, style: [intro_blank_style, intro_blank_style, intro_blank_style, intro_blank_style])
-
+      def add_upload_intro_row(sheet, styles)
         upload_row = sheet.add_row(
-          intro_row_values('Replace all commodities (upload)'),
-          style: [upload_link_style, intro_blank_style, intro_blank_style, intro_blank_style],
+          ['Replace all commodities (upload)', '', '', ''],
+          style: [styles.fetch(:upload_link), styles.fetch(:blank), styles.fetch(:blank), styles.fetch(:blank)],
         )
         upload_row.height = REPLACE_LINK_ROW_HEIGHT
         sheet.add_hyperlink(location: REPLACE_ALL_COMMODITIES_UPLOAD_URL, ref: upload_row.cells[0])
+      end
 
-        sheet.add_row(blank_intro_row_values, style: [intro_blank_style, intro_blank_style, intro_blank_style, intro_blank_style])
+      def add_blank_intro_bottom_row(sheet, blank_style)
+        blank_bottom_row = sheet.add_row(blank_intro_row_values, style: [blank_style] * 4)
+        blank_bottom_row.height = BLANK_ROW_HEIGHT
       end
 
       def add_rows(sheet, workbook)
@@ -164,7 +176,7 @@ module Api
       def add_table_styling(sheet)
         return if report_rows.empty?
 
-        last_row = TABLE_START_ROW + report_rows.length
+        last_row = TABLE_START_ROW + report_rows.length - 1
         sheet.add_table(
           "A#{TABLE_START_ROW}:D#{last_row}",
           name: TABLE_NAME,
@@ -276,6 +288,22 @@ module Api
         return plain_description.to_s if hierarchy_levels.empty?
 
         build_hierarchy_rich_text(hierarchy_levels, has_heading: has_heading)
+      end
+
+      def instruction_rows_data
+        [
+          { text: 'Updating your commodity watch list:' },
+          { text: 'All your active and expired codes, as well as errors, are listed on this spreadsheet.' },
+          { text: 'You can edit, add and remove codes from this spreadsheet or your own.' },
+          { text: build_upload_instructions_rich_text },
+        ]
+      end
+
+      def build_upload_instructions_rich_text
+        rich_text = Axlsx::RichText.new
+        rich_text.add_run('You can then upload it to update your commodity watchlist. ', sz: 14)
+        rich_text.add_run('Ensure all codes are listed in column A.', b: true, sz: 14)
+        rich_text
       end
 
       def build_hierarchy_rich_text(hierarchy_levels, has_heading:)
