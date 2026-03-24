@@ -169,6 +169,21 @@ RSpec.describe SearchSuggestion do
     end
   end
 
+  describe '.without_labels' do
+    subject(:without_labels) { described_class.without_labels }
+
+    before do
+      create(:search_suggestion, :search_reference, value: 'gold ore')
+      create(:search_suggestion, :synonym)
+      create(:search_suggestion, :colloquial_term)
+      create(:search_suggestion, :known_brand)
+    end
+
+    it 'returns only non-label search suggestions' do
+      expect(without_labels.select_map(:value)).to eq(['gold ore'])
+    end
+  end
+
   describe '.goods_nomenclature_type' do
     subject(:goods_nomenclature_type) { described_class.goods_nomenclature_type.sql }
 

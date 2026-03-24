@@ -15,6 +15,12 @@ class SearchSuggestion < Sequel::Model
     TYPE_GOODS_NOMENCLATURE,
   ].freeze
 
+  LABEL_TYPES = [
+    TYPE_KNOWN_BRAND,
+    TYPE_COLLOQUIAL_TERM,
+    TYPE_SYNONYM,
+  ].freeze
+
   CONFIGURABLE_TYPES = {
     'suggest_chemical_names' => TYPE_FULL_CHEMICAL_NAME,
     'suggest_chemical_cas' => TYPE_FULL_CHEMICAL_CAS,
@@ -45,6 +51,10 @@ class SearchSuggestion < Sequel::Model
                                    end
 
   dataset_module do
+    def without_labels
+      exclude(type: LABEL_TYPES)
+    end
+
     def declarable
       where(declarable: true)
     end
