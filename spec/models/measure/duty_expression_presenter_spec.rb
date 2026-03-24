@@ -33,7 +33,7 @@ RSpec.describe Measure::DutyExpressionPresenter do
       end
 
       it 'collapses double spaces to a single space' do
-        expect(presenter.verbose).to eq '10 %'
+        expect(presenter.verbose).to eq '10%'
       end
     end
 
