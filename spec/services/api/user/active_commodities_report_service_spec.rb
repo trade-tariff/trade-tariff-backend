@@ -53,6 +53,7 @@ RSpec.describe Api::User::ActiveCommoditiesReportService do
   describe '#call' do
     subject(:package) { described_class.new(active_codes, expired_codes, invalid_codes).call }
 
+    let(:builder_class) { Api::User::ActiveCommoditiesReportWorksheetBuilder }
     let(:worksheet) { package.workbook.worksheets.first }
 
     it 'creates a worksheet named Your commodities' do
@@ -66,7 +67,7 @@ RSpec.describe Api::User::ActiveCommoditiesReportService do
         expected_date = Time.zone.today.strftime('%d/%m/%Y')
 
         expect(dated_sheet.rows[0].cells[0].value).to eq("Your commodities (#{expected_date})")
-        expect(dated_sheet.rows[0].height).to eq(described_class::TITLE_ROW_HEIGHT)
+        expect(dated_sheet.rows[0].height).to eq(builder_class::TITLE_ROW_HEIGHT)
       end
     end
 
@@ -77,8 +78,8 @@ RSpec.describe Api::User::ActiveCommoditiesReportService do
       expect(instructions_cell.map(&:value).join).to include('Updating your commodity watch list:')
       expect(instructions_cell.map(&:value).join).to include('Ensure all codes are listed in column A.')
       expect(instructions_cell.last).to have_attributes(b: true)
-      expect(worksheet.rows[2].height).to eq(described_class::INSTRUCTIONS_ROW_HEIGHT)
-      expect(worksheet.instance_variable_get(:@merged_cells)).to include(described_class::INSTRUCTIONS_MERGE_RANGE)
+      expect(worksheet.rows[2].height).to eq(builder_class::INSTRUCTIONS_ROW_HEIGHT)
+      expect(worksheet.instance_variable_get(:@merged_cells)).to include(builder_class::INSTRUCTIONS_MERGE_RANGE)
     end
 
     it 'uses 12pt font in row 3' do
@@ -100,7 +101,7 @@ RSpec.describe Api::User::ActiveCommoditiesReportService do
 
       expect(link_row.cells[0].value).to eq('Replace all commodities (upload)')
       expect(worksheet.hyperlinks.map(&:location)).to include(
-        Api::User::ActiveCommoditiesReportService::REPLACE_ALL_COMMODITIES_UPLOAD_URL,
+        builder_class::REPLACE_ALL_COMMODITIES_UPLOAD_URL,
       )
       expect(worksheet.hyperlinks.map(&:ref)).to include('A4')
       expect(worksheet.instance_variable_get(:@merged_cells)).not_to include('A4:D4')
@@ -114,8 +115,8 @@ RSpec.describe Api::User::ActiveCommoditiesReportService do
     end
 
     it 'uses double-height blank rows for the spacer rows' do
-      expect(worksheet.rows[1].height).to eq(described_class::BLANK_ROW_HEIGHT)
-      expect(worksheet.rows[4].height).to eq(described_class::BLANK_ROW_HEIGHT)
+      expect(worksheet.rows[1].height).to eq(builder_class::BLANK_ROW_HEIGHT)
+      expect(worksheet.rows[4].height).to eq(builder_class::BLANK_ROW_HEIGHT)
     end
 
     it 'applies a bottom border in #0b0c0c to A1' do
