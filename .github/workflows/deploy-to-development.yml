@@ -25,6 +25,20 @@ jobs:
       environment: development
       test-flavour: none
       migrate: true
+      migration-task: backend-job
+      migration-overrides: |
+        {
+          "name": "backend-job",
+          "environment": [
+            {
+              "name": "SERVICE"
+              "value": "uk"
+            }
+          ]
+          "command": [
+            "/bin/sh", "-c", "bundle exec rails db:migrate && bundle exec rails data:migrate"
+          ]
+        }
     secrets:
       slack-webhook: ${{ secrets.SLACK_WEBHOOK }}
       ssh-key: ${{ secrets.PRIVATE_SSH_KEY }}
