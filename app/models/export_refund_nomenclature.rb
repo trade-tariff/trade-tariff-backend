@@ -87,4 +87,12 @@ class ExportRefundNomenclature < Sequel::Model
   def heading_id
     "#{goods_nomenclature_item_id.first(4)}______"
   end
+
+  def applicable?
+    true
+  end
+
+  def type
+    'export_refund_nomenclature'
+  end
 end
