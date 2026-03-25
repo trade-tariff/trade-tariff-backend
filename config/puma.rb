@@ -8,9 +8,9 @@ rackup      Puma::Configuration::DEFAULTS[:rackup]
 environment ENV['RACK_ENV'] || 'development'
 
 # Explicit HTTP bind,  default is 8080.
-if Rails.env.development?
-  bind "tcp://0.0.0.0:#{ENV.fetch('PORT', 8080)}"
-end
+# if Rails.env.development?
+bind "tcp://0.0.0.0:#{ENV.fetch('PORT', 8080)}"
+# end
 
 # Explicit HTTPS bind
 cert = ENV['SSL_CERT_PEM']&.gsub("\\n", "\n")
