@@ -60,95 +60,103 @@ RSpec.describe Api::User::ActiveCommoditiesReportService do
     end
 
     it 'adds a large title row before the table' do
-      expect(worksheet.rows[0].cells[0].value).to eq('Your commodities')
-      expect(worksheet.rows[0].height).to eq(54)
-    end
-
-    it 'adds the instructions row before the table' do
-      instructions_row = worksheet.rows[1].cells.map(&:value)
-
-      expect(instructions_row[0]).to eq('Instructions:')
-      expect(instructions_row[1]).to eq(described_class::INSTRUCTIONS_TEXT)
-      expect(worksheet.rows[1].height).to eq(described_class::INSTRUCTIONS_ROW_HEIGHT)
-      expect(worksheet.instance_variable_get(:@merged_cells)).to include(described_class::INSTRUCTIONS_MERGE_RANGE)
-    end
-
-    it 'adds the date downloaded row in dd/mm/yyyy format' do
       freeze_time do
         dated_package = described_class.new(active_codes, expired_codes, invalid_codes).call
         dated_sheet = dated_package.workbook.worksheets.first
-        styles = dated_package.workbook.styles
+        expected_date = Time.zone.today.strftime('%d/%m/%Y')
 
-        date_row = dated_sheet.rows[2].cells.map(&:value)
-        expect(date_row[0]).to eq('Date downloaded:')
-        expect(date_row[1]).to eq(Time.zone.today.strftime('%d/%m/%Y'))
-        expect(dated_sheet.rows[2].height).to eq(54)
-
-        date_row_a3_alignment = styles.cellXfs[dated_sheet.rows[2].cells[0].style].alignment.to_xml_string
-        date_row_b3_alignment = styles.cellXfs[dated_sheet.rows[2].cells[1].style].alignment.to_xml_string
-
-        expect(date_row_a3_alignment).to include('vertical="center"')
-        expect(date_row_b3_alignment).to include('vertical="center"')
+        expect(dated_sheet.rows[0].cells[0].value).to eq('Your commodities')
+        expect(dated_sheet.rows[0].cells[1].value).to eq("(#{expected_date})")
+        expect(dated_sheet.rows[0].height).to eq(described_class::TITLE_ROW_HEIGHT)
       end
     end
 
-    it 'uses 12pt font in rows 2 and 3' do
+    it 'adds the instructions rows before the table' do
+      merged_cells = Array(worksheet.instance_variable_get(:@merged_cells))
+      final_instruction = worksheet.rows[4].cells[0].value
+
+      # Instruction rows are 1-4
+      expect(worksheet.rows[1].cells[0].value).to eq('Updating your commodity watch list:')
+      expect(worksheet.rows[2].cells[0].value).to eq('All your active and expired codes, as well as errors, are listed on this spreadsheet.')
+      expect(worksheet.rows[3].cells[0].value).to eq('You can edit, add and remove codes from this spreadsheet or your own.')
+      expect(final_instruction).to be_a(Axlsx::RichText)
+      expect(final_instruction.map(&:value).join).to eq('You can then upload it to update your commodity watchlist. Ensure all codes are listed in column A.')
+      expect(final_instruction.last.value).to eq('Ensure all codes are listed in column A.')
+      expect(final_instruction.last.b).to be true
+      expect(merged_cells).not_to include(described_class::INSTRUCTIONS_MERGE_RANGE)
+    end
+
+    it 'uses 14pt font in instruction rows and 16pt bold for the first line' do
       styles = package.workbook.styles
-      cells = [
-        worksheet.rows[1].cells[0],
-        worksheet.rows[1].cells[1],
-        worksheet.rows[2].cells[0],
-        worksheet.rows[2].cells[1],
-      ]
+      first_instruction_cell = worksheet.rows[1].cells[0]
+      second_instruction_cell = worksheet.rows[2].cells[0]
 
-      cells.each do |cell|
-        xf = styles.cellXfs[cell.style]
-        font = styles.fonts[xf.fontId]
+      first_font = styles.fonts[styles.cellXfs[first_instruction_cell.style].fontId]
+      second_font = styles.fonts[styles.cellXfs[second_instruction_cell.style].fontId]
 
-        expect(font.sz.to_i).to eq(12)
-      end
+      expect(first_font.sz.to_i).to eq(16)
+      expect(first_font.b).to be true
+      expect(second_font.sz.to_i).to eq(14)
     end
 
     it 'adds a replace all upload link row before the table' do
-      link_row = worksheet.rows[4]
+      link_row = worksheet.rows[5]
+      merged_cells = Array(worksheet.instance_variable_get(:@merged_cells))
 
       expect(link_row.cells[0].value).to eq('Replace all commodities (upload)')
       expect(worksheet.hyperlinks.map(&:location)).to include(
         Api::User::ActiveCommoditiesReportService::REPLACE_ALL_COMMODITIES_UPLOAD_URL,
       )
-      expect(worksheet.hyperlinks.map(&:ref)).to include('A5')
+      expect(worksheet.hyperlinks.map(&:ref)).to include('A6')
+      expect(merged_cells).not_to include('A6:D6')
     end
 
     it 'adds the expected header row' do
-      header_row = worksheet.rows[6]
+      header_row = worksheet.rows[7]
       headers = header_row.cells.map(&:value)
       expect(headers).to eq(%w[Commodity Chapter Description Status])
       expect(header_row.height).to eq(34)
     end
 
-    it 'applies a bottom border in #0b0c0c to A2, B2, A3 and B3' do
+    it 'uses double-height blank rows for the spacer rows' do
+      expect(worksheet.rows[6].height).to eq(described_class::BLANK_ROW_HEIGHT)
+    end
+
+    it 'does not apply a bottom border to the title row' do
       styles = package.workbook.styles
       bordered_cells = [
-        worksheet.rows[1].cells[0],
-        worksheet.rows[1].cells[1],
-        worksheet.rows[2].cells[0],
-        worksheet.rows[2].cells[1],
+        worksheet.rows[0].cells[0],
       ]
 
       bordered_cells.each do |cell|
         xf = styles.cellXfs[cell.style]
         border_xml = styles.borders[xf.borderId].to_xml_string
 
-        expect(border_xml).to include('style="medium"')
-        expect(border_xml).to include('rgb="FF0B0C0C"')
+        expect(border_xml).not_to include('style="medium"')
+        expect(border_xml).not_to include('rgb="FF0B0C0C"')
       end
     end
 
-    it 'uses filled cells in the first 6 rows to hide gridlines in that area' do
+    it 'does not apply a bottom border to intro rows' do
       styles = package.workbook.styles
-      intro_rows = worksheet.rows.first(6)
+      unbordered_cells = [
+        worksheet.rows[1].cells[0],
+      ]
 
-      intro_rows.each do |row|
+      unbordered_cells.each do |cell|
+        xf = styles.cellXfs[cell.style]
+        border_xml = styles.borders[xf.borderId].to_xml_string
+
+        expect(border_xml).not_to include('style="medium"')
+        expect(border_xml).not_to include('rgb="FF0B0C0C"')
+      end
+    end
+
+    it 'uses filled cells in the blank intro rows to hide gridlines' do
+      styles = package.workbook.styles
+      blank_intro_rows = [worksheet.rows[6]]
+
+      blank_intro_rows.each do |row|
         row.cells.each do |cell|
           xf = styles.cellXfs[cell.style]
           fill_xml = styles.fills[xf.fillId].to_xml_string
@@ -160,8 +168,8 @@ RSpec.describe Api::User::ActiveCommoditiesReportService do
 
     it 'indents table headers the same as table cells' do
       styles = package.workbook.styles
-      header_cell = worksheet.rows[6].cells[0]
-      first_data_cell = worksheet.rows[7].cells[0]
+      header_cell = worksheet.rows[7].cells[0]
+      first_data_cell = worksheet.rows[8].cells[0]
 
       header_alignment = styles.cellXfs[header_cell.style].alignment.to_xml_string
       data_alignment = styles.cellXfs[first_data_cell.style].alignment.to_xml_string
@@ -171,7 +179,7 @@ RSpec.describe Api::User::ActiveCommoditiesReportService do
     end
 
     it 'adds rows ordered by commodity code with chapter, description and status' do
-      data_rows = worksheet.rows[7..].map do |row|
+      data_rows = worksheet.rows[8..].map do |row|
         [
           row.cells[0].value.to_s,
           extract_cell_text(row.cells[1].value),
@@ -188,8 +196,8 @@ RSpec.describe Api::User::ActiveCommoditiesReportService do
     end
 
     it 'renders the final description level in bold rich text for valid rows' do
-      expired_description = worksheet.rows[7].cells[2].value
-      active_description = worksheet.rows[8].cells[2].value
+      expired_description = worksheet.rows[8].cells[2].value
+      active_description = worksheet.rows[9].cells[2].value
 
       expect(expired_description).to be_a(Axlsx::RichText)
       expect(active_description).to be_a(Axlsx::RichText)
@@ -198,7 +206,7 @@ RSpec.describe Api::User::ActiveCommoditiesReportService do
     end
 
     it 'uses bold styling for values in the first table column' do
-      first_data_cell = worksheet.rows[7].cells[0]
+      first_data_cell = worksheet.rows[8].cells[0]
       font = package.workbook.styles.fonts[package.workbook.styles.cellXfs[first_data_cell.style].fontId]
 
       expect(font.b).to be true
@@ -213,13 +221,13 @@ RSpec.describe Api::User::ActiveCommoditiesReportService do
     end
 
     it 'does not force a fixed explicit row height for table rows' do
-      data_rows = worksheet.rows[7..9]
+      data_rows = worksheet.rows[8..10]
       expect(data_rows.map(&:height)).to all(be_nil)
     end
 
     it 'applies requested status colors and bold 12pt text' do
       styles = package.workbook.styles
-      status_cells = worksheet.rows[7..9].map { |row| row.cells[3] }
+      status_cells = worksheet.rows[8..10].map { |row| row.cells[3] }
 
       style_data = status_cells.map do |cell|
         xf = styles.cellXfs[cell.style]
@@ -243,7 +251,7 @@ RSpec.describe Api::User::ActiveCommoditiesReportService do
       table = worksheet.tables.first
 
       expect(table).not_to be_nil
-      expect(table.ref).to eq('A7:D10')
+      expect(table.ref).to eq('A8:D10')
     end
   end
 
