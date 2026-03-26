@@ -25,6 +25,15 @@ module Api
         head :accepted
       end
 
+      def backfill
+        report_definition = Reporting::AdminReportRegistry.all.find { |definition| definition.id == params[:id].to_s }
+        return head :not_found unless report_definition&.id == 'differences'
+
+        Reporting::BackfillDifferencesReports.new.call
+
+        head :accepted
+      end
+
       private
 
       def report
