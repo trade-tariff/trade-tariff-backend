@@ -22,6 +22,7 @@ AdminApi.routes.draw do
         member do
           post :run
           post :send_email
+          post :backfill
         end
       end
 

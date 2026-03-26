@@ -91,4 +91,41 @@ RSpec.describe Api::Admin::ReportsController do
     it { expect(response).to have_http_status(:accepted) }
     it { expect(ReportTriggerWorker).to have_received(:perform_async).with('commodities') }
   end
+
+  describe 'POST #backfill' do
+    context 'when backfilling differences on the UK service' do
+      let(:backfill_service) { instance_double(Reporting::BackfillDifferencesReports, call: {}) }
+
+      before do
+        allow(TradeTariffBackend).to receive_messages(service: 'uk', reporting_cdn_host: nil)
+        allow(Reporting::BackfillDifferencesReports).to receive(:new).and_return(backfill_service)
+        post :backfill, params: { id: 'differences' }
+      end
+
+      it { expect(response).to have_http_status(:accepted) }
+      it { expect(backfill_service).to have_received(:call) }
+    end
+
+    context 'when requesting backfill for a non-differences report' do
+      before do
+        allow(TradeTariffBackend).to receive_messages(service: 'uk', reporting_cdn_host: nil)
+        allow(Reporting::BackfillDifferencesReports).to receive(:new)
+        post :backfill, params: { id: 'commodities' }
+      end
+
+      it { expect(response).to have_http_status(:not_found) }
+      it { expect(Reporting::BackfillDifferencesReports).not_to have_received(:new) }
+    end
+
+    context 'when requesting backfill for differences on the XI service' do
+      before do
+        allow(TradeTariffBackend).to receive_messages(service: 'xi', reporting_cdn_host: nil)
+        allow(Reporting::BackfillDifferencesReports).to receive(:new)
+        post :backfill, params: { id: 'differences' }
+      end
+
+      it { expect(response).to have_http_status(:not_found) }
+      it { expect(Reporting::BackfillDifferencesReports).not_to have_received(:new) }
+    end
+  end
 end
