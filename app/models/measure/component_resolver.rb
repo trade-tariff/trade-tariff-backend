@@ -64,6 +64,10 @@ class Measure
       measure.measure_type.expresses_unit? && components_express_unit?
     end
 
+    def meursing_measures
+      @meursing_measures ||= MeursingMeasureFinderService.new(measure, meursing_additional_code_id).call
+    end
+
     private
 
     attr_reader :measure
@@ -71,10 +75,6 @@ class Measure
     def pre_excise_coercion_date?
       point_in_time = measure.respond_to?(:point_in_time) ? measure.point_in_time : nil
       EXCISE_ALCOHOL_COERCION_DATE && point_in_time.present? && point_in_time < EXCISE_ALCOHOL_COERCION_DATE
-    end
-
-    def meursing_measures
-      @meursing_measures ||= MeursingMeasureFinderService.new(measure, meursing_additional_code_id).call
     end
 
     def meursing_additional_code_id
