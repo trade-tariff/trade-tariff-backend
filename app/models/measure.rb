@@ -591,36 +591,7 @@ class Measure < Sequel::Model
     component_resolver.send(:meursing_measures)
   end
 
-  def sort_key
-    @sort_key ||= [
-      geographical_area_id,
-      measure_type_id,
-      additional_code_type_id,
-      additional_code_id,
-      ordernumber,
-      values[
-        values.key?(:effective_end_date) ? :effective_end_date : :validity_end_date,
-      ],
-    ]
-  end
-
-  def <=>(other)
-    sort_key.each.with_index do |value, index|
-      if value.nil?
-        next if other.sort_key[index].nil?
-
-        return 1
-      elsif other.sort_key[index].nil?
-        return -1
-      else
-        comparison_result = value <=> other.sort_key[index]
-
-        return comparison_result unless comparison_result.zero?
-      end
-    end
-
-    0
-  end
+  include Orderable
 
   delegate :all_components, to: :component_resolver
 
