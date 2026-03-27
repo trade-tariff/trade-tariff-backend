@@ -8,6 +8,11 @@ class ClearCacheWorker
 
     clear_frontend_cache
 
+    ActiveSupport::Notifications.instrument(
+      TradeTariffBackend::TariffUpdateEventListener::TARIFF_CACHE_CLEARED,
+      service: TradeTariffBackend.service,
+    )
+
     Sidekiq::Client.enqueue(PrecacheHeadingsWorker, Time.zone.today.to_formatted_s(:db))
     Sidekiq::Client.enqueue(PrewarmQuotaOrderNumbersWorker)
     Sidekiq::Client.enqueue(ReindexModelsWorker)
