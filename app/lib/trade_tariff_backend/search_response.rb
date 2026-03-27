@@ -8,7 +8,9 @@ module TradeTariffBackend
       @data = data
     end
 
-    delegate :[], to: :@data
+    def [](key) # rubocop:disable Rails/Delegate -- this file loads before Rails; delegate is unavailable
+      @data[key]
+    end
 
     def dig(*keys)
       @data.dig(*keys)
