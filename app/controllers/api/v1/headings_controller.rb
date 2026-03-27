@@ -102,12 +102,16 @@ module Api
         @heading ||= if base_heading.declarable?
                        shared_heading_scope.eager(DECLARABLE_EAGER).take
                      else
-                       shared_heading_scope.eager(NON_DECLARABLE_EAGER).take
+                       non_declarable_heading
                      end
       end
 
       def base_heading
         @base_heading ||= shared_heading_scope.take
+      end
+
+      def non_declarable_heading
+        @non_declarable_heading ||= shared_heading_scope.eager(NON_DECLARABLE_EAGER).take
       end
 
       def shared_heading_scope
