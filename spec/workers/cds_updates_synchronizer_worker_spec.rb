@@ -1,11 +1,13 @@
 require 'data_migrator'
 
 RSpec.describe CdsUpdatesSynchronizerWorker, type: :worker do
-  shared_examples_for 'a synchronizer worker that queues other workers' do
-    it { expect(Sidekiq::Client).to have_received(:enqueue_in).with(5.minutes, ClearInvalidSearchReferences) }
-    it { expect(Sidekiq::Client).to have_received(:enqueue_in).with(11.minutes, PopulateChangesTableWorker) }
-    it { expect(Sidekiq::Client).to have_received(:enqueue_in).with(15.minutes, PopulateTariffChangesWorker) }
-    it { expect(Sidekiq::Client).to have_received(:enqueue_in).with(5.minutes, ClearCacheWorker) }
+  shared_examples_for 'a synchronizer worker that fires the updates applied event' do
+    it 'instruments the tariff updates applied event for uk service' do
+      expect(ActiveSupport::Notifications).to have_received(:instrument).with(
+        TradeTariffBackend::TariffUpdateEventListener::TARIFF_UPDATES_APPLIED,
+        service: 'uk',
+      )
+    end
   end
 
   describe '#perform' do
@@ -19,8 +21,11 @@ RSpec.describe CdsUpdatesSynchronizerWorker, type: :worker do
 
       allow(TradeTariffBackend).to receive(:service).and_return(service)
 
-      allow(Sidekiq::Client).to receive(:enqueue)
-      allow(Sidekiq::Client).to receive(:enqueue_in)
+      allow(ActiveSupport::Notifications).to receive(:instrument).and_call_original
+      allow(ActiveSupport::Notifications).to receive(:instrument).with(
+        TradeTariffBackend::TariffUpdateEventListener::TARIFF_UPDATES_APPLIED,
+        anything,
+      )
 
       migrations_dir = Rails.root.join(file_fixture_path).join('data_migrations')
       allow(DataMigrator).to receive_messages(migrations_dir:, migrate_up!: true)
@@ -82,7 +87,7 @@ RSpec.describe CdsUpdatesSynchronizerWorker, type: :worker do
 
         it { expect(GoodsNomenclatures::TreeNode).to have_received(:refresh!) }
 
-        it_behaves_like 'a synchronizer worker that queues other workers'
+        it_behaves_like 'a synchronizer worker that fires the updates applied event'
 
         it { expect(described_class.jobs).to be_empty }
 
@@ -108,7 +113,7 @@ RSpec.describe CdsUpdatesSynchronizerWorker, type: :worker do
 
         it { expect(GoodsNomenclatures::TreeNode).to have_received(:refresh!) }
 
-        it_behaves_like 'a synchronizer worker that queues other workers'
+        it_behaves_like 'a synchronizer worker that fires the updates applied event'
 
         it { expect(described_class.jobs).to be_empty }
 
@@ -140,7 +145,7 @@ RSpec.describe CdsUpdatesSynchronizerWorker, type: :worker do
 
       it { expect(DataMigrator).not_to have_received(:migrate_up!) }
 
-      it_behaves_like 'a synchronizer worker that queues other workers'
+      it_behaves_like 'a synchronizer worker that fires the updates applied event'
 
       it { expect(described_class.jobs).to be_empty }
 
