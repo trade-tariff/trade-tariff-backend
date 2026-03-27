@@ -8,10 +8,9 @@ class HashPresenter
   end
 
   def method_missing(name, *_args)
-    key = name.to_s
-    return self.class.coerce(@data[key]) if @data.key?(key)
-
-    super
+    # Return nil for unknown keys, matching Hashie::Mash behaviour so that
+    # serializers receiving sparse fixtures don't raise NoMethodError.
+    self.class.coerce(@data[name.to_s])
   end
 
   def respond_to_missing?(name, include_private = false)
