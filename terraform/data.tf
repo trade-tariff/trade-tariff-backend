@@ -19,14 +19,6 @@ data "aws_security_group" "this" {
   name = "trade-tariff-ecs-security-group-${var.environment}"
 }
 
-data "aws_lb_target_group" "backend_uk" {
-  name = "backend-uk"
-}
-
-data "aws_lb_target_group" "backend_xi" {
-  name = "backend-xi"
-}
-
 data "aws_lb_target_group" "backend_uk_https" {
   name = "backend-uk-https"
 }
