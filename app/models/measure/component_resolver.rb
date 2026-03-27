@@ -26,7 +26,7 @@ class Measure
 
     # Flat list of components from all measure conditions.
     def condition_components
-      measure.measure_conditions.flat_map(&:measure_condition_components)
+      @condition_components ||= measure.measure_conditions.flat_map(&:measure_condition_components)
     end
 
     # Resolved measure components after Meursing substitution (may be empty).
@@ -84,7 +84,7 @@ class Measure
     def components_express_unit?
       measure.measure_components.any?(&:expresses_unit?) ||
         measure.measure_conditions.any?(&:expresses_unit?) ||
-        measure.measure_conditions.flat_map(&:measure_condition_components).any?(&:expresses_unit?) ||
+        condition_components.any?(&:expresses_unit?) ||
         resolved_components.any?(&:expresses_unit?)
     end
 
