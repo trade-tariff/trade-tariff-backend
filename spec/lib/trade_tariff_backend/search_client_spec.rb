@@ -38,22 +38,22 @@ RSpec.describe TradeTariffBackend::SearchClient do
     end
 
     let(:search_result_commodity_ids) do
-      search_result.hits.hits.map(&:_source).map(&:goods_nomenclature_item_id)
+      search_result.dig('hits', 'hits').map { |h| h.dig('_source', 'goods_nomenclature_item_id') }
     end
 
     context 'with existing index' do
       before { commodity }
 
       it 'searches in supplied index' do
-        expect(search_result.hits.total.value).to be >= 1
+        expect(search_result.dig('hits', 'total', 'value')).to be >= 1
       end
 
       it 'returns expected results' do
         expect(search_result_commodity_ids).to include commodity.goods_nomenclature_item_id
       end
 
-      it 'returns results wrapped in Hashie::Mash structure' do
-        expect(search_result).to be_a Hashie::Mash
+      it 'returns results wrapped in a SearchResponse' do
+        expect(search_result).to be_a TradeTariffBackend::SearchResponse
       end
     end
   end
