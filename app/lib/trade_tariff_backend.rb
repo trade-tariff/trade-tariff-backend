@@ -11,6 +11,7 @@ end
 
 require_relative 'trade_tariff_backend/config'
 require_relative 'trade_tariff_backend/clients'
+require_relative 'trade_tariff_backend/search_response'
 
 module TradeTariffBackend
   extend Config

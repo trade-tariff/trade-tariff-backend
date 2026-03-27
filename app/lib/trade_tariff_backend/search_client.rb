@@ -1,5 +1,3 @@
-require 'hashie'
-
 module TradeTariffBackend
   class SearchClient < SimpleDelegator
     SEARCH_SERVER_CONFIG_FILE = Rails.root.join('config/elasticsearch_server_options.yml')
@@ -26,11 +24,11 @@ module TradeTariffBackend
     end
 
     def search(*)
-      Hashie::TariffMash.new(super)
+      SearchResponse.new(super)
     end
 
     def msearch(*)
-      Hashie::TariffMash.new(super)
+      SearchResponse.new(super)
     end
 
     def reindex_all
