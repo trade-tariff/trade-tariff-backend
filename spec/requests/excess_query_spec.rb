@@ -1,5 +1,8 @@
 RSpec.describe 'excess query counts', :v2 do
-  before { allow(NewRelic::Agent).to receive(:notice_error).and_return true }
+  before do
+    allow(NewRelic::Agent).to receive(:notice_error).and_return true
+    allow(TradeTariffBackend).to receive(:check_query_count?).and_return true
+  end
 
   let(:get_page) { api_get api_heading_path(heading, format: :json) }
 
