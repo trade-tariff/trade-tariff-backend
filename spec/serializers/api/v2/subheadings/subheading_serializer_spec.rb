@@ -14,7 +14,7 @@ RSpec.describe Api::V2::Subheadings::SubheadingSerializer do
     file = File.read(path)
     file = JSON.parse(file)
 
-    Hashie::TariffMash.new(file)
+    HashPresenter.new(file)
   end
 
   let(:expected_pattern) do
