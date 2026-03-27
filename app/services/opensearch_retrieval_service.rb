@@ -75,7 +75,7 @@ class OpensearchRetrievalService
 
   def build_result_from_hit(hit)
     source = hit['_source']
-    OpenStruct.new(
+    GoodsNomenclatureResult.new(
       id: source['goods_nomenclature_sid'],
       goods_nomenclature_item_id: source['goods_nomenclature_item_id'],
       goods_nomenclature_sid: source['goods_nomenclature_sid'],

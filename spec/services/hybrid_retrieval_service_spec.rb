@@ -1,6 +1,6 @@
 RSpec.describe HybridRetrievalService do
   def make_result(sid:, item_id:, score:)
-    OpenStruct.new(
+    GoodsNomenclatureResult.new(
       id: sid,
       goods_nomenclature_item_id: item_id,
       goods_nomenclature_sid: sid,
