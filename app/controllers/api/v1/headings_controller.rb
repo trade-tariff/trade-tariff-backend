@@ -99,15 +99,15 @@ module Api
       private
 
       def heading
-        @heading ||= if declarable?
-                       declarable_heading
+        @heading ||= if base_heading.declarable?
+                       shared_heading_scope.eager(DECLARABLE_EAGER).take
                      else
                        non_declarable_heading
                      end
       end
 
-      def declarable_heading
-        @declarable_heading ||= shared_heading_scope.eager(DECLARABLE_EAGER).take
+      def base_heading
+        @base_heading ||= shared_heading_scope.take
       end
 
       def non_declarable_heading
@@ -120,12 +120,6 @@ module Api
           .non_hidden
           .non_grouping
           .by_code(params[:id])
-      end
-
-      def declarable?
-        shared_heading_scope
-          .take
-          .declarable?
       end
     end
   end
