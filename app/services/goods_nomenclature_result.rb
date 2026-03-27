@@ -1,0 +1,16 @@
+GoodsNomenclatureResult = Data.define(
+  :id,
+  :goods_nomenclature_item_id,
+  :goods_nomenclature_sid,
+  :producline_suffix,
+  :goods_nomenclature_class,
+  :description,
+  :formatted_description,
+  :self_text,
+  :classification_description,
+  :full_description,
+  :heading_description,
+  :declarable,
+  :score,
+  :confidence,
+)
