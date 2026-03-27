@@ -50,7 +50,7 @@ RSpec.describe Measure::DutyExpressionPresenter do
 
   describe '#resolved' do
     context 'when the measure does not resolve Meursing components' do
-      before { allow(measure).to receive(:send).with(:resolves_meursing_measures?).and_return(false) }
+      before { allow(measure).to receive(:resolves_meursing_measures?).and_return(false) }
 
       it 'returns an empty string' do
         expect(presenter.resolved).to eq ''
@@ -61,8 +61,10 @@ RSpec.describe Measure::DutyExpressionPresenter do
       let(:resolved_component) { instance_double(MeasureComponent, formatted_duty_expression: '8.00%') }
 
       before do
-        allow(measure).to receive(:send).with(:resolves_meursing_measures?).and_return(true)
-        allow(measure).to receive(:resolved_measure_components).and_return([resolved_component])
+        allow(measure).to receive_messages(
+          resolves_meursing_measures?: true,
+          resolved_measure_components: [resolved_component],
+        )
       end
 
       it 'joins the resolved component formatted expressions' do

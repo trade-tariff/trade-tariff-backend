@@ -27,7 +27,7 @@ class Measure
 
     # Resolved duty expression after Meursing component substitution.
     def resolved
-      return '' unless measure.send(:resolves_meursing_measures?)
+      return '' unless measure.resolves_meursing_measures?
 
       measure.resolved_measure_components.map(&:formatted_duty_expression).join(' ')
     end

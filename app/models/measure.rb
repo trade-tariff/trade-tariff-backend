@@ -587,9 +587,7 @@ class Measure < Sequel::Model
     component_resolver.resolved_components
   end
 
-  def meursing_measures
-    component_resolver.send(:meursing_measures)
-  end
+  delegate :meursing_measures, to: :component_resolver
 
   def sort_key
     @sort_key ||= [
