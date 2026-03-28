@@ -381,5 +381,34 @@ RSpec.describe Api::User::ActiveCommoditiesService do
         expect(result).to eq([])
       end
     end
+
+    describe '#create_payload' do
+      it 'returns hash with correct structure and keys' do
+        result = service.create_payload
+
+        expect(result).to have_key(:file_name)
+        expect(result).to have_key(:content_type)
+        expect(result).to have_key(:body)
+      end
+
+      it 'returns correctly formatted file_name' do
+        result = service.create_payload
+
+        expect(result[:file_name]).to match(/commodity_watch_list-your_codes_\d{4}-\d{2}-\d{2}\.xlsx/)
+      end
+
+      it 'returns correct content_type' do
+        result = service.create_payload
+
+        expect(result[:content_type]).to eq(Downloadable::CONTENT_TYPE_XLSX)
+      end
+
+      it 'returns body as binary XLSX data' do
+        result = service.create_payload
+
+        expect(result[:body]).to be_a(String)
+        expect(result[:body]).to start_with('PK')
+      end
+    end
   end
 end

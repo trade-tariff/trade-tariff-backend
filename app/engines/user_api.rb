@@ -10,6 +10,10 @@ UserApi.routes.draw do
         resources :subscription_targets, only: %i[index], path: 'targets' do
           get :download, on: :collection
         end
+        resources :data_export, only: %i[show], path: 'data_export' do
+          post :create, on: :collection
+          get :download, on: :member, action: :download
+        end
       end
       resources :commodity_changes, only: %i[index show]
       resources :grouped_measure_changes, only: %i[index show]
