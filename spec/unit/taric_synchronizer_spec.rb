@@ -94,6 +94,19 @@ RSpec.describe TaricSynchronizer, :truncation do
     let(:applied_update) { create(:taric_update, :applied, example_date: Time.zone.yesterday) }
     let(:pending_update) { create(:taric_update, :pending, example_date: Time.zone.today) }
 
+    context 'when the Redis lock cannot be acquired' do
+      before do
+        allow(TradeTariffBackend).to receive(:with_redis_lock).and_raise(Redlock::LockError)
+        allow(TariffSynchronizer::BaseUpdate).to receive(:failed)
+      end
+
+      it 'does not run failure or sequence checks' do
+        described_class.apply
+
+        expect(TariffSynchronizer::BaseUpdate).not_to have_received(:failed)
+      end
+    end
+
     context 'when successful' do
       before do
         allow_any_instance_of(TaricImporter).to receive(:import)
