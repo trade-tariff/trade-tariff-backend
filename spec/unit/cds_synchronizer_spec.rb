@@ -81,7 +81,7 @@ RSpec.describe CdsSynchronizer, :truncation do
 
     context 'when the Redis lock cannot be acquired' do
       before do
-        allow(TradeTariffBackend).to receive(:with_redis_lock).and_raise(Redlock::LockError)
+        allow(TradeTariffBackend).to receive(:with_redis_lock).and_raise(Redlock::LockError, 'tariff-lock')
         allow(TariffSynchronizer::BaseUpdate).to receive(:failed)
       end
 
