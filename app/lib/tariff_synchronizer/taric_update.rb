@@ -66,6 +66,10 @@ module TariffSynchronizer
       end
     end
 
+    def clear_errors
+      presence_errors_dataset.destroy
+    end
+
     def to_param
       filename.sub('.xml', '')
     end

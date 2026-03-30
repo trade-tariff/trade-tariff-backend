@@ -23,5 +23,11 @@ FactoryBot.define do
     trait :failed do
       state { 'F' }
     end
+
+    trait :with_measure do
+      after :create do |taric_update, _evaluator|
+        create :measure, operation_date: taric_update.issue_date, filename: taric_update.filename
+      end
+    end
   end
 end
