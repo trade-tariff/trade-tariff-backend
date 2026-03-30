@@ -197,7 +197,7 @@ module Api
       def build_exact_result(goods_nomenclature)
         self_text = goods_nomenclature.goods_nomenclature_self_text&.self_text
 
-        OpenStruct.new(
+        GoodsNomenclatureResult.new(
           id: goods_nomenclature.goods_nomenclature_sid,
           goods_nomenclature_item_id: goods_nomenclature.goods_nomenclature_item_id,
           goods_nomenclature_sid: goods_nomenclature.goods_nomenclature_sid,
@@ -247,7 +247,7 @@ module Api
       end
 
       def build_result(result, confidence)
-        OpenStruct.new(
+        GoodsNomenclatureResult.new(
           id: result.id,
           goods_nomenclature_item_id: result.goods_nomenclature_item_id,
           goods_nomenclature_sid: result.goods_nomenclature_sid,

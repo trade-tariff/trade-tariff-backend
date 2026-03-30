@@ -64,7 +64,7 @@ class VectorRetrievalService
     full_desc = self_text.presence ||
       DescriptionHtmlFormatter.call(goods_nomenclature.raw_classification_description)
 
-    OpenStruct.new(
+    GoodsNomenclatureResult.new(
       id: goods_nomenclature.goods_nomenclature_sid,
       goods_nomenclature_item_id: goods_nomenclature.goods_nomenclature_item_id,
       goods_nomenclature_sid: goods_nomenclature.goods_nomenclature_sid,

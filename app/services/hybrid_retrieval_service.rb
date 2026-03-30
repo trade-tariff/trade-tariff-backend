@@ -91,7 +91,7 @@ class HybridRetrievalService
   end
 
   def build_result(item, score)
-    OpenStruct.new(
+    GoodsNomenclatureResult.new(
       id: item.id,
       goods_nomenclature_item_id: item.goods_nomenclature_item_id,
       goods_nomenclature_sid: item.goods_nomenclature_sid,
