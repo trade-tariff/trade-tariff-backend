@@ -5,9 +5,20 @@ RSpec.describe 'tariff:sync:status' do
   after { Rake::Task['tariff:sync:status'].reenable }
 
   context 'with a mix of update states' do
-    let!(:applied_cds)  { create(:cds_update, :applied, issue_date: 2.days.ago.to_date) }
-    let!(:pending_cds)  { create(:cds_update, :pending, issue_date: 1.day.ago.to_date) }
-    let!(:failed_cds)   { create(:cds_update, :failed, issue_date: Date.current, exception_class: 'Sequel::DatabaseError: bad record') }
+    let!(:applied_cds) { create(:cds_update, :applied, issue_date: 2.days.ago.to_date) }
+    let!(:pending_cds) { create(:cds_update, :pending, issue_date: 1.day.ago.to_date) }
+    let!(:failed_cds) do
+      create(:cds_update, :failed, issue_date: Date.current, exception_class: 'Sequel::DatabaseError: bad record')
+    end
+
+    let(:output) do
+      original_stdout = $stdout
+      $stdout = StringIO.new
+      Rake::Task['tariff:sync:status'].invoke
+      $stdout.string
+    ensure
+      $stdout = original_stdout
+    end
 
     before do
       create(:taric_update, :applied, issue_date: 2.days.ago.to_date)
@@ -16,32 +27,27 @@ RSpec.describe 'tariff:sync:status' do
       allow(TariffSynchronizer::TaricUpdate).to receive(:correct_filename_sequence?).and_return(false)
     end
 
-    it 'shows both service sections' do
-      expect { Rake::Task['tariff:sync:status'].invoke }
-        .to output(/UK \(CDS\)/).to_stdout
-        .and output(/XI \(TARIC\)/).to_stdout
+    it 'shows both service sections', :aggregate_failures do
+      expect(output).to match(/UK \(CDS\)/)
+      expect(output).to match(/XI \(TARIC\)/)
     end
 
     it 'shows the last applied CDS filename' do
-      expect { Rake::Task['tariff:sync:status'].invoke }
-        .to output(/#{Regexp.escape(applied_cds.filename)}/).to_stdout
+      expect(output).to include(applied_cds.filename)
     end
 
     it 'shows pending CDS filename' do
-      expect { Rake::Task['tariff:sync:status'].invoke }
-        .to output(/#{Regexp.escape(pending_cds.filename)}/).to_stdout
+      expect(output).to include(pending_cds.filename)
     end
 
-    it 'shows failed CDS filename and error class' do
-      expect { Rake::Task['tariff:sync:status'].invoke }
-        .to output(/#{Regexp.escape(failed_cds.filename)}/).to_stdout
-        .and output(/Sequel::DatabaseError/).to_stdout
+    it 'shows failed CDS filename and error class', :aggregate_failures do
+      expect(output).to include(failed_cds.filename)
+      expect(output).to match(/Sequel::DatabaseError/)
     end
 
-    it 'shows OK sequence for CDS and INVALID for TARIC' do
-      expect { Rake::Task['tariff:sync:status'].invoke }
-        .to output(/Sequence\s+: OK/).to_stdout
-        .and output(/Sequence\s+: INVALID/).to_stdout
+    it 'shows OK sequence for CDS and INVALID for TARIC', :aggregate_failures do
+      expect(output).to match(/Sequence\s+: OK/)
+      expect(output).to match(/Sequence\s+: INVALID/)
     end
   end
 
@@ -75,15 +81,22 @@ RSpec.describe 'tariff:sync:failures' do
              exception_class: 'Sequel::DatabaseError: constraint violation')
     end
 
-    it 'lists the filename and service' do
-      expect { Rake::Task['tariff:sync:failures'].invoke }
-        .to output(/#{Regexp.escape(failed_cds.filename)}/).to_stdout
-        .and output(/UK\/CDS/).to_stdout
+    let(:output) do
+      original_stdout = $stdout
+      $stdout = StringIO.new
+      Rake::Task['tariff:sync:failures'].invoke
+      $stdout.string
+    ensure
+      $stdout = original_stdout
+    end
+
+    it 'lists the filename and service', :aggregate_failures do
+      expect(output).to include(failed_cds.filename)
+      expect(output).to include('UK/CDS')
     end
 
     it 'shows the error class' do
-      expect { Rake::Task['tariff:sync:failures'].invoke }
-        .to output(/Sequel::DatabaseError/).to_stdout
+      expect(output).to match(/Sequel::DatabaseError/)
     end
 
     it 'shows the CDS error count when present' do
@@ -93,13 +106,11 @@ RSpec.describe 'tariff:sync:failures' do
         details: { errors: %w[invalid] },
       )
 
-      expect { Rake::Task['tariff:sync:failures'].invoke }
-        .to output(/CDS errors\s+: 1/).to_stdout
+      expect(output).to match(/CDS errors\s+: 1/)
     end
 
     it 'suggests running failure_detail' do
-      expect { Rake::Task['tariff:sync:failures'].invoke }
-        .to output(/failure_detail/).to_stdout
+      expect(output).to include('failure_detail')
     end
   end
 
@@ -156,39 +167,42 @@ RSpec.describe 'tariff:sync:failure_detail' do
              inserts: { operations: {}, total_count: 0 }.to_json)
     end
 
+    let(:output) do
+      original_stdout = $stdout
+      $stdout = StringIO.new
+      Rake::Task['tariff:sync:failure_detail'].invoke
+      $stdout.string
+    ensure
+      $stdout = original_stdout
+    end
+
     before { ENV['FILENAME'] = update.filename }
 
-    it 'shows the service, state and issue date' do
-      expect { Rake::Task['tariff:sync:failure_detail'].invoke }
-        .to output(/UK \(CDS\)/).to_stdout
-        .and output(/State\s+: F/).to_stdout
-        .and output(/Issue date\s+: #{update.issue_date}/).to_stdout
+    it 'shows the service, state and issue date', :aggregate_failures do
+      expect(output).to match(/UK \(CDS\)/)
+      expect(output).to match(/State\s+: F/)
+      expect(output).to match(/Issue date\s+: #{update.issue_date}/)
     end
 
     it 'shows the file size' do
-      expect { Rake::Task['tariff:sync:failure_detail'].invoke }
-        .to output(/12345 bytes/).to_stdout
+      expect(output).to match(/12345 bytes/)
     end
 
     it 'shows the exception class' do
-      expect { Rake::Task['tariff:sync:failure_detail'].invoke }
-        .to output(/Sequel::DatabaseError: bad column/).to_stdout
+      expect(output).to match(/Sequel::DatabaseError: bad column/)
     end
 
-    it 'shows the backtrace' do
-      expect { Rake::Task['tariff:sync:failure_detail'].invoke }
-        .to output(/line 1/).to_stdout
-        .and output(/line 2/).to_stdout
+    it 'shows the backtrace', :aggregate_failures do
+      expect(output).to match(/line 1/)
+      expect(output).to match(/line 2/)
     end
 
     it 'shows the last SQL queries' do
-      expect { Rake::Task['tariff:sync:failure_detail'].invoke }
-        .to output(/SELECT \* FROM measures/).to_stdout
+      expect(output).to match(/SELECT \* FROM measures/)
     end
 
     it 'shows the previous import operation counts' do
-      expect { Rake::Task['tariff:sync:failure_detail'].invoke }
-        .to output(/total_count/).to_stdout
+      expect(output).to match(/total_count/)
     end
 
     context 'with associated CDS errors' do
@@ -200,11 +214,10 @@ RSpec.describe 'tariff:sync:failure_detail' do
         )
       end
 
-      it 'shows CDS errors with model name' do
-        expect { Rake::Task['tariff:sync:failure_detail'].invoke }
-          .to output(/CDS Record Errors/).to_stdout
-          .and output(/Measure/).to_stdout
-          .and output(/is invalid/).to_stdout
+      it 'shows CDS errors with model name and details', :aggregate_failures do
+        expect(output).to match(/CDS Record Errors/)
+        expect(output).to match(/Measure/)
+        expect(output).to match(/is invalid/)
       end
     end
   end
@@ -220,6 +233,15 @@ RSpec.describe 'tariff:sync:failure_detail' do
     end
 
     context 'with associated presence errors' do
+      let(:output) do
+        original_stdout = $stdout
+        $stdout = StringIO.new
+        Rake::Task['tariff:sync:failure_detail'].invoke
+        $stdout.string
+      ensure
+        $stdout = original_stdout
+      end
+
       before do
         TariffSynchronizer::TariffUpdatePresenceError.create(
           tariff_update_filename: update.filename,
@@ -228,10 +250,9 @@ RSpec.describe 'tariff:sync:failure_detail' do
         )
       end
 
-      it 'shows presence errors with model name' do
-        expect { Rake::Task['tariff:sync:failure_detail'].invoke }
-          .to output(/Presence Errors/).to_stdout
-          .and output(/GoodsNomenclature/).to_stdout
+      it 'shows presence errors with model name', :aggregate_failures do
+        expect(output).to match(/Presence Errors/)
+        expect(output).to match(/GoodsNomenclature/)
       end
     end
   end
@@ -283,21 +304,28 @@ RSpec.describe 'tariff:sync:inspect_file' do
       }.tap(&:rewind)
     end
 
+    let(:output) do
+      original_stdout = $stdout
+      $stdout = StringIO.new
+      Rake::Task['tariff:sync:inspect_file'].invoke
+      $stdout.string
+    ensure
+      $stdout = original_stdout
+    end
+
     before do
       ENV['FILENAME'] = update.filename
       allow(TariffSynchronizer::FileService).to receive_messages(file_exists?: true, file_size: 4096)
       allow(TariffSynchronizer::FileService).to receive(:file_as_stringio).with(update).and_return(empty_zip)
     end
 
-    it 'shows the file header with state and size' do
-      expect { Rake::Task['tariff:sync:inspect_file'].invoke }
-        .to output(/State\s+: P/).to_stdout
-        .and output(/4096 bytes/).to_stdout
+    it 'shows the file header with state and size', :aggregate_failures do
+      expect(output).to match(/State\s+: P/)
+      expect(output).to match(/4096 bytes/)
     end
 
     it 'shows the entity record summary' do
-      expect { Rake::Task['tariff:sync:inspect_file'].invoke }
-        .to output(/Total entity records:/).to_stdout
+      expect(output).to match(/Total entity records:/)
     end
   end
 
@@ -314,23 +342,30 @@ RSpec.describe 'tariff:sync:inspect_file' do
       XML
     end
 
+    let(:output) do
+      original_stdout = $stdout
+      $stdout = StringIO.new
+      Rake::Task['tariff:sync:inspect_file'].invoke
+      $stdout.string
+    ensure
+      $stdout = original_stdout
+    end
+
     before do
       ENV['FILENAME'] = update.filename
       allow(TariffSynchronizer::FileService).to receive_messages(file_exists?: true, file_size: 2048)
       allow(TariffSynchronizer::FileService).to receive(:get).with(update.file_path).and_return(taric_xml)
     end
 
-    it 'shows the file header' do
-      expect { Rake::Task['tariff:sync:inspect_file'].invoke }
-        .to output(/State\s+: P/).to_stdout
-        .and output(/2048 bytes/).to_stdout
+    it 'shows the file header', :aggregate_failures do
+      expect(output).to match(/State\s+: P/)
+      expect(output).to match(/2048 bytes/)
     end
 
-    it 'shows the transaction record summary with counts' do
-      expect { Rake::Task['tariff:sync:inspect_file'].invoke }
-        .to output(/Total transaction records: 3/).to_stdout
-        .and output(/GoodsNomenclature\s+2/).to_stdout
-        .and output(/Measure\s+1/).to_stdout
+    it 'shows the transaction record summary with counts', :aggregate_failures do
+      expect(output).to match(/Total transaction records: 3/)
+      expect(output).to match(/GoodsNomenclature\s+2/)
+      expect(output).to match(/Measure\s+1/)
     end
   end
 end
@@ -354,14 +389,14 @@ RSpec.describe 'tariff:sync:reset_failed' do
     end
     let!(:failed_taric) { create(:taric_update, :failed, exception_class: 'OtherError') }
 
-    it 'resets all failed updates to pending' do
+    it 'resets all failed updates to pending', :aggregate_failures do
       suppress_output { Rake::Task['tariff:sync:reset_failed'].invoke }
 
       expect(failed_cds.reload.state).to eq('P')
       expect(failed_taric.reload.state).to eq('P')
     end
 
-    it 'clears exception fields' do
+    it 'clears exception fields', :aggregate_failures do
       suppress_output { Rake::Task['tariff:sync:reset_failed'].invoke }
 
       reloaded = failed_cds.reload
@@ -414,12 +449,8 @@ RSpec.describe 'tariff:sync:force_apply' do
     end
 
     it 'does not change the update state' do
-      begin
-        suppress_output { Rake::Task['tariff:sync:force_apply'].invoke }
-      rescue SystemExit
-        nil
-      end
-
+      suppress_output { Rake::Task['tariff:sync:force_apply'].invoke }
+    rescue SystemExit
       expect(update.reload.state).to eq('F')
     end
   end

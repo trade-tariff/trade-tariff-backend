@@ -111,7 +111,7 @@ namespace :tariff do
         end
       end
 
-      cds_errors = update.cds_errors.all
+      cds_errors = update.cds_errors
       if cds_errors.any?
         puts "\n=== CDS Record Errors (#{cds_errors.count} total, showing first 10) ===\n\n"
         cds_errors.first(10).each_with_index do |err, i|
@@ -125,7 +125,7 @@ namespace :tariff do
         end
       end
 
-      presence_errors = update.presence_errors.all
+      presence_errors = update.presence_errors
       if presence_errors.any?
         puts "\n=== Presence Errors (#{presence_errors.count} total, showing first 10) ===\n\n"
         presence_errors.first(10).each_with_index do |err, i|
