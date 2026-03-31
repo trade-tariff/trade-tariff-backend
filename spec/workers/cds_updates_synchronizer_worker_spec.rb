@@ -179,5 +179,34 @@ RSpec.describe CdsUpdatesSynchronizerWorker, type: :worker do
 
       it { expect(described_class.jobs).to have_attributes length: 1 }
     end
+
+    context 'when a retriable download error is raised' do
+      before do
+        allow(TariffSynchronizer::CdsUpdate).to receive(:downloaded_todays_file?).and_return(true)
+        allow(CdsSynchronizer).to receive(:download)
+          .and_raise(TariffSynchronizer::TariffUpdatesRequester::RetriableDownloadError, 'http://example/file')
+      end
+
+      context 'when retry budget remains' do
+        subject(:perform) { described_class.new.perform(true, false, 0) }
+
+        it 'reschedules the job with an incremented retry count' do
+          perform
+
+          expect(described_class.jobs).to have_attributes length: 1
+          expect(described_class.jobs.first).to include('args' => [true, false, 1])
+        end
+      end
+
+      context 'when retry budget is exhausted' do
+        subject(:perform) { described_class.new.perform(true, false, described_class::DOWNLOAD_MAX_RETRIES) }
+
+        it 'does not reschedule the job' do
+          perform
+
+          expect(described_class.jobs).to be_empty
+        end
+      end
+    end
   end
 end

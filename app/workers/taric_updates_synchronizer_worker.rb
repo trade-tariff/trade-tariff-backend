@@ -1,9 +1,11 @@
 class TaricUpdatesSynchronizerWorker
   include Sidekiq::Worker
 
+  DOWNLOAD_MAX_RETRIES = TariffSynchronizer.retry_count
+
   sidekiq_options queue: :sync, retry: false
 
-  def perform(reapply_data_migrations = false)
+  def perform(reapply_data_migrations = false, download_retry_count = 0)
     return unless TradeTariffBackend.xi?
 
     Thread.current[:tariff_sync_run_id] = SecureRandom.uuid
@@ -44,6 +46,8 @@ class TaricUpdatesSynchronizerWorker
     Sidekiq::Client.enqueue_in(20.minutes, ClearCacheWorker)
 
     emit_sync_run_completed(start_time)
+  rescue TariffSynchronizer::TariffUpdatesRequester::RetriableDownloadError
+    attempt_reschedule_download!(download_retry_count, reapply_data_migrations)
   rescue StandardError => e
     TariffSynchronizer::Instrumentation.sync_run_failed(
       phase: 'sync',
@@ -67,5 +71,16 @@ private
 
     require 'data_migrator' unless defined?(DataMigrator)
     DataMigrator.migrate_up!(nil)
+  end
+
+  def attempt_reschedule_download!(download_retry_count, reapply_data_migrations)
+    delay = TariffSynchronizer.request_throttle.seconds
+
+    if download_retry_count < DOWNLOAD_MAX_RETRIES
+      self.class.perform_in(delay, reapply_data_migrations, download_retry_count + 1)
+      TariffSynchronizer::Instrumentation.download_delayed(retry_at: delay.from_now.iso8601)
+    else
+      TariffSynchronizer::Instrumentation.download_retry_exhausted(url: 'taric')
+    end
   end
 end

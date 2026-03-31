@@ -72,20 +72,11 @@ RSpec.describe TaricSynchronizer, :truncation do
         allow_any_instance_of(Faraday::Connection).to receive(:get).and_raise(Faraday::Error, 'Foo')
       end
 
-      it 'raises original exception ending the process and emits a download_failed event' do
-        allow(TariffSynchronizer::Instrumentation).to receive(:download_failed)
+      it 'raises a retriable download error and emits a download_retried event' do
+        allow(TariffSynchronizer::Instrumentation).to receive(:download_retried)
 
-        expect { described_class.download }.to raise_error Faraday::Error
-        expect(TariffSynchronizer::Instrumentation).to have_received(:download_failed)
-      end
-
-      it 'sends an email with the exception error' do
-        ActionMailer::Base.deliveries.clear
-        expect { described_class.download }.to raise_error(Faraday::Error)
-
-        expect(ActionMailer::Base.deliveries).not_to be_empty
-        expect(ActionMailer::Base.deliveries.last.encoded).to match(/Backtrace/)
-        expect(ActionMailer::Base.deliveries.last.encoded).to match(/Trade Tariff download failure/)
+        expect { described_class.download }.to raise_error TariffSynchronizer::TariffUpdatesRequester::RetriableDownloadError
+        expect(TariffSynchronizer::Instrumentation).to have_received(:download_retried)
       end
     end
   end
