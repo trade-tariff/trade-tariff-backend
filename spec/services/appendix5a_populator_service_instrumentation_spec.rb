@@ -1,11 +1,3 @@
-require 'spec_helper'
-
-require 'action_mailer'
-require 'logger'
-require 'mail'
-
-require_relative '../../app/services/appendix_5a_populator_service'
-
 RSpec.describe Appendix5aPopulatorService do
   subject(:call) { service.call }
 
