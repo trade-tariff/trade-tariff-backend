@@ -2,13 +2,6 @@ name: Deploy to production
 
 on:
   workflow_dispatch:
-  workflow_run:
-    workflows:
-      - 'Deploy to staging'
-    types:
-      - completed
-    branches:
-      - main
 
 permissions:
   contents: read
@@ -16,7 +9,6 @@ permissions:
 
 jobs:
   deploy:
-    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch' }}
     uses: trade-tariff/trade-tariff-tools/.github/workflows/deploy-ecs.yml@main
     with:
       app-name: tariff-backend
