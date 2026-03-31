@@ -2,20 +2,30 @@ RSpec.describe Appendix5aPopulatorService do
   describe '#call' do
     subject(:call) { described_class.new.call }
 
-    before do
-      allow(Appendix5a).to receive(:fetch_latest).and_return(new_guidance)
-      allow(SlackNotifierService).to receive(:call).and_call_original
-      allow(Appendix5aMailer).to receive_message_chain(:appendix5a_notify_message, :deliver_now)
+    let(:mail_message) do
+      instance_double(
+        Mail::Message,
+        to: ['cupid@example.com'],
+        smtp_envelope_to: ['cupid@example.com'],
+        delivery_handler: instance_double(Appendix5aMailer, class: double(name: 'Appendix5aMailer')),
+        delivery_method: instance_double(Aws::ActionMailer::SESV2::Mailer, class: double(name: 'Aws::ActionMailer::SESV2::Mailer')),
+      )
     end
-
+    let(:message_delivery) { instance_double(ActionMailer::MessageDelivery, message: mail_message, deliver_now: true) }
     let!(:existing_guidance) do
       create(
         :appendix_5a,
         cds_guidance: 'foo',
       )
     end
-
     let(:change_guidance_values) { change { existing_guidance.reload.values } }
+
+    before do
+      allow(Appendix5a).to receive(:fetch_latest).and_return(new_guidance)
+      allow(SlackNotifierService).to receive(:call).and_call_original
+      allow(Appendix5aMailer).to receive(:appendix5a_notify_message).and_return(message_delivery)
+      allow(mail_message).to receive(:instance_variable_get).with(:@smtp_envelope_to).and_return(nil)
+    end
 
     context 'when the latest guidance has changed' do
       let(:new_guidance) do
