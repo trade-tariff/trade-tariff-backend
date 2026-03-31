@@ -79,6 +79,19 @@ RSpec.describe CdsSynchronizer, :truncation do
     let(:applied_update) { create(:cds_update, :applied, example_date: Time.zone.yesterday) }
     let(:pending_update) { create(:cds_update, :pending, example_date: Time.zone.today) }
 
+    context 'when the Redis lock cannot be acquired' do
+      before do
+        allow(TradeTariffBackend).to receive(:with_redis_lock).and_raise(Redlock::LockError, 'tariff-lock')
+        allow(TariffSynchronizer::BaseUpdate).to receive(:failed)
+      end
+
+      it 'does not run failure or sequence checks' do
+        described_class.apply
+
+        expect(TariffSynchronizer::BaseUpdate).not_to have_received(:failed)
+      end
+    end
+
     context 'with failed updates present' do
       let(:failed_update) { create(:cds_update, :failed, example_date: Time.zone.yesterday) }
 

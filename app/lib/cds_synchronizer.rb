@@ -44,15 +44,14 @@ class CdsSynchronizer
     end
 
     def apply
-      applied_updates = []
-      import_warnings = []
-
-      start_time = Process.clock_gettime(Process::CLOCK_MONOTONIC)
-
       # The sync task is run on multiple machines to avoid more than one process
       # running the apply task it is wrapped with a redis lock
       TradeTariffBackend.with_redis_lock do
         TariffSynchronizer::Instrumentation.lock_acquired(phase: 'apply')
+
+        applied_updates = []
+        import_warnings = []
+        start_time = Process.clock_gettime(Process::CLOCK_MONOTONIC)
 
         check_tariff_updates_failures
         check_sequence
