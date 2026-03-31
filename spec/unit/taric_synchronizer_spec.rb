@@ -223,14 +223,9 @@ RSpec.describe TaricSynchronizer, :truncation do
   end
 
   describe '.rollback' do
-    let(:rollback_attributes) { attributes_for :rollback }
-    let(:record) do
-      create :measure, operation_date: Time.zone.yesterday.to_date
-    end
-
     before do
-      record
       allow(TradeTariffBackend).to receive(:service).and_return('xi')
+      create :taric_update, :applied, :with_measure, example_date: Date.yesterday
     end
 
     it 'performs a rollback' do

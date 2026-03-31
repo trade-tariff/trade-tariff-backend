@@ -152,6 +152,10 @@ module TariffSynchronizer
       raise NotImplementedError
     end
 
+    def clear_errors
+      raise NotImplementedError
+    end
+
     def cache_key_with_version
       [
         'tariff-update',
