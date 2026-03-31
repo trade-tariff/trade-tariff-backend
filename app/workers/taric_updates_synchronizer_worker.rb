@@ -26,22 +26,11 @@ class TaricUpdatesSynchronizerWorker
 
     MaterializeViewHelper.refresh_materialized_view
 
-    # NOTE: Make sure caches have been refreshed including the CDN
-    #       otherwise we serve up stale responses.
-    #
-    #       We let all of the other work complete off of the same queue first and whilst all items are dequeued in the correct order they have different runtimes so we add a further delay to be sure.
-    Sidekiq::Client.enqueue_in(5.minutes, ClearCacheWorker)
-
-    Sidekiq::Client.enqueue_in(5.minutes, ClearInvalidSearchReferences)
-    Sidekiq::Client.enqueue_in(10.minutes, TreeIntegrityCheckWorker)
-    Sidekiq::Client.enqueue_in(11.minutes, PopulateChangesTableWorker)
-
-    # NOTE: This will create some category assessments.
-    #       - Delay for 15 minutes as some of the category assessment queries rely on materialized views
-    #       - Pass the oldest pending date to process all changes inclusive of the oldest pending update
-    Sidekiq::Client.enqueue_in(15.minutes, GreenLanesUpdatesWorker, oldest_pending_date.iso8601)
-
-    Sidekiq::Client.enqueue_in(20.minutes, ClearCacheWorker)
+    ActiveSupport::Notifications.instrument(
+      TradeTariffBackend::TariffUpdateEventListener::TARIFF_UPDATES_APPLIED,
+      service: 'xi',
+      oldest_pending_date: oldest_pending_date.iso8601,
+    )
 
     emit_sync_run_completed(start_time)
   rescue StandardError => e

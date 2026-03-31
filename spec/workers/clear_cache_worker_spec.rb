@@ -22,6 +22,11 @@ RSpec.describe ClearCacheWorker, type: :worker do
     allow(TradeTariffBackend.frontend_redis).to receive(:flushdb)
     allow(Sidekiq::Client).to receive(:enqueue)
     allow(Sidekiq::Client).to receive(:enqueue_in)
+    allow(ActiveSupport::Notifications).to receive(:instrument).and_call_original
+    allow(ActiveSupport::Notifications).to receive(:instrument).with(
+      TradeTariffBackend::TariffUpdateEventListener::TARIFF_CACHE_CLEARED,
+      anything,
+    )
 
     allow(redis).to receive(:scan_each) do |match:, &block|
       preserved_keys.each_key do |key|
@@ -76,6 +81,13 @@ RSpec.describe ClearCacheWorker, type: :worker do
   it { expect(Sidekiq::Client).to have_received(:enqueue).with(PrewarmQuotaOrderNumbersWorker) }
   it { expect(Sidekiq::Client).to have_received(:enqueue).with(ReindexModelsWorker) }
   it { expect(Sidekiq::Client).to have_received(:enqueue_in).with(1.minute, InvalidateCacheWorker) }
+
+  it 'instruments the tariff cache cleared event' do
+    expect(ActiveSupport::Notifications).to have_received(:instrument).with(
+      TradeTariffBackend::TariffUpdateEventListener::TARIFF_CACHE_CLEARED,
+      service: TradeTariffBackend.service,
+    )
+  end
 
   context 'when keys have no expiry (TTL -1)' do
     let(:no_expiry_keys) do

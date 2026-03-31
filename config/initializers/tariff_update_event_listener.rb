@@ -1,0 +1,1 @@
+TradeTariffBackend::TariffUpdateEventListener.subscribe!
