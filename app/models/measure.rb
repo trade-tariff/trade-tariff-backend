@@ -3,7 +3,6 @@ class Measure < Sequel::Model
   PROVISIONAL_ANTIDUMPING_ROLE = 2
   DEFINITIVE_ANTIDUMPING_ROLE = 3
   MODIFICATION_REGULATION_ROLE = 4
-  AUTHORISED_USE_PROVISIONS_SUBMISSION = '464'.freeze
 
   # Number of days in a standard year and a leap year — used to exclude
   # year-long measures from the seasonal measures query.

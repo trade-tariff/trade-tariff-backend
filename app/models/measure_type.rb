@@ -14,7 +14,6 @@ class MeasureType < Sequel::Model
   XI_EXCLUDED_TYPES = DEFAULT_EXCLUDED_TYPES + NATIONAL_PR_TYPES + QUOTA_TYPES
   GL_EXCLUDED_TYPES = DEFAULT_EXCLUDED_TYPES + NATIONAL_PR_TYPES
   UK_EXCLUDED_TYPES = DEFAULT_EXCLUDED_TYPES
-  XI_EXCLUDED_SERIES = %w[P Q].freeze
 
   AUTHORISED_USE_PROVISIONS_SUBMISSION = '464'.freeze
   TARIFF_PREFERENCE = %w[142 145].freeze
@@ -55,8 +54,6 @@ class MeasureType < Sequel::Model
     1 => 'export',
     2 => 'both',
   }.freeze
-
-  UNIT_EXPRESSABLE_MEASURES.freeze
 
   plugin :time_machine
   plugin :oplog, primary_key: :measure_type_id
