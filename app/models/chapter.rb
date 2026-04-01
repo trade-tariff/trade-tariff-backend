@@ -1,7 +1,7 @@
 class Chapter < GoodsNomenclature
   plugin :oplog, primary_key: :goods_nomenclature_sid, materialized: true
 
-  set_dataset filter('goods_nomenclatures.goods_nomenclature_item_id LIKE ?', '__00000000')
+  set_dataset filter('goods_nomenclatures.goods_nomenclature_item_id LIKE ?', GoodsNomenclature.sql_pattern_for(CHAPTER_SUFFIX))
               .order(
                 Sequel.asc(:goods_nomenclature_item_id),
                 Sequel.asc(:goods_nomenclatures__producline_suffix),
@@ -88,8 +88,8 @@ class Chapter < GoodsNomenclature
       :operation,
       Sequel.as(depth, :depth),
     ).where(pk_hash)
-     .union(Heading.changes_for(depth + 1, ['goods_nomenclature_item_id LIKE ? AND goods_nomenclature_item_id NOT LIKE ?', relevant_headings, '__00______']))
-     .union(Commodity.changes_for(depth + 1, ['goods_nomenclature_item_id LIKE ? AND goods_nomenclature_item_id NOT LIKE ?', relevant_goods_nomenclature, '____000000'])).union(Measure.changes_for(depth + 1, ['goods_nomenclature_item_id LIKE ?', relevant_goods_nomenclature]))
+     .union(Heading.changes_for(depth + 1, ['goods_nomenclature_item_id LIKE ? AND goods_nomenclature_item_id NOT LIKE ?', relevant_headings, GoodsNomenclature.sql_pattern_for(CHAPTER_SUFFIX)]))
+     .union(Commodity.changes_for(depth + 1, ['goods_nomenclature_item_id LIKE ? AND goods_nomenclature_item_id NOT LIKE ?', relevant_goods_nomenclature, GoodsNomenclature.sql_pattern_for(HEADING_SUFFIX)])).union(Measure.changes_for(depth + 1, ['goods_nomenclature_item_id LIKE ?', relevant_goods_nomenclature]))
      .from_self
      .where(Sequel.~(operation_date: nil))
      .tap! { |criteria|
@@ -104,7 +104,7 @@ class Chapter < GoodsNomenclature
   private
 
   def relevant_headings
-    "#{short_code}__000000"
+    "#{short_code}__#{HEADING_SUFFIX}"
   end
 
   def relevant_goods_nomenclature

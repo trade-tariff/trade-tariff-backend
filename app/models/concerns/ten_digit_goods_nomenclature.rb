@@ -4,7 +4,7 @@ module TenDigitGoodsNomenclature
   included do
     plugin :oplog, primary_key: :goods_nomenclature_sid, materialized: true
 
-    set_dataset filter('goods_nomenclatures.goods_nomenclature_item_id NOT LIKE ?', '____000000')
+    set_dataset filter('goods_nomenclatures.goods_nomenclature_item_id NOT LIKE ?', GoodsNomenclature.sql_pattern_for(GoodsNomenclature::HEADING_SUFFIX))
       .order(Sequel.asc(:goods_nomenclatures__goods_nomenclature_item_id),
              Sequel.asc(:goods_nomenclatures__producline_suffix),
              Sequel.asc(:goods_nomenclatures__goods_nomenclature_sid))

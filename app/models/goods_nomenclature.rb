@@ -1,6 +1,12 @@
 class GoodsNomenclature < Sequel::Model
   VALID_GOODS_NOMENCLATURE_ITEM_ID_LENGTH = 10
   CLASSIFICATION_CHAPTER = '98'.freeze
+  CHAPTER_SUFFIX = '00000000'.freeze
+  HEADING_SUFFIX = '000000'.freeze
+
+  def self.sql_pattern_for(suffix)
+    '_' * (10 - suffix.length) + suffix
+  end
 
   set_dataset order(Sequel.asc(:goods_nomenclatures__goods_nomenclature_item_id), Sequel.asc(:goods_nomenclatures__producline_suffix))
   set_primary_key [:goods_nomenclature_sid]
@@ -14,18 +20,16 @@ class GoodsNomenclature < Sequel::Model
   plugin :sti, class_determinator: lambda { |record|
     gono_id = record[:goods_nomenclature_item_id].to_s
 
-    if gono_id.ends_with?('00000000')
+    if gono_id.ends_with?(CHAPTER_SUFFIX)
       'Chapter'
-    elsif gono_id.ends_with?('000000') && gono_id.slice(2, 2) != '00'
+    elsif gono_id.ends_with?(HEADING_SUFFIX)
       'Heading'
-    elsif !gono_id.ends_with?('000000')
+    else
       # checking its a False class because if :leaf is not assigned, we should
       # continue to assume Commodity as previously done
       #
       # :leaf can be included by the use of `GoodsNomenclature.with_leaf_column`
       record[:producline_suffix] != '80' || record[:leaf].is_a?(FalseClass) ? 'Subheading' : 'Commodity'
-    else
-      'GoodsNomenclature'
     end
   }
 
