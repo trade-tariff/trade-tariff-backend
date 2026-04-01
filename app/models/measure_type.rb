@@ -74,6 +74,18 @@ class MeasureType < Sequel::Model
 
   delegate :description, to: :measure_type_description
 
+  def self.excluded_measure_types
+    if TradeTariffBackend.xi?
+      if TradeTariffRequest.green_lanes
+        GL_EXCLUDED_TYPES
+      else
+        XI_EXCLUDED_TYPES
+      end
+    else
+      UK_EXCLUDED_TYPES
+    end
+  end
+
   dataset_module do
     def national
       where(national: true)
@@ -130,17 +142,5 @@ class MeasureType < Sequel::Model
 
   def authorised_use_provisions_submission?
     measure_type_id.in?(AUTHORISED_USE_PROVISIONS_SUBMISSION)
-  end
-
-  def self.excluded_measure_types
-    if TradeTariffBackend.xi?
-      if TradeTariffRequest.green_lanes
-        GL_EXCLUDED_TYPES
-      else
-        XI_EXCLUDED_TYPES
-      end
-    else
-      UK_EXCLUDED_TYPES
-    end
   end
 end

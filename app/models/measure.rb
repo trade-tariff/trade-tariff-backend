@@ -1,4 +1,6 @@
 class Measure < Sequel::Model
+  include Orderable
+
   BASE_REGULATION_ROLE = 1
   PROVISIONAL_ANTIDUMPING_ROLE = 2
   DEFINITIVE_ANTIDUMPING_ROLE = 3
@@ -133,8 +135,10 @@ class Measure < Sequel::Model
            :tariff_preference?,
            :supplementary?,
            :trade_remedy?, to: :measure_type, allow_nil: true
-
   delegate :gsp_or_dcts?, to: :geographical_area, allow_nil: true
+  delegate :expresses_unit?, :ad_valorem?, :units, to: :component_resolver
+  delegate :meursing_measures, to: :component_resolver
+  delegate :all_components, to: :component_resolver
 
   def universal_waiver_applies?
     measure_conditions.any?(&:universal_waiver_applies?)
@@ -572,8 +576,6 @@ class Measure < Sequel::Model
     measure_components.first.zero_duty?
   end
 
-  delegate :expresses_unit?, :ad_valorem?, :units, to: :component_resolver
-
   def entry_price_system?
     measure_conditions && measure_conditions.any?(&:entry_price_system?)
   end
@@ -585,12 +587,6 @@ class Measure < Sequel::Model
   def resolved_measure_components
     component_resolver.resolved_components
   end
-
-  delegate :meursing_measures, to: :component_resolver
-
-  include Orderable
-
-  delegate :all_components, to: :component_resolver
 
   def resolves_meursing_measures?
     component_resolver.resolves_meursing?
