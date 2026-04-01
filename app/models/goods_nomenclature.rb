@@ -1,5 +1,4 @@
 class GoodsNomenclature < Sequel::Model
-  VALID_GOODS_NOMENCLATURE_ITEM_ID_LENGTH = 10
   CLASSIFICATION_CHAPTER = '98'.freeze
   CHAPTER_SUFFIX = '00000000'.freeze
   HEADING_SUFFIX = '000000'.freeze
