@@ -1,2 +1,2 @@
-web: bin/rails server -p 3000
-worker: bundle exec sidekiq -C ./config/sidekiq.yml
+web: DB_POOL="${DB_POOL:-${MAX_THREADS:-6}}" bin/rails server -p 3000
+worker: DB_POOL="${DB_POOL:-${SIDEKIQ_CONCURRENCY:-10}}" bundle exec sidekiq -C ./config/sidekiq.yml

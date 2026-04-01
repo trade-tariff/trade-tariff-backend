@@ -6,10 +6,7 @@ Sequel.split_symbols = true
 # important for low-traffic Sidekiq queues such as within_1_hour, where a
 # thread can hold a stale PostgreSQL connection for a long time between jobs.
 Sequel::Model.db.extension(:connection_validator)
-
-# Keep Sequel's default 1 hour validation threshold explicit in app config so
-# the intent is obvious and testable.
-Sequel::Model.db.pool.connection_validation_timeout = 3600
+Sequel::Model.db.pool.connection_validation_timeout = 60 # seconds
 
 # TimeMachine is incompatible with caching of associations dataset objects. This
 # is due to the cached dataset object including the TimeMachine date in it,
