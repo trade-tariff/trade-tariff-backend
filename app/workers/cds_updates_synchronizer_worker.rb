@@ -86,8 +86,6 @@ private
       TariffSynchronizer::Instrumentation.download_delayed(retry_at: TRY_AGAIN_IN.from_now.iso8601)
       true
     else
-      SlackNotifierService.call \
-        'Daily CDS file missing, max retry time passed - continuing without todays file'
       false
     end
   end
