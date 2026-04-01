@@ -64,9 +64,6 @@ namespace :tariff do
           puts "  Updated at      : #{update.updated_at}"
           puts "  Error           : #{update.exception_class}" if update.exception_class.present?
 
-          cds_count = update.cds_errors.count
-          puts "  CDS errors      : #{cds_count}" if cds_count.positive?
-
           presence_count = update.presence_errors.count
           puts "  Presence errors : #{presence_count}" if presence_count.positive?
 
@@ -108,20 +105,6 @@ namespace :tariff do
         if update.exception_queries.present?
           puts "\n=== Last SQL Queries ===\n\n"
           puts update.exception_queries
-        end
-      end
-
-      cds_errors = update.cds_errors
-      if cds_errors.any?
-        puts "\n=== CDS Record Errors (#{cds_errors.count} total, showing first 10) ===\n\n"
-        cds_errors.first(10).each_with_index do |err, i|
-          puts "#{i + 1}. #{err.model_name}"
-          begin
-            puts JSON.pretty_generate(err.details)
-          rescue JSON::GeneratorError
-            puts err.details.inspect
-          end
-          puts
         end
       end
 

@@ -14,7 +14,6 @@ module TariffSynchronizer
 
       track_latest_sql_queries
       keep_record_of_presence_errors
-      keep_record_of_cds_errors
 
       # IMPORTANT: running large update files may cause out of memory exception.
       # Run `import!` outside of this class to prevent that.
@@ -31,7 +30,6 @@ module TariffSynchronizer
     ensure
       ActiveSupport::Notifications.unsubscribe(@sql_subscriber)
       ActiveSupport::Notifications.unsubscribe(@presence_errors_subscriber)
-      ActiveSupport::Notifications.unsubscribe(@cds_errors_subscriber)
     end
 
     private
@@ -66,27 +64,6 @@ module TariffSynchronizer
           base_update: @base_update,
           model_name: klass,
           details: details.to_json,
-        )
-      end
-    end
-
-    def keep_record_of_cds_errors
-      @cds_errors_subscriber = ActiveSupport::Notifications.subscribe(/cds_error/) do |*args|
-        event = ActiveSupport::Notifications::Event.new(*args)
-        record = event.payload[:record]
-        xml_key = event.payload[:xml_key]
-        xml_node = event.payload[:xml_node]
-        exception = event.payload[:exception]
-        model_name = record&.class || event.payload[:type]
-        TariffSynchronizer::TariffUpdateCdsError.create(
-          base_update: @base_update,
-          model_name: model_name,
-          details: {
-            errors: record&.errors,
-            xml_key:,
-            xml_node:,
-            exception: ("#{exception.class}: #{exception.message}" if exception),
-          }.to_json,
         )
       end
     end

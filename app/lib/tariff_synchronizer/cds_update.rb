@@ -26,10 +26,6 @@ module TariffSynchronizer
       end
     end
 
-    def clear_errors
-      cds_errors_dataset.destroy
-    end
-
     def import!
       started_at = Process.clock_gettime(Process::CLOCK_MONOTONIC)
 
