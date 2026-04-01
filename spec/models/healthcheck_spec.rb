@@ -31,30 +31,16 @@ RSpec.describe Healthcheck do
     end
 
     describe 'sidekiq health' do
-      context 'with no cache key' do
-        before { TradeTariffBackend.redis.del described_class::SIDEKIQ_KEY }
+      context 'when no Sidekiq processes are registered' do
+        before { allow(Sidekiq::ProcessSet).to receive(:new).and_return([]) }
 
         it { is_expected.to include sidekiq: false }
       end
 
-      context 'with recent cache key' do
-        before do
-          TradeTariffBackend.redis.set \
-            described_class::SIDEKIQ_KEY,
-            (described_class::SIDEKIQ_THRESHOLD - 1.minute).ago.utc.iso8601
-        end
+      context 'when at least one Sidekiq process is registered' do
+        before { allow(Sidekiq::ProcessSet).to receive(:new).and_return([instance_double(Sidekiq::Process)]) }
 
         it { is_expected.to include sidekiq: true }
-      end
-
-      context 'with outdated cache key' do
-        before do
-          TradeTariffBackend.redis.set \
-            described_class::SIDEKIQ_KEY,
-            (described_class::SIDEKIQ_THRESHOLD + 1.minute).ago.utc.iso8601
-        end
-
-        it { is_expected.to include sidekiq: false }
       end
     end
   end
@@ -64,10 +50,7 @@ RSpec.describe Healthcheck do
 
     before do
       allow(TradeTariffBackend).to receive(:revision).and_return nil
-
-      TradeTariffBackend.redis.set \
-        described_class::SIDEKIQ_KEY,
-        (described_class::SIDEKIQ_THRESHOLD - 1.minute).ago.utc.iso8601
+      allow(Sidekiq::ProcessSet).to receive(:new).and_return([instance_double(Sidekiq::Process)])
     end
 
     let(:expected) do
