@@ -69,8 +69,8 @@
       description: Creates average rates from downloaded data and uploads file to S3
       enabled: <%= ENV.fetch('SERVICE', 'uk') == 'uk' %>
     SynchronizerCheckWorker:
-      cron: "30 08 * * *"
-      description: Checks we have recent Quota Balance Events - this is an early warning that our sync process has a potential issue
+      cron: "*/30 * * * *"
+      description: Records sync age as a New Relic custom metric every 30 minutes — NR alert conditions on Custom/TariffSync/{service}/AgeMinutes trigger PagerDuty when age exceeds threshold
     CheckDifferencesReportHasRun:
       cron: "0 1 * * 2"  # 1am every Tuesday
       description: "Checks if the differences report has run"

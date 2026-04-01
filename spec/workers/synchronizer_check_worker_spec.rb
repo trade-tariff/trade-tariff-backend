@@ -1,38 +1,39 @@
 RSpec.describe SynchronizerCheckWorker, type: :worker do
   describe '#perform' do
-    before { allow(::NewRelic::Agent).to receive(:notice_error) }
+    subject(:perform) { described_class.new.perform }
 
-    context 'with data' do
-      before do
-        QuotaBalanceEvent::Operation.where(oid: qbe.oid).update(created_at:)
+    before { allow(NewRelic::Agent).to receive(:record_metric) }
 
-        described_class.new.perform
-      end
+    context 'when there are no applied updates' do
+      before { perform }
 
-      let(:qbe) { create :quota_balance_event }
-
-      context 'when it is up to date' do
-        let(:created_at) { 1.day.ago }
-
-        it 'takes no action' do
-          expect(NewRelic::Agent).not_to have_received(:notice_error)
-        end
-      end
-
-      context 'when it is outdated' do
-        let(:created_at) { 10.days.ago }
-
-        it 'alerts with the failing service' do
-          expect(NewRelic::Agent).to have_received(:notice_error).with %r{CDS sync problem}
-        end
+      it 'records the sentinel age metric' do
+        expect(NewRelic::Agent).to have_received(:record_metric)
+          .with('Custom/TariffSync/uk/AgeMinutes', SynchronizerCheckWorker::NO_SYNC_SENTINEL_MINUTES)
       end
     end
 
-    context 'with no data' do
-      before { described_class.new.perform }
+    context 'when the most recent applied update is recent' do
+      before do
+        create :base_update, :applied, applied_at: 2.hours.ago
+        perform
+      end
 
-      it 'alerts with the failing service' do
-        expect(NewRelic::Agent).to have_received(:notice_error).with %r{CDS sync problem}
+      it 'records an age metric close to 120 minutes' do
+        expect(NewRelic::Agent).to have_received(:record_metric)
+          .with('Custom/TariffSync/uk/AgeMinutes', be_within(2).of(120))
+      end
+    end
+
+    context 'when the most recent applied update is stale' do
+      before do
+        create :base_update, :applied, applied_at: 25.hours.ago
+        perform
+      end
+
+      it 'records an age metric over 24 hours' do
+        expect(NewRelic::Agent).to have_received(:record_metric)
+          .with('Custom/TariffSync/uk/AgeMinutes', be > 1440)
       end
     end
   end
