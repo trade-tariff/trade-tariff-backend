@@ -87,13 +87,62 @@ class Appendix5aPopulatorService
     Rails.logger.info message
 
     SlackNotifierService.call(message)
-    Appendix5aMailer.appendix5a_notify_message(added_guidance.count,
-                                               changed_guidance.count,
-                                               removed_guidance.count)
-                                              .deliver_now
+    message_delivery = Appendix5aMailer.appendix5a_notify_message(
+      added_guidance.count,
+      changed_guidance.count,
+      removed_guidance.count,
+    )
+
+    log_mail_delivery_state('before_deliver', message_delivery)
+    message_delivery.deliver_now
+  rescue StandardError => e
+    log_mail_delivery_state('deliver_failed', message_delivery, exception: e)
+    raise
   end
 
   def no_guidance_changes?
     added_guidance.empty? && changed_guidance.empty? && removed_guidance.empty?
+  end
+
+  def log_mail_delivery_state(state, message_delivery, exception: nil)
+    mail_message = message_delivery&.message
+    smtp_envelope_to = mail_message&.instance_variable_get(:@smtp_envelope_to)
+
+    payload = {
+      event: 'appendix5a_mail_delivery',
+      state:,
+      message_delivery_class: message_delivery&.class&.name,
+      message_object_id: mail_message&.object_id,
+      to: address_metadata(mail_message&.to),
+      smtp_envelope_to: address_metadata(mail_message&.smtp_envelope_to),
+      smtp_envelope_to_ivar: address_metadata(smtp_envelope_to),
+      delivery_handler_class: mail_message&.delivery_handler&.class&.name,
+      delivery_method_class: mail_message&.delivery_method&.class&.name,
+      exception_class: exception&.class&.name,
+      exception_message: exception&.message,
+    }.compact
+
+    log_message = "Appendix5a mail delivery #{state}: #{payload}"
+    exception.nil? ? Rails.logger.info(log_message) : Rails.logger.error(log_message)
+  end
+
+  def address_metadata(value)
+    case value
+    when nil
+      { class: 'NilClass', empty: true }
+    when Array
+      {
+        class: 'Array',
+        empty: value.empty?,
+        count: value.length,
+        member_classes: value.map { |entry| entry.class.name }.uniq,
+      }
+    else
+      {
+        class: value.class.name,
+        empty: value.respond_to?(:empty?) ? value.empty? : false,
+        count: value.respond_to?(:to_a) ? value.to_a.length : nil,
+      }.compact
+    end
   end
 end
