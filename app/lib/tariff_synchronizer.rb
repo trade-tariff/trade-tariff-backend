@@ -58,7 +58,6 @@ module TariffSynchronizer
     TariffSynchronizer::Instrumentation.lock_failed(phase: 'apply')
   end
 
-
   def rollback_updates(update_type, rollback_date, keep: false)
     Rails.autoloaders.main.eager_load
 
