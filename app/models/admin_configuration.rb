@@ -87,6 +87,15 @@ class AdminConfiguration < Sequel::Model(Sequel[:admin_configurations].qualify(:
     value.respond_to?(:call) ? value.call : value
   end
 
+  def self.nested_option_default_for(name)
+    default = NESTED_OPTION_DEFAULTS.fetch(name.to_s)
+
+    {
+      selected: default[:selected],
+      sub_values: default[:sub_values].dup,
+    }
+  end
+
   def self.enabled?(name)
     config = classification.by_name(name.to_s)
     return default_for(name) if config.nil?

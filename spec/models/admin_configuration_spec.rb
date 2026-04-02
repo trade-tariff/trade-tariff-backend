@@ -367,6 +367,15 @@ RSpec.describe AdminConfiguration do
     end
   end
 
+  describe '.nested_option_default_for' do
+    it 'returns the configured nested option defaults' do
+      expect(described_class.nested_option_default_for('search_model')).to eq(
+        selected: 'gpt-5.4',
+        sub_values: { 'reasoning_effort' => 'medium' },
+      )
+    end
+  end
+
   describe '.enabled?' do
     context 'when config record is missing' do
       it 'returns the default value' do
