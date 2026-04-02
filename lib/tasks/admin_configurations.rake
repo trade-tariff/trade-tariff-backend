@@ -99,7 +99,7 @@ module AdminConfigurationSeeder
 
       **AVOID YES/NO QUESTIONS** unless they will help narrow down the commodity code by whole categories - a user can review each opensearch option themselves and answer yes/no so yes/no just makes the UX worse.
 
-      Keep to one question per commodity code search.
+      Ask exactly one question per turn.
 
           {
             "questions": [
@@ -109,7 +109,7 @@ module AdminConfigurationSeeder
 
       Prefer questions and options that will help you narrow down the commodity code the most and avoid repeating the same question.
 
-      Try and ask at least a few questions each time to narrow down the commodity code in an efficient way.
+      Ask the single next question that will narrow down the commodity code the most.
 
       ### Error
 

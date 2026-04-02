@@ -119,6 +119,7 @@ RSpec.describe InteractiveSearchService do
 
       before do
         allow(OpenaiClient).to receive(:call).and_return(ai_response)
+        allow(Search::Instrumentation).to receive(:api_call).and_yield
       end
 
       it 'calls the AI with the final answer instruction' do
@@ -135,6 +136,16 @@ RSpec.describe InteractiveSearchService do
         expect(result.type).to eq(:answers)
       end
 
+      it 'instruments the final answer call' do
+        result
+
+        expect(Search::Instrumentation).to have_received(:api_call).with(
+          request_id: request_id,
+          model: 'gpt-5.2',
+          attempt_number: 4,
+        )
+      end
+
       it 'falls back to best available answers when AI returns questions' do
         allow(OpenaiClient).to receive(:call).and_return(
           '{"questions": [{"question": "What colour?", "options": ["Red", "Blue"]}]}',
@@ -142,6 +153,15 @@ RSpec.describe InteractiveSearchService do
 
         expect(result.type).to eq(:answers)
         expect(result.data.first[:confidence]).to eq('good')
+      end
+
+      it 'returns an error result when AI returns a structured error' do
+        allow(OpenaiClient).to receive(:call).and_return(
+          '{"error": "Contradictory answers given"}',
+        )
+
+        expect(result.type).to eq(:error)
+        expect(result.data[:message]).to eq('Contradictory answers given')
       end
     end
 

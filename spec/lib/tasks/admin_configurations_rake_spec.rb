@@ -87,6 +87,8 @@ RSpec.describe 'admin_configurations:seed' do
     expect(search_context.config_type).to eq('markdown')
     expect(search_context.value).to include('## Response format')
     expect(search_context.value).to include('### Confident answer')
+    expect(search_context.value).to include('Ask exactly one question per turn')
+    expect(search_context.value).not_to include('Try and ask at least a few questions each time')
 
     expand_query = AdminConfiguration.where(name: 'expand_query_context').first
     expect(expand_query.config_type).to eq('markdown')
