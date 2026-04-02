@@ -1,9 +1,6 @@
 class Healthcheck
   include Singleton
 
-  SIDEKIQ_KEY = 'sidekiq-healthcheck'.freeze
-  SIDEKIQ_THRESHOLD = 90.minutes
-
   class << self
     delegate :check, :checkz, to: :instance
   end
@@ -45,16 +42,6 @@ class Healthcheck
   end
 
   def sidekiq_healthy?
-    if (healthcheck_time = read_last_sidekiq_healthcheck)
-      Time.zone.parse(healthcheck_time) >= SIDEKIQ_THRESHOLD.ago
-    else
-      false
-    end
-  end
-
-  def read_last_sidekiq_healthcheck
-    Sidekiq.redis do |redis|
-      redis.get(SIDEKIQ_KEY)
-    end
+    Sidekiq::ProcessSet.new.size.positive?
   end
 end
