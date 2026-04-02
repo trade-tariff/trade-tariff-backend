@@ -110,6 +110,24 @@ RSpec.describe VersionDiffService do
       end
     end
 
+    context 'with DescriptionIntercept changes' do
+      it 'shows array diffs for sources and simple diffs for other fields' do
+        old_obj = { 'id' => 1, 'term' => 'footwear', 'sources' => %w[guided_search], 'excluded' => false }
+        new_obj = { 'id' => 1, 'term' => 'footwear', 'sources' => %w[guided_search fpo_search], 'excluded' => true }
+
+        result = described_class.new('DescriptionIntercept', old_obj, new_obj).call
+
+        expect(result['changed_fields']).to contain_exactly('sources', 'excluded')
+        expect(result['changes']['sources']).to eq(
+          'type' => 'array',
+          'added' => %w[fpo_search],
+          'removed' => [],
+          'unchanged' => %w[guided_search],
+        )
+        expect(result['changes']['excluded']).to eq('type' => 'simple', 'old' => false, 'new' => true)
+      end
+    end
+
     context 'with multiple changes' do
       it 'returns all changed fields' do
         old_obj = { 'stale' => false, 'manually_edited' => false }
