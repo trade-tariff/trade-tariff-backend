@@ -1,6 +1,4 @@
 class Chapter < GoodsNomenclature
-  plugin :oplog, primary_key: :goods_nomenclature_sid, materialized: true
-
   set_dataset filter('goods_nomenclatures.goods_nomenclature_item_id LIKE ?', GoodsNomenclature.sql_pattern_for(CHAPTER_SUFFIX))
               .order(
                 Sequel.asc(:goods_nomenclature_item_id),
@@ -9,14 +7,16 @@ class Chapter < GoodsNomenclature
 
   set_primary_key [:goods_nomenclature_sid]
 
+  include SearchReferenceable # must be after set_dataset and set_primary_key
+
+  plugin :oplog, primary_key: :goods_nomenclature_sid, materialized: true
+
   many_to_many :sections, left_key: :goods_nomenclature_sid,
                           left_primary_key: :goods_nomenclature_sid,
                           right_primary_key: :id,
                           right_key: :section_id,
                           join_table: :chapters_sections,
                           use_optimized: true
-
-  include SearchReferenceable
 
   one_to_many :headings, primary_key: :chapter_short_code, key: :chapter_short_code, foreign_key: :chapter_short_code do |ds|
     ds.with_actual(Heading).non_hidden

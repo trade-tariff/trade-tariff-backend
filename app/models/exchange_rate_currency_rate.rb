@@ -5,9 +5,6 @@ class ExchangeRateCurrencyRate < Sequel::Model
   SPOT_RATE_TYPE = 'spot'.freeze
   AVERAGE_RATE_TYPE = 'average'.freeze
 
-  RATES_FILE = 'data/exchange_rates/all_rates.csv'.freeze
-  SPOT_RATES_FILE = 'data/exchange_rates/all_spot_rates.csv'.freeze
-
   one_to_many :exchange_rate_countries_currencies, key: :currency_code, primary_key: :currency_code, class_name: ExchangeRateCountryCurrency
 
   def_column_accessor :currency_description,

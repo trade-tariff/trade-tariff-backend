@@ -1,6 +1,4 @@
 class Heading < GoodsNomenclature
-  plugin :oplog, primary_key: :goods_nomenclature_sid, materialized: true
-
   set_dataset filter('goods_nomenclatures.goods_nomenclature_item_id LIKE ?', GoodsNomenclature.sql_pattern_for(HEADING_SUFFIX))
               .filter('goods_nomenclatures.goods_nomenclature_item_id NOT LIKE ?', GoodsNomenclature.sql_pattern_for(CHAPTER_SUFFIX))
               .order(
@@ -10,7 +8,9 @@ class Heading < GoodsNomenclature
 
   set_primary_key [:goods_nomenclature_sid]
 
-  include SearchReferenceable
+  include SearchReferenceable # must be after set_dataset and set_primary_key
+
+  plugin :oplog, primary_key: :goods_nomenclature_sid, materialized: true
 
   one_to_one :chapter,
              primary_key: :chapter_short_code,

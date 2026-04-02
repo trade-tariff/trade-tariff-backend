@@ -1,6 +1,5 @@
 class QuotaCriticalEvent < Sequel::Model
   ACTIVE_CRITICAL_STATE = 'Y'.freeze
-  INACTIVE_CRITICAL_STATE = 'N'.freeze
 
   plugin :oplog, primary_key: %i[quota_definition_sid occurrence_timestamp], materialized: true
 

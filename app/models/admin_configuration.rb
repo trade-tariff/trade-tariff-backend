@@ -1,10 +1,6 @@
 class AdminConfiguration < Sequel::Model(Sequel[:admin_configurations].qualify(:uk))
-  plugin :auto_validations, not_null: :presence
-  plugin :has_paper_trail
-  plugin :timestamps, update_on_create: true
-
-  set_primary_key [:name]
-  unrestrict_primary_key
+  include ValueNormalizer
+  include ValueValidator
 
   CACHE_TTL = 150.seconds
 
@@ -41,6 +37,13 @@ class AdminConfiguration < Sequel::Model(Sequel[:admin_configurations].qualify(:
     'non_other_self_text_model' => -> { TradeTariffBackend.ai_model },
     'non_other_self_text_batch_size' => 15,
   }.freeze
+
+  plugin :auto_validations, not_null: :presence
+  plugin :has_paper_trail
+  plugin :timestamps, update_on_create: true
+
+  set_primary_key [:name]
+  unrestrict_primary_key
 
   dataset_module do
     def classification
@@ -159,9 +162,6 @@ class AdminConfiguration < Sequel::Model(Sequel[:admin_configurations].qualify(:
 
     val == true
   end
-
-  include ValueNormalizer
-  include ValueValidator
 
   private
 
