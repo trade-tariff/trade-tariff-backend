@@ -506,7 +506,6 @@ DEPENDENCIES
   foreman
   forgery
   get_process_mem
-  hashie
   holidays
   json_expressions
   jsonapi-serializer
