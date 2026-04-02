@@ -1,4 +1,8 @@
 RSpec.describe TradeTariffBackend do
+  after do
+    described_class.instance_variable_set(:@revision, nil)
+  end
+
   describe '.api_version' do
     let(:request) { instance_double(ActionDispatch::Request) }
 
