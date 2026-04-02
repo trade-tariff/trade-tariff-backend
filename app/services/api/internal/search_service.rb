@@ -59,6 +59,7 @@ module Api
             final_result_type: interactive_result&.type&.to_s,
             results_type: retrieval.results_type,
             max_score: retrieval.max_score,
+            error_message: interactive_result&.type == :error ? interactive_result.data[:message] : nil,
           }
 
           [response, completion]

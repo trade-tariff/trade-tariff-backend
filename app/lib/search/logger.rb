@@ -23,14 +23,16 @@ module Search
     end
 
     def api_call_completed(event)
-      info log_entry(
+      data = {
         event: 'api_call_completed',
         request_id: event.payload[:request_id],
         model: event.payload[:model],
         duration_ms: event.payload[:duration_ms],
         response_type: event.payload[:response_type],
         attempt_number: event.payload[:attempt_number],
-      )
+      }
+      add_error_fields!(data, event)
+      info log_entry(data)
     end
 
     def question_returned(event)
@@ -66,18 +68,21 @@ module Search
       }
       data[:results_type] = event.payload[:results_type] if event.payload[:results_type]
       data[:max_score] = event.payload[:max_score] if event.payload[:max_score]
+      add_error_fields!(data, event)
       info log_entry(data)
     end
 
     def retrieval_leg_completed(event)
-      info log_entry(
+      data = {
         event: 'retrieval_leg_completed',
         request_id: event.payload[:request_id],
         leg: event.payload[:leg],
         duration_ms: event.payload[:duration_ms],
         result_count: event.payload[:result_count],
         status: event.payload[:status],
-      )
+      }
+      add_error_fields!(data, event)
+      info log_entry(data)
     end
 
     def result_selected(event)
@@ -90,13 +95,15 @@ module Search
     end
 
     def search_failed(event)
-      error log_entry(
+      data = {
         event: 'search_failed',
         request_id: event.payload[:request_id],
         error_type: event.payload[:error_type],
         error_message: event.payload[:error_message],
         search_type: event.payload[:search_type],
-      )
+      }
+      add_error_fields!(data, event)
+      error log_entry(data)
     end
 
     private
@@ -106,6 +113,13 @@ module Search
         service: 'search',
         timestamp: Time.current.iso8601,
       ).to_json
+    end
+
+    def add_error_fields!(data, event)
+      return unless event.payload.key?(:error_message)
+
+      data[:error_message] = event.payload[:error_message]
+      data[:error_message_truncated] = event.payload[:error_message_truncated]
     end
   end
 end

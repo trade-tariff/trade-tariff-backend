@@ -98,6 +98,18 @@ RSpec.describe Search::Logger do
       expect(json['response_type']).to eq('answers')
       expect(json['attempt_number']).to eq(1)
     end
+
+    it 'logs error details when present' do
+      payload[:response_type] = 'error'
+      payload[:error_message] = 'bad model output'
+      payload[:error_message_truncated] = false
+
+      logger_instance.api_call_completed(build_event('api_call_completed', payload))
+      json = parsed_log_output
+
+      expect(json['error_message']).to eq('bad model output')
+      expect(json['error_message_truncated']).to be(false)
+    end
   end
 
   describe '#question_returned' do
@@ -168,6 +180,54 @@ RSpec.describe Search::Logger do
       expect(json['result_count']).to eq(5)
       expect(json['total_attempts']).to eq(2)
     end
+
+    it 'logs error details when present' do
+      payload[:final_result_type] = 'error'
+      payload[:error_message] = 'Contradictory answers given'
+      payload[:error_message_truncated] = false
+
+      logger_instance.search_completed(build_event('search_completed', payload))
+      json = parsed_log_output
+
+      expect(json['error_message']).to eq('Contradictory answers given')
+      expect(json['error_message_truncated']).to be(false)
+    end
+  end
+
+  describe '#retrieval_leg_completed' do
+    let(:payload) do
+      {
+        request_id: 'req-1',
+        leg: 'vector',
+        duration_ms: 120.5,
+        result_count: 0,
+        status: 'error',
+        error_message: 'vector down',
+        error_message_truncated: false,
+      }
+    end
+
+    it_behaves_like 'a search log entry', :retrieval_leg_completed, 'retrieval_leg_completed',
+                    {
+                      request_id: 'req-1',
+                      leg: 'vector',
+                      duration_ms: 120.5,
+                      result_count: 0,
+                      status: 'error',
+                      error_message: 'vector down',
+                      error_message_truncated: false,
+                    }
+
+    it 'logs error details when present' do
+      logger_instance.retrieval_leg_completed(build_event('retrieval_leg_completed', payload))
+      json = parsed_log_output
+
+      expect(json['event']).to eq('retrieval_leg_completed')
+      expect(json['leg']).to eq('vector')
+      expect(json['status']).to eq('error')
+      expect(json['error_message']).to eq('vector down')
+      expect(json['error_message_truncated']).to be(false)
+    end
   end
 
   describe '#result_selected' do
@@ -200,6 +260,15 @@ RSpec.describe Search::Logger do
       expect(json['error_type']).to eq('Faraday::TimeoutError')
       expect(json['error_message']).to eq('connection timed out')
       expect(json['service']).to eq('search')
+    end
+
+    it 'logs truncation metadata when present' do
+      payload[:error_message_truncated] = true
+
+      logger_instance.search_failed(build_event('search_failed', payload))
+      json = parsed_log_output
+
+      expect(json['error_message_truncated']).to be(true)
     end
   end
 end
