@@ -99,7 +99,6 @@ module Search
         event: 'search_failed',
         request_id: event.payload[:request_id],
         error_type: event.payload[:error_type],
-        error_message: event.payload[:error_message],
         search_type: event.payload[:search_type],
       }
       add_error_fields!(data, event)
