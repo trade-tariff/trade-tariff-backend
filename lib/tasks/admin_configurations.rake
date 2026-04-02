@@ -99,7 +99,7 @@ module AdminConfigurationSeeder
 
       **AVOID YES/NO QUESTIONS** unless they will help narrow down the commodity code by whole categories - a user can review each opensearch option themselves and answer yes/no so yes/no just makes the UX worse.
 
-      Keep to one question per commodity code search.
+      Ask exactly one question per turn.
 
           {
             "questions": [
@@ -109,7 +109,7 @@ module AdminConfigurationSeeder
 
       Prefer questions and options that will help you narrow down the commodity code the most and avoid repeating the same question.
 
-      Try and ask at least a few questions each time to narrow down the commodity code in an efficient way.
+      Ask the single next question that will narrow down the commodity code the most.
 
       ### Error
 
@@ -377,20 +377,27 @@ namespace :admin_configurations do
       }
     end
 
-    default_model = TradeTariffBackend.ai_model
+    nested_option_value = lambda do |name|
+      default = AdminConfiguration.nested_option_default_for(name)
+      {
+        'selected' => default[:selected],
+        'sub_values' => default[:sub_values],
+        'options' => model_options_with_reasoning,
+      }
+    end
 
     configs = [
       {
         name: 'expand_search_enabled',
         config_type: 'boolean',
         description: 'Expand search queries using AI to translate everyday language into tariff terminology before searching',
-        value: 'true',
+        value: AdminConfiguration.default_for('expand_search_enabled'),
       },
       {
         name: 'expand_model',
         config_type: 'nested_options',
         description: 'AI model used for search query expansion',
-        value: { 'selected' => 'gpt-4.1-mini-2025-04-14', 'sub_values' => {}, 'options' => model_options_with_reasoning },
+        value: nested_option_value.call('expand_model'),
       },
       {
         name: 'expand_query_context',
@@ -402,31 +409,31 @@ namespace :admin_configurations do
         name: 'interactive_search_enabled',
         config_type: 'boolean',
         description: 'Enable interactive Q&A to help traders narrow down commodity codes through clarifying questions',
-        value: 'true',
+        value: AdminConfiguration.default_for('interactive_search_enabled'),
       },
       {
         name: 'interactive_search_max_questions',
         config_type: 'integer',
         description: 'Maximum number of clarifying questions to ask before forcing a best-guess answer from the AI',
-        value: '3',
+        value: AdminConfiguration.default_for('interactive_search_max_questions').to_s,
       },
       {
         name: 'input_sanitiser_enabled',
         config_type: 'boolean',
         description: 'Sanitise and validate search queries before AI processing. Strips HTML, rejects non-printable characters, and enforces a maximum query length.',
-        value: 'true',
+        value: AdminConfiguration.default_for('input_sanitiser_enabled'),
       },
       {
         name: 'input_sanitiser_max_length',
         config_type: 'integer',
         description: 'Maximum allowed character length for search queries when input sanitiser is enabled',
-        value: '500',
+        value: AdminConfiguration.default_for('input_sanitiser_max_length').to_s,
       },
       {
         name: 'retrieval_method',
         config_type: 'options',
         description: 'Search retrieval method: opensearch uses traditional text search with query expansion, vector uses pgvector cosine similarity and skips query expansion, hybrid runs both and fuses with RRF',
-        value: { 'selected' => 'vector',
+        value: { 'selected' => AdminConfiguration.default_for('retrieval_method'),
                  'options' => [
                    { 'key' => 'opensearch', 'label' => 'OpenSearch (text search + query expansion)' },
                    { 'key' => 'vector', 'label' => 'pgvector (cosine similarity)' },
@@ -437,19 +444,19 @@ namespace :admin_configurations do
         name: 'rrf_k',
         config_type: 'integer',
         description: 'Reciprocal Rank Fusion constant (k). Controls how much lower-ranked results are penalised: score = 1/(rank + k). Higher k flattens rank differences. Typical range 1-100. Only applies when retrieval_method is hybrid.',
-        value: '60',
+        value: AdminConfiguration.default_for('rrf_k').to_s,
       },
       {
         name: 'vector_ef_search',
         config_type: 'integer',
         description: 'HNSW ef_search parameter for pgvector queries. Controls the recall/speed tradeoff: higher values search more candidates and improve recall at the cost of latency. Typical range 40-200. Only applies when retrieval_method is vector.',
-        value: '100',
+        value: AdminConfiguration.default_for('vector_ef_search').to_s,
       },
       {
         name: 'vector_score_threshold',
         config_type: 'integer',
         description: 'Minimum cosine similarity score (0-100) for vector search results. Results below this threshold are discarded before AI processing. Based on empirical analysis: good queries score 47-70, junk queries score 13-35. Default 35 provides clean separation.',
-        value: '35',
+        value: AdminConfiguration.default_for('vector_score_threshold').to_s,
       },
       {
         name: 'label_context',
@@ -461,43 +468,43 @@ namespace :admin_configurations do
         name: 'label_model',
         config_type: 'nested_options',
         description: 'AI model used for commodity labelling',
-        value: { 'selected' => default_model, 'sub_values' => { 'reasoning_effort' => 'low' }, 'options' => model_options_with_reasoning },
+        value: nested_option_value.call('label_model'),
       },
       {
         name: 'label_page_size',
         config_type: 'integer',
         description: 'Number of commodities processed per batch during AI labelling',
-        value: TradeTariffBackend.goods_nomenclature_label_page_size.to_s,
+        value: AdminConfiguration.default_for('label_page_size').to_s,
       },
       {
         name: 'opensearch_result_limit',
         config_type: 'integer',
         description: 'Maximum number of OpenSearch results fetched for AI processing during interactive search',
-        value: '30',
+        value: AdminConfiguration.default_for('opensearch_result_limit').to_s,
       },
       {
         name: 'pos_noun_boost',
         config_type: 'integer',
         description: 'Boost factor for nouns in POS-tagged search queries. Higher values make noun matches dominate scoring.',
-        value: '10',
+        value: AdminConfiguration.default_for('pos_noun_boost').to_s,
       },
       {
         name: 'pos_qualifier_boost',
         config_type: 'integer',
         description: 'Boost factor for qualifiers (adjectives, past participles, gerunds) in POS-tagged search queries.',
-        value: '3',
+        value: AdminConfiguration.default_for('pos_qualifier_boost').to_s,
       },
       {
         name: 'pos_search_enabled',
         config_type: 'boolean',
         description: 'Use part-of-speech tagging to structure search queries. Nouns become required terms, modifiers become optional. When disabled, falls back to a single multi-match query.',
-        value: 'true',
+        value: AdminConfiguration.default_for('pos_search_enabled'),
       },
       {
         name: 'other_self_text_batch_size',
         config_type: 'integer',
         description: 'Number of Other nodes processed per batch during AI self-text generation',
-        value: '5',
+        value: AdminConfiguration.default_for('other_self_text_batch_size').to_s,
       },
       {
         name: 'other_self_text_context',
@@ -509,13 +516,13 @@ namespace :admin_configurations do
         name: 'other_self_text_model',
         config_type: 'nested_options',
         description: 'AI model used for generating self-texts for Other nodes',
-        value: { 'selected' => default_model, 'sub_values' => { 'reasoning_effort' => 'low' }, 'options' => model_options_with_reasoning },
+        value: nested_option_value.call('other_self_text_model'),
       },
       {
         name: 'non_other_self_text_batch_size',
         config_type: 'integer',
         description: 'Number of non-Other nodes processed per batch during AI self-text generation',
-        value: '15',
+        value: AdminConfiguration.default_for('non_other_self_text_batch_size').to_s,
       },
       {
         name: 'non_other_self_text_context',
@@ -527,7 +534,7 @@ namespace :admin_configurations do
         name: 'non_other_self_text_model',
         config_type: 'nested_options',
         description: 'AI model used for generating self-texts for non-Other nodes',
-        value: { 'selected' => default_model, 'sub_values' => { 'reasoning_effort' => 'low' }, 'options' => model_options_with_reasoning },
+        value: nested_option_value.call('non_other_self_text_model'),
       },
       {
         name: 'search_context',
@@ -539,61 +546,61 @@ namespace :admin_configurations do
         name: 'search_labels_enabled',
         config_type: 'boolean',
         description: 'Include AI-generated labels (brands, synonyms, colloquial terms) in search queries',
-        value: 'true',
+        value: AdminConfiguration.default_for('search_labels_enabled'),
       },
       {
         name: 'search_model',
         config_type: 'nested_options',
         description: 'AI model used for interactive Q&A search',
-        value: { 'selected' => default_model, 'sub_values' => { 'reasoning_effort' => 'low' }, 'options' => model_options_with_reasoning },
+        value: nested_option_value.call('search_model'),
       },
       {
         name: 'search_result_limit',
         config_type: 'integer',
         description: 'Maximum number of commodity code suggestions shown during interactive Q&A. The frontend uses this to decide how to display results (e.g. as a shortlist or expanded view).',
-        value: '0',
+        value: AdminConfiguration.default_for('search_result_limit').to_s,
       },
       {
         name: 'suggest_results_limit',
         config_type: 'integer',
         description: 'Maximum number of search suggestions returned by the internal suggestions endpoint',
-        value: '10',
+        value: AdminConfiguration.default_for('suggest_results_limit').to_s,
       },
       {
         name: 'suggest_chemical_cas',
         config_type: 'boolean',
         description: 'Enable CAS Registry Number suggestions and exact match redirects in internal search',
-        value: 'false',
+        value: AdminConfiguration.default_for('suggest_chemical_cas'),
       },
       {
         name: 'suggest_chemical_cus',
         config_type: 'boolean',
         description: 'Enable CUS identifier suggestions and exact match redirects in internal search',
-        value: 'false',
+        value: AdminConfiguration.default_for('suggest_chemical_cus'),
       },
       {
         name: 'suggest_chemical_names',
         config_type: 'boolean',
         description: 'Enable chemical substance name suggestions and exact match redirects in internal search',
-        value: 'false',
+        value: AdminConfiguration.default_for('suggest_chemical_names'),
       },
       {
         name: 'suggest_colloquial_terms',
         config_type: 'boolean',
         description: 'Enable AI-generated colloquial term suggestions and exact match redirects in internal search',
-        value: 'false',
+        value: AdminConfiguration.default_for('suggest_colloquial_terms'),
       },
       {
         name: 'suggest_known_brands',
         config_type: 'boolean',
         description: 'Enable AI-generated known brand suggestions and exact match redirects in internal search',
-        value: 'false',
+        value: AdminConfiguration.default_for('suggest_known_brands'),
       },
       {
         name: 'suggest_synonyms',
         config_type: 'boolean',
         description: 'Enable AI-generated synonym suggestions and exact match redirects in internal search',
-        value: 'false',
+        value: AdminConfiguration.default_for('suggest_synonyms'),
       },
     ]
 

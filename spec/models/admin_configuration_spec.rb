@@ -351,12 +351,11 @@ RSpec.describe AdminConfiguration do
 
   describe '.default_for' do
     it 'returns static values directly' do
-      expect(described_class.default_for('opensearch_result_limit')).to eq(30)
+      expect(described_class.default_for('opensearch_result_limit')).to eq(50)
     end
 
-    it 'resolves lambda values' do
-      allow(TradeTariffBackend).to receive(:ai_model).and_return('gpt-5.2')
-      expect(described_class.default_for('search_model')).to eq('gpt-5.2')
+    it 'returns explicit nested model defaults' do
+      expect(described_class.default_for('search_model')).to eq('gpt-5.4')
     end
 
     it 'raises KeyError for unknown names' do
@@ -368,10 +367,19 @@ RSpec.describe AdminConfiguration do
     end
   end
 
+  describe '.nested_option_default_for' do
+    it 'returns the configured nested option defaults' do
+      expect(described_class.nested_option_default_for('search_model')).to eq(
+        selected: 'gpt-5.4',
+        sub_values: { 'reasoning_effort' => 'medium' },
+      )
+    end
+  end
+
   describe '.enabled?' do
     context 'when config record is missing' do
       it 'returns the default value' do
-        expect(described_class.enabled?('expand_search_enabled')).to be true
+        expect(described_class.enabled?('expand_search_enabled')).to be false
         expect(described_class.enabled?('interactive_search_enabled')).to be true
       end
     end
@@ -390,7 +398,7 @@ RSpec.describe AdminConfiguration do
   describe '.integer_value' do
     context 'when config record is missing' do
       it 'returns the default value' do
-        expect(described_class.integer_value('opensearch_result_limit')).to eq(30)
+        expect(described_class.integer_value('opensearch_result_limit')).to eq(50)
         expect(described_class.integer_value('pos_noun_boost')).to eq(10)
         expect(described_class.integer_value('search_result_limit')).to eq(0)
       end
@@ -410,8 +418,7 @@ RSpec.describe AdminConfiguration do
   describe '.option_value' do
     context 'when config record is missing' do
       it 'returns the default value' do
-        allow(TradeTariffBackend).to receive(:ai_model).and_return('gpt-5.2')
-        expect(described_class.option_value('search_model')).to eq('gpt-5.2')
+        expect(described_class.option_value('search_model')).to eq('gpt-5.4')
       end
     end
 
@@ -491,10 +498,14 @@ RSpec.describe AdminConfiguration do
 
   describe '.nested_options_value' do
     context 'when config record is missing' do
-      it 'returns the default value with empty sub_values' do
-        allow(TradeTariffBackend).to receive(:ai_model).and_return('gpt-5.2')
+      it 'returns the default search model with reasoning_effort' do
         result = described_class.nested_options_value('search_model')
-        expect(result).to eq({ selected: 'gpt-5.2', sub_values: {} })
+        expect(result).to eq({ selected: 'gpt-5.4', sub_values: { 'reasoning_effort' => 'medium' } })
+      end
+
+      it 'returns the default expand model with reasoning_effort' do
+        result = described_class.nested_options_value('expand_model')
+        expect(result).to eq({ selected: 'gpt-4.1-mini-2025-04-14', sub_values: { 'reasoning_effort' => 'low' } })
       end
     end
 

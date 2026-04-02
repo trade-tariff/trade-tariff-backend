@@ -54,17 +54,20 @@ RSpec.describe 'admin_configurations:seed' do
   it 'seeds nested_options configs with sorted model options', :aggregate_failures do
     seed
 
-    %w[label_model search_model expand_model other_self_text_model non_other_self_text_model].each do |name|
+    expected_defaults = {
+      'expand_model' => AdminConfiguration.nested_option_default_for('expand_model'),
+      'label_model' => AdminConfiguration.nested_option_default_for('label_model'),
+      'search_model' => AdminConfiguration.nested_option_default_for('search_model'),
+      'other_self_text_model' => AdminConfiguration.nested_option_default_for('other_self_text_model'),
+      'non_other_self_text_model' => AdminConfiguration.nested_option_default_for('non_other_self_text_model'),
+    }
+
+    expected_defaults.each do |name, expected|
       config = AdminConfiguration.where(name:).first
       expect(config.config_type).to eq('nested_options')
       expect(config.area).to eq('classification')
-
-      expected_selected = if name == 'expand_model'
-                            'gpt-4.1-mini-2025-04-14'
-                          else
-                            TradeTariffBackend.ai_model
-                          end
-      expect(config.value['selected']).to eq(expected_selected)
+      expect(config.value['selected']).to eq(expected[:selected])
+      expect(config.value['sub_values']).to eq(expected[:sub_values])
 
       option_keys = config.value['options'].map { |o| o['key'] }
       expect(option_keys).to eq(option_keys.sort)
@@ -87,6 +90,8 @@ RSpec.describe 'admin_configurations:seed' do
     expect(search_context.config_type).to eq('markdown')
     expect(search_context.value).to include('## Response format')
     expect(search_context.value).to include('### Confident answer')
+    expect(search_context.value).to include('Ask exactly one question per turn')
+    expect(search_context.value).not_to include('Try and ask at least a few questions each time')
 
     expand_query = AdminConfiguration.where(name: 'expand_query_context').first
     expect(expand_query.config_type).to eq('markdown')
@@ -138,7 +143,7 @@ RSpec.describe 'admin_configurations:seed' do
     config = AdminConfiguration.where(name: 'search_labels_enabled').first
     expect(config.config_type).to eq('boolean')
     expect(config.area).to eq('classification')
-    expect(config.value).to be true
+    expect(config.value).to be(AdminConfiguration.default_for('search_labels_enabled'))
   end
 
   it 'seeds expand_search_enabled as a boolean config', :aggregate_failures do
@@ -147,7 +152,7 @@ RSpec.describe 'admin_configurations:seed' do
     config = AdminConfiguration.where(name: 'expand_search_enabled').first
     expect(config.config_type).to eq('boolean')
     expect(config.area).to eq('classification')
-    expect(config.value).to be true
+    expect(config.value).to be(AdminConfiguration.default_for('expand_search_enabled'))
   end
 
   it 'seeds interactive_search_enabled as a boolean config defaulting to true', :aggregate_failures do
@@ -156,7 +161,7 @@ RSpec.describe 'admin_configurations:seed' do
     config = AdminConfiguration.where(name: 'interactive_search_enabled').first
     expect(config.config_type).to eq('boolean')
     expect(config.area).to eq('classification')
-    expect(config.value).to be true
+    expect(config.value).to be(AdminConfiguration.default_for('interactive_search_enabled'))
   end
 
   it 'seeds search_result_limit as an integer config defaulting to 0', :aggregate_failures do
@@ -165,73 +170,73 @@ RSpec.describe 'admin_configurations:seed' do
     config = AdminConfiguration.where(name: 'search_result_limit').first
     expect(config.config_type).to eq('integer')
     expect(config.area).to eq('classification')
-    expect(config.value).to eq(0)
+    expect(config.value).to eq(AdminConfiguration.default_for('search_result_limit'))
   end
 
-  it 'seeds opensearch_result_limit as an integer config defaulting to 30', :aggregate_failures do
+  it 'seeds opensearch_result_limit from the AdminConfiguration default', :aggregate_failures do
     seed
 
     config = AdminConfiguration.where(name: 'opensearch_result_limit').first
     expect(config.config_type).to eq('integer')
     expect(config.area).to eq('classification')
-    expect(config.value).to eq(30)
+    expect(config.value).to eq(AdminConfiguration.default_for('opensearch_result_limit'))
   end
 
-  it 'seeds pos_noun_boost as an integer config defaulting to 10', :aggregate_failures do
+  it 'seeds pos_noun_boost from the AdminConfiguration default', :aggregate_failures do
     seed
 
     config = AdminConfiguration.where(name: 'pos_noun_boost').first
     expect(config.config_type).to eq('integer')
     expect(config.area).to eq('classification')
-    expect(config.value).to eq(10)
+    expect(config.value).to eq(AdminConfiguration.default_for('pos_noun_boost'))
   end
 
-  it 'seeds pos_qualifier_boost as an integer config defaulting to 3', :aggregate_failures do
+  it 'seeds pos_qualifier_boost from the AdminConfiguration default', :aggregate_failures do
     seed
 
     config = AdminConfiguration.where(name: 'pos_qualifier_boost').first
     expect(config.config_type).to eq('integer')
     expect(config.area).to eq('classification')
-    expect(config.value).to eq(3)
+    expect(config.value).to eq(AdminConfiguration.default_for('pos_qualifier_boost'))
   end
 
-  it 'seeds pos_search_enabled as a boolean config defaulting to true', :aggregate_failures do
+  it 'seeds pos_search_enabled from the AdminConfiguration default', :aggregate_failures do
     seed
 
     config = AdminConfiguration.where(name: 'pos_search_enabled').first
     expect(config.config_type).to eq('boolean')
     expect(config.area).to eq('classification')
-    expect(config.value).to be true
+    expect(config.value).to be(AdminConfiguration.default_for('pos_search_enabled'))
   end
 
-  it 'seeds retrieval_method as an options config defaulting to vector', :aggregate_failures do
+  it 'seeds retrieval_method from the AdminConfiguration default', :aggregate_failures do
     seed
 
     config = AdminConfiguration.where(name: 'retrieval_method').first
     expect(config.config_type).to eq('options')
     expect(config.area).to eq('classification')
-    expect(config.value['selected']).to eq('vector')
+    expect(config.value['selected']).to eq(AdminConfiguration.default_for('retrieval_method'))
 
     option_keys = config.value['options'].map { |o| o['key'] }
     expect(option_keys).to contain_exactly('opensearch', 'vector', 'hybrid')
   end
 
-  it 'seeds vector_ef_search as an integer config defaulting to 100', :aggregate_failures do
+  it 'seeds vector_ef_search from the AdminConfiguration default', :aggregate_failures do
     seed
 
     config = AdminConfiguration.where(name: 'vector_ef_search').first
     expect(config.config_type).to eq('integer')
     expect(config.area).to eq('classification')
-    expect(config.value).to eq(100)
+    expect(config.value).to eq(AdminConfiguration.default_for('vector_ef_search'))
   end
 
-  it 'seeds rrf_k as an integer config defaulting to 60', :aggregate_failures do
+  it 'seeds rrf_k from the AdminConfiguration default', :aggregate_failures do
     seed
 
     config = AdminConfiguration.where(name: 'rrf_k').first
     expect(config.config_type).to eq('integer')
     expect(config.area).to eq('classification')
-    expect(config.value).to eq(60)
+    expect(config.value).to eq(AdminConfiguration.default_for('rrf_k'))
   end
 
   it 'seeds suggestion toggle configs as booleans', :aggregate_failures do

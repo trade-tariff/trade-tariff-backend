@@ -147,6 +147,24 @@ RSpec.describe Search::Instrumentation do
         hash_including(error_type: 'Faraday::TimeoutError'),
       )
     end
+
+    it 'includes truncated error details when the model returns an error payload' do
+      allow(ActiveSupport::Notifications).to receive(:instrument)
+      error_message = 'x' * 550
+
+      described_class.api_call(request_id: 'req-1', model: 'gpt-4', attempt_number: 1) do
+        { 'error' => error_message }
+      end
+
+      expect(ActiveSupport::Notifications).to have_received(:instrument).with(
+        'api_call_completed.search',
+        hash_including(
+          response_type: 'error',
+          error_message: ('x' * 500),
+          error_message_truncated: true,
+        ),
+      )
+    end
   end
 
   describe '.question_returned' do
@@ -212,6 +230,53 @@ RSpec.describe Search::Instrumentation do
         result_count: 3,
       )
     end
+
+    it 'includes truncated error details when provided' do
+      allow(ActiveSupport::Notifications).to receive(:instrument)
+
+      described_class.search_completed(
+        request_id: 'req-1',
+        query: 'horses',
+        search_type: 'interactive',
+        total_attempts: 2,
+        total_questions: 1,
+        final_result_type: 'error',
+        total_duration_ms: 1500.0,
+        result_count: 3,
+        error_message: 'x' * 550,
+      )
+
+      expect(ActiveSupport::Notifications).to have_received(:instrument).with(
+        'search_completed.search',
+        hash_including(
+          error_message: ('x' * 500),
+          error_message_truncated: true,
+        ),
+      )
+    end
+  end
+
+  describe '.retrieval_leg_completed' do
+    it 'includes truncated error details when provided' do
+      allow(ActiveSupport::Notifications).to receive(:instrument)
+
+      described_class.retrieval_leg_completed(
+        request_id: 'req-1',
+        leg: :vector,
+        duration_ms: 123.4,
+        result_count: 0,
+        status: 'error',
+        error_message: 'x' * 550,
+      )
+
+      expect(ActiveSupport::Notifications).to have_received(:instrument).with(
+        'retrieval_leg_completed.search',
+        hash_including(
+          error_message: ('x' * 500),
+          error_message_truncated: true,
+        ),
+      )
+    end
   end
 
   describe '.result_selected' do
@@ -249,7 +314,27 @@ RSpec.describe Search::Instrumentation do
         request_id: 'req-1',
         error_type: 'Faraday::TimeoutError',
         error_message: 'connection timed out',
+        error_message_truncated: false,
         search_type: 'interactive',
+      )
+    end
+
+    it 'truncates long error messages' do
+      allow(ActiveSupport::Notifications).to receive(:instrument)
+
+      described_class.search_failed(
+        request_id: 'req-1',
+        error_type: 'Faraday::TimeoutError',
+        error_message: 'x' * 550,
+        search_type: 'interactive',
+      )
+
+      expect(ActiveSupport::Notifications).to have_received(:instrument).with(
+        'search_failed.search',
+        hash_including(
+          error_message: ('x' * 500),
+          error_message_truncated: true,
+        ),
       )
     end
   end
