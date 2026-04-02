@@ -810,6 +810,8 @@ RSpec.describe Api::Internal::SearchService do
       end
 
       before do
+        allow(AdminConfiguration).to receive(:enabled?).and_call_original
+        allow(AdminConfiguration).to receive(:enabled?).with('expand_search_enabled').and_return(true)
         allow(ExpandSearchQueryService).to receive(:call)
           .and_return(ExpandSearchQueryService::Result.new(
                         expanded_query: 'portable data processing machine',

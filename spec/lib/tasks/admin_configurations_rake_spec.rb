@@ -54,17 +54,20 @@ RSpec.describe 'admin_configurations:seed' do
   it 'seeds nested_options configs with sorted model options', :aggregate_failures do
     seed
 
-    %w[label_model search_model expand_model other_self_text_model non_other_self_text_model].each do |name|
+    expected_defaults = {
+      'expand_model' => { 'selected' => 'gpt-4.1-mini-2025-04-14', 'reasoning_effort' => 'low' },
+      'label_model' => { 'selected' => 'gpt-5.4', 'reasoning_effort' => 'high' },
+      'search_model' => { 'selected' => 'gpt-5.4', 'reasoning_effort' => 'medium' },
+      'other_self_text_model' => { 'selected' => 'gpt-5.4', 'reasoning_effort' => 'high' },
+      'non_other_self_text_model' => { 'selected' => 'gpt-5.4', 'reasoning_effort' => 'high' },
+    }
+
+    expected_defaults.each do |name, expected|
       config = AdminConfiguration.where(name:).first
       expect(config.config_type).to eq('nested_options')
       expect(config.area).to eq('classification')
-
-      expected_selected = if name == 'expand_model'
-                            'gpt-4.1-mini-2025-04-14'
-                          else
-                            TradeTariffBackend.ai_model
-                          end
-      expect(config.value['selected']).to eq(expected_selected)
+      expect(config.value['selected']).to eq(expected['selected'])
+      expect(config.value['sub_values']).to eq({ 'reasoning_effort' => expected['reasoning_effort'] })
 
       option_keys = config.value['options'].map { |o| o['key'] }
       expect(option_keys).to eq(option_keys.sort)

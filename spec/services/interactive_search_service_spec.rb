@@ -141,7 +141,7 @@ RSpec.describe InteractiveSearchService do
 
         expect(Search::Instrumentation).to have_received(:api_call).with(
           request_id: request_id,
-          model: 'gpt-5.2',
+          model: 'gpt-5.4',
           attempt_number: 4,
         )
       end
@@ -192,7 +192,7 @@ RSpec.describe InteractiveSearchService do
       end
 
       it 'includes the model used' do
-        expect(result.model).to eq('gpt-5.2')
+        expect(result.model).to eq('gpt-5.4')
       end
     end
 
@@ -328,8 +328,8 @@ RSpec.describe InteractiveSearchService do
 
         expect(OpenaiClient).to have_received(:call).with(
           a_string_including('Leather'),
-          model: 'gpt-5.2',
-          reasoning_effort: nil,
+          model: 'gpt-5.4',
+          reasoning_effort: 'medium',
         )
       end
 

@@ -149,7 +149,7 @@ RSpec.describe LabelService do
 
       expect(LabelGenerator::Instrumentation).to have_received(:api_call).with(
         batch_size: 1,
-        model: TradeTariffBackend.ai_model,
+        model: 'gpt-5.4',
         page_number: nil,
       )
     end

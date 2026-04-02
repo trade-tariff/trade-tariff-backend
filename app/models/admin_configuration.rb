@@ -8,20 +8,43 @@ class AdminConfiguration < Sequel::Model(Sequel[:admin_configurations].qualify(:
 
   CACHE_TTL = 150.seconds
 
+  NESTED_OPTION_DEFAULTS = {
+    'expand_model' => {
+      selected: 'gpt-4.1-mini-2025-04-14',
+      sub_values: { 'reasoning_effort' => 'low' },
+    },
+    'label_model' => {
+      selected: 'gpt-5.4',
+      sub_values: { 'reasoning_effort' => 'high' },
+    },
+    'search_model' => {
+      selected: 'gpt-5.4',
+      sub_values: { 'reasoning_effort' => 'medium' },
+    },
+    'other_self_text_model' => {
+      selected: 'gpt-5.4',
+      sub_values: { 'reasoning_effort' => 'high' },
+    },
+    'non_other_self_text_model' => {
+      selected: 'gpt-5.4',
+      sub_values: { 'reasoning_effort' => 'high' },
+    },
+  }.freeze
+
   DEFAULTS = {
-    'expand_search_enabled' => true,
-    'expand_model' => 'gpt-4.1-mini-2025-04-14',
+    'expand_search_enabled' => false,
+    'expand_model' => NESTED_OPTION_DEFAULTS['expand_model'][:selected],
     'interactive_search_enabled' => true,
-    'interactive_search_max_questions' => 3,
-    'label_model' => -> { TradeTariffBackend.ai_model },
+    'interactive_search_max_questions' => 7,
+    'label_model' => NESTED_OPTION_DEFAULTS['label_model'][:selected],
     'label_page_size' => -> { TradeTariffBackend.goods_nomenclature_label_page_size },
-    'opensearch_result_limit' => 30,
+    'opensearch_result_limit' => 50,
     'pos_noun_boost' => 10,
     'pos_qualifier_boost' => 3,
     'pos_search_enabled' => true,
     'search_labels_enabled' => true,
     'search_non_declarables' => false,
-    'search_model' => -> { TradeTariffBackend.ai_model },
+    'search_model' => NESTED_OPTION_DEFAULTS['search_model'][:selected],
     'search_result_limit' => 0,
     'suggest_results_limit' => 10,
     'suggest_chemical_cas' => false,
@@ -32,13 +55,13 @@ class AdminConfiguration < Sequel::Model(Sequel[:admin_configurations].qualify(:
     'suggest_synonyms' => false,
     'input_sanitiser_enabled' => true,
     'input_sanitiser_max_length' => 500,
-    'retrieval_method' => 'vector',
+    'retrieval_method' => 'hybrid',
     'rrf_k' => 60,
     'vector_ef_search' => 100,
     'vector_score_threshold' => 35,
-    'other_self_text_model' => -> { TradeTariffBackend.ai_model },
+    'other_self_text_model' => NESTED_OPTION_DEFAULTS['other_self_text_model'][:selected],
     'other_self_text_batch_size' => 5,
-    'non_other_self_text_model' => -> { TradeTariffBackend.ai_model },
+    'non_other_self_text_model' => NESTED_OPTION_DEFAULTS['non_other_self_text_model'][:selected],
     'non_other_self_text_batch_size' => 15,
   }.freeze
 
@@ -88,10 +111,14 @@ class AdminConfiguration < Sequel::Model(Sequel[:admin_configurations].qualify(:
 
   def self.nested_options_value(name)
     config = classification.by_name(name.to_s)
+    nested_default = NESTED_OPTION_DEFAULTS[name.to_s]
     default_value = default_for(name)
 
     if config.nil?
-      return { selected: default_value, sub_values: {} }
+      return {
+        selected: nested_default&.fetch(:selected, default_value) || default_value,
+        sub_values: nested_default&.fetch(:sub_values, {}) || {},
+      }
     end
 
     val = config[:value]

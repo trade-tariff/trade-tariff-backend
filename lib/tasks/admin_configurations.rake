@@ -377,8 +377,6 @@ namespace :admin_configurations do
       }
     end
 
-    default_model = TradeTariffBackend.ai_model
-
     configs = [
       {
         name: 'expand_search_enabled',
@@ -390,7 +388,7 @@ namespace :admin_configurations do
         name: 'expand_model',
         config_type: 'nested_options',
         description: 'AI model used for search query expansion',
-        value: { 'selected' => 'gpt-4.1-mini-2025-04-14', 'sub_values' => {}, 'options' => model_options_with_reasoning },
+        value: { 'selected' => 'gpt-4.1-mini-2025-04-14', 'sub_values' => { 'reasoning_effort' => 'low' }, 'options' => model_options_with_reasoning },
       },
       {
         name: 'expand_query_context',
@@ -461,7 +459,7 @@ namespace :admin_configurations do
         name: 'label_model',
         config_type: 'nested_options',
         description: 'AI model used for commodity labelling',
-        value: { 'selected' => default_model, 'sub_values' => { 'reasoning_effort' => 'low' }, 'options' => model_options_with_reasoning },
+        value: { 'selected' => 'gpt-5.4', 'sub_values' => { 'reasoning_effort' => 'high' }, 'options' => model_options_with_reasoning },
       },
       {
         name: 'label_page_size',
@@ -509,7 +507,7 @@ namespace :admin_configurations do
         name: 'other_self_text_model',
         config_type: 'nested_options',
         description: 'AI model used for generating self-texts for Other nodes',
-        value: { 'selected' => default_model, 'sub_values' => { 'reasoning_effort' => 'low' }, 'options' => model_options_with_reasoning },
+        value: { 'selected' => 'gpt-5.4', 'sub_values' => { 'reasoning_effort' => 'high' }, 'options' => model_options_with_reasoning },
       },
       {
         name: 'non_other_self_text_batch_size',
@@ -527,7 +525,7 @@ namespace :admin_configurations do
         name: 'non_other_self_text_model',
         config_type: 'nested_options',
         description: 'AI model used for generating self-texts for non-Other nodes',
-        value: { 'selected' => default_model, 'sub_values' => { 'reasoning_effort' => 'low' }, 'options' => model_options_with_reasoning },
+        value: { 'selected' => 'gpt-5.4', 'sub_values' => { 'reasoning_effort' => 'high' }, 'options' => model_options_with_reasoning },
       },
       {
         name: 'search_context',
@@ -545,7 +543,7 @@ namespace :admin_configurations do
         name: 'search_model',
         config_type: 'nested_options',
         description: 'AI model used for interactive Q&A search',
-        value: { 'selected' => default_model, 'sub_values' => { 'reasoning_effort' => 'low' }, 'options' => model_options_with_reasoning },
+        value: { 'selected' => 'gpt-5.4', 'sub_values' => { 'reasoning_effort' => 'medium' }, 'options' => model_options_with_reasoning },
       },
       {
         name: 'search_result_limit',
