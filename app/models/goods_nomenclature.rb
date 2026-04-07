@@ -29,7 +29,7 @@ class GoodsNomenclature < Sequel::Model
       # continue to assume Commodity as previously done
       #
       # :leaf can be included by the use of `GoodsNomenclature.with_leaf_column`
-      record[:producline_suffix] != '80' || record[:leaf].is_a?(FalseClass) ? 'Subheading' : 'Commodity'
+      record[:producline_suffix] != NON_GROUPING_PRODUCTLINE_SUFFIX || record[:leaf].is_a?(FalseClass) ? 'Subheading' : 'Commodity'
     end
   }
 
@@ -159,7 +159,7 @@ class GoodsNomenclature < Sequel::Model
     end
 
     def non_grouping
-      where(producline_suffix: '80')
+      where(producline_suffix: NON_GROUPING_PRODUCTLINE_SUFFIX)
     end
 
     def join_footnotes

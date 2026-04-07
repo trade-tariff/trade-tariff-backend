@@ -23,7 +23,7 @@ module Api
       end
 
       def productline_suffix
-        params[:id].split('-', 2)[1] || '80'
+        params[:id].split('-', 2)[1] || GoodsNomenclature::NON_GROUPING_PRODUCTLINE_SUFFIX
       end
 
       def subheading

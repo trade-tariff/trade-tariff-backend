@@ -76,7 +76,7 @@ module TariffChanges
 
     def set_commodity
       @commodity = Commodity.where(goods_nomenclature_item_id: goods_nomenclature_item_id)
-                            .where(producline_suffix: '80')
+                            .where(producline_suffix: GoodsNomenclature::NON_GROUPING_PRODUCTLINE_SUFFIX)
                             .last
     end
   end
