@@ -154,9 +154,8 @@ module GoodsNomenclatures
 
         def declarable
           with_leaf_column
-            .where(tree_node__child_sid: nil,
-                   goods_nomenclatures__producline_suffix:
-                     GoodsNomenclature::NON_GROUPING_PRODUCTLINE_SUFFIX)
+            .non_grouping
+            .where(tree_node__child_sid: nil)
         end
       end
     end

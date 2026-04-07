@@ -39,8 +39,8 @@ module Api
                       geographical_area: grouped_measure_change.geographical_area_id,
                       excluded_areas: excluded_areas_sorted,
                     )
-                    .where(operation_date: date)
-                    .where(goods_nomenclature_sid: user_commodity_code_sids)
+                    .on_date(date)
+                    .for_goods_nomenclature_sids(user_commodity_code_sids)
                     .group(:goods_nomenclature_item_id)
                     .order(:goods_nomenclature_item_id)
                     .select(
@@ -75,7 +75,7 @@ module Api
 
       def load_commodities(commodity_ids)
         if commodity_ids.any?
-          GoodsNomenclature.where(goods_nomenclature_item_id: commodity_ids)
+          GoodsNomenclature.by_codes(commodity_ids)
                            .index_by(&:goods_nomenclature_item_id)
         else
           {}
@@ -96,8 +96,8 @@ module Api
         return [] if user_commodity_code_sids.blank?
 
         TariffChange.measures
-                    .where(operation_date: @date)
-                    .where(goods_nomenclature_sid: user_commodity_code_sids)
+                    .on_date(@date)
+                    .for_goods_nomenclature_sids(user_commodity_code_sids)
                     .group(
                       Sequel.lit("metadata->'measure'->>'trade_movement_code'"),
                       Sequel.lit("metadata->'measure'->>'geographical_area_id'"),

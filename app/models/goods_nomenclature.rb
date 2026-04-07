@@ -150,6 +150,18 @@ class GoodsNomenclature < Sequel::Model
                                      reciprocal: :goods_nomenclature
 
   dataset_module do
+    def by_codes(codes)
+      where(goods_nomenclatures__goods_nomenclature_item_id: codes)
+    end
+
+    def by_code(code = '')
+      where(goods_nomenclatures__goods_nomenclature_item_id: code.to_s.first(10))
+    end
+
+    def by_productline_suffix(productline_suffix)
+      where(goods_nomenclatures__producline_suffix: productline_suffix)
+    end
+
     def non_hidden
       filter(Sequel.~(goods_nomenclatures__goods_nomenclature_item_id: HiddenGoodsNomenclature.codes))
     end

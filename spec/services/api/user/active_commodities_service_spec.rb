@@ -77,14 +77,19 @@ RSpec.describe Api::User::ActiveCommoditiesService do
       Rails.cache.delete('myott_all_expired_commodities')
       described_class.instance_variable_set(:@all_expired_commodities, nil)
 
-      allow(GoodsNomenclature).to receive_message_chain(:where, :pluck).and_return([])
+      non_grouping_query = instance_double(Sequel::Dataset, pluck: [])
+      allow(GoodsNomenclature).to receive(:non_grouping).and_return(non_grouping_query)
 
       result = described_class.all_expired_commodities
       expect(result).to eq([])
     end
 
     it 'returns empty array when no expired candidates exist with target filtering' do
-      allow(GoodsNomenclature).to receive_message_chain(:where, :where, :pluck).and_return([])
+      filtered_query = instance_double(Sequel::Dataset, pluck: [])
+      non_grouping_query = instance_double(Sequel::Dataset)
+
+      allow(non_grouping_query).to receive(:where).with(goods_nomenclature_sid: [999]).and_return(filtered_query)
+      allow(GoodsNomenclature).to receive(:non_grouping).and_return(non_grouping_query)
 
       result = described_class.all_expired_commodities(target_sids: [999])
       expect(result).to eq([])
