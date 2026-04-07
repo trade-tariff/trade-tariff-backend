@@ -43,7 +43,7 @@ module Api
       def self.generate_fresh_expired_commodities(target_sids: nil)
         expired_candidates = TimeMachine.no_time_machine do
           query = GoodsNomenclature
-            .where(producline_suffix: GoodsNomenclatureIndent::NON_GROUPING_PRODUCTLINE_SUFFIX)
+            .where(producline_suffix: GoodsNomenclature::NON_GROUPING_PRODUCTLINE_SUFFIX)
 
           query = query.where(goods_nomenclature_sid: target_sids) if target_sids
 

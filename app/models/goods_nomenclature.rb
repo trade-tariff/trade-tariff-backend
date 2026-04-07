@@ -2,6 +2,7 @@ class GoodsNomenclature < Sequel::Model
   CLASSIFICATION_CHAPTER = '98'.freeze
   CHAPTER_SUFFIX = '00000000'.freeze
   HEADING_SUFFIX = '000000'.freeze
+  NON_GROUPING_PRODUCTLINE_SUFFIX = '80'.freeze
 
   def self.sql_pattern_for(suffix)
     '_' * (10 - suffix.length) + suffix
@@ -273,7 +274,7 @@ class GoodsNomenclature < Sequel::Model
   end
 
   def non_grouping?
-    producline_suffix == GoodsNomenclatureIndent::NON_GROUPING_PRODUCTLINE_SUFFIX
+    producline_suffix == NON_GROUPING_PRODUCTLINE_SUFFIX
   end
 
   def grouping?

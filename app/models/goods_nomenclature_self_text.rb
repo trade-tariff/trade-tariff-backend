@@ -73,7 +73,7 @@ class GoodsNomenclatureSelfText < Sequel::Model
 
       exclude(search_embedding: nil)
         .association_join(:goods_nomenclature)
-        .where(goods_nomenclature__producline_suffix: GoodsNomenclatureIndent::NON_GROUPING_PRODUCTLINE_SUFFIX)
+        .where(goods_nomenclature__producline_suffix: GoodsNomenclature::NON_GROUPING_PRODUCTLINE_SUFFIX)
         .where { GoodsNomenclature.validity_dates_filter(:goods_nomenclature) }
         .exclude(goods_nomenclature__goods_nomenclature_item_id: HiddenGoodsNomenclature.codes)
         .select(Sequel[:goods_nomenclature][:goods_nomenclature_sid])

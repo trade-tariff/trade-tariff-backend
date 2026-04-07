@@ -156,7 +156,7 @@ module GoodsNomenclatures
           with_leaf_column
             .where(tree_node__child_sid: nil,
                    goods_nomenclatures__producline_suffix:
-                     GoodsNomenclatureIndent::NON_GROUPING_PRODUCTLINE_SUFFIX)
+                     GoodsNomenclature::NON_GROUPING_PRODUCTLINE_SUFFIX)
         end
       end
     end
@@ -212,7 +212,7 @@ module GoodsNomenclatures
     end
 
     def declarable?
-      producline_suffix == GoodsNomenclatureIndent::NON_GROUPING_PRODUCTLINE_SUFFIX && leaf?
+      producline_suffix == GoodsNomenclature::NON_GROUPING_PRODUCTLINE_SUFFIX && leaf?
     end
 
     def leaf?
