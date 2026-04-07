@@ -25,21 +25,19 @@ module Api
         end
 
         def create
-          gn = GoodsNomenclature.actual.where(goods_nomenclature_item_id: measure_params[:goods_nomenclature_item_id],
-                                              producline_suffix: measure_params[:productline_suffix])
+          GoodsNomenclature.actual
+                           .by_code(measure_params[:goods_nomenclature_item_id])
+                           .by_productline_suffix(measure_params[:productline_suffix])
+                           .take # will raise if not found
 
-          if gn.present?
-            measure = ::GreenLanes::Measure.new(measure_params)
+          measure = ::GreenLanes::Measure.new(measure_params)
 
-            if gn.present? && measure.valid? && measure.save
-              render json: serialize(measure),
-                     status: :created
-            else
-              render json: serialize_errors(measure),
-                     status: :unprocessable_content
-            end
+          if measure.valid? && measure.save
+            render json: serialize(measure),
+                   status: :created
           else
-            raise Sequel::RecordNotFound
+            render json: serialize_errors(measure),
+                   status: :unprocessable_content
           end
         end
 
