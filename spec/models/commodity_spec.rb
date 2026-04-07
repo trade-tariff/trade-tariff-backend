@@ -15,7 +15,7 @@ RSpec.describe Commodity do
         create :heading, goods_nomenclature_item_id: "#{gono1.goods_nomenclature_item_id.first(4)}000000",
                          validity_start_date: Date.new(1991, 1, 1),
                          validity_end_date: Date.new(2002, 1, 1),
-                         producline_suffix: '80'
+                         producline_suffix: GoodsNomenclature::NON_GROUPING_PRODUCTLINE_SUFFIX
       end
 
       before do
@@ -25,7 +25,7 @@ RSpec.describe Commodity do
         create :heading, goods_nomenclature_item_id: "#{gono1.goods_nomenclature_item_id.first(4)}000000",
                          validity_start_date: Date.new(2002, 1, 1),
                          validity_end_date: Date.new(2014, 1, 1),
-                         producline_suffix: '80'
+                         producline_suffix: GoodsNomenclature::NON_GROUPING_PRODUCTLINE_SUFFIX
       end
 
       context 'when fetching a chapter on a given day' do
@@ -44,7 +44,7 @@ RSpec.describe Commodity do
                            validity_start_date: Date.new(1972, 1, 1)
           create :heading, goods_nomenclature_item_id: '6308000000',
                            goods_nomenclature_sid: 43_838,
-                           producline_suffix: '80',
+                           producline_suffix: GoodsNomenclature::NON_GROUPING_PRODUCTLINE_SUFFIX,
                            validity_start_date: Date.new(1972, 1, 1)
         end
 
@@ -54,7 +54,7 @@ RSpec.describe Commodity do
                  indents: 1,
                  goods_nomenclature_sid: 91_335,
                  goods_nomenclature_item_id: '6308000015',
-                 producline_suffix: '80',
+                 producline_suffix: GoodsNomenclature::NON_GROUPING_PRODUCTLINE_SUFFIX,
                  validity_start_date: Date.new(2009, 7, 1)
         end
 
@@ -174,7 +174,7 @@ RSpec.describe Commodity do
       non_declarable_commodity
     end
 
-    let(:declarable_commodity) { create(:commodity, producline_suffix: '80') }
+    let(:declarable_commodity) { create(:commodity, producline_suffix: GoodsNomenclature::NON_GROUPING_PRODUCTLINE_SUFFIX) }
     let(:non_declarable_commodity) { create(:commodity, producline_suffix: '10') }
 
     it { expect(result).to eq([non_declarable_commodity]) }

@@ -3,7 +3,7 @@ FactoryBot.define do
     transient do
       type_explosion_level { 10 }
       gono_number_indents { 1 }
-      gono_producline_suffix { '80' }
+      gono_producline_suffix { GoodsNomenclature::NON_GROUPING_PRODUCTLINE_SUFFIX }
       order_number_capture_code { 2 }
       duty_amount { Forgery(:basic).number }
       measure_components_count { 1 }

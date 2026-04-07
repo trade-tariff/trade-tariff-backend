@@ -3,7 +3,7 @@ RSpec.describe Api::Admin::GoodsNomenclatureLabelsController do
 
   describe '#index' do
     let!(:commodity) do
-      create(:goods_nomenclature, producline_suffix: '80').tap do |gn|
+      create(:goods_nomenclature, producline_suffix: GoodsNomenclature::NON_GROUPING_PRODUCTLINE_SUFFIX).tap do |gn|
         create(:goods_nomenclature_label,
                goods_nomenclature: gn,
                description: 'Live horses',
@@ -83,7 +83,7 @@ RSpec.describe Api::Admin::GoodsNomenclatureLabelsController do
 
     context 'with score_category filter' do
       let!(:low_score) do # rubocop:disable RSpec/LetSetup
-        create(:goods_nomenclature, producline_suffix: '80').tap do |gn|
+        create(:goods_nomenclature, producline_suffix: GoodsNomenclature::NON_GROUPING_PRODUCTLINE_SUFFIX).tap do |gn|
           create(:goods_nomenclature_label,
                  goods_nomenclature: gn,
                  description: 'Bad label',
@@ -121,7 +121,7 @@ RSpec.describe Api::Admin::GoodsNomenclatureLabelsController do
       end
 
       it 'filters to records with no score' do
-        create(:goods_nomenclature, producline_suffix: '80').tap do |gn|
+        create(:goods_nomenclature, producline_suffix: GoodsNomenclature::NON_GROUPING_PRODUCTLINE_SUFFIX).tap do |gn|
           create(:goods_nomenclature_label,
                  goods_nomenclature: gn,
                  description: 'No score label',
@@ -232,7 +232,7 @@ RSpec.describe Api::Admin::GoodsNomenclatureLabelsController do
 
     context 'with nil scores' do
       let!(:nil_score) do # rubocop:disable RSpec/LetSetup
-        create(:goods_nomenclature, producline_suffix: '80').tap do |gn|
+        create(:goods_nomenclature, producline_suffix: GoodsNomenclature::NON_GROUPING_PRODUCTLINE_SUFFIX).tap do |gn|
           create(:goods_nomenclature_label,
                  goods_nomenclature: gn,
                  description: 'No score',

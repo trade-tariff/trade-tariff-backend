@@ -24,7 +24,7 @@ RSpec.describe FullChemical do
           create(:full_chemical, goods_nomenclature_sid: 999_999_999) # varying sids
           create(:full_chemical, goods_nomenclature_item_id: '0409000000') # varying codes
           create(:full_chemical, goods_nomenclature_item_id: '0409000001') # varying codes
-          create(:full_chemical, producline_suffix: '80') # varying suffixes
+          create(:full_chemical, producline_suffix: GoodsNomenclature::NON_GROUPING_PRODUCTLINE_SUFFIX) # varying suffixes
           create(:full_chemical, producline_suffix: '81') # varying suffixes
           create(:full_chemical, cus: '1234567890') # varying cus
           create(:full_chemical, cus: '1234567891') # varying cus
@@ -74,14 +74,14 @@ RSpec.describe FullChemical do
       end
 
       context 'when a producline_suffix filter is provided' do
-        subject(:full_chemicals) { described_class.with_filter(producline_suffix: '80') }
+        subject(:full_chemicals) { described_class.with_filter(producline_suffix: GoodsNomenclature::NON_GROUPING_PRODUCTLINE_SUFFIX) }
 
         before do
-          create(:full_chemical, producline_suffix: '80') # varying suffixes
+          create(:full_chemical, producline_suffix: GoodsNomenclature::NON_GROUPING_PRODUCTLINE_SUFFIX) # varying suffixes
           create(:full_chemical, producline_suffix: '81') # varying suffixes
         end
 
-        let(:expected_chemical) { described_class.where(producline_suffix: '80').take }
+        let(:expected_chemical) { described_class.where(producline_suffix: GoodsNomenclature::NON_GROUPING_PRODUCTLINE_SUFFIX).take }
 
         it { is_expected.to eq([expected_chemical]) }
       end
@@ -163,10 +163,10 @@ RSpec.describe FullChemical do
     describe '.by_suffix' do
       subject(:full_chemicals) { described_class.by_suffix(suffix) }
 
-      let!(:full_chemical) { create(:full_chemical, producline_suffix: '80') }
+      let!(:full_chemical) { create(:full_chemical, producline_suffix: GoodsNomenclature::NON_GROUPING_PRODUCTLINE_SUFFIX) }
 
       context 'when an existing suffix is provided' do
-        let(:suffix) { '80' }
+        let(:suffix) { GoodsNomenclature::NON_GROUPING_PRODUCTLINE_SUFFIX }
 
         it { is_expected.to include(full_chemical) }
       end

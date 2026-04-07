@@ -27,13 +27,16 @@ RSpec.describe Api::V2::ValidityPeriodsController, :v2 do
       create(
         :commodity,
         :with_deriving_goods_nomenclatures,
-        producline_suffix: '80',
+        producline_suffix: GoodsNomenclature::NON_GROUPING_PRODUCTLINE_SUFFIX,
         goods_nomenclature_item_id: '0101290000',
       )
     end
 
     let(:validity_period_path) { api_subheading_validity_periods_path(goods_nomenclature) }
-    let(:goods_nomenclature) { Subheading.find(goods_nomenclature_item_id: '0101290000', producline_suffix: '80') }
+    let(:goods_nomenclature) do
+      Subheading.find(goods_nomenclature_item_id: '0101290000',
+                      producline_suffix: GoodsNomenclature::NON_GROUPING_PRODUCTLINE_SUFFIX)
+    end
   end
 
   it_behaves_like 'a correctly routing validity periods api request' do
