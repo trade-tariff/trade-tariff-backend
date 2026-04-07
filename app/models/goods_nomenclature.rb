@@ -163,7 +163,7 @@ class GoodsNomenclature < Sequel::Model
     end
 
     def non_hidden
-      filter(Sequel.~(goods_nomenclatures__goods_nomenclature_item_id: HiddenGoodsNomenclature.codes))
+      where(Sequel.~(goods_nomenclatures__goods_nomenclature_item_id: HiddenGoodsNomenclature.codes))
     end
 
     def non_classifieds
@@ -171,7 +171,7 @@ class GoodsNomenclature < Sequel::Model
     end
 
     def non_grouping
-      where(producline_suffix: NON_GROUPING_PRODUCTLINE_SUFFIX)
+      where(goods_nomenclatures__producline_suffix: NON_GROUPING_PRODUCTLINE_SUFFIX)
     end
 
     def join_footnotes

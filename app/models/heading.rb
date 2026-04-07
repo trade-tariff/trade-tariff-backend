@@ -1,6 +1,6 @@
 class Heading < GoodsNomenclature
-  set_dataset filter('goods_nomenclatures.goods_nomenclature_item_id LIKE ?', GoodsNomenclature.sql_pattern_for(HEADING_SUFFIX))
-              .filter('goods_nomenclatures.goods_nomenclature_item_id NOT LIKE ?', GoodsNomenclature.sql_pattern_for(CHAPTER_SUFFIX))
+  set_dataset where('goods_nomenclatures.goods_nomenclature_item_id LIKE ?', GoodsNomenclature.sql_pattern_for(HEADING_SUFFIX))
+              .where('goods_nomenclatures.goods_nomenclature_item_id NOT LIKE ?', GoodsNomenclature.sql_pattern_for(CHAPTER_SUFFIX))
               .order(
                 Sequel.asc(:goods_nomenclature_item_id),
                 Sequel.asc(:goods_nomenclatures__producline_suffix),
@@ -22,7 +22,7 @@ class Heading < GoodsNomenclature
 
   dataset_module do
     def by_code(code = '')
-      filter(goods_nomenclatures__goods_nomenclature_item_id: "#{code.to_s.first(4)}000000")
+      where(goods_nomenclatures__goods_nomenclature_item_id: "#{code.to_s.first(4)}#{HEADING_SUFFIX}")
     end
   end
 
