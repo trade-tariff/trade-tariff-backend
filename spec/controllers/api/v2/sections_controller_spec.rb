@@ -86,6 +86,14 @@ RSpec.describe Api::V2::SectionsController do
         expect(response.status).to eq 404
       end
     end
+
+    context 'when id is not numeric' do
+      it 'returns bad request' do
+        get :show, params: { id: 'VII' }, format: :json
+
+        expect(response.status).to eq 400
+      end
+    end
   end
 
   describe '#index' do

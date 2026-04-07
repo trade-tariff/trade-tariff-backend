@@ -110,7 +110,7 @@ module News
 
       def for_year(year)
         year = year.presence&.to_i
-        return self unless year
+        return self if !year || year.zero?
 
         first_of_jan = Time.zone.parse("#{year}-01-01 00:00:00")
         where(start_date: first_of_jan..first_of_jan.end_of_year)
