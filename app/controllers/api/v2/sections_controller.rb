@@ -20,7 +20,9 @@ module Api
       end
 
       def show
-        @section = Section.where(position: params[:id]).take
+        return head :bad_request unless params[:id].to_s.match?(/\A\d+\z/)
+
+        @section = Section.where(position: params[:id].to_i).take
 
         options = { is_collection: false }
         options[:include] = [:chapters, 'chapters.guides']
