@@ -42,7 +42,7 @@ module AdminListingDataset
       CASE
         WHEN "gn"."goods_nomenclature_item_id" LIKE '#{chapter_pattern}' THEN 'chapter'
         WHEN "gn"."goods_nomenclature_item_id" LIKE '#{heading_pattern}' THEN 'heading'
-        WHEN "gn"."producline_suffix" != '80' OR EXISTS (
+        WHEN "gn"."producline_suffix" != '#{GoodsNomenclature::NON_GROUPING_PRODUCTLINE_SUFFIX}' OR EXISTS (
           SELECT 1
           FROM goods_nomenclature_tree_nodes parent
           JOIN goods_nomenclature_tree_nodes child

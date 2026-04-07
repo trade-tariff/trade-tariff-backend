@@ -3,7 +3,9 @@ RSpec.describe SuggestionsService do
 
   before do
     chapter = create(:chapter, goods_nomenclature_item_id: '0100000000')
-    heading = create(:heading, goods_nomenclature_item_id: '0101000000', producline_suffix: '80')
+    heading = create(:heading,
+                     goods_nomenclature_item_id: '0101000000',
+                     producline_suffix: GoodsNomenclature::NON_GROUPING_PRODUCTLINE_SUFFIX)
 
     create(:heading, goods_nomenclature_item_id: '0102000000', producline_suffix: '10')
     create(:commodity, :non_declarable, goods_nomenclature_item_id: '0202070000')

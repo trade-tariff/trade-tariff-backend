@@ -29,9 +29,16 @@ RSpec.describe Subheading do
     end
 
     context 'when the subheading is a taric code' do
-      subject(:short_code) { described_class.find(goods_nomenclature_item_id: '0101210900', producline_suffix: '80').short_code }
+      subject(:short_code) do
+        described_class.find(goods_nomenclature_item_id: '0101210900',
+                             producline_suffix: GoodsNomenclature::NON_GROUPING_PRODUCTLINE_SUFFIX).short_code
+      end
 
-      before { create(:commodity, producline_suffix: '80', goods_nomenclature_item_id: '0101210900') }
+      before do
+        create(:commodity,
+               producline_suffix: GoodsNomenclature::NON_GROUPING_PRODUCTLINE_SUFFIX,
+               goods_nomenclature_item_id: '0101210900')
+      end
 
       it { is_expected.to eq('0101210900') }
     end

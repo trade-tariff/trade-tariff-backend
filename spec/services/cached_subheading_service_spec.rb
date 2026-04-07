@@ -1,21 +1,24 @@
 RSpec.describe CachedSubheadingService do
   subject(:service) { described_class.new(subheading, actual_date) }
 
-  let(:subheading) { Subheading.find(goods_nomenclature_item_id: '0101290000', producline_suffix: '80') }
+  let(:subheading) do
+    Subheading.find(goods_nomenclature_item_id: '0101290000',
+                    producline_suffix: GoodsNomenclature::NON_GROUPING_PRODUCTLINE_SUFFIX)
+  end
   let(:actual_date) { '2021-01-01' }
 
   before do
     GoodsNomenclature.unrestrict_primary_key
 
-    create(:chapter, :with_section, :with_indent, :with_guide, goods_nomenclature_sid: 1, indents: 0, producline_suffix: '80', goods_nomenclature_item_id: '0100000000') # Live animals
-    create(:heading, :with_indent, :with_description, goods_nomenclature_sid: 2, indents: 0, producline_suffix: '80', goods_nomenclature_item_id: '0101000000')   # Live horses, asses, mules and hinnies
+    create(:chapter, :with_section, :with_indent, :with_guide, goods_nomenclature_sid: 1, indents: 0, producline_suffix: GoodsNomenclature::NON_GROUPING_PRODUCTLINE_SUFFIX, goods_nomenclature_item_id: '0100000000') # Live animals
+    create(:heading, :with_indent, :with_description, goods_nomenclature_sid: 2, indents: 0, producline_suffix: GoodsNomenclature::NON_GROUPING_PRODUCTLINE_SUFFIX, goods_nomenclature_item_id: '0101000000') # Live horses, asses, mules and hinnies
     create(:commodity, :with_indent, :with_description, goods_nomenclature_sid: 3, indents: 1, producline_suffix: '10', goods_nomenclature_item_id: '0101210000') # Horses
-    create(:commodity, :with_indent, :with_description, goods_nomenclature_sid: 4, indents: 2, producline_suffix: '80', goods_nomenclature_item_id: '0101210000') # -- Pure-bred breeding animals
-    create(:commodity, :with_indent, :with_description, :with_overview_measures, goods_nomenclature_sid: 5, indents: 2, producline_suffix: '80', goods_nomenclature_item_id: '0101290000') # -- Other
-    create(:commodity, :with_indent, :with_description, goods_nomenclature_sid: 6, indents: 3, producline_suffix: '80', goods_nomenclature_item_id: '0101291000') # ---- For slaughter
-    create(:commodity, :with_indent, :with_description, goods_nomenclature_sid: 7, indents: 3, producline_suffix: '80', goods_nomenclature_item_id: '0101299000') # ---- Other
-    create(:commodity, :with_indent, :with_description, goods_nomenclature_sid: 8, indents: 1, producline_suffix: '80', goods_nomenclature_item_id: '0101300000') # Asses
-    create(:commodity, :with_indent, :with_description, goods_nomenclature_sid: 9, indents: 1, producline_suffix: '80', goods_nomenclature_item_id: '0101900000') # Other
+    create(:commodity, :with_indent, :with_description, goods_nomenclature_sid: 4, indents: 2, producline_suffix: GoodsNomenclature::NON_GROUPING_PRODUCTLINE_SUFFIX, goods_nomenclature_item_id: '0101210000') # -- Pure-bred breeding animals
+    create(:commodity, :with_indent, :with_description, :with_overview_measures, goods_nomenclature_sid: 5, indents: 2, producline_suffix: GoodsNomenclature::NON_GROUPING_PRODUCTLINE_SUFFIX, goods_nomenclature_item_id: '0101290000') # -- Other
+    create(:commodity, :with_indent, :with_description, goods_nomenclature_sid: 6, indents: 3, producline_suffix: GoodsNomenclature::NON_GROUPING_PRODUCTLINE_SUFFIX, goods_nomenclature_item_id: '0101291000') # ---- For slaughter
+    create(:commodity, :with_indent, :with_description, goods_nomenclature_sid: 7, indents: 3, producline_suffix: GoodsNomenclature::NON_GROUPING_PRODUCTLINE_SUFFIX, goods_nomenclature_item_id: '0101299000') # ---- Other
+    create(:commodity, :with_indent, :with_description, goods_nomenclature_sid: 8, indents: 1, producline_suffix: GoodsNomenclature::NON_GROUPING_PRODUCTLINE_SUFFIX, goods_nomenclature_item_id: '0101300000') # Asses
+    create(:commodity, :with_indent, :with_description, goods_nomenclature_sid: 9, indents: 1, producline_suffix: GoodsNomenclature::NON_GROUPING_PRODUCTLINE_SUFFIX, goods_nomenclature_item_id: '0101900000') # Other
   end
 
   describe '#call' do

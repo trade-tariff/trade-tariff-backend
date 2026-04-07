@@ -15,7 +15,7 @@ FactoryBot.define do
       (goods_nomenclature && goods_nomenclature.goods_nomenclature_item_id) || '0409000000'
     end
     producline_suffix do
-      (goods_nomenclature && goods_nomenclature&.producline_suffix) || '80'
+      (goods_nomenclature && goods_nomenclature&.producline_suffix) || GoodsNomenclature::NON_GROUPING_PRODUCTLINE_SUFFIX
     end
     goods_nomenclature_sid do
       (goods_nomenclature && goods_nomenclature&.goods_nomenclature_sid) || generate(:goods_nomenclature_sid)

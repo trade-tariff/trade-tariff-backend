@@ -36,7 +36,7 @@ RSpec.describe ValidityPeriodSerializerService do
           :commodity,
           :with_deriving_goods_nomenclatures,
           goods_nomenclature_item_id: '0101210000',
-          producline_suffix: '80',
+          producline_suffix: GoodsNomenclature::NON_GROUPING_PRODUCTLINE_SUFFIX,
           validity_start_date: Date.new(2023, 1, 1),
           validity_end_date: Date.new(2023, 2, 1),
         )
@@ -44,7 +44,7 @@ RSpec.describe ValidityPeriodSerializerService do
           :commodity,
           :with_deriving_goods_nomenclatures,
           goods_nomenclature_item_id: '0101210000',
-          producline_suffix: '80',
+          producline_suffix: GoodsNomenclature::NON_GROUPING_PRODUCTLINE_SUFFIX,
           validity_start_date: Date.new(2023, 1, 2),
           validity_end_date: Date.new(2023, 2, 1),
         )
@@ -66,7 +66,7 @@ RSpec.describe ValidityPeriodSerializerService do
           :commodity,
           :with_deriving_goods_nomenclatures,
           goods_nomenclature_item_id: '0101210000',
-          producline_suffix: '80',
+          producline_suffix: GoodsNomenclature::NON_GROUPING_PRODUCTLINE_SUFFIX,
           validity_start_date: Date.new(2023, 1, 1),
           validity_end_date: Date.new(2023, 2, 1),
         )
@@ -74,7 +74,7 @@ RSpec.describe ValidityPeriodSerializerService do
           :commodity,
           :with_deriving_goods_nomenclatures,
           goods_nomenclature_item_id: '0101210000',
-          producline_suffix: '80',
+          producline_suffix: GoodsNomenclature::NON_GROUPING_PRODUCTLINE_SUFFIX,
           validity_start_date: Date.new(2023, 1, 2),
           validity_end_date: Date.new(2023, 2, 1),
         )
