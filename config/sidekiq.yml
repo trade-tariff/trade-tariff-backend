@@ -21,7 +21,7 @@
     # Online converter: https://crontab.guru/#0_22_*_*_*
     #
     CdsUpdatesSynchronizerWorker:
-      cron: "30 0 * * *"
+      cron: <%= ENV.fetch('CDS_SYNC_SCHEDULE', '0 5 * * *')%>
       description: "Runs ETL of CDS files and populates indexes"
       enabled: <%= ENV.fetch('SERVICE', 'uk') == 'uk' %>
     TaricUpdatesSynchronizerWorker:
