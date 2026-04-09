@@ -1,16 +1,10 @@
 RSpec.describe 'excess query counts', :v2 do
   before do
     allow(NewRelic::Agent).to receive(:notice_error).and_return true
-    allow(TradeTariffBackend).to receive_messages(
-      check_query_count?: true,
-      excess_query_threshold: 20,
-    )
+    allow(TradeTariffBackend).to receive(:check_query_count?).and_return true
   end
 
-  let :get_page do
-    MaterializeViewHelper.refresh_materialized_view
-    api_get api_heading_path(heading, format: :json)
-  end
+  let(:get_page) { api_get api_heading_path(heading, format: :json) }
 
   let :heading do
     create(:commodity,
@@ -40,7 +34,12 @@ RSpec.describe 'excess query counts', :v2 do
     before { allow(::SequelRails::Railties::LogSubscriber).to receive(:count).and_return 21 }
 
     context 'with exceptions mode' do
-      before { get_page }
+      before do
+        allow(QueryCountChecker).to receive(:new).and_return \
+          QueryCountChecker.new(20, raise_exception: true)
+
+        get_page
+      end
 
       it { expect(response).to have_http_status :internal_server_error }
     end
