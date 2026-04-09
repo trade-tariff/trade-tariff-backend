@@ -23,7 +23,7 @@ Before setup you will need your backing services and header files/libs:
 
 These can be configured by following the instructions here:
 
-https://docs.trade-tariff.service.gov.uk/manual/get-started.html#6-set-up-ott-docker
+https://transformuk.atlassian.net/wiki/spaces/HO/pages/22447161366/Get+started+developing+on+the+OTT
 
 ### DevContainers (recommended)
 
