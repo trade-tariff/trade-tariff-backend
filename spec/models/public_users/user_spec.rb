@@ -39,34 +39,34 @@ RSpec.describe PublicUsers::User do
   end
 
   describe '#stop_press_subscription' do
-    it 'returns id when user has an active subscription' do
+    it 'returns subscription when user has an active subscription' do
       user.add_subscription(subscription_type_id: Subscriptions::Type.stop_press.id, active: true)
-      expect(user.stop_press_subscription).to be_a(String)
+      expect(user.stop_press_subscription).to be_a(PublicUsers::Subscription)
     end
 
-    it 'returns false when user has an inactive subscription' do
+    it 'returns nil when user has an inactive subscription' do
       user.add_subscription(subscription_type_id: Subscriptions::Type.stop_press.id, active: false)
-      expect(user.stop_press_subscription).to be false
+      expect(user.stop_press_subscription).to be_nil
     end
 
-    it 'returns false when user does not have a subscription' do
-      expect(user.stop_press_subscription).to be false
+    it 'returns nil when user does not have a subscription' do
+      expect(user.stop_press_subscription).to be_nil
     end
   end
 
   describe '#my_commodities_subscription' do
-    it 'returns id when user has an active subscription' do
+    it 'returns subscription when user has an active subscription' do
       user.add_subscription(subscription_type_id: Subscriptions::Type.my_commodities.id, active: true)
-      expect(user.my_commodities_subscription).to be_a(String)
+      expect(user.my_commodities_subscription).to be_a(PublicUsers::Subscription)
     end
 
-    it 'returns false when user has an inactive subscription' do
+    it 'returns nil when user has an inactive subscription' do
       user.add_subscription(subscription_type_id: Subscriptions::Type.my_commodities.id, active: false)
-      expect(user.my_commodities_subscription).to be false
+      expect(user.my_commodities_subscription).to be_nil
     end
 
-    it 'returns false when user does not have a subscription' do
-      expect(user.my_commodities_subscription).to be false
+    it 'returns nil when user does not have a subscription' do
+      expect(user.my_commodities_subscription).to be_nil
     end
   end
 
