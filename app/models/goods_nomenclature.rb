@@ -12,9 +12,7 @@ class GoodsNomenclature < Sequel::Model
   set_primary_key [:goods_nomenclature_sid]
 
   plugin :time_machine
-
   plugin :oplog, primary_key: :goods_nomenclature_sid, materialized: true
-  plugin :nullable
   plugin :active_model
 
   plugin :sti, class_determinator: lambda { |record|
