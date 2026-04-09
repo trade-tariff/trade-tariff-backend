@@ -1,26 +1,26 @@
 class SynchronizerCheckWorker
   include Sidekiq::Worker
 
-  RECENCY_THRESHOLD = 4 # days ago
+  # Sentinel value recorded when no applied updates exist at all, ensuring
+  # the NR alert condition fires immediately rather than silently passing.
+  NO_SYNC_SENTINEL_MINUTES = 99_999
 
-  def perform(check_since = RECENCY_THRESHOLD)
-    latest_qbe = QuotaBalanceEvent::Operation.order_by(Sequel.desc(:oid)).first
+  def perform
+    last_applied_at = TariffSynchronizer::BaseUpdate.most_recent_applied&.applied_at
+    age_minutes = age_in_minutes(last_applied_at)
 
-    return true if latest_qbe && latest_qbe.created_at > check_since.days.ago
-
-    msg = <<~EOMSG
-      #{sync_service_name} sync problem - last update to Quota Balance Events was over #{check_since} days ago
-
-      Last update was at #{latest_qbe&.created_at}. Please investigate promptly.
-    EOMSG
-
-    NewRelic::Agent.notice_error(msg)
-    Rails.logger.warn(msg)
+    NewRelic::Agent.record_metric("Custom/TariffSync/#{service}/AgeMinutes", age_minutes)
   end
 
-  private
+private
 
-  def sync_service_name
-    TradeTariffBackend.uk? ? 'CDS' : 'Taric'
+  def age_in_minutes(last_applied_at)
+    return NO_SYNC_SENTINEL_MINUTES if last_applied_at.nil?
+
+    (Time.zone.now - last_applied_at) / 60.0
+  end
+
+  def service
+    TradeTariffBackend.uk? ? 'uk' : 'xi'
   end
 end
