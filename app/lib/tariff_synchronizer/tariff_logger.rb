@@ -46,18 +46,6 @@ module TariffSynchronizer
 
         Mailer.blank_update(url, date).deliver_now
       end
-
-      # We missed {count} update files in a row
-      # Might be okay for Taric. This is a precautionary measure
-      def missing_updates(update_type:, count:)
-        Instrumentation.sync_run_failed(
-          phase: 'download',
-          error_class: 'MissingUpdates',
-          error_message: "Missing #{count} updates in a row for #{update_type.to_s.upcase}",
-        )
-
-        Mailer.missing_updates(count, update_type.to_s).deliver_now
-      end
     end
   end
 end
