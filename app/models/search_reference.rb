@@ -8,7 +8,6 @@ class SearchReference < Sequel::Model
     Commodity
   ].freeze
 
-  plugin :active_model
   plugin :has_paper_trail
 
   referenced_setter = proc do |referenced|
