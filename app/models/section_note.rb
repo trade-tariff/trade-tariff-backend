@@ -1,6 +1,5 @@
 class SectionNote < Sequel::Model
   plugin :json_serializer
-  plugin :active_model
   plugin :has_paper_trail
 
   many_to_one :section
