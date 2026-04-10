@@ -99,16 +99,6 @@ RSpec.describe 'tariff:sync:failures' do
       expect(output).to match(/Sequel::DatabaseError/)
     end
 
-    it 'shows the CDS error count when present' do
-      TariffSynchronizer::TariffUpdateCdsError.create(
-        tariff_update_filename: failed_cds.filename,
-        model_name: 'Measure',
-        details: { errors: %w[invalid] },
-      )
-
-      expect(output).to match(/CDS errors\s+: 1/)
-    end
-
     it 'suggests running failure_detail' do
       expect(output).to include('failure_detail')
     end
@@ -203,22 +193,6 @@ RSpec.describe 'tariff:sync:failure_detail' do
 
     it 'shows the previous import operation counts' do
       expect(output).to match(/total_count/)
-    end
-
-    context 'with associated CDS errors' do
-      before do
-        TariffSynchronizer::TariffUpdateCdsError.create(
-          tariff_update_filename: update.filename,
-          model_name: 'Measure',
-          details: { errors: ['is invalid'], xml_node: '<Measure/>' },
-        )
-      end
-
-      it 'shows CDS errors with model name and details', :aggregate_failures do
-        expect(output).to match(/CDS Record Errors/)
-        expect(output).to match(/Measure/)
-        expect(output).to match(/is invalid/)
-      end
     end
   end
 

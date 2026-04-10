@@ -73,3 +73,4 @@ tariff_data_basic_*.csv
 
 .claude/
 terraform/modules/*/.terraform.lock.hcl
+CLAUDE.md
