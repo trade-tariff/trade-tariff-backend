@@ -74,7 +74,7 @@ locals {
   worker_static_env_vars = [
     {
       name  = "RAILS_ENV"
-      value = "production"
+      value = var.environment
     }
   ]
 
