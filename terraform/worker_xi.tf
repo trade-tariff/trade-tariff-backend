@@ -31,7 +31,7 @@ module "worker_xi" {
   init_container_entrypoint = [""]
   init_container_command    = local.init_command
 
-  service_environment_config = local.worker_xi_secret_env_vars
+  service_environment_config = local.worker_xi_env_vars
 
   has_autoscaler = local.has_autoscaler
   min_capacity   = 1

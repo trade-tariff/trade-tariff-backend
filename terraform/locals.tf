@@ -70,4 +70,15 @@ locals {
     }
   ]
   ecr_repo = "382373577178.dkr.ecr.eu-west-2.amazonaws.com/tariff-backend-production"
+
+  worker_static_env_vars = [
+    {
+      name  = "RAILS_ENV"
+      value = "production"
+    }
+  ]
+
+  worker_uk_env_vars   = concat(local.worker_uk_secret_env_vars, local.worker_static_env_vars)
+  worker_xi_env_vars   = concat(local.worker_xi_secret_env_vars, local.worker_static_env_vars)
+  backend_job_env_vars = concat(local.backend_job_secret_env_vars, local.worker_static_env_vars)
 }
