@@ -9,7 +9,7 @@ class SynchronizerCheckWorker
     last_applied_at = TariffSynchronizer::BaseUpdate.most_recent_applied&.applied_at
     age_minutes = age_in_minutes(last_applied_at)
 
-    NewRelic::Agent.record_custom_event("TariffSyncAge", service: service, age_minutes: age_minutes)
+    NewRelic::Agent.record_custom_event('TariffSyncAge', service: service, age_minutes: age_minutes)
   end
 
 private
