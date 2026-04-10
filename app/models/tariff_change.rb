@@ -19,6 +19,14 @@ class TariffChange < Sequel::Model
   end
 
   dataset_module do
+    def on_date(date)
+      where(operation_date: date)
+    end
+
+    def for_goods_nomenclature_sids(goods_nomenclature_sids)
+      where(goods_nomenclature_sid: goods_nomenclature_sids)
+    end
+
     def measures
       where(type: 'Measure')
     end

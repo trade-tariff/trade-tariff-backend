@@ -40,7 +40,7 @@ module TariffSynchronizer
       end
 
       def applied
-        filter(state: APPLIED_STATE)
+        where(state: APPLIED_STATE)
       end
 
       def pending

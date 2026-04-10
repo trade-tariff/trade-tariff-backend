@@ -9,7 +9,7 @@ class MonetaryExchangeRate < Sequel::Model
 
   dataset_module do
     def currency(currency)
-      filter(child_monetary_unit_code: currency)
+      where(child_monetary_unit_code: currency)
     end
   end
 

@@ -49,13 +49,11 @@ module Api
         end
 
         def chapter
-          @chapter ||= Chapter.find(goods_nomenclature_item_id: chapter_id)
+          @chapter ||= Chapter.by_code(chapter_id).take
         end
 
         def chapter_id
-          # Converts 8 to 0800000000, 18 to 1800000000
-          # May result in 0000000000 but there is no such chapter
-          params[:chapter_id].to_s.rjust(2, '0').ljust(10, '0')
+          params[:chapter_id]
         end
       end
     end

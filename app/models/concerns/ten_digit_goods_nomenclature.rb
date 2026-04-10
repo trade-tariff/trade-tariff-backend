@@ -4,10 +4,10 @@ module TenDigitGoodsNomenclature
   included do
     plugin :oplog, primary_key: :goods_nomenclature_sid, materialized: true
 
-    set_dataset filter('goods_nomenclatures.goods_nomenclature_item_id NOT LIKE ?', GoodsNomenclature.sql_pattern_for(GoodsNomenclature::HEADING_SUFFIX))
-      .order(Sequel.asc(:goods_nomenclatures__goods_nomenclature_item_id),
-             Sequel.asc(:goods_nomenclatures__producline_suffix),
-             Sequel.asc(:goods_nomenclatures__goods_nomenclature_sid))
+    set_dataset where('goods_nomenclatures.goods_nomenclature_item_id NOT LIKE ?', GoodsNomenclature.sql_pattern_for(GoodsNomenclature::HEADING_SUFFIX))
+                .order(Sequel.asc(:goods_nomenclatures__goods_nomenclature_item_id),
+                       Sequel.asc(:goods_nomenclatures__producline_suffix),
+                       Sequel.asc(:goods_nomenclatures__goods_nomenclature_sid))
 
     set_primary_key [:goods_nomenclature_sid]
 
@@ -28,16 +28,6 @@ module TenDigitGoodsNomenclature
     end
 
     delegate :section, :section_id, to: :chapter, allow_nil: true
-
-    dataset_module do
-      def by_code(code = '')
-        filter(goods_nomenclatures__goods_nomenclature_item_id: code.to_s.first(10))
-      end
-
-      def by_productline_suffix(productline_suffix)
-        filter(producline_suffix: productline_suffix)
-      end
-    end
 
     # See oplog sequel plugin
     def operation=(operation)
