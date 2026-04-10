@@ -61,15 +61,11 @@ module PublicUsers
     end
 
     def stop_press_subscription
-      subscription_for(Subscriptions::Type.stop_press)&.uuid || false
+      subscription_for(Subscriptions::Type.stop_press)
     end
 
     def my_commodities_subscription
-      subscription_for(Subscriptions::Type.my_commodities)&.uuid || false
-    end
-
-    def subscription_for(type)
-      subscriptions_dataset.where(subscription_type: type, active: true).first
+      subscription_for(Subscriptions::Type.my_commodities)
     end
 
     def stop_press_subscription=(active)
@@ -97,8 +93,7 @@ module PublicUsers
     end
 
     def target_ids_for_my_commodities
-      subscription = subscription_for(Subscriptions::Type.my_commodities)
-      subscription&.subscription_targets_dataset&.map(&:target_id) || []
+      my_commodities_subscription&.subscription_targets_dataset&.map(&:target_id) || []
     end
 
     def invalidate!
@@ -123,6 +118,10 @@ module PublicUsers
       super
       PublicUsers::Preferences.create(user_id: id)
       PublicUsers::ActionLog.create(user_id: id, action: PublicUsers::ActionLog::REGISTERED)
+    end
+
+    def subscription_for(type)
+      subscriptions_dataset.where(subscription_type: type, active: true).first
     end
   end
 end

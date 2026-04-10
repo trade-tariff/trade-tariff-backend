@@ -28,7 +28,7 @@ RSpec.describe MyCommoditiesEmailWorker, type: :worker do
             changes_count: count,
             published_date: date,
             site_url: "#{TradeTariffBackend.frontend_host}/subscriptions/mycommodities?as_of=2025-12-08&utm_source=private+beta&utm_medium=email&utm_campaign=commodity+watchlist",
-            unsubscribe_url: "#{URI.join(TradeTariffBackend.frontend_host, 'subscriptions/unsubscribe/', user.my_commodities_subscription)}?utm_source=private+beta&utm_medium=email&utm_campaign=commodity+watchlist",
+            unsubscribe_url: "#{URI.join(TradeTariffBackend.frontend_host, 'subscriptions/unsubscribe/', user.my_commodities_subscription.uuid)}?utm_source=private+beta&utm_medium=email&utm_campaign=commodity+watchlist",
           },
           described_class::REPLY_TO_ID,
           nil,
