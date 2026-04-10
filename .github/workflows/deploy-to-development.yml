@@ -24,6 +24,17 @@ jobs:
       app-name: tariff-backend
       environment: development
       test-flavour: none
+      migrate: true
+      migration-task: backend-uk
+      migration-overrides: |
+        {
+          "containerOverrides": [
+            {
+              "name": "backend-uk",
+              "command": ["/bin/sh", "-c", "bundle exec rails db:migrate && bundle exec rails data:migrate"]
+            }
+          ]
+        }
     secrets:
       slack-webhook: ${{ secrets.SLACK_WEBHOOK }}
       ssh-key: ${{ secrets.PRIVATE_SSH_KEY }}
