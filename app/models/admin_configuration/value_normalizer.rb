@@ -17,7 +17,7 @@ class AdminConfiguration
                   val.to_s.downcase == 'true'
                 when 'integer'
                   val.to_i
-                when 'options', 'nested_options'
+                when 'options', 'nested_options', 'multi_options'
                   coerce_json_object(val)
                 else # string, markdown
                   val.to_s
@@ -31,10 +31,14 @@ class AdminConfiguration
       when Hash then val
       when Sequel::Postgres::JSONBHash then val.to_hash
       when String then JSON.parse(val)
-      else { 'selected' => '', 'options' => [] }
+      else { 'selected' => default_selected_value, 'options' => [] }
       end
     rescue JSON::ParserError
-      { 'selected' => '', 'options' => [] }
+      { 'selected' => default_selected_value, 'options' => [] }
+    end
+
+    def default_selected_value
+      config_type == 'multi_options' ? [] : ''
     end
   end
 end

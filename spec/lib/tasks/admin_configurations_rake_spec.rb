@@ -8,8 +8,8 @@ RSpec.describe 'admin_configurations:seed' do
     Rake::Task['admin_configurations:seed'].reenable
   end
 
-  it 'creates all 35 admin configurations', :aggregate_failures do
-    expect { seed }.to change(AdminConfiguration, :count).by(35)
+  it 'creates all 36 admin configurations', :aggregate_failures do
+    expect { seed }.to change(AdminConfiguration, :count).by(36)
 
     names = AdminConfiguration.order(:name).select_map(:name)
     expect(names).to eq(%w[
@@ -19,6 +19,7 @@ RSpec.describe 'admin_configurations:seed' do
       input_sanitiser_enabled
       input_sanitiser_max_length
       interactive_search_enabled
+      interactive_search_excluded_chapters
       interactive_search_max_questions
       label_context
       label_model
@@ -162,6 +163,19 @@ RSpec.describe 'admin_configurations:seed' do
     expect(config.config_type).to eq('boolean')
     expect(config.area).to eq('classification')
     expect(config.value).to be(AdminConfiguration.default_for('interactive_search_enabled'))
+  end
+
+  it 'seeds interactive_search_excluded_chapters as a multi_options config defaulting to chapters 98 and 99', :aggregate_failures do
+    seed
+
+    config = AdminConfiguration.where(name: 'interactive_search_excluded_chapters').first
+    expect(config.config_type).to eq('multi_options')
+    expect(config.area).to eq('classification')
+    expect(config.value['selected']).to eq(%w[98 99])
+    expect(config.value['options']).to include(
+      { 'key' => '98', 'label' => 'Chapter 98' },
+      { 'key' => '99', 'label' => 'Chapter 99' },
+    )
   end
 
   it 'seeds search_result_limit as an integer config defaulting to 0', :aggregate_failures do

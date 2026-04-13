@@ -260,6 +260,51 @@ RSpec.describe AdminConfiguration do
       end
     end
 
+    describe 'multi_options value validation' do
+      let(:attrs) { { config_type: 'multi_options', value: value } }
+
+      context 'with valid multi_options hash' do
+        let(:value) do
+          {
+            'selected' => %w[98 99],
+            'options' => [
+              { 'key' => '98', 'label' => 'Chapter 98' },
+              { 'key' => '99', 'label' => 'Chapter 99' },
+            ],
+          }
+        end
+
+        it 'is valid' do
+          expect(config).to be_valid
+        end
+      end
+
+      context 'with empty options array' do
+        let(:value) do
+          { 'selected' => %w[98 99], 'options' => [] }
+        end
+
+        it 'is invalid' do
+          expect(config).not_to be_valid
+          expect(config.errors[:value]).to be_present
+        end
+      end
+
+      context 'with selected that is not an array' do
+        let(:value) do
+          {
+            'selected' => '98',
+            'options' => [{ 'key' => '98', 'label' => 'Chapter 98' }],
+          }
+        end
+
+        it 'is invalid' do
+          expect(config).not_to be_valid
+          expect(config.errors[:value]).to be_present
+        end
+      end
+    end
+
     describe 'unique name' do
       before { create(:admin_configuration, name: 'taken_name') }
 
@@ -435,6 +480,34 @@ RSpec.describe AdminConfiguration do
 
       it 'returns the selected option' do
         expect(described_class.option_value('search_model')).to eq('gpt-4.1-mini-2025-04-14')
+      end
+    end
+  end
+
+  describe '.multi_options_values' do
+    context 'when config record is missing' do
+      it 'returns the default selected values' do
+        expect(described_class.multi_options_values('interactive_search_excluded_chapters')).to eq(%w[98 99])
+      end
+    end
+
+    context 'when config record exists' do
+      before do
+        create(:admin_configuration,
+               name: 'interactive_search_excluded_chapters',
+               config_type: 'multi_options',
+               area: 'classification',
+               value: {
+                 'selected' => %w[01 02],
+                 'options' => [
+                   { 'key' => '01', 'label' => 'Chapter 01' },
+                   { 'key' => '02', 'label' => 'Chapter 02' },
+                 ],
+               })
+      end
+
+      it 'returns the selected values' do
+        expect(described_class.multi_options_values('interactive_search_excluded_chapters')).to eq(%w[01 02])
       end
     end
   end
