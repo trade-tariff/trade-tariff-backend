@@ -4,6 +4,8 @@ module TariffSynchronizer
 
     # Used for TARIC updates only.
     one_to_many :presence_errors, class: TariffUpdatePresenceError, key: :tariff_update_filename
+    # Used for CDS updates only.
+    one_to_many :cds_errors, class: TariffUpdateCdsError, key: :tariff_update_filename
 
     def presence_error_ids
       presence_errors.pluck(:id)

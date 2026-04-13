@@ -27,7 +27,7 @@ module TariffSynchronizer
     end
 
     def clear_errors
-      # CDS errors table has been dropped; nothing to clear.
+      cds_errors_dataset.destroy
     end
 
     def import!
