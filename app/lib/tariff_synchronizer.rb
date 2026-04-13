@@ -18,10 +18,6 @@ module TariffSynchronizer
   cattr_accessor :exception_retry_count
   self.exception_retry_count = 10
 
-  # Number of days to warn about missing updates after
-  cattr_accessor :warning_day_count
-  self.warning_day_count = 3
-
   def apply_updates(update_type)
     applied_updates = []
     import_warnings = []

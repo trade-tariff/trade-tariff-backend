@@ -63,13 +63,6 @@ module TariffSynchronizer
       mail subject: "#{subject_prefix(:info)} Tariff updates applied"
     end
 
-    def missing_updates(count, update_type)
-      @count = count
-      @update_type = update_type
-
-      mail subject: "#{subject_prefix(:warn)} Missing #{count} #{update_type.upcase} updates in a row"
-    end
-
     def cds_updates(file_date, excel, file_name)
       @produced_date = file_date
       @loaded_date = (Date.parse(file_date) + 1).strftime('%Y-%m-%d')
