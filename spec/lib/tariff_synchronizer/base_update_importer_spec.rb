@@ -19,4 +19,19 @@ RSpec.describe TariffSynchronizer::BaseUpdateImporter do
       end
     end
   end
+
+  describe '#keep_record_of_cds_errors', :truncation do
+    let(:cds_update) { create(:cds_update, :pending) }
+
+    it 'creates a cds error record when the notification has no :record' do
+      importer = described_class.new(cds_update)
+      importer.send(:keep_record_of_cds_errors)
+
+      expect {
+        ActiveSupport::Notifications.instrument('cds_error.cds_importer',
+                                                type: 'SomeOperation',
+                                                exception: StandardError.new('batch failed'))
+      }.to change(TariffSynchronizer::TariffUpdateCdsError, :count).by(1)
+    end
+  end
 end
