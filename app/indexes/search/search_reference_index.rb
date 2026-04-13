@@ -1,5 +1,5 @@
 module Search
-  class SearchReferenceIndex < SearchIndex
+  class SearchReferenceIndex < ::SearchIndex
     def definition
       {
         mappings: {
