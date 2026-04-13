@@ -1,6 +1,11 @@
 class QuotaDefinition < Sequel::Model
   DATE_HMRC_STARTED_MANAGING_PENDING_BALANCES = Date.parse('2022-07-01').freeze
   DEFINITION_CRITICAL_STATE = 'Y'.freeze
+  STATUS_OPEN = 'Open'.freeze
+  STATUS_BLOCKED = 'Blocked'.freeze
+  STATUS_SUSPENDED = 'Suspended'.freeze
+  STATUS_EXHAUSTED = 'Exhausted'.freeze
+  STATUS_CRITICAL = 'Critical'.freeze
 
   plugin :time_machine
   plugin :oplog, primary_key: :quota_definition_sid, materialized: true
