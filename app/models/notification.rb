@@ -1,6 +1,5 @@
 class Notification
   include ActiveModel::Model
-  include ActiveModel::Validations
 
   attr_accessor :email,
                 :template_id,

@@ -5,7 +5,6 @@ class Section < Sequel::Model
   set_dataset order(Sequel.asc(:position))
 
   plugin :timestamps
-  plugin :active_model
 
   many_to_many :chapters,
                join_table: :chapters_sections,
