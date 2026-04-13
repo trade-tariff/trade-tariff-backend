@@ -40,10 +40,10 @@ RSpec.describe SynchronizerCheckWorker, type: :worker do
     context 'when the XI service is running' do
       before { allow(TradeTariffBackend).to receive(:service).and_return('xi') }
 
-      context 'on a day with no TARIC updates (Sunday, Monday, Tuesday)' do
+      context 'when on a day with no TARIC updates (Sunday, Monday, Tuesday)' do
         before do
-          create :base_update, :applied, applied_at: 2.days.ago
           travel_to Time.zone.now.next_occurring(:monday)
+          create :base_update, :applied, applied_at: 2.days.ago
           perform
         end
 
@@ -53,10 +53,10 @@ RSpec.describe SynchronizerCheckWorker, type: :worker do
         end
       end
 
-      context 'on a day with TARIC updates (Wednesday–Saturday)' do
+      context 'when on a day with TARIC updates (Wednesday–Saturday)' do
         before do
-          create :base_update, :applied, applied_at: 2.hours.ago
           travel_to Time.zone.now.next_occurring(:wednesday)
+          create :base_update, :applied, applied_at: 2.hours.ago
           perform
         end
 
