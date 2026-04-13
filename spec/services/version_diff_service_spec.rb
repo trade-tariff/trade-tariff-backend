@@ -189,6 +189,40 @@ RSpec.describe VersionDiffService do
         expect(result['changes']['reasoning_effort']).to eq('type' => 'simple', 'old' => 'low', 'new' => 'high')
       end
 
+      it 'extracts selected arrays for multi_options as an array diff' do
+        old_obj = {
+          'id' => 1,
+          'name' => 'interactive_search_excluded_chapters',
+          'config_type' => 'multi_options',
+          'area' => 'classification',
+          'description' => 'Excluded chapters',
+          'value' => {
+            'selected' => %w[98 99],
+            'options' => [
+              { 'key' => '98', 'label' => 'Chapter 98' },
+              { 'key' => '99', 'label' => 'Chapter 99' },
+              { 'key' => '97', 'label' => 'Chapter 97' },
+            ],
+          },
+        }
+        new_obj = old_obj.merge(
+          'value' => {
+            'selected' => %w[97 99],
+            'options' => old_obj['value']['options'],
+          },
+        )
+
+        result = described_class.new('AdminConfiguration', old_obj, new_obj).call
+
+        expect(result['changed_fields']).to eq(%w[selected])
+        expect(result['changes']['selected']).to eq(
+          'type' => 'array',
+          'added' => %w[97],
+          'removed' => %w[98],
+          'unchanged' => %w[99],
+        )
+      end
+
       it 'falls back to raw value for non-hash values' do
         old_obj = {
           'id' => 1,

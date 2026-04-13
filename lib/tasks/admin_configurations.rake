@@ -386,6 +386,13 @@ namespace :admin_configurations do
       }
     end
 
+    chapter_options = lambda do
+      (1..99).map do |chapter|
+        formatted = sprintf('%02d', chapter)
+        { 'key' => formatted, 'label' => "Chapter #{formatted}" }
+      end
+    end
+
     configs = [
       {
         name: 'expand_search_enabled',
@@ -410,6 +417,15 @@ namespace :admin_configurations do
         config_type: 'boolean',
         description: 'Enable interactive Q&A to help traders narrow down commodity codes through clarifying questions',
         value: AdminConfiguration.default_for('interactive_search_enabled'),
+      },
+      {
+        name: 'interactive_search_excluded_chapters',
+        config_type: 'multi_options',
+        description: 'Chapters excluded from guided search results',
+        value: {
+          'selected' => AdminConfiguration.default_for('interactive_search_excluded_chapters'),
+          'options' => chapter_options.call,
+        },
       },
       {
         name: 'interactive_search_max_questions',

@@ -461,10 +461,34 @@ RSpec.describe Search::GoodsNomenclatureQuery do
 
     it 'filters out hidden goods nomenclatures' do
       must_clauses = query.dig(:body, :query, :bool, :must)
-      hidden_filter = must_clauses.find { |c| c.dig(:bool, :must_not) }
+      hidden_filter = must_clauses.find do |clause|
+        clause.dig(:bool, :must_not, :terms, :goods_nomenclature_item_id)
+      end
 
       expect(hidden_filter).to be_present
       expect(hidden_filter.dig(:bool, :must_not, :terms, :goods_nomenclature_item_id)).to eq(HiddenGoodsNomenclature.codes)
+    end
+
+    it 'filters out configured excluded chapters' do
+      create(:admin_configuration,
+             name: 'interactive_search_excluded_chapters',
+             config_type: 'multi_options',
+             area: 'classification',
+             value: {
+               'selected' => %w[98 99],
+               'options' => [
+                 { 'key' => '98', 'label' => 'Chapter 98' },
+                 { 'key' => '99', 'label' => 'Chapter 99' },
+               ],
+             })
+
+      must_clauses = query.dig(:body, :query, :bool, :must)
+      chapter_filter = must_clauses.find do |clause|
+        clause.dig(:bool, :must_not, :terms, :chapter_short_code)
+      end
+
+      expect(chapter_filter).to be_present
+      expect(chapter_filter.dig(:bool, :must_not, :terms, :chapter_short_code)).to eq(%w[98 99])
     end
 
     it 'filters to only declarable goods nomenclatures' do

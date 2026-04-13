@@ -31,6 +31,7 @@ class AdminConfiguration < Sequel::Model(Sequel[:admin_configurations].qualify(:
     'expand_search_enabled' => false,
     'expand_model' => NESTED_OPTION_DEFAULTS['expand_model'][:selected],
     'interactive_search_enabled' => true,
+    'interactive_search_excluded_chapters' => %w[98 99].freeze,
     'interactive_search_max_questions' => 7,
     'label_model' => NESTED_OPTION_DEFAULTS['label_model'][:selected],
     'label_page_size' => -> { TradeTariffBackend.goods_nomenclature_label_page_size },
@@ -121,6 +122,22 @@ class AdminConfiguration < Sequel::Model(Sequel[:admin_configurations].qualify(:
     config.selected_option(default: default) || default
   end
 
+  def self.multi_options_values(name)
+    config = classification.by_name(name.to_s)
+    default = Array(default_for(name))
+    return default if config.nil?
+
+    val = config[:value]
+    hash = case val
+           when Hash then val
+           when Sequel::Postgres::JSONBHash then val.to_hash
+           else {}
+           end
+
+    selected = hash['selected']
+    selected.is_a?(Array) ? selected : default
+  end
+
   def self.nested_options_value(name)
     config = classification.by_name(name.to_s)
     nested_default = NESTED_OPTION_DEFAULTS[name.to_s]
@@ -158,7 +175,7 @@ class AdminConfiguration < Sequel::Model(Sequel[:admin_configurations].qualify(:
     validates_presence :config_type
     validates_presence :area
     validates_presence :description
-    validates_includes %w[string markdown boolean options integer nested_options], :config_type
+    validates_includes %w[string markdown boolean options multi_options integer nested_options], :config_type
     validate_unique_name if new?
     validate_value_for_type
   end

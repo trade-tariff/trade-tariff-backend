@@ -76,6 +76,7 @@ class GoodsNomenclatureSelfText < Sequel::Model
         .where(goods_nomenclature__producline_suffix: GoodsNomenclature::NON_GROUPING_PRODUCTLINE_SUFFIX)
         .where { GoodsNomenclature.validity_dates_filter(:goods_nomenclature) }
         .exclude(goods_nomenclature__goods_nomenclature_item_id: HiddenGoodsNomenclature.codes)
+        .exclude(goods_nomenclature__chapter_short_code: AdminConfiguration.multi_options_values('interactive_search_excluded_chapters'))
         .select(Sequel[:goods_nomenclature][:goods_nomenclature_sid])
         .select_append(Sequel.as(Sequel.lit("1 - (#{distance_expr})"), :score))
         .order(distance_expr)
