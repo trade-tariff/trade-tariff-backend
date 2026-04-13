@@ -21,7 +21,10 @@ module Api
       end
 
       def letter
-        params.dig(:query, :letter) || ''
+        query = params[:query]
+        return '' unless query.is_a?(ActionController::Parameters)
+
+        query[:letter] || ''
       end
     end
   end
