@@ -9,13 +9,13 @@ module Api
         end
 
         def overview_measures
-          applicable_overview_measures.map do |measure|
+          @overview_measure_presenters ||= applicable_overview_measures.map do |measure|
             Api::V2::Measures::MeasurePresenter.new(measure, self)
           end
         end
 
         def overview_measure_ids
-          applicable_overview_measures.map(&:measure_sid)
+          overview_measures.map(&:measure_sid)
         end
 
         def leaf

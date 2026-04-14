@@ -77,5 +77,12 @@ RSpec.describe Api::V2::Headings::CommodityPresenter do
     end
 
     it { is_expected.to have_attributes overview_measure_ids: measures.map(&:measure_sid) }
+
+    it 'memoizes overview measure builders for ids access' do
+      expect(commodity).to receive(:applicable_overview_measures).once.and_call_original
+
+      presenter.overview_measures
+      presenter.overview_measure_ids
+    end
   end
 end

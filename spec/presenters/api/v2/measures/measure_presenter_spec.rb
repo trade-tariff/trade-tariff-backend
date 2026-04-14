@@ -5,12 +5,32 @@ RSpec.describe Api::V2::Measures::MeasurePresenter do
 
   describe '#measure_conditions' do
     it { expect(presenter.measure_conditions).to all(be_a(Api::V2::Measures::MeasureConditionPresenter)) }
+
+    it 'memoizes wrapped conditions for id access' do
+      expect(Api::V2::Measures::MeasureConditionPresenter)
+        .to receive(:wrap)
+        .once
+        .and_call_original
+
+      presenter.measure_conditions
+      presenter.measure_condition_ids
+    end
   end
 
   describe '#legal_acts' do
     it 'is mapped through the MeasureLegalActPresenter' do
       expect(presenter.legal_acts.first).to \
         be_instance_of(Api::V2::Measures::MeasureLegalActPresenter)
+    end
+
+    it 'memoizes legal act presenters for id access' do
+      expect(Api::V2::Measures::MeasureLegalActPresenter)
+        .to receive(:new)
+        .once
+        .and_call_original
+
+      presenter.legal_acts
+      presenter.legal_act_ids
     end
   end
 
@@ -184,6 +204,19 @@ RSpec.describe Api::V2::Measures::MeasurePresenter do
 
     it { is_expected.not_to be_empty }
     it { is_expected.to all be_instance_of MeasureConditionPermutations::Group }
+
+    it 'memoizes permutation calculation for relationship and ids access' do
+      calculator = instance_double(MeasureConditionPermutations::Calculator, permutation_groups: [])
+
+      expect(MeasureConditionPermutations::Calculator)
+        .to receive(:new)
+        .with(measure)
+        .once
+        .and_return(calculator)
+
+      presenter.measure_condition_permutation_groups
+      presenter.measure_condition_permutation_group_ids
+    end
   end
 
   describe '#special_nature?' do
