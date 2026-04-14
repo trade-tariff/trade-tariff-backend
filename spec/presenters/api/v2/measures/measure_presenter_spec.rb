@@ -7,13 +7,14 @@ RSpec.describe Api::V2::Measures::MeasurePresenter do
     it { expect(presenter.measure_conditions).to all(be_a(Api::V2::Measures::MeasureConditionPresenter)) }
 
     it 'memoizes wrapped conditions for id access' do
-      expect(Api::V2::Measures::MeasureConditionPresenter)
+      allow(Api::V2::Measures::MeasureConditionPresenter)
         .to receive(:wrap)
-        .once
         .and_call_original
 
       presenter.measure_conditions
       presenter.measure_condition_ids
+
+      expect(Api::V2::Measures::MeasureConditionPresenter).to have_received(:wrap).once
     end
   end
 
@@ -24,13 +25,14 @@ RSpec.describe Api::V2::Measures::MeasurePresenter do
     end
 
     it 'memoizes legal act presenters for id access' do
-      expect(Api::V2::Measures::MeasureLegalActPresenter)
+      allow(Api::V2::Measures::MeasureLegalActPresenter)
         .to receive(:new)
-        .once
         .and_call_original
 
       presenter.legal_acts
       presenter.legal_act_ids
+
+      expect(Api::V2::Measures::MeasureLegalActPresenter).to have_received(:new).once
     end
   end
 
@@ -208,14 +210,15 @@ RSpec.describe Api::V2::Measures::MeasurePresenter do
     it 'memoizes permutation calculation for relationship and ids access' do
       calculator = instance_double(MeasureConditionPermutations::Calculator, permutation_groups: [])
 
-      expect(MeasureConditionPermutations::Calculator)
+      allow(MeasureConditionPermutations::Calculator)
         .to receive(:new)
         .with(measure)
-        .once
         .and_return(calculator)
 
       presenter.measure_condition_permutation_groups
       presenter.measure_condition_permutation_group_ids
+
+      expect(MeasureConditionPermutations::Calculator).to have_received(:new).once
     end
   end
 
