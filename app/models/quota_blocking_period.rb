@@ -6,6 +6,6 @@ class QuotaBlockingPeriod < Sequel::Model
   set_primary_key [:quota_blocking_period_sid]
 
   def self.status
-    'Blocked'
+    QuotaDefinition::STATUS_BLOCKED
   end
 end

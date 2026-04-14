@@ -6,7 +6,7 @@ class QuotaExhaustionEvent < Sequel::Model
   many_to_one :quota_definition, key: :quota_definition_sid, primary_key: :quota_definition_sid
 
   def self.status
-    'Exhausted'
+    QuotaDefinition::STATUS_EXHAUSTED
   end
 
   def event_type

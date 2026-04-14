@@ -6,6 +6,6 @@ class QuotaSuspensionPeriod < Sequel::Model
   set_primary_key [:quota_suspension_period_sid]
 
   def self.status
-    'Suspended'
+    QuotaDefinition::STATUS_SUSPENDED
   end
 end
