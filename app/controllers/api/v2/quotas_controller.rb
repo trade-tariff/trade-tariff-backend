@@ -26,7 +26,7 @@ module Api
 
       def validate_order_number
         return if params[:order_number].blank?
-        raise NotImplementedError, params[:order_number] unless params[:order_number].match?(/\A\d{6}\z/)
+        raise ActionController::BadRequest, params[:order_number] unless params[:order_number].match?(/\A\d{6}\z/)
       end
 
       def serialized_quota_definitions
