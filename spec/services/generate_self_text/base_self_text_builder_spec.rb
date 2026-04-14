@@ -100,6 +100,42 @@ RSpec.describe GenerateSelfText::BaseSelfTextBuilder do
       end
     end
 
+    describe 'paper trail' do
+      it 'creates a create version for a newly generated self-text' do
+        result
+
+        version = GoodsNomenclatureSelfText[other_commodity.goods_nomenclature_sid].versions.order(:id).last
+        expect(version.event).to eq('create')
+      end
+
+      it 'creates an update version when regeneration changes an existing self-text' do
+        result
+        GoodsNomenclatureSelfText[other_commodity.goods_nomenclature_sid].update(stale: true)
+        create(:commodity, :with_description, description: 'Ponies', parent: heading)
+
+        allow(ai_client).to receive(:call).and_return({
+          'descriptions' => [{
+            'sid' => other_commodity.goods_nomenclature_sid,
+            'contextualised_description' => 'Updated generated text',
+          }],
+        }.to_json)
+
+        expect { builder_class.call(chapter) }.to change(Version, :count).by(1)
+        expect(GoodsNomenclatureSelfText[other_commodity.goods_nomenclature_sid].versions.order(:id).last.event).to eq('update')
+      end
+
+      it 'does not create a version when a manually edited record is skipped' do
+        result
+        record = GoodsNomenclatureSelfText[other_commodity.goods_nomenclature_sid]
+        existing_version_count = record.versions.count
+        record.update(manually_edited: true, self_text: 'Custom text')
+
+        builder_class.call(chapter)
+
+        expect(record.reload.versions.count).to eq(existing_version_count + 1)
+      end
+    end
+
     describe 'failed count' do
       context 'when the AI returns an empty response' do
         before { allow(ai_client).to receive(:call).and_return('') }

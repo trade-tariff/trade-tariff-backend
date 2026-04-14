@@ -92,7 +92,7 @@ RSpec.describe RelabelGoodsNomenclaturePageWorker, type: :worker do
       let(:invalid_label) do
         GoodsNomenclatureLabel.new(
           goods_nomenclature: commodity,
-          labels: nil, # missing required field
+          labels: nil,
         )
       end
 
@@ -215,6 +215,50 @@ RSpec.describe RelabelGoodsNomenclaturePageWorker, type: :worker do
         expect(LabelGenerator::Instrumentation).to have_received(:label_saved).once
         expect(LabelGenerator::Instrumentation).to have_received(:label_save_failed).once
       end
+    end
+  end
+
+  describe '#upsert_label' do
+    subject(:upsert_label) { described_class.new.send(:upsert_label, label) }
+
+    let(:commodity) { create(:commodity) }
+    let(:label) do
+      build(
+        :goods_nomenclature_label,
+        goods_nomenclature: commodity,
+        description: 'Fresh label text',
+        labels: { 'description' => 'Fresh label text' },
+      )
+    end
+
+    it 'creates a create version when inserting a new label' do
+      expect { upsert_label }.to change(Version, :count).by(1)
+
+      version = Version.last
+      expect(version.item_type).to eq('GoodsNomenclatureLabel')
+      expect(version.event).to eq('create')
+      expect(version.object['description']).to eq('Fresh label text')
+    end
+
+    it 'creates an update version when updating an existing label' do
+      create(:goods_nomenclature_label, goods_nomenclature: commodity, description: 'Old text')
+
+      expect { upsert_label }.to change(Version, :count).by(1)
+
+      version = Version.last
+      expect(version.event).to eq('update')
+      expect(version.object['description']).to eq('Fresh label text')
+    end
+
+    it 'does not create a version when a manually edited label is protected from overwrite' do
+      create(
+        :goods_nomenclature_label,
+        goods_nomenclature: commodity,
+        description: 'Manual text',
+        manually_edited: true,
+      )
+
+      expect { upsert_label }.not_to change(Version, :count)
     end
   end
 end

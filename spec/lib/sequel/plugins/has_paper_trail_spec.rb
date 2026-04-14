@@ -75,6 +75,23 @@ RSpec.describe Sequel::Plugins::HasPaperTrail do
     end
   end
 
+  describe '.tracked_models' do
+    it 'registers all models using has_paper_trail in sorted order without duplicates' do
+      Rails.application.eager_load!
+
+      expect(described_class.tracked_models.map(&:name)).to eq(%w[
+        AdminConfiguration
+        ChapterNote
+        DescriptionIntercept
+        GoodsNomenclatureIntercept
+        GoodsNomenclatureLabel
+        GoodsNomenclatureSelfText
+        SearchReference
+        SectionNote
+      ])
+    end
+  end
+
   describe '.without_paper_trail' do
     it 'suppresses version creation within the block' do
       model_with_plugin

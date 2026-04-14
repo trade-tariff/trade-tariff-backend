@@ -228,7 +228,7 @@ module GenerateSelfText
         updated_at: now,
       }
 
-      GoodsNomenclatureSelfText.dataset.insert_conflict(
+      result = GoodsNomenclatureSelfText.dataset.insert_conflict(
         constraint: :goods_nomenclature_self_texts_pkey,
         update: {
           self_text: Sequel[:excluded][:self_text],
@@ -243,7 +243,12 @@ module GenerateSelfText
           { Sequel[:goods_nomenclature_self_texts][:manually_edited] => false },
           Sequel.~(Sequel[:goods_nomenclature_self_texts][:context_hash] => context_hash),
         ),
-      ).insert(values)
+      ).returning(:goods_nomenclature_sid).insert(values)
+
+      return if result.empty?
+
+      record = GoodsNomenclatureSelfText[node[:sid]]
+      Sequel::Plugins::HasPaperTrail.record_current_version!(record, created_at: now)
     end
 
     def system_prompt
