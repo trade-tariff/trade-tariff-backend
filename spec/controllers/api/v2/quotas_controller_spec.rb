@@ -291,10 +291,10 @@ RSpec.describe Api::V2::QuotasController, type: :controller do
     context 'when order_number is not 6 digits' do
       let(:params) { { year: [Time.zone.today.year.to_s], order_number: '0500' } }
 
-      it 'returns 422' do
+      it 'returns 400' do
         get :search, params:, format: :json
 
-        expect(response).to have_http_status(:unprocessable_content)
+        expect(response).to have_http_status(:bad_request)
       end
     end
   end
