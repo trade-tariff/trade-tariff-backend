@@ -9,7 +9,7 @@ module Api
         end
 
         def overview_measures
-          @overview_measure_presenters ||= applicable_overview_measures.map do |measure|
+          @overview_measures ||= applicable_overview_measures.map do |measure|
             Api::V2::Measures::MeasurePresenter.new(measure, self)
           end
         end
