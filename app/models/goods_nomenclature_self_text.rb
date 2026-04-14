@@ -168,6 +168,11 @@ class GoodsNomenclatureSelfText < Sequel::Model
         FROM (VALUES #{values}) AS v(goods_nomenclature_sid, search_text, search_embedding)
         WHERE t.goods_nomenclature_sid = v.goods_nomenclature_sid
       SQL
+
+      PaperTrail::BulkVersioning.record_current_versions_for_item_ids!(
+        model: GoodsNomenclatureSelfText,
+        item_ids: batch.map(&:goods_nomenclature_sid),
+      )
     end
   end
 

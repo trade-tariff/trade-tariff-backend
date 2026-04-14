@@ -30,7 +30,10 @@ namespace :self_texts do
 
   desc 'Regenerate all self-texts by marking them stale and re-enqueuing'
   task regenerate: :environment do
-    count = GoodsNomenclatureSelfText.where(stale: false, manually_edited: false).update(stale: true)
+    dataset = GoodsNomenclatureSelfText.where(stale: false, manually_edited: false)
+    item_ids = dataset.select_map(:goods_nomenclature_sid)
+    count = dataset.update(stale: true)
+    PaperTrail::BulkVersioning.record_current_versions_for_item_ids!(model: GoodsNomenclatureSelfText, item_ids:) if count.positive?
     puts "Marked #{count} self-texts as stale."
 
     GenerateSelfTextWorker.perform_async
@@ -76,13 +79,16 @@ namespace :self_texts do
 
       normalized = code.gsub(/\s/, '').ljust(10, '0')
 
-      count = GoodsNomenclatureSelfText
+      dataset = GoodsNomenclatureSelfText
         .where(goods_nomenclature_item_id: normalized)
         .where(Sequel.|(
                  { eu_self_text: nil },
                  Sequel.~(eu_self_text: eu_text),
                ))
-        .update(eu_self_text: eu_text, eu_embedding: nil)
+      item_ids = dataset.select_map(:goods_nomenclature_sid)
+      count = dataset.update(eu_self_text: eu_text, eu_embedding: nil)
+
+      PaperTrail::BulkVersioning.record_current_versions_for_item_ids!(model: GoodsNomenclatureSelfText, item_ids:) if count.positive?
 
       if count.positive?
         stats[:updated] += count
@@ -113,9 +119,9 @@ namespace :self_texts do
       embeddings = service.embed_batch(texts)
 
       batch.zip(embeddings).each do |record, embedding|
-        GoodsNomenclatureSelfText
-          .where(goods_nomenclature_sid: record.goods_nomenclature_sid)
-          .update(embedding: Sequel.lit("'[#{embedding.join(',')}]'::vector"))
+        update_dataset = GoodsNomenclatureSelfText.where(goods_nomenclature_sid: record.goods_nomenclature_sid)
+        update_dataset.update(embedding: Sequel.lit("'[#{embedding.join(',')}]'::vector"))
+        PaperTrail::BulkVersioning.record_current_versions_for_dataset!(model: GoodsNomenclatureSelfText, dataset: update_dataset)
       end
 
       processed = [(i + 1) * EmbeddingService::BATCH_SIZE, generate_texts.size].min
@@ -136,9 +142,9 @@ namespace :self_texts do
       embeddings = service.embed_batch(texts)
 
       batch.zip(embeddings).each do |record, embedding|
-        GoodsNomenclatureSelfText
-          .where(goods_nomenclature_sid: record.goods_nomenclature_sid)
-          .update(eu_embedding: Sequel.lit("'[#{embedding.join(',')}]'::vector"))
+        update_dataset = GoodsNomenclatureSelfText.where(goods_nomenclature_sid: record.goods_nomenclature_sid)
+        update_dataset.update(eu_embedding: Sequel.lit("'[#{embedding.join(',')}]'::vector"))
+        PaperTrail::BulkVersioning.record_current_versions_for_dataset!(model: GoodsNomenclatureSelfText, dataset: update_dataset)
       end
 
       processed = [(i + 1) * EmbeddingService::BATCH_SIZE, eu_texts.size].min
