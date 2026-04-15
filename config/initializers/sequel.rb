@@ -2,7 +2,6 @@ Sequel.default_timezone = :utc
 Sequel.extension :pg_json
 Sequel.split_symbols = true
 
-
 # TimeMachine is incompatible with caching of associations dataset objects. This
 # is due to the cached dataset object including the TimeMachine date in it,
 # which may change between queries.

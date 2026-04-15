@@ -25,6 +25,90 @@ RSpec.describe DescriptionIntercept do
         expect(intercept.errors[:sources]).to be_present
       end
     end
+
+    context 'when using the new guidance and filtering fields' do
+      let(:attrs) do
+        {
+          message: 'Consult the footwear guidance.',
+          guidance_level: 'warning',
+          guidance_location: 'results',
+          escalate_to_webchat: true,
+          filter_prefixes: Sequel.pg_array(%w[6403 6404], :text),
+        }
+      end
+
+      it 'is valid' do
+        expect(intercept).to be_valid
+      end
+    end
+
+    context 'when excluded and filtering prefixes are both set' do
+      let(:attrs) do
+        {
+          excluded: true,
+          filter_prefixes: Sequel.pg_array(%w[6403], :text),
+        }
+      end
+
+      it 'is invalid' do
+        expect(intercept).not_to be_valid
+        expect(intercept.errors[:filter_prefixes]).to include('cannot be set when excluded')
+      end
+    end
+
+    context 'when guidance level is set without a message' do
+      let(:attrs) do
+        {
+          message: nil,
+          guidance_level: 'warning',
+        }
+      end
+
+      it 'is invalid' do
+        expect(intercept).not_to be_valid
+        expect(intercept.errors[:guidance_level]).to include('requires message')
+      end
+    end
+
+    context 'when guidance location is set without a message' do
+      let(:attrs) do
+        {
+          message: nil,
+          guidance_location: 'results',
+        }
+      end
+
+      it 'is invalid' do
+        expect(intercept).not_to be_valid
+        expect(intercept.errors[:guidance_location]).to include('requires message')
+      end
+    end
+
+    context 'when a filtering prefix is blank' do
+      let(:attrs) do
+        {
+          filter_prefixes: Sequel.pg_array(['6403', ''], :text),
+        }
+      end
+
+      it 'is invalid' do
+        expect(intercept).not_to be_valid
+        expect(intercept.errors[:filter_prefixes]).to include('cannot contain blank prefixes')
+      end
+    end
+
+    context 'when a filtering prefix is not numeric' do
+      let(:attrs) do
+        {
+          filter_prefixes: Sequel.pg_array(%w[64A3], :text),
+        }
+      end
+
+      it 'is invalid' do
+        expect(intercept).not_to be_valid
+        expect(intercept.errors[:filter_prefixes]).to include('must contain only numeric prefixes')
+      end
+    end
   end
 
   describe 'versioning' do

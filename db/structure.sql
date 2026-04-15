@@ -2,7 +2,7 @@
 -- PostgreSQL database dump
 --
 
-\restrict BlqRmhNHc0IpOluROnbM6lczo1hATSck8GN6LPFq0w6uKXg5Gh4JLpWBkBFfdFH
+\restrict 4xXn0CQzIHYhRrgv2qlE8Idjmg9eMNwFPzYhYmOtHiGsA71Y1oTKhiObnChJBkm
 
 -- Dumped from database version 18.3
 -- Dumped by pg_dump version 18.3
@@ -1816,7 +1816,11 @@ CREATE TABLE uk.description_intercepts (
     message text,
     excluded boolean DEFAULT false NOT NULL,
     created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
-    updated_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL
+    updated_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    guidance_level text,
+    guidance_location text,
+    escalate_to_webchat boolean DEFAULT false NOT NULL,
+    filter_prefixes text[]
 );
 
 
@@ -13612,7 +13616,7 @@ ALTER TABLE ONLY uk.news_collections_news_items
 -- PostgreSQL database dump complete
 --
 
-\unrestrict BlqRmhNHc0IpOluROnbM6lczo1hATSck8GN6LPFq0w6uKXg5Gh4JLpWBkBFfdFH
+\unrestrict 4xXn0CQzIHYhRrgv2qlE8Idjmg9eMNwFPzYhYmOtHiGsA71Y1oTKhiObnChJBkm
 
 SET search_path TO uk, public;
 INSERT INTO "schema_migrations" ("filename") VALUES ('1342519058_create_schema.rb');
@@ -13838,3 +13842,4 @@ INSERT INTO "schema_migrations" ("filename") VALUES ('20260401110000_create_desc
 INSERT INTO "schema_migrations" ("filename") VALUES ('20260401110100_create_goods_nomenclature_intercepts.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20260413120000_drop_tariff_update_conformance_errors.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20260413120001_drop_tariff_update_cds_errors.rb');
+INSERT INTO "schema_migrations" ("filename") VALUES ('20260415120000_add_guidance_fields_to_description_intercepts.rb');
