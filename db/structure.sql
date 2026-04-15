@@ -2,12 +2,15 @@
 -- PostgreSQL database dump
 --
 
--- Dumped from database version 16.8 (Debian 16.8-1.pgdg120+1)
--- Dumped by pg_dump version 16.9 (Homebrew)
+\restrict 4xXn0CQzIHYhRrgv2qlE8Idjmg9eMNwFPzYhYmOtHiGsA71Y1oTKhiObnChJBkm
+
+-- Dumped from database version 18.3
+-- Dumped by pg_dump version 18.3
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
 SET idle_in_transaction_session_timeout = 0;
+SET transaction_timeout = 0;
 SET client_encoding = 'UTF8';
 SET standard_conforming_strings = on;
 SELECT pg_catalog.set_config('search_path', '', false);
@@ -508,10 +511,10 @@ CREATE TABLE uk.additional_code_description_periods_oplog (
 
 
 --
--- Name: additional_code_description_periods; Type: VIEW; Schema: uk; Owner: -
+-- Name: additional_code_description_periods; Type: MATERIALIZED VIEW; Schema: uk; Owner: -
 --
 
-CREATE VIEW uk.additional_code_description_periods AS
+CREATE MATERIALIZED VIEW uk.additional_code_description_periods AS
  SELECT additional_code_description_period_sid,
     additional_code_sid,
     additional_code_type_id,
@@ -525,7 +528,8 @@ CREATE VIEW uk.additional_code_description_periods AS
    FROM uk.additional_code_description_periods_oplog additional_code_description_periods1
   WHERE ((oid IN ( SELECT max(additional_code_description_periods2.oid) AS max
            FROM uk.additional_code_description_periods_oplog additional_code_description_periods2
-          WHERE ((additional_code_description_periods1.additional_code_description_period_sid = additional_code_description_periods2.additional_code_description_period_sid) AND (additional_code_description_periods1.additional_code_sid = additional_code_description_periods2.additional_code_sid) AND ((additional_code_description_periods1.additional_code_type_id)::text = (additional_code_description_periods2.additional_code_type_id)::text)))) AND ((operation)::text <> 'D'::text));
+          WHERE ((additional_code_description_periods1.additional_code_description_period_sid = additional_code_description_periods2.additional_code_description_period_sid) AND (additional_code_description_periods1.additional_code_sid = additional_code_description_periods2.additional_code_sid) AND ((additional_code_description_periods1.additional_code_type_id)::text = (additional_code_description_periods2.additional_code_type_id)::text)))) AND ((operation)::text <> 'D'::text))
+  WITH NO DATA;
 
 
 --
@@ -568,10 +572,10 @@ CREATE TABLE uk.additional_code_descriptions_oplog (
 
 
 --
--- Name: additional_code_descriptions; Type: VIEW; Schema: uk; Owner: -
+-- Name: additional_code_descriptions; Type: MATERIALIZED VIEW; Schema: uk; Owner: -
 --
 
-CREATE VIEW uk.additional_code_descriptions AS
+CREATE MATERIALIZED VIEW uk.additional_code_descriptions AS
  SELECT additional_code_description_period_sid,
     language_id,
     additional_code_sid,
@@ -586,7 +590,8 @@ CREATE VIEW uk.additional_code_descriptions AS
    FROM uk.additional_code_descriptions_oplog additional_code_descriptions1
   WHERE ((oid IN ( SELECT max(additional_code_descriptions2.oid) AS max
            FROM uk.additional_code_descriptions_oplog additional_code_descriptions2
-          WHERE ((additional_code_descriptions1.additional_code_description_period_sid = additional_code_descriptions2.additional_code_description_period_sid) AND (additional_code_descriptions1.additional_code_sid = additional_code_descriptions2.additional_code_sid)))) AND ((operation)::text <> 'D'::text));
+          WHERE ((additional_code_descriptions1.additional_code_description_period_sid = additional_code_descriptions2.additional_code_description_period_sid) AND (additional_code_descriptions1.additional_code_sid = additional_code_descriptions2.additional_code_sid)))) AND ((operation)::text <> 'D'::text))
+  WITH NO DATA;
 
 
 --
@@ -626,10 +631,10 @@ CREATE TABLE uk.additional_code_type_descriptions_oplog (
 
 
 --
--- Name: additional_code_type_descriptions; Type: VIEW; Schema: uk; Owner: -
+-- Name: additional_code_type_descriptions; Type: MATERIALIZED VIEW; Schema: uk; Owner: -
 --
 
-CREATE VIEW uk.additional_code_type_descriptions AS
+CREATE MATERIALIZED VIEW uk.additional_code_type_descriptions AS
  SELECT additional_code_type_id,
     language_id,
     description,
@@ -641,7 +646,8 @@ CREATE VIEW uk.additional_code_type_descriptions AS
    FROM uk.additional_code_type_descriptions_oplog additional_code_type_descriptions1
   WHERE ((oid IN ( SELECT max(additional_code_type_descriptions2.oid) AS max
            FROM uk.additional_code_type_descriptions_oplog additional_code_type_descriptions2
-          WHERE (((additional_code_type_descriptions1.additional_code_type_id)::text = (additional_code_type_descriptions2.additional_code_type_id)::text) AND ((additional_code_type_descriptions1.language_id)::text = (additional_code_type_descriptions2.language_id)::text)))) AND ((operation)::text <> 'D'::text));
+          WHERE (((additional_code_type_descriptions1.additional_code_type_id)::text = (additional_code_type_descriptions2.additional_code_type_id)::text) AND ((additional_code_type_descriptions1.language_id)::text = (additional_code_type_descriptions2.language_id)::text)))) AND ((operation)::text <> 'D'::text))
+  WITH NO DATA;
 
 
 --
@@ -682,10 +688,10 @@ CREATE TABLE uk.additional_code_type_measure_types_oplog (
 
 
 --
--- Name: additional_code_type_measure_types; Type: VIEW; Schema: uk; Owner: -
+-- Name: additional_code_type_measure_types; Type: MATERIALIZED VIEW; Schema: uk; Owner: -
 --
 
-CREATE VIEW uk.additional_code_type_measure_types AS
+CREATE MATERIALIZED VIEW uk.additional_code_type_measure_types AS
  SELECT measure_type_id,
     additional_code_type_id,
     validity_start_date,
@@ -698,7 +704,8 @@ CREATE VIEW uk.additional_code_type_measure_types AS
    FROM uk.additional_code_type_measure_types_oplog additional_code_type_measure_types1
   WHERE ((oid IN ( SELECT max(additional_code_type_measure_types2.oid) AS max
            FROM uk.additional_code_type_measure_types_oplog additional_code_type_measure_types2
-          WHERE (((additional_code_type_measure_types1.measure_type_id)::text = (additional_code_type_measure_types2.measure_type_id)::text) AND ((additional_code_type_measure_types1.additional_code_type_id)::text = (additional_code_type_measure_types2.additional_code_type_id)::text)))) AND ((operation)::text <> 'D'::text));
+          WHERE (((additional_code_type_measure_types1.measure_type_id)::text = (additional_code_type_measure_types2.measure_type_id)::text) AND ((additional_code_type_measure_types1.additional_code_type_id)::text = (additional_code_type_measure_types2.additional_code_type_id)::text)))) AND ((operation)::text <> 'D'::text))
+  WITH NO DATA;
 
 
 --
@@ -740,10 +747,10 @@ CREATE TABLE uk.additional_code_types_oplog (
 
 
 --
--- Name: additional_code_types; Type: VIEW; Schema: uk; Owner: -
+-- Name: additional_code_types; Type: MATERIALIZED VIEW; Schema: uk; Owner: -
 --
 
-CREATE VIEW uk.additional_code_types AS
+CREATE MATERIALIZED VIEW uk.additional_code_types AS
  SELECT additional_code_type_id,
     validity_start_date,
     validity_end_date,
@@ -757,7 +764,8 @@ CREATE VIEW uk.additional_code_types AS
    FROM uk.additional_code_types_oplog additional_code_types1
   WHERE ((oid IN ( SELECT max(additional_code_types2.oid) AS max
            FROM uk.additional_code_types_oplog additional_code_types2
-          WHERE ((additional_code_types1.additional_code_type_id)::text = (additional_code_types2.additional_code_type_id)::text))) AND ((operation)::text <> 'D'::text));
+          WHERE ((additional_code_types1.additional_code_type_id)::text = (additional_code_types2.additional_code_type_id)::text))) AND ((operation)::text <> 'D'::text))
+  WITH NO DATA;
 
 
 --
@@ -799,10 +807,10 @@ CREATE TABLE uk.additional_codes_oplog (
 
 
 --
--- Name: additional_codes; Type: VIEW; Schema: uk; Owner: -
+-- Name: additional_codes; Type: MATERIALIZED VIEW; Schema: uk; Owner: -
 --
 
-CREATE VIEW uk.additional_codes AS
+CREATE MATERIALIZED VIEW uk.additional_codes AS
  SELECT additional_code_sid,
     additional_code_type_id,
     additional_code,
@@ -816,7 +824,8 @@ CREATE VIEW uk.additional_codes AS
    FROM uk.additional_codes_oplog additional_codes1
   WHERE ((oid IN ( SELECT max(additional_codes2.oid) AS max
            FROM uk.additional_codes_oplog additional_codes2
-          WHERE (additional_codes1.additional_code_sid = additional_codes2.additional_code_sid))) AND ((operation)::text <> 'D'::text));
+          WHERE (additional_codes1.additional_code_sid = additional_codes2.additional_code_sid))) AND ((operation)::text <> 'D'::text))
+  WITH NO DATA;
 
 
 --
@@ -1004,10 +1013,10 @@ CREATE TABLE uk.quota_definitions_oplog (
 
 
 --
--- Name: quota_definitions; Type: VIEW; Schema: uk; Owner: -
+-- Name: quota_definitions; Type: MATERIALIZED VIEW; Schema: uk; Owner: -
 --
 
-CREATE VIEW uk.quota_definitions AS
+CREATE MATERIALIZED VIEW uk.quota_definitions AS
  SELECT quota_definition_sid,
     quota_order_number_id,
     validity_start_date,
@@ -1029,7 +1038,8 @@ CREATE VIEW uk.quota_definitions AS
    FROM uk.quota_definitions_oplog quota_definitions1
   WHERE ((oid IN ( SELECT max(quota_definitions2.oid) AS max
            FROM uk.quota_definitions_oplog quota_definitions2
-          WHERE (quota_definitions1.quota_definition_sid = quota_definitions2.quota_definition_sid))) AND ((operation)::text <> 'D'::text));
+          WHERE (quota_definitions1.quota_definition_sid = quota_definitions2.quota_definition_sid))) AND ((operation)::text <> 'D'::text))
+  WITH NO DATA;
 
 
 --
@@ -1171,10 +1181,10 @@ CREATE TABLE uk.base_regulations_oplog (
 
 
 --
--- Name: base_regulations; Type: VIEW; Schema: uk; Owner: -
+-- Name: base_regulations; Type: MATERIALIZED VIEW; Schema: uk; Owner: -
 --
 
-CREATE VIEW uk.base_regulations AS
+CREATE MATERIALIZED VIEW uk.base_regulations AS
  SELECT base_regulation_role,
     base_regulation_id,
     validity_start_date,
@@ -1203,7 +1213,8 @@ CREATE VIEW uk.base_regulations AS
    FROM uk.base_regulations_oplog base_regulations1
   WHERE ((oid IN ( SELECT max(base_regulations2.oid) AS max
            FROM uk.base_regulations_oplog base_regulations2
-          WHERE (((base_regulations1.base_regulation_id)::text = (base_regulations2.base_regulation_id)::text) AND (base_regulations1.base_regulation_role = base_regulations2.base_regulation_role)))) AND ((operation)::text <> 'D'::text));
+          WHERE (((base_regulations1.base_regulation_id)::text = (base_regulations2.base_regulation_id)::text) AND (base_regulations1.base_regulation_role = base_regulations2.base_regulation_role)))) AND ((operation)::text <> 'D'::text))
+  WITH NO DATA;
 
 
 --
@@ -2011,7 +2022,7 @@ CREATE TABLE uk.exchange_rate_countries_currencies (
     country_code text NOT NULL,
     country_description text NOT NULL,
     currency_code text NOT NULL,
-    currency_description text NOT NULL,
+    currency_description text CONSTRAINT exchange_rate_countries_currencie_currency_description_not_null NOT NULL,
     validity_start_date date NOT NULL,
     validity_end_date date,
     created_at timestamp without time zone NOT NULL,
@@ -2180,7 +2191,7 @@ CREATE TABLE uk.export_refund_nomenclature_description_periods_oplog (
     productline_suffix character varying(2),
     created_at timestamp without time zone,
     validity_end_date timestamp without time zone,
-    oid integer NOT NULL,
+    oid integer CONSTRAINT export_refund_nomenclature_description_periods_opl_oid_not_null NOT NULL,
     operation character varying(1) DEFAULT 'C'::character varying,
     operation_date date,
     filename text
@@ -3210,10 +3221,10 @@ CREATE TABLE uk.geographical_area_description_periods_oplog (
 
 
 --
--- Name: geographical_area_description_periods; Type: VIEW; Schema: uk; Owner: -
+-- Name: geographical_area_description_periods; Type: MATERIALIZED VIEW; Schema: uk; Owner: -
 --
 
-CREATE VIEW uk.geographical_area_description_periods AS
+CREATE MATERIALIZED VIEW uk.geographical_area_description_periods AS
  SELECT geographical_area_description_period_sid,
     geographical_area_sid,
     validity_start_date,
@@ -3227,7 +3238,8 @@ CREATE VIEW uk.geographical_area_description_periods AS
    FROM uk.geographical_area_description_periods_oplog geographical_area_description_periods1
   WHERE ((oid IN ( SELECT max(geographical_area_description_periods2.oid) AS max
            FROM uk.geographical_area_description_periods_oplog geographical_area_description_periods2
-          WHERE ((geographical_area_description_periods1.geographical_area_description_period_sid = geographical_area_description_periods2.geographical_area_description_period_sid) AND (geographical_area_description_periods1.geographical_area_sid = geographical_area_description_periods2.geographical_area_sid)))) AND ((operation)::text <> 'D'::text));
+          WHERE ((geographical_area_description_periods1.geographical_area_description_period_sid = geographical_area_description_periods2.geographical_area_description_period_sid) AND (geographical_area_description_periods1.geographical_area_sid = geographical_area_description_periods2.geographical_area_sid)))) AND ((operation)::text <> 'D'::text))
+  WITH NO DATA;
 
 
 --
@@ -3269,10 +3281,10 @@ CREATE TABLE uk.geographical_area_descriptions_oplog (
 
 
 --
--- Name: geographical_area_descriptions; Type: VIEW; Schema: uk; Owner: -
+-- Name: geographical_area_descriptions; Type: MATERIALIZED VIEW; Schema: uk; Owner: -
 --
 
-CREATE VIEW uk.geographical_area_descriptions AS
+CREATE MATERIALIZED VIEW uk.geographical_area_descriptions AS
  SELECT geographical_area_description_period_sid,
     language_id,
     geographical_area_sid,
@@ -3286,7 +3298,8 @@ CREATE VIEW uk.geographical_area_descriptions AS
    FROM uk.geographical_area_descriptions_oplog geographical_area_descriptions1
   WHERE ((oid IN ( SELECT max(geographical_area_descriptions2.oid) AS max
            FROM uk.geographical_area_descriptions_oplog geographical_area_descriptions2
-          WHERE ((geographical_area_descriptions1.geographical_area_description_period_sid = geographical_area_descriptions2.geographical_area_description_period_sid) AND (geographical_area_descriptions1.geographical_area_sid = geographical_area_descriptions2.geographical_area_sid)))) AND ((operation)::text <> 'D'::text));
+          WHERE ((geographical_area_descriptions1.geographical_area_description_period_sid = geographical_area_descriptions2.geographical_area_description_period_sid) AND (geographical_area_descriptions1.geographical_area_sid = geographical_area_descriptions2.geographical_area_sid)))) AND ((operation)::text <> 'D'::text))
+  WITH NO DATA;
 
 
 --
@@ -3394,10 +3407,10 @@ CREATE TABLE uk.geographical_areas_oplog (
 
 
 --
--- Name: geographical_areas; Type: VIEW; Schema: uk; Owner: -
+-- Name: geographical_areas; Type: MATERIALIZED VIEW; Schema: uk; Owner: -
 --
 
-CREATE VIEW uk.geographical_areas AS
+CREATE MATERIALIZED VIEW uk.geographical_areas AS
  SELECT geographical_area_sid,
     parent_geographical_area_group_sid,
     validity_start_date,
@@ -3413,7 +3426,8 @@ CREATE VIEW uk.geographical_areas AS
    FROM uk.geographical_areas_oplog geographical_areas1
   WHERE ((oid IN ( SELECT max(geographical_areas2.oid) AS max
            FROM uk.geographical_areas_oplog geographical_areas2
-          WHERE (geographical_areas1.geographical_area_sid = geographical_areas2.geographical_area_sid))) AND ((operation)::text <> 'D'::text));
+          WHERE (geographical_areas1.geographical_area_sid = geographical_areas2.geographical_area_sid))) AND ((operation)::text <> 'D'::text))
+  WITH NO DATA;
 
 
 --
@@ -3828,7 +3842,7 @@ ALTER SEQUENCE uk.goods_nomenclature_origins_oid_seq OWNED BY uk.goods_nomenclat
 
 CREATE TABLE uk.goods_nomenclature_self_texts (
     goods_nomenclature_sid integer NOT NULL,
-    goods_nomenclature_item_id character varying(10) NOT NULL,
+    goods_nomenclature_item_id character varying(10) CONSTRAINT goods_nomenclature_self_tex_goods_nomenclature_item_id_not_null NOT NULL,
     self_text text NOT NULL,
     generation_type text NOT NULL,
     input_context jsonb NOT NULL,
@@ -3913,7 +3927,7 @@ ALTER SEQUENCE uk.goods_nomenclature_successors_oid_seq OWNED BY uk.goods_nomenc
 
 CREATE TABLE uk.goods_nomenclature_tree_node_overrides (
     id integer NOT NULL,
-    goods_nomenclature_indent_sid integer NOT NULL,
+    goods_nomenclature_indent_sid integer CONSTRAINT goods_nomenclature_tree_nod_goods_nomenclature_indent__not_null NOT NULL,
     depth integer NOT NULL,
     created_at timestamp without time zone NOT NULL,
     updated_at timestamp without time zone
@@ -3955,10 +3969,10 @@ CREATE TABLE uk.goods_nomenclatures_oplog (
 
 
 --
--- Name: goods_nomenclatures; Type: VIEW; Schema: uk; Owner: -
+-- Name: goods_nomenclatures; Type: MATERIALIZED VIEW; Schema: uk; Owner: -
 --
 
-CREATE VIEW uk.goods_nomenclatures AS
+CREATE MATERIALIZED VIEW uk.goods_nomenclatures AS
  SELECT goods_nomenclature_sid,
     goods_nomenclature_item_id,
     producline_suffix,
@@ -3978,7 +3992,8 @@ CREATE VIEW uk.goods_nomenclatures AS
    FROM uk.goods_nomenclatures_oplog goods_nomenclatures1
   WHERE ((oid IN ( SELECT max(goods_nomenclatures2.oid) AS max
            FROM uk.goods_nomenclatures_oplog goods_nomenclatures2
-          WHERE (goods_nomenclatures1.goods_nomenclature_sid = goods_nomenclatures2.goods_nomenclature_sid))) AND ((operation)::text <> 'D'::text));
+          WHERE (goods_nomenclatures1.goods_nomenclature_sid = goods_nomenclatures2.goods_nomenclature_sid))) AND ((operation)::text <> 'D'::text))
+  WITH NO DATA;
 
 
 --
@@ -4044,8 +4059,8 @@ CREATE TABLE uk.green_lanes_category_assessments (
 --
 
 CREATE TABLE uk.green_lanes_category_assessments_exemptions (
-    category_assessment_id integer NOT NULL,
-    exemption_id integer NOT NULL
+    category_assessment_id integer CONSTRAINT green_lanes_category_assessment_category_assessment_id_not_null NOT NULL,
+    exemption_id integer CONSTRAINT green_lanes_category_assessments_exemptio_exemption_id_not_null NOT NULL
 );
 
 
@@ -4069,10 +4084,10 @@ ALTER TABLE uk.green_lanes_category_assessments ALTER COLUMN id ADD GENERATED BY
 
 CREATE TABLE uk.green_lanes_exempting_additional_code_overrides (
     id integer NOT NULL,
-    additional_code_type_id text NOT NULL,
-    additional_code text NOT NULL,
-    created_at timestamp without time zone NOT NULL,
-    updated_at timestamp without time zone NOT NULL
+    additional_code_type_id text CONSTRAINT green_lanes_exempting_addition_additional_code_type_id_not_null NOT NULL,
+    additional_code text CONSTRAINT green_lanes_exempting_additional_code__additional_code_not_null NOT NULL,
+    created_at timestamp without time zone CONSTRAINT green_lanes_exempting_additional_code_overr_created_at_not_null NOT NULL,
+    updated_at timestamp without time zone CONSTRAINT green_lanes_exempting_additional_code_overr_updated_at_not_null NOT NULL
 );
 
 
@@ -4096,8 +4111,8 @@ ALTER TABLE uk.green_lanes_exempting_additional_code_overrides ALTER COLUMN id A
 
 CREATE TABLE uk.green_lanes_exempting_certificate_overrides (
     id integer NOT NULL,
-    certificate_type_code text NOT NULL,
-    certificate_code text NOT NULL,
+    certificate_type_code text CONSTRAINT green_lanes_exempting_certificat_certificate_type_code_not_null NOT NULL,
+    certificate_code text CONSTRAINT green_lanes_exempting_certificate_ove_certificate_code_not_null NOT NULL,
     created_at timestamp without time zone NOT NULL,
     updated_at timestamp without time zone NOT NULL
 );
@@ -4178,11 +4193,11 @@ ALTER TABLE uk.green_lanes_faq_feedback ALTER COLUMN id ADD GENERATED BY DEFAULT
 --
 
 CREATE TABLE uk.green_lanes_identified_measure_type_category_assessments (
-    id integer NOT NULL,
-    measure_type_id character varying(6) NOT NULL,
-    theme_id integer NOT NULL,
-    created_at timestamp without time zone NOT NULL,
-    updated_at timestamp without time zone NOT NULL
+    id integer CONSTRAINT green_lanes_identified_measure_type_category_assess_id_not_null NOT NULL,
+    measure_type_id character varying(6) CONSTRAINT green_lanes_identified_measure_type_ca_measure_type_id_not_null NOT NULL,
+    theme_id integer CONSTRAINT green_lanes_identified_measure_type_category__theme_id_not_null NOT NULL,
+    created_at timestamp without time zone CONSTRAINT green_lanes_identified_measure_type_categor_created_at_not_null NOT NULL,
+    updated_at timestamp without time zone CONSTRAINT green_lanes_identified_measure_type_categor_updated_at_not_null NOT NULL
 );
 
 
@@ -4877,10 +4892,10 @@ CREATE TABLE uk.measure_excluded_geographical_areas_oplog (
 
 
 --
--- Name: measure_excluded_geographical_areas; Type: VIEW; Schema: uk; Owner: -
+-- Name: measure_excluded_geographical_areas; Type: MATERIALIZED VIEW; Schema: uk; Owner: -
 --
 
-CREATE VIEW uk.measure_excluded_geographical_areas AS
+CREATE MATERIALIZED VIEW uk.measure_excluded_geographical_areas AS
  SELECT measure_sid,
     excluded_geographical_area,
     geographical_area_sid,
@@ -4888,10 +4903,11 @@ CREATE VIEW uk.measure_excluded_geographical_areas AS
     operation,
     operation_date,
     filename
-   FROM uk.measure_excluded_geographical_areas_oplog measure_excluded_geographical_areas1
-  WHERE ((oid IN ( SELECT max(measure_excluded_geographical_areas2.oid) AS max
-           FROM uk.measure_excluded_geographical_areas_oplog measure_excluded_geographical_areas2
-          WHERE ((measure_excluded_geographical_areas1.measure_sid = measure_excluded_geographical_areas2.measure_sid) AND (measure_excluded_geographical_areas1.geographical_area_sid = measure_excluded_geographical_areas2.geographical_area_sid)))) AND ((operation)::text <> 'D'::text));
+   FROM uk.measure_excluded_geographical_areas_oplog geographical_areas
+  WHERE ((oid IN ( SELECT max(geographical_areas2.oid) AS max
+           FROM uk.measure_excluded_geographical_areas_oplog geographical_areas2
+          WHERE ((geographical_areas.measure_sid = geographical_areas2.measure_sid) AND (geographical_areas.geographical_area_sid = geographical_areas2.geographical_area_sid)))) AND ((operation)::text <> 'D'::text))
+  WITH NO DATA;
 
 
 --
@@ -5547,10 +5563,10 @@ CREATE TABLE uk.measures_oplog (
 
 
 --
--- Name: measures; Type: VIEW; Schema: uk; Owner: -
+-- Name: measures; Type: MATERIALIZED VIEW; Schema: uk; Owner: -
 --
 
-CREATE VIEW uk.measures AS
+CREATE MATERIALIZED VIEW uk.measures AS
  SELECT measure_sid,
     measure_type_id,
     geographical_area_id,
@@ -5581,7 +5597,8 @@ CREATE VIEW uk.measures AS
    FROM uk.measures_oplog measures1
   WHERE ((oid IN ( SELECT max(measures2.oid) AS max
            FROM uk.measures_oplog measures2
-          WHERE (measures1.measure_sid = measures2.measure_sid))) AND ((operation)::text <> 'D'::text));
+          WHERE (measures1.measure_sid = measures2.measure_sid))) AND ((operation)::text <> 'D'::text))
+  WITH NO DATA;
 
 
 --
@@ -5981,10 +5998,10 @@ CREATE TABLE uk.modification_regulations_oplog (
 
 
 --
--- Name: modification_regulations; Type: VIEW; Schema: uk; Owner: -
+-- Name: modification_regulations; Type: MATERIALIZED VIEW; Schema: uk; Owner: -
 --
 
-CREATE VIEW uk.modification_regulations AS
+CREATE MATERIALIZED VIEW uk.modification_regulations AS
  SELECT modification_regulation_role,
     modification_regulation_id,
     validity_start_date,
@@ -6010,7 +6027,8 @@ CREATE VIEW uk.modification_regulations AS
    FROM uk.modification_regulations_oplog modification_regulations1
   WHERE ((oid IN ( SELECT max(modification_regulations2.oid) AS max
            FROM uk.modification_regulations_oplog modification_regulations2
-          WHERE (((modification_regulations1.modification_regulation_id)::text = (modification_regulations2.modification_regulation_id)::text) AND (modification_regulations1.modification_regulation_role = modification_regulations2.modification_regulation_role)))) AND ((operation)::text <> 'D'::text));
+          WHERE (((modification_regulations1.modification_regulation_id)::text = (modification_regulations2.modification_regulation_id)::text) AND (modification_regulations1.modification_regulation_role = modification_regulations2.modification_regulation_role)))) AND ((operation)::text <> 'D'::text))
+  WITH NO DATA;
 
 
 --
@@ -6606,10 +6624,10 @@ CREATE TABLE uk.quota_balance_events_oplog (
 
 
 --
--- Name: quota_balance_events; Type: VIEW; Schema: uk; Owner: -
+-- Name: quota_balance_events; Type: MATERIALIZED VIEW; Schema: uk; Owner: -
 --
 
-CREATE VIEW uk.quota_balance_events AS
+CREATE MATERIALIZED VIEW uk.quota_balance_events AS
  SELECT quota_definition_sid,
     occurrence_timestamp,
     last_import_date_in_allocation,
@@ -6623,7 +6641,8 @@ CREATE VIEW uk.quota_balance_events AS
    FROM uk.quota_balance_events_oplog quota_balance_events1
   WHERE ((oid IN ( SELECT max(quota_balance_events2.oid) AS max
            FROM uk.quota_balance_events_oplog quota_balance_events2
-          WHERE ((quota_balance_events1.quota_definition_sid = quota_balance_events2.quota_definition_sid) AND (quota_balance_events1.occurrence_timestamp = quota_balance_events2.occurrence_timestamp)))) AND ((operation)::text <> 'D'::text));
+          WHERE ((quota_balance_events1.quota_definition_sid = quota_balance_events2.quota_definition_sid) AND (quota_balance_events1.occurrence_timestamp = quota_balance_events2.occurrence_timestamp)))) AND ((operation)::text <> 'D'::text))
+  WITH NO DATA;
 
 
 --
@@ -6712,9 +6731,9 @@ CREATE TABLE uk.quota_closed_and_transferred_events_oplog (
     oid integer NOT NULL,
     operation character varying(1) DEFAULT 'C'::character varying,
     operation_date date,
-    quota_definition_sid integer NOT NULL,
-    occurrence_timestamp timestamp without time zone NOT NULL,
-    target_quota_definition_sid integer NOT NULL,
+    quota_definition_sid integer CONSTRAINT quota_closed_and_transferred_even_quota_definition_sid_not_null NOT NULL,
+    occurrence_timestamp timestamp without time zone CONSTRAINT quota_closed_and_transferred_even_occurrence_timestamp_not_null NOT NULL,
+    target_quota_definition_sid integer CONSTRAINT quota_closed_and_transferre_target_quota_definition_si_not_null NOT NULL,
     closing_date date,
     transferred_amount numeric(15,3),
     created_at timestamp without time zone,
@@ -6775,10 +6794,10 @@ CREATE TABLE uk.quota_critical_events_oplog (
 
 
 --
--- Name: quota_critical_events; Type: VIEW; Schema: uk; Owner: -
+-- Name: quota_critical_events; Type: MATERIALIZED VIEW; Schema: uk; Owner: -
 --
 
-CREATE VIEW uk.quota_critical_events AS
+CREATE MATERIALIZED VIEW uk.quota_critical_events AS
  SELECT quota_definition_sid,
     occurrence_timestamp,
     critical_state,
@@ -6790,7 +6809,8 @@ CREATE VIEW uk.quota_critical_events AS
    FROM uk.quota_critical_events_oplog quota_critical_events1
   WHERE ((oid IN ( SELECT max(quota_critical_events2.oid) AS max
            FROM uk.quota_critical_events_oplog quota_critical_events2
-          WHERE ((quota_critical_events1.quota_definition_sid = quota_critical_events2.quota_definition_sid) AND (quota_critical_events1.occurrence_timestamp = quota_critical_events2.occurrence_timestamp)))) AND ((operation)::text <> 'D'::text));
+          WHERE ((quota_critical_events1.quota_definition_sid = quota_critical_events2.quota_definition_sid) AND (quota_critical_events1.occurrence_timestamp = quota_critical_events2.occurrence_timestamp)))) AND ((operation)::text <> 'D'::text))
+  WITH NO DATA;
 
 
 --
@@ -6848,10 +6868,10 @@ CREATE TABLE uk.quota_exhaustion_events_oplog (
 
 
 --
--- Name: quota_exhaustion_events; Type: VIEW; Schema: uk; Owner: -
+-- Name: quota_exhaustion_events; Type: MATERIALIZED VIEW; Schema: uk; Owner: -
 --
 
-CREATE VIEW uk.quota_exhaustion_events AS
+CREATE MATERIALIZED VIEW uk.quota_exhaustion_events AS
  SELECT quota_definition_sid,
     occurrence_timestamp,
     exhaustion_date,
@@ -6862,7 +6882,8 @@ CREATE VIEW uk.quota_exhaustion_events AS
    FROM uk.quota_exhaustion_events_oplog quota_exhaustion_events1
   WHERE ((oid IN ( SELECT max(quota_exhaustion_events2.oid) AS max
            FROM uk.quota_exhaustion_events_oplog quota_exhaustion_events2
-          WHERE ((quota_exhaustion_events1.quota_definition_sid = quota_exhaustion_events2.quota_definition_sid) AND (quota_exhaustion_events1.occurrence_timestamp = quota_exhaustion_events2.occurrence_timestamp)))) AND ((operation)::text <> 'D'::text));
+          WHERE ((quota_exhaustion_events1.quota_definition_sid = quota_exhaustion_events2.quota_definition_sid) AND (quota_exhaustion_events1.occurrence_timestamp = quota_exhaustion_events2.occurrence_timestamp)))) AND ((operation)::text <> 'D'::text))
+  WITH NO DATA;
 
 
 --
@@ -6990,10 +7011,10 @@ CREATE TABLE uk.quota_reopening_events_oplog (
 
 
 --
--- Name: quota_reopening_events; Type: VIEW; Schema: uk; Owner: -
+-- Name: quota_reopening_events; Type: MATERIALIZED VIEW; Schema: uk; Owner: -
 --
 
-CREATE VIEW uk.quota_reopening_events AS
+CREATE MATERIALIZED VIEW uk.quota_reopening_events AS
  SELECT quota_definition_sid,
     occurrence_timestamp,
     reopening_date,
@@ -7004,7 +7025,8 @@ CREATE VIEW uk.quota_reopening_events AS
    FROM uk.quota_reopening_events_oplog quota_reopening_events1
   WHERE ((oid IN ( SELECT max(quota_reopening_events2.oid) AS max
            FROM uk.quota_reopening_events_oplog quota_reopening_events2
-          WHERE ((quota_reopening_events1.quota_definition_sid = quota_reopening_events2.quota_definition_sid) AND (quota_reopening_events1.occurrence_timestamp = quota_reopening_events2.occurrence_timestamp)))) AND ((operation)::text <> 'D'::text));
+          WHERE ((quota_reopening_events1.quota_definition_sid = quota_reopening_events2.quota_definition_sid) AND (quota_reopening_events1.occurrence_timestamp = quota_reopening_events2.occurrence_timestamp)))) AND ((operation)::text <> 'D'::text))
+  WITH NO DATA;
 
 
 --
@@ -7100,10 +7122,10 @@ CREATE TABLE uk.quota_unblocking_events_oplog (
 
 
 --
--- Name: quota_unblocking_events; Type: VIEW; Schema: uk; Owner: -
+-- Name: quota_unblocking_events; Type: MATERIALIZED VIEW; Schema: uk; Owner: -
 --
 
-CREATE VIEW uk.quota_unblocking_events AS
+CREATE MATERIALIZED VIEW uk.quota_unblocking_events AS
  SELECT quota_definition_sid,
     occurrence_timestamp,
     unblocking_date,
@@ -7114,7 +7136,8 @@ CREATE VIEW uk.quota_unblocking_events AS
    FROM uk.quota_unblocking_events_oplog quota_unblocking_events1
   WHERE ((oid IN ( SELECT max(quota_unblocking_events2.oid) AS max
            FROM uk.quota_unblocking_events_oplog quota_unblocking_events2
-          WHERE (quota_unblocking_events1.quota_definition_sid = quota_unblocking_events2.quota_definition_sid))) AND ((operation)::text <> 'D'::text));
+          WHERE (quota_unblocking_events1.quota_definition_sid = quota_unblocking_events2.quota_definition_sid))) AND ((operation)::text <> 'D'::text))
+  WITH NO DATA;
 
 
 --
@@ -7153,10 +7176,10 @@ CREATE TABLE uk.quota_unsuspension_events_oplog (
 
 
 --
--- Name: quota_unsuspension_events; Type: VIEW; Schema: uk; Owner: -
+-- Name: quota_unsuspension_events; Type: MATERIALIZED VIEW; Schema: uk; Owner: -
 --
 
-CREATE VIEW uk.quota_unsuspension_events AS
+CREATE MATERIALIZED VIEW uk.quota_unsuspension_events AS
  SELECT quota_definition_sid,
     occurrence_timestamp,
     unsuspension_date,
@@ -7167,7 +7190,8 @@ CREATE VIEW uk.quota_unsuspension_events AS
    FROM uk.quota_unsuspension_events_oplog quota_unsuspension_events1
   WHERE ((oid IN ( SELECT max(quota_unsuspension_events2.oid) AS max
            FROM uk.quota_unsuspension_events_oplog quota_unsuspension_events2
-          WHERE ((quota_unsuspension_events1.quota_definition_sid = quota_unsuspension_events2.quota_definition_sid) AND (quota_unsuspension_events1.occurrence_timestamp = quota_unsuspension_events2.occurrence_timestamp)))) AND ((operation)::text <> 'D'::text));
+          WHERE ((quota_unsuspension_events1.quota_definition_sid = quota_unsuspension_events2.quota_definition_sid) AND (quota_unsuspension_events1.occurrence_timestamp = quota_unsuspension_events2.occurrence_timestamp)))) AND ((operation)::text <> 'D'::text))
+  WITH NO DATA;
 
 
 --
@@ -7771,22 +7795,6 @@ CREATE TABLE uk.tariff_updates (
     exception_class text,
     inserts text,
     report_sent boolean DEFAULT false NOT NULL
-);
-
-
---
--- Name: tradeset_descriptions; Type: TABLE; Schema: uk; Owner: -
---
-
-CREATE TABLE uk.tradeset_descriptions (
-    filename text NOT NULL,
-    classification_date date NOT NULL,
-    description text NOT NULL,
-    goods_nomenclature_item_id text NOT NULL,
-    created_at timestamp without time zone NOT NULL,
-    updated_at timestamp without time zone NOT NULL,
-    validity_start_date timestamp without time zone NOT NULL,
-    validity_end_date timestamp without time zone
 );
 
 
@@ -8770,6 +8778,54 @@ ALTER TABLE ONLY public.users
 
 
 --
+-- Name: additional_code_description_periods_oplog additional_code_description_periods_pkey; Type: CONSTRAINT; Schema: uk; Owner: -
+--
+
+ALTER TABLE ONLY uk.additional_code_description_periods_oplog
+    ADD CONSTRAINT additional_code_description_periods_pkey PRIMARY KEY (oid);
+
+
+--
+-- Name: additional_code_descriptions_oplog additional_code_descriptions_pkey; Type: CONSTRAINT; Schema: uk; Owner: -
+--
+
+ALTER TABLE ONLY uk.additional_code_descriptions_oplog
+    ADD CONSTRAINT additional_code_descriptions_pkey PRIMARY KEY (oid);
+
+
+--
+-- Name: additional_code_type_descriptions_oplog additional_code_type_descriptions_pkey; Type: CONSTRAINT; Schema: uk; Owner: -
+--
+
+ALTER TABLE ONLY uk.additional_code_type_descriptions_oplog
+    ADD CONSTRAINT additional_code_type_descriptions_pkey PRIMARY KEY (oid);
+
+
+--
+-- Name: additional_code_type_measure_types_oplog additional_code_type_measure_types_pkey; Type: CONSTRAINT; Schema: uk; Owner: -
+--
+
+ALTER TABLE ONLY uk.additional_code_type_measure_types_oplog
+    ADD CONSTRAINT additional_code_type_measure_types_pkey PRIMARY KEY (oid);
+
+
+--
+-- Name: additional_code_types_oplog additional_code_types_pkey; Type: CONSTRAINT; Schema: uk; Owner: -
+--
+
+ALTER TABLE ONLY uk.additional_code_types_oplog
+    ADD CONSTRAINT additional_code_types_pkey PRIMARY KEY (oid);
+
+
+--
+-- Name: additional_codes_oplog additional_codes_pkey; Type: CONSTRAINT; Schema: uk; Owner: -
+--
+
+ALTER TABLE ONLY uk.additional_codes_oplog
+    ADD CONSTRAINT additional_codes_pkey PRIMARY KEY (oid);
+
+
+--
 -- Name: admin_configurations admin_configurations_name_key; Type: CONSTRAINT; Schema: uk; Owner: -
 --
 
@@ -8807,6 +8863,14 @@ ALTER TABLE ONLY uk.applies
 
 ALTER TABLE ONLY uk.audits
     ADD CONSTRAINT audits_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: base_regulations_oplog base_regulations_pkey; Type: CONSTRAINT; Schema: uk; Owner: -
+--
+
+ALTER TABLE ONLY uk.base_regulations_oplog
+    ADD CONSTRAINT base_regulations_pkey PRIMARY KEY (oid);
 
 
 --
@@ -9178,11 +9242,35 @@ ALTER TABLE ONLY uk.full_temporary_stop_regulations_oplog
 
 
 --
+-- Name: geographical_area_description_periods_oplog geographical_area_description_periods_pkey; Type: CONSTRAINT; Schema: uk; Owner: -
+--
+
+ALTER TABLE ONLY uk.geographical_area_description_periods_oplog
+    ADD CONSTRAINT geographical_area_description_periods_pkey PRIMARY KEY (oid);
+
+
+--
+-- Name: geographical_area_descriptions_oplog geographical_area_descriptions_pkey; Type: CONSTRAINT; Schema: uk; Owner: -
+--
+
+ALTER TABLE ONLY uk.geographical_area_descriptions_oplog
+    ADD CONSTRAINT geographical_area_descriptions_pkey PRIMARY KEY (oid);
+
+
+--
 -- Name: geographical_area_memberships_oplog geographical_area_memberships_pkey; Type: CONSTRAINT; Schema: uk; Owner: -
 --
 
 ALTER TABLE ONLY uk.geographical_area_memberships_oplog
     ADD CONSTRAINT geographical_area_memberships_pkey PRIMARY KEY (oid);
+
+
+--
+-- Name: geographical_areas_oplog geographical_areas_pkey; Type: CONSTRAINT; Schema: uk; Owner: -
+--
+
+ALTER TABLE ONLY uk.geographical_areas_oplog
+    ADD CONSTRAINT geographical_areas_pkey PRIMARY KEY (oid);
 
 
 --
@@ -9271,6 +9359,14 @@ ALTER TABLE ONLY uk.goods_nomenclature_successors_oplog
 
 ALTER TABLE ONLY uk.goods_nomenclature_tree_node_overrides
     ADD CONSTRAINT goods_nomenclature_tree_node_overrides_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: goods_nomenclatures_oplog goods_nomenclatures_pkey; Type: CONSTRAINT; Schema: uk; Owner: -
+--
+
+ALTER TABLE ONLY uk.goods_nomenclatures_oplog
+    ADD CONSTRAINT goods_nomenclatures_pkey PRIMARY KEY (oid);
 
 
 --
@@ -9458,6 +9554,14 @@ ALTER TABLE ONLY uk.measure_conditions_oplog
 
 
 --
+-- Name: measure_excluded_geographical_areas_oplog measure_excluded_geographical_areas_pkey; Type: CONSTRAINT; Schema: uk; Owner: -
+--
+
+ALTER TABLE ONLY uk.measure_excluded_geographical_areas_oplog
+    ADD CONSTRAINT measure_excluded_geographical_areas_pkey PRIMARY KEY (oid);
+
+
+--
 -- Name: measure_partial_temporary_stops_oplog measure_partial_temporary_stops_pkey; Type: CONSTRAINT; Schema: uk; Owner: -
 --
 
@@ -9546,6 +9650,14 @@ ALTER TABLE ONLY uk.measurements_oplog
 
 
 --
+-- Name: measures_oplog measures_pkey; Type: CONSTRAINT; Schema: uk; Owner: -
+--
+
+ALTER TABLE ONLY uk.measures_oplog
+    ADD CONSTRAINT measures_pkey PRIMARY KEY (oid);
+
+
+--
 -- Name: meursing_additional_codes_oplog meursing_additional_codes_pkey; Type: CONSTRAINT; Schema: uk; Owner: -
 --
 
@@ -9591,6 +9703,14 @@ ALTER TABLE ONLY uk.meursing_table_cell_components_oplog
 
 ALTER TABLE ONLY uk.meursing_table_plans_oplog
     ADD CONSTRAINT meursing_table_plans_pkey PRIMARY KEY (oid);
+
+
+--
+-- Name: modification_regulations_oplog modification_regulations_pkey; Type: CONSTRAINT; Schema: uk; Owner: -
+--
+
+ALTER TABLE ONLY uk.modification_regulations_oplog
+    ADD CONSTRAINT modification_regulations_pkey PRIMARY KEY (oid);
 
 
 --
@@ -9714,6 +9834,14 @@ ALTER TABLE ONLY uk.quota_associations_oplog
 
 
 --
+-- Name: quota_balance_events_oplog quota_balance_events_pkey; Type: CONSTRAINT; Schema: uk; Owner: -
+--
+
+ALTER TABLE ONLY uk.quota_balance_events_oplog
+    ADD CONSTRAINT quota_balance_events_pkey PRIMARY KEY (oid);
+
+
+--
 -- Name: quota_blocking_periods_oplog quota_blocking_periods_pkey; Type: CONSTRAINT; Schema: uk; Owner: -
 --
 
@@ -9727,6 +9855,30 @@ ALTER TABLE ONLY uk.quota_blocking_periods_oplog
 
 ALTER TABLE ONLY uk.quota_closed_and_transferred_events_oplog
     ADD CONSTRAINT quota_closed_and_transferred_events_oplog_pkey PRIMARY KEY (oid);
+
+
+--
+-- Name: quota_critical_events_oplog quota_critical_events_pkey; Type: CONSTRAINT; Schema: uk; Owner: -
+--
+
+ALTER TABLE ONLY uk.quota_critical_events_oplog
+    ADD CONSTRAINT quota_critical_events_pkey PRIMARY KEY (oid);
+
+
+--
+-- Name: quota_definitions_oplog quota_definitions_pkey; Type: CONSTRAINT; Schema: uk; Owner: -
+--
+
+ALTER TABLE ONLY uk.quota_definitions_oplog
+    ADD CONSTRAINT quota_definitions_pkey PRIMARY KEY (oid);
+
+
+--
+-- Name: quota_exhaustion_events_oplog quota_exhaustion_events_pkey; Type: CONSTRAINT; Schema: uk; Owner: -
+--
+
+ALTER TABLE ONLY uk.quota_exhaustion_events_oplog
+    ADD CONSTRAINT quota_exhaustion_events_pkey PRIMARY KEY (oid);
 
 
 --
@@ -9754,11 +9906,35 @@ ALTER TABLE ONLY uk.quota_order_numbers_oplog
 
 
 --
+-- Name: quota_reopening_events_oplog quota_reopening_events_pkey; Type: CONSTRAINT; Schema: uk; Owner: -
+--
+
+ALTER TABLE ONLY uk.quota_reopening_events_oplog
+    ADD CONSTRAINT quota_reopening_events_pkey PRIMARY KEY (oid);
+
+
+--
 -- Name: quota_suspension_periods_oplog quota_suspension_periods_pkey; Type: CONSTRAINT; Schema: uk; Owner: -
 --
 
 ALTER TABLE ONLY uk.quota_suspension_periods_oplog
     ADD CONSTRAINT quota_suspension_periods_pkey PRIMARY KEY (oid);
+
+
+--
+-- Name: quota_unblocking_events_oplog quota_unblocking_events_pkey; Type: CONSTRAINT; Schema: uk; Owner: -
+--
+
+ALTER TABLE ONLY uk.quota_unblocking_events_oplog
+    ADD CONSTRAINT quota_unblocking_events_pkey PRIMARY KEY (oid);
+
+
+--
+-- Name: quota_unsuspension_events_oplog quota_unsuspension_events_pkey; Type: CONSTRAINT; Schema: uk; Owner: -
+--
+
+ALTER TABLE ONLY uk.quota_unsuspension_events_oplog
+    ADD CONSTRAINT quota_unsuspension_events_pkey PRIMARY KEY (oid);
 
 
 --
@@ -9866,14 +10042,6 @@ ALTER TABLE ONLY uk.tariff_changes
 
 
 --
--- Name: tariff_update_presence_errors tariff_update_presence_errors_pkey; Type: CONSTRAINT; Schema: uk; Owner: -
---
-
-ALTER TABLE ONLY uk.tariff_update_presence_errors
-    ADD CONSTRAINT tariff_update_presence_errors_pkey PRIMARY KEY (id);
-
-
---
 -- Name: tariff_update_state_changes tariff_update_state_changes_pkey; Type: CONSTRAINT; Schema: uk; Owner: -
 --
 
@@ -9882,19 +10050,19 @@ ALTER TABLE ONLY uk.tariff_update_state_changes
 
 
 --
+-- Name: tariff_update_presence_errors tariff_update_presence_errors_pkey; Type: CONSTRAINT; Schema: uk; Owner: -
+--
+
+ALTER TABLE ONLY uk.tariff_update_presence_errors
+    ADD CONSTRAINT tariff_update_presence_errors_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: tariff_updates tariff_updates_pkey; Type: CONSTRAINT; Schema: uk; Owner: -
 --
 
 ALTER TABLE ONLY uk.tariff_updates
     ADD CONSTRAINT tariff_updates_pkey PRIMARY KEY (filename);
-
-
---
--- Name: tradeset_descriptions tradeset_descriptions_filename_description_goods_nomenclatu_key; Type: CONSTRAINT; Schema: uk; Owner: -
---
-
-ALTER TABLE ONLY uk.tradeset_descriptions
-    ADD CONSTRAINT tradeset_descriptions_filename_description_goods_nomenclatu_key UNIQUE (filename, description, goods_nomenclature_item_id);
 
 
 --
@@ -10057,10 +10225,199 @@ CREATE INDEX add_code_desc_description_trgm_idx ON uk.additional_code_descriptio
 
 
 --
+-- Name: additional_code_description_periods_additional_code; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX additional_code_description_periods_additional_code ON uk.additional_code_description_periods USING btree (additional_code_description_period_sid, additional_code_sid, additional_code_type_id);
+
+
+--
+-- Name: additional_code_description_periods_additional_code_description; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX additional_code_description_periods_additional_code_description ON uk.additional_code_description_periods USING btree (additional_code_description_period_sid);
+
+
+--
+-- Name: additional_code_description_periods_additional_code_type_id_ind; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX additional_code_description_periods_additional_code_type_id_ind ON uk.additional_code_description_periods USING btree (additional_code_type_id);
+
+
+--
+-- Name: additional_code_description_periods_oid_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE UNIQUE INDEX additional_code_description_periods_oid_index ON uk.additional_code_description_periods USING btree (oid);
+
+
+--
+-- Name: additional_code_description_periods_operation_date_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX additional_code_description_periods_operation_date_index ON uk.additional_code_description_periods USING btree (operation_date);
+
+
+--
+-- Name: additional_code_descriptions_additional_code; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX additional_code_descriptions_additional_code ON uk.additional_code_descriptions USING btree (additional_code_description_period_sid, additional_code_type_id, additional_code_sid);
+
+
+--
+-- Name: additional_code_descriptions_additional_code_description_period; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX additional_code_descriptions_additional_code_description_period ON uk.additional_code_descriptions USING btree (additional_code_description_period_sid);
+
+
+--
+-- Name: additional_code_descriptions_additional_code_sid_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX additional_code_descriptions_additional_code_sid_index ON uk.additional_code_descriptions USING btree (additional_code_sid);
+
+
+--
+-- Name: additional_code_descriptions_additional_code_type_id_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX additional_code_descriptions_additional_code_type_id_index ON uk.additional_code_descriptions USING btree (additional_code_type_id);
+
+
+--
+-- Name: additional_code_descriptions_language_id_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX additional_code_descriptions_language_id_index ON uk.additional_code_descriptions USING btree (language_id);
+
+
+--
+-- Name: additional_code_descriptions_oid_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE UNIQUE INDEX additional_code_descriptions_oid_index ON uk.additional_code_descriptions USING btree (oid);
+
+
+--
+-- Name: additional_code_descriptions_operation_date_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX additional_code_descriptions_operation_date_index ON uk.additional_code_descriptions USING btree (operation_date);
+
+
+--
 -- Name: additional_code_type; Type: INDEX; Schema: uk; Owner: -
 --
 
 CREATE INDEX additional_code_type ON uk.footnote_association_additional_codes_oplog USING btree (additional_code_type_id);
+
+
+--
+-- Name: additional_code_type_descriptions_additional_code_type_id_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX additional_code_type_descriptions_additional_code_type_id_index ON uk.additional_code_type_descriptions USING btree (additional_code_type_id);
+
+
+--
+-- Name: additional_code_type_descriptions_language_id_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX additional_code_type_descriptions_language_id_index ON uk.additional_code_type_descriptions USING btree (language_id);
+
+
+--
+-- Name: additional_code_type_descriptions_oid_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE UNIQUE INDEX additional_code_type_descriptions_oid_index ON uk.additional_code_type_descriptions USING btree (oid);
+
+
+--
+-- Name: additional_code_type_descriptions_operation_date_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX additional_code_type_descriptions_operation_date_index ON uk.additional_code_type_descriptions USING btree (operation_date);
+
+
+--
+-- Name: additional_code_type_measure_types_measure_type_id_additional_c; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX additional_code_type_measure_types_measure_type_id_additional_c ON uk.additional_code_type_measure_types USING btree (measure_type_id, additional_code_type_id);
+
+
+--
+-- Name: additional_code_type_measure_types_oid_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE UNIQUE INDEX additional_code_type_measure_types_oid_index ON uk.additional_code_type_measure_types USING btree (oid);
+
+
+--
+-- Name: additional_code_type_measure_types_operation_date_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX additional_code_type_measure_types_operation_date_index ON uk.additional_code_type_measure_types USING btree (operation_date);
+
+
+--
+-- Name: additional_code_types_additional_code_type_id_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX additional_code_types_additional_code_type_id_index ON uk.additional_code_types USING btree (additional_code_type_id);
+
+
+--
+-- Name: additional_code_types_meursing_table_plan_id_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX additional_code_types_meursing_table_plan_id_index ON uk.additional_code_types USING btree (meursing_table_plan_id);
+
+
+--
+-- Name: additional_code_types_oid_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE UNIQUE INDEX additional_code_types_oid_index ON uk.additional_code_types USING btree (oid);
+
+
+--
+-- Name: additional_code_types_operation_date_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX additional_code_types_operation_date_index ON uk.additional_code_types USING btree (operation_date);
+
+
+--
+-- Name: additional_codes_additional_code_sid_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX additional_codes_additional_code_sid_index ON uk.additional_codes USING btree (additional_code_sid);
+
+
+--
+-- Name: additional_codes_additional_code_type_id_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX additional_codes_additional_code_type_id_index ON uk.additional_codes USING btree (additional_code_type_id);
+
+
+--
+-- Name: additional_codes_oid_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE UNIQUE INDEX additional_codes_oid_index ON uk.additional_codes USING btree (oid);
+
+
+--
+-- Name: additional_codes_operation_date_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX additional_codes_operation_date_index ON uk.additional_codes USING btree (operation_date);
 
 
 --
@@ -10075,6 +10432,62 @@ CREATE INDEX antidumping_regulation ON uk.base_regulations_oplog USING btree (an
 --
 
 CREATE INDEX base_regulation ON uk.modification_regulations_oplog USING btree (base_regulation_id, base_regulation_role);
+
+
+--
+-- Name: base_regulations_antidumping_regulation_role_related_antidumpin; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX base_regulations_antidumping_regulation_role_related_antidumpin ON uk.base_regulations USING btree (antidumping_regulation_role, related_antidumping_regulation_id);
+
+
+--
+-- Name: base_regulations_approved_flag_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX base_regulations_approved_flag_index ON uk.base_regulations USING btree (approved_flag);
+
+
+--
+-- Name: base_regulations_base_regulation_id_base_regulation_role_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX base_regulations_base_regulation_id_base_regulation_role_index ON uk.base_regulations USING btree (base_regulation_id, base_regulation_role);
+
+
+--
+-- Name: base_regulations_complete_abrogation_regulation_role_complete_a; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX base_regulations_complete_abrogation_regulation_role_complete_a ON uk.base_regulations USING btree (complete_abrogation_regulation_role, complete_abrogation_regulation_id);
+
+
+--
+-- Name: base_regulations_effective_end_date_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX base_regulations_effective_end_date_index ON uk.base_regulations USING btree (effective_end_date);
+
+
+--
+-- Name: base_regulations_explicit_abrogation_regulation_role_explicit_a; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX base_regulations_explicit_abrogation_regulation_role_explicit_a ON uk.base_regulations USING btree (explicit_abrogation_regulation_role, explicit_abrogation_regulation_id);
+
+
+--
+-- Name: base_regulations_oid_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE UNIQUE INDEX base_regulations_oid_index ON uk.base_regulations USING btree (oid);
+
+
+--
+-- Name: base_regulations_operation_date_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX base_regulations_operation_date_index ON uk.base_regulations USING btree (operation_date);
 
 
 --
@@ -10110,6 +10523,27 @@ CREATE INDEX base_regulations_oplog_validity_start_date_index ON uk.base_regulat
 --
 
 CREATE INDEX base_regulations_pk ON uk.base_regulations_oplog USING btree (base_regulation_id, base_regulation_role);
+
+
+--
+-- Name: base_regulations_regulation_group_id_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX base_regulations_regulation_group_id_index ON uk.base_regulations USING btree (regulation_group_id);
+
+
+--
+-- Name: base_regulations_validity_end_date_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX base_regulations_validity_end_date_index ON uk.base_regulations USING btree (validity_end_date);
+
+
+--
+-- Name: base_regulations_validity_start_date_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX base_regulations_validity_start_date_index ON uk.base_regulations USING btree (validity_start_date);
 
 
 --
@@ -10827,6 +11261,55 @@ CREATE INDEX geog_area_pk ON uk.geographical_areas_oplog USING btree (geographic
 
 
 --
+-- Name: geographical_area_description_periods_geographical_area_descrip; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX geographical_area_description_periods_geographical_area_descrip ON uk.geographical_area_description_periods USING btree (geographical_area_description_period_sid, geographical_area_sid);
+
+
+--
+-- Name: geographical_area_description_periods_oid_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE UNIQUE INDEX geographical_area_description_periods_oid_index ON uk.geographical_area_description_periods USING btree (oid);
+
+
+--
+-- Name: geographical_area_description_periods_operation_date_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX geographical_area_description_periods_operation_date_index ON uk.geographical_area_description_periods USING btree (operation_date);
+
+
+--
+-- Name: geographical_area_descriptions_geographical_area_description_pe; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX geographical_area_descriptions_geographical_area_description_pe ON uk.geographical_area_descriptions USING btree (geographical_area_description_period_sid, geographical_area_sid);
+
+
+--
+-- Name: geographical_area_descriptions_language_id_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX geographical_area_descriptions_language_id_index ON uk.geographical_area_descriptions USING btree (language_id);
+
+
+--
+-- Name: geographical_area_descriptions_oid_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE UNIQUE INDEX geographical_area_descriptions_oid_index ON uk.geographical_area_descriptions USING btree (oid);
+
+
+--
+-- Name: geographical_area_descriptions_operation_date_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX geographical_area_descriptions_operation_date_index ON uk.geographical_area_descriptions USING btree (operation_date);
+
+
+--
 -- Name: geographical_area_memberships_geographical_area_sid_geographica; Type: INDEX; Schema: uk; Owner: -
 --
 
@@ -10845,6 +11328,41 @@ CREATE UNIQUE INDEX geographical_area_memberships_oid_index ON uk.geographical_a
 --
 
 CREATE INDEX geographical_area_memberships_operation_date_index ON uk.geographical_area_memberships USING btree (operation_date);
+
+
+--
+-- Name: geographical_areas_geographical_area_id_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX geographical_areas_geographical_area_id_index ON uk.geographical_areas USING btree (geographical_area_id);
+
+
+--
+-- Name: geographical_areas_geographical_area_sid_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX geographical_areas_geographical_area_sid_index ON uk.geographical_areas USING btree (geographical_area_sid);
+
+
+--
+-- Name: geographical_areas_oid_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE UNIQUE INDEX geographical_areas_oid_index ON uk.geographical_areas USING btree (oid);
+
+
+--
+-- Name: geographical_areas_operation_date_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX geographical_areas_operation_date_index ON uk.geographical_areas USING btree (operation_date);
+
+
+--
+-- Name: geographical_areas_parent_geographical_area_group_sid_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX geographical_areas_parent_geographical_area_group_sid_index ON uk.geographical_areas USING btree (parent_geographical_area_group_sid);
 
 
 --
@@ -11065,6 +11583,34 @@ CREATE INDEX goods_nomenclature_validity_dates ON uk.goods_nomenclature_indents_
 
 
 --
+-- Name: goods_nomenclatures_goods_nomenclature_item_id_producline_suffi; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX goods_nomenclatures_goods_nomenclature_item_id_producline_suffi ON uk.goods_nomenclatures USING btree (goods_nomenclature_item_id, producline_suffix);
+
+
+--
+-- Name: goods_nomenclatures_goods_nomenclature_sid_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX goods_nomenclatures_goods_nomenclature_sid_index ON uk.goods_nomenclatures USING btree (goods_nomenclature_sid);
+
+
+--
+-- Name: goods_nomenclatures_oid_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE UNIQUE INDEX goods_nomenclatures_oid_index ON uk.goods_nomenclatures USING btree (oid);
+
+
+--
+-- Name: goods_nomenclatures_operation_date_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX goods_nomenclatures_operation_date_index ON uk.goods_nomenclatures USING btree (operation_date);
+
+
+--
 -- Name: goods_nomenclatures_oplog_path_index; Type: INDEX; Schema: uk; Owner: -
 --
 
@@ -11083,6 +11629,27 @@ CREATE INDEX goods_nomenclatures_oplog_validity_end_date_index ON uk.goods_nomen
 --
 
 CREATE INDEX goods_nomenclatures_oplog_validity_start_date_index ON uk.goods_nomenclatures_oplog USING btree (validity_start_date);
+
+
+--
+-- Name: goods_nomenclatures_path_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX goods_nomenclatures_path_index ON uk.goods_nomenclatures USING gin (path);
+
+
+--
+-- Name: goods_nomenclatures_validity_end_date_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX goods_nomenclatures_validity_end_date_index ON uk.goods_nomenclatures USING btree (validity_end_date);
+
+
+--
+-- Name: goods_nomenclatures_validity_start_date_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX goods_nomenclatures_validity_start_date_index ON uk.goods_nomenclatures USING btree (validity_start_date);
 
 
 --
@@ -11772,6 +12339,34 @@ CREATE INDEX measure_conditions_oplog_certificate_type_code_index ON uk.measure_
 
 
 --
+-- Name: measure_excluded_geographical_areas_geographical_area_sid_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX measure_excluded_geographical_areas_geographical_area_sid_index ON uk.measure_excluded_geographical_areas USING btree (geographical_area_sid);
+
+
+--
+-- Name: measure_excluded_geographical_areas_measure_sid_excluded_geogra; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX measure_excluded_geographical_areas_measure_sid_excluded_geogra ON uk.measure_excluded_geographical_areas USING btree (measure_sid, excluded_geographical_area, geographical_area_sid);
+
+
+--
+-- Name: measure_excluded_geographical_areas_oid_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE UNIQUE INDEX measure_excluded_geographical_areas_oid_index ON uk.measure_excluded_geographical_areas USING btree (oid);
+
+
+--
+-- Name: measure_excluded_geographical_areas_operation_date_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX measure_excluded_geographical_areas_operation_date_index ON uk.measure_excluded_geographical_areas USING btree (operation_date);
+
+
+--
 -- Name: measure_generating_regulation; Type: INDEX; Schema: uk; Owner: -
 --
 
@@ -11800,6 +12395,27 @@ CREATE INDEX measurement_unit_qualifier_code ON uk.measure_condition_components_
 
 
 --
+-- Name: measures_additional_code_id_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX measures_additional_code_id_index ON uk.measures USING btree (additional_code_id);
+
+
+--
+-- Name: measures_additional_code_sid_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX measures_additional_code_sid_index ON uk.measures USING btree (additional_code_sid);
+
+
+--
+-- Name: measures_additional_code_type_id_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX measures_additional_code_type_id_index ON uk.measures USING btree (additional_code_type_id);
+
+
+--
 -- Name: measures_export_refund_nomenclature_sid_index; Type: INDEX; Schema: uk; Owner: -
 --
 
@@ -11807,10 +12423,73 @@ CREATE INDEX measures_export_refund_nomenclature_sid_index ON uk.measures_oplog 
 
 
 --
+-- Name: measures_geographical_area_sid_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX measures_geographical_area_sid_index ON uk.measures USING btree (geographical_area_sid);
+
+
+--
 -- Name: measures_goods_nomenclature_item_id_index; Type: INDEX; Schema: uk; Owner: -
 --
 
 CREATE INDEX measures_goods_nomenclature_item_id_index ON uk.measures_oplog USING btree (goods_nomenclature_item_id);
+
+
+--
+-- Name: measures_goods_nomenclature_sid_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX measures_goods_nomenclature_sid_index ON uk.measures USING btree (goods_nomenclature_sid);
+
+
+--
+-- Name: measures_justification_regulation_role_justification_regulation; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX measures_justification_regulation_role_justification_regulation ON uk.measures USING btree (justification_regulation_role, justification_regulation_id);
+
+
+--
+-- Name: measures_measure_generating_regulation_id_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX measures_measure_generating_regulation_id_index ON uk.measures USING btree (measure_generating_regulation_id);
+
+
+--
+-- Name: measures_measure_generating_regulation_role_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX measures_measure_generating_regulation_role_index ON uk.measures USING btree (measure_generating_regulation_role);
+
+
+--
+-- Name: measures_measure_sid_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX measures_measure_sid_index ON uk.measures USING btree (measure_sid);
+
+
+--
+-- Name: measures_measure_type_id_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX measures_measure_type_id_index ON uk.measures USING btree (measure_type_id);
+
+
+--
+-- Name: measures_oid_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE UNIQUE INDEX measures_oid_index ON uk.measures USING btree (oid);
+
+
+--
+-- Name: measures_operation_date_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX measures_operation_date_index ON uk.measures USING btree (operation_date);
 
 
 --
@@ -11853,6 +12532,41 @@ CREATE INDEX measures_oplog_validity_end_date_index ON uk.measures_oplog USING b
 --
 
 CREATE INDEX measures_oplog_validity_start_date_index ON uk.measures_oplog USING btree (validity_start_date);
+
+
+--
+-- Name: measures_ordernumber_validity_start_date_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX measures_ordernumber_validity_start_date_index ON uk.measures USING btree (ordernumber, validity_start_date);
+
+
+--
+-- Name: measures_validity_end_date_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX measures_validity_end_date_index ON uk.measures USING btree (validity_end_date);
+
+
+--
+-- Name: measures_validity_start_date_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX measures_validity_start_date_index ON uk.measures USING btree (validity_start_date);
+
+
+--
+-- Name: measures_view_export_refund_nomenclature_sid_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX measures_view_export_refund_nomenclature_sid_index ON uk.measures USING btree (export_refund_nomenclature_sid);
+
+
+--
+-- Name: measures_view_goods_nomenclature_item_id_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX measures_view_goods_nomenclature_item_id_index ON uk.measures USING btree (goods_nomenclature_item_id);
 
 
 --
@@ -11968,6 +12682,62 @@ CREATE INDEX mod_reg_pk ON uk.modification_regulations_oplog USING btree (modifi
 
 
 --
+-- Name: modification_regulations_approved_flag_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX modification_regulations_approved_flag_index ON uk.modification_regulations USING btree (approved_flag);
+
+
+--
+-- Name: modification_regulations_base_regulation_id_base_regulation_rol; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX modification_regulations_base_regulation_id_base_regulation_rol ON uk.modification_regulations USING btree (base_regulation_id, base_regulation_role);
+
+
+--
+-- Name: modification_regulations_complete_abrogation_regulation_role_co; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX modification_regulations_complete_abrogation_regulation_role_co ON uk.modification_regulations USING btree (complete_abrogation_regulation_role, complete_abrogation_regulation_id);
+
+
+--
+-- Name: modification_regulations_effective_end_date_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX modification_regulations_effective_end_date_index ON uk.modification_regulations USING btree (effective_end_date);
+
+
+--
+-- Name: modification_regulations_explicit_abrogation_regulation_role_ex; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX modification_regulations_explicit_abrogation_regulation_role_ex ON uk.modification_regulations USING btree (explicit_abrogation_regulation_role, explicit_abrogation_regulation_id);
+
+
+--
+-- Name: modification_regulations_modification_regulation_id_modificatio; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX modification_regulations_modification_regulation_id_modificatio ON uk.modification_regulations USING btree (modification_regulation_id, modification_regulation_role);
+
+
+--
+-- Name: modification_regulations_oid_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE UNIQUE INDEX modification_regulations_oid_index ON uk.modification_regulations USING btree (oid);
+
+
+--
+-- Name: modification_regulations_operation_date_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX modification_regulations_operation_date_index ON uk.modification_regulations USING btree (operation_date);
+
+
+--
 -- Name: modification_regulations_oplog_approved_flag_index; Type: INDEX; Schema: uk; Owner: -
 --
 
@@ -11993,6 +12763,20 @@ CREATE INDEX modification_regulations_oplog_validity_end_date_index ON uk.modifi
 --
 
 CREATE INDEX modification_regulations_oplog_validity_start_date_index ON uk.modification_regulations_oplog USING btree (validity_start_date);
+
+
+--
+-- Name: modification_regulations_validity_end_date_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX modification_regulations_validity_end_date_index ON uk.modification_regulations USING btree (validity_end_date);
+
+
+--
+-- Name: modification_regulations_validity_start_date_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX modification_regulations_validity_start_date_index ON uk.modification_regulations USING btree (validity_start_date);
 
 
 --
@@ -12311,6 +13095,27 @@ CREATE INDEX quota_assoc_pk ON uk.quota_associations_oplog USING btree (main_quo
 
 
 --
+-- Name: quota_balance_events_oid_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE UNIQUE INDEX quota_balance_events_oid_index ON uk.quota_balance_events USING btree (oid);
+
+
+--
+-- Name: quota_balance_events_operation_date_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX quota_balance_events_operation_date_index ON uk.quota_balance_events USING btree (operation_date);
+
+
+--
+-- Name: quota_balance_events_quota_definition_sid, occurrence_timestamp; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX "quota_balance_events_quota_definition_sid, occurrence_timestamp" ON uk.quota_balance_events USING btree (quota_definition_sid, occurrence_timestamp, oid DESC);
+
+
+--
 -- Name: quota_balance_evt_pk; Type: INDEX; Schema: uk; Owner: -
 --
 
@@ -12339,6 +13144,27 @@ CREATE INDEX quota_crit_evt_pk ON uk.quota_critical_events_oplog USING btree (qu
 
 
 --
+-- Name: quota_critical_events_oid_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE UNIQUE INDEX quota_critical_events_oid_index ON uk.quota_critical_events USING btree (oid);
+
+
+--
+-- Name: quota_critical_events_operation_date_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX quota_critical_events_operation_date_index ON uk.quota_critical_events USING btree (operation_date);
+
+
+--
+-- Name: quota_critical_events_quota_definition_sid_occurrence_timestamp; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX quota_critical_events_quota_definition_sid_occurrence_timestamp ON uk.quota_critical_events USING btree (quota_definition_sid, occurrence_timestamp);
+
+
+--
 -- Name: quota_def_pk; Type: INDEX; Schema: uk; Owner: -
 --
 
@@ -12346,10 +13172,80 @@ CREATE INDEX quota_def_pk ON uk.quota_definitions_oplog USING btree (quota_defin
 
 
 --
+-- Name: quota_definitions_measurement_unit_code_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX quota_definitions_measurement_unit_code_index ON uk.quota_definitions USING btree (measurement_unit_code);
+
+
+--
+-- Name: quota_definitions_measurement_unit_qualifier_code_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX quota_definitions_measurement_unit_qualifier_code_index ON uk.quota_definitions USING btree (measurement_unit_qualifier_code);
+
+
+--
+-- Name: quota_definitions_monetary_unit_code_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX quota_definitions_monetary_unit_code_index ON uk.quota_definitions USING btree (monetary_unit_code);
+
+
+--
+-- Name: quota_definitions_oid_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE UNIQUE INDEX quota_definitions_oid_index ON uk.quota_definitions USING btree (oid);
+
+
+--
+-- Name: quota_definitions_operation_date_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX quota_definitions_operation_date_index ON uk.quota_definitions USING btree (operation_date);
+
+
+--
+-- Name: quota_definitions_quota_definition_sid, oid DESC_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX "quota_definitions_quota_definition_sid, oid DESC_index" ON uk.quota_definitions USING btree (quota_definition_sid, oid DESC);
+
+
+--
+-- Name: quota_definitions_quota_order_number_id_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX quota_definitions_quota_order_number_id_index ON uk.quota_definitions USING btree (quota_order_number_id);
+
+
+--
 -- Name: quota_exhaus_evt_pk; Type: INDEX; Schema: uk; Owner: -
 --
 
 CREATE INDEX quota_exhaus_evt_pk ON uk.quota_exhaustion_events_oplog USING btree (quota_definition_sid, occurrence_timestamp);
+
+
+--
+-- Name: quota_exhaustion_events_oid_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE UNIQUE INDEX quota_exhaustion_events_oid_index ON uk.quota_exhaustion_events USING btree (oid);
+
+
+--
+-- Name: quota_exhaustion_events_operation_date_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX quota_exhaustion_events_operation_date_index ON uk.quota_exhaustion_events USING btree (operation_date);
+
+
+--
+-- Name: quota_exhaustion_events_quota_definition_sid_occurrence_timesta; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX quota_exhaustion_events_quota_definition_sid_occurrence_timesta ON uk.quota_exhaustion_events USING btree (quota_definition_sid, occurrence_timestamp);
 
 
 --
@@ -12381,6 +13277,27 @@ CREATE INDEX quota_reopen_evt_pk ON uk.quota_reopening_events_oplog USING btree 
 
 
 --
+-- Name: quota_reopening_events_oid_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE UNIQUE INDEX quota_reopening_events_oid_index ON uk.quota_reopening_events USING btree (oid);
+
+
+--
+-- Name: quota_reopening_events_operation_date_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX quota_reopening_events_operation_date_index ON uk.quota_reopening_events USING btree (operation_date);
+
+
+--
+-- Name: quota_reopening_events_quota_definition_sid_occurrence_timestam; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX quota_reopening_events_quota_definition_sid_occurrence_timestam ON uk.quota_reopening_events USING btree (quota_definition_sid, occurrence_timestamp);
+
+
+--
 -- Name: quota_susp_period_pk; Type: INDEX; Schema: uk; Owner: -
 --
 
@@ -12395,10 +13312,52 @@ CREATE INDEX quota_unblock_evt_pk ON uk.quota_unblocking_events_oplog USING btre
 
 
 --
+-- Name: quota_unblocking_events_oid_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE UNIQUE INDEX quota_unblocking_events_oid_index ON uk.quota_unblocking_events USING btree (oid);
+
+
+--
+-- Name: quota_unblocking_events_operation_date_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX quota_unblocking_events_operation_date_index ON uk.quota_unblocking_events USING btree (operation_date);
+
+
+--
+-- Name: quota_unblocking_events_quota_definition_sid_occurrence_timesta; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX quota_unblocking_events_quota_definition_sid_occurrence_timesta ON uk.quota_unblocking_events USING btree (quota_definition_sid, occurrence_timestamp);
+
+
+--
 -- Name: quota_unsusp_evt_pk; Type: INDEX; Schema: uk; Owner: -
 --
 
 CREATE INDEX quota_unsusp_evt_pk ON uk.quota_unsuspension_events_oplog USING btree (quota_definition_sid, occurrence_timestamp);
+
+
+--
+-- Name: quota_unsuspension_events_oid_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE UNIQUE INDEX quota_unsuspension_events_oid_index ON uk.quota_unsuspension_events USING btree (oid);
+
+
+--
+-- Name: quota_unsuspension_events_operation_date_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX quota_unsuspension_events_operation_date_index ON uk.quota_unsuspension_events USING btree (operation_date);
+
+
+--
+-- Name: quota_unsuspension_events_quota_definition_sid_occurrence_times; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX quota_unsuspension_events_quota_definition_sid_occurrence_times ON uk.quota_unsuspension_events USING btree (quota_definition_sid, occurrence_timestamp);
 
 
 --
@@ -12528,17 +13487,17 @@ CREATE INDEX tariff_changes_metadata_index ON uk.tariff_changes USING gin (metad
 
 
 --
--- Name: tariff_update_presence_errors_tariff_update_filename_index; Type: INDEX; Schema: uk; Owner: -
---
-
-CREATE INDEX tariff_update_presence_errors_tariff_update_filename_index ON uk.tariff_update_presence_errors USING btree (tariff_update_filename);
-
-
---
 -- Name: tariff_update_state_changes_tariff_update_filename_index; Type: INDEX; Schema: uk; Owner: -
 --
 
 CREATE INDEX tariff_update_state_changes_tariff_update_filename_index ON uk.tariff_update_state_changes USING btree (tariff_update_filename);
+
+
+--
+-- Name: tariff_update_presence_errors_tariff_update_filename_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX tariff_update_presence_errors_tariff_update_filename_index ON uk.tariff_update_presence_errors USING btree (tariff_update_filename);
 
 
 --
@@ -12553,13 +13512,6 @@ CREATE INDEX tariff_updates_issue_date_index ON uk.tariff_updates USING btree (i
 --
 
 CREATE INDEX tco_tracomopl_ionntslog_operation_date ON uk.transmission_comments_oplog USING btree (operation_date);
-
-
---
--- Name: tradeset_descriptions_goods_nomenclature_item_id_index; Type: INDEX; Schema: uk; Owner: -
---
-
-CREATE INDEX tradeset_descriptions_goods_nomenclature_item_id_index ON uk.tradeset_descriptions USING btree (goods_nomenclature_item_id);
 
 
 --
@@ -12705,6 +13657,8 @@ ALTER TABLE ONLY uk.news_collections_news_items
 --
 -- PostgreSQL database dump complete
 --
+
+\unrestrict 4xXn0CQzIHYhRrgv2qlE8Idjmg9eMNwFPzYhYmOtHiGsA71Y1oTKhiObnChJBkm
 
 SET search_path TO uk, public;
 INSERT INTO "schema_migrations" ("filename") VALUES ('1342519058_create_schema.rb');
@@ -12907,8 +13861,8 @@ INSERT INTO "schema_migrations" ("filename") VALUES ('20250902151220_create_user
 INSERT INTO "schema_migrations" ("filename") VALUES ('20251010130950_add_cds_update_notifications_table.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20251016115024_drop_user_delta_preferences.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20251016144135_add_column_metadata_to_user_subscriptions.rb');
-INSERT INTO "schema_migrations" ("filename") VALUES ('20251020111455_create_tariff_changes.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20251021145145_create_table_user_subscription_targets.rb');
+INSERT INTO "schema_migrations" ("filename") VALUES ('20251020111455_create_tariff_changes.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20251117120000_add_metadata_to_tariff_changes.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20260108120000_create_tariff_changes_job_status.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20260113104016_adds_goods_nomenclature_labels_oplog.rb');
@@ -12926,9 +13880,6 @@ INSERT INTO "schema_migrations" ("filename") VALUES ('20260312120000_convert_adm
 INSERT INTO "schema_migrations" ("filename") VALUES ('20260312120001_rename_user_id_to_whodunnit.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20260316163507_adds_declarable_flag_to_search_suggestions.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20260317120000_remove_chief_leftovers.rb');
-INSERT INTO "schema_migrations" ("filename") VALUES ('20260401120000_drop_tariff_update_conformance_errors.rb');
-INSERT INTO "schema_migrations" ("filename") VALUES ('20260401120001_drop_tariff_update_cds_errors.rb');
-INSERT INTO "schema_migrations" ("filename") VALUES ('20260415120000_create_tariff_update_state_changes.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20260401110000_create_description_intercepts.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20260401110100_create_goods_nomenclature_intercepts.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20260413120000_drop_tariff_update_conformance_errors.rb');
