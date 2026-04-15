@@ -1,27 +1,47 @@
 class AdminConfiguration < Sequel::Model(Sequel[:admin_configurations].qualify(:uk))
-  plugin :auto_validations, not_null: :presence
-  plugin :has_paper_trail
-  plugin :timestamps, update_on_create: true
-
-  set_primary_key [:name]
-  unrestrict_primary_key
+  include ValueNormalizer
+  include ValueValidator
 
   CACHE_TTL = 150.seconds
 
+  NESTED_OPTION_DEFAULTS = {
+    'expand_model' => {
+      selected: 'gpt-4.1-mini-2025-04-14',
+      sub_values: { 'reasoning_effort' => 'low' },
+    },
+    'label_model' => {
+      selected: 'gpt-5.4',
+      sub_values: { 'reasoning_effort' => 'high' },
+    },
+    'search_model' => {
+      selected: 'gpt-5.4',
+      sub_values: { 'reasoning_effort' => 'medium' },
+    },
+    'other_self_text_model' => {
+      selected: 'gpt-5.4',
+      sub_values: { 'reasoning_effort' => 'high' },
+    },
+    'non_other_self_text_model' => {
+      selected: 'gpt-5.4',
+      sub_values: { 'reasoning_effort' => 'high' },
+    },
+  }.freeze
+
   DEFAULTS = {
-    'expand_search_enabled' => true,
-    'expand_model' => 'gpt-4.1-mini-2025-04-14',
+    'expand_search_enabled' => false,
+    'expand_model' => NESTED_OPTION_DEFAULTS['expand_model'][:selected],
     'interactive_search_enabled' => true,
-    'interactive_search_max_questions' => 3,
-    'label_model' => -> { TradeTariffBackend.ai_model },
+    'interactive_search_excluded_chapters' => %w[98 99].freeze,
+    'interactive_search_max_questions' => 7,
+    'label_model' => NESTED_OPTION_DEFAULTS['label_model'][:selected],
     'label_page_size' => -> { TradeTariffBackend.goods_nomenclature_label_page_size },
-    'opensearch_result_limit' => 30,
+    'opensearch_result_limit' => 50,
     'pos_noun_boost' => 10,
     'pos_qualifier_boost' => 3,
     'pos_search_enabled' => true,
     'search_labels_enabled' => true,
     'search_non_declarables' => false,
-    'search_model' => -> { TradeTariffBackend.ai_model },
+    'search_model' => NESTED_OPTION_DEFAULTS['search_model'][:selected],
     'search_result_limit' => 0,
     'suggest_results_limit' => 10,
     'suggest_chemical_cas' => false,
@@ -32,15 +52,22 @@ class AdminConfiguration < Sequel::Model(Sequel[:admin_configurations].qualify(:
     'suggest_synonyms' => false,
     'input_sanitiser_enabled' => true,
     'input_sanitiser_max_length' => 500,
-    'retrieval_method' => 'vector',
+    'retrieval_method' => 'hybrid',
     'rrf_k' => 60,
     'vector_ef_search' => 100,
     'vector_score_threshold' => 35,
-    'other_self_text_model' => -> { TradeTariffBackend.ai_model },
+    'other_self_text_model' => NESTED_OPTION_DEFAULTS['other_self_text_model'][:selected],
     'other_self_text_batch_size' => 5,
-    'non_other_self_text_model' => -> { TradeTariffBackend.ai_model },
+    'non_other_self_text_model' => NESTED_OPTION_DEFAULTS['non_other_self_text_model'][:selected],
     'non_other_self_text_batch_size' => 15,
   }.freeze
+
+  plugin :auto_validations, not_null: :presence
+  plugin :has_paper_trail
+  plugin :timestamps, update_on_create: true
+
+  set_primary_key [:name]
+  unrestrict_primary_key
 
   dataset_module do
     def classification
@@ -62,6 +89,15 @@ class AdminConfiguration < Sequel::Model(Sequel[:admin_configurations].qualify(:
     name = name.to_s
     value = DEFAULTS.fetch(name)
     value.respond_to?(:call) ? value.call : value
+  end
+
+  def self.nested_option_default_for(name)
+    default = NESTED_OPTION_DEFAULTS.fetch(name.to_s)
+
+    {
+      selected: default[:selected],
+      sub_values: default[:sub_values].dup,
+    }
   end
 
   def self.enabled?(name)
@@ -86,12 +122,32 @@ class AdminConfiguration < Sequel::Model(Sequel[:admin_configurations].qualify(:
     config.selected_option(default: default) || default
   end
 
+  def self.multi_options_values(name)
+    config = classification.by_name(name.to_s)
+    default = Array(default_for(name))
+    return default if config.nil?
+
+    val = config[:value]
+    hash = case val
+           when Hash then val
+           when Sequel::Postgres::JSONBHash then val.to_hash
+           else {}
+           end
+
+    selected = hash['selected']
+    selected.is_a?(Array) ? selected : default
+  end
+
   def self.nested_options_value(name)
     config = classification.by_name(name.to_s)
+    nested_default = NESTED_OPTION_DEFAULTS[name.to_s]
     default_value = default_for(name)
 
     if config.nil?
-      return { selected: default_value, sub_values: {} }
+      return {
+        selected: nested_default&.fetch(:selected, default_value) || default_value,
+        sub_values: nested_default&.fetch(:sub_values, {}) || {},
+      }
     end
 
     val = config[:value]
@@ -119,7 +175,7 @@ class AdminConfiguration < Sequel::Model(Sequel[:admin_configurations].qualify(:
     validates_presence :config_type
     validates_presence :area
     validates_presence :description
-    validates_includes %w[string markdown boolean options integer nested_options], :config_type
+    validates_includes %w[string markdown boolean options multi_options integer nested_options], :config_type
     validate_unique_name if new?
     validate_value_for_type
   end
@@ -159,9 +215,6 @@ class AdminConfiguration < Sequel::Model(Sequel[:admin_configurations].qualify(:
 
     val == true
   end
-
-  include ValueNormalizer
-  include ValueValidator
 
   private
 

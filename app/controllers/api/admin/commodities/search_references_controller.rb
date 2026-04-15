@@ -55,7 +55,7 @@ module Api
         end
 
         def productline_suffix
-          admin_commodity_id.split('-', 2)[1] || '80'
+          admin_commodity_id.split('-', 2)[1] || GoodsNomenclature::NON_GROUPING_PRODUCTLINE_SUFFIX
         end
       end
     end

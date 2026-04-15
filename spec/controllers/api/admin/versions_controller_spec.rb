@@ -120,6 +120,36 @@ RSpec.describe Api::Admin::VersionsController do
       end
     end
 
+    context 'with a DescriptionIntercept' do
+      let!(:intercept) { create(:description_intercept, message: 'original guidance') }
+
+      before { intercept.update(message: 'changed guidance') }
+
+      it 'restores the intercept to a previous version' do
+        version = intercept.versions.first
+
+        post :restore, params: { id: version.id }, format: :json
+
+        expect(response).to have_http_status(:ok)
+        expect(intercept.reload.message).to eq('original guidance')
+      end
+    end
+
+    context 'with a GoodsNomenclatureIntercept' do
+      let!(:intercept) { create(:goods_nomenclature_intercept, message: 'original commodity guidance') }
+
+      before { intercept.update(message: 'changed commodity guidance') }
+
+      it 'restores the intercept to a previous version' do
+        version = intercept.versions.first
+
+        post :restore, params: { id: version.id }, format: :json
+
+        expect(response).to have_http_status(:ok)
+        expect(intercept.reload.message).to eq('original commodity guidance')
+      end
+    end
+
     context 'when version does not exist' do
       it 'returns 404' do
         post :restore, params: { id: 999_999 }, format: :json

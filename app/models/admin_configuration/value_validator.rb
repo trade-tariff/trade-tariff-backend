@@ -17,6 +17,8 @@ class AdminConfiguration
         validate_integer_value
       when 'options'
         validate_options_value
+      when 'multi_options'
+        validate_multi_options_value
       when 'nested_options'
         validate_nested_options_value
       when 'string', 'markdown'
@@ -78,6 +80,33 @@ class AdminConfiguration
 
       selected = hash['selected']
       errors.add(:value, t('value.no_selected')) if selected.blank?
+    end
+
+    def validate_multi_options_value
+      val = self[:value]
+      return if val.nil?
+
+      hash = case val
+             when Hash then val
+             when Sequel::Postgres::JSONBHash then val.to_hash
+             when Sequel::Postgres::JSONBObject then return
+             else return errors.add(:value, t('value.invalid_options'))
+             end
+
+      options = hash['options']
+      unless options.is_a?(Array) && options.any?
+        errors.add(:value, t('value.no_options'))
+        return
+      end
+
+      selected = hash['selected']
+      unless selected.is_a?(Array)
+        errors.add(:value, t('value.invalid_options'))
+        return
+      end
+
+      option_keys = options.filter_map { |option| option['key'] if option.is_a?(Hash) }
+      errors.add(:value, t('value.invalid_options')) unless (selected - option_keys).empty?
     end
   end
 end

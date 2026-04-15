@@ -47,7 +47,7 @@ module Api
 
           raise Sequel::RecordNotFound unless gn
 
-          chapter = TimeMachine.now { Chapter.actual.by_code(gn.goods_nomenclature_item_id[0..1]).take }
+          chapter = TimeMachine.now { Chapter.actual.by_code(gn.goods_nomenclature_item_id).take }
           raise Sequel::RecordNotFound unless chapter
 
           # Force regeneration by invalidating context hash so context_stale? returns true

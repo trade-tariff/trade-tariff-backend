@@ -296,6 +296,13 @@ RSpec.describe News::Item do
         it { is_expected.to include twentytwo }
         it { is_expected.to include twentythree }
       end
+
+      context 'with zero year' do
+        let(:year) { '0' }
+
+        it { is_expected.to include twentytwo }
+        it { is_expected.to include twentythree }
+      end
     end
 
     describe '.for_chapters' do

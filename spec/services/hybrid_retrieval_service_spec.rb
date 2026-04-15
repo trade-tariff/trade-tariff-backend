@@ -126,7 +126,7 @@ RSpec.describe HybridRetrievalService do
         described_class.call(query: 'horses', as_of: Time.zone.today)
 
         expect(Search::Instrumentation).to have_received(:retrieval_leg_completed).with(
-          hash_including(leg: :opensearch, status: 'error'),
+          hash_including(leg: :opensearch, status: 'error', error_message: 'opensearch down'),
         )
         expect(Search::Instrumentation).to have_received(:retrieval_leg_completed).with(
           hash_including(leg: :vector, status: 'success'),
@@ -159,7 +159,7 @@ RSpec.describe HybridRetrievalService do
           hash_including(leg: :opensearch, status: 'success'),
         )
         expect(Search::Instrumentation).to have_received(:retrieval_leg_completed).with(
-          hash_including(leg: :vector, status: 'error'),
+          hash_including(leg: :vector, status: 'error', error_message: 'vector down'),
         )
       end
     end

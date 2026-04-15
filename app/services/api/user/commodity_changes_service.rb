@@ -31,8 +31,8 @@ module Api
 
       def ending(with_records: false)
         changes = TariffChange.commodities
-                              .where(operation_date: date)
-                              .where(goods_nomenclature_sid: user_commodity_code_sids)
+                              .on_date(date)
+                              .for_goods_nomenclature_sids(user_commodity_code_sids)
                               .where(action: TariffChangesService::BaseChanges::ENDING)
 
         count = changes.count
@@ -49,8 +49,8 @@ module Api
 
       def classification(with_records: false)
         changes = TariffChange.commodity_descriptions
-                              .where(operation_date: date)
-                              .where(goods_nomenclature_sid: user_commodity_code_sids)
+                              .on_date(date)
+                              .for_goods_nomenclature_sids(user_commodity_code_sids)
                               .where(action: TariffChangesService::BaseChanges::UPDATE)
         count = changes.count
 

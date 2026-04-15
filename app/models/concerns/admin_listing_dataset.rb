@@ -35,11 +35,14 @@ module AdminListingDataset
   end
 
   def nomenclature_type_sql
+    chapter_pattern = GoodsNomenclature.sql_pattern_for(GoodsNomenclature::CHAPTER_SUFFIX)
+    heading_pattern = GoodsNomenclature.sql_pattern_for(GoodsNomenclature::HEADING_SUFFIX)
+
     <<~SQL.squish
       CASE
-        WHEN "gn"."goods_nomenclature_item_id" LIKE '__00000000' THEN 'chapter'
-        WHEN "gn"."goods_nomenclature_item_id" LIKE '____000000' THEN 'heading'
-        WHEN "gn"."producline_suffix" != '80' OR EXISTS (
+        WHEN "gn"."goods_nomenclature_item_id" LIKE '#{chapter_pattern}' THEN 'chapter'
+        WHEN "gn"."goods_nomenclature_item_id" LIKE '#{heading_pattern}' THEN 'heading'
+        WHEN "gn"."producline_suffix" != '#{GoodsNomenclature::NON_GROUPING_PRODUCTLINE_SUFFIX}' OR EXISTS (
           SELECT 1
           FROM goods_nomenclature_tree_nodes parent
           JOIN goods_nomenclature_tree_nodes child

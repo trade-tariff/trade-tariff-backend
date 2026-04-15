@@ -268,7 +268,7 @@ RSpec.describe OpenaiClient do
       expect(client).to be_a(Faraday::Connection)
       expect(client.headers['Authorization']).to eq("Bearer #{TradeTariffBackend.openai_api_key}")
       expect(client.headers['Content-Type']).to eq('application/json')
-      expect(client.headers['User-Agent']).to eq('TradeTariffBackend/')
+      expect(client.headers['User-Agent']).to eq(TradeTariffBackend.user_agent)
     end
 
     it 'memoizes the client' do

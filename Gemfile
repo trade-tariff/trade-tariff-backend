@@ -44,7 +44,6 @@ gem 'diff-lcs'
 gem 'bootsnap', require: false
 gem 'csv'
 gem 'engtagger'
-gem 'hashie'
 gem 'holidays'
 gem 'lograge'
 gem 'logstash-event'

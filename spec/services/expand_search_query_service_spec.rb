@@ -33,7 +33,7 @@ RSpec.describe ExpandSearchQueryService do
         expect(OpenaiClient).to have_received(:call).with(
           a_string_including('laptop'),
           model: 'gpt-4.1-mini-2025-04-14',
-          reasoning_effort: nil,
+          reasoning_effort: 'low',
         )
       end
     end
@@ -200,7 +200,7 @@ RSpec.describe ExpandSearchQueryService do
         expect(OpenaiClient).to have_received(:call).with(
           'Custom prompt for: laptop',
           model: 'gpt-4.1-mini-2025-04-14',
-          reasoning_effort: nil,
+          reasoning_effort: 'low',
         )
       end
     end

@@ -183,7 +183,7 @@ RSpec.describe GoodsNomenclatureLabel do
   end
 
   describe '.admin_listing' do
-    let(:commodity) { create(:goods_nomenclature, producline_suffix: '80') }
+    let(:commodity) { create(:goods_nomenclature, producline_suffix: GoodsNomenclature::NON_GROUPING_PRODUCTLINE_SUFFIX) }
 
     before do
       create(:goods_nomenclature_label,
@@ -214,7 +214,7 @@ RSpec.describe GoodsNomenclatureLabel do
   end
 
   describe '.search' do
-    let(:commodity) { create(:goods_nomenclature, goods_nomenclature_item_id: '0201100000', producline_suffix: '80') }
+    let(:commodity) { create(:goods_nomenclature, goods_nomenclature_item_id: '0201100000', producline_suffix: GoodsNomenclature::NON_GROUPING_PRODUCTLINE_SUFFIX) }
 
     before do
       create(:goods_nomenclature_label,
@@ -263,8 +263,8 @@ RSpec.describe GoodsNomenclatureLabel do
   end
 
   describe '.for_status' do
-    let(:commodity_a) { create(:goods_nomenclature, producline_suffix: '80') }
-    let(:commodity_b) { create(:goods_nomenclature, producline_suffix: '80') }
+    let(:commodity_a) { create(:goods_nomenclature, producline_suffix: GoodsNomenclature::NON_GROUPING_PRODUCTLINE_SUFFIX) }
+    let(:commodity_b) { create(:goods_nomenclature, producline_suffix: GoodsNomenclature::NON_GROUPING_PRODUCTLINE_SUFFIX) }
 
     before do
       create(:goods_nomenclature_label, :stale, goods_nomenclature: commodity_a)
@@ -290,9 +290,9 @@ RSpec.describe GoodsNomenclatureLabel do
   end
 
   describe '.for_score_category' do
-    let(:commodity_bad) { create(:goods_nomenclature, producline_suffix: '80') }
-    let(:commodity_good) { create(:goods_nomenclature, producline_suffix: '80') }
-    let(:commodity_nil) { create(:goods_nomenclature, producline_suffix: '80') }
+    let(:commodity_bad) { create(:goods_nomenclature, producline_suffix: GoodsNomenclature::NON_GROUPING_PRODUCTLINE_SUFFIX) }
+    let(:commodity_good) { create(:goods_nomenclature, producline_suffix: GoodsNomenclature::NON_GROUPING_PRODUCTLINE_SUFFIX) }
+    let(:commodity_nil) { create(:goods_nomenclature, producline_suffix: GoodsNomenclature::NON_GROUPING_PRODUCTLINE_SUFFIX) }
 
     before do
       create(:goods_nomenclature_label, goods_nomenclature: commodity_bad, description_score: 0.2)

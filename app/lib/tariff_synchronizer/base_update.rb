@@ -4,7 +4,6 @@ module TariffSynchronizer
 
     # Used for TARIC updates only.
     one_to_many :presence_errors, class: TariffUpdatePresenceError, key: :tariff_update_filename
-
     def presence_error_ids
       presence_errors.pluck(:id)
     end
@@ -38,7 +37,7 @@ module TariffSynchronizer
       end
 
       def applied
-        filter(state: APPLIED_STATE)
+        where(state: APPLIED_STATE)
       end
 
       def pending
@@ -185,8 +184,6 @@ module TariffSynchronizer
 
       def sync(initial_date:)
         applicable_download_date_range(initial_date:).each { |date| download(date) }
-
-        notify_about_missing_updates if last_updates_are_missing?
       end
 
       def update_type
@@ -211,16 +208,6 @@ module TariffSynchronizer
 
           [last_download.issue_date, DOWNLOAD_FROM.ago.to_date].min
         end
-      end
-
-      def last_updates_are_missing?
-        holidays = BankHolidays.last(TariffSynchronizer.warning_day_count)
-        descending.exclude(issue_date: holidays)
-          .first.try(:missing?)
-      end
-
-      def notify_about_missing_updates
-        TariffLogger.missing_updates(update_type:, count: TariffSynchronizer.warning_day_count)
       end
     end
   end

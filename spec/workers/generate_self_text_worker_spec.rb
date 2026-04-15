@@ -18,12 +18,12 @@ RSpec.describe GenerateSelfTextWorker, type: :worker do
       before do
         gn_stale = create(:goods_nomenclature, :actual,
                           goods_nomenclature_item_id: '0101210000',
-                          producline_suffix: '80')
+                          producline_suffix: GoodsNomenclature::NON_GROUPING_PRODUCTLINE_SUFFIX)
         create(:goods_nomenclature_self_text, :stale, goods_nomenclature: gn_stale)
 
         gn_fresh = create(:goods_nomenclature, :actual,
                           goods_nomenclature_item_id: '0201210000',
-                          producline_suffix: '80')
+                          producline_suffix: GoodsNomenclature::NON_GROUPING_PRODUCTLINE_SUFFIX)
         create(:goods_nomenclature_self_text, goods_nomenclature: gn_fresh)
       end
 
@@ -58,7 +58,7 @@ RSpec.describe GenerateSelfTextWorker, type: :worker do
       before do
         create(:goods_nomenclature, :actual,
                goods_nomenclature_item_id: '0301210000',
-               producline_suffix: '80')
+               producline_suffix: GoodsNomenclature::NON_GROUPING_PRODUCTLINE_SUFFIX)
       end
 
       it 'enqueues the chapter' do
@@ -74,7 +74,7 @@ RSpec.describe GenerateSelfTextWorker, type: :worker do
         create(:chapter, :actual, goods_nomenclature_item_id: '0500000000')
         gn = create(:goods_nomenclature, :actual,
                     goods_nomenclature_item_id: '0501210000',
-                    producline_suffix: '80')
+                    producline_suffix: GoodsNomenclature::NON_GROUPING_PRODUCTLINE_SUFFIX)
         create(:hidden_goods_nomenclature,
                goods_nomenclature_item_id: gn.goods_nomenclature_item_id)
       end
@@ -91,7 +91,7 @@ RSpec.describe GenerateSelfTextWorker, type: :worker do
         create(:chapter, :actual, goods_nomenclature_item_id: '0400000000')
         gn = create(:goods_nomenclature, :actual,
                     goods_nomenclature_item_id: '0401210000',
-                    producline_suffix: '80')
+                    producline_suffix: GoodsNomenclature::NON_GROUPING_PRODUCTLINE_SUFFIX)
         create(:goods_nomenclature_self_text, goods_nomenclature: gn)
       end
 

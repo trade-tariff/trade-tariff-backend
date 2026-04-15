@@ -10,7 +10,10 @@ class StopPressEmailWorker
 
     return if stop_press.nil?
     return if user.nil?
-    return unless user.email
+    return if user.email.blank?
+
+    subscription = user.stop_press_subscription
+    return if subscription.nil?
 
     tracking_params = 'utm_source=private+beta&utm_medium=email&utm_campaign=stop+press+notification'
 
@@ -19,7 +22,7 @@ class StopPressEmailWorker
       stop_press_link: "#{stop_press.public_url}?#{tracking_params}",
       subscription_reason: subscription_reason(stop_press, user),
       site_url: "#{URI.join(TradeTariffBackend.frontend_host, 'subscriptions/')}?#{tracking_params}",
-      unsubscribe_url: "#{URI.join(TradeTariffBackend.frontend_host, 'subscriptions/unsubscribe/', user.stop_press_subscription)}?#{tracking_params}",
+      unsubscribe_url: "#{URI.join(TradeTariffBackend.frontend_host, 'subscriptions/unsubscribe/', subscription.uuid)}?#{tracking_params}",
     }
 
     response = client.send_email(user.email, TEMPLATE_ID, personalisation, REPLY_TO_ID, nil)

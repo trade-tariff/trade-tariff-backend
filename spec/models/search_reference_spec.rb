@@ -43,7 +43,11 @@ RSpec.describe SearchReference do
     end
 
     context 'when getting a Commodity reference' do
-      let(:referenced) { create(:commodity, goods_nomenclature_item_id: '0101110000', producline_suffix: '80') }
+      let(:referenced) do
+        create(:commodity,
+               goods_nomenclature_item_id: '0101110000',
+               producline_suffix: GoodsNomenclature::NON_GROUPING_PRODUCTLINE_SUFFIX)
+      end
 
       it { expect(search_reference.referenced).to be_a(Commodity) }
     end

@@ -29,6 +29,7 @@ module Search
             bool: {
               must: [
                 hidden_goods_nomenclature_filter,
+                excluded_chapter_filter,
                 declarable_filter,
                 multi_match_clause,
                 validity_date_filter,
@@ -144,6 +145,18 @@ module Search
           must_not: {
             terms: {
               goods_nomenclature_item_id: HiddenGoodsNomenclature.codes,
+            },
+          },
+        },
+      }
+    end
+
+    def excluded_chapter_filter
+      {
+        bool: {
+          must_not: {
+            terms: {
+              chapter_short_code: AdminConfiguration.multi_options_values('interactive_search_excluded_chapters'),
             },
           },
         },

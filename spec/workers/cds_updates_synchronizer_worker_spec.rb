@@ -97,8 +97,8 @@ RSpec.describe CdsUpdatesSynchronizerWorker, type: :worker do
           it { expect(DataMigrator).to have_received(:migrate_up!).with(nil) }
         end
 
-        it 'notifies Slack ETL channel' do
-          expect(SlackNotifierService).to have_received(:call).with(/CDS file missing/)
+        it 'does not notify Slack' do
+          expect(SlackNotifierService).not_to have_received(:call)
         end
       end
 

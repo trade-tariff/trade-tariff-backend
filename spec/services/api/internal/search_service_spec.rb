@@ -153,6 +153,35 @@ RSpec.describe Api::Internal::SearchService do
       end
     end
 
+    context 'when exact match is in a configured excluded chapter' do
+      let(:opensearch_response) { { 'hits' => { 'hits' => [] } } }
+
+      before do
+        create(:admin_configuration,
+               name: 'interactive_search_excluded_chapters',
+               config_type: 'multi_options',
+               area: 'classification',
+               value: {
+                 'selected' => %w[98],
+                 'options' => [
+                   { 'key' => '98', 'label' => 'Chapter 98' },
+                   { 'key' => '99', 'label' => 'Chapter 99' },
+                 ],
+               })
+        create(:chapter, :with_description,
+               goods_nomenclature_item_id: '9800000000',
+               description: 'special classifications')
+        allow(TradeTariffBackend.search_client).to receive(:search).and_return(opensearch_response)
+      end
+
+      it 'falls through to OpenSearch instead of returning exact match' do
+        result = described_class.new(q: '98').call
+
+        expect(result).to eq(data: [])
+        expect(TradeTariffBackend.search_client).to have_received(:search)
+      end
+    end
+
     context 'when suggestion exists but has no associated goods nomenclature' do
       let(:opensearch_response) { { 'hits' => { 'hits' => [] } } }
 
@@ -810,6 +839,8 @@ RSpec.describe Api::Internal::SearchService do
       end
 
       before do
+        allow(AdminConfiguration).to receive(:enabled?).and_call_original
+        allow(AdminConfiguration).to receive(:enabled?).with('expand_search_enabled').and_return(true)
         allow(ExpandSearchQueryService).to receive(:call)
           .and_return(ExpandSearchQueryService::Result.new(
                         expanded_query: 'portable data processing machine',

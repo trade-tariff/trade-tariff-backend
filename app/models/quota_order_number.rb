@@ -1,4 +1,6 @@
 class QuotaOrderNumber < Sequel::Model
+  LICENSED_QUOTA_PREFIXES = %w[094 084 074 064 054 044 034 024 014].freeze
+
   plugin :time_machine
   plugin :oplog, primary_key: :quota_order_number_sid
 
@@ -38,8 +40,6 @@ class QuotaOrderNumber < Sequel::Model
         .with_actual(QuotaDefinition)
     end
   end
-
-  LICENSED_QUOTA_PREFIXES = %w[094 084 074 064 054 044 034 024 014].freeze
 
   def quota_definition!
     return nil if quota_order_number_id.starts_with?(*LICENSED_QUOTA_PREFIXES)

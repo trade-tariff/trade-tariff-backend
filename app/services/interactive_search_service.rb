@@ -170,11 +170,17 @@ class InteractiveSearchService
 
   def final_answer
     context = build_context + FINAL_ANSWER_INSTRUCTION
-    response = OpenaiClient.call(context, model: configured_model, reasoning_effort: configured_reasoning_effort)
+    response = Search::Instrumentation.api_call(
+      request_id: request_id,
+      model: configured_model,
+      attempt_number: attempt,
+    ) { OpenaiClient.call(context, model: configured_model, reasoning_effort: configured_reasoning_effort) }
     parsed = ExtractBottomJson.call(response)
 
     if parsed['answers'].present?
       answers_result(parsed['answers'])
+    elsif parsed['error'].present?
+      error_result(parsed['error'])
     else
       best_available_answers
     end

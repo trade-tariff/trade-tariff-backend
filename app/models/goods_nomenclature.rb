@@ -1,40 +1,38 @@
 class GoodsNomenclature < Sequel::Model
-  VALID_GOODS_NOMENCLATURE_ITEM_ID_LENGTH = 10
-  CLASSIFICATION_CHAPTER = '98'.freeze
-
-  set_dataset order(Sequel.asc(:goods_nomenclatures__goods_nomenclature_item_id), Sequel.asc(:goods_nomenclatures__producline_suffix))
-  set_primary_key [:goods_nomenclature_sid]
-
-  plugin :time_machine
-
-  plugin :oplog, primary_key: :goods_nomenclature_sid, materialized: true
-  plugin :nullable
-  plugin :active_model
-
-  plugin :sti, class_determinator: lambda { |record|
-    gono_id = record[:goods_nomenclature_item_id].to_s
-
-    if gono_id.ends_with?('00000000')
-      'Chapter'
-    elsif gono_id.ends_with?('000000') && gono_id.slice(2, 2) != '00'
-      'Heading'
-    elsif !gono_id.ends_with?('000000')
-      # checking its a False class because if :leaf is not assigned, we should
-      # continue to assume Commodity as previously done
-      #
-      # :leaf can be included by the use of `GoodsNomenclature.with_leaf_column`
-      record[:producline_suffix] != '80' || record[:leaf].is_a?(FalseClass) ? 'Subheading' : 'Commodity'
-    else
-      'GoodsNomenclature'
-    end
-  }
-
   extend ActiveModel::Naming
 
   include AncestorChainDescription
   include ClassificationDescription
   include Formatter
-  include GoodsNomenclatures::NestedSet
+
+  CLASSIFICATION_CHAPTER = '98'.freeze
+  CHAPTER_SUFFIX = '00000000'.freeze
+  HEADING_SUFFIX = '000000'.freeze
+  NON_GROUPING_PRODUCTLINE_SUFFIX = '80'.freeze
+
+  set_dataset order(Sequel.asc(:goods_nomenclatures__goods_nomenclature_item_id), Sequel.asc(:goods_nomenclatures__producline_suffix))
+  set_primary_key [:goods_nomenclature_sid]
+
+  include GoodsNomenclatures::NestedSet # must be after set_dataset and set_primary_key
+
+  plugin :time_machine
+  plugin :oplog, primary_key: :goods_nomenclature_sid, materialized: true
+
+  plugin :sti, class_determinator: lambda { |record|
+    gono_id = record[:goods_nomenclature_item_id].to_s
+
+    if gono_id.ends_with?(CHAPTER_SUFFIX)
+      'Chapter'
+    elsif gono_id.ends_with?(HEADING_SUFFIX)
+      'Heading'
+    else
+      # checking its a False class because if :leaf is not assigned, we should
+      # continue to assume Commodity as previously done
+      #
+      # :leaf can be included by the use of `GoodsNomenclature.with_leaf_column`
+      record[:producline_suffix] != NON_GROUPING_PRODUCTLINE_SUFFIX || record[:leaf].is_a?(FalseClass) ? 'Subheading' : 'Commodity'
+    end
+  }
 
   one_to_one :chapter,
              key: :goods_nomenclature_item_id,
@@ -91,26 +89,6 @@ class GoodsNomenclature < Sequel::Model
     ds.with_actual(FootnoteAssociationGoodsNomenclature)
   end
 
-  def number_indents
-    if values.key?(:number_indents)
-      values[:number_indents]
-    elsif goods_nomenclature_indent.present?
-      goods_nomenclature_indent.number_indents
-    else
-      reload && goods_nomenclature_indent&.number_indents
-    end
-  end
-
-  delegate :description,
-           :description_html,
-           :description_indexed,
-           :description_plain,
-           :formatted_description,
-           :csv_formatted_description,
-           :consigned_from,
-           to: :goods_nomenclature_description,
-           allow_nil: true
-
   # Find goods nomenclature where I am the origin (e.g. who succeed me)
   one_to_many :deriving_goods_nomenclature_origins, key: %i[derived_goods_nomenclature_item_id derived_productline_suffix],
                                                     primary_key: %i[goods_nomenclature_item_id producline_suffix],
@@ -145,9 +123,35 @@ class GoodsNomenclature < Sequel::Model
                                      primary_key: %i[goods_nomenclature_item_id producline_suffix],
                                      reciprocal: :goods_nomenclature
 
+  delegate :description,
+           :description_html,
+           :description_indexed,
+           :description_plain,
+           :formatted_description,
+           :csv_formatted_description,
+           :consigned_from,
+           to: :goods_nomenclature_description,
+           allow_nil: true
+
+  def self.sql_pattern_for(suffix)
+    '_' * (10 - suffix.length) + suffix
+  end
+
   dataset_module do
+    def by_codes(codes)
+      where(goods_nomenclatures__goods_nomenclature_item_id: codes)
+    end
+
+    def by_code(code = '')
+      where(goods_nomenclatures__goods_nomenclature_item_id: code.to_s.first(10))
+    end
+
+    def by_productline_suffix(productline_suffix)
+      where(goods_nomenclatures__producline_suffix: productline_suffix)
+    end
+
     def non_hidden
-      filter(Sequel.~(goods_nomenclatures__goods_nomenclature_item_id: HiddenGoodsNomenclature.codes))
+      where(Sequel.~(goods_nomenclatures__goods_nomenclature_item_id: HiddenGoodsNomenclature.codes))
     end
 
     def non_classifieds
@@ -155,7 +159,7 @@ class GoodsNomenclature < Sequel::Model
     end
 
     def non_grouping
-      where(producline_suffix: '80')
+      where(goods_nomenclatures__producline_suffix: NON_GROUPING_PRODUCTLINE_SUFFIX)
     end
 
     def join_footnotes
@@ -184,6 +188,16 @@ class GoodsNomenclature < Sequel::Model
       combined_conditions = conditions.reduce(:|)
 
       where(combined_conditions)
+    end
+  end
+
+  def number_indents
+    if values.key?(:number_indents)
+      values[:number_indents]
+    elsif goods_nomenclature_indent.present?
+      goods_nomenclature_indent.number_indents
+    else
+      reload && goods_nomenclature_indent&.number_indents
     end
   end
 
@@ -270,7 +284,7 @@ class GoodsNomenclature < Sequel::Model
   end
 
   def non_grouping?
-    producline_suffix == GoodsNomenclatureIndent::NON_GROUPING_PRODUCTLINE_SUFFIX
+    producline_suffix == NON_GROUPING_PRODUCTLINE_SUFFIX
   end
 
   def grouping?

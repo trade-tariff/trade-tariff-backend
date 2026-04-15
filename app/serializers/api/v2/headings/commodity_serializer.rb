@@ -21,7 +21,7 @@ module Api
                    :validity_end_date
 
         attribute :declarable do |commodity|
-          commodity.leaf && commodity.producline_suffix == '80'
+          commodity.leaf && commodity.producline_suffix == GoodsNomenclature::NON_GROUPING_PRODUCTLINE_SUFFIX
         end
 
         has_many :overview_measures, serializer: Api::V2::Measures::OverviewMeasureSerializer

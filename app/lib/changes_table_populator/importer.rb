@@ -74,7 +74,7 @@ module ChangesTablePopulator
       [
         row[:goods_nomenclature_item_id],
         row[:goods_nomenclature_sid],
-        row[:producline_suffix] || row[:productline_suffix] || '80',
+        row[:producline_suffix] || row[:productline_suffix] || GoodsNomenclature::NON_GROUPING_PRODUCTLINE_SUFFIX,
         is_end_line,
         change_type,
         day,

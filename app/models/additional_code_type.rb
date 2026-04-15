@@ -19,27 +19,4 @@ class AdditionalCodeType < Sequel::Model
 
   delegate :present?, to: :meursing_table_plan, prefix: true, allow_nil: true
   delegate :description, to: :additional_code_type_description
-
-  APPLICATION_CODES = {
-    0 => 'Export refund nomencalture',
-    1 => 'Additional Codes',
-    3 => 'Meursing addition codes',
-    4 => 'Export refund for processed agricultural goods',
-  }.freeze
-
-  def meursing?
-    application_code.in?('3')
-  end
-
-  def non_meursing?
-    !meursing?
-  end
-
-  def export_refund?
-    application_code == '0'
-  end
-
-  def export_refund_agricultural?
-    application_code == '4'
-  end
 end

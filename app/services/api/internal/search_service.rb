@@ -59,6 +59,7 @@ module Api
             final_result_type: interactive_result&.type&.to_s,
             results_type: retrieval.results_type,
             max_score: retrieval.max_score,
+            error_message: interactive_result&.type == :error ? interactive_result.data[:message] : nil,
           }
 
           [response, completion]
@@ -173,7 +174,13 @@ module Api
       end
 
       def hidden?(goods_nomenclature)
-        ::HiddenGoodsNomenclature.codes.include?(goods_nomenclature.goods_nomenclature_item_id)
+        ::HiddenGoodsNomenclature.codes.include?(goods_nomenclature.goods_nomenclature_item_id) ||
+          excluded_chapter?(goods_nomenclature)
+      end
+
+      def excluded_chapter?(goods_nomenclature)
+        AdminConfiguration.multi_options_values('interactive_search_excluded_chapters')
+          .include?(goods_nomenclature.chapter_short_code.to_s)
       end
 
       def digits_only?(query)

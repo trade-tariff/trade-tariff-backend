@@ -99,6 +99,10 @@ RSpec.describe 'tariff:sync:failures' do
       expect(output).to match(/Sequel::DatabaseError/)
     end
 
+    it 'does not show CDS error counts' do
+      expect(output).not_to match(/CDS errors\s+:/)
+    end
+
     it 'suggests running failure_detail' do
       expect(output).to include('failure_detail')
     end
@@ -193,6 +197,10 @@ RSpec.describe 'tariff:sync:failure_detail' do
 
     it 'shows the previous import operation counts' do
       expect(output).to match(/total_count/)
+    end
+
+    it 'does not show CDS error details' do
+      expect(output).not_to match(/CDS Record Errors/)
     end
   end
 

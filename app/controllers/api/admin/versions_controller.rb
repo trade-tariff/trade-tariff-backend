@@ -9,6 +9,8 @@ module Api
         'GoodsNomenclatureLabel' => GoodsNomenclatureLabel,
         'GoodsNomenclatureSelfText' => GoodsNomenclatureSelfText,
         'AdminConfiguration' => AdminConfiguration,
+        'DescriptionIntercept' => DescriptionIntercept,
+        'GoodsNomenclatureIntercept' => GoodsNomenclatureIntercept,
       }.freeze
 
       def restore

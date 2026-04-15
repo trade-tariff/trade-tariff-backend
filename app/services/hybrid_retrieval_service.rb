@@ -60,6 +60,7 @@ class HybridRetrievalService
 
     Search::Instrumentation.retrieval_leg_completed(
       request_id: @request_id, leg: leg, duration_ms: duration_ms, result_count: 0, status: 'error',
+      error_message: e.message
     )
 
     Rails.logger.error("HybridRetrievalService #{leg} leg failed: #{e.message}")

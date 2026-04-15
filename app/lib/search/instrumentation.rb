@@ -4,6 +4,8 @@ module Search
   module Instrumentation
     module_function
 
+    ERROR_MESSAGE_MAX_LENGTH = 500
+
     def instrument(event_name, payload = {}, &block)
       ActiveSupport::Notifications.instrument("#{event_name}.search", payload, &block)
     end
@@ -51,11 +53,13 @@ module Search
 
       instrument(
         'api_call_completed',
-        request_id:,
-        model:,
-        duration_ms: (duration * 1000).round(2),
-        response_type: determine_response_type(result),
-        attempt_number:,
+        {
+          request_id:,
+          model:,
+          duration_ms: (duration * 1000).round(2),
+          response_type: determine_response_type(result),
+          attempt_number:,
+        }.merge(error_payload_for_result(result)),
       )
 
       result
@@ -63,11 +67,13 @@ module Search
       duration = Process.clock_gettime(Process::CLOCK_MONOTONIC) - start_time
       instrument(
         'api_call_completed',
-        request_id:,
-        model:,
-        duration_ms: (duration * 1000).round(2),
-        response_type: 'error',
-        attempt_number:,
+        {
+          request_id:,
+          model:,
+          duration_ms: (duration * 1000).round(2),
+          response_type: 'error',
+          attempt_number:,
+        }.merge(truncate_error_payload(e.message)),
       )
       search_failed(request_id:, error_type: e.class.name, error_message: e.message, search_type: 'interactive')
       raise
@@ -81,7 +87,7 @@ module Search
       instrument('answer_returned', request_id:, answer_count:, confidence_levels:, attempt_number:)
     end
 
-    def search_completed(request_id:, search_type:, total_duration_ms:, result_count:, query: nil, total_attempts: nil, total_questions: nil, final_result_type: nil, results_type: nil, max_score: nil)
+    def search_completed(request_id:, search_type:, total_duration_ms:, result_count:, query: nil, total_attempts: nil, total_questions: nil, final_result_type: nil, results_type: nil, max_score: nil, error_message: nil)
       payload = {
         request_id:,
         query:,
@@ -94,11 +100,21 @@ module Search
       }
       payload[:results_type] = results_type if results_type
       payload[:max_score] = max_score if max_score
+      payload.merge!(truncate_error_payload(error_message))
       instrument('search_completed', payload)
     end
 
-    def retrieval_leg_completed(request_id:, leg:, duration_ms:, result_count:, status:)
-      instrument('retrieval_leg_completed', request_id:, leg:, duration_ms:, result_count:, status:)
+    def retrieval_leg_completed(request_id:, leg:, duration_ms:, result_count:, status:, error_message: nil)
+      instrument(
+        'retrieval_leg_completed',
+        {
+          request_id:,
+          leg:,
+          duration_ms:,
+          result_count:,
+          status:,
+        }.merge(truncate_error_payload(error_message)),
+      )
     end
 
     def result_selected(request_id:, goods_nomenclature_item_id:, goods_nomenclature_class:)
@@ -106,13 +122,20 @@ module Search
     end
 
     def search_failed(request_id:, error_type:, error_message:, search_type:)
-      instrument('search_failed', request_id:, error_type:, error_message:, search_type:)
+      instrument(
+        'search_failed',
+        {
+          request_id:,
+          error_type:,
+          search_type:,
+        }.merge(truncate_error_payload(error_message)),
+      )
     end
 
     def determine_response_type(result)
       return 'unknown' if result.nil?
 
-      parsed = result.is_a?(String) ? ExtractBottomJson.call(result) : result
+      parsed = parse_result(result)
       return 'error' if parsed.is_a?(Hash) && parsed['error'].present?
       return 'answers' if parsed.is_a?(Hash) && parsed['answers'].present?
       return 'questions' if parsed.is_a?(Hash) && parsed['questions'].is_a?(Array) && parsed['questions'].any?
@@ -120,6 +143,30 @@ module Search
       'unknown'
     rescue StandardError
       'unknown'
+    end
+
+    def error_payload_for_result(result)
+      parsed = parse_result(result)
+      return {} unless parsed.is_a?(Hash) && parsed['error'].present?
+
+      truncate_error_payload(parsed['error'])
+    rescue StandardError
+      {}
+    end
+
+    def parse_result(result)
+      result.is_a?(String) ? ExtractBottomJson.call(result) : result
+    end
+
+    def truncate_error_payload(error_message)
+      return {} if error_message.blank?
+
+      message = error_message.to_s
+
+      {
+        error_message: message.first(ERROR_MESSAGE_MAX_LENGTH),
+        error_message_truncated: message.length > ERROR_MESSAGE_MAX_LENGTH,
+      }
     end
   end
 end

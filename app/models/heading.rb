@@ -1,8 +1,6 @@
 class Heading < GoodsNomenclature
-  plugin :oplog, primary_key: :goods_nomenclature_sid, materialized: true
-
-  set_dataset filter('goods_nomenclatures.goods_nomenclature_item_id LIKE ?', '____000000')
-              .filter('goods_nomenclatures.goods_nomenclature_item_id NOT LIKE ?', '__00______')
+  set_dataset where('goods_nomenclatures.goods_nomenclature_item_id LIKE ?', GoodsNomenclature.sql_pattern_for(HEADING_SUFFIX))
+              .where('goods_nomenclatures.goods_nomenclature_item_id NOT LIKE ?', GoodsNomenclature.sql_pattern_for(CHAPTER_SUFFIX))
               .order(
                 Sequel.asc(:goods_nomenclature_item_id),
                 Sequel.asc(:goods_nomenclatures__producline_suffix),
@@ -10,7 +8,9 @@ class Heading < GoodsNomenclature
 
   set_primary_key [:goods_nomenclature_sid]
 
-  include SearchReferenceable
+  include SearchReferenceable # must be after set_dataset and set_primary_key
+
+  plugin :oplog, primary_key: :goods_nomenclature_sid, materialized: true
 
   one_to_one :chapter,
              primary_key: :chapter_short_code,
@@ -22,7 +22,7 @@ class Heading < GoodsNomenclature
 
   dataset_module do
     def by_code(code = '')
-      filter(goods_nomenclatures__goods_nomenclature_item_id: "#{code.to_s.first(4)}000000")
+      where(goods_nomenclatures__goods_nomenclature_item_id: "#{code.to_s.first(4)}#{HEADING_SUFFIX}")
     end
   end
 
@@ -54,7 +54,7 @@ class Heading < GoodsNomenclature
       :operation,
       Sequel.as(depth, :depth),
     ).where(pk_hash)
-     .union(Commodity.changes_for(depth + 1, ['goods_nomenclature_item_id LIKE ? AND goods_nomenclature_item_id NOT LIKE ?', relevant_goods_nomenclature, '____000000']))
+     .union(Commodity.changes_for(depth + 1, ['goods_nomenclature_item_id LIKE ? AND goods_nomenclature_item_id NOT LIKE ?', relevant_goods_nomenclature, GoodsNomenclature.sql_pattern_for(HEADING_SUFFIX)]))
      .union(Measure.changes_for(depth + 1, ['goods_nomenclature_item_id LIKE ?', relevant_goods_nomenclature]))
      .from_self
      .where(Sequel.~(operation_date: nil))

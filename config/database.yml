@@ -19,4 +19,7 @@ test:
 production:
   <<: *default
   url: <%= ENV['DATABASE_URL'] %>
-  pool: <%= ENV['DB_POOL'] || 20 %>
+  # DB_POOL is derived by each process entrypoint from its own concurrency
+  # setting, so Puma can follow MAX_THREADS and Sidekiq can follow
+  # SIDEKIQ_CONCURRENCY without guessing process type here.
+  pool: <%= Integer(ENV.fetch('DB_POOL', 6)) %>

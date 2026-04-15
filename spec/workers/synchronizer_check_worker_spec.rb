@@ -1,38 +1,69 @@
 RSpec.describe SynchronizerCheckWorker, type: :worker do
   describe '#perform' do
-    before { allow(::NewRelic::Agent).to receive(:notice_error) }
+    subject(:perform) { described_class.new.perform }
 
-    context 'with data' do
-      before do
-        QuotaBalanceEvent::Operation.where(oid: qbe.oid).update(created_at:)
+    before { allow(NewRelic::Agent).to receive(:record_custom_event) }
 
-        described_class.new.perform
-      end
+    context 'when there are no applied updates' do
+      before { perform }
 
-      let(:qbe) { create :quota_balance_event }
-
-      context 'when it is up to date' do
-        let(:created_at) { 1.day.ago }
-
-        it 'takes no action' do
-          expect(NewRelic::Agent).not_to have_received(:notice_error)
-        end
-      end
-
-      context 'when it is outdated' do
-        let(:created_at) { 10.days.ago }
-
-        it 'alerts with the failing service' do
-          expect(NewRelic::Agent).to have_received(:notice_error).with %r{CDS sync problem}
-        end
+      it 'records the sentinel age event' do
+        expect(NewRelic::Agent).to have_received(:record_custom_event)
+          .with('TariffSyncAge', service: 'uk', age_minutes: SynchronizerCheckWorker::NO_SYNC_SENTINEL_MINUTES, expected_stale: false)
       end
     end
 
-    context 'with no data' do
-      before { described_class.new.perform }
+    context 'when the most recent applied update is recent' do
+      before do
+        create :base_update, :applied, applied_at: 2.hours.ago
+        perform
+      end
 
-      it 'alerts with the failing service' do
-        expect(NewRelic::Agent).to have_received(:notice_error).with %r{CDS sync problem}
+      it 'records an age event close to 120 minutes' do
+        expect(NewRelic::Agent).to have_received(:record_custom_event)
+          .with('TariffSyncAge', service: 'uk', age_minutes: be_within(2).of(120), expected_stale: false)
+      end
+    end
+
+    context 'when the most recent applied update is stale' do
+      before do
+        create :base_update, :applied, applied_at: 25.hours.ago
+        perform
+      end
+
+      it 'records an age event over 24 hours' do
+        expect(NewRelic::Agent).to have_received(:record_custom_event)
+          .with('TariffSyncAge', service: 'uk', age_minutes: be > 1440, expected_stale: false)
+      end
+    end
+
+    context 'when the XI service is running' do
+      before { allow(TradeTariffBackend).to receive(:service).and_return('xi') }
+
+      context 'when on a day with no TARIC updates (Sunday, Monday, Tuesday)' do
+        before do
+          travel_to Time.zone.now.next_occurring(:monday)
+          create :base_update, :applied, applied_at: 2.days.ago
+          perform
+        end
+
+        it 'records the event as expected_stale' do
+          expect(NewRelic::Agent).to have_received(:record_custom_event)
+            .with('TariffSyncAge', service: 'xi', age_minutes: be > 1440, expected_stale: true)
+        end
+      end
+
+      context 'when on a day with TARIC updates (Wednesday–Saturday)' do
+        before do
+          travel_to Time.zone.now.next_occurring(:wednesday)
+          create :base_update, :applied, applied_at: 2.hours.ago
+          perform
+        end
+
+        it 'records the event as not expected_stale' do
+          expect(NewRelic::Agent).to have_received(:record_custom_event)
+            .with('TariffSyncAge', service: 'xi', age_minutes: be_within(2).of(120), expected_stale: false)
+        end
       end
     end
   end

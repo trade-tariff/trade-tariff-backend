@@ -11,7 +11,7 @@ FactoryBot.define do
     end
 
     trait :declarable do
-      producline_suffix { '80' }
+      producline_suffix { GoodsNomenclature::NON_GROUPING_PRODUCTLINE_SUFFIX }
     end
 
     trait :non_declarable do

@@ -19,7 +19,7 @@ module Api
         gn = GoodsNomenclature
                .actual
                .association_inner_join(:goods_nomenclature_indents)
-               .where(Sequel[:goods_nomenclatures][:goods_nomenclature_item_id] => params[:id])
+               .by_code(params[:id])
                .order(Sequel[:goods_nomenclatures][:producline_suffix], Sequel[:goods_nomenclature_indents][:number_indents])
                .last
 

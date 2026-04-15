@@ -128,40 +128,6 @@ RSpec.describe TariffSynchronizer::BaseUpdate do
     end
   end
 
-  describe '#last_updates_are_missing?' do
-    context 'with weekends' do
-      before do
-        travel_to Date.parse('21-05-2017')
-        @missing_update = create(:taric_update, :missing, example_date: Time.zone.today)
-        @pending_update = create(:taric_update, example_date: Time.zone.yesterday)
-      end
-
-      after do
-        travel_back
-      end
-
-      it 'returns false' do
-        expect(described_class.send(:last_updates_are_missing?)).to be_falsey
-      end
-    end
-
-    context 'without weekends' do
-      before do
-        travel_to Date.parse('17-05-2017')
-        @missing_update = create(:taric_update, :missing, example_date: Time.zone.today)
-        @pending_update = create(:taric_update, example_date: Time.zone.yesterday)
-      end
-
-      after do
-        travel_back
-      end
-
-      it 'returns true' do
-        expect(described_class.send(:last_updates_are_missing?)).to be_truthy
-      end
-    end
-  end
-
   describe '.oldest_pending' do
     subject(:oldest_pending) { described_class.oldest_pending }
 
