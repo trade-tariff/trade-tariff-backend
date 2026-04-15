@@ -1,15 +1,16 @@
 class OpensearchRetrievalService
   Result = Struct.new(:results, :expanded_query, keyword_init: true)
 
-  def self.call(query:, as_of:, request_id: nil, limit: 30)
-    new(query:, as_of:, request_id:, limit:).call
+  def self.call(query:, as_of:, request_id: nil, limit: 30, filter_prefixes: [])
+    new(query:, as_of:, request_id:, limit:, filter_prefixes:).call
   end
 
-  def initialize(query:, as_of:, request_id: nil, limit: 30)
+  def initialize(query:, as_of:, request_id: nil, limit: 30, filter_prefixes: [])
     @query = query
     @as_of = as_of
     @request_id = request_id
     @limit = limit
+    @filter_prefixes = Array(filter_prefixes).compact_blank
   end
 
   def call
@@ -31,6 +32,7 @@ class OpensearchRetrievalService
           size: @limit,
           noun_boost: pos_noun_boost,
           qualifier_boost: pos_qualifier_boost,
+          filter_prefixes: @filter_prefixes,
         ).query,
       )
     end

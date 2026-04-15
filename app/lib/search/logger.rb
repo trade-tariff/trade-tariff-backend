@@ -54,6 +54,14 @@ module Search
       )
     end
 
+    def description_intercept_checked(event)
+      info log_entry(description_intercept_fields(event).merge(
+                       event: 'description_intercept_checked',
+                       request_id: event.payload[:request_id],
+                       query: event.payload[:query],
+                     ))
+    end
+
     def search_completed(event)
       data = {
         event: 'search_completed',
@@ -68,6 +76,7 @@ module Search
       }
       data[:results_type] = event.payload[:results_type] if event.payload[:results_type]
       data[:max_score] = event.payload[:max_score] if event.payload[:max_score]
+      add_description_intercept_fields!(data, event)
       add_error_fields!(data, event)
       info log_entry(data)
     end
@@ -112,6 +121,21 @@ module Search
         service: 'search',
         timestamp: Time.current.iso8601,
       ).to_json
+    end
+
+    def add_description_intercept_fields!(data, event)
+      description_intercept_fields(event, prefix: :description_intercept).each do |key, value|
+        data[key] = value
+      end
+    end
+
+    def description_intercept_fields(event, prefix: nil)
+      keys = %i[matched term excluded filtering filter_prefix_count guidance_level guidance_location escalate_to_webchat]
+
+      keys.each_with_object({}) do |key, fields|
+        payload_key = prefix ? [prefix, key].join('_').to_sym : key
+        fields[payload_key] = event.payload[payload_key] if event.payload.key?(payload_key)
+      end
     end
 
     def add_error_fields!(data, event)

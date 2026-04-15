@@ -5,7 +5,7 @@ module Api
 
       RetrievalResult = Struct.new(:goods_nomenclatures, :max_score, :expanded_query, :results_type, keyword_init: true)
 
-      attr_reader :q, :as_of, :answers, :request_id
+      attr_reader :q, :as_of, :answers, :request_id, :description_intercept
 
       def initialize(params = {})
         sanitiser_result = InputSanitiser.new(params[:q]).call
@@ -25,21 +25,27 @@ module Api
       def call
         return @sanitiser_errors if @sanitiser_errors
 
-        if q.blank? || ::SearchService::RogueSearchService.call(q)
-          return { data: [] }
-        end
+        return { data: [] } if q.blank?
+
+        @description_intercept = DescriptionIntercept.for_search(q, source: 'guided_search')
+        ::Search::Instrumentation.description_intercept_checked(
+          request_id:,
+          query: q,
+          description_intercept:,
+        )
+        return empty_response if description_intercept&.excluded
 
         ::Search::Instrumentation.search(request_id:, query: q, search_type: 'interactive') do
           exact = find_exact_match
           if exact
-            next [GoodsNomenclatureSearchSerializer.serialize([exact]),
-                  { result_count: 1, results_type: 'exact_match' }]
+            next [with_description_intercept_meta(GoodsNomenclatureSearchSerializer.serialize([exact])),
+                  completion_payload(result_count: 1, results_type: 'exact_match')]
           end
 
           retrieval = retrieve_short_list
 
           if retrieval.goods_nomenclatures.empty?
-            next [{ data: [] }, { result_count: 0, results_type: retrieval.results_type }]
+            next [empty_response, completion_payload(result_count: 0, results_type: retrieval.results_type)]
           end
 
           interactive_result = run_interactive_search(
@@ -52,7 +58,7 @@ module Api
             interactive_result,
             retrieval.expanded_query,
           )
-          completion = {
+          completion = completion_payload(
             result_count: response[:data]&.size || 0,
             total_attempts: interactive_result&.attempt,
             total_questions: answers.size,
@@ -60,13 +66,19 @@ module Api
             results_type: retrieval.results_type,
             max_score: retrieval.max_score,
             error_message: interactive_result&.type == :error ? interactive_result.data[:message] : nil,
-          }
+          )
 
           [response, completion]
         end
       end
 
       private
+
+      def completion_payload(**payload)
+        return payload unless description_intercept
+
+        payload.merge(description_intercept:)
+      end
 
       def retrieve_short_list
         case retrieval_method
@@ -84,6 +96,7 @@ module Api
         goods_nomenclatures = VectorRetrievalService.call(
           query: q,
           limit: opensearch_result_limit,
+          filter_prefixes: filter_prefixes,
         )
 
         RetrievalResult.new(
@@ -96,6 +109,7 @@ module Api
       def opensearch_short_list
         result = OpensearchRetrievalService.call(
           query: q, as_of: as_of, request_id: request_id, limit: opensearch_result_limit,
+          filter_prefixes: filter_prefixes
         )
 
         RetrievalResult.new(
@@ -109,6 +123,7 @@ module Api
       def hybrid_short_list
         result = HybridRetrievalService.call(
           query: q, as_of: as_of, request_id: request_id, limit: opensearch_result_limit,
+          filter_prefixes: filter_prefixes
         )
 
         RetrievalResult.new(
@@ -134,6 +149,7 @@ module Api
 
         return nil unless gn
         return nil if hidden?(gn)
+        return nil unless allowed_by_description_intercept_filter?(gn)
 
         build_exact_result(gn)
       end
@@ -274,6 +290,7 @@ module Api
 
       def build_meta(interactive_result, expanded_query)
         meta = {}
+        meta[:description_intercept] = description_intercept.search_metadata if description_intercept
 
         if interactive_result
           interactive_meta = {
@@ -297,6 +314,26 @@ module Api
         end
 
         meta.presence
+      end
+
+      def empty_response
+        with_description_intercept_meta({ data: [] })
+      end
+
+      def with_description_intercept_meta(response)
+        return response unless description_intercept
+
+        response.merge(meta: (response[:meta] || {}).merge(description_intercept: description_intercept.search_metadata))
+      end
+
+      def filter_prefixes
+        description_intercept&.filter_prefixes_array || []
+      end
+
+      def allowed_by_description_intercept_filter?(goods_nomenclature)
+        return true if filter_prefixes.empty?
+
+        filter_prefixes.any? { |prefix| goods_nomenclature.goods_nomenclature_item_id.to_s.start_with?(prefix) }
       end
 
       def normalize_answers(answers_param)
