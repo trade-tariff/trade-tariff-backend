@@ -20,9 +20,8 @@ RSpec.describe DescriptionIntercept do
     context 'when sources is blank' do
       let(:attrs) { { sources: [] } }
 
-      it 'is invalid' do
-        expect(intercept).not_to be_valid
-        expect(intercept.errors[:sources]).to be_present
+      it 'is valid' do
+        expect(intercept).to be_valid
       end
     end
 
@@ -81,6 +80,34 @@ RSpec.describe DescriptionIntercept do
       it 'is invalid' do
         expect(intercept).not_to be_valid
         expect(intercept.errors[:guidance_location]).to include('requires message')
+      end
+    end
+
+    context 'when guidance level is not one of the allowed values' do
+      let(:attrs) do
+        {
+          message: 'Consult the footwear guidance.',
+          guidance_level: 'urgent',
+        }
+      end
+
+      it 'is invalid' do
+        expect(intercept).not_to be_valid
+        expect(intercept.errors[:guidance_level]).to include('is not in range or set: ["info", "warning", "error"]')
+      end
+    end
+
+    context 'when guidance location is not one of the allowed values' do
+      let(:attrs) do
+        {
+          message: 'Consult the footwear guidance.',
+          guidance_location: 'sidebar',
+        }
+      end
+
+      it 'is invalid' do
+        expect(intercept).not_to be_valid
+        expect(intercept.errors[:guidance_location]).to include('is not in range or set: ["interstitial", "results", "question"]')
       end
     end
 
