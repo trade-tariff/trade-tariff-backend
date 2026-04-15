@@ -137,7 +137,7 @@ module TariffSynchronizer
     private
 
     def record_state_change(to_state:)
-      TariffUpdateStateChange.create(
+      TariffUpdateStateChange.insert(
         tariff_update_filename: filename,
         from_state: state,
         to_state:,
