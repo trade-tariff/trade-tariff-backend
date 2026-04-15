@@ -1,6 +1,6 @@
 Sequel.migration do
   up do
-    drop_table :tariff_update_cds_errors
+    drop_table(:tariff_update_cds_errors, if_exists: true)
   end
 
   down do
