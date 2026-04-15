@@ -7,7 +7,7 @@ RSpec.describe ApplyWorker, type: :worker do
       allow(TaricSynchronizer).to receive(:apply)
       allow(MaterializeViewHelper).to receive(:refresh_materialized_view)
       allow(ActiveSupport::Notifications).to receive(:instrument)
-      allow(TariffSynchronizer::BaseUpdate).to receive(:oldest_pending).and_return(nil)
+      allow(TariffSynchronizer::BaseUpdate).to receive_messages(oldest_pending: nil, pending: double(count: 0))
       allow(TradeTariffBackend).to receive(:service).and_return(service)
     end
 
