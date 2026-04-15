@@ -1,14 +1,16 @@
-class DropTariffUpdateCdsErrors < ActiveRecord::Migration[7.2]
-  def up
-    drop_table :tariff_update_cds_errors
+Sequel.migration do
+  up do
+    drop_table(:tariff_update_cds_errors)
   end
 
-  def down
-    create_table :tariff_update_cds_errors do |t|
-      t.string :tariff_update_filename, null: false
-      t.string :model_name
-      t.text :details
-      t.timestamps null: false
+  down do
+    create_table(:tariff_update_cds_errors) do
+      primary_key :id
+      String :tariff_update_filename, null: false
+      String :model_name
+      String :details, text: true
+      DateTime :created_at, null: false
+      DateTime :updated_at, null: false
     end
   end
 end

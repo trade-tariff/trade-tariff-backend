@@ -277,4 +277,58 @@ RSpec.describe TariffSynchronizer::BaseUpdate do
       it { expect(described_class.by_filename(xi_update.to_param)).to be_a(TariffSynchronizer::TaricUpdate) }
     end
   end
+
+  describe 'state transition audit trail', :truncation do
+    subject(:update) { create(:taric_update, :pending, example_date: Time.zone.today) }
+
+    describe '#mark_as_applied' do
+      it 'records a state change from pending to applied' do
+        expect { update.mark_as_applied }
+          .to change(TariffSynchronizer::TariffUpdateStateChange, :count).by(1)
+      end
+
+      it 'records the correct from and to states' do
+        update.mark_as_applied
+
+        change = TariffSynchronizer::TariffUpdateStateChange.last
+        expect(change.from_state).to eq(TariffSynchronizer::BaseUpdate::PENDING_STATE)
+        expect(change.to_state).to eq(TariffSynchronizer::BaseUpdate::APPLIED_STATE)
+        expect(change.tariff_update_filename).to eq(update.filename)
+      end
+    end
+
+    describe '#mark_as_failed' do
+      it 'records a state change from pending to failed' do
+        expect { update.mark_as_failed }
+          .to change(TariffSynchronizer::TariffUpdateStateChange, :count).by(1)
+      end
+
+      it 'records the correct from and to states' do
+        update.mark_as_failed
+
+        change = TariffSynchronizer::TariffUpdateStateChange.last
+        expect(change.from_state).to eq(TariffSynchronizer::BaseUpdate::PENDING_STATE)
+        expect(change.to_state).to eq(TariffSynchronizer::BaseUpdate::FAILED_STATE)
+        expect(change.tariff_update_filename).to eq(update.filename)
+      end
+    end
+
+    describe '#mark_as_pending' do
+      subject(:update) { create(:taric_update, :applied, example_date: Time.zone.today) }
+
+      it 'records a state change from applied to pending' do
+        expect { update.mark_as_pending }
+          .to change(TariffSynchronizer::TariffUpdateStateChange, :count).by(1)
+      end
+
+      it 'records the correct from and to states' do
+        update.mark_as_pending
+
+        change = TariffSynchronizer::TariffUpdateStateChange.last
+        expect(change.from_state).to eq(TariffSynchronizer::BaseUpdate::APPLIED_STATE)
+        expect(change.to_state).to eq(TariffSynchronizer::BaseUpdate::PENDING_STATE)
+        expect(change.tariff_update_filename).to eq(update.filename)
+      end
+    end
+  end
 end
