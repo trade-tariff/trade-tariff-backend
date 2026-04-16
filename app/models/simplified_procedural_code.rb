@@ -4,15 +4,13 @@ class SimplifiedProceduralCode < Sequel::Model
 
   class << self
     def all_null_measures
-      @all_null_measures ||= select(
+      select(
         :simplified_procedural_code,
         :goods_nomenclature_label,
         Sequel.lit('ARRAY_AGG(goods_nomenclature_item_id) AS goods_nomenclature_item_ids'),
       )
-                               .group(:simplified_procedural_code, :goods_nomenclature_label)
-                               .map do |record|
-                                 to_null_measure(record)
-      end
+        .group(:simplified_procedural_code, :goods_nomenclature_label)
+        .map { |record| to_null_measure(record) }
     end
 
     def populate

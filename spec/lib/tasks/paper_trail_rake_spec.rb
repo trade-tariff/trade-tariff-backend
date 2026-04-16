@@ -4,9 +4,12 @@ RSpec.describe 'paper_trail:reset_initial_versions' do
 
   let(:service) { instance_spy(PaperTrail::ResetInitialVersions, call: true) }
 
-  after do
+  before do
     Rake::Task['paper_trail:reset_initial_versions'].reenable
     Rake::Task['class_eager_load'].reenable
+  end
+
+  after do
     ENV.delete('CONFIRM')
   end
 
