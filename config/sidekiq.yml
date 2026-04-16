@@ -83,3 +83,7 @@
       cron: "0 6 * * *" # 6am every day
       description: Generates and emails a CSV report of the previous day's user action logs
       enabled: <%= ENV.fetch('SERVICE', 'uk') == 'uk' %>
+    ImportCustomsTariffDocumentWorker:
+      cron: "0 9 * * *"
+      description: "Checks GOV.UK for a new Customs Tariff document version and imports it"
+      enabled: <%= ENV.fetch('SERVICE', 'uk') == 'uk' %>
