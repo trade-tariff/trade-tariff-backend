@@ -1,7 +1,7 @@
 module Api
   module Search
     class ErrorSerializationService
-      DEFAULT_ERROR_STATUS_CODE = 422 # Unprocessable_entity
+      DEFAULT_ERROR_STATUS_CODE = 422 # Unprocessable_content
 
       def initialize(records)
         @records = Array.wrap(records)

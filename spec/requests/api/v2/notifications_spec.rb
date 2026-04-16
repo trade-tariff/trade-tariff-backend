@@ -79,7 +79,7 @@ RSpec.describe Api::V2::NotificationsController, :v2 do
         }
       end
 
-      it 'returns a 422 Unprocessable Entity response with validation errors' do
+      it 'returns a 422 Unprocessable Content response with validation errors' do
         do_request
         expect(response).to have_http_status(:unprocessable_content)
         expect(JSON.parse(response.body)).to eq(expected_errors)

@@ -10,10 +10,10 @@ class ErrorsController < ActionController::Base
     respond_to_error :not_found, 'Not Found'
   end
 
-  def unprocessable_entity
+  def unprocessable_content
     respond_to_error \
       :unprocessable_content,
-      'Unprocessable entity: API documentation is available at https://api.trade-tariff.service.gov.uk/'
+      'Unprocessable content: API documentation is available at https://api.trade-tariff.service.gov.uk/'
   end
 
   def internal_server_error
