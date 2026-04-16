@@ -14,6 +14,11 @@ module Api
       render json: serializer.serialized_errors({ error: exception.message, url: request.url }), status: :unprocessable_content
     end
 
+    rescue_from ActionController::BadRequest do |exception|
+      serializer = TradeTariffBackend.error_serializer(request)
+      render json: serializer.serialized_errors({ error: exception.message, url: request.url }), status: :bad_request
+    end
+
     protected
 
     def current_page
