@@ -1,5 +1,11 @@
 # rubocop:disable RSpec/AnyInstance
 RSpec.describe TaricSynchronizer, :truncation do
+  describe '.update_type' do
+    it 'always returns TaricUpdate regardless of the SERVICE env var' do
+      expect(described_class.update_type).to eq(TariffSynchronizer::TaricUpdate)
+    end
+  end
+
   describe '.initial_update_date' do
     it 'returns initial update date' do
       expect(described_class.initial_update_date).to eq(Date.new(2012, 6, 6))
@@ -153,7 +159,7 @@ RSpec.describe TaricSynchronizer, :truncation do
       end
     end
 
-    context 'with failed updates present' do
+    context 'with failed TARIC updates present' do
       let(:failed_update) { create(:taric_update, :failed, example_date: Time.zone.yesterday) }
 
       before do
@@ -178,6 +184,18 @@ RSpec.describe TaricSynchronizer, :truncation do
 
       it 'sends email with the error' do
         expect { described_class.apply }.to raise_error(TariffSynchronizer::FailedUpdatesError)
+      end
+    end
+
+    context 'with only CDS failed updates present' do
+      before do
+        create(:cds_update, :failed, example_date: Time.zone.yesterday)
+        allow(TradeTariffBackend).to receive(:service).and_return('xi')
+        allow(TradeTariffBackend).to receive(:with_redis_lock)
+      end
+
+      it 'does not raise FailedUpdatesError' do
+        expect { described_class.apply }.not_to raise_error
       end
     end
   end

@@ -118,8 +118,9 @@ module TariffSynchronizer
   end
 
   def check_tariff_updates_failures
-    if BaseUpdate.failed.any?
-      Instrumentation.failed_updates_detected(filenames: BaseUpdate.failed.map(&:filename))
+    failed = update_type.failed
+    if failed.any?
+      Instrumentation.failed_updates_detected(filenames: failed.map(&:filename))
       raise FailedUpdatesError
     end
   rescue FailedUpdatesError => e

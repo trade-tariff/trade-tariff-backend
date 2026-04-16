@@ -29,6 +29,10 @@ class TaricSynchronizer
   self.taric_update_url_template = '%{host}/taric/%{filename}'
 
   class << self
+    def update_type
+      TariffSynchronizer::TaricUpdate
+    end
+
     # Download pending updates for TARIC and CDS data
     # Gets latest downloaded file present in (inbox/failbox/processed) and tries
     # to download any further updates to current day.

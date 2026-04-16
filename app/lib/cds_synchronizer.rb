@@ -14,6 +14,10 @@ class CdsSynchronizer
   self.initial_update_date = Date.new(2020, 9, 1)
 
   class << self
+    def update_type
+      TariffSynchronizer::CdsUpdate
+    end
+
     def download
       unless sync_variables_set?
         TariffSynchronizer::Instrumentation.sync_run_failed(
