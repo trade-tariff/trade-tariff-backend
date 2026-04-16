@@ -28,6 +28,10 @@ RSpec.describe InvalidateCacheWorker, type: :worker do
   end
 
   describe '#perform' do
+    before do
+      allow(TradeTariffBackend).to receive(:environment).and_return(ActiveSupport::StringInquirer.new('test'))
+    end
+
     context 'when the targeted CDN exists' do
       let(:test_distribution) { base_distribution.merge(id: 'TEST123', comment: 'Test CDN') }
       let(:prod_distribution) { base_distribution.merge(id: 'PROD123', comment: 'Production CDN') }
@@ -48,7 +52,7 @@ RSpec.describe InvalidateCacheWorker, type: :worker do
         client.stub_responses(:create_invalidation)
       end
 
-      it 'creates an invalidation', skip: 'TODO: Going to investigate this separately' do
+      it 'creates an invalidation' do
         worker.perform(client)
         expect(client.api_requests.pluck(:operation_name)).to include(:list_distributions, :create_invalidation)
       end
