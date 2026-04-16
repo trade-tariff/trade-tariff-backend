@@ -209,6 +209,81 @@ RSpec.describe TariffSynchronizer::BaseUpdate do
     end
   end
 
+  describe '#mark_as_applied' do
+    subject(:mark_as_applied) { update.mark_as_applied }
+
+    let(:update) { create(:cds_update, :pending) }
+
+    it 'transitions the update to applied state' do
+      expect { mark_as_applied }.to change { update.reload.state }.from('P').to('A')
+    end
+
+    it 'records the state change' do
+      expect { mark_as_applied }
+        .to change(TariffSynchronizer::TariffUpdateStateChange, :count).by(1)
+    end
+
+    it 'records the correct from and to states' do
+      mark_as_applied
+      change_record = TariffSynchronizer::TariffUpdateStateChange.last
+      expect(change_record).to have_attributes(
+        tariff_update_filename: update.filename,
+        from_state: 'P',
+        to_state: 'A',
+      )
+    end
+  end
+
+  describe '#mark_as_failed' do
+    subject(:mark_as_failed) { update.mark_as_failed }
+
+    let(:update) { create(:cds_update, :pending) }
+
+    it 'transitions the update to failed state' do
+      expect { mark_as_failed }.to change { update.reload.state }.from('P').to('F')
+    end
+
+    it 'records the state change' do
+      expect { mark_as_failed }
+        .to change(TariffSynchronizer::TariffUpdateStateChange, :count).by(1)
+    end
+
+    it 'records the correct from and to states' do
+      mark_as_failed
+      change_record = TariffSynchronizer::TariffUpdateStateChange.last
+      expect(change_record).to have_attributes(
+        tariff_update_filename: update.filename,
+        from_state: 'P',
+        to_state: 'F',
+      )
+    end
+  end
+
+  describe '#mark_as_pending' do
+    subject(:mark_as_pending) { update.mark_as_pending }
+
+    let(:update) { create(:cds_update, :applied) }
+
+    it 'transitions the update to pending state' do
+      expect { mark_as_pending }.to change { update.reload.state }.from('A').to('P')
+    end
+
+    it 'records the state change' do
+      expect { mark_as_pending }
+        .to change(TariffSynchronizer::TariffUpdateStateChange, :count).by(1)
+    end
+
+    it 'records the correct from and to states' do
+      mark_as_pending
+      change_record = TariffSynchronizer::TariffUpdateStateChange.last
+      expect(change_record).to have_attributes(
+        tariff_update_filename: update.filename,
+        from_state: 'A',
+        to_state: 'P',
+      )
+    end
+  end
+
   describe '.by_filename' do
     subject(:update) {}
 
