@@ -55,6 +55,10 @@ module TradeTariffBackend
       Sequel::Model.plugin :validation_class_methods
       Sequel::Model.plugin :optimized_many_to_many
 
+      # Validate long-idle pooled connections before reuse.
+      Sequel::Model.db.extension :connection_validator
+      Sequel::Model.db.pool.connection_validation_timeout = 60 # seconds
+
       Sequel::Model.db.extension :pagination
       Sequel::Model.db.extension :server_block
       Sequel::Model.db.extension :auto_literal_strings

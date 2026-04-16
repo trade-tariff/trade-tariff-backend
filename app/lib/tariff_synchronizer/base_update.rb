@@ -120,14 +120,17 @@ module TariffSynchronizer
     end
 
     def mark_as_applied
+      record_state_change(to_state: APPLIED_STATE)
       update(state: APPLIED_STATE, applied_at: Time.zone.now, last_error: nil, last_error_at: nil, exception_backtrace: nil, exception_class: nil)
     end
 
     def mark_as_failed
+      record_state_change(to_state: FAILED_STATE)
       update(state: FAILED_STATE)
     end
 
     def mark_as_pending
+      record_state_change(to_state: PENDING_STATE)
       update(state: PENDING_STATE)
     end
 
@@ -161,6 +164,17 @@ module TariffSynchronizer
         state,
         applied_at.iso8601,
       ].map(&:to_s).join('-')
+    end
+
+    private
+
+    def record_state_change(to_state:)
+      TariffUpdateStateChange.insert(
+        tariff_update_filename: filename,
+        from_state: state,
+        to_state:,
+        created_at: Time.zone.now,
+      )
     end
 
     class << self

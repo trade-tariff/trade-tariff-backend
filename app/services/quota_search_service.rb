@@ -110,7 +110,7 @@ class QuotaSearchService
   end
 
   def apply_order_number_filter
-    @scope = scope.where(Sequel.like(:measures__ordernumber, "#{order_number}%"))
+    @scope = scope.where(measures__ordernumber: order_number)
   end
 
   def apply_quota_definition
