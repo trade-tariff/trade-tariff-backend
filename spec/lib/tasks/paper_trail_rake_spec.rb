@@ -17,6 +17,14 @@ RSpec.describe 'paper_trail:reset_initial_versions' do
     expect { Rake::Task['paper_trail:reset_initial_versions'].invoke }.to raise_error(SystemExit)
   end
 
+  it 'does not eager load classes without confirmation' do
+    allow(Rails.application).to receive(:eager_load!).and_return(true)
+
+    expect { Rake::Task['paper_trail:reset_initial_versions'].invoke }.to raise_error(SystemExit)
+
+    expect(Rails.application).not_to have_received(:eager_load!)
+  end
+
   it 'eager loads classes and runs the reset service when confirmed' do
     allow(Rails.application).to receive(:eager_load!).and_return(true)
     allow(PaperTrail::ResetInitialVersions).to receive(:new).and_return(service)
