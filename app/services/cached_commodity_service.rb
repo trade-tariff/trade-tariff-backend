@@ -14,14 +14,13 @@ class CachedCommodityService
     export_measures.measure_components.measurement_unit
   ]).freeze
 
-  MEASURES_EAGER_LOAD_GRAPH = [
+  MEASURES_PAYLOAD_EAGER_LOAD_GRAPH = [
     { footnotes: :footnote_descriptions },
     { measure_type: :measure_type_description },
     {
       measure_components: [
         { duty_expression: :duty_expression_description },
         { measurement_unit: %i[measurement_unit_description measurement_unit_abbreviations] },
-        { measure: { measure_type: :measure_type_description } },
         :monetary_unit,
         { measurement_unit_qualifier: :measurement_unit_qualifier_description },
       ],
@@ -34,20 +33,40 @@ class CachedCommodityService
         { measurement_unit: %i[measurement_unit_description measurement_unit_abbreviations] },
         :appendix_5a,
         :monetary_unit,
-        :measurement_unit_qualifier,
+        { measurement_unit_qualifier: :measurement_unit_qualifier_description },
         { measure_condition_code: :measure_condition_code_description },
         {
           measure_condition_components: [
             { duty_expression: :duty_expression_description },
             { measurement_unit: %i[measurement_unit_description measurement_unit_abbreviations] },
-            :measure_condition,
             :monetary_unit,
             :measurement_unit_qualifier,
           ],
         },
       ],
     },
-    { quota_order_number: { quota_definition: %i[quota_balance_events quota_suspension_periods quota_blocking_periods] } },
+    {
+      quota_order_number: {
+        quota_definition: %i[
+          quota_balance_events
+          quota_suspension_periods
+          quota_blocking_periods
+          incoming_quota_closed_and_transferred_event
+        ],
+      },
+    },
+    {
+      geographical_area: [:geographical_area_descriptions,
+                          { contained_geographical_areas: :geographical_area_descriptions }],
+    },
+    { additional_code: :additional_code_descriptions },
+    :base_regulation,
+    :modification_regulation,
+    :full_temporary_stop_regulations,
+    :measure_partial_temporary_stops,
+  ].freeze
+
+  MEASURES_FILTER_META_EAGER_LOAD_GRAPH = [
     {
       excluded_geographical_areas: [
         :geographical_area_descriptions,
@@ -55,14 +74,15 @@ class CachedCommodityService
         { referenced: :contained_geographical_areas },
       ],
     },
-    { geographical_area: [:geographical_area_descriptions,
-                          { contained_geographical_areas: :geographical_area_descriptions }] },
-    { additional_code: :additional_code_descriptions },
-    :base_regulation,
-    :modification_regulation,
-    :full_temporary_stop_regulations,
-    :measure_partial_temporary_stops,
+    { geographical_area: :contained_geographical_areas },
+    :measure_type,
+    :additional_code,
+    :measure_components,
   ].freeze
+
+  MEASURES_EAGER_LOAD_GRAPH = (
+    MEASURES_PAYLOAD_EAGER_LOAD_GRAPH + MEASURES_FILTER_META_EAGER_LOAD_GRAPH
+  ).freeze
 
   TTL = 24.hours
 
