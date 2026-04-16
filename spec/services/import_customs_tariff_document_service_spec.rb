@@ -59,7 +59,7 @@ RSpec.describe ImportCustomsTariffDocumentService do
       it 'creates a CustomsTariffUpdate record awaiting approval' do
         expect { results }.to change(CustomsTariffUpdate, :count).by(1)
         update = CustomsTariffUpdate.where(version: '1.30').first
-        expect(update.status).to eq(CustomsTariffUpdate::AWAITING_APPROVAL)
+        expect(update.status).to eq(CustomsTariffUpdate::PENDING)
         expect(update.file_checksum).to eq(checksum)
       end
 

@@ -7,7 +7,7 @@ class GovUkTariffDocumentFetcher
 
   VERSION_PATTERN = /UKGT_(\d+\.\d+)\.docx/i
 
-  Result = Struct.new(:content, :url, :version, :checksum, :published_on, :entry_into_force_on, keyword_init: true)
+  Result = Data.define(:content, :url, :version, :checksum, :published_on, :entry_into_force_on)
 
   # Returns all UKGT .docx documents found on the publication page,
   # sorted by version ascending (oldest first).

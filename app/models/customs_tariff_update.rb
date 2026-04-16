@@ -5,7 +5,7 @@ class CustomsTariffUpdate < Sequel::Model
   plugin :time_machine
   plugin :timestamps, update_on_create: true
 
-  AWAITING_APPROVAL = 'awaiting_approval'.freeze
+  PENDING = 'pending'.freeze
   APPROVED          = 'approved'.freeze
   REJECTED          = 'rejected'.freeze
   FAILED            = 'failed'.freeze
@@ -15,8 +15,8 @@ class CustomsTariffUpdate < Sequel::Model
   one_to_many :customs_tariff_general_rules, key: :customs_tariff_update_version
 
   dataset_module do
-    def awaiting_approval
-      where(status: AWAITING_APPROVAL)
+    def pending
+      where(status: PENDING)
     end
 
     def approved

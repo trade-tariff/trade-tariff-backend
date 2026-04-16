@@ -18,7 +18,7 @@ RSpec.describe ImportCustomsTariffDocumentWorker, type: :worker do
     it 'sends a Slack notification listing the imported version' do
       perform
       expect(SlackNotifierService).to have_received(:call).with(
-        'Customs Tariff documents imported: versions 1.30 — awaiting approval',
+        'Customs Tariff documents imported: versions 1.30 — pending approval',
       )
     end
   end
@@ -37,7 +37,7 @@ RSpec.describe ImportCustomsTariffDocumentWorker, type: :worker do
     it 'sends a single Slack notification listing all imported versions' do
       perform
       expect(SlackNotifierService).to have_received(:call).with(
-        'Customs Tariff documents imported: versions 1.30, 1.31 — awaiting approval',
+        'Customs Tariff documents imported: versions 1.30, 1.31 — pending approval',
       )
     end
   end

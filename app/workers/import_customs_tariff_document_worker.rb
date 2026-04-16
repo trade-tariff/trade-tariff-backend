@@ -9,7 +9,7 @@ class ImportCustomsTariffDocumentWorker
     failed   = results.select { |r| r.status == :failed }
 
     if imported.any?
-      SlackNotifierService.call("Customs Tariff documents imported: versions #{imported.join(', ')} — awaiting approval")
+      SlackNotifierService.call("Customs Tariff documents imported: versions #{imported.join(', ')} — pending approval")
     end
 
     failed.each do |r|

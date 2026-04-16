@@ -2,7 +2,7 @@ FactoryBot.define do
   factory :customs_tariff_update do
     sequence(:version) { |n| "1.#{n}" }
     validity_start_date { Time.zone.today }
-    status { CustomsTariffUpdate::AWAITING_APPROVAL }
+    status { CustomsTariffUpdate::PENDING }
     source_url { 'https://assets.publishing.service.gov.uk/media/abc123/UKGT_1.30.docx' }
     s3_path { "data/customs_tariff_documents/UKGT_#{version}.docx" }
     file_checksum { SecureRandom.hex(32) }

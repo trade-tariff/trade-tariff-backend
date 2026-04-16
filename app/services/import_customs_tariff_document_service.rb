@@ -1,7 +1,11 @@
 class ImportCustomsTariffDocumentService
   S3_KEY_PREFIX = 'data/customs_tariff_documents'.freeze
 
-  Result = Struct.new(:status, :version, :error, keyword_init: true)
+  Result = Data.define(:status, :version, :error) do
+    def initialize(status:, version: nil, error: nil)
+      super
+    end
+  end
 
   # Returns an array of Result objects, one per document found on GOV.UK.
   def call
@@ -36,7 +40,7 @@ class ImportCustomsTariffDocumentService
       update = CustomsTariffUpdate.create(
         version: fetched.version,
         validity_start_date: fetched.entry_into_force_on || fetched.published_on || Time.zone.today,
-        status: CustomsTariffUpdate::AWAITING_APPROVAL,
+        status: CustomsTariffUpdate::PENDING,
         source_url: fetched.url,
         s3_path:,
         file_checksum: fetched.checksum,

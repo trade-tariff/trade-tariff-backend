@@ -10849,11 +10849,6 @@ CREATE UNIQUE INDEX customs_tariff_general_rules_customs_tariff_update_version_r
 CREATE UNIQUE INDEX customs_tariff_section_notes_customs_tariff_update_version_sect ON uk.customs_tariff_section_notes USING btree (customs_tariff_update_version, section_id);
 
 
---
--- Name: customs_tariff_updates_file_checksum_index; Type: INDEX; Schema: uk; Owner: -
---
-
-CREATE INDEX customs_tariff_updates_file_checksum_index ON uk.customs_tariff_updates USING btree (file_checksum);
 
 
 --

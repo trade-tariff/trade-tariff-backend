@@ -12,7 +12,7 @@ class TariffNotesExtractor
   # Any "PART X –" heading signals the end of the GRI section (e.g. "PART THREE – ANNEXES")
   PART_BOUNDARY_PATTERN       = /\APART\s+\w+/i
 
-  Result = Struct.new(:chapters, :sections, :general_rules, keyword_init: true)
+  Result = Data.define(:chapters, :sections, :general_rules)
 
   def initialize(docx_content)
     @docx_content = docx_content

@@ -1,12 +1,12 @@
 RSpec.describe CustomsTariffUpdate do
   describe 'dataset scopes' do
-    let!(:awaiting) { create(:customs_tariff_update, status: CustomsTariffUpdate::AWAITING_APPROVAL) }
+    let!(:pending) { create(:customs_tariff_update, status: CustomsTariffUpdate::PENDING) }
     let!(:approved) { create(:customs_tariff_update, :approved) }
     let!(:failed)   { create(:customs_tariff_update, :failed) }
 
-    describe '.awaiting_approval' do
-      it 'returns only awaiting_approval records' do
-        expect(described_class.awaiting_approval.all).to contain_exactly(awaiting)
+    describe '.pending' do
+      it 'returns only pending records' do
+        expect(described_class.pending.all).to contain_exactly(pending)
       end
     end
 
