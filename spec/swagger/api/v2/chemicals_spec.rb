@@ -19,7 +19,7 @@ RSpec.describe 'Chemicals', swagger_doc: 'v2/swagger.json', type: :request do
     },
   }.freeze
 
-  path '/uk/api/chemicals' do
+  path '/api/chemicals' do
     parameter name: :Accept, in: :header, required: true,
               schema: { type: :string, enum: ['application/vnd.hmrc.2.0+json'] },
               description: 'API version negotiation header'
@@ -47,7 +47,7 @@ RSpec.describe 'Chemicals', swagger_doc: 'v2/swagger.json', type: :request do
     end
   end
 
-  path '/uk/api/chemicals/search' do
+  path '/api/chemicals/search' do
     parameter name: :Accept, in: :header, required: true,
               schema: { type: :string, enum: ['application/vnd.hmrc.2.0+json'] },
               description: 'API version negotiation header'
@@ -88,7 +88,7 @@ RSpec.describe 'Chemicals', swagger_doc: 'v2/swagger.json', type: :request do
     end
   end
 
-  path '/uk/api/chemicals/{id}' do
+  path '/api/chemicals/{id}' do
     parameter name: :Accept, in: :header, required: true,
               schema: { type: :string, enum: ['application/vnd.hmrc.2.0+json'] },
               description: 'API version negotiation header'

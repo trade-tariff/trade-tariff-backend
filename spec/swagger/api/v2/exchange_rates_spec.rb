@@ -3,7 +3,7 @@ require 'swagger_helper'
 RSpec.describe 'Exchange Rates', swagger_doc: 'v2/swagger.json', type: :request do
   let(:Accept) { 'application/vnd.hmrc.2.0+json' }
 
-  path '/uk/api/exchange_rates/{id}' do
+  path '/api/exchange_rates/{id}' do
     parameter name: :Accept, in: :header, required: true,
               schema: { type: :string, enum: ['application/vnd.hmrc.2.0+json'] },
               description: 'API version negotiation header'
@@ -80,7 +80,7 @@ RSpec.describe 'Exchange Rates', swagger_doc: 'v2/swagger.json', type: :request 
     end
   end
 
-  path '/uk/api/exchange_rates/period_lists/{year}' do
+  path '/api/exchange_rates/period_lists/{year}' do
     parameter name: :Accept, in: :header, required: true,
               schema: { type: :string, enum: ['application/vnd.hmrc.2.0+json'] },
               description: 'API version negotiation header'

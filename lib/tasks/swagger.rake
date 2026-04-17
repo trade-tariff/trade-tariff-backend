@@ -6,8 +6,10 @@ namespace :swagger do
 
   # Paths that have specs (useful for contract testing) but must not appear in
   # the public API docs — either because they are internal-only endpoints or
-  # because they are no longer active. Applies to both uk and xi service prefixes.
-  internal_path_suffixes = %w[
+  # because they are no longer active.
+  #
+  # Paths here are relative to the server base URL (i.e. no /uk or /xi prefix).
+  internal_paths = %w[
     /api/commodities/{commodity_id}/validity_periods
     /api/headings/{heading_id}/validity_periods
     /api/monetary_exchange_rates
@@ -17,10 +19,6 @@ namespace :swagger do
     /api/subheadings/{subheading_id}/validity_periods
     /api/updates/latest
   ].freeze
-
-  internal_paths = %w[uk xi].flat_map { |service|
-    internal_path_suffixes.map { |suffix| "/#{service}#{suffix}" }
-  }.freeze
 
   # Sort paths alphabetically so the generated JSON is deterministic across
   # platforms regardless of the order Dir.glob returns spec files.

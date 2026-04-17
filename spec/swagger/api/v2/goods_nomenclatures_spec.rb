@@ -44,7 +44,7 @@ RSpec.describe 'Goods Nomenclatures', swagger_doc: 'v2/swagger.json', type: :req
     },
   }.freeze
 
-  path '/uk/api/goods_nomenclatures/{id}' do
+  path '/api/goods_nomenclatures/{id}' do
     parameter name: :Accept, in: :header, required: true,
               schema: { type: :string, enum: ['application/vnd.hmrc.2.0+json'] },
               description: 'API version negotiation header'
@@ -79,7 +79,7 @@ RSpec.describe 'Goods Nomenclatures', swagger_doc: 'v2/swagger.json', type: :req
     end
   end
 
-  path '/uk/api/goods_nomenclatures/section/{position}' do
+  path '/api/goods_nomenclatures/section/{position}' do
     parameter name: :Accept, in: :header, required: true,
               schema: { type: :string, enum: ['application/vnd.hmrc.2.0+json'] },
               description: 'API version negotiation header'
@@ -111,7 +111,7 @@ RSpec.describe 'Goods Nomenclatures', swagger_doc: 'v2/swagger.json', type: :req
     end
   end
 
-  path '/uk/api/goods_nomenclatures/chapter/{chapter_id}' do
+  path '/api/goods_nomenclatures/chapter/{chapter_id}' do
     parameter name: :Accept, in: :header, required: true,
               schema: { type: :string, enum: ['application/vnd.hmrc.2.0+json'] },
               description: 'API version negotiation header'
@@ -143,7 +143,7 @@ RSpec.describe 'Goods Nomenclatures', swagger_doc: 'v2/swagger.json', type: :req
     end
   end
 
-  path '/uk/api/goods_nomenclatures/heading/{heading_id}' do
+  path '/api/goods_nomenclatures/heading/{heading_id}' do
     parameter name: :Accept, in: :header, required: true,
               schema: { type: :string, enum: ['application/vnd.hmrc.2.0+json'] },
               description: 'API version negotiation header'

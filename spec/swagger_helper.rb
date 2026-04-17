@@ -28,7 +28,7 @@ RSpec.configure do |config|
       },
       servers: [
         {
-          url: 'https://www.trade-tariff.service.gov.uk',
+          url: 'https://www.trade-tariff.service.gov.uk/uk',
           description: 'Production (UK Global Tariff)',
         },
         {

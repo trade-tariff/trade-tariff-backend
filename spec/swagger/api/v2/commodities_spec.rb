@@ -3,7 +3,7 @@ require 'swagger_helper'
 RSpec.describe 'Commodities', swagger_doc: 'v2/swagger.json', type: :request do
   let(:Accept) { 'application/vnd.hmrc.2.0+json' }
 
-  path '/uk/api/commodities/{id}' do
+  path '/api/commodities/{id}' do
     parameter name: :Accept, in: :header, required: true,
               schema: { type: :string, enum: ['application/vnd.hmrc.2.0+json'] },
               description: 'API version negotiation header'
@@ -201,7 +201,7 @@ RSpec.describe 'Commodities', swagger_doc: 'v2/swagger.json', type: :request do
     end
   end
 
-  path '/uk/api/commodities/{id}/changes' do
+  path '/api/commodities/{id}/changes' do
     parameter name: :Accept, in: :header, required: true,
               schema: { type: :string, enum: ['application/vnd.hmrc.2.0+json'] },
               description: 'API version negotiation header'

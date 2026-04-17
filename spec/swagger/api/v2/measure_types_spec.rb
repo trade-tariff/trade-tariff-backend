@@ -25,7 +25,7 @@ RSpec.describe 'Measure Types', swagger_doc: 'v2/swagger.json', type: :request d
     },
   }.freeze
 
-  path '/uk/api/measure_types' do
+  path '/api/measure_types' do
     parameter name: :Accept, in: :header, required: true,
               schema: { type: :string, enum: ['application/vnd.hmrc.2.0+json'] },
               description: 'API version negotiation header'
@@ -53,7 +53,7 @@ RSpec.describe 'Measure Types', swagger_doc: 'v2/swagger.json', type: :request d
     end
   end
 
-  path '/uk/api/measure_types/{id}' do
+  path '/api/measure_types/{id}' do
     parameter name: :Accept, in: :header, required: true,
               schema: { type: :string, enum: ['application/vnd.hmrc.2.0+json'] },
               description: 'API version negotiation header'
