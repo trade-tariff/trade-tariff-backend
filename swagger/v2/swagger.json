@@ -15,7 +15,7 @@
   },
   "servers": [
     {
-      "url": "https://www.trade-tariff.service.gov.uk",
+      "url": "https://www.trade-tariff.service.gov.uk/uk",
       "description": "Production (UK Global Tariff)"
     },
     {
@@ -72,7 +72,7 @@
     }
   },
   "paths": {
-    "/uk/api/additional_code_types": {
+    "/api/additional_code_types": {
       "parameters": [
         {
           "name": "Accept",
@@ -143,7 +143,7 @@
         }
       }
     },
-    "/uk/api/additional_codes/search": {
+    "/api/additional_codes/search": {
       "parameters": [
         {
           "name": "Accept",
@@ -253,7 +253,7 @@
         }
       }
     },
-    "/uk/api/certificate_types": {
+    "/api/certificate_types": {
       "parameters": [
         {
           "name": "Accept",
@@ -324,7 +324,7 @@
         }
       }
     },
-    "/uk/api/certificates": {
+    "/api/certificates": {
       "parameters": [
         {
           "name": "Accept",
@@ -416,7 +416,7 @@
         }
       }
     },
-    "/uk/api/certificates/search": {
+    "/api/certificates/search": {
       "parameters": [
         {
           "name": "Accept",
@@ -535,7 +535,7 @@
         }
       }
     },
-    "/uk/api/changes": {
+    "/api/changes": {
       "parameters": [
         {
           "name": "Accept",
@@ -623,7 +623,7 @@
         }
       }
     },
-    "/uk/api/changes/{as_of}": {
+    "/api/changes/{as_of}": {
       "parameters": [
         {
           "name": "Accept",
@@ -721,7 +721,7 @@
         }
       }
     },
-    "/uk/api/chapters": {
+    "/api/chapters": {
       "parameters": [
         {
           "name": "Accept",
@@ -799,7 +799,7 @@
         }
       }
     },
-    "/uk/api/chapters/{id}": {
+    "/api/chapters/{id}": {
       "parameters": [
         {
           "name": "Accept",
@@ -1004,7 +1004,7 @@
         }
       }
     },
-    "/uk/api/chapters/{id}/changes": {
+    "/api/chapters/{id}/changes": {
       "parameters": [
         {
           "name": "Accept",
@@ -1114,7 +1114,7 @@
         }
       }
     },
-    "/uk/api/chemical_substances": {
+    "/api/chemical_substances": {
       "parameters": [
         {
           "name": "Accept",
@@ -1229,7 +1229,7 @@
         }
       }
     },
-    "/uk/api/chemicals": {
+    "/api/chemicals": {
       "parameters": [
         {
           "name": "Accept",
@@ -1304,7 +1304,7 @@
         }
       }
     },
-    "/uk/api/chemicals/search": {
+    "/api/chemicals/search": {
       "parameters": [
         {
           "name": "Accept",
@@ -1415,7 +1415,7 @@
         }
       }
     },
-    "/uk/api/chemicals/{id}": {
+    "/api/chemicals/{id}": {
       "parameters": [
         {
           "name": "Accept",
@@ -1499,7 +1499,7 @@
         }
       }
     },
-    "/uk/api/commodities/{id}": {
+    "/api/commodities/{id}": {
       "parameters": [
         {
           "name": "Accept",
@@ -1835,7 +1835,7 @@
         }
       }
     },
-    "/uk/api/commodities/{id}/changes": {
+    "/api/commodities/{id}/changes": {
       "parameters": [
         {
           "name": "Accept",
@@ -1945,7 +1945,7 @@
         }
       }
     },
-    "/uk/api/exchange_rates/period_lists/{year}": {
+    "/api/exchange_rates/period_lists/{year}": {
       "parameters": [
         {
           "name": "Accept",
@@ -2063,7 +2063,7 @@
         }
       }
     },
-    "/uk/api/exchange_rates/{id}": {
+    "/api/exchange_rates/{id}": {
       "parameters": [
         {
           "name": "Accept",
@@ -2189,7 +2189,7 @@
         }
       }
     },
-    "/uk/api/footnote_types": {
+    "/api/footnote_types": {
       "parameters": [
         {
           "name": "Accept",
@@ -2260,7 +2260,7 @@
         }
       }
     },
-    "/uk/api/footnotes/search": {
+    "/api/footnotes/search": {
       "parameters": [
         {
           "name": "Accept",
@@ -2380,7 +2380,7 @@
         }
       }
     },
-    "/uk/api/geographical_areas": {
+    "/api/geographical_areas": {
       "parameters": [
         {
           "name": "Accept",
@@ -2468,7 +2468,7 @@
         }
       }
     },
-    "/uk/api/geographical_areas/countries": {
+    "/api/geographical_areas/countries": {
       "parameters": [
         {
           "name": "Accept",
@@ -2556,7 +2556,7 @@
         }
       }
     },
-    "/uk/api/geographical_areas/{id}": {
+    "/api/geographical_areas/{id}": {
       "parameters": [
         {
           "name": "Accept",
@@ -2660,7 +2660,7 @@
         }
       }
     },
-    "/uk/api/goods_nomenclatures/chapter/{chapter_id}": {
+    "/api/goods_nomenclatures/chapter/{chapter_id}": {
       "parameters": [
         {
           "name": "Accept",
@@ -2797,7 +2797,7 @@
         }
       }
     },
-    "/uk/api/goods_nomenclatures/heading/{heading_id}": {
+    "/api/goods_nomenclatures/heading/{heading_id}": {
       "parameters": [
         {
           "name": "Accept",
@@ -2934,7 +2934,7 @@
         }
       }
     },
-    "/uk/api/goods_nomenclatures/section/{position}": {
+    "/api/goods_nomenclatures/section/{position}": {
       "parameters": [
         {
           "name": "Accept",
@@ -3070,7 +3070,7 @@
         }
       }
     },
-    "/uk/api/goods_nomenclatures/{id}": {
+    "/api/goods_nomenclatures/{id}": {
       "parameters": [
         {
           "name": "Accept",
@@ -3207,7 +3207,7 @@
         }
       }
     },
-    "/uk/api/headings/{id}": {
+    "/api/headings/{id}": {
       "parameters": [
         {
           "name": "Accept",
@@ -3441,7 +3441,7 @@
         }
       }
     },
-    "/uk/api/headings/{id}/changes": {
+    "/api/headings/{id}/changes": {
       "parameters": [
         {
           "name": "Accept",
@@ -3551,7 +3551,7 @@
         }
       }
     },
-    "/uk/api/headings/{id}/commodities": {
+    "/api/headings/{id}/commodities": {
       "parameters": [
         {
           "name": "Accept",
@@ -3624,7 +3624,7 @@
         }
       }
     },
-    "/uk/api/live_issues": {
+    "/api/live_issues": {
       "parameters": [
         {
           "name": "Accept",
@@ -3724,7 +3724,7 @@
         }
       }
     },
-    "/uk/api/measure_actions": {
+    "/api/measure_actions": {
       "parameters": [
         {
           "name": "Accept",
@@ -3805,7 +3805,7 @@
         }
       }
     },
-    "/uk/api/measure_condition_codes": {
+    "/api/measure_condition_codes": {
       "parameters": [
         {
           "name": "Accept",
@@ -3886,7 +3886,7 @@
         }
       }
     },
-    "/uk/api/measure_types": {
+    "/api/measure_types": {
       "parameters": [
         {
           "name": "Accept",
@@ -3987,7 +3987,7 @@
         }
       }
     },
-    "/uk/api/measure_types/{id}": {
+    "/api/measure_types/{id}": {
       "parameters": [
         {
           "name": "Accept",
@@ -4097,7 +4097,7 @@
         }
       }
     },
-    "/uk/api/measures/{id}": {
+    "/api/measures/{id}": {
       "parameters": [
         {
           "name": "Accept",
@@ -4291,7 +4291,7 @@
         }
       }
     },
-    "/uk/api/news/collections": {
+    "/api/news/collections": {
       "parameters": [
         {
           "name": "Accept",
@@ -4366,7 +4366,7 @@
         }
       }
     },
-    "/uk/api/news/items": {
+    "/api/news/items": {
       "parameters": [
         {
           "name": "Accept",
@@ -4523,7 +4523,7 @@
         }
       }
     },
-    "/uk/api/news/items/{id}": {
+    "/api/news/items/{id}": {
       "parameters": [
         {
           "name": "Accept",
@@ -4621,7 +4621,7 @@
         }
       }
     },
-    "/uk/api/news/years": {
+    "/api/news/years": {
       "parameters": [
         {
           "name": "Accept",
@@ -4701,7 +4701,7 @@
         }
       }
     },
-    "/uk/api/quota_order_numbers": {
+    "/api/quota_order_numbers": {
       "parameters": [
         {
           "name": "Accept",
@@ -4778,7 +4778,7 @@
         }
       }
     },
-    "/uk/api/quotas/search": {
+    "/api/quotas/search": {
       "parameters": [
         {
           "name": "Accept",
@@ -4955,7 +4955,7 @@
         }
       }
     },
-    "/uk/api/rules_of_origin_schemes": {
+    "/api/rules_of_origin_schemes": {
       "parameters": [
         {
           "name": "Accept",
@@ -5033,7 +5033,7 @@
         }
       }
     },
-    "/uk/api/rules_of_origin_schemes/{commodity_code}": {
+    "/api/rules_of_origin_schemes/{commodity_code}": {
       "parameters": [
         {
           "name": "Accept",
@@ -5121,7 +5121,7 @@
         }
       }
     },
-    "/uk/api/rules_of_origin_schemes/{heading_code}/{country_code}": {
+    "/api/rules_of_origin_schemes/{heading_code}/{country_code}": {
       "parameters": [
         {
           "name": "Accept",
@@ -5217,7 +5217,7 @@
         }
       }
     },
-    "/uk/api/search_references": {
+    "/api/search_references": {
       "parameters": [
         {
           "name": "Accept",
@@ -5302,7 +5302,7 @@
         }
       }
     },
-    "/uk/api/sections": {
+    "/api/sections": {
       "parameters": [
         {
           "name": "Accept",
@@ -5401,7 +5401,7 @@
         }
       }
     },
-    "/uk/api/sections/{id}": {
+    "/api/sections/{id}": {
       "parameters": [
         {
           "name": "Accept",
@@ -5595,7 +5595,7 @@
         }
       }
     },
-    "/uk/api/sections/{id}/chapters": {
+    "/api/sections/{id}/chapters": {
       "parameters": [
         {
           "name": "Accept",
@@ -5704,7 +5704,7 @@
         }
       }
     },
-    "/uk/api/subheadings/{id}": {
+    "/api/subheadings/{id}": {
       "parameters": [
         {
           "name": "Accept",
