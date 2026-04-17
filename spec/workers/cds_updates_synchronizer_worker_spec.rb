@@ -14,6 +14,8 @@ RSpec.describe CdsUpdatesSynchronizerWorker, type: :worker do
     subject(:perform) { described_class.new.perform }
 
     before do
+      travel_to(Time.zone.today.noon)
+
       allow(TaricSynchronizer).to receive(:download)
       allow(TaricSynchronizer).to receive(:apply).and_return(changes_applied)
       allow(CdsSynchronizer).to receive(:download)
