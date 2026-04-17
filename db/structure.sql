@@ -2,8 +2,8 @@
 -- PostgreSQL database dump
 --
 
--- Dumped from database version 13.23 (Debian 13.23-1.pgdg12+1)
--- Dumped by pg_dump version 14.17 (Homebrew)
+-- Schema structure dump
+-- Generated with the project's supported PostgreSQL toolchain
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
