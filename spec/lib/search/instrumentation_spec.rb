@@ -203,9 +203,71 @@ RSpec.describe Search::Instrumentation do
     end
   end
 
+  describe '.description_intercept_checked' do
+    it 'instruments an unmatched description intercept check' do
+      allow(ActiveSupport::Notifications).to receive(:instrument)
+
+      described_class.description_intercept_checked(
+        request_id: 'req-1',
+        query: 'horses',
+        description_intercept: nil,
+      )
+
+      expect(ActiveSupport::Notifications).to have_received(:instrument).with(
+        'description_intercept_checked.search',
+        request_id: 'req-1',
+        query: 'horses',
+        matched: false,
+      )
+    end
+
+    it 'instruments a matched description intercept check with low-cardinality fields' do
+      allow(ActiveSupport::Notifications).to receive(:instrument)
+      intercept = double(
+        term: 'gift',
+        excluded: true,
+        filtering?: true,
+        filter_prefixes_array: %w[9503 9504],
+        guidance_level: 'warning',
+        guidance_location: 'interstitial',
+        escalate_to_webchat: true,
+      )
+
+      described_class.description_intercept_checked(
+        request_id: 'req-1',
+        query: 'gift',
+        description_intercept: intercept,
+      )
+
+      expect(ActiveSupport::Notifications).to have_received(:instrument).with(
+        'description_intercept_checked.search',
+        request_id: 'req-1',
+        query: 'gift',
+        matched: true,
+        term: 'gift',
+        excluded: true,
+        filtering: true,
+        filter_prefix_count: 2,
+        guidance_level: 'warning',
+        guidance_location: 'interstitial',
+        escalate_to_webchat: true,
+      )
+    end
+  end
+
   describe '.search_completed' do
     it 'instruments the search_completed event' do
       allow(ActiveSupport::Notifications).to receive(:instrument)
+
+      intercept = double(
+        term: 'gift',
+        excluded: false,
+        filtering?: true,
+        filter_prefixes_array: %w[9503 9504],
+        guidance_level: 'info',
+        guidance_location: 'results',
+        escalate_to_webchat: false,
+      )
 
       described_class.search_completed(
         request_id: 'req-1',
@@ -216,6 +278,7 @@ RSpec.describe Search::Instrumentation do
         final_result_type: 'answers',
         total_duration_ms: 1500.0,
         result_count: 3,
+        description_intercept: intercept,
       )
 
       expect(ActiveSupport::Notifications).to have_received(:instrument).with(
@@ -228,6 +291,14 @@ RSpec.describe Search::Instrumentation do
         final_result_type: 'answers',
         total_duration_ms: 1500.0,
         result_count: 3,
+        description_intercept_matched: true,
+        description_intercept_term: 'gift',
+        description_intercept_excluded: false,
+        description_intercept_filtering: true,
+        description_intercept_filter_prefix_count: 2,
+        description_intercept_guidance_level: 'info',
+        description_intercept_guidance_location: 'results',
+        description_intercept_escalate_to_webchat: false,
       )
     end
 

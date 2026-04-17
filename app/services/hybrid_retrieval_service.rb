@@ -1,15 +1,16 @@
 class HybridRetrievalService
   Result = Struct.new(:results, :expanded_query, keyword_init: true)
 
-  def self.call(query:, as_of:, request_id: nil, limit: 30)
-    new(query:, as_of:, request_id:, limit:).call
+  def self.call(query:, as_of:, request_id: nil, limit: 30, filter_prefixes: [])
+    new(query:, as_of:, request_id:, limit:, filter_prefixes:).call
   end
 
-  def initialize(query:, as_of:, request_id: nil, limit: 30)
+  def initialize(query:, as_of:, request_id: nil, limit: 30, filter_prefixes: [])
     @query = query
     @as_of = as_of
     @request_id = request_id
     @limit = limit
+    @filter_prefixes = Array(filter_prefixes).compact_blank
   end
 
   def call
@@ -39,11 +40,9 @@ class HybridRetrievalService
     result = TimeMachine.at(@as_of) do
       case leg
       when :opensearch
-        OpensearchRetrievalService.call(
-          query: @query, as_of: @as_of, request_id: @request_id, limit: @limit,
-        )
+        OpensearchRetrievalService.call(**opensearch_args)
       when :vector
-        VectorRetrievalService.call(query: @query, limit: @limit)
+        VectorRetrievalService.call(**vector_args)
       end
     end
 
@@ -65,6 +64,18 @@ class HybridRetrievalService
 
     Rails.logger.error("HybridRetrievalService #{leg} leg failed: #{e.message}")
     nil
+  end
+
+  def opensearch_args
+    args = { query: @query, as_of: @as_of, request_id: @request_id, limit: @limit }
+    args[:filter_prefixes] = @filter_prefixes if @filter_prefixes.present?
+    args
+  end
+
+  def vector_args
+    args = { query: @query, limit: @limit }
+    args[:filter_prefixes] = @filter_prefixes if @filter_prefixes.present?
+    args
   end
 
   def rrf_merge(opensearch_items, vector_items)

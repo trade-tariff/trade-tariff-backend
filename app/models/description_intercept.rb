@@ -49,6 +49,33 @@ class DescriptionIntercept < Sequel::Model
     end
   end
 
+  def self.for_search(query, source:)
+    return nil if query.blank?
+
+    for_source(source).where(Sequel.ilike(:term, query)).first
+  end
+
+  def filter_prefixes_array
+    Array(filter_prefixes).compact_blank
+  end
+
+  def filtering?
+    filter_prefixes_array.present?
+  end
+
+  def search_metadata
+    {
+      term: term,
+      excluded: excluded,
+      filtering: filtering?,
+      filter_prefixes: filter_prefixes_array,
+      message: message,
+      guidance_level: guidance_level,
+      guidance_location: guidance_location,
+      escalate_to_webchat: escalate_to_webchat,
+    }
+  end
+
   def validate
     super
     validates_presence :term

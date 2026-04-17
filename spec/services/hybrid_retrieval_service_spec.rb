@@ -63,6 +63,19 @@ RSpec.describe HybridRetrievalService do
       expect(VectorRetrievalService).to have_received(:call).with(query: 'horses', limit: 30)
     end
 
+    it 'passes filter prefixes to both retrieval legs' do
+      as_of = Time.zone.today
+
+      described_class.call(query: 'horses', as_of: as_of, filter_prefixes: %w[0101])
+
+      expect(OpensearchRetrievalService).to have_received(:call).with(
+        query: 'horses', as_of: as_of, request_id: nil, limit: 30, filter_prefixes: %w[0101],
+      )
+      expect(VectorRetrievalService).to have_received(:call).with(
+        query: 'horses', limit: 30, filter_prefixes: %w[0101],
+      )
+    end
+
     it 'returns items from both lists ranked by RRF score' do
       result = described_class.call(query: 'horses', as_of: Time.zone.today)
 

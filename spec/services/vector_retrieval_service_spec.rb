@@ -202,6 +202,29 @@ RSpec.describe VectorRetrievalService do
 
       expect(results.size).to eq(2)
     end
+
+    context 'with filter prefixes' do
+      subject(:service) { described_class.new(query: 'live horses', limit: 10, filter_prefixes: %w[0101]) }
+
+      it 'only returns goods nomenclatures matching the prefixes' do
+        matching = create(:commodity, :with_description, :declarable,
+                          goods_nomenclature_item_id: '0101210000',
+                          producline_suffix: GoodsNomenclature::NON_GROUPING_PRODUCTLINE_SUFFIX)
+        non_matching = create(:commodity, :with_description, :declarable,
+                              goods_nomenclature_item_id: '0201210000',
+                              producline_suffix: GoodsNomenclature::NON_GROUPING_PRODUCTLINE_SUFFIX)
+
+        [matching, non_matching].each do |commodity|
+          create(:goods_nomenclature_self_text,
+                 goods_nomenclature_sid: commodity.goods_nomenclature_sid,
+                 goods_nomenclature_item_id: commodity.goods_nomenclature_item_id,
+                 self_text: 'Pure-bred breeding horses')
+          populate_search_embedding(commodity.goods_nomenclature_sid, query_embedding)
+        end
+
+        expect(service.call.map(&:goods_nomenclature_item_id)).to eq(%w[0101210000])
+      end
+    end
   end
 
   private

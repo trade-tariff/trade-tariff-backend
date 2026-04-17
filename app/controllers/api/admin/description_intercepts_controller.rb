@@ -115,8 +115,8 @@ module Api
           result[:guidance_level] = permitted[:guidance_level] if permitted.key?(:guidance_level)
           result[:guidance_location] = permitted[:guidance_location] if permitted.key?(:guidance_location)
           result[:escalate_to_webchat] = permitted[:escalate_to_webchat] if permitted.key?(:escalate_to_webchat)
-          result[:sources] = Sequel.pg_array(Array(permitted[:sources]), :text) if permitted.key?(:sources)
-          result[:filter_prefixes] = Sequel.pg_array(Array(permitted[:filter_prefixes]), :text) if permitted.key?(:filter_prefixes)
+          result[:sources] = Sequel.pg_array(Array(permitted[:sources]).compact_blank, :text) if permitted.key?(:sources)
+          result[:filter_prefixes] = Sequel.pg_array(Array(permitted[:filter_prefixes]).compact_blank, :text) if permitted.key?(:filter_prefixes)
         end
       end
     end
