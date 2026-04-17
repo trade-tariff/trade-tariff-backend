@@ -115,6 +115,29 @@ GREEN_LANES_NOTIFY_MEASURE_UPDATES
 OPTIMISED_SEARCH_ENABLED
 ```
 
+## API Documentation
+
+The V2 public API is documented as an OpenAPI 3.0 spec generated from RSpec metadata using [rswag](https://github.com/rswag/rswag).
+
+`swagger/v2/swagger.json` is generated automatically by CI after the rspec suite passes and committed back to the branch — you never need to commit it manually.
+
+### Adding documentation for a new endpoint
+
+1. Write a spec under `spec/swagger/api/v2/` (see existing files for the pattern)
+2. Push — CI will run the specs, generate `swagger/v2/swagger.json`, and commit it back
+
+To preview the generated spec locally:
+
+```sh
+RAILS_ENV=test bin/generate-swagger
+```
+
+CI enforces two things:
+- **`swagger:check_coverage`** — fails if any public V2 controller has no swagger spec
+- **`swagger:generate` + auto-commit** — regenerates and commits `swagger.json` after specs pass
+
+Internal/authenticated controllers (green lanes, enquiry form, etc.) are explicitly excluded in `lib/tasks/swagger.rake`.
+
 ## Licence
 
 Trade Tariff is licenced under the [MIT licence](https://github.com/trade-tariff/trade-tariff-backend/blob/main/LICENCE.txt)
