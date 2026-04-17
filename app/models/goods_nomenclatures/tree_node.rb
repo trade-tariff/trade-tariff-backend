@@ -21,21 +21,6 @@ module GoodsNomenclatures
         db.refresh_view(:goods_nomenclature_tree_nodes, concurrently:)
       end
 
-      def previous_sibling(origin_position, origin_depth)
-        siblings_position = Sequel.qualify(:siblings, :position)
-        siblings_depth    = Sequel.qualify(:siblings, :depth)
-        siblings_table    = Sequel.as(table_name, :siblings)
-
-        from(siblings_table)
-          .select { Sequel.as(max(siblings_position), :previous_sibling) }
-          .where do |_query|
-            (siblings_depth =~ origin_depth) &
-              (siblings_position < origin_position) &
-              (siblings_position >= TreeNode.start_of_chapter(origin_position)) &
-              validity_dates_filter(:siblings)
-          end
-      end
-
       def start_of_chapter(position_column)
         (position_column / ROUND_DOWN_TO_CHAPTER) * ROUND_DOWN_TO_CHAPTER
       end
@@ -59,16 +44,37 @@ module GoodsNomenclatures
       end
 
       def ancestor_node_constraints(origin, ancestors, date_constraints = origin)
+        next_sib = Sequel.qualify(ancestors.table, :next_sibling_or_end_position)
+        sibling_ok = next_sib > origin.position
+
+        if historical_query?
+          next_sib_start = Sequel.qualify(ancestors.table, :next_sibling_validity_start_date)
+          sibling_ok |= (next_sib_start > point_in_time)
+        end
+
         (ancestors.position < origin.position) &
           (ancestors.position >= start_of_chapter(origin.position)) &
           validity_dates_filter(date_constraints.table) &
-          (ancestors.position =~ previous_sibling(origin.position, ancestors.depth))
+          sibling_ok
+      end
+
+      def historical_query?
+        point_in_time.present? && point_in_time.to_date < Date.current
       end
 
       def descendant_node_constraints(origin, descendants, date_constraints = origin)
+        # Current-date queries use the precomputed column on the view; historical
+        # queries fall back to the validity-aware subquery because the view stores
+        # one next-sibling row per indent and can't answer "at point_in_time".
+        origin_next_sib = if historical_query?
+          next_sibling_or_end(origin.position, origin.depth)
+        else
+          Sequel.qualify(origin.table, :next_sibling_or_end_position)
+        end
+
         (descendants.position > origin.position) &
           validity_dates_filter(date_constraints.table) &
-          (descendants.position < next_sibling_or_end(origin.position, origin.depth))
+          (descendants.position < origin_next_sib)
       end
     end
 
