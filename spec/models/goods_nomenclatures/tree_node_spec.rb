@@ -56,7 +56,6 @@ RSpec.describe GoodsNomenclatures::TreeNode do
     it { is_expected.to have_attributes number_indents: commodity.number_indents }
   end
 
-
   describe '.next_sibling' do
     subject do
       described_class.next_sibling(origin.tree_node.position, origin.tree_node.depth)
