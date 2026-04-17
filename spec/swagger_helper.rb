@@ -1,5 +1,7 @@
 require 'rails_helper'
 
+TARIFF_API_HOST = 'https://www.trade-tariff.service.gov.uk'.freeze
+
 RSpec.configure do |config|
   config.swagger_root = Rails.root.join('swagger').to_s
 
@@ -28,11 +30,11 @@ RSpec.configure do |config|
       },
       servers: [
         {
-          url: 'https://www.trade-tariff.service.gov.uk/uk',
+          url: "#{TARIFF_API_HOST}/uk",
           description: 'Production (UK Global Tariff)',
         },
         {
-          url: 'https://www.trade-tariff.service.gov.uk/xi',
+          url: "#{TARIFF_API_HOST}/xi",
           description: 'Production (Northern Ireland)',
         },
       ],
