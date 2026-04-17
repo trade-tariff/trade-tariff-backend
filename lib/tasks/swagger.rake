@@ -4,13 +4,33 @@ namespace :swagger do
   swagger_spec_pattern = 'spec/swagger/**/*_spec.rb'
   swagger_json_path = File.expand_path('../../swagger/v2/swagger.json', __dir__)
 
+  # Paths that have specs (useful for contract testing) but must not appear in
+  # the public API docs — either because they are internal-only endpoints or
+  # because they are no longer active.
+  internal_paths = %w[
+    /uk/api/commodities/{commodity_id}/validity_periods
+    /uk/api/headings/{heading_id}/validity_periods
+    /uk/api/monetary_exchange_rates
+    /uk/api/preference_codes
+    /uk/api/preference_codes/{id}
+    /uk/api/simplified_procedural_code_measures
+    /uk/api/subheadings/{subheading_id}/validity_periods
+    /uk/api/updates/latest
+  ].freeze
+
   # Sort paths alphabetically so the generated JSON is deterministic across
   # platforms regardless of the order Dir.glob returns spec files.
-  sort_paths = lambda do
+  # Also strips internal/dead paths that must not appear in the public docs.
+  post_process = lambda do
     next unless File.exist?(swagger_json_path)
 
     doc = JSON.parse(File.read(swagger_json_path))
-    doc['paths'] = doc['paths'].sort.to_h if doc['paths']
+    if doc['paths']
+      doc['paths'] = doc['paths']
+        .reject { |path, _| internal_paths.include?(path) }
+        .sort
+        .to_h
+    end
     File.write(swagger_json_path, "#{JSON.pretty_generate(doc)}\n")
   end
 
@@ -18,7 +38,7 @@ namespace :swagger do
   task :generate do
     ENV['PATTERN'] = swagger_spec_pattern
     Rake::Task['rswag:specs:swaggerize'].invoke
-    sort_paths.call
+    post_process.call
   end
 
   desc 'Check every public V2 controller has a swagger spec (intended for CI)'
