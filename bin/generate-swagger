@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+# Regenerates swagger/v2/swagger.json from spec metadata.
+# CI runs this automatically after specs pass and commits the result.
+# Run locally if you want to preview the generated spec before pushing.
+
+if bundle exec rake swagger:generate; then
+  echo "swagger/v2/swagger.json updated. CI will commit this automatically."
+else
+  echo "WARNING: swagger:generate failed (is Postgres running?)."
+fi

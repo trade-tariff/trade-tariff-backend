@@ -83,6 +83,7 @@ group :test do
   gem 'rspec_junit_formatter'
   gem 'rspec-rails'
   gem 'rspec-rebound'
+  gem 'rswag-specs'
   gem 'webmock'
 end
 

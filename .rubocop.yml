@@ -22,9 +22,24 @@ AllCops:
 
 RSpec:
   Language:
+    ExampleGroups:
+      Regular:
+        - path
+        - get
+        - post
+        - put
+        - patch
+        - delete
+        - head
     Examples:
       Regular:
         - it_with_refresh_materialized_view
+        - run_test!
+
+# rswag requires let names to match HTTP header names (e.g. let(:Accept)), which are PascalCase.
+RSpec/VariableName:
+  Exclude:
+    - 'spec/swagger/**/*'
 
 Layout/LineLength:
   Max: 120
@@ -47,6 +62,7 @@ RSpec/SpecFilePathFormat:
     - spec/presenters/**/*
     - spec/serializers/**/*
     - spec/requests/**/*
+    - spec/swagger/**/*
 
 RSpec/ContextWording:
   Prefixes:
@@ -66,6 +82,12 @@ RSpec/NestedGroups:
 
 Rails/FilePath:
   Enabled: false
+
+# swagger:generate intentionally omits :environment — rswag:specs:swaggerize
+# runs rspec in a subprocess and does not need Rails loaded in this process.
+Rails/RakeEnvironment:
+  Exclude:
+    - 'lib/tasks/swagger.rake'
 
 Rails/FindEach:
   Enabled: false

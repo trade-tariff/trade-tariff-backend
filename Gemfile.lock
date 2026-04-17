@@ -167,6 +167,8 @@ GEM
     fast_excel (0.5.0)
       ffi (> 1.9, < 2)
     ffi (1.17.3)
+    ffi (1.17.3-arm64-darwin)
+    ffi (1.17.3-x86_64-linux-gnu)
     foreman (0.90.0)
       thor (~> 1.4)
     forgery (0.8.1)
@@ -191,6 +193,9 @@ GEM
       reline (>= 0.4.2)
     jmespath (1.6.2)
     json (2.19.3)
+    json-schema (6.2.0)
+      addressable (~> 2.8)
+      bigdecimal (>= 3.1, < 5)
     json_expressions (0.9.0)
     jsonapi-serializer (2.2.0)
       activesupport (>= 4.2)
@@ -223,7 +228,6 @@ GEM
     marcel (1.1.0)
     method_source (1.1.0)
     mini_mime (1.1.5)
-    mini_portile2 (2.8.9)
     minitest (6.0.3)
       drb (~> 2.0)
       prism (~> 1.5)
@@ -243,8 +247,9 @@ GEM
     newrelic_rpm (10.3.0)
       logger
     nio4r (2.7.5)
-    nokogiri (1.19.2)
-      mini_portile2 (~> 2.8.2)
+    nokogiri (1.19.2-arm64-darwin)
+      racc (~> 1.4)
+    nokogiri (1.19.2-x86_64-linux-gnu)
       racc (~> 1.4)
     notifications-ruby-client (6.3.0)
       jwt (>= 1.5, < 4)
@@ -371,6 +376,11 @@ GEM
     rspec-support (3.13.7)
     rspec_junit_formatter (0.6.0)
       rspec-core (>= 2, < 4, != 2.12.0)
+    rswag-specs (2.17.0)
+      activesupport (>= 5.2, < 8.2)
+      json-schema (>= 2.2, < 7.0)
+      railties (>= 5.2, < 8.2)
+      rspec-core (>= 2.14)
     rubocop (1.82.1)
       json (~> 2.3)
       language_server-protocol (~> 3.17.0.2)
@@ -464,7 +474,8 @@ GEM
     zeitwerk (2.7.5)
 
 PLATFORMS
-  ruby
+  arm64-darwin-25
+  x86_64-linux
 
 DEPENDENCIES
   amazing_print
@@ -513,6 +524,7 @@ DEPENDENCIES
   rspec-rails
   rspec-rebound
   rspec_junit_formatter
+  rswag-specs
   rubocop-govuk
   rubocop-performance
   ruby-lsp-rails
