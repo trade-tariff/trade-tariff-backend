@@ -58,25 +58,14 @@ RSpec.describe CdsSynchronizer, :truncation do
     end
 
     context 'when a download exception' do
-      let(:exception) { StandardError.new 'Something went wrong' }
-
       before do
         allow(described_class).to receive(:sync_variables_set?).and_return(true)
-        allow(exception).to receive(:backtrace).and_return([])
-        allow(TariffSynchronizer::CdsUpdate).to receive(:sync).and_raise(TariffSynchronizer::TariffUpdatesRequester::DownloadException.new('url', exception))
+        allow(TariffSynchronizer::CdsUpdate).to receive(:sync)
+          .and_raise(TariffSynchronizer::TariffUpdatesRequester::RetriableDownloadError.new('url'))
       end
 
-      it 'raises original exception ending the process and logs an error event' do
-        expect { described_class.download }.to raise_error StandardError
-      end
-
-      it 'sends an email with the exception error', :aggregate_failures do
-        ActionMailer::Base.deliveries.clear
-        expect { described_class.download }.to raise_error(StandardError)
-
-        expect(ActionMailer::Base.deliveries).not_to be_empty
-        expect(ActionMailer::Base.deliveries.last.encoded).to match(/Backtrace/)
-        expect(ActionMailer::Base.deliveries.last.encoded).to match(/Trade Tariff download failure/)
+      it 'raises a retriable download error ending the process' do
+        expect { described_class.download }.to raise_error TariffSynchronizer::TariffUpdatesRequester::RetriableDownloadError
       end
     end
   end

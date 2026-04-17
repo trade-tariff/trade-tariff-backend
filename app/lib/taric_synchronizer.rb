@@ -50,12 +50,7 @@ class TaricSynchronizer
         TariffSynchronizer::Instrumentation.lock_acquired(phase: 'download')
 
         start_time = Process.clock_gettime(Process::CLOCK_MONOTONIC)
-        begin
-          TradeTariffBackend.patch_broken_taric_downloads? ? TariffSynchronizer::TaricUpdate.sync_patched : TariffSynchronizer::TaricUpdate.sync(initial_date: initial_update_date)
-        rescue TariffSynchronizer::TariffUpdatesRequester::DownloadException => e
-          TariffLogger.failed_download(exception: e)
-          raise e.original
-        end
+        TradeTariffBackend.patch_broken_taric_downloads? ? TariffSynchronizer::TaricUpdate.sync_patched : TariffSynchronizer::TaricUpdate.sync(initial_date: initial_update_date)
 
         duration_ms = ((Process.clock_gettime(Process::CLOCK_MONOTONIC) - start_time) * 1000).round(2)
         TariffSynchronizer::Instrumentation.download_completed(
