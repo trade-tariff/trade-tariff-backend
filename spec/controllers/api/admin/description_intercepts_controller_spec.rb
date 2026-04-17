@@ -247,6 +247,30 @@ RSpec.describe Api::Admin::DescriptionInterceptsController do
       expect(intercept.sources).to eq(%w[guided_search fpo_search])
     end
 
+    it 'clears array fields when blank values are submitted' do
+      intercept.update(
+        filter_prefixes: Sequel.pg_array(%w[6403 6404], :text),
+        sources: Sequel.pg_array(%w[guided_search fpo_search], :text),
+      )
+
+      put :update, params: {
+        id: intercept.id,
+        data: {
+          type: 'description_intercept',
+          attributes: {
+            filter_prefixes: [''],
+            sources: [''],
+          },
+        },
+      }, format: :json
+
+      expect(response).to have_http_status(:ok)
+
+      intercept.reload
+      expect(intercept.filter_prefixes).to eq([])
+      expect(intercept.sources).to eq([])
+    end
+
     it 'returns validation errors for invalid combinations' do
       put :update, params: {
         id: intercept.id,
