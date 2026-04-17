@@ -5,19 +5,23 @@ namespace :swagger do
   swagger_json_path = File.expand_path('../../swagger/v2/swagger.json', __dir__)
 
   # Paths that have specs (useful for contract testing) but must not appear in
-  # the public API docs — either because they are internal-only endpoints or
-  # because they are no longer active.
+  # the public API docs. Excluded because they are frontend-internal endpoints
+  # (zero or near-zero external API usage) or have no observed traffic at all.
   #
-  # Paths here are relative to the server base URL (i.e. no /uk or /xi prefix).
+  # Classification is based on 90 days of CloudWatch traffic data.
+  # Paths are relative to the server base URL (no /uk or /xi prefix).
+  #
+  # To re-evaluate: compare non-frontend vs frontend request counts. Any path
+  # with meaningful non-frontend traffic belongs in the public docs, not here.
   internal_paths = %w[
+    /api/chemicals/{id}
     /api/commodities/{commodity_id}/validity_periods
     /api/headings/{heading_id}/validity_periods
-    /api/monetary_exchange_rates
-    /api/preference_codes
+    /api/news/items/{id}
+    /api/news/years
     /api/preference_codes/{id}
-    /api/simplified_procedural_code_measures
+    /api/sections/{id}/chapters
     /api/subheadings/{subheading_id}/validity_periods
-    /api/updates/latest
   ].freeze
 
   # Sort paths alphabetically so the generated JSON is deterministic across
