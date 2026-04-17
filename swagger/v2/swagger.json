@@ -1415,90 +1415,6 @@
         }
       }
     },
-    "/api/chemicals/{id}": {
-      "parameters": [
-        {
-          "name": "Accept",
-          "in": "header",
-          "required": true,
-          "schema": {
-            "type": "string",
-            "enum": [
-              "application/vnd.hmrc.2.0+json"
-            ]
-          },
-          "description": "API version negotiation header"
-        },
-        {
-          "name": "id",
-          "in": "path",
-          "required": true,
-          "schema": {
-            "type": "string"
-          },
-          "description": "CAS number (e.g. \"22199-08-2\")"
-        }
-      ],
-      "get": {
-        "summary": "Retrieve a chemical",
-        "tags": [
-          "Chemicals"
-        ],
-        "description": "Returns a single chemical by its CAS number.",
-        "operationId": "getChemical",
-        "responses": {
-          "200": {
-            "description": "chemical found",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "required": [
-                    "data"
-                  ],
-                  "properties": {
-                    "data": {
-                      "type": "object",
-                      "properties": {
-                        "id": {
-                          "type": "string"
-                        },
-                        "type": {
-                          "type": "string",
-                          "enum": [
-                            "chemical"
-                          ]
-                        },
-                        "attributes": {
-                          "type": "object",
-                          "properties": {
-                            "id": {
-                              "type": "integer",
-                              "nullable": true
-                            },
-                            "cas": {
-                              "type": "string",
-                              "nullable": true
-                            },
-                            "name": {
-                              "type": "string",
-                              "nullable": true
-                            }
-                          }
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "chemical not found"
-          }
-        }
-      }
-    },
     "/api/commodities/{id}": {
       "parameters": [
         {
@@ -4291,6 +4207,82 @@
         }
       }
     },
+    "/api/monetary_exchange_rates": {
+      "parameters": [
+        {
+          "name": "Accept",
+          "in": "header",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "enum": [
+              "application/vnd.hmrc.2.0+json"
+            ]
+          },
+          "description": "API version negotiation header"
+        }
+      ],
+      "get": {
+        "summary": "List monetary exchange rates",
+        "tags": [
+          "Exchange Rates"
+        ],
+        "description": "Returns GBP monetary exchange rates from the last 5 years, ordered by validity start date.",
+        "operationId": "listMonetaryExchangeRates",
+        "responses": {
+          "200": {
+            "description": "monetary exchange rates listed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string"
+                          },
+                          "type": {
+                            "type": "string",
+                            "enum": [
+                              "monetary_exchange_rate"
+                            ]
+                          },
+                          "attributes": {
+                            "type": "object",
+                            "properties": {
+                              "child_monetary_unit_code": {
+                                "type": "string",
+                                "nullable": true
+                              },
+                              "exchange_rate": {
+                                "type": "string",
+                                "nullable": true
+                              },
+                              "operation_date": {
+                                "type": "string",
+                                "nullable": true,
+                                "format": "date"
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/news/collections": {
       "parameters": [
         {
@@ -4523,7 +4515,7 @@
         }
       }
     },
-    "/api/news/items/{id}": {
+    "/api/preference_codes": {
       "parameters": [
         {
           "name": "Accept",
@@ -4536,129 +4528,18 @@
             ]
           },
           "description": "API version negotiation header"
-        },
-        {
-          "name": "id",
-          "in": "path",
-          "required": true,
-          "schema": {
-            "type": "string"
-          },
-          "description": "News item ID or slug"
         }
       ],
       "get": {
-        "summary": "Retrieve a news item",
+        "summary": "List all preference codes",
         "tags": [
-          "News"
+          "Preference Codes"
         ],
-        "description": "Returns a single news item. Accepts either a numeric ID or a slug string.",
-        "operationId": "getNewsItem",
+        "description": "Returns all preference codes loaded from the preference codes reference file.",
+        "operationId": "listPreferenceCodes",
         "responses": {
           "200": {
-            "description": "news item found",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "required": [
-                    "data"
-                  ],
-                  "properties": {
-                    "data": {
-                      "type": "object",
-                      "properties": {
-                        "id": {
-                          "type": "string"
-                        },
-                        "type": {
-                          "type": "string",
-                          "enum": [
-                            "news_item"
-                          ]
-                        },
-                        "attributes": {
-                          "type": "object",
-                          "properties": {
-                            "title": {
-                              "type": "string",
-                              "nullable": true
-                            },
-                            "precis": {
-                              "type": "string",
-                              "nullable": true
-                            },
-                            "content": {
-                              "type": "string",
-                              "nullable": true
-                            },
-                            "display_style": {
-                              "type": "integer",
-                              "nullable": true
-                            },
-                            "start_date": {
-                              "type": "string",
-                              "nullable": true,
-                              "format": "date"
-                            },
-                            "end_date": {
-                              "type": "string",
-                              "nullable": true,
-                              "format": "date"
-                            }
-                          }
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "news item not found"
-          }
-        }
-      }
-    },
-    "/api/news/years": {
-      "parameters": [
-        {
-          "name": "Accept",
-          "in": "header",
-          "required": true,
-          "schema": {
-            "type": "string",
-            "enum": [
-              "application/vnd.hmrc.2.0+json"
-            ]
-          },
-          "description": "API version negotiation header"
-        },
-        {
-          "name": "service",
-          "in": "query",
-          "required": false,
-          "schema": {
-            "type": "string",
-            "enum": [
-              "uk",
-              "xi"
-            ]
-          },
-          "description": "Tariff service to filter years by"
-        }
-      ],
-      "get": {
-        "summary": "List news years",
-        "tags": [
-          "News"
-        ],
-        "description": "Returns distinct years for which updates-page news items exist in published collections.",
-        "operationId": "listNewsYears",
-        "responses": {
-          "200": {
-            "description": "news years listed",
+            "description": "preference codes listed",
             "content": {
               "application/json": {
                 "schema": {
@@ -4678,14 +4559,18 @@
                           "type": {
                             "type": "string",
                             "enum": [
-                              "news_year"
+                              "preference_code"
                             ]
                           },
                           "attributes": {
                             "type": "object",
                             "properties": {
-                              "year": {
-                                "type": "integer",
+                              "code": {
+                                "type": "string",
+                                "nullable": true
+                              },
+                              "description": {
+                                "type": "string",
                                 "nullable": true
                               }
                             }
@@ -5595,7 +5480,7 @@
         }
       }
     },
-    "/api/sections/{id}/chapters": {
+    "/api/simplified_procedural_code_measures": {
       "parameters": [
         {
           "name": "Accept",
@@ -5610,25 +5495,45 @@
           "description": "API version negotiation header"
         },
         {
-          "name": "id",
-          "in": "path",
-          "required": true,
+          "name": "filter[simplified_procedural_code]",
+          "in": "query",
+          "required": false,
           "schema": {
-            "type": "integer"
+            "type": "string"
           },
-          "description": "Section position number"
+          "description": "Filter by simplified procedural code (e.g. \"2.120.1\")"
+        },
+        {
+          "name": "filter[from_date]",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "string",
+            "format": "date"
+          },
+          "description": "Filter measures valid from this date (inclusive)"
+        },
+        {
+          "name": "filter[to_date]",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "string",
+            "format": "date"
+          },
+          "description": "Filter measures valid up to this date (inclusive)"
         }
       ],
       "get": {
-        "summary": "List chapters in a section",
+        "summary": "List simplified procedural code measures",
         "tags": [
-          "Sections"
+          "Simplified Procedural Codes"
         ],
-        "description": "Returns all chapters belonging to a section.",
-        "operationId": "listSectionChapters",
+        "description": "Returns measures associated with simplified procedural codes. Without a code filter, returns all codes merged with null measures.",
+        "operationId": "listSimplifiedProceduralCodeMeasures",
         "responses": {
           "200": {
-            "description": "chapters listed",
+            "description": "simplified procedural code measures listed",
             "content": {
               "application/json": {
                 "schema": {
@@ -5641,11 +5546,6 @@
                       "type": "array",
                       "items": {
                         "type": "object",
-                        "required": [
-                          "id",
-                          "type",
-                          "attributes"
-                        ],
                         "properties": {
                           "id": {
                             "type": "string"
@@ -5653,31 +5553,21 @@
                           "type": {
                             "type": "string",
                             "enum": [
-                              "chapter"
+                              "simplified_procedural_code_measure"
                             ]
                           },
                           "attributes": {
                             "type": "object",
                             "properties": {
-                              "goods_nomenclature_sid": {
-                                "type": "integer"
+                              "simplified_procedural_code": {
+                                "type": "string",
+                                "nullable": true
                               },
                               "goods_nomenclature_item_id": {
-                                "type": "string"
-                              },
-                              "headings_from": {
                                 "type": "string",
                                 "nullable": true
                               },
-                              "headings_to": {
-                                "type": "string",
-                                "nullable": true
-                              },
-                              "description": {
-                                "type": "string",
-                                "nullable": true
-                              },
-                              "formatted_description": {
+                              "goods_nomenclature_label": {
                                 "type": "string",
                                 "nullable": true
                               },
@@ -5962,6 +5852,102 @@
           },
           "404": {
             "description": "subheading not found"
+          }
+        }
+      }
+    },
+    "/api/updates/latest": {
+      "parameters": [
+        {
+          "name": "Accept",
+          "in": "header",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "enum": [
+              "application/vnd.hmrc.2.0+json"
+            ]
+          },
+          "description": "API version negotiation header"
+        }
+      ],
+      "get": {
+        "summary": "Retrieve the latest tariff updates",
+        "tags": [
+          "Updates"
+        ],
+        "description": "Returns the most recently applied tariff update records.",
+        "operationId": "getLatestUpdates",
+        "responses": {
+          "200": {
+            "description": "latest updates retrieved",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "required": [
+                          "id",
+                          "type",
+                          "attributes"
+                        ],
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "description": "The update filename used as the record id"
+                          },
+                          "type": {
+                            "type": "string",
+                            "enum": [
+                              "tariff_update"
+                            ]
+                          },
+                          "attributes": {
+                            "type": "object",
+                            "properties": {
+                              "update_type": {
+                                "type": "string",
+                                "nullable": true
+                              },
+                              "state": {
+                                "type": "string",
+                                "nullable": true
+                              },
+                              "created_at": {
+                                "type": "string",
+                                "nullable": true,
+                                "format": "date-time"
+                              },
+                              "updated_at": {
+                                "type": "string",
+                                "nullable": true,
+                                "format": "date-time"
+                              },
+                              "filename": {
+                                "type": "string",
+                                "nullable": true
+                              },
+                              "applied_at": {
+                                "type": "string",
+                                "nullable": true,
+                                "format": "date-time"
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
           }
         }
       }
