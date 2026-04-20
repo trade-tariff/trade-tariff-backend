@@ -11260,6 +11260,20 @@ CREATE INDEX geographical_area_description_periods_operation_date_index ON uk.ge
 
 
 --
+-- Name: geographical_area_description_periods_validity_end_date_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX geographical_area_description_periods_validity_end_date_index ON uk.geographical_area_description_periods USING btree (validity_end_date);
+
+
+--
+-- Name: geographical_area_description_periods_validity_start_date_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX geographical_area_description_periods_validity_start_date_index ON uk.geographical_area_description_periods USING btree (validity_start_date);
+
+
+--
 -- Name: geographical_area_descriptions_geographical_area_description_pe; Type: INDEX; Schema: uk; Owner: -
 --
 
