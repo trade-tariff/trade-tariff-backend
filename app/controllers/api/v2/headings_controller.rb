@@ -43,7 +43,7 @@ module Api
     private
 
       def heading_scope
-        Heading.actual.non_grouping.non_hidden.by_code(params[:id])
+        Heading.actual.non_grouping.non_hidden.by_code(params[:id]).with_leaf_column
       end
 
       def heading
