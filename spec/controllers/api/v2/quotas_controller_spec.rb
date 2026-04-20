@@ -191,6 +191,18 @@ RSpec.describe Api::V2::QuotasController, type: :controller do
 
         expect(response.body).to match_json_expression pattern
       end
+
+      it 'does not request eager loading full quota balance events' do
+        expect(QuotaSearchService).to receive(:new).with(
+          anything,
+          anything,
+          anything,
+          anything,
+          include_quota_balance_events: false,
+        ).and_call_original
+
+        get :search, params:, format: :json
+      end
     end
 
     context 'when specifying an includes list in the query params' do
@@ -274,6 +286,18 @@ RSpec.describe Api::V2::QuotasController, type: :controller do
           get :search, params:, format: :json
 
           expect(response.body).to match_json_expression pattern
+        end
+
+        it 'requests eager loading full quota balance events' do
+          expect(QuotaSearchService).to receive(:new).with(
+            anything,
+            anything,
+            anything,
+            anything,
+            include_quota_balance_events: true,
+          ).and_call_original
+
+          get :search, params:, format: :json
         end
       end
 

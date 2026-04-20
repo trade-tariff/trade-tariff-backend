@@ -53,7 +53,13 @@ module Api
       end
 
       def search_service
-        @search_service ||= QuotaSearchService.new(params, current_page, per_page, actual_date)
+        @search_service ||= QuotaSearchService.new(
+          params,
+          current_page,
+          per_page,
+          actual_date,
+          include_quota_balance_events: include_params.include?('quota_balance_events'),
+        )
       end
 
       def valid_includes
