@@ -127,7 +127,7 @@ class CachedCommodityService
     @commodity ||= Commodity
       .actual
       .with_leaf_column
-      .where(goods_nomenclature_sid: @commodity_sid)
+      .where(goods_nomenclatures__goods_nomenclature_sid: @commodity_sid)
       .eager(ancestors: { measures: MEASURES_EAGER_LOAD_GRAPH,
                           goods_nomenclature_descriptions: {} },
              measures: MEASURES_EAGER_LOAD_GRAPH)
