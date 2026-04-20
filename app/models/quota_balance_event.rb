@@ -12,6 +12,6 @@ class QuotaBalanceEvent < Sequel::Model
   end
 
   def self.status
-    'Open'
+    QuotaDefinition::STATUS_OPEN
   end
 end

@@ -17,7 +17,7 @@ FactoryBot.define do
     end
 
     producline_suffix do
-      goods_nomenclature&.producline_suffix || '80'
+      goods_nomenclature&.producline_suffix || GoodsNomenclature::NON_GROUPING_PRODUCTLINE_SUFFIX
     end
 
     goods_nomenclature_type do

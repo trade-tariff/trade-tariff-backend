@@ -168,13 +168,37 @@ RSpec.describe Api::Internal::SearchController, :internal do
       end
     end
 
-    context 'when rogue query' do
-      let(:pattern) do
-        { 'data' => [] }
+    context 'when description intercept matches' do
+      before do
+        create(:description_intercept,
+               term: 'gift',
+               excluded: true,
+               message: 'Gift is too vague.',
+               guidance_level: 'warning',
+               guidance_location: 'interstitial',
+               escalate_to_webchat: true)
       end
 
-      it 'returns an empty data array' do
-        post api_search_path(format: :json), params: { q: 'gif' }
+      let(:pattern) do
+        {
+          'data' => [],
+          'meta' => {
+            'description_intercept' => {
+              'term' => 'gift',
+              'excluded' => true,
+              'filtering' => false,
+              'filter_prefixes' => [],
+              'message' => 'Gift is too vague.',
+              'guidance_level' => 'warning',
+              'guidance_location' => 'interstitial',
+              'escalate_to_webchat' => true,
+            },
+          },
+        }
+      end
+
+      it 'returns intercept metadata' do
+        post api_search_path(format: :json), params: { q: 'gift' }
 
         expect(response).to have_http_status(:ok)
         expect(response.body).to match_json_expression(pattern)

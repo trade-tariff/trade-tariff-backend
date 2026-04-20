@@ -76,7 +76,7 @@ class RelabelGoodsNomenclaturePageWorker
 
   def upsert_label(label)
     now = Time.zone.now
-    GoodsNomenclatureLabel.dataset.insert_conflict(
+    result = GoodsNomenclatureLabel.dataset.insert_conflict(
       target: :goods_nomenclature_sid,
       update: {
         labels: label.labels,
@@ -90,7 +90,7 @@ class RelabelGoodsNomenclaturePageWorker
         updated_at: now,
       },
       update_where: { Sequel[:goods_nomenclature_labels][:manually_edited] => false },
-    ).insert(
+    ).returning(:goods_nomenclature_sid).insert(
       goods_nomenclature_sid: label.goods_nomenclature_sid,
       goods_nomenclature_type: label.goods_nomenclature_type,
       goods_nomenclature_item_id: label.goods_nomenclature_item_id,
@@ -107,5 +107,10 @@ class RelabelGoodsNomenclaturePageWorker
       created_at: now,
       updated_at: now,
     )
+
+    return false if result.empty?
+
+    persisted_label = GoodsNomenclatureLabel[label.goods_nomenclature_sid]
+    Sequel::Plugins::HasPaperTrail.record_current_version!(persisted_label, created_at: now)
   end
 end

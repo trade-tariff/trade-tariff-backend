@@ -1,4 +1,10 @@
 RSpec.describe CdsSynchronizer, :truncation do
+  describe '.update_type' do
+    it 'always returns CdsUpdate regardless of the SERVICE env var' do
+      expect(described_class.update_type).to eq(TariffSynchronizer::CdsUpdate)
+    end
+  end
+
   describe '.initial_update_date' do
     it 'returns initial update date' do
       expect(described_class.initial_update_date).to eq(Date.new(2020, 9, 1))
@@ -79,7 +85,20 @@ RSpec.describe CdsSynchronizer, :truncation do
     let(:applied_update) { create(:cds_update, :applied, example_date: Time.zone.yesterday) }
     let(:pending_update) { create(:cds_update, :pending, example_date: Time.zone.today) }
 
-    context 'with failed updates present' do
+    context 'when the Redis lock cannot be acquired' do
+      before do
+        allow(TradeTariffBackend).to receive(:with_redis_lock).and_raise(Redlock::LockError, 'tariff-lock')
+        allow(TariffSynchronizer::BaseUpdate).to receive(:failed)
+      end
+
+      it 'does not run failure or sequence checks' do
+        described_class.apply
+
+        expect(TariffSynchronizer::BaseUpdate).not_to have_received(:failed)
+      end
+    end
+
+    context 'with failed CDS updates present' do
       let(:failed_update) { create(:cds_update, :failed, example_date: Time.zone.yesterday) }
 
       before do
@@ -105,6 +124,18 @@ RSpec.describe CdsSynchronizer, :truncation do
 
       it 'sends email with the error' do
         expect { described_class.apply }.to raise_error(TariffSynchronizer::FailedUpdatesError)
+      end
+    end
+
+    context 'with only TARIC failed updates present' do
+      before do
+        create(:taric_update, :failed, example_date: Time.zone.yesterday)
+        allow(TradeTariffBackend).to receive(:service).and_return('uk')
+        allow(TradeTariffBackend).to receive(:with_redis_lock)
+      end
+
+      it 'does not raise FailedUpdatesError' do
+        expect { described_class.apply }.not_to raise_error
       end
     end
   end

@@ -1,10 +1,8 @@
 RSpec.describe BuildIndexPageWorker, type: :worker do
   describe '#methods' do
     let :search_result_commodity_ids do
-      search_result.hits
-                   .hits
-                   .map(&:_source)
-                   .map(&:goods_nomenclature_item_id)
+      search_result.dig('hits', 'hits')
+                   .map { |h| h.dig('_source', 'goods_nomenclature_item_id') }
     end
 
     describe 'build index page' do

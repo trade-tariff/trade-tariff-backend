@@ -84,4 +84,4 @@ HEALTHCHECK CMD nc -z 0.0.0.0 $SSL_PORT
 
 USER tariff
 
-CMD ["bundle", "exec", "puma", "-C", "config/puma.rb"]
+CMD ["/bin/sh", "-c", "export DB_POOL=${DB_POOL:-${MAX_THREADS:-6}} && bundle exec puma -C config/puma.rb"]

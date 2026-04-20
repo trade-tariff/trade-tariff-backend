@@ -1,5 +1,4 @@
 FactoryBot.define do
-  sequence(:goods_nomenclature_sid, 100) # Some factories hard code SIDs, so avoid clashing
   sequence(:chapter_short_code, 10) { |n| sprintf '%02d', n }
   sequence(:heading_short_code, 10) { |n| sprintf '01%02d', n }
   sequence(:commodity_short_code) { |n| sprintf '%06d', n }
@@ -12,7 +11,7 @@ FactoryBot.define do
     end
 
     goods_nomenclature_sid { generate(:goods_nomenclature_sid) }
-    producline_suffix   { '80' }
+    producline_suffix   { GoodsNomenclature::NON_GROUPING_PRODUCTLINE_SUFFIX }
     validity_start_date { 2.years.ago.beginning_of_day }
     validity_end_date   { nil }
 
@@ -139,7 +138,7 @@ FactoryBot.define do
     end
 
     trait :non_grouping do
-      producline_suffix { '80' }
+      producline_suffix { GoodsNomenclature::NON_GROUPING_PRODUCTLINE_SUFFIX }
     end
 
     trait :with_indent do
@@ -293,7 +292,7 @@ FactoryBot.define do
 
     goods_nomenclature_indent_sid { generate(:sid) }
     goods_nomenclature_sid { goods_nomenclature&.goods_nomenclature_sid || generate(:sid) }
-    productline_suffix { goods_nomenclature&.producline_suffix || '80' }
+    productline_suffix { goods_nomenclature&.producline_suffix || GoodsNomenclature::NON_GROUPING_PRODUCTLINE_SUFFIX }
     number_indents { Forgery(:basic).number }
 
     goods_nomenclature_item_id do

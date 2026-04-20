@@ -8,8 +8,8 @@ RSpec.describe FullChemicalPopulatorService do
 
     context 'when there are preexisting full chemicals' do
       before do
-        create(:goods_nomenclature, goods_nomenclature_item_id: '0409000000', producline_suffix: '80')
-        create(:goods_nomenclature, goods_nomenclature_item_id: '0511998590', producline_suffix: '80')
+        create(:goods_nomenclature, goods_nomenclature_item_id: '0409000000', producline_suffix: GoodsNomenclature::NON_GROUPING_PRODUCTLINE_SUFFIX)
+        create(:goods_nomenclature, goods_nomenclature_item_id: '0511998590', producline_suffix: GoodsNomenclature::NON_GROUPING_PRODUCTLINE_SUFFIX)
       end
 
       let!(:full_chemical) do
@@ -20,7 +20,7 @@ RSpec.describe FullChemicalPopulatorService do
           cas_rn: '8028-66-8',
           ec_number: '293-255-4',
           goods_nomenclature_item_id: '0409000000',
-          producline_suffix: '80',
+          producline_suffix: GoodsNomenclature::NON_GROUPING_PRODUCTLINE_SUFFIX,
           un_number: nil,
           nomen: 'COMMON', # Changed
           name: 'powder', # Changed
@@ -37,8 +37,8 @@ RSpec.describe FullChemicalPopulatorService do
 
     context 'when there are matching goods nomenclatures' do
       before do
-        create(:goods_nomenclature, goods_nomenclature_item_id: '0409000000', producline_suffix: '80')
-        create(:goods_nomenclature, goods_nomenclature_item_id: '0511998590', producline_suffix: '80')
+        create(:goods_nomenclature, goods_nomenclature_item_id: '0409000000', producline_suffix: GoodsNomenclature::NON_GROUPING_PRODUCTLINE_SUFFIX)
+        create(:goods_nomenclature, goods_nomenclature_item_id: '0511998590', producline_suffix: GoodsNomenclature::NON_GROUPING_PRODUCTLINE_SUFFIX)
       end
 
       it { expect { call }.to change(FullChemical, :count).by(2) }
@@ -64,8 +64,8 @@ RSpec.describe FullChemicalPopulatorService do
 
     context 'when there are no current matching goods nomenclatures' do
       before do
-        create(:goods_nomenclature, :non_current, goods_nomenclature_item_id: '0409000000', producline_suffix: '80')
-        create(:goods_nomenclature, :non_current, goods_nomenclature_item_id: '0511998590', producline_suffix: '80')
+        create(:goods_nomenclature, :non_current, goods_nomenclature_item_id: '0409000000', producline_suffix: GoodsNomenclature::NON_GROUPING_PRODUCTLINE_SUFFIX)
+        create(:goods_nomenclature, :non_current, goods_nomenclature_item_id: '0511998590', producline_suffix: GoodsNomenclature::NON_GROUPING_PRODUCTLINE_SUFFIX)
       end
 
       it { expect { call }.to raise_error(Sequel::NotNullConstraintViolation) }

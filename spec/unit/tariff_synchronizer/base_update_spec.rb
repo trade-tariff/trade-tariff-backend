@@ -128,40 +128,6 @@ RSpec.describe TariffSynchronizer::BaseUpdate do
     end
   end
 
-  describe '#last_updates_are_missing?' do
-    context 'with weekends' do
-      before do
-        travel_to Date.parse('21-05-2017')
-        @missing_update = create(:taric_update, :missing, example_date: Time.zone.today)
-        @pending_update = create(:taric_update, example_date: Time.zone.yesterday)
-      end
-
-      after do
-        travel_back
-      end
-
-      it 'returns false' do
-        expect(described_class.send(:last_updates_are_missing?)).to be_falsey
-      end
-    end
-
-    context 'without weekends' do
-      before do
-        travel_to Date.parse('17-05-2017')
-        @missing_update = create(:taric_update, :missing, example_date: Time.zone.today)
-        @pending_update = create(:taric_update, example_date: Time.zone.yesterday)
-      end
-
-      after do
-        travel_back
-      end
-
-      it 'returns true' do
-        expect(described_class.send(:last_updates_are_missing?)).to be_truthy
-      end
-    end
-  end
-
   describe '.oldest_pending' do
     subject(:oldest_pending) { described_class.oldest_pending }
 
@@ -240,6 +206,81 @@ RSpec.describe TariffSynchronizer::BaseUpdate do
 
     context 'when there are no updates' do
       it { is_expected.to be_nil }
+    end
+  end
+
+  describe '#mark_as_applied' do
+    subject(:mark_as_applied) { update.mark_as_applied }
+
+    let(:update) { create(:cds_update, :pending) }
+
+    it 'transitions the update to applied state' do
+      expect { mark_as_applied }.to change { update.reload.state }.from('P').to('A')
+    end
+
+    it 'records the state change' do
+      expect { mark_as_applied }
+        .to change(TariffSynchronizer::TariffUpdateStateChange, :count).by(1)
+    end
+
+    it 'records the correct from and to states' do
+      mark_as_applied
+      change_record = TariffSynchronizer::TariffUpdateStateChange.last
+      expect(change_record).to have_attributes(
+        tariff_update_filename: update.filename,
+        from_state: 'P',
+        to_state: 'A',
+      )
+    end
+  end
+
+  describe '#mark_as_failed' do
+    subject(:mark_as_failed) { update.mark_as_failed }
+
+    let(:update) { create(:cds_update, :pending) }
+
+    it 'transitions the update to failed state' do
+      expect { mark_as_failed }.to change { update.reload.state }.from('P').to('F')
+    end
+
+    it 'records the state change' do
+      expect { mark_as_failed }
+        .to change(TariffSynchronizer::TariffUpdateStateChange, :count).by(1)
+    end
+
+    it 'records the correct from and to states' do
+      mark_as_failed
+      change_record = TariffSynchronizer::TariffUpdateStateChange.last
+      expect(change_record).to have_attributes(
+        tariff_update_filename: update.filename,
+        from_state: 'P',
+        to_state: 'F',
+      )
+    end
+  end
+
+  describe '#mark_as_pending' do
+    subject(:mark_as_pending) { update.mark_as_pending }
+
+    let(:update) { create(:cds_update, :applied) }
+
+    it 'transitions the update to pending state' do
+      expect { mark_as_pending }.to change { update.reload.state }.from('A').to('P')
+    end
+
+    it 'records the state change' do
+      expect { mark_as_pending }
+        .to change(TariffSynchronizer::TariffUpdateStateChange, :count).by(1)
+    end
+
+    it 'records the correct from and to states' do
+      mark_as_pending
+      change_record = TariffSynchronizer::TariffUpdateStateChange.last
+      expect(change_record).to have_attributes(
+        tariff_update_filename: update.filename,
+        from_state: 'A',
+        to_state: 'P',
+      )
     end
   end
 

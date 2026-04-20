@@ -50,8 +50,7 @@ class CdsImporter
         instrument('cds_importer.import.operations', mapper: first_entity.mapper, operation: first_entity.instance.operation, count: group.size) do
           save_group(operation_klass, group)
         end
-      rescue StandardError => e
-        instrument('cds_error.cds_importer', type: operation_klass, exception: e)
+      rescue StandardError
         raise
       end
     end

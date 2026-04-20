@@ -7,91 +7,91 @@ RSpec.describe QuotaDefinition do
     context 'when not in a critical state with no events' do
       subject(:status) { build(:quota_definition, critical_state: 'N').status }
 
-      it { is_expected.to eq 'Open' }
+      it { is_expected.to eq QuotaDefinition::STATUS_OPEN }
     end
 
     context 'when in a critical state with no events' do
       subject(:status) { build(:quota_definition, critical_state: 'Y').status }
 
-      it { is_expected.to eq 'Critical' }
+      it { is_expected.to eq QuotaDefinition::STATUS_CRITICAL }
     end
 
     context 'when there are balance events' do
       subject(:status) { create(:quota_definition, :with_quota_balance_events).status }
 
-      it { is_expected.to eq 'Open' }
+      it { is_expected.to eq QuotaDefinition::STATUS_OPEN }
     end
 
     context 'when there are critical events' do
       subject(:status) { create(:quota_definition, :with_quota_critical_events).status }
 
-      it { is_expected.to eq 'Critical' }
+      it { is_expected.to eq QuotaDefinition::STATUS_CRITICAL }
     end
 
     context 'when there are exhaustion events' do
       subject(:status) { create(:quota_definition, :with_quota_exhaustion_events).status }
 
-      it { is_expected.to eq 'Exhausted' }
+      it { is_expected.to eq QuotaDefinition::STATUS_EXHAUSTED }
     end
 
     context 'when there are unsuspension events' do
       subject(:status) { create(:quota_definition, :with_quota_unsuspension_events).status }
 
-      it { is_expected.to eq 'Open' }
+      it { is_expected.to eq QuotaDefinition::STATUS_OPEN }
     end
 
     context 'when there are reopening events' do
       subject(:status) { create(:quota_definition, :with_quota_reopening_events).status }
 
-      it { is_expected.to eq 'Open' }
+      it { is_expected.to eq QuotaDefinition::STATUS_OPEN }
     end
 
     context 'when there are unblocking events' do
       subject(:status) { create(:quota_definition, :with_quota_unblocking_events).reload.status }
 
-      it { is_expected.to eq 'Open' }
+      it { is_expected.to eq QuotaDefinition::STATUS_OPEN }
     end
 
     context 'when there are balance events and an active critical event' do
       subject(:status) { create(:quota_definition, :with_quota_balance_and_active_critical_events).status }
 
-      it { is_expected.to eq 'Critical' }
+      it { is_expected.to eq QuotaDefinition::STATUS_CRITICAL }
     end
 
     context 'when there are balance events and an inactive critical event' do
       subject(:status) { build(:quota_definition, :with_quota_balance_and_inactive_critical_events).status }
 
-      it { is_expected.to eq 'Open' }
+      it { is_expected.to eq QuotaDefinition::STATUS_OPEN }
     end
 
     context 'when there is a valid suspension period it doenst overide the quota exausted status' do
       subject(:status) { create(:quota_definition, :with_quota_exhaustion_events, :with_quota_suspension_period).reload.status }
 
-      it { is_expected.to eq 'Exhausted' }
+      it { is_expected.to eq QuotaDefinition::STATUS_EXHAUSTED }
     end
 
     context 'when there is a valid suspension period' do
       subject(:status) { create(:quota_definition, :with_quota_suspension_period).reload.status }
 
-      it { is_expected.to eq 'Suspended' }
+      it { is_expected.to eq QuotaDefinition::STATUS_SUSPENDED }
     end
 
     context 'when there is a expired suspension period' do
       subject(:status) { create(:quota_definition, :with_expired_quota_suspension_period).reload.status }
 
-      it { is_expected.to eq 'Open' }
+      it { is_expected.to eq QuotaDefinition::STATUS_OPEN }
     end
 
     context 'when there is a valid blocking period' do
       subject(:status) { create(:quota_definition, :with_quota_blocking_period).reload.status }
 
-      it { is_expected.to eq 'Blocked' }
+      it { is_expected.to eq QuotaDefinition::STATUS_BLOCKED }
     end
 
     context 'when there is a expired blocking period' do
       subject(:status) { create(:quota_definition, :with_expired_quota_blocking_period).reload.status }
 
-      it { is_expected.to eq 'Open' }
+      it { is_expected.to eq QuotaDefinition::STATUS_OPEN }
     end
   end
 
@@ -283,6 +283,19 @@ RSpec.describe QuotaDefinition do
       it 'returns initial volume' do
         expect(quota_definition.balance).to eq(6502)
       end
+    end
+  end
+
+  describe '#last_balance_event' do
+    subject(:last_balance_event) { quota_definition.last_balance_event }
+
+    let(:quota_definition) { build(:quota_definition) }
+    let(:latest_event) { instance_double(QuotaBalanceEvent) }
+
+    it 'uses the latest quota balance event association when events are not preloaded' do
+      allow(quota_definition).to receive_messages(associations: {}, latest_quota_balance_event: latest_event)
+
+      expect(last_balance_event).to eq(latest_event)
     end
   end
 

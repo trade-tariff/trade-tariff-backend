@@ -5,7 +5,6 @@
   - default
   - within_1_hour
   - within_1_day
-  - healthcheck
 :scheduler:
   :schedule:
     #
@@ -22,7 +21,7 @@
     # Online converter: https://crontab.guru/#0_22_*_*_*
     #
     CdsUpdatesSynchronizerWorker:
-      cron: "30 0 * * *"
+      cron: <%= ENV.fetch('CDS_SYNC_SCHEDULE', '0 5 * * *')%>
       description: "Runs ETL of CDS files and populates indexes"
       enabled: <%= ENV.fetch('SERVICE', 'uk') == 'uk' %>
     TaricUpdatesSynchronizerWorker:
@@ -49,9 +48,6 @@
     ReportWorker:
       cron: "30 10 * * *" # Needs to run even if the UpdatesSynchronizerWorker failed
       description: "Generates reports and persists them to S3"
-    HealthcheckWorker:
-      every: 30.minutes
-      description: Trigger the health check
     OneWeekTreeIntegrityCheck:
       cron: '05 8 * * 1'
       class: TreeIntegrityCheckWorker
@@ -69,8 +65,8 @@
       description: Creates average rates from downloaded data and uploads file to S3
       enabled: <%= ENV.fetch('SERVICE', 'uk') == 'uk' %>
     SynchronizerCheckWorker:
-      cron: "30 08 * * *"
-      description: Checks we have recent Quota Balance Events - this is an early warning that our sync process has a potential issue
+      cron: "*/30 * * * *"
+      description: Records sync age as a New Relic custom metric every 30 minutes — NR alert conditions on Custom/TariffSync/{service}/AgeMinutes trigger PagerDuty when age exceeds threshold
     CheckDifferencesReportHasRun:
       cron: "0 1 * * 2"  # 1am every Tuesday
       description: "Checks if the differences report has run"

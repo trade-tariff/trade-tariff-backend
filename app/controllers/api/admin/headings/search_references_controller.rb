@@ -20,7 +20,7 @@ module Api
           @heading ||= begin
             heading = Heading.actual
                    .non_grouping
-                   .where(goods_nomenclatures__goods_nomenclature_item_id: heading_id)
+                   .by_code(heading_id)
                    .take
 
             raise Sequel::RecordNotFound if heading.goods_nomenclature_item_id.in?(HiddenGoodsNomenclature.codes)
@@ -30,7 +30,7 @@ module Api
         end
 
         def heading_id
-          "#{params[:heading_id]}000000"
+          params[:heading_id]
         end
       end
     end

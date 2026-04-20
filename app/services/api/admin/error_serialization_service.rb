@@ -1,7 +1,7 @@
 module Api
   module Admin
     class ErrorSerializationService
-      DEFAULT_ERROR_STATUS_CODE = 422 # Unprocessable_entity
+      DEFAULT_ERROR_STATUS_CODE = 422 # Unprocessable_content
       STATUS_CODES_FOR_ERRORS = {
         'is already taken' => 409, # Conflict
       }.freeze

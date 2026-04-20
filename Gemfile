@@ -1,6 +1,6 @@
 source 'https://rubygems.org'
 
-ruby File.read('.ruby-version')
+ruby file: '.ruby-version'
 
 # Server
 gem 'puma'
@@ -15,7 +15,6 @@ gem 'sequel-rails'
 # File uploads and AWS
 gem 'aws-actionmailer-ses'
 gem 'aws-sdk-cloudfront'
-gem 'aws-sdk-cloudwatch'
 gem 'aws-sdk-rails'
 gem 'aws-sdk-s3'
 
@@ -44,23 +43,19 @@ gem 'diff-lcs'
 gem 'bootsnap', require: false
 gem 'csv'
 gem 'engtagger'
-gem 'hashie'
 gem 'holidays'
 gem 'lograge'
 gem 'logstash-event'
 gem 'newrelic_rpm'
 gem 'nokogiri'
 gem 'notifications-ruby-client'
-gem 'omniauth-rails_csrf_protection'
 gem 'ostruct'
-gem 'plek'
 gem 'slack-notifier'
 
 # API related
 gem 'jsonapi-serializer'
 gem 'rabl'
 gem 'responders'
-gem 'tilt'
 
 group :development do
   gem 'foreman'
@@ -88,6 +83,7 @@ group :test do
   gem 'rspec_junit_formatter'
   gem 'rspec-rails'
   gem 'rspec-rebound'
+  gem 'rswag-specs'
   gem 'webmock'
 end
 

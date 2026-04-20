@@ -17,6 +17,7 @@ module HeadingService
       }.freeze
 
       MEASURES_EAGER_LOAD = {
+        geographical_area: :geographical_area_descriptions,
         measure_components: {
           duty_expression: :duty_expression_description,
           measurement_unit: %i[measurement_unit_description

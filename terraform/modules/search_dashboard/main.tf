@@ -24,9 +24,9 @@ resource "aws_cloudwatch_dashboard" "search" {
           properties = {
             markdown = join("\n", [
               "## Trade Tariff Search",
-              "Monitors keyword, interactive AI, and reference searches. Follows the RED method (Rate, Errors, Duration).",
-              "**Healthy:** p90 latency < 5s, error rate < 1%, zero-result rate < 10%.",
-              "**Start here:** check latency and error trends in the top row, then drill into search quality and zero-result terms below.",
+              "Monitors keyword, interactive AI, reference searches, and description intercept behaviour. Follows the RED method (Rate, Errors, Duration).",
+              "**Healthy:** p90 latency < 5s, error rate < 1%, zero-result rate < 10%, intercept matches consistent with configured terms.",
+              "**Start here:** check latency and error trends in the top row, then review description intercept matches and zero-result terms below.",
               "**Related:** [Label Generator](${local.label_dashboard_url}) | [Self-Text Generator](${local.self_text_dashboard_url})",
             ])
           }
@@ -308,12 +308,69 @@ resource "aws_cloudwatch_dashboard" "search" {
         },
       ],
 
-      # Row 6 (y=32): Zero-Result Searches
+      # Row 6 (y=32): Description Intercepts
       [
         {
           type   = "log"
           x      = 0
           y      = 32
+          width  = 8
+          height = 6
+          properties = {
+            title  = "Intercept Checks Over Time"
+            region = var.region
+            view   = "timeSeries"
+            query  = <<-EOT
+              ${local.source}
+              | ${local.service_filter} and event = "description_intercept_checked"
+              | stats count(*) as checks by matched, bin(1h)
+            EOT
+          }
+        },
+        {
+          type   = "log"
+          x      = 8
+          y      = 32
+          width  = 8
+          height = 6
+          properties = {
+            title  = "Intercept Outcomes"
+            region = var.region
+            view   = "bar"
+            query  = <<-EOT
+              ${local.source}
+              | ${local.service_filter} and event = "description_intercept_checked" and matched = true
+              | stats count(*) as matches by excluded, filtering, guidance_level, guidance_location, escalate_to_webchat
+              | sort matches desc
+            EOT
+          }
+        },
+        {
+          type   = "log"
+          x      = 16
+          y      = 32
+          width  = 8
+          height = 6
+          properties = {
+            title  = "Top Matched Intercept Terms"
+            region = var.region
+            query  = <<-EOT
+              ${local.source}
+              | ${local.service_filter} and event = "description_intercept_checked" and matched = true
+              | stats count(*) as matches by term, excluded, filtering, guidance_level, guidance_location, escalate_to_webchat
+              | sort matches desc
+              | limit 30
+            EOT
+          }
+        },
+      ],
+
+      # Row 7 (y=38): Zero-Result Searches
+      [
+        {
+          type   = "log"
+          x      = 0
+          y      = 38
           width  = 8
           height = 6
           properties = {
@@ -330,7 +387,7 @@ resource "aws_cloudwatch_dashboard" "search" {
         {
           type   = "log"
           x      = 8
-          y      = 32
+          y      = 38
           width  = 8
           height = 6
           properties = {
@@ -348,7 +405,7 @@ resource "aws_cloudwatch_dashboard" "search" {
         {
           type   = "log"
           x      = 16
-          y      = 32
+          y      = 38
           width  = 8
           height = 6
           properties = {
@@ -365,12 +422,12 @@ resource "aws_cloudwatch_dashboard" "search" {
         },
       ],
 
-      # Row 7 (y=38): Interactive Search - The AI Story
+      # Row 8 (y=44): Interactive Search - The AI Story
       [
         {
           type   = "log"
           x      = 0
-          y      = 38
+          y      = 44
           width  = 12
           height = 6
           properties = {
@@ -387,7 +444,7 @@ resource "aws_cloudwatch_dashboard" "search" {
         {
           type   = "log"
           x      = 12
-          y      = 38
+          y      = 44
           width  = 6
           height = 6
           properties = {
@@ -404,7 +461,7 @@ resource "aws_cloudwatch_dashboard" "search" {
         {
           type   = "log"
           x      = 18
-          y      = 38
+          y      = 44
           width  = 6
           height = 6
           properties = {
@@ -420,12 +477,12 @@ resource "aws_cloudwatch_dashboard" "search" {
         },
       ],
 
-      # Row 8 (y=44): User Journey - Result Selection
+      # Row 9 (y=50): User Journey - Result Selection
       [
         {
           type   = "log"
           x      = 0
-          y      = 44
+          y      = 50
           width  = 8
           height = 6
           properties = {
@@ -442,7 +499,7 @@ resource "aws_cloudwatch_dashboard" "search" {
         {
           type   = "log"
           x      = 8
-          y      = 44
+          y      = 50
           width  = 8
           height = 6
           properties = {
@@ -459,7 +516,7 @@ resource "aws_cloudwatch_dashboard" "search" {
         {
           type   = "log"
           x      = 16
-          y      = 44
+          y      = 50
           width  = 8
           height = 6
           properties = {
@@ -476,12 +533,12 @@ resource "aws_cloudwatch_dashboard" "search" {
         },
       ],
 
-      # Row 9 (y=50): Errors and Reliability
+      # Row 10 (y=56): Errors and Reliability
       [
         {
           type   = "log"
           x      = 0
-          y      = 50
+          y      = 56
           width  = 6
           height = 6
           properties = {
@@ -498,7 +555,7 @@ resource "aws_cloudwatch_dashboard" "search" {
         {
           type   = "log"
           x      = 6
-          y      = 50
+          y      = 56
           width  = 6
           height = 6
           properties = {
@@ -515,7 +572,7 @@ resource "aws_cloudwatch_dashboard" "search" {
         {
           type   = "log"
           x      = 12
-          y      = 50
+          y      = 56
           width  = 6
           height = 6
           properties = {
@@ -532,7 +589,7 @@ resource "aws_cloudwatch_dashboard" "search" {
         {
           type   = "log"
           x      = 18
-          y      = 50
+          y      = 56
           width  = 6
           height = 6
           properties = {
@@ -550,12 +607,12 @@ resource "aws_cloudwatch_dashboard" "search" {
         },
       ],
 
-      # Row 10 (y=56): Live Feed
+      # Row 11 (y=62): Live Feed
       [
         {
           type   = "log"
           x      = 0
-          y      = 56
+          y      = 62
           width  = 12
           height = 6
           properties = {
@@ -573,7 +630,7 @@ resource "aws_cloudwatch_dashboard" "search" {
         {
           type   = "log"
           x      = 12
-          y      = 56
+          y      = 62
           width  = 12
           height = 6
           properties = {
@@ -583,6 +640,28 @@ resource "aws_cloudwatch_dashboard" "search" {
               ${local.source}
               | ${local.service_filter} and event = "search_completed"
               | fields @timestamp, search_type, total_duration_ms, result_count, final_result_type, request_id
+              | sort @timestamp desc
+              | limit 30
+            EOT
+          }
+        },
+      ],
+
+      # Row 12 (y=68): Description Intercept Drill-Down
+      [
+        {
+          type   = "log"
+          x      = 0
+          y      = 68
+          width  = 24
+          height = 6
+          properties = {
+            title  = "Recent Intercept Matches"
+            region = var.region
+            query  = <<-EOT
+              ${local.source}
+              | ${local.service_filter} and event = "description_intercept_checked" and matched = true
+              | fields @timestamp, query, term, excluded, filtering, filter_prefix_count, guidance_level, guidance_location, escalate_to_webchat, request_id
               | sort @timestamp desc
               | limit 30
             EOT

@@ -33,14 +33,10 @@ class CdsUpdatesSynchronizerWorker
     migrate_data if reapply_data_migrations
     MaterializeViewHelper.refresh_materialized_view
 
-    Sidekiq::Client.enqueue_in(5.minutes, ClearCacheWorker)
-    Sidekiq::Client.enqueue_in(5.minutes, ClearInvalidSearchReferences)
-    Sidekiq::Client.enqueue_in(10.minutes, TreeIntegrityCheckWorker)
-    Sidekiq::Client.enqueue_in(11.minutes, PopulateChangesTableWorker)
-    Sidekiq::Client.enqueue_in(12.minutes, ClearCacheWorker)
-
-    # After cache is cleared
-    Sidekiq::Client.enqueue_in(15.minutes, PopulateTariffChangesWorker)
+    ActiveSupport::Notifications.instrument(
+      TradeTariffBackend::TariffUpdateEventListener::TARIFF_UPDATES_APPLIED,
+      service: 'uk',
+    )
 
     emit_sync_run_completed(start_time)
   rescue TariffSynchronizer::CdsUpdateDownloader::ListDownloadFailedError => e
@@ -90,8 +86,6 @@ private
       TariffSynchronizer::Instrumentation.download_delayed(retry_at: TRY_AGAIN_IN.from_now.iso8601)
       true
     else
-      SlackNotifierService.call \
-        'Daily CDS file missing, max retry time passed - continuing without todays file'
       false
     end
   end

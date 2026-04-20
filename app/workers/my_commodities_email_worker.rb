@@ -10,7 +10,9 @@ class MyCommoditiesEmailWorker
     return if date.nil?
     return if user.nil?
     return if user.email.blank?
-    return if user.deleted
+
+    subscription = user.my_commodities_subscription
+    return if subscription.nil?
 
     as_of_date = Date.parse(date).strftime('%Y-%m-%d')
     tracking_params = 'utm_source=private+beta&utm_medium=email&utm_campaign=commodity+watchlist'
@@ -19,7 +21,7 @@ class MyCommoditiesEmailWorker
       changes_count:,
       published_date: date,
       site_url: "#{URI.join(TradeTariffBackend.frontend_host, 'subscriptions/mycommodities')}?as_of=#{as_of_date}&#{tracking_params}",
-      unsubscribe_url: "#{URI.join(TradeTariffBackend.frontend_host, 'subscriptions/unsubscribe/', user.my_commodities_subscription)}?#{tracking_params}",
+      unsubscribe_url: "#{URI.join(TradeTariffBackend.frontend_host, 'subscriptions/unsubscribe/', subscription.uuid)}?#{tracking_params}",
     }
 
     response = client.send_email(user.email, TEMPLATE_ID, personalisation, REPLY_TO_ID, nil)

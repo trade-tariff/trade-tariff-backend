@@ -4,9 +4,6 @@ module TariffSynchronizer
 
     # Used for TARIC updates only.
     one_to_many :presence_errors, class: TariffUpdatePresenceError, key: :tariff_update_filename
-    # Used for CDS updates only.
-    one_to_many :cds_errors, class: TariffUpdateCdsError, key: :tariff_update_filename
-
     def presence_error_ids
       presence_errors.pluck(:id)
     end
@@ -40,7 +37,7 @@ module TariffSynchronizer
       end
 
       def applied
-        filter(state: APPLIED_STATE)
+        where(state: APPLIED_STATE)
       end
 
       def pending
@@ -123,14 +120,17 @@ module TariffSynchronizer
     end
 
     def mark_as_applied
+      record_state_change(to_state: APPLIED_STATE)
       update(state: APPLIED_STATE, applied_at: Time.zone.now, last_error: nil, last_error_at: nil, exception_backtrace: nil, exception_class: nil)
     end
 
     def mark_as_failed
+      record_state_change(to_state: FAILED_STATE)
       update(state: FAILED_STATE)
     end
 
     def mark_as_pending
+      record_state_change(to_state: PENDING_STATE)
       update(state: PENDING_STATE)
     end
 
@@ -152,6 +152,10 @@ module TariffSynchronizer
       raise NotImplementedError
     end
 
+    def clear_errors
+      raise NotImplementedError
+    end
+
     def cache_key_with_version
       [
         'tariff-update',
@@ -162,13 +166,22 @@ module TariffSynchronizer
       ].map(&:to_s).join('-')
     end
 
+    private
+
+    def record_state_change(to_state:)
+      TariffUpdateStateChange.insert(
+        tariff_update_filename: filename,
+        from_state: state,
+        to_state:,
+        created_at: Time.zone.now,
+      )
+    end
+
     class << self
       delegate :instrument, to: ActiveSupport::Notifications
 
       def sync(initial_date:)
         applicable_download_date_range(initial_date:).each { |date| download(date) }
-
-        notify_about_missing_updates if last_updates_are_missing?
       end
 
       def update_type
@@ -193,16 +206,6 @@ module TariffSynchronizer
 
           [last_download.issue_date, DOWNLOAD_FROM.ago.to_date].min
         end
-      end
-
-      def last_updates_are_missing?
-        holidays = BankHolidays.last(TariffSynchronizer.warning_day_count)
-        descending.exclude(issue_date: holidays)
-          .first.try(:missing?)
-      end
-
-      def notify_about_missing_updates
-        TariffLogger.missing_updates(update_type:, count: TariffSynchronizer.warning_day_count)
       end
     end
   end

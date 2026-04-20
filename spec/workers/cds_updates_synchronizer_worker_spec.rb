@@ -1,17 +1,21 @@
 require 'data_migrator'
 
 RSpec.describe CdsUpdatesSynchronizerWorker, type: :worker do
-  shared_examples_for 'a synchronizer worker that queues other workers' do
-    it { expect(Sidekiq::Client).to have_received(:enqueue_in).with(5.minutes, ClearInvalidSearchReferences) }
-    it { expect(Sidekiq::Client).to have_received(:enqueue_in).with(11.minutes, PopulateChangesTableWorker) }
-    it { expect(Sidekiq::Client).to have_received(:enqueue_in).with(15.minutes, PopulateTariffChangesWorker) }
-    it { expect(Sidekiq::Client).to have_received(:enqueue_in).with(5.minutes, ClearCacheWorker) }
+  shared_examples_for 'a synchronizer worker that fires the updates applied event' do
+    it 'instruments the tariff updates applied event for uk service' do
+      expect(ActiveSupport::Notifications).to have_received(:instrument).with(
+        TradeTariffBackend::TariffUpdateEventListener::TARIFF_UPDATES_APPLIED,
+        service: 'uk',
+      )
+    end
   end
 
   describe '#perform' do
     subject(:perform) { described_class.new.perform }
 
     before do
+      travel_to(Time.zone.today.noon)
+
       allow(TaricSynchronizer).to receive(:download)
       allow(TaricSynchronizer).to receive(:apply).and_return(changes_applied)
       allow(CdsSynchronizer).to receive(:download)
@@ -19,8 +23,11 @@ RSpec.describe CdsUpdatesSynchronizerWorker, type: :worker do
 
       allow(TradeTariffBackend).to receive(:service).and_return(service)
 
-      allow(Sidekiq::Client).to receive(:enqueue)
-      allow(Sidekiq::Client).to receive(:enqueue_in)
+      allow(ActiveSupport::Notifications).to receive(:instrument).and_call_original
+      allow(ActiveSupport::Notifications).to receive(:instrument).with(
+        TradeTariffBackend::TariffUpdateEventListener::TARIFF_UPDATES_APPLIED,
+        anything,
+      )
 
       migrations_dir = Rails.root.join(file_fixture_path).join('data_migrations')
       allow(DataMigrator).to receive_messages(migrations_dir:, migrate_up!: true)
@@ -82,7 +89,7 @@ RSpec.describe CdsUpdatesSynchronizerWorker, type: :worker do
 
         it { expect(GoodsNomenclatures::TreeNode).to have_received(:refresh!) }
 
-        it_behaves_like 'a synchronizer worker that queues other workers'
+        it_behaves_like 'a synchronizer worker that fires the updates applied event'
 
         it { expect(described_class.jobs).to be_empty }
 
@@ -92,8 +99,8 @@ RSpec.describe CdsUpdatesSynchronizerWorker, type: :worker do
           it { expect(DataMigrator).to have_received(:migrate_up!).with(nil) }
         end
 
-        it 'notifies Slack ETL channel' do
-          expect(SlackNotifierService).to have_received(:call).with(/CDS file missing/)
+        it 'does not notify Slack' do
+          expect(SlackNotifierService).not_to have_received(:call)
         end
       end
 
@@ -108,7 +115,7 @@ RSpec.describe CdsUpdatesSynchronizerWorker, type: :worker do
 
         it { expect(GoodsNomenclatures::TreeNode).to have_received(:refresh!) }
 
-        it_behaves_like 'a synchronizer worker that queues other workers'
+        it_behaves_like 'a synchronizer worker that fires the updates applied event'
 
         it { expect(described_class.jobs).to be_empty }
 
@@ -140,7 +147,7 @@ RSpec.describe CdsUpdatesSynchronizerWorker, type: :worker do
 
       it { expect(DataMigrator).not_to have_received(:migrate_up!) }
 
-      it_behaves_like 'a synchronizer worker that queues other workers'
+      it_behaves_like 'a synchronizer worker that fires the updates applied event'
 
       it { expect(described_class.jobs).to be_empty }
 

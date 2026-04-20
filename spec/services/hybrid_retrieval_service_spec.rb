@@ -1,6 +1,6 @@
 RSpec.describe HybridRetrievalService do
   def make_result(sid:, item_id:, score:)
-    OpenStruct.new(
+    GoodsNomenclatureResult.new(
       id: sid,
       goods_nomenclature_item_id: item_id,
       goods_nomenclature_sid: sid,
@@ -61,6 +61,19 @@ RSpec.describe HybridRetrievalService do
         query: 'horses', as_of: as_of, request_id: nil, limit: 30,
       )
       expect(VectorRetrievalService).to have_received(:call).with(query: 'horses', limit: 30)
+    end
+
+    it 'passes filter prefixes to both retrieval legs' do
+      as_of = Time.zone.today
+
+      described_class.call(query: 'horses', as_of: as_of, filter_prefixes: %w[0101])
+
+      expect(OpensearchRetrievalService).to have_received(:call).with(
+        query: 'horses', as_of: as_of, request_id: nil, limit: 30, filter_prefixes: %w[0101],
+      )
+      expect(VectorRetrievalService).to have_received(:call).with(
+        query: 'horses', limit: 30, filter_prefixes: %w[0101],
+      )
     end
 
     it 'returns items from both lists ranked by RRF score' do
@@ -126,7 +139,7 @@ RSpec.describe HybridRetrievalService do
         described_class.call(query: 'horses', as_of: Time.zone.today)
 
         expect(Search::Instrumentation).to have_received(:retrieval_leg_completed).with(
-          hash_including(leg: :opensearch, status: 'error'),
+          hash_including(leg: :opensearch, status: 'error', error_message: 'opensearch down'),
         )
         expect(Search::Instrumentation).to have_received(:retrieval_leg_completed).with(
           hash_including(leg: :vector, status: 'success'),
@@ -159,7 +172,7 @@ RSpec.describe HybridRetrievalService do
           hash_including(leg: :opensearch, status: 'success'),
         )
         expect(Search::Instrumentation).to have_received(:retrieval_leg_completed).with(
-          hash_including(leg: :vector, status: 'error'),
+          hash_including(leg: :vector, status: 'error', error_message: 'vector down'),
         )
       end
     end

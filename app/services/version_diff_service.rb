@@ -38,6 +38,16 @@ class VersionDiffService
       created_at
       updated_at
     ].freeze,
+    'DescriptionIntercept' => %w[
+      id
+      created_at
+      updated_at
+    ].freeze,
+    'GoodsNomenclatureIntercept' => %w[
+      goods_nomenclature_sid
+      created_at
+      updated_at
+    ].freeze,
   }.freeze
 
   TEXT_THRESHOLD = 40

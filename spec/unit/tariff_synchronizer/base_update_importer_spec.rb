@@ -48,7 +48,7 @@ RSpec.describe TariffSynchronizer::BaseUpdateImporter do
 
       expect(ActiveSupport::Notifications).to have_received(:subscribe).with(/sql\.sequel/)
       expect(ActiveSupport::Notifications).to have_received(:subscribe).with(/presence_error/)
-      expect(ActiveSupport::Notifications).to have_received(:subscribe).with(/cds_error/)
+      expect(ActiveSupport::Notifications).not_to have_received(:subscribe).with(/cds_error/)
     end
 
     it 'emits instrumentation event and sends an email' do

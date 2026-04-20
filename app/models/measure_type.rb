@@ -14,7 +14,6 @@ class MeasureType < Sequel::Model
   XI_EXCLUDED_TYPES = DEFAULT_EXCLUDED_TYPES + NATIONAL_PR_TYPES + QUOTA_TYPES
   GL_EXCLUDED_TYPES = DEFAULT_EXCLUDED_TYPES + NATIONAL_PR_TYPES
   UK_EXCLUDED_TYPES = DEFAULT_EXCLUDED_TYPES
-  XI_EXCLUDED_SERIES = %w[P Q].freeze
 
   AUTHORISED_USE_PROVISIONS_SUBMISSION = '464'.freeze
   TARIFF_PREFERENCE = %w[142 145].freeze
@@ -56,8 +55,6 @@ class MeasureType < Sequel::Model
     2 => 'both',
   }.freeze
 
-  UNIT_EXPRESSABLE_MEASURES.freeze
-
   plugin :time_machine
   plugin :oplog, primary_key: :measure_type_id
 
@@ -76,6 +73,18 @@ class MeasureType < Sequel::Model
   one_to_many :green_lanes_category_assessments, class: :'GreenLanes::CategoryAssessment'
 
   delegate :description, to: :measure_type_description
+
+  def self.excluded_measure_types
+    if TradeTariffBackend.xi?
+      if TradeTariffRequest.green_lanes
+        GL_EXCLUDED_TYPES
+      else
+        XI_EXCLUDED_TYPES
+      end
+    else
+      UK_EXCLUDED_TYPES
+    end
+  end
 
   dataset_module do
     def national
@@ -133,17 +142,5 @@ class MeasureType < Sequel::Model
 
   def authorised_use_provisions_submission?
     measure_type_id.in?(AUTHORISED_USE_PROVISIONS_SUBMISSION)
-  end
-
-  def self.excluded_measure_types
-    if TradeTariffBackend.xi?
-      if TradeTariffRequest.green_lanes
-        GL_EXCLUDED_TYPES
-      else
-        XI_EXCLUDED_TYPES
-      end
-    else
-      UK_EXCLUDED_TYPES
-    end
   end
 end

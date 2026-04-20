@@ -1,7 +1,4 @@
 FactoryBot.define do
-  sequence(:certificate_sid) { |n| n }
-  sequence(:certificate_type_code, LoopingSequence.lower_a_to_upper_z, &:value)
-
   factory :certificate do
     transient do
       description { Forgery(:basic).text }

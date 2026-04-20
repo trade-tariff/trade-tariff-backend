@@ -16,11 +16,18 @@ module Api
 
       ALLOWED_INCLUDES = %w[quota_balance_events].freeze
 
+      before_action :validate_order_number, only: :search
+
       def search
         render json: serialized_quota_definitions
       end
 
       private
+
+      def validate_order_number
+        return if params[:order_number].blank?
+        raise ActionController::BadRequest, params[:order_number] unless params[:order_number].match?(/\A\d{6}\z/)
+      end
 
       def serialized_quota_definitions
         Api::V2::Quotas::QuotaDefinitionSerializer.new(
@@ -46,7 +53,13 @@ module Api
       end
 
       def search_service
-        @search_service ||= QuotaSearchService.new(params, current_page, per_page, actual_date)
+        @search_service ||= QuotaSearchService.new(
+          params,
+          current_page,
+          per_page,
+          actual_date,
+          include_quota_balance_events: include_params.include?('quota_balance_events'),
+        )
       end
 
       def valid_includes

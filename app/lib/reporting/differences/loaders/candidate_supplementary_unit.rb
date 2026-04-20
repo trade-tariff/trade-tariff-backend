@@ -45,8 +45,9 @@ module Reporting
         #    of a different class/or type.
         # 3. We have specific heuristics/business rules that tell us that a unit should be ignored
         def candidate_units_for(declarable)
-          supplementary_unit_measures = declarable.applicable_measures.select(&:supplementary?)
-          relevant_measures = declarable.applicable_measures - supplementary_unit_measures
+          all_measures = declarable.applicable_measures
+          supplementary_unit_measures = all_measures.select(&:supplementary?)
+          relevant_measures = all_measures - supplementary_unit_measures
           units = relevant_measures.flat_map(&:units)
 
           if supplementary_unit_measures.any?

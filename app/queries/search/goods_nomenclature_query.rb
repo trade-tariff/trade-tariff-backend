@@ -3,7 +3,7 @@ module Search
     NOISE_TAGS = %w[cc dt det in to prp prp$ md ex pdt wp wp$ wdt wrb].freeze
 
     attr_reader :query_string, :date, :expanded_query, :pos_search, :size,
-                :noun_boost, :qualifier_boost
+                :noun_boost, :qualifier_boost, :filter_prefixes
 
     class << self
       def tagger
@@ -11,7 +11,7 @@ module Search
       end
     end
 
-    def initialize(query_string, date, size:, noun_boost:, qualifier_boost:, expanded_query: nil, pos_search: true)
+    def initialize(query_string, date, size:, noun_boost:, qualifier_boost:, expanded_query: nil, pos_search: true, filter_prefixes: [])
       @query_string = query_string
       @date = date
       @expanded_query = expanded_query
@@ -19,6 +19,7 @@ module Search
       @size = size
       @noun_boost = noun_boost
       @qualifier_boost = qualifier_boost
+      @filter_prefixes = Array(filter_prefixes).compact_blank
     end
 
     def query
@@ -29,10 +30,12 @@ module Search
             bool: {
               must: [
                 hidden_goods_nomenclature_filter,
+                excluded_chapter_filter,
                 declarable_filter,
                 multi_match_clause,
                 validity_date_filter,
-              ],
+                filter_prefixes_clause,
+              ].compact,
             },
           },
           size: size,
@@ -150,6 +153,18 @@ module Search
       }
     end
 
+    def excluded_chapter_filter
+      {
+        bool: {
+          must_not: {
+            terms: {
+              chapter_short_code: AdminConfiguration.multi_options_values('interactive_search_excluded_chapters'),
+            },
+          },
+        },
+      }
+    end
+
     def declarable_filter
       { term: { declarable: true } }
     end
@@ -183,6 +198,19 @@ module Search
               },
             },
           ],
+        },
+      }
+    end
+
+    def filter_prefixes_clause
+      return nil if filter_prefixes.empty?
+
+      {
+        bool: {
+          should: filter_prefixes.map do |prefix|
+            { prefix: { goods_nomenclature_item_id: prefix } }
+          end,
+          minimum_should_match: 1,
         },
       }
     end

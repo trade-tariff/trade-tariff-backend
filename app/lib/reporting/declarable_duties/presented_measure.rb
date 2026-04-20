@@ -102,7 +102,7 @@ module Reporting
         return 'See RPA' if ordernumber.starts_with?(*QuotaOrderNumber::LICENSED_QUOTA_PREFIXES)
         return 'Invalid' if quota_definition.nil?
 
-        quota_definition.balance.to_i.positive? ? 'Open' : 'Exhausted'
+        quota_definition.balance.to_i.positive? ? QuotaDefinition::STATUS_OPEN : QuotaDefinition::STATUS_EXHAUSTED
       end
 
       def measure__regulation__id

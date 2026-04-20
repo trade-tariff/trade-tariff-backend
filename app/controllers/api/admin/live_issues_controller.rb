@@ -39,6 +39,8 @@ module Api
 
       private
 
+      def serializer_class = Api::Admin::LiveIssueSerializer
+
       def live_issues
         @live_issues ||= LiveIssue.all
       end
@@ -54,14 +56,6 @@ module Api
         ).merge(
           commodities: params[:data][:attributes][:commodities]&.split(' '),
         )
-      end
-
-      def serialize(*args)
-        Api::Admin::LiveIssueSerializer.new(*args).serializable_hash
-      end
-
-      def serialize_errors(*args)
-        Api::Admin::ErrorSerializationService.new(*args).call
       end
     end
   end

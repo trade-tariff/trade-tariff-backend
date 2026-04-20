@@ -1,6 +1,4 @@
 FactoryBot.define do
-  sequence(:modification_regulation_sid) { |n| n }
-
   factory :modification_regulation do
     modification_regulation_id   { generate(:sid) }
     modification_regulation_role { 4 }

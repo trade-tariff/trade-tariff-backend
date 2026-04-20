@@ -1,6 +1,11 @@
 class QuotaDefinition < Sequel::Model
   DATE_HMRC_STARTED_MANAGING_PENDING_BALANCES = Date.parse('2022-07-01').freeze
   DEFINITION_CRITICAL_STATE = 'Y'.freeze
+  STATUS_OPEN = 'Open'.freeze
+  STATUS_BLOCKED = 'Blocked'.freeze
+  STATUS_SUSPENDED = 'Suspended'.freeze
+  STATUS_EXHAUSTED = 'Exhausted'.freeze
+  STATUS_CRITICAL = 'Critical'.freeze
 
   plugin :time_machine
   plugin :oplog, primary_key: :quota_definition_sid, materialized: true
@@ -48,6 +53,13 @@ class QuotaDefinition < Sequel::Model
               key: :quota_definition_sid,
               primary_key: :quota_definition_sid,
               order: Sequel.desc(:occurrence_timestamp)
+
+  one_to_one :latest_quota_balance_event, class_name: 'QuotaBalanceEvent',
+                                          key: :quota_definition_sid,
+                                          primary_key: :quota_definition_sid do |ds|
+    ds = ds.where('occurrence_timestamp <= ?', point_in_time) if point_in_time.present?
+    ds.order(Sequel.desc(:occurrence_timestamp))
+  end
 
   one_to_many :quota_suspension_periods, key: :quota_definition_sid,
                                          primary_key: :quota_definition_sid do |ds|
@@ -132,9 +144,13 @@ class QuotaDefinition < Sequel::Model
   end
 
   def last_balance_event
-    @last_balance_event ||= quota_balance_events.select { |quota_balance_event|
-      point_in_time.blank? || quota_balance_event.occurrence_timestamp <= point_in_time
-    }.max_by(&:occurrence_timestamp)
+    @last_balance_event ||= if associations.key?(:quota_balance_events)
+                              quota_balance_events.select { |quota_balance_event|
+                                point_in_time.blank? || quota_balance_event.occurrence_timestamp <= point_in_time
+                              }.max_by(&:occurrence_timestamp)
+                            else
+                              latest_quota_balance_event
+                            end
   end
 
   def balance

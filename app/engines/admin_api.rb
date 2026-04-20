@@ -22,6 +22,7 @@ AdminApi.routes.draw do
         member do
           post :run
           post :send_email
+          post :backfill
         end
       end
 
@@ -89,6 +90,12 @@ AdminApi.routes.draw do
 
         resources :live_issues, only: %i[index show create update destroy]
         resources :admin_configurations, only: %i[index show update]
+        resources :description_intercepts, only: %i[index show create update] do
+          member do
+            get :versions
+          end
+        end
+        resources :goods_nomenclature_autocomplete, only: [:index]
       end
 
       namespace :green_lanes do

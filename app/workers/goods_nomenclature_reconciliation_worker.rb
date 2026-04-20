@@ -105,10 +105,13 @@ class GoodsNomenclatureReconciliationWorker
   end
 
   def mark_self_texts_stale(sids)
-    GoodsNomenclatureSelfText
+    dataset = GoodsNomenclatureSelfText
       .where(goods_nomenclature_sid: sids)
       .where(stale: false)
-      .update(stale: true, search_embedding_stale: true, updated_at: Time.zone.now)
+
+    item_ids = dataset.select_map(:goods_nomenclature_sid)
+    updated = dataset.update(stale: true, search_embedding_stale: true, updated_at: Time.zone.now)
+    PaperTrail::BulkVersioning.record_current_versions_for_item_ids!(model: GoodsNomenclatureSelfText, item_ids:) if updated.positive?
   end
 
   def regenerate_self_texts(chapter_code)
@@ -122,10 +125,13 @@ class GoodsNomenclatureReconciliationWorker
   def mark_labels_stale(sids)
     return if sids.empty?
 
-    GoodsNomenclatureLabel
+    dataset = GoodsNomenclatureLabel
       .where(goods_nomenclature_sid: sids)
       .where(stale: false)
-      .update(stale: true, updated_at: Time.zone.now)
+
+    item_ids = dataset.select_map(:goods_nomenclature_sid)
+    updated = dataset.update(stale: true, updated_at: Time.zone.now)
+    PaperTrail::BulkVersioning.record_current_versions_for_item_ids!(model: GoodsNomenclatureLabel, item_ids:) if updated.positive?
 
     RelabelGoodsNomenclatureWorker.perform_async
   end

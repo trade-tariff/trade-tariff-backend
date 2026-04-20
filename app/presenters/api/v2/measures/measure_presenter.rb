@@ -61,7 +61,7 @@ module Api
         end
 
         def measure_conditions
-          MeasureConditionPresenter.wrap(super, measure)
+          @measure_conditions ||= MeasureConditionPresenter.wrap(super, measure)
         end
 
         def measure_condition_ids
@@ -89,7 +89,7 @@ module Api
         end
 
         def legal_acts
-          super.map do |legal_act|
+          @legal_acts ||= super.map do |legal_act|
             Api::V2::Measures::MeasureLegalActPresenter.new legal_act, self
           end
         end
@@ -113,7 +113,7 @@ module Api
         end
 
         def measure_condition_permutation_groups
-          @measure_condition_permutation_groups = \
+          @measure_condition_permutation_groups ||= \
             MeasureConditionPermutations::Calculator.new(measure)
                                                     .permutation_groups
         end

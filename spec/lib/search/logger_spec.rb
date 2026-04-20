@@ -98,6 +98,18 @@ RSpec.describe Search::Logger do
       expect(json['response_type']).to eq('answers')
       expect(json['attempt_number']).to eq(1)
     end
+
+    it 'logs error details when present' do
+      payload[:response_type] = 'error'
+      payload[:error_message] = 'bad model output'
+      payload[:error_message_truncated] = false
+
+      logger_instance.api_call_completed(build_event('api_call_completed', payload))
+      json = parsed_log_output
+
+      expect(json['error_message']).to eq('bad model output')
+      expect(json['error_message_truncated']).to be(false)
+    end
   end
 
   describe '#question_returned' do
@@ -136,6 +148,43 @@ RSpec.describe Search::Logger do
     end
   end
 
+  describe '#description_intercept_checked' do
+    let(:payload) do
+      {
+        request_id: 'req-1',
+        query: 'gift',
+        matched: true,
+        term: 'gift',
+        excluded: true,
+        filtering: false,
+        filter_prefix_count: 0,
+        guidance_level: 'warning',
+        guidance_location: 'interstitial',
+        escalate_to_webchat: true,
+      }
+    end
+
+    it_behaves_like 'a search log entry', :description_intercept_checked, 'description_intercept_checked',
+                    { request_id: 'req-1', query: 'gift', matched: true }
+
+    it 'logs correct fields' do
+      logger_instance.description_intercept_checked(build_event('description_intercept_checked', payload))
+      json = parsed_log_output
+
+      expect(json['event']).to eq('description_intercept_checked')
+      expect(json['request_id']).to eq('req-1')
+      expect(json['query']).to eq('gift')
+      expect(json['matched']).to be(true)
+      expect(json['term']).to eq('gift')
+      expect(json['excluded']).to be(true)
+      expect(json['filtering']).to be(false)
+      expect(json['filter_prefix_count']).to eq(0)
+      expect(json['guidance_level']).to eq('warning')
+      expect(json['guidance_location']).to eq('interstitial')
+      expect(json['escalate_to_webchat']).to be(true)
+    end
+  end
+
   describe '#search_completed' do
     let(:payload) do
       { request_id: 'req-1',
@@ -167,6 +216,78 @@ RSpec.describe Search::Logger do
       expect(json['total_duration_ms']).to eq(3000.0)
       expect(json['result_count']).to eq(5)
       expect(json['total_attempts']).to eq(2)
+    end
+
+    it 'logs description intercept fields when present' do
+      payload.merge!(
+        description_intercept_matched: true,
+        description_intercept_term: 'gift',
+        description_intercept_excluded: false,
+        description_intercept_filtering: true,
+        description_intercept_filter_prefix_count: 2,
+        description_intercept_guidance_level: 'info',
+        description_intercept_guidance_location: 'results',
+        description_intercept_escalate_to_webchat: false,
+      )
+
+      logger_instance.search_completed(build_event('search_completed', payload))
+      json = parsed_log_output
+
+      expect(json['description_intercept_matched']).to be(true)
+      expect(json['description_intercept_term']).to eq('gift')
+      expect(json['description_intercept_filtering']).to be(true)
+      expect(json['description_intercept_filter_prefix_count']).to eq(2)
+      expect(json['description_intercept_guidance_level']).to eq('info')
+      expect(json['description_intercept_guidance_location']).to eq('results')
+      expect(json['description_intercept_escalate_to_webchat']).to be(false)
+    end
+
+    it 'logs error details when present' do
+      payload[:final_result_type] = 'error'
+      payload[:error_message] = 'Contradictory answers given'
+      payload[:error_message_truncated] = false
+
+      logger_instance.search_completed(build_event('search_completed', payload))
+      json = parsed_log_output
+
+      expect(json['error_message']).to eq('Contradictory answers given')
+      expect(json['error_message_truncated']).to be(false)
+    end
+  end
+
+  describe '#retrieval_leg_completed' do
+    let(:payload) do
+      {
+        request_id: 'req-1',
+        leg: 'vector',
+        duration_ms: 120.5,
+        result_count: 0,
+        status: 'error',
+        error_message: 'vector down',
+        error_message_truncated: false,
+      }
+    end
+
+    it_behaves_like 'a search log entry', :retrieval_leg_completed, 'retrieval_leg_completed',
+                    {
+                      request_id: 'req-1',
+                      leg: 'vector',
+                      duration_ms: 120.5,
+                      result_count: 0,
+                      status: 'error',
+                      error_message: 'vector down',
+                      error_message_truncated: false,
+                    }
+
+    it 'logs error details when present' do
+      logger_instance.retrieval_leg_completed(build_event('retrieval_leg_completed', payload))
+      json = parsed_log_output
+
+      expect(json['event']).to eq('retrieval_leg_completed')
+      expect(json['leg']).to eq('vector')
+      expect(json['status']).to eq('error')
+      expect(json['error_message']).to eq('vector down')
+      expect(json['error_message_truncated']).to be(false)
     end
   end
 
@@ -200,6 +321,15 @@ RSpec.describe Search::Logger do
       expect(json['error_type']).to eq('Faraday::TimeoutError')
       expect(json['error_message']).to eq('connection timed out')
       expect(json['service']).to eq('search')
+    end
+
+    it 'logs truncation metadata when present' do
+      payload[:error_message_truncated] = true
+
+      logger_instance.search_failed(build_event('search_failed', payload))
+      json = parsed_log_output
+
+      expect(json['error_message_truncated']).to be(true)
     end
   end
 end

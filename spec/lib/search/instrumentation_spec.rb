@@ -147,6 +147,24 @@ RSpec.describe Search::Instrumentation do
         hash_including(error_type: 'Faraday::TimeoutError'),
       )
     end
+
+    it 'includes truncated error details when the model returns an error payload' do
+      allow(ActiveSupport::Notifications).to receive(:instrument)
+      error_message = 'x' * 550
+
+      described_class.api_call(request_id: 'req-1', model: 'gpt-4', attempt_number: 1) do
+        { 'error' => error_message }
+      end
+
+      expect(ActiveSupport::Notifications).to have_received(:instrument).with(
+        'api_call_completed.search',
+        hash_including(
+          response_type: 'error',
+          error_message: ('x' * 500),
+          error_message_truncated: true,
+        ),
+      )
+    end
   end
 
   describe '.question_returned' do
@@ -185,9 +203,71 @@ RSpec.describe Search::Instrumentation do
     end
   end
 
+  describe '.description_intercept_checked' do
+    it 'instruments an unmatched description intercept check' do
+      allow(ActiveSupport::Notifications).to receive(:instrument)
+
+      described_class.description_intercept_checked(
+        request_id: 'req-1',
+        query: 'horses',
+        description_intercept: nil,
+      )
+
+      expect(ActiveSupport::Notifications).to have_received(:instrument).with(
+        'description_intercept_checked.search',
+        request_id: 'req-1',
+        query: 'horses',
+        matched: false,
+      )
+    end
+
+    it 'instruments a matched description intercept check with low-cardinality fields' do
+      allow(ActiveSupport::Notifications).to receive(:instrument)
+      intercept = double(
+        term: 'gift',
+        excluded: true,
+        filtering?: true,
+        filter_prefixes_array: %w[9503 9504],
+        guidance_level: 'warning',
+        guidance_location: 'interstitial',
+        escalate_to_webchat: true,
+      )
+
+      described_class.description_intercept_checked(
+        request_id: 'req-1',
+        query: 'gift',
+        description_intercept: intercept,
+      )
+
+      expect(ActiveSupport::Notifications).to have_received(:instrument).with(
+        'description_intercept_checked.search',
+        request_id: 'req-1',
+        query: 'gift',
+        matched: true,
+        term: 'gift',
+        excluded: true,
+        filtering: true,
+        filter_prefix_count: 2,
+        guidance_level: 'warning',
+        guidance_location: 'interstitial',
+        escalate_to_webchat: true,
+      )
+    end
+  end
+
   describe '.search_completed' do
     it 'instruments the search_completed event' do
       allow(ActiveSupport::Notifications).to receive(:instrument)
+
+      intercept = double(
+        term: 'gift',
+        excluded: false,
+        filtering?: true,
+        filter_prefixes_array: %w[9503 9504],
+        guidance_level: 'info',
+        guidance_location: 'results',
+        escalate_to_webchat: false,
+      )
 
       described_class.search_completed(
         request_id: 'req-1',
@@ -198,6 +278,7 @@ RSpec.describe Search::Instrumentation do
         final_result_type: 'answers',
         total_duration_ms: 1500.0,
         result_count: 3,
+        description_intercept: intercept,
       )
 
       expect(ActiveSupport::Notifications).to have_received(:instrument).with(
@@ -210,6 +291,61 @@ RSpec.describe Search::Instrumentation do
         final_result_type: 'answers',
         total_duration_ms: 1500.0,
         result_count: 3,
+        description_intercept_matched: true,
+        description_intercept_term: 'gift',
+        description_intercept_excluded: false,
+        description_intercept_filtering: true,
+        description_intercept_filter_prefix_count: 2,
+        description_intercept_guidance_level: 'info',
+        description_intercept_guidance_location: 'results',
+        description_intercept_escalate_to_webchat: false,
+      )
+    end
+
+    it 'includes truncated error details when provided' do
+      allow(ActiveSupport::Notifications).to receive(:instrument)
+
+      described_class.search_completed(
+        request_id: 'req-1',
+        query: 'horses',
+        search_type: 'interactive',
+        total_attempts: 2,
+        total_questions: 1,
+        final_result_type: 'error',
+        total_duration_ms: 1500.0,
+        result_count: 3,
+        error_message: 'x' * 550,
+      )
+
+      expect(ActiveSupport::Notifications).to have_received(:instrument).with(
+        'search_completed.search',
+        hash_including(
+          error_message: ('x' * 500),
+          error_message_truncated: true,
+        ),
+      )
+    end
+  end
+
+  describe '.retrieval_leg_completed' do
+    it 'includes truncated error details when provided' do
+      allow(ActiveSupport::Notifications).to receive(:instrument)
+
+      described_class.retrieval_leg_completed(
+        request_id: 'req-1',
+        leg: :vector,
+        duration_ms: 123.4,
+        result_count: 0,
+        status: 'error',
+        error_message: 'x' * 550,
+      )
+
+      expect(ActiveSupport::Notifications).to have_received(:instrument).with(
+        'retrieval_leg_completed.search',
+        hash_including(
+          error_message: ('x' * 500),
+          error_message_truncated: true,
+        ),
       )
     end
   end
@@ -249,7 +385,27 @@ RSpec.describe Search::Instrumentation do
         request_id: 'req-1',
         error_type: 'Faraday::TimeoutError',
         error_message: 'connection timed out',
+        error_message_truncated: false,
         search_type: 'interactive',
+      )
+    end
+
+    it 'truncates long error messages' do
+      allow(ActiveSupport::Notifications).to receive(:instrument)
+
+      described_class.search_failed(
+        request_id: 'req-1',
+        error_type: 'Faraday::TimeoutError',
+        error_message: 'x' * 550,
+        search_type: 'interactive',
+      )
+
+      expect(ActiveSupport::Notifications).to have_received(:instrument).with(
+        'search_failed.search',
+        hash_including(
+          error_message: ('x' * 500),
+          error_message_truncated: true,
+        ),
       )
     end
   end

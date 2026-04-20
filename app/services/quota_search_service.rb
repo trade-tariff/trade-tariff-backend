@@ -8,7 +8,6 @@ class QuotaSearchService
       { measures: [{ geographical_area: :geographical_area_description }] },
       :quota_suspension_periods,
       :quota_blocking_periods,
-      :quota_balance_events,
       {
         quota_order_number: [
           {
@@ -27,9 +26,9 @@ class QuotaSearchService
   }.freeze
 
   attr_reader :scope, :goods_nomenclature_item_id, :geographical_area_id, :order_number,
-              :critical, :years, :status, :current_page, :per_page, :date
+              :critical, :years, :status, :current_page, :per_page, :date, :include_quota_balance_events
 
-  def initialize(attributes, current_page, per_page, date)
+  def initialize(attributes, current_page, per_page, date, include_quota_balance_events: false)
     @attributes = attributes
     status_value = attributes['status']&.gsub(/[+ ]/, '_')
     status_value = '' unless STATUS_VALUES.include?(status_value)
@@ -41,6 +40,7 @@ class QuotaSearchService
     @current_page = current_page
     @per_page = per_page
     @date = date
+    @include_quota_balance_events = include_quota_balance_events
   end
 
   def call
@@ -85,7 +85,10 @@ class QuotaSearchService
   end
 
   def eager_load_graph
-    eager_load = DEFAULT_EAGER_LOAD_GRAPH.dup
+    eager_load = DEFAULT_EAGER_LOAD_GRAPH.deep_dup
+
+    eager_load[:quota_definition] << :latest_quota_balance_event
+    eager_load[:quota_definition] << :quota_balance_events if include_quota_balance_events
 
     eager_load[:quota_definition] << :quota_exhaustion_events if status.exhausted? || status.not_exhausted?
 
@@ -110,7 +113,7 @@ class QuotaSearchService
   end
 
   def apply_order_number_filter
-    @scope = scope.where(Sequel.like(:measures__ordernumber, "#{order_number}%"))
+    @scope = scope.where(measures__ordernumber: order_number)
   end
 
   def apply_quota_definition

@@ -56,7 +56,9 @@ namespace :labels do
       scope = scope.where(Sequel.like(:goods_nomenclature_item_id, "#{ENV['CHAPTER']}%"))
     end
 
+    label_sids = scope.select_map(:goods_nomenclature_sid)
     updated = scope.update(stale: true, updated_at: Time.zone.now)
+    PaperTrail::BulkVersioning.record_current_versions_for_item_ids!(model: GoodsNomenclatureLabel, item_ids: label_sids) if updated.positive?
     puts "Marked #{updated} labels as stale"
 
     unlabeled = GoodsNomenclatureLabel.goods_nomenclatures_dataset.count
@@ -285,8 +287,10 @@ namespace :labels do
     end
 
     puts "\nDeleting all labels..."
-    deleted_count = GoodsNomenclatureLabel.count
-    GoodsNomenclatureLabel.dataset.delete
+    label_dataset = GoodsNomenclatureLabel.dataset
+    deleted_count = label_dataset.count
+    PaperTrail::BulkVersioning.record_destroy_versions_for_dataset!(dataset: label_dataset) if deleted_count.positive?
+    label_dataset.delete
     puts "Deleted #{deleted_count} labels"
 
     puts "\nEnqueuing label generation..."

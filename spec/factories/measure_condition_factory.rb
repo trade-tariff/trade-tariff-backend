@@ -1,5 +1,4 @@
 FactoryBot.define do
-  sequence(:measure_condition_sid) { |n| n }
   sequence(:condition_measurement_unit_qualifier_code, LoopingSequence.lower_a_to_upper_z, &:value)
   sequence(:action_code, LoopingSequence.lower_a_to_upper_z, &:value)
 

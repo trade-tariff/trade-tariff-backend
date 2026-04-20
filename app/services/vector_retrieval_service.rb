@@ -1,11 +1,12 @@
 class VectorRetrievalService
-  def self.call(query:, limit: 80)
-    new(query:, limit:).call
+  def self.call(query:, limit: 80, filter_prefixes: [])
+    new(query:, limit:, filter_prefixes:).call
   end
 
-  def initialize(query:, limit: 80)
+  def initialize(query:, limit: 80, filter_prefixes: [])
     @query = query
     @limit = limit
+    @filter_prefixes = Array(filter_prefixes).compact_blank
   end
 
   def call
@@ -45,6 +46,7 @@ class VectorRetrievalService
 
       GoodsNomenclatureSelfText
         .vector_search(vector_literal, limit: @limit)
+        .then { |dataset| apply_filter_prefixes(dataset, Sequel[:goods_nomenclature][:goods_nomenclature_item_id]) }
         .all
     end
   end
@@ -54,9 +56,16 @@ class VectorRetrievalService
       .actual
       .with_leaf_column
       .where(goods_nomenclatures__goods_nomenclature_sid: sids)
+      .then { |dataset| apply_filter_prefixes(dataset, Sequel[:goods_nomenclatures][:goods_nomenclature_item_id]) }
       .eager(:goods_nomenclature_descriptions, :goods_nomenclature_self_text, :heading)
       .all
       .index_by(&:goods_nomenclature_sid)
+  end
+
+  def apply_filter_prefixes(dataset, column)
+    return dataset if @filter_prefixes.empty?
+
+    dataset.where(Sequel.|(*@filter_prefixes.map { |prefix| Sequel.like(column, "#{prefix}%") }))
   end
 
   def build_result(goods_nomenclature, score)
@@ -64,7 +73,7 @@ class VectorRetrievalService
     full_desc = self_text.presence ||
       DescriptionHtmlFormatter.call(goods_nomenclature.raw_classification_description)
 
-    OpenStruct.new(
+    GoodsNomenclatureResult.new(
       id: goods_nomenclature.goods_nomenclature_sid,
       goods_nomenclature_item_id: goods_nomenclature.goods_nomenclature_item_id,
       goods_nomenclature_sid: goods_nomenclature.goods_nomenclature_sid,

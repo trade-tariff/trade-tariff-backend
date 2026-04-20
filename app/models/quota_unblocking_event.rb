@@ -6,7 +6,7 @@ class QuotaUnblockingEvent < Sequel::Model
   many_to_one :quota_definition, key: :quota_definition_sid, primary_key: :quota_definition_sid
 
   def self.status
-    'Open'
+    QuotaDefinition::STATUS_OPEN
   end
 
   def event_type

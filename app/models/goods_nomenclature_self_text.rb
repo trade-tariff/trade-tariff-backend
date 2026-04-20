@@ -73,9 +73,10 @@ class GoodsNomenclatureSelfText < Sequel::Model
 
       exclude(search_embedding: nil)
         .association_join(:goods_nomenclature)
-        .where(goods_nomenclature__producline_suffix: GoodsNomenclatureIndent::NON_GROUPING_PRODUCTLINE_SUFFIX)
+        .where(goods_nomenclature__producline_suffix: GoodsNomenclature::NON_GROUPING_PRODUCTLINE_SUFFIX)
         .where { GoodsNomenclature.validity_dates_filter(:goods_nomenclature) }
         .exclude(goods_nomenclature__goods_nomenclature_item_id: HiddenGoodsNomenclature.codes)
+        .exclude(goods_nomenclature__chapter_short_code: AdminConfiguration.multi_options_values('interactive_search_excluded_chapters'))
         .select(Sequel[:goods_nomenclature][:goods_nomenclature_sid])
         .select_append(Sequel.as(Sequel.lit("1 - (#{distance_expr})"), :score))
         .order(distance_expr)
@@ -167,6 +168,11 @@ class GoodsNomenclatureSelfText < Sequel::Model
         FROM (VALUES #{values}) AS v(goods_nomenclature_sid, search_text, search_embedding)
         WHERE t.goods_nomenclature_sid = v.goods_nomenclature_sid
       SQL
+
+      PaperTrail::BulkVersioning.record_current_versions_for_item_ids!(
+        model: GoodsNomenclatureSelfText,
+        item_ids: batch.map(&:goods_nomenclature_sid),
+      )
     end
   end
 

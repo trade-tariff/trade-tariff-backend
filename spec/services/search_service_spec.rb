@@ -247,6 +247,30 @@ RSpec.describe SearchService do
       it { is_expected.to match_json_expression(expected_pattern) }
     end
 
+    context 'when a matching label suggestion exists' do
+      let(:query) { '0101' }
+      let(:pattern) do
+        {
+          type: 'exact_match',
+          entry: {
+            endpoint: 'headings',
+            id: '0101',
+          },
+        }
+      end
+
+      before do
+        goods_nomenclature = create :heading, goods_nomenclature_item_id: '0101000000'
+
+        create :search_suggestion, :goods_nomenclature, goods_nomenclature: goods_nomenclature
+        create :search_suggestion, :synonym, goods_nomenclature: goods_nomenclature, value: query
+      end
+
+      it 'ignores label suggestions and returns the goods nomenclature exact match' do
+        expect(result).to match_json_expression(pattern)
+      end
+    end
+
     shared_examples_for 'an historic goods nomenclature exact search' do |goods_nomenclature_type, query|
       subject(:result) do
         described_class.new(

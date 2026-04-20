@@ -154,9 +154,8 @@ module GoodsNomenclatures
 
         def declarable
           with_leaf_column
-            .where(tree_node__child_sid: nil,
-                   goods_nomenclatures__producline_suffix:
-                     GoodsNomenclatureIndent::NON_GROUPING_PRODUCTLINE_SUFFIX)
+            .non_grouping
+            .where(tree_node__child_sid: nil)
         end
       end
     end
@@ -212,17 +211,24 @@ module GoodsNomenclatures
     end
 
     def declarable?
-      producline_suffix == GoodsNomenclatureIndent::NON_GROUPING_PRODUCTLINE_SUFFIX && leaf?
+      producline_suffix == GoodsNomenclature::NON_GROUPING_PRODUCTLINE_SUFFIX && leaf?
     end
 
     def leaf?
       values.key?(:leaf) ? values[:leaf] : children.empty?
     end
 
+    # Returns all measures that apply to this node, including those inherited
+    # from ancestors. Callers must eager-load ancestors with their measures
+    # (e.g. .eager(ancestors: :measures)) to avoid N+1 queries.
     def applicable_measures
       (ancestors.flat_map(&:measures) + measures).sort
     end
 
+    # Returns all overview measures that apply to this node, including those
+    # inherited from ancestors. Callers must eager-load ancestors with their
+    # overview_measures (e.g. .eager(ancestors: :overview_measures)) to avoid
+    # N+1 queries.
     def applicable_overview_measures
       (ancestors.flat_map(&:overview_measures) + overview_measures).sort
     end

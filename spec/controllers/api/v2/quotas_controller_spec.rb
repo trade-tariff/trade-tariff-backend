@@ -191,6 +191,20 @@ RSpec.describe Api::V2::QuotasController, type: :controller do
 
         expect(response.body).to match_json_expression pattern
       end
+
+      it 'does not request eager loading full quota balance events' do
+        allow(QuotaSearchService).to receive(:new).and_call_original
+
+        get :search, params:, format: :json
+
+        expect(QuotaSearchService).to have_received(:new).with(
+          anything,
+          anything,
+          anything,
+          anything,
+          include_quota_balance_events: false,
+        )
+      end
     end
 
     context 'when specifying an includes list in the query params' do
@@ -275,6 +289,20 @@ RSpec.describe Api::V2::QuotasController, type: :controller do
 
           expect(response.body).to match_json_expression pattern
         end
+
+        it 'requests eager loading full quota balance events' do
+          allow(QuotaSearchService).to receive(:new).and_call_original
+
+          get :search, params:, format: :json
+
+          expect(QuotaSearchService).to have_received(:new).with(
+            anything,
+            anything,
+            anything,
+            anything,
+            include_quota_balance_events: true,
+          )
+        end
       end
 
       context 'when included resources are NOT allowed (or non-existent)' do
@@ -285,6 +313,16 @@ RSpec.describe Api::V2::QuotasController, type: :controller do
             get :search, params:, format: :json
           }.to raise_error(ArgumentError, /wrong_resource/)
         end
+      end
+    end
+
+    context 'when order_number is not 6 digits' do
+      let(:params) { { year: [Time.zone.today.year.to_s], order_number: '0500' } }
+
+      it 'returns 400' do
+        get :search, params:, format: :json
+
+        expect(response).to have_http_status(:bad_request)
       end
     end
   end

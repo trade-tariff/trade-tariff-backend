@@ -1,4 +1,6 @@
 class SearchReference < Sequel::Model
+  extend ActiveModel::Naming
+
   VALID_REFERENCED_CLASSES = %w[
     Chapter
     Heading
@@ -6,9 +8,6 @@ class SearchReference < Sequel::Model
     Commodity
   ].freeze
 
-  extend ActiveModel::Naming
-
-  plugin :active_model
   plugin :has_paper_trail
 
   referenced_setter = proc do |referenced|

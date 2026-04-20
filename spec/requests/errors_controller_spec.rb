@@ -51,10 +51,10 @@ RSpec.describe ErrorsController do
     it_behaves_like 'a csv or json error response', 404, 'Not Found'
   end
 
-  describe 'GET #unprocessable_entity' do
+  describe 'GET #unprocessable_content' do
     it_behaves_like 'a csv or json error response',
                     422,
-                    'Unprocessable entity: API documentation is available at https://api.trade-tariff.service.gov.uk/'
+                    'Unprocessable content: API documentation is available at https://api.trade-tariff.service.gov.uk/'
   end
 
   describe 'GET #internal_server_error' do

@@ -28,7 +28,7 @@ RSpec.shared_examples_for 'a user controller subscription type update' do |subsc
 
       it 'activates the subscription' do
         api_response
-        expect(user.public_send(subscription_type)).to be_a(String)
+        expect(user.reload.public_send(subscription_type)).to be_a(PublicUsers::Subscription)
       end
 
       it 'responds with updated subscription details' do
@@ -48,7 +48,7 @@ RSpec.shared_examples_for 'a user controller subscription type update' do |subsc
 
       it 'deactivates the subscription' do
         api_response
-        expect(user.public_send(subscription_type)).to be(false)
+        expect(user.reload.public_send(subscription_type)).to be_nil
       end
 
       it 'responds with updated subscription details' do

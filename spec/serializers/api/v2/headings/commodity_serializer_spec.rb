@@ -2,7 +2,7 @@ RSpec.describe Api::V2::Headings::CommoditySerializer do
   subject(:serializer) { described_class.new(serializable).serializable_hash.as_json }
 
   let(:serializable) do
-    Hashie::TariffMash.new(
+    HashPresenter.new(
       leaf:,
       producline_suffix:,
     )

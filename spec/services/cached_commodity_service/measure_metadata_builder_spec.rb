@@ -97,6 +97,47 @@ RSpec.describe CachedCommodityService::MeasureMetadataBuilder do
       expect(meta[:has_no_additional_code]).to be_in([true, false])
     end
 
+    context 'with an export measure backed by export refund nomenclature' do
+      it 'builds metadata without raising and surfaces a contribution' do
+        export_measure_type = create(:measure_type, :export, measure_type_id: '680')
+        export_refund_nomenclature = create(
+          :export_refund_nomenclature,
+          export_refund_nomenclature_sid: 99_001,
+          export_refund_code: '123',
+          additional_code_type: '9',
+        )
+        create(
+          :export_refund_nomenclature_description,
+          export_refund_nomenclature_sid: export_refund_nomenclature.export_refund_nomenclature_sid,
+          description: 'Renderable ERN description',
+        )
+        export_measure = create(
+          :measure,
+          :with_base_regulation,
+          goods_nomenclature: commodity,
+          goods_nomenclature_item_id: commodity.goods_nomenclature_item_id,
+          goods_nomenclature_sid: commodity.goods_nomenclature_sid,
+          geographical_area_id: geographical_area.geographical_area_id,
+          geographical_area_sid: geographical_area.geographical_area_sid,
+          measure_type_id: export_measure_type.measure_type_id,
+          trade_movement_code: export_measure_type.trade_movement_code,
+          export_refund_nomenclature_sid: export_refund_nomenclature.export_refund_nomenclature_sid,
+        )
+        meta = nil
+
+        expect { meta = result.fetch(export_measure.measure_sid) }.not_to raise_error
+        expect(meta[:additional_code_contribution]).to include(
+          measure_type_id: '680',
+          heading: nil,
+          code_annotation: hash_including(
+            'code' => '9123',
+            'overlay' => 'Renderable ERN description',
+            'measure_sid' => export_measure.measure_sid,
+          ),
+        )
+      end
+    end
+
     context 'with an erga omnes measure' do
       let(:geographical_area) { erga_omnes_area }
 

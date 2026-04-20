@@ -64,7 +64,7 @@ module Api
         group = { group_lead: nil, group_members: [] }
 
         chapter.children.each do |heading|
-          if heading.producline_suffix == GoodsNomenclatureIndent::NON_GROUPING_PRODUCTLINE_SUFFIX
+          if heading.producline_suffix == GoodsNomenclature::NON_GROUPING_PRODUCTLINE_SUFFIX
             if group[:group_lead].present?
               group[:group_members] << heading
             else
@@ -101,7 +101,7 @@ module Api
       end
 
       def leaf
-        producline_suffix == GoodsNomenclatureIndent::NON_GROUPING_PRODUCTLINE_SUFFIX && children.none?
+        producline_suffix == GoodsNomenclature::NON_GROUPING_PRODUCTLINE_SUFFIX && children.none?
       end
 
       def declarable

@@ -15,6 +15,12 @@ class SearchSuggestion < Sequel::Model
     TYPE_GOODS_NOMENCLATURE,
   ].freeze
 
+  LABEL_TYPES = [
+    TYPE_KNOWN_BRAND,
+    TYPE_COLLOQUIAL_TERM,
+    TYPE_SYNONYM,
+  ].freeze
+
   CONFIGURABLE_TYPES = {
     'suggest_chemical_names' => TYPE_FULL_CHEMICAL_NAME,
     'suggest_chemical_cas' => TYPE_FULL_CHEMICAL_CAS,
@@ -45,6 +51,10 @@ class SearchSuggestion < Sequel::Model
                                    end
 
   dataset_module do
+    def without_labels
+      exclude(type: LABEL_TYPES)
+    end
+
     def declarable
       where(declarable: true)
     end
@@ -111,6 +121,36 @@ class SearchSuggestion < Sequel::Model
 
     def goods_nomenclature_type
       where(type: 'goods_nomenclature')
+    end
+
+    def goods_nomenclature_autocomplete(query)
+      goods_nomenclature_autocomplete_with_filters(query)
+    end
+
+    def goods_nomenclature_autocomplete_with_filters(query, filters = {})
+      dataset = goods_nomenclature_type
+      dataset = dataset.where(Sequel.ilike(:value, "#{query}%")) if query.present?
+      dataset = dataset.exclude_hidden_goods_nomenclatures
+      dataset = dataset.for_goods_nomenclature_classes(filters[:goods_nomenclature_class])
+
+      dataset
+        .eager(:goods_nomenclature)
+        .order(Sequel.asc(:value), Sequel.asc(:goods_nomenclature_sid))
+        .limit(20)
+    end
+
+    def for_goods_nomenclature_classes(classes)
+      normalised_classes = Array(classes).flat_map { |value| value.to_s.split(',') }.map(&:strip).reject(&:blank?)
+      return self if normalised_classes.empty?
+
+      where(goods_nomenclature_class: normalised_classes)
+    end
+
+    def exclude_hidden_goods_nomenclatures
+      excluded_chapters = AdminConfiguration.multi_options_values('interactive_search_excluded_chapters')
+      return self if excluded_chapters.empty?
+
+      exclude(Sequel.function(:substring, :value, 1, 2) => excluded_chapters)
     end
 
     def text_type

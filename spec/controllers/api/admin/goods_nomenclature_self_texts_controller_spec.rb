@@ -3,7 +3,7 @@ RSpec.describe Api::Admin::GoodsNomenclatureSelfTextsController do
 
   describe '#index' do
     let!(:commodity) do
-      create(:goods_nomenclature, producline_suffix: '80').tap do |gn|
+      create(:goods_nomenclature, producline_suffix: GoodsNomenclature::NON_GROUPING_PRODUCTLINE_SUFFIX).tap do |gn|
         create(:goods_nomenclature_self_text,
                goods_nomenclature: gn,
                similarity_score: 0.5,
@@ -29,7 +29,7 @@ RSpec.describe Api::Admin::GoodsNomenclatureSelfTextsController do
     end
 
     let!(:mechanical) do
-      create(:goods_nomenclature, producline_suffix: '80').tap do |gn|
+      create(:goods_nomenclature, producline_suffix: GoodsNomenclature::NON_GROUPING_PRODUCTLINE_SUFFIX).tap do |gn|
         create(:goods_nomenclature_self_text,
                goods_nomenclature: gn,
                similarity_score: 0.7,
@@ -134,7 +134,7 @@ RSpec.describe Api::Admin::GoodsNomenclatureSelfTextsController do
 
     context 'with score_category filter' do
       let!(:low_score) do # rubocop:disable RSpec/LetSetup
-        create(:goods_nomenclature, producline_suffix: '80').tap do |gn|
+        create(:goods_nomenclature, producline_suffix: GoodsNomenclature::NON_GROUPING_PRODUCTLINE_SUFFIX).tap do |gn|
           create(:goods_nomenclature_self_text,
                  goods_nomenclature: gn,
                  similarity_score: 0.2,
@@ -178,7 +178,7 @@ RSpec.describe Api::Admin::GoodsNomenclatureSelfTextsController do
       end
 
       it 'filters to records with no score' do
-        create(:goods_nomenclature, producline_suffix: '80').tap do |gn|
+        create(:goods_nomenclature, producline_suffix: GoodsNomenclature::NON_GROUPING_PRODUCTLINE_SUFFIX).tap do |gn|
           create(:goods_nomenclature_self_text,
                  goods_nomenclature: gn,
                  similarity_score: nil,
@@ -281,7 +281,7 @@ RSpec.describe Api::Admin::GoodsNomenclatureSelfTextsController do
 
     context 'with nil scores' do
       let!(:nil_scores) do # rubocop:disable RSpec/LetSetup
-        create(:goods_nomenclature, producline_suffix: '80').tap do |gn|
+        create(:goods_nomenclature, producline_suffix: GoodsNomenclature::NON_GROUPING_PRODUCTLINE_SUFFIX).tap do |gn|
           create(:goods_nomenclature_self_text,
                  goods_nomenclature: gn,
                  similarity_score: nil,
