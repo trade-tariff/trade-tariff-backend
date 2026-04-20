@@ -286,6 +286,19 @@ RSpec.describe QuotaDefinition do
     end
   end
 
+  describe '#last_balance_event' do
+    subject(:last_balance_event) { quota_definition.last_balance_event }
+
+    let(:quota_definition) { build(:quota_definition) }
+    let(:latest_event) { instance_double(QuotaBalanceEvent) }
+
+    it 'uses the latest quota balance event association when events are not preloaded' do
+      allow(quota_definition).to receive_messages(associations: {}, latest_quota_balance_event: latest_event)
+
+      expect(last_balance_event).to eq(latest_event)
+    end
+  end
+
   describe '#incoming_quota_closed_and_transferred_event' do
     subject(:incoming_quota_closed_and_transferred_event) do
       quota_definition.incoming_quota_closed_and_transferred_event
