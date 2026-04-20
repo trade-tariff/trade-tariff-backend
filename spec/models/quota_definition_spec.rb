@@ -293,8 +293,7 @@ RSpec.describe QuotaDefinition do
     let(:latest_event) { instance_double(QuotaBalanceEvent) }
 
     it 'uses the latest quota balance event association when events are not preloaded' do
-      allow(quota_definition).to receive(:associations).and_return({})
-      allow(quota_definition).to receive(:latest_quota_balance_event).and_return(latest_event)
+      allow(quota_definition).to receive_messages(associations: {}, latest_quota_balance_event: latest_event)
 
       expect(last_balance_event).to eq(latest_event)
     end
