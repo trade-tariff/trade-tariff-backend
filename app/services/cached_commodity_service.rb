@@ -16,7 +16,9 @@ class CachedCommodityService
 
   MEASURES_PAYLOAD_EAGER_LOAD_GRAPH = [
     { footnotes: :footnote_descriptions },
-    { measure_type: :measure_type_description },
+    # Load both description associations so the serializer can access
+    # measure_type_series_description without a per-measure lazy query.
+    { measure_type: %i[measure_type_description measure_type_series_description] },
     {
       measure_components: [
         { duty_expression: :duty_expression_description },
@@ -62,6 +64,10 @@ class CachedCommodityService
     { additional_code: :additional_code_descriptions },
     :base_regulation,
     :modification_regulation,
+    # Batch-load both directions of the justification regulation so
+    # Measure#justification_regulation uses the cache instead of a raw .find.
+    :justification_base_regulation,
+    :justification_modification_regulation,
     :full_temporary_stop_regulations,
     :measure_partial_temporary_stops,
   ].freeze
@@ -128,9 +134,20 @@ class CachedCommodityService
       .actual
       .with_leaf_column
       .where(goods_nomenclatures__goods_nomenclature_sid: @commodity_sid)
-      .eager(ancestors: { measures: MEASURES_EAGER_LOAD_GRAPH,
-                          goods_nomenclature_descriptions: {} },
-             measures: MEASURES_EAGER_LOAD_GRAPH)
+      .eager(
+        # Descriptions are delegated through goods_nomenclature_descriptions.first;
+        # without this the commodity's own description triggers a lazy load.
+        goods_nomenclature_descriptions: {},
+        # CommodityPresenter combines commodity.footnotes + heading.footnotes.
+        # Without the nested :footnotes the heading is loaded separately.
+        heading: :footnotes,
+        # ChapterSerializer renders chapter_note; section comes via
+        # chapter.sections.first and SectionSerializer renders section_note.
+        chapter: [:chapter_note, { sections: :section_note }],
+        ancestors: { measures: MEASURES_EAGER_LOAD_GRAPH,
+                     goods_nomenclature_descriptions: {} },
+        measures: MEASURES_EAGER_LOAD_GRAPH,
+      )
       .take
   end
 
