@@ -11424,7 +11424,21 @@ CREATE INDEX gono_desc_periods_pk ON uk.goods_nomenclature_description_periods_o
 -- Name: gono_desc_pk; Type: INDEX; Schema: uk; Owner: -
 --
 
+CREATE INDEX gono_desc_oid_index ON uk.goods_nomenclature_descriptions_oplog USING btree (goods_nomenclature_sid, goods_nomenclature_description_period_sid, oid DESC);
+
+
+--
+-- Name: gono_desc_pk; Type: INDEX; Schema: uk; Owner: -
+--
+
 CREATE INDEX gono_desc_pk ON uk.goods_nomenclature_descriptions_oplog USING btree (goods_nomenclature_sid, goods_nomenclature_description_period_sid);
+
+
+--
+-- Name: gono_desc_periods_oid_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX gono_desc_periods_oid_index ON uk.goods_nomenclature_description_periods_oplog USING btree (goods_nomenclature_description_period_sid, oid DESC);
 
 
 --
