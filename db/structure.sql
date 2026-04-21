@@ -12345,6 +12345,13 @@ CREATE INDEX measure_excluded_geographical_areas_measure_sid_excluded_geogra ON 
 
 
 --
+-- Name: measure_excluded_geographical_areas_measure_sid_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX measure_excluded_geographical_areas_measure_sid_index ON uk.measure_excluded_geographical_areas USING btree (measure_sid);
+
+
+--
 -- Name: measure_excluded_geographical_areas_oid_index; Type: INDEX; Schema: uk; Owner: -
 --
 
@@ -12433,6 +12440,13 @@ CREATE INDEX measures_goods_nomenclature_item_id_index ON uk.measures_oplog USIN
 --
 
 CREATE INDEX measures_goods_nomenclature_sid_index ON uk.measures USING btree (goods_nomenclature_sid);
+
+
+--
+-- Name: measures_goods_nomenclature_sid_validity_composite_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX measures_goods_nomenclature_sid_validity_composite_index ON uk.measures USING btree (goods_nomenclature_sid, validity_start_date, validity_end_date);
 
 
 --
