@@ -65,7 +65,7 @@ RUN bundle config set without 'development test'
 WORKDIR /app
 
 ENV RAILS_ENV=production \
-  PORT=8080 \
+  SSL_PORT=8443 \
   RUBYOPT="--enable-yjit" \
   MALLOC_ARENA_MAX="2"
 
@@ -80,7 +80,7 @@ RUN addgroup -S tariff && \
   chown -R tariff:tariff /app && \
   chown -R tariff:tariff /usr/local/bundle
 
-HEALTHCHECK CMD nc -z 0.0.0.0 $PORT
+HEALTHCHECK CMD nc -z 0.0.0.0 $SSL_PORT
 
 USER tariff
 

@@ -11,16 +11,8 @@ module "backend_xi" {
   subnet_ids      = data.aws_subnets.private.ids
   security_groups = [data.aws_security_group.this.id]
 
-  target_group_mappings = [
-    {
-      target_group_arn = data.aws_lb_target_group.backend_xi.arn,
-      container_port   = 8080
-    },
-    {
-      target_group_arn = data.aws_lb_target_group.backend_xi_https.arn,
-      container_port   = 8443
-    },
-  ]
+  target_group_arn = data.aws_lb_target_group.backend_xi_https.arn
+  container_port   = 8443
 
   cloudwatch_log_group_name = "platform-logs-${var.environment}"
 
