@@ -31,6 +31,7 @@ module Api
                   .non_hidden
                   .by_code(subheading_code)
                   .by_productline_suffix(productline_suffix)
+                  .with_leaf_column
                   .take
                   .tap { |sh| raise Sequel::RecordNotFound if sh.leaf? }
       end
