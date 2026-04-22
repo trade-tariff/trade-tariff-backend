@@ -310,7 +310,7 @@ RSpec.describe CachedCommodityService do
           result = service.call
           ref = reference_response(commodity, filter_params.to_h.symbolize_keys)
 
-          result_summary = result[:included].find { |e| e[:type] == :import_trade_summary }
+          result_summary = result[:included].find { |e| e[:type].to_s == 'import_trade_summary' }
           ref_summary = ref[:included].find { |e| e[:type].to_s == 'import_trade_summary' }
 
           expect(result_summary[:attributes]).to eq(ref_summary[:attributes])
