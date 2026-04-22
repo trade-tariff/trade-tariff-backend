@@ -245,6 +245,9 @@ RSpec.describe CachedCommodityService do
           result_summary = result[:included].find { |e| e[:type] == :import_trade_summary }
           ref_summary = ref[:included].find { |e| e[:type].to_s == 'import_trade_summary' }
 
+          expect(result_summary).to be_present
+          expect(ref_summary).to be_present
+
           expect(result_summary[:attributes][:basic_third_country_duty]).to eq(ref_summary[:attributes][:basic_third_country_duty])
           expect(result_summary[:attributes][:preferential_tariff_duty]).to eq(ref_summary[:attributes][:preferential_tariff_duty])
           expect(result_summary[:attributes][:preferential_quota_duty]).to eq(ref_summary[:attributes][:preferential_quota_duty])
