@@ -1,7 +1,7 @@
 class CachedCommodityService
   include DeclarableSerialization
 
-  CACHE_VERSION = 4
+  CACHE_VERSION = 5
 
   DEFAULT_INCLUDES = (DECLARABLE_INCLUDES + %w[
     heading
@@ -14,11 +14,31 @@ class CachedCommodityService
     export_measures.measure_components.measurement_unit
   ]).freeze
 
-  MEASURES_PAYLOAD_EAGER_LOAD_GRAPH = [
+  # Single unified eager-load graph for all measures associations.
+  #
+  # IMPORTANT: Do not split this into two arrays and concatenate them.
+  # Sequel's eager_options_for_associations builds a flat hash from the array
+  # via opts.merge!(association). If the same association key appears twice —
+  # even as a bare symbol vs a nested hash — the later entry silently overwrites
+  # the earlier one, dropping all nested sub-associations from the first entry.
+  # This was the root cause of ~491 N+1 queries on commodities#show:
+  #
+  #   :geographical_area  appeared in both arrays → geographical_area_descriptions dropped
+  #   :measure_type       appeared in both arrays → measure_type_series_description dropped
+  #   :measure_components appeared in both arrays → duty_expression sub-load dropped
+  #   :additional_code    appeared in both arrays → additional_code_descriptions dropped
+  #
+  # Every association that is needed for both payload serialisation and measure
+  # filtering/metadata is listed once here, with the union of all nested
+  # associations required by either use.
+  MEASURES_EAGER_LOAD_GRAPH = [
     { footnotes: :footnote_descriptions },
     # Load both description associations so the serializer can access
     # measure_type_series_description without a per-measure lazy query.
+    # measure_type is also used by MeasureCollection filter logic.
     { measure_type: %i[measure_type_description measure_type_series_description] },
+    # measure_components is used by MeasureCollection filter logic AND serialised
+    # via MeasureComponentSerializer. The nested associations cover both.
     {
       measure_components: [
         { duty_expression: :duty_expression_description },
@@ -61,10 +81,27 @@ class CachedCommodityService
         ],
       },
     },
+    # geographical_area_descriptions is needed by GeographicalAreaSerializer.
+    # contained_geographical_areas (with descriptions) is needed by the
+    # serializer for group members. referenced + its contained_geographical_areas
+    # is needed by GeographicalRelevance#contained_area_ids to resolve
+    # area-group references without per-measure lazy queries.
     {
-      geographical_area: [:geographical_area_descriptions,
-                          { contained_geographical_areas: :geographical_area_descriptions }],
+      geographical_area: [
+        :geographical_area_descriptions,
+        { contained_geographical_areas: :geographical_area_descriptions },
+        { referenced: :contained_geographical_areas },
+      ],
     },
+    # excluded_geographical_areas are used by MeasureCollection filter logic.
+    {
+      excluded_geographical_areas: [
+        :geographical_area_descriptions,
+        :contained_geographical_areas,
+        { referenced: :contained_geographical_areas },
+      ],
+    },
+    # additional_code is used by MeasureCollection filter logic AND serialised.
     { additional_code: :additional_code_descriptions },
     :base_regulation,
     # Measure#legal_acts appends generating_regulation.base_regulation for
@@ -79,29 +116,6 @@ class CachedCommodityService
     :full_temporary_stop_regulations,
     :measure_partial_temporary_stops,
   ].freeze
-
-  MEASURES_FILTER_META_EAGER_LOAD_GRAPH = [
-    {
-      excluded_geographical_areas: [
-        :geographical_area_descriptions,
-        :contained_geographical_areas,
-        { referenced: :contained_geographical_areas },
-      ],
-    },
-    # GeographicalRelevance#contained_area_ids calls
-    # geographical_area.referenced.contained_geographical_areas to resolve
-    # area-group references. Without referenced, each reference-backed area
-    # fires two extra queries (one for the referenced area, one for its members).
-    { geographical_area: [:contained_geographical_areas,
-                          { referenced: :contained_geographical_areas }] },
-    :measure_type,
-    :additional_code,
-    :measure_components,
-  ].freeze
-
-  MEASURES_EAGER_LOAD_GRAPH = (
-    MEASURES_PAYLOAD_EAGER_LOAD_GRAPH + MEASURES_FILTER_META_EAGER_LOAD_GRAPH
-  ).freeze
 
   TTL = 24.hours
 
