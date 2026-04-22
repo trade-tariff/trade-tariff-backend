@@ -1,4 +1,5 @@
 class GoodsNomenclatureSelfText < Sequel::Model
+  include GeneratedContentLifecycle
   plugin :timestamps, update_on_create: true
   plugin :auto_validations, not_null: :presence
   plugin :has_paper_trail
@@ -32,6 +33,7 @@ class GoodsNomenclatureSelfText < Sequel::Model
           score_expression.as(:score),
         )
         .where(st[:generation_type] => %w[ai ai_non_other])
+        .where(st[:expired] => false)
     end
 
     def search(query)
@@ -59,6 +61,8 @@ class GoodsNomenclatureSelfText < Sequel::Model
       case status
       when 'needs_review'
         where(st[:needs_review] => true)
+      when 'approved'
+        where(st[:approved] => true)
       when 'stale'
         where(st[:stale] => true)
       when 'manually_edited'
@@ -174,10 +178,6 @@ class GoodsNomenclatureSelfText < Sequel::Model
         item_ids: batch.map(&:goods_nomenclature_sid),
       )
     end
-  end
-
-  def mark_stale!
-    update(stale: true)
   end
 
   def context_stale?(current_hash)
