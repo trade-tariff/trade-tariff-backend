@@ -36,9 +36,7 @@ class PrewarmCommoditiesWorker
       commodities_by_item_id = Commodity.actual
                                       .by_codes(ids)
                                       .all
-                                      .each_with_object({}) do |commodity, memo|
-        memo[commodity.goods_nomenclature_item_id] = commodity
-      end
+                                      .index_by(&:goods_nomenclature_item_id)
 
       ids.each do |goods_nomenclature_item_id|
         commodity = commodities_by_item_id[goods_nomenclature_item_id]
@@ -86,9 +84,9 @@ class PrewarmCommoditiesWorker
 
     results = await_query_results(query_id)
 
-    results.filter_map do |row|
+    results.filter_map { |row|
       row.to_h { |field| [field.field, field.value] }['goods_nomenclature_item_id']
-    end.uniq
+    }.uniq
   rescue StandardError => e
     logger.error("PrewarmCommoditiesWorker CloudWatch query failed: #{e.class} - #{e.message}")
     []

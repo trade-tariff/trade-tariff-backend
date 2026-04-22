@@ -21,8 +21,7 @@ RSpec.describe PrewarmCommoditiesWorker do
 
   before do
     allow(described_class).to receive(:client).and_return(client)
-    allow(client).to receive(:start_query).and_return(start_query_response)
-    allow(client).to receive(:get_query_results).and_return(query_results_response)
+    allow(client).to receive_messages(start_query: start_query_response, get_query_results: query_results_response)
     allow(Commodity).to receive_message_chain(:actual, :by_codes).and_return(query_scope)
     allow(CachedCommodityService).to receive(:new).and_return(cached_commodity_service)
     allow(TimeMachine).to receive(:now).and_yield
