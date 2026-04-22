@@ -30,7 +30,11 @@ class CachedCommodityService
     {
       measure_conditions: [
         { measure_action: :measure_action_description },
-        { certificate: :certificate_descriptions },
+        # exempting_certificate_override is accessed in
+        # MeasureCondition#is_exempting_certificate_overridden? (called by the
+        # condition permutations calculator). Without it, every condition that
+        # has a certificate fires a separate query.
+        { certificate: %i[certificate_descriptions exempting_certificate_override] },
         { certificate_type: :certificate_type_description },
         { measurement_unit: %i[measurement_unit_description measurement_unit_abbreviations] },
         :appendix_5a,
@@ -63,7 +67,11 @@ class CachedCommodityService
     },
     { additional_code: :additional_code_descriptions },
     :base_regulation,
-    :modification_regulation,
+    # Measure#legal_acts appends generating_regulation.base_regulation for
+    # modification-regulation-backed measures (to include the parent base
+    # regulation in the legal acts list). Loading it nested here means a single
+    # batch query instead of one per such measure.
+    { modification_regulation: :base_regulation },
     # Batch-load both directions of the justification regulation so
     # Measure#justification_regulation uses the cache instead of a raw .find.
     :justification_base_regulation,
@@ -80,7 +88,12 @@ class CachedCommodityService
         { referenced: :contained_geographical_areas },
       ],
     },
-    { geographical_area: :contained_geographical_areas },
+    # GeographicalRelevance#contained_area_ids calls
+    # geographical_area.referenced.contained_geographical_areas to resolve
+    # area-group references. Without referenced, each reference-backed area
+    # fires two extra queries (one for the referenced area, one for its members).
+    { geographical_area: [:contained_geographical_areas,
+                          { referenced: :contained_geographical_areas }] },
     :measure_type,
     :additional_code,
     :measure_components,
