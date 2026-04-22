@@ -23,7 +23,7 @@ RSpec.describe CachedCommodityService do
                      goods_nomenclature_descriptions: {} },
         measures: described_class::MEASURES_EAGER_LOAD_GRAPH,
       )
-      .take
+      .take!
 
     measures = MeasureCollection.new(reloaded.applicable_measures, filters).filter
     presenter = Api::V2::Commodities::CommodityPresenter.new(reloaded, measures)
