@@ -93,7 +93,7 @@ RSpec.describe CachedCommodityService do
 
       it 'does not include geographical_area_id' do
         service.call
-        expected_key = "_commodity-v4-#{commodity.goods_nomenclature_sid}-#{actual_date}-#{TradeTariffBackend.currency}-"
+        expected_key = "_commodity-v#{CachedCommodityService::CACHE_VERSION}-#{commodity.goods_nomenclature_sid}-#{actual_date}-#{TradeTariffBackend.currency}-"
         expect(Rails.cache).to have_received(:fetch).with(expected_key, expires_in: 24.hours)
       end
 
@@ -102,7 +102,7 @@ RSpec.describe CachedCommodityService do
 
         it 'uses the same cache key regardless of country' do
           service.call
-          expected_key = "_commodity-v4-#{commodity.goods_nomenclature_sid}-#{actual_date}-#{TradeTariffBackend.currency}-"
+          expected_key = "_commodity-v#{CachedCommodityService::CACHE_VERSION}-#{commodity.goods_nomenclature_sid}-#{actual_date}-#{TradeTariffBackend.currency}-"
           expect(Rails.cache).to have_received(:fetch).with(expected_key, expires_in: 24.hours)
         end
       end
@@ -112,7 +112,7 @@ RSpec.describe CachedCommodityService do
 
         it 'includes meursing code in cache key' do
           service.call
-          expected_key = "_commodity-v4-#{commodity.goods_nomenclature_sid}-#{actual_date}-#{TradeTariffBackend.currency}-foo"
+          expected_key = "_commodity-v#{CachedCommodityService::CACHE_VERSION}-#{commodity.goods_nomenclature_sid}-#{actual_date}-#{TradeTariffBackend.currency}-foo"
           expect(Rails.cache).to have_received(:fetch).with(expected_key, expires_in: 24.hours)
         end
       end
@@ -124,7 +124,7 @@ RSpec.describe CachedCommodityService do
         ro_service.call
         de_service.call
 
-        expected_key = "_commodity-v4-#{commodity.goods_nomenclature_sid}-#{actual_date}-#{TradeTariffBackend.currency}-"
+        expected_key = "_commodity-v#{CachedCommodityService::CACHE_VERSION}-#{commodity.goods_nomenclature_sid}-#{actual_date}-#{TradeTariffBackend.currency}-"
         expect(Rails.cache).to have_received(:fetch).with(expected_key, expires_in: 24.hours).twice
       end
     end
