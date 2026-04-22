@@ -62,8 +62,10 @@ class CachedCommodityService
       },
     },
     {
-      geographical_area: [:geographical_area_descriptions,
-                          { contained_geographical_areas: :geographical_area_descriptions }],
+      geographical_area: [
+        :geographical_area_descriptions,
+        { contained_geographical_areas: %i[geographical_area_descriptions contained_geographical_areas] },
+      ],
     },
     { additional_code: :additional_code_descriptions },
     :base_regulation,
@@ -92,8 +94,8 @@ class CachedCommodityService
     # geographical_area.referenced.contained_geographical_areas to resolve
     # area-group references. Without referenced, each reference-backed area
     # fires two extra queries (one for the referenced area, one for its members).
-    { geographical_area: [:contained_geographical_areas,
-                          { referenced: :contained_geographical_areas }] },
+    { geographical_area: [{ contained_geographical_areas: :contained_geographical_areas },
+                          { referenced: { contained_geographical_areas: :contained_geographical_areas } }] },
     :measure_type,
     :additional_code,
     :measure_components,
