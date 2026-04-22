@@ -7,19 +7,16 @@ class PrewarmCommoditiesWorker
   DEFAULT_LIMIT = 1000
   QUERY_POLL_INTERVAL_SECONDS = 1
   QUERY_MAX_POLLS = 60
+  SEARCH_LOG_GROUP_NAME = "platform-logs-#{TradeTariffBackend.environment}".freeze
 
-  def perform(log_group_name = ENV['SEARCH_LOG_GROUP_NAME'])
+  def perform
     preconfigured_ids = preconfigured_goods_nomenclature_item_ids
-    most_requested_ids = if log_group_name.present?
-                           most_requested_goods_nomenclature_item_ids(
-                             log_group_name:,
-                             lookback_hours: DEFAULT_LOOKBACK_HOURS,
-                             limit: DEFAULT_LIMIT,
-                           )
-                         else
-                           logger.warn 'PrewarmCommoditiesWorker running with preconfigured ids only: SEARCH_LOG_GROUP_NAME is not set'
-                           []
-                         end
+    most_requested_ids = most_requested_goods_nomenclature_item_ids(
+      log_group_name: SEARCH_LOG_GROUP_NAME,
+      lookback_hours: DEFAULT_LOOKBACK_HOURS,
+      limit: DEFAULT_LIMIT,
+    )
+
     ids = (preconfigured_ids + most_requested_ids).uniq
 
     if ids.empty?

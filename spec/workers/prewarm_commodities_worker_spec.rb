@@ -31,7 +31,7 @@ RSpec.describe PrewarmCommoditiesWorker do
 
   describe '#perform' do
     it 'queries CloudWatch and prewarms cached commodities' do
-      worker.perform('search-log-group')
+      worker.perform
 
       expect(client).to have_received(:start_query)
       expect(CachedCommodityService).to have_received(:new).with(commodity, Date.current)
@@ -42,18 +42,31 @@ RSpec.describe PrewarmCommoditiesWorker do
     it 'merges preconfigured ids with most requested ids' do
       allow(ENV).to receive(:fetch).with('PREWARM_COMMODITY_IDS', '').and_return("#{preconfigured_id},0101210000")
 
-      worker.perform('search-log-group')
+      worker.perform
 
       expect(Commodity).to have_received(:actual)
       expect(CachedCommodityService).to have_received(:new).with(preconfigured_commodity, Date.current)
       expect(CachedCommodityService).to have_received(:new).with(commodity, Date.current)
     end
 
-    it 'returns early when both log group and preconfigured ids are missing' do
-      worker.perform(nil)
+    context 'when commodity list is empty' do
+      let(:empty_query_results_response) do
+        instance_double(
+          Aws::CloudWatchLogs::Types::GetQueryResultsResponse,
+          status: 'Complete',
+          results: [],
+        )
+      end
 
-      expect(client).not_to have_received(:start_query)
-      expect(CachedCommodityService).not_to have_received(:new)
+      before do
+        allow(client).to receive_messages(start_query: start_query_response, get_query_results: empty_query_results_response)
+      end
+
+      it 'returns early when both log group and preconfigured ids are missing' do
+        worker.perform
+
+        expect(CachedCommodityService).not_to have_received(:new)
+      end
     end
   end
 end
