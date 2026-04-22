@@ -14,31 +14,9 @@ class CachedCommodityService
     export_measures.measure_components.measurement_unit
   ]).freeze
 
-  # Single unified eager-load graph for all measures associations.
-  #
-  # IMPORTANT: Do not split this into two arrays and concatenate them.
-  # Sequel's eager_options_for_associations builds a flat hash from the array
-  # via opts.merge!(association). If the same association key appears twice —
-  # even as a bare symbol vs a nested hash — the later entry silently overwrites
-  # the earlier one, dropping all nested sub-associations from the first entry.
-  # This was the root cause of ~491 N+1 queries on commodities#show:
-  #
-  #   :geographical_area  appeared in both arrays → geographical_area_descriptions dropped
-  #   :measure_type       appeared in both arrays → measure_type_series_description dropped
-  #   :measure_components appeared in both arrays → duty_expression sub-load dropped
-  #   :additional_code    appeared in both arrays → additional_code_descriptions dropped
-  #
-  # Every association that is needed for both payload serialisation and measure
-  # filtering/metadata is listed once here, with the union of all nested
-  # associations required by either use.
   MEASURES_EAGER_LOAD_GRAPH = [
     { footnotes: :footnote_descriptions },
-    # Load both description associations so the serializer can access
-    # measure_type_series_description without a per-measure lazy query.
-    # measure_type is also used by MeasureCollection filter logic.
     { measure_type: %i[measure_type_description measure_type_series_description] },
-    # measure_components is used by MeasureCollection filter logic AND serialised
-    # via MeasureComponentSerializer. The nested associations cover both.
     {
       measure_components: [
         { duty_expression: :duty_expression_description },
@@ -50,10 +28,6 @@ class CachedCommodityService
     {
       measure_conditions: [
         { measure_action: :measure_action_description },
-        # exempting_certificate_override is accessed in
-        # MeasureCondition#is_exempting_certificate_overridden? (called by the
-        # condition permutations calculator). Without it, every condition that
-        # has a certificate fires a separate query.
         { certificate: %i[certificate_descriptions exempting_certificate_override] },
         { certificate_type: :certificate_type_description },
         { measurement_unit: %i[measurement_unit_description measurement_unit_abbreviations] },
@@ -81,11 +55,6 @@ class CachedCommodityService
         ],
       },
     },
-    # geographical_area_descriptions is needed by GeographicalAreaSerializer.
-    # contained_geographical_areas (with descriptions) is needed by the
-    # serializer for group members. referenced + its contained_geographical_areas
-    # is needed by GeographicalRelevance#contained_area_ids to resolve
-    # area-group references without per-measure lazy queries.
     {
       geographical_area: [
         :geographical_area_descriptions,
@@ -93,7 +62,6 @@ class CachedCommodityService
         { referenced: :contained_geographical_areas },
       ],
     },
-    # excluded_geographical_areas are used by MeasureCollection filter logic.
     {
       excluded_geographical_areas: [
         :geographical_area_descriptions,
@@ -101,16 +69,9 @@ class CachedCommodityService
         { referenced: :contained_geographical_areas },
       ],
     },
-    # additional_code is used by MeasureCollection filter logic AND serialised.
     { additional_code: :additional_code_descriptions },
     :base_regulation,
-    # Measure#legal_acts appends generating_regulation.base_regulation for
-    # modification-regulation-backed measures (to include the parent base
-    # regulation in the legal acts list). Loading it nested here means a single
-    # batch query instead of one per such measure.
     { modification_regulation: :base_regulation },
-    # Batch-load both directions of the justification regulation so
-    # Measure#justification_regulation uses the cache instead of a raw .find.
     :justification_base_regulation,
     :justification_modification_regulation,
     :full_temporary_stop_regulations,
@@ -162,14 +123,8 @@ class CachedCommodityService
       .with_leaf_column
       .where(goods_nomenclatures__goods_nomenclature_sid: @commodity_sid)
       .eager(
-        # Descriptions are delegated through goods_nomenclature_descriptions.first;
-        # without this the commodity's own description triggers a lazy load.
         goods_nomenclature_descriptions: {},
-        # CommodityPresenter combines commodity.footnotes + heading.footnotes.
-        # Without the nested :footnotes the heading is loaded separately.
         heading: :footnotes,
-        # ChapterSerializer renders chapter_note; section comes via
-        # chapter.sections.first and SectionSerializer renders section_note.
         chapter: [:chapter_note, { sections: :section_note }],
         ancestors: { measures: MEASURES_EAGER_LOAD_GRAPH,
                      goods_nomenclature_descriptions: {} },
