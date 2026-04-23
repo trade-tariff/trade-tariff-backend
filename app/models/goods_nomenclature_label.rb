@@ -70,26 +70,11 @@ class GoodsNomenclatureLabel < Sequel::Model
       end
     end
 
-    def for_status(status)
-      lbl = Sequel[:goods_nomenclature_labels]
-
-      case status
-      when 'needs_review'
-        where(lbl[:needs_review] => true)
-      when 'approved'
-        where(lbl[:approved] => true)
-      when 'stale'
-        where(lbl[:stale] => true)
-      when 'manually_edited'
-        where(lbl[:manually_edited] => true)
-      when 'expired'
-        where(lbl[:expired] => true)
-      else
-        self
-      end
-    end
-
     private
+
+    def generated_content_table
+      Sequel[:goods_nomenclature_labels]
+    end
 
     def score_sql
       lbl = '"goods_nomenclature_labels"'

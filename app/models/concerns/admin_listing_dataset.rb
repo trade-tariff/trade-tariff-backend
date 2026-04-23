@@ -1,8 +1,22 @@
 module AdminListingDataset
+  GENERATED_CONTENT_STATUSES = %w[
+    needs_review
+    approved
+    stale
+    manually_edited
+    expired
+  ].freeze
+
   def for_nomenclature_type(type)
     return self unless %w[commodity heading subheading].include?(type)
 
     where(Sequel.lit("(#{nomenclature_type_sql}) = ?", type))
+  end
+
+  def for_status(status)
+    return self unless GENERATED_CONTENT_STATUSES.include?(status)
+
+    where(generated_content_table[status.to_sym] => true)
   end
 
   def for_score_category(category)
@@ -25,6 +39,10 @@ module AdminListingDataset
   end
 
   private
+
+  def generated_content_table
+    raise NotImplementedError, "#{self.class} must define #generated_content_table"
+  end
 
   def score_expression
     Sequel.lit(score_sql)
