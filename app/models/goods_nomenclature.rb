@@ -300,11 +300,7 @@ class GoodsNomenclature < Sequel::Model
   end
 
   def has_chemicals
-    if associations.key?(:full_chemicals)
-      full_chemicals.any?
-    else
-      @has_chemicals ||= full_chemicals_dataset.limit(1).any?
-    end
+    @has_chemicals ||= full_chemicals_dataset.limit(1).any?
   end
 
   def to_admin_param
