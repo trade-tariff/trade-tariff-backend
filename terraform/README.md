@@ -6,20 +6,20 @@ Terraform to deploy the service into AWS.
 ## Requirements
 
 | Name | Version |
-|------|---------|
+| ---- | ------- |
 | <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >=1.12.0 |
 | <a name="requirement_aws"></a> [aws](#requirement\_aws) | ~> 5 |
 
 ## Providers
 
 | Name | Version |
-|------|---------|
+| ---- | ------- |
 | <a name="provider_aws"></a> [aws](#provider\_aws) | 5.100.0 |
 
 ## Modules
 
 | Name | Source | Version |
-|------|--------|---------|
+| ---- | ------ | ------- |
 | <a name="module_backend-job"></a> [backend-job](#module\_backend-job) | git@github.com:trade-tariff/trade-tariff-platform-terraform-modules.git//aws/ecs-service | aws/ecs-service-v1.21.0 |
 | <a name="module_backend_uk"></a> [backend\_uk](#module\_backend\_uk) | git@github.com:trade-tariff/trade-tariff-platform-terraform-modules.git//aws/ecs-service | aws/ecs-service-v1.21.0 |
 | <a name="module_backend_xi"></a> [backend\_xi](#module\_backend\_xi) | git@github.com:trade-tariff/trade-tariff-platform-terraform-modules.git//aws/ecs-service | aws/ecs-service-v1.21.0 |
@@ -33,7 +33,7 @@ Terraform to deploy the service into AWS.
 ## Resources
 
 | Name | Type |
-|------|------|
+| ---- | ---- |
 | [aws_cloudwatch_event_rule.database_backup](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cloudwatch_event_rule) | resource |
 | [aws_cloudwatch_event_rule.database_replication](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cloudwatch_event_rule) | resource |
 | [aws_cloudwatch_event_target.database_backup](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cloudwatch_event_target) | resource |
@@ -71,7 +71,7 @@ Terraform to deploy the service into AWS.
 ## Inputs
 
 | Name | Description | Type | Default | Required |
-|------|-------------|------|---------|:--------:|
+| ---- | ----------- | ---- | ------- | :------: |
 | <a name="input_cpu"></a> [cpu](#input\_cpu) | CPU units to use. | `number` | n/a | yes |
 | <a name="input_database_backup_secret_name"></a> [database\_backup\_secret\_name](#input\_database\_backup\_secret\_name) | Secrets Manager secret name containing the database URL for backups. | `string` | n/a | yes |
 | <a name="input_docker_tag"></a> [docker\_tag](#input\_docker\_tag) | Image tag to use. | `string` | n/a | yes |
@@ -86,7 +86,7 @@ Terraform to deploy the service into AWS.
 ## Outputs
 
 | Name | Description |
-|------|-------------|
+| ---- | ----------- |
 | <a name="output_label_generator_dashboard_url"></a> [label\_generator\_dashboard\_url](#output\_label\_generator\_dashboard\_url) | URL to the Label Generator CloudWatch dashboard |
 | <a name="output_search_dashboard_url"></a> [search\_dashboard\_url](#output\_search\_dashboard\_url) | URL to the Search CloudWatch dashboard |
 | <a name="output_self_text_generator_dashboard_url"></a> [self\_text\_generator\_dashboard\_url](#output\_self\_text\_generator\_dashboard\_url) | URL to the Self-Text Generator CloudWatch dashboard |
