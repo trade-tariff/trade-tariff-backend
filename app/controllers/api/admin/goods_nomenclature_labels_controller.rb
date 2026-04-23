@@ -37,7 +37,19 @@ module Api
           .for_status(params[:status])
           .for_score_category(params[:score_category])
 
+        dataset = dataset.exclude(Sequel[:goods_nomenclature_labels][:approved] => true) if normal_review_listing?
+
         apply_sorting(dataset)
+      end
+
+      def normal_review_listing?
+        params[:status].blank? && !search_query?
+      end
+
+      def search_query?
+        q = params[:q].to_s.strip
+
+        q.match?(/\A\d{2,10}\z/) || q.length >= 2
       end
 
       def apply_sorting(dataset)

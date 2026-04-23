@@ -81,6 +81,46 @@ RSpec.describe Api::Admin::GoodsNomenclatureLabelsController do
       end
     end
 
+    context 'with approved records' do
+      let!(:approved_commodity) do
+        create(:goods_nomenclature, producline_suffix: GoodsNomenclature::NON_GROUPING_PRODUCTLINE_SUFFIX).tap do |gn|
+          create(:goods_nomenclature_label,
+                 goods_nomenclature: gn,
+                 description: 'Approved label for direct lookup',
+                 description_score: 0.4,
+                 known_brands: Sequel.pg_array([], :text),
+                 synonyms: Sequel.pg_array([], :text),
+                 colloquial_terms: Sequel.pg_array([], :text),
+                 approved: true,
+                 labels: { 'description' => 'Approved label for direct lookup' })
+        end
+      end
+
+      it 'excludes approved labels from normal listing by default' do
+        get :index, format: :json
+
+        json = JSON.parse(response.body)
+        sids = json['data'].map { |d| d.dig('attributes', 'goods_nomenclature_sid') }
+        expect(sids).not_to include(approved_commodity.goods_nomenclature_sid)
+      end
+
+      it 'returns approved labels when explicitly filtered' do
+        get :index, params: { status: 'approved' }, format: :json
+
+        json = JSON.parse(response.body)
+        expect(json['data'].length).to eq(1)
+        expect(json['data'].first.dig('attributes', 'approved')).to be true
+      end
+
+      it 'keeps approved labels searchable by text' do
+        get :index, params: { q: 'direct lookup' }, format: :json
+
+        json = JSON.parse(response.body)
+        sids = json['data'].map { |d| d.dig('attributes', 'goods_nomenclature_sid') }
+        expect(sids).to include(approved_commodity.goods_nomenclature_sid)
+      end
+    end
+
     context 'with score_category filter' do
       let!(:low_score) do # rubocop:disable RSpec/LetSetup
         create(:goods_nomenclature, producline_suffix: GoodsNomenclature::NON_GROUPING_PRODUCTLINE_SUFFIX).tap do |gn|
