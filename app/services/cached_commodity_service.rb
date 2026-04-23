@@ -58,8 +58,8 @@ class CachedCommodityService
     {
       geographical_area: [
         :geographical_area_descriptions,
-        { contained_geographical_areas: :geographical_area_descriptions },
-        { referenced: :contained_geographical_areas },
+        { contained_geographical_areas: %i[geographical_area_descriptions contained_geographical_areas] },
+        { referenced: { contained_geographical_areas: :contained_geographical_areas } },
       ],
     },
     {
