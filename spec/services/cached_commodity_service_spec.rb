@@ -31,18 +31,32 @@ RSpec.describe CachedCommodityService do
   end
 
   describe '#call' do
-    # MeasureType records must be created before measures because FactoryBot
-    # skips the measure_type association block when measure_type_id is overridden
-    before do
-      create(:duty_expression, :with_description, duty_expression_id: '01')
-      create(:measure_type, measure_type_id: '103', trade_movement_code: 0)
-      create(:measure_type, measure_type_id: '142', trade_movement_code: 0)
+    let!(:de_measure) do
+      create(
+        :measure,
+        :with_measure_components,
+        :with_base_regulation,
+        measure_type_id: '142',
+        goods_nomenclature: commodity,
+        goods_nomenclature_item_id: commodity.goods_nomenclature_item_id,
+        goods_nomenclature_sid: commodity.goods_nomenclature_sid,
+        for_geo_area: de_area,
+        duty_amount: 2.5,
+      ).tap(&:reload)
     end
-
-    let!(:ro_area) { create(:geographical_area, :country, :with_description, geographical_area_id: 'RO') }
-    let!(:de_area) { create(:geographical_area, :country, :with_description, geographical_area_id: 'DE') }
-    let!(:erga_omnes_area) { create(:geographical_area, :erga_omnes, :with_description) }
-
+    let!(:ro_measure) do
+      create(
+        :measure,
+        :with_measure_components,
+        :with_base_regulation,
+        measure_type_id: '142',
+        goods_nomenclature: commodity,
+        goods_nomenclature_item_id: commodity.goods_nomenclature_item_id,
+        goods_nomenclature_sid: commodity.goods_nomenclature_sid,
+        for_geo_area: ro_area,
+        duty_amount: 0.0,
+      ).tap(&:reload)
+    end
     let!(:erga_omnes_measure) do
       create(
         :measure,
@@ -57,33 +71,33 @@ RSpec.describe CachedCommodityService do
         duty_amount: 4.0,
       ).tap(&:reload)
     end
+    let!(:erga_omnes_area) { create(:geographical_area, :erga_omnes, :with_description) }
+    let!(:de_area) { create(:geographical_area, :country, :with_description, geographical_area_id: 'DE') }
+    let!(:ro_area) { create(:geographical_area, :country, :with_description, geographical_area_id: 'RO') }
 
-    let!(:ro_measure) do
-      create(
-        :measure,
-        :with_measure_components,
-        :with_base_regulation,
-        measure_type_id: '142',
-        goods_nomenclature: commodity,
-        goods_nomenclature_item_id: commodity.goods_nomenclature_item_id,
-        goods_nomenclature_sid: commodity.goods_nomenclature_sid,
-        for_geo_area: ro_area,
-        duty_amount: 0.0,
-      ).tap(&:reload)
+    # MeasureType records must be created before measures because FactoryBot
+    # skips the measure_type association block when measure_type_id is overridden
+    before do
+      create(:duty_expression, :with_description, duty_expression_id: '01')
+      create(:measure_type, measure_type_id: '103', trade_movement_code: 0)
+      create(:measure_type, measure_type_id: '142', trade_movement_code: 0)
     end
 
-    let!(:de_measure) do
-      create(
-        :measure,
-        :with_measure_components,
-        :with_base_regulation,
-        measure_type_id: '142',
-        goods_nomenclature: commodity,
-        goods_nomenclature_item_id: commodity.goods_nomenclature_item_id,
-        goods_nomenclature_sid: commodity.goods_nomenclature_sid,
-        for_geo_area: de_area,
-        duty_amount: 2.5,
-      ).tap(&:reload)
+    context 'when loading the commodity for serialization' do
+      let(:commodity) { create(:commodity, :with_chapter_and_heading, :with_full_chemicals) }
+
+      it 'loads full chemicals on the commodity' do
+        loaded_commodity = nil
+
+        allow(Api::V2::Commodities::CommodityPresenter).to receive(:new).and_wrap_original do |original, commodity, measures|
+          loaded_commodity = commodity
+          original.call(commodity, measures)
+        end
+
+        described_class.new(commodity.reload, actual_date).call
+
+        expect(loaded_commodity.associations).to include(full_chemicals: be_present)
+      end
     end
 
     describe 'cache key' do

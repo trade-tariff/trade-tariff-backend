@@ -10425,6 +10425,13 @@ CREATE INDEX base_regulations_antidumping_regulation_role_related_antidumpin ON 
 
 
 --
+-- Name: base_regulations_approved_composite_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX base_regulations_approved_composite_index ON uk.base_regulations USING btree (base_regulation_id, base_regulation_role) WHERE (approved_flag IS TRUE);
+
+
+--
 -- Name: base_regulations_approved_flag_index; Type: INDEX; Schema: uk; Owner: -
 --
 
@@ -11136,6 +11143,13 @@ CREATE INDEX fto_footypopl_otepeslog_operation_date ON uk.footnote_types_oplog U
 --
 
 CREATE INDEX fts_reg_act_pk ON uk.fts_regulation_actions_oplog USING btree (fts_regulation_id, fts_regulation_role, stopped_regulation_id, stopped_regulation_role);
+
+
+--
+-- Name: fts_regulation_actions_stopped_regulation_id_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX fts_regulation_actions_stopped_regulation_id_index ON uk.fts_regulation_actions_oplog USING btree (stopped_regulation_id);
 
 
 --
@@ -12742,6 +12756,13 @@ CREATE INDEX mod_reg_pk ON uk.modification_regulations_oplog USING btree (modifi
 
 
 --
+-- Name: modification_regulations_approved_composite_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX modification_regulations_approved_composite_index ON uk.modification_regulations USING btree (modification_regulation_id, modification_regulation_role) WHERE (approved_flag IS TRUE);
+
+
+--
 -- Name: modification_regulations_approved_flag_index; Type: INDEX; Schema: uk; Owner: -
 --
 
@@ -13947,3 +13968,4 @@ INSERT INTO "schema_migrations" ("filename") VALUES ('20260413120001_drop_tariff
 INSERT INTO "schema_migrations" ("filename") VALUES ('20260415120000_add_guidance_fields_to_description_intercepts.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20260415120001_create_tariff_update_state_changes.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20260422143000_add_lifecycle_flags_to_generated_classification_content.rb');
+INSERT INTO "schema_migrations" ("filename") VALUES ('20260423120000_add_regulation_and_fts_performance_indexes.rb');

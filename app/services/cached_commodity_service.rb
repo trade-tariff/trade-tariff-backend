@@ -129,6 +129,7 @@ class CachedCommodityService
         ancestors: { measures: MEASURES_EAGER_LOAD_GRAPH,
                      goods_nomenclature_descriptions: {} },
         measures: MEASURES_EAGER_LOAD_GRAPH,
+        full_chemicals: {},
       )
       .take
   end
