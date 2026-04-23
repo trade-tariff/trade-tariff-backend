@@ -47,7 +47,7 @@ module TradeTariffBackend
     end
 
     def excess_query_threshold
-      @excess_query_threshold ||= ENV['EXCESS_QUERY_THRESHOLD'].presence.to_i
+      ENV['EXCESS_QUERY_THRESHOLD'].presence.to_i
     end
 
     def check_query_count?
