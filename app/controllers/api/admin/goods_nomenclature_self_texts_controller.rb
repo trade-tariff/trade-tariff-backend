@@ -31,7 +31,7 @@ module Api
 
       def filtered_dataset
         dataset = GoodsNomenclatureSelfText
-          .admin_listing
+          .admin_listing(include_expired: expired_listing?)
           .search(params[:q])
           .for_nomenclature_type(params[:type])
           .for_status(params[:status])
@@ -44,6 +44,10 @@ module Api
 
       def normal_review_listing?
         params[:status].blank? && !search_query?
+      end
+
+      def expired_listing?
+        params[:status] == 'expired'
       end
 
       def search_query?

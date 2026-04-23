@@ -34,18 +34,18 @@ class GoodsNomenclatureLabel < Sequel::Model
       where(stale: true, manually_edited: false)
     end
 
-    def admin_listing
+    def admin_listing(include_expired: false)
       lbl = Sequel[:goods_nomenclature_labels]
 
       TimeMachine.now do
-        join(:goods_nomenclatures, { Sequel[:gn][:goods_nomenclature_sid] => lbl[:goods_nomenclature_sid] }, table_alias: :gn)
-          .where(GoodsNomenclature.validity_dates_filter(:gn))
+        dataset = join(:goods_nomenclatures, { Sequel[:gn][:goods_nomenclature_sid] => lbl[:goods_nomenclature_sid] }, table_alias: :gn)
           .select_all(:goods_nomenclature_labels)
           .select_append(
             nomenclature_type_expression.as(:nomenclature_type),
             score_expression.as(:score),
           )
-          .where(lbl[:expired] => false)
+
+        include_expired ? dataset : dataset.where(GoodsNomenclature.validity_dates_filter(:gn)).where(lbl[:expired] => false)
       end
     end
 
@@ -82,6 +82,8 @@ class GoodsNomenclatureLabel < Sequel::Model
         where(lbl[:stale] => true)
       when 'manually_edited'
         where(lbl[:manually_edited] => true)
+      when 'expired'
+        where(lbl[:expired] => true)
       else
         self
       end

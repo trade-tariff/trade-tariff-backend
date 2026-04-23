@@ -132,6 +132,33 @@ RSpec.describe Api::Admin::GoodsNomenclatureSelfTextsController do
       end
     end
 
+    context 'with expired records' do
+      let!(:expired_commodity) do
+        create(:commodity, :expired, producline_suffix: GoodsNomenclature::NON_GROUPING_PRODUCTLINE_SUFFIX).tap do |gn|
+          create(:goods_nomenclature_self_text,
+                 goods_nomenclature: gn,
+                 generation_type: 'ai',
+                 expired: true)
+        end
+      end
+
+      it 'excludes expired self texts from normal listing by default' do
+        get :index, format: :json
+
+        json = JSON.parse(response.body)
+        sids = json['data'].map { |d| d.dig('attributes', 'goods_nomenclature_sid') }
+        expect(sids).not_to include(expired_commodity.goods_nomenclature_sid)
+      end
+
+      it 'returns expired self texts when explicitly filtered' do
+        get :index, params: { status: 'expired' }, format: :json
+
+        json = JSON.parse(response.body)
+        expect(json['data'].length).to eq(1)
+        expect(json['data'].first.dig('attributes', 'expired')).to be true
+      end
+    end
+
     context 'with approved records' do
       let!(:approved_commodity) do
         create(:goods_nomenclature, producline_suffix: GoodsNomenclature::NON_GROUPING_PRODUCTLINE_SUFFIX).tap do |gn|

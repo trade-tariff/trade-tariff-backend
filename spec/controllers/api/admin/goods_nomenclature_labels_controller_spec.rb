@@ -81,6 +81,38 @@ RSpec.describe Api::Admin::GoodsNomenclatureLabelsController do
       end
     end
 
+    context 'with expired records' do
+      let!(:expired_commodity) do
+        create(:commodity, :expired, producline_suffix: GoodsNomenclature::NON_GROUPING_PRODUCTLINE_SUFFIX).tap do |gn|
+          create(:goods_nomenclature_label,
+                 goods_nomenclature: gn,
+                 description: 'Expired label',
+                 description_score: 0.4,
+                 known_brands: Sequel.pg_array([], :text),
+                 synonyms: Sequel.pg_array([], :text),
+                 colloquial_terms: Sequel.pg_array([], :text),
+                 expired: true,
+                 labels: { 'description' => 'Expired label' })
+        end
+      end
+
+      it 'excludes expired labels from normal listing by default' do
+        get :index, format: :json
+
+        json = JSON.parse(response.body)
+        sids = json['data'].map { |d| d.dig('attributes', 'goods_nomenclature_sid') }
+        expect(sids).not_to include(expired_commodity.goods_nomenclature_sid)
+      end
+
+      it 'returns expired labels when explicitly filtered' do
+        get :index, params: { status: 'expired' }, format: :json
+
+        json = JSON.parse(response.body)
+        expect(json['data'].length).to eq(1)
+        expect(json['data'].first.dig('attributes', 'expired')).to be true
+      end
+    end
+
     context 'with approved records' do
       let!(:approved_commodity) do
         create(:goods_nomenclature, producline_suffix: GoodsNomenclature::NON_GROUPING_PRODUCTLINE_SUFFIX).tap do |gn|
