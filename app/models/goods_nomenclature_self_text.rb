@@ -23,17 +23,18 @@ class GoodsNomenclatureSelfText < Sequel::Model
       where(needs_review: true)
     end
 
-    def admin_listing
+    def admin_listing(include_expired: false)
       st = Sequel[:goods_nomenclature_self_texts]
 
-      join(:goods_nomenclatures, { Sequel[:gn][:goods_nomenclature_sid] => st[:goods_nomenclature_sid] }, table_alias: :gn)
+      dataset = join(:goods_nomenclatures, { Sequel[:gn][:goods_nomenclature_sid] => st[:goods_nomenclature_sid] }, table_alias: :gn)
         .select_all(:goods_nomenclature_self_texts)
         .select_append(
           nomenclature_type_expression.as(:nomenclature_type),
           score_expression.as(:score),
         )
         .where(st[:generation_type] => %w[ai ai_non_other])
-        .where(st[:expired] => false)
+
+      include_expired ? dataset : dataset.where(st[:expired] => false)
     end
 
     def search(query)
@@ -67,6 +68,8 @@ class GoodsNomenclatureSelfText < Sequel::Model
         where(st[:stale] => true)
       when 'manually_edited'
         where(st[:manually_edited] => true)
+      when 'expired'
+        where(st[:expired] => true)
       else
         self
       end
