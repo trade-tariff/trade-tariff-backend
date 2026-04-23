@@ -1,7 +1,7 @@
 class CachedCommodityService
   include DeclarableSerialization
 
-  CACHE_VERSION = 5
+  CACHE_VERSION = 6
 
   DEFAULT_INCLUDES = (DECLARABLE_INCLUDES + %w[
     heading
@@ -147,6 +147,6 @@ class CachedCommodityService
   end
 
   def cache_key
-    "_commodity-v#{CACHE_VERSION}-#{@commodity_sid}-#{actual_date}-#{TradeTariffBackend.currency}-#{meursing_additional_code_id}"
+    "_commodity-v#{CACHE_VERSION}-#{@commodity_sid}-#{actual_date}-#{meursing_additional_code_id}"
   end
 end
