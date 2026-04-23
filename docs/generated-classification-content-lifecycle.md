@@ -64,7 +64,7 @@ flowchart LR
 flowchart LR
     ANY_STATE[Any lifecycle state]
     REGENERATED[Regenerated generated content]
-    RESET[Lifecycle tags reset]
+    RESET[Content lifecycle tags reset]
 
     ANY_STATE -->|UI regenerate| REGENERATED
     REGENERATED --> RESET
@@ -79,7 +79,7 @@ The diagrams are split so they are readable in GitHub and Confluence. The action
 | Mark needs review | Sets `needs_review`, clears `approved`. Does not change generated content. |
 | Approve | Sets `approved`, clears `needs_review`. Does not change generated content. In admin this action is available once the row needs review. |
 | Manual edit | Updates content, sets `manually_edited`, sets `approved`, clears `needs_review`. Normal pipeline regeneration must not overwrite the row. |
-| UI regeneration | Replaces content with generated content even if it was manually edited. Clears `stale`, `needs_review`, `approved`, and `manually_edited`. |
+| UI regeneration | Replaces content with generated content even if it was manually edited. Clears `stale`, `needs_review`, `approved`, and `manually_edited`. It does not clear `expired`. |
 | Score or rescore | Refreshes score fields. It does not change review, approval, stale, manual edit, or expiry tags. |
 
 ## Pipeline and context changes
@@ -163,17 +163,10 @@ flowchart LR
 
 Expired commodities are excluded from trader search results. Generated content for expired records should also be excluded from normal generated-content admin listings so operators do not spend review time on content that cannot appear in search results.
 
-The `expired` tag is visibility metadata. It does not delete generated content and it does not trigger regeneration.
+The `expired` tag is visibility metadata. It does not delete generated content, it does not trigger regeneration, and it is not cleared by regeneration.
 
 At the time of writing:
 
 - self-texts and labels support an `expired` flag
 - expired rows are excluded from normal admin listings when the flag is set
 - no explicit admin UI filter for expired rows is required in this slice
-
-## Implementation notes
-
-- Self-text and label lifecycle transitions should go through named transition methods where model instances are being changed.
-- Bulk pipeline upserts may still set lifecycle flags directly because they are atomic SQL upserts rather than model instance transitions. Keep that SQL small, explicit, and covered by tests.
-- Direct lookup should still work for records that are filtered out of normal review listings. Default list views are not the only way operators investigate support issues.
-- Version history should remain available so operators can understand when content was approved, manually edited, regenerated, or marked for review.
