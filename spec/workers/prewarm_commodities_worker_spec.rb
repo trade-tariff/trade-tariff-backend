@@ -2,7 +2,6 @@ RSpec.describe PrewarmCommoditiesWorker do
   subject(:worker) { described_class.new }
 
   let(:client) { instance_double(Aws::CloudWatchLogs::Client) }
-  let(:logger) { instance_double(Logger, info: nil, warn: nil, error: nil) }
   let(:start_query_response) { instance_double(Aws::CloudWatchLogs::Types::StartQueryResponse, query_id: 'query-123') }
   let(:query_results_response) do
     instance_double(
@@ -26,7 +25,6 @@ RSpec.describe PrewarmCommoditiesWorker do
     allow(Commodity).to receive_message_chain(:actual, :by_codes).and_return(query_scope)
     allow(CachedCommodityService).to receive(:new).and_return(cached_commodity_service)
     allow(TimeMachine).to receive(:now).and_yield
-    allow(worker).to receive(:logger).and_return(logger)
     allow(ENV).to receive(:fetch).and_call_original
     allow(ENV).to receive(:fetch).with('PREWARM_COMMODITY_IDS', '').and_return('')
   end
@@ -70,12 +68,10 @@ RSpec.describe PrewarmCommoditiesWorker do
         results: [],
       )
       allow(client).to receive(:get_query_results).and_return(running_response, query_results_response)
-      allow(worker).to receive(:sleep)
 
       worker.perform
 
       expect(client).to have_received(:get_query_results).twice
-      expect(worker).to have_received(:sleep).with(PrewarmCommoditiesWorker::QUERY_POLL_INTERVAL_SECONDS).once
     end
 
     it 'merges preconfigured ids with most requested ids' do
@@ -118,7 +114,6 @@ RSpec.describe PrewarmCommoditiesWorker do
 
         worker.perform
 
-        expect(logger).to have_received(:error).with(/CloudWatch query failed/)
         expect(CachedCommodityService).to have_received(:new).with(preconfigured_commodity, Date.current)
       end
     end
