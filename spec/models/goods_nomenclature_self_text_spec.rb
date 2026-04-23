@@ -80,12 +80,178 @@ RSpec.describe GoodsNomenclatureSelfText do
     end
   end
 
+  describe '.admin_listing' do
+    let(:commodity) { create(:goods_nomenclature, producline_suffix: GoodsNomenclature::NON_GROUPING_PRODUCTLINE_SUFFIX) }
+
+    it 'excludes expired self-texts by default' do
+      create(:goods_nomenclature_self_text, :ai_generated, goods_nomenclature: commodity, expired: true)
+
+      expect(described_class.admin_listing.all).to be_empty
+    end
+  end
+
+  describe '.for_status' do
+    let(:commodity_a) { create(:goods_nomenclature, producline_suffix: GoodsNomenclature::NON_GROUPING_PRODUCTLINE_SUFFIX) }
+    let(:commodity_b) { create(:goods_nomenclature, producline_suffix: GoodsNomenclature::NON_GROUPING_PRODUCTLINE_SUFFIX) }
+
+    before do
+      create(:goods_nomenclature_self_text, :ai_generated, goods_nomenclature: commodity_a, needs_review: true)
+      create(:goods_nomenclature_self_text, :ai_generated, goods_nomenclature: commodity_b, approved: true)
+    end
+
+    it 'filters to records needing review' do
+      results = described_class.admin_listing.for_status('needs_review').all
+
+      expect(results.length).to eq(1)
+      expect(results.first.needs_review).to be true
+    end
+
+    it 'filters to approved records' do
+      results = described_class.admin_listing.for_status('approved').all
+
+      expect(results.length).to eq(1)
+      expect(results.first.approved).to be true
+    end
+  end
+
   describe '#mark_stale!' do
     it 'sets stale to true' do
       record = create(:goods_nomenclature_self_text, stale: false)
       record.mark_stale!
 
       expect(record.reload.stale).to be true
+    end
+  end
+
+  describe 'lifecycle transitions' do
+    describe '#mark_needs_review!' do
+      it 'marks the record for review and clears approval' do
+        record = create(:goods_nomenclature_self_text, needs_review: false, approved: true)
+
+        record.mark_needs_review!
+
+        expect(record.reload).to have_attributes(
+          needs_review: true,
+          approved: false,
+        )
+      end
+    end
+
+    describe '#approve!' do
+      it 'approves the current content and clears review' do
+        record = create(:goods_nomenclature_self_text, needs_review: true, approved: false)
+
+        record.approve!
+
+        expect(record.reload).to have_attributes(
+          needs_review: false,
+          approved: true,
+        )
+      end
+    end
+
+    describe '#apply_manual_edit!' do
+      it 'updates the text, records the manual edit, approves it and clears review' do
+        record = create(:goods_nomenclature_self_text, needs_review: true, approved: false, manually_edited: false)
+
+        record.apply_manual_edit!(self_text: 'Operator corrected description')
+
+        expect(record.reload).to have_attributes(
+          self_text: 'Operator corrected description',
+          needs_review: false,
+          approved: true,
+          manually_edited: true,
+        )
+      end
+    end
+
+    describe '#apply_pipeline_generation!' do
+      it 'updates generated content and clears stale review state for non-manually-edited records' do
+        record = create(:goods_nomenclature_self_text, :stale, needs_review: true, approved: true, manually_edited: false)
+        input_context = { 'description' => 'Updated widgets' }
+
+        result = record.apply_pipeline_generation!(
+          self_text: 'Generated replacement',
+          generation_type: 'ai',
+          input_context: input_context,
+          context_hash: 'fresh-hash',
+          generated_at: Time.zone.now,
+        )
+
+        expect(result).to be true
+        expect(record.reload).to have_attributes(
+          self_text: 'Generated replacement',
+          generation_type: 'ai',
+          context_hash: 'fresh-hash',
+          stale: false,
+          needs_review: false,
+          approved: false,
+          manually_edited: false,
+        )
+      end
+
+      it 'does not update manually edited records' do
+        record = create(:goods_nomenclature_self_text,
+                        :stale,
+                        self_text: 'Operator text',
+                        manually_edited: true,
+                        approved: true)
+
+        result = record.apply_pipeline_generation!(
+          self_text: 'Generated replacement',
+          generation_type: 'ai',
+          input_context: { 'description' => 'Updated widgets' },
+          context_hash: 'fresh-hash',
+          generated_at: Time.zone.now,
+        )
+
+        expect(result).to be false
+        expect(record.reload).to have_attributes(
+          self_text: 'Operator text',
+          stale: true,
+          manually_edited: true,
+          approved: true,
+        )
+      end
+    end
+
+    describe '#apply_ui_regeneration!' do
+      it 'can replace manually edited content and clears lifecycle review tags' do
+        record = create(:goods_nomenclature_self_text,
+                        :stale,
+                        self_text: 'Operator text',
+                        needs_review: true,
+                        approved: true,
+                        manually_edited: true)
+
+        record.apply_ui_regeneration!(
+          self_text: 'Generated replacement',
+          generation_type: 'ai_non_other',
+          input_context: { 'description' => 'Updated widgets' },
+          context_hash: 'fresh-hash',
+          generated_at: Time.zone.now,
+        )
+
+        expect(record.reload).to have_attributes(
+          self_text: 'Generated replacement',
+          generation_type: 'ai_non_other',
+          context_hash: 'fresh-hash',
+          stale: false,
+          needs_review: false,
+          approved: false,
+          manually_edited: false,
+        )
+      end
+    end
+
+    describe '#mark_expired!' do
+      it 'marks the record expired' do
+        record = create(:goods_nomenclature_self_text, expired: false)
+
+        record.mark_expired!
+
+        expect(record.reload.expired).to be true
+      end
     end
   end
 

@@ -3775,7 +3775,10 @@ CREATE TABLE uk.goods_nomenclature_labels (
     known_brands text[] DEFAULT '{}'::text[],
     description_score double precision,
     synonym_scores double precision[] DEFAULT '{}'::double precision[],
-    colloquial_term_scores double precision[] DEFAULT '{}'::double precision[]
+    colloquial_term_scores double precision[] DEFAULT '{}'::double precision[],
+    needs_review boolean DEFAULT false NOT NULL,
+    approved boolean DEFAULT false NOT NULL,
+    expired boolean DEFAULT false NOT NULL
 );
 
 
@@ -3860,7 +3863,9 @@ CREATE TABLE uk.goods_nomenclature_self_texts (
     coherence_score double precision,
     search_embedding public.vector(1536),
     search_text text,
-    search_embedding_stale boolean DEFAULT false NOT NULL
+    search_embedding_stale boolean DEFAULT false NOT NULL,
+    approved boolean DEFAULT false NOT NULL,
+    expired boolean DEFAULT false NOT NULL
 );
 
 
@@ -11750,6 +11755,27 @@ CREATE INDEX idx_description_intercepts_sources_gin ON uk.description_intercepts
 
 
 --
+-- Name: idx_labels_approved; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX idx_labels_approved ON uk.goods_nomenclature_labels USING btree (approved) WHERE (approved = true);
+
+
+--
+-- Name: idx_labels_expired; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX idx_labels_expired ON uk.goods_nomenclature_labels USING btree (expired) WHERE (expired = true);
+
+
+--
+-- Name: idx_labels_needs_review; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX idx_labels_needs_review ON uk.goods_nomenclature_labels USING btree (needs_review) WHERE (needs_review = true);
+
+
+--
 -- Name: idx_labels_stale; Type: INDEX; Schema: uk; Owner: -
 --
 
@@ -11768,6 +11794,20 @@ CREATE INDEX idx_search_suggestions_distinct ON uk.search_suggestions USING btre
 --
 
 CREATE INDEX idx_search_suggestions_value_trgm ON uk.search_suggestions USING gin (value public.gin_trgm_ops);
+
+
+--
+-- Name: idx_self_texts_approved; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX idx_self_texts_approved ON uk.goods_nomenclature_self_texts USING btree (approved) WHERE (approved = true);
+
+
+--
+-- Name: idx_self_texts_expired; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX idx_self_texts_expired ON uk.goods_nomenclature_self_texts USING btree (expired) WHERE (expired = true);
 
 
 --
@@ -13906,3 +13946,4 @@ INSERT INTO "schema_migrations" ("filename") VALUES ('20260413120000_drop_tariff
 INSERT INTO "schema_migrations" ("filename") VALUES ('20260413120001_drop_tariff_update_cds_errors.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20260415120000_add_guidance_fields_to_description_intercepts.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20260415120001_create_tariff_update_state_changes.rb');
+INSERT INTO "schema_migrations" ("filename") VALUES ('20260422143000_add_lifecycle_flags_to_generated_classification_content.rb');

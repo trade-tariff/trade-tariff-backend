@@ -1,4 +1,5 @@
 class GoodsNomenclatureLabel < Sequel::Model
+  include GeneratedContentLifecycle
   plugin :timestamps, update_on_create: true
   plugin :auto_validations, not_null: :presence
   plugin :has_paper_trail
@@ -44,6 +45,7 @@ class GoodsNomenclatureLabel < Sequel::Model
             nomenclature_type_expression.as(:nomenclature_type),
             score_expression.as(:score),
           )
+          .where(lbl[:expired] => false)
       end
     end
 
@@ -72,6 +74,10 @@ class GoodsNomenclatureLabel < Sequel::Model
       lbl = Sequel[:goods_nomenclature_labels]
 
       case status
+      when 'needs_review'
+        where(lbl[:needs_review] => true)
+      when 'approved'
+        where(lbl[:approved] => true)
       when 'stale'
         where(lbl[:stale] => true)
       when 'manually_edited'
@@ -119,10 +125,6 @@ class GoodsNomenclatureLabel < Sequel::Model
     components.any? ? (components.sum / components.size).round(4) : nil
   end
 
-  def mark_stale!
-    update(stale: true)
-  end
-
   def context_stale?(hash)
     context_hash != hash
   end
@@ -141,6 +143,10 @@ class GoodsNomenclatureLabel < Sequel::Model
 
       new(
         goods_nomenclature: goods_nomenclature,
+        goods_nomenclature_sid: goods_nomenclature.goods_nomenclature_sid,
+        goods_nomenclature_item_id: goods_nomenclature.goods_nomenclature_item_id,
+        producline_suffix: goods_nomenclature.producline_suffix,
+        goods_nomenclature_type: goods_nomenclature.class.name,
         labels: labels_hash,
         original_description: description_text,
         description: item.fetch('description', ''),

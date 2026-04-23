@@ -12,8 +12,13 @@ RSpec.describe Api::Admin::GoodsNomenclatures::GoodsNomenclatureLabelsController
             goods_nomenclature_item_id: String,
             goods_nomenclature_type: String,
             producline_suffix: String,
+            needs_review: wildcard_matcher,
+            approved: wildcard_matcher,
             stale: wildcard_matcher,
             manually_edited: wildcard_matcher,
+            expired: wildcard_matcher,
+            created_at: String,
+            updated_at: String,
             context_hash: wildcard_matcher,
             labels: Hash,
             description: wildcard_matcher,
@@ -121,6 +126,27 @@ RSpec.describe Api::Admin::GoodsNomenclatures::GoodsNomenclatureLabelsController
         expect(label.manually_edited).to be true
       end
 
+      it 'marks the edited label as approved and clears review' do
+        GoodsNomenclatureLabel
+          .where(goods_nomenclature_sid: commodity.goods_nomenclature_sid)
+          .first
+          .update(needs_review: true, approved: false)
+
+        put :update, params: {
+          goods_nomenclature_id: commodity.goods_nomenclature_item_id,
+          data: { type: 'goods_nomenclature_label', attributes: { labels: new_labels } },
+        }, format: :json
+
+        label = GoodsNomenclatureLabel
+          .where(goods_nomenclature_sid: commodity.goods_nomenclature_sid)
+          .first
+
+        expect(label).to have_attributes(
+          needs_review: false,
+          approved: true,
+        )
+      end
+
       it 'enqueues ScoreLabelBatchWorker' do
         allow(ScoreLabelBatchWorker).to receive(:perform_async)
 
@@ -209,6 +235,34 @@ RSpec.describe Api::Admin::GoodsNomenclatures::GoodsNomenclatureLabelsController
         expect(response.status).to eq 404
       end
     end
+
+    context 'when save fails' do
+      it 'returns 422 without reindexing or enqueueing scoring' do
+        label = GoodsNomenclatureLabel
+          .where(goods_nomenclature_sid: commodity.goods_nomenclature_sid)
+          .first
+
+        allow(controller).to receive(:goods_nomenclature_label).and_return(label)
+        allow(label)
+          .to receive(:save)
+          .with(raise_on_failure: false)
+          .and_return(false)
+        allow(TradeTariffBackend.search_client).to receive(:index)
+        allow(ScoreLabelBatchWorker).to receive(:perform_async)
+
+        put :update, params: {
+          goods_nomenclature_id: commodity.goods_nomenclature_item_id,
+          data: {
+            type: 'goods_nomenclature_label',
+            attributes: { labels: { description: 'test' } },
+          },
+        }, format: :json
+
+        expect(response.status).to eq 422
+        expect(TradeTariffBackend.search_client).not_to have_received(:index)
+        expect(ScoreLabelBatchWorker).not_to have_received(:perform_async)
+      end
+    end
   end
 
   describe '#show with version browsing' do
@@ -294,6 +348,109 @@ RSpec.describe Api::Admin::GoodsNomenclatures::GoodsNomenclatureLabelsController
 
         expect(response).to have_http_status(:not_found)
       end
+    end
+  end
+
+  describe '#approve' do
+    let(:commodity) { create :commodity }
+    let!(:label) { create :goods_nomenclature_label, goods_nomenclature: commodity, needs_review: true, approved: false }
+
+    it 'approves the label and clears review' do
+      post :approve, params: { goods_nomenclature_id: commodity.goods_nomenclature_item_id }, format: :json
+
+      expect(response).to have_http_status(:ok)
+      expect(label.reload).to have_attributes(
+        needs_review: false,
+        approved: true,
+      )
+    end
+  end
+
+  describe '#reject' do
+    let(:commodity) { create :commodity }
+    let!(:label) { create :goods_nomenclature_label, goods_nomenclature: commodity, needs_review: false, approved: true }
+
+    it 'marks the label for review and clears approval' do
+      post :reject, params: { goods_nomenclature_id: commodity.goods_nomenclature_item_id }, format: :json
+
+      expect(response).to have_http_status(:ok)
+      expect(label.reload).to have_attributes(
+        needs_review: true,
+        approved: false,
+      )
+    end
+  end
+
+  describe '#score' do
+    let(:commodity) { create :commodity }
+    let!(:label) { create :goods_nomenclature_label, goods_nomenclature: commodity, needs_review: true, approved: true }
+    let(:scorer) { instance_double(LabelConfidenceScorer, score: nil) }
+
+    before do
+      allow(LabelConfidenceScorer).to receive(:new).and_return(scorer)
+    end
+
+    it 'scores the label without changing review state' do
+      post :score, params: { goods_nomenclature_id: commodity.goods_nomenclature_item_id }, format: :json
+
+      expect(response).to have_http_status(:ok)
+      expect(scorer).to have_received(:score).with([label.goods_nomenclature_sid])
+      expect(label.reload).to have_attributes(
+        needs_review: true,
+        approved: true,
+      )
+    end
+  end
+
+  describe '#regenerate' do
+    let(:commodity) { create :commodity }
+    let!(:label) do
+      create(:goods_nomenclature_label,
+             :stale,
+             goods_nomenclature: commodity,
+             needs_review: true,
+             approved: true,
+             manually_edited: true,
+             description: 'Operator label')
+    end
+    let(:generated_label) do
+      build(:goods_nomenclature_label,
+            goods_nomenclature: commodity,
+            labels: { 'description' => 'Generated label' },
+            description: 'Generated label',
+            synonyms: Sequel.pg_array(['generated synonym'], :text),
+            context_hash: 'fresh-hash')
+    end
+
+    before do
+      allow(LabelService).to receive(:call).and_return([generated_label])
+      allow(TradeTariffBackend.search_client).to receive(:index)
+      allow(LabelSuggestionsUpdaterService).to receive(:new).and_return(instance_double(LabelSuggestionsUpdaterService, call: nil))
+      allow(ScoreLabelBatchWorker).to receive(:perform_async)
+    end
+
+    it 'replaces the label and clears lifecycle review tags' do
+      post :regenerate, params: { goods_nomenclature_id: commodity.goods_nomenclature_item_id }, format: :json
+
+      expect(response).to have_http_status(:ok)
+      expect(LabelService).to have_received(:call).with([
+        have_attributes(goods_nomenclature_sid: commodity.goods_nomenclature_sid),
+      ])
+      expect(label.reload).to have_attributes(
+        description: 'Generated label',
+        context_hash: 'fresh-hash',
+        stale: false,
+        needs_review: false,
+        approved: false,
+        manually_edited: false,
+      )
+      expect(label.synonyms.to_a).to eq(['generated synonym'])
+    end
+
+    it 'enqueues label scoring' do
+      post :regenerate, params: { goods_nomenclature_id: commodity.goods_nomenclature_item_id }, format: :json
+
+      expect(ScoreLabelBatchWorker).to have_received(:perform_async).with(label.goods_nomenclature_sid)
     end
   end
 end

@@ -13,9 +13,12 @@ RSpec.describe Api::Admin::GoodsNomenclatures::GoodsNomenclatureSelfTextsControl
             self_text: String,
             generation_type: String,
             needs_review: wildcard_matcher,
+            approved: wildcard_matcher,
             manually_edited: wildcard_matcher,
             stale: wildcard_matcher,
-            generated_at: String,
+            expired: wildcard_matcher,
+            created_at: String,
+            updated_at: String,
             eu_self_text: wildcard_matcher,
             similarity_score: wildcard_matcher,
             coherence_score: wildcard_matcher,
@@ -45,6 +48,7 @@ RSpec.describe Api::Admin::GoodsNomenclatures::GoodsNomenclatureSelfTextsControl
 
         expect(response).to have_http_status(:ok)
         expect(response.body).to match_json_expression pattern
+        expect(JSON.parse(response.body).dig('data', 'attributes')).not_to have_key('generated_at')
       end
     end
 
@@ -147,7 +151,8 @@ RSpec.describe Api::Admin::GoodsNomenclatures::GoodsNomenclatureSelfTextsControl
   end
 
   describe '#update' do
-    let!(:self_text) { create :goods_nomenclature_self_text }
+    let!(:goods_nomenclature) { create(:commodity) }
+    let!(:self_text) { create :goods_nomenclature_self_text, goods_nomenclature: goods_nomenclature }
 
     context 'when save succeeds' do
       let(:new_text) { 'Updated self text content' }
@@ -170,6 +175,20 @@ RSpec.describe Api::Admin::GoodsNomenclatures::GoodsNomenclatureSelfTextsControl
         }, format: :json
 
         expect(ScoreLabelBatchWorker).to have_received(:perform_async).with(self_text.goods_nomenclature_sid)
+      end
+
+      it 'reindexes the goods nomenclature search document when the self-text changes' do
+        allow(TradeTariffBackend.search_client).to receive(:index)
+
+        put :update, params: {
+          goods_nomenclature_id: self_text.goods_nomenclature_sid,
+          data: { type: 'goods_nomenclature_self_text', attributes: { self_text: new_text } },
+        }, format: :json
+
+        expect(TradeTariffBackend.search_client).to have_received(:index).with(
+          Search::GoodsNomenclatureIndex,
+          have_attributes(goods_nomenclature_sid: goods_nomenclature.goods_nomenclature_sid),
+        )
       end
 
       it 'updates the self text' do
@@ -202,6 +221,16 @@ RSpec.describe Api::Admin::GoodsNomenclatures::GoodsNomenclatureSelfTextsControl
 
         json = JSON.parse(response.body)
         expect(json.dig('data', 'attributes', 'needs_review')).to be false
+      end
+
+      it 'marks the edited self text as approved' do
+        put :update, params: {
+          goods_nomenclature_id: self_text.goods_nomenclature_sid,
+          data: { type: 'goods_nomenclature_self_text', attributes: { self_text: new_text } },
+        }, format: :json
+
+        json = JSON.parse(response.body)
+        expect(json.dig('data', 'attributes', 'approved')).to be true
       end
     end
 
@@ -242,7 +271,7 @@ RSpec.describe Api::Admin::GoodsNomenclatures::GoodsNomenclatureSelfTextsControl
   end
 
   describe '#approve' do
-    let!(:self_text) { create :goods_nomenclature_self_text, needs_review: true, manually_edited: false }
+    let!(:self_text) { create :goods_nomenclature_self_text, needs_review: true, approved: false, manually_edited: false }
 
     it 'clears needs_review' do
       post :approve, params: { goods_nomenclature_id: self_text.goods_nomenclature_sid }, format: :json
@@ -251,6 +280,13 @@ RSpec.describe Api::Admin::GoodsNomenclatures::GoodsNomenclatureSelfTextsControl
 
       json = JSON.parse(response.body)
       expect(json.dig('data', 'attributes', 'needs_review')).to be false
+    end
+
+    it 'sets approved' do
+      post :approve, params: { goods_nomenclature_id: self_text.goods_nomenclature_sid }, format: :json
+
+      json = JSON.parse(response.body)
+      expect(json.dig('data', 'attributes', 'approved')).to be true
     end
 
     it 'does not set manually_edited' do
@@ -270,7 +306,7 @@ RSpec.describe Api::Admin::GoodsNomenclatures::GoodsNomenclatureSelfTextsControl
   end
 
   describe '#reject' do
-    let!(:self_text) { create :goods_nomenclature_self_text, needs_review: false }
+    let!(:self_text) { create :goods_nomenclature_self_text, needs_review: false, approved: true }
 
     it 'sets needs_review to true' do
       post :reject, params: { goods_nomenclature_id: self_text.goods_nomenclature_sid }, format: :json
@@ -279,6 +315,13 @@ RSpec.describe Api::Admin::GoodsNomenclatures::GoodsNomenclatureSelfTextsControl
 
       json = JSON.parse(response.body)
       expect(json.dig('data', 'attributes', 'needs_review')).to be true
+    end
+
+    it 'clears approved' do
+      post :reject, params: { goods_nomenclature_id: self_text.goods_nomenclature_sid }, format: :json
+
+      json = JSON.parse(response.body)
+      expect(json.dig('data', 'attributes', 'approved')).to be false
     end
 
     context 'when self text record does not exist' do
@@ -338,12 +381,24 @@ RSpec.describe Api::Admin::GoodsNomenclatures::GoodsNomenclatureSelfTextsControl
       allow(GenerateSelfText::NonOtherSelfTextBuilder).to receive(:call)
     end
 
-    it 'invalidates context_hash, marks stale, and calls the builders' do
+    it 'invalidates context_hash, clears operator lifecycle tags, and calls the builders' do
+      self_text.update(
+        stale: false,
+        needs_review: true,
+        approved: true,
+        manually_edited: true,
+      )
+
       post :regenerate, params: { goods_nomenclature_id: self_text.goods_nomenclature_sid }, format: :json
 
       expect(response).to have_http_status(:ok)
-      expect(self_text.reload.context_hash).to eq('invalidated')
-      expect(self_text.reload.stale).to be true
+      expect(self_text.reload).to have_attributes(
+        context_hash: 'invalidated',
+        stale: false,
+        needs_review: false,
+        approved: false,
+        manually_edited: false,
+      )
       expect(GenerateSelfText::OtherSelfTextBuilder).to have_received(:call)
       expect(GenerateSelfText::NonOtherSelfTextBuilder).to have_received(:call)
     end
@@ -354,6 +409,17 @@ RSpec.describe Api::Admin::GoodsNomenclatures::GoodsNomenclatureSelfTextsControl
       post :regenerate, params: { goods_nomenclature_id: self_text.goods_nomenclature_sid }, format: :json
 
       expect(ScoreLabelBatchWorker).to have_received(:perform_async).with(self_text.goods_nomenclature_sid)
+    end
+
+    it 'reindexes the goods nomenclature search document after regeneration' do
+      allow(TradeTariffBackend.search_client).to receive(:index)
+
+      post :regenerate, params: { goods_nomenclature_id: self_text.goods_nomenclature_sid }, format: :json
+
+      expect(TradeTariffBackend.search_client).to have_received(:index).with(
+        Search::GoodsNomenclatureIndex,
+        have_attributes(goods_nomenclature_sid: goods_nomenclature.goods_nomenclature_sid),
+      )
     end
 
     context 'when self text record does not exist' do

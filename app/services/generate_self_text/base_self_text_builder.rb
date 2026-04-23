@@ -221,8 +221,10 @@ module GenerateSelfText
         input_context: Sequel.pg_jsonb_wrap(input_context),
         context_hash: context_hash,
         needs_review: false,
+        approved: false,
         manually_edited: false,
         stale: false,
+        expired: false,
         generated_at: now,
         created_at: now,
         updated_at: now,
@@ -235,13 +237,19 @@ module GenerateSelfText
           generation_type: Sequel[:excluded][:generation_type],
           input_context: Sequel[:excluded][:input_context],
           context_hash: Sequel[:excluded][:context_hash],
+          needs_review: false,
+          approved: false,
+          manually_edited: false,
           stale: false,
           generated_at: Sequel[:excluded][:generated_at],
           updated_at: Sequel[:excluded][:updated_at],
         },
         update_where: Sequel.&(
           { Sequel[:goods_nomenclature_self_texts][:manually_edited] => false },
-          Sequel.~(Sequel[:goods_nomenclature_self_texts][:context_hash] => context_hash),
+          Sequel.|(
+            { Sequel[:goods_nomenclature_self_texts][:stale] => true },
+            Sequel.~(Sequel[:goods_nomenclature_self_texts][:context_hash] => context_hash),
+          ),
         ),
       ).returning(:goods_nomenclature_sid).insert(values)
 

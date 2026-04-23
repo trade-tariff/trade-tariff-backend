@@ -12,9 +12,12 @@ module Api
                    :self_text,
                    :generation_type,
                    :needs_review,
+                   :approved,
                    :manually_edited,
                    :stale,
-                   :generated_at,
+                   :expired,
+                   :created_at,
+                   :updated_at,
                    :eu_self_text,
                    :similarity_score,
                    :coherence_score
