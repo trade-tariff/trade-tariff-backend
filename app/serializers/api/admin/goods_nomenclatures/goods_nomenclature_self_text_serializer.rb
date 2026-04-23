@@ -18,7 +18,6 @@ module Api
                    :expired,
                    :created_at,
                    :updated_at,
-                   :generated_at,
                    :eu_self_text,
                    :similarity_score,
                    :coherence_score

@@ -19,7 +19,6 @@ RSpec.describe Api::Admin::GoodsNomenclatures::GoodsNomenclatureSelfTextsControl
             expired: wildcard_matcher,
             created_at: String,
             updated_at: String,
-            generated_at: String,
             eu_self_text: wildcard_matcher,
             similarity_score: wildcard_matcher,
             coherence_score: wildcard_matcher,
@@ -49,6 +48,7 @@ RSpec.describe Api::Admin::GoodsNomenclatures::GoodsNomenclatureSelfTextsControl
 
         expect(response).to have_http_status(:ok)
         expect(response.body).to match_json_expression pattern
+        expect(JSON.parse(response.body).dig('data', 'attributes')).not_to have_key('generated_at')
       end
     end
 
