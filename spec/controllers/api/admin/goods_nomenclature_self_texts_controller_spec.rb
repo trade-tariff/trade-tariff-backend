@@ -132,6 +132,44 @@ RSpec.describe Api::Admin::GoodsNomenclatureSelfTextsController do
       end
     end
 
+    context 'with approved records' do
+      let!(:approved_commodity) do
+        create(:goods_nomenclature, producline_suffix: GoodsNomenclature::NON_GROUPING_PRODUCTLINE_SUFFIX).tap do |gn|
+          create(:goods_nomenclature_self_text,
+                 goods_nomenclature: gn,
+                 self_text: 'Approved widgets for direct lookup',
+                 similarity_score: 0.4,
+                 coherence_score: 0.4,
+                 generation_type: 'ai',
+                 approved: true)
+        end
+      end
+
+      it 'excludes approved self texts from normal listing by default' do
+        get :index, format: :json
+
+        json = JSON.parse(response.body)
+        sids = json['data'].map { |d| d.dig('attributes', 'goods_nomenclature_sid') }
+        expect(sids).not_to include(approved_commodity.goods_nomenclature_sid)
+      end
+
+      it 'returns approved self texts when explicitly filtered' do
+        get :index, params: { status: 'approved' }, format: :json
+
+        json = JSON.parse(response.body)
+        expect(json['data'].length).to eq(1)
+        expect(json['data'].first.dig('attributes', 'approved')).to be true
+      end
+
+      it 'keeps approved self texts searchable by text' do
+        get :index, params: { q: 'direct lookup' }, format: :json
+
+        json = JSON.parse(response.body)
+        sids = json['data'].map { |d| d.dig('attributes', 'goods_nomenclature_sid') }
+        expect(sids).to include(approved_commodity.goods_nomenclature_sid)
+      end
+    end
+
     context 'with score_category filter' do
       let!(:low_score) do # rubocop:disable RSpec/LetSetup
         create(:goods_nomenclature, producline_suffix: GoodsNomenclature::NON_GROUPING_PRODUCTLINE_SUFFIX).tap do |gn|
