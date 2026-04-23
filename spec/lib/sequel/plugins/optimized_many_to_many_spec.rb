@@ -222,9 +222,11 @@ RSpec.describe Sequel::Plugins::OptimizedManyToMany do
                           use_optimized: true
     end
 
-    it 'eager loads nested associations (children → grandchildren)' do
+    it 'eager loads nested associations (cte_children → grandchildren)' do
       parents = Parent.eager(cte_children: :grandchildren).all
-      expect(parents.first.children.first.grandchildren.map(&:name)).to eq(%w[G1])
+      p1 = parents.find { |p| p.id == @p1.id }
+      c1 = p1.cte_children.find { |c| c.id == @c1.id }
+      expect(c1.grandchildren.map(&:name)).to eq(%w[G1])
     end
   end
 

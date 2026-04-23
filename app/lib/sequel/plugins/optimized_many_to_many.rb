@@ -119,51 +119,53 @@ module Sequel
             target_table = associated_class.table_name
             right_pks = Array(refl[:right_primary_key])
             order = refl[:order]
-            cte_name = 'filter_ids'
 
-            # Build join conditions for right-hand side
             join_conditions = OptimizedManyToMany.join_conditions(right_keys, right_pks, join_table, target_table)
             order_sql = OptimizedManyToMany.qualify_order(order, target_table, associated_class)
+            fk_selects = left_keys.map { |lk| "#{join_table}.#{lk} AS x_fk_#{lk}" }.join(', ')
 
-            # Build the CTE for composite keys
-            cte_columns = left_pks.map(&:to_s).join(', ')
-            unnest_args = left_pks.each_with_index.map { |_, _i| 'unnest(?)' }.join(', ')
-            fk_selects = left_keys.each_with_index.map { |lk, _i|
-              "#{join_table}.#{lk} AS x_fk_#{lk}"
-            }.join(', ')
+            if left_pks.size == 1
+              sql = <<~SQL.strip
+                SELECT #{target_table}.*, #{fk_selects}
+                FROM #{OptimizedManyToMany.table_ref(join_table)}
+                JOIN #{target_table} ON #{join_conditions}
+                WHERE #{join_table}.#{left_keys.first} = ANY(?)
+                #{order_sql ? "ORDER BY #{order_sql}" : ''}
+              SQL
 
-            sql = <<~SQL.strip
-              WITH #{cte_name} (#{cte_columns}) AS (
-                SELECT #{unnest_args}
-              )
-              SELECT #{target_table}.*, #{fk_selects}
-              FROM #{target_table}
-              JOIN #{OptimizedManyToMany.table_ref(join_table)} ON #{join_conditions}
-              JOIN #{cte_name} fm ON #{left_keys.zip(left_pks).map { |lk, pk| "fm.#{pk} = #{join_table}.#{lk}" }.join(' AND ')}
-              #{order_sql ? "ORDER BY #{order_sql}" : ''}
-            SQL
+              bind_args = [Sequel.pg_array(ids)]
+            else
+              cte_name = 'filter_ids'
+              cte_columns = left_pks.map(&:to_s).join(', ')
+              unnest_args = left_pks.map { 'unnest(?)' }.join(', ')
 
-            # Build bind arguments for unnest
-            bind_args = left_pks.map.with_index do |_pk, i|
-              Sequel.pg_array(ids.map { |k| Array(k)[i] })
+              sql = <<~SQL.strip
+                WITH #{cte_name} (#{cte_columns}) AS (
+                  SELECT #{unnest_args}
+                )
+                SELECT #{target_table}.*, #{fk_selects}
+                FROM #{target_table}
+                JOIN #{OptimizedManyToMany.table_ref(join_table)} ON #{join_conditions}
+                JOIN #{cte_name} fm ON #{left_keys.zip(left_pks).map { |lk, pk| "fm.#{pk} = #{join_table}.#{lk}" }.join(' AND ')}
+                #{order_sql ? "ORDER BY #{order_sql}" : ''}
+              SQL
+
+              bind_args = left_pks.map.with_index do |_pk, i|
+                Sequel.pg_array(ids.map { |k| Array(k)[i] })
+              end
             end
 
             dataset = associated_class.with_sql(sql, *bind_args)
             records = dataset.all
 
-            # Load nested associations if requested
-            if eo[:associations]
-              associated_class.eager(eo[:associations])
-            end
+            associated_class.eager(eo[:associations]).send(:eager_load, records) if eo[:associations] && records.any?
 
-            # Group by composite key (tuples)
             grouped = Hash.new { |h, k| h[k] = [] }
             records.each do |rec|
               key_values = left_keys.map { |lk| rec.values.delete("x_fk_#{lk}".to_sym) }
               grouped[key_values] << rec
             end
 
-            # Assign back to parent objects
             eo[:rows].each do |parent|
               parent_key = Array(left_pks).map { |pk| parent.send(pk) }
               parent.associations[assoc_name] = grouped[parent_key] || []
