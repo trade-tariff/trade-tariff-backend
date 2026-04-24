@@ -78,16 +78,18 @@ class CachedCommodityService
     :measure_partial_temporary_stops,
   ].freeze
 
-  TTL = 24.hours
-
   def initialize(commodity, actual_date, filters = {})
     @commodity_sid = commodity.goods_nomenclature_sid
     @actual_date = actual_date
     @filters = filters
   end
 
+  def ttl
+    actual_date.to_date == Time.zone.today ? 24.hours : 2.hours
+  end
+
   def call
-    cached_data = Rails.cache.fetch(cache_key, expires_in: TTL) do
+    cached_data = Rails.cache.fetch(cache_key, expires_in: ttl) do
       presenter = presented_commodity
       hash = Api::V2::Commodities::CommoditySerializer.new(presenter, options).serializable_hash
       measure_meta = MeasureMetadataBuilder.new(presenter).build
