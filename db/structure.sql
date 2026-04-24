@@ -2,15 +2,12 @@
 -- PostgreSQL database dump
 --
 
-\restrict 4xXn0CQzIHYhRrgv2qlE8Idjmg9eMNwFPzYhYmOtHiGsA71Y1oTKhiObnChJBkm
-
--- Dumped from database version 18.3
--- Dumped by pg_dump version 18.3
+-- Dumped from database version 16.8 (Debian 16.8-1.pgdg120+1)
+-- Dumped by pg_dump version 16.9 (Homebrew)
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
 SET idle_in_transaction_session_timeout = 0;
-SET transaction_timeout = 0;
 SET client_encoding = 'UTF8';
 SET standard_conforming_strings = on;
 SELECT pg_catalog.set_config('search_path', '', false);
@@ -2022,7 +2019,7 @@ CREATE TABLE uk.exchange_rate_countries_currencies (
     country_code text NOT NULL,
     country_description text NOT NULL,
     currency_code text NOT NULL,
-    currency_description text CONSTRAINT exchange_rate_countries_currencie_currency_description_not_null NOT NULL,
+    currency_description text NOT NULL,
     validity_start_date date NOT NULL,
     validity_end_date date,
     created_at timestamp without time zone NOT NULL,
@@ -2191,7 +2188,7 @@ CREATE TABLE uk.export_refund_nomenclature_description_periods_oplog (
     productline_suffix character varying(2),
     created_at timestamp without time zone,
     validity_end_date timestamp without time zone,
-    oid integer CONSTRAINT export_refund_nomenclature_description_periods_opl_oid_not_null NOT NULL,
+    oid integer NOT NULL,
     operation character varying(1) DEFAULT 'C'::character varying,
     operation_date date,
     filename text
@@ -2756,10 +2753,10 @@ CREATE TABLE uk.footnote_description_periods_oplog (
 
 
 --
--- Name: footnote_description_periods; Type: VIEW; Schema: uk; Owner: -
+-- Name: footnote_description_periods; Type: MATERIALIZED VIEW; Schema: uk; Owner: -
 --
 
-CREATE VIEW uk.footnote_description_periods AS
+CREATE MATERIALIZED VIEW uk.footnote_description_periods AS
  SELECT footnote_description_period_sid,
     footnote_type_id,
     footnote_id,
@@ -2773,7 +2770,8 @@ CREATE VIEW uk.footnote_description_periods AS
    FROM uk.footnote_description_periods_oplog footnote_description_periods1
   WHERE ((oid IN ( SELECT max(footnote_description_periods2.oid) AS max
            FROM uk.footnote_description_periods_oplog footnote_description_periods2
-          WHERE (((footnote_description_periods1.footnote_id)::text = (footnote_description_periods2.footnote_id)::text) AND ((footnote_description_periods1.footnote_type_id)::text = (footnote_description_periods2.footnote_type_id)::text) AND (footnote_description_periods1.footnote_description_period_sid = footnote_description_periods2.footnote_description_period_sid)))) AND ((operation)::text <> 'D'::text));
+          WHERE (((footnote_description_periods1.footnote_id)::text = (footnote_description_periods2.footnote_id)::text) AND ((footnote_description_periods1.footnote_type_id)::text = (footnote_description_periods2.footnote_type_id)::text) AND (footnote_description_periods1.footnote_description_period_sid = footnote_description_periods2.footnote_description_period_sid)))) AND ((operation)::text <> 'D'::text))
+  WITH NO DATA;
 
 
 --
@@ -2815,10 +2813,10 @@ CREATE TABLE uk.footnote_descriptions_oplog (
 
 
 --
--- Name: footnote_descriptions; Type: VIEW; Schema: uk; Owner: -
+-- Name: footnote_descriptions; Type: MATERIALIZED VIEW; Schema: uk; Owner: -
 --
 
-CREATE VIEW uk.footnote_descriptions AS
+CREATE MATERIALIZED VIEW uk.footnote_descriptions AS
  SELECT footnote_description_period_sid,
     footnote_type_id,
     footnote_id,
@@ -2832,7 +2830,8 @@ CREATE VIEW uk.footnote_descriptions AS
    FROM uk.footnote_descriptions_oplog footnote_descriptions1
   WHERE ((oid IN ( SELECT max(footnote_descriptions2.oid) AS max
            FROM uk.footnote_descriptions_oplog footnote_descriptions2
-          WHERE ((footnote_descriptions1.footnote_description_period_sid = footnote_descriptions2.footnote_description_period_sid) AND ((footnote_descriptions1.footnote_id)::text = (footnote_descriptions2.footnote_id)::text) AND ((footnote_descriptions1.footnote_type_id)::text = (footnote_descriptions2.footnote_type_id)::text)))) AND ((operation)::text <> 'D'::text));
+          WHERE ((footnote_descriptions1.footnote_description_period_sid = footnote_descriptions2.footnote_description_period_sid) AND ((footnote_descriptions1.footnote_id)::text = (footnote_descriptions2.footnote_id)::text) AND ((footnote_descriptions1.footnote_type_id)::text = (footnote_descriptions2.footnote_type_id)::text)))) AND ((operation)::text <> 'D'::text))
+  WITH NO DATA;
 
 
 --
@@ -2985,10 +2984,10 @@ CREATE TABLE uk.footnotes_oplog (
 
 
 --
--- Name: footnotes; Type: VIEW; Schema: uk; Owner: -
+-- Name: footnotes; Type: MATERIALIZED VIEW; Schema: uk; Owner: -
 --
 
-CREATE VIEW uk.footnotes AS
+CREATE MATERIALIZED VIEW uk.footnotes AS
  SELECT footnote_id,
     footnote_type_id,
     validity_start_date,
@@ -3001,7 +3000,8 @@ CREATE VIEW uk.footnotes AS
    FROM uk.footnotes_oplog footnotes1
   WHERE ((oid IN ( SELECT max(footnotes2.oid) AS max
            FROM uk.footnotes_oplog footnotes2
-          WHERE (((footnotes1.footnote_type_id)::text = (footnotes2.footnote_type_id)::text) AND ((footnotes1.footnote_id)::text = (footnotes2.footnote_id)::text)))) AND ((operation)::text <> 'D'::text));
+          WHERE (((footnotes1.footnote_type_id)::text = (footnotes2.footnote_type_id)::text) AND ((footnotes1.footnote_id)::text = (footnotes2.footnote_id)::text)))) AND ((operation)::text <> 'D'::text))
+  WITH NO DATA;
 
 
 --
@@ -3845,7 +3845,7 @@ ALTER SEQUENCE uk.goods_nomenclature_origins_oid_seq OWNED BY uk.goods_nomenclat
 
 CREATE TABLE uk.goods_nomenclature_self_texts (
     goods_nomenclature_sid integer NOT NULL,
-    goods_nomenclature_item_id character varying(10) CONSTRAINT goods_nomenclature_self_tex_goods_nomenclature_item_id_not_null NOT NULL,
+    goods_nomenclature_item_id character varying(10) NOT NULL,
     self_text text NOT NULL,
     generation_type text NOT NULL,
     input_context jsonb NOT NULL,
@@ -3932,7 +3932,7 @@ ALTER SEQUENCE uk.goods_nomenclature_successors_oid_seq OWNED BY uk.goods_nomenc
 
 CREATE TABLE uk.goods_nomenclature_tree_node_overrides (
     id integer NOT NULL,
-    goods_nomenclature_indent_sid integer CONSTRAINT goods_nomenclature_tree_nod_goods_nomenclature_indent__not_null NOT NULL,
+    goods_nomenclature_indent_sid integer NOT NULL,
     depth integer NOT NULL,
     created_at timestamp without time zone NOT NULL,
     updated_at timestamp without time zone
@@ -4064,8 +4064,8 @@ CREATE TABLE uk.green_lanes_category_assessments (
 --
 
 CREATE TABLE uk.green_lanes_category_assessments_exemptions (
-    category_assessment_id integer CONSTRAINT green_lanes_category_assessment_category_assessment_id_not_null NOT NULL,
-    exemption_id integer CONSTRAINT green_lanes_category_assessments_exemptio_exemption_id_not_null NOT NULL
+    category_assessment_id integer NOT NULL,
+    exemption_id integer NOT NULL
 );
 
 
@@ -4089,10 +4089,10 @@ ALTER TABLE uk.green_lanes_category_assessments ALTER COLUMN id ADD GENERATED BY
 
 CREATE TABLE uk.green_lanes_exempting_additional_code_overrides (
     id integer NOT NULL,
-    additional_code_type_id text CONSTRAINT green_lanes_exempting_addition_additional_code_type_id_not_null NOT NULL,
-    additional_code text CONSTRAINT green_lanes_exempting_additional_code__additional_code_not_null NOT NULL,
-    created_at timestamp without time zone CONSTRAINT green_lanes_exempting_additional_code_overr_created_at_not_null NOT NULL,
-    updated_at timestamp without time zone CONSTRAINT green_lanes_exempting_additional_code_overr_updated_at_not_null NOT NULL
+    additional_code_type_id text NOT NULL,
+    additional_code text NOT NULL,
+    created_at timestamp without time zone NOT NULL,
+    updated_at timestamp without time zone NOT NULL
 );
 
 
@@ -4116,8 +4116,8 @@ ALTER TABLE uk.green_lanes_exempting_additional_code_overrides ALTER COLUMN id A
 
 CREATE TABLE uk.green_lanes_exempting_certificate_overrides (
     id integer NOT NULL,
-    certificate_type_code text CONSTRAINT green_lanes_exempting_certificat_certificate_type_code_not_null NOT NULL,
-    certificate_code text CONSTRAINT green_lanes_exempting_certificate_ove_certificate_code_not_null NOT NULL,
+    certificate_type_code text NOT NULL,
+    certificate_code text NOT NULL,
     created_at timestamp without time zone NOT NULL,
     updated_at timestamp without time zone NOT NULL
 );
@@ -4198,11 +4198,11 @@ ALTER TABLE uk.green_lanes_faq_feedback ALTER COLUMN id ADD GENERATED BY DEFAULT
 --
 
 CREATE TABLE uk.green_lanes_identified_measure_type_category_assessments (
-    id integer CONSTRAINT green_lanes_identified_measure_type_category_assess_id_not_null NOT NULL,
-    measure_type_id character varying(6) CONSTRAINT green_lanes_identified_measure_type_ca_measure_type_id_not_null NOT NULL,
-    theme_id integer CONSTRAINT green_lanes_identified_measure_type_category__theme_id_not_null NOT NULL,
-    created_at timestamp without time zone CONSTRAINT green_lanes_identified_measure_type_categor_created_at_not_null NOT NULL,
-    updated_at timestamp without time zone CONSTRAINT green_lanes_identified_measure_type_categor_updated_at_not_null NOT NULL
+    id integer NOT NULL,
+    measure_type_id character varying(6) NOT NULL,
+    theme_id integer NOT NULL,
+    created_at timestamp without time zone NOT NULL,
+    updated_at timestamp without time zone NOT NULL
 );
 
 
@@ -4607,10 +4607,10 @@ CREATE TABLE uk.measure_components_oplog (
 
 
 --
--- Name: measure_components; Type: VIEW; Schema: uk; Owner: -
+-- Name: measure_components; Type: MATERIALIZED VIEW; Schema: uk; Owner: -
 --
 
-CREATE VIEW uk.measure_components AS
+CREATE MATERIALIZED VIEW uk.measure_components AS
  SELECT measure_sid,
     duty_expression_id,
     duty_amount,
@@ -4624,7 +4624,8 @@ CREATE VIEW uk.measure_components AS
    FROM uk.measure_components_oplog measure_components1
   WHERE ((oid IN ( SELECT max(measure_components2.oid) AS max
            FROM uk.measure_components_oplog measure_components2
-          WHERE ((measure_components1.measure_sid = measure_components2.measure_sid) AND ((measure_components1.duty_expression_id)::text = (measure_components2.duty_expression_id)::text)))) AND ((operation)::text <> 'D'::text));
+          WHERE ((measure_components1.measure_sid = measure_components2.measure_sid) AND ((measure_components1.duty_expression_id)::text = (measure_components2.duty_expression_id)::text)))) AND ((operation)::text <> 'D'::text))
+  WITH NO DATA;
 
 
 --
@@ -4836,10 +4837,10 @@ CREATE TABLE uk.measure_conditions_oplog (
 
 
 --
--- Name: measure_conditions; Type: VIEW; Schema: uk; Owner: -
+-- Name: measure_conditions; Type: MATERIALIZED VIEW; Schema: uk; Owner: -
 --
 
-CREATE VIEW uk.measure_conditions AS
+CREATE MATERIALIZED VIEW uk.measure_conditions AS
  SELECT measure_condition_sid,
     measure_sid,
     condition_code,
@@ -4858,7 +4859,8 @@ CREATE VIEW uk.measure_conditions AS
    FROM uk.measure_conditions_oplog measure_conditions1
   WHERE ((oid IN ( SELECT max(measure_conditions2.oid) AS max
            FROM uk.measure_conditions_oplog measure_conditions2
-          WHERE (measure_conditions1.measure_condition_sid = measure_conditions2.measure_condition_sid))) AND ((operation)::text <> 'D'::text));
+          WHERE (measure_conditions1.measure_condition_sid = measure_conditions2.measure_condition_sid))) AND ((operation)::text <> 'D'::text))
+  WITH NO DATA;
 
 
 --
@@ -6736,9 +6738,9 @@ CREATE TABLE uk.quota_closed_and_transferred_events_oplog (
     oid integer NOT NULL,
     operation character varying(1) DEFAULT 'C'::character varying,
     operation_date date,
-    quota_definition_sid integer CONSTRAINT quota_closed_and_transferred_even_quota_definition_sid_not_null NOT NULL,
-    occurrence_timestamp timestamp without time zone CONSTRAINT quota_closed_and_transferred_even_occurrence_timestamp_not_null NOT NULL,
-    target_quota_definition_sid integer CONSTRAINT quota_closed_and_transferre_target_quota_definition_si_not_null NOT NULL,
+    quota_definition_sid integer NOT NULL,
+    occurrence_timestamp timestamp without time zone NOT NULL,
+    target_quota_definition_sid integer NOT NULL,
     closing_date date,
     transferred_amount numeric(15,3),
     created_at timestamp without time zone,
@@ -7683,7 +7685,7 @@ CREATE VIEW uk.simplified_procedural_code_measures AS
     max(simplified_procedural_codes.goods_nomenclature_label) AS goods_nomenclature_label
    FROM ((uk.measures
      JOIN uk.measure_components ON ((measures.measure_sid = measure_components.measure_sid)))
-     RIGHT JOIN uk.simplified_procedural_codes ON ((((measures.goods_nomenclature_item_id)::text = simplified_procedural_codes.goods_nomenclature_item_id) AND ((measures.measure_type_id)::text = '488'::text) AND (measures.validity_end_date > '2021-01-01'::date) AND ((measures.geographical_area_id)::text = '1011'::text))))
+     RIGHT JOIN uk.simplified_procedural_codes ON ((((measures.goods_nomenclature_item_id)::text = simplified_procedural_codes.goods_nomenclature_item_id) AND ((measures.measure_type_id)::text = '488'::text) AND (measures.validity_end_date > '2021-01-01 00:00:00'::timestamp without time zone) AND ((measures.geographical_area_id)::text = '1011'::text))))
   GROUP BY simplified_procedural_codes.simplified_procedural_code, measures.validity_start_date, measures.validity_end_date;
 
 
@@ -7758,11 +7760,25 @@ ALTER SEQUENCE uk.tariff_update_presence_errors_id_seq OWNED BY uk.tariff_update
 --
 
 CREATE TABLE uk.tariff_update_state_changes (
-    id integer GENERATED BY DEFAULT AS IDENTITY PRIMARY KEY,
+    id integer NOT NULL,
     tariff_update_filename text NOT NULL,
-    from_state character(1),
-    to_state character(1) NOT NULL,
+    from_state character varying(1),
+    to_state character varying(1) NOT NULL,
     created_at timestamp without time zone NOT NULL
+);
+
+
+--
+-- Name: tariff_update_state_changes_id_seq; Type: SEQUENCE; Schema: uk; Owner: -
+--
+
+ALTER TABLE uk.tariff_update_state_changes ALTER COLUMN id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME uk.tariff_update_state_changes_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
 );
 
 
@@ -10041,6 +10057,14 @@ ALTER TABLE ONLY uk.tariff_update_presence_errors
 
 
 --
+-- Name: tariff_update_state_changes tariff_update_state_changes_pkey; Type: CONSTRAINT; Schema: uk; Owner: -
+--
+
+ALTER TABLE ONLY uk.tariff_update_state_changes
+    ADD CONSTRAINT tariff_update_state_changes_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: tariff_updates tariff_updates_pkey; Type: CONSTRAINT; Schema: uk; Owner: -
 --
 
@@ -11034,6 +11058,20 @@ CREATE INDEX footnote_association_measures_oplog_footnote_type_id_index ON uk.fo
 
 
 --
+-- Name: footnote_description_periods_footnote_type_id_footnote_id_valid; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX footnote_description_periods_footnote_type_id_footnote_id_valid ON uk.footnote_description_periods USING btree (footnote_type_id, footnote_id, validity_start_date);
+
+
+--
+-- Name: footnote_description_periods_oid_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE UNIQUE INDEX footnote_description_periods_oid_index ON uk.footnote_description_periods USING btree (oid);
+
+
+--
 -- Name: footnote_descriptions_description_trgm_idx; Type: INDEX; Schema: uk; Owner: -
 --
 
@@ -11041,10 +11079,45 @@ CREATE INDEX footnote_descriptions_description_trgm_idx ON uk.footnote_descripti
 
 
 --
+-- Name: footnote_descriptions_footnote_description_period_sid_footnote_; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX footnote_descriptions_footnote_description_period_sid_footnote_ ON uk.footnote_descriptions USING btree (footnote_description_period_sid, footnote_type_id, footnote_id);
+
+
+--
+-- Name: footnote_descriptions_oid_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE UNIQUE INDEX footnote_descriptions_oid_index ON uk.footnote_descriptions USING btree (oid);
+
+
+--
 -- Name: footnote_id; Type: INDEX; Schema: uk; Owner: -
 --
 
 CREATE INDEX footnote_id ON uk.footnote_association_measures_oplog USING btree (footnote_id);
+
+
+--
+-- Name: footnotes_footnote_type_id_footnote_id_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX footnotes_footnote_type_id_footnote_id_index ON uk.footnotes USING btree (footnote_type_id, footnote_id);
+
+
+--
+-- Name: footnotes_oid_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE UNIQUE INDEX footnotes_oid_index ON uk.footnotes USING btree (oid);
+
+
+--
+-- Name: footnotes_validity_start_date_validity_end_date_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX footnotes_validity_start_date_validity_end_date_index ON uk.footnotes USING btree (validity_start_date, validity_end_date);
 
 
 --
@@ -11433,6 +11506,20 @@ CREATE INDEX gnso_goonomsucopl_odsureorslog_operation_date ON uk.goods_nomenclat
 
 
 --
+-- Name: gono_desc_oid_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX gono_desc_oid_index ON uk.goods_nomenclature_descriptions_oplog USING btree (goods_nomenclature_sid, goods_nomenclature_description_period_sid, oid DESC);
+
+
+--
+-- Name: gono_desc_periods_oid_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX gono_desc_periods_oid_index ON uk.goods_nomenclature_description_periods_oplog USING btree (goods_nomenclature_description_period_sid, oid DESC);
+
+
+--
 -- Name: gono_desc_periods_pk; Type: INDEX; Schema: uk; Owner: -
 --
 
@@ -11443,21 +11530,7 @@ CREATE INDEX gono_desc_periods_pk ON uk.goods_nomenclature_description_periods_o
 -- Name: gono_desc_pk; Type: INDEX; Schema: uk; Owner: -
 --
 
-CREATE INDEX gono_desc_oid_index ON uk.goods_nomenclature_descriptions_oplog USING btree (goods_nomenclature_sid, goods_nomenclature_description_period_sid, oid DESC);
-
-
---
--- Name: gono_desc_pk; Type: INDEX; Schema: uk; Owner: -
---
-
 CREATE INDEX gono_desc_pk ON uk.goods_nomenclature_descriptions_oplog USING btree (goods_nomenclature_sid, goods_nomenclature_description_period_sid);
-
-
---
--- Name: gono_desc_periods_oid_index; Type: INDEX; Schema: uk; Owner: -
---
-
-CREATE INDEX gono_desc_periods_oid_index ON uk.goods_nomenclature_description_periods_oplog USING btree (goods_nomenclature_description_period_sid, oid DESC);
 
 
 --
@@ -12389,6 +12462,41 @@ CREATE INDEX meas_unit_qual_pk ON uk.measurement_unit_qualifiers_oplog USING btr
 --
 
 CREATE INDEX measrm_pk ON uk.measurements_oplog USING btree (measurement_unit_code, measurement_unit_qualifier_code);
+
+
+--
+-- Name: measure_components_measure_sid_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX measure_components_measure_sid_index ON uk.measure_components USING btree (measure_sid);
+
+
+--
+-- Name: measure_components_oid_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE UNIQUE INDEX measure_components_oid_index ON uk.measure_components USING btree (oid);
+
+
+--
+-- Name: measure_conditions_measure_condition_sid_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX measure_conditions_measure_condition_sid_index ON uk.measure_conditions USING btree (measure_condition_sid);
+
+
+--
+-- Name: measure_conditions_measure_sid_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX measure_conditions_measure_sid_index ON uk.measure_conditions USING btree (measure_sid);
+
+
+--
+-- Name: measure_conditions_oid_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE UNIQUE INDEX measure_conditions_oid_index ON uk.measure_conditions USING btree (oid);
 
 
 --
@@ -13739,8 +13847,6 @@ ALTER TABLE ONLY uk.news_collections_news_items
 -- PostgreSQL database dump complete
 --
 
-\unrestrict 4xXn0CQzIHYhRrgv2qlE8Idjmg9eMNwFPzYhYmOtHiGsA71Y1oTKhiObnChJBkm
-
 SET search_path TO uk, public;
 INSERT INTO "schema_migrations" ("filename") VALUES ('1342519058_create_schema.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20120726092749_duty_amount_expressed_in_float.rb');
@@ -13967,5 +14073,9 @@ INSERT INTO "schema_migrations" ("filename") VALUES ('20260413120000_drop_tariff
 INSERT INTO "schema_migrations" ("filename") VALUES ('20260413120001_drop_tariff_update_cds_errors.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20260415120000_add_guidance_fields_to_description_intercepts.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20260415120001_create_tariff_update_state_changes.rb');
+INSERT INTO "schema_migrations" ("filename") VALUES ('20260420115159_add_validity_date_indexes_to_geographical_area_description_periods.rb');
+INSERT INTO "schema_migrations" ("filename") VALUES ('20260421120000_add_commodity_show_performance_indexes.rb');
+INSERT INTO "schema_migrations" ("filename") VALUES ('20260421120001_add_oid_covering_indexes_to_goods_nomenclature_description_oplogs.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20260422143000_add_lifecycle_flags_to_generated_classification_content.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20260423120000_add_regulation_and_fts_performance_indexes.rb');
+INSERT INTO "schema_migrations" ("filename") VALUES ('20260424120000_materialise_hot_path_footnote_and_measure_views.rb');
