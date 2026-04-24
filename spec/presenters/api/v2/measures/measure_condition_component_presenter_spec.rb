@@ -209,7 +209,7 @@ RSpec.describe Api::V2::Measures::MeasureConditionComponentPresenter do
         )
       end
 
-      it { expect(presenter.presented_duty_expression).to eq('- £1.00  / for each litre of pure alcohol, multiplied by the SPR discount') }
+      it { expect(presenter.presented_duty_expression).to eq('- £1.00 / for each litre of pure alcohol, multiplied by the SPR discount') }
     end
 
     context 'when the component is not a Small Producers Quotient component' do
