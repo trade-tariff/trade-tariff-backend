@@ -2,6 +2,8 @@ module Api
   module V2
     module Measures
       class MeasureConditionComponentPresenter < WrapDelegator
+        include DutyExpressionFormattable
+
         delegate :excise_alcohol_coercian_starts_from, to: TradeTariffBackend
 
         # Rather than just creating a new measurement unit,
@@ -38,18 +40,6 @@ module Api
           end
         end
 
-        def formatted_duty_expression
-          DutyExpressionFormatter.format(duty_expression_formatter_options.merge(formatted: true))
-        end
-
-        def verbose_duty_expression
-          DutyExpressionFormatter.format(duty_expression_formatter_options.merge(verbose: true))
-        end
-
-        def duty_expression_str
-          DutyExpressionFormatter.format(duty_expression_formatter_options)
-        end
-
         private
 
         attr_reader :measure
@@ -58,19 +48,6 @@ module Api
           return false if point_in_time.present? && point_in_time < excise_alcohol_coercian_starts_from
 
           measure.excise? && percentage_alcohol_and_volume_per_hl?
-        end
-
-        def duty_expression_formatter_options
-          {
-            duty_expression_id:,
-            duty_expression_description:,
-            duty_expression_abbreviation:,
-            duty_amount:,
-            monetary_unit: monetary_unit_code,
-            monetary_unit_abbreviation:,
-            measurement_unit:,
-            measurement_unit_qualifier:,
-          }
         end
       end
     end

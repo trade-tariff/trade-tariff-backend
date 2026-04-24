@@ -96,6 +96,20 @@ RSpec.describe RequirementDutyExpressionFormatter do
           expect(output).to eq('<span>3.50</span> EUR')
         end
       end
+
+      context 'when the monetary unit abbreviation is also present' do
+        subject(:output) do
+          described_class.format(
+            duty_amount: 3.50,
+            monetary_unit: 'Euro',
+            monetary_unit_abbreviation: 'EUR',
+          )
+        end
+
+        it 'prefers the monetary unit abbreviation' do
+          expect(output).to eq('3.50 EUR')
+        end
+      end
     end
 
     context 'when measurement unit is present' do
@@ -105,6 +119,16 @@ RSpec.describe RequirementDutyExpressionFormatter do
 
       it 'properly formats output' do
         expect(output).to match Regexp.new(measurement_unit.description)
+      end
+
+      context 'when formatted in html' do
+        subject(:output) do
+          described_class.format(measurement_unit:, formatted: true)
+        end
+
+        it 'renders an abbreviation tag' do
+          expect(output).to eq("<abbr title='#{measurement_unit.description}'>#{measurement_unit.description}</abbr>")
+        end
       end
     end
   end
