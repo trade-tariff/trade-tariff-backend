@@ -141,6 +141,16 @@ RSpec.describe CachedCommodityService do
         expected_key = "_commodity-v#{CachedCommodityService::CACHE_VERSION}-#{commodity.goods_nomenclature_sid}-#{actual_date}-"
         expect(Rails.cache).to have_received(:fetch).with(expected_key, expires_in: 24.hours).twice
       end
+
+      context 'with a non-current tariff date' do
+        let(:actual_date) { Time.zone.tomorrow }
+
+        it 'caches with a 2-hour ttl' do
+          service.call
+          expected_key = "_commodity-v#{CachedCommodityService::CACHE_VERSION}-#{commodity.goods_nomenclature_sid}-#{actual_date}-"
+          expect(Rails.cache).to have_received(:fetch).with(expected_key, expires_in: 2.hours)
+        end
+      end
     end
 
     describe 'measure filtering' do
