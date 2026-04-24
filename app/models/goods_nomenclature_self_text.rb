@@ -56,25 +56,6 @@ class GoodsNomenclatureSelfText < Sequel::Model
       end
     end
 
-    def for_status(status)
-      st = Sequel[:goods_nomenclature_self_texts]
-
-      case status
-      when 'needs_review'
-        where(st[:needs_review] => true)
-      when 'approved'
-        where(st[:approved] => true)
-      when 'stale'
-        where(st[:stale] => true)
-      when 'manually_edited'
-        where(st[:manually_edited] => true)
-      when 'expired'
-        where(st[:expired] => true)
-      else
-        self
-      end
-    end
-
     def vector_search(vector_literal, limit:)
       distance_expr = Sequel.lit("goods_nomenclature_self_texts.search_embedding <=> #{vector_literal}")
 
@@ -91,6 +72,10 @@ class GoodsNomenclatureSelfText < Sequel::Model
     end
 
     private
+
+    def generated_content_table
+      Sequel[:goods_nomenclature_self_texts]
+    end
 
     def score_expression
       st = Sequel[:goods_nomenclature_self_texts]
