@@ -1,6 +1,6 @@
 class Footnote < Sequel::Model
   plugin :time_machine
-  plugin :oplog, primary_key: %i[footnote_type_id footnote_id]
+  plugin :oplog, primary_key: %i[footnote_type_id footnote_id], materialized: true
 
   set_primary_key %i[footnote_type_id footnote_id]
 
