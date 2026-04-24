@@ -170,6 +170,7 @@ module Sequel
         def _refresh_get(dataset)
           return super unless self.class.materialized?
           return values unless Rails.env.test?
+          return values unless self.class.actually_materialized?
 
           self.class.refresh!(concurrently: false)
           super
