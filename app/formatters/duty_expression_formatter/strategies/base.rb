@@ -53,12 +53,7 @@ class DutyExpressionFormatter::Strategies::Base
 
   def measurement_unit_fragment
     render_measurement_unit_fragment(
-      measurement_unit: context.measurement_unit,
-      abbreviation: context.measurement_unit_abbreviation,
-      formatted: context.formatted,
-      unformatted: context.measurement_unit_abbreviation.to_s,
-      verbose: context.verbose,
-      expansion: context.measurement_unit_expansion,
+      **measurement_unit_render_options,
     )
   end
 
@@ -67,12 +62,18 @@ class DutyExpressionFormatter::Strategies::Base
 
     render_prefixed_measurement_unit_fragment(
       prefix: '/ ',
+      **measurement_unit_render_options,
+    )
+  end
+
+  def measurement_unit_render_options
+    {
       measurement_unit: context.measurement_unit,
       abbreviation: context.measurement_unit_abbreviation,
       formatted: context.formatted,
       unformatted: context.measurement_unit_abbreviation,
       verbose: context.verbose,
       expansion: context.measurement_unit_expansion,
-    )
+    }
   end
 end

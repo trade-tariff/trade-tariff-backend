@@ -58,24 +58,18 @@ class RequirementDutyExpressionFormatter::OutputBuilder
   end
 
   def monetary_measurement_qualifier_fragment
-    "#{context.monetary_unit} / (#{render_measurement_unit_fragment(
-      measurement_unit: context.measurement_unit,
-      abbreviation: context.measurement_unit_abbreviation,
-      formatted: context.formatted,
-      unformatted: context.measurement_unit,
-    )} / #{context.measurement_unit_qualifier})"
+    "#{context.monetary_unit} / (#{measurement_unit_fragment} / #{context.measurement_unit_qualifier})"
   end
 
   def monetary_measurement_fragment
-    "#{context.monetary_unit} / #{render_measurement_unit_fragment(
-      measurement_unit: context.measurement_unit,
-      abbreviation: context.measurement_unit_abbreviation,
-      formatted: context.formatted,
-      unformatted: context.measurement_unit,
-    )}"
+    "#{context.monetary_unit} / #{measurement_unit_fragment}"
   end
 
   def measurement_fragment
+    measurement_unit_fragment
+  end
+
+  def measurement_unit_fragment
     render_measurement_unit_fragment(
       measurement_unit: context.measurement_unit,
       abbreviation: context.measurement_unit_abbreviation,
