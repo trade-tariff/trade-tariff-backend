@@ -61,6 +61,7 @@ V2Api.routes.draw do
 
       resources :chemical_substances, only: %i[index]
       resources :simplified_procedural_code_measures, only: %i[index]
+      resources :description_intercepts, only: %i[index]
 
       resources :preference_codes, only: %i[index show]
 

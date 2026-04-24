@@ -1861,6 +1861,135 @@
         }
       }
     },
+    "/api/description_intercepts": {
+      "parameters": [
+        {
+          "name": "Accept",
+          "in": "header",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "enum": [
+              "application/vnd.hmrc.2.0+json"
+            ]
+          },
+          "description": "API version negotiation header"
+        },
+        {
+          "name": "source",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "string"
+          },
+          "description": "Filter by an enabled description intercept source"
+        },
+        {
+          "name": "excluded",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "boolean"
+          },
+          "description": "Filter by whether the intercept excludes the term"
+        }
+      ],
+      "get": {
+        "summary": "List description intercepts",
+        "tags": [
+          "Description Intercepts"
+        ],
+        "description": "Returns description intercepts, optionally filtered by source and excluded state.",
+        "operationId": "listDescriptionIntercepts",
+        "responses": {
+          "200": {
+            "description": "description intercepts listed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string"
+                          },
+                          "type": {
+                            "type": "string",
+                            "enum": [
+                              "description_intercept"
+                            ]
+                          },
+                          "attributes": {
+                            "type": "object",
+                            "properties": {
+                              "term": {
+                                "type": "string",
+                                "nullable": true
+                              },
+                              "sources": {
+                                "type": "array",
+                                "items": {
+                                  "type": "string"
+                                },
+                                "nullable": true
+                              },
+                              "message": {
+                                "type": "string",
+                                "nullable": true
+                              },
+                              "excluded": {
+                                "type": "boolean",
+                                "nullable": true
+                              },
+                              "created_at": {
+                                "type": "string",
+                                "format": "date-time",
+                                "nullable": true
+                              },
+                              "updated_at": {
+                                "type": "string",
+                                "format": "date-time",
+                                "nullable": true
+                              },
+                              "guidance_level": {
+                                "type": "string",
+                                "nullable": true
+                              },
+                              "guidance_location": {
+                                "type": "string",
+                                "nullable": true
+                              },
+                              "escalate_to_webchat": {
+                                "type": "boolean",
+                                "nullable": true
+                              },
+                              "filter_prefixes": {
+                                "type": "array",
+                                "items": {
+                                  "type": "string"
+                                },
+                                "nullable": true
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/exchange_rates/period_lists/{year}": {
       "parameters": [
         {

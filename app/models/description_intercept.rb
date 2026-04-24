@@ -20,6 +20,12 @@ class DescriptionIntercept < Sequel::Model
       where(Sequel.lit('? = ANY(sources)', source))
     end
 
+    def matching_excluded(value)
+      return self if value.blank?
+
+      where(excluded: ActiveModel::Type::Boolean.new.cast(value))
+    end
+
     def with_filtering(enabled)
       return self unless boolean_filter_enabled?(enabled)
 
