@@ -21,7 +21,7 @@ class DescriptionIntercept < Sequel::Model
     end
 
     def matching_excluded(value)
-      return self if value.nil? || value == ''
+      return self if value.blank?
 
       where(excluded: ActiveModel::Type::Boolean.new.cast(value))
     end
