@@ -119,6 +119,8 @@ RSpec.describe TradeTariffBackend::Config do
     end
 
     describe '.check_query_count?' do
+      after { config.instance_variable_set(:@excess_query_threshold, 200) }
+
       it 'returns false when threshold is 0' do
         ENV.delete('EXCESS_QUERY_THRESHOLD')
         # Reset memoized value
