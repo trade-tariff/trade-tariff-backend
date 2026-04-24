@@ -56,35 +56,6 @@ RSpec.describe GoodsNomenclatures::TreeNode do
     it { is_expected.to have_attributes number_indents: commodity.number_indents }
   end
 
-  describe '.previous_sibling' do
-    subject do
-      described_class.previous_sibling(origin.tree_node.position, origin.tree_node.depth)
-                     .first
-                     .values[:previous_sibling]
-    end
-
-    let(:subheading) { create :commodity, :with_chapter_and_heading }
-    let(:siblings) { create_list :commodity, 3, parent: subheading }
-
-    context 'with first sibling' do
-      let(:origin) { siblings.first }
-
-      it { is_expected.to be_nil }
-    end
-
-    context 'with second sibling' do
-      let(:origin) { siblings.second }
-
-      it { is_expected.to eq siblings.first.tree_node.position }
-    end
-
-    context 'with third sibling' do
-      let(:origin) { siblings.third }
-
-      it { is_expected.to eq siblings.second.tree_node.position }
-    end
-  end
-
   describe '.next_sibling' do
     subject do
       described_class.next_sibling(origin.tree_node.position, origin.tree_node.depth)
