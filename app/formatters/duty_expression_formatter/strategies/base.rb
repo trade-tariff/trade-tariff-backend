@@ -52,24 +52,27 @@ class DutyExpressionFormatter::Strategies::Base
   end
 
   def measurement_unit_fragment
-    if context.formatted
-      measurement_unit_abbr_tag(context.measurement_unit, context.measurement_unit_abbreviation)
-    elsif context.verbose && context.measurement_unit_expansion
-      context.measurement_unit_expansion
-    else
-      context.measurement_unit_abbreviation.to_s
-    end
+    render_measurement_unit_fragment(
+      measurement_unit: context.measurement_unit,
+      abbreviation: context.measurement_unit_abbreviation,
+      formatted: context.formatted,
+      unformatted: context.measurement_unit_abbreviation.to_s,
+      verbose: context.verbose,
+      expansion: context.measurement_unit_expansion,
+    )
   end
 
   def per_measurement_unit_fragment
     return if context.measurement_unit_abbreviation.blank?
 
-    if context.formatted
-      "/ #{measurement_unit_abbr_tag(context.measurement_unit, context.measurement_unit_abbreviation)}"
-    elsif context.verbose && context.measurement_unit_expansion
-      "/ #{context.measurement_unit_expansion}"
-    else
-      "/ #{context.measurement_unit_abbreviation}"
-    end
+    render_prefixed_measurement_unit_fragment(
+      prefix: '/ ',
+      measurement_unit: context.measurement_unit,
+      abbreviation: context.measurement_unit_abbreviation,
+      formatted: context.formatted,
+      unformatted: context.measurement_unit_abbreviation,
+      verbose: context.verbose,
+      expansion: context.measurement_unit_expansion,
+    )
   end
 end

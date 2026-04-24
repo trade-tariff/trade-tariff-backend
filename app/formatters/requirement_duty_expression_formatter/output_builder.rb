@@ -58,26 +58,29 @@ class RequirementDutyExpressionFormatter::OutputBuilder
   end
 
   def monetary_measurement_qualifier_fragment
-    if context.formatted
-      "#{context.monetary_unit} / (#{measurement_unit_abbr_tag(context.measurement_unit, context.measurement_unit_abbreviation)} / #{context.measurement_unit_qualifier})"
-    else
-      "#{context.monetary_unit} / (#{context.measurement_unit} / #{context.measurement_unit_qualifier})"
-    end
+    "#{context.monetary_unit} / (#{render_measurement_unit_fragment(
+      measurement_unit: context.measurement_unit,
+      abbreviation: context.measurement_unit_abbreviation,
+      formatted: context.formatted,
+      unformatted: context.measurement_unit,
+    )} / #{context.measurement_unit_qualifier})"
   end
 
   def monetary_measurement_fragment
-    if context.formatted
-      "#{context.monetary_unit} / #{measurement_unit_abbr_tag(context.measurement_unit, context.measurement_unit_abbreviation)}"
-    else
-      "#{context.monetary_unit} / #{context.measurement_unit}"
-    end
+    "#{context.monetary_unit} / #{render_measurement_unit_fragment(
+      measurement_unit: context.measurement_unit,
+      abbreviation: context.measurement_unit_abbreviation,
+      formatted: context.formatted,
+      unformatted: context.measurement_unit,
+    )}"
   end
 
   def measurement_fragment
-    if context.formatted
-      measurement_unit_abbr_tag(context.measurement_unit, context.measurement_unit_abbreviation)
-    else
-      context.measurement_unit
-    end
+    render_measurement_unit_fragment(
+      measurement_unit: context.measurement_unit,
+      abbreviation: context.measurement_unit_abbreviation,
+      formatted: context.formatted,
+      unformatted: context.measurement_unit,
+    )
   end
 end
