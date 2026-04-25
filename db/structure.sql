@@ -2753,10 +2753,10 @@ CREATE TABLE uk.footnote_description_periods_oplog (
 
 
 --
--- Name: footnote_description_periods; Type: MATERIALIZED VIEW; Schema: uk; Owner: -
+-- Name: footnote_description_periods; Type: VIEW; Schema: uk; Owner: -
 --
 
-CREATE MATERIALIZED VIEW uk.footnote_description_periods AS
+CREATE VIEW uk.footnote_description_periods AS
  SELECT footnote_description_period_sid,
     footnote_type_id,
     footnote_id,
@@ -2770,8 +2770,7 @@ CREATE MATERIALIZED VIEW uk.footnote_description_periods AS
    FROM uk.footnote_description_periods_oplog footnote_description_periods1
   WHERE ((oid IN ( SELECT max(footnote_description_periods2.oid) AS max
            FROM uk.footnote_description_periods_oplog footnote_description_periods2
-          WHERE (((footnote_description_periods1.footnote_id)::text = (footnote_description_periods2.footnote_id)::text) AND ((footnote_description_periods1.footnote_type_id)::text = (footnote_description_periods2.footnote_type_id)::text) AND (footnote_description_periods1.footnote_description_period_sid = footnote_description_periods2.footnote_description_period_sid)))) AND ((operation)::text <> 'D'::text))
-  WITH NO DATA;
+          WHERE (((footnote_description_periods1.footnote_id)::text = (footnote_description_periods2.footnote_id)::text) AND ((footnote_description_periods1.footnote_type_id)::text = (footnote_description_periods2.footnote_type_id)::text) AND (footnote_description_periods1.footnote_description_period_sid = footnote_description_periods2.footnote_description_period_sid)))) AND ((operation)::text <> 'D'::text));
 
 
 --
@@ -2813,10 +2812,10 @@ CREATE TABLE uk.footnote_descriptions_oplog (
 
 
 --
--- Name: footnote_descriptions; Type: MATERIALIZED VIEW; Schema: uk; Owner: -
+-- Name: footnote_descriptions; Type: VIEW; Schema: uk; Owner: -
 --
 
-CREATE MATERIALIZED VIEW uk.footnote_descriptions AS
+CREATE VIEW uk.footnote_descriptions AS
  SELECT footnote_description_period_sid,
     footnote_type_id,
     footnote_id,
@@ -2830,8 +2829,7 @@ CREATE MATERIALIZED VIEW uk.footnote_descriptions AS
    FROM uk.footnote_descriptions_oplog footnote_descriptions1
   WHERE ((oid IN ( SELECT max(footnote_descriptions2.oid) AS max
            FROM uk.footnote_descriptions_oplog footnote_descriptions2
-          WHERE ((footnote_descriptions1.footnote_description_period_sid = footnote_descriptions2.footnote_description_period_sid) AND ((footnote_descriptions1.footnote_id)::text = (footnote_descriptions2.footnote_id)::text) AND ((footnote_descriptions1.footnote_type_id)::text = (footnote_descriptions2.footnote_type_id)::text)))) AND ((operation)::text <> 'D'::text))
-  WITH NO DATA;
+          WHERE ((footnote_descriptions1.footnote_description_period_sid = footnote_descriptions2.footnote_description_period_sid) AND ((footnote_descriptions1.footnote_id)::text = (footnote_descriptions2.footnote_id)::text) AND ((footnote_descriptions1.footnote_type_id)::text = (footnote_descriptions2.footnote_type_id)::text)))) AND ((operation)::text <> 'D'::text));
 
 
 --
@@ -2984,10 +2982,10 @@ CREATE TABLE uk.footnotes_oplog (
 
 
 --
--- Name: footnotes; Type: MATERIALIZED VIEW; Schema: uk; Owner: -
+-- Name: footnotes; Type: VIEW; Schema: uk; Owner: -
 --
 
-CREATE MATERIALIZED VIEW uk.footnotes AS
+CREATE VIEW uk.footnotes AS
  SELECT footnote_id,
     footnote_type_id,
     validity_start_date,
@@ -3000,8 +2998,7 @@ CREATE MATERIALIZED VIEW uk.footnotes AS
    FROM uk.footnotes_oplog footnotes1
   WHERE ((oid IN ( SELECT max(footnotes2.oid) AS max
            FROM uk.footnotes_oplog footnotes2
-          WHERE (((footnotes1.footnote_type_id)::text = (footnotes2.footnote_type_id)::text) AND ((footnotes1.footnote_id)::text = (footnotes2.footnote_id)::text)))) AND ((operation)::text <> 'D'::text))
-  WITH NO DATA;
+          WHERE (((footnotes1.footnote_type_id)::text = (footnotes2.footnote_type_id)::text) AND ((footnotes1.footnote_id)::text = (footnotes2.footnote_id)::text)))) AND ((operation)::text <> 'D'::text));
 
 
 --
@@ -4607,10 +4604,10 @@ CREATE TABLE uk.measure_components_oplog (
 
 
 --
--- Name: measure_components; Type: MATERIALIZED VIEW; Schema: uk; Owner: -
+-- Name: measure_components; Type: VIEW; Schema: uk; Owner: -
 --
 
-CREATE MATERIALIZED VIEW uk.measure_components AS
+CREATE VIEW uk.measure_components AS
  SELECT measure_sid,
     duty_expression_id,
     duty_amount,
@@ -4624,8 +4621,7 @@ CREATE MATERIALIZED VIEW uk.measure_components AS
    FROM uk.measure_components_oplog measure_components1
   WHERE ((oid IN ( SELECT max(measure_components2.oid) AS max
            FROM uk.measure_components_oplog measure_components2
-          WHERE ((measure_components1.measure_sid = measure_components2.measure_sid) AND ((measure_components1.duty_expression_id)::text = (measure_components2.duty_expression_id)::text)))) AND ((operation)::text <> 'D'::text))
-  WITH NO DATA;
+          WHERE ((measure_components1.measure_sid = measure_components2.measure_sid) AND ((measure_components1.duty_expression_id)::text = (measure_components2.duty_expression_id)::text)))) AND ((operation)::text <> 'D'::text));
 
 
 --
@@ -4837,10 +4833,10 @@ CREATE TABLE uk.measure_conditions_oplog (
 
 
 --
--- Name: measure_conditions; Type: MATERIALIZED VIEW; Schema: uk; Owner: -
+-- Name: measure_conditions; Type: VIEW; Schema: uk; Owner: -
 --
 
-CREATE MATERIALIZED VIEW uk.measure_conditions AS
+CREATE VIEW uk.measure_conditions AS
  SELECT measure_condition_sid,
     measure_sid,
     condition_code,
@@ -4859,8 +4855,7 @@ CREATE MATERIALIZED VIEW uk.measure_conditions AS
    FROM uk.measure_conditions_oplog measure_conditions1
   WHERE ((oid IN ( SELECT max(measure_conditions2.oid) AS max
            FROM uk.measure_conditions_oplog measure_conditions2
-          WHERE (measure_conditions1.measure_condition_sid = measure_conditions2.measure_condition_sid))) AND ((operation)::text <> 'D'::text))
-  WITH NO DATA;
+          WHERE (measure_conditions1.measure_condition_sid = measure_conditions2.measure_condition_sid))) AND ((operation)::text <> 'D'::text));
 
 
 --
@@ -11058,20 +11053,6 @@ CREATE INDEX footnote_association_measures_oplog_footnote_type_id_index ON uk.fo
 
 
 --
--- Name: footnote_description_periods_footnote_type_id_footnote_id_valid; Type: INDEX; Schema: uk; Owner: -
---
-
-CREATE INDEX footnote_description_periods_footnote_type_id_footnote_id_valid ON uk.footnote_description_periods USING btree (footnote_type_id, footnote_id, validity_start_date);
-
-
---
--- Name: footnote_description_periods_oid_index; Type: INDEX; Schema: uk; Owner: -
---
-
-CREATE UNIQUE INDEX footnote_description_periods_oid_index ON uk.footnote_description_periods USING btree (oid);
-
-
---
 -- Name: footnote_descriptions_description_trgm_idx; Type: INDEX; Schema: uk; Owner: -
 --
 
@@ -11079,45 +11060,10 @@ CREATE INDEX footnote_descriptions_description_trgm_idx ON uk.footnote_descripti
 
 
 --
--- Name: footnote_descriptions_footnote_description_period_sid_footnote_; Type: INDEX; Schema: uk; Owner: -
---
-
-CREATE INDEX footnote_descriptions_footnote_description_period_sid_footnote_ ON uk.footnote_descriptions USING btree (footnote_description_period_sid, footnote_type_id, footnote_id);
-
-
---
--- Name: footnote_descriptions_oid_index; Type: INDEX; Schema: uk; Owner: -
---
-
-CREATE UNIQUE INDEX footnote_descriptions_oid_index ON uk.footnote_descriptions USING btree (oid);
-
-
---
 -- Name: footnote_id; Type: INDEX; Schema: uk; Owner: -
 --
 
 CREATE INDEX footnote_id ON uk.footnote_association_measures_oplog USING btree (footnote_id);
-
-
---
--- Name: footnotes_footnote_type_id_footnote_id_index; Type: INDEX; Schema: uk; Owner: -
---
-
-CREATE INDEX footnotes_footnote_type_id_footnote_id_index ON uk.footnotes USING btree (footnote_type_id, footnote_id);
-
-
---
--- Name: footnotes_oid_index; Type: INDEX; Schema: uk; Owner: -
---
-
-CREATE UNIQUE INDEX footnotes_oid_index ON uk.footnotes USING btree (oid);
-
-
---
--- Name: footnotes_validity_start_date_validity_end_date_index; Type: INDEX; Schema: uk; Owner: -
---
-
-CREATE INDEX footnotes_validity_start_date_validity_end_date_index ON uk.footnotes USING btree (validity_start_date, validity_end_date);
 
 
 --
@@ -12462,41 +12408,6 @@ CREATE INDEX meas_unit_qual_pk ON uk.measurement_unit_qualifiers_oplog USING btr
 --
 
 CREATE INDEX measrm_pk ON uk.measurements_oplog USING btree (measurement_unit_code, measurement_unit_qualifier_code);
-
-
---
--- Name: measure_components_measure_sid_index; Type: INDEX; Schema: uk; Owner: -
---
-
-CREATE INDEX measure_components_measure_sid_index ON uk.measure_components USING btree (measure_sid);
-
-
---
--- Name: measure_components_oid_index; Type: INDEX; Schema: uk; Owner: -
---
-
-CREATE UNIQUE INDEX measure_components_oid_index ON uk.measure_components USING btree (oid);
-
-
---
--- Name: measure_conditions_measure_condition_sid_index; Type: INDEX; Schema: uk; Owner: -
---
-
-CREATE INDEX measure_conditions_measure_condition_sid_index ON uk.measure_conditions USING btree (measure_condition_sid);
-
-
---
--- Name: measure_conditions_measure_sid_index; Type: INDEX; Schema: uk; Owner: -
---
-
-CREATE INDEX measure_conditions_measure_sid_index ON uk.measure_conditions USING btree (measure_sid);
-
-
---
--- Name: measure_conditions_oid_index; Type: INDEX; Schema: uk; Owner: -
---
-
-CREATE UNIQUE INDEX measure_conditions_oid_index ON uk.measure_conditions USING btree (oid);
 
 
 --
