@@ -22,6 +22,8 @@ RSpec.describe Api::V2::HeadingsController, type: :request do
       )
     end
 
+    let(:cache_version) { 'v2' }
+
     before do
       allow(Rails.cache).to receive(:fetch).and_call_original
     end
@@ -30,11 +32,8 @@ RSpec.describe Api::V2::HeadingsController, type: :request do
       it 'calls the Rails cache with the correct key' do
         api_response
 
-        expected_hash = Digest::MD5.hexdigest('{}')
-        cache_suffix = '-v1'
-
         expect(Rails.cache).to have_received(:fetch).with(
-          "_heading-uk-#{heading.goods_nomenclature_sid}-#{Time.zone.today.iso8601}-false-#{expected_hash}#{cache_suffix}",
+          "_heading-uk-#{heading.goods_nomenclature_sid}-#{Time.zone.today.iso8601}-false-#{cache_version}",
           { expires_in: 24.hours },
         )
       end
@@ -42,14 +41,11 @@ RSpec.describe Api::V2::HeadingsController, type: :request do
       context 'when filtering by a specific geographical area' do
         let(:filter) { { geographical_area_id: 'BR' } }
 
-        it 'calls the Rails cache with the correct key' do
+        it 'calls the Rails cache with the correct, non-filtered, key' do
           api_response
 
-          expected_hash = Digest::MD5.hexdigest(filter.to_json)
-          cache_suffix = '-v1'
-
           expect(Rails.cache).to have_received(:fetch).with(
-            "_heading-uk-#{heading.goods_nomenclature_sid}-#{Time.zone.today.iso8601}-false-#{expected_hash}#{cache_suffix}",
+            "_heading-uk-#{heading.goods_nomenclature_sid}-#{Time.zone.today.iso8601}-false-#{cache_version}",
             { expires_in: 24.hours },
           )
         end

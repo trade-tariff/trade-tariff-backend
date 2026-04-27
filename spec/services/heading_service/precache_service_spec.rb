@@ -10,7 +10,7 @@ RSpec.describe HeadingService::PrecacheService do
 
   let :heading_key do
     HeadingService::HeadingSerializationService
-      .cache_key(commodity.heading, Time.zone.today, false, {})
+      .cache_key(commodity.heading, Time.zone.today, false)
   end
 
   let :subheading_key do

@@ -1,16 +1,15 @@
 module HeadingService
   class HeadingSerializationService
-    CACHE_VERSION = 'v1'.freeze
+    CACHE_VERSION = 'v2'.freeze
 
     class << self
-      def cache_key(heading, actual_date, is_declarable, filters)
+      def cache_key(heading, actual_date, is_declarable)
         cache_key = [
           'heading',
           TradeTariffBackend.service,
           heading.goods_nomenclature_sid,
           date_string(actual_date),
           is_declarable,
-          filters_hash(filters),
           CACHE_VERSION,
         ]
 
@@ -18,10 +17,6 @@ module HeadingService
       end
 
     private
-
-      def filters_hash(filters)
-        Digest::MD5.hexdigest(filters.to_json)
-      end
 
       def date_string(date)
         date.is_a?(String) ? date : date.to_date.to_formatted_s(:db)
@@ -55,7 +50,7 @@ module HeadingService
     end
 
     def heading_cache_key
-      self.class.cache_key(heading, actual_date, heading.declarable?, filters)
+      self.class.cache_key(heading, actual_date, heading.declarable?)
     end
   end
 end

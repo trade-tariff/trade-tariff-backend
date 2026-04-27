@@ -41,7 +41,7 @@ module HeadingService
     end
 
     def heading_cache_key(heading)
-      HeadingSerializationService.cache_key(heading, actual_date, false, {})
+      HeadingSerializationService.cache_key(heading, actual_date, false)
     end
 
     def write_heading(heading)

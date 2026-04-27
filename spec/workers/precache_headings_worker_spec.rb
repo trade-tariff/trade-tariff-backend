@@ -13,7 +13,7 @@ RSpec.describe PrecacheHeadingsWorker, type: :worker do
     let(:heading) { create :heading, :with_chapter, :with_children }
 
     let(:cache_key) do
-      HeadingService::HeadingSerializationService.cache_key(heading, date, false, {})
+      HeadingService::HeadingSerializationService.cache_key(heading, date, false)
     end
 
     it 'writes to cache' do
