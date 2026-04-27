@@ -80,6 +80,6 @@
       description: "Removes failed myott subscribers"
       enabled: <%= ENV.fetch('SERVICE', 'uk') == 'uk' %>
     ActionLogReportWorker:
-      cron: "0 6 * * *" # 6am every day
+      cron: "0 23 * * 0" # 11pm UTC every Sunday
       description: Generates and emails a CSV report of the previous day's user action logs
       enabled: <%= ENV.fetch('SERVICE', 'uk') == 'uk' %>
