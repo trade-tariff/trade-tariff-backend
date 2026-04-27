@@ -3,13 +3,11 @@ require 'csv'
 class ActionLogReportWorker
   include Sidekiq::Worker
 
-  START_DATE = Date.new(2025, 6, 19).freeze
-
   def perform
     return unless TradeTariffBackend.uk?
 
     yesterday = Time.zone.yesterday
-    start_date = START_DATE.beginning_of_day
+    start_date = 1.month.ago.beginning_of_day
     end_date = yesterday.end_of_day
 
     action_logs = PublicUsers::ActionLog
