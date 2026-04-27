@@ -51,7 +51,7 @@ Rate the overall risk of deploying this change:
 
 🔴 RED – requires explicit approval from Thor or Neil:
 ───────────────────────────────────────────────────
-- Dangeorous database migrations, especially destructive ones (dropping columns/tables, removing indexes)
+- Dangerous database migrations, especially destructive ones (dropping columns/tables, removing indexes)
 - Modifications to how measures, conditions, or footnotes are processed or surfaced
 - Changes to the synchronisation mechanism from CDS or HMRC upstream data feeds
 - Any change to production AWS infrastructure that cannot be easily rolled back (e.g. RDS parameter groups, KMS key policy, removal of resources)
