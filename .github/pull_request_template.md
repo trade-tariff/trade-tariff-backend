@@ -7,7 +7,7 @@
 ## Ticket:
 <!-- Link to the relevant Jira/ticket, or 'N/A' if not applicable -->
 
-## Risk: 
+## Risk:
 **Risk level:** 🟢 / 🟠 / 🔴 <!-- delete as appropriate -->
 
 **Reason for rating:**
