@@ -3,7 +3,7 @@ module MaterializeViewHelper
     eager_load_materialized_view_models
 
     Sequel::Plugins::Oplog.models.each do |model|
-      if model.materialized?
+      if model.materialized? && model.actually_materialized?
         model.refresh!(concurrently:)
       end
     end

@@ -161,14 +161,23 @@ module Sequel
           operation_klass.insert(values)
         end
 
-        # NOTE: This method is called by Sequel::Model#_refresh after we save a new record.
-        #       We skip refreshes of the full materialized view in production to avoid excessive work and
-        #       file apply slowness.
+        # NOTE: This method is called by Sequel::Model#_refresh after we save a new record,
+        #       and also by Sequel::Model#reload whenever a record is re-read from the DB.
         #
-        #       The original values are returned to avoid the default Sequel::Model#refresh handling of falsey values as an error
-        #       but also preserve some of the instrumentation of oplog inserts we store for the admin UI.
+        #       When the view is not yet actually materialized in the database (e.g. the
+        #       migration has not yet been applied to the test DB), we fall through to super
+        #       so that both post-insert refreshes and explicit reload calls read from the
+        #       live plain view correctly. Returning values here instead would intercept
+        #       reload and hand back a stale in-memory hash.
+        #
+        #       When the view is materialized:
+        #         - In production we skip the DB re-read (return values) to avoid triggering
+        #           a full view refresh on every record save during a bulk import.
+        #         - In tests we refresh the entire materialized view then re-read so that
+        #           subsequent queries against the view see the just-saved record.
         def _refresh_get(dataset)
           return super unless self.class.materialized?
+          return super unless self.class.actually_materialized?
           return values unless Rails.env.test?
 
           self.class.refresh!(concurrently: false)

@@ -1,5 +1,5 @@
 class MeasureComponent < Sequel::Model
-  plugin :oplog, primary_key: %i[measure_sid duty_expression_id]
+  plugin :oplog, primary_key: %i[measure_sid duty_expression_id], materialized: true
 
   set_primary_key %i[measure_sid duty_expression_id]
 

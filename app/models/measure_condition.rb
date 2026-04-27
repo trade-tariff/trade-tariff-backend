@@ -4,7 +4,7 @@ class MeasureCondition < Sequel::Model
 
   plugin :time_machine
   plugin :national
-  plugin :oplog, primary_key: :measure_condition_sid
+  plugin :oplog, primary_key: :measure_condition_sid, materialized: true
 
   set_primary_key [:measure_condition_sid]
 
