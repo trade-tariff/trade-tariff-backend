@@ -14,12 +14,12 @@ RSpec.describe TariffSynchronizer::TariffUpdatesRequester do
         it { expect(response.response_code).to eq(200) }
       end
 
-      context 'when a Faraday:Error is propagated' do
+      context 'when a Faraday::Error is propagated' do
         before do
           stub_request(:get, url).to_raise(Faraday::Error)
         end
 
-        it { expect { described_class.perform('http://example/test') }.to raise_error TariffSynchronizer::TariffUpdatesRequester::DownloadException }
+        it { expect { described_class.perform('http://example/test') }.to raise_error TariffSynchronizer::TariffUpdatesRequester::RetriableDownloadError }
       end
 
       context 'when a 401 response is returned' do
@@ -27,12 +27,12 @@ RSpec.describe TariffSynchronizer::TariffUpdatesRequester do
           stub_request(:get, url).to_return(status: 401)
         end
 
-        it { expect(response).to be_retry_count_exceeded }
+        it { expect { response }.to raise_error TariffSynchronizer::TariffUpdatesRequester::RetriableDownloadError }
 
         it 'emits a download_retried instrumentation event' do
           allow(TariffSynchronizer::Instrumentation).to receive(:download_retried)
 
-          response
+          expect { response }.to raise_error TariffSynchronizer::TariffUpdatesRequester::RetriableDownloadError
 
           expect(TariffSynchronizer::Instrumentation).to have_received(:download_retried)
         end

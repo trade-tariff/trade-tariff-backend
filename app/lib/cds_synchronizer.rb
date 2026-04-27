@@ -32,12 +32,7 @@ class CdsSynchronizer
         TariffSynchronizer::Instrumentation.lock_acquired(phase: 'download')
 
         start_time = Process.clock_gettime(Process::CLOCK_MONOTONIC)
-        begin
-          TariffSynchronizer::CdsUpdate.sync(initial_date: initial_update_date)
-        rescue TariffUpdatesRequester::DownloadException => e
-          TariffLogger.failed_download(exception: e)
-          raise e.original
-        end
+        TariffSynchronizer::CdsUpdate.sync(initial_date: initial_update_date)
 
         duration_ms = ((Process.clock_gettime(Process::CLOCK_MONOTONIC) - start_time) * 1000).round(2)
         TariffSynchronizer::Instrumentation.download_completed(
