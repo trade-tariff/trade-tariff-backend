@@ -1,6 +1,7 @@
 module Api
   module Internal
     class InputSanitiser
+      MAX_QUERY_LENGTH = 500
       NON_PRINTABLE = /[\x00-\x08\x0B\x0C\x0E-\x1F\x7F\u200B\u200C\u200D\uFEFF]/
 
       def initialize(query)
@@ -34,7 +35,7 @@ module Api
       end
 
       def max_length
-        AdminConfiguration.integer_value('input_sanitiser_max_length')
+        [AdminConfiguration.integer_value('input_sanitiser_max_length'), MAX_QUERY_LENGTH].min
       end
 
       def strip_html(text)
