@@ -1,4 +1,4 @@
-RSpec.describe GovUkTariffDocumentFetcher do
+RSpec.describe CustomsTariffImporter::DocumentFetcher do
   subject(:fetcher) { described_class.new }
 
   describe '#call (unit: date parsing and link extraction)' do
@@ -69,8 +69,6 @@ RSpec.describe GovUkTariffDocumentFetcher do
     describe 'all_docx_links (private)' do
       subject(:links) { fetcher.send(:all_docx_links, html) }
 
-      # Mirrors the real GOV.UK gem-c-attachment structure: a thumbnail <a> and a
-      # title <h3><a> per attachment. Only the <h3> link carries the date text.
       let(:html) do
         <<~HTML
           <html><body>
@@ -123,6 +121,56 @@ RSpec.describe GovUkTariffDocumentFetcher do
         it 'returns an empty array' do
           expect(links).to eq([])
         end
+      end
+    end
+  end
+
+  describe '#call instrumentation' do
+    let(:docx_url) { 'https://assets.publishing.service.gov.uk/media/abc/UKGT_1.30.docx' }
+    let(:link_text) { 'The Tariff of the United Kingdom, version 1.30, dated 14 January 2026 (entry into force 22 January 2026)' }
+    let(:page_html) do
+      <<~HTML
+        <html><body>
+          <h3 class="gem-c-attachment__title">
+            <a href="#{docx_url}">#{link_text}</a>
+          </h3>
+        </body></html>
+      HTML
+    end
+
+    before do
+      stub_request(:get, described_class::PUBLICATION_URL).to_return(body: page_html)
+      stub_request(:get, docx_url).to_return(body: 'fake docx binary')
+      allow(CustomsTariffImporter::Instrumentation).to receive(:fetch_started)
+      allow(CustomsTariffImporter::Instrumentation).to receive(:document_fetched)
+      allow(CustomsTariffImporter::Instrumentation).to receive(:fetch_failed)
+    end
+
+    it 'emits fetch_started with the publication URL' do
+      fetcher.call
+      expect(CustomsTariffImporter::Instrumentation).to have_received(:fetch_started).with(
+        url: described_class::PUBLICATION_URL,
+      )
+    end
+
+    it 'emits document_fetched for each document with version and timing' do
+      fetcher.call
+      expect(CustomsTariffImporter::Instrumentation).to have_received(:document_fetched).with(
+        version: '1.30',
+        duration_ms: a_kind_of(Float),
+      )
+    end
+
+    context 'when fetching raises' do
+      before { stub_request(:get, described_class::PUBLICATION_URL).to_raise(RuntimeError.new('timeout')) }
+
+      it 'emits fetch_failed and re-raises' do
+        expect { fetcher.call }.to raise_error(RuntimeError)
+        expect(CustomsTariffImporter::Instrumentation).to have_received(:fetch_failed).with(
+          url: described_class::PUBLICATION_URL,
+          error_class: 'RuntimeError',
+          error_message: 'timeout',
+        )
       end
     end
   end
