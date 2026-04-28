@@ -14,9 +14,10 @@ RSpec.describe Api::Internal::QueryProcessing do
       expect(instance.process_query('')).to eq('')
     end
 
-    it 'truncates to 100 characters' do
+    it 'does not truncate long queries' do
       long_query = 'a' * 200
-      expect(instance.process_query(long_query).length).to eq(100)
+
+      expect(instance.process_query(long_query)).to eq(long_query)
     end
 
     it 'extracts CAS number from query' do

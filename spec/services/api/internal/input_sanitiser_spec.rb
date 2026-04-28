@@ -73,7 +73,7 @@ RSpec.describe Api::Internal::InputSanitiser do
       it 'returns an error' do
         expect(result[:errors]).to be_present
         expect(result[:errors].first[:status]).to eq('422')
-        expect(result[:errors].first[:detail]).to include('exceeds maximum length')
+        expect(result[:errors].first[:detail]).to eq('Query exceeds maximum length of 500 characters')
       end
     end
 
@@ -87,6 +87,19 @@ RSpec.describe Api::Internal::InputSanitiser do
       it 'uses the configured max length' do
         expect(result[:errors]).to be_present
         expect(result[:errors].first[:detail]).to include('10 characters')
+      end
+    end
+
+    context 'when max length is configured above 500' do
+      let(:query) { 'a' * 501 }
+
+      before do
+        create(:admin_configuration, :integer, name: 'input_sanitiser_max_length', value: 600)
+      end
+
+      it 'caps validation at 500 characters' do
+        expect(result[:errors]).to be_present
+        expect(result[:errors].first[:detail]).to eq('Query exceeds maximum length of 500 characters')
       end
     end
 

@@ -8,7 +8,7 @@ module Api
       def process_query(term)
         return '' if term.blank?
 
-        term = term.to_s.first(100)
+        term = term.to_s
 
         if (m = cas_number_regex.match(term))
           m[1]

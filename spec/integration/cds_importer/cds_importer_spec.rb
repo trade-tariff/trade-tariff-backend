@@ -47,6 +47,10 @@ RSpec.describe CdsImporter do
 
       it 'creates a footnote with a large description' do
         importer.import
+        Footnote.refresh!
+        FootnoteDescriptionPeriod.refresh!
+        FootnoteDescription.refresh!
+
         expect(Footnote.last.description.bytesize).to eq(5985)
       end
     end

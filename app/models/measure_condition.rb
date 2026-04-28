@@ -4,7 +4,7 @@ class MeasureCondition < Sequel::Model
 
   plugin :time_machine
   plugin :national
-  plugin :oplog, primary_key: :measure_condition_sid
+  plugin :oplog, primary_key: :measure_condition_sid, materialized: true
 
   set_primary_key [:measure_condition_sid]
 
@@ -103,7 +103,6 @@ class MeasureCondition < Sequel::Model
       monetary_unit_abbreviation:,
       measurement_unit:,
       formatted_measurement_unit_qualifier:,
-      currency: TradeTariffBackend.currency,
       formatted: true,
     )
   end
