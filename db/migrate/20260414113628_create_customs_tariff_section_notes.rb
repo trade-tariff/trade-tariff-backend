@@ -13,6 +13,6 @@ Sequel.migration do
   end
 
   down do
-    drop_table :customs_tariff_section_notes
+    drop_table :customs_tariff_section_notes if TradeTariffBackend.uk?
   end
 end

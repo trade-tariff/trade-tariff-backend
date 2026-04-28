@@ -1,3 +1,6 @@
+require_relative '../lib/customs_tariff_importer/instrumentation'
+require_relative '../lib/customs_tariff_importer/logger'
+
 class ImportCustomsTariffDocumentWorker
   include Sidekiq::Worker
 

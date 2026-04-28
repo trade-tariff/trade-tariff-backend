@@ -18,7 +18,7 @@ module CustomsTariffImporter
     private
 
     def import_document(fetched)
-      if CustomsTariffUpdate.where(version: fetched.version).any?
+      if CustomsTariffUpdate.exclude(status: CustomsTariffUpdate::FAILED).where(version: fetched.version).any?
         Instrumentation.document_skipped(version: fetched.version, reason: :already_imported)
         return Result.new(status: :skipped, version: fetched.version)
       end
@@ -36,6 +36,8 @@ module CustomsTariffImporter
       start_time = Process.clock_gettime(Process::CLOCK_MONOTONIC)
 
       CustomsTariffUpdate.db.transaction do
+        CustomsTariffUpdate.failed.where(version: fetched.version).delete
+
         update = CustomsTariffUpdate.create(
           version: fetched.version,
           validity_start_date: fetched.entry_into_force_on || fetched.published_on || Time.zone.today,

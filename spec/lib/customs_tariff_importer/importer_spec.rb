@@ -149,6 +149,18 @@ RSpec.describe CustomsTariffImporter::Importer do
       end
     end
 
+    context 'when the version previously failed to import' do
+      before { create(:customs_tariff_update, :failed, version: '1.30') }
+
+      it 'retries the import rather than skipping' do
+        expect(results.first.status).to eq(:imported)
+      end
+
+      it 'creates the notes and updates the record' do
+        expect { results }.to change(CustomsTariffChapterNote, :count).by(2)
+      end
+    end
+
     context 'when a different version with the same content has been imported' do
       before { create(:customs_tariff_update, version: '1.29', file_checksum: checksum) }
 
