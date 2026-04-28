@@ -97,4 +97,160 @@ RSpec.describe DutyExpressionFormatter::Strategies::Base do
       expect(described_class.new(context).call).to eq(['0.52', '%'])
     end
   end
+
+  describe '.format integration' do
+    let(:measurement_unit) do
+      instance_double(
+        MeasurementUnit,
+        description: 'kilogram',
+        abbreviation: 'kg',
+        expansion: 'kilogram (kg)',
+      ).tap do |dbl|
+        allow(dbl).to receive(:abbreviation).with(measurement_unit_qualifier: nil).and_return('kg')
+        allow(dbl).to receive(:expansion).with(measurement_unit_qualifier: nil).and_return('kilogram (kg)')
+      end
+    end
+
+    describe 'UnitOnly strategy (duty_expression_id 99)' do
+      it 'returns the plain measurement unit abbreviation' do
+        result = DutyExpressionFormatter.format(
+          duty_expression_id: '99',
+          measurement_unit:,
+          measurement_unit_qualifier: nil,
+        )
+
+        expect(result).to eq('kg')
+      end
+
+      it 'returns a formatted abbr tag when formatted: true' do
+        result = DutyExpressionFormatter.format(
+          duty_expression_id: '99',
+          measurement_unit:,
+          measurement_unit_qualifier: nil,
+          formatted: true,
+        )
+
+        expect(result).to eq("<abbr title='kilogram'>kg</abbr>")
+      end
+
+      it 'returns the expanded unit when verbose: true' do
+        result = DutyExpressionFormatter.format(
+          duty_expression_id: '99',
+          measurement_unit:,
+          measurement_unit_qualifier: nil,
+          verbose: true,
+        )
+
+        expect(result).to eq('kilogram (kg)')
+      end
+    end
+
+    describe 'DescriptionOnly strategy (duty_expression_id 12)' do
+      it 'returns the duty expression abbreviation when present' do
+        result = DutyExpressionFormatter.format(
+          duty_expression_id: '12',
+          duty_expression_abbreviation: 'MAX',
+          duty_expression_description: 'Maximum',
+        )
+
+        expect(result).to eq('MAX')
+      end
+
+      it 'falls back to description when abbreviation is absent' do
+        result = DutyExpressionFormatter.format(
+          duty_expression_id: '12',
+          duty_expression_description: 'Maximum',
+        )
+
+        expect(result).to eq('Maximum')
+      end
+    end
+
+    describe 'DescriptionAmount strategy (duty_expression_id 02)' do
+      it 'returns plain description, amount and percent for a simple case' do
+        result = DutyExpressionFormatter.format(
+          duty_expression_id: '02',
+          duty_expression_abbreviation: 'MIN',
+          duty_amount: 1.5,
+        )
+
+        expect(result).to eq('MIN 1.50 %')
+      end
+
+      it 'returns formatted HTML fragments when formatted: true' do
+        result = DutyExpressionFormatter.format(
+          duty_expression_id: '02',
+          duty_expression_abbreviation: 'MIN',
+          duty_amount: 1.5,
+          formatted: true,
+        )
+
+        expect(result).to eq('MIN <span>1.50</span> %')
+      end
+
+      it 'includes the measurement unit when present' do
+        result = DutyExpressionFormatter.format(
+          duty_expression_id: '02',
+          duty_expression_abbreviation: 'MIN',
+          duty_amount: 1.5,
+          measurement_unit:,
+          measurement_unit_qualifier: nil,
+        )
+
+        expect(result).to eq('MIN 1.50 % / kg')
+      end
+    end
+
+    describe 'Default strategy (other duty expression ids)' do
+      it 'returns amount and percent for a simple case' do
+        result = DutyExpressionFormatter.format(
+          duty_expression_id: '66',
+          duty_amount: 4.0,
+        )
+
+        expect(result).to eq('4.00 %')
+      end
+
+      it 'returns amount and monetary unit when monetary unit is present' do
+        result = DutyExpressionFormatter.format(
+          duty_expression_id: '66',
+          duty_amount: 4.0,
+          monetary_unit: 'GBP',
+        )
+
+        expect(result).to eq('4.00 % GBP')
+      end
+
+      it 'returns formatted HTML when formatted: true' do
+        result = DutyExpressionFormatter.format(
+          duty_expression_id: '66',
+          duty_amount: 4.0,
+          formatted: true,
+        )
+
+        expect(result).to eq('<span>4.00</span> %')
+      end
+
+      it 'includes a measurement unit when present' do
+        result = DutyExpressionFormatter.format(
+          duty_expression_id: '66',
+          duty_amount: 4.0,
+          measurement_unit:,
+          measurement_unit_qualifier: nil,
+        )
+
+        expect(result).to eq('4.00 % / kg')
+      end
+
+      it 'wraps output in strong tags when resolved_meursing: true' do
+        result = DutyExpressionFormatter.format(
+          duty_expression_id: '66',
+          duty_amount: 4.0,
+          resolved_meursing: true,
+        )
+
+        expect(result).to eq('<strong>4.00 %</strong>')
+      end
+    end
+  end
 end
