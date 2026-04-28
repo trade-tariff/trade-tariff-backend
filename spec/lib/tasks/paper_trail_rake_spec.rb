@@ -7,6 +7,7 @@ RSpec.describe 'paper_trail:reset_initial_versions' do
   before do
     Rake::Task['paper_trail:reset_initial_versions'].reenable
     Rake::Task['class_eager_load'].reenable
+    allow(Rails.application).to receive(:eager_load!).and_return(true)
   end
 
   after do
