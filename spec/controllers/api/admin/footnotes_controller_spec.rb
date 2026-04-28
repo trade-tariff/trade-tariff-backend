@@ -75,6 +75,7 @@ RSpec.describe Api::Admin::FootnotesController do
     specify 'updates national footnote' do
       expect {
         put :update, params: { id: national_footnote.pk.join, data: { type: :footnote, attributes: { description: 'new description' } } }, format: :json
+        FootnoteDescription.refresh!
       }.to change { national_footnote.reload.description }.to('new description')
     end
 
