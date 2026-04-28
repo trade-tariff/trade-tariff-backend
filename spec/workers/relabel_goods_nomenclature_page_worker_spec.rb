@@ -250,6 +250,26 @@ RSpec.describe RelabelGoodsNomenclaturePageWorker, type: :worker do
       expect(version.object['description']).to eq('Fresh label text')
     end
 
+    it 'clears stale review state when updating an existing generated label' do
+      existing_label = create(:goods_nomenclature_label,
+                              :stale,
+                              goods_nomenclature: commodity,
+                              needs_review: true,
+                              approved: true,
+                              manually_edited: false,
+                              description: 'Old text')
+
+      upsert_label
+
+      expect(existing_label.reload).to have_attributes(
+        description: 'Fresh label text',
+        stale: false,
+        needs_review: false,
+        approved: false,
+        manually_edited: false,
+      )
+    end
+
     it 'does not create a version when a manually edited label is protected from overwrite' do
       create(
         :goods_nomenclature_label,

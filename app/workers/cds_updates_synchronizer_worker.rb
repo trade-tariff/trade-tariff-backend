@@ -3,10 +3,11 @@ class CdsUpdatesSynchronizerWorker
 
   TRY_AGAIN_IN = 20.minutes
   CUT_OFF_TIME = '10:00'.freeze
+  DOWNLOAD_MAX_RETRIES = TariffSynchronizer.retry_count
 
   sidekiq_options queue: :sync, retry: false
 
-  def perform(check_for_todays_file = true, reapply_data_migrations = false)
+  def perform(check_for_todays_file = true, reapply_data_migrations = false, download_retry_count = 0)
     return unless TradeTariffBackend.uk?
 
     Thread.current[:tariff_sync_run_id] = SecureRandom.uuid
@@ -39,6 +40,8 @@ class CdsUpdatesSynchronizerWorker
     )
 
     emit_sync_run_completed(start_time)
+  rescue TariffSynchronizer::TariffUpdatesRequester::RetriableDownloadError
+    attempt_reschedule_download!(download_retry_count, check_for_todays_file, reapply_data_migrations)
   rescue TariffSynchronizer::CdsUpdateDownloader::ListDownloadFailedError => e
     TariffSynchronizer::Instrumentation.sync_run_failed(
       phase: 'download',
@@ -87,6 +90,17 @@ private
       true
     else
       false
+    end
+  end
+
+  def attempt_reschedule_download!(download_retry_count, check_for_todays_file, reapply_data_migrations)
+    delay = TariffSynchronizer.request_throttle.seconds
+
+    if download_retry_count < DOWNLOAD_MAX_RETRIES
+      self.class.perform_in(delay, check_for_todays_file, reapply_data_migrations, download_retry_count + 1)
+      TariffSynchronizer::Instrumentation.download_delayed(retry_at: delay.from_now.iso8601)
+    else
+      TariffSynchronizer::Instrumentation.download_retry_exhausted(url: 'cds')
     end
   end
 end

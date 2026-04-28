@@ -48,6 +48,10 @@ AdminApi.routes.draw do
       resources :goods_nomenclatures, only: %i[], constraints: { id: /\d+/ } do
         scope module: 'goods_nomenclatures' do
           resource :goods_nomenclature_label, only: %i[show update] do
+            post :score
+            post :regenerate
+            post :approve
+            post :reject
             get :versions
           end
           resource :goods_nomenclature_self_text, only: %i[show update] do
@@ -90,6 +94,12 @@ AdminApi.routes.draw do
 
         resources :live_issues, only: %i[index show create update destroy]
         resources :admin_configurations, only: %i[index show update]
+        resources :description_intercepts, only: %i[index show create update] do
+          member do
+            get :versions
+          end
+        end
+        resources :goods_nomenclature_autocomplete, only: [:index]
       end
 
       namespace :green_lanes do

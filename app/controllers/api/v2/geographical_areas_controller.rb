@@ -23,7 +23,13 @@ module Api
       end
 
       def geographical_area
-        GeographicalArea.actual.by_id(params[:id]).eager(:geographical_area_descriptions, :contained_geographical_areas).take
+        GeographicalArea.actual
+          .by_id(params[:id])
+          .eager(
+            :geographical_area_descriptions,
+            contained_geographical_areas: %i[geographical_area_descriptions contained_geographical_areas],
+          )
+          .take
       end
 
       def exclude_none

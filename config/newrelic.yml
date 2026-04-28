@@ -36,6 +36,9 @@ common: &default_settings # Required license key associated with your New Relic 
   # Logging level for log/newrelic_agent.log
   log_level: info
 
+  # Disable New Relic's Rails.event forwarding to avoid duplicating Rails request lifecycle logs.
+  instrumentation.rails_event_logger: false
+
   application_logging:
     # If `true`, all logging-related features for the agent can be enabled or disabled
     # independently. If `false`, all logging-related features are disabled.

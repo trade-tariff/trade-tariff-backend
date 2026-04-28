@@ -68,5 +68,33 @@ RSpec.describe OpensearchRetrievalService do
         expect(result.results).to be_empty
       end
     end
+
+    context 'with filter prefixes' do
+      let(:opensearch_response) { { 'hits' => { 'hits' => [] } } }
+
+      it 'adds prefix filters to the query' do
+        described_class.call(query: 'toys', as_of: Time.zone.today, filter_prefixes: %w[9503 9504])
+
+        expect(TradeTariffBackend.search_client).to have_received(:search).with(
+          hash_including(
+            body: hash_including(
+              query: hash_including(
+                bool: hash_including(
+                  must: include(
+                    bool: hash_including(
+                      minimum_should_match: 1,
+                      should: contain_exactly(
+                        { prefix: { goods_nomenclature_item_id: '9503' } },
+                        { prefix: { goods_nomenclature_item_id: '9504' } },
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        )
+      end
+    end
   end
 end

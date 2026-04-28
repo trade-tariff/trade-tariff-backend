@@ -1,4 +1,5 @@
 class GoodsNomenclatureLabel < Sequel::Model
+  include GeneratedContentLifecycle
   plugin :timestamps, update_on_create: true
   plugin :auto_validations, not_null: :presence
   plugin :has_paper_trail
@@ -33,17 +34,18 @@ class GoodsNomenclatureLabel < Sequel::Model
       where(stale: true, manually_edited: false)
     end
 
-    def admin_listing
+    def admin_listing(include_expired: false)
       lbl = Sequel[:goods_nomenclature_labels]
 
       TimeMachine.now do
-        join(:goods_nomenclatures, { Sequel[:gn][:goods_nomenclature_sid] => lbl[:goods_nomenclature_sid] }, table_alias: :gn)
-          .where(GoodsNomenclature.validity_dates_filter(:gn))
+        dataset = join(:goods_nomenclatures, { Sequel[:gn][:goods_nomenclature_sid] => lbl[:goods_nomenclature_sid] }, table_alias: :gn)
           .select_all(:goods_nomenclature_labels)
           .select_append(
             nomenclature_type_expression.as(:nomenclature_type),
             score_expression.as(:score),
           )
+
+        include_expired ? dataset : dataset.where(GoodsNomenclature.validity_dates_filter(:gn)).where(lbl[:expired] => false)
       end
     end
 
@@ -68,20 +70,11 @@ class GoodsNomenclatureLabel < Sequel::Model
       end
     end
 
-    def for_status(status)
-      lbl = Sequel[:goods_nomenclature_labels]
-
-      case status
-      when 'stale'
-        where(lbl[:stale] => true)
-      when 'manually_edited'
-        where(lbl[:manually_edited] => true)
-      else
-        self
-      end
-    end
-
     private
+
+    def generated_content_table
+      Sequel[:goods_nomenclature_labels]
+    end
 
     def score_sql
       lbl = '"goods_nomenclature_labels"'
@@ -119,10 +112,6 @@ class GoodsNomenclatureLabel < Sequel::Model
     components.any? ? (components.sum / components.size).round(4) : nil
   end
 
-  def mark_stale!
-    update(stale: true)
-  end
-
   def context_stale?(hash)
     context_hash != hash
   end
@@ -141,6 +130,10 @@ class GoodsNomenclatureLabel < Sequel::Model
 
       new(
         goods_nomenclature: goods_nomenclature,
+        goods_nomenclature_sid: goods_nomenclature.goods_nomenclature_sid,
+        goods_nomenclature_item_id: goods_nomenclature.goods_nomenclature_item_id,
+        producline_suffix: goods_nomenclature.producline_suffix,
+        goods_nomenclature_type: goods_nomenclature.class.name,
         labels: labels_hash,
         original_description: description_text,
         description: item.fetch('description', ''),

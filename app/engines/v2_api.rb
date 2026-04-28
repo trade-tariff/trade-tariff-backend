@@ -61,6 +61,7 @@ V2Api.routes.draw do
 
       resources :chemical_substances, only: %i[index]
       resources :simplified_procedural_code_measures, only: %i[index]
+      resources :description_intercepts, only: %i[index]
 
       resources :preference_codes, only: %i[index show]
 
@@ -160,7 +161,7 @@ V2Api.routes.draw do
       match '/404', to: 'errors#not_found', via: :all
       match '/405', to: 'errors#method_not_allowed', via: :all
       match '/406', to: 'errors#not_acceptable', via: :all
-      match '/422', to: 'errors#unprocessable_entity', via: :all
+      match '/422', to: 'errors#unprocessable_content', via: :all
       match '/500', to: 'errors#internal_server_error', via: :all
       match '/501', to: 'errors#not_implemented', via: :all
       match '/503', to: 'errors#maintenance', via: :all

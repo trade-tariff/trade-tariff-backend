@@ -24,8 +24,11 @@ FactoryBot.define do
       goods_nomenclature&.class&.name || 'Commodity'
     end
 
+    needs_review { false }
+    approved { false }
     stale { false }
     manually_edited { false }
+    expired { false }
     context_hash { nil }
 
     trait :with_labels do
@@ -43,12 +46,24 @@ FactoryBot.define do
       synonyms { Sequel.pg_array([], :text) }
     end
 
+    trait :needs_review do
+      needs_review { true }
+    end
+
+    trait :approved do
+      approved { true }
+    end
+
     trait :stale do
       stale { true }
     end
 
     trait :manually_edited do
       manually_edited { true }
+    end
+
+    trait :expired do
+      expired { true }
     end
   end
 end

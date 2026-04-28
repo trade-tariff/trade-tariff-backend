@@ -24,6 +24,9 @@ module TariffSynchronizer
       else
         download_and_create_entry
       end
+    rescue TariffUpdatesRequester::RetriableDownloadError => e
+      persist_exception_for_review(e)
+      raise
     rescue StandardError => e
       persist_exception_for_review(e)
     end

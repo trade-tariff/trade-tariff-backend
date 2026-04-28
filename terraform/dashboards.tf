@@ -24,6 +24,32 @@ output "search_dashboard_url" {
   value       = module.search_dashboard.dashboard_url
 }
 
+module "search_operations_dashboard" {
+  source = "./modules/search_operations_dashboard"
+
+  environment    = var.environment
+  log_group_name = "platform-logs-${var.environment}"
+  region         = var.region
+}
+
+output "search_operations_dashboard_url" {
+  description = "URL to the Search Operations CloudWatch dashboard"
+  value       = module.search_operations_dashboard.dashboard_url
+}
+
+module "search_quality_dashboard" {
+  source = "./modules/search_quality_dashboard"
+
+  environment    = var.environment
+  log_group_name = "platform-logs-${var.environment}"
+  region         = var.region
+}
+
+output "search_quality_dashboard_url" {
+  description = "URL to the Search Quality CloudWatch dashboard"
+  value       = module.search_quality_dashboard.dashboard_url
+}
+
 module "self_text_generator_dashboard" {
   source = "./modules/self_text_generator_dashboard"
 

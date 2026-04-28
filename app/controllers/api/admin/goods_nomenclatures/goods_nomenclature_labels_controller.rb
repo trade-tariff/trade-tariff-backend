@@ -9,7 +9,7 @@ module Api
         end
 
         def update
-          goods_nomenclature_label.set(label_params.merge(manually_edited: true))
+          goods_nomenclature_label.assign_manual_edit(label_params)
 
           if goods_nomenclature_label.save(raise_on_failure: false)
             reindex_goods_nomenclature
@@ -23,6 +23,38 @@ module Api
 
         def versions
           render json: serialize_versions(goods_nomenclature_label.versions.all)
+        end
+
+        def score
+          LabelConfidenceScorer.new.score([goods_nomenclature_label.goods_nomenclature_sid])
+
+          render json: serialize(goods_nomenclature_label.reload), status: :ok
+        end
+
+        def approve
+          goods_nomenclature_label.approve!
+
+          render json: serialize(goods_nomenclature_label.reload), status: :ok
+        end
+
+        def reject
+          goods_nomenclature_label.mark_needs_review!
+
+          render json: serialize(goods_nomenclature_label.reload), status: :ok
+        end
+
+        def regenerate
+          generated_label = LabelService.call([goods_nomenclature]).find do |label|
+            label.goods_nomenclature_sid == goods_nomenclature_label.goods_nomenclature_sid
+          end
+
+          raise Sequel::RecordNotFound unless generated_label
+
+          goods_nomenclature_label.apply_ui_regeneration!(label_attributes_from(generated_label))
+          reindex_goods_nomenclature
+          ScoreLabelBatchWorker.perform_async(goods_nomenclature_label.goods_nomenclature_sid)
+
+          render json: serialize(goods_nomenclature_label.reload), status: :ok
         end
 
         private
@@ -130,6 +162,18 @@ module Api
               'colloquial_terms' => Array(labels_data[:colloquial_terms]),
               'synonyms' => Array(labels_data[:synonyms]),
             },
+          }
+        end
+
+        def label_attributes_from(label)
+          {
+            labels: label.labels,
+            description: label.description,
+            original_description: label.original_description,
+            known_brands: label.known_brands,
+            colloquial_terms: label.colloquial_terms,
+            synonyms: label.synonyms,
+            context_hash: label.context_hash,
           }
         end
       end

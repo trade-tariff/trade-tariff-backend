@@ -270,6 +270,19 @@ RSpec.describe GoodsNomenclature do
 
       it { is_expected.to be(true) }
     end
+
+    context 'when the full_chemicals association is already loaded' do
+      subject(:has_chemicals) { goods_nomenclature.has_chemicals }
+
+      let(:goods_nomenclature) { create(:goods_nomenclature, :with_full_chemicals) }
+
+      before do
+        goods_nomenclature.full_chemicals
+        allow(goods_nomenclature).to receive(:full_chemicals_dataset).and_raise('should not query dataset')
+      end
+
+      it { is_expected.to be(true) }
+    end
   end
 
   describe '#non_grouping?' do

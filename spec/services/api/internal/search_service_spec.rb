@@ -8,6 +8,7 @@ RSpec.describe Api::Internal::SearchService do
     allow(InteractiveSearchService).to receive(:call).and_return(nil)
     allow(Search::Instrumentation).to receive(:search) { |**_kwargs, &block| block.call&.first }
     allow(Search::Instrumentation).to receive(:query_expanded).and_yield
+    allow(Search::Instrumentation).to receive(:description_intercept_checked)
   end
 
   describe '#call' do
@@ -21,13 +22,6 @@ RSpec.describe Api::Internal::SearchService do
     context 'when nil query' do
       it 'returns empty data' do
         result = described_class.new(q: nil).call
-        expect(result).to eq(data: [])
-      end
-    end
-
-    context 'when rogue query' do
-      it 'returns empty data' do
-        result = described_class.new(q: 'gif').call
         expect(result).to eq(data: [])
       end
     end
@@ -254,6 +248,176 @@ RSpec.describe Api::Internal::SearchService do
 
         expect(TradeTariffBackend.search_client).to have_received(:search).with(
           hash_including(index: Search::GoodsNomenclatureIndex.new.name),
+        )
+      end
+
+      it 'instruments the lack of a description intercept match' do
+        described_class.new(q: 'animals', as_of: Time.zone.today.iso8601, request_id: 'req-1').call
+
+        expect(Search::Instrumentation).to have_received(:description_intercept_checked).with(
+          request_id: 'req-1',
+          query: 'animals',
+          description_intercept: nil,
+        )
+      end
+    end
+
+    context 'when description intercept excludes the query' do
+      before do
+        create(:description_intercept,
+               term: 'gift',
+               excluded: true,
+               message: 'Gift is too vague.',
+               guidance_level: 'warning',
+               guidance_location: 'interstitial',
+               escalate_to_webchat: true)
+        allow(TradeTariffBackend.search_client).to receive(:search)
+      end
+
+      it 'returns no results with intercept meta without querying retrieval' do
+        result = described_class.new(q: 'gift', request_id: 'req-1').call
+
+        expect(result).to include(data: [])
+        expect(result[:meta][:description_intercept]).to include(
+          term: 'gift',
+          excluded: true,
+          filtering: false,
+          filter_prefixes: [],
+          message: 'Gift is too vague.',
+          guidance_level: 'warning',
+          guidance_location: 'interstitial',
+          escalate_to_webchat: true,
+        )
+        expect(TradeTariffBackend.search_client).not_to have_received(:search)
+        expect(Search::Instrumentation).to have_received(:description_intercept_checked).with(
+          request_id: 'req-1',
+          query: 'gift',
+          description_intercept: an_instance_of(DescriptionIntercept),
+        )
+      end
+    end
+
+    context 'when description intercept provides guidance' do
+      let(:opensearch_response) do
+        {
+          'hits' => {
+            'hits' => [
+              {
+                '_score' => 12.5,
+                '_source' => {
+                  'goods_nomenclature_sid' => 1,
+                  'goods_nomenclature_item_id' => '0100000000',
+                  'producline_suffix' => '80',
+                  'goods_nomenclature_class' => 'Chapter',
+                  'description' => 'live animals',
+                  'formatted_description' => 'Live animals',
+                  'declarable' => false,
+                },
+              },
+            ],
+          },
+        }
+      end
+
+      before do
+        create(:description_intercept,
+               term: 'animals',
+               message: 'Use a more specific animal term.',
+               guidance_level: 'info',
+               guidance_location: 'results',
+               escalate_to_webchat: true)
+        allow(TradeTariffBackend.search_client).to receive(:search).and_return(opensearch_response)
+      end
+
+      it 'keeps results and adds intercept meta' do
+        result = described_class.new(q: 'animals').call
+
+        expect(result[:data].length).to eq(1)
+        expect(result[:meta][:description_intercept]).to include(
+          term: 'animals',
+          excluded: false,
+          filtering: false,
+          message: 'Use a more specific animal term.',
+          guidance_level: 'info',
+          guidance_location: 'results',
+          escalate_to_webchat: true,
+        )
+      end
+
+      it 'adds description intercept fields to search completion instrumentation' do
+        completion_payload = nil
+        allow(Search::Instrumentation).to receive(:search) do |**_kwargs, &block|
+          result, completion_payload = block.call
+          result
+        end
+
+        described_class.new(q: 'animals').call
+
+        expect(completion_payload[:description_intercept]).to have_attributes(
+          term: 'animals',
+          excluded: false,
+          filtering?: false,
+          filter_prefixes_array: [],
+          guidance_level: 'info',
+          guidance_location: 'results',
+          escalate_to_webchat: true,
+        )
+      end
+    end
+
+    context 'when description intercept filters the query' do
+      before do
+        create(:description_intercept,
+               term: 'toy',
+               message: nil,
+               guidance_level: nil,
+               guidance_location: nil,
+               filter_prefixes: Sequel.pg_array(%w[9503 9504], :text))
+        allow(OpensearchRetrievalService).to receive(:call).and_return(
+          OpensearchRetrievalService::Result.new(results: [], expanded_query: 'toy'),
+        )
+      end
+
+      it 'passes prefixes to retrieval and adds filtering meta' do
+        result = described_class.new(q: 'toy').call
+
+        expect(OpensearchRetrievalService).to have_received(:call).with(
+          hash_including(filter_prefixes: %w[9503 9504]),
+        )
+        expect(result[:meta][:description_intercept]).to include(
+          term: 'toy',
+          filtering: true,
+          filter_prefixes: %w[9503 9504],
+        )
+      end
+    end
+
+    context 'when filtered description intercept has an exact match outside prefixes' do
+      let!(:chapter) do
+        create(:chapter, :with_description,
+               goods_nomenclature_item_id: '0100000000',
+               description: 'live animals')
+      end
+
+      before do
+        create(:description_intercept,
+               term: 'animals',
+               filter_prefixes: Sequel.pg_array(%w[9503], :text))
+        create(:search_suggestion, :goods_nomenclature,
+               goods_nomenclature: chapter,
+               value: 'animals',
+               declarable: true)
+        allow(OpensearchRetrievalService).to receive(:call).and_return(
+          OpensearchRetrievalService::Result.new(results: [], expanded_query: 'animals'),
+        )
+      end
+
+      it 'does not let the exact match bypass filtering' do
+        result = described_class.new(q: 'animals').call
+
+        expect(result[:data]).to be_empty
+        expect(OpensearchRetrievalService).to have_received(:call).with(
+          hash_including(filter_prefixes: %w[9503]),
         )
       end
     end
@@ -745,6 +909,22 @@ RSpec.describe Api::Internal::SearchService do
         expect(result[:data].length).to eq(1)
         expect(result[:data][0][:attributes][:goods_nomenclature_item_id]).to eq('0101210000')
       end
+
+      context 'with a filtering description intercept' do
+        before do
+          create(:description_intercept,
+                 term: 'horses',
+                 filter_prefixes: Sequel.pg_array(%w[0101], :text))
+        end
+
+        it 'passes prefixes to VectorRetrievalService' do
+          described_class.new(q: 'horses').call
+
+          expect(VectorRetrievalService).to have_received(:call).with(
+            hash_including(filter_prefixes: %w[0101]),
+          )
+        end
+      end
     end
 
     context 'when retrieval_method is hybrid' do
@@ -803,6 +983,22 @@ RSpec.describe Api::Internal::SearchService do
 
         expect(result[:data].length).to eq(1)
         expect(result[:data][0][:attributes][:goods_nomenclature_item_id]).to eq('0101210000')
+      end
+
+      context 'with a filtering description intercept' do
+        before do
+          create(:description_intercept,
+                 term: 'horses',
+                 filter_prefixes: Sequel.pg_array(%w[0101], :text))
+        end
+
+        it 'passes prefixes to HybridRetrievalService' do
+          described_class.new(q: 'horses').call
+
+          expect(HybridRetrievalService).to have_received(:call).with(
+            hash_including(filter_prefixes: %w[0101]),
+          )
+        end
       end
     end
 

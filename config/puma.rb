@@ -5,11 +5,14 @@ threads threads_count, threads_count
 preload_app!
 
 rackup      Puma::Configuration::DEFAULTS[:rackup]
-# port        ENV['PORT']     || 8080
 environment ENV['RACK_ENV'] || 'development'
 
-# Explicit HTTP bind,  default is 8080.
-bind "tcp://0.0.0.0:#{ENV.fetch('PORT', 8080)}"
+rails_env = ENV.fetch("RAILS_ENV", "development")
+
+# Explicit HTTP bind,  default is 3000.
+if rails_env == "development"
+  bind "tcp://0.0.0.0:#{ENV.fetch('PORT', 8080)}"
+end
 
 # Explicit HTTPS bind
 cert = ENV['SSL_CERT_PEM']&.gsub('\n', "\n")

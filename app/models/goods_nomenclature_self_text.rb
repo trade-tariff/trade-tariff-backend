@@ -1,4 +1,5 @@
 class GoodsNomenclatureSelfText < Sequel::Model
+  include GeneratedContentLifecycle
   plugin :timestamps, update_on_create: true
   plugin :auto_validations, not_null: :presence
   plugin :has_paper_trail
@@ -22,16 +23,18 @@ class GoodsNomenclatureSelfText < Sequel::Model
       where(needs_review: true)
     end
 
-    def admin_listing
+    def admin_listing(include_expired: false)
       st = Sequel[:goods_nomenclature_self_texts]
 
-      join(:goods_nomenclatures, { Sequel[:gn][:goods_nomenclature_sid] => st[:goods_nomenclature_sid] }, table_alias: :gn)
+      dataset = join(:goods_nomenclatures, { Sequel[:gn][:goods_nomenclature_sid] => st[:goods_nomenclature_sid] }, table_alias: :gn)
         .select_all(:goods_nomenclature_self_texts)
         .select_append(
           nomenclature_type_expression.as(:nomenclature_type),
           score_expression.as(:score),
         )
         .where(st[:generation_type] => %w[ai ai_non_other])
+
+      include_expired ? dataset : dataset.where(st[:expired] => false)
     end
 
     def search(query)
@@ -53,21 +56,6 @@ class GoodsNomenclatureSelfText < Sequel::Model
       end
     end
 
-    def for_status(status)
-      st = Sequel[:goods_nomenclature_self_texts]
-
-      case status
-      when 'needs_review'
-        where(st[:needs_review] => true)
-      when 'stale'
-        where(st[:stale] => true)
-      when 'manually_edited'
-        where(st[:manually_edited] => true)
-      else
-        self
-      end
-    end
-
     def vector_search(vector_literal, limit:)
       distance_expr = Sequel.lit("goods_nomenclature_self_texts.search_embedding <=> #{vector_literal}")
 
@@ -84,6 +72,10 @@ class GoodsNomenclatureSelfText < Sequel::Model
     end
 
     private
+
+    def generated_content_table
+      Sequel[:goods_nomenclature_self_texts]
+    end
 
     def score_expression
       st = Sequel[:goods_nomenclature_self_texts]
@@ -174,10 +166,6 @@ class GoodsNomenclatureSelfText < Sequel::Model
         item_ids: batch.map(&:goods_nomenclature_sid),
       )
     end
-  end
-
-  def mark_stale!
-    update(stale: true)
   end
 
   def context_stale?(current_hash)

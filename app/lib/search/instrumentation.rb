@@ -87,7 +87,7 @@ module Search
       instrument('answer_returned', request_id:, answer_count:, confidence_levels:, attempt_number:)
     end
 
-    def search_completed(request_id:, search_type:, total_duration_ms:, result_count:, query: nil, total_attempts: nil, total_questions: nil, final_result_type: nil, results_type: nil, max_score: nil, error_message: nil)
+    def search_completed(request_id:, search_type:, total_duration_ms:, result_count:, query: nil, total_attempts: nil, total_questions: nil, final_result_type: nil, results_type: nil, max_score: nil, error_message: nil, description_intercept: nil)
       payload = {
         request_id:,
         query:,
@@ -100,8 +100,16 @@ module Search
       }
       payload[:results_type] = results_type if results_type
       payload[:max_score] = max_score if max_score
+      payload.merge!(description_intercept_payload(description_intercept, prefix: :description_intercept))
       payload.merge!(truncate_error_payload(error_message))
       instrument('search_completed', payload)
+    end
+
+    def description_intercept_checked(request_id:, query:, description_intercept:)
+      instrument(
+        'description_intercept_checked',
+        { request_id:, query: }.merge(description_intercept_payload(description_intercept)),
+      )
     end
 
     def retrieval_leg_completed(request_id:, leg:, duration_ms:, result_count:, status:, error_message: nil)
@@ -130,6 +138,27 @@ module Search
           search_type:,
         }.merge(truncate_error_payload(error_message)),
       )
+    end
+
+    def description_intercept_payload(description_intercept, prefix: nil)
+      payload = if description_intercept
+                  {
+                    matched: true,
+                    term: description_intercept.term,
+                    excluded: description_intercept.excluded,
+                    filtering: description_intercept.filtering?,
+                    filter_prefix_count: description_intercept.filter_prefixes_array.size,
+                    guidance_level: description_intercept.guidance_level,
+                    guidance_location: description_intercept.guidance_location,
+                    escalate_to_webchat: description_intercept.escalate_to_webchat,
+                  }
+                else
+                  { matched: false }
+                end
+
+      return payload unless prefix
+
+      payload.transform_keys { |key| [prefix, key].join('_').to_sym }
     end
 
     def determine_response_type(result)

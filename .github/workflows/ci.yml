@@ -20,7 +20,7 @@ env:
   RAILS_ENV: test
 
 permissions:
-  contents: read
+  contents: write
   id-token: write
 
 jobs:
@@ -70,6 +70,9 @@ jobs:
           - 6379:6379
     steps:
       - uses: actions/checkout@v6
+        with:
+          ref: ${{ github.head_ref || github.ref_name }}
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - uses: ankane/setup-opensearch@v1
         with:
@@ -84,6 +87,20 @@ jobs:
       - run: bundle exec rails db:structure:load --trace
 
       - run: bundle exec rspec --format progress --format Ctrf::RSpecFormatter --out ./ctrf/ctrf.json
+
+      - name: Check all public V2 controllers have swagger specs
+        run: bundle exec rake swagger:check_coverage
+
+      - name: Generate swagger docs
+        run: bundle exec rake swagger:generate
+
+      - name: Commit swagger docs if changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add swagger/v2/swagger.json
+          git diff --staged --quiet || git commit -m "Generate swagger/v2/swagger.json [skip ci]" && git push
+
       - name: Publish Test Report
         uses: ctrf-io/github-test-reporter@v1
         with:

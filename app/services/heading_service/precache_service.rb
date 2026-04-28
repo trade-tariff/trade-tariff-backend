@@ -26,15 +26,16 @@ module HeadingService
 
     def each_heading
       Chapter.actual.non_hidden.all do |chapter|
-        Chapter.actual
-               .where(goods_nomenclature_sid: chapter.goods_nomenclature_sid)
-               .eager(*Serialization::NsNondeclarableService::HEADING_EAGER_LOAD)
-               .take
-               .children
-               .each do |heading|
-                 next if heading.declarable?
+        headings = Chapter.actual
+                          .where(goods_nomenclature_sid: chapter.goods_nomenclature_sid)
+                          .eager(*Serialization::NsNondeclarableService::HEADING_EAGER_LOAD)
+                          .take
+                          .children
 
-                 yield heading
+        headings.each do |heading|
+          next if heading.declarable?
+
+          yield heading
         end
       end
     end

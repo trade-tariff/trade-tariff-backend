@@ -15,6 +15,7 @@ gem 'sequel-rails'
 # File uploads and AWS
 gem 'aws-actionmailer-ses'
 gem 'aws-sdk-cloudfront'
+gem 'aws-sdk-cloudwatchlogs'
 gem 'aws-sdk-rails'
 gem 'aws-sdk-s3'
 
@@ -83,6 +84,7 @@ group :test do
   gem 'rspec_junit_formatter'
   gem 'rspec-rails'
   gem 'rspec-rebound'
+  gem 'rswag-specs'
   gem 'webmock'
 end
 

@@ -170,6 +170,22 @@ class Measure < Sequel::Model
                                         measure_generating_regulation_role],
                                 conditions: { approved_flag: true }
 
+  # The justification regulation is a separate regulation from the generating
+  # one: it records the legal act that justifies the measure ending. Both
+  # association directions are defined so they can be batch-eager-loaded in the
+  # commodity serialization path, avoiding a raw `.find` per measure.
+  many_to_one :justification_modification_regulation,
+              class: 'ModificationRegulation',
+              primary_key: %i[modification_regulation_id modification_regulation_role],
+              key: %i[justification_regulation_id justification_regulation_role],
+              conditions: { approved_flag: true }
+
+  many_to_one :justification_base_regulation,
+              class: 'BaseRegulation',
+              primary_key: %i[base_regulation_id base_regulation_role],
+              key: %i[justification_regulation_id justification_regulation_role],
+              conditions: { approved_flag: true }
+
   def validity_start_date
     self[:validity_start_date].presence || generating_regulation.validity_start_date
   end
@@ -188,11 +204,9 @@ class Measure < Sequel::Model
 
   def justification_regulation
     @justification_regulation ||= if justification_regulation_role == MODIFICATION_REGULATION_ROLE
-                                    ModificationRegulation.find(modification_regulation_id: justification_regulation_id,
-                                                                modification_regulation_role: justification_regulation_role)
+                                    justification_modification_regulation
                                   else
-                                    BaseRegulation.find(base_regulation_id: justification_regulation_id,
-                                                        base_regulation_role: justification_regulation_role)
+                                    justification_base_regulation
                                   end
   end
 

@@ -82,5 +82,31 @@ RSpec.describe TaricUpdatesSynchronizerWorker, type: :worker do
         end
       end
     end
+
+    context 'when a retriable download error is raised' do
+      let(:service) { 'xi' }
+
+      before do
+        allow(TaricSynchronizer).to receive(:download)
+          .and_raise(TariffSynchronizer::TariffUpdatesRequester::RetriableDownloadError, 'http://example/file')
+      end
+
+      context 'when retry budget remains' do
+        it 'reschedules the job with an incremented retry count' do
+          described_class.new.perform(false, 0)
+
+          expect(described_class.jobs).to have_attributes length: 1
+          expect(described_class.jobs.first).to include('args' => [false, 1])
+        end
+      end
+
+      context 'when retry budget is exhausted' do
+        it 'does not reschedule the job' do
+          described_class.new.perform(false, described_class::DOWNLOAD_MAX_RETRIES)
+
+          expect(described_class.jobs).to be_empty
+        end
+      end
+    end
   end
 end

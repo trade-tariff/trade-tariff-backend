@@ -13,7 +13,7 @@ RSpec.describe ApplicationController, type: :request do
         {
           "errors": [
             {
-              "detail": '422 - Unprocessable entity: API documentation is available at https://api.trade-tariff.service.gov.uk/',
+              "detail": '422 - Unprocessable content: API documentation is available at https://api.trade-tariff.service.gov.uk/',
             },
           ],
         }.to_json

@@ -25,9 +25,29 @@ class GeographicalArea < Sequel::Model
       .order(Sequel.desc(:geographical_area_description_periods__validity_start_date))
   end
 
-  many_to_one :referenced, class: 'GeographicalArea',
-                           primary_key: :geographical_area_id,
-                           key: :referenced_id do |ds|
+  many_to_one :referenced,
+              class: 'GeographicalArea',
+              primary_key: :geographical_area_id,
+              key: :referenced_id,
+              eager_loader: (lambda do |eo|
+                eo[:rows].each { |ga| ga.associations[:referenced] = nil }
+
+                rows_with_refs = eo[:rows].select { |ga| REFERENCED_GEOGRAPHICAL_AREAS.key?(ga.geographical_area_id) }
+                return if rows_with_refs.empty?
+
+                ref_ids = rows_with_refs.map { |ga| REFERENCED_GEOGRAPHICAL_AREAS[ga.geographical_area_id] }.uniq
+
+                referenced_by_id = GeographicalArea.actual
+                  .where(geographical_area_id: ref_ids)
+                  .eager(eo[:associations])
+                  .all
+                  .index_by(&:geographical_area_id)
+
+                rows_with_refs.each do |ga|
+                  ref_id = REFERENCED_GEOGRAPHICAL_AREAS[ga.geographical_area_id]
+                  ga.associations[:referenced] = referenced_by_id[ref_id]
+                end
+              end) do |ds|
     ds.with_actual(GeographicalArea)
   end
 

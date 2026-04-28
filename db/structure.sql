@@ -3872,7 +3872,10 @@ CREATE TABLE uk.goods_nomenclature_labels (
     known_brands text[] DEFAULT '{}'::text[],
     description_score double precision,
     synonym_scores double precision[] DEFAULT '{}'::double precision[],
-    colloquial_term_scores double precision[] DEFAULT '{}'::double precision[]
+    colloquial_term_scores double precision[] DEFAULT '{}'::double precision[],
+    needs_review boolean DEFAULT false NOT NULL,
+    approved boolean DEFAULT false NOT NULL,
+    expired boolean DEFAULT false NOT NULL
 );
 
 
@@ -3957,7 +3960,9 @@ CREATE TABLE uk.goods_nomenclature_self_texts (
     coherence_score double precision,
     search_embedding public.vector(1536),
     search_text text,
-    search_embedding_stale boolean DEFAULT false NOT NULL
+    search_embedding_stale boolean DEFAULT false NOT NULL,
+    approved boolean DEFAULT false NOT NULL,
+    expired boolean DEFAULT false NOT NULL
 );
 
 
@@ -10549,6 +10554,13 @@ CREATE INDEX base_regulations_antidumping_regulation_role_related_antidumpin ON 
 
 
 --
+-- Name: base_regulations_approved_composite_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX base_regulations_approved_composite_index ON uk.base_regulations USING btree (base_regulation_id, base_regulation_role) WHERE (approved_flag IS TRUE);
+
+
+--
 -- Name: base_regulations_approved_flag_index; Type: INDEX; Schema: uk; Owner: -
 --
 
@@ -11293,6 +11305,13 @@ CREATE INDEX fts_reg_act_pk ON uk.fts_regulation_actions_oplog USING btree (fts_
 
 
 --
+-- Name: fts_regulation_actions_stopped_regulation_id_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX fts_regulation_actions_stopped_regulation_id_index ON uk.fts_regulation_actions_oplog USING btree (stopped_regulation_id);
+
+
+--
 -- Name: ftsro_fultemstoregopl_ullarytoponslog_operation_date; Type: INDEX; Schema: uk; Owner: -
 --
 
@@ -11416,6 +11435,20 @@ CREATE UNIQUE INDEX geographical_area_description_periods_oid_index ON uk.geogra
 --
 
 CREATE INDEX geographical_area_description_periods_operation_date_index ON uk.geographical_area_description_periods USING btree (operation_date);
+
+
+--
+-- Name: geographical_area_description_periods_validity_end_date_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX geographical_area_description_periods_validity_end_date_index ON uk.geographical_area_description_periods USING btree (validity_end_date);
+
+
+--
+-- Name: geographical_area_description_periods_validity_start_date_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX geographical_area_description_periods_validity_start_date_index ON uk.geographical_area_description_periods USING btree (validity_start_date);
 
 
 --
@@ -11569,7 +11602,21 @@ CREATE INDEX gono_desc_periods_pk ON uk.goods_nomenclature_description_periods_o
 -- Name: gono_desc_pk; Type: INDEX; Schema: uk; Owner: -
 --
 
+CREATE INDEX gono_desc_oid_index ON uk.goods_nomenclature_descriptions_oplog USING btree (goods_nomenclature_sid, goods_nomenclature_description_period_sid, oid DESC);
+
+
+--
+-- Name: gono_desc_pk; Type: INDEX; Schema: uk; Owner: -
+--
+
 CREATE INDEX gono_desc_pk ON uk.goods_nomenclature_descriptions_oplog USING btree (goods_nomenclature_sid, goods_nomenclature_description_period_sid);
+
+
+--
+-- Name: gono_desc_periods_oid_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX gono_desc_periods_oid_index ON uk.goods_nomenclature_description_periods_oplog USING btree (goods_nomenclature_description_period_sid, oid DESC);
 
 
 --
@@ -11881,6 +11928,27 @@ CREATE INDEX idx_description_intercepts_sources_gin ON uk.description_intercepts
 
 
 --
+-- Name: idx_labels_approved; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX idx_labels_approved ON uk.goods_nomenclature_labels USING btree (approved) WHERE (approved = true);
+
+
+--
+-- Name: idx_labels_expired; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX idx_labels_expired ON uk.goods_nomenclature_labels USING btree (expired) WHERE (expired = true);
+
+
+--
+-- Name: idx_labels_needs_review; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX idx_labels_needs_review ON uk.goods_nomenclature_labels USING btree (needs_review) WHERE (needs_review = true);
+
+
+--
 -- Name: idx_labels_stale; Type: INDEX; Schema: uk; Owner: -
 --
 
@@ -11899,6 +11967,20 @@ CREATE INDEX idx_search_suggestions_distinct ON uk.search_suggestions USING btre
 --
 
 CREATE INDEX idx_search_suggestions_value_trgm ON uk.search_suggestions USING gin (value public.gin_trgm_ops);
+
+
+--
+-- Name: idx_self_texts_approved; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX idx_self_texts_approved ON uk.goods_nomenclature_self_texts USING btree (approved) WHERE (approved = true);
+
+
+--
+-- Name: idx_self_texts_expired; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX idx_self_texts_expired ON uk.goods_nomenclature_self_texts USING btree (expired) WHERE (expired = true);
 
 
 --
@@ -12490,6 +12572,13 @@ CREATE INDEX measure_excluded_geographical_areas_measure_sid_excluded_geogra ON 
 
 
 --
+-- Name: measure_excluded_geographical_areas_measure_sid_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX measure_excluded_geographical_areas_measure_sid_index ON uk.measure_excluded_geographical_areas USING btree (measure_sid);
+
+
+--
 -- Name: measure_excluded_geographical_areas_oid_index; Type: INDEX; Schema: uk; Owner: -
 --
 
@@ -12578,6 +12667,13 @@ CREATE INDEX measures_goods_nomenclature_item_id_index ON uk.measures_oplog USIN
 --
 
 CREATE INDEX measures_goods_nomenclature_sid_index ON uk.measures USING btree (goods_nomenclature_sid);
+
+
+--
+-- Name: measures_goods_nomenclature_sid_validity_composite_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX measures_goods_nomenclature_sid_validity_composite_index ON uk.measures USING btree (goods_nomenclature_sid, validity_start_date, validity_end_date);
 
 
 --
@@ -12816,6 +12912,13 @@ CREATE INDEX mod_reg_explicit_abrogation_regulation ON uk.modification_regulatio
 --
 
 CREATE INDEX mod_reg_pk ON uk.modification_regulations_oplog USING btree (modification_regulation_id, modification_regulation_role);
+
+
+--
+-- Name: modification_regulations_approved_composite_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX modification_regulations_approved_composite_index ON uk.modification_regulations USING btree (modification_regulation_id, modification_regulation_role) WHERE (approved_flag IS TRUE);
 
 
 --
@@ -14027,3 +14130,5 @@ INSERT INTO "schema_migrations" ("filename") VALUES ('20260414113628_create_cust
 INSERT INTO "schema_migrations" ("filename") VALUES ('20260414113629_create_customs_tariff_general_rules.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20260415120000_add_guidance_fields_to_description_intercepts.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20260415120001_create_tariff_update_state_changes.rb');
+INSERT INTO "schema_migrations" ("filename") VALUES ('20260422143000_add_lifecycle_flags_to_generated_classification_content.rb');
+INSERT INTO "schema_migrations" ("filename") VALUES ('20260423120000_add_regulation_and_fts_performance_indexes.rb');

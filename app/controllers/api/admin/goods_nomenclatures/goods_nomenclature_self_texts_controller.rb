@@ -9,8 +9,8 @@ module Api
         end
 
         def update
-          self_text_record.set(update_params)
-          self_text_record.save_changes
+          self_text_record.apply_manual_edit!(update_params)
+          reindex_goods_nomenclature
           ScoreLabelBatchWorker.perform_async(self_text_record.goods_nomenclature_sid)
 
           render json: serialize(self_text_record.reload, serializer_options), status: :ok
@@ -23,13 +23,13 @@ module Api
         end
 
         def approve
-          self_text_record.update(needs_review: false)
+          self_text_record.approve!
 
           render json: serialize(self_text_record.reload), status: :ok
         end
 
         def reject
-          self_text_record.update(needs_review: true)
+          self_text_record.mark_needs_review!
 
           render json: serialize(self_text_record.reload), status: :ok
         end
@@ -50,11 +50,13 @@ module Api
           chapter = TimeMachine.now { Chapter.actual.by_code(gn.goods_nomenclature_item_id).take }
           raise Sequel::RecordNotFound unless chapter
 
-          # Force regeneration by invalidating context hash so context_stale? returns true
-          self_text_record.update(context_hash: 'invalidated', stale: true)
+          # Force regeneration by invalidating context hash so context_stale? returns true.
+          # UI regeneration deliberately replaces manual content, so clear the manual lock first.
+          self_text_record.prepare_ui_regeneration!(context_hash: 'invalidated')
 
           GenerateSelfText::OtherSelfTextBuilder.call(chapter)
           GenerateSelfText::NonOtherSelfTextBuilder.call(chapter)
+          reindex_goods_nomenclature(gn)
           ScoreLabelBatchWorker.perform_async(self_text_record.goods_nomenclature_sid)
 
           render json: serialize(self_text_record.reload), status: :ok
@@ -107,9 +109,24 @@ module Api
           attributes = params.require(:data).require(:attributes)
           {
             self_text: attributes[:self_text],
-            manually_edited: true,
-            needs_review: false,
           }
+        end
+
+        def reindex_goods_nomenclature(record = goods_nomenclature)
+          return unless record
+
+          TradeTariffBackend.search_client.index(
+            ::Search::GoodsNomenclatureIndex,
+            record.reload,
+          )
+        end
+
+        def goods_nomenclature
+          @goods_nomenclature ||= TimeMachine.now do
+            GoodsNomenclature.actual
+              .where(goods_nomenclature_sid: self_text_record.goods_nomenclature_sid)
+              .first
+          end
         end
       end
     end

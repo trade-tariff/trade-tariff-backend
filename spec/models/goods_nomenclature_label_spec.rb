@@ -78,6 +78,15 @@ RSpec.describe GoodsNomenclatureLabel do
       expect(label.goods_nomenclature).to eq(goods_nomenclature)
     end
 
+    it 'sets goods nomenclature identifiers before validation' do
+      expect(label).to have_attributes(
+        goods_nomenclature_sid: goods_nomenclature.goods_nomenclature_sid,
+        goods_nomenclature_item_id: goods_nomenclature.goods_nomenclature_item_id,
+        producline_suffix: goods_nomenclature.producline_suffix,
+        goods_nomenclature_type: 'Commodity',
+      )
+    end
+
     it 'populates labels from the item' do
       expect(label.labels.to_h).to include(
         'description' => 'A test description',
@@ -141,6 +150,177 @@ RSpec.describe GoodsNomenclatureLabel do
       label = create(:goods_nomenclature_label)
       label.mark_stale!
       expect(label.reload.stale).to be true
+    end
+  end
+
+  describe 'lifecycle transitions' do
+    describe '#mark_needs_review!' do
+      it 'marks the label for review and clears approval' do
+        label = create(:goods_nomenclature_label, needs_review: false, approved: true)
+
+        label.mark_needs_review!
+
+        expect(label.reload).to have_attributes(
+          needs_review: true,
+          approved: false,
+        )
+      end
+    end
+
+    describe '#approve!' do
+      it 'approves the current label and clears review' do
+        label = create(:goods_nomenclature_label, needs_review: true, approved: false)
+
+        label.approve!
+
+        expect(label.reload).to have_attributes(
+          needs_review: false,
+          approved: true,
+        )
+      end
+    end
+
+    describe '#apply_manual_edit!' do
+      it 'updates label fields, records the manual edit, approves it and clears review' do
+        label = create(:goods_nomenclature_label, needs_review: true, approved: false, manually_edited: false)
+        labels = {
+          'description' => 'Operator label',
+          'known_brands' => ['Brand A'],
+          'colloquial_terms' => ['Trade term'],
+          'synonyms' => ['Synonym A'],
+        }
+
+        label.apply_manual_edit!(
+          labels: labels,
+          description: 'Operator label',
+          known_brands: Sequel.pg_array(['Brand A'], :text),
+          colloquial_terms: Sequel.pg_array(['Trade term'], :text),
+          synonyms: Sequel.pg_array(['Synonym A'], :text),
+        )
+
+        expect(label.reload).to have_attributes(
+          description: 'Operator label',
+          needs_review: false,
+          approved: true,
+          manually_edited: true,
+        )
+        expect(label.known_brands.to_a).to eq(['Brand A'])
+        expect(label.colloquial_terms.to_a).to eq(['Trade term'])
+        expect(label.synonyms.to_a).to eq(['Synonym A'])
+      end
+    end
+
+    describe '#assign_manual_edit' do
+      it 'assigns label fields and lifecycle flags without saving' do
+        label = create(:goods_nomenclature_label, needs_review: true, approved: false, manually_edited: false)
+        persisted_description = label.description
+
+        label.assign_manual_edit(description: 'Unsaved operator label')
+
+        expect(label).to have_attributes(
+          description: 'Unsaved operator label',
+          needs_review: false,
+          approved: true,
+          manually_edited: true,
+        )
+        expect(label.reload).to have_attributes(
+          description: persisted_description,
+          needs_review: true,
+          approved: false,
+          manually_edited: false,
+        )
+      end
+    end
+
+    describe '#apply_pipeline_generation!' do
+      it 'updates generated label content and clears stale review state for non-manually-edited records' do
+        label = create(:goods_nomenclature_label, :stale, needs_review: true, approved: true, manually_edited: false)
+
+        result = label.apply_pipeline_generation!(
+          labels: { 'description' => 'Generated label' },
+          description: 'Generated label',
+          synonyms: Sequel.pg_array(['generated synonym'], :text),
+          colloquial_terms: Sequel.pg_array([], :text),
+          known_brands: Sequel.pg_array([], :text),
+          context_hash: 'fresh-hash',
+        )
+
+        expect(result).to be true
+        expect(label.reload).to have_attributes(
+          description: 'Generated label',
+          context_hash: 'fresh-hash',
+          stale: false,
+          needs_review: false,
+          approved: false,
+          manually_edited: false,
+        )
+        expect(label.synonyms.to_a).to eq(['generated synonym'])
+      end
+
+      it 'does not update manually edited labels' do
+        label = create(:goods_nomenclature_label,
+                       :stale,
+                       description: 'Operator label',
+                       manually_edited: true,
+                       approved: true)
+
+        result = label.apply_pipeline_generation!(
+          labels: { 'description' => 'Generated label' },
+          description: 'Generated label',
+          synonyms: Sequel.pg_array([], :text),
+          colloquial_terms: Sequel.pg_array([], :text),
+          known_brands: Sequel.pg_array([], :text),
+          context_hash: 'fresh-hash',
+        )
+
+        expect(result).to be false
+        expect(label.reload).to have_attributes(
+          description: 'Operator label',
+          stale: true,
+          manually_edited: true,
+          approved: true,
+        )
+      end
+    end
+
+    describe '#apply_ui_regeneration!' do
+      it 'can replace manually edited label content and clears lifecycle review tags' do
+        label = create(:goods_nomenclature_label,
+                       :stale,
+                       description: 'Operator label',
+                       needs_review: true,
+                       approved: true,
+                       manually_edited: true)
+
+        label.apply_ui_regeneration!(
+          labels: { 'description' => 'Generated label' },
+          description: 'Generated label',
+          synonyms: Sequel.pg_array([], :text),
+          colloquial_terms: Sequel.pg_array(['generated term'], :text),
+          known_brands: Sequel.pg_array([], :text),
+          context_hash: 'fresh-hash',
+        )
+
+        expect(label.reload).to have_attributes(
+          description: 'Generated label',
+          context_hash: 'fresh-hash',
+          stale: false,
+          needs_review: false,
+          approved: false,
+          manually_edited: false,
+        )
+        expect(label.colloquial_terms.to_a).to eq(['generated term'])
+      end
+    end
+
+    describe '#mark_expired!' do
+      it 'marks the label expired' do
+        label = create(:goods_nomenclature_label, expired: false)
+
+        label.mark_expired!
+
+        expect(label.reload.expired).to be true
+      end
     end
   end
 
@@ -210,6 +390,12 @@ RSpec.describe GoodsNomenclatureLabel do
       described_class.dataset.update(description_score: nil)
       result = described_class.admin_listing.first
       expect(result[:score]).to be_nil
+    end
+
+    it 'excludes expired labels by default' do
+      described_class.dataset.update(expired: true)
+
+      expect(described_class.admin_listing.all).to be_empty
     end
   end
 
@@ -286,6 +472,30 @@ RSpec.describe GoodsNomenclatureLabel do
     it 'returns all for unrecognised status' do
       results = described_class.admin_listing.for_status('unknown').all
       expect(results.length).to eq(2)
+    end
+
+    context 'with review lifecycle statuses' do
+      let(:commodity_c) { create(:goods_nomenclature, producline_suffix: GoodsNomenclature::NON_GROUPING_PRODUCTLINE_SUFFIX) }
+      let(:commodity_d) { create(:goods_nomenclature, producline_suffix: GoodsNomenclature::NON_GROUPING_PRODUCTLINE_SUFFIX) }
+
+      before do
+        create(:goods_nomenclature_label, goods_nomenclature: commodity_c, needs_review: true)
+        create(:goods_nomenclature_label, goods_nomenclature: commodity_d, approved: true)
+      end
+
+      it 'filters to labels needing review' do
+        results = described_class.admin_listing.for_status('needs_review').all
+
+        expect(results.length).to eq(1)
+        expect(results.first.needs_review).to be true
+      end
+
+      it 'filters to approved labels' do
+        results = described_class.admin_listing.for_status('approved').all
+
+        expect(results.length).to eq(1)
+        expect(results.first.approved).to be true
+      end
     end
   end
 

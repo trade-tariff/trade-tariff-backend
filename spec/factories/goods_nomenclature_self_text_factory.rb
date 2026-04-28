@@ -17,8 +17,10 @@ FactoryBot.define do
     input_context { Sequel.pg_jsonb_wrap({ 'ancestors' => [], 'description' => 'Widgets' }) }
     context_hash { Digest::SHA256.hexdigest('default') }
     needs_review { false }
+    approved { false }
     manually_edited { false }
     stale { false }
+    expired { false }
     generated_at { Time.zone.now }
 
     trait :ai_generated do
@@ -37,8 +39,16 @@ FactoryBot.define do
       needs_review { true }
     end
 
+    trait :approved do
+      approved { true }
+    end
+
     trait :manually_edited do
       manually_edited { true }
+    end
+
+    trait :expired do
+      expired { true }
     end
   end
 end

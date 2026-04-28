@@ -107,6 +107,7 @@ RSpec.describe GoodsNomenclatureReconciliationWorker, type: :worker do
 
     describe 'inserted today (UK - filename matching)' do
       before do
+        travel_to(Time.zone.today.noon)
         allow(TradeTariffBackend).to receive(:uk?).and_return(true)
       end
 
@@ -167,6 +168,7 @@ RSpec.describe GoodsNomenclatureReconciliationWorker, type: :worker do
 
     describe 'inserted today (XI - operation_date matching)' do
       before do
+        travel_to(Time.zone.today.noon)
         allow(TradeTariffBackend).to receive(:uk?).and_return(false)
       end
 
