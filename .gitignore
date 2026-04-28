@@ -73,3 +73,7 @@ tariff_data_basic_*.csv
 
 .claude/
 terraform/modules/*/.terraform.lock.hcl
+.gitnexus
+
+AGENTS.md
+.codex
