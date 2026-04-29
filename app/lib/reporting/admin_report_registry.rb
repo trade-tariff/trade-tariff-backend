@@ -129,6 +129,15 @@ module Reporting
             dependencies: [],
             email_generator: nil,
           ),
+          ReportDefinition.new(
+            id: 'tariff_update',
+            name: 'Tariff Update report',
+            description: 'Spreadsheet containing relevant dates/timestamps for the download and ingest of tariff files into OTT.',
+            generator: -> { Reporting::TariffUpdates },
+            services: %w[uk xi],
+            dependencies: [],
+            email_generator: nil,
+          ),
         ]
       end
     end

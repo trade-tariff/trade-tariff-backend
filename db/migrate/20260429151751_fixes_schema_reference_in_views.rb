@@ -5,7 +5,7 @@ Sequel.migration do
     if TradeTariffBackend.xi?
       # --- footnotes -----------------------------------------------------------
 
-      drop_view :footnotes
+      drop_view :footnotes, materialized: true
 
       create_view :footnotes, <<~SQL, materialized: true
         SELECT footnote_id,
@@ -37,7 +37,7 @@ Sequel.migration do
 
       # --- footnote_description_periods ----------------------------------------
 
-      drop_view :footnote_description_periods
+      drop_view :footnote_description_periods, materialized: true
 
       create_view :footnote_description_periods, <<~SQL, materialized: true
         SELECT footnote_description_period_sid,
@@ -68,7 +68,7 @@ Sequel.migration do
 
       # --- footnote_descriptions -----------------------------------------------
 
-      drop_view :footnote_descriptions
+      drop_view :footnote_descriptions, materialized: true
 
       create_view :footnote_descriptions, <<~SQL, materialized: true
         SELECT footnote_description_period_sid,
@@ -98,7 +98,7 @@ Sequel.migration do
 
       # --- measure_conditions --------------------------------------------------
 
-      drop_view :measure_conditions
+      drop_view :measure_conditions, materialized: true
 
       create_view :measure_conditions, <<~SQL, materialized: true
         SELECT measure_condition_sid,
@@ -134,7 +134,7 @@ Sequel.migration do
       # Drop the dependent view first; recreated at the end of this migration.
 
       drop_view :simplified_procedural_code_measures
-      drop_view :measure_components
+      drop_view :measure_components, materialized: true
 
       create_view :measure_components, <<~SQL, materialized: true
         SELECT measure_sid,

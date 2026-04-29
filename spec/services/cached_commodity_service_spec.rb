@@ -98,6 +98,27 @@ RSpec.describe CachedCommodityService do
 
         expect(loaded_commodity.associations).to include(full_chemicals: be_present)
       end
+
+      it 'pre-populates :measures on the commodity and each ancestor (single-pass load)' do
+        loaded_commodity = nil
+
+        allow(Api::V2::Commodities::CommodityPresenter).to receive(:new).and_wrap_original do |original, commodity, measures|
+          loaded_commodity = commodity
+          original.call(commodity, measures)
+        end
+
+        described_class.new(commodity.reload, actual_date).call
+
+        # Own measures slot must be set (even if empty) so applicable_measures
+        # does not fire a lazy DB query.
+        expect(loaded_commodity.associations).to have_key(:measures)
+
+        # Every ancestor must also have its measures slot pre-populated.
+        loaded_commodity.ancestors.each do |ancestor|
+          expect(ancestor.associations).to have_key(:measures),
+                                           "ancestor #{ancestor.goods_nomenclature_sid} had no :measures association set"
+        end
+      end
     end
 
     describe 'cache key' do

@@ -99,6 +99,16 @@ RSpec.describe TariffSynchronizer::TariffDownloader do
             perform
             expect(TariffSynchronizer::FileService).to have_received(:write_file).with('tmp/data/cds/foo.xml.gzip', be_a(String))
           end
+
+          it 'records a state transition to pending' do
+            expect { perform }
+              .to change {
+                TariffSynchronizer::TariffUpdateStateChange.where(
+                  tariff_update_filename: filename,
+                  to_state: TariffSynchronizer::BaseUpdate::PENDING_STATE,
+                ).count
+              }.by(1)
+          end
         end
 
         context 'when the response body is not a ZIP file and the update type is Taric' do
@@ -136,6 +146,22 @@ RSpec.describe TariffSynchronizer::TariffDownloader do
           it 'does not write using the FileService' do
             perform
             expect(TariffSynchronizer::FileService).not_to have_received(:write_file)
+          end
+
+          it 'records pending then failed state transitions' do
+            perform
+
+            transitions = TariffSynchronizer::TariffUpdateStateChange
+                            .where(tariff_update_filename: filename)
+                            .order(:created_at)
+                            .all
+
+            expect(transitions.map { |transition| [transition.from_state, transition.to_state] }).to eq(
+              [
+                [nil, TariffSynchronizer::BaseUpdate::PENDING_STATE],
+                [TariffSynchronizer::BaseUpdate::PENDING_STATE, TariffSynchronizer::BaseUpdate::FAILED_STATE],
+              ],
+            )
           end
         end
       end
