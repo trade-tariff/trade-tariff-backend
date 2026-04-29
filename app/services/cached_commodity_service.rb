@@ -165,7 +165,7 @@ class CachedCommodityService
   def commodity_has_meursing_measures?
     Rails.cache.fetch(
       "commodity-has-meursing-#{@commodity_sid}-#{actual_date}",
-      expires_in: 24.hours,
+      expires_in: ttl,
     ) do
       Measure.actual
              .where(goods_nomenclature_sid: @commodity_sid)
