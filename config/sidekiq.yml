@@ -45,6 +45,10 @@
     PopulateSearchSuggestionsWorker:
       cron: "0 18 * * *"
       description: "Populates search suggestions which are used in the frontend"
+    SpellingFileUploaderWorker:
+      cron: "0 14 * * *"
+      description: "Uploads a new snapshot of the spelling model based on the latest data"
+      enabled: <%= ENV.fetch('SERVICE', 'uk') == 'uk' %>
     ReportWorker:
       cron: "30 10 * * *" # Needs to run even if the UpdatesSynchronizerWorker failed
       description: "Generates reports and persists them to S3"
