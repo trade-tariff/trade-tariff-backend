@@ -7,6 +7,7 @@ FactoryBot.define do
     guidance_location { nil }
     escalate_to_webchat { false }
     filter_prefixes { nil }
+    aliases { Sequel.pg_array([], :text) }
     excluded { false }
   end
 end

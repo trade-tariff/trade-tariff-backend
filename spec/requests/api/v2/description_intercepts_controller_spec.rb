@@ -4,6 +4,7 @@ RSpec.describe Api::V2::DescriptionInterceptsController, :v2 do
       create(
         :description_intercept,
         term: 'alpha',
+        aliases: Sequel.pg_array(%w[aleph first], :text),
         sources: Sequel.pg_array(%w[guided_search], :text),
         message: 'Alpha guidance',
         excluded: true,
@@ -49,6 +50,7 @@ RSpec.describe Api::V2::DescriptionInterceptsController, :v2 do
       expect(body.fetch('data').map { |row| row.fetch('id') }).to eq([guided_excluded.id.to_s, fpo_excluded.id.to_s, fpo_included.id.to_s])
       expect(body.fetch('data').first.fetch('attributes').keys).to match_array(%w[
         term
+        aliases
         sources
         message
         excluded

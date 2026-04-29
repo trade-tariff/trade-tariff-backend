@@ -11,6 +11,7 @@ RSpec.describe Api::Admin::DescriptionInterceptsController do
       create(
         :description_intercept,
         term: 'footwear',
+        aliases: Sequel.pg_array(%w[trainers shoes], :text),
         sources: Sequel.pg_array(%w[guided_search], :text),
         guidance_level: 'warning',
         guidance_location: 'results',
@@ -50,6 +51,14 @@ RSpec.describe Api::Admin::DescriptionInterceptsController do
 
     it 'filters by search term' do
       get :index, params: { q: 'foot' }, format: :json
+
+      json = JSON.parse(response.body)
+      expect(json['data'].length).to eq(1)
+      expect(json.dig('data', 0, 'attributes', 'term')).to eq('footwear')
+    end
+
+    it 'filters by alias' do
+      get :index, params: { q: 'trainers' }, format: :json
 
       json = JSON.parse(response.body)
       expect(json['data'].length).to eq(1)
@@ -102,6 +111,7 @@ RSpec.describe Api::Admin::DescriptionInterceptsController do
       create(
         :description_intercept,
         term: 'footwear',
+        aliases: Sequel.pg_array(%w[trainers shoes], :text),
         guidance_level: 'warning',
         guidance_location: 'results',
         escalate_to_webchat: true,
@@ -119,6 +129,7 @@ RSpec.describe Api::Admin::DescriptionInterceptsController do
           type: 'description_intercept',
           attributes: {
             term: 'footwear',
+            aliases: %w[trainers shoes],
             sources: %w[guided_search],
             message: 'Please be more specific.',
             excluded: false,
@@ -170,6 +181,7 @@ RSpec.describe Api::Admin::DescriptionInterceptsController do
             type: 'description_intercept',
             attributes: {
               term: 'bicycles',
+              aliases: %w[cycle bike],
               message: 'Read the bicycle guidance.',
               guidance_level: 'info',
               guidance_location: 'results',
@@ -186,6 +198,7 @@ RSpec.describe Api::Admin::DescriptionInterceptsController do
 
       intercept = DescriptionIntercept.order(Sequel.desc(:id)).first
       expect(intercept.term).to eq('bicycles')
+      expect(intercept.aliases).to eq(%w[cycle bike])
       expect(intercept.message).to eq('Read the bicycle guidance.')
       expect(intercept.guidance_level).to eq('info')
       expect(intercept.guidance_location).to eq('results')
@@ -231,6 +244,7 @@ RSpec.describe Api::Admin::DescriptionInterceptsController do
             guidance_location: 'results',
             escalate_to_webchat: true,
             filter_prefixes: %w[6403 6404],
+            aliases: %w[trainers shoes],
             sources: %w[guided_search fpo_search],
           },
         },
@@ -244,12 +258,14 @@ RSpec.describe Api::Admin::DescriptionInterceptsController do
       expect(intercept.guidance_location).to eq('results')
       expect(intercept.escalate_to_webchat).to be true
       expect(intercept.filter_prefixes).to eq(%w[6403 6404])
+      expect(intercept.aliases).to eq(%w[trainers shoes])
       expect(intercept.sources).to eq(%w[guided_search fpo_search])
     end
 
     it 'clears array fields when blank values are submitted' do
       intercept.update(
         filter_prefixes: Sequel.pg_array(%w[6403 6404], :text),
+        aliases: Sequel.pg_array(%w[trainers shoes], :text),
         sources: Sequel.pg_array(%w[guided_search fpo_search], :text),
       )
 
@@ -259,6 +275,7 @@ RSpec.describe Api::Admin::DescriptionInterceptsController do
           type: 'description_intercept',
           attributes: {
             filter_prefixes: [''],
+            aliases: [''],
             sources: [''],
           },
         },
@@ -268,6 +285,7 @@ RSpec.describe Api::Admin::DescriptionInterceptsController do
 
       intercept.reload
       expect(intercept.filter_prefixes).to eq([])
+      expect(intercept.aliases).to eq([])
       expect(intercept.sources).to eq([])
     end
 

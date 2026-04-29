@@ -1820,7 +1820,8 @@ CREATE TABLE uk.description_intercepts (
     guidance_level text,
     guidance_location text,
     escalate_to_webchat boolean DEFAULT false NOT NULL,
-    filter_prefixes text[]
+    filter_prefixes text[],
+    aliases text[] DEFAULT '{}'::text[] NOT NULL
 );
 
 
@@ -11845,6 +11846,13 @@ CREATE INDEX idx_description_intercepts_sources_gin ON uk.description_intercepts
 
 
 --
+-- Name: idx_description_intercepts_aliases_gin; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX idx_description_intercepts_aliases_gin ON uk.description_intercepts USING gin (aliases);
+
+
+--
 -- Name: idx_labels_approved; Type: INDEX; Schema: uk; Owner: -
 --
 
@@ -14084,3 +14092,4 @@ INSERT INTO "schema_migrations" ("filename") VALUES ('20260421120001_add_oid_cov
 INSERT INTO "schema_migrations" ("filename") VALUES ('20260422143000_add_lifecycle_flags_to_generated_classification_content.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20260423120000_add_regulation_and_fts_performance_indexes.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20260424120000_materialise_hot_path_footnote_and_measure_views.rb');
+INSERT INTO "schema_migrations" ("filename") VALUES ('20260429120000_add_aliases_to_description_intercepts.rb');
