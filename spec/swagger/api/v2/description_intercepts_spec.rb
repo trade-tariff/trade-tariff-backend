@@ -35,6 +35,7 @@ RSpec.describe 'Description Intercepts', swagger_doc: 'v2/swagger.json', type: :
                          type: :object,
                          properties: {
                            term: { type: :string, nullable: true },
+                           aliases: { type: :array, items: { type: :string }, nullable: true },
                            sources: { type: :array, items: { type: :string }, nullable: true },
                            message: { type: :string, nullable: true },
                            excluded: { type: :boolean, nullable: true },

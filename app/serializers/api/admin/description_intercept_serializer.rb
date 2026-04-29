@@ -6,6 +6,7 @@ module Api
       set_type :description_intercept
 
       attributes :term,
+                 :aliases,
                  :sources,
                  :message,
                  :excluded,
