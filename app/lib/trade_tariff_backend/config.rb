@@ -179,7 +179,7 @@ module TradeTariffBackend
     end
 
     def cupid_team_to_emails
-      ENV['CUPID_TEAM_TO_EMAILS']
+      ENV['CUPID_TEAM_TO_EMAILS']&.split(',')&.map(&:strip) || []
     end
 
     def myott_report_email
