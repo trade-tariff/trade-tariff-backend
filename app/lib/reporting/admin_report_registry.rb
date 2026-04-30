@@ -137,7 +137,7 @@ module Reporting
             services: %w[uk],
             dependencies: [],
             email_generator: nil,
-            )
+          ),
         ]
       end
     end

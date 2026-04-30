@@ -2,7 +2,7 @@ module Reporting
   class CdsUpdates
     include Reporting::Reportable
 
-    HEADER_ROW = ["Date of the file", "Downloaded Time", "Updated Time", "Status"].freeze
+    HEADER_ROW = ['Date of the file', 'Downloaded Time', 'Updated Time', 'Status'].freeze
     COLUMN_WIDTHS = [30, 50, 50, 20].freeze
 
     class << self
