@@ -1,0 +1,4 @@
+# Add "needs-deployment" label to pull requests making database schema changes
+needs-deployment:
+  - changed-files:
+    - any-glob-to-any-file: "db/*"
