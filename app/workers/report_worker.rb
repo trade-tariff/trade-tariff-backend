@@ -38,7 +38,7 @@ class ReportWorker
   def generate_report?(report)
     return true unless report == Reporting::CdsUpdates
 
-    second_monday_of_month?
+    TradeTariffBackend.uk? && second_monday_of_month?
   end
 
   def generate_differences?
