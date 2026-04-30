@@ -2,8 +2,7 @@ module TariffSynchronizer
   class BaseUpdate < Sequel::Model(:tariff_updates)
     DOWNLOAD_FROM = 20.days
 
-    # Used for TARIC updates only.
-    one_to_many :presence_errors, class: TariffUpdatePresenceError, key: :tariff_update_filename
+    one_to_many :presence_errors, class: TariffUpdatePresenceError, key: :tariff_update_filename # Used for TARIC updates only.
     one_to_many :state_changes, class: TariffUpdateStateChange, key: :tariff_update_filename, primary_key: :filename
     def presence_error_ids
       presence_errors.pluck(:id)
