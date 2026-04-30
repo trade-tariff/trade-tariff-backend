@@ -82,9 +82,25 @@ module TariffSynchronizer
     end
 
     def update_or_create(filename, state, filesize = nil)
-      update_klass
-        .find_or_create(filename:, update_type: update_klass.name, issue_date:)
-        .update(state:, filesize:)
+      update = update_klass
+               .find_or_create(filename:, update_type: update_klass.name, issue_date:)
+
+      transition_update_state(update, state)
+      update.update(filesize:)
+      update
+    end
+
+    def transition_update_state(update, state)
+      return if update.state == state
+
+      case state
+      when BaseUpdate::PENDING_STATE
+        update.mark_as_pending
+      when BaseUpdate::FAILED_STATE
+        update.mark_as_failed
+      else
+        update.update(state:)
+      end
     end
 
     def write_update_file(response_body)

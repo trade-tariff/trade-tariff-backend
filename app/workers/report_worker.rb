@@ -11,6 +11,7 @@ class ReportWorker
     Reporting::Prohibitions,
     Reporting::GeographicalAreaGroups,
     Reporting::CategoryAssessments,
+    Reporting::CdsUpdates,
   ].freeze
 
   def perform(trigger_differences_report = true)
@@ -19,6 +20,8 @@ class ReportWorker
     failures = []
 
     REPORTS.each do |report|
+      next unless generate_report?(report)
+
       report.generate
     rescue StandardError => e
       failures << { report: report.name, error: e }
@@ -32,6 +35,12 @@ class ReportWorker
 
   private
 
+  def generate_report?(report)
+    return true unless report == Reporting::CdsUpdates
+
+    TradeTariffBackend.uk? && second_monday_of_month?
+  end
+
   def generate_differences?
     TradeTariffBackend.uk? && monday?
   end
@@ -44,5 +53,11 @@ class ReportWorker
 
   def monday?
     Time.zone.now.monday?
+  end
+
+  def second_monday_of_month?
+    now = Time.zone.now
+
+    now.monday? && now.day.between?(8, 14)
   end
 end
