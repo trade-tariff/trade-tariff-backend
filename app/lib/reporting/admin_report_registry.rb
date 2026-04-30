@@ -129,6 +129,15 @@ module Reporting
             dependencies: [],
             email_generator: nil,
           ),
+          ReportDefinition.new(
+            id: 'cds_update',
+            name: 'CDS Update report',
+            description: 'Spreadsheet containing relevant dates/timestamps for the download and ingest of CDS tariff files into OTT.',
+            generator: -> { Reporting::CdsUpdates },
+            services: %w[uk],
+            dependencies: [],
+            email_generator: nil,
+            )
         ]
       end
     end
