@@ -63,17 +63,15 @@ module Reporting
             Rails.env.production? ? workbook.read_string : nil
           end
 
-          log_report_metric('output_bytes', workbook_data.bytesize) if workbook_data
+          if workbook_data
+            log_report_metric('output_bytes', workbook_data.bytesize)
 
-          if Rails.env.development?
-            return
-          end
-
-          instrument_report_step('upload', rows_written:, output_bytes: workbook_data.bytesize) do
-            object.put(
-              body: workbook_data,
-              content_type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-            )
+            instrument_report_step('upload', rows_written:, output_bytes: workbook_data.bytesize) do
+              object.put(
+                body: workbook_data,
+                content_type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+              )
+            end
           end
         end
       end
