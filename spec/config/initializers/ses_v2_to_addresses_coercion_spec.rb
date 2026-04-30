@@ -8,7 +8,7 @@ RSpec.describe 'ses_v2_to_addresses_coercion initializer' do # rubocop:disable R
   # which requires an Array. This spec verifies that the prepended module
   # always coerces the return value to an Array.
   describe 'Aws::ActionMailer::SESV2::Mailer#to_addresses' do
-    subject(:mailer) { Aws::ActionMailer::SESV2::Mailer.new }
+    subject(:mailer) { Aws::ActionMailer::SESV2::Mailer.new(stub_responses: true) }
 
     def build_message(to:)
       mail_double = instance_double(Mail::Message, to:)
