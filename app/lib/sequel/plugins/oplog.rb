@@ -192,12 +192,20 @@ module Sequel
           @operation_klass ||= "#{self}::Operation".constantize
         end
 
-        def refresh!(concurrently: false)
-          if materialized? && actually_materialized?
-            db.refresh_view(table_name, concurrently:)
-          else
+        def refresh!(concurrently: true)
+          unless materialized? && actually_materialized?
             raise NotImplementedError
           end
+
+          db.refresh_view(table_name, concurrently:)
+        rescue Sequel::DatabaseError => e
+          raise unless concurrently && e.message.include?('is not populated')
+
+          # The view was created WITH NO DATA (e.g. after a migration that
+          # drops and recreates it). A concurrent refresh requires existing
+          # rows; fall back to a blocking refresh to populate it, after
+          # which future concurrent refreshes will succeed.
+          db.refresh_view(table_name, concurrently: false)
         end
       end
 
