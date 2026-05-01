@@ -32,7 +32,7 @@ RSpec.describe CustomsTariffUpdate do
     end
 
     it 'has many customs_tariff_section_notes' do
-      create(:customs_tariff_section_note, customs_tariff_update: update, section_id: 'I')
+      create(:customs_tariff_section_note, customs_tariff_update: update, section_id: '1')
       expect(update.customs_tariff_section_notes.count).to eq(1)
     end
 

@@ -34,7 +34,7 @@ FactoryBot.define do
 
   factory :customs_tariff_section_note do
     association :customs_tariff_update
-    sequence(:section_id) { |n| %w[I II III IV V VI VII VIII IX X XI XII][n % 12] }
+    sequence(:section_id) { |n| (n % 21) + 1 }
     content { 'Any reference in this section to a particular genus or species of an animal includes a reference to the young of that genus or species.' }
 
     after(:build) do |note|

@@ -234,7 +234,7 @@ module CustomsTariffImporter
       return if @current_section.nil?
 
       content = @note_lines.reject(&:blank?).join("\n").strip
-      @sections[@current_section] = content if content.present?
+      @sections[RomanNumerals::Converter.to_decimal(@current_section)] = content if content.present?
       @current_section = nil
       @note_lines = []
     end

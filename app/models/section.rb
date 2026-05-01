@@ -25,6 +25,10 @@ class Section < Sequel::Model
 
   one_to_one :section_note
 
+  one_to_one :customs_tariff_section_note, key: :section_id, primary_key: :id do |ds|
+    ds.where(customs_tariff_update_version: CustomsTariffUpdate.actual.select(:version))
+  end
+
   def first_chapter
     chapters.first || NullObject.new
   end

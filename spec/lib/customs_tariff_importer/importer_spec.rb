@@ -22,7 +22,7 @@ RSpec.describe CustomsTariffImporter::Importer do
   let(:extracted_result) do
     CustomsTariffImporter::NotesExtractor::Result.new(
       chapters: { '01' => 'Chapter 1 notes content', '02' => 'Chapter 2 notes content' },
-      sections: { 'I' => 'Section I notes content' },
+      sections: { 1 => 'Section I notes content' },
       general_rules: { '1' => 'Rule 1 content', '2' => 'Rule 2 content' },
     )
   end

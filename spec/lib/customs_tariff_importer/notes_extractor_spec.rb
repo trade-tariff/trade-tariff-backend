@@ -79,7 +79,7 @@ RSpec.describe CustomsTariffImporter::NotesExtractor do
     end
 
     describe 'section notes' do
-      it 'collects notes under the roman numeral section key' do
+      it 'collects notes under the integer section key' do
         result = parse([
           'SECTION I',
           'Section Notes',
@@ -89,13 +89,13 @@ RSpec.describe CustomsTariffImporter::NotesExtractor do
           'Vegetable products.',
         ])
 
-        expect(result.sections['I']).to include('Live animals')
-        expect(result.sections['II']).to include('Vegetable products')
+        expect(result.sections[1]).to include('Live animals')
+        expect(result.sections[2]).to include('Vegetable products')
       end
 
-      it 'upcases the section key' do
+      it 'converts the section key to an integer' do
         result = parse(['SECTION iv', 'Section Notes', 'Some content.'])
-        expect(result.sections.keys).to contain_exactly('IV')
+        expect(result.sections.keys).to contain_exactly(4)
       end
 
       it 'does not save a section with no notes' do
@@ -167,7 +167,7 @@ RSpec.describe CustomsTariffImporter::NotesExtractor do
           'Horses and donkeys.',
         ])
 
-        expect(result.sections['I']).to include('Live animals shall be classified here.')
+        expect(result.sections[1]).to include('Live animals shall be classified here.')
         expect(result.chapters['01']).to include('Horses and donkeys.')
       end
 
@@ -195,7 +195,7 @@ RSpec.describe CustomsTariffImporter::NotesExtractor do
         ])
 
         expect(result.chapters['01']).to be_present
-        expect(result.sections['II']).to include('Vegetable products.')
+        expect(result.sections[2]).to include('Vegetable products.')
       end
     end
 
@@ -249,7 +249,7 @@ RSpec.describe CustomsTariffImporter::NotesExtractor do
       end
 
       it 'extracts section notes' do
-        expect(extractor.call.sections['I']).to include('live animals')
+        expect(extractor.call.sections[1]).to include('live animals')
       end
 
       it 'extracts general rules' do
