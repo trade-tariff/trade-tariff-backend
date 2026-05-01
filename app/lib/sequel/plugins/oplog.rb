@@ -199,7 +199,7 @@ module Sequel
 
           db.refresh_view(table_name, concurrently:)
         rescue Sequel::DatabaseError => e
-          raise unless concurrently && e.message.include?('has not been populated')
+          raise unless concurrently && e.message.include?('is not populated')
 
           # The view was created WITH NO DATA (e.g. after a migration that
           # drops and recreates it). A concurrent refresh requires existing
