@@ -13,12 +13,16 @@ module GoodsNomenclatures
                                     read_only: true
 
     class << self
-      # Defaults to concurrent refresh to avoid blocking other queries
-      # If the Materialized View has never been populated, eg after a
-      # rake db:test:prepare or rake db:structure:load then a non-concurrent
-      # refresh is required
-      def refresh!(concurrently: false)
+      def refresh!(concurrently: true)
         db.refresh_view(:goods_nomenclature_tree_nodes, concurrently:)
+      rescue Sequel::DatabaseError => e
+        raise unless concurrently && e.message.include?('has not been populated')
+
+        # The view was created WITH NO DATA (e.g. after a migration that
+        # drops and recreates it). A concurrent refresh requires existing
+        # rows; fall back to a blocking refresh to populate it, after
+        # which future concurrent refreshes will succeed.
+        db.refresh_view(:goods_nomenclature_tree_nodes, concurrently: false)
       end
 
       def previous_sibling(origin_position, origin_depth)
