@@ -11,7 +11,10 @@ class DescriptionIntercept < Sequel::Model
     def search(query)
       return self if query.blank?
 
-      where(Sequel.ilike(:term, "%#{query}%"))
+      where(
+        Sequel.ilike(:term, "%#{query}%") |
+          Sequel.ilike(Sequel.function(:array_to_string, :aliases, ' '), "%#{query}%"),
+      )
     end
 
     def for_source(source)
@@ -58,7 +61,22 @@ class DescriptionIntercept < Sequel::Model
   def self.for_search(query, source:)
     return nil if query.blank?
 
-    for_source(source).where(Sequel.ilike(:term, query)).first
+    normalised_query = normalize_alias(query)
+
+    for_source(source)
+      .where(
+        Sequel.ilike(:term, normalised_query) |
+          Sequel.lit('aliases @> ARRAY[?]::text[]', normalised_query),
+      )
+      .first
+  end
+
+  def self.normalize_alias(value)
+    value.to_s.squish.downcase
+  end
+
+  def aliases_array
+    Array(aliases).compact_blank
   end
 
   def filter_prefixes_array
@@ -91,7 +109,14 @@ class DescriptionIntercept < Sequel::Model
     validates_includes GUIDANCE_LOCATIONS, :guidance_location, allow_nil: true
 
     validate_filter_prefixes
+    validate_aliases
     validate_guidance_dependencies
+  end
+
+  def before_validation
+    self.aliases = Sequel.pg_array(Array(aliases).map { |value| self.class.normalize_alias(value) }.uniq, :text)
+
+    super
   end
 
   private
@@ -103,6 +128,13 @@ class DescriptionIntercept < Sequel::Model
     errors.add(:filter_prefixes, 'cannot be set when excluded') if excluded
     errors.add(:filter_prefixes, 'cannot contain blank prefixes') if prefixes.any?(&:blank?)
     errors.add(:filter_prefixes, 'must contain only numeric prefixes') if prefixes.any? { |prefix| prefix.present? && !/\A\d+\z/.match?(prefix) }
+  end
+
+  def validate_aliases
+    aliases = Array(self.aliases)
+    return if aliases.empty?
+
+    errors.add(:aliases, 'cannot contain blank aliases') if aliases.any?(&:blank?)
   end
 
   def validate_guidance_dependencies

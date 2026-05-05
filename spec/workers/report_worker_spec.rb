@@ -12,12 +12,13 @@ RSpec.describe ReportWorker, type: :worker do
       allow(Reporting::GeographicalAreaGroups).to receive(:generate)
       allow(Reporting::Prohibitions).to receive(:generate)
       allow(Reporting::CategoryAssessments).to receive(:generate).and_call_original
+      allow(Reporting::CdsUpdates).to receive(:generate)
       allow(DifferencesReportWorker).to receive(:perform_in).and_call_original
       allow(TradeTariffBackend).to receive(:service).and_return(service)
       travel_to Date.parse(date).beginning_of_day
     end
 
-    shared_examples 'all reports are generated' do
+    shared_examples 'core reports are generated' do
       it { expect(Reporting::Commodities).to have_received(:generate) }
       it { expect(Reporting::Basic).to have_received(:generate) }
       it { expect(Reporting::SupplementaryUnits).to have_received(:generate) }
@@ -27,20 +28,40 @@ RSpec.describe ReportWorker, type: :worker do
       it { expect(Reporting::CategoryAssessments).to have_received(:generate) }
     end
 
+    shared_examples 'cds updates report is generated' do
+      it { expect(Reporting::CdsUpdates).to have_received(:generate) }
+    end
+
+    shared_examples 'cds updates report is skipped' do
+      it { expect(Reporting::CdsUpdates).not_to have_received(:generate) }
+    end
+
     context 'with default behaviour' do
       before { worker.perform }
 
       context 'when on the xi service' do
         let(:service) { 'xi' }
 
-        it_behaves_like 'all reports are generated'
+        it_behaves_like 'core reports are generated'
+        it_behaves_like 'cds updates report is skipped'
         it { expect(DifferencesReportWorker).not_to have_received(:perform_in) }
       end
 
-      context 'when on the uk service and the day is a monday' do
+      context 'when on the uk service and the day is the second monday of the month' do
         let(:service) { 'uk' }
+        let(:date) { '2023-10-09' }
 
-        it_behaves_like 'all reports are generated'
+        it_behaves_like 'core reports are generated'
+        it_behaves_like 'cds updates report is generated'
+        it { expect(DifferencesReportWorker).to have_received(:perform_in) }
+      end
+
+      context 'when on the uk service and the day is a monday but not the second monday' do
+        let(:service) { 'uk' }
+        let(:date) { '2023-10-30' }
+
+        it_behaves_like 'core reports are generated'
+        it_behaves_like 'cds updates report is skipped'
         it { expect(DifferencesReportWorker).to have_received(:perform_in) }
       end
 
@@ -48,7 +69,8 @@ RSpec.describe ReportWorker, type: :worker do
         let(:service) { 'uk' }
         let(:date) { '2023-10-31' }
 
-        it_behaves_like 'all reports are generated'
+        it_behaves_like 'core reports are generated'
+        it_behaves_like 'cds updates report is skipped'
         it { expect(DifferencesReportWorker).not_to have_received(:perform_in) }
       end
     end
@@ -58,7 +80,8 @@ RSpec.describe ReportWorker, type: :worker do
 
       let(:service) { 'uk' }
 
-      it_behaves_like 'all reports are generated'
+      it_behaves_like 'core reports are generated'
+      it_behaves_like 'cds updates report is skipped'
       it { expect(DifferencesReportWorker).not_to have_received(:perform_in) }
     end
 

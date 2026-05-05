@@ -344,6 +344,27 @@ RSpec.describe Api::Internal::SearchService do
         )
       end
 
+      it 'keeps results and adds intercept meta when the query matches an alias' do
+        create(:description_intercept,
+               term: 'sofa',
+               aliases: Sequel.pg_array(%w[settee couch], :text),
+               message: 'Use a more specific furniture term.',
+               guidance_level: 'info',
+               guidance_location: 'interstitial')
+
+        result = described_class.new(q: 'settee').call
+
+        expect(result[:data].length).to eq(1)
+        expect(result[:meta][:description_intercept]).to include(
+          term: 'sofa',
+          excluded: false,
+          filtering: false,
+          message: 'Use a more specific furniture term.',
+          guidance_level: 'info',
+          guidance_location: 'interstitial',
+        )
+      end
+
       it 'adds description intercept fields to search completion instrumentation' do
         completion_payload = nil
         allow(Search::Instrumentation).to receive(:search) do |**_kwargs, &block|

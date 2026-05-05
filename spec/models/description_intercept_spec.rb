@@ -136,6 +136,66 @@ RSpec.describe DescriptionIntercept do
         expect(intercept.errors[:filter_prefixes]).to include('must contain only numeric prefixes')
       end
     end
+
+    context 'when aliases contain blanks' do
+      let(:attrs) do
+        {
+          aliases: Sequel.pg_array(['settee', ''], :text),
+        }
+      end
+
+      it 'is invalid' do
+        expect(intercept).not_to be_valid
+        expect(intercept.errors[:aliases]).to include('cannot contain blank aliases')
+      end
+    end
+  end
+
+  describe '.for_search' do
+    it 'normalises aliases for indexed exact lookup' do
+      intercept = create(
+        :description_intercept,
+        term: 'sofa',
+        aliases: Sequel.pg_array([' Settee ', 'settee', 'COUCH'], :text),
+        sources: Sequel.pg_array(%w[guided_search], :text),
+      )
+
+      expect(intercept.reload.aliases).to eq(%w[settee couch])
+      expect(described_class.for_search('COUCH', source: 'guided_search')).to eq(intercept)
+    end
+
+    it 'matches an intercept by alias for the requested source' do
+      intercept = create(
+        :description_intercept,
+        term: 'sofa',
+        aliases: Sequel.pg_array(%w[settee couch], :text),
+        sources: Sequel.pg_array(%w[guided_search], :text),
+      )
+
+      expect(described_class.for_search('settee', source: 'guided_search')).to eq(intercept)
+    end
+
+    it 'matches aliases case-insensitively' do
+      intercept = create(
+        :description_intercept,
+        term: 'sofa',
+        aliases: Sequel.pg_array(%w[Settee], :text),
+        sources: Sequel.pg_array(%w[guided_search], :text),
+      )
+
+      expect(described_class.for_search('settee', source: 'guided_search')).to eq(intercept)
+    end
+
+    it 'does not match an alias for another source' do
+      create(
+        :description_intercept,
+        term: 'sofa',
+        aliases: Sequel.pg_array(%w[settee], :text),
+        sources: Sequel.pg_array(%w[fpo_search], :text),
+      )
+
+      expect(described_class.for_search('settee', source: 'guided_search')).to be_nil
+    end
   end
 
   describe 'versioning' do

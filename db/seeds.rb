@@ -3,6 +3,7 @@ require_relative '../app/helpers/materialize_view_helper'
 include MaterializeViewHelper
 # rubocop:enable Style/MixinUsage
 
-# After a rake db:structure:load Materialized Views are unpopulated, causing
-# any concurrent refreshes to fail. Populating here should help avoid that.
+# Populate materialized views after a db:structure:load. If any view was
+# created WITH NO DATA, refresh! will detect "has not been populated" and
+# fall back to a blocking refresh automatically.
 refresh_materialized_view

@@ -407,5 +407,27 @@ RSpec.describe TradeTariffBackend::Config do
         expect(config.green_lanes_notify_measure_updates).to be true
       end
     end
+
+    describe '.cupid_team_to_emails' do
+      it 'returns an empty array when the env var is not set' do
+        ENV.delete('CUPID_TEAM_TO_EMAILS')
+        expect(config.cupid_team_to_emails).to eq([])
+      end
+
+      it 'returns a single-element array for one address' do
+        ENV['CUPID_TEAM_TO_EMAILS'] = 'cupid@example.com'
+        expect(config.cupid_team_to_emails).to eq(['cupid@example.com'])
+      end
+
+      it 'splits a comma-separated list into an array' do
+        ENV['CUPID_TEAM_TO_EMAILS'] = 'a@example.com,b@example.com'
+        expect(config.cupid_team_to_emails).to eq(['a@example.com', 'b@example.com'])
+      end
+
+      it 'strips whitespace around addresses' do
+        ENV['CUPID_TEAM_TO_EMAILS'] = 'a@example.com, b@example.com'
+        expect(config.cupid_team_to_emails).to eq(['a@example.com', 'b@example.com'])
+      end
+    end
   end
 end
