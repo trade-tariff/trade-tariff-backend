@@ -1,27 +1,31 @@
 RSpec.describe MaterializeViewHelper do
   describe '.reload_static_caches' do
-    context 'when in the test environment' do
-      it 'does nothing and raises no error' do
-        # The guard `return if Rails.env.test?` short-circuits the method so
-        # no constantize calls are attempted and no load_cache is fired.
-        expect { described_class.reload_static_caches }.not_to raise_error
-      end
+    it 'does not error when models do not have static_cache loaded' do
+      # In the test environment plugin :static_cache is not applied, so
+      # none of the models define load_cache.  reload_static_caches must
+      # handle this gracefully via respond_to? rather than blowing up.
+      expect { described_class.reload_static_caches }.not_to raise_error
     end
 
-    context 'when outside the test environment' do
-      before { allow(Rails.env).to receive(:test?).and_return(false) }
+    it 'calls load_cache on models that respond to it' do
+      model_name = 'FakeStaticCacheModel'
+      model_class = double('model_class', load_cache: nil) # rubocop:disable RSpec/VerifiedDoubles
+      allow(model_class).to receive(:respond_to?).with(:load_cache).and_return(true)
+      stub_const('MaterializeViewHelper::STATIC_CACHE_MODEL_NAMES', [model_name])
+      allow(model_name).to receive(:constantize).and_return(model_class)
 
-      it 'calls load_cache on every model listed in STATIC_CACHE_MODEL_NAMES' do
-        MaterializeViewHelper::STATIC_CACHE_MODEL_NAMES.each do |name|
-          allow(name.constantize).to receive(:load_cache)
-        end
+      described_class.reload_static_caches
 
-        described_class.reload_static_caches
+      expect(model_class).to have_received(:load_cache).once
+    end
 
-        MaterializeViewHelper::STATIC_CACHE_MODEL_NAMES.each do |name|
-          expect(name.constantize).to have_received(:load_cache).once
-        end
-      end
+    it 'skips models that do not respond to load_cache' do
+      model_name = 'FakeModelWithoutCache'
+      model_class = double('model_class') # rubocop:disable RSpec/VerifiedDoubles
+      stub_const('MaterializeViewHelper::STATIC_CACHE_MODEL_NAMES', [model_name])
+      allow(model_name).to receive(:constantize).and_return(model_class)
+
+      expect { described_class.reload_static_caches }.not_to raise_error
     end
   end
 

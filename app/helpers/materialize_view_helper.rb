@@ -51,12 +51,17 @@ module MaterializeViewHelper
   end
 
   # Repopulate the in-memory static caches after the daily MV refresh so
-  # reference data stays current without an app restart.  Skipped in test
-  # because the models do not load plugin :static_cache in that environment.
+  # reference data stays current without an app restart.
+  #
+  # plugin :static_cache is only loaded outside the test environment, so
+  # load_cache is only defined on the model class in production/development.
+  # Using respond_to? means this method is safe to call in any environment
+  # without stubbing Rails.env.
   def reload_static_caches
-    return if Rails.env.test?
-
-    STATIC_CACHE_MODEL_NAMES.each { |name| name.constantize.load_cache }
+    STATIC_CACHE_MODEL_NAMES.each do |name|
+      model = name.constantize
+      model.load_cache if model.respond_to?(:load_cache)
+    end
   end
 
   def prewarm_views
