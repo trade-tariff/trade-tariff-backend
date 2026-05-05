@@ -120,24 +120,57 @@ class CachedCommodityService
   end
 
   def commodity
-    @commodity ||= Commodity
-      .actual
-      .with_leaf_column
-      .where(goods_nomenclatures__goods_nomenclature_sid: @commodity_sid)
-      .eager(
-        goods_nomenclature_descriptions: {},
-        heading: :footnotes,
-        chapter: [:chapter_note, { sections: :section_note }],
-        ancestors: { measures: MEASURES_EAGER_LOAD_GRAPH,
-                     goods_nomenclature_descriptions: {} },
-        measures: MEASURES_EAGER_LOAD_GRAPH,
-        full_chemicals: {},
-      )
-      .take
+    @commodity ||= begin
+      # Phase 1: load the commodity and its ancestors for their own attributes.
+      # Measures are deliberately excluded here and loaded in a separate
+      # batched pass below so that MEASURES_EAGER_LOAD_GRAPH is applied once
+      # across all applicable goods_nomenclature_sids instead of twice
+      # (once for own measures, once for ancestor measures).
+      result = Commodity
+        .actual
+        .with_leaf_column
+        .where(goods_nomenclatures__goods_nomenclature_sid: @commodity_sid)
+        .eager(
+          goods_nomenclature_descriptions: {},
+          heading: :footnotes,
+          chapter: [:chapter_note, { sections: :section_note }],
+          ancestors: :goods_nomenclature_descriptions,
+          full_chemicals: {},
+        )
+        .take
+
+      load_applicable_measures(result)
+      result
+    end
   end
 
   def measures
     commodity.applicable_measures
+  end
+
+  # Fetches all measures for the commodity and every ancestor in one batched
+  # Sequel query, then distributes them back into each object's :measures
+  # association slot. This halves the number of queries compared with loading
+  # own measures and ancestor measures with separate eager-load passes.
+  def load_applicable_measures(commodity)
+    all_sids = [commodity.goods_nomenclature_sid] +
+      commodity.ancestors.map(&:goods_nomenclature_sid)
+
+    all_measures = Measure
+      .actual
+      .dedupe_similar
+      .with_regulation_dates_query
+      .without_excluded_types
+      .where(goods_nomenclature_sid: all_sids)
+      .eager(MEASURES_EAGER_LOAD_GRAPH)
+      .all
+
+    measures_by_sid = all_measures.group_by(&:goods_nomenclature_sid)
+
+    commodity.associations[:measures] = measures_by_sid.fetch(commodity.goods_nomenclature_sid, [])
+    commodity.ancestors.each do |ancestor|
+      ancestor.associations[:measures] = measures_by_sid.fetch(ancestor.goods_nomenclature_sid, [])
+    end
   end
 
   def geographical_area_id
