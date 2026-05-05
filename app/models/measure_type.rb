@@ -57,6 +57,7 @@ class MeasureType < Sequel::Model
 
   plugin :time_machine
   plugin :oplog, primary_key: :measure_type_id
+  plugin :static_cache, frozen: false unless Rails.env.test?
 
   set_primary_key [:measure_type_id]
 

@@ -4,6 +4,7 @@ class MeasurementUnit < Sequel::Model
 
   plugin :oplog, primary_key: :measurement_unit_code
   plugin :time_machine
+  plugin :static_cache, frozen: false unless Rails.env.test?
 
   set_primary_key [:measurement_unit_code]
 
