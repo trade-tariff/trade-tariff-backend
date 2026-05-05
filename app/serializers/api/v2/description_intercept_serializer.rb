@@ -7,6 +7,7 @@ module Api
       set_id :id
 
       attributes :term,
+                 :aliases,
                  :sources,
                  :message,
                  :excluded,

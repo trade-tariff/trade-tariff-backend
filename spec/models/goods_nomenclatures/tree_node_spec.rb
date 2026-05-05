@@ -172,7 +172,7 @@ RSpec.describe GoodsNomenclatures::TreeNode do
     let(:commodities) { create_list :commodity, 2, parent: subheading }
 
     it { is_expected.to include subheading.chapter.pk => [subheading.parent.pk] }
-    it { is_expected.to include subheading.pk => commodities.map(&:pk) }
+    it { is_expected.to include(subheading.pk => match_array(commodities.map(&:pk))) }
     it { is_expected.to include commodities.first.pk => [nil] }
   end
 

@@ -7,16 +7,14 @@ module MaterializeViewHelper
     ModificationRegulation
   ].freeze
 
-  def refresh_materialized_view(concurrently: false)
+  def refresh_materialized_view
     eager_load_materialized_view_models
 
     Sequel::Plugins::Oplog.models.each do |model|
-      if model.materialized? && model.actually_materialized?
-        model.refresh!(concurrently:)
-      end
+      model.refresh! if model.materialized? && model.actually_materialized?
     end
 
-    GoodsNomenclatures::TreeNode.refresh!(concurrently:)
+    GoodsNomenclatures::TreeNode.refresh!
 
     prewarm_views
   end
