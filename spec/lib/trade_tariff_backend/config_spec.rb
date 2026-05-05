@@ -428,6 +428,11 @@ RSpec.describe TradeTariffBackend::Config do
         ENV['CUPID_TEAM_TO_EMAILS'] = 'a@example.com, b@example.com'
         expect(config.cupid_team_to_emails).to eq(['a@example.com', 'b@example.com'])
       end
+
+      it 'extracts addresses from a JSON hash (AWS Secrets Manager format)' do
+        ENV['CUPID_TEAM_TO_EMAILS'] = '{"backend-cupid-team-to-emails":"cupid@example.com"}'
+        expect(config.cupid_team_to_emails).to eq(['cupid@example.com'])
+      end
     end
   end
 end

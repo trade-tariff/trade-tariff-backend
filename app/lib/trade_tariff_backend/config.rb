@@ -179,7 +179,10 @@ module TradeTariffBackend
     end
 
     def cupid_team_to_emails
-      ENV['CUPID_TEAM_TO_EMAILS']&.split(',')&.map(&:strip) || []
+      raw = ENV['CUPID_TEAM_TO_EMAILS']
+      return [] if raw.blank?
+
+      parse_email_list(raw)
     end
 
     def myott_report_email
@@ -268,6 +271,17 @@ module TradeTariffBackend
     # Goods nomenclature
     def goods_nomenclature_label_page_size
       ENV.fetch('GOODS_NOMENCLATURE_LABEL_PAGE_SIZE', '10').to_i
+    end
+
+    private
+
+    # Parse a comma-separated email list, or a JSON hash whose values are
+    # email addresses (the format used when the secret is injected directly
+    # from an AWS Secrets Manager JSON object).
+    def parse_email_list(raw)
+      JSON.parse(raw).values.map(&:strip).reject(&:empty?)
+    rescue JSON::ParserError
+      raw.split(',').map(&:strip).reject(&:empty?)
     end
   end
 end
