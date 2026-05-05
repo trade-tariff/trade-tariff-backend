@@ -200,7 +200,7 @@ RSpec.describe CustomsTariffImporter::NotesExtractor do
     end
 
     describe 'blank paragraph handling' do
-      it 'ignores blank paragraphs between content lines' do
+      it 'preserves blank paragraphs as blank lines' do
         result = parse([
           'CHAPTER 1',
           'Chapter Notes',
@@ -209,7 +209,7 @@ RSpec.describe CustomsTariffImporter::NotesExtractor do
           'Line two.',
         ])
 
-        expect(result.chapters['01']).to include("Line one.\nLine two.")
+        expect(result.chapters['01']).to include("Line one.\n\nLine two.")
       end
     end
   end

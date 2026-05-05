@@ -83,10 +83,7 @@ module CustomsTariffImporter
       @general_rules   = {}
 
       paragraphs.each do |para|
-        text = para[:text]
-        next if text.blank?
-
-        send(:"handle_#{@state}", text)
+        send(:"handle_#{@state}", para[:text])
       end
 
       finalize_chapter_note
@@ -134,7 +131,7 @@ module CustomsTariffImporter
         @current_section = text.match(SECTION_PATTERN)[1].upcase
         @note_lines = []
         @state = :in_section
-      else
+      elsif text.present? || (@note_lines.any? && @note_lines.last.present?)
         @note_lines << text
       end
     end
@@ -166,7 +163,7 @@ module CustomsTariffImporter
         @current_chapter = sprintf('%02d', m[1].to_i)
         @note_lines = []
         @state = :in_chapter
-      else
+      elsif text.present? || (@note_lines.any? && @note_lines.last.present?)
         @note_lines << text
       end
     end
@@ -204,7 +201,7 @@ module CustomsTariffImporter
         @current_section = m[1].upcase
         @note_lines = []
         @state = :in_section
-      else
+      elsif text.present? || (@note_lines.any? && @note_lines.last.present?)
         @note_lines << text
       end
     end
@@ -224,7 +221,7 @@ module CustomsTariffImporter
     def finalize_chapter_note
       return if @current_chapter.nil?
 
-      content = @note_lines.reject(&:blank?).join("\n").strip
+      content = @note_lines.join("\n").strip
       @chapters[@current_chapter] = content if content.present?
       @current_chapter = nil
       @note_lines = []
@@ -233,7 +230,7 @@ module CustomsTariffImporter
     def finalize_section_note
       return if @current_section.nil?
 
-      content = @note_lines.reject(&:blank?).join("\n").strip
+      content = @note_lines.join("\n").strip
       @sections[RomanNumerals::Converter.to_decimal(@current_section)] = content if content.present?
       @current_section = nil
       @note_lines = []
@@ -242,7 +239,7 @@ module CustomsTariffImporter
     def finalize_rule
       return if @current_rule.nil?
 
-      content = @note_lines.reject(&:blank?).join("\n").strip
+      content = @note_lines.join("\n").strip
       @general_rules[@current_rule] = content if content.present?
       @current_rule = nil
       @note_lines = []

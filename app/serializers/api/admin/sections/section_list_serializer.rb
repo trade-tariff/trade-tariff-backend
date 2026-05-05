@@ -11,7 +11,8 @@ module Api
         attributes :id, :numeral, :title, :position, :chapter_from, :chapter_to
 
         attribute :section_note_id do |section|
-          section.customs_tariff_section_note&.id
+          note = TradeTariffBackend.uk? ? section.customs_tariff_section_note : section.section_note
+          note&.id
         end
       end
     end
