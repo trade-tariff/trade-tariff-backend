@@ -6,7 +6,7 @@ class GoodsNomenclatureDescription < Sequel::Model
   plugin :time_machine
   plugin :oplog, primary_key: %i[goods_nomenclature_sid
                                  goods_nomenclature_description_period_sid],
-               materialized: true
+                 materialized: true
 
   set_primary_key %i[goods_nomenclature_sid goods_nomenclature_description_period_sid]
 
