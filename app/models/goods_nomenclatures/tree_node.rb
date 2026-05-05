@@ -67,10 +67,10 @@ module GoodsNomenclatures
         # queries fall back to the validity-aware subquery because the view stores
         # one next-sibling row per indent and can't answer "at point_in_time".
         origin_next_sib = if historical_query?
-          next_sibling_or_end(origin.position, origin.depth)
-        else
-          Sequel.qualify(origin.table, :next_sibling_or_end_position)
-        end
+                            next_sibling_or_end(origin.position, origin.depth)
+                          else
+                            Sequel.qualify(origin.table, :next_sibling_or_end_position)
+                          end
 
         (descendants.position > origin.position) &
           validity_dates_filter(date_constraints.table) &

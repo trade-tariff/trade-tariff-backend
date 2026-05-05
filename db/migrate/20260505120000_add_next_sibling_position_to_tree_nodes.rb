@@ -47,7 +47,6 @@ Sequel.migration do
         FROM tree_nodes t
         LEFT JOIN tree_nodes s ON
           s.depth = t.depth
-          AND (s."position" / 10000000000) = (t."position" / 10000000000)
           AND s."position" > t."position"
           AND (t.validity_end_date IS NULL OR s.validity_start_date <= t.validity_end_date)
           AND (s.validity_end_date IS NULL OR s.validity_end_date >= t.validity_start_date)

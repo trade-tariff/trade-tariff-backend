@@ -4030,7 +4030,7 @@ CREATE MATERIALIZED VIEW uk.goods_nomenclature_tree_nodes AS
             COALESCE(s."position", '1000000000000'::bigint) AS next_sibling_or_end_position,
             s.validity_start_date AS next_sibling_validity_start_date
            FROM (tree_nodes t_1
-             LEFT JOIN tree_nodes s ON (((s.depth = t_1.depth) AND ((s."position" / '10000000000'::bigint) = (t_1."position" / '10000000000'::bigint)) AND (s."position" > t_1."position") AND ((t_1.validity_end_date IS NULL) OR (s.validity_start_date <= t_1.validity_end_date)) AND ((s.validity_end_date IS NULL) OR (s.validity_end_date >= t_1.validity_start_date)))))
+             LEFT JOIN tree_nodes s ON (((s.depth = t_1.depth) AND (s."position" > t_1."position") AND ((t_1.validity_end_date IS NULL) OR (s.validity_start_date <= t_1.validity_end_date)) AND ((s.validity_end_date IS NULL) OR (s.validity_end_date >= t_1.validity_start_date)))))
           ORDER BY t_1.goods_nomenclature_indent_sid, s."position"
         )
  SELECT t.goods_nomenclature_indent_sid,
