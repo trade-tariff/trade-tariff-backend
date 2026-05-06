@@ -49,15 +49,33 @@ module CustomsTariffImporter
         )
 
         extracted.chapters.each do |chapter_id, content|
-          CustomsTariffChapterNote.create(customs_tariff_update_version: update.version, chapter_id:, content:)
+          CustomsTariffChapterNote.create(
+            customs_tariff_update_version: update.version,
+            chapter_id:,
+            content:,
+            validity_start_date: update.validity_start_date,
+            status: CustomsTariffChapterNote::PENDING,
+          )
         end
 
         extracted.sections.each do |section_id, content|
-          CustomsTariffSectionNote.create(customs_tariff_update_version: update.version, section_id:, content:)
+          CustomsTariffSectionNote.create(
+            customs_tariff_update_version: update.version,
+            section_id:,
+            content:,
+            validity_start_date: update.validity_start_date,
+            status: CustomsTariffSectionNote::PENDING,
+          )
         end
 
         extracted.general_rules.each do |rule_label, content|
-          CustomsTariffGeneralRule.create(customs_tariff_update_version: update.version, rule_label:, content:)
+          CustomsTariffGeneralRule.create(
+            customs_tariff_update_version: update.version,
+            rule_label:,
+            content:,
+            validity_start_date: update.validity_start_date,
+            status: CustomsTariffGeneralRule::PENDING,
+          )
         end
       end
 

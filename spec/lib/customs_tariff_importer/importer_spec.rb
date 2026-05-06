@@ -93,6 +93,27 @@ RSpec.describe CustomsTariffImporter::Importer do
         expect(CustomsTariffGeneralRule.where(customs_tariff_update_version: '1.30').count).to eq(2)
       end
 
+      it 'creates chapter notes with the update validity_start_date and pending status' do
+        results
+        note = CustomsTariffChapterNote.where(customs_tariff_update_version: '1.30').first
+        expect(note.validity_start_date).to eq(entry_into_force_on)
+        expect(note.status).to eq(CustomsTariffChapterNote::PENDING)
+      end
+
+      it 'creates section notes with the update validity_start_date and pending status' do
+        results
+        note = CustomsTariffSectionNote.where(customs_tariff_update_version: '1.30').first
+        expect(note.validity_start_date).to eq(entry_into_force_on)
+        expect(note.status).to eq(CustomsTariffSectionNote::PENDING)
+      end
+
+      it 'creates general rules with the update validity_start_date and pending status' do
+        results
+        rule = CustomsTariffGeneralRule.where(customs_tariff_update_version: '1.30').first
+        expect(rule.validity_start_date).to eq(entry_into_force_on)
+        expect(rule.status).to eq(CustomsTariffGeneralRule::PENDING)
+      end
+
       it 'emits a document_imported instrumentation event' do
         results
         expect(CustomsTariffImporter::Instrumentation).to have_received(:document_imported).with(
