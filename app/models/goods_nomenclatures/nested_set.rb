@@ -207,7 +207,7 @@ module GoodsNomenclatures
       descendants.each_with_index do |d, i|
         stack.pop while stack.last && stack.last.depth >= d.depth
         parent = stack.last
-        d.associations[:parent] = parent if parent
+        d.associations[:parent] = parent if parent && parent.depth == d.depth - 1
         stack.push(d)
 
         next_d = descendants[i + 1]

@@ -14164,6 +14164,5 @@ INSERT INTO "schema_migrations" ("filename") VALUES ('20260424120000_materialise
 INSERT INTO "schema_migrations" ("filename") VALUES ('20260429120000_add_aliases_to_description_intercepts.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20260429140000_add_covering_index_to_measure_components.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20260429151751_fixes_schema_reference_in_views.rb');
-INSERT INTO "schema_migrations" ("filename") VALUES ('20260415092811_add_next_sibling_position_to_tree_nodes.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20260501120000_materialise_goods_nomenclature_description_views.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20260505120000_add_next_sibling_position_to_tree_nodes.rb');
