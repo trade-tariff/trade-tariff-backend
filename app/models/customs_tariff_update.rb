@@ -23,6 +23,10 @@ class CustomsTariffUpdate < Sequel::Model
       where(status: APPROVED)
     end
 
+    def rejected
+      where(status: REJECTED)
+    end
+
     def failed
       where(status: FAILED)
     end
