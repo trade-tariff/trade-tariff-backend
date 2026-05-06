@@ -1801,7 +1801,10 @@ CREATE TABLE uk.customs_tariff_chapter_notes (
     id integer NOT NULL,
     customs_tariff_update_version text NOT NULL,
     chapter_id character varying(2) NOT NULL,
-    content text NOT NULL
+    content text NOT NULL,
+    status text DEFAULT 'pending'::text NOT NULL,
+    validity_start_date date,
+    validity_end_date date
 );
 
 
@@ -1827,7 +1830,10 @@ CREATE TABLE uk.customs_tariff_general_rules (
     id integer NOT NULL,
     customs_tariff_update_version text NOT NULL,
     rule_label character varying(10) NOT NULL,
-    content text NOT NULL
+    content text NOT NULL,
+    status text DEFAULT 'pending'::text NOT NULL,
+    validity_start_date date,
+    validity_end_date date
 );
 
 
@@ -1853,7 +1859,10 @@ CREATE TABLE uk.customs_tariff_section_notes (
     id integer NOT NULL,
     customs_tariff_update_version text NOT NULL,
     section_id integer NOT NULL,
-    content text NOT NULL
+    content text NOT NULL,
+    status text DEFAULT 'pending'::text NOT NULL,
+    validity_start_date date,
+    validity_end_date date
 );
 
 
@@ -14329,3 +14338,4 @@ INSERT INTO "schema_migrations" ("filename") VALUES ('20260429140000_add_coverin
 INSERT INTO "schema_migrations" ("filename") VALUES ('20260429151751_fixes_schema_reference_in_views.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20260501120000_materialise_goods_nomenclature_description_views.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20260505120000_add_next_sibling_position_to_tree_nodes.rb');
+INSERT INTO "schema_migrations" ("filename") VALUES ('20260506120000_add_approval_fields_to_customs_tariff_notes.rb');
