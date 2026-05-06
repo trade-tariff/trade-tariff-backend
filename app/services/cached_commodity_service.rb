@@ -14,7 +14,8 @@ class CachedCommodityService
     export_measures.measure_components.measurement_unit
   ]).freeze
 
-  MEASURES_EAGER_LOAD_GRAPH = [
+  # All measure associations except quota — loaded for every commodity.
+  BASE_MEASURES_EAGER_LOAD_GRAPH = [
     { footnotes: :footnote_descriptions },
     { measure_type: %i[measure_type_description measure_type_series_description] },
     {
@@ -46,16 +47,6 @@ class CachedCommodityService
       ],
     },
     {
-      quota_order_number: {
-        quota_definition: %i[
-          quota_balance_events
-          quota_suspension_periods
-          quota_blocking_periods
-          incoming_quota_closed_and_transferred_event
-        ],
-      },
-    },
-    {
       geographical_area: [
         :geographical_area_descriptions,
         { contained_geographical_areas: %i[geographical_area_descriptions contained_geographical_areas] },
@@ -77,6 +68,24 @@ class CachedCommodityService
     :full_temporary_stop_regulations,
     :measure_partial_temporary_stops,
   ].freeze
+
+  # Quota sub-graph loaded only when at least one applicable measure has an
+  # ordernumber — most commodities never have quota measures, so skipping
+  # this sub-graph when it is not needed avoids 6 unnecessary queries.
+  QUOTA_EAGER_LOAD_GRAPH = {
+    quota_definition: %i[
+      quota_balance_events
+      quota_suspension_periods
+      quota_blocking_periods
+      incoming_quota_closed_and_transferred_event
+    ],
+  }.freeze
+
+  # Full graph retained as a convenience reference (e.g. tests that use
+  # the old single-call eager load path to build a reference response).
+  MEASURES_EAGER_LOAD_GRAPH = (BASE_MEASURES_EAGER_LOAD_GRAPH + [
+    { quota_order_number: QUOTA_EAGER_LOAD_GRAPH },
+  ]).freeze
 
   def initialize(commodity, actual_date, filters = {})
     @commodity_sid = commodity.goods_nomenclature_sid
@@ -123,8 +132,8 @@ class CachedCommodityService
     @commodity ||= begin
       # Phase 1: load the commodity and its ancestors for their own attributes.
       # Measures are deliberately excluded here and loaded in a separate
-      # batched pass below so that MEASURES_EAGER_LOAD_GRAPH is applied once
-      # across all applicable goods_nomenclature_sids instead of twice
+      # batched pass below so that BASE_MEASURES_EAGER_LOAD_GRAPH is applied
+      # once across all applicable goods_nomenclature_sids instead of twice
       # (once for own measures, once for ancestor measures).
       result = Commodity
         .actual
@@ -140,7 +149,32 @@ class CachedCommodityService
         .take
 
       load_applicable_measures(result)
+      load_quota_associations(result)
       result
+    end
+  end
+
+  # Eager-load quota_order_number and its definition sub-tree only for
+  # measures that actually have a quota (ordernumber is present).  Most
+  # commodities have none, so this avoids 6 superfluous queries per request.
+  # When quota measures do exist, a single batched query loads all relevant
+  # QuotaOrderNumbers and their sub-associations in one pass.
+  def load_quota_associations(commodity)
+    all_measures = commodity.measures + commodity.ancestors.flat_map(&:measures)
+    quota_measures = all_measures.select { |m| m.ordernumber.present? }
+    return if quota_measures.empty?
+
+    ordernumbers = quota_measures.map(&:ordernumber).uniq
+
+    quota_order_numbers = QuotaOrderNumber
+      .where(quota_order_number_id: ordernumbers)
+      .eager(QUOTA_EAGER_LOAD_GRAPH)
+      .all
+
+    quota_by_ordernumber = quota_order_numbers.index_by(&:quota_order_number_id)
+
+    quota_measures.each do |measure|
+      measure.associations[:quota_order_number] = quota_by_ordernumber[measure.ordernumber]
     end
   end
 
@@ -152,6 +186,8 @@ class CachedCommodityService
   # Sequel query, then distributes them back into each object's :measures
   # association slot. This halves the number of queries compared with loading
   # own measures and ancestor measures with separate eager-load passes.
+  # Quota associations are intentionally excluded here — load_quota_associations
+  # handles them conditionally in a follow-up pass.
   def load_applicable_measures(commodity)
     all_sids = [commodity.goods_nomenclature_sid] +
       commodity.ancestors.map(&:goods_nomenclature_sid)
@@ -162,7 +198,7 @@ class CachedCommodityService
       .with_regulation_dates_query
       .without_excluded_types
       .where(goods_nomenclature_sid: all_sids)
-      .eager(MEASURES_EAGER_LOAD_GRAPH)
+      .eager(BASE_MEASURES_EAGER_LOAD_GRAPH)
       .all
 
     measures_by_sid = all_measures.group_by(&:goods_nomenclature_sid)

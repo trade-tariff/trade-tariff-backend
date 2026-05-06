@@ -355,6 +355,54 @@ RSpec.describe CachedCommodityService do
       end
     end
 
+    describe 'quota association loading' do
+      context 'when no measures have a quota order number' do
+        it 'does not populate quota_order_number on any measure' do
+          loaded_commodity = nil
+
+          allow(Api::V2::Commodities::CommodityPresenter).to receive(:new).and_wrap_original do |original, commodity, measures|
+            loaded_commodity = commodity
+            original.call(commodity, measures)
+          end
+
+          service.call
+
+          all_measures = loaded_commodity.measures + loaded_commodity.ancestors.flat_map(&:measures)
+          expect(all_measures).to all(satisfy { |m| m.associations[:quota_order_number].nil? })
+        end
+      end
+
+      context 'when a measure has a quota order number' do
+        it 'populates quota_order_number only on measures that have one' do
+          create(:measure_type, measure_type_id: '143', trade_movement_code: 0)
+          quota_measure = create(
+            :measure,
+            :with_quota_order_number,
+            :with_base_regulation,
+            measure_type_id: '143',
+            goods_nomenclature: commodity,
+            goods_nomenclature_item_id: commodity.goods_nomenclature_item_id,
+            goods_nomenclature_sid: commodity.goods_nomenclature_sid,
+            for_geo_area: erga_omnes_area,
+          ).tap(&:reload)
+
+          loaded_commodity = nil
+          allow(Api::V2::Commodities::CommodityPresenter).to receive(:new).and_wrap_original do |original, c, m|
+            loaded_commodity = c
+            original.call(c, m)
+          end
+
+          service.call
+
+          quota_m = loaded_commodity.measures.find { |m| m.measure_sid == quota_measure.measure_sid }
+          non_quota = loaded_commodity.measures.reject { |m| m.measure_sid == quota_measure.measure_sid }
+
+          expect(quota_m.associations[:quota_order_number]).to be_present
+          expect(non_quota).to all(satisfy { |m| m.associations[:quota_order_number].nil? })
+        end
+      end
+    end
+
     describe 'full response equivalence' do
       shared_examples 'matches reference response' do |country_id|
         it "produces identical measure sids for #{country_id || 'no filter'}" do
