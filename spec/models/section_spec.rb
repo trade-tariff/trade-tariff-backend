@@ -23,4 +23,24 @@ RSpec.describe Section do
       end
     end
   end
+
+  describe '#customs_tariff_section_note' do
+    let!(:section) { create(:section) }
+
+    around { |example| TimeMachine.now { example.run } }
+
+    it 'returns the note from the currently actual update' do
+      older = create(:customs_tariff_update, validity_start_date: 1.month.ago, validity_end_date: 1.day.ago)
+      newer = create(:customs_tariff_update, validity_start_date: Time.zone.today)
+      create(:customs_tariff_section_note, customs_tariff_update: older, section_id: section.id)
+      note = create(:customs_tariff_section_note, customs_tariff_update: newer, section_id: section.id)
+
+      expect(section.customs_tariff_section_note.id).to eq(note.id)
+    end
+
+    it 'returns nil when no note exists for this section' do
+      create(:customs_tariff_update)
+      expect(section.customs_tariff_section_note).to be_nil
+    end
+  end
 end
