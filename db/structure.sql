@@ -11387,7 +11387,7 @@ CREATE INDEX fto_footypopl_otepeslog_operation_date ON uk.footnote_types_oplog U
 -- Name: fts_reg_act_pk; Type: INDEX; Schema: uk; Owner: -
 --
 
-CREATE INDEX fts_reg_act_pk ON uk.fts_regulation_actions_oplog USING btree (fts_regulation_id, fts_regulation_role, stopped_regulation_id, stopped_regulation_role);
+CREATE INDEX fts_reg_act_pk ON uk.fts_regulation_actions_oplog USING btree (fts_regulation_id, fts_regulation_role, stopped_regulation_id, stopped_regulation_role) INCLUDE (oid);
 
 
 --
@@ -11443,7 +11443,7 @@ CREATE INDEX full_temp_explicit_abrogation_regulation ON uk.full_temporary_stop_
 -- Name: full_temp_stop_reg_pk; Type: INDEX; Schema: uk; Owner: -
 --
 
-CREATE INDEX full_temp_stop_reg_pk ON uk.full_temporary_stop_regulations_oplog USING btree (full_temporary_stop_regulation_id, full_temporary_stop_regulation_role);
+CREATE INDEX full_temp_stop_reg_pk ON uk.full_temporary_stop_regulations_oplog USING btree (full_temporary_stop_regulation_id, full_temporary_stop_regulation_role) INCLUDE (oid);
 
 
 --
