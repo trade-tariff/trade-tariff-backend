@@ -395,6 +395,12 @@ namespace :admin_configurations do
 
     configs = [
       {
+        name: 'description_intercept_templates',
+        config_type: 'object_template',
+        description: 'Named templates used by the description intercept bulk import. CSV uploads provide term and template only.',
+        value: AdminConfiguration.default_for('description_intercept_templates'),
+      },
+      {
         name: 'expand_search_enabled',
         config_type: 'boolean',
         description: 'Expand search queries using AI to translate everyday language into tariff terminology before searching',
@@ -623,8 +629,15 @@ namespace :admin_configurations do
     created = 0
 
     configs.each do |attrs|
-      if AdminConfiguration.where(name: attrs[:name]).any?
-        puts "  skip: #{attrs[:name]} (already exists)"
+      config = AdminConfiguration.where(name: attrs[:name]).first
+      if config
+        if config.config_type != attrs[:config_type]
+          config.update(config_type: attrs[:config_type], value: attrs[:value])
+          puts "  patched: #{attrs[:name]} (config type)"
+          created += 1
+        else
+          puts "  skip: #{attrs[:name]} (already exists)"
+        end
         next
       end
 

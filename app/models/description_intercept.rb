@@ -94,6 +94,7 @@ class DescriptionIntercept < Sequel::Model
       filtering: filtering?,
       filter_prefixes: filter_prefixes_array,
       message: message,
+      message_header: message_header,
       guidance_level: guidance_level,
       guidance_location: guidance_location,
       escalate_to_webchat: escalate_to_webchat,
@@ -110,10 +111,13 @@ class DescriptionIntercept < Sequel::Model
 
     validate_filter_prefixes
     validate_aliases
+    validate_unique_search_terms
     validate_guidance_dependencies
+    validates_unique :term
   end
 
   def before_validation
+    self.term = self.class.normalize_alias(term) if term.present?
     self.aliases = Sequel.pg_array(Array(aliases).map { |value| self.class.normalize_alias(value) }.uniq, :text)
 
     super
@@ -131,14 +135,53 @@ class DescriptionIntercept < Sequel::Model
   end
 
   def validate_aliases
-    aliases = Array(self.aliases)
-    return if aliases.empty?
+    raw_aliases = Array(aliases)
+    aliases = raw_aliases.compact_blank
 
-    errors.add(:aliases, 'cannot contain blank aliases') if aliases.any?(&:blank?)
+    errors.add(:aliases, 'cannot contain blank aliases') if raw_aliases.any?(&:blank?)
+    errors.add(:aliases, 'cannot duplicate the search term') if term.present? && aliases.include?(term)
+  end
+
+  def validate_unique_search_terms
+    term_conflicts = []
+    alias_conflicts = []
+
+    search_terms.each do |search_term|
+      conflict = search_term_conflict(search_term)
+      next if conflict.blank?
+
+      search_term == term ? term_conflicts << search_term : alias_conflicts << search_term
+    end
+
+    term_conflicts.each { |search_term| errors.add(:term, "is already used by another description intercept (#{search_term})") }
+    add_alias_conflict_error(alias_conflicts)
   end
 
   def validate_guidance_dependencies
     errors.add(:guidance_level, 'requires message') if guidance_level.present? && message.blank?
     errors.add(:guidance_location, 'requires message') if guidance_location.present? && message.blank?
+  end
+
+  def search_terms
+    ([term] + aliases_array).compact_blank
+  end
+
+  def search_term_conflict(search_term)
+    query = Sequel.expr(term: search_term) | Sequel.lit('aliases @> ARRAY[?]::text[]', search_term)
+    dataset = self.class.where(query)
+    dataset = dataset.exclude(id:) if id.present?
+    dataset.first
+  end
+
+  def add_alias_conflict_error(alias_conflicts)
+    return if alias_conflicts.empty?
+
+    message = if alias_conflicts.one?
+                "include a value already used by another description intercept (#{alias_conflicts.first})"
+              else
+                "include values already used by another description intercept (#{alias_conflicts.join(', ')})"
+              end
+
+    errors.add(:aliases, message)
   end
 end

@@ -95,6 +95,10 @@ AdminApi.routes.draw do
         resources :live_issues, only: %i[index show create update destroy]
         resources :admin_configurations, only: %i[index show update]
         resources :description_intercepts, only: %i[index show create update] do
+          collection do
+            post :bulk_import
+          end
+
           member do
             get :versions
           end

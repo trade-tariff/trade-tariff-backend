@@ -38,6 +38,7 @@ RSpec.describe 'Description Intercepts', swagger_doc: 'v2/swagger.json', type: :
                            aliases: { type: :array, items: { type: :string }, nullable: true },
                            sources: { type: :array, items: { type: :string }, nullable: true },
                            message: { type: :string, nullable: true },
+                           message_header: { type: :string, nullable: true },
                            excluded: { type: :boolean, nullable: true },
                            created_at: { type: :string, format: :'date-time', nullable: true },
                            updated_at: { type: :string, format: :'date-time', nullable: true },

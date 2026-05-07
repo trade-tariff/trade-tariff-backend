@@ -19,6 +19,8 @@ class AdminConfiguration
                   val.to_i
                 when 'options', 'nested_options', 'multi_options'
                   coerce_json_object(val)
+                when 'object_template'
+                  coerce_template_object(val)
                 else # string, markdown
                   val.to_s
                 end
@@ -35,6 +37,17 @@ class AdminConfiguration
       end
     rescue JSON::ParserError
       { 'selected' => default_selected_value, 'options' => [] }
+    end
+
+    def coerce_template_object(val)
+      case val
+      when Hash then val
+      when Sequel::Postgres::JSONBHash then val.to_hash
+      when String then JSON.parse(val)
+      else val
+      end
+    rescue JSON::ParserError
+      val
     end
 
     def default_selected_value

@@ -4,7 +4,7 @@ RSpec.describe Api::V2::DescriptionInterceptsController, :v2 do
       create(
         :description_intercept,
         term: 'alpha',
-        aliases: Sequel.pg_array(%w[aleph first], :text),
+        aliases: Sequel.pg_array(%w[aleph], :text),
         sources: Sequel.pg_array(%w[guided_search], :text),
         message: 'Alpha guidance',
         excluded: true,
@@ -53,6 +53,7 @@ RSpec.describe Api::V2::DescriptionInterceptsController, :v2 do
         aliases
         sources
         message
+        message_header
         excluded
         created_at
         updated_at

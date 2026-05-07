@@ -21,6 +21,8 @@ class AdminConfiguration
         validate_multi_options_value
       when 'nested_options'
         validate_nested_options_value
+      when 'object_template'
+        validate_object_template_value
       when 'string', 'markdown'
         validate_text_value
       end
@@ -107,6 +109,43 @@ class AdminConfiguration
 
       option_keys = options.filter_map { |option| option['key'] if option.is_a?(Hash) }
       errors.add(:value, t('value.invalid_options')) unless (selected - option_keys).empty?
+    end
+
+    def validate_object_template_value
+      templates = hash_value
+      return errors.add(:value, 'must be a map of object templates') unless templates.is_a?(Hash) && templates.present?
+
+      templates.each do |key, template|
+        unless key.to_s.match?(/\A[a-z][a-z0-9_]*\z/)
+          errors.add(:value, 'template keys must be lowercase snake case')
+          next
+        end
+
+        validate_object_template(key, template)
+      end
+    end
+
+    def validate_object_template(key, template)
+      unless template.is_a?(Hash) && template.keys.sort == %w[attributes description label]
+        errors.add(:value, "#{key} must include label, description and attributes")
+        return
+      end
+
+      errors.add(:value, "#{key} label is required") if template['label'].blank?
+      errors.add(:value, "#{key} description is required") if template['description'].blank?
+
+      attrs = template['attributes']
+      unless attrs.is_a?(Hash)
+        errors.add(:value, "#{key} attributes must be a map")
+      end
+    end
+
+    def hash_value
+      val = self[:value]
+      case val
+      when Hash then val
+      when Sequel::Postgres::JSONBHash then val.to_hash
+      end
     end
   end
 end

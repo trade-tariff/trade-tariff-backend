@@ -10,6 +10,7 @@ module Api
                  :aliases,
                  :sources,
                  :message,
+                 :message_header,
                  :excluded,
                  :created_at,
                  :updated_at,
