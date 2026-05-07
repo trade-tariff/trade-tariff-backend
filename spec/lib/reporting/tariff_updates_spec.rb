@@ -1,5 +1,5 @@
-RSpec.describe Reporting::CdsUpdates do
-  describe '.cds_updates' do
+RSpec.describe Reporting::TariffUpdates do
+  describe '.tariff_updates' do
     around do |example|
       travel_to Time.zone.parse('2026-02-15 12:00:00') do
         example.run
@@ -23,7 +23,7 @@ RSpec.describe Reporting::CdsUpdates do
         created_at: Time.zone.parse('2026-02-01 10:00:00'),
       )
 
-      expect(described_class.send(:cds_updates)).to eq([january_record])
+      expect(described_class.send(:tariff_updates)).to eq([january_record])
     end
 
     it 'includes records on previous month boundaries only' do
@@ -48,7 +48,7 @@ RSpec.describe Reporting::CdsUpdates do
         created_at: Time.zone.parse('2026-02-01 00:00:00'),
       )
 
-      expect(described_class.send(:cds_updates)).to contain_exactly(january_start, january_end)
+      expect(described_class.send(:tariff_updates)).to contain_exactly(january_start, january_end)
     end
 
     it 'eager-loads state changes' do
@@ -64,7 +64,7 @@ RSpec.describe Reporting::CdsUpdates do
         created_at: Time.zone.parse('2026-01-15 10:00:00'),
       )
 
-      result = described_class.send(:cds_updates)
+      result = described_class.send(:tariff_updates)
 
       expect(result.first.associations).to have_key(:state_changes)
       expect(result.first.state_changes.map(&:to_state)).to eq(%w[P])
@@ -103,7 +103,7 @@ RSpec.describe Reporting::CdsUpdates do
           operation_name: :put_object,
           params: hash_including(
             bucket: s3_bucket.name,
-            key: /^.*\/cds_updates_.*\.xlsx$/,
+            key: /^.*\/tariff_updates_.*\.xlsx$/,
             body: instance_of(String),
             content_type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
           ),
@@ -141,8 +141,8 @@ RSpec.describe Reporting::CdsUpdates do
 
       expect(rows).to eq(
         [
-          %w[2026-01-20 2026-01-20T08:00:00Z 2026-01-20T08:00:00Z P],
-          %w[2026-01-20 2026-01-20T08:00:00Z 2026-01-20T08:10:00Z A],
+          ['2026-01-20', '2026-01-20T08:00:00Z', '2026-01-20T08:00:00Z', 'Pending'],
+          [nil, nil, '2026-01-20T08:10:00Z', 'Applied'],
         ],
       )
     end
@@ -161,7 +161,7 @@ RSpec.describe Reporting::CdsUpdates do
 
       expect(rows).to eq(
         [
-          %w[2026-01-22 2026-01-22T09:00:00Z 2026-01-22T09:05:00Z P],
+          ['2026-01-22', '2026-01-22T09:00:00Z', '2026-01-22T09:05:00Z', 'Pending'],
         ],
       )
     end
