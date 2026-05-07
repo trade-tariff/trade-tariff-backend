@@ -1,9 +1,8 @@
 module "worker_uk" {
   source = "git@github.com:trade-tariff/trade-tariff-platform-terraform-modules.git//aws/ecs-service?ref=aws/ecs-service-v1.21.0"
 
-  service_name              = "worker-uk"
-  container_definition_kind = "db-backed"
-  region                    = var.region
+  service_name = "worker-uk"
+  region       = var.region
 
   cluster_name              = "trade-tariff-cluster-${var.environment}"
   subnet_ids                = data.aws_subnets.private.ids
