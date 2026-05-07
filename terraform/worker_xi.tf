@@ -1,9 +1,8 @@
 module "worker_xi" {
   source = "git@github.com:trade-tariff/trade-tariff-platform-terraform-modules.git//aws/ecs-service?ref=aws/ecs-service-v1.21.0"
 
-  service_name              = "worker-xi"
-  container_definition_kind = "db-backed"
-  region                    = var.region
+  service_name = "worker-xi"
+  region       = var.region
 
   cluster_name              = "trade-tariff-cluster-${var.environment}"
   subnet_ids                = data.aws_subnets.private.ids
@@ -27,9 +26,6 @@ module "worker_xi" {
 
   container_entrypoint = [""]
   container_command    = local.worker_command
-
-  init_container_entrypoint = [""]
-  init_container_command    = local.init_command
 
   service_environment_config = local.worker_xi_secret_env_vars
 
