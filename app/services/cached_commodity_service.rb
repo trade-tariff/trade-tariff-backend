@@ -217,33 +217,7 @@ class CachedCommodityService
     TradeTariffRequest.meursing_additional_code_id
   end
 
-  # Only fragment the cache by meursing code when the commodity actually has
-  # meursing measures (types 672, 673, 674 — agricultural duty add-ons).
-  # Most commodities (e.g. vehicles, electronics) never have these, so
-  # including the code in the key would create N identical cache entries —
-  # one per distinct meursing code seen in requests — for no benefit.
-  def effective_meursing_code
-    return nil if meursing_additional_code_id.blank?
-
-    commodity_has_meursing_measures? ? meursing_additional_code_id : nil
-  end
-
-  # Cached per commodity+date so we pay at most one DB query per commodity
-  # per day. The result is stable within a trading day; the 24-hour TTL
-  # matches the commodity response TTL for today's date.
-  def commodity_has_meursing_measures?
-    Rails.cache.fetch(
-      "commodity-has-meursing-#{@commodity_sid}-#{actual_date}",
-      expires_in: ttl,
-    ) do
-      Measure.actual
-             .where(goods_nomenclature_sid: @commodity_sid)
-             .where(measure_type_id: MeasureType::MEURSING_MEASURES)
-             .any?
-    end
-  end
-
   def cache_key
-    "_commodity-v#{CACHE_VERSION}-#{@commodity_sid}-#{actual_date}-#{effective_meursing_code}"
+    "_commodity-v#{CACHE_VERSION}-#{@commodity_sid}-#{actual_date}-#{meursing_additional_code_id}"
   end
 end
