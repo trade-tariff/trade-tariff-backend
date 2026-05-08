@@ -2,7 +2,7 @@ Sequel.migration do
   no_transaction
 
   up do
-    run 'CREATE INDEX CONCURRENTLY goods_nomenclature_tree_nodes_position_index ON uk.goods_nomenclature_tree_nodes (position)'
+    run 'CREATE INDEX CONCURRENTLY IF NOT EXISTS goods_nomenclature_tree_nodes_position_index ON uk.goods_nomenclature_tree_nodes (position)'
   end
 
   down do
