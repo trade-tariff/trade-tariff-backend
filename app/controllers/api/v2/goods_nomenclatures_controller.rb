@@ -34,9 +34,9 @@ module Api
                           .non_hidden
                           .eager(:goods_nomenclature_descriptions,
                                  :goods_nomenclature_indents,
-                                 :ancestors,
-                                 flat_descendants: :goods_nomenclature_descriptions)
+                                 :flat_descendants)
                           .all
+        chapters.each { |ch| ch.associations[:parent] = nil }
 
         @goods_nomenclatures = chapters.flat_map { |ch| [ch] + ch.flat_descendants }
 
@@ -48,7 +48,8 @@ module Api
                          .non_hidden
                          .by_code(params[:chapter_id])
                          .eager(:ancestors,
-                                flat_descendants: :goods_nomenclature_descriptions)
+                                :goods_nomenclature_descriptions,
+                                :flat_descendants)
                          .take
 
         @goods_nomenclatures = [chapter] + chapter.flat_descendants
@@ -61,7 +62,8 @@ module Api
                           .non_hidden
                           .by_code(params[:heading_id])
                           .eager(:ancestors,
-                                 flat_descendants: :goods_nomenclature_descriptions)
+                                 :goods_nomenclature_descriptions,
+                                 :flat_descendants)
                           .all
 
         raise Sequel::RecordNotFound if headings.empty?

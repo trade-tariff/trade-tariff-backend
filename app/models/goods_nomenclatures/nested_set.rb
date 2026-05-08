@@ -110,6 +110,7 @@ module GoodsNomenclatures
           .with_validity_dates(:descendant_nodes)
           .select_append(:descendant_nodes__depth)
           .select_append(:descendant_nodes__number_indents)
+          .select_append(:descendant_nodes__description)
           .join(Sequel.as(:goods_nomenclature_tree_nodes, :origin_nodes)) do |origin_table, descendants_table, _join_clauses|
             descendants = TreeNodeAlias.new(descendants_table)
             origin      = TreeNodeAlias.new(origin_table)
@@ -254,7 +255,9 @@ module GoodsNomenclatures
     end
 
     def declarable?
-      producline_suffix == GoodsNomenclature::NON_GROUPING_PRODUCTLINE_SUFFIX && leaf?
+      return @declarable if defined?(@declarable)
+
+      @declarable = producline_suffix == GoodsNomenclature::NON_GROUPING_PRODUCTLINE_SUFFIX && leaf?
     end
 
     def leaf?

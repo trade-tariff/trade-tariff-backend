@@ -4150,9 +4150,16 @@ CREATE MATERIALIZED VIEW uk.goods_nomenclature_tree_nodes AS
     t.oid,
     t.depth,
     vns.next_sibling_or_end_position,
-    vns.next_sibling_validity_start_date
-   FROM (tree_nodes t
+    vns.next_sibling_validity_start_date,
+    latest_desc.description
+   FROM ((tree_nodes t
      LEFT JOIN valid_next_siblings vns USING (goods_nomenclature_indent_sid))
+     LEFT JOIN LATERAL ( SELECT gnd.description
+           FROM (uk.goods_nomenclature_description_periods gndp
+             JOIN uk.goods_nomenclature_descriptions gnd ON (((gnd.goods_nomenclature_description_period_sid = gndp.goods_nomenclature_description_period_sid) AND (gnd.goods_nomenclature_sid = gndp.goods_nomenclature_sid))))
+          WHERE ((gndp.goods_nomenclature_sid = t.goods_nomenclature_sid) AND (gndp.validity_start_date <= now()))
+          ORDER BY gndp.validity_start_date DESC
+         LIMIT 1) latest_desc ON (true))
   WITH NO DATA;
 
 
@@ -14338,3 +14345,4 @@ INSERT INTO "schema_migrations" ("filename") VALUES ('20260414113628_create_cust
 INSERT INTO "schema_migrations" ("filename") VALUES ('20260414113629_create_customs_tariff_general_rules.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20260506120000_add_approval_fields_to_customs_tariff_notes.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20260508120000_add_position_index_to_tree_nodes.rb');
+INSERT INTO "schema_migrations" ("filename") VALUES ('20260509120000_add_description_to_tree_nodes.rb');

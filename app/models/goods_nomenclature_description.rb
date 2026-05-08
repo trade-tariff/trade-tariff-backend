@@ -28,7 +28,7 @@ class GoodsNomenclatureDescription < Sequel::Model
   custom_format :description_indexed, with: DescriptionFormatter,
                                       using: :description
   def description
-    super.try(:gsub, %r/( ?<br> ?){2,}/, '<br>') || ''
+    @description ||= super.try(:gsub, %r/( ?<br> ?){2,}/, '<br>') || ''
   end
 
   def description_html

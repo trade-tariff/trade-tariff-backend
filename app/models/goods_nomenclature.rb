@@ -228,7 +228,11 @@ class GoodsNomenclature < Sequel::Model
   end
 
   def goods_nomenclature_description
-    goods_nomenclature_descriptions.first || NullGoodsNomenclature.new
+    @goods_nomenclature_description ||= if values.key?(:description)
+                                          GoodsNomenclatureDescription.new(description: values[:description])
+                                        else
+                                          goods_nomenclature_descriptions.first || NullGoodsNomenclature.new
+                                        end
   end
 
   def footnote
