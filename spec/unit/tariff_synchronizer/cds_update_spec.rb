@@ -85,7 +85,7 @@ RSpec.describe TariffSynchronizer::CdsUpdate do
         cds_update.import!
       end
 
-      let(:importer) { CdsImporter.new(cds_update) }
+      let(:importer) { instance_double(CdsImporter) }
 
       let(:inserted_oplog_records) do
         {
