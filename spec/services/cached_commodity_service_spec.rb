@@ -145,33 +145,10 @@ RSpec.describe CachedCommodityService do
       context 'with meursing_additional_code_id' do
         include_context 'with meursing additional code id', 'foo'
 
-        context 'when the commodity has no meursing measures' do
-          it 'uses the canonical cache key (no meursing code) to prevent fragmentation' do
-            service.call
-            expected_key = "_commodity-v#{CachedCommodityService::CACHE_VERSION}-#{commodity.goods_nomenclature_sid}-#{actual_date}-"
-            expect(Rails.cache).to have_received(:fetch).with(expected_key, expires_in: 24.hours)
-          end
-        end
-
-        context 'when the commodity has meursing measures' do
-          before do
-            create(:measure_type, measure_type_id: '672', trade_movement_code: 0)
-            create(
-              :measure,
-              :with_base_regulation,
-              measure_type_id: '672',
-              goods_nomenclature: commodity,
-              goods_nomenclature_item_id: commodity.goods_nomenclature_item_id,
-              goods_nomenclature_sid: commodity.goods_nomenclature_sid,
-              for_geo_area: erga_omnes_area,
-            ).tap(&:reload)
-          end
-
-          it 'includes the meursing code in the cache key' do
-            service.call
-            expected_key = "_commodity-v#{CachedCommodityService::CACHE_VERSION}-#{commodity.goods_nomenclature_sid}-#{actual_date}-foo"
-            expect(Rails.cache).to have_received(:fetch).with(expected_key, expires_in: 24.hours)
-          end
+        it 'includes meursing code in cache key' do
+          service.call
+          expected_key = "_commodity-v#{CachedCommodityService::CACHE_VERSION}-#{commodity.goods_nomenclature_sid}-#{actual_date}-foo"
+          expect(Rails.cache).to have_received(:fetch).with(expected_key, expires_in: 24.hours)
         end
       end
 
