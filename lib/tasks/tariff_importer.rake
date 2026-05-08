@@ -28,4 +28,12 @@ namespace :importer do
       end
     end
   end
+
+  namespace :customs_tariff do
+    desc 'Wipe and re-populate customs tariff notes from stored S3 documents'
+    task reimport: %i[environment] do
+      CustomsTariffImporter::Reimporter.new.call
+      puts 'Customs tariff notes re-imported successfully.'
+    end
+  end
 end
