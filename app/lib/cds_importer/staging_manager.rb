@@ -25,6 +25,13 @@ class CdsImporter
   # UNLOGGED tables are lost (PostgreSQL truncates them on recovery), so no
   # partial data lands in the real oplog.  The sync simply re-runs from the
   # source file on S3.
+  #
+  # Orphaned tables: if the Ruby process is killed with SIGKILL (or crashes
+  # without running ensure blocks), cleanup is never called and the staging
+  # tables remain.  This is safe — table names include a per-run SecureRandom
+  # hex ID so they never collide with a future import run.  Future imports are
+  # unaffected.  Orphans can be identified and removed with:
+  #   SELECT relname FROM pg_class WHERE relname LIKE 'stg_%' AND relkind = 'r';
   class StagingManager
     def initialize
       # Short unique ID scoped to this import run.  Used to build staging

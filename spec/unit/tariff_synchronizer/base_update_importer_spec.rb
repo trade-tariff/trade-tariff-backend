@@ -37,7 +37,7 @@ RSpec.describe TariffSynchronizer::BaseUpdateImporter do
 
       expect(taric_update.reload).to be_failed
       expect(taric_update.exception_backtrace).to include('lib/taric_importer.rb:')
-      expect(taric_update.exception_queries).to be_present
+      expect(taric_update.exception_queries).to include('(Sequel::Postgres::Database) ROLLBACK')
     end
 
     it 'subscribes to all events' do
@@ -61,7 +61,7 @@ RSpec.describe TariffSynchronizer::BaseUpdateImporter do
       email = ActionMailer::Base.deliveries.last
       expect(email.subject).to include('Failed Trade Tariff update')
       expect(email.encoded).to include('Backtrace')
-      expect(email.encoded).to include('(Sequel::Postgres::Database)')
+      expect(email.encoded).to include('(Sequel::Postgres::Database) ROLLBACK')
     end
   end
   # rubocop:enable RSpec/MultipleExpectations
