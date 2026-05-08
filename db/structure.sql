@@ -1888,7 +1888,7 @@ CREATE TABLE uk.customs_tariff_updates (
     version text NOT NULL,
     validity_start_date date NOT NULL,
     validity_end_date date,
-    status text DEFAULT 'awaiting_approval'::text NOT NULL,
+    status text DEFAULT 'pending'::text NOT NULL,
     source_url text,
     s3_path text,
     file_checksum text,
@@ -10809,13 +10809,6 @@ CREATE INDEX certificate_descriptions_description_trgm_idx ON uk.certificate_des
 
 
 --
--- Name: chapter_note_experimentals_chapter_id_index; Type: INDEX; Schema: uk; Owner: -
---
-
-CREATE UNIQUE INDEX chapter_note_experimentals_chapter_id_index ON uk.chapter_note_experimentals USING btree (chapter_id);
-
-
---
 -- Name: chapter_notes_chapter_id_index; Type: INDEX; Schema: uk; Owner: -
 --
 
@@ -10918,8 +10911,6 @@ CREATE UNIQUE INDEX customs_tariff_general_rules_customs_tariff_update_version_r
 --
 
 CREATE UNIQUE INDEX customs_tariff_section_notes_customs_tariff_update_version_sect ON uk.customs_tariff_section_notes USING btree (customs_tariff_update_version, section_id);
-
-
 
 
 --
@@ -11914,6 +11905,13 @@ CREATE INDEX goods_nomenclature_tree_nodes_next_sibling_validity_start_date_ ON 
 --
 
 CREATE UNIQUE INDEX goods_nomenclature_tree_nodes_oid_index ON uk.goods_nomenclature_tree_nodes USING btree (oid);
+
+
+--
+-- Name: goods_nomenclature_tree_nodes_position_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX goods_nomenclature_tree_nodes_position_index ON uk.goods_nomenclature_tree_nodes USING btree ("position");
 
 
 --
@@ -14321,10 +14319,6 @@ INSERT INTO "schema_migrations" ("filename") VALUES ('20260401110000_create_desc
 INSERT INTO "schema_migrations" ("filename") VALUES ('20260401110100_create_goods_nomenclature_intercepts.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20260413120000_drop_tariff_update_conformance_errors.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20260413120001_drop_tariff_update_cds_errors.rb');
-INSERT INTO "schema_migrations" ("filename") VALUES ('20260414113626_create_customs_tariff_updates.rb');
-INSERT INTO "schema_migrations" ("filename") VALUES ('20260414113627_create_customs_tariff_chapter_notes.rb');
-INSERT INTO "schema_migrations" ("filename") VALUES ('20260414113628_create_customs_tariff_section_notes.rb');
-INSERT INTO "schema_migrations" ("filename") VALUES ('20260414113629_create_customs_tariff_general_rules.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20260415120000_add_guidance_fields_to_description_intercepts.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20260415120001_create_tariff_update_state_changes.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20260420115159_add_validity_date_indexes_to_geographical_area_description_periods.rb');
@@ -14338,4 +14332,9 @@ INSERT INTO "schema_migrations" ("filename") VALUES ('20260429140000_add_coverin
 INSERT INTO "schema_migrations" ("filename") VALUES ('20260429151751_fixes_schema_reference_in_views.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20260501120000_materialise_goods_nomenclature_description_views.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20260505120000_add_next_sibling_position_to_tree_nodes.rb');
+INSERT INTO "schema_migrations" ("filename") VALUES ('20260414113626_create_customs_tariff_updates.rb');
+INSERT INTO "schema_migrations" ("filename") VALUES ('20260414113627_create_customs_tariff_chapter_notes.rb');
+INSERT INTO "schema_migrations" ("filename") VALUES ('20260414113628_create_customs_tariff_section_notes.rb');
+INSERT INTO "schema_migrations" ("filename") VALUES ('20260414113629_create_customs_tariff_general_rules.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20260506120000_add_approval_fields_to_customs_tariff_notes.rb');
+INSERT INTO "schema_migrations" ("filename") VALUES ('20260508120000_add_position_index_to_tree_nodes.rb');

@@ -205,9 +205,9 @@ module GoodsNomenclatures
     def populate_parent_links_only(descendants)
       stack = [self]
       descendants.each_with_index do |d, i|
-        stack.pop while stack.last && stack.last.depth >= d.depth
+        stack.pop while stack.size > 1 && stack.last.depth >= d.depth
         parent = stack.last
-        d.associations[:parent] = parent if parent && parent.depth == d.depth - 1
+        d.associations[:parent] = parent if parent.equal?(self) || parent.depth == d.depth - 1
         stack.push(d)
 
         next_d = descendants[i + 1]
