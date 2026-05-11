@@ -46,11 +46,11 @@ RSpec.describe 'Chapters', swagger_doc: 'v2/swagger.json', type: :request do
     end
   end
 
-  path '/api/chapters/{id}' do
+  path '/api/chapters/{chapter_id}' do
     parameter name: :Accept, in: :header, required: true,
               schema: { type: :string, enum: ['application/vnd.hmrc.2.0+json'] },
               description: 'API version negotiation header'
-    parameter name: :id, in: :path, required: true,
+    parameter name: :chapter_id, in: :path, required: true,
               schema: { type: :string, pattern: '^\d{1,2}$' },
               description: 'Chapter short code (1–2 digits, e.g. "01")'
 
@@ -150,24 +150,24 @@ RSpec.describe 'Chapters', swagger_doc: 'v2/swagger.json', type: :request do
                }
 
         let(:chapter) { create(:chapter, :with_section, :with_description) }
-        let(:id) { chapter.goods_nomenclature_item_id.first(2) }
+        let(:chapter_id) { chapter.goods_nomenclature_item_id.first(2) }
 
         run_test!
       end
 
       response '404', 'chapter not found' do
-        let(:id) { '99' }
+        let(:chapter_id) { '99' }
 
         run_test!
       end
     end
   end
 
-  path '/api/chapters/{id}/changes' do
+  path '/api/chapters/{chapter_id}/changes' do
     parameter name: :Accept, in: :header, required: true,
               schema: { type: :string, enum: ['application/vnd.hmrc.2.0+json'] },
               description: 'API version negotiation header'
-    parameter name: :id, in: :path, required: true,
+    parameter name: :chapter_id, in: :path, required: true,
               schema: { type: :string, pattern: '^\d{1,2}$' },
               description: 'Chapter short code (1–2 digits, e.g. "01")'
 
@@ -218,7 +218,7 @@ RSpec.describe 'Chapters', swagger_doc: 'v2/swagger.json', type: :request do
                }
 
         let(:chapter) { create(:chapter, :with_description) }
-        let(:id) { chapter.goods_nomenclature_item_id.first(2) }
+        let(:chapter_id) { chapter.goods_nomenclature_item_id.first(2) }
 
         run_test!
       end

@@ -11,7 +11,8 @@
     "license": {
       "name": "MIT",
       "url": "https://opensource.org/licenses/MIT"
-    }
+    },
+    "x-response-examples": "Response example coverage is not yet complete in this generated artifact. Endpoint schemas are available; examples will be added incrementally as the backend contract tests are expanded."
   },
   "servers": [
     {
@@ -799,7 +800,7 @@
         }
       }
     },
-    "/api/chapters/{id}": {
+    "/api/chapters/{chapter_id}": {
       "parameters": [
         {
           "name": "Accept",
@@ -814,7 +815,7 @@
           "description": "API version negotiation header"
         },
         {
-          "name": "id",
+          "name": "chapter_id",
           "in": "path",
           "required": true,
           "schema": {
@@ -1004,7 +1005,7 @@
         }
       }
     },
-    "/api/chapters/{id}/changes": {
+    "/api/chapters/{chapter_id}/changes": {
       "parameters": [
         {
           "name": "Accept",
@@ -1019,7 +1020,7 @@
           "description": "API version negotiation header"
         },
         {
-          "name": "id",
+          "name": "chapter_id",
           "in": "path",
           "required": true,
           "schema": {
@@ -2119,7 +2120,7 @@
         }
       }
     },
-    "/api/exchange_rates/{id}": {
+    "/api/exchange_rates/{year}-{month}": {
       "parameters": [
         {
           "name": "Accept",
@@ -2134,14 +2135,22 @@
           "description": "API version negotiation header"
         },
         {
-          "name": "id",
+          "name": "year",
           "in": "path",
           "required": true,
           "schema": {
-            "type": "string",
-            "pattern": "^\\d{4}-\\d{1,2}$"
+            "type": "integer"
           },
-          "description": "Year and month in \"YYYY-M\" format (e.g. \"2024-3\")"
+          "description": "Four-digit year to retrieve rates for"
+        },
+        {
+          "name": "month",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "integer"
+          },
+          "description": "Month to retrieve rates for"
         },
         {
           "name": "filter[type]",
@@ -3263,7 +3272,7 @@
         }
       }
     },
-    "/api/headings/{id}": {
+    "/api/headings/{heading_id}": {
       "parameters": [
         {
           "name": "Accept",
@@ -3278,7 +3287,7 @@
           "description": "API version negotiation header"
         },
         {
-          "name": "id",
+          "name": "heading_id",
           "in": "path",
           "required": true,
           "schema": {
@@ -3497,7 +3506,7 @@
         }
       }
     },
-    "/api/headings/{id}/changes": {
+    "/api/headings/{heading_id}/changes": {
       "parameters": [
         {
           "name": "Accept",
@@ -3512,7 +3521,7 @@
           "description": "API version negotiation header"
         },
         {
-          "name": "id",
+          "name": "heading_id",
           "in": "path",
           "required": true,
           "schema": {
@@ -3607,7 +3616,7 @@
         }
       }
     },
-    "/api/headings/{id}/commodities": {
+    "/api/headings/{heading_id}/commodities": {
       "parameters": [
         {
           "name": "Accept",
@@ -3622,7 +3631,7 @@
           "description": "API version negotiation header"
         },
         {
-          "name": "id",
+          "name": "heading_id",
           "in": "path",
           "required": true,
           "schema": {
@@ -4153,7 +4162,7 @@
         }
       }
     },
-    "/api/measures/{id}": {
+    "/api/measures/{measure_sid}": {
       "parameters": [
         {
           "name": "Accept",
@@ -4168,7 +4177,7 @@
           "description": "API version negotiation header"
         },
         {
-          "name": "id",
+          "name": "measure_sid",
           "in": "path",
           "required": true,
           "schema": {
@@ -5426,7 +5435,7 @@
         }
       }
     },
-    "/api/sections/{id}": {
+    "/api/sections/{position}": {
       "parameters": [
         {
           "name": "Accept",
@@ -5441,7 +5450,7 @@
           "description": "API version negotiation header"
         },
         {
-          "name": "id",
+          "name": "position",
           "in": "path",
           "required": true,
           "schema": {

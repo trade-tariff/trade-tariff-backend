@@ -27,6 +27,7 @@ RSpec.configure do |config|
           name: 'MIT',
           url: 'https://opensource.org/licenses/MIT',
         },
+        'x-response-examples': 'Response example coverage is not yet complete in this generated artifact. Endpoint schemas are available; examples will be added incrementally as the backend contract tests are expanded.',
       },
       servers: [
         {

@@ -51,11 +51,11 @@ RSpec.describe 'Sections', swagger_doc: 'v2/swagger.json', type: :request do
     end
   end
 
-  path '/api/sections/{id}' do
+  path '/api/sections/{position}' do
     parameter name: :Accept, in: :header, required: true,
               schema: { type: :string, enum: ['application/vnd.hmrc.2.0+json'] },
               description: 'API version negotiation header'
-    parameter name: :id, in: :path, required: true,
+    parameter name: :position, in: :path, required: true,
               schema: { type: :integer },
               description: 'Section position number'
 
@@ -138,25 +138,25 @@ RSpec.describe 'Sections', swagger_doc: 'v2/swagger.json', type: :request do
                }
 
         let(:section) { create(:section, :with_chapter) }
-        let(:id) { section.position }
+        let(:position) { section.position }
 
         run_test!
       end
 
       response '400', 'invalid section id — id must be an integer' do
         # The controller returns head :bad_request (empty body) for non-integer ids.
-        let(:id) { 'invalid' }
+        let(:position) { 'invalid' }
 
         run_test!
       end
     end
   end
 
-  path '/api/sections/{id}/chapters' do
+  path '/api/sections/{position}/chapters' do
     parameter name: :Accept, in: :header, required: true,
               schema: { type: :string, enum: ['application/vnd.hmrc.2.0+json'] },
               description: 'API version negotiation header'
-    parameter name: :id, in: :path, required: true,
+    parameter name: :position, in: :path, required: true,
               schema: { type: :integer },
               description: 'Section position number'
 
@@ -197,7 +197,7 @@ RSpec.describe 'Sections', swagger_doc: 'v2/swagger.json', type: :request do
                }
 
         let(:section) { create(:section, :with_chapter) }
-        let(:id) { section.position }
+        let(:position) { section.position }
 
         run_test!
       end

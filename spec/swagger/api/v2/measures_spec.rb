@@ -3,11 +3,11 @@ require 'swagger_helper'
 RSpec.describe 'Measures', swagger_doc: 'v2/swagger.json', type: :request do
   let(:Accept) { 'application/vnd.hmrc.2.0+json' }
 
-  path '/api/measures/{id}' do
+  path '/api/measures/{measure_sid}' do
     parameter name: :Accept, in: :header, required: true,
               schema: { type: :string, enum: ['application/vnd.hmrc.2.0+json'] },
               description: 'API version negotiation header'
-    parameter name: :id, in: :path, required: true,
+    parameter name: :measure_sid, in: :path, required: true,
               schema: { type: :integer },
               description: 'Measure SID (may be negative for national measures)'
 
@@ -102,13 +102,13 @@ RSpec.describe 'Measures', swagger_doc: 'v2/swagger.json', type: :request do
                }
 
         let(:measure) { create(:measure) }
-        let(:id) { measure.measure_sid }
+        let(:measure_sid) { measure.measure_sid }
 
         run_test!
       end
 
       response '404', 'measure not found' do
-        let(:id) { 99_999_999 }
+        let(:measure_sid) { 99_999_999 }
 
         run_test!
       end

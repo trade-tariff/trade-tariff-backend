@@ -1,7 +1,7 @@
 require 'json'
 
 namespace :swagger do
-  swagger_spec_pattern = 'spec/swagger/**/*_spec.rb'
+  swagger_spec_pattern = 'spec/swagger/api/**/*_spec.rb'
   swagger_json_path = File.expand_path('../../swagger/v2/swagger.json', __dir__)
 
   # Paths that have specs (useful for contract testing) but must not appear in
@@ -20,7 +20,7 @@ namespace :swagger do
     /api/news/items/{id}
     /api/news/years
     /api/preference_codes/{id}
-    /api/sections/{id}/chapters
+    /api/sections/{position}/chapters
     /api/subheadings/{subheading_id}/validity_periods
   ].freeze
 

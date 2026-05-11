@@ -3,11 +3,11 @@ require 'swagger_helper'
 RSpec.describe 'Headings', swagger_doc: 'v2/swagger.json', type: :request do
   let(:Accept) { 'application/vnd.hmrc.2.0+json' }
 
-  path '/api/headings/{id}' do
+  path '/api/headings/{heading_id}' do
     parameter name: :Accept, in: :header, required: true,
               schema: { type: :string, enum: ['application/vnd.hmrc.2.0+json'] },
               description: 'API version negotiation header'
-    parameter name: :id, in: :path, required: true,
+    parameter name: :heading_id, in: :path, required: true,
               schema: { type: :string, pattern: '^\d{4}$' },
               description: 'Heading code (exactly 4 digits, e.g. "0101")'
 
@@ -123,24 +123,24 @@ RSpec.describe 'Headings', swagger_doc: 'v2/swagger.json', type: :request do
                }
 
         let(:heading) { create(:heading, :with_chapter, :with_description) }
-        let(:id) { heading.goods_nomenclature_item_id.first(4) }
+        let(:heading_id) { heading.goods_nomenclature_item_id.first(4) }
 
         run_test!
       end
 
       response '404', 'heading not found' do
-        let(:id) { '9999' }
+        let(:heading_id) { '9999' }
 
         run_test!
       end
     end
   end
 
-  path '/api/headings/{id}/commodities' do
+  path '/api/headings/{heading_id}/commodities' do
     parameter name: :Accept, in: :header, required: true,
               schema: { type: :string, enum: ['application/vnd.hmrc.2.0+json'] },
               description: 'API version negotiation header'
-    parameter name: :id, in: :path, required: true,
+    parameter name: :heading_id, in: :path, required: true,
               schema: { type: :string, pattern: '^\d{4}$' },
               description: 'Heading code (exactly 4 digits, e.g. "0101")'
 
@@ -166,18 +166,18 @@ RSpec.describe 'Headings', swagger_doc: 'v2/swagger.json', type: :request do
                }
 
         let(:heading) { create(:heading, :with_chapter, :with_description) }
-        let(:id) { heading.goods_nomenclature_item_id.first(4) }
+        let(:heading_id) { heading.goods_nomenclature_item_id.first(4) }
 
         run_test!
       end
     end
   end
 
-  path '/api/headings/{id}/changes' do
+  path '/api/headings/{heading_id}/changes' do
     parameter name: :Accept, in: :header, required: true,
               schema: { type: :string, enum: ['application/vnd.hmrc.2.0+json'] },
               description: 'API version negotiation header'
-    parameter name: :id, in: :path, required: true,
+    parameter name: :heading_id, in: :path, required: true,
               schema: { type: :string, pattern: '^\d{4}$' },
               description: 'Heading code (exactly 4 digits, e.g. "0101")'
 
@@ -228,7 +228,7 @@ RSpec.describe 'Headings', swagger_doc: 'v2/swagger.json', type: :request do
                }
 
         let(:heading) { create(:heading, :with_description) }
-        let(:id) { heading.goods_nomenclature_item_id.first(4) }
+        let(:heading_id) { heading.goods_nomenclature_item_id.first(4) }
 
         run_test!
       end

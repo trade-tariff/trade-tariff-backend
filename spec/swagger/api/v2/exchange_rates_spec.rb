@@ -3,13 +3,16 @@ require 'swagger_helper'
 RSpec.describe 'Exchange Rates', swagger_doc: 'v2/swagger.json', type: :request do
   let(:Accept) { 'application/vnd.hmrc.2.0+json' }
 
-  path '/api/exchange_rates/{id}' do
+  path '/api/exchange_rates/{year}-{month}' do
     parameter name: :Accept, in: :header, required: true,
               schema: { type: :string, enum: ['application/vnd.hmrc.2.0+json'] },
               description: 'API version negotiation header'
-    parameter name: :id, in: :path, required: true,
-              schema: { type: :string, pattern: '^\d{4}-\d{1,2}$' },
-              description: 'Year and month in "YYYY-M" format (e.g. "2024-3")'
+    parameter name: :year, in: :path, required: true,
+              schema: { type: :integer },
+              description: 'Four-digit year to retrieve rates for'
+    parameter name: :month, in: :path, required: true,
+              schema: { type: :integer },
+              description: 'Month to retrieve rates for'
     parameter name: 'filter[type]', in: :query, required: true,
               schema: { type: :string, enum: %w[monthly spot average] },
               description: 'Rate type to retrieve'
@@ -65,14 +68,16 @@ RSpec.describe 'Exchange Rates', swagger_doc: 'v2/swagger.json', type: :request 
             .and_return(build(:exchange_rates_collection, month: 3, year: 2024))
         end
 
-        let(:id) { '2024-3' }
+        let(:year) { 2024 }
+        let(:month) { 3 }
         let(:'filter[type]') { 'monthly' }
 
         run_test!
       end
 
       response '404', 'invalid year/month format' do
-        let(:id) { 'invalid' }
+        let(:year) { 'invalid' }
+        let(:month) { 3 }
         let(:'filter[type]') { 'monthly' }
 
         run_test!
