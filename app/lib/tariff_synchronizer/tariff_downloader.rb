@@ -2,8 +2,13 @@ module TariffSynchronizer
   # Download pending updates for TARIC and CDS data
   class TariffDownloader
     TariffDownloaderZipError = Class.new(StandardError)
+    InvalidFilenameError = Class.new(StandardError)
 
     ZIP_SIGNATURE = "\x50\x4B\x03\x04".freeze
+    VALID_FILENAME_PATTERNS = {
+      'TariffSynchronizer::CdsUpdate' => /\Atariff_dailyExtract_v1_\d{8}T\d+\.gzip\z/,
+      'TariffSynchronizer::TaricUpdate' => /\A\d{4}-\d{2}-\d{2}_TGB\d+\.xml\z/,
+    }.freeze
 
     delegate :instrument, :subscribe, to: ActiveSupport::Notifications
 
@@ -114,7 +119,7 @@ module TariffSynchronizer
     end
 
     def file_path
-      File.join(TariffSynchronizer.root_path, update_type.to_s, filename)
+      File.join(TariffSynchronizer.root_path, update_type.to_s, validated_filename)
     end
 
     def persist_exception_for_review(exception)
@@ -132,6 +137,14 @@ module TariffSynchronizer
 
     def zip_file?(content)
       content.to_s.start_with?(ZIP_SIGNATURE)
+    end
+
+    def validated_filename
+      pattern = VALID_FILENAME_PATTERNS.fetch(update_klass.name)
+
+      return filename if pattern.match?(filename.to_s)
+
+      raise InvalidFilenameError, "Unexpected #{update_klass.name} filename: #{filename}"
     end
 
     delegate :update_type, to: :update_klass

@@ -20,6 +20,21 @@ RSpec.describe TariffSynchronizer::TariffDownloader do
       it { expect { perform }.to change { update_klass.where(state: TariffSynchronizer::BaseUpdate::FAILED_STATE).count }.by(1) }
     end
 
+    context 'when the filename contains path traversal characters' do
+      let(:filename) { '../foo.xml.gzip' }
+
+      before do
+        allow(TariffSynchronizer::FileService).to receive(:file_exists?)
+      end
+
+      it 'rejects the update before checking the filesystem' do
+        expect { perform }
+          .to change { update_klass.where(state: TariffSynchronizer::BaseUpdate::FAILED_STATE).count }.by(1)
+
+        expect(TariffSynchronizer::FileService).not_to have_received(:file_exists?)
+      end
+    end
+
     context 'when the file is already downloaded' do
       before do
         allow(TariffSynchronizer::FileService).to receive(:file_exists?).with('tmp/data/cds/foo.xml.gzip').and_return(true)
