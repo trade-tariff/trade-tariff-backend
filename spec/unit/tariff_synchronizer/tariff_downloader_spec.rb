@@ -2,7 +2,7 @@ RSpec.describe TariffSynchronizer::TariffDownloader do
   describe '#perform' do
     subject(:perform) { described_class.new(filename, url, date, update_klass).perform }
 
-    let(:filename) { 'foo.xml.gzip' }
+    let(:filename) { 'tariff_dailyExtract_v1_20201004T235959.gzip' }
     let(:url) { 'https://example.com/download-the-file' }
     let(:date) { Date.current }
     let(:update_klass) { TariffSynchronizer::CdsUpdate }
@@ -37,8 +37,8 @@ RSpec.describe TariffSynchronizer::TariffDownloader do
 
     context 'when the file is already downloaded' do
       before do
-        allow(TariffSynchronizer::FileService).to receive(:file_exists?).with('tmp/data/cds/foo.xml.gzip').and_return(true)
-        allow(TariffSynchronizer::FileService).to receive(:file_size).with('tmp/data/cds/foo.xml.gzip').and_return(1)
+        allow(TariffSynchronizer::FileService).to receive(:file_exists?).with("tmp/data/cds/#{filename}").and_return(true)
+        allow(TariffSynchronizer::FileService).to receive(:file_size).with("tmp/data/cds/#{filename}").and_return(1)
         allow(TariffSynchronizer::TariffUpdatesRequester).to receive(:perform).with(url)
       end
 
@@ -98,7 +98,7 @@ RSpec.describe TariffSynchronizer::TariffDownloader do
 
       context 'when the download response is successful' do
         before do
-          allow(TariffSynchronizer::FileService).to receive(:write_file).with("tmp/data/#{update_klass.update_type}/foo.xml.gzip", be_a(String))
+          allow(TariffSynchronizer::FileService).to receive(:write_file).with("tmp/data/#{update_klass.update_type}/#{filename}", be_a(String))
         end
 
         context 'when the response body is a valid ZIP file' do
@@ -112,7 +112,7 @@ RSpec.describe TariffSynchronizer::TariffDownloader do
 
           it 'writes using the FileService' do
             perform
-            expect(TariffSynchronizer::FileService).to have_received(:write_file).with('tmp/data/cds/foo.xml.gzip', be_a(String))
+            expect(TariffSynchronizer::FileService).to have_received(:write_file).with("tmp/data/cds/#{filename}", be_a(String))
           end
 
           it 'records a state transition to pending' do
@@ -127,6 +127,7 @@ RSpec.describe TariffSynchronizer::TariffDownloader do
         end
 
         context 'when the response body is not a ZIP file and the update type is Taric' do
+          let(:filename) { '2020-10-04_TGB20278.xml' }
           let(:response) { build(:response, :success, content: 'not_a_zip_file') }
           let(:update_klass) { TariffSynchronizer::TaricUpdate }
 
@@ -138,7 +139,7 @@ RSpec.describe TariffSynchronizer::TariffDownloader do
 
           it 'writes using the FileService' do
             perform
-            expect(TariffSynchronizer::FileService).to have_received(:write_file).with('tmp/data/taric/foo.xml.gzip', 'not_a_zip_file')
+            expect(TariffSynchronizer::FileService).to have_received(:write_file).with("tmp/data/taric/#{filename}", 'not_a_zip_file')
           end
         end
 
