@@ -37,7 +37,6 @@
 | ffi | 1.17.3 | 1.17.4 | patch |
 | irb | 1.17.0 | 1.18.0 | minor |
 | json | 2.19.4 | 2.19.5 | patch |
-| json_expressions | (in spec) | — | check |
 | launchy | 3.1.0 | 3.1.1 | patch |
 | minitest | 6.0.5 | 6.0.6 | patch |
 | parallel | 1.28.0 | 2.1.0 | minor |
@@ -80,12 +79,12 @@
 
 ## Recommended Action
 
-1. **Merge the gem-update-bot workflow PR** (#3133) to enable automated weekly updates
+1. **Merge the gem-update-bot workflow PR** ([#3133](https://github.com/trade-tariff/trade-tariff-backend/pull/3133)) to enable automated weekly updates
 2. **Manually run `bundle update`** for gems requiring investigation (`diff-lcs`, `multi_json`) — update separately with extra review
 3. **Standard `bundle update`** for low-risk gems — the gem-update-bot workflow will handle this once merged
 
 ## Metadata
 
-- Generated: 2026-05-11T16:11:25Z
+- Generated: 2026-05-11T16:11:54Z UTC
 - Ruby version: 4.0.3
 - Method: RubyGems API comparison against Gemfile.lock
