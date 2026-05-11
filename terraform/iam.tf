@@ -102,6 +102,7 @@ data "aws_iam_policy_document" "task" {
     ]
     resources = [
       "arn:aws:secretsmanager:${var.region}:${local.account_id}:secret:aurora-postgres-rw-connection-string-*",
+      "arn:aws:secretsmanager:${var.region}:${local.account_id}:secret:aurora-postgres-ro-connection-string-*",
       "arn:aws:secretsmanager:${var.region}:${local.account_id}:secret:*-postgres-database-url-*",
     ]
   }

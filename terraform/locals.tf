@@ -21,6 +21,13 @@ locals {
     }
   ]
 
+  reader_url_env_var = [
+    {
+      name  = "READER_DATABASE_URL"
+      value = data.aws_secretsmanager_secret_version.aurora_reader_connection_string.secret_string
+    }
+  ]
+
 
   worker_uk_secret_value = try(data.aws_secretsmanager_secret_version.backend_uk_worker_configuration.secret_string, "{}")
   worker_uk_secret_map   = jsondecode(local.worker_uk_secret_value)
@@ -39,7 +46,7 @@ locals {
       value = value
     }
   ]
-  backend_uk_service_env_vars = concat(local.backend_uk_secret_env_vars, local.ecs_tls_env_vars)
+  backend_uk_service_env_vars = concat(local.backend_uk_secret_env_vars, local.ecs_tls_env_vars, local.reader_url_env_var)
 
   worker_xi_secret_value = try(data.aws_secretsmanager_secret_version.backend_xi_worker_configuration.secret_string, "{}")
   worker_xi_secret_map   = jsondecode(local.worker_xi_secret_value)
@@ -58,7 +65,7 @@ locals {
       value = value
     }
   ]
-  backend_xi_service_env_vars = concat(local.backend_xi_secret_env_vars, local.ecs_tls_env_vars)
+  backend_xi_service_env_vars = concat(local.backend_xi_secret_env_vars, local.ecs_tls_env_vars, local.reader_url_env_var)
 
   backend_job_secret_value = try(data.aws_secretsmanager_secret_version.backend_job_configuration.secret_string, "{}")
   backend_job_secret_map   = jsondecode(local.backend_job_secret_value)
