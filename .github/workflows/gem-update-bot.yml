@@ -21,9 +21,9 @@ jobs:
           ruby-version: '4.0.3'
           bundler-cache: true
 
-      - name: Update non-development gems
+      - name: Update gems
         run: |
-          bundle update --jobs=4 --retry=3 --group default --group test --group production || true
+          bundle update --jobs=4 --retry=3
 
       - name: Create PR
         run: |
@@ -41,4 +41,4 @@ jobs:
           git commit -m "Update Gemfile.lock"
           git push -u origin "$BRANCH"
           
-          gh pr create --title "Update Gemfile.lock"             --body "**Risk level:** 🟢 Green — Dependency bumps with no API changes (minor/patch gems)"             --label "dependencies"             --reviewer "trade-tariff/team-leads"
+          gh pr create             --title "Update Gemfile.lock"             --body "**Risk level:** 🟢 Green — Dependency bumps with no API changes (minor/patch gems)"             --label "dependencies"             --reviewer "trade-tariff/team-leads"
