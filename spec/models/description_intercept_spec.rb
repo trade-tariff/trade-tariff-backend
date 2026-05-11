@@ -149,6 +149,78 @@ RSpec.describe DescriptionIntercept do
         expect(intercept.errors[:aliases]).to include('cannot contain blank aliases')
       end
     end
+
+    context 'when more than one alias is set' do
+      let(:attrs) do
+        {
+          aliases: Sequel.pg_array(%w[present gifts], :text),
+        }
+      end
+
+      it 'is valid' do
+        expect(intercept).to be_valid
+      end
+    end
+
+    context 'when an alias duplicates the term' do
+      let(:attrs) do
+        {
+          term: 'gift',
+          aliases: Sequel.pg_array(%w[gift], :text),
+        }
+      end
+
+      it 'is invalid' do
+        expect(intercept).not_to be_valid
+        expect(intercept.errors[:aliases]).to include('cannot duplicate the search term')
+      end
+    end
+
+    context 'when an alias is already used as another term' do
+      let(:attrs) do
+        {
+          term: 'gift',
+          aliases: Sequel.pg_array(%w[present], :text),
+        }
+      end
+
+      before { create(:description_intercept, term: 'present') }
+
+      it 'is invalid' do
+        expect(intercept).not_to be_valid
+        expect(intercept.errors[:aliases]).to include('include a value already used by another description intercept (present)')
+      end
+    end
+
+    context 'when multiple aliases are already used by other intercepts' do
+      let(:attrs) do
+        {
+          term: 'horses',
+          aliases: Sequel.pg_array(%w[present gift], :text),
+        }
+      end
+
+      before do
+        create(:description_intercept, term: 'present')
+        create(:description_intercept, term: 'gift')
+      end
+
+      it 'accumulates the duplicate alias values into one error' do
+        expect(intercept).not_to be_valid
+        expect(intercept.errors[:aliases]).to contain_exactly('include values already used by another description intercept (present, gift)')
+      end
+    end
+
+    context 'when a term is already used as another alias' do
+      let(:attrs) { { term: 'present' } }
+
+      before { create(:description_intercept, term: 'gift', aliases: Sequel.pg_array(%w[present], :text)) }
+
+      it 'is invalid' do
+        expect(intercept).not_to be_valid
+        expect(intercept.errors[:term]).to include('is already used by another description intercept (present)')
+      end
+    end
   end
 
   describe '.for_search' do
@@ -190,7 +262,7 @@ RSpec.describe DescriptionIntercept do
       create(
         :description_intercept,
         term: 'sofa',
-        aliases: Sequel.pg_array(%w[settee], :text),
+        aliases: Sequel.pg_array(%w[settee couch], :text),
         sources: Sequel.pg_array(%w[fpo_search], :text),
       )
 
@@ -207,6 +279,22 @@ RSpec.describe DescriptionIntercept do
       }.to change { Version.where(item_type: 'DescriptionIntercept', item_id: intercept.id.to_s).count }.by(1)
 
       expect(Version.where(item_type: 'DescriptionIntercept', item_id: intercept.id.to_s).count).to eq(2)
+    end
+  end
+
+  describe 'term normalisation' do
+    it 'normalises terms before validation' do
+      intercept = create(:description_intercept, term: ' Gift  ')
+
+      expect(intercept.reload.term).to eq('gift')
+    end
+
+    it 'rejects duplicate terms after normalisation' do
+      create(:description_intercept, term: 'gift')
+      intercept = build(:description_intercept, term: ' Gift ')
+
+      expect(intercept).not_to be_valid
+      expect(intercept.errors[:term]).to include('is already taken')
     end
   end
 end

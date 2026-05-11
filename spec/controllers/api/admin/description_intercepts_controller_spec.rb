@@ -15,6 +15,7 @@ RSpec.describe Api::Admin::DescriptionInterceptsController do
         sources: Sequel.pg_array(%w[guided_search], :text),
         guidance_level: 'warning',
         guidance_location: 'results',
+        message_header: 'Check the term',
         escalate_to_webchat: true,
         filter_prefixes: Sequel.pg_array(%w[6403 6404], :text),
       )
@@ -114,6 +115,7 @@ RSpec.describe Api::Admin::DescriptionInterceptsController do
         aliases: Sequel.pg_array(%w[trainers shoes], :text),
         guidance_level: 'warning',
         guidance_location: 'results',
+        message_header: 'Check the term',
         escalate_to_webchat: true,
         filter_prefixes: Sequel.pg_array(%w[6403 6404], :text),
       )
@@ -132,6 +134,7 @@ RSpec.describe Api::Admin::DescriptionInterceptsController do
             aliases: %w[trainers shoes],
             sources: %w[guided_search],
             message: 'Please be more specific.',
+            message_header: 'Check the term',
             excluded: false,
             created_at: wildcard_matcher,
             guidance_level: 'warning',
@@ -183,6 +186,7 @@ RSpec.describe Api::Admin::DescriptionInterceptsController do
               term: 'bicycles',
               aliases: %w[cycle bike],
               message: 'Read the bicycle guidance.',
+              message_header: 'Bicycle guidance',
               guidance_level: 'info',
               guidance_location: 'results',
               escalate_to_webchat: true,
@@ -200,6 +204,7 @@ RSpec.describe Api::Admin::DescriptionInterceptsController do
       expect(intercept.term).to eq('bicycles')
       expect(intercept.aliases).to eq(%w[cycle bike])
       expect(intercept.message).to eq('Read the bicycle guidance.')
+      expect(intercept.message_header).to eq('Bicycle guidance')
       expect(intercept.guidance_level).to eq('info')
       expect(intercept.guidance_location).to eq('results')
       expect(intercept.escalate_to_webchat).to be true
@@ -240,6 +245,7 @@ RSpec.describe Api::Admin::DescriptionInterceptsController do
           type: 'description_intercept',
           attributes: {
             message: 'Read the footwear guidance.',
+            message_header: 'Footwear guidance',
             guidance_level: 'warning',
             guidance_location: 'results',
             escalate_to_webchat: true,
@@ -254,6 +260,7 @@ RSpec.describe Api::Admin::DescriptionInterceptsController do
 
       intercept.reload
       expect(intercept.message).to eq('Read the footwear guidance.')
+      expect(intercept.message_header).to eq('Footwear guidance')
       expect(intercept.guidance_level).to eq('warning')
       expect(intercept.guidance_location).to eq('results')
       expect(intercept.escalate_to_webchat).to be true
@@ -265,7 +272,7 @@ RSpec.describe Api::Admin::DescriptionInterceptsController do
     it 'clears array fields when blank values are submitted' do
       intercept.update(
         filter_prefixes: Sequel.pg_array(%w[6403 6404], :text),
-        aliases: Sequel.pg_array(%w[trainers shoes], :text),
+        aliases: Sequel.pg_array(%w[trainers], :text),
         sources: Sequel.pg_array(%w[guided_search fpo_search], :text),
       )
 
@@ -304,6 +311,64 @@ RSpec.describe Api::Admin::DescriptionInterceptsController do
       expect(response).to have_http_status(:unprocessable_content)
       json = JSON.parse(response.body)
       expect(json['errors'].first.dig('source', 'pointer')).to eq('/data/attributes/filter_prefixes')
+    end
+  end
+
+  describe '#bulk_import' do
+    let(:template_value) do
+      {
+        'vague' => {
+          'label' => 'Vague term',
+          'description' => 'Use when the term is too broad to classify safely.',
+          'attributes' => {
+            'escalate_to_webchat' => false,
+            'excluded' => true,
+            'filter_prefixes' => [],
+            'guidance_level' => 'info',
+            'guidance_location' => 'interstitial',
+            'message_header' => 'Placeholder guidance heading',
+            'message' => 'This is too vague. Please be better at classification',
+            'sources' => %w[guided_search fpo_search],
+          },
+        },
+      }
+    end
+
+    before do
+      create(:admin_configuration, name: 'description_intercept_templates', config_type: 'object_template', value: template_value)
+    end
+
+    it 'imports valid CSV content' do
+      expect {
+        post :bulk_import, params: {
+          data: {
+            type: 'description_intercept_bulk_import',
+            attributes: { csv: "term,template\ngift,vague\n" },
+          },
+        }, format: :json
+      }.to change(DescriptionIntercept, :count).by(1)
+
+      expect(response).to have_http_status(:created)
+      json = JSON.parse(response.body)
+      expect(json.dig('data', 'attributes')).to include('created' => 1, 'updated' => 0, 'total' => 1)
+    end
+
+    it 'returns grouped validation errors without importing' do
+      expect {
+        post :bulk_import, params: {
+          data: {
+            type: 'description_intercept_bulk_import',
+            attributes: { csv: "term,template\ngift,foo\npresent,baz\n" },
+          },
+        }, format: :json
+      }.not_to change(DescriptionIntercept, :count)
+
+      expect(response).to have_http_status(:unprocessable_content)
+      json = JSON.parse(response.body)
+      expect(json['errors'].first).to include(
+        'detail' => 'foo and baz are not valid templates',
+        'meta' => { 'code' => 'invalid_templates', 'values' => %w[foo baz] },
+      )
     end
   end
 

@@ -31,6 +31,16 @@ module Api
         end
       end
 
+      def bulk_import
+        result = DescriptionIntercepts::TemplateImporter.new(csv_content: bulk_import_params[:csv]).call
+
+        if result.success?
+          render json: serialize_bulk_import(result), status: :created
+        else
+          render json: { errors: result.summary_errors + result.row_errors }, status: :unprocessable_content
+        end
+      end
+
       def versions
         versions = description_intercept.versions.all
         Version.preload_predecessors(versions)
@@ -100,6 +110,7 @@ module Api
         permitted = attrs.permit(
           :term,
           :message,
+          :message_header,
           :excluded,
           :guidance_level,
           :guidance_location,
@@ -112,6 +123,7 @@ module Api
         {}.tap do |result|
           result[:term] = permitted[:term] if permitted.key?(:term)
           result[:message] = permitted[:message] if permitted.key?(:message)
+          result[:message_header] = permitted[:message_header] if permitted.key?(:message_header)
           result[:excluded] = permitted[:excluded] if permitted.key?(:excluded)
           result[:guidance_level] = permitted[:guidance_level] if permitted.key?(:guidance_level)
           result[:guidance_location] = permitted[:guidance_location] if permitted.key?(:guidance_location)
@@ -120,6 +132,23 @@ module Api
           result[:sources] = Sequel.pg_array(Array(permitted[:sources]).compact_blank, :text) if permitted.key?(:sources)
           result[:filter_prefixes] = Sequel.pg_array(Array(permitted[:filter_prefixes]).compact_blank, :text) if permitted.key?(:filter_prefixes)
         end
+      end
+
+      def bulk_import_params
+        params.require(:data).require(:attributes).permit(:csv)
+      end
+
+      def serialize_bulk_import(result)
+        {
+          data: {
+            type: 'description_intercept_bulk_import',
+            attributes: {
+              created: result.created_count,
+              updated: result.updated_count,
+              total: result.total_count,
+            },
+          },
+        }
       end
     end
   end

@@ -1927,7 +1927,8 @@ CREATE TABLE uk.description_intercepts (
     guidance_location text,
     escalate_to_webchat boolean DEFAULT false NOT NULL,
     filter_prefixes text[],
-    aliases text[] DEFAULT '{}'::text[] NOT NULL
+    aliases text[] DEFAULT '{}'::text[] NOT NULL,
+    message_header text
 );
 
 
@@ -9167,6 +9168,22 @@ ALTER TABLE ONLY uk.description_intercepts
 
 
 --
+-- Name: description_intercepts description_intercepts_term_not_alias; Type: CHECK CONSTRAINT; Schema: uk; Owner: -
+--
+
+ALTER TABLE ONLY uk.description_intercepts
+    ADD CONSTRAINT description_intercepts_term_not_alias CHECK ((NOT (term = ANY (COALESCE(aliases, ARRAY[]::text[])))));
+
+
+--
+-- Name: description_intercepts description_intercepts_term_unique; Type: CONSTRAINT; Schema: uk; Owner: -
+--
+
+ALTER TABLE ONLY uk.description_intercepts
+    ADD CONSTRAINT description_intercepts_term_unique UNIQUE (term);
+
+
+--
 -- Name: differences_logs differences_logs_pkey; Type: CONSTRAINT; Schema: uk; Owner: -
 --
 
@@ -10927,12 +10944,6 @@ CREATE INDEX deo_dutexpopl_utyonslog_operation_date ON uk.duty_expressions_oplog
 
 CREATE INDEX description_intercepts_excluded_index ON uk.description_intercepts USING btree (excluded);
 
-
---
--- Name: description_intercepts_term_index; Type: INDEX; Schema: uk; Owner: -
---
-
-CREATE INDEX description_intercepts_term_index ON uk.description_intercepts USING btree (term);
 
 
 --
@@ -14270,5 +14281,7 @@ INSERT INTO "schema_migrations" ("filename") VALUES ('20260414113628_create_cust
 INSERT INTO "schema_migrations" ("filename") VALUES ('20260414113629_create_customs_tariff_general_rules.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20260424120000_materialise_hot_path_footnote_and_measure_views.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20260429120000_add_aliases_to_description_intercepts.rb');
+INSERT INTO "schema_migrations" ("filename") VALUES ('20260506170000_add_unique_index_to_description_intercepts_term.rb');
+INSERT INTO "schema_migrations" ("filename") VALUES ('20260507110000_add_message_header_and_alias_constraints_to_description_intercepts.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20260429151751_fixes_schema_reference_in_views.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20260506120000_add_approval_fields_to_customs_tariff_notes.rb');

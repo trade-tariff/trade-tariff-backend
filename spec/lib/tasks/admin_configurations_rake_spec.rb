@@ -8,11 +8,12 @@ RSpec.describe 'admin_configurations:seed' do
     Rake::Task['admin_configurations:seed'].reenable
   end
 
-  it 'creates all 36 admin configurations', :aggregate_failures do
-    expect { seed }.to change(AdminConfiguration, :count).by(36)
+  it 'creates all 37 admin configurations', :aggregate_failures do
+    expect { seed }.to change(AdminConfiguration, :count).by(37)
 
     names = AdminConfiguration.order(:name).select_map(:name)
     expect(names).to eq(%w[
+      description_intercept_templates
       expand_model
       expand_query_context
       expand_search_enabled
@@ -50,6 +51,31 @@ RSpec.describe 'admin_configurations:seed' do
       vector_ef_search
       vector_score_threshold
     ])
+  end
+
+  it 'seeds the initial description intercept template registry', :aggregate_failures do
+    seed
+
+    config = AdminConfiguration.where(name: 'description_intercept_templates').first
+    expect(config.config_type).to eq('object_template')
+    expect(config.value.keys).to contain_exactly('generic', 'escalation')
+    expect(config.value['generic']['label']).to eq('Generic guidance')
+    expect(config.value['generic']['attributes']).to include(
+      'excluded' => true,
+      'message_header' => "We can't suggest a tariff code yet",
+      'guidance_level' => 'info',
+      'guidance_location' => 'interstitial',
+      'sources' => %w[guided_search fpo_search],
+    )
+    expect(config.value['escalation']['label']).to eq('Escalation guidance')
+    expect(config.value['escalation']['attributes']).to include(
+      'excluded' => true,
+      'escalate_to_webchat' => true,
+      'message_header' => 'Contact HMRC for help',
+    )
+    expect(config.value['escalation']['attributes']['message']).to include('{{request_id}}')
+    expect(config.value['escalation']['attributes']['message']).to include('{{webchat_url}}')
+    expect(config.value['escalation']['attributes']['message']).to include('{{enquiries_email}}')
   end
 
   it 'seeds nested_options configs with sorted model options', :aggregate_failures do
@@ -288,6 +314,13 @@ RSpec.describe 'admin_configurations:seed' do
 
     expect { suppress_output { Rake::Task['admin_configurations:seed'].invoke } }
       .not_to change(AdminConfiguration, :count)
+  end
+
+  it 'patches existing configurations when their type changes' do
+    create(:admin_configuration, name: 'description_intercept_templates', config_type: 'string', value: 'legacy')
+
+    expect { seed }.to change(AdminConfiguration, :count).by(36)
+    expect(AdminConfiguration.where(name: 'description_intercept_templates').first.config_type).to eq('object_template')
   end
 end
 # rubocop:enable RSpec/DescribeClass

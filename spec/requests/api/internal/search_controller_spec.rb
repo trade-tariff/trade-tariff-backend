@@ -189,6 +189,7 @@ RSpec.describe Api::Internal::SearchController, :internal do
               'filtering' => false,
               'filter_prefixes' => [],
               'message' => 'Gift is too vague.',
+              'message_header' => nil,
               'guidance_level' => 'warning',
               'guidance_location' => 'interstitial',
               'escalate_to_webchat' => true,
