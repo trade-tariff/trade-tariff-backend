@@ -2,7 +2,7 @@ RSpec.describe TariffSynchronizer::TariffDownloader do
   describe '#perform' do
     subject(:perform) { described_class.new(filename, url, date, update_klass).perform }
 
-    let(:filename) { 'tariff_dailyExtract_v1_20201004T235959.gzip' }
+    let(:filename) { 'tariff_dailyExtract_v1_20991231T235959.gzip' }
     let(:url) { 'https://example.com/download-the-file' }
     let(:date) { Date.current }
     let(:update_klass) { TariffSynchronizer::CdsUpdate }
