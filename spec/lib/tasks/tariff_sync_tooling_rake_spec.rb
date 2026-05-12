@@ -137,7 +137,7 @@ RSpec.describe 'tariff:sync:failure_detail' do
 
   context 'without FILENAME set' do
     it 'aborts with an instruction' do
-      expect { Rake::Task['tariff:sync:failure_detail'].invoke }
+      expect { suppress_output { Rake::Task['tariff:sync:failure_detail'].invoke } }
         .to raise_error(SystemExit)
     end
   end
@@ -146,7 +146,7 @@ RSpec.describe 'tariff:sync:failure_detail' do
     before { ENV['FILENAME'] = 'nonexistent.gzip' }
 
     it 'aborts' do
-      expect { Rake::Task['tariff:sync:failure_detail'].invoke }
+      expect { suppress_output { Rake::Task['tariff:sync:failure_detail'].invoke } }
         .to raise_error(SystemExit)
     end
   end
@@ -248,7 +248,7 @@ RSpec.describe 'tariff:sync:inspect_file' do
 
   context 'without FILENAME set' do
     it 'aborts with an instruction' do
-      expect { Rake::Task['tariff:sync:inspect_file'].invoke }
+      expect { suppress_output { Rake::Task['tariff:sync:inspect_file'].invoke } }
         .to raise_error(SystemExit)
     end
   end
@@ -257,7 +257,7 @@ RSpec.describe 'tariff:sync:inspect_file' do
     before { ENV['FILENAME'] = 'nonexistent.gzip' }
 
     it 'aborts' do
-      expect { Rake::Task['tariff:sync:inspect_file'].invoke }
+      expect { suppress_output { Rake::Task['tariff:sync:inspect_file'].invoke } }
         .to raise_error(SystemExit)
     end
   end
@@ -271,7 +271,7 @@ RSpec.describe 'tariff:sync:inspect_file' do
     end
 
     it 'aborts' do
-      expect { Rake::Task['tariff:sync:inspect_file'].invoke }
+      expect { suppress_output { Rake::Task['tariff:sync:inspect_file'].invoke } }
         .to raise_error(SystemExit)
     end
   end
@@ -408,7 +408,7 @@ RSpec.describe 'tariff:sync:force_apply' do
 
   context 'without FILENAME set' do
     it 'aborts' do
-      expect { Rake::Task['tariff:sync:force_apply'].invoke }
+      expect { suppress_output { Rake::Task['tariff:sync:force_apply'].invoke } }
         .to raise_error(SystemExit)
     end
   end
@@ -419,7 +419,7 @@ RSpec.describe 'tariff:sync:force_apply' do
     before { ENV['FILENAME'] = update.filename }
 
     it 'exits without applying' do
-      expect { Rake::Task['tariff:sync:force_apply'].invoke }
+      expect { suppress_output { Rake::Task['tariff:sync:force_apply'].invoke } }
         .to raise_error(SystemExit)
     end
 
@@ -446,7 +446,7 @@ RSpec.describe 'tariff:sync:force_apply' do
     end
 
     it 'aborts with a state error' do
-      expect { Rake::Task['tariff:sync:force_apply'].invoke }
+      expect { suppress_output { Rake::Task['tariff:sync:force_apply'].invoke } }
         .to raise_error(SystemExit)
     end
   end
