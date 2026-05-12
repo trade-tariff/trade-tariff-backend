@@ -46,8 +46,20 @@ variable "database_backup_secret_name" {
   type        = string
 }
 
-variable "enable_service_count_alarm" {
-  description = "Whether to enable an alarm that triggers when the service count is below the desired count."
+variable "enable_alarms" {
+  description = "Whether to enable CloudWatch alarms for the service."
   type        = bool
   default     = true
+}
+# Can remove that variable after deploying to P
+variable "scale_in_cooldown" {
+  description = "Prevents aggressive scale-in by enforcing a waiting period after tasks are removed."
+  type        = number
+  default     = 300
+}
+
+variable "scale_out_cooldown" {
+  description = "Minimum time to wait after a scale-out before allowing another scale-out, giving new tasks time to start contributing capacity."
+  type        = number
+  default     = 60
 }
