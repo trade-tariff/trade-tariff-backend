@@ -67,14 +67,6 @@ data "aws_secretsmanager_secret_version" "backend_job_configuration" {
   secret_id = data.aws_secretsmanager_secret.backend_job_configuration.id
 }
 
-data "aws_secretsmanager_secret" "aurora_reader_connection_string" {
-  name = "aurora-postgres-ro-connection-string"
-}
-
-data "aws_secretsmanager_secret_version" "aurora_reader_connection_string" {
-  secret_id = data.aws_secretsmanager_secret.aurora_reader_connection_string.id
-}
-
 data "aws_secretsmanager_secret" "ecs_tls_certificate" {
   name = "ecs-tls-certificate"
 }

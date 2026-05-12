@@ -19,10 +19,6 @@ locals {
       name  = "SSL_PORT"
       value = "8443"
     },
-    {
-      name  = "READER_DATABASE_URL"
-      value = data.aws_secretsmanager_secret_version.aurora_reader_connection_string.secret_string
-    }
   ]
 
 
