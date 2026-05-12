@@ -15,13 +15,13 @@ RSpec.describe 'paper_trail:reset_initial_versions' do
   end
 
   it 'aborts unless CONFIRM=true' do
-    expect { Rake::Task['paper_trail:reset_initial_versions'].invoke }.to raise_error(SystemExit)
+    expect { suppress_output { Rake::Task['paper_trail:reset_initial_versions'].invoke } }.to raise_error(SystemExit)
   end
 
   it 'does not eager load classes without confirmation' do
     allow(Rails.application).to receive(:eager_load!).and_return(true)
 
-    expect { Rake::Task['paper_trail:reset_initial_versions'].invoke }.to raise_error(SystemExit)
+    expect { suppress_output { Rake::Task['paper_trail:reset_initial_versions'].invoke } }.to raise_error(SystemExit)
 
     expect(Rails.application).not_to have_received(:eager_load!)
   end
