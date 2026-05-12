@@ -5,4 +5,4 @@ memory                      = 2048
 min_capacity                = 1
 max_capacity                = 1
 database_backup_secret_name = "aurora-postgres-rw-connection-string"
-enable_alarms = false
+enable_alarms               = false

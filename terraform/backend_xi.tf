@@ -31,9 +31,9 @@ module "backend_xi" {
 
   enable_ecs_exec = true
 
-  has_autoscaler = local.has_autoscaler
-  min_capacity   = var.min_capacity
-  max_capacity   = var.max_capacity
+  has_autoscaler     = local.has_autoscaler
+  min_capacity       = var.min_capacity
+  max_capacity       = var.max_capacity
   scale_in_cooldown  = var.scale_in_cooldown
   scale_out_cooldown = var.scale_out_cooldown
 

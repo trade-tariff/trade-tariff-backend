@@ -24,9 +24,9 @@ module "backend-job" {
 
   enable_ecs_exec = true
 
-  has_autoscaler = false
-  max_capacity   = 1
-  min_capacity   = 0
+  has_autoscaler     = false
+  max_capacity       = 1
+  min_capacity       = 0
   scale_in_cooldown  = var.scale_in_cooldown
   scale_out_cooldown = var.scale_out_cooldown
 

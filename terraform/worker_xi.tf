@@ -29,9 +29,9 @@ module "worker_xi" {
 
   service_environment_config = local.worker_xi_secret_env_vars
 
-  has_autoscaler = local.has_autoscaler
-  min_capacity   = 1
-  max_capacity   = var.max_capacity
+  has_autoscaler     = local.has_autoscaler
+  min_capacity       = 1
+  max_capacity       = var.max_capacity
   scale_in_cooldown  = var.scale_in_cooldown
   scale_out_cooldown = var.scale_out_cooldown
 
