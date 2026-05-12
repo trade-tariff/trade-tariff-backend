@@ -103,6 +103,7 @@
             lint
             pkgs.python3
             pkgs.socat
+            pkgs.terraform-docs
             pkgs.zlib
             postgresql
             postgresql-start
