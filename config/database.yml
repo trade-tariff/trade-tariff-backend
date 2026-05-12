@@ -25,5 +25,5 @@ production:
   pool: <%= Integer(ENV.fetch('DB_POOL', 6)) %>
   servers:
     read_only:
-      url: <%= ENV.fetch('READER_DATABASE_URL', ENV['DATABASE_URL']) %>
+      conn_str: <%= ENV.fetch('READER_DATABASE_URL', ENV['DATABASE_URL']) %>
       pool: <%= Integer(ENV.fetch('READER_DB_POOL', ENV.fetch('DB_POOL', 6))) %>
