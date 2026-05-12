@@ -6,7 +6,7 @@ locals {
 
   tls_secret = jsondecode(data.aws_secretsmanager_secret_version.ecs_tls_certificate.secret_string)
 
-  ecs_tls_env_vars = [
+  api_service_env_vars = [
     {
       name  = "SSL_KEY_PEM"
       value = local.tls_secret.private_key
@@ -18,10 +18,7 @@ locals {
     {
       name  = "SSL_PORT"
       value = "8443"
-    }
-  ]
-
-  reader_url_env_var = [
+    },
     {
       name  = "READER_DATABASE_URL"
       value = data.aws_secretsmanager_secret_version.aurora_reader_connection_string.secret_string
@@ -46,7 +43,7 @@ locals {
       value = value
     }
   ]
-  backend_uk_service_env_vars = concat(local.backend_uk_secret_env_vars, local.ecs_tls_env_vars, local.reader_url_env_var)
+  backend_uk_service_env_vars = concat(local.backend_uk_secret_env_vars, local.api_service_env_vars)
 
   worker_xi_secret_value = try(data.aws_secretsmanager_secret_version.backend_xi_worker_configuration.secret_string, "{}")
   worker_xi_secret_map   = jsondecode(local.worker_xi_secret_value)
@@ -65,7 +62,7 @@ locals {
       value = value
     }
   ]
-  backend_xi_service_env_vars = concat(local.backend_xi_secret_env_vars, local.ecs_tls_env_vars, local.reader_url_env_var)
+  backend_xi_service_env_vars = concat(local.backend_xi_secret_env_vars, local.api_service_env_vars)
 
   backend_job_secret_value = try(data.aws_secretsmanager_secret_version.backend_job_configuration.secret_string, "{}")
   backend_job_secret_map   = jsondecode(local.backend_job_secret_value)
