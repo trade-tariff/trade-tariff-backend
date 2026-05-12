@@ -35,7 +35,9 @@ module "worker_uk" {
   scale_in_cooldown  = var.scale_in_cooldown
   scale_out_cooldown = var.scale_out_cooldown
 
-  enable_alarms = var.enable_alarms
+  enable_alarms       = var.enable_alarms
+  cpu_alarm_threshold = 85 # Temporarily set higher to avoid alarm noise during load testing, will be adjusted based on observed metrics after testing is complete.
+
 
   sns_topic_arns = [data.aws_sns_topic.slack_topic.arn]
 }
