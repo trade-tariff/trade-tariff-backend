@@ -23,7 +23,7 @@ SET row_security = off;
 -- Name: public; Type: SCHEMA; Schema: -; Owner: -
 --
 
-CREATE SCHEMA IF NOT EXISTS public;
+CREATE SCHEMA public;
 
 
 --
@@ -10804,6 +10804,13 @@ CREATE INDEX certificate_descriptions_description_trgm_idx ON uk.certificate_des
 
 
 --
+-- Name: chapter_note_experimentals_chapter_id_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE UNIQUE INDEX chapter_note_experimentals_chapter_id_index ON uk.chapter_note_experimentals USING btree (chapter_id);
+
+
+--
 -- Name: chapter_notes_chapter_id_index; Type: INDEX; Schema: uk; Owner: -
 --
 
@@ -14267,6 +14274,11 @@ INSERT INTO "schema_migrations" ("filename") VALUES ('20260421120000_add_commodi
 INSERT INTO "schema_migrations" ("filename") VALUES ('20260421120001_add_oid_covering_indexes_to_goods_nomenclature_description_oplogs.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20260422143000_add_lifecycle_flags_to_generated_classification_content.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20260423120000_add_regulation_and_fts_performance_indexes.rb');
+INSERT INTO "schema_migrations" ("filename") VALUES ('20260424120000_materialise_hot_path_footnote_and_measure_views.rb');
+INSERT INTO "schema_migrations" ("filename") VALUES ('20260414113626_create_customs_tariff_updates.rb');
+INSERT INTO "schema_migrations" ("filename") VALUES ('20260414113627_create_customs_tariff_chapter_notes.rb');
+INSERT INTO "schema_migrations" ("filename") VALUES ('20260414113628_create_customs_tariff_section_notes.rb');
+INSERT INTO "schema_migrations" ("filename") VALUES ('20260414113629_create_customs_tariff_general_rules.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20260424120000_materialise_hot_path_footnote_and_measure_views.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20260429120000_add_aliases_to_description_intercepts.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20260506170000_add_unique_index_to_description_intercepts_term.rb');
