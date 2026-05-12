@@ -4,3 +4,4 @@ needs-deployment:
     - any-glob-to-any-file:
       - "db/**"
       - "Dockerfile"
+      - "terraform/**"
