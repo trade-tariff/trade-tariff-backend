@@ -1,5 +1,5 @@
 module "backend_xi" {
-  source = "git@github.com:trade-tariff/trade-tariff-platform-terraform-modules.git//aws/ecs-service?ref=aws/ecs-service-v1.21.0"
+  source = "git@github.com:trade-tariff/trade-tariff-platform-terraform-modules.git//aws/ecs-service?ref=aws/ecs-service-v3.0.1"
 
   region = var.region
 
@@ -34,8 +34,22 @@ module "backend_xi" {
   has_autoscaler = local.has_autoscaler
   min_capacity   = var.min_capacity
   max_capacity   = var.max_capacity
+  scale_in_cooldown  = var.scale_in_cooldown
+  scale_out_cooldown = var.scale_out_cooldown
 
-  enable_service_count_alarm = var.enable_service_count_alarm
+  autoscaling_metrics = {
+    cpu = {
+      metric_type  = "ECSServiceAverageCPUUtilization"
+      target_value = 30
+    }
+    memory = {
+      metric_type  = "ECSServiceAverageMemoryUtilization"
+      target_value = 70
+    }
+  }
+
+  enable_alarms       = var.enable_alarms
+  cpu_alarm_threshold = 85 # Temporarily set higher to avoid alarm noise during load testing, will be adjusted based on observed metrics after testing is complete.
 
   sns_topic_arns = [data.aws_sns_topic.slack_topic.arn]
 }

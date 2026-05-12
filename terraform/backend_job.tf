@@ -1,5 +1,5 @@
 module "backend-job" {
-  source = "git@github.com:trade-tariff/trade-tariff-platform-terraform-modules.git//aws/ecs-service?ref=aws/ecs-service-v1.21.0"
+  source = "git@github.com:trade-tariff/trade-tariff-platform-terraform-modules.git//aws/ecs-service?ref=aws/ecs-service-v3.0.1"
 
   region = var.region
 
@@ -27,6 +27,8 @@ module "backend-job" {
   has_autoscaler = false
   max_capacity   = 1
   min_capacity   = 0
+  scale_in_cooldown  = var.scale_in_cooldown
+  scale_out_cooldown = var.scale_out_cooldown
 
   sns_topic_arns = [data.aws_sns_topic.slack_topic.arn]
 }

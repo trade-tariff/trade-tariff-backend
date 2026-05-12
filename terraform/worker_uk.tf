@@ -1,5 +1,5 @@
 module "worker_uk" {
-  source = "git@github.com:trade-tariff/trade-tariff-platform-terraform-modules.git//aws/ecs-service?ref=aws/ecs-service-v1.21.0"
+  source = "git@github.com:trade-tariff/trade-tariff-platform-terraform-modules.git//aws/ecs-service?ref=aws/ecs-service-v3.0.1"
 
   service_name = "worker-uk"
   region       = var.region
@@ -32,8 +32,10 @@ module "worker_uk" {
   has_autoscaler = local.has_autoscaler
   min_capacity   = 1
   max_capacity   = var.max_capacity
+  scale_in_cooldown  = var.scale_in_cooldown
+  scale_out_cooldown = var.scale_out_cooldown
 
-  enable_service_count_alarm = var.enable_service_count_alarm
+  enable_alarms = var.enable_alarms
 
   sns_topic_arns = [data.aws_sns_topic.slack_topic.arn]
 }
