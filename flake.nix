@@ -198,6 +198,7 @@ OPENSEARCH_CLI
             pkgs.opensearch
             pkgs.redis
             pkgs.socat
+            pkgs.terraform-docs
             pkgs.zlib
             opensearch-start
             postgresql
