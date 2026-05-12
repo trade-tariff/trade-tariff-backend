@@ -49,9 +49,6 @@ class ReportWorker
     # Delays to ensure both XI and UK Report Workers have completed before
     # DifferencesReportWorker executes
     DifferencesReportWorker.perform_in(30.minutes) if generate_differences?
-  rescue StandardError => e
-    Rails.logger.error("ReportWorker: failed to schedule DifferencesReportWorker: #{e.class} - #{e.message}")
-    raise
   end
 
   def monday?
