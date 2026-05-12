@@ -1,4 +1,7 @@
-# Add "needs-deployment" label to pull requests making database schema changes
+# Add "needs-deployment" label to pull requests that should be deployed
 needs-deployment:
   - changed-files:
-    - any-glob-to-any-file: "db/*"
+    - any-glob-to-any-file:
+      - "db/**"
+      - "Dockerfile"
+      - "terraform/**"
