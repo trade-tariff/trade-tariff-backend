@@ -110,7 +110,7 @@ module GoodsNomenclatures
           .with_validity_dates(:descendant_nodes)
           .select_append(:descendant_nodes__depth)
           .select_append(:descendant_nodes__number_indents)
-          .select_append(:descendant_nodes__description)
+          .select_append(Sequel.as(:descendant_nodes__description, :node_description))
           .join(Sequel.as(:goods_nomenclature_tree_nodes, :origin_nodes)) do |origin_table, descendants_table, _join_clauses|
             descendants = TreeNodeAlias.new(descendants_table)
             origin      = TreeNodeAlias.new(origin_table)
@@ -168,6 +168,7 @@ module GoodsNomenclatures
       end
 
       def_column_accessor :leaf
+      def_column_accessor :node_description
 
       dataset_module do
         def with_leaf_column
@@ -208,7 +209,7 @@ module GoodsNomenclatures
       descendants.each_with_index do |d, i|
         stack.pop while stack.size > 1 && stack.last.depth >= d.depth
         parent = stack.last
-        d.associations[:parent] = parent if parent.equal?(self) || parent.depth == d.depth - 1
+        d.associations[:parent] = parent if parent.depth == d.depth - 1
         stack.push(d)
 
         next_d = descendants[i + 1]

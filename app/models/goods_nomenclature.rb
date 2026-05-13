@@ -133,6 +133,22 @@ class GoodsNomenclature < Sequel::Model
            to: :goods_nomenclature_description,
            allow_nil: true
 
+  def description
+    if values.key?(:node_description)
+      @node_description ||= values[:node_description].try(:gsub, %r{( ?<br> ?){2,}}, '<br>') || ''
+    else
+      goods_nomenclature_description.description
+    end
+  end
+
+  def formatted_description
+    if values.key?(:node_description)
+      @node_formatted_description ||= GoodsNomenclatureDescription.new(description: description).formatted_description
+    else
+      goods_nomenclature_description.formatted_description
+    end
+  end
+
   def self.sql_pattern_for(suffix)
     '_' * (10 - suffix.length) + suffix
   end
@@ -228,11 +244,7 @@ class GoodsNomenclature < Sequel::Model
   end
 
   def goods_nomenclature_description
-    @goods_nomenclature_description ||= if values.key?(:description)
-                                          GoodsNomenclatureDescription.new(description: values[:description])
-                                        else
-                                          goods_nomenclature_descriptions.first || NullGoodsNomenclature.new
-                                        end
+    @goods_nomenclature_description ||= goods_nomenclature_descriptions.first || NullGoodsNomenclature.new
   end
 
   def footnote

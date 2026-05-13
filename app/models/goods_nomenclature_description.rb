@@ -44,12 +44,20 @@ class GoodsNomenclatureDescription < Sequel::Model
   end
 
   def formatted_description
-    formatted = super.downcase.gsub(/^(.)/) { Regexp.last_match(1).capitalize }
+    formatted = format_description(description)
     consigned_countries.each do |country|
       formatted.gsub!(country.downcase, country)
     end
     formatted
   end
+
+  def format_description(description)
+    DescriptionFormatter.format(description: description.dup)
+                        .downcase
+                        .gsub(/^(.)/) { Regexp.last_match(1).capitalize }
+  end
+
+  private :format_description
 
   def consigned_countries
     description.scan(CONSIGNED_FROM_REGEX).flatten
