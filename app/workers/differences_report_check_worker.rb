@@ -11,7 +11,8 @@ class DifferencesReportCheckWorker
 
     return notify if last_log.blank?
 
-    notify if last_log < 7.days.ago
+    # Notify if the report hasn't run this week
+    notify if last_log.before?(Date.current.beginning_of_week)
   end
 
   private
