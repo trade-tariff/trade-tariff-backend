@@ -11,7 +11,7 @@ class ReportWorker
     Reporting::Prohibitions,
     Reporting::GeographicalAreaGroups,
     Reporting::CategoryAssessments,
-    Reporting::CdsUpdates,
+    Reporting::TariffUpdates,
   ].freeze
 
   def perform(trigger_differences_report = true)
@@ -36,9 +36,9 @@ class ReportWorker
   private
 
   def generate_report?(report)
-    return true unless report == Reporting::CdsUpdates
+    return true unless report == Reporting::TariffUpdates
 
-    TradeTariffBackend.uk? && second_monday_of_month?
+    second_monday_of_month?
   end
 
   def generate_differences?

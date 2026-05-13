@@ -138,6 +138,12 @@ CI enforces two things:
 
 Internal/authenticated controllers (green lanes, enquiry form, etc.) are explicitly excluded in `lib/tasks/swagger.rake`.
 
+## Understanding the codebase
+
+Start with [docs/README.md](docs/README.md) for the documentation map, [docs/architecture/README.md](docs/architecture/README.md) for the main runtime boundaries, and [docs/development-and-delivery.md](docs/development-and-delivery.md) for team delivery conventions.
+
+For AI-assisted exploration, see [docs/code-wiki.md](docs/code-wiki.md). Google Code Wiki can help find candidate files and concepts for this public repository, but source code, tests, ADRs, and local docs remain authoritative.
+
 ## Licence
 
 Trade Tariff is licenced under the [MIT licence](https://github.com/trade-tariff/trade-tariff-backend/blob/main/LICENCE.txt)

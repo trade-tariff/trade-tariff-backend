@@ -102,6 +102,31 @@ RSpec.describe CustomsTariffImporter::NotesExtractor do
         result = parse(['SECTION I', 'CHAPTER 1'])
         expect(result.sections).to be_empty
       end
+
+      context 'when a chapter header appears before the section notes heading' do
+        it 'still captures the section notes' do
+          result = parse([
+            'SECTION XI',
+            'CHAPTER 50',
+            'Section notes',
+            'This section does not cover bristles.',
+            'CHAPTER 51',
+          ])
+          expect(result.sections[11]).to eq('This section does not cover bristles.')
+        end
+
+        it 'stops collecting section notes when a commodity code is encountered' do
+          result = parse([
+            'SECTION XI',
+            'CHAPTER 50',
+            'Section notes',
+            'Note content.',
+            '5001000000',
+            'Silkworm cocoons suitable for reeling',
+          ])
+          expect(result.sections[11]).to eq('Note content.')
+        end
+      end
     end
 
     describe 'chapter notes' do

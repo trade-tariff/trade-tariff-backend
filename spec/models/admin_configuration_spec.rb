@@ -677,4 +677,71 @@ RSpec.describe AdminConfiguration do
       end
     end
   end
+
+  describe 'object templates' do
+    let(:template_value) do
+      {
+        'vague' => {
+          'label' => 'Vague term',
+          'description' => 'Use when the term is too broad to classify safely.',
+          'attributes' => {
+            'escalate_to_webchat' => false,
+            'excluded' => true,
+            'filter_prefixes' => [],
+            'guidance_level' => 'info',
+            'guidance_location' => 'interstitial',
+            'message_header' => 'Placeholder guidance heading',
+            'message' => 'This is too vague. Please be better at classification',
+            'sources' => %w[guided_search fpo_search],
+          },
+        },
+      }
+    end
+
+    it 'accepts valid template registries' do
+      config = build(:admin_configuration, name: 'description_intercept_templates', config_type: 'object_template', value: template_value)
+
+      expect(config).to be_valid
+    end
+
+    it 'rejects values that are not template maps' do
+      config = build(:admin_configuration, name: 'description_intercept_templates', config_type: 'object_template', value: 'not json')
+
+      expect(config).not_to be_valid
+      expect(config.errors[:value]).to include('must be a map of object templates')
+    end
+
+    it 'rejects template keys that are not lowercase snake case' do
+      config = build(:admin_configuration, name: 'description_intercept_templates', config_type: 'object_template', value: template_value.merge('Bad Key' => template_value['vague']))
+
+      expect(config).not_to be_valid
+      expect(config.errors[:value]).to include('template keys must be lowercase snake case')
+    end
+
+    it 'rejects templates without admin guidance' do
+      invalid = template_value.deep_dup
+      invalid['vague'].delete('label')
+      config = build(:admin_configuration, name: 'description_intercept_templates', config_type: 'object_template', value: invalid)
+
+      expect(config).not_to be_valid
+      expect(config.errors[:value]).to include('vague must include label, description and attributes')
+    end
+
+    it 'rejects templates without attribute maps' do
+      invalid = template_value.deep_dup
+      invalid['vague']['attributes'] = []
+      config = build(:admin_configuration, name: 'description_intercept_templates', config_type: 'object_template', value: invalid)
+
+      expect(config).not_to be_valid
+      expect(config.errors[:value]).to include('vague attributes must be a map')
+    end
+
+    describe '.description_intercept_templates_value' do
+      it 'returns the configured template map' do
+        create(:admin_configuration, name: 'description_intercept_templates', config_type: 'object_template', value: template_value)
+
+        expect(described_class.description_intercept_templates_value).to eq(template_value)
+      end
+    end
+  end
 end

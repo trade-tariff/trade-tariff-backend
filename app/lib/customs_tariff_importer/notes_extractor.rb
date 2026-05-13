@@ -145,7 +145,6 @@ module CustomsTariffImporter
         @current_section = m[1].upcase
         @note_lines = []
       elsif (m = text.match(CHAPTER_PATTERN))
-        finalize_section_note
         @current_chapter = sprintf('%02d', m[1].to_i)
         @note_lines = []
         @state = :in_chapter
@@ -163,13 +162,19 @@ module CustomsTariffImporter
         @current_chapter = sprintf('%02d', m[1].to_i)
         @note_lines = []
         @state = :in_chapter
+      elsif text.match?(COMMODITY_CODE_PATTERN)
+        finalize_section_note
+        @state = :skipping
       elsif text.present? || (@note_lines.any? && @note_lines.last.present?)
         @note_lines << text
       end
     end
 
     def handle_in_chapter(text)
-      if text.match?(CHAPTER_NOTES_PATTERN)
+      if text.match?(SECTION_NOTES_PATTERN)
+        @note_lines = []
+        @state = :collecting_section
+      elsif text.match?(CHAPTER_NOTES_PATTERN)
         @note_lines = []
         @state = :collecting_chapter
       elsif (m = text.match(CHAPTER_PATTERN))

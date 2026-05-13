@@ -1951,6 +1951,10 @@
                                 "type": "string",
                                 "nullable": true
                               },
+                              "message_header": {
+                                "type": "string",
+                                "nullable": true
+                              },
                               "excluded": {
                                 "type": "boolean",
                                 "nullable": true

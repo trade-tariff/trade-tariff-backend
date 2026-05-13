@@ -75,5 +75,5 @@ tariff_data_basic_*.csv
 terraform/modules/*/.terraform.lock.hcl
 .gitnexus
 
-AGENTS.md
 .codex
+docs/superpowers/

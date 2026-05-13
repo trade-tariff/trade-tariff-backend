@@ -77,7 +77,17 @@ module TariffSynchronizer
     def import!
       started_at = Process.clock_gettime(Process::CLOCK_MONOTONIC)
 
-      @oplog_inserts = TaricImporter.new(self).import
+      # Wrap the entire TARIC import in a single transaction so that all
+      # TARIC-transaction records from one file are applied atomically — either
+      # all land in the oplog tables or none do.  This mirrors the atomicity
+      # that CdsUpdate#import! provides via StagingManager.
+      #
+      # Note: BaseUpdateImporter used to provide this transaction wrapper for
+      # all update types.  It was removed there to allow CDS to use its own
+      # unlogged-staging approach, but TARIC still needs the protection here.
+      Sequel::Model.db.transaction do
+        @oplog_inserts = TaricImporter.new(self).import
+      end
 
       mark_as_applied
       store_oplog_inserts

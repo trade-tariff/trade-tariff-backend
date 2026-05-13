@@ -1,9 +1,15 @@
 module Reporting
-  class CdsUpdates
+  class TariffUpdates
     include Reporting::Reportable
 
     HEADER_ROW = ['Date of the file', 'Downloaded Time', 'Updated Time', 'Status'].freeze
     COLUMN_WIDTHS = [30, 50, 50, 20].freeze
+    STATE_LABELS = {
+      'A' => 'Applied',
+      'P' => 'Pending',
+      'F' => 'Failed',
+      'M' => 'Missing',
+    }.freeze
 
     class << self
       def generate
@@ -40,7 +46,7 @@ module Reporting
           end
 
           rows = instrument_report_step('load_rows') do
-            cds_updates
+            tariff_updates
           end
 
           rows_written = instrument_report_step('append_rows') do
@@ -60,17 +66,22 @@ module Reporting
 
           workbook_data = instrument_report_step('close_workbook', rows_written:) do
             workbook.close
-            Rails.env.production? ? workbook.read_string : nil
+            workbook.read_string
           end
 
           if workbook_data
-            log_report_metric('output_bytes', workbook_data.bytesize)
+            if Rails.env.development?
+              FileUtils.mkdir_p(file_path) unless File.exist?(file_path)
+              File.open(object_key, 'wb') { |f| f.write(workbook_data) }
+            elsif Rails.env.production?
+              log_report_metric('output_bytes', workbook_data.bytesize)
 
-            instrument_report_step('upload', rows_written:, output_bytes: workbook_data.bytesize) do
-              object.put(
-                body: workbook_data,
-                content_type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-              )
+              instrument_report_step('upload', rows_written:, output_bytes: workbook_data.bytesize) do
+                object.put(
+                  body: workbook_data,
+                  content_type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                )
+              end
             end
           end
         end
@@ -78,30 +89,31 @@ module Reporting
 
       private
 
-      def cds_updates
+      def tariff_updates
         previous_month = Time.zone.today.last_month
         start_of_previous_month = previous_month.beginning_of_month
         start_of_current_month = previous_month.next_month.beginning_of_month
 
-        TariffSynchronizer::CdsUpdate
-          .exclude(filename: nil)
-          .where(Sequel[:created_at] >= start_of_previous_month)
-          .where(Sequel[:created_at] < start_of_current_month)
-          .eager(state_changes: ->(association_dataset) { association_dataset.order(:created_at) })
-          .reverse_order(:created_at)
-          .all
+        update_type = TradeTariffBackend.uk? ? TariffSynchronizer::CdsUpdate : TariffSynchronizer::TaricUpdate
+
+        update_type.exclude(filename: nil)
+                   .where(Sequel[:created_at] >= start_of_previous_month)
+                   .where(Sequel[:created_at] < start_of_current_month)
+                   .eager(state_changes: ->(association_dataset) { association_dataset.order(:created_at) })
+                   .reverse_order(:created_at)
+                   .all
       end
 
       def build_rows_for(update)
         state_changes = update.state_changes
         return [default_row_for(update)] if state_changes.empty?
 
-        state_changes.map do |change|
+        state_changes.each_with_index.map do |change, index|
           [
-            update.issue_date&.iso8601,
-            update.created_at&.iso8601,
+            (index.zero? ? update.issue_date&.iso8601 : nil),
+            (index.zero? ? update.created_at&.iso8601 : nil),
             change.created_at&.iso8601,
-            change.to_state,
+            state_label(change.to_state),
           ]
         end
       end
@@ -111,12 +123,20 @@ module Reporting
           update.issue_date&.iso8601,
           update.created_at&.iso8601,
           update.updated_at&.iso8601,
-          update.state,
+          state_label(update.state),
         ]
       end
 
+      def state_label(state)
+        STATE_LABELS.fetch(state, state)
+      end
+
       def object_key
-        "#{service}/reporting/#{year}/#{month}/#{day}/cds_updates_#{service}_#{now.strftime('%Y_%m_%d')}.xlsx"
+        "#{file_path}/tariff_updates_#{service}_#{now.strftime('%Y_%m_%d')}.xlsx"
+      end
+
+      def file_path
+        "#{service}/reporting/#{year}/#{month}/#{day}"
       end
 
       def filename

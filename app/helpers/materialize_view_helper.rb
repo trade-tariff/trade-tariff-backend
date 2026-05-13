@@ -1,9 +1,20 @@
 module MaterializeViewHelper
-  # Tables the commodity query plan always seq-scans via Hash Left Join.
-  # Loading them into shared_buffers here means they are warm before
-  # PrewarmCommoditiesWorker fires HTTP requests that hit them concurrently.
+  # Materialized views that the commodity query plan seq-scans via Hash Left Join.
+  # Calling `.count` on each model forces PostgreSQL to read every page into
+  # shared_buffers so the data is warm before PrewarmCommoditiesWorker fires
+  # concurrent HTTP requests that would otherwise all pay the cold-read cost.
   VIEWS_TO_PREWARM = %w[
+    AdditionalCode
+    AdditionalCodeDescription
     BaseRegulation
+    Footnote
+    FootnoteDescription
+    GeographicalArea
+    GeographicalAreaDescription
+    GeographicalAreaMembership
+    Measure
+    MeasureComponent
+    MeasureCondition
     ModificationRegulation
   ].freeze
 

@@ -10,7 +10,7 @@ RSpec.describe CdsImporter do
     it 'creates new instance of XmlProcessor' do
       allow(CdsImporter::XmlProcessor).to receive(:new).and_call_original
       allow(CdsImporter::ExcelWriter).to receive(:new).with(cds_update.filename).and_call_original
-      allow(CdsImporter::RecordInserter).to receive(:new).with(cds_update.filename).and_call_original
+      allow(CdsImporter::RecordInserter).to receive(:new).with(cds_update.filename, staging_manager: nil).and_call_original
 
       importer.import
       expect(CdsImporter::XmlProcessor).to have_received(:new).with(cds_update.filename, kind_of(Array))

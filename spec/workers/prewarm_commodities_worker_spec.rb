@@ -112,7 +112,13 @@ RSpec.describe PrewarmCommoditiesWorker do
       it 'logs and continues with preconfigured ids' do
         allow(ENV).to receive(:fetch).with('PREWARM_COMMODITY_IDS', '').and_return(preconfigured_id)
 
-        worker.perform
+        original_logger = Sidekiq.default_configuration.logger
+        Sidekiq.default_configuration.logger = Logger.new(StringIO.new)
+        begin
+          worker.perform
+        ensure
+          Sidekiq.default_configuration.logger = original_logger
+        end
 
         expect(CachedCommodityService).to have_received(:new).with(preconfigured_commodity, Date.current)
       end

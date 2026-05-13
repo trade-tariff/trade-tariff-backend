@@ -1924,7 +1924,8 @@ CREATE TABLE uk.description_intercepts (
     guidance_location text,
     escalate_to_webchat boolean DEFAULT false NOT NULL,
     filter_prefixes text[],
-    aliases text[] DEFAULT '{}'::text[] NOT NULL
+    aliases text[] DEFAULT '{}'::text[] NOT NULL,
+    message_header text
 );
 
 
@@ -9196,6 +9197,22 @@ ALTER TABLE ONLY uk.description_intercepts
 
 
 --
+-- Name: description_intercepts description_intercepts_term_not_alias; Type: CHECK CONSTRAINT; Schema: uk; Owner: -
+--
+
+ALTER TABLE ONLY uk.description_intercepts
+    ADD CONSTRAINT description_intercepts_term_not_alias CHECK ((NOT (term = ANY (COALESCE(aliases, ARRAY[]::text[])))));
+
+
+--
+-- Name: description_intercepts description_intercepts_term_unique; Type: CONSTRAINT; Schema: uk; Owner: -
+--
+
+ALTER TABLE ONLY uk.description_intercepts
+    ADD CONSTRAINT description_intercepts_term_unique UNIQUE (term);
+
+
+--
 -- Name: differences_logs differences_logs_pkey; Type: CONSTRAINT; Schema: uk; Owner: -
 --
 
@@ -10948,12 +10965,6 @@ CREATE INDEX deo_dutexpopl_utyonslog_operation_date ON uk.duty_expressions_oplog
 CREATE INDEX description_intercepts_excluded_index ON uk.description_intercepts USING btree (excluded);
 
 
---
--- Name: description_intercepts_term_index; Type: INDEX; Schema: uk; Owner: -
---
-
-CREATE INDEX description_intercepts_term_index ON uk.description_intercepts USING btree (term);
-
 
 --
 -- Name: description_period_sid; Type: INDEX; Schema: uk; Owner: -
@@ -11407,7 +11418,7 @@ CREATE INDEX fto_footypopl_otepeslog_operation_date ON uk.footnote_types_oplog U
 -- Name: fts_reg_act_pk; Type: INDEX; Schema: uk; Owner: -
 --
 
-CREATE INDEX fts_reg_act_pk ON uk.fts_regulation_actions_oplog USING btree (fts_regulation_id, fts_regulation_role, stopped_regulation_id, stopped_regulation_role);
+CREATE INDEX fts_reg_act_pk ON uk.fts_regulation_actions_oplog USING btree (fts_regulation_id, fts_regulation_role, stopped_regulation_id, stopped_regulation_role) INCLUDE (oid);
 
 
 --
@@ -11463,7 +11474,7 @@ CREATE INDEX full_temp_explicit_abrogation_regulation ON uk.full_temporary_stop_
 -- Name: full_temp_stop_reg_pk; Type: INDEX; Schema: uk; Owner: -
 --
 
-CREATE INDEX full_temp_stop_reg_pk ON uk.full_temporary_stop_regulations_oplog USING btree (full_temporary_stop_regulation_id, full_temporary_stop_regulation_role);
+CREATE INDEX full_temp_stop_reg_pk ON uk.full_temporary_stop_regulations_oplog USING btree (full_temporary_stop_regulation_id, full_temporary_stop_regulation_role) INCLUDE (oid);
 
 
 --

@@ -27,7 +27,75 @@ class AdminConfiguration < Sequel::Model(Sequel[:admin_configurations].qualify(:
     },
   }.freeze
 
+  GENERIC_DESCRIPTION_INTERCEPT_MESSAGE = <<~MARKDOWN.strip.freeze
+    To find the relevant commodity code, we need more information about the product.
+
+    ## What information is needed?
+
+    The kind of details about the product you should include are:
+
+    - the type of product
+    - what the product is used for
+    - the materials used to make it
+    - how it's produced
+    - how it's packaged
+
+    ## Where can I find this information?
+
+    The information might be found on:
+
+    - invoice or other billing documents
+    - online listings
+    - product information documents included in the packaging
+
+    ## Next steps
+
+    Go back and add more details so we can find the relevant commodity code with the highest accuracy.
+  MARKDOWN
+
+  ESCALATION_DESCRIPTION_INTERCEPT_MESSAGE = <<~MARKDOWN.strip.freeze
+    You should contact HMRC for help classifying this product.
+
+    ## Next steps
+
+    Contact HMRC and quote reference {{request_id}}
+
+    *Webchat*: [Ask HMRC online]({{webchat_url}})
+
+    *Email*: [{{enquiries_email}}](mailto:{{enquiries_email}})
+  MARKDOWN
+
   DEFAULTS = {
+    'description_intercept_templates' => {
+      'generic' => {
+        'label' => 'Generic guidance',
+        'description' => 'Use when more detail is needed before a commodity code can be suggested.',
+        'attributes' => {
+          'escalate_to_webchat' => false,
+          'excluded' => true,
+          'filter_prefixes' => [],
+          'guidance_level' => 'info',
+          'guidance_location' => 'interstitial',
+          'message_header' => "We can't suggest a tariff code yet",
+          'message' => GENERIC_DESCRIPTION_INTERCEPT_MESSAGE,
+          'sources' => %w[guided_search fpo_search],
+        },
+      },
+      'escalation' => {
+        'label' => 'Escalation guidance',
+        'description' => 'Use when HMRC support is needed to classify the product.',
+        'attributes' => {
+          'escalate_to_webchat' => true,
+          'excluded' => true,
+          'filter_prefixes' => [],
+          'guidance_level' => 'info',
+          'guidance_location' => 'interstitial',
+          'message_header' => 'Contact HMRC for help',
+          'message' => ESCALATION_DESCRIPTION_INTERCEPT_MESSAGE,
+          'sources' => %w[guided_search fpo_search],
+        },
+      },
+    },
     'expand_search_enabled' => false,
     'expand_model' => NESTED_OPTION_DEFAULTS['expand_model'][:selected],
     'interactive_search_enabled' => true,
@@ -163,6 +231,17 @@ class AdminConfiguration < Sequel::Model(Sequel[:admin_configurations].qualify(:
     }
   end
 
+  def self.description_intercept_templates_value
+    config = classification.by_name('description_intercept_templates')
+    val = config&.value || default_for('description_intercept_templates')
+
+    case val
+    when Hash then val
+    when Sequel::Postgres::JSONBHash then val.to_hash
+    else default_for('description_intercept_templates')
+    end
+  end
+
   def self.schema_type_class(column)
     return nil if column == :value
 
@@ -175,7 +254,7 @@ class AdminConfiguration < Sequel::Model(Sequel[:admin_configurations].qualify(:
     validates_presence :config_type
     validates_presence :area
     validates_presence :description
-    validates_includes %w[string markdown boolean options multi_options integer nested_options], :config_type
+    validates_includes %w[string markdown boolean options multi_options integer nested_options object_template], :config_type
     validate_unique_name if new?
     validate_value_for_type
   end
