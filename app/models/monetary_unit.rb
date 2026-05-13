@@ -1,6 +1,7 @@
 class MonetaryUnit < Sequel::Model
   plugin :time_machine
   plugin :oplog, primary_key: :monetary_unit_code
+  plugin :static_cache, frozen: false unless Rails.env.test?
 
   set_primary_key [:monetary_unit_code]
 

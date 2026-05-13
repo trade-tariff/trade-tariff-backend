@@ -1,6 +1,7 @@
 class MeasureTypeDescription < Sequel::Model
   set_primary_key [:measure_type_id]
   plugin :oplog, primary_key: :measure_type_id
+  plugin :static_cache, frozen: false unless Rails.env.test?
 
   one_to_one :measure_type, key: :measure_type_id,
                             foreign_key: :measure_type_id

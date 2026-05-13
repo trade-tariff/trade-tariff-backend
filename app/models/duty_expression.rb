@@ -12,6 +12,7 @@ class DutyExpression < Sequel::Model
 
   plugin :time_machine
   plugin :oplog, primary_key: :duty_expression_id
+  plugin :static_cache, frozen: false unless Rails.env.test?
 
   set_primary_key [:duty_expression_id]
 
