@@ -9,10 +9,10 @@ RSpec.describe MaterializeViewHelper do
 
     it 'calls load_cache on models that respond to it' do
       model_name = 'FakeStaticCacheModel'
-      model_class = double('model_class', load_cache: nil) # rubocop:disable RSpec/VerifiedDoubles
-      allow(model_class).to receive(:respond_to?).with(:load_cache).and_return(true)
+      model_class = Class.new { def self.load_cache; end }
       stub_const('MaterializeViewHelper::STATIC_CACHE_MODEL_NAMES', [model_name])
       allow(model_name).to receive(:constantize).and_return(model_class)
+      allow(model_class).to receive(:load_cache)
 
       described_class.reload_static_caches
 
@@ -21,7 +21,7 @@ RSpec.describe MaterializeViewHelper do
 
     it 'skips models that do not respond to load_cache' do
       model_name = 'FakeModelWithoutCache'
-      model_class = double('model_class') # rubocop:disable RSpec/VerifiedDoubles
+      model_class = Class.new
       stub_const('MaterializeViewHelper::STATIC_CACHE_MODEL_NAMES', [model_name])
       allow(model_name).to receive(:constantize).and_return(model_class)
 
