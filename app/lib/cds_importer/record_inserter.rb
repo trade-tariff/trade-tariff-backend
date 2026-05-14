@@ -4,11 +4,10 @@ class CdsImporter
 
     delegate :instrument, to: ActiveSupport::Notifications
 
-    def initialize(filename, staging_manager: nil)
+    def initialize(filename)
       @count = 0
       @record_batch = []
       @filename = filename
-      @staging_manager = staging_manager
     end
 
     def process_record(cds_entity)
@@ -68,12 +67,7 @@ class CdsImporter
         end
         value_batch << values
       end
-      target_dataset = if @staging_manager
-                         @staging_manager.dataset_for(operation_klass)
-                       else
-                         operation_klass
-                       end
-      target_dataset.multi_insert(value_batch)
+      operation_klass.multi_insert(value_batch)
     end
 
     def instrument_skip_record(record, mapper)

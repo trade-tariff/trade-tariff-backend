@@ -33,7 +33,7 @@ RSpec.describe TariffSynchronizer::BaseUpdateImporter do
     end
 
     it 'updates the record with the exception if an error occurs' do
-      base_update_importer.apply
+      expect { base_update_importer.apply }.to raise_error(Sequel::Error)
 
       expect(taric_update.reload).to be_failed
       expect(taric_update.exception_backtrace).to include('lib/taric_importer.rb:')
@@ -53,7 +53,7 @@ RSpec.describe TariffSynchronizer::BaseUpdateImporter do
 
     it 'emits instrumentation event and sends an email' do
       allow(TariffSynchronizer::Instrumentation).to receive(:file_import_failed)
-      base_update_importer.apply
+      expect { base_update_importer.apply }.to raise_error(Sequel::Error)
 
       expect(TariffSynchronizer::Instrumentation).to have_received(:file_import_failed)
 

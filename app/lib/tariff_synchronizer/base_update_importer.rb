@@ -15,12 +15,18 @@ module TariffSynchronizer
       track_latest_sql_queries
       keep_record_of_presence_errors
 
-      @base_update.import!
+      # IMPORTANT: running large update files may cause out of memory exception.
+      # Run `import!` outside of this class to prevent that.
+      Sequel::Model.db.transaction(reraise: true) do
+        # If a error is raised during import, mark the update as failed
+        Sequel::Model.db.after_rollback { @base_update.mark_as_failed }
+        @base_update.import!
+      end
     rescue StandardError => e
-      @base_update.mark_as_failed
       e = e.original if e.respond_to?(:original) && e.original
       persist_exception_for_review(e)
       notify_exception(e)
+      raise Sequel::Rollback
     ensure
       ActiveSupport::Notifications.unsubscribe(@sql_subscriber)
       ActiveSupport::Notifications.unsubscribe(@presence_errors_subscriber)

@@ -1,5 +1,4 @@
 require_relative 'cds_importer/entity_mapper'
-require_relative 'cds_importer/staging_manager'
 require_relative 'cds_importer/xml_parser'
 
 require 'zip'
@@ -22,10 +21,9 @@ class CdsImporter
     CdsImporter::ExcelWriter,
   ].freeze
 
-  def initialize(cds_update, handler_classes: DEFAULT_HANDLER_CLASSES, staging_manager: nil)
+  def initialize(cds_update, handler_classes: DEFAULT_HANDLER_CLASSES)
     @cds_update = cds_update
     @handler_classes = handler_classes
-    @staging_manager = staging_manager
     @oplog_inserts = {
       operations: {
         create: { count: 0, duration: 0 },
@@ -41,13 +39,7 @@ class CdsImporter
 
   def import
     zip_file = TariffSynchronizer::FileService.file_as_stringio(@cds_update)
-    handlers = @handler_classes.map do |klass|
-      if klass == CdsImporter::RecordInserter
-        klass.new(@cds_update.filename, staging_manager: @staging_manager)
-      else
-        klass.new(@cds_update.filename)
-      end
-    end
+    handlers = @handler_classes.map { |klass| klass.new(@cds_update.filename) }
     handler = XmlProcessor.new(@cds_update.filename, handlers)
 
     subscribe_to_oplog_inserts

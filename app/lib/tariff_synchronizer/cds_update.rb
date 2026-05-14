@@ -31,15 +31,9 @@ module TariffSynchronizer
     end
 
     def import!
-      staging_manager = CdsImporter::StagingManager.new
       started_at = Process.clock_gettime(Process::CLOCK_MONOTONIC)
 
-      @oplog_inserts = CdsImporter.new(self, staging_manager:).import
-
-      # Atomically promote all staged rows into the real oplog tables.
-      # This transaction is short: the data is already on disk in the UNLOGGED
-      # staging tables, so it is just a bulk INSERT … SELECT per table.
-      staging_manager.promote!
+      @oplog_inserts = CdsImporter.new(self).import
 
       check_oplog_inserts
       mark_as_applied
@@ -47,11 +41,6 @@ module TariffSynchronizer
 
       duration_ms = (Process.clock_gettime(Process::CLOCK_MONOTONIC) - started_at) * 1000
       Instrumentation.file_import_completed(filename:, duration_ms:)
-    ensure
-      # Drop staging tables whether the import succeeded or failed.
-      # If promote! was never called (error during parsing), the real oplog
-      # tables are untouched and no partial data is visible.
-      staging_manager&.cleanup
     end
 
     # Extract Date from filename

@@ -54,8 +54,8 @@ RSpec.describe TaricSynchronizer do
           expect(taric_update.reload).not_to be_applied
         end
 
-        it 'handles the error without crashing the sync process' do
-          expect { described_class.apply }.not_to raise_error
+        it 'stops syncing and roll back' do
+          expect { described_class.apply }.to raise_error Sequel::Rollback
         end
       end
 
@@ -75,8 +75,8 @@ RSpec.describe TaricSynchronizer do
           expect(taric_update.reload).not_to be_applied
         end
 
-        it 'handles the error without crashing the sync process' do
-          expect { described_class.apply }.not_to raise_error
+        it 'stops syncing and roll back' do
+          expect { described_class.apply }.to raise_error Sequel::Rollback
         end
       end
     end
