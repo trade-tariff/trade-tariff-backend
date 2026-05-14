@@ -12,6 +12,26 @@ module Api
           user.email = result.payload['email']
           user
         end
+
+        def find(token)
+          result = CognitoTokenVerifier.verify_id_token(token)
+
+          return result unless result.valid?
+
+          user = PublicUsers::User.active[external_id: result.payload['sub']]
+          user.email = result.payload['email'] if user
+          user
+        end
+
+        def create(token)
+          result = CognitoTokenVerifier.verify_id_token(token)
+
+          return result unless result.valid?
+
+          user = PublicUsers::User.create(external_id: result.payload['sub'])
+          user.email = result.payload['email']
+          user
+        end
       end
     end
   end

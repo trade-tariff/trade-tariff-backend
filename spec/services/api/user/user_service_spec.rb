@@ -217,4 +217,110 @@ RSpec.describe Api::User::UserService do
       end
     end
   end
+
+  describe '.find' do
+    let(:external_id) { 'test-user-123' }
+    let(:email) { 'test@example.com' }
+    let(:valid_payload) { { 'sub' => external_id, 'email' => email } }
+    let(:token) { 'valid.jwt.token' }
+
+    context 'when token verification fails' do
+      let(:invalid_result) { CognitoTokenVerifier::Result.new(valid: false, payload: nil, reason: :invalid_token) }
+
+      before do
+        allow(CognitoTokenVerifier).to receive(:verify_id_token).with(token).and_return(invalid_result)
+      end
+
+      it 'returns the Result object' do
+        result = described_class.find(token)
+
+        expect(result).to eq(invalid_result)
+      end
+    end
+
+    context 'when token verification succeeds' do
+      let(:valid_result) { CognitoTokenVerifier::Result.new(valid: true, payload: valid_payload, reason: nil) }
+
+      before do
+        allow(CognitoTokenVerifier).to receive(:verify_id_token).with(token).and_return(valid_result)
+      end
+
+      context 'when user exists' do
+        let!(:existing_user) { create(:public_user, external_id:, email: 'old@example.com') }
+
+        it 'returns the existing active user' do
+          result = described_class.find(token)
+
+          expect(result).to eq(existing_user)
+        end
+
+        it 'returns a user with email from token payload' do
+          result = described_class.find(token)
+
+          expect(result.email).to eq(email)
+        end
+      end
+
+      context 'when user does not exist' do
+        it 'returns nil' do
+          expect(described_class.find(token)).to be_nil
+        end
+
+        it 'does not create a user' do
+          expect {
+            described_class.find(token)
+          }.not_to change(PublicUsers::User, :count)
+        end
+      end
+    end
+  end
+
+  describe '.create' do
+    let(:external_id) { 'new-user-123' }
+    let(:email) { 'new@example.com' }
+    let(:valid_payload) { { 'sub' => external_id, 'email' => email } }
+    let(:token) { 'valid.jwt.token' }
+
+    context 'when token verification fails' do
+      let(:invalid_result) { CognitoTokenVerifier::Result.new(valid: false, payload: nil, reason: :invalid_token) }
+
+      before do
+        allow(CognitoTokenVerifier).to receive(:verify_id_token).with(token).and_return(invalid_result)
+      end
+
+      it 'returns the Result object' do
+        result = described_class.create(token)
+
+        expect(result).to eq(invalid_result)
+      end
+
+      it 'does not create a user' do
+        expect {
+          described_class.create(token)
+        }.not_to change(PublicUsers::User, :count)
+      end
+    end
+
+    context 'when token verification succeeds' do
+      let(:valid_result) { CognitoTokenVerifier::Result.new(valid: true, payload: valid_payload, reason: nil) }
+
+      before do
+        allow(CognitoTokenVerifier).to receive(:verify_id_token).with(token).and_return(valid_result)
+      end
+
+      it 'creates a user' do
+        expect {
+          described_class.create(token)
+        }.to change(PublicUsers::User, :count).by(1)
+      end
+
+      it 'returns the created user with email from token payload' do
+        result = described_class.create(token)
+
+        expect(result).to be_a(PublicUsers::User)
+        expect(result.external_id).to eq(external_id)
+        expect(result.email).to eq(email)
+      end
+    end
+  end
 end

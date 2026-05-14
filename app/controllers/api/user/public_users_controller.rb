@@ -1,8 +1,22 @@
 module Api
   module User
     class PublicUsersController < UserController
+      skip_before_action :authenticate!, only: [:create]
+
       def show
         render json: serialize
+      end
+
+      def create
+        user = Api::User::UserService.find(user_token)
+
+        if user.present?
+          render json: serialize_errors({ error: 'User already exists' }), status: :conflict and return
+        end
+
+        @current_user = Api::User::UserService.create(user_token)
+
+        render json: serialize, status: :created
       end
 
       def update

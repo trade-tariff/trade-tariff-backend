@@ -60,13 +60,21 @@ RSpec.describe Api::User::PublicUsersController do
         allow(CognitoTokenVerifier).to receive(:verify_id_token).and_return(verify_result)
       end
 
-      it 'creates a user' do
+      it 'does not create a user' do
         expect {
           get :show
-        }.to change(PublicUsers::User, :count).by 1
+        }.not_to change(PublicUsers::User, :count)
       end
 
-      it { is_expected.to have_http_status :ok }
+      it { is_expected.to have_http_status :not_found }
+
+      it 'returns not found error payload' do
+        api_response
+
+        expect(response.parsed_body).to eq(
+          'errors' => [{ 'detail' => 'User not found', 'code' => 'not_found' }],
+        )
+      end
     end
 
     describe 'when token is for deleted user' do
@@ -84,13 +92,21 @@ RSpec.describe Api::User::PublicUsersController do
         allow(CognitoTokenVerifier).to receive(:verify_id_token).and_return(verify_result)
       end
 
-      it 'creates a user' do
+      it 'does not create a user' do
         expect {
           get :show
-        }.to change(PublicUsers::User, :count).by 1
+        }.not_to change(PublicUsers::User, :count)
       end
 
-      it { is_expected.to have_http_status :ok }
+      it { is_expected.to have_http_status :not_found }
+
+      it 'returns not found error payload' do
+        api_response
+
+        expect(response.parsed_body).to eq(
+          'errors' => [{ 'detail' => 'User not found', 'code' => 'not_found' }],
+        )
+      end
     end
 
     context 'when in development environment without valid token' do
@@ -182,5 +198,62 @@ RSpec.describe Api::User::PublicUsersController do
 
     it_behaves_like 'a user controller subscription type update', :stop_press_subscription
     it_behaves_like 'a user controller subscription type update', :my_commodities_subscription
+  end
+
+  describe 'POST #create' do
+    let(:make_request) { post :create }
+
+    context 'when user already exists' do
+      let!(:user) { create(:public_user) }
+      let(:token) { 'tariff-api-test-token' }
+
+      before do
+        allow(Api::User::UserService).to receive(:find).with(token).and_return(user)
+        allow(Api::User::UserService).to receive(:create)
+      end
+
+      it 'returns conflict' do
+        expect(api_response).to have_http_status :conflict
+      end
+
+      it 'does not create a user' do
+        api_response
+
+        expect(Api::User::UserService).not_to have_received(:create)
+      end
+
+      it 'returns a user already exists error' do
+        api_response
+
+        expect(response.parsed_body).to eq(
+          'errors' => [{ 'detail' => 'User already exists' }],
+        )
+      end
+    end
+
+    context 'when user does not exist' do
+      let(:token) { 'tariff-api-test-token' }
+
+      before do
+        allow(Api::User::UserService).to receive(:find).with(token).and_return(nil)
+        allow(Api::User::UserService).to receive(:create)
+      end
+
+      it 'returns created' do
+        expect(api_response).to have_http_status :created
+      end
+
+      it 'creates the user from token' do
+        api_response
+
+        expect(Api::User::UserService).to have_received(:create).with(token)
+      end
+
+      it 'returns jsonapi payload' do
+        api_response
+
+        expect(response.parsed_body).to include('data')
+      end
+    end
   end
 end

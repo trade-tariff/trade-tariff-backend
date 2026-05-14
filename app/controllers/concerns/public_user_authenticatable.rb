@@ -15,21 +15,24 @@ module PublicUserAuthenticatable
     attr_reader :current_user
 
     def authenticate!
+      if Rails.env.development?
+        @current_user ||= Api::User::DummyUserService.find_or_create
+        return
+      end
+
       if user_token.present?
-        result = Api::User::UserService.find_or_create(user_token)
+        result = Api::User::UserService.find(user_token)
 
         if result.is_a?(CognitoTokenVerifier::Result)
           return render_authentication_error(result.reason)
         end
 
+        if result.nil?
+          return render_not_found_error
+        end
+
         @current_user = result
-      end
-
-      if Rails.env.development?
-        @current_user ||= Api::User::DummyUserService.find_or_create
-      end
-
-      if @current_user.nil?
+      else
         render_authentication_error(:missing_token)
       end
     end
@@ -38,6 +41,10 @@ module PublicUserAuthenticatable
       error_detail = AUTHENTICATION_ERROR_MESSAGES[reason] || 'Authentication failed'
 
       render json: serialize_authentication_error(error_detail, reason), status: :unauthorized
+    end
+
+    def render_not_found_error
+      render json: serialize_authentication_error('User not found', :not_found), status: :not_found
     end
 
     def serialize_authentication_error(detail, reason)
