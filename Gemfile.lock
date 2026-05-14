@@ -506,6 +506,7 @@ DEPENDENCIES
   holidays
   json_expressions
   jsonapi-serializer
+  jwt
   letter_opener
   lograge
   logstash-event
