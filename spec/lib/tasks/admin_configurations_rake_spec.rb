@@ -63,6 +63,7 @@ RSpec.describe 'admin_configurations:seed' do
     expect(config.value['generic']['attributes']).to include(
       'excluded' => true,
       'message_header' => "We can't suggest a tariff code yet",
+      'message' => include('This information might be found on:'),
       'guidance_level' => 'info',
       'guidance_location' => 'interstitial',
       'sources' => %w[guided_search fpo_search],

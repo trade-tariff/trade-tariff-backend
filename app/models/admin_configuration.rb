@@ -42,7 +42,7 @@ class AdminConfiguration < Sequel::Model(Sequel[:admin_configurations].qualify(:
 
     ## Where can I find this information?
 
-    The information might be found on:
+    This information might be found on:
 
     - invoice or other billing documents
     - online listings
