@@ -10,11 +10,11 @@ module Api
           current_user.preferences.update(chapter_ids: user_params[:chapter_ids])
         end
 
-        if user_params[:stop_press_subscription]
+        if user_params.key?(:stop_press_subscription)
           current_user.stop_press_subscription = user_params[:stop_press_subscription]
         end
 
-        if user_params[:my_commodities_subscription]
+        if user_params.key?(:my_commodities_subscription)
           current_user.my_commodities_subscription = user_params[:my_commodities_subscription]
         end
 

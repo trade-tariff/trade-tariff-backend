@@ -24,7 +24,6 @@ RSpec.configure do |config|
   config.infer_base_class_for_anonymous_controllers = false
   config.alias_it_should_behave_like_to :it_results_in, 'it results in'
   config.alias_it_should_behave_like_to :it_is_associated, 'it is associated'
-  config.include ControllerSpecHelper, type: :controller
   config.include RequestSpecHelper, type: :request
   config.include SynchronizerHelper
   config.include RescueHelper
@@ -99,14 +98,14 @@ def silence
   @original_stdout = nil
 end
 
-# rubocop:disable RSpec/NoExpectationExample
 def it_with_refresh_materialized_view(description, &block)
-  it(description) do
+  example = proc do
     MaterializeViewHelper.refresh_materialized_view
     instance_exec(&block)
   end
+
+  it(description, &example)
 end
-# rubocop:enable RSpec/NoExpectationExample
 
 def strong_params(wimpy_params)
   ActionController::Parameters.new(wimpy_params).permit!

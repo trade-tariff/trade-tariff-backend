@@ -6,7 +6,7 @@ module Api
 
         if notification.valid?
           notification.save
-          render json: Api::Admin::CdsUpdateNotificationSerializer.new(notification, { is_collection: false }).serializable_hash, status: :created, location: api_cds_update_notifications_url
+          render json: Api::Admin::CdsUpdateNotificationSerializer.new(notification, { is_collection: false }).serializable_hash, status: :created, location: request.url
         else
           render json: Api::Admin::ErrorSerializationService.new(notification).call, status: :unprocessable_content
         end

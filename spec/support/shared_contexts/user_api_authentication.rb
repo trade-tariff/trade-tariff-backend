@@ -9,6 +9,4 @@ RSpec.shared_context 'with user API authentication' do
     request.headers['Authorization'] = user_token
     allow(CognitoTokenVerifier).to receive(:verify_id_token).and_return(verify_result)
   end
-
-  routes { UserApi.routes }
 end
