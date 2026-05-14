@@ -25,11 +25,54 @@ RSpec.describe 'Database configuration' do
     )
   end
 
-  it 'passes the read-only connection string to Sequel as a conn_str' do
-    read_only_config = production_config.fetch('servers').fetch('read_only')
+  it 'passes the reader connection string to Sequel as a conn_str' do
+    reader_config = production_config.fetch('servers').fetch('reader')
 
-    expect(read_only_config).to include('conn_str' => reader_url)
-    expect(read_only_config).not_to have_key('url')
+    expect(reader_config).to include('conn_str' => reader_url)
+    expect(reader_config).not_to have_key('url')
+  end
+
+  it 'does not configure a read_only server that Sequel would use by default for selects' do
+    expect(production_config.fetch('servers')).not_to have_key('read_only')
+  end
+
+  it 'uses the writer for plain model reads unless reader routing is explicit' do
+    db = Sequel.connect(
+      Sequel::Model.db.opts.slice(
+        :adapter,
+        :host,
+        :port,
+        :database,
+        :user,
+        :password,
+        :search_path,
+      ).compact.merge(
+        connect_sqls: ["SET application_name = 'writer'"],
+        servers: {
+          reader: {
+            connect_sqls: ["SET application_name = 'reader'"],
+          },
+        },
+      ),
+    )
+    db.extension :server_block
+
+    expect(application_name_for(db)).to eq('writer')
+
+    db.with_server(:reader) do
+      expect(application_name_for(db)).to eq('reader')
+    end
+  ensure
+    if db
+      db.disconnect
+      Sequel::DATABASES.delete(db)
+    end
+  end
+
+  def application_name_for(db)
+    db.fetch("SELECT current_setting('application_name') AS application_name")
+      .first
+      .fetch(:application_name)
   end
 end
 # rubocop:enable RSpec/DescribeClass
