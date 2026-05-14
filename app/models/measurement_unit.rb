@@ -2,11 +2,11 @@ class MeasurementUnit < Sequel::Model
   STANDARD_MEASUREMENT_UNIT_CODE_LENGTH = 3
   MEASUREMENT_UNIT_OVERLAY_FILE = 'db/measurement_units.json'.freeze
 
+  set_primary_key [:measurement_unit_code]
+
   plugin :oplog, primary_key: :measurement_unit_code
   plugin :time_machine
   plugin :static_cache, frozen: false unless Rails.env.test?
-
-  set_primary_key [:measurement_unit_code]
 
   one_to_one :measurement_unit_description, primary_key: :measurement_unit_code,
                                             key: :measurement_unit_code

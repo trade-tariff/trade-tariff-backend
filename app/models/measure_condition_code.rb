@@ -16,11 +16,11 @@ class MeasureConditionCode < Sequel::Model
     "X": '>',
   }.freeze
 
+  set_primary_key [:condition_code]
+
   plugin :time_machine
   plugin :oplog, primary_key: :condition_code
   plugin :static_cache, frozen: false unless Rails.env.test?
-
-  set_primary_key [:condition_code]
 
   one_to_one :measure_condition_code_description, key: :condition_code,
                                                   primary_key: :condition_code
