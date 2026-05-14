@@ -4,27 +4,30 @@ RSpec.describe ReadOnlyConnectionEnforcement do
   let(:db) { Sequel::Model.db }
 
   describe 'inside a with_server(:read_only) block' do
+    # The enforcer raises before the SQL reaches PostgreSQL, so the table name
+    # in the statement does not need to be valid — only the leading verb matters.
+
     it 'raises on INSERT' do
       expect {
-        db.with_server(:read_only) { db.run('INSERT INTO uk.schema_info (version) VALUES (0)') }
+        db.with_server(:read_only) { db.run('INSERT INTO _read_only_test (x) VALUES (1)') }
       }.to raise_error(described_class::WriteOnReadOnlyConnectionError, /INSERT/)
     end
 
     it 'raises on UPDATE' do
       expect {
-        db.with_server(:read_only) { db.run('UPDATE uk.schema_info SET version = 0') }
+        db.with_server(:read_only) { db.run('UPDATE _read_only_test SET x = 1') }
       }.to raise_error(described_class::WriteOnReadOnlyConnectionError, /UPDATE/)
     end
 
     it 'raises on DELETE' do
       expect {
-        db.with_server(:read_only) { db.run('DELETE FROM uk.schema_info') }
+        db.with_server(:read_only) { db.run('DELETE FROM _read_only_test') }
       }.to raise_error(described_class::WriteOnReadOnlyConnectionError, /DELETE/)
     end
 
     it 'raises on TRUNCATE' do
       expect {
-        db.with_server(:read_only) { db.run('TRUNCATE uk.schema_info') }
+        db.with_server(:read_only) { db.run('TRUNCATE _read_only_test') }
       }.to raise_error(described_class::WriteOnReadOnlyConnectionError, /TRUNCATE/)
     end
 
@@ -59,7 +62,7 @@ RSpec.describe ReadOnlyConnectionEnforcement do
       expect {
         db.with_server(:read_only) do
           db.with_server(:read_only) {} # inner block exits
-          db.run('INSERT INTO uk.schema_info (version) VALUES (0)') # still inside outer
+          db.run('INSERT INTO _read_only_test (x) VALUES (1)') # still inside outer
         end
       }.to raise_error(described_class::WriteOnReadOnlyConnectionError)
     end

@@ -11,11 +11,27 @@
 # DatabaseCleaner's :transaction strategy because the reader connection
 # cannot see data that is uncommitted on the writer connection.
 #
-# Instead, this module prepends onto Sequel::Database to:
+# Instead, this module prepends onto the singleton class of the live database
+# instance to:
 #   1. Track entry into with_server(:read_only) blocks via a thread-local
 #      nesting counter (a counter, not a boolean, so nested calls are safe).
 #   2. Raise WriteOnReadOnlyConnectionError before executing any INSERT,
 #      UPDATE, DELETE, or TRUNCATE while that counter is positive.
+#
+# Why singleton_class, not Sequel::Database?  Two reasons:
+#
+#   a) The server_block extension adds with_server via db.extend(ServerBlock),
+#      which places it on the singleton class of the instance.  A class-level
+#      prepend loses to singleton methods, so with_server would never be
+#      intercepted.
+#
+#   b) The concrete adapter (Sequel::Postgres::Database) defines its own
+#      execute, overriding the base class method.  A prepend on
+#      Sequel::Database is below the subclass in the lookup chain and is
+#      therefore also bypassed.
+#
+# Prepending to db.singleton_class inserts DatabaseMethods before both the
+# extended singleton methods and the subclass overrides, so both hooks fire.
 #
 # Transaction control statements (BEGIN, COMMIT, ROLLBACK, SAVEPOINT) are
 # deliberately not blocked — they are required for DatabaseCleaner to function
@@ -60,4 +76,4 @@ module ReadOnlyConnectionEnforcement
   end
 end
 
-Sequel::Database.prepend(ReadOnlyConnectionEnforcement::DatabaseMethods)
+Sequel::Model.db.singleton_class.prepend(ReadOnlyConnectionEnforcement::DatabaseMethods)
