@@ -8,7 +8,7 @@ RSpec.describe Api::Admin::CdsUpdateNotificationsController, :admin do
           post '/uk/admin/cds_update_notifications', params: { data: { type: :cds_update_notification, attributes: { filename: cds_update.filename } } }, headers: request_headers({ 'X-Whodunnit' => 'test-user-uid' }), as: :json
         }.to change(CdsUpdateNotification, :count).by(1)
         expect(response.status).to eq 201
-        expect(response.location).to eq api_cds_update_notifications_url
+        expect(response.location).to eq 'http://www.example.com/cds_update_notifications'
       end
     end
 

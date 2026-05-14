@@ -13,7 +13,7 @@ RSpec.describe Api::Admin::RollbacksController, :admin do
           post '/uk/admin/rollbacks', params: { data: { type: :rollback, attributes: rollback_attributes } }, headers: request_headers({ 'X-Whodunnit' => 'test-user-uid' }), as: :json
         }.to change(Rollback, :count).by(1)
         expect(response.status).to eq 201
-        expect(response.location).to eq api_rollbacks_url
+        expect(response.location).to eq 'http://www.example.com/rollbacks'
       end
     end
 
