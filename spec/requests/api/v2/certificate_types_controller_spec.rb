@@ -1,9 +1,12 @@
 RSpec.describe Api::V2::CertificateTypesController, type: :request do
   describe 'GET #index' do
-    subject(:do_response) do
-      get :index, format: :json
+    subject(:api_response) do
+      make_request
+      response
+    end
 
-      response.body
+    let(:make_request) do
+      get '/uk/api/certificate_types.json', headers: request_headers(format: :json)
     end
 
     let(:certificate_type) { create(:certificate_type, :with_description) }
@@ -27,6 +30,6 @@ RSpec.describe Api::V2::CertificateTypesController, type: :request do
       certificate_type
     end
 
-    it { is_expected.to match_json_expression(pattern) }
+    it { expect(api_response.body).to match_json_expression(pattern) }
   end
 end

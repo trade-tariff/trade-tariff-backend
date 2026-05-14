@@ -36,7 +36,7 @@ RSpec.describe Api::Admin::GoodsNomenclatureSelfTextsController do
     end
 
     it 'returns only AI-generated self texts' do
-      get :index, format: :json
+      get '/uk/admin/goods_nomenclature_self_texts.json', headers: request_headers(format: :json)
 
       json = JSON.parse(response.body)
       expect(json['data'].length).to eq(2)
@@ -46,7 +46,7 @@ RSpec.describe Api::Admin::GoodsNomenclatureSelfTextsController do
     end
 
     it 'excludes mechanical self texts' do
-      get :index, format: :json
+      get '/uk/admin/goods_nomenclature_self_texts.json', headers: request_headers(format: :json)
 
       json = JSON.parse(response.body)
       sids = json['data'].map { |d| d.dig('attributes', 'goods_nomenclature_sid') }
@@ -54,7 +54,7 @@ RSpec.describe Api::Admin::GoodsNomenclatureSelfTextsController do
     end
 
     it 'includes combined score attribute' do
-      get :index, format: :json
+      get '/uk/admin/goods_nomenclature_self_texts.json', headers: request_headers(format: :json)
 
       json = JSON.parse(response.body)
       scores = json['data'].map { |d| d.dig('attributes', 'score') }
@@ -62,7 +62,7 @@ RSpec.describe Api::Admin::GoodsNomenclatureSelfTextsController do
     end
 
     it 'sorts by combined score ascending by default' do
-      get :index, format: :json
+      get '/uk/admin/goods_nomenclature_self_texts.json', headers: request_headers(format: :json)
 
       json = JSON.parse(response.body)
       scores = json['data'].map { |d| d.dig('attributes', 'score') }
@@ -70,7 +70,7 @@ RSpec.describe Api::Admin::GoodsNomenclatureSelfTextsController do
     end
 
     it 'includes pagination meta' do
-      get :index, format: :json
+      get '/uk/admin/goods_nomenclature_self_texts.json', headers: request_headers(format: :json)
 
       json = JSON.parse(response.body)
       pagination = json.dig('meta', 'pagination')
@@ -79,7 +79,7 @@ RSpec.describe Api::Admin::GoodsNomenclatureSelfTextsController do
     end
 
     it 'includes nomenclature_type attribute' do
-      get :index, format: :json
+      get '/uk/admin/goods_nomenclature_self_texts.json', headers: request_headers(format: :json)
 
       json = JSON.parse(response.body)
       types = json['data'].map { |d| d.dig('attributes', 'nomenclature_type') }
@@ -88,7 +88,7 @@ RSpec.describe Api::Admin::GoodsNomenclatureSelfTextsController do
 
     context 'with type filter' do
       it 'filters to commodities only' do
-        get :index, params: { type: 'commodity' }, format: :json
+        get '/uk/admin/goods_nomenclature_self_texts.json', params: { type: 'commodity' }, headers: request_headers(format: :json)
 
         json = JSON.parse(response.body)
         expect(json['data'].length).to eq(1)
@@ -96,7 +96,7 @@ RSpec.describe Api::Admin::GoodsNomenclatureSelfTextsController do
       end
 
       it 'filters to subheadings only' do
-        get :index, params: { type: 'subheading' }, format: :json
+        get '/uk/admin/goods_nomenclature_self_texts.json', params: { type: 'subheading' }, headers: request_headers(format: :json)
 
         json = JSON.parse(response.body)
         expect(json['data'].length).to eq(1)
@@ -106,7 +106,7 @@ RSpec.describe Api::Admin::GoodsNomenclatureSelfTextsController do
 
     context 'with status filter' do
       it 'filters to needs_review' do
-        get :index, params: { status: 'needs_review' }, format: :json
+        get '/uk/admin/goods_nomenclature_self_texts.json', params: { status: 'needs_review' }, headers: request_headers(format: :json)
 
         json = JSON.parse(response.body)
         expect(json['data'].length).to eq(1)
@@ -114,7 +114,7 @@ RSpec.describe Api::Admin::GoodsNomenclatureSelfTextsController do
       end
 
       it 'filters to stale' do
-        get :index, params: { status: 'stale' }, format: :json
+        get '/uk/admin/goods_nomenclature_self_texts.json', params: { status: 'stale' }, headers: request_headers(format: :json)
 
         json = JSON.parse(response.body)
         expect(json['data'].length).to eq(1)
@@ -122,7 +122,7 @@ RSpec.describe Api::Admin::GoodsNomenclatureSelfTextsController do
       end
 
       it 'filters to manually_edited' do
-        get :index, params: { status: 'manually_edited' }, format: :json
+        get '/uk/admin/goods_nomenclature_self_texts.json', params: { status: 'manually_edited' }, headers: request_headers(format: :json)
 
         json = JSON.parse(response.body)
         expect(json['data'].length).to eq(0)
@@ -140,7 +140,7 @@ RSpec.describe Api::Admin::GoodsNomenclatureSelfTextsController do
       end
 
       it 'excludes expired self texts from normal listing by default' do
-        get :index, format: :json
+        get '/uk/admin/goods_nomenclature_self_texts.json', headers: request_headers(format: :json)
 
         json = JSON.parse(response.body)
         sids = json['data'].map { |d| d.dig('attributes', 'goods_nomenclature_sid') }
@@ -148,7 +148,7 @@ RSpec.describe Api::Admin::GoodsNomenclatureSelfTextsController do
       end
 
       it 'returns expired self texts when explicitly filtered' do
-        get :index, params: { status: 'expired' }, format: :json
+        get '/uk/admin/goods_nomenclature_self_texts.json', params: { status: 'expired' }, headers: request_headers(format: :json)
 
         json = JSON.parse(response.body)
         expect(json['data'].length).to eq(1)
@@ -170,7 +170,7 @@ RSpec.describe Api::Admin::GoodsNomenclatureSelfTextsController do
       end
 
       it 'excludes approved self texts from normal listing by default' do
-        get :index, format: :json
+        get '/uk/admin/goods_nomenclature_self_texts.json', headers: request_headers(format: :json)
 
         json = JSON.parse(response.body)
         sids = json['data'].map { |d| d.dig('attributes', 'goods_nomenclature_sid') }
@@ -178,7 +178,7 @@ RSpec.describe Api::Admin::GoodsNomenclatureSelfTextsController do
       end
 
       it 'returns approved self texts when explicitly filtered' do
-        get :index, params: { status: 'approved' }, format: :json
+        get '/uk/admin/goods_nomenclature_self_texts.json', params: { status: 'approved' }, headers: request_headers(format: :json)
 
         json = JSON.parse(response.body)
         expect(json['data'].length).to eq(1)
@@ -186,7 +186,7 @@ RSpec.describe Api::Admin::GoodsNomenclatureSelfTextsController do
       end
 
       it 'keeps approved self texts searchable by text' do
-        get :index, params: { q: 'direct lookup' }, format: :json
+        get '/uk/admin/goods_nomenclature_self_texts.json', params: { q: 'direct lookup' }, headers: request_headers(format: :json)
 
         json = JSON.parse(response.body)
         sids = json['data'].map { |d| d.dig('attributes', 'goods_nomenclature_sid') }
@@ -206,7 +206,7 @@ RSpec.describe Api::Admin::GoodsNomenclatureSelfTextsController do
       end
 
       it 'filters to bad scores (below 0.3)' do
-        get :index, params: { score_category: 'bad' }, format: :json
+        get '/uk/admin/goods_nomenclature_self_texts.json', params: { score_category: 'bad' }, headers: request_headers(format: :json)
 
         json = JSON.parse(response.body)
         scores = json['data'].map { |d| d.dig('attributes', 'score') }
@@ -214,7 +214,7 @@ RSpec.describe Api::Admin::GoodsNomenclatureSelfTextsController do
       end
 
       it 'filters to okay scores (0.3 to 0.5)' do
-        get :index, params: { score_category: 'okay' }, format: :json
+        get '/uk/admin/goods_nomenclature_self_texts.json', params: { score_category: 'okay' }, headers: request_headers(format: :json)
 
         json = JSON.parse(response.body)
         scores = json['data'].map { |d| d.dig('attributes', 'score') }
@@ -223,7 +223,7 @@ RSpec.describe Api::Admin::GoodsNomenclatureSelfTextsController do
       end
 
       it 'filters to good scores (0.5 to 0.85)' do
-        get :index, params: { score_category: 'good' }, format: :json
+        get '/uk/admin/goods_nomenclature_self_texts.json', params: { score_category: 'good' }, headers: request_headers(format: :json)
 
         json = JSON.parse(response.body)
         scores = json['data'].map { |d| d.dig('attributes', 'score') }
@@ -232,7 +232,7 @@ RSpec.describe Api::Admin::GoodsNomenclatureSelfTextsController do
       end
 
       it 'filters to amazing scores (0.85+)' do
-        get :index, params: { score_category: 'amazing' }, format: :json
+        get '/uk/admin/goods_nomenclature_self_texts.json', params: { score_category: 'amazing' }, headers: request_headers(format: :json)
 
         json = JSON.parse(response.body)
         scores = json['data'].map { |d| d.dig('attributes', 'score') }
@@ -248,7 +248,7 @@ RSpec.describe Api::Admin::GoodsNomenclatureSelfTextsController do
                  generation_type: 'ai')
         end
 
-        get :index, params: { score_category: 'no_score' }, format: :json
+        get '/uk/admin/goods_nomenclature_self_texts.json', params: { score_category: 'no_score' }, headers: request_headers(format: :json)
 
         json = JSON.parse(response.body)
         scores = json['data'].map { |d| d.dig('attributes', 'score') }
@@ -258,7 +258,7 @@ RSpec.describe Api::Admin::GoodsNomenclatureSelfTextsController do
 
     context 'with sorting' do
       it 'sorts by score descending' do
-        get :index, params: { sort: 'score', direction: 'desc' }, format: :json
+        get '/uk/admin/goods_nomenclature_self_texts.json', params: { sort: 'score', direction: 'desc' }, headers: request_headers(format: :json)
 
         json = JSON.parse(response.body)
         scores = json['data'].map { |d| d.dig('attributes', 'score') }
@@ -266,13 +266,13 @@ RSpec.describe Api::Admin::GoodsNomenclatureSelfTextsController do
       end
 
       it 'sorts by goods_nomenclature_item_id' do
-        get :index, params: { sort: 'goods_nomenclature_item_id', direction: 'asc' }, format: :json
+        get '/uk/admin/goods_nomenclature_self_texts.json', params: { sort: 'goods_nomenclature_item_id', direction: 'asc' }, headers: request_headers(format: :json)
 
         expect(response).to have_http_status(:ok)
       end
 
       it 'ignores invalid sort columns' do
-        get :index, params: { sort: 'invalid_column' }, format: :json
+        get '/uk/admin/goods_nomenclature_self_texts.json', params: { sort: 'invalid_column' }, headers: request_headers(format: :json)
 
         expect(response).to have_http_status(:ok)
       end
@@ -280,7 +280,7 @@ RSpec.describe Api::Admin::GoodsNomenclatureSelfTextsController do
 
     context 'with pagination' do
       it 'respects per_page parameter' do
-        get :index, params: { per_page: 1 }, format: :json
+        get '/uk/admin/goods_nomenclature_self_texts.json', params: { per_page: 1 }, headers: request_headers(format: :json)
 
         json = JSON.parse(response.body)
         expect(json['data'].length).to eq(1)
@@ -288,7 +288,7 @@ RSpec.describe Api::Admin::GoodsNomenclatureSelfTextsController do
       end
 
       it 'respects page parameter' do
-        get :index, params: { per_page: 1, page: 2 }, format: :json
+        get '/uk/admin/goods_nomenclature_self_texts.json', params: { per_page: 1, page: 2 }, headers: request_headers(format: :json)
 
         json = JSON.parse(response.body)
         expect(json['data'].length).to eq(1)
@@ -298,7 +298,7 @@ RSpec.describe Api::Admin::GoodsNomenclatureSelfTextsController do
 
     context 'with q param searching by commodity code prefix' do
       it 'returns self texts matching the code prefix' do
-        get :index, params: { q: commodity.goods_nomenclature_item_id[0..3] }, format: :json
+        get '/uk/admin/goods_nomenclature_self_texts.json', params: { q: commodity.goods_nomenclature_item_id[0..3] }, headers: request_headers(format: :json)
 
         json = JSON.parse(response.body)
         item_ids = json['data'].map { |d| d.dig('attributes', 'goods_nomenclature_item_id') }
@@ -308,7 +308,7 @@ RSpec.describe Api::Admin::GoodsNomenclatureSelfTextsController do
 
     context 'with q param searching by text' do
       it 'matches self_text content case-insensitively' do
-        get :index, params: { q: 'widgets' }, format: :json
+        get '/uk/admin/goods_nomenclature_self_texts.json', params: { q: 'widgets' }, headers: request_headers(format: :json)
 
         json = JSON.parse(response.body)
         expect(json['data']).not_to be_empty
@@ -317,14 +317,14 @@ RSpec.describe Api::Admin::GoodsNomenclatureSelfTextsController do
       end
 
       it 'matches input_context content' do
-        get :index, params: { q: 'Widgets' }, format: :json
+        get '/uk/admin/goods_nomenclature_self_texts.json', params: { q: 'Widgets' }, headers: request_headers(format: :json)
 
         json = JSON.parse(response.body)
         expect(json['data']).not_to be_empty
       end
 
       it 'returns empty results for non-matching text' do
-        get :index, params: { q: 'zznonexistentzz' }, format: :json
+        get '/uk/admin/goods_nomenclature_self_texts.json', params: { q: 'zznonexistentzz' }, headers: request_headers(format: :json)
 
         json = JSON.parse(response.body)
         expect(json['data']).to be_empty
@@ -333,7 +333,7 @@ RSpec.describe Api::Admin::GoodsNomenclatureSelfTextsController do
 
     context 'with q param too short' do
       it 'ignores single character non-numeric queries' do
-        get :index, params: { q: 'a' }, format: :json
+        get '/uk/admin/goods_nomenclature_self_texts.json', params: { q: 'a' }, headers: request_headers(format: :json)
 
         json = JSON.parse(response.body)
         # Single char text is ignored, returns all results
@@ -353,7 +353,7 @@ RSpec.describe Api::Admin::GoodsNomenclatureSelfTextsController do
       end
 
       it 'places nil scores last when sorting ascending' do
-        get :index, params: { sort: 'score', direction: 'asc' }, format: :json
+        get '/uk/admin/goods_nomenclature_self_texts.json', params: { sort: 'score', direction: 'asc' }, headers: request_headers(format: :json)
 
         json = JSON.parse(response.body)
         scores = json['data'].map { |d| d.dig('attributes', 'score') }

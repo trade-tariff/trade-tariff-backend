@@ -1,6 +1,9 @@
 RSpec.describe HealthcheckController, type: :request do
   describe 'GET #index' do
-    subject(:rendered) { make_request && response }
+    subject(:api_response) do
+      make_request
+      response
+    end
 
     let(:make_request) { api_get '/uk/api/healthcheck' }
     let(:healthcheck) { Healthcheck.instance }
@@ -15,7 +18,7 @@ RSpec.describe HealthcheckController, type: :request do
 
       it { is_expected.to have_http_status :success }
       it { is_expected.to have_attributes media_type: /json/ }
-      it { expect(rendered.body).to eq '{"healthy":true}' }
+      it { expect(api_response.body).to eq '{"healthy":true}' }
     end
 
     context 'when Healthcheck#check returns unhealthy' do
@@ -23,7 +26,7 @@ RSpec.describe HealthcheckController, type: :request do
 
       it { is_expected.to have_http_status :service_unavailable }
       it { is_expected.to have_attributes media_type: /json/ }
-      it { expect(rendered.body).to eq '{"healthy":false}' }
+      it { expect(api_response.body).to eq '{"healthy":false}' }
     end
 
     context 'when maintenance mode enabled' do

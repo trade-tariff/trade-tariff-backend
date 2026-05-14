@@ -1,6 +1,13 @@
 RSpec.describe Api::V2::HeadingsController, type: :request do
   describe '#show' do
-    subject(:do_response) { get :show, params: { id:, filter: } }
+    subject(:api_response) do
+      make_request
+      response
+    end
+
+    let(:make_request) do
+      get "/uk/api/headings/#{id}", params: { filter: }, headers: request_headers
+    end
 
     let(:id) { heading.short_code }
     let(:filter) { {} }
@@ -21,7 +28,7 @@ RSpec.describe Api::V2::HeadingsController, type: :request do
 
     context 'when the heading is not declarable' do
       it 'calls the Rails cache with the correct key' do
-        do_response
+        api_response
 
         expected_hash = Digest::MD5.hexdigest('{}')
         cache_suffix = '-v1'
@@ -36,7 +43,7 @@ RSpec.describe Api::V2::HeadingsController, type: :request do
         let(:filter) { { geographical_area_id: 'BR' } }
 
         it 'calls the Rails cache with the correct key' do
-          do_response
+          api_response
 
           expected_hash = Digest::MD5.hexdigest(filter.to_json)
           cache_suffix = '-v1'
@@ -51,7 +58,7 @@ RSpec.describe Api::V2::HeadingsController, type: :request do
       context 'when the heading does not exist' do
         let(:id) { heading.short_code.next }
 
-        it { expect(do_response).to have_http_status(:not_found) }
+        it { expect(api_response).to have_http_status(:not_found) }
       end
 
       context 'when the heading is not declarable' do
@@ -92,7 +99,7 @@ RSpec.describe Api::V2::HeadingsController, type: :request do
             }.ignore_extra_keys!
           end
 
-          it { expect(do_response.body).to match_json_expression(pattern) }
+          it { expect(api_response.body).to match_json_expression(pattern) }
         end
 
         context 'when heading is present and commodity has hidden commodities' do
@@ -108,7 +115,7 @@ RSpec.describe Api::V2::HeadingsController, type: :request do
           end
 
           it 'does not return the hidden commodity' do
-            parsed_body = JSON.parse(do_response.body)
+            parsed_body = JSON.parse(api_response.body)
             resources = parsed_body['included']
             commodities = resources.select { |resource| resource['type'] == 'commodity' }
             actual_commodity_codes = commodities.map { |commodity| commodity['attributes']['goods_nomenclature_item_id'] }
@@ -120,7 +127,7 @@ RSpec.describe Api::V2::HeadingsController, type: :request do
         context 'when the record is not present' do
           let(:id) { heading.short_code.next }
 
-          it { expect(do_response).to have_http_status(:not_found) }
+          it { expect(api_response).to have_http_status(:not_found) }
         end
       end
     end
@@ -170,13 +177,20 @@ RSpec.describe Api::V2::HeadingsController, type: :request do
           }.ignore_extra_keys!
         end
 
-        it { expect(do_response.body).to match_json_expression(pattern) }
+        it { expect(api_response.body).to match_json_expression(pattern) }
       end
     end
   end
 
   describe 'GET #changes' do
-    subject(:do_response) { get :changes, params: }
+    subject(:api_response) do
+      make_request
+      response
+    end
+
+    let(:make_request) do
+      get "/uk/api/headings/#{params.fetch(:id)}/changes", params: params.except(:id), headers: request_headers
+    end
 
     let(:params) do
       {
@@ -237,7 +251,7 @@ RSpec.describe Api::V2::HeadingsController, type: :request do
         }
       end
 
-      it { expect(do_response.body).to match_json_expression(pattern) }
+      it { expect(api_response.body).to match_json_expression(pattern) }
     end
 
     context 'when changes happened before requested date' do
@@ -251,7 +265,7 @@ RSpec.describe Api::V2::HeadingsController, type: :request do
         }
       end
 
-      it { expect(do_response.body).to match_json_expression(pattern) }
+      it { expect(api_response.body).to match_json_expression(pattern) }
     end
 
     context 'when changes include deleted record' do
@@ -354,7 +368,7 @@ RSpec.describe Api::V2::HeadingsController, type: :request do
         }
       end
 
-      it { expect(do_response.body).to match_json_expression(pattern) }
+      it { expect(api_response.body).to match_json_expression(pattern) }
     end
   end
 end

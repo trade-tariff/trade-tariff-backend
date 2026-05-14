@@ -1,10 +1,17 @@
 RSpec.describe Api::V2::SearchController do
   describe 'GET /search' do
-    subject(:response) { get :search, params: { q: chapter.to_param, as_of: chapter.validity_start_date } }
+    subject(:api_response) do
+      make_request
+      response
+    end
+
+    let(:make_request) do
+      get '/uk/api/search', params: { q: chapter.to_param, as_of: chapter.validity_start_date }, headers: request_headers
+    end
 
     let(:chapter) { create :chapter }
 
-    it { expect(response).to have_http_status(:ok) }
+    it { is_expected.to have_http_status(:ok) }
   end
 
   describe 'POST /search' do
@@ -14,7 +21,7 @@ RSpec.describe Api::V2::SearchController do
 
         create(:search_suggestion, :goods_nomenclature, goods_nomenclature:)
 
-        post :search, params: { q: '01', as_of: Time.zone.today.iso8601 }
+        post '/uk/api/search', params: { q: '01', as_of: Time.zone.today.iso8601 }, headers: request_headers, as: :json
       end
 
       let(:pattern) do
@@ -39,7 +46,7 @@ RSpec.describe Api::V2::SearchController do
 
     context 'when fuzzy matching' do
       before do
-        post :search, params: { q: chapter.description, as_of: chapter.validity_start_date }
+        post '/uk/api/search', params: { q: chapter.description, as_of: chapter.validity_start_date }, headers: request_headers, as: :json
       end
 
       let(:chapter) { create :chapter, :with_description, description: 'horse', validity_start_date: Time.zone.today }
@@ -71,7 +78,7 @@ RSpec.describe Api::V2::SearchController do
     end
 
     context 'when no matches are found' do
-      before { post :search }
+      before { post '/uk/api/search', headers: request_headers, as: :json }
 
       let(:pattern) do
         {
@@ -102,7 +109,14 @@ RSpec.describe Api::V2::SearchController do
 
   describe 'GET /search_suggestions' do
     context 'when a query is provided' do
-      subject(:response) { get :suggestions, params: { q: 'same' } }
+      subject(:api_response) do
+        make_request
+        response
+      end
+
+      let(:make_request) do
+        get '/uk/api/search_suggestions', params: { q: 'same' }, headers: request_headers
+      end
 
       let(:pattern) do
         {
@@ -128,13 +142,20 @@ RSpec.describe Api::V2::SearchController do
         create(:search_suggestion, :search_reference, value: 'but different')
       end
 
-      it { expect(response.body).to match_json_expression pattern }
+      it { expect(api_response.body).to match_json_expression pattern }
 
       it_behaves_like 'a successful jsonapi response'
     end
 
     context 'when no query is provided' do
-      subject(:response) { get :suggestions }
+      subject(:api_response) do
+        make_request
+        response
+      end
+
+      let(:make_request) do
+        get '/uk/api/search_suggestions', headers: request_headers
+      end
 
       it_behaves_like 'a successful jsonapi response'
     end

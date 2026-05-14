@@ -35,7 +35,7 @@ RSpec.describe Api::User::SubscriptionsController do
                target_id: measure.goods_nomenclature_sid,
                target_type: 'measure')
 
-        get :show, params: { id: valid_id }
+        get "/uk/user/subscriptions/#{valid_id}", headers: request_headers
       end
 
       it 'returns a successful response' do
@@ -52,7 +52,7 @@ RSpec.describe Api::User::SubscriptionsController do
     context 'when an invalid id is provided' do
       before do
         allow(PublicUsers::Subscription).to receive(:find).with(uuid: invalid_id).and_return(nil)
-        get :show, params: { id: invalid_id }
+        get "/uk/user/subscriptions/#{invalid_id}", headers: request_headers
       end
 
       it 'returns an unauthorized response' do
@@ -72,7 +72,7 @@ RSpec.describe Api::User::SubscriptionsController do
       end
 
       before do
-        get :show, params: { id: valid_id }
+        get "/uk/user/subscriptions/#{valid_id}", headers: request_headers
       end
 
       it 'returns a successful response' do
@@ -94,7 +94,7 @@ RSpec.describe Api::User::SubscriptionsController do
       before do
         allow(PublicUsers::Subscription).to receive(:find).with(uuid: valid_id).and_return(subscription)
         allow(subscription).to receive(:unsubscribe)
-        post :destroy, params: { id: valid_id }
+        delete "/uk/user/subscriptions/#{valid_id}", headers: request_headers, as: :json
       end
 
       it 'returns a successful response' do
@@ -109,7 +109,7 @@ RSpec.describe Api::User::SubscriptionsController do
     context 'when an invalid ID is provided' do
       before do
         allow(PublicUsers::Subscription).to receive(:find).with(uuid: invalid_id).and_return(nil)
-        post :destroy, params: { id: invalid_id }
+        delete "/uk/user/subscriptions/#{invalid_id}", headers: request_headers, as: :json
       end
 
       it 'returns an unauthorized response' do
@@ -130,7 +130,7 @@ RSpec.describe Api::User::SubscriptionsController do
 
       before do
         create(:commodity, goods_nomenclature_item_id: '1234567890', goods_nomenclature_sid: 123)
-        post :create_batch, params: { id: valid_id, data: { attributes: { targets: targets } } }
+        post "/uk/user/subscriptions/#{valid_id}/batch", params: { data: { attributes: { targets: targets } } }, headers: request_headers, as: :json
       end
 
       it 'returns a successful response' do
@@ -153,7 +153,7 @@ RSpec.describe Api::User::SubscriptionsController do
     context 'when an invalid token is provided' do
       before do
         allow(PublicUsers::Subscription).to receive(:find).with(uuid: invalid_id).and_return(nil)
-        post :create_batch, params: { id: invalid_id, data: { attributes: { targets: targets } } }
+        post "/uk/user/subscriptions/#{invalid_id}/batch", params: { data: { attributes: { targets: targets } } }, headers: request_headers, as: :json
       end
 
       it 'returns an unauthorized response' do
@@ -170,7 +170,7 @@ RSpec.describe Api::User::SubscriptionsController do
 
       before do
         allow(PublicUsers::Subscription).to receive(:find).with(uuid: valid_id).and_return(subscription)
-        post :create_batch, params: { id: valid_id, data: { attributes: { targets: targets } } }
+        post "/uk/user/subscriptions/#{valid_id}/batch", params: { data: { attributes: { targets: targets } } }, headers: request_headers, as: :json
       end
 
       it 'returns a bad request response' do
@@ -184,7 +184,7 @@ RSpec.describe Api::User::SubscriptionsController do
 
     context 'when no subscription type is provided' do
       before do
-        post :create_batch, params: { id: valid_id, data: { attributes: { targets: targets } } }
+        post "/uk/user/subscriptions/#{valid_id}/batch", params: { data: { attributes: { targets: targets } } }, headers: request_headers, as: :json
       end
 
       it 'returns a bad request response' do

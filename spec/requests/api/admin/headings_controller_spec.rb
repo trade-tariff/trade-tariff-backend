@@ -1,7 +1,10 @@
 RSpec.describe Api::Admin::HeadingsController, :admin do
-  subject(:page_response) { make_request && response }
+  subject(:api_response) do
+    make_request
+    response
+  end
 
-  let(:json_response) { JSON.parse(page_response.body) }
+  let(:json_response) { JSON.parse(api_response.body) }
   let(:heading) { create(:heading, :non_declarable, :with_chapter).reload }
 
   describe 'GET to #show' do

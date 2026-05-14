@@ -27,13 +27,13 @@ RSpec.describe Api::V2::ChangesController do
 
   describe '#index' do
     it 'is successful' do
-      get :index, format: :json
+      get '/uk/api/changes.json', headers: request_headers(format: :json)
 
       expect(response).to be_successful
     end
 
     context 'when nothing has changed' do
-      before { get :index, format: :json }
+      before { get '/uk/api/changes.json', headers: request_headers(format: :json) }
 
       let(:json) { JSON.parse(response.body) }
 
@@ -51,7 +51,7 @@ RSpec.describe Api::V2::ChangesController do
       let(:end_line) { true }
 
       context 'when on the same day' do
-        before { get :index, format: :json }
+        before { get '/uk/api/changes.json', headers: request_headers(format: :json) }
 
         let(:json) { JSON.parse(response.body) }
 
@@ -61,7 +61,7 @@ RSpec.describe Api::V2::ChangesController do
       end
 
       context 'when on the previous day' do
-        before { get :index, params: { as_of: (Time.zone.today - 1.day) }, format: :json }
+        before { get "/uk/api/changes/#{Time.zone.today - 1.day}.json", headers: request_headers(format: :json) }
 
         let(:json) { JSON.parse(response.body) }
 
@@ -80,7 +80,7 @@ RSpec.describe Api::V2::ChangesController do
       let(:end_line) { true }
 
       context 'when on the same day' do
-        before { get :index, format: :json }
+        before { get '/uk/api/changes.json', headers: request_headers(format: :json) }
 
         let(:json) { JSON.parse(response.body) }
 
@@ -90,7 +90,7 @@ RSpec.describe Api::V2::ChangesController do
       end
 
       context 'when on the previous day' do
-        before { get :index, params: { as_of: (Time.zone.today - 1.day) }, format: :json }
+        before { get "/uk/api/changes/#{Time.zone.today - 1.day}.json", headers: request_headers(format: :json) }
 
         let(:json) { JSON.parse(response.body) }
 

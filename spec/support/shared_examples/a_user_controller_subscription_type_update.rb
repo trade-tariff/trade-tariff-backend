@@ -2,10 +2,19 @@ RSpec.shared_examples_for 'a user controller subscription type update' do |subsc
   context "when updating the #{subscription_type} subscription" do
     let!(:user) { create(:public_user) }
     let(:make_request) do
-      patch :update, params: {
-        data: {
-          attributes: { subscription_type => active },
-        },
+      patch '/uk/user/users',
+            params: {
+              data: {
+                attributes: { subscription_type => active },
+              },
+            },
+            headers: request_headers,
+            as: :json
+    end
+
+    let(:request_header_overrides) do
+      {
+        'Authorization' => 'Bearer test-token',
       }
     end
 
@@ -19,7 +28,6 @@ RSpec.shared_examples_for 'a user controller subscription type update' do |subsc
     let(:verify_result) { CognitoTokenVerifier::Result.new(valid: true, payload: token, reason: nil) }
 
     before do
-      request.headers['Authorization'] = 'Bearer test-token'
       allow(CognitoTokenVerifier).to receive(:verify_id_token).and_return(verify_result)
     end
 

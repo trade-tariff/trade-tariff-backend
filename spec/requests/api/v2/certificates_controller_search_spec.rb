@@ -1,6 +1,13 @@
 RSpec.describe Api::V2::CertificatesController, type: :request do
   describe 'GET #search' do
-    subject(:do_response) { get(:search, params:) && response }
+    subject(:api_response) do
+      make_request
+      response
+    end
+
+    let(:make_request) do
+      get '/uk/api/certificates/search', params: params, headers: request_headers
+    end
 
     let(:certificate) { create(:certificate, :with_description) }
 
@@ -60,13 +67,13 @@ RSpec.describe Api::V2::CertificatesController, type: :request do
     context 'when searching by code and type' do
       let(:params) { { code: certificate.certificate_code, type: certificate.certificate_type_code } }
 
-      it { expect(do_response.body).to match_json_expression pattern }
+      it { expect(api_response.body).to match_json_expression pattern }
     end
 
     context 'when searching by description' do
       let(:params) { { description: certificate.description } }
 
-      it { expect(do_response.body).to match_json_expression pattern }
+      it { expect(api_response.body).to match_json_expression pattern }
     end
 
     context 'when searching by type' do
@@ -85,7 +92,7 @@ RSpec.describe Api::V2::CertificatesController, type: :request do
       end
 
       it { is_expected.to have_http_status :unprocessable_content }
-      it { expect(do_response.body).to match_json_expression pattern }
+      it { expect(api_response.body).to match_json_expression pattern }
     end
 
     context 'when searching by id' do
@@ -104,7 +111,7 @@ RSpec.describe Api::V2::CertificatesController, type: :request do
       end
 
       it { is_expected.to have_http_status :unprocessable_content }
-      it { expect(do_response.body).to match_json_expression pattern }
+      it { expect(api_response.body).to match_json_expression pattern }
     end
 
     context 'when searching with no params' do
@@ -123,7 +130,7 @@ RSpec.describe Api::V2::CertificatesController, type: :request do
       end
 
       it { is_expected.to have_http_status :unprocessable_content }
-      it { expect(do_response.body).to match_json_expression pattern }
+      it { expect(api_response.body).to match_json_expression pattern }
     end
   end
 end

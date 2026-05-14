@@ -11,32 +11,53 @@ RSpec.describe Api::V2::CommoditiesController do
   end
 
   describe 'GET #show' do
-    subject(:do_response) { get :show, params: { id: commodity.code } }
+    subject(:api_response) do
+      make_request
+      response
+    end
+
+    let(:make_request) do
+      get "/uk/api/commodities/#{commodity.code}", headers: request_headers
+    end
 
     before do
       allow(CachedCommodityService).to receive(:new).and_call_original
     end
 
     it 'initializes the CachedCommodityService' do
-      do_response
+      api_response
 
       expect(CachedCommodityService).to have_received(:new).with(commodity, Time.zone.today, strong_params({}))
     end
 
     context 'when a filter for geographical_area_id is passed' do
-      subject(:do_response) { get :show, params: { id: commodity.code, filter: { geographical_area_id: 'RO' } } }
+      subject(:api_response) do
+        make_request
+        response
+      end
+
+      let(:make_request) do
+        get "/uk/api/commodities/#{commodity.code}", params: { filter: { geographical_area_id: 'RO' } }, headers: request_headers
+      end
 
       before { create :geographical_area, geographical_area_id: 'RO' }
 
       it 'passes the filter to the CachedCommodityService' do
-        do_response
+        api_response
 
         expect(CachedCommodityService).to have_received(:new).with(commodity, Time.zone.today, strong_params({ geographical_area_id: 'RO' }))
       end
     end
 
     context 'when a filter for meursing_additional_code_id is passed' do
-      subject(:do_response) { get :show, params: { id: commodity.code, filter: { meursing_additional_code_id: '000' } } }
+      subject(:api_response) do
+        make_request
+        response
+      end
+
+      let(:make_request) do
+        get "/uk/api/commodities/#{commodity.code}", params: { filter: { meursing_additional_code_id: '000' } }, headers: request_headers
+      end
 
       let(:commodity) do
         create(
@@ -51,14 +72,21 @@ RSpec.describe Api::V2::CommoditiesController do
 
       it 'passes the correct meursing additional code to the MeursingMeasureFinderService' do
         allow(MeursingMeasureFinderService).to receive(:new).and_call_original
-        do_response
+        api_response
 
         expect(MeursingMeasureFinderService).to have_received(:new).with(an_instance_of(Measure), '000')
       end
     end
 
     context 'when fetching a commodity that does not exist' do
-      subject(:do_response) { get :show, params: { id: commodity.goods_nomenclature_item_id.next } }
+      subject(:api_response) do
+        make_request
+        response
+      end
+
+      let(:make_request) do
+        get "/uk/api/commodities/#{commodity.goods_nomenclature_item_id.next}", headers: request_headers
+      end
 
       it { is_expected.to have_http_status(:not_found) }
     end
@@ -71,7 +99,7 @@ RSpec.describe Api::V2::CommoditiesController do
         goods_nomenclature_item_id: commodity.goods_nomenclature_item_id,
       )
 
-      get :show, params: { id: commodity.goods_nomenclature_item_id }, format: :json
+      get "/uk/api/commodities/#{commodity.goods_nomenclature_item_id}.json", headers: request_headers(format: :json)
     end
 
     it { expect(response).to have_http_status(:not_found) }
@@ -92,7 +120,7 @@ RSpec.describe Api::V2::CommoditiesController do
                                 goods_nomenclature_item_id: '3903909000',
                                 producline_suffix: '80'
 
-      get :show, params: { id: parent_commodity.goods_nomenclature_item_id }, format: :json
+      get "/uk/api/commodities/#{parent_commodity.goods_nomenclature_item_id}.json", headers: request_headers(format: :json)
     end
 
     it { expect(response).to have_http_status(:not_found) }
@@ -122,7 +150,7 @@ RSpec.describe Api::V2::CommoditiesController do
       end
 
       it 'returns commodity changes' do
-        get :changes, params: { id: commodity }, format: :json
+        get "/uk/api/commodities/#{commodity.to_param}/changes.json", headers: request_headers(format: :json)
 
         expect(response.body).to match_json_expression pattern
       end
@@ -145,7 +173,7 @@ RSpec.describe Api::V2::CommoditiesController do
       end
 
       it 'does not include change records' do
-        get :changes, params: { id: commodity, as_of: Time.zone.yesterday }, format: :json
+        get "/uk/api/commodities/#{commodity.to_param}/changes.json", params: { as_of: Time.zone.yesterday }, headers: request_headers(format: :json)
 
         expect(response.body).to match_json_expression pattern
       end
@@ -268,7 +296,7 @@ RSpec.describe Api::V2::CommoditiesController do
       before { measure.destroy }
 
       it 'renders record attributes' do
-        get :changes, params: { id: commodity }, format: :json
+        get "/uk/api/commodities/#{commodity.to_param}/changes.json", headers: request_headers(format: :json)
 
         expect(response.body).to match_json_expression pattern
       end

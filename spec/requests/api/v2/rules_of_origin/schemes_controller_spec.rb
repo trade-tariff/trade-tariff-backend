@@ -1,10 +1,13 @@
 RSpec.describe Api::V2::RulesOfOrigin::SchemesController, :v2 do
   describe 'GET #index' do
-    subject(:rendered) { make_request && response }
+    subject(:api_response) do
+      make_request
+      response
+    end
 
     let(:heading_code) { roo_heading_code }
     let(:country_code) { roo_country_code }
-    let(:first_scheme) { JSON.parse(rendered.body)['data'].first['attributes'] }
+    let(:first_scheme) { JSON.parse(api_response.body)['data'].first['attributes'] }
 
     let :make_request do
       api_get api_rules_of_origin_schemes_path(format: :json),
@@ -45,7 +48,7 @@ RSpec.describe Api::V2::RulesOfOrigin::SchemesController, :v2 do
       it { expect(first_scheme).not_to include 'introductory_notes' }
 
       context 'with custom includes' do
-        subject { JSON.parse(rendered.body)['included'] }
+        subject(:included_resources) { JSON.parse(api_response.body)['included'] }
 
         let :make_request do
           api_get api_rules_of_origin_schemes_path(include: 'proofs', format: :json)

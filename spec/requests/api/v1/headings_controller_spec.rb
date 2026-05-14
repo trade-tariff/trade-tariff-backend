@@ -27,8 +27,8 @@ RSpec.describe Api::V1::HeadingsController, :flaky do
       end
 
       context 'when record is present' do
-        it 'returns rendered record' do
-          get :show, params: { id: heading }, format: :json
+        it 'returns api_response record' do
+          get "/uk/api/headings/#{heading.to_param}.json", headers: request_headers(format: :json)
           expect(response.body).to match_json_expression pattern
         end
       end
@@ -38,7 +38,7 @@ RSpec.describe Api::V1::HeadingsController, :flaky do
           commodity
           hidden_commodity
 
-          get :show, params: { id: heading }, format: :json
+          get "/uk/api/headings/#{heading.to_param}.json", headers: request_headers(format: :json)
         end
 
         let(:commodity) do
@@ -71,7 +71,7 @@ RSpec.describe Api::V1::HeadingsController, :flaky do
       context 'when record is not present' do
         it 'returns not found if record was not found' do
           id = heading.goods_nomenclature_item_id.first(4).next
-          get :show, params: { id: }, format: :json
+          get "/uk/api/headings/#{id}.json", headers: request_headers(format: :json)
 
           expect(response.status).to eq 404
         end
@@ -106,8 +106,8 @@ RSpec.describe Api::V1::HeadingsController, :flaky do
       end
 
       context 'when record is present' do
-        it 'returns rendered record' do
-          get :show, params: { id: heading }, format: :json
+        it 'returns api_response record' do
+          get "/uk/api/headings/#{heading.to_param}.json", headers: request_headers(format: :json)
 
           expect(response.body).to match_json_expression pattern
         end
@@ -116,7 +116,7 @@ RSpec.describe Api::V1::HeadingsController, :flaky do
       context 'when record is not present' do
         it 'returns not found if record was not found' do
           id = heading.goods_nomenclature_item_id.first(4).next
-          get :show, params: { id: }, format: :json
+          get "/uk/api/headings/#{id}.json", headers: request_headers(format: :json)
 
           expect(response.status).to eq 404
         end
@@ -134,7 +134,7 @@ RSpec.describe Api::V1::HeadingsController, :flaky do
         end
 
         it 'returns not found' do
-          get :show, params: { id: heading.goods_nomenclature_item_id.first(4) }, format: :json
+          get "/uk/api/headings/#{heading.goods_nomenclature_item_id.first(4)}.json", headers: request_headers(format: :json)
 
           expect(response.status).to eq 404
         end
@@ -170,7 +170,7 @@ RSpec.describe Api::V1::HeadingsController, :flaky do
       end
 
       it 'returns heading changes' do
-        get :changes, params: { id: heading }, format: :json
+        get "/uk/api/headings/#{heading.to_param}/changes.json", headers: request_headers(format: :json)
 
         expect(response.body).to match_json_expression pattern
       end
@@ -186,7 +186,7 @@ RSpec.describe Api::V1::HeadingsController, :flaky do
       end
 
       it 'does not include change records' do
-        get :changes, params: { id: heading, as_of: Time.zone.yesterday }, format: :json
+        get "/uk/api/headings/#{heading.to_param}/changes.json", params: { as_of: Time.zone.yesterday }, headers: request_headers(format: :json)
 
         expect(response.body).to match_json_expression []
       end
@@ -239,7 +239,7 @@ RSpec.describe Api::V1::HeadingsController, :flaky do
       before { measure.destroy }
 
       it 'renders record attributes' do
-        get :changes, params: { id: heading }, format: :json
+        get "/uk/api/headings/#{heading.to_param}/changes.json", headers: request_headers(format: :json)
 
         expect(response.body).to match_json_expression pattern
       end

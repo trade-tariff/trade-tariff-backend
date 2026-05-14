@@ -1,6 +1,13 @@
 RSpec.describe Api::V2::QuotaOrderNumbersController, type: :request do
   describe '#index' do
-    subject(:do_request) { get :index }
+    subject(:api_response) do
+      make_request
+      response
+    end
+
+    let(:make_request) do
+      get '/uk/api/quota_order_numbers', headers: request_headers
+    end
 
     before do
       create(
@@ -18,7 +25,7 @@ RSpec.describe Api::V2::QuotaOrderNumbersController, type: :request do
 
     it 'calls the CachedQuotaOrderNumberService' do
       allow(CachedQuotaOrderNumberService).to receive(:new).and_call_original
-      do_request
+      api_response
       expect(CachedQuotaOrderNumberService).to have_received(:new)
     end
   end

@@ -143,7 +143,7 @@ RSpec.describe Api::V2::ChemicalsController, type: :request do
 
   context 'without parameters, GET #index' do
     it 'returns chemicals as a collection' do
-      get :index, format: :json
+      get '/uk/api/chemicals.json', headers: request_headers(format: :json)
 
       expect(response.body).to match_json_expression api_short_object_pattern
     end
@@ -151,7 +151,7 @@ RSpec.describe Api::V2::ChemicalsController, type: :request do
 
   context 'with the `:id` (i.e., CAS number) parameter, GET #show' do
     it 'returns one record' do
-      get :show, params: { id: chemical1.cas }, format: :json
+      get "/uk/api/chemicals/#{chemical1.cas}.json", headers: request_headers(format: :json)
 
       expect(response.body).to match_json_expression api_long_object_pattern
     end
@@ -159,7 +159,7 @@ RSpec.describe Api::V2::ChemicalsController, type: :request do
 
   context 'with the `:cas` (i.e., CAS number) parameter, GET #search' do
     it 'returns all matching records (which should normally be one record), as a collection' do
-      get :search, params: { cas: chemical1.cas }, format: :json
+      get '/uk/api/chemicals/search.json', params: { cas: chemical1.cas }, headers: request_headers(format: :json)
 
       expect(response.body).to match_json_expression search_long_collection_pattern
     end
@@ -167,7 +167,7 @@ RSpec.describe Api::V2::ChemicalsController, type: :request do
 
   context 'with the `:name` (i.e., partial chemical name) parameter, GET #search' do
     it 'returns all matching records as a collection' do
-      get :search, params: { name: chemical1.name[1..5] }, format: :json
+      get '/uk/api/chemicals/search.json', params: { name: chemical1.name[1..5] }, headers: request_headers(format: :json)
 
       expect(response.body).to match_json_expression search_long_collection_pattern
     end
@@ -177,7 +177,7 @@ RSpec.describe Api::V2::ChemicalsController, type: :request do
 
   context 'with an invalid `:id` parameter, GET #show' do
     it 'returns 404' do
-      get :show, params: { id: 'FOOBAR' }, format: :json
+      get '/uk/api/chemicals/FOOBAR.json', headers: request_headers(format: :json)
 
       expect(response.code.to_i).to eq 404
     end
@@ -185,7 +185,7 @@ RSpec.describe Api::V2::ChemicalsController, type: :request do
 
   context 'with an invalid `:cas` parameter, GET #search' do
     it 'returns 404' do
-      get :search, params: { cas: 'FOOBAR' }, format: :json
+      get '/uk/api/chemicals/search.json', params: { cas: 'FOOBAR' }, headers: request_headers(format: :json)
 
       expect(response.code.to_i).to eq 404
     end
@@ -193,7 +193,7 @@ RSpec.describe Api::V2::ChemicalsController, type: :request do
 
   context 'with an invalid `:name` parameter, GET #search' do
     it 'returns 404' do
-      get :search, params: { name: 'FOOBAR' }, format: :json
+      get '/uk/api/chemicals/search.json', params: { name: 'FOOBAR' }, headers: request_headers(format: :json)
 
       expect(response.code.to_i).to eq 404
     end

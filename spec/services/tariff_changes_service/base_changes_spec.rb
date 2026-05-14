@@ -1,4 +1,4 @@
-DummyRecord = Struct.new(
+DummyRecord = Data.define(
   :goods_nomenclature_sid,
   :goods_nomenclature_item_id,
   :operation,
@@ -9,8 +9,27 @@ DummyRecord = Struct.new(
   :oid,
   :field1,
   :field2,
-  keyword_init: true,
 ) do
+  class << self
+    alias_method :strict_new, :new
+
+    def new(goods_nomenclature_sid: nil, goods_nomenclature_item_id: nil, operation: nil, record_values: nil,
+            previous_record: nil, validity_start_date: nil, validity_end_date: nil, oid: nil, field1: nil, field2: nil)
+      strict_new(
+        goods_nomenclature_sid:,
+        goods_nomenclature_item_id:,
+        operation:,
+        record_values:,
+        previous_record:,
+        validity_start_date:,
+        validity_end_date:,
+        oid:,
+        field1:,
+        field2:,
+      )
+    end
+  end
+
   def values
     record_values || {}
   end
@@ -145,9 +164,10 @@ RSpec.describe TariffChangesService::BaseChanges do
     let(:instance) { described_class.new(record, date) }
 
     context 'when validity_start_date changed and is present' do
+      let(:record) { DummyRecord.new(validity_start_date: date) }
+
       before do
         instance.changes = %w[validity_start_date]
-        allow(record).to receive(:validity_start_date).and_return(date)
       end
 
       it 'returns the validity_start_date' do
@@ -157,10 +177,10 @@ RSpec.describe TariffChangesService::BaseChanges do
 
     context 'when validity_end_date changed and is present' do
       let(:end_date) { Date.new(2025, 2, 1) }
+      let(:record) { DummyRecord.new(validity_end_date: end_date) }
 
       before do
         instance.changes = %w[validity_end_date]
-        allow(record).to receive(:validity_end_date).and_return(end_date)
       end
 
       it 'returns validity_end_date plus one day' do

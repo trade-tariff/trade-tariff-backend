@@ -6,8 +6,7 @@ RSpec.describe Api::Admin::DownloadsController do
 
     context 'when download is valid' do
       before do
-        request.headers['X-Whodunnit'] = 'test-user-uid'
-        post :create
+        post '/uk/admin/downloads', headers: request_headers({ 'X-Whodunnit' => 'test-user-uid' }), as: :json
       end
 
       it { expect(response.status).to eq 201 }
@@ -16,7 +15,7 @@ RSpec.describe Api::Admin::DownloadsController do
 
     context 'when download is not valid' do
       before do
-        post :create
+        post '/uk/admin/downloads', headers: request_headers, as: :json
       end
 
       let(:response_pattern) do

@@ -8,5 +8,11 @@ RSpec.describe Api::Admin::Headings::SearchReferencesController do
     let(:resource_query) do
       collection_query.merge(id: search_reference.id)
     end
+    let(:search_references_collection_path) do
+      "/uk/admin/headings/#{collection_query.fetch(:heading_id)}/search_references.json"
+    end
+    let(:search_reference_resource_path) do
+      "/uk/admin/headings/#{resource_query.fetch(:heading_id)}/search_references/#{resource_query.fetch(:id)}.json"
+    end
   end
 end

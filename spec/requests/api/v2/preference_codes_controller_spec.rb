@@ -1,6 +1,9 @@
 RSpec.describe Api::V2::PreferenceCodesController, :v2 do
   describe 'GET #index' do
-    subject(:rendered) { make_request && response }
+    subject(:api_response) do
+      make_request
+      response
+    end
 
     let(:make_request) { api_get api_preference_codes_path }
 
@@ -9,7 +12,10 @@ RSpec.describe Api::V2::PreferenceCodesController, :v2 do
 
   describe 'GET #show' do
     context 'when it finds a preference_code' do
-      subject(:rendered) { make_request && response }
+      subject(:api_response) do
+        make_request
+        response
+      end
 
       let(:preference_code) { PreferenceCode['100'] }
 
@@ -21,7 +27,10 @@ RSpec.describe Api::V2::PreferenceCodesController, :v2 do
     end
 
     context 'when preference code is not found' do
-      subject(:rendered) { make_request && response }
+      subject(:api_response) do
+        make_request
+        response
+      end
 
       let :make_request do
         get api_preference_code_path('foo')

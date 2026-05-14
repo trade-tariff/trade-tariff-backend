@@ -1,5 +1,12 @@
 RSpec.describe Api::ApiController, type: :request do
-  subject(:page_response) { api_get(testpath, headers:) && response }
+  subject(:api_response) do
+    make_request
+    response
+  end
+
+  let(:make_request) do
+    api_get(testpath, headers:)
+  end
 
   let(:chapter) { create :chapter, :with_section }
 
@@ -11,14 +18,17 @@ RSpec.describe Api::ApiController, type: :request do
     it { is_expected.to have_http_status :success }
 
     describe 'cache headers' do
-      subject { page_response.headers.to_h }
+      subject(:response_headers) { api_response.headers.to_h }
 
       before do
         allow(Rails.configuration.action_controller).to \
           receive(:perform_caching).and_return(true)
       end
 
-      let(:earlier_request) { api_get(testpath, headers:) && response }
+      let(:earlier_request) do
+        api_get(testpath, headers:)
+        response
+      end
 
       it { is_expected.to include 'etag' }
       it { is_expected.to include 'cache-control' => /public/i }
@@ -65,7 +75,7 @@ RSpec.describe Api::ApiController, type: :request do
       end
 
       context 'when request originates not from the frontend' do
-        subject { response.headers.to_h }
+        subject(:response_headers) { response.headers.to_h }
 
         before { api_get testpath, headers: }
 

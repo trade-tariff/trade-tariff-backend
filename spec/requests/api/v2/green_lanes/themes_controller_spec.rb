@@ -1,5 +1,8 @@
 RSpec.describe Api::V2::GreenLanes::ThemesController, :v2 do
-  subject(:page_response) { make_request && response }
+  subject(:api_response) do
+    make_request
+    response
+  end
 
   before { allow(TradeTariffBackend).to receive(:service).and_return 'xi' }
 

@@ -1,6 +1,13 @@
 RSpec.describe Api::V2::AdditionalCodesController, type: :request do
   describe 'GET #search' do
-    subject(:response) { get :search, params:, format: :json }
+    subject(:api_response) do
+      make_request
+      response
+    end
+
+    let(:make_request) do
+      get '/uk/api/additional_codes/search.json', params:, headers: request_headers(format: :json)
+    end
 
     let!(:additional_code) { create(:additional_code, :with_description) }
 
@@ -76,14 +83,14 @@ RSpec.describe Api::V2::AdditionalCodesController, type: :request do
       end
 
       it { is_expected.to have_http_status :ok }
-      it { expect(response.body).to match_json_expression pattern }
+      it { expect(api_response.body).to match_json_expression pattern }
     end
 
     context 'when searching by additional code description' do
       let(:params) { { description: additional_code.additional_code_description.description } }
 
       it { is_expected.to have_http_status :ok }
-      it { expect(response.body).to match_json_expression pattern }
+      it { expect(api_response.body).to match_json_expression pattern }
     end
 
     context 'when searching by additional code id, type and description' do
@@ -96,7 +103,7 @@ RSpec.describe Api::V2::AdditionalCodesController, type: :request do
       end
 
       it { is_expected.to have_http_status :ok }
-      it { expect(response.body).to match_json_expression pattern }
+      it { expect(api_response.body).to match_json_expression pattern }
     end
 
     context 'when searching by additional code type' do
@@ -115,7 +122,7 @@ RSpec.describe Api::V2::AdditionalCodesController, type: :request do
       end
 
       it { is_expected.to have_http_status :unprocessable_content }
-      it { expect(response.body).to match_json_expression pattern }
+      it { expect(api_response.body).to match_json_expression pattern }
     end
 
     context 'when searching by additional code id' do
@@ -134,7 +141,7 @@ RSpec.describe Api::V2::AdditionalCodesController, type: :request do
       end
 
       it { is_expected.to have_http_status :unprocessable_content }
-      it { expect(response.body).to match_json_expression pattern }
+      it { expect(api_response.body).to match_json_expression pattern }
     end
 
     context 'when searching with no params' do
@@ -153,13 +160,13 @@ RSpec.describe Api::V2::AdditionalCodesController, type: :request do
       end
 
       it { is_expected.to have_http_status :unprocessable_content }
-      it { expect(response.body).to match_json_expression pattern }
+      it { expect(api_response.body).to match_json_expression pattern }
     end
 
     context 'when searching for a non-existing additional code' do
       let(:params) { { code: 'non-existing', type: 'non-existing' } }
 
-      it { expect(response.body).to match_json_expression(data: [], included: []) }
+      it { expect(api_response.body).to match_json_expression(data: [], included: []) }
     end
   end
 end

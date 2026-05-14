@@ -1,12 +1,16 @@
 RSpec.describe Api::User::PublicUsersController do
-  subject(:api_response) { make_request && response }
-
-  before do
-    request.headers['Authorization'] = "Bearer #{token}"
+  subject(:api_response) do
+    make_request
+    response
   end
 
+  let(:request_header_overrides) { { 'Authorization' => "Bearer #{token}" } }
+
   describe 'GET #show' do
-    let(:make_request) { get :show }
+    let(:make_request) do
+      get '/uk/user/users', headers: request_headers
+      response
+    end
 
     context 'when token is invalid' do
       let(:token) { nil }
@@ -37,7 +41,7 @@ RSpec.describe Api::User::PublicUsersController do
 
       it 'does not create a user' do
         expect {
-          get :show
+          get '/uk/user/users', headers: request_headers
         }.not_to change(PublicUsers::User, :count)
       end
 
@@ -60,7 +64,7 @@ RSpec.describe Api::User::PublicUsersController do
 
       it 'creates a user' do
         expect {
-          get :show
+          get '/uk/user/users', headers: request_headers
         }.to change(PublicUsers::User, :count).by 1
       end
 
@@ -84,7 +88,7 @@ RSpec.describe Api::User::PublicUsersController do
 
       it 'creates a user' do
         expect {
-          get :show
+          get '/uk/user/users', headers: request_headers
         }.to change(PublicUsers::User, :count).by 1
       end
 
@@ -105,7 +109,7 @@ RSpec.describe Api::User::PublicUsersController do
         allow(Api::User::DummyUserService).to receive(:find_or_create).and_call_original
 
         expect {
-          get :show
+          get '/uk/user/users', headers: request_headers
         }.to change(PublicUsers::User, :count).by(1)
 
         expect(Api::User::DummyUserService).to have_received(:find_or_create)
@@ -122,7 +126,10 @@ RSpec.describe Api::User::PublicUsersController do
   describe 'PATCH #update' do
     context 'when token is invalid' do
       let(:token) { nil }
-      let(:make_request) { patch :update, params: { data: { attributes: { chapter_ids: '12,13,14' } } } }
+      let(:make_request) do
+        patch '/uk/user/users', params: { data: { attributes: { chapter_ids: '12,13,14' } } }, headers: request_headers, as: :json
+        response
+      end
       let(:verify_result) { CognitoTokenVerifier::Result.new(valid: false, payload: nil, reason: :missing_token) }
 
       before do
@@ -134,7 +141,10 @@ RSpec.describe Api::User::PublicUsersController do
 
     context 'when chapter_ids are being updated' do
       let!(:user) { create(:public_user) }
-      let(:make_request) { patch :update, params: { data: { attributes: { chapter_ids: '12,13,14' } } } }
+      let(:make_request) do
+        patch '/uk/user/users', params: { data: { attributes: { chapter_ids: '12,13,14' } } }, headers: request_headers, as: :json
+        response
+      end
 
       let(:token) do
         {
@@ -161,7 +171,10 @@ RSpec.describe Api::User::PublicUsersController do
       it { is_expected.to have_http_status :ok }
 
       context 'with invalid params' do
-        let(:make_request) { patch :update, params: { data: { attributes: { chapter_ids: '123' } } } }
+        let(:make_request) do
+          patch '/uk/user/users', params: { data: { attributes: { chapter_ids: '123' } } }, headers: request_headers, as: :json
+          response
+        end
 
         it 'returns errors for user' do
           expected = {

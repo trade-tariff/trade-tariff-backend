@@ -1,16 +1,21 @@
 RSpec.describe Api::V2::MeasureTypesController, type: :request do
   describe '#index' do
-    subject(:do_request) { get :index }
+    subject(:api_response) do
+      make_request
+      response
+    end
+
+    let(:make_request) do
+      get '/uk/api/measure_types', headers: request_headers
+    end
+    let(:json_body) { JSON.parse(api_response.body)['data'] }
+    let(:validity_end_date) { nil }
 
     before do
       create(:measure_type, :with_measure_type_series_description, validity_end_date:)
 
       allow(TimeMachine).to receive(:at).and_call_original
     end
-
-    let(:json_body) { JSON.parse(do_request.body)['data'] }
-
-    let(:validity_end_date) { nil }
 
     it { is_expected.to have_http_status(:success) }
 
@@ -27,7 +32,14 @@ RSpec.describe Api::V2::MeasureTypesController, type: :request do
 
   describe 'GET #show' do
     context 'when records are present' do
-      subject(:do_request) { get :show, params: { id: measure_type.id, format: :json } }
+      subject(:api_response) do
+        make_request
+        response
+      end
+
+      let(:make_request) do
+        get "/uk/api/measure_types/#{measure_type.id}.json", headers: request_headers(format: :json)
+      end
 
       let(:pattern) do
         {
@@ -45,22 +57,29 @@ RSpec.describe Api::V2::MeasureTypesController, type: :request do
 
       let(:measure_type) { create(:measure_type, :with_measure_type_series_description) }
 
-      it { expect(do_request.body).to match_json_expression pattern }
+      it { expect(api_response.body).to match_json_expression pattern }
 
       it { is_expected.to have_http_status :success }
     end
 
     context 'when records are not present' do
-      subject(:do_request) { get :show, params: { id: 'foo', format: :json } }
+      subject(:api_response) do
+        make_request
+        response
+      end
+
+      let(:make_request) do
+        get '/uk/api/measure_types/foo.json', headers: request_headers(format: :json)
+      end
 
       let(:pattern) do
         {
           error: 'not found',
-          url: 'http://www.example.com/uk/api/measure_types/foo',
+          url: 'http://www.example.com/uk/api/measure_types/foo.json',
         }
       end
 
-      it { expect(do_request.body).to match_json_expression pattern }
+      it { expect(api_response.body).to match_json_expression pattern }
 
       it { is_expected.to have_http_status :not_found }
     end

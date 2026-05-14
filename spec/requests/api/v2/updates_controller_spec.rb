@@ -18,10 +18,10 @@ RSpec.describe Api::V2::UpdatesController do
     end
 
     context 'when records are present' do
-      it 'returns rendered records' do
+      it 'returns api_response records' do
         create :taric_update, :applied
 
-        get :latest, format: :json
+        get '/uk/api/updates/latest.json', headers: request_headers(format: :json)
 
         expect(response.body).to match_json_expression pattern
       end
@@ -29,7 +29,7 @@ RSpec.describe Api::V2::UpdatesController do
 
     context 'when records are not present' do
       it 'returns blank array' do
-        get :latest, format: :json
+        get '/uk/api/updates/latest.json', headers: request_headers(format: :json)
 
         expect(
           JSON.parse(response.body)['data'],

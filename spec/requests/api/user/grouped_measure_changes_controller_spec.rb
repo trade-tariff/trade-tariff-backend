@@ -22,7 +22,7 @@ RSpec.describe Api::User::GroupedMeasureChangesController do
     let(:expected_response) { [grouped_measure_change] }
 
     context 'when authenticated' do
-      before { get :index }
+      before { get '/uk/user/grouped_measure_changes', headers: request_headers }
 
       it 'returns a successful response' do
         expect(response).to have_http_status(:ok)
@@ -57,9 +57,10 @@ RSpec.describe Api::User::GroupedMeasureChangesController do
     end
 
     context 'when not authenticated' do
+      let(:request_header_overrides) { {} }
+
       before do
-        request.headers['Authorization'] = nil
-        get :index
+        get '/uk/user/grouped_measure_changes', headers: request_headers
       end
 
       it 'returns unauthorized status' do
@@ -74,7 +75,7 @@ RSpec.describe Api::User::GroupedMeasureChangesController do
     context 'when authentication fails' do
       before do
         allow(Api::User::UserService).to receive(:find_or_create).and_return(nil)
-        get :index
+        get '/uk/user/grouped_measure_changes', headers: request_headers
       end
 
       it 'returns unauthorized status' do
@@ -91,7 +92,7 @@ RSpec.describe Api::User::GroupedMeasureChangesController do
 
       before do
         allow(measure_changes_service).to receive(:call).and_return(expected_response)
-        get :index
+        get '/uk/user/grouped_measure_changes', headers: request_headers
       end
 
       it 'returns the service response serialized' do
@@ -105,14 +106,14 @@ RSpec.describe Api::User::GroupedMeasureChangesController do
       end
 
       it 'returns an internal server error' do
-        get :index
+        get '/uk/user/grouped_measure_changes', headers: request_headers
 
         expect(response).to have_http_status(:internal_server_error)
       end
     end
 
     context 'with pagination parameters' do
-      before { get :index, params: { page: 2, per_page: 10 } }
+      before { get '/uk/user/grouped_measure_changes', params: { page: 2, per_page: 10 }, headers: request_headers }
 
       it 'passes pagination parameters to the service' do
         expect(measure_changes_service).to have_received(:call).with(page: 2, per_page: 10)
@@ -124,7 +125,7 @@ RSpec.describe Api::User::GroupedMeasureChangesController do
     end
 
     context 'without pagination parameters' do
-      before { get :index }
+      before { get '/uk/user/grouped_measure_changes', headers: request_headers }
 
       it 'passes default pagination parameters to the service' do
         expect(measure_changes_service).to have_received(:call).with(page: 1, per_page: 20)
@@ -151,7 +152,7 @@ RSpec.describe Api::User::GroupedMeasureChangesController do
     let(:expected_response) { grouped_measure_change }
 
     context 'when authenticated and id is provided' do
-      before { get :show, params: { id: id } }
+      before { get "/uk/user/grouped_measure_changes/#{id}", headers: request_headers }
 
       it 'returns a successful response' do
         expect(response).to have_http_status(:ok)
@@ -185,7 +186,7 @@ RSpec.describe Api::User::GroupedMeasureChangesController do
     context 'when custom as_of date is provided' do
       let(:custom_date) { '2024-01-15' }
 
-      before { get :show, params: { id: id, as_of: custom_date } }
+      before { get "/uk/user/grouped_measure_changes/#{id}", params: { as_of: custom_date }, headers: request_headers }
 
       it 'calls the service with the custom as_of date' do
         expect(Api::User::GroupedMeasureChangesService).to have_received(:new).with(
@@ -197,9 +198,10 @@ RSpec.describe Api::User::GroupedMeasureChangesController do
     end
 
     context 'when not authenticated' do
+      let(:request_header_overrides) { {} }
+
       before do
-        request.headers['Authorization'] = nil
-        get :show, params: { id: id }
+        get "/uk/user/grouped_measure_changes/#{id}", headers: request_headers
       end
 
       it 'returns unauthorized status' do
@@ -217,14 +219,14 @@ RSpec.describe Api::User::GroupedMeasureChangesController do
       end
 
       it 'returns an internal server error' do
-        get :show, params: { id: id }
+        get "/uk/user/grouped_measure_changes/#{id}", headers: request_headers
 
         expect(response).to have_http_status(:internal_server_error)
       end
     end
 
     context 'with pagination parameters' do
-      before { get :show, params: { id: id, page: 3, per_page: 20 } }
+      before { get "/uk/user/grouped_measure_changes/#{id}", params: { page: 3, per_page: 20 }, headers: request_headers }
 
       it 'passes pagination parameters to the service' do
         expect(measure_changes_service).to have_received(:call).with(page: 3, per_page: 20)
@@ -236,7 +238,7 @@ RSpec.describe Api::User::GroupedMeasureChangesController do
     end
 
     context 'without pagination parameters' do
-      before { get :show, params: { id: id } }
+      before { get "/uk/user/grouped_measure_changes/#{id}", headers: request_headers }
 
       it 'passes default pagination parameters to the service' do
         expect(measure_changes_service).to have_received(:call).with(page: 1, per_page: 20)

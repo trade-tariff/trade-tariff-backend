@@ -1,5 +1,12 @@
 RSpec.describe Api::V2::NotificationsController, :v2 do
-  subject(:do_request) { post api_notifications_path, params: params, headers: headers, as: :json }
+  subject(:api_response) do
+    make_request
+    response
+  end
+
+  let(:make_request) do
+    post api_notifications_path, params: params, headers: headers, as: :json
+  end
 
   describe 'POST #create' do
     let(:params) do
@@ -26,13 +33,13 @@ RSpec.describe Api::V2::NotificationsController, :v2 do
 
     it 'stores the notification data in the cache and enqueues a job' do
       allow(NotificationsWorker).to receive(:perform_async)
-      do_request
+      api_response
       expect(NotificationsWorker).to have_received(:perform_async)
     end
 
     it 'stores the correct data in the cache' do
       allow(TradeTariffBackend.redis).to receive(:set).and_return('OK')
-      do_request
+      api_response
       expect(TradeTariffBackend.redis).to have_received(:set) do |key, value, **options|
         expect(key).to match(/^notification_/)
         expect(JSON.parse(value, symbolize_names: true)).to eq(params[:data][:attributes])
@@ -41,7 +48,7 @@ RSpec.describe Api::V2::NotificationsController, :v2 do
     end
 
     it 'returns a 202 Accepted response with the notification ID' do
-      do_request
+      api_response
       expect(response).to have_http_status(:accepted)
       response_data = JSON.parse(response.body)['data']
       expect(response_data['id']).to be_a_uuid
@@ -80,7 +87,7 @@ RSpec.describe Api::V2::NotificationsController, :v2 do
       end
 
       it 'returns a 422 Unprocessable Content response with validation errors' do
-        do_request
+        api_response
         expect(response).to have_http_status(:unprocessable_content)
         expect(JSON.parse(response.body)).to eq(expected_errors)
       end

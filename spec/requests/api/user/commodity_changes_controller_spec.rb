@@ -26,7 +26,7 @@ RSpec.describe Api::User::CommodityChangesController do
     it 'authenticates the user and calls the service' do
       allow(Api::User::CommodityChangesService).to receive(:new).with(user, nil, anything).and_return(service_instance)
       allow(service_instance).to receive(:call).and_return(changes)
-      get :index
+      get '/uk/user/commodity_changes', headers: request_headers
       expect(Api::User::CommodityChangesService).to have_received(:new).with(user, nil, anything)
       expect(service_instance).to have_received(:call)
       expect(response).to have_http_status(:ok)
@@ -36,14 +36,14 @@ RSpec.describe Api::User::CommodityChangesController do
   describe 'as_of param' do
     it 'uses param if present' do
       allow(Api::User::CommodityChangesService).to receive(:new).with(user, nil, Date.parse(as_of)).and_return(service_instance)
-      get :index, params: { as_of: }
+      get '/uk/user/commodity_changes', params: { as_of: }, headers: request_headers
       expect(Api::User::CommodityChangesService).to have_received(:new).with(user, nil, Date.parse(as_of))
       expect(response).to have_http_status(:ok)
     end
 
     it 'uses yesterday as date if param missing' do
       allow(Api::User::CommodityChangesService).to receive(:new).with(user, nil, Time.zone.yesterday).and_return(service_instance)
-      get :index
+      get '/uk/user/commodity_changes', headers: request_headers
       expect(Api::User::CommodityChangesService).to have_received(:new).with(user, nil, Time.zone.yesterday)
       expect(response).to have_http_status(:ok)
     end
@@ -58,7 +58,7 @@ RSpec.describe Api::User::CommodityChangesController do
 
     it 'authenticates the user and calls the service with id' do
       allow(Api::User::CommodityChangesService).to receive(:new).with(user, '1', anything).and_return(service_instance)
-      get :show, params: { id: '1' }
+      get '/uk/user/commodity_changes/1', headers: request_headers
       expect(Api::User::CommodityChangesService).to have_received(:new).with(user, '1', anything)
       expect(service_instance).to have_received(:call)
       expect(Api::User::CommodityChangesSerializer).to have_received(:new).with(changes, anything)
@@ -67,7 +67,7 @@ RSpec.describe Api::User::CommodityChangesController do
 
     it 'uses as_of param if present' do
       allow(Api::User::CommodityChangesService).to receive(:new).with(user, '2', Date.parse(as_of)).and_return(service_instance)
-      get :show, params: { id: '2', as_of: }
+      get '/uk/user/commodity_changes/2', params: { as_of: }, headers: request_headers
       expect(Api::User::CommodityChangesService).to have_received(:new).with(user, '2', Date.parse(as_of))
       expect(response).to have_http_status(:ok)
     end

@@ -4,10 +4,8 @@ RSpec.describe Api::Admin::CdsUpdateNotificationsController, :admin do
       let(:cds_update) { create(:cds_update) }
 
       it 'responds with success + redirect', :aggregate_failures do
-        request.headers['X-Whodunnit'] = 'test-user-uid'
-
         expect {
-          post :create, params: { data: { type: :cds_update_notification, attributes: { filename: cds_update.filename } } }
+          post '/uk/admin/cds_update_notifications', params: { data: { type: :cds_update_notification, attributes: { filename: cds_update.filename } } }, headers: request_headers({ 'X-Whodunnit' => 'test-user-uid' }), as: :json
         }.to change(CdsUpdateNotification, :count).by(1)
         expect(response.status).to eq 201
         expect(response.location).to eq api_cds_update_notifications_url
@@ -22,7 +20,7 @@ RSpec.describe Api::Admin::CdsUpdateNotificationsController, :admin do
       end
 
       it 'returns errors for cds_update_notification', :aggregate_failures do
-        post :create, params: { data: { type: :cds_update_notification, attributes: { name: nil } } }
+        post '/uk/admin/cds_update_notifications', params: { data: { type: :cds_update_notification, attributes: { name: nil } } }, headers: request_headers, as: :json
 
         expect(response.status).to eq 422
         expect(response.body).to match_json_expression response_pattern

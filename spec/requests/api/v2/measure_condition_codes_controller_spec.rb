@@ -1,8 +1,15 @@
 RSpec.describe Api::V2::MeasureConditionCodesController, type: :request do
   describe '#index' do
-    subject(:do_request) { get :index }
+    subject(:api_response) do
+      make_request
+      response
+    end
 
-    let(:json_body) { JSON.parse(do_request.body)['data'] }
+    let(:make_request) do
+      get '/uk/api/measure_condition_codes', headers: request_headers
+    end
+
+    let(:json_body) { JSON.parse(api_response.body)['data'] }
     let(:validity_end_date) { nil }
 
     before do

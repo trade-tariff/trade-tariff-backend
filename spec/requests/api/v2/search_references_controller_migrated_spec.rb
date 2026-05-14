@@ -43,7 +43,7 @@ RSpec.describe Api::V2::SearchReferencesController do
       end
 
       it 'performs lookup with provided letter' do
-        get :index, params: { query: { letter: 'b' } }, format: :json
+        get '/uk/api/search_references.json', params: { query: { letter: 'b' } }, headers: request_headers(format: :json)
 
         expect(response.body).to match_json_expression pattern
       end
@@ -51,7 +51,7 @@ RSpec.describe Api::V2::SearchReferencesController do
 
     context 'with no letter param provided' do
       it 'does not filter by letter' do
-        get :index, format: :json
+        get '/uk/api/search_references.json', headers: request_headers(format: :json)
 
         ref_count = JSON.parse(response.body)['data'].count
         expect(ref_count).to eq(3)

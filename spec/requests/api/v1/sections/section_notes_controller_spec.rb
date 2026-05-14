@@ -10,8 +10,8 @@ RSpec.describe Api::V1::Sections::SectionNotesController do
   context 'when section note is present' do
     let(:section) { create :section, :with_note }
 
-    it 'returns rendered record' do
-      get :show, params: { section_id: section.id }, format: :json
+    it 'returns api_response record' do
+      get "/uk/api/sections/#{section.id}/section_note.json", headers: request_headers(format: :json)
 
       expect(response.body).to match_json_expression pattern
     end
@@ -21,7 +21,7 @@ RSpec.describe Api::V1::Sections::SectionNotesController do
     let(:section) { create :section }
 
     it 'returns not found if record was not found' do
-      get :show, params: { section_id: section.id }, format: :json
+      get "/uk/api/sections/#{section.id}/section_note.json", headers: request_headers(format: :json)
 
       expect(response.status).to eq 404
     end

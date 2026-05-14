@@ -70,8 +70,8 @@ RSpec.describe Api::V2::SectionsController do
     end
 
     context 'when record is present' do
-      it 'returns rendered record' do
-        get :show, params: { id: section.position }, format: :json
+      it 'returns api_response record' do
+        get "/uk/api/sections/#{section.position}.json", headers: request_headers(format: :json)
 
         expect(response.body).to match_json_expression pattern
       end
@@ -79,7 +79,7 @@ RSpec.describe Api::V2::SectionsController do
 
     context 'when record is not present' do
       it 'returns not found if record was not found' do
-        get :show, params: { id: section.position + 1 }, format: :json
+        get "/uk/api/sections/#{section.position + 1}.json", headers: request_headers(format: :json)
 
         expect(response.status).to eq 404
       end
@@ -87,7 +87,7 @@ RSpec.describe Api::V2::SectionsController do
 
     context 'when id is not numeric' do
       it 'returns bad request' do
-        get :show, params: { id: 'VII' }, format: :json
+        get '/uk/api/sections/VII.json', headers: request_headers(format: :json)
 
         expect(response.status).to eq 400
       end
@@ -131,8 +131,8 @@ RSpec.describe Api::V2::SectionsController do
       }
     end
 
-    it 'returns rendered records' do
-      get :index, format: :json
+    it 'returns api_response records' do
+      get '/uk/api/sections.json', headers: request_headers(format: :json)
 
       expect(response.body).to match_json_expression pattern
     end

@@ -93,8 +93,8 @@ RSpec.describe Api::V2::ChaptersController do
     end
 
     context 'when record is present' do
-      it 'returns rendered record' do
-        get :show, params: { id: chapter }, format: :json
+      it 'returns api_response record' do
+        get "/uk/api/chapters/#{chapter.to_param}.json", headers: request_headers(format: :json)
         TradeTariffRequest.time_machine_now = Time.current
 
         expect(response.body).to match_json_expression pattern
@@ -104,7 +104,7 @@ RSpec.describe Api::V2::ChaptersController do
     context 'when record is not present' do
       it 'returns not found if record was not found' do
         id = chapter.goods_nomenclature_item_id.first(2).to_i + 1
-        get :show, params: { id: }, format: :json
+        get "/uk/api/chapters/#{id}.json", headers: request_headers(format: :json)
 
         expect(response.status).to eq 404
       end
@@ -116,7 +116,7 @@ RSpec.describe Api::V2::ChaptersController do
       end
 
       it 'returns not found' do
-        get :show, params: { id: chapter.goods_nomenclature_item_id.first(2) }, format: :json
+        get "/uk/api/chapters/#{chapter.goods_nomenclature_item_id.first(2)}.json", headers: request_headers(format: :json)
 
         expect(response.status).to eq 404
       end
@@ -152,8 +152,8 @@ RSpec.describe Api::V2::ChaptersController do
       }
     end
 
-    it 'returns rendered records' do
-      get :index, format: :json
+    it 'returns api_response records' do
+      get '/uk/api/chapters.json', headers: request_headers(format: :json)
 
       expect(response.body).to match_json_expression pattern
     end
@@ -290,7 +290,7 @@ RSpec.describe Api::V2::ChaptersController do
       end
 
       it 'returns chapter changes' do
-        get :changes, params: { id: chapter }, format: :json
+        get "/uk/api/chapters/#{chapter.to_param}/changes.json", headers: request_headers(format: :json)
 
         expect(response.body).to match_json_expression pattern
       end
@@ -319,7 +319,7 @@ RSpec.describe Api::V2::ChaptersController do
       end
 
       it 'does not include change records' do
-        get :changes, params: { id: chapter, as_of: Time.zone.yesterday }, format: :json
+        get "/uk/api/chapters/#{chapter.to_param}/changes.json", params: { as_of: Time.zone.yesterday }, headers: request_headers(format: :json)
 
         expect(response.body).to match_json_expression pattern
       end
@@ -475,7 +475,7 @@ RSpec.describe Api::V2::ChaptersController do
       before { measure.destroy }
 
       it 'renders record attributes' do
-        get :changes, params: { id: chapter }, format: :json
+        get "/uk/api/chapters/#{chapter.to_param}/changes.json", headers: request_headers(format: :json)
 
         expect(response.body).to match_json_expression pattern
       end

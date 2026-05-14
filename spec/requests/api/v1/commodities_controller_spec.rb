@@ -20,8 +20,8 @@ RSpec.describe Api::V1::CommoditiesController do
     end
 
     context 'when record is present' do
-      it 'returns rendered record' do
-        get :show, params: { id: commodity }, format: :json
+      it 'returns api_response record' do
+        get "/uk/api/commodities/#{commodity.to_param}.json", headers: request_headers(format: :json)
 
         expect(response.body).to match_json_expression pattern
       end
@@ -30,7 +30,7 @@ RSpec.describe Api::V1::CommoditiesController do
     context 'when record is not present' do
       it 'returns not found if record was not found' do
         id = commodity.goods_nomenclature_item_id.next
-        get :show, params: { id: }, format: :json
+        get "/uk/api/commodities/#{id}.json", headers: request_headers(format: :json)
 
         expect(response.status).to eq 404
       end
@@ -40,7 +40,7 @@ RSpec.describe Api::V1::CommoditiesController do
       before { create :hidden_goods_nomenclature, goods_nomenclature_item_id: commodity.goods_nomenclature_item_id }
 
       it 'returns not found' do
-        get :show, params: { id: commodity.goods_nomenclature_item_id }, format: :json
+        get "/uk/api/commodities/#{commodity.goods_nomenclature_item_id}.json", headers: request_headers(format: :json)
 
         expect(response.status).to eq 404
       end
@@ -68,7 +68,7 @@ RSpec.describe Api::V1::CommoditiesController do
       end
 
       it 'returns not found (is not declarable)' do
-        get :show, params: { id: parent_commodity.goods_nomenclature_item_id }, format: :json
+        get "/uk/api/commodities/#{parent_commodity.goods_nomenclature_item_id}.json", headers: request_headers(format: :json)
 
         expect(response.status).to eq 404
       end
@@ -103,7 +103,7 @@ RSpec.describe Api::V1::CommoditiesController do
       end
 
       it 'returns commodity changes' do
-        get :changes, params: { id: commodity }, format: :json
+        get "/uk/api/commodities/#{commodity.to_param}/changes.json", headers: request_headers(format: :json)
 
         expect(response.body).to match_json_expression pattern
       end
@@ -119,7 +119,7 @@ RSpec.describe Api::V1::CommoditiesController do
       end
 
       it 'does not include change records' do
-        get :changes, params: { id: commodity, as_of: Time.zone.yesterday }, format: :json
+        get "/uk/api/commodities/#{commodity.to_param}/changes.json", params: { as_of: Time.zone.yesterday }, headers: request_headers(format: :json)
 
         expect(response.body).to match_json_expression []
       end
@@ -173,7 +173,7 @@ RSpec.describe Api::V1::CommoditiesController do
       before { measure.destroy }
 
       it 'renders record attributes' do
-        get :changes, params: { id: commodity }, format: :json
+        get "/uk/api/commodities/#{commodity.to_param}/changes.json", headers: request_headers(format: :json)
 
         expect(response.body).to match_json_expression pattern
       end

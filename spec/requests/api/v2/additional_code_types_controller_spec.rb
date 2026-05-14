@@ -18,7 +18,7 @@ RSpec.describe Api::V2::AdditionalCodeTypesController, type: :request do
     it 'returns all additional code types' do
       create(:additional_code_type, :with_description)
 
-      get :index, format: :json
+      get '/uk/api/additional_code_types.json', headers: request_headers(format: :json)
 
       expect(response.body).to match_json_expression pattern
     end

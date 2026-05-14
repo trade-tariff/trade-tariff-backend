@@ -184,8 +184,8 @@ RSpec.describe Api::V2::QuotasController, type: :request do
         }
       end
 
-      it 'returns rendered found quotas' do
-        get :search, params:, format: :json
+      it 'returns api_response found quotas' do
+        get '/uk/api/quotas/search.json', params: params, headers: request_headers(format: :json)
 
         expect(response.body).to match_json_expression pattern
       end
@@ -193,7 +193,7 @@ RSpec.describe Api::V2::QuotasController, type: :request do
       it 'does not request eager loading full quota balance events' do
         allow(QuotaSearchService).to receive(:new).and_call_original
 
-        get :search, params:, format: :json
+        get '/uk/api/quotas/search.json', params: params, headers: request_headers(format: :json)
 
         expect(QuotaSearchService).to have_received(:new).with(
           anything,
@@ -282,8 +282,8 @@ RSpec.describe Api::V2::QuotasController, type: :request do
       context 'when included resources are valid' do
         let(:include_param) { 'quota_balance_events' }
 
-        it 'returns rendered found quotas with the allowed resources' do
-          get :search, params:, format: :json
+        it 'returns api_response found quotas with the allowed resources' do
+          get '/uk/api/quotas/search.json', params: params, headers: request_headers(format: :json)
 
           expect(response.body).to match_json_expression pattern
         end
@@ -291,7 +291,7 @@ RSpec.describe Api::V2::QuotasController, type: :request do
         it 'requests eager loading full quota balance events' do
           allow(QuotaSearchService).to receive(:new).and_call_original
 
-          get :search, params:, format: :json
+          get '/uk/api/quotas/search.json', params: params, headers: request_headers(format: :json)
 
           expect(QuotaSearchService).to have_received(:new).with(
             anything,
@@ -307,7 +307,7 @@ RSpec.describe Api::V2::QuotasController, type: :request do
         let(:include_param) { 'wrong_resource' }
 
         it 'returns 400' do
-          get :search, params:, format: :json
+          get '/uk/api/quotas/search.json', params: params, headers: request_headers(format: :json)
 
           expect(response).to have_http_status(:bad_request)
         end
@@ -318,7 +318,7 @@ RSpec.describe Api::V2::QuotasController, type: :request do
       let(:params) { { year: [Time.zone.today.year.to_s], order_number: '0500' } }
 
       it 'returns 400' do
-        get :search, params:, format: :json
+        get '/uk/api/quotas/search.json', params: params, headers: request_headers(format: :json)
 
         expect(response).to have_http_status(:bad_request)
       end

@@ -15,10 +15,23 @@ RSpec.describe Api::Admin::Commodities::SearchReferencesController do
     let(:to_param) do
       search_reference_parent.to_admin_param
     end
+    let(:search_references_collection_path) do
+      "/uk/admin/commodities/#{to_param}/search_references.json"
+    end
+    let(:search_reference_resource_path) do
+      "/uk/admin/commodities/#{to_param}/search_references/#{resource_query.fetch(:id)}.json"
+    end
   end
 
   describe 'POST to #create' do
-    subject(:do_post) { post :create, params: }
+    subject(:api_response) do
+      make_request
+      response
+    end
+
+    let(:make_request) do
+      post "/uk/admin/commodities/#{params.fetch(:admin_commodity_id)}/search_references", params: params.except(:admin_commodity_id), headers: request_headers, as: :json
+    end
 
     let(:referenced) { create(:commodity, :with_heading, goods_nomenclature_item_id: '0101110000', producline_suffix: '80') }
 
@@ -31,10 +44,10 @@ RSpec.describe Api::Admin::Commodities::SearchReferencesController do
       end
 
       it { is_expected.to have_http_status(:created) }
-      it { expect { do_post }.to change(SearchReference, :count).by(1) }
+      it { expect { api_response }.to change(SearchReference, :count).by(1) }
 
       it 'creates a search reference with the correct attributes' do
-        do_post
+        api_response
 
         expect(SearchReference.last).to have_attributes(
           referenced_class: 'Commodity',
@@ -54,7 +67,7 @@ RSpec.describe Api::Admin::Commodities::SearchReferencesController do
       end
 
       it { is_expected.to have_http_status(:not_found) }
-      it { expect { do_post }.not_to change(SearchReference, :count) }
+      it { expect { api_response }.not_to change(SearchReference, :count) }
     end
 
     context 'when not passing a productline suffix' do
@@ -66,10 +79,10 @@ RSpec.describe Api::Admin::Commodities::SearchReferencesController do
       end
 
       it { is_expected.to have_http_status(:created) }
-      it { expect { do_post }.to change(SearchReference, :count).by(1) }
+      it { expect { api_response }.to change(SearchReference, :count).by(1) }
 
       it 'creates a search reference with the correct attributes' do
-        do_post
+        api_response
 
         expect(SearchReference.last).to have_attributes(
           referenced_class: 'Commodity',
@@ -91,10 +104,10 @@ RSpec.describe Api::Admin::Commodities::SearchReferencesController do
       end
 
       it { is_expected.to have_http_status(:created) }
-      it { expect { do_post }.to change(SearchReference, :count).by(1) }
+      it { expect { api_response }.to change(SearchReference, :count).by(1) }
 
       it 'creates a search reference with the correct attributes' do
-        do_post
+        api_response
 
         expect(SearchReference.last).to have_attributes(
           referenced_class: 'Subheading',

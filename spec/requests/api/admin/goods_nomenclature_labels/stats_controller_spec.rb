@@ -20,7 +20,7 @@ RSpec.describe Api::Admin::GoodsNomenclatureLabels::StatsController do
     end
 
     it 'returns stats in JSONAPI format' do
-      get :show, format: :json
+      get '/uk/admin/goods_nomenclature_labels/stats.json', headers: request_headers(format: :json)
 
       expect(response).to have_http_status(:ok)
       expect(response.body).to match_json_expression(pattern)
@@ -41,7 +41,7 @@ RSpec.describe Api::Admin::GoodsNomenclatureLabels::StatsController do
       end
 
       it 'returns correct counts' do
-        get :show, format: :json
+        get '/uk/admin/goods_nomenclature_labels/stats.json', headers: request_headers(format: :json)
 
         json = JSON.parse(response.body)
         attributes = json.dig('data', 'attributes')

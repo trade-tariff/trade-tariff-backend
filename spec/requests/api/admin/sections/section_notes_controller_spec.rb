@@ -16,8 +16,8 @@ RSpec.describe Api::Admin::Sections::SectionNotesController do
     context 'when section note is present' do
       let(:section) { create :section, :with_note }
 
-      it 'returns rendered record' do
-        get :show, params: { section_id: section.id }, format: :json
+      it 'returns api_response record' do
+        get "/uk/admin/sections/#{section.id}/section_note.json", headers: request_headers(format: :json)
 
         expect(response.body).to match_json_expression pattern
       end
@@ -27,7 +27,7 @@ RSpec.describe Api::Admin::Sections::SectionNotesController do
       let(:section) { create :section }
 
       it 'returns not found if record was not found' do
-        get :show, params: { section_id: section.id }, format: :json
+        get "/uk/admin/sections/#{section.id}/section_note.json", headers: request_headers(format: :json)
 
         expect(response.status).to eq 404
       end
@@ -39,7 +39,7 @@ RSpec.describe Api::Admin::Sections::SectionNotesController do
 
     context 'when save succeeded' do
       before do
-        post :create, params: { section_id: section.id, data: { type: 'section_note', attributes: { content: 'test string' } } }, format: :json
+        post "/uk/admin/sections/#{section.id}/section_note.json", params: { data: { type: 'section_note', attributes: { content: 'test string' } } }, headers: request_headers(format: :json), as: :json
       end
 
       it 'responds with success' do
@@ -68,7 +68,7 @@ RSpec.describe Api::Admin::Sections::SectionNotesController do
 
     context 'when save fails' do
       before do
-        post :create, params: { section_id: section.id, data: { type: 'section_note', attributes: { content: '' } } }, format: :json
+        post "/uk/admin/sections/#{section.id}/section_note.json", params: { data: { type: 'section_note', attributes: { content: '' } } }, headers: request_headers(format: :json), as: :json
       end
 
       it 'responds with 422' do
@@ -94,27 +94,27 @@ RSpec.describe Api::Admin::Sections::SectionNotesController do
 
     context 'when save succeeded' do
       it 'responds with success' do
-        put :update, params: { section_id: section.id, data: { type: 'section_note', attributes: { content: 'test string' } } }, format: :json
+        put "/uk/admin/sections/#{section.id}/section_note.json", params: { data: { type: 'section_note', attributes: { content: 'test string' } } }, headers: request_headers(format: :json), as: :json
 
         expect(response.status).to eq 200
       end
 
       it 'changes section_note content' do
         expect {
-          put :update, params: { section_id: section.id, data: { type: 'section_note', attributes: { content: 'test string' } } }, format: :json
+          put "/uk/admin/sections/#{section.id}/section_note.json", params: { data: { type: 'section_note', attributes: { content: 'test string' } } }, headers: request_headers(format: :json), as: :json
         }.to(change { section.reload.section_note.content })
       end
     end
 
     context 'when save fails' do
       it 'responds with 422 not acceptable' do
-        put :update, params: { section_id: section.id, data: { type: 'section_note', attributes: { content: '' } } }, format: :json
+        put "/uk/admin/sections/#{section.id}/section_note.json", params: { data: { type: 'section_note', attributes: { content: '' } } }, headers: request_headers(format: :json), as: :json
 
         expect(response.status).to eq 422
       end
 
       it 'returns section_note validation errors' do
-        put :update, params: { section_id: section.id, data: { type: 'section_note', attributes: { content: '' } } }, format: :json
+        put "/uk/admin/sections/#{section.id}/section_note.json", params: { data: { type: 'section_note', attributes: { content: '' } } }, headers: request_headers(format: :json), as: :json
 
         pattern = {
           errors: [Hash],
@@ -125,7 +125,7 @@ RSpec.describe Api::Admin::Sections::SectionNotesController do
 
       it 'does not change section_note content' do
         expect {
-          put :update, params: { section_id: section.id, section_note: { content: '' } }, format: :json
+          put "/uk/admin/sections/#{section.id}/section_note.json", params: { section_note: { content: '' } }, headers: request_headers(format: :json), as: :json
         }.not_to(change { section.reload.section_note.content })
       end
     end
@@ -136,14 +136,14 @@ RSpec.describe Api::Admin::Sections::SectionNotesController do
       let(:section) { create :section, :with_note }
 
       it 'responds with success (204 no content)' do
-        delete :destroy, params: { section_id: section.id }, format: :json
+        delete "/uk/admin/sections/#{section.id}/section_note.json", headers: request_headers(format: :json), as: :json
 
         expect(response.status).to eq 204
       end
 
       it 'deletes section note' do
         expect {
-          delete :destroy, params: { section_id: section.id }, format: :json
+          delete "/uk/admin/sections/#{section.id}/section_note.json", headers: request_headers(format: :json), as: :json
         }.to(change { section.reload.section_note })
       end
     end
@@ -152,7 +152,7 @@ RSpec.describe Api::Admin::Sections::SectionNotesController do
       let(:section) { create :section }
 
       it 'responds with 404 not found' do
-        delete :destroy, params: { section_id: section.id }, format: :json
+        delete "/uk/admin/sections/#{section.id}/section_note.json", headers: request_headers(format: :json), as: :json
 
         expect(response.status).to eq 404
       end

@@ -17,8 +17,8 @@ RSpec.describe Api::Admin::Chapters::ChapterNotesController do
     context 'when chapter note is present' do
       let(:chapter) { create :chapter, :with_note }
 
-      it 'returns rendered record' do
-        get :show, params: { chapter_id: chapter.to_param }, format: :json
+      it 'returns api_response record' do
+        get "/uk/admin/chapters/#{chapter.to_param}/chapter_note.json", headers: request_headers(format: :json)
 
         expect(response.body).to match_json_expression pattern
       end
@@ -28,7 +28,7 @@ RSpec.describe Api::Admin::Chapters::ChapterNotesController do
       let(:chapter) { create :chapter }
 
       it 'returns not found if record was not found' do
-        get :show, params: { chapter_id: chapter.to_param }, format: :json
+        get "/uk/admin/chapters/#{chapter.to_param}/chapter_note.json", headers: request_headers(format: :json)
 
         expect(response.status).to eq 404
       end
@@ -40,7 +40,7 @@ RSpec.describe Api::Admin::Chapters::ChapterNotesController do
 
     context 'when save succeeded' do
       before do
-        post :create, params: { chapter_id: chapter.to_param, data: { type: 'chapter_note', attributes: { content: 'test string' } } }, format: :json
+        post "/uk/admin/chapters/#{chapter.to_param}/chapter_note.json", params: { data: { type: 'chapter_note', attributes: { content: 'test string' } } }, headers: request_headers(format: :json), as: :json
       end
 
       it 'responds with success' do
@@ -70,7 +70,7 @@ RSpec.describe Api::Admin::Chapters::ChapterNotesController do
 
     context 'when save failed' do
       before do
-        post :create, params: { chapter_id: chapter.to_param, data: { type: 'chapter_note', attributes: { content: '' } } }, format: :json
+        post "/uk/admin/chapters/#{chapter.to_param}/chapter_note.json", params: { data: { type: 'chapter_note', attributes: { content: '' } } }, headers: request_headers(format: :json), as: :json
       end
 
       it 'responds with 422' do
@@ -96,27 +96,27 @@ RSpec.describe Api::Admin::Chapters::ChapterNotesController do
 
     context 'when save succeeded' do
       it 'responds with success' do
-        put :update, params: { chapter_id: chapter.to_param, data: { type: 'chapter_note', attributes: { content: 'test string' } } }, format: :json
+        put "/uk/admin/chapters/#{chapter.to_param}/chapter_note.json", params: { data: { type: 'chapter_note', attributes: { content: 'test string' } } }, headers: request_headers(format: :json), as: :json
 
         expect(response.status).to eq 200
       end
 
       it 'changes chapter_note content' do
         expect {
-          put :update, params: { chapter_id: chapter.to_param, data: { type: 'chapter_note', attributes: { content: 'test string' } } }, format: :json
+          put "/uk/admin/chapters/#{chapter.to_param}/chapter_note.json", params: { data: { type: 'chapter_note', attributes: { content: 'test string' } } }, headers: request_headers(format: :json), as: :json
         }.to(change { chapter.reload.chapter_note.content })
       end
     end
 
     context 'when save failed' do
       it 'responds with 422 not acceptable' do
-        put :update, params: { chapter_id: chapter.to_param, data: { type: 'chapter_note', attributes: { content: '' } } }, format: :json
+        put "/uk/admin/chapters/#{chapter.to_param}/chapter_note.json", params: { data: { type: 'chapter_note', attributes: { content: '' } } }, headers: request_headers(format: :json), as: :json
 
         expect(response.status).to eq 422
       end
 
       it 'returns chapter_note validation errors' do
-        put :update, params: { chapter_id: chapter.to_param, data: { type: 'chapter_note', attributes: { content: '' } } }, format: :json
+        put "/uk/admin/chapters/#{chapter.to_param}/chapter_note.json", params: { data: { type: 'chapter_note', attributes: { content: '' } } }, headers: request_headers(format: :json), as: :json
 
         pattern = {
           errors: [Hash],
@@ -127,7 +127,7 @@ RSpec.describe Api::Admin::Chapters::ChapterNotesController do
 
       it 'does not change chapter_note content' do
         expect {
-          put :update, params: { chapter_id: chapter.to_param, data: { type: 'chapter_note', attributes: { content: '' } } }, format: :json
+          put "/uk/admin/chapters/#{chapter.to_param}/chapter_note.json", params: { data: { type: 'chapter_note', attributes: { content: '' } } }, headers: request_headers(format: :json), as: :json
         }.not_to(change { chapter.reload.chapter_note.content })
       end
     end
@@ -138,14 +138,14 @@ RSpec.describe Api::Admin::Chapters::ChapterNotesController do
       let(:chapter) { create :chapter, :with_note }
 
       it 'responds with success (204 no content)' do
-        delete :destroy, params: { chapter_id: chapter.to_param }, format: :json
+        delete "/uk/admin/chapters/#{chapter.to_param}/chapter_note.json", headers: request_headers(format: :json), as: :json
 
         expect(response.status).to eq 204
       end
 
       it 'deletes chapter note' do
         expect {
-          delete :destroy, params: { chapter_id: chapter.to_param }, format: :json
+          delete "/uk/admin/chapters/#{chapter.to_param}/chapter_note.json", headers: request_headers(format: :json), as: :json
         }.to(change { chapter.reload.chapter_note })
       end
     end
@@ -154,7 +154,7 @@ RSpec.describe Api::Admin::Chapters::ChapterNotesController do
       let(:chapter) { create :chapter }
 
       it 'responds with 404 not found' do
-        delete :destroy, params: { chapter_id: chapter.to_param }, format: :json
+        delete "/uk/admin/chapters/#{chapter.to_param}/chapter_note.json", headers: request_headers(format: :json), as: :json
 
         expect(response.status).to eq 404
       end

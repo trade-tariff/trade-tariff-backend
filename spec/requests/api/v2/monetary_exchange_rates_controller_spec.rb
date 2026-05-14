@@ -13,7 +13,7 @@ RSpec.describe Api::V2::MonetaryExchangeRatesController do
       let!(:five_year_old_rate) { create :monetary_exchange_rate, monetary_exchange_period_sid: five_year_old_period.monetary_exchange_period_sid }
 
       it 'returns exchange rates for the last 5 years only', :aggregate_failures do
-        get :index, format: :json
+        get '/uk/api/monetary_exchange_rates.json', headers: request_headers(format: :json)
 
         json_response = JSON.parse(response.body)['data']
         expect(json_response.length).to eq(2)
@@ -32,7 +32,7 @@ RSpec.describe Api::V2::MonetaryExchangeRatesController do
       let(:old_period) { create :monetary_exchange_period, :six_years_old }
 
       it "doesn't return either exchange rates" do
-        get :index, format: :json
+        get '/uk/api/monetary_exchange_rates.json', headers: request_headers(format: :json)
 
         json_response = JSON.parse(response.body)['data']
         expect(json_response.length).to eq(0)

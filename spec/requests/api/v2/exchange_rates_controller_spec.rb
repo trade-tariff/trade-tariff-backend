@@ -1,6 +1,9 @@
 RSpec.describe Api::V2::ExchangeRatesController, :v2 do
   describe 'GET #show' do
-    subject { make_request && response }
+    subject(:api_response) do
+      make_request
+      response
+    end
 
     let(:exchange_rate_collection) { build(:exchange_rates_collection, month: 6, year: 2023) }
 

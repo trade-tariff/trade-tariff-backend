@@ -1,5 +1,7 @@
 RSpec.describe Api::V2::GoodsNomenclaturesController do
-  subject { response }
+  subject(:api_response) do
+    response
+  end
 
   before { commodity }
 
@@ -10,8 +12,8 @@ RSpec.describe Api::V2::GoodsNomenclaturesController do
 
   context 'when GNs for a section are requested' do
     context 'with a correct short code' do
-      it 'returns rendered record of GNs in the section' do
-        get :show_by_section, params: { position: section.position }, format: :json
+      it 'returns api_response record of GNs in the section' do
+        get "/uk/api/goods_nomenclatures/section/#{section.position}.json", headers: request_headers(format: :json)
 
         expect(response_json.map { |gn| gn['id'] }).to eq \
           [commodity.chapter, commodity.heading, commodity]
@@ -21,15 +23,15 @@ RSpec.describe Api::V2::GoodsNomenclaturesController do
     end
 
     context 'with an incorrect short code' do
-      before { get :show_by_section, params: { position: '99' }, format: :json }
+      before { get '/uk/api/goods_nomenclatures/section/99.json', headers: request_headers(format: :json) }
 
       it { is_expected.to have_http_status :not_found }
     end
   end
 
   context 'when GNs for a section are requested as CSV' do
-    it 'returns rendered record of GNs in the section as CSV' do
-      get :show_by_section, params: { position: section.position }, format: :csv
+    it 'returns api_response record of GNs in the section as CSV' do
+      get "/uk/api/goods_nomenclatures/section/#{section.position}.csv", headers: request_headers(format: :csv)
 
       expect(response_rows.map(&:first)).to eq \
         %w[SID] + [commodity.chapter, commodity.heading, commodity]
@@ -39,9 +41,8 @@ RSpec.describe Api::V2::GoodsNomenclaturesController do
   end
 
   context 'when GNs for a chapter are requested' do
-    it 'returns rendered record of GNs in the chapter' do
-      get :show_by_chapter, params: { chapter_id: commodity.chapter.short_code },
-                            format: :json
+    it 'returns api_response record of GNs in the chapter' do
+      get "/uk/api/goods_nomenclatures/chapter/#{commodity.chapter.short_code}.json", headers: request_headers(format: :json)
 
       expect(response_json.map { |gn| gn['id'] }).to eq \
         [commodity.chapter, commodity.heading, commodity]
@@ -50,16 +51,15 @@ RSpec.describe Api::V2::GoodsNomenclaturesController do
     end
 
     context 'with an incorrect short code' do
-      before { get :show_by_chapter, params: { chapter_id: '99' }, format: :json }
+      before { get '/uk/api/goods_nomenclatures/chapter/99.json', headers: request_headers(format: :json) }
 
       it { is_expected.to have_http_status :not_found }
     end
   end
 
   context 'when GNs for a chapter are requested as CSV' do
-    it 'returns rendered record of GNs in the chapter as CSV' do
-      get :show_by_chapter, params: { chapter_id: commodity.chapter.short_code },
-                            format: :csv
+    it 'returns api_response record of GNs in the chapter as CSV' do
+      get "/uk/api/goods_nomenclatures/chapter/#{commodity.chapter.short_code}.csv", headers: request_headers(format: :csv)
 
       expect(response_rows.map(&:first)).to eq \
         %w[SID] + [commodity.chapter, commodity.heading, commodity]
@@ -70,9 +70,8 @@ RSpec.describe Api::V2::GoodsNomenclaturesController do
 
   context 'when GNs for a heading are requested' do
     context 'with a correct short code' do
-      it 'returns rendered record of GNs in the heading' do
-        get :show_by_heading, params: { heading_id: commodity.heading.short_code },
-                              format: :json
+      it 'returns api_response record of GNs in the heading' do
+        get "/uk/api/goods_nomenclatures/heading/#{commodity.heading.short_code}.json", headers: request_headers(format: :json)
 
         expect(response_json.map { |gn| gn['id'] }).to eq \
           [commodity.heading, commodity].map(&:goods_nomenclature_sid).map(&:to_s)
@@ -80,31 +79,29 @@ RSpec.describe Api::V2::GoodsNomenclaturesController do
     end
 
     context 'with an incorrect short code' do
-      before { get :show_by_heading, params: { heading_id: '9999' }, format: :json }
+      before { get '/uk/api/goods_nomenclatures/heading/9999.json', headers: request_headers(format: :json) }
 
       it { is_expected.to have_http_status :not_found }
     end
   end
 
   context 'when GNs for a id is requested' do
-    it 'returns rendered record of the GN' do
-      get :show, params: { id: commodity.goods_nomenclature_item_id },
-                 format: :json
+    it 'returns api_response record of the GN' do
+      get "/uk/api/goods_nomenclatures/#{commodity.goods_nomenclature_item_id}.json", headers: request_headers(format: :json)
 
       expect(response_json['id']).to eq commodity.goods_nomenclature_sid.to_s
     end
 
     context 'with an incorrect short code' do
-      before { get :show, params: { id: '9922' }, format: :json }
+      before { get '/uk/api/goods_nomenclatures/9922.json', headers: request_headers(format: :json) }
 
       it { is_expected.to have_http_status :not_found }
     end
   end
 
   context 'when GNs for a heading are requested as CSV' do
-    it 'returns rendered record of GNs in the heading as CSV' do
-      get :show_by_heading, params: { heading_id: commodity.heading.short_code },
-                            format: :csv
+    it 'returns api_response record of GNs in the heading as CSV' do
+      get "/uk/api/goods_nomenclatures/heading/#{commodity.heading.short_code}.csv", headers: request_headers(format: :csv)
 
       expect(response_rows.map(&:first)).to eq \
         %w[SID] + [commodity.heading, commodity].map(&:goods_nomenclature_sid)

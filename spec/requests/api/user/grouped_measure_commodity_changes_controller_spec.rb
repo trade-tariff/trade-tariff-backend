@@ -14,7 +14,7 @@ RSpec.describe Api::User::GroupedMeasureCommodityChangesController do
 
   describe '#show' do
     context 'when authenticated' do
-      before { get :show, params: { id: id } }
+      before { get "/uk/user/grouped_measure_commodity_changes/#{id}", headers: request_headers }
 
       it 'returns a successful response' do
         expect(response).to have_http_status(:ok)
@@ -49,7 +49,7 @@ RSpec.describe Api::User::GroupedMeasureCommodityChangesController do
     context 'when custom as_of date is provided' do
       let(:as_of) { '2024-01-15' }
 
-      before { get :show, params: { id: id, as_of: as_of } }
+      before { get "/uk/user/grouped_measure_commodity_changes/#{id}", params: { as_of: as_of }, headers: request_headers }
 
       it 'passes the custom date to the serializer' do
         expect(Api::User::GroupedMeasureCommodityChangeSerializer)
@@ -64,9 +64,10 @@ RSpec.describe Api::User::GroupedMeasureCommodityChangesController do
     end
 
     context 'when not authenticated' do
+      let(:request_header_overrides) { {} }
+
       before do
-        request.headers['Authorization'] = nil
-        get :show, params: { id: id }
+        get "/uk/user/grouped_measure_commodity_changes/#{id}", headers: request_headers
       end
 
       it 'returns unauthorized status' do

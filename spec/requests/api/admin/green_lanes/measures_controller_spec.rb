@@ -1,11 +1,14 @@
 RSpec.describe Api::Admin::GreenLanes::MeasuresController, :admin do
-  subject(:page_response) { make_request && response }
+  subject(:api_response) do
+    make_request
+    response
+  end
 
   before do
     allow(TradeTariffBackend).to receive(:service).and_return 'xi'
   end
 
-  let(:json_response) { JSON.parse(page_response.body) }
+  let(:json_response) { JSON.parse(api_response.body) }
   let(:measure) { create :green_lanes_measure }
 
   describe 'GET to #index' do
@@ -64,7 +67,7 @@ RSpec.describe Api::Admin::GreenLanes::MeasuresController, :admin do
       let(:measure_attrs) { build(:green_lanes_measure).to_hash }
 
       it { is_expected.to have_http_status :created }
-      it { expect { page_response }.to change(GreenLanes::Measure, :count).by(1) }
+      it { expect { api_response }.to change(GreenLanes::Measure, :count).by(1) }
     end
 
     context 'with invalid params' do
@@ -76,7 +79,7 @@ RSpec.describe Api::Admin::GreenLanes::MeasuresController, :admin do
         expect(json_response).to include('errors')
       end
 
-      it { expect { page_response }.not_to change(GreenLanes::Measure, :count) }
+      it { expect { api_response }.not_to change(GreenLanes::Measure, :count) }
     end
   end
 
@@ -97,7 +100,7 @@ RSpec.describe Api::Admin::GreenLanes::MeasuresController, :admin do
       let(:new_category_assessment_id) { new_category_assessment.id }
 
       it { is_expected.to have_http_status :success }
-      it { expect { page_response }.not_to change(measure.reload, :productline_suffix) }
+      it { expect { api_response }.not_to change(measure.reload, :productline_suffix) }
     end
 
     context 'with invalid params' do
@@ -116,7 +119,7 @@ RSpec.describe Api::Admin::GreenLanes::MeasuresController, :admin do
       let(:new_category_assessment_id) { new_category_assessment.id }
 
       it { is_expected.to have_http_status :not_found }
-      it { expect { page_response }.not_to change(measure.reload, :productline_suffix) }
+      it { expect { api_response }.not_to change(measure.reload, :productline_suffix) }
     end
   end
 
@@ -129,14 +132,14 @@ RSpec.describe Api::Admin::GreenLanes::MeasuresController, :admin do
       let(:id) { measure.id }
 
       it { is_expected.to have_http_status :no_content }
-      it { expect { page_response }.to change(measure, :exists?) }
+      it { expect { api_response }.to change(measure, :exists?) }
     end
 
     context 'with unknown measure' do
       let(:id) { 9999 }
 
       it { is_expected.to have_http_status :not_found }
-      it { expect { page_response }.not_to change(GreenLanes::Measure, :count) }
+      it { expect { api_response }.not_to change(GreenLanes::Measure, :count) }
     end
   end
 end

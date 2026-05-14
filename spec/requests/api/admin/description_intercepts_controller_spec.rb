@@ -30,7 +30,7 @@ RSpec.describe Api::Admin::DescriptionInterceptsController do
     end
 
     it 'returns all description intercepts' do
-      get :index, format: :json
+      get '/uk/admin/description_intercepts.json', headers: request_headers(format: :json)
 
       json = JSON.parse(response.body)
       expect(json['data'].length).to eq(2)
@@ -38,7 +38,7 @@ RSpec.describe Api::Admin::DescriptionInterceptsController do
     end
 
     it 'includes pagination meta' do
-      get :index, format: :json
+      get '/uk/admin/description_intercepts.json', headers: request_headers(format: :json)
 
       json = JSON.parse(response.body)
       expect(json.dig('meta', 'pagination')).to include(
@@ -49,7 +49,7 @@ RSpec.describe Api::Admin::DescriptionInterceptsController do
     end
 
     it 'filters by search term' do
-      get :index, params: { q: 'foot' }, format: :json
+      get '/uk/admin/description_intercepts.json', params: { q: 'foot' }, headers: request_headers(format: :json)
 
       json = JSON.parse(response.body)
       expect(json['data'].length).to eq(1)
@@ -57,7 +57,7 @@ RSpec.describe Api::Admin::DescriptionInterceptsController do
     end
 
     it 'filters by alias' do
-      get :index, params: { q: 'trainers' }, format: :json
+      get '/uk/admin/description_intercepts.json', params: { q: 'trainers' }, headers: request_headers(format: :json)
 
       json = JSON.parse(response.body)
       expect(json['data'].length).to eq(1)
@@ -65,7 +65,7 @@ RSpec.describe Api::Admin::DescriptionInterceptsController do
     end
 
     it 'filters by source' do
-      get :index, params: { source: 'fpo_search' }, format: :json
+      get '/uk/admin/description_intercepts.json', params: { source: 'fpo_search' }, headers: request_headers(format: :json)
 
       json = JSON.parse(response.body)
       expect(json['data'].length).to eq(1)
@@ -73,7 +73,7 @@ RSpec.describe Api::Admin::DescriptionInterceptsController do
     end
 
     it 'filters to rows with filtering enabled' do
-      get :index, params: { filtering: 'true' }, format: :json
+      get '/uk/admin/description_intercepts.json', params: { filtering: 'true' }, headers: request_headers(format: :json)
 
       json = JSON.parse(response.body)
       expect(json['data'].length).to eq(1)
@@ -81,7 +81,7 @@ RSpec.describe Api::Admin::DescriptionInterceptsController do
     end
 
     it 'filters to rows with escalation enabled' do
-      get :index, params: { escalates: 'true' }, format: :json
+      get '/uk/admin/description_intercepts.json', params: { escalates: 'true' }, headers: request_headers(format: :json)
 
       json = JSON.parse(response.body)
       expect(json['data'].length).to eq(1)
@@ -89,7 +89,7 @@ RSpec.describe Api::Admin::DescriptionInterceptsController do
     end
 
     it 'filters to rows with guidance' do
-      get :index, params: { guidance: 'true' }, format: :json
+      get '/uk/admin/description_intercepts.json', params: { guidance: 'true' }, headers: request_headers(format: :json)
 
       json = JSON.parse(response.body)
       expect(json['data'].length).to eq(1)
@@ -97,7 +97,7 @@ RSpec.describe Api::Admin::DescriptionInterceptsController do
     end
 
     it 'filters to rows that are excluded' do
-      get :index, params: { excluded: 'true' }, format: :json
+      get '/uk/admin/description_intercepts.json', params: { excluded: 'true' }, headers: request_headers(format: :json)
 
       json = JSON.parse(response.body)
       expect(json['data'].length).to eq(1)
@@ -120,7 +120,7 @@ RSpec.describe Api::Admin::DescriptionInterceptsController do
     end
 
     it 'returns the description intercept' do
-      get :show, params: { id: intercept.id }, format: :json
+      get "/uk/admin/description_intercepts/#{intercept.id}.json", headers: request_headers(format: :json)
 
       json = JSON.parse(response.body)
       expect(json).to match_json_expression(
@@ -154,7 +154,7 @@ RSpec.describe Api::Admin::DescriptionInterceptsController do
     end
 
     it 'returns 404 when not found' do
-      get :show, params: { id: 999_999 }, format: :json
+      get '/uk/admin/description_intercepts/999999.json', headers: request_headers(format: :json)
 
       expect(response).to have_http_status(:not_found)
     end
@@ -165,7 +165,7 @@ RSpec.describe Api::Admin::DescriptionInterceptsController do
       it 'returns the historical version data' do
         version = intercept.versions.order(:id).first
 
-        get :show, params: { id: intercept.id, filter: { oid: version.id } }, format: :json
+        get "/uk/admin/description_intercepts/#{intercept.id}.json", params: { filter: { oid: version.id } }, headers: request_headers(format: :json)
 
         json = JSON.parse(response.body)
         expect(json.dig('data', 'attributes', 'message')).to eq('Please be more specific.')
@@ -177,23 +177,21 @@ RSpec.describe Api::Admin::DescriptionInterceptsController do
   describe '#create' do
     it 'creates a description intercept' do
       expect {
-        post :create, params: {
-          data: {
-            type: 'description_intercept',
-            attributes: {
-              term: 'bicycles',
-              aliases: %w[cycle bike],
-              message: 'Read the bicycle guidance.',
-              message_header: 'Bicycle guidance',
-              guidance_level: 'info',
-              guidance_location: 'results',
-              escalate_to_webchat: true,
-              filter_prefixes: %w[8712 9503],
-              sources: %w[guided_search fpo_search],
-              excluded: false,
-            },
+        post '/uk/admin/description_intercepts.json', params: { data: {
+          type: 'description_intercept',
+          attributes: {
+            term: 'bicycles',
+            aliases: %w[cycle bike],
+            message: 'Read the bicycle guidance.',
+            message_header: 'Bicycle guidance',
+            guidance_level: 'info',
+            guidance_location: 'results',
+            escalate_to_webchat: true,
+            filter_prefixes: %w[8712 9503],
+            sources: %w[guided_search fpo_search],
+            excluded: false,
           },
-        }, format: :json
+        } }, headers: request_headers(format: :json), as: :json
       }.to change(DescriptionIntercept, :count).by(1)
 
       expect(response).to have_http_status(:created)
@@ -213,18 +211,16 @@ RSpec.describe Api::Admin::DescriptionInterceptsController do
 
     it 'returns validation errors for invalid attributes' do
       expect {
-        post :create, params: {
-          data: {
-            type: 'description_intercept',
-            attributes: {
-              term: 'bicycles',
-              excluded: true,
-              filter_prefixes: %w[8712],
-              sources: %w[guided_search],
-              escalate_to_webchat: false,
-            },
+        post '/uk/admin/description_intercepts.json', params: { data: {
+          type: 'description_intercept',
+          attributes: {
+            term: 'bicycles',
+            excluded: true,
+            filter_prefixes: %w[8712],
+            sources: %w[guided_search],
+            escalate_to_webchat: false,
           },
-        }, format: :json
+        } }, headers: request_headers(format: :json), as: :json
       }.not_to change(DescriptionIntercept, :count)
 
       expect(response).to have_http_status(:unprocessable_content)
@@ -237,22 +233,19 @@ RSpec.describe Api::Admin::DescriptionInterceptsController do
     let!(:intercept) { create(:description_intercept, term: 'footwear') }
 
     it 'updates the description intercept fields' do
-      put :update, params: {
-        id: intercept.id,
-        data: {
-          type: 'description_intercept',
-          attributes: {
-            message: 'Read the footwear guidance.',
-            message_header: 'Footwear guidance',
-            guidance_level: 'warning',
-            guidance_location: 'results',
-            escalate_to_webchat: true,
-            filter_prefixes: %w[6403 6404],
-            aliases: %w[trainers shoes],
-            sources: %w[guided_search fpo_search],
-          },
+      put "/uk/admin/description_intercepts/#{intercept.id}.json", params: { data: {
+        type: 'description_intercept',
+        attributes: {
+          message: 'Read the footwear guidance.',
+          message_header: 'Footwear guidance',
+          guidance_level: 'warning',
+          guidance_location: 'results',
+          escalate_to_webchat: true,
+          filter_prefixes: %w[6403 6404],
+          aliases: %w[trainers shoes],
+          sources: %w[guided_search fpo_search],
         },
-      }, format: :json
+      } }, headers: request_headers(format: :json), as: :json
 
       expect(response).to have_http_status(:ok)
 
@@ -274,17 +267,14 @@ RSpec.describe Api::Admin::DescriptionInterceptsController do
         sources: Sequel.pg_array(%w[guided_search fpo_search], :text),
       )
 
-      put :update, params: {
-        id: intercept.id,
-        data: {
-          type: 'description_intercept',
-          attributes: {
-            filter_prefixes: [''],
-            aliases: [''],
-            sources: [''],
-          },
+      put "/uk/admin/description_intercepts/#{intercept.id}.json", params: { data: {
+        type: 'description_intercept',
+        attributes: {
+          filter_prefixes: [''],
+          aliases: [''],
+          sources: [''],
         },
-      }, format: :json
+      } }, headers: request_headers(format: :json), as: :json
 
       expect(response).to have_http_status(:ok)
 
@@ -295,16 +285,13 @@ RSpec.describe Api::Admin::DescriptionInterceptsController do
     end
 
     it 'returns validation errors for invalid combinations' do
-      put :update, params: {
-        id: intercept.id,
-        data: {
-          type: 'description_intercept',
-          attributes: {
-            excluded: true,
-            filter_prefixes: %w[6403],
-          },
+      put "/uk/admin/description_intercepts/#{intercept.id}.json", params: { data: {
+        type: 'description_intercept',
+        attributes: {
+          excluded: true,
+          filter_prefixes: %w[6403],
         },
-      }, format: :json
+      } }, headers: request_headers(format: :json), as: :json
 
       expect(response).to have_http_status(:unprocessable_content)
       json = JSON.parse(response.body)
@@ -338,12 +325,10 @@ RSpec.describe Api::Admin::DescriptionInterceptsController do
 
     it 'imports valid CSV content' do
       expect {
-        post :bulk_import, params: {
-          data: {
-            type: 'description_intercept_bulk_import',
-            attributes: { csv: "term,template\ngift,vague\n" },
-          },
-        }, format: :json
+        post '/uk/admin/description_intercepts/bulk_import.json', params: { data: {
+          type: 'description_intercept_bulk_import',
+          attributes: { csv: "term,template\ngift,vague\n" },
+        } }, headers: request_headers(format: :json), as: :json
       }.to change(DescriptionIntercept, :count).by(1)
 
       expect(response).to have_http_status(:created)
@@ -353,12 +338,10 @@ RSpec.describe Api::Admin::DescriptionInterceptsController do
 
     it 'returns grouped validation errors without importing' do
       expect {
-        post :bulk_import, params: {
-          data: {
-            type: 'description_intercept_bulk_import',
-            attributes: { csv: "term,template\ngift,foo\npresent,baz\n" },
-          },
-        }, format: :json
+        post '/uk/admin/description_intercepts/bulk_import.json', params: { data: {
+          type: 'description_intercept_bulk_import',
+          attributes: { csv: "term,template\ngift,foo\npresent,baz\n" },
+        } }, headers: request_headers(format: :json), as: :json
       }.not_to change(DescriptionIntercept, :count)
 
       expect(response).to have_http_status(:unprocessable_content)
@@ -376,7 +359,7 @@ RSpec.describe Api::Admin::DescriptionInterceptsController do
     before { intercept.update(message: 'Updated guidance') }
 
     it 'returns the intercept versions' do
-      get :versions, params: { id: intercept.id }, format: :json
+      get "/uk/admin/description_intercepts/#{intercept.id}/versions.json", headers: request_headers(format: :json)
 
       json = JSON.parse(response.body)
       expect(json['data'].length).to eq(2)

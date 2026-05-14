@@ -98,14 +98,14 @@ RSpec.describe Api::Admin::GoodsNomenclatureAutocompleteController do
     end
 
     it 'returns active goods nomenclatures ordered by item id and producline suffix' do
-      get :index, params: { q: '640' }, format: :json
+      get '/uk/admin/goods_nomenclature_autocomplete.json', params: { q: '640' }, headers: request_headers(format: :json)
 
       json = JSON.parse(response.body)
       expect(json['data'].map { |row| row.dig('attributes', 'goods_nomenclature_item_id') }).to eq(%w[6403000000 6404000000 6406100000 6407000000])
     end
 
     it 'includes the description in the response' do
-      get :index, params: { q: '6403' }, format: :json
+      get '/uk/admin/goods_nomenclature_autocomplete.json', params: { q: '6403' }, headers: request_headers(format: :json)
 
       json = JSON.parse(response.body)
       expect(json.dig('data', 0, 'attributes')).to include(
@@ -115,14 +115,14 @@ RSpec.describe Api::Admin::GoodsNomenclatureAutocompleteController do
     end
 
     it 'excludes non-current goods nomenclatures' do
-      get :index, params: { q: '640' }, format: :json
+      get '/uk/admin/goods_nomenclature_autocomplete.json', params: { q: '640' }, headers: request_headers(format: :json)
 
       json = JSON.parse(response.body)
       expect(json['data'].map { |row| row.dig('attributes', 'goods_nomenclature_item_id') }).not_to include('6405000000')
     end
 
     it 'does not exclude hidden goods nomenclatures by exact code' do
-      get :index, params: { q: '6407' }, format: :json
+      get '/uk/admin/goods_nomenclature_autocomplete.json', params: { q: '6407' }, headers: request_headers(format: :json)
 
       json = JSON.parse(response.body)
       expect(json['data'].map { |row| row.dig('attributes', 'goods_nomenclature_item_id') }).to eq(%w[6407000000])
@@ -141,14 +141,14 @@ RSpec.describe Api::Admin::GoodsNomenclatureAutocompleteController do
         },
       )
 
-      get :index, params: { q: '640' }, format: :json
+      get '/uk/admin/goods_nomenclature_autocomplete.json', params: { q: '640' }, headers: request_headers(format: :json)
 
       json = JSON.parse(response.body)
       expect(json['data']).to be_empty
     end
 
     it 'filters by goods nomenclature class when requested' do
-      get :index, params: { q: '640', filter: { goods_nomenclature_class: %w[Chapter Heading] } }, format: :json
+      get '/uk/admin/goods_nomenclature_autocomplete.json', params: { q: '640', filter: { goods_nomenclature_class: %w[Chapter Heading] } }, headers: request_headers(format: :json)
 
       json = JSON.parse(response.body)
       expect(json['data'].map { |row| row.dig('attributes', 'goods_nomenclature_item_id') }).to eq(%w[6403000000 6404000000 6407000000])

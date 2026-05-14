@@ -31,14 +31,14 @@ RSpec.describe Api::Admin::GoodsNomenclatureLabelsController do
     end
 
     it 'returns all labels' do
-      get :index, format: :json
+      get '/uk/admin/goods_nomenclature_labels.json', headers: request_headers(format: :json)
 
       json = JSON.parse(response.body)
       expect(json['data'].length).to eq(2)
     end
 
     it 'includes score attribute' do
-      get :index, format: :json
+      get '/uk/admin/goods_nomenclature_labels.json', headers: request_headers(format: :json)
 
       json = JSON.parse(response.body)
       scores = json['data'].map { |d| d.dig('attributes', 'description_score') }
@@ -46,7 +46,7 @@ RSpec.describe Api::Admin::GoodsNomenclatureLabelsController do
     end
 
     it 'sorts by score ascending by default' do
-      get :index, format: :json
+      get '/uk/admin/goods_nomenclature_labels.json', headers: request_headers(format: :json)
 
       json = JSON.parse(response.body)
       scores = json['data'].map { |d| d.dig('attributes', 'description_score') }
@@ -54,7 +54,7 @@ RSpec.describe Api::Admin::GoodsNomenclatureLabelsController do
     end
 
     it 'includes pagination meta' do
-      get :index, format: :json
+      get '/uk/admin/goods_nomenclature_labels.json', headers: request_headers(format: :json)
 
       json = JSON.parse(response.body)
       pagination = json.dig('meta', 'pagination')
@@ -64,7 +64,7 @@ RSpec.describe Api::Admin::GoodsNomenclatureLabelsController do
 
     context 'with status filter' do
       it 'filters to stale' do
-        get :index, params: { status: 'stale' }, format: :json
+        get '/uk/admin/goods_nomenclature_labels.json', params: { status: 'stale' }, headers: request_headers(format: :json)
 
         json = JSON.parse(response.body)
         expect(json['data'].length).to eq(1)
@@ -72,7 +72,7 @@ RSpec.describe Api::Admin::GoodsNomenclatureLabelsController do
       end
 
       it 'filters to manually_edited' do
-        get :index, params: { status: 'manually_edited' }, format: :json
+        get '/uk/admin/goods_nomenclature_labels.json', params: { status: 'manually_edited' }, headers: request_headers(format: :json)
 
         json = JSON.parse(response.body)
         expect(json['data'].length).to eq(0)
@@ -95,7 +95,7 @@ RSpec.describe Api::Admin::GoodsNomenclatureLabelsController do
       end
 
       it 'excludes expired labels from normal listing by default' do
-        get :index, format: :json
+        get '/uk/admin/goods_nomenclature_labels.json', headers: request_headers(format: :json)
 
         json = JSON.parse(response.body)
         sids = json['data'].map { |d| d.dig('attributes', 'goods_nomenclature_sid') }
@@ -103,7 +103,7 @@ RSpec.describe Api::Admin::GoodsNomenclatureLabelsController do
       end
 
       it 'returns expired labels when explicitly filtered' do
-        get :index, params: { status: 'expired' }, format: :json
+        get '/uk/admin/goods_nomenclature_labels.json', params: { status: 'expired' }, headers: request_headers(format: :json)
 
         json = JSON.parse(response.body)
         expect(json['data'].length).to eq(1)
@@ -127,7 +127,7 @@ RSpec.describe Api::Admin::GoodsNomenclatureLabelsController do
       end
 
       it 'excludes approved labels from normal listing by default' do
-        get :index, format: :json
+        get '/uk/admin/goods_nomenclature_labels.json', headers: request_headers(format: :json)
 
         json = JSON.parse(response.body)
         sids = json['data'].map { |d| d.dig('attributes', 'goods_nomenclature_sid') }
@@ -135,7 +135,7 @@ RSpec.describe Api::Admin::GoodsNomenclatureLabelsController do
       end
 
       it 'returns approved labels when explicitly filtered' do
-        get :index, params: { status: 'approved' }, format: :json
+        get '/uk/admin/goods_nomenclature_labels.json', params: { status: 'approved' }, headers: request_headers(format: :json)
 
         json = JSON.parse(response.body)
         expect(json['data'].length).to eq(1)
@@ -143,7 +143,7 @@ RSpec.describe Api::Admin::GoodsNomenclatureLabelsController do
       end
 
       it 'keeps approved labels searchable by text' do
-        get :index, params: { q: 'direct lookup' }, format: :json
+        get '/uk/admin/goods_nomenclature_labels.json', params: { q: 'direct lookup' }, headers: request_headers(format: :json)
 
         json = JSON.parse(response.body)
         sids = json['data'].map { |d| d.dig('attributes', 'goods_nomenclature_sid') }
@@ -166,7 +166,7 @@ RSpec.describe Api::Admin::GoodsNomenclatureLabelsController do
       end
 
       it 'filters to bad scores (below 0.3)' do
-        get :index, params: { score_category: 'bad' }, format: :json
+        get '/uk/admin/goods_nomenclature_labels.json', params: { score_category: 'bad' }, headers: request_headers(format: :json)
 
         json = JSON.parse(response.body)
         scores = json['data'].map { |d| d.dig('attributes', 'description_score') }
@@ -174,7 +174,7 @@ RSpec.describe Api::Admin::GoodsNomenclatureLabelsController do
       end
 
       it 'filters to good scores (0.5 to 0.85)' do
-        get :index, params: { score_category: 'good' }, format: :json
+        get '/uk/admin/goods_nomenclature_labels.json', params: { score_category: 'good' }, headers: request_headers(format: :json)
 
         json = JSON.parse(response.body)
         scores = json['data'].map { |d| d.dig('attributes', 'description_score') }
@@ -183,7 +183,7 @@ RSpec.describe Api::Admin::GoodsNomenclatureLabelsController do
       end
 
       it 'filters to amazing scores (0.85+)' do
-        get :index, params: { score_category: 'amazing' }, format: :json
+        get '/uk/admin/goods_nomenclature_labels.json', params: { score_category: 'amazing' }, headers: request_headers(format: :json)
 
         json = JSON.parse(response.body)
         scores = json['data'].map { |d| d.dig('attributes', 'description_score') }
@@ -202,7 +202,7 @@ RSpec.describe Api::Admin::GoodsNomenclatureLabelsController do
                  labels: { 'description' => 'No score label' })
         end
 
-        get :index, params: { score_category: 'no_score' }, format: :json
+        get '/uk/admin/goods_nomenclature_labels.json', params: { score_category: 'no_score' }, headers: request_headers(format: :json)
 
         json = JSON.parse(response.body)
         scores = json['data'].map { |d| d.dig('attributes', 'description_score') }
@@ -212,7 +212,7 @@ RSpec.describe Api::Admin::GoodsNomenclatureLabelsController do
 
     context 'with sorting' do
       it 'sorts by score descending' do
-        get :index, params: { sort: 'score', direction: 'desc' }, format: :json
+        get '/uk/admin/goods_nomenclature_labels.json', params: { sort: 'score', direction: 'desc' }, headers: request_headers(format: :json)
 
         json = JSON.parse(response.body)
         scores = json['data'].map { |d| d.dig('attributes', 'description_score') }
@@ -220,13 +220,13 @@ RSpec.describe Api::Admin::GoodsNomenclatureLabelsController do
       end
 
       it 'sorts by goods_nomenclature_item_id' do
-        get :index, params: { sort: 'goods_nomenclature_item_id', direction: 'asc' }, format: :json
+        get '/uk/admin/goods_nomenclature_labels.json', params: { sort: 'goods_nomenclature_item_id', direction: 'asc' }, headers: request_headers(format: :json)
 
         expect(response).to have_http_status(:ok)
       end
 
       it 'ignores invalid sort columns' do
-        get :index, params: { sort: 'invalid_column' }, format: :json
+        get '/uk/admin/goods_nomenclature_labels.json', params: { sort: 'invalid_column' }, headers: request_headers(format: :json)
 
         expect(response).to have_http_status(:ok)
       end
@@ -234,7 +234,7 @@ RSpec.describe Api::Admin::GoodsNomenclatureLabelsController do
 
     context 'with q param searching by commodity code prefix' do
       it 'returns labels matching the code prefix' do
-        get :index, params: { q: commodity.goods_nomenclature_item_id[0..3] }, format: :json
+        get '/uk/admin/goods_nomenclature_labels.json', params: { q: commodity.goods_nomenclature_item_id[0..3] }, headers: request_headers(format: :json)
 
         json = JSON.parse(response.body)
         item_ids = json['data'].map { |d| d.dig('attributes', 'goods_nomenclature_item_id') }
@@ -244,28 +244,28 @@ RSpec.describe Api::Admin::GoodsNomenclatureLabelsController do
 
     context 'with q param searching by text' do
       it 'matches description case-insensitively' do
-        get :index, params: { q: 'horses' }, format: :json
+        get '/uk/admin/goods_nomenclature_labels.json', params: { q: 'horses' }, headers: request_headers(format: :json)
 
         json = JSON.parse(response.body)
         expect(json['data'].length).to eq(1)
       end
 
       it 'matches known brands' do
-        get :index, params: { q: 'Thoroughbred' }, format: :json
+        get '/uk/admin/goods_nomenclature_labels.json', params: { q: 'Thoroughbred' }, headers: request_headers(format: :json)
 
         json = JSON.parse(response.body)
         expect(json['data'].length).to eq(1)
       end
 
       it 'matches synonyms' do
-        get :index, params: { q: 'bovine' }, format: :json
+        get '/uk/admin/goods_nomenclature_labels.json', params: { q: 'bovine' }, headers: request_headers(format: :json)
 
         json = JSON.parse(response.body)
         expect(json['data'].length).to eq(1)
       end
 
       it 'returns empty results for non-matching text' do
-        get :index, params: { q: 'zznonexistentzz' }, format: :json
+        get '/uk/admin/goods_nomenclature_labels.json', params: { q: 'zznonexistentzz' }, headers: request_headers(format: :json)
 
         json = JSON.parse(response.body)
         expect(json['data']).to be_empty
@@ -274,7 +274,7 @@ RSpec.describe Api::Admin::GoodsNomenclatureLabelsController do
 
     context 'with q param too short' do
       it 'ignores single character non-numeric queries' do
-        get :index, params: { q: 'a' }, format: :json
+        get '/uk/admin/goods_nomenclature_labels.json', params: { q: 'a' }, headers: request_headers(format: :json)
 
         json = JSON.parse(response.body)
         # Single char text is ignored, returns all results
@@ -284,7 +284,7 @@ RSpec.describe Api::Admin::GoodsNomenclatureLabelsController do
 
     context 'with pagination' do
       it 'respects per_page parameter' do
-        get :index, params: { per_page: 1 }, format: :json
+        get '/uk/admin/goods_nomenclature_labels.json', params: { per_page: 1 }, headers: request_headers(format: :json)
 
         json = JSON.parse(response.body)
         expect(json['data'].length).to eq(1)
@@ -292,7 +292,7 @@ RSpec.describe Api::Admin::GoodsNomenclatureLabelsController do
       end
 
       it 'respects page parameter' do
-        get :index, params: { per_page: 1, page: 2 }, format: :json
+        get '/uk/admin/goods_nomenclature_labels.json', params: { per_page: 1, page: 2 }, headers: request_headers(format: :json)
 
         json = JSON.parse(response.body)
         expect(json['data'].length).to eq(1)
@@ -315,7 +315,7 @@ RSpec.describe Api::Admin::GoodsNomenclatureLabelsController do
       end
 
       it 'places nil scores last when sorting ascending' do
-        get :index, params: { sort: 'score', direction: 'asc' }, format: :json
+        get '/uk/admin/goods_nomenclature_labels.json', params: { sort: 'score', direction: 'asc' }, headers: request_headers(format: :json)
 
         json = JSON.parse(response.body)
         scores = json['data'].map { |d| d.dig('attributes', 'description_score') }

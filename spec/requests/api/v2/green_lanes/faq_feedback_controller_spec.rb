@@ -1,5 +1,8 @@
 RSpec.describe Api::V2::GreenLanes::FaqFeedbackController, :v2 do
-  subject(:api_response) { make_request && response }
+  subject(:api_response) do
+    make_request
+    response
+  end
 
   let(:json_response) { JSON.parse(api_response.body) }
   let(:faq_feedback) { create :green_lanes_faq_feedback }

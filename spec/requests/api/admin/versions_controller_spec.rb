@@ -11,7 +11,7 @@ RSpec.describe Api::Admin::VersionsController do
     end
 
     it 'returns all versions ordered by most recent first' do
-      get :index, format: :json
+      get '/uk/admin/versions.json', headers: request_headers(format: :json)
 
       json = JSON.parse(response.body)
       expect(json['data'].length).to be >= 4
@@ -22,7 +22,7 @@ RSpec.describe Api::Admin::VersionsController do
     end
 
     it 'includes pagination meta' do
-      get :index, format: :json
+      get '/uk/admin/versions.json', headers: request_headers(format: :json)
 
       json = JSON.parse(response.body)
       expect(json['meta']['pagination']).to include(
@@ -33,7 +33,7 @@ RSpec.describe Api::Admin::VersionsController do
     end
 
     it 'filters by item_type' do
-      get :index, params: { item_type: 'GoodsNomenclatureLabel' }, format: :json
+      get '/uk/admin/versions.json', params: { item_type: 'GoodsNomenclatureLabel' }, headers: request_headers(format: :json)
 
       json = JSON.parse(response.body)
       types = json['data'].map { |v| v.dig('attributes', 'item_type') }.uniq
@@ -41,7 +41,7 @@ RSpec.describe Api::Admin::VersionsController do
     end
 
     it 'paginates results' do
-      get :index, params: { page: 1, per_page: 2 }, format: :json
+      get '/uk/admin/versions.json', params: { page: 1, per_page: 2 }, headers: request_headers(format: :json)
 
       json = JSON.parse(response.body)
       expect(json['data'].length).to be <= 2
@@ -58,7 +58,7 @@ RSpec.describe Api::Admin::VersionsController do
       it 'restores the record to a previous version' do
         version = config.versions.first
 
-        post :restore, params: { id: version.id }, format: :json
+        post "/uk/admin/versions/#{version.id}/restore.json", headers: request_headers(format: :json), as: :json
 
         expect(response).to have_http_status(:ok)
         expect(config.reload[:value]).to eq('original')
@@ -68,14 +68,14 @@ RSpec.describe Api::Admin::VersionsController do
         version = config.versions.first
 
         expect {
-          post :restore, params: { id: version.id }, format: :json
+          post "/uk/admin/versions/#{version.id}/restore.json", headers: request_headers(format: :json), as: :json
         }.to change { Version.where(item_type: 'AdminConfiguration', item_id: 'restore_test').count }.by(1)
       end
 
       it 'returns the new version' do
         version = config.versions.first
 
-        post :restore, params: { id: version.id }, format: :json
+        post "/uk/admin/versions/#{version.id}/restore.json", headers: request_headers(format: :json), as: :json
 
         json = JSON.parse(response.body)
         expect(json['data']['type']).to eq('version')
@@ -96,7 +96,7 @@ RSpec.describe Api::Admin::VersionsController do
       it 'restores the label to a previous version' do
         version = label.versions.first
 
-        post :restore, params: { id: version.id }, format: :json
+        post "/uk/admin/versions/#{version.id}/restore.json", headers: request_headers(format: :json), as: :json
 
         expect(response).to have_http_status(:ok)
         expect(label.reload.description).to eq('original')
@@ -111,7 +111,7 @@ RSpec.describe Api::Admin::VersionsController do
       it 'restores the self text to a previous version' do
         version = self_text.versions.first
 
-        post :restore, params: { id: version.id }, format: :json
+        post "/uk/admin/versions/#{version.id}/restore.json", headers: request_headers(format: :json), as: :json
 
         expect(response).to have_http_status(:ok)
         expect(self_text.reload.self_text).to eq('original text')
@@ -126,7 +126,7 @@ RSpec.describe Api::Admin::VersionsController do
       it 'restores the intercept to a previous version' do
         version = intercept.versions.first
 
-        post :restore, params: { id: version.id }, format: :json
+        post "/uk/admin/versions/#{version.id}/restore.json", headers: request_headers(format: :json), as: :json
 
         expect(response).to have_http_status(:ok)
         expect(intercept.reload.message).to eq('original guidance')
@@ -141,7 +141,7 @@ RSpec.describe Api::Admin::VersionsController do
       it 'restores the intercept to a previous version' do
         version = intercept.versions.first
 
-        post :restore, params: { id: version.id }, format: :json
+        post "/uk/admin/versions/#{version.id}/restore.json", headers: request_headers(format: :json), as: :json
 
         expect(response).to have_http_status(:ok)
         expect(intercept.reload.message).to eq('original commodity guidance')
@@ -150,7 +150,7 @@ RSpec.describe Api::Admin::VersionsController do
 
     context 'when version does not exist' do
       it 'returns 404' do
-        post :restore, params: { id: 999_999 }, format: :json
+        post '/uk/admin/versions/999999/restore.json', headers: request_headers(format: :json), as: :json
 
         expect(response).to have_http_status(:not_found)
       end
@@ -163,7 +163,7 @@ RSpec.describe Api::Admin::VersionsController do
         config.destroy
 
         expect {
-          post :restore, params: { id: version.id }, format: :json
+          post "/uk/admin/versions/#{version.id}/restore.json", headers: request_headers(format: :json), as: :json
         }.to change { AdminConfiguration.where(name: 'deleted_test').count }.from(0).to(1)
 
         expect(response).to have_http_status(:ok)
@@ -179,7 +179,7 @@ RSpec.describe Api::Admin::VersionsController do
         version = config.versions.first
 
         expect {
-          post :restore, params: { id: version.id }, format: :json
+          post "/uk/admin/versions/#{version.id}/restore.json", headers: request_headers(format: :json), as: :json
         }.not_to raise_error
 
         expect(response).to have_http_status(:ok)

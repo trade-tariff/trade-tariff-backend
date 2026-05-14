@@ -24,7 +24,7 @@ RSpec.describe Api::User::SubscriptionTargetsController do
           .to receive(:call)
           .and_return([subscription_targets, 2])
 
-        get :index, params: { subscription_id: valid_subscription_id, page: 1, per_page: 10 }
+        get "/uk/user/subscriptions/#{valid_subscription_id}/targets", params: { page: 1, per_page: 10 }, headers: request_headers
       end
 
       it 'returns status 200' do
@@ -55,7 +55,7 @@ RSpec.describe Api::User::SubscriptionTargetsController do
       let(:subscription) { create(:user_subscription, user: user, subscription_type: Subscriptions::Type.stop_press) }
 
       before do
-        get :index, params: { subscription_id: valid_subscription_id }
+        get "/uk/user/subscriptions/#{valid_subscription_id}/targets", headers: request_headers
       end
 
       it 'returns a bad request response' do
@@ -69,15 +69,16 @@ RSpec.describe Api::User::SubscriptionTargetsController do
 
     context 'when subscription is missing' do
       it 'returns unauthorized' do
-        get :index, params: { subscription_id: SecureRandom.uuid }
+        get "/uk/user/subscriptions/#{SecureRandom.uuid}/targets", headers: request_headers
         expect(response).to have_http_status(:unauthorized)
       end
     end
 
     context 'when no auth token provided' do
+      let(:request_header_overrides) { {} }
+
       it 'returns unauthorized' do
-        request.headers['Authorization'] = nil
-        get :index, params: { subscription_id: valid_subscription_id }
+        get "/uk/user/subscriptions/#{valid_subscription_id}/targets", headers: request_headers
         expect(response).to have_http_status(:unauthorized)
       end
     end
@@ -96,7 +97,7 @@ RSpec.describe Api::User::SubscriptionTargetsController do
 
     it 'returns an Excel file with expected headers and body' do
       freeze_time do
-        get :download, params: { subscription_id: valid_subscription_id }
+        get "/uk/user/subscriptions/#{valid_subscription_id}/targets/download", headers: request_headers
 
         expect(response).to have_http_status(:ok)
         expect(response.content_type).to eq('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
@@ -107,7 +108,7 @@ RSpec.describe Api::User::SubscriptionTargetsController do
     end
 
     it 'builds the report from the current subscription' do
-      get :download, params: { subscription_id: valid_subscription_id }
+      get "/uk/user/subscriptions/#{valid_subscription_id}/targets/download", headers: request_headers
 
       expect(Api::User::ActiveCommoditiesService).to have_received(:new).with(subscription)
       expect(service).to have_received(:generate_report)
@@ -115,15 +116,16 @@ RSpec.describe Api::User::SubscriptionTargetsController do
 
     context 'when subscription is missing' do
       it 'returns unauthorized' do
-        get :download, params: { subscription_id: SecureRandom.uuid }
+        get "/uk/user/subscriptions/#{SecureRandom.uuid}/targets/download", headers: request_headers
         expect(response).to have_http_status(:unauthorized)
       end
     end
 
     context 'when no auth token provided' do
+      let(:request_header_overrides) { {} }
+
       it 'returns unauthorized' do
-        request.headers['Authorization'] = nil
-        get :download, params: { subscription_id: valid_subscription_id }
+        get "/uk/user/subscriptions/#{valid_subscription_id}/targets/download", headers: request_headers
         expect(response).to have_http_status(:unauthorized)
       end
     end

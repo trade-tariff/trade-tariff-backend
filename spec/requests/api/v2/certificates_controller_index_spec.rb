@@ -1,8 +1,12 @@
 RSpec.describe Api::V2::CertificatesController, type: :request do
   describe 'GET #index' do
-    subject(:do_response) do
-      get :index, format: :json
-      response.body
+    subject(:api_response) do
+      make_request
+      response
+    end
+
+    let(:make_request) do
+      get '/uk/api/certificates.json', headers: request_headers(format: :json)
     end
 
     let(:certificate) do
@@ -38,12 +42,12 @@ RSpec.describe Api::V2::CertificatesController, type: :request do
       certificate
     end
 
-    it { is_expected.to match_json_expression(pattern) }
+    it { expect(api_response.body).to match_json_expression(pattern) }
 
     context 'when the validity_end_date is set to a past date' do
       let(:certificate) { create(:certificate, validity_end_date: 1.day.ago) }
 
-      it { is_expected.to match_json_expression({ data: [] }) }
+      it { expect(api_response.body).to match_json_expression({ data: [] }) }
     end
   end
 end

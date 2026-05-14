@@ -17,29 +17,43 @@ RSpec.describe Api::V2::GeographicalAreasController do
   let(:actual_date) { Time.zone.today }
 
   describe 'GET countries' do
-    subject(:do_response) { get :countries }
+    subject(:api_response) do
+      make_request
+      response
+    end
 
-    it { expect(do_response.body).to include(region_geographical_area.geographical_area_id) }
-    it { expect(do_response.body).to include(country_geographical_area.geographical_area_id) }
-    it { expect(do_response.body).not_to include(group_geographical_area.geographical_area_id) }
-    it { expect(do_response.body).not_to include(globally_excluded_area.geographical_area_id) }
+    let(:make_request) do
+      get '/uk/api/geographical_areas/countries', headers: request_headers
+    end
+
+    it { expect(api_response.body).to include(region_geographical_area.geographical_area_id) }
+    it { expect(api_response.body).to include(country_geographical_area.geographical_area_id) }
+    it { expect(api_response.body).not_to include(group_geographical_area.geographical_area_id) }
+    it { expect(api_response.body).not_to include(globally_excluded_area.geographical_area_id) }
 
     it 'caches the serialized countries' do
-      do_response
+      api_response
 
       expect(Rails.cache).to have_received(:fetch).with("_geographical-areas-#{actual_date}-true-false", expires_in: 24.hours)
     end
 
     context 'when the exclude none filter is passed' do
-      subject(:do_response) { get :countries, params: { filter: { exclude_none: 'true' } } }
+      subject(:api_response) do
+        make_request
+        response
+      end
 
-      it { expect(do_response.body).to include(region_geographical_area.geographical_area_id) }
-      it { expect(do_response.body).to include(country_geographical_area.geographical_area_id) }
-      it { expect(do_response.body).to include(globally_excluded_area.geographical_area_id) }
-      it { expect(do_response.body).not_to include(group_geographical_area.geographical_area_id) }
+      let(:make_request) do
+        get '/uk/api/geographical_areas/countries', params: { filter: { exclude_none: 'true' } }, headers: request_headers
+      end
+
+      it { expect(api_response.body).to include(region_geographical_area.geographical_area_id) }
+      it { expect(api_response.body).to include(country_geographical_area.geographical_area_id) }
+      it { expect(api_response.body).to include(globally_excluded_area.geographical_area_id) }
+      it { expect(api_response.body).not_to include(group_geographical_area.geographical_area_id) }
 
       it 'caches the serialized geographical_areas' do
-        do_response
+        api_response
 
         expect(Rails.cache).to have_received(:fetch).with("_geographical-areas-#{actual_date}-true-true", expires_in: 24.hours)
       end
@@ -47,15 +61,22 @@ RSpec.describe Api::V2::GeographicalAreasController do
   end
 
   describe 'GET index' do
-    subject(:do_response) { get :index }
+    subject(:api_response) do
+      make_request
+      response
+    end
 
-    it { expect(do_response.body).to include(region_geographical_area.geographical_area_id) }
-    it { expect(do_response.body).to include(country_geographical_area.geographical_area_id) }
-    it { expect(do_response.body).to include(group_geographical_area.geographical_area_id) }
-    it { expect(do_response.body).not_to include(globally_excluded_area.geographical_area_id) }
+    let(:make_request) do
+      get '/uk/api/geographical_areas', headers: request_headers
+    end
+
+    it { expect(api_response.body).to include(region_geographical_area.geographical_area_id) }
+    it { expect(api_response.body).to include(country_geographical_area.geographical_area_id) }
+    it { expect(api_response.body).to include(group_geographical_area.geographical_area_id) }
+    it { expect(api_response.body).not_to include(globally_excluded_area.geographical_area_id) }
 
     it 'caches the serialized geographical_areas' do
-      do_response
+      api_response
 
       expect(Rails.cache).to have_received(:fetch).with("_geographical-areas-#{actual_date}-false-false", expires_in: 24.hours)
     end
@@ -75,7 +96,7 @@ RSpec.describe Api::V2::GeographicalAreasController do
       end
 
       it 'returns the correct contained areas' do
-        geographical_area_group = JSON.parse(do_response.body)['data'].find { |area| area['id'] == '1011' }
+        geographical_area_group = JSON.parse(api_response.body)['data'].find { |area| area['id'] == '1011' }
 
         actual_children_geographical_areas = geographical_area_group
           .dig('relationships', 'children_geographical_areas', 'data')
@@ -92,15 +113,22 @@ RSpec.describe Api::V2::GeographicalAreasController do
     end
 
     context 'when the exclude none filter is passed' do
-      subject(:do_response) { get :index, params: { filter: { exclude_none: 'true' } } }
+      subject(:api_response) do
+        make_request
+        response
+      end
 
-      it { expect(do_response.body).to include(region_geographical_area.geographical_area_id) }
-      it { expect(do_response.body).to include(country_geographical_area.geographical_area_id) }
-      it { expect(do_response.body).to include(globally_excluded_area.geographical_area_id) }
-      it { expect(do_response.body).to include(group_geographical_area.geographical_area_id) }
+      let(:make_request) do
+        get '/uk/api/geographical_areas', params: { filter: { exclude_none: 'true' } }, headers: request_headers
+      end
+
+      it { expect(api_response.body).to include(region_geographical_area.geographical_area_id) }
+      it { expect(api_response.body).to include(country_geographical_area.geographical_area_id) }
+      it { expect(api_response.body).to include(globally_excluded_area.geographical_area_id) }
+      it { expect(api_response.body).to include(group_geographical_area.geographical_area_id) }
 
       it 'caches the serialized geographical_areas' do
-        do_response
+        api_response
 
         expect(Rails.cache).to have_received(:fetch).with("_geographical-areas-#{actual_date}-false-true", expires_in: 24.hours)
       end
@@ -108,8 +136,15 @@ RSpec.describe Api::V2::GeographicalAreasController do
   end
 
   describe 'GET show' do
-    subject(:do_response) { get :show, params: { id: country_geographical_area.geographical_area_id } }
+    subject(:api_response) do
+      make_request
+      response
+    end
 
-    it { expect(do_response.body).to include(country_geographical_area.geographical_area_id) }
+    let(:make_request) do
+      get "/uk/api/geographical_areas/#{country_geographical_area.geographical_area_id}", headers: request_headers
+    end
+
+    it { expect(api_response.body).to include(country_geographical_area.geographical_area_id) }
   end
 end

@@ -28,7 +28,7 @@ RSpec.describe Api::V1::ChaptersController do
 
     context 'when record is present' do
       it 'caches the serialized chapter' do
-        get :show, params: { id: chapter.short_code }, format: :json
+        get "/uk/api/chapters/#{chapter.short_code}.json", headers: request_headers(format: :json)
 
         expect(Rails.cache)
           .to have_received(:fetch)
@@ -38,8 +38,8 @@ RSpec.describe Api::V1::ChaptersController do
           )
       end
 
-      it 'returns rendered record' do
-        get :show, params: { id: chapter }, format: :json
+      it 'returns api_response record' do
+        get "/uk/api/chapters/#{chapter.to_param}.json", headers: request_headers(format: :json)
 
         expect(response.body).to match_json_expression pattern
       end
@@ -48,7 +48,7 @@ RSpec.describe Api::V1::ChaptersController do
     context 'when record is not present' do
       it 'returns not found if record was not found' do
         id = chapter.goods_nomenclature_item_id.first(2).to_i + 1
-        get :show, params: { id: }, format: :json
+        get "/uk/api/chapters/#{id}.json", headers: request_headers(format: :json)
 
         expect(response.status).to eq 404
       end
@@ -57,7 +57,7 @@ RSpec.describe Api::V1::ChaptersController do
     context 'when record is hidden' do
       it 'returns not found' do
         create :hidden_goods_nomenclature, goods_nomenclature_item_id: chapter.goods_nomenclature_item_id
-        get :show, params: { id: chapter.goods_nomenclature_item_id.first(2) }, format: :json
+        get "/uk/api/chapters/#{chapter.goods_nomenclature_item_id.first(2)}.json", headers: request_headers(format: :json)
 
         expect(response.status).to eq 404
       end
@@ -78,7 +78,7 @@ RSpec.describe Api::V1::ChaptersController do
     end
 
     it 'caches the serialized chapters' do
-      get :index, format: :json
+      get '/uk/api/chapters.json', headers: request_headers(format: :json)
 
       expect(Rails.cache)
         .to have_received(:fetch)
@@ -88,8 +88,8 @@ RSpec.describe Api::V1::ChaptersController do
         )
     end
 
-    it 'returns rendered records' do
-      get :index, format: :json
+    it 'returns api_response records' do
+      get '/uk/api/chapters.json', headers: request_headers(format: :json)
 
       expect(response.body).to match_json_expression pattern
     end
@@ -137,7 +137,7 @@ RSpec.describe Api::V1::ChaptersController do
       end
 
       it 'caches the serialized chapter changes' do
-        get :changes, params: { id: chapter.short_code }, format: :json
+        get "/uk/api/chapters/#{chapter.short_code}/changes.json", headers: request_headers(format: :json)
 
         expect(Rails.cache)
           .to have_received(:fetch)
@@ -148,7 +148,7 @@ RSpec.describe Api::V1::ChaptersController do
       end
 
       it 'returns chapter changes' do
-        get :changes, params: { id: chapter.short_code }, format: :json
+        get "/uk/api/chapters/#{chapter.short_code}/changes.json", headers: request_headers(format: :json)
 
         expect(response.body).to match_json_expression pattern
       end
@@ -169,7 +169,7 @@ RSpec.describe Api::V1::ChaptersController do
                goods_nomenclature_item_id: heading.goods_nomenclature_item_id,
                operation_date: Time.zone.today
 
-        get :changes, params: { id: chapter, as_of: Time.zone.yesterday }, format: :json
+        get "/uk/api/chapters/#{chapter.to_param}/changes.json", params: { as_of: Time.zone.yesterday }, headers: request_headers(format: :json)
 
         expect(response.body).to match_json_expression []
       end
@@ -219,7 +219,7 @@ RSpec.describe Api::V1::ChaptersController do
                          goods_nomenclature_item_id: heading.goods_nomenclature_item_id,
                          operation_date: Time.zone.today
         measure.destroy
-        get :changes, params: { id: chapter }, format: :json
+        get "/uk/api/chapters/#{chapter.to_param}/changes.json", headers: request_headers(format: :json)
 
         expect(response.body).to match_json_expression pattern
       end

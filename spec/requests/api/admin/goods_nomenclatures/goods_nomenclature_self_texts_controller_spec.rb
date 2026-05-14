@@ -41,8 +41,8 @@ RSpec.describe Api::Admin::GoodsNomenclatures::GoodsNomenclatureSelfTextsControl
     context 'when self text record exists' do
       let!(:self_text) { create :goods_nomenclature_self_text }
 
-      it 'returns rendered record' do
-        get :show, params: { goods_nomenclature_id: self_text.goods_nomenclature_sid }, format: :json
+      it 'returns api_response record' do
+        get "/uk/admin/goods_nomenclatures/#{self_text.goods_nomenclature_sid}/goods_nomenclature_self_text.json", headers: request_headers(format: :json)
 
         expect(response).to have_http_status(:ok)
         expect(response.body).to match_json_expression pattern
@@ -52,7 +52,7 @@ RSpec.describe Api::Admin::GoodsNomenclatures::GoodsNomenclatureSelfTextsControl
 
     context 'when self text record does not exist' do
       it 'returns not found' do
-        get :show, params: { goods_nomenclature_id: '9999999999' }, format: :json
+        get '/uk/admin/goods_nomenclatures/9999999999/goods_nomenclature_self_text.json', headers: request_headers(format: :json)
 
         expect(response).to have_http_status(:not_found)
       end
@@ -79,7 +79,7 @@ RSpec.describe Api::Admin::GoodsNomenclatures::GoodsNomenclatureSelfTextsControl
     end
 
     it 'enriches ancestors with current self_texts' do
-      get :show, params: { goods_nomenclature_id: self_text.goods_nomenclature_sid }, format: :json
+      get "/uk/admin/goods_nomenclatures/#{self_text.goods_nomenclature_sid}/goods_nomenclature_self_text.json", headers: request_headers(format: :json)
 
       json = JSON.parse(response.body)
       ancestors = json.dig('data', 'attributes', 'input_context', 'ancestors')
@@ -92,7 +92,7 @@ RSpec.describe Api::Admin::GoodsNomenclatures::GoodsNomenclatureSelfTextsControl
     let!(:self_text) { create :goods_nomenclature_self_text, self_text: 'original text' }
 
     it 'includes version meta in the response' do
-      get :show, params: { goods_nomenclature_id: self_text.goods_nomenclature_sid }, format: :json
+      get "/uk/admin/goods_nomenclatures/#{self_text.goods_nomenclature_sid}/goods_nomenclature_self_text.json", headers: request_headers(format: :json)
 
       json = JSON.parse(response.body)
       version_meta = json.dig('meta', 'version')
@@ -107,10 +107,7 @@ RSpec.describe Api::Admin::GoodsNomenclatures::GoodsNomenclatureSelfTextsControl
       it 'returns the historical version data' do
         version = self_text.versions.order(:id).first
 
-        get :show, params: {
-          goods_nomenclature_id: self_text.goods_nomenclature_sid,
-          filter: { oid: version.id },
-        }, format: :json
+        get "/uk/admin/goods_nomenclatures/#{self_text.goods_nomenclature_sid}/goods_nomenclature_self_text.json", params: { filter: { oid: version.id } }, headers: request_headers(format: :json)
 
         expect(response).to have_http_status(:ok)
 
@@ -126,10 +123,7 @@ RSpec.describe Api::Admin::GoodsNomenclatures::GoodsNomenclatureSelfTextsControl
       it 'returns current=true' do
         version = self_text.versions.order(Sequel.desc(:id)).first
 
-        get :show, params: {
-          goods_nomenclature_id: self_text.goods_nomenclature_sid,
-          filter: { oid: version.id },
-        }, format: :json
+        get "/uk/admin/goods_nomenclatures/#{self_text.goods_nomenclature_sid}/goods_nomenclature_self_text.json", params: { filter: { oid: version.id } }, headers: request_headers(format: :json)
 
         json = JSON.parse(response.body)
         expect(json.dig('meta', 'version', 'current')).to be true
@@ -138,10 +132,7 @@ RSpec.describe Api::Admin::GoodsNomenclatures::GoodsNomenclatureSelfTextsControl
 
     context 'when version does not exist' do
       it 'returns 404' do
-        get :show, params: {
-          goods_nomenclature_id: self_text.goods_nomenclature_sid,
-          filter: { oid: 999_999 },
-        }, format: :json
+        get "/uk/admin/goods_nomenclatures/#{self_text.goods_nomenclature_sid}/goods_nomenclature_self_text.json", params: { filter: { oid: 999_999 } }, headers: request_headers(format: :json)
 
         expect(response).to have_http_status(:not_found)
       end
@@ -156,10 +147,7 @@ RSpec.describe Api::Admin::GoodsNomenclatures::GoodsNomenclatureSelfTextsControl
       let(:new_text) { 'Updated self text content' }
 
       it 'responds with success' do
-        put :update, params: {
-          goods_nomenclature_id: self_text.goods_nomenclature_sid,
-          data: { type: 'goods_nomenclature_self_text', attributes: { self_text: new_text } },
-        }, format: :json
+        put "/uk/admin/goods_nomenclatures/#{self_text.goods_nomenclature_sid}/goods_nomenclature_self_text.json", params: { data: { type: 'goods_nomenclature_self_text', attributes: { self_text: new_text } } }, headers: request_headers(format: :json), as: :json
 
         expect(response).to have_http_status(:ok)
       end
@@ -167,10 +155,7 @@ RSpec.describe Api::Admin::GoodsNomenclatures::GoodsNomenclatureSelfTextsControl
       it 'enqueues ScoreLabelBatchWorker' do
         allow(ScoreLabelBatchWorker).to receive(:perform_async)
 
-        put :update, params: {
-          goods_nomenclature_id: self_text.goods_nomenclature_sid,
-          data: { type: 'goods_nomenclature_self_text', attributes: { self_text: new_text } },
-        }, format: :json
+        put "/uk/admin/goods_nomenclatures/#{self_text.goods_nomenclature_sid}/goods_nomenclature_self_text.json", params: { data: { type: 'goods_nomenclature_self_text', attributes: { self_text: new_text } } }, headers: request_headers(format: :json), as: :json
 
         expect(ScoreLabelBatchWorker).to have_received(:perform_async).with(self_text.goods_nomenclature_sid)
       end
@@ -178,10 +163,7 @@ RSpec.describe Api::Admin::GoodsNomenclatures::GoodsNomenclatureSelfTextsControl
       it 'reindexes the goods nomenclature search document when the self-text changes' do
         allow(TradeTariffBackend.search_client).to receive(:index)
 
-        put :update, params: {
-          goods_nomenclature_id: self_text.goods_nomenclature_sid,
-          data: { type: 'goods_nomenclature_self_text', attributes: { self_text: new_text } },
-        }, format: :json
+        put "/uk/admin/goods_nomenclatures/#{self_text.goods_nomenclature_sid}/goods_nomenclature_self_text.json", params: { data: { type: 'goods_nomenclature_self_text', attributes: { self_text: new_text } } }, headers: request_headers(format: :json), as: :json
 
         expect(TradeTariffBackend.search_client).to have_received(:index).with(
           Search::GoodsNomenclatureIndex,
@@ -190,20 +172,14 @@ RSpec.describe Api::Admin::GoodsNomenclatures::GoodsNomenclatureSelfTextsControl
       end
 
       it 'updates the self text' do
-        put :update, params: {
-          goods_nomenclature_id: self_text.goods_nomenclature_sid,
-          data: { type: 'goods_nomenclature_self_text', attributes: { self_text: new_text } },
-        }, format: :json
+        put "/uk/admin/goods_nomenclatures/#{self_text.goods_nomenclature_sid}/goods_nomenclature_self_text.json", params: { data: { type: 'goods_nomenclature_self_text', attributes: { self_text: new_text } } }, headers: request_headers(format: :json), as: :json
 
         json = JSON.parse(response.body)
         expect(json.dig('data', 'attributes', 'self_text')).to eq(new_text)
       end
 
       it 'sets manually_edited to true' do
-        put :update, params: {
-          goods_nomenclature_id: self_text.goods_nomenclature_sid,
-          data: { type: 'goods_nomenclature_self_text', attributes: { self_text: new_text } },
-        }, format: :json
+        put "/uk/admin/goods_nomenclatures/#{self_text.goods_nomenclature_sid}/goods_nomenclature_self_text.json", params: { data: { type: 'goods_nomenclature_self_text', attributes: { self_text: new_text } } }, headers: request_headers(format: :json), as: :json
 
         json = JSON.parse(response.body)
         expect(json.dig('data', 'attributes', 'manually_edited')).to be true
@@ -212,20 +188,14 @@ RSpec.describe Api::Admin::GoodsNomenclatures::GoodsNomenclatureSelfTextsControl
       it 'clears needs_review flag' do
         self_text.update(needs_review: true)
 
-        put :update, params: {
-          goods_nomenclature_id: self_text.goods_nomenclature_sid,
-          data: { type: 'goods_nomenclature_self_text', attributes: { self_text: new_text } },
-        }, format: :json
+        put "/uk/admin/goods_nomenclatures/#{self_text.goods_nomenclature_sid}/goods_nomenclature_self_text.json", params: { data: { type: 'goods_nomenclature_self_text', attributes: { self_text: new_text } } }, headers: request_headers(format: :json), as: :json
 
         json = JSON.parse(response.body)
         expect(json.dig('data', 'attributes', 'needs_review')).to be false
       end
 
       it 'marks the edited self text as approved' do
-        put :update, params: {
-          goods_nomenclature_id: self_text.goods_nomenclature_sid,
-          data: { type: 'goods_nomenclature_self_text', attributes: { self_text: new_text } },
-        }, format: :json
+        put "/uk/admin/goods_nomenclatures/#{self_text.goods_nomenclature_sid}/goods_nomenclature_self_text.json", params: { data: { type: 'goods_nomenclature_self_text', attributes: { self_text: new_text } } }, headers: request_headers(format: :json), as: :json
 
         json = JSON.parse(response.body)
         expect(json.dig('data', 'attributes', 'approved')).to be true
@@ -234,10 +204,7 @@ RSpec.describe Api::Admin::GoodsNomenclatures::GoodsNomenclatureSelfTextsControl
 
     context 'when self text record does not exist' do
       it 'returns 404' do
-        put :update, params: {
-          goods_nomenclature_id: '9999999999',
-          data: { type: 'goods_nomenclature_self_text', attributes: { self_text: 'test' } },
-        }, format: :json
+        put '/uk/admin/goods_nomenclatures/9999999999/goods_nomenclature_self_text.json', params: { data: { type: 'goods_nomenclature_self_text', attributes: { self_text: 'test' } } }, headers: request_headers(format: :json), as: :json
 
         expect(response).to have_http_status(:not_found)
       end
@@ -253,7 +220,7 @@ RSpec.describe Api::Admin::GoodsNomenclatures::GoodsNomenclatureSelfTextsControl
     end
 
     it 'triggers scoring and returns success' do
-      post :score, params: { goods_nomenclature_id: self_text.goods_nomenclature_sid }, format: :json
+      post "/uk/admin/goods_nomenclatures/#{self_text.goods_nomenclature_sid}/goods_nomenclature_self_text/score.json", headers: request_headers(format: :json), as: :json
 
       expect(response).to have_http_status(:ok)
       expect(scorer).to have_received(:score).with([self_text.goods_nomenclature_sid])
@@ -261,7 +228,7 @@ RSpec.describe Api::Admin::GoodsNomenclatures::GoodsNomenclatureSelfTextsControl
 
     context 'when self text record does not exist' do
       it 'returns 404' do
-        post :score, params: { goods_nomenclature_id: '9999999999' }, format: :json
+        post '/uk/admin/goods_nomenclatures/9999999999/goods_nomenclature_self_text/score.json', headers: request_headers(format: :json), as: :json
 
         expect(response).to have_http_status(:not_found)
       end
@@ -272,7 +239,7 @@ RSpec.describe Api::Admin::GoodsNomenclatures::GoodsNomenclatureSelfTextsControl
     let!(:self_text) { create :goods_nomenclature_self_text, needs_review: true, approved: false, manually_edited: false }
 
     it 'clears needs_review' do
-      post :approve, params: { goods_nomenclature_id: self_text.goods_nomenclature_sid }, format: :json
+      post "/uk/admin/goods_nomenclatures/#{self_text.goods_nomenclature_sid}/goods_nomenclature_self_text/approve.json", headers: request_headers(format: :json), as: :json
 
       expect(response).to have_http_status(:ok)
 
@@ -281,14 +248,14 @@ RSpec.describe Api::Admin::GoodsNomenclatures::GoodsNomenclatureSelfTextsControl
     end
 
     it 'sets approved' do
-      post :approve, params: { goods_nomenclature_id: self_text.goods_nomenclature_sid }, format: :json
+      post "/uk/admin/goods_nomenclatures/#{self_text.goods_nomenclature_sid}/goods_nomenclature_self_text/approve.json", headers: request_headers(format: :json), as: :json
 
       json = JSON.parse(response.body)
       expect(json.dig('data', 'attributes', 'approved')).to be true
     end
 
     it 'does not set manually_edited' do
-      post :approve, params: { goods_nomenclature_id: self_text.goods_nomenclature_sid }, format: :json
+      post "/uk/admin/goods_nomenclatures/#{self_text.goods_nomenclature_sid}/goods_nomenclature_self_text/approve.json", headers: request_headers(format: :json), as: :json
 
       json = JSON.parse(response.body)
       expect(json.dig('data', 'attributes', 'manually_edited')).to be false
@@ -296,7 +263,7 @@ RSpec.describe Api::Admin::GoodsNomenclatures::GoodsNomenclatureSelfTextsControl
 
     context 'when self text record does not exist' do
       it 'returns 404' do
-        post :approve, params: { goods_nomenclature_id: '9999999999' }, format: :json
+        post '/uk/admin/goods_nomenclatures/9999999999/goods_nomenclature_self_text/approve.json', headers: request_headers(format: :json), as: :json
 
         expect(response).to have_http_status(:not_found)
       end
@@ -307,7 +274,7 @@ RSpec.describe Api::Admin::GoodsNomenclatures::GoodsNomenclatureSelfTextsControl
     let!(:self_text) { create :goods_nomenclature_self_text, needs_review: false, approved: true }
 
     it 'sets needs_review to true' do
-      post :reject, params: { goods_nomenclature_id: self_text.goods_nomenclature_sid }, format: :json
+      post "/uk/admin/goods_nomenclatures/#{self_text.goods_nomenclature_sid}/goods_nomenclature_self_text/reject.json", headers: request_headers(format: :json), as: :json
 
       expect(response).to have_http_status(:ok)
 
@@ -316,7 +283,7 @@ RSpec.describe Api::Admin::GoodsNomenclatures::GoodsNomenclatureSelfTextsControl
     end
 
     it 'clears approved' do
-      post :reject, params: { goods_nomenclature_id: self_text.goods_nomenclature_sid }, format: :json
+      post "/uk/admin/goods_nomenclatures/#{self_text.goods_nomenclature_sid}/goods_nomenclature_self_text/reject.json", headers: request_headers(format: :json), as: :json
 
       json = JSON.parse(response.body)
       expect(json.dig('data', 'attributes', 'approved')).to be false
@@ -324,7 +291,7 @@ RSpec.describe Api::Admin::GoodsNomenclatures::GoodsNomenclatureSelfTextsControl
 
     context 'when self text record does not exist' do
       it 'returns 404' do
-        post :reject, params: { goods_nomenclature_id: '9999999999' }, format: :json
+        post '/uk/admin/goods_nomenclatures/9999999999/goods_nomenclature_self_text/reject.json', headers: request_headers(format: :json), as: :json
 
         expect(response).to have_http_status(:not_found)
       end
@@ -337,7 +304,7 @@ RSpec.describe Api::Admin::GoodsNomenclatures::GoodsNomenclatureSelfTextsControl
     it 'returns versions for the self text' do
       self_text.update(self_text: 'changed text')
 
-      get :versions, params: { goods_nomenclature_id: self_text.goods_nomenclature_sid }, format: :json
+      get "/uk/admin/goods_nomenclatures/#{self_text.goods_nomenclature_sid}/goods_nomenclature_self_text/versions.json", headers: request_headers(format: :json)
 
       expect(response).to have_http_status(:ok)
 
@@ -348,7 +315,7 @@ RSpec.describe Api::Admin::GoodsNomenclatures::GoodsNomenclatureSelfTextsControl
 
     context 'when self text record does not exist' do
       it 'returns 404' do
-        get :versions, params: { goods_nomenclature_id: '9999999999' }, format: :json
+        get '/uk/admin/goods_nomenclatures/9999999999/goods_nomenclature_self_text/versions.json', headers: request_headers(format: :json)
 
         expect(response).to have_http_status(:not_found)
       end
@@ -385,7 +352,7 @@ RSpec.describe Api::Admin::GoodsNomenclatures::GoodsNomenclatureSelfTextsControl
         manually_edited: true,
       )
 
-      post :regenerate, params: { goods_nomenclature_id: self_text.goods_nomenclature_sid }, format: :json
+      post "/uk/admin/goods_nomenclatures/#{self_text.goods_nomenclature_sid}/goods_nomenclature_self_text/regenerate.json", headers: request_headers(format: :json), as: :json
 
       expect(response).to have_http_status(:ok)
       expect(self_text.reload).to have_attributes(
@@ -402,7 +369,7 @@ RSpec.describe Api::Admin::GoodsNomenclatures::GoodsNomenclatureSelfTextsControl
     it 'enqueues ScoreLabelBatchWorker' do
       allow(ScoreLabelBatchWorker).to receive(:perform_async)
 
-      post :regenerate, params: { goods_nomenclature_id: self_text.goods_nomenclature_sid }, format: :json
+      post "/uk/admin/goods_nomenclatures/#{self_text.goods_nomenclature_sid}/goods_nomenclature_self_text/regenerate.json", headers: request_headers(format: :json), as: :json
 
       expect(ScoreLabelBatchWorker).to have_received(:perform_async).with(self_text.goods_nomenclature_sid)
     end
@@ -410,7 +377,7 @@ RSpec.describe Api::Admin::GoodsNomenclatures::GoodsNomenclatureSelfTextsControl
     it 'reindexes the goods nomenclature search document after regeneration' do
       allow(TradeTariffBackend.search_client).to receive(:index)
 
-      post :regenerate, params: { goods_nomenclature_id: self_text.goods_nomenclature_sid }, format: :json
+      post "/uk/admin/goods_nomenclatures/#{self_text.goods_nomenclature_sid}/goods_nomenclature_self_text/regenerate.json", headers: request_headers(format: :json), as: :json
 
       expect(TradeTariffBackend.search_client).to have_received(:index).with(
         Search::GoodsNomenclatureIndex,
@@ -420,7 +387,7 @@ RSpec.describe Api::Admin::GoodsNomenclatures::GoodsNomenclatureSelfTextsControl
 
     context 'when self text record does not exist' do
       it 'returns 404' do
-        post :regenerate, params: { goods_nomenclature_id: '9999999999' }, format: :json
+        post '/uk/admin/goods_nomenclatures/9999999999/goods_nomenclature_self_text/regenerate.json', headers: request_headers(format: :json), as: :json
 
         expect(response).to have_http_status(:not_found)
       end

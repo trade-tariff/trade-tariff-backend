@@ -9,10 +9,8 @@ RSpec.describe Api::Admin::RollbacksController, :admin do
       before { record }
 
       it 'responds with success + redirect', :aggregate_failures do
-        request.headers['X-Whodunnit'] = 'test-user-uid'
-
         expect {
-          post :create, params: { data: { type: :rollback, attributes: rollback_attributes } }
+          post '/uk/admin/rollbacks', params: { data: { type: :rollback, attributes: rollback_attributes } }, headers: request_headers({ 'X-Whodunnit' => 'test-user-uid' }), as: :json
         }.to change(Rollback, :count).by(1)
         expect(response.status).to eq 201
         expect(response.location).to eq api_rollbacks_url
@@ -27,7 +25,7 @@ RSpec.describe Api::Admin::RollbacksController, :admin do
       end
 
       it 'returns errors for rollback', :aggregate_failures do
-        post :create, params: { data: { type: :rollback, attributes: { date: '', keep: '' } } }
+        post '/uk/admin/rollbacks', params: { data: { type: :rollback, attributes: { date: '', keep: '' } } }, headers: request_headers, as: :json
 
         expect(response.status).to eq 422
         expect(response.body).to match_json_expression response_pattern
@@ -64,7 +62,7 @@ RSpec.describe Api::Admin::RollbacksController, :admin do
     end
 
     it 'returns scheduled rollbacks', :aggregate_failures do
-      get :index, format: :json
+      get '/uk/admin/rollbacks.json', headers: request_headers(format: :json)
 
       expect(response.status).to eq 200
       expect(response.body).to match_json_expression response_pattern
@@ -76,7 +74,7 @@ RSpec.describe Api::Admin::RollbacksController, :admin do
       end
 
       it 'returns empty rollbacks array', :aggregate_failures do
-        get :index, format: :json
+        get '/uk/admin/rollbacks.json', headers: request_headers(format: :json)
 
         expect(response.status).to eq 200
         expect(JSON.parse(response.body)['data']).to eq []

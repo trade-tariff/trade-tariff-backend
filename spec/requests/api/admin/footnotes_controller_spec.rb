@@ -21,14 +21,14 @@ RSpec.describe Api::Admin::FootnotesController do
     end
 
     specify 'returns national footnote', :aggregate_failures do
-      get :index, format: :json
+      get '/uk/admin/footnotes.json', headers: request_headers(format: :json)
 
       expect(response.body).to match_json_expression response_pattern
       expect(json_body.map { |f| f['id'] }).to include national_footnote.pk.join
     end
 
     specify 'does not return non-national footnote' do
-      get :index, format: :json
+      get '/uk/admin/footnotes.json', headers: request_headers(format: :json)
 
       expect(json_body.map { |f| f['id'] }).not_to include non_national_footnote.pk.join
     end
@@ -54,13 +54,13 @@ RSpec.describe Api::Admin::FootnotesController do
     end
 
     specify 'returns national footnote' do
-      get :show, params: { id: national_footnote.pk.join }, format: :json
+      get "/uk/admin/footnotes/#{national_footnote.pk.join}.json", headers: request_headers(format: :json)
 
       expect(response.body).to match_json_expression response_pattern
     end
 
     specify 'does not return non-national footnote' do
-      get :show, params: { id: non_national_footnote.pk.join }, format: :json
+      get "/uk/admin/footnotes/#{non_national_footnote.pk.join}.json", headers: request_headers(format: :json)
 
       expect(response.status).to eq 404
     end
@@ -72,13 +72,13 @@ RSpec.describe Api::Admin::FootnotesController do
 
     specify 'updates national footnote' do
       expect {
-        put :update, params: { id: national_footnote.pk.join, data: { type: :footnote, attributes: { description: 'new description' } } }, format: :json
+        put "/uk/admin/footnotes/#{national_footnote.pk.join}.json", params: { data: { type: :footnote, attributes: { description: 'new description' } } }, headers: request_headers(format: :json), as: :json
         FootnoteDescription.refresh!
       }.to change { national_footnote.reload.description }.to('new description')
     end
 
     specify 'does not update non-national footnote' do
-      put :update, params: { id: non_national_footnote.pk.join, data: {} }, format: :json
+      put "/uk/admin/footnotes/#{non_national_footnote.pk.join}.json", params: { data: {} }, headers: request_headers(format: :json), as: :json
 
       expect(response.status).to eq 404
     end

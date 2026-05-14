@@ -1,5 +1,12 @@
 RSpec.describe Api::V2::FootnotesController, type: :request do
-  subject(:do_response) { get(:search, params:) && response }
+  subject(:api_response) do
+    make_request
+    response
+  end
+
+  let(:make_request) do
+    get '/uk/api/footnotes/search', params: params, headers: request_headers
+  end
 
   let(:footnote) { create(:footnote, :with_description) }
 
@@ -43,7 +50,7 @@ RSpec.describe Api::V2::FootnotesController, type: :request do
     end
 
     it { is_expected.to have_http_status :unprocessable_content }
-    it { expect(do_response.body).to match_json_expression pattern }
+    it { expect(api_response.body).to match_json_expression pattern }
   end
 
   context 'when searching by id' do
@@ -62,7 +69,7 @@ RSpec.describe Api::V2::FootnotesController, type: :request do
     end
 
     it { is_expected.to have_http_status :unprocessable_content }
-    it { expect(do_response.body).to match_json_expression pattern }
+    it { expect(api_response.body).to match_json_expression pattern }
   end
 
   context 'when searching with no params' do
@@ -81,7 +88,7 @@ RSpec.describe Api::V2::FootnotesController, type: :request do
     end
 
     it { is_expected.to have_http_status :unprocessable_content }
-    it { expect(do_response.body).to match_json_expression pattern }
+    it { expect(api_response.body).to match_json_expression pattern }
   end
 
   context 'when no footnotes are found' do
@@ -94,6 +101,6 @@ RSpec.describe Api::V2::FootnotesController, type: :request do
       }
     end
 
-    it { expect(do_response.body).to match_json_expression pattern_empty }
+    it { expect(api_response.body).to match_json_expression pattern_empty }
   end
 end

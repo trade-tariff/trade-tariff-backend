@@ -39,7 +39,7 @@ RSpec.describe Api::V2::FootnoteTypesController, type: :request do
     end
 
     it 'returns all footnote types' do
-      get :index, format: :json
+      get '/uk/api/footnote_types.json', headers: request_headers(format: :json)
 
       expect(response.body).to match_json_expression pattern
     end

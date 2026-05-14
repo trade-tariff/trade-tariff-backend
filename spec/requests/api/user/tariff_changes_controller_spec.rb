@@ -13,13 +13,13 @@ RSpec.describe Api::User::TariffChangesController do
       end
 
       it 'calls TariffChangesService with the correct date and user' do
-        get :download, params: { as_of: date.to_s }
+        get '/uk/user/tariff_changes/download', params: { as_of: date.to_s }, headers: request_headers
 
         expect(TariffChangesService).to have_received(:generate_report_for).with(date, user)
       end
 
       it 'returns an Excel file with correct headers' do
-        get :download, params: { as_of: date.to_s }
+        get '/uk/user/tariff_changes/download', params: { as_of: date.to_s }, headers: request_headers
 
         expect(response).to have_http_status(:ok)
         expect(response.content_type).to eq('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
@@ -28,7 +28,7 @@ RSpec.describe Api::User::TariffChangesController do
       end
 
       it 'sends the file data' do
-        get :download, params: { as_of: date.to_s }
+        get '/uk/user/tariff_changes/download', params: { as_of: date.to_s }, headers: request_headers
 
         expect(response.body).to eq('mock excel data')
       end
@@ -40,7 +40,7 @@ RSpec.describe Api::User::TariffChangesController do
       end
 
       it 'returns a not found error' do
-        get :download, params: { as_of: date.to_s }
+        get '/uk/user/tariff_changes/download', params: { as_of: date.to_s }, headers: request_headers
 
         expect(response).to have_http_status(:not_found)
         expect(JSON.parse(response.body)).to eq({ 'error' => 'No changes found' })
@@ -55,7 +55,7 @@ RSpec.describe Api::User::TariffChangesController do
 
       it 'defaults to yesterday' do
         freeze_time do
-          get :download
+          get '/uk/user/tariff_changes/download', headers: request_headers
 
           expect(TariffChangesService).to have_received(:generate_report_for).with(Time.zone.yesterday, user)
         end
@@ -71,19 +71,17 @@ RSpec.describe Api::User::TariffChangesController do
       end
 
       it 'uses the provided date' do
-        get :download, params: { as_of: custom_date.to_s }
+        get '/uk/user/tariff_changes/download', params: { as_of: custom_date.to_s }, headers: request_headers
 
         expect(TariffChangesService).to have_received(:generate_report_for).with(custom_date, user)
       end
     end
 
     context 'when user is not authenticated' do
-      before do
-        request.headers['Authorization'] = nil
-      end
+      let(:request_header_overrides) { {} }
 
       it 'returns unauthorized' do
-        get :download, params: { as_of: date.to_s }
+        get '/uk/user/tariff_changes/download', params: { as_of: date.to_s }, headers: request_headers
 
         expect(response).to have_http_status(:unauthorized)
       end

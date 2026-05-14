@@ -4,7 +4,7 @@ RSpec.describe Api::Admin::ReportsController do
       allow(TradeTariffBackend).to receive_messages(service: service, reporting_cdn_host: nil)
       allow(Reporting::Commodities).to receive(:available_today?).and_return(true)
       allow(Reporting::SupplementaryUnits).to receive(:available_today?).and_return(true)
-      get :index
+      get '/uk/admin/reports', headers: request_headers
     end
 
     context 'when on the UK service' do
@@ -21,7 +21,7 @@ RSpec.describe Api::Admin::ReportsController do
       before do
         allow(Reporting::Commodities).to receive(:available_today?).and_return(false)
         allow(Reporting::SupplementaryUnits).to receive(:available_today?).and_return(true)
-        get :index
+        get '/uk/admin/reports', headers: request_headers
       end
 
       it 'returns the missing dependency labels' do
@@ -59,7 +59,7 @@ RSpec.describe Api::Admin::ReportsController do
       allow(Reporting::Commodities).to receive(:available_today?).and_return(true)
       allow(Reporting::SupplementaryUnits).to receive(:available_today?).and_return(true)
       allow(TradeTariffBackend).to receive_messages(reporting_cdn_host: nil, service: 'uk')
-      get :show, params: { id: 'differences' }
+      get '/uk/admin/reports/differences', headers: request_headers
     end
 
     it { expect(response).to have_http_status(:ok) }
@@ -72,7 +72,7 @@ RSpec.describe Api::Admin::ReportsController do
     before do
       allow(TradeTariffBackend).to receive_messages(service: 'uk', reporting_cdn_host: nil)
       allow(DifferencesReportWorker).to receive(:perform_async)
-      post :send_email, params: { id: 'differences' }
+      post '/uk/admin/reports/differences/send_email', headers: request_headers, as: :json
     end
 
     it { expect(response).to have_http_status(:accepted) }
@@ -83,7 +83,7 @@ RSpec.describe Api::Admin::ReportsController do
     before do
       allow(TradeTariffBackend).to receive_messages(service: 'uk', reporting_cdn_host: nil)
       allow(ReportTriggerWorker).to receive(:perform_async)
-      post :run, params: { id: 'commodities' }
+      post '/uk/admin/reports/commodities/run', headers: request_headers, as: :json
     end
 
     it { expect(response).to have_http_status(:accepted) }
@@ -97,7 +97,7 @@ RSpec.describe Api::Admin::ReportsController do
       before do
         allow(TradeTariffBackend).to receive_messages(service: 'uk', reporting_cdn_host: nil)
         allow(Reporting::BackfillDifferencesReports).to receive(:new).and_return(backfill_service)
-        post :backfill, params: { id: 'differences' }
+        post '/uk/admin/reports/differences/backfill', headers: request_headers, as: :json
       end
 
       it { expect(response).to have_http_status(:accepted) }
@@ -108,7 +108,7 @@ RSpec.describe Api::Admin::ReportsController do
       before do
         allow(TradeTariffBackend).to receive_messages(service: 'uk', reporting_cdn_host: nil)
         allow(Reporting::BackfillDifferencesReports).to receive(:new)
-        post :backfill, params: { id: 'commodities' }
+        post '/uk/admin/reports/commodities/backfill', headers: request_headers, as: :json
       end
 
       it { expect(response).to have_http_status(:not_found) }
@@ -119,7 +119,7 @@ RSpec.describe Api::Admin::ReportsController do
       before do
         allow(TradeTariffBackend).to receive_messages(service: 'xi', reporting_cdn_host: nil)
         allow(Reporting::BackfillDifferencesReports).to receive(:new)
-        post :backfill, params: { id: 'differences' }
+        post '/uk/admin/reports/differences/backfill', headers: request_headers, as: :json
       end
 
       it { expect(response).to have_http_status(:not_found) }

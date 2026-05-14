@@ -27,8 +27,8 @@ RSpec.describe Api::Admin::UpdatesController do
     context 'when records are present' do
       before { create :taric_update }
 
-      it 'returns rendered records' do
-        get :index, format: :json
+      it 'returns api_response records' do
+        get '/uk/admin/updates.json', headers: request_headers(format: :json)
 
         expect(response.body).to match_json_expression pattern
       end
@@ -36,7 +36,7 @@ RSpec.describe Api::Admin::UpdatesController do
 
     context 'when records are not present' do
       it 'returns blank array' do
-        get :index, format: :json
+        get '/uk/admin/updates.json', headers: request_headers(format: :json)
 
         expect(JSON.parse(response.body)['data']).to eq []
       end
@@ -45,7 +45,14 @@ RSpec.describe Api::Admin::UpdatesController do
 
   describe 'GET #show' do
     context 'when records are present' do
-      subject(:do_request) { get :show, params: { id: update.to_param, format: :json } }
+      subject(:api_response) do
+        make_request
+        response
+      end
+
+      let(:make_request) do
+        get "/uk/admin/updates/#{update.to_param}.json", headers: request_headers(format: :json)
+      end
 
       let(:pattern) do
         {
@@ -64,20 +71,27 @@ RSpec.describe Api::Admin::UpdatesController do
 
       let(:update) { create(:cds_update) }
 
-      it { expect(do_request.body).to match_json_expression pattern }
+      it { expect(api_response.body).to match_json_expression pattern }
     end
 
     context 'when records are not present' do
-      subject(:do_request) { get :show, params: { id: 'foo', format: :json } }
+      subject(:api_response) do
+        make_request
+        response
+      end
+
+      let(:make_request) do
+        get '/uk/admin/updates/foo.json', headers: request_headers(format: :json)
+      end
 
       let(:pattern) do
         {
           error: 'not found',
-          url: 'http://www.example.com/uk/admin/updates/foo',
+          url: 'http://www.example.com/uk/admin/updates/foo.json',
         }
       end
 
-      it { expect(do_request.body).to match_json_expression pattern }
+      it { expect(api_response.body).to match_json_expression pattern }
     end
   end
 end
