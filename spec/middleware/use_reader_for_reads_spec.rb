@@ -13,9 +13,9 @@ RSpec.describe UseReaderForReads do
     context 'when the request method is GET' do
       let(:env) { Rack::MockRequest.env_for('/uk/api/commodities', method: 'GET') }
 
-      it 'routes through the read_only server' do
+      it 'routes through the reader server' do
         middleware.call(env)
-        expect(Sequel::Model.db).to have_received(:with_server).with(:read_only)
+        expect(Sequel::Model.db).to have_received(:with_server).with(:reader)
       end
 
       it 'calls the inner app' do
@@ -27,9 +27,9 @@ RSpec.describe UseReaderForReads do
     context 'when the request method is HEAD' do
       let(:env) { Rack::MockRequest.env_for('/uk/api/commodities', method: 'HEAD') }
 
-      it 'routes through the read_only server' do
+      it 'routes through the reader server' do
         middleware.call(env)
-        expect(Sequel::Model.db).to have_received(:with_server).with(:read_only)
+        expect(Sequel::Model.db).to have_received(:with_server).with(:reader)
       end
 
       it 'calls the inner app' do
