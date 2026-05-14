@@ -10,11 +10,11 @@ class DutyExpression < Sequel::Model
     '29' => '673', # + reduced additional duty on flour
   }.freeze
 
+  set_primary_key [:duty_expression_id]
+
   plugin :time_machine
   plugin :oplog, primary_key: :duty_expression_id
   plugin :static_cache, frozen: false unless Rails.env.test?
-
-  set_primary_key [:duty_expression_id]
 
   one_to_one :duty_expression_description
 

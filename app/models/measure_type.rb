@@ -55,11 +55,11 @@ class MeasureType < Sequel::Model
     2 => 'both',
   }.freeze
 
+  set_primary_key [:measure_type_id]
+
   plugin :time_machine
   plugin :oplog, primary_key: :measure_type_id
   plugin :static_cache, frozen: false unless Rails.env.test?
-
-  set_primary_key [:measure_type_id]
 
   one_to_one :measure_type_description, key: :measure_type_id,
                                         foreign_key: :measure_type_id

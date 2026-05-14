@@ -1,9 +1,9 @@
 class MeasureAction < Sequel::Model
+  set_primary_key [:action_code]
+
   plugin :time_machine
   plugin :oplog, primary_key: :action_code
   plugin :static_cache, frozen: false unless Rails.env.test?
-
-  set_primary_key [:action_code]
 
   many_to_one :measure_action_description, key: :action_code,
                                            primary_key: :action_code
