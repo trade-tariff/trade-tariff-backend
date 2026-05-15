@@ -1,4 +1,4 @@
-DutyExpressionFormatter::Context = Struct.new(
+DutyExpressionFormatter::Context = Data.define(
   :duty_expression_id,
   :duty_expression_description,
   :duty_expression_abbreviation,
@@ -12,7 +12,6 @@ DutyExpressionFormatter::Context = Struct.new(
   :resolved_meursing_component,
   :formatted,
   :verbose,
-  keyword_init: true,
 ) do
   class << self
     def build(opts)

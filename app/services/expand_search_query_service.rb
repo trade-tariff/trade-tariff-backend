@@ -2,7 +2,7 @@ class ExpandSearchQueryService
   NUMERIC_CODE_PATTERN = /\A\d+\z/
   CACHE_TTL = 7.days
 
-  Result = Struct.new(:expanded_query, :reason, keyword_init: true)
+  Result = Data.define(:expanded_query, :reason)
 
   def initialize(query)
     @query = query.to_s.strip

@@ -1,5 +1,5 @@
 class HybridRetrievalService
-  Result = Struct.new(:results, :expanded_query, keyword_init: true)
+  Result = Data.define(:results, :expanded_query)
 
   def self.call(query:, as_of:, request_id: nil, limit: 30, filter_prefixes: [])
     new(query:, as_of:, request_id:, limit:, filter_prefixes:).call
