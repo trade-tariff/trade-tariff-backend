@@ -7,9 +7,13 @@ RSpec.describe Api::Admin::SearchReferencesController, :admin do
   end
 
   describe 'GET #index' do
-    subject(:do_request) do
-      authenticated_get api_search_references_path(params: query_letter, format: :json)
+    subject(:api_response) do
+      make_request
       response
+    end
+
+    let(:make_request) do
+      authenticated_get api_search_references_path(params: query_letter, format: :json)
     end
 
     context 'when letter is provided' do
@@ -18,7 +22,7 @@ RSpec.describe Api::Admin::SearchReferencesController, :admin do
       it { is_expected.to be_successful }
 
       it 'performs lookup with provided letter' do
-        do_request
+        api_response
 
         search_ref_count = JSON.parse(response.body)['data'].count
         expect(search_ref_count).to eq(1)
@@ -31,7 +35,7 @@ RSpec.describe Api::Admin::SearchReferencesController, :admin do
       it { is_expected.to be_successful }
 
       it 'does not filter by letter' do
-        do_request
+        api_response
 
         search_ref_count = JSON.parse(response.body)['data'].count
         expect(search_ref_count).to eq(3)

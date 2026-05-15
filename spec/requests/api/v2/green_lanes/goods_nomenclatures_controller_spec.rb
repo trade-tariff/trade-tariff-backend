@@ -25,7 +25,10 @@ RSpec.describe Api::V2::GreenLanes::GoodsNomenclaturesController, :v2 do
   let(:params) { {} }
 
   describe 'GET #show' do
-    subject(:rendered) { make_request && response }
+    subject(:api_response) do
+      make_request
+      response
+    end
 
     context 'when the good nomenclature id is not a subheading' do
       let(:request_item_id) { '1234000000' }
@@ -69,7 +72,10 @@ RSpec.describe Api::V2::GreenLanes::GoodsNomenclaturesController, :v2 do
   end
 
   describe 'User authentication' do
-    subject(:rendered) { make_request && response }
+    subject(:api_response) do
+      make_request
+      response
+    end
 
     context 'when presence of incorrect bearer token' do
       let :authorization do

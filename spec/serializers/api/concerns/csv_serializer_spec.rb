@@ -1,4 +1,4 @@
-TestSerializer = Struct.new('Serializer') do
+TestSerializer = Class.new do
   include Api::Shared::CsvSerializer
 
   columns :id, :numeral
@@ -8,11 +8,12 @@ TestSerializer = Struct.new('Serializer') do
     serializable.qux
   end
 end
+TestSerializable = Data.define(:id, :numeral, :title, :qux)
 
 RSpec.describe Api::Shared::CsvSerializer do
   let(:serializables) do
     [
-      Struct.new(:id, :numeral, :title, :qux).new(
+      TestSerializable.new(
         '123',
         'IV',
         'Thing is, good',

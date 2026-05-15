@@ -1,17 +1,385 @@
-RSpec.describe Api::Admin::DescriptionInterceptsController, :admin, type: :request do
-  describe 'DELETE #destroy' do
+RSpec.describe Api::Admin::DescriptionInterceptsController do
+  describe '#index' do
+    before do
+      guided_search_intercept
+      fpo_intercept
+    end
+
+    let!(:guided_search_intercept) do
+      create(
+        :description_intercept,
+        term: 'footwear',
+        aliases: Sequel.pg_array(%w[trainers shoes], :text),
+        sources: Sequel.pg_array(%w[guided_search], :text),
+        guidance_level: 'warning',
+        guidance_location: 'results',
+        message_header: 'Check the term',
+        escalate_to_webchat: true,
+        filter_prefixes: Sequel.pg_array(%w[6403 6404], :text),
+      )
+    end
+
+    let!(:fpo_intercept) do
+      create(
+        :description_intercept,
+        term: 'gift',
+        sources: Sequel.pg_array(%w[fpo_search], :text),
+        excluded: true,
+        message: nil,
+      )
+    end
+
+    it 'returns all description intercepts' do
+      get '/uk/admin/description_intercepts.json', headers: request_headers(format: :json)
+
+      json = JSON.parse(response.body)
+      expect(json['data'].length).to eq(2)
+      expect(json['data'].map { |row| row['type'] }.uniq).to eq(%w[description_intercept])
+    end
+
+    it 'includes pagination meta' do
+      get '/uk/admin/description_intercepts.json', headers: request_headers(format: :json)
+
+      json = JSON.parse(response.body)
+      expect(json.dig('meta', 'pagination')).to include(
+        'page' => 1,
+        'per_page' => Integer,
+        'total_count' => 2,
+      )
+    end
+
+    it 'filters by search term' do
+      get '/uk/admin/description_intercepts.json', params: { q: 'foot' }, headers: request_headers(format: :json)
+
+      json = JSON.parse(response.body)
+      expect(json['data'].length).to eq(1)
+      expect(json.dig('data', 0, 'attributes', 'term')).to eq('footwear')
+    end
+
+    it 'filters by alias' do
+      get '/uk/admin/description_intercepts.json', params: { q: 'trainers' }, headers: request_headers(format: :json)
+
+      json = JSON.parse(response.body)
+      expect(json['data'].length).to eq(1)
+      expect(json.dig('data', 0, 'attributes', 'term')).to eq('footwear')
+    end
+
+    it 'filters by source' do
+      get '/uk/admin/description_intercepts.json', params: { source: 'fpo_search' }, headers: request_headers(format: :json)
+
+      json = JSON.parse(response.body)
+      expect(json['data'].length).to eq(1)
+      expect(json.dig('data', 0, 'attributes', 'term')).to eq('gift')
+    end
+
+    it 'filters to rows with filtering enabled' do
+      get '/uk/admin/description_intercepts.json', params: { filtering: 'true' }, headers: request_headers(format: :json)
+
+      json = JSON.parse(response.body)
+      expect(json['data'].length).to eq(1)
+      expect(json.dig('data', 0, 'attributes', 'term')).to eq('footwear')
+    end
+
+    it 'filters to rows with escalation enabled' do
+      get '/uk/admin/description_intercepts.json', params: { escalates: 'true' }, headers: request_headers(format: :json)
+
+      json = JSON.parse(response.body)
+      expect(json['data'].length).to eq(1)
+      expect(json.dig('data', 0, 'attributes', 'term')).to eq('footwear')
+    end
+
+    it 'filters to rows with guidance' do
+      get '/uk/admin/description_intercepts.json', params: { guidance: 'true' }, headers: request_headers(format: :json)
+
+      json = JSON.parse(response.body)
+      expect(json['data'].length).to eq(1)
+      expect(json.dig('data', 0, 'attributes', 'term')).to eq('footwear')
+    end
+
+    it 'filters to rows that are excluded' do
+      get '/uk/admin/description_intercepts.json', params: { excluded: 'true' }, headers: request_headers(format: :json)
+
+      json = JSON.parse(response.body)
+      expect(json['data'].length).to eq(1)
+      expect(json.dig('data', 0, 'attributes', 'term')).to eq('gift')
+    end
+  end
+
+  describe '#show' do
+    let!(:intercept) do
+      create(
+        :description_intercept,
+        term: 'footwear',
+        aliases: Sequel.pg_array(%w[trainers shoes], :text),
+        guidance_level: 'warning',
+        guidance_location: 'results',
+        message_header: 'Check the term',
+        escalate_to_webchat: true,
+        filter_prefixes: Sequel.pg_array(%w[6403 6404], :text),
+      )
+    end
+
+    it 'returns the description intercept' do
+      get "/uk/admin/description_intercepts/#{intercept.id}.json", headers: request_headers(format: :json)
+
+      json = JSON.parse(response.body)
+      expect(json).to match_json_expression(
+        data: {
+          id: intercept.id.to_s,
+          type: 'description_intercept',
+          attributes: {
+            term: 'footwear',
+            aliases: %w[trainers shoes],
+            sources: %w[guided_search],
+            message: 'Please be more specific.',
+            message_header: 'Check the term',
+            excluded: false,
+            created_at: wildcard_matcher,
+            guidance_level: 'warning',
+            guidance_location: 'results',
+            escalate_to_webchat: true,
+            filter_prefixes: %w[6403 6404],
+          },
+        },
+        meta: {
+          version: {
+            current: wildcard_matcher,
+            oid: wildcard_matcher,
+            previous_oid: wildcard_matcher,
+            has_previous_version: wildcard_matcher,
+            latest_event: wildcard_matcher,
+          },
+        },
+      )
+    end
+
+    it 'returns 404 when not found' do
+      get '/uk/admin/description_intercepts/999999.json', headers: request_headers(format: :json)
+
+      expect(response).to have_http_status(:not_found)
+    end
+
+    context 'when viewing a historical version' do
+      before { intercept.update(message: 'Updated guidance') }
+
+      it 'returns the historical version data' do
+        version = intercept.versions.order(:id).first
+
+        get "/uk/admin/description_intercepts/#{intercept.id}.json", params: { filter: { oid: version.id } }, headers: request_headers(format: :json)
+
+        json = JSON.parse(response.body)
+        expect(json.dig('data', 'attributes', 'message')).to eq('Please be more specific.')
+        expect(json.dig('meta', 'version', 'current')).to be false
+      end
+    end
+  end
+
+  describe '#create' do
+    it 'creates a description intercept' do
+      expect {
+        post '/uk/admin/description_intercepts.json', params: { data: {
+          type: 'description_intercept',
+          attributes: {
+            term: 'bicycles',
+            aliases: %w[cycle bike],
+            message: 'Read the bicycle guidance.',
+            message_header: 'Bicycle guidance',
+            guidance_level: 'info',
+            guidance_location: 'results',
+            escalate_to_webchat: true,
+            filter_prefixes: %w[8712 9503],
+            sources: %w[guided_search fpo_search],
+            excluded: false,
+          },
+        } }, headers: request_headers(format: :json), as: :json
+      }.to change(DescriptionIntercept, :count).by(1)
+
+      expect(response).to have_http_status(:created)
+
+      intercept = DescriptionIntercept.order(Sequel.desc(:id)).first
+      expect(intercept.term).to eq('bicycles')
+      expect(intercept.aliases).to eq(%w[cycle bike])
+      expect(intercept.message).to eq('Read the bicycle guidance.')
+      expect(intercept.message_header).to eq('Bicycle guidance')
+      expect(intercept.guidance_level).to eq('info')
+      expect(intercept.guidance_location).to eq('results')
+      expect(intercept.escalate_to_webchat).to be true
+      expect(intercept.filter_prefixes).to eq(%w[8712 9503])
+      expect(intercept.sources).to eq(%w[guided_search fpo_search])
+      expect(intercept.excluded).to be false
+    end
+
+    it 'returns validation errors for invalid attributes' do
+      expect {
+        post '/uk/admin/description_intercepts.json', params: { data: {
+          type: 'description_intercept',
+          attributes: {
+            term: 'bicycles',
+            excluded: true,
+            filter_prefixes: %w[8712],
+            sources: %w[guided_search],
+            escalate_to_webchat: false,
+          },
+        } }, headers: request_headers(format: :json), as: :json
+      }.not_to change(DescriptionIntercept, :count)
+
+      expect(response).to have_http_status(:unprocessable_content)
+      json = JSON.parse(response.body)
+      expect(json['errors'].first.dig('source', 'pointer')).to eq('/data/attributes/filter_prefixes')
+    end
+  end
+
+  describe '#update' do
+    let!(:intercept) { create(:description_intercept, term: 'footwear') }
+
+    it 'updates the description intercept fields' do
+      put "/uk/admin/description_intercepts/#{intercept.id}.json", params: { data: {
+        type: 'description_intercept',
+        attributes: {
+          message: 'Read the footwear guidance.',
+          message_header: 'Footwear guidance',
+          guidance_level: 'warning',
+          guidance_location: 'results',
+          escalate_to_webchat: true,
+          filter_prefixes: %w[6403 6404],
+          aliases: %w[trainers shoes],
+          sources: %w[guided_search fpo_search],
+        },
+      } }, headers: request_headers(format: :json), as: :json
+
+      expect(response).to have_http_status(:ok)
+
+      intercept.reload
+      expect(intercept.message).to eq('Read the footwear guidance.')
+      expect(intercept.message_header).to eq('Footwear guidance')
+      expect(intercept.guidance_level).to eq('warning')
+      expect(intercept.guidance_location).to eq('results')
+      expect(intercept.escalate_to_webchat).to be true
+      expect(intercept.filter_prefixes).to eq(%w[6403 6404])
+      expect(intercept.aliases).to eq(%w[trainers shoes])
+      expect(intercept.sources).to eq(%w[guided_search fpo_search])
+    end
+
+    it 'clears array fields when blank values are submitted' do
+      intercept.update(
+        filter_prefixes: Sequel.pg_array(%w[6403 6404], :text),
+        aliases: Sequel.pg_array(%w[trainers], :text),
+        sources: Sequel.pg_array(%w[guided_search fpo_search], :text),
+      )
+
+      put "/uk/admin/description_intercepts/#{intercept.id}.json", params: { data: {
+        type: 'description_intercept',
+        attributes: {
+          filter_prefixes: [''],
+          aliases: [''],
+          sources: [''],
+        },
+      } }, headers: request_headers(format: :json), as: :json
+
+      expect(response).to have_http_status(:ok)
+
+      intercept.reload
+      expect(intercept.filter_prefixes).to eq([])
+      expect(intercept.aliases).to eq([])
+      expect(intercept.sources).to eq([])
+    end
+
+    it 'returns validation errors for invalid combinations' do
+      put "/uk/admin/description_intercepts/#{intercept.id}.json", params: { data: {
+        type: 'description_intercept',
+        attributes: {
+          excluded: true,
+          filter_prefixes: %w[6403],
+        },
+      } }, headers: request_headers(format: :json), as: :json
+
+      expect(response).to have_http_status(:unprocessable_content)
+      json = JSON.parse(response.body)
+      expect(json['errors'].first.dig('source', 'pointer')).to eq('/data/attributes/filter_prefixes')
+    end
+  end
+
+  describe '#bulk_import' do
+    let(:template_value) do
+      {
+        'vague' => {
+          'label' => 'Vague term',
+          'description' => 'Use when the term is too broad to classify safely.',
+          'attributes' => {
+            'escalate_to_webchat' => false,
+            'excluded' => true,
+            'filter_prefixes' => [],
+            'guidance_level' => 'info',
+            'guidance_location' => 'interstitial',
+            'message_header' => 'Placeholder guidance heading',
+            'message' => 'This is too vague. Please be better at classification',
+            'sources' => %w[guided_search fpo_search],
+          },
+        },
+      }
+    end
+
+    before do
+      create(:admin_configuration, name: 'description_intercept_templates', config_type: 'object_template', value: template_value)
+    end
+
+    it 'imports valid CSV content' do
+      expect {
+        post '/uk/admin/description_intercepts/bulk_import.json', params: { data: {
+          type: 'description_intercept_bulk_import',
+          attributes: { csv: "term,template\ngift,vague\n" },
+        } }, headers: request_headers(format: :json), as: :json
+      }.to change(DescriptionIntercept, :count).by(1)
+
+      expect(response).to have_http_status(:created)
+      json = JSON.parse(response.body)
+      expect(json.dig('data', 'attributes')).to include('created' => 1, 'updated' => 0, 'total' => 1)
+    end
+
+    it 'returns grouped validation errors without importing' do
+      expect {
+        post '/uk/admin/description_intercepts/bulk_import.json', params: { data: {
+          type: 'description_intercept_bulk_import',
+          attributes: { csv: "term,template\ngift,foo\npresent,baz\n" },
+        } }, headers: request_headers(format: :json), as: :json
+      }.not_to change(DescriptionIntercept, :count)
+
+      expect(response).to have_http_status(:unprocessable_content)
+      json = JSON.parse(response.body)
+      expect(json['errors'].first).to include(
+        'detail' => 'foo and baz are not valid templates',
+        'meta' => { 'code' => 'invalid_templates', 'values' => %w[foo baz] },
+      )
+    end
+  end
+
+  describe '#versions' do
+    let!(:intercept) { create(:description_intercept, term: 'footwear') }
+
+    before { intercept.update(message: 'Updated guidance') }
+
+    it 'returns the intercept versions' do
+      get "/uk/admin/description_intercepts/#{intercept.id}/versions.json", headers: request_headers(format: :json)
+
+      json = JSON.parse(response.body)
+      expect(json['data'].length).to eq(2)
+      expect(json['data'].map { |row| row['type'] }.uniq).to eq(%w[version])
+    end
+  end
+
+  describe '#destroy' do
     let!(:intercept) { create(:description_intercept, term: 'footwear') }
 
     it 'deletes the description intercept' do
       expect {
-        authenticated_delete api_admin_description_intercept_path(intercept.id, format: :json)
+        delete "/uk/admin/description_intercepts/#{intercept.id}.json", headers: request_headers(format: :json)
       }.to change(DescriptionIntercept, :count).by(-1)
 
       expect(response).to have_http_status(:no_content)
     end
 
     it 'returns 404 when not found' do
-      authenticated_delete api_admin_description_intercept_path(999_999, format: :json)
+      delete '/uk/admin/description_intercepts/999_999.json', headers: request_headers(format: :json)
 
       expect(response).to have_http_status(:not_found)
     end

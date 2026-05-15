@@ -1,8 +1,12 @@
 RSpec.describe Api::Admin::CommoditiesController, :admin do
   describe 'GET #show' do
-    subject(:do_request) do
-      authenticated_get api_admin_commodity_path(id: goods_nomenclature.to_admin_param)
+    subject(:api_response) do
+      make_request
       response
+    end
+
+    let(:make_request) do
+      authenticated_get api_admin_commodity_path(id: goods_nomenclature.to_admin_param)
     end
 
     context 'when fetching a commodity' do
@@ -17,7 +21,7 @@ RSpec.describe Api::Admin::CommoditiesController, :admin do
       it_behaves_like 'a successful jsonapi response'
 
       it 'returns the commodity' do
-        json_response = JSON.parse(do_request.body)
+        json_response = JSON.parse(api_response.body)
 
         expect(json_response.dig('data', 'id')).to eq('0101010100')
       end
@@ -35,7 +39,7 @@ RSpec.describe Api::Admin::CommoditiesController, :admin do
       it_behaves_like 'a successful jsonapi response'
 
       it 'returns the subheading' do
-        json_response = JSON.parse(do_request.body)
+        json_response = JSON.parse(api_response.body)
 
         expect(json_response.dig('data', 'id')).to eq('0101010100-10')
       end

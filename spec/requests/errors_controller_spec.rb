@@ -1,7 +1,10 @@
 RSpec.describe ErrorsController do
-  subject(:rendered) { make_request && response }
+  subject(:api_response) do
+    make_request
+    response
+  end
 
-  let(:json_response) { JSON.parse(rendered.body) }
+  let(:json_response) { JSON.parse(api_response.body) }
 
   shared_examples 'a json error response' do |status_code, message|
     it { is_expected.to have_http_status status_code }

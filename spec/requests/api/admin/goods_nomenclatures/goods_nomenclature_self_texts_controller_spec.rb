@@ -1,0 +1,396 @@
+RSpec.describe Api::Admin::GoodsNomenclatures::GoodsNomenclatureSelfTextsController do
+  describe '#show' do
+    let(:pattern) do
+      {
+        data: {
+          id: String,
+          type: 'goods_nomenclature_self_text',
+          attributes: {
+            goods_nomenclature_sid: Integer,
+            goods_nomenclature_item_id: String,
+            self_text: String,
+            generation_type: String,
+            needs_review: wildcard_matcher,
+            approved: wildcard_matcher,
+            manually_edited: wildcard_matcher,
+            stale: wildcard_matcher,
+            expired: wildcard_matcher,
+            created_at: String,
+            updated_at: String,
+            eu_self_text: wildcard_matcher,
+            similarity_score: wildcard_matcher,
+            coherence_score: wildcard_matcher,
+            input_context: Hash,
+            nomenclature_type: wildcard_matcher,
+            score: wildcard_matcher,
+            has_label: wildcard_matcher,
+          },
+        },
+        meta: {
+          version: {
+            current: wildcard_matcher,
+            oid: wildcard_matcher,
+            previous_oid: wildcard_matcher,
+            has_previous_version: wildcard_matcher,
+            latest_event: wildcard_matcher,
+          },
+        },
+      }
+    end
+
+    context 'when self text record exists' do
+      let!(:self_text) { create :goods_nomenclature_self_text }
+
+      it 'returns api_response record' do
+        get "/uk/admin/goods_nomenclatures/#{self_text.goods_nomenclature_sid}/goods_nomenclature_self_text.json", headers: request_headers(format: :json)
+
+        expect(response).to have_http_status(:ok)
+        expect(response.body).to match_json_expression pattern
+        expect(JSON.parse(response.body).dig('data', 'attributes')).not_to have_key('generated_at')
+      end
+    end
+
+    context 'when self text record does not exist' do
+      it 'returns not found' do
+        get '/uk/admin/goods_nomenclatures/9999999999/goods_nomenclature_self_text.json', headers: request_headers(format: :json)
+
+        expect(response).to have_http_status(:not_found)
+      end
+    end
+  end
+
+  describe '#show input_context enrichment' do
+    let(:parent_sid) { 12_345 }
+    let!(:self_text) do
+      create(:goods_nomenclature_self_text,
+             input_context: {
+               'ancestors' => [
+                 { 'sid' => parent_sid, 'description' => 'Other' },
+               ],
+               'description' => 'Widgets',
+             })
+    end
+
+    before do
+      create(:goods_nomenclature_self_text,
+             goods_nomenclature_sid: parent_sid,
+             self_text: 'Live animals >> Other live animals',
+             generation_type: 'ai')
+    end
+
+    it 'enriches ancestors with current self_texts' do
+      get "/uk/admin/goods_nomenclatures/#{self_text.goods_nomenclature_sid}/goods_nomenclature_self_text.json", headers: request_headers(format: :json)
+
+      json = JSON.parse(response.body)
+      ancestors = json.dig('data', 'attributes', 'input_context', 'ancestors')
+
+      expect(ancestors.first['self_text']).to eq('Live animals >> Other live animals')
+    end
+  end
+
+  describe '#show with version browsing' do
+    let!(:self_text) { create :goods_nomenclature_self_text, self_text: 'original text' }
+
+    it 'includes version meta in the response' do
+      get "/uk/admin/goods_nomenclatures/#{self_text.goods_nomenclature_sid}/goods_nomenclature_self_text.json", headers: request_headers(format: :json)
+
+      json = JSON.parse(response.body)
+      version_meta = json.dig('meta', 'version')
+
+      expect(version_meta['current']).to be true
+      expect(version_meta['oid']).to be_present
+    end
+
+    context 'when viewing a historical version via filter[oid]' do
+      before { self_text.update(self_text: 'changed text') }
+
+      it 'returns the historical version data' do
+        version = self_text.versions.order(:id).first
+
+        get "/uk/admin/goods_nomenclatures/#{self_text.goods_nomenclature_sid}/goods_nomenclature_self_text.json", params: { filter: { oid: version.id } }, headers: request_headers(format: :json)
+
+        expect(response).to have_http_status(:ok)
+
+        json = JSON.parse(response.body)
+        expect(json.dig('data', 'attributes', 'self_text')).to eq('original text')
+        expect(json.dig('meta', 'version', 'current')).to be false
+      end
+    end
+
+    context 'when viewing the latest version via filter[oid]' do
+      before { self_text.update(self_text: 'changed text') }
+
+      it 'returns current=true' do
+        version = self_text.versions.order(Sequel.desc(:id)).first
+
+        get "/uk/admin/goods_nomenclatures/#{self_text.goods_nomenclature_sid}/goods_nomenclature_self_text.json", params: { filter: { oid: version.id } }, headers: request_headers(format: :json)
+
+        json = JSON.parse(response.body)
+        expect(json.dig('meta', 'version', 'current')).to be true
+      end
+    end
+
+    context 'when version does not exist' do
+      it 'returns 404' do
+        get "/uk/admin/goods_nomenclatures/#{self_text.goods_nomenclature_sid}/goods_nomenclature_self_text.json", params: { filter: { oid: 999_999 } }, headers: request_headers(format: :json)
+
+        expect(response).to have_http_status(:not_found)
+      end
+    end
+  end
+
+  describe '#update' do
+    let!(:goods_nomenclature) { create(:commodity) }
+    let!(:self_text) { create :goods_nomenclature_self_text, goods_nomenclature: goods_nomenclature }
+
+    context 'when save succeeds' do
+      let(:new_text) { 'Updated self text content' }
+
+      it 'responds with success' do
+        put "/uk/admin/goods_nomenclatures/#{self_text.goods_nomenclature_sid}/goods_nomenclature_self_text.json", params: { data: { type: 'goods_nomenclature_self_text', attributes: { self_text: new_text } } }, headers: request_headers(format: :json), as: :json
+
+        expect(response).to have_http_status(:ok)
+      end
+
+      it 'enqueues ScoreLabelBatchWorker' do
+        allow(ScoreLabelBatchWorker).to receive(:perform_async)
+
+        put "/uk/admin/goods_nomenclatures/#{self_text.goods_nomenclature_sid}/goods_nomenclature_self_text.json", params: { data: { type: 'goods_nomenclature_self_text', attributes: { self_text: new_text } } }, headers: request_headers(format: :json), as: :json
+
+        expect(ScoreLabelBatchWorker).to have_received(:perform_async).with(self_text.goods_nomenclature_sid)
+      end
+
+      it 'reindexes the goods nomenclature search document when the self-text changes' do
+        allow(TradeTariffBackend.search_client).to receive(:index)
+
+        put "/uk/admin/goods_nomenclatures/#{self_text.goods_nomenclature_sid}/goods_nomenclature_self_text.json", params: { data: { type: 'goods_nomenclature_self_text', attributes: { self_text: new_text } } }, headers: request_headers(format: :json), as: :json
+
+        expect(TradeTariffBackend.search_client).to have_received(:index).with(
+          Search::GoodsNomenclatureIndex,
+          have_attributes(goods_nomenclature_sid: goods_nomenclature.goods_nomenclature_sid),
+        )
+      end
+
+      it 'updates the self text' do
+        put "/uk/admin/goods_nomenclatures/#{self_text.goods_nomenclature_sid}/goods_nomenclature_self_text.json", params: { data: { type: 'goods_nomenclature_self_text', attributes: { self_text: new_text } } }, headers: request_headers(format: :json), as: :json
+
+        json = JSON.parse(response.body)
+        expect(json.dig('data', 'attributes', 'self_text')).to eq(new_text)
+      end
+
+      it 'sets manually_edited to true' do
+        put "/uk/admin/goods_nomenclatures/#{self_text.goods_nomenclature_sid}/goods_nomenclature_self_text.json", params: { data: { type: 'goods_nomenclature_self_text', attributes: { self_text: new_text } } }, headers: request_headers(format: :json), as: :json
+
+        json = JSON.parse(response.body)
+        expect(json.dig('data', 'attributes', 'manually_edited')).to be true
+      end
+
+      it 'clears needs_review flag' do
+        self_text.update(needs_review: true)
+
+        put "/uk/admin/goods_nomenclatures/#{self_text.goods_nomenclature_sid}/goods_nomenclature_self_text.json", params: { data: { type: 'goods_nomenclature_self_text', attributes: { self_text: new_text } } }, headers: request_headers(format: :json), as: :json
+
+        json = JSON.parse(response.body)
+        expect(json.dig('data', 'attributes', 'needs_review')).to be false
+      end
+
+      it 'marks the edited self text as approved' do
+        put "/uk/admin/goods_nomenclatures/#{self_text.goods_nomenclature_sid}/goods_nomenclature_self_text.json", params: { data: { type: 'goods_nomenclature_self_text', attributes: { self_text: new_text } } }, headers: request_headers(format: :json), as: :json
+
+        json = JSON.parse(response.body)
+        expect(json.dig('data', 'attributes', 'approved')).to be true
+      end
+    end
+
+    context 'when self text record does not exist' do
+      it 'returns 404' do
+        put '/uk/admin/goods_nomenclatures/9999999999/goods_nomenclature_self_text.json', params: { data: { type: 'goods_nomenclature_self_text', attributes: { self_text: 'test' } } }, headers: request_headers(format: :json), as: :json
+
+        expect(response).to have_http_status(:not_found)
+      end
+    end
+  end
+
+  describe '#score' do
+    let!(:self_text) { create :goods_nomenclature_self_text }
+    let(:scorer) { instance_double(SelfTextConfidenceScorer, score: nil) }
+
+    before do
+      allow(SelfTextConfidenceScorer).to receive(:new).and_return(scorer)
+    end
+
+    it 'triggers scoring and returns success' do
+      post "/uk/admin/goods_nomenclatures/#{self_text.goods_nomenclature_sid}/goods_nomenclature_self_text/score.json", headers: request_headers(format: :json), as: :json
+
+      expect(response).to have_http_status(:ok)
+      expect(scorer).to have_received(:score).with([self_text.goods_nomenclature_sid])
+    end
+
+    context 'when self text record does not exist' do
+      it 'returns 404' do
+        post '/uk/admin/goods_nomenclatures/9999999999/goods_nomenclature_self_text/score.json', headers: request_headers(format: :json), as: :json
+
+        expect(response).to have_http_status(:not_found)
+      end
+    end
+  end
+
+  describe '#approve' do
+    let!(:self_text) { create :goods_nomenclature_self_text, needs_review: true, approved: false, manually_edited: false }
+
+    it 'clears needs_review' do
+      post "/uk/admin/goods_nomenclatures/#{self_text.goods_nomenclature_sid}/goods_nomenclature_self_text/approve.json", headers: request_headers(format: :json), as: :json
+
+      expect(response).to have_http_status(:ok)
+
+      json = JSON.parse(response.body)
+      expect(json.dig('data', 'attributes', 'needs_review')).to be false
+    end
+
+    it 'sets approved' do
+      post "/uk/admin/goods_nomenclatures/#{self_text.goods_nomenclature_sid}/goods_nomenclature_self_text/approve.json", headers: request_headers(format: :json), as: :json
+
+      json = JSON.parse(response.body)
+      expect(json.dig('data', 'attributes', 'approved')).to be true
+    end
+
+    it 'does not set manually_edited' do
+      post "/uk/admin/goods_nomenclatures/#{self_text.goods_nomenclature_sid}/goods_nomenclature_self_text/approve.json", headers: request_headers(format: :json), as: :json
+
+      json = JSON.parse(response.body)
+      expect(json.dig('data', 'attributes', 'manually_edited')).to be false
+    end
+
+    context 'when self text record does not exist' do
+      it 'returns 404' do
+        post '/uk/admin/goods_nomenclatures/9999999999/goods_nomenclature_self_text/approve.json', headers: request_headers(format: :json), as: :json
+
+        expect(response).to have_http_status(:not_found)
+      end
+    end
+  end
+
+  describe '#reject' do
+    let!(:self_text) { create :goods_nomenclature_self_text, needs_review: false, approved: true }
+
+    it 'sets needs_review to true' do
+      post "/uk/admin/goods_nomenclatures/#{self_text.goods_nomenclature_sid}/goods_nomenclature_self_text/reject.json", headers: request_headers(format: :json), as: :json
+
+      expect(response).to have_http_status(:ok)
+
+      json = JSON.parse(response.body)
+      expect(json.dig('data', 'attributes', 'needs_review')).to be true
+    end
+
+    it 'clears approved' do
+      post "/uk/admin/goods_nomenclatures/#{self_text.goods_nomenclature_sid}/goods_nomenclature_self_text/reject.json", headers: request_headers(format: :json), as: :json
+
+      json = JSON.parse(response.body)
+      expect(json.dig('data', 'attributes', 'approved')).to be false
+    end
+
+    context 'when self text record does not exist' do
+      it 'returns 404' do
+        post '/uk/admin/goods_nomenclatures/9999999999/goods_nomenclature_self_text/reject.json', headers: request_headers(format: :json), as: :json
+
+        expect(response).to have_http_status(:not_found)
+      end
+    end
+  end
+
+  describe '#versions' do
+    let!(:self_text) { create :goods_nomenclature_self_text }
+
+    it 'returns versions for the self text' do
+      self_text.update(self_text: 'changed text')
+
+      get "/uk/admin/goods_nomenclatures/#{self_text.goods_nomenclature_sid}/goods_nomenclature_self_text/versions.json", headers: request_headers(format: :json)
+
+      expect(response).to have_http_status(:ok)
+
+      json = JSON.parse(response.body)
+      expect(json['data']).to be_present
+      expect(json['data'].first['type']).to eq('version')
+    end
+
+    context 'when self text record does not exist' do
+      it 'returns 404' do
+        get '/uk/admin/goods_nomenclatures/9999999999/goods_nomenclature_self_text/versions.json', headers: request_headers(format: :json)
+
+        expect(response).to have_http_status(:not_found)
+      end
+    end
+  end
+
+  describe '#regenerate' do
+    let!(:goods_nomenclature) do
+      create(:goods_nomenclature,
+             :actual,
+             goods_nomenclature_item_id: '0101210000',
+             producline_suffix: '80')
+    end
+    let!(:self_text) do
+      create(:goods_nomenclature_self_text,
+             goods_nomenclature: goods_nomenclature,
+             context_hash: 'old_hash',
+             stale: false)
+    end
+
+    before do
+      create(:chapter,
+             :actual,
+             goods_nomenclature_item_id: '0100000000')
+      allow(GenerateSelfText::OtherSelfTextBuilder).to receive(:call)
+      allow(GenerateSelfText::NonOtherSelfTextBuilder).to receive(:call)
+    end
+
+    it 'invalidates context_hash, clears operator lifecycle tags, and calls the builders' do
+      self_text.update(
+        stale: false,
+        needs_review: true,
+        approved: true,
+        manually_edited: true,
+      )
+
+      post "/uk/admin/goods_nomenclatures/#{self_text.goods_nomenclature_sid}/goods_nomenclature_self_text/regenerate.json", headers: request_headers(format: :json), as: :json
+
+      expect(response).to have_http_status(:ok)
+      expect(self_text.reload).to have_attributes(
+        context_hash: 'invalidated',
+        stale: false,
+        needs_review: false,
+        approved: false,
+        manually_edited: false,
+      )
+      expect(GenerateSelfText::OtherSelfTextBuilder).to have_received(:call)
+      expect(GenerateSelfText::NonOtherSelfTextBuilder).to have_received(:call)
+    end
+
+    it 'enqueues ScoreLabelBatchWorker' do
+      allow(ScoreLabelBatchWorker).to receive(:perform_async)
+
+      post "/uk/admin/goods_nomenclatures/#{self_text.goods_nomenclature_sid}/goods_nomenclature_self_text/regenerate.json", headers: request_headers(format: :json), as: :json
+
+      expect(ScoreLabelBatchWorker).to have_received(:perform_async).with(self_text.goods_nomenclature_sid)
+    end
+
+    it 'reindexes the goods nomenclature search document after regeneration' do
+      allow(TradeTariffBackend.search_client).to receive(:index)
+
+      post "/uk/admin/goods_nomenclatures/#{self_text.goods_nomenclature_sid}/goods_nomenclature_self_text/regenerate.json", headers: request_headers(format: :json), as: :json
+
+      expect(TradeTariffBackend.search_client).to have_received(:index).with(
+        Search::GoodsNomenclatureIndex,
+        have_attributes(goods_nomenclature_sid: goods_nomenclature.goods_nomenclature_sid),
+      )
+    end
+
+    context 'when self text record does not exist' do
+      it 'returns 404' do
+        post '/uk/admin/goods_nomenclatures/9999999999/goods_nomenclature_self_text/regenerate.json', headers: request_headers(format: :json), as: :json
+
+        expect(response).to have_http_status(:not_found)
+      end
+    end
+  end
+end

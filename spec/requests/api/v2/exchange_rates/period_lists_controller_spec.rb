@@ -1,6 +1,9 @@
 RSpec.describe Api::V2::ExchangeRates::PeriodListsController, :v2 do
   describe 'GET #show' do
-    subject { make_request && response }
+    subject(:api_response) do
+      make_request
+      response
+    end
 
     let(:period_list) { build(:period_list, :with_periods, :with_period_years, year: 2023) }
 

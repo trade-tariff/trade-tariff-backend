@@ -2,10 +2,19 @@ RSpec.shared_examples_for 'a user controller subscription type update' do |subsc
   context "when updating the #{subscription_type} subscription" do
     let!(:user) { create(:public_user) }
     let(:make_request) do
-      patch :update, params: {
-        data: {
-          attributes: { subscription_type => active },
-        },
+      patch '/uk/user/users',
+            params: {
+              data: {
+                attributes: { subscription_type => active },
+              },
+            },
+            headers: request_headers,
+            as: :json
+    end
+
+    let(:request_header_overrides) do
+      {
+        'Authorization' => 'Bearer test-token',
       }
     end
 
@@ -19,7 +28,6 @@ RSpec.shared_examples_for 'a user controller subscription type update' do |subsc
     let(:verify_result) { CognitoTokenVerifier::Result.new(valid: true, payload: token, reason: nil) }
 
     before do
-      request.headers['Authorization'] = 'Bearer test-token'
       allow(CognitoTokenVerifier).to receive(:verify_id_token).and_return(verify_result)
     end
 
@@ -46,18 +54,15 @@ RSpec.shared_examples_for 'a user controller subscription type update' do |subsc
     context 'when deactivating the subscription' do
       let(:active) { false }
 
-      it 'deactivates the subscription' do
-        api_response
+      it 'does not create an inactive subscription' do
+        expect { api_response }.not_to change(PublicUsers::Subscription, :count)
         expect(user.reload.public_send(subscription_type)).to be_nil
       end
 
-      it 'responds with updated subscription details' do
+      it 'responds without subscription details' do
         body = JSON.parse(api_response.body)
-        response = body['data']['attributes']['subscriptions'][0]
 
-        expect(response['active']).to be(false)
-        expect(response['subscription_type']).to eq(subscription_type.to_s.sub('_subscription', ''))
-        expect(response['id']).to be_a(String)
+        expect(body['data']['attributes']['subscriptions']).to eq([])
       end
 
       it { is_expected.to have_http_status :ok }

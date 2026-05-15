@@ -1,7 +1,10 @@
 RSpec.describe Api::Admin::News::CollectionsController, :admin do
-  subject(:page_response) { make_request && response }
+  subject(:api_response) do
+    make_request
+    response
+  end
 
-  let(:json_response) { JSON.parse(page_response.body) }
+  let(:json_response) { JSON.parse(api_response.body) }
 
   let(:news_collection) { create :news_collection }
 
@@ -59,7 +62,7 @@ RSpec.describe Api::Admin::News::CollectionsController, :admin do
 
       it { is_expected.to have_http_status :created }
 
-      it { expect { page_response }.to change(News::Collection, :count).by(1) }
+      it { expect { api_response }.to change(News::Collection, :count).by(1) }
     end
 
     context 'with invalid params' do
@@ -71,7 +74,7 @@ RSpec.describe Api::Admin::News::CollectionsController, :admin do
         expect(json_response).to include('errors')
       end
 
-      it { expect { page_response }.not_to change(News::Collection, :count) }
+      it { expect { api_response }.not_to change(News::Collection, :count) }
     end
   end
 
@@ -90,7 +93,7 @@ RSpec.describe Api::Admin::News::CollectionsController, :admin do
 
     context 'with valid params' do
       it { is_expected.to have_http_status :success }
-      it { expect { page_response }.not_to change(news_collection.reload, :name) }
+      it { expect { api_response }.not_to change(news_collection.reload, :name) }
     end
 
     context 'with invalid params' do
@@ -102,14 +105,14 @@ RSpec.describe Api::Admin::News::CollectionsController, :admin do
         expect(json_response).to include('errors')
       end
 
-      it { expect { page_response }.not_to change(news_collection.reload, :name) }
+      it { expect { api_response }.not_to change(news_collection.reload, :name) }
     end
 
     context 'with unknown news collection' do
       let(:news_collection_id) { 9999 }
 
       it { is_expected.to have_http_status :not_found }
-      it { expect { page_response }.not_to change(news_collection.reload, :name) }
+      it { expect { api_response }.not_to change(news_collection.reload, :name) }
     end
   end
 end

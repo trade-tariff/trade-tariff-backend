@@ -1,11 +1,14 @@
 RSpec.describe Api::Admin::GreenLanes::CategoryAssessmentsController, :admin do
-  subject(:page_response) { make_request && response }
+  subject(:api_response) do
+    make_request
+    response
+  end
 
   before do
     allow(TradeTariffBackend).to receive(:service).and_return 'xi'
   end
 
-  let(:json_response) { JSON.parse(page_response.body) }
+  let(:json_response) { JSON.parse(api_response.body) }
   let(:category) { create :category_assessment, :with_green_lanes_measure, :with_exemption }
 
   shared_examples_for 'search category assessment response' do
@@ -178,7 +181,7 @@ RSpec.describe Api::Admin::GreenLanes::CategoryAssessmentsController, :admin do
       let(:ca_attrs) { build(:category_assessment).to_hash }
 
       it { is_expected.to have_http_status :created }
-      it { expect { page_response }.to change(GreenLanes::CategoryAssessment, :count).by(1) }
+      it { expect { api_response }.to change(GreenLanes::CategoryAssessment, :count).by(1) }
     end
 
     context 'with invalid params' do
@@ -190,7 +193,7 @@ RSpec.describe Api::Admin::GreenLanes::CategoryAssessmentsController, :admin do
         expect(json_response).to include('errors')
       end
 
-      it { expect { page_response }.not_to change(GreenLanes::CategoryAssessment, :count) }
+      it { expect { api_response }.not_to change(GreenLanes::CategoryAssessment, :count) }
     end
   end
 
@@ -209,7 +212,7 @@ RSpec.describe Api::Admin::GreenLanes::CategoryAssessmentsController, :admin do
 
     context 'with valid params' do
       it { is_expected.to have_http_status :success }
-      it { expect { page_response }.not_to change(category.reload, :regulation_role) }
+      it { expect { api_response }.not_to change(category.reload, :regulation_role) }
     end
 
     context 'with invalid params' do
@@ -221,14 +224,14 @@ RSpec.describe Api::Admin::GreenLanes::CategoryAssessmentsController, :admin do
         expect(json_response).to include('errors')
       end
 
-      it { expect { page_response }.not_to change(category.reload, :regulation_role) }
+      it { expect { api_response }.not_to change(category.reload, :regulation_role) }
     end
 
     context 'with unknown category assessment' do
       let(:id) { 9999 }
 
       it { is_expected.to have_http_status :not_found }
-      it { expect { page_response }.not_to change(category.reload, :regulation_role) }
+      it { expect { api_response }.not_to change(category.reload, :regulation_role) }
     end
   end
 
@@ -247,21 +250,21 @@ RSpec.describe Api::Admin::GreenLanes::CategoryAssessmentsController, :admin do
 
     context 'with valid params' do
       it { is_expected.to have_http_status :success }
-      it { expect { page_response }.not_to change(category.reload, :regulation_role) }
+      it { expect { api_response }.not_to change(category.reload, :regulation_role) }
     end
 
     context 'with unknown exemption' do
       let(:exemption_id) { 9999 }
 
       it { is_expected.to have_http_status :not_found }
-      it { expect { page_response }.not_to change(category.reload, :regulation_role) }
+      it { expect { api_response }.not_to change(category.reload, :regulation_role) }
     end
 
     context 'with unknown category assessment' do
       let(:id) { 9999 }
 
       it { is_expected.to have_http_status :not_found }
-      it { expect { page_response }.not_to change(category.reload, :regulation_role) }
+      it { expect { api_response }.not_to change(category.reload, :regulation_role) }
     end
   end
 
@@ -274,14 +277,14 @@ RSpec.describe Api::Admin::GreenLanes::CategoryAssessmentsController, :admin do
       let(:id) { category.id }
 
       it { is_expected.to have_http_status :no_content }
-      it { expect { page_response }.to change(category, :exists?) }
+      it { expect { api_response }.to change(category, :exists?) }
     end
 
     context 'with unknown category assessment' do
       let(:id) { 9999 }
 
       it { is_expected.to have_http_status :not_found }
-      it { expect { page_response }.not_to change(GreenLanes::CategoryAssessment, :count) }
+      it { expect { api_response }.not_to change(GreenLanes::CategoryAssessment, :count) }
     end
   end
 end

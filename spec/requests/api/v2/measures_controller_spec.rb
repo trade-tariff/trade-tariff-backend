@@ -1,6 +1,9 @@
 RSpec.describe Api::V2::MeasuresController, :v2 do
   describe 'GET #show' do
-    subject(:rendered) { make_request && response }
+    subject(:api_response) do
+      make_request
+      response
+    end
 
     let(:measure) { create(:measure) }
 

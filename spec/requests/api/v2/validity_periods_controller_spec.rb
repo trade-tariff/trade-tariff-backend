@@ -1,15 +1,18 @@
 RSpec.describe Api::V2::ValidityPeriodsController, :v2 do
   shared_examples 'a correctly routing validity periods api request' do
-    subject(:do_response) do
-      api_get validity_period_path
-
+    subject(:api_response) do
+      make_request
       response
+    end
+
+    let(:make_request) do
+      api_get validity_period_path
     end
 
     it 'calls the serializer service' do
       allow(ValidityPeriodSerializerService).to receive(:new).and_call_original
 
-      do_response
+      api_response
 
       expect(ValidityPeriodSerializerService).to have_received(:new)
     end
