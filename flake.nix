@@ -255,6 +255,9 @@ OPENSEARCH_CLI
               WT_ID=$(${worktree.id})
               export GEM_HOME="$HOME/.local/share/gem/worktrees/$WT_ID"
               export BUNDLE_PATH=".bundle"
+              export BUNDLE_APP_CONFIG=".bundle"
+              export BUNDLE_IGNORE_CONFIG=1
+              export BUNDLE_FORCE_RUBY_PLATFORM=1
               mkdir -p "$GEM_HOME" ".bundle"
               echo "Worktree Bundler isolation enabled (ID: $WT_ID)"
             else
@@ -286,9 +289,19 @@ OPENSEARCH_CLI
               if [ ! -f "$MARKER" ]; then
                 echo ""
                 echo "==> First time in this worktree (ID: $WT_ID)"
-                echo "    Initializing databases (db:create + db:structure:load + db:test:prepare)..."
+                echo "    Installing gems + initializing databases + assets..."
                 echo ""
 
+                # Start Postgres as a proper daemon on the short socket (backend-specific tuning)
+                if ! pg_isready -h "$PGHOST" -p "${PGPORT:-5432}" >/dev/null 2>&1; then
+                  echo "    Starting Postgres as daemon on short socket..."
+                  pg_ctl start -D "$PGDATA" -l "/tmp/pg-$WT_ID.log" \
+                    -o "-k $PGHOST -c listen_addresses='' -c max_wal_size=16GB -c maintenance_work_mem=8GB" \
+                    -w -t 30 || true
+                fi
+
+                rm -rf .bundle
+                bundle install --jobs=4 --retry=3 2>&1 | tail -8 || true
                 bundle exec rails db:create 2>&1 | tail -3 || true
                 bundle exec rails db:structure:load 2>&1 | tail -5 || true
 
