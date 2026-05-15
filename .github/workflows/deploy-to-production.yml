@@ -10,6 +10,10 @@ on:
     branches:
       - main
 
+concurrency:
+  group: deploy-production
+  cancel-in-progress: true
+
 permissions:
   contents: read
   id-token: write
@@ -26,3 +30,43 @@ jobs:
       basic-password: ${{ secrets.BASIC_PASSWORD }}
       slack-webhook: ${{ secrets.SLACK_WEBHOOK }}
       ssh-key: ${{ secrets.PRIVATE_SSH_KEY }}
+
+  newrelic:
+    runs-on: ubuntu-latest
+    needs: deploy
+    steps:
+      - uses: actions/checkout@v6
+      - id: docker-tag
+        run: echo "DOCKER_TAG=$(git rev-parse --short HEAD)" >> "$GITHUB_OUTPUT"
+      - name: New Relic deployment marker for backend UK
+        uses: newrelic/deployment-marker-action@v2.6.2
+        with:
+          apiKey: ${{ secrets.NEW_RELIC_API_KEY }}
+          region: "EU"
+          guid: ${{ secrets.NEW_RELIC_BACKEND_UK_GUID }}
+          version: ${{ steps.docker-tag.outputs.DOCKER_TAG }}
+          user: "${{ github.actor }}"
+      - name: New Relic deployment marker for backend XI
+        uses: newrelic/deployment-marker-action@v2.6.2
+        with:
+          apiKey: ${{ secrets.NEW_RELIC_API_KEY }}
+          region: "EU"
+          guid: ${{ secrets.NEW_RELIC_BACKEND_XI_GUID }}
+          version: ${{ steps.docker-tag.outputs.DOCKER_TAG }}
+          user: "${{ github.actor }}"
+      - name: New Relic deployment marker for worker UK
+        uses: newrelic/deployment-marker-action@v2.6.2
+        with:
+          apiKey: ${{ secrets.NEW_RELIC_API_KEY }}
+          region: "EU"
+          guid: ${{ secrets.NEW_RELIC_WORKER_UK_GUID }}
+          version: ${{ steps.docker-tag.outputs.DOCKER_TAG }}
+          user: "${{ github.actor }}"
+      - name: New Relic deployment marker for worker XI
+        uses: newrelic/deployment-marker-action@v2.6.2
+        with:
+          apiKey: ${{ secrets.NEW_RELIC_API_KEY }}
+          region: "EU"
+          guid: ${{ secrets.NEW_RELIC_WORKER_XI_GUID }}
+          version: ${{ steps.docker-tag.outputs.DOCKER_TAG }}
+          user: "${{ github.actor }}"
