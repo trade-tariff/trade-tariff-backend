@@ -379,7 +379,7 @@ RSpec.describe Api::Admin::DescriptionInterceptsController do
     end
 
     it 'returns 404 when not found' do
-      delete "/uk/admin/description_intercepts/999_999.json", headers: request_headers(format: :json)
+      delete '/uk/admin/description_intercepts/999_999.json', headers: request_headers(format: :json)
 
       expect(response).to have_http_status(:not_found)
     end
