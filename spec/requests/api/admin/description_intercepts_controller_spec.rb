@@ -366,4 +366,22 @@ RSpec.describe Api::Admin::DescriptionInterceptsController do
       expect(json['data'].map { |row| row['type'] }.uniq).to eq(%w[version])
     end
   end
+
+  describe '#destroy' do
+    let!(:intercept) { create(:description_intercept, term: 'footwear') }
+
+    it 'deletes the description intercept' do
+      expect {
+        delete "/uk/admin/description_intercepts/#{intercept.id}.json", headers: request_headers(format: :json)
+      }.to change(DescriptionIntercept, :count).by(-1)
+
+      expect(response).to have_http_status(:no_content)
+    end
+
+    it 'returns 404 when not found' do
+      delete "/uk/admin/description_intercepts/999_999.json", headers: request_headers(format: :json)
+
+      expect(response).to have_http_status(:not_found)
+    end
+  end
 end
