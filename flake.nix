@@ -273,6 +273,11 @@ OPENSEARCH_CLI
 
             ${worktree-info}/bin/worktree-info
 
+            # Ensure pre-commit hooks are installed (so they actually run on commit)
+            if command -v pre-commit >/dev/null 2>&1; then
+              pre-commit install --install-hooks 2>/dev/null || true
+            fi
+
             # === Automatic per-worktree database initialization ===
             if [ "$(${worktree.isWorktree})" = "true" ]; then
               WT_ID=$(${worktree.id})
@@ -302,6 +307,7 @@ OPENSEARCH_CLI
           buildInputs = [
             init
             lint
+            pkgs.pre-commit
             pkgs.python3
             pkgs.opensearch
             pkgs.redis
