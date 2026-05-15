@@ -762,6 +762,7 @@ RSpec.describe Api::Internal::SearchService do
           data: [{ question: 'What material?', options: %w[Leather Plastic] }],
           attempt: 1,
           model: 'gpt-5.2',
+          result_limit: nil,
         )
       end
 
@@ -813,6 +814,7 @@ RSpec.describe Api::Internal::SearchService do
           data: [{ commodity_code: '4202210000', confidence: 'strong' }],
           attempt: 2,
           model: 'gpt-5.2',
+          result_limit: nil,
         )
       end
 
