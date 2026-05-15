@@ -31,6 +31,12 @@ module Api
         end
       end
 
+      def destroy
+        description_intercept.destroy
+
+        head :no_content
+      end
+
       def bulk_import
         result = DescriptionIntercepts::TemplateImporter.new(csv_content: bulk_import_params[:csv]).call
 
