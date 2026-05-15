@@ -3,7 +3,7 @@ RSpec.shared_context 'with duty expression formatter strategy helpers' do
 
   def build_context(overrides = {})
     DutyExpressionFormatter::Context.new(
-      {
+      **{
         duty_expression_id: '66',
         duty_expression_description: nil,
         duty_expression_abbreviation: nil,
