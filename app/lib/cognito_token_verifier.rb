@@ -2,7 +2,7 @@ class CognitoTokenVerifier
   ISSUER = "https://cognito-idp.#{TradeTariffBackend.aws_region}.amazonaws.com/#{TradeTariffBackend.cognito_user_pool_id}".freeze
   JWKS_URL = "#{ISSUER}/.well-known/jwks.json".freeze
 
-  Result = Struct.new(:valid, :payload, :reason, keyword_init: true) do
+  Result = Data.define(:valid, :payload, :reason) do
     def valid?
       valid
     end

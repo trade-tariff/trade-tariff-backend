@@ -1,11 +1,10 @@
-RequirementDutyExpressionFormatter::Context = Struct.new(
+RequirementDutyExpressionFormatter::Context = Data.define(
   :duty_amount,
   :monetary_unit,
   :measurement_unit,
   :measurement_unit_qualifier,
   :measurement_unit_abbreviation,
   :formatted,
-  keyword_init: true,
 ) do
   class << self
     def build(opts)

@@ -51,7 +51,7 @@ module Reporting
 
     private
 
-    ReportSource = Struct.new(:date, :key, keyword_init: true)
+    ReportSource = Data.define(:date, :key)
 
     class WorkbookWrapper
       def initialize(data)

@@ -1,5 +1,5 @@
 class InteractiveSearchService
-  Result = Struct.new(:type, :data, :attempt, :model, :result_limit, keyword_init: true)
+  Result = Data.define(:type, :data, :attempt, :model, :result_limit)
 
   CONFIDENCE_ORDER = %w[strong good possible].freeze
   FINAL_ANSWER_INSTRUCTION = <<~INSTRUCTION.freeze

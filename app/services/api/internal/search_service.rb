@@ -3,7 +3,7 @@ module Api
     class SearchService
       include QueryProcessing
 
-      RetrievalResult = Struct.new(:goods_nomenclatures, :max_score, :expanded_query, :results_type, keyword_init: true)
+      RetrievalResult = Data.define(:goods_nomenclatures, :max_score, :expanded_query, :results_type)
 
       attr_reader :q, :as_of, :answers, :request_id, :description_intercept
 
@@ -102,6 +102,7 @@ module Api
         RetrievalResult.new(
           goods_nomenclatures: goods_nomenclatures,
           max_score: goods_nomenclatures.map(&:score).compact.max,
+          expanded_query: nil,
           results_type: 'vector',
         )
       end
