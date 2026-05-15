@@ -18,6 +18,9 @@ The application is a Rails API using Sequel, PostgreSQL, Redis, Sidekiq, and Ope
 
 - Keep scope tight and prefer simple changes.
 - Verify generated or AI-suggested claims against source code and tests.
+- Write controller coverage as request specs under `spec/requests/`. Do not add new files under `spec/controllers/`; when touching legacy controller specs, migrate the coverage into request specs and remove the controller spec.
+- Request specs must use concrete paths or route helpers, not controller-style action symbols such as `get :show`.
+- Use Ruby data classes such as `Data.define` for simple value objects. Do not introduce `Struct`.
 - For public V2 API changes, update swagger specs under `spec/swagger/api/v2/`.
 - Do not manually edit generated `swagger/v2/swagger.json` for endpoint changes.
 - Run project commands directly by default. If you use Nix/direnv locally, `direnv exec <repo-path> <command>` is also fine.
