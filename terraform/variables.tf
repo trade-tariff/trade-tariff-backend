@@ -41,11 +41,6 @@ variable "memory" {
   type        = number
 }
 
-variable "database_backup_secret_name" {
-  description = "Secrets Manager secret name containing the database URL for backups."
-  type        = string
-}
-
 variable "enable_alarms" {
   description = "Whether to enable CloudWatch alarms for the service."
   type        = bool
