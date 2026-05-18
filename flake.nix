@@ -260,12 +260,13 @@ OPENSEARCH_CLI
             # Worktree-aware Bundler/Ruby isolation
             if [ "$(${worktree.isWorktree})" = "true" ]; then
               WT_ID=$(${worktree.id})
+              WT_ROOT=$(git rev-parse --show-toplevel)
+              WT_BUNDLE_PATH="$WT_ROOT/.bundle"
               export GEM_HOME="$HOME/.local/share/gem/worktrees/$WT_ID"
-              export BUNDLE_PATH=".bundle"
-              export BUNDLE_APP_CONFIG=".bundle"
+              export BUNDLE_PATH="$WT_BUNDLE_PATH"
+              export BUNDLE_APP_CONFIG="$WT_BUNDLE_PATH"
               export BUNDLE_IGNORE_CONFIG=1
-              export BUNDLE_FORCE_RUBY_PLATFORM=1
-              mkdir -p "$GEM_HOME" ".bundle"
+              mkdir -p "$GEM_HOME" "$WT_BUNDLE_PATH"
               echo "Worktree Bundler isolation enabled (ID: $WT_ID)"
             else
               export GEM_HOME=$PWD/.nix/ruby/$(${ruby}/bin/ruby -e "puts RUBY_VERSION")
@@ -328,7 +329,18 @@ OPENSEARCH_CLI
                     run_setup_step "Initialising Postgres data directory" ${postgresql}/bin/initdb "$PGDATA" --auth=trust || fail_worktree_setup
                   fi
                   rm -f "$PIDFILE"
-                  if ! ${postgresql}/bin/pg_ctl start -D "$PGDATA" -l "/tmp/pg-$WT_ID.log" -o "-k $PGHOST -c listen_addresses= -c max_wal_size=16GB -c maintenance_work_mem=8GB -c external_pid_file=$PIDFILE" -w -t 60; then
+                  # pg_ctl daemonises Postgres from inside direnv's shellHook. File descriptors
+                  # 3+ are extra handles opened by the parent process; `>&-` closes them for this
+                  # command. Without this, Postgres inherits a nix-direnv pipe and the first
+                  # `direnv exec ...` stays blocked after setup instead of running its command.
+                  if ! ${postgresql}/bin/pg_ctl start \
+                    -D "$PGDATA" \
+                    -l "/tmp/pg-$WT_ID.log" \
+                    -o "-k $PGHOST -c listen_addresses= -c max_wal_size=16GB -c maintenance_work_mem=8GB -c external_pid_file=$PIDFILE" \
+                    -w \
+                    -t 60 \
+                    3>&- 4>&- 5>&- \
+                    6>&- 7>&- 8>&- 9>&-; then
                     echo "      failed to start Postgres (log: /tmp/pg-$WT_ID.log)"
                     echo "      last 80 log lines:"
                     tail -80 "/tmp/pg-$WT_ID.log" | sed 's/^/        /' || true
@@ -348,11 +360,9 @@ OPENSEARCH_CLI
                 fi
 
                 # Defensive bundle install (only on first entry)
-                rm -rf .bundle
-                export BUNDLE_PATH=".bundle"
-                export BUNDLE_APP_CONFIG=".bundle"
+                rm -rf "$BUNDLE_PATH"
+                mkdir -p "$BUNDLE_PATH"
                 export BUNDLE_IGNORE_CONFIG=1
-                export BUNDLE_FORCE_RUBY_PLATFORM=1
                 run_setup_step "Installing gems" bundle install --jobs=4 --retry=3 || fail_worktree_setup
 
                 # Database preparation (this app exposes Sequel-backed db tasks, not db:prepare)
@@ -370,10 +380,7 @@ OPENSEARCH_CLI
                 echo ""
               else
                 # Marked worktree — just ensure env vars are set
-                export BUNDLE_PATH=".bundle"
-                export BUNDLE_APP_CONFIG=".bundle"
                 export BUNDLE_IGNORE_CONFIG=1
-                export BUNDLE_FORCE_RUBY_PLATFORM=1
               fi
             fi
           '';
