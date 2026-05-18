@@ -1,11 +1,14 @@
 RSpec.describe Api::Admin::GreenLanes::MeasureTypeMappingsController, :admin do
-  subject(:page_response) { make_request && response }
+  subject(:api_response) do
+    make_request
+    response
+  end
 
   before do
     allow(TradeTariffBackend).to receive(:service).and_return 'xi'
   end
 
-  let(:json_response) { JSON.parse(page_response.body) }
+  let(:json_response) { JSON.parse(api_response.body) }
   let(:mapping) { create :identified_measure_type_category_assessment }
 
   describe 'GET to #index' do
@@ -64,7 +67,7 @@ RSpec.describe Api::Admin::GreenLanes::MeasureTypeMappingsController, :admin do
       let(:ex_attrs) { build(:identified_measure_type_category_assessment).to_hash }
 
       it { is_expected.to have_http_status :created }
-      it { expect { page_response }.to change(GreenLanes::IdentifiedMeasureTypeCategoryAssessment, :count).by(1) }
+      it { expect { api_response }.to change(GreenLanes::IdentifiedMeasureTypeCategoryAssessment, :count).by(1) }
     end
 
     context 'with invalid params' do
@@ -76,7 +79,7 @@ RSpec.describe Api::Admin::GreenLanes::MeasureTypeMappingsController, :admin do
         expect(json_response).to include('errors')
       end
 
-      it { expect { page_response }.not_to change(GreenLanes::IdentifiedMeasureTypeCategoryAssessment, :count) }
+      it { expect { api_response }.not_to change(GreenLanes::IdentifiedMeasureTypeCategoryAssessment, :count) }
     end
   end
 
@@ -89,14 +92,14 @@ RSpec.describe Api::Admin::GreenLanes::MeasureTypeMappingsController, :admin do
       let(:id) { mapping.id }
 
       it { is_expected.to have_http_status :no_content }
-      it { expect { page_response }.to change(mapping, :exists?) }
+      it { expect { api_response }.to change(mapping, :exists?) }
     end
 
     context 'with unknown mapping' do
       let(:id) { 9999 }
 
       it { is_expected.to have_http_status :not_found }
-      it { expect { page_response }.not_to change(GreenLanes::IdentifiedMeasureTypeCategoryAssessment, :count) }
+      it { expect { api_response }.not_to change(GreenLanes::IdentifiedMeasureTypeCategoryAssessment, :count) }
     end
   end
 end

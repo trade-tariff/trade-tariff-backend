@@ -4,6 +4,10 @@ RSpec.shared_examples_for 'v2 search references controller' do
     search_reference
   end
 
+  let(:search_reference_resource_path) do
+    "#{search_references_collection_path.delete_suffix('.json')}/#{resource_query.fetch(:id)}.json"
+  end
+
   describe 'GET #index' do
     let(:pattern) do
       {
@@ -26,7 +30,7 @@ RSpec.shared_examples_for 'v2 search references controller' do
 
     context 'without pagination' do
       it 'returns rendered records with default pagination values' do
-        get :index, params: { format: :json }.merge(collection_query)
+        get search_references_collection_path, headers: request_headers(format: :json)
 
         expect(response.body).to match_json_expression pattern
       end
@@ -65,9 +69,7 @@ RSpec.shared_examples_for 'v2 search references controller' do
     end
 
     it 'returns rendered search reference record' do
-      get :show, params: {
-        format: :json,
-      }.merge(resource_query)
+      get search_reference_resource_path, headers: request_headers(format: :json)
 
       expect(response.body).to match_json_expression pattern
     end
@@ -104,10 +106,10 @@ RSpec.shared_examples_for 'v2 search references controller' do
       end
 
       before do
-        post :create, params: {
-          data: { type: :search_reference, attributes: { title: search_reference.title } },
-          format: :json,
-        }.merge(collection_query)
+        post search_references_collection_path,
+             params: { data: { type: :search_reference, attributes: { title: search_reference.title } } },
+             headers: request_headers(format: :json),
+             as: :json
       end
 
       it 'persists SearchReference entry' do
@@ -129,10 +131,10 @@ RSpec.shared_examples_for 'v2 search references controller' do
       end
 
       before do
-        post :create, params: {
-          data: { type: :search_reference, attributes: { title: '' } },
-          format: :json,
-        }.merge(collection_query)
+        post search_references_collection_path,
+             params: { data: { type: :search_reference, attributes: { title: '' } } },
+             headers: request_headers(format: :json),
+             as: :json
       end
 
       it 'does not persist SearchReference entry' do
@@ -172,10 +174,10 @@ RSpec.shared_examples_for 'v2 search references controller' do
       end
 
       before do
-        post :create, params: {
-          data: { type: :search_reference, attributes: { title: '=SUM(A1:A2)' } },
-          format: :json,
-        }.merge(collection_query)
+        post search_references_collection_path,
+             params: { data: { type: :search_reference, attributes: { title: '=SUM(A1:A2)' } } },
+             headers: request_headers(format: :json),
+             as: :json
       end
 
       it 'escapes the formula' do
@@ -190,16 +192,12 @@ RSpec.shared_examples_for 'v2 search references controller' do
 
       it 'destroys SearchReference entry' do
         expect {
-          delete :destroy, params: {
-            format: :json,
-          }.merge(resource_query)
+          delete search_reference_resource_path, headers: request_headers(format: :json), as: :json
         }.to change(SearchReference, :count).by(-1)
       end
 
       it 'enqueues ScoreLabelBatchWorker' do
-        delete :destroy, params: {
-          format: :json,
-        }.merge(resource_query)
+        delete search_reference_resource_path, headers: request_headers(format: :json), as: :json
 
         expect(ScoreLabelBatchWorker).to have_received(:perform_async).at_least(:once)
       end
@@ -207,21 +205,18 @@ RSpec.shared_examples_for 'v2 search references controller' do
 
     context 'with non-existant search reference' do
       let(:bogus_search_ref_id) { 666 }
+      let(:bogus_search_reference_resource_path) do
+        "#{search_references_collection_path.delete_suffix('.json')}/#{bogus_search_ref_id}.json"
+      end
 
       it 'does not destroy SearchReference entry' do
         expect {
-          delete :destroy, params: {
-            id: bogus_search_ref_id,
-            format: :json,
-          }.merge(collection_query)
+          delete bogus_search_reference_resource_path, headers: request_headers(format: :json), as: :json
         }.not_to change(SearchReference, :count)
       end
 
       it 'returns 404 response' do
-        delete :destroy, params: {
-          id: bogus_search_ref_id,
-          format: :json,
-        }.merge(collection_query)
+        delete bogus_search_reference_resource_path, headers: request_headers(format: :json), as: :json
 
         expect(response.status).to eq 404
       end
@@ -233,10 +228,10 @@ RSpec.shared_examples_for 'v2 search references controller' do
 
     context 'with valid params provided' do
       before do
-        put :update, params: {
-          data: { type: search_reference, attributes: { title: new_title } },
-          format: :json,
-        }.merge(resource_query)
+        put search_reference_resource_path,
+            params: { data: { type: search_reference, attributes: { title: new_title } } },
+            headers: request_headers(format: :json),
+            as: :json
       end
 
       it 'updates SearchReference entry' do
@@ -262,10 +257,10 @@ RSpec.shared_examples_for 'v2 search references controller' do
       end
 
       before do
-        put :update, params: {
-          data: { type: search_reference, attributes: { title: '' } },
-          format: :json,
-        }.merge(resource_query)
+        put search_reference_resource_path,
+            params: { data: { type: search_reference, attributes: { title: '' } } },
+            headers: request_headers(format: :json),
+            as: :json
       end
 
       it 'does not update SearchReference entry' do

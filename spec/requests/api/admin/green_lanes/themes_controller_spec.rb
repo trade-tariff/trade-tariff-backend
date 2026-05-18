@@ -1,11 +1,14 @@
 RSpec.describe Api::Admin::GreenLanes::ThemesController, :admin do
-  subject(:page_response) { make_request && response }
+  subject(:api_response) do
+    make_request
+    response
+  end
 
   before do
     allow(TradeTariffBackend).to receive(:service).and_return 'xi'
   end
 
-  let(:json_response) { JSON.parse(page_response.body) }
+  let(:json_response) { JSON.parse(api_response.body) }
   let(:theme) { create :green_lanes_theme }
 
   describe 'GET to #index' do

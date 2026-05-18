@@ -1,6 +1,9 @@
 RSpec.describe Api::V2::ChemicalSubstancesController, :v2 do
   describe 'GET #index' do
-    subject(:rendered) { make_request && response }
+    subject(:api_response) do
+      make_request
+      response
+    end
 
     let(:make_request) do
       create(:full_chemical, cus: '1234567890')
@@ -13,7 +16,7 @@ RSpec.describe Api::V2::ChemicalSubstancesController, :v2 do
 
       it_behaves_like 'a successful jsonapi response'
 
-      it { expect(rendered.body).to eq({ data: [] }.to_json) }
+      it { expect(api_response.body).to eq({ data: [] }.to_json) }
     end
 
     context 'when a filter is provided' do
@@ -23,11 +26,11 @@ RSpec.describe Api::V2::ChemicalSubstancesController, :v2 do
 
       it 'calls the FullChemical.with_filter method' do
         allow(FullChemical).to receive(:with_filter).and_call_original
-        rendered
+        api_response
         expect(FullChemical).to have_received(:with_filter).with(strong_params('cus' => '1234567890'))
       end
 
-      it { expect(rendered.body).to match(/1234567890/) }
+      it { expect(api_response.body).to match(/1234567890/) }
     end
   end
 end

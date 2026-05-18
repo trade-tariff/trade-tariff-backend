@@ -1,5 +1,7 @@
 RSpec.describe 'Maintenance mode' do
-  subject { response }
+  subject(:api_response) do
+    response
+  end
 
   describe 'making an API request whilst maintenance mode is enabled' do
     before do

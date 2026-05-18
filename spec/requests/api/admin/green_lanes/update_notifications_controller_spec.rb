@@ -1,11 +1,14 @@
 RSpec.describe Api::Admin::GreenLanes::UpdateNotificationsController, :admin do
-  subject(:page_response) { make_request && response }
+  subject(:api_response) do
+    make_request
+    response
+  end
 
   before do
     allow(TradeTariffBackend).to receive(:service).and_return 'xi'
   end
 
-  let(:json_response) { JSON.parse(page_response.body) }
+  let(:json_response) { JSON.parse(api_response.body) }
   let(:update) { create :update_notification }
 
   describe 'GET to #index' do
@@ -55,14 +58,14 @@ RSpec.describe Api::Admin::GreenLanes::UpdateNotificationsController, :admin do
 
     context 'with valid params' do
       it { is_expected.to have_http_status :success }
-      it { expect { page_response }.not_to change(update.reload, :status) }
+      it { expect { api_response }.not_to change(update.reload, :status) }
     end
 
     context 'with unknown update notification' do
       let(:id) { 9999 }
 
       it { is_expected.to have_http_status :not_found }
-      it { expect { page_response }.not_to change(update.reload, :status) }
+      it { expect { api_response }.not_to change(update.reload, :status) }
     end
   end
 end

@@ -52,7 +52,6 @@ resource "aws_cloudwatch_event_target" "database_backup" {
       environment = [
         { name = "ENVIRONMENT", value = var.environment },
         { name = "S3_BUCKET", value = "trade-tariff-database-backups-${local.account_id}" },
-        { name = "DATABASE_SECRET", value = var.database_backup_secret_name },
       ]
     }]
   })

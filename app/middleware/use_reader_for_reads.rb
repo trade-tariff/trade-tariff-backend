@@ -1,27 +1,49 @@
 # frozen_string_literal: true
 
-# Routes GET and HEAD requests to the Aurora reader instance.  All other HTTP
-# methods (POST, PUT, PATCH, DELETE) use the default (writer) connection pool.
+# Routes GET and HEAD requests to the Aurora reader instance. All other HTTP
+# methods (POST, PUT, PATCH, DELETE) use Sequel's default writer connection.
 #
 # Sequel's server_block extension (already loaded in application.rb) sets a
 # thread-local so every Sequel::Model.db[...] call within the block is
-# transparently routed to the :read_only server defined in database.yml.
+# transparently routed to the :reader server defined in database.yml.
 #
-# Sidekiq workers do not go through Rack middleware and therefore continue
-# using the writer, which is correct — they often read data immediately after
-# writing it.
+# The server is deliberately named :reader instead of :read_only. Sequel treats
+# :read_only as a reserved default for all SELECT queries in sharded mode. By not
+# defining a :read_only server, Sidekiq and non-GET web requests fall back to the
+# writer unless this middleware explicitly selects the reader.
 class UseReaderForReads
   READ_METHODS = %w[GET HEAD].freeze
+
+  # User API authentication can create PublicUsers::User records on first use,
+  # so these routes need the writer even for GET/HEAD requests.
+  WRITER_READ_PATH_PREFIXES = %w[
+    /uk/user
+    /xi/user
+  ].freeze
 
   def initialize(app)
     @app = app
   end
 
   def call(env)
-    if READ_METHODS.include?(env['REQUEST_METHOD'])
-      Sequel::Model.db.with_server(:read_only) { @app.call(env) }
+    if read_request?(env) && !writer_read_request?(env)
+      Sequel::Model.db.with_server(:reader) { @app.call(env) }
     else
       @app.call(env)
+    end
+  end
+
+private
+
+  def read_request?(env)
+    READ_METHODS.include?(env['REQUEST_METHOD'])
+  end
+
+  def writer_read_request?(env)
+    path = env['PATH_INFO'].to_s
+
+    WRITER_READ_PATH_PREFIXES.any? do |prefix|
+      path == prefix || path.start_with?("#{prefix}/")
     end
   end
 end
