@@ -12,7 +12,7 @@ RSpec.describe DifferencesReportCheckWorker, type: :worker do
       let(:uk) { true }
 
       it 'is happy if the differences report has run this week' do
-        DifferencesLog.create(date: Time.zone.yesterday, key: 'foo', value: 'foo')
+        DifferencesLog.create(date: Date.current.beginning_of_week, key: 'foo', value: 'foo')
         worker.perform
         expect(SlackNotifierService).not_to have_received(:call)
       end
