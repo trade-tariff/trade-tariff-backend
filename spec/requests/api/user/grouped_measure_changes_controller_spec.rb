@@ -74,7 +74,9 @@ RSpec.describe Api::User::GroupedMeasureChangesController do
 
     context 'when authentication fails' do
       before do
-        allow(Api::User::UserService).to receive(:find_or_create).and_return(nil)
+        allow(Api::User::UserService).to receive(:find).and_return(
+          CognitoTokenVerifier::Result.new(valid: false, payload: nil, reason: :expired),
+        )
         get '/uk/user/grouped_measure_changes', headers: request_headers
       end
 
@@ -83,7 +85,7 @@ RSpec.describe Api::User::GroupedMeasureChangesController do
       end
 
       it 'returns proper error message' do
-        expect(response.parsed_body).to eq({ 'errors' => [{ 'code' => 'missing_token', 'detail' => 'No bearer token was provided' }] })
+        expect(response.parsed_body).to eq({ 'errors' => [{ 'code' => 'expired', 'detail' => 'Token has expired' }] })
       end
     end
 

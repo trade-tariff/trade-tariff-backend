@@ -212,7 +212,7 @@ RSpec.describe Api::User::PublicUsersController do
   end
 
   describe 'POST #create' do
-    let(:make_request) { post :create }
+    let(:make_request) { post '/uk/user/users', headers: request_headers }
 
     context 'when user already exists' do
       let!(:user) { create(:public_user) }
