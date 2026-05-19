@@ -94,7 +94,7 @@ module Api
 
       def vector_short_list
         goods_nomenclatures = VectorRetrievalService.call(
-          query: q,
+          query: normalised_query.expanded_query,
           limit: opensearch_result_limit,
           filter_prefixes: filter_prefixes,
         )
@@ -102,14 +102,15 @@ module Api
         RetrievalResult.new(
           goods_nomenclatures: goods_nomenclatures,
           max_score: goods_nomenclatures.map(&:score).compact.max,
-          expanded_query: nil,
+          expanded_query: normalised_query.expanded_query,
           results_type: 'vector',
         )
       end
 
       def opensearch_short_list
         result = OpensearchRetrievalService.call(
-          query: q, as_of: as_of, request_id: request_id, limit: opensearch_result_limit,
+          query: q, expanded_query: normalised_query.expanded_query,
+          as_of: as_of, request_id: request_id, limit: opensearch_result_limit,
           filter_prefixes: filter_prefixes
         )
 
@@ -123,7 +124,8 @@ module Api
 
       def hybrid_short_list
         result = HybridRetrievalService.call(
-          query: q, as_of: as_of, request_id: request_id, limit: opensearch_result_limit,
+          query: q, expanded_query: normalised_query.expanded_query,
+          as_of: as_of, request_id: request_id, limit: opensearch_result_limit,
           filter_prefixes: filter_prefixes
         )
 
@@ -137,6 +139,10 @@ module Api
 
       def opensearch_result_limit
         AdminConfiguration.integer_value('opensearch_result_limit')
+      end
+
+      def normalised_query
+        @normalised_query ||= InternalSearchQueryNormaliserService.call(query: q, request_id: request_id)
       end
 
       def allowed_suggestion_types

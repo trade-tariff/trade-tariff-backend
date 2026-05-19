@@ -1,12 +1,13 @@
 class HybridRetrievalService
   Result = Data.define(:results, :expanded_query)
 
-  def self.call(query:, as_of:, request_id: nil, limit: 30, filter_prefixes: [])
-    new(query:, as_of:, request_id:, limit:, filter_prefixes:).call
+  def self.call(query:, as_of:, expanded_query: nil, request_id: nil, limit: 30, filter_prefixes: [])
+    new(query:, as_of:, expanded_query:, request_id:, limit:, filter_prefixes:).call
   end
 
-  def initialize(query:, as_of:, request_id: nil, limit: 30, filter_prefixes: [])
+  def initialize(query:, as_of:, expanded_query: nil, request_id: nil, limit: 30, filter_prefixes: [])
     @query = query
+    @expanded_query = expanded_query.presence || query
     @as_of = as_of
     @request_id = request_id
     @limit = limit
@@ -18,11 +19,10 @@ class HybridRetrievalService
 
     opensearch_items = opensearch_result&.results || []
     vector_items = vector_results || []
-    expanded_query = opensearch_result&.expanded_query
 
     merged = rrf_merge(opensearch_items, vector_items)
 
-    Result.new(results: merged, expanded_query: expanded_query)
+    Result.new(results: merged, expanded_query: @expanded_query)
   end
 
   private
@@ -67,13 +67,19 @@ class HybridRetrievalService
   end
 
   def opensearch_args
-    args = { query: @query, as_of: @as_of, request_id: @request_id, limit: @limit }
+    args = {
+      query: @query,
+      expanded_query: @expanded_query,
+      as_of: @as_of,
+      request_id: @request_id,
+      limit: @limit,
+    }
     args[:filter_prefixes] = @filter_prefixes if @filter_prefixes.present?
     args
   end
 
   def vector_args
-    args = { query: @query, limit: @limit }
+    args = { query: @expanded_query, limit: @limit }
     args[:filter_prefixes] = @filter_prefixes if @filter_prefixes.present?
     args
   end

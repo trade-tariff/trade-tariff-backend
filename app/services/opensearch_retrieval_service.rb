@@ -1,22 +1,22 @@
 class OpensearchRetrievalService
   Result = Data.define(:results, :expanded_query)
 
-  def self.call(query:, as_of:, request_id: nil, limit: 30, filter_prefixes: [])
-    new(query:, as_of:, request_id:, limit:, filter_prefixes:).call
+  def self.call(query:, as_of:, expanded_query: nil, request_id: nil, limit: 30, filter_prefixes: [])
+    new(query:, as_of:, expanded_query:, request_id:, limit:, filter_prefixes:).call
   end
 
-  def initialize(query:, as_of:, request_id: nil, limit: 30, filter_prefixes: [])
+  def initialize(query:, as_of:, expanded_query: nil, request_id: nil, limit: 30, filter_prefixes: [])
     @query = query
     @as_of = as_of
+    @expanded_query = expanded_query.presence || query
     @request_id = request_id
     @limit = limit
     @filter_prefixes = Array(filter_prefixes).compact_blank
   end
 
   def call
-    expanded = expand_query(@query)
-    hits = run_search(expanded)
-    Result.new(results: hits.map { |h| build_result_from_hit(h) }, expanded_query: expanded)
+    hits = run_search(@expanded_query)
+    Result.new(results: hits.map { |h| build_result_from_hit(h) }, expanded_query: @expanded_query)
   end
 
   private
@@ -38,21 +38,6 @@ class OpensearchRetrievalService
     end
 
     results.dig('hits', 'hits') || []
-  end
-
-  def expand_query(query)
-    return query unless expand_search_enabled?
-
-    result = ::Search::Instrumentation.query_expanded(
-      request_id: @request_id,
-      original_query: query,
-    ) { ExpandSearchQueryService.call(query) }
-
-    result.expanded_query
-  end
-
-  def expand_search_enabled?
-    AdminConfiguration.enabled?('expand_search_enabled')
   end
 
   def pos_search_enabled?

@@ -333,9 +333,11 @@ module AdminConfigurationSeeder
     <<~MARKDOWN.strip
       You are an expert in trade tariff classification and search queries.
 
-      Your task is to rephrase and expand a given search query to improve its effectiveness when searching an OpenSearch index for trade commodities. The goal is to generate a query that is more likely to match relevant documents, especially considering that the original query might not use the exact terminology found in the tariff data.
+      Your task is to rephrase and expand a given search query so it matches trade commodities more effectively.
+      The goal is to generate a query likely to match relevant tariff data, especially when the original query does not
+      use official terminology found in commodity descriptions and supporting classification text.
 
-      Provide only the rephrased and expanded search query as plain text, without any additional formatting or explanation.
+      Provide only the rephrased and expanded search query as plain text, without extra formatting or explanation.
 
       **Original search query:** %{search_query}
 
@@ -454,12 +456,14 @@ namespace :admin_configurations do
       {
         name: 'retrieval_method',
         config_type: 'options',
-        description: 'Search retrieval method: opensearch uses traditional text search with query expansion, vector uses pgvector cosine similarity and skips query expansion, hybrid runs both and fuses with RRF',
+        description: 'Search retrieval method: opensearch uses traditional text search, ' \
+          'vector uses pgvector cosine similarity, and hybrid runs both and fuses with RRF. ' \
+          'Query expansion runs before the selected retrieval method.',
         value: { 'selected' => AdminConfiguration.default_for('retrieval_method'),
                  'options' => [
-                   { 'key' => 'opensearch', 'label' => 'OpenSearch (text search + query expansion)' },
+                   { 'key' => 'opensearch', 'label' => 'OpenSearch (text search)' },
                    { 'key' => 'vector', 'label' => 'pgvector (cosine similarity)' },
-                   { 'key' => 'hybrid', 'label' => 'Hybrid (opensearch + vector with RRF fusion)' },
+                   { 'key' => 'hybrid', 'label' => 'Hybrid (text + vector with RRF fusion)' },
                  ] },
       },
       {
@@ -651,7 +655,7 @@ namespace :admin_configurations do
     if retrieval
       options = retrieval.value['options'] || []
       unless options.any? { |o| o['key'] == 'hybrid' }
-        options << { 'key' => 'hybrid', 'label' => 'Hybrid (opensearch + vector with RRF fusion)' }
+        options << { 'key' => 'hybrid', 'label' => 'Hybrid (text + vector with RRF fusion)' }
         retrieval.update(value: Sequel.pg_jsonb_wrap(retrieval.value.to_hash.merge('options' => options)))
         puts '  patched: retrieval_method (added hybrid option)'
         created += 1
