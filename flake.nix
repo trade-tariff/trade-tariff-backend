@@ -41,10 +41,13 @@
         postgresql = pkgs.postgresql_18.withPackages (ps: [ ps.pgvector ]);
 
         # Worktree detection hook (per-flake, reusable pattern)
+        # Disable Git fsmonitor for hook-local probes. If these git commands start
+        # fsmonitor--daemon inside direnv's shellHook, the daemon can inherit a
+        # nix-direnv pipe and keep the first `direnv exec ...` blocked after setup.
         worktree = rec {
           isWorktree = ''
-            if git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
-              if [ "$(git rev-parse --git-dir 2>/dev/null)" != "$(git rev-parse --git-common-dir 2>/dev/null)" ]; then
+            if git -c core.fsmonitor=false rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+              if [ "$(git -c core.fsmonitor=false rev-parse --git-dir 2>/dev/null)" != "$(git -c core.fsmonitor=false rev-parse --git-common-dir 2>/dev/null)" ]; then
                 echo "true"
               else
                 echo "false"
@@ -56,7 +59,7 @@
 
           id = ''
             if [ "$(${isWorktree})" = "true" ]; then
-              git rev-parse --show-toplevel | md5sum | cut -c1-8
+              git -c core.fsmonitor=false rev-parse --show-toplevel | md5sum | cut -c1-8
             else
               echo "main"
             fi
@@ -260,7 +263,7 @@ OPENSEARCH_CLI
             # Worktree-aware Bundler/Ruby isolation
             if [ "$(${worktree.isWorktree})" = "true" ]; then
               WT_ID=$(${worktree.id})
-              WT_ROOT=$(git rev-parse --show-toplevel)
+              WT_ROOT=$(git -c core.fsmonitor=false rev-parse --show-toplevel)
               WT_BUNDLE_PATH="$WT_ROOT/.bundle"
               export GEM_HOME="$HOME/.local/share/gem/worktrees/$WT_ID"
               export BUNDLE_PATH="$WT_BUNDLE_PATH"
@@ -310,7 +313,11 @@ OPENSEARCH_CLI
                   log_file="/tmp/worktree-$WT_ID-$(echo "$label" | tr '[:upper:] /:' '[:lower:]---').log"
 
                   echo "    $label..."
-                  if "$@" >"$log_file" 2>&1; then
+                  # Setup commands may spawn daemon helpers, such as git fsmonitor. Close
+                  # inherited nix-direnv pipe fds so those helpers cannot block `direnv exec`.
+                  if "$@" >"$log_file" 2>&1 \
+                    3>&- 4>&- 5>&- \
+                    6>&- 7>&- 8>&- 9>&-; then
                     echo "      ok (log: $log_file)"
                   else
                     status=$?
