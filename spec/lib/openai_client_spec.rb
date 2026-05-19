@@ -66,6 +66,13 @@ RSpec.describe OpenaiClient do
         expect(WebMock).to(have_requested(:post, "#{api_base_url}/chat/completions")
           .with { |req| !JSON.parse(req.body).key?('reasoning_effort') })
       end
+
+      it 'omits reasoning_effort from the request body when the model does not support it' do
+        client.call(context, model: 'gpt-4.1-mini-2025-04-14', reasoning_effort: 'low')
+
+        expect(WebMock).to(have_requested(:post, "#{api_base_url}/chat/completions")
+          .with { |req| !JSON.parse(req.body).key?('reasoning_effort') })
+      end
     end
 
     context 'when given an array of messages' do

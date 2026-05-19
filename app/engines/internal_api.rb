@@ -7,6 +7,7 @@ InternalApi.routes.draw do
       post 'search' => 'search#search'
       get 'search' => 'search#search'
       get 'search_suggestions' => 'search#suggestions'
+      post 'product_description' => 'product_descriptions#create'
     end
   end
 end

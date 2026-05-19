@@ -9,6 +9,10 @@ class AdminConfiguration < Sequel::Model(Sequel[:admin_configurations].qualify(:
       selected: 'gpt-4.1-mini-2025-04-14',
       sub_values: { 'reasoning_effort' => 'low' },
     },
+    'product_description_model' => {
+      selected: 'gpt-4.1-mini-2025-04-14',
+      sub_values: {},
+    },
     'label_model' => {
       selected: 'gpt-5.4',
       sub_values: { 'reasoning_effort' => 'high' },
@@ -98,6 +102,7 @@ class AdminConfiguration < Sequel::Model(Sequel[:admin_configurations].qualify(:
     },
     'expand_search_enabled' => false,
     'expand_model' => NESTED_OPTION_DEFAULTS['expand_model'][:selected],
+    'product_description_model' => NESTED_OPTION_DEFAULTS['product_description_model'][:selected],
     'interactive_search_enabled' => true,
     'interactive_search_excluded_chapters' => %w[98 99].freeze,
     'interactive_search_max_questions' => 7,
@@ -128,6 +133,10 @@ class AdminConfiguration < Sequel::Model(Sequel[:admin_configurations].qualify(:
     'other_self_text_batch_size' => 5,
     'non_other_self_text_model' => NESTED_OPTION_DEFAULTS['non_other_self_text_model'][:selected],
     'non_other_self_text_batch_size' => 15,
+    'product_description_max_redirects' => 3,
+    'product_description_open_timeout_seconds' => 3,
+    'product_description_read_timeout_seconds' => 5,
+    'product_description_max_response_bytes' => 256.kilobytes,
   }.freeze
 
   plugin :auto_validations, not_null: :presence

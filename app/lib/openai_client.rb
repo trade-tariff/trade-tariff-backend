@@ -45,7 +45,7 @@ class OpenaiClient
       user: TradeTariffBackend.openai_user,
       response_format: { type: 'json_object' },
     }
-    body[:reasoning_effort] = reasoning_effort if reasoning_effort.present?
+    body[:reasoning_effort] = reasoning_effort if supported_reasoning_effort?(model, reasoning_effort)
     body = body.to_json
 
     with_retry do
@@ -101,6 +101,15 @@ class OpenaiClient
     else
       [base_delay, MAX_RETRY_DELAY].min
     end
+  end
+
+  def supported_reasoning_effort?(model, reasoning_effort)
+    return false if reasoning_effort.blank?
+
+    model_config = MODEL_CONFIGS[model]
+    return true if model_config.blank?
+
+    model_config[:reasoning_levels].include?(reasoning_effort)
   end
 
   class << self

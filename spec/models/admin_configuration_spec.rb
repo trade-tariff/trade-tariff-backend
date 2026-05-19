@@ -580,6 +580,18 @@ RSpec.describe AdminConfiguration do
         result = described_class.nested_options_value('expand_model')
         expect(result).to eq({ selected: 'gpt-4.1-mini-2025-04-14', sub_values: { 'reasoning_effort' => 'low' } })
       end
+
+      it 'returns the default product description model without reasoning_effort' do
+        result = described_class.nested_options_value('product_description_model')
+        expect(result).to eq({ selected: 'gpt-4.1-mini-2025-04-14', sub_values: {} })
+      end
+
+      it 'returns default product description fetch controls' do
+        expect(described_class.integer_value('product_description_max_redirects')).to eq(3)
+        expect(described_class.integer_value('product_description_open_timeout_seconds')).to eq(3)
+        expect(described_class.integer_value('product_description_read_timeout_seconds')).to eq(5)
+        expect(described_class.integer_value('product_description_max_response_bytes')).to eq(256.kilobytes)
+      end
     end
 
     context 'when config record exists' do
