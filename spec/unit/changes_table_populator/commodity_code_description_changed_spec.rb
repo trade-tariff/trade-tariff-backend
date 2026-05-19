@@ -29,6 +29,7 @@ RSpec.describe ChangesTablePopulator::CommodityCodeDescriptionChanged do
         period = commodity.goods_nomenclature_description.goods_nomenclature_description_period
         period.validity_start_date = Time.zone.today
         period.save
+        GoodsNomenclatureDescriptionPeriod.refresh!(concurrently: false)
       end
 
       it 'extracts changes' do

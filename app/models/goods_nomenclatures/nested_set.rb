@@ -94,6 +94,32 @@ module GoodsNomenclatures
           end
       end
 
+      many_to_many :flat_descendants,
+                   left_primary_key: :goods_nomenclature_sid,
+                   left_key: Sequel.qualify(:origin_nodes, :goods_nomenclature_sid),
+                   right_primary_key: :goods_nomenclature_sid,
+                   right_key: :goods_nomenclature_sid,
+                   class_name: '::GoodsNomenclature',
+                   join_table: Sequel.as(:goods_nomenclature_tree_nodes, :descendant_nodes),
+                   after_load: :populate_parent_links_only,
+                   read_only: true do |ds|
+        raise DateNotSet unless TimeMachine.date_is_set?
+
+        ds.non_hidden
+          .order(:descendant_nodes__position)
+          .with_validity_dates(:descendant_nodes)
+          .select_append(:descendant_nodes__depth)
+          .select_append(:descendant_nodes__number_indents)
+          .select_append(Sequel.as(:descendant_nodes__description, :node_description))
+          .join(Sequel.as(:goods_nomenclature_tree_nodes, :origin_nodes)) do |origin_table, descendants_table, _join_clauses|
+            descendants = TreeNodeAlias.new(descendants_table)
+            origin      = TreeNodeAlias.new(origin_table)
+
+            (descendants.depth > origin.depth) &
+              TreeNode.descendant_node_constraints(origin, descendants)
+          end
+      end
+
       many_to_many :children,
                    left_primary_key: :goods_nomenclature_sid,
                    left_key: Sequel.qualify(:origin_nodes, :goods_nomenclature_sid),
@@ -142,6 +168,7 @@ module GoodsNomenclatures
       end
 
       def_column_accessor :leaf
+      def_column_accessor :node_description
 
       dataset_module do
         def with_leaf_column
@@ -170,6 +197,24 @@ module GoodsNomenclatures
       return if ancestors.empty?
 
       parent.recursive_ancestor_populator(parents_ancestors)
+    end
+
+    # Populates :parent association and :leaf column on each loaded descendant
+    # in a single linear pass using depth ordering. Skips the O(n × depth)
+    # child/ancestor recursion that recursive_descendant_populator does. Keeps
+    # `obj.parent` and `obj.leaf?` cheap for serializers that read them per
+    # row, avoiding N+1 queries on `parent` and `children` associations.
+    def populate_parent_links_only(descendants)
+      stack = [self]
+      descendants.each_with_index do |d, i|
+        stack.pop while stack.size > 1 && stack.last.depth >= d.depth
+        parent = stack.last
+        d.associations[:parent] = parent if parent.depth == d.depth - 1
+        stack.push(d)
+
+        next_d = descendants[i + 1]
+        d.values[:leaf] = next_d.nil? || next_d.depth <= d.depth
+      end
     end
 
     def recursive_descendant_populator(descendants, parent = nil)
@@ -211,7 +256,9 @@ module GoodsNomenclatures
     end
 
     def declarable?
-      producline_suffix == GoodsNomenclature::NON_GROUPING_PRODUCTLINE_SUFFIX && leaf?
+      return @declarable if defined?(@declarable)
+
+      @declarable = producline_suffix == GoodsNomenclature::NON_GROUPING_PRODUCTLINE_SUFFIX && leaf?
     end
 
     def leaf?

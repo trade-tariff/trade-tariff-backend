@@ -29,46 +29,57 @@ module Api
       end
 
       def show_by_section
+        timing_started_at, timing_started_allocations = hmrc2190_timing_start
+
         section  = Section.where(position: params[:position]).take
         chapters = section.chapters_dataset
                           .non_hidden
                           .eager(:goods_nomenclature_descriptions,
                                  :goods_nomenclature_indents,
-                                 :ancestors,
-                                 descendants: :goods_nomenclature_descriptions)
+                                 :flat_descendants)
                           .all
+        chapters.each { |ch| ch.associations[:parent] = nil }
 
-        @goods_nomenclatures = chapters.flat_map { |ch| [ch] + ch.descendants }
+        @goods_nomenclatures = chapters.flat_map { |ch| [ch] + ch.flat_descendants }
+        log_hmrc2190_timing(:collection, timing_started_at, timing_started_allocations)
 
         respond_with(@goods_nomenclatures)
       end
 
       def show_by_chapter
+        timing_started_at, timing_started_allocations = hmrc2190_timing_start
+
         chapter = Chapter.actual
                          .non_hidden
                          .by_code(params[:chapter_id])
                          .eager(:ancestors,
-                                descendants: :goods_nomenclature_descriptions)
+                                :goods_nomenclature_descriptions,
+                                :flat_descendants)
                          .take
 
-        @goods_nomenclatures = [chapter] + chapter.descendants
+        @goods_nomenclatures = [chapter] + chapter.flat_descendants
+        log_hmrc2190_timing(:collection, timing_started_at, timing_started_allocations)
 
         respond_with(@goods_nomenclatures)
       end
 
       def show_by_heading
+        timing_started_at, timing_started_allocations = hmrc2190_timing_start
+
         headings = Heading.actual
                           .non_hidden
                           .by_code(params[:heading_id])
                           .eager(:ancestors,
-                                 descendants: :goods_nomenclature_descriptions)
+                                 :goods_nomenclature_descriptions,
+                                 :flat_descendants)
                           .all
 
         raise Sequel::RecordNotFound if headings.empty?
 
         @goods_nomenclatures = headings.flat_map do |heading|
-          [heading] + heading.descendants
+          [heading] + heading.flat_descendants
         end
+        log_hmrc2190_timing(:collection, timing_started_at, timing_started_allocations)
 
         respond_with(@goods_nomenclatures)
       end
@@ -104,7 +115,11 @@ module Api
         respond_to do |format|
           format.json do
             headers['Content-Type'] = 'application/json'
-            render json: Api::V2::GoodsNomenclatures::GoodsNomenclatureExtendedSerializer.new(@goods_nomenclatures.to_a).serializable_hash
+            timing_started_at, timing_started_allocations = hmrc2190_timing_start
+            serialized = Api::V2::GoodsNomenclatures::GoodsNomenclatureExtendedSerializer.new(@goods_nomenclatures.to_a).serializable_hash
+            log_hmrc2190_timing(:serializer, timing_started_at, timing_started_allocations)
+
+            render json: serialized
           end
           format.csv do
             send_data(
@@ -127,6 +142,33 @@ module Api
 
       def set_request_format
         request.format = :csv if request.headers['CONTENT_TYPE'] == 'text/csv'
+      end
+
+      def hmrc2190_timing_start
+        return unless hmrc2190_timing_enabled?
+
+        [
+          Process.clock_gettime(Process::CLOCK_MONOTONIC),
+          GC.stat(:total_allocated_objects),
+        ]
+      end
+
+      def log_hmrc2190_timing(stage, started_at, started_allocations)
+        return unless hmrc2190_timing_enabled?
+
+        Rails.logger.info({
+          marker: 'HMRC2190_TREE_TIMING',
+          stage:,
+          path: request.path,
+          action: action_name,
+          elapsed_ms: ((Process.clock_gettime(Process::CLOCK_MONOTONIC) - started_at) * 1000).round(2),
+          allocated_objects: GC.stat(:total_allocated_objects) - started_allocations,
+          records: @goods_nomenclatures&.size,
+        }.to_json)
+      end
+
+      def hmrc2190_timing_enabled?
+        params[:hmrc2190_timing].present?
       end
     end
   end
