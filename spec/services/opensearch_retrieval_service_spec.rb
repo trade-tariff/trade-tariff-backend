@@ -1,9 +1,6 @@
 RSpec.describe OpensearchRetrievalService do
   before do
-    allow(ExpandSearchQueryService).to receive(:call).and_wrap_original do |_method, query|
-      ExpandSearchQueryService::Result.new(expanded_query: query, reason: nil)
-    end
-    allow(Search::Instrumentation).to receive(:query_expanded).and_yield
+    allow(ExpandSearchQueryService).to receive(:call)
   end
 
   describe '#call' do
@@ -37,26 +34,19 @@ RSpec.describe OpensearchRetrievalService do
     end
 
     it 'returns a Result with results and expanded_query' do
-      result = described_class.call(query: 'animals', as_of: Time.zone.today)
+      result = described_class.call(query: 'animals', expanded_query: 'live animals', as_of: Time.zone.today)
 
       expect(result).to be_a(described_class::Result)
       expect(result.results.length).to eq(1)
       expect(result.results.first.goods_nomenclature_item_id).to eq('0100000000')
       expect(result.results.first.score).to eq(12.5)
-      expect(result.expanded_query).to eq('animals')
+      expect(result.expanded_query).to eq('live animals')
     end
 
-    context 'when expand_search_enabled is false' do
-      before do
-        allow(AdminConfiguration).to receive(:enabled?).and_call_original
-        allow(AdminConfiguration).to receive(:enabled?).with('expand_search_enabled').and_return(false)
-      end
+    it 'does not expand queries itself' do
+      described_class.call(query: 'animals', as_of: Time.zone.today)
 
-      it 'does not call ExpandSearchQueryService' do
-        described_class.call(query: 'animals', as_of: Time.zone.today)
-
-        expect(ExpandSearchQueryService).not_to have_received(:call)
-      end
+      expect(ExpandSearchQueryService).not_to have_received(:call)
     end
 
     context 'when opensearch returns empty hits' do

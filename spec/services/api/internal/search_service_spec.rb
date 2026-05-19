@@ -901,20 +901,27 @@ RSpec.describe Api::Internal::SearchService do
       before do
         allow(AdminConfiguration).to receive(:option_value).and_call_original
         allow(AdminConfiguration).to receive(:option_value).with('retrieval_method').and_return('vector')
+        allow(AdminConfiguration).to receive(:enabled?).and_call_original
+        allow(AdminConfiguration).to receive(:enabled?).with('expand_search_enabled').and_return(true)
+        allow(ExpandSearchQueryService).to receive(:call)
+          .and_return(ExpandSearchQueryService::Result.new(
+                        expanded_query: 'pure-bred breeding horses',
+                        reason: 'horses is broader than tariff terminology',
+                      ))
         allow(VectorRetrievalService).to receive(:call).and_return(vector_results)
       end
 
-      it 'skips query expansion' do
+      it 'expands the query before vector retrieval' do
         described_class.new(q: 'horses').call
 
-        expect(ExpandSearchQueryService).not_to have_received(:call)
+        expect(ExpandSearchQueryService).to have_received(:call).with('horses')
       end
 
-      it 'calls VectorRetrievalService with query' do
+      it 'calls VectorRetrievalService with the expanded query' do
         described_class.new(q: 'horses').call
 
         expect(VectorRetrievalService).to have_received(:call).with(
-          hash_including(query: 'horses'),
+          hash_including(query: 'pure-bred breeding horses'),
         )
       end
 
@@ -982,14 +989,21 @@ RSpec.describe Api::Internal::SearchService do
       before do
         allow(AdminConfiguration).to receive(:option_value).and_call_original
         allow(AdminConfiguration).to receive(:option_value).with('retrieval_method').and_return('hybrid')
+        allow(AdminConfiguration).to receive(:enabled?).and_call_original
+        allow(AdminConfiguration).to receive(:enabled?).with('expand_search_enabled').and_return(true)
+        allow(ExpandSearchQueryService).to receive(:call)
+          .and_return(ExpandSearchQueryService::Result.new(
+                        expanded_query: 'pure-bred breeding horses',
+                        reason: 'horses is broader than tariff terminology',
+                      ))
         allow(HybridRetrievalService).to receive(:call).and_return(hybrid_result)
       end
 
-      it 'calls HybridRetrievalService' do
+      it 'calls HybridRetrievalService with the original and expanded query' do
         described_class.new(q: 'horses').call
 
         expect(HybridRetrievalService).to have_received(:call).with(
-          hash_including(query: 'horses'),
+          hash_including(query: 'horses', expanded_query: 'pure-bred breeding horses'),
         )
       end
 

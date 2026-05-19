@@ -34,10 +34,12 @@ RSpec.describe HybridRetrievalService do
     ]
   end
 
+  let(:expanded_query) { 'expanded horses' }
+
   let(:opensearch_result) do
     OpensearchRetrievalService::Result.new(
       results: opensearch_results,
-      expanded_query: 'expanded horses',
+      expanded_query: expanded_query,
     )
   end
 
@@ -54,25 +56,26 @@ RSpec.describe HybridRetrievalService do
       as_of = Time.zone.today
       allow(TimeMachine).to receive(:at).with(as_of).and_yield
 
-      described_class.call(query: 'horses', as_of: as_of)
+      described_class.call(query: 'horses', expanded_query: expanded_query, as_of: as_of)
 
       expect(TimeMachine).to have_received(:at).with(as_of).at_least(:twice)
       expect(OpensearchRetrievalService).to have_received(:call).with(
-        query: 'horses', as_of: as_of, request_id: nil, limit: 30,
+        query: 'horses', expanded_query: expanded_query, as_of: as_of, request_id: nil, limit: 30,
       )
-      expect(VectorRetrievalService).to have_received(:call).with(query: 'horses', limit: 30)
+      expect(VectorRetrievalService).to have_received(:call).with(query: expanded_query, limit: 30)
     end
 
     it 'passes filter prefixes to both retrieval legs' do
       as_of = Time.zone.today
 
-      described_class.call(query: 'horses', as_of: as_of, filter_prefixes: %w[0101])
+      described_class.call(query: 'horses', expanded_query: expanded_query, as_of: as_of, filter_prefixes: %w[0101])
 
       expect(OpensearchRetrievalService).to have_received(:call).with(
-        query: 'horses', as_of: as_of, request_id: nil, limit: 30, filter_prefixes: %w[0101],
+        query: 'horses', expanded_query: expanded_query,
+        as_of: as_of, request_id: nil, limit: 30, filter_prefixes: %w[0101]
       )
       expect(VectorRetrievalService).to have_received(:call).with(
-        query: 'horses', limit: 30, filter_prefixes: %w[0101],
+        query: expanded_query, limit: 30, filter_prefixes: %w[0101],
       )
     end
 
@@ -101,9 +104,9 @@ RSpec.describe HybridRetrievalService do
     end
 
     it 'returns expanded_query from the opensearch leg' do
-      result = described_class.call(query: 'horses', as_of: Time.zone.today)
+      result = described_class.call(query: 'horses', expanded_query: expanded_query, as_of: Time.zone.today)
 
-      expect(result.expanded_query).to eq('expanded horses')
+      expect(result.expanded_query).to eq(expanded_query)
     end
 
     it 'reads rrf_k from AdminConfiguration' do
@@ -159,10 +162,10 @@ RSpec.describe HybridRetrievalService do
         expect(sids).to eq([1, 2, 3])
       end
 
-      it 'still returns expanded_query from opensearch' do
-        result = described_class.call(query: 'horses', as_of: Time.zone.today)
+      it 'still returns the expanded_query passed by internal search' do
+        result = described_class.call(query: 'horses', expanded_query: expanded_query, as_of: Time.zone.today)
 
-        expect(result.expanded_query).to eq('expanded horses')
+        expect(result.expanded_query).to eq(expanded_query)
       end
 
       it 'emits error status for vector leg' do

@@ -125,6 +125,7 @@ RSpec.describe 'admin_configurations:seed' do
     expect(expand_query.config_type).to eq('markdown')
     expect(expand_query.value).to include('## Output format')
     expect(expand_query.value).to include('## Example')
+    expect(expand_query.value).not_to include('OpenSearch')
 
     other_self_text_context = AdminConfiguration.where(name: 'other_self_text_context').first
     expect(other_self_text_context.config_type).to eq('markdown')
