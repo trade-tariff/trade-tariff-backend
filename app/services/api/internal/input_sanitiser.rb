@@ -1,7 +1,7 @@
 module Api
   module Internal
     class InputSanitiser
-      MAX_QUERY_LENGTH = 500
+      MAX_QUERY_LENGTH = 1000
       NON_PRINTABLE = /[\x00-\x08\x0B\x0C\x0E-\x1F\x7F\u200B\u200C\u200D\uFEFF]/
 
       def initialize(query)

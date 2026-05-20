@@ -119,7 +119,7 @@ class AdminConfiguration < Sequel::Model(Sequel[:admin_configurations].qualify(:
     'suggest_known_brands' => false,
     'suggest_synonyms' => false,
     'input_sanitiser_enabled' => true,
-    'input_sanitiser_max_length' => 500,
+    'input_sanitiser_max_length' => 1000,
     'retrieval_method' => 'hybrid',
     'rrf_k' => 60,
     'vector_ef_search' => 100,

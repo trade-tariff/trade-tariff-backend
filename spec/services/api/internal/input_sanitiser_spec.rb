@@ -67,13 +67,21 @@ RSpec.describe Api::Internal::InputSanitiser do
       end
     end
 
+    context 'when input is exactly the max length' do
+      let(:query) { 'a' * 1000 }
+
+      it 'returns the cleaned query' do
+        expect(result).to eq(query: query)
+      end
+    end
+
     context 'when input exceeds max length' do
-      let(:query) { 'a' * 501 }
+      let(:query) { 'a' * 1001 }
 
       it 'returns an error' do
         expect(result[:errors]).to be_present
         expect(result[:errors].first[:status]).to eq('422')
-        expect(result[:errors].first[:detail]).to eq('Query exceeds maximum length of 500 characters')
+        expect(result[:errors].first[:detail]).to eq('Query exceeds maximum length of 1000 characters')
       end
     end
 
@@ -90,16 +98,16 @@ RSpec.describe Api::Internal::InputSanitiser do
       end
     end
 
-    context 'when max length is configured above 500' do
-      let(:query) { 'a' * 501 }
+    context 'when max length is configured above 1000' do
+      let(:query) { 'a' * 1001 }
 
       before do
-        create(:admin_configuration, :integer, name: 'input_sanitiser_max_length', value: 600)
+        create(:admin_configuration, :integer, name: 'input_sanitiser_max_length', value: 1100)
       end
 
-      it 'caps validation at 500 characters' do
+      it 'caps validation at 1000 characters' do
         expect(result[:errors]).to be_present
-        expect(result[:errors].first[:detail]).to eq('Query exceeds maximum length of 500 characters')
+        expect(result[:errors].first[:detail]).to eq('Query exceeds maximum length of 1000 characters')
       end
     end
 
