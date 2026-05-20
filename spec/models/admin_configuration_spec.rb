@@ -397,6 +397,7 @@ RSpec.describe AdminConfiguration do
   describe '.default_for' do
     it 'returns static values directly' do
       expect(described_class.default_for('opensearch_result_limit')).to eq(50)
+      expect(described_class.default_for('input_sanitiser_max_length')).to eq(1000)
     end
 
     it 'returns explicit nested model defaults' do
@@ -444,6 +445,7 @@ RSpec.describe AdminConfiguration do
     context 'when config record is missing' do
       it 'returns the default value' do
         expect(described_class.integer_value('opensearch_result_limit')).to eq(50)
+        expect(described_class.integer_value('input_sanitiser_max_length')).to eq(1000)
         expect(described_class.integer_value('pos_noun_boost')).to eq(10)
         expect(described_class.integer_value('search_result_limit')).to eq(0)
       end
