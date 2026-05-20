@@ -13852,6 +13852,20 @@ CREATE INDEX sid ON uk.additional_code_descriptions_oplog USING btree (additiona
 
 
 --
+-- Name: tariff_changes_commodity_date_sid_action_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX tariff_changes_commodity_date_sid_action_index ON uk.tariff_changes USING btree (operation_date, goods_nomenclature_sid, action) WHERE (type = 'Commodity'::text);
+
+
+--
+-- Name: tariff_changes_commodity_description_date_sid_action_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX tariff_changes_commodity_description_date_sid_action_index ON uk.tariff_changes USING btree (operation_date, goods_nomenclature_sid, action) WHERE (type = 'GoodsNomenclatureDescription'::text);
+
+
+--
 -- Name: tariff_changes_goods_nomenclature_item_id_index; Type: INDEX; Schema: uk; Owner: -
 --
 
@@ -13859,10 +13873,24 @@ CREATE INDEX tariff_changes_goods_nomenclature_item_id_index ON uk.tariff_change
 
 
 --
+-- Name: tariff_changes_measure_date_sid_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX tariff_changes_measure_date_sid_index ON uk.tariff_changes USING btree (operation_date, goods_nomenclature_sid) WHERE (type = 'Measure'::text);
+
+
+--
 -- Name: tariff_changes_metadata_index; Type: INDEX; Schema: uk; Owner: -
 --
 
 CREATE INDEX tariff_changes_metadata_index ON uk.tariff_changes USING gin (metadata);
+
+
+--
+-- Name: tariff_changes_operation_date_goods_nomenclature_sid_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX tariff_changes_operation_date_goods_nomenclature_sid_index ON uk.tariff_changes USING btree (operation_date, goods_nomenclature_sid);
 
 
 --
@@ -14285,3 +14313,4 @@ INSERT INTO "schema_migrations" ("filename") VALUES ('20260506170000_add_unique_
 INSERT INTO "schema_migrations" ("filename") VALUES ('20260507110000_add_message_header_and_alias_constraints_to_description_intercepts.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20260429151751_fixes_schema_reference_in_views.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20260506120000_add_approval_fields_to_customs_tariff_notes.rb');
+INSERT INTO "schema_migrations" ("filename") VALUES ('20260519120000_add_tariff_changes_query_indexes.rb');
