@@ -141,8 +141,8 @@ class CachedCommodityService
         .where(goods_nomenclatures__goods_nomenclature_sid: @commodity_sid)
         .eager(
           goods_nomenclature_descriptions: {},
-          heading: :footnotes,
-          chapter: [:chapter_note, { sections: :section_note }],
+          heading: %i[footnotes goods_nomenclature_descriptions],
+          chapter: [:chapter_note, :goods_nomenclature_descriptions, :guides, { sections: :section_note }],
           ancestors: :goods_nomenclature_descriptions,
           full_chemicals: {},
         )
