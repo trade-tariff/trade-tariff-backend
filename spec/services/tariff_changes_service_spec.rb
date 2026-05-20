@@ -534,6 +534,53 @@ RSpec.describe TariffChangesService do
         end
       end
 
+      context 'with multiple measure changes' do
+        let!(:first_goods_nomenclature) { create(:commodity, :declarable, goods_nomenclature_sid: 67_890) }
+        let!(:second_goods_nomenclature) { create(:commodity, :declarable, goods_nomenclature_sid: 67_891) }
+
+        before do
+          service.instance_variable_set(:@changes, {
+            commodities: [],
+            commodity_descriptions: [],
+            measures: [
+              {
+                type: 'Measure',
+                object_sid: 54_321,
+                goods_nomenclature_sid: first_goods_nomenclature.goods_nomenclature_sid,
+              },
+              {
+                type: 'Measure',
+                object_sid: 54_322,
+                goods_nomenclature_sid: first_goods_nomenclature.goods_nomenclature_sid,
+              },
+              {
+                type: 'Measure',
+                object_sid: 54_323,
+                goods_nomenclature_sid: second_goods_nomenclature.goods_nomenclature_sid,
+              },
+            ],
+          })
+        end
+
+        it 'loads goods nomenclatures once for the measure batch' do
+          allow(service).to receive(:matching_commodity_change?).and_return(false)
+          allow(GoodsNomenclature).to receive(:where).and_call_original
+
+          service.generate_commodity_change_records
+
+          expect(GoodsNomenclature).to have_received(:where).with(goods_nomenclature_sid: [
+            first_goods_nomenclature.goods_nomenclature_sid,
+            second_goods_nomenclature.goods_nomenclature_sid,
+          ]).once
+          measure_records = service.tariff_change_records.select { |record| record[:type] == 'Measure' }
+          expect(measure_records.map { |record| record[:goods_nomenclature_sid] }).to contain_exactly(
+            first_goods_nomenclature.goods_nomenclature_sid,
+            first_goods_nomenclature.goods_nomenclature_sid,
+            second_goods_nomenclature.goods_nomenclature_sid,
+          )
+        end
+      end
+
       context 'when goods nomenclature is not declarable but has declarable descendants' do
         let(:non_declarable_parent) { create(:heading, goods_nomenclature_sid: 67_890) }
         let(:declarable_child) { create(:commodity, :declarable, parent: non_declarable_parent) }
