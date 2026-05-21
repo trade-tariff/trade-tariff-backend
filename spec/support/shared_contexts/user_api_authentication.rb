@@ -7,6 +7,7 @@ RSpec.shared_context 'with user API authentication' do
   let(:request_header_overrides) { { 'Authorization' => user_token } }
 
   before do
+    user
     allow(CognitoTokenVerifier).to receive(:verify_id_token).and_return(verify_result)
   end
 end

@@ -4,7 +4,7 @@ end
 UserApi.routes.draw do
   namespace :api, defaults: { format: 'json' }, path: '' do
     scope module: :user do
-      resource :users, only: %i[show update], controller: 'public_users'
+      resource :users, only: %i[show create update], controller: 'public_users'
       resources :subscriptions, only: %i[show destroy] do
         post :batch, on: :member, action: :create_batch
         resources :subscription_targets, only: %i[index], path: 'targets' do
