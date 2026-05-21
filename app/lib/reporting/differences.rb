@@ -73,6 +73,7 @@ module Reporting
 
     attr_reader :workbook,
                 :regular_style,
+                :date_style,
                 :bold_style,
                 :centered_style,
                 :print_style,
@@ -97,6 +98,14 @@ module Reporting
         font_name: 'Calibri',
         font_size: 11,
         text_wrap: true,
+      )
+
+      @date_style = workbook.add_format(
+        align: { h: :left, v: :top },
+        font_name: 'Calibri',
+        font_size: 11,
+        text_wrap: true,
+        num_format: 'd mmmm yyyy',
       )
 
       @centered_style = workbook.add_format(

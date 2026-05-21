@@ -4,6 +4,7 @@ module Reporting
       class Seasonal
         delegate :workbook,
                  :regular_style,
+                 :date_style,
                  :bold_style,
                  to: :report
 
@@ -54,7 +55,15 @@ module Reporting
           worksheet.freeze_panes(5, 0)
 
           (rows || []).compact.each do |row|
-            worksheet.append_row(row, regular_style)
+            worksheet.append_row(row, [
+              regular_style,
+              regular_style,
+              regular_style,
+              date_style,
+              date_style,
+              regular_style,
+              regular_style,
+            ])
           end
 
           COLUMN_WIDTHS.each_with_index do |width, index|

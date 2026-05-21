@@ -27,8 +27,8 @@ module Reporting
             measure.goods_nomenclature_item_id,
             measure.geographical_area_id,
             measure.measure_type_id,
-            measure.validity_start_date.to_fs(:govuk),
-            measure.validity_end_date.to_fs(:govuk),
+            measure.validity_start_date,
+            measure.validity_end_date,
             measure.failed_duty_status,
           ]
         end
