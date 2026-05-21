@@ -63,18 +63,20 @@ RSpec.describe 'admin_configurations:seed' do
     expect(config.value['generic']['attributes']).to include(
       'excluded' => true,
       'message_header' => "We can't suggest a tariff code yet",
-      'message' => include('This information might be found on:'),
+      'message' => include('## What if I need more help?'),
       'guidance_level' => 'info',
       'guidance_location' => 'interstitial',
       'sources' => %w[guided_search fpo_search],
     )
+    expect(config.value['generic']['attributes']['message']).to include('Guidance on classifying products can be found in [help on using the tariff (opens in new tab)]')
     expect(config.value['escalation']['label']).to eq('Escalation guidance')
     expect(config.value['escalation']['attributes']).to include(
       'excluded' => true,
       'escalate_to_webchat' => true,
       'message_header' => 'Contact HMRC for help',
     )
-    expect(config.value['escalation']['attributes']['message']).to include('{{request_id}}')
+    expect(config.value['escalation']['attributes']['message']).to include("The product you're searching for is difficult to classify.")
+    expect(config.value['escalation']['attributes']['message']).not_to include('{{request_id}}')
     expect(config.value['escalation']['attributes']['message']).to include('{{webchat_url}}')
     expect(config.value['escalation']['attributes']['message']).to include('{{enquiries_email}}')
   end
