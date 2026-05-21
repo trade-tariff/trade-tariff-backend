@@ -241,7 +241,7 @@ module Api
           heading_description: goods_nomenclature.heading&.formatted_description,
           declarable: goods_nomenclature.respond_to?(:declarable?) ? goods_nomenclature.declarable? : false,
           score: nil,
-          confidence: 'high',
+          confidence: 'strong',
         )
       end
 

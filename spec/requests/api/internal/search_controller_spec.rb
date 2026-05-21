@@ -95,14 +95,14 @@ RSpec.describe Api::Internal::SearchController, :internal do
                 'score' => nil,
                 'producline_suffix' => '80',
                 'goods_nomenclature_class' => 'Heading',
-                'confidence' => 'high',
+                'confidence' => 'strong',
               },
             },
           ],
         }
       end
 
-      it 'returns the exact match with null score and high confidence' do
+      it 'returns the exact match with null score and strong confidence' do
         post api_search_path(format: :json), params: { q: 'horse', as_of: Time.zone.today.iso8601 }
 
         expect(response).to have_http_status(:ok)
@@ -140,14 +140,14 @@ RSpec.describe Api::Internal::SearchController, :internal do
                 'score' => nil,
                 'producline_suffix' => '80',
                 'goods_nomenclature_class' => 'Chapter',
-                'confidence' => 'high',
+                'confidence' => 'strong',
               },
             },
           ],
         }
       end
 
-      it 'returns the exact match with null score and high confidence' do
+      it 'returns the exact match with null score and strong confidence' do
         post api_search_path(format: :json), params: { q: '01', as_of: Time.zone.today.iso8601 }
 
         expect(response).to have_http_status(:ok)
