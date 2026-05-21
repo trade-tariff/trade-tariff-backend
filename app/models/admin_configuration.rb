@@ -48,21 +48,29 @@ class AdminConfiguration < Sequel::Model(Sequel[:admin_configurations].qualify(:
     - online listings
     - product information documents included in the packaging
 
+    ## What if I need more help?
+
+    Guidance on classifying products can be found in [help on using the tariff (opens in new tab)](https://www.gov.uk/guidance/classification-of-goods/) where you can find information about:
+
+    - structure of commodity codes
+    - the information you need to classify a product
+    - detailed guidance on hard to classify products
+
     ## Next steps
 
     Go back and add more details so we can find the relevant commodity code with the highest accuracy.
   MARKDOWN
 
   ESCALATION_DESCRIPTION_INTERCEPT_MESSAGE = <<~MARKDOWN.strip.freeze
-    You should contact HMRC for help classifying this product.
+    The product you're searching for is difficult to classify.
 
     ## Next steps
 
-    Contact HMRC and quote reference {{request_id}}
+    You should contact HMRC for help classifying this product.
 
-    *Webchat*: [Ask HMRC online]({{webchat_url}})
+    **Webchat:** [Ask HMRC online]({{webchat_url}})
 
-    *Email*: [{{enquiries_email}}](mailto:{{enquiries_email}})
+    **Email:** [{{enquiries_email}}](mailto:{{enquiries_email}})
   MARKDOWN
 
   DEFAULTS = {

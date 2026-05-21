@@ -400,6 +400,29 @@ RSpec.describe AdminConfiguration do
       expect(described_class.default_for('input_sanitiser_max_length')).to eq(1000)
     end
 
+    it 'returns the current description intercept template copy' do
+      templates = described_class.default_for('description_intercept_templates')
+
+      expect(templates['generic']['attributes']['message']).to include(
+        '## What if I need more help?',
+        'Guidance on classifying products can be found in [help on using the tariff (opens in new tab)]',
+        '- structure of commodity codes',
+        '- the information you need to classify a product',
+        '- detailed guidance on hard to classify products',
+      )
+      expect(templates['escalation']['attributes']['message']).to eq(<<~MARKDOWN.strip)
+        The product you're searching for is difficult to classify.
+
+        ## Next steps
+
+        You should contact HMRC for help classifying this product.
+
+        **Webchat:** [Ask HMRC online]({{webchat_url}})
+
+        **Email:** [{{enquiries_email}}](mailto:{{enquiries_email}})
+      MARKDOWN
+    end
+
     it 'returns explicit nested model defaults' do
       expect(described_class.default_for('search_model')).to eq('gpt-5.4')
     end
