@@ -5,7 +5,7 @@ module Api
 
       RetrievalResult = Data.define(:goods_nomenclatures, :max_score, :expanded_query, :results_type)
 
-      attr_reader :q, :as_of, :answers, :request_id, :description_intercept
+      attr_reader :q, :as_of, :answers, :request_id, :description_intercept, :expanded_query
 
       def initialize(params = {})
         sanitiser_result = InputSanitiser.new(params[:q]).call
@@ -20,6 +20,7 @@ module Api
         @as_of = parse_date(params[:as_of])
         @answers = normalize_answers(params[:answers])
         @request_id = params[:request_id] || SecureRandom.uuid
+        @expanded_query = params[:expanded_query].to_s.strip.presence
       end
 
       def call
@@ -142,6 +143,8 @@ module Api
       end
 
       def normalised_query
+        return InternalSearchQueryNormaliserService::Result.new(query: q, expanded_query: expanded_query) if expanded_query.present?
+
         @normalised_query ||= InternalSearchQueryNormaliserService.call(query: q, request_id: request_id)
       end
 

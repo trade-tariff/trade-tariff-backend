@@ -367,13 +367,17 @@ RSpec.describe Api::Internal::SearchController, :internal do
       end
 
       it 'accepts answers parameter and responds successfully' do
+        allow(ExpandSearchQueryService).to receive(:call)
+
         post api_search_path(format: :json), params: {
           q: 'handbag',
+          expanded_query: 'leather handbag travel bag',
           request_id: 'test-123',
           answers: [{ question: 'Material?', answer: 'Leather' }],
         }
 
         expect(response).to have_http_status(:ok)
+        expect(ExpandSearchQueryService).not_to have_received(:call)
         expect(InteractiveSearchService).to have_received(:call)
       end
     end
