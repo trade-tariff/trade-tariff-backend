@@ -7,7 +7,7 @@ module Search
     ERROR_MESSAGE_MAX_LENGTH = 500
 
     def instrument(event_name, payload = {}, &block)
-      ActiveSupport::Notifications.instrument("#{event_name}.search", payload, &block)
+      ActiveSupport::Notifications.instrument("#{event_name}.search", with_request_id(payload), &block)
     end
 
     def search_started(request_id:, query:, search_type:)
@@ -44,6 +44,16 @@ module Search
       )
 
       result
+    end
+
+    def query_refined(request_id:, original_query:, refined_query:, answer_count:)
+      result = yield
+      instrument('query_refined', request_id:, original_query:, refined_query:, answer_count:)
+      result
+    end
+
+    def query_expansion_decided(request_id:, query:, expand:, reason:, result_count:, max_score:)
+      instrument('query_expansion_decided', request_id:, query:, expand:, reason:, result_count:, max_score:)
     end
 
     def api_call(request_id:, model:, attempt_number:)
@@ -196,6 +206,12 @@ module Search
         error_message: message.first(ERROR_MESSAGE_MAX_LENGTH),
         error_message_truncated: message.length > ERROR_MESSAGE_MAX_LENGTH,
       }
+    end
+
+    def with_request_id(payload)
+      return payload unless payload.key?(:request_id)
+
+      payload.merge(request_id: payload[:request_id].presence || TradeTariffRequest.request_id.presence || SecureRandom.uuid)
     end
   end
 end

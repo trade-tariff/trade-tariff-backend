@@ -337,6 +337,20 @@ RSpec.describe InteractiveSearchService do
         expect(result.attempt).to eq(2)
       end
     end
+
+    context 'when AI returns uncertainty options' do
+      let(:ai_response) do
+        %q({"questions": [{"question": "What is the material?", "options": ["Leather", "I don't know", "Unknown", "Other"]}]})
+      end
+
+      before do
+        allow(OpenaiClient).to receive(:call).and_return(ai_response)
+      end
+
+      it 'removes uncertainty options but keeps Other as a catch-all option' do
+        expect(result.data.first[:options]).to eq(%w[Leather Other])
+      end
+    end
   end
 
   describe 'question extraction' do

@@ -7,7 +7,7 @@ class AdminConfiguration < Sequel::Model(Sequel[:admin_configurations].qualify(:
   NESTED_OPTION_DEFAULTS = {
     'expand_model' => {
       selected: 'gpt-4.1-mini-2025-04-14',
-      sub_values: { 'reasoning_effort' => 'low' },
+      sub_values: {},
     },
     'label_model' => {
       selected: 'gpt-5.4',
@@ -105,10 +105,14 @@ class AdminConfiguration < Sequel::Model(Sequel[:admin_configurations].qualify(:
       },
     },
     'expand_search_enabled' => false,
+    'expand_search_min_results' => 5,
+    'expand_search_min_score' => 5,
+    'expand_search_when_needed_enabled' => false,
     'expand_model' => NESTED_OPTION_DEFAULTS['expand_model'][:selected],
     'interactive_search_enabled' => true,
     'interactive_search_excluded_chapters' => %w[98 99].freeze,
     'interactive_search_max_questions' => 7,
+    'refine_search_with_answers_enabled' => false,
     'label_model' => NESTED_OPTION_DEFAULTS['label_model'][:selected],
     'label_page_size' => -> { TradeTariffBackend.goods_nomenclature_label_page_size },
     'opensearch_result_limit' => 50,
@@ -220,9 +224,11 @@ class AdminConfiguration < Sequel::Model(Sequel[:admin_configurations].qualify(:
     default_value = default_for(name)
 
     if config.nil?
+      selected = nested_default&.fetch(:selected, default_value) || default_value
+
       return {
-        selected: nested_default&.fetch(:selected, default_value) || default_value,
-        sub_values: nested_default&.fetch(:sub_values, {}) || {},
+        selected: selected,
+        sub_values: supported_nested_sub_values(selected, nested_default&.fetch(:sub_values, {}) || {}),
       }
     end
 
@@ -233,10 +239,26 @@ class AdminConfiguration < Sequel::Model(Sequel[:admin_configurations].qualify(:
            else {}
            end
 
+    selected = hash['selected'].presence || default_value
+
     {
-      selected: hash['selected'].presence || default_value,
-      sub_values: hash['sub_values'].is_a?(Hash) ? hash['sub_values'] : {},
+      selected: selected,
+      sub_values: supported_nested_sub_values(selected, hash['sub_values'].is_a?(Hash) ? hash['sub_values'] : {}),
     }
+  end
+
+  def self.supported_nested_sub_values(selected, sub_values)
+    return {} unless sub_values.is_a?(Hash)
+
+    model_config = OpenaiClient::MODEL_CONFIGS[selected.to_s]
+    return sub_values if model_config.nil?
+
+    allowed = {}
+    if model_config[:reasoning_levels].present? && model_config[:reasoning_levels].include?(sub_values['reasoning_effort'])
+      allowed['reasoning_effort'] = sub_values['reasoning_effort']
+    end
+
+    allowed
   end
 
   def self.description_intercept_templates_value

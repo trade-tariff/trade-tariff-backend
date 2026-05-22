@@ -8,8 +8,8 @@ RSpec.describe 'admin_configurations:seed' do
     Rake::Task['admin_configurations:seed'].reenable
   end
 
-  it 'creates all 37 admin configurations', :aggregate_failures do
-    expect { seed }.to change(AdminConfiguration, :count).by(37)
+  it 'creates all 41 admin configurations', :aggregate_failures do
+    expect { seed }.to change(AdminConfiguration, :count).by(41)
 
     names = AdminConfiguration.order(:name).select_map(:name)
     expect(names).to eq(%w[
@@ -17,6 +17,9 @@ RSpec.describe 'admin_configurations:seed' do
       expand_model
       expand_query_context
       expand_search_enabled
+      expand_search_min_results
+      expand_search_min_score
+      expand_search_when_needed_enabled
       input_sanitiser_enabled
       input_sanitiser_max_length
       interactive_search_enabled
@@ -35,6 +38,7 @@ RSpec.describe 'admin_configurations:seed' do
       pos_noun_boost
       pos_qualifier_boost
       pos_search_enabled
+      refine_search_with_answers_enabled
       retrieval_method
       rrf_k
       search_context
@@ -121,6 +125,8 @@ RSpec.describe 'admin_configurations:seed' do
     expect(search_context.value).to include('## Response format')
     expect(search_context.value).to include('### Confident answer')
     expect(search_context.value).to include('Ask exactly one question per turn')
+    expect(search_context.value).to include('Do not include uncertainty options')
+    expect(search_context.value).to include('"Other" must mean "something else"')
     expect(search_context.value).not_to include('Try and ask at least a few questions each time')
 
     expand_query = AdminConfiguration.where(name: 'expand_query_context').first
@@ -139,6 +145,34 @@ RSpec.describe 'admin_configurations:seed' do
     expect(non_other_self_text_context.config_type).to eq('markdown')
     expect(non_other_self_text_context.value).to include('## Output format')
     expect(non_other_self_text_context.value).to include('## Style rules')
+  end
+
+  it 'seeds answer-based query refinement as disabled by default', :aggregate_failures do
+    seed
+
+    config = AdminConfiguration.where(name: 'refine_search_with_answers_enabled').first
+    expect(config.config_type).to eq('boolean')
+    expect(config.value).to be false
+  end
+
+  it 'seeds conditional expansion controls', :aggregate_failures do
+    seed
+
+    enabled = AdminConfiguration.where(name: 'expand_search_when_needed_enabled').first
+    expect(enabled.config_type).to eq('boolean')
+    expect(enabled.description).to include('Requires expand_search_enabled')
+    expect(enabled.description).to include('acronym-like terms')
+    expect(enabled.description).to include('no useful word parts')
+    expect(enabled.description).to include('weak retrieval results')
+    expect(enabled.value).to be false
+
+    min_results = AdminConfiguration.where(name: 'expand_search_min_results').first
+    expect(min_results.config_type).to eq('integer')
+    expect(min_results.value).to eq(AdminConfiguration.default_for('expand_search_min_results'))
+
+    min_score = AdminConfiguration.where(name: 'expand_search_min_score').first
+    expect(min_score.config_type).to eq('integer')
+    expect(min_score.value).to eq(AdminConfiguration.default_for('expand_search_min_score'))
   end
 
   it 'seeds other_self_text_batch_size as an integer config defaulting to 5', :aggregate_failures do
@@ -323,7 +357,7 @@ RSpec.describe 'admin_configurations:seed' do
   it 'patches existing configurations when their type changes' do
     create(:admin_configuration, name: 'description_intercept_templates', config_type: 'string', value: 'legacy')
 
-    expect { seed }.to change(AdminConfiguration, :count).by(36)
+    expect { seed }.to change(AdminConfiguration, :count).by(40)
     expect(AdminConfiguration.where(name: 'description_intercept_templates').first.config_type).to eq('object_template')
   end
 end

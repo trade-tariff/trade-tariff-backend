@@ -77,6 +77,64 @@ RSpec.describe Search::Logger do
     end
   end
 
+  describe '#query_refined' do
+    let(:payload) do
+      {
+        request_id: 'req-1',
+        original_query: 'handbag',
+        refined_query: 'handbag Leather',
+        answer_count: 1,
+      }
+    end
+
+    it_behaves_like 'a search log entry', :query_refined, 'query_refined',
+                    { request_id: 'req-1',
+                      original_query: 'handbag',
+                      refined_query: 'handbag Leather',
+                      answer_count: 1 }
+
+    it 'logs correct fields' do
+      logger_instance.query_refined(build_event('query_refined', payload))
+      json = parsed_log_output
+      expect(json['event']).to eq('query_refined')
+      expect(json['original_query']).to eq('handbag')
+      expect(json['refined_query']).to eq('handbag Leather')
+      expect(json['answer_count']).to eq(1)
+    end
+  end
+
+  describe '#query_expansion_decided' do
+    let(:payload) do
+      {
+        request_id: 'req-1',
+        query: 'CBD oil',
+        expand: true,
+        reason: 'non_word_token',
+        result_count: 3,
+        max_score: 4.5,
+      }
+    end
+
+    it_behaves_like 'a search log entry', :query_expansion_decided, 'query_expansion_decided',
+                    { request_id: 'req-1',
+                      query: 'CBD oil',
+                      expand: true,
+                      reason: 'non_word_token',
+                      result_count: 3,
+                      max_score: 4.5 }
+
+    it 'logs correct fields' do
+      logger_instance.query_expansion_decided(build_event('query_expansion_decided', payload))
+      json = parsed_log_output
+      expect(json['event']).to eq('query_expansion_decided')
+      expect(json['query']).to eq('CBD oil')
+      expect(json['expand']).to be(true)
+      expect(json['reason']).to eq('non_word_token')
+      expect(json['result_count']).to eq(3)
+      expect(json['max_score']).to eq(4.5)
+    end
+  end
+
   describe '#api_call_completed' do
     let(:payload) do
       { request_id: 'req-1', model: 'gpt-4', duration_ms: 2500.0, response_type: 'answers', attempt_number: 1 }
