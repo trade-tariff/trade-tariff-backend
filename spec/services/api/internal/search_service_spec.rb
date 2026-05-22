@@ -8,6 +8,7 @@ RSpec.describe Api::Internal::SearchService do
     allow(InteractiveSearchService).to receive(:call).and_return(nil)
     allow(Search::Instrumentation).to receive(:search) { |**_kwargs, &block| block.call&.first }
     allow(Search::Instrumentation).to receive(:query_expanded).and_yield
+    allow(Search::Instrumentation).to receive(:query_refined).and_call_original
     allow(Search::Instrumentation).to receive(:description_intercept_checked)
   end
 
@@ -668,6 +669,7 @@ RSpec.describe Api::Internal::SearchService do
       before do
         allow(AdminConfiguration).to receive(:enabled?).and_call_original
         allow(AdminConfiguration).to receive(:enabled?).with('expand_search_enabled').and_return(true)
+        allow(AdminConfiguration).to receive(:enabled?).with('expand_search_when_needed_enabled').and_return(false)
         allow(TradeTariffBackend.search_client).to receive(:search).and_return(opensearch_response)
       end
 
@@ -675,6 +677,118 @@ RSpec.describe Api::Internal::SearchService do
         described_class.new(q: 'laptop').call
 
         expect(ExpandSearchQueryService).to have_received(:call).with('laptop')
+      end
+
+      it 'appends answer text before expanding the query' do
+        answers = [{ question: 'What material?', answer: 'Leather' }]
+        allow(AdminConfiguration).to receive(:enabled?).with('refine_search_with_answers_enabled').and_return(true)
+
+        described_class.new(q: 'handbag', answers: answers).call
+
+        expect(ExpandSearchQueryService).to have_received(:call).with('handbag Leather')
+      end
+    end
+
+    context 'when conditional expansion is enabled' do
+      let(:weak_opensearch_response) { { 'hits' => { 'hits' => [] } } }
+      let(:expanded_opensearch_response) do
+        {
+          'hits' => {
+            'hits' => [
+              {
+                '_score' => 12.5,
+                '_source' => {
+                  'goods_nomenclature_sid' => 1,
+                  'goods_nomenclature_item_id' => '3304990000',
+                  'producline_suffix' => '80',
+                  'goods_nomenclature_class' => 'Commodity',
+                  'description' => 'beauty preparations',
+                  'formatted_description' => 'Beauty preparations',
+                  'declarable' => true,
+                },
+              },
+            ],
+          },
+        }
+      end
+
+      before do
+        allow(AdminConfiguration).to receive(:enabled?).and_call_original
+        allow(AdminConfiguration).to receive(:enabled?).with('expand_search_enabled').and_return(true)
+        allow(AdminConfiguration).to receive(:enabled?).with('expand_search_when_needed_enabled').and_return(true)
+        allow(AdminConfiguration).to receive(:integer_value).and_call_original
+        allow(AdminConfiguration).to receive(:integer_value).with('expand_search_min_results').and_return(5)
+        allow(AdminConfiguration).to receive(:integer_value).with('expand_search_min_score').and_return(5)
+        allow(ExpandSearchQueryService).to receive(:call)
+          .and_return(ExpandSearchQueryService::Result.new(
+                        expanded_query: 'cannabidiol oil',
+                        reason: 'CBD is an acronym',
+                      ))
+        allow(TradeTariffBackend.search_client).to receive(:search)
+          .and_return(weak_opensearch_response, expanded_opensearch_response)
+      end
+
+      it 'runs expansion after the initial result set is judged weak' do
+        result = described_class.new(q: 'CBD oil').call
+
+        expect(ExpandSearchQueryService).to have_received(:call).with('CBD oil')
+        expect(TradeTariffBackend.search_client).to have_received(:search).twice
+        expect(result[:data].first[:attributes][:goods_nomenclature_item_id]).to eq('3304990000')
+      end
+    end
+
+    context 'when answer-based query refinement is enabled' do
+      let(:opensearch_response) { { 'hits' => { 'hits' => [] } } }
+
+      before do
+        allow(AdminConfiguration).to receive(:enabled?).and_call_original
+        allow(AdminConfiguration).to receive(:enabled?).with('expand_search_enabled').and_return(false)
+        allow(AdminConfiguration).to receive(:enabled?).with('refine_search_with_answers_enabled').and_return(true)
+        allow(TradeTariffBackend.search_client).to receive(:search).and_return(opensearch_response)
+        allow(Search::GoodsNomenclatureQuery).to receive(:new).and_call_original
+      end
+
+      it 'uses answered questions to target retrieval even when AI expansion is disabled' do
+        described_class.new(q: 'handbag', answers: [{ question: 'What material?', answer: 'Leather' }]).call
+
+        expect(Search::GoodsNomenclatureQuery).to have_received(:new).with(
+          'handbag',
+          anything,
+          hash_including(expanded_query: 'handbag Leather'),
+        )
+      end
+
+      it 'instruments the query refinement' do
+        described_class.new(q: 'handbag', answers: [{ question: 'What material?', answer: 'Leather' }]).call
+
+        expect(Search::Instrumentation).to have_received(:query_refined).with(
+          request_id: anything,
+          original_query: 'handbag',
+          refined_query: 'handbag Leather',
+          answer_count: 1,
+        )
+      end
+    end
+
+    context 'when answer-based query refinement is disabled' do
+      let(:opensearch_response) { { 'hits' => { 'hits' => [] } } }
+
+      before do
+        allow(AdminConfiguration).to receive(:enabled?).and_call_original
+        allow(AdminConfiguration).to receive(:enabled?).with('expand_search_enabled').and_return(false)
+        allow(AdminConfiguration).to receive(:enabled?).with('refine_search_with_answers_enabled').and_return(false)
+        allow(TradeTariffBackend.search_client).to receive(:search).and_return(opensearch_response)
+        allow(Search::GoodsNomenclatureQuery).to receive(:new).and_call_original
+      end
+
+      it 'keeps retrieval on the original query' do
+        described_class.new(q: 'handbag', answers: [{ question: 'What material?', answer: 'Leather' }]).call
+
+        expect(Search::GoodsNomenclatureQuery).to have_received(:new).with(
+          'handbag',
+          anything,
+          hash_including(expanded_query: 'handbag'),
+        )
       end
     end
 
@@ -1125,13 +1239,14 @@ RSpec.describe Api::Internal::SearchService do
       before do
         allow(AdminConfiguration).to receive(:enabled?).and_call_original
         allow(AdminConfiguration).to receive(:enabled?).with('expand_search_enabled').and_return(true)
+        allow(AdminConfiguration).to receive(:enabled?).with('refine_search_with_answers_enabled').and_return(true)
         allow(ExpandSearchQueryService).to receive(:call)
         allow(Search::GoodsNomenclatureQuery).to receive(:new).and_call_original
         allow(TradeTariffBackend.search_client).to receive(:search).and_return(opensearch_response)
         allow(InteractiveSearchService).to receive(:call).and_return(interactive_result)
       end
 
-      it 'reuses the supplied expanded query without expanding again' do
+      it 'reuses the supplied expanded query without expanding again and appends answered questions' do
         result = described_class.new(
           q: 'laptop',
           expanded_query: 'portable data processing machine',
@@ -1142,12 +1257,26 @@ RSpec.describe Api::Internal::SearchService do
         expect(Search::GoodsNomenclatureQuery).to have_received(:new).with(
           'laptop',
           anything,
-          hash_including(expanded_query: 'portable data processing machine'),
+          hash_including(expanded_query: 'portable data processing machine Personal'),
         )
         expect(InteractiveSearchService).to have_received(:call).with(
-          hash_including(expanded_query: 'portable data processing machine'),
+          hash_including(expanded_query: 'portable data processing machine Personal'),
         )
-        expect(result[:meta][:interactive_search]).to include(expanded_query: 'portable data processing machine')
+        expect(result[:meta][:interactive_search]).to include(expanded_query: 'portable data processing machine Personal')
+      end
+
+      it 'does not append answer text that is already present in the supplied expanded query' do
+        described_class.new(
+          q: 'laptop',
+          expanded_query: 'portable data processing machine Personal',
+          answers: [{ question: 'What type of laptop?', answer: 'Personal' }],
+        ).call
+
+        expect(Search::GoodsNomenclatureQuery).to have_received(:new).with(
+          'laptop',
+          anything,
+          hash_including(expanded_query: 'portable data processing machine Personal'),
+        )
       end
     end
   end

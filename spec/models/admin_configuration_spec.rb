@@ -601,9 +601,9 @@ RSpec.describe AdminConfiguration do
         expect(result).to eq({ selected: 'gpt-5.4', sub_values: { 'reasoning_effort' => 'medium' } })
       end
 
-      it 'returns the default expand model with reasoning_effort' do
+      it 'returns the default expand model without unsupported sub_values' do
         result = described_class.nested_options_value('expand_model')
-        expect(result).to eq({ selected: 'gpt-4.1-mini-2025-04-14', sub_values: { 'reasoning_effort' => 'low' } })
+        expect(result).to eq({ selected: 'gpt-4.1-mini-2025-04-14', sub_values: {} })
       end
     end
 
@@ -623,7 +623,28 @@ RSpec.describe AdminConfiguration do
 
       it 'returns the selected value and sub_values' do
         result = described_class.nested_options_value('search_model')
-        expect(result).to eq({ selected: 'gpt-4.1-mini-2025-04-14', sub_values: { 'reasoning_effort' => 'high' } })
+        expect(result).to eq({ selected: 'gpt-4.1-mini-2025-04-14', sub_values: {} })
+      end
+    end
+
+    context 'when config has stale sub_values for the selected model' do
+      before do
+        create(:admin_configuration, :nested_options,
+               name: 'expand_model',
+               area: 'classification',
+               value: {
+                 'selected' => 'gpt-4.1-mini-2025-04-14',
+                 'sub_values' => { 'reasoning_effort' => 'low' },
+                 'options' => [
+                   { 'key' => 'gpt-4.1-mini-2025-04-14', 'label' => 'GPT-4.1 Mini', 'sub_options' => {} },
+                   { 'key' => 'gpt-5.2', 'label' => 'GPT-5.2', 'sub_options' => { 'reasoning_effort' => %w[none low medium high] } },
+                 ],
+               })
+      end
+
+      it 'drops unsupported sub_values' do
+        result = described_class.nested_options_value('expand_model')
+        expect(result).to eq({ selected: 'gpt-4.1-mini-2025-04-14', sub_values: {} })
       end
     end
 

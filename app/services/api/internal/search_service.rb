@@ -19,7 +19,8 @@ module Api
 
         @as_of = parse_date(params[:as_of])
         @answers = normalize_answers(params[:answers])
-        @request_id = params[:request_id] || SecureRandom.uuid
+        @request_id = params[:request_id].presence || TradeTariffRequest.request_id.presence || SecureRandom.uuid
+        TradeTariffRequest.request_id ||= @request_id
         @expanded_query = params[:expanded_query].to_s.strip.presence
       end
 
@@ -82,10 +83,35 @@ module Api
       end
 
       def retrieve_short_list
+        if conditional_expansion_enabled?
+          return retrieve_short_list_with_conditional_expansion
+        end
+
+        retrieve_short_list_with_expanded_query(normalised_query.expanded_query)
+      end
+
+      def retrieve_short_list_with_conditional_expansion
+        unexpanded_query = retrieval_query
+        preliminary_retrieval = retrieve_short_list_with_expanded_query(unexpanded_query)
+        decision = SearchExpansionDecisionService.call(
+          query: unexpanded_query,
+          results: preliminary_retrieval.goods_nomenclatures,
+          request_id: request_id,
+        )
+
+        return preliminary_retrieval unless decision.expand?
+
+        expanded = expand_query(unexpanded_query)
+        return preliminary_retrieval if expanded == unexpanded_query
+
+        retrieve_short_list_with_expanded_query(expanded)
+      end
+
+      def retrieve_short_list_with_expanded_query(search_expanded_query)
         case retrieval_method
-        when 'vector' then vector_short_list
-        when 'hybrid' then hybrid_short_list
-        else opensearch_short_list
+        when 'vector' then vector_short_list(search_expanded_query)
+        when 'hybrid' then hybrid_short_list(search_expanded_query)
+        else opensearch_short_list(search_expanded_query)
         end
       end
 
@@ -93,9 +119,9 @@ module Api
         AdminConfiguration.option_value('retrieval_method')
       end
 
-      def vector_short_list
+      def vector_short_list(search_expanded_query)
         goods_nomenclatures = VectorRetrievalService.call(
-          query: normalised_query.expanded_query,
+          query: search_expanded_query,
           limit: opensearch_result_limit,
           filter_prefixes: filter_prefixes,
         )
@@ -103,14 +129,14 @@ module Api
         RetrievalResult.new(
           goods_nomenclatures: goods_nomenclatures,
           max_score: goods_nomenclatures.map(&:score).compact.max,
-          expanded_query: normalised_query.expanded_query,
+          expanded_query: search_expanded_query,
           results_type: 'vector',
         )
       end
 
-      def opensearch_short_list
+      def opensearch_short_list(search_expanded_query)
         result = OpensearchRetrievalService.call(
-          query: q, expanded_query: normalised_query.expanded_query,
+          query: q, expanded_query: search_expanded_query,
           as_of: as_of, request_id: request_id, limit: opensearch_result_limit,
           filter_prefixes: filter_prefixes
         )
@@ -123,9 +149,9 @@ module Api
         )
       end
 
-      def hybrid_short_list
+      def hybrid_short_list(search_expanded_query)
         result = HybridRetrievalService.call(
-          query: q, expanded_query: normalised_query.expanded_query,
+          query: q, expanded_query: search_expanded_query,
           as_of: as_of, request_id: request_id, limit: opensearch_result_limit,
           filter_prefixes: filter_prefixes
         )
@@ -142,10 +168,51 @@ module Api
         AdminConfiguration.integer_value('opensearch_result_limit')
       end
 
-      def normalised_query
-        return InternalSearchQueryNormaliserService::Result.new(query: q, expanded_query: expanded_query) if expanded_query.present?
+      def conditional_expansion_enabled?
+        expanded_query.blank? &&
+          AdminConfiguration.enabled?('expand_search_enabled') &&
+          AdminConfiguration.enabled?('expand_search_when_needed_enabled')
+      end
 
-        @normalised_query ||= InternalSearchQueryNormaliserService.call(query: q, request_id: request_id)
+      def normalised_query
+        if expanded_query.present?
+          return InternalSearchQueryNormaliserService::Result.new(query: q, expanded_query: refine_query(expanded_query))
+        end
+
+        @normalised_query ||= InternalSearchQueryNormaliserService.call(query: retrieval_query, request_id: request_id)
+      end
+
+      def expand_query(query)
+        result = ::Search::Instrumentation.query_expanded(
+          request_id: request_id,
+          original_query: query,
+        ) { ExpandSearchQueryService.call(query) }
+
+        result.expanded_query
+      end
+
+      def retrieval_query
+        @retrieval_query ||= refine_query(q)
+      end
+
+      def refine_query(base_query)
+        values = answered_values.reject { |value| base_query.downcase.include?(value.downcase) }
+        refined_query = [base_query, values.join(' ')].compact_blank.join(' ').squish
+
+        return base_query if refined_query == base_query
+
+        ::Search::Instrumentation.query_refined(
+          request_id: request_id,
+          original_query: base_query,
+          refined_query: refined_query,
+          answer_count: values.size,
+        ) { refined_query }
+      end
+
+      def answered_values
+        return [] unless AdminConfiguration.enabled?('refine_search_with_answers_enabled')
+
+        @answered_values ||= answers.filter_map { |answer| answer[:answer].presence }.uniq
       end
 
       def allowed_suggestion_types

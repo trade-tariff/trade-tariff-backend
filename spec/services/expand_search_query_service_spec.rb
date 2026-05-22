@@ -33,7 +33,7 @@ RSpec.describe ExpandSearchQueryService do
         expect(OpenaiClient).to have_received(:call).with(
           a_string_including('laptop'),
           model: 'gpt-4.1-mini-2025-04-14',
-          reasoning_effort: 'low',
+          reasoning_effort: nil,
         )
       end
     end
@@ -134,6 +134,7 @@ RSpec.describe ExpandSearchQueryService do
 
       before do
         allow(OpenaiClient).to receive(:call).and_raise(Faraday::TimeoutError)
+        TradeTariffRequest.request_id = 'req-1'
       end
 
       it 'falls back to the original query' do
@@ -200,7 +201,7 @@ RSpec.describe ExpandSearchQueryService do
         expect(OpenaiClient).to have_received(:call).with(
           'Custom prompt for: laptop',
           model: 'gpt-4.1-mini-2025-04-14',
-          reasoning_effort: 'low',
+          reasoning_effort: nil,
         )
       end
     end

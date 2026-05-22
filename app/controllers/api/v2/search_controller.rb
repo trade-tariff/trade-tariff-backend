@@ -7,7 +7,7 @@ module Api
       no_caching
 
       def search
-        request_id = params[:request_id] || SecureRandom.uuid
+        request_id = TradeTariffRequest.request_id.presence || SecureRandom.uuid
 
         results = ::Search::Instrumentation.search(request_id:, query: params[:q], search_type: 'classic') do
           res = SearchService.new(Api::V2::SearchSerializationService.new, params).to_json

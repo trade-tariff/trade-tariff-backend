@@ -22,6 +22,28 @@ module Search
       )
     end
 
+    def query_refined(event)
+      info log_entry(
+        event: 'query_refined',
+        request_id: event.payload[:request_id],
+        original_query: event.payload[:original_query],
+        refined_query: event.payload[:refined_query],
+        answer_count: event.payload[:answer_count],
+      )
+    end
+
+    def query_expansion_decided(event)
+      info log_entry(
+        event: 'query_expansion_decided',
+        request_id: event.payload[:request_id],
+        query: event.payload[:query],
+        expand: event.payload[:expand],
+        reason: event.payload[:reason],
+        result_count: event.payload[:result_count],
+        max_score: event.payload[:max_score],
+      )
+    end
+
     def api_call_completed(event)
       data = {
         event: 'api_call_completed',

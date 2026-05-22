@@ -103,13 +103,19 @@ module AdminConfigurationSeeder
 
           {
             "questions": [
-              { "question": "What is the material of the clothing?", "options": ["Cotton", "Wool", "Synthetic"] }
+              { "question": "What is the material of the clothing?", "options": ["Cotton", "Wool", "Synthetic", "Other"] }
             ]
           }
 
       Prefer questions and options that will help you narrow down the commodity code the most and avoid repeating the same question.
 
       Ask the single next question that will narrow down the commodity code the most.
+
+      Question options must be concrete, user-selectable product attributes or categories.
+
+      Do not include uncertainty options such as "I don't know", "Don't know", "Not sure", "Unknown", "Unsure", "Cannot determine", "N/A", or similar. The user should never be offered an option whose meaning is that they do not know the answer.
+
+      You may include "Other" where it represents a real catch-all category outside the named options. "Other" must mean "something else" and should allow follow-up narrowing later; it must not mean "I don't know".
 
       ### Error
 
@@ -122,6 +128,8 @@ module AdminConfigurationSeeder
       - Always respond in JSON as per the three examples above and never try and code anything up.
       - Always structure questions so they have multiple meaningful options, not just yes/no.
       - Avoid hallucinating codes and only provide codes that you are certain of based on the information provided.
+      - Never include "I don't know", "Don't know", "Not sure", "Unknown", "Unsure", or equivalent uncertainty wording in question options.
+      - If the distinction cannot be expressed as concrete options, ask a better question or provide the best available ranked answers.
 
       ## Context sections
 
@@ -409,6 +417,24 @@ namespace :admin_configurations do
         value: AdminConfiguration.default_for('expand_search_enabled'),
       },
       {
+        name: 'expand_search_when_needed_enabled',
+        config_type: 'boolean',
+        description: 'Requires expand_search_enabled. Only expand search queries when simple heuristics suggest expansion is useful: acronym-like terms, no useful word parts from POS tagging, low result count, or low top score from weak retrieval results',
+        value: AdminConfiguration.default_for('expand_search_when_needed_enabled'),
+      },
+      {
+        name: 'expand_search_min_results',
+        config_type: 'integer',
+        description: 'Minimum number of retrieval results required before conditional query expansion is skipped',
+        value: AdminConfiguration.default_for('expand_search_min_results').to_s,
+      },
+      {
+        name: 'expand_search_min_score',
+        config_type: 'integer',
+        description: 'Minimum top retrieval score required before conditional query expansion is skipped',
+        value: AdminConfiguration.default_for('expand_search_min_score').to_s,
+      },
+      {
         name: 'expand_model',
         config_type: 'nested_options',
         description: 'AI model used for search query expansion',
@@ -440,6 +466,12 @@ namespace :admin_configurations do
         config_type: 'integer',
         description: 'Maximum number of clarifying questions to ask before forcing a best-guess answer from the AI',
         value: AdminConfiguration.default_for('interactive_search_max_questions').to_s,
+      },
+      {
+        name: 'refine_search_with_answers_enabled',
+        config_type: 'boolean',
+        description: 'Append answered interactive search question values to the retrieval query so each iteration targets the shortlist more closely',
+        value: AdminConfiguration.default_for('refine_search_with_answers_enabled'),
       },
       {
         name: 'input_sanitiser_enabled',

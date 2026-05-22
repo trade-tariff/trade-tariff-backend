@@ -12,6 +12,20 @@ RSpec.describe Search::Instrumentation do
         search_type: 'interactive',
       )
     end
+
+    it 'uses the TradeTariffRequest request_id when the payload request_id is blank' do
+      allow(ActiveSupport::Notifications).to receive(:instrument)
+      TradeTariffRequest.request_id = 'current-request-id'
+
+      described_class.search_started(request_id: nil, query: 'horses', search_type: 'interactive')
+
+      expect(ActiveSupport::Notifications).to have_received(:instrument).with(
+        'search_started.search',
+        request_id: 'current-request-id',
+        query: 'horses',
+        search_type: 'interactive',
+      )
+    end
   end
 
   describe '.search' do
@@ -109,6 +123,53 @@ RSpec.describe Search::Instrumentation do
       expect(ActiveSupport::Notifications).to have_received(:instrument).with(
         'query_expanded.search',
         hash_including(duration_ms: a_kind_of(Float)),
+      )
+    end
+  end
+
+  describe '.query_refined' do
+    it 'instruments the query_refined event' do
+      allow(ActiveSupport::Notifications).to receive(:instrument)
+
+      result = described_class.query_refined(
+        request_id: 'req-1',
+        original_query: 'handbag',
+        refined_query: 'handbag Leather',
+        answer_count: 1,
+      ) { 'handbag Leather' }
+
+      expect(result).to eq('handbag Leather')
+      expect(ActiveSupport::Notifications).to have_received(:instrument).with(
+        'query_refined.search',
+        request_id: 'req-1',
+        original_query: 'handbag',
+        refined_query: 'handbag Leather',
+        answer_count: 1,
+      )
+    end
+  end
+
+  describe '.query_expansion_decided' do
+    it 'instruments the query_expansion_decided event' do
+      allow(ActiveSupport::Notifications).to receive(:instrument)
+
+      described_class.query_expansion_decided(
+        request_id: 'req-1',
+        query: 'CBD oil',
+        expand: true,
+        reason: 'non_word_token',
+        result_count: 3,
+        max_score: 4.5,
+      )
+
+      expect(ActiveSupport::Notifications).to have_received(:instrument).with(
+        'query_expansion_decided.search',
+        request_id: 'req-1',
+        query: 'CBD oil',
+        expand: true,
+        reason: 'non_word_token',
+        result_count: 3,
+        max_score: 4.5,
       )
     end
   end

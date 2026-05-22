@@ -2,6 +2,15 @@ class InteractiveSearchService
   Result = Data.define(:type, :data, :attempt, :model, :result_limit)
 
   CONFIDENCE_ORDER = %w[strong good possible].freeze
+  UNCERTAINTY_OPTION_PATTERNS = [
+    /\Ai\s+don'?t\s+know\z/i,
+    /\Adon'?t\s+know\z/i,
+    /\Anot\s+sure\z/i,
+    /\Aunknown\z/i,
+    /\Aunsure\z/i,
+    /\Acannot\s+determine\z/i,
+    %r{\An/?a\z}i,
+  ].freeze
   FINAL_ANSWER_INSTRUCTION = <<~INSTRUCTION.freeze
 
     IMPORTANT: You have asked the maximum number of questions allowed. Based on the search input, OpenSearch results, and the answers provided so far, you MUST now provide your best answer. Do not ask any more questions. Rank the opensearch results by confidence using the information you have.
@@ -278,11 +287,17 @@ class InteractiveSearchService
       case q
       when Hash
         text = q['question']
-        options = q['options'].is_a?(Array) ? q['options'].map(&:to_s) : %w[Yes No]
-        { question: text, options: options } if text.present?
+        options = q['options'].is_a?(Array) ? concrete_options(q['options']) : %w[Yes No]
+        { question: text, options: options } if text.present? && options.any?
       when String
         { question: q, options: %w[Yes No] }
       end
+    end
+  end
+
+  def concrete_options(options)
+    options.map(&:to_s).reject do |option|
+      UNCERTAINTY_OPTION_PATTERNS.any? { |pattern| pattern.match?(option.strip) }
     end
   end
 

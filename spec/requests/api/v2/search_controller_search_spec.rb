@@ -15,6 +15,18 @@ RSpec.describe Api::V2::SearchController do
   end
 
   describe 'POST /search' do
+    it 'sets the search request id from the request params' do
+      allow(Search::Instrumentation).to receive(:search).and_call_original
+
+      post '/uk/api/search', params: { q: 'horse', request_id: 'param-request-id' }, headers: request_headers, as: :json
+
+      expect(Search::Instrumentation).to have_received(:search).with(
+        request_id: 'param-request-id',
+        query: 'horse',
+        search_type: 'classic',
+      )
+    end
+
     context 'when an exact match' do
       before do
         goods_nomenclature = create :chapter, goods_nomenclature_item_id: '0100000000'

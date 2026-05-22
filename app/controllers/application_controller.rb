@@ -7,6 +7,7 @@ class ApplicationController < ActionController::API
 
   respond_to :json
 
+  before_action :set_trade_tariff_request_id
   before_action :maintenance_mode_if_active
   around_action :configure_time_machine
   after_action  :check_query_count, if: -> { TradeTariffBackend.check_query_count? }
@@ -61,5 +62,9 @@ class ApplicationController < ActionController::API
 
   def maintenance_mode_if_active
     MaintenanceMode.check! params[:maintenance_bypass]
+  end
+
+  def set_trade_tariff_request_id
+    TradeTariffRequest.request_id = params[:request_id].presence || request.request_id
   end
 end
