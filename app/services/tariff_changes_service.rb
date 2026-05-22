@@ -93,23 +93,42 @@ class TariffChangesService
       add_change_record(change, change[:goods_nomenclature_item_id], change[:goods_nomenclature_sid])
     end
 
+    declarables_by_sid = measure_declarables_by_sid
+
     @changes[:measures].each do |change|
-      gn = GoodsNomenclature.where(goods_nomenclature_sid: change[:goods_nomenclature_sid]).first
-
-      declarables = if gn.nil?
-                      []
-                    elsif gn&.declarable?
-                      [gn]
-                    else
-                      gn.descendants.select(&:declarable?)
-                    end
-
-      declarables.each do |declarable|
+      declarables_by_sid.fetch(change[:goods_nomenclature_sid], []).each do |declarable|
         next if matching_commodity_change?(declarable.goods_nomenclature_sid, change[:action])
 
         add_change_record(change, declarable.goods_nomenclature_item_id, declarable.goods_nomenclature_sid)
       end
     end
+  end
+
+  def measure_declarables_by_sid
+    @measure_declarables_by_sid ||= begin
+      goods_nomenclature_sids = @changes[:measures].filter_map { |change| change[:goods_nomenclature_sid] }.uniq
+
+      if goods_nomenclature_sids.empty?
+        {}
+      else
+        goods_nomenclatures = GoodsNomenclature
+          .where(goods_nomenclature_sid: goods_nomenclature_sids)
+          .eager(:descendants)
+          .all
+          .index_by(&:goods_nomenclature_sid)
+
+        goods_nomenclature_sids.index_with do |goods_nomenclature_sid|
+          declarables_for(goods_nomenclatures[goods_nomenclature_sid])
+        end
+      end
+    end
+  end
+
+  def declarables_for(goods_nomenclature)
+    return [] if goods_nomenclature.nil?
+    return [goods_nomenclature] if goods_nomenclature.declarable?
+
+    goods_nomenclature.descendants.select(&:declarable?)
   end
 
   def matching_commodity_change?(goods_nomenclature_sid, action)
