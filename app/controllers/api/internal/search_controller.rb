@@ -18,7 +18,7 @@ module Api
       private
 
       def search_params
-        params.permit(:q, :as_of, :request_id, answers: %i[question answer options])
+        params.permit(:q, :as_of, :request_id, :expanded_query, answers: %i[question answer options])
       end
     end
   end

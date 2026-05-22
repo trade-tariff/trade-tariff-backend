@@ -1089,5 +1089,66 @@ RSpec.describe Api::Internal::SearchService do
         expect(result[:meta][:interactive_search]).to include(expanded_query: 'portable data processing machine')
       end
     end
+
+    context 'when expanded_query is supplied by the client' do
+      let(:opensearch_response) do
+        {
+          'hits' => {
+            'hits' => [
+              {
+                '_score' => 10.0,
+                '_source' => {
+                  'goods_nomenclature_sid' => 1,
+                  'goods_nomenclature_item_id' => '8471300000',
+                  'producline_suffix' => '80',
+                  'goods_nomenclature_class' => 'Commodity',
+                  'description' => 'portable data processing machine',
+                  'formatted_description' => 'Portable data processing machine',
+                  'declarable' => true,
+                },
+              },
+            ],
+          },
+        }
+      end
+
+      let(:interactive_result) do
+        InteractiveSearchService::Result.new(
+          type: :questions,
+          data: [{ question: 'What type of laptop?', options: %w[Personal Business] }],
+          attempt: 2,
+          model: 'gpt-5.2',
+          result_limit: 5,
+        )
+      end
+
+      before do
+        allow(AdminConfiguration).to receive(:enabled?).and_call_original
+        allow(AdminConfiguration).to receive(:enabled?).with('expand_search_enabled').and_return(true)
+        allow(ExpandSearchQueryService).to receive(:call)
+        allow(Search::GoodsNomenclatureQuery).to receive(:new).and_call_original
+        allow(TradeTariffBackend.search_client).to receive(:search).and_return(opensearch_response)
+        allow(InteractiveSearchService).to receive(:call).and_return(interactive_result)
+      end
+
+      it 'reuses the supplied expanded query without expanding again' do
+        result = described_class.new(
+          q: 'laptop',
+          expanded_query: 'portable data processing machine',
+          answers: [{ question: 'What type of laptop?', answer: 'Personal' }],
+        ).call
+
+        expect(ExpandSearchQueryService).not_to have_received(:call)
+        expect(Search::GoodsNomenclatureQuery).to have_received(:new).with(
+          'laptop',
+          anything,
+          hash_including(expanded_query: 'portable data processing machine'),
+        )
+        expect(InteractiveSearchService).to have_received(:call).with(
+          hash_including(expanded_query: 'portable data processing machine'),
+        )
+        expect(result[:meta][:interactive_search]).to include(expanded_query: 'portable data processing machine')
+      end
+    end
   end
 end
