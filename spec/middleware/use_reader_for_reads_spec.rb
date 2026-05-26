@@ -38,24 +38,6 @@ RSpec.describe UseReaderForReads do
       end
     end
 
-    context 'when the GET request is under the user API' do
-      let(:env) { Rack::MockRequest.env_for('/uk/user/commodity_changes', method: 'GET') }
-
-      it 'does not route through the reader server' do
-        middleware.call(env)
-        expect(Sequel::Model.db).not_to have_received(:with_server)
-      end
-    end
-
-    context 'when the HEAD request is under the user API' do
-      let(:env) { Rack::MockRequest.env_for('/uk/user/users', method: 'HEAD') }
-
-      it 'does not route through the reader server' do
-        middleware.call(env)
-        expect(Sequel::Model.db).not_to have_received(:with_server)
-      end
-    end
-
     context 'when the request method is POST' do
       let(:env) { Rack::MockRequest.env_for('/uk/api/something', method: 'POST') }
 

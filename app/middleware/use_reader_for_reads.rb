@@ -14,19 +14,12 @@
 class UseReaderForReads
   READ_METHODS = %w[GET HEAD].freeze
 
-  # User API authentication can create PublicUsers::User records on first use,
-  # so these routes need the writer even for GET/HEAD requests.
-  WRITER_READ_PATH_PREFIXES = %w[
-    /uk/user
-    /xi/user
-  ].freeze
-
   def initialize(app)
     @app = app
   end
 
   def call(env)
-    if read_request?(env) && !writer_read_request?(env)
+    if read_request?(env)
       Sequel::Model.db.with_server(:reader) { @app.call(env) }
     else
       @app.call(env)
@@ -37,13 +30,5 @@ private
 
   def read_request?(env)
     READ_METHODS.include?(env['REQUEST_METHOD'])
-  end
-
-  def writer_read_request?(env)
-    path = env['PATH_INFO'].to_s
-
-    WRITER_READ_PATH_PREFIXES.any? do |prefix|
-      path == prefix || path.start_with?("#{prefix}/")
-    end
   end
 end
