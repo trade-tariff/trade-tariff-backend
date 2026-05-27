@@ -333,7 +333,7 @@ RSpec.describe Api::User::ActiveCommoditiesService do
         commodity.values[:validity_end_date] = nil
 
         # Mock children with earliest start date
-        allow(commodity).to receive(:children).and_return(
+        allow(commodity).to receive(:historical_children).and_return(
           instance_double(Sequel::Dataset, pluck: [
             [Date.new(2023, 6, 1), nil],
           ]),
@@ -348,14 +348,14 @@ RSpec.describe Api::User::ActiveCommoditiesService do
       let(:commodity) { create(:commodity, :expired) }
 
       it 'returns nil when no children exist' do
-        allow(commodity).to receive(:children).and_return(instance_double(Sequel::Dataset, pluck: []))
+        allow(commodity).to receive(:historical_children).and_return(instance_double(Sequel::Dataset, pluck: []))
 
         result = service.send(:calculate_end_date_from_descendants, commodity)
         expect(result).to be_nil
       end
 
       it 'returns one day before earliest start date when descendant periods are continuous' do
-        allow(commodity).to receive(:children).and_return(
+        allow(commodity).to receive(:historical_children).and_return(
           instance_double(Sequel::Dataset, pluck: [
             [Time.zone.parse('2023-01-01T00:00:00Z'), Time.zone.parse('2023-01-31T00:00:00Z')],
             [Time.zone.parse('2023-02-01T00:00:00Z'), Time.zone.parse('2023-02-28T00:00:00Z')],
@@ -367,7 +367,7 @@ RSpec.describe Api::User::ActiveCommoditiesService do
       end
 
       it 'calculates correct end date from gaps between descendant periods' do
-        allow(commodity).to receive(:children).and_return(
+        allow(commodity).to receive(:historical_children).and_return(
           instance_double(Sequel::Dataset, pluck: [
             [Time.zone.parse('2023-01-01T00:00:00Z'), Time.zone.parse('2023-01-31T00:00:00Z')],
             [Time.zone.parse('2023-02-10T00:00:00Z'), Time.zone.parse('2023-03-01T00:00:00Z')],
@@ -379,7 +379,7 @@ RSpec.describe Api::User::ActiveCommoditiesService do
       end
 
       it 'returns the latest invalid date when multiple gaps exist' do
-        allow(commodity).to receive(:children).and_return(
+        allow(commodity).to receive(:historical_children).and_return(
           instance_double(Sequel::Dataset, pluck: [
             [Time.zone.parse('2023-03-01T00:00:00Z'), Time.zone.parse('2023-03-31T00:00:00Z')],
             [Time.zone.parse('2023-04-05T00:00:00Z'), Time.zone.parse('2023-04-30T00:00:00Z')],

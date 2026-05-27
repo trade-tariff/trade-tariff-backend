@@ -233,11 +233,13 @@ module Api
       end
 
       def calculate_end_date_from_descendants(commodity)
-        periods = commodity.children
+        periods = TimeMachine.no_time_machine do
+          commodity.historical_children
                            .pluck(:validity_start_date, :validity_end_date)
                            .map { |start_date, end_date| [start_date.to_date, end_date&.to_date] }
                            .uniq
                            .sort_by(&:first)
+        end
 
         return if periods.empty?
 
