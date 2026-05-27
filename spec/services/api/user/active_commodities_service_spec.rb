@@ -334,7 +334,9 @@ RSpec.describe Api::User::ActiveCommoditiesService do
 
         # Mock children with earliest start date
         allow(commodity).to receive(:children).and_return(
-          instance_double(Sequel::Dataset, minimum: Date.new(2023, 6, 1)),
+          instance_double(Sequel::Dataset, pluck: [
+            [Date.new(2023, 6, 1), nil],
+          ]),
         )
 
         result = service.send(:apply_validity_end_date, commodity)
@@ -346,19 +348,49 @@ RSpec.describe Api::User::ActiveCommoditiesService do
       let(:commodity) { create(:commodity, :expired) }
 
       it 'returns nil when no children exist' do
-        allow(commodity).to receive(:children).and_return(instance_double(Sequel::Dataset, minimum: nil))
+        allow(commodity).to receive(:children).and_return(instance_double(Sequel::Dataset, pluck: []))
 
         result = service.send(:calculate_end_date_from_descendants, commodity)
         expect(result).to be_nil
       end
 
-      it 'calculates correct end date from earliest child start date' do
+      it 'returns one day before earliest start date when descendant periods are continuous' do
         allow(commodity).to receive(:children).and_return(
-          instance_double(Sequel::Dataset, minimum: Date.new(2023, 6, 1)),
+          instance_double(Sequel::Dataset, pluck: [
+            [Time.zone.parse('2023-01-01T00:00:00Z'), Time.zone.parse('2023-01-31T00:00:00Z')],
+            [Time.zone.parse('2023-02-01T00:00:00Z'), Time.zone.parse('2023-02-28T00:00:00Z')],
+          ]),
         )
 
         result = service.send(:calculate_end_date_from_descendants, commodity)
-        expect(result).to eq(Date.new(2023, 5, 31))
+        expect(result).to eq(Date.new(2022, 12, 31))
+      end
+
+      it 'calculates correct end date from gaps between descendant periods' do
+        allow(commodity).to receive(:children).and_return(
+          instance_double(Sequel::Dataset, pluck: [
+            [Time.zone.parse('2023-01-01T00:00:00Z'), Time.zone.parse('2023-01-31T00:00:00Z')],
+            [Time.zone.parse('2023-02-10T00:00:00Z'), Time.zone.parse('2023-03-01T00:00:00Z')],
+          ]),
+        )
+
+        result = service.send(:calculate_end_date_from_descendants, commodity)
+        expect(result).to eq(Date.new(2023, 2, 9))
+      end
+
+      it 'returns the latest invalid date when multiple gaps exist' do
+        allow(commodity).to receive(:children).and_return(
+          instance_double(Sequel::Dataset, pluck: [
+            [Time.zone.parse('2023-03-01T00:00:00Z'), Time.zone.parse('2023-03-31T00:00:00Z')],
+            [Time.zone.parse('2023-04-05T00:00:00Z'), Time.zone.parse('2023-04-30T00:00:00Z')],
+            [Time.zone.parse('2023-01-01T00:00:00Z'), Time.zone.parse('2023-01-31T00:00:00Z')],
+            [Time.zone.parse('2023-02-10T00:00:00Z'), Time.zone.parse('2023-03-01T00:00:00Z')],
+          ]),
+        )
+
+        result = service.send(:calculate_end_date_from_descendants, commodity)
+        # Gaps produce invalid dates of 2023-02-09 and 2023-04-04; we return the latest.
+        expect(result).to eq(Date.new(2023, 4, 4))
       end
     end
 
