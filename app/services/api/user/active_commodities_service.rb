@@ -233,10 +233,24 @@ module Api
       end
 
       def calculate_end_date_from_descendants(commodity)
-        earliest_child_start = commodity.children.minimum(:validity_start_date)
-        return nil if earliest_child_start.blank?
+        periods = TimeMachine.no_time_machine do
+          commodity.historical_children
+                           .pluck(:validity_start_date, :validity_end_date)
+                           .map { |start_date, end_date| [start_date.to_date, end_date&.to_date] }
+                           .uniq
+                           .sort_by(&:first)
+        end
 
-        earliest_child_start.to_date - 1
+        return if periods.empty?
+
+        invalid_dates = periods.each_cons(2).filter_map do |(_, current_end), (next_start, _)|
+          next unless current_end
+          next unless next_start > current_end + 1
+
+          next_start - 1
+        end
+
+        invalid_dates.max || periods.first.first - 1
       end
     end
   end

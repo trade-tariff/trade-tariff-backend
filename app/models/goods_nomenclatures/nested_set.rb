@@ -118,6 +118,27 @@ module GoodsNomenclatures
           end
       end
 
+      many_to_many :historical_children,
+                   left_primary_key: :goods_nomenclature_sid,
+                   left_key: Sequel.qualify(:origin_nodes, :goods_nomenclature_sid),
+                   right_primary_key: :goods_nomenclature_sid,
+                   right_key: :goods_nomenclature_sid,
+                   class_name: '::GoodsNomenclature',
+                   join_table: Sequel.as(:goods_nomenclature_tree_nodes, :child_nodes),
+                   read_only: true do |ds|
+        ds.non_hidden
+          .order(:child_nodes__position)
+          .select_append(:child_nodes__depth, :child_nodes__number_indents)
+          .join(Sequel.as(:goods_nomenclature_tree_nodes, :origin_nodes)) do |origin_table, children_table, _|
+          children = TreeNodeAlias.new(children_table)
+          origin   = TreeNodeAlias.new(origin_table)
+
+          # no with_validity_dates here -> no point-in-time filter
+          (children.depth =~ (origin.depth + 1)) &
+            TreeNode.descendant_node_constraints(origin, children, children)
+        end
+      end
+
       one_to_many :measures,
                   primary_key: :goods_nomenclature_sid,
                   key: :goods_nomenclature_sid,
