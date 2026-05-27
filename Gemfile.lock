@@ -169,9 +169,11 @@ GEM
       net-http (~> 0.5)
     fast_excel (0.5.0)
       ffi (> 1.9, < 2)
-    ffi (1.17.3)
-    ffi (1.17.3-arm64-darwin)
-    ffi (1.17.3-x86_64-linux-gnu)
+    ffi (1.17.4)
+    ffi (1.17.4-aarch64-linux-musl)
+    ffi (1.17.4-arm64-darwin)
+    ffi (1.17.4-x86_64-linux-gnu)
+    ffi (1.17.4-x86_64-linux-musl)
     foreman (0.90.0)
       thor (~> 1.4)
     forgery (0.8.1)
@@ -231,6 +233,7 @@ GEM
     marcel (1.1.0)
     method_source (1.1.0)
     mini_mime (1.1.5)
+    mini_portile2 (2.8.9)
     minitest (6.0.5)
       drb (~> 2.0)
       prism (~> 1.5)
@@ -250,9 +253,16 @@ GEM
     newrelic_rpm (10.4.0)
       logger
     nio4r (2.7.5)
+    nokogiri (1.19.3)
+      mini_portile2 (~> 2.8.2)
+      racc (~> 1.4)
+    nokogiri (1.19.3-aarch64-linux-musl)
+      racc (~> 1.4)
     nokogiri (1.19.3-arm64-darwin)
       racc (~> 1.4)
     nokogiri (1.19.3-x86_64-linux-gnu)
+      racc (~> 1.4)
+    nokogiri (1.19.3-x86_64-linux-musl)
       racc (~> 1.4)
     notifications-ruby-client (6.3.0)
       jwt (>= 1.5, < 4)
@@ -265,7 +275,9 @@ GEM
       ast (~> 2.4.1)
       racc
     pg (1.6.3)
+    pg (1.6.3-aarch64-linux-musl)
     pg (1.6.3-arm64-darwin)
+    pg (1.6.3-x86_64-linux-musl)
     pp (0.6.3)
       prettyprint
     prettyprint (0.2.0)
@@ -478,9 +490,12 @@ GEM
     zeitwerk (2.7.5)
 
 PLATFORMS
+  aarch64-linux-musl
   arm64-darwin-24
   arm64-darwin-25
+  ruby
   x86_64-linux
+  x86_64-linux-musl
 
 DEPENDENCIES
   amazing_print
@@ -545,7 +560,7 @@ DEPENDENCIES
   webmock
 
 RUBY VERSION
-  ruby 4.0.3
+  ruby 4.0.5
 
 BUNDLED WITH
   4.0.3
