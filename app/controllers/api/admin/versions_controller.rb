@@ -11,6 +11,7 @@ module Api
         'AdminConfiguration' => AdminConfiguration,
         'DescriptionIntercept' => DescriptionIntercept,
         'GoodsNomenclatureIntercept' => GoodsNomenclatureIntercept,
+        'CustomsTariffSectionNote' => CustomsTariffSectionNote,
       }.freeze
 
       def restore

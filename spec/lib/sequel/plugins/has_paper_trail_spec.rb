@@ -82,6 +82,7 @@ RSpec.describe Sequel::Plugins::HasPaperTrail do
       expect(described_class.tracked_models.map(&:name)).to eq(%w[
         AdminConfiguration
         ChapterNote
+        CustomsTariffSectionNote
         DescriptionIntercept
         GoodsNomenclatureIntercept
         GoodsNomenclatureLabel

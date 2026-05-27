@@ -48,6 +48,14 @@ class VersionDiffService
       created_at
       updated_at
     ].freeze,
+    'CustomsTariffSectionNote' => %w[
+      id
+      customs_tariff_update_version
+      section_id
+      status
+      created_at
+      updated_at
+    ].freeze,
   }.freeze
 
   TEXT_THRESHOLD = 40
