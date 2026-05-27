@@ -231,6 +231,7 @@ GEM
     marcel (1.1.0)
     method_source (1.1.0)
     mini_mime (1.1.5)
+    mini_portile2 (2.8.9)
     minitest (6.0.5)
       drb (~> 2.0)
       prism (~> 1.5)
@@ -250,6 +251,9 @@ GEM
     newrelic_rpm (10.4.0)
       logger
     nio4r (2.7.5)
+    nokogiri (1.19.3)
+      mini_portile2 (~> 2.8.2)
+      racc (~> 1.4)
     nokogiri (1.19.3-arm64-darwin)
       racc (~> 1.4)
     nokogiri (1.19.3-x86_64-linux-gnu)
@@ -480,6 +484,7 @@ GEM
 PLATFORMS
   arm64-darwin-24
   arm64-darwin-25
+  ruby
   x86_64-linux
 
 DEPENDENCIES
@@ -545,7 +550,7 @@ DEPENDENCIES
   webmock
 
 RUBY VERSION
-  ruby 4.0.3
+  ruby 4.0.5
 
 BUNDLED WITH
   4.0.3
