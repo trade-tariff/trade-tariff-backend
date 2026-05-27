@@ -48,6 +48,45 @@ RSpec.describe TariffChange do
     end
   end
 
+  describe '.preload_measures' do
+    let(:measure) { create(:measure) }
+    let(:tariff_change) { create(:tariff_change, type: 'Measure', object_sid: measure.measure_sid) }
+
+    it 'batch-loads measures to avoid N+1 queries' do
+      described_class.preload_measures([tariff_change])
+
+      allow(Measure).to receive(:operation_klass)
+      tariff_change.measure
+
+      expect(Measure).not_to have_received(:operation_klass)
+    end
+
+    it 'makes the correct measure available via #measure' do
+      described_class.preload_measures([tariff_change])
+
+      expect(tariff_change.measure.measure_sid).to eq(measure.measure_sid)
+    end
+
+    context 'when the measure_sid has no oplog entry' do
+      let(:tariff_change) { create(:tariff_change, type: 'Measure', object_sid: 999_999_999) }
+
+      it 'returns nil from #measure without raising' do
+        described_class.preload_measures([tariff_change])
+
+        expect(tariff_change.measure).to be_nil
+      end
+
+      it 'does not query again after preloading the missing measure' do
+        described_class.preload_measures([tariff_change])
+
+        allow(Measure).to receive(:operation_klass)
+        tariff_change.measure
+
+        expect(Measure).not_to have_received(:operation_klass)
+      end
+    end
+  end
+
   describe '.delete_for' do
     let(:operation_date) { Date.new(2025, 1, 15) }
 

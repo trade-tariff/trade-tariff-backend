@@ -35,14 +35,7 @@ class TariffChangesService
 
       tariff_changes = query.all
 
-      # Eagerly load measures for Measure type records
-      measure_sids = tariff_changes.select { |tc| tc.type == 'Measure' }.map(&:object_sid).uniq
-      if measure_sids.any?
-        measures = Measure.where(measure_sid: measure_sids).eager(:measure_type).all.index_by(&:measure_sid)
-        tariff_changes.each do |tc|
-          tc.instance_variable_set(:@measure, measures[tc.object_sid]) if tc.type == 'Measure'
-        end
-      end
+      TariffChange.preload_measures(tariff_changes)
 
       # Batch load geographical areas
       geo_area_ids = tariff_changes.map { |tc| tc.metadata&.dig('measure', 'geographical_area_id') }.compact.uniq
