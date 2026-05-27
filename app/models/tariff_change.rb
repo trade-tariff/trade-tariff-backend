@@ -6,16 +6,45 @@ class TariffChange < Sequel::Model
 
   def measure
     return nil unless type == 'Measure'
+    return @measure if instance_variable_defined?(:@measure)
 
-    @measure ||= Measure.operation_klass
-                        .where(measure_sid: object_sid)
-                        .order(:oid)
-                        .last
-                        &.record_from_oplog
+    @measure = Measure.operation_klass
+                      .where(measure_sid: object_sid)
+                      .order(:oid)
+                      .last
+                      &.record_from_oplog
   end
 
   def self.delete_for(operation_date:)
     TariffChange.where(operation_date: operation_date).delete
+  end
+
+  def self.preload_measures(tariff_changes)
+    measure_sids = tariff_changes
+      .filter_map { |tc| tc.object_sid if tc.type == 'Measure' }
+      .uniq
+
+    return if measure_sids.empty?
+
+    oid_by_sid = Measure.operation_klass
+      .select(:measure_sid, Sequel.function(:max, :oid).as(:max_oid))
+      .where(measure_sid: measure_sids)
+      .group(:measure_sid)
+      .all
+      .to_h { |row| [row.values[:measure_sid], row.values[:max_oid]] }
+
+    measures = Measure
+      .from(:measures_oplog)
+      .where(oid: oid_by_sid.values)
+      .eager(:measure_type)
+      .all
+      .index_by { |m| m.values[:oid] }
+
+    tariff_changes.each do |tc|
+      next unless tc.type == 'Measure'
+
+      tc.instance_variable_set(:@measure, measures[oid_by_sid[tc.object_sid]])
+    end
   end
 
   dataset_module do
