@@ -10,7 +10,7 @@ module Api
         attributes :section_id, :content, :customs_tariff_update_version
 
         attribute :file_diff do |note, params|
-          params[:file_diffs]&.dig(note.section_id)
+          params[:file_diff] || params[:file_diffs]&.dig(note.section_id)
         end
 
         attribute :versions do |_note, params|

@@ -7,18 +7,14 @@ module Api
             .where(customs_tariff_update_version: customs_tariff_update.version)
             .order(:section_id).all
 
-          approved_by_section = approved_notes_index
+          baseline_by_section = compare_notes_index
 
           file_diffs = notes.each_with_object({}) do |note, diffs|
-            approved = approved_by_section[note.section_id]
-            diffs[note.section_id] = if approved.nil?
+            baseline = baseline_by_section[note.section_id]
+            diffs[note.section_id] = if baseline.nil?
                                        nil
                                      else
-                                       VersionDiffService.new(
-                                         'CustomsTariffSectionNote',
-                                         approved.values.transform_keys(&:to_s),
-                                         note.values.transform_keys(&:to_s),
-                                       ).call || {}
+                                       content_diff(baseline, note)
                                      end
           end
 
@@ -29,12 +25,26 @@ module Api
 
         def show
           note = customs_tariff_section_note
-          versions = note.versions.order(Sequel.desc(:created_at)).all
-          Version.preload_predecessors(versions)
 
-          render json: Api::Admin::CustomsTariffUpdates::SectionNoteSerializer.new(
-            note, is_collection: false, params: { versions: }
-          ).serializable_hash
+          if params[:compare_version].present?
+            compare_note = CustomsTariffSectionNote
+              .where(section_id: note.section_id,
+                     customs_tariff_update_version: params[:compare_version])
+              .first
+
+            file_diff = content_diff(compare_note, note) if compare_note
+
+            render json: Api::Admin::CustomsTariffUpdates::SectionNoteSerializer.new(
+              note, is_collection: false, params: { file_diff: }
+            ).serializable_hash
+          else
+            versions = note.versions.order(Sequel.desc(:created_at)).all
+            Version.preload_predecessors(versions)
+
+            render json: Api::Admin::CustomsTariffUpdates::SectionNoteSerializer.new(
+              note, is_collection: false, params: { versions: }
+            ).serializable_hash
+          end
         end
 
         def update
@@ -57,6 +67,16 @@ module Api
 
         private
 
+        def compare_notes_index
+          if params[:compare_version].present?
+            CustomsTariffSectionNote
+              .where(customs_tariff_update_version: params[:compare_version])
+              .all.index_by(&:section_id)
+          else
+            approved_notes_index
+          end
+        end
+
         def customs_tariff_section_note
           @customs_tariff_section_note ||= CustomsTariffSectionNote
             .where(id: params[:id], customs_tariff_update_version: customs_tariff_update.version)
@@ -70,6 +90,14 @@ module Api
           CustomsTariffSectionNote
             .where(customs_tariff_update_version: latest_approved.version)
             .all.index_by(&:section_id)
+        end
+
+        def content_diff(from_note, to_note)
+          VersionDiffService.new(
+            'CustomsTariffSectionNote',
+            { 'content' => from_note.content },
+            { 'content' => to_note.content },
+          ).call || {}
         end
 
         def section_note_params

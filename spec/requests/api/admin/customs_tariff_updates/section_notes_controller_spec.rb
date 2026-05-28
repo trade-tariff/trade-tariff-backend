@@ -50,6 +50,43 @@ RSpec.describe Api::Admin::CustomsTariffUpdates::SectionNotesController do
 
       expect(JSON.parse(response.body)['data']).to be_empty
     end
+
+    context 'with compare_version param' do
+      let!(:compare_update) do
+        create(:customs_tariff_update, :approved, validity_start_date: 3.months.ago)
+      end
+      let!(:target_update) do
+        create(:customs_tariff_update, validity_start_date: Time.zone.today)
+      end
+
+      before do
+        create(:customs_tariff_section_note, customs_tariff_update: compare_update, section_id: 10,
+                                             content: 'Compare section content that is long enough for text diffing here')
+        create(:customs_tariff_section_note, customs_tariff_update: target_update, section_id: 10,
+                                             content: 'Target section content that is long enough for text diffing here')
+      end
+
+      it 'diffs against the specified compare_version instead of latest approved' do
+        get "/uk/admin/customs_tariff_updates/#{target_update.version}/section_notes.json",
+            params: { compare_version: compare_update.version },
+            headers: request_headers(format: :json)
+
+        expect(response.status).to eq(200)
+        note = JSON.parse(response.body)['data'].find { |n| n.dig('attributes', 'section_id') == 10 }
+        expect(note.dig('attributes', 'file_diff', 'changed_fields')).to include('content')
+      end
+
+      it 'returns nil file_diff when section has no counterpart in the compare version' do
+        create(:customs_tariff_section_note, customs_tariff_update: target_update, section_id: 20)
+
+        get "/uk/admin/customs_tariff_updates/#{target_update.version}/section_notes.json",
+            params: { compare_version: compare_update.version },
+            headers: request_headers(format: :json)
+
+        note = JSON.parse(response.body)['data'].find { |n| n.dig('attributes', 'section_id') == 20 }
+        expect(note.dig('attributes', 'file_diff')).to be_nil
+      end
+    end
   end
 
   describe 'GET #show' do
@@ -62,6 +99,50 @@ RSpec.describe Api::Admin::CustomsTariffUpdates::SectionNotesController do
 
       expect(response.status).to eq(200)
       expect(JSON.parse(response.body).dig('data', 'attributes', 'versions')).to be_an(Array)
+    end
+
+    context 'with compare_version param' do
+      let!(:compare_update) do
+        create(:customs_tariff_update, :approved, validity_start_date: 1.month.ago)
+      end
+
+      context 'when a matching note exists in the compare version' do
+        before do
+          create(:customs_tariff_section_note,
+                 customs_tariff_update: compare_update,
+                 section_id: note.section_id,
+                 content: 'Old content that is long enough to trigger text diff in the service here')
+          note.update(content: 'New content that is long enough to trigger text diff in the service here')
+        end
+
+        it 'returns file_diff instead of versions' do
+          get "/uk/admin/customs_tariff_updates/#{update.version}/section_notes/#{note.id}.json",
+              params: { compare_version: compare_update.version },
+              headers: request_headers(format: :json)
+
+          expect(response.status).to eq(200)
+          attrs = JSON.parse(response.body).dig('data', 'attributes')
+          expect(attrs['file_diff']).to be_a(Hash)
+          expect(attrs['file_diff']['changed_fields']).to include('content')
+          expect(attrs['versions']).to eq([])
+        end
+      end
+
+      context 'when the section has no counterpart in the compare version' do
+        it 'returns nil file_diff' do
+          other_update = create(:customs_tariff_update, validity_start_date: 2.months.ago)
+          orphan_note = create(:customs_tariff_section_note,
+                               customs_tariff_update: other_update,
+                               section_id: 99)
+
+          get "/uk/admin/customs_tariff_updates/#{other_update.version}/section_notes/#{orphan_note.id}.json",
+              params: { compare_version: compare_update.version },
+              headers: request_headers(format: :json)
+
+          expect(response.status).to eq(200)
+          expect(JSON.parse(response.body).dig('data', 'attributes', 'file_diff')).to be_nil
+        end
+      end
     end
   end
 
