@@ -88,7 +88,7 @@ GEM
     aws-sdk-cloudfront (1.148.0)
       aws-sdk-core (~> 3, >= 3.247.0)
       aws-sigv4 (~> 1.5)
-    aws-sdk-cloudwatchlogs (1.150.0)
+    aws-sdk-cloudwatchlogs (1.152.0)
       aws-sdk-core (~> 3, >= 3.247.0)
       aws-sigv4 (~> 1.5)
     aws-sdk-core (3.249.0)
