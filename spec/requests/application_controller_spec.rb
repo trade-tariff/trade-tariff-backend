@@ -46,6 +46,17 @@ RSpec.describe ApplicationController, type: :request do
         it { expect(TimeMachine).to have_received(:at).with(Time.zone.today) }
       end
 
+      context 'when as_of has year zero' do
+        subject(:api_response) do
+          make_request
+          response
+        end
+
+        let(:make_request) { api_get('/uk/api/healthcheck', params: { as_of: '0000-05-24' }) }
+
+        it { expect(TimeMachine).to have_received(:at).with(Time.zone.today) }
+      end
+
       context 'when as_of is in range' do
         subject(:api_response) do
           make_request
