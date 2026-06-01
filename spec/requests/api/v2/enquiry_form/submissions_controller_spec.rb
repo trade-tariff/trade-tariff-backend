@@ -60,6 +60,46 @@ RSpec.describe Api::V2::EnquiryForm::SubmissionsController, :v2 do
       expect(::EnquiryForm::SendSubmissionEmailWorker).to have_received(:perform_async).with(reference_number)
     end
 
+    context 'with a classification enquiry from the revised frontend form' do
+      let(:classification_params) do
+        params.merge(
+          enquiry_category: 'classification',
+          enquiry_description: nil,
+          goods_product: 'Baked beans',
+          goods_made_of: 'Beans and tomato sauce',
+          goods_used_for: 'Food',
+          goods_function: 'Ready to eat',
+          goods_processed: 'Cooked and mixed',
+          goods_packaged: 'Tinned',
+          has_commodity_code: 'yes',
+          commodity_code: '2005590000',
+        ).compact
+      end
+
+      it 'caches the structured classification answers for the worker' do
+        post api_enquiry_form_submissions_path,
+             params: { data: { attributes: classification_params } },
+             headers: headers,
+             as: :json
+
+        cached = Sidekiq.redis { |conn| conn.get("enquiry_form_#{reference_number}") }
+
+        expect(JSON.parse(cached, symbolize_names: true)).to include(
+          enquiry_category: 'classification',
+          goods_product: 'Baked beans',
+          goods_made_of: 'Beans and tomato sauce',
+          goods_used_for: 'Food',
+          goods_function: 'Ready to eat',
+          goods_processed: 'Cooked and mixed',
+          goods_packaged: 'Tinned',
+          has_commodity_code: 'yes',
+          commodity_code: '2005590000',
+          reference_number: reference_number,
+          created_at: frozen_time.strftime('%Y-%m-%d %H:%M'),
+        )
+      end
+    end
+
     context 'when required params are missing' do
       it 'returns a 422 Unprocessable Content with errors' do
         post api_enquiry_form_submissions_path,

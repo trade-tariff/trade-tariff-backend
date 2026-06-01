@@ -21,14 +21,15 @@ class EnquiryForm::SendSubmissionEmailWorker
     created_at = Time.zone.parse(form_data[:created_at]).in_time_zone('London').strftime('%Y-%m-%d %H:%M')
     csv_data = ::EnquiryForm::CsvGeneratorService.new(form_data).generate
     csv_file = Notifications.prepare_upload(StringIO.new(csv_data), filename: "enquiry_form_#{form_data[:reference_number]}.csv")
+    formatter = EnquiryForm::SubmissionFormatter.new(form_data)
 
     personalisation = {
       name: form_data[:name],
       company_name: form_data[:company_name],
       job_title: form_data[:job_title],
       email: form_data[:email],
-      enquiry_category: form_data[:enquiry_category],
-      enquiry_description: form_data[:enquiry_description],
+      enquiry_category: formatter.notify_category,
+      enquiry_description: formatter.enquiry_description,
       reference_number: form_data[:reference_number],
       created_at: created_at,
       csv_file: csv_file,

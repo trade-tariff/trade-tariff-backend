@@ -9,7 +9,7 @@ RSpec.describe EnquiryForm::SendSubmissionEmailWorker, type: :worker do
       company_name: 'Doe & Co Inc.',
       job_title: 'CEO',
       email: 'john@example.com',
-      enquiry_category: 'Quotas',
+      enquiry_category: 'import_duties_and_quota',
       enquiry_description: 'I have a question about quotas',
       reference_number: reference,
       created_at: '2025-08-15 10:00',
@@ -45,7 +45,7 @@ RSpec.describe EnquiryForm::SendSubmissionEmailWorker, type: :worker do
             retention_period: nil,
           },
           email: 'john@example.com',
-          enquiry_category: 'Quotas',
+          enquiry_category: 'import_duties',
           enquiry_description: 'I have a question about quotas',
           job_title: 'CEO',
           name: 'John Doe',
@@ -61,7 +61,60 @@ RSpec.describe EnquiryForm::SendSubmissionEmailWorker, type: :worker do
 
       worker.perform(reference)
 
-      expect(StringIO).to have_received(:new).with("Reference,Submission date,Full name,Company name,Job title,Email address,What do you need help with?,How can we help?\nABC12345,2025-08-15 10:00,John Doe,Doe & Co Inc.,CEO,john@example.com,Quotas,I have a question about quotas\n").twice
+      expect(StringIO).to have_received(:new).with("Reference,Submission date,Full name,Company name,Job title,Email address,What do you need help with?,How can we help?\nABC12345,2025-08-15 10:00,John Doe,Doe & Co Inc.,CEO,john@example.com,Import duties and quotas,I have a question about quotas\n").twice
+    end
+
+    context 'with a classification enquiry' do
+      let(:form_data) do
+        {
+          name: 'John Doe',
+          company_name: 'Doe & Co Inc.',
+          job_title: 'CEO',
+          email: 'john@example.com',
+          enquiry_category: 'classification',
+          goods_product: 'Baked beans',
+          goods_made_of: 'Beans and tomato sauce',
+          goods_used_for: 'Food',
+          goods_function: 'Ready to eat',
+          goods_processed: 'Cooked and mixed',
+          goods_packaged: 'Tinned',
+          has_commodity_code: 'yes',
+          commodity_code: '2005590000',
+          reference_number: reference,
+          created_at: '2025-08-15 10:00',
+        }
+      end
+
+      it 'sends the structured answers as the enquiry description personalisation' do
+        worker.perform(reference)
+
+        expect(notifier_client).to have_received(:send_email).with(
+          'support@example.com',
+          NOTIFY_CONFIGURATION.dig(:templates, :enquiry_form, :submission),
+          hash_including(
+            enquiry_category: 'classification',
+            enquiry_description: "What is the product?\nBaked beans\n\nWhat is it made of?\nBeans and tomato sauce\n\nWhat is it used for?\nFood\n\nHow does it work or function?\nReady to eat\n\nHas it been processed, prepared or treated in any way?\nCooked and mixed\n\nHow is it presented or packaged?\nTinned\n\nDo you already have a possible commodity code?\nYes\n\nPossible commodity code\n2005590000",
+          ),
+          nil,
+          'ABC12345',
+        )
+      end
+    end
+
+    context 'with an unexpected enquiry category' do
+      let(:form_data) { super().merge(enquiry_category: 'unknown_category') }
+
+      it 'defaults the Notify category tag to other' do
+        worker.perform(reference)
+
+        expect(notifier_client).to have_received(:send_email).with(
+          'support@example.com',
+          NOTIFY_CONFIGURATION.dig(:templates, :enquiry_form, :submission),
+          hash_including(enquiry_category: 'other'),
+          nil,
+          'ABC12345',
+        )
+      end
     end
 
     context 'when the cache key has expired or is missing' do
