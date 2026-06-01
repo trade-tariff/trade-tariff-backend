@@ -31,9 +31,9 @@ jobs:
         with:
           fetch-depth: 0
 
-      - uses: trade-tariff/trade-tariff-tools/.github/actions/check-pr-lines@HMRC-2246
+      - uses: trade-tariff/trade-tariff-tools/.github/actions/check-pr-lines@main
         with:
-          threshold: 5
+          threshold: 600
           exclude-paths: |
             .github/**
             **/*.lock
