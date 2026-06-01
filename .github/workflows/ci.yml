@@ -24,6 +24,20 @@ permissions:
   id-token: write
 
 jobs:
+  check-pr-lines:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - uses: trade-tariff/trade-tariff-tools/.github/actions/check-pr-lines@HMRC-2246
+        with:
+          threshold: 5
+          exclude-paths: |
+            .github/**
+            **/*.lock
+
   lint:
     runs-on: ubuntu-latest
     steps:
