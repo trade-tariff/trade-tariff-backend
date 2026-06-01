@@ -34,10 +34,10 @@ class ApplicationController < ActionController::API
       return default
     end
 
-    date = Date.parse(as_of_param)
+    date = Date.iso8601(as_of_param)
 
-    # Ensure the date is within a 20-year range
-    if date > 20.years.from_now
+    # Ensure the date is within a supported range
+    if date < Date.new(1, 1, 1) || date > 20.years.from_now
       default
     else
       date
