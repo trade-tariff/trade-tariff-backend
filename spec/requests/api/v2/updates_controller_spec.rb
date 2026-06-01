@@ -36,5 +36,19 @@ RSpec.describe Api::V2::UpdatesController do
         ).to eq []
       end
     end
+
+    context 'when the result is cached' do
+      it 'only queries the database once across multiple requests' do
+        create :taric_update, :applied
+
+        allow(Rails).to receive(:cache).and_return(ActiveSupport::Cache::MemoryStore.new)
+        allow(TariffSynchronizer::BaseUpdate).to receive(:latest_applied_of_both_kinds).and_call_original
+
+        get '/uk/api/updates/latest.json', headers: request_headers(format: :json)
+        get '/uk/api/updates/latest.json', headers: request_headers(format: :json)
+
+        expect(TariffSynchronizer::BaseUpdate).to have_received(:latest_applied_of_both_kinds).once
+      end
+    end
   end
 end
