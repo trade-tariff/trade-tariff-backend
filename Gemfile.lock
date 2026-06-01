@@ -269,7 +269,6 @@ GEM
     opensearch-ruby (3.4.0)
       faraday (>= 1.0, < 3)
       multi_json (>= 1.0)
-    ostruct (0.6.3)
     parallel (1.28.0)
     parser (3.3.11.1)
       ast (~> 2.4.1)
@@ -529,7 +528,6 @@ DEPENDENCIES
   nokogiri
   notifications-ruby-client
   opensearch-ruby
-  ostruct
   pg
   pry-rails
   puma
