@@ -9,3 +9,5 @@ max_capacity  = 16
 # Can also remove those variables (in variables.tf) if we decide to keep the default cooldown values
 scale_in_cooldown  = 0
 scale_out_cooldown = 0
+
+enable_observability_alerts = true

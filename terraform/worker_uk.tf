@@ -1,5 +1,5 @@
 module "worker_uk" {
-  source = "git@github.com:trade-tariff/trade-tariff-platform-terraform-modules.git//aws/ecs-service?ref=aws/ecs-service-v3.0.1"
+  source = "git@github.com:trade-tariff/trade-tariff-platform-terraform-modules.git//aws/ecs-service?ref=aws/ecs-service-v3.1.0"
 
   service_name = "worker-uk"
   region       = var.region
@@ -39,5 +39,6 @@ module "worker_uk" {
   cpu_alarm_threshold = 85 # Temporarily set higher to avoid alarm noise during load testing, will be adjusted based on observed metrics after testing is complete.
 
 
-  sns_topic_arns = [data.aws_sns_topic.slack_topic.arn]
+  sns_topic_arns               = [data.aws_sns_topic.slack_topic.arn]
+  observability_sns_topic_arns = var.enable_observability_alerts ? [data.aws_sns_topic.slack_observability_topic[0].arn] : null
 }

@@ -79,6 +79,11 @@ data "aws_sns_topic" "slack_topic" {
   name = "slack-topic"
 }
 
+data "aws_sns_topic" "slack_observability_topic" {
+  count = var.enable_observability_alerts ? 1 : 0
+  name  = "slack-observability-topic"
+}
+
 data "aws_ecs_cluster" "this" {
   cluster_name = "trade-tariff-cluster-${var.environment}"
 }

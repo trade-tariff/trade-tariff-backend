@@ -46,6 +46,12 @@ variable "enable_alarms" {
   type        = bool
   default     = true
 }
+
+variable "enable_observability_alerts" {
+  type    = bool
+  default = false
+}
+
 # Can remove that variable after deploying to P
 variable "scale_in_cooldown" {
   description = "Prevents aggressive scale-in by enforcing a waiting period after tasks are removed."

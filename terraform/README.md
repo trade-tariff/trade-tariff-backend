@@ -21,16 +21,16 @@ Terraform to deploy the service into AWS.
 | Name | Source | Version |
 | ---- | ------ | ------- |
 | <a name="module_backend-job"></a> [backend-job](#module\_backend-job) | git@github.com:trade-tariff/trade-tariff-platform-terraform-modules.git//aws/ecs-service | aws/ecs-service-v3.0.1 |
-| <a name="module_backend_uk"></a> [backend\_uk](#module\_backend\_uk) | git@github.com:trade-tariff/trade-tariff-platform-terraform-modules.git//aws/ecs-service | aws/ecs-service-v3.0.1 |
-| <a name="module_backend_xi"></a> [backend\_xi](#module\_backend\_xi) | git@github.com:trade-tariff/trade-tariff-platform-terraform-modules.git//aws/ecs-service | aws/ecs-service-v3.0.1 |
+| <a name="module_backend_uk"></a> [backend\_uk](#module\_backend\_uk) | git@github.com:trade-tariff/trade-tariff-platform-terraform-modules.git//aws/ecs-service | aws/ecs-service-v3.1.0 |
+| <a name="module_backend_xi"></a> [backend\_xi](#module\_backend\_xi) | git@github.com:trade-tariff/trade-tariff-platform-terraform-modules.git//aws/ecs-service | aws/ecs-service-v3.1.0 |
 | <a name="module_label_generator_dashboard"></a> [label\_generator\_dashboard](#module\_label\_generator\_dashboard) | ./modules/label_generator_dashboard | n/a |
 | <a name="module_search_dashboard"></a> [search\_dashboard](#module\_search\_dashboard) | ./modules/search_dashboard | n/a |
 | <a name="module_search_operations_dashboard"></a> [search\_operations\_dashboard](#module\_search\_operations\_dashboard) | ./modules/search_operations_dashboard | n/a |
 | <a name="module_search_quality_dashboard"></a> [search\_quality\_dashboard](#module\_search\_quality\_dashboard) | ./modules/search_quality_dashboard | n/a |
 | <a name="module_self_text_generator_dashboard"></a> [self\_text\_generator\_dashboard](#module\_self\_text\_generator\_dashboard) | ./modules/self_text_generator_dashboard | n/a |
 | <a name="module_tariff_sync_dashboard"></a> [tariff\_sync\_dashboard](#module\_tariff\_sync\_dashboard) | ./modules/tariff_sync_dashboard | n/a |
-| <a name="module_worker_uk"></a> [worker\_uk](#module\_worker\_uk) | git@github.com:trade-tariff/trade-tariff-platform-terraform-modules.git//aws/ecs-service | aws/ecs-service-v3.0.1 |
-| <a name="module_worker_xi"></a> [worker\_xi](#module\_worker\_xi) | git@github.com:trade-tariff/trade-tariff-platform-terraform-modules.git//aws/ecs-service | aws/ecs-service-v3.0.1 |
+| <a name="module_worker_uk"></a> [worker\_uk](#module\_worker\_uk) | git@github.com:trade-tariff/trade-tariff-platform-terraform-modules.git//aws/ecs-service | aws/ecs-service-v3.1.0 |
+| <a name="module_worker_xi"></a> [worker\_xi](#module\_worker\_xi) | git@github.com:trade-tariff/trade-tariff-platform-terraform-modules.git//aws/ecs-service | aws/ecs-service-v3.1.0 |
 
 ## Resources
 
@@ -66,6 +66,7 @@ Terraform to deploy the service into AWS.
 | [aws_secretsmanager_secret_version.backend_xi_worker_configuration](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/secretsmanager_secret_version) | data source |
 | [aws_secretsmanager_secret_version.ecs_tls_certificate](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/secretsmanager_secret_version) | data source |
 | [aws_security_group.this](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/security_group) | data source |
+| [aws_sns_topic.slack_observability_topic](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/sns_topic) | data source |
 | [aws_sns_topic.slack_topic](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/sns_topic) | data source |
 | [aws_subnets.private](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/subnets) | data source |
 | [aws_vpc.vpc](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/vpc) | data source |
@@ -77,6 +78,7 @@ Terraform to deploy the service into AWS.
 | <a name="input_cpu"></a> [cpu](#input\_cpu) | CPU units to use. | `number` | n/a | yes |
 | <a name="input_docker_tag"></a> [docker\_tag](#input\_docker\_tag) | Image tag to use. | `string` | n/a | yes |
 | <a name="input_enable_alarms"></a> [enable\_alarms](#input\_enable\_alarms) | Whether to enable CloudWatch alarms for the service. | `bool` | `true` | no |
+| <a name="input_enable_observability_alerts"></a> [enable\_observability\_alerts](#input\_enable\_observability\_alerts) | n/a | `bool` | `false` | no |
 | <a name="input_environment"></a> [environment](#input\_environment) | Deployment environment. | `string` | n/a | yes |
 | <a name="input_max_capacity"></a> [max\_capacity](#input\_max\_capacity) | Largest number of tasks the service can scale-out to. | `number` | `5` | no |
 | <a name="input_memory"></a> [memory](#input\_memory) | Memory to allocate in MB. Powers of 2 only. | `number` | n/a | yes |
