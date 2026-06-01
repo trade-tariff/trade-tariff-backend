@@ -2,8 +2,19 @@ module Api
   module Admin
     module GoodsNomenclatureLabels
       class StatsService
+        Result = Data.define(
+          :total_goods_nomenclatures,
+          :descriptions_count,
+          :known_brands_count,
+          :colloquial_terms_count,
+          :synonyms_count,
+          :ai_created_only,
+          :human_edited,
+          :coverage_by_chapter,
+        )
+
         def call
-          {
+          Result.new(
             total_goods_nomenclatures: total_goods_nomenclatures,
             descriptions_count: descriptions_count,
             known_brands_count: jsonb_array_sum('known_brands'),
@@ -12,7 +23,7 @@ module Api
             ai_created_only: ai_created_only,
             human_edited: human_edited,
             coverage_by_chapter: coverage_by_chapter,
-          }
+          )
         end
 
         private

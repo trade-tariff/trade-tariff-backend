@@ -26,18 +26,23 @@ RSpec.describe Api::Admin::GoodsNomenclatureLabels::StatsController do
       expect(response.body).to match_json_expression(pattern)
     end
 
-    context 'when there are labels' do
-      let(:commodity) { create :commodity }
+    context 'when service returns non-zero stats' do
+      let(:stats_result) do
+        Api::Admin::GoodsNomenclatureLabels::StatsService::Result.new(
+          total_goods_nomenclatures: 1,
+          descriptions_count: 1,
+          known_brands_count: 2,
+          colloquial_terms_count: 0,
+          synonyms_count: 1,
+          ai_created_only: 1,
+          human_edited: 0,
+          coverage_by_chapter: [],
+        )
+      end
 
       before do
-        create :goods_nomenclature_label,
-               goods_nomenclature: commodity,
-               labels: {
-                 'description' => 'Test description',
-                 'known_brands' => %w[BrandA BrandB],
-                 'colloquial_terms' => [],
-                 'synonyms' => %w[syn1],
-               }
+        service = instance_double(Api::Admin::GoodsNomenclatureLabels::StatsService, call: stats_result)
+        allow(Api::Admin::GoodsNomenclatureLabels::StatsService).to receive(:new).and_return(service)
       end
 
       it 'returns correct counts' do

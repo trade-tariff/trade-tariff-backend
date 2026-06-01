@@ -1,20 +1,24 @@
 RSpec.describe Api::Admin::GoodsNomenclatureLabels::StatsService do
   subject(:service) { described_class.new }
 
+  let(:result_class) { described_class::Result }
+
   describe '#call' do
     let(:result) { service.call }
 
     context 'when there are no labels' do
       it 'returns zero counts' do
         expect(result).to eq(
-          total_goods_nomenclatures: 0,
-          descriptions_count: 0,
-          known_brands_count: 0,
-          colloquial_terms_count: 0,
-          synonyms_count: 0,
-          ai_created_only: 0,
-          human_edited: 0,
-          coverage_by_chapter: [],
+          result_class.new(
+            total_goods_nomenclatures: 0,
+            descriptions_count: 0,
+            known_brands_count: 0,
+            colloquial_terms_count: 0,
+            synonyms_count: 0,
+            ai_created_only: 0,
+            human_edited: 0,
+            coverage_by_chapter: [],
+          ),
         )
       end
     end
@@ -54,23 +58,23 @@ RSpec.describe Api::Admin::GoodsNomenclatureLabels::StatsService do
       end
 
       it 'counts total goods nomenclatures with labels' do
-        expect(result[:total_goods_nomenclatures]).to eq(3)
+        expect(result.total_goods_nomenclatures).to eq(3)
       end
 
       it 'counts records with a description' do
-        expect(result[:descriptions_count]).to eq(2)
+        expect(result.descriptions_count).to eq(2)
       end
 
       it 'sums individual known brands across all records' do
-        expect(result[:known_brands_count]).to eq(3)
+        expect(result.known_brands_count).to eq(3)
       end
 
       it 'sums individual colloquial terms across all records' do
-        expect(result[:colloquial_terms_count]).to eq(1)
+        expect(result.colloquial_terms_count).to eq(1)
       end
 
       it 'sums individual synonyms across all records' do
-        expect(result[:synonyms_count]).to eq(2)
+        expect(result.synonyms_count).to eq(2)
       end
     end
 
@@ -90,11 +94,11 @@ RSpec.describe Api::Admin::GoodsNomenclatureLabels::StatsService do
       end
 
       it 'counts AI-created labels' do
-        expect(result[:ai_created_only]).to eq(1)
+        expect(result.ai_created_only).to eq(1)
       end
 
       it 'counts human-edited labels' do
-        expect(result[:human_edited]).to eq(1)
+        expect(result.human_edited).to eq(1)
       end
     end
 
@@ -113,16 +117,16 @@ RSpec.describe Api::Admin::GoodsNomenclatureLabels::StatsService do
       end
 
       it 'does not count null description' do
-        expect(result[:descriptions_count]).to eq(0)
+        expect(result.descriptions_count).to eq(0)
       end
 
       it 'returns zero for null arrays' do
-        expect(result[:known_brands_count]).to eq(0)
+        expect(result.known_brands_count).to eq(0)
       end
 
       it 'returns zero for empty arrays' do
-        expect(result[:colloquial_terms_count]).to eq(0)
-        expect(result[:synonyms_count]).to eq(0)
+        expect(result.colloquial_terms_count).to eq(0)
+        expect(result.synonyms_count).to eq(0)
       end
     end
   end
