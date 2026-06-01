@@ -25,7 +25,6 @@ permissions:
 
 jobs:
   check-pr-lines:
-    if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
@@ -38,6 +37,11 @@ jobs:
           exclude-paths: |
             .github/**
             **/*.lock
+            spec/
+            db/
+            data/
+            docs/
+            *.md
 
   lint:
     runs-on: ubuntu-latest
