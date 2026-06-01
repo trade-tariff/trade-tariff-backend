@@ -2,6 +2,7 @@ module Api
   module V2
     class EnquiryForm::SubmissionsController < ApiController
       CACHE_DURATION = 1.hour
+      SubmissionResult = Data.define(:reference_number)
 
       def create
         store_enquiry_form_data
@@ -9,7 +10,7 @@ module Api
         ::EnquiryForm::SendSubmissionEmailWorker.perform_async(reference_number)
 
         begin
-          render json: serialize(OpenStruct.new(reference_number: reference_number)), status: :created
+          render json: serialize(SubmissionResult.new(reference_number:)), status: :created
         rescue ActionController::ParameterMissing => e
           render json: { errors: [e.message] }, status: :unprocessable_content
         end
