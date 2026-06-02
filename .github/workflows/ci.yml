@@ -24,6 +24,25 @@ permissions:
   id-token: write
 
 jobs:
+  check-pr-lines:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - uses: trade-tariff/trade-tariff-tools/.github/actions/check-pr-lines@main
+        with:
+          threshold: 600
+          exclude-paths: |
+            db/
+            data/
+            docs/
+            terraform/versions.tf
+            *.md
+            *.lock
+            .github
+
   lint:
     runs-on: ubuntu-latest
     steps:
