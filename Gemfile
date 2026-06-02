@@ -50,7 +50,6 @@ gem 'logstash-event'
 gem 'newrelic_rpm'
 gem 'nokogiri'
 gem 'notifications-ruby-client'
-gem 'ostruct'
 gem 'slack-notifier'
 
 # API related

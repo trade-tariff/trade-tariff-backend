@@ -8,6 +8,7 @@ class AdditionalCode < Sequel::Model
   PREFERENCE_TYPE_IDS = %w[2].freeze
   REMEDY_TYPE_IDS = %w[8 A B C].freeze
   EXCISE_TYPE_IDS = %w[X].freeze
+  NullCode = Data.define(:code, :description)
 
   plugin :time_machine
   plugin :oplog, primary_key: :additional_code_sid, materialized: true
@@ -69,7 +70,7 @@ class AdditionalCode < Sequel::Model
 
   class << self
     def null_code
-      OpenStruct.new(code: 'none', description: 'No additional code')
+      NullCode.new(code: 'none', description: 'No additional code')
     end
 
     def heading_for(type)

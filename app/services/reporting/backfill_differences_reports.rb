@@ -52,6 +52,8 @@ module Reporting
     private
 
     ReportSource = Data.define(:date, :key)
+    Worksheet = Data.define(:worksheet, :worksheet_name, :subtext)
+    Section = Data.define(:section, :worksheets)
 
     class WorkbookWrapper
       def initialize(data)
@@ -74,14 +76,14 @@ module Reporting
       def sections
         Reporting::Differences::Renderers::Overview::OVERVIEW_SECTION_CONFIG.keys.map do |section|
           worksheets = Reporting::Differences::Renderers::Overview::OVERVIEW_SECTION_CONFIG.dig(section, :worksheets).map do |worksheet, config|
-            OpenStruct.new(
+            Worksheet.new(
               worksheet:,
               worksheet_name: config[:worksheet_name],
               subtext: config[:description].sub('as_of', as_of.to_date.to_fs(:govuk)),
             )
           end
 
-          OpenStruct.new(section:, worksheets:)
+          Section.new(section:, worksheets:)
         end
       end
 

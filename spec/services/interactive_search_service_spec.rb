@@ -1,6 +1,7 @@
 RSpec.describe InteractiveSearchService do
   subject(:result) { described_class.call(**params) }
 
+  let(:search_result_class) { Data.define(:goods_nomenclature_item_id, :description, :full_description, :score) }
   let(:params) do
     {
       query: query,
@@ -10,12 +11,10 @@ RSpec.describe InteractiveSearchService do
       request_id: request_id,
     }
   end
-
   let(:query) { 'leather handbag' }
   let(:expanded_query) { 'leather handbag travel bag accessory' }
   let(:request_id) { 'test-request-123' }
   let(:answers) { [] }
-
   let(:opensearch_results) do
     [
       build_result('4202210000', 'Handbags with outer surface of leather', 10.5),
@@ -23,7 +22,6 @@ RSpec.describe InteractiveSearchService do
       build_result('4202290000', 'Other handbags', 6.1),
     ]
   end
-
   let(:default_search_context) do
     <<~CONTEXT
       You are a UK trade tariff classification assistant.
@@ -46,7 +44,7 @@ RSpec.describe InteractiveSearchService do
   end
 
   def build_result(code, description, score, full_description: nil)
-    OpenStruct.new(
+    search_result_class.new(
       goods_nomenclature_item_id: code,
       description: description,
       full_description: full_description,

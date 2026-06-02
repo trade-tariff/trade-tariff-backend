@@ -3,6 +3,9 @@ module Reporting
   # relies on source date about supplementary units and commodities to compare
   # the UK and XI data.
   class Differences
+    Worksheet = Data.define(:worksheet, :worksheet_name, :subtext)
+    Section = Data.define(:section, :worksheets)
+
     MEASURE_EAGER = [
       {
         measure_components: [
@@ -278,14 +281,14 @@ module Reporting
     def sections
       Reporting::Differences::Renderers::Overview::OVERVIEW_SECTION_CONFIG.keys.map do |section|
         worksheets = Reporting::Differences::Renderers::Overview::OVERVIEW_SECTION_CONFIG.dig(section, :worksheets).map do |worksheet, config|
-          OpenStruct.new(
+          Worksheet.new(
             worksheet:,
             worksheet_name: config[:worksheet_name],
             subtext: config[:description].sub('as_of', as_of.to_date.to_fs(:govuk)),
           )
         end
 
-        OpenStruct.new(
+        Section.new(
           section:,
           worksheets:,
         )

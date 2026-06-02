@@ -1,8 +1,27 @@
 RSpec.shared_examples_for 'a serialized goods nomenclature search result' do |type|
   subject(:serializer) { described_class.new(serializable) }
 
+  let(:serializable_goods_nomenclature_class) do
+    Data.define(
+      :id,
+      :goods_nomenclature_item_id,
+      :goods_nomenclature_sid,
+      :producline_suffix,
+      :goods_nomenclature_class,
+      :description,
+      :formatted_description,
+      :self_text,
+      :classification_description,
+      :full_description,
+      :heading_description,
+      :confidence,
+      :declarable,
+      :score,
+    )
+  end
+
   let(:serializable) do
-    OpenStruct.new(
+    serializable_goods_nomenclature_class.new(
       id: 12_345,
       goods_nomenclature_item_id: '0100000000',
       goods_nomenclature_sid: 12_345,
@@ -12,6 +31,9 @@ RSpec.shared_examples_for 'a serialized goods nomenclature search result' do |ty
       formatted_description: 'Live animals',
       self_text: nil,
       classification_description: nil,
+      full_description: nil,
+      heading_description: nil,
+      confidence: nil,
       declarable: false,
       score: 12.5,
     )

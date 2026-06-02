@@ -1,4 +1,23 @@
 RSpec.describe Api::Internal::SearchService do
+  let(:retrieval_result_class) do
+    Data.define(
+      :id,
+      :goods_nomenclature_item_id,
+      :goods_nomenclature_sid,
+      :producline_suffix,
+      :goods_nomenclature_class,
+      :description,
+      :formatted_description,
+      :self_text,
+      :classification_description,
+      :full_description,
+      :heading_description,
+      :declarable,
+      :score,
+      :confidence,
+    )
+  end
+
   before do
     allow(AdminConfiguration).to receive(:option_value).and_call_original
     allow(AdminConfiguration).to receive(:option_value).with('retrieval_method').and_return('opensearch')
@@ -993,7 +1012,7 @@ RSpec.describe Api::Internal::SearchService do
     context 'when retrieval_method is vector' do
       let(:vector_results) do
         [
-          OpenStruct.new(
+          retrieval_result_class.new(
             id: 1,
             goods_nomenclature_item_id: '0101210000',
             goods_nomenclature_sid: 1,
@@ -1074,7 +1093,7 @@ RSpec.describe Api::Internal::SearchService do
     context 'when retrieval_method is hybrid' do
       let(:hybrid_results) do
         [
-          OpenStruct.new(
+          retrieval_result_class.new(
             id: 1,
             goods_nomenclature_item_id: '0101210000',
             goods_nomenclature_sid: 1,

@@ -1,17 +1,17 @@
 RSpec.describe Api::Shared::CsvSerializer do
   subject(:serialized) { serializer.new([data]).serialized_csv }
 
+  let(:csv_row_class) { Data.define(:name, :age, :date_of_birth, :is_admin, :bio, :created_at) }
   let :data do
-    OpenStruct.new.tap do |data|
-      data.name = 'A String'
-      data.age = 1
-      data.date_of_birth = Date.parse('2000-01-01')
-      data.is_admin = true
-      data.bio = nil
-      data.created_at = Time.zone.parse('2010-01-01 23:59:59.999999')
-    end
+    csv_row_class.new(
+      name: 'A String',
+      age: 1,
+      date_of_birth: Date.parse('2000-01-01'),
+      is_admin: true,
+      bio: nil,
+      created_at: Time.zone.parse('2010-01-01 23:59:59.999999'),
+    )
   end
-
   let :serializer do
     Class.new do
       include Api::Shared::CsvSerializer
