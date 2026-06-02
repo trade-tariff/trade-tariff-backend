@@ -530,6 +530,23 @@ RSpec.describe TariffChangesService::Presenter do
       result = presenter.date_of_effect
       expect(result).to eq('15/08/2024')
     end
+
+    context 'when measure end date has been removed' do
+      let(:tariff_change) do
+        create(:tariff_change,
+               action: 'ending',
+               type: 'Measure',
+               operation_date: Date.parse('2024-08-14'),
+               validity_end_date: nil,
+               goods_nomenclature_sid: goods_nomenclature.goods_nomenclature_sid,
+               goods_nomenclature_item_id: goods_nomenclature.goods_nomenclature_item_id,
+               date_of_effect: Date.parse('2024-08-15'))
+      end
+
+      it 'returns end date removed' do
+        expect(presenter.date_of_effect).to eq('end date removed')
+      end
+    end
   end
 
   describe '#ott_url' do
@@ -596,6 +613,24 @@ RSpec.describe TariffChangesService::Presenter do
         expect(result).to eq(expected_url)
       end
     end
+
+    context 'when end date has been removed' do
+      let(:tariff_change) do
+        create(:tariff_change,
+               type: 'Measure',
+               action: 'ending',
+               operation_date: Date.parse('2024-08-14'),
+               validity_end_date: nil,
+               goods_nomenclature_item_id: '0202000000',
+               goods_nomenclature_sid: goods_nomenclature.goods_nomenclature_sid,
+               date_of_effect: Date.parse('2024-08-15'),
+               metadata: { 'measure' => { 'trade_movement_code' => 0 } })
+      end
+
+      it 'builds the OTT URL without date parameters' do
+        expect(presenter.ott_url).to eq('https://www.trade-tariff.service.gov.uk/commodities/0202000000?utm_source=offline&utm_medium=excel&utm_campaign=change_data#import')
+      end
+    end
   end
 
   describe '#api_url' do
@@ -610,6 +645,23 @@ RSpec.describe TariffChangesService::Presenter do
       result = presenter.api_url
       expected_url = 'https://www.trade-tariff.service.gov.uk/uk/api/commodities/0202000000?as_of=2024-08-15&utm_source=offline&utm_medium=excel&utm_campaign=change_data'
       expect(result).to eq(expected_url)
+    end
+
+    context 'when end date has been removed' do
+      let(:tariff_change) do
+        create(:tariff_change,
+               type: 'Measure',
+               action: 'ending',
+               operation_date: Date.parse('2024-08-14'),
+               validity_end_date: nil,
+               goods_nomenclature_item_id: '0202000000',
+               goods_nomenclature_sid: goods_nomenclature.goods_nomenclature_sid,
+               date_of_effect: Date.parse('2024-08-15'))
+      end
+
+      it 'builds the API URL without as_of' do
+        expect(presenter.api_url).to eq('https://www.trade-tariff.service.gov.uk/uk/api/commodities/0202000000?utm_source=offline&utm_medium=excel&utm_campaign=change_data')
+      end
     end
   end
 end

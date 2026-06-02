@@ -72,11 +72,14 @@ class TariffChangesService
     end
 
     def date_of_effect
+      return TariffChange::END_DATE_REMOVED_DISPLAY if measure_end_date_removed?
+
       super.strftime('%d/%m/%Y')
     end
 
     def ott_url
-      url = "https://www.trade-tariff.service.gov.uk/commodities/#{goods_nomenclature_item_id}?day=#{date_of_effect_visible.day}&month=#{date_of_effect_visible.month}&year=#{date_of_effect_visible.year}&#{UTM_TAGS}"
+      query = measure_end_date_removed? ? UTM_TAGS : "#{ott_date_query}&#{UTM_TAGS}"
+      url = "#{commodity_base_url}?#{query}"
       url += '#export' if trade_movement_code == 1
       url += '#import' if trade_movement_code.in?([0, 2])
 
@@ -84,10 +87,23 @@ class TariffChangesService
     end
 
     def api_url
-      "https://www.trade-tariff.service.gov.uk/uk/api/commodities/#{goods_nomenclature_item_id}?as_of=#{date_of_effect_visible.strftime('%Y-%m-%d')}&#{UTM_TAGS}"
+      query = measure_end_date_removed? ? UTM_TAGS : "as_of=#{date_of_effect_visible.strftime('%Y-%m-%d')}&#{UTM_TAGS}"
+      "#{commodity_api_base_url}?#{query}"
     end
 
     private
+
+    def commodity_base_url
+      "https://www.trade-tariff.service.gov.uk/commodities/#{goods_nomenclature_item_id}"
+    end
+
+    def commodity_api_base_url
+      "https://www.trade-tariff.service.gov.uk/uk/api/commodities/#{goods_nomenclature_item_id}"
+    end
+
+    def ott_date_query
+      "day=#{date_of_effect_visible.day}&month=#{date_of_effect_visible.month}&year=#{date_of_effect_visible.year}"
+    end
 
     def format_excluded_areas
       return '' if excluded_geographical_area_ids.empty?
