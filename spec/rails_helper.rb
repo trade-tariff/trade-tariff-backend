@@ -42,9 +42,10 @@ RSpec.configure do |config|
   end
 
   config.before(:all) do
-    FileUtils.rm_rf('tmp/data/cds')
-    FileUtils.mkpath('tmp/data/cds')
-    FileUtils.cp_r('spec/fixtures/cds_samples/.', 'tmp/data/cds')
+    cds_data_path = File.join(TariffSynchronizer.root_path, 'cds')
+    FileUtils.rm_rf(cds_data_path)
+    FileUtils.mkpath(cds_data_path)
+    FileUtils.cp_r('spec/fixtures/cds_samples/.', cds_data_path)
   end
 
   config.before(:suite) do

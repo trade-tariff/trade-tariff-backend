@@ -41,6 +41,24 @@ RSpec.describe TradeTariffBackend do
         expect(described_class.sidekiq_redis_config[:url]).to eq('redis://default-host:6379')
       end
     end
+
+    context 'when TEST_ENV_NUMBER is set' do
+      before { stub_const('ENV', ENV.to_hash.merge('TEST_ENV_NUMBER' => '2')) }
+
+      it 'uses a worker-specific Redis database' do
+        expect(described_class.sidekiq_redis_config[:db]).to eq(3)
+      end
+    end
+  end
+
+  describe '.redis_config' do
+    context 'when TEST_ENV_NUMBER is set' do
+      before { stub_const('ENV', ENV.to_hash.merge('TEST_ENV_NUMBER' => '2')) }
+
+      it 'uses a worker-specific Redis database' do
+        expect(described_class.redis_config[:db]).to eq(3)
+      end
+    end
   end
 
   describe '.currency' do

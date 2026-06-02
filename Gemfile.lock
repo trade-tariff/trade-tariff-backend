@@ -270,6 +270,8 @@ GEM
       faraday (>= 1.0, < 3)
       multi_json (>= 1.0)
     parallel (1.28.0)
+    parallel_tests (5.7.0)
+      parallel
     parser (3.3.11.1)
       ast (~> 2.4.1)
       racc
@@ -528,6 +530,7 @@ DEPENDENCIES
   nokogiri
   notifications-ruby-client
   opensearch-ruby
+  parallel_tests
   pg
   pry-rails
   puma

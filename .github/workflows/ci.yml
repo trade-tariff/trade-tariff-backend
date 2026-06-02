@@ -13,10 +13,11 @@ env:
   AWS_REGION: eu-west-2
   BUNDLE_JOBS: "3"
   BUNDLE_RETRY: "3"
-  DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/tariff_test"
   ECR_URL: 382373577178.dkr.ecr.eu-west-2.amazonaws.com/tariff-backend-production
   ENVIRONMENT: development
   IAM_ROLE_ARN: arn:aws:iam::844815912454:role/GithubActions-ECS-Deployments-Role
+  PARALLEL_TEST_PROCESSORS: "5"
+  PGHOST: localhost
   RAILS_ENV: test
 
 permissions:
@@ -80,8 +81,7 @@ jobs:
       postgres:
         image: pgvector/pgvector:pg18
         env:
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
+          POSTGRES_HOST_AUTH_METHOD: trust
           POSTGRES_DB: tariff_test
         ports:
           - 5432:5432
@@ -105,9 +105,16 @@ jobs:
         with:
           bundler-cache: true
 
-      - run: bundle exec rails db:structure:load --trace
+      - name: Prepare test databases
+        run: bundle exec rails db:test:prepare_parallel
 
-      - run: bundle exec rspec --format progress --format Ctrf::RSpecFormatter --out ./ctrf/ctrf.json
+      - name: Run tests
+        run: |
+          mkdir -p ctrf
+          bundle exec parallel_test spec \
+            -n "$PARALLEL_TEST_PROCESSORS" \
+            --type rspec \
+            --exec-args "sh -c 'PARALLEL_RSPEC_CHILD=true bundle exec rspec \"\$@\" --format progress --format Ctrf::RSpecFormatter --out ./ctrf/ctrf\${TEST_ENV_NUMBER:-1}.json' sh"
 
       - name: Check all public V2 controllers have swagger specs
         run: bundle exec rake swagger:check_coverage

@@ -2,7 +2,7 @@ RSpec.describe TradeTariffBackend::SearchClient do
   describe '.server_namespace' do
     subject { described_class.server_namespace }
 
-    it { is_expected.to eql 'tariff-test' }
+    it { is_expected.to eql ['tariff-test', ENV['TEST_ENV_NUMBER']].compact_blank.join('-') }
 
     context 'when overridden' do
       before do

@@ -8,7 +8,7 @@ RSpec.describe Search::Fuzzy::ReferenceQuery do
 
     let(:pattern) do
       {
-        index: 'tariff-test-search_references-uk',
+        index: index.name,
         search: {
           query: {
             bool: {

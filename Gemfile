@@ -79,6 +79,7 @@ group :test do
   gem 'database_cleaner-sequel'
   gem 'forgery'
   gem 'json_expressions'
+  gem 'parallel_tests'
   gem 'rspec-ctrf'
   gem 'rspec-json_expectations'
   gem 'rspec_junit_formatter'

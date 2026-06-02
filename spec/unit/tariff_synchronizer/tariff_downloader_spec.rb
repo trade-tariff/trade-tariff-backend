@@ -21,9 +21,11 @@ RSpec.describe TariffSynchronizer::TariffDownloader do
     end
 
     context 'when the file is already downloaded' do
+      let(:file_path) { File.join(TariffSynchronizer.root_path, 'cds', filename) }
+
       before do
-        allow(TariffSynchronizer::FileService).to receive(:file_exists?).with('tmp/data/cds/foo.xml.gzip').and_return(true)
-        allow(TariffSynchronizer::FileService).to receive(:file_size).with('tmp/data/cds/foo.xml.gzip').and_return(1)
+        allow(TariffSynchronizer::FileService).to receive(:file_exists?).with(file_path).and_return(true)
+        allow(TariffSynchronizer::FileService).to receive(:file_size).with(file_path).and_return(1)
         allow(TariffSynchronizer::TariffUpdatesRequester).to receive(:perform).with(url)
       end
 
@@ -82,8 +84,10 @@ RSpec.describe TariffSynchronizer::TariffDownloader do
       end
 
       context 'when the download response is successful' do
+        let(:file_path) { File.join(TariffSynchronizer.root_path, update_klass.update_type.to_s, filename) }
+
         before do
-          allow(TariffSynchronizer::FileService).to receive(:write_file).with("tmp/data/#{update_klass.update_type}/foo.xml.gzip", be_a(String))
+          allow(TariffSynchronizer::FileService).to receive(:write_file).with(file_path, be_a(String))
         end
 
         context 'when the response body is a valid ZIP file' do
@@ -97,7 +101,7 @@ RSpec.describe TariffSynchronizer::TariffDownloader do
 
           it 'writes using the FileService' do
             perform
-            expect(TariffSynchronizer::FileService).to have_received(:write_file).with('tmp/data/cds/foo.xml.gzip', be_a(String))
+            expect(TariffSynchronizer::FileService).to have_received(:write_file).with(file_path, be_a(String))
           end
 
           it 'records a state transition to pending' do
@@ -123,7 +127,7 @@ RSpec.describe TariffSynchronizer::TariffDownloader do
 
           it 'writes using the FileService' do
             perform
-            expect(TariffSynchronizer::FileService).to have_received(:write_file).with('tmp/data/taric/foo.xml.gzip', 'not_a_zip_file')
+            expect(TariffSynchronizer::FileService).to have_received(:write_file).with(file_path, 'not_a_zip_file')
           end
         end
 

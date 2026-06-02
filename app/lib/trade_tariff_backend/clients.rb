@@ -6,7 +6,7 @@ module TradeTariffBackend
 
     def frontend_redis
       @frontend_redis ||= begin
-        db = Rails.env.test? ? 1 : 0
+        db = Rails.env.test? ? test_redis_db : 0
         Redis.new(url: frontend_redis_url, db:)
       end
     end

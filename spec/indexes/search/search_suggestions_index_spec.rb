@@ -2,7 +2,7 @@ RSpec.describe Search::SearchSuggestionsIndex do
   subject(:instance) { described_class.new 'testnamespace' }
 
   it { is_expected.to have_attributes type: 'search_suggestion' }
-  it { is_expected.to have_attributes name: 'tariff-test-search_suggestions-uk' }
+  it { is_expected.to have_attributes name: "#{TradeTariffBackend::SearchClient.server_namespace}-search_suggestions-uk" }
   it { is_expected.to have_attributes name_without_namespace: 'SearchSuggestionsIndex' }
   it { is_expected.to have_attributes model_class: SearchSuggestion }
   it { is_expected.to have_attributes serializer: Search::SearchSuggestionsSerializer }

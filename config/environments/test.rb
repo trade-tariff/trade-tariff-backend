@@ -59,7 +59,8 @@ Rails.application.configure do
   config.after_initialize do
     require_relative '../../app/lib/trade_tariff_backend'
 
-    TradeTariffBackend::SearchClient.server_namespace = 'tariff-test' # default is just tariff
+    search_index_namespace = ['tariff-test', ENV['TEST_ENV_NUMBER']].compact_blank.join('-')
+    TradeTariffBackend::SearchClient.server_namespace = search_index_namespace # default is just tariff
 
     # We need search index to be refreshed after each operation
     # in order to assert record presence in the index (in integration specs)
