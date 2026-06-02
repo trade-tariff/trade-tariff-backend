@@ -35,13 +35,13 @@ jobs:
         with:
           threshold: 600
           exclude-paths: |
-            .github/**
-            **/*.lock
-            spec/
             db/
             data/
             docs/
+            terraform/versions.tf
             *.md
+            *.lock
+            .github
 
   lint:
     runs-on: ubuntu-latest
