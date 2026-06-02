@@ -6,20 +6,20 @@ Terraform to deploy the service into AWS.
 ## Requirements
 
 | Name | Version |
-|------|---------|
+| ---- | ------- |
 | <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >=1.12.0 |
 | <a name="requirement_aws"></a> [aws](#requirement\_aws) | ~> 5 |
 
 ## Providers
 
 | Name | Version |
-|------|---------|
+| ---- | ------- |
 | <a name="provider_aws"></a> [aws](#provider\_aws) | 5.100.0 |
 
 ## Modules
 
 | Name | Source | Version |
-|------|--------|---------|
+| ---- | ------ | ------- |
 | <a name="module_backend-job"></a> [backend-job](#module\_backend-job) | git@github.com:trade-tariff/trade-tariff-platform-terraform-modules.git//aws/ecs-service | aws/ecs-service-v3.0.1 |
 | <a name="module_backend_uk"></a> [backend\_uk](#module\_backend\_uk) | git@github.com:trade-tariff/trade-tariff-platform-terraform-modules.git//aws/ecs-service | aws/ecs-service-v3.1.0 |
 | <a name="module_backend_xi"></a> [backend\_xi](#module\_backend\_xi) | git@github.com:trade-tariff/trade-tariff-platform-terraform-modules.git//aws/ecs-service | aws/ecs-service-v3.1.0 |
@@ -35,7 +35,7 @@ Terraform to deploy the service into AWS.
 ## Resources
 
 | Name | Type |
-|------|------|
+| ---- | ---- |
 | [aws_cloudwatch_event_rule.database_backup](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cloudwatch_event_rule) | resource |
 | [aws_cloudwatch_event_rule.database_replication](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cloudwatch_event_rule) | resource |
 | [aws_cloudwatch_event_target.database_backup](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cloudwatch_event_target) | resource |
@@ -74,7 +74,7 @@ Terraform to deploy the service into AWS.
 ## Inputs
 
 | Name | Description | Type | Default | Required |
-|------|-------------|------|---------|:--------:|
+| ---- | ----------- | ---- | ------- | :------: |
 | <a name="input_backend_uk_min_capacity"></a> [backend\_uk\_min\_capacity](#input\_backend\_uk\_min\_capacity) | Smallest number of tasks the backend-uk service can scale-in to. | `number` | `1` | no |
 | <a name="input_backend_xi_min_capacity"></a> [backend\_xi\_min\_capacity](#input\_backend\_xi\_min\_capacity) | Smallest number of tasks the backend-xi service can scale-in to. | `number` | `1` | no |
 | <a name="input_cpu"></a> [cpu](#input\_cpu) | CPU units to use. | `number` | n/a | yes |
@@ -92,7 +92,7 @@ Terraform to deploy the service into AWS.
 ## Outputs
 
 | Name | Description |
-|------|-------------|
+| ---- | ----------- |
 | <a name="output_label_generator_dashboard_url"></a> [label\_generator\_dashboard\_url](#output\_label\_generator\_dashboard\_url) | URL to the Label Generator CloudWatch dashboard |
 | <a name="output_search_dashboard_url"></a> [search\_dashboard\_url](#output\_search\_dashboard\_url) | URL to the Search CloudWatch dashboard |
 | <a name="output_search_operations_dashboard_url"></a> [search\_operations\_dashboard\_url](#output\_search\_operations\_dashboard\_url) | URL to the Search Operations CloudWatch dashboard |
