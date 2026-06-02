@@ -8,7 +8,7 @@ on:
       stale_days:
         description: Days without pull request activity before closure
         required: false
-        default: '90'
+        default: '14'
       keep_label:
         description: Label exempting a pull request from closure
         required: false
@@ -30,6 +30,6 @@ jobs:
   close-stale:
     uses: trade-tariff/trade-tariff-tools/.github/workflows/close-stale-pull-requests-reusable.yml@main
     with:
-      stale_days: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.stale_days != '' && fromJSON(github.event.inputs.stale_days) || 90 }}
+      stale_days: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.stale_days != '' && fromJSON(github.event.inputs.stale_days) || 14 }}
       keep_label: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.keep_label != '' && github.event.inputs.keep_label || 'keep' }}
       dry_run: ${{ github.event_name != 'schedule' && (github.event.inputs.dry_run != 'false') }}
