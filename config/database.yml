@@ -13,8 +13,9 @@ development:
 test:
   <<: *default
   user: <%= ENV.fetch("DB_USER", "postgres") %>
+  password: <%= ENV["DB_PASSWORD"] %>
   host: <%= ENV.fetch('PGHOST', "localhost") %>
-  database: tariff_test
+  database: <%= "tariff_test#{ENV['TEST_ENV_NUMBER']}" %>
 
 production:
   <<: *default

@@ -8,7 +8,7 @@ RSpec.describe Search::Fuzzy::GoodsNomenclatureQuery do
 
     let(:pattern) do
       {
-        index: 'tariff-test-commodities-uk',
+        index: index.name,
         search: {
           query: {
             bool: {
