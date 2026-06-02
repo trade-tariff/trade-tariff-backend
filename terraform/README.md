@@ -75,6 +75,8 @@ Terraform to deploy the service into AWS.
 
 | Name | Description | Type | Default | Required |
 | ---- | ----------- | ---- | ------- | :------: |
+| <a name="input_backend_uk_min_capacity"></a> [backend\_uk\_min\_capacity](#input\_backend\_uk\_min\_capacity) | Smallest number of tasks the backend-uk service can scale-in to. | `number` | `1` | no |
+| <a name="input_backend_xi_min_capacity"></a> [backend\_xi\_min\_capacity](#input\_backend\_xi\_min\_capacity) | Smallest number of tasks the backend-xi service can scale-in to. | `number` | `1` | no |
 | <a name="input_cpu"></a> [cpu](#input\_cpu) | CPU units to use. | `number` | n/a | yes |
 | <a name="input_docker_tag"></a> [docker\_tag](#input\_docker\_tag) | Image tag to use. | `string` | n/a | yes |
 | <a name="input_enable_alarms"></a> [enable\_alarms](#input\_enable\_alarms) | Whether to enable CloudWatch alarms for the service. | `bool` | `true` | no |
@@ -82,7 +84,6 @@ Terraform to deploy the service into AWS.
 | <a name="input_environment"></a> [environment](#input\_environment) | Deployment environment. | `string` | n/a | yes |
 | <a name="input_max_capacity"></a> [max\_capacity](#input\_max\_capacity) | Largest number of tasks the service can scale-out to. | `number` | `5` | no |
 | <a name="input_memory"></a> [memory](#input\_memory) | Memory to allocate in MB. Powers of 2 only. | `number` | n/a | yes |
-| <a name="input_min_capacity"></a> [min\_capacity](#input\_min\_capacity) | Smallest number of tasks the service can scale-in to. | `number` | `1` | no |
 | <a name="input_region"></a> [region](#input\_region) | AWS region to use. | `string` | n/a | yes |
 | <a name="input_scale_in_cooldown"></a> [scale\_in\_cooldown](#input\_scale\_in\_cooldown) | Prevents aggressive scale-in by enforcing a waiting period after tasks are removed. | `number` | `300` | no |
 | <a name="input_scale_out_cooldown"></a> [scale\_out\_cooldown](#input\_scale\_out\_cooldown) | Minimum time to wait after a scale-out before allowing another scale-out, giving new tasks time to start contributing capacity. | `number` | `60` | no |
