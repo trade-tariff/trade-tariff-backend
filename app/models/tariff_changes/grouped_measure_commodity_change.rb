@@ -63,7 +63,7 @@ module TariffChanges
         changes.sort_by(&:date_of_effect).map do |change|
           {
             measure_sid: change.object_sid,
-            date_of_effect: change.date_of_effect,
+            date_of_effect: change.measure_end_date_removed? ? TariffChange::END_DATE_REMOVED_DISPLAY : change.date_of_effect,
             date_of_effect_visible: change.date_of_effect_visible,
             change_type: change.description,
             additional_code: change.additional_code,

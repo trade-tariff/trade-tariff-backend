@@ -469,7 +469,7 @@ RSpec.describe TariffChange do
   end
 
   describe '#description' do
-    let(:tariff_change) { described_class.new(type: 'Commodity', action: action) }
+    let(:tariff_change) { described_class.new(type: 'Commodity', action: action, validity_end_date: Date.parse('2024-08-15')) }
 
     context 'when action is CREATION' do
       let(:action) { TariffChangesService::BaseChanges::CREATION }
@@ -484,6 +484,22 @@ RSpec.describe TariffChange do
 
       it 'returns end description' do
         expect(tariff_change.description).to eq('Commodity will end')
+      end
+
+      context 'when validity_end_date is nil' do
+        let(:tariff_change) do
+          described_class.new(
+            type: 'Commodity',
+            action: action,
+            operation_date: Date.parse('2024-08-14'),
+            date_of_effect: Date.parse('2024-08-15'),
+            validity_end_date: nil,
+          )
+        end
+
+        it 'returns end description' do
+          expect(tariff_change.description).to eq('Commodity will end')
+        end
       end
     end
 
@@ -506,7 +522,8 @@ RSpec.describe TariffChange do
 
   describe '#date_of_effect_visible' do
     let(:date_of_effect) { Date.parse('2024-08-15') }
-    let(:tariff_change) { create(:tariff_change, date_of_effect:, action:) }
+    let(:tariff_change) { create(:tariff_change, date_of_effect:, action:, validity_end_date:) }
+    let(:validity_end_date) { Date.parse('2024-08-15') }
 
     context 'when action is ENDING' do
       let(:action) { TariffChangesService::BaseChanges::ENDING }
@@ -519,10 +536,30 @@ RSpec.describe TariffChange do
         result = tariff_change.date_of_effect_visible
         expect(result).to eq(Date.parse('2024-08-16'))
       end
+
+      context 'when measure and validity_end_date is nil' do
+        let(:validity_end_date) { nil }
+        let(:date_of_effect) { Date.parse('2024-08-16') }
+        let(:tariff_change) do
+          create(
+            :tariff_change,
+            type: 'Measure',
+            action: action,
+            operation_date: Date.parse('2024-08-15'),
+            date_of_effect: date_of_effect,
+            validity_end_date: validity_end_date,
+          )
+        end
+
+        it 'returns nil' do
+          expect(tariff_change.date_of_effect_visible).to be_nil
+        end
+      end
     end
 
     context 'when action is CREATION' do
       let(:action) { TariffChangesService::BaseChanges::CREATION }
+      let(:validity_end_date) { nil }
 
       it 'returns the same date_of_effect' do
         expect(tariff_change.date_of_effect_visible).to eq(date_of_effect)
@@ -536,6 +573,7 @@ RSpec.describe TariffChange do
 
     context 'when action is UPDATE' do
       let(:action) { TariffChangesService::BaseChanges::UPDATE }
+      let(:validity_end_date) { nil }
 
       it 'returns the same date_of_effect' do
         expect(tariff_change.date_of_effect_visible).to eq(date_of_effect)
@@ -544,9 +582,75 @@ RSpec.describe TariffChange do
 
     context 'when action is DELETION' do
       let(:action) { TariffChangesService::BaseChanges::DELETION }
+      let(:validity_end_date) { nil }
 
       it 'returns the same date_of_effect' do
         expect(tariff_change.date_of_effect_visible).to eq(date_of_effect)
+      end
+    end
+  end
+
+  describe '#measure_end_date_removed?' do
+    context 'when Commodity and action is ending and validity_end_date is nil' do
+      let(:tariff_change) do
+        described_class.new(
+          type: 'Commodity',
+          action: TariffChangesService::BaseChanges::ENDING,
+          operation_date: Date.parse('2024-08-14'),
+          date_of_effect: Date.parse('2024-08-15'),
+          validity_end_date: nil,
+        )
+      end
+
+      it 'returns false' do
+        expect(tariff_change.measure_end_date_removed?).to be(false)
+      end
+    end
+
+    context 'when measure and action is ending and validity_end_date is nil' do
+      let(:tariff_change) do
+        described_class.new(
+          type: 'Measure',
+          action: TariffChangesService::BaseChanges::ENDING,
+          operation_date: Date.parse('2024-08-14'),
+          date_of_effect: Date.parse('2024-08-15'),
+          validity_end_date: nil,
+        )
+      end
+
+      it 'returns true' do
+        expect(tariff_change.measure_end_date_removed?).to be(true)
+      end
+    end
+
+    context 'when measure and action is ending and validity_end_date is present' do
+      let(:tariff_change) do
+        described_class.new(
+          type: 'Measure',
+          action: TariffChangesService::BaseChanges::ENDING,
+          operation_date: Date.parse('2024-08-14'),
+          date_of_effect: Date.parse('2024-08-15'),
+          validity_end_date: Date.parse('2024-08-15'),
+        )
+      end
+
+      it 'returns false' do
+        expect(tariff_change.measure_end_date_removed?).to be(false)
+      end
+    end
+
+    context 'when action is not ending' do
+      let(:tariff_change) do
+        described_class.new(
+          action: TariffChangesService::BaseChanges::UPDATE,
+          operation_date: Date.parse('2024-08-14'),
+          date_of_effect: Date.parse('2024-08-15'),
+          validity_end_date: nil,
+        )
+      end
+
+      it 'returns false' do
+        expect(tariff_change.measure_end_date_removed?).to be(false)
       end
     end
   end

@@ -177,6 +177,7 @@ RSpec.describe TariffChangesService::TransformRecords do
                operation_date: operation_date,
                type: 'Commodity',
                action: 'ending',
+               validity_end_date: operation_date,
                goods_nomenclature_sid: goods_nomenclature.goods_nomenclature_sid,
                goods_nomenclature_item_id: goods_nomenclature.goods_nomenclature_item_id)
       end
@@ -305,6 +306,7 @@ RSpec.describe TariffChangesService::TransformRecords do
                operation_date: operation_date,
                type: 'Measure',
                action: 'ending',
+               validity_end_date: operation_date,
                object_sid: measure.measure_sid,
                goods_nomenclature_sid: goods_nomenclature.goods_nomenclature_sid,
                goods_nomenclature_item_id: goods_nomenclature.goods_nomenclature_item_id,
@@ -326,6 +328,46 @@ RSpec.describe TariffChangesService::TransformRecords do
 
         expect(record[:type_of_change]).to eq('Measure End Date Updated')
         expect(record[:change_detail]).to eq('Measure will end')
+      end
+    end
+
+    context 'when measure end date is removed' do
+      let(:measure_type) { create(:measure_type, trade_movement_code: 0) }
+      let(:measure) { create(:measure, measure_type: measure_type) }
+      let(:goods_nomenclature) { create(:goods_nomenclature, goods_nomenclature_sid: measure.goods_nomenclature_sid) }
+
+      before do
+        goods_nomenclature
+        create(:goods_nomenclature_description, goods_nomenclature_sid: goods_nomenclature.goods_nomenclature_sid)
+        create(:tariff_change,
+               operation_date: operation_date,
+               date_of_effect: operation_date + 1.day,
+               validity_end_date: nil,
+               type: 'Measure',
+               action: 'ending',
+               object_sid: measure.measure_sid,
+               goods_nomenclature_sid: goods_nomenclature.goods_nomenclature_sid,
+               goods_nomenclature_item_id: goods_nomenclature.goods_nomenclature_item_id,
+               metadata: {
+                 'measure' => {
+                   'measure_type_id' => measure.measure_type_id,
+                   'trade_movement_code' => measure_type.trade_movement_code,
+                   'geographical_area_id' => measure.geographical_area_id,
+                   'excluded_geographical_area_ids' => [],
+                   'additional_code' => '',
+                   'quota_order_number' => nil,
+                 },
+               })
+      end
+
+      it 'uses end date removed messaging and undated links' do
+        record = service.call.first
+
+        expect(record[:type_of_change]).to eq('Measure End Date Updated')
+        expect(record[:date_of_effect]).to eq('end date removed')
+        expect(record[:change_detail]).to eq('Measure will end')
+        expect(record[:ott_url]).to eq("https://www.trade-tariff.service.gov.uk/commodities/#{goods_nomenclature.goods_nomenclature_item_id}?#{TariffChangesService::Presenter::UTM_TAGS}#import")
+        expect(record[:api_url]).to eq("https://www.trade-tariff.service.gov.uk/uk/api/commodities/#{goods_nomenclature.goods_nomenclature_item_id}?#{TariffChangesService::Presenter::UTM_TAGS}")
       end
     end
 
@@ -545,7 +587,7 @@ RSpec.describe TariffChangesService::TransformRecords do
       end
 
       context 'when action is ending' do
-        let(:tariff_change) { build(:tariff_change, type: 'Commodity', action: 'ending') }
+        let(:tariff_change) { build(:tariff_change, type: 'Commodity', action: 'ending', validity_end_date: Date.parse('2024-08-15')) }
 
         it 'returns ending message' do
           result = service.send(:describe_commodity_change, presented_change)
@@ -631,7 +673,7 @@ RSpec.describe TariffChangesService::TransformRecords do
       end
 
       context 'when action is ending' do
-        let(:tariff_change) { build(:tariff_change, type: 'Measure', action: 'ending') }
+        let(:tariff_change) { build(:tariff_change, type: 'Measure', action: 'ending', validity_end_date: Date.parse('2024-08-15')) }
 
         it 'returns ending message' do
           result = service.send(:describe_measure_change, presented_change)

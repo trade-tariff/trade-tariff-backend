@@ -1,4 +1,6 @@
 class TariffChange < Sequel::Model
+  END_DATE_REMOVED_DISPLAY = 'end date removed'.freeze
+
   plugin :auto_validations, not_null: :presence
   plugin :timestamps, update_on_create: true
 
@@ -117,6 +119,12 @@ class TariffChange < Sequel::Model
     measure_metadata['quota_order_number']
   end
 
+  def measure_end_date_removed?
+    type == 'Measure' &&
+      action == TariffChangesService::BaseChanges::ENDING &&
+      validity_end_date.nil?
+  end
+
   def description
     case action
     when TariffChangesService::BaseChanges::CREATION
@@ -133,6 +141,8 @@ class TariffChange < Sequel::Model
   # When this change becomes effective to the public.
   # e.g. for ENDING measures, it is no longer visible the day after its end date
   def date_of_effect_visible
+    return if measure_end_date_removed?
+
     action == TariffChangesService::BaseChanges::ENDING ? date_of_effect + 1.day : date_of_effect
   end
 end

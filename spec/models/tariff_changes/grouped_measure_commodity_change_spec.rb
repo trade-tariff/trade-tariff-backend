@@ -389,6 +389,44 @@ RSpec.describe TariffChanges::GroupedMeasureCommodityChange do
 
           expect(date_of_effects).to eq([Date.parse('2023-01-10'), Date.parse('2023-01-20')])
         end
+
+        it 'returns end date removed for undated ending changes' do
+          removed_measure = create(:measure,
+                                   measure_sid: 102,
+                                   measure_type_id: import_measure_type.measure_type_id,
+                                   geographical_area_id: 'GB',
+                                   geographical_area_sid: geographical_area.geographical_area_sid)
+
+          create(:measure_excluded_geographical_area,
+                 measure_sid: removed_measure.measure_sid,
+                 excluded_geographical_area: 'FR')
+          create(:measure_excluded_geographical_area,
+                 measure_sid: removed_measure.measure_sid,
+                 excluded_geographical_area: 'DE')
+
+          create(:tariff_change,
+                 type: 'Measure',
+                 action: 'ending',
+                 validity_end_date: nil,
+                 object_sid: removed_measure.measure_sid,
+                 operation_date: date,
+                 date_of_effect: date + 1.day,
+                 goods_nomenclature_item_id: '1234567890',
+                 metadata: {
+                   'measure' => {
+                     'measure_type_id' => removed_measure.measure_type_id,
+                     'trade_movement_code' => import_measure_type.trade_movement_code,
+                     'geographical_area_id' => removed_measure.geographical_area_id,
+                     'excluded_geographical_area_ids' => %w[DE FR],
+                   },
+                 })
+
+          result = grouped_commodity_change.measure_changes(date)
+          removed_change = result.fetch(import_measure_type.description).find { |change| change[:measure_sid] == removed_measure.measure_sid }
+
+          expect(removed_change[:date_of_effect]).to eq('end date removed')
+          expect(removed_change[:date_of_effect_visible]).to be_nil
+        end
       end
 
       context 'for export measures' do
