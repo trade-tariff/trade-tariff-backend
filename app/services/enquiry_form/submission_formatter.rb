@@ -14,6 +14,15 @@ class EnquiryForm::SubmissionFormatter
     'tariff_watch_lists' => 'stop_press_subscriptions',
     'developer_portal' => 'api_dev_portal_support',
     'other' => 'other',
+    'Classification' => 'classification',
+    'Import duties' => 'import_duties',
+    'Import Duties and Quota' => 'import_duties',
+    'Customs valuation' => 'customs_valuation',
+    'Origin' => 'origin',
+    'Quotas' => 'import_duties',
+    'Developer portal' => 'api_dev_portal_support',
+    'Stop Press and commodity code watch lists' => 'stop_press_subscriptions',
+    'Other' => 'other',
   }.freeze
 
   CATEGORY_LABELS = {
@@ -31,7 +40,18 @@ class EnquiryForm::SubmissionFormatter
     'tariff_watch_lists' => 'Tariff Watch Lists',
     'developer_portal' => 'API support and Developer Portal',
     'other' => 'Other',
+    'Classification' => 'Classification',
+    'Import duties' => 'Import duties',
+    'Import Duties and Quota' => 'Import duties and quotas',
+    'Customs valuation' => 'Customs Valuation',
+    'Origin' => 'Origin',
+    'Quotas' => 'Quotas',
+    'Developer portal' => 'API support and Developer Portal',
+    'Stop Press and commodity code watch lists' => 'Stop Press and commodity code watch lists',
+    'Other' => 'Other',
   }.freeze
+
+  DANGEROUS_CSV_PREFIX = /\A[=+\-@\t\r\n]/
 
   COMMON_HEADERS = [
     'Reference',
@@ -86,11 +106,14 @@ class EnquiryForm::SubmissionFormatter
   def csv_row
     common_values = COMMON_KEYS.map { |key| enquiry_form_data[key] } + [display_category]
 
-    if structured_classification?
-      common_values + CLASSIFICATION_FIELDS.map { |key, _label| display_value(key, enquiry_form_data[key]) }
-    else
-      common_values + [enquiry_form_data[:enquiry_description]]
-    end
+    values =
+      if structured_classification?
+        common_values + CLASSIFICATION_FIELDS.map { |key, _label| display_value(key, enquiry_form_data[key]) }
+      else
+        common_values + [enquiry_form_data[:enquiry_description]]
+      end
+
+    values.map { |value| csv_value(value) }
   end
 
   private
@@ -139,5 +162,11 @@ class EnquiryForm::SubmissionFormatter
     else
       value
     end
+  end
+
+  def csv_value(value)
+    return value unless value.is_a?(String) && value.match?(DANGEROUS_CSV_PREFIX)
+
+    "'#{value}"
   end
 end

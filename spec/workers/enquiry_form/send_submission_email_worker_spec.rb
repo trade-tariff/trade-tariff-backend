@@ -117,6 +117,22 @@ RSpec.describe EnquiryForm::SendSubmissionEmailWorker, type: :worker do
       end
     end
 
+    context 'with a legacy display-value enquiry category' do
+      let(:form_data) { super().merge(enquiry_category: 'Quotas') }
+
+      it 'keeps the Notify routing tag backwards compatible' do
+        worker.perform(reference)
+
+        expect(notifier_client).to have_received(:send_email).with(
+          'support@example.com',
+          NOTIFY_CONFIGURATION.dig(:templates, :enquiry_form, :submission),
+          hash_including(enquiry_category: 'import_duties'),
+          nil,
+          'ABC12345',
+        )
+      end
+    end
+
     context 'with revised frontend enquiry payload combinations' do
       let(:large_text) do
         [

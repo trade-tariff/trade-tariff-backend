@@ -131,4 +131,44 @@ RSpec.describe EnquiryForm::CsvGeneratorService do
       ])
     end
   end
+
+  context 'with spreadsheet formula-like user input' do
+    let(:enquiry_data) do
+      super().merge(
+        name: '=Jane Doe',
+        company_name: '+Jane Ltd.',
+        job_title: '-Product Manager',
+        email: '@jane.example',
+        enquiry_category: 'other',
+        other_category: '=Other topic',
+        enquiry_description: '=Need help with quotas.',
+      )
+    end
+
+    it 'escapes user-controlled CSV cells without changing headers' do
+      csv = CSV.parse(csv_content)
+
+      expect(csv.first).to eq([
+        'Reference',
+        'Submission date',
+        'Full name',
+        'Company name',
+        'Job title',
+        'Email address',
+        'What do you need help with?',
+        'How can we help?',
+      ])
+
+      expect(csv.second).to eq([
+        'ABC123',
+        '2025-07-21 10:00:00 UTC',
+        "'=Jane Doe",
+        "'+Jane Ltd.",
+        "'-Product Manager",
+        "'@jane.example",
+        'Other - =Other topic',
+        "'=Need help with quotas.",
+      ])
+    end
+  end
 end

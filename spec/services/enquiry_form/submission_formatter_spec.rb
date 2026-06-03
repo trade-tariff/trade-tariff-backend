@@ -16,7 +16,15 @@ RSpec.describe EnquiryForm::SubmissionFormatter do
         'tariff_watch_lists' => 'stop_press_subscriptions',
         'developer_portal' => 'api_dev_portal_support',
         'other' => 'other',
-        'Classification' => 'other',
+        'Classification' => 'classification',
+        'Import duties' => 'import_duties',
+        'Import Duties and Quota' => 'import_duties',
+        'Customs valuation' => 'customs_valuation',
+        'Origin' => 'origin',
+        'Quotas' => 'import_duties',
+        'Developer portal' => 'api_dev_portal_support',
+        'Stop Press and commodity code watch lists' => 'stop_press_subscriptions',
+        'Other' => 'other',
         'unexpected' => 'other',
       }.each do |enquiry_category, notify_category|
         formatter = described_class.new(enquiry_category: enquiry_category)
