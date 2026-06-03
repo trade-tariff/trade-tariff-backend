@@ -1,0 +1,35 @@
+name: Close stale pull requests
+
+on:
+  schedule:
+    - cron: '0 6 * * 1'
+  workflow_dispatch:
+    inputs:
+      stale_days:
+        description: Days without pull request activity before closure
+        required: false
+        default: '14'
+      keep_label:
+        description: Label exempting a pull request from closure
+        required: false
+        default: keep
+      dry_run:
+        description: Dry run only (true/false)
+        required: false
+        default: 'true'
+        type: choice
+        options:
+          - 'true'
+          - 'false'
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  close-stale:
+    uses: trade-tariff/trade-tariff-tools/.github/workflows/close-stale-pull-requests-reusable.yml@main
+    with:
+      stale_days: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.stale_days != '' && fromJSON(github.event.inputs.stale_days) || 14 }}
+      keep_label: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.keep_label != '' && github.event.inputs.keep_label || 'keep' }}
+      dry_run: ${{ github.event_name != 'schedule' && (github.event.inputs.dry_run != 'false') }}
