@@ -96,7 +96,7 @@ class PrewarmCommoditiesWorker
 
       raise "CloudWatch query #{response.status}" if %w[Failed Cancelled Timeout Unknown].include?(response.status)
 
-      sleep QUERY_POLL_INTERVAL_SECONDS
+      Kernel.sleep QUERY_POLL_INTERVAL_SECONDS
     end
 
     raise 'CloudWatch query timed out while polling'

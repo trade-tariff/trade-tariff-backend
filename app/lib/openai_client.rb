@@ -84,7 +84,7 @@ class OpenaiClient
       if attempts < MAX_RETRIES
         delay = calculate_retry_delay(attempts, e)
         Rails.logger.warn "OpenaiClient: #{e.class} on attempt #{attempts}, retrying in #{delay}s..."
-        sleep delay
+        Kernel.sleep delay
         retry
       else
         Rails.logger.error "OpenaiClient: #{e.class} after #{attempts} attempts, giving up"
