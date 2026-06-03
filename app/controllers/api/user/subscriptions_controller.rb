@@ -1,7 +1,7 @@
 module Api
   module User
     class SubscriptionsController < UserController
-      skip_before_action :authenticate!, only: %i[destroy]
+      skip_before_action :authenticate!, only: %i[show destroy]
       before_action :find_subscription
 
       def show
