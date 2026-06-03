@@ -76,5 +76,29 @@ module TradeTariffBackend
     def data_migration_path
       Rails.root.join('db/data_migrations')
     end
+
+    def tariff_sync_retry_count
+      ENV.fetch('TARIFF_SYNC_RETRY_COUNT', 20).to_i
+    end
+
+    def exception_retry_count
+      ENV.fetch('EXCEPTION_RETRY_COUNT', 10).to_i
+    end
+
+    def request_throttle
+      ENV.fetch('REQUEST_THROTTLE', 60).to_i
+    end
+
+    def cut_off_time
+      ENV.fetch('CUT_OFF_TIME', '10:00')
+    end
+
+    def try_again_in
+      ENV.fetch('TRY_AGAIN_IN', 20).minutes
+    end
+
+    def empty_file_size_threshold
+      ENV.fetch('EMPTY_FILE_SIZE_THRESHOLD', 500).to_i
+    end
   end
 end

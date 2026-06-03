@@ -92,6 +92,8 @@ RSpec.describe TaricUpdatesSynchronizerWorker, type: :worker do
       end
 
       context 'when retry budget remains' do
+        before { allow(TariffSynchronizer).to receive(:retry_count).and_return(1) }
+
         it 'reschedules the job with an incremented retry count' do
           described_class.new.perform(false, 0)
 
@@ -101,8 +103,10 @@ RSpec.describe TaricUpdatesSynchronizerWorker, type: :worker do
       end
 
       context 'when retry budget is exhausted' do
+        before { allow(TariffSynchronizer).to receive(:retry_count).and_return(1) }
+
         it 'does not reschedule the job' do
-          described_class.new.perform(false, described_class::DOWNLOAD_MAX_RETRIES)
+          described_class.new.perform(false, 1)
 
           expect(described_class.jobs).to be_empty
         end

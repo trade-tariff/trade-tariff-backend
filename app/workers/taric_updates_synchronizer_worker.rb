@@ -1,8 +1,6 @@
 class TaricUpdatesSynchronizerWorker
   include Sidekiq::Worker
 
-  DOWNLOAD_MAX_RETRIES = TariffSynchronizer.retry_count
-
   sidekiq_options queue: :sync, retry: false
 
   def perform(reapply_data_migrations = false, download_retry_count = 0)
@@ -65,7 +63,7 @@ private
   def attempt_reschedule_download!(download_retry_count, reapply_data_migrations)
     delay = TariffSynchronizer.request_throttle.seconds
 
-    if download_retry_count < DOWNLOAD_MAX_RETRIES
+    if download_retry_count < TariffSynchronizer.retry_count
       self.class.perform_in(delay, reapply_data_migrations, download_retry_count + 1)
       TariffSynchronizer::Instrumentation.download_delayed(retry_at: delay.from_now.iso8601)
     else
