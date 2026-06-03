@@ -68,5 +68,21 @@ RSpec.describe ApplicationController, type: :request do
         it { expect(TimeMachine).to have_received(:at).with(Date.new(2024, 1, 1)) }
       end
     end
+
+    context 'with request logging payload' do
+      it 'adds the current request_id to the action controller payload' do
+        events = []
+        subscriber = ActiveSupport::Notifications.subscribe('process_action.action_controller') do |*args|
+          events << ActiveSupport::Notifications::Event.new(*args)
+        end
+
+        api_get('/uk/api/healthcheck', params: { request_id: 'search-request-id' })
+
+        payload = events.last.payload
+        expect(payload[:request_id]).to eq('search-request-id')
+      ensure
+        ActiveSupport::Notifications.unsubscribe(subscriber) if subscriber
+      end
+    end
   end
 end
