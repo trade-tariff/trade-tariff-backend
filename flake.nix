@@ -27,8 +27,12 @@
         rubyVersion = builtins.head (builtins.split "\n" (builtins.readFile ./.ruby-version));
         ruby = pkgs."ruby-${rubyVersion}";
 
-        postgresqlBuildFlags = with pkgs; [
-          "--with-pg-config=${lib.getDev postgresql.pg_config}/bin/pg_config"
+        pgBase = pkgs.postgresql_18;
+        pgConfig = pgBase.pg_config;
+        postgresql = pgBase.withPackages (ps: [ ps.pgvector ]);
+
+        postgresqlBuildFlags = [
+          "--with-pg-config=${pgConfig}/bin/pg_config"
         ];
         psychBuildFlags = with pkgs; [
           "--with-libyaml-include=${libyaml.dev}/include"
@@ -38,7 +42,6 @@
           "--with-zlib-include=${zlib.dev}/include"
           "--with-zlib-lib=${zlib.out}/lib"
         ];
-        postgresql = pkgs.postgresql_18.withPackages (ps: [ ps.pgvector ]);
 
         # Worktree detection hook (per-flake, reusable pattern)
         # Disable Git fsmonitor for hook-local probes. If these git commands start
@@ -396,6 +399,7 @@ OPENSEARCH_CLI
             init
             lint
             pkgs.pre-commit
+            pkgs.pkg-config
             pkgs.python3
             pkgs.opensearch
             pkgs.redis
@@ -404,6 +408,7 @@ OPENSEARCH_CLI
             pkgs.zlib
             opensearch-start
             postgresql
+            pgConfig
             postgresql-start
             redis-start
             ruby
