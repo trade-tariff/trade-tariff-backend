@@ -86,7 +86,7 @@ class EmbeddingService
       if attempts < MAX_RETRIES
         delay = RETRY_DELAY * (2**(attempts - 1))
         SelfTextGenerator::Instrumentation.embedding_api_retry(attempt: attempts, delay:, error: e)
-        sleep delay
+        Kernel.sleep delay
         retry
       else
         raise
