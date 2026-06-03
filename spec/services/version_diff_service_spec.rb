@@ -150,6 +150,29 @@ RSpec.describe VersionDiffService do
       end
     end
 
+    context 'with CustomsTariffSectionNote' do
+      let(:base) do
+        { 'id' => 1,
+          'section_id' => 3,
+          'customs_tariff_update_version' => '1.0',
+          'content' => 'Same text',
+          'status' => 'pending',
+          'created_at' => nil,
+          'updated_at' => nil }
+      end
+
+      it 'returns nil when content is identical' do
+        result = described_class.new('CustomsTariffSectionNote', base, base.merge('id' => 2)).call
+        expect(result).to be_nil
+      end
+
+      it 'returns a changeset when content differs' do
+        new_obj = base.merge('content' => 'New content for this section that is longer than 40 chars.')
+        result = described_class.new('CustomsTariffSectionNote', base, new_obj).call
+        expect(result['changed_fields']).to include('content')
+      end
+    end
+
     context 'with AdminConfiguration virtual fields' do
       it 'extracts selected from nested options value' do
         old_obj = {

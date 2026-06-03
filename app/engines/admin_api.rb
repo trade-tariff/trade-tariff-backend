@@ -76,6 +76,13 @@ AdminApi.routes.draw do
         end
       end
 
+      get  'customs_tariff_updates',          to: 'customs_tariff_updates#index'
+      get  'customs_tariff_updates/:version', to: 'customs_tariff_updates#show', constraints: { version: /\d+\.\d+/ }
+      get  'customs_tariff_updates/:customs_tariff_update_version/section_notes',      to: 'customs_tariff_updates/section_notes#index',  constraints: { customs_tariff_update_version: /[^\/]+/ }
+      get  'customs_tariff_updates/:customs_tariff_update_version/section_notes/:id',  to: 'customs_tariff_updates/section_notes#show',   constraints: { customs_tariff_update_version: /[^\/]+/ }
+      patch 'customs_tariff_updates/:customs_tariff_update_version/section_notes/:id', to: 'customs_tariff_updates/section_notes#update',  constraints: { customs_tariff_update_version: /[^\/]+/ }
+      patch 'customs_tariff_updates/:customs_tariff_update_version/status',            to: 'customs_tariff_updates/status#update',         constraints: { customs_tariff_update_version: /[^\/]+/ }
+
       resources :quota_order_numbers, module: 'quota_order_numbers', only: %i[] do
         resources :quota_definitions, only: %i[index show]
       end

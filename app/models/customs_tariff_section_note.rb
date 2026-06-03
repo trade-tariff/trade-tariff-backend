@@ -3,6 +3,8 @@ class CustomsTariffSectionNote < Sequel::Model
   APPROVED = 'approved'.freeze
   REJECTED = 'rejected'.freeze
 
+  plugin :has_paper_trail
+
   many_to_one :customs_tariff_update, key: :customs_tariff_update_version
 
   dataset_module do
