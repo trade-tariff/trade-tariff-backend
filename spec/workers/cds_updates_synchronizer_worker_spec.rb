@@ -21,8 +21,6 @@ RSpec.describe CdsUpdatesSynchronizerWorker, type: :worker do
       allow(CdsSynchronizer).to receive(:download)
       allow(CdsSynchronizer).to receive(:apply).and_return(changes_applied)
 
-      allow(TradeTariffBackend).to receive(:service).and_return(service)
-
       allow(ActiveSupport::Notifications).to receive(:instrument).and_call_original
       allow(ActiveSupport::Notifications).to receive(:instrument).with(
         TradeTariffBackend::TariffUpdateEventListener::TARIFF_UPDATES_APPLIED,
@@ -33,7 +31,7 @@ RSpec.describe CdsUpdatesSynchronizerWorker, type: :worker do
       allow(DataMigrator).to receive_messages(migrations_dir:, migrate_up!: true)
 
       allow(GoodsNomenclatures::TreeNode).to receive(:refresh!).and_call_original
-      allow(TradeTariffBackend).to receive(:cut_off_time).and_return(cut_off_time.strftime('%H:%M'))
+      allow(TradeTariffBackend).to receive_messages(service: service, cut_off_time: cut_off_time.strftime('%H:%M'))
       allow(TradeTariffBackend).to receive(:try_again_in).and_call_original
 
       allow(SlackNotifierService).to receive(:call)
