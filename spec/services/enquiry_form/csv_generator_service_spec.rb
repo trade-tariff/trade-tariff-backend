@@ -96,4 +96,39 @@ RSpec.describe EnquiryForm::CsvGeneratorService do
       ])
     end
   end
+
+  context 'with a legacy classification enquiry' do
+    let(:enquiry_data) do
+      super().merge(
+        enquiry_category: 'classification',
+        enquiry_description: 'Legacy free text classification question.',
+      )
+    end
+
+    it 'keeps the legacy free-text CSV format' do
+      csv = CSV.parse(csv_content)
+
+      expect(csv.first).to eq([
+        'Reference',
+        'Submission date',
+        'Full name',
+        'Company name',
+        'Job title',
+        'Email address',
+        'What do you need help with?',
+        'How can we help?',
+      ])
+
+      expect(csv.second).to eq([
+        'ABC123',
+        '2025-07-21 10:00:00 UTC',
+        'Jane Doe',
+        'Jane Ltd.',
+        'Product Manager',
+        'jane@example.com',
+        'Classification',
+        'Legacy free text classification question.',
+      ])
+    end
+  end
 end

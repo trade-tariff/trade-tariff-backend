@@ -1,22 +1,34 @@
 class EnquiryForm::SubmissionFormatter
   CATEGORY_TAGS = {
     'classification' => 'classification',
+    'api_dev_portal_support' => 'api_dev_portal_support',
+    'customs_valuation' => 'customs_valuation',
+    'import_duties' => 'import_duties',
     'import_duties_and_quota' => 'import_duties',
     'import_duties_and_quotas' => 'import_duties',
     'valuation' => 'customs_valuation',
+    'quotas' => 'import_duties',
     'origin' => 'origin',
+    'stop_press_subscription' => 'stop_press_subscriptions',
     'stop_press_and_commodity_code_watch_lists' => 'stop_press_subscriptions',
+    'tariff_watch_lists' => 'stop_press_subscriptions',
     'developer_portal' => 'api_dev_portal_support',
     'other' => 'other',
   }.freeze
 
   CATEGORY_LABELS = {
     'classification' => 'Classification',
+    'api_dev_portal_support' => 'API & Dev Portal Support',
+    'customs_valuation' => 'Customs Valuation',
+    'import_duties' => 'Import duties',
     'import_duties_and_quota' => 'Import duties and quotas',
     'import_duties_and_quotas' => 'Import duties and quotas',
     'valuation' => 'Valuation',
+    'quotas' => 'Quotas',
     'origin' => 'Origin',
+    'stop_press_subscription' => 'Stop Press Subscription',
     'stop_press_and_commodity_code_watch_lists' => 'Stop Press and commodity code watch lists',
+    'tariff_watch_lists' => 'Tariff Watch Lists',
     'developer_portal' => 'API support and Developer Portal',
     'other' => 'Other',
   }.freeze
@@ -64,7 +76,7 @@ class EnquiryForm::SubmissionFormatter
   end
 
   def csv_headers
-    if classification?
+    if structured_classification?
       COMMON_HEADERS + CLASSIFICATION_FIELDS.map(&:second)
     else
       COMMON_HEADERS + ['How can we help?']
@@ -74,7 +86,7 @@ class EnquiryForm::SubmissionFormatter
   def csv_row
     common_values = COMMON_KEYS.map { |key| enquiry_form_data[key] } + [display_category]
 
-    if classification?
+    if structured_classification?
       common_values + CLASSIFICATION_FIELDS.map { |key, _label| display_value(key, enquiry_form_data[key]) }
     else
       common_values + [enquiry_form_data[:enquiry_description]]
@@ -87,6 +99,10 @@ class EnquiryForm::SubmissionFormatter
 
   def classification?
     enquiry_form_data[:enquiry_category].to_s == 'classification'
+  end
+
+  def structured_classification?
+    classification? && CLASSIFICATION_FIELDS.any? { |key, _label| enquiry_form_data[key].present? }
   end
 
   def display_category
