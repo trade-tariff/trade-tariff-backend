@@ -48,9 +48,14 @@ Rails.application.configure do
   config.lograge.enabled = true
   config.lograge.formatter = Lograge::Formatters::Logstash.new
   config.lograge.custom_options = lambda do |event|
+    exception = event.payload[:exception_object]
+    exception_class, exception_message = event.payload[:exception]
+
     {
       auth_type: event.payload[:auth_type],
       client_id: event.payload[:client_id],
+      exception_class: exception&.class&.name || exception_class,
+      exception_message: exception&.message || exception_message,
       params: event.payload[:params].except('controller', 'action', 'format', 'utf8'),
       user_agent: event.payload[:user_agent],
     }.compact
