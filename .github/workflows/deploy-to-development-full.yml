@@ -26,6 +26,7 @@ jobs:
         [
           {
             "name": "tariff-backend",
+            "migrate": true,
             "service-names": ["backend-uk", "backend-xi", "worker-uk", "worker-xi"]
           },
           {
@@ -36,6 +37,7 @@ jobs:
           {
             "name": "tariff-admin",
             "repo": "trade-tariff/trade-tariff-admin",
+            "migrate": true,
             "service-names": ["admin"]
           },
           {
