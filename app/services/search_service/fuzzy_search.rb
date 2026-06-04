@@ -15,7 +15,7 @@ class SearchService
         error_message: e.message,
         search_type: 'classic',
       )
-      # rescue from malformed queries, return empty resultset in that case
+      # OpenSearch transport failures should not prevent the blank-result fallback.
       @results = BLANK_RESULT
       self
     end

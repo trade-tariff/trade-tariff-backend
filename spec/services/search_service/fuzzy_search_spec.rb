@@ -137,8 +137,16 @@ RSpec.describe SearchService::FuzzySearch do
     context 'when OpenSearch raises an error' do
       let(:error) { OpenSearch::Transport::Transport::Error.new('OpenSearch timeout') }
 
-      before do
+      around do |example|
+        previous_request_id = TradeTariffRequest.request_id
         TradeTariffRequest.request_id = 'request-123'
+
+        example.run
+      ensure
+        TradeTariffRequest.request_id = previous_request_id
+      end
+
+      before do
         allow(Search::Instrumentation).to receive(:search_failed)
         allow(TradeTariffBackend.search_client).to receive(:msearch)
           .and_raise(error)
