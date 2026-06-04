@@ -16,6 +16,15 @@ Before changing code:
 - Run project commands directly by default. If you use Nix/direnv locally, `direnv exec <repo-path> <command>` is also fine.
 - Use `rg` for code search.
 
+Before opening a PR:
+
+- Use `.github/pull_request_template.md` as the canonical risk decision tree.
+- Fill in the Risk section and apply exactly one matching GitHub label: `low-risk` for green, `medium-risk` for amber, or `high-risk` for red.
+- Treat dependency bumps with no API changes, copy/content changes, read-only observability, tests-only changes, additive config with safe defaults, covered refactors with no behaviour change, Terraform changes with no resource recreation, and non-destructive S3 lifecycle rules as typical `low-risk` changes.
+- Treat commodity code lookup, measure type, declarable goods, quota, duty calculation, OpenSearch indexing, consumed API endpoint, live feature flag, networking, security group, IAM, CI/CD, deployment ordering, S3 access-control, resource replacement, and deprecation changes as typical `medium-risk` changes that need a team conversation before merging.
+- Treat destructive database migrations, measure/condition/footnote processing, CDS or HMRC upstream sync, hard-to-rollback production AWS, secrets or credential handling, legally significant regulatory content, and significant architecture changes as typical `high-risk` changes that require explicit approval from Thor or Neil.
+- If the risk rating changes during review, remove the old risk label and apply the new one.
+
 Useful docs:
 
 - `docs/development-and-delivery.md`
