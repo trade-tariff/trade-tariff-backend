@@ -68,5 +68,40 @@ RSpec.describe ApplicationController, type: :request do
         it { expect(TimeMachine).to have_received(:at).with(Date.new(2024, 1, 1)) }
       end
     end
+
+    context 'with request logging payload' do
+      def process_action_payload_for(params:)
+        events = []
+        subscriber = ActiveSupport::Notifications.subscribe('process_action.action_controller') do |*args|
+          events << ActiveSupport::Notifications::Event.new(*args)
+        end
+
+        api_get('/uk/api/healthcheck', params:)
+
+        events.last.payload
+      ensure
+        ActiveSupport::Notifications.unsubscribe(subscriber) if subscriber
+      end
+
+      it 'adds the current request_id to the action controller payload' do
+        payload = process_action_payload_for(params: { request_id: 'search-request-id' })
+
+        expect(payload[:request_id]).to eq('search-request-id')
+      end
+
+      it 'bounds request_id values added to the action controller payload' do
+        long_request_id = 'a' * 101
+        payload = process_action_payload_for(params: { request_id: long_request_id })
+
+        expect(payload[:request_id]).to eq('a' * ApplicationController::MAX_LOGGED_REQUEST_ID_LENGTH)
+      end
+
+      it 'falls back to the Rails request id when the search request_id is blank' do
+        payload = process_action_payload_for(params: { request_id: '' })
+
+        expect(payload[:request_id]).to be_present
+        expect(payload[:request_id].length).to be <= ApplicationController::MAX_LOGGED_REQUEST_ID_LENGTH
+      end
+    end
   end
 end
