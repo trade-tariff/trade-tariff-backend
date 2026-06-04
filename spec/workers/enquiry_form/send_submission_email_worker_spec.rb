@@ -133,7 +133,7 @@ RSpec.describe EnquiryForm::SendSubmissionEmailWorker, type: :worker do
       end
     end
 
-    context 'with revised frontend enquiry payload combinations' do
+    context 'with revised enquiry payload combinations' do
       let(:large_text) do
         [
           'Lorem Ipsum is simply dummy text of the printing and typesetting industry.',
