@@ -1,6 +1,10 @@
 ENV['RAILS_ENV'] ||= 'test'
 
+require 'simplecov'
 require 'spec_helper'
+
+SimpleCov.start 'rails'
+SimpleCov.formatters = SimpleCov::Formatter::HTMLFormatter
 
 require 'webmock/rspec'
 WebMock.disable_net_connect!(allow_localhost: true)

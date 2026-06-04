@@ -86,6 +86,7 @@ group :test do
   gem 'rspec-rails'
   gem 'rspec-rebound'
   gem 'rswag-specs'
+  gem 'simplecov'
   gem 'webmock'
 end
 
