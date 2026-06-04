@@ -1,6 +1,5 @@
 module TariffSynchronizer
   class CdsUpdate < BaseUpdate
-    EMPTY_FILE_SIZE_THRESHOLD = 500
     REGEX_CDS_SEQUENCE = /^tariff_dailyExtract_v1_(?<year>\d{4})(?<month>\d{2})(?<day>\d{2})T\d+\.gzip$/
 
     class << self
@@ -72,7 +71,7 @@ module TariffSynchronizer
     private
 
     def check_oplog_inserts
-      return if filesize <= EMPTY_FILE_SIZE_THRESHOLD
+      return if filesize <= TradeTariffBackend.empty_file_size_threshold
       return if @oplog_inserts[:total_count].positive?
 
       alert_potential_failed_import

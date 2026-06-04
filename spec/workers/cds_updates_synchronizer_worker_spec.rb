@@ -21,8 +21,6 @@ RSpec.describe CdsUpdatesSynchronizerWorker, type: :worker do
       allow(CdsSynchronizer).to receive(:download)
       allow(CdsSynchronizer).to receive(:apply).and_return(changes_applied)
 
-      allow(TradeTariffBackend).to receive(:service).and_return(service)
-
       allow(ActiveSupport::Notifications).to receive(:instrument).and_call_original
       allow(ActiveSupport::Notifications).to receive(:instrument).with(
         TradeTariffBackend::TariffUpdateEventListener::TARIFF_UPDATES_APPLIED,
@@ -33,8 +31,8 @@ RSpec.describe CdsUpdatesSynchronizerWorker, type: :worker do
       allow(DataMigrator).to receive_messages(migrations_dir:, migrate_up!: true)
 
       allow(GoodsNomenclatures::TreeNode).to receive(:refresh!).and_call_original
-      stub_const 'CdsUpdatesSynchronizerWorker::CUT_OFF_TIME',
-                 cut_off_time.strftime('%H:%M')
+      allow(TradeTariffBackend).to receive_messages(service: service, cut_off_time: cut_off_time.strftime('%H:%M'))
+      allow(TradeTariffBackend).to receive(:try_again_in).and_call_original
 
       allow(SlackNotifierService).to receive(:call)
     end
@@ -62,7 +60,7 @@ RSpec.describe CdsUpdatesSynchronizerWorker, type: :worker do
         it 'creates a later job to re-attempt download and processing' do
           expect(described_class.jobs.first).to \
             include 'at' => be_within(2)
-                            .of(described_class::TRY_AGAIN_IN.from_now.to_f),
+                            .of(TradeTariffBackend.try_again_in.from_now.to_f),
                     'args' => [true],
                     'retry' => false
         end
@@ -197,6 +195,8 @@ RSpec.describe CdsUpdatesSynchronizerWorker, type: :worker do
       context 'when retry budget remains' do
         subject(:perform) { described_class.new.perform(true, false, 0) }
 
+        before { allow(TariffSynchronizer).to receive(:retry_count).and_return(1) }
+
         it 'reschedules the job with an incremented retry count' do
           perform
 
@@ -206,7 +206,9 @@ RSpec.describe CdsUpdatesSynchronizerWorker, type: :worker do
       end
 
       context 'when retry budget is exhausted' do
-        subject(:perform) { described_class.new.perform(true, false, described_class::DOWNLOAD_MAX_RETRIES) }
+        subject(:perform) { described_class.new.perform(true, false, 1) }
+
+        before { allow(TariffSynchronizer).to receive(:retry_count).and_return(1) }
 
         it 'does not reschedule the job' do
           perform

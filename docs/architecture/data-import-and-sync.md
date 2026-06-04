@@ -16,6 +16,17 @@ Tariff data is primarily imported from upstream CDS and TARIC update files. UK m
 
 Successful sync paths usually have follow-on work: cache invalidation, search/cache index rebuilding, reports, and generated classification content refresh. Check worker code and `config/sidekiq.yml` before changing sync behaviour, because UK and XI schedules differ.
 
+## Sync Configuration
+
+The sync pipeline reads these environment variables, with defaults preserved when unset:
+
+- `TARIFF_SYNC_RETRY_COUNT`: download retry budget, default `20`.
+- `EXCEPTION_RETRY_COUNT`: retry budget for exceptional download failures, default `10`.
+- `REQUEST_THROTTLE`: seconds before retrying retriable downloads, default `60`.
+- `CUT_OFF_TIME`: latest time to keep waiting for today's CDS file, default `10:00`.
+- `TRY_AGAIN_IN`: minutes before retrying when today's CDS file has not arrived, default `20`.
+- `EMPTY_FILE_SIZE_THRESHOLD`: bytes below which an empty CDS update is treated as expected, default `500`.
+
 ## CDS and TARIC Modes
 
 `app/lib/cds_synchronizer.rb` extends `TariffSynchronizer` for UK CDS updates. It requires `HMRC_API_HOST`, `HMRC_CLIENT_ID`, and `HMRC_CLIENT_SECRET` before download.

@@ -8,15 +8,15 @@ module TariffSynchronizer
 
   # Number of seconds to sleep between sync retries
   cattr_accessor :request_throttle
-  self.request_throttle = 60
+  self.request_throttle = TradeTariffBackend.request_throttle
 
   # Times to retry downloading update before giving up
   cattr_accessor :retry_count
-  self.retry_count = 20
+  self.retry_count = TradeTariffBackend.tariff_sync_retry_count
 
   # Times to retry downloading update in case of serious problems (host resolution, ssl handshake, partial file) before giving up
   cattr_accessor :exception_retry_count
-  self.exception_retry_count = 10
+  self.exception_retry_count = TradeTariffBackend.exception_retry_count
 
   def apply_updates(update_type)
     applied_updates = []

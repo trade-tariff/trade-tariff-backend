@@ -1,10 +1,6 @@
 class CdsUpdatesSynchronizerWorker
   include Sidekiq::Worker
 
-  TRY_AGAIN_IN = 20.minutes
-  CUT_OFF_TIME = '10:00'.freeze
-  DOWNLOAD_MAX_RETRIES = TariffSynchronizer.retry_count
-
   sidekiq_options queue: :sync, retry: false
 
   def perform(check_for_todays_file = true, reapply_data_migrations = false, download_retry_count = 0)
@@ -57,7 +53,7 @@ private
 
   def cut_off_date_time
     @cut_off_date_time ||= begin
-      hour, minute = CUT_OFF_TIME.split(':', 2).map(&:to_i)
+      hour, minute = TradeTariffBackend.cut_off_time.split(':', 2).map(&:to_i)
 
       Time.zone.now.beginning_of_day + hour.hours + minute.minutes
     end
@@ -85,8 +81,8 @@ private
 
   def attempt_reschedule!
     if still_time_to_reschedule?
-      self.class.perform_in(TRY_AGAIN_IN, true)
-      TariffSynchronizer::Instrumentation.download_delayed(retry_at: TRY_AGAIN_IN.from_now.iso8601)
+      self.class.perform_in(TradeTariffBackend.try_again_in, true)
+      TariffSynchronizer::Instrumentation.download_delayed(retry_at: TradeTariffBackend.try_again_in.from_now.iso8601)
       true
     else
       false
@@ -96,7 +92,7 @@ private
   def attempt_reschedule_download!(download_retry_count, check_for_todays_file, reapply_data_migrations)
     delay = TariffSynchronizer.request_throttle.seconds
 
-    if download_retry_count < DOWNLOAD_MAX_RETRIES
+    if download_retry_count < TariffSynchronizer.retry_count
       self.class.perform_in(delay, check_for_todays_file, reapply_data_migrations, download_retry_count + 1)
       TariffSynchronizer::Instrumentation.download_delayed(retry_at: delay.from_now.iso8601)
     else
