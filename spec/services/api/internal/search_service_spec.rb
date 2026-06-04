@@ -71,6 +71,18 @@ RSpec.describe Api::Internal::SearchService do
         expect(result[:data][0][:attributes][:score]).to be_nil
         expect(TradeTariffBackend.search_client).not_to have_received(:search)
       end
+
+      it 'matches text suggestions case-insensitively' do
+        allow(TradeTariffBackend.search_client).to receive(:search).and_return({ 'hits' => { 'hits' => [] } })
+
+        result = described_class.new(q: 'Horse').call
+
+        expect(result[:data].length).to eq(1)
+        expect(result[:data][0][:type]).to eq(:heading)
+        expect(result[:data][0][:attributes][:goods_nomenclature_item_id]).to eq('0101000000')
+        expect(result[:data][0][:attributes][:score]).to be_nil
+        expect(TradeTariffBackend.search_client).not_to have_received(:search)
+      end
     end
 
     context 'when exact match via singular/plural expansion' do

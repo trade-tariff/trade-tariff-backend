@@ -234,7 +234,7 @@ module Api
       def find_by_suggestion(query)
         ::SearchSuggestion
           .declarable
-          .by_value(singular_and_plural(query))
+          .by_value(singular_and_plural(query.downcase))
           .where(type: allowed_suggestion_types)
           .eager(:goods_nomenclature)
           .first
