@@ -27,6 +27,16 @@ The application is a Rails API using Sequel, PostgreSQL, Redis, Sidekiq, and Ope
 - Use `rg` for code search.
 - Treat tariff data, measures, quotas, duties, certificates, rules of origin, auth, and sync logic as high-risk areas.
 
+## PR Risk Labels
+
+When opening a PR, use `.github/pull_request_template.md` as the canonical risk decision tree. Fill in the Risk section and apply exactly one matching GitHub label:
+
+- `low-risk` for green changes: standard review. Typical examples include dependency bumps with no API changes, copy/content changes, read-only observability, tests-only changes, additive config with safe defaults, covered refactors with no behaviour change, Terraform changes with no resource recreation, and non-destructive S3 lifecycle rules.
+- `medium-risk` for amber changes: socialise with the team before merging. Typical examples include commodity code lookup, measure type, declarable goods, quota, or duty calculation changes; OpenSearch indexing changes; new or modified consumed API endpoints; feature flags affecting live journeys; networking, security group, IAM, CI/CD, deployment ordering, S3 access-control, resource replacement, or deprecation changes.
+- `high-risk` for red changes: requires explicit approval from Thor or Neil before merging. Typical examples include destructive database migrations, changes to how measures, conditions, or footnotes are processed or surfaced, CDS or HMRC upstream sync changes, production AWS changes that cannot be easily rolled back, secrets or credential handling changes, legally significant trader-facing regulatory content changes, and significant architectural shifts.
+
+Do not apply more than one risk label to the same PR. If the risk rating changes during review, remove the old risk label and apply the new one.
+
 ## Key Entry Points
 
 - Routes: `config/routes.rb` and `app/engines/`
