@@ -1,4 +1,6 @@
 class ApplicationController < ActionController::API
+  MAX_LOGGED_REQUEST_ID_LENGTH = 100
+
   include ActionController::Helpers
   include ::ActionController::MimeResponds
   # SequelRails incorrectly includes this into ActionController::Base but our
@@ -20,7 +22,7 @@ class ApplicationController < ActionController::API
 
   def append_info_to_payload(payload)
     super
-    payload[:request_id] = TradeTariffRequest.request_id
+    payload[:request_id] = logged_request_id
     payload[:user_agent] = request.headers['HTTP_X_ORIGINAL_USER_AGENT'].presence || request.env['HTTP_USER_AGENT']
     payload[:client_id] = request.headers['HTTP_X_CLIENT_ID']
   end
@@ -67,5 +69,9 @@ class ApplicationController < ActionController::API
 
   def set_trade_tariff_request_id
     TradeTariffRequest.request_id = params[:request_id].presence || request.request_id
+  end
+
+  def logged_request_id
+    (TradeTariffRequest.request_id.presence || request.request_id).to_s.first(MAX_LOGGED_REQUEST_ID_LENGTH)
   end
 end
