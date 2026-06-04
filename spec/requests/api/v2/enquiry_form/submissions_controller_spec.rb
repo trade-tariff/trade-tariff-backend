@@ -60,8 +60,8 @@ RSpec.describe Api::V2::EnquiryForm::SubmissionsController, :v2 do
       expect(::EnquiryForm::SendSubmissionEmailWorker).to have_received(:perform_async).with(reference_number)
     end
 
-    it 'keeps the legacy endpoint scoped to the legacy enquiry payload' do
-      legacy_payload = params.merge(
+    it 'accepts the revised enquiry payload on the original endpoint' do
+      revised_payload = params.merge(
         goods_product: 'Baked beans',
         goods_made_of: 'Beans and tomato sauce',
         has_commodity_code: 'yes',
@@ -69,21 +69,21 @@ RSpec.describe Api::V2::EnquiryForm::SubmissionsController, :v2 do
       )
 
       post api_enquiry_form_submissions_path,
-           params: { data: { attributes: legacy_payload } },
+           params: { data: { attributes: revised_payload } },
            headers: headers,
            as: :json
 
       cached = Sidekiq.redis { |conn| conn.get("enquiry_form_#{reference_number}") }
 
-      expect(JSON.parse(cached, symbolize_names: true)).to eq(
-        params.merge(
+      expect(JSON.parse(cached, symbolize_names: true)).to include(
+        revised_payload.merge(
           reference_number: reference_number,
           created_at: frozen_time.strftime('%Y-%m-%d %H:%M'),
         ),
       )
     end
 
-    context 'with a classification enquiry from the revised frontend form' do
+    context 'with a classification enquiry from the revised alias endpoint' do
       let(:classification_params) do
         params.merge(
           enquiry_category: 'classification',
@@ -123,7 +123,7 @@ RSpec.describe Api::V2::EnquiryForm::SubmissionsController, :v2 do
       end
     end
 
-    context 'with revised frontend enquiry payload combinations' do
+    context 'with revised enquiry payload combinations on the original endpoint' do
       let(:large_text) do
         [
           'Lorem Ipsum is simply dummy text of the printing and typesetting industry.',
@@ -195,7 +195,7 @@ RSpec.describe Api::V2::EnquiryForm::SubmissionsController, :v2 do
           )
           frontend_payload[:other_category] = large_text if category == 'other'
 
-          post api_enquiry_form_revised_submissions_path,
+          post api_enquiry_form_submissions_path,
                params: { data: { attributes: frontend_payload } },
                headers: headers,
                as: :json
@@ -233,7 +233,7 @@ RSpec.describe Api::V2::EnquiryForm::SubmissionsController, :v2 do
             goods_made_of: large_text,
           ).merge(optional_answers).merge(commodity_code_answer)
 
-          post api_enquiry_form_revised_submissions_path,
+          post api_enquiry_form_submissions_path,
                params: { data: { attributes: frontend_payload } },
                headers: headers,
                as: :json

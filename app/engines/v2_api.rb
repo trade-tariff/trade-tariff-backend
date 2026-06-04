@@ -134,7 +134,7 @@ V2Api.routes.draw do
 
       namespace :enquiry_form do
         resources :submissions, only: %i[create]
-        resources :revised_submissions, only: %i[create]
+        resources :revised_submissions, only: %i[create], controller: :submissions
       end
 
       get '/changes(/:as_of)', to: 'changes#index', as: :changes, constraints: { as_of: /\d{4}-\d{1,2}-\d{1,2}/ }
