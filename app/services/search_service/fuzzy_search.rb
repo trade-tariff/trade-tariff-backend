@@ -8,8 +8,14 @@ class SearchService
       end
 
       self
-    rescue OpenSearch::Transport::Transport::Error
-      # rescue from malformed queries, return empty resultset in that case
+    rescue OpenSearch::Transport::Transport::Error => e
+      Search::Instrumentation.search_failed(
+        request_id: TradeTariffRequest.request_id,
+        error_type: e.class.name,
+        error_message: e.message,
+        search_type: 'classic',
+      )
+      # OpenSearch transport failures should not prevent the blank-result fallback.
       @results = BLANK_RESULT
       self
     end

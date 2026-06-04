@@ -47,14 +47,31 @@ Rails.application.configure do
   config.logger = ActiveSupport::Logger.new($stdout)
   config.lograge.enabled = true
   config.lograge.formatter = Lograge::Formatters::Logstash.new
+  lograge_exception_message_max_length = 500
+  truncate_lograge_exception_message = lambda do |exception_message|
+    next {} if exception_message.blank?
+
+    message = exception_message.to_s
+
+    {
+      exception_message: message.first(lograge_exception_message_max_length),
+      exception_message_truncated: message.length > lograge_exception_message_max_length,
+    }
+  end
+
   config.lograge.custom_options = lambda do |event|
+    exception = event.payload[:exception_object]
+    exception_class, exception_message = event.payload[:exception]
+    raw_exception_message = exception&.message || exception_message
+
     {
       request_id: event.payload[:request_id],
       auth_type: event.payload[:auth_type],
       client_id: event.payload[:client_id],
+      exception_class: exception&.class&.name || exception_class,
       params: event.payload[:params].except('controller', 'action', 'format', 'utf8'),
       user_agent: event.payload[:user_agent],
-    }.compact
+    }.merge(truncate_lograge_exception_message.call(raw_exception_message)).compact
   end
 
   config.lograge.ignore_actions = [

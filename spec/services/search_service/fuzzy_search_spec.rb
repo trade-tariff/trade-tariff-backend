@@ -135,9 +135,21 @@ RSpec.describe SearchService::FuzzySearch do
     end
 
     context 'when OpenSearch raises an error' do
+      let(:error) { OpenSearch::Transport::Transport::Error.new('OpenSearch timeout') }
+
+      around do |example|
+        previous_request_id = TradeTariffRequest.request_id
+        TradeTariffRequest.request_id = 'request-123'
+
+        example.run
+      ensure
+        TradeTariffRequest.request_id = previous_request_id
+      end
+
       before do
+        allow(Search::Instrumentation).to receive(:search_failed)
         allow(TradeTariffBackend.search_client).to receive(:msearch)
-          .and_raise(OpenSearch::Transport::Transport::Error)
+          .and_raise(error)
       end
 
       it 'returns BLANK_RESULT without raising' do
@@ -145,6 +157,17 @@ RSpec.describe SearchService::FuzzySearch do
 
         expect(results[:type]).to eq('fuzzy_match')
         expect(results).to include(SearchService::BaseSearch::BLANK_RESULT)
+      end
+
+      it 'emits a search_failed event' do
+        fuzzy_search.serializable_hash
+
+        expect(Search::Instrumentation).to have_received(:search_failed).with(
+          request_id: 'request-123',
+          error_type: 'OpenSearch::Transport::Transport::Error',
+          error_message: 'OpenSearch timeout',
+          search_type: 'classic',
+        )
       end
     end
   end
