@@ -36,10 +36,16 @@ RSpec.describe TariffSynchronizer::TaricUpdate do
   describe '#import!' do
     let(:taric_update) { create :taric_update }
     let(:taric_importer) { instance_double(TaricImporter) }
+    let(:inserted_oplog_records) do
+      {
+        total_count: 1,
+        total_duration: 0,
+      }
+    end
 
     before do
       allow(TaricImporter).to receive(:new).with(taric_update).and_return(taric_importer)
-      allow(taric_importer).to receive(:import)
+      allow(taric_importer).to receive(:import).and_return(inserted_oplog_records)
       allow(taric_update).to receive(:file_path).and_return('spec/fixtures/taric_samples/insert_record.xml')
     end
 
@@ -51,6 +57,11 @@ RSpec.describe TariffSynchronizer::TaricUpdate do
     it 'marks the Taric update as applied' do
       taric_update.import!
       expect(taric_update.reload).to be_applied
+    end
+
+    it 'stores the inserts on the update' do
+      taric_update.import!
+      expect(taric_update.reload.inserts).to include('"total_count":1')
     end
 
     it 'emits a file_import_completed instrumentation event' do
