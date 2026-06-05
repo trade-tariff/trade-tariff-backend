@@ -39,6 +39,7 @@ jobs:
             db/
             data/
             docs/
+            spec/
             terraform/versions.tf
             *.md
             *.lock
