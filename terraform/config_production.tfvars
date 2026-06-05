@@ -11,4 +11,5 @@ max_capacity            = 16
 scale_in_cooldown  = 0
 scale_out_cooldown = 0
 
+enable_alarms               = true
 enable_observability_alerts = true
