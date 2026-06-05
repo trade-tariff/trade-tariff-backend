@@ -5,6 +5,7 @@ module Search
     module_function
 
     ERROR_MESSAGE_MAX_LENGTH = 500
+    MAX_LOGGED_RESULTS = 50
 
     def instrument(event_name, payload = {}, &block)
       ActiveSupport::Notifications.instrument("#{event_name}.search", with_request_id(payload), &block)
@@ -89,12 +90,72 @@ module Search
       raise
     end
 
-    def question_returned(request_id:, question_count:, attempt_number:)
-      instrument('question_returned', request_id:, question_count:, attempt_number:)
+    def exact_match_selected(request_id:, search_type:, query:, match_source:, matched_value:, result:)
+      result_fields = result_summary(result)
+      instrument(
+        'exact_match_selected',
+        {
+          request_id:,
+          search_type:,
+          query:,
+          match_source:,
+          matched_value:,
+          target_type: result_fields[:goods_nomenclature_class],
+          target_id: result_fields[:target_id],
+          target_endpoint: result_fields[:target_endpoint],
+          goods_nomenclature_item_id: result_fields[:goods_nomenclature_item_id],
+          goods_nomenclature_sid: result_fields[:goods_nomenclature_sid],
+          details: result_fields,
+        },
+      )
     end
 
-    def answer_returned(request_id:, answer_count:, confidence_levels:, attempt_number:)
-      instrument('answer_returned', request_id:, answer_count:, confidence_levels:, attempt_number:)
+    def fuzzy_results_returned(request_id:, query:, results:)
+      instrument(
+        'fuzzy_results_returned',
+        request_id:,
+        search_type: 'classic',
+        query:,
+        result_count: nested_result_count(results),
+        details: summarize_classic_fuzzy_results(results),
+      )
+    end
+
+    def interactive_configuration_used(request_id:, query:, configuration:)
+      instrument(
+        'interactive_configuration_used',
+        request_id:,
+        search_type: 'interactive',
+        query:,
+        details: configuration,
+      )
+    end
+
+    def retrieval_results_returned(request_id:, query:, search_type:, retrieval_method:, stage:, results:, leg: nil, iteration: nil)
+      instrument(
+        'retrieval_results_returned',
+        request_id:,
+        search_type:,
+        query:,
+        retrieval_method:,
+        stage:,
+        leg:,
+        iteration:,
+        result_count: Array(results).size,
+        details: { results: summarize_results(results) },
+      )
+    end
+
+    def question_returned(request_id:, question_count:, attempt_number:, questions: nil)
+      payload = { request_id:, question_count:, attempt_number: }
+      payload[:details] = { questions: questions } if questions
+      instrument('question_returned', payload)
+    end
+
+    def answer_returned(request_id:, answer_count:, confidence_levels:, attempt_number:, answers: nil)
+      payload = { request_id:, answer_count:, confidence_levels:, attempt_number: }
+      payload[:details] = { answers: answers } if answers
+      instrument('answer_returned', payload)
     end
 
     def search_completed(request_id:, search_type:, total_duration_ms:, result_count:, query: nil, total_attempts: nil, total_questions: nil, final_result_type: nil, results_type: nil, max_score: nil, error_message: nil, description_intercept: nil)
@@ -212,6 +273,102 @@ module Search
       return payload unless payload.key?(:request_id)
 
       payload.merge(request_id: payload[:request_id].presence || TradeTariffRequest.request_id.presence || SecureRandom.uuid)
+    end
+
+    def summarize_classic_fuzzy_results(results)
+      return {} unless results.is_a?(Hash)
+
+      %i[goods_nomenclature_match reference_match].each_with_object({}) do |match_type, memo|
+        groups = results[match_type] || results[match_type.to_s]
+        next unless groups.respond_to?(:each_pair)
+
+        memo[match_type] = groups.each_with_object({}) do |(level, hits), level_memo|
+          level_memo[level] = summarize_hits(hits, level:)
+        end
+      end
+    end
+
+    def summarize_hits(hits, level:)
+      Array(hits).first(MAX_LOGGED_RESULTS).map do |hit|
+        source = hit['_source'] || hit[:_source] || {}
+        reference = source['reference'] || source[:reference] || {}
+        target = reference.presence || source
+        goods_nomenclature_class = target['class'] || target[:class] ||
+          source['reference_class'] || source[:reference_class] ||
+          target['goods_nomenclature_class'] || target[:goods_nomenclature_class] ||
+          level.to_s.singularize.camelize
+        goods_nomenclature_item_id = target['goods_nomenclature_item_id'] || target[:goods_nomenclature_item_id]
+        goods_nomenclature_sid = target['goods_nomenclature_sid'] || target[:goods_nomenclature_sid] || target['id'] || target[:id]
+        producline_suffix = target['producline_suffix'] || target[:producline_suffix]
+        {
+          target_endpoint: level.to_s,
+          target_id: target_id_for_classic_hit(level, goods_nomenclature_item_id, producline_suffix),
+          goods_nomenclature_item_id: goods_nomenclature_item_id,
+          goods_nomenclature_sid: goods_nomenclature_sid,
+          goods_nomenclature_class: goods_nomenclature_class,
+          producline_suffix: producline_suffix,
+          reference_id: reference['id'] || reference[:id],
+          reference_title: reference['title'] || reference[:title],
+          score: hit['_score'] || hit[:_score],
+        }.compact_blank
+      end
+    end
+
+    def summarize_results(results)
+      Array(results).first(MAX_LOGGED_RESULTS).map { |result| result_summary(result) }
+    end
+
+    def result_summary(result)
+      {
+        target_endpoint: result_endpoint(result),
+        target_id: target_id_for_result(result),
+        goods_nomenclature_item_id: result.try(:goods_nomenclature_item_id),
+        goods_nomenclature_sid: result.try(:goods_nomenclature_sid) || result.try(:id),
+        goods_nomenclature_class: result.try(:goods_nomenclature_class),
+        producline_suffix: result.try(:producline_suffix),
+        score: result.try(:score),
+        confidence: result.try(:confidence),
+        has_self_text: result.respond_to?(:self_text) ? result.self_text.present? : nil,
+        self_text_id: result.try(:goods_nomenclature_sid) || result.try(:id),
+        label_id: result.try(:goods_nomenclature_sid) || result.try(:id),
+      }.compact_blank
+    end
+
+    def result_endpoint(result)
+      result.try(:goods_nomenclature_class).to_s.underscore.pluralize.presence ||
+        result.class.name.demodulize.underscore.pluralize
+    end
+
+    def target_id_for_result(result)
+      return result.to_param if result.is_a?(GoodsNomenclature)
+
+      result.try(:goods_nomenclature_item_id)
+    end
+
+    def target_id_for_classic_hit(level, goods_nomenclature_item_id, producline_suffix)
+      return if goods_nomenclature_item_id.blank?
+
+      case level.to_s
+      when 'chapters'
+        goods_nomenclature_item_id.first(2)
+      when 'headings'
+        goods_nomenclature_item_id.first(4)
+      when 'subheadings'
+        [goods_nomenclature_item_id, producline_suffix].compact_blank.join('-')
+      else
+        goods_nomenclature_item_id
+      end
+    end
+
+    def nested_result_count(results)
+      return 0 unless results.is_a?(Hash)
+
+      %i[goods_nomenclature_match reference_match].sum do |match_type|
+        groups = results[match_type] || results[match_type.to_s]
+        next 0 unless groups.respond_to?(:each_value)
+
+        groups.each_value.sum { |hits| Array(hits).size }
+      end
     end
   end
 end

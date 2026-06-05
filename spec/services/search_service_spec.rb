@@ -306,6 +306,24 @@ RSpec.describe SearchService do
     it_behaves_like 'an historic goods nomenclature exact search', :heading, '0101'
     it_behaves_like 'an historic goods nomenclature exact search', :subheading, '010121'
     it_behaves_like 'an historic goods nomenclature exact search', :commodity, '0101210000'
+
+    it 'emits exact match diagnostics with the suggestion source' do
+      allow(Search::Instrumentation).to receive(:exact_match_selected)
+      goods_nomenclature = create :heading, goods_nomenclature_item_id: '0101000000'
+      create :search_suggestion, :search_reference, goods_nomenclature: goods_nomenclature, value: 'horse'
+
+      described_class.new(data_serializer, q: 'horse').to_json
+
+      expect(Search::Instrumentation).to have_received(:exact_match_selected).with(
+        hash_including(
+          search_type: 'classic',
+          query: 'horse',
+          match_source: 'search_reference',
+          matched_value: 'horse',
+          result: goods_nomenclature,
+        ),
+      )
+    end
   end
 
   # Searching in ElasticSearch index
@@ -341,6 +359,16 @@ RSpec.describe SearchService do
           around { |example| TimeMachine.at('2005-01-01') { example.run } }
 
           it { is_expected.to match_json_expression heading_pattern }
+
+          it 'emits fuzzy result diagnostics' do
+            allow(Search::Instrumentation).to receive(:fuzzy_results_returned)
+
+            described_class.new(data_serializer, q: 'water').to_json
+
+            expect(Search::Instrumentation).to have_received(:fuzzy_results_returned).with(
+              hash_including(query: 'water', results: hash_including(type: 'fuzzy_match')),
+            )
+          end
         end
 
         context 'with search date outside goods code validity period' do

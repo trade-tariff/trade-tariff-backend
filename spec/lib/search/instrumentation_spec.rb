@@ -228,17 +228,218 @@ RSpec.describe Search::Instrumentation do
     end
   end
 
+  describe '.exact_match_selected' do
+    it 'instruments compact exact match result details' do
+      allow(ActiveSupport::Notifications).to receive(:instrument)
+      result = GoodsNomenclatureResult.new(
+        id: 1,
+        goods_nomenclature_item_id: '0101210000',
+        goods_nomenclature_sid: 1,
+        producline_suffix: '80',
+        goods_nomenclature_class: 'Commodity',
+        description: 'Horse',
+        formatted_description: 'Horse',
+        self_text: 'Generated self text',
+        classification_description: 'Horse',
+        full_description: 'Horse',
+        heading_description: nil,
+        declarable: true,
+        score: nil,
+        confidence: 'strong',
+      )
+
+      described_class.exact_match_selected(
+        request_id: 'req-1',
+        search_type: 'interactive',
+        query: 'horse',
+        match_source: 'search_reference',
+        matched_value: 'horse',
+        result: result,
+      )
+
+      expect(ActiveSupport::Notifications).to have_received(:instrument).with(
+        'exact_match_selected.search',
+        hash_including(
+          request_id: 'req-1',
+          search_type: 'interactive',
+          match_source: 'search_reference',
+          target_id: '0101210000',
+          target_endpoint: 'commodities',
+          goods_nomenclature_sid: 1,
+          details: hash_including(has_self_text: true, self_text_id: 1, label_id: 1),
+        ),
+      )
+    end
+
+    it 'uses the classic entity route target for exact tariff entities' do
+      allow(ActiveSupport::Notifications).to receive(:instrument)
+      heading = Heading.call(goods_nomenclature_item_id: '0101000000', goods_nomenclature_sid: 1)
+
+      described_class.exact_match_selected(
+        request_id: 'req-1',
+        search_type: 'classic',
+        query: '0101',
+        match_source: 'goods_nomenclature',
+        matched_value: '0101',
+        result: heading,
+      )
+
+      expect(ActiveSupport::Notifications).to have_received(:instrument).with(
+        'exact_match_selected.search',
+        hash_including(
+          target_type: 'Heading',
+          target_endpoint: 'headings',
+          target_id: '0101',
+          goods_nomenclature_item_id: '0101000000',
+        ),
+      )
+    end
+  end
+
+  describe '.fuzzy_results_returned' do
+    it 'instruments compact grouped fuzzy result details' do
+      allow(ActiveSupport::Notifications).to receive(:instrument)
+
+      described_class.fuzzy_results_returned(
+        request_id: 'req-1',
+        query: 'horse',
+        results: {
+          goods_nomenclature_match: {
+            'chapters' => [
+              { '_score' => 12.5, '_source' => { 'goods_nomenclature_item_id' => '0100000000', 'goods_nomenclature_sid' => 1 } },
+            ],
+          },
+          reference_match: {
+            'headings' => [
+              { '_score' => 10.1, '_source' => { 'reference_class' => 'Heading', 'reference' => { 'id' => 2, 'title' => 'Equine animals', 'goods_nomenclature_item_id' => '0101000000' } } },
+            ],
+          },
+        },
+      )
+
+      expect(ActiveSupport::Notifications).to have_received(:instrument).with(
+        'fuzzy_results_returned.search',
+        hash_including(
+          request_id: 'req-1',
+          search_type: 'classic',
+          result_count: 2,
+          details: {
+            goods_nomenclature_match: {
+              'chapters' => [
+                hash_including(target_endpoint: 'chapters', target_id: '01', goods_nomenclature_class: 'Chapter'),
+              ],
+            },
+            reference_match: {
+              'headings' => [
+                hash_including(target_endpoint: 'headings', target_id: '0101', goods_nomenclature_class: 'Heading', reference_title: 'Equine animals'),
+              ],
+            },
+          },
+        ),
+      )
+    end
+
+    it 'counts all fuzzy results while truncating logged details' do
+      allow(ActiveSupport::Notifications).to receive(:instrument)
+      hits = Array.new(60) do |index|
+        {
+          '_score' => 12.5,
+          '_source' => {
+            'goods_nomenclature_item_id' => "01012100#{index.to_s.rjust(2, '0')}",
+            'goods_nomenclature_sid' => index,
+            'goods_nomenclature_class' => 'Commodity',
+          },
+        }
+      end
+
+      described_class.fuzzy_results_returned(
+        request_id: 'req-1',
+        query: 'horse',
+        results: { goods_nomenclature_match: { 'commodities' => hits } },
+      )
+
+      expect(ActiveSupport::Notifications).to have_received(:instrument).with(
+        'fuzzy_results_returned.search',
+        hash_including(
+          result_count: 60,
+          details: hash_including(
+            goods_nomenclature_match: hash_including('commodities' => have_attributes(size: 50)),
+          ),
+        ),
+      )
+    end
+  end
+
+  describe '.interactive_configuration_used' do
+    it 'instruments configuration details' do
+      allow(ActiveSupport::Notifications).to receive(:instrument)
+
+      described_class.interactive_configuration_used(
+        request_id: 'req-1',
+        query: 'horse',
+        configuration: { retrieval_method: 'hybrid', rrf_k: 60 },
+      )
+
+      expect(ActiveSupport::Notifications).to have_received(:instrument).with(
+        'interactive_configuration_used.search',
+        hash_including(search_type: 'interactive', details: { retrieval_method: 'hybrid', rrf_k: 60 }),
+      )
+    end
+  end
+
+  describe '.retrieval_results_returned' do
+    it 'instruments compact retrieval result details' do
+      allow(ActiveSupport::Notifications).to receive(:instrument)
+      result = GoodsNomenclatureResult.new(
+        id: 1,
+        goods_nomenclature_item_id: '0101210000',
+        goods_nomenclature_sid: 1,
+        producline_suffix: '80',
+        goods_nomenclature_class: 'Commodity',
+        description: 'Horse',
+        formatted_description: 'Horse',
+        self_text: nil,
+        classification_description: 'Horse',
+        full_description: 'Horse',
+        heading_description: nil,
+        declarable: true,
+        score: 12.5,
+        confidence: nil,
+      )
+
+      described_class.retrieval_results_returned(
+        request_id: 'req-1',
+        query: 'horse',
+        search_type: 'interactive',
+        retrieval_method: 'hybrid',
+        stage: 'after_rrf',
+        results: [result],
+      )
+
+      expect(ActiveSupport::Notifications).to have_received(:instrument).with(
+        'retrieval_results_returned.search',
+        hash_including(
+          retrieval_method: 'hybrid',
+          stage: 'after_rrf',
+          result_count: 1,
+          details: { results: [hash_including(goods_nomenclature_item_id: '0101210000', score: 12.5)] },
+        ),
+      )
+    end
+  end
+
   describe '.question_returned' do
     it 'instruments the question_returned event' do
       allow(ActiveSupport::Notifications).to receive(:instrument)
 
-      described_class.question_returned(request_id: 'req-1', question_count: 2, attempt_number: 1)
+      described_class.question_returned(request_id: 'req-1', question_count: 2, attempt_number: 1, questions: [{ question: 'Material?' }])
 
       expect(ActiveSupport::Notifications).to have_received(:instrument).with(
         'question_returned.search',
         request_id: 'req-1',
         question_count: 2,
         attempt_number: 1,
+        details: { questions: [{ question: 'Material?' }] },
       )
     end
   end
@@ -252,6 +453,7 @@ RSpec.describe Search::Instrumentation do
         answer_count: 3,
         confidence_levels: { 'strong' => 1, 'good' => 2 },
         attempt_number: 2,
+        answers: [{ commodity_code: '0101210000', confidence: 'strong' }],
       )
 
       expect(ActiveSupport::Notifications).to have_received(:instrument).with(
@@ -260,6 +462,7 @@ RSpec.describe Search::Instrumentation do
         answer_count: 3,
         confidence_levels: { 'strong' => 1, 'good' => 2 },
         attempt_number: 2,
+        details: { answers: [{ commodity_code: '0101210000', confidence: 'strong' }] },
       )
     end
   end

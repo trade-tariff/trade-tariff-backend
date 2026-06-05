@@ -21,6 +21,14 @@ class HybridRetrievalService
     vector_items = vector_results || []
 
     merged = rrf_merge(opensearch_items, vector_items)
+    Search::Instrumentation.retrieval_results_returned(
+      request_id: @request_id,
+      query: @query,
+      search_type: 'interactive',
+      retrieval_method: 'hybrid',
+      stage: 'after_rrf',
+      results: merged,
+    )
 
     Result.new(results: merged, expanded_query: @expanded_query)
   end
@@ -51,6 +59,15 @@ class HybridRetrievalService
 
     Search::Instrumentation.retrieval_leg_completed(
       request_id: @request_id, leg: leg, duration_ms: duration_ms, result_count: count, status: 'success',
+    )
+    Search::Instrumentation.retrieval_results_returned(
+      request_id: @request_id,
+      query: @query,
+      search_type: 'interactive',
+      retrieval_method: 'hybrid',
+      stage: 'before_rrf',
+      leg: leg,
+      results: leg == :opensearch ? result&.results || [] : result || [],
     )
 
     result

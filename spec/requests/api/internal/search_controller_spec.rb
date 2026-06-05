@@ -9,6 +9,18 @@ RSpec.describe Api::Internal::SearchController, :internal do
   end
 
   describe 'POST /search' do
+    it 'sets the search request id from the request params' do
+      allow(Search::Instrumentation).to receive(:search).and_return({ data: [] })
+
+      post api_search_path(format: :json), params: { q: 'horse', request_id: 'param-request-id' }
+
+      expect(Search::Instrumentation).to have_received(:search).with(
+        request_id: 'param-request-id',
+        query: 'horse',
+        search_type: 'interactive',
+      )
+    end
+
     context 'when text query with results' do
       before do
         index = Search::GoodsNomenclatureIndex.new

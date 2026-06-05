@@ -1,5 +1,7 @@
 class SearchService
   class ExactSearch < BaseSearch
+    attr_reader :match_source, :matched_value
+
     def search!
       @results = case query_string
                  # A CAS number, in the format e.g., "178535-93-8", e.g. /\d+-\d+-\d/
@@ -43,6 +45,11 @@ class SearchService
         .where(filter)
         .first
 
+      if suggestion
+        @match_source = suggestion.type
+        @matched_value = suggestion.value
+      end
+
       suggestion&.goods_nomenclature&.sti_cast
     end
 
@@ -73,6 +80,9 @@ class SearchService
         end
 
       # Check whether Subheading or Commodity at the appropriate point in time
+      @match_source = 'goods_nomenclature'
+      @matched_value = query
+
       TimeMachine.at(check_for_children_on) { goods_nomenclature.sti_cast }
     end
 

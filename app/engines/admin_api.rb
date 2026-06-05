@@ -17,6 +17,7 @@ AdminApi.routes.draw do
       resources :applies, only: %i[create]
       resources :footnotes, only: %i[index show update]
       resources :search_references, only: [:index]
+      resources :search_diagnostics, only: [:show], param: :request_id, constraints: { request_id: /[^\/.]+/ }
       resources :cds_update_notifications, only: [:create]
       resources :reports, only: %i[index show], constraints: { id: /[a-z_]+/ } do
         member do

@@ -76,6 +76,8 @@ class SearchService
                 end || NullSearch.new(q)
               end
 
+    instrument_result
+
     @result
   end
 
@@ -85,5 +87,27 @@ class SearchService
 
   def fuzzy_search
     FuzzySearch.new(q).search!
+  end
+
+  def instrument_result
+    request_id = TradeTariffRequest.request_id
+
+    case result
+    when ExactSearch
+      Search::Instrumentation.exact_match_selected(
+        request_id: request_id,
+        search_type: 'classic',
+        query: q,
+        match_source: result.match_source,
+        matched_value: result.matched_value,
+        result: result.results,
+      )
+    when FuzzySearch
+      Search::Instrumentation.fuzzy_results_returned(
+        request_id: request_id,
+        query: q,
+        results: result.serializable_hash,
+      )
+    end
   end
 end

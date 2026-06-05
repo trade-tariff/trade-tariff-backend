@@ -269,6 +269,7 @@ class InteractiveSearchService
       request_id: request_id,
       question_count: questions.size,
       attempt_number: attempt,
+      questions: questions,
     )
 
     Result.new(
@@ -308,6 +309,7 @@ class InteractiveSearchService
       answer_count: answers_data.size,
       confidence_levels: confidence_levels,
       attempt_number: attempt,
+      answers: answers_data,
     )
   end
 end
