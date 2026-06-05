@@ -57,23 +57,79 @@ module Search
       info log_entry(data)
     end
 
-    def question_returned(event)
+    def exact_match_selected(event)
       info log_entry(
+        event: 'exact_match_selected',
+        request_id: event.payload[:request_id],
+        search_type: event.payload[:search_type],
+        query: event.payload[:query],
+        match_source: event.payload[:match_source],
+        matched_value: event.payload[:matched_value],
+        target_type: event.payload[:target_type],
+        target_id: event.payload[:target_id],
+        goods_nomenclature_item_id: event.payload[:goods_nomenclature_item_id],
+        goods_nomenclature_sid: event.payload[:goods_nomenclature_sid],
+        details: event.payload[:details],
+      )
+    end
+
+    def fuzzy_results_returned(event)
+      info log_entry(
+        event: 'fuzzy_results_returned',
+        request_id: event.payload[:request_id],
+        search_type: event.payload[:search_type],
+        query: event.payload[:query],
+        result_count: event.payload[:result_count],
+        details: event.payload[:details],
+      )
+    end
+
+    def interactive_configuration_used(event)
+      info log_entry(
+        event: 'interactive_configuration_used',
+        request_id: event.payload[:request_id],
+        search_type: event.payload[:search_type],
+        query: event.payload[:query],
+        details: event.payload[:details],
+      )
+    end
+
+    def retrieval_results_returned(event)
+      info log_entry(
+        event: 'retrieval_results_returned',
+        request_id: event.payload[:request_id],
+        search_type: event.payload[:search_type],
+        query: event.payload[:query],
+        retrieval_method: event.payload[:retrieval_method],
+        stage: event.payload[:stage],
+        leg: event.payload[:leg],
+        iteration: event.payload[:iteration],
+        result_count: event.payload[:result_count],
+        details: event.payload[:details],
+      )
+    end
+
+    def question_returned(event)
+      data = {
         event: 'question_returned',
         request_id: event.payload[:request_id],
         question_count: event.payload[:question_count],
         attempt_number: event.payload[:attempt_number],
-      )
+      }
+      data[:details] = event.payload[:details] if event.payload[:details]
+      info log_entry(data)
     end
 
     def answer_returned(event)
-      info log_entry(
+      data = {
         event: 'answer_returned',
         request_id: event.payload[:request_id],
         answer_count: event.payload[:answer_count],
         confidence_levels: event.payload[:confidence_levels],
         attempt_number: event.payload[:attempt_number],
-      )
+      }
+      data[:details] = event.payload[:details] if event.payload[:details]
+      info log_entry(data)
     end
 
     def description_intercept_checked(event)

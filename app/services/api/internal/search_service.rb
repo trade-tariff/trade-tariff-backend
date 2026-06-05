@@ -37,9 +37,24 @@ module Api
         )
         return empty_response if description_intercept&.excluded
 
+        ::Search::Instrumentation.interactive_configuration_used(
+          request_id:,
+          query: q,
+          configuration: diagnostics_configuration,
+        )
+
         ::Search::Instrumentation.search(request_id:, query: q, search_type: 'interactive') do
           exact = find_exact_match
           if exact
+            ::Search::Instrumentation.exact_match_selected(
+              request_id:,
+              search_type: 'interactive',
+              query: q,
+              match_source: @exact_match_source,
+              matched_value: @exact_matched_value,
+              result: exact,
+            )
+
             next [with_description_intercept_meta(GoodsNomenclatureSearchSerializer.serialize([exact])),
                   completion_payload(result_count: 1, results_type: 'exact_match')]
           end
@@ -125,6 +140,15 @@ module Api
           limit: opensearch_result_limit,
           filter_prefixes: filter_prefixes,
         )
+        ::Search::Instrumentation.retrieval_results_returned(
+          request_id: request_id,
+          query: q,
+          search_type: 'interactive',
+          retrieval_method: 'vector',
+          stage: 'returned',
+          leg: 'vector',
+          results: goods_nomenclatures,
+        )
 
         RetrievalResult.new(
           goods_nomenclatures: goods_nomenclatures,
@@ -139,6 +163,15 @@ module Api
           query: q, expanded_query: search_expanded_query,
           as_of: as_of, request_id: request_id, limit: opensearch_result_limit,
           filter_prefixes: filter_prefixes
+        )
+        ::Search::Instrumentation.retrieval_results_returned(
+          request_id: request_id,
+          query: q,
+          search_type: 'interactive',
+          retrieval_method: 'opensearch',
+          stage: 'returned',
+          leg: 'opensearch',
+          results: result.results,
         )
 
         RetrievalResult.new(
@@ -219,6 +252,40 @@ module Api
         ::SearchSuggestion.allowed_types
       end
 
+      def diagnostics_configuration
+        {
+          retrieval_method: retrieval_method,
+          opensearch_result_limit: opensearch_result_limit,
+          search_result_limit: AdminConfiguration.integer_value('search_result_limit'),
+          interactive_search_enabled: AdminConfiguration.enabled?('interactive_search_enabled'),
+          interactive_search_max_questions: AdminConfiguration.integer_value('interactive_search_max_questions'),
+          expand_search_enabled: AdminConfiguration.enabled?('expand_search_enabled'),
+          expand_search_when_needed_enabled: AdminConfiguration.enabled?('expand_search_when_needed_enabled'),
+          expand_search_min_results: AdminConfiguration.integer_value('expand_search_min_results'),
+          expand_search_min_score: AdminConfiguration.integer_value('expand_search_min_score'),
+          refine_search_with_answers_enabled: AdminConfiguration.enabled?('refine_search_with_answers_enabled'),
+          search_non_declarables: AdminConfiguration.enabled?('search_non_declarables'),
+          search_labels_enabled: AdminConfiguration.enabled?('search_labels_enabled'),
+          pos_search_enabled: AdminConfiguration.enabled?('pos_search_enabled'),
+          pos_noun_boost: AdminConfiguration.integer_value('pos_noun_boost'),
+          pos_qualifier_boost: AdminConfiguration.integer_value('pos_qualifier_boost'),
+          vector_score_threshold: AdminConfiguration.integer_value('vector_score_threshold'),
+          vector_ef_search: AdminConfiguration.integer_value('vector_ef_search'),
+          rrf_k: AdminConfiguration.integer_value('rrf_k'),
+          search_model: model_configuration('search_model'),
+          expand_model: model_configuration('expand_model'),
+          filter_prefixes: filter_prefixes,
+        }.compact_blank
+      end
+
+      def model_configuration(name)
+        config = AdminConfiguration.nested_options_value(name)
+        {
+          selected: config[:selected],
+          reasoning_effort: config[:sub_values]&.fetch('reasoning_effort', nil),
+        }.compact_blank
+      end
+
       def find_exact_match
         gn = find_by_suggestion(q) ||
           find_by_padded_code(q) ||
@@ -232,14 +299,18 @@ module Api
       end
 
       def find_by_suggestion(query)
-        ::SearchSuggestion
+        suggestion = ::SearchSuggestion
           .declarable
           .by_value(singular_and_plural(query.downcase))
           .where(type: allowed_suggestion_types)
           .eager(:goods_nomenclature)
           .first
-          &.goods_nomenclature
-          &.sti_cast
+        if suggestion
+          @exact_match_source = suggestion.type
+          @exact_matched_value = suggestion.value
+        end
+
+        suggestion&.goods_nomenclature&.sti_cast
       end
 
       def find_by_padded_code(query)
@@ -262,6 +333,9 @@ module Api
 
         gn = ::GoodsNomenclature.non_hidden.where(filter).first
         return nil unless gn
+
+        @exact_match_source = 'goods_nomenclature'
+        @exact_matched_value = query
 
         TimeMachine.at(validity_date_for(gn)) { gn.sti_cast }
       end

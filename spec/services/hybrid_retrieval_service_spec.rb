@@ -49,6 +49,7 @@ RSpec.describe HybridRetrievalService do
     allow(AdminConfiguration).to receive(:integer_value).and_call_original
     allow(AdminConfiguration).to receive(:integer_value).with('rrf_k').and_return(60)
     allow(Search::Instrumentation).to receive(:retrieval_leg_completed)
+    allow(Search::Instrumentation).to receive(:retrieval_results_returned)
   end
 
   describe '#call' do
@@ -123,6 +124,20 @@ RSpec.describe HybridRetrievalService do
       )
       expect(Search::Instrumentation).to have_received(:retrieval_leg_completed).with(
         hash_including(leg: :vector, status: 'success', result_count: 3),
+      )
+    end
+
+    it 'emits retrieval results before and after RRF' do
+      described_class.call(query: 'horses', as_of: Time.zone.today, request_id: 'req-1')
+
+      expect(Search::Instrumentation).to have_received(:retrieval_results_returned).with(
+        hash_including(request_id: 'req-1', retrieval_method: 'hybrid', stage: 'before_rrf', leg: :opensearch, results: opensearch_results),
+      )
+      expect(Search::Instrumentation).to have_received(:retrieval_results_returned).with(
+        hash_including(request_id: 'req-1', retrieval_method: 'hybrid', stage: 'before_rrf', leg: :vector, results: vector_results),
+      )
+      expect(Search::Instrumentation).to have_received(:retrieval_results_returned).with(
+        hash_including(request_id: 'req-1', retrieval_method: 'hybrid', stage: 'after_rrf'),
       )
     end
 
