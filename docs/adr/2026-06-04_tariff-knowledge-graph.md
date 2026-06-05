@@ -35,16 +35,16 @@ The knowledge graph is scoped to the active tariff schema. UK and XI data should
 
 The graph will model typed nodes and typed edges:
 
-- nodes represent things we need to reason about, such as goods nomenclature references, note sources, note fragments, ranges, and derived knowledge artefacts
+- nodes represent things we need to reason about, such as goods nomenclature references, note sources, extracted note rules or fragments, ranges where they need to be preserved as source-expressed concepts, and derived knowledge artefacts where graph traversal needs them
 - edges represent facts or relationships between those things, such as `classifies`, `excludes`, `constrains`, `references`, `applies_to`, and `derived_from`
 
 Edges should point from the artefact making the statement to the thing the statement is about. Query code can index and traverse both ends, but inverse edges should only be stored when they represent a separate domain fact.
 
 Goods nomenclature nodes in the knowledge graph are references to tariff identifiers. They are not the authoritative hierarchy. Hierarchy, ancestry, descendants and validity remain owned by the existing nested set.
 
-Source documents and extracted fragments should participate in the graph as nodes when they state, qualify or derive relationships. Their provenance metadata should remain structured storage rather than opaque graph-only data.
+Source documents and extracted fragments or rules should participate in the graph as nodes when they state, qualify or derive relationships. Their provenance metadata should remain structured storage rather than opaque graph-only data.
 
-Source-expressed ranges should also be preserved as graph concepts. For example, a note that references "headings 2843 to 2846" should retain that range as the thing the source said. The range should then be deterministically expanded to the individual goods nomenclature reference nodes it covers so lookup by goods nomenclature stays cheap.
+Source-expressed ranges should be retained in structured provenance even when the first implementation expands them directly to individual goods nomenclature reference nodes. If range review, range reuse, or impacted-source analysis needs the range itself to be traversable, the range should be promoted to a graph node and deterministically connected to the individual goods nomenclature references it covers.
 
 The graph is an additional access path for facts about goods nomenclatures. It should let callers quickly ask:
 
@@ -57,7 +57,9 @@ The graph is an additional access path for facts about goods nomenclatures. It s
 The immediate compression workflow has two phases:
 
 1. While compressing notes for a declarable goods nomenclature, find the note references relevant to that declarable. This includes note fragments applying to the declarable or its ancestors, and references from those fragments to ancestors, siblings, ranges, or other tariff nodes.
-2. When serving or reviewing a declarable goods nomenclature, find the compressed notes that already exist for that declarable and retain enough provenance to explain which note fragments they summarise.
+2. When serving or reviewing a declarable goods nomenclature, find the compressed notes or context projections that already exist for that declarable and retain enough provenance to explain which note fragments or rules they summarise.
+
+Compressed LLM context does not have to be a graph node by default. It may be a generated, reviewable projection keyed by declarable goods nomenclature when the application only needs to append it to classification context. It should become a graph node only if callers need to traverse from or to the compressed artefact as a first-class relationship.
 
 ## Non-functional requirements
 
@@ -104,18 +106,19 @@ The exact table names are not decided by this ADR, but the storage model should 
 
 The first relationship vocabulary should stay narrow:
 
-- `contains`: a source document contains a note fragment
-- `applies_to`: a note fragment, range, or compressed note applies to a goods nomenclature reference
+- `contains` or `has_fragment`: a source document contains an extracted note fragment or rule
+- `applies_to`: a note fragment, extracted rule, range, or compressed note applies to a goods nomenclature reference
 - `references`: a note fragment references another goods nomenclature reference or range
 - `expands_to`: a source-expressed range deterministically expands to an individual goods nomenclature reference
-- `summarises`: a compressed note summarises one or more note fragments
+- domain-specific relationships such as `classifies`, `excludes`, `constrains`, `subject_to`, or `defines_term` where the extracted rule is making a more specific statement than a generic reference
+- `summarises`: a compressed note or generated context projection summarises one or more note fragments or rules
 - `for_declarable`: a compressed note was produced for a specific declarable goods nomenclature
 - `derived_from`: a generated or compressed artefact was derived from a source fragment, extraction run, compression run, or previous artefact
 
-Ranges need two representations:
+Ranges may need two representations:
 
-- a graph node that preserves the range expression from the source
-- deterministic membership edges or rows that connect the range to each goods nomenclature reference it covers
+- structured provenance that preserves the range expression from the source
+- deterministic membership edges or rows that connect the range to each goods nomenclature reference it covers when the range itself needs to be traversed or reviewed
 
 This lets us explain the source faithfully while still supporting indexed lookup by individual goods nomenclature.
 
@@ -127,9 +130,9 @@ Example graph facts:
 - `note_fragment(28.3) --references--> range("headings 2843 to 2846")`
 - `range("headings 2843 to 2846") --expands_to--> heading(2843)`
 - `range("headings 2843 to 2846") --expands_to--> heading(2844)`
-- `compressed_note(commodity_1704909990) --for_declarable--> commodity(1704909990)`
-- `compressed_note(commodity_1704909990) --summarises--> note_fragment(17.1)`
-- `compressed_note(commodity_1704909990) --derived_from--> compression_run(...)`
+- `note_fragment(17.1) --excludes--> heading(1704)`
+- `declarable_context(commodity_1704909990) --summarises--> note_fragment(17.1)` if generated contexts are later promoted into the graph
+- `declarable_context(commodity_1704909990) --derived_from--> compression_run(...)` if generated contexts are later promoted into the graph
 
 ## Index and access patterns
 
