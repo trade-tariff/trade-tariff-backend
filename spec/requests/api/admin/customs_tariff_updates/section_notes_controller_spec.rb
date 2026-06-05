@@ -150,13 +150,23 @@ RSpec.describe Api::Admin::CustomsTariffUpdates::SectionNotesController do
     let!(:update) { create(:customs_tariff_update) }
     let!(:note)   { create(:customs_tariff_section_note, customs_tariff_update: update) }
 
+    before do
+      allow(CustomsTariffImporter::Instrumentation).to receive(:section_note_updated)
+    end
+
     it 'updates the content' do
       patch "/uk/admin/customs_tariff_updates/#{update.version}/section_notes/#{note.id}.json",
             params: { data: { type: 'customs_tariff_section_note', attributes: { content: 'Updated content' } } },
-            headers: request_headers(format: :json), as: :json
+            headers: request_headers({ 'X-Whodunnit' => 'operator-1' }, format: :json), as: :json
 
       expect(response.status).to eq(200)
       expect(note.reload.content).to eq('Updated content')
+      expect(CustomsTariffImporter::Instrumentation).to have_received(:section_note_updated).with(
+        version: update.version,
+        section_id: note.section_id,
+        note_id: note.id,
+        whodunnit: 'operator-1',
+      )
     end
 
     it 'returns 422 when the parent update is rejected' do
@@ -167,6 +177,7 @@ RSpec.describe Api::Admin::CustomsTariffUpdates::SectionNotesController do
             headers: request_headers(format: :json), as: :json
 
       expect(response.status).to eq(422)
+      expect(CustomsTariffImporter::Instrumentation).not_to have_received(:section_note_updated)
     end
 
     it 'creates a Version record on successful save' do

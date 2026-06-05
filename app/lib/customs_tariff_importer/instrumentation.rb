@@ -12,8 +12,8 @@ module CustomsTariffImporter
       instrument('import_run_started')
     end
 
-    def import_run_completed(imported:, skipped:, failed:, duration_ms:)
-      instrument('import_run_completed', imported:, skipped:, failed:, duration_ms:)
+    def import_run_completed(imported:, skipped:, failed:, duration_ms:, review_backlog:)
+      instrument('import_run_completed', imported:, skipped:, failed:, duration_ms:, review_backlog:)
     end
 
     def import_run_failed(error_class:, error_message:)
@@ -54,6 +54,14 @@ module CustomsTariffImporter
 
     def document_import_failed(version:, error_class:, error_message:)
       instrument('document_import_failed', version:, error_class:, error_message:)
+    end
+
+    def status_changed(version:, from_status:, to_status:, whodunnit:, review_backlog:)
+      instrument('status_changed', version:, from_status:, to_status:, whodunnit:, review_backlog:)
+    end
+
+    def section_note_updated(version:, section_id:, note_id:, whodunnit:)
+      instrument('section_note_updated', version:, section_id:, note_id:, whodunnit:)
     end
   end
 end

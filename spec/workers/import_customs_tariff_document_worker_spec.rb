@@ -25,12 +25,15 @@ RSpec.describe ImportCustomsTariffDocumentWorker, type: :worker do
     end
 
     it 'emits import_run_completed with correct counts' do
+      create(:customs_tariff_update)
+
       perform
       expect(CustomsTariffImporter::Instrumentation).to have_received(:import_run_completed).with(
         imported: 1,
         skipped: 0,
         failed: 0,
         duration_ms: a_kind_of(Float),
+        review_backlog: 1,
       )
     end
   end

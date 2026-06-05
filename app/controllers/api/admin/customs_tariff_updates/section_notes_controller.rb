@@ -59,6 +59,13 @@ module Api
           note.set(content: section_note_params[:content])
 
           if note.save(raise_on_failure: false)
+            CustomsTariffImporter::Instrumentation.section_note_updated(
+              version: customs_tariff_update.version,
+              section_id: note.section_id,
+              note_id: note.id,
+              whodunnit: TradeTariffRequest.whodunnit,
+            )
+
             render json: Api::Admin::CustomsTariffUpdates::SectionNoteSerializer.new(note, is_collection: false).serializable_hash
           else
             render json: Api::Admin::ErrorSerializationService.new(note).call, status: :unprocessable_content
