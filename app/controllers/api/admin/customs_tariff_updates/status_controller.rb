@@ -26,6 +26,7 @@ module Api
             from_status: previous_status,
             to_status: new_status,
             whodunnit: TradeTariffRequest.whodunnit,
+            review_backlog: CustomsTariffUpdate.pending.count,
           )
 
           render json: Api::Admin::CustomsTariffUpdateSerializer.new(customs_tariff_update, is_collection: false).serializable_hash

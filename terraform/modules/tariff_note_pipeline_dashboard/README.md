@@ -7,6 +7,7 @@ The dashboard follows the RED model:
 - **Rate**: import runs, document outcomes, status changes and note edits.
 - **Errors**: failed import runs, fetches, parses and document imports.
 - **Duration**: import run, fetch, parse and document import latency percentiles.
+- **Review backlog**: pending tariff note updates recorded on import completion and status changes.
 
 It reads structured JSON logs emitted by `CustomsTariffImporter::Logger` with `service = "customs_tariff_importer"`.
 

@@ -13,6 +13,7 @@ module CustomsTariffImporter
         skipped: event.payload[:skipped],
         failed: event.payload[:failed],
         duration_ms: event.payload[:duration_ms],
+        review_backlog: event.payload[:review_backlog],
       )
     end
 
@@ -101,6 +102,7 @@ module CustomsTariffImporter
         from_status: event.payload[:from_status],
         to_status: event.payload[:to_status],
         whodunnit: event.payload[:whodunnit],
+        review_backlog: event.payload[:review_backlog],
       )
     end
 

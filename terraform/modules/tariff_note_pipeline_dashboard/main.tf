@@ -22,8 +22,8 @@ resource "aws_cloudwatch_dashboard" "tariff_note_pipeline" {
             markdown = join("\n", [
               "## Tariff Note Pipeline RED Dashboard",
               "CloudWatch Logs Insights dashboard for the tariff note document import and admin review pipeline.",
-              "**Healthy:** import runs complete, failed event volume stays at zero, and p90 import/parse/fetch duration remains stable.",
-              "**Start here:** check Rate, Errors, and Duration in the first row. Use the drill-down tables for failed documents and operator status changes.",
+              "**Healthy:** import runs complete, failed event volume stays at zero, p90 import/parse/fetch duration remains stable, and review backlog does not grow unexpectedly.",
+              "**Start here:** check Rate, Errors, Duration, and Review Backlog in the first row. Use the drill-down tables for failed documents and operator status changes.",
               "**Related:** [Tariff Sync](${local.tariff_sync_dashboard_url})",
             ])
           }
@@ -95,7 +95,7 @@ resource "aws_cloudwatch_dashboard" "tariff_note_pipeline" {
             query  = <<-EOT
               ${local.source}
               | ${local.service_filter} and event = "import_run_completed"
-              | fields @timestamp, imported, skipped, failed, duration_ms
+              | fields @timestamp, imported, skipped, failed, review_backlog, duration_ms
               | sort @timestamp desc
               | limit 20
             EOT
@@ -184,13 +184,13 @@ resource "aws_cloudwatch_dashboard" "tariff_note_pipeline" {
           width  = 8
           height = 6
           properties = {
-            title  = "Admin Status Changes"
+            title  = "Review Backlog"
             region = var.region
             view   = "timeSeries"
             query  = <<-EOT
               ${local.source}
-              | ${local.service_filter} and event = "status_changed"
-              | stats count(*) as changes by from_status, to_status, bin(1h)
+              | ${local.service_filter} and event in ["import_run_completed", "status_changed"] and ispresent(review_backlog)
+              | stats latest(review_backlog) as pending_updates by bin(1h)
             EOT
           }
         },
@@ -263,7 +263,7 @@ resource "aws_cloudwatch_dashboard" "tariff_note_pipeline" {
             query  = <<-EOT
               ${local.source}
               | ${local.service_filter} and event in ["status_changed", "section_note_updated"]
-              | fields @timestamp, event, version, from_status, to_status, section_id, note_id, whodunnit
+              | fields @timestamp, event, version, from_status, to_status, review_backlog, section_id, note_id, whodunnit
               | sort @timestamp desc
               | limit 30
             EOT

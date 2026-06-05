@@ -7,6 +7,8 @@ RSpec.describe Api::Admin::CustomsTariffUpdates::StatusController do
     end
 
     it 'changes status to approved' do
+      create(:customs_tariff_update)
+
       patch "/uk/admin/customs_tariff_updates/#{update.version}/status.json",
             params: { data: { attributes: { status: 'approved' } } },
             headers: request_headers({ 'X-Whodunnit' => 'operator-1' }, format: :json), as: :json
@@ -18,6 +20,7 @@ RSpec.describe Api::Admin::CustomsTariffUpdates::StatusController do
         from_status: 'pending',
         to_status: 'approved',
         whodunnit: 'operator-1',
+        review_backlog: 1,
       )
     end
 

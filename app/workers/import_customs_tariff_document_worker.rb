@@ -18,6 +18,7 @@ class ImportCustomsTariffDocumentWorker
       skipped: results.count { |r| %i[skipped duplicate_content].include?(r.status) },
       failed: results.count { |r| r.status == :failed },
       duration_ms:,
+      review_backlog: CustomsTariffUpdate.pending.count,
     )
   rescue StandardError => e
     CustomsTariffImporter::Instrumentation.import_run_failed(

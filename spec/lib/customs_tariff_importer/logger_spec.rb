@@ -30,12 +30,12 @@ RSpec.describe CustomsTariffImporter::Logger do
 
       log_subscriber.import_run_completed(build_event(
                                             'import_run_completed',
-                                            payload: { imported: 2, skipped: 1, failed: 0, duration_ms: 3500.0 },
+                                            payload: { imported: 2, skipped: 1, failed: 0, duration_ms: 3500.0, review_backlog: 3 },
                                           ))
 
       expect(log_subscriber).to have_received(:info) do |json|
         entry = JSON.parse(json)
-        expect(entry).to include('imported' => 2, 'skipped' => 1, 'failed' => 0, 'duration_ms' => 3500.0)
+        expect(entry).to include('imported' => 2, 'skipped' => 1, 'failed' => 0, 'duration_ms' => 3500.0, 'review_backlog' => 3)
       end
     end
   end
@@ -191,7 +191,7 @@ RSpec.describe CustomsTariffImporter::Logger do
 
       log_subscriber.status_changed(build_event(
                                       'status_changed',
-                                      payload: { version: '1.30', from_status: 'pending', to_status: 'approved', whodunnit: 'user-1' },
+                                      payload: { version: '1.30', from_status: 'pending', to_status: 'approved', whodunnit: 'user-1', review_backlog: 2 },
                                     ))
 
       expect(log_subscriber).to have_received(:info) do |json|
@@ -202,6 +202,7 @@ RSpec.describe CustomsTariffImporter::Logger do
           'from_status' => 'pending',
           'to_status' => 'approved',
           'whodunnit' => 'user-1',
+          'review_backlog' => 2,
         )
       end
     end

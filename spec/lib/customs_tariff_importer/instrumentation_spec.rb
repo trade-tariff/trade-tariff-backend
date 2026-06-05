@@ -25,10 +25,10 @@ RSpec.describe CustomsTariffImporter::Instrumentation do
   describe '.import_run_completed' do
     it 'emits import_run_completed with counts and duration' do
       allow(ActiveSupport::Notifications).to receive(:instrument)
-      described_class.import_run_completed(imported: 2, skipped: 1, failed: 0, duration_ms: 1500.0)
+      described_class.import_run_completed(imported: 2, skipped: 1, failed: 0, duration_ms: 1500.0, review_backlog: 3)
       expect(ActiveSupport::Notifications).to have_received(:instrument).with(
         'import_run_completed.customs_tariff_importer',
-        hash_including(imported: 2, skipped: 1, failed: 0, duration_ms: 1500.0),
+        hash_including(imported: 2, skipped: 1, failed: 0, duration_ms: 1500.0, review_backlog: 3),
       )
     end
   end
@@ -124,10 +124,10 @@ RSpec.describe CustomsTariffImporter::Instrumentation do
   describe '.status_changed' do
     it 'emits status_changed with the operator and status transition' do
       allow(ActiveSupport::Notifications).to receive(:instrument)
-      described_class.status_changed(version: '1.30', from_status: 'pending', to_status: 'approved', whodunnit: 'user-1')
+      described_class.status_changed(version: '1.30', from_status: 'pending', to_status: 'approved', whodunnit: 'user-1', review_backlog: 2)
       expect(ActiveSupport::Notifications).to have_received(:instrument).with(
         'status_changed.customs_tariff_importer',
-        hash_including(version: '1.30', from_status: 'pending', to_status: 'approved', whodunnit: 'user-1'),
+        hash_including(version: '1.30', from_status: 'pending', to_status: 'approved', whodunnit: 'user-1', review_backlog: 2),
       )
     end
   end
