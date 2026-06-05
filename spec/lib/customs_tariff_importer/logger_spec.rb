@@ -184,4 +184,48 @@ RSpec.describe CustomsTariffImporter::Logger do
       end
     end
   end
+
+  describe '#status_changed' do
+    it 'logs the status transition and operator' do
+      allow(log_subscriber).to receive(:info)
+
+      log_subscriber.status_changed(build_event(
+                                      'status_changed',
+                                      payload: { version: '1.30', from_status: 'pending', to_status: 'approved', whodunnit: 'user-1' },
+                                    ))
+
+      expect(log_subscriber).to have_received(:info) do |json|
+        entry = JSON.parse(json)
+        expect(entry).to include(
+          'event' => 'status_changed',
+          'version' => '1.30',
+          'from_status' => 'pending',
+          'to_status' => 'approved',
+          'whodunnit' => 'user-1',
+        )
+      end
+    end
+  end
+
+  describe '#section_note_updated' do
+    it 'logs the note identifiers and operator' do
+      allow(log_subscriber).to receive(:info)
+
+      log_subscriber.section_note_updated(build_event(
+                                            'section_note_updated',
+                                            payload: { version: '1.30', section_id: 1, note_id: 12, whodunnit: 'user-1' },
+                                          ))
+
+      expect(log_subscriber).to have_received(:info) do |json|
+        entry = JSON.parse(json)
+        expect(entry).to include(
+          'event' => 'section_note_updated',
+          'version' => '1.30',
+          'section_id' => 1,
+          'note_id' => 12,
+          'whodunnit' => 'user-1',
+        )
+      end
+    end
+  end
 end

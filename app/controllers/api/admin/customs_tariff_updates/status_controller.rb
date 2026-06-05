@@ -19,7 +19,15 @@ module Api
             return
           end
 
+          previous_status = customs_tariff_update.status
           customs_tariff_update.update(status: new_status)
+          CustomsTariffImporter::Instrumentation.status_changed(
+            version: customs_tariff_update.version,
+            from_status: previous_status,
+            to_status: new_status,
+            whodunnit: TradeTariffRequest.whodunnit,
+          )
+
           render json: Api::Admin::CustomsTariffUpdateSerializer.new(customs_tariff_update, is_collection: false).serializable_hash
         end
 

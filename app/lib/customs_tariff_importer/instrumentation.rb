@@ -55,5 +55,13 @@ module CustomsTariffImporter
     def document_import_failed(version:, error_class:, error_message:)
       instrument('document_import_failed', version:, error_class:, error_message:)
     end
+
+    def status_changed(version:, from_status:, to_status:, whodunnit:)
+      instrument('status_changed', version:, from_status:, to_status:, whodunnit:)
+    end
+
+    def section_note_updated(version:, section_id:, note_id:, whodunnit:)
+      instrument('section_note_updated', version:, section_id:, note_id:, whodunnit:)
+    end
   end
 end

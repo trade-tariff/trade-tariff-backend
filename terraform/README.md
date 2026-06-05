@@ -28,6 +28,7 @@ Terraform to deploy the service into AWS.
 | <a name="module_search_operations_dashboard"></a> [search\_operations\_dashboard](#module\_search\_operations\_dashboard) | ./modules/search_operations_dashboard | n/a |
 | <a name="module_search_quality_dashboard"></a> [search\_quality\_dashboard](#module\_search\_quality\_dashboard) | ./modules/search_quality_dashboard | n/a |
 | <a name="module_self_text_generator_dashboard"></a> [self\_text\_generator\_dashboard](#module\_self\_text\_generator\_dashboard) | ./modules/self_text_generator_dashboard | n/a |
+| <a name="module_tariff_note_pipeline_dashboard"></a> [tariff\_note\_pipeline\_dashboard](#module\_tariff\_note\_pipeline\_dashboard) | ./modules/tariff_note_pipeline_dashboard | n/a |
 | <a name="module_tariff_sync_dashboard"></a> [tariff\_sync\_dashboard](#module\_tariff\_sync\_dashboard) | ./modules/tariff_sync_dashboard | n/a |
 | <a name="module_worker_uk"></a> [worker\_uk](#module\_worker\_uk) | git@github.com:trade-tariff/trade-tariff-platform-terraform-modules.git//aws/ecs-service | aws/ecs-service-v3.1.0 |
 | <a name="module_worker_xi"></a> [worker\_xi](#module\_worker\_xi) | git@github.com:trade-tariff/trade-tariff-platform-terraform-modules.git//aws/ecs-service | aws/ecs-service-v3.1.0 |
@@ -98,5 +99,6 @@ Terraform to deploy the service into AWS.
 | <a name="output_search_operations_dashboard_url"></a> [search\_operations\_dashboard\_url](#output\_search\_operations\_dashboard\_url) | URL to the Search Operations CloudWatch dashboard |
 | <a name="output_search_quality_dashboard_url"></a> [search\_quality\_dashboard\_url](#output\_search\_quality\_dashboard\_url) | URL to the Search Quality CloudWatch dashboard |
 | <a name="output_self_text_generator_dashboard_url"></a> [self\_text\_generator\_dashboard\_url](#output\_self\_text\_generator\_dashboard\_url) | URL to the Self-Text Generator CloudWatch dashboard |
+| <a name="output_tariff_note_pipeline_dashboard_url"></a> [tariff\_note\_pipeline\_dashboard\_url](#output\_tariff\_note\_pipeline\_dashboard\_url) | URL to the Tariff Note Pipeline CloudWatch dashboard |
 | <a name="output_tariff_sync_dashboard_url"></a> [tariff\_sync\_dashboard\_url](#output\_tariff\_sync\_dashboard\_url) | URL to the Tariff Sync CloudWatch dashboard |
 <!-- END_TF_DOCS -->

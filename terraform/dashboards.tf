@@ -75,3 +75,16 @@ output "tariff_sync_dashboard_url" {
   description = "URL to the Tariff Sync CloudWatch dashboard"
   value       = module.tariff_sync_dashboard.dashboard_url
 }
+
+module "tariff_note_pipeline_dashboard" {
+  source = "./modules/tariff_note_pipeline_dashboard"
+
+  environment    = var.environment
+  log_group_name = "platform-logs-${var.environment}"
+  region         = var.region
+}
+
+output "tariff_note_pipeline_dashboard_url" {
+  description = "URL to the Tariff Note Pipeline CloudWatch dashboard"
+  value       = module.tariff_note_pipeline_dashboard.dashboard_url
+}

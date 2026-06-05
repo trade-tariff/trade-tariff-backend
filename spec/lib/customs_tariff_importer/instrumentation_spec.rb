@@ -120,4 +120,26 @@ RSpec.describe CustomsTariffImporter::Instrumentation do
       )
     end
   end
+
+  describe '.status_changed' do
+    it 'emits status_changed with the operator and status transition' do
+      allow(ActiveSupport::Notifications).to receive(:instrument)
+      described_class.status_changed(version: '1.30', from_status: 'pending', to_status: 'approved', whodunnit: 'user-1')
+      expect(ActiveSupport::Notifications).to have_received(:instrument).with(
+        'status_changed.customs_tariff_importer',
+        hash_including(version: '1.30', from_status: 'pending', to_status: 'approved', whodunnit: 'user-1'),
+      )
+    end
+  end
+
+  describe '.section_note_updated' do
+    it 'emits section_note_updated with the operator and note identifiers' do
+      allow(ActiveSupport::Notifications).to receive(:instrument)
+      described_class.section_note_updated(version: '1.30', section_id: 1, note_id: 12, whodunnit: 'user-1')
+      expect(ActiveSupport::Notifications).to have_received(:instrument).with(
+        'section_note_updated.customs_tariff_importer',
+        hash_including(version: '1.30', section_id: 1, note_id: 12, whodunnit: 'user-1'),
+      )
+    end
+  end
 end

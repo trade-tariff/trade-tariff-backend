@@ -94,6 +94,26 @@ module CustomsTariffImporter
       )
     end
 
+    def status_changed(event)
+      info log_entry(
+        event: 'status_changed',
+        version: event.payload[:version],
+        from_status: event.payload[:from_status],
+        to_status: event.payload[:to_status],
+        whodunnit: event.payload[:whodunnit],
+      )
+    end
+
+    def section_note_updated(event)
+      info log_entry(
+        event: 'section_note_updated',
+        version: event.payload[:version],
+        section_id: event.payload[:section_id],
+        note_id: event.payload[:note_id],
+        whodunnit: event.payload[:whodunnit],
+      )
+    end
+
     private
 
     def log_entry(data)
