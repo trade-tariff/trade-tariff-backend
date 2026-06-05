@@ -121,6 +121,7 @@ class AdminConfiguration < Sequel::Model(Sequel[:admin_configurations].qualify(:
     'pos_search_enabled' => true,
     'search_labels_enabled' => true,
     'search_non_declarables' => false,
+    'tariff_knowledge_context_enabled' => false,
     'search_model' => NESTED_OPTION_DEFAULTS['search_model'][:selected],
     'search_result_limit' => 0,
     'suggest_results_limit' => 10,

@@ -40,6 +40,7 @@ module Api
         ::Search::Instrumentation.search(request_id:, query: q, search_type: 'interactive') do
           exact = find_exact_match
           if exact
+            exact = augment_with_tariff_knowledge_context([exact]).first
             next [with_description_intercept_meta(GoodsNomenclatureSearchSerializer.serialize([exact])),
                   completion_payload(result_count: 1, results_type: 'exact_match')]
           end
@@ -50,13 +51,15 @@ module Api
             next [empty_response, completion_payload(result_count: 0, results_type: retrieval.results_type)]
           end
 
+          goods_nomenclatures = augment_with_tariff_knowledge_context(retrieval.goods_nomenclatures)
+
           interactive_result = run_interactive_search(
-            retrieval.goods_nomenclatures,
+            goods_nomenclatures,
             retrieval.expanded_query,
           )
 
           response = build_response(
-            retrieval.goods_nomenclatures,
+            goods_nomenclatures,
             interactive_result,
             retrieval.expanded_query,
           )
@@ -323,6 +326,12 @@ module Api
           answers: answers,
           request_id: request_id,
         )
+      end
+
+      def augment_with_tariff_knowledge_context(goods_nomenclatures)
+        return goods_nomenclatures unless AdminConfiguration.enabled?('tariff_knowledge_context_enabled')
+
+        TariffKnowledge::SearchAugmenter.call(goods_nomenclatures)
       end
 
       def build_response(goods_nomenclatures, interactive_result, expanded_query)
