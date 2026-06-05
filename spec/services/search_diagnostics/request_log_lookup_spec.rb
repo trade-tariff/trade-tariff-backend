@@ -134,6 +134,18 @@ RSpec.describe SearchDiagnostics::RequestLogLookup do
       end
     end
 
+    context 'when polling raises a query error' do
+      let(:query_error) { described_class::QueryError.new('CloudWatch query timed out while polling') }
+
+      before do
+        allow(client).to receive(:get_query_results).and_raise(query_error)
+      end
+
+      it 're-raises the original query error' do
+        expect { lookup.call }.to raise_error(satisfy { |error| error.equal?(query_error) })
+      end
+    end
+
     context 'with bounded params' do
       let(:lookback_hours) { 999 }
       let(:limit) { 999 }

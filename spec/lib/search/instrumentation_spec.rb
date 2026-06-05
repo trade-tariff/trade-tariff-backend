@@ -264,8 +264,33 @@ RSpec.describe Search::Instrumentation do
           search_type: 'interactive',
           match_source: 'search_reference',
           target_id: '0101210000',
+          target_endpoint: 'commodities',
           goods_nomenclature_sid: 1,
           details: hash_including(has_self_text: true, self_text_id: 1, label_id: 1),
+        ),
+      )
+    end
+
+    it 'uses the classic entity route target for exact tariff entities' do
+      allow(ActiveSupport::Notifications).to receive(:instrument)
+      heading = Heading.call(goods_nomenclature_item_id: '0101000000', goods_nomenclature_sid: 1)
+
+      described_class.exact_match_selected(
+        request_id: 'req-1',
+        search_type: 'classic',
+        query: '0101',
+        match_source: 'goods_nomenclature',
+        matched_value: '0101',
+        result: heading,
+      )
+
+      expect(ActiveSupport::Notifications).to have_received(:instrument).with(
+        'exact_match_selected.search',
+        hash_including(
+          target_type: 'Heading',
+          target_endpoint: 'headings',
+          target_id: '0101',
+          goods_nomenclature_item_id: '0101000000',
         ),
       )
     end
@@ -280,8 +305,13 @@ RSpec.describe Search::Instrumentation do
         query: 'horse',
         results: {
           goods_nomenclature_match: {
-            'commodities' => [
-              { '_score' => 12.5, '_source' => { 'goods_nomenclature_item_id' => '0101210000', 'goods_nomenclature_sid' => 1, 'goods_nomenclature_class' => 'Commodity' } },
+            'chapters' => [
+              { '_score' => 12.5, '_source' => { 'goods_nomenclature_item_id' => '0100000000', 'goods_nomenclature_sid' => 1 } },
+            ],
+          },
+          reference_match: {
+            'headings' => [
+              { '_score' => 10.1, '_source' => { 'reference_class' => 'Heading', 'reference' => { 'id' => 2, 'title' => 'Equine animals', 'goods_nomenclature_item_id' => '0101000000' } } },
             ],
           },
         },
@@ -292,8 +322,49 @@ RSpec.describe Search::Instrumentation do
         hash_including(
           request_id: 'req-1',
           search_type: 'classic',
-          result_count: 1,
-          details: { goods_nomenclature_match: { 'commodities' => [hash_including(goods_nomenclature_item_id: '0101210000')] } },
+          result_count: 2,
+          details: {
+            goods_nomenclature_match: {
+              'chapters' => [
+                hash_including(target_endpoint: 'chapters', target_id: '01', goods_nomenclature_class: 'Chapter'),
+              ],
+            },
+            reference_match: {
+              'headings' => [
+                hash_including(target_endpoint: 'headings', target_id: '0101', goods_nomenclature_class: 'Heading', reference_title: 'Equine animals'),
+              ],
+            },
+          },
+        ),
+      )
+    end
+
+    it 'counts all fuzzy results while truncating logged details' do
+      allow(ActiveSupport::Notifications).to receive(:instrument)
+      hits = Array.new(60) do |index|
+        {
+          '_score' => 12.5,
+          '_source' => {
+            'goods_nomenclature_item_id' => "01012100#{index.to_s.rjust(2, '0')}",
+            'goods_nomenclature_sid' => index,
+            'goods_nomenclature_class' => 'Commodity',
+          },
+        }
+      end
+
+      described_class.fuzzy_results_returned(
+        request_id: 'req-1',
+        query: 'horse',
+        results: { goods_nomenclature_match: { 'commodities' => hits } },
+      )
+
+      expect(ActiveSupport::Notifications).to have_received(:instrument).with(
+        'fuzzy_results_returned.search',
+        hash_including(
+          result_count: 60,
+          details: hash_including(
+            goods_nomenclature_match: hash_including('commodities' => have_attributes(size: 50)),
+          ),
         ),
       )
     end

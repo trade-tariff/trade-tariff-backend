@@ -101,7 +101,8 @@ module Search
           match_source:,
           matched_value:,
           target_type: result_fields[:goods_nomenclature_class],
-          target_id: result_fields[:goods_nomenclature_item_id],
+          target_id: result_fields[:target_id],
+          target_endpoint: result_fields[:target_endpoint],
           goods_nomenclature_item_id: result_fields[:goods_nomenclature_item_id],
           goods_nomenclature_sid: result_fields[:goods_nomenclature_sid],
           details: result_fields,
@@ -282,19 +283,30 @@ module Search
         next unless groups.respond_to?(:each_pair)
 
         memo[match_type] = groups.each_with_object({}) do |(level, hits), level_memo|
-          level_memo[level] = summarize_hits(hits)
+          level_memo[level] = summarize_hits(hits, level:)
         end
       end
     end
 
-    def summarize_hits(hits)
+    def summarize_hits(hits, level:)
       Array(hits).first(MAX_LOGGED_RESULTS).map do |hit|
         source = hit['_source'] || hit[:_source] || {}
         reference = source['reference'] || source[:reference] || {}
+        target = reference.presence || source
+        goods_nomenclature_class = target['class'] || target[:class] ||
+          source['reference_class'] || source[:reference_class] ||
+          target['goods_nomenclature_class'] || target[:goods_nomenclature_class] ||
+          level.to_s.singularize.camelize
+        goods_nomenclature_item_id = target['goods_nomenclature_item_id'] || target[:goods_nomenclature_item_id]
+        goods_nomenclature_sid = target['goods_nomenclature_sid'] || target[:goods_nomenclature_sid] || target['id'] || target[:id]
+        producline_suffix = target['producline_suffix'] || target[:producline_suffix]
         {
-          goods_nomenclature_item_id: source['goods_nomenclature_item_id'] || source[:goods_nomenclature_item_id],
-          goods_nomenclature_sid: source['goods_nomenclature_sid'] || source[:goods_nomenclature_sid],
-          goods_nomenclature_class: source['goods_nomenclature_class'] || source[:goods_nomenclature_class],
+          target_endpoint: level.to_s,
+          target_id: target_id_for_classic_hit(level, goods_nomenclature_item_id, producline_suffix),
+          goods_nomenclature_item_id: goods_nomenclature_item_id,
+          goods_nomenclature_sid: goods_nomenclature_sid,
+          goods_nomenclature_class: goods_nomenclature_class,
+          producline_suffix: producline_suffix,
           reference_id: reference['id'] || reference[:id],
           reference_title: reference['title'] || reference[:title],
           score: hit['_score'] || hit[:_score],
@@ -308,6 +320,8 @@ module Search
 
     def result_summary(result)
       {
+        target_endpoint: result_endpoint(result),
+        target_id: target_id_for_result(result),
         goods_nomenclature_item_id: result.try(:goods_nomenclature_item_id),
         goods_nomenclature_sid: result.try(:goods_nomenclature_sid) || result.try(:id),
         goods_nomenclature_class: result.try(:goods_nomenclature_class),
@@ -320,9 +334,40 @@ module Search
       }.compact_blank
     end
 
+    def result_endpoint(result)
+      result.try(:goods_nomenclature_class).to_s.underscore.pluralize.presence ||
+        result.class.name.demodulize.underscore.pluralize
+    end
+
+    def target_id_for_result(result)
+      return result.to_param if result.is_a?(GoodsNomenclature)
+
+      result.try(:goods_nomenclature_item_id)
+    end
+
+    def target_id_for_classic_hit(level, goods_nomenclature_item_id, producline_suffix)
+      return if goods_nomenclature_item_id.blank?
+
+      case level.to_s
+      when 'chapters'
+        goods_nomenclature_item_id.first(2)
+      when 'headings'
+        goods_nomenclature_item_id.first(4)
+      when 'subheadings'
+        [goods_nomenclature_item_id, producline_suffix].compact_blank.join('-')
+      else
+        goods_nomenclature_item_id
+      end
+    end
+
     def nested_result_count(results)
-      summarize_classic_fuzzy_results(results).sum do |_match_type, groups|
-        groups.sum { |_level, hits| hits.size }
+      return 0 unless results.is_a?(Hash)
+
+      %i[goods_nomenclature_match reference_match].sum do |match_type|
+        groups = results[match_type] || results[match_type.to_s]
+        next 0 unless groups.respond_to?(:each_value)
+
+        groups.each_value.sum { |hits| Array(hits).size }
       end
     end
   end

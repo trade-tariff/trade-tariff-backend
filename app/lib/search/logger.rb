@@ -67,6 +67,7 @@ module Search
         matched_value: event.payload[:matched_value],
         target_type: event.payload[:target_type],
         target_id: event.payload[:target_id],
+        target_endpoint: event.payload[:target_endpoint],
         goods_nomenclature_item_id: event.payload[:goods_nomenclature_item_id],
         goods_nomenclature_sid: event.payload[:goods_nomenclature_sid],
         details: event.payload[:details],
