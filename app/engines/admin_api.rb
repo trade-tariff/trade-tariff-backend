@@ -83,6 +83,13 @@ AdminApi.routes.draw do
       patch 'customs_tariff_updates/:customs_tariff_update_version/section_notes/:id', to: 'customs_tariff_updates/section_notes#update',  constraints: { customs_tariff_update_version: /[^\/]+/ }
       patch 'customs_tariff_updates/:customs_tariff_update_version/status',            to: 'customs_tariff_updates/status#update',         constraints: { customs_tariff_update_version: /[^\/]+/ }
 
+      namespace :customs_tariff_pipeline do
+        resources :events, only: [:index]
+        resources :metric_bins, only: [:index]
+        resources :alerts, only: [:index]
+        resource :dashboard, only: [:show], controller: :dashboard
+      end
+
       resources :quota_order_numbers, module: 'quota_order_numbers', only: %i[] do
         resources :quota_definitions, only: %i[index show]
       end
