@@ -35,6 +35,21 @@ RSpec.describe SearchDiagnostics::RequestLogLookup do
           result_field('search_type', 'classic'),
           result_field('result_count', '3'),
         ],
+        [
+          result_field('@timestamp', '2026-06-05 09:59:01.000'),
+          result_field('@message', {
+            service: 'search',
+            event: 'search_completed',
+            request_id:,
+            search_type: 'interactive',
+            query: 'horse',
+            result_count: 1,
+          }.to_json),
+          result_field('event', 'search_completed'),
+          result_field('request_id', request_id),
+          result_field('search_type', 'interactive'),
+          result_field('result_count', '1'),
+        ],
       ],
     )
   end
@@ -75,6 +90,13 @@ RSpec.describe SearchDiagnostics::RequestLogLookup do
         'request_id' => request_id,
         'result_count' => '3',
       )
+    end
+
+    it 'returns classic and internal search events scoped by the same request id key' do
+      events = lookup.call.events
+
+      expect(events.map(&:search_type)).to eq(%w[classic interactive])
+      expect(events.map { |event| event.fields['request_id'] }).to all(eq(request_id))
     end
 
     context 'when CloudWatch is still running the query' do
