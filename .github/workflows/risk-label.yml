@@ -1,0 +1,97 @@
+name: "Risk Label"
+
+on:
+  pull_request_target:
+    types: [opened, edited, synchronize]
+
+jobs:
+  risk-label:
+    name: Apply risk label
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      pull-requests: write
+
+    steps:
+      - name: Detect risk level and apply label
+        uses: actions/github-script@v9
+        with:
+          script: |
+            const body = context.payload.pull_request.body || '';
+            const prNumber = context.payload.pull_request.number;
+
+            const GREEN = '🟢';
+            const AMBER = '🟠';
+            const RED   = '🔴';
+
+            const LABEL_LOW    = 'low-risk';
+            const LABEL_MEDIUM = 'medium-risk';
+            const LABEL_HIGH   = 'high-risk';
+            const RISK_LABELS  = [LABEL_LOW, LABEL_MEDIUM, LABEL_HIGH];
+
+            const { data: currentLabels } = await github.rest.issues.listLabelsOnIssue({
+              owner: context.repo.owner,
+              repo:  context.repo.repo,
+              issue_number: prNumber,
+            });
+
+            const existingRiskLabel = currentLabels.find(l => RISK_LABELS.includes(l.name));
+
+            // Prefer emoji in the body; fall back to an already-applied risk label.
+            const hasGreen = body.includes(GREEN);
+            const hasAmber = body.includes(AMBER);
+            const hasRed   = body.includes(RED);
+
+            let detectedLabel = null;
+
+            if (hasRed) {
+              detectedLabel = LABEL_HIGH;
+            } else if (hasAmber) {
+              detectedLabel = LABEL_MEDIUM;
+            } else if (hasGreen) {
+              detectedLabel = LABEL_LOW;
+            } else if (existingRiskLabel) {
+              detectedLabel = existingRiskLabel.name;
+            }
+
+            if (!detectedLabel) {
+              core.setFailed(
+                'No risk level found. Add 🟢, 🟠, or 🔴 to the PR description, or apply a risk label manually.'
+              );
+              return;
+            }
+
+            // Remove stale risk labels before applying the detected one.
+            for (const label of currentLabels) {
+              if (RISK_LABELS.includes(label.name) && label.name !== detectedLabel) {
+                await github.rest.issues.removeLabel({
+                  owner: context.repo.owner,
+                  repo:  context.repo.repo,
+                  issue_number: prNumber,
+                  name: label.name,
+                });
+              }
+            }
+
+            if (!existingRiskLabel || existingRiskLabel.name !== detectedLabel) {
+              await github.rest.issues.addLabels({
+                owner: context.repo.owner,
+                repo:  context.repo.repo,
+                issue_number: prNumber,
+                labels: [detectedLabel],
+              });
+            }
+
+            await github.rest.issues.addLabels({
+              owner: context.repo.owner,
+              repo:  context.repo.repo,
+              issue_number: prNumber,
+              labels: [detectedLabel],
+            });
+
+            if (detectedLabel === LABEL_HIGH) {
+              core.setFailed(
+                '🔴 This PR is rated HIGH RISK. An admin must bypass branch protection to merge it.'
+              );
+            }
