@@ -66,7 +66,7 @@ module Reporting
           condition << "certificate:#{measure_condition.document_code}" if measure_condition.document_code.present?
           condition << "action:#{measure_condition.action_code}"
           condition.join(',')
-        }.join('|').presence || nil
+        }.join('|').presence
       end
 
       def measure__geographical_area__sid

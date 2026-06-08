@@ -79,7 +79,7 @@ module Reporting
           end
 
           def additional_code
-            "#{additional_code_type_id}#{additional_code_id}".presence || nil
+            "#{additional_code_type_id}#{additional_code_id}".presence
           end
 
           def measure_type_description
