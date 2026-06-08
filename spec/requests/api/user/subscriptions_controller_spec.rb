@@ -85,6 +85,30 @@ RSpec.describe Api::User::SubscriptionsController do
         expect(response.body).to eq(serialized_subscription.to_json)
       end
     end
+
+    context 'when no authentication header is provided' do
+      let(:request_header_overrides) { {} }
+      let(:subscription) do
+        create(:user_subscription,
+               subscription_type_id: Subscriptions::Type.stop_press.id,
+               user: user)
+      end
+
+      before do
+        allow(PublicUsers::Subscription).to receive(:find).with(uuid: valid_id).and_return(subscription)
+        get "/uk/user/subscriptions/#{valid_id}", headers: request_headers
+      end
+
+      it 'returns a successful response' do
+        expect(response).to have_http_status(:ok)
+      end
+
+      it 'returns the subscription payload' do
+        serialized_subscription =
+          Api::User::SubscriptionSerializer.new(subscription, include: [:subscription_type]).serializable_hash
+        expect(response.body).to eq(serialized_subscription.to_json)
+      end
+    end
   end
 
   describe '#destroy' do
