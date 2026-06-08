@@ -21,6 +21,6 @@ jobs:
     uses: trade-tariff/trade-tariff-tools/.github/workflows/auto-merge-low-risk.yml@main
     with:
       label: low-risk
-      merge-method: squash
+      merge-method: merge
     secrets:
       github-token: ${{ secrets.PULL_REQUEST_PAT }}
