@@ -1215,6 +1215,28 @@ RSpec.describe Api::Internal::SearchService do
             ),
           )
         end
+
+        context 'when source retrieval results contain duplicate goods nomenclatures' do
+          let(:hybrid_source_results) do
+            [
+              hybrid_results[0].with(score: 12.0),
+              hybrid_results[0].with(score: 250.0),
+              hybrid_results[1].with(score: 200.0),
+              hybrid_results[1].with(score: 8.0),
+            ]
+          end
+
+          it 'deduplicates source results by SID and keeps the highest score for the expansion decision' do
+            described_class.new(q: 'horses').call
+
+            expect(Search::Instrumentation).to have_received(:query_expansion_decided).with(
+              hash_including(
+                result_count: 2,
+                max_score: 250.0,
+              ),
+            )
+          end
+        end
       end
 
       context 'with a filtering description intercept' do

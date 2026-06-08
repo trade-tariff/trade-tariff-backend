@@ -205,7 +205,18 @@ module Api
       end
 
       def hybrid_decision_results(result)
-        result.respond_to?(:source_results) ? result.source_results : result.results
+        source_results = result.respond_to?(:source_results) ? result.source_results : result.results
+
+        results_by_sid = source_results.each_with_object({}) do |source_result, grouped_results|
+          result_key = source_result.goods_nomenclature_sid.presence || source_result.object_id
+          existing = grouped_results[result_key]
+
+          if existing.blank? || source_result.score.to_f > existing.score.to_f
+            grouped_results[result_key] = source_result
+          end
+        end
+
+        results_by_sid.values
       end
 
       def opensearch_result_limit
