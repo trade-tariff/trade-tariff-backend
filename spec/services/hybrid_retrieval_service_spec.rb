@@ -87,6 +87,12 @@ RSpec.describe HybridRetrievalService do
       expect(sids).to include(1, 2, 3, 4)
     end
 
+    it 'returns source results for diagnostics decisions' do
+      result = described_class.call(query: 'horses', as_of: Time.zone.today)
+
+      expect(result.source_results).to match_array(opensearch_results + vector_results)
+    end
+
     it 'ranks items in both lists higher than items in only one list' do
       result = described_class.call(query: 'horses', as_of: Time.zone.today)
 
@@ -201,10 +207,23 @@ RSpec.describe HybridRetrievalService do
         allow(VectorRetrievalService).to receive(:call).and_raise(StandardError, 'vector down')
       end
 
-      it 'returns empty results' do
-        result = described_class.call(query: 'horses', as_of: Time.zone.today)
+      it 'raises a retrieval failure' do
+        expect {
+          described_class.call(query: 'horses', as_of: Time.zone.today)
+        }.to raise_error(described_class::AllLegsFailed, 'Hybrid retrieval failed for all legs: opensearch down; vector down')
+      end
 
-        expect(result.results).to be_empty
+      it 'emits error status for both legs' do
+        expect {
+          described_class.call(query: 'horses', as_of: Time.zone.today)
+        }.to raise_error(described_class::AllLegsFailed)
+
+        expect(Search::Instrumentation).to have_received(:retrieval_leg_completed).with(
+          hash_including(leg: :opensearch, status: 'error', error_message: 'opensearch down'),
+        )
+        expect(Search::Instrumentation).to have_received(:retrieval_leg_completed).with(
+          hash_including(leg: :vector, status: 'error', error_message: 'vector down'),
+        )
       end
     end
   end

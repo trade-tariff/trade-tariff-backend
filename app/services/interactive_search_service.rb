@@ -35,6 +35,8 @@ class InteractiveSearchService
       request_id: request_id,
       model: configured_model,
       attempt_number: attempt,
+      iteration: attempt,
+      effective_query: expanded_query,
     ) { OpenaiClient.call(build_context, model: configured_model, reasoning_effort: configured_reasoning_effort) }
     parsed = ExtractBottomJson.call(response)
 
@@ -183,6 +185,8 @@ class InteractiveSearchService
       request_id: request_id,
       model: configured_model,
       attempt_number: attempt,
+      iteration: attempt,
+      effective_query: expanded_query,
     ) { OpenaiClient.call(context, model: configured_model, reasoning_effort: configured_reasoning_effort) }
     parsed = ExtractBottomJson.call(response)
 
@@ -269,6 +273,8 @@ class InteractiveSearchService
       request_id: request_id,
       question_count: questions.size,
       attempt_number: attempt,
+      iteration: attempt,
+      effective_query: expanded_query,
       questions: questions,
     )
 
@@ -309,6 +315,8 @@ class InteractiveSearchService
       answer_count: answers_data.size,
       confidence_levels: confidence_levels,
       attempt_number: attempt,
+      iteration: attempt,
+      effective_query: expanded_query,
       answers: answers_data,
     )
   end

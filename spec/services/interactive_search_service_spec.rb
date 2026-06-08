@@ -141,6 +141,8 @@ RSpec.describe InteractiveSearchService do
           request_id: request_id,
           model: 'gpt-5.4',
           attempt_number: 4,
+          iteration: 4,
+          effective_query: expanded_query,
         )
       end
 
@@ -191,6 +193,18 @@ RSpec.describe InteractiveSearchService do
 
       it 'includes the model used' do
         expect(result.model).to eq('gpt-5.4')
+      end
+
+      it 'instruments the question iteration' do
+        result
+
+        expect(Search::Instrumentation).to have_received(:question_returned).with(
+          hash_including(
+            attempt_number: 1,
+            iteration: 1,
+            effective_query: expanded_query,
+          ),
+        )
       end
     end
 
@@ -333,6 +347,18 @@ RSpec.describe InteractiveSearchService do
 
       it 'increments the attempt counter' do
         expect(result.attempt).to eq(2)
+      end
+
+      it 'instruments answers with query iteration' do
+        result
+
+        expect(Search::Instrumentation).to have_received(:answer_returned).with(
+          hash_including(
+            attempt_number: 2,
+            iteration: 2,
+            effective_query: expanded_query,
+          ),
+        )
       end
     end
 

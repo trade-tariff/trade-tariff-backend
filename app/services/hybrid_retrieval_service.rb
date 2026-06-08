@@ -1,36 +1,46 @@
 class HybridRetrievalService
-  Result = Data.define(:results, :expanded_query)
+  AllLegsFailed = Class.new(StandardError)
+  LegResult = Data.define(:value, :error)
+  Result = Data.define(:results, :expanded_query, :source_results)
 
-  def self.call(query:, as_of:, expanded_query: nil, request_id: nil, limit: 30, filter_prefixes: [])
-    new(query:, as_of:, expanded_query:, request_id:, limit:, filter_prefixes:).call
+  def self.call(query:, as_of:, expanded_query: nil, request_id: nil, limit: 30, filter_prefixes: [], iteration: nil)
+    new(query:, as_of:, expanded_query:, request_id:, limit:, filter_prefixes:, iteration:).call
   end
 
-  def initialize(query:, as_of:, expanded_query: nil, request_id: nil, limit: 30, filter_prefixes: [])
+  def initialize(query:, as_of:, expanded_query: nil, request_id: nil, limit: 30, filter_prefixes: [], iteration: nil)
     @query = query
     @expanded_query = expanded_query.presence || query
     @as_of = as_of
     @request_id = request_id
     @limit = limit
     @filter_prefixes = Array(filter_prefixes).compact_blank
+    @iteration = iteration
   end
 
   def call
-    opensearch_result, vector_results = run_concurrent_retrievals
+    opensearch_leg, vector_leg = run_concurrent_retrievals
+    leg_errors = [opensearch_leg.error, vector_leg.error].compact
 
-    opensearch_items = opensearch_result&.results || []
-    vector_items = vector_results || []
+    if leg_errors.size == 2
+      raise AllLegsFailed, "Hybrid retrieval failed for all legs: #{leg_errors.map(&:message).join('; ')}"
+    end
+
+    opensearch_items = opensearch_leg.value&.results || []
+    vector_items = vector_leg.value || []
 
     merged = rrf_merge(opensearch_items, vector_items)
     Search::Instrumentation.retrieval_results_returned(
       request_id: @request_id,
       query: @query,
+      effective_query: @expanded_query,
       search_type: 'interactive',
       retrieval_method: 'hybrid',
       stage: 'after_rrf',
+      iteration: @iteration,
       results: merged,
     )
 
-    Result.new(results: merged, expanded_query: @expanded_query)
+    Result.new(results: merged, expanded_query: @expanded_query, source_results: opensearch_items + vector_items)
   end
 
   private
@@ -63,14 +73,16 @@ class HybridRetrievalService
     Search::Instrumentation.retrieval_results_returned(
       request_id: @request_id,
       query: @query,
+      effective_query: @expanded_query,
       search_type: 'interactive',
       retrieval_method: 'hybrid',
       stage: 'before_rrf',
       leg: leg,
+      iteration: @iteration,
       results: leg == :opensearch ? result&.results || [] : result || [],
     )
 
-    result
+    LegResult.new(value: result, error: nil)
   rescue StandardError => e
     duration_ms = ((Process.clock_gettime(Process::CLOCK_MONOTONIC) - start) * 1000).round(2)
 
@@ -80,7 +92,7 @@ class HybridRetrievalService
     )
 
     Rails.logger.error("HybridRetrievalService #{leg} leg failed: #{e.message}")
-    nil
+    LegResult.new(value: nil, error: e)
   end
 
   def opensearch_args

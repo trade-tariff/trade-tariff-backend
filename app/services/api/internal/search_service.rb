@@ -3,7 +3,7 @@ module Api
     class SearchService
       include QueryProcessing
 
-      RetrievalResult = Data.define(:goods_nomenclatures, :max_score, :expanded_query, :results_type)
+      RetrievalResult = Data.define(:goods_nomenclatures, :max_score, :expanded_query, :results_type, :decision_results)
 
       attr_reader :q, :as_of, :answers, :request_id, :description_intercept, :expanded_query
 
@@ -110,7 +110,7 @@ module Api
         preliminary_retrieval = retrieve_short_list_with_expanded_query(unexpanded_query)
         decision = SearchExpansionDecisionService.call(
           query: unexpanded_query,
-          results: preliminary_retrieval.goods_nomenclatures,
+          results: preliminary_retrieval.decision_results,
           request_id: request_id,
         )
 
@@ -143,10 +143,12 @@ module Api
         ::Search::Instrumentation.retrieval_results_returned(
           request_id: request_id,
           query: q,
+          effective_query: search_expanded_query,
           search_type: 'interactive',
           retrieval_method: 'vector',
           stage: 'returned',
           leg: 'vector',
+          iteration: search_iteration,
           results: goods_nomenclatures,
         )
 
@@ -155,6 +157,7 @@ module Api
           max_score: goods_nomenclatures.map(&:score).compact.max,
           expanded_query: search_expanded_query,
           results_type: 'vector',
+          decision_results: goods_nomenclatures,
         )
       end
 
@@ -167,10 +170,12 @@ module Api
         ::Search::Instrumentation.retrieval_results_returned(
           request_id: request_id,
           query: q,
+          effective_query: result.expanded_query,
           search_type: 'interactive',
           retrieval_method: 'opensearch',
           stage: 'returned',
           leg: 'opensearch',
+          iteration: search_iteration,
           results: result.results,
         )
 
@@ -179,6 +184,7 @@ module Api
           max_score: result.results.map(&:score).compact.max,
           expanded_query: result.expanded_query,
           results_type: 'opensearch',
+          decision_results: result.results,
         )
       end
 
@@ -186,15 +192,20 @@ module Api
         result = HybridRetrievalService.call(
           query: q, expanded_query: search_expanded_query,
           as_of: as_of, request_id: request_id, limit: opensearch_result_limit,
-          filter_prefixes: filter_prefixes
+          filter_prefixes: filter_prefixes, iteration: search_iteration
         )
 
         RetrievalResult.new(
           goods_nomenclatures: result.results,
-          max_score: result.results.map(&:score).compact.max,
+          max_score: hybrid_decision_results(result).map(&:score).compact.max,
           expanded_query: result.expanded_query,
           results_type: 'hybrid',
+          decision_results: hybrid_decision_results(result),
         )
+      end
+
+      def hybrid_decision_results(result)
+        result.respond_to?(:source_results) ? result.source_results : result.results
       end
 
       def opensearch_result_limit
@@ -236,10 +247,18 @@ module Api
 
         ::Search::Instrumentation.query_refined(
           request_id: request_id,
+          base_query: base_query,
           original_query: base_query,
           refined_query: refined_query,
+          effective_query: refined_query,
           answer_count: values.size,
+          added_answers: values,
+          iteration: search_iteration,
         ) { refined_query }
+      end
+
+      def search_iteration
+        answers.size + 1
       end
 
       def answered_values

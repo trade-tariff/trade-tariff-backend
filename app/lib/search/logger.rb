@@ -15,6 +15,7 @@ module Search
       info log_entry(
         event: 'query_expanded',
         request_id: event.payload[:request_id],
+        search_type: event.payload[:search_type],
         original_query: event.payload[:original_query],
         expanded_query: event.payload[:expanded_query],
         reason: event.payload[:reason],
@@ -26,9 +27,14 @@ module Search
       info log_entry(
         event: 'query_refined',
         request_id: event.payload[:request_id],
+        search_type: event.payload[:search_type],
+        base_query: event.payload[:base_query],
         original_query: event.payload[:original_query],
         refined_query: event.payload[:refined_query],
+        effective_query: event.payload[:effective_query],
         answer_count: event.payload[:answer_count],
+        added_answers: event.payload[:added_answers],
+        iteration: event.payload[:iteration],
       )
     end
 
@@ -36,6 +42,7 @@ module Search
       info log_entry(
         event: 'query_expansion_decided',
         request_id: event.payload[:request_id],
+        search_type: event.payload[:search_type],
         query: event.payload[:query],
         expand: event.payload[:expand],
         reason: event.payload[:reason],
@@ -48,10 +55,13 @@ module Search
       data = {
         event: 'api_call_completed',
         request_id: event.payload[:request_id],
+        search_type: event.payload[:search_type],
         model: event.payload[:model],
         duration_ms: event.payload[:duration_ms],
         response_type: event.payload[:response_type],
         attempt_number: event.payload[:attempt_number],
+        iteration: event.payload[:iteration],
+        effective_query: event.payload[:effective_query],
       }
       add_error_fields!(data, event)
       info log_entry(data)
@@ -101,6 +111,7 @@ module Search
         request_id: event.payload[:request_id],
         search_type: event.payload[:search_type],
         query: event.payload[:query],
+        effective_query: event.payload[:effective_query],
         retrieval_method: event.payload[:retrieval_method],
         stage: event.payload[:stage],
         leg: event.payload[:leg],
@@ -114,8 +125,11 @@ module Search
       data = {
         event: 'question_returned',
         request_id: event.payload[:request_id],
+        search_type: event.payload[:search_type],
         question_count: event.payload[:question_count],
         attempt_number: event.payload[:attempt_number],
+        iteration: event.payload[:iteration],
+        effective_query: event.payload[:effective_query],
       }
       data[:details] = event.payload[:details] if event.payload[:details]
       info log_entry(data)
@@ -125,9 +139,12 @@ module Search
       data = {
         event: 'answer_returned',
         request_id: event.payload[:request_id],
+        search_type: event.payload[:search_type],
         answer_count: event.payload[:answer_count],
         confidence_levels: event.payload[:confidence_levels],
         attempt_number: event.payload[:attempt_number],
+        iteration: event.payload[:iteration],
+        effective_query: event.payload[:effective_query],
       }
       data[:details] = event.payload[:details] if event.payload[:details]
       info log_entry(data)
@@ -137,6 +154,7 @@ module Search
       info log_entry(description_intercept_fields(event).merge(
                        event: 'description_intercept_checked',
                        request_id: event.payload[:request_id],
+                       search_type: event.payload[:search_type],
                        query: event.payload[:query],
                      ))
     end
@@ -164,6 +182,7 @@ module Search
       data = {
         event: 'retrieval_leg_completed',
         request_id: event.payload[:request_id],
+        search_type: event.payload[:search_type],
         leg: event.payload[:leg],
         duration_ms: event.payload[:duration_ms],
         result_count: event.payload[:result_count],

@@ -777,6 +777,7 @@ RSpec.describe Api::Internal::SearchService do
         allow(AdminConfiguration).to receive(:enabled?).with('refine_search_with_answers_enabled').and_return(true)
         allow(TradeTariffBackend.search_client).to receive(:search).and_return(opensearch_response)
         allow(Search::GoodsNomenclatureQuery).to receive(:new).and_call_original
+        allow(Search::Instrumentation).to receive(:retrieval_results_returned)
       end
 
       it 'uses answered questions to target retrieval even when AI expansion is disabled' do
@@ -794,9 +795,25 @@ RSpec.describe Api::Internal::SearchService do
 
         expect(Search::Instrumentation).to have_received(:query_refined).with(
           request_id: anything,
+          base_query: 'handbag',
           original_query: 'handbag',
           refined_query: 'handbag Leather',
+          effective_query: 'handbag Leather',
           answer_count: 1,
+          added_answers: %w[Leather],
+          iteration: 2,
+        )
+      end
+
+      it 'instruments the effective retrieval query' do
+        described_class.new(q: 'handbag', answers: [{ question: 'What material?', answer: 'Leather' }]).call
+
+        expect(Search::Instrumentation).to have_received(:retrieval_results_returned).with(
+          hash_including(
+            query: 'handbag',
+            effective_query: 'handbag Leather',
+            iteration: 2,
+          ),
         )
       end
     end
@@ -1104,11 +1121,11 @@ RSpec.describe Api::Internal::SearchService do
 
     context 'when retrieval_method is hybrid' do
       let(:hybrid_results) do
-        [
+        Array.new(5) do |index|
           retrieval_result_class.new(
-            id: 1,
-            goods_nomenclature_item_id: '0101210000',
-            goods_nomenclature_sid: 1,
+            id: index + 1,
+            goods_nomenclature_item_id: "010121000#{index}",
+            goods_nomenclature_sid: index + 1,
             producline_suffix: '80',
             goods_nomenclature_class: 'Commodity',
             description: 'pure-bred breeding horses',
@@ -1120,14 +1137,22 @@ RSpec.describe Api::Internal::SearchService do
             declarable: true,
             score: 0.032,
             confidence: nil,
-          ),
-        ]
+          )
+        end
+      end
+
+      let(:hybrid_source_results) do
+        hybrid_results.map.with_index do |result, index|
+          result.with(score: 250.0 - index)
+        end
       end
 
       let(:hybrid_result) do
-        HybridRetrievalService::Result.new(
+        instance_double(
+          HybridRetrievalService::Result,
           results: hybrid_results,
           expanded_query: 'expanded horses',
+          source_results: hybrid_source_results,
         )
       end
 
@@ -1163,8 +1188,33 @@ RSpec.describe Api::Internal::SearchService do
       it 'returns serialized results' do
         result = described_class.new(q: 'horses').call
 
-        expect(result[:data].length).to eq(1)
+        expect(result[:data].length).to eq(5)
         expect(result[:data][0][:attributes][:goods_nomenclature_item_id]).to eq('0101210000')
+      end
+
+      context 'when conditional expansion is enabled' do
+        before do
+          allow(AdminConfiguration).to receive(:enabled?).with('expand_search_when_needed_enabled').and_return(true)
+          allow(AdminConfiguration).to receive(:integer_value).and_call_original
+          allow(AdminConfiguration).to receive(:integer_value).with('expand_search_min_results').and_return(5)
+          allow(AdminConfiguration).to receive(:integer_value).with('expand_search_min_score').and_return(5)
+          allow(Search::Instrumentation).to receive(:query_expansion_decided).and_call_original
+        end
+
+        it 'uses source retrieval scores for the expansion decision' do
+          described_class.new(q: 'horses').call
+
+          expect(ExpandSearchQueryService).not_to have_received(:call)
+          expect(HybridRetrievalService).to have_received(:call).once
+          expect(Search::Instrumentation).to have_received(:query_expansion_decided).with(
+            hash_including(
+              expand: false,
+              reason: 'sufficient_results',
+              result_count: 5,
+              max_score: 250.0,
+            ),
+          )
+        end
       end
 
       context 'with a filtering description intercept' do
