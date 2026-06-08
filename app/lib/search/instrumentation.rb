@@ -38,6 +38,7 @@ module Search
       instrument(
         'query_expanded',
         request_id:,
+        search_type: 'interactive',
         original_query:,
         expanded_query: result.expanded_query,
         reason: result.reason,
@@ -47,17 +48,28 @@ module Search
       result
     end
 
-    def query_refined(request_id:, original_query:, refined_query:, answer_count:)
+    def query_refined(request_id:, original_query:, refined_query:, answer_count:, base_query: original_query, effective_query: refined_query, added_answers: [], iteration: nil)
       result = yield
-      instrument('query_refined', request_id:, original_query:, refined_query:, answer_count:)
+      instrument(
+        'query_refined',
+        request_id:,
+        search_type: 'interactive',
+        base_query:,
+        original_query:,
+        refined_query:,
+        effective_query:,
+        answer_count:,
+        added_answers:,
+        iteration:,
+      )
       result
     end
 
     def query_expansion_decided(request_id:, query:, expand:, reason:, result_count:, max_score:)
-      instrument('query_expansion_decided', request_id:, query:, expand:, reason:, result_count:, max_score:)
+      instrument('query_expansion_decided', request_id:, search_type: 'interactive', query:, expand:, reason:, result_count:, max_score:)
     end
 
-    def api_call(request_id:, model:, attempt_number:)
+    def api_call(request_id:, model:, attempt_number:, iteration: nil, effective_query: nil)
       start_time = Process.clock_gettime(Process::CLOCK_MONOTONIC)
       result = yield
       duration = Process.clock_gettime(Process::CLOCK_MONOTONIC) - start_time
@@ -66,10 +78,13 @@ module Search
         'api_call_completed',
         {
           request_id:,
+          search_type: 'interactive',
           model:,
           duration_ms: (duration * 1000).round(2),
           response_type: determine_response_type(result),
           attempt_number:,
+          iteration:,
+          effective_query:,
         }.merge(error_payload_for_result(result)),
       )
 
@@ -80,10 +95,13 @@ module Search
         'api_call_completed',
         {
           request_id:,
+          search_type: 'interactive',
           model:,
           duration_ms: (duration * 1000).round(2),
           response_type: 'error',
           attempt_number:,
+          iteration:,
+          effective_query:,
         }.merge(truncate_error_payload(e.message)),
       )
       search_failed(request_id:, error_type: e.class.name, error_message: e.message, search_type: 'interactive')
@@ -131,12 +149,13 @@ module Search
       )
     end
 
-    def retrieval_results_returned(request_id:, query:, search_type:, retrieval_method:, stage:, results:, leg: nil, iteration: nil)
+    def retrieval_results_returned(request_id:, query:, search_type:, retrieval_method:, stage:, results:, effective_query: nil, leg: nil, iteration: nil)
       instrument(
         'retrieval_results_returned',
         request_id:,
         search_type:,
         query:,
+        effective_query:,
         retrieval_method:,
         stage:,
         leg:,
@@ -146,14 +165,14 @@ module Search
       )
     end
 
-    def question_returned(request_id:, question_count:, attempt_number:, questions: nil)
-      payload = { request_id:, question_count:, attempt_number: }
+    def question_returned(request_id:, question_count:, attempt_number:, iteration: nil, effective_query: nil, questions: nil)
+      payload = { request_id:, search_type: 'interactive', question_count:, attempt_number:, iteration:, effective_query: }
       payload[:details] = { questions: questions } if questions
       instrument('question_returned', payload)
     end
 
-    def answer_returned(request_id:, answer_count:, confidence_levels:, attempt_number:, answers: nil)
-      payload = { request_id:, answer_count:, confidence_levels:, attempt_number: }
+    def answer_returned(request_id:, answer_count:, confidence_levels:, attempt_number:, iteration: nil, effective_query: nil, answers: nil)
+      payload = { request_id:, search_type: 'interactive', answer_count:, confidence_levels:, attempt_number:, iteration:, effective_query: }
       payload[:details] = { answers: answers } if answers
       instrument('answer_returned', payload)
     end
@@ -179,7 +198,7 @@ module Search
     def description_intercept_checked(request_id:, query:, description_intercept:)
       instrument(
         'description_intercept_checked',
-        { request_id:, query: }.merge(description_intercept_payload(description_intercept)),
+        { request_id:, search_type: 'interactive', query: }.merge(description_intercept_payload(description_intercept)),
       )
     end
 
@@ -188,6 +207,7 @@ module Search
         'retrieval_leg_completed',
         {
           request_id:,
+          search_type: 'interactive',
           leg:,
           duration_ms:,
           result_count:,

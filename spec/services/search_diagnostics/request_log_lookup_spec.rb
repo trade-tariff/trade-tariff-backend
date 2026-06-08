@@ -68,6 +68,10 @@ RSpec.describe SearchDiagnostics::RequestLogLookup do
           start_time: (now - described_class::DEFAULT_LOOKBACK_HOURS.hours).to_i,
           end_time: now.to_i,
           query_string: a_string_including(
+            'base_query',
+            'effective_query',
+            'added_answers',
+            'iteration',
             'filter service = "search"',
             'request_id = "request-123"',
             "limit #{described_class::DEFAULT_LIMIT}",

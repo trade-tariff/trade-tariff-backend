@@ -107,6 +107,7 @@ RSpec.describe Search::Instrumentation do
         'query_expanded.search',
         hash_including(
           request_id: 'req-1',
+          search_type: 'interactive',
           original_query: 'horses',
           expanded_query: 'equine animals',
           reason: 'colloquial',
@@ -133,18 +134,27 @@ RSpec.describe Search::Instrumentation do
 
       result = described_class.query_refined(
         request_id: 'req-1',
+        base_query: 'handbag',
         original_query: 'handbag',
         refined_query: 'handbag Leather',
+        effective_query: 'handbag Leather',
         answer_count: 1,
+        added_answers: %w[Leather],
+        iteration: 2,
       ) { 'handbag Leather' }
 
       expect(result).to eq('handbag Leather')
       expect(ActiveSupport::Notifications).to have_received(:instrument).with(
         'query_refined.search',
         request_id: 'req-1',
+        search_type: 'interactive',
+        base_query: 'handbag',
         original_query: 'handbag',
         refined_query: 'handbag Leather',
+        effective_query: 'handbag Leather',
         answer_count: 1,
+        added_answers: %w[Leather],
+        iteration: 2,
       )
     end
   end
@@ -165,6 +175,7 @@ RSpec.describe Search::Instrumentation do
       expect(ActiveSupport::Notifications).to have_received(:instrument).with(
         'query_expansion_decided.search',
         request_id: 'req-1',
+        search_type: 'interactive',
         query: 'CBD oil',
         expand: true,
         reason: 'non_word_token',
@@ -185,6 +196,7 @@ RSpec.describe Search::Instrumentation do
         'api_call_completed.search',
         hash_including(
           request_id: 'req-1',
+          search_type: 'interactive',
           model: 'gpt-4',
           attempt_number: 1,
           duration_ms: a_kind_of(Float),
@@ -410,9 +422,11 @@ RSpec.describe Search::Instrumentation do
       described_class.retrieval_results_returned(
         request_id: 'req-1',
         query: 'horse',
+        effective_query: 'equine animals',
         search_type: 'interactive',
         retrieval_method: 'hybrid',
         stage: 'after_rrf',
+        iteration: 2,
         results: [result],
       )
 
@@ -421,6 +435,8 @@ RSpec.describe Search::Instrumentation do
         hash_including(
           retrieval_method: 'hybrid',
           stage: 'after_rrf',
+          effective_query: 'equine animals',
+          iteration: 2,
           result_count: 1,
           details: { results: [hash_including(goods_nomenclature_item_id: '0101210000', score: 12.5)] },
         ),
@@ -432,13 +448,23 @@ RSpec.describe Search::Instrumentation do
     it 'instruments the question_returned event' do
       allow(ActiveSupport::Notifications).to receive(:instrument)
 
-      described_class.question_returned(request_id: 'req-1', question_count: 2, attempt_number: 1, questions: [{ question: 'Material?' }])
+      described_class.question_returned(
+        request_id: 'req-1',
+        question_count: 2,
+        attempt_number: 1,
+        iteration: 1,
+        effective_query: 'horses',
+        questions: [{ question: 'Material?' }],
+      )
 
       expect(ActiveSupport::Notifications).to have_received(:instrument).with(
         'question_returned.search',
         request_id: 'req-1',
+        search_type: 'interactive',
         question_count: 2,
         attempt_number: 1,
+        iteration: 1,
+        effective_query: 'horses',
         details: { questions: [{ question: 'Material?' }] },
       )
     end
@@ -453,15 +479,20 @@ RSpec.describe Search::Instrumentation do
         answer_count: 3,
         confidence_levels: { 'strong' => 1, 'good' => 2 },
         attempt_number: 2,
+        iteration: 2,
+        effective_query: 'handbag Leather',
         answers: [{ commodity_code: '0101210000', confidence: 'strong' }],
       )
 
       expect(ActiveSupport::Notifications).to have_received(:instrument).with(
         'answer_returned.search',
         request_id: 'req-1',
+        search_type: 'interactive',
         answer_count: 3,
         confidence_levels: { 'strong' => 1, 'good' => 2 },
         attempt_number: 2,
+        iteration: 2,
+        effective_query: 'handbag Leather',
         details: { answers: [{ commodity_code: '0101210000', confidence: 'strong' }] },
       )
     end
@@ -480,6 +511,7 @@ RSpec.describe Search::Instrumentation do
       expect(ActiveSupport::Notifications).to have_received(:instrument).with(
         'description_intercept_checked.search',
         request_id: 'req-1',
+        search_type: 'interactive',
         query: 'horses',
         matched: false,
       )
@@ -506,6 +538,7 @@ RSpec.describe Search::Instrumentation do
       expect(ActiveSupport::Notifications).to have_received(:instrument).with(
         'description_intercept_checked.search',
         request_id: 'req-1',
+        search_type: 'interactive',
         query: 'gift',
         matched: true,
         term: 'gift',
@@ -607,6 +640,7 @@ RSpec.describe Search::Instrumentation do
       expect(ActiveSupport::Notifications).to have_received(:instrument).with(
         'retrieval_leg_completed.search',
         hash_including(
+          search_type: 'interactive',
           error_message: ('x' * 500),
           error_message_truncated: true,
         ),
