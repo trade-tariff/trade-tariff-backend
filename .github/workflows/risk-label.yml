@@ -15,7 +15,7 @@ jobs:
 
     steps:
       - name: Detect risk level and apply label
-        uses: actions/github-script@v7
+        uses: actions/github-script@v9
         with:
           script: |
             const body = context.payload.pull_request.body || '';
