@@ -196,8 +196,8 @@ module Search
       )
     end
 
-    def result_selected(request_id:, goods_nomenclature_item_id:, goods_nomenclature_class:)
-      instrument('result_selected', request_id:, goods_nomenclature_item_id:, goods_nomenclature_class:)
+    def result_selected(request_id:, search_type:, goods_nomenclature_item_id:, goods_nomenclature_class:)
+      instrument('result_selected', request_id:, search_type:, goods_nomenclature_item_id:, goods_nomenclature_class:)
     end
 
     def search_failed(request_id:, error_type:, error_message:, search_type:)

@@ -177,6 +177,7 @@ module Search
       info log_entry(
         event: 'result_selected',
         request_id: event.payload[:request_id],
+        search_type: event.payload[:search_type],
         goods_nomenclature_item_id: event.payload[:goods_nomenclature_item_id],
         goods_nomenclature_class: event.payload[:goods_nomenclature_class],
       )

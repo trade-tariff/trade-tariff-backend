@@ -11,6 +11,7 @@ module SearchResultTracking
 
     ::Search::Instrumentation.result_selected(
       request_id: rid,
+      search_type: 'classic',
       goods_nomenclature_item_id: params[:id],
       goods_nomenclature_class: controller_name.classify,
     )

@@ -620,6 +620,7 @@ RSpec.describe Search::Instrumentation do
 
       described_class.result_selected(
         request_id: 'req-1',
+        search_type: 'classic',
         goods_nomenclature_item_id: '4202210000',
         goods_nomenclature_class: 'Commodity',
       )
@@ -627,6 +628,7 @@ RSpec.describe Search::Instrumentation do
       expect(ActiveSupport::Notifications).to have_received(:instrument).with(
         'result_selected.search',
         request_id: 'req-1',
+        search_type: 'classic',
         goods_nomenclature_item_id: '4202210000',
         goods_nomenclature_class: 'Commodity',
       )

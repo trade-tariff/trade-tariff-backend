@@ -21,6 +21,7 @@ RSpec.describe SearchResultTracking, :v2, type: :request do
 
         expect(Search::Instrumentation).to have_received(:result_selected).with(
           request_id: 'req-abc-123',
+          search_type: 'classic',
           goods_nomenclature_item_id: commodity.code,
           goods_nomenclature_class: 'Commodity',
         )
@@ -33,6 +34,7 @@ RSpec.describe SearchResultTracking, :v2, type: :request do
 
         expect(Search::Instrumentation).to have_received(:result_selected).with(
           request_id: 'req-def-456',
+          search_type: 'classic',
           goods_nomenclature_item_id: commodity.code,
           goods_nomenclature_class: 'Commodity',
         )

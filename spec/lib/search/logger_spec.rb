@@ -350,15 +350,16 @@ RSpec.describe Search::Logger do
   end
 
   describe '#result_selected' do
-    let(:payload) { { request_id: 'req-1', goods_nomenclature_item_id: '4202210000', goods_nomenclature_class: 'Commodity' } }
+    let(:payload) { { request_id: 'req-1', search_type: 'classic', goods_nomenclature_item_id: '4202210000', goods_nomenclature_class: 'Commodity' } }
 
     it_behaves_like 'a search log entry', :result_selected, 'result_selected',
-                    { request_id: 'req-1', goods_nomenclature_item_id: '4202210000', goods_nomenclature_class: 'Commodity' }
+                    { request_id: 'req-1', search_type: 'classic', goods_nomenclature_item_id: '4202210000', goods_nomenclature_class: 'Commodity' }
 
     it 'logs correct fields' do
       logger_instance.result_selected(build_event('result_selected', payload))
       json = parsed_log_output
       expect(json['event']).to eq('result_selected')
+      expect(json['search_type']).to eq('classic')
       expect(json['goods_nomenclature_item_id']).to eq('4202210000')
       expect(json['goods_nomenclature_class']).to eq('Commodity')
     end
