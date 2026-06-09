@@ -1,4 +1,25 @@
 RSpec.describe TariffKnowledge::CompressedNote do
+  describe 'validations' do
+    it 'rejects blank strings for required generated content fields' do
+      note = described_class.new(
+        goods_nomenclature_item_id: '',
+        producline_suffix: '',
+        goods_nomenclature_type: '',
+        content: '',
+        context_hash: '',
+      )
+
+      expect(note).not_to be_valid
+      expect(note.errors).to include(
+        :goods_nomenclature_item_id,
+        :producline_suffix,
+        :goods_nomenclature_type,
+        :content,
+        :context_hash,
+      )
+    end
+  end
+
   describe 'lifecycle' do
     it 'uses the generated content lifecycle for reviewable compressed notes' do
       note = create(:tariff_knowledge_compressed_note, needs_review: true, approved: false)

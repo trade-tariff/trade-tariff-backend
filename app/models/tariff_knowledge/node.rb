@@ -1,7 +1,7 @@
 module TariffKnowledge
   class Node < Sequel::Model(:tariff_knowledge_nodes)
     plugin :timestamps, update_on_create: true
-    plugin :auto_validations, not_null: :not_nil
+    plugin :auto_validations, not_null: :presence
     plugin :has_paper_trail
 
     GOODS_NOMENCLATURE = 'goods_nomenclature'.freeze

@@ -1,4 +1,13 @@
 RSpec.describe TariffKnowledge::Edge do
+  describe 'validations' do
+    it 'rejects blank strings for required fields' do
+      edge = described_class.new(relationship_type: '')
+
+      expect(edge).not_to be_valid
+      expect(edge.errors).to include(:relationship_type)
+    end
+  end
+
   describe 'associations' do
     it 'connects a source graph node to a target graph node' do
       edge = create(:tariff_knowledge_edge)

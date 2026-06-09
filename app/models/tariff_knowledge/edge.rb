@@ -1,7 +1,7 @@
 module TariffKnowledge
   class Edge < Sequel::Model(:tariff_knowledge_edges)
     plugin :timestamps, update_on_create: true
-    plugin :auto_validations, not_null: :not_nil
+    plugin :auto_validations, not_null: :presence
 
     CONTAINS = 'contains'.freeze
     APPLIES_TO = 'applies_to'.freeze

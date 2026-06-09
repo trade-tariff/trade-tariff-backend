@@ -6,6 +6,13 @@ RSpec.describe TariffKnowledge::Node do
       expect(node).not_to be_valid
       expect(node.errors).to include(:node_type, :key)
     end
+
+    it 'rejects blank strings for required fields' do
+      node = described_class.new(node_type: '', key: '')
+
+      expect(node).not_to be_valid
+      expect(node.errors).to include(:node_type, :key)
+    end
   end
 
   describe 'datasets' do

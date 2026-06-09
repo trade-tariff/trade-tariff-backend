@@ -3,7 +3,7 @@ FactoryBot.define do
     node_type { TariffKnowledge::Node::GOODS_NOMENCLATURE }
     sequence(:key) { |n| "goods_nomenclature:#{goods_nomenclature_sid}:#{n}" }
     title { goods_nomenclature_item_id }
-    metadata { Sequel.pg_jsonb_wrap({}) }
+    metadata { Sequel.pg_jsonb_wrap({ 'source' => 'factory' }) }
     goods_nomenclature_sid { generate(:goods_nomenclature_sid) }
     goods_nomenclature_item_id { "0101#{generate(:commodity_short_code)}" }
     producline_suffix { GoodsNomenclature::NON_GROUPING_PRODUCTLINE_SUFFIX }
@@ -28,7 +28,7 @@ FactoryBot.define do
     source_node { create(:tariff_knowledge_node, :note_fragment) }
     target_node { create(:tariff_knowledge_node) }
     relationship_type { TariffKnowledge::Edge::APPLIES_TO }
-    metadata { Sequel.pg_jsonb_wrap({}) }
+    metadata { Sequel.pg_jsonb_wrap({ 'source' => 'factory' }) }
   end
 
   factory :tariff_knowledge_compressed_note, class: 'TariffKnowledge::CompressedNote' do
