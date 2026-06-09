@@ -38,26 +38,30 @@ jobs:
 
             const existingRiskLabel = currentLabels.find(l => RISK_LABELS.includes(l.name));
 
-            // Prefer emoji in the body; fall back to an already-applied risk label.
-            const hasGreen = body.includes(GREEN);
-            const hasAmber = body.includes(AMBER);
-            const hasRed   = body.includes(RED);
+            // Extract everything before **Reason for rating:** so that emoji in
+            // the template guidance sections below don't interfere with detection.
+            // Fall back to an already-applied risk label (e.g. set manually).
+            const riskSection = (body.match(/([\s\S]*?)\*\*Reason for rating:\*\*/i) || [])[1] || '';
+            const lineHasGreen = riskSection.includes(GREEN);
+            const lineHasAmber = riskSection.includes(AMBER);
+            const lineHasRed   = riskSection.includes(RED);
+            const lineCount    = [lineHasGreen, lineHasAmber, lineHasRed].filter(Boolean).length;
 
             let detectedLabel = null;
 
-            if (hasRed) {
-              detectedLabel = LABEL_HIGH;
-            } else if (hasAmber) {
-              detectedLabel = LABEL_MEDIUM;
-            } else if (hasGreen) {
-              detectedLabel = LABEL_LOW;
+            if (lineCount === 1) {
+              if (lineHasRed)        detectedLabel = LABEL_HIGH;
+              else if (lineHasAmber) detectedLabel = LABEL_MEDIUM;
+              else                   detectedLabel = LABEL_LOW;
             } else if (existingRiskLabel) {
               detectedLabel = existingRiskLabel.name;
             }
 
             if (!detectedLabel) {
               core.setFailed(
-                'No risk level found. Add 🟢, 🟠, or 🔴 to the PR description, or apply a risk label manually.'
+                lineCount > 1
+                  ? 'Multiple risk emoji found on the **Risk level:** line — please delete all but one of 🟢, 🟠, 🔴.'
+                  : 'No risk level found. Add exactly one of 🟢, 🟠, or 🔴 on the **Risk level:** line, or apply a risk label manually.'
               );
               return;
             }
@@ -82,13 +86,6 @@ jobs:
                 labels: [detectedLabel],
               });
             }
-
-            await github.rest.issues.addLabels({
-              owner: context.repo.owner,
-              repo:  context.repo.repo,
-              issue_number: prNumber,
-              labels: [detectedLabel],
-            });
 
             if (detectedLabel === LABEL_HIGH) {
               core.setFailed(
