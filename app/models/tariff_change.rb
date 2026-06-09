@@ -119,9 +119,8 @@ class TariffChange < Sequel::Model
     measure_metadata['quota_order_number']
   end
 
-  def measure_end_date_removed?
-    type == 'Measure' &&
-      action == TariffChangesService::BaseChanges::ENDING &&
+  def end_date_removed?
+    action == TariffChangesService::BaseChanges::ENDING &&
       validity_end_date.nil?
   end
 
@@ -141,7 +140,7 @@ class TariffChange < Sequel::Model
   # When this change becomes effective to the public.
   # e.g. for ENDING measures, it is no longer visible the day after its end date
   def date_of_effect_visible
-    return if measure_end_date_removed?
+    return if end_date_removed?
 
     action == TariffChangesService::BaseChanges::ENDING ? date_of_effect + 1.day : date_of_effect
   end

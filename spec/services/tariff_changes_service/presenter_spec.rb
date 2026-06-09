@@ -547,6 +547,23 @@ RSpec.describe TariffChangesService::Presenter do
         expect(presenter.date_of_effect).to eq('end date removed')
       end
     end
+
+    context 'when commodity end date has been removed' do
+      let(:tariff_change) do
+        create(:tariff_change,
+               action: 'ending',
+               type: 'Commodity',
+               operation_date: Date.parse('2024-08-14'),
+               validity_end_date: nil,
+               goods_nomenclature_sid: goods_nomenclature.goods_nomenclature_sid,
+               goods_nomenclature_item_id: goods_nomenclature.goods_nomenclature_item_id,
+               date_of_effect: Date.parse('2024-08-15'))
+      end
+
+      it 'returns end date removed' do
+        expect(presenter.date_of_effect).to eq('end date removed')
+      end
+    end
   end
 
   describe '#ott_url' do

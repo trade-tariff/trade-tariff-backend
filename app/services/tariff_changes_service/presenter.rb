@@ -72,13 +72,13 @@ class TariffChangesService
     end
 
     def date_of_effect
-      return TariffChange::END_DATE_REMOVED_DISPLAY if measure_end_date_removed?
+      return TariffChange::END_DATE_REMOVED_DISPLAY if end_date_removed?
 
       super.strftime('%d/%m/%Y')
     end
 
     def ott_url
-      query = measure_end_date_removed? ? UTM_TAGS : "#{ott_date_query}&#{UTM_TAGS}"
+      query = end_date_removed? ? UTM_TAGS : "#{ott_date_query}&#{UTM_TAGS}"
       url = "#{commodity_base_url}?#{query}"
       url += '#export' if trade_movement_code == 1
       url += '#import' if trade_movement_code.in?([0, 2])
@@ -87,7 +87,7 @@ class TariffChangesService
     end
 
     def api_url
-      query = measure_end_date_removed? ? UTM_TAGS : "as_of=#{date_of_effect_visible.strftime('%Y-%m-%d')}&#{UTM_TAGS}"
+      query = end_date_removed? ? UTM_TAGS : "as_of=#{date_of_effect_visible.strftime('%Y-%m-%d')}&#{UTM_TAGS}"
       "#{commodity_api_base_url}?#{query}"
     end
 

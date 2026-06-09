@@ -590,7 +590,7 @@ RSpec.describe TariffChange do
     end
   end
 
-  describe '#measure_end_date_removed?' do
+  describe '#end_date_removed?' do
     context 'when Commodity and action is ending and validity_end_date is nil' do
       let(:tariff_change) do
         described_class.new(
@@ -602,8 +602,8 @@ RSpec.describe TariffChange do
         )
       end
 
-      it 'returns false' do
-        expect(tariff_change.measure_end_date_removed?).to be(false)
+      it 'returns true' do
+        expect(tariff_change.end_date_removed?).to be(true)
       end
     end
 
@@ -619,7 +619,7 @@ RSpec.describe TariffChange do
       end
 
       it 'returns true' do
-        expect(tariff_change.measure_end_date_removed?).to be(true)
+        expect(tariff_change.end_date_removed?).to be(true)
       end
     end
 
@@ -635,7 +635,7 @@ RSpec.describe TariffChange do
       end
 
       it 'returns false' do
-        expect(tariff_change.measure_end_date_removed?).to be(false)
+        expect(tariff_change.end_date_removed?).to be(false)
       end
     end
 
@@ -650,7 +650,7 @@ RSpec.describe TariffChange do
       end
 
       it 'returns false' do
-        expect(tariff_change.measure_end_date_removed?).to be(false)
+        expect(tariff_change.end_date_removed?).to be(false)
       end
     end
   end

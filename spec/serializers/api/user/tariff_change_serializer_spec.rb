@@ -28,4 +28,19 @@ RSpec.describe Api::User::TariffChangeSerializer do
     data = result[:data].first
     expect(data[:attributes][:classification_description]).to eq('Test Classification Description')
   end
+
+  it 'serializes date_of_effect as end date removed when end date is removed' do
+    removed_end_date_change = create(
+      :tariff_change,
+      action: TariffChangesService::BaseChanges::ENDING,
+      validity_end_date: nil,
+      date_of_effect: Date.new(2025, 10, 17),
+      goods_nomenclature_item_id: goods_nomenclature.goods_nomenclature_item_id,
+    )
+
+    result = described_class.new([removed_end_date_change]).serializable_hash
+    data = result[:data].first
+
+    expect(data[:attributes][:date_of_effect]).to eq(TariffChange::END_DATE_REMOVED_DISPLAY)
+  end
 end
