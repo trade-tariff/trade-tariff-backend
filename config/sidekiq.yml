@@ -87,3 +87,15 @@
       cron: "0 9 * * *"
       description: "Checks GOV.UK for a new Customs Tariff document version and imports it"
       enabled: <%= ENV.fetch('SERVICE', 'uk') == 'uk' %>
+    CreateTariffKnowledgeSourceGraphWorker:
+      cron: "0 2 * * *"
+      description: "Builds the tariff knowledge source graph from current approved chapter and section notes"
+      enabled: <%= ENV.fetch('SERVICE', 'uk') == 'uk' && ENV.fetch('ENVIRONMENT', 'local') == 'staging' %>
+    CreateTariffKnowledgeDeclarableNodesWorker:
+      cron: "30 2 * * *"
+      description: "Builds current declarable tariff knowledge graph nodes"
+      enabled: <%= ENV.fetch('SERVICE', 'uk') == 'uk' && ENV.fetch('ENVIRONMENT', 'local') == 'staging' %>
+    RefreshTariffKnowledgeCompressedNotesWorker:
+      cron: "0 3 * * *"
+      description: "Refreshes tariff knowledge compressed notes for current declarable goods"
+      enabled: <%= ENV.fetch('SERVICE', 'uk') == 'uk' && ENV.fetch('ENVIRONMENT', 'local') == 'staging' %>
