@@ -74,6 +74,50 @@ RSpec.describe TariffKnowledge::SourceGraphLoader do
       expect(TariffKnowledge::Node.count).to eq(node_count)
       expect(TariffKnowledge::Edge.count).to eq(edge_count)
     end
+
+    it 'only loads notes from the latest approved update that is actual in TimeMachine' do
+      older_update = create(
+        :customs_tariff_update,
+        :approved,
+        version: '1.30',
+        validity_start_date: 2.months.ago,
+        validity_end_date: 1.month.ago,
+      )
+      future_update = create(
+        :customs_tariff_update,
+        :approved,
+        version: '1.32',
+        validity_start_date: 1.month.from_now,
+      )
+      create(
+        :customs_tariff_chapter_note,
+        :approved,
+        customs_tariff_update: older_update,
+        chapter_id: '01',
+        content: 'Heading 0101 covers older horses.',
+      )
+      current_note = create(
+        :customs_tariff_chapter_note,
+        :approved,
+        customs_tariff_update: update,
+        chapter_id: '01',
+        content: 'Heading 0101 covers current horses.',
+      )
+      create(
+        :customs_tariff_chapter_note,
+        :approved,
+        customs_tariff_update: future_update,
+        chapter_id: '01',
+        content: 'Heading 0101 covers future horses.',
+      )
+
+      described_class.call
+
+      expect(TariffKnowledge::Node.where(node_type: TariffKnowledge::Node::NOTE_SOURCE).select_map(:source_version))
+        .to contain_exactly(update.version)
+      expect(TariffKnowledge::Node.by_key('note_source:customs_tariff_chapter_note:1.31:01').first.content)
+        .to eq(current_note.content)
+    end
   end
 
   def edge_exists?(source_node, target_node, relationship_type)

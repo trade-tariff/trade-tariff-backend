@@ -28,14 +28,31 @@ module TariffKnowledge
     end
 
     def call
+      update = latest_approved_update
+      return unless update
+
       SOURCE_TYPES.each do |source_type|
-        source_type[:model].approved.each do |source|
+        sources_for(source_type, update).each do |source|
           load_source(source_type, source)
         end
       end
     end
 
   private
+
+    def latest_approved_update
+      CustomsTariffUpdate
+        .actual
+        .approved
+        .order(Sequel.desc(:validity_start_date))
+        .first
+    end
+
+    def sources_for(source_type, update)
+      source_type[:model]
+        .approved
+        .where(customs_tariff_update_version: update.version)
+    end
 
     def load_source(source_type, source)
       source_node = upsert_node(
