@@ -121,13 +121,31 @@ class InteractiveSearchService
 
   def format_opensearch_results
     results = opensearch_results.map do |result|
-      {
+      formatted_result = {
         commodity_code: result.goods_nomenclature_item_id,
         description: result.full_description.presence || result.description,
         score: result.score,
       }
+      compressed_note = compressed_notes_by_item_id[result.goods_nomenclature_item_id]
+      formatted_result[:compressed_note] = compressed_note.content if compressed_note
+      formatted_result
     end
     results.to_json
+  end
+
+  def compressed_notes_by_item_id
+    return {} unless AdminConfiguration.enabled?('search_compressed_notes_enabled')
+
+    @compressed_notes_by_item_id ||= begin
+      item_ids = opensearch_results.map(&:goods_nomenclature_item_id).compact_blank.uniq
+      notes = TariffKnowledge::CompressedNote
+        .where(approved: true, stale: false, expired: false)
+        .by_item_ids(item_ids)
+
+      notes.each_with_object({}) do |note, by_item_id|
+        by_item_id[note.goods_nomenclature_item_id] ||= note
+      end
+    end
   end
 
   def format_questions_and_answers
