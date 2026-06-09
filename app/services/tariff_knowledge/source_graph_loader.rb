@@ -43,11 +43,13 @@ module TariffKnowledge
   private
 
     def latest_approved_update
-      CustomsTariffUpdate
-        .actual
-        .approved
-        .order(Sequel.desc(:validity_start_date))
-        .first
+      TimeMachine.now do
+        CustomsTariffUpdate
+          .actual
+          .approved
+          .order(Sequel.desc(:validity_start_date))
+          .first
+      end
     end
 
     def sources_for(source_type, update)
