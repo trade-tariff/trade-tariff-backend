@@ -81,8 +81,27 @@ AdminApi.routes.draw do
       get  'customs_tariff_updates/:version', to: 'customs_tariff_updates#show', constraints: { version: /\d+\.\d+/ }
       get  'customs_tariff_updates/:customs_tariff_update_version/section_notes',      to: 'customs_tariff_updates/section_notes#index',  constraints: { customs_tariff_update_version: /[^\/]+/ }
       get  'customs_tariff_updates/:customs_tariff_update_version/section_notes/:id',  to: 'customs_tariff_updates/section_notes#show',   constraints: { customs_tariff_update_version: /[^\/]+/ }
-      patch 'customs_tariff_updates/:customs_tariff_update_version/section_notes/:id', to: 'customs_tariff_updates/section_notes#update',  constraints: { customs_tariff_update_version: /[^\/]+/ }
-      patch 'customs_tariff_updates/:customs_tariff_update_version/status',            to: 'customs_tariff_updates/status#update',         constraints: { customs_tariff_update_version: /[^\/]+/ }
+      patch 'customs_tariff_updates/:customs_tariff_update_version/section_notes/:id', to: 'customs_tariff_updates/section_notes#update', constraints: { customs_tariff_update_version: /[^\/]+/ }
+      post 'customs_tariff_updates/:customs_tariff_update_version/section_notes',
+           to: 'customs_tariff_updates/section_notes#create',
+           constraints: { customs_tariff_update_version: /[^\/]+/ }
+      delete 'customs_tariff_updates/:customs_tariff_update_version/section_notes/:id',
+             to: 'customs_tariff_updates/section_notes#destroy',
+             constraints: { customs_tariff_update_version: /[^\/]+/ }
+      patch 'customs_tariff_updates/:customs_tariff_update_version/status', to: 'customs_tariff_updates/status#update', constraints: { customs_tariff_update_version: /[^\/]+/ }
+      post  'customs_tariff_updates/:customs_tariff_update_version/reimport',
+            to: 'customs_tariff_updates/reimport#create',
+            constraints: { customs_tariff_update_version: /[^\/]+/ }
+      get   'customs_tariff_updates/:customs_tariff_update_version/chapter_notes',      to: 'customs_tariff_updates/chapter_notes#index',  constraints: { customs_tariff_update_version: /[^\/]+/ }
+      get   'customs_tariff_updates/:customs_tariff_update_version/chapter_notes/:id',  to: 'customs_tariff_updates/chapter_notes#show',   constraints: { customs_tariff_update_version: /[^\/]+/ }
+      patch 'customs_tariff_updates/:customs_tariff_update_version/chapter_notes/:id',  to: 'customs_tariff_updates/chapter_notes#update', constraints: { customs_tariff_update_version: /[^\/]+/ }
+      delete 'customs_tariff_updates/:customs_tariff_update_version/chapter_notes/:id',
+             to: 'customs_tariff_updates/chapter_notes#destroy',
+             constraints: { customs_tariff_update_version: /[^\/]+/ }
+      post 'customs_tariff_updates/:customs_tariff_update_version/chapter_notes',
+           to: 'customs_tariff_updates/chapter_notes#create',
+           constraints: { customs_tariff_update_version: /[^\/]+/ }
+      get 'customs_tariff_updates/:customs_tariff_update_version/sections_summary', to: 'customs_tariff_updates/sections_summary#index', constraints: { customs_tariff_update_version: /[^\/]+/ }
 
       resources :quota_order_numbers, module: 'quota_order_numbers', only: %i[] do
         resources :quota_definitions, only: %i[index show]

@@ -5,7 +5,8 @@ module CustomsTariffImporter
   class DocumentFetcher
     PUBLICATION_URL = 'https://www.gov.uk/government/publications/reference-document-for-the-customs-tariff-establishment-eu-exit-regulations-2020'.freeze
     MAX_REDIRECTS = 5
-    VERSION_PATTERN = /UKGT_(\d+\.\d+)\.docx/i
+    TEXT_VERSION_PATTERN = /\bversion\s+(\d+\.\d+)\b/i
+    URL_VERSION_PATTERN  = /[_-](\d+\.\d+)\.docx/i
 
     Result = Data.define(:content, :url, :version, :checksum, :published_on, :entry_into_force_on)
 
@@ -19,7 +20,7 @@ module CustomsTariffImporter
       links.map { |link|
         url  = link[:url]
         text = link[:text]
-        version = extract_version(url)
+        version = extract_version(url, text)
 
         start_time = Process.clock_gettime(Process::CLOCK_MONOTONIC)
         content = fetch_url(url)
@@ -52,8 +53,9 @@ module CustomsTariffImporter
       end
     end
 
-    def extract_version(url)
-      url.match(VERSION_PATTERN)&.captures&.first
+    def extract_version(url, text)
+      text.match(TEXT_VERSION_PATTERN)&.captures&.first ||
+        url.match(URL_VERSION_PATTERN)&.captures&.first
     end
 
     def parse_entry_into_force_date(text)
