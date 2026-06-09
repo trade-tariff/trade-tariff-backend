@@ -48,6 +48,19 @@ RSpec.describe Api::Admin::GoodsNomenclatures::TariffKnowledgeCompressedNotesCon
       expect(response).to have_http_status(:ok)
       expect(note.reload).to have_attributes(approved: true, needs_review: false)
     end
+
+    it 'approves the current compressed note when a historical version is selected' do
+      note.update(content: 'Historical note')
+      historical_version_id = note.versions.order(:id).first.id
+
+      post '/uk/admin/goods_nomenclatures/123/tariff_knowledge_compressed_note/approve.json',
+           params: { filter: { oid: historical_version_id } },
+           headers: request_headers(format: :json),
+           as: :json
+
+      expect(response).to have_http_status(:ok)
+      expect(note.reload).to have_attributes(approved: true, needs_review: false)
+    end
   end
 
   describe '#reject' do

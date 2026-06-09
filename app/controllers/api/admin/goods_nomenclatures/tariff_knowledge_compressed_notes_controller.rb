@@ -5,7 +5,7 @@ module Api
         include Api::Admin::VersionBrowsing
 
         def show
-          render json: serialize(compressed_note, serializer_options)
+          render json: serialize(viewed_compressed_note, serializer_options)
         end
 
         def update
@@ -51,10 +51,10 @@ module Api
         end
 
         def compressed_note
-          @compressed_note ||= find_compressed_note
+          @compressed_note ||= find_current_compressed_note
         end
 
-        def find_compressed_note
+        def viewed_compressed_note
           if filter_version_id.present? && !current_version?
             find_historical_compressed_note
           else
