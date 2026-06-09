@@ -75,6 +75,51 @@ RSpec.describe TariffKnowledge::SourceGraphLoader do
       expect(TariffKnowledge::Edge.count).to eq(edge_count)
     end
 
+    it 'loads approved chapter, section, and general rule source associations from the latest approved update' do
+      create(
+        :customs_tariff_chapter_note,
+        :approved,
+        customs_tariff_update: update,
+        chapter_id: '01',
+        content: 'Heading 0101 covers chapter note horses.',
+      )
+      create(
+        :customs_tariff_section_note,
+        :approved,
+        customs_tariff_update: update,
+        section_id: 1,
+        content: 'Heading 0101 covers section note horses.',
+      )
+      create(
+        :customs_tariff_general_rule,
+        :approved,
+        customs_tariff_update: update,
+        rule_label: '1',
+        content: 'Heading 0101 covers general rule horses.',
+      )
+      create(
+        :customs_tariff_chapter_note,
+        customs_tariff_update: update,
+        chapter_id: '02',
+        content: 'Heading 0201 is pending.',
+      )
+
+      described_class.call
+
+      expect(TariffKnowledge::Node.where(node_type: TariffKnowledge::Node::NOTE_SOURCE).select_order_map(:key))
+        .to contain_exactly(
+          'note_source:customs_tariff_chapter_note:1.31:01',
+          'note_source:customs_tariff_general_rule:1.31:1',
+          'note_source:customs_tariff_section_note:1.31:1',
+        )
+      expect(TariffKnowledge::Node.by_key('note_source:customs_tariff_chapter_note:1.31:01').first.title)
+        .to eq('Chapter 01 notes')
+      expect(TariffKnowledge::Node.by_key('note_source:customs_tariff_section_note:1.31:1').first.title)
+        .to eq('Section 1 notes')
+      expect(TariffKnowledge::Node.by_key('note_source:customs_tariff_general_rule:1.31:1').first.title)
+        .to eq('GIR 1')
+    end
+
     it 'only loads notes from the latest approved update that is actual in TimeMachine' do
       older_update = create(
         :customs_tariff_update,
@@ -117,6 +162,58 @@ RSpec.describe TariffKnowledge::SourceGraphLoader do
         .to contain_exactly(update.version)
       expect(TariffKnowledge::Node.by_key('note_source:customs_tariff_chapter_note:1.31:01').first.content)
         .to eq(current_note.content)
+    end
+
+    it 'honours an existing TimeMachine date when choosing the latest approved update and its source associations' do
+      old_update = create(
+        :customs_tariff_update,
+        :approved,
+        version: '1.29',
+        validity_start_date: Date.new(2020, 1, 1),
+        validity_end_date: Date.new(2020, 12, 31),
+      )
+      current_update = create(
+        :customs_tariff_update,
+        :approved,
+        version: '1.31',
+        validity_start_date: Date.new(2021, 1, 1),
+      )
+      old_note = create(
+        :customs_tariff_chapter_note,
+        :approved,
+        customs_tariff_update: old_update,
+        chapter_id: '01',
+        content: 'Heading 0101 covers historical horses.',
+      )
+      create(
+        :customs_tariff_chapter_note,
+        :approved,
+        customs_tariff_update: current_update,
+        chapter_id: '01',
+        content: 'Heading 0101 covers current horses.',
+      )
+
+      TimeMachine.at(Date.new(2020, 6, 1)) { described_class.call }
+
+      expect(TariffKnowledge::Node.where(node_type: TariffKnowledge::Node::NOTE_SOURCE).select_map(:source_version))
+        .to contain_exactly(old_update.version)
+      expect(TariffKnowledge::Node.by_key('note_source:customs_tariff_chapter_note:1.29:01').first.content)
+        .to eq(old_note.content)
+    end
+
+    it 'sets TimeMachine.now when called outside an existing TimeMachine context' do
+      create(
+        :customs_tariff_chapter_note,
+        :approved,
+        customs_tariff_update: update,
+        chapter_id: '01',
+        content: 'Heading 0101 covers current horses.',
+      )
+
+      TimeMachine.no_time_machine { described_class.call }
+
+      expect(TariffKnowledge::Node.by_key('note_source:customs_tariff_chapter_note:1.31:01').first)
+        .to be_present
     end
 
     it 'keeps positive references when another clause in the fragment is negated' do

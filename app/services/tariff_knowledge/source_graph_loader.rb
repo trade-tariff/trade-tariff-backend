@@ -3,26 +3,27 @@ module TariffKnowledge
     BATCH_SIZE = 500
 
     RangeReference = Data.define(:type, :code)
+    SourceAssociation = Data.define(:association, :label, :identifier, :title)
 
-    SOURCE_TYPES = [
-      {
-        model: CustomsTariffChapterNote,
+    SOURCE_ASSOCIATIONS = [
+      SourceAssociation.new(
+        association: :customs_tariff_chapter_notes,
         label: 'customs_tariff_chapter_note',
         identifier: :chapter_id,
-        title: ->(note) { "Chapter #{note.chapter_id} notes" },
-      },
-      {
-        model: CustomsTariffSectionNote,
+        title: ->(source) { "Chapter #{source.chapter_id} notes" },
+      ),
+      SourceAssociation.new(
+        association: :customs_tariff_section_notes,
         label: 'customs_tariff_section_note',
         identifier: :section_id,
-        title: ->(note) { "Section #{note.section_id} notes" },
-      },
-      {
-        model: CustomsTariffGeneralRule,
+        title: ->(source) { "Section #{source.section_id} notes" },
+      ),
+      SourceAssociation.new(
+        association: :customs_tariff_general_rules,
         label: 'customs_tariff_general_rule',
         identifier: :rule_label,
-        title: ->(note) { "GIR #{note.rule_label}" },
-      },
+        title: ->(source) { "GIR #{source.rule_label}" },
+      ),
     ].freeze
 
     def self.call
@@ -33,9 +34,9 @@ module TariffKnowledge
       update = latest_approved_update
       return unless update
 
-      SOURCE_TYPES.each do |source_type|
-        sources_for(source_type, update).each do |source|
-          load_source(source_type, source)
+      SOURCE_ASSOCIATIONS.each do |source_association|
+        sources_for(source_association, update).each do |source|
+          load_source(source_association, source)
         end
       end
     end
@@ -43,6 +44,14 @@ module TariffKnowledge
   private
 
     def latest_approved_update
+      if TimeMachine.date_is_set?
+        latest_approved_update_at_time_machine_date
+      else
+        TimeMachine.now { latest_approved_update_at_time_machine_date }
+      end
+    end
+
+    def latest_approved_update_at_time_machine_date
       CustomsTariffUpdate
         .actual
         .approved
@@ -50,25 +59,33 @@ module TariffKnowledge
         .first
     end
 
-    def sources_for(source_type, update)
-      source_type[:model]
-        .approved
-        .where(customs_tariff_update_version: update.version)
+    def sources_for(source_association, update)
+      if TimeMachine.date_is_set?
+        sources_for_at_time_machine_date(source_association, update)
+      else
+        TimeMachine.now { sources_for_at_time_machine_date(source_association, update) }
+      end
     end
 
-    def load_source(source_type, source)
+    def sources_for_at_time_machine_date(source_association, update)
+      update
+        .public_send(:"#{source_association.association}_dataset")
+        .approved
+    end
+
+    def load_source(source_association, source)
       source_node = upsert_node(
         node_type: Node::NOTE_SOURCE,
-        key: source_key(source_type, source),
-        title: source_type[:title].call(source),
+        key: source_key(source_association, source),
+        title: source_association.title.call(source),
         content: source.content,
-        source_type: source_type[:label],
-        source_id: source.public_send(source_type[:identifier]).to_s,
+        source_type: source_association.label,
+        source_id: source.public_send(source_association.identifier).to_s,
         source_version: source.customs_tariff_update_version,
       )
 
       fragment_nodes = fragments(source.content).map.with_index(1) do |fragment_content, index|
-        load_fragment(source_type, source, source_node, fragment_content, index)
+        load_fragment(source_association, source, source_node, fragment_content, index)
       end
 
       delete_stale_edges(
@@ -78,13 +95,13 @@ module TariffKnowledge
       )
     end
 
-    def load_fragment(source_type, source, source_node, content, index)
+    def load_fragment(source_association, source, source_node, content, index)
       fragment_node = upsert_node(
         node_type: Node::NOTE_FRAGMENT,
-        key: "#{source_key(source_type, source)}:#{sprintf('%04d', index)}".sub('note_source:', 'note_fragment:'),
+        key: "#{source_key(source_association, source)}:#{sprintf('%04d', index)}".sub('note_source:', 'note_fragment:'),
         title: "#{source_node.title} fragment #{index}",
         content:,
-        source_type: source_type[:label],
+        source_type: source_association.label,
         source_id: source_node.source_id,
         source_version: source.customs_tariff_update_version,
       )
@@ -151,9 +168,9 @@ module TariffKnowledge
           .where(Sequel.like(:goods_nomenclature_item_id, "#{reference.code}%"))
     end
 
-    def source_key(source_type, source)
-      identifier = source.public_send(source_type[:identifier])
-      "note_source:#{source_type[:label]}:#{source.customs_tariff_update_version}:#{identifier}"
+    def source_key(source_association, source)
+      identifier = source.public_send(source_association.identifier)
+      "note_source:#{source_association.label}:#{source.customs_tariff_update_version}:#{identifier}"
     end
 
     def upsert_node(attributes)

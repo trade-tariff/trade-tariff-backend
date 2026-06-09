@@ -87,3 +87,7 @@
       cron: "0 9 * * *"
       description: "Checks GOV.UK for a new Customs Tariff document version and imports it"
       enabled: <%= ENV.fetch('SERVICE', 'uk') == 'uk' %>
+    RefreshTariffKnowledgeCompressedNotesWorker:
+      cron: "0 3 * * *"
+      description: "Refreshes tariff knowledge graph and compressed notes for current declarable goods"
+      enabled: <%= ENV.fetch('SERVICE', 'uk') == 'uk' && ENV.fetch('ENVIRONMENT', 'local') == 'staging' %>
