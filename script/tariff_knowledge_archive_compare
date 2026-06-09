@@ -1,0 +1,541 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+# rubocop:disable Rails/TimeZone
+
+require 'digest'
+require 'fileutils'
+require 'json'
+require 'open3'
+require 'optparse'
+require 'shellwords'
+require 'time'
+
+options = {
+  archive_db: ENV['ARCHIVE_DB'],
+  archive_zip: ENV['ARCHIVE_ZIP'],
+  spike_db: ENV.fetch('SPIKE_DB', 'tariff_development'),
+  service: ENV.fetch('SERVICE', 'uk'),
+  out_dir: ENV['OUT_DIR'] || "/tmp/ai868_kg_compare/run-#{Time.now.utc.strftime('%Y%m%dT%H%M%SZ')}",
+}
+
+OptionParser.new { |opts|
+  opts.banner = "Usage: #{$PROGRAM_NAME} [options]"
+  opts.on('--archive-db DB', 'Existing restored archive database name') { |value| options[:archive_db] = value }
+  opts.on('--archive-zip PATH', 'Restore archive database from this zip before comparing') { |value| options[:archive_zip] = value }
+  opts.on('--spike-db DB', 'Spike/backend database name (default: tariff_development)') { |value| options[:spike_db] = value }
+  opts.on('--service SCHEMA', 'Backend service schema (default: uk)') { |value| options[:service] = value }
+  opts.on('--out DIR', 'Directory for CSV and markdown outputs') { |value| options[:out_dir] = value }
+}.parse!
+
+def run!(*command)
+  stdout, stderr, status = Open3.capture3(*command)
+  return stdout if status.success?
+
+  warn stderr unless stderr.empty?
+  abort "Command failed: #{command.shelljoin}"
+end
+
+def sh!(command)
+  stdout, stderr, status = Open3.capture3(command)
+  return stdout if status.success?
+
+  warn stderr unless stderr.empty?
+  abort "Command failed: #{command}"
+end
+
+def psql_rows(database, sql)
+  json = run!(
+    'psql',
+    '-d',
+    database,
+    '-v',
+    'ON_ERROR_STOP=1',
+    '-P',
+    'pager=off',
+    '-At',
+    '-c',
+    "select coalesce(json_agg(row_to_json(query_rows)), '[]'::json) from (#{sql}) query_rows",
+  )
+  JSON.parse(json)
+end
+
+def csv_escape(value)
+  string = value.to_s
+  return string unless string.match?(/[",\r\n]/)
+
+  "\"#{string.gsub('"', '""')}\""
+end
+
+def write_csv(path, rows)
+  headers = rows.first&.keys || []
+  lines = []
+  lines << headers.map { |header| csv_escape(header) }.join(',') unless headers.empty?
+  rows.each do |row|
+    lines << headers.map { |header| csv_escape(row[header]) }.join(',')
+  end
+  File.write(path, lines.join("\n"))
+  File.write(path, "\n", mode: 'a') unless lines.empty?
+  rows
+end
+
+def normalize_text(value)
+  value.to_s
+       .gsub(/\[([^\]]+)\]\([^)]+\)/, '\1')
+       .gsub(/[[:space:]]+/, ' ')
+       .strip
+       .downcase
+end
+
+def text_hash(value)
+  Digest::SHA256.hexdigest(normalize_text(value))
+end
+
+def archive_semantic_type(type)
+  case type
+  when 'exclusion' then 'excludes'
+  when 'definition' then 'defines_term'
+  when 'classification_order' then 'classifies_as'
+  else 'constrains'
+  end
+end
+
+def spike_archive_source(scope)
+  type, id = scope.to_s.split(':', 2)
+  case type
+  when 'chapter' then "UK Tariff Chapter #{id.rjust(2, '0')} Notes"
+  when 'section' then "UK Tariff Section #{id} Notes"
+  else 'Spike tariff note source'
+  end
+end
+
+def restore_archive!(zip_path)
+  abort "Archive zip not found: #{zip_path}" unless File.exist?(zip_path)
+
+  database = "kg_archive_compare_#{Time.now.utc.strftime('%Y%m%d%H%M%S')}_#{Process.pid}"
+  entries = run!('unzip', '-Z1', zip_path).lines.map(&:strip)
+  schema_entry = entries.find { |entry| entry.end_with?('/db/kg_schema.sql') }
+  data_entry = entries.find { |entry| entry.end_with?('/db/kg_data_no_audit.sql.gz') }
+  abort 'Archive zip does not contain db/kg_schema.sql' unless schema_entry
+  abort 'Archive zip does not contain db/kg_data_no_audit.sql.gz' unless data_entry
+
+  run!('createdb', database)
+  run!('psql', '-d', database, '-v', 'ON_ERROR_STOP=1', '-c', 'CREATE EXTENSION IF NOT EXISTS vector;')
+  sh!("unzip -p #{Shellwords.escape(zip_path)} #{Shellwords.escape(schema_entry)} | psql -d #{Shellwords.escape(database)} -v ON_ERROR_STOP=1")
+  sh!("unzip -p #{Shellwords.escape(zip_path)} #{Shellwords.escape(data_entry)} | gzip -dc | psql -d #{Shellwords.escape(database)} -v ON_ERROR_STOP=1")
+  database
+end
+
+if options[:archive_zip]
+  options[:archive_db] = restore_archive!(File.expand_path(options[:archive_zip]))
+elsif options[:archive_db].to_s.empty? && File.exist?('/tmp/ai868_kg_compare/archive_db_name')
+  options[:archive_db] = File.read('/tmp/ai868_kg_compare/archive_db_name').strip
+end
+
+abort 'Pass --archive-db DB or --archive-zip PATH' if options[:archive_db].to_s.empty?
+
+FileUtils.mkdir_p(options[:out_dir])
+
+archive_totals = write_csv(
+  File.join(options[:out_dir], 'archive_totals.csv'),
+  psql_rows(options[:archive_db], <<~SQL),
+    select 'kg_edges' as relation, count(*)::bigint as rows from kg.kg_edges
+    union all
+    select 'kg_edge_commodities', count(*)::bigint from kg.kg_edge_commodities
+    union all
+    select 'commodity_facets', count(*)::bigint from kg.commodity_facets
+    union all
+    select 'composite_search_text', count(*)::bigint from kg.composite_search_text
+    order by relation
+  SQL
+)
+
+archive_edges = write_csv(
+  File.join(options[:out_dir], 'archive_comparable_edges.csv'),
+  psql_rows(options[:archive_db], <<~SQL),
+    select
+      id,
+      type,
+      case
+        when scope ~ '^chapter:[0-9]$' then 'chapter:0' || split_part(scope, ':', 2)
+        else scope
+      end as scope,
+      source,
+      title,
+      body
+    from kg.kg_edges
+    where source like 'UK Tariff Chapter % Notes'
+       or source like 'UK Tariff Section % Notes'
+       or source like 'Combined Nomenclature / Tariff of the United Kingdom Part Two%'
+    order by source, id
+  SQL
+)
+
+archive_links = write_csv(
+  File.join(options[:out_dir], 'archive_comparable_links.csv'),
+  psql_rows(options[:archive_db], <<~SQL),
+    select
+      e.id as edge_id,
+      case
+        when e.scope ~ '^chapter:[0-9]$' then 'chapter:0' || split_part(e.scope, ':', 2)
+        else e.scope
+      end as scope,
+      e.type,
+      c.commodity_code
+    from kg.kg_edges e
+    join kg.kg_edge_commodities c on c.edge_id = e.id
+    where e.source like 'UK Tariff Chapter % Notes'
+       or e.source like 'UK Tariff Section % Notes'
+       or e.source like 'Combined Nomenclature / Tariff of the United Kingdom Part Two%'
+    order by e.scope, e.id, c.commodity_code
+  SQL
+)
+
+archive_node_counts = write_csv(
+  File.join(options[:out_dir], 'archive_node_like_counts.csv'),
+  psql_rows(options[:archive_db], <<~SQL),
+    with comparable_edges as (
+      select id
+      from kg.kg_edges
+      where source like 'UK Tariff Chapter % Notes'
+         or source like 'UK Tariff Section % Notes'
+         or source like 'Combined Nomenclature / Tariff of the United Kingdom Part Two%'
+    )
+    select 'total_kg_edge_ids' as node_like_set, count(*)::bigint as rows
+    from kg.kg_edges
+    union all
+    select 'comparable_kg_edge_ids', count(*)::bigint
+    from comparable_edges
+    union all
+    select 'total_edge_linked_commodity_codes', count(distinct commodity_code)::bigint
+    from kg.kg_edge_commodities
+    union all
+    select 'comparable_edge_linked_commodity_codes', count(distinct kec.commodity_code)::bigint
+    from kg.kg_edge_commodities kec
+    join comparable_edges e on e.id = kec.edge_id
+    union all
+    select 'commodity_facet_codes', count(distinct commodity_code)::bigint
+    from kg.commodity_facets
+    union all
+    select 'composite_search_text_codes', count(distinct goods_nomenclature_item_id)::bigint
+    from kg.composite_search_text
+    order by node_like_set
+  SQL
+)
+
+schema = options[:service]
+spike_rules = write_csv(
+  File.join(options[:out_dir], 'spike_rules.csv'),
+  psql_rows(options[:spike_db], <<~SQL),
+    with source_rules as (
+      select
+        s.key as source_key,
+        concat(s.metadata->>'scope_type', ':', lpad(s.metadata->>'scope_id', case when s.metadata->>'scope_type' = 'chapter' then 2 else length(s.metadata->>'scope_id') end, '0')) as scope,
+        s.title as source_title,
+        r.key as rule_key,
+        r.title,
+        r.content as body,
+        r.metadata->>'rule_type' as type,
+        r.metadata->>'rule_label' as rule_label,
+        r.source_type,
+        r.source_id,
+        r.source_version
+      from #{schema}.tariff_knowledge_nodes s
+      join #{schema}.tariff_knowledge_edges e
+        on e.source_node_id = s.id
+       and e.relationship_type = 'has_fragment'
+      join #{schema}.tariff_knowledge_nodes r
+        on r.id = e.target_node_id
+      where s.node_type = 'note_source'
+        and r.node_type = 'rule'
+    )
+    select
+      source_key,
+      scope,
+      source_title,
+      rule_key,
+      title,
+      body,
+      type,
+      rule_label,
+      source_type,
+      source_id,
+      source_version
+    from source_rules
+    order by scope, rule_key
+  SQL
+)
+
+spike_links = write_csv(
+  File.join(options[:out_dir], 'spike_applies_to_links.csv'),
+  psql_rows(options[:spike_db], <<~SQL),
+    with source_rules as (
+      select
+        concat(s.metadata->>'scope_type', ':', lpad(s.metadata->>'scope_id', case when s.metadata->>'scope_type' = 'chapter' then 2 else length(s.metadata->>'scope_id') end, '0')) as scope,
+        r.id as rule_node_id,
+        r.key as rule_key,
+        r.metadata->>'rule_type' as type
+      from #{schema}.tariff_knowledge_nodes s
+      join #{schema}.tariff_knowledge_edges hf
+        on hf.source_node_id = s.id
+       and hf.relationship_type = 'has_fragment'
+      join #{schema}.tariff_knowledge_nodes r
+        on r.id = hf.target_node_id
+      where s.node_type = 'note_source'
+        and r.node_type = 'rule'
+    )
+    select
+      sr.scope,
+      sr.rule_key,
+      sr.type,
+      gn.goods_nomenclature_item_id as commodity_code,
+      ae.metadata->>'resolution_reason' as resolution_reason
+    from source_rules sr
+    join #{schema}.tariff_knowledge_edges ae
+      on ae.source_node_id = sr.rule_node_id
+     and ae.relationship_type = 'applies_to'
+    join #{schema}.tariff_knowledge_nodes gn
+      on gn.id = ae.target_node_id
+     and gn.node_type = 'goods_nomenclature'
+    order by sr.scope, sr.rule_key, gn.goods_nomenclature_item_id
+  SQL
+)
+
+spike_node_counts = write_csv(
+  File.join(options[:out_dir], 'spike_node_counts.csv'),
+  psql_rows(options[:spike_db], <<~SQL),
+    select
+      node_type,
+      count(*)::bigint as rows,
+      count(distinct goods_nomenclature_item_id)::bigint as distinct_goods_nomenclature_item_ids
+    from #{schema}.tariff_knowledge_nodes
+    group by node_type
+    union all
+    select
+      'applies_to_linked_goods_nomenclature_codes',
+      count(distinct gn.goods_nomenclature_item_id)::bigint,
+      count(distinct gn.goods_nomenclature_item_id)::bigint
+    from #{schema}.tariff_knowledge_nodes gn
+    join #{schema}.tariff_knowledge_edges e
+      on e.target_node_id = gn.id
+     and e.relationship_type = 'applies_to'
+    where gn.node_type = 'goods_nomenclature'
+    order by node_type
+  SQL
+)
+
+if spike_rules.empty?
+  abort 'Spike has no tariff knowledge rules. Run `bundle exec rake tariff_knowledge:refresh` against the spike/backend database first.'
+end
+
+archive_edges.each do |row|
+  row['semantic_type'] = archive_semantic_type(row['type'])
+  row['normalized_body_hash'] = text_hash(row['body'])
+  row['signature'] = [row['scope'], row['semantic_type'], row['normalized_body_hash']].join('|')
+end
+
+spike_rules.each do |row|
+  row['source'] = spike_archive_source(row['scope'])
+  row['semantic_type'] = row['type']
+  row['normalized_body_hash'] = text_hash(row['body'])
+  row['signature'] = [row['scope'], row['semantic_type'], row['normalized_body_hash']].join('|')
+end
+
+archive_signatures = archive_edges.map { |row| row['signature'] }.to_set
+spike_signatures = spike_rules.map { |row| row['signature'] }.to_set
+
+archive_scope_codes = Hash.new { |hash, key| hash[key] = Set.new }
+archive_links.each { |row| archive_scope_codes[row['scope']] << row['commodity_code'] }
+
+spike_scope_codes = Hash.new { |hash, key| hash[key] = Set.new }
+spike_links.each { |row| spike_scope_codes[row['scope']] << row['commodity_code'] }
+
+archive_scope_sources = Hash.new { |hash, key| hash[key] = Set.new }
+archive_edges.each { |row| archive_scope_sources[row['scope']] << row['source'] }
+
+spike_scope_sources = Hash.new { |hash, key| hash[key] = Set.new }
+spike_rules.each { |row| spike_scope_sources[row['scope']] << row['source_title'] }
+
+all_scopes = (archive_edges.map { |row| row['scope'] } + spike_rules.map { |row| row['scope'] }).uniq.sort
+scope_rows = all_scopes.map do |scope|
+  archive_scope_edges = archive_edges.select { |row| row['scope'] == scope }
+  spike_scope_rules = spike_rules.select { |row| row['scope'] == scope }
+  archive_codes = archive_scope_codes[scope]
+  spike_codes = spike_scope_codes[scope]
+  {
+    'scope' => scope,
+    'archive_edges' => archive_scope_edges.size,
+    'spike_rules' => spike_scope_rules.size,
+    'archive_linked_codes' => archive_codes.size,
+    'spike_linked_codes' => spike_codes.size,
+    'linked_code_overlap' => (archive_codes & spike_codes).size,
+    'archive_only_codes' => (archive_codes - spike_codes).size,
+    'spike_only_codes' => (spike_codes - archive_codes).size,
+  }
+end
+
+write_csv(File.join(options[:out_dir], 'scope_code_coverage.csv'), scope_rows)
+
+source_scope_rows = scope_rows.map do |row|
+  archive_edges_present = row['archive_edges'].positive?
+  spike_rules_present = row['spike_rules'].positive?
+  status = if archive_edges_present && spike_rules_present
+             'both'
+           elsif archive_edges_present
+             'archive_only'
+           else
+             'spike_only'
+           end
+
+  row.merge(
+    'status' => status,
+    'archive_sources' => archive_scope_sources[row['scope']].to_a.sort.join('; '),
+    'spike_sources' => spike_scope_sources[row['scope']].to_a.sort.join('; '),
+    'rule_edge_delta' => row['spike_rules'] - row['archive_edges'],
+    'linked_code_delta' => row['spike_linked_codes'] - row['archive_linked_codes'],
+  )
+end
+
+write_csv(File.join(options[:out_dir], 'source_scope_coverage.csv'), source_scope_rows)
+
+signature_gap_rows = []
+archive_edges.reject { |row| spike_signatures.include?(row['signature']) }.each do |row|
+  signature_gap_rows << {
+    'side' => 'archive_only',
+    'scope' => row['scope'],
+    'type' => row['semantic_type'],
+    'source' => row['source'],
+    'key' => row['id'],
+    'title' => row['title'],
+    'body_hash' => row['normalized_body_hash'],
+  }
+end
+spike_rules.reject { |row| archive_signatures.include?(row['signature']) }.each do |row|
+  signature_gap_rows << {
+    'side' => 'spike_only',
+    'scope' => row['scope'],
+    'type' => row['semantic_type'],
+    'source' => row['source'],
+    'key' => row['rule_key'],
+    'title' => row['title'],
+    'body_hash' => row['normalized_body_hash'],
+  }
+end
+write_csv(File.join(options[:out_dir], 'signature_gaps.csv'), signature_gap_rows)
+
+archive_type_counts = archive_edges.each_with_object(Hash.new(0)) { |row, counts| counts[row['semantic_type']] += 1 }
+spike_type_counts = spike_rules.each_with_object(Hash.new(0)) { |row, counts| counts[row['semantic_type']] += 1 }
+archive_only_scopes = source_scope_rows.select { |row| row['status'] == 'archive_only' }
+spike_only_scopes = source_scope_rows.select { |row| row['status'] == 'spike_only' }
+largest_link_deltas = source_scope_rows.select { |row| row['status'] == 'both' }
+                                       .sort_by { |row| -row['linked_code_delta'].abs }
+                                       .first(10)
+
+markdown = <<~MARKDOWN
+  # Tariff Knowledge Archive Comparison
+
+  Generated at: #{Time.now.utc.iso8601}
+
+  ## Inputs
+
+  - Archive DB: `#{options[:archive_db]}`
+  - Spike DB: `#{options[:spike_db]}`
+  - Spike schema: `#{schema}`
+
+  ## Archive Totals
+
+  | Relation | Rows |
+  | --- | ---: |
+  #{archive_totals.map { |row| "| `#{row['relation']}` | #{row['rows']} |" }.join("\n")}
+
+  ## Comparable Subset
+
+  The archive contains ATAR, HS explanatory note, fact-store, and tariff-note material. This comparison only treats these archive sources as comparable with the Rails spike output:
+
+  - `UK Tariff Chapter % Notes`
+  - `UK Tariff Section % Notes`
+  - `Combined Nomenclature / Tariff of the United Kingdom Part Two%`
+
+  | Dataset | Rule/edge rows | Linked commodity-code rows | Distinct scopes |
+  | --- | ---: | ---: | ---: |
+  | Archive comparable subset | #{archive_edges.size} | #{archive_links.size} | #{archive_edges.map { |row| row['scope'] }.uniq.size} |
+  | Spike generated graph | #{spike_rules.size} | #{spike_links.size} | #{spike_rules.map { |row| row['scope'] }.uniq.size} |
+
+  ## Node-Like Coverage
+
+  The archive does not have a Rails-style graph node table. Its node-like entities are KG edge IDs plus commodity codes linked through KG/facet/search tables.
+
+  | Archive node-like set | Rows |
+  | --- | ---: |
+  #{archive_node_counts.map { |row| "| `#{row['node_like_set']}` | #{row['rows']} |" }.join("\n")}
+
+  | Spike node set | Rows | Distinct goods nomenclature codes |
+  | --- | ---: | ---: |
+  #{spike_node_counts.map { |row| "| `#{row['node_type']}` | #{row['rows']} | #{row['distinct_goods_nomenclature_item_ids']} |" }.join("\n")}
+
+  ## Semantic Type Counts
+
+  | Type | Archive | Spike |
+  | --- | ---: | ---: |
+  #{(archive_type_counts.keys + spike_type_counts.keys).uniq.sort.map { |type| "| `#{type}` | #{archive_type_counts.fetch(type, 0)} | #{spike_type_counts.fetch(type, 0)} |" }.join("\n")}
+
+  ## Normalized Signature Match
+
+  Signatures are `scope + mapped semantic type + SHA256(normalized body)`. They are deliberately strict: source IDs and row IDs are ignored, while wording differences still show as gaps.
+
+  | Metric | Count |
+  | --- | ---: |
+  | Matching signatures | #{(archive_signatures & spike_signatures).size} |
+  | Archive-only signatures | #{(archive_signatures - spike_signatures).size} |
+  | Spike-only signatures | #{(spike_signatures - archive_signatures).size} |
+
+  ## Source And Scope Coverage
+
+  | Metric | Count |
+  | --- | ---: |
+  | Scopes present in both | #{source_scope_rows.count { |row| row['status'] == 'both' }} |
+  | Archive-only scopes | #{archive_only_scopes.size} |
+  | Spike-only scopes | #{spike_only_scopes.size} |
+
+  Archive-only scopes:
+
+  #{archive_only_scopes.empty? ? '- None' : archive_only_scopes.map { |row| "- `#{row['scope']}`: #{row['archive_edges']} archive edges, #{row['archive_sources']}" }.join("\n")}
+
+  Spike-only scopes:
+
+  #{spike_only_scopes.empty? ? '- None' : spike_only_scopes.map { |row| "- `#{row['scope']}`: #{row['spike_rules']} spike rules, #{row['spike_sources']}" }.join("\n")}
+
+  Largest linked-code deltas in scopes present in both:
+
+  | Scope | Archive linked codes | Spike linked codes | Delta |
+  | --- | ---: | ---: | ---: |
+  #{largest_link_deltas.map { |row| "| `#{row['scope']}` | #{row['archive_linked_codes']} | #{row['spike_linked_codes']} | #{row['linked_code_delta']} |" }.join("\n")}
+
+  ## Outputs
+
+  - `archive_totals.csv`
+  - `archive_node_like_counts.csv`
+  - `archive_comparable_edges.csv`
+  - `archive_comparable_links.csv`
+  - `spike_node_counts.csv`
+  - `spike_rules.csv`
+  - `spike_applies_to_links.csv`
+  - `scope_code_coverage.csv`
+  - `source_scope_coverage.csv`
+  - `signature_gaps.csv`
+
+  ## Notes
+
+  Archive totals are not expected to match spike totals. The archive has broader KG sources, while the Rails spike generates approved actual customs tariff chapter and section note rules, then expands them to declarable goods nomenclatures.
+MARKDOWN
+
+File.write(File.join(options[:out_dir], 'summary.md'), markdown)
+
+puts "Wrote comparison outputs to #{options[:out_dir]}"
+puts "Archive comparable edges: #{archive_edges.size}"
+puts "Spike rules: #{spike_rules.size}"
+puts "Archive comparable links: #{archive_links.size}"
+puts "Spike applies_to links: #{spike_links.size}"
+puts "Matching normalized signatures: #{(archive_signatures & spike_signatures).size}"
+
+# rubocop:enable Rails/TimeZone
