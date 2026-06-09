@@ -118,6 +118,21 @@ RSpec.describe TariffKnowledge::SourceGraphLoader do
       expect(TariffKnowledge::Node.by_key('note_source:customs_tariff_chapter_note:1.31:01').first.content)
         .to eq(current_note.content)
     end
+
+    it 'keeps positive references when another clause in the fragment is negated' do
+      create(
+        :customs_tariff_chapter_note,
+        :approved,
+        customs_tariff_update: update,
+        chapter_id: '01',
+        content: 'Heading 0101 covers live horses; Chapter 02 is excluded.',
+      )
+
+      described_class.call
+
+      expect(TariffKnowledge::Node.where(node_type: TariffKnowledge::Node::RANGE).select_map(:key))
+        .to contain_exactly('range:heading:0101')
+    end
   end
 
   def edge_exists?(source_node, target_node, relationship_type)

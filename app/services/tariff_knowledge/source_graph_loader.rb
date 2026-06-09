@@ -1,5 +1,7 @@
 module TariffKnowledge
   class SourceGraphLoader
+    BATCH_SIZE = 500
+
     RangeReference = Data.define(:type, :code)
 
     SOURCE_TYPES = [
@@ -94,13 +96,19 @@ module TariffKnowledge
     end
 
     def range_references(content)
-      references = content.to_s.scan(/\b(chapter|heading)\s+(\d{2}|\d{4})\b/i).filter_map do |type, code|
-        next if negated_reference?(content)
+      references = reference_clauses(content).flat_map do |clause|
+        next [] if negated_reference?(clause)
 
-        RangeReference.new(type: type.downcase, code:)
+        clause.scan(/\b(chapter|heading)\s+(\d{2}|\d{4})\b/i).map do |type, code|
+          RangeReference.new(type: type.downcase, code:)
+        end
       end
 
       references.uniq
+    end
+
+    def reference_clauses(content)
+      content.to_s.split(/[.;]/).map(&:strip).reject(&:blank?)
     end
 
     def negated_reference?(content)
@@ -118,7 +126,7 @@ module TariffKnowledge
     end
 
     def expand_range(range_node, reference)
-      matching_declarable_nodes(reference).each do |declarable_node|
+      matching_declarable_nodes(reference).paged_each(rows_per_fetch: BATCH_SIZE) do |declarable_node|
         upsert_edge(range_node, declarable_node, Edge::EXPANDS_TO)
       end
     end
@@ -126,7 +134,6 @@ module TariffKnowledge
     def matching_declarable_nodes(reference)
       Node.goods_nomenclatures
           .where(Sequel.like(:goods_nomenclature_item_id, "#{reference.code}%"))
-          .all
     end
 
     def source_key(source_type, source)
