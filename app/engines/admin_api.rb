@@ -62,6 +62,12 @@ AdminApi.routes.draw do
             post :reject
             get :versions
           end
+          resource :tariff_knowledge_compressed_note, only: %i[show update] do
+            post :regenerate
+            post :approve
+            post :reject
+            get :versions
+          end
         end
       end
 
@@ -71,6 +77,7 @@ AdminApi.routes.draw do
 
       resources :goods_nomenclature_labels, only: [:index]
       resources :goods_nomenclature_self_texts, only: [:index]
+      resources :tariff_knowledge_compressed_notes, only: [:index]
       resources :versions, only: [:index] do
         member do
           post :restore
