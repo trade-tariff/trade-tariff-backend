@@ -127,5 +127,43 @@ RSpec.describe CustomsTariffImporter::Reimporter do
         expect(TariffSynchronizer::FileService).not_to have_received(:get)
       end
     end
+
+    context 'when called with a specific version' do
+      let(:other_update) do
+        create(:customs_tariff_update,
+               version: '1.30',
+               status: CustomsTariffUpdate::PENDING,
+               validity_start_date: Date.new(2026, 3, 1),
+               s3_path: 'data/customs_tariff_documents/UKGT_1.30.docx')
+      end
+      let(:other_docx_io) { build_docx('SECTION II', 'Section Notes', 'Other note.', 'CHAPTER 6') }
+
+      before do
+        other_update
+        allow(TariffSynchronizer::FileService).to receive(:get)
+          .with(other_update.s3_path)
+          .and_return(other_docx_io)
+      end
+
+      it 'reimports only that update' do
+        reimporter.call(version: update.version)
+
+        expect(CustomsTariffSectionNote.where(customs_tariff_update_version: update.version).count).to eq(1)
+        expect(CustomsTariffSectionNote.where(customs_tariff_update_version: other_update.version).count).to eq(0)
+      end
+
+      it 'reimports a FAILED update (no status filtering in single-version mode)' do
+        update.update(status: CustomsTariffUpdate::FAILED)
+
+        reimporter.call(version: update.version)
+
+        expect(CustomsTariffSectionNote.where(customs_tariff_update_version: update.version).count).to eq(1)
+      end
+
+      it 'does nothing when the version does not exist' do
+        expect { reimporter.call(version: 'nonexistent.99') }
+          .not_to(change(CustomsTariffSectionNote, :count))
+      end
+    end
   end
 end

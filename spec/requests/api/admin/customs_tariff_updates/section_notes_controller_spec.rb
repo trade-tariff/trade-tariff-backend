@@ -177,4 +177,76 @@ RSpec.describe Api::Admin::CustomsTariffUpdates::SectionNotesController do
       }.to change { Version.where(item_type: 'CustomsTariffSectionNote', item_id: note.id.to_s).count }.by(1)
     end
   end
+
+  describe 'DELETE #destroy' do
+    let!(:update) { create(:customs_tariff_update) }
+    let!(:note)   { create(:customs_tariff_section_note, customs_tariff_update: update) }
+
+    it 'destroys the note and returns 204' do
+      delete "/uk/admin/customs_tariff_updates/#{update.version}/section_notes/#{note.id}.json",
+             headers: request_headers(format: :json)
+
+      expect(response.status).to eq(204)
+      expect(CustomsTariffSectionNote.where(id: note.id).first).to be_nil
+    end
+
+    it 'returns 422 and does not destroy when the parent update is rejected' do
+      update.update(status: CustomsTariffUpdate::REJECTED)
+
+      delete "/uk/admin/customs_tariff_updates/#{update.version}/section_notes/#{note.id}.json",
+             headers: request_headers(format: :json)
+
+      expect(response.status).to eq(422)
+      expect(CustomsTariffSectionNote.where(id: note.id).first).not_to be_nil
+    end
+
+    it 'returns 404 when the note does not belong to the update' do
+      other_update = create(:customs_tariff_update)
+
+      delete "/uk/admin/customs_tariff_updates/#{other_update.version}/section_notes/#{note.id}.json",
+             headers: request_headers(format: :json)
+
+      expect(response.status).to eq(404)
+    end
+  end
+
+  describe 'POST #create' do
+    let!(:update) { create(:customs_tariff_update, validity_start_date: Date.new(2026, 3, 1)) }
+
+    it 'creates a section note and returns 201' do
+      post "/uk/admin/customs_tariff_updates/#{update.version}/section_notes.json",
+           params: { data: { type: 'customs_tariff_section_note',
+                             attributes: { section_id: 7, content: 'Manually added note content here' } } },
+           headers: request_headers(format: :json), as: :json
+
+      expect(response.status).to eq(201)
+      attrs = JSON.parse(response.body).dig('data', 'attributes')
+      expect(attrs['section_id']).to eq(7)
+      expect(attrs['content']).to eq('Manually added note content here')
+    end
+
+    it 'sets status to pending and copies validity_start_date from the update' do
+      post "/uk/admin/customs_tariff_updates/#{update.version}/section_notes.json",
+           params: { data: { type: 'customs_tariff_section_note',
+                             attributes: { section_id: 8, content: 'Some note content here' } } },
+           headers: request_headers(format: :json), as: :json
+
+      note = CustomsTariffSectionNote.where(
+        customs_tariff_update_version: update.version, section_id: 8,
+      ).first
+      expect(note.status).to eq(CustomsTariffSectionNote::PENDING)
+      expect(note.validity_start_date).to eq(Date.new(2026, 3, 1))
+    end
+
+    it 'returns 422 when the parent update is rejected' do
+      update.update(status: CustomsTariffUpdate::REJECTED)
+
+      post "/uk/admin/customs_tariff_updates/#{update.version}/section_notes.json",
+           params: { data: { type: 'customs_tariff_section_note',
+                             attributes: { section_id: 7, content: 'Some content' } } },
+           headers: request_headers(format: :json), as: :json
+
+      expect(response.status).to eq(422)
+    end
+  end
 end

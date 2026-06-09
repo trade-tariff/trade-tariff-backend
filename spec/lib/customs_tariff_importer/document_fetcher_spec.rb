@@ -73,18 +73,18 @@ RSpec.describe CustomsTariffImporter::DocumentFetcher do
         <<~HTML
           <html><body>
             <div class="gem-c-attachment">
-              <a class="gem-c-attachment__thumbnail-image" href="https://assets.publishing.service.gov.uk/media/abc/UKGT_1.30.docx"></a>
+              <a class="gem-c-attachment__thumbnail-image" href="https://assets.publishing.service.gov.uk/media/abc/The_Tariff_of_the_United_Kingdom_1.31.docx"></a>
               <h3 class="gem-c-attachment__title">
-                <a href="https://assets.publishing.service.gov.uk/media/abc/UKGT_1.30.docx">
-                  The Tariff of the United Kingdom, version 1.30, dated 14 January 2026 (entry into force 22 January 2026)
+                <a href="https://assets.publishing.service.gov.uk/media/abc/The_Tariff_of_the_United_Kingdom_1.31.docx">
+                  The Tariff of the United Kingdom, version 1.31, dated 3 March 2026 (entry into force 1 April 2026)
                 </a>
               </h3>
             </div>
             <div class="gem-c-attachment">
-              <a class="gem-c-attachment__thumbnail-image" href="https://assets.publishing.service.gov.uk/media/def/UKGT_1.31.docx"></a>
+              <a class="gem-c-attachment__thumbnail-image" href="https://assets.publishing.service.gov.uk/media/def/The_Tariff_of_the_United_Kingdom_1.32.docx"></a>
               <h3 class="gem-c-attachment__title">
-                <a href="https://assets.publishing.service.gov.uk/media/def/UKGT_1.31.docx">
-                  The Tariff of the United Kingdom, version 1.31, dated 3 March 2026 (entry into force 1 April 2026)
+                <a href="https://assets.publishing.service.gov.uk/media/def/The_Tariff_of_the_United_Kingdom_1.32.docx">
+                  The Tariff of the United Kingdom, version 1.32, dated 14 January 2026 (entry into force 22 January 2026)
                 </a>
               </h3>
             </div>
@@ -105,14 +105,14 @@ RSpec.describe CustomsTariffImporter::DocumentFetcher do
 
       it 'returns the correct URLs' do
         expect(links.map { |l| l[:url] }).to contain_exactly(
-          'https://assets.publishing.service.gov.uk/media/abc/UKGT_1.30.docx',
-          'https://assets.publishing.service.gov.uk/media/def/UKGT_1.31.docx',
+          'https://assets.publishing.service.gov.uk/media/abc/The_Tariff_of_the_United_Kingdom_1.31.docx',
+          'https://assets.publishing.service.gov.uk/media/def/The_Tariff_of_the_United_Kingdom_1.32.docx',
         )
       end
 
       it 'returns the link text for each document' do
-        expect(links.first[:text]).to include('version 1.30')
-        expect(links.last[:text]).to include('version 1.31')
+        expect(links.first[:text]).to include('version 1.31')
+        expect(links.last[:text]).to include('version 1.32')
       end
 
       context 'when there are no .docx links' do
@@ -123,11 +123,51 @@ RSpec.describe CustomsTariffImporter::DocumentFetcher do
         end
       end
     end
+
+    describe 'extract_version (private)' do
+      subject(:extract) { fetcher.send(:extract_version, url, text) }
+
+      context 'when text contains "version X.Y"' do
+        let(:url)  { 'https://assets.publishing.service.gov.uk/media/abc/The_Tariff_of_the_United_Kingdom_1.32.docx' }
+        let(:text) { 'The Tariff of the United Kingdom, version 1.32, dated 14 January 2026 (entry into force 22 January 2026)' }
+
+        it 'returns the version from the link text' do
+          expect(extract).to eq('1.32')
+        end
+      end
+
+      context 'when text has no version label but URL has _X.Y.docx' do
+        let(:url)  { 'https://assets.publishing.service.gov.uk/media/abc/The_Tariff_of_the_United_Kingdom_1.30.docx' }
+        let(:text) { 'Some document with no version label' }
+
+        it 'falls back to the URL pattern' do
+          expect(extract).to eq('1.30')
+        end
+      end
+
+      context 'when text version and URL version differ' do
+        let(:url)  { 'https://assets.publishing.service.gov.uk/media/abc/The_Tariff_of_the_United_Kingdom_1.30.docx' }
+        let(:text) { 'The Tariff of the United Kingdom, version 1.32, dated 14 January 2026' }
+
+        it 'prefers the text version' do
+          expect(extract).to eq('1.32')
+        end
+      end
+
+      context 'when neither text nor URL contains a version' do
+        let(:url)  { 'https://assets.publishing.service.gov.uk/media/abc/document.docx' }
+        let(:text) { 'Some document' }
+
+        it 'returns nil' do
+          expect(extract).to be_nil
+        end
+      end
+    end
   end
 
   describe '#call instrumentation' do
-    let(:docx_url) { 'https://assets.publishing.service.gov.uk/media/abc/UKGT_1.30.docx' }
-    let(:link_text) { 'The Tariff of the United Kingdom, version 1.30, dated 14 January 2026 (entry into force 22 January 2026)' }
+    let(:docx_url) { 'https://assets.publishing.service.gov.uk/media/abc/The_Tariff_of_the_United_Kingdom_1.32.docx' }
+    let(:link_text) { 'The Tariff of the United Kingdom, version 1.32, dated 14 January 2026 (entry into force 22 January 2026)' }
     let(:page_html) do
       <<~HTML
         <html><body>
@@ -156,7 +196,7 @@ RSpec.describe CustomsTariffImporter::DocumentFetcher do
     it 'emits document_fetched for each document with version and timing' do
       fetcher.call
       expect(CustomsTariffImporter::Instrumentation).to have_received(:document_fetched).with(
-        version: '1.30',
+        version: '1.32',
         duration_ms: a_kind_of(Float),
       )
     end

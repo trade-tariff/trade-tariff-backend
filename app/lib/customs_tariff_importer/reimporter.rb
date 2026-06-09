@@ -1,9 +1,14 @@
 module CustomsTariffImporter
   # this class is responsible for re-importing customs tariff notes from stored S3 documents into the database as part of rake task "importer:customs_tariff:reimport"
   class Reimporter
-    def call
-      CustomsTariffUpdate.exclude(status: CustomsTariffUpdate::FAILED).each do |update|
-        reimport(update)
+    def call(version: nil)
+      if version
+        update = CustomsTariffUpdate.first(version:)
+        reimport(update) if update # no-op if the version does not exist
+      else
+        CustomsTariffUpdate.exclude(status: CustomsTariffUpdate::FAILED).each do |update|
+          reimport(update)
+        end
       end
     end
 

@@ -12,6 +12,7 @@ module Api
         'DescriptionIntercept' => DescriptionIntercept,
         'GoodsNomenclatureIntercept' => GoodsNomenclatureIntercept,
         'CustomsTariffSectionNote' => CustomsTariffSectionNote,
+        'CustomsTariffChapterNote' => CustomsTariffChapterNote,
       }.freeze
 
       def restore
