@@ -122,7 +122,7 @@ module TariffKnowledge
       node = Node.by_key(key).first
       now = Time.zone.now
       values = attributes.merge(
-        metadata: Sequel.pg_jsonb(attributes.fetch(:metadata, {})),
+        metadata: Sequel.pg_jsonb(attributes.fetch(:metadata, { 'loader' => self.class.name })),
         updated_at: now,
       )
 
@@ -140,7 +140,7 @@ module TariffKnowledge
         relationship_type:,
       ).first
       now = Time.zone.now
-      values = { metadata: Sequel.pg_jsonb({}), updated_at: now }
+      values = { metadata: Sequel.pg_jsonb({ 'loader' => self.class.name }), updated_at: now }
 
       if edge
         edge.update(values)
