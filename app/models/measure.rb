@@ -1,5 +1,5 @@
 class Measure < Sequel::Model
-  include Orderable
+  include Orderable # Useful for ordering things like measures
 
   BASE_REGULATION_ROLE = 1
   PROVISIONAL_ANTIDUMPING_ROLE = 2
