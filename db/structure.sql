@@ -14074,6 +14074,12 @@ CREATE INDEX tariff_knowledge_edges_target_node_id_index ON uk.tariff_knowledge_
 
 CREATE INDEX tariff_knowledge_edges_target_node_id_relationship_type_index ON uk.tariff_knowledge_edges USING btree (target_node_id, relationship_type);
 
+--
+-- Name: idx_tariff_knowledge_edges_unique; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE UNIQUE INDEX idx_tariff_knowledge_edges_unique ON uk.tariff_knowledge_edges USING btree (source_node_id, target_node_id, relationship_type);
+
 
 --
 -- Name: tariff_knowledge_nodes_goods_nomenclature_item_id_index; Type: INDEX; Schema: uk; Owner: -
