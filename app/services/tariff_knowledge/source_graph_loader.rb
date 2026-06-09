@@ -136,34 +136,60 @@ module TariffKnowledge
 
     def upsert_node(attributes)
       key = attributes.fetch(:key)
-      node = Node.by_key(key).first
       now = Time.zone.now
       values = attributes.merge(
         metadata: Sequel.pg_jsonb(attributes.fetch(:metadata, { 'loader' => self.class.name })),
+        created_at: now,
         updated_at: now,
       )
 
-      if node
-        node.update(values)
-      else
-        Node.create(values.merge(created_at: now))
-      end
+      Node.dataset
+          .insert_conflict(target: :key, update: node_update_values)
+          .insert(values)
+
+      Node.by_key(key).first
     end
 
     def upsert_edge(source_node, target_node, relationship_type)
-      edge = Edge.where(
+      now = Time.zone.now
+      values = {
         source_node_id: source_node.id,
         target_node_id: target_node.id,
         relationship_type:,
-      ).first
-      now = Time.zone.now
-      values = { metadata: Sequel.pg_jsonb({ 'loader' => self.class.name }), updated_at: now }
+        metadata: Sequel.pg_jsonb({ 'loader' => self.class.name }),
+        created_at: now,
+        updated_at: now,
+      }
 
-      if edge
-        edge.update(values)
-      else
-        Edge.create(values.merge(source_node_id: source_node.id, target_node_id: target_node.id, relationship_type:, created_at: now))
-      end
+      Edge.dataset
+          .insert_conflict(target: %i[source_node_id target_node_id relationship_type], update: edge_update_values)
+          .insert(values)
+    end
+
+    def node_update_values
+      {
+        node_type: Sequel[:excluded][:node_type],
+        title: Sequel[:excluded][:title],
+        content: Sequel[:excluded][:content],
+        metadata: Sequel[:excluded][:metadata],
+        source_type: Sequel[:excluded][:source_type],
+        source_id: Sequel[:excluded][:source_id],
+        source_version: Sequel[:excluded][:source_version],
+        goods_nomenclature_sid: Sequel[:excluded][:goods_nomenclature_sid],
+        goods_nomenclature_item_id: Sequel[:excluded][:goods_nomenclature_item_id],
+        producline_suffix: Sequel[:excluded][:producline_suffix],
+        goods_nomenclature_type: Sequel[:excluded][:goods_nomenclature_type],
+        validity_start_date: Sequel[:excluded][:validity_start_date],
+        validity_end_date: Sequel[:excluded][:validity_end_date],
+        updated_at: Sequel[:excluded][:updated_at],
+      }
+    end
+
+    def edge_update_values
+      {
+        metadata: Sequel[:excluded][:metadata],
+        updated_at: Sequel[:excluded][:updated_at],
+      }
     end
   end
 end
