@@ -133,6 +133,50 @@ RSpec.describe TariffKnowledge::SourceGraphLoader do
       expect(TariffKnowledge::Node.where(node_type: TariffKnowledge::Node::RANGE).select_map(:key))
         .to contain_exactly('range:heading:0101')
     end
+
+    it 'removes stale fragment links when source content has fewer fragments' do
+      note = create(
+        :customs_tariff_chapter_note,
+        :approved,
+        customs_tariff_update: update,
+        chapter_id: '01',
+        content: 'Heading 0101 covers live horses. Heading 0201 covers bovine animals.',
+      )
+
+      described_class.call
+
+      note.update(content: 'Heading 0101 covers live horses.')
+      described_class.call
+
+      source_node = TariffKnowledge::Node.by_key('note_source:customs_tariff_chapter_note:1.31:01').first
+      current_fragment_node = TariffKnowledge::Node.by_key('note_fragment:customs_tariff_chapter_note:1.31:01:0001').first
+      stale_fragment_node = TariffKnowledge::Node.by_key('note_fragment:customs_tariff_chapter_note:1.31:01:0002').first
+
+      expect(edge_exists?(source_node, current_fragment_node, TariffKnowledge::Edge::CONTAINS)).to be(true)
+      expect(edge_exists?(source_node, stale_fragment_node, TariffKnowledge::Edge::CONTAINS)).to be(false)
+    end
+
+    it 'removes stale range references when fragment content changes' do
+      note = create(
+        :customs_tariff_chapter_note,
+        :approved,
+        customs_tariff_update: update,
+        chapter_id: '01',
+        content: 'Heading 0101 covers live horses.',
+      )
+
+      described_class.call
+
+      note.update(content: 'Heading 0201 covers bovine animals.')
+      described_class.call
+
+      fragment_node = TariffKnowledge::Node.by_key('note_fragment:customs_tariff_chapter_note:1.31:01:0001').first
+      current_range_node = TariffKnowledge::Node.by_key('range:heading:0201').first
+      stale_range_node = TariffKnowledge::Node.by_key('range:heading:0101').first
+
+      expect(edge_exists?(fragment_node, current_range_node, TariffKnowledge::Edge::REFERENCES)).to be(true)
+      expect(edge_exists?(fragment_node, stale_range_node, TariffKnowledge::Edge::REFERENCES)).to be(false)
+    end
   end
 
   def edge_exists?(source_node, target_node, relationship_type)

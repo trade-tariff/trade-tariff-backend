@@ -67,9 +67,15 @@ module TariffKnowledge
         source_version: source.customs_tariff_update_version,
       )
 
-      fragments(source.content).each.with_index(1) do |fragment_content, index|
+      fragment_nodes = fragments(source.content).map.with_index(1) do |fragment_content, index|
         load_fragment(source_type, source, source_node, fragment_content, index)
       end
+
+      delete_stale_edges(
+        source_node:,
+        relationship_type: Edge::CONTAINS,
+        current_target_node_ids: fragment_nodes.map(&:id),
+      )
     end
 
     def load_fragment(source_type, source, source_node, content, index)
@@ -84,11 +90,20 @@ module TariffKnowledge
       )
       upsert_edge(source_node, fragment_node, Edge::CONTAINS)
 
-      range_references(content).each do |reference|
+      range_nodes = range_references(content).map do |reference|
         range_node = upsert_range_node(reference)
         upsert_edge(fragment_node, range_node, Edge::REFERENCES)
         expand_range(range_node, reference)
+        range_node
       end
+
+      delete_stale_edges(
+        source_node: fragment_node,
+        relationship_type: Edge::REFERENCES,
+        current_target_node_ids: range_nodes.map(&:id),
+      )
+
+      fragment_node
     end
 
     def fragments(content)
@@ -171,6 +186,15 @@ module TariffKnowledge
       Edge.dataset
           .insert_conflict(target: %i[source_node_id target_node_id relationship_type], update: edge_update_values)
           .insert(values)
+    end
+
+    def delete_stale_edges(source_node:, relationship_type:, current_target_node_ids:)
+      dataset = Edge.where(
+        source_node_id: source_node.id,
+        relationship_type:,
+      )
+      dataset = dataset.exclude(target_node_id: current_target_node_ids) if current_target_node_ids.any?
+      dataset.delete
     end
 
     def node_update_values
