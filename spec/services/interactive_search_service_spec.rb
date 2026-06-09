@@ -425,6 +425,44 @@ RSpec.describe InteractiveSearchService do
       allow(OpenaiClient).to receive(:call).and_return(ai_response)
     end
 
+    context 'when compressed note context is enabled' do
+      before do
+        create(:admin_configuration,
+               :boolean,
+               name: 'search_compressed_notes_enabled',
+               value: true,
+               area: 'classification')
+        create(:tariff_knowledge_compressed_note,
+               goods_nomenclature_item_id: '4202210000',
+               content: 'Includes handbags with outer surface of leather. Excludes plastic sheeting.',
+               approved: true,
+               stale: false,
+               expired: false)
+        create(:tariff_knowledge_compressed_note,
+               goods_nomenclature_item_id: '4202220000',
+               content: 'Stale notes should not be consumed.',
+               approved: true,
+               stale: true,
+               expired: false)
+      end
+
+      it 'adds current approved compressed notes to matching OpenSearch results' do
+        result
+
+        context_arg = nil
+        expect(OpenaiClient).to have_received(:call) do |context, **_opts|
+          context_arg = context
+        end
+
+        parsed_results = JSON.parse(context_arg.match(/OpenSearch results: (.+?)Previous/m)[1])
+        expect(parsed_results.first).to include(
+          'commodity_code' => '4202210000',
+          'compressed_note' => 'Includes handbags with outer surface of leather. Excludes plastic sheeting.',
+        )
+        expect(parsed_results.second).not_to include('compressed_note')
+      end
+    end
+
     context 'when results have full_description' do
       let(:opensearch_results) do
         [

@@ -8,8 +8,8 @@ RSpec.describe 'admin_configurations:seed' do
     Rake::Task['admin_configurations:seed'].reenable
   end
 
-  it 'creates all 41 admin configurations', :aggregate_failures do
-    expect { seed }.to change(AdminConfiguration, :count).by(41)
+  it 'creates all 42 admin configurations', :aggregate_failures do
+    expect { seed }.to change(AdminConfiguration, :count).by(42)
 
     names = AdminConfiguration.order(:name).select_map(:name)
     expect(names).to eq(%w[
@@ -41,6 +41,7 @@ RSpec.describe 'admin_configurations:seed' do
       refine_search_with_answers_enabled
       retrieval_method
       rrf_k
+      search_compressed_notes_enabled
       search_context
       search_labels_enabled
       search_model
@@ -357,7 +358,7 @@ RSpec.describe 'admin_configurations:seed' do
   it 'patches existing configurations when their type changes' do
     create(:admin_configuration, name: 'description_intercept_templates', config_type: 'string', value: 'legacy')
 
-    expect { seed }.to change(AdminConfiguration, :count).by(40)
+    expect { seed }.to change(AdminConfiguration, :count).by(41)
     expect(AdminConfiguration.where(name: 'description_intercept_templates').first.config_type).to eq('object_template')
   end
 end
