@@ -19,31 +19,23 @@ RSpec.describe 'config/sidekiq.yml' do
     end
   end
 
-  it 'schedules tariff knowledge graph population jobs in staging' do
+  it 'schedules the tariff knowledge compressed note refresh pipeline in staging' do
     schedule = sidekiq_schedule(environment: 'staging')
 
     expect(schedule).to include(
-      'CreateTariffKnowledgeSourceGraphWorker' => include(
-        'cron' => '0 2 * * *',
-        'enabled' => true,
-      ),
-      'CreateTariffKnowledgeDeclarableNodesWorker' => include(
-        'cron' => '30 2 * * *',
-        'enabled' => true,
-      ),
       'RefreshTariffKnowledgeCompressedNotesWorker' => include(
         'cron' => '0 3 * * *',
         'enabled' => true,
       ),
     )
+    expect(schedule).not_to include('CreateTariffKnowledgeSourceGraphWorker')
+    expect(schedule).not_to include('CreateTariffKnowledgeDeclarableNodesWorker')
   end
 
-  it 'keeps tariff knowledge graph schedules disabled outside staging' do
+  it 'keeps tariff knowledge compressed note refresh disabled outside staging' do
     schedule = sidekiq_schedule(environment: 'production')
 
     expect(schedule).to include(
-      'CreateTariffKnowledgeSourceGraphWorker' => include('enabled' => false),
-      'CreateTariffKnowledgeDeclarableNodesWorker' => include('enabled' => false),
       'RefreshTariffKnowledgeCompressedNotesWorker' => include('enabled' => false),
     )
   end

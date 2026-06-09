@@ -1,14 +1,8 @@
 namespace :tariff_knowledge do
   desc 'Enqueue the full tariff knowledge graph population pipeline'
   task populate: :environment do
-    CreateTariffKnowledgeSourceGraphWorker.perform_async
-    puts 'Enqueued source graph loading.'
-
-    CreateTariffKnowledgeDeclarableNodesWorker.perform_async
-    puts 'Enqueued declarable node loading.'
-
     RefreshTariffKnowledgeCompressedNotesWorker.perform_async
-    puts 'Enqueued compressed note refresh. Check Sidekiq for progress.'
+    puts 'Enqueued compressed note refresh, including source graph and declarable node loading. Check Sidekiq for progress.'
   end
 
   namespace :source_graph do

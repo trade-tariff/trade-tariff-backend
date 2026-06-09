@@ -13,16 +13,16 @@ RSpec.describe 'tariff_knowledge rake tasks' do
   end
 
   describe 'tariff_knowledge:populate' do
-    it 'enqueues the full tariff knowledge graph pipeline' do
+    it 'enqueues the compressed note refresh pipeline' do
       allow(CreateTariffKnowledgeSourceGraphWorker).to receive(:perform_async)
       allow(CreateTariffKnowledgeDeclarableNodesWorker).to receive(:perform_async)
       allow(RefreshTariffKnowledgeCompressedNotesWorker).to receive(:perform_async)
 
       suppress_output { Rake::Task['tariff_knowledge:populate'].invoke }
 
-      expect(CreateTariffKnowledgeSourceGraphWorker).to have_received(:perform_async).ordered
-      expect(CreateTariffKnowledgeDeclarableNodesWorker).to have_received(:perform_async).ordered
-      expect(RefreshTariffKnowledgeCompressedNotesWorker).to have_received(:perform_async).ordered
+      expect(RefreshTariffKnowledgeCompressedNotesWorker).to have_received(:perform_async)
+      expect(CreateTariffKnowledgeSourceGraphWorker).not_to have_received(:perform_async)
+      expect(CreateTariffKnowledgeDeclarableNodesWorker).not_to have_received(:perform_async)
     end
   end
 
