@@ -82,7 +82,7 @@ class TaricImporter
       if count.positive?
         duration = oplog_event.duration
         operation = oplog_event.payload[:operation]
-        entity_class = oplog_event.payload[:entity_class]
+        entity_class = oplog_event.payload[:entity_class].to_s
 
         oplog_inserts[:operations][operation][entity_class] ||= {}
         oplog_inserts[:operations][operation][entity_class][:count] ||= 0
