@@ -2,6 +2,7 @@ RSpec.describe ImportCustomsTariffDocumentWorker, type: :worker do
   subject(:perform) { described_class.new.perform }
 
   before do
+    allow(SlackNotifierService).to receive(:call)
     allow(CustomsTariffImporter::Instrumentation).to receive(:import_run_started)
     allow(CustomsTariffImporter::Instrumentation).to receive(:import_run_completed)
     allow(CustomsTariffImporter::Instrumentation).to receive(:import_run_failed)
@@ -36,6 +37,26 @@ RSpec.describe ImportCustomsTariffDocumentWorker, type: :worker do
         review_backlog: 1,
       )
     end
+
+    it 'notifies Slack that the import completed successfully' do
+      perform
+
+      expect(SlackNotifierService).to have_received(:call).with(
+        include('Customs tariff document import completed', 'imported: 1', 'skipped: 0', 'failed: 0'),
+      )
+    end
+
+    context 'when Slack notification fails' do
+      before do
+        allow(SlackNotifierService).to receive(:call).and_raise(Slack::Notifier::APIError, 'Slack timeout')
+      end
+
+      it 'does not fail the import job' do
+        expect { perform }.not_to raise_error
+
+        expect(CustomsTariffImporter::Instrumentation).to have_received(:import_run_completed)
+      end
+    end
   end
 
   context 'when all documents are skipped' do
@@ -52,6 +73,12 @@ RSpec.describe ImportCustomsTariffDocumentWorker, type: :worker do
         hash_including(imported: 0, skipped: 1, failed: 0),
       )
     end
+
+    it 'does not notify Slack' do
+      perform
+
+      expect(SlackNotifierService).not_to have_received(:call)
+    end
   end
 
   context 'when a document import fails' do
@@ -66,6 +93,14 @@ RSpec.describe ImportCustomsTariffDocumentWorker, type: :worker do
       perform
       expect(CustomsTariffImporter::Instrumentation).to have_received(:import_run_completed).with(
         hash_including(imported: 0, skipped: 0, failed: 1),
+      )
+    end
+
+    it 'notifies Slack that the import completed with failures' do
+      perform
+
+      expect(SlackNotifierService).to have_received(:call).with(
+        include('Customs tariff document import completed with failures', 'failed: 1'),
       )
     end
   end
@@ -85,6 +120,24 @@ RSpec.describe ImportCustomsTariffDocumentWorker, type: :worker do
         error_class: 'RuntimeError',
         error_message: 'catastrophic failure',
       )
+    end
+
+    it 'notifies Slack that the import failed unexpectedly' do
+      expect { perform }.to raise_error(RuntimeError)
+
+      expect(SlackNotifierService).to have_received(:call).with(
+        include('Customs tariff document import failed', 'RuntimeError', 'catastrophic failure'),
+      )
+    end
+
+    context 'when Slack notification fails' do
+      before do
+        allow(SlackNotifierService).to receive(:call).and_raise(Slack::Notifier::APIError, 'Slack timeout')
+      end
+
+      it 're-raises the original import error' do
+        expect { perform }.to raise_error(RuntimeError, 'catastrophic failure')
+      end
     end
   end
 end
