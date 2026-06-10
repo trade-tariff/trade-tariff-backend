@@ -101,6 +101,14 @@ RSpec.describe TaricImporter do
         expect(Rails.logger).to have_received(:info)
         expect(Rails.logger).to have_received(:info).with('Successfully imported Taric file: 2013-08-02_TGB13214.xml')
       end
+
+      it 'stores string entity keys in the oplog inserts payload' do
+        oplog_inserts = described_class.new(taric_update).import
+
+        expect(oplog_inserts[:operations][:create]).to include('ExplicitAbrogationRegulation')
+        expect(oplog_inserts[:operations][:create]).not_to include(ExplicitAbrogationRegulation)
+        expect { oplog_inserts.to_json }.not_to raise_error
+      end
     end
 
     context 'on an unexpected update operation type'

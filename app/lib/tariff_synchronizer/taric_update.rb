@@ -89,8 +89,8 @@ module TariffSynchronizer
         @oplog_inserts = TaricImporter.new(self).import
       end
 
-      mark_as_applied
       store_oplog_inserts
+      mark_as_applied
 
       duration_ms = (Process.clock_gettime(Process::CLOCK_MONOTONIC) - started_at) * 1000
       Instrumentation.file_import_completed(filename:, duration_ms:)
@@ -161,9 +161,7 @@ module TariffSynchronizer
     end
 
     def store_oplog_inserts
-      # self.inserts = @oplog_inserts.to_json
-
-      save
+      self.inserts = @oplog_inserts.to_json
     end
   end
 end
