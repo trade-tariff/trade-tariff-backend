@@ -2,6 +2,16 @@ module TariffKnowledge
   class SourceGraphLoader
     BATCH_SIZE = 500
 
+    # Tariff notes often use nested list markers such as "a.", "ii.", "ij.",
+    # and "1.". These patterns identify standalone markers and markers stranded
+    # at the end of a split fragment so we can merge them back into the following
+    # legal text. They intentionally anchor to the whole fragment to avoid
+    # treating ordinary prose as a list marker.
+    LIST_MARKER_PATTERN = /\A(?:ij|\(?[a-z]\)?|[ivx]+|\d+)\.\z/i
+    TRAILING_LIST_MARKER_PATTERN = /\A(.+?)\s+((?:ij|\(?[a-z]\)?|[ivx]+|\d+)\.)\z/im
+    USABLE_UPDATE_STATUSES = [CustomsTariffUpdate::APPROVED].freeze
+    USABLE_SOURCE_STATUSES = %w[approved].freeze
+
     RangeReference = Data.define(:type, :code)
     SourceAssociation = Data.define(:association, :label, :identifier, :title)
 
@@ -44,33 +54,26 @@ module TariffKnowledge
   private
 
     def latest_approved_update
-      if TimeMachine.date_is_set?
-        latest_approved_update_at_time_machine_date
-      else
-        TimeMachine.now { latest_approved_update_at_time_machine_date }
+      # The graph represents the tariff source set we are prepared to expose to
+      # generated classification context. Use one approved update snapshot only;
+      # mixing pending files or older approved files would make note provenance
+      # hard to reason about and could surface source text that is not current.
+      TimeMachine.at(@time_machine_date ||= Time.current) do
+        CustomsTariffUpdate
+          .actual
+          .where(status: USABLE_UPDATE_STATUSES)
+          .order(Sequel.desc(:validity_start_date))
+          .first
       end
-    end
-
-    def latest_approved_update_at_time_machine_date
-      CustomsTariffUpdate
-        .actual
-        .approved
-        .order(Sequel.desc(:validity_start_date))
-        .first
     end
 
     def sources_for(source_association, update)
-      if TimeMachine.date_is_set?
-        sources_for_at_time_machine_date(source_association, update)
-      else
-        TimeMachine.now { sources_for_at_time_machine_date(source_association, update) }
-      end
+      TimeMachine.at(@time_machine_date ||= Time.current) { approved_sources_for_update(source_association, update) }
     end
 
-    def sources_for_at_time_machine_date(source_association, update)
-      update
-        .public_send(:"#{source_association.association}_dataset")
-        .approved
+    def approved_sources_for_update(source_association, update)
+      update.public_send(:"#{source_association.association}_dataset")
+            .where(status: USABLE_SOURCE_STATUSES)
     end
 
     def load_source(source_association, source)
@@ -113,24 +116,90 @@ module TariffKnowledge
         expand_range(range_node, reference)
         range_node
       end
+      scoped_declarable_nodes = scoped_declarable_nodes_for(source_association, source)
+      upsert_edges(fragment_node, scoped_declarable_nodes, Edge::APPLIES_TO)
 
       delete_stale_edges(
         source_node: fragment_node,
         relationship_type: Edge::REFERENCES,
         current_target_node_ids: range_nodes.map(&:id),
       )
+      delete_stale_edges(
+        source_node: fragment_node,
+        relationship_type: Edge::APPLIES_TO,
+        current_target_node_ids: scoped_declarable_nodes.map(&:id),
+      )
 
       fragment_node
     end
 
     def fragments(content)
-      content.to_s.split(/\n{2,}|(?<=[.!?])\s+/).map(&:strip).reject(&:blank?)
+      content
+        .to_s
+        .split(/\n{2,}|(?<=[.!?])\s+/)
+        .map(&:strip)
+        .reject(&:blank?)
+        .then { |split_fragments| merge_orphaned_list_markers(split_fragments) }
+        .then { |split_fragments| merge_dangling_numeric_references(split_fragments) }
+    end
+
+    def merge_orphaned_list_markers(split_fragments)
+      split_fragments.each_with_object([]) do |fragment, merged|
+        fragment = "#{merged.pop} #{fragment}" if list_marker_sequence?(merged.last)
+        match = fragment.match(TRAILING_LIST_MARKER_PATTERN)
+        text, marker = match&.captures
+
+        if match && !list_marker_sequence?(text.strip)
+          merged.push(text.strip, marker)
+        else
+          merged << (match ? "#{text.strip} #{marker}" : fragment)
+        end
+      end
+    end
+
+    def list_marker_sequence?(fragment)
+      fragment.present? && fragment.split.all? { |part| part.match?(LIST_MARKER_PATTERN) }
+    end
+
+    def merge_dangling_numeric_references(split_fragments)
+      split_fragments.each_with_object([]) do |fragment, merged|
+        # Sentence splitting can detach references such as "heading 8481." or
+        # "C." from the text that introduces them. Reattach only when the
+        # previous fragment ends in wording that normally introduces a legal
+        # chapter/heading/rule reference, a digit, or a known year-style number.
+        if merged.last && (
+          numeric_reference_context?(merged.last, fragment) ||
+            (fragment.match?(/\AC\.(?:\s+.+)?\z/i) && merged.last.match?(/\d\z/))
+        )
+          attach_reference_fragment(fragment, merged)
+        else
+          merged << fragment
+        end
+      end
+    end
+
+    def attach_reference_fragment(fragment, merged)
+      reference, remaining_fragment = fragment.match(/\A((?:\d{1,4}|C)\.)\s*(.*)\z/i).captures
+      merged[-1] = "#{merged.last} #{reference}"
+      merged << remaining_fragment.strip if remaining_fragment.present?
+    end
+
+    def numeric_reference_context?(previous_fragment, fragment)
+      fragment.match?(/\A\d{1,4}\.(?:\s+.+)?\z/) &&
+        (
+          previous_fragment.match?(/\b(?:heading|headings|chapter|chapters|rule|rules|and|or|to)\z/i) ||
+            previous_fragment.match?(/\d\z/) ||
+            fragment.match?(/\A(?:19|20)\d{2}\.(?:\s+.+)?\z/)
+        )
     end
 
     def range_references(content)
       references = reference_clauses(content).flat_map do |clause|
         next [] if negated_reference?(clause)
 
+        # Only positive chapter/heading references become range nodes. Negated
+        # clauses such as "excluding chapter 39" are classification evidence but
+        # should not expand the fragment to every commodity in the excluded range.
         clause.scan(/\b(chapter|heading)\s+(\d{2}|\d{4})\b/i).map do |type, code|
           RangeReference.new(type: type.downcase, code:)
         end
@@ -168,6 +237,66 @@ module TariffKnowledge
           .where(Sequel.like(:goods_nomenclature_item_id, "#{reference.code}%"))
     end
 
+    def scoped_declarable_nodes_for(source_association, source)
+      @scoped_declarable_nodes_by_key ||= {}
+      @scoped_declarable_nodes_by_key[[source_association.label, source.public_send(source_association.identifier)]] ||= uncached_scoped_declarable_nodes_for(source_association, source)
+    end
+
+    def uncached_scoped_declarable_nodes_for(source_association, source)
+      case source_association.label
+      when 'customs_tariff_chapter_note'
+        scoped_chapter_declarable_nodes([source.chapter_id])
+      when 'customs_tariff_section_note'
+        scoped_chapter_declarable_nodes(chapter_codes_for_section(source.section_id))
+      when 'customs_tariff_general_rule'
+        general_rule_declarable_nodes
+      else
+        []
+      end
+    end
+
+    def general_rule_declarable_nodes
+      # GIRs apply across the tariff, so this is intentionally the full declarable set.
+      @general_rule_declarable_nodes ||= Node.goods_nomenclatures.all
+    end
+
+    def scoped_chapter_declarable_nodes(chapter_codes)
+      chapter_codes = normalize_chapter_codes(chapter_codes)
+      return [] if chapter_codes.empty?
+
+      # Most declarables are scoped by their own item-id chapter prefix. Some
+      # special/proxy codes live outside the CN chapter they represent, so the
+      # declarable loader stores explicit chapter-scope metadata for them.
+      direct_conditions = chapter_codes.map { |code| Sequel.like(:goods_nomenclature_item_id, "#{code}%") }
+      (Node.goods_nomenclatures.where(Sequel.|(*direct_conditions)).all + proxy_declarable_nodes)
+        .select { |node| chapter_codes.intersect?([node.goods_nomenclature_item_id.first(2)] + referenced_chapter_codes(node)) }
+        .uniq(&:id)
+    end
+
+    def proxy_declarable_nodes
+      @proxy_declarable_nodes ||= Node.goods_nomenclatures
+                                      .where(Sequel.lit("metadata ? 'chapter_scope_codes'"))
+                                      .all
+    end
+
+    def referenced_chapter_codes(node)
+      @referenced_chapter_codes_by_node_id ||= {}
+      @referenced_chapter_codes_by_node_id[node.id] ||= normalize_chapter_codes(Array(node.metadata.to_h['chapter_scope_codes']))
+    end
+
+    def chapter_codes_for_section(section_id)
+      Chapter
+        .association_join(:sections)
+        .where(sections__id: section_id)
+        .select_map(:goods_nomenclature_item_id)
+        .map { |item_id| item_id.first(2) }
+        .uniq
+    end
+
+    def normalize_chapter_codes(chapter_codes)
+      chapter_codes.map { |code| sprintf('%02d', code.to_i) }.uniq
+    end
+
     def source_key(source_association, source)
       identifier = source.public_send(source_association.identifier)
       "note_source:#{source_association.label}:#{source.customs_tariff_update_version}:#{identifier}"
@@ -203,6 +332,26 @@ module TariffKnowledge
       Edge.dataset
           .insert_conflict(target: %i[source_node_id target_node_id relationship_type], update: edge_update_values)
           .insert(values)
+    end
+
+    def upsert_edges(source_node, target_nodes, relationship_type)
+      target_nodes.each_slice(BATCH_SIZE) do |nodes|
+        now = Time.zone.now
+        rows = nodes.map do |target_node|
+          {
+            source_node_id: source_node.id,
+            target_node_id: target_node.id,
+            relationship_type:,
+            metadata: Sequel.pg_jsonb({ 'loader' => self.class.name }),
+            created_at: now,
+            updated_at: now,
+          }
+        end
+
+        Edge.dataset
+            .insert_conflict(target: %i[source_node_id target_node_id relationship_type], update: edge_update_values)
+            .multi_insert(rows)
+      end
     end
 
     def delete_stale_edges(source_node:, relationship_type:, current_target_node_ids:)
