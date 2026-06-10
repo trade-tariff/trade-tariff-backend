@@ -40,36 +40,19 @@ RSpec.describe TariffKnowledge::DeclarableNodeLoader do
       expect(node.goods_nomenclature_item_id).to eq('0101210000')
     end
 
-    it 'stores explicit chapter scope metadata for proxy declarables' do
-      chapter = create(
-        :chapter,
-        :with_description,
-        goods_nomenclature_item_id: '9900000000',
-        description: 'Special combined nomenclature codes',
-      )
-      heading = create(
-        :heading,
-        :with_description,
-        parent: chapter,
-        goods_nomenclature_item_id: '9930000000',
-        description: 'Goods from CN chapters 1 to 24',
-      )
+    it 'does not create goods nomenclature nodes for hidden declarables' do
       commodity = create(
         :commodity,
-        :with_description,
         parent: heading,
         goods_nomenclature_item_id: '9930240000',
-        description: 'Other',
       )
+      create(:hidden_goods_nomenclature, goods_nomenclature_item_id: commodity.goods_nomenclature_item_id)
       GoodsNomenclatures::TreeNode.refresh!
 
       described_class.call
 
-      node = TariffKnowledge::Node.goods_nomenclatures
-                                  .where(goods_nomenclature_sid: commodity.goods_nomenclature_sid)
-                                  .first
-      expect(node.content).to be_nil
-      expect(node.metadata.to_hash).to include('chapter_scope_codes' => ('01'..'24').to_a)
+      expect(TariffKnowledge::Node.goods_nomenclatures.where(goods_nomenclature_sid: commodity.goods_nomenclature_sid))
+        .to be_empty
     end
   end
 end

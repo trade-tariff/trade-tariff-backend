@@ -196,58 +196,6 @@ RSpec.describe TariffKnowledge::CompressedNoteGenerator do
       )
     end
 
-    it 'summarises broad proxy chapter-range fragments while retaining provenance' do
-      declarable_node.update(
-        goods_nomenclature_item_id: '9930240000',
-        content: nil,
-        metadata: Sequel.pg_jsonb_wrap('chapter_scope_codes' => ('01'..'24').to_a),
-      )
-      chapter_two_fragment_node = create(
-        :tariff_knowledge_node,
-        :note_fragment,
-        key: 'note_fragment:customs_tariff_chapter_note:1.31:02:0001',
-        title: 'Chapter 02 notes fragment 1',
-        content: 'This chapter covers meat and edible meat offal.',
-        source_type: 'customs_tariff_chapter_note',
-        source_id: '02',
-      )
-      create(
-        :tariff_knowledge_edge,
-        source_node: chapter_two_fragment_node,
-        target_node: declarable_node,
-        relationship_type: TariffKnowledge::Edge::APPLIES_TO,
-      )
-
-      described_class.call(goods_nomenclature_sids: [123])
-
-      note = TariffKnowledge::CompressedNote[123]
-      expect(note.content).to include('Chapter note provenance for CN chapters 01 to 02 applies')
-      expect(note.content).not_to include('Commodity context')
-      expect(note.content).not_to include('9930240000: Goods from CN chapters 1 to 24')
-      expect(note.content).not_to include('Heading 0101 covers live horses.')
-      expect(note.content).not_to include('This chapter covers meat and edible meat offal.')
-      expect(note.metadata.to_hash).to include(
-        'source_node_keys' => [
-          'note_fragment:customs_tariff_chapter_note:1.31:01:0002',
-          'note_fragment:customs_tariff_chapter_note:1.31:02:0001',
-        ],
-      )
-    end
-
-    it 'uses singular chapter wording for one broad proxy chapter note' do
-      declarable_node.update(
-        goods_nomenclature_item_id: '9930240000',
-        content: nil,
-        metadata: Sequel.pg_jsonb_wrap('chapter_scope_codes' => ('01'..'24').to_a),
-      )
-
-      described_class.call(goods_nomenclature_sids: [123])
-
-      note = TariffKnowledge::CompressedNote[123]
-      expect(note.content).to include('Chapter note provenance for CN chapter 01 applies')
-      expect(note.content).not_to include('chapters 01 to 01')
-    end
-
     it 'does not include referenced fragments that do not directly apply to the declarable' do
       TariffKnowledge::Edge
         .where(

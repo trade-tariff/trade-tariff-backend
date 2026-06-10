@@ -264,24 +264,8 @@ module TariffKnowledge
       chapter_codes = normalize_chapter_codes(chapter_codes)
       return [] if chapter_codes.empty?
 
-      # Most declarables are scoped by their own item-id chapter prefix. Some
-      # special/proxy codes live outside the CN chapter they represent, so the
-      # declarable loader stores explicit chapter-scope metadata for them.
       direct_conditions = chapter_codes.map { |code| Sequel.like(:goods_nomenclature_item_id, "#{code}%") }
-      (Node.goods_nomenclatures.where(Sequel.|(*direct_conditions)).all + proxy_declarable_nodes)
-        .select { |node| chapter_codes.intersect?([node.goods_nomenclature_item_id.first(2)] + referenced_chapter_codes(node)) }
-        .uniq(&:id)
-    end
-
-    def proxy_declarable_nodes
-      @proxy_declarable_nodes ||= Node.goods_nomenclatures
-                                      .where(Sequel.lit("metadata ? 'chapter_scope_codes'"))
-                                      .all
-    end
-
-    def referenced_chapter_codes(node)
-      @referenced_chapter_codes_by_node_id ||= {}
-      @referenced_chapter_codes_by_node_id[node.id] ||= normalize_chapter_codes(Array(node.metadata.to_h['chapter_scope_codes']))
+      Node.goods_nomenclatures.where(Sequel.|(*direct_conditions)).all
     end
 
     def chapter_codes_for_section(section_id)

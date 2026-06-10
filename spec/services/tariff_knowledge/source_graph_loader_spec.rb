@@ -163,29 +163,6 @@ RSpec.describe TariffKnowledge::SourceGraphLoader do
       ])
     end
 
-    it 'applies chapter note fragments to proxy declarables classified in that chapter' do
-      proxy_declarable_node = create(
-        :tariff_knowledge_node,
-        key: 'goods_nomenclature:9880010000',
-        goods_nomenclature_sid: 99_001,
-        goods_nomenclature_item_id: '9880010000',
-        metadata: Sequel.pg_jsonb_wrap('chapter_scope_codes' => %w[01]),
-      )
-      create(
-        :customs_tariff_chapter_note,
-        :approved,
-        customs_tariff_update: update,
-        chapter_id: '01',
-        content: 'Live animals are classified in this chapter.',
-      )
-
-      described_class.call
-
-      fragment_node = TariffKnowledge::Node.by_key('note_fragment:customs_tariff_chapter_note:1.31:01:0001').first
-
-      expect(edge_exists?(fragment_node, proxy_declarable_node, TariffKnowledge::Edge::APPLIES_TO)).to be(true)
-    end
-
     it 'applies section note fragments to declarables in the section chapters' do
       section = create(:section, id: 1)
       chapter.add_section(section)
@@ -208,32 +185,6 @@ RSpec.describe TariffKnowledge::SourceGraphLoader do
         .select_map(Sequel[:target_node][:goods_nomenclature_item_id])
 
       expect(applied_codes).to contain_exactly('0101210000', '0101290000')
-    end
-
-    it 'applies section note fragments to proxy declarables classified in one of the section chapters' do
-      section = create(:section, id: 1)
-      chapter.add_section(section)
-      chapter.save
-      proxy_declarable_node = create(
-        :tariff_knowledge_node,
-        key: 'goods_nomenclature:9930240000',
-        goods_nomenclature_sid: 99_302,
-        goods_nomenclature_item_id: '9930240000',
-        metadata: Sequel.pg_jsonb_wrap('chapter_scope_codes' => ('01'..'24').to_a),
-      )
-      create(
-        :customs_tariff_section_note,
-        :approved,
-        customs_tariff_update: update,
-        section_id: section.id,
-        content: 'Section I covers live animals and animal products.',
-      )
-
-      described_class.call
-
-      fragment_node = TariffKnowledge::Node.by_key('note_fragment:customs_tariff_section_note:1.31:1:0001').first
-
-      expect(edge_exists?(fragment_node, proxy_declarable_node, TariffKnowledge::Edge::APPLIES_TO)).to be(true)
     end
 
     it 'loads general rules from an approved update and applies them to every declarable' do

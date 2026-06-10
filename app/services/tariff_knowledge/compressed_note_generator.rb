@@ -120,17 +120,13 @@ module TariffKnowledge
       end
     end
 
-    def content_for(declarable_node, evidence)
+    def content_for(_declarable_node, evidence)
       general_rule_evidence, note_evidence = evidence.partition do |fragment_node, _range_node, _source_node|
         general_rule_fragment?(fragment_node)
-      end
-      proxy_chapter_evidence, note_evidence = note_evidence.partition do |fragment_node, _range_node, _source_node|
-        broad_proxy_chapter_fragment?(declarable_node, fragment_node)
       end
       content = note_evidence.map { |fragment_node, _range_node, _source_node|
         "#{fragment_node.title}\n#{fragment_node.content}"
       }.uniq
-      content << proxy_chapter_summary(proxy_chapter_evidence) if proxy_chapter_evidence.any?
       content << general_rule_summary(general_rule_evidence) if general_rule_evidence.any?
 
       content.compact.join("\n\n")
@@ -139,39 +135,6 @@ module TariffKnowledge
     def general_rule_fragment?(fragment_node)
       fragment_node.source_type == 'customs_tariff_general_rule' ||
         fragment_node.key.include?(':customs_tariff_general_rule:')
-    end
-
-    def broad_proxy_chapter_fragment?(declarable_node, fragment_node)
-      # Special/proxy codes can represent goods from many CN chapters. Rendering
-      # every applicable chapter note would produce huge, mostly unusable notes,
-      # so broad multi-chapter provenance is summarised in content and retained
-      # in metadata for audit/drill-down.
-      proxy_chapter_codes(declarable_node).many? &&
-        (fragment_node.source_type == 'customs_tariff_chapter_note' ||
-          fragment_node.key.include?(':customs_tariff_chapter_note:')) &&
-        proxy_chapter_codes(declarable_node).include?(fragment_node.source_id.to_s.rjust(2, '0'))
-    end
-
-    def proxy_chapter_codes(declarable_node)
-      @proxy_chapter_codes_by_node_id ||= {}
-      @proxy_chapter_codes_by_node_id[declarable_node.id] ||= Array(declarable_node.metadata.to_h['chapter_scope_codes']).map { |code| sprintf('%02d', code.to_i) }.uniq
-    end
-
-    def proxy_chapter_summary(evidence)
-      chapter_range = compact_chapter_range(evidence.map { |fragment_node, _range_node, _source_node| fragment_node.source_id.to_s.rjust(2, '0') }.uniq.sort)
-      "Chapter note provenance for CN #{chapter_range} applies because this special code covers goods from those chapters. " \
-        'The full chapter-note fragments are retained in this note provenance; use the underlying CN chapter when detailed legal note text is needed.'
-    end
-
-    def compact_chapter_range(chapter_ids)
-      return "chapter #{chapter_ids.first}" if chapter_ids.one?
-
-      chapter_numbers = chapter_ids.map(&:to_i)
-      if chapter_numbers.each_cons(2).all? { |left, right| right == left + 1 }
-        "chapters #{chapter_ids.first} to #{chapter_ids.last}"
-      else
-        "chapters #{chapter_ids.join(', ')}"
-      end
     end
 
     def general_rule_summary(evidence)
