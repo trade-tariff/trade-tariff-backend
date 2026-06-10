@@ -39,5 +39,17 @@ RSpec.describe 'config/sidekiq.yml' do
       'RefreshTariffKnowledgeCompressedNotesWorker' => include('enabled' => false),
     )
   end
+
+  it 'schedules search analytics snapshot refreshes' do
+    schedule = sidekiq_schedule(environment: 'production')
+
+    expect(schedule).to include(
+      'SearchAnalyticsSnapshotWorker' => include(
+        'cron' => '0 6 * * 6',
+        'queue' => 'within_1_day',
+        'description' => 'Refreshes cached aggregate search analytics snapshots',
+      ),
+    )
+  end
 end
 # rubocop:enable RSpec/DescribeClass

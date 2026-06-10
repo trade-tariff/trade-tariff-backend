@@ -12,7 +12,9 @@ module Api
       end
 
       def suggestions
-        render json: Api::Internal::SuggestionsService.new(params).call
+        result = Api::Internal::SuggestionsService.new(params).call
+
+        render json: result
       end
 
       private
