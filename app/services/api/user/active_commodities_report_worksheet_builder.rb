@@ -78,7 +78,7 @@ module Api
 
         header_row_index = TABLE_START_ROW - 1
         last_row_index = header_row_index + report_rows.length
-        sheet.autofilter(header_row_index, 0, last_row_index, HEADERS.length - 1)
+        sheet.add_table(header_row_index, 0, last_row_index, HEADERS.length - 1, style: 'TableStyleLight15', columns: HEADERS)
       end
 
       def set_column_widths(sheet)
@@ -108,9 +108,9 @@ module Api
       end
 
       def add_upload_row(sheet, styles)
-        row_index = 5
+        row_index = sheet.last_row_number + 1
         sheet.append_row(
-          [FastExcel::URL.new(REPLACE_ALL_COMMODITIES_UPLOAD_URL), '', '', ''],
+          ['', '', '', ''],
           [styles.fetch(:upload_link), styles.fetch(:blank), styles.fetch(:blank), styles.fetch(:blank)],
         )
         sheet.set_row(row_index, REPLACE_LINK_ROW_HEIGHT, styles.fetch(:upload_link))
@@ -119,7 +119,7 @@ module Api
 
       def add_blank_bottom_row(sheet, blank_style)
         sheet.append_row(blank_intro_row_values, full_width_styles(blank_style))
-        sheet.set_row(6, BLANK_ROW_HEIGHT, blank_style)
+        sheet.set_row(sheet.last_row_number, BLANK_ROW_HEIGHT, blank_style)
       end
 
       def intro_styles

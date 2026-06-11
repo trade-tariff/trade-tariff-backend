@@ -1,6 +1,6 @@
 GIT
   remote: git@github.com:willfish/fast_excel.git
-  revision: 36c6075c1366d5b541c154a0afc32f59445bd3a2
+  revision: c069766eb7271d3b9b42f41eb71cb2d38d5d247c
   branch: HMRC-1866-write-rich-string
   specs:
     fast_excel (0.5.0)

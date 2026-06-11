@@ -14,7 +14,7 @@ class TariffChangesService
     end
 
     def call
-      @workbook = FastExcel.open(constant_memory: true)
+      @workbook = FastExcel.open
       sheet = workbook.add_worksheet('Commodity watch list')
 
       set_column_widths(sheet)
@@ -42,6 +42,10 @@ class TariffChangesService
         cell_styles[:pre_header],
       )
       sheet.set_row(3, 40, cell_styles[:pre_header])
+      sheet.merge_range(3, 0, 3, 4, 'Is this change relevant to your business (useful filters)', cell_styles[:pre_header])
+      sheet.merge_range(3, 5, 3, 7, 'Impacted Commodity details', cell_styles[:pre_header])
+      sheet.merge_range(3, 8, 3, 10, 'Change details', cell_styles[:pre_header])
+      sheet.merge_range(3, 11, 3, 12, 'Useful Links', cell_styles[:pre_header])
 
       sheet.append_row(excel_header_row, cell_styles[:header])
       sheet.set_row(4, 40, cell_styles[:header])
@@ -197,7 +201,7 @@ class TariffChangesService
     def add_table_styling(sheet)
       return if @change_records.empty?
 
-      sheet.autofilter(4, 0, 4 + @change_records.length, excel_header_row.size - 1)
+      sheet.add_table(4, 0, 4 + @change_records.length, excel_header_row.size - 1, style: 'TableStyleMedium2', columns: excel_header_row)
     end
   end
 end

@@ -17,7 +17,7 @@ module Api
       end
 
       def call
-        workbook = FastExcel.open(constant_memory: true)
+        workbook = FastExcel.open
 
         ActiveCommoditiesReportWorksheetBuilder.call(
           workbook:,

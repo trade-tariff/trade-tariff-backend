@@ -5,7 +5,7 @@ RSpec.describe Api::User::ActiveCommoditiesReportWorksheetBuilder do
       workbook.read_string
     end
 
-    let(:workbook) { FastExcel.open(constant_memory: true) }
+    let(:workbook) { FastExcel.open }
     let(:report_rows) do
       [
         {
@@ -54,22 +54,27 @@ RSpec.describe Api::User::ActiveCommoditiesReportWorksheetBuilder do
     end
 
     it 'writes rich text for bold fragments' do
-      xml = worksheet_xml(xlsx_data)
+      xml = shared_strings_xml(xlsx_data)
 
       expect(xml).to match(%r{<r><rPr><b/>.*?</rPr><t>Ensure all codes are listed in column A\.</t></r>}m)
       expect(xml).to match(%r{<r><rPr><b/>.*?</rPr><t>Expired commodity description</t></r>}m)
     end
 
     it 'adds the upload hyperlink and filters' do
-      expect(worksheet_relationships_xml(xlsx_data)).to include(xml_escape(described_class::REPLACE_ALL_COMMODITIES_UPLOAD_URL))
-      expect(worksheet_xml(xlsx_data)).to include('<autoFilter ref="A8:D11"/>')
+      relationships_xml = worksheet_relationships_xml(xlsx_data)
+
+      expect(relationships_xml).to include(xml_escape(described_class::REPLACE_ALL_COMMODITIES_UPLOAD_URL))
+      expect(relationships_xml.scan(%r{Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink"}).size).to eq(1)
+      expect(table_xml(xlsx_data)).to include('ref="A8:D11"')
+      expect(table_xml(xlsx_data)).to include('name="TableStyleLight15"')
+      expect(table_xml(xlsx_data)).to include('showRowStripes="1"')
     end
 
     context 'when there are no report rows' do
       let(:report_rows) { [] }
 
       it 'does not add a filter range' do
-        expect(worksheet_xml(xlsx_data)).not_to include('<autoFilter')
+        expect { table_xml(xlsx_data) }.to raise_error(Errno::ENOENT)
       end
     end
   end

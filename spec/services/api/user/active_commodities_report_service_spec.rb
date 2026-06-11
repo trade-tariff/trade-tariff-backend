@@ -100,7 +100,7 @@ RSpec.describe Api::User::ActiveCommoditiesReportService do
     end
 
     it 'renders rich text emphasis for the final instruction and valid descriptions' do
-      xml = worksheet_xml(xlsx_data)
+      xml = shared_strings_xml(xlsx_data)
 
       expect(xml).to match(%r{<r><rPr><b/>.*?</rPr><t>Ensure all codes are listed in column A\.</t></r>}m)
       expect(xml).to match(%r{<r><rPr><b/>.*?</rPr><t>Expired commodity description</t></r>}m)
@@ -108,9 +108,11 @@ RSpec.describe Api::User::ActiveCommoditiesReportService do
     end
 
     it 'adds table styling for the full data range' do
-      xml = worksheet_xml(xlsx_data)
+      xml = table_xml(xlsx_data)
 
-      expect(xml).to include('<autoFilter ref="A8:D11"/>')
+      expect(xml).to include('ref="A8:D11"')
+      expect(xml).to include('name="TableStyleLight15"')
+      expect(xml).to include('showRowStripes="1"')
     end
   end
 

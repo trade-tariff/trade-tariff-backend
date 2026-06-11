@@ -101,7 +101,13 @@ RSpec.describe TariffChangesService::ExcelGenerator do
       xml = worksheet_xml(xlsx_data)
 
       expect(xml).to include('width="20.7109375"')
-      expect(xml).to include('<autoFilter ref="A5:M7"/>')
+      expect(xml).to include('<mergeCell ref="A4:E4"/>')
+      expect(xml).to include('<mergeCell ref="F4:H4"/>')
+      expect(xml).to include('<mergeCell ref="I4:K4"/>')
+      expect(xml).to include('<mergeCell ref="L4:M4"/>')
+      expect(table_xml(xlsx_data)).to include('ref="A5:M7"')
+      expect(table_xml(xlsx_data)).to include('name="TableStyleMedium2"')
+      expect(table_xml(xlsx_data)).to include('showRowStripes="1"')
     end
   end
 
