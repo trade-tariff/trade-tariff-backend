@@ -85,14 +85,12 @@ RSpec.describe Api::User::SubscriptionTargetsController do
   end
 
   describe 'GET #download' do
-    let(:package) { instance_double(Axlsx::Package) }
-    let(:stream) { StringIO.new('mock excel data') }
+    let(:workbook) { instance_double(Libxlsxwriter::Workbook, read_string: 'mock excel data') }
     let(:service) { instance_double(Api::User::ActiveCommoditiesService) }
 
     before do
       allow(Api::User::ActiveCommoditiesService).to receive(:new).with(subscription).and_return(service)
-      allow(service).to receive(:generate_report).and_return(package)
-      allow(package).to receive(:to_stream).and_return(stream)
+      allow(service).to receive(:generate_report).and_return(workbook)
     end
 
     it 'returns an Excel file with expected headers and body' do

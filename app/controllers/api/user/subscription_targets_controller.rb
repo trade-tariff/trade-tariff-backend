@@ -18,7 +18,7 @@ module Api
 
         filename_date = Time.zone.today.strftime('%Y-%m-%d')
 
-        send_data package.to_stream.read,
+        send_data package.read_string,
                   type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
                   disposition: "attachment; filename=commodity_watch_list-your_codes_#{filename_date}.xlsx"
       end

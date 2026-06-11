@@ -7,7 +7,7 @@ module Api
         return render json: { error: 'No changes found' }, status: :not_found if package.nil?
 
         filename = "commodity_watch_list_changes_#{actual_date.strftime('%Y_%m_%d')}.xlsx"
-        send_data package.to_stream.read,
+        send_data package.read_string,
                   type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
                   disposition: "attachment; filename=#{filename}"
       end

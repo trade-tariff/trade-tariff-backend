@@ -1,3 +1,12 @@
+GIT
+  remote: git@github.com:willfish/fast_excel.git
+  revision: 36c6075c1366d5b541c154a0afc32f59445bd3a2
+  branch: HMRC-1866-write-rich-string
+  specs:
+    fast_excel (0.5.0)
+      base64 (>= 0.2, < 2)
+      ffi (> 1.17, < 2)
+
 GEM
   remote: https://rubygems.org/
   specs:
@@ -124,11 +133,6 @@ GEM
     brakeman (8.0.4)
       racc
     builder (3.3.0)
-    caxlsx (4.4.2)
-      htmlentities (~> 4.3, >= 4.3.4)
-      marcel (~> 1.0)
-      nokogiri (~> 1.10, >= 1.10.4)
-      rubyzip (>= 2.4, < 4)
     childprocess (5.1.0)
       logger (~> 1.5)
     coderay (1.1.3)
@@ -168,8 +172,6 @@ GEM
       logger
     faraday-net_http (3.4.2)
       net-http (~> 0.5)
-    fast_excel (0.5.0)
-      ffi (> 1.9, < 2)
     ffi (1.17.4)
     ffi (1.17.4-aarch64-linux-musl)
     ffi (1.17.4-arm64-darwin)
@@ -188,7 +190,6 @@ GEM
       activesupport (>= 6.1)
     hashdiff (1.2.1)
     holidays (10.0.0)
-    htmlentities (4.4.2)
     i18n (1.14.8)
       concurrent-ruby (~> 1.0)
     io-console (0.8.2)
@@ -514,7 +515,6 @@ DEPENDENCIES
   aws-sdk-s3
   bootsnap
   brakeman
-  caxlsx
   connection_pool
   csv
   database_cleaner-sequel
@@ -522,7 +522,7 @@ DEPENDENCIES
   dotenv-rails
   engtagger
   factory_bot_rails
-  fast_excel
+  fast_excel!
   foreman
   forgery
   get_process_mem

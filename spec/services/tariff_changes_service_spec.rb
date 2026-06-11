@@ -97,7 +97,7 @@ RSpec.describe TariffChangesService do
   describe '.generate_report_for' do
     let(:date) { Date.new(2024, 8, 11) }
     let(:change_records) { [{ dummy: 'data' }] }
-    let(:package) { instance_double(Axlsx::Package) }
+    let(:package) { instance_double(Libxlsxwriter::Workbook) }
 
     before do
       allow(TariffChangesService::TransformRecords).to receive(:call).with(date, nil).and_return(change_records)
