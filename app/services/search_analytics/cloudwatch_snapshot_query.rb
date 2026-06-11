@@ -35,7 +35,7 @@ module SearchAnalytics
         all_latency_rows: run_query(all_latency_query),
         view_latency_rows: run_query(view_latency_query),
         selection_rows: selection_queries.flat_map { |view, query| run_query(query).map { |row| row.merge('selectable_search_type' => view) } },
-        selection_trend_rows: run_query(selection_trend_query),
+        selection_trend_rows: selection_trend_queries.flat_map { |view, query| run_query(query).map { |row| row.merge('selectable_search_type' => view) } },
         improvement_term_rows: improvement_term_queries.flat_map { |query| run_query(query) },
       )
 
@@ -148,12 +148,13 @@ module SearchAnalytics
       QUERY
     end
 
-    def selection_trend_query
-      <<~QUERY
-        fields @timestamp, request_id
-        | filter service = "search" and event = "result_selected" and ispresent(request_id)
-        | stats count(*) as selected by #{bucket_expression}
-      QUERY
+    def selection_trend_queries
+      selection_queries.transform_values do |query|
+        query.sub(
+          '| stats sum(result_selections) as selected, sum(selectable_searches) as selectable',
+          "| stats sum(result_selections) as selected by #{bucket_expression}",
+        )
+      end
     end
 
     def improvement_term_queries
@@ -244,7 +245,7 @@ module SearchAnalytics
             'completed' => bucket_event_count(bucket, view, 'search_completed'),
             'failed' => bucket_event_count(bucket, view, 'search_failed'),
             'zero_result' => bucket_zero_result_count(bucket, view),
-            'selected' => view == 'all' ? bucket_selection_count(bucket) : 0,
+            'selected' => bucket_selection_count(bucket, view),
           }
         end
       end
@@ -388,8 +389,8 @@ module SearchAnalytics
         filtered_rows(zero_result_rows, view).sum { |row| iso8601(row['@timestamp']) == bucket ? integer(row['zero_results']) : 0 }
       end
 
-      def bucket_selection_count(bucket)
-        selection_trend_rows.sum { |row| iso8601(row['@timestamp']) == bucket ? integer(row['selected']) : 0 }
+      def bucket_selection_count(bucket, view)
+        filtered_rows(selection_trend_rows, view).sum { |row| iso8601(row['@timestamp']) == bucket ? integer(row['selected']) : 0 }
       end
 
       def buckets

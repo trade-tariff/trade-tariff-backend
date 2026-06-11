@@ -18,7 +18,8 @@ RSpec.describe SearchAnalytics::CloudwatchSnapshotQuery do
       start_query_response('latency_by_view'),
       start_query_response('classic_selections'),
       start_query_response('internal_selections'),
-      start_query_response('selection_trend'),
+      start_query_response('classic_selection_trend'),
+      start_query_response('internal_selection_trend'),
       start_query_response('terms'),
       start_query_response('non_numeric_terms'),
       start_query_response('numeric_terms'),
@@ -40,7 +41,8 @@ RSpec.describe SearchAnalytics::CloudwatchSnapshotQuery do
       ),
       complete_response(result_row('selected' => '3', 'selectable' => '42')),
       complete_response(result_row('selected' => '2', 'selectable' => '8')),
-      complete_response(result_row('@timestamp' => '2026-06-10 09:00:00.000', 'selected' => '5')),
+      complete_response(result_row('@timestamp' => '2026-06-10 09:00:00.000', 'selected' => '3')),
+      complete_response(result_row('@timestamp' => '2026-06-10 09:00:00.000', 'selected' => '2')),
       complete_response(
         result_row('query' => 'yoga ball', 'search_type' => 'classic', 'zero_results' => '3'),
         result_row('query' => '3926909090', 'search_type' => 'classic', 'zero_results' => '2'),
@@ -72,17 +74,17 @@ RSpec.describe SearchAnalytics::CloudwatchSnapshotQuery do
       hash_including(
         query_string: a_string_including('search_type = "classic" and results_type = "fuzzy_search"'),
       ),
-    )
+    ).twice
     expect(client).to have_received(:start_query).with(
       hash_including(
         query_string: a_string_including('event = "result_selected" or (event = "search_completed"'),
       ),
-    ).twice
+    ).exactly(4).times
     expect(client).to have_received(:start_query).with(
       hash_including(
         query_string: a_string_including('results_type = "opensearch" or results_type = "vector" or results_type = "hybrid"'),
       ),
-    )
+    ).twice
     expect(client).not_to have_received(:start_query).with(
       hash_including(
         query_string: a_string_including('selected_count'),
@@ -119,6 +121,12 @@ RSpec.describe SearchAnalytics::CloudwatchSnapshotQuery do
         'zero_result' => 5,
         'selected' => 5,
       },
+    )
+    expect(payloads.dig('classic', 'trends', 'outcomes')).to contain_exactly(
+      include(
+        'bucket' => '2026-06-10T09:00:00Z',
+        'selected' => 3,
+      ),
     )
     expect(payloads.dig('all', 'improvement_terms')).to include(
       include('query' => '0101210000', 'zero_results' => 7),
