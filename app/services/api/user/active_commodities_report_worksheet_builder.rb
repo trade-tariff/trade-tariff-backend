@@ -155,8 +155,8 @@ module Api
             font_color: color(WHITE_COLOR),
             bg_color: color(UPLOAD_LINK_BACKGROUND_COLOR),
             align: {
-              horizontal: :center,
-              vertical: :center,
+              h: :center,
+              v: :center,
             },
             indent: 1,
           ),
@@ -281,9 +281,13 @@ module Api
           fragments << { text: "\n" }
         end
 
-        fragments << { text: last_level, format: workbook.add_format(bold: true) }
+        fragments << { text: last_level, format: hierarchy_level_format }
         fragments << { text: "\n" }
         FastExcel::RichString.new(fragments)
+      end
+
+      def hierarchy_level_format
+        @hierarchy_level_format ||= workbook.add_format(bold: true)
       end
 
       def fast_excel_style_options(options)
