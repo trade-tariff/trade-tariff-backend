@@ -39,6 +39,25 @@ RSpec.describe TariffKnowledge::CompressedNoteRefresh do
       )
     end
 
+    it 'does not regenerate hidden declarables and expires their existing notes' do
+      create(:commodity, parent: heading, goods_nomenclature_sid: 123, goods_nomenclature_item_id: '0101210000')
+      hidden_commodity = create(:commodity, parent: heading, goods_nomenclature_sid: 124, goods_nomenclature_item_id: '0101900000')
+      create(:hidden_goods_nomenclature, goods_nomenclature_item_id: hidden_commodity.goods_nomenclature_item_id)
+      create(
+        :tariff_knowledge_compressed_note,
+        goods_nomenclature_sid: hidden_commodity.goods_nomenclature_sid,
+        goods_nomenclature_item_id: hidden_commodity.goods_nomenclature_item_id,
+        expired: false,
+      )
+      GoodsNomenclatures::TreeNode.refresh!
+
+      described_class.call
+
+      expect(TariffKnowledge::CompressedNoteGenerator)
+        .to have_received(:call).with(goods_nomenclature_sids: [123]).ordered
+      expect(TariffKnowledge::CompressedNote[hidden_commodity.goods_nomenclature_sid].expired).to be(true)
+    end
+
     it 'processes current declarables in batches' do
       stub_const("#{described_class}::BATCH_SIZE", 1)
       create(:commodity, parent: heading, goods_nomenclature_sid: 123, goods_nomenclature_item_id: '0101210000')

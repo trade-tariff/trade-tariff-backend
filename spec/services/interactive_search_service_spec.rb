@@ -26,6 +26,7 @@ RSpec.describe InteractiveSearchService do
     <<~CONTEXT
       You are a UK trade tariff classification assistant.
       Search query: %{search_input}
+      Relevant compressed notes: %{compressed_notes}
       OpenSearch results: %{answers_opensearch}
       Previous Q&A: %{questions}
       Respond with JSON containing either "questions" or "answers".
@@ -425,28 +426,32 @@ RSpec.describe InteractiveSearchService do
       allow(OpenaiClient).to receive(:call).and_return(ai_response)
     end
 
-    context 'when compressed note context is enabled' do
-      before do
-        create(:admin_configuration,
-               :boolean,
-               name: 'search_compressed_notes_enabled',
-               value: true,
-               area: 'classification')
-        create(:tariff_knowledge_compressed_note,
-               goods_nomenclature_item_id: '4202210000',
-               content: 'Includes handbags with outer surface of leather. Excludes plastic sheeting.',
-               approved: true,
-               stale: false,
-               expired: false)
-        create(:tariff_knowledge_compressed_note,
-               goods_nomenclature_item_id: '4202220000',
-               content: 'Stale notes should not be consumed.',
-               approved: true,
-               stale: true,
-               expired: false)
+    it 'removes the compressed notes line when no compressed note contexts are selected' do
+      result
+
+      context_arg = nil
+      expect(OpenaiClient).to have_received(:call) do |context, **_opts|
+        context_arg = context
       end
 
-      it 'adds current approved compressed notes to matching OpenSearch results' do
+      expect(context_arg).not_to include('Relevant compressed notes')
+      expect(context_arg).not_to include('Relevant compressed notes: []')
+      expect(context_arg).to include('OpenSearch results:')
+    end
+
+    context 'when the configured prompt wraps compressed notes in marker lines' do
+      let(:default_search_context) do
+        <<~CONTEXT
+          Search query: %{search_input}
+          -----------RELEVANT_COMPRESSED_NOTES-------
+          %{compressed_notes}
+          -----------END RELEVANT_COMPRESSED_NOTES---
+          OpenSearch results: %{answers_opensearch}
+          Previous Q&A: %{questions}
+        CONTEXT
+      end
+
+      it 'removes the whole compressed notes marker section when no contexts are selected' do
         result
 
         context_arg = nil
@@ -454,12 +459,189 @@ RSpec.describe InteractiveSearchService do
           context_arg = context
         end
 
+        expect(context_arg).not_to include('RELEVANT_COMPRESSED_NOTES')
+        expect(context_arg).to include('OpenSearch results:')
+      end
+    end
+
+    context 'when compressed note context is enabled' do
+      before do
+        create(
+          :tariff_knowledge_node,
+          :note_fragment,
+          key: 'note_fragment:customs_tariff_chapter_note:1.31:42:0001',
+          content: 'Heading 4202 includes handbags with outer surface of leather.',
+          source_type: 'customs_tariff_chapter_note',
+          source_id: '42',
+        )
+        metadata = {
+          'evidence' => [
+            {
+              'source_node_key' => 'note_fragment:customs_tariff_chapter_note:1.31:42:0001',
+              'source_type' => 'customs_tariff_chapter_note',
+              'source_id' => '42',
+              'source_title' => 'Chapter 42 notes fragment 1',
+              'source_context' => 'Heading 4202 includes handbags with outer surface of leather.',
+              'context_type' => 'inclusion',
+              'range_type' => 'heading',
+              'range_code' => '4202',
+              'relationships' => [TariffKnowledge::Edge::APPLIES_TO],
+            },
+          ],
+        }
+        create(
+          :tariff_knowledge_node,
+          :note_fragment,
+          key: 'note_fragment:customs_tariff_chapter_note:1.30:42:0001',
+          content: 'Historic heading 4202 evidence should not be used.',
+          source_type: 'customs_tariff_chapter_note',
+          source_id: '42',
+        )
+        historic_metadata = {
+          'evidence' => [
+            {
+              'source_node_key' => 'note_fragment:customs_tariff_chapter_note:1.30:42:0001',
+              'source_type' => 'customs_tariff_chapter_note',
+              'source_id' => '42',
+              'source_title' => 'Historic Chapter 42 notes fragment 1',
+              'source_context' => 'Historic heading 4202 evidence should not be used.',
+              'context_type' => 'inclusion',
+              'range_type' => 'heading',
+              'range_code' => '4202',
+              'relationships' => [TariffKnowledge::Edge::APPLIES_TO],
+            },
+          ],
+        }
+        create(:admin_configuration,
+               :boolean,
+               name: 'search_compressed_notes_enabled',
+               value: true,
+               area: 'classification')
+        create(:tariff_knowledge_compressed_note,
+               goods_nomenclature_item_id: '4202210000',
+               content: 'Historic approved note.',
+               context_hash: Digest::SHA256.hexdigest('Historic approved note.'),
+               metadata: Sequel.pg_jsonb_wrap(historic_metadata),
+               approved: true,
+               stale: false,
+               expired: false,
+               generated_at: 2.days.ago)
+        create(:tariff_knowledge_compressed_note,
+               goods_nomenclature_item_id: '4202210000',
+               content: 'Includes handbags with outer surface of leather. Excludes plastic sheeting.',
+               context_hash: Digest::SHA256.hexdigest('Includes handbags with outer surface of leather. Excludes plastic sheeting.'),
+               metadata: Sequel.pg_jsonb_wrap(metadata),
+               approved: false,
+               needs_review: false,
+               stale: false,
+               expired: false)
+        create(:tariff_knowledge_compressed_note,
+               goods_nomenclature_item_id: '4202220000',
+               content: 'Rejected notes should not be consumed.',
+               metadata: Sequel.pg_jsonb_wrap(metadata),
+               approved: false,
+               needs_review: true,
+               stale: false,
+               expired: false)
+        create(:tariff_knowledge_compressed_note,
+               goods_nomenclature_item_id: '4202290000',
+               content: 'Includes handbags with outer surface of leather. Excludes plastic sheeting.',
+               context_hash: Digest::SHA256.hexdigest('Includes handbags with outer surface of leather. Excludes plastic sheeting.'),
+               metadata: Sequel.pg_jsonb_wrap(metadata),
+               approved: false,
+               needs_review: false,
+               stale: false,
+               expired: false)
+        create(:tariff_knowledge_compressed_note,
+               goods_nomenclature_item_id: '4202220000',
+               content: 'Stale notes should not be consumed.',
+               approved: true,
+               needs_review: false,
+               stale: true,
+               expired: false)
+      end
+
+      context 'when no compressed notes qualify' do
+        let(:opensearch_results) do
+          [
+            build_result('4202230000', 'Handbags with outer surface of textile materials', 7.1),
+            build_result('4202240000', 'Other handbags', 6.8),
+          ]
+        end
+
+        it 'removes the compressed notes line instead of sending an empty array' do
+          result
+
+          context_arg = nil
+          expect(OpenaiClient).to have_received(:call) do |context, **_opts|
+            context_arg = context
+          end
+
+          expect(context_arg).not_to include('Relevant compressed notes')
+          expect(context_arg).not_to include('Relevant compressed notes: []')
+          expect(context_arg).to include('OpenSearch results:')
+        end
+      end
+
+      it 'adds current approved compressed notes once and references them from matching OpenSearch results' do
+        result
+
+        context_arg = nil
+        expect(OpenaiClient).to have_received(:call) do |context, **_opts|
+          context_arg = context
+        end
+
+        parsed_notes = JSON.parse(context_arg.match(/Relevant compressed notes: (.+?)OpenSearch/m)[1])
         parsed_results = JSON.parse(context_arg.match(/OpenSearch results: (.+?)Previous/m)[1])
+        expect(parsed_notes).to contain_exactly(
+          include(
+            'note_ref' => 'compressed_note_1',
+            'commodity_codes' => contain_exactly('4202210000', '4202290000'),
+            'fragments' => contain_exactly(
+              include(
+                'source' => 'Chapter 42 notes fragment 1',
+                'type' => 'inclusion',
+                'text' => 'Heading 4202 includes handbags with outer surface of leather.',
+              ),
+            ),
+          ),
+        )
         expect(parsed_results.first).to include(
           'commodity_code' => '4202210000',
-          'compressed_note' => 'Includes handbags with outer surface of leather. Excludes plastic sheeting.',
+          'compressed_note_refs' => %w[compressed_note_1],
         )
         expect(parsed_results.second).not_to include('compressed_note')
+        expect(parsed_results.second).not_to include('compressed_note_refs')
+        expect(parsed_results.third).to include(
+          'commodity_code' => '4202290000',
+          'compressed_note_refs' => %w[compressed_note_1],
+        )
+        expect(context_arg).not_to include('Includes handbags with outer surface of leather. Excludes plastic sheeting.')
+        expect(context_arg).not_to include('Historic heading 4202 evidence should not be used.')
+        expect(context_arg).not_to include('Rejected notes should not be consumed.')
+        expect(context_arg.scan('Heading 4202 includes handbags with outer surface of leather.').size).to eq(1)
+      end
+
+      context 'when the configured prompt has no compressed notes placeholder' do
+        let(:default_search_context) do
+          <<~CONTEXT
+            Search query: %{search_input}
+            OpenSearch results: %{answers_opensearch}
+            Previous Q&A: %{questions}
+          CONTEXT
+        end
+
+        it 'inserts the deduplicated notes before OpenSearch results' do
+          result
+
+          context_arg = nil
+          expect(OpenaiClient).to have_received(:call) do |context, **_opts|
+            context_arg = context
+          end
+
+          expect(context_arg).to match(/Relevant compressed notes: .+\nOpenSearch results:/)
+          expect(context_arg.scan('Heading 4202 includes handbags with outer surface of leather.').size).to eq(1)
+        end
       end
     end
 

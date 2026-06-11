@@ -11,14 +11,22 @@ module TariffKnowledge
         GoodsNomenclature.actual
                          .with_leaf_column
                          .declarable
+                         .non_hidden
                          .paged_each(rows_per_fetch: BATCH_SIZE)
                          .each_slice(BATCH_SIZE) do |goods_nomenclatures|
           upsert_goods_nomenclature_nodes(goods_nomenclatures.map(&:sti_cast))
         end
+        remove_hidden_goods_nomenclature_nodes
       end
     end
 
   private
+
+    def remove_hidden_goods_nomenclature_nodes
+      Node.goods_nomenclatures
+          .where(goods_nomenclature_item_id: HiddenGoodsNomenclature.codes)
+          .delete
+    end
 
     def upsert_goods_nomenclature_nodes(goods_nomenclatures)
       rows = goods_nomenclatures.map { |goods_nomenclature| node_row(goods_nomenclature) }
@@ -36,7 +44,7 @@ module TariffKnowledge
         node_type: Node::GOODS_NOMENCLATURE,
         key: "goods_nomenclature:#{goods_nomenclature.goods_nomenclature_sid}",
         title: goods_nomenclature.goods_nomenclature_item_id,
-        content: goods_nomenclature.description,
+        content: nil,
         metadata: Sequel.pg_jsonb({}),
         goods_nomenclature_sid: goods_nomenclature.goods_nomenclature_sid,
         goods_nomenclature_item_id: goods_nomenclature.goods_nomenclature_item_id,

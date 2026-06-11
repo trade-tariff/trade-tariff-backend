@@ -111,12 +111,30 @@ class InteractiveSearchService
   end
 
   def build_context
-    context = configured_context.to_s
+    context = context_with_compressed_notes(configured_context.to_s)
     context
       .gsub('%{search_input}', query.to_s)
       .gsub('%{expanded_query}', expanded_query.to_s)
       .gsub('%{answers_opensearch}', format_opensearch_results.to_s)
       .gsub('%{questions}', format_questions_and_answers.to_s)
+  end
+
+  def context_with_compressed_notes(context)
+    if context.include?('%{compressed_notes}')
+      compressed_note_contexts.any? ? context.gsub('%{compressed_notes}', format_compressed_notes) : remove_compressed_notes_line(context)
+    elsif compressed_note_contexts.any?
+      context.sub(/^.*%{answers_opensearch}.*$/) do |answers_opensearch_line|
+        "Relevant compressed notes: #{format_compressed_notes}\n#{answers_opensearch_line}"
+      end
+    else
+      context
+    end
+  end
+
+  def remove_compressed_notes_line(context)
+    context
+      .gsub(/^[^\n]*RELEVANT_COMPRESSED_NOTES[^\n]*\n[^\n]*%\{compressed_notes\}[^\n]*\n[^\n]*END RELEVANT_COMPRESSED_NOTES[^\n]*\n?/, '')
+      .gsub(/^.*%{compressed_notes}.*$\n?/, '')
   end
 
   def format_opensearch_results
@@ -126,26 +144,52 @@ class InteractiveSearchService
         description: result.full_description.presence || result.description,
         score: result.score,
       }
-      compressed_note = compressed_notes_by_item_id[result.goods_nomenclature_item_id]
-      formatted_result[:compressed_note] = compressed_note.content if compressed_note
+      note_key = selected_compressed_note_keys_by_item_id[result.goods_nomenclature_item_id]
+      formatted_result[:compressed_note_refs] = [compressed_note_ref(note_key)] if note_key
       formatted_result
     end
     results.to_json
   end
+
+  def format_compressed_notes = compressed_note_contexts.to_json
 
   def compressed_notes_by_item_id
     return {} unless AdminConfiguration.enabled?('search_compressed_notes_enabled')
 
     @compressed_notes_by_item_id ||= begin
       item_ids = opensearch_results.map(&:goods_nomenclature_item_id).compact_blank.uniq
-      notes = TariffKnowledge::CompressedNote
-        .where(approved: true, stale: false, expired: false)
+      TariffKnowledge::CompressedNote.usable_for_search
         .by_item_ids(item_ids)
-
-      notes.each_with_object({}) do |note, by_item_id|
+        .order(Sequel.desc(:generated_at), Sequel.desc(:updated_at))
+        .each_with_object({}) do |note, by_item_id|
         by_item_id[note.goods_nomenclature_item_id] ||= note
       end
     end
+  end
+
+  def compressed_note_contexts
+    return @compressed_note_contexts if defined?(@compressed_note_contexts)
+
+    @compressed_note_contexts = selected_compressed_note_contexts.map do |context|
+      { note_ref: compressed_note_ref(context[:key]), commodity_codes: context[:commodity_codes], fragments: context[:fragments] }
+    end
+  end
+
+  def selected_compressed_note_keys_by_item_id
+    @selected_compressed_note_keys_by_item_id ||= begin
+      selected_note_keys = selected_compressed_note_contexts.pluck(:key).to_set
+
+      compressed_notes_by_item_id.each_with_object({}) do |(item_id, note), by_item_id|
+        by_item_id[item_id] = note.context_hash if selected_note_keys.include?(note.context_hash)
+      end
+    end
+  end
+
+  def selected_compressed_note_contexts = @selected_compressed_note_contexts ||= TariffKnowledge::RelevantNoteFragmentSelector.call(query:, search_results: opensearch_results, notes_by_item_id: compressed_notes_by_item_id)
+
+  def compressed_note_ref(compressed_note_key)
+    @compressed_note_refs ||= {}
+    @compressed_note_refs[compressed_note_key] ||= "compressed_note_#{@compressed_note_refs.size + 1}"
   end
 
   def format_questions_and_answers

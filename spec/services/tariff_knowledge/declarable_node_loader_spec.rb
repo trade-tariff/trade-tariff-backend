@@ -39,5 +39,41 @@ RSpec.describe TariffKnowledge::DeclarableNodeLoader do
                                   .first
       expect(node.goods_nomenclature_item_id).to eq('0101210000')
     end
+
+    it 'does not create goods nomenclature nodes for hidden declarables' do
+      commodity = create(
+        :commodity,
+        parent: heading,
+        goods_nomenclature_item_id: '9930240000',
+      )
+      create(:hidden_goods_nomenclature, goods_nomenclature_item_id: commodity.goods_nomenclature_item_id)
+      GoodsNomenclatures::TreeNode.refresh!
+
+      described_class.call
+
+      expect(TariffKnowledge::Node.goods_nomenclatures.where(goods_nomenclature_sid: commodity.goods_nomenclature_sid))
+        .to be_empty
+    end
+
+    it 'removes existing goods nomenclature nodes when their code is now hidden' do
+      commodity = create(
+        :commodity,
+        parent: heading,
+        goods_nomenclature_item_id: '9930240000',
+      )
+      create(
+        :tariff_knowledge_node,
+        key: "goods_nomenclature:#{commodity.goods_nomenclature_sid}",
+        goods_nomenclature_sid: commodity.goods_nomenclature_sid,
+        goods_nomenclature_item_id: commodity.goods_nomenclature_item_id,
+      )
+      create(:hidden_goods_nomenclature, goods_nomenclature_item_id: commodity.goods_nomenclature_item_id)
+      GoodsNomenclatures::TreeNode.refresh!
+
+      described_class.call
+
+      expect(TariffKnowledge::Node.goods_nomenclatures.where(goods_nomenclature_sid: commodity.goods_nomenclature_sid))
+        .to be_empty
+    end
   end
 end

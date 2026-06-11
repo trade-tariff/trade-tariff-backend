@@ -38,6 +38,7 @@ module TariffKnowledge
         .actual
         .with_leaf_column
         .declarable
+        .non_hidden
         .unordered
         .select_map(Sequel[:goods_nomenclatures][:goods_nomenclature_sid])
         .compact

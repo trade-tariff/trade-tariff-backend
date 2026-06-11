@@ -140,6 +140,9 @@ module AdminConfigurationSeeder
       -----------EXPANDED_QUERY-----------------
       %{expanded_query}
       -----------END EXPANDED_QUERY-------------
+      -----------RELEVANT_COMPRESSED_NOTES-------
+      %{compressed_notes}
+      -----------END RELEVANT_COMPRESSED_NOTES---
 
       -----------ANSWERS_OPENSEARCH-------------
       %{answers_opensearch}
