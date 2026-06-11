@@ -268,6 +268,79 @@ RSpec.describe TariffKnowledge::CompressedNoteGenerator do
         .to eq('Reviewed human content')
     end
 
+    it 'marks manually edited notes stale when graph context changes' do
+      create(
+        :tariff_knowledge_compressed_note,
+        goods_nomenclature_sid: 123,
+        content: 'Reviewed human content',
+        context_hash: Digest::SHA256.hexdigest('Reviewed human content'),
+        manually_edited: true,
+        approved: true,
+        stale: false,
+      )
+
+      described_class.call(goods_nomenclature_sids: [123])
+
+      note = TariffKnowledge::CompressedNote[123]
+      expect(note).to have_attributes(
+        content: 'Reviewed human content',
+        stale: true,
+      )
+    end
+
+    it 'marks existing notes stale when evidence disappears' do
+      create(
+        :tariff_knowledge_compressed_note,
+        goods_nomenclature_sid: 123,
+        goods_nomenclature_item_id: '0101210000',
+        content: 'Old generated context',
+        stale: false,
+        expired: false,
+        needs_review: false,
+      )
+      TariffKnowledge::Edge.where(target_node_id: declarable_node.id).delete
+
+      described_class.call(goods_nomenclature_sids: [123])
+
+      expect(TariffKnowledge::CompressedNote[123]).to have_attributes(stale: true)
+      expect(TariffKnowledge::CompressedNote.usable_for_search.by_sids([123]).all).to be_empty
+    end
+
+    it 'ignores fragments from old source versions' do
+      create(
+        :customs_tariff_update,
+        :approved,
+        version: '1.30',
+        validity_start_date: 2.months.ago,
+        validity_end_date: 1.month.ago,
+      )
+      create(
+        :customs_tariff_update,
+        :approved,
+        version: '1.31',
+        validity_start_date: 1.day.ago,
+      )
+      old_fragment_node = create(
+        :tariff_knowledge_node,
+        :note_fragment,
+        key: 'note_fragment:customs_tariff_chapter_note:1.30:01:0001',
+        title: 'Old Chapter 01 notes fragment 1',
+        content: 'Old version evidence should not be used.',
+        source_version: '1.30',
+      )
+      create(
+        :tariff_knowledge_edge,
+        source_node: old_fragment_node,
+        target_node: declarable_node,
+        relationship_type: TariffKnowledge::Edge::APPLIES_TO,
+      )
+
+      described_class.call(goods_nomenclature_sids: [123])
+
+      expect(TariffKnowledge::CompressedNote[123].content)
+        .not_to include('Old version evidence')
+    end
+
     it 'preloads graph evidence for the requested goods nomenclatures' do
       second_declarable_node = create(
         :tariff_knowledge_node,

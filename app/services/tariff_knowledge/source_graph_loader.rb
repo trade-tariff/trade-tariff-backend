@@ -44,9 +44,13 @@ module TariffKnowledge
       update = latest_approved_update
       return unless update
 
-      SOURCE_ASSOCIATIONS.each do |source_association|
-        sources_for(source_association, update).each do |source|
-          load_source(source_association, source)
+      Node.db.transaction do
+        prune_non_current_source_nodes(update.version)
+
+        SOURCE_ASSOCIATIONS.each do |source_association|
+          sources_for(source_association, update).each do |source|
+            load_source(source_association, source)
+          end
         end
       end
     end
@@ -227,7 +231,13 @@ module TariffKnowledge
     end
 
     def expand_range(range_node, reference)
-      upsert_edges(range_node, matching_declarable_nodes(reference), Edge::EXPANDS_TO)
+      current_declarable_nodes = matching_declarable_nodes(reference)
+      upsert_edges(range_node, current_declarable_nodes, Edge::EXPANDS_TO)
+      delete_stale_edges(
+        source_node: range_node,
+        relationship_type: Edge::EXPANDS_TO,
+        current_target_node_dataset: current_declarable_nodes,
+      )
     end
 
     def matching_declarable_nodes(reference)
@@ -286,6 +296,14 @@ module TariffKnowledge
     def source_key(source_association, source)
       identifier = source.public_send(source_association.identifier)
       "note_source:#{source_association.label}:#{source.customs_tariff_update_version}:#{identifier}"
+    end
+
+    def prune_non_current_source_nodes(source_version)
+      Node
+        .where(node_type: [Node::NOTE_SOURCE, Node::NOTE_FRAGMENT])
+        .where(source_type: SOURCE_ASSOCIATIONS.map(&:label))
+        .exclude(source_version:)
+        .delete
     end
 
     def upsert_node(attributes)
