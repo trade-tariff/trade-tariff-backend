@@ -17,6 +17,7 @@ class TariffChangesService
       @workbook = FastExcel.open
       sheet = workbook.add_worksheet('Commodity watch list')
 
+      setup_sheet_formatting(sheet)
       set_column_widths(sheet)
       add_headers(sheet)
       stream_data_rows(sheet)
@@ -26,6 +27,10 @@ class TariffChangesService
     end
 
     private
+
+    def setup_sheet_formatting(sheet)
+      sheet.set_default_row(40, 0)
+    end
 
     def add_headers(sheet)
       sheet.append_row(['Changes to your commodity watch list'], cell_styles[:title])

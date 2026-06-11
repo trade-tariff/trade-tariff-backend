@@ -1,6 +1,7 @@
 require 'zip'
 require 'nokogiri'
 require 'cgi'
+require 'stringio'
 
 module XlsxHelpers
   def xlsx_entry(xlsx_data, entry_name)

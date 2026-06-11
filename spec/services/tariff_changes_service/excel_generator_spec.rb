@@ -113,6 +113,10 @@ RSpec.describe TariffChangesService::ExcelGenerator do
     it 'preserves the explicit blank spacer cell emitted by the caxlsx report' do
       expect(worksheet_xml(xlsx_data)).to include('<c r="A3"')
     end
+
+    it 'sets the worksheet default row height for wrapped data rows' do
+      expect(worksheet_xml(xlsx_data)).to include('<sheetFormatPr defaultRowHeight="40"')
+    end
   end
 
   describe '#build_excel_row' do
