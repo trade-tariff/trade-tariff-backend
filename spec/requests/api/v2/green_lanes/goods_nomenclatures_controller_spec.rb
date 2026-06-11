@@ -122,5 +122,16 @@ RSpec.describe Api::V2::GreenLanes::GoodsNomenclaturesController, :v2 do
 
       it { is_expected.to have_http_status :success }
     end
+
+    context 'when in development mode and green lanes API keys are the default empty JSON object' do
+      let(:authorization) { nil }
+
+      before do
+        allow(Rails.env).to receive(:development?).and_return(true)
+        allow(TradeTariffBackend).to receive_messages(api_tokens: nil, green_lanes_api_keys: '{}')
+      end
+
+      it { is_expected.to have_http_status :success }
+    end
   end
 end
