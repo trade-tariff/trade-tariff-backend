@@ -65,7 +65,8 @@ RSpec.describe Api::User::ActiveCommoditiesReportWorksheetBuilder do
 
       expect(relationships_xml).to include(xml_escape(described_class::REPLACE_ALL_COMMODITIES_UPLOAD_URL))
       expect(relationships_xml.scan(%r{Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink"}).size).to eq(1)
-      expect(table_xml(xlsx_data)).to include('ref="A8:D11"')
+      expect(table_xml(xlsx_data)).to include('displayName="Your_commodities_from_your_commodity_watch_list"')
+      expect(table_xml(xlsx_data)).to include('ref="A8:D10"')
       expect(table_xml(xlsx_data)).to include('name="TableStyleLight15"')
       expect(table_xml(xlsx_data)).to include('showRowStripes="1"')
     end

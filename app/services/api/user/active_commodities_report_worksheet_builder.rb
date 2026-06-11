@@ -77,8 +77,8 @@ module Api
         return if report_rows.empty?
 
         header_row_index = TABLE_START_ROW - 1
-        last_row_index = header_row_index + report_rows.length
-        sheet.add_table(header_row_index, 0, last_row_index, HEADERS.length - 1, style: 'TableStyleLight15', columns: HEADERS)
+        last_row_index = header_row_index + report_rows.length - 1
+        sheet.add_table(header_row_index, 0, last_row_index, HEADERS.length - 1, name: TABLE_NAME, style: 'TableStyleLight15', columns: HEADERS)
       end
 
       def set_column_widths(sheet)

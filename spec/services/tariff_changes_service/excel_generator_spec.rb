@@ -109,6 +109,10 @@ RSpec.describe TariffChangesService::ExcelGenerator do
       expect(table_xml(xlsx_data)).to include('name="TableStyleMedium2"')
       expect(table_xml(xlsx_data)).to include('showRowStripes="1"')
     end
+
+    it 'preserves the explicit blank spacer cell emitted by the caxlsx report' do
+      expect(worksheet_xml(xlsx_data)).to include('<c r="A3"')
+    end
   end
 
   describe '#build_excel_row' do
@@ -132,6 +136,18 @@ RSpec.describe TariffChangesService::ExcelGenerator do
       ])
       expect(row[11]).to be_a(FastExcel::URL)
       expect(row[12]).to be_a(FastExcel::URL)
+    end
+
+    context 'when the date of effect is a Date' do
+      before do
+        change_records.first[:date_of_effect] = Date.new(2024, 8, 11)
+      end
+
+      it 'serializes the date as the same ISO string as the caxlsx report' do
+        row = generator.send(:build_excel_row, change_records.first)
+
+        expect(row[10]).to eq('2024-08-11')
+      end
     end
   end
 end

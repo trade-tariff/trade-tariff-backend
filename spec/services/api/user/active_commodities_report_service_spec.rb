@@ -107,10 +107,11 @@ RSpec.describe Api::User::ActiveCommoditiesReportService do
       expect(xml).to match(%r{<r><rPr><b/>.*?</rPr><t>Active commodity\n?description</t></r>}m)
     end
 
-    it 'adds table styling for the full data range' do
+    it 'adds table styling using the same range as the caxlsx report' do
       xml = table_xml(xlsx_data)
 
-      expect(xml).to include('ref="A8:D11"')
+      expect(xml).to include('displayName="Your_commodities_from_your_commodity_watch_list"')
+      expect(xml).to include('ref="A8:D10"')
       expect(xml).to include('name="TableStyleLight15"')
       expect(xml).to include('showRowStripes="1"')
     end

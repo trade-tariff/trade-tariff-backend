@@ -35,6 +35,7 @@ class TariffChangesService
       sheet.set_row(1, 25, cell_styles[:subtitle])
 
       sheet.append_row([''])
+      sheet.write_blank(2, 0, workbook.add_format)
       sheet.set_row(2, 20, nil)
 
       sheet.append_row(
@@ -192,7 +193,7 @@ class TariffChangesService
         record[:commodity_code_description],
         record[:type_of_change],
         record[:change_detail],
-        record[:date_of_effect],
+        record[:date_of_effect].to_s,
         record[:ott_url] ? FastExcel::URL.new(record[:ott_url]) : nil,
         record[:api_url] ? FastExcel::URL.new(record[:api_url]) : nil,
       ]
