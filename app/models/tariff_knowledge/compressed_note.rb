@@ -22,6 +22,10 @@ module TariffKnowledge
         where(goods_nomenclature_item_id: item_ids)
       end
 
+      def usable_for_search
+        where(stale: false, expired: false, needs_review: false)
+      end
+
       def needing_regeneration
         where(stale: true, manually_edited: false)
       end

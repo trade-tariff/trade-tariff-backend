@@ -52,5 +52,15 @@ RSpec.describe TariffKnowledge::CompressedNote do
       expect(described_class.by_sids([123]).all).to contain_exactly(note)
       expect(described_class.by_item_ids(%w[0101210000]).all).to contain_exactly(note)
     end
+
+    it 'returns current generated notes that are usable by search' do
+      generated_note = create(:tariff_knowledge_compressed_note, approved: false, needs_review: false)
+      approved_note = create(:tariff_knowledge_compressed_note, approved: true, needs_review: false)
+      create(:tariff_knowledge_compressed_note, approved: false, needs_review: true)
+      create(:tariff_knowledge_compressed_note, stale: true, needs_review: false)
+      create(:tariff_knowledge_compressed_note, expired: true, needs_review: false)
+
+      expect(described_class.usable_for_search.all).to contain_exactly(generated_note, approved_note)
+    end
   end
 end

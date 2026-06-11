@@ -506,7 +506,16 @@ RSpec.describe InteractiveSearchService do
                content: 'Includes handbags with outer surface of leather. Excludes plastic sheeting.',
                context_hash: Digest::SHA256.hexdigest('Includes handbags with outer surface of leather. Excludes plastic sheeting.'),
                metadata: Sequel.pg_jsonb_wrap(metadata),
-               approved: true,
+               approved: false,
+               needs_review: false,
+               stale: false,
+               expired: false)
+        create(:tariff_knowledge_compressed_note,
+               goods_nomenclature_item_id: '4202220000',
+               content: 'Rejected notes should not be consumed.',
+               metadata: Sequel.pg_jsonb_wrap(metadata),
+               approved: false,
+               needs_review: true,
                stale: false,
                expired: false)
         create(:tariff_knowledge_compressed_note,
@@ -514,13 +523,15 @@ RSpec.describe InteractiveSearchService do
                content: 'Includes handbags with outer surface of leather. Excludes plastic sheeting.',
                context_hash: Digest::SHA256.hexdigest('Includes handbags with outer surface of leather. Excludes plastic sheeting.'),
                metadata: Sequel.pg_jsonb_wrap(metadata),
-               approved: true,
+               approved: false,
+               needs_review: false,
                stale: false,
                expired: false)
         create(:tariff_knowledge_compressed_note,
                goods_nomenclature_item_id: '4202220000',
                content: 'Stale notes should not be consumed.',
                approved: true,
+               needs_review: false,
                stale: true,
                expired: false)
       end
@@ -582,6 +593,7 @@ RSpec.describe InteractiveSearchService do
         )
         expect(context_arg).not_to include('Includes handbags with outer surface of leather. Excludes plastic sheeting.')
         expect(context_arg).not_to include('Historic heading 4202 evidence should not be used.')
+        expect(context_arg).not_to include('Rejected notes should not be consumed.')
         expect(context_arg.scan('Heading 4202 includes handbags with outer surface of leather.').size).to eq(1)
       end
 

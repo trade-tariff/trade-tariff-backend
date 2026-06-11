@@ -156,7 +156,7 @@ class InteractiveSearchService
 
     @compressed_notes_by_item_id ||= begin
       item_ids = opensearch_results.map(&:goods_nomenclature_item_id).compact_blank.uniq
-      TariffKnowledge::CompressedNote.where(approved: true, stale: false, expired: false)
+      TariffKnowledge::CompressedNote.usable_for_search
         .by_item_ids(item_ids)
         .order(Sequel.desc(:generated_at), Sequel.desc(:updated_at))
         .each_with_object({}) do |note, by_item_id|
