@@ -1,3 +1,5 @@
+require 'zip'
+
 module CustomsTariffImporter
   class NotesExtractor
     WORD_NS = { 'w' => 'http://schemas.openxmlformats.org/wordprocessingml/2006/main' }.freeze
