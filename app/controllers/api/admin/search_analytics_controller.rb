@@ -21,7 +21,7 @@ module Api
       def error_response(period)
         {
           errors: [{
-            status: '404',
+            status: Rack::Utils.status_code(:not_found).to_s,
             title: 'Search analytics unavailable',
             detail: "No cached search analytics snapshot is available for #{period.key}/#{period.view}",
           }],

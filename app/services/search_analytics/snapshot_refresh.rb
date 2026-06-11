@@ -2,8 +2,8 @@
 
 module SearchAnalytics
   class SnapshotRefresh
-    PERIODS = %w[24h 7d 30d].freeze
-    VIEWS = %w[all classic internal].freeze
+    PERIODS = Period::PERIODS.keys.freeze
+    VIEWS = Period::VIEWS
 
     def self.call(now: Time.current, periods: PERIODS)
       new(now:, periods:).call
