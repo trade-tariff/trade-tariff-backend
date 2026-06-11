@@ -426,6 +426,19 @@ RSpec.describe InteractiveSearchService do
       allow(OpenaiClient).to receive(:call).and_return(ai_response)
     end
 
+    it 'removes the compressed notes line when no compressed note contexts are selected' do
+      result
+
+      context_arg = nil
+      expect(OpenaiClient).to have_received(:call) do |context, **_opts|
+        context_arg = context
+      end
+
+      expect(context_arg).not_to include('Relevant compressed notes')
+      expect(context_arg).not_to include('Relevant compressed notes: []')
+      expect(context_arg).to include('OpenSearch results:')
+    end
+
     context 'when compressed note context is enabled' do
       before do
         create(
@@ -510,6 +523,28 @@ RSpec.describe InteractiveSearchService do
                approved: true,
                stale: true,
                expired: false)
+      end
+
+      context 'when no compressed notes qualify' do
+        let(:opensearch_results) do
+          [
+            build_result('4202230000', 'Handbags with outer surface of textile materials', 7.1),
+            build_result('4202240000', 'Other handbags', 6.8),
+          ]
+        end
+
+        it 'removes the compressed notes line instead of sending an empty array' do
+          result
+
+          context_arg = nil
+          expect(OpenaiClient).to have_received(:call) do |context, **_opts|
+            context_arg = context
+          end
+
+          expect(context_arg).not_to include('Relevant compressed notes')
+          expect(context_arg).not_to include('Relevant compressed notes: []')
+          expect(context_arg).to include('OpenSearch results:')
+        end
       end
 
       it 'adds current approved compressed notes once and references them from matching OpenSearch results' do

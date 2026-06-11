@@ -27,6 +27,10 @@ module TariffKnowledge
         where(node_type: GOODS_NOMENCLATURE)
       end
 
+      def non_hidden_goods_nomenclatures
+        goods_nomenclatures.exclude(goods_nomenclature_item_id: HiddenGoodsNomenclature.codes)
+      end
+
       def note_fragments
         where(node_type: NOTE_FRAGMENT)
       end

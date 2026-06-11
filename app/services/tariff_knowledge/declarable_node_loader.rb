@@ -16,10 +16,17 @@ module TariffKnowledge
                          .each_slice(BATCH_SIZE) do |goods_nomenclatures|
           upsert_goods_nomenclature_nodes(goods_nomenclatures.map(&:sti_cast))
         end
+        remove_hidden_goods_nomenclature_nodes
       end
     end
 
   private
+
+    def remove_hidden_goods_nomenclature_nodes
+      Node.goods_nomenclatures
+          .where(goods_nomenclature_item_id: HiddenGoodsNomenclature.codes)
+          .delete
+    end
 
     def upsert_goods_nomenclature_nodes(goods_nomenclatures)
       rows = goods_nomenclatures.map { |goods_nomenclature| node_row(goods_nomenclature) }

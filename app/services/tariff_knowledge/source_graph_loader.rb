@@ -127,7 +127,7 @@ module TariffKnowledge
       delete_stale_edges(
         source_node: fragment_node,
         relationship_type: Edge::APPLIES_TO,
-        current_target_node_ids: scoped_declarable_nodes.map(&:id),
+        current_target_node_dataset: scoped_declarable_nodes,
       )
 
       fragment_node
@@ -227,9 +227,7 @@ module TariffKnowledge
     end
 
     def expand_range(range_node, reference)
-      matching_declarable_nodes(reference).paged_each(rows_per_fetch: BATCH_SIZE) do |declarable_node|
-        upsert_edge(range_node, declarable_node, Edge::EXPANDS_TO)
-      end
+      upsert_edges(range_node, matching_declarable_nodes(reference), Edge::EXPANDS_TO)
     end
 
     def matching_declarable_nodes(reference)
@@ -251,21 +249,25 @@ module TariffKnowledge
       when 'customs_tariff_general_rule'
         general_rule_declarable_nodes
       else
-        []
+        empty_declarable_node_dataset
       end
+    end
+
+    def empty_declarable_node_dataset
+      Node.non_hidden_goods_nomenclatures.where(Sequel.lit('1 = 0'))
     end
 
     def general_rule_declarable_nodes
       # GIRs apply across the tariff, so this is intentionally the full declarable set.
-      @general_rule_declarable_nodes ||= Node.goods_nomenclatures.all
+      @general_rule_declarable_nodes ||= Node.non_hidden_goods_nomenclatures
     end
 
     def scoped_chapter_declarable_nodes(chapter_codes)
       chapter_codes = normalize_chapter_codes(chapter_codes)
-      return [] if chapter_codes.empty?
+      return empty_declarable_node_dataset if chapter_codes.empty?
 
       direct_conditions = chapter_codes.map { |code| Sequel.like(:goods_nomenclature_item_id, "#{code}%") }
-      Node.goods_nomenclatures.where(Sequel.|(*direct_conditions)).all
+      Node.non_hidden_goods_nomenclatures.where(Sequel.|(*direct_conditions))
     end
 
     def chapter_codes_for_section(section_id)
@@ -319,7 +321,7 @@ module TariffKnowledge
     end
 
     def upsert_edges(source_node, target_nodes, relationship_type)
-      target_nodes.each_slice(BATCH_SIZE) do |nodes|
+      target_node_batches(target_nodes).each do |nodes|
         now = Time.zone.now
         rows = nodes.map do |target_node|
           {
@@ -338,12 +340,32 @@ module TariffKnowledge
       end
     end
 
-    def delete_stale_edges(source_node:, relationship_type:, current_target_node_ids:)
+    def target_node_batches(target_nodes)
+      return target_nodes.each_slice(BATCH_SIZE) unless target_nodes.respond_to?(:paged_each)
+
+      Enumerator.new do |yielder|
+        batch = []
+        target_nodes.paged_each(rows_per_fetch: BATCH_SIZE) do |target_node|
+          batch << target_node
+          next unless batch.size == BATCH_SIZE
+
+          yielder << batch
+          batch = []
+        end
+        yielder << batch if batch.any?
+      end
+    end
+
+    def delete_stale_edges(source_node:, relationship_type:, current_target_node_ids: [], current_target_node_dataset: nil)
       dataset = Edge.where(
         source_node_id: source_node.id,
         relationship_type:,
       )
-      dataset = dataset.exclude(target_node_id: current_target_node_ids) if current_target_node_ids.any?
+      if current_target_node_dataset
+        dataset = dataset.exclude(target_node_id: current_target_node_dataset.select(:id))
+      elsif current_target_node_ids.any?
+        dataset = dataset.exclude(target_node_id: current_target_node_ids)
+      end
       dataset.delete
     end
 

@@ -121,7 +121,7 @@ class InteractiveSearchService
 
   def context_with_compressed_notes(context)
     if context.include?('%{compressed_notes}')
-      context.gsub('%{compressed_notes}', format_compressed_notes)
+      compressed_note_contexts.any? ? context.gsub('%{compressed_notes}', format_compressed_notes) : remove_compressed_notes_line(context)
     elsif compressed_note_contexts.any?
       context.sub(/^.*%{answers_opensearch}.*$/) do |answers_opensearch_line|
         "Relevant compressed notes: #{format_compressed_notes}\n#{answers_opensearch_line}"
@@ -129,6 +129,10 @@ class InteractiveSearchService
     else
       context
     end
+  end
+
+  def remove_compressed_notes_line(context)
+    context.gsub(/^.*%{compressed_notes}.*$\n?/, '')
   end
 
   def format_opensearch_results
