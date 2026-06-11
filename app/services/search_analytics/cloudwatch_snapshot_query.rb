@@ -14,13 +14,9 @@ module SearchAnalytics
     VIEWS = %w[all classic internal].freeze
     QueryError = Class.new(StandardError)
 
-    def self.call(period:, client: self.client, now: Time.current)
-      new(period:, client:, now:).call
-    end
+    def self.call(period:, client: self.client, now: Time.current) = new(period:, client:, now:).call
 
-    def self.client
-      @client ||= Aws::CloudWatchLogs::Client.new
-    end
+    def self.client = @client ||= Aws::CloudWatchLogs::Client.new
 
     def initialize(period:, client: self.class.client, now: Time.current)
       @period = Period.for(period:, view: 'all')
@@ -75,9 +71,7 @@ module SearchAnalytics
       raise QueryError, 'CloudWatch query timed out while polling'
     end
 
-    def parsed_row(row)
-      row.to_h { |field| [normalise_field(field.field), field.value] }
-    end
+    def parsed_row(row) = row.to_h { |field| [normalise_field(field.field), field.value] }
 
     def normalise_field(field)
       return '@timestamp' if field.to_s.start_with?('bin(')
@@ -85,21 +79,13 @@ module SearchAnalytics
       field
     end
 
-    def bucket_expression
-      period.bucket_size == 'hour' ? 'bin(1h)' : 'bin(1d)'
-    end
+    def bucket_expression = period.bucket_size == 'hour' ? 'bin(1h)' : 'bin(1d)'
 
-    def bucket_period
-      period.bucket_size == 'hour' ? '1h' : '1d'
-    end
+    def bucket_period = period.bucket_size == 'hour' ? '1h' : '1d'
 
-    def base_search_filter
-      'filter service = "search" and event in ["search_completed", "search_failed"]'
-    end
+    def base_search_filter = 'filter service = "search" and event in ["search_completed", "search_failed"]'
 
-    def log_stream_filter
-      %(filter @logStream like "ecs/backend-#{TradeTariffBackend.service}/")
-    end
+    def log_stream_filter = %(filter @logStream like "ecs/backend-#{TradeTariffBackend.service}/")
 
     def volume_query
       <<~QUERY
@@ -139,12 +125,8 @@ module SearchAnalytics
 
     def selection_queries
       {
-        'classic' => selection_query(
-          'search_type = "classic" and results_type = "fuzzy_search"',
-        ),
-        'internal' => selection_query(
-          '(search_type = "interactive" or search_type = "internal") and (results_type = "opensearch" or results_type = "vector" or results_type = "hybrid")',
-        ),
+        'classic' => selection_query('search_type = "classic" and results_type = "fuzzy_search"'),
+        'internal' => selection_query('(search_type = "interactive" or search_type = "internal") and (results_type = "opensearch" or results_type = "vector" or results_type = "hybrid")'),
       }
     end
 
@@ -369,9 +351,7 @@ module SearchAnalytics
         end
       end
 
-      def search_count(view)
-        filtered_rows(volume_rows, view).sum { |row| integer(row['searches']) }
-      end
+      def search_count(view) = filtered_rows(volume_rows, view).sum { |row| integer(row['searches']) }
 
       def failed_count(view)
         filtered_rows(volume_rows, view).sum { |row| row['event'] == 'search_failed' ? integer(row['searches']) : 0 }
@@ -381,17 +361,11 @@ module SearchAnalytics
         filtered_rows(volume_rows, view).sum { |row| row['event'] == 'search_completed' ? integer(row['searches']) : 0 }
       end
 
-      def zero_result_count(view)
-        filtered_rows(zero_result_rows, view).sum { |row| integer(row['zero_results']) }
-      end
+      def zero_result_count(view) = filtered_rows(zero_result_rows, view).sum { |row| integer(row['zero_results']) }
 
-      def selection_count(view)
-        filtered_rows(selection_rows, view).sum { |row| integer(row['selected']) }
-      end
+      def selection_count(view) = filtered_rows(selection_rows, view).sum { |row| integer(row['selected']) }
 
-      def selectable_count(view)
-        filtered_rows(selection_rows, view).sum { |row| integer(row['selectable']) }
-      end
+      def selectable_count(view) = filtered_rows(selection_rows, view).sum { |row| integer(row['selectable']) }
 
       def latency_for(view)
         return integer(all_latency_rows.first&.fetch('p90_latency_ms', nil)) if view == 'all'
@@ -430,13 +404,9 @@ module SearchAnalytics
         rows.select { |row| row_matches_view?(row, view) }
       end
 
-      def row_matches_view?(row, view)
-        VIEW_SEARCH_TYPES.fetch(view, [view]).include?(row_search_type(row))
-      end
+      def row_matches_view?(row, view) = VIEW_SEARCH_TYPES.fetch(view, [view]).include?(row_search_type(row))
 
-      def row_search_type(row)
-        row['search_type'] || row['selectable_search_type']
-      end
+      def row_search_type(row) = row['search_type'] || row['selectable_search_type']
 
       def rate(numerator, denominator)
         return 0.0 if denominator.zero?
