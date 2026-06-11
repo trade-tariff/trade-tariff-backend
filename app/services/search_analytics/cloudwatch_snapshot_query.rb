@@ -5,7 +5,7 @@ module SearchAnalytics
     QUERY_POLL_INTERVAL_SECONDS = ENV.fetch('SEARCH_ANALYTICS_QUERY_POLL_INTERVAL_SECONDS', 1).to_f
     QUERY_MAX_POLLS = ENV.fetch('SEARCH_ANALYTICS_QUERY_MAX_POLLS', 60).to_i
     IMPROVEMENT_TERM_LIMIT = 100
-    TERMINAL_FAILURE_STATUSES = %w[Failed Cancelled Timeout].freeze
+    TERMINAL_FAILURE_STATUSES = %w[Failed Cancelled Timeout Unknown].freeze
     SEARCH_LOG_GROUP_NAME = "platform-logs-#{TradeTariffBackend.environment}".freeze
     VIEW_SEARCH_TYPES = {
       'classic' => %w[classic],
@@ -37,7 +37,7 @@ module SearchAnalytics
       )
 
       VIEWS.index_with { |view| aggregate.payload_for(view) }
-    rescue Aws::Errors::ServiceError
+    rescue Aws::Errors::ServiceError, QueryError
       raise
     rescue StandardError => e
       raise QueryError, e.message
@@ -415,7 +415,7 @@ module SearchAnalytics
       end
 
       def integer(value)
-        Integer(value || 0)
+        Float(value || 0).to_i
       rescue ArgumentError, TypeError
         0
       end

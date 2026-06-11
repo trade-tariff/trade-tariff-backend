@@ -33,7 +33,7 @@ RSpec.describe SearchAnalytics::CloudwatchSnapshotQuery do
         result_row('@timestamp' => '2026-06-10 09:00:00.000', 'search_type' => 'classic', 'zero_results' => '4'),
         result_row('@timestamp' => '2026-06-10 09:00:00.000', 'search_type' => 'interactive', 'zero_results' => '1'),
       ),
-      complete_response(result_row('p90_latency_ms' => '1200')),
+      complete_response(result_row('p90_latency_ms' => '1200.0')),
       complete_response(
         result_row('search_type' => 'classic', 'p90_latency_ms' => '900'),
         result_row('search_type' => 'interactive', 'p90_latency_ms' => '2100'),
@@ -114,6 +114,23 @@ RSpec.describe SearchAnalytics::CloudwatchSnapshotQuery do
     ).exactly(10).times
   end
 
+  it 'raises terminal unknown CloudWatch query statuses immediately' do
+    allow(client).to receive_messages(
+      start_query: start_query_response('unknown'),
+      get_query_results: query_response('Unknown'),
+    )
+
+    expect { payloads }.to raise_error(described_class::QueryError, 'CloudWatch query Unknown')
+  end
+
+  it 'preserves existing query errors' do
+    query_error = described_class::QueryError.new('CloudWatch query Failed')
+
+    allow(client).to receive(:start_query).and_raise(query_error)
+
+    expect { payloads }.to raise_error(described_class::QueryError) { |error| expect(error).to equal(query_error) }
+  end
+
   it 'builds all dashboard views without raw search rows', :aggregate_failures do
     expect(payloads.keys).to contain_exactly('all', 'classic', 'internal')
     expect(payloads.dig('all', 'summary')).to include(
@@ -163,7 +180,11 @@ RSpec.describe SearchAnalytics::CloudwatchSnapshotQuery do
   end
 
   def complete_response(*results)
-    instance_double(Aws::CloudWatchLogs::Types::GetQueryResultsResponse, status: 'Complete', results: results)
+    query_response('Complete', results:)
+  end
+
+  def query_response(status, results: [])
+    instance_double(Aws::CloudWatchLogs::Types::GetQueryResultsResponse, status:, results:)
   end
 
   def result_row(fields)
