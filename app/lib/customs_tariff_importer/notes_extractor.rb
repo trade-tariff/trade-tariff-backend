@@ -2,15 +2,17 @@ module CustomsTariffImporter
   class NotesExtractor
     WORD_NS = { 'w' => 'http://schemas.openxmlformats.org/wordprocessingml/2006/main' }.freeze
 
-    SECTION_PATTERN          = /\ASECTION\s+([IVX]+)/i
-    CHAPTER_PATTERN          = /\ACHAPTER\s+(\d+)/i
+    SECTION_PATTERN          = /\ASECTION\s+([IVX]+)\z/i
+    CHAPTER_PATTERN          = /\ACHAPTER\s+(\d+)\z/
     CHAPTER_NOTES_PATTERN    = /\AChapter\s+[Nn]otes?\z/i
     ADDITIONAL_NOTES_PATTERN = /\AAdditional\s+[Cc]hapter\s+[Nn]otes?\z/i
+    SUBHEADING_NOTES_PATTERN = /\ASubheading\s+[Nn]otes?\z/i
     SECTION_NOTES_PATTERN    = /\ASection\s+[Nn]otes?\z/i
     GENERAL_RULES_PATTERN    = /\AGeneral\s+Interpretive\s+Rules?\z/i
     RULE_PATTERN             = /\ARule\s+(\d+)\z/i
     COMMODITY_CODE_PATTERN   = /\A\d{10}\z/
     PART_BOUNDARY_PATTERN    = /\APART\s+\w+/i
+    NUMBERED_NOTE_PATTERN    = /\A1\.\s*[A-Za-z(]/
 
     Result = Data.define(:chapters, :sections, :general_rules)
 
@@ -177,6 +179,15 @@ module CustomsTariffImporter
       elsif text.match?(CHAPTER_NOTES_PATTERN)
         @note_lines = []
         @state = :collecting_chapter
+      elsif text.match?(ADDITIONAL_NOTES_PATTERN)
+        @note_lines = [text]
+        @state = :collecting_chapter
+      elsif text.match?(SUBHEADING_NOTES_PATTERN)
+        @note_lines = [text]
+        @state = :collecting_chapter
+      elsif text.match?(NUMBERED_NOTE_PATTERN)
+        @note_lines = [text]
+        @state = :collecting_chapter
       elsif (m = text.match(CHAPTER_PATTERN))
         finalize_chapter_note
         @current_chapter = sprintf('%02d', m[1].to_i)
@@ -195,7 +206,7 @@ module CustomsTariffImporter
         @note_lines = []
         @state = :skipping
       elsif text.match?(ADDITIONAL_NOTES_PATTERN)
-        # continue accumulating — additional chapter notes belong to the same chapter
+        @note_lines << text
       elsif (m = text.match(CHAPTER_PATTERN))
         finalize_chapter_note
         @current_chapter = sprintf('%02d', m[1].to_i)

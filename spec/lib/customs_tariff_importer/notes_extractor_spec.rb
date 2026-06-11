@@ -159,6 +159,7 @@ RSpec.describe CustomsTariffImporter::NotesExtractor do
         ])
 
         expect(result.chapters['01']).to include('Primary note.')
+        expect(result.chapters['01']).to include('Additional Chapter Notes')
         expect(result.chapters['01']).to include('Extra note.')
       end
 
@@ -178,6 +179,98 @@ RSpec.describe CustomsTariffImporter::NotesExtractor do
       it 'does not save a chapter with no notes' do
         result = parse(['CHAPTER 1', 'CHAPTER 2'])
         expect(result.chapters).to be_empty
+      end
+    end
+
+    describe 'boundary pattern anchoring' do
+      it 'does not treat an inline chapter reference within note text as a chapter boundary' do
+        result = parse([
+          'CHAPTER 72',
+          'Chapter Notes',
+          '1. Some definition.',
+          'Chapter 72 does not include products of heading 7301 or 7302.',
+          'More note text.',
+          'CHAPTER 73',
+          'Chapter Notes',
+          'Steel content.',
+        ])
+
+        expect(result.chapters['72']).to include('More note text.')
+        expect(result.chapters['73']).to include('Steel content.')
+      end
+
+      it 'does not treat an inline section reference within note text as a section boundary' do
+        result = parse([
+          'CHAPTER 5',
+          'Chapter Notes',
+          '1. Some definition.',
+          'Section II also covers related products.',
+          'More note text.',
+          'CHAPTER 6',
+          'Chapter Notes',
+          'Next chapter content.',
+        ])
+
+        expect(result.chapters['05']).to include('More note text.')
+        expect(result.chapters['06']).to include('Next chapter content.')
+      end
+    end
+
+    describe 'chapter notes without a "Chapter Notes" heading' do
+      it 'starts collecting from "Additional chapter notes" when it is the first heading' do
+        result = parse([
+          'CHAPTER 53',
+          'OTHER VEGETABLE TEXTILE FIBRES; PAPER YARN AND WOVEN FABRICS OF PAPER YARN',
+          'Additional chapter notes',
+          '1. (A) For the purposes of code 5306 10 90, the expression "put up for retail sale" means goods put up:',
+          '5306100000',
+        ])
+
+        expect(result.chapters['53']).to start_with('Additional chapter notes')
+        expect(result.chapters['53']).to include('1. (A) For the purposes of code 5306 10 90')
+        expect(result.chapters['53']).not_to include('5306100000')
+      end
+
+      it 'starts collecting from "Subheading note" when it is the first heading' do
+        result = parse([
+          'CHAPTER 52',
+          'COTTON',
+          'Subheading note',
+          "For the purposes of subheadings 5209.42 and 5211.42, the expression 'denim' means fabrics of yarns.",
+          '5201000000',
+        ])
+
+        expect(result.chapters['52']).to start_with('Subheading note')
+        expect(result.chapters['52']).to include("the expression 'denim' means fabrics of yarns.")
+        expect(result.chapters['52']).not_to include('5201000000')
+      end
+
+      it 'starts collecting from the first numbered note when there is no heading' do
+        result = parse([
+          'CHAPTER 30',
+          'PHARMACEUTICAL PRODUCTS',
+          '1. This chapter does not cover:',
+          '(a) foods or beverages (such as dietetic, diabetic or fortified foods).',
+          '3001000000',
+        ])
+
+        expect(result.chapters['30']).to start_with('1. This chapter does not cover:')
+        expect(result.chapters['30']).to include('(a) foods or beverages')
+        expect(result.chapters['30']).not_to include('3001000000')
+      end
+
+      it 'does not mistake a duty-rate percentage for a numbered note' do
+        result = parse([
+          'CHAPTER 1',
+          'LIVE ANIMALS',
+          '0.00%',
+          'CHAPTER 2',
+          'Chapter Notes',
+          'Meat content.',
+        ])
+
+        expect(result.chapters['01']).to be_nil
+        expect(result.chapters['02']).to include('Meat content.')
       end
     end
 
