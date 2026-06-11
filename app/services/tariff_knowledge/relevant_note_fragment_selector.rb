@@ -84,7 +84,7 @@ module TariffKnowledge
       # Each record is compressed-note metadata pointing to a source fragment and
       # explaining the relationship that made that fragment evidence for a code.
       fragment_evidence_records(note).filter_map do |evidence_record|
-        fragment_node = fragment_nodes_by_key[evidence_record['source_node_key']]
+        fragment_node = fragment_node_for(evidence_record)
         text = (evidence_record['source_context'].presence || fragment_node&.content).to_s.squish
         next if text.blank?
 
@@ -98,6 +98,12 @@ module TariffKnowledge
           why_relevant: reasons.join('; '),
         }
       end
+    end
+
+    def fragment_node_for(evidence_record)
+      return if evidence_record['source_context'].present? && evidence_record['source_title'].present?
+
+      fragment_nodes_by_key[evidence_record['source_node_key']]
     end
 
     def score_fragment(evidence_record, text)
@@ -183,10 +189,19 @@ module TariffKnowledge
     end
 
     def fragment_nodes_by_key
-      @fragment_nodes_by_key ||= Node.note_fragments.where(key: notes_by_item_id.values.flat_map { |note| fragment_evidence_records(note).pluck('source_node_key') }.compact.uniq).all.index_by(&:key)
+      @fragment_nodes_by_key ||= begin
+        keys = notes_by_item_id.values.flat_map { |note| fallback_fragment_keys(note) }.compact.uniq
+        keys.empty? ? {} : Node.note_fragments.where(key: keys).all.index_by(&:key)
+      end
     end
 
     def fragment_evidence_records(note) = Array(note.metadata.to_h['evidence'])
+
+    def fallback_fragment_keys(note)
+      fragment_evidence_records(note).filter_map do |evidence_record|
+        evidence_record['source_node_key'] if evidence_record['source_context'].blank? || evidence_record['source_title'].blank?
+      end
+    end
 
     def relevance_tokens = @relevance_tokens ||= tokenize(query)
 

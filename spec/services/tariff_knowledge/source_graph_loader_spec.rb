@@ -131,6 +131,44 @@ RSpec.describe TariffKnowledge::SourceGraphLoader do
       expect(edge_exists?(range_node, hidden_node, TariffKnowledge::Edge::EXPANDS_TO)).to be(false)
     end
 
+    it 'removes stale range expansion edges' do
+      hidden_node = create(
+        :tariff_knowledge_node,
+        key: 'goods_nomenclature:99003',
+        goods_nomenclature_sid: 99_003,
+        goods_nomenclature_item_id: '0101900000',
+      )
+      create(:hidden_goods_nomenclature, goods_nomenclature_item_id: hidden_node.goods_nomenclature_item_id)
+      range_node = create(
+        :tariff_knowledge_node,
+        node_type: TariffKnowledge::Node::RANGE,
+        key: 'range:heading:0101',
+        title: 'Heading 0101',
+        goods_nomenclature_sid: nil,
+        goods_nomenclature_item_id: nil,
+        producline_suffix: nil,
+        goods_nomenclature_type: nil,
+        metadata: Sequel.pg_jsonb_wrap({ 'range_type' => 'heading', 'code' => '0101' }),
+      )
+      create(
+        :tariff_knowledge_edge,
+        source_node: range_node,
+        target_node: hidden_node,
+        relationship_type: TariffKnowledge::Edge::EXPANDS_TO,
+      )
+      create(
+        :customs_tariff_chapter_note,
+        :approved,
+        customs_tariff_update: update,
+        chapter_id: '01',
+        content: 'Heading 0101 covers live horses.',
+      )
+
+      described_class.call
+
+      expect(edge_exists?(range_node, hidden_node, TariffKnowledge::Edge::EXPANDS_TO)).to be(false)
+    end
+
     it 'keeps list markers attached to the note text they introduce' do
       create(
         :customs_tariff_chapter_note,
@@ -318,6 +356,50 @@ RSpec.describe TariffKnowledge::SourceGraphLoader do
         .to eq('Section 1 notes')
       expect(TariffKnowledge::Node.by_key('note_source:customs_tariff_general_rule:1.31:1').first.title)
         .to eq('GIR 1')
+    end
+
+    it 'prunes note source nodes from older graph snapshots' do
+      old_source_node = create(
+        :tariff_knowledge_node,
+        node_type: TariffKnowledge::Node::NOTE_SOURCE,
+        key: 'note_source:customs_tariff_chapter_note:1.30:01',
+        title: 'Old Chapter 01 notes',
+        content: 'Old source content',
+        source_type: 'customs_tariff_chapter_note',
+        source_id: '01',
+        source_version: '1.30',
+        goods_nomenclature_sid: nil,
+        goods_nomenclature_item_id: nil,
+        producline_suffix: nil,
+        goods_nomenclature_type: nil,
+      )
+      old_fragment_node = create(
+        :tariff_knowledge_node,
+        :note_fragment,
+        key: 'note_fragment:customs_tariff_chapter_note:1.30:01:0001',
+        content: 'Old fragment content',
+        source_type: 'customs_tariff_chapter_note',
+        source_id: '01',
+        source_version: '1.30',
+      )
+      create(
+        :tariff_knowledge_edge,
+        source_node: old_source_node,
+        target_node: old_fragment_node,
+        relationship_type: TariffKnowledge::Edge::CONTAINS,
+      )
+      create(
+        :customs_tariff_chapter_note,
+        :approved,
+        customs_tariff_update: update,
+        chapter_id: '01',
+        content: 'Heading 0101 covers current horses.',
+      )
+
+      described_class.call
+
+      expect(TariffKnowledge::Node.by_key('note_source:customs_tariff_chapter_note:1.30:01').first).to be_nil
+      expect(TariffKnowledge::Node.by_key('note_fragment:customs_tariff_chapter_note:1.30:01:0001').first).to be_nil
     end
 
     it 'loads notes from the latest current approved update and ignores newer future approved updates' do

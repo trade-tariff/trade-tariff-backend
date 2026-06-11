@@ -88,6 +88,18 @@ RSpec.describe TariffKnowledge::RelevantNoteFragmentSelector do
     expect(emitted_text).not_to include(note_content)
   end
 
+  it 'does not load fragment nodes when metadata has context' do
+    queries = sql_queries do
+      described_class.call(
+        query:,
+        search_results:,
+        notes_by_item_id: { '9506911000' => note },
+      )
+    end
+
+    expect(queries.grep(/FROM "tariff_knowledge_nodes"/)).to be_empty
+  end
+
   it 'uses range metadata even when context text does not repeat the candidate code' do
     range_note = create_note_with_evidence(
       '9506911000',
@@ -242,5 +254,20 @@ RSpec.describe TariffKnowledge::RelevantNoteFragmentSelector do
       source_type:,
       source_id:,
     )
+  end
+
+  def sql_queries
+    queries = []
+    logger = Logger.new(StringIO.new)
+    logger.formatter = proc do |_severity, _datetime, _progname, message|
+      queries << message
+      nil
+    end
+
+    Sequel::Model.db.loggers << logger
+    yield
+    queries
+  ensure
+    Sequel::Model.db.loggers.delete(logger)
   end
 end

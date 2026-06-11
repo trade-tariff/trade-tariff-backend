@@ -28,7 +28,7 @@ module TariffKnowledge
     end
 
     def generate_for(declarable_node, evidence)
-      return if evidence.empty?
+      return mark_existing_note_stale(declarable_node) if evidence.empty?
 
       content = content_for(declarable_node, evidence)
       attributes = {
@@ -66,7 +66,7 @@ module TariffKnowledge
       range_nodes = nodes_by_id(expansion_edges.map(&:source_node_id), Node.where(node_type: Node::RANGE))
       reference_edges = Edge.by_relationship(Edge::REFERENCES).where(target_node_id: range_nodes.keys).all
       apply_edges = Edge.by_relationship(Edge::APPLIES_TO).where(target_node_id: declarable_node_ids).all
-      fragment_nodes = nodes_by_id((reference_edges + apply_edges).map(&:source_node_id), Node.note_fragments)
+      fragment_nodes = current_fragment_nodes((reference_edges + apply_edges).map(&:source_node_id))
       expansion_edges_by_target_id = expansion_edges.group_by(&:target_node_id)
       reference_edges_by_range_id = reference_edges.group_by(&:target_node_id)
       apply_edges_by_target_id = apply_edges.group_by(&:target_node_id)
@@ -103,6 +103,24 @@ module TariffKnowledge
     def nodes_by_id(ids, dataset)
       ids = ids.compact.uniq
       ids.empty? ? {} : dataset.where(id: ids).all.index_by(&:id)
+    end
+
+    def current_fragment_nodes(ids)
+      nodes_by_id(ids, Node.note_fragments).select do |_id, node|
+        current_source_version.blank? || node.source_version == current_source_version
+      end
+    end
+
+    def current_source_version
+      return @current_source_version if defined?(@current_source_version)
+
+      @current_source_version = TimeMachine.at(@time_machine_date ||= Time.current) do
+        CustomsTariffUpdate
+          .actual
+          .where(status: SourceGraphLoader::USABLE_UPDATE_STATUSES)
+          .order(Sequel.desc(:validity_start_date))
+          .get(:version)
+      end
     end
 
     def source_nodes_by_fragment_node_id(fragment_nodes)
@@ -216,13 +234,23 @@ module TariffKnowledge
 
     def upsert_note(declarable_node, attributes)
       note = CompressedNote[declarable_node.goods_nomenclature_sid]
-      return note if note&.manually_edited
+      return mark_note_stale_if_context_changed(note, attributes[:context_hash]) if note&.manually_edited
 
       if note
         note.update(attributes)
       else
         CompressedNote.create(attributes.merge(goods_nomenclature_sid: declarable_node.goods_nomenclature_sid))
       end
+    end
+
+    def mark_existing_note_stale(declarable_node)
+      CompressedNote[declarable_node.goods_nomenclature_sid]&.mark_stale!
+      nil
+    end
+
+    def mark_note_stale_if_context_changed(note, current_hash)
+      note.mark_stale! if note.context_stale?(current_hash)
+      note
     end
   end
 end
