@@ -44,11 +44,13 @@ module TariffKnowledge
       update = latest_approved_update
       return unless update
 
-      prune_non_current_source_nodes(update.version)
+      Node.db.transaction do
+        prune_non_current_source_nodes(update.version)
 
-      SOURCE_ASSOCIATIONS.each do |source_association|
-        sources_for(source_association, update).each do |source|
-          load_source(source_association, source)
+        SOURCE_ASSOCIATIONS.each do |source_association|
+          sources_for(source_association, update).each do |source|
+            load_source(source_association, source)
+          end
         end
       end
     end

@@ -106,9 +106,9 @@ module TariffKnowledge
     end
 
     def current_fragment_nodes(ids)
-      nodes_by_id(ids, Node.note_fragments).select do |_id, node|
-        current_source_version.blank? || node.source_version == current_source_version
-      end
+      dataset = Node.note_fragments
+      dataset = dataset.where(source_version: current_source_version) if current_source_version.present?
+      nodes_by_id(ids, dataset)
     end
 
     def current_source_version
