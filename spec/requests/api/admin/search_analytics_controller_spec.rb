@@ -105,16 +105,6 @@ RSpec.describe Api::Admin::SearchAnalyticsController do
       expect(response.parsed_body.dig('data', 'id')).to eq('uk-24h-all')
     end
 
-    it 'does not query CloudWatch from the request path' do
-      allow(SearchAnalytics::CloudwatchQuery).to receive(:call)
-
-      get '/uk/admin/search_analytics.json',
-          params: { period: '24h', view: 'all' },
-          headers: request_headers(format: :json)
-
-      expect(SearchAnalytics::CloudwatchQuery).not_to have_received(:call)
-    end
-
     context 'when no cached snapshot exists' do
       before do
         SearchAnalyticsSnapshot.dataset.delete

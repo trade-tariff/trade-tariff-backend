@@ -4,14 +4,15 @@ module SearchAnalytics
   class CloudwatchSnapshotQuery
     QUERY_POLL_INTERVAL_SECONDS = ENV.fetch('SEARCH_ANALYTICS_QUERY_POLL_INTERVAL_SECONDS', 1).to_f
     QUERY_MAX_POLLS = ENV.fetch('SEARCH_ANALYTICS_QUERY_MAX_POLLS', 60).to_i
+    IMPROVEMENT_TERM_LIMIT = 100
     TERMINAL_FAILURE_STATUSES = %w[Failed Cancelled Timeout].freeze
     SEARCH_LOG_GROUP_NAME = "platform-logs-#{TradeTariffBackend.environment}".freeze
-    SEARCH_EVENTS = %w[search_completed search_failed].freeze
     VIEW_SEARCH_TYPES = {
       'classic' => %w[classic],
       'internal' => %w[interactive internal],
     }.freeze
     VIEWS = %w[all classic internal].freeze
+    QueryError = Class.new(StandardError)
 
     def self.call(period:, client: self.client, now: Time.current)
       new(period:, client:, now:).call
@@ -43,7 +44,7 @@ module SearchAnalytics
     rescue Aws::Errors::ServiceError
       raise
     rescue StandardError => e
-      raise CloudwatchQuery::QueryError, e.message
+      raise QueryError, e.message
     end
 
     private
@@ -66,12 +67,12 @@ module SearchAnalytics
         response = client.get_query_results(query_id:)
         return response.results if response.status == 'Complete'
 
-        raise CloudwatchQuery::QueryError, "CloudWatch query #{response.status}" if TERMINAL_FAILURE_STATUSES.include?(response.status)
+        raise QueryError, "CloudWatch query #{response.status}" if TERMINAL_FAILURE_STATUSES.include?(response.status)
 
         Kernel.sleep QUERY_POLL_INTERVAL_SECONDS
       end
 
-      raise CloudwatchQuery::QueryError, 'CloudWatch query timed out while polling'
+      raise QueryError, 'CloudWatch query timed out while polling'
     end
 
     def parsed_row(row)
@@ -193,7 +194,7 @@ module SearchAnalytics
         <<~QUERY,
           | stats count(*) as zero_results by query, search_type
           | sort zero_results desc
-          | limit #{SnapshotBuilder::IMPROVEMENT_TERM_LIMIT * VIEWS.size}
+          | limit #{IMPROVEMENT_TERM_LIMIT * VIEWS.size}
         QUERY
       ].compact.join
     end
@@ -295,7 +296,7 @@ module SearchAnalytics
           .flat_map { |terms|
             terms
               .sort_by { |term| [-term['zero_results'], term['query']] }
-              .first(SnapshotBuilder::IMPROVEMENT_TERM_LIMIT)
+              .first(IMPROVEMENT_TERM_LIMIT)
           }
           .sort_by { |term| [term['term_type'], -term['zero_results'], term['query']] }
       end
