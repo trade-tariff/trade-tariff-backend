@@ -18,9 +18,7 @@ module Api
       end
 
       def suggestions
-        suggestions = matching_suggestions
-        results = Api::V2::SearchSuggestionSerializer.new(suggestions).serializable_hash
-
+        results = Api::V2::SearchSuggestionSerializer.new(matching_suggestions).serializable_hash
         render json: results
       end
 
