@@ -85,6 +85,16 @@ RSpec.describe SearchAnalytics::CloudwatchSnapshotQuery do
         query_string: a_string_including('results_type = "opensearch" or results_type = "vector" or results_type = "hybrid"'),
       ),
     ).twice
+    expect(client).to have_received(:start_query).with(
+      hash_including(
+        query_string: a_string_including('max(@timestamp) as @t by request_id'),
+      ),
+    ).twice
+    expect(client).to have_received(:start_query).with(
+      hash_including(
+        query_string: a_string_including('datefloor(@t, 1h) as @timestamp'),
+      ),
+    ).twice
     expect(client).not_to have_received(:start_query).with(
       hash_including(
         query_string: a_string_including('selected_count'),

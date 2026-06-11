@@ -88,6 +88,10 @@ module SearchAnalytics
       period.bucket_size == 'hour' ? 'bin(1h)' : 'bin(1d)'
     end
 
+    def bucket_period
+      period.bucket_size == 'hour' ? '1h' : '1d'
+    end
+
     def base_search_filter
       'filter service = "search" and event in ["search_completed", "search_failed"]'
     end
@@ -150,10 +154,15 @@ module SearchAnalytics
 
     def selection_trend_queries
       selection_queries.transform_values do |query|
-        query.sub(
-          '| stats sum(result_selections) as selected, sum(selectable_searches) as selectable',
-          "| stats sum(result_selections) as selected by #{bucket_expression}",
-        )
+        query
+          .sub(
+            'sum(selectable_search_marker) as selectable_searches by request_id',
+            'sum(selectable_search_marker) as selectable_searches, max(@timestamp) as @t by request_id',
+          )
+          .sub(
+            '| stats sum(result_selections) as selected, sum(selectable_searches) as selectable',
+            "| stats sum(result_selections) as selected by datefloor(@t, #{bucket_period}) as @timestamp",
+          )
       end
     end
 
