@@ -14,74 +14,64 @@ class TariffChangesService
     end
 
     def call
-      package = Axlsx::Package.new
-      package.use_shared_strings = true
-      @workbook = package.workbook
+      @workbook = FastExcel.open
+      sheet = workbook.add_worksheet('Commodity watch list')
 
-      workbook.add_worksheet(name: 'Commodity watch list') do |sheet|
-        setup_sheet_formatting(sheet)
-        add_headers(sheet)
-        stream_data_rows(sheet)
-        add_table_styling(sheet)
-        set_column_widths(sheet)
-      end
+      setup_sheet_formatting(sheet)
+      set_column_widths(sheet)
+      add_headers(sheet)
+      stream_data_rows(sheet)
+      add_table_styling(sheet)
 
-      package
+      workbook
     end
 
     private
 
     def setup_sheet_formatting(sheet)
-      sheet.sheet_format_pr.default_row_height = 40.0
-      sheet.sheet_format_pr.custom_height = false
+      sheet.set_default_row(40, 0)
     end
 
     def add_headers(sheet)
-      # Title row
-      sheet.add_row(['Changes to your commodity watch list'], style: workbook.styles.add_style(b: true, sz: 24))
-      sheet.rows[0].height = 40
+      sheet.append_row(['Changes to your commodity watch list'], cell_styles[:title])
+      sheet.set_row(0, 40, cell_styles[:title])
 
-      # Subtitle row
-      sheet.add_row(["Published #{date}"], style: workbook.styles.add_style(b: false, sz: 16))
-      sheet.rows[1].height = 25
+      sheet.append_row(["Published #{date}"], cell_styles[:subtitle])
+      sheet.set_row(1, 25, cell_styles[:subtitle])
 
-      # Empty row
-      sheet.add_row([''])
-      sheet.rows[2].height = 20
+      sheet.append_row([''])
+      sheet.write_blank(2, 0, workbook.add_format)
+      sheet.set_row(2, 20, nil)
 
-      # Pre-header row
-      pre_header_styles = [cell_styles[:pre_header]] * 13
-      sheet.add_row(['Is this change relevant to your business (useful filters)', '', '', '', '', 'Impacted Commodity details', '', '', 'Change details', '', '', 'Useful Links', ''], style: pre_header_styles)
-      sheet.rows[3].height = 40
+      sheet.append_row(
+        ['Is this change relevant to your business (useful filters)', '', '', '', '', 'Impacted Commodity details', '', '', 'Change details', '', '', 'Useful Links', ''],
+        cell_styles[:pre_header],
+      )
+      sheet.set_row(3, 40, cell_styles[:pre_header])
+      sheet.merge_range(3, 0, 3, 4, 'Is this change relevant to your business (useful filters)', cell_styles[:pre_header])
+      sheet.merge_range(3, 5, 3, 7, 'Impacted Commodity details', cell_styles[:pre_header])
+      sheet.merge_range(3, 8, 3, 10, 'Change details', cell_styles[:pre_header])
+      sheet.merge_range(3, 11, 3, 12, 'Useful Links', cell_styles[:pre_header])
 
-      # Merge pre-header cells
-      sheet.merge_cells('A4:E4')
-      sheet.merge_cells('F4:H4')
-      sheet.merge_cells('I4:K4')
-      sheet.merge_cells('L4:M4')
-
-      # Header row
-      header_styles = [cell_styles[:header]] * 13
-      sheet.add_row(excel_header_row, style: header_styles)
-      sheet.rows[4].height = 40
+      sheet.append_row(excel_header_row, cell_styles[:header])
+      sheet.set_row(4, 40, cell_styles[:header])
     end
 
     def stream_data_rows(sheet)
       @change_records.each_slice(100) do |batch|
         batch.each do |record|
-          row = sheet.add_row(
+          sheet.append_row(
             build_excel_row(record),
-            types: [:string] * 13,
-            style: build_row_styles,
+            build_row_styles,
           )
-
-          add_hyperlinks(sheet, row, record)
         end
       end
     end
 
     def set_column_widths(sheet)
-      sheet.column_widths(*excel_column_widths)
+      excel_column_widths.each_with_index do |width, index|
+        sheet.set_column_width(index, width)
+      end
     end
 
     def excel_header_row
@@ -122,51 +112,58 @@ class TariffChangesService
 
     def cell_styles
       @cell_styles ||= {
-        pre_header: workbook.styles.add_style(
-          b: true,
-          bg_color: '215c98',
-          fg_color: 'ffffff',
-          border: { style: :thin, color: '000000' },
-          alignment: { horizontal: :left, vertical: :center, wrap_text: true },
-          sz: 16,
+        title: workbook.add_format(bold: true, font_size: 24),
+        subtitle: workbook.add_format(font_size: 16),
+        pre_header: workbook.add_format(
+          bold: true,
+          bg_color: 0x215c98,
+          font_color: 0xffffff,
+          border: :border_thin,
+          align: { h: :left, v: :center },
+          text_wrap: true,
+          font_size: 16,
         ),
-        header: workbook.styles.add_style(
-          b: true,
-          alignment: { horizontal: :left, vertical: :center, wrap_text: true },
+        header: workbook.add_format(
+          bold: true,
+          align: { h: :left, v: :center },
+          text_wrap: true,
         ),
-        date: workbook.styles.add_style(
-          num_fmt: 14,
-          border: { style: :thin, color: 'D3D3D3' },
-          alignment: { horizontal: :center, vertical: :center },
+        date: workbook.add_format(
+          num_format: 'yyyy-mm-dd',
+          border: :border_thin,
+          align: { h: :center, v: :center },
         ),
-        commodity_code: workbook.styles.add_style(
-          format_code: '0000000000',
-          border: { style: :thin, color: 'D3D3D3' },
-          alignment: { horizontal: :center, vertical: :center },
+        commodity_code: workbook.add_format(
+          num_format: '0000000000',
+          border: :border_thin,
+          align: { h: :center, v: :center },
         ),
-        chapter: workbook.styles.add_style(
-          format_code: '00',
-          border: { style: :thin, color: 'D3D3D3' },
-          alignment: { horizontal: :center, vertical: :center },
+        chapter: workbook.add_format(
+          num_format: '00',
+          border: :border_thin,
+          align: { h: :center, v: :center },
         ),
-        text: workbook.styles.add_style(
-          border: { style: :thin, color: 'D3D3D3' },
-          alignment: { horizontal: :left, vertical: :center, wrap_text: true },
+        text: workbook.add_format(
+          border: :border_thin,
+          align: { h: :left, v: :center },
+          text_wrap: true,
         ),
-        center_text: workbook.styles.add_style(
-          border: { style: :thin, color: 'D3D3D3' },
-          alignment: { horizontal: :center, vertical: :center },
+        center_text: workbook.add_format(
+          border: :border_thin,
+          align: { h: :center, v: :center },
         ),
-        hyperlink: workbook.styles.add_style(
-          fg_color: '0563C1',
-          u: true,
-          border: { style: :thin, color: 'D3D3D3' },
-          alignment: { horizontal: :left, vertical: :center, wrap_text: true },
+        hyperlink: workbook.add_format(
+          font_color: 0x0563C1,
+          underline: :underline_single,
+          border: :border_thin,
+          align: { h: :left, v: :center },
+          text_wrap: true,
         ),
-        bold_text: workbook.styles.add_style(
-          b: true,
-          border: { style: :thin, color: 'D3D3D3' },
-          alignment: { horizontal: :left, vertical: :center, wrap_text: true },
+        bold_text: workbook.add_format(
+          bold: true,
+          border: :border_thin,
+          align: { h: :left, v: :center },
+          text_wrap: true,
         ),
       }
     end
@@ -201,35 +198,16 @@ class TariffChangesService
         record[:commodity_code_description],
         record[:type_of_change],
         record[:change_detail],
-        record[:date_of_effect],
-        record[:ott_url],
-        record[:api_url],
+        record[:date_of_effect].to_s,
+        record[:ott_url] ? FastExcel::URL.new(record[:ott_url]) : nil,
+        record[:api_url] ? FastExcel::URL.new(record[:api_url]) : nil,
       ]
-    end
-
-    def add_hyperlinks(sheet, row, record)
-      ott_cell = row.cells[11]
-      api_cell = row.cells[12]
-
-      sheet.add_hyperlink(location: record[:ott_url], ref: ott_cell) if record[:ott_url]
-      sheet.add_hyperlink(location: record[:api_url], ref: api_cell) if record[:api_url]
     end
 
     def add_table_styling(sheet)
       return if @change_records.empty?
 
-      header_row = 5
-      last_data_row = header_row + @change_records.length
-      last_col_letter = ('A'.ord + excel_header_row.size - 1).chr
-      table_range = "A#{header_row}:#{last_col_letter}#{last_data_row}"
-
-      sheet.add_table table_range, style_info: {
-        name: 'TableStyleMedium2',
-        show_first_column: false,
-        show_last_column: false,
-        show_row_stripes: true,
-        show_column_stripes: false,
-      }
+      sheet.add_table(4, 0, 4 + @change_records.length, excel_header_row.size - 1, style: 'TableStyleMedium2', columns: excel_header_row)
     end
   end
 end

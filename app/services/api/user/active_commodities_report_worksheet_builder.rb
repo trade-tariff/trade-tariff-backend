@@ -38,13 +38,12 @@ module Api
       end
 
       def call
-        workbook.add_worksheet(name: SHEET_NAME) do |sheet|
-          add_intro_rows(sheet)
-          add_headers(sheet)
-          add_rows(sheet)
-          add_table_styling(sheet)
-          set_column_widths(sheet)
-        end
+        sheet = workbook.add_worksheet(SHEET_NAME)
+        add_intro_rows(sheet)
+        add_headers(sheet)
+        add_rows(sheet)
+        add_table_styling(sheet)
+        set_column_widths(sheet)
       end
 
       private
@@ -61,16 +60,15 @@ module Api
       end
 
       def add_headers(sheet)
-        header_row = sheet.add_row(HEADERS, style: full_width_styles(table_styles.fetch(:header)))
-        header_row.height = TABLE_HEADER_ROW_HEIGHT
+        sheet.append_row(HEADERS, full_width_styles(table_styles.fetch(:header)))
+        sheet.set_row(TABLE_START_ROW - 1, TABLE_HEADER_ROW_HEIGHT, table_styles.fetch(:header))
       end
 
       def add_rows(sheet)
         report_rows.each do |row|
-          sheet.add_row(
+          sheet.append_row(
             ["#{row[:code]}\n ", row[:chapter], description_cell_value(row[:description]), row[:status]],
-            types: [:string, :string, nil, :string],
-            style: row_styles(row[:status]),
+            row_styles(row[:status]),
           )
         end
       end
@@ -78,56 +76,50 @@ module Api
       def add_table_styling(sheet)
         return if report_rows.empty?
 
-        last_row = TABLE_START_ROW + report_rows.length - 1
-        sheet.add_table(
-          "A#{TABLE_START_ROW}:D#{last_row}",
-          name: TABLE_NAME,
-          style_info: {
-            name: 'TableStyleLight15',
-            show_first_column: false,
-            show_last_column: false,
-            show_row_stripes: true,
-            show_column_stripes: false,
-          },
-        )
+        header_row_index = TABLE_START_ROW - 1
+        last_row_index = header_row_index + report_rows.length - 1
+        sheet.add_table(header_row_index, 0, last_row_index, HEADERS.length - 1, name: TABLE_NAME, style: 'TableStyleLight15', columns: HEADERS)
       end
 
       def set_column_widths(sheet)
-        sheet.column_widths(*COLUMN_WIDTHS)
+        COLUMN_WIDTHS.each_with_index do |width, index|
+          sheet.set_column_width(index, width)
+        end
       end
 
       def add_title_row(sheet, title_style)
         downloaded_on = TimeMachine.now { Time.zone.today.strftime('%d/%m/%Y') }
-        title_row = sheet.add_row(
+        sheet.append_row(
           intro_row_values('Your commodities', "(#{downloaded_on})"),
-          style: full_width_styles(title_style),
+          full_width_styles(title_style),
         )
-        title_row.height = TITLE_ROW_HEIGHT
+        sheet.set_row(0, TITLE_ROW_HEIGHT, title_style)
       end
 
       def add_instruction_rows(sheet, styles)
         instruction_rows_data.each_with_index do |row_data, index|
           style = index.zero? ? styles.fetch(:instruction_first) : styles.fetch(:instruction)
-          row = sheet.add_row(
+          sheet.append_row(
             [row_data[:text], nil, nil, nil],
-            style: [style, styles.fetch(:blank), styles.fetch(:blank), styles.fetch(:blank)],
+            [style, styles.fetch(:blank), styles.fetch(:blank), styles.fetch(:blank)],
           )
-          row.height = index.zero? ? FIRST_INSTRUCTION_ROW_HEIGHT : INSTRUCTION_LINE_HEIGHT
+          sheet.set_row(index + 1, index.zero? ? FIRST_INSTRUCTION_ROW_HEIGHT : INSTRUCTION_LINE_HEIGHT, style)
         end
       end
 
       def add_upload_row(sheet, styles)
-        upload_row = sheet.add_row(
-          ['Replace all commodities (upload)', '', '', ''],
-          style: [styles.fetch(:upload_link), styles.fetch(:blank), styles.fetch(:blank), styles.fetch(:blank)],
+        row_index = sheet.last_row_number + 1
+        sheet.append_row(
+          ['', '', '', ''],
+          [styles.fetch(:upload_link), styles.fetch(:blank), styles.fetch(:blank), styles.fetch(:blank)],
         )
-        upload_row.height = REPLACE_LINK_ROW_HEIGHT
-        sheet.add_hyperlink(location: REPLACE_ALL_COMMODITIES_UPLOAD_URL, ref: upload_row.cells[0])
+        sheet.set_row(row_index, REPLACE_LINK_ROW_HEIGHT, styles.fetch(:upload_link))
+        sheet.write_url_opt(row_index, 0, REPLACE_ALL_COMMODITIES_UPLOAD_URL, styles.fetch(:upload_link), 'Replace all commodities (upload)', nil)
       end
 
       def add_blank_bottom_row(sheet, blank_style)
-        blank_bottom_row = sheet.add_row(blank_intro_row_values, style: full_width_styles(blank_style))
-        blank_bottom_row.height = BLANK_ROW_HEIGHT
+        sheet.append_row(blank_intro_row_values, full_width_styles(blank_style))
+        sheet.set_row(sheet.last_row_number, BLANK_ROW_HEIGHT, blank_style)
       end
 
       def intro_styles
@@ -142,31 +134,31 @@ module Api
         )
 
         {
-          title: workbook.styles.add_style(
-            b: true,
-            sz: 24,
-            fg_color: DEFAULT_DARK_COLOR,
-            bg_color: WHITE_COLOR,
-            alignment: { vertical: :top },
+          title: workbook.add_format(
+            bold: true,
+            font_size: 24,
+            font_color: color(DEFAULT_DARK_COLOR),
+            bg_color: color(WHITE_COLOR),
+            align: { v: :top },
           ),
-          instruction: workbook.styles.add_style(
-            intro_text_style_options.merge(sz: 14),
+          instruction: workbook.add_format(
+            fast_excel_style_options(intro_text_style_options.merge(sz: 14)),
           ),
-          instruction_first: workbook.styles.add_style(
-            intro_text_style_options.merge(sz: 16, b: true, alignment: { vertical: :bottom }),
+          instruction_first: workbook.add_format(
+            fast_excel_style_options(intro_text_style_options.merge(sz: 16, b: true, alignment: { vertical: :bottom })),
           ),
-          blank: workbook.styles.add_style(bg_color: WHITE_COLOR),
-          upload_link: workbook.styles.add_style(
-            b: true,
-            sz: ROW_FONT_SIZE,
-            u: true,
-            fg_color: WHITE_COLOR,
-            bg_color: UPLOAD_LINK_BACKGROUND_COLOR,
-            alignment: {
-              horizontal: :center,
-              vertical: :center,
-              indent: 1,
+          blank: workbook.add_format(bg_color: color(WHITE_COLOR)),
+          upload_link: workbook.add_format(
+            bold: true,
+            font_size: ROW_FONT_SIZE,
+            underline: :underline_single,
+            font_color: color(WHITE_COLOR),
+            bg_color: color(UPLOAD_LINK_BACKGROUND_COLOR),
+            align: {
+              h: :center,
+              v: :center,
             },
+            indent: 1,
           ),
         }
       end
@@ -177,27 +169,30 @@ module Api
 
       def build_table_styles
         {
-          header: workbook.styles.add_style(
-            b: true,
-            sz: HEADER_FONT_SIZE,
-            fg_color: WHITE_COLOR,
-            bg_color: HEADER_BACKGROUND_COLOR,
-            alignment: { horizontal: :left, vertical: :center, indent: CELL_INDENT },
+          header: workbook.add_format(
+            bold: true,
+            font_size: HEADER_FONT_SIZE,
+            font_color: color(WHITE_COLOR),
+            bg_color: color(HEADER_BACKGROUND_COLOR),
+            align: { h: :left, v: :center },
+            indent: CELL_INDENT,
           ),
-          commodity_code: workbook.styles.add_style(base_text_style_options(bold: true)),
-          description: workbook.styles.add_style(base_text_style_options),
-          chapter: workbook.styles.add_style(base_text_style_options),
+          commodity_code: workbook.add_format(fast_excel_style_options(base_text_style_options(bold: true))),
+          description: workbook.add_format(fast_excel_style_options(base_text_style_options)),
+          chapter: workbook.add_format(fast_excel_style_options(base_text_style_options)),
           statuses: {
-            ActiveCommoditiesReportService::ACTIVE => workbook.styles.add_style(
-              status_style_options(ACTIVE_BACKGROUND_COLOR, ACTIVE_FONT_COLOR),
+            ActiveCommoditiesReportService::ACTIVE => workbook.add_format(
+              fast_excel_style_options(status_style_options(ACTIVE_BACKGROUND_COLOR, ACTIVE_FONT_COLOR)),
             ),
-            ActiveCommoditiesReportService::EXPIRED => workbook.styles.add_style(
-              status_style_options(EXPIRED_BACKGROUND_COLOR, EXPIRED_FONT_COLOR),
+            ActiveCommoditiesReportService::EXPIRED => workbook.add_format(
+              fast_excel_style_options(status_style_options(EXPIRED_BACKGROUND_COLOR, EXPIRED_FONT_COLOR)),
             ),
-            ActiveCommoditiesReportService::ERROR_FROM_UPLOAD => workbook.styles.add_style(
-              status_style_options(
-                ERROR_FROM_UPLOAD_BACKGROUND_COLOR,
-                ERROR_FROM_UPLOAD_FONT_COLOR,
+            ActiveCommoditiesReportService::ERROR_FROM_UPLOAD => workbook.add_format(
+              fast_excel_style_options(
+                status_style_options(
+                  ERROR_FROM_UPLOAD_BACKGROUND_COLOR,
+                  ERROR_FROM_UPLOAD_FONT_COLOR,
+                ),
               ),
             ),
           },
@@ -269,26 +264,56 @@ module Api
       end
 
       def build_upload_instructions_rich_text
-        rich_text = Axlsx::RichText.new
-        rich_text.add_run('You can then upload it to update your commodity watchlist. ', sz: 14)
-        rich_text.add_run('Ensure all codes are listed in column A.', b: true, sz: 14)
-        rich_text
+        FastExcel::RichString.new([
+          { text: 'You can then upload it to update your commodity watchlist. ' },
+          { text: 'Ensure all codes are listed in column A.', format: workbook.add_format(bold: true, font_size: 14) },
+        ])
       end
 
       def build_hierarchy_rich_text(hierarchy_levels, has_heading:)
         last_level = hierarchy_levels.last.to_s
-        rich_text = Axlsx::RichText.new
+        fragments = []
 
         if has_heading
           hierarchy_levels[0...-1].each do |level|
-            rich_text.add_run("#{BULLET_PREFIX}#{level}\n")
+            fragments << { text: "#{BULLET_PREFIX}#{level}\n" }
           end
-          rich_text.add_run("\n")
+          fragments << { text: "\n" }
         end
 
-        rich_text.add_run(last_level, b: true)
-        rich_text.add_run("\n")
-        rich_text
+        fragments << { text: last_level, format: hierarchy_level_format }
+        fragments << { text: "\n" }
+        FastExcel::RichString.new(fragments)
+      end
+
+      def hierarchy_level_format
+        @hierarchy_level_format ||= workbook.add_format(bold: true)
+      end
+
+      def fast_excel_style_options(options)
+        style_options = {
+          font_size: options[:sz],
+          font_color: color(options[:fg_color]),
+          bg_color: color(options[:bg_color]),
+          align: fast_excel_alignment(options.dig(:alignment, :horizontal), options.dig(:alignment, :vertical)),
+          indent: options.dig(:alignment, :indent),
+        }.compact
+        style_options[:bold] = true if options[:b]
+        style_options[:text_wrap] = true if options.dig(:alignment, :wrap_text)
+        style_options
+      end
+
+      def fast_excel_alignment(horizontal, vertical)
+        {}.tap do |alignment|
+          alignment[:h] = horizontal if horizontal
+          alignment[:v] = vertical if vertical
+        end
+      end
+
+      def color(argb)
+        return unless argb
+
+        argb.to_s.delete_prefix('FF').to_i(16)
       end
     end
   end

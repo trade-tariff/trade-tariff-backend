@@ -2,14 +2,12 @@ RSpec.describe Api::User::TariffChangesController do
   include_context 'with user API authentication'
 
   let(:date) { Date.parse('2025-10-28') }
-  let(:package) { instance_double(Axlsx::Package) }
-  let(:stream) { StringIO.new('mock excel data') }
+  let(:workbook) { instance_double(Libxlsxwriter::Workbook, read_string: 'mock excel data') }
 
   describe '#download' do
     context 'when there are changes' do
       before do
-        allow(TariffChangesService).to receive(:generate_report_for).with(date, user).and_return(package)
-        allow(package).to receive(:to_stream).and_return(stream)
+        allow(TariffChangesService).to receive(:generate_report_for).with(date, user).and_return(workbook)
       end
 
       it 'calls TariffChangesService with the correct date and user' do
@@ -49,8 +47,7 @@ RSpec.describe Api::User::TariffChangesController do
 
     context 'when as_of param is not provided' do
       before do
-        allow(TariffChangesService).to receive(:generate_report_for).with(Time.zone.yesterday, user).and_return(package)
-        allow(package).to receive(:to_stream).and_return(stream)
+        allow(TariffChangesService).to receive(:generate_report_for).with(Time.zone.yesterday, user).and_return(workbook)
       end
 
       it 'defaults to yesterday' do
@@ -66,8 +63,7 @@ RSpec.describe Api::User::TariffChangesController do
       let(:custom_date) { Date.parse('2024-12-15') }
 
       before do
-        allow(TariffChangesService).to receive(:generate_report_for).with(custom_date, user).and_return(package)
-        allow(package).to receive(:to_stream).and_return(stream)
+        allow(TariffChangesService).to receive(:generate_report_for).with(custom_date, user).and_return(workbook)
       end
 
       it 'uses the provided date' do

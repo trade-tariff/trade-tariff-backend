@@ -17,15 +17,14 @@ module Api
       end
 
       def call
-        package = Axlsx::Package.new
-        package.use_shared_strings = true
+        workbook = FastExcel.open
 
         ActiveCommoditiesReportWorksheetBuilder.call(
-          workbook: package.workbook,
+          workbook:,
           report_rows: report_rows,
         )
 
-        package
+        workbook
       end
 
       private

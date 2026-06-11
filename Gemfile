@@ -34,8 +34,7 @@ gem 'sidekiq-scheduler'
 gem 'opensearch-ruby'
 
 # Reporting
-gem 'caxlsx'
-gem 'fast_excel'
+gem 'fast_excel', git: 'https://github.com/willfish/fast_excel.git', branch: 'HMRC-1866-write-rich-string'
 
 # Diffing
 gem 'diff-lcs'

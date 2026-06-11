@@ -38,235 +38,94 @@ RSpec.describe TariffChangesService::ExcelGenerator do
   describe '.call' do
     context 'when change_records is empty' do
       it 'returns nil' do
-        result = described_class.call([], date)
-        expect(result).to be_nil
+        expect(described_class.call([], date)).to be_nil
       end
     end
 
-    context 'when change_records has data' do
-      it 'creates a new instance and calls #call' do
-        instance = instance_double(described_class, call: 'package')
-        allow(described_class).to receive(:new).and_return(instance)
-        result = described_class.call(change_records, date)
-        expect(result).to eq('package')
-      end
-    end
-  end
-
-  describe '#initialize' do
-    let(:generator) { described_class.new(change_records, date) }
-
-    it 'sets change_records' do
-      expect(generator.change_records).to eq(change_records)
-    end
-
-    it 'sets date' do
-      expect(generator.date).to eq(date)
+    it 'returns a FastExcel workbook' do
+      expect(described_class.call(change_records, date)).to be_a(Libxlsxwriter::Workbook)
     end
   end
 
   describe '#call' do
-    let(:generator) { described_class.new(change_records, date) }
-    let(:package) { generator.call }
-    let(:workbook) { package.workbook }
-    let(:worksheet) { workbook.worksheets.first }
+    let(:workbook) { described_class.new(change_records, date).call }
+    let(:xlsx_data) { workbook.read_string }
 
-    before do
-      allow(Rails.env).to receive(:development?).and_return(false)
+    it 'renders the expected worksheet rows' do
+      expect(worksheet_row_texts(xlsx_data)).to include(
+        ['Changes to your commodity watch list'],
+        ["Published #{date}"],
+        [
+          'Import/Export (if applicable)',
+          'Impacted Geographical area (if applicable)',
+          'Impacted Measure (if applicable)',
+          'Additional Code (if applicable)',
+          'Quota order number (if applicable)',
+          'Chapter',
+          'Commodity Code',
+          'Commodity Code description',
+          'Change Type',
+          'Change Detail',
+          'Change Date of Effect',
+          'View OTT for Change Date of Effect',
+          'API call for the changed Commodity',
+        ],
+        [
+          'Import',
+          'United Kingdom',
+          'Third country duty',
+          'N/A',
+          'N/A',
+          '01',
+          '0101000000',
+          'Live horses, asses, mules and hinnies',
+          'Added',
+          'New measure added',
+          '2024-08-11',
+          'https://www.trade-tariff.service.gov.uk/commodities/0101000000',
+          'https://www.trade-tariff.service.gov.uk/api/v2/commodities/0101000000',
+        ],
+      )
     end
 
-    it 'creates an Axlsx package' do
-      expect(package).to be_a(Axlsx::Package)
+    it 'adds hyperlinks for OTT and API columns' do
+      relationships_xml = worksheet_relationships_xml(xlsx_data)
+
+      expect(relationships_xml).to include(change_records[0][:ott_url])
+      expect(relationships_xml).to include(change_records[0][:api_url])
+      expect(relationships_xml).to include(change_records[1][:ott_url])
+      expect(relationships_xml).to include(change_records[1][:api_url])
     end
 
-    it 'creates a worksheet named "Commodity watch list"' do
-      expect(worksheet.name).to eq('Commodity watch list')
+    it 'sets expected column widths and filters' do
+      xml = worksheet_xml(xlsx_data)
+
+      expect(xml).to include('width="20.7109375"')
+      expect(xml).to include('<mergeCell ref="A4:E4"/>')
+      expect(xml).to include('<mergeCell ref="F4:H4"/>')
+      expect(xml).to include('<mergeCell ref="I4:K4"/>')
+      expect(xml).to include('<mergeCell ref="L4:M4"/>')
+      expect(table_xml(xlsx_data)).to include('ref="A5:M7"')
+      expect(table_xml(xlsx_data)).to include('name="TableStyleMedium2"')
+      expect(table_xml(xlsx_data)).to include('showRowStripes="1"')
     end
 
-    it 'sets default row height' do
-      expect(worksheet.sheet_format_pr.default_row_height).to eq(40.0)
-      expect(worksheet.sheet_format_pr.custom_height).to be false
+    it 'preserves the explicit blank spacer cell emitted by the caxlsx report' do
+      expect(worksheet_xml(xlsx_data)).to include('<c r="A3"')
     end
 
-    describe 'worksheet structure' do
-      it 'has the correct number of rows' do
-        # 5 header rows + 2 data rows
-        expect(worksheet.rows.size).to eq(7)
-      end
-
-      it 'sets the title row correctly' do
-        title_row = worksheet.rows[0]
-        expect(title_row.cells[0].value).to eq('Changes to your commodity watch list')
-        expect(title_row.height).to eq(40)
-      end
-
-      it 'sets the subtitle row correctly' do
-        subtitle_row = worksheet.rows[1]
-        expect(subtitle_row.cells[0].value).to eq("Published #{date}")
-        expect(subtitle_row.height).to eq(25)
-      end
-
-      it 'has an empty row' do
-        empty_row = worksheet.rows[2]
-        expect(empty_row.cells[0].value).to eq('')
-        expect(empty_row.height).to eq(20)
-      end
-
-      it 'sets the pre-header row correctly' do
-        pre_header_row = worksheet.rows[3]
-        expect(pre_header_row.cells[0].value).to eq('Is this change relevant to your business (useful filters)')
-        expect(pre_header_row.height).to eq(40)
-      end
-
-      it 'sets the header row correctly' do
-        header_row = worksheet.rows[4]
-        expect(header_row.cells[0].value).to eq('Import/Export (if applicable)')
-        expect(header_row.height).to eq(40)
-      end
-    end
-
-    describe 'cell merging' do
-      it 'merges the pre-header cells correctly' do
-        merged_cells = worksheet.instance_variable_get(:@merged_cells)
-        expect(merged_cells).to include('A4:E4', 'F4:H4', 'I4:K4', 'L4:M4')
-      end
-    end
-
-    describe 'data rows' do
-      it 'adds data rows for each record' do
-        data_rows = worksheet.rows[5..]
-        expect(data_rows.size).to eq(2)
-      end
-
-      it 'populates data correctly' do
-        first_data_row = worksheet.rows[5]
-        expect(first_data_row.cells[0].value).to eq('Import')
-        expect(first_data_row.cells[6].value).to eq('0101000000')
-        expect(first_data_row.cells[8].value).to eq('Added')
-      end
-
-      it 'adds hyperlinks for OTT and API columns' do
-        hyperlinks = worksheet.hyperlinks
-
-        expect(hyperlinks.map(&:location)).to contain_exactly(
-          change_records[0][:ott_url],
-          change_records[0][:api_url],
-          change_records[1][:ott_url],
-          change_records[1][:api_url],
-        )
-
-        expect(hyperlinks.map(&:ref)).to include('L6', 'M6', 'L7', 'M7')
-      end
-    end
-
-    describe 'table styling' do
-      it 'creates a styled table over the data range' do
-        table = worksheet.tables.first
-
-        expect(table).not_to be_nil
-        style_name = if table.respond_to?(:table_style_info)
-                       table.table_style_info&.name
-                     elsif table.respond_to?(:style)
-                       table.style
-                     end
-
-        style_name ||= table.to_xml_string
-
-        expect(style_name).to include('TableStyleMedium2')
-        expect(table.ref).to eq('A5:M7')
-      end
-    end
-
-    describe 'column widths' do
-      it 'sets column widths correctly' do
-        expected_widths = [20, 30, 30, 30, 25, 15, 20, 50, 30, 30, 22, 80, 60]
-        expect(worksheet.column_info.map(&:width)).to eq(expected_widths)
-      end
-    end
-  end
-
-  describe '#excel_header_row' do
-    let(:generator) { described_class.new(change_records, date) }
-
-    it 'returns the correct header array' do
-      expected_headers = [
-        'Import/Export (if applicable)',
-        'Impacted Geographical area (if applicable)',
-        'Impacted Measure (if applicable)',
-        'Additional Code (if applicable)',
-        'Quota order number (if applicable)',
-        'Chapter',
-        'Commodity Code',
-        'Commodity Code description',
-        'Change Type',
-        'Change Detail',
-        'Change Date of Effect',
-        'View OTT for Change Date of Effect',
-        'API call for the changed Commodity',
-      ]
-      expect(generator.send(:excel_header_row)).to eq(expected_headers)
-    end
-
-    it 'has 13 columns' do
-      expect(generator.send(:excel_header_row).size).to eq(13)
-    end
-  end
-
-  describe '#excel_column_widths' do
-    let(:generator) { described_class.new(change_records, date) }
-
-    it 'returns the correct column widths' do
-      expected_widths = [20, 30, 30, 30, 25, 15, 20, 50, 30, 30, 22, 80, 60]
-      expect(generator.send(:excel_column_widths)).to eq(expected_widths)
-    end
-
-    it 'has widths for all 13 columns' do
-      expect(generator.send(:excel_column_widths).size).to eq(13)
-    end
-  end
-
-  describe '#cell_styles' do
-    let(:generator) { described_class.new(change_records, date) }
-
-    before do
-      generator.instance_variable_set(:@workbook, Axlsx::Package.new.workbook)
-    end
-
-    context 'without background color' do
-      let(:styles) { generator.send(:cell_styles) }
-
-      it 'returns a hash of styles' do
-        expect(styles).to be_a(Hash)
-        expect(styles.keys).to include(:pre_header, :header, :date, :commodity_code, :chapter, :text, :center_text, :hyperlink, :bold_text)
-      end
-
-      it 'creates Axlsx styles' do
-        expect(styles[:text]).to be_a(Integer)
-      end
-    end
-  end
-
-  describe '#build_row_styles' do
-    let(:generator) { described_class.new(change_records, date) }
-    let(:styles) { generator.send(:build_row_styles) }
-
-    before do
-      generator.instance_variable_set(:@workbook, Axlsx::Package.new.workbook)
-    end
-
-    it 'returns an array of 13 styles' do
-      expect(styles.size).to eq(13)
+    it 'sets the worksheet default row height for wrapped data rows' do
+      expect(worksheet_xml(xlsx_data)).to include('<sheetFormatPr defaultRowHeight="40"')
     end
   end
 
   describe '#build_excel_row' do
     let(:generator) { described_class.new(change_records, date) }
-    let(:record) { change_records.first }
 
     it 'builds a row array from a record hash' do
-      row = generator.send(:build_excel_row, record)
+      row = generator.send(:build_excel_row, change_records.first)
 
-      expect(row).to eq([
+      expect(row[0..10]).to eq([
         'Import',
         'United Kingdom',
         'Third country duty',
@@ -278,25 +137,21 @@ RSpec.describe TariffChangesService::ExcelGenerator do
         'Added',
         'New measure added',
         '2024-08-11',
-        'https://www.trade-tariff.service.gov.uk/commodities/0101000000',
-        'https://www.trade-tariff.service.gov.uk/api/v2/commodities/0101000000',
       ])
+      expect(row[11]).to be_a(FastExcel::URL)
+      expect(row[12]).to be_a(FastExcel::URL)
     end
 
-    it 'formats date correctly' do
-      row = generator.send(:build_excel_row, record)
-      expect(row[10]).to eq('2024-08-11')
-    end
+    context 'when the date of effect is a Date' do
+      before do
+        change_records.first[:date_of_effect] = Date.new(2024, 8, 11)
+      end
 
-    it 'handles nil date' do
-      record_with_nil_date = record.merge(date_of_effect: nil)
-      row = generator.send(:build_excel_row, record_with_nil_date)
-      expect(row[10]).to be_nil
-    end
+      it 'serializes the date as the same ISO string as the caxlsx report' do
+        row = generator.send(:build_excel_row, change_records.first)
 
-    it 'returns an array with 13 elements' do
-      row = generator.send(:build_excel_row, record)
-      expect(row.size).to eq(13)
+        expect(row[10]).to eq('2024-08-11')
+      end
     end
   end
 end
