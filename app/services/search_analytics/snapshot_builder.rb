@@ -149,11 +149,19 @@ module SearchAnalytics
           {
             'query' => query,
             'zero_results' => zero_results,
+            'term_type' => item_id_query?(query) ? 'item_ids' : 'search_terms',
           }
         end
 
-      terms.sort_by { |term| [-term['zero_results'], term['query']] }
-        .first(IMPROVEMENT_TERM_LIMIT)
+      terms
+        .group_by { |term| term['term_type'] }
+        .values
+        .flat_map { |grouped_terms|
+          grouped_terms
+            .sort_by { |term| [-term['zero_results'], term['query']] }
+            .first(IMPROVEMENT_TERM_LIMIT)
+        }
+        .sort_by { |term| [term['term_type'], -term['zero_results'], term['query']] }
     end
 
     def summary_statuses
@@ -203,6 +211,10 @@ module SearchAnalytics
 
     def zero_result_rows(scope)
       scope.select { |row| integer(row['result_count']).zero? }
+    end
+
+    def item_id_query?(query)
+      query.to_s.match?(/\A[\d\s.-]+\z/)
     end
 
     def selectable_search_rows(scope)

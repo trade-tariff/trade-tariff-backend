@@ -36,7 +36,7 @@ module SearchAnalytics
         view_latency_rows: run_query(view_latency_query),
         selection_rows: selection_queries.flat_map { |view, query| run_query(query).map { |row| row.merge('selectable_search_type' => view) } },
         selection_trend_rows: selection_trend_queries.flat_map { |view, query| run_query(query).map { |row| row.merge('selectable_search_type' => view) } },
-        improvement_term_rows: improvement_term_queries.flat_map { |query| run_query(query) },
+        improvement_term_rows: improvement_term_queries.flat_map { |term_type, query| run_query(query).map { |row| row.merge('term_type' => term_type) } },
       )
 
       VIEWS.index_with { |view| aggregate.payload_for(view) }
@@ -176,11 +176,10 @@ module SearchAnalytics
     end
 
     def improvement_term_queries
-      [
-        improvement_terms_query,
-        improvement_terms_query(term_filter: 'query not like /^[0-9 .-]+$/'),
-        improvement_terms_query(term_filter: 'query like /^[0-9 .-]+$/'),
-      ]
+      {
+        'search_terms' => improvement_terms_query(term_filter: 'query not like /^[0-9 .-]+$/'),
+        'item_ids' => improvement_terms_query(term_filter: 'query like /^[0-9 .-]+$/'),
+      }
     end
 
     def improvement_terms_query(term_filter: nil)
@@ -291,8 +290,14 @@ module SearchAnalytics
 
       def improvement_terms(view)
         grouped_terms(view)
-          .sort_by { |term| [-term['zero_results'], term['query']] }
-          .first(SnapshotBuilder::IMPROVEMENT_TERM_LIMIT)
+          .group_by { |term| term['term_type'] }
+          .values
+          .flat_map { |terms|
+            terms
+              .sort_by { |term| [-term['zero_results'], term['query']] }
+              .first(SnapshotBuilder::IMPROVEMENT_TERM_LIMIT)
+          }
+          .sort_by { |term| [term['term_type'], -term['zero_results'], term['query']] }
       end
 
       def grouped_terms(view)
@@ -304,13 +309,14 @@ module SearchAnalytics
           {
             'query' => query,
             'zero_results' => zero_results,
+            'term_type' => rows.first['term_type'],
           }
         end
       end
 
       def distinct_improvement_term_rows(view)
         filtered_rows(improvement_term_rows, view)
-          .group_by { |row| [row['query'].to_s, row['search_type'].to_s] }
+          .group_by { |row| [row['query'].to_s, row['search_type'].to_s, row['term_type'].to_s] }
           .values
           .map { |rows| rows.max_by { |row| integer(row['zero_results']) } }
       end

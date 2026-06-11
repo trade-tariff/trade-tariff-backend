@@ -92,25 +92,32 @@ RSpec.describe SearchAnalytics::SnapshotBuilder do
         {
           'query' => 'trainers',
           'zero_results' => 1,
+          'term_type' => 'search_terms',
         },
       )
     end
 
     it 'returns enough improvement terms for admin-side filtering and pagination' do
-      rows = Array.new(11) do |index|
+      item_id_rows = Array.new(described_class::IMPROVEMENT_TERM_LIMIT) do |index|
         search_row(
-          "2026-06-10T09:#{index.to_s.rjust(2, '0')}:00Z",
+          (Time.zone.parse('2026-06-10T09:00:00Z') + index.minutes).iso8601,
           'search_completed',
           'classic',
-          "zero result #{index}",
+          "392690#{index.to_s.rjust(4, '0')}",
           result_count: 0,
-          request_id: "zero-result-#{index}",
+          request_id: "zero-result-item-id-#{index}",
         )
       end
+      search_term_rows = [
+        search_row('2026-06-10T10:00:00Z', 'search_completed', 'classic', 'yoga ball', result_count: 0, request_id: 'zero-result-search-term'),
+      ]
 
-      payload = described_class.call(rows:, period: '24h', view: 'all', now: now)
+      payload = described_class.call(rows: item_id_rows + search_term_rows, period: '24h', view: 'all', now: now)
 
-      expect(payload.fetch('improvement_terms').size).to eq(11)
+      expect(payload.fetch('improvement_terms')).to include(
+        include('query' => 'yoga ball', 'term_type' => 'search_terms'),
+        include('query' => '3926900000', 'term_type' => 'item_ids'),
+      )
     end
 
     it 'builds plain-English summary statuses' do

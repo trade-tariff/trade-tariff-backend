@@ -20,9 +20,8 @@ RSpec.describe SearchAnalytics::CloudwatchSnapshotQuery do
       start_query_response('internal_selections'),
       start_query_response('classic_selection_trend'),
       start_query_response('internal_selection_trend'),
-      start_query_response('terms'),
-      start_query_response('non_numeric_terms'),
-      start_query_response('numeric_terms'),
+      start_query_response('search_term_terms'),
+      start_query_response('item_id_terms'),
     )
     allow(client).to receive(:get_query_results).and_return(
       complete_response(
@@ -43,10 +42,6 @@ RSpec.describe SearchAnalytics::CloudwatchSnapshotQuery do
       complete_response(result_row('selected' => '2', 'selectable' => '8')),
       complete_response(result_row('@timestamp' => '2026-06-10 09:00:00.000', 'selected' => '3')),
       complete_response(result_row('@timestamp' => '2026-06-10 09:00:00.000', 'selected' => '2')),
-      complete_response(
-        result_row('query' => 'yoga ball', 'search_type' => 'classic', 'zero_results' => '3'),
-        result_row('query' => '3926909090', 'search_type' => 'classic', 'zero_results' => '2'),
-      ),
       complete_response(
         result_row('query' => 'scarf', 'search_type' => 'classic', 'zero_results' => '5'),
         result_row('query' => 'running shoes', 'search_type' => 'classic', 'zero_results' => '4'),
@@ -71,7 +66,7 @@ RSpec.describe SearchAnalytics::CloudwatchSnapshotQuery do
       hash_including(
         query_string: a_string_including('filter @logStream like "ecs/backend-uk/"'),
       ),
-    ).exactly(11).times
+    ).exactly(10).times
     expect(client).not_to have_received(:start_query).with(
       hash_including(query_string: a_string_including('sort bin(')),
     )
@@ -116,7 +111,7 @@ RSpec.describe SearchAnalytics::CloudwatchSnapshotQuery do
       hash_including(
         query_string: a_string_including('filter @logStream like "ecs/backend-xi/"'),
       ),
-    ).exactly(11).times
+    ).exactly(10).times
   end
 
   it 'builds all dashboard views without raw search rows', :aggregate_failures do
@@ -156,10 +151,9 @@ RSpec.describe SearchAnalytics::CloudwatchSnapshotQuery do
       ),
     )
     expect(payloads.dig('all', 'improvement_terms')).to include(
-      include('query' => '0101210000', 'zero_results' => 7),
-      include('query' => 'scarf', 'zero_results' => 5),
-      include('query' => 'running shoes', 'zero_results' => 4),
-      include('query' => 'yoga ball', 'zero_results' => 3),
+      include('query' => '0101210000', 'zero_results' => 7, 'term_type' => 'item_ids'),
+      include('query' => 'scarf', 'zero_results' => 5, 'term_type' => 'search_terms'),
+      include('query' => 'running shoes', 'zero_results' => 4, 'term_type' => 'search_terms'),
     )
     expect(payloads.dig('all', 'improvement_terms')).to all(satisfy { |term| term.keys.exclude?('searches') && term.keys.exclude?('selection_rate') })
   end
