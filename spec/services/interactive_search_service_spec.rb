@@ -439,6 +439,31 @@ RSpec.describe InteractiveSearchService do
       expect(context_arg).to include('OpenSearch results:')
     end
 
+    context 'when the configured prompt wraps compressed notes in marker lines' do
+      let(:default_search_context) do
+        <<~CONTEXT
+          Search query: %{search_input}
+          -----------RELEVANT_COMPRESSED_NOTES-------
+          %{compressed_notes}
+          -----------END RELEVANT_COMPRESSED_NOTES---
+          OpenSearch results: %{answers_opensearch}
+          Previous Q&A: %{questions}
+        CONTEXT
+      end
+
+      it 'removes the whole compressed notes marker section when no contexts are selected' do
+        result
+
+        context_arg = nil
+        expect(OpenaiClient).to have_received(:call) do |context, **_opts|
+          context_arg = context
+        end
+
+        expect(context_arg).not_to include('RELEVANT_COMPRESSED_NOTES')
+        expect(context_arg).to include('OpenSearch results:')
+      end
+    end
+
     context 'when compressed note context is enabled' do
       before do
         create(

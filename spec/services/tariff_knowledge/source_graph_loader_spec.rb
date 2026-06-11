@@ -108,6 +108,29 @@ RSpec.describe TariffKnowledge::SourceGraphLoader do
       expect(edge_exists?(fragment_node, hidden_node, TariffKnowledge::Edge::APPLIES_TO)).to be(false)
     end
 
+    it 'does not expand explicit range references to stale hidden goods nomenclature nodes' do
+      hidden_node = create(
+        :tariff_knowledge_node,
+        key: 'goods_nomenclature:99002',
+        goods_nomenclature_sid: 99_002,
+        goods_nomenclature_item_id: '0101900000',
+      )
+      create(:hidden_goods_nomenclature, goods_nomenclature_item_id: hidden_node.goods_nomenclature_item_id)
+      create(
+        :customs_tariff_chapter_note,
+        :approved,
+        customs_tariff_update: update,
+        chapter_id: '01',
+        content: 'Heading 0101 covers live horses.',
+      )
+
+      described_class.call
+
+      range_node = TariffKnowledge::Node.by_key('range:heading:0101').first
+
+      expect(edge_exists?(range_node, hidden_node, TariffKnowledge::Edge::EXPANDS_TO)).to be(false)
+    end
+
     it 'keeps list markers attached to the note text they introduce' do
       create(
         :customs_tariff_chapter_note,

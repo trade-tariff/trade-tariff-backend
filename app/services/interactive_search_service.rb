@@ -132,7 +132,9 @@ class InteractiveSearchService
   end
 
   def remove_compressed_notes_line(context)
-    context.gsub(/^.*%{compressed_notes}.*$\n?/, '')
+    context
+      .gsub(/^[^\n]*RELEVANT_COMPRESSED_NOTES[^\n]*\n[^\n]*%\{compressed_notes\}[^\n]*\n[^\n]*END RELEVANT_COMPRESSED_NOTES[^\n]*\n?/, '')
+      .gsub(/^.*%{compressed_notes}.*$\n?/, '')
   end
 
   def format_opensearch_results

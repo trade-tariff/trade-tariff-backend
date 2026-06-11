@@ -231,7 +231,7 @@ module TariffKnowledge
     end
 
     def matching_declarable_nodes(reference)
-      Node.goods_nomenclatures
+      Node.non_hidden_goods_nomenclatures
           .where(Sequel.like(:goods_nomenclature_item_id, "#{reference.code}%"))
     end
 

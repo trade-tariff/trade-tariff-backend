@@ -39,6 +39,8 @@ module TariffKnowledge
         metadata: Sequel.pg_jsonb(metadata_for(evidence)),
         context_hash: Digest::SHA256.hexdigest(content),
         generated_at: Time.zone.now,
+        # Pipeline generation resets lifecycle flags. Reviewers can later mark
+        # generated content as needing review if it is suspect.
         needs_review: false,
         approved: false,
         manually_edited: false,
@@ -178,11 +180,6 @@ module TariffKnowledge
     def source_context(fragment_node, source_node)
       return fragment_node.content.to_s.squish unless source_node
 
-      # A fragment can be a short list item whose meaning depends on the lead-in
-      # immediately before it, for example "This chapter does not cover:".
-      # Include that lead-in in metadata so prompt-time selection can classify
-      # the fragment as inclusion/exclusion/reference without sending the whole
-      # source note.
       fragment_nodes = source_fragment_nodes(source_node)
       fragment_index = fragment_nodes.index { |node| node.id == fragment_node.id }
       return fragment_node.content.to_s.squish unless fragment_index
