@@ -1,4 +1,11 @@
 RSpec.describe SearchAnalyticsSnapshot do
+  describe 'dataset' do
+    it 'uses the current service schema from the connection search path' do
+      expect(described_class.dataset.sql).to include('FROM "search_analytics_snapshots"')
+      expect(described_class.dataset.sql).not_to include('public')
+    end
+  end
+
   describe 'validations' do
     let(:snapshot) { build :search_analytics_snapshot }
 

@@ -40,16 +40,20 @@ RSpec.describe 'config/sidekiq.yml' do
     )
   end
 
-  it 'schedules search analytics snapshot refreshes' do
-    schedule = sidekiq_schedule(environment: 'production')
+  it 'schedules search analytics snapshot refreshes for each backend service' do
+    uk_schedule = sidekiq_schedule(environment: 'production', service: 'uk')
+    xi_schedule = sidekiq_schedule(environment: 'production', service: 'xi')
 
-    expect(schedule).to include(
-      'SearchAnalyticsSnapshotWorker' => include(
-        'cron' => '0 6 * * 6',
-        'queue' => 'within_1_day',
-        'description' => 'Refreshes cached aggregate search analytics snapshots',
-      ),
-    )
+    [uk_schedule, xi_schedule].each do |schedule|
+      expect(schedule).to include(
+        'SearchAnalyticsSnapshotWorker' => include(
+          'cron' => '0 6 * * 6',
+          'queue' => 'within_1_day',
+          'description' => 'Refreshes cached aggregate search analytics snapshots',
+        ),
+      )
+      expect(schedule.fetch('SearchAnalyticsSnapshotWorker')).not_to include('enabled' => false)
+    end
   end
 end
 # rubocop:enable RSpec/DescribeClass

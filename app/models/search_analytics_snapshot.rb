@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-class SearchAnalyticsSnapshot < Sequel::Model(Sequel[:search_analytics_snapshots].qualify(:public))
+class SearchAnalyticsSnapshot < Sequel::Model
   plugin :auto_validations, not_null: :presence
   plugin :timestamps, update_on_create: true
 

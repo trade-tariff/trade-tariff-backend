@@ -138,8 +138,6 @@ module SearchAnalytics
     end
 
     def improvement_terms
-      selected_request_ids = attributed_selected_request_ids
-
       terms = completed_rows
         .group_by { |row| row['query'].to_s }
         .filter_map do |query, query_rows|
@@ -148,13 +146,9 @@ module SearchAnalytics
           zero_results = zero_result_rows(query_rows).count
           next if zero_results.zero?
 
-          selections = query_rows.count { |row| selected_request_ids.include?(row['request_id']) }
-
           {
             'query' => query,
-            'searches' => query_rows.count,
             'zero_results' => zero_results,
-            'selection_rate' => rate(selections, query_rows.count),
           }
         end
 

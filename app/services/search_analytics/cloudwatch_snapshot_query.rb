@@ -2,8 +2,8 @@
 
 module SearchAnalytics
   class CloudwatchSnapshotQuery
-    QUERY_POLL_INTERVAL_SECONDS = 1
-    QUERY_MAX_POLLS = 180
+    QUERY_POLL_INTERVAL_SECONDS = ENV.fetch('SEARCH_ANALYTICS_QUERY_POLL_INTERVAL_SECONDS', 1).to_f
+    QUERY_MAX_POLLS = ENV.fetch('SEARCH_ANALYTICS_QUERY_MAX_POLLS', 60).to_i
     TERMINAL_FAILURE_STATUSES = %w[Failed Cancelled Timeout].freeze
     SEARCH_LOG_GROUP_NAME = "platform-logs-#{TradeTariffBackend.environment}".freeze
     SEARCH_EVENTS = %w[search_completed search_failed].freeze
@@ -96,9 +96,14 @@ module SearchAnalytics
       'filter service = "search" and event in ["search_completed", "search_failed"]'
     end
 
+    def log_stream_filter
+      %(filter @logStream like "ecs/backend-#{TradeTariffBackend.service}/")
+    end
+
     def volume_query
       <<~QUERY
         fields @timestamp, event, search_type
+        | #{log_stream_filter}
         | #{base_search_filter}
         | stats count(*) as searches by #{bucket_expression}, search_type, event
       QUERY
@@ -107,6 +112,7 @@ module SearchAnalytics
     def zero_result_query
       <<~QUERY
         fields @timestamp, event, search_type, result_count
+        | #{log_stream_filter}
         | filter service = "search" and event = "search_completed" and result_count = 0
         | stats count(*) as zero_results by #{bucket_expression}, search_type
       QUERY
@@ -115,6 +121,7 @@ module SearchAnalytics
     def all_latency_query
       <<~QUERY
         fields event, total_duration_ms
+        | #{log_stream_filter}
         | #{base_search_filter} and ispresent(total_duration_ms)
         | stats pct(total_duration_ms, 90) as p90_latency_ms
       QUERY
@@ -123,6 +130,7 @@ module SearchAnalytics
     def view_latency_query
       <<~QUERY
         fields event, search_type, total_duration_ms
+        | #{log_stream_filter}
         | #{base_search_filter} and ispresent(total_duration_ms)
         | stats pct(total_duration_ms, 90) as p90_latency_ms by search_type
       QUERY
@@ -142,6 +150,7 @@ module SearchAnalytics
     def selection_query(selectable_condition)
       <<~QUERY
         fields request_id, event, search_type, result_count, results_type
+        | #{log_stream_filter}
         | filter service = "search" and ispresent(request_id) and (event = "result_selected" or (event = "search_completed" and result_count > 0 and #{selectable_condition}))
         | fields if(event = "result_selected", 1, 0) as result_selection_marker
         | fields if(event = "search_completed" and result_count > 0 and #{selectable_condition}, 1, 0) as selectable_search_marker
@@ -178,6 +187,7 @@ module SearchAnalytics
       [
         <<~QUERY,
           fields query, search_type, result_count
+          | #{log_stream_filter}
           | filter service = "search" and event = "search_completed" and result_count = 0 and ispresent(query)
         QUERY
         ("| filter #{term_filter}\n" if term_filter.present?),
@@ -293,9 +303,7 @@ module SearchAnalytics
 
           {
             'query' => query,
-            'searches' => zero_results,
             'zero_results' => zero_results,
-            'selection_rate' => 0.0,
           }
         end
       end

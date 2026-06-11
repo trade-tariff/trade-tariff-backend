@@ -2,8 +2,8 @@
 
 Sequel.migration do
   change do
-    unless Sequel::Model.db.table_exists?(Sequel[:search_analytics_snapshots].qualify(:public))
-      create_table Sequel[:search_analytics_snapshots].qualify(:public) do
+    unless Sequel::Model.db.table_exists?(:search_analytics_snapshots)
+      create_table :search_analytics_snapshots do
         primary_key :id
         String :service, null: false
         String :period, null: false

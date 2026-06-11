@@ -25,7 +25,7 @@ RSpec.describe Api::Admin::SearchAnalyticsController do
           'classic' => { 'searches' => 710 },
         },
         'improvement_terms' => [
-          { 'query' => 'trainers', 'searches' => 40, 'zero_results' => 18, 'selection_rate' => 0.12 },
+          { 'query' => 'trainers', 'zero_results' => 18 },
         ],
       }
     end
@@ -88,7 +88,7 @@ RSpec.describe Api::Admin::SearchAnalyticsController do
             improvement_terms: [
               {
                 query: 'trainers',
-                searches: 40,
+                zero_results: 18,
               }.ignore_extra_keys!,
             ],
           }.ignore_extra_keys!,

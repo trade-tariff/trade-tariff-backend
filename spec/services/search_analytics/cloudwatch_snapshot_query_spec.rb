@@ -67,6 +67,11 @@ RSpec.describe SearchAnalytics::CloudwatchSnapshotQuery do
         query_string: a_string_including('| stats'),
       ),
     ).at_least(:once)
+    expect(client).to have_received(:start_query).with(
+      hash_including(
+        query_string: a_string_including('filter @logStream like "ecs/backend-uk/"'),
+      ),
+    ).exactly(11).times
     expect(client).not_to have_received(:start_query).with(
       hash_including(query_string: a_string_including('sort bin(')),
     )
@@ -100,6 +105,18 @@ RSpec.describe SearchAnalytics::CloudwatchSnapshotQuery do
         query_string: a_string_including('selected_count'),
       ),
     )
+  end
+
+  it 'scopes CloudWatch queries to the current backend service log stream' do
+    allow(TradeTariffBackend).to receive(:service).and_return('xi')
+
+    payloads
+
+    expect(client).to have_received(:start_query).with(
+      hash_including(
+        query_string: a_string_including('filter @logStream like "ecs/backend-xi/"'),
+      ),
+    ).exactly(11).times
   end
 
   it 'builds all dashboard views without raw search rows', :aggregate_failures do
@@ -144,6 +161,7 @@ RSpec.describe SearchAnalytics::CloudwatchSnapshotQuery do
       include('query' => 'running shoes', 'zero_results' => 4),
       include('query' => 'yoga ball', 'zero_results' => 3),
     )
+    expect(payloads.dig('all', 'improvement_terms')).to all(satisfy { |term| term.keys.exclude?('searches') && term.keys.exclude?('selection_rate') })
   end
 
   def start_query_response(query_id)

@@ -91,9 +91,7 @@ RSpec.describe SearchAnalytics::SnapshotBuilder do
       expect(payload.fetch('improvement_terms')).to contain_exactly(
         {
           'query' => 'trainers',
-          'searches' => 2,
           'zero_results' => 1,
-          'selection_rate' => 0.5,
         },
       )
     end
