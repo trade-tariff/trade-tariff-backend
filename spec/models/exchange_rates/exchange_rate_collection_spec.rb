@@ -49,6 +49,23 @@ RSpec.describe ExchangeRates::ExchangeRateCollection do
     it 'initializes exchange rates to an empty array' do
       expect(rates_list.exchange_rates).to be_empty
     end
+
+    it 'builds a rates list from applicable files and rates', :aggregate_failures do
+      type = ExchangeRateCurrencyRate::MONTHLY_RATE_TYPE
+      exchange_rate_file = build(:exchange_rate_file, period_month: month, period_year: year)
+      exchange_rate = build(:exchange_rate_currency_rate)
+
+      allow(ExchangeRateFile).to receive(:applicable_files_for).with(month, year, type).and_return([exchange_rate_file])
+      allow(described_class).to receive(:exchange_rates).with(month, year, type).and_return([exchange_rate])
+
+      rates_list = described_class.build(month, year, type)
+
+      expect(rates_list.year).to eq(year)
+      expect(rates_list.month).to eq(month)
+      expect(rates_list.type).to eq(type)
+      expect(rates_list.exchange_rate_files).to eq([exchange_rate_file])
+      expect(rates_list.exchange_rates).to eq([exchange_rate])
+    end
   end
 
   describe '.exchange_rates' do
