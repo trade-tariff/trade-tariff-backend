@@ -69,6 +69,14 @@ RSpec.describe ApplicationController, type: :request do
       end
     end
 
+    context 'with Link header' do
+      it 'includes the API docs link header on every response' do
+        api_get('/uk/api/healthcheck')
+
+        expect(response.headers['Link']).to eq('<https://api-docs.trade-tariff.service.gov.uk/llms.txt>; rel="describedby"')
+      end
+    end
+
     context 'with request logging payload' do
       def process_action_payload_for(params:)
         events = []
