@@ -47,7 +47,7 @@ RSpec.describe 'config/sidekiq.yml' do
     [uk_schedule, xi_schedule].each do |schedule|
       expect(schedule).to include(
         'SearchAnalyticsSnapshotWorker' => include(
-          'cron' => '0 6 * * 6',
+          'cron' => '0 4 * * *',
           'queue' => 'within_1_day',
           'description' => 'Refreshes cached aggregate search analytics snapshots',
         ),
