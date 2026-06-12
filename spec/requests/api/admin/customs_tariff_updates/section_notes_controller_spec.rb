@@ -94,7 +94,7 @@ RSpec.describe Api::Admin::CustomsTariffUpdates::SectionNotesController do
     let!(:note)   { create(:customs_tariff_section_note, customs_tariff_update: update) }
 
     it 'returns the note with a versions array' do
-      get "/uk/admin/customs_tariff_updates/#{update.version}/section_notes/#{note.id}.json",
+      get "/uk/admin/customs_tariff_updates/#{update.version}/section_notes/#{note.section_id}.json",
           headers: request_headers(format: :json)
 
       expect(response.status).to eq(200)
@@ -116,7 +116,7 @@ RSpec.describe Api::Admin::CustomsTariffUpdates::SectionNotesController do
         end
 
         it 'returns file_diff instead of versions' do
-          get "/uk/admin/customs_tariff_updates/#{update.version}/section_notes/#{note.id}.json",
+          get "/uk/admin/customs_tariff_updates/#{update.version}/section_notes/#{note.section_id}.json",
               params: { compare_version: compare_update.version },
               headers: request_headers(format: :json)
 
@@ -135,7 +135,7 @@ RSpec.describe Api::Admin::CustomsTariffUpdates::SectionNotesController do
                                customs_tariff_update: other_update,
                                section_id: 99)
 
-          get "/uk/admin/customs_tariff_updates/#{other_update.version}/section_notes/#{orphan_note.id}.json",
+          get "/uk/admin/customs_tariff_updates/#{other_update.version}/section_notes/#{orphan_note.section_id}.json",
               params: { compare_version: compare_update.version },
               headers: request_headers(format: :json)
 
@@ -155,7 +155,7 @@ RSpec.describe Api::Admin::CustomsTariffUpdates::SectionNotesController do
     end
 
     it 'updates the content' do
-      patch "/uk/admin/customs_tariff_updates/#{update.version}/section_notes/#{note.id}.json",
+      patch "/uk/admin/customs_tariff_updates/#{update.version}/section_notes/#{note.section_id}.json",
             params: { data: { type: 'customs_tariff_section_note', attributes: { content: 'Updated content' } } },
             headers: request_headers({ 'X-Whodunnit' => 'operator-1' }, format: :json), as: :json
 
@@ -172,7 +172,7 @@ RSpec.describe Api::Admin::CustomsTariffUpdates::SectionNotesController do
     it 'returns 422 when the parent update is rejected' do
       update.update(status: CustomsTariffUpdate::REJECTED)
 
-      patch "/uk/admin/customs_tariff_updates/#{update.version}/section_notes/#{note.id}.json",
+      patch "/uk/admin/customs_tariff_updates/#{update.version}/section_notes/#{note.section_id}.json",
             params: { data: { type: 'customs_tariff_section_note', attributes: { content: 'Updated' } } },
             headers: request_headers(format: :json), as: :json
 
@@ -182,7 +182,7 @@ RSpec.describe Api::Admin::CustomsTariffUpdates::SectionNotesController do
 
     it 'creates a Version record on successful save' do
       expect {
-        patch "/uk/admin/customs_tariff_updates/#{update.version}/section_notes/#{note.id}.json",
+        patch "/uk/admin/customs_tariff_updates/#{update.version}/section_notes/#{note.section_id}.json",
               params: { data: { type: 'customs_tariff_section_note', attributes: { content: 'Versioned content' } } },
               headers: request_headers(format: :json), as: :json
       }.to change { Version.where(item_type: 'CustomsTariffSectionNote', item_id: note.id.to_s).count }.by(1)
@@ -194,7 +194,7 @@ RSpec.describe Api::Admin::CustomsTariffUpdates::SectionNotesController do
     let!(:note)   { create(:customs_tariff_section_note, customs_tariff_update: update) }
 
     it 'destroys the note and returns 204' do
-      delete "/uk/admin/customs_tariff_updates/#{update.version}/section_notes/#{note.id}.json",
+      delete "/uk/admin/customs_tariff_updates/#{update.version}/section_notes/#{note.section_id}.json",
              headers: request_headers(format: :json)
 
       expect(response.status).to eq(204)
@@ -204,7 +204,7 @@ RSpec.describe Api::Admin::CustomsTariffUpdates::SectionNotesController do
     it 'returns 422 and does not destroy when the parent update is rejected' do
       update.update(status: CustomsTariffUpdate::REJECTED)
 
-      delete "/uk/admin/customs_tariff_updates/#{update.version}/section_notes/#{note.id}.json",
+      delete "/uk/admin/customs_tariff_updates/#{update.version}/section_notes/#{note.section_id}.json",
              headers: request_headers(format: :json)
 
       expect(response.status).to eq(422)
@@ -214,7 +214,7 @@ RSpec.describe Api::Admin::CustomsTariffUpdates::SectionNotesController do
     it 'returns 404 when the note does not belong to the update' do
       other_update = create(:customs_tariff_update)
 
-      delete "/uk/admin/customs_tariff_updates/#{other_update.version}/section_notes/#{note.id}.json",
+      delete "/uk/admin/customs_tariff_updates/#{other_update.version}/section_notes/#{note.section_id}.json",
              headers: request_headers(format: :json)
 
       expect(response.status).to eq(404)
