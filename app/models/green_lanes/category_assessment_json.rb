@@ -5,11 +5,7 @@ module GreenLanes
     include ActiveModel::Model
     include ContentAddressableId
 
-    DEFAULT_JSON = if Rails.env.development?
-                     'data/green_lanes/categories.json'
-                   else
-                     'data/green_lanes/stub_categories.json'
-                   end
+    DEFAULT_JSON = Rails.env.development? ? 'data/green_lanes/categories.json' : 'data/green_lanes/stub_categories.json'
 
     CATEGORISATION_OBJECT_KEY = 'data/categorisation/categories.json'
 

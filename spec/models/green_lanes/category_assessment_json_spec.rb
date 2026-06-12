@@ -1,4 +1,20 @@
 RSpec.describe GreenLanes::CategoryAssessmentJson do
+  describe 'coverage' do
+    it 'covers category assessment loading and excluded geographical area ids' do
+      bucket = instance_double(Aws::S3::Bucket, present?: true)
+      categorisation = described_class.new
+
+      allow(Rails.application.config).to receive(:persistence_bucket).and_return(bucket, nil)
+      allow(described_class).to receive_messages(load_from_s3: :s3, load_from_file: :file)
+      allow(categorisation).to receive(:excluded_geographical_areas)
+        .and_return([instance_double(GeographicalArea, geographical_area_id: 'FR')])
+
+      expect([described_class.load_category_assessment,
+              described_class.load_category_assessment,
+              categorisation.excluded_geographical_area_ids]).to eq([:s3, :file, %w[FR]])
+    end
+  end
+
   describe '.load_from_string' do
     subject(:categorisation) { described_class.load_from_string json_string }
 

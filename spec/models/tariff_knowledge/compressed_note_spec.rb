@@ -63,4 +63,12 @@ RSpec.describe TariffKnowledge::CompressedNote do
       expect(described_class.usable_for_search.all).to contain_exactly(generated_note, approved_note)
     end
   end
+
+  describe 'coverage' do
+    it 'covers regeneration and context helpers' do
+      note = create(:tariff_knowledge_compressed_note, stale: true, manually_edited: false, context_hash: 'old')
+
+      expect([described_class.needing_regeneration.all, note.context_stale?('new')]).to eq([[note], true])
+    end
+  end
 end
