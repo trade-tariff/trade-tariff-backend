@@ -5,7 +5,7 @@ module Api
         include JSONAPI::Serializer
 
         set_type :customs_tariff_chapter_note
-        set_id   :id
+        set_id   :chapter_id
 
         attributes :chapter_id, :content, :customs_tariff_update_version
 
