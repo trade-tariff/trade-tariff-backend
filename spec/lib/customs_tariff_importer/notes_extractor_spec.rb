@@ -38,6 +38,22 @@ RSpec.describe CustomsTariffImporter::NotesExtractor do
     "<w:p><w:r>#{run_properties}<w:t>#{escaped}</w:t></w:r></w:p>"
   end
 
+  def hyperlink_paragraph_xml(prefix, linked_text, suffix)
+    escaped_prefix = prefix.gsub('&', '&amp;').gsub('<', '&lt;').gsub('>', '&gt;')
+    escaped_linked_text = linked_text.gsub('&', '&amp;').gsub('<', '&lt;').gsub('>', '&gt;')
+    escaped_suffix = suffix.gsub('&', '&amp;').gsub('<', '&lt;').gsub('>', '&gt;')
+
+    <<~XML
+      <w:p>
+        <w:r><w:t>#{escaped_prefix}</w:t></w:r>
+        <w:hyperlink w:anchor="target">
+          <w:r><w:t>#{escaped_linked_text}</w:t></w:r>
+        </w:hyperlink>
+        <w:r><w:t>#{escaped_suffix}</w:t></w:r>
+      </w:p>
+    XML
+  end
+
   def indented_paragraph_xml(text, left:)
     escaped = text.gsub('&', '&amp;').gsub('<', '&lt;').gsub('>', '&gt;')
 
@@ -1101,6 +1117,34 @@ RSpec.describe CustomsTariffImporter::NotesExtractor do
         result = described_class.new('1.30', docx_content).call
 
         expect(result.chapters['07']).to eq('5. Heading 0711 applies to preserved vegetables.')
+      end
+
+      it 'preserves visible text inside hyperlink-wrapped runs' do
+        docx_content = build_docx_from_body_xml([
+          paragraph_xml('CHAPTER 20', bold: true),
+          paragraph_xml('Chapter Notes', bold: true),
+          hyperlink_paragraph_xml('1. Products of heading ', '2009', ' are covered by this chapter.'),
+        ].join("\n"))
+
+        result = described_class.new('1.30', docx_content).call
+
+        expect(result.chapters['20']).to eq('1. Products of heading 2009 are covered by this chapter.')
+      end
+
+      it 'resets visual numbering counters between chapter notes sharing a Word numId' do
+        docx_content = build_docx_from_body_xml([
+          paragraph_xml('CHAPTER 84', bold: true),
+          paragraph_xml('Chapter Notes', bold: true),
+          numbered_paragraph_xml('This chapter does not cover:', num_id: 23),
+          paragraph_xml('CHAPTER 85', bold: true),
+          paragraph_xml('Chapter Notes', bold: true),
+          numbered_paragraph_xml('This chapter does not cover:', num_id: 23),
+        ].join("\n"))
+
+        result = described_class.new('1.30', docx_content).call
+
+        expect(result.chapters['84']).to eq('1. This chapter does not cover:')
+        expect(result.chapters['85']).to eq('1. This chapter does not cover:')
       end
 
       it 'uses commodity tables as note boundaries instead of note markdown' do

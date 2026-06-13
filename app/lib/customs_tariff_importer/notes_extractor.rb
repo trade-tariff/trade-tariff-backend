@@ -110,7 +110,7 @@ module CustomsTariffImporter
       plain_text = paragraph_plain_text(para)
       return plain_text if structural_marker?(plain_text)
 
-      para.xpath('./w:r', WORD_NS).map { |run|
+      para.xpath('.//w:r', WORD_NS).map { |run|
         text = run.xpath('.//w:t', WORD_NS).map(&:text).join
         next if text.empty?
 
@@ -532,6 +532,7 @@ module CustomsTariffImporter
       @in_nested_numbered_subnote = false
       @last_top_level_note_number = nil
       @previous_markdown_bullet_indent = nil
+      @numbering_counters.clear
     end
 
     def numbered_note?(text)

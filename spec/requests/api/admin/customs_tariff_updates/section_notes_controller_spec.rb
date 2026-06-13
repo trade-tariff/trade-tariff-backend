@@ -19,6 +19,7 @@ RSpec.describe Api::Admin::CustomsTariffUpdates::SectionNotesController do
 
       expect(response.status).to eq(200)
       note = JSON.parse(response.body)['data'].find { |n| n.dig('attributes', 'section_id') == 1 }
+      expect(note['id']).to eq('1')
       expect(note.dig('attributes', 'file_diff', 'changed_fields')).to include('content')
     end
 
@@ -167,6 +168,20 @@ RSpec.describe Api::Admin::CustomsTariffUpdates::SectionNotesController do
         note_id: note.id,
         whodunnit: 'operator-1',
       )
+    end
+
+    it 'updates when following the JSON:API id from the index response' do
+      get "/uk/admin/customs_tariff_updates/#{update.version}/section_notes.json",
+          headers: request_headers(format: :json)
+
+      response_id = JSON.parse(response.body).dig('data', 0, 'id')
+
+      patch "/uk/admin/customs_tariff_updates/#{update.version}/section_notes/#{response_id}.json",
+            params: { data: { type: 'customs_tariff_section_note', attributes: { content: 'Updated via response id' } } },
+            headers: request_headers(format: :json), as: :json
+
+      expect(response.status).to eq(200)
+      expect(note.reload.content).to eq('Updated via response id')
     end
 
     it 'returns 422 when the parent update is rejected' do
