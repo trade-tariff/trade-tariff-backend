@@ -1,9 +1,9 @@
 GIT
   remote: https://github.com/willfish/fast_excel.git
-  revision: b63426e3d056c77bb9df56f25bbe40c6d1e2092b
-  branch: HMRC-1866-write-rich-string
+  revision: 21b71a2a9b90a1c73c4b934d6d186edf59b65506
+  branch: master
   specs:
-    fast_excel (0.5.0)
+    uber_fast_excel (0.6.0)
       base64 (>= 0.2, < 2)
       ffi (> 1.17, < 2)
 
@@ -522,7 +522,6 @@ DEPENDENCIES
   dotenv-rails
   engtagger
   factory_bot_rails
-  fast_excel!
   foreman
   forgery
   get_process_mem
@@ -566,6 +565,7 @@ DEPENDENCIES
   sidekiq-scheduler
   simplecov
   slack-notifier
+  uber_fast_excel!
   webmock
 
 RUBY VERSION
