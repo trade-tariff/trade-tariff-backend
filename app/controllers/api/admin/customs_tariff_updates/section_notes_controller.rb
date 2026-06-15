@@ -127,7 +127,7 @@ module Api
 
         def customs_tariff_section_note
           @customs_tariff_section_note ||= CustomsTariffSectionNote
-            .where(id: params[:id], customs_tariff_update_version: customs_tariff_update.version)
+            .where(section_id: params[:id], customs_tariff_update_version: customs_tariff_update.version)
             .first.tap { |n| raise Sequel::RecordNotFound unless n }
         end
 

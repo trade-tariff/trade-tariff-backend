@@ -5,16 +5,20 @@ RSpec.describe CustomsTariffImporter::NotesExtractor do
 
   # Builds a minimal .docx (ZIP containing word/document.xml) from a flat list of paragraph strings
   def build_docx(paragraphs)
-    ns = 'http://schemas.openxmlformats.org/wordprocessingml/2006/main'
     para_xml = paragraphs.map { |text|
       escaped = text.gsub('&', '&amp;').gsub('<', '&lt;').gsub('>', '&gt;')
       "<w:p><w:r><w:t>#{escaped}</w:t></w:r></w:p>"
     }.join("\n")
 
+    build_docx_from_body_xml(para_xml)
+  end
+
+  def build_docx_from_body_xml(body_xml)
+    ns = 'http://schemas.openxmlformats.org/wordprocessingml/2006/main'
     xml = <<~XML
       <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
       <w:document xmlns:w="#{ns}">
-        <w:body>#{para_xml}</w:body>
+        <w:body>#{body_xml}</w:body>
       </w:document>
     XML
 
@@ -25,6 +29,67 @@ RSpec.describe CustomsTariffImporter::NotesExtractor do
       zip.write(xml)
     end
     buffer.string
+  end
+
+  def paragraph_xml(text, bold: false)
+    escaped = text.gsub('&', '&amp;').gsub('<', '&lt;').gsub('>', '&gt;')
+    run_properties = bold ? '<w:rPr><w:b/></w:rPr>' : ''
+
+    "<w:p><w:r>#{run_properties}<w:t>#{escaped}</w:t></w:r></w:p>"
+  end
+
+  def hyperlink_paragraph_xml(prefix, linked_text, suffix)
+    escaped_prefix = prefix.gsub('&', '&amp;').gsub('<', '&lt;').gsub('>', '&gt;')
+    escaped_linked_text = linked_text.gsub('&', '&amp;').gsub('<', '&lt;').gsub('>', '&gt;')
+    escaped_suffix = suffix.gsub('&', '&amp;').gsub('<', '&lt;').gsub('>', '&gt;')
+
+    <<~XML
+      <w:p>
+        <w:r><w:t>#{escaped_prefix}</w:t></w:r>
+        <w:hyperlink w:anchor="target">
+          <w:r><w:t>#{escaped_linked_text}</w:t></w:r>
+        </w:hyperlink>
+        <w:r><w:t>#{escaped_suffix}</w:t></w:r>
+      </w:p>
+    XML
+  end
+
+  def indented_paragraph_xml(text, left:)
+    escaped = text.gsub('&', '&amp;').gsub('<', '&lt;').gsub('>', '&gt;')
+
+    <<~XML
+      <w:p>
+        <w:pPr><w:ind w:left="#{left}"/></w:pPr>
+        <w:r><w:t>#{escaped}</w:t></w:r>
+      </w:p>
+    XML
+  end
+
+  def numbered_paragraph_xml(text, num_id: 1, level: 0)
+    escaped = text.gsub('&', '&amp;').gsub('<', '&lt;').gsub('>', '&gt;')
+
+    <<~XML
+      <w:p>
+        <w:pPr>
+          <w:numPr>
+            <w:ilvl w:val="#{level}"/>
+            <w:numId w:val="#{num_id}"/>
+          </w:numPr>
+        </w:pPr>
+        <w:r><w:t>#{escaped}</w:t></w:r>
+      </w:p>
+    XML
+  end
+
+  def paragraph_xml_with_paragraph_bold_only(text)
+    escaped = text.gsub('&', '&amp;').gsub('<', '&lt;').gsub('>', '&gt;')
+
+    <<~XML
+      <w:p>
+        <w:pPr><w:rPr><w:b/></w:rPr></w:pPr>
+        <w:r><w:t>#{escaped}</w:t></w:r>
+      </w:p>
+    XML
   end
 
   # Unit tests for the state machine via parse_notes (private)
@@ -96,6 +161,40 @@ RSpec.describe CustomsTariffImporter::NotesExtractor do
       it 'converts the section key to an integer' do
         result = parse(['SECTION iv', 'Section Notes', 'Some content.'])
         expect(result.sections.keys).to contain_exactly(4)
+      end
+
+      it 'normalises compact numbering and indented marker paragraphs' do
+        [
+          '**There are important section noted for this part of the tariff:**',
+          'There are important section noted for this part of the tariff:',
+          '**There are important section notes for this part of the tariff**',
+        ].each do |preamble|
+          result = parse([
+            'SECTION XV',
+            'Section Notes',
+            preamble,
+            '1.This section does not cover:',
+            '    a. prepared paints;',
+            '    b. ferro-cerium;',
+            '2.Throughout the nomenclature, the expression means:',
+            '    a. articles of heading 7307;',
+          ])
+
+          expect(result.sections[15]).not_to include('There are important section')
+          expect(result.sections[15]).to include(
+            [
+              '1. This section does not cover:',
+              '',
+              '    a. prepared paints;',
+              '',
+              '    b. ferro-cerium;',
+              '',
+              '2. Throughout the nomenclature, the expression means:',
+              '',
+              '    a. articles of heading 7307;',
+            ].join("\n"),
+          )
+        end
       end
 
       it 'does not save a section with no notes' do
@@ -226,7 +325,7 @@ RSpec.describe CustomsTariffImporter::NotesExtractor do
           '5306100000',
         ])
 
-        expect(result.chapters['53']).to start_with('Additional chapter notes')
+        expect(result.chapters['53']).to start_with('### Additional chapter notes')
         expect(result.chapters['53']).to include('1. (A) For the purposes of code 5306 10 90')
         expect(result.chapters['53']).not_to include('5306100000')
       end
@@ -240,7 +339,7 @@ RSpec.describe CustomsTariffImporter::NotesExtractor do
           '5201000000',
         ])
 
-        expect(result.chapters['52']).to start_with('Subheading note')
+        expect(result.chapters['52']).to start_with('### Subheading note')
         expect(result.chapters['52']).to include("the expression 'denim' means fabrics of yarns.")
         expect(result.chapters['52']).not_to include('5201000000')
       end
@@ -330,6 +429,352 @@ RSpec.describe CustomsTariffImporter::NotesExtractor do
         expect(result.chapters['01']).to include("Line one.\n\nLine two.")
       end
     end
+
+    describe 'recoverable markdown list signal' do
+      it 'drops a singleton opening expression-note number and unindents its content' do
+        result = parse([
+          'CHAPTER 74',
+          'Chapter Notes',
+          '1. In this chapter, the following expressions have the meanings hereby assigned to them:',
+          '',
+          'a. Refined copper:',
+          '',
+          'Metal containing copper.',
+          'Subheading note',
+          '',
+          '1. In this chapter, the following expressions have the meanings hereby assigned to them:',
+          '',
+          'a. Copper-zinc base alloys (brasses):',
+        ])
+
+        expect(result.chapters['74']).to eq(
+          [
+            'In this chapter, the following expressions have the meanings hereby assigned to them:',
+            '',
+            'a. Refined copper:',
+            '',
+            'Metal containing copper.',
+            '### Subheading note',
+            '',
+            'In this chapter, the following expressions have the meanings hereby assigned to them:',
+            '',
+            'a. Copper-zinc base alloys (brasses):',
+          ].join("\n"),
+        )
+      end
+
+      it 'keeps an opening expression-note number when the section has later numbered notes' do
+        result = parse([
+          'CHAPTER 72',
+          'Chapter Notes',
+          '1. In this chapter, the following expressions have the meanings hereby assigned to them:',
+          'a. pig iron',
+          'Iron-carbon alloys.',
+          '2. Ferrous metals clad with another ferrous metal are to be classified elsewhere.',
+        ])
+
+        expect(result.chapters['72']).to include('1. In this chapter')
+        expect(result.chapters['72']).to include('2. Ferrous metals clad')
+        expect(result.chapters['72']).to include('    a. pig iron')
+      end
+
+      it 'keeps numbered-note content indented before rendering' do
+        result = parse([
+          'CHAPTER 72',
+          'Chapter Notes',
+          '1. In this chapter, the following expressions have the meanings hereby assigned to them:',
+          'a. pig iron',
+          'Iron-carbon alloys not usefully malleable, containing one or more of the following:',
+          '- not more than 10 % of chromium',
+          '- not more than 6 % of manganese',
+          'b. spiegeleisen',
+          'Additional chapter note',
+          '1. For the purposes of code 7201 50 10:',
+          '- ferro-alloys contain 4 % or more of iron',
+        ])
+
+        expect(result.chapters['72']).to include(
+          [
+            '1. In this chapter, the following expressions have the meanings hereby assigned to them:',
+            '    a. pig iron',
+            '    Iron-carbon alloys not usefully malleable, containing one or more of the following:',
+            '',
+            '    - not more than 10 % of chromium',
+            '',
+            '    - not more than 6 % of manganese',
+            '',
+            '    b. spiegeleisen',
+            '### Additional chapter note',
+            '',
+            '1. For the purposes of code 7201 50 10:',
+            '',
+            '    - ferro-alloys contain 4 % or more of iron',
+          ].join("\n"),
+        )
+      end
+
+      it 'keeps explicit hyphen bullets nested under their numbered note' do
+        result = parse([
+          'CHAPTER 72',
+          'Chapter Notes',
+          '1. In this chapter, the following expressions have the meanings hereby assigned to them:',
+          'f. other alloy steel',
+          'Steels containing one or more of the following elements:',
+          '- 0.3 % or more of aluminium',
+          '- 0.0008 % or more of boron',
+          'g. remelting scrap ingots of iron or steel',
+        ])
+
+        expect(result.chapters['72']).to include(
+          [
+            '    Steels containing one or more of the following elements:',
+            '',
+            '    - 0.3 % or more of aluminium',
+            '',
+            '    - 0.0008 % or more of boron',
+            '',
+            '    g. remelting scrap ingots of iron or steel',
+          ].join("\n"),
+        )
+      end
+
+      it 'keeps unmarked continuation lines inside the previous bullet item' do
+        result = parse([
+          'CHAPTER 72',
+          'Chapter Notes',
+          'Additional chapter note',
+          "- 'Tool steel': containing one of the following compositions:",
+          '- less than 0.6 % of carbon',
+          'and 0.7 % or more of silicon and 0.05 % or more of vanadium',
+          'or',
+          '4 % or more of tungsten;',
+          '- 0.8 % or more of carbon',
+        ])
+
+        expect(result.chapters['72']).to include(
+          [
+            '- less than 0.6 % of carbon',
+            '',
+            '    and 0.7 % or more of silicon and 0.05 % or more of vanadium',
+            '    or',
+            '    4 % or more of tungsten;',
+            '',
+            '- 0.8 % or more of carbon',
+          ].join("\n"),
+        )
+      end
+
+      it 'converts source em dash bullets and keeps following paragraphs outside the bullet' do
+        result = parse([
+          'CHAPTER 2',
+          'Chapter Notes',
+          '1. A. The following expressions have the meanings hereby assigned to them:',
+          '(c) portions composed of either:',
+          '— forequarters comprising all the bones and the scrag;',
+          'The forequarters and the hindquarters constituting compensated quarters must be presented together;',
+          '(d) unseparated forequarters:',
+        ])
+
+        expect(result.chapters['02']).to include(
+          [
+            '    (c) portions composed of either:',
+            '',
+            '    - forequarters comprising all the bones and the scrag;',
+            '',
+            '    The forequarters and the hindquarters constituting compensated quarters must be presented together;',
+            '    (d) unseparated forequarters:',
+          ].join("\n"),
+        )
+      end
+
+      it 'splits a lettered item with an inline nested number into a nested numbered list' do
+        result = parse([
+          'CHAPTER 2',
+          'Chapter Notes',
+          '1. A. The following expressions have the meanings hereby assigned to them:',
+          "(h) 1. 'crop' and 'chuck and blade' cuts, for the purposes of code 0202 30 50: the dorsal part;",
+          "2. 'brisket' cut, for the purposes of code 0202 30 50: the lower part.",
+          'B. Products covered by additional chapter notes may be presented with or without the vertebral column.',
+        ])
+
+        expect(result.chapters['02']).to include(
+          [
+            '    (h)',
+            '',
+            "    1. 'crop' and 'chuck and blade' cuts, for the purposes of code 0202 30 50: the dorsal part;",
+            '',
+            "    2. 'brisket' cut, for the purposes of code 0202 30 50: the lower part.",
+            '    B. Products covered by additional chapter notes may be presented with or without the vertebral column.',
+          ].join("\n"),
+        )
+      end
+
+      it 'normalises dotless numbered notes before nested bullets and tables' do
+        result = parse([
+          'CHAPTER 4',
+          'Chapter Notes',
+          '3. Previous note.',
+          '4 The term “unfit for human consumption” applies when:',
+          '• the goods are homogeneously mixed',
+          '| Denaturant | Minimum quantity |',
+          '| --- | --- |',
+          '| Spirit of turpentine | 500 |',
+          '5. The duty rate applies.',
+        ])
+
+        expect(result.chapters['04']).to include(
+          [
+            '4. The term “unfit for human consumption” applies when:',
+            '',
+            '    - the goods are homogeneously mixed',
+            '',
+            '    | Denaturant | Minimum quantity |',
+            '    | --- | --- |',
+            '    | Spirit of turpentine | 500 |',
+            '',
+            '5. The duty rate applies.',
+          ].join("\n"),
+        )
+      end
+
+      it 'restores an omitted first additional chapter note marker when later notes continue the sequence' do
+        result = parse([
+          'CHAPTER 15',
+          'Chapter Notes',
+          'Additional chapter notes',
+          'For the purposes of subheadings/codes 1507 10 and 1518 00 31:',
+          '(a) fixed vegetable oils obtained by pressure are crude if:',
+          '— decantation within the normal time limits,',
+          '(b) fixed vegetable oils obtained by extraction are crude when indistinguishable;',
+          '2.A. Headings 1509 and 1510 cover only oils derived solely from olives.',
+          'B. Codes 1509 20 00, 1509 30 00 and 1509 40 00 cover only points 1, 2 and 3 below.',
+          '1. For the purposes of code 1509 20 00, extra virgin olive oil means category 1 oil.',
+          '2. Code 1509 30 00 covers category 2 oil.',
+          '3. Code 1509 40 00 covers category 3 oil.',
+          'C. Code 1509 90 00 covers other olive oil.',
+          '3. Codes 1522 00 31 and 1522 00 39 do not cover residues.',
+        ])
+
+        expect(result.chapters['15']).to include(
+          [
+            '### Additional chapter notes',
+            '',
+            '1. For the purposes of subheadings/codes 1507 10 and 1518 00 31:',
+            '',
+            '    (a) fixed vegetable oils obtained by pressure are crude if:',
+            '',
+            '    - decantation within the normal time limits,',
+            '',
+            '    (b) fixed vegetable oils obtained by extraction are crude when indistinguishable;',
+            '',
+            '2. A. Headings 1509 and 1510 cover only oils derived solely from olives.',
+            '    B. Codes 1509 20 00, 1509 30 00 and 1509 40 00 cover only points 1, 2 and 3 below.',
+            '',
+            '    1. For the purposes of code 1509 20 00, extra virgin olive oil means category 1 oil.',
+            '',
+            '    2. Code 1509 30 00 covers category 2 oil.',
+            '',
+            '    3. Code 1509 40 00 covers category 3 oil.',
+            '    C. Code 1509 90 00 covers other olive oil.',
+            '',
+            '3. Codes 1522 00 31 and 1522 00 39 do not cover residues.',
+          ].join("\n"),
+        )
+      end
+
+      it 'joins same-note paragraph continuations split mid-phrase by the source document' do
+        result = parse([
+          'CHAPTER 15',
+          'Chapter Notes',
+          '5. Food preparations are excluded by their specific form of',
+          'presentation revealing their function.',
+        ])
+
+        expect(result.chapters['15']).to eq(
+          '5. Food preparations are excluded by their specific form of presentation revealing their function.',
+        )
+      end
+
+      it 'keeps consecutive indented source paragraphs separate under a numbered note' do
+        result = parse([
+          'CHAPTER 17',
+          'Chapter Notes',
+          '3. For products of codes 1702 2010, the sugar content is determined using the following formula:',
+          'S + 0,95 x (F + G) + M',
+          'where:',
+          '“S” is the sucrose content determined by the HPLC method;',
+          '“F” is the fructose content determined by the HPLC method;',
+          '“G” is the glucose content determined by the HPLC method;',
+          '“M” is the maltose content determined by the HPLC method.',
+        ])
+
+        expect(result.chapters['17']).to include(
+          [
+            '    “S” is the sucrose content determined by the HPLC method;',
+            '',
+            '    “F” is the fructose content determined by the HPLC method;',
+            '',
+            '    “G” is the glucose content determined by the HPLC method;',
+            '',
+            '    “M” is the maltose content determined by the HPLC method.',
+          ].join("\n"),
+        )
+      end
+
+      it 'normalises compact note markers and lettered paragraph lists after colon lead-ins' do
+        result = parse([
+          'CHAPTER 34',
+          'Chapter Notes',
+          '5.In heading 3404, artificial waxes and prepared waxes applies only to:',
+          'a. chemically produced organic products of a waxy character;',
+          'b. products obtained by mixing different waxes;',
+          'c. products of a waxy character with a basis of one or more waxes.',
+          'The heading does not apply to:',
+          '(a) products of heading 1516;',
+          '(b) unmixed animal waxes;',
+          '(c) mineral waxes; or',
+          '(d) waxes mixed with a liquid medium.',
+        ])
+
+        expect(result.chapters['34']).to include(
+          [
+            '5. In heading 3404, artificial waxes and prepared waxes applies only to:',
+            '',
+            '    - a. chemically produced organic products of a waxy character;',
+            '',
+            '    - b. products obtained by mixing different waxes;',
+            '',
+            '    - c. products of a waxy character with a basis of one or more waxes.',
+            '',
+            '    The heading does not apply to:',
+            '',
+            '    - (a) products of heading 1516;',
+            '',
+            '    - (b) unmixed animal waxes;',
+            '',
+            '    - (c) mineral waxes; or',
+            '',
+            '    - (d) waxes mixed with a liquid medium.',
+          ].join("\n"),
+        )
+      end
+
+      it 'does not normalise a dotless number unless it continues the top-level note sequence' do
+        result = parse([
+          'CHAPTER 4',
+          'Chapter Notes',
+          '1. Previous note.',
+          '4 The goods are put up in containers.',
+        ])
+
+        expect(result.chapters['04']).to include(
+          [
+            '1. Previous note.',
+            '    4 The goods are put up in containers.',
+          ].join("\n"),
+        )
+      end
+    end
   end
 
   # Integration tests — full call through read_document_xml → extract_paragraphs → parse_notes
@@ -388,6 +833,341 @@ RSpec.describe CustomsTariffImporter::NotesExtractor do
           rules: 1,
           duration_ms: a_kind_of(Float),
         )
+      end
+    end
+
+    context 'with source formatting in the .docx' do
+      it 'converts Word tables to markdown before storing chapter notes' do
+        table_xml = <<~XML
+          <w:tbl>
+            <w:tr>
+              <w:tc>
+                <w:tcPr><w:gridSpan w:val="2"/></w:tcPr>
+                <w:p><w:r><w:t>Element</w:t></w:r></w:p>
+              </w:tc>
+              <w:tc><w:p><w:r><w:t>Limiting content % by weight</w:t></w:r></w:p></w:tc>
+            </w:tr>
+            <w:tr>
+              <w:tc><w:p><w:r><w:t>Ag</w:t></w:r></w:p></w:tc>
+              <w:tc><w:p><w:r><w:t>Silver | gold \\ alloy</w:t></w:r></w:p></w:tc>
+              <w:tc><w:p><w:r><w:t>0,25</w:t></w:r></w:p></w:tc>
+            </w:tr>
+            <w:tr>
+              <w:tc><w:p><w:r><w:t>Other elements are, for example, Al, Be, Co, Fe, Mn, Ni, Si.</w:t></w:r></w:p></w:tc>
+              <w:tc><w:p/></w:tc>
+              <w:tc><w:p><w:r><w:t>0.3</w:t></w:r></w:p></w:tc>
+            </w:tr>
+          </w:tbl>
+        XML
+
+        docx_content = build_docx_from_body_xml([
+          paragraph_xml('CHAPTER 74', bold: true),
+          paragraph_xml('Chapter Notes', bold: true),
+          paragraph_xml('1. In this chapter, the following expressions have the meanings hereby assigned to them:'),
+          paragraph_xml('Other elements', bold: true),
+          table_xml,
+          paragraph_xml('b. Copper alloys:'),
+        ].join("\n"))
+
+        result = described_class.new('1.30', docx_content).call
+
+        expect(result.chapters['74']).to include(<<~MARKDOWN.strip)
+          **Other elements**
+
+          | Element | Limiting content % by weight |
+          | --- | --- |
+          | Ag Silver \\| gold \\\\ alloy | 0,25 |
+          | Other elements are, for example, Al, Be, Co, Fe, Mn, Ni, Si. | 0.3 |
+        MARKDOWN
+        expect(result.chapters['74']).not_to include("Ag\n    Silver\n    0,25")
+      end
+
+      it 'preserves table columns from spanned multi-row headers' do
+        table_xml = <<~XML
+          <w:tbl>
+            <w:tr>
+              <w:tc><w:p><w:r><w:t>Cereal</w:t></w:r></w:p></w:tc>
+              <w:tc><w:p><w:r><w:t>Starch content</w:t></w:r></w:p></w:tc>
+              <w:tc><w:p><w:r><w:t>Ash content</w:t></w:r></w:p></w:tc>
+              <w:tc>
+                <w:tcPr><w:gridSpan w:val="2"/></w:tcPr>
+                <w:p><w:r><w:t>Rate of passage through a sieve with an aperture of</w:t></w:r></w:p>
+              </w:tc>
+            </w:tr>
+            <w:tr>
+              <w:tc><w:p><w:r><w:t> </w:t></w:r></w:p></w:tc>
+              <w:tc><w:p><w:r><w:t> </w:t></w:r></w:p></w:tc>
+              <w:tc><w:p><w:r><w:t> </w:t></w:r></w:p></w:tc>
+              <w:tc><w:p><w:r><w:t>315 micrometres (microns)</w:t></w:r></w:p></w:tc>
+              <w:tc><w:p><w:r><w:t>500 micrometres (microns)</w:t></w:r></w:p></w:tc>
+            </w:tr>
+            <w:tr>
+              <w:tc><w:p><w:r><w:t>(1)</w:t></w:r></w:p></w:tc>
+              <w:tc><w:p><w:r><w:t>(2)</w:t></w:r></w:p></w:tc>
+              <w:tc><w:p><w:r><w:t>(3)</w:t></w:r></w:p></w:tc>
+              <w:tc><w:p><w:r><w:t>(4)</w:t></w:r></w:p></w:tc>
+              <w:tc><w:p><w:r><w:t>(5)</w:t></w:r></w:p></w:tc>
+            </w:tr>
+            <w:tr>
+              <w:tc><w:p><w:r><w:t>Maize (corn) and grain sorghum</w:t></w:r></w:p></w:tc>
+              <w:tc><w:p><w:r><w:t>45 %</w:t></w:r></w:p></w:tc>
+              <w:tc><w:p><w:r><w:t>2 %</w:t></w:r></w:p></w:tc>
+              <w:tc><w:p><w:r><w:t>—</w:t></w:r></w:p></w:tc>
+              <w:tc><w:p><w:r><w:t>90 %</w:t></w:r></w:p></w:tc>
+            </w:tr>
+          </w:tbl>
+        XML
+
+        docx_content = build_docx_from_body_xml([
+          paragraph_xml('CHAPTER 11', bold: true),
+          paragraph_xml('Chapter Notes', bold: true),
+          paragraph_xml('2. Products are classified according to the table:'),
+          table_xml,
+        ].join("\n"))
+
+        result = described_class.new('1.30', docx_content).call
+
+        expect(result.chapters['11']).to include(
+          [
+            '    | Cereal | Starch content | Ash content | Rate of passage through a sieve with an aperture of 315 micrometres (microns) | Rate of passage through a sieve with an aperture of 500 micrometres (microns) |',
+            '    | --- | --- | --- | --- | --- |',
+            '    | (1) | (2) | (3) | (4) | (5) |',
+            '    | Maize (corn) and grain sorghum | 45 % | 2 % | — | 90 % |',
+          ].join("\n"),
+        )
+      end
+
+      it 'preserves grouped table columns when a top header spans several subcolumns' do
+        table_xml = <<~XML
+          <w:tbl>
+            <w:tr>
+              <w:tc>
+                <w:tcPr><w:gridSpan w:val="3"/></w:tcPr>
+                <w:p><w:r><w:t>Denaturant</w:t></w:r></w:p>
+              </w:tc>
+              <w:tc><w:p><w:r><w:t>Minimum quantity to be used (in g) per 100 kg of denatured product</w:t></w:r></w:p></w:tc>
+            </w:tr>
+            <w:tr>
+              <w:tc>
+                <w:tcPr><w:gridSpan w:val="3"/></w:tcPr>
+                <w:p><w:r><w:t>(1)</w:t></w:r></w:p>
+              </w:tc>
+              <w:tc><w:p><w:r><w:t>(2)</w:t></w:r></w:p></w:tc>
+            </w:tr>
+            <w:tr>
+              <w:tc><w:p><w:r><w:t>Chemical name or description</w:t></w:r></w:p></w:tc>
+              <w:tc><w:p><w:r><w:t>Common name</w:t></w:r></w:p></w:tc>
+              <w:tc><w:p><w:r><w:t>Colour index</w:t></w:r></w:p></w:tc>
+              <w:tc><w:p/></w:tc>
+            </w:tr>
+            <w:tr>
+              <w:tc><w:p><w:r><w:t>Sodium salt of 4-sulphobenzeneazo-resorcinol</w:t></w:r></w:p></w:tc>
+              <w:tc><w:p><w:r><w:t>Chrysoine S</w:t></w:r></w:p></w:tc>
+              <w:tc><w:p><w:r><w:t>14270</w:t></w:r></w:p></w:tc>
+              <w:tc><w:p><w:r><w:t>6</w:t></w:r></w:p></w:tc>
+            </w:tr>
+          </w:tbl>
+        XML
+
+        docx_content = build_docx_from_body_xml([
+          paragraph_xml('CHAPTER 25', bold: true),
+          paragraph_xml('Chapter Notes', bold: true),
+          paragraph_xml('2. The term denatured applies when:'),
+          table_xml,
+        ].join("\n"))
+
+        result = described_class.new('1.30', docx_content).call
+
+        expect(result.chapters['25']).to include(
+          [
+            '    | Denaturant |  |  | Minimum quantity to be used (in g) per 100 kg of denatured product |',
+            '    | --- | --- | --- | --- |',
+            '    | (1) |  |  | (2) |',
+            '    | Chemical name or description | Common name | Colour index |  |',
+            '    | Sodium salt of 4-sulphobenzeneazo-resorcinol | Chrysoine S | 14270 | 6 |',
+          ].join("\n"),
+        )
+      end
+
+      it 'uses source indentation to recover nested marker lists' do
+        docx_content = build_docx_from_body_xml([
+          paragraph_xml('CHAPTER 84', bold: true),
+          paragraph_xml('Chapter Notes', bold: true),
+          numbered_paragraph_xml('This chapter does not cover:', num_id: 23),
+          indented_paragraph_xml('a. millstones, grindstones or other articles of Chapter 68;', left: 720),
+          indented_paragraph_xml('b. machinery or appliances of ceramic material;', left: 720),
+          numbered_paragraph_xml('Subject to the operation of note 3 to Section XVI, a machine is to be classified under the former group.', num_id: 23),
+          indented_paragraph_xml('(A) Heading 8419 does not, however, cover:', left: 1080),
+          indented_paragraph_xml('i. germination plant, incubators or brooders (heading 8436);', left: 1800),
+          indented_paragraph_xml('ii. grain dampening machines (heading 8437);', left: 1800),
+          indented_paragraph_xml('(B) Heading 8422 does not cover:', left: 1080),
+          indented_paragraph_xml('i. sewing machines for closing bags or similar containers (heading 8452); or', left: 1800),
+          indented_paragraph_xml('ii. office machinery of heading 8472.', left: 1800),
+          numbered_paragraph_xml('Heading 8457 applies only to machine tools for working metal either:', num_id: 23),
+          indented_paragraph_xml('a. by automatic tool change from a magazine;', left: 1800),
+          indented_paragraph_xml('b. by the automatic use of different unit heads;', left: 1800),
+          numbered_paragraph_xml('For the purposes of heading 8471, automatic data-processing machines means machines, capable of', num_id: 23),
+          indented_paragraph_xml('(1) storing the processing program;', left: 1800),
+          indented_paragraph_xml('(2) being freely programmed;', left: 1080),
+        ].join("\n"))
+
+        result = described_class.new('1.30', docx_content).call
+
+        expect(result.chapters['84']).to include(
+          [
+            '1. This chapter does not cover:',
+            '',
+            '    a. millstones, grindstones or other articles of Chapter 68;',
+            '',
+            '    b. machinery or appliances of ceramic material;',
+            '',
+            '2. Subject to the operation of note 3 to Section XVI, a machine is to be classified under the former group.',
+            '',
+            '    - (A) Heading 8419 does not, however, cover:',
+            '',
+            '        - i. germination plant, incubators or brooders (heading 8436);',
+            '',
+            '        - ii. grain dampening machines (heading 8437);',
+            '',
+            '    - (B) Heading 8422 does not cover:',
+            '',
+            '        - i. sewing machines for closing bags or similar containers (heading 8452); or',
+            '',
+            '        - ii. office machinery of heading 8472.',
+            '',
+            '3. Heading 8457 applies only to machine tools for working metal either:',
+            '',
+            '    a. by automatic tool change from a magazine;',
+            '',
+            '    b. by the automatic use of different unit heads;',
+            '',
+            '4. For the purposes of heading 8471, automatic data-processing machines means machines, capable of',
+            '',
+            '    (1) storing the processing program;',
+            '',
+            '    (2) being freely programmed;',
+          ].join("\n"),
+        )
+      end
+
+      it 'keeps source-indented definition paragraphs and roman bracket conditions out of code blocks' do
+        docx_content = build_docx_from_body_xml([
+          paragraph_xml('CHAPTER 75', bold: true),
+          paragraph_xml('Subheading notes', bold: true),
+          numbered_paragraph_xml('In this chapter, the following expressions have the meanings hereby assigned to them:', num_id: 24),
+          indented_paragraph_xml('a. nickel, not alloyed:', left: 720),
+          indented_paragraph_xml('Metal containing by weight at least 99 % of nickel plus cobalt, provided that:', left: 720),
+          indented_paragraph_xml('(i) the cobalt content by weight does not exceed 1.5 %, and', left: 1800),
+          indented_paragraph_xml('(ii) the content by weight of any other element does not exceed the limit specified in the following table:', left: 1800),
+        ].join("\n"))
+
+        result = described_class.new('1.30', docx_content).call
+
+        expect(result.chapters['75']).to include(
+          [
+            '### Subheading notes',
+            '',
+            '1. In this chapter, the following expressions have the meanings hereby assigned to them:',
+            '',
+            '    a. nickel, not alloyed:',
+            '',
+            '    Metal containing by weight at least 99 % of nickel plus cobalt, provided that:',
+            '',
+            '    (i) the cobalt content by weight does not exceed 1.5 %, and',
+            '',
+            '    (ii) the content by weight of any other element does not exceed the limit specified in the following table:',
+          ].join("\n"),
+        )
+      end
+
+      it 'preserves source bold without inventing bold for plain paragraphs' do
+        docx_content = build_docx_from_body_xml([
+          paragraph_xml('CHAPTER 74', bold: true),
+          paragraph_xml('Chapter Notes', bold: true),
+          paragraph_xml('1. In this chapter, the following expressions have the meanings hereby assigned to them:'),
+          paragraph_xml('a. Refined copper:'),
+          paragraph_xml('Actually bold source text', bold: true),
+        ].join("\n"))
+
+        result = described_class.new('1.30', docx_content).call
+
+        expect(result.chapters['74']).to include("a. Refined copper:\n\n**Actually bold source text**")
+        expect(result.chapters['74']).not_to include('**a. Refined copper:**')
+      end
+
+      it 'keeps numbered note markers outside source paragraph bold markdown' do
+        docx_content = build_docx_from_body_xml([
+          paragraph_xml('CHAPTER 7', bold: true),
+          paragraph_xml('Chapter Notes', bold: true),
+          paragraph_xml('5. Heading 0711 applies to preserved vegetables.', bold: true),
+        ].join("\n"))
+
+        result = described_class.new('1.30', docx_content).call
+
+        expect(result.chapters['07']).to eq('5. **Heading 0711 applies to preserved vegetables.**')
+      end
+
+      it 'does not treat paragraph property bold as visible text bold' do
+        docx_content = build_docx_from_body_xml([
+          paragraph_xml('CHAPTER 7', bold: true),
+          paragraph_xml('Chapter Notes', bold: true),
+          paragraph_xml_with_paragraph_bold_only('5. Heading 0711 applies to preserved vegetables.'),
+        ].join("\n"))
+
+        result = described_class.new('1.30', docx_content).call
+
+        expect(result.chapters['07']).to eq('5. Heading 0711 applies to preserved vegetables.')
+      end
+
+      it 'preserves visible text inside hyperlink-wrapped runs' do
+        docx_content = build_docx_from_body_xml([
+          paragraph_xml('CHAPTER 20', bold: true),
+          paragraph_xml('Chapter Notes', bold: true),
+          hyperlink_paragraph_xml('1. Products of heading ', '2009', ' are covered by this chapter.'),
+        ].join("\n"))
+
+        result = described_class.new('1.30', docx_content).call
+
+        expect(result.chapters['20']).to eq('1. Products of heading 2009 are covered by this chapter.')
+      end
+
+      it 'resets visual numbering counters between chapter notes sharing a Word numId' do
+        docx_content = build_docx_from_body_xml([
+          paragraph_xml('CHAPTER 84', bold: true),
+          paragraph_xml('Chapter Notes', bold: true),
+          numbered_paragraph_xml('This chapter does not cover:', num_id: 23),
+          paragraph_xml('CHAPTER 85', bold: true),
+          paragraph_xml('Chapter Notes', bold: true),
+          numbered_paragraph_xml('This chapter does not cover:', num_id: 23),
+        ].join("\n"))
+
+        result = described_class.new('1.30', docx_content).call
+
+        expect(result.chapters['84']).to eq('1. This chapter does not cover:')
+        expect(result.chapters['85']).to eq('1. This chapter does not cover:')
+      end
+
+      it 'uses commodity tables as note boundaries instead of note markdown' do
+        commodity_table_xml = <<~XML
+          <w:tbl>
+            <w:tr>
+              <w:tc><w:p><w:r><w:t>7401000000</w:t></w:r></w:p></w:tc>
+              <w:tc><w:p><w:r><w:t>Copper mattes</w:t></w:r></w:p></w:tc>
+            </w:tr>
+          </w:tbl>
+        XML
+
+        docx_content = build_docx_from_body_xml([
+          paragraph_xml('CHAPTER 74'),
+          paragraph_xml('Chapter Notes'),
+          paragraph_xml('1. Note content.'),
+          commodity_table_xml,
+          paragraph_xml('This commodity description should not be captured.'),
+        ].join("\n"))
+
+        result = described_class.new('1.30', docx_content).call
+
+        expect(result.chapters['74']).to eq('1. Note content.')
       end
     end
 
