@@ -208,6 +208,51 @@ RSpec.describe CustomsTariffImporter::NotesExtractor do
         end
       end
 
+      it 'removes advisory chapter note preambles' do
+        [
+          '**There are important notes for this part of the tariff:**',
+          '**There are important chapter notes for this part of the tariff:**',
+        ].each do |preamble|
+          result = parse_paragraphs([
+            paragraph('CHAPTER 70'),
+            paragraph('Chapter Notes'),
+            paragraph(preamble),
+            paragraph('1.This chapter does not cover:'),
+            paragraph('a. goods of heading 3207;', indent: 720),
+          ])
+
+          expect(result.chapters['70']).not_to include('There are important')
+          expect(result.chapters['70']).to start_with(
+            [
+              '1. This chapter does not cover:',
+              '',
+              '    a. goods of heading 3207;',
+            ].join("\n"),
+          )
+        end
+      end
+
+      it 'removes malformed literal bold markers duplicated by the next source paragraph' do
+        result = parse([
+          'CHAPTER 76',
+          'Subheading notes',
+          '**Other elements',
+          '**Other elements**',
+          '1.This chapter does not cover:',
+        ])
+
+        expect(result.chapters['76']).to include(
+          [
+            '### Subheading notes',
+            '',
+            '**Other elements**',
+            '',
+            '1. This chapter does not cover:',
+          ].join("\n"),
+        )
+        expect(result.chapters['76']).not_to include("**Other elements\n")
+      end
+
       it 'does not save a section with no notes' do
         result = parse(['SECTION I', 'CHAPTER 1'])
         expect(result.sections).to be_empty
@@ -547,6 +592,68 @@ RSpec.describe CustomsTariffImporter::NotesExtractor do
             '        1. weighing not more than 80 g/m2; or',
             '',
             '        2. coloured throughout the mass; or',
+          ].join("\n"),
+        )
+      end
+
+      it 'does not promote an uppercase marker group unless it starts at the first parent marker' do
+        result = parse_paragraphs([
+          paragraph('CHAPTER 84'),
+          paragraph('Chapter Notes'),
+          paragraph('6. (A) For the purposes of heading 8471, automatic data-processing machines means machines, capable of'),
+          paragraph('(1) storing the processing program;', indent: 1440),
+          paragraph('(2) being freely programmed;', indent: 720, first_line_indent: 720),
+          paragraph('(B) Automatic data-processing machines may be in the form of systems.', indent: 720),
+          paragraph('(C) A unit is part of an automatic data processing system if it meets all the following conditions:', indent: 720),
+          paragraph('(1) it is principally used in an automatic data-processing system;', indent: 1440),
+          paragraph('(2) it is connectable to the central processing unit;', indent: 1440),
+          paragraph('Separately presented units are to be classified in heading 8471.', indent: 720),
+          paragraph('(D) Heading 8471 does not cover the following:', indent: 720),
+          paragraph('(1) printers, copying machines, facsimile machines;', indent: 720, first_line_indent: 720),
+        ])
+
+        expect(result.chapters['84']).to include(
+          [
+            '6. (A) For the purposes of heading 8471, automatic data-processing machines means machines, capable of',
+            '',
+            '    (1) storing the processing program;',
+            '',
+            '    (2) being freely programmed;',
+            '',
+            '    (B) Automatic data-processing machines may be in the form of systems.',
+            '',
+            '    (C) A unit is part of an automatic data processing system if it meets all the following conditions:',
+            '',
+            '    (1) it is principally used in an automatic data-processing system;',
+            '',
+            '    (2) it is connectable to the central processing unit;',
+            '',
+            '    Separately presented units are to be classified in heading 8471.',
+            '',
+            '    (D) Heading 8471 does not cover the following:',
+            '',
+            '    (1) printers, copying machines, facsimile machines;',
+          ].join("\n"),
+        )
+        expect(result.chapters['84']).not_to include('    - (B)')
+      end
+
+      it 'separates source-indented paragraphs within numbered notes' do
+        result = parse_paragraphs([
+          paragraph('CHAPTER 84'),
+          paragraph('Chapter Notes'),
+          paragraph('10. For the purposes of heading 8485, additive manufacturing means layering material.'),
+          paragraph(
+            'Subject to Note 1 to Section XVI and Note 1 to Chapter 84, machines answering to heading 8485 are classified there.',
+            indent: 720,
+          ),
+        ])
+
+        expect(result.chapters['84']).to include(
+          [
+            '10. For the purposes of heading 8485, additive manufacturing means layering material.',
+            '',
+            '    Subject to Note 1 to Section XVI and Note 1 to Chapter 84, machines answering to heading 8485 are classified there.',
           ].join("\n"),
         )
       end
@@ -1219,6 +1326,7 @@ RSpec.describe CustomsTariffImporter::NotesExtractor do
           | Ag Silver \\| gold \\\\ alloy | 0,25 |
           | Other elements are, for example, Al, Be, Co, Fe, Mn, Ni, Si. | 0.3 |
         MARKDOWN
+        expect(result.chapters['74']).to have_valid_markdown_tables
         expect(result.chapters['74']).not_to include("Ag\n    Silver\n    0,25")
       end
 
@@ -1391,6 +1499,35 @@ RSpec.describe CustomsTariffImporter::NotesExtractor do
       end
 
       it 'keeps source-indented definition paragraphs and roman bracket conditions out of code blocks' do
+        table_xml = <<~XML
+          <w:tbl>
+            <w:tr>
+              <w:tc>
+                <w:tcPr><w:gridSpan w:val="2"/></w:tcPr>
+                <w:p><w:r><w:t>Element</w:t></w:r></w:p>
+              </w:tc>
+              <w:tc><w:p><w:r><w:t>Limiting content % by weight</w:t></w:r></w:p></w:tc>
+            </w:tr>
+            <w:tr>
+              <w:tc><w:p><w:r><w:t>Fe</w:t></w:r></w:p></w:tc>
+              <w:tc><w:p><w:r><w:t>Iron</w:t></w:r></w:p></w:tc>
+              <w:tc><w:p><w:r><w:t>0.5</w:t></w:r></w:p></w:tc>
+            </w:tr>
+            <w:tr>
+              <w:tc><w:p><w:r><w:t>O</w:t></w:r></w:p></w:tc>
+              <w:tc><w:p><w:r><w:t>Oxygen</w:t></w:r></w:p></w:tc>
+              <w:tc><w:p><w:r><w:t>0.4</w:t></w:r></w:p></w:tc>
+            </w:tr>
+            <w:tr>
+              <w:tc>
+                <w:tcPr><w:gridSpan w:val="2"/></w:tcPr>
+                <w:p><w:r><w:t>Other elements, each</w:t></w:r></w:p>
+              </w:tc>
+              <w:tc><w:p><w:r><w:t>0.3</w:t></w:r></w:p></w:tc>
+            </w:tr>
+          </w:tbl>
+        XML
+
         docx_content = build_docx_from_body_xml([
           paragraph_xml('CHAPTER 75', bold: true),
           paragraph_xml('Subheading notes', bold: true),
@@ -1399,6 +1536,7 @@ RSpec.describe CustomsTariffImporter::NotesExtractor do
           indented_paragraph_xml('Metal containing by weight at least 99 % of nickel plus cobalt, provided that:', left: 720),
           indented_paragraph_xml('(i) the cobalt content by weight does not exceed 1.5 %, and', left: 1800),
           indented_paragraph_xml('(ii) the content by weight of any other element does not exceed the limit specified in the following table:', left: 1800),
+          table_xml,
         ].join("\n"))
 
         result = described_class.new('1.30', docx_content).call
@@ -1416,8 +1554,15 @@ RSpec.describe CustomsTariffImporter::NotesExtractor do
             '    (i) the cobalt content by weight does not exceed 1.5 %, and',
             '',
             '    (ii) the content by weight of any other element does not exceed the limit specified in the following table:',
+            '',
+            '    | Element | Limiting content % by weight |',
+            '    | --- | --- |',
+            '    | Fe (Iron) | 0.5 |',
+            '    | O (Oxygen) | 0.4 |',
+            '    | Other elements, each | 0.3 |',
           ].join("\n"),
         )
+        expect(result.chapters['75']).to have_valid_markdown_tables
       end
 
       it 'preserves source bold without inventing bold for plain paragraphs' do
