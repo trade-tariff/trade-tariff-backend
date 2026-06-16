@@ -658,6 +658,77 @@ RSpec.describe CustomsTariffImporter::NotesExtractor do
         )
       end
 
+      it 'promotes source-indented numeric marker runs after semantic lead-ins' do
+        result = parse_paragraphs([
+          paragraph('CHAPTER 85'),
+          paragraph('Chapter Notes'),
+          paragraph('12. For the purpose of heading 8541 and 8542:'),
+          paragraph('(a) (i) “Semiconductor devices” are semiconductor devices.', indent: 720),
+          paragraph('The following expressions mean :', first_line_indent: 720),
+          paragraph('(1) “Semiconductor-based” means built on a semiconductor substrate.', indent: 720),
+          paragraph('(2) “Physical or chemical phenomena” relate to pressure and light.', indent: 720),
+          paragraph('(ii) “Light-emitting diodes (LED)” are semiconductor devices.', indent: 720),
+          paragraph('b. ‘Electronic integrated circuits’ are:', first_line_indent: 720),
+          paragraph('(1) monolithic integrated circuits;', indent: 720),
+          paragraph('(2) hybrid integrated circuits;', indent: 720),
+          paragraph('For the purpose of this definition:', first_line_indent: 720),
+          paragraph('(1) ‘Components’ may be discrete.', indent: 720),
+          paragraph('(2) ‘Silicon based’ means built on silicon.', indent: 720),
+          paragraph('(3) (a) ‘Silicon based sensors’ consist of structures.', indent: 720),
+          paragraph('(b) ‘Silicon based actuators’ convert signals.', indent: 720),
+        ])
+
+        expect(result.chapters['85']).to include(
+          [
+            '    The following expressions mean :',
+            '',
+            '    - (1) “Semiconductor-based” means built on a semiconductor substrate.',
+            '',
+            '    - (2) “Physical or chemical phenomena” relate to pressure and light.',
+            '',
+            '    (ii) “Light-emitting diodes (LED)” are semiconductor devices.',
+            '',
+            '    b. ‘Electronic integrated circuits’ are:',
+            '',
+            '    - (1) monolithic integrated circuits;',
+            '',
+            '    - (2) hybrid integrated circuits;',
+            '',
+            '    For the purpose of this definition:',
+            '',
+            '    - (1) ‘Components’ may be discrete.',
+            '',
+            '    - (2) ‘Silicon based’ means built on silicon.',
+            '',
+            '    - (3) (a) ‘Silicon based sensors’ consist of structures.',
+            '',
+            '    (b) ‘Silicon based actuators’ convert signals.',
+          ].join("\n"),
+        )
+      end
+
+      it 'keeps alphabetic marker runs after semantic lead-ins as source-indented paragraphs' do
+        result = parse_paragraphs([
+          paragraph('SECTION XV'),
+          paragraph('Section Notes'),
+          paragraph('7. Classification of composite articles:'),
+          paragraph('For this purpose:', first_line_indent: 720),
+          paragraph('a. Iron and steel are regarded as one metal.', indent: 720),
+          paragraph('b. An alloy is regarded as entirely composed of that metal.', indent: 720),
+        ])
+
+        expect(result.sections[15]).to include(
+          [
+            '    For this purpose:',
+            '',
+            '    a. Iron and steel are regarded as one metal.',
+            '',
+            '    b. An alloy is regarded as entirely composed of that metal.',
+          ].join("\n"),
+        )
+        expect(result.sections[15]).not_to include('    - a.')
+      end
+
       it 'stops collecting chapter notes when a 10-digit commodity code is encountered' do
         result = parse([
           'CHAPTER 1',

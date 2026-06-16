@@ -311,6 +311,7 @@ module CustomsTariffImporter
         end
 
         normalize_source_nested_marker_lists(lines)
+        normalize_semantic_numeric_marker_lists(lines)
         normalize_plain_marker_code_block_indents(lines)
         normalize_indented_marker_spacing(lines) if section
         normalize_lettered_paragraph_lists(lines)
@@ -923,6 +924,61 @@ module CustomsTariffImporter
         lines.map! do |line|
           plain_deep_marker_line?(line) ? marker_list_line(line, indent_level: 1, bullet: false) : line
         end
+      end
+
+      def normalize_semantic_numeric_marker_lists(lines)
+        index = 0
+        while index < lines.length
+          if semantic_numeric_marker_list_lead_in?(lines[index])
+            first_item_index = next_content_line_index(lines, index + 1)
+            if first_item_index && first_semantic_numeric_marker_line?(lines[first_item_index], lines[index])
+              normalize_semantic_numeric_marker_list(lines, first_item_index, line_indent_level(lines[index]))
+            end
+          end
+
+          index += 1
+        end
+      end
+
+      def normalize_semantic_numeric_marker_list(lines, start_index, indent_level)
+        index = start_index
+        while index < lines.length
+          index = next_content_line_index(lines, index)
+          break unless index && semantic_numeric_marker_line?(lines[index])
+
+          lines[index] = marker_list_line(lines[index], indent_level:, bullet: true)
+          index += 1
+        end
+      end
+
+      def semantic_numeric_marker_list_lead_in?(line)
+        line_indent_level(line) == 1 &&
+          semantic_numeric_marker_list_lead_in_marker?(line) &&
+          line.to_s.strip.end_with?(':')
+      end
+
+      def semantic_numeric_marker_list_lead_in_marker?(line)
+        marker = MarkerTrie.marker_from_line(line).to_s
+
+        marker.blank? || marker.match?(/\A(?:[a-z]|ij)\.\z/i)
+      end
+
+      def first_semantic_numeric_marker_line?(line, lead_in)
+        lead_in_indent_level = line_indent_level(lead_in)
+
+        semantic_numeric_marker_line?(line) &&
+          [lead_in_indent_level, lead_in_indent_level + 1].include?(MarkerTrie.indent_level(line)) &&
+          MarkerTrie.marker_from_line(line) == '(1)'
+      end
+
+      def semantic_numeric_marker_line?(line)
+        MarkerTrie.indent_level(line).to_i.positive? &&
+          MarkerTrie.marker_from_line(line).to_s.match?(/\A\(\d+\)\z/) &&
+          !markdown_bullet?(line)
+      end
+
+      def line_indent_level(line)
+        line.to_s[/\A */].length / 4
       end
 
       def plain_deep_marker_line?(line)
