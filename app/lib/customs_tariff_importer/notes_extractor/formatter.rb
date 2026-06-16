@@ -30,6 +30,8 @@ module CustomsTariffImporter
       def reset_note_formatting_context
         @in_numbered_note = false
         @in_nested_numbered_subnote = false
+        @in_source_indented_marker_list = false
+        @source_indented_marker_list_closed = false
         @last_top_level_note_number = nil
         @previous_markdown_bullet_indent = nil
         @current_paragraph = nil
@@ -73,12 +75,17 @@ module CustomsTariffImporter
           style:,
           text: paragraph_text(para),
           indent: paragraph_indent(para),
+          first_line_indent: paragraph_first_line_indent(para),
           numbering: paragraph_numbering(para),
         }
       end
 
       def paragraph_indent(para)
         para.at_xpath('./w:pPr/w:ind', WORD_NS)&.attr('w:left').to_i
+      end
+
+      def paragraph_first_line_indent(para)
+        para.at_xpath('./w:pPr/w:ind', WORD_NS)&.attr('w:firstLine').to_i
       end
 
       def paragraph_numbering(para)
@@ -267,6 +274,7 @@ module CustomsTariffImporter
         return "    #{text}" if nested_numbered_note?(text)
         return text if numbered_note?(text)
         return markdown_bullet_line(text) if source_bullet_line?(text)
+        return missing_source_bullet_line(text) if missing_source_bullet_line?(text)
         return "    #{text.sub(/\A\s*/, '')}" if @in_numbered_note
 
         text
@@ -280,9 +288,22 @@ module CustomsTariffImporter
           return
         end
 
+        if source_indented_marker_line?(formatted)
+          @in_source_indented_marker_list = true
+          @source_indented_marker_list_closed = false
+          @previous_markdown_bullet_indent = nil
+          return
+        end
+
+        if source_indented_marker_list_ended?(text)
+          @in_source_indented_marker_list = false
+          @source_indented_marker_list_closed = true
+        end
+
         if nested_numbered_subnote_start?(text)
           @in_numbered_note = true
           @in_nested_numbered_subnote = true
+          @source_indented_marker_list_closed = false
           @previous_markdown_bullet_indent = nil
           return
         end
@@ -297,6 +318,7 @@ module CustomsTariffImporter
         @in_nested_numbered_subnote = false if @in_nested_numbered_subnote && !numbered_note?(formatted)
         if numbered_note?(formatted)
           @in_numbered_note = true
+          @source_indented_marker_list_closed = false
           @last_top_level_note_number = formatted[/\A([1-9]\d*)\./, 1].to_i unless @in_nested_numbered_subnote
         end
         @previous_markdown_bullet_indent =
@@ -371,6 +393,16 @@ module CustomsTariffImporter
         "#{'    ' if @in_numbered_note}- #{bullet_text}"
       end
 
+      def missing_source_bullet_line?(text)
+        @previous_markdown_bullet_indent &&
+          paragraph_first_line_indent_level.positive? &&
+          text.match?(/\A\S/)
+      end
+
+      def missing_source_bullet_line(text)
+        "#{' ' * @previous_markdown_bullet_indent}- #{text.sub(/\A\s*/, '')}"
+      end
+
       def indented_marker?(text)
         paragraph_indent_level.positive? && indented_marker_text?(text)
       end
@@ -394,6 +426,10 @@ module CustomsTariffImporter
 
       def paragraph_indent_level
         (@current_paragraph&.fetch(:indent, 0).to_i / 720).clamp(0, 3)
+      end
+
+      def paragraph_first_line_indent_level
+        (@current_paragraph&.fetch(:first_line_indent, 0).to_i / 720).clamp(0, 3)
       end
 
       def indented_marker_text?(text)
@@ -424,6 +460,16 @@ module CustomsTariffImporter
         text.match?(/\A(?:and|or|(?:not\s+)?less than|more than|\d+(?:[.,]\d+)?\s*(?:%|W|mm|cm|g|kg)(?=\s|$))/i)
       end
 
+      def source_indented_marker_list_ended?(text)
+        @in_source_indented_marker_list &&
+          paragraph_indent_level.zero? &&
+          !indented_marker_text?(text)
+      end
+
+      def in_closed_source_indented_marker_list?
+        @source_indented_marker_list_closed && paragraph_indent_level.zero?
+      end
+
       def note_section_heading?(text)
         plain_note_section_heading?(text) || markdown_note_section_heading?(text)
       end
@@ -448,6 +494,8 @@ module CustomsTariffImporter
           (markdown_bullet?(lines.last) ||
            note_section_heading?(formatted) ||
            markdown_bullet?(formatted) ||
+           source_indented_marker_list_ended?(formatted) ||
+           closed_source_indented_marker_list_paragraph?(formatted) ||
            source_indented_marker_line?(formatted) ||
            source_indented_marker_continuation?(formatted, lines) ||
            nested_numbered_subnote?(formatted) ||
@@ -470,6 +518,12 @@ module CustomsTariffImporter
 
         lines.last.to_s.match?(/\A\s+(?:[a-z]\.|\([A-Z]\)|\([ivxlcdm]+\)|[ivxlcdm]+\.|\(\d+\))\s+\S/i) &&
           formatted.match?(/\A\s+\S/)
+      end
+
+      def closed_source_indented_marker_list_paragraph?(formatted)
+        in_closed_source_indented_marker_list? &&
+          !note_section_heading?(formatted) &&
+          !numbered_note?(formatted)
       end
 
       def variable_definition_paragraph?(text)

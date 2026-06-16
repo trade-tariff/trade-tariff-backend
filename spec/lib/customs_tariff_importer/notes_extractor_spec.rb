@@ -99,8 +99,16 @@ RSpec.describe CustomsTariffImporter::NotesExtractor do
       texts.map { |t| { style: '', text: t } }
     end
 
+    def paragraph(text, indent: 0, first_line_indent: 0)
+      { style: '', text:, indent:, first_line_indent: }
+    end
+
     def parse(texts)
       described_class.new('1.30', '').send(:parse_notes, paragraphs(*texts))
+    end
+
+    def parse_paragraphs(paragraphs)
+      described_class.new('1.30', '').send(:parse_notes, paragraphs)
     end
 
     describe 'General Rules of Interpretation' do
@@ -358,6 +366,51 @@ RSpec.describe CustomsTariffImporter::NotesExtractor do
             '    - pineapples and grapes: 13 %,',
             '',
             '    - other fruits: 9 %.',
+          ].join("\n"),
+        )
+      end
+
+      it 'ends an alphabetic sublist and keeps following paragraphs under their numbered note' do
+        result = parse_paragraphs([
+          paragraph('CHAPTER 23'),
+          paragraph('Chapter Notes'),
+          paragraph('Additional chapter notes'),
+          paragraph('2. Code 2306 90 05 includes only residues containing:'),
+          paragraph('a. products of an oil content of less than 3 %;', indent: 720),
+          paragraph('b. products of an oil content of not less than 3 %;', indent: 720),
+          paragraph('For the determination of the starch and protein content, the methods are to be applied.'),
+          paragraph('For the determination of the oil and moisture content, the methods are to be applied.'),
+          paragraph('Products containing components added after processing are excluded.'),
+          paragraph('3. For the purposes of codes 2307 00 11, the following expressions apply:'),
+          paragraph('•‘actual alcoholic strength by mass’: the number of kilograms of pure alcohol contained in 100 kg of the product,', indent: 720),
+          paragraph('•‘potential alcoholic strength by mass’: the number of kilograms of pure alcohol capable of being produced by total fermentation of the sugars contained in 100 kg of the product,', indent: 720),
+          paragraph('•‘total alcoholic strength by mass’: the sum of the actual and potential alcoholic strengths by mass,', indent: 720),
+          paragraph('% mas’: the symbol for alcoholic strength by mass.', first_line_indent: 720),
+        ])
+
+        expect(result.chapters['23']).to include(
+          [
+            '2. Code 2306 90 05 includes only residues containing:',
+            '',
+            '    a. products of an oil content of less than 3 %;',
+            '',
+            '    b. products of an oil content of not less than 3 %;',
+            '',
+            '    For the determination of the starch and protein content, the methods are to be applied.',
+            '',
+            '    For the determination of the oil and moisture content, the methods are to be applied.',
+            '',
+            '    Products containing components added after processing are excluded.',
+            '',
+            '3. For the purposes of codes 2307 00 11, the following expressions apply:',
+            '',
+            '    - ‘actual alcoholic strength by mass’: the number of kilograms of pure alcohol contained in 100 kg of the product,',
+            '',
+            '    - ‘potential alcoholic strength by mass’: the number of kilograms of pure alcohol capable of being produced by total fermentation of the sugars contained in 100 kg of the product,',
+            '',
+            '    - ‘total alcoholic strength by mass’: the sum of the actual and potential alcoholic strengths by mass,',
+            '',
+            '    - % mas’: the symbol for alcoholic strength by mass.',
           ].join("\n"),
         )
       end
