@@ -329,6 +329,39 @@ RSpec.describe CustomsTariffImporter::NotesExtractor do
         )
       end
 
+      it 'normalises compact bracketed subnotes and bullet glyphs' do
+        result = parse([
+          'CHAPTER 20',
+          'Chapter Notes',
+          'Additional chapter notes',
+          '2.(a) The sugar content is multiplied by one of the following factors:',
+          '•0.93 in respect of products of codes 2008 20 to 2008 80;',
+          '•0.95 in respect of products of the other headings.',
+          '(b) The expression Brix value means the direct reading.',
+          '3. Products are considered as containing added sugar when:',
+          '•pineapples and grapes: 13 %,',
+          '•other fruits: 9 %.',
+        ])
+
+        expect(result.chapters['20']).to include(
+          [
+            '2. (a) The sugar content is multiplied by one of the following factors:',
+            '',
+            '    - 0.93 in respect of products of codes 2008 20 to 2008 80;',
+            '',
+            '    - 0.95 in respect of products of the other headings.',
+            '',
+            '    (b) The expression Brix value means the direct reading.',
+            '',
+            '3. Products are considered as containing added sugar when:',
+            '',
+            '    - pineapples and grapes: 13 %,',
+            '',
+            '    - other fruits: 9 %.',
+          ].join("\n"),
+        )
+      end
+
       it 'stops collecting chapter notes when a 10-digit commodity code is encountered' do
         result = parse([
           'CHAPTER 1',

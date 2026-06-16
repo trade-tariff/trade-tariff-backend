@@ -363,11 +363,11 @@ module CustomsTariffImporter
       end
 
       def source_bullet_line?(text)
-        text.match?(/\A\s*(?:-|•|—)\s+\S/)
+        text.match?(/\A\s*(?:-|•|—|–)\s*\S/)
       end
 
       def markdown_bullet_line(text)
-        bullet_text = text.sub(/\A\s*(?:-|•|—)\s+/, '')
+        bullet_text = text.sub(/\A\s*(?:-|•|—|–)\s*/, '')
         "#{'    ' if @in_numbered_note}- #{bullet_text}"
       end
 
@@ -549,6 +549,7 @@ module CustomsTariffImporter
       end
 
       def normalize_compact_numbered_letter_markers(lines)
+        lines.map! { |line| line.sub(/\A([1-9]\d*)\.(\([a-z]\))/, '\1. \2') }
         lines.map! { |line| line.sub(/\A([1-9]\d*)\.([A-Z]\.)/, '\1. \2') }
         lines.map! { |line| line.sub(/\A([1-9]\d*)\.(?=[A-Z][a-z])/, '\1. ') }
       end
