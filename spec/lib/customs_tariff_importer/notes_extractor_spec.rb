@@ -415,6 +415,133 @@ RSpec.describe CustomsTariffImporter::NotesExtractor do
         )
       end
 
+      it 'promotes marker paragraphs to markdown lists only when the source has child markers' do
+        result = parse_paragraphs([
+          paragraph('CHAPTER 30'),
+          paragraph('Chapter Notes'),
+          paragraph('1. This chapter does not cover:'),
+          paragraph('(a) foods or beverages;'),
+          paragraph('(b) products containing nicotine.'),
+          paragraph('3. For the purposes of headings 3003 and 3004, the following are to be treated:'),
+          paragraph('(a) as unmixed products:'),
+          paragraph('(1) unmixed products dissolved in water;', first_line_indent: 720),
+          paragraph('(2) all goods of Chapter 28 or 29; and', first_line_indent: 720),
+          paragraph('(b) as products which have been mixed:'),
+          paragraph('(1) colloidal solutions and suspensions;', first_line_indent: 720),
+          paragraph('Subheading notes'),
+          paragraph('1. For the purposes of subheadings 3002 13 and 3002 14, the following are to be treated:'),
+          paragraph('(a) as unmixed products, pure products, whether or not containing impurities;', first_line_indent: 720),
+          paragraph('(b) as products which have been mixed:', first_line_indent: 720),
+          paragraph('(1) the products mentioned in (a) above dissolved in water or in other solvents;', indent: 1440),
+          paragraph('(2) the products mentioned in (a) and (b) (1) above with an added stabiliser;', indent: 1440),
+          paragraph('Additional chapter note'),
+          paragraph('1. Heading 3004 includes herbal medicinal preparations if they bear the following statements of:'),
+          paragraph('(a) the specific diseases, ailments or their symptoms for which the product is to be used;', indent: 720),
+          paragraph('(b) the concentration of active substance or substances contained therein;', first_line_indent: 720),
+          paragraph('(c) dosage; and', first_line_indent: 720),
+          paragraph('(d) mode of application.', first_line_indent: 720),
+          paragraph('CHAPTER 39'),
+          paragraph('Chapter Notes'),
+          paragraph('2. This chapter does not cover:'),
+          paragraph('(u) articles of Chapter 90;'),
+          paragraph('(v) articles of Chapter 91;'),
+          paragraph('(w) articles of Chapter 92;'),
+          paragraph('(x) articles of Chapter 94;'),
+          paragraph('CHAPTER 40'),
+          paragraph('Chapter Notes'),
+          paragraph('5. (A) Headings 4001 and 4002 do not apply to rubber compounded with:'),
+          paragraph('(1) vulcanising agents;'),
+          paragraph('(2) pigments;'),
+          paragraph('(B) The presence of the following substances shall not affect classification:'),
+          paragraph('(1) emulsifiers or anti-tack agents;'),
+          paragraph('(2) small amounts of breakdown products of emulsifiers;'),
+          paragraph('CHAPTER 48'),
+          paragraph('Chapter Notes'),
+          paragraph('5. For the purposes of heading 4802, the following criteria apply:'),
+          paragraph('(A). For paper weighing not more than 150 g/m2:'),
+          paragraph('a. containing 10 % or more fibres, and', indent: 1440),
+          paragraph('1.weighing not more than 80 g/m2; or', indent: 1440, first_line_indent: 720),
+          paragraph('2.coloured throughout the mass; or', indent: 1440, first_line_indent: 720),
+        ])
+
+        expect(result.chapters['30']).to include(
+          [
+            '1. This chapter does not cover:',
+            '    (a) foods or beverages;',
+            '    (b) products containing nicotine.',
+          ].join("\n"),
+        )
+        expect(result.chapters['30']).to include(
+          [
+            '3. For the purposes of headings 3003 and 3004, the following are to be treated:',
+            '    - (a) as unmixed products:',
+            '        - (1) unmixed products dissolved in water;',
+            '        - (2) all goods of Chapter 28 or 29; and',
+            '    - (b) as products which have been mixed:',
+            '        - (1) colloidal solutions and suspensions;',
+          ].join("\n"),
+        )
+        expect(result.chapters['30']).to include(
+          [
+            '### Subheading notes',
+            '',
+            '1. For the purposes of subheadings 3002 13 and 3002 14, the following are to be treated:',
+            '    - (a) as unmixed products, pure products, whether or not containing impurities;',
+            '    - (b) as products which have been mixed:',
+            '',
+            '        - (1) the products mentioned in (a) above dissolved in water or in other solvents;',
+            '',
+            '        - (2) the products mentioned in (a) and (b) (1) above with an added stabiliser;',
+          ].join("\n"),
+        )
+        expect(result.chapters['30']).to include(
+          [
+            '### Additional chapter note',
+            '',
+            '1. Heading 3004 includes herbal medicinal preparations if they bear the following statements of:',
+            '',
+            '    (a) the specific diseases, ailments or their symptoms for which the product is to be used;',
+            '',
+            '    (b) the concentration of active substance or substances contained therein;',
+            '',
+            '    (c) dosage; and',
+            '',
+            '    (d) mode of application.',
+          ].join("\n"),
+        )
+        expect(result.chapters['39']).to include(
+          [
+            '2. This chapter does not cover:',
+            '    (u) articles of Chapter 90;',
+            '    (v) articles of Chapter 91;',
+            '    (w) articles of Chapter 92;',
+            '    (x) articles of Chapter 94;',
+          ].join("\n"),
+        )
+        expect(result.chapters['40']).to include(
+          [
+            '5. (A) Headings 4001 and 4002 do not apply to rubber compounded with:',
+            '    (1) vulcanising agents;',
+            '    (2) pigments;',
+            '    (B) The presence of the following substances shall not affect classification:',
+            '    (1) emulsifiers or anti-tack agents;',
+            '    (2) small amounts of breakdown products of emulsifiers;',
+          ].join("\n"),
+        )
+        expect(result.chapters['48']).to include(
+          [
+            '5. For the purposes of heading 4802, the following criteria apply:',
+            '    (A). For paper weighing not more than 150 g/m2:',
+            '',
+            '    - a. containing 10 % or more fibres, and',
+            '',
+            '        1. weighing not more than 80 g/m2; or',
+            '',
+            '        2. coloured throughout the mass; or',
+          ].join("\n"),
+        )
+      end
+
       it 'stops collecting chapter notes when a 10-digit commodity code is encountered' do
         result = parse([
           'CHAPTER 1',
