@@ -118,6 +118,7 @@ module CustomsTariffImporter
           text.match?(CHAPTER_PATTERN) ||
           text.match?(CHAPTER_NOTES_PATTERN) ||
           text.match?(ADDITIONAL_NOTES_PATTERN) ||
+          text.match?(ADDITIONAL_SECTION_NOTES_PATTERN) ||
           text.match?(SUBHEADING_NOTES_PATTERN) ||
           text.match?(SECTION_NOTES_PATTERN) ||
           text.match?(GENERAL_RULES_PATTERN) ||
@@ -428,11 +429,13 @@ module CustomsTariffImporter
       end
 
       def plain_note_section_heading?(text)
-        text.match?(ADDITIONAL_NOTES_PATTERN) || text.match?(SUBHEADING_NOTES_PATTERN)
+        text.match?(ADDITIONAL_NOTES_PATTERN) ||
+          text.match?(ADDITIONAL_SECTION_NOTES_PATTERN) ||
+          text.match?(SUBHEADING_NOTES_PATTERN)
       end
 
       def markdown_note_section_heading?(text)
-        text.match?(/\A###\s+(?:Additional\s+[Cc]hapter\s+[Nn]otes?|Subheading\s+[Nn]otes?)\z/i)
+        text.match?(/\A###\s+(?:Additional\s+(?:[Cc]hapter|[Ss]ection)\s+[Nn]otes?|Subheading\s+[Nn]otes?)\z/i)
       end
 
       def markdown_note_section_heading(text)
@@ -443,6 +446,7 @@ module CustomsTariffImporter
         formatted.present? &&
           lines.last.present? &&
           (markdown_bullet?(lines.last) ||
+           note_section_heading?(formatted) ||
            markdown_bullet?(formatted) ||
            source_indented_marker_line?(formatted) ||
            source_indented_marker_continuation?(formatted, lines) ||

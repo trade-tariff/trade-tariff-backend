@@ -202,6 +202,52 @@ RSpec.describe CustomsTariffImporter::NotesExtractor do
         expect(result.sections).to be_empty
       end
 
+      it 'resets indentation for additional section notes' do
+        result = parse([
+          'SECTION XVI',
+          'Section Notes',
+          '6. Throughout the nomenclature, the expression electrical and electronic waste means:',
+          '(C) This section does not cover municipal waste.',
+          'Additional section notes',
+          '1. Tools necessary for the assembly or maintenance of machines are to be classified with those machines.',
+          '2. General rule of interpretation 2(a) is also applicable to machines imported in split consignments.',
+        ])
+
+        expect(result.sections[16]).to include(
+          [
+            '6. Throughout the nomenclature, the expression electrical and electronic waste means:',
+            '',
+            '    (C) This section does not cover municipal waste.',
+            '',
+            '### Additional section notes',
+            '',
+            '1. Tools necessary for the assembly or maintenance of machines are to be classified with those machines.',
+            '',
+            '2. General rule of interpretation 2(a) is also applicable to machines imported in split consignments.',
+          ].join("\n"),
+        )
+      end
+
+      it 'does not inherit general rule indentation state' do
+        result = parse([
+          'General Interpretive Rules',
+          'Rule 2',
+          '2. A reference to an article includes incomplete articles.',
+          'SECTION I',
+          'Section Notes',
+          '1. Any reference in this section to a particular genus or species includes the young of that genus or species.',
+          '2. References to dried products also cover dehydrated, evaporated or freeze-dried products.',
+        ])
+
+        expect(result.sections[1]).to eq(
+          [
+            '1. Any reference in this section to a particular genus or species includes the young of that genus or species.',
+            '',
+            '2. References to dried products also cover dehydrated, evaporated or freeze-dried products.',
+          ].join("\n"),
+        )
+      end
+
       context 'when a chapter header appears before the section notes heading' do
         it 'still captures the section notes' do
           result = parse([
@@ -260,6 +306,27 @@ RSpec.describe CustomsTariffImporter::NotesExtractor do
         expect(result.chapters['01']).to include('Primary note.')
         expect(result.chapters['01']).to include('Additional Chapter Notes')
         expect(result.chapters['01']).to include('Extra note.')
+      end
+
+      it 'separates additional chapter note headings from preceding numbered notes' do
+        result = parse([
+          'CHAPTER 9',
+          'Chapter Notes',
+          '1. Primary note.',
+          '2. Second primary note.',
+          'Additional chapter notes',
+          '1. Additional note.',
+        ])
+
+        expect(result.chapters['09']).to include(
+          [
+            '2. Second primary note.',
+            '',
+            '### Additional chapter notes',
+            '',
+            '1. Additional note.',
+          ].join("\n"),
+        )
       end
 
       it 'stops collecting chapter notes when a 10-digit commodity code is encountered' do
@@ -454,6 +521,7 @@ RSpec.describe CustomsTariffImporter::NotesExtractor do
             'a. Refined copper:',
             '',
             'Metal containing copper.',
+            '',
             '### Subheading note',
             '',
             'In this chapter, the following expressions have the meanings hereby assigned to them:',
@@ -504,6 +572,7 @@ RSpec.describe CustomsTariffImporter::NotesExtractor do
             '    - not more than 6 % of manganese',
             '',
             '    b. spiegeleisen',
+            '',
             '### Additional chapter note',
             '',
             '1. For the purposes of code 7201 50 10:',
