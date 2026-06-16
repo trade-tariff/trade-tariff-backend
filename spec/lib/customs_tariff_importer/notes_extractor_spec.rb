@@ -729,6 +729,31 @@ RSpec.describe CustomsTariffImporter::NotesExtractor do
         expect(result.sections[15]).not_to include('    - a.')
       end
 
+      it 'does not treat letter v in an alphabetic marker run as a roman child marker' do
+        result = parse_paragraphs([
+          paragraph('CHAPTER 95'),
+          paragraph('Chapter Notes'),
+          paragraph('1. This chapter does not cover:'),
+          paragraph('u. lighting strings of all kinds;', indent: 720, first_line_indent: 720),
+          paragraph('v. monopods, bipods, tripods and similar articles;', indent: 720, first_line_indent: 720),
+          paragraph('w. racket strings, tents or other camping goods;', indent: 1440),
+          paragraph('x. tableware, kitchenware, toilet articles.', indent: 1440),
+        ])
+
+        expect(result.chapters['95']).to include(
+          [
+            '    u. lighting strings of all kinds;',
+            '',
+            '    v. monopods, bipods, tripods and similar articles;',
+            '',
+            '    w. racket strings, tents or other camping goods;',
+            '',
+            '    x. tableware, kitchenware, toilet articles.',
+          ].join("\n"),
+        )
+        expect(result.chapters['95']).not_to include('    - v.')
+      end
+
       it 'stops collecting chapter notes when a 10-digit commodity code is encountered' do
         result = parse([
           'CHAPTER 1',

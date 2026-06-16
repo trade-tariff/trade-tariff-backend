@@ -91,23 +91,23 @@ module CustomsTariffImporter
         end
 
         def observe(formatted, in_numbered_note:, paragraph_indent_level:, paragraph_first_line_indent_level:)
-          if source_child_marker_line?(formatted, paragraph_indent_level:) ||
-              first_line_source_child_marker_line?(formatted, paragraph_indent_level:, paragraph_first_line_indent_level:)
+          if (paragraph_indent_level.positive? && formatted.match?(SOURCE_CHILD_MARKER_LINE_PATTERN)) ||
+              (paragraph_indent_level.zero? && paragraph_first_line_indent_level.positive? && self.class.marker_line?(formatted, :child))
             marker = self.class.marker_from_line(formatted)
             @active_child_family = self.class.child_marker_family(marker) if marker
             @pending_parent_depth
-          elsif source_parent_marker_line?(formatted, paragraph_indent_level:)
-            @pending_parent_depth = formatted_indent_level(formatted)
-            @active_child_family = nil
-          elsif first_line_source_parent_marker_line?(formatted, paragraph_indent_level:, paragraph_first_line_indent_level:)
-            @pending_parent_depth = formatted_indent_level(formatted)
-            @active_child_family = nil
-          elsif logical_parent_marker_line?(formatted, in_numbered_note:)
+          elsif (paragraph_indent_level.positive? && formatted.match?(SOURCE_PARENT_MARKER_LINE_PATTERN)) ||
+              (paragraph_indent_level.zero? && paragraph_first_line_indent_level.positive? && self.class.marker_line?(formatted, :parent)) ||
+              (in_numbered_note && self.class.marker_line?(formatted, :parent))
             @pending_parent_depth = formatted_indent_level(formatted)
             @active_child_family = nil
           else
             reset
           end
+        end
+
+        def self.source_marker_line?(line)
+          line.to_s.match?(SOURCE_MARKER_LINE_PATTERN)
         end
 
         def self.marker_text?(text)
@@ -122,48 +122,10 @@ module CustomsTariffImporter
           text.match?(ROMAN_MARKER_TEXT_PATTERN)
         end
 
-        def self.child_marker_text?(text)
-          text.match?(CHILD_MARKER_TEXT_PATTERN)
-        end
-
-        def self.bullet_marker_text?(text)
-          roman_marker_text?(text)
-        end
-
-        def self.parent_line?(line)
-          parsed_line(line)&.then { |marker| marker[:indent_level].positive? && parent_marker?(marker[:text]) }
-        end
-
-        def self.first_parent_line?(line)
-          parsed_line(line)&.then { |marker| marker[:indent_level].positive? && first_parent_marker?(marker[:text]) }
-        end
-
-        def self.promotable_parent_line?(line)
-          parsed_line(line)&.then { |marker| marker[:indent_level].positive? && promotable_parent_marker?(marker[:text]) }
-        end
-
-        def self.child_line?(line)
-          parsed_line(line)&.then { |marker| marker[:indent_level].positive? && child_marker?(marker[:text]) }
-        end
-
-        def self.first_child_line?(line)
-          parsed_line(line)&.then { |marker| marker[:indent_level].positive? && first_child_marker?(marker[:text]) }
-        end
-
-        def self.source_marker_line?(line)
-          line.to_s.match?(SOURCE_MARKER_LINE_PATTERN)
-        end
-
-        def self.child_line_deeper_than?(line, parent_indent_level)
-          parsed_line(line)&.then { |marker| marker[:indent_level] > parent_indent_level && child_marker?(marker[:text]) }
-        end
-
-        def self.first_child_line_deeper_than?(line, parent_indent_level)
-          parsed_line(line)&.then { |marker| marker[:indent_level] > parent_indent_level && first_child_marker?(marker[:text]) }
-        end
-
-        def self.roman_child_line_deeper_than?(line, parent_indent_level)
-          parsed_line(line)&.then { |marker| marker[:indent_level] > parent_indent_level && roman_child_marker?(marker[:text]) }
+        def self.marker_line?(line, kind, min_indent: 1)
+          parsed_line(line)&.then do |marker|
+            marker[:indent_level] >= min_indent && public_send("#{kind}_marker?", marker[:text])
+          end
         end
 
         def self.indent_level(line)
@@ -220,31 +182,6 @@ module CustomsTariffImporter
         private_class_method :parsed_line
 
         private
-
-        def source_parent_marker_line?(formatted, paragraph_indent_level:)
-          paragraph_indent_level.positive? &&
-            formatted.match?(SOURCE_PARENT_MARKER_LINE_PATTERN)
-        end
-
-        def first_line_source_parent_marker_line?(formatted, paragraph_indent_level:, paragraph_first_line_indent_level:)
-          paragraph_indent_level.zero? &&
-            paragraph_first_line_indent_level.positive? &&
-            self.class.parent_line?(formatted)
-        end
-
-        def logical_parent_marker_line?(formatted, in_numbered_note:)
-          in_numbered_note && self.class.parent_line?(formatted)
-        end
-
-        def source_child_marker_line?(formatted, paragraph_indent_level:)
-          paragraph_indent_level.positive? && formatted.match?(SOURCE_CHILD_MARKER_LINE_PATTERN)
-        end
-
-        def first_line_source_child_marker_line?(formatted, paragraph_indent_level:, paragraph_first_line_indent_level:)
-          paragraph_indent_level.zero? &&
-            paragraph_first_line_indent_level.positive? &&
-            self.class.child_line?(formatted)
-        end
 
         def formatted_indent_level(formatted)
           formatted[/\A */].length / 4
@@ -661,7 +598,7 @@ module CustomsTariffImporter
       def first_line_indented_marker?(text)
         paragraph_indent_level.zero? &&
           paragraph_first_line_indent_level.positive? &&
-          indented_marker_text?(text)
+          MarkerTrie.marker_text?(text)
       end
 
       def first_line_indented_marker_line(text)
@@ -674,7 +611,7 @@ module CustomsTariffImporter
       end
 
       def indented_marker?(text)
-        paragraph_indent_level.positive? && indented_marker_text?(text)
+        paragraph_indent_level.positive? && MarkerTrie.marker_text?(text)
       end
 
       def child_indented_marker?(text)
@@ -687,14 +624,14 @@ module CustomsTariffImporter
       end
 
       def indented_marker_indent_level(text)
-        return 1 if alphabetic_marker_text?(text) && !roman_marker_text?(text)
+        return 1 if MarkerTrie.alphabetic_marker_text?(text) && !MarkerTrie.roman_marker_text?(text)
         return @marker_trie.child_indent_level(text) if @marker_trie.child_indent_level(text)
 
         [paragraph_indent_level, 1].min
       end
 
       def indented_marker_prefix(text)
-        bullet_marker_text?(text) ? '- ' : ''
+        MarkerTrie.roman_marker_text?(text) && @marker_trie.child_indent_level(text) ? '- ' : ''
       end
 
       def paragraph_indent_level
@@ -705,22 +642,6 @@ module CustomsTariffImporter
         (@current_paragraph&.fetch(:first_line_indent, 0).to_i / 720).clamp(0, 3)
       end
 
-      def indented_marker_text?(text)
-        MarkerTrie.marker_text?(text)
-      end
-
-      def alphabetic_marker_text?(text)
-        MarkerTrie.alphabetic_marker_text?(text)
-      end
-
-      def roman_marker_text?(text)
-        MarkerTrie.roman_marker_text?(text)
-      end
-
-      def bullet_marker_text?(text)
-        MarkerTrie.bullet_marker_text?(text)
-      end
-
       def bullet_continuation_line?(text)
         text.match?(/\A(?:and|or|(?:not\s+)?less than|more than|\d+(?:[.,]\d+)?\s*(?:%|W|mm|cm|g|kg)(?=\s|$))/i)
       end
@@ -728,7 +649,7 @@ module CustomsTariffImporter
       def source_indented_marker_list_ended?(text)
         @in_source_indented_marker_list &&
           paragraph_indent_level.zero? &&
-          !indented_marker_text?(text)
+          !MarkerTrie.marker_text?(text)
       end
 
       def in_closed_source_indented_marker_list?
@@ -912,7 +833,7 @@ module CustomsTariffImporter
       def normalize_source_nested_marker_lists(lines)
         index = 0
         while index < lines.length
-          if promotable_parent_marker_line?(lines[index])
+          if MarkerTrie.marker_line?(lines[index], :promotable_parent)
             index = normalize_source_nested_marker_list(lines, index)
           else
             index += 1
@@ -991,8 +912,8 @@ module CustomsTariffImporter
       def normalize_source_nested_marker_list(lines, start_index)
         parent_indices, child_indices, stop_index, parent_indent_level = source_nested_marker_group(lines, start_index)
         return start_index + 1 if child_indices.empty?
-        return start_index + 1 if uppercase_parent_marker_line?(lines[start_index]) &&
-          !roman_child_marker_line?(lines[child_indices.first], parent_indent_level)
+        return start_index + 1 if MarkerTrie.uppercase_parent_marker?(MarkerTrie.marker_from_line(lines[start_index]).to_s) &&
+          !MarkerTrie.marker_line?(lines[child_indices.first], :roman_child, min_indent: parent_indent_level.to_i + 1)
 
         parent_indices.each do |index|
           lines[index] = marker_list_line(lines[index], indent_level: MarkerTrie.indent_level(lines[index]), bullet: true)
@@ -1030,16 +951,21 @@ module CustomsTariffImporter
 
         loop do
           index = next_content_line_index(lines, index)
-          break unless index && parent_marker_line?(lines[index])
+          break unless index && MarkerTrie.marker_line?(lines[index], :parent)
 
           parent_indices << index
           parent_indent_level = MarkerTrie.indent_level(lines[index])
           index += 1
 
           while (index = next_content_line_index(lines, index))
-            break if parent_marker_line?(lines[index])
-            return [parent_indices, child_indices, index, parent_indent_level] unless child_marker_line?(lines[index], parent_indent_level)
-            return [parent_indices, [], index, parent_indent_level] if child_indices.empty? && !first_child_marker_line?(lines[index], parent_indent_level)
+            break if MarkerTrie.marker_line?(lines[index], :parent)
+            unless MarkerTrie.marker_line?(lines[index], :child, min_indent: parent_indent_level.to_i + 1)
+              return [parent_indices, child_indices, index, parent_indent_level]
+            end
+            if child_indices.empty? &&
+                !MarkerTrie.marker_line?(lines[index], :first_child, min_indent: parent_indent_level.to_i + 1)
+              return [parent_indices, [], index, parent_indent_level]
+            end
 
             child_indices << index
             index += 1
@@ -1049,34 +975,6 @@ module CustomsTariffImporter
         end
 
         [parent_indices, child_indices, index || lines.length, parent_indent_level]
-      end
-
-      def parent_marker_line?(line)
-        MarkerTrie.parent_line?(line)
-      end
-
-      def first_parent_marker_line?(line)
-        MarkerTrie.first_parent_line?(line)
-      end
-
-      def promotable_parent_marker_line?(line)
-        MarkerTrie.promotable_parent_line?(line)
-      end
-
-      def uppercase_parent_marker_line?(line)
-        MarkerTrie.uppercase_parent_marker?(MarkerTrie.marker_from_line(line).to_s)
-      end
-
-      def child_marker_line?(line, parent_indent_level = 0)
-        MarkerTrie.child_line_deeper_than?(line, parent_indent_level)
-      end
-
-      def first_child_marker_line?(line, parent_indent_level = 0)
-        MarkerTrie.first_child_line_deeper_than?(line, parent_indent_level)
-      end
-
-      def roman_child_marker_line?(line, parent_indent_level = 0)
-        MarkerTrie.roman_child_line_deeper_than?(line, parent_indent_level)
       end
 
       def normalize_lettered_paragraph_lists(lines)
