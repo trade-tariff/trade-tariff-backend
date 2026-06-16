@@ -6,7 +6,48 @@ on:
 
 jobs:
   risk-label:
+    if: github.actor != 'dependabot[bot]'
     uses: trade-tariff/trade-tariff-tools/.github/workflows/risk-label-reusable.yml@main
     permissions:
       contents: read
       pull-requests: write
+
+  risk-label-dependabot:
+    if: github.actor == 'dependabot[bot]'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - name: Apply low-risk label to dependabot PR
+        uses: actions/github-script@v9
+        with:
+          script: |
+            const RISK_LABELS = ['low-risk', 'medium-risk', 'high-risk'];
+            const prNumber = context.payload.pull_request.number;
+
+            const { data: currentLabels } = await github.rest.issues.listLabelsOnIssue({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: prNumber,
+            });
+
+            for (const label of currentLabels) {
+              if (RISK_LABELS.includes(label.name) && label.name !== 'low-risk') {
+                await github.rest.issues.removeLabel({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: prNumber,
+                  name: label.name,
+                });
+              }
+            }
+
+            if (!currentLabels.find(l => l.name === 'low-risk')) {
+              await github.rest.issues.addLabels({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: prNumber,
+                labels: ['low-risk'],
+              });
+            }
