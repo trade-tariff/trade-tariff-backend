@@ -478,9 +478,13 @@ RSpec.describe CustomsTariffImporter::NotesExtractor do
           [
             '3. For the purposes of headings 3003 and 3004, the following are to be treated:',
             '    - (a) as unmixed products:',
+            '',
             '        - (1) unmixed products dissolved in water;',
+            '',
             '        - (2) all goods of Chapter 28 or 29; and',
+            '',
             '    - (b) as products which have been mixed:',
+            '',
             '        - (1) colloidal solutions and suspensions;',
           ].join("\n"),
         )
@@ -489,7 +493,9 @@ RSpec.describe CustomsTariffImporter::NotesExtractor do
             '### Subheading notes',
             '',
             '1. For the purposes of subheadings 3002 13 and 3002 14, the following are to be treated:',
+            '',
             '    - (a) as unmixed products, pure products, whether or not containing impurities;',
+            '',
             '    - (b) as products which have been mixed:',
             '',
             '        - (1) the products mentioned in (a) above dissolved in water or in other solvents;',
@@ -1079,6 +1085,32 @@ RSpec.describe CustomsTariffImporter::NotesExtractor do
             '    b. articles of Chapter 96.',
             '',
             '3. Subject to the provisions of note 7, headings 4801 to 4805 include paper.',
+          ].join("\n"),
+        )
+      end
+
+      it 'spaces first-line indented marker siblings like source-indented marker siblings' do
+        result = parse_paragraphs([
+          paragraph('CHAPTER 49'),
+          paragraph('Chapter Notes'),
+          paragraph('1.This chapter does not cover:'),
+          paragraph('a. photographic negatives or positives on transparent bases (Chapter 37);', first_line_indent: 720),
+          paragraph('b. maps, plans or globes, in relief, whether or not printed (heading 9023);', first_line_indent: 720),
+          paragraph('c. playing cards or other goods of Chapter 95; or', first_line_indent: 720),
+          paragraph('d. original engravings. prints or lithographs (heading 9702).', indent: 720),
+        ])
+
+        expect(result.chapters['49']).to include(
+          [
+            '1. This chapter does not cover:',
+            '',
+            '    a. photographic negatives or positives on transparent bases (Chapter 37);',
+            '',
+            '    b. maps, plans or globes, in relief, whether or not printed (heading 9023);',
+            '',
+            '    c. playing cards or other goods of Chapter 95; or',
+            '',
+            '    d. original engravings. prints or lithographs (heading 9702).',
           ].join("\n"),
         )
       end

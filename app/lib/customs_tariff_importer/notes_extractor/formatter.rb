@@ -729,8 +729,8 @@ module CustomsTariffImporter
       end
 
       def source_indented_marker_line?(formatted)
-        paragraph_indent_level.positive? &&
-          MarkerHierarchy.source_marker_line?(formatted)
+        formatted_source_marker_line?(formatted) &&
+          (paragraph_indent_level.positive? || paragraph_first_line_indent_level.positive?)
       end
 
       def source_indented_marker_continuation?(formatted, lines)
@@ -738,6 +738,10 @@ module CustomsTariffImporter
 
         MarkerHierarchy.source_marker_line?(lines.last) &&
           formatted.match?(/\A\s+\S/)
+      end
+
+      def formatted_source_marker_line?(formatted)
+        MarkerHierarchy.source_marker_line?(formatted)
       end
 
       def closed_source_indented_marker_list_paragraph?(formatted)
