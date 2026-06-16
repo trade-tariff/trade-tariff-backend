@@ -57,14 +57,15 @@ module CustomsTariffImporter
 
       class MarkerHierarchy
         ROMAN_MARKER_PATTERN = /(?:i{1,3}|iv|v|vi{0,3}|ix)/i
-        MARKER_TEXT_PATTERN = /\A(?:[a-z]\.|\([A-Z]\)|\([ivxlcdm]+\)|[ivxlcdm]+\.|\(\d+\)|\d+\.)\s+\S/i
-        ALPHABETIC_MARKER_TEXT_PATTERN = /\A[a-z]\.\s+\S/i
+        ALPHABETIC_DOTTED_MARKER_PATTERN = /(?:[a-z]|ij)\./i
+        MARKER_TEXT_PATTERN = /\A(?:#{ALPHABETIC_DOTTED_MARKER_PATTERN}|\([A-Z]\)|\([ivxlcdm]+\)|[ivxlcdm]+\.|\(\d+\)|\d+\.)\s+\S/i
+        ALPHABETIC_MARKER_TEXT_PATTERN = /\A#{ALPHABETIC_DOTTED_MARKER_PATTERN}\s+\S/i
         ROMAN_MARKER_TEXT_PATTERN = /\A#{ROMAN_MARKER_PATTERN}\.\s+\S/
         UPPERCASE_BRACKET_MARKER_TEXT_PATTERN = /\A\([A-Z]\)\s+\S/
         CHILD_MARKER_TEXT_PATTERN = /\A(?:\(\d+\)|\d+\.|#{ROMAN_MARKER_PATTERN}\.|\(#{ROMAN_MARKER_PATTERN}\))\s+\S/
-        SOURCE_MARKER_LINE_PATTERN = /\A\s+(?:-\s+)?(?:[a-z]\.|\([A-Z]\)|\([ivxlcdm]+\)|[ivxlcdm]+\.|\(\d+\)|\d+\.)\s+\S/i
-        MARKER_LINE_PATTERN = /\A(?<spaces> *)(?:-\s+)?(?<marker>\(\d+\)|\d+\.|[a-z]\.|\([a-z]+\))\s+\S/i
-        SOURCE_PARENT_MARKER_LINE_PATTERN = /\A\s+(?:-\s+)?(?:[a-z]\.|\((?![ivx]+\))[a-z]\))\s+\S/i
+        SOURCE_MARKER_LINE_PATTERN = /\A\s+(?:-\s+)?(?:#{ALPHABETIC_DOTTED_MARKER_PATTERN}|\([A-Z]\)|\([ivxlcdm]+\)|[ivxlcdm]+\.|\(\d+\)|\d+\.)\s+\S/i
+        MARKER_LINE_PATTERN = /\A(?<spaces> *)(?:-\s+)?(?<marker>\(\d+\)|\d+\.|ij\.|#{ROMAN_MARKER_PATTERN}\.|[a-z]\.|\([a-z]+\))\s+\S/i
+        SOURCE_PARENT_MARKER_LINE_PATTERN = /\A\s+(?:-\s+)?(?:#{ALPHABETIC_DOTTED_MARKER_PATTERN}|\((?![ivx]+\))[a-z]\))\s+\S/i
         SOURCE_CHILD_MARKER_LINE_PATTERN = /\A\s+(?:-\s+)?(?:\(\d+\)|\d+\.|#{ROMAN_MARKER_PATTERN}\.|\(#{ROMAN_MARKER_PATTERN}\))\s+\S/
 
         def initialize
@@ -73,22 +74,38 @@ module CustomsTariffImporter
 
         def reset
           @pending_parent_depth = nil
+          @active_child_family = nil
         end
 
         def child_indent_level(text)
-          @pending_parent_depth + 1 if self.class.child_marker_text?(text) && @pending_parent_depth
+          return unless @pending_parent_depth
+
+          marker = self.class.marker_from_text(text)
+          return unless marker && self.class.child_marker?(marker)
+
+          family = self.class.child_marker_family(marker)
+          if @active_child_family
+            @pending_parent_depth + 1 if family == @active_child_family
+          elsif self.class.first_child_marker?(marker)
+            @pending_parent_depth + 1
+          end
         end
 
         def observe(formatted, in_numbered_note:, paragraph_indent_level:, paragraph_first_line_indent_level:)
           if source_child_marker_line?(formatted, paragraph_indent_level:) ||
               first_line_source_child_marker_line?(formatted, paragraph_indent_level:, paragraph_first_line_indent_level:)
+            marker = self.class.marker_from_line(formatted)
+            @active_child_family = self.class.child_marker_family(marker) if marker
             @pending_parent_depth
           elsif source_parent_marker_line?(formatted, paragraph_indent_level:)
             @pending_parent_depth = formatted_indent_level(formatted)
+            @active_child_family = nil
           elsif first_line_source_parent_marker_line?(formatted, paragraph_indent_level:, paragraph_first_line_indent_level:)
             @pending_parent_depth = formatted_indent_level(formatted)
+            @active_child_family = nil
           elsif logical_parent_marker_line?(formatted, in_numbered_note:)
             @pending_parent_depth = formatted_indent_level(formatted)
+            @active_child_family = nil
           else
             reset
           end
@@ -142,6 +159,14 @@ module CustomsTariffImporter
           parsed_line(line)&.fetch(:indent_level)
         end
 
+        def self.marker_from_text(text)
+          text.to_s.match(MARKER_LINE_PATTERN)&.[](:marker)
+        end
+
+        def self.marker_from_line(line)
+          parsed_line(line)&.fetch(:text)
+        end
+
         def self.parsed_line(line)
           return unless (match = line.to_s.match(MARKER_LINE_PATTERN))
 
@@ -149,7 +174,7 @@ module CustomsTariffImporter
         end
 
         def self.parent_marker?(marker)
-          marker.match?(/\A[a-z]\.\z/i) || marker.match?(/\A\((?![ivx]+\))[a-z]+\)\z/i)
+          marker.match?(/\A#{ALPHABETIC_DOTTED_MARKER_PATTERN}\z/i) || marker.match?(/\A\((?![ivx]+\))[a-z]+\)\z/i)
         end
 
         def self.child_marker?(marker)
@@ -160,7 +185,11 @@ module CustomsTariffImporter
           marker.match?(/\A(?:1\.|\(1\)|i\.|\(i\))\z/i)
         end
 
-        private_class_method :parsed_line, :parent_marker?, :child_marker?, :first_child_marker?
+        def self.child_marker_family(marker)
+          marker.match?(/\A(?:\d+\.|\(\d+\))\z/) ? :number : :roman
+        end
+
+        private_class_method :parsed_line
 
         private
 
@@ -759,7 +788,7 @@ module CustomsTariffImporter
       end
 
       def final_indented_marker_line?(line)
-        line.to_s.match?(/\A {4}(?:[a-z]{1,4}[.)]|\([a-z]\)|\([A-Z]\)|\([1-9]\d*\)|[ivxlcdm]+\.)\s+\S/i)
+        MarkerHierarchy.indent_level(line).to_i.positive? && MarkerHierarchy.marker_from_line(line).present?
       end
 
       def normalize_omitted_additional_chapter_note_one(lines)
@@ -808,16 +837,32 @@ module CustomsTariffImporter
         parent_indices, child_indices, stop_index, parent_indent_level = source_nested_marker_group(lines, start_index)
         return start_index + 1 if child_indices.empty?
 
-        parent_indices.each { |index| lines[index] = lines[index].sub(/\A {4}/, '    - ') }
+        parent_indices.each do |index|
+          lines[index] = marker_list_line(lines[index], indent_level: MarkerHierarchy.indent_level(lines[index]), bullet: true)
+        end
         child_indices.each { |index| lines[index] = nested_child_marker_line(lines[index], parent_indent_level:) }
         stop_index
       end
 
       def nested_child_marker_line(line, parent_indent_level:)
-        child_indent = '    ' * (parent_indent_level.to_i + 1)
-        return line.sub(/\A {4,}/, child_indent) if line.match?(/\A {4,}\d+\.\s+\S/)
+        marker_list_line(
+          line,
+          indent_level: parent_indent_level.to_i + 1,
+          bullet: !dotted_numeric_marker_line?(line),
+        )
+      end
 
-        line.sub(/\A {4,}/, "#{child_indent}- ")
+      def marker_list_line(line, indent_level:, bullet:)
+        content = line.sub(/\A */, '').sub(/\A-\s+/, '')
+        "#{markdown_indent(indent_level)}#{'- ' if bullet}#{content}"
+      end
+
+      def dotted_numeric_marker_line?(line)
+        MarkerHierarchy.marker_from_line(line).to_s.match?(/\A\d+\.\z/)
+      end
+
+      def markdown_indent(indent_level)
+        '    ' * indent_level.to_i
       end
 
       def source_nested_marker_group(lines, start_index)
@@ -887,7 +932,7 @@ module CustomsTariffImporter
           lines.insert(index, '') if lines[index - 1].present?
           index += 1
 
-          lines[index] = lines[index].sub(/\A {4}/, '    - ')
+          lines[index] = marker_list_line(lines[index], indent_level: MarkerHierarchy.indent_level(lines[index]), bullet: true)
           expected_letter = expected_letter.next
           index += 1
         end
@@ -897,7 +942,9 @@ module CustomsTariffImporter
       end
 
       def lettered_paragraph_item?(line, expected_letter)
-        line.match?(/\A {4}(?:#{expected_letter}\.|\(#{expected_letter}\))\s+\S/)
+        return false unless MarkerHierarchy.indent_level(line).to_i.positive?
+
+        [expected_letter, "(#{expected_letter})"].include?(MarkerHierarchy.marker_from_line(line).to_s.downcase.delete_suffix('.'))
       end
 
       def join_split_paragraph_continuations(lines)

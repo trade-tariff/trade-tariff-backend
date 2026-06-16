@@ -184,6 +184,7 @@ RSpec.describe CustomsTariffImporter::NotesExtractor do
             '1.This section does not cover:',
             '    a. prepared paints;',
             '    b. ferro-cerium;',
+            '    ij. articles of Chapter 46;',
             '2.Throughout the nomenclature, the expression means:',
             '    a. articles of heading 7307;',
           ])
@@ -196,6 +197,8 @@ RSpec.describe CustomsTariffImporter::NotesExtractor do
               '    a. prepared paints;',
               '',
               '    b. ferro-cerium;',
+              '',
+              '    ij. articles of Chapter 46;',
               '',
               '2. Throughout the nomenclature, the expression means:',
               '',
@@ -1053,6 +1056,29 @@ RSpec.describe CustomsTariffImporter::NotesExtractor do
           [
             '1. Previous note.',
             '    4 The goods are put up in containers.',
+          ].join("\n"),
+        )
+      end
+
+      it 'unindents a compact top-level note after a source-indented lettered list' do
+        result = parse_paragraphs([
+          paragraph('CHAPTER 48'),
+          paragraph('Chapter Notes'),
+          paragraph('2. This chapter does not cover:'),
+          paragraph('a. articles of Chapter 95; or', indent: 720, first_line_indent: 720),
+          paragraph('b. articles of Chapter 96.', indent: 1440),
+          paragraph('3.Subject to the provisions of note 7, headings 4801 to 4805 include paper.', indent: 720),
+        ])
+
+        expect(result.chapters['48']).to include(
+          [
+            '2. This chapter does not cover:',
+            '',
+            '    a. articles of Chapter 95; or',
+            '',
+            '    b. articles of Chapter 96.',
+            '',
+            '3. Subject to the provisions of note 7, headings 4801 to 4805 include paper.',
           ].join("\n"),
         )
       end
