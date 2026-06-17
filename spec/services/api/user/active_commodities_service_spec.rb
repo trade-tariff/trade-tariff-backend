@@ -184,6 +184,64 @@ RSpec.describe Api::User::ActiveCommoditiesService do
       expired_sids = result.map(&:first)
       expect(expired_sids).not_to include(666)
     end
+
+    it 'excludes commodities covered by an open-ended child from creation even if a later child also exists' do
+      start_date = 2.years.ago.beginning_of_day
+
+      parent_commodity = create(:commodity, :non_grouping,
+                                goods_nomenclature_item_id: '2233333333',
+                                goods_nomenclature_sid: 663,
+                                validity_start_date: start_date,
+                                validity_end_date: nil)
+
+      create(:commodity, :non_grouping,
+             goods_nomenclature_item_id: '2233333334',
+             goods_nomenclature_sid: 662,
+             validity_start_date: start_date,
+             validity_end_date: nil,
+             parent: parent_commodity)
+
+      create(:commodity, :non_grouping,
+             goods_nomenclature_item_id: '2233333335',
+             goods_nomenclature_sid: 661,
+             validity_start_date: 1.year.ago.beginning_of_day,
+             validity_end_date: nil,
+             parent: parent_commodity)
+
+      result = described_class.all_expired_commodities(target_sids: [663])
+
+      expired_sids = result.map(&:first)
+      expect(expired_sids).not_to include(663)
+    end
+
+    it 'includes commodities that started as subheading, became declarable, then became subheading again' do
+      parent_start_date = 3.years.ago.beginning_of_day
+
+      parent_commodity = create(:commodity, :non_grouping,
+                                goods_nomenclature_item_id: '3333333333',
+                                goods_nomenclature_sid: 333,
+                                validity_start_date: parent_start_date,
+                                validity_end_date: nil)
+
+      create(:commodity, :non_grouping,
+             goods_nomenclature_item_id: '3333333334',
+             goods_nomenclature_sid: 334,
+             validity_start_date: parent_start_date,
+             validity_end_date: 2.years.ago.beginning_of_day,
+             parent: parent_commodity)
+
+      create(:commodity, :non_grouping,
+             goods_nomenclature_item_id: '3333333335',
+             goods_nomenclature_sid: 335,
+             validity_start_date: 1.year.ago.beginning_of_day,
+             validity_end_date: nil,
+             parent: parent_commodity)
+
+      result = described_class.all_expired_commodities
+
+      expired_sids = result.map(&:first)
+      expect(expired_sids).to include(333)
+    end
   end
 
   describe '#initialize' do

@@ -56,9 +56,13 @@ module Api
 
         # Find commodities that had children at their creation date
         commodities_with_creation_children = had_children_at_creation(expired_sids)
+        # For commodities that started with children, keep those that became declarable later
+        commodities_ever_declarable = ever_declarable_since_creation(
+          expired_sids.select { |sid| commodities_with_creation_children[sid] },
+        )
 
         expired_candidates
-          .reject { |sid, _| commodities_with_creation_children[sid] }
+          .reject { |sid, _| commodities_with_creation_children[sid] && !commodities_ever_declarable[sid] }
           .map { |sid, code| [sid, code] }
       end
 
@@ -69,7 +73,7 @@ module Api
           .where(goods_nomenclature_sid: goods_nomenclature_sids)
           .select(:goods_nomenclature_sid, :validity_start_date)
           .all
-          .map { |gn| [gn.goods_nomenclature_sid, gn.validity_start_date] }
+          .map { |gn| [gn.goods_nomenclature_sid, gn.validity_start_date.to_date] }
 
         results = {}
 
@@ -92,6 +96,52 @@ module Api
         end
 
         results
+      end
+
+      def self.ever_declarable_since_creation(goods_nomenclature_sids)
+        return {} if goods_nomenclature_sids.empty?
+
+        parents = GoodsNomenclature
+          .where(goods_nomenclature_sid: goods_nomenclature_sids)
+          .eager(:historical_children)
+          .all
+
+        parents.each_with_object({}) do |parent, results|
+          child_periods = parent.historical_children
+                               .map { |child| [child.validity_start_date.to_date, child.validity_end_date&.to_date] }
+                               .uniq
+                               .sort_by(&:first)
+
+          results[parent.goods_nomenclature_sid] = declarable_period_exists?(
+            parent.validity_start_date.to_date,
+            parent.validity_end_date&.to_date,
+            child_periods,
+          )
+        end
+      end
+
+      # A commodity was declarable if there is any day in its validity window not covered by a child.
+      def self.declarable_period_exists?(parent_start_date, parent_end_date, child_periods)
+        return true if child_periods.empty?
+
+        covered_until = parent_start_date
+
+        child_periods.each do |child_start_date, child_end_date|
+          return true if child_start_date > covered_until
+
+          if child_end_date.nil?
+            # Open-ended child covers everything from child_start_date onwards
+            return false
+          end
+
+          covered_until = [covered_until, child_end_date + 1].max
+        end
+
+        if parent_end_date
+          covered_until <= parent_end_date
+        else
+          child_periods.last.last.present?
+        end
       end
 
       def initialize(subscription)
