@@ -32,7 +32,7 @@ jobs:
         with:
           fetch-depth: 0
 
-      - uses: trade-tariff/trade-tariff-tools/.github/actions/check-pr-lines@main
+      - uses: trade-tariff/trade-tariff-tools/.github/actions/check-pr-lines@fix/check-pr-lines-stacked-prs
         with:
           threshold: 600
           exclude-paths: |
