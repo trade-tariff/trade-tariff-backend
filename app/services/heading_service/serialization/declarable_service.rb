@@ -48,7 +48,28 @@ module HeadingService
         :full_temporary_stop_regulations,
         :measure_partial_temporary_stops,
       ].freeze
-      HEADING_EAGER = [
+      def self.heading_eager
+        [
+          *BASE_HEADING_EAGER,
+          {
+            chapter: [
+              chapter_note_eager_load,
+              :guides,
+              { sections: [section_note_eager_load] },
+            ],
+          },
+        ]
+      end
+
+      def self.chapter_note_eager_load
+        TradeTariffBackend.promote_customs_tariff_notes? ? :customs_tariff_chapter_note : :chapter_note
+      end
+
+      def self.section_note_eager_load
+        TradeTariffBackend.promote_customs_tariff_notes? ? :customs_tariff_section_note : :section_note
+      end
+
+      BASE_HEADING_EAGER = [
         {
           measures: MEASURE_EAGER,
           ancestors: [{ measures: MEASURE_EAGER }],
@@ -87,7 +108,7 @@ module HeadingService
       end
 
       def heading
-        @heading ||= Heading.where(goods_nomenclature_sid:).eager(HEADING_EAGER).take
+        @heading ||= Heading.where(goods_nomenclature_sid:).eager(*self.class.heading_eager).take
       end
 
       def measures

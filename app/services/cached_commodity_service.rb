@@ -142,7 +142,12 @@ class CachedCommodityService
         .eager(
           goods_nomenclature_descriptions: {},
           heading: %i[footnotes goods_nomenclature_descriptions],
-          chapter: [:chapter_note, :goods_nomenclature_descriptions, :guides, { sections: :section_note }],
+          chapter: [
+            chapter_note_eager_load,
+            :goods_nomenclature_descriptions,
+            :guides,
+            { sections: [section_note_eager_load] },
+          ],
           ancestors: :goods_nomenclature_descriptions,
           full_chemicals: {},
         )
@@ -152,6 +157,14 @@ class CachedCommodityService
       load_quota_associations(result)
       result
     end
+  end
+
+  def chapter_note_eager_load
+    TradeTariffBackend.promote_customs_tariff_notes? ? :customs_tariff_chapter_note : :chapter_note
+  end
+
+  def section_note_eager_load
+    TradeTariffBackend.promote_customs_tariff_notes? ? :customs_tariff_section_note : :section_note
   end
 
   # Eager-load quota_order_number and its definition sub-tree only for

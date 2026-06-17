@@ -3,7 +3,10 @@ module Api
     class SectionsController < ApiController
       def index
         @sections = Section
-          .eager({ chapters: [:chapter_note] }, :section_note)
+          .eager(
+            section_note_eager_load,
+            chapters: [chapter_note_eager_load],
+          )
           .all
 
         respond_to do |format|
@@ -22,7 +25,13 @@ module Api
       def show
         return head :bad_request unless params[:id].to_s.match?(/\A\d+\z/)
 
-        @section = Section.where(position: params[:id].to_i).take
+        @section = Section
+          .where(position: params[:id].to_i)
+          .eager(
+            section_note_eager_load,
+            chapters: [chapter_note_eager_load],
+          )
+          .take
 
         options = { is_collection: false }
         options[:include] = [:chapters, 'chapters.guides']
@@ -47,6 +56,16 @@ module Api
             render json: Api::V2::Chapters::ChapterListSerializer.new(chapters).serializable_hash
           end
         end
+      end
+
+      private
+
+      def chapter_note_eager_load
+        TradeTariffBackend.promote_customs_tariff_notes? ? :customs_tariff_chapter_note : :chapter_note
+      end
+
+      def section_note_eager_load
+        TradeTariffBackend.promote_customs_tariff_notes? ? :customs_tariff_section_note : :section_note
       end
     end
   end

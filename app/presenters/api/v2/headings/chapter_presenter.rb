@@ -3,7 +3,7 @@ module Api
     module Headings
       class ChapterPresenter < SimpleDelegator
         def chapter_note
-          super&.content
+          public_chapter_note&.content
         end
       end
     end

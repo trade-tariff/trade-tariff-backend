@@ -41,6 +41,46 @@ RSpec.describe Api::V2::ChaptersController, :v2 do
           expires_at:,
         )
     end
+
+    context 'when customs tariff notes are promoted' do
+      let!(:customs_tariff_update) { create(:customs_tariff_update, :approved) }
+
+      before do
+        Rails.cache.clear
+        create(:chapter_note, chapter_id: chapter.short_code, content: 'Legacy chapter note')
+        create(:customs_tariff_chapter_note, :approved,
+               customs_tariff_update:,
+               chapter_id: chapter.short_code,
+               content: 'Imported chapter note')
+        allow(TradeTariffBackend).to receive(:promote_customs_tariff_notes?).and_return(true)
+      end
+
+      it 'returns the imported chapter note' do
+        api_get "/uk/api/chapters/#{chapter.short_code}"
+
+        expect(JSON.parse(response.body).dig('data', 'attributes', 'chapter_note')).to eq('Imported chapter note')
+      end
+    end
+
+    context 'when customs tariff notes are not promoted' do
+      let!(:legacy_note) { create(:chapter_note, chapter_id: chapter.short_code, content: 'Legacy chapter note') }
+      let!(:customs_tariff_update) { create(:customs_tariff_update, :approved) }
+
+      before do
+        Rails.cache.clear
+        create(:customs_tariff_chapter_note, :approved,
+               customs_tariff_update:,
+               chapter_id: chapter.short_code,
+               content: 'Imported chapter note')
+        allow(TradeTariffBackend).to receive(:promote_customs_tariff_notes?).and_return(false)
+      end
+
+      it 'returns the legacy chapter note' do
+        api_get "/uk/api/chapters/#{chapter.short_code}"
+
+        expect(JSON.parse(response.body).dig('data', 'attributes', 'chapter_note')).to eq(legacy_note.content)
+      end
+    end
   end
 
   describe 'GET #changes' do
