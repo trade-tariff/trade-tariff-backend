@@ -3,7 +3,17 @@ RSpec.describe Api::V2::ChaptersController do
     let(:heading) { create :heading, :with_chapter }
     let(:chapter) { heading.reload.chapter }
     let!(:section) { chapter.section }
-    let!(:section_note) { create :section_note, section_id: section.id }
+    let!(:customs_tariff_update) { create(:customs_tariff_update, :approved) }
+    let!(:customs_tariff_chapter_note) do
+      create(:customs_tariff_chapter_note, :approved,
+             customs_tariff_update:,
+             chapter_id: chapter.short_code)
+    end
+    let!(:customs_tariff_section_note) do
+      create(:customs_tariff_section_note, :approved,
+             customs_tariff_update:,
+             section_id: section.id)
+    end
 
     let(:pattern) do
       {
@@ -15,7 +25,7 @@ RSpec.describe Api::V2::ChaptersController do
             goods_nomenclature_item_id: chapter.goods_nomenclature_item_id,
             description: chapter.description,
             formatted_description: chapter.formatted_description,
-            chapter_note: chapter.chapter_note.content,
+            chapter_note: customs_tariff_chapter_note.content,
             forum_url: chapter.forum_link&.url,
             section_id: section.id,
             validity_start_date: chapter.validity_start_date,
@@ -56,7 +66,7 @@ RSpec.describe Api::V2::ChaptersController do
               position: section.position,
               title: section.title,
               numeral: section.numeral,
-              section_note: section_note.content,
+              section_note: customs_tariff_section_note.content,
             },
           },
           {
