@@ -729,6 +729,35 @@ RSpec.describe CustomsTariffImporter::NotesExtractor do
         expect(result.sections[15]).not_to include('    - a.')
       end
 
+      it 'promotes uppercase markers with inline lowercase children' do
+        result = parse_paragraphs([
+          paragraph('CHAPTER 22'),
+          paragraph('Chapter Notes'),
+          paragraph('4. For the purposes of subheadings 2204 21, 2204 22 and 2204 29:'),
+          paragraph('A. total dry extract means the content in grams per litre.', indent: 720),
+          paragraph('B. (a) the presence of the quantities of total dry extract does not affect classification:', indent: 720),
+          paragraph('1. products of an actual alcoholic strength of not more than 13% vol;', indent: 1440),
+          paragraph('2. products of an actual alcoholic strength of more than 13% vol;', indent: 1440),
+          paragraph('(b) the above rules do not apply.', indent: 720),
+        ])
+
+        expect(result.chapters['22']).to include(
+          [
+            '    - A. total dry extract means the content in grams per litre.',
+            '',
+            '    - B.',
+            '',
+            '        - (a) the presence of the quantities of total dry extract does not affect classification:',
+            '',
+            '            1. products of an actual alcoholic strength of not more than 13% vol;',
+            '',
+            '            2. products of an actual alcoholic strength of more than 13% vol;',
+            '',
+            '        - (b) the above rules do not apply.',
+          ].join("\n"),
+        )
+      end
+
       it 'does not treat letter v in an alphabetic marker run as a roman child marker' do
         result = parse_paragraphs([
           paragraph('CHAPTER 95'),
