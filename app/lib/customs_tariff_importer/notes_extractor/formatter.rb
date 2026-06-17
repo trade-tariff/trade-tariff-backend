@@ -61,6 +61,7 @@ module CustomsTariffImporter
           normalize_omitted_additional_chapter_note_one(lines)
         end
 
+        normalize_inline_uppercase_child_marker_lists(lines)
         normalize_source_nested_marker_lists(lines)
         normalize_semantic_numeric_marker_lists(lines)
         normalize_plain_marker_code_block_indents(lines)
@@ -525,6 +526,89 @@ module CustomsTariffImporter
         end
       end
 
+      def normalize_inline_uppercase_child_marker_lists(lines)
+        index = 0
+        while index < lines.length
+          if inline_uppercase_child_marker_line?(lines[index])
+            index = normalize_inline_uppercase_child_marker_list(lines, index)
+          else
+            index += 1
+          end
+        end
+      end
+
+      def normalize_inline_uppercase_child_marker_list(lines, start_index)
+        parent_indent_level = MarkerTrie.indent_level(lines[start_index]).to_i
+        parent_marker, child_marker, child_text = inline_uppercase_child_marker_parts(lines[start_index])
+
+        promote_uppercase_parent_marker_siblings(lines, start_index, parent_indent_level)
+        lines[start_index] = marker_list_line(
+          "#{markdown_indent(parent_indent_level)}#{parent_marker}",
+          indent_level: parent_indent_level,
+          bullet: true,
+        )
+        lines.insert(start_index + 1, '') if lines[start_index + 1].present?
+        lines.insert(
+          start_index + 2,
+          marker_list_line(
+            "#{markdown_indent(parent_indent_level + 1)}#{child_marker} #{child_text}",
+            indent_level: parent_indent_level + 1,
+            bullet: true,
+          ),
+        )
+        lines.insert(start_index + 3, '') if lines[start_index + 3].present?
+
+        normalize_inline_uppercase_child_marker_following_lines(lines, start_index + 3, parent_indent_level)
+      end
+
+      def normalize_inline_uppercase_child_marker_following_lines(lines, start_index, parent_indent_level)
+        index = start_index
+        while (index = next_content_line_index(lines, index))
+          marker = MarkerTrie.marker_from_line(lines[index]).to_s
+          indent_level = MarkerTrie.indent_level(lines[index]).to_i
+
+          if indent_level == parent_indent_level && marker.match?(/\A\([a-z]\)\z/i)
+            lines[index] = marker_list_line(lines[index], indent_level: parent_indent_level + 1, bullet: true)
+          elsif indent_level > parent_indent_level && dotted_numeric_marker_line?(lines[index])
+            lines[index] = marker_list_line(lines[index], indent_level: parent_indent_level + 2, bullet: false)
+          elsif indent_level == parent_indent_level && uppercase_dotted_marker?(marker)
+            lines[index] = marker_list_line(lines[index], indent_level: parent_indent_level, bullet: true)
+          else
+            break
+          end
+
+          index += 1
+        end
+
+        index || lines.length
+      end
+
+      def promote_uppercase_parent_marker_siblings(lines, start_index, parent_indent_level)
+        index = previous_content_line_index(lines, start_index - 1)
+        while index && uppercase_dotted_marker_line_at_indent?(lines[index], parent_indent_level)
+          lines[index] = marker_list_line(lines[index], indent_level: parent_indent_level, bullet: true)
+          index = previous_content_line_index(lines, index - 1)
+        end
+      end
+
+      def inline_uppercase_child_marker_line?(line)
+        MarkerTrie.indent_level(line).to_i.positive? &&
+          line.match?(/\A *(?!-\s+)[A-Z]\.\s+\([a-z]\)\s+\S/)
+      end
+
+      def inline_uppercase_child_marker_parts(line)
+        line.match(/\A *(?<parent>[A-Z]\.)\s+(?<child>\([a-z]\))\s+(?<text>.+)\z/).captures
+      end
+
+      def uppercase_dotted_marker_line_at_indent?(line, indent_level)
+        MarkerTrie.indent_level(line).to_i == indent_level &&
+          uppercase_dotted_marker?(MarkerTrie.marker_from_line(line).to_s)
+      end
+
+      def uppercase_dotted_marker?(marker)
+        marker.match?(/\A[A-Z]\.\z/)
+      end
+
       def normalize_plain_marker_code_block_indents(lines)
         lines.map! do |line|
           plain_deep_marker_line?(line) ? marker_list_line(line, indent_level: 1, bullet: false) : line
@@ -745,6 +829,10 @@ module CustomsTariffImporter
 
       def next_content_line_index(lines, start_index)
         (start_index...lines.length).find { |index| lines[index].present? }
+      end
+
+      def previous_content_line_index(lines, start_index)
+        start_index.downto(0).find { |index| lines[index].present? }
       end
     end
   end
