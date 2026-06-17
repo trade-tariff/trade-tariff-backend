@@ -8,6 +8,7 @@ module CustomsTariffImporter
     CHAPTER_PATTERN          = /\ACHAPTER\s+(\d+)\z/
     CHAPTER_NOTES_PATTERN    = /\AChapter\s+[Nn]otes?\z/i
     ADDITIONAL_NOTES_PATTERN = /\AAdditional\s+[Cc]hapter\s+[Nn]otes?\z/i
+    ADDITIONAL_SECTION_NOTES_PATTERN = /\AAdditional\s+[Ss]ection\s+[Nn]otes?\z/i
     SUBHEADING_NOTES_PATTERN = /\ASubheading\s+[Nn]otes?\z/i
     SECTION_NOTES_PATTERN    = /\ASection\s+[Nn]otes?\z/i
     GENERAL_RULES_PATTERN    = /\AGeneral\s+Interpretive\s+Rules?\z/i
@@ -266,6 +267,7 @@ module CustomsTariffImporter
       @general_rules[@current_rule] = content if content.present?
       @current_rule = nil
       @note_lines = []
+      @formatter.reset_note_formatting_context
     end
 
     def append_note_line(text)

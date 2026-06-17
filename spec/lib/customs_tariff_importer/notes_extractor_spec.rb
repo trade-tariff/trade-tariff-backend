@@ -99,8 +99,16 @@ RSpec.describe CustomsTariffImporter::NotesExtractor do
       texts.map { |t| { style: '', text: t } }
     end
 
+    def paragraph(text, indent: 0, first_line_indent: 0)
+      { style: '', text:, indent:, first_line_indent: }
+    end
+
     def parse(texts)
       described_class.new('1.30', '').send(:parse_notes, paragraphs(*texts))
+    end
+
+    def parse_paragraphs(paragraphs)
+      described_class.new('1.30', '').send(:parse_notes, paragraphs)
     end
 
     describe 'General Rules of Interpretation' do
@@ -176,6 +184,7 @@ RSpec.describe CustomsTariffImporter::NotesExtractor do
             '1.This section does not cover:',
             '    a. prepared paints;',
             '    b. ferro-cerium;',
+            '    ij. articles of Chapter 46;',
             '2.Throughout the nomenclature, the expression means:',
             '    a. articles of heading 7307;',
           ])
@@ -189,6 +198,8 @@ RSpec.describe CustomsTariffImporter::NotesExtractor do
               '',
               '    b. ferro-cerium;',
               '',
+              '    ij. articles of Chapter 46;',
+              '',
               '2. Throughout the nomenclature, the expression means:',
               '',
               '    a. articles of heading 7307;',
@@ -197,9 +208,100 @@ RSpec.describe CustomsTariffImporter::NotesExtractor do
         end
       end
 
+      it 'removes advisory chapter note preambles' do
+        [
+          '**There are important notes for this part of the tariff:**',
+          '**There are important chapter notes for this part of the tariff:**',
+        ].each do |preamble|
+          result = parse_paragraphs([
+            paragraph('CHAPTER 70'),
+            paragraph('Chapter Notes'),
+            paragraph(preamble),
+            paragraph('1.This chapter does not cover:'),
+            paragraph('a. goods of heading 3207;', indent: 720),
+          ])
+
+          expect(result.chapters['70']).not_to include('There are important')
+          expect(result.chapters['70']).to start_with(
+            [
+              '1. This chapter does not cover:',
+              '',
+              '    a. goods of heading 3207;',
+            ].join("\n"),
+          )
+        end
+      end
+
+      it 'removes malformed literal bold markers duplicated by the next source paragraph' do
+        result = parse([
+          'CHAPTER 76',
+          'Subheading notes',
+          '**Other elements',
+          '**Other elements**',
+          '1.This chapter does not cover:',
+        ])
+
+        expect(result.chapters['76']).to include(
+          [
+            '### Subheading notes',
+            '',
+            '**Other elements**',
+            '',
+            '1. This chapter does not cover:',
+          ].join("\n"),
+        )
+        expect(result.chapters['76']).not_to include("**Other elements\n")
+      end
+
       it 'does not save a section with no notes' do
         result = parse(['SECTION I', 'CHAPTER 1'])
         expect(result.sections).to be_empty
+      end
+
+      it 'resets indentation for additional section notes' do
+        result = parse([
+          'SECTION XVI',
+          'Section Notes',
+          '6. Throughout the nomenclature, the expression electrical and electronic waste means:',
+          '(C) This section does not cover municipal waste.',
+          'Additional section notes',
+          '1. Tools necessary for the assembly or maintenance of machines are to be classified with those machines.',
+          '2. General rule of interpretation 2(a) is also applicable to machines imported in split consignments.',
+        ])
+
+        expect(result.sections[16]).to include(
+          [
+            '6. Throughout the nomenclature, the expression electrical and electronic waste means:',
+            '',
+            '    (C) This section does not cover municipal waste.',
+            '',
+            '### Additional section notes',
+            '',
+            '1. Tools necessary for the assembly or maintenance of machines are to be classified with those machines.',
+            '',
+            '2. General rule of interpretation 2(a) is also applicable to machines imported in split consignments.',
+          ].join("\n"),
+        )
+      end
+
+      it 'does not inherit general rule indentation state' do
+        result = parse([
+          'General Interpretive Rules',
+          'Rule 2',
+          '2. A reference to an article includes incomplete articles.',
+          'SECTION I',
+          'Section Notes',
+          '1. Any reference in this section to a particular genus or species includes the young of that genus or species.',
+          '2. References to dried products also cover dehydrated, evaporated or freeze-dried products.',
+        ])
+
+        expect(result.sections[1]).to eq(
+          [
+            '1. Any reference in this section to a particular genus or species includes the young of that genus or species.',
+            '',
+            '2. References to dried products also cover dehydrated, evaporated or freeze-dried products.',
+          ].join("\n"),
+        )
       end
 
       context 'when a chapter header appears before the section notes heading' do
@@ -260,6 +362,396 @@ RSpec.describe CustomsTariffImporter::NotesExtractor do
         expect(result.chapters['01']).to include('Primary note.')
         expect(result.chapters['01']).to include('Additional Chapter Notes')
         expect(result.chapters['01']).to include('Extra note.')
+      end
+
+      it 'separates additional chapter note headings from preceding numbered notes' do
+        result = parse([
+          'CHAPTER 9',
+          'Chapter Notes',
+          '1. Primary note.',
+          '2. Second primary note.',
+          'Additional chapter notes',
+          '1. Additional note.',
+        ])
+
+        expect(result.chapters['09']).to include(
+          [
+            '2. Second primary note.',
+            '',
+            '### Additional chapter notes',
+            '',
+            '1. Additional note.',
+          ].join("\n"),
+        )
+      end
+
+      it 'normalises compact bracketed subnotes and bullet glyphs' do
+        result = parse([
+          'CHAPTER 20',
+          'Chapter Notes',
+          'Additional chapter notes',
+          '2.(a) The sugar content is multiplied by one of the following factors:',
+          '•0.93 in respect of products of codes 2008 20 to 2008 80;',
+          '•0.95 in respect of products of the other headings.',
+          '(b) The expression Brix value means the direct reading.',
+          '3. Products are considered as containing added sugar when:',
+          '•pineapples and grapes: 13 %,',
+          '•other fruits: 9 %.',
+        ])
+
+        expect(result.chapters['20']).to include(
+          [
+            '2. (a) The sugar content is multiplied by one of the following factors:',
+            '',
+            '    - 0.93 in respect of products of codes 2008 20 to 2008 80;',
+            '',
+            '    - 0.95 in respect of products of the other headings.',
+            '',
+            '    (b) The expression Brix value means the direct reading.',
+            '',
+            '3. Products are considered as containing added sugar when:',
+            '',
+            '    - pineapples and grapes: 13 %,',
+            '',
+            '    - other fruits: 9 %.',
+          ].join("\n"),
+        )
+      end
+
+      it 'ends an alphabetic sublist and keeps following paragraphs under their numbered note' do
+        result = parse_paragraphs([
+          paragraph('CHAPTER 23'),
+          paragraph('Chapter Notes'),
+          paragraph('Additional chapter notes'),
+          paragraph('2. Code 2306 90 05 includes only residues containing:'),
+          paragraph('a. products of an oil content of less than 3 %;', indent: 720),
+          paragraph('b. products of an oil content of not less than 3 %;', indent: 720),
+          paragraph('For the determination of the starch and protein content, the methods are to be applied.'),
+          paragraph('For the determination of the oil and moisture content, the methods are to be applied.'),
+          paragraph('Products containing components added after processing are excluded.'),
+          paragraph('3. For the purposes of codes 2307 00 11, the following expressions apply:'),
+          paragraph('•‘actual alcoholic strength by mass’: the number of kilograms of pure alcohol contained in 100 kg of the product,', indent: 720),
+          paragraph('•‘potential alcoholic strength by mass’: the number of kilograms of pure alcohol capable of being produced by total fermentation of the sugars contained in 100 kg of the product,', indent: 720),
+          paragraph('•‘total alcoholic strength by mass’: the sum of the actual and potential alcoholic strengths by mass,', indent: 720),
+          paragraph('% mas’: the symbol for alcoholic strength by mass.', first_line_indent: 720),
+        ])
+
+        expect(result.chapters['23']).to include(
+          [
+            '2. Code 2306 90 05 includes only residues containing:',
+            '',
+            '    a. products of an oil content of less than 3 %;',
+            '',
+            '    b. products of an oil content of not less than 3 %;',
+            '',
+            '    For the determination of the starch and protein content, the methods are to be applied.',
+            '',
+            '    For the determination of the oil and moisture content, the methods are to be applied.',
+            '',
+            '    Products containing components added after processing are excluded.',
+            '',
+            '3. For the purposes of codes 2307 00 11, the following expressions apply:',
+            '',
+            '    - ‘actual alcoholic strength by mass’: the number of kilograms of pure alcohol contained in 100 kg of the product,',
+            '',
+            '    - ‘potential alcoholic strength by mass’: the number of kilograms of pure alcohol capable of being produced by total fermentation of the sugars contained in 100 kg of the product,',
+            '',
+            '    - ‘total alcoholic strength by mass’: the sum of the actual and potential alcoholic strengths by mass,',
+            '',
+            '    - % mas’: the symbol for alcoholic strength by mass.',
+          ].join("\n"),
+        )
+      end
+
+      it 'promotes marker paragraphs to markdown lists only when the source has child markers' do
+        result = parse_paragraphs([
+          paragraph('CHAPTER 30'),
+          paragraph('Chapter Notes'),
+          paragraph('1. This chapter does not cover:'),
+          paragraph('(a) foods or beverages;'),
+          paragraph('(b) products containing nicotine.'),
+          paragraph('3. For the purposes of headings 3003 and 3004, the following are to be treated:'),
+          paragraph('(a) as unmixed products:'),
+          paragraph('(1) unmixed products dissolved in water;', first_line_indent: 720),
+          paragraph('(2) all goods of Chapter 28 or 29; and', first_line_indent: 720),
+          paragraph('(b) as products which have been mixed:'),
+          paragraph('(1) colloidal solutions and suspensions;', first_line_indent: 720),
+          paragraph('Subheading notes'),
+          paragraph('1. For the purposes of subheadings 3002 13 and 3002 14, the following are to be treated:'),
+          paragraph('(a) as unmixed products, pure products, whether or not containing impurities;', first_line_indent: 720),
+          paragraph('(b) as products which have been mixed:', first_line_indent: 720),
+          paragraph('(1) the products mentioned in (a) above dissolved in water or in other solvents;', indent: 1440),
+          paragraph('(2) the products mentioned in (a) and (b) (1) above with an added stabiliser;', indent: 1440),
+          paragraph('Additional chapter note'),
+          paragraph('1. Heading 3004 includes herbal medicinal preparations if they bear the following statements of:'),
+          paragraph('(a) the specific diseases, ailments or their symptoms for which the product is to be used;', indent: 720),
+          paragraph('(b) the concentration of active substance or substances contained therein;', first_line_indent: 720),
+          paragraph('(c) dosage; and', first_line_indent: 720),
+          paragraph('(d) mode of application.', first_line_indent: 720),
+          paragraph('CHAPTER 39'),
+          paragraph('Chapter Notes'),
+          paragraph('2. This chapter does not cover:'),
+          paragraph('(u) articles of Chapter 90;'),
+          paragraph('(v) articles of Chapter 91;'),
+          paragraph('(w) articles of Chapter 92;'),
+          paragraph('(x) articles of Chapter 94;'),
+          paragraph('CHAPTER 40'),
+          paragraph('Chapter Notes'),
+          paragraph('5. (A) Headings 4001 and 4002 do not apply to rubber compounded with:'),
+          paragraph('(1) vulcanising agents;'),
+          paragraph('(2) pigments;'),
+          paragraph('(B) The presence of the following substances shall not affect classification:'),
+          paragraph('(1) emulsifiers or anti-tack agents;'),
+          paragraph('(2) small amounts of breakdown products of emulsifiers;'),
+          paragraph('CHAPTER 48'),
+          paragraph('Chapter Notes'),
+          paragraph('5. For the purposes of heading 4802, the following criteria apply:'),
+          paragraph('(A). For paper weighing not more than 150 g/m2:'),
+          paragraph('a. containing 10 % or more fibres, and', indent: 1440),
+          paragraph('1.weighing not more than 80 g/m2; or', indent: 1440, first_line_indent: 720),
+          paragraph('2.coloured throughout the mass; or', indent: 1440, first_line_indent: 720),
+        ])
+
+        expect(result.chapters['30']).to include(
+          [
+            '1. This chapter does not cover:',
+            '    (a) foods or beverages;',
+            '    (b) products containing nicotine.',
+          ].join("\n"),
+        )
+        expect(result.chapters['30']).to include(
+          [
+            '3. For the purposes of headings 3003 and 3004, the following are to be treated:',
+            '    - (a) as unmixed products:',
+            '',
+            '        - (1) unmixed products dissolved in water;',
+            '',
+            '        - (2) all goods of Chapter 28 or 29; and',
+            '',
+            '    - (b) as products which have been mixed:',
+            '',
+            '        - (1) colloidal solutions and suspensions;',
+          ].join("\n"),
+        )
+        expect(result.chapters['30']).to include(
+          [
+            '### Subheading notes',
+            '',
+            '1. For the purposes of subheadings 3002 13 and 3002 14, the following are to be treated:',
+            '',
+            '    - (a) as unmixed products, pure products, whether or not containing impurities;',
+            '',
+            '    - (b) as products which have been mixed:',
+            '',
+            '        - (1) the products mentioned in (a) above dissolved in water or in other solvents;',
+            '',
+            '        - (2) the products mentioned in (a) and (b) (1) above with an added stabiliser;',
+          ].join("\n"),
+        )
+        expect(result.chapters['30']).to include(
+          [
+            '### Additional chapter note',
+            '',
+            '1. Heading 3004 includes herbal medicinal preparations if they bear the following statements of:',
+            '',
+            '    (a) the specific diseases, ailments or their symptoms for which the product is to be used;',
+            '',
+            '    (b) the concentration of active substance or substances contained therein;',
+            '',
+            '    (c) dosage; and',
+            '',
+            '    (d) mode of application.',
+          ].join("\n"),
+        )
+        expect(result.chapters['39']).to include(
+          [
+            '2. This chapter does not cover:',
+            '    (u) articles of Chapter 90;',
+            '    (v) articles of Chapter 91;',
+            '    (w) articles of Chapter 92;',
+            '    (x) articles of Chapter 94;',
+          ].join("\n"),
+        )
+        expect(result.chapters['40']).to include(
+          [
+            '5. (A) Headings 4001 and 4002 do not apply to rubber compounded with:',
+            '    (1) vulcanising agents;',
+            '    (2) pigments;',
+            '    (B) The presence of the following substances shall not affect classification:',
+            '    (1) emulsifiers or anti-tack agents;',
+            '    (2) small amounts of breakdown products of emulsifiers;',
+          ].join("\n"),
+        )
+        expect(result.chapters['48']).to include(
+          [
+            '5. For the purposes of heading 4802, the following criteria apply:',
+            '    (A). For paper weighing not more than 150 g/m2:',
+            '',
+            '    - a. containing 10 % or more fibres, and',
+            '',
+            '        1. weighing not more than 80 g/m2; or',
+            '',
+            '        2. coloured throughout the mass; or',
+          ].join("\n"),
+        )
+      end
+
+      it 'does not promote an uppercase marker group unless it starts at the first parent marker' do
+        result = parse_paragraphs([
+          paragraph('CHAPTER 84'),
+          paragraph('Chapter Notes'),
+          paragraph('6. (A) For the purposes of heading 8471, automatic data-processing machines means machines, capable of'),
+          paragraph('(1) storing the processing program;', indent: 1440),
+          paragraph('(2) being freely programmed;', indent: 720, first_line_indent: 720),
+          paragraph('(B) Automatic data-processing machines may be in the form of systems.', indent: 720),
+          paragraph('(C) A unit is part of an automatic data processing system if it meets all the following conditions:', indent: 720),
+          paragraph('(1) it is principally used in an automatic data-processing system;', indent: 1440),
+          paragraph('(2) it is connectable to the central processing unit;', indent: 1440),
+          paragraph('Separately presented units are to be classified in heading 8471.', indent: 720),
+          paragraph('(D) Heading 8471 does not cover the following:', indent: 720),
+          paragraph('(1) printers, copying machines, facsimile machines;', indent: 720, first_line_indent: 720),
+        ])
+
+        expect(result.chapters['84']).to include(
+          [
+            '6. (A) For the purposes of heading 8471, automatic data-processing machines means machines, capable of',
+            '',
+            '    (1) storing the processing program;',
+            '',
+            '    (2) being freely programmed;',
+            '',
+            '    (B) Automatic data-processing machines may be in the form of systems.',
+            '',
+            '    (C) A unit is part of an automatic data processing system if it meets all the following conditions:',
+            '',
+            '    (1) it is principally used in an automatic data-processing system;',
+            '',
+            '    (2) it is connectable to the central processing unit;',
+            '',
+            '    Separately presented units are to be classified in heading 8471.',
+            '',
+            '    (D) Heading 8471 does not cover the following:',
+            '',
+            '    (1) printers, copying machines, facsimile machines;',
+          ].join("\n"),
+        )
+        expect(result.chapters['84']).not_to include('    - (B)')
+      end
+
+      it 'separates source-indented paragraphs within numbered notes' do
+        result = parse_paragraphs([
+          paragraph('CHAPTER 84'),
+          paragraph('Chapter Notes'),
+          paragraph('10. For the purposes of heading 8485, additive manufacturing means layering material.'),
+          paragraph(
+            'Subject to Note 1 to Section XVI and Note 1 to Chapter 84, machines answering to heading 8485 are classified there.',
+            indent: 720,
+          ),
+        ])
+
+        expect(result.chapters['84']).to include(
+          [
+            '10. For the purposes of heading 8485, additive manufacturing means layering material.',
+            '',
+            '    Subject to Note 1 to Section XVI and Note 1 to Chapter 84, machines answering to heading 8485 are classified there.',
+          ].join("\n"),
+        )
+      end
+
+      it 'promotes source-indented numeric marker runs after semantic lead-ins' do
+        result = parse_paragraphs([
+          paragraph('CHAPTER 85'),
+          paragraph('Chapter Notes'),
+          paragraph('12. For the purpose of heading 8541 and 8542:'),
+          paragraph('(a) (i) “Semiconductor devices” are semiconductor devices.', indent: 720),
+          paragraph('The following expressions mean :', first_line_indent: 720),
+          paragraph('(1) “Semiconductor-based” means built on a semiconductor substrate.', indent: 720),
+          paragraph('(2) “Physical or chemical phenomena” relate to pressure and light.', indent: 720),
+          paragraph('(ii) “Light-emitting diodes (LED)” are semiconductor devices.', indent: 720),
+          paragraph('b. ‘Electronic integrated circuits’ are:', first_line_indent: 720),
+          paragraph('(1) monolithic integrated circuits;', indent: 720),
+          paragraph('(2) hybrid integrated circuits;', indent: 720),
+          paragraph('For the purpose of this definition:', first_line_indent: 720),
+          paragraph('(1) ‘Components’ may be discrete.', indent: 720),
+          paragraph('(2) ‘Silicon based’ means built on silicon.', indent: 720),
+          paragraph('(3) (a) ‘Silicon based sensors’ consist of structures.', indent: 720),
+          paragraph('(b) ‘Silicon based actuators’ convert signals.', indent: 720),
+        ])
+
+        expect(result.chapters['85']).to include(
+          [
+            '    The following expressions mean :',
+            '',
+            '    - (1) “Semiconductor-based” means built on a semiconductor substrate.',
+            '',
+            '    - (2) “Physical or chemical phenomena” relate to pressure and light.',
+            '',
+            '    (ii) “Light-emitting diodes (LED)” are semiconductor devices.',
+            '',
+            '    b. ‘Electronic integrated circuits’ are:',
+            '',
+            '    - (1) monolithic integrated circuits;',
+            '',
+            '    - (2) hybrid integrated circuits;',
+            '',
+            '    For the purpose of this definition:',
+            '',
+            '    - (1) ‘Components’ may be discrete.',
+            '',
+            '    - (2) ‘Silicon based’ means built on silicon.',
+            '',
+            '    - (3) (a) ‘Silicon based sensors’ consist of structures.',
+            '',
+            '    (b) ‘Silicon based actuators’ convert signals.',
+          ].join("\n"),
+        )
+      end
+
+      it 'keeps alphabetic marker runs after semantic lead-ins as source-indented paragraphs' do
+        result = parse_paragraphs([
+          paragraph('SECTION XV'),
+          paragraph('Section Notes'),
+          paragraph('7. Classification of composite articles:'),
+          paragraph('For this purpose:', first_line_indent: 720),
+          paragraph('a. Iron and steel are regarded as one metal.', indent: 720),
+          paragraph('b. An alloy is regarded as entirely composed of that metal.', indent: 720),
+        ])
+
+        expect(result.sections[15]).to include(
+          [
+            '    For this purpose:',
+            '',
+            '    a. Iron and steel are regarded as one metal.',
+            '',
+            '    b. An alloy is regarded as entirely composed of that metal.',
+          ].join("\n"),
+        )
+        expect(result.sections[15]).not_to include('    - a.')
+      end
+
+      it 'does not treat letter v in an alphabetic marker run as a roman child marker' do
+        result = parse_paragraphs([
+          paragraph('CHAPTER 95'),
+          paragraph('Chapter Notes'),
+          paragraph('1. This chapter does not cover:'),
+          paragraph('u. lighting strings of all kinds;', indent: 720, first_line_indent: 720),
+          paragraph('v. monopods, bipods, tripods and similar articles;', indent: 720, first_line_indent: 720),
+          paragraph('w. racket strings, tents or other camping goods;', indent: 1440),
+          paragraph('x. tableware, kitchenware, toilet articles.', indent: 1440),
+        ])
+
+        expect(result.chapters['95']).to include(
+          [
+            '    u. lighting strings of all kinds;',
+            '',
+            '    v. monopods, bipods, tripods and similar articles;',
+            '',
+            '    w. racket strings, tents or other camping goods;',
+            '',
+            '    x. tableware, kitchenware, toilet articles.',
+          ].join("\n"),
+        )
+        expect(result.chapters['95']).not_to include('    - v.')
       end
 
       it 'stops collecting chapter notes when a 10-digit commodity code is encountered' do
@@ -454,6 +946,7 @@ RSpec.describe CustomsTariffImporter::NotesExtractor do
             'a. Refined copper:',
             '',
             'Metal containing copper.',
+            '',
             '### Subheading note',
             '',
             'In this chapter, the following expressions have the meanings hereby assigned to them:',
@@ -504,6 +997,7 @@ RSpec.describe CustomsTariffImporter::NotesExtractor do
             '    - not more than 6 % of manganese',
             '',
             '    b. spiegeleisen',
+            '',
             '### Additional chapter note',
             '',
             '1. For the purposes of code 7201 50 10:',
@@ -774,6 +1268,55 @@ RSpec.describe CustomsTariffImporter::NotesExtractor do
           ].join("\n"),
         )
       end
+
+      it 'unindents a compact top-level note after a source-indented lettered list' do
+        result = parse_paragraphs([
+          paragraph('CHAPTER 48'),
+          paragraph('Chapter Notes'),
+          paragraph('2. This chapter does not cover:'),
+          paragraph('a. articles of Chapter 95; or', indent: 720, first_line_indent: 720),
+          paragraph('b. articles of Chapter 96.', indent: 1440),
+          paragraph('3.Subject to the provisions of note 7, headings 4801 to 4805 include paper.', indent: 720),
+        ])
+
+        expect(result.chapters['48']).to include(
+          [
+            '2. This chapter does not cover:',
+            '',
+            '    a. articles of Chapter 95; or',
+            '',
+            '    b. articles of Chapter 96.',
+            '',
+            '3. Subject to the provisions of note 7, headings 4801 to 4805 include paper.',
+          ].join("\n"),
+        )
+      end
+
+      it 'spaces first-line indented marker siblings like source-indented marker siblings' do
+        result = parse_paragraphs([
+          paragraph('CHAPTER 49'),
+          paragraph('Chapter Notes'),
+          paragraph('1.This chapter does not cover:'),
+          paragraph('a. photographic negatives or positives on transparent bases (Chapter 37);', first_line_indent: 720),
+          paragraph('b. maps, plans or globes, in relief, whether or not printed (heading 9023);', first_line_indent: 720),
+          paragraph('c. playing cards or other goods of Chapter 95; or', first_line_indent: 720),
+          paragraph('d. original engravings. prints or lithographs (heading 9702).', indent: 720),
+        ])
+
+        expect(result.chapters['49']).to include(
+          [
+            '1. This chapter does not cover:',
+            '',
+            '    a. photographic negatives or positives on transparent bases (Chapter 37);',
+            '',
+            '    b. maps, plans or globes, in relief, whether or not printed (heading 9023);',
+            '',
+            '    c. playing cards or other goods of Chapter 95; or',
+            '',
+            '    d. original engravings. prints or lithographs (heading 9702).',
+          ].join("\n"),
+        )
+      end
     end
   end
 
@@ -879,6 +1422,7 @@ RSpec.describe CustomsTariffImporter::NotesExtractor do
           | Ag Silver \\| gold \\\\ alloy | 0,25 |
           | Other elements are, for example, Al, Be, Co, Fe, Mn, Ni, Si. | 0.3 |
         MARKDOWN
+        expect(result.chapters['74']).to have_valid_markdown_tables
         expect(result.chapters['74']).not_to include("Ag\n    Silver\n    0,25")
       end
 
@@ -1051,6 +1595,35 @@ RSpec.describe CustomsTariffImporter::NotesExtractor do
       end
 
       it 'keeps source-indented definition paragraphs and roman bracket conditions out of code blocks' do
+        table_xml = <<~XML
+          <w:tbl>
+            <w:tr>
+              <w:tc>
+                <w:tcPr><w:gridSpan w:val="2"/></w:tcPr>
+                <w:p><w:r><w:t>Element</w:t></w:r></w:p>
+              </w:tc>
+              <w:tc><w:p><w:r><w:t>Limiting content % by weight</w:t></w:r></w:p></w:tc>
+            </w:tr>
+            <w:tr>
+              <w:tc><w:p><w:r><w:t>Fe</w:t></w:r></w:p></w:tc>
+              <w:tc><w:p><w:r><w:t>Iron</w:t></w:r></w:p></w:tc>
+              <w:tc><w:p><w:r><w:t>0.5</w:t></w:r></w:p></w:tc>
+            </w:tr>
+            <w:tr>
+              <w:tc><w:p><w:r><w:t>O</w:t></w:r></w:p></w:tc>
+              <w:tc><w:p><w:r><w:t>Oxygen</w:t></w:r></w:p></w:tc>
+              <w:tc><w:p><w:r><w:t>0.4</w:t></w:r></w:p></w:tc>
+            </w:tr>
+            <w:tr>
+              <w:tc>
+                <w:tcPr><w:gridSpan w:val="2"/></w:tcPr>
+                <w:p><w:r><w:t>Other elements, each</w:t></w:r></w:p>
+              </w:tc>
+              <w:tc><w:p><w:r><w:t>0.3</w:t></w:r></w:p></w:tc>
+            </w:tr>
+          </w:tbl>
+        XML
+
         docx_content = build_docx_from_body_xml([
           paragraph_xml('CHAPTER 75', bold: true),
           paragraph_xml('Subheading notes', bold: true),
@@ -1059,6 +1632,7 @@ RSpec.describe CustomsTariffImporter::NotesExtractor do
           indented_paragraph_xml('Metal containing by weight at least 99 % of nickel plus cobalt, provided that:', left: 720),
           indented_paragraph_xml('(i) the cobalt content by weight does not exceed 1.5 %, and', left: 1800),
           indented_paragraph_xml('(ii) the content by weight of any other element does not exceed the limit specified in the following table:', left: 1800),
+          table_xml,
         ].join("\n"))
 
         result = described_class.new('1.30', docx_content).call
@@ -1076,8 +1650,15 @@ RSpec.describe CustomsTariffImporter::NotesExtractor do
             '    (i) the cobalt content by weight does not exceed 1.5 %, and',
             '',
             '    (ii) the content by weight of any other element does not exceed the limit specified in the following table:',
+            '',
+            '    | Element | Limiting content % by weight |',
+            '    | --- | --- |',
+            '    | Fe (Iron) | 0.5 |',
+            '    | O (Oxygen) | 0.4 |',
+            '    | Other elements, each | 0.3 |',
           ].join("\n"),
         )
+        expect(result.chapters['75']).to have_valid_markdown_tables
       end
 
       it 'preserves source bold without inventing bold for plain paragraphs' do

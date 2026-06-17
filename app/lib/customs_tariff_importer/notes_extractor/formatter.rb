@@ -1,6 +1,193 @@
 module CustomsTariffImporter
   class NotesExtractor
     class Formatter
+      class ParagraphPreprocessor
+        COMPACT_NUMBERED_MARKER_PATTERN = /\A([1-9]\d*)\.(?=(?:\([a-z]\)|[A-Z]\.|[[:alpha:]]))/i
+        DOTLESS_NUMBERED_NOTE_PATTERN = /\A([1-9]\d*)\s+(?=[A-Z]|\u201C|\()/
+        NUMBERED_NOTE_PATTERN = /\A[1-9]\d*\.(?!\d)/
+        SOURCE_BULLET_MARKER_PATTERN = /\A\s*(?:-|•|—|–)\s*/
+
+        def initialize(numbering_counters)
+          @numbering_counters = numbering_counters
+        end
+
+        def call(text, current_paragraph:, last_top_level_note_number:)
+          text = normalize_source_bullet_marker(text)
+          text = normalize_compact_numbered_marker(text)
+          text = normalize_dotless_numbered_note(text, last_top_level_note_number)
+          normalize_visual_numbering(text, current_paragraph)
+        end
+
+        private
+
+        def normalize_source_bullet_marker(text)
+          return text unless text.match?(SOURCE_BULLET_MARKER_PATTERN)
+
+          "- #{text.sub(SOURCE_BULLET_MARKER_PATTERN, '')}"
+        end
+
+        def normalize_compact_numbered_marker(text)
+          text.sub(COMPACT_NUMBERED_MARKER_PATTERN, '\1. ')
+        end
+
+        def normalize_dotless_numbered_note(text, last_top_level_note_number)
+          return text unless (match = text.match(DOTLESS_NUMBERED_NOTE_PATTERN))
+
+          note_number = match[1].to_i
+          expected_note_number = last_top_level_note_number ? last_top_level_note_number + 1 : 1
+          continues_sequence = note_number == expected_note_number
+          return text unless continues_sequence
+
+          text.sub(/\A([1-9]\d*)\s+/, '\1. ')
+        end
+
+        def normalize_visual_numbering(text, current_paragraph)
+          numbering = current_paragraph&.fetch(:numbering, nil)
+          return text unless numbering && numbering[:id].positive? && numbering[:level].zero?
+          return text if text.match?(NUMBERED_NOTE_PATTERN)
+
+          "#{next_visual_number(numbering)}. #{text}"
+        end
+
+        def next_visual_number(numbering)
+          key = [numbering[:id], numbering[:level]]
+          @numbering_counters[key] = @numbering_counters.fetch(key, 0) + 1
+        end
+      end
+
+      class MarkerTrie
+        ROMAN_MARKER_PATTERN = /(?:i{1,3}|iv|v|vi{0,3}|ix)/i
+        ALPHABETIC_DOTTED_MARKER_PATTERN = /(?:[a-z]|ij)\./i
+        MARKER_TEXT_PATTERN = /\A(?:#{ALPHABETIC_DOTTED_MARKER_PATTERN}|\([A-Z]\)|\([ivxlcdm]+\)|[ivxlcdm]+\.|\(\d+\)|\d+\.)\s+\S/i
+        ALPHABETIC_MARKER_TEXT_PATTERN = /\A#{ALPHABETIC_DOTTED_MARKER_PATTERN}\s+\S/i
+        ROMAN_MARKER_TEXT_PATTERN = /\A#{ROMAN_MARKER_PATTERN}\.\s+\S/
+        CHILD_MARKER_TEXT_PATTERN = /\A(?:\(\d+\)|\d+\.|#{ROMAN_MARKER_PATTERN}\.|\(#{ROMAN_MARKER_PATTERN}\))\s+\S/
+        SOURCE_MARKER_LINE_PATTERN = /\A\s+(?:-\s+)?(?:#{ALPHABETIC_DOTTED_MARKER_PATTERN}|\([A-Z]\)|\([ivxlcdm]+\)|[ivxlcdm]+\.|\(\d+\)|\d+\.)\s+\S/i
+        MARKER_LINE_PATTERN = /\A(?<spaces> *)(?:-\s+)?(?<marker>\(\d+\)|\d+\.|ij\.|#{ROMAN_MARKER_PATTERN}\.|[a-z]\.|\([a-z]+\))\s+\S/i
+        SOURCE_PARENT_MARKER_LINE_PATTERN = /\A\s+(?:-\s+)?(?:#{ALPHABETIC_DOTTED_MARKER_PATTERN}|\((?![ivx]+\))[a-z]\))\s+\S/i
+        SOURCE_CHILD_MARKER_LINE_PATTERN = /\A\s+(?:-\s+)?(?:\(\d+\)|\d+\.|#{ROMAN_MARKER_PATTERN}\.|\(#{ROMAN_MARKER_PATTERN}\))\s+\S/
+
+        def initialize
+          reset
+        end
+
+        def reset
+          @pending_parent_depth = nil
+          @active_child_family = nil
+        end
+
+        def child_indent_level(text)
+          return unless @pending_parent_depth
+
+          marker = self.class.marker_from_text(text)
+          return unless marker && self.class.child_marker?(marker)
+
+          family = self.class.child_marker_family(marker)
+          if @active_child_family
+            @pending_parent_depth + 1 if family == @active_child_family
+          elsif self.class.first_child_marker?(marker)
+            @pending_parent_depth + 1
+          end
+        end
+
+        def observe(formatted, in_numbered_note:, paragraph_indent_level:, paragraph_first_line_indent_level:)
+          if (paragraph_indent_level.positive? && formatted.match?(SOURCE_CHILD_MARKER_LINE_PATTERN)) ||
+              (paragraph_indent_level.zero? && paragraph_first_line_indent_level.positive? && self.class.marker_line?(formatted, :child))
+            marker = self.class.marker_from_line(formatted)
+            @active_child_family = self.class.child_marker_family(marker) if marker
+            @pending_parent_depth
+          elsif (paragraph_indent_level.positive? && formatted.match?(SOURCE_PARENT_MARKER_LINE_PATTERN)) ||
+              (paragraph_indent_level.zero? && paragraph_first_line_indent_level.positive? && self.class.marker_line?(formatted, :parent)) ||
+              (in_numbered_note && self.class.marker_line?(formatted, :parent))
+            @pending_parent_depth = formatted_indent_level(formatted)
+            @active_child_family = nil
+          else
+            reset
+          end
+        end
+
+        def self.source_marker_line?(line)
+          line.to_s.match?(SOURCE_MARKER_LINE_PATTERN)
+        end
+
+        def self.marker_text?(text)
+          text.match?(MARKER_TEXT_PATTERN)
+        end
+
+        def self.alphabetic_marker_text?(text)
+          text.match?(ALPHABETIC_MARKER_TEXT_PATTERN)
+        end
+
+        def self.roman_marker_text?(text)
+          text.match?(ROMAN_MARKER_TEXT_PATTERN)
+        end
+
+        def self.marker_line?(line, kind, min_indent: 1)
+          parsed_line(line)&.then do |marker|
+            marker[:indent_level] >= min_indent && public_send("#{kind}_marker?", marker[:text])
+          end
+        end
+
+        def self.indent_level(line)
+          parsed_line(line)&.fetch(:indent_level)
+        end
+
+        def self.marker_from_text(text)
+          text.to_s.match(MARKER_LINE_PATTERN)&.[](:marker)
+        end
+
+        def self.marker_from_line(line)
+          parsed_line(line)&.fetch(:text)
+        end
+
+        def self.parsed_line(line)
+          return unless (match = line.to_s.match(MARKER_LINE_PATTERN))
+
+          { indent_level: match[:spaces].length / 4, text: match[:marker] }
+        end
+
+        def self.parent_marker?(marker)
+          (marker.match?(/\A#{ALPHABETIC_DOTTED_MARKER_PATTERN}\z/i) && !roman_child_marker?(marker)) ||
+            marker.match?(/\A\((?![ivx]+\))[a-z]+\)\z/i)
+        end
+
+        def self.first_parent_marker?(marker)
+          marker.match?(/\Aa\.\z/) || marker.match?(/\A\(a\)\z/)
+        end
+
+        def self.promotable_parent_marker?(marker)
+          first_parent_marker?(marker) || marker.match?(/\A\(A\)\z/)
+        end
+
+        def self.uppercase_parent_marker?(marker)
+          marker.match?(/\A\([A-Z]\)\z/)
+        end
+
+        def self.child_marker?(marker)
+          marker.match?(/\A(?:\d+\.|\(\d+\)|#{ROMAN_MARKER_PATTERN}\.|\(#{ROMAN_MARKER_PATTERN}\))\z/)
+        end
+
+        def self.roman_child_marker?(marker)
+          marker.match?(/\A(?:#{ROMAN_MARKER_PATTERN}\.|\(#{ROMAN_MARKER_PATTERN}\))\z/i)
+        end
+
+        def self.first_child_marker?(marker)
+          marker.match?(/\A(?:1\.|\(1\)|i\.|\(i\))\z/i)
+        end
+
+        def self.child_marker_family(marker)
+          marker.match?(/\A(?:\d+\.|\(\d+\))\z/) ? :number : :roman
+        end
+
+        private_class_method :parsed_line
+
+        private
+
+        def formatted_indent_level(formatted)
+          formatted[/\A */].length / 4
+        end
+      end
+
       def initialize
         reset_note_formatting_context
       end
@@ -30,10 +217,14 @@ module CustomsTariffImporter
       def reset_note_formatting_context
         @in_numbered_note = false
         @in_nested_numbered_subnote = false
+        @in_source_indented_marker_list = false
+        @source_indented_marker_list_closed = false
         @last_top_level_note_number = nil
         @previous_markdown_bullet_indent = nil
         @current_paragraph = nil
         @numbering_counters = {}
+        @paragraph_preprocessor = ParagraphPreprocessor.new(@numbering_counters)
+        @marker_trie = MarkerTrie.new
       end
 
       def normalize_note_lines(lines, chapter: false, section: false, current_chapter: nil)
@@ -41,7 +232,8 @@ module CustomsTariffImporter
         lines = lines.dup
         start_index = 0
 
-        remove_section_note_preamble(lines) if section
+        remove_malformed_duplicate_markdown_artifacts(lines)
+        remove_note_preamble(lines) if chapter || section
 
         if chapter
           loop do
@@ -55,7 +247,9 @@ module CustomsTariffImporter
           normalize_omitted_additional_chapter_note_one(lines)
         end
 
-        normalize_compact_numbered_letter_markers(lines)
+        normalize_source_nested_marker_lists(lines)
+        normalize_semantic_numeric_marker_lists(lines)
+        normalize_plain_marker_code_block_indents(lines)
         normalize_indented_marker_spacing(lines) if section
         normalize_lettered_paragraph_lists(lines)
         join_split_paragraph_continuations(lines)
@@ -73,12 +267,17 @@ module CustomsTariffImporter
           style:,
           text: paragraph_text(para),
           indent: paragraph_indent(para),
+          first_line_indent: paragraph_first_line_indent(para),
           numbering: paragraph_numbering(para),
         }
       end
 
       def paragraph_indent(para)
         para.at_xpath('./w:pPr/w:ind', WORD_NS)&.attr('w:left').to_i
+      end
+
+      def paragraph_first_line_indent(para)
+        para.at_xpath('./w:pPr/w:ind', WORD_NS)&.attr('w:firstLine').to_i
       end
 
       def paragraph_numbering(para)
@@ -118,6 +317,7 @@ module CustomsTariffImporter
           text.match?(CHAPTER_PATTERN) ||
           text.match?(CHAPTER_NOTES_PATTERN) ||
           text.match?(ADDITIONAL_NOTES_PATTERN) ||
+          text.match?(ADDITIONAL_SECTION_NOTES_PATTERN) ||
           text.match?(SUBHEADING_NOTES_PATTERN) ||
           text.match?(SECTION_NOTES_PATTERN) ||
           text.match?(GENERAL_RULES_PATTERN) ||
@@ -233,10 +433,24 @@ module CustomsTariffImporter
 
       def normalize_table_row(row, columns)
         if columns == 2 && row.length == 3
-          [row.first(2).reject(&:blank?).join(' '), row.last]
+          [combined_two_column_table_label(row.first(2)), row.last]
         else
           row.first(columns).fill('', row.length...columns)
         end
+      end
+
+      def combined_two_column_table_label(cells)
+        compact_cells = cells.reject(&:blank?)
+        return compact_cells.first.to_s if compact_cells.uniq.one?
+        return "#{compact_cells.first} (#{compact_cells.second})" if chemical_symbol_name_cells?(compact_cells)
+
+        compact_cells.join(' ')
+      end
+
+      def chemical_symbol_name_cells?(cells)
+        cells.length == 2 &&
+          cells.first.match?(/\A[A-Z][a-z]?\z/) &&
+          cells.second.match?(/\A[A-Z][a-z]+\z/)
       end
 
       def markdown_table_row(cells)
@@ -254,18 +468,26 @@ module CustomsTariffImporter
       def formatted_note_line(text)
         return text if text.blank?
 
+        text = @paragraph_preprocessor.call(
+          text,
+          current_paragraph: @current_paragraph,
+          last_top_level_note_number: @last_top_level_note_number,
+        )
+
         if @previous_markdown_bullet_indent && bullet_continuation_line?(text)
           return "#{' ' * (@previous_markdown_bullet_indent + 4)}#{text.sub(/\A\s*/, '')}"
         end
 
-        text = normalize_dotless_numbered_note(text)
-        text = normalize_visual_numbering(text)
         return markdown_note_section_heading(text) if note_section_heading?(text)
         return nested_numbered_subnote_start(text) if nested_numbered_subnote_start?(text)
-        return indented_marker_line(text) if indented_marker?(text)
+        return indented_marker_line(text) if child_indented_marker?(text)
+        return first_line_indented_marker_line(text) if child_first_line_indented_marker?(text)
         return "    #{text}" if nested_numbered_note?(text)
         return text if numbered_note?(text)
+        return indented_marker_line(text) if indented_marker?(text)
         return markdown_bullet_line(text) if source_bullet_line?(text)
+        return first_line_indented_marker_line(text) if first_line_indented_marker?(text)
+        return missing_source_bullet_line(text) if missing_source_bullet_line?(text)
         return "    #{text.sub(/\A\s*/, '')}" if @in_numbered_note
 
         text
@@ -279,10 +501,23 @@ module CustomsTariffImporter
           return
         end
 
+        if source_indented_marker_line?(formatted)
+          @in_source_indented_marker_list = true
+          @source_indented_marker_list_closed = false
+          @previous_markdown_bullet_indent = nil
+        end
+
+        if source_indented_marker_list_ended?(text)
+          @in_source_indented_marker_list = false
+          @source_indented_marker_list_closed = true
+        end
+
         if nested_numbered_subnote_start?(text)
           @in_numbered_note = true
           @in_nested_numbered_subnote = true
+          @source_indented_marker_list_closed = false
           @previous_markdown_bullet_indent = nil
+          @marker_trie.reset
           return
         end
 
@@ -290,12 +525,14 @@ module CustomsTariffImporter
           @in_numbered_note = true
           @in_nested_numbered_subnote = true
           @previous_markdown_bullet_indent = nil
+          @marker_trie.reset
           return
         end
 
         @in_nested_numbered_subnote = false if @in_nested_numbered_subnote && !numbered_note?(formatted)
         if numbered_note?(formatted)
           @in_numbered_note = true
+          @source_indented_marker_list_closed = false
           @last_top_level_note_number = formatted[/\A([1-9]\d*)\./, 1].to_i unless @in_nested_numbered_subnote
         end
         @previous_markdown_bullet_indent =
@@ -304,6 +541,13 @@ module CustomsTariffImporter
           elsif @previous_markdown_bullet_indent && bullet_continuation_line?(text)
             formatted[/\A */].length - 4
           end
+
+        @marker_trie.observe(
+          formatted,
+          in_numbered_note: @in_numbered_note,
+          paragraph_indent_level:,
+          paragraph_first_line_indent_level:,
+        )
       end
 
       def numbered_note?(text)
@@ -316,35 +560,6 @@ module CustomsTariffImporter
         return false unless @in_numbered_note && @last_top_level_note_number
 
         text[/\A([1-9]\d*)\./, 1].to_i <= @last_top_level_note_number
-      end
-
-      def dotless_numbered_note?(text)
-        return false unless (match = text.match(/\A([1-9]\d*)\s+(?:[A-Z]|\u201C|\()/))
-
-        note_number = match[1].to_i
-        return note_number == 1 if @last_top_level_note_number.nil?
-
-        note_number == @last_top_level_note_number + 1
-      end
-
-      def normalize_dotless_numbered_note(text)
-        return text unless dotless_numbered_note?(text)
-
-        text.sub(/\A([1-9]\d*)\s+/, '\1. ')
-      end
-
-      def normalize_visual_numbering(text)
-        numbering = @current_paragraph&.fetch(:numbering, nil)
-        return text unless numbering && numbering[:id].positive? && numbering[:level].zero?
-        return text if numbered_note?(text)
-
-        number = next_visual_number(numbering)
-        "#{number}. #{text}"
-      end
-
-      def next_visual_number(numbering)
-        key = [numbering[:id], numbering[:level]]
-        @numbering_counters[key] = @numbering_counters.fetch(key, 0) + 1
       end
 
       def nested_numbered_subnote_start?(text)
@@ -362,16 +577,45 @@ module CustomsTariffImporter
       end
 
       def source_bullet_line?(text)
-        text.match?(/\A\s*(?:-|•|—)\s+\S/)
+        text.match?(/\A\s*(?:-|•|—|–)\s*\S/)
       end
 
       def markdown_bullet_line(text)
-        bullet_text = text.sub(/\A\s*(?:-|•|—)\s+/, '')
+        bullet_text = text.sub(/\A\s*(?:-|•|—|–)\s*/, '')
         "#{'    ' if @in_numbered_note}- #{bullet_text}"
       end
 
+      def missing_source_bullet_line?(text)
+        @previous_markdown_bullet_indent &&
+          paragraph_first_line_indent_level.positive? &&
+          text.match?(/\A\S/)
+      end
+
+      def missing_source_bullet_line(text)
+        "#{' ' * @previous_markdown_bullet_indent}- #{text.sub(/\A\s*/, '')}"
+      end
+
+      def first_line_indented_marker?(text)
+        paragraph_indent_level.zero? &&
+          paragraph_first_line_indent_level.positive? &&
+          MarkerTrie.marker_text?(text)
+      end
+
+      def first_line_indented_marker_line(text)
+        indent_level = @in_numbered_note ? (@marker_trie.child_indent_level(text) || 1) : paragraph_first_line_indent_level
+        "#{'    ' * indent_level}#{text}"
+      end
+
+      def child_first_line_indented_marker?(text)
+        first_line_indented_marker?(text) && @marker_trie.child_indent_level(text)
+      end
+
       def indented_marker?(text)
-        paragraph_indent_level.positive? && indented_marker_text?(text)
+        paragraph_indent_level.positive? && MarkerTrie.marker_text?(text)
+      end
+
+      def child_indented_marker?(text)
+        indented_marker?(text) && @marker_trie.child_indent_level(text)
       end
 
       def indented_marker_line(text)
@@ -380,47 +624,36 @@ module CustomsTariffImporter
       end
 
       def indented_marker_indent_level(text)
-        return 1 if alphabetic_marker_text?(text) && !roman_marker_text?(text)
-        return 1 if numeric_bracket_marker_text?(text)
-        return 1 if roman_bracket_marker_text?(text)
+        return 1 if MarkerTrie.alphabetic_marker_text?(text) && !MarkerTrie.roman_marker_text?(text)
+        return @marker_trie.child_indent_level(text) if @marker_trie.child_indent_level(text)
 
-        paragraph_indent_level
+        [paragraph_indent_level, 1].min
       end
 
       def indented_marker_prefix(text)
-        bullet_marker_text?(text) ? '- ' : ''
+        MarkerTrie.roman_marker_text?(text) && @marker_trie.child_indent_level(text) ? '- ' : ''
       end
 
       def paragraph_indent_level
         (@current_paragraph&.fetch(:indent, 0).to_i / 720).clamp(0, 3)
       end
 
-      def indented_marker_text?(text)
-        text.match?(/\A(?:[a-z]\.|\([A-Z]\)|\([ivxlcdm]+\)|[ivxlcdm]+\.|\(\d+\))\s+\S/i)
-      end
-
-      def alphabetic_marker_text?(text)
-        text.match?(/\A[a-z]\.\s+\S/i)
-      end
-
-      def roman_marker_text?(text)
-        text.match?(/\A(?:i{1,3}|iv|v|vi{0,3}|ix)\.\s+\S/i)
-      end
-
-      def numeric_bracket_marker_text?(text)
-        text.match?(/\A\(\d+\)\s+\S/)
-      end
-
-      def roman_bracket_marker_text?(text)
-        text.match?(/\A\((?:i{1,3}|iv|v|vi{0,3}|ix)\)\s+\S/i)
-      end
-
-      def bullet_marker_text?(text)
-        text.match?(/\A\([A-Z]\)\s+\S/) || roman_marker_text?(text)
+      def paragraph_first_line_indent_level
+        (@current_paragraph&.fetch(:first_line_indent, 0).to_i / 720).clamp(0, 3)
       end
 
       def bullet_continuation_line?(text)
         text.match?(/\A(?:and|or|(?:not\s+)?less than|more than|\d+(?:[.,]\d+)?\s*(?:%|W|mm|cm|g|kg)(?=\s|$))/i)
+      end
+
+      def source_indented_marker_list_ended?(text)
+        @in_source_indented_marker_list &&
+          paragraph_indent_level.zero? &&
+          !MarkerTrie.marker_text?(text)
+      end
+
+      def in_closed_source_indented_marker_list?
+        @source_indented_marker_list_closed && paragraph_indent_level.zero?
       end
 
       def note_section_heading?(text)
@@ -428,11 +661,13 @@ module CustomsTariffImporter
       end
 
       def plain_note_section_heading?(text)
-        text.match?(ADDITIONAL_NOTES_PATTERN) || text.match?(SUBHEADING_NOTES_PATTERN)
+        text.match?(ADDITIONAL_NOTES_PATTERN) ||
+          text.match?(ADDITIONAL_SECTION_NOTES_PATTERN) ||
+          text.match?(SUBHEADING_NOTES_PATTERN)
       end
 
       def markdown_note_section_heading?(text)
-        text.match?(/\A###\s+(?:Additional\s+[Cc]hapter\s+[Nn]otes?|Subheading\s+[Nn]otes?)\z/i)
+        text.match?(/\A###\s+(?:Additional\s+(?:[Cc]hapter|[Ss]ection)\s+[Nn]otes?|Subheading\s+[Nn]otes?)\z/i)
       end
 
       def markdown_note_section_heading(text)
@@ -442,9 +677,14 @@ module CustomsTariffImporter
       def blank_line_needed_before?(formatted, lines)
         formatted.present? &&
           lines.last.present? &&
+          !consecutive_markdown_table_rows?(lines.last, formatted) &&
           (markdown_bullet?(lines.last) ||
+           note_section_heading?(formatted) ||
            markdown_bullet?(formatted) ||
+           source_indented_marker_list_ended?(formatted) ||
+           closed_source_indented_marker_list_paragraph?(formatted) ||
            source_indented_marker_line?(formatted) ||
+           source_indented_paragraph?(formatted) ||
            source_indented_marker_continuation?(formatted, lines) ||
            nested_numbered_subnote?(formatted) ||
            numbered_note?(formatted) ||
@@ -452,20 +692,46 @@ module CustomsTariffImporter
            consecutive_variable_definition_paragraphs?(lines.last, formatted))
       end
 
+      def consecutive_markdown_table_rows?(previous, current)
+        markdown_table_row?(previous) && markdown_table_row?(current)
+      end
+
+      def markdown_table_row?(line)
+        line.to_s.strip.match?(/\A\|.*\|\z/)
+      end
+
       def consecutive_variable_definition_paragraphs?(previous, formatted)
         variable_definition_paragraph?(previous) && variable_definition_paragraph?(formatted)
       end
 
       def source_indented_marker_line?(formatted)
-        paragraph_indent_level.positive? &&
-          formatted.match?(/\A\s+(?:-\s+)?(?:[a-z]\.|\([A-Z]\)|[ivxlcdm]+\.|\(\d+\))\s+\S/i)
+        formatted_source_marker_line?(formatted) &&
+          (paragraph_indent_level.positive? || paragraph_first_line_indent_level.positive?)
       end
 
       def source_indented_marker_continuation?(formatted, lines)
         return false unless paragraph_indent_level.positive?
 
-        lines.last.to_s.match?(/\A\s+(?:[a-z]\.|\([A-Z]\)|\([ivxlcdm]+\)|[ivxlcdm]+\.|\(\d+\))\s+\S/i) &&
+        MarkerTrie.source_marker_line?(lines.last) &&
           formatted.match?(/\A\s+\S/)
+      end
+
+      def source_indented_paragraph?(formatted)
+        @in_numbered_note &&
+          paragraph_indent_level.positive? &&
+          formatted.match?(/\A {4}\S/) &&
+          !formatted_source_marker_line?(formatted) &&
+          !markdown_table_row?(formatted)
+      end
+
+      def formatted_source_marker_line?(formatted)
+        MarkerTrie.source_marker_line?(formatted)
+      end
+
+      def closed_source_indented_marker_list_paragraph?(formatted)
+        in_closed_source_indented_marker_list? &&
+          !note_section_heading?(formatted) &&
+          !numbered_note?(formatted)
       end
 
       def variable_definition_paragraph?(text)
@@ -480,17 +746,37 @@ module CustomsTariffImporter
         text.match?(/\A {4}[1-9]\d*\.(?!\d)\s+\S/)
       end
 
-      def remove_section_note_preamble(lines)
-        lines.delete_if { |line| section_note_preamble?(line) }
+      def remove_malformed_duplicate_markdown_artifacts(lines)
+        lines.delete_if.with_index { |_line, index| malformed_duplicate_markdown_artifact?(lines, index) }
+      end
+
+      # Chapter 76 source contains a literal "**Other elements" before the real heading.
+      def malformed_duplicate_markdown_artifact?(lines, index)
+        text = lines[index].to_s.strip
+        return false unless text.match?(/\A\*\*[^*]/) && !text.end_with?('**')
+
+        normalized_note_text(next_content_line(lines, index + 1)) == text.delete_prefix('**').strip
+      end
+
+      def next_content_line(lines, start_index)
+        lines[start_index..]&.find(&:present?)
+      end
+
+      def normalized_note_text(line)
+        line.to_s.strip.delete_prefix('**').delete_suffix('**')
+      end
+
+      def remove_note_preamble(lines)
+        lines.delete_if { |line| note_preamble?(line) }
         lines.shift while lines.any? && lines.first.blank?
       end
 
-      def section_note_preamble?(line)
+      def note_preamble?(line)
         line.to_s
           .strip
           .delete_prefix('**')
           .delete_suffix('**')
-          .match?(/\AThere are important section (?:note|noted|notes) for this part of the tariff:?\z/i)
+          .match?(/\AThere are important (?:(?:chapter|section) )?(?:note|noted|notes) for this part of the tariff:?\z/i)
       end
 
       def normalize_indented_marker_spacing(lines)
@@ -510,7 +796,7 @@ module CustomsTariffImporter
       end
 
       def final_indented_marker_line?(line)
-        line.to_s.match?(/\A {4}(?:[a-z]{1,4}[.)]|\([a-z]\)|\([A-Z]\)|\([1-9]\d*\)|[ivxlcdm]+\.)\s+\S/i)
+        MarkerTrie.indent_level(line).to_i.positive? && MarkerTrie.marker_from_line(line).present?
       end
 
       def normalize_omitted_additional_chapter_note_one(lines)
@@ -544,9 +830,151 @@ module CustomsTariffImporter
           line.match?(/\A###\s+Additional\s+[Cc]hapter\s+[Nn]otes?\z/i)
       end
 
-      def normalize_compact_numbered_letter_markers(lines)
-        lines.map! { |line| line.sub(/\A([1-9]\d*)\.([A-Z]\.)/, '\1. \2') }
-        lines.map! { |line| line.sub(/\A([1-9]\d*)\.(?=[A-Z][a-z])/, '\1. ') }
+      def normalize_source_nested_marker_lists(lines)
+        index = 0
+        while index < lines.length
+          if MarkerTrie.marker_line?(lines[index], :promotable_parent)
+            index = normalize_source_nested_marker_list(lines, index)
+          else
+            index += 1
+          end
+        end
+      end
+
+      def normalize_plain_marker_code_block_indents(lines)
+        lines.map! do |line|
+          plain_deep_marker_line?(line) ? marker_list_line(line, indent_level: 1, bullet: false) : line
+        end
+      end
+
+      def normalize_semantic_numeric_marker_lists(lines)
+        index = 0
+        while index < lines.length
+          if semantic_numeric_marker_list_lead_in?(lines[index])
+            first_item_index = next_content_line_index(lines, index + 1)
+            if first_item_index && first_semantic_numeric_marker_line?(lines[first_item_index], lines[index])
+              normalize_semantic_numeric_marker_list(lines, first_item_index, line_indent_level(lines[index]))
+            end
+          end
+
+          index += 1
+        end
+      end
+
+      def normalize_semantic_numeric_marker_list(lines, start_index, indent_level)
+        index = start_index
+        while index < lines.length
+          index = next_content_line_index(lines, index)
+          break unless index && semantic_numeric_marker_line?(lines[index])
+
+          lines[index] = marker_list_line(lines[index], indent_level:, bullet: true)
+          index += 1
+        end
+      end
+
+      def semantic_numeric_marker_list_lead_in?(line)
+        line_indent_level(line) == 1 &&
+          semantic_numeric_marker_list_lead_in_marker?(line) &&
+          line.to_s.strip.end_with?(':')
+      end
+
+      def semantic_numeric_marker_list_lead_in_marker?(line)
+        marker = MarkerTrie.marker_from_line(line).to_s
+
+        marker.blank? || marker.match?(/\A(?:[a-z]|ij)\.\z/i)
+      end
+
+      def first_semantic_numeric_marker_line?(line, lead_in)
+        lead_in_indent_level = line_indent_level(lead_in)
+
+        semantic_numeric_marker_line?(line) &&
+          [lead_in_indent_level, lead_in_indent_level + 1].include?(MarkerTrie.indent_level(line)) &&
+          MarkerTrie.marker_from_line(line) == '(1)'
+      end
+
+      def semantic_numeric_marker_line?(line)
+        MarkerTrie.indent_level(line).to_i.positive? &&
+          MarkerTrie.marker_from_line(line).to_s.match?(/\A\(\d+\)\z/) &&
+          !markdown_bullet?(line)
+      end
+
+      def line_indent_level(line)
+        line.to_s[/\A */].length / 4
+      end
+
+      def plain_deep_marker_line?(line)
+        MarkerTrie.indent_level(line).to_i > 1 &&
+          MarkerTrie.marker_from_line(line).present? &&
+          !markdown_bullet?(line) &&
+          !dotted_numeric_marker_line?(line)
+      end
+
+      def normalize_source_nested_marker_list(lines, start_index)
+        parent_indices, child_indices, stop_index, parent_indent_level = source_nested_marker_group(lines, start_index)
+        return start_index + 1 if child_indices.empty?
+        return start_index + 1 if MarkerTrie.uppercase_parent_marker?(MarkerTrie.marker_from_line(lines[start_index]).to_s) &&
+          !MarkerTrie.marker_line?(lines[child_indices.first], :roman_child, min_indent: parent_indent_level.to_i + 1)
+
+        parent_indices.each do |index|
+          lines[index] = marker_list_line(lines[index], indent_level: MarkerTrie.indent_level(lines[index]), bullet: true)
+        end
+        child_indices.each { |index| lines[index] = nested_child_marker_line(lines[index], parent_indent_level:) }
+        stop_index
+      end
+
+      def nested_child_marker_line(line, parent_indent_level:)
+        marker_list_line(
+          line,
+          indent_level: parent_indent_level.to_i + 1,
+          bullet: !dotted_numeric_marker_line?(line),
+        )
+      end
+
+      def marker_list_line(line, indent_level:, bullet:)
+        content = line.sub(/\A */, '').sub(/\A-\s+/, '')
+        "#{markdown_indent(indent_level)}#{'- ' if bullet}#{content}"
+      end
+
+      def dotted_numeric_marker_line?(line)
+        MarkerTrie.marker_from_line(line).to_s.match?(/\A\d+\.\z/)
+      end
+
+      def markdown_indent(indent_level)
+        '    ' * indent_level.to_i
+      end
+
+      def source_nested_marker_group(lines, start_index)
+        parent_indices = []
+        child_indices = []
+        index = start_index
+        parent_indent_level = nil
+
+        loop do
+          index = next_content_line_index(lines, index)
+          break unless index && MarkerTrie.marker_line?(lines[index], :parent)
+
+          parent_indices << index
+          parent_indent_level = MarkerTrie.indent_level(lines[index])
+          index += 1
+
+          while (index = next_content_line_index(lines, index))
+            break if MarkerTrie.marker_line?(lines[index], :parent)
+            unless MarkerTrie.marker_line?(lines[index], :child, min_indent: parent_indent_level.to_i + 1)
+              return [parent_indices, child_indices, index, parent_indent_level]
+            end
+            if child_indices.empty? &&
+                !MarkerTrie.marker_line?(lines[index], :first_child, min_indent: parent_indent_level.to_i + 1)
+              return [parent_indices, [], index, parent_indent_level]
+            end
+
+            child_indices << index
+            index += 1
+          end
+
+          break unless index
+        end
+
+        [parent_indices, child_indices, index || lines.length, parent_indent_level]
       end
 
       def normalize_lettered_paragraph_lists(lines)
@@ -575,7 +1003,7 @@ module CustomsTariffImporter
           lines.insert(index, '') if lines[index - 1].present?
           index += 1
 
-          lines[index] = lines[index].sub(/\A {4}/, '    - ')
+          lines[index] = marker_list_line(lines[index], indent_level: MarkerTrie.indent_level(lines[index]), bullet: true)
           expected_letter = expected_letter.next
           index += 1
         end
@@ -585,7 +1013,9 @@ module CustomsTariffImporter
       end
 
       def lettered_paragraph_item?(line, expected_letter)
-        line.match?(/\A {4}(?:#{expected_letter}\.|\(#{expected_letter}\))\s+\S/)
+        return false unless MarkerTrie.indent_level(line).to_i.positive?
+
+        [expected_letter, "(#{expected_letter})"].include?(MarkerTrie.marker_from_line(line).to_s.downcase.delete_suffix('.'))
       end
 
       def join_split_paragraph_continuations(lines)
