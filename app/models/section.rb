@@ -25,8 +25,22 @@ class Section < Sequel::Model
 
   one_to_one :section_note
 
-  one_to_one :customs_tariff_section_note, key: :section_id, primary_key: :id do |ds|
+  one_to_one :current_customs_tariff_section_note, class: :CustomsTariffSectionNote, key: :section_id, primary_key: :id do |ds|
     ds.where(customs_tariff_update_version: CustomsTariffUpdate.actual.select(:version))
+  end
+  one_to_one :customs_tariff_section_note, key: :section_id, primary_key: :id do |ds|
+    ds.where(
+      status: CustomsTariffSectionNote::APPROVED,
+      customs_tariff_update_version: CustomsTariffUpdate.approved.actual.select(:version),
+    )
+  end
+
+  def public_section_note
+    if TradeTariffBackend.promote_customs_tariff_notes?
+      customs_tariff_section_note
+    else
+      section_note
+    end
   end
 
   def first_chapter

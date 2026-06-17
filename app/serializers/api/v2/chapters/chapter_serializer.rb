@@ -16,8 +16,8 @@ module Api
                    :validity_end_date,
                    :description_plain
 
-        attribute :chapter_note, if: proc { |chapter| chapter.chapter_note.present? } do |chapter|
-          chapter.chapter_note.content
+        attribute :chapter_note, if: proc { |chapter| chapter.public_chapter_note.present? } do |chapter|
+          chapter.public_chapter_note.content
         end
 
         attribute :forum_url do |chapter|

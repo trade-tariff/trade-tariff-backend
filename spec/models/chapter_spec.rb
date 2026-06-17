@@ -61,6 +61,60 @@ RSpec.describe Chapter do
     end
   end
 
+  describe '#customs_tariff_chapter_note' do
+    let!(:chapter) { create(:chapter, goods_nomenclature_item_id: '0100000000') }
+
+    around { |example| TimeMachine.now { example.run } }
+
+    it 'returns the approved note from the currently actual update' do
+      older = create(:customs_tariff_update, :approved, validity_start_date: 1.month.ago, validity_end_date: 1.day.ago)
+      newer = create(:customs_tariff_update, :approved, validity_start_date: Time.zone.today)
+      create(:customs_tariff_chapter_note, :approved, customs_tariff_update: older, chapter_id: chapter.short_code)
+      note = create(:customs_tariff_chapter_note, :approved, customs_tariff_update: newer, chapter_id: chapter.short_code)
+
+      expect(chapter.customs_tariff_chapter_note.id).to eq(note.id)
+    end
+
+    it 'ignores pending notes' do
+      update = create(:customs_tariff_update, :approved)
+      create(:customs_tariff_chapter_note, customs_tariff_update: update, chapter_id: chapter.short_code)
+
+      expect(chapter.customs_tariff_chapter_note).to be_nil
+    end
+  end
+
+  describe '#public_chapter_note' do
+    let!(:chapter) { create(:chapter, goods_nomenclature_item_id: '0100000000') }
+    let!(:legacy_note) { create(:chapter_note, chapter_id: chapter.short_code, content: 'Legacy chapter note') }
+    let!(:customs_tariff_update) { create(:customs_tariff_update, :approved) }
+    let!(:customs_tariff_note) do
+      create(:customs_tariff_chapter_note, :approved,
+             customs_tariff_update:,
+             chapter_id: chapter.short_code,
+             content: 'Imported chapter note')
+    end
+
+    context 'when promoted notes are enabled' do
+      before do
+        allow(TradeTariffBackend).to receive(:promote_customs_tariff_notes?).and_return(true)
+      end
+
+      it 'returns the customs tariff note' do
+        expect(chapter.public_chapter_note).to eq(customs_tariff_note)
+      end
+    end
+
+    context 'when promoted notes are disabled' do
+      before do
+        allow(TradeTariffBackend).to receive(:promote_customs_tariff_notes?).and_return(false)
+      end
+
+      it 'returns the legacy note' do
+        expect(chapter.public_chapter_note).to eq(legacy_note)
+      end
+    end
+  end
+
   describe '#to_param' do
     let(:chapter) { create :chapter, goods_nomenclature_item_id: '1200000000' }
 

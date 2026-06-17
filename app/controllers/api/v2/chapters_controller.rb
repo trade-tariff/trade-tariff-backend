@@ -81,6 +81,10 @@ module Api
           .actual
           .non_hidden
           .by_code(chapter_id)
+          .eager(
+            chapter_note_eager_load,
+            sections: [section_note_eager_load],
+          )
           .take
       end
 
@@ -88,8 +92,16 @@ module Api
         Chapter
           .actual
           .non_hidden
-          .eager(:chapter_note, :goods_nomenclature_descriptions)
+          .eager(chapter_note_eager_load, :goods_nomenclature_descriptions)
           .all
+      end
+
+      def chapter_note_eager_load
+        TradeTariffBackend.promote_customs_tariff_notes? ? :customs_tariff_chapter_note : :chapter_note
+      end
+
+      def section_note_eager_load
+        TradeTariffBackend.promote_customs_tariff_notes? ? :customs_tariff_section_note : :section_note
       end
 
       def chapter_id

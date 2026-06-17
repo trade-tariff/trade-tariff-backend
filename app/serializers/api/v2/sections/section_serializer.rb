@@ -10,8 +10,8 @@ module Api
 
         attributes :id, :numeral, :title, :position, :chapter_from, :chapter_to, :description_plain
 
-        attribute :section_note, if: proc { |section| section.section_note.present? } do |section|
-          section.section_note.content
+        attribute :section_note, if: proc { |section| section.public_section_note.present? } do |section|
+          section.public_section_note.content
         end
 
         has_many :chapters, serializer: Api::V2::Sections::ChapterSerializer

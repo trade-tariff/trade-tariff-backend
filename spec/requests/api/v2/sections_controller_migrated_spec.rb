@@ -4,7 +4,12 @@ RSpec.describe Api::V2::SectionsController do
     let(:chapter) { heading.reload.chapter }
     let(:chapter_guide) { chapter.guides.first }
     let(:section) { chapter.section }
-    let!(:section_note) { create :section_note, section_id: section.id }
+    let!(:customs_tariff_update) { create(:customs_tariff_update, :approved) }
+    let!(:customs_tariff_section_note) do
+      create(:customs_tariff_section_note, :approved,
+             customs_tariff_update:,
+             section_id: section.id)
+    end
 
     let(:pattern) do
       {
@@ -19,7 +24,7 @@ RSpec.describe Api::V2::SectionsController do
             chapter_from: section.chapter_from,
             chapter_to: section.chapter_to,
             description_plain: section.description_plain,
-            section_note: section_note.content,
+            section_note: customs_tariff_section_note.content,
           },
           relationships: {
             chapters: {

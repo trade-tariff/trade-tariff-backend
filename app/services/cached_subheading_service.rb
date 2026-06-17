@@ -54,7 +54,7 @@ class CachedSubheadingService
         .actual
         .non_hidden
         .where(goods_nomenclature_sid: @subheading.goods_nomenclature_sid)
-        .eager(*HeadingService::Serialization::NsNondeclarableService::HEADING_EAGER_LOAD)
+        .eager(*HeadingService::Serialization::NsNondeclarableService.heading_eager_load)
         .take
   end
 

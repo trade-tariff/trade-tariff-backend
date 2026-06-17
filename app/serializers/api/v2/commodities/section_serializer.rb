@@ -10,8 +10,8 @@ module Api
 
         attributes :numeral, :title, :position
 
-        attribute :section_note, if: proc { |section| section.section_note.present? } do |section|
-          section.section_note.content
+        attribute :section_note, if: proc { |section| section.public_section_note.present? } do |section|
+          section.public_section_note.content
         end
       end
     end

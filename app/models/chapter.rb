@@ -23,9 +23,23 @@ class Chapter < GoodsNomenclature
   end
 
   one_to_one :chapter_note, primary_key: :chapter_short_code
+  one_to_one :customs_tariff_chapter_note, key: :chapter_id, primary_key: :chapter_short_code do |ds|
+    ds.where(
+      status: CustomsTariffChapterNote::APPROVED,
+      customs_tariff_update_version: CustomsTariffUpdate.approved.actual.select(:version),
+    )
+  end
 
   def guide_ids
     guides.pluck(:id)
+  end
+
+  def public_chapter_note
+    if TradeTariffBackend.promote_customs_tariff_notes?
+      customs_tariff_chapter_note
+    else
+      chapter_note
+    end
   end
 
   def section_id

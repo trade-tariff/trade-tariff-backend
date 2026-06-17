@@ -75,6 +75,10 @@ module TradeTariffBackend
       ENV.fetch('ENVIRONMENT', Rails.env)
     end
 
+    def promote_customs_tariff_notes?
+      !environment.production?
+    end
+
     def currency
       SERVICE_CURRENCIES.fetch(service, 'GBP')
     end
