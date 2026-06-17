@@ -35,19 +35,39 @@ module Api
 
         has_one :import_trade_summary, serializer: Api::V2::Shared::ImportTradeSummarySerializer
 
+        MEASURE_DERIVED_FIELDS = %i[
+          basic_duty_rate
+          export_measures
+          import_measures
+          import_trade_summary
+          meursing_code
+        ].freeze
+
         meta do |commodity|
-          {
-            duty_calculator: {
-              applicable_additional_codes: commodity.applicable_additional_codes,
-              applicable_measure_units: commodity.applicable_measure_units,
-              applicable_vat_options: commodity.applicable_vat_options,
-              entry_price_system: commodity.entry_price_system?,
-              meursing_code: commodity.meursing_code,
-              source: TradeTariffBackend.service,
-              trade_defence: commodity.trade_remedies?,
-              zero_mfn_duty: commodity.zero_mfn_duty?,
-            },
-          }
+          if duty_calculator_meta_requested?
+            {
+              duty_calculator: {
+                applicable_additional_codes: commodity.applicable_additional_codes,
+                applicable_measure_units: commodity.applicable_measure_units,
+                applicable_vat_options: commodity.applicable_vat_options,
+                entry_price_system: commodity.entry_price_system?,
+                meursing_code: commodity.meursing_code,
+                source: TradeTariffBackend.service,
+                trade_defence: commodity.trade_remedies?,
+                zero_mfn_duty: commodity.zero_mfn_duty?,
+              },
+            }
+          else
+            {}
+          end
+        end
+
+        def self.duty_calculator_meta_requested?
+          fieldsets = Thread.current[:jsonapi_query_options]&.fetch(:fields, {}) || {}
+          commodity_fields = fieldsets[:commodity]
+          return true unless commodity_fields
+
+          (commodity_fields & MEASURE_DERIVED_FIELDS).any?
         end
       end
     end

@@ -11,6 +11,7 @@ RSpec.describe 'Footnote Types', swagger_doc: 'v2/swagger.json', type: :request 
     get 'List all footnote types' do
       tags 'Footnotes'
       produces 'application/json'
+      jsonapi_query_parameters(includes: [])
       description 'Returns all footnote types with their descriptions.'
       operationId 'listFootnoteTypes'
 

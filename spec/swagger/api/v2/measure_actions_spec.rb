@@ -11,6 +11,7 @@ RSpec.describe 'Measure Actions', swagger_doc: 'v2/swagger.json', type: :request
     get 'List all measure actions' do
       tags 'Measure Actions'
       produces 'application/json'
+      jsonapi_query_parameters(includes: [])
       description 'Returns all current measure actions with their descriptions.'
       operationId 'listMeasureActions'
 

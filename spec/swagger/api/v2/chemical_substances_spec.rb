@@ -23,6 +23,7 @@ RSpec.describe 'Chemical Substances', swagger_doc: 'v2/swagger.json', type: :req
     get 'List chemical substances' do
       tags 'Chemicals'
       produces 'application/json'
+      jsonapi_query_parameters(includes: [])
       description 'Returns chemical substances, optionally filtered by CAS number, CUS, or goods nomenclature.'
       operationId 'listChemicalSubstances'
 

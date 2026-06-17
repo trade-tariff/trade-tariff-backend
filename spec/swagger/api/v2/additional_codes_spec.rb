@@ -20,6 +20,7 @@ RSpec.describe 'Additional Codes', swagger_doc: 'v2/swagger.json', type: :reques
     get 'Search additional codes' do
       tags 'Additional Codes'
       produces 'application/json'
+      jsonapi_query_parameters(includes: %w[goods_nomenclatures])
       description 'Returns additional codes matching the search parameters, including related goods nomenclatures.'
       operationId 'searchAdditionalCodes'
 

@@ -11,6 +11,7 @@ RSpec.describe 'Measure Condition Codes', swagger_doc: 'v2/swagger.json', type: 
     get 'List all measure condition codes' do
       tags 'Measure Condition Codes'
       produces 'application/json'
+      jsonapi_query_parameters(includes: [])
       description 'Returns all current measure condition codes with their descriptions.'
       operationId 'listMeasureConditionCodes'
 

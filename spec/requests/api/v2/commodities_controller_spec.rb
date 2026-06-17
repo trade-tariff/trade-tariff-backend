@@ -90,6 +90,38 @@ RSpec.describe Api::V2::CommoditiesController do
 
       it { is_expected.to have_http_status(:not_found) }
     end
+
+    context 'with empty includes and sparse fields that do not need association data' do
+      let(:make_request) do
+        get "/uk/api/commodities/#{commodity.code}",
+            params: { include: '', fields: { commodity: 'goods_nomenclature_item_id' } },
+            headers: request_headers
+      end
+
+      it 'returns only the requested field without loading the full association graph' do
+        commodity
+
+        sql = []
+        subscriber = ActiveSupport::Notifications.subscribe(/sql\.sequel/) do |*args|
+          event = ActiveSupport::Notifications::Event.new(*args)
+          sql << event.payload[:sql].to_s
+        end
+
+        begin
+          api_response
+        ensure
+          ActiveSupport::Notifications.unsubscribe(subscriber)
+        end
+
+        parsed_body = JSON.parse(response.body)
+        expect(parsed_body['data']['attributes']).to eq('goods_nomenclature_item_id' => commodity.goods_nomenclature_item_id)
+        expect(parsed_body['data']['relationships']).to eq({})
+        expect(parsed_body).not_to have_key('included')
+
+        forbidden_sql = sql.grep(/measures|footnotes|full_chemicals|goods_nomenclature_descriptions|section_notes|chapter_notes/i)
+        expect(forbidden_sql).to be_empty
+      end
+    end
   end
 
   context 'when record is hidden' do

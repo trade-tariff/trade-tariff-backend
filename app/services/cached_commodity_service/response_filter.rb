@@ -8,6 +8,7 @@ class CachedCommodityService
 
     def call
       return @cached_hash if @geographical_area_id.blank?
+      return @cached_hash if @measure_meta.blank?
 
       @hash = deep_dup(@cached_hash)
 

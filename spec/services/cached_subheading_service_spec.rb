@@ -77,5 +77,27 @@ RSpec.describe CachedSubheadingService do
       service.call.to_json
       expect(Rails.cache).to have_received(:fetch).with("_subheading-#{subheading.goods_nomenclature_sid}-2021-01-01-v1", expires_in: 23.hours)
     end
+
+    context 'with empty include and sparse fields that do not need eager-loaded data' do
+      around do |example|
+        Thread.current[:jsonapi_query_options] = {
+          include_requested: true,
+          include: [],
+          fields: { subheading: %i[goods_nomenclature_item_id] },
+        }
+
+        example.run
+      ensure
+        Thread.current[:jsonapi_query_options] = nil
+      end
+
+      it 'does not reload the full subheading eager graph' do
+        allow(Subheading).to receive(:actual).and_call_original
+
+        service.call
+
+        expect(Subheading).not_to have_received(:actual)
+      end
+    end
   end
 end

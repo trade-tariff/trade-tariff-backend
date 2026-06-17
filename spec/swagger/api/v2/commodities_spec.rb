@@ -14,6 +14,7 @@ RSpec.describe 'Commodities', swagger_doc: 'v2/swagger.json', type: :request do
     get 'Retrieve a commodity' do
       tags 'Commodities'
       produces 'application/json'
+      jsonapi_query_parameters(includes: JsonapiSwaggerParameters::COMMODITY_INCLUDES)
       description 'Returns a single commodity including its measures, footnotes, and ancestors.'
       operationId 'getCommodity'
 
@@ -212,6 +213,7 @@ RSpec.describe 'Commodities', swagger_doc: 'v2/swagger.json', type: :request do
     get 'List changes for a commodity' do
       tags 'Commodities'
       produces 'application/json'
+      jsonapi_query_parameters(includes: JsonapiSwaggerParameters::CHANGE_INCLUDES)
       description 'Returns the changelog for a commodity.'
       operationId 'listCommodityChanges'
 

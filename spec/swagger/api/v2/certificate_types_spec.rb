@@ -11,6 +11,7 @@ RSpec.describe 'Certificate Types', swagger_doc: 'v2/swagger.json', type: :reque
     get 'List all certificate types' do
       tags 'Certificates'
       produces 'application/json'
+      jsonapi_query_parameters(includes: [])
       description 'Returns all certificate types with their descriptions.'
       operationId 'listCertificateTypes'
 

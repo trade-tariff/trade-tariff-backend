@@ -99,6 +99,28 @@ RSpec.describe CachedCommodityService do
         expect(loaded_commodity.associations).to include(full_chemicals: be_present)
       end
 
+      context 'with empty include and sparse fields that do not need eager-loaded associations' do
+        around do |example|
+          Thread.current[:jsonapi_query_options] = {
+            include_requested: true,
+            include: [],
+            fields: { commodity: %i[goods_nomenclature_item_id] },
+          }
+
+          example.run
+        ensure
+          Thread.current[:jsonapi_query_options] = nil
+        end
+
+        it 'does not load the full commodity association graph' do
+          allow(Commodity).to receive(:actual).and_call_original
+
+          described_class.new(commodity.reload, actual_date).call
+
+          expect(Commodity).not_to have_received(:actual)
+        end
+      end
+
       it 'pre-populates :measures on the commodity and each ancestor (single-pass load)' do
         loaded_commodity = nil
 

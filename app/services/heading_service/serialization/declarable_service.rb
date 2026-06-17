@@ -2,6 +2,7 @@ module HeadingService
   module Serialization
     class DeclarableService
       include DeclarableSerialization
+      include JsonapiQueryOptions
 
       MEASURE_EAGER = [
         {
@@ -48,19 +49,6 @@ module HeadingService
         :full_temporary_stop_regulations,
         :measure_partial_temporary_stops,
       ].freeze
-      def self.heading_eager
-        [
-          *BASE_HEADING_EAGER,
-          {
-            chapter: [
-              chapter_note_eager_load,
-              :guides,
-              { sections: [section_note_eager_load] },
-            ],
-          },
-        ]
-      end
-
       def self.chapter_note_eager_load
         TradeTariffBackend.promote_customs_tariff_notes? ? :customs_tariff_chapter_note : :chapter_note
       end
@@ -108,11 +96,51 @@ module HeadingService
       end
 
       def heading
-        @heading ||= Heading.where(goods_nomenclature_sid:).eager(*self.class.heading_eager).take
+        @heading ||= Heading.where(goods_nomenclature_sid:).eager(*heading_eager_loads).take
       end
 
       def measures
         heading.applicable_measures
+      end
+
+      def heading_eager_loads
+        [
+          *BASE_HEADING_EAGER,
+          *chapter_eager_loads,
+        ]
+      end
+
+      def chapter_eager_loads
+        return [] unless heading_chapter_data_requested?
+
+        chapter_eager_load = []
+        chapter_eager_load << self.class.chapter_note_eager_load if jsonapi_field_requested?(:chapter, :chapter_note)
+        chapter_eager_load << :guides if chapter_guides_requested?
+        chapter_eager_load << section_eager_load if heading_section_data_requested?
+
+        return [:chapter] if chapter_eager_load.empty?
+
+        [{ chapter: chapter_eager_load }]
+      end
+
+      def heading_chapter_data_requested?
+        jsonapi_relationship_requested?(:heading, :chapter, default_include: DECLARABLE_INCLUDES) ||
+          heading_section_data_requested?
+      end
+
+      def heading_section_data_requested?
+        jsonapi_relationship_requested?(:heading, :section, default_include: DECLARABLE_INCLUDES)
+      end
+
+      def chapter_guides_requested?
+        includes = jsonapi_include_requested? ? jsonapi_query_options[:include] : DECLARABLE_INCLUDES
+        Array(includes).map(&:to_s).include?('chapter.guides')
+      end
+
+      def section_eager_load
+        return :sections unless jsonapi_field_requested?(:section, :section_note)
+
+        { sections: [self.class.section_note_eager_load] }
       end
     end
   end

@@ -1,6 +1,21 @@
 class CachedSubheadingService
+  include JsonapiCacheKey
+
   TTL = 23.hours # Expire just before the ETL job runs and prewarms expensive subheadings
   CACHE_VERSION = 1
+  RELATIONSHIP_FIELDS = %i[
+    ancestors
+    chapter
+    commodities
+    footnotes
+    heading
+    section
+  ].freeze
+  DESCRIPTION_FIELDS = %i[
+    description
+    description_plain
+    formatted_description
+  ].freeze
 
   DEFAULT_INCLUDES = [
     :section,
@@ -30,7 +45,9 @@ class CachedSubheadingService
   end
 
   def cache_key
-    "_subheading-#{@subheading.goods_nomenclature_sid}-#{@actual_date}-v#{CACHE_VERSION}"
+    with_jsonapi_cache_key_suffix(
+      "_subheading-#{@subheading.goods_nomenclature_sid}-#{@actual_date}-v#{CACHE_VERSION}",
+    )
   end
 
   private
@@ -59,6 +76,12 @@ class CachedSubheadingService
   end
 
   def eager_reload?
-    @eager_reload
+    @eager_reload && subheading_eager_reload_required?
+  end
+
+  def subheading_eager_reload_required?
+    (RELATIONSHIP_FIELDS + DESCRIPTION_FIELDS).any? do |field|
+      jsonapi_field_requested?(:subheading, field)
+    end
   end
 end

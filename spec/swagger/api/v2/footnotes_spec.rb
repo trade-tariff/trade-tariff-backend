@@ -20,6 +20,7 @@ RSpec.describe 'Footnotes', swagger_doc: 'v2/swagger.json', type: :request do
     get 'Search footnotes' do
       tags 'Footnotes'
       produces 'application/json'
+      jsonapi_query_parameters(includes: %w[goods_nomenclatures])
       description 'Returns footnotes matching the search parameters, including related goods nomenclatures.'
       operationId 'searchFootnotes'
 

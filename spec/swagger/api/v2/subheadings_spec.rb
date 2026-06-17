@@ -14,6 +14,7 @@ RSpec.describe 'Subheadings', swagger_doc: 'v2/swagger.json', type: :request do
     get 'Retrieve a subheading' do
       tags 'Subheadings'
       produces 'application/json'
+      jsonapi_query_parameters(includes: JsonapiSwaggerParameters::SUBHEADING_INCLUDES)
       description 'Returns a single subheading including its commodities, footnotes, and ancestors.'
       operationId 'getSubheading'
 
