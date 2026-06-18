@@ -26,12 +26,21 @@ class Section < Sequel::Model
   one_to_one :section_note
 
   one_to_one :current_customs_tariff_section_note, class: :CustomsTariffSectionNote, key: :section_id, primary_key: :id do |ds|
-    ds.where(customs_tariff_update_version: CustomsTariffUpdate.actual.select(:version))
+    ds.where(
+      customs_tariff_update_version: CustomsTariffUpdate.actual
+        .exclude(status: CustomsTariffUpdate::FAILED)
+        .order(Sequel.desc(:validity_start_date))
+        .select(:version)
+        .limit(1),
+    )
   end
   one_to_one :customs_tariff_section_note, key: :section_id, primary_key: :id do |ds|
     ds.where(
-      status: CustomsTariffSectionNote::APPROVED,
-      customs_tariff_update_version: CustomsTariffUpdate.approved.actual.select(:version),
+      customs_tariff_update_version: CustomsTariffUpdate.actual
+        .exclude(status: CustomsTariffUpdate::FAILED)
+        .order(Sequel.desc(:validity_start_date))
+        .select(:version)
+        .limit(1),
     )
   end
 

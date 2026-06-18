@@ -138,14 +138,14 @@ RSpec.describe Api::Admin::CustomsTariffUpdates::ChapterNotesController do
       expect(CustomsTariffChapterNote.where(id: note.id).first).to be_nil
     end
 
-    it 'returns 422 and does not destroy when the parent update is rejected' do
+    it 'destroys when the parent update is rejected' do
       update.update(status: CustomsTariffUpdate::REJECTED)
 
       delete "/uk/admin/customs_tariff_updates/#{update.version}/chapter_notes/#{note.chapter_id}.json",
              headers: request_headers(format: :json)
 
-      expect(response.status).to eq(422)
-      expect(CustomsTariffChapterNote.where(id: note.id).first).not_to be_nil
+      expect(response.status).to eq(204)
+      expect(CustomsTariffChapterNote.where(id: note.id).first).to be_nil
     end
 
     it 'returns 404 when the note does not belong to the update' do
@@ -177,10 +177,10 @@ RSpec.describe Api::Admin::CustomsTariffUpdates::ChapterNotesController do
       expect(note.validity_start_date).to eq(update.validity_start_date)
     end
 
-    it 'returns 422 when the parent update is rejected' do
+    it 'creates when the parent update is rejected' do
       update.update(status: CustomsTariffUpdate::REJECTED)
-      expect { make_request }.not_to(change(CustomsTariffChapterNote, :count))
-      expect(response.status).to eq(422)
+      expect { make_request }.to change(CustomsTariffChapterNote, :count).by(1)
+      expect(response.status).to eq(201)
     end
 
     it 'returns 422 on duplicate (update_version, chapter_id)' do
@@ -217,14 +217,15 @@ RSpec.describe Api::Admin::CustomsTariffUpdates::ChapterNotesController do
       expect(note.reload.content).to eq('Updated via response id')
     end
 
-    it 'returns 422 when the parent update is rejected' do
+    it 'updates when the parent update is rejected' do
       update.update(status: CustomsTariffUpdate::REJECTED)
 
       patch "/uk/admin/customs_tariff_updates/#{update.version}/chapter_notes/#{note.chapter_id}.json",
             params: { data: { type: 'customs_tariff_chapter_note', attributes: { content: 'Updated' } } },
             headers: request_headers(format: :json), as: :json
 
-      expect(response.status).to eq(422)
+      expect(response.status).to eq(200)
+      expect(note.reload.content).to eq('Updated')
     end
 
     it 'creates a Version record on successful save' do

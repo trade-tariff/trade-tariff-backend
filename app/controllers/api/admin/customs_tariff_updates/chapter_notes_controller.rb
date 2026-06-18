@@ -47,12 +47,6 @@ module Api
         def update
           note = customs_tariff_chapter_note
 
-          if customs_tariff_update.status == CustomsTariffUpdate::REJECTED
-            render json: { errors: [{ detail: 'Cannot edit a note on a rejected update' }] },
-                   status: :unprocessable_content
-            return
-          end
-
           note.set(content: chapter_note_params[:content])
 
           if note.save(raise_on_failure: false)
@@ -63,12 +57,6 @@ module Api
         end
 
         def create
-          if customs_tariff_update.status == CustomsTariffUpdate::REJECTED
-            render json: { errors: [{ detail: 'Cannot add a note to a rejected update' }] },
-                   status: :unprocessable_content
-            return
-          end
-
           note = CustomsTariffChapterNote.new(
             customs_tariff_update_version: customs_tariff_update.version,
             chapter_id: create_params[:chapter_id],
@@ -92,12 +80,6 @@ module Api
 
         def destroy
           note = customs_tariff_chapter_note
-
-          if customs_tariff_update.status == CustomsTariffUpdate::REJECTED
-            render json: { errors: [{ detail: 'Cannot remove a note from a rejected update' }] },
-                   status: :unprocessable_content
-            return
-          end
 
           note.destroy
           head :no_content

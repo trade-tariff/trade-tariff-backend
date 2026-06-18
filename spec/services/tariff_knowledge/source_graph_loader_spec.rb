@@ -311,24 +311,21 @@ RSpec.describe TariffKnowledge::SourceGraphLoader do
       expect(TariffKnowledge::Edge.count).to eq(edge_count)
     end
 
-    it 'loads chapter, section, and general rule source associations from the latest approved update' do
+    it 'loads chapter, section, and general rule source associations from the latest non-failed update' do
       create(
         :customs_tariff_chapter_note,
-        :approved,
         customs_tariff_update: update,
         chapter_id: '01',
         content: 'Heading 0101 covers chapter note horses.',
       )
       create(
         :customs_tariff_section_note,
-        :approved,
         customs_tariff_update: update,
         section_id: 1,
         content: 'Heading 0101 covers section note horses.',
       )
       create(
         :customs_tariff_general_rule,
-        :approved,
         customs_tariff_update: update,
         rule_label: '1',
         content: 'Heading 0101 covers general rule horses.',
@@ -402,7 +399,7 @@ RSpec.describe TariffKnowledge::SourceGraphLoader do
       expect(TariffKnowledge::Node.by_key('note_fragment:customs_tariff_chapter_note:1.30:01:0001').first).to be_nil
     end
 
-    it 'loads notes from the latest current approved update and ignores newer future approved updates' do
+    it 'loads notes from the latest current non-failed update and ignores newer future updates' do
       older_update = create(
         :customs_tariff_update,
         :approved,
@@ -446,17 +443,17 @@ RSpec.describe TariffKnowledge::SourceGraphLoader do
         .to eq('Heading 0101 covers current horses.')
     end
 
-    it 'does not use non-approved updates as the source graph version' do
+    it 'uses pending and rejected updates as source graph versions' do
       rejected_update = create(
         :customs_tariff_update,
         :rejected,
         version: '1.32',
-        validity_start_date: 1.month.from_now,
+        validity_start_date: 1.day.ago,
       )
       pending_update = create(
         :customs_tariff_update,
         version: '1.33',
-        validity_start_date: 2.months.from_now,
+        validity_start_date: Time.zone.today,
       )
       create(
         :customs_tariff_chapter_note,
@@ -483,12 +480,12 @@ RSpec.describe TariffKnowledge::SourceGraphLoader do
       described_class.call
 
       expect(TariffKnowledge::Node.where(node_type: TariffKnowledge::Node::NOTE_SOURCE).select_map(:source_version))
-        .to contain_exactly(update.version)
-      expect(TariffKnowledge::Node.by_key('note_source:customs_tariff_chapter_note:1.31:01').first.content)
-        .to eq('Heading 0101 covers approved update horses.')
+        .to contain_exactly(pending_update.version)
+      expect(TariffKnowledge::Node.by_key('note_source:customs_tariff_chapter_note:1.33:01').first.content)
+        .to eq('Heading 0101 covers pending update horses.')
     end
 
-    it 'does not load non-approved note sources from the selected update' do
+    it 'loads note sources regardless of row status from the selected update' do
       create(
         :customs_tariff_chapter_note,
         :approved,
@@ -513,10 +510,14 @@ RSpec.describe TariffKnowledge::SourceGraphLoader do
       described_class.call
 
       expect(TariffKnowledge::Node.where(node_type: TariffKnowledge::Node::NOTE_SOURCE).select_order_map(:key))
-        .to contain_exactly('note_source:customs_tariff_chapter_note:1.31:01')
+        .to contain_exactly(
+          'note_source:customs_tariff_chapter_note:1.31:01',
+          'note_source:customs_tariff_chapter_note:1.31:02',
+          'note_source:customs_tariff_chapter_note:1.31:03',
+        )
     end
 
-    it 'uses the latest approved update even inside an existing TimeMachine date' do
+    it 'uses the latest non-failed update even inside an existing TimeMachine date' do
       old_update = create(
         :customs_tariff_update,
         :approved,
