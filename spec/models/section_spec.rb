@@ -49,18 +49,25 @@ RSpec.describe Section do
 
     around { |example| TimeMachine.now { example.run } }
 
-    it 'returns the approved note from the currently actual update' do
-      older = create(:customs_tariff_update, :approved, validity_start_date: 1.month.ago, validity_end_date: 1.day.ago)
-      newer = create(:customs_tariff_update, :approved, validity_start_date: Time.zone.today)
-      create(:customs_tariff_section_note, :approved, customs_tariff_update: older, section_id: section.id)
-      note = create(:customs_tariff_section_note, :approved, customs_tariff_update: newer, section_id: section.id)
+    it 'returns the note from the currently actual non-failed update' do
+      older = create(:customs_tariff_update, validity_start_date: 1.month.ago, validity_end_date: 1.day.ago)
+      newer = create(:customs_tariff_update, validity_start_date: Time.zone.today)
+      create(:customs_tariff_section_note, customs_tariff_update: older, section_id: section.id)
+      note = create(:customs_tariff_section_note, customs_tariff_update: newer, section_id: section.id)
 
       expect(section.customs_tariff_section_note.id).to eq(note.id)
     end
 
-    it 'ignores pending notes' do
-      update = create(:customs_tariff_update, :approved)
-      create(:customs_tariff_section_note, customs_tariff_update: update, section_id: section.id)
+    it 'returns pending notes' do
+      update = create(:customs_tariff_update)
+      note = create(:customs_tariff_section_note, customs_tariff_update: update, section_id: section.id)
+
+      expect(section.customs_tariff_section_note.id).to eq(note.id)
+    end
+
+    it 'ignores notes from failed updates' do
+      failed_update = create(:customs_tariff_update, :failed, validity_start_date: Time.zone.today)
+      create(:customs_tariff_section_note, customs_tariff_update: failed_update, section_id: section.id)
 
       expect(section.customs_tariff_section_note).to be_nil
     end

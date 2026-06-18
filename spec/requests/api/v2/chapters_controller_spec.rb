@@ -60,6 +60,51 @@ RSpec.describe Api::V2::ChaptersController, :v2 do
 
         expect(JSON.parse(response.body).dig('data', 'attributes', 'chapter_note')).to eq('Imported chapter note')
       end
+
+      context 'when a newer non-failed update exists' do
+        let!(:customs_tariff_update) do
+          create(:customs_tariff_update, :approved,
+                 version: '1.29',
+                 validity_start_date: 2.months.ago.to_date)
+        end
+        let!(:older_update) do
+          create(:customs_tariff_update, :approved,
+                 version: '1.30',
+                 validity_start_date: 1.month.ago.to_date)
+        end
+        let!(:latest_update) do
+          create(:customs_tariff_update,
+                 version: '1.31',
+                 validity_start_date: Time.zone.today)
+        end
+        let!(:failed_update) do
+          create(:customs_tariff_update, :failed,
+                 version: '1.32',
+                 validity_start_date: Time.zone.today)
+        end
+
+        before do
+          Rails.cache.clear
+          create(:customs_tariff_chapter_note, :approved,
+                 customs_tariff_update: older_update,
+                 chapter_id: chapter.short_code,
+                 content: 'Older approved chapter note')
+          create(:customs_tariff_chapter_note,
+                 customs_tariff_update: latest_update,
+                 chapter_id: chapter.short_code,
+                 content: 'Latest pending chapter note')
+          create(:customs_tariff_chapter_note,
+                 customs_tariff_update: failed_update,
+                 chapter_id: chapter.short_code,
+                 content: 'Failed update chapter note')
+        end
+
+        it 'returns the chapter note from the latest non-failed update' do
+          api_get "/uk/api/chapters/#{chapter.short_code}"
+
+          expect(JSON.parse(response.body).dig('data', 'attributes', 'chapter_note')).to eq('Latest pending chapter note')
+        end
+      end
     end
 
     context 'when customs tariff notes are not promoted' do

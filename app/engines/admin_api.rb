@@ -96,7 +96,6 @@ AdminApi.routes.draw do
       delete 'customs_tariff_updates/:customs_tariff_update_version/section_notes/:id',
              to: 'customs_tariff_updates/section_notes#destroy',
              constraints: { customs_tariff_update_version: /[^\/]+/ }
-      patch 'customs_tariff_updates/:customs_tariff_update_version/status', to: 'customs_tariff_updates/status#update', constraints: { customs_tariff_update_version: /[^\/]+/ }
       post  'customs_tariff_updates/:customs_tariff_update_version/reimport',
             to: 'customs_tariff_updates/reimport#create',
             constraints: { customs_tariff_update_version: /[^\/]+/ }
