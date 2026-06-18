@@ -26,6 +26,7 @@
       let
         pkgs = import nixpkgs {
           inherit system;
+          config.allowUnfree = true;
           overlays = [ nixpkgs-ruby.overlays.default ];
         };
 
@@ -328,15 +329,57 @@
             };
             statix = {
               enable = true;
-              settings.ignore = [ ".worktrees" ];
+              settings.ignore = [ "{.direnv,.nix,.worktrees}/**" ];
               stages = [ "pre-commit" ];
             };
             terraform-format = {
               enable = true;
+              package = pkgs.terraform;
               stages = [ "pre-commit" ];
             };
             terraform-validate = {
               enable = true;
+              package = pkgs.terraform;
+              entry = ''
+                bash -c '
+                  set -uo pipefail
+                  status=0
+
+                  while read -r dir; do
+                    lockfile="$dir/.terraform.lock.hcl"
+                    backup=$(mktemp)
+                    had_lockfile=false
+
+                    if [ -f "$lockfile" ]; then
+                      cp "$lockfile" "$backup"
+                      had_lockfile=true
+                    fi
+
+                    ${pkgs.terraform}/bin/terraform -chdir="$dir" init -backend=false
+                    init_status=$?
+
+                    if [ "$init_status" -eq 0 ]; then
+                      ${pkgs.terraform}/bin/terraform -chdir="$dir" validate
+                      validate_status=$?
+                    else
+                      validate_status=$init_status
+                    fi
+
+                    if [ "$had_lockfile" = true ]; then
+                      cp "$backup" "$lockfile"
+                    else
+                      rm -f "$lockfile"
+                    fi
+                    rm -f "$backup"
+
+                    if [ "$validate_status" -ne 0 ]; then
+                      status=$validate_status
+                    fi
+                  done < <(for arg in "$@"; do dirname "$arg"; done | sort | uniq)
+
+                  exit "$status"
+                ' --
+              '';
               stages = [ "pre-commit" ];
             };
             tflint = {
@@ -356,9 +399,18 @@
             rubocop = {
               enable = true;
               name = "rubocop";
-              description = "Run RuboCop through Bundler";
-              entry = "bundle exec rubocop --autocorrect --force-exclusion";
+              description = "Run RuboCop through Bundler on changed Ruby files";
+              entry = ''
+                bash -c '
+                  changed_files=$(git diff --name-only --diff-filter=ACM --merge-base main | grep -E "\\.(rb|rake)$|^(Gemfile|Rakefile|config\\.ru)$" || true)
+
+                  if [ -n "$changed_files" ]; then
+                    bundle exec rubocop --autocorrect --force-exclusion $changed_files
+                  fi
+                '
+              '';
               files = "\\.(rb|rake)$|^(Gemfile|Rakefile|config\\.ru)$";
+              pass_filenames = false;
               stages = [ "pre-commit" ];
             };
           };
