@@ -12,6 +12,7 @@ ENV['RACK_TIMEOUT_WAIT_TIMEOUT'] ||= '100'
 # Requests exceeding this will be terminated (SIGTERM sent to worker).
 # Current setting: 50 seconds
 ENV['RACK_TIMEOUT_SERVICE_TIMEOUT'] ||= '50'
+ENV['RACK_TIMEOUT_PATH_OVERRIDES'] ||= TradeTariffBackend::ServiceTimeout::DEFAULT_PATH_OVERRIDES
 
 # Other available settings (using defaults if not set):
 # - RACK_TIMEOUT_WAIT_OVERTIME: Additional wait time for requests with a body (POST, PUT, etc.) (default: 60)
@@ -21,3 +22,12 @@ ENV['RACK_TIMEOUT_SERVICE_TIMEOUT'] ||= '50'
 # Disable verbose logging - only log when timeouts actually occur
 # Timeout exceptions will still be raised and logged by Rails as 503 errors
 Rack::Timeout::Logger.disable if Rails.env.production?
+
+if defined?(Rack::Timeout)
+  Rails.application.config.middleware.delete Rack::Timeout
+end
+
+Rails.application.config.middleware.insert_after(
+  ActionDispatch::RequestId,
+  TradeTariffBackend::ServiceTimeout,
+)
