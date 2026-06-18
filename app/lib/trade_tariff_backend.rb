@@ -13,6 +13,7 @@ require_relative 'trade_tariff_backend/config'
 require_relative 'trade_tariff_backend/clients'
 require_relative 'trade_tariff_backend/tariff_update_event_listener'
 require_relative 'trade_tariff_backend/search_response'
+require_relative 'trade_tariff_backend/service_timeout'
 
 module TradeTariffBackend
   extend Config
