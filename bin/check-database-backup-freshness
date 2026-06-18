@@ -1,0 +1,267 @@
+#!/usr/bin/env bash
+
+[[ "${TRACE:-}" ]] && set -o xtrace
+set -o errexit
+set -o nounset
+set -o pipefail
+
+START_TIME=$(date +%s)
+
+METRIC_NAMESPACE="${METRIC_NAMESPACE:-TradeTariff/DatabaseBackup}"
+METRIC_NAME="${METRIC_NAME:-DatabaseBackupFreshnessOk}"
+BACKUP_FRESHNESS_THRESHOLD_SECONDS="${BACKUP_FRESHNESS_THRESHOLD_SECONDS:-86400}" # 24 Hours
+BACKUP_ARCHIVE_TIME_ZONE="${BACKUP_ARCHIVE_TIME_ZONE:-Europe/London}"
+PUBLISH_METRIC=false
+METRIC_PUBLICATION_STATUS="not attempted"
+
+usage() {
+  echo "Usage: $0 [--publish]"
+  echo
+  echo "Checks the database backup objects in S3."
+  echo
+  echo "Options:"
+  echo "  --publish  Publish the freshness result as a CloudWatch metric."
+}
+
+for arg in "$@"; do
+  case "$arg" in
+    --publish)
+      PUBLISH_METRIC=true
+      ;;
+    --help|-h)
+      usage
+      exit 0
+      ;;
+    *)
+      echo "Unknown option: $arg"
+      usage
+      exit 1
+      ;;
+  esac
+done
+
+if [ -z "${ENVIRONMENT:-}" ]; then
+  echo "You need to set the ENVIRONMENT environment variable."
+  exit 1
+fi
+
+if [ -z "${S3_BUCKET:-}" ]; then
+  echo "You need to set the S3_BUCKET environment variable."
+  exit 1
+fi
+
+if ! [[ "$BACKUP_FRESHNESS_THRESHOLD_SECONDS" =~ ^[0-9]+$ ]]; then
+  echo "BACKUP_FRESHNESS_THRESHOLD_SECONDS must be an integer number of seconds."
+  exit 1
+fi
+
+LATEST_KEY="${LATEST_KEY:-tariff-merged-${ENVIRONMENT}.sql.gz}"
+BACKUP_JOB_NAME="${BACKUP_JOB_NAME:-backend-database-backup-${ENVIRONMENT}}"
+
+publish_freshness_metric() {
+  local value=$1
+
+  if [ "$PUBLISH_METRIC" = false ]; then
+    METRIC_PUBLICATION_STATUS="not published; value would be $value"
+    return
+  fi
+
+  aws cloudwatch put-metric-data \
+    --namespace "$METRIC_NAMESPACE" \
+    --metric-name "$METRIC_NAME" \
+    --dimensions \
+      "Name=Environment,Value=$ENVIRONMENT" \
+      "Name=Bucket,Value=$S3_BUCKET" \
+      "Name=LatestKey,Value=$LATEST_KEY" \
+    --unit Count \
+    --value "$value" > /dev/null
+
+  METRIC_PUBLICATION_STATUS="published value $value"
+}
+
+format_duration() {
+  local total_seconds=$1
+  local days
+  local hours
+  local minutes
+  local seconds
+
+  if [ "$total_seconds" = "unknown" ]; then
+    echo "unknown"
+    return
+  fi
+
+  days=$((total_seconds / 86400))
+  hours=$(((total_seconds % 86400) / 3600))
+  minutes=$(((total_seconds % 3600) / 60))
+  seconds=$((total_seconds % 60))
+
+  if [ "$days" -gt 0 ]; then
+    echo "${days}d ${hours}h ${minutes}m ${seconds}s"
+  elif [ "$hours" -gt 0 ]; then
+    echo "${hours}h ${minutes}m ${seconds}s"
+  elif [ "$minutes" -gt 0 ]; then
+    echo "${minutes}m ${seconds}s"
+  else
+    echo "${seconds}s"
+  fi
+}
+
+print_report() {
+  local status=$1
+  local end_time
+  local elapsed_time
+  local latest_age_display="unknown"
+  local latest_age_seconds_display="unknown"
+  local archive_last_modified_display="${archive_last_modified:-missing}"
+
+  end_time=$(date +%s)
+  elapsed_time=$((end_time - START_TIME))
+
+  if [ -n "${latest_age_seconds:-}" ]; then
+    latest_age_display=$(format_duration "$latest_age_seconds")
+    latest_age_seconds_display="${latest_age_seconds}s"
+  fi
+
+  cat <<REPORT
+Database backup freshness check
+Status: $status
+Environment: $ENVIRONMENT
+Bucket: $S3_BUCKET
+Backup job: $BACKUP_JOB_NAME
+
+Last backup
+  Key: $LATEST_KEY
+  Last modified: ${latest_last_modified:-missing}
+  Age: $latest_age_display ($latest_age_seconds_display)
+  Threshold: $(format_duration "$BACKUP_FRESHNESS_THRESHOLD_SECONDS") (${BACKUP_FRESHNESS_THRESHOLD_SECONDS}s)
+
+Archive backup
+  Key: ${archive_key:-not checked}
+  Last modified: $archive_last_modified_display
+  Archive date timezone: $BACKUP_ARCHIVE_TIME_ZONE
+
+CloudWatch metric: $METRIC_PUBLICATION_STATUS
+Elapsed: $(format_duration "$elapsed_time") (${elapsed_time}s)
+REPORT
+
+  if [ "$status" = "FAIL" ]; then
+    printf '\nReasons:\n'
+    printf '  - %s\n' "${reasons[@]}"
+  fi
+}
+
+head_object_last_modified() {
+  local key=$1
+  local error_file
+  local status
+
+  error_file=$(mktemp)
+
+  set +o errexit
+  aws s3api head-object \
+    --bucket "$S3_BUCKET" \
+    --key "$key" \
+    --query LastModified \
+    --output text 2>"$error_file"
+  status=$?
+  set -o errexit
+
+  if [ "$status" -eq 0 ]; then
+    rm "$error_file"
+    return 0
+  fi
+
+  if grep -Eq "(404|Not Found|NotFound|NoSuchKey)" "$error_file"; then
+    rm "$error_file"
+    return 1
+  fi
+
+  echo "Unable to inspect s3://$S3_BUCKET/$key." >&2
+  cat "$error_file" >&2
+  rm "$error_file"
+
+  return "$status"
+}
+
+epoch_for_timestamp() {
+  local timestamp=$1
+  local timestamp_without_colon_offset
+
+  if date -d "$timestamp" +%s >/dev/null 2>&1; then
+    date -d "$timestamp" +%s
+    return
+  fi
+
+  timestamp_without_colon_offset=$(echo "$timestamp" | sed -E 's/([+-][0-9]{2}):([0-9]{2})$/\1\2/')
+  date -j -f "%Y-%m-%dT%H:%M:%S%z" "$timestamp_without_colon_offset" +%s
+}
+
+archive_key_for_epoch() {
+  local epoch=$1
+
+  # bin/backup-database uses plain date +"%Y/%m/%d" in a Europe/London
+  # container. EventBridge runs cron(0 23 * * ? *) in UTC, so during BST the
+  # archive prefix is the next London calendar day even though S3 LastModified
+  # is still on the previous UTC date.
+  if TZ="$BACKUP_ARCHIVE_TIME_ZONE" date -d "@$epoch" +"%Y/%m/%d" >/dev/null 2>&1; then
+    echo "$(TZ="$BACKUP_ARCHIVE_TIME_ZONE" date -d "@$epoch" +"%Y/%m/%d")/tariff-merged-${ENVIRONMENT}.sql.gz"
+    return
+  fi
+
+  echo "$(TZ="$BACKUP_ARCHIVE_TIME_ZONE" date -r "$epoch" +"%Y/%m/%d")/tariff-merged-${ENVIRONMENT}.sql.gz"
+}
+
+reasons=()
+freshness_ok=1
+now_epoch=$(date +%s)
+
+if latest_last_modified=$(head_object_last_modified "$LATEST_KEY"); then
+  latest_epoch=$(epoch_for_timestamp "$latest_last_modified")
+  latest_age_seconds=$((now_epoch - latest_epoch))
+
+  if [ "$latest_age_seconds" -gt "$BACKUP_FRESHNESS_THRESHOLD_SECONDS" ]; then
+    freshness_ok=0
+    reasons+=("latest object is ${latest_age_seconds}s old, over threshold ${BACKUP_FRESHNESS_THRESHOLD_SECONDS}s")
+  fi
+
+  archive_key=$(archive_key_for_epoch "$latest_epoch")
+
+  if archive_last_modified=$(head_object_last_modified "$archive_key"); then
+    archive_epoch=$(epoch_for_timestamp "$archive_last_modified")
+
+    if [ "$archive_epoch" -lt "$latest_epoch" ]; then
+      freshness_ok=0
+      reasons+=("archive key $archive_key is older than latest key $LATEST_KEY")
+    fi
+  else
+    status=$?
+
+    if [ "$status" -eq 1 ]; then
+      freshness_ok=0
+      reasons+=("archive key $archive_key is missing")
+    else
+      exit "$status"
+    fi
+  fi
+else
+  status=$?
+
+  if [ "$status" -eq 1 ]; then
+    freshness_ok=0
+    reasons+=("latest key $LATEST_KEY is missing")
+  else
+    exit "$status"
+  fi
+fi
+
+publish_freshness_metric "$freshness_ok"
+
+if [ "$freshness_ok" -eq 1 ]; then
+  print_report "PASS"
+  exit 0
+fi
+
+print_report "FAIL"
+
+exit 0
