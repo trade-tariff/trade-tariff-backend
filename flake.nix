@@ -357,7 +357,7 @@
               enable = true;
               name = "rubocop";
               description = "Run RuboCop through Bundler";
-              entry = "bundle exec rubocop --autocorrect";
+              entry = "bundle exec rubocop --autocorrect --force-exclusion";
               files = "\\.(rb|rake)$|^(Gemfile|Rakefile|config\\.ru)$";
               stages = [ "pre-commit" ];
             };
