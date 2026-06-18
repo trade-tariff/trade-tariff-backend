@@ -11,6 +11,7 @@ RSpec.describe 'Quota Order Numbers', swagger_doc: 'v2/swagger.json', type: :req
     get 'List all quota order numbers' do
       tags 'Quotas'
       produces 'application/json'
+      jsonapi_query_parameters(includes: JsonapiSwaggerParameters::QUOTA_ORDER_NUMBER_INCLUDES)
       description 'Returns all quota order numbers with their current quota definitions.'
       operationId 'listQuotaOrderNumbers'
 

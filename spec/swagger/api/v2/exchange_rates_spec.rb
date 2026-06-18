@@ -17,6 +17,7 @@ RSpec.describe 'Exchange Rates', swagger_doc: 'v2/swagger.json', type: :request 
     get 'Retrieve exchange rates for a period' do
       tags 'Exchange Rates'
       produces 'application/json'
+      jsonapi_query_parameters(includes: %w[exchange_rates exchange_rate_files])
       description 'Returns the exchange rate collection for the specified year, month, and rate type.'
       operationId 'getExchangeRates'
 
@@ -94,6 +95,7 @@ RSpec.describe 'Exchange Rates', swagger_doc: 'v2/swagger.json', type: :request 
     get 'List exchange rate periods for a year' do
       tags 'Exchange Rates'
       produces 'application/json'
+      jsonapi_query_parameters(includes: %w[exchange_rate_periods exchange_rate_years exchange_rate_periods.files])
       description 'Returns available exchange rate periods for the specified year and type.'
       operationId 'listExchangeRatePeriods'
 

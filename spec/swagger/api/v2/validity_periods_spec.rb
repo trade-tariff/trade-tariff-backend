@@ -48,6 +48,7 @@ RSpec.describe 'Validity Periods', swagger_doc: 'v2/swagger.json', type: :reques
     get 'List validity periods for a heading' do
       tags 'Validity Periods'
       produces 'application/json'
+      jsonapi_query_parameters(includes: %w[deriving_goods_nomenclatures])
       description 'Returns all validity periods for a heading.'
       operationId 'listHeadingValidityPeriods'
 
@@ -80,6 +81,7 @@ RSpec.describe 'Validity Periods', swagger_doc: 'v2/swagger.json', type: :reques
     get 'List validity periods for a subheading' do
       tags 'Validity Periods'
       produces 'application/json'
+      jsonapi_query_parameters(includes: %w[deriving_goods_nomenclatures])
       description 'Returns all validity periods for a subheading.'
       operationId 'listSubheadingValidityPeriods'
 
@@ -112,6 +114,7 @@ RSpec.describe 'Validity Periods', swagger_doc: 'v2/swagger.json', type: :reques
     get 'List validity periods for a commodity' do
       tags 'Validity Periods'
       produces 'application/json'
+      jsonapi_query_parameters(includes: %w[deriving_goods_nomenclatures])
       description 'Returns all validity periods for a commodity.'
       operationId 'listCommodityValidityPeriods'
 

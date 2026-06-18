@@ -26,6 +26,10 @@ RSpec.describe 'Quotas', swagger_doc: 'v2/swagger.json', type: :request do
     get 'Search quota definitions' do
       tags 'Quotas'
       produces 'application/json'
+      jsonapi_query_parameters(
+        includes: JsonapiSwaggerParameters::QUOTA_INCLUDES,
+        default_includes: JsonapiSwaggerParameters::QUOTA_DEFAULT_INCLUDES,
+      )
       description 'Returns quota definitions matching the search parameters. Results are paginated at 5 per page.'
       operationId 'searchQuotas'
 

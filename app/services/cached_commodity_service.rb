@@ -1,7 +1,30 @@
 class CachedCommodityService
   include DeclarableSerialization
+  include JsonapiCacheKey
 
   CACHE_VERSION = 6
+  RELATIONSHIP_FIELDS = %i[
+    ancestors
+    chapter
+    export_measures
+    footnotes
+    heading
+    import_measures
+    import_trade_summary
+    section
+  ].freeze
+  DESCRIPTION_FIELDS = %i[
+    description
+    description_plain
+    formatted_description
+  ].freeze
+  ASSOCIATION_DERIVED_FIELDS = %i[
+    basic_duty_rate
+    consigned
+    consigned_from
+    has_chemicals
+    meursing_code
+  ].freeze
 
   DEFAULT_INCLUDES = (DECLARABLE_INCLUDES + %w[
     heading
@@ -88,6 +111,7 @@ class CachedCommodityService
   ]).freeze
 
   def initialize(commodity, actual_date, filters = {})
+    @source_commodity = commodity
     @commodity_sid = commodity.goods_nomenclature_sid
     @actual_date = actual_date
     @filters = filters
@@ -101,7 +125,7 @@ class CachedCommodityService
     cached_data = Rails.cache.fetch(cache_key, expires_in: ttl) do
       presenter = presented_commodity
       hash = Api::V2::Commodities::CommoditySerializer.new(presenter, options).serializable_hash
-      measure_meta = MeasureMetadataBuilder.new(presenter).build
+      measure_meta = commodity_association_data_required? ? MeasureMetadataBuilder.new(presenter).build : {}
 
       { v: CACHE_VERSION, hash: hash, measure_meta: measure_meta }
     end
@@ -118,6 +142,8 @@ class CachedCommodityService
   end
 
   def excise_filtered_measures
+    return MeasureCollection.new([], {}) unless commodity_association_data_required?
+
     MeasureCollection.new(measures, {}).apply_excise_filter
   end
 
@@ -129,6 +155,8 @@ class CachedCommodityService
   end
 
   def commodity
+    return @source_commodity unless commodity_association_data_required?
+
     @commodity ||= begin
       # Phase 1: load the commodity and its ancestors for their own attributes.
       # Measures are deliberately excluded here and loaded in a separate
@@ -231,6 +259,14 @@ class CachedCommodityService
   end
 
   def cache_key
-    "_commodity-v#{CACHE_VERSION}-#{@commodity_sid}-#{actual_date}-#{meursing_additional_code_id}"
+    with_jsonapi_cache_key_suffix(
+      "_commodity-v#{CACHE_VERSION}-#{@commodity_sid}-#{actual_date}-#{meursing_additional_code_id}",
+    )
+  end
+
+  def commodity_association_data_required?
+    (RELATIONSHIP_FIELDS + DESCRIPTION_FIELDS + ASSOCIATION_DERIVED_FIELDS).any? do |field|
+      jsonapi_field_requested?(:commodity, field)
+    end
   end
 end

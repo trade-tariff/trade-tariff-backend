@@ -2,12 +2,7 @@ module Api
   module V2
     class SectionsController < ApiController
       def index
-        @sections = Section
-          .eager(
-            section_note_eager_load,
-            chapters: [chapter_note_eager_load],
-          )
-          .all
+        @sections = sections_dataset.all
 
         respond_to do |format|
           format.csv do
@@ -25,12 +20,8 @@ module Api
       def show
         return head :bad_request unless params[:id].to_s.match?(/\A\d+\z/)
 
-        @section = Section
+        @section = sections_dataset
           .where(position: params[:id].to_i)
-          .eager(
-            section_note_eager_load,
-            chapters: [chapter_note_eager_load],
-          )
           .take
 
         options = { is_collection: false }
@@ -66,6 +57,22 @@ module Api
 
       def section_note_eager_load
         TradeTariffBackend.promote_customs_tariff_notes? ? :customs_tariff_section_note : :section_note
+      end
+
+      def sections_dataset
+        eager_loads = []
+        eager_loads << { chapters: [chapter_note_eager_load] } if section_chapter_fields_requested?
+        eager_loads << section_note_eager_load if jsonapi_field_requested?(:section, :section_note)
+
+        return Section if eager_loads.empty?
+
+        Section.eager(*eager_loads)
+      end
+
+      def section_chapter_fields_requested?
+        %i[chapters chapter_from chapter_to].any? do |field|
+          jsonapi_field_requested?(:section, field)
+        end
       end
     end
   end

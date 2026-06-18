@@ -31,6 +31,7 @@ RSpec.describe 'Certificates', swagger_doc: 'v2/swagger.json', type: :request do
     get 'List all certificates' do
       tags 'Certificates'
       produces 'application/json'
+      jsonapi_query_parameters(includes: [])
       description 'Returns all current certificates ordered by type and code.'
       operationId 'listCertificates'
 
@@ -68,6 +69,7 @@ RSpec.describe 'Certificates', swagger_doc: 'v2/swagger.json', type: :request do
     get 'Search certificates' do
       tags 'Certificates'
       produces 'application/json'
+      jsonapi_query_parameters(includes: %w[goods_nomenclatures])
       description 'Returns certificates matching the search parameters, including related goods nomenclatures.'
       operationId 'searchCertificates'
 

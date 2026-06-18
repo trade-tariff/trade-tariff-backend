@@ -167,6 +167,85 @@ RSpec.describe Api::V2::ChaptersController do
 
       expect(response.body).to match_json_expression pattern
     end
+
+    it 'returns only requested sparse fields for chapter resources' do
+      get '/uk/api/chapters.json',
+          params: { fields: { chapter: 'formatted_description' } },
+          headers: request_headers(format: :json)
+
+      attributes = JSON.parse(response.body).fetch('data').first.fetch('attributes')
+
+      expect(attributes).to eq(
+        'formatted_description' => chapter1.formatted_description,
+      )
+    end
+  end
+
+  describe 'GET #show with JSON:API include params' do
+    let(:heading) { create :heading, :with_chapter }
+    let(:chapter) { heading.reload.chapter }
+
+    it 'includes only the requested relationships as compound documents' do
+      get "/uk/api/chapters/#{chapter.to_param}.json",
+          params: { include: 'section' },
+          headers: request_headers(format: :json)
+
+      included_types = JSON.parse(response.body).fetch('included').pluck('type')
+
+      expect(included_types).to contain_exactly('section')
+    end
+
+    it 'does not load headings when sparse fields exclude the headings relationship' do
+      allow(Api::V2::Chapters::ChapterPresenter).to receive(:new).and_call_original
+
+      get "/uk/api/chapters/#{chapter.to_param}.json",
+          params: { fields: { chapter: 'description' } },
+          headers: request_headers(format: :json)
+
+      expect(response).to have_http_status(:ok)
+      expect(Api::V2::Chapters::ChapterPresenter)
+        .to have_received(:new)
+        .with(instance_of(Chapter), [])
+    end
+
+    it 'does not issue a headings query when sparse fields only request scalar chapter data' do
+      chapter
+      Rails.cache.clear
+
+      sql = []
+      subscriber = ActiveSupport::Notifications.subscribe(/sql\.sequel/) do |*args|
+        event = ActiveSupport::Notifications::Event.new(*args)
+        sql << event.payload[:sql].to_s
+      end
+
+      begin
+        get "/uk/api/chapters/#{chapter.to_param}.json",
+            params: { fields: { chapter: 'goods_nomenclature_item_id' } },
+            headers: request_headers(format: :json)
+      ensure
+        ActiveSupport::Notifications.unsubscribe(subscriber)
+      end
+
+      expect(response).to have_http_status(:ok)
+      goods_nomenclature_queries = sql.grep(/FROM "?goods_nomenclatures"?/i)
+      expect(goods_nomenclature_queries.size).to eq(1)
+      forbidden_sql = sql.grep(/goods_nomenclature_descriptions|chapter_notes|section_notes|guides/i)
+      expect(forbidden_sql).to be_empty
+    end
+
+    it 'does not load headings when the include parameter is empty' do
+      allow(Api::V2::Chapters::ChapterPresenter).to receive(:new).and_call_original
+
+      get "/uk/api/chapters/#{chapter.to_param}.json",
+          params: { include: '' },
+          headers: request_headers(format: :json)
+
+      expect(response).to have_http_status(:ok)
+      expect(JSON.parse(response.body)).not_to have_key('included')
+      expect(Api::V2::Chapters::ChapterPresenter)
+        .to have_received(:new)
+        .with(instance_of(Chapter), [])
+    end
   end
 
   describe 'GET #changes' do

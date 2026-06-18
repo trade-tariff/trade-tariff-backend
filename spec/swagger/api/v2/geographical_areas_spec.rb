@@ -31,6 +31,7 @@ RSpec.describe 'Geographical Areas', swagger_doc: 'v2/swagger.json', type: :requ
     get 'List all geographical areas' do
       tags 'Geographical Areas'
       produces 'application/json'
+      jsonapi_query_parameters(includes: %w[contained_geographical_areas])
       description 'Returns all geographical areas (countries and groups).'
       operationId 'listGeographicalAreas'
 
@@ -62,6 +63,7 @@ RSpec.describe 'Geographical Areas', swagger_doc: 'v2/swagger.json', type: :requ
     get 'List all countries' do
       tags 'Geographical Areas'
       produces 'application/json'
+      jsonapi_query_parameters(includes: %w[contained_geographical_areas])
       description 'Returns only country-type geographical areas (geographical_code = "0").'
       operationId 'listCountries'
 
@@ -93,6 +95,7 @@ RSpec.describe 'Geographical Areas', swagger_doc: 'v2/swagger.json', type: :requ
     get 'Retrieve a geographical area' do
       tags 'Geographical Areas'
       produces 'application/json'
+      jsonapi_query_parameters(includes: %w[contained_geographical_areas])
       description 'Returns a single geographical area with its contained areas.'
       operationId 'getGeographicalArea'
 
