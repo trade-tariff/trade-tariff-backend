@@ -625,6 +625,72 @@ RSpec.describe TariffChangesService do
     end
   end
 
+  describe '#parent_declarability_loss_changes' do
+    let(:child_sid) { 91_001 }
+    let(:parent_sid) { 91_000 }
+    let(:child_date_of_effect) { date + 2.days }
+    let(:parent_current) do
+      instance_double(
+        GoodsNomenclature,
+        goods_nomenclature_sid: parent_sid,
+        goods_nomenclature_item_id: '0101000001',
+        validity_start_date: date - 1.year,
+        validity_end_date: nil,
+        declarable?: false,
+      )
+    end
+    let(:parent_previous) { instance_double(GoodsNomenclature, goods_nomenclature_sid: parent_sid, declarable?: true) }
+    let(:child_current) { instance_double(GoodsNomenclature, goods_nomenclature_sid: child_sid, parent: parent_current) }
+    # rubocop:disable RSpec/VerifiedDoubles
+    let(:children_scope) { double('ChildrenScope') }
+    let(:parents_scope) { double('ParentsScope') }
+    # rubocop:enable RSpec/VerifiedDoubles
+
+    before do
+      service.instance_variable_set(:@changes, {
+        commodities: [{
+          type: 'Commodity',
+          object_sid: child_sid,
+          action: 'creation',
+          date_of_effect: child_date_of_effect,
+        }],
+        commodity_descriptions: [],
+        measures: [],
+      })
+
+      allow(GoodsNomenclature).to receive(:where).with(goods_nomenclature_sid: [child_sid]).and_return(children_scope)
+      allow(children_scope).to receive(:eager).with(:parent).and_return(children_scope)
+      allow(children_scope).to receive(:all).and_return([child_current])
+
+      allow(GoodsNomenclature).to receive(:where).with(goods_nomenclature_sid: [parent_sid]).and_return(parents_scope)
+      allow(parents_scope).to receive(:all).and_return([parent_previous])
+    end
+
+    it 'returns an ending commodity change for parent that was declarable yesterday' do
+      result = TimeMachine.at(date) { service.parent_declarability_loss_changes }
+
+      expect(result).to include(
+        hash_including(
+          type: 'Commodity',
+          goods_nomenclature_sid: parent_sid,
+          goods_nomenclature_item_id: '0101000001',
+          action: 'ending',
+          date_of_effect: child_date_of_effect,
+        ),
+      )
+    end
+
+    it 'returns empty when parent was not declarable yesterday' do
+      allow(parents_scope).to receive(:all).and_return([
+        instance_double(GoodsNomenclature, goods_nomenclature_sid: parent_sid, declarable?: false),
+      ])
+
+      result = TimeMachine.at(date) { service.parent_declarability_loss_changes }
+
+      expect(result).to eq([])
+    end
+  end
+
   describe '#add_change_record' do
     let(:change) do
       {

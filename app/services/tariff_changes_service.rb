@@ -87,6 +87,8 @@ class TariffChangesService
       add_change_record(change, change[:goods_nomenclature_item_id], change[:object_sid])
     end
 
+    add_parent_declarability_loss_records
+
     @changes[:commodity_descriptions].each do |change|
       next if matching_commodity_change?(change[:goods_nomenclature_sid], change[:action])
 
@@ -121,6 +123,66 @@ class TariffChangesService
           declarables_for(goods_nomenclatures[goods_nomenclature_sid])
         end
       end
+    end
+  end
+
+  def add_parent_declarability_loss_records
+    parent_declarability_loss_changes.each do |change|
+      next if matching_commodity_change?(change[:goods_nomenclature_sid], change[:action])
+
+      add_change_record(change, change[:goods_nomenclature_item_id], change[:goods_nomenclature_sid])
+    end
+  end
+
+  def parent_declarability_loss_changes
+    created_child_changes = @changes[:commodities]
+      .select { |change| change[:action] == BaseChanges::CREATION }
+    created_child_changes_by_sid = created_child_changes.index_by { |change| change[:object_sid] }
+    created_child_sids = created_child_changes_by_sid.keys.compact.uniq
+
+    return [] if created_child_sids.empty?
+
+    created_children = GoodsNomenclature.where(goods_nomenclature_sid: created_child_sids).eager(:parent).all
+    parents = created_children.filter_map(&:parent).uniq(&:goods_nomenclature_sid)
+    # Multiple child creations can map to same parent on same run; keep earliest child date_of_effect.
+    parent_date_of_effect_by_sid = created_children.each_with_object({}) do |child, dates_by_parent_sid|
+      parent = child.parent
+      child_change = created_child_changes_by_sid[child.goods_nomenclature_sid]
+      next if child_change.nil?
+
+      candidate_date = child_change[:date_of_effect]
+      existing_date = dates_by_parent_sid[parent.goods_nomenclature_sid]
+
+      dates_by_parent_sid[parent.goods_nomenclature_sid] =
+        if existing_date.nil? || (candidate_date && candidate_date < existing_date)
+          candidate_date
+        else
+          existing_date
+        end
+    end
+
+    return [] if parents.empty?
+
+    parent_sids = parents.map(&:goods_nomenclature_sid)
+    previous_parents_by_sid = TimeMachine.at(date - 1.day) do
+      GoodsNomenclature.where(goods_nomenclature_sid: parent_sids).all.index_by(&:goods_nomenclature_sid)
+    end
+
+    parents.filter_map do |parent|
+      previous_parent = previous_parents_by_sid[parent.goods_nomenclature_sid]
+
+      next unless previous_parent&.declarable?
+
+      {
+        type: 'Commodity',
+        object_sid: parent.goods_nomenclature_sid,
+        goods_nomenclature_item_id: parent.goods_nomenclature_item_id,
+        goods_nomenclature_sid: parent.goods_nomenclature_sid,
+        action: BaseChanges::ENDING,
+        date_of_effect: parent_date_of_effect_by_sid[parent.goods_nomenclature_sid],
+        validity_start_date: parent.validity_start_date&.to_date,
+        validity_end_date: parent.validity_end_date&.to_date,
+      }
     end
   end
 
