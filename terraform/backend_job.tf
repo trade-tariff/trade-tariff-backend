@@ -1,5 +1,5 @@
 module "backend-job" {
-  source = "git@github.com:trade-tariff/trade-tariff-platform-terraform-modules.git//aws/ecs-service?ref=aws/ecs-service-v3.0.1"
+  source = "git@github.com:trade-tariff/trade-tariff-platform-terraform-modules.git//aws/ecs-service?ref=aws/ecs-service-v3.2.0"
 
   region = var.region
 
@@ -30,7 +30,8 @@ module "backend-job" {
   scale_in_cooldown  = var.scale_in_cooldown
   scale_out_cooldown = var.scale_out_cooldown
 
-  sns_topic_arns = [data.aws_sns_topic.slack_topic.arn]
+  sns_topic_arns               = [data.aws_sns_topic.slack_topic.arn]
+  observability_sns_topic_arns = var.enable_observability_alerts ? [data.aws_sns_topic.slack_observability_topic[0].arn] : null
 }
 
 resource "aws_cloudwatch_event_rule" "database_backup" {
