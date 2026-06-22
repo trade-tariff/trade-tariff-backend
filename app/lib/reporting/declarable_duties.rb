@@ -116,12 +116,6 @@ module Reporting
     AUTOFILTER_CELL_RANGE = 'A1:Y1'.freeze
 
     class << self
-      def profile
-        profile_mem_report('DeclarableDuties') do
-          generate
-        end
-      end
-
       def generate
         with_report_logging do
           workbook = instrument_report_step('open_workbook') do

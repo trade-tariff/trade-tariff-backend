@@ -12,10 +12,6 @@ module Api
           { referenced: chapter }
         end
 
-        def collection_url
-          [:admin, chapter, @search_reference]
-        end
-
         def chapter
           @chapter ||= Chapter.by_code(chapter_id).take
         end

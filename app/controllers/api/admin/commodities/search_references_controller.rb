@@ -12,10 +12,6 @@ module Api
           { referenced: commodity_or_subheading }
         end
 
-        def collection_url
-          [:admin, commodity.to_admin_param, @search_reference]
-        end
-
         def commodity_or_subheading
           subheading.declarable? ? commodity : subheading
         end

@@ -68,10 +68,6 @@ module TariffSynchronizer
         where(state: [PENDING_STATE, FAILED_STATE])
       end
 
-      def applied_or_failed
-        where(state: [APPLIED_STATE, FAILED_STATE])
-      end
-
       def oldest_pending
         pending.ascending.first
       end

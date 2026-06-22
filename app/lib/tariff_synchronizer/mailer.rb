@@ -26,12 +26,6 @@ module TariffSynchronizer
       mail subject: "#{subject_prefix(:error)} Trade Tariff download failure"
     end
 
-    def file_not_found_on_filesystem(path)
-      @path = path
-
-      mail subject: "#{subject_prefix(:error)} Update application failed: update file not found"
-    end
-
     def retry_exceeded(url, date)
       @url = url
       @date = date
@@ -44,13 +38,6 @@ module TariffSynchronizer
       @date = date
 
       mail subject: "#{subject_prefix(:error)} Update fetch failed: received blank update file"
-    end
-
-    def file_write_error(path, reason)
-      @path = path
-      @reason = reason
-
-      mail subject: "#{subject_prefix(:error)} Update fetch failed: cannot write update file to file system"
     end
 
     def applied(update_names, import_warnings)

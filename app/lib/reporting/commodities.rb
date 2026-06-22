@@ -38,10 +38,6 @@ module Reporting
         end
       end
 
-      def get_today
-        Reporting.get_published(object_key)
-      end
-
       def get_xi_today
         Reporting.get_published(xi_object_key)
       end
