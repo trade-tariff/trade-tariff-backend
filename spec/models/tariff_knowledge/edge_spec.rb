@@ -26,4 +26,20 @@ RSpec.describe TariffKnowledge::Edge do
       expect(described_class.by_relationship(described_class::APPLIES_TO).all).to contain_exactly(edge)
     end
   end
+
+  describe '::TYPES' do
+    it 'lists every valid relationship type' do
+      expect(described_class::TYPES).to eq(
+        [
+          described_class::CONTAINS,
+          described_class::APPLIES_TO,
+          described_class::REFERENCES,
+          described_class::EXPANDS_TO,
+          described_class::SUMMARISES,
+          described_class::FOR_DECLARABLE,
+          described_class::DERIVED_FROM,
+        ],
+      )
+    end
+  end
 end

@@ -141,6 +141,11 @@ V2Api.routes.draw do
       post 'search' => 'search#search'
       get 'search' => 'search#search'
       get 'search_suggestions' => 'search#suggestions'
+      match 'classification_search' => 'classification_search#search', via: %i[get post]
+
+      namespace :knowledge_graph do
+        resources :queries, only: %i[create]
+      end
 
       get '/headings/:id/tree' => 'headings#tree'
 
