@@ -73,7 +73,7 @@ resource "aws_cloudwatch_event_rule" "database_backup_freshness_check" {
 
   name                = "backend-database-backup-freshness-check-${var.environment}"
   description         = "Checks database backup freshness for ${var.environment}"
-  schedule_expression = "cron(0 1 * * ? *)"
+  schedule_expression = "cron(0 6 * * ? *)"
   state               = "ENABLED"
 }
 

@@ -199,17 +199,21 @@ epoch_for_timestamp() {
 
 archive_key_for_epoch() {
   local epoch=$1
+  local offset_seconds=${2:-0}
+  local archive_epoch
+
+  archive_epoch=$((epoch + offset_seconds))
 
   # bin/backup-database uses plain date +"%Y/%m/%d" in a Europe/London
-  # container. EventBridge runs cron(0 23 * * ? *) in UTC, so during BST the
-  # archive prefix is the next London calendar day even though S3 LastModified
-  # is still on the previous UTC date.
-  if TZ="$BACKUP_ARCHIVE_TIME_ZONE" date -d "@$epoch" +"%Y/%m/%d" >/dev/null 2>&1; then
-    echo "$(TZ="$BACKUP_ARCHIVE_TIME_ZONE" date -d "@$epoch" +"%Y/%m/%d")/tariff-merged-${ENVIRONMENT}.sql.gz"
+  # container. The latest object's LastModified is upload completion time, so a
+  # backup that starts before midnight and finishes after midnight may archive
+  # under the previous date.
+  if TZ="$BACKUP_ARCHIVE_TIME_ZONE" date -d "@$archive_epoch" +"%Y/%m/%d" >/dev/null 2>&1; then
+    echo "$(TZ="$BACKUP_ARCHIVE_TIME_ZONE" date -d "@$archive_epoch" +"%Y/%m/%d")/tariff-merged-${ENVIRONMENT}.sql.gz"
     return
   fi
 
-  echo "$(TZ="$BACKUP_ARCHIVE_TIME_ZONE" date -r "$epoch" +"%Y/%m/%d")/tariff-merged-${ENVIRONMENT}.sql.gz"
+  echo "$(TZ="$BACKUP_ARCHIVE_TIME_ZONE" date -r "$archive_epoch" +"%Y/%m/%d")/tariff-merged-${ENVIRONMENT}.sql.gz"
 }
 
 reasons=()
@@ -238,8 +242,26 @@ if latest_last_modified=$(head_object_last_modified "$LATEST_KEY"); then
     status=$?
 
     if [ "$status" -eq 1 ]; then
-      freshness_ok=0
-      reasons+=("archive key $archive_key is missing")
+      expected_archive_key=$archive_key
+      archive_key=$(archive_key_for_epoch "$latest_epoch" -86400)
+
+      if archive_last_modified=$(head_object_last_modified "$archive_key"); then
+        archive_epoch=$(epoch_for_timestamp "$archive_last_modified")
+
+        if [ "$archive_epoch" -lt "$latest_epoch" ]; then
+          freshness_ok=0
+          reasons+=("archive key $archive_key is older than latest key $LATEST_KEY")
+        fi
+      else
+        status=$?
+
+        if [ "$status" -eq 1 ]; then
+          freshness_ok=0
+          reasons+=("archive keys $expected_archive_key and $archive_key are missing")
+        else
+          exit "$status"
+        fi
+      fi
     else
       exit "$status"
     fi
