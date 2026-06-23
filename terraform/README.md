@@ -20,9 +20,9 @@ Terraform to deploy the service into AWS.
 
 | Name | Source | Version |
 | ---- | ------ | ------- |
-| <a name="module_backend-job"></a> [backend-job](#module\_backend-job) | git@github.com:trade-tariff/trade-tariff-platform-terraform-modules.git//aws/ecs-service | aws/ecs-service-v3.0.1 |
-| <a name="module_backend_uk"></a> [backend\_uk](#module\_backend\_uk) | git@github.com:trade-tariff/trade-tariff-platform-terraform-modules.git//aws/ecs-service | aws/ecs-service-v3.1.0 |
-| <a name="module_backend_xi"></a> [backend\_xi](#module\_backend\_xi) | git@github.com:trade-tariff/trade-tariff-platform-terraform-modules.git//aws/ecs-service | aws/ecs-service-v3.1.0 |
+| <a name="module_backend-job"></a> [backend-job](#module\_backend-job) | git@github.com:trade-tariff/trade-tariff-platform-terraform-modules.git//aws/ecs-service | aws/ecs-service-v3.2.0 |
+| <a name="module_backend_uk"></a> [backend\_uk](#module\_backend\_uk) | git@github.com:trade-tariff/trade-tariff-platform-terraform-modules.git//aws/ecs-service | aws/ecs-service-v3.2.0 |
+| <a name="module_backend_xi"></a> [backend\_xi](#module\_backend\_xi) | git@github.com:trade-tariff/trade-tariff-platform-terraform-modules.git//aws/ecs-service | aws/ecs-service-v3.2.0 |
 | <a name="module_label_generator_dashboard"></a> [label\_generator\_dashboard](#module\_label\_generator\_dashboard) | ./modules/label_generator_dashboard | n/a |
 | <a name="module_search_dashboard"></a> [search\_dashboard](#module\_search\_dashboard) | ./modules/search_dashboard | n/a |
 | <a name="module_search_operations_dashboard"></a> [search\_operations\_dashboard](#module\_search\_operations\_dashboard) | ./modules/search_operations_dashboard | n/a |
@@ -30,8 +30,8 @@ Terraform to deploy the service into AWS.
 | <a name="module_self_text_generator_dashboard"></a> [self\_text\_generator\_dashboard](#module\_self\_text\_generator\_dashboard) | ./modules/self_text_generator_dashboard | n/a |
 | <a name="module_tariff_note_pipeline_dashboard"></a> [tariff\_note\_pipeline\_dashboard](#module\_tariff\_note\_pipeline\_dashboard) | ./modules/tariff_note_pipeline_dashboard | n/a |
 | <a name="module_tariff_sync_dashboard"></a> [tariff\_sync\_dashboard](#module\_tariff\_sync\_dashboard) | ./modules/tariff_sync_dashboard | n/a |
-| <a name="module_worker_uk"></a> [worker\_uk](#module\_worker\_uk) | git@github.com:trade-tariff/trade-tariff-platform-terraform-modules.git//aws/ecs-service | aws/ecs-service-v3.1.0 |
-| <a name="module_worker_xi"></a> [worker\_xi](#module\_worker\_xi) | git@github.com:trade-tariff/trade-tariff-platform-terraform-modules.git//aws/ecs-service | aws/ecs-service-v3.1.0 |
+| <a name="module_worker_uk"></a> [worker\_uk](#module\_worker\_uk) | git@github.com:trade-tariff/trade-tariff-platform-terraform-modules.git//aws/ecs-service | aws/ecs-service-v3.2.0 |
+| <a name="module_worker_xi"></a> [worker\_xi](#module\_worker\_xi) | git@github.com:trade-tariff/trade-tariff-platform-terraform-modules.git//aws/ecs-service | aws/ecs-service-v3.2.0 |
 
 ## Resources
 
