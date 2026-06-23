@@ -9,6 +9,7 @@ RSpec.describe 'tariff_knowledge rake tasks' do
       tariff_knowledge:declarable_nodes:run
       tariff_knowledge:compressed_notes:refresh:enqueue
       tariff_knowledge:compressed_notes:refresh:run
+      tariff_knowledge:semantic_rule_facts:extract
     ].each { |task| Rake::Task[task].reenable if Rake::Task.task_defined?(task) }
   end
 
@@ -86,6 +87,29 @@ RSpec.describe 'tariff_knowledge rake tasks' do
 
       expect(TariffKnowledge::CompressedNoteRefresh).to have_received(:call)
     end
+  end
+
+  describe 'tariff_knowledge:semantic_rule_facts:extract' do
+    it 'runs semantic rule fact extraction inline' do
+      allow(TariffKnowledge::SemanticRuleFactExtraction)
+        .to receive(:call)
+        .and_return(TariffKnowledge::SemanticRuleFactExtraction::Result.new(fragment_count: 2, fact_count: 3, goods_nomenclature_count: 1))
+
+      output = capture_output { Rake::Task['tariff_knowledge:semantic_rule_facts:extract'].invoke }
+
+      expect(TariffKnowledge::SemanticRuleFactExtraction).to have_received(:call)
+      expect(output).to include('2 fragments, 3 facts, 1 compressed notes refreshed')
+    end
+  end
+
+  def capture_output
+    original_stdout = $stdout
+    output = StringIO.new
+    $stdout = output
+    yield
+    output.string
+  ensure
+    $stdout = original_stdout
   end
 end
 # rubocop:enable RSpec/DescribeClass

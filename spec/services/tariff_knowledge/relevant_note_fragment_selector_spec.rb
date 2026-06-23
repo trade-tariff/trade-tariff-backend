@@ -132,6 +132,88 @@ RSpec.describe TariffKnowledge::RelevantNoteFragmentSelector do
     expect(contexts.first[:fragments].first[:why_relevant]).to include('references retrieved heading 9506')
   end
 
+  it 'prioritises heading-level semantic range evidence over broader chapter evidence' do
+    heading_note_content = 'compressed note 9405500010'
+    heading_note = create(
+      :tariff_knowledge_compressed_note,
+      goods_nomenclature_item_id: '9405500010',
+      content: heading_note_content,
+      context_hash: Digest::SHA256.hexdigest(heading_note_content),
+      metadata: Sequel.pg_jsonb_wrap(
+        'evidence' => [
+          evidence_for(
+            'note_fragment:customs_tariff_chapter_note:1.31:90:9405',
+            'searchlights or spotlights of heading 9405;',
+            'reference',
+            range_type: 'heading',
+            range_code: '9405',
+            semantic_context: 'Generated rule facts: references heading 9405.',
+          ),
+          evidence_for(
+            'note_fragment:customs_tariff_chapter_note:1.31:90:94',
+            'articles of Chapter 94, for example furniture, lamps and lighting fittings.',
+            'exclusion',
+            range_type: 'chapter',
+            range_code: '94',
+            semantic_context: 'Generated rule facts: excludes chapter 94.',
+          ),
+          evidence_for(
+            'note_fragment:customs_tariff_chapter_note:1.31:94:generic',
+            'Generic Chapter 94 furniture note.',
+            'reference',
+          ),
+        ],
+      ),
+    )
+
+    contexts = described_class.call(
+      query: 'decorative lantern candle holder',
+      search_results: [
+        search_result_class.new(
+          goods_nomenclature_item_id: '9405500010',
+          description: 'Non-electrical luminaires and lighting fittings',
+          full_description: nil,
+          score: 10,
+        ),
+      ],
+      notes_by_item_id: { '9405500010' => heading_note },
+    )
+
+    fragment_texts = contexts.first[:fragments].pluck(:text)
+    expect(fragment_texts.first).to include('heading 9405')
+  end
+
+  it 'includes validated semantic context without replacing source context' do
+    semantic_note = create_note_with_evidence(
+      '9506911000',
+      evidence_for(
+        'note_fragment:customs_tariff_chapter_note:1.31:95:semantic',
+        'Heading 9506 includes articles and equipment for general physical exercise.',
+        'inclusion',
+        range_type: 'heading',
+        range_code: '9506',
+        semantic_context: 'Generated rule facts: includes heading 9506 when general physical exercise.',
+      ),
+    )
+
+    contexts = described_class.call(
+      query: 'exercise apparatus',
+      search_results: [
+        search_result_class.new(
+          goods_nomenclature_item_id: '9506911000',
+          description: 'Articles and equipment for general physical exercise',
+          full_description: nil,
+          score: 10,
+        ),
+      ],
+      notes_by_item_id: { '9506911000' => semantic_note },
+    )
+
+    text = contexts.first[:fragments].first[:text]
+    expect(text).to include('Heading 9506 includes articles')
+    expect(text).to include('Generated rule facts: includes heading 9506')
+  end
+
   it 'caps total emitted fragments across all selected notes' do
     contexts = described_class.call(
       query: 'plastic exercise article',
@@ -150,6 +232,55 @@ RSpec.describe TariffKnowledge::RelevantNoteFragmentSelector do
     )
 
     expect(contexts.sum { |context| context[:fragments].size }).to eq(described_class::MAX_TOTAL_FRAGMENTS)
+  end
+
+  it 'allows a single selected note to use the global fragment budget' do
+    contexts = described_class.call(
+      query: 'plastic exercise article',
+      search_results: [
+        search_result_class.new(
+          goods_nomenclature_item_id: '9506911000',
+          description: 'Articles and equipment for general physical exercise',
+          full_description: nil,
+          score: 10,
+        ),
+      ],
+      notes_by_item_id: { '9506911000' => create_note_with_fragments('9506911000', 1) },
+    )
+
+    expect(contexts.first[:fragments].size).to eq(6)
+  end
+
+  it 'allows the only qualifying note to use the global fragment budget' do
+    irrelevant_note = create_note_with_evidence(
+      '6403999110',
+      evidence_for(
+        'note_fragment:customs_tariff_chapter_note:1.31:12:irrelevant',
+        'Candles of heading 3406 are excluded.',
+        'reference',
+        range_type: 'heading',
+        range_code: '3406',
+      ),
+    )
+
+    contexts = described_class.call(
+      query: 'plastic exercise article',
+      search_results: [
+        search_result_class.new(
+          goods_nomenclature_item_id: '9506911000',
+          description: 'Articles and equipment for general physical exercise',
+          full_description: nil,
+          score: 10,
+        ),
+      ],
+      notes_by_item_id: {
+        '9506911000' => create_note_with_fragments('9506911000', 1),
+        '6403999110' => irrelevant_note,
+      },
+    )
+
+    expect(contexts.size).to eq(1)
+    expect(contexts.first[:fragments].size).to eq(6)
   end
 
   it 'applies the global fragment cap to the highest scoring notes first' do
@@ -199,7 +330,7 @@ RSpec.describe TariffKnowledge::RelevantNoteFragmentSelector do
     expect(contexts).to be_empty
   end
 
-  def evidence_for(key, text, context_type, range_type: nil, range_code: nil, source_type: 'customs_tariff_chapter_note')
+  def evidence_for(key, text, context_type, range_type: nil, range_code: nil, source_type: 'customs_tariff_chapter_note', semantic_context: nil)
     {
       'source_node_key' => key,
       'source_type' => source_type,
@@ -210,7 +341,9 @@ RSpec.describe TariffKnowledge::RelevantNoteFragmentSelector do
       'range_type' => range_type,
       'range_code' => range_code,
       'relationships' => [TariffKnowledge::Edge::APPLIES_TO],
-    }
+    }.tap do |evidence|
+      evidence['semantic_context'] = semantic_context if semantic_context
+    end
   end
 
   def create_note_with_fragments(item_id, note_index)

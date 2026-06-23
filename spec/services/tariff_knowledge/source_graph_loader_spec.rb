@@ -569,6 +569,70 @@ RSpec.describe TariffKnowledge::SourceGraphLoader do
         .to be_present
     end
 
+    it 'preserves source-backed semantic facts when reloading unchanged fragments' do
+      create(
+        :customs_tariff_chapter_note,
+        :approved,
+        customs_tariff_update: update,
+        chapter_id: '01',
+        content: 'Heading 0101 covers live horses.',
+      )
+
+      described_class.call
+
+      fragment_node = TariffKnowledge::Node.by_key('note_fragment:customs_tariff_chapter_note:1.31:01:0001').first
+      semantic_rule_facts = [
+        {
+          'source_reference' => 'Chapter 01 note 1',
+          'source_span' => 'Heading 0101 covers live horses.',
+          'relationship_type' => 'includes',
+          'subject' => { 'type' => 'chapter', 'code' => '01' },
+          'target' => { 'type' => 'heading', 'code' => '0101' },
+          'conditions' => ['live horses'],
+          'exceptions' => [],
+          'confidence' => 'high',
+        },
+      ]
+      TariffKnowledge::Node
+        .where(id: fragment_node.id)
+        .update(metadata: Sequel.pg_jsonb('semantic_rule_facts' => semantic_rule_facts))
+
+      described_class.call
+
+      expect(fragment_node.refresh.metadata.to_h['semantic_rule_facts'])
+        .to eq(semantic_rule_facts)
+    end
+
+    it 'drops semantic facts with stale or blank source spans when reloading fragments' do
+      note = create(
+        :customs_tariff_chapter_note,
+        :approved,
+        customs_tariff_update: update,
+        chapter_id: '01',
+        content: 'Heading 0101 covers live horses.',
+      )
+
+      described_class.call
+
+      fragment_node = TariffKnowledge::Node.by_key('note_fragment:customs_tariff_chapter_note:1.31:01:0001').first
+      TariffKnowledge::Node
+        .where(id: fragment_node.id)
+        .update(
+          metadata: Sequel.pg_jsonb(
+            'semantic_rule_facts' => [
+              { 'source_span' => 'Heading 0101 covers live horses.' },
+              { 'source_span' => '' },
+              { 'source_span' => 'Not in source.' },
+            ],
+          ),
+        )
+      note.update(content: 'Heading 0101 covers racehorses.')
+
+      described_class.call
+
+      expect(fragment_node.refresh.metadata.to_h).not_to include('semantic_rule_facts')
+    end
+
     it 'keeps positive references when another clause in the fragment is negated' do
       create(
         :customs_tariff_chapter_note,

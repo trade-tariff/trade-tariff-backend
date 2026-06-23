@@ -307,7 +307,7 @@ module TariffKnowledge
       key = attributes.fetch(:key)
       now = Time.zone.now
       values = attributes.merge(
-        metadata: Sequel.pg_jsonb(attributes.fetch(:metadata, { 'loader' => self.class.name })),
+        metadata: Sequel.pg_jsonb(metadata_for_node(attributes)),
         created_at: now,
         updated_at: now,
       )
@@ -317,6 +317,23 @@ module TariffKnowledge
           .insert(values)
 
       Node.by_key(key).first
+    end
+
+    def metadata_for_node(attributes)
+      metadata = attributes.fetch(:metadata, { 'loader' => self.class.name }).to_h
+      return metadata unless attributes[:node_type] == Node::NOTE_FRAGMENT
+
+      semantic_rule_facts = reusable_semantic_rule_facts(attributes.fetch(:key), attributes[:content])
+      semantic_rule_facts.any? ? metadata.merge('semantic_rule_facts' => semantic_rule_facts) : metadata
+    end
+
+    def reusable_semantic_rule_facts(key, content)
+      existing_node = Node.by_key(key).first
+      Array(existing_node&.metadata.to_h.fetch('semantic_rule_facts', nil)).select do |fact|
+        source_span = fact['source_span'].to_s.squish if fact.is_a?(Hash)
+
+        source_span.present? && content.to_s.include?(source_span)
+      end
     end
 
     def upsert_edge(source_node, target_node, relationship_type)

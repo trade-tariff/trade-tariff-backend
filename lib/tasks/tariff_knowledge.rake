@@ -48,4 +48,12 @@ namespace :tariff_knowledge do
       end
     end
   end
+
+  namespace :semantic_rule_facts do
+    desc 'Run semantic rule fact extraction for referenced tariff knowledge note fragments'
+    task extract: :environment do
+      result = TariffKnowledge::SemanticRuleFactExtraction.call
+      puts "Semantic rule fact extraction complete: #{result.fragment_count} fragments, #{result.fact_count} facts, #{result.goods_nomenclature_count} compressed notes refreshed."
+    end
+  end
 end

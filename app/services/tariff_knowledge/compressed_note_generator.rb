@@ -81,7 +81,7 @@ module TariffKnowledge
             range_node = range_nodes[edge.source_node_id]
             reference_edges_by_range_id.fetch(range_node&.id, []).filter_map do |reference_edge|
               fragment_node = fragment_nodes[reference_edge.source_node_id]
-              if fragment_node && applicable_fragment_ids.include?(fragment_node.id)
+              if fragment_node && (applicable_fragment_ids.include?(fragment_node.id) || semantic_rule_fact_evidence?(fragment_node, range_node))
                 [fragment_node, range_node, source_nodes_by_fragment_id[fragment_node.id]]
               end
             end
@@ -174,8 +174,9 @@ module TariffKnowledge
     def evidence_metadata(fragment_node, range_node, source_node)
       range_metadata = range_node ? range_node.metadata.to_h : {}
       context = source_context(fragment_node, source_node)
+      semantic_rule_facts = semantic_rule_facts(fragment_node, context, range_node)
 
-      {
+      metadata = {
         'source_node_key' => fragment_node.key,
         'source_type' => fragment_node.source_type.to_s.underscore,
         'source_id' => fragment_node.source_id,
@@ -191,9 +192,80 @@ module TariffKnowledge
         'range_title' => range_node&.title,
         'relationships' => relationships_for(range_node),
       }
+      metadata['semantic_rule_facts'] = semantic_rule_facts if semantic_rule_facts.any?
+      metadata['semantic_context'] = semantic_context(semantic_rule_facts) if semantic_rule_facts.any?
+      metadata
     end
 
     def relationships_for(range_node) = range_node ? [Edge::REFERENCES, Edge::EXPANDS_TO, Edge::APPLIES_TO] : [Edge::APPLIES_TO]
+
+    def semantic_rule_fact_evidence?(fragment_node, range_node)
+      semantic_rule_facts(fragment_node, fragment_node.content.to_s.squish, range_node).any?
+    end
+
+    def semantic_rule_facts(fragment_node, context, range_node)
+      SemanticRuleFactValidator.call(
+        facts: fragment_node.metadata.to_h['semantic_rule_facts'],
+        source_text: context,
+        valid_references: valid_references_for(fragment_node, range_node),
+        target_references: valid_target_references_for(range_node),
+      )
+    end
+
+    def valid_references_for(fragment_node, range_node)
+      references = [source_reference_for(fragment_node)]
+      return references.compact unless range_node
+
+      range_metadata = range_node.metadata.to_h
+      references << { 'type' => range_metadata['range_type'], 'code' => range_metadata['code'] }
+      references.compact.uniq
+    end
+
+    def valid_target_references_for(range_node)
+      return [] unless range_node
+
+      range_metadata = range_node.metadata.to_h
+      [{ 'type' => range_metadata['range_type'], 'code' => range_metadata['code'] }]
+    end
+
+    def source_reference_for(fragment_node)
+      case fragment_node.source_type
+      when 'customs_tariff_section_note'
+        { 'type' => 'section', 'code' => fragment_node.source_id }
+      when 'customs_tariff_chapter_note'
+        { 'type' => 'chapter', 'code' => fragment_node.source_id }
+      when 'customs_tariff_general_rule'
+        { 'type' => 'rule', 'code' => fragment_node.source_id }
+      end
+    end
+
+    def semantic_context(semantic_rule_facts)
+      "Generated rule facts: #{semantic_rule_fact_summaries(semantic_rule_facts).join(' ')}"
+    end
+
+    def semantic_rule_fact_summaries(semantic_rule_facts)
+      semantic_rule_facts.map do |fact|
+        "#{[
+          fact['relationship_type'],
+          fact.dig('target', 'type'),
+          fact.dig('target', 'code'),
+          conditions_text(fact['conditions']),
+          exceptions_text(fact['exceptions']),
+        ].compact.join(' ')}."
+      end
+    end
+
+    def conditions_text(conditions)
+      return if conditions.blank?
+
+      "when #{conditions.join('; ')}"
+    end
+
+    def exceptions_text(exceptions)
+      return if exceptions.blank?
+
+      "except #{exceptions.join('; ')}"
+    end
 
     def source_context(fragment_node, source_node)
       return fragment_node.content.to_s.squish unless source_node

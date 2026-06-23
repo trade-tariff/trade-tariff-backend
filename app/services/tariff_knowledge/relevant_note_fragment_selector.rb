@@ -1,9 +1,9 @@
 module TariffKnowledge
   class RelevantNoteFragmentSelector
     # The classifier prompt needs source evidence, not complete compressed notes.
-    # These caps keep one broad chapter/section note from dominating the prompt:
-    # at most two fragments may come from one compressed note, and at most eight
-    # fragments are emitted for the whole candidate set.
+    # These caps keep one broad chapter/section note from dominating prompts
+    # with several candidate notes. When only one note is selected, it may use
+    # the global budget.
     MAX_FRAGMENTS_PER_NOTE = 2
     MAX_TOTAL_FRAGMENTS = 8
 
@@ -17,7 +17,8 @@ module TariffKnowledge
       'inclusion' => 2,
       'reference' => 1,
     }.freeze
-    RANGE_MATCH_SCORE = 8
+    CHAPTER_RANGE_MATCH_SCORE = 8
+    HEADING_RANGE_MATCH_SCORE = 14
     MENTIONED_RANGE_SCORE = 4
     MAX_MENTIONED_RANGE_SCORE = 12
     QUERY_TERM_SCORE = 2
@@ -55,19 +56,23 @@ module TariffKnowledge
         end
       end
 
-      cap_total_fragments(contexts.values.filter_map { |context| selected_context(context) })
+      selectable_contexts = contexts.values.select { |context| qualifying_fragments(context).any? }
+      per_note_limit = selectable_contexts.one? ? MAX_TOTAL_FRAGMENTS : MAX_FRAGMENTS_PER_NOTE
+      cap_total_fragments(selectable_contexts.filter_map { |context| selected_context(context, per_note_limit) })
     end
 
   private
 
     attr_reader :query, :search_results, :notes_by_item_id
 
-    def selected_context(context)
-      fragments = context[:fragments].values.select { |fragment| fragment[:score] >= MIN_SCORE }
-        .sort_by { |fragment| [-fragment[:score], fragment[:source].to_s, fragment[:key].to_s] }.first(MAX_FRAGMENTS_PER_NOTE)
+    def selected_context(context, per_note_limit)
+      fragments = qualifying_fragments(context)
+        .sort_by { |fragment| [-fragment[:score], fragment[:source].to_s, fragment[:key].to_s] }.first(per_note_limit)
         .map { |fragment| fragment.except(:key) }
       { key: context[:key], commodity_codes: context[:commodity_codes].uniq, fragments: } if fragments.any?
     end
+
+    def qualifying_fragments(context) = context[:fragments].values.select { |fragment| fragment[:score] >= MIN_SCORE }
 
     def cap_total_fragments(contexts)
       remaining = MAX_TOTAL_FRAGMENTS
@@ -85,10 +90,11 @@ module TariffKnowledge
       # explaining the relationship that made that fragment evidence for a code.
       fragment_evidence_records(note).filter_map do |evidence_record|
         fragment_node = fragment_node_for(evidence_record)
-        text = (evidence_record['source_context'].presence || fragment_node&.content).to_s.squish
-        next if text.blank?
+        source_text = (evidence_record['source_context'].presence || fragment_node&.content).to_s.squish
+        next if source_text.blank?
 
-        score, reasons = score_fragment(evidence_record, text)
+        score, reasons = score_fragment(evidence_record, source_text)
+        text = [source_text, evidence_record['semantic_context'].presence].compact.join(' ').squish
         {
           key: evidence_record['source_node_key'],
           source: evidence_record['source_title'] || fragment_node&.title,
@@ -140,7 +146,14 @@ module TariffKnowledge
     def range_match_rule(evidence_record)
       return unless range_match?(evidence_record)
 
-      [RANGE_MATCH_SCORE, "references retrieved #{evidence_record['range_type']} #{evidence_record['range_code']}"]
+      [
+        range_match_score(evidence_record),
+        "references retrieved #{evidence_record['range_type']} #{evidence_record['range_code']}",
+      ]
+    end
+
+    def range_match_score(evidence_record)
+      evidence_record['range_type'] == 'heading' ? HEADING_RANGE_MATCH_SCORE : CHAPTER_RANGE_MATCH_SCORE
     end
 
     def mentioned_range_rule(text)

@@ -42,6 +42,8 @@ RSpec.describe TariffKnowledge::CompressedNoteGenerator do
         key: 'note_fragment:customs_tariff_chapter_note:1.31:01:0001',
         title: 'Chapter 01 notes fragment 1',
         content: '1. This chapter includes:',
+        source_type: 'customs_tariff_chapter_note',
+        source_id: '01',
       )
     end
     let(:fragment_node) do
@@ -51,6 +53,8 @@ RSpec.describe TariffKnowledge::CompressedNoteGenerator do
         key: 'note_fragment:customs_tariff_chapter_note:1.31:01:0002',
         title: 'Chapter 01 notes fragment 2',
         content: 'Heading 0101 covers live horses.',
+        source_type: 'customs_tariff_chapter_note',
+        source_id: '01',
       )
     end
 
@@ -147,11 +151,9 @@ RSpec.describe TariffKnowledge::CompressedNoteGenerator do
       expect(note.content).to include('Heading 0101 covers live horses.')
       expect(note.content).to include('Chapter 01 notes fragment 3')
       expect(note.content).to include('Live animals are classified in this chapter.')
-      expect(note.metadata.to_hash).to include(
-        'source_node_keys' => [
-          'note_fragment:customs_tariff_chapter_note:1.31:01:0002',
-          'note_fragment:customs_tariff_chapter_note:1.31:01:0003',
-        ],
+      expect(note.metadata.to_hash['source_node_keys']).to contain_exactly(
+        'note_fragment:customs_tariff_chapter_note:1.31:01:0002',
+        'note_fragment:customs_tariff_chapter_note:1.31:01:0003',
       )
       direct_evidence = note.metadata.to_hash['evidence'].find do |evidence|
         evidence['source_node_key'] == 'note_fragment:customs_tariff_chapter_note:1.31:01:0003'
@@ -387,6 +389,158 @@ RSpec.describe TariffKnowledge::CompressedNoteGenerator do
       evidence = TariffKnowledge::CompressedNote[123].metadata['evidence'].first
       expect(evidence['source_context']).to eq('1. This chapter includes: ii. Heading 0101 covers live horses.')
       expect(evidence['context_type']).to eq('inclusion')
+    end
+
+    it 'adds valid semantic rule facts to source-backed evidence context' do
+      fragment_node.update(
+        metadata: Sequel.pg_jsonb_wrap(
+          'semantic_rule_facts' => [
+            {
+              'source_reference' => 'Chapter 01 note 1',
+              'source_span' => 'Heading 0101 covers live horses.',
+              'relationship_type' => 'includes',
+              'subject' => { 'type' => 'chapter', 'code' => '01' },
+              'target' => { 'type' => 'heading', 'code' => '0101' },
+              'conditions' => ['live horses'],
+              'exceptions' => [],
+              'confidence' => 'high',
+            },
+          ],
+        ),
+      )
+
+      described_class.call(goods_nomenclature_sids: [123])
+
+      evidence = TariffKnowledge::CompressedNote[123].metadata['evidence'].first
+      expect(evidence['semantic_rule_facts']).to contain_exactly(
+        include(
+          'source_reference' => 'Chapter 01 note 1',
+          'source_span' => 'Heading 0101 covers live horses.',
+          'relationship_type' => 'includes',
+          'target' => { 'type' => 'heading', 'code' => '0101' },
+          'confidence' => 'high',
+        ),
+      )
+      expect(evidence['source_context']).to eq('1. This chapter includes: Heading 0101 covers live horses.')
+      expect(evidence['semantic_context'])
+        .to include('Generated rule facts: includes heading 0101 when live horses.')
+    end
+
+    it 'validates semantic rule facts from section note source references' do
+      source_node.update(
+        key: 'note_source:customs_tariff_section_note:1.31:1',
+        title: 'Section 1 notes',
+      )
+      lead_in_fragment_node.update(
+        key: 'note_fragment:customs_tariff_section_note:1.31:1:0001',
+        title: 'Section 1 notes fragment 1',
+        source_type: 'customs_tariff_section_note',
+        source_id: '1',
+      )
+      fragment_node.update(
+        key: 'note_fragment:customs_tariff_section_note:1.31:1:0002',
+        title: 'Section 1 notes fragment 2',
+        source_type: 'customs_tariff_section_note',
+        source_id: '1',
+        metadata: Sequel.pg_jsonb_wrap(
+          'semantic_rule_facts' => [
+            {
+              'source_reference' => 'Section 1 note 1',
+              'source_span' => 'Heading 0101 covers live horses.',
+              'relationship_type' => 'includes',
+              'subject' => { 'type' => 'section', 'code' => '1' },
+              'target' => { 'type' => 'heading', 'code' => '0101' },
+              'conditions' => ['live horses'],
+              'exceptions' => [],
+              'confidence' => 'high',
+            },
+          ],
+        ),
+      )
+
+      described_class.call(goods_nomenclature_sids: [123])
+
+      evidence = TariffKnowledge::CompressedNote[123].metadata['evidence'].first
+      expect(evidence['semantic_rule_facts']).to contain_exactly(
+        include(
+          'source_reference' => 'Section 1 note 1',
+          'subject' => { 'type' => 'section', 'code' => '1' },
+          'target' => { 'type' => 'heading', 'code' => '0101' },
+        ),
+      )
+      expect(evidence['semantic_context'])
+        .to include('Generated rule facts: includes heading 0101 when live horses.')
+    end
+
+    it 'uses accepted semantic rule facts to bridge referenced ranges without mechanical applicability' do
+      TariffKnowledge::Edge
+        .where(
+          source_node_id: fragment_node.id,
+          target_node_id: declarable_node.id,
+          relationship_type: TariffKnowledge::Edge::APPLIES_TO,
+        )
+        .delete
+      fragment_node.update(
+        metadata: Sequel.pg_jsonb_wrap(
+          'semantic_rule_facts' => [
+            {
+              'source_reference' => 'Chapter 01 note 1',
+              'source_span' => 'Heading 0101 covers live horses.',
+              'relationship_type' => 'includes',
+              'subject' => { 'type' => 'chapter', 'code' => '01' },
+              'target' => { 'type' => 'heading', 'code' => '0101' },
+              'conditions' => ['live horses'],
+              'exceptions' => [],
+              'confidence' => 'high',
+            },
+          ],
+        ),
+      )
+
+      described_class.call(goods_nomenclature_sids: [123])
+
+      evidence = TariffKnowledge::CompressedNote[123].metadata['evidence'].first
+      expect(evidence).to include(
+        'source_node_key' => 'note_fragment:customs_tariff_chapter_note:1.31:01:0002',
+        'range_node_key' => 'range:heading:0101',
+      )
+      expect(evidence['semantic_context'])
+        .to include('Generated rule facts: includes heading 0101 when live horses.')
+    end
+
+    it 'rejects semantic rule facts without exact source spans or valid tariff references' do
+      fragment_node.update(
+        metadata: Sequel.pg_jsonb_wrap(
+          'semantic_rule_facts' => [
+            {
+              'source_reference' => 'Chapter 01 note 1',
+              'source_span' => 'text that is not in the source',
+              'relationship_type' => 'includes',
+              'subject' => { 'type' => 'chapter', 'code' => '01' },
+              'target' => { 'type' => 'heading', 'code' => '0101' },
+              'conditions' => [],
+              'exceptions' => [],
+              'confidence' => 'high',
+            },
+            {
+              'source_reference' => 'Chapter 01 note 1',
+              'source_span' => 'Heading 0101 covers live horses.',
+              'relationship_type' => 'includes',
+              'subject' => { 'type' => 'chapter', 'code' => '01' },
+              'target' => { 'type' => 'heading', 'code' => '9999' },
+              'conditions' => [],
+              'exceptions' => [],
+              'confidence' => 'high',
+            },
+          ],
+        ),
+      )
+
+      described_class.call(goods_nomenclature_sids: [123])
+
+      evidence = TariffKnowledge::CompressedNote[123].metadata['evidence'].first
+      expect(evidence).not_to include('semantic_rule_facts')
+      expect(evidence).not_to include('semantic_context')
     end
   end
 
