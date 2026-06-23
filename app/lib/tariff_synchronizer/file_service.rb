@@ -1,6 +1,5 @@
 module TariffSynchronizer
   class FileService
-    BYTE_SIZE = 16 * 1024 # 16KB
     S3_MAX_RETRIES = 3
 
     # Errors that indicate the S3 object or access is permanently broken.
@@ -85,44 +84,6 @@ module TariffSynchronizer
           end
         else
           File.delete(file_path)
-        end
-      end
-
-      def download_and_gunzip(source:, destination:)
-        directory = File.dirname(destination)
-
-        FileUtils.rm_rf(directory) if File.exist?(directory)
-        FileUtils.mkdir_p(directory)
-
-        download(source:, destination:)
-        gunzip(source: destination, destination: destination.to_s.gsub('.gz', ''))
-
-        Dir.glob("#{directory}/*").reject { |file| file.end_with?('.gz') }
-      end
-
-      def download(source:, destination:)
-        if Rails.env.production?
-          with_s3_retry(operation: 'download', file_path: source) do
-            s3_object = bucket.object(source)
-            File.open(destination, 'wb') do |file|
-              s3_object.get(response_target: file)
-            end
-          end
-        else
-          FileUtils.cp(source, destination)
-        end
-      end
-
-      def gunzip(source:, destination:)
-        File.open(destination, 'wb') do |output|
-          Zlib::GzipReader.open(source) do |input|
-            bytes = input.read(BYTE_SIZE)
-
-            while bytes
-              output.write(bytes)
-              bytes = input.read(BYTE_SIZE)
-            end
-          end
         end
       end
 

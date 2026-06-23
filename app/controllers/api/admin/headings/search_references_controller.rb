@@ -12,10 +12,6 @@ module Api
           { referenced: heading }
         end
 
-        def collection_url
-          [:admin, heading, @search_reference]
-        end
-
         def heading
           @heading ||= begin
             heading = Heading.actual

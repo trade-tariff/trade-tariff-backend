@@ -81,10 +81,6 @@ class ApplicationController < ActionController::API
     TimeMachine.at(actual_date, &block)
   end
 
-  def skip_time_machine(&block)
-    TimeMachine.no_time_machine(&block)
-  end
-
   def check_query_count
     QueryCountChecker.new(TradeTariffBackend.excess_query_threshold).check
   end

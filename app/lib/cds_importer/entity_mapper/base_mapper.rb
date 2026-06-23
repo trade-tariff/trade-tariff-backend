@@ -33,8 +33,7 @@ class CdsImporter
                       :entity_mapping,      # attributes mapping
                       :mapping_path,        # path to attributes in xml
                       :mapping_root,        # node name in xml that provides data for mapping
-                      :exclude_mapping,     # list of excluded attributes
-                      :primary_key_mapping  # how we pull out the (often composite) primary key from the xml node document
+                      :exclude_mapping      # list of excluded attributes
 
         def before_oplog_inserts_callbacks
           @before_oplog_inserts_callbacks ||= []
@@ -87,13 +86,6 @@ class CdsImporter
 
         def sort_key
           "#{mapping_path.to_s.length}#{name}"
-        end
-
-        # Returns sequel filter args that will find all secondaries associated with a primary model instance
-        def filter_for(primary_model_instance)
-          primary_filters.each_with_object({}) do |(primary_field, secondary_field), acc|
-            acc[secondary_field] = primary_model_instance.public_send(primary_field)
-          end
         end
 
         protected

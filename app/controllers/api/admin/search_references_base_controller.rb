@@ -80,17 +80,6 @@ module Api
         raise ArgumentError, '#search_reference_resource_association_hash should be overriden by inheriting classes'
       end
 
-      def set_pagination_headers
-        headers['X-Meta'] = {
-          pagination: {
-            total: search_reference_collection.count,
-            offset: page * per_page,
-            page:,
-            per_page:,
-          },
-        }.to_json
-      end
-
       def enqueue_embedding_refresh
         sid = @search_reference.goods_nomenclature_sid
         ScoreLabelBatchWorker.perform_async(sid) if sid
