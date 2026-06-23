@@ -3,6 +3,9 @@ require 'json'
 namespace :swagger do
   swagger_spec_pattern = 'spec/swagger/**/*_spec.rb'
   swagger_json_path = File.expand_path('../../swagger/v2/swagger.json', __dir__)
+  draft_swagger_specs = %w[
+    spec/swagger/api/v2/classification_search_spec.rb
+  ].freeze
 
   # Paths that have specs (useful for contract testing) but must not appear in
   # the public API docs. Excluded because they are frontend-internal endpoints
@@ -15,6 +18,7 @@ namespace :swagger do
   # with meaningful non-frontend traffic belongs in the public docs, not here.
   internal_paths = %w[
     /api/chemicals/{id}
+    /api/classification_search
     /api/commodities/{commodity_id}/validity_periods
     /api/headings/{heading_id}/validity_periods
     /api/news/items/{id}
@@ -42,7 +46,7 @@ namespace :swagger do
 
   desc 'Generate swagger documentation from spec metadata (no database required)'
   task :generate do
-    ENV['PATTERN'] = swagger_spec_pattern
+    ENV['PATTERN'] = Dir.glob(swagger_spec_pattern).reject { |path| draft_swagger_specs.include?(path) }.join(',')
     Rake::Task['rswag:specs:swaggerize'].invoke
     post_process.call
   end
@@ -55,12 +59,15 @@ namespace :swagger do
     # Controllers that are deliberately not documented:
     #   - abstract base classes that define no routes of their own
     #   - internal/authenticated endpoints not part of the public API
+    #   - draft MCP-facing APIs that should not be published until release
     excluded = %w[
+      classification_search_controller.rb
       exchange_rates/base_controller.rb
       green_lanes/base_controller.rb
       green_lanes/faq_feedback_controller.rb
       green_lanes/goods_nomenclatures_controller.rb
       green_lanes/themes_controller.rb
+      knowledge_graph/queries_controller.rb
       enquiry_form/revised_submissions_controller.rb
       enquiry_form/submissions_controller.rb
       errors_controller.rb

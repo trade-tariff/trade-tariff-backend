@@ -11,6 +11,16 @@ module TariffKnowledge
     FOR_DECLARABLE = 'for_declarable'.freeze
     DERIVED_FROM = 'derived_from'.freeze
 
+    TYPES = [
+      CONTAINS,
+      APPLIES_TO,
+      REFERENCES,
+      EXPANDS_TO,
+      SUMMARISES,
+      FOR_DECLARABLE,
+      DERIVED_FROM,
+    ].freeze
+
     many_to_one :source_node,
                 class: 'TariffKnowledge::Node',
                 key: :source_node_id
