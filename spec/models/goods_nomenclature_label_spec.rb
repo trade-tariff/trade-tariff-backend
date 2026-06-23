@@ -345,16 +345,6 @@ RSpec.describe GoodsNomenclatureLabel do
     end
   end
 
-  describe '.needing_relabel' do
-    it 'returns stale non-manually-edited labels' do
-      relabel_label = create(:goods_nomenclature_label, :stale)
-      create(:goods_nomenclature_label, :stale, :manually_edited)
-      create(:goods_nomenclature_label)
-
-      expect(described_class.needing_relabel.all).to eq([relabel_label])
-    end
-  end
-
   describe '#labels' do
     subject(:labels) { create(:goods_nomenclature_label, :with_labels).labels }
 

@@ -9,8 +9,6 @@ module Reporting
 
         WORKSHEET_NAME = 'Incomplete conditions'.freeze
 
-        DASHBOARD_SECTION = 'Duty and measure-related anomalies'.freeze
-
         HEADER_ROW = [
           'Measure SID',
           'Measure type ID',

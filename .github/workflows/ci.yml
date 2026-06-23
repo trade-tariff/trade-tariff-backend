@@ -73,7 +73,8 @@ jobs:
           ssh-key: ${{ secrets.PRIVATE_SSH_KEY }}
       - run: cd terraform/ && terraform init -backend=false -reconfigure
       - run: pip install pre-commit
-      - run: pre-commit run --all-files
+      - run: pre-commit run --all-files --hook-stage pre-commit
+      - run: pre-commit run --all-files --hook-stage pre-push
       - run: bundle exec brakeman
 
   test:

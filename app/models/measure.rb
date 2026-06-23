@@ -2,8 +2,6 @@ class Measure < Sequel::Model
   include Orderable
 
   BASE_REGULATION_ROLE = 1
-  PROVISIONAL_ANTIDUMPING_ROLE = 2
-  DEFINITIVE_ANTIDUMPING_ROLE = 3
   MODIFICATION_REGULATION_ROLE = 4
 
   # Number of days in a standard year and a leap year — used to exclude

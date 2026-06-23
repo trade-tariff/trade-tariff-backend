@@ -83,8 +83,6 @@ module Reporting
       measure__regulation__url
     ].freeze
 
-    CELL_TYPES = Array.new(HEADER_ROW.size, :string).freeze
-
     COLUMN_WIDTHS = [
       20,  # trackedmodel_ptr_id
       20,  # commodity__sid
@@ -112,8 +110,6 @@ module Reporting
       20,  # measure__regulation__id
       30,  # measure__regulation__url
     ].freeze
-
-    AUTOFILTER_CELL_RANGE = 'A1:Y1'.freeze
 
     class << self
       def generate

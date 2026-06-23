@@ -1,16 +1,6 @@
 RSpec.describe EncryptionService, type: :service do
   let(:string) { 'test_string' }
-  let(:encrypted_string) { described_class.encrypt_string(string) }
-
-  describe '.encrypt_string' do
-    it 'returns a string' do
-      expect(encrypted_string).to be_a(String)
-    end
-
-    it 'is different to the original string' do
-      expect(encrypted_string).not_to eq(string)
-    end
-  end
+  let(:encrypted_string) { described_class.new.crypt.encrypt_and_sign(string) }
 
   describe '.decrypt_string' do
     it 'decrypts an encrypted string back to the original' do

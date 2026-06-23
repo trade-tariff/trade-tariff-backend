@@ -1,8 +1,4 @@
 class EncryptionService
-  def self.encrypt_string(string)
-    new.crypt.encrypt_and_sign(string)
-  end
-
   def self.decrypt_string(encrypted_string)
     new.crypt.decrypt_and_verify(encrypted_string)
   end
