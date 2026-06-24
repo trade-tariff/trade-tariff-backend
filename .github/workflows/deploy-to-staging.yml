@@ -21,3 +21,4 @@ jobs:
       basic-password: ${{ secrets.BASIC_PASSWORD }}
       slack-webhook: ${{ secrets.SLACK_WEBHOOK }}
       ssh-key: ${{ secrets.PRIVATE_SSH_KEY }}
+      waf_bypass_token: ${{ secrets.TF_VAR_WAF_E2E_SECRET_TOKEN }}
