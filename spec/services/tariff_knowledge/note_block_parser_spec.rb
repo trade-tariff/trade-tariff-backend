@@ -51,6 +51,42 @@ RSpec.describe TariffKnowledge::NoteBlockParser do
       )
     end
 
+    it 'scopes repeated marker paths under markdown headings' do
+      fragments = [
+        build_fragment('0001', '1. In this chapter and, in the case of notes (d), (e) and (f) throughout the nomenclature, the following expressions have the meanings hereby assigned to them:'),
+        build_fragment('0002', 'a. pig Iron'),
+        build_fragment('0003', 'Iron-carbon alloys not usefully malleable, containing more than 2 % by weight of carbon.'),
+        build_fragment('0072', '### Subheading notes'),
+        build_fragment('0073', '1. In this chapter, the following expressions have the meanings hereby assigned to them:'),
+        build_fragment('0074', 'a. alloy pig iron'),
+        build_fragment('0075', 'Pig iron containing, by weight, one or more of the following elements in the specified proportions:'),
+      ]
+
+      blocks = described_class.call(
+        source_type: 'customs_tariff_chapter_note',
+        source_id: '72',
+        source_version: '1.31',
+        fragments:,
+      )
+
+      pig_iron = blocks.find { |block| block.metadata['term'] == 'pig iron' }
+      alloy_pig_iron = blocks.find { |block| block.metadata['term'] == 'alloy pig iron' }
+
+      aggregate_failures do
+        expect(pig_iron).to have_attributes(
+          key: 'note_block:customs_tariff_chapter_note:1.31:72:1:a',
+          content: a_string_including('Iron-carbon alloys not usefully malleable'),
+        )
+        expect(alloy_pig_iron).to have_attributes(
+          key: 'note_block:customs_tariff_chapter_note:1.31:72:subheading_notes:1:a',
+          content: a_string_including('Pig iron containing'),
+        )
+        expect(pig_iron.key).not_to eq(alloy_pig_iron.key)
+        expect(pig_iron.metadata['path']).to eq(%w[1 a])
+        expect(alloy_pig_iron.metadata['path']).to eq(%w[subheading_notes 1 a])
+      end
+    end
+
     def build_fragment(sequence, content)
       Data.define(:key, :content).new(
         "note_fragment:customs_tariff_chapter_note:1.31:72:#{sequence}",
