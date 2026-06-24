@@ -126,6 +126,7 @@ RSpec.describe TariffKnowledge::RelevantNoteFragmentSelector do
     expect(first_fragment[:text]).to include('pig Iron')
     expect(first_fragment[:text]).to include('not more than 10 % chromium')
     expect(first_fragment[:text]).not_to eq('Chapter 72 does not include products of heading 7301 or 7302.')
+    expect(first_fragment[:source_ref]).to eq('chapter 72 note')
     expect(first_fragment[:why_relevant]).to include('exact phrase match pig iron')
     expect(first_fragment[:why_relevant].scan(/exact phrase match pig iron/).size).to eq(1)
     expect(first_fragment[:why_relevant]).to include('definition block')
@@ -446,6 +447,34 @@ RSpec.describe TariffKnowledge::RelevantNoteFragmentSelector do
     )
 
     expect(contexts.first[:fragments].first[:why_relevant]).to include('references retrieved heading 9506')
+  end
+
+  it 'includes source references for fragment evidence sent to the classifier context' do
+    source_note = create_note_with_evidence(
+      '9506911000',
+      evidence_for(
+        'note_fragment:customs_tariff_chapter_note:1.31:95:source',
+        'Heading 9506 includes articles and equipment for general physical exercise.',
+        'inclusion',
+        range_type: 'heading',
+        range_code: '9506',
+      ),
+    )
+
+    contexts = described_class.call(
+      query: 'exercise apparatus',
+      search_results: [
+        search_result_class.new(
+          goods_nomenclature_item_id: '9506911000',
+          description: 'Articles and equipment for general physical exercise',
+          full_description: nil,
+          score: 10,
+        ),
+      ],
+      notes_by_item_id: { '9506911000' => source_note },
+    )
+
+    expect(contexts.first[:fragments].first[:source_ref]).to eq('chapter 95 note')
   end
 
   it 'caps total emitted fragments across all selected notes' do
