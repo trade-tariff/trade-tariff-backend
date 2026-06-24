@@ -2,92 +2,76 @@ module TariffKnowledge
   class NoteBlockParser
     Block = Data.define(:key, :title, :content, :metadata, :fragment_keys)
 
-    DEFINITION_MARKER = /\A(?<marker>[a-z]|ij)\.\s+(?<term>[[:alpha:]][[:alnum:][:space:]-]+)\z/i
-    ROOT_MARKER = /\A(?<marker>\d+)\.\s+/
-    BULLET_MARKER = /\A[-–—]\s+/
-    HEADING_MARKER = /\A#+\s+(?<title>.+)\z/
-
     def self.call(...) = new(...).call
 
-    def initialize(source_type:, source_id:, source_version:, fragments:)
+    def initialize(source_type:, source_id:, source_version:, fragments:, structure_parser: NoteStructureParser)
       @source_type = source_type
       @source_id = source_id.to_s
       @source_version = source_version.to_s
       @fragments = fragments
+      @structure_parser = structure_parser
     end
 
     def call
-      blocks = []
-      current_root = nil
-      current_definition = nil
-      current_section_slug = nil
+      tree = structure_parser.call(
+        source_type:,
+        source_id:,
+        source_version:,
+        fragments:,
+      )
 
-      fragments.each do |fragment|
-        text = fragment.content.to_s.squish
-        heading_match = text.match(HEADING_MARKER)
-        root_match = text.match(ROOT_MARKER)
-        definition_match = text.match(DEFINITION_MARKER)
-
-        if heading_match
-          current_section_slug = heading_match[:title].parameterize(separator: '_')
-          current_root = nil
-          current_definition = nil
-          next
-        end
-
-        if root_match
-          current_root = root_match[:marker]
-          current_definition = nil
-        end
-
-        if definition_match && current_root
-          current_definition = new_definition_block(current_section_slug, current_root, definition_match, fragment)
-          blocks << current_definition
-          next
-        end
-
-        append_to_definition(current_definition, fragment) if current_definition && belongs_to_definition?(text)
-      end
-
-      blocks
+      flatten_nodes(tree.nodes).filter_map { |node| block_for(node) }
     end
 
   private
 
-    attr_reader :source_type, :source_id, :source_version, :fragments
+    attr_reader :source_type, :source_id, :source_version, :fragments, :structure_parser
 
-    def new_definition_block(section_slug, root_marker, definition_match, fragment)
-      term = definition_match[:term].squish
-      marker = definition_match[:marker].downcase
-      path = [section_slug, root_marker, marker].compact
+    def flatten_nodes(nodes)
+      nodes.flat_map { |node| [node, *flatten_nodes(node.children)] }
+    end
+
+    def block_for(node)
+      path = node.path.map(&:to_s)
+      return unless definition_path?(path)
+
+      marker = node.marker.to_s
+      term = node.title.to_s.squish
+      return if term.blank?
+
+      fragment_keys = descendant_fragment_keys(node)
       metadata = {
         'path' => path,
         'marker' => marker,
         'block_type' => 'definition',
         'term' => term.downcase,
+        'marker_kind' => node.kind.to_s,
       }
-      metadata['section'] = section_slug if section_slug
+      metadata['section'] = section_slug(path) if section_slug(path)
 
       Block.new(
         key: "note_block:#{source_type}:#{source_version}:#{source_id}:#{path.join(':')}",
         title: term,
-        content: fragment.content.to_s.squish,
+        content: descendant_content(node),
         metadata:,
-        fragment_keys: [fragment.key],
+        fragment_keys:,
       )
     end
 
-    def belongs_to_definition?(text)
-      return true if text.match?(BULLET_MARKER)
-      return false if text.match?(DEFINITION_MARKER)
-      return false if text.match?(ROOT_MARKER)
-
-      true
+    def section_slug(path)
+      path.first unless path.first.to_s.match?(/\A\d+\z/)
     end
 
-    def append_to_definition(block, fragment)
-      block.content << " #{fragment.content.to_s.squish}"
-      block.fragment_keys << fragment.key
+    def definition_path?(path)
+      path.any? { |segment| segment.match?(/\A\d+\z/) }
+    end
+
+    def descendant_content(node)
+      [node.content, *node.children.map { |child| descendant_content(child) }].join(' ').squish
+    end
+
+    def descendant_fragment_keys(node)
+      [node.fragment_keys, *node.children.map { |child| descendant_fragment_keys(child) }].flatten
     end
   end
 end
