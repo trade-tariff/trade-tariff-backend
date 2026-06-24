@@ -3,6 +3,8 @@ module TariffKnowledge
     Event = Data.define(:fragment, :kind, :marker, :depth, :path_segment, :title, :body, :raw_text)
 
     HEADING_MARKER = /\A#+\s+(?<title>.+)\z/
+    BULLET_ALPHA_SECTION = /\A\((?<marker>[A-Z])\)\.?\s+(?<body>.+)\z/
+    ALPHA_SECTION_MARKER = /\A\((?<marker>[A-Z])\)\.\z/
 
     def self.call(...) = new(...).call
 
@@ -18,12 +20,21 @@ module TariffKnowledge
       return heading_event(heading_match[:title].squish, text) if heading_match
 
       token, body = text.split(/\s+/, 2)
+      alpha_section_match = token.to_s.match(ALPHA_SECTION_MARKER)
+
+      return alpha_section_event(alpha_section_match[:marker], body.to_s.squish, text) if alpha_section_match
+
       marker_match = trie.match(token)
 
       return continuation_event(text) unless marker_match
       return continuation_event(text) unless valid_marker_boundary?(token, marker_match)
 
-      marker_event(marker_match, marker_body(token, marker_match, body), text)
+      marker_body = marker_body(token, marker_match, body)
+      embedded_section = embedded_bullet_alpha_section(marker_match, marker_body)
+
+      return alpha_section_event(embedded_section[:marker], embedded_section[:body], text) if embedded_section
+
+      marker_event(marker_match, marker_body, text)
     end
 
   private
@@ -46,16 +57,31 @@ module TariffKnowledge
     end
 
     def marker_event(marker_match, body, raw_text)
-      title, event_body = title_and_body(marker_match, body)
+      kind = marker_kind(marker_match)
+      marker = marker(marker_match)
+      title, event_body = title_and_body(kind, marker_match, body)
 
       Event.new(
         fragment:,
-        kind: marker_match.kind,
-        marker: marker_match.marker,
+        kind:,
+        marker:,
         depth: marker_match.depth,
-        path_segment: marker_match.marker,
+        path_segment: marker,
         title:,
         body: event_body,
+        raw_text:,
+      )
+    end
+
+    def alpha_section_event(marker, body, raw_text)
+      Event.new(
+        fragment:,
+        kind: :alpha_section,
+        marker:,
+        depth: 2,
+        path_segment: marker,
+        title: body.presence,
+        body: '',
         raw_text:,
       )
     end
@@ -73,11 +99,11 @@ module TariffKnowledge
       )
     end
 
-    def title_and_body(marker_match, body)
-      case marker_match.kind
+    def title_and_body(kind, marker_match, body)
+      case kind
       when :numeric
         [marker_match.marker, body]
-      when :alpha
+      when :alpha, :alpha_section
         [body.presence, '']
       else
         [nil, body]
@@ -88,6 +114,32 @@ module TariffKnowledge
       suffix = token[marker_match.length..]
 
       [suffix, body].compact_blank.join(' ').squish
+    end
+
+    def marker_kind(marker_match)
+      return :alpha_section if uppercase_alpha_marker?(marker_match)
+
+      marker_match.kind
+    end
+
+    def marker(marker_match)
+      return marker_match.marker.upcase if uppercase_alpha_marker?(marker_match)
+
+      marker_match.marker
+    end
+
+    def uppercase_alpha_marker?(marker_match)
+      marker_match.kind == :alpha && marker_text(marker_match).match?(/[A-Z]/)
+    end
+
+    def marker_text(marker_match)
+      fragment.content.to_s.squish.first(marker_match.length)
+    end
+
+    def embedded_bullet_alpha_section(marker_match, body)
+      return unless marker_match.kind == :bullet
+
+      body.match(BULLET_ALPHA_SECTION)
     end
 
     def valid_marker_boundary?(token, marker_match)

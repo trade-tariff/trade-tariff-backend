@@ -113,15 +113,51 @@ RSpec.describe TariffKnowledge::NoteMarkerClassifier do
       )
     end
 
-    it 'classifies uppercase markers case-insensitively' do
+    it 'classifies uppercase alpha markers as structural section scopes' do
       event = described_class.call(fragment('f2', 'A. The following'))
 
       expect(event).to have_attributes(
-        kind: :alpha,
-        marker: 'a',
+        kind: :alpha_section,
+        marker: 'A',
         depth: 2,
-        path_segment: 'a',
+        path_segment: 'A',
         title: 'The following',
+        body: '',
+      )
+    end
+
+    it 'classifies parenthesized uppercase alpha markers with trailing periods as section scopes' do
+      event = described_class.call(fragment('f2', '(A). For paper or paperboard weighing not more than 150 g/m2:'))
+
+      expect(event).to have_attributes(
+        kind: :alpha_section,
+        marker: 'A',
+        depth: 2,
+        path_segment: 'A',
+        title: 'For paper or paperboard weighing not more than 150 g/m2:',
+        body: '',
+      )
+    end
+
+    it 'does not classify lowercase parenthesized cross-references with trailing periods as list markers' do
+      event = described_class.call(fragment('f2', '(b). Strip and the like are not considered fibres.'))
+
+      expect(event).to have_attributes(
+        kind: :continuation,
+        marker: nil,
+        body: '(b). Strip and the like are not considered fibres.',
+      )
+    end
+
+    it 'classifies bullet-prefixed uppercase alpha markers as section scopes' do
+      event = described_class.call(fragment('f2', '- (B) Heading 8422 does not cover:'))
+
+      expect(event).to have_attributes(
+        kind: :alpha_section,
+        marker: 'B',
+        depth: 2,
+        path_segment: 'B',
+        title: 'Heading 8422 does not cover:',
         body: '',
       )
     end
