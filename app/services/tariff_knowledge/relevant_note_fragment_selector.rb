@@ -24,6 +24,7 @@ module TariffKnowledge
     MAX_QUERY_TERM_SCORE = 10
     SAME_CHAPTER_SCORE = 1
     EXACT_PHRASE_SCORE = 14
+    EXACT_TERM_SCORE = 4
     DEFINITION_BLOCK_SCORE = 4
     MAX_REASON_CODES = 4
     MAX_REASON_TERMS = 5
@@ -162,6 +163,10 @@ module TariffKnowledge
       score = 0
       reasons = []
 
+      if exact_query_term?(evidence_block['term'])
+        score, reasons = add_score(score, reasons, EXACT_TERM_SCORE, "exact term match #{query_phrase}")
+      end
+
       if exact_query_phrase?(evidence_block['term'])
         score, reasons = add_score(score, reasons, EXACT_PHRASE_SCORE, "exact phrase match #{query_phrase} in term")
       elsif exact_query_phrase?(text)
@@ -253,6 +258,10 @@ module TariffKnowledge
     def relevance_tokens = @relevance_tokens ||= tokenize(query)
 
     def query_phrase = @query_phrase ||= query.to_s.squish.downcase
+
+    def exact_query_term?(term)
+      query_phrase.present? && term.to_s.squish.downcase == query_phrase
+    end
 
     def exact_query_phrase?(text)
       phrase = query_phrase
