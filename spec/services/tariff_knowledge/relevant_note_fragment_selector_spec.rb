@@ -192,6 +192,121 @@ RSpec.describe TariffKnowledge::RelevantNoteFragmentSelector do
     expect(fragments.second[:why_relevant]).not_to include('exact term match pig iron')
   end
 
+  it 'does not select a compound definition block for a single-word modifier query' do
+    pig_iron_note = create(
+      :tariff_knowledge_compressed_note,
+      goods_nomenclature_item_id: '7201200000',
+      content: 'compressed note pig modifier',
+      context_hash: Digest::SHA256.hexdigest('compressed note pig modifier'),
+      metadata: Sequel.pg_jsonb_wrap(
+        'evidence_blocks' => [
+          {
+            'source_node_key' => 'note_block:customs_tariff_chapter_note:1.31:72:1:a',
+            'source_title' => 'pig Iron',
+            'source_context' => 'pig Iron: Iron-carbon alloys not usefully malleable.',
+            'block_type' => 'definition',
+            'term' => 'pig iron',
+            'source_type' => 'customs_tariff_chapter_note',
+            'source_id' => '72',
+            'fragment_node_keys' => [],
+          },
+        ],
+      ),
+    )
+
+    contexts = described_class.call(
+      query: 'pig',
+      search_results: [
+        search_result_class.new(
+          goods_nomenclature_item_id: '7201200000',
+          description: 'Non-alloy pig iron',
+          full_description: nil,
+          score: 10,
+        ),
+      ],
+      notes_by_item_id: { '7201200000' => pig_iron_note },
+    )
+
+    expect(contexts).to be_empty
+  end
+
+  it 'does not select an unrelated definition block because aggregate text contains a single-word query' do
+    aggregate_note = create(
+      :tariff_knowledge_compressed_note,
+      goods_nomenclature_item_id: '7201200000',
+      content: 'compressed note aggregate pig',
+      context_hash: Digest::SHA256.hexdigest('compressed note aggregate pig'),
+      metadata: Sequel.pg_jsonb_wrap(
+        'evidence_blocks' => [
+          {
+            'source_node_key' => 'note_block:customs_tariff_chapter_note:1.31:72:1:d',
+            'source_title' => 'remelting scrap ingots of iron or steel',
+            'source_context' => 'remelting scrap ingots of iron or steel: Parent aggregate text also includes the pig iron definition below it.',
+            'block_type' => 'definition',
+            'term' => 'remelting scrap ingots of iron or steel',
+            'source_type' => 'customs_tariff_chapter_note',
+            'source_id' => '72',
+            'fragment_node_keys' => [],
+          },
+        ],
+      ),
+    )
+
+    contexts = described_class.call(
+      query: 'pig',
+      search_results: [
+        search_result_class.new(
+          goods_nomenclature_item_id: '7201200000',
+          description: 'Non-alloy pig iron',
+          full_description: nil,
+          score: 10,
+        ),
+      ],
+      notes_by_item_id: { '7201200000' => aggregate_note },
+    )
+
+    expect(contexts).to be_empty
+  end
+
+  it 'selects a compound definition block for a single-word head-term query' do
+    pig_iron_note = create(
+      :tariff_knowledge_compressed_note,
+      goods_nomenclature_item_id: '7201200000',
+      content: 'compressed note iron head',
+      context_hash: Digest::SHA256.hexdigest('compressed note iron head'),
+      metadata: Sequel.pg_jsonb_wrap(
+        'evidence_blocks' => [
+          {
+            'source_node_key' => 'note_block:customs_tariff_chapter_note:1.31:72:1:a',
+            'source_title' => 'pig Iron',
+            'source_context' => 'pig Iron: Iron-carbon alloys not usefully malleable.',
+            'block_type' => 'definition',
+            'term' => 'pig iron',
+            'source_type' => 'customs_tariff_chapter_note',
+            'source_id' => '72',
+            'fragment_node_keys' => [],
+          },
+        ],
+      ),
+    )
+
+    contexts = described_class.call(
+      query: 'iron',
+      search_results: [
+        search_result_class.new(
+          goods_nomenclature_item_id: '7201200000',
+          description: 'Non-alloy pig iron',
+          full_description: nil,
+          score: 10,
+        ),
+      ],
+      notes_by_item_id: { '7201200000' => pig_iron_note },
+    )
+
+    expect(contexts.first[:fragments].first[:source]).to eq('pig Iron')
+    expect(contexts.first[:fragments].first[:why_relevant]).to include('exact phrase match iron in term')
+  end
+
   it 'does not emit full compressed note content' do
     contexts = described_class.call(
       query:,
