@@ -2,13 +2,6 @@ module TariffKnowledge
   class SourceGraphLoader
     BATCH_SIZE = 500
 
-    # Tariff notes often use nested list markers such as "a.", "ii.", "ij.",
-    # and "1.". These patterns identify standalone markers and markers stranded
-    # at the end of a split fragment so we can merge them back into the following
-    # legal text. They intentionally anchor to the whole fragment to avoid
-    # treating ordinary prose as a list marker.
-    LIST_MARKER_PATTERN = /\A(?:ij|\(?[a-z]\)?|[ivx]+|\d+)\.\z/i
-    TRAILING_LIST_MARKER_PATTERN = /\A(.+?)\s+((?:ij|\(?[a-z]\)?|[ivx]+|\d+)\.)\z/im
     EXCLUDED_UPDATE_STATUSES = [CustomsTariffUpdate::FAILED].freeze
 
     RangeReference = Data.define(:type, :code)
@@ -206,63 +199,7 @@ module TariffKnowledge
     end
 
     def fragments(content)
-      content
-        .to_s
-        .split(/\n{2,}|(?<=[.!?])\s+/)
-        .map(&:strip)
-        .reject(&:blank?)
-        .then { |split_fragments| merge_orphaned_list_markers(split_fragments) }
-        .then { |split_fragments| merge_dangling_numeric_references(split_fragments) }
-    end
-
-    def merge_orphaned_list_markers(split_fragments)
-      split_fragments.each_with_object([]) do |fragment, merged|
-        fragment = "#{merged.pop} #{fragment}" if list_marker_sequence?(merged.last)
-        match = fragment.match(TRAILING_LIST_MARKER_PATTERN)
-        text, marker = match&.captures
-
-        if match && !list_marker_sequence?(text.strip)
-          merged.push(text.strip, marker)
-        else
-          merged << (match ? "#{text.strip} #{marker}" : fragment)
-        end
-      end
-    end
-
-    def list_marker_sequence?(fragment)
-      fragment.present? && fragment.split.all? { |part| part.match?(LIST_MARKER_PATTERN) }
-    end
-
-    def merge_dangling_numeric_references(split_fragments)
-      split_fragments.each_with_object([]) do |fragment, merged|
-        # Sentence splitting can detach references such as "heading 8481." or
-        # "C." from the text that introduces them. Reattach only when the
-        # previous fragment ends in wording that normally introduces a legal
-        # chapter/heading/rule reference, a digit, or a known year-style number.
-        if merged.last && (
-          numeric_reference_context?(merged.last, fragment) ||
-            (fragment.match?(/\AC\.(?:\s+.+)?\z/i) && merged.last.match?(/\d\z/))
-        )
-          attach_reference_fragment(fragment, merged)
-        else
-          merged << fragment
-        end
-      end
-    end
-
-    def attach_reference_fragment(fragment, merged)
-      reference, remaining_fragment = fragment.match(/\A((?:\d{1,4}|C)\.)\s*(.*)\z/i).captures
-      merged[-1] = "#{merged.last} #{reference}"
-      merged << remaining_fragment.strip if remaining_fragment.present?
-    end
-
-    def numeric_reference_context?(previous_fragment, fragment)
-      fragment.match?(/\A\d{1,4}\.(?:\s+.+)?\z/) &&
-        (
-          previous_fragment.match?(/\b(?:heading|headings|chapter|chapters|rule|rules|and|or|to)\z/i) ||
-            previous_fragment.match?(/\d\z/) ||
-            fragment.match?(/\A(?:19|20)\d{2}\.(?:\s+.+)?\z/)
-        )
+      NoteFragmentSplitter.call(content)
     end
 
     def range_references(content)
