@@ -112,6 +112,31 @@ RSpec.describe TariffKnowledge::NoteStructureParser do
       expect(stainless_steel.content).not_to include('Containing carbon.')
     end
 
+    it 'uses uppercase alpha markers as section scopes for repeated lower alpha lists' do
+      tree = described_class.call(
+        source_type: 'customs_tariff_chapter_note',
+        source_id: '72',
+        source_version: '1.31',
+        fragments: [
+          fragment('0001', '1. Definitions:'),
+          fragment('0002', '(A) General rule'),
+          fragment('0003', 'a. first condition'),
+          fragment('0004', '(B) Exceptions'),
+          fragment('0005', 'a. second condition'),
+        ],
+      )
+
+      general_rule = tree.nodes.find { |node| node.title == 'General rule' }
+      exceptions = tree.nodes.find { |node| node.title == 'Exceptions' }
+      first_condition = general_rule.children.find { |node| node.title == 'first condition' }
+      second_condition = exceptions.children.find { |node| node.title == 'second condition' }
+
+      expect(general_rule).to have_attributes(kind: :alpha_section, path: %w[1 A])
+      expect(exceptions).to have_attributes(kind: :alpha_section, path: %w[1 B])
+      expect(first_condition.path).to eq(%w[1 A a])
+      expect(second_condition.path).to eq(%w[1 B a])
+    end
+
     it 'reports orphan events that cannot attach to a block candidate' do
       tree = described_class.call(
         source_type: 'customs_tariff_chapter_note',

@@ -148,6 +148,54 @@ RSpec.describe TariffKnowledge::NoteBlockParser do
       expect(blocks).to be_empty
     end
 
+    it 'scopes repeated lower alpha blocks below uppercase section markers without emitting the section markers' do
+      fragments = [
+        build_fragment('0001', '1. Definitions:'),
+        build_fragment('0002', '(A) General rule'),
+        build_fragment('0003', 'a. first condition'),
+        build_fragment('0004', '(B) Exceptions'),
+        build_fragment('0005', 'a. second condition'),
+      ]
+
+      blocks = described_class.call(
+        source_type: 'customs_tariff_chapter_note',
+        source_id: '72',
+        source_version: '1.31',
+        fragments:,
+      )
+
+      expect(blocks.map(&:key)).to contain_exactly(
+        'note_block:customs_tariff_chapter_note:1.31:72:1:A:a',
+        'note_block:customs_tariff_chapter_note:1.31:72:1:B:a',
+      )
+      expect(blocks.map { |block| block.metadata['term'] }).to contain_exactly('first condition', 'second condition')
+    end
+
+    it 'adds a repeat scope when the same marker path is reused without an explicit section marker' do
+      fragments = [
+        build_fragment('0001', '5. The expression applies only to:'),
+        build_fragment('0002', 'a. included product'),
+        build_fragment('0003', 'b. included mixture'),
+        build_fragment('0004', 'The heading does not apply to:'),
+        build_fragment('0005', '(a) excluded product'),
+        build_fragment('0006', '(b) excluded mixture'),
+      ]
+
+      blocks = described_class.call(
+        source_type: 'customs_tariff_chapter_note',
+        source_id: '34',
+        source_version: '1.31',
+        fragments:,
+      )
+
+      expect(blocks.map(&:key)).to contain_exactly(
+        'note_block:customs_tariff_chapter_note:1.31:34:5:a',
+        'note_block:customs_tariff_chapter_note:1.31:34:5:b',
+        'note_block:customs_tariff_chapter_note:1.31:34:5:repeat_2:a',
+        'note_block:customs_tariff_chapter_note:1.31:34:5:repeat_2:b',
+      )
+    end
+
     def build_fragment(sequence, content)
       Data.define(:key, :content).new(
         "note_fragment:customs_tariff_chapter_note:1.31:72:#{sequence}",

@@ -3,7 +3,7 @@ module TariffKnowledge
     Tree = Data.define(:nodes, :events, :orphans)
     Node = Data.define(:kind, :marker, :path, :title, :content, :fragment_keys, :children)
 
-    BLOCK_CANDIDATE_KINDS = %i[alpha roman].freeze
+    BLOCK_CANDIDATE_KINDS = %i[alpha_section alpha roman].freeze
 
     def self.call(...) = new(...).call
 
@@ -55,11 +55,12 @@ module TariffKnowledge
     end
 
     def add_block_candidate(event)
-      reset_at_depth(event.depth)
-      path_segments[event.depth] = event.path_segment
+      depth = block_depth(event)
+      reset_at_depth(depth)
+      path_segments[depth] = event.path_segment
 
       block = MutableNode.new(event, path)
-      parent = nearest_active_block(event.depth - 1)
+      parent = nearest_active_block(depth - 1)
 
       if parent
         parent.children.push(block)
@@ -67,7 +68,7 @@ module TariffKnowledge
         root_nodes << block
       end
 
-      active_blocks[event.depth] = block
+      active_blocks[depth] = block
     end
 
     def append_to_active_block(event)
@@ -99,6 +100,17 @@ module TariffKnowledge
         .select { |depth, _| max_depth.nil? || depth <= max_depth }
         .max_by { |depth, _| depth }
         &.last
+    end
+
+    def block_depth(event)
+      case event.kind
+      when :alpha
+        active_blocks[event.depth]&.kind == :alpha_section ? event.depth + 1 : event.depth
+      when :roman
+        active_blocks[event.depth]&.kind == :alpha ? event.depth + 1 : event.depth
+      else
+        event.depth
+      end
     end
 
     class MutableNode

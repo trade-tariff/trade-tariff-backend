@@ -20,7 +20,7 @@ module TariffKnowledge
         fragments:,
       )
 
-      flatten_nodes(tree.nodes).filter_map { |node| block_for(node) }
+      uniquify_duplicate_paths(flatten_nodes(tree.nodes).filter_map { |node| block_for(node) })
     end
 
   private
@@ -32,6 +32,8 @@ module TariffKnowledge
     end
 
     def block_for(node)
+      return unless %i[alpha roman].include?(node.kind)
+
       path = node.path.map(&:to_s)
       return unless definition_path?(path)
 
@@ -60,6 +62,31 @@ module TariffKnowledge
 
     def section_slug(path)
       path.first unless path.first.to_s.match?(/\A\d+\z/)
+    end
+
+    def uniquify_duplicate_paths(blocks)
+      key_counts = Hash.new(0)
+
+      blocks.map do |block|
+        key_counts[block.key] += 1
+        next block if key_counts[block.key] == 1
+
+        with_path_scope(block, "repeat_#{key_counts[block.key]}")
+      end
+    end
+
+    def with_path_scope(block, scope)
+      path = block.metadata.fetch('path')
+      scoped_path = [*path[0...-1], scope, path.last]
+      metadata = block.metadata.merge('path' => scoped_path)
+
+      Block.new(
+        key: "note_block:#{source_type}:#{source_version}:#{source_id}:#{scoped_path.join(':')}",
+        title: block.title,
+        content: block.content,
+        metadata:,
+        fragment_keys: block.fragment_keys,
+      )
     end
 
     def definition_path?(path)
