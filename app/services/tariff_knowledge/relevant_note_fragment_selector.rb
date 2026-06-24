@@ -99,6 +99,7 @@ module TariffKnowledge
         {
           key: evidence_block['source_node_key'],
           source: evidence_block['source_title'],
+          source_ref: source_reference(evidence_block),
           type: evidence_block['block_type'],
           text: source_text.truncate(MAX_FRAGMENT_CHARS, omission: '...'),
           score:,
@@ -119,6 +120,7 @@ module TariffKnowledge
         {
           key: evidence_record['source_node_key'],
           source: evidence_record['source_title'] || fragment_node&.title,
+          source_ref: source_reference(evidence_record),
           type: evidence_record['context_type'],
           text: text.truncate(MAX_FRAGMENT_CHARS, omission: '...'),
           score:,
@@ -245,6 +247,17 @@ module TariffKnowledge
       [SAME_CHAPTER_SCORE, 'same chapter as retrieved candidate']
     end
 
+    def source_reference(evidence_record)
+      case evidence_record['source_type'].to_s
+      when 'customs_tariff_chapter_note'
+        "chapter #{evidence_record['source_id'].to_s.rjust(2, '0')} note"
+      when 'customs_tariff_section_note'
+        "section #{evidence_record['source_id']} note"
+      when 'customs_tariff_general_rule'
+        "GIR #{evidence_record['source_id']}"
+      end
+    end
+
     def range_match?(evidence_record)
       code = evidence_record['range_code'].to_s
       case evidence_record['range_type']
@@ -341,7 +354,7 @@ module TariffKnowledge
     def evidence_corpus
       @evidence_corpus ||= notes_by_item_id.values.flat_map do |note|
         block_evidence_records(note).map { |record| record['source_context'].to_s } +
-          fragment_evidence_records(note).map { |record| [record['source_context'], record['semantic_context']].compact.join(' ') }
+          fragment_evidence_records(note).map { |record| record['source_context'].to_s }
       end
     end
 
