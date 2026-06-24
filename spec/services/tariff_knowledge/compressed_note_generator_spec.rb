@@ -53,6 +53,27 @@ RSpec.describe TariffKnowledge::CompressedNoteGenerator do
         content: 'Heading 0101 covers live horses.',
       )
     end
+    let(:note_block_node) do
+      create(
+        :tariff_knowledge_node,
+        node_type: TariffKnowledge::Node::NOTE_BLOCK,
+        key: 'note_block:customs_tariff_chapter_note:1.31:01:1:a',
+        title: 'pure-bred breeding animals',
+        content: 'pure-bred breeding animals means animals certified as breeding stock.',
+        source_type: 'customs_tariff_chapter_note',
+        source_id: '01',
+        source_version: '1.31',
+        metadata: Sequel.pg_jsonb_wrap(
+          'block_type' => 'definition',
+          'term' => 'pure-bred breeding animals',
+          'path' => %w[1 a],
+        ),
+        goods_nomenclature_sid: nil,
+        goods_nomenclature_item_id: nil,
+        producline_suffix: nil,
+        goods_nomenclature_type: nil,
+      )
+    end
 
     before do
       create(
@@ -123,6 +144,254 @@ RSpec.describe TariffKnowledge::CompressedNoteGenerator do
         TariffKnowledge::Edge::APPLIES_TO,
       )
       expect(note.context_hash).to eq(Digest::SHA256.hexdigest(note.content))
+    end
+
+    it 'stores coherent note block evidence for definition blocks' do
+      create(
+        :tariff_knowledge_edge,
+        source_node: note_block_node,
+        target_node: lead_in_fragment_node,
+        relationship_type: TariffKnowledge::Edge::CONTAINS,
+      )
+      create(
+        :tariff_knowledge_edge,
+        source_node: note_block_node,
+        target_node: fragment_node,
+        relationship_type: TariffKnowledge::Edge::CONTAINS,
+      )
+      create(
+        :tariff_knowledge_edge,
+        source_node: note_block_node,
+        target_node: declarable_node,
+        relationship_type: TariffKnowledge::Edge::APPLIES_TO,
+      )
+
+      described_class.call(goods_nomenclature_sids: [123])
+
+      note = TariffKnowledge::CompressedNote[123]
+      expect(note.metadata.to_hash['evidence_blocks']).to contain_exactly(
+        include(
+          'source_node_key' => 'note_block:customs_tariff_chapter_note:1.31:01:1:a',
+          'source_type' => 'customs_tariff_chapter_note',
+          'source_id' => '01',
+          'source_version' => '1.31',
+          'source_title' => 'pure-bred breeding animals',
+          'source_context' => 'pure-bred breeding animals means animals certified as breeding stock.',
+          'block_type' => 'definition',
+          'term' => 'pure-bred breeding animals',
+          'path' => %w[1 a],
+          'fragment_node_keys' => [
+            'note_fragment:customs_tariff_chapter_note:1.31:01:0001',
+            'note_fragment:customs_tariff_chapter_note:1.31:01:0002',
+          ],
+        ),
+      )
+      expect(note.metadata.to_hash['evidence']).to be_present
+    end
+
+    it 'generates from block-only evidence' do
+      TariffKnowledge::Edge
+        .where(
+          source_node_id: fragment_node.id,
+          target_node_id: declarable_node.id,
+          relationship_type: TariffKnowledge::Edge::APPLIES_TO,
+        )
+        .delete
+      TariffKnowledge::Edge
+        .where(
+          source_node_id: fragment_node.id,
+          target_node_id: range_node.id,
+          relationship_type: TariffKnowledge::Edge::REFERENCES,
+        )
+        .delete
+      create(
+        :tariff_knowledge_edge,
+        source_node: note_block_node,
+        target_node: declarable_node,
+        relationship_type: TariffKnowledge::Edge::APPLIES_TO,
+      )
+
+      described_class.call(goods_nomenclature_sids: [123])
+
+      note = TariffKnowledge::CompressedNote[123]
+      expect(note).to have_attributes(stale: false)
+      expect(note.content).to include('pure-bred breeding animals')
+      expect(note.content).to include('animals certified as breeding stock')
+      expect(note.metadata.to_hash).to include(
+        'source_node_keys' => [],
+        'range_node_keys' => [],
+        'evidence' => [],
+      )
+      expect(note.metadata.to_hash['evidence_blocks'].first['fragment_node_keys']).to eq([])
+    end
+
+    it 'ignores old source version block evidence' do
+      create(
+        :customs_tariff_update,
+        :approved,
+        version: '1.30',
+        validity_start_date: 2.months.ago,
+        validity_end_date: 1.month.ago,
+      )
+      create(
+        :customs_tariff_update,
+        version: '1.31',
+        validity_start_date: 1.day.ago,
+      )
+      old_block_node = create(
+        :tariff_knowledge_node,
+        node_type: TariffKnowledge::Node::NOTE_BLOCK,
+        key: 'note_block:customs_tariff_chapter_note:1.30:01:1:a',
+        title: 'Old definition block',
+        content: 'Old version block evidence should not be used.',
+        source_type: 'customs_tariff_chapter_note',
+        source_id: '01',
+        source_version: '1.30',
+        goods_nomenclature_sid: nil,
+        goods_nomenclature_item_id: nil,
+        producline_suffix: nil,
+        goods_nomenclature_type: nil,
+      )
+      create(
+        :tariff_knowledge_edge,
+        source_node: old_block_node,
+        target_node: declarable_node,
+        relationship_type: TariffKnowledge::Edge::APPLIES_TO,
+      )
+      create(
+        :tariff_knowledge_edge,
+        source_node: note_block_node,
+        target_node: declarable_node,
+        relationship_type: TariffKnowledge::Edge::APPLIES_TO,
+      )
+
+      described_class.call(goods_nomenclature_sids: [123])
+
+      expect(TariffKnowledge::CompressedNote[123].metadata.to_hash['evidence_blocks'])
+        .to contain_exactly(include('source_node_key' => 'note_block:customs_tariff_chapter_note:1.31:01:1:a'))
+    end
+
+    it 'ignores old source version fragments contained by current block evidence' do
+      create(
+        :customs_tariff_update,
+        :approved,
+        version: '1.30',
+        validity_start_date: 2.months.ago,
+        validity_end_date: 1.month.ago,
+      )
+      create(
+        :customs_tariff_update,
+        version: '1.31',
+        validity_start_date: 1.day.ago,
+      )
+      old_fragment_node = create(
+        :tariff_knowledge_node,
+        :note_fragment,
+        key: 'note_fragment:customs_tariff_chapter_note:1.30:01:0001',
+        title: 'Old Chapter 01 notes fragment 1',
+        content: 'Old version contained evidence should not be used.',
+        source_type: 'customs_tariff_chapter_note',
+        source_id: '01',
+        source_version: '1.30',
+      )
+      create(
+        :tariff_knowledge_edge,
+        source_node: note_block_node,
+        target_node: old_fragment_node,
+        relationship_type: TariffKnowledge::Edge::CONTAINS,
+      )
+      create(
+        :tariff_knowledge_edge,
+        source_node: note_block_node,
+        target_node: fragment_node,
+        relationship_type: TariffKnowledge::Edge::CONTAINS,
+      )
+      create(
+        :tariff_knowledge_edge,
+        source_node: note_block_node,
+        target_node: declarable_node,
+        relationship_type: TariffKnowledge::Edge::APPLIES_TO,
+      )
+
+      described_class.call(goods_nomenclature_sids: [123])
+
+      evidence_block = TariffKnowledge::CompressedNote[123].metadata.to_hash['evidence_blocks'].first
+      expect(evidence_block['fragment_node_keys']).to eq(['note_fragment:customs_tariff_chapter_note:1.31:01:0002'])
+    end
+
+    it 'preloads block fragment evidence for the requested goods nomenclatures' do
+      TariffKnowledge::Edge
+        .where(
+          source_node_id: fragment_node.id,
+          target_node_id: declarable_node.id,
+          relationship_type: TariffKnowledge::Edge::APPLIES_TO,
+        )
+        .delete
+      TariffKnowledge::Edge
+        .where(
+          source_node_id: fragment_node.id,
+          target_node_id: range_node.id,
+          relationship_type: TariffKnowledge::Edge::REFERENCES,
+        )
+        .delete
+      TariffKnowledge::Edge
+        .where(
+          source_node_id: range_node.id,
+          target_node_id: declarable_node.id,
+          relationship_type: TariffKnowledge::Edge::EXPANDS_TO,
+        )
+        .delete
+      second_declarable_node = create(
+        :tariff_knowledge_node,
+        key: 'goods_nomenclature:456',
+        goods_nomenclature_sid: 456,
+        goods_nomenclature_item_id: '0101290000',
+      )
+      third_declarable_node = create(
+        :tariff_knowledge_node,
+        key: 'goods_nomenclature:789',
+        goods_nomenclature_sid: 789,
+        goods_nomenclature_item_id: '0101300000',
+      )
+      block_nodes = [declarable_node, second_declarable_node, third_declarable_node].map.with_index do |node, index|
+        block_node = create(
+          :tariff_knowledge_node,
+          node_type: TariffKnowledge::Node::NOTE_BLOCK,
+          key: "note_block:customs_tariff_chapter_note:1.31:01:#{index + 1}:a",
+          title: "Definition block #{index + 1}",
+          content: "Block #{index + 1} context.",
+          source_type: 'customs_tariff_chapter_note',
+          source_id: '01',
+          source_version: '1.31',
+          goods_nomenclature_sid: nil,
+          goods_nomenclature_item_id: nil,
+          producline_suffix: nil,
+          goods_nomenclature_type: nil,
+        )
+        create(
+          :tariff_knowledge_edge,
+          source_node: block_node,
+          target_node: fragment_node,
+          relationship_type: TariffKnowledge::Edge::CONTAINS,
+        )
+        create(
+          :tariff_knowledge_edge,
+          source_node: block_node,
+          target_node: node,
+          relationship_type: TariffKnowledge::Edge::APPLIES_TO,
+        )
+        block_node
+      end
+
+      queries = sql_queries do
+        described_class.call(goods_nomenclature_sids: [123, 456, 789])
+      end
+
+      contains_edge_queries = queries.grep(/FROM "tariff_knowledge_edges".*"relationship_type" = 'contains'/)
+      expect(contains_edge_queries.size).to eq(1)
+      expect(block_nodes.map(&:key)).to match_array(
+        [123, 456, 789].map { |sid| TariffKnowledge::CompressedNote[sid].metadata.to_hash.dig('evidence_blocks', 0, 'source_node_key') },
+      )
     end
 
     it 'includes fragments that directly apply to the declarable without an explicit range reference' do
