@@ -374,8 +374,8 @@ module TariffKnowledge
         @stop_words = stop_words
         @query_tokens = query_tokens.to_a
         @document_tokens = documents.map { |document| tokenize(document) }.reject(&:empty?)
-        @average_document_length = average_document_length
-        @document_frequencies = document_frequencies
+        @average_document_length = calculate_average_document_length
+        @document_frequencies = calculate_document_frequencies
       end
 
       def score(document)
@@ -392,17 +392,17 @@ module TariffKnowledge
 
     private
 
-      attr_reader :query_tokens, :document_tokens, :stop_words
+      attr_reader :query_tokens, :document_tokens, :average_document_length, :document_frequencies, :stop_words
 
       def tokenize(text) = text.to_s.downcase.scan(/[a-z0-9]{3,}/).reject { |token| stop_words.include?(token) }
 
-      def average_document_length
+      def calculate_average_document_length
         return 0.0 if document_tokens.empty?
 
         document_tokens.sum(&:length).fdiv(document_tokens.length)
       end
 
-      def document_frequencies
+      def calculate_document_frequencies
         document_tokens.each_with_object(Hash.new(0)) do |tokens, frequencies|
           tokens.uniq.each { |token| frequencies[token] += 1 }
         end
