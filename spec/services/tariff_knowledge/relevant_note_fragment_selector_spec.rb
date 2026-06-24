@@ -77,6 +77,66 @@ RSpec.describe TariffKnowledge::RelevantNoteFragmentSelector do
     expect(fragment_texts).not_to include(a_string_including('candles'))
   end
 
+  it 'prefers exact query definition blocks over generic chapter exclusions' do
+    pig_iron_note = create(
+      :tariff_knowledge_compressed_note,
+      goods_nomenclature_item_id: '7201200000',
+      content: 'compressed note 7201200000',
+      context_hash: Digest::SHA256.hexdigest('compressed note 7201200000'),
+      metadata: Sequel.pg_jsonb_wrap(
+        'evidence_blocks' => [
+          {
+            'source_node_key' => 'note_block:customs_tariff_chapter_note:1.31:72:1:a',
+            'source_title' => 'pig Iron',
+            'source_context' => 'pig Iron: Iron-carbon alloys not usefully malleable, containing more than 2 % carbon; not more than 10 % chromium; not more than 6 % manganese.',
+            'block_type' => 'definition',
+            'term' => 'pig iron',
+            'path' => %w[1 a],
+            'source_type' => 'customs_tariff_chapter_note',
+            'source_id' => '72',
+            'source_version' => '1.31',
+            'fragment_node_keys' => [],
+          },
+        ],
+        'evidence' => [
+          evidence_for(
+            'note_fragment:customs_tariff_chapter_note:1.31:72:0069',
+            'Chapter 72 does not include products of heading 7301 or 7302.',
+            'exclusion',
+            source_id: '72',
+          ),
+        ],
+      ),
+    )
+
+    contexts = described_class.call(
+      query: 'pig iron',
+      search_results: [
+        search_result_class.new(
+          goods_nomenclature_item_id: '7201200000',
+          description: 'Non-alloy pig iron in pigs, blocks or other primary forms',
+          full_description: nil,
+          score: 10,
+        ),
+      ],
+      notes_by_item_id: { '7201200000' => pig_iron_note },
+    )
+
+    first_fragment = contexts.first[:fragments].first
+    expect(first_fragment[:text]).to include('pig Iron')
+    expect(first_fragment[:text]).to include('not more than 10 % chromium')
+    expect(first_fragment[:text]).not_to eq('Chapter 72 does not include products of heading 7301 or 7302.')
+    expect(first_fragment[:why_relevant]).to include('exact phrase match pig iron')
+    expect(first_fragment[:why_relevant].scan(/exact phrase match pig iron/).size).to eq(1)
+    expect(first_fragment[:why_relevant]).to include('definition block')
+    expect(first_fragment[:score]).to eq(
+      described_class::EXACT_PHRASE_SCORE +
+        described_class::DEFINITION_BLOCK_SCORE +
+        described_class::QUERY_TERM_SCORE * 2 +
+        described_class::SAME_CHAPTER_SCORE,
+    )
+  end
+
   it 'does not emit full compressed note content' do
     contexts = described_class.call(
       query:,
@@ -94,6 +154,46 @@ RSpec.describe TariffKnowledge::RelevantNoteFragmentSelector do
         query:,
         search_results:,
         notes_by_item_id: { '9506911000' => note },
+      )
+    end
+
+    expect(queries.grep(/FROM "tariff_knowledge_nodes"/)).to be_empty
+  end
+
+  it 'does not load fragment nodes for block evidence with metadata context and title' do
+    block_only_note = create(
+      :tariff_knowledge_compressed_note,
+      goods_nomenclature_item_id: '7201200000',
+      content: 'compressed note block only',
+      context_hash: Digest::SHA256.hexdigest('compressed note block only'),
+      metadata: Sequel.pg_jsonb_wrap(
+        'evidence_blocks' => [
+          {
+            'source_node_key' => 'note_block:customs_tariff_chapter_note:1.31:72:1:a',
+            'source_title' => 'pig Iron',
+            'source_context' => 'pig Iron: Iron-carbon alloys not usefully malleable.',
+            'block_type' => 'definition',
+            'term' => 'pig iron',
+            'source_type' => 'customs_tariff_chapter_note',
+            'source_id' => '72',
+            'fragment_node_keys' => [],
+          },
+        ],
+      ),
+    )
+
+    queries = sql_queries do
+      described_class.call(
+        query: 'pig iron',
+        search_results: [
+          search_result_class.new(
+            goods_nomenclature_item_id: '7201200000',
+            description: 'Non-alloy pig iron in pigs, blocks or other primary forms',
+            full_description: nil,
+            score: 10,
+          ),
+        ],
+        notes_by_item_id: { '7201200000' => block_only_note },
       )
     end
 
@@ -199,11 +299,11 @@ RSpec.describe TariffKnowledge::RelevantNoteFragmentSelector do
     expect(contexts).to be_empty
   end
 
-  def evidence_for(key, text, context_type, range_type: nil, range_code: nil, source_type: 'customs_tariff_chapter_note')
+  def evidence_for(key, text, context_type, range_type: nil, range_code: nil, source_type: 'customs_tariff_chapter_note', source_id: '95')
     {
       'source_node_key' => key,
       'source_type' => source_type,
-      'source_id' => '95',
+      'source_id' => source_id,
       'source_title' => key.split(':').last,
       'source_context' => text,
       'context_type' => context_type,

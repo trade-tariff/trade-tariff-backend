@@ -23,6 +23,8 @@ module TariffKnowledge
     QUERY_TERM_SCORE = 2
     MAX_QUERY_TERM_SCORE = 10
     SAME_CHAPTER_SCORE = 1
+    EXACT_PHRASE_SCORE = 14
+    DEFINITION_BLOCK_SCORE = 4
     MAX_REASON_CODES = 4
     MAX_REASON_TERMS = 5
 
@@ -81,6 +83,27 @@ module TariffKnowledge
     end
 
     def scored_fragments(note)
+      scored_block_records(note) + scored_fragment_records(note)
+    end
+
+    def scored_block_records(note)
+      block_evidence_records(note).filter_map do |evidence_block|
+        source_text = evidence_block['source_context'].to_s.squish
+        next if source_text.blank?
+
+        score, reasons = score_block(evidence_block, source_text)
+        {
+          key: evidence_block['source_node_key'],
+          source: evidence_block['source_title'],
+          type: evidence_block['block_type'],
+          text: source_text.truncate(MAX_FRAGMENT_CHARS, omission: '...'),
+          score:,
+          why_relevant: reasons.join('; '),
+        }
+      end
+    end
+
+    def scored_fragment_records(note)
       # Each record is compressed-note metadata pointing to a source fragment and
       # explaining the relationship that made that fragment evidence for a code.
       fragment_evidence_records(note).filter_map do |evidence_record|
@@ -129,6 +152,28 @@ module TariffKnowledge
 
       SCORING_RULES.each do |rule|
         rule_result = instance_exec(evidence_record, text, &rule)
+        score, reasons = add_score(score, reasons, *rule_result) if rule_result
+      end
+
+      [score, reasons]
+    end
+
+    def score_block(evidence_block, text)
+      score = 0
+      reasons = []
+
+      if exact_query_phrase?(evidence_block['term'])
+        score, reasons = add_score(score, reasons, EXACT_PHRASE_SCORE, "exact phrase match #{query_phrase} in term")
+      elsif exact_query_phrase?(text)
+        score, reasons = add_score(score, reasons, EXACT_PHRASE_SCORE, "exact phrase match #{query_phrase}")
+      end
+
+      if evidence_block['block_type'] == 'definition'
+        score, reasons = add_score(score, reasons, DEFINITION_BLOCK_SCORE, 'definition block')
+      end
+
+      SCORING_RULES.each do |rule|
+        rule_result = instance_exec(evidence_block, text, &rule)
         score, reasons = add_score(score, reasons, *rule_result) if rule_result
       end
 
@@ -197,6 +242,8 @@ module TariffKnowledge
 
     def fragment_evidence_records(note) = Array(note.metadata.to_h['evidence'])
 
+    def block_evidence_records(note) = Array(note.metadata.to_h['evidence_blocks'])
+
     def fallback_fragment_keys(note)
       fragment_evidence_records(note).filter_map do |evidence_record|
         evidence_record['source_node_key'] if evidence_record['source_context'].blank? || evidence_record['source_title'].blank?
@@ -204,6 +251,15 @@ module TariffKnowledge
     end
 
     def relevance_tokens = @relevance_tokens ||= tokenize(query)
+
+    def query_phrase = @query_phrase ||= query.to_s.squish.downcase
+
+    def exact_query_phrase?(text)
+      phrase = query_phrase
+      return false if phrase.blank?
+
+      text.to_s.squish.downcase.include?(phrase)
+    end
 
     # Keep token matching intentionally coarse: legal fragments and trader
     # queries use different grammar, so this only rewards shared meaningful
