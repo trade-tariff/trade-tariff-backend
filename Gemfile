@@ -76,6 +76,7 @@ end
 group :test do
   gem 'brakeman'
   gem 'database_cleaner-sequel'
+  gem 'debride', require: false
   gem 'forgery'
   gem 'json_expressions'
   gem 'parallel_tests'

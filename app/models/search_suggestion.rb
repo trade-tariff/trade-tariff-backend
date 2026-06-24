@@ -113,12 +113,6 @@ class SearchSuggestion < Sequel::Model
         .limit(2)
     end
 
-    def distinct_values(query)
-      ilike_filter = Sequel.ilike(:value, "%#{query}%")
-
-      text_type.where(ilike_filter).distinct(:value)
-    end
-
     def goods_nomenclature_type
       where(type: 'goods_nomenclature')
     end
@@ -153,15 +147,6 @@ class SearchSuggestion < Sequel::Model
       exclude(Sequel.function(:substring, :value, 1, 2) => excluded_chapters)
     end
 
-    def text_type
-      where(
-        type: [
-          TYPE_SEARCH_REFERENCE,
-          TYPE_FULL_CHEMICAL_NAME,
-        ],
-      )
-    end
-
     def search_reference_type
       where(type: [TYPE_SEARCH_REFERENCE])
     end
@@ -182,24 +167,6 @@ class SearchSuggestion < Sequel::Model
 
     def with_score(query)
       select_append(Sequel.function(:similarity, :value, query).as(:score))
-    end
-
-    def duplicates_by(field)
-      most_recent_records = most_recent_by(field)
-
-      goods_nomenclature_type
-        .select(:search_suggestions__id, :search_suggestions__value)
-        .left_join(
-          most_recent_records.as(:recent_records),
-          field => field,
-        )
-        .where { Sequel[:search_suggestions][:created_at] < Sequel[:recent_records][:latest_created_at] }
-    end
-
-    def most_recent_by(field)
-      goods_nomenclature_type
-        .select_group(field)
-        .select_append { max(:created_at).as(:latest_created_at) }
     end
   end
 

@@ -1,5 +1,4 @@
 class ExchangeRateFile < Sequel::Model
-  APPLICABLE_TYPES = %w[monthly_csv monthly_xml spot_csv average_csv].freeze
   OBJECT_KEY_PREFIX = 'data/exchange_rates'.freeze
 
   include ContentAddressableId
@@ -25,10 +24,6 @@ class ExchangeRateFile < Sequel::Model
   end
 
   dataset_module do
-    def applicable_types
-      where(type: APPLICABLE_TYPES)
-    end
-
     def by_year(period_year)
       where(period_year:)
     end

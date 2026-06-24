@@ -30,10 +30,6 @@ class GoodsNomenclatureLabel < Sequel::Model
       where(stale: true)
     end
 
-    def needing_relabel
-      where(stale: true, manually_edited: false)
-    end
-
     def admin_listing(include_expired: false)
       lbl = Sequel[:goods_nomenclature_labels]
 
@@ -143,11 +139,6 @@ class GoodsNomenclatureLabel < Sequel::Model
       ).tap do |label|
         label.context_hash = Digest::SHA256.hexdigest(description_text.to_s)
       end
-    end
-
-    def goods_nomenclature_label_total_pages
-      page_size = AdminConfiguration.integer_value('label_page_size')
-      (goods_nomenclatures_dataset.count / page_size.to_f).ceil
     end
 
     def goods_nomenclatures_dataset

@@ -1,4 +1,10 @@
 ---
+default_install_hook_types:
+  - pre-commit
+  - pre-push
+default_stages:
+  - pre-commit
+
 repos:
   - repo: https://github.com/antonbabenko/pre-commit-terraform
     rev: v1.105.0
@@ -46,3 +52,8 @@ repos:
     rev: v1.7.12
     hooks:
       - id: actionlint-docker
+
+  - repo: https://github.com/trade-tariff/trade-tariff-tools
+    rev: main
+    hooks:
+      - id: debride

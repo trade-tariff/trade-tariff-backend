@@ -190,17 +190,6 @@ RSpec.describe SearchSuggestion do
     it { is_expected.to include("WHERE (\"type\" = 'goods_nomenclature')") }
   end
 
-  describe '.text_type' do
-    subject(:text_type) { described_class.text_type.select_map(:value) }
-
-    before do
-      create(:search_suggestion, :search_reference, value: 'gold ore')
-      create(:search_suggestion, :full_chemical_name, value: 'ore')
-    end
-
-    it { is_expected.to eq(['gold ore', 'ore']) }
-  end
-
   describe '.numeric_type' do
     subject(:numeric_type) { described_class.numeric_type.select_map(:value) }
 

@@ -138,7 +138,8 @@
         "flake-utils": "flake-utils",
         "nixpkgs": "nixpkgs",
         "nixpkgs-ruby": "nixpkgs-ruby",
-        "pre-commit-hooks": "pre-commit-hooks"
+        "pre-commit-hooks": "pre-commit-hooks",
+        "trade-tariff-tools": "trade-tariff-tools"
       }
     },
     "systems": {
@@ -153,6 +154,23 @@
       "original": {
         "owner": "nix-systems",
         "repo": "default",
+        "type": "github"
+      }
+    },
+    "trade-tariff-tools": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1782213097,
+        "narHash": "sha256-uQyF1hojMxmw1yY1ReMEebbKyAnjKSdG/Zkx5j3MDSs=",
+        "owner": "trade-tariff",
+        "repo": "trade-tariff-tools",
+        "rev": "1cf7af52c35d7a3425c424731320423f4fea1486",
+        "type": "github"
+      },
+      "original": {
+        "owner": "trade-tariff",
+        "ref": "main",
+        "repo": "trade-tariff-tools",
         "type": "github"
       }
     }
