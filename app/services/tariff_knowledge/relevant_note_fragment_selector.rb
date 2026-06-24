@@ -26,6 +26,8 @@ module TariffKnowledge
     EXACT_PHRASE_SCORE = 14
     EXACT_TERM_SCORE = 4
     DEFINITION_BLOCK_SCORE = 4
+    BM25_SCORE_MULTIPLIER = 2
+    MAX_BM25_SCORE = 8
     MAX_REASON_CODES = 4
     MAX_REASON_TERMS = 5
 
@@ -36,6 +38,7 @@ module TariffKnowledge
       ->(evidence_record, _text) { range_match_rule(evidence_record) },
       ->(_evidence, text) { mentioned_range_rule(text) },
       ->(_evidence, text) { query_term_rule(text) },
+      ->(_evidence, text) { bm25_rule(text) },
       ->(evidence_record, _text) { same_chapter_rule(evidence_record) },
     ].freeze
     STOP_WORDS = %w[above an and are article articles as at be by chapter chapters code codes for from goods has have heading headings in into is it its kind made nomenclature of on or other purposes than that the this to use used with without].to_set.freeze
@@ -183,6 +186,7 @@ module TariffKnowledge
         range_match_rule(evidence_block),
         mentioned_range_rule(text),
         query_term_rule(block_query_text(text, suppressed_single_word_match)),
+        bm25_rule(block_query_text(text, suppressed_single_word_match)),
         same_chapter_rule(evidence_block),
       ].compact.each { |points, reason| score, reasons = add_score(score, reasons, points, reason) }
 
@@ -216,6 +220,21 @@ module TariffKnowledge
       [
         [overlap.size * QUERY_TERM_SCORE, MAX_QUERY_TERM_SCORE].min,
         "matches query terms #{overlap.first(MAX_REASON_TERMS).join(', ')}",
+      ]
+    end
+
+    def bm25_rule(text)
+      return if bm25_query_tokens.empty?
+
+      matched_terms = bm25_query_tokens.intersection(tokenize(text)).to_a
+      return if matched_terms.size < 2
+
+      bm25_score = bm25_scorer.score(text)
+      return unless bm25_score.positive?
+
+      [
+        [[(bm25_score * BM25_SCORE_MULTIPLIER).round, 1].max, MAX_BM25_SCORE].min,
+        "BM25 lexical match #{matched_terms.first(MAX_REASON_TERMS).join(', ')}",
       ]
     end
 
@@ -260,6 +279,8 @@ module TariffKnowledge
     end
 
     def relevance_tokens = @relevance_tokens ||= tokenize(query)
+
+    def bm25_query_tokens = @bm25_query_tokens ||= relevance_tokens
 
     def query_phrase = @query_phrase ||= query.to_s.squish.downcase
 
@@ -309,6 +330,21 @@ module TariffKnowledge
 
     def ordered_tokens(text) = text.to_s.downcase.scan(/[a-z0-9]{3,}/).reject { |token| STOP_WORDS.include?(token) }
 
+    def bm25_scorer
+      @bm25_scorer ||= Bm25Scorer.new(
+        documents: evidence_corpus,
+        query_tokens: bm25_query_tokens,
+        stop_words: STOP_WORDS,
+      )
+    end
+
+    def evidence_corpus
+      @evidence_corpus ||= notes_by_item_id.values.flat_map do |note|
+        block_evidence_records(note).map { |record| record['source_context'].to_s } +
+          fragment_evidence_records(note).map { |record| [record['source_context'], record['semantic_context']].compact.join(' ') }
+      end
+    end
+
     def candidate_chapters = @candidate_chapters ||= candidate_item_ids.map { |item_id| item_id.first(2) }.uniq
 
     def candidate_headings = @candidate_headings ||= candidate_item_ids.map { |item_id| item_id.first(4) }.uniq
@@ -316,5 +352,60 @@ module TariffKnowledge
     def candidate_ranges = @candidate_ranges ||= (candidate_chapters + candidate_headings).uniq
 
     def candidate_item_ids = @candidate_item_ids ||= search_results.map(&:goods_nomenclature_item_id).compact_blank.uniq
+
+    class Bm25Scorer
+      K1 = 1.2
+      B = 0.75
+
+      def initialize(documents:, query_tokens:, stop_words:)
+        @stop_words = stop_words
+        @query_tokens = query_tokens.to_a
+        @document_tokens = documents.map { |document| tokenize(document) }.reject(&:empty?)
+        @average_document_length = average_document_length
+        @document_frequencies = document_frequencies
+      end
+
+      def score(document)
+        tokens = tokenize(document)
+        return 0.0 if tokens.empty? || query_tokens.empty? || document_tokens.empty?
+
+        term_frequencies = tokens.tally
+        query_tokens.sum do |term|
+          next 0.0 unless term_frequencies[term]
+
+          idf(term) * term_weight(term_frequencies[term], tokens.length)
+        end
+      end
+
+    private
+
+      attr_reader :query_tokens, :document_tokens, :stop_words
+
+      def tokenize(text) = text.to_s.downcase.scan(/[a-z0-9]{3,}/).reject { |token| stop_words.include?(token) }
+
+      def average_document_length
+        return 0.0 if document_tokens.empty?
+
+        document_tokens.sum(&:length).fdiv(document_tokens.length)
+      end
+
+      def document_frequencies
+        document_tokens.each_with_object(Hash.new(0)) do |tokens, frequencies|
+          tokens.uniq.each { |token| frequencies[token] += 1 }
+        end
+      end
+
+      def idf(term)
+        document_count = document_tokens.length
+        frequency = document_frequencies.fetch(term, 0)
+
+        Math.log(1 + ((document_count - frequency + 0.5) / (frequency + 0.5)))
+      end
+
+      def term_weight(term_frequency, document_length)
+        denominator = term_frequency + K1 * (1 - B + (B * document_length / average_document_length))
+        (term_frequency * (K1 + 1)) / denominator
+      end
+    end
   end
 end

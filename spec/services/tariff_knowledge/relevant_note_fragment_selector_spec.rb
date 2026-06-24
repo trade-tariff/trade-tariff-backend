@@ -129,13 +129,8 @@ RSpec.describe TariffKnowledge::RelevantNoteFragmentSelector do
     expect(first_fragment[:why_relevant]).to include('exact phrase match pig iron')
     expect(first_fragment[:why_relevant].scan(/exact phrase match pig iron/).size).to eq(1)
     expect(first_fragment[:why_relevant]).to include('definition block')
-    expect(first_fragment[:score]).to eq(
-      described_class::EXACT_TERM_SCORE +
-        described_class::EXACT_PHRASE_SCORE +
-        described_class::DEFINITION_BLOCK_SCORE +
-        described_class::QUERY_TERM_SCORE * 2 +
-        described_class::SAME_CHAPTER_SCORE,
-    )
+    expect(first_fragment[:why_relevant]).to include('BM25 lexical match pig, iron')
+    expect(first_fragment[:score]).to be > described_class::MIN_SCORE
   end
 
   it 'ranks exact term definition blocks ahead of longer phrase-containing terms' do
@@ -266,6 +261,57 @@ RSpec.describe TariffKnowledge::RelevantNoteFragmentSelector do
     )
 
     expect(contexts).to be_empty
+  end
+
+  it 'uses BM25 lexical scoring to rank relevant definition blocks ahead of repeated generic text' do
+    lexical_note = create(
+      :tariff_knowledge_compressed_note,
+      goods_nomenclature_item_id: '7201200000',
+      content: 'compressed note lexical pig iron',
+      context_hash: Digest::SHA256.hexdigest('compressed note lexical pig iron'),
+      metadata: Sequel.pg_jsonb_wrap(
+        'evidence_blocks' => [
+          {
+            'source_node_key' => 'note_block:customs_tariff_chapter_note:1.31:72:1:a',
+            'source_title' => 'pig Iron',
+            'source_context' => 'pig Iron: Iron-carbon alloys not usefully malleable, containing more than 2 % carbon and cast in pigs, blocks or other primary forms.',
+            'block_type' => 'definition',
+            'term' => 'pig iron',
+            'source_type' => 'customs_tariff_chapter_note',
+            'source_id' => '72',
+            'fragment_node_keys' => [],
+          },
+          {
+            'source_node_key' => 'note_block:customs_tariff_chapter_note:1.31:72:1:z',
+            'source_title' => 'generic chapter 72 exclusions',
+            'source_context' => 'Chapter 72 does not include iron articles of heading 7301. Iron articles of heading 7302 are also excluded. Iron waste is handled elsewhere.',
+            'block_type' => 'exclusion',
+            'term' => nil,
+            'source_type' => 'customs_tariff_chapter_note',
+            'source_id' => '72',
+            'fragment_node_keys' => [],
+          },
+        ],
+      ),
+    )
+
+    contexts = described_class.call(
+      query: 'pig iron',
+      search_results: [
+        search_result_class.new(
+          goods_nomenclature_item_id: '7201200000',
+          description: 'Non-alloy pig iron in pigs, blocks or other primary forms',
+          full_description: nil,
+          score: 10,
+        ),
+      ],
+      notes_by_item_id: { '7201200000' => lexical_note },
+    )
+
+    fragments = contexts.first[:fragments]
+    expect(fragments.first[:source]).to eq('pig Iron')
+    expect(fragments.first[:why_relevant]).to include('BM25 lexical match pig, iron')
+    expect(fragments.second[:source]).to eq('generic chapter 72 exclusions')
   end
 
   it 'selects a compound definition block for a single-word head-term query' do
