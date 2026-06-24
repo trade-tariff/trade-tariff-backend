@@ -167,9 +167,11 @@ module TariffKnowledge
         score, reasons = add_score(score, reasons, EXACT_TERM_SCORE, "exact term match #{query_phrase}")
       end
 
-      if exact_query_phrase?(evidence_block['term'])
+      suppressed_single_word_match = suppress_single_word_block_match?(evidence_block['term'])
+
+      if exact_query_phrase?(evidence_block['term']) && block_term_phrase_match?(evidence_block['term'])
         score, reasons = add_score(score, reasons, EXACT_PHRASE_SCORE, "exact phrase match #{query_phrase} in term")
-      elsif exact_query_phrase?(text)
+      elsif !suppressed_single_word_match && exact_query_phrase?(text)
         score, reasons = add_score(score, reasons, EXACT_PHRASE_SCORE, "exact phrase match #{query_phrase}")
       end
 
@@ -177,10 +179,12 @@ module TariffKnowledge
         score, reasons = add_score(score, reasons, DEFINITION_BLOCK_SCORE, 'definition block')
       end
 
-      SCORING_RULES.each do |rule|
-        rule_result = instance_exec(evidence_block, text, &rule)
-        score, reasons = add_score(score, reasons, *rule_result) if rule_result
-      end
+      [
+        range_match_rule(evidence_block),
+        mentioned_range_rule(text),
+        query_term_rule(block_query_text(text, suppressed_single_word_match)),
+        same_chapter_rule(evidence_block),
+      ].compact.each { |points, reason| score, reasons = add_score(score, reasons, points, reason) }
 
       [score, reasons]
     end
@@ -270,10 +274,40 @@ module TariffKnowledge
       text.to_s.squish.downcase.include?(phrase)
     end
 
+    def block_term_phrase_match?(term)
+      return true unless single_relevance_token?
+
+      exact_query_term?(term) || head_term_match?(term)
+    end
+
+    def block_query_text(text, suppressed_modifier_match)
+      return text unless suppressed_modifier_match
+
+      ''
+    end
+
+    def suppress_single_word_block_match?(term)
+      single_relevance_token? && !block_term_phrase_match?(term)
+    end
+
+    def single_relevance_token?
+      relevance_tokens.one?
+    end
+
+    def single_relevance_token
+      relevance_tokens.first
+    end
+
+    def head_term_match?(term)
+      ordered_tokens(term).last == single_relevance_token
+    end
+
     # Keep token matching intentionally coarse: legal fragments and trader
     # queries use different grammar, so this only rewards shared meaningful
     # words/numbers after dropping common tariff/search glue words.
     def tokenize(text) = text.to_s.downcase.scan(/[a-z0-9]{3,}/).reject { |token| STOP_WORDS.include?(token) }.to_set
+
+    def ordered_tokens(text) = text.to_s.downcase.scan(/[a-z0-9]{3,}/).reject { |token| STOP_WORDS.include?(token) }
 
     def candidate_chapters = @candidate_chapters ||= candidate_item_ids.map { |item_id| item_id.first(2) }.uniq
 
