@@ -10,10 +10,18 @@ module TariffKnowledge
 
     def call
       nodes = declarable_nodes
-      evidence_by_node_id = evidence_by_declarable_node_id(nodes)
+      apply_edges = apply_edges_for_declarable_nodes(nodes)
+      evidence_by_node_id = evidence_by_declarable_node_id(nodes, apply_edges)
+      block_evidence_by_node_id = block_evidence_by_declarable_node_id(nodes, apply_edges)
+      contained_fragment_key_lookup = contained_fragment_keys_by_block_node_id(block_evidence_by_node_id.values.flatten)
 
       nodes.filter_map do |declarable_node|
-        generate_for(declarable_node, evidence_by_node_id.fetch(declarable_node.id, []))
+        generate_for(
+          declarable_node,
+          evidence_by_node_id.fetch(declarable_node.id, []),
+          block_evidence_by_node_id.fetch(declarable_node.id, []),
+          contained_fragment_key_lookup,
+        )
       end
     end
 
@@ -27,16 +35,16 @@ module TariffKnowledge
           .all
     end
 
-    def generate_for(declarable_node, evidence)
-      return mark_existing_note_stale(declarable_node) if evidence.empty?
+    def generate_for(declarable_node, evidence, block_evidence, contained_fragment_keys_by_block_node_id)
+      return mark_existing_note_stale(declarable_node) if evidence.empty? && block_evidence.empty?
 
-      content = content_for(declarable_node, evidence)
+      content = evidence.any? ? content_for(declarable_node, evidence) : block_content_for(block_evidence)
       attributes = {
         goods_nomenclature_item_id: declarable_node.goods_nomenclature_item_id,
         producline_suffix: declarable_node.producline_suffix,
         goods_nomenclature_type: declarable_node.goods_nomenclature_type,
         content:,
-        metadata: Sequel.pg_jsonb(metadata_for(evidence)),
+        metadata: Sequel.pg_jsonb(metadata_for(evidence, block_evidence, contained_fragment_keys_by_block_node_id)),
         context_hash: Digest::SHA256.hexdigest(content),
         generated_at: Time.zone.now,
         # Pipeline generation resets lifecycle flags. Reviewers can later mark
@@ -51,7 +59,14 @@ module TariffKnowledge
       upsert_note(declarable_node, attributes)
     end
 
-    def evidence_by_declarable_node_id(declarable_nodes)
+    def apply_edges_for_declarable_nodes(declarable_nodes)
+      declarable_node_ids = declarable_nodes.map(&:id)
+      return [] if declarable_node_ids.empty?
+
+      Edge.by_relationship(Edge::APPLIES_TO).where(target_node_id: declarable_node_ids).all
+    end
+
+    def evidence_by_declarable_node_id(declarable_nodes, apply_edges)
       declarable_node_ids = declarable_nodes.map(&:id)
       return {} if declarable_node_ids.empty?
 
@@ -65,7 +80,6 @@ module TariffKnowledge
       expansion_edges = Edge.by_relationship(Edge::EXPANDS_TO).where(target_node_id: declarable_node_ids).all
       range_nodes = nodes_by_id(expansion_edges.map(&:source_node_id), Node.where(node_type: Node::RANGE))
       reference_edges = Edge.by_relationship(Edge::REFERENCES).where(target_node_id: range_nodes.keys).all
-      apply_edges = Edge.by_relationship(Edge::APPLIES_TO).where(target_node_id: declarable_node_ids).all
       fragment_nodes = current_fragment_nodes((reference_edges + apply_edges).map(&:source_node_id))
       expansion_edges_by_target_id = expansion_edges.group_by(&:target_node_id)
       reference_edges_by_range_id = reference_edges.group_by(&:target_node_id)
@@ -100,6 +114,24 @@ module TariffKnowledge
       end
     end
 
+    def block_evidence_by_declarable_node_id(declarable_nodes, apply_edges)
+      declarable_node_ids = declarable_nodes.map(&:id)
+      return {} if declarable_node_ids.empty?
+
+      block_nodes = current_block_nodes(apply_edges.map(&:source_node_id))
+      apply_edges_by_target_id = apply_edges.group_by(&:target_node_id)
+
+      declarable_nodes.each_with_object({}) do |declarable_node, grouped|
+        block_evidence = apply_edges_by_target_id
+          .fetch(declarable_node.id, [])
+          .filter_map { |edge| block_nodes[edge.source_node_id] }
+          .uniq(&:id)
+          .sort_by { |block_node| [block_node.source_type.to_s, block_node.source_id.to_s, block_node.key.to_s] }
+
+        grouped[declarable_node.id] = block_evidence if block_evidence.any?
+      end
+    end
+
     def nodes_by_id(ids, dataset)
       ids = ids.compact.uniq
       ids.empty? ? {} : dataset.where(id: ids).all.index_by(&:id)
@@ -107,6 +139,12 @@ module TariffKnowledge
 
     def current_fragment_nodes(ids)
       dataset = Node.note_fragments
+      dataset = dataset.where(source_version: current_source_version) if current_source_version.present?
+      nodes_by_id(ids, dataset)
+    end
+
+    def current_block_nodes(ids)
+      dataset = Node.note_blocks
       dataset = dataset.where(source_version: current_source_version) if current_source_version.present?
       nodes_by_id(ids, dataset)
     end
@@ -152,6 +190,12 @@ module TariffKnowledge
       content.compact.join("\n\n")
     end
 
+    def block_content_for(block_evidence)
+      block_evidence.map { |block_node| "#{block_node.title}\n#{block_node.content}" }
+                    .uniq
+                    .join("\n\n")
+    end
+
     def general_rule_fragment?(fragment_node)
       fragment_node.source_type == 'customs_tariff_general_rule' ||
         fragment_node.key.include?(':customs_tariff_general_rule:')
@@ -163,11 +207,12 @@ module TariffKnowledge
         'The full rule fragments are retained in this note provenance.'
     end
 
-    def metadata_for(evidence)
+    def metadata_for(evidence, block_evidence, contained_fragment_keys_by_block_node_id)
       {
         'source_node_keys' => evidence.map { |fragment_node, _range_node, _source_node| fragment_node.key }.uniq,
         'range_node_keys' => evidence.filter_map { |_fragment_node, range_node, _source_node| range_node&.key }.uniq,
         'evidence' => evidence.map { |fragment_node, range_node, source_node| evidence_metadata(fragment_node, range_node, source_node) },
+        'evidence_blocks' => block_evidence.map { |block_node| block_evidence_metadata(block_node, contained_fragment_keys_by_block_node_id) },
       }
     end
 
@@ -191,6 +236,43 @@ module TariffKnowledge
         'range_title' => range_node&.title,
         'relationships' => relationships_for(range_node),
       }
+    end
+
+    def block_evidence_metadata(block_node, contained_fragment_keys_by_block_node_id)
+      block_metadata = block_node.metadata.to_h
+
+      {
+        'source_node_key' => block_node.key,
+        'source_type' => block_node.source_type.to_s.underscore,
+        'source_id' => block_node.source_id,
+        'source_version' => block_node.source_version,
+        'source_title' => block_node.title,
+        'source_context' => block_node.content.to_s.squish,
+        'block_type' => block_metadata['block_type'],
+        'term' => block_metadata['term'],
+        'path' => block_metadata['path'],
+        'fragment_node_keys' => contained_fragment_keys_by_block_node_id.fetch(block_node.id, []),
+      }
+    end
+
+    def contained_fragment_keys_by_block_node_id(block_nodes)
+      block_node_ids = block_nodes.map(&:id).uniq
+      return {} if block_node_ids.empty?
+
+      contains_edges = Edge.by_relationship(Edge::CONTAINS).where(source_node_id: block_node_ids).all
+      fragment_nodes = current_fragment_nodes(contains_edges.map(&:target_node_id))
+
+      contains_edges.each_with_object({}) { |edge, grouped|
+        fragment_node = fragment_nodes[edge.target_node_id]
+        next unless fragment_node
+
+        grouped[edge.source_node_id] ||= []
+        grouped[edge.source_node_id] << fragment_node
+      }.transform_values do |fragment_nodes_for_block|
+        fragment_nodes_for_block
+          .sort_by { |fragment_node| [fragment_sequence(fragment_node), fragment_node.key.to_s, fragment_node.id] }
+          .map(&:key)
+      end
     end
 
     def relationships_for(range_node) = range_node ? [Edge::REFERENCES, Edge::EXPANDS_TO, Edge::APPLIES_TO] : [Edge::APPLIES_TO]
