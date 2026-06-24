@@ -91,12 +91,83 @@ module TariffKnowledge
       fragment_nodes = fragments(source.content).map.with_index(1) do |fragment_content, index|
         load_fragment(source_association, source, source_node, fragment_content, index)
       end
+      block_nodes = load_note_blocks(source_association, source, source_node, fragment_nodes)
+      delete_stale_note_block_edges(source_node, block_nodes)
 
       delete_stale_edges(
         source_node:,
         relationship_type: Edge::CONTAINS,
-        current_target_node_ids: fragment_nodes.map(&:id),
+        current_target_node_ids: (fragment_nodes + block_nodes).map(&:id),
       )
+    end
+
+    def load_note_blocks(source_association, source, source_node, fragment_nodes)
+      fragment_nodes_by_key = fragment_nodes.index_by(&:key)
+      NoteBlockParser.call(
+        source_type: source_association.label,
+        source_id: source_node.source_id,
+        source_version: source.customs_tariff_update_version,
+        fragments: fragment_nodes,
+      ).map do |block|
+        load_note_block(source, source_node, block, fragment_nodes_by_key)
+      end
+    end
+
+    def load_note_block(source, source_node, block, fragment_nodes_by_key)
+      block_node = upsert_node(
+        node_type: Node::NOTE_BLOCK,
+        key: block.key,
+        title: block.title,
+        content: block.content,
+        metadata: block.metadata,
+        source_type: source_node.source_type,
+        source_id: source_node.source_id,
+        source_version: source.customs_tariff_update_version,
+      )
+      contained_fragments = block.fragment_keys.filter_map { |key| fragment_nodes_by_key[key] }
+
+      upsert_edge(source_node, block_node, Edge::CONTAINS)
+      upsert_edges(block_node, contained_fragments, Edge::CONTAINS)
+      delete_stale_edges(
+        source_node: block_node,
+        relationship_type: Edge::CONTAINS,
+        current_target_node_ids: contained_fragments.map(&:id),
+      )
+
+      propagate_fragment_edges(block_node, contained_fragments, Edge::APPLIES_TO)
+      propagate_fragment_edges(block_node, contained_fragments, Edge::REFERENCES)
+
+      block_node
+    end
+
+    def propagate_fragment_edges(block_node, contained_fragments, relationship_type)
+      target_node_ids = Edge
+        .where(source_node_id: contained_fragments.map(&:id), relationship_type:)
+        .select_map(:target_node_id)
+        .uniq
+      target_nodes = Node.where(id: target_node_ids)
+
+      upsert_edges(block_node, target_nodes, relationship_type)
+      delete_stale_edges(
+        source_node: block_node,
+        relationship_type:,
+        current_target_node_ids: target_node_ids,
+      )
+    end
+
+    def delete_stale_note_block_edges(source_node, current_block_nodes)
+      stale_block_edges = Edge
+        .where(source_node_id: source_node.id, relationship_type: Edge::CONTAINS)
+        .association_join(:target_node)
+        .where(target_node__node_type: Node::NOTE_BLOCK)
+      current_block_node_ids = current_block_nodes.map(&:id)
+      stale_block_edges = stale_block_edges.exclude(target_node_id: current_block_node_ids) if current_block_node_ids.any?
+
+      Node.where(id: stale_block_edges.select_map(:target_node_id)).each do |block_node|
+        delete_stale_edges(source_node: block_node, relationship_type: Edge::CONTAINS)
+        delete_stale_edges(source_node: block_node, relationship_type: Edge::APPLIES_TO)
+        delete_stale_edges(source_node: block_node, relationship_type: Edge::REFERENCES)
+      end
     end
 
     def load_fragment(source_association, source, source_node, content, index)
@@ -297,7 +368,7 @@ module TariffKnowledge
 
     def prune_non_current_source_nodes(source_version)
       Node
-        .where(node_type: [Node::NOTE_SOURCE, Node::NOTE_FRAGMENT])
+        .where(node_type: [Node::NOTE_SOURCE, Node::NOTE_FRAGMENT, Node::NOTE_BLOCK])
         .where(source_type: SOURCE_ASSOCIATIONS.map(&:label))
         .exclude(source_version:)
         .delete

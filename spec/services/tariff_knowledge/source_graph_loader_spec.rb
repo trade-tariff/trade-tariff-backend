@@ -63,6 +63,125 @@ RSpec.describe TariffKnowledge::SourceGraphLoader do
       expect(applied_codes).to contain_exactly('0101210000', '0101290000')
     end
 
+    it 'creates note block nodes and propagates contained fragment applicability and references' do
+      chapter_72 = create(:chapter, goods_nomenclature_item_id: '7200000000')
+      create(:heading, parent: chapter_72, goods_nomenclature_item_id: '7201000000')
+      GoodsNomenclatures::TreeNode.refresh!
+      TariffKnowledge::DeclarableNodeLoader.call
+      create(
+        :customs_tariff_chapter_note,
+        :approved,
+        customs_tariff_update: update,
+        chapter_id: '72',
+        content: [
+          '1. In this chapter the following expressions have the meanings hereby assigned to them:',
+          '',
+          'a. pig Iron',
+          '',
+          'Iron-carbon alloys not usefully malleable, containing more than 2 % by weight of carbon and which may contain by weight one or more other elements within the following limits:',
+          '',
+          '- not more than 10 % of chromium',
+          '',
+          '- not more than 6 % of manganese',
+          '',
+          'b. spiegeleisen',
+          '',
+          'Iron-carbon alloys containing by weight more than 6 % but not more than 30 % of manganese and otherwise conforming to the specification at (a) above.',
+        ].join("\n"),
+      )
+      create(
+        :customs_tariff_chapter_note,
+        :approved,
+        customs_tariff_update: update,
+        chapter_id: '01',
+        content: [
+          '1. In this chapter the following expressions have the meanings hereby assigned to them:',
+          '',
+          'a. pure-bred breeding animals',
+          '',
+          'Heading 0101 covers live horses.',
+        ].join("\n"),
+      )
+
+      described_class.call
+
+      source_node = TariffKnowledge::Node.by_key('note_source:customs_tariff_chapter_note:1.31:72').first
+      block_node = TariffKnowledge::Node.by_key('note_block:customs_tariff_chapter_note:1.31:72:1:a').first
+      heading_7201_node = TariffKnowledge::Node.goods_nomenclatures.where(goods_nomenclature_item_id: '7201000000').first
+      contained_fragment_nodes = %w[0002 0003 0004 0005].map do |suffix|
+        TariffKnowledge::Node.by_key("note_fragment:customs_tariff_chapter_note:1.31:72:#{suffix}").first
+      end
+      reference_block_node = TariffKnowledge::Node.by_key('note_block:customs_tariff_chapter_note:1.31:01:1:a').first
+      range_node = TariffKnowledge::Node.by_key('range:heading:0101').first
+
+      expect(block_node).to have_attributes(
+        node_type: TariffKnowledge::Node::NOTE_BLOCK,
+        title: 'pig Iron',
+      )
+      expect(block_node.metadata.to_h).to include(
+        'block_type' => 'definition',
+        'term' => 'pig iron',
+        'path' => %w[1 a],
+      )
+      expect(block_node.content).to include('not more than 6 % of manganese')
+      expect(edge_exists?(source_node, block_node, TariffKnowledge::Edge::CONTAINS)).to be(true)
+      contained_fragment_nodes.each do |fragment_node|
+        expect(edge_exists?(block_node, fragment_node, TariffKnowledge::Edge::CONTAINS)).to be(true)
+      end
+      expect(edge_exists?(block_node, heading_7201_node, TariffKnowledge::Edge::APPLIES_TO)).to be(true)
+      expect(edge_exists?(reference_block_node, range_node, TariffKnowledge::Edge::REFERENCES)).to be(true)
+    end
+
+    it 'removes stale block links when reloading changed source content' do
+      note = create(
+        :customs_tariff_chapter_note,
+        :approved,
+        customs_tariff_update: update,
+        chapter_id: '01',
+        content: [
+          '1. In this chapter the following expressions have the meanings hereby assigned to them:',
+          '',
+          'a. pure-bred breeding animals',
+          '',
+          'Heading 0101 covers live horses.',
+          '',
+          '- certified breeding animals',
+        ].join("\n"),
+      )
+
+      described_class.call
+
+      note.update(
+        content: [
+          '1. In this chapter the following expressions have the meanings hereby assigned to them:',
+          '',
+          'a. pure-bred breeding animals',
+          '',
+          'Live horses are covered here.',
+        ].join("\n"),
+      )
+      create(:hidden_goods_nomenclature, goods_nomenclature_item_id: '0101290000')
+      described_class.call
+
+      block_node = TariffKnowledge::Node.by_key('note_block:customs_tariff_chapter_note:1.31:01:1:a').first
+      stale_fragment_node = TariffKnowledge::Node.by_key('note_fragment:customs_tariff_chapter_note:1.31:01:0004').first
+      stale_range_node = TariffKnowledge::Node.by_key('range:heading:0101').first
+      stale_declarable_node = TariffKnowledge::Node.goods_nomenclatures.where(goods_nomenclature_item_id: '0101290000').first
+
+      expect(edge_exists?(block_node, stale_fragment_node, TariffKnowledge::Edge::CONTAINS)).to be(false)
+      expect(edge_exists?(block_node, stale_range_node, TariffKnowledge::Edge::REFERENCES)).to be(false)
+      expect(edge_exists?(block_node, stale_declarable_node, TariffKnowledge::Edge::APPLIES_TO)).to be(false)
+
+      note.update(content: '1. This chapter covers live horses.')
+      described_class.call
+
+      source_node = TariffKnowledge::Node.by_key('note_source:customs_tariff_chapter_note:1.31:01').first
+      current_declarable_node = TariffKnowledge::Node.goods_nomenclatures.where(goods_nomenclature_item_id: '0101210000').first
+
+      expect(edge_exists?(source_node, block_node, TariffKnowledge::Edge::CONTAINS)).to be(false)
+      expect(edge_exists?(block_node, current_declarable_node, TariffKnowledge::Edge::APPLIES_TO)).to be(false)
+    end
+
     it 'applies chapter note fragments to all declarables in the chapter even without explicit references' do
       create(
         :customs_tariff_chapter_note,
@@ -379,10 +498,30 @@ RSpec.describe TariffKnowledge::SourceGraphLoader do
         source_id: '01',
         source_version: '1.30',
       )
+      old_block_node = create(
+        :tariff_knowledge_node,
+        node_type: TariffKnowledge::Node::NOTE_BLOCK,
+        key: 'note_block:customs_tariff_chapter_note:1.30:01:1:a',
+        title: 'Old block',
+        content: 'Old block content',
+        source_type: 'customs_tariff_chapter_note',
+        source_id: '01',
+        source_version: '1.30',
+        goods_nomenclature_sid: nil,
+        goods_nomenclature_item_id: nil,
+        producline_suffix: nil,
+        goods_nomenclature_type: nil,
+      )
       create(
         :tariff_knowledge_edge,
         source_node: old_source_node,
         target_node: old_fragment_node,
+        relationship_type: TariffKnowledge::Edge::CONTAINS,
+      )
+      create(
+        :tariff_knowledge_edge,
+        source_node: old_source_node,
+        target_node: old_block_node,
         relationship_type: TariffKnowledge::Edge::CONTAINS,
       )
       create(
@@ -397,6 +536,7 @@ RSpec.describe TariffKnowledge::SourceGraphLoader do
 
       expect(TariffKnowledge::Node.by_key('note_source:customs_tariff_chapter_note:1.30:01').first).to be_nil
       expect(TariffKnowledge::Node.by_key('note_fragment:customs_tariff_chapter_note:1.30:01:0001').first).to be_nil
+      expect(TariffKnowledge::Node.by_key('note_block:customs_tariff_chapter_note:1.30:01:1:a').first).to be_nil
     end
 
     it 'loads notes from the latest current non-failed update and ignores newer future updates' do
