@@ -2,11 +2,13 @@
 
 [[ "$TRACE" ]] && set -o xtrace
 set -o errexit
+set -o errtrace
 set -o nounset
 set -o pipefail
 set -o noclobber
 
 START_TIME=$(date +%s)
+SERVICES_STOPPED=false
 
 declare -A SERVICE_COUNTS
 declare -A ACCOUNT_IDS=(
@@ -38,6 +40,34 @@ set_desired_count_for_service_to() {
         --desired-count "$desired_count" > /dev/null
 }
 
+restore_file_url() {
+  echo "$DB_DUMP_SERVER""$RESTORE_FILE"
+}
+
+validate_restore_file() {
+  local sample_file
+  sample_file=$(mktemp)
+
+  if ! curl --fail --silent --show-error --location \
+    --user "$DB_DUMP_USER":"$DB_DUMP_PASSWORD" \
+    --range 0-1 \
+    --output "$sample_file" \
+    "$(restore_file_url)"; then
+    rm -f "$sample_file"
+    echo "Unable to read restore file: $(restore_file_url)" >&2
+    exit 1
+  fi
+
+  local magic
+  magic=$(od -An -tx1 -N2 "$sample_file" | tr -d '[:space:]')
+  rm -f "$sample_file"
+
+  if [ "$magic" != "1f8b" ]; then
+    echo "Restore file is not a gzip stream: $(restore_file_url)" >&2
+    exit 1
+  fi
+}
+
 stop_services() {
   for service in $SERVICES; do
       SERVICE_COUNTS[$service]=$(get_desired_count_for_service "$service")
@@ -49,7 +79,9 @@ stop_services() {
 }
 
 restore_database() {
-  curl --silent -u "$DB_DUMP_USER":"$DB_DUMP_PASSWORD" "$DB_DUMP_SERVER""$RESTORE_FILE" | gzip -d | psql "$DATABASE_URL"
+  curl --fail --silent --show-error --location \
+    --user "$DB_DUMP_USER":"$DB_DUMP_PASSWORD" \
+    "$(restore_file_url)" | gzip -d | psql "$DATABASE_URL"
 }
 
 start_services() {
@@ -63,6 +95,20 @@ start_services() {
 
       set_desired_count_for_service_to "$service" "$desired_count"
   done
+
+  SERVICES_STOPPED=false
+}
+
+restart_services_on_error() {
+  local exit_code=$?
+  trap - ERR
+
+  if [ "$SERVICES_STOPPED" = true ]; then
+    echo "Replication failed after services were stopped; restarting services $SERVICES" >&2
+    start_services
+  fi
+
+  exit "$exit_code"
 }
 
 lookup_persistence_bucket() {
@@ -81,8 +127,12 @@ sync_buckets() {
   aws s3 sync "$source_bucket/data/exchange_rates/" "$target_bucket/data/exchange_rates/"
 }
 
+validate_restore_file
+
 echo "Stopping services $SERVICES"
 stop_services
+SERVICES_STOPPED=true
+trap restart_services_on_error ERR
 
 restore_database
 
@@ -90,6 +140,7 @@ echo "SQL backup restored successfully"
 
 echo "Starting services  $SERVICES"
 start_services
+trap - ERR
 
 echo "Syncing exchange rates"
 
