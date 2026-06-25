@@ -132,7 +132,7 @@ jobs:
           git diff --staged --quiet || git commit -m "Generate swagger/v2/swagger.json [skip ci]" && git push
 
       - name: Publish Test Report
-        uses: ctrf-io/github-test-reporter@v1
+        uses: ctrf-io/github-test-reporter@v1.0.28
         with:
           report-path: './ctrf/*.json'
           flaky-rate-report: true
