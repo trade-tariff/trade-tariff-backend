@@ -1,5 +1,9 @@
 class InteractiveSearchService
-  Result = Data.define(:type, :data, :attempt, :model, :result_limit)
+  Result = Data.define(:type, :data, :attempt, :model, :result_limit, :ranking_source) do
+    def initialize(type:, data:, attempt:, model:, result_limit:, ranking_source: nil)
+      super
+    end
+  end
 
   CONFIDENCE_ORDER = %w[strong good possible].freeze
   UNCERTAINTY_OPTION_PATTERNS = [
@@ -228,6 +232,7 @@ class InteractiveSearchService
       attempt: attempt,
       model: configured_model,
       result_limit: configured_result_limit,
+      ranking_source: 'single_result',
     )
   end
 
@@ -238,6 +243,7 @@ class InteractiveSearchService
       attempt: attempt,
       model: configured_model,
       result_limit: configured_result_limit,
+      ranking_source: 'no_results',
     )
   end
 
@@ -261,7 +267,7 @@ class InteractiveSearchService
     end
   end
 
-  def best_available_answers
+  def best_available_answers(ranking_source: 'best_available_fallback')
     limit = configured_result_limit
     results_to_process = limit.zero? ? opensearch_results : opensearch_results.first(limit)
     top_results = results_to_process.map.with_index do |result, index|
@@ -277,6 +283,7 @@ class InteractiveSearchService
       attempt: attempt,
       model: configured_model,
       result_limit: limit,
+      ranking_source: ranking_source,
     )
   end
 
@@ -287,12 +294,13 @@ class InteractiveSearchService
       attempt: attempt,
       model: configured_model,
       result_limit: configured_result_limit,
+      ranking_source: 'model_error',
     )
   end
 
   def answers_result(ai_answers)
     filtered = filter_hallucinated_codes(ai_answers)
-    return best_available_answers if filtered.empty?
+    return best_available_answers(ranking_source: 'filtered_hallucinated_answers') if filtered.empty?
 
     limit = configured_result_limit
     normalized = filtered.map do |answer|
@@ -313,6 +321,7 @@ class InteractiveSearchService
       attempt: attempt,
       model: configured_model,
       result_limit: limit,
+      ranking_source: 'model_answers',
     )
   end
 
@@ -346,6 +355,7 @@ class InteractiveSearchService
       attempt: attempt,
       model: configured_model,
       result_limit: configured_result_limit,
+      ranking_source: 'model_questions',
     )
   end
 

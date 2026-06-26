@@ -29,6 +29,7 @@ RSpec.describe Api::Internal::SearchService do
     allow(Search::Instrumentation).to receive(:query_expanded).and_yield
     allow(Search::Instrumentation).to receive(:query_refined).and_call_original
     allow(Search::Instrumentation).to receive(:description_intercept_checked)
+    allow(Search::Instrumentation).to receive(:evaluation_trace_returned)
   end
 
   describe '#call' do
@@ -925,6 +926,7 @@ RSpec.describe Api::Internal::SearchService do
           attempt: 1,
           model: 'gpt-5.2',
           result_limit: nil,
+          ranking_source: 'model_questions',
         )
       end
 
@@ -945,6 +947,22 @@ RSpec.describe Api::Internal::SearchService do
         result = described_class.new(q: 'handbag', request_id: 'abc-123').call
 
         expect(result[:meta][:interactive_search][:request_id]).to eq('abc-123')
+      end
+
+      it 'instruments an evaluation trace for the question iteration' do
+        described_class.new(q: 'handbag', request_id: 'req-1').call
+
+        expect(Search::Instrumentation).to have_received(:evaluation_trace_returned).with(
+          hash_including(
+            request_id: 'req-1',
+            query: 'handbag',
+            iteration: 1,
+            final_result_type: 'questions',
+            ranked_answers: [],
+            ranking_source: 'model_questions',
+            model: 'gpt-5.2',
+          ),
+        )
       end
     end
 
@@ -977,6 +995,7 @@ RSpec.describe Api::Internal::SearchService do
           attempt: 2,
           model: 'gpt-5.2',
           result_limit: nil,
+          ranking_source: 'model_answers',
         )
       end
 
@@ -1001,6 +1020,89 @@ RSpec.describe Api::Internal::SearchService do
         # No pending question means all questions are answered
         answers = result[:meta][:interactive_search][:answers]
         expect(answers).to be_empty.or(all(satisfy { |a| a[:answer].present? }))
+      end
+
+      it 'instruments an evaluation trace for the ranked answers' do
+        allow(AdminConfiguration).to receive(:enabled?).and_call_original
+        allow(AdminConfiguration).to receive(:enabled?).with('refine_search_with_answers_enabled').and_return(true)
+
+        described_class.new(
+          q: 'handbag',
+          request_id: 'req-1',
+          answers: [{ question: 'Material?', answer: 'Leather' }],
+        ).call
+
+        expect(Search::Instrumentation).to have_received(:evaluation_trace_returned).with(
+          hash_including(
+            request_id: 'req-1',
+            query: 'handbag',
+            effective_query: 'handbag Leather',
+            iteration: 2,
+            answer_count: 1,
+            retrieval_method: 'opensearch',
+            results_type: 'opensearch',
+            final_result_type: 'answers',
+            ranked_answers: [{ commodity_code: '4202210000', confidence: 'strong' }],
+            ranking_source: 'model_answers',
+            model: 'gpt-5.2',
+            result_limit: nil,
+          ),
+        )
+      end
+    end
+
+    context 'when interactive search returns an error' do
+      let(:opensearch_response) do
+        {
+          'hits' => {
+            'hits' => [
+              {
+                '_score' => 10.0,
+                '_source' => {
+                  'goods_nomenclature_sid' => 1,
+                  'goods_nomenclature_item_id' => '4202210000',
+                  'producline_suffix' => '80',
+                  'goods_nomenclature_class' => 'Commodity',
+                  'description' => 'leather handbags',
+                  'formatted_description' => 'Leather handbags',
+                  'declarable' => true,
+                },
+              },
+            ],
+          },
+        }
+      end
+
+      let(:interactive_result) do
+        InteractiveSearchService::Result.new(
+          type: :error,
+          data: { message: 'Model failed' },
+          attempt: 1,
+          model: 'gpt-5.2',
+          result_limit: nil,
+          ranking_source: 'model_error',
+        )
+      end
+
+      before do
+        allow(TradeTariffBackend.search_client).to receive(:search).and_return(opensearch_response)
+        allow(InteractiveSearchService).to receive(:call).and_return(interactive_result)
+      end
+
+      it 'instruments an evaluation trace for the error iteration' do
+        described_class.new(q: 'handbag', request_id: 'req-1').call
+
+        expect(Search::Instrumentation).to have_received(:evaluation_trace_returned).with(
+          hash_including(
+            request_id: 'req-1',
+            query: 'handbag',
+            iteration: 1,
+            final_result_type: 'error',
+            ranked_answers: [],
+            ranking_source: 'model_error',
+            model: 'gpt-5.2',
+          ),
+        )
       end
     end
 
@@ -1035,6 +1137,12 @@ RSpec.describe Api::Internal::SearchService do
         result = described_class.new(q: 'handbag').call
 
         expect(result[:meta]).to be_nil
+      end
+
+      it 'does not instrument an evaluation trace' do
+        described_class.new(q: 'handbag').call
+
+        expect(Search::Instrumentation).not_to have_received(:evaluation_trace_returned)
       end
     end
 

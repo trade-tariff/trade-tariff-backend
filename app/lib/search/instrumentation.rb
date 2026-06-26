@@ -6,6 +6,7 @@ module Search
 
     ERROR_MESSAGE_MAX_LENGTH = 500
     MAX_LOGGED_RESULTS = 50
+    EVALUATION_TRACE_VERSION = 'classification_evaluation_trace.v1'.freeze
 
     def instrument(event_name, payload = {}, &block)
       ActiveSupport::Notifications.instrument("#{event_name}.search", with_request_id(payload), &block)
@@ -177,6 +178,45 @@ module Search
       instrument('answer_returned', payload)
     end
 
+    def evaluation_trace_returned(request_id:, query:, effective_query:, iteration:, answer_count:, retrieval_method:, results_type:, candidates:, final_result_type:, ranked_answers:, questions:, error_message:, ranking_source:, model:, result_limit:)
+      candidate_summaries = summarize_results(candidates)
+      ranked_answer_summaries = summarize_ranked_answers(ranked_answers)
+      question_summaries = summarize_questions(questions)
+
+      instrument(
+        'evaluation_trace_returned',
+        request_id:,
+        search_type: 'interactive',
+        trace_version: EVALUATION_TRACE_VERSION,
+        query:,
+        effective_query:,
+        iteration:,
+        answer_count:,
+        retrieval_method:,
+        results_type:,
+        candidate_count: Array(candidates).size,
+        logged_candidate_count: candidate_summaries.size,
+        candidates_truncated: candidate_summaries.size < Array(candidates).size,
+        final_result_type:,
+        ranked_answer_count: Array(ranked_answers).size,
+        logged_ranked_answer_count: ranked_answer_summaries.size,
+        ranked_answers_truncated: ranked_answer_summaries.size < Array(ranked_answers).size,
+        question_count: Array(questions).size,
+        logged_question_count: question_summaries.size,
+        questions_truncated: question_summaries.size < Array(questions).size,
+        confidence_levels: confidence_levels_for(ranked_answer_summaries),
+        ranking_source:,
+        model:,
+        result_limit:,
+        details: {
+          candidates: candidate_summaries,
+          ranked_answers: ranked_answer_summaries,
+          questions: question_summaries,
+        }.compact_blank,
+        **truncate_error_payload(error_message),
+      )
+    end
+
     def search_completed(request_id:, search_type:, total_duration_ms:, result_count:, query: nil, total_attempts: nil, total_questions: nil, final_result_type: nil, results_type: nil, max_score: nil, error_message: nil, description_intercept: nil)
       payload = {
         request_id:,
@@ -338,6 +378,30 @@ module Search
       Array(results).first(MAX_LOGGED_RESULTS).map { |result| result_summary(result) }
     end
 
+    def summarize_ranked_answers(answers)
+      Array(answers).first(MAX_LOGGED_RESULTS).filter_map do |answer|
+        next unless answer.respond_to?(:[])
+
+        summary = {
+          commodity_code: answer[:commodity_code] || answer['commodity_code'],
+          confidence: answer[:confidence] || answer['confidence'],
+        }.compact_blank
+        summary.presence
+      end
+    end
+
+    def summarize_questions(questions)
+      Array(questions).first(MAX_LOGGED_RESULTS).filter_map do |question|
+        next unless question.respond_to?(:[])
+
+        summary = {
+          question: question[:question] || question['question'],
+          options: question[:options] || question['options'],
+        }.compact_blank
+        summary.presence
+      end
+    end
+
     def result_summary(result)
       {
         target_endpoint: result_endpoint(result),
@@ -352,6 +416,10 @@ module Search
         self_text_id: result.try(:goods_nomenclature_sid) || result.try(:id),
         label_id: result.try(:goods_nomenclature_sid) || result.try(:id),
       }.compact_blank
+    end
+
+    def confidence_levels_for(answers)
+      answers.filter_map { |answer| answer[:confidence] || answer['confidence'] }.tally
     end
 
     def result_endpoint(result)
