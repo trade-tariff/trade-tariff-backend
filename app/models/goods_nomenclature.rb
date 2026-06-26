@@ -50,6 +50,12 @@ class GoodsNomenclature < Sequel::Model
 
   one_to_many :full_chemicals, key: :goods_nomenclature_sid
 
+  one_to_many :public_atar_rulings,
+              class: 'TariffKnowledge::PublicAtarRuling',
+              key: :goods_nomenclature_item_id,
+              primary_key: :goods_nomenclature_item_id,
+              &:actual
+
   many_to_many :guides, left_key: :goods_nomenclature_sid,
                         left_primary_key: :goods_nomenclature_sid,
                         right_key: :guide_id,

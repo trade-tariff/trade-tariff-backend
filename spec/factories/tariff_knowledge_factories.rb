@@ -46,4 +46,20 @@ FactoryBot.define do
     expired { false }
     generated_at { Time.zone.now }
   end
+
+  factory :tariff_knowledge_public_atar_ruling, class: 'TariffKnowledge::PublicAtarRuling' do
+    sequence(:ref) { |n| "600000#{n.to_s.rjust(3, '0')}" }
+    commodity_code { '9705100074' }
+    goods_nomenclature_item_id { commodity_code.ljust(10, '0') }
+    description { 'Venini, Cardin lights - Set of five.' }
+    keywords { Sequel.pg_array(['CEILING LIGHTS', 'OF GLASS'], :text) }
+    justification { 'Classification has been determined in accordance with GIR 1.' }
+    validity_start_date { Date.new(2026, 6, 26) }
+    validity_end_date { Date.new(2029, 6, 25) }
+    source_url { "https://www.tax.service.gov.uk/search-for-advance-tariff-rulings/ruling/#{ref}" }
+    raw_fields { Sequel.pg_jsonb_wrap({ 'Commodity code' => commodity_code }) }
+    first_seen_at { Time.zone.parse('2026-06-26 09:00:00 UTC') }
+    last_seen_at { first_seen_at }
+    fetched_at { first_seen_at }
+  end
 end
