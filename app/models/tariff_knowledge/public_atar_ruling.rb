@@ -10,10 +10,6 @@ module TariffKnowledge
       def by_ref(ref)
         where(ref:)
       end
-
-      def by_source_commodity_code(commodity_code)
-        where(commodity_code:)
-      end
     end
 
     def validate
