@@ -7,6 +7,7 @@ module TariffKnowledge
     GOODS_NOMENCLATURE = 'goods_nomenclature'.freeze
     SECTION = 'section'.freeze
     NOTE_SOURCE = 'note_source'.freeze
+    NOTE_BLOCK = 'note_block'.freeze
     NOTE_FRAGMENT = 'note_fragment'.freeze
     RANGE = 'range'.freeze
     COMPRESSED_NOTE = 'compressed_note'.freeze
@@ -33,6 +34,10 @@ module TariffKnowledge
 
       def note_fragments
         where(node_type: NOTE_FRAGMENT)
+      end
+
+      def note_blocks
+        where(node_type: NOTE_BLOCK)
       end
     end
 
