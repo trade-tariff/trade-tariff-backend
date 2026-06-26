@@ -68,6 +68,7 @@ Rails.application.configure do
       request_id: event.payload[:request_id],
       auth_type: event.payload[:auth_type],
       client_id: event.payload[:client_id],
+      accept: event.payload[:headers]['HTTP_ACCEPT'],
       exception_class: exception&.class&.name || exception_class,
       params: event.payload[:params].except('controller', 'action', 'format', 'utf8'),
       user_agent: event.payload[:user_agent],
