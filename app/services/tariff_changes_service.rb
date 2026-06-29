@@ -147,6 +147,8 @@ class TariffChangesService
     # Multiple child creations can map to same parent on same run; keep earliest child date_of_effect.
     parent_date_of_effect_by_sid = created_children.each_with_object({}) do |child, dates_by_parent_sid|
       parent = child.parent
+      next if parent.nil?
+
       child_change = created_child_changes_by_sid[child.goods_nomenclature_sid]
       next if child_change.nil?
 

@@ -680,6 +680,15 @@ RSpec.describe TariffChangesService do
       )
     end
 
+    it 'ignores created declarables with no parent' do
+      root_child = instance_double(GoodsNomenclature, goods_nomenclature_sid: child_sid, parent: nil)
+      allow(children_scope).to receive(:all).and_return([root_child])
+
+      result = TimeMachine.at(date) { service.parent_declarability_loss_changes }
+
+      expect(result).to eq([])
+    end
+
     it 'returns empty when parent was not declarable yesterday' do
       allow(parents_scope).to receive(:all).and_return([
         instance_double(GoodsNomenclature, goods_nomenclature_sid: parent_sid, declarable?: false),
