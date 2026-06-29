@@ -192,8 +192,8 @@ class TariffChangesService
       goods_nomenclature_sid: parent.goods_nomenclature_sid,
       action:,
       date_of_effect:,
-      validity_start_date: action == BaseChanges::CREATION ? date_of_effect : previous_parent&.validity_start_date&.to_date,
-      validity_end_date: action == BaseChanges::ENDING ? date_of_effect : previous_parent&.validity_end_date&.to_date,
+      validity_start_date: action == BaseChanges::CREATION ? date_of_effect : current_parent&.validity_start_date&.to_date,
+      validity_end_date: action == BaseChanges::ENDING ? date_of_effect : current_parent&.validity_end_date&.to_date,
     }
   end
 

@@ -682,8 +682,8 @@ RSpec.describe TariffChangesService do
         action: TariffChangesService::BaseChanges::CREATION,
         date_of_effect: child_effective_date,
       }
-      previous_parent = instance_double(GoodsNomenclature, declarable?: true, validity_start_date: Date.new(2024, 1, 1), validity_end_date: nil)
-      current_parent = instance_double(GoodsNomenclature, declarable?: false)
+      previous_parent = instance_double(GoodsNomenclature, declarable?: true)
+      current_parent = instance_double(GoodsNomenclature, declarable?: false, validity_start_date: Date.new(2024, 1, 1), validity_end_date: nil)
 
       allow(other_service).to receive(:parent_declarability_child_changes).and_return([child_change])
       allow(other_service).to receive(:parent_for_child_at).with(child_sid, child_effective_date).and_return(parent)
@@ -713,8 +713,8 @@ RSpec.describe TariffChangesService do
         action: TariffChangesService::BaseChanges::ENDING,
         date_of_effect: child_end_date,
       }
-      previous_parent = instance_double(GoodsNomenclature, declarable?: false, validity_start_date: Date.new(2024, 1, 1), validity_end_date: nil)
-      current_parent = instance_double(GoodsNomenclature, declarable?: true)
+      previous_parent = instance_double(GoodsNomenclature, declarable?: false)
+      current_parent = instance_double(GoodsNomenclature, declarable?: true, validity_start_date: Date.new(2024, 1, 1), validity_end_date: nil)
 
       allow(other_service).to receive(:parent_declarability_child_changes).and_return([child_change])
       allow(other_service).to receive(:parent_for_child_at).with(child_sid, child_end_date).and_return(parent)
@@ -748,7 +748,7 @@ RSpec.describe TariffChangesService do
     describe '#parent_for_child_at' do
       context 'when child is imported before its validity starts' do
         let!(:parent_node) do
-          create(:commodity, :declarable, validity_start_date: 2.years.ago.to_date)
+          create(:commodity, :declarable, validity_start_date: operation_date - 2.years)
         end
         let!(:child_node) do
           create(:commodity, :non_declarable,
@@ -774,7 +774,7 @@ RSpec.describe TariffChangesService do
     describe '#parent_declarability_transition_for' do
       context 'when a non-declarable child is imported before its validity starts' do
         let!(:parent_node) do
-          create(:commodity, :declarable, validity_start_date: 2.years.ago.to_date)
+          create(:commodity, :declarable, validity_start_date: operation_date - 2.years)
         end
         let!(:child_node) do
           create(:commodity, :non_declarable,
@@ -804,12 +804,12 @@ RSpec.describe TariffChangesService do
       context 'when child ending makes parent declarable again' do
         let(:child_end_date) { operation_date + 3.days }
         let!(:parent_node) do
-          create(:commodity, :declarable, validity_start_date: 2.years.ago.to_date)
+          create(:commodity, :declarable, validity_start_date: operation_date - 2.years)
         end
         let!(:child_node) do
           create(:commodity, :non_declarable,
                  parent: parent_node,
-                 validity_start_date: 2.years.ago.to_date,
+                 validity_start_date: operation_date - 2.years,
                  validity_end_date: child_end_date)
         end
 
