@@ -9,6 +9,9 @@ RSpec.describe 'tariff_knowledge rake tasks' do
       tariff_knowledge:declarable_nodes:run
       tariff_knowledge:compressed_notes:refresh:enqueue
       tariff_knowledge:compressed_notes:refresh:run
+      tariff_knowledge:atars:preload
+      tariff_knowledge:atars:import
+      tariff_knowledge:atars:enqueue
     ].each { |task| Rake::Task[task].reenable if Rake::Task.task_defined?(task) }
   end
 
@@ -85,6 +88,62 @@ RSpec.describe 'tariff_knowledge rake tasks' do
       suppress_output { Rake::Task['tariff_knowledge:compressed_notes:refresh:run'].invoke }
 
       expect(TariffKnowledge::CompressedNoteRefresh).to have_received(:call)
+    end
+  end
+
+  describe 'tariff_knowledge:atars:preload' do
+    it 'imports the public ATAR preload file' do
+      allow(TariffKnowledge::PublicAtarRulingImporter).to receive(:import_file)
+        .and_return(TariffKnowledge::PublicAtarRulingImporter::Result.new(seen_count: 2, created_count: 2, updated_count: 0, failed_count: 0))
+
+      suppress_output { Rake::Task['tariff_knowledge:atars:preload'].invoke }
+
+      expect(TariffKnowledge::PublicAtarRulingImporter).to have_received(:import_file)
+    end
+
+    it 'skips outside UK service mode' do
+      allow(TradeTariffBackend).to receive(:service).and_return('xi')
+      allow(TariffKnowledge::PublicAtarRulingImporter).to receive(:import_file)
+
+      suppress_output { Rake::Task['tariff_knowledge:atars:preload'].invoke }
+
+      expect(TariffKnowledge::PublicAtarRulingImporter).not_to have_received(:import_file)
+    end
+  end
+
+  describe 'tariff_knowledge:atars:import' do
+    it 'imports public ATAR rulings inline' do
+      allow(TariffKnowledge::PublicAtarRulingImporter).to receive(:call)
+        .and_return(TariffKnowledge::PublicAtarRulingImporter::Result.new(seen_count: 2, created_count: 1, updated_count: 1, failed_count: 0))
+
+      suppress_output { Rake::Task['tariff_knowledge:atars:import'].invoke }
+
+      expect(TariffKnowledge::PublicAtarRulingImporter).to have_received(:call)
+    end
+
+    it 'rejects invalid numeric options' do
+      original_value = ENV.fetch('ATAR_MAX_PAGES', nil)
+      ENV['ATAR_MAX_PAGES'] = 'oops'
+
+      expect {
+        suppress_output { Rake::Task['tariff_knowledge:atars:import'].invoke }
+      }.to raise_error(ArgumentError, /ATAR_MAX_PAGES/)
+    ensure
+      if original_value
+        ENV['ATAR_MAX_PAGES'] = original_value
+      else
+        ENV.delete('ATAR_MAX_PAGES')
+      end
+    end
+  end
+
+  describe 'tariff_knowledge:atars:enqueue' do
+    it 'enqueues public ATAR import' do
+      allow(ImportPublicAtarRulingsWorker).to receive(:perform_async)
+
+      suppress_output { Rake::Task['tariff_knowledge:atars:enqueue'].invoke }
+
+      expect(ImportPublicAtarRulingsWorker).to have_received(:perform_async)
     end
   end
 end

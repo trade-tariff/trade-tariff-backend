@@ -9,6 +9,33 @@ RSpec.describe GoodsNomenclature do
     it { is_expected.to all(be_a(FullChemical)) }
   end
 
+  describe '#public_atar_rulings' do
+    it 'returns public ATAR rulings associated with the goods nomenclature code' do
+      commodity = create(:commodity, :declarable, goods_nomenclature_item_id: '6302100000')
+      ruling = create(:tariff_knowledge_public_atar_ruling, commodity_code: '630210', goods_nomenclature_item_id: '6302100000')
+
+      expect(commodity.public_atar_rulings).to contain_exactly(ruling)
+      expect(commodity.public_atar_rulings_dataset.all).to contain_exactly(ruling)
+    end
+
+    it 'eager loads public ATAR rulings' do
+      commodity = create(:commodity, :declarable, goods_nomenclature_item_id: '6302100000')
+      other_commodity = create(:commodity, :declarable, goods_nomenclature_item_id: '6404199000')
+      commodity_ruling = create(:tariff_knowledge_public_atar_ruling, ref: '600015804', commodity_code: '630210', goods_nomenclature_item_id: '6302100000')
+      other_commodity_ruling = create(:tariff_knowledge_public_atar_ruling, ref: '600004365', commodity_code: '6404199000', goods_nomenclature_item_id: '6404199000')
+      create(:tariff_knowledge_public_atar_ruling, ref: '600010924', commodity_code: '4202929890')
+
+      goods_nomenclatures = described_class
+        .where(goods_nomenclature_sid: [commodity.goods_nomenclature_sid, other_commodity.goods_nomenclature_sid])
+        .eager(:public_atar_rulings)
+        .all
+        .index_by(&:goods_nomenclature_item_id)
+
+      expect(goods_nomenclatures.fetch('6302100000').public_atar_rulings).to contain_exactly(commodity_ruling)
+      expect(goods_nomenclatures.fetch('6404199000').public_atar_rulings).to contain_exactly(other_commodity_ruling)
+    end
+  end
+
   describe 'ordering', :flaky do
     subject(:goods_nomenclatures) { described_class.all.pluck(:goods_nomenclature_item_id, :producline_suffix) }
 
