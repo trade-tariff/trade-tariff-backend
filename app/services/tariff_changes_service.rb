@@ -175,15 +175,17 @@ class TariffChangesService
 
       next unless previous_parent&.declarable?
 
+      end_date = parent_date_of_effect_by_sid[parent.goods_nomenclature_sid]&.-(1.day)
+
       {
         type: 'Commodity',
         object_sid: parent.goods_nomenclature_sid,
         goods_nomenclature_item_id: parent.goods_nomenclature_item_id,
         goods_nomenclature_sid: parent.goods_nomenclature_sid,
         action: BaseChanges::ENDING,
-        date_of_effect: parent_date_of_effect_by_sid[parent.goods_nomenclature_sid],
+        date_of_effect: end_date,
         validity_start_date: parent.validity_start_date&.to_date,
-        validity_end_date: parent.validity_end_date&.to_date,
+        validity_end_date: end_date,
       }
     end
   end

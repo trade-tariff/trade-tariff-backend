@@ -675,7 +675,8 @@ RSpec.describe TariffChangesService do
           goods_nomenclature_sid: parent_sid,
           goods_nomenclature_item_id: '0101000001',
           action: 'ending',
-          date_of_effect: child_date_of_effect,
+          date_of_effect: child_date_of_effect - 1.day,
+          validity_end_date: child_date_of_effect - 1.day,
         ),
       )
     end
