@@ -453,6 +453,8 @@ RSpec.describe TariffChangesService do
 
     context 'when processing commodity changes' do
       it 'adds change records for each commodity change' do
+        allow(service).to receive(:parent_declarability_transition_changes).and_return([])
+
         service.generate_commodity_change_records
 
         expect(service.tariff_change_records).to include(
@@ -467,6 +469,8 @@ RSpec.describe TariffChangesService do
 
     context 'when processing commodity description changes' do
       it 'adds change records for commodity description changes' do
+        allow(service).to receive(:parent_declarability_transition_changes).and_return([])
+
         service.generate_commodity_change_records
 
         expect(service.tariff_change_records).to include(
@@ -479,6 +483,7 @@ RSpec.describe TariffChangesService do
       end
 
       it 'skips commodity description changes when there is a matching commodity change' do
+        allow(service).to receive(:parent_declarability_transition_changes).and_return([])
         allow(service).to receive(:matching_commodity_change?).with(commodity_description_change[:goods_nomenclature_sid], commodity_description_change[:action]).and_return(true)
 
         service.generate_commodity_change_records
@@ -491,6 +496,7 @@ RSpec.describe TariffChangesService do
     context 'when processing measure changes' do
       context 'when goods nomenclature is not found' do
         it 'does not add measure change records but processes other changes' do
+          allow(service).to receive(:parent_declarability_transition_changes).and_return([])
           # Create a measure change that references a non-existent goods_nomenclature_sid
           service.instance_variable_set(:@changes, {
             commodities: [commodity_change],
@@ -517,7 +523,7 @@ RSpec.describe TariffChangesService do
 
         it 'adds change record for the declarable goods nomenclature' do
           other_service = described_class.new(date)
-          allow(other_service).to receive(:matching_commodity_change?).and_return(false)
+          allow(other_service).to receive_messages(parent_declarability_transition_changes: [], matching_commodity_change?: false)
 
           other_service.instance_variable_set(:@changes, service.instance_variable_get(:@changes))
 
@@ -563,7 +569,7 @@ RSpec.describe TariffChangesService do
         end
 
         it 'loads goods nomenclatures once for the measure batch' do
-          allow(service).to receive(:matching_commodity_change?).and_return(false)
+          allow(service).to receive_messages(parent_declarability_transition_changes: [], matching_commodity_change?: false)
           allow(GoodsNomenclature).to receive(:where).and_call_original
 
           service.generate_commodity_change_records
@@ -593,7 +599,7 @@ RSpec.describe TariffChangesService do
         it 'adds change records for declarable descendants' do
           other_service = described_class.new(date)
           other_service.instance_variable_set(:@changes, service.instance_variable_get(:@changes))
-          allow(other_service).to receive(:matching_commodity_change?).and_return(false)
+          allow(other_service).to receive_messages(parent_declarability_transition_changes: [], matching_commodity_change?: false)
 
           other_service.generate_commodity_change_records
 
@@ -615,11 +621,215 @@ RSpec.describe TariffChangesService do
         it 'does not add a change record' do
           other_service = described_class.new(date)
           other_service.instance_variable_set(:@changes, service.instance_variable_get(:@changes))
+          allow(other_service).to receive(:parent_declarability_transition_changes).and_return([])
           allow(other_service).to receive(:matching_commodity_change?).and_return(false, true)
 
           other_service.generate_commodity_change_records
 
           expect(other_service.tariff_change_records).not_to include(hash_including(type: 'Measure', goods_nomenclature_sid: goods_nomenclature.goods_nomenclature_sid))
+        end
+      end
+
+      context 'when parent declarability transitions are present' do
+        let(:transition_change) do
+          {
+            type: 'Commodity',
+            object_sid: 78_901,
+            goods_nomenclature_item_id: '0202000000',
+            goods_nomenclature_sid: 78_901,
+            action: 'ending',
+            date_of_effect: date,
+            validity_start_date: date - 1.year,
+            validity_end_date: date,
+          }
+        end
+
+        it 'adds parent transition records before non-commodity changes' do
+          allow(service).to receive(:parent_declarability_transition_changes).and_return([transition_change])
+
+          service.generate_commodity_change_records
+
+          expect(service.tariff_change_records).to include(
+            hash_including(
+              type: 'Commodity',
+              goods_nomenclature_sid: transition_change[:goods_nomenclature_sid],
+              action: 'ending',
+            ),
+          )
+        end
+      end
+    end
+  end
+
+  describe '#parent_declarability_transition_changes' do
+    let(:date) { Date.new(2025, 1, 15) }
+    let(:other_service) { described_class.new(date) }
+    let(:parent_sid) { 90_001 }
+    let(:parent) do
+      instance_double(
+        GoodsNomenclature,
+        goods_nomenclature_sid: parent_sid,
+        goods_nomenclature_item_id: '2202000000',
+      )
+    end
+
+    it 'creates an ending change when creation causes declarability to switch from true to false' do
+      child_effective_date = date + 2.days
+      child_sid = 91_001
+      child_change = {
+        type: 'Commodity',
+        object_sid: child_sid,
+        action: TariffChangesService::BaseChanges::CREATION,
+        date_of_effect: child_effective_date,
+      }
+      previous_parent = instance_double(GoodsNomenclature, declarable?: true, validity_start_date: Date.new(2024, 1, 1), validity_end_date: nil)
+      current_parent = instance_double(GoodsNomenclature, declarable?: false)
+
+      allow(other_service).to receive(:parent_declarability_child_changes).and_return([child_change])
+      allow(other_service).to receive(:parent_for_child_at).with(child_sid, child_effective_date).and_return(parent)
+      allow(other_service).to receive(:goods_nomenclature_at).with(parent_sid, child_effective_date - 1.day).and_return(previous_parent)
+      allow(other_service).to receive(:goods_nomenclature_at).with(parent_sid, child_effective_date).and_return(current_parent)
+
+      result = other_service.parent_declarability_transition_changes
+
+      expect(result).to include(
+        hash_including(
+          type: 'Commodity',
+          goods_nomenclature_sid: parent_sid,
+          action: TariffChangesService::BaseChanges::ENDING,
+          date_of_effect: child_effective_date - 1.day,
+          validity_start_date: Date.new(2024, 1, 1),
+          validity_end_date: child_effective_date - 1.day,
+        ),
+      )
+    end
+
+    it 'creates a creation change when ending causes declarability to switch from false to true' do
+      child_end_date = date + 1.day
+      child_sid = 91_002
+      child_change = {
+        type: 'Commodity',
+        object_sid: child_sid,
+        action: TariffChangesService::BaseChanges::ENDING,
+        date_of_effect: child_end_date,
+      }
+      previous_parent = instance_double(GoodsNomenclature, declarable?: false, validity_start_date: Date.new(2024, 1, 1), validity_end_date: nil)
+      current_parent = instance_double(GoodsNomenclature, declarable?: true)
+
+      allow(other_service).to receive(:parent_declarability_child_changes).and_return([child_change])
+      allow(other_service).to receive(:parent_for_child_at).with(child_sid, child_end_date).and_return(parent)
+      allow(other_service).to receive(:goods_nomenclature_at).with(parent_sid, child_end_date).and_return(previous_parent)
+      allow(other_service).to receive(:goods_nomenclature_at).with(parent_sid, child_end_date + 1.day).and_return(current_parent)
+
+      result = other_service.parent_declarability_transition_changes
+
+      expect(result).to include(
+        hash_including(
+          type: 'Commodity',
+          goods_nomenclature_sid: parent_sid,
+          action: TariffChangesService::BaseChanges::CREATION,
+          date_of_effect: child_end_date + 1.day,
+          validity_start_date: child_end_date + 1.day,
+          validity_end_date: nil,
+        ),
+      )
+    end
+  end
+
+  # Integration specs: use real goods nomenclature tree nodes to verify that
+  # parent declarability is resolved at the child's effective date, not the
+  # operation date. This exercises the TimeMachine + nested-set path that
+  # mocked unit specs cannot reach.
+  describe 'parent declarability (integration)' do
+    let(:operation_date) { Date.new(2025, 1, 15) }
+    let(:effective_date) { operation_date + 5.days }
+    let(:int_service) { described_class.new(operation_date) }
+
+    describe '#parent_for_child_at' do
+      context 'when child is imported before its validity starts' do
+        let!(:parent_node) do
+          create(:commodity, :declarable, validity_start_date: 2.years.ago.to_date)
+        end
+        let!(:child_node) do
+          create(:commodity, :non_declarable,
+                 parent: parent_node,
+                 validity_start_date: effective_date)
+        end
+
+        it 'returns nil at operation_date because child not yet valid at that snapshot' do
+          result = int_service.parent_for_child_at(child_node.goods_nomenclature_sid, operation_date)
+
+          expect(result).to be_nil
+        end
+
+        it 'resolves the parent at the child effective_date' do
+          result = int_service.parent_for_child_at(child_node.goods_nomenclature_sid, effective_date)
+
+          expect(result).not_to be_nil
+          expect(result.goods_nomenclature_sid).to eq(parent_node.goods_nomenclature_sid)
+        end
+      end
+    end
+
+    describe '#parent_declarability_transition_for' do
+      context 'when a non-declarable child is imported before its validity starts' do
+        let!(:parent_node) do
+          create(:commodity, :declarable, validity_start_date: 2.years.ago.to_date)
+        end
+        let!(:child_node) do
+          create(:commodity, :non_declarable,
+                 parent: parent_node,
+                 validity_start_date: effective_date)
+        end
+
+        it 'emits an ENDING change for the parent using the child effective date, not operation date' do
+          child_change = {
+            type: 'Commodity',
+            object_sid: child_node.goods_nomenclature_sid,
+            action: TariffChangesService::BaseChanges::CREATION,
+            date_of_effect: effective_date,
+          }
+
+          result = int_service.parent_declarability_transition_for(child_change)
+
+          expect(result).to include(
+            type: 'Commodity',
+            goods_nomenclature_sid: parent_node.goods_nomenclature_sid,
+            action: TariffChangesService::BaseChanges::ENDING,
+            date_of_effect: effective_date - 1.day,
+          )
+        end
+      end
+
+      context 'when child ending makes parent declarable again' do
+        let(:child_end_date) { operation_date + 3.days }
+        let!(:parent_node) do
+          create(:commodity, :declarable, validity_start_date: 2.years.ago.to_date)
+        end
+        let!(:child_node) do
+          create(:commodity, :non_declarable,
+                 parent: parent_node,
+                 validity_start_date: 2.years.ago.to_date,
+                 validity_end_date: child_end_date)
+        end
+
+        it 'emits a CREATION change for the parent the day after the child ends' do
+          child_change = {
+            type: 'Commodity',
+            object_sid: child_node.goods_nomenclature_sid,
+            action: TariffChangesService::BaseChanges::ENDING,
+            date_of_effect: child_end_date,
+          }
+
+          result = int_service.parent_declarability_transition_for(child_change)
+
+          expect(result).to include(
+            type: 'Commodity',
+            goods_nomenclature_sid: parent_node.goods_nomenclature_sid,
+            action: TariffChangesService::BaseChanges::CREATION,
+            date_of_effect: child_end_date + 1.day,
+            validity_start_date: child_end_date + 1.day,
+          )
         end
       end
     end
