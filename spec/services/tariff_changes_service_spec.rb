@@ -177,7 +177,7 @@ RSpec.describe TariffChangesService do
         goods_nomenclature_item_id: '0101010100',
         object_sid: 12_345,
         goods_nomenclature_sid: 12_345,
-        action: 'creation',
+        action: TariffChangesService::BaseChanges::CREATION,
         date_of_effect: date,
         validity_start_date: date,
         validity_end_date: nil,
@@ -189,7 +189,7 @@ RSpec.describe TariffChangesService do
         goods_nomenclature_item_id: '0102020200',
         object_sid: 23_456,
         goods_nomenclature_sid: 23_456,
-        action: 'update',
+        action: TariffChangesService::BaseChanges::UPDATE,
         date_of_effect: date,
         validity_start_date: date,
         validity_end_date: nil,
@@ -200,7 +200,7 @@ RSpec.describe TariffChangesService do
         type: 'Measure',
         object_sid: 54_321,
         goods_nomenclature_sid: 67_890,
-        action: 'creation',
+        action: TariffChangesService::BaseChanges::CREATION,
         date_of_effect: date,
         validity_start_date: date,
         validity_end_date: nil,
@@ -260,7 +260,7 @@ RSpec.describe TariffChangesService do
         object_sid: 12_345,
         goods_nomenclature_item_id: '0101010100',
         goods_nomenclature_sid: 12_345,
-        action: 'creation',
+        action: TariffChangesService::BaseChanges::CREATION,
         operation_date: date,
         date_of_effect: date,
         validity_start_date: date,
@@ -344,7 +344,7 @@ RSpec.describe TariffChangesService do
       change_1 = {
         goods_nomenclature_item_id: '0102000000',
         type: 'Commodity',
-        action: 'creation',
+        action: TariffChangesService::BaseChanges::CREATION,
         object_sid: 12_345,
         goods_nomenclature_sid: 12_345,
         operation_date: date,
@@ -355,7 +355,7 @@ RSpec.describe TariffChangesService do
       change_2 = {
         goods_nomenclature_item_id: '0101000000',
         type: 'Measure',
-        action: 'update',
+        action: TariffChangesService::BaseChanges::UPDATE,
         object_sid: 23_456,
         goods_nomenclature_sid: 23_456,
         operation_date: date,
@@ -366,7 +366,7 @@ RSpec.describe TariffChangesService do
       change_3 = {
         goods_nomenclature_item_id: '0101000000',
         type: 'Commodity',
-        action: 'creation',
+        action: TariffChangesService::BaseChanges::CREATION,
         object_sid: 34_567,
         goods_nomenclature_sid: 34_567,
         operation_date: date,
@@ -393,7 +393,7 @@ RSpec.describe TariffChangesService do
         type: 'Measure',
         object_sid: measure.measure_sid,
         goods_nomenclature_sid: measure.goods_nomenclature_sid,
-        action: 'creation',
+        action: TariffChangesService::BaseChanges::CREATION,
         date_of_effect: date,
         validity_start_date: date,
         validity_end_date: nil,
@@ -430,7 +430,7 @@ RSpec.describe TariffChangesService do
         goods_nomenclature_item_id: '0102020200',
         object_sid: 23_456,
         goods_nomenclature_sid: 23_456,
-        action: 'update',
+        action: TariffChangesService::BaseChanges::UPDATE,
       }
     end
     let(:measure_change) do
@@ -651,7 +651,7 @@ RSpec.describe TariffChangesService do
         commodities: [{
           type: 'Commodity',
           object_sid: child_sid,
-          action: 'creation',
+          action: TariffChangesService::BaseChanges::CREATION,
           date_of_effect: child_date_of_effect,
         }],
         commodity_descriptions: [],
@@ -674,7 +674,7 @@ RSpec.describe TariffChangesService do
           type: 'Commodity',
           goods_nomenclature_sid: parent_sid,
           goods_nomenclature_item_id: '0101000001',
-          action: 'ending',
+          action: TariffChangesService::BaseChanges::ENDING,
           date_of_effect: child_date_of_effect - 1.day,
           validity_end_date: child_date_of_effect - 1.day,
         ),
@@ -706,7 +706,7 @@ RSpec.describe TariffChangesService do
       {
         type: 'Commodity',
         object_sid: 98_765,
-        action: 'creation',
+        action: TariffChangesService::BaseChanges::CREATION,
         date_of_effect: date,
         validity_start_date: date,
         validity_end_date: nil,
@@ -724,7 +724,7 @@ RSpec.describe TariffChangesService do
           object_sid: 98_765,
           goods_nomenclature_item_id: '0101010100',
           goods_nomenclature_sid: 12_345,
-          action: 'creation',
+          action: TariffChangesService::BaseChanges::CREATION,
           operation_date: date,
           date_of_effect: date,
           validity_start_date: date,
@@ -749,7 +749,7 @@ RSpec.describe TariffChangesService do
         {
           type: 'Measure',
           object_sid: measure.measure_sid,
-          action: 'creation',
+          action: TariffChangesService::BaseChanges::CREATION,
           date_of_effect: date,
           validity_start_date: date,
           validity_end_date: nil,
@@ -776,7 +776,7 @@ RSpec.describe TariffChangesService do
           {
             type: 'Measure',
             object_sid: 99_999,
-            action: 'creation',
+            action: TariffChangesService::BaseChanges::CREATION,
             date_of_effect: date,
             validity_start_date: date,
             validity_end_date: nil,
@@ -801,12 +801,12 @@ RSpec.describe TariffChangesService do
         {
           goods_nomenclature_sid: 12_345,
           type: 'Commodity',
-          action: 'creation',
+          action: TariffChangesService::BaseChanges::CREATION,
         },
         {
           goods_nomenclature_sid: 67_890,
           type: 'Measure',
-          action: 'update',
+          action: TariffChangesService::BaseChanges::UPDATE,
         },
       ])
     end
