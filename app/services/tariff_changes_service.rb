@@ -198,13 +198,21 @@ class TariffChangesService
   end
 
   def parent_for_child_at(child_sid, snapshot_date)
-    TimeMachine.at(snapshot_date) do
+    @parent_for_child_at_cache ||= {}
+    cache_key = [child_sid, snapshot_date.to_date]
+    return @parent_for_child_at_cache[cache_key] if @parent_for_child_at_cache.key?(cache_key)
+
+    @parent_for_child_at_cache[cache_key] = TimeMachine.at(snapshot_date) do
       GoodsNomenclature.where(goods_nomenclature_sid: child_sid).actual.eager(:parent).first&.parent
     end
   end
 
   def goods_nomenclature_at(goods_nomenclature_sid, snapshot_date)
-    TimeMachine.at(snapshot_date) do
+    @goods_nomenclature_at_cache ||= {}
+    cache_key = [goods_nomenclature_sid, snapshot_date.to_date]
+    return @goods_nomenclature_at_cache[cache_key] if @goods_nomenclature_at_cache.key?(cache_key)
+
+    @goods_nomenclature_at_cache[cache_key] = TimeMachine.at(snapshot_date) do
       gn = GoodsNomenclature.where(goods_nomenclature_sid: goods_nomenclature_sid).actual.first
       next nil if gn.nil?
 
