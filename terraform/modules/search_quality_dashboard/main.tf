@@ -305,6 +305,86 @@ resource "aws_cloudwatch_dashboard" "search_quality" {
           type   = "log"
           x      = 0
           y      = 32
+          width  = 8
+          height = 6
+          properties = {
+            title  = "Duplicate Guard Outcomes"
+            region = var.region
+            view   = "pie"
+            query  = <<-EOT
+              ${local.source}
+              | ${local.service_filter} and event = "duplicate_question_guard_checked"
+              | stats count(*) as checks by suspicious, duplicate, allowed
+            EOT
+          }
+        },
+        {
+          type   = "log"
+          x      = 8
+          y      = 32
+          width  = 8
+          height = 6
+          properties = {
+            title  = "Duplicate Guard Rates"
+            region = var.region
+            view   = "timeSeries"
+            query  = <<-EOT
+              ${local.source}
+              | ${local.service_filter} and event = "duplicate_question_guard_checked"
+              | stats count(*) as checks,
+                  sum(if(suspicious = true, 1, 0)) as suspicious_checks,
+                  sum(if(duplicate = true, 1, 0)) as duplicate_checks,
+                  round(100 * sum(if(suspicious = true, 1, 0)) / count(*), 2) as suspicious_pct,
+                  round(100 * sum(if(duplicate = true, 1, 0)) / count(*), 2) as duplicate_pct
+                by bin(1h)
+            EOT
+          }
+        },
+        {
+          type   = "log"
+          x      = 16
+          y      = 32
+          width  = 8
+          height = 6
+          properties = {
+            title  = "Duplicate Guard Signal Breakdown"
+            region = var.region
+            query  = <<-EOT
+              ${local.source}
+              | ${local.service_filter} and event = "duplicate_question_guard_checked" and suspicious = true
+              | fields jsonParse(@message) as guard
+              | unnest guard.signals into signal
+              | stats count(*) as checks by signal
+              | sort checks desc
+            EOT
+          }
+        },
+      ],
+      [
+        {
+          type   = "log"
+          x      = 0
+          y      = 38
+          width  = 24
+          height = 6
+          properties = {
+            title  = "Recent Duplicate Guard Decisions"
+            region = var.region
+            query  = <<-EOT
+              ${local.source}
+              | ${local.service_filter} and event = "duplicate_question_guard_checked"
+              | fields @timestamp, request_id, attempt_number, suspicious, duplicate, allowed, signals, reason, duplicate_of_question, duplicate_of_answer
+              | sort @timestamp desc
+              | limit 30
+            EOT
+          }
+        },
+      ],
+      [
+        {
+          type   = "log"
+          x      = 0
+          y      = 44
           width  = 24
           height = 6
           properties = {

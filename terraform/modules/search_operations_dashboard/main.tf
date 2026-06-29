@@ -267,6 +267,83 @@ resource "aws_cloudwatch_dashboard" "search_operations" {
           type   = "log"
           x      = 0
           y      = 26
+          width  = 8
+          height = 6
+          properties = {
+            title  = "Duplicate Guard AI Latency"
+            region = var.region
+            view   = "timeSeries"
+            query  = <<-EOT
+              ${local.source}
+              | ${local.service_filter} and event = "api_call_completed" and operation in ["duplicate_question_validator", "duplicate_question_retry"]
+              | stats pct(duration_ms, 50) as p50, pct(duration_ms, 90) as p90, pct(duration_ms, 99) as p99 by operation, bin(1h)
+            EOT
+          }
+        },
+        {
+          type   = "log"
+          x      = 8
+          y      = 26
+          width  = 8
+          height = 6
+          properties = {
+            title  = "Duplicate Guard Fail-Open Rate"
+            region = var.region
+            view   = "timeSeries"
+            query  = <<-EOT
+              ${local.source}
+              | ${local.service_filter} and event = "duplicate_question_guard_checked"
+              | stats count(*) as checks,
+                  sum(if(reason = "validator_unparseable", 1, 0)) as fail_open_checks,
+                  round(100 * sum(if(reason = "validator_unparseable", 1, 0)) / count(*), 2) as fail_open_pct
+                by bin(1h)
+            EOT
+          }
+        },
+        {
+          type   = "log"
+          x      = 16
+          y      = 26
+          width  = 8
+          height = 6
+          properties = {
+            title  = "Duplicate Retry Volume"
+            region = var.region
+            view   = "timeSeries"
+            query  = <<-EOT
+              ${local.source}
+              | ${local.service_filter} and event = "api_call_completed" and operation = "duplicate_question_retry"
+              | stats count(*) as retries by response_type, bin(1h)
+            EOT
+          }
+        },
+      ],
+      [
+        {
+          type   = "log"
+          x      = 0
+          y      = 32
+          width  = 24
+          height = 6
+          properties = {
+            title  = "Recent Duplicate Guard AI Issues"
+            region = var.region
+            query  = <<-EOT
+              ${local.source}
+              | ${local.service_filter}
+              | filter (event = "api_call_completed" and operation in ["duplicate_question_validator", "duplicate_question_retry"] and response_type = "error") or (event = "duplicate_question_guard_checked" and reason = "validator_unparseable")
+              | fields @timestamp, event, request_id, operation, response_type, reason, error_type, error_message, effective_query, attempt_number
+              | sort @timestamp desc
+              | limit 30
+            EOT
+          }
+        },
+      ],
+      [
+        {
+          type   = "log"
+          x      = 0
+          y      = 38
           width  = 24
           height = 6
           properties = {
