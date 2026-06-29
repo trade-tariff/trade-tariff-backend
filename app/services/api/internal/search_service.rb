@@ -75,6 +75,10 @@ module Api
             interactive_result,
             retrieval.expanded_query,
           )
+          emit_evaluation_trace(
+            retrieval: retrieval,
+            interactive_result: interactive_result,
+          )
           completion = completion_payload(
             result_count: response[:data]&.size || 0,
             total_attempts: interactive_result&.attempt,
@@ -95,6 +99,46 @@ module Api
         return payload unless description_intercept
 
         payload.merge(description_intercept:)
+      end
+
+      def emit_evaluation_trace(retrieval:, interactive_result:)
+        return unless interactive_result
+
+        ::Search::Instrumentation.evaluation_trace_returned(
+          request_id: request_id,
+          query: q,
+          effective_query: retrieval.expanded_query,
+          iteration: interactive_result.attempt,
+          answer_count: answers.size,
+          retrieval_method: retrieval_method,
+          results_type: retrieval.results_type,
+          candidates: retrieval.goods_nomenclatures,
+          final_result_type: interactive_result.type&.to_s,
+          ranked_answers: evaluation_ranked_answers(interactive_result),
+          questions: evaluation_questions(interactive_result),
+          error_message: evaluation_error_message(interactive_result),
+          ranking_source: interactive_result.ranking_source,
+          model: interactive_result.model,
+          result_limit: interactive_result.result_limit,
+        )
+      end
+
+      def evaluation_ranked_answers(interactive_result)
+        return [] unless interactive_result.type == :answers
+
+        Array(interactive_result.data)
+      end
+
+      def evaluation_questions(interactive_result)
+        return [] unless interactive_result.type == :questions
+
+        Array(interactive_result.data)
+      end
+
+      def evaluation_error_message(interactive_result)
+        return unless interactive_result.type == :error
+
+        interactive_result.data[:message]
       end
 
       def retrieve_short_list

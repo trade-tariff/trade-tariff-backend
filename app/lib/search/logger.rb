@@ -150,6 +150,38 @@ module Search
       info log_entry(data)
     end
 
+    def evaluation_trace_returned(event)
+      info log_entry(
+        event: 'evaluation_trace_returned',
+        request_id: event.payload[:request_id],
+        search_type: event.payload[:search_type],
+        trace_version: event.payload[:trace_version],
+        query: event.payload[:query],
+        effective_query: event.payload[:effective_query],
+        iteration: event.payload[:iteration],
+        answer_count: event.payload[:answer_count],
+        retrieval_method: event.payload[:retrieval_method],
+        results_type: event.payload[:results_type],
+        candidate_count: event.payload[:candidate_count],
+        logged_candidate_count: event.payload[:logged_candidate_count],
+        candidates_truncated: event.payload[:candidates_truncated],
+        final_result_type: event.payload[:final_result_type],
+        ranked_answer_count: event.payload[:ranked_answer_count],
+        logged_ranked_answer_count: event.payload[:logged_ranked_answer_count],
+        ranked_answers_truncated: event.payload[:ranked_answers_truncated],
+        question_count: event.payload[:question_count],
+        logged_question_count: event.payload[:logged_question_count],
+        questions_truncated: event.payload[:questions_truncated],
+        confidence_levels: event.payload[:confidence_levels],
+        ranking_source: event.payload[:ranking_source],
+        model: event.payload[:model],
+        result_limit: event.payload[:result_limit],
+        error_message: event.payload[:error_message],
+        error_message_truncated: event.payload[:error_message_truncated],
+        details: event.payload[:details],
+      )
+    end
+
     def description_intercept_checked(event)
       info log_entry(description_intercept_fields(event).merge(
                        event: 'description_intercept_checked',

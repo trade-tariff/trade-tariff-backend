@@ -206,6 +206,65 @@ RSpec.describe Search::Logger do
     end
   end
 
+  describe '#evaluation_trace_returned' do
+    let(:payload) do
+      {
+        request_id: 'req-1',
+        search_type: 'interactive',
+        trace_version: 'classification_evaluation_trace.v1',
+        query: 'handbag',
+        effective_query: 'handbag Leather',
+        iteration: 2,
+        answer_count: 1,
+        retrieval_method: 'opensearch',
+        results_type: 'opensearch',
+        candidate_count: 1,
+        logged_candidate_count: 1,
+        candidates_truncated: false,
+        final_result_type: 'answers',
+        ranked_answer_count: 1,
+        logged_ranked_answer_count: 1,
+        ranked_answers_truncated: false,
+        question_count: 0,
+        logged_question_count: 0,
+        questions_truncated: false,
+        confidence_levels: { 'strong' => 1 },
+        ranking_source: 'model_answers',
+        model: 'gpt-5.2',
+        result_limit: 3,
+        details: {
+          candidates: [{ goods_nomenclature_item_id: '4202210000', score: 10.5 }],
+          ranked_answers: [{ commodity_code: '4202210000', confidence: 'strong' }],
+        },
+      }
+    end
+
+    it_behaves_like 'a search log entry', :evaluation_trace_returned, 'evaluation_trace_returned',
+                    { request_id: 'req-1', trace_version: 'classification_evaluation_trace.v1' }
+
+    it 'logs the consolidated trace fields' do
+      logger_instance.evaluation_trace_returned(build_event('evaluation_trace_returned', payload))
+      json = parsed_log_output
+
+      expect(json['event']).to eq('evaluation_trace_returned')
+      expect(json['trace_version']).to eq('classification_evaluation_trace.v1')
+      expect(json['effective_query']).to eq('handbag Leather')
+      expect(json['iteration']).to eq(2)
+      expect(json['candidate_count']).to eq(1)
+      expect(json['logged_candidate_count']).to eq(1)
+      expect(json['candidates_truncated']).to be(false)
+      expect(json['ranked_answer_count']).to eq(1)
+      expect(json['logged_ranked_answer_count']).to eq(1)
+      expect(json['ranked_answers_truncated']).to be(false)
+      expect(json['question_count']).to eq(0)
+      expect(json['logged_question_count']).to eq(0)
+      expect(json['questions_truncated']).to be(false)
+      expect(json['confidence_levels']).to eq({ 'strong' => 1 })
+      expect(json['ranking_source']).to eq('model_answers')
+      expect(json['details']['ranked_answers']).to eq([{ 'commodity_code' => '4202210000', 'confidence' => 'strong' }])
+    end
+  end
+
   describe '#description_intercept_checked' do
     let(:payload) do
       {

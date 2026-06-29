@@ -126,6 +126,41 @@ RSpec.describe Search::Instrumentation do
         hash_including(duration_ms: a_kind_of(Float)),
       )
     end
+
+    it 'caps ranked answer details and exposes truncation metadata' do
+      captured_payload = nil
+      allow(ActiveSupport::Notifications).to receive(:instrument) { |_, payload| captured_payload = payload }
+      ranked_answers = (1..51).map do |index|
+        { commodity_code: index.to_s.rjust(10, '0'), confidence: 'possible', raw_response: 'not logged' }
+      end
+
+      described_class.evaluation_trace_returned(
+        request_id: 'req-1',
+        query: 'handbag',
+        effective_query: 'handbag',
+        iteration: 1,
+        answer_count: 0,
+        retrieval_method: 'opensearch',
+        results_type: 'opensearch',
+        candidates: [],
+        final_result_type: 'answers',
+        ranked_answers: ranked_answers,
+        questions: [],
+        error_message: nil,
+        ranking_source: 'model_answers',
+        model: 'gpt-5.2',
+        result_limit: 0,
+      )
+
+      expect(captured_payload).to include(
+        ranked_answer_count: 51,
+        logged_ranked_answer_count: 50,
+        ranked_answers_truncated: true,
+        confidence_levels: { 'possible' => 50 },
+      )
+      expect(captured_payload[:details][:ranked_answers]).to all(include(:commodity_code, :confidence))
+      expect(captured_payload[:details][:ranked_answers]).not_to include(include(:raw_response))
+    end
   end
 
   describe '.query_refined' do
@@ -494,6 +529,81 @@ RSpec.describe Search::Instrumentation do
         iteration: 2,
         effective_query: 'handbag Leather',
         details: { answers: [{ commodity_code: '0101210000', confidence: 'strong' }] },
+      )
+    end
+  end
+
+  describe '.evaluation_trace_returned' do
+    it 'instruments a consolidated eval trace event' do
+      allow(ActiveSupport::Notifications).to receive(:instrument)
+      candidates = [
+        GoodsNomenclatureResult.new(
+          id: 1,
+          goods_nomenclature_item_id: '4202210000',
+          goods_nomenclature_sid: 1,
+          producline_suffix: '80',
+          goods_nomenclature_class: 'Commodity',
+          description: 'Leather handbags',
+          formatted_description: 'Leather handbags',
+          self_text: 'Generated self text',
+          classification_description: 'Leather handbags',
+          full_description: 'Leather handbags',
+          heading_description: nil,
+          declarable: true,
+          score: 10.5,
+          confidence: nil,
+        ),
+      ]
+
+      described_class.evaluation_trace_returned(
+        request_id: 'req-1',
+        query: 'handbag',
+        effective_query: 'handbag Leather',
+        iteration: 2,
+        answer_count: 1,
+        retrieval_method: 'opensearch',
+        results_type: 'opensearch',
+        candidates: candidates,
+        final_result_type: 'answers',
+        ranked_answers: [{ commodity_code: '4202210000', confidence: 'strong', explanation: 'Do not log this' }],
+        questions: [],
+        error_message: nil,
+        ranking_source: 'model_answers',
+        model: 'gpt-5.2',
+        result_limit: 3,
+      )
+
+      expect(ActiveSupport::Notifications).to have_received(:instrument).with(
+        'evaluation_trace_returned.search',
+        hash_including(
+          request_id: 'req-1',
+          search_type: 'interactive',
+          trace_version: 'classification_evaluation_trace.v1',
+          query: 'handbag',
+          effective_query: 'handbag Leather',
+          iteration: 2,
+          answer_count: 1,
+          retrieval_method: 'opensearch',
+          results_type: 'opensearch',
+          candidate_count: 1,
+          logged_candidate_count: 1,
+          candidates_truncated: false,
+          final_result_type: 'answers',
+          ranked_answer_count: 1,
+          logged_ranked_answer_count: 1,
+          ranked_answers_truncated: false,
+          question_count: 0,
+          logged_question_count: 0,
+          questions_truncated: false,
+          confidence_levels: { 'strong' => 1 },
+          ranking_source: 'model_answers',
+          model: 'gpt-5.2',
+          result_limit: 3,
+          details: {
+            candidates: [hash_including(goods_nomenclature_item_id: '4202210000', score: 10.5)],
+            ranked_answers: [{ commodity_code: '4202210000', confidence: 'strong' }],
+          },
+        ),
       )
     end
   end
