@@ -17,6 +17,10 @@ class AdminConfiguration < Sequel::Model(Sequel[:admin_configurations].qualify(:
       selected: 'gpt-5.4',
       sub_values: { 'reasoning_effort' => 'medium' },
     },
+    'interactive_search_duplicate_question_guard_model' => {
+      selected: 'gpt-5-nano-2025-08-07',
+      sub_values: { 'reasoning_effort' => 'low' },
+    },
     'other_self_text_model' => {
       selected: 'gpt-5.4',
       sub_values: { 'reasoning_effort' => 'high' },
@@ -111,6 +115,7 @@ class AdminConfiguration < Sequel::Model(Sequel[:admin_configurations].qualify(:
     'search_compressed_notes_enabled' => false,
     'expand_model' => NESTED_OPTION_DEFAULTS['expand_model'][:selected],
     'interactive_search_enabled' => true,
+    'interactive_search_duplicate_question_guard_enabled' => true,
     'interactive_search_excluded_chapters' => %w[98 99].freeze,
     'interactive_search_max_questions' => 7,
     'refine_search_with_answers_enabled' => false,
@@ -122,6 +127,7 @@ class AdminConfiguration < Sequel::Model(Sequel[:admin_configurations].qualify(:
     'pos_search_enabled' => true,
     'search_labels_enabled' => true,
     'search_non_declarables' => false,
+    'interactive_search_duplicate_question_guard_model' => NESTED_OPTION_DEFAULTS['interactive_search_duplicate_question_guard_model'][:selected],
     'search_model' => NESTED_OPTION_DEFAULTS['search_model'][:selected],
     'search_result_limit' => 0,
     'suggest_results_limit' => 10,

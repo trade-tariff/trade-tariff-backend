@@ -47,6 +47,25 @@ RSpec.describe Api::Internal::SearchService do
       end
     end
 
+    it 'emits interactive configuration diagnostics including the duplicate question guard gate' do
+      allow(Search::Instrumentation).to receive(:interactive_configuration_used)
+      allow(TradeTariffBackend.search_client).to receive(:search).and_return({ 'hits' => { 'hits' => [] } })
+
+      described_class.new(q: 'multimeter leads').call
+
+      expect(Search::Instrumentation).to have_received(:interactive_configuration_used).with(
+        request_id: anything,
+        query: 'multimeter leads',
+        configuration: hash_including(
+          interactive_search_duplicate_question_guard_enabled: true,
+          interactive_search_duplicate_question_guard_model: {
+            selected: 'gpt-5-nano-2025-08-07',
+            reasoning_effort: 'low',
+          },
+        ),
+      )
+    end
+
     context 'when exact match via search_reference suggestion' do
       let!(:heading) do
         create(:heading, :with_description,

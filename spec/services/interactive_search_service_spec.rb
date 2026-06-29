@@ -38,10 +38,19 @@ RSpec.describe InteractiveSearchService do
     allow(Search::Instrumentation).to receive(:api_call).and_yield
     allow(Search::Instrumentation).to receive(:question_returned)
     allow(Search::Instrumentation).to receive(:answer_returned)
+    allow(Search::Instrumentation).to receive(:duplicate_question_guard_checked)
     allow(Search::Instrumentation).to receive(:search_failed)
     create(:admin_configuration, :boolean, name: 'interactive_search_enabled', value: true, area: 'classification')
     create(:admin_configuration, :integer, name: 'interactive_search_max_questions', value: 3, area: 'classification')
     create(:admin_configuration, name: 'search_context', value: default_search_context, area: 'classification')
+    create(
+      :admin_configuration,
+      name: 'interactive_search_duplicate_question_guard_context',
+      config_type: 'markdown',
+      area: 'classification',
+      value: AdminConfigurationSeeder.duplicate_question_guard_context_markdown,
+      description: 'Validator prompt',
+    )
   end
 
   def build_result(code, description, score, full_description: nil)
@@ -144,6 +153,7 @@ RSpec.describe InteractiveSearchService do
           attempt_number: 4,
           iteration: 4,
           effective_query: expanded_query,
+          operation: 'interactive_search_final_answer',
         )
       end
 
@@ -206,6 +216,101 @@ RSpec.describe InteractiveSearchService do
             effective_query: expanded_query,
           ),
         )
+      end
+    end
+
+    context 'when AI returns a duplicate question' do
+      let(:query) { 'Universal Probe Test Leads Cable Digital Multimeter 1000V 10A Cat.2 for Electrical Testing (2 Pcs)' }
+      let(:expanded_query) { "#{query} Another electrical measuring or checking instrument" }
+      let(:answers) do
+        [
+          {
+            question: 'What best describes the goods being imported?',
+            answer: 'Another electrical measuring or checking instrument',
+          },
+          {
+            question: 'Which of these best describes what is actually included in the imported product?',
+            answer: 'Another electrical measuring or checking instrument',
+          },
+          {
+            question: 'Which best describes the imported item itself?',
+            answer: 'Another electrical measuring or checking instrument',
+          },
+        ]
+      end
+      let(:duplicate_question_response) do
+        <<~JSON
+          {"questions": [{
+            "question": "Which of these best matches the item being imported?",
+            "options": [
+              "A digital multimeter instrument",
+              "A pair of multimeter test leads/probes with connectors",
+              "Another electrical measuring or checking instrument",
+              "An insulated electrical cable with connectors, not specifically for a measuring instrument"
+            ]
+          }]}
+        JSON
+      end
+
+      before do
+        create(
+          :admin_configuration,
+          :boolean,
+          name: 'interactive_search_duplicate_question_guard_enabled',
+          value: true,
+          area: 'classification',
+        )
+        AdminConfiguration.where(name: 'interactive_search_max_questions').first.update(value: Sequel.pg_jsonb_wrap(7))
+      end
+
+      it 'retries once with corrective feedback and returns the retry response' do
+        allow(OpenaiClient).to receive(:call) do |prompt, **|
+          if prompt.include?('Decide whether a candidate guided-search question repeats')
+            '{"duplicate": true, "reason": "Repeats the already answered item-identity distinction", "new_dimension": null}'
+          elsif prompt.include?('The previous candidate question repeated')
+            '{"questions": [{"question": "Which type of accessory is being imported?", "options": ["Probe or test lead", "Connector", "Carrying case"]}]}'
+          else
+            duplicate_question_response
+          end
+        end
+
+        expect(result.type).to eq(:questions)
+        expect(result.data.first[:question]).to eq('Which type of accessory is being imported?')
+        expect(OpenaiClient).to have_received(:call).with(
+          a_string_including('The previous candidate question repeated'),
+          model: 'gpt-5.4',
+          reasoning_effort: 'medium',
+        )
+        expect(Search::Instrumentation).to have_received(:api_call).with(
+          request_id: request_id,
+          model: 'gpt-5.4',
+          attempt_number: 4,
+          iteration: 4,
+          effective_query: expanded_query,
+          operation: 'duplicate_question_retry',
+        )
+      end
+
+      it 'falls back to best available answers when the retry also returns a duplicate question' do
+        allow(OpenaiClient).to receive(:call) do |prompt, **|
+          if prompt.include?('Decide whether a candidate guided-search question repeats')
+            '{"duplicate": true, "reason": "Repeats the already answered item-identity distinction", "new_dimension": null}'
+          else
+            duplicate_question_response
+          end
+        end
+
+        expect(result.type).to eq(:answers)
+        expect(result.data.first).to eq({ commodity_code: '4202210000', confidence: 'good' })
+      end
+
+      it 'returns the duplicate-looking question without retry when the guard is disabled' do
+        AdminConfiguration.where(name: 'interactive_search_duplicate_question_guard_enabled').first.update(value: Sequel.pg_jsonb_wrap(false))
+        allow(OpenaiClient).to receive(:call).and_return(duplicate_question_response)
+
+        expect(result.type).to eq(:questions)
+        expect(result.data.first[:question]).to eq('Which of these best matches the item being imported?')
+        expect(OpenaiClient).to have_received(:call).once
       end
     end
 

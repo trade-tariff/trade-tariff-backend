@@ -8,8 +8,8 @@ RSpec.describe 'admin_configurations:seed' do
     Rake::Task['admin_configurations:seed'].reenable
   end
 
-  it 'creates all 42 admin configurations', :aggregate_failures do
-    expect { seed }.to change(AdminConfiguration, :count).by(42)
+  it 'creates all 44 admin configurations', :aggregate_failures do
+    expect { seed }.to change(AdminConfiguration, :count).by(45)
 
     names = AdminConfiguration.order(:name).select_map(:name)
     expect(names).to eq(%w[
@@ -22,6 +22,9 @@ RSpec.describe 'admin_configurations:seed' do
       expand_search_when_needed_enabled
       input_sanitiser_enabled
       input_sanitiser_max_length
+      interactive_search_duplicate_question_guard_context
+      interactive_search_duplicate_question_guard_enabled
+      interactive_search_duplicate_question_guard_model
       interactive_search_enabled
       interactive_search_excluded_chapters
       interactive_search_max_questions
@@ -93,6 +96,7 @@ RSpec.describe 'admin_configurations:seed' do
       'expand_model' => AdminConfiguration.nested_option_default_for('expand_model'),
       'label_model' => AdminConfiguration.nested_option_default_for('label_model'),
       'search_model' => AdminConfiguration.nested_option_default_for('search_model'),
+      'interactive_search_duplicate_question_guard_model' => AdminConfiguration.nested_option_default_for('interactive_search_duplicate_question_guard_model'),
       'other_self_text_model' => AdminConfiguration.nested_option_default_for('other_self_text_model'),
       'non_other_self_text_model' => AdminConfiguration.nested_option_default_for('non_other_self_text_model'),
     }
@@ -129,6 +133,15 @@ RSpec.describe 'admin_configurations:seed' do
     expect(search_context.value).to include('Do not include uncertainty options')
     expect(search_context.value).to include('"Other" must mean "something else"')
     expect(search_context.value).not_to include('Try and ask at least a few questions each time')
+
+    duplicate_question_guard_context = AdminConfiguration.where(name: 'interactive_search_duplicate_question_guard_context').first
+    expect(duplicate_question_guard_context.config_type).to eq('markdown')
+    expect(duplicate_question_guard_context.value).to include('## Task')
+    expect(duplicate_question_guard_context.value).to include('%{previous_answers}')
+    expect(duplicate_question_guard_context.value).to include('%{candidate_question}')
+    expect(duplicate_question_guard_context.value).to include('"duplicate": true')
+    expect(duplicate_question_guard_context.value).to include('"duplicate_of_question"')
+    expect(duplicate_question_guard_context.value).to include('"duplicate_of_answer"')
 
     expand_query = AdminConfiguration.where(name: 'expand_query_context').first
     expect(expand_query.config_type).to eq('markdown')
@@ -228,6 +241,15 @@ RSpec.describe 'admin_configurations:seed' do
     expect(config.config_type).to eq('boolean')
     expect(config.area).to eq('classification')
     expect(config.value).to be(AdminConfiguration.default_for('interactive_search_enabled'))
+  end
+
+  it 'seeds interactive_search_duplicate_question_guard_enabled as a boolean config defaulting to true', :aggregate_failures do
+    seed
+
+    config = AdminConfiguration.where(name: 'interactive_search_duplicate_question_guard_enabled').first
+    expect(config.config_type).to eq('boolean')
+    expect(config.area).to eq('classification')
+    expect(config.value).to be(AdminConfiguration.default_for('interactive_search_duplicate_question_guard_enabled'))
   end
 
   it 'seeds interactive_search_excluded_chapters as a multi_options config defaulting to chapters 98 and 99', :aggregate_failures do
@@ -341,7 +363,7 @@ RSpec.describe 'admin_configurations:seed' do
   it 'uses indented code blocks instead of fenced blocks for Govspeak compatibility', :aggregate_failures do
     seed
 
-    %w[label_context search_context expand_query_context other_self_text_context non_other_self_text_context].each do |name|
+    %w[label_context search_context expand_query_context interactive_search_duplicate_question_guard_context other_self_text_context non_other_self_text_context].each do |name|
       config = AdminConfiguration.where(name:).first
       expect(config.value).not_to include('```'), "#{name} should not contain fenced code blocks"
     end
@@ -358,7 +380,7 @@ RSpec.describe 'admin_configurations:seed' do
   it 'patches existing configurations when their type changes' do
     create(:admin_configuration, name: 'description_intercept_templates', config_type: 'string', value: 'legacy')
 
-    expect { seed }.to change(AdminConfiguration, :count).by(41)
+    expect { seed }.to change(AdminConfiguration, :count).by(44)
     expect(AdminConfiguration.where(name: 'description_intercept_templates').first.config_type).to eq('object_template')
   end
 end
