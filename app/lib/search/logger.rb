@@ -62,6 +62,7 @@ module Search
         attempt_number: event.payload[:attempt_number],
         iteration: event.payload[:iteration],
         effective_query: event.payload[:effective_query],
+        operation: event.payload[:operation],
       }
       add_error_fields!(data, event)
       info log_entry(data)
@@ -179,6 +180,25 @@ module Search
         error_message: event.payload[:error_message],
         error_message_truncated: event.payload[:error_message_truncated],
         details: event.payload[:details],
+      )
+    end
+
+    def duplicate_question_guard_checked(event)
+      info log_entry(
+        event: 'duplicate_question_guard_checked',
+        request_id: event.payload[:request_id],
+        search_type: event.payload[:search_type],
+        attempt_number: event.payload[:attempt_number],
+        iteration: event.payload[:iteration],
+        effective_query: event.payload[:effective_query],
+        allowed: event.payload[:allowed],
+        duplicate: event.payload[:duplicate],
+        suspicious: event.payload[:suspicious],
+        signals: event.payload[:signals],
+        reason: event.payload[:reason],
+        reason_truncated: event.payload[:reason_truncated],
+        duplicate_of_question: event.payload[:duplicate_of_question],
+        duplicate_of_answer: event.payload[:duplicate_of_answer],
       )
     end
 

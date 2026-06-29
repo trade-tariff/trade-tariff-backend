@@ -137,7 +137,7 @@ RSpec.describe Search::Logger do
 
   describe '#api_call_completed' do
     let(:payload) do
-      { request_id: 'req-1', model: 'gpt-4', duration_ms: 2500.0, response_type: 'answers', attempt_number: 1 }
+      { request_id: 'req-1', model: 'gpt-4', duration_ms: 2500.0, response_type: 'answers', attempt_number: 1, operation: 'interactive_search' }
     end
 
     it_behaves_like 'a search log entry', :api_call_completed, 'api_call_completed',
@@ -145,7 +145,8 @@ RSpec.describe Search::Logger do
                       model: 'gpt-4',
                       duration_ms: 2500.0,
                       response_type: 'answers',
-                      attempt_number: 1 }
+                      attempt_number: 1,
+                      operation: 'interactive_search' }
 
     it 'logs correct fields' do
       logger_instance.api_call_completed(build_event('api_call_completed', payload))
@@ -155,6 +156,7 @@ RSpec.describe Search::Logger do
       expect(json['duration_ms']).to eq(2500.0)
       expect(json['response_type']).to eq('answers')
       expect(json['attempt_number']).to eq(1)
+      expect(json['operation']).to eq('interactive_search')
     end
 
     it 'logs error details when present' do
@@ -262,6 +264,49 @@ RSpec.describe Search::Logger do
       expect(json['confidence_levels']).to eq({ 'strong' => 1 })
       expect(json['ranking_source']).to eq('model_answers')
       expect(json['details']['ranked_answers']).to eq([{ 'commodity_code' => '4202210000', 'confidence' => 'strong' }])
+    end
+  end
+
+  describe '#duplicate_question_guard_checked' do
+    let(:payload) do
+      {
+        request_id: 'req-1',
+        attempt_number: 4,
+        allowed: false,
+        duplicate: true,
+        suspicious: true,
+        signals: %w[repeated_selected_answer broad_item_identity_stem],
+        reason: 'Repeats a previous item-identity question',
+        reason_truncated: false,
+        duplicate_of_question: 'Which best describes the imported item itself?',
+        duplicate_of_answer: 'Another electrical measuring or checking instrument',
+      }
+    end
+
+    it_behaves_like 'a search log entry', :duplicate_question_guard_checked, 'duplicate_question_guard_checked',
+                    { request_id: 'req-1',
+                      attempt_number: 4,
+                      allowed: false,
+                      duplicate: true,
+                      suspicious: true,
+                      signals: %w[repeated_selected_answer broad_item_identity_stem],
+                      reason: 'Repeats a previous item-identity question',
+                      reason_truncated: false,
+                      duplicate_of_question: 'Which best describes the imported item itself?',
+                      duplicate_of_answer: 'Another electrical measuring or checking instrument' }
+
+    it 'logs correct fields' do
+      logger_instance.duplicate_question_guard_checked(build_event('duplicate_question_guard_checked', payload))
+      json = parsed_log_output
+      expect(json['event']).to eq('duplicate_question_guard_checked')
+      expect(json['allowed']).to be(false)
+      expect(json['duplicate']).to be(true)
+      expect(json['suspicious']).to be(true)
+      expect(json['signals']).to eq(%w[repeated_selected_answer broad_item_identity_stem])
+      expect(json['reason']).to eq('Repeats a previous item-identity question')
+      expect(json['reason_truncated']).to be(false)
+      expect(json['duplicate_of_question']).to eq('Which best describes the imported item itself?')
+      expect(json['duplicate_of_answer']).to eq('Another electrical measuring or checking instrument')
     end
   end
 

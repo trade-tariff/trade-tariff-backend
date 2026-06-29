@@ -235,6 +235,7 @@ RSpec.describe Search::Instrumentation do
           model: 'gpt-4',
           attempt_number: 1,
           duration_ms: a_kind_of(Float),
+          operation: 'interactive_search',
         ),
       )
     end
@@ -270,6 +271,27 @@ RSpec.describe Search::Instrumentation do
           response_type: 'error',
           error_message: ('x' * 500),
           error_message_truncated: true,
+        ),
+      )
+    end
+
+    it 'classifies duplicate validator responses distinctly' do
+      allow(ActiveSupport::Notifications).to receive(:instrument)
+
+      described_class.api_call(
+        request_id: 'req-1',
+        model: 'gpt-5-nano-2025-08-07',
+        attempt_number: 2,
+        operation: 'duplicate_question_validator',
+      ) do
+        '{"duplicate": false, "reason": "New dimension"}'
+      end
+
+      expect(ActiveSupport::Notifications).to have_received(:instrument).with(
+        'api_call_completed.search',
+        hash_including(
+          response_type: 'duplicate_validation',
+          operation: 'duplicate_question_validator',
         ),
       )
     end
@@ -603,6 +625,66 @@ RSpec.describe Search::Instrumentation do
             candidates: [hash_including(goods_nomenclature_item_id: '4202210000', score: 10.5)],
             ranked_answers: [{ commodity_code: '4202210000', confidence: 'strong' }],
           },
+        ),
+      )
+    end
+  end
+
+  describe '.duplicate_question_guard_checked' do
+    it 'instruments the duplicate_question_guard_checked event' do
+      allow(ActiveSupport::Notifications).to receive(:instrument)
+
+      described_class.duplicate_question_guard_checked(
+        request_id: 'req-1',
+        attempt_number: 4,
+        iteration: 4,
+        effective_query: 'multimeter leads Other instrument',
+        allowed: false,
+        duplicate: true,
+        suspicious: true,
+        signals: %w[repeated_selected_answer broad_item_identity_stem],
+        reason: 'Repeats a previous item-identity question',
+        duplicate_of_question: 'Which best describes the imported item itself?',
+        duplicate_of_answer: 'Another electrical measuring or checking instrument',
+      )
+
+      expect(ActiveSupport::Notifications).to have_received(:instrument).with(
+        'duplicate_question_guard_checked.search',
+        request_id: 'req-1',
+        search_type: 'interactive',
+        attempt_number: 4,
+        iteration: 4,
+        effective_query: 'multimeter leads Other instrument',
+        allowed: false,
+        duplicate: true,
+        suspicious: true,
+        signals: %w[repeated_selected_answer broad_item_identity_stem],
+        reason: 'Repeats a previous item-identity question',
+        reason_truncated: false,
+        duplicate_of_question: 'Which best describes the imported item itself?',
+        duplicate_of_answer: 'Another electrical measuring or checking instrument',
+      )
+    end
+
+    it 'truncates long guard reasons' do
+      allow(ActiveSupport::Notifications).to receive(:instrument)
+
+      described_class.duplicate_question_guard_checked(
+        request_id: 'req-1',
+        attempt_number: 4,
+        effective_query: 'multimeter leads',
+        allowed: true,
+        duplicate: false,
+        suspicious: true,
+        signals: %w[repeated_selected_answer],
+        reason: 'x' * 550,
+      )
+
+      expect(ActiveSupport::Notifications).to have_received(:instrument).with(
+        'duplicate_question_guard_checked.search',
+        hash_including(
+          reason: 'x' * 500,
+          reason_truncated: true,
         ),
       )
     end

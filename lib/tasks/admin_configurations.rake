@@ -373,6 +373,48 @@ module AdminConfigurationSeeder
           }
     MARKDOWN
   end
+
+  def duplicate_question_guard_context_markdown
+    <<~MARKDOWN.strip
+      ## Task
+
+      Decide whether a candidate guided-search question repeats an already answered classification distinction.
+
+      ## Rules
+
+      - Return `duplicate: true` only when the candidate asks the same material distinction as a previous answered question.
+      - Return `duplicate: false` when the candidate narrows the same broad branch using a new classification dimension.
+      - Repeated words like other, another, part, accessory, instrument, or measuring are not enough by themselves.
+      - When `duplicate` is true, copy the previous question and answer that the candidate duplicates into `duplicate_of_question` and `duplicate_of_answer`.
+      - When `duplicate` is false, return null for `duplicate_of_question` and `duplicate_of_answer`.
+
+      ## Search context
+
+      Search query:
+      %{search_query}
+
+      Effective query:
+      %{effective_query}
+
+      Previous answers JSON:
+      %{previous_answers}
+
+      Candidate question JSON:
+      %{candidate_question}
+
+      ## Response format
+
+      Return JSON only:
+
+          {
+            "duplicate": true,
+            "reason": "short string",
+            "duplicate_of_question": "string or null",
+            "duplicate_of_answer": "string or null",
+            "new_dimension": "string or null"
+          }
+    MARKDOWN
+  end
   # rubocop:enable Metrics/MethodLength
 end
 # rubocop:enable Metrics/ModuleLength
@@ -460,6 +502,24 @@ namespace :admin_configurations do
         config_type: 'boolean',
         description: 'Enable interactive Q&A to help traders narrow down commodity codes through clarifying questions',
         value: AdminConfiguration.default_for('interactive_search_enabled'),
+      },
+      {
+        name: 'interactive_search_duplicate_question_guard_enabled',
+        config_type: 'boolean',
+        description: 'Detect and retry repeated interactive search questions before showing them to traders',
+        value: AdminConfiguration.default_for('interactive_search_duplicate_question_guard_enabled'),
+      },
+      {
+        name: 'interactive_search_duplicate_question_guard_context',
+        config_type: 'markdown',
+        description: 'System prompt sent to the cheap AI model when validating whether a suspicious interactive search question repeats an already answered classification distinction',
+        value: AdminConfigurationSeeder.duplicate_question_guard_context_markdown,
+      },
+      {
+        name: 'interactive_search_duplicate_question_guard_model',
+        config_type: 'nested_options',
+        description: 'Cheap AI model used to validate whether a suspicious interactive search question repeats an already answered classification distinction',
+        value: nested_option_value.call('interactive_search_duplicate_question_guard_model'),
       },
       {
         name: 'interactive_search_excluded_chapters',

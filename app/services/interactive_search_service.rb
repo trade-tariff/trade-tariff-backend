@@ -35,24 +35,7 @@ class InteractiveSearchService
     return no_results_error if no_results?
     return final_answer if max_questions_reached?
 
-    response = Search::Instrumentation.api_call(
-      request_id: request_id,
-      model: configured_model,
-      attempt_number: attempt,
-      iteration: attempt,
-      effective_query: expanded_query,
-    ) { OpenaiClient.call(build_context, model: configured_model, reasoning_effort: configured_reasoning_effort) }
-    parsed = ExtractBottomJson.call(response)
-
-    if parsed['error'].present?
-      error_result(parsed['error'])
-    elsif parsed['answers'].present?
-      answers_result(parsed['answers'])
-    elsif has_questions?(parsed)
-      questions_result(parsed)
-    else
-      best_available_answers
-    end
+    handle_parsed_response(parse_model_response(build_context, operation: 'interactive_search'))
   rescue StandardError => e
     Search::Instrumentation.search_failed(
       request_id: request_id,
@@ -249,19 +232,37 @@ class InteractiveSearchService
 
   def final_answer
     context = build_context + FINAL_ANSWER_INSTRUCTION
+    parsed = parse_model_response(context, operation: 'interactive_search_final_answer')
+
+    if parsed['answers'].present?
+      answers_result(parsed['answers'])
+    elsif parsed['error'].present?
+      error_result(parsed['error'])
+    else
+      best_available_answers
+    end
+  end
+
+  def parse_model_response(context, operation:)
     response = Search::Instrumentation.api_call(
       request_id: request_id,
       model: configured_model,
       attempt_number: attempt,
       iteration: attempt,
       effective_query: expanded_query,
+      operation: operation,
     ) { OpenaiClient.call(context, model: configured_model, reasoning_effort: configured_reasoning_effort) }
-    parsed = ExtractBottomJson.call(response)
 
-    if parsed['answers'].present?
-      answers_result(parsed['answers'])
-    elsif parsed['error'].present?
+    ExtractBottomJson.call(response)
+  end
+
+  def handle_parsed_response(parsed, duplicate_retry: false)
+    if parsed['error'].present?
       error_result(parsed['error'])
+    elsif parsed['answers'].present?
+      answers_result(parsed['answers'])
+    elsif has_questions?(parsed)
+      questions_result(parsed, duplicate_retry: duplicate_retry)
     else
       best_available_answers
     end
@@ -336,9 +337,28 @@ class InteractiveSearchService
     parsed['questions'].is_a?(Array) && parsed['questions'].any?
   end
 
-  def questions_result(parsed)
+  def questions_result(parsed, duplicate_retry: false)
     questions = extract_questions(parsed)
     return best_available_answers if questions.empty?
+
+    question = questions.first
+    guard_result = InteractiveSearch::DuplicateQuestionGuard.call(
+      query: query,
+      effective_query: expanded_query,
+      answers: answers,
+      candidate_question: question,
+      request_id: request_id,
+      attempt_number: attempt,
+    )
+
+    if guard_result.duplicate?
+      return best_available_answers if duplicate_retry
+
+      return handle_parsed_response(
+        parse_model_response(duplicate_retry_context(question, guard_result), operation: 'duplicate_question_retry'),
+        duplicate_retry: true,
+      )
+    end
 
     Search::Instrumentation.question_returned(
       request_id: request_id,
@@ -351,12 +371,36 @@ class InteractiveSearchService
 
     Result.new(
       type: :questions,
-      data: questions.first(1),
+      data: [question],
       attempt: attempt,
       model: configured_model,
       result_limit: configured_result_limit,
       ranking_source: 'model_questions',
     )
+  end
+
+  def duplicate_retry_context(question, guard_result)
+    <<~PROMPT
+      #{build_context}
+
+      The previous candidate question repeated a classification distinction that the user has already answered.
+      Do not ask that question again, and do not ask another question with the same material distinction.
+
+      Repeated candidate question:
+      #{question.to_json}
+
+      Duplicate guard diagnostics:
+      #{duplicate_guard_diagnostics(guard_result).to_json}
+
+      Ask one new, concrete narrowing question only if it uses a different classification dimension. Otherwise return the best answers from the OpenSearch results.
+    PROMPT
+  end
+
+  def duplicate_guard_diagnostics(guard_result)
+    {
+      reason: guard_result.reason,
+      signals: guard_result.signals,
+    }
   end
 
   def extract_questions(parsed)

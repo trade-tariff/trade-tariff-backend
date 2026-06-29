@@ -498,6 +498,7 @@ RSpec.describe AdminConfiguration do
 
     it 'returns explicit nested model defaults' do
       expect(described_class.default_for('search_model')).to eq('gpt-5.4')
+      expect(described_class.default_for('interactive_search_duplicate_question_guard_model')).to eq('gpt-5-nano-2025-08-07')
     end
 
     it 'raises KeyError for unknown names' do
@@ -515,6 +516,10 @@ RSpec.describe AdminConfiguration do
         selected: 'gpt-5.4',
         sub_values: { 'reasoning_effort' => 'medium' },
       )
+      expect(described_class.nested_option_default_for('interactive_search_duplicate_question_guard_model')).to eq(
+        selected: 'gpt-5-nano-2025-08-07',
+        sub_values: { 'reasoning_effort' => 'low' },
+      )
     end
   end
 
@@ -523,6 +528,7 @@ RSpec.describe AdminConfiguration do
       it 'returns the default value' do
         expect(described_class.enabled?('expand_search_enabled')).to be false
         expect(described_class.enabled?('interactive_search_enabled')).to be true
+        expect(described_class.enabled?('interactive_search_duplicate_question_guard_enabled')).to be true
       end
     end
 
@@ -672,6 +678,11 @@ RSpec.describe AdminConfiguration do
       it 'returns the default search model with reasoning_effort' do
         result = described_class.nested_options_value('search_model')
         expect(result).to eq({ selected: 'gpt-5.4', sub_values: { 'reasoning_effort' => 'medium' } })
+      end
+
+      it 'returns the default duplicate question guard model with low reasoning_effort' do
+        result = described_class.nested_options_value('interactive_search_duplicate_question_guard_model')
+        expect(result).to eq({ selected: 'gpt-5-nano-2025-08-07', sub_values: { 'reasoning_effort' => 'low' } })
       end
 
       it 'returns the default expand model without unsupported sub_values' do

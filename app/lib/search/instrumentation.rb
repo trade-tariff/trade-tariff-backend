@@ -70,7 +70,7 @@ module Search
       instrument('query_expansion_decided', request_id:, search_type: 'interactive', query:, expand:, reason:, result_count:, max_score:)
     end
 
-    def api_call(request_id:, model:, attempt_number:, iteration: nil, effective_query: nil)
+    def api_call(request_id:, model:, attempt_number:, iteration: nil, effective_query: nil, operation: 'interactive_search', emit_search_failed: true)
       start_time = Process.clock_gettime(Process::CLOCK_MONOTONIC)
       result = yield
       duration = Process.clock_gettime(Process::CLOCK_MONOTONIC) - start_time
@@ -86,6 +86,7 @@ module Search
           attempt_number:,
           iteration:,
           effective_query:,
+          operation:,
         }.merge(error_payload_for_result(result)),
       )
 
@@ -103,9 +104,10 @@ module Search
           attempt_number:,
           iteration:,
           effective_query:,
+          operation:,
         }.merge(truncate_error_payload(e.message)),
       )
-      search_failed(request_id:, error_type: e.class.name, error_message: e.message, search_type: 'interactive')
+      search_failed(request_id:, error_type: e.class.name, error_message: e.message, search_type: 'interactive') if emit_search_failed
       raise
     end
 
@@ -217,6 +219,27 @@ module Search
       )
     end
 
+    def duplicate_question_guard_checked(request_id:, attempt_number:, allowed:, duplicate:, suspicious:, signals:, reason:, iteration: nil, effective_query: nil, duplicate_of_question: nil, duplicate_of_answer: nil)
+      reason_payload = truncate_reason_payload(reason)
+
+      instrument(
+        'duplicate_question_guard_checked',
+        request_id:,
+        search_type: 'interactive',
+        attempt_number:,
+        iteration:,
+        effective_query:,
+        allowed:,
+        duplicate:,
+        suspicious:,
+        signals:,
+        reason: reason_payload[:reason],
+        reason_truncated: reason_payload[:reason_truncated],
+        duplicate_of_question:,
+        duplicate_of_answer:,
+      )
+    end
+
     def search_completed(request_id:, search_type:, total_duration_ms:, result_count:, query: nil, total_attempts: nil, total_questions: nil, final_result_type: nil, results_type: nil, max_score: nil, error_message: nil, description_intercept: nil)
       payload = {
         request_id:,
@@ -299,6 +322,7 @@ module Search
       return 'error' if parsed.is_a?(Hash) && parsed['error'].present?
       return 'answers' if parsed.is_a?(Hash) && parsed['answers'].present?
       return 'questions' if parsed.is_a?(Hash) && parsed['questions'].is_a?(Array) && parsed['questions'].any?
+      return 'duplicate_validation' if parsed.is_a?(Hash) && [true, false].include?(parsed['duplicate'])
 
       'unknown'
     rescue StandardError
@@ -326,6 +350,16 @@ module Search
       {
         error_message: message.first(ERROR_MESSAGE_MAX_LENGTH),
         error_message_truncated: message.length > ERROR_MESSAGE_MAX_LENGTH,
+      }
+    end
+
+    def truncate_reason_payload(reason)
+      return { reason: nil, reason_truncated: false } if reason.blank?
+
+      message = reason.to_s
+      {
+        reason: message.first(ERROR_MESSAGE_MAX_LENGTH),
+        reason_truncated: message.length > ERROR_MESSAGE_MAX_LENGTH,
       }
     end
 
