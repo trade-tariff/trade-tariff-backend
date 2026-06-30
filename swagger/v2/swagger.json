@@ -23,7 +23,29 @@
       "description": "Production (Northern Ireland)"
     }
   ],
+  "security": [
+    {
+      "oauth2_client_credentials": [
+        "tariff/read"
+      ]
+    }
+  ],
   "components": {
+    "securitySchemes": {
+      "oauth2_client_credentials": {
+        "type": "oauth2",
+        "description": "OAuth 2.0 client credentials authentication for Trade Tariff API clients.",
+        "flows": {
+          "clientCredentials": {
+            "tokenUrl": "https://auth.id.trade-tariff.service.gov.uk/oauth2/token",
+            "scopes": {
+              "tariff/read": "Read public Trade Tariff API data.",
+              "tariff/write": "Write Trade Tariff API data where an endpoint explicitly supports it."
+            }
+          }
+        }
+      }
+    },
     "parameters": {
       "accept_header": {
         "name": "Accept",
@@ -37,31 +59,167 @@
           "default": "application/vnd.hmrc.2.0+json"
         },
         "description": "API version negotiation header. Must be `application/vnd.hmrc.2.0+json`."
+      },
+      "AsOfDate": {
+        "name": "as_of",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "string",
+          "format": "date",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+        },
+        "description": "Return tariff data that was valid on this date, formatted as `YYYY-MM-DD`. Defaults to the current date when omitted."
+      },
+      "Include": {
+        "name": "include",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "string"
+        },
+        "description": "Comma-separated JSON:API relationship paths to include in the response. Supported values vary by endpoint."
+      },
+      "Filter": {
+        "name": "filter",
+        "in": "query",
+        "required": false,
+        "style": "deepObject",
+        "explode": true,
+        "schema": {
+          "type": "object",
+          "additionalProperties": true
+        },
+        "description": "Endpoint-specific filter object using `filter[name]=value` query parameters."
+      },
+      "PageNumber": {
+        "name": "page",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "integer",
+          "minimum": 1,
+          "default": 1
+        },
+        "description": "Page number for paginated responses. Defaults to `1`."
+      },
+      "PageSize": {
+        "name": "per_page",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "integer",
+          "minimum": 1,
+          "default": 20
+        },
+        "description": "Number of records to return per page for paginated responses. Defaults to `20` when supported by the endpoint."
+      }
+    },
+    "responses": {
+      "BadRequest": {
+        "description": "The request is malformed or contains unsupported parameters.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/JsonApiErrorResponse"
+            }
+          }
+        }
+      },
+      "NotFound": {
+        "description": "The requested resource could not be found.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/JsonApiErrorResponse"
+            }
+          }
+        }
+      },
+      "UnprocessableContent": {
+        "description": "The request was understood but failed validation.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/JsonApiErrorResponse"
+            }
+          }
+        }
       }
     },
     "schemas": {
+      "JsonApiErrorResponse": {
+        "type": "object",
+        "description": "JSON:API error response returned by V2 endpoints.",
+        "properties": {
+          "errors": {
+            "type": "array",
+            "description": "One or more errors that explain why the request failed.",
+            "items": {
+              "type": "object",
+              "properties": {
+                "status": {
+                  "type": "string",
+                  "description": "HTTP status code associated with the error, when supplied by the endpoint."
+                },
+                "title": {
+                  "type": "string",
+                  "description": "Short error title or affected attribute, when supplied by the endpoint."
+                },
+                "detail": {
+                  "type": "string",
+                  "description": "Human-readable explanation of the error."
+                },
+                "source": {
+                  "type": "object",
+                  "description": "Location of the invalid request value, when supplied by the endpoint.",
+                  "properties": {
+                    "pointer": {
+                      "type": "string",
+                      "description": "JSON Pointer to the related request member."
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "required": [
+          "errors"
+        ]
+      },
       "error_response": {
         "type": "object",
-        "description": "Standard error response",
+        "description": "Deprecated alias for JSON:API error responses. Use `JsonApiErrorResponse` for new endpoint documentation.",
         "properties": {
           "errors": {
             "type": "array",
             "items": {
               "type": "object",
               "properties": {
-                "code": {
+                "status": {
                   "type": "string",
-                  "description": "Machine-readable error code"
+                  "description": "HTTP status code associated with the error, when supplied by the endpoint."
+                },
+                "title": {
+                  "type": "string",
+                  "description": "Short error title or affected attribute, when supplied by the endpoint."
                 },
                 "detail": {
                   "type": "string",
-                  "description": "Human-readable error message"
+                  "description": "Human-readable explanation of the error."
+                },
+                "source": {
+                  "type": "object",
+                  "description": "Location of the invalid request value, when supplied by the endpoint.",
+                  "properties": {
+                    "pointer": {
+                      "type": "string",
+                      "description": "JSON Pointer to the related request member."
+                    }
+                  }
                 }
-              },
-              "required": [
-                "code",
-                "detail"
-              ]
+              }
             }
           }
         },
