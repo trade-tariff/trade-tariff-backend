@@ -75,6 +75,9 @@ RSpec.describe 'swagger helper configuration' do
       :PageNumber,
       :PageSize,
     )
+    expect(parameters.fetch(:accept_header).fetch(:description)).to eq(
+      'API version negotiation header. Use `application/vnd.hmrc.2.0+json` for V2 JSON responses.',
+    )
   end
 
   it 'documents commodity lookup with endpoint-specific usage guidance and key field descriptions' do
