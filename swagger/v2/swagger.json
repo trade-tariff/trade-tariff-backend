@@ -58,7 +58,7 @@
           ],
           "default": "application/vnd.hmrc.2.0+json"
         },
-        "description": "API version negotiation header. Must be `application/vnd.hmrc.2.0+json`."
+        "description": "API version negotiation header. Use `application/vnd.hmrc.2.0+json` for V2 JSON responses."
       },
       "AsOfDate": {
         "name": "as_of",
