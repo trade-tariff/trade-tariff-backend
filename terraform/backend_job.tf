@@ -89,10 +89,7 @@ resource "aws_cloudwatch_event_target" "database_backup_freshness_check" {
       name    = "backend-job"
       command = ["/bin/sh", "-c", "./bin/check-database-backup-freshness --publish"]
       environment = [
-        { name = "ENVIRONMENT", value = var.environment },
-        { name = "S3_BUCKET", value = "trade-tariff-database-backups-${local.account_id}" },
-        { name = "AWS_REGION", value = var.region },
-        { name = "AWS_DEFAULT_REGION", value = var.region },
+        { name = "S3_BUCKET", value = "trade-tariff-database-backups-${local.account_id}" }
       ]
     }]
   })
