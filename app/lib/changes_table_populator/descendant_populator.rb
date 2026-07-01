@@ -10,8 +10,8 @@ module ChangesTablePopulator
     end
 
     def build_descendant_change_records(row:, day: Time.zone.today)
-      find_source_and_descendants(row:, day:).map do |descendant|
-        build_change_record(row: descendant, day:, is_end_line: descendant.declarable?)
+      find_source_and_descendants(row:, day:).map do |descendant, declarable|
+        build_change_record(row: descendant, day:, is_end_line: declarable)
       end
     end
   end

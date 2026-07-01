@@ -105,7 +105,7 @@ module ChangesTablePopulator
              .first
 
       TimeMachine.at(descendants_date(gn, day)) do
-        [gn] + gn.descendants
+        ([gn] + gn.descendants).map { |d| [d, d.declarable?] }
       end
     end
   end
