@@ -157,8 +157,16 @@ module JsonapiSwaggerParameters
   end
 end
 
+module SwaggerSecurityParameters
+  # Rswag reads header parameters by method name, including OpenAPI header casing.
+  # rubocop:disable Naming/MethodName
+  define_method(:Authorization) { 'Bearer test-token' }
+  # rubocop:enable Naming/MethodName
+end
+
 RSpec.configure do |config|
   config.extend JsonapiSwaggerParameters
+  config.include SwaggerSecurityParameters, type: :request
 
   config.openapi_root = Rails.root.join('swagger').to_s
 
@@ -283,33 +291,23 @@ RSpec.configure do |config|
             description: 'Number of records to return per page for paginated responses. Defaults to `20` when supported by the endpoint.',
           },
         },
-        responses: {
-          BadRequest: {
-            description: 'The request is malformed or contains unsupported parameters.',
-            content: {
-              'application/json' => {
-                schema: { '$ref' => '#/components/schemas/JsonApiErrorResponse' },
-              },
-            },
-          },
-          NotFound: {
-            description: 'The requested resource could not be found.',
-            content: {
-              'application/json' => {
-                schema: { '$ref' => '#/components/schemas/JsonApiErrorResponse' },
-              },
-            },
-          },
-          UnprocessableContent: {
-            description: 'The request was understood but failed validation.',
-            content: {
-              'application/json' => {
-                schema: { '$ref' => '#/components/schemas/JsonApiErrorResponse' },
-              },
-            },
-          },
-        },
         schemas: {
+          SimpleErrorResponse: {
+            type: :object,
+            description: 'Error response returned by shared API rescue handlers when a request cannot be processed.',
+            properties: {
+              error: {
+                type: :string,
+                description: 'Short human-readable error message.',
+              },
+              url: {
+                type: :string,
+                format: :uri,
+                description: 'Request URL that produced the error, when supplied by the endpoint.',
+              },
+            },
+            required: %w[error],
+          },
           JsonApiErrorResponse: {
             type: :object,
             description: 'JSON:API error response returned by V2 endpoints.',

@@ -35,32 +35,13 @@ RSpec.describe 'swagger helper configuration' do
     )
   end
 
-  it 'defines reusable JSON:API error responses' do
-    responses = components.fetch(:responses)
+  it 'defines a reusable simple error schema that matches shared rescue handlers' do
+    schema = components.fetch(:schemas).fetch(:SimpleErrorResponse)
 
-    expect(responses.fetch(:BadRequest)).to include(
-      description: 'The request is malformed or contains unsupported parameters.',
-      content: {
-        'application/json' => {
-          schema: { '$ref' => '#/components/schemas/JsonApiErrorResponse' },
-        },
-      },
-    )
-    expect(responses.fetch(:NotFound)).to include(
-      description: 'The requested resource could not be found.',
-      content: {
-        'application/json' => {
-          schema: { '$ref' => '#/components/schemas/JsonApiErrorResponse' },
-        },
-      },
-    )
-    expect(responses.fetch(:UnprocessableContent)).to include(
-      description: 'The request was understood but failed validation.',
-      content: {
-        'application/json' => {
-          schema: { '$ref' => '#/components/schemas/JsonApiErrorResponse' },
-        },
-      },
+    expect(schema).to include(type: :object, required: %w[error])
+    expect(schema.fetch(:properties)).to include(
+      error: { type: :string, description: 'Short human-readable error message.' },
+      url: { type: :string, format: :uri, description: 'Request URL that produced the error, when supplied by the endpoint.' },
     )
   end
 
@@ -94,5 +75,27 @@ RSpec.describe 'swagger helper configuration' do
       :PageNumber,
       :PageSize,
     )
+  end
+
+  it 'documents commodity lookup with endpoint-specific usage guidance and key field descriptions' do
+    generated_doc = JSON.parse(Rails.root.join('swagger/v2/swagger.json').read)
+    path_item = generated_doc.dig('paths', '/api/commodities/{id}')
+    operation = path_item.fetch('get')
+    parameters = path_item.fetch('parameters', []) + operation.fetch('parameters', [])
+    data_schema = operation.dig('responses', '200', 'content', 'application/json', 'schema', 'properties', 'data')
+    attributes = data_schema.dig('properties', 'attributes', 'properties')
+    relationships = data_schema.dig('properties', 'relationships', 'properties')
+
+    expect(operation.fetch('description')).to include('Use this endpoint when you already have a 10-digit commodity code')
+    expect(operation.fetch('description')).to include('Use the `/uk` server for UK Global Tariff data and the `/xi` server for Northern Ireland data')
+    expect(parameters.pluck('name')).to include(
+      'filter[geographical_area_id]',
+      'filter[meursing_additional_code_id]',
+    )
+    expect(attributes.fetch('goods_nomenclature_item_id').fetch('description')).to include('10-digit commodity code')
+    expect(attributes.fetch('declarable').fetch('description')).to include('true when this commodity can be declared')
+    expect(relationships.fetch('import_measures').fetch('description')).to include('Import duties, controls, restrictions, quotas, and other import measures')
+    expect(relationships.fetch('export_measures').fetch('description')).to include('Export controls, restrictions, duties, and other export measures')
+    expect(operation.dig('responses', '404', 'content', 'application/json', 'schema', '$ref')).to eq('#/components/schemas/SimpleErrorResponse')
   end
 end

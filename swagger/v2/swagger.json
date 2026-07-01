@@ -115,39 +115,25 @@
         "description": "Number of records to return per page for paginated responses. Defaults to `20` when supported by the endpoint."
       }
     },
-    "responses": {
-      "BadRequest": {
-        "description": "The request is malformed or contains unsupported parameters.",
-        "content": {
-          "application/json": {
-            "schema": {
-              "$ref": "#/components/schemas/JsonApiErrorResponse"
-            }
-          }
-        }
-      },
-      "NotFound": {
-        "description": "The requested resource could not be found.",
-        "content": {
-          "application/json": {
-            "schema": {
-              "$ref": "#/components/schemas/JsonApiErrorResponse"
-            }
-          }
-        }
-      },
-      "UnprocessableContent": {
-        "description": "The request was understood but failed validation.",
-        "content": {
-          "application/json": {
-            "schema": {
-              "$ref": "#/components/schemas/JsonApiErrorResponse"
-            }
-          }
-        }
-      }
-    },
     "schemas": {
+      "SimpleErrorResponse": {
+        "type": "object",
+        "description": "Error response returned by shared API rescue handlers when a request cannot be processed.",
+        "properties": {
+          "error": {
+            "type": "string",
+            "description": "Short human-readable error message."
+          },
+          "url": {
+            "type": "string",
+            "format": "uri",
+            "description": "Request URL that produced the error, when supplied by the endpoint."
+          }
+        },
+        "required": [
+          "error"
+        ]
+      },
       "JsonApiErrorResponse": {
         "type": "object",
         "description": "JSON:API error response returned by V2 endpoints.",
@@ -1585,7 +1571,7 @@
               "application/vnd.hmrc.2.0+json"
             ]
           },
-          "description": "API version negotiation header"
+          "description": "Accept header for V2 JSON responses. Must be `application/vnd.hmrc.2.0+json`."
         },
         {
           "name": "id",
@@ -1595,7 +1581,25 @@
             "type": "string",
             "pattern": "^\\d{10}$"
           },
-          "description": "Commodity code (exactly 10 digits)"
+          "description": "Declarable commodity code, exactly 10 digits with no spaces or punctuation."
+        },
+        {
+          "name": "filter[geographical_area_id]",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "string"
+          },
+          "description": "Optional country or geographical area code used to remove import and export measures that are not relevant to that area."
+        },
+        {
+          "name": "filter[meursing_additional_code_id]",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "string"
+          },
+          "description": "Optional Meursing additional code used when resolving duty components for goods that require Meursing calculations."
         }
       ],
       "get": {
@@ -1603,7 +1607,7 @@
         "tags": [
           "Commodities"
         ],
-        "description": "Returns a single commodity including its measures, footnotes, and ancestors.",
+        "description": "Use this endpoint when you already have a 10-digit commodity code and need the commodity record,\nincluding classification hierarchy, footnotes, import measures, export measures, and duty-related metadata.\n\nUse the `/uk` server for UK Global Tariff data and the `/xi` server for Northern Ireland data. The same\ncommodity code can have different measures, duty rates, restrictions, or related records in each dataset.\n\nThe commodity must be declarable and valid on the requested date. Use search or hierarchy endpoints first\nwhen you only have a goods description or a partial commodity code.\n",
         "operationId": "getCommodity",
         "responses": {
           "200": {
@@ -1625,7 +1629,8 @@
                       ],
                       "properties": {
                         "id": {
-                          "type": "string"
+                          "type": "string",
+                          "description": "JSON:API resource identifier for the commodity goods nomenclature record."
                         },
                         "type": {
                           "type": "string",
@@ -1638,63 +1643,78 @@
                           "properties": {
                             "producline_suffix": {
                               "type": "string",
-                              "nullable": true
+                              "nullable": true,
+                              "description": "Goods nomenclature product-line suffix for this row."
                             },
                             "description": {
                               "type": "string",
-                              "nullable": true
+                              "nullable": true,
+                              "description": "Commodity description as stored in the tariff dataset."
                             },
                             "number_indents": {
                               "type": "integer",
-                              "nullable": true
+                              "nullable": true,
+                              "description": "Indentation level in the tariff hierarchy."
                             },
                             "goods_nomenclature_item_id": {
-                              "type": "string"
+                              "type": "string",
+                              "description": "10-digit commodity code for this goods nomenclature item."
                             },
                             "bti_url": {
                               "type": "string",
-                              "nullable": true
+                              "nullable": true,
+                              "description": "GOV.UK guidance URL for applying for a Binding Tariff Information decision."
                             },
                             "formatted_description": {
                               "type": "string",
-                              "nullable": true
+                              "nullable": true,
+                              "description": "Commodity description formatted for display."
                             },
                             "description_plain": {
                               "type": "string",
-                              "nullable": true
+                              "nullable": true,
+                              "description": "Commodity description with formatting removed."
                             },
                             "consigned": {
                               "type": "boolean",
-                              "nullable": true
+                              "nullable": true,
+                              "description": "Whether the commodity description identifies goods as consigned from one or more countries."
                             },
                             "consigned_from": {
                               "type": "string",
-                              "nullable": true
+                              "nullable": true,
+                              "description": "Country or countries extracted from \"consigned from\" wording in the commodity description."
                             },
                             "basic_duty_rate": {
                               "type": "string",
-                              "nullable": true
+                              "nullable": true,
+                              "description": "Summary basic third-country duty rate, when one can be derived from applicable import measures."
                             },
                             "meursing_code": {
                               "type": "boolean",
-                              "nullable": true
+                              "nullable": true,
+                              "description": "Whether Meursing additional code information may be needed for this commodity."
                             },
                             "validity_start_date": {
                               "type": "string",
                               "nullable": true,
-                              "format": "date-time"
+                              "format": "date-time",
+                              "description": "Date and time from which this commodity description period is valid."
                             },
                             "validity_end_date": {
                               "type": "string",
                               "nullable": true,
-                              "format": "date-time"
+                              "format": "date-time",
+                              "description": "Date and time after which this commodity description period is no longer valid, or null when open-ended."
                             },
                             "has_chemicals": {
                               "type": "boolean",
-                              "nullable": true
+                              "nullable": true,
+                              "description": "Whether chemical substance records are associated with this commodity."
                             },
                             "declarable": {
-                              "type": "boolean"
+                              "type": "boolean",
+                              "description": "true when this commodity can be declared on a customs declaration."
                             }
                           }
                         },
@@ -1703,6 +1723,7 @@
                           "properties": {
                             "footnotes": {
                               "type": "object",
+                              "description": "Footnotes linked to the commodity, including legal or usage notes that may affect classification or measures.",
                               "properties": {
                                 "data": {
                                   "type": "array",
@@ -1725,6 +1746,7 @@
                             },
                             "section": {
                               "type": "object",
+                              "description": "Tariff section containing the commodity.",
                               "properties": {
                                 "data": {
                                   "type": "object",
@@ -1745,6 +1767,7 @@
                             },
                             "chapter": {
                               "type": "object",
+                              "description": "Tariff chapter containing the commodity.",
                               "properties": {
                                 "data": {
                                   "type": "object",
@@ -1765,6 +1788,7 @@
                             },
                             "heading": {
                               "type": "object",
+                              "description": "Tariff heading containing the commodity.",
                               "properties": {
                                 "data": {
                                   "type": "object",
@@ -1785,6 +1809,7 @@
                             },
                             "ancestors": {
                               "type": "object",
+                              "description": "Parent goods nomenclature records in the classification hierarchy.",
                               "properties": {
                                 "data": {
                                   "type": "array",
@@ -1804,6 +1829,7 @@
                             },
                             "import_measures": {
                               "type": "object",
+                              "description": "Import duties, controls, restrictions, quotas, and other import measures applicable to the commodity.",
                               "properties": {
                                 "data": {
                                   "type": "array",
@@ -1826,6 +1852,7 @@
                             },
                             "export_measures": {
                               "type": "object",
+                              "description": "Export controls, restrictions, duties, and other export measures applicable to the commodity.",
                               "properties": {
                                 "data": {
                                   "type": "array",
@@ -1848,6 +1875,7 @@
                             },
                             "import_trade_summary": {
                               "type": "object",
+                              "description": "Summary trade statistics for imports of the commodity, when available.",
                               "properties": {
                                 "data": {
                                   "type": "object",
@@ -1882,7 +1910,7 @@
                     },
                     "included": {
                       "type": "array",
-                      "description": "Related footnote, section, chapter, heading, measure, and other objects",
+                      "description": "Related resources included with the commodity response, such as hierarchy, footnote, measure, duty, geographical area, and quota records.",
                       "items": {
                         "type": "object",
                         "properties": {
@@ -1904,7 +1932,14 @@
             }
           },
           "404": {
-            "description": "commodity not found"
+            "description": "commodity not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SimpleErrorResponse"
+                }
+              }
+            }
           }
         }
       }
