@@ -52,6 +52,23 @@ RSpec.describe Api::Admin::LiveIssuesController, :admin do
         expect(json_response).to include('data')
         expect(json_response['data']['attributes'].size).to eq(8)
       end
+
+      it 'removes comma separators from commodity codes before saving' do
+        authenticated_post api_admin_live_issues_path(format: :json),
+                           params: { data: { type: 'live_issues', attributes: live_issue_data.merge(commodities: '3402420090, 7222190000') } }
+
+        expect(response).to have_http_status(:created)
+        expect(json_response.dig('data', 'attributes', 'commodities')).to eq(%w[3402420090 7222190000])
+        expect(LiveIssue.last.commodities).to eq(%w[3402420090 7222190000])
+      end
+
+      it 'accepts comma-separated commodity codes without spaces' do
+        authenticated_post api_admin_live_issues_path(format: :json),
+                           params: { data: { type: 'live_issues', attributes: live_issue_data.merge(commodities: '3402420090,7222190000') } }
+
+        expect(response).to have_http_status(:created)
+        expect(json_response.dig('data', 'attributes', 'commodities')).to eq(%w[3402420090 7222190000])
+      end
     end
 
     context 'when the live issue is invalid' do
@@ -60,6 +77,36 @@ RSpec.describe Api::Admin::LiveIssuesController, :admin do
 
         expect(response).to have_http_status(:unprocessable_content)
         expect(json_response['errors'].first['detail']).to include('Title is not present')
+      end
+
+      it 'returns 422 if a commodity code is not ten digits after normalisation' do
+        expect {
+          authenticated_post api_admin_live_issues_path(format: :json),
+                             params: { data: { type: 'live_issues', attributes: live_issue_data.merge(commodities: '3402420090 BAD') } }
+        }.not_to change(LiveIssue, :count)
+
+        expect(response).to have_http_status(:unprocessable_content)
+        expect(json_response['errors'].first['detail']).to include('Commodities must contain 10 digit commodity codes')
+      end
+
+      it 'returns 422 if a commodity code contains unexpected characters' do
+        expect {
+          authenticated_post api_admin_live_issues_path(format: :json),
+                             params: { data: { type: 'live_issues', attributes: live_issue_data.merge(commodities: '3402420090abc') } }
+        }.not_to change(LiveIssue, :count)
+
+        expect(response).to have_http_status(:unprocessable_content)
+        expect(json_response['errors'].first['detail']).to include('Commodities must contain 10 digit commodity codes')
+      end
+
+      it 'returns 422 if commodities are submitted with an unsupported shape' do
+        expect {
+          authenticated_post api_admin_live_issues_path(format: :json),
+                             params: { data: { type: 'live_issues', attributes: live_issue_data.merge(commodities: { code: '3402420090' }) } }
+        }.not_to change(LiveIssue, :count)
+
+        expect(response).to have_http_status(:unprocessable_content)
+        expect(json_response['errors'].first['detail']).to include('Commodities must contain 10 digit commodity codes')
       end
     end
   end
@@ -89,6 +136,23 @@ RSpec.describe Api::Admin::LiveIssuesController, :admin do
         expect(json_response['data']['attributes'].size).to eq(8)
         expect(json_response['data']['attributes']['status']).to eq('Resolved')
       end
+
+      it 'removes comma separators from commodity codes before saving' do
+        authenticated_patch api_admin_live_issue_path(live_issue.id, format: :json),
+                            params: { data: { type: 'live_issues', attributes: live_issue_data.merge(commodities: '3402420090, 7222190000') } }
+
+        expect(response).to have_http_status(:ok)
+        expect(json_response.dig('data', 'attributes', 'commodities')).to eq(%w[3402420090 7222190000])
+        expect(live_issue.reload.commodities).to eq(%w[3402420090 7222190000])
+      end
+
+      it 'does not clear commodity codes when commodities are omitted' do
+        authenticated_patch api_admin_live_issue_path(live_issue.id, format: :json),
+                            params: { data: { type: 'live_issues', attributes: live_issue_data.except(:commodities) } }
+
+        expect(response).to have_http_status(:ok)
+        expect(live_issue.reload.commodities).to eq(%w[0101000000 0101000090])
+      end
     end
 
     context 'when the live issue is invalid' do
@@ -97,6 +161,15 @@ RSpec.describe Api::Admin::LiveIssuesController, :admin do
 
         expect(response).to have_http_status(:unprocessable_content)
         expect(json_response['errors'].first['detail']).to include('Title is not present')
+      end
+
+      it 'returns 422 if a commodity code is not ten digits after normalisation' do
+        authenticated_patch api_admin_live_issue_path(live_issue.id, format: :json),
+                            params: { data: { type: 'live_issues', attributes: live_issue_data.merge(commodities: '3402420090 BAD') } }
+
+        expect(response).to have_http_status(:unprocessable_content)
+        expect(json_response['errors'].first['detail']).to include('Commodities must contain 10 digit commodity codes')
+        expect(live_issue.reload.commodities).to eq(%w[0101000000 0101000090])
       end
     end
   end
