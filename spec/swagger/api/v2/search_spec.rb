@@ -1,6 +1,8 @@
 require 'swagger_helper'
 
 RSpec.describe 'Search', swagger_doc: 'v2/swagger.json', type: :request do
+  let(:Accept) { 'application/vnd.hmrc.2.0+json' }
+
   search_match_groups_schema = {
     type: :object,
     description: 'Matches grouped into chapters, headings, and commodities.',
