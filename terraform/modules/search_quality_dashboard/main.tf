@@ -131,7 +131,7 @@ resource "aws_cloudwatch_dashboard" "search_quality" {
             query  = <<-EOT
               ${local.source}
               | ${local.service_filter} and event = "search_completed" and result_count = 0
-              | fields @timestamp, query, search_type, request_id
+              | fields @timestamp, query, request_source, search_type, request_id
               | sort @timestamp desc
               | limit 30
             EOT

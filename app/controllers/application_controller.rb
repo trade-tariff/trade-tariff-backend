@@ -49,7 +49,8 @@ class ApplicationController < ActionController::API
   def append_info_to_payload(payload)
     super
     payload[:request_id] = logged_request_id
-    payload[:user_agent] = request.headers['HTTP_X_ORIGINAL_USER_AGENT'].presence || request.env['HTTP_USER_AGENT']
+    payload[:user_agent] = request_user_agent
+    payload[:request_source] = TradeTariffRequest.request_source
     payload[:client_id] = request.headers['HTTP_X_CLIENT_ID']
   end
 
@@ -126,6 +127,7 @@ class ApplicationController < ActionController::API
 
   def set_trade_tariff_request_id
     TradeTariffRequest.request_id = params[:request_id].presence || request.request_id
+    TradeTariffRequest.request_source = TradeTariffRequest.request_source_for_user_agent(request_user_agent)
   end
 
   def set_api_docs_link_header
@@ -134,5 +136,9 @@ class ApplicationController < ActionController::API
 
   def logged_request_id
     (TradeTariffRequest.request_id.presence || request.request_id).to_s.first(MAX_LOGGED_REQUEST_ID_LENGTH)
+  end
+
+  def request_user_agent
+    request.headers['HTTP_X_ORIGINAL_USER_AGENT'].presence || request.env['HTTP_USER_AGENT']
   end
 end

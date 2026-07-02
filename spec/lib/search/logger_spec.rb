@@ -33,6 +33,15 @@ RSpec.describe Search::Logger do
       expect(json['service']).to eq('search')
       expect(json['timestamp']).to be_present
     end
+
+    it 'uses the event payload request source when present' do
+      TradeTariffRequest.request_source = 'backend_only'
+      logger_instance.public_send(method_name, build_event(event_name, payload.merge(request_source: 'frontend')))
+      json = parsed_log_output
+      expect(json['request_source']).to eq('frontend')
+    ensure
+      TradeTariffRequest.request_source = nil
+    end
   end
 
   describe '#search_started' do
@@ -48,6 +57,16 @@ RSpec.describe Search::Logger do
       expect(json['request_id']).to eq('req-1')
       expect(json['query']).to eq('horses')
       expect(json['search_type']).to eq('interactive')
+    end
+
+    it 'preserves nil logged fields when request source is absent' do
+      TradeTariffRequest.request_source = nil
+
+      logger_instance.search_started(build_event('search_started', payload.merge(query: nil)))
+
+      json = parsed_log_output
+      expect(json).to include('query' => nil)
+      expect(json).not_to have_key('request_source')
     end
   end
 
