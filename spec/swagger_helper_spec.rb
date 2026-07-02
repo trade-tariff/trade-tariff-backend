@@ -98,4 +98,15 @@ RSpec.describe 'swagger helper configuration' do
     expect(relationships.fetch('export_measures').fetch('description')).to include('Export controls, restrictions, duties, and other export measures')
     expect(operation.dig('responses', '404', 'content', 'application/json', 'schema', '$ref')).to eq('#/components/schemas/SimpleErrorResponse')
   end
+
+  it 'documents search for both GET and POST requests' do
+    generated_doc = JSON.parse(Rails.root.join('swagger/v2/swagger.json').read)
+    path_item = generated_doc.dig('paths', '/api/search')
+
+    expect(path_item).to include('get', 'post')
+    expect(path_item.dig('get', 'description')).to include('Use this endpoint to search for tariff classifications')
+    expect(path_item.dig('post', 'description')).to include('Use this endpoint to search for tariff classifications')
+    expect(path_item.dig('get', 'responses', '200', 'content', 'application/json', 'schema', 'properties', 'data', 'oneOf')).to be_present
+    expect(path_item.dig('post', 'responses', '200', 'content', 'application/json', 'schema', 'properties', 'data', 'oneOf')).to be_present
+  end
 end

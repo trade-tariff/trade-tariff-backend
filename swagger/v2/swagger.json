@@ -5435,6 +5435,619 @@
         }
       }
     },
+    "/api/search": {
+      "parameters": [
+        {
+          "name": "Accept",
+          "in": "header",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "enum": [
+              "application/vnd.hmrc.2.0+json"
+            ]
+          },
+          "description": "Accept header for V2 JSON responses. Must be `application/vnd.hmrc.2.0+json`."
+        }
+      ],
+      "get": {
+        "summary": "Search tariff classifications with query parameters",
+        "tags": [
+          "Search"
+        ],
+        "operationId": "searchTariffClassifications",
+        "description": "Use this endpoint to search for tariff classifications using a goods description, commodity code,\nchapter or heading code, CAS number, CUS number, or search reference. The response is one of three\nresult shapes: exact match, fuzzy matches grouped by tariff level, or null search with empty match groups.\n",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Search term, such as a goods description, commodity code, chapter or heading code, CAS number, CUS number, or search reference."
+          },
+          {
+            "name": "as_of",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "date",
+              "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+            },
+            "description": "Date for the tariff data snapshot, formatted as `YYYY-MM-DD`. Defaults to today when omitted or invalid."
+          },
+          {
+            "name": "request_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Optional request identifier used in search instrumentation."
+          },
+          {
+            "name": "resource_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Optional search suggestion identifier used to narrow exact-match lookup."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "search result returned",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "oneOf": [
+                        {
+                          "type": "object",
+                          "required": [
+                            "id",
+                            "type",
+                            "attributes"
+                          ],
+                          "properties": {
+                            "id": {
+                              "type": "string"
+                            },
+                            "type": {
+                              "type": "string",
+                              "enum": [
+                                "exact_search"
+                              ]
+                            },
+                            "attributes": {
+                              "type": "object",
+                              "required": [
+                                "type",
+                                "entry"
+                              ],
+                              "properties": {
+                                "type": {
+                                  "type": "string",
+                                  "enum": [
+                                    "exact_match"
+                                  ],
+                                  "description": "Match type for exact-search responses."
+                                },
+                                "entry": {
+                                  "type": "object",
+                                  "required": [
+                                    "endpoint",
+                                    "id"
+                                  ],
+                                  "properties": {
+                                    "endpoint": {
+                                      "type": "string",
+                                      "description": "Endpoint name for the matched resource, such as `chapters`, `headings`, or `commodities`."
+                                    },
+                                    "id": {
+                                      "type": "string",
+                                      "description": "Identifier for the matched resource."
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        },
+                        {
+                          "type": "object",
+                          "required": [
+                            "id",
+                            "type",
+                            "attributes"
+                          ],
+                          "properties": {
+                            "id": {
+                              "type": "string"
+                            },
+                            "type": {
+                              "type": "string",
+                              "enum": [
+                                "fuzzy_search"
+                              ]
+                            },
+                            "attributes": {
+                              "type": "object",
+                              "required": [
+                                "type",
+                                "goods_nomenclature_match",
+                                "reference_match"
+                              ],
+                              "properties": {
+                                "type": {
+                                  "type": "string",
+                                  "enum": [
+                                    "fuzzy_match",
+                                    "null_match"
+                                  ],
+                                  "description": "Match type for fuzzy-search or null-search responses."
+                                },
+                                "goods_nomenclature_match": {
+                                  "type": "object",
+                                  "description": "Matches grouped into chapters, headings, and commodities.",
+                                  "properties": {
+                                    "chapters": {
+                                      "type": "array",
+                                      "items": {
+                                        "type": "object",
+                                        "additionalProperties": true
+                                      }
+                                    },
+                                    "headings": {
+                                      "type": "array",
+                                      "items": {
+                                        "type": "object",
+                                        "additionalProperties": true
+                                      }
+                                    },
+                                    "commodities": {
+                                      "type": "array",
+                                      "items": {
+                                        "type": "object",
+                                        "additionalProperties": true
+                                      }
+                                    }
+                                  }
+                                },
+                                "reference_match": {
+                                  "type": "object",
+                                  "description": "Matches grouped into chapters, headings, and commodities.",
+                                  "properties": {
+                                    "chapters": {
+                                      "type": "array",
+                                      "items": {
+                                        "type": "object",
+                                        "additionalProperties": true
+                                      }
+                                    },
+                                    "headings": {
+                                      "type": "array",
+                                      "items": {
+                                        "type": "object",
+                                        "additionalProperties": true
+                                      }
+                                    },
+                                    "commodities": {
+                                      "type": "array",
+                                      "items": {
+                                        "type": "object",
+                                        "additionalProperties": true
+                                      }
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        },
+                        {
+                          "type": "object",
+                          "required": [
+                            "id",
+                            "type",
+                            "attributes"
+                          ],
+                          "properties": {
+                            "id": {
+                              "type": "string"
+                            },
+                            "type": {
+                              "type": "string",
+                              "enum": [
+                                "null_search"
+                              ]
+                            },
+                            "attributes": {
+                              "type": "object",
+                              "required": [
+                                "type",
+                                "goods_nomenclature_match",
+                                "reference_match"
+                              ],
+                              "properties": {
+                                "type": {
+                                  "type": "string",
+                                  "enum": [
+                                    "fuzzy_match",
+                                    "null_match"
+                                  ],
+                                  "description": "Match type for fuzzy-search or null-search responses."
+                                },
+                                "goods_nomenclature_match": {
+                                  "type": "object",
+                                  "description": "Matches grouped into chapters, headings, and commodities.",
+                                  "properties": {
+                                    "chapters": {
+                                      "type": "array",
+                                      "items": {
+                                        "type": "object",
+                                        "additionalProperties": true
+                                      }
+                                    },
+                                    "headings": {
+                                      "type": "array",
+                                      "items": {
+                                        "type": "object",
+                                        "additionalProperties": true
+                                      }
+                                    },
+                                    "commodities": {
+                                      "type": "array",
+                                      "items": {
+                                        "type": "object",
+                                        "additionalProperties": true
+                                      }
+                                    }
+                                  }
+                                },
+                                "reference_match": {
+                                  "type": "object",
+                                  "description": "Matches grouped into chapters, headings, and commodities.",
+                                  "properties": {
+                                    "chapters": {
+                                      "type": "array",
+                                      "items": {
+                                        "type": "object",
+                                        "additionalProperties": true
+                                      }
+                                    },
+                                    "headings": {
+                                      "type": "array",
+                                      "items": {
+                                        "type": "object",
+                                        "additionalProperties": true
+                                      }
+                                    },
+                                    "commodities": {
+                                      "type": "array",
+                                      "items": {
+                                        "type": "object",
+                                        "additionalProperties": true
+                                      }
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Search tariff classifications with a JSON body",
+        "tags": [
+          "Search"
+        ],
+        "operationId": "postSearchTariffClassifications",
+        "description": "Use this endpoint to search for tariff classifications using a goods description, commodity code,\nchapter or heading code, CAS number, CUS number, or search reference. Use POST when sending search\nparameters in a JSON request body rather than a query string. The response is one of three result\nshapes: exact match, fuzzy matches grouped by tariff level, or null search with empty match groups.\n",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "search result returned",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "oneOf": [
+                        {
+                          "type": "object",
+                          "required": [
+                            "id",
+                            "type",
+                            "attributes"
+                          ],
+                          "properties": {
+                            "id": {
+                              "type": "string"
+                            },
+                            "type": {
+                              "type": "string",
+                              "enum": [
+                                "exact_search"
+                              ]
+                            },
+                            "attributes": {
+                              "type": "object",
+                              "required": [
+                                "type",
+                                "entry"
+                              ],
+                              "properties": {
+                                "type": {
+                                  "type": "string",
+                                  "enum": [
+                                    "exact_match"
+                                  ],
+                                  "description": "Match type for exact-search responses."
+                                },
+                                "entry": {
+                                  "type": "object",
+                                  "required": [
+                                    "endpoint",
+                                    "id"
+                                  ],
+                                  "properties": {
+                                    "endpoint": {
+                                      "type": "string",
+                                      "description": "Endpoint name for the matched resource, such as `chapters`, `headings`, or `commodities`."
+                                    },
+                                    "id": {
+                                      "type": "string",
+                                      "description": "Identifier for the matched resource."
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        },
+                        {
+                          "type": "object",
+                          "required": [
+                            "id",
+                            "type",
+                            "attributes"
+                          ],
+                          "properties": {
+                            "id": {
+                              "type": "string"
+                            },
+                            "type": {
+                              "type": "string",
+                              "enum": [
+                                "fuzzy_search"
+                              ]
+                            },
+                            "attributes": {
+                              "type": "object",
+                              "required": [
+                                "type",
+                                "goods_nomenclature_match",
+                                "reference_match"
+                              ],
+                              "properties": {
+                                "type": {
+                                  "type": "string",
+                                  "enum": [
+                                    "fuzzy_match",
+                                    "null_match"
+                                  ],
+                                  "description": "Match type for fuzzy-search or null-search responses."
+                                },
+                                "goods_nomenclature_match": {
+                                  "type": "object",
+                                  "description": "Matches grouped into chapters, headings, and commodities.",
+                                  "properties": {
+                                    "chapters": {
+                                      "type": "array",
+                                      "items": {
+                                        "type": "object",
+                                        "additionalProperties": true
+                                      }
+                                    },
+                                    "headings": {
+                                      "type": "array",
+                                      "items": {
+                                        "type": "object",
+                                        "additionalProperties": true
+                                      }
+                                    },
+                                    "commodities": {
+                                      "type": "array",
+                                      "items": {
+                                        "type": "object",
+                                        "additionalProperties": true
+                                      }
+                                    }
+                                  }
+                                },
+                                "reference_match": {
+                                  "type": "object",
+                                  "description": "Matches grouped into chapters, headings, and commodities.",
+                                  "properties": {
+                                    "chapters": {
+                                      "type": "array",
+                                      "items": {
+                                        "type": "object",
+                                        "additionalProperties": true
+                                      }
+                                    },
+                                    "headings": {
+                                      "type": "array",
+                                      "items": {
+                                        "type": "object",
+                                        "additionalProperties": true
+                                      }
+                                    },
+                                    "commodities": {
+                                      "type": "array",
+                                      "items": {
+                                        "type": "object",
+                                        "additionalProperties": true
+                                      }
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        },
+                        {
+                          "type": "object",
+                          "required": [
+                            "id",
+                            "type",
+                            "attributes"
+                          ],
+                          "properties": {
+                            "id": {
+                              "type": "string"
+                            },
+                            "type": {
+                              "type": "string",
+                              "enum": [
+                                "null_search"
+                              ]
+                            },
+                            "attributes": {
+                              "type": "object",
+                              "required": [
+                                "type",
+                                "goods_nomenclature_match",
+                                "reference_match"
+                              ],
+                              "properties": {
+                                "type": {
+                                  "type": "string",
+                                  "enum": [
+                                    "fuzzy_match",
+                                    "null_match"
+                                  ],
+                                  "description": "Match type for fuzzy-search or null-search responses."
+                                },
+                                "goods_nomenclature_match": {
+                                  "type": "object",
+                                  "description": "Matches grouped into chapters, headings, and commodities.",
+                                  "properties": {
+                                    "chapters": {
+                                      "type": "array",
+                                      "items": {
+                                        "type": "object",
+                                        "additionalProperties": true
+                                      }
+                                    },
+                                    "headings": {
+                                      "type": "array",
+                                      "items": {
+                                        "type": "object",
+                                        "additionalProperties": true
+                                      }
+                                    },
+                                    "commodities": {
+                                      "type": "array",
+                                      "items": {
+                                        "type": "object",
+                                        "additionalProperties": true
+                                      }
+                                    }
+                                  }
+                                },
+                                "reference_match": {
+                                  "type": "object",
+                                  "description": "Matches grouped into chapters, headings, and commodities.",
+                                  "properties": {
+                                    "chapters": {
+                                      "type": "array",
+                                      "items": {
+                                        "type": "object",
+                                        "additionalProperties": true
+                                      }
+                                    },
+                                    "headings": {
+                                      "type": "array",
+                                      "items": {
+                                        "type": "object",
+                                        "additionalProperties": true
+                                      }
+                                    },
+                                    "commodities": {
+                                      "type": "array",
+                                      "items": {
+                                        "type": "object",
+                                        "additionalProperties": true
+                                      }
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "q": {
+                    "type": "string",
+                    "description": "Search term, such as a goods description, commodity code, chapter or heading code, CAS number, CUS number, or search reference."
+                  },
+                  "as_of": {
+                    "type": "string",
+                    "format": "date",
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+                    "description": "Date for the tariff data snapshot, formatted as `YYYY-MM-DD`. Defaults to today when omitted or invalid."
+                  },
+                  "request_id": {
+                    "type": "string",
+                    "description": "Optional request identifier used in search instrumentation."
+                  },
+                  "resource_id": {
+                    "type": "string",
+                    "description": "Optional search suggestion identifier used to narrow exact-match lookup."
+                  }
+                }
+              }
+            }
+          },
+          "description": "JSON request body containing search parameters."
+        }
+      }
+    },
     "/api/search_references": {
       "parameters": [
         {
