@@ -112,9 +112,7 @@ RSpec.describe 'Search', swagger_doc: 'v2/swagger.json', type: :request do
   }.freeze
 
   path '/api/search' do
-    parameter name: :Accept, in: :header, required: true,
-              schema: { type: :string, enum: ['application/vnd.hmrc.2.0+json'] },
-              description: 'Accept header for V2 JSON responses. Use `application/vnd.hmrc.2.0+json`.'
+    parameter '$ref' => '#/components/parameters/accept_header'
 
     get 'Search tariff classifications with query parameters' do
       tags 'Search'
@@ -129,9 +127,7 @@ RSpec.describe 'Search', swagger_doc: 'v2/swagger.json', type: :request do
       parameter name: :q, in: :query, required: false,
                 schema: { type: :string },
                 description: 'Search term, such as a goods description, commodity code, chapter or heading code, CAS number, CUS number, or search reference.'
-      parameter name: :as_of, in: :query, required: false,
-                schema: { type: :string, format: :date, pattern: '^\\d{4}-\\d{2}-\\d{2}$' },
-                description: 'Date for the tariff data snapshot, formatted as `YYYY-MM-DD`. Defaults to today when omitted or invalid.'
+      parameter '$ref' => '#/components/parameters/AsOfDate'
       parameter name: :request_id, in: :query, required: false,
                 schema: { type: :string },
                 description: 'Optional request identifier used in search instrumentation.'
