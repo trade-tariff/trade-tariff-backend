@@ -237,7 +237,7 @@ resource "aws_cloudwatch_dashboard" "search_operations" {
               ${local.source}
               | ${local.service_filter} and event in ["search_failed", "search_completed"]
               | filter event = "search_failed" or final_result_type = "error"
-              | fields @timestamp, event, search_type, error_type, final_result_type, error_message, request_id
+              | fields @timestamp, event, request_source, search_type, error_type, final_result_type, error_message, request_id
               | sort @timestamp desc
               | limit 20
             EOT
@@ -255,7 +255,7 @@ resource "aws_cloudwatch_dashboard" "search_operations" {
             query  = <<-EOT
               ${local.source}
               | ${local.service_filter} and event = "search_started"
-              | fields @timestamp, query, search_type, request_id
+              | fields @timestamp, query, request_source, search_type, request_id
               | sort @timestamp desc
               | limit 30
             EOT
@@ -352,7 +352,7 @@ resource "aws_cloudwatch_dashboard" "search_operations" {
             query  = <<-EOT
               ${local.source}
               | ${local.service_filter} and event = "search_completed"
-              | fields @timestamp, search_type, total_duration_ms, result_count, final_result_type, request_id
+              | fields @timestamp, request_source, search_type, total_duration_ms, result_count, final_result_type, request_id
               | sort @timestamp desc
               | limit 30
             EOT

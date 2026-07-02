@@ -12,6 +12,7 @@ module SearchAnalytics
       'internal' => %w[interactive internal],
     }.freeze
     VIEWS = %w[all classic internal].freeze
+    REQUEST_SOURCES = %w[frontend backend_only unknown].freeze
     QueryError = Class.new(StandardError)
 
     def self.call(period:, client: self.client, now: Time.current) = new(period:, client:, now:).call
@@ -29,8 +30,10 @@ module SearchAnalytics
         period:,
         volume_rows: run_query(volume_query),
         zero_result_rows: run_query(zero_result_query),
-        all_latency_rows: run_query(all_latency_query),
-        view_latency_rows: run_query(view_latency_query),
+        summary_all_latency_rows: run_query(summary_all_latency_query),
+        summary_view_latency_rows: run_query(summary_view_latency_query),
+        source_all_latency_rows: run_query(source_all_latency_query),
+        source_view_latency_rows: run_query(source_view_latency_query),
         selection_rows: selection_queries.flat_map { |view, query| run_query(query).map { |row| row.merge('selectable_search_type' => view) } },
         selection_trend_rows: selection_trend_queries.flat_map { |view, query| run_query(query).map { |row| row.merge('selectable_search_type' => view) } },
         improvement_term_rows: improvement_term_queries.flat_map { |term_type, query| run_query(query).map { |row| row.merge('term_type' => term_type) } },
@@ -89,23 +92,25 @@ module SearchAnalytics
 
     def volume_query
       <<~QUERY
-        fields @timestamp, event, search_type
+        fields @timestamp, event, search_type, request_source
         | #{log_stream_filter}
         | #{base_search_filter}
-        | stats count(*) as searches by #{bucket_expression}, search_type, event
+        | fields if(ispresent(request_source), request_source, "unknown") as request_source
+        | stats count(*) as searches by #{bucket_expression}, search_type, event, request_source
       QUERY
     end
 
     def zero_result_query
       <<~QUERY
-        fields @timestamp, event, search_type, result_count
+        fields @timestamp, event, search_type, result_count, request_source
         | #{log_stream_filter}
         | filter service = "search" and event = "search_completed" and result_count = 0
-        | stats count(*) as zero_results by #{bucket_expression}, search_type
+        | fields if(ispresent(request_source), request_source, "unknown") as request_source
+        | stats count(*) as zero_results by #{bucket_expression}, search_type, request_source
       QUERY
     end
 
-    def all_latency_query
+    def summary_all_latency_query
       <<~QUERY
         fields event, total_duration_ms
         | #{log_stream_filter}
@@ -114,12 +119,32 @@ module SearchAnalytics
       QUERY
     end
 
-    def view_latency_query
+    def summary_view_latency_query
       <<~QUERY
         fields event, search_type, total_duration_ms
         | #{log_stream_filter}
         | #{base_search_filter} and ispresent(total_duration_ms)
         | stats pct(total_duration_ms, 90) as p90_latency_ms by search_type
+      QUERY
+    end
+
+    def source_all_latency_query
+      <<~QUERY
+        fields event, total_duration_ms, request_source
+        | #{log_stream_filter}
+        | #{base_search_filter} and ispresent(total_duration_ms)
+        | fields if(ispresent(request_source), request_source, "unknown") as request_source
+        | stats pct(total_duration_ms, 90) as p90_latency_ms by request_source
+      QUERY
+    end
+
+    def source_view_latency_query
+      <<~QUERY
+        fields event, search_type, total_duration_ms, request_source
+        | #{log_stream_filter}
+        | #{base_search_filter} and ispresent(total_duration_ms)
+        | fields if(ispresent(request_source), request_source, "unknown") as request_source
+        | stats pct(total_duration_ms, 90) as p90_latency_ms by search_type, request_source
       QUERY
     end
 
@@ -132,15 +157,17 @@ module SearchAnalytics
 
     def selection_query(selectable_condition)
       <<~QUERY
-        fields request_id, event, search_type, result_count, results_type
+        fields request_id, event, search_type, result_count, results_type, request_source
         | #{log_stream_filter}
         | filter service = "search" and ispresent(request_id) and (event = "result_selected" or (event = "search_completed" and result_count > 0 and #{selectable_condition}))
         | fields if(event = "result_selected", 1, 0) as result_selection_marker
         | fields if(event = "search_completed" and result_count > 0 and #{selectable_condition}, 1, 0) as selectable_search_marker
+        | fields if(ispresent(request_source), request_source, "unknown") as request_source
         | stats sum(result_selection_marker) as result_selections,
-            sum(selectable_search_marker) as selectable_searches by request_id
+            sum(selectable_search_marker) as selectable_searches,
+            earliest(request_source) as request_source by request_id
         | filter selectable_searches > 0
-        | stats sum(result_selections) as selected, sum(selectable_searches) as selectable
+        | stats sum(result_selections) as selected, sum(selectable_searches) as selectable by request_source
       QUERY
     end
 
@@ -148,11 +175,11 @@ module SearchAnalytics
       selection_queries.transform_values do |query|
         query
           .sub(
-            'sum(selectable_search_marker) as selectable_searches by request_id',
-            'sum(selectable_search_marker) as selectable_searches, max(@timestamp) as @t by request_id',
+            'earliest(request_source) as request_source by request_id',
+            'earliest(request_source) as request_source, max(@timestamp) as @t by request_id',
           )
           .sub(
-            '| stats sum(result_selections) as selected, sum(selectable_searches) as selectable',
+            '| stats sum(result_selections) as selected, sum(selectable_searches) as selectable by request_source',
             "| stats sum(result_selections) as selected by datefloor(@t, #{bucket_period}) as @timestamp",
           )
       end
@@ -182,12 +209,14 @@ module SearchAnalytics
     end
 
     class Aggregate
-      def initialize(period:, volume_rows:, zero_result_rows:, all_latency_rows:, view_latency_rows:, selection_rows:, selection_trend_rows:, improvement_term_rows:)
+      def initialize(period:, volume_rows:, zero_result_rows:, summary_all_latency_rows:, summary_view_latency_rows:, source_all_latency_rows:, source_view_latency_rows:, selection_rows:, selection_trend_rows:, improvement_term_rows:)
         @period = period
         @volume_rows = volume_rows
         @zero_result_rows = zero_result_rows
-        @all_latency_rows = all_latency_rows
-        @view_latency_rows = view_latency_rows
+        @summary_all_latency_rows = summary_all_latency_rows
+        @summary_view_latency_rows = summary_view_latency_rows
+        @source_all_latency_rows = source_all_latency_rows
+        @source_view_latency_rows = source_view_latency_rows
         @selection_rows = selection_rows
         @selection_trend_rows = selection_trend_rows
         @improvement_term_rows = improvement_term_rows
@@ -199,13 +228,14 @@ module SearchAnalytics
           'summary_statuses' => summary_statuses(view),
           'trends' => trends(view),
           'comparisons' => comparisons,
+          'request_sources' => request_sources(view),
           'improvement_terms' => improvement_terms(view),
         }
       end
 
       private
 
-      attr_reader :period, :volume_rows, :zero_result_rows, :all_latency_rows, :view_latency_rows, :selection_rows, :selection_trend_rows, :improvement_term_rows
+      attr_reader :period, :volume_rows, :zero_result_rows, :summary_all_latency_rows, :summary_view_latency_rows, :source_all_latency_rows, :source_view_latency_rows, :selection_rows, :selection_trend_rows, :improvement_term_rows
 
       def summary(view)
         searches = search_count(view)
@@ -235,6 +265,9 @@ module SearchAnalytics
             'all' => bucket_search_count(bucket, 'all'),
             'classic' => bucket_search_count(bucket, 'classic'),
             'internal' => bucket_search_count(bucket, 'internal'),
+            'frontend' => bucket_search_count(bucket, 'all', request_source: 'frontend'),
+            'backend_only' => bucket_search_count(bucket, 'all', request_source: 'backend_only'),
+            'unknown' => bucket_search_count(bucket, 'all', request_source: 'unknown'),
           }
         end
       end
@@ -258,16 +291,21 @@ module SearchAnalytics
         }
       end
 
-      def comparison_for(view)
-        searches = search_count(view)
-        completed = completed_count(view)
-        zero_results = zero_result_count(view)
+      def request_sources(view)
+        REQUEST_SOURCES.index_with { |source| comparison_for(view, request_source: source) }
+      end
+
+      def comparison_for(view, request_source: nil)
+        searches = search_count(view, request_source:)
+        completed = completed_count(view, request_source:)
+        zero_results = zero_result_count(view, request_source:)
 
         {
           'searches' => searches,
+          'failure_rate' => rate(failed_count(view, request_source:), searches),
           'zero_result_rate' => rate(zero_results, completed),
-          'selection_rate' => rate(selection_count(view), selectable_count(view)),
-          'p90_latency_ms' => latency_for(view),
+          'selection_rate' => rate(selection_count(view, request_source:), selectable_count(view, request_source:)),
+          'p90_latency_ms' => latency_for(view, request_source:),
         }
       end
 
@@ -351,30 +389,42 @@ module SearchAnalytics
         end
       end
 
-      def search_count(view) = filtered_rows(volume_rows, view).sum { |row| integer(row['searches']) }
+      def search_count(view, request_source: nil) = filtered_rows(volume_rows, view, request_source:).sum { |row| integer(row['searches']) }
 
-      def failed_count(view)
-        filtered_rows(volume_rows, view).sum { |row| row['event'] == 'search_failed' ? integer(row['searches']) : 0 }
+      def failed_count(view, request_source: nil)
+        filtered_rows(volume_rows, view, request_source:).sum { |row| row['event'] == 'search_failed' ? integer(row['searches']) : 0 }
       end
 
-      def completed_count(view)
-        filtered_rows(volume_rows, view).sum { |row| row['event'] == 'search_completed' ? integer(row['searches']) : 0 }
+      def completed_count(view, request_source: nil)
+        filtered_rows(volume_rows, view, request_source:).sum { |row| row['event'] == 'search_completed' ? integer(row['searches']) : 0 }
       end
 
-      def zero_result_count(view) = filtered_rows(zero_result_rows, view).sum { |row| integer(row['zero_results']) }
+      def zero_result_count(view, request_source: nil) = filtered_rows(zero_result_rows, view, request_source:).sum { |row| integer(row['zero_results']) }
 
-      def selection_count(view) = filtered_rows(selection_rows, view).sum { |row| integer(row['selected']) }
+      def selection_count(view, request_source: nil) = filtered_rows(selection_rows, view, request_source:).sum { |row| integer(row['selected']) }
 
-      def selectable_count(view) = filtered_rows(selection_rows, view).sum { |row| integer(row['selectable']) }
+      def selectable_count(view, request_source: nil) = filtered_rows(selection_rows, view, request_source:).sum { |row| integer(row['selectable']) }
 
-      def latency_for(view)
-        return integer(all_latency_rows.first&.fetch('p90_latency_ms', nil)) if view == 'all'
+      def latency_for(view, request_source: nil)
+        rows = latency_rows_for(view, request_source:)
 
-        filtered_rows(view_latency_rows, view).map { |row| integer(row['p90_latency_ms']) }.max || 0
+        rows.map { |row| integer(row['p90_latency_ms']) }.max || 0
       end
 
-      def bucket_search_count(bucket, view)
-        filtered_rows(volume_rows, view).sum { |row| iso8601(row['@timestamp']) == bucket ? integer(row['searches']) : 0 }
+      def latency_rows_for(view, request_source: nil)
+        if request_source
+          return filtered_rows(source_all_latency_rows, view, request_source:) if view == 'all'
+
+          filtered_rows(source_view_latency_rows, view, request_source:)
+        elsif view == 'all'
+          summary_all_latency_rows
+        else
+          filtered_rows(summary_view_latency_rows, view)
+        end
+      end
+
+      def bucket_search_count(bucket, view, request_source: nil)
+        filtered_rows(volume_rows, view, request_source:).sum { |row| iso8601(row['@timestamp']) == bucket ? integer(row['searches']) : 0 }
       end
 
       def bucket_event_count(bucket, view, event)
@@ -398,11 +448,15 @@ module SearchAnalytics
           .sort
       end
 
-      def filtered_rows(rows, view)
+      def filtered_rows(rows, view, request_source: nil)
+        rows = rows.select { |row| source_key(row) == request_source } if request_source
+
         return rows if view == 'all'
 
         rows.select { |row| row_matches_view?(row, view) }
       end
+
+      def source_key(row) = row['request_source'].presence || 'unknown'
 
       def row_matches_view?(row, view) = VIEW_SEARCH_TYPES.fetch(view, [view]).include?(row_search_type(row))
 

@@ -14,8 +14,10 @@ RSpec.describe SearchAnalytics::CloudwatchSnapshotQuery do
     allow(client).to receive(:start_query).and_return(
       start_query_response('volume'),
       start_query_response('zero'),
-      start_query_response('latency_all'),
-      start_query_response('latency_by_view'),
+      start_query_response('summary_latency_all'),
+      start_query_response('summary_latency_by_view'),
+      start_query_response('source_latency_all'),
+      start_query_response('source_latency_by_view'),
       start_query_response('classic_selections'),
       start_query_response('internal_selections'),
       start_query_response('classic_selection_trend'),
@@ -25,22 +27,41 @@ RSpec.describe SearchAnalytics::CloudwatchSnapshotQuery do
     )
     allow(client).to receive(:get_query_results).and_return(
       complete_response(
-        result_row('@timestamp' => '2026-06-10 09:00:00.000', 'search_type' => 'classic', 'event' => 'search_completed', 'searches' => '42'),
-        result_row('@timestamp' => '2026-06-10 09:00:00.000', 'search_type' => 'interactive', 'event' => 'search_completed', 'searches' => '8'),
-        result_row('@timestamp' => '2026-06-10 09:00:00.000', 'search_type' => 'classic', 'event' => 'search_failed', 'searches' => '2'),
+        result_row('@timestamp' => '2026-06-10 09:00:00.000', 'search_type' => 'classic', 'event' => 'search_completed', 'request_source' => 'frontend', 'searches' => '35'),
+        result_row('@timestamp' => '2026-06-10 09:00:00.000', 'search_type' => 'classic', 'event' => 'search_completed', 'request_source' => 'backend_only', 'searches' => '7'),
+        result_row('@timestamp' => '2026-06-10 09:00:00.000', 'search_type' => 'classic', 'event' => 'search_completed', 'searches' => '5'),
+        result_row('@timestamp' => '2026-06-10 09:00:00.000', 'search_type' => 'interactive', 'event' => 'search_completed', 'request_source' => 'frontend', 'searches' => '8'),
+        result_row('@timestamp' => '2026-06-10 09:00:00.000', 'search_type' => 'classic', 'event' => 'search_failed', 'request_source' => 'frontend', 'searches' => '2'),
       ),
       complete_response(
-        result_row('@timestamp' => '2026-06-10 09:00:00.000', 'search_type' => 'classic', 'zero_results' => '4'),
-        result_row('@timestamp' => '2026-06-10 09:00:00.000', 'search_type' => 'interactive', 'zero_results' => '1'),
+        result_row('@timestamp' => '2026-06-10 09:00:00.000', 'search_type' => 'classic', 'request_source' => 'frontend', 'zero_results' => '3'),
+        result_row('@timestamp' => '2026-06-10 09:00:00.000', 'search_type' => 'classic', 'request_source' => 'backend_only', 'zero_results' => '1'),
+        result_row('@timestamp' => '2026-06-10 09:00:00.000', 'search_type' => 'classic', 'zero_results' => '1'),
+        result_row('@timestamp' => '2026-06-10 09:00:00.000', 'search_type' => 'interactive', 'request_source' => 'frontend', 'zero_results' => '1'),
       ),
-      complete_response(result_row('p90_latency_ms' => '1200.0')),
+      complete_response(result_row('p90_latency_ms' => '1000.0')),
       complete_response(
-        result_row('search_type' => 'classic', 'p90_latency_ms' => '900'),
+        result_row('search_type' => 'classic', 'p90_latency_ms' => '700'),
         result_row('search_type' => 'interactive', 'p90_latency_ms' => '2100'),
       ),
-      complete_response(result_row('selected' => '3', 'selectable' => '42')),
-      complete_response(result_row('selected' => '2', 'selectable' => '8')),
-      complete_response(result_row('@timestamp' => '2026-06-10 09:00:00.000', 'selected' => '3')),
+      complete_response(
+        result_row('request_source' => 'frontend', 'p90_latency_ms' => '1200.0'),
+        result_row('request_source' => 'backend_only', 'p90_latency_ms' => '800.0'),
+        result_row('p90_latency_ms' => '600.0'),
+      ),
+      complete_response(
+        result_row('search_type' => 'classic', 'request_source' => 'frontend', 'p90_latency_ms' => '900'),
+        result_row('search_type' => 'classic', 'request_source' => 'backend_only', 'p90_latency_ms' => '800'),
+        result_row('search_type' => 'classic', 'p90_latency_ms' => '600'),
+        result_row('search_type' => 'interactive', 'request_source' => 'frontend', 'p90_latency_ms' => '2100'),
+      ),
+      complete_response(
+        result_row('request_source' => 'frontend', 'selected' => '2', 'selectable' => '35'),
+        result_row('request_source' => 'backend_only', 'selected' => '1', 'selectable' => '7'),
+        result_row('selected' => '1', 'selectable' => '5'),
+      ),
+      complete_response(result_row('request_source' => 'frontend', 'selected' => '2', 'selectable' => '8')),
+      complete_response(result_row('@timestamp' => '2026-06-10 09:00:00.000', 'selected' => '4')),
       complete_response(result_row('@timestamp' => '2026-06-10 09:00:00.000', 'selected' => '2')),
       complete_response(
         result_row('query' => 'scarf', 'search_type' => 'classic', 'zero_results' => '5'),
@@ -66,7 +87,7 @@ RSpec.describe SearchAnalytics::CloudwatchSnapshotQuery do
       hash_including(
         query_string: a_string_including('filter @logStream like "ecs/backend-uk/"'),
       ),
-    ).exactly(10).times
+    ).exactly(12).times
     expect(client).not_to have_received(:start_query).with(
       hash_including(query_string: a_string_including('sort bin(')),
     )
@@ -92,9 +113,24 @@ RSpec.describe SearchAnalytics::CloudwatchSnapshotQuery do
     ).twice
     expect(client).to have_received(:start_query).with(
       hash_including(
+        query_string: a_string_including('earliest(request_source) as request_source'),
+      ),
+    ).exactly(4).times
+    expect(client).to have_received(:start_query).with(
+      hash_including(
         query_string: a_string_including('datefloor(@t, 1h) as @timestamp'),
       ),
     ).twice
+    expect(client).to have_received(:start_query).with(
+      hash_including(
+        query_string: a_string_matching(/stats pct\(total_duration_ms, 90\) as p90_latency_ms\s*$/),
+      ),
+    ).once
+    expect(client).to have_received(:start_query).with(
+      hash_including(
+        query_string: a_string_including('stats pct(total_duration_ms, 90) as p90_latency_ms by request_source'),
+      ),
+    ).once
     expect(client).not_to have_received(:start_query).with(
       hash_including(
         query_string: a_string_including('selected_count'),
@@ -111,7 +147,7 @@ RSpec.describe SearchAnalytics::CloudwatchSnapshotQuery do
       hash_including(
         query_string: a_string_including('filter @logStream like "ecs/backend-xi/"'),
       ),
-    ).exactly(10).times
+    ).exactly(12).times
   end
 
   it 'raises terminal unknown CloudWatch query statuses immediately' do
@@ -134,37 +170,62 @@ RSpec.describe SearchAnalytics::CloudwatchSnapshotQuery do
   it 'builds all dashboard views without raw search rows', :aggregate_failures do
     expect(payloads.keys).to contain_exactly('all', 'classic', 'internal')
     expect(payloads.dig('all', 'summary')).to include(
-      'searches' => 52,
+      'searches' => 57,
       'failure_rate' => 0.04,
-      'zero_result_rate' => 0.1,
-      'selection_rate' => 0.1,
-      'p90_latency_ms' => 1200,
+      'zero_result_rate' => 0.11,
+      'selection_rate' => 0.11,
+      'p90_latency_ms' => 1000,
     )
     expect(payloads.dig('all', 'comparisons', 'classic')).to include(
-      'searches' => 44,
-      'zero_result_rate' => 0.1,
+      'searches' => 49,
+      'zero_result_rate' => 0.11,
+      'p90_latency_ms' => 700,
+    )
+    expect(payloads.dig('all', 'request_sources', 'frontend')).to include(
+      'searches' => 45,
+      'failure_rate' => 0.04,
+      'zero_result_rate' => 0.09,
+      'selection_rate' => 0.09,
+      'p90_latency_ms' => 1200,
+    )
+    expect(payloads.dig('all', 'request_sources', 'backend_only')).to include(
+      'searches' => 7,
+      'failure_rate' => 0.0,
+      'zero_result_rate' => 0.14,
+      'selection_rate' => 0.14,
+      'p90_latency_ms' => 800,
+    )
+    expect(payloads.dig('all', 'request_sources', 'unknown')).to include(
+      'searches' => 5,
+      'failure_rate' => 0.0,
+      'zero_result_rate' => 0.2,
+      'selection_rate' => 0.2,
+      'p90_latency_ms' => 600,
     )
     expect(payloads.dig('all', 'trends', 'volume')).to contain_exactly(
       {
         'bucket' => '2026-06-10T09:00:00Z',
-        'all' => 52,
-        'classic' => 44,
+        'all' => 57,
+        'classic' => 49,
         'internal' => 8,
+        'frontend' => 45,
+        'backend_only' => 7,
+        'unknown' => 5,
       },
     )
     expect(payloads.dig('all', 'trends', 'outcomes')).to contain_exactly(
       {
         'bucket' => '2026-06-10T09:00:00Z',
-        'completed' => 50,
+        'completed' => 55,
         'failed' => 2,
-        'zero_result' => 5,
-        'selected' => 5,
+        'zero_result' => 6,
+        'selected' => 6,
       },
     )
     expect(payloads.dig('classic', 'trends', 'outcomes')).to contain_exactly(
       include(
         'bucket' => '2026-06-10T09:00:00Z',
-        'selected' => 3,
+        'selected' => 4,
       ),
     )
     expect(payloads.dig('all', 'improvement_terms')).to include(

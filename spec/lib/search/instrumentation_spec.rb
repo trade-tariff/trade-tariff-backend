@@ -1,4 +1,6 @@
 RSpec.describe Search::Instrumentation do
+  before { TradeTariffRequest.request_source = nil }
+
   describe '.search_started' do
     it 'instruments the search_started event' do
       allow(ActiveSupport::Notifications).to receive(:instrument)
@@ -24,6 +26,21 @@ RSpec.describe Search::Instrumentation do
         request_id: 'current-request-id',
         query: 'horses',
         search_type: 'interactive',
+      )
+    end
+
+    it 'adds the current request source to the search event payload' do
+      allow(ActiveSupport::Notifications).to receive(:instrument)
+      TradeTariffRequest.request_source = 'frontend'
+
+      described_class.search_started(request_id: 'req-1', query: 'horses', search_type: 'interactive')
+
+      expect(ActiveSupport::Notifications).to have_received(:instrument).with(
+        'search_started.search',
+        request_id: 'req-1',
+        query: 'horses',
+        search_type: 'interactive',
+        request_source: 'frontend',
       )
     end
   end

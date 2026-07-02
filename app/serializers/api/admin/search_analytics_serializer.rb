@@ -11,7 +11,7 @@ module Api
       attribute(:generated_at) { |snapshot| snapshot.generated_at.iso8601 }
       attribute(:data_through) { |snapshot| snapshot.data_through.iso8601 }
 
-      %w[summary summary_statuses trends comparisons].each do |name|
+      %w[summary summary_statuses trends comparisons request_sources].each do |name|
         attribute(name.to_sym) { |snapshot| snapshot.payload.fetch(name, {}) }
       end
 

@@ -24,6 +24,11 @@ RSpec.describe Api::Admin::SearchAnalyticsController do
         'comparisons' => {
           'classic' => { 'searches' => 710 },
         },
+        'request_sources' => {
+          'frontend' => { 'searches' => 920 },
+          'backend_only' => { 'searches' => 320 },
+          'unknown' => { 'searches' => 5 },
+        },
         'improvement_terms' => [
           { 'query' => 'trainers', 'zero_results' => 18 },
         ],
@@ -83,6 +88,17 @@ RSpec.describe Api::Admin::SearchAnalyticsController do
             comparisons: {
               classic: {
                 searches: 710,
+              },
+            },
+            request_sources: {
+              frontend: {
+                searches: 920,
+              },
+              backend_only: {
+                searches: 320,
+              },
+              unknown: {
+                searches: 5,
               },
             },
             improvement_terms: [

@@ -9,7 +9,7 @@ module Search
     EVALUATION_TRACE_VERSION = 'classification_evaluation_trace.v1'.freeze
 
     def instrument(event_name, payload = {}, &block)
-      ActiveSupport::Notifications.instrument("#{event_name}.search", with_request_id(payload), &block)
+      ActiveSupport::Notifications.instrument("#{event_name}.search", with_request_context(payload), &block)
     end
 
     def search_started(request_id:, query:, search_type:)
@@ -363,10 +363,18 @@ module Search
       }
     end
 
-    def with_request_id(payload)
+    def with_request_context(payload)
       return payload unless payload.key?(:request_id)
 
-      payload.merge(request_id: payload[:request_id].presence || TradeTariffRequest.request_id.presence || SecureRandom.uuid)
+      payload
+        .merge(request_id: payload[:request_id].presence || TradeTariffRequest.request_id.presence || SecureRandom.uuid)
+        .merge(request_source_payload)
+    end
+
+    def request_source_payload
+      return {} if TradeTariffRequest.request_source.blank?
+
+      { request_source: TradeTariffRequest.request_source }
     end
 
     def summarize_classic_fuzzy_results(results)

@@ -40,13 +40,14 @@ resource "aws_cloudwatch_dashboard" "search" {
           width  = 6
           height = 6
           properties = {
-            title  = "Total Searches"
+            title  = "Search Volume by Request Source and Outcome"
             region = var.region
             view   = "timeSeries"
             query  = <<-EOT
               ${local.source}
-              | ${local.service_filter} and event = "search_completed"
-              | stats count(*) as searches by bin(1d)
+              | ${local.service_filter} and event in ["search_completed", "search_failed"]
+              | fields if(ispresent(request_source), request_source, "unknown") as request_source
+              | stats count(*) as searches by request_source, event, bin(1d)
             EOT
           }
         },
