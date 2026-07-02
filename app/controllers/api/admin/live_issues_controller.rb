@@ -22,12 +22,10 @@ module Api
       def update
         live_issue = LiveIssue.with_pk!(params[:id])
 
-        begin
-          live_issue.update(live_issue_params)
-          render json: serialize(live_issue), status: :ok
-        rescue StandardError
-          render json: serialize_errors(live_issue), status: :unprocessable_content
-        end
+        live_issue.update(live_issue_params)
+        render json: serialize(live_issue), status: :ok
+      rescue Sequel::ValidationFailed
+        render json: serialize_errors(live_issue), status: :unprocessable_content
       end
 
       def destroy
@@ -46,16 +44,34 @@ module Api
       end
 
       def live_issue_params
-        params.require(:data).require(:attributes).permit(
+        attributes = params.require(:data).require(:attributes)
+
+        permitted_params = attributes.permit(
           :title,
           :description,
           :suggested_action,
           :status,
           :date_discovered,
           :date_resolved,
-        ).merge(
-          commodities: params[:data][:attributes][:commodities]&.split(' '),
         )
+
+        if attributes.key?(:commodities)
+          permitted_params.merge(commodities: normalized_commodities(attributes[:commodities]))
+        else
+          permitted_params
+        end
+      end
+
+      def normalized_commodities(commodities)
+        return [] if commodities.blank?
+
+        return [nil] unless commodities.is_a?(String) || commodities.is_a?(Array)
+
+        Array(commodities).flat_map do |commodity|
+          return [nil] unless commodity.is_a?(String)
+
+          commodity.split(/[,\s]+/)
+        end
       end
     end
   end
