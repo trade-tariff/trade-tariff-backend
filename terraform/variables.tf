@@ -69,3 +69,24 @@ variable "scale_out_cooldown" {
   type        = number
   default     = 60
 }
+
+variable "scheduled_actions_enabled" {
+  description = "Enables scheduled scaling to proactively increase or reduce capacity during predictable traffic patterns."
+  type        = bool
+  default     = false
+}
+
+variable "scheduled_scaling_actions" {
+  description = <<EOT
+Map of scheduled scaling actions keyed by a unique name. Each value must include:
+- schedule     : AWS cron expression in UTC, e.g. 'cron(0 7 ? * MON-FRI *)'
+- min_capacity : minimum desired tasks at schedule time
+- max_capacity : maximum desired tasks at schedule time
+EOT
+  type = map(object({
+    schedule     = string
+    min_capacity = number
+    max_capacity = number
+  }))
+  default = {}
+}
