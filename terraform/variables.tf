@@ -70,13 +70,7 @@ variable "scale_out_cooldown" {
   default     = 60
 }
 
-variable "scheduled_actions_enabled" {
-  description = "Enables scheduled scaling to proactively increase or reduce capacity during predictable traffic patterns."
-  type        = bool
-  default     = false
-}
-
-variable "scheduled_scaling_actions" {
+variable "backend_uk_scheduled_scaling_actions" {
   description = <<EOT
 Map of scheduled scaling actions keyed by a unique name. Each value must include:
 - schedule     : AWS cron expression in UTC, e.g. 'cron(0 7 ? * MON-FRI *)'
@@ -89,4 +83,11 @@ EOT
     max_capacity = number
   }))
   default = {}
+  validation {
+    condition = alltrue([
+      for _, action in var.backend_uk_scheduled_scaling_actions :
+      action.min_capacity >= 0 && action.max_capacity >= 0 && action.min_capacity <= action.max_capacity
+    ])
+    error_message = "Each backend_uk_scheduled_scaling_actions entry must have non-negative min_capacity/max_capacity and min_capacity must be <= max_capacity."
+  }
 }

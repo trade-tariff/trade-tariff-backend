@@ -48,8 +48,8 @@ module "backend_uk" {
     }
   }
 
-  scheduled_actions_enabled = var.scheduled_actions_enabled
-  scheduled_scaling_actions = var.scheduled_scaling_actions
+  scheduled_actions_enabled = length(var.backend_uk_scheduled_scaling_actions) > 0
+  scheduled_scaling_actions = var.backend_uk_scheduled_scaling_actions
 
   enable_alarms       = var.enable_alarms
   cpu_alarm_threshold = 85 # Temporarily set higher to avoid alarm noise during load testing, will be adjusted based on observed metrics after testing is complete.
