@@ -9,9 +9,8 @@ max_capacity            = 16
 
 enable_alarms               = true
 enable_observability_alerts = true
-scheduled_actions_enabled   = true
 
-scheduled_scaling_actions = {
+backend_uk_scheduled_scaling_actions = {
 
   midnight_scale_up = {
     schedule     = "cron(55 23 * * ? *)"
