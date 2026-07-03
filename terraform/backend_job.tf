@@ -153,7 +153,7 @@ resource "aws_cloudwatch_event_target" "database_replication" {
   input = jsonencode({
     containerOverrides = [{
       name    = "backend-job"
-      command = ["/bin/sh", "-c", "./bin/db-replicate"]
+      command = ["/bin/sh", "-c", "exec ./bin/db-replicate"]
     }]
   })
 
