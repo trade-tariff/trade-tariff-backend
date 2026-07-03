@@ -80,6 +80,7 @@ Terraform to deploy the service into AWS.
 | Name | Description | Type | Default | Required |
 | ---- | ----------- | ---- | ------- | :------: |
 | <a name="input_backend_uk_min_capacity"></a> [backend\_uk\_min\_capacity](#input\_backend\_uk\_min\_capacity) | Smallest number of tasks the backend-uk service can scale-in to. | `number` | `1` | no |
+| <a name="input_backend_uk_scheduled_scaling_actions"></a> [backend\_uk\_scheduled\_scaling\_actions](#input\_backend\_uk\_scheduled\_scaling\_actions) | Map of scheduled scaling actions keyed by a unique name. Each value must include:<br/>- schedule     : AWS cron expression in UTC, e.g. 'cron(0 7 ? * MON-FRI *)'<br/>- min\_capacity : minimum desired tasks at schedule time<br/>- max\_capacity : maximum desired tasks at schedule time | <pre>map(object({<br/>    schedule     = string<br/>    min_capacity = number<br/>    max_capacity = number<br/>  }))</pre> | `{}` | no |
 | <a name="input_backend_xi_min_capacity"></a> [backend\_xi\_min\_capacity](#input\_backend\_xi\_min\_capacity) | Smallest number of tasks the backend-xi service can scale-in to. | `number` | `1` | no |
 | <a name="input_cpu"></a> [cpu](#input\_cpu) | CPU units to use. | `number` | n/a | yes |
 | <a name="input_docker_tag"></a> [docker\_tag](#input\_docker\_tag) | Image tag to use. | `string` | n/a | yes |
