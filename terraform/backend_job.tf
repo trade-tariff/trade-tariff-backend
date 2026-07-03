@@ -135,7 +135,7 @@ resource "aws_cloudwatch_metric_alarm" "database_backup_freshness" {
 }
 
 resource "aws_cloudwatch_event_rule" "database_replication" {
-  count = var.environment != "production" ? 1 : 0
+  count = var.enable_database_replication ? 1 : 0
 
   name                = "backend-database-replication-${var.environment}"
   description         = "Triggers weekday database replication for ${var.environment}"
@@ -144,7 +144,7 @@ resource "aws_cloudwatch_event_rule" "database_replication" {
 }
 
 resource "aws_cloudwatch_event_target" "database_replication" {
-  count = var.environment != "production" ? 1 : 0
+  count = var.enable_database_replication ? 1 : 0
 
   rule     = aws_cloudwatch_event_rule.database_replication[0].name
   arn      = data.aws_ecs_cluster.this.arn
