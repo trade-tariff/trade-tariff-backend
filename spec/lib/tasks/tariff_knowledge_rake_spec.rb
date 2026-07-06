@@ -94,31 +94,37 @@ RSpec.describe 'tariff_knowledge rake tasks' do
   describe 'tariff_knowledge:atars:preload' do
     it 'imports the public ATAR preload file' do
       allow(TariffKnowledge::PublicAtarRulingImporter).to receive(:import_file)
-        .and_return(TariffKnowledge::PublicAtarRulingImporter::Result.new(seen_count: 2, created_count: 2, updated_count: 0, failed_count: 0))
+        .and_return(TariffKnowledge::PublicAtarRulingImporter::Result.new(seen_count: 2, created_count: 2, updated_count: 0, failed_count: 0, refresh_goods_nomenclature_item_ids: %w[6302100000]))
+      allow(TariffKnowledge::PublicAtarSearchRefresh).to receive(:call).and_return([1])
 
       suppress_output { Rake::Task['tariff_knowledge:atars:preload'].invoke }
 
       expect(TariffKnowledge::PublicAtarRulingImporter).to have_received(:import_file)
+      expect(TariffKnowledge::PublicAtarSearchRefresh).to have_received(:call).with(%w[6302100000])
     end
 
     it 'skips outside UK service mode' do
       allow(TradeTariffBackend).to receive(:service).and_return('xi')
       allow(TariffKnowledge::PublicAtarRulingImporter).to receive(:import_file)
+      allow(TariffKnowledge::PublicAtarSearchRefresh).to receive(:call)
 
       suppress_output { Rake::Task['tariff_knowledge:atars:preload'].invoke }
 
       expect(TariffKnowledge::PublicAtarRulingImporter).not_to have_received(:import_file)
+      expect(TariffKnowledge::PublicAtarSearchRefresh).not_to have_received(:call)
     end
   end
 
   describe 'tariff_knowledge:atars:import' do
     it 'imports public ATAR rulings inline' do
       allow(TariffKnowledge::PublicAtarRulingImporter).to receive(:call)
-        .and_return(TariffKnowledge::PublicAtarRulingImporter::Result.new(seen_count: 2, created_count: 1, updated_count: 1, failed_count: 0))
+        .and_return(TariffKnowledge::PublicAtarRulingImporter::Result.new(seen_count: 2, created_count: 1, updated_count: 1, failed_count: 0, refresh_goods_nomenclature_item_ids: %w[6302100000]))
+      allow(TariffKnowledge::PublicAtarSearchRefresh).to receive(:call).and_return([1])
 
       suppress_output { Rake::Task['tariff_knowledge:atars:import'].invoke }
 
       expect(TariffKnowledge::PublicAtarRulingImporter).to have_received(:call)
+      expect(TariffKnowledge::PublicAtarSearchRefresh).to have_received(:call).with(%w[6302100000])
     end
 
     it 'rejects invalid numeric options' do

@@ -1,5 +1,5 @@
 RSpec.describe CompositeSearchTextBuilder do
-  subject(:builder) { described_class.new(self_text_record, labels: label, search_references: refs) }
+  subject(:builder) { described_class.new(self_text_record, labels: label, search_references: refs, atar_keywords: atar_keywords) }
 
   let(:self_text_record) do
     build(:goods_nomenclature_self_text,
@@ -9,6 +9,7 @@ RSpec.describe CompositeSearchTextBuilder do
 
   let(:label) { nil }
   let(:refs) { nil }
+  let(:atar_keywords) { nil }
 
   describe '#call' do
     context 'with only a self-text description' do
@@ -72,6 +73,16 @@ RSpec.describe CompositeSearchTextBuilder do
       end
     end
 
+    context 'with public ATAR keywords' do
+      let(:atar_keywords) { ['riding horses', 'show ponies', '', 'riding horses'] }
+
+      it 'includes unique nonblank ATAR keywords' do
+        result = builder.call
+
+        expect(result).to include('ATAR keywords: riding horses, show ponies')
+      end
+    end
+
     context 'with all data present' do
       let(:label) do
         build(:goods_nomenclature_label,
@@ -90,6 +101,8 @@ RSpec.describe CompositeSearchTextBuilder do
         [build(:search_reference, title: 'horses')]
       end
 
+      let(:atar_keywords) { ['equestrian sports'] }
+
       it 'assembles all sections in order' do
         result = builder.call
         lines = result.split("\n")
@@ -98,6 +111,7 @@ RSpec.describe CompositeSearchTextBuilder do
         expect(lines[1]).to eq('Also known as: ponies, equines')
         expect(lines[2]).to eq('Brands: Thoroughbred')
         expect(lines[3]).to eq('References: horses')
+        expect(lines[4]).to eq('ATAR keywords: equestrian sports')
       end
     end
 
@@ -192,6 +206,23 @@ RSpec.describe CompositeSearchTextBuilder do
       result = described_class.batch([self_text])
 
       expect(result[commodity.goods_nomenclature_sid]).to include('References: fridges')
+    end
+
+    it 'includes public ATAR keywords for the matching goods nomenclature item id' do
+      commodity = create(:commodity, :with_description, :declarable,
+                         goods_nomenclature_item_id: '6302100000')
+      self_text = create(:goods_nomenclature_self_text,
+                         goods_nomenclature_sid: commodity.goods_nomenclature_sid,
+                         goods_nomenclature_item_id: commodity.goods_nomenclature_item_id,
+                         self_text: 'Bed linen commodity')
+      create(:tariff_knowledge_public_atar_ruling,
+             commodity_code: '630210',
+             goods_nomenclature_item_id: commodity.goods_nomenclature_item_id,
+             keywords: Sequel.pg_array(['cotton sheets', 'bed linen'], :text))
+
+      result = described_class.batch([self_text])
+
+      expect(result[commodity.goods_nomenclature_sid]).to include('ATAR keywords: cotton sheets, bed linen')
     end
   end
 end

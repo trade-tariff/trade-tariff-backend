@@ -33,6 +33,7 @@ RSpec.describe Search::GoodsNomenclatureIndex do
       expect(properties[:description]).to eq(type: 'text', analyzer: 'snowball')
       expect(properties[:ancestor_descriptions]).to eq(type: 'text', analyzer: 'snowball')
       expect(properties[:search_references]).to eq(type: 'text', analyzer: 'snowball')
+      expect(properties[:atar_keywords]).to eq(type: 'text', analyzer: 'snowball')
     end
 
     it 'includes labels mapping' do
@@ -50,6 +51,7 @@ RSpec.describe Search::GoodsNomenclatureIndex do
         :goods_nomenclature_indents,
         :goods_nomenclature_descriptions,
         :goods_nomenclature_label,
+        :public_atar_rulings,
         :search_references,
       )
     end
