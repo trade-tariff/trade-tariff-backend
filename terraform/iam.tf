@@ -87,22 +87,6 @@ data "aws_iam_policy_document" "task" {
   statement {
     effect = "Allow"
     actions = [
-      "ecs:DescribeServices",
-      "ecs:UpdateService",
-    ]
-    resources = [
-      "arn:aws:ecs:${var.region}:${local.account_id}:service/trade-tariff-cluster-${var.environment}/*",
-    ]
-    condition {
-      test     = "ArnEquals"
-      variable = "ecs:cluster"
-      values   = [data.aws_ecs_cluster.this.arn]
-    }
-  }
-
-  statement {
-    effect = "Allow"
-    actions = [
       "s3:ListBucket",
       "s3:GetObject",
       "s3:GetObjectTagging",
