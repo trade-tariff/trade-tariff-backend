@@ -46,7 +46,9 @@ module TariffKnowledge
     def bulk_reindex(goods_nomenclatures)
       index = Search::GoodsNomenclatureIndex.new
       TradeTariffBackend.search_client.bulk(
-        body: goods_nomenclatures.map { |goods_nomenclature| bulk_operation(index, goods_nomenclature) },
+        {
+          body: goods_nomenclatures.map { |goods_nomenclature| bulk_operation(index, goods_nomenclature) },
+        }.merge(TradeTariffBackend.search_client.search_operation_options),
       )
     end
 
