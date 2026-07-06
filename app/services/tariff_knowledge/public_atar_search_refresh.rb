@@ -11,11 +11,18 @@ module TariffKnowledge
     def call
       return [] if goods_nomenclature_item_ids.empty?
 
-      goods_nomenclatures = matching_goods_nomenclatures
-      goods_nomenclatures.each { |goods_nomenclature| reindex(goods_nomenclature) }
+      sids = []
+      goods_nomenclature_item_ids.each_slice(BATCH_SIZE) do |item_id_batch|
+        goods_nomenclatures = matching_goods_nomenclatures(item_id_batch)
+        next if goods_nomenclatures.empty?
 
-      sids = goods_nomenclatures.map(&:goods_nomenclature_sid)
-      sids.each_slice(BATCH_SIZE) { |batch| ScoreLabelBatchWorker.perform_async(batch) }
+        bulk_reindex(goods_nomenclatures)
+
+        sid_batch = goods_nomenclatures.map(&:goods_nomenclature_sid)
+        sids.concat(sid_batch)
+        ScoreLabelBatchWorker.perform_async(sid_batch)
+      end
+
       sids
     end
 
@@ -23,24 +30,36 @@ module TariffKnowledge
 
     attr_reader :goods_nomenclature_item_ids
 
-    def matching_goods_nomenclatures
+    def matching_goods_nomenclatures(item_ids)
       TimeMachine.now do
         index = Search::GoodsNomenclatureIndex.new
 
         GoodsNomenclature
           .actual
           .with_leaf_column
-          .where(goods_nomenclatures__goods_nomenclature_item_id: goods_nomenclature_item_ids)
+          .where(goods_nomenclatures__goods_nomenclature_item_id: item_ids)
           .eager(index.eager_load)
           .all
       end
     end
 
-    def reindex(goods_nomenclature)
-      TradeTariffBackend.search_client.index(
-        Search::GoodsNomenclatureIndex,
-        goods_nomenclature,
+    def bulk_reindex(goods_nomenclatures)
+      index = Search::GoodsNomenclatureIndex.new
+      TradeTariffBackend.search_client.bulk(
+        {
+          body: goods_nomenclatures.map { |goods_nomenclature| bulk_operation(index, goods_nomenclature) },
+        }.merge(TradeTariffBackend.search_client.search_operation_options),
       )
+    end
+
+    def bulk_operation(index, goods_nomenclature)
+      {
+        index: {
+          _index: index.name,
+          _id: index.document_id(goods_nomenclature),
+          data: index.serialize_record(goods_nomenclature),
+        },
+      }
     end
   end
 end
