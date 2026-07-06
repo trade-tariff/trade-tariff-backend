@@ -48,6 +48,10 @@ RSpec.describe Search::GoodsNomenclatureQuery do
           expect(multi_match[:fields]).to include('search_references^5')
           expect(multi_match[:fields]).to include('ancestor_descriptions')
         end
+
+        it 'searches public ATAR keywords' do
+          expect(multi_match[:fields]).to include('atar_keywords^2')
+        end
       end
     end
 

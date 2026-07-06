@@ -12,6 +12,7 @@ RSpec.describe TariffKnowledge::PublicAtarRulingImporter do
 
       ruling = TariffKnowledge::PublicAtarRuling.by_ref('600015804').first
       expect(result.created_count).to eq(1)
+      expect(result.refresh_goods_nomenclature_item_ids).to eq(%w[9705100074])
       expect(ruling.commodity_code).to eq('9705100074')
       expect(ruling.goods_nomenclature_item_id).to eq('9705100074')
       expect(ruling.keywords).to eq(['CEILING LIGHTS', 'OF GLASS'])
@@ -107,6 +108,21 @@ RSpec.describe TariffKnowledge::PublicAtarRulingImporter do
       expect(updated.first_seen_at).to eq(first_seen_at)
       expect(updated.last_seen_at).to eq(Time.zone.now)
       expect(updated.fetched_at).to eq(Time.zone.now)
+      expect(result.refresh_goods_nomenclature_item_ids).to contain_exactly('9705100074')
+    end
+
+    it 'keeps unchanged existing rulings in the refresh list so retries remain safe' do
+      path = Rails.root.join('tmp/public_atar_rulings_preload_spec.json')
+      File.write(path, JSON.pretty_generate([ruling_hash(ref: '600015804', keywords: ['CEILING LIGHTS'])]))
+      importer = described_class.new
+
+      importer.import_file(path:)
+      result = importer.import_file(path:)
+
+      expect(result.updated_count).to eq(1)
+      expect(result.refresh_goods_nomenclature_item_ids).to eq(%w[9705100074])
+    ensure
+      FileUtils.rm_f(path)
     end
 
     it 'continues past already imported listing pages' do
