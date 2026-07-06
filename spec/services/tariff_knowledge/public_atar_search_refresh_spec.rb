@@ -1,6 +1,6 @@
 RSpec.describe TariffKnowledge::PublicAtarSearchRefresh do
   describe '.call' do
-    let(:search_client) { object_double(TradeTariffBackend.search_client, bulk: true) }
+    let(:search_client) { object_double(TradeTariffBackend.search_client, bulk: true, search_operation_options: { refresh: true }) }
 
     before do
       allow(TradeTariffBackend).to receive(:search_client).and_return(search_client)
@@ -18,6 +18,7 @@ RSpec.describe TariffKnowledge::PublicAtarSearchRefresh do
 
       expect(result).to eq([commodity.goods_nomenclature_sid])
       expect(search_client).to have_received(:bulk) do |args|
+        expect(args).to include(refresh: true)
         operation = args.fetch(:body).first.fetch(:index)
         expect(operation[:_id]).to eq(commodity.goods_nomenclature_sid)
         expect(operation[:data]).to include('goods_nomenclature_sid' => commodity.goods_nomenclature_sid)
