@@ -2,7 +2,8 @@ require 'json'
 
 module TariffKnowledge
   class PublicAtarRulingImporter
-    Result = Data.define(:seen_count, :created_count, :updated_count, :failed_count)
+    Result = Data.define(:seen_count, :created_count, :updated_count, :failed_count, :refresh_goods_nomenclature_item_ids)
+    UpsertResult = Data.define(:action, :refresh_goods_nomenclature_item_ids)
 
     DEFAULT_PRELOAD_PATH = Rails.root.join('db/tariff_knowledge/public_atar_rulings_preload.json')
 
@@ -25,6 +26,7 @@ module TariffKnowledge
       created_count = 0
       updated_count = 0
       failed_count = 0
+      refresh_goods_nomenclature_item_ids = []
       remaining = limit
 
       (1..max_pages).each do |page|
@@ -35,9 +37,10 @@ module TariffKnowledge
         seen_count += refs.size
 
         refs.each do |ref|
-          action = upsert_ruling(sync_source.ruling_for_ref(ref))
-          created_count += 1 if action == :created
-          updated_count += 1 if action == :updated
+          upsert_result = upsert_ruling(sync_source.ruling_for_ref(ref))
+          created_count += 1 if upsert_result.action == :created
+          updated_count += 1 if upsert_result.action == :updated
+          refresh_goods_nomenclature_item_ids.concat(upsert_result.refresh_goods_nomenclature_item_ids)
         rescue StandardError => e
           failed_count += 1
           Rails.logger.warn("Failed to import public ATAR #{ref}: #{e.class}: #{e.message}")
@@ -49,26 +52,28 @@ module TariffKnowledge
         end
       end
 
-      Result.new(seen_count:, created_count:, updated_count:, failed_count:)
+      Result.new(seen_count:, created_count:, updated_count:, failed_count:, refresh_goods_nomenclature_item_ids: refresh_goods_nomenclature_item_ids.uniq)
     end
 
     def import_file(path: DEFAULT_PRELOAD_PATH)
       created_count = 0
       updated_count = 0
       failed_count = 0
+      refresh_goods_nomenclature_item_ids = []
       rows = JSON.parse(File.read(path))
 
       rows.each do |attributes|
         ruling = ruling_from_hash(attributes)
-        action = upsert_ruling(ruling)
-        created_count += 1 if action == :created
-        updated_count += 1 if action == :updated
+        upsert_result = upsert_ruling(ruling)
+        created_count += 1 if upsert_result.action == :created
+        updated_count += 1 if upsert_result.action == :updated
+        refresh_goods_nomenclature_item_ids.concat(upsert_result.refresh_goods_nomenclature_item_ids)
       rescue StandardError => e
         failed_count += 1
         Rails.logger.warn("Failed to import public ATAR #{attributes['ref'] || 'unknown'}: #{e.class}: #{e.message}")
       end
 
-      Result.new(seen_count: rows.size, created_count:, updated_count:, failed_count:)
+      Result.new(seen_count: rows.size, created_count:, updated_count:, failed_count:, refresh_goods_nomenclature_item_ids: refresh_goods_nomenclature_item_ids.uniq)
     end
 
   private
@@ -79,12 +84,20 @@ module TariffKnowledge
       existing = PublicAtarRuling.by_ref(ruling.ref).first
       now = Time.zone.now
       action = existing ? :updated : :created
+      row = row_for(ruling, existing:, now:)
+      refresh_goods_nomenclature_item_ids = search_refresh_item_ids(existing, row)
 
       PublicAtarRuling.dataset
                        .insert_conflict(target: :ref, update: update_values)
-                       .insert(row_for(ruling, existing:, now:))
+                       .insert(row)
 
-      action
+      UpsertResult.new(action:, refresh_goods_nomenclature_item_ids:)
+    end
+
+    def search_refresh_item_ids(existing, row)
+      return [row[:goods_nomenclature_item_id]] unless existing
+
+      [existing.goods_nomenclature_item_id, row[:goods_nomenclature_item_id]].compact.uniq
     end
 
     def row_for(ruling, existing:, now:)

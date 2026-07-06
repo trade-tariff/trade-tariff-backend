@@ -23,6 +23,7 @@ module Search
         description:,
         ancestor_descriptions:,
         search_references: search_references_part,
+        atar_keywords: atar_keywords_part,
         labels: labels_part,
       }.compact
     end
@@ -74,6 +75,11 @@ module Search
         colloquial_terms: labels['colloquial_terms'],
         synonyms: labels['synonyms'],
       }.compact_blank
+    end
+
+    def atar_keywords_part
+      keywords = public_atar_rulings.flat_map(&:keywords).compact_blank.uniq
+      keywords.presence
     end
   end
 end

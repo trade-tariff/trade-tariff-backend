@@ -79,7 +79,9 @@ namespace :tariff_knowledge do
       next unless ensure_uk_service.call
 
       result = TariffKnowledge::PublicAtarRulingImporter.import_file
+      refreshed_sids = TariffKnowledge::PublicAtarSearchRefresh.call(result.refresh_goods_nomenclature_item_ids)
       puts "Public ATAR preload complete: #{result.seen_count} seen, #{result.created_count} created, #{result.updated_count} updated, #{result.failed_count} failed."
+      puts "Public ATAR search refresh complete: #{refreshed_sids.size} goods nomenclatures refreshed or queued."
     end
 
     desc 'Import public ATAR rulings from tax.service.gov.uk'
@@ -92,7 +94,9 @@ namespace :tariff_knowledge do
         request_delay: float_env.call('ATAR_REQUEST_DELAY', TariffKnowledge::PublicAtarRulingSource::DEFAULT_REQUEST_DELAY),
         max_retries: integer_env.call('ATAR_MAX_RETRIES', TariffKnowledge::PublicAtarRulingSource::DEFAULT_MAX_RETRIES),
       )
+      refreshed_sids = TariffKnowledge::PublicAtarSearchRefresh.call(result.refresh_goods_nomenclature_item_ids)
       puts "Public ATAR import complete: #{result.seen_count} seen, #{result.created_count} created, #{result.updated_count} updated, #{result.failed_count} failed."
+      puts "Public ATAR search refresh complete: #{refreshed_sids.size} goods nomenclatures refreshed or queued."
     end
 
     desc 'Enqueue public ATAR ruling import'

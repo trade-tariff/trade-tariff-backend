@@ -30,6 +30,7 @@ module Search
               type: 'text',
               analyzer: 'snowball',
             },
+            atar_keywords: { type: 'text', analyzer: 'snowball' },
             labels: {
               properties: {
                 description: { type: 'text', analyzer: 'snowball' },
@@ -55,6 +56,7 @@ module Search
         :goods_nomenclature_descriptions,
         :goods_nomenclature_label,
         :goods_nomenclature_self_text,
+        :public_atar_rulings,
         :search_references,
         { ancestors: %i[goods_nomenclature_descriptions search_references] },
         { heading: [:goods_nomenclature_descriptions] },
