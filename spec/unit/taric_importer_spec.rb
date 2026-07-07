@@ -85,6 +85,30 @@ RSpec.describe TaricImporter do
       end
     end
 
+    context 'when a file creates and then destroys the same measure SID, with materialized refresh after save disabled' do
+      before do
+        Measure.unrestrict_primary_key
+        allow(taric_update).to receive(:file_path)
+          .and_return('spec/fixtures/taric_samples/create_and_destroy_measure.xml')
+        allow(TaricSynchronizer).to receive(:ignore_presence_errors).and_return(true)
+      end
+
+      after { Measure.restrict_primary_key }
+
+      it 'records both a create and a destroy in measures_oplog, with no presence error', :aggregate_failures do
+        events = []
+        Measure.without_materialized_refresh do
+          ActiveSupport::Notifications.subscribed(->(*args) { events << args }, 'presence_error.taric_importer') do
+            described_class.new(taric_update).import
+          end
+        end
+
+        expect(Measure::Operation.where(measure_sid: '3318240', operation: 'C')).to be_present
+        expect(Measure::Operation.where(measure_sid: '3318240', operation: 'D')).to be_present
+        expect(events).to be_empty
+      end
+    end
+
     context 'when provided with valid taric file' do
       before do
         ExplicitAbrogationRegulation.unrestrict_primary_key

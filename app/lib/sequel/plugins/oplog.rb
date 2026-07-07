@@ -169,6 +169,7 @@ module Sequel
         #       but also preserve some of the instrumentation of oplog inserts we store for the admin UI.
         def _refresh_get(dataset)
           return super unless self.class.materialized?
+          return values if self.class.materialized_refresh_disabled?
           return values unless Rails.env.test?
 
           self.class.refresh!(concurrently: false)
@@ -206,6 +207,27 @@ module Sequel
           # rows; fall back to a blocking refresh to populate it, after
           # which future concurrent refreshes will succeed.
           db.refresh_view(table_name, concurrently: false)
+        end
+
+        # Explicit, block-scoped override for the implicit Rails.env.test?
+        # refresh-after-save behaviour below, e.g. to simulate production
+        # conditions (no per-save refresh) in a test.
+        def without_materialized_refresh
+          previous = Thread.current[materialized_refresh_disabled_key]
+          Thread.current[materialized_refresh_disabled_key] = true
+          yield
+        ensure
+          Thread.current[materialized_refresh_disabled_key] = previous
+        end
+
+        def materialized_refresh_disabled?
+          Thread.current[materialized_refresh_disabled_key] == true
+        end
+
+        private
+
+        def materialized_refresh_disabled_key
+          :"materialized_refresh_disabled_#{name}"
         end
       end
 

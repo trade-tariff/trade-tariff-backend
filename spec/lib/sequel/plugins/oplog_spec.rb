@@ -66,6 +66,46 @@ RSpec.describe Sequel::Plugins::Oplog do
     Sequel::Model.db[:composite_test_records].truncate(restart: true, cascade: true)
   end
 
+  describe '.without_materialized_refresh' do
+    it 'defaults to not disabled' do
+      expect(TestRecord.materialized_refresh_disabled?).to be false
+    end
+
+    it 'is disabled inside the block' do
+      TestRecord.without_materialized_refresh do
+        expect(TestRecord.materialized_refresh_disabled?).to be true
+      end
+    end
+
+    it 'resets to not disabled after the block' do
+      TestRecord.without_materialized_refresh {}
+
+      expect(TestRecord.materialized_refresh_disabled?).to be false
+    end
+
+    it 'resets to not disabled even if the block raises' do
+      expect {
+        TestRecord.without_materialized_refresh { raise 'boom' }
+      }.to raise_error('boom')
+
+      expect(TestRecord.materialized_refresh_disabled?).to be false
+    end
+
+    it 'restores the previous value for nested calls' do
+      TestRecord.without_materialized_refresh do
+        TestRecord.without_materialized_refresh {}
+
+        expect(TestRecord.materialized_refresh_disabled?).to be true
+      end
+    end
+
+    it 'does not affect other oplog models' do
+      TestRecord.without_materialized_refresh do
+        expect(CompositeTestRecord.materialized_refresh_disabled?).to be false
+      end
+    end
+  end
+
   describe '#previous_record' do
     context 'when there are multiple operation records for the same entity' do
       before do
