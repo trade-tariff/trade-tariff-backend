@@ -12,7 +12,7 @@ class CustomsTariffUpdate < Sequel::Model
 
   one_to_many :customs_tariff_chapter_notes, key: :customs_tariff_update_version
   one_to_many :customs_tariff_section_notes, key: :customs_tariff_update_version
-  one_to_many :customs_tariff_general_rules, key: :customs_tariff_update_version
+  one_to_many :customs_tariff_general_rules, key: :customs_tariff_update_version, order: :rule_label
 
   dataset_module do
     def pending
@@ -29,6 +29,10 @@ class CustomsTariffUpdate < Sequel::Model
 
     def failed
       where(status: FAILED)
+    end
+
+    def latest
+      actual.exclude(status: FAILED).order(Sequel.desc(:validity_start_date))
     end
   end
 end
