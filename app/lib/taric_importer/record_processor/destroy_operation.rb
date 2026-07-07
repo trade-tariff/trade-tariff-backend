@@ -18,23 +18,21 @@ class TaricImporter
 
       private
 
-      # Falls back to the live oplog table when the materialized view (queried by
-      # the inherited lookup) hasn't caught up yet with a record created earlier
-      # in the same import run.
+      # Temporary fix: the materialized-view lookup inherited from Operation can miss a
+      # record created earlier in the same import file, since the view isn't refreshed
+      # mid-import. Rather than querying the oplog table, build the instance straight from
+      # this record's own attributes - #call immediately overwrites everything but the
+      # primary key via model.set(...) anyway, so a lookup wouldn't keep anything extra.
       def get_model_record
-        super || record_from_latest_oplog_entry
+        super || record_from_attributes
       rescue Sequel::RecordNotFound
-        record_from_latest_oplog_entry || raise
+        record_from_attributes || raise
       end
 
-      def record_from_latest_oplog_entry
+      def record_from_attributes
         return unless klass.materialized?
 
-        filters = attributes.slice(*primary_key).symbolize_keys
-        latest = klass.operation_klass.where(filters).order(Sequel.desc(:oid)).first
-        return if latest.nil? || latest[:operation] == Sequel::Plugins::Oplog::DESTROY_OPERATION
-
-        klass.load(latest.values.slice(*klass.columns))
+        klass.load(attributes.slice(*klass.columns.map(&:to_s)).symbolize_keys)
       end
     end
   end
