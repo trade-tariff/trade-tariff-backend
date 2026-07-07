@@ -25,6 +25,7 @@ RSpec.describe InteractiveSearchService do
   let(:default_search_context) do
     <<~CONTEXT
       You are a UK trade tariff classification assistant.
+      General rules: %{general_rules}
       Search query: %{search_input}
       Relevant compressed notes: %{compressed_notes}
       OpenSearch results: %{answers_opensearch}
@@ -566,6 +567,64 @@ RSpec.describe InteractiveSearchService do
 
         expect(context_arg).not_to include('RELEVANT_COMPRESSED_NOTES')
         expect(context_arg).to include('OpenSearch results:')
+      end
+    end
+
+    context 'when general rules are available' do
+      let(:general_rules_presenter) { instance_double(Search::GeneralRulesPresenter, to_s: "Current General Rules of Interpretation:\nUse headings first.") }
+
+      before do
+        allow(Search::GeneralRulesPresenter).to receive(:new)
+          .and_return(general_rules_presenter)
+      end
+
+      it 'adds the rules below the role description' do
+        result
+
+        context_arg = nil
+        expect(OpenaiClient).to have_received(:call) do |context, **_opts|
+          context_arg = context
+        end
+
+        expect(context_arg).to start_with("You are a UK trade tariff classification assistant.\nGeneral rules: Current General Rules of Interpretation:\nUse headings first.")
+        expect(context_arg).to include('Search query: leather handbag')
+      end
+
+      it 'does not substitute prompt placeholders inside the rules' do
+        allow(general_rules_presenter).to receive(:to_s)
+          .and_return("Current General Rules of Interpretation:\nRule mentions %{search_input}.")
+
+        result
+
+        context_arg = nil
+        expect(OpenaiClient).to have_received(:call) do |context, **_opts|
+          context_arg = context
+        end
+
+        expect(context_arg).to include("General rules: Current General Rules of Interpretation:\nRule mentions %{search_input}.")
+        expect(context_arg).to include('Search query: leather handbag')
+      end
+
+      context 'when max questions have been reached' do
+        let(:answers) do
+          [
+            { question: 'Q1', answer: 'A1' },
+            { question: 'Q2', answer: 'A2' },
+            { question: 'Q3', answer: 'A3' },
+          ]
+        end
+
+        it 'includes the rules in the final answer prompt once' do
+          result
+
+          context_arg = nil
+          expect(OpenaiClient).to have_received(:call) do |context, **_opts|
+            context_arg = context
+          end
+
+          expect(context_arg.scan('Current General Rules of Interpretation').size).to eq(1)
+          expect(context_arg).to include(InteractiveSearchService::FINAL_ANSWER_INSTRUCTION.strip)
+        end
       end
     end
 

@@ -98,12 +98,12 @@ class InteractiveSearchService
   end
 
   def build_context
-    context = context_with_compressed_notes(configured_context.to_s)
-    context
+    context_with_compressed_notes(configured_context.to_s)
       .gsub('%{search_input}', query.to_s)
       .gsub('%{expanded_query}', expanded_query.to_s)
       .gsub('%{answers_opensearch}', format_opensearch_results.to_s)
       .gsub('%{questions}', format_questions_and_answers.to_s)
+      .gsub('%{general_rules}', Search::GeneralRulesPresenter.new.to_s)
   end
 
   def context_with_compressed_notes(context)
