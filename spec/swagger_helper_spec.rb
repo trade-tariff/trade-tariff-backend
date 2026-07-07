@@ -51,7 +51,7 @@ RSpec.describe 'swagger helper configuration' do
 
     expect(schema).to include(type: :object, required: %w[errors])
     expect(error.fetch(:properties)).to include(
-      status: { type: :string, description: 'HTTP status code associated with the error, when supplied by the endpoint.' },
+      status: { type: :integer, description: 'HTTP status code associated with the error, when supplied by the endpoint.' },
       title: { type: :string, description: 'Short error title or affected attribute, when supplied by the endpoint.' },
       detail: { type: :string, description: 'Human-readable explanation of the error.' },
       source: {

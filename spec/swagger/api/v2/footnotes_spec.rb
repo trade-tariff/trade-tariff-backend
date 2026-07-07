@@ -89,7 +89,7 @@ RSpec.describe 'Footnotes', swagger_doc: 'v2/swagger.json', type: :request do
         run_test!
       end
 
-      response '422', 'invalid search params — description required when type and code are blank' do
+      response '422', 'Invalid search params. Description required when type and code are blank' do
         schema '$ref' => '#/components/schemas/JsonApiErrorResponse'
 
         let(:description) { nil }

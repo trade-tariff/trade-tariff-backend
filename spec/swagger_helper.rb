@@ -319,7 +319,7 @@ RSpec.configure do |config|
                   type: :object,
                   properties: {
                     status: {
-                      type: :string,
+                      type: :integer,
                       description: 'HTTP status code associated with the error, when supplied by the endpoint.',
                     },
                     title: {
