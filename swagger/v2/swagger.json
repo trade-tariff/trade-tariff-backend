@@ -315,16 +315,7 @@
     "/api/additional_codes/search": {
       "parameters": [
         {
-          "name": "Accept",
-          "in": "header",
-          "required": true,
-          "schema": {
-            "type": "string",
-            "enum": [
-              "application/vnd.hmrc.2.0+json"
-            ]
-          },
-          "description": "API version negotiation header"
+          "$ref": "#/components/parameters/accept_header"
         },
         {
           "name": "description",
@@ -342,7 +333,7 @@
           "schema": {
             "type": "string"
           },
-          "description": "Filter by additional code type ID"
+          "description": "Filter by additional code type ID which will be 1-character. Must be passed together with the `code` parameter."
         },
         {
           "name": "code",
@@ -351,7 +342,7 @@
           "schema": {
             "type": "string"
           },
-          "description": "Filter by additional code value"
+          "description": "Filter by additional code value which will be a 3-character ID and may also include letters. Must be passed together with the `type` parameter."
         }
       ],
       "get": {
@@ -391,15 +382,18 @@
                             "properties": {
                               "additional_code_type_id": {
                                 "type": "string",
-                                "nullable": true
+                                "nullable": true,
+                                "description": "1-character additional code type ID. See `GET /api/additional_code_types` for the corresponding description."
                               },
                               "additional_code": {
                                 "type": "string",
-                                "nullable": true
+                                "nullable": true,
+                                "description": "The 3-character additional code value on its own, without the type ID prefix."
                               },
                               "code": {
                                 "type": "string",
-                                "nullable": true
+                                "nullable": true,
+                                "description": "The full additional code: the 1-character `additional_code_type_id` followed by the 3-character `additional_code`."
                               },
                               "description": {
                                 "type": "string",
@@ -410,11 +404,64 @@
                                 "nullable": true
                               }
                             }
+                          },
+                          "relationships": {
+                            "type": "object",
+                            "properties": {
+                              "goods_nomenclatures": {
+                                "type": "object",
+                                "description": "Goods nomenclature records (chapters, headings, commodities, subheadings) associated with this additional code.",
+                                "properties": {
+                                  "data": {
+                                    "type": "array",
+                                    "items": {
+                                      "type": "object",
+                                      "properties": {
+                                        "id": {
+                                          "type": "string"
+                                        },
+                                        "type": {
+                                          "type": "string"
+                                        }
+                                      }
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "included": {
+                      "type": "array",
+                      "description": "Goods nomenclature records included via the `goods_nomenclatures` relationship.",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string"
+                          },
+                          "type": {
+                            "type": "string"
+                          },
+                          "attributes": {
+                            "type": "object"
                           }
                         }
                       }
                     }
                   }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "invalid search params description required when type and code are blank",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JsonApiErrorResponse"
                 }
               }
             }
