@@ -6,7 +6,7 @@ RSpec.describe 'Commodities', swagger_doc: 'v2/swagger.json', type: :request do
   path '/api/commodities/{id}' do
     parameter name: :Accept, in: :header, required: true,
               schema: { type: :string, enum: ['application/vnd.hmrc.2.0+json'] },
-              description: 'Accept header for V2 JSON responses. Must be `application/vnd.hmrc.2.0+json`.'
+              description: 'Accept header for V2 JSON responses. Use `application/vnd.hmrc.2.0+json`.'
     parameter name: :id, in: :path, required: true,
               schema: { type: :string, pattern: '^\d{10}$' },
               description: 'Declarable commodity code, exactly 10 digits with no spaces or punctuation.'

@@ -6,13 +6,13 @@ RSpec.describe 'Certificate Types', swagger_doc: 'v2/swagger.json', type: :reque
   path '/api/certificate_types' do
     parameter name: :Accept, in: :header, required: true,
               schema: { type: :string, enum: ['application/vnd.hmrc.2.0+json'] },
-              description: 'API version negotiation header'
+              description: 'Accept header for V2 JSON responses. Use `application/vnd.hmrc.2.0+json`.'
 
     get 'List all certificate types' do
       tags 'Certificates'
       produces 'application/json'
       jsonapi_query_parameters(includes: [])
-      description 'Returns all certificate types with their descriptions.'
+      description 'List certificate type codes used to group certificate document codes.'
       operationId 'listCertificateTypes'
 
       response '200', 'certificate types listed' do
@@ -24,13 +24,13 @@ RSpec.describe 'Certificate Types', swagger_doc: 'v2/swagger.json', type: :reque
                    items: {
                      type: :object,
                      properties: {
-                       id: { type: :string },
-                       type: { type: :string, enum: %w[certificate_type] },
+                       id: { type: :string, description: 'Certificate type code.' },
+                       type: { type: :string, enum: %w[certificate_type], description: 'JSON:API resource type.' },
                        attributes: {
                          type: :object,
                          properties: {
-                           certificate_type_code: { type: :string, nullable: true },
-                           description: { type: :string, nullable: true },
+                           certificate_type_code: { type: :string, nullable: true, description: 'Single-character certificate type code.' },
+                           description: { type: :string, nullable: true, description: 'Certificate type description.' },
                          },
                        },
                      },

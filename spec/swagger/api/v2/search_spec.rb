@@ -114,7 +114,7 @@ RSpec.describe 'Search', swagger_doc: 'v2/swagger.json', type: :request do
   path '/api/search' do
     parameter name: :Accept, in: :header, required: true,
               schema: { type: :string, enum: ['application/vnd.hmrc.2.0+json'] },
-              description: 'Accept header for V2 JSON responses. Must be `application/vnd.hmrc.2.0+json`.'
+              description: 'Accept header for V2 JSON responses. Use `application/vnd.hmrc.2.0+json`.'
 
     get 'Search tariff classifications with query parameters' do
       tags 'Search'

@@ -409,7 +409,7 @@
               "application/vnd.hmrc.2.0+json"
             ]
           },
-          "description": "API version negotiation header"
+          "description": "Accept header for V2 JSON responses. Use `application/vnd.hmrc.2.0+json`."
         }
       ],
       "get": {
@@ -417,7 +417,7 @@
         "tags": [
           "Certificates"
         ],
-        "description": "Returns all certificate types with their descriptions.",
+        "description": "List certificate type codes used to group certificate document codes.",
         "operationId": "listCertificateTypes",
         "responses": {
           "200": {
@@ -436,24 +436,28 @@
                         "type": "object",
                         "properties": {
                           "id": {
-                            "type": "string"
+                            "type": "string",
+                            "description": "Certificate type code."
                           },
                           "type": {
                             "type": "string",
                             "enum": [
                               "certificate_type"
-                            ]
+                            ],
+                            "description": "JSON:API resource type."
                           },
                           "attributes": {
                             "type": "object",
                             "properties": {
                               "certificate_type_code": {
                                 "type": "string",
-                                "nullable": true
+                                "nullable": true,
+                                "description": "Single-character certificate type code."
                               },
                               "description": {
                                 "type": "string",
-                                "nullable": true
+                                "nullable": true,
+                                "description": "Certificate type description."
                               }
                             }
                           }
@@ -480,7 +484,7 @@
               "application/vnd.hmrc.2.0+json"
             ]
           },
-          "description": "API version negotiation header"
+          "description": "Accept header for V2 JSON responses. Use `application/vnd.hmrc.2.0+json`."
         }
       ],
       "get": {
@@ -488,7 +492,7 @@
         "tags": [
           "Certificates"
         ],
-        "description": "Returns all current certificates ordered by type and code.",
+        "description": "List current certificate document codes, ordered by certificate type code and certificate code.",
         "operationId": "listCertificates",
         "responses": {
           "200": {
@@ -505,47 +509,61 @@
                       "type": "array",
                       "items": {
                         "type": "object",
+                        "required": [
+                          "id",
+                          "type",
+                          "attributes"
+                        ],
                         "properties": {
                           "id": {
-                            "type": "string"
+                            "type": "string",
+                            "description": "Combined certificate type and certificate code."
                           },
                           "type": {
                             "type": "string",
                             "enum": [
                               "certificate"
-                            ]
+                            ],
+                            "description": "JSON:API resource type."
                           },
                           "attributes": {
                             "type": "object",
                             "properties": {
                               "certificate_type_code": {
                                 "type": "string",
-                                "nullable": true
+                                "nullable": true,
+                                "description": "Single-character document type code."
                               },
                               "certificate_code": {
                                 "type": "string",
-                                "nullable": true
+                                "nullable": true,
+                                "description": "Document code within the certificate type."
                               },
                               "description": {
                                 "type": "string",
-                                "nullable": true
+                                "nullable": true,
+                                "description": "Certificate description."
                               },
                               "formatted_description": {
                                 "type": "string",
-                                "nullable": true
+                                "nullable": true,
+                                "description": "Certificate description formatted for display."
                               },
                               "guidance_cds": {
                                 "type": "string",
-                                "nullable": true
+                                "nullable": true,
+                                "description": "CDS guidance text for the certificate, when available."
                               },
                               "certificate_type_description": {
                                 "type": "string",
-                                "nullable": true
+                                "nullable": true,
+                                "description": "Description of the certificate type, when returned by this endpoint."
                               },
                               "validity_start_date": {
                                 "type": "string",
                                 "nullable": true,
-                                "format": "date-time"
+                                "format": "date-time",
+                                "description": "Date and time from which this certificate description is valid."
                               }
                             }
                           }
@@ -572,7 +590,7 @@
               "application/vnd.hmrc.2.0+json"
             ]
           },
-          "description": "API version negotiation header"
+          "description": "Accept header for V2 JSON responses. Use `application/vnd.hmrc.2.0+json`."
         },
         {
           "name": "description",
@@ -581,7 +599,7 @@
           "schema": {
             "type": "string"
           },
-          "description": "Filter by certificate description (partial match)"
+          "description": "Partial certificate description to search for. Required when `type` and `code` are both omitted."
         },
         {
           "name": "type",
@@ -590,7 +608,7 @@
           "schema": {
             "type": "string"
           },
-          "description": "Filter by certificate type code"
+          "description": "Certificate type code. Must be supplied with `code` when used."
         },
         {
           "name": "code",
@@ -599,7 +617,7 @@
           "schema": {
             "type": "string"
           },
-          "description": "Filter by certificate code"
+          "description": "Certificate code. Must be supplied with `type` when used."
         }
       ],
       "get": {
@@ -607,7 +625,7 @@
         "tags": [
           "Certificates"
         ],
-        "description": "Returns certificates matching the search parameters, including related goods nomenclatures.",
+        "description": "Search certificate document codes by description, or by type and code together. Results include matching certificates and can include related goods nomenclatures.",
         "operationId": "searchCertificates",
         "responses": {
           "200": {
@@ -624,49 +642,99 @@
                       "type": "array",
                       "items": {
                         "type": "object",
+                        "required": [
+                          "id",
+                          "type",
+                          "attributes"
+                        ],
                         "properties": {
                           "id": {
-                            "type": "string"
+                            "type": "string",
+                            "description": "Combined certificate type and certificate code."
                           },
                           "type": {
                             "type": "string",
                             "enum": [
-                              "certificate"
-                            ]
+                              "certificates"
+                            ],
+                            "description": "JSON:API resource type returned by certificate search."
                           },
                           "attributes": {
                             "type": "object",
                             "properties": {
                               "certificate_type_code": {
                                 "type": "string",
-                                "nullable": true
+                                "nullable": true,
+                                "description": "Single-character document type code."
                               },
                               "certificate_code": {
                                 "type": "string",
-                                "nullable": true
+                                "nullable": true,
+                                "description": "Document code within the certificate type."
                               },
                               "description": {
                                 "type": "string",
-                                "nullable": true
+                                "nullable": true,
+                                "description": "Certificate description."
                               },
                               "formatted_description": {
                                 "type": "string",
-                                "nullable": true
+                                "nullable": true,
+                                "description": "Certificate description formatted for display."
                               },
                               "guidance_cds": {
                                 "type": "string",
-                                "nullable": true
-                              },
-                              "certificate_type_description": {
-                                "type": "string",
-                                "nullable": true
-                              },
-                              "validity_start_date": {
-                                "type": "string",
                                 "nullable": true,
-                                "format": "date-time"
+                                "description": "CDS guidance text for the certificate, when available."
                               }
                             }
+                          },
+                          "relationships": {
+                            "type": "object",
+                            "properties": {
+                              "goods_nomenclatures": {
+                                "type": "object",
+                                "description": "Goods nomenclature records linked to matching measures."
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "invalid certificate search parameters",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "errors"
+                  ],
+                  "properties": {
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "status": {
+                            "type": "integer",
+                            "enum": [
+                              422
+                            ],
+                            "description": "HTTP status code for the validation error."
+                          },
+                          "title": {
+                            "type": "string",
+                            "description": "Validation message."
+                          },
+                          "detail": {
+                            "type": "string",
+                            "description": "Human-readable validation error detail."
                           }
                         }
                       }
@@ -1571,7 +1639,7 @@
               "application/vnd.hmrc.2.0+json"
             ]
           },
-          "description": "Accept header for V2 JSON responses. Must be `application/vnd.hmrc.2.0+json`."
+          "description": "Accept header for V2 JSON responses. Use `application/vnd.hmrc.2.0+json`."
         },
         {
           "name": "id",
@@ -2450,7 +2518,7 @@
               "application/vnd.hmrc.2.0+json"
             ]
           },
-          "description": "API version negotiation header"
+          "description": "Accept header for V2 JSON responses. Use `application/vnd.hmrc.2.0+json`."
         }
       ],
       "get": {
@@ -2458,7 +2526,7 @@
         "tags": [
           "Footnotes"
         ],
-        "description": "Returns all footnote types with their descriptions.",
+        "description": "List footnote type IDs used to group footnotes.",
         "operationId": "listFootnoteTypes",
         "responses": {
           "200": {
@@ -2477,24 +2545,28 @@
                         "type": "object",
                         "properties": {
                           "id": {
-                            "type": "string"
+                            "type": "string",
+                            "description": "Footnote type ID."
                           },
                           "type": {
                             "type": "string",
                             "enum": [
                               "footnote_type"
-                            ]
+                            ],
+                            "description": "JSON:API resource type."
                           },
                           "attributes": {
                             "type": "object",
                             "properties": {
                               "footnote_type_id": {
                                 "type": "string",
-                                "nullable": true
+                                "nullable": true,
+                                "description": "Footnote type ID."
                               },
                               "description": {
                                 "type": "string",
-                                "nullable": true
+                                "nullable": true,
+                                "description": "Footnote type description."
                               }
                             }
                           }
@@ -2521,7 +2593,7 @@
               "application/vnd.hmrc.2.0+json"
             ]
           },
-          "description": "API version negotiation header"
+          "description": "Accept header for V2 JSON responses. Use `application/vnd.hmrc.2.0+json`."
         },
         {
           "name": "description",
@@ -2530,7 +2602,7 @@
           "schema": {
             "type": "string"
           },
-          "description": "Filter by footnote description (partial match)"
+          "description": "Partial footnote description to search for. Required when `type` and `code` are both omitted."
         },
         {
           "name": "type",
@@ -2539,7 +2611,7 @@
           "schema": {
             "type": "string"
           },
-          "description": "Filter by footnote type ID"
+          "description": "Footnote type ID. Must be supplied with `code` when used."
         },
         {
           "name": "code",
@@ -2548,7 +2620,7 @@
           "schema": {
             "type": "string"
           },
-          "description": "Filter by footnote code"
+          "description": "Footnote code within the footnote type. Must be supplied with `type` when used."
         }
       ],
       "get": {
@@ -2556,7 +2628,7 @@
         "tags": [
           "Footnotes"
         ],
-        "description": "Returns footnotes matching the search parameters, including related goods nomenclatures.",
+        "description": "Search footnotes attached to goods nomenclature or measures by description, or by type and code together. Results can include related goods nomenclatures.",
         "operationId": "searchFootnotes",
         "responses": {
           "200": {
@@ -2575,48 +2647,95 @@
                         "type": "object",
                         "properties": {
                           "id": {
-                            "type": "string"
+                            "type": "string",
+                            "description": "Combined footnote type and footnote code."
                           },
                           "type": {
                             "type": "string",
                             "enum": [
                               "footnote"
-                            ]
+                            ],
+                            "description": "JSON:API resource type."
                           },
                           "attributes": {
                             "type": "object",
                             "properties": {
                               "code": {
                                 "type": "string",
-                                "nullable": true
+                                "nullable": true,
+                                "description": "Combined footnote type and footnote ID."
                               },
                               "footnote_type_id": {
                                 "type": "string",
-                                "nullable": true
+                                "nullable": true,
+                                "description": "Footnote type ID."
                               },
                               "footnote_id": {
                                 "type": "string",
-                                "nullable": true
+                                "nullable": true,
+                                "description": "Footnote code within the footnote type."
                               },
                               "description": {
                                 "type": "string",
-                                "nullable": true
+                                "nullable": true,
+                                "description": "Footnote description."
                               },
                               "formatted_description": {
                                 "type": "string",
-                                "nullable": true
+                                "nullable": true,
+                                "description": "Footnote description formatted for display."
                               },
                               "validity_start_date": {
                                 "type": "string",
                                 "nullable": true,
-                                "format": "date-time"
+                                "format": "date-time",
+                                "description": "Date and time from which this footnote is valid."
                               },
                               "validity_end_date": {
                                 "type": "string",
                                 "nullable": true,
-                                "format": "date-time"
+                                "format": "date-time",
+                                "description": "Date and time after which this footnote is no longer valid, or null when current."
                               }
                             }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "invalid footnote search parameters",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "errors"
+                  ],
+                  "properties": {
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "status": {
+                            "type": "integer",
+                            "enum": [
+                              422
+                            ],
+                            "description": "HTTP status code for the validation error."
+                          },
+                          "title": {
+                            "type": "string",
+                            "description": "Validation message."
+                          },
+                          "detail": {
+                            "type": "string",
+                            "description": "Human-readable validation error detail."
                           }
                         }
                       }
@@ -4066,7 +4185,7 @@
               "application/vnd.hmrc.2.0+json"
             ]
           },
-          "description": "API version negotiation header"
+          "description": "Accept header for V2 JSON responses. Use `application/vnd.hmrc.2.0+json`."
         }
       ],
       "get": {
@@ -4074,7 +4193,7 @@
         "tags": [
           "Measure Condition Codes"
         ],
-        "description": "Returns all current measure condition codes with their descriptions.",
+        "description": "List measure condition codes used in measure conditions, with current descriptions and validity dates.",
         "operationId": "listMeasureConditionCodes",
         "responses": {
           "200": {
@@ -4093,34 +4212,40 @@
                         "type": "object",
                         "properties": {
                           "id": {
-                            "type": "string"
+                            "type": "string",
+                            "description": "Measure condition code."
                           },
                           "type": {
                             "type": "string",
                             "enum": [
                               "measure_condition_code"
-                            ]
+                            ],
+                            "description": "JSON:API resource type."
                           },
                           "attributes": {
                             "type": "object",
                             "properties": {
                               "condition_code": {
                                 "type": "string",
-                                "nullable": true
+                                "nullable": true,
+                                "description": "Code used on measure conditions."
                               },
                               "description": {
                                 "type": "string",
-                                "nullable": true
+                                "nullable": true,
+                                "description": "Measure condition code description."
                               },
                               "validity_start_date": {
                                 "type": "string",
                                 "nullable": true,
-                                "format": "date-time"
+                                "format": "date-time",
+                                "description": "Date and time from which this condition code is valid."
                               },
                               "validity_end_date": {
                                 "type": "string",
                                 "nullable": true,
-                                "format": "date-time"
+                                "format": "date-time",
+                                "description": "Date and time after which this condition code is no longer valid, or null when current."
                               }
                             }
                           }
@@ -5447,7 +5572,7 @@
               "application/vnd.hmrc.2.0+json"
             ]
           },
-          "description": "Accept header for V2 JSON responses. Must be `application/vnd.hmrc.2.0+json`."
+          "description": "Accept header for V2 JSON responses. Use `application/vnd.hmrc.2.0+json`."
         }
       ],
       "get": {

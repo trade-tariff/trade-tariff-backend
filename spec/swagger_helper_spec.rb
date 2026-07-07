@@ -109,4 +109,18 @@ RSpec.describe 'swagger helper configuration' do
     expect(path_item.dig('get', 'responses', '200', 'content', 'application/json', 'schema', 'properties', 'data', 'oneOf')).to be_present
     expect(path_item.dig('post', 'responses', '200', 'content', 'application/json', 'schema', 'properties', 'data', 'oneOf')).to be_present
   end
+
+  it 'documents priority reference code endpoints with descriptions and validation errors' do
+    generated_doc = JSON.parse(Rails.root.join('swagger/v2/swagger.json').read)
+
+    certificates_search = generated_doc.dig('paths', '/api/certificates/search', 'get')
+    footnotes_search = generated_doc.dig('paths', '/api/footnotes/search', 'get')
+    condition_codes = generated_doc.dig('paths', '/api/measure_condition_codes', 'get')
+
+    expect(certificates_search.fetch('description')).to include('Search certificate document codes')
+    expect(footnotes_search.fetch('description')).to include('Search footnotes attached to goods nomenclature or measures')
+    expect(condition_codes.fetch('description')).to include('List measure condition codes used in measure conditions')
+    expect(certificates_search.dig('responses', '422', 'content', 'application/json', 'schema', 'properties', 'errors')).to be_present
+    expect(footnotes_search.dig('responses', '422', 'content', 'application/json', 'schema', 'properties', 'errors')).to be_present
+  end
 end
