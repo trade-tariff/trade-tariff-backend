@@ -8,7 +8,7 @@ RSpec.describe 'admin_configurations:seed' do
     Rake::Task['admin_configurations:seed'].reenable
   end
 
-  it 'creates all 44 admin configurations', :aggregate_failures do
+  it 'creates all 45 admin configurations', :aggregate_failures do
     expect { seed }.to change(AdminConfiguration, :count).by(45)
 
     names = AdminConfiguration.order(:name).select_map(:name)
@@ -132,6 +132,8 @@ RSpec.describe 'admin_configurations:seed' do
     expect(search_context.value).to include('Ask exactly one question per turn')
     expect(search_context.value).to include('Do not include uncertainty options')
     expect(search_context.value).to include('"Other" must mean "something else"')
+    expect(search_context.value).to include('## General Rules of Interpretation')
+    expect(search_context.value).to include('%{general_rules}')
     expect(search_context.value).not_to include('Try and ask at least a few questions each time')
 
     duplicate_question_guard_context = AdminConfiguration.where(name: 'interactive_search_duplicate_question_guard_context').first

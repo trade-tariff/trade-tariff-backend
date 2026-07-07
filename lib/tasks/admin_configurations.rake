@@ -73,6 +73,10 @@ module AdminConfigurationSeeder
     <<~MARKDOWN.strip
       You're an expert Harmonised System code classifier.
 
+      ## General Rules of Interpretation
+
+      %{general_rules}
+
       Look at the search input and any previously answered questions and decide whether more questions are needed to confidently assign a commodity code.
 
       If answers are available, use them to help formulate your questions and answers - don't go beyond these search results in terms of the overall commodity hierarchy - even if you know the results are incorrect.
