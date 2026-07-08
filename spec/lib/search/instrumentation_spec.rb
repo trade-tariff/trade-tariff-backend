@@ -545,6 +545,7 @@ RSpec.describe Search::Instrumentation do
       described_class.interactive_configuration_used(
         request_id: 'req-1',
         query: 'horse',
+        skip_question: true,
         configuration: { retrieval_method: 'hybrid', rrf_k: 60 },
       )
 

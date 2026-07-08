@@ -58,6 +58,7 @@ RSpec.describe Api::Internal::SearchService do
       expect(Search::Instrumentation).to have_received(:interactive_configuration_used).with(
         request_id: anything,
         query: 'multimeter leads',
+        skip_question: nil,
         configuration: hash_including(
           interactive_search_duplicate_question_guard_enabled: true,
           interactive_search_duplicate_question_guard_model: {
