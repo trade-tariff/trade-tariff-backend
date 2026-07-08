@@ -76,6 +76,7 @@ RSpec.describe InteractiveSearch::DuplicateQuestionGuard do
       anything,
       model: 'gpt-5-nano-2025-08-07',
       reasoning_effort: 'low',
+      event_kind: 'duplicate_question_validator',
     )
   end
 
@@ -148,6 +149,7 @@ RSpec.describe InteractiveSearch::DuplicateQuestionGuard do
       ),
       model: 'gpt-5-nano-2025-08-07',
       reasoning_effort: 'low',
+      event_kind: 'duplicate_question_validator',
     )
   end
 

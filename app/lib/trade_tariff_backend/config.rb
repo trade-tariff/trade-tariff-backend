@@ -276,6 +276,10 @@ module TradeTariffBackend
       ENV.fetch('OPENAI_API_OPEN_TIMEOUT', '60').to_i
     end
 
+    def openai_model_pricing
+      Rails.application.config.x.openai_model_pricing || {}
+    end
+
     # Goods nomenclature
     def goods_nomenclature_label_page_size
       ENV.fetch('GOODS_NOMENCLATURE_LABEL_PAGE_SIZE', '10').to_i

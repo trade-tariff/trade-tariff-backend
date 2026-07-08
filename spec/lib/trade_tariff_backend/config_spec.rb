@@ -394,6 +394,16 @@ RSpec.describe TradeTariffBackend::Config do
         expect(config.openai_api_base_url).to eq('https://api.openai.com/v1')
       end
     end
+
+    describe '.openai_model_pricing' do
+      it 'loads reviewed model pricing from application config' do
+        expect(config.openai_model_pricing).to include(
+          'text-embedding-3-small' => {
+            'input_per_million_tokens' => 0.02,
+          },
+        )
+      end
+    end
   end
 
   describe 'goods nomenclature config' do

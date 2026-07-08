@@ -135,6 +135,17 @@ There are two search paths affected by content changes:
 
 Content-changing actions must keep both paths in sync. Lifecycle-only actions do not need search updates.
 
+AI token and cost telemetry is emitted for generated content calls that use OpenAI:
+
+- Self-text generation emits `self_text_generation_ai` or `self_text_generation_ai_non_other`.
+- Label generation emits `label_generation`.
+- Label scoring embeddings emit `label_scoring_embedding`.
+- Self-text scoring embeddings emit `self_text_scoring_embedding`.
+- Composite search embedding refresh emits `composite_search_embedding`.
+- Public ATAR fact extraction emits `atar_fact_extraction`.
+
+Chapter-note source graph loading and chapter-note expression handling are deterministic parsing and graph-loading paths. They do not call OpenAI directly; their AI cost exposure is limited to downstream generated-content or composite embedding refreshes that include chapter-note-derived context.
+
 | Action | Changes content? | Refresh OpenSearch document? | Refresh composite embedding? |
 | --- | --- | --- | --- |
 | Mark needs review | No | No | No |

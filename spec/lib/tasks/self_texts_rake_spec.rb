@@ -139,6 +139,24 @@ RSpec.describe 'self_texts rake tasks' do
 
       expect(WebMock).to have_requested(:post, "#{api_base_url}/embeddings").at_least_once
     end
+
+    it 'instruments generated and EU embedding backfill batches with event kinds' do
+      create(:goods_nomenclature_self_text, self_text: 'Live horses')
+      create(:goods_nomenclature_self_text, self_text: 'Pure-bred horses', eu_self_text: 'EU pure-bred horses')
+      events = []
+      subscriber = ActiveSupport::Notifications.subscribe('embedding_api_call_completed.ai_usage') do |*args|
+        events << ActiveSupport::Notifications::Event.new(*args)
+      end
+
+      generate_embeddings
+
+      expect(events.map { |event| event.payload[:event_kind] }).to include(
+        'self_text_embedding_backfill',
+        'eu_self_text_embedding_backfill',
+      )
+    ensure
+      ActiveSupport::Notifications.unsubscribe(subscriber) if subscriber
+    end
   end
 end
 # rubocop:enable RSpec/DescribeClass

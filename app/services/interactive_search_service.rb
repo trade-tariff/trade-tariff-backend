@@ -251,7 +251,7 @@ class InteractiveSearchService
       iteration: attempt,
       effective_query: expanded_query,
       operation: operation,
-    ) { OpenaiClient.call(context, model: configured_model, reasoning_effort: configured_reasoning_effort) }
+    ) { OpenaiClient.call(context, model: configured_model, reasoning_effort: configured_reasoning_effort, event_kind: operation) }
 
     ExtractBottomJson.call(response)
   end

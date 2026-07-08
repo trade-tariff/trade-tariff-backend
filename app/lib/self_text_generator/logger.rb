@@ -54,17 +54,19 @@ module SelfTextGenerator
     end
 
     def api_call_completed(event)
-      info log_entry(
+      data = {
         event: 'api_call_completed',
         batch_size: event.payload[:batch_size],
         model: event.payload[:model],
         chapter_code: event.payload[:chapter_code],
         duration_ms: event.payload[:duration_ms],
-      )
+      }
+      add_ai_usage_fields!(data, event)
+      info log_entry(data)
     end
 
     def api_call_failed(event)
-      error log_entry(
+      data = {
         event: 'api_call_failed',
         batch_size: event.payload[:batch_size],
         model: event.payload[:model],
@@ -73,7 +75,9 @@ module SelfTextGenerator
         error_message: event.payload[:error_message],
         duration_ms: event.payload[:duration_ms],
         http_status: event.payload[:http_status],
-      )
+      }
+      add_ai_usage_fields!(data, event)
+      error log_entry(data)
     end
 
     def scoring_started(event)
@@ -115,17 +119,19 @@ module SelfTextGenerator
     end
 
     def embedding_api_call_completed(event)
-      info log_entry(
+      data = {
         event: 'embedding_api_call_completed',
         batch_size: event.payload[:batch_size],
         model: event.payload[:model],
         chapter_code: event.payload[:chapter_code],
         duration_ms: event.payload[:duration_ms],
-      )
+      }
+      add_ai_usage_fields!(data, event)
+      info log_entry(data)
     end
 
     def embedding_api_call_failed(event)
-      error log_entry(
+      data = {
         event: 'embedding_api_call_failed',
         batch_size: event.payload[:batch_size],
         model: event.payload[:model],
@@ -134,7 +140,9 @@ module SelfTextGenerator
         error_message: event.payload[:error_message],
         duration_ms: event.payload[:duration_ms],
         http_status: event.payload[:http_status],
-      )
+      }
+      add_ai_usage_fields!(data, event)
+      error log_entry(data)
     end
 
     def embedding_api_retry(event)
@@ -161,6 +169,10 @@ module SelfTextGenerator
         service: 'self_text_generator',
         timestamp: Time.current.iso8601,
       ).to_json
+    end
+
+    def add_ai_usage_fields!(data, event)
+      AiUsage.add_log_fields!(data, event)
     end
   end
 end

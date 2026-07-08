@@ -126,6 +126,7 @@ module InteractiveSearch
           validator_prompt,
           model: model_config[:selected],
           reasoning_effort: model_config[:sub_values]['reasoning_effort'],
+          event_kind: 'duplicate_question_validator',
         )
       end
       parsed = ExtractBottomJson.call(response)

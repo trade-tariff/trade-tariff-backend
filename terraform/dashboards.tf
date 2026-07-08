@@ -1,3 +1,36 @@
+locals {
+  ai_cost_events = "filter event in [\"api_call_completed\", \"embedding_api_call_completed\", \"api_call_failed\", \"embedding_api_call_failed\"] and ispresent(event_kind)"
+}
+
+resource "aws_cloudwatch_dashboard" "ai_costs" {
+  dashboard_name = "AICosts-${var.environment}"
+  dashboard_body = jsonencode({
+    widgets = [
+      {
+        type = "log", x = 0, y = 0, width = 12, height = 6
+        properties = {
+          title = "Total Cost by Event Kind", region = var.region, view = "bar"
+          query = "SOURCE 'platform-logs-${var.environment}' | ${local.ai_cost_events} | filter pricing_known = true | stats sum(total_cost_usd) as total_cost_usd by event_kind | sort total_cost_usd desc"
+        }
+      },
+      {
+        type = "log", x = 12, y = 0, width = 12, height = 6
+        properties = {
+          title = "Token Totals by Event Kind", region = var.region, view = "bar"
+          query = "SOURCE 'platform-logs-${var.environment}' | ${local.ai_cost_events} | stats sum(input_tokens) as input_tokens, sum(output_tokens) as output_tokens, sum(total_tokens) as total_tokens by event_kind | sort total_tokens desc"
+        }
+      },
+      {
+        type = "log", x = 0, y = 6, width = 24, height = 8
+        properties = {
+          title = "Unknown or High-Cost Events", region = var.region
+          query = "SOURCE 'platform-logs-${var.environment}' | ${local.ai_cost_events} | fields @timestamp, service, event, event_kind, model, total_tokens, total_cost_usd, pricing_known | filter pricing_known = false or not ispresent(total_cost_usd) or total_cost_usd > 0 | sort total_cost_usd desc, total_tokens desc | limit 50"
+        }
+      },
+    ]
+  })
+}
+
 module "label_generator_dashboard" {
   source = "./modules/label_generator_dashboard"
 

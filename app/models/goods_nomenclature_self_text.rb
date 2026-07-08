@@ -136,7 +136,11 @@ class GoodsNomenclatureSelfText < Sequel::Model
 
       records.each_slice(EmbeddingService::BATCH_SIZE) do |batch|
         texts = batch.map { |r| composite_texts[r.goods_nomenclature_sid] }
-        embeddings = embedding_service.embed_batch(texts)
+        embeddings = AiUsage::Instrumentation.embedding_api_call(
+          event_kind: 'composite_search_embedding',
+          batch_size: texts.size,
+          model: EmbeddingService::MODEL,
+        ) { embedding_service.embed_batch(texts, event_kind: 'composite_search_embedding') }
         bulk_update_embeddings(batch, composite_texts, embeddings)
       end
     end
