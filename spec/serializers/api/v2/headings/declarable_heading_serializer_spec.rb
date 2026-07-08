@@ -34,7 +34,7 @@ RSpec.describe Api::V2::Headings::DeclarableHeadingSerializer do
           bti_url: 'https://www.gov.uk/guidance/check-what-youll-need-to-get-a-legally-binding-decision-on-a-commodity-code',
           formatted_description: heading.formatted_description,
           basic_duty_rate: nil,
-          meursing_code: false,
+          meursing_code: true,
           declarable: true,
           has_chemicals: false,
         },
@@ -47,21 +47,65 @@ RSpec.describe Api::V2::Headings::DeclarableHeadingSerializer do
         },
         meta: {
           duty_calculator: {
-            applicable_additional_codes: {},
-            applicable_measure_units: {},
-            applicable_vat_options: {},
-            entry_price_system: false,
-            meursing_code: false,
+            applicable_additional_codes: {
+              '1' => {
+                'type' => 'additional_code',
+                'code' => '1999',
+                'description' => 'Third country additional duty',
+              },
+            },
+            applicable_measure_units: {
+              'DTN' => {
+                'measurement_unit_code' => 'DTN',
+                'description' => '100 kg',
+              },
+            },
+            applicable_vat_options: {
+              'VATZ' => {
+                'value' => 'VATZ',
+                'description' => 'VAT zero rate',
+              },
+            },
+            entry_price_system: true,
+            meursing_code: true,
             source: 'uk',
-            trade_defence: false,
-            zero_mfn_duty: false,
+            trade_defence: true,
+            zero_mfn_duty: true,
           },
         },
       },
     }
   end
 
-  before { chapter }
+  before do
+    chapter
+
+    allow(serializable).to receive_messages(
+      applicable_additional_codes: {
+        '1' => {
+          'type' => 'additional_code',
+          'code' => '1999',
+          'description' => 'Third country additional duty',
+        },
+      },
+      applicable_measure_units: {
+        'DTN' => {
+          'measurement_unit_code' => 'DTN',
+          'description' => '100 kg',
+        },
+      },
+      applicable_vat_options: {
+        'VATZ' => {
+          'value' => 'VATZ',
+          'description' => 'VAT zero rate',
+        },
+      },
+      entry_price_system?: true,
+      meursing_code: true,
+      trade_remedies?: true,
+      zero_mfn_duty?: true,
+    )
+  end
 
   describe '#serializable_hash' do
     it { is_expected.to include_json(expected_pattern) }
