@@ -25,7 +25,7 @@ module TariffSynchronizer
       presence_of :filename, :issue_date
     end
 
-    dataset_module do
+    module DatasetFilters
       def by_filename(filename_without_suffix)
         filename = if TradeTariffBackend.uk?
                      "#{filename_without_suffix}.gzip"
@@ -97,6 +97,10 @@ module TariffSynchronizer
           .select(Sequel.expr(:tariff_updates).*)
           .descending.applied.order_prepend(:update_type)
       end
+    end
+
+    dataset_module do
+      include DatasetFilters
     end
 
     def applied?
