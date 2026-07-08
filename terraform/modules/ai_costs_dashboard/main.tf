@@ -44,7 +44,7 @@ resource "aws_cloudwatch_dashboard" "ai_costs" {
             query  = <<-EOT
               ${local.source}
               | ${local.ai_cost_events}
-              | filter ispresent(total_cost_usd)
+              | filter pricing_known = true and ispresent(total_cost_usd)
               | stats sum(total_cost_usd) as total_cost_usd by event_kind
               | sort total_cost_usd desc
             EOT

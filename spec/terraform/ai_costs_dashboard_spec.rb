@@ -23,7 +23,7 @@ RSpec.describe 'AI costs dashboard Terraform' do # rubocop:disable RSpec/Describ
     expect(module_main_tf).to include('api_call_failed')
     expect(module_main_tf).to include('embedding_api_call_failed')
     expect(aggregate_query).to include('${local.ai_cost_events}')
-    expect(aggregate_query).to include('filter ispresent(total_cost_usd)')
+    expect(aggregate_query).to include('filter pricing_known = true and ispresent(total_cost_usd)')
     expect(aggregate_query).to include('stats sum(total_cost_usd) as total_cost_usd by event_kind')
     expect(aggregate_query).not_to include('bin(')
   end
