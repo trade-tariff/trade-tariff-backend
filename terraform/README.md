@@ -20,6 +20,7 @@ Terraform to deploy the service into AWS.
 
 | Name | Source | Version |
 | ---- | ------ | ------- |
+| <a name="module_ai_costs_dashboard"></a> [ai\_costs\_dashboard](#module\_ai\_costs\_dashboard) | ./modules/ai_costs_dashboard | n/a |
 | <a name="module_backend-job"></a> [backend-job](#module\_backend-job) | git@github.com:trade-tariff/trade-tariff-platform-terraform-modules.git//aws/ecs-service | aws/ecs-service-v3.2.0 |
 | <a name="module_backend_uk"></a> [backend\_uk](#module\_backend\_uk) | git@github.com:trade-tariff/trade-tariff-platform-terraform-modules.git//aws/ecs-service | aws/ecs-service-v3.2.0 |
 | <a name="module_backend_xi"></a> [backend\_xi](#module\_backend\_xi) | git@github.com:trade-tariff/trade-tariff-platform-terraform-modules.git//aws/ecs-service | aws/ecs-service-v3.2.0 |
@@ -37,7 +38,6 @@ Terraform to deploy the service into AWS.
 
 | Name | Type |
 | ---- | ---- |
-| [aws_cloudwatch_dashboard.ai_costs](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cloudwatch_dashboard) | resource |
 | [aws_cloudwatch_event_rule.database_backup](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cloudwatch_event_rule) | resource |
 | [aws_cloudwatch_event_rule.database_backup_freshness_check](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cloudwatch_event_rule) | resource |
 | [aws_cloudwatch_event_rule.database_replication](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cloudwatch_event_rule) | resource |
@@ -100,6 +100,7 @@ Terraform to deploy the service into AWS.
 
 | Name | Description |
 | ---- | ----------- |
+| <a name="output_ai_costs_dashboard_url"></a> [ai\_costs\_dashboard\_url](#output\_ai\_costs\_dashboard\_url) | URL to the AI Costs CloudWatch dashboard |
 | <a name="output_label_generator_dashboard_url"></a> [label\_generator\_dashboard\_url](#output\_label\_generator\_dashboard\_url) | URL to the Label Generator CloudWatch dashboard |
 | <a name="output_search_dashboard_url"></a> [search\_dashboard\_url](#output\_search\_dashboard\_url) | URL to the Search CloudWatch dashboard |
 | <a name="output_search_operations_dashboard_url"></a> [search\_operations\_dashboard\_url](#output\_search\_operations\_dashboard\_url) | URL to the Search Operations CloudWatch dashboard |
