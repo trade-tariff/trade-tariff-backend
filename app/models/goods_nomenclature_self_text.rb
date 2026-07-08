@@ -12,7 +12,7 @@ class GoodsNomenclatureSelfText < Sequel::Model
   many_to_one :goods_nomenclature, key: :goods_nomenclature_sid,
                                    primary_key: :goods_nomenclature_sid
 
-  dataset_module do
+  module DatasetMethods
     include AdminListingDataset
 
     def stale
@@ -93,6 +93,10 @@ class GoodsNomenclatureSelfText < Sequel::Model
         nil,
       )
     end
+  end
+
+  dataset_module do
+    include DatasetMethods
   end
 
   def validate
