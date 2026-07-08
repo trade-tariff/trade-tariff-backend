@@ -1,0 +1,13 @@
+# Prices are USD per 1M tokens. This is not secret material; keep changes reviewed in git.
+#
+# Models missing from this file are still reported with token usage and
+# pricing_known=false so they remain visible in the AI costs dashboard.
+development: &pricing
+  text-embedding-3-small:
+    input_per_million_tokens: 0.02
+
+test:
+  <<: *pricing
+
+production:
+  <<: *pricing

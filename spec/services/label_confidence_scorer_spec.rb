@@ -73,6 +73,7 @@ RSpec.describe LabelConfidenceScorer do
         # 1 description + 2 synonyms + 1 colloquial term = 4 texts
         expect(embedding_service).to have_received(:embed_batch).with(
           ['Live horses for breeding', 'stallions', 'mares', 'stud horses'],
+          event_kind: 'label_scoring_embedding',
         )
       end
     end

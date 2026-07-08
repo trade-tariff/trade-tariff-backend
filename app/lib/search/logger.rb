@@ -64,6 +64,7 @@ module Search
         effective_query: event.payload[:effective_query],
         operation: event.payload[:operation],
       }
+      add_ai_usage_fields!(data, event)
       add_error_fields!(data, event)
       info log_entry(data, event)
     end
@@ -295,6 +296,10 @@ module Search
 
       data[:error_message] = event.payload[:error_message]
       data[:error_message_truncated] = event.payload[:error_message_truncated]
+    end
+
+    def add_ai_usage_fields!(data, event)
+      AiUsage.add_log_fields!(data, event)
     end
   end
 end

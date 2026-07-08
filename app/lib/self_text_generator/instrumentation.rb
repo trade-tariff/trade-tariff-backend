@@ -34,7 +34,7 @@ module SelfTextGenerator
       )
     end
 
-    def api_call(batch_size:, model:, chapter_code:)
+    def api_call(batch_size:, model:, chapter_code:, event_kind: 'self_text_generation_ai')
       instrument('api_call_started', batch_size:, model:, chapter_code:)
 
       start_time = Process.clock_gettime(Process::CLOCK_MONOTONIC)
@@ -43,10 +43,13 @@ module SelfTextGenerator
 
       instrument(
         'api_call_completed',
-        batch_size:,
-        model:,
-        chapter_code:,
-        duration_ms: (duration * 1000).round(2),
+        {
+          batch_size:,
+          model:,
+          chapter_code:,
+          duration_ms: (duration * 1000).round(2),
+          event_kind:,
+        }.merge(AiUsage.payload_from(result)),
       )
 
       result
@@ -60,13 +63,16 @@ module SelfTextGenerator
 
       instrument(
         'api_call_failed',
-        batch_size:,
-        model:,
-        chapter_code:,
-        error_class: e.class.name,
-        error_message: e.message,
-        duration_ms: (duration * 1000).round(2),
-        http_status:,
+        {
+          batch_size:,
+          model:,
+          chapter_code:,
+          error_class: e.class.name,
+          error_message: AiUsage.safe_error_message(e),
+          duration_ms: (duration * 1000).round(2),
+          http_status:,
+          event_kind:,
+        }.merge(AiUsage.payload_from_error(e)),
       )
       raise
     end
@@ -105,10 +111,13 @@ module SelfTextGenerator
 
       instrument(
         'embedding_api_call_completed',
-        batch_size:,
-        model:,
-        chapter_code:,
-        duration_ms: (duration * 1000).round(2),
+        {
+          batch_size:,
+          model:,
+          chapter_code:,
+          duration_ms: (duration * 1000).round(2),
+          event_kind: 'self_text_scoring_embedding',
+        }.merge(AiUsage.payload_from(result)),
       )
 
       result
@@ -122,13 +131,16 @@ module SelfTextGenerator
 
       instrument(
         'embedding_api_call_failed',
-        batch_size:,
-        model:,
-        chapter_code:,
-        error_class: e.class.name,
-        error_message: e.message,
-        duration_ms: (duration * 1000).round(2),
-        http_status:,
+        {
+          batch_size:,
+          model:,
+          chapter_code:,
+          error_class: e.class.name,
+          error_message: AiUsage.safe_error_message(e),
+          duration_ms: (duration * 1000).round(2),
+          http_status:,
+          event_kind: 'self_text_scoring_embedding',
+        }.merge(AiUsage.payload_from_error(e)),
       )
       raise
     end

@@ -6,14 +6,32 @@ RSpec.describe VectorRetrievalService do
 
   before do
     allow(EmbeddingService).to receive(:new).and_return(embedding_service)
-    allow(embedding_service).to receive(:embed).with('live horses').and_return(query_embedding)
+    allow(embedding_service).to receive(:embed).with('live horses', event_kind: 'vector_search_query_embedding').and_return(query_embedding)
   end
 
   describe '#call' do
     it 'embeds the query text' do
       service.call
 
-      expect(embedding_service).to have_received(:embed).with('live horses')
+      expect(embedding_service).to have_received(:embed).with('live horses', event_kind: 'vector_search_query_embedding')
+    end
+
+    it 'instruments the query embedding call with AI usage metadata' do
+      events = []
+      subscriber = ActiveSupport::Notifications.subscribe('embedding_api_call_completed.ai_usage') do |*args|
+        events << ActiveSupport::Notifications::Event.new(*args)
+      end
+
+      service.call
+
+      expect(events.size).to eq(1)
+      expect(events.first.payload).to include(
+        event_kind: 'vector_search_query_embedding',
+        batch_size: 1,
+        model: EmbeddingService::MODEL,
+      )
+    ensure
+      ActiveSupport::Notifications.unsubscribe(subscriber) if subscriber
     end
 
     it 'returns results with ORM-derived fields', :aggregate_failures do

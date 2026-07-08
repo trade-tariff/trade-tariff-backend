@@ -253,6 +253,46 @@ RSpec.describe Search::Instrumentation do
           attempt_number: 1,
           duration_ms: a_kind_of(Float),
           operation: 'interactive_search',
+          event_kind: 'interactive_search',
+        ),
+      )
+    end
+
+    it 'includes AI usage and cost metadata from the response' do
+      allow(ActiveSupport::Notifications).to receive(:instrument)
+      response = AiUsage.attach_metadata(
+        { 'answer' => 'ai response' },
+        AiUsage::Metadata.new(
+          provider: 'openai',
+          model: 'gpt-4',
+          event_kind: 'interactive_search_final_answer',
+          input_tokens: 1_000,
+          output_tokens: 200,
+          total_tokens: 1_200,
+          input_cost_usd: 0.002,
+          output_cost_usd: 0.0016,
+          total_cost_usd: 0.0036,
+          pricing_known: true,
+        ),
+      )
+
+      described_class.api_call(
+        request_id: 'req-1',
+        model: 'gpt-4',
+        attempt_number: 1,
+        operation: 'interactive_search_final_answer',
+      ) { response }
+
+      expect(ActiveSupport::Notifications).to have_received(:instrument).with(
+        'api_call_completed.search',
+        hash_including(
+          provider: 'openai',
+          event_kind: 'interactive_search_final_answer',
+          input_tokens: 1_000,
+          output_tokens: 200,
+          total_tokens: 1_200,
+          total_cost_usd: 0.0036,
+          pricing_known: true,
         ),
       )
     end
@@ -271,6 +311,48 @@ RSpec.describe Search::Instrumentation do
       expect(ActiveSupport::Notifications).to have_received(:instrument).with(
         'search_failed.search',
         hash_including(error_type: 'Faraday::TimeoutError'),
+      )
+    end
+
+    it 'includes AI usage metadata on failed provider calls when available' do
+      allow(ActiveSupport::Notifications).to receive(:instrument)
+      error = OpenaiClient::ApiError.new(
+        status: 500,
+        body: { 'usage' => { 'prompt_tokens' => 75, 'completion_tokens' => 0, 'total_tokens' => 75 } },
+        ai_usage: AiUsage::Metadata.new(
+          provider: 'openai',
+          model: 'gpt-4',
+          event_kind: 'interactive_search',
+          input_tokens: 75,
+          output_tokens: 0,
+          total_tokens: 75,
+          input_cost_usd: nil,
+          output_cost_usd: nil,
+          total_cost_usd: nil,
+          pricing_known: false,
+        ),
+      )
+
+      expect {
+        described_class.api_call(request_id: 'req-1', model: 'gpt-4', attempt_number: 1) { raise error }
+      }.to raise_error(OpenaiClient::ApiError)
+
+      expect(ActiveSupport::Notifications).to have_received(:instrument).with(
+        'api_call_completed.search',
+        hash_including(
+          response_type: 'error',
+          error_message: 'OpenAI API error status=500',
+          provider: 'openai',
+          event_kind: 'interactive_search',
+          input_tokens: 75,
+          total_tokens: 75,
+          pricing_known: false,
+        ),
+      )
+
+      expect(ActiveSupport::Notifications).not_to have_received(:instrument).with(
+        anything,
+        hash_including(error_message: a_string_including('usage')),
       )
     end
 

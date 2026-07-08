@@ -33,7 +33,10 @@ module TariffKnowledge
     end
 
     def call
-      response = ai_client.call(messages, model:, reasoning_effort:)
+      response = AiUsage::Instrumentation.api_call(
+        event_kind: 'atar_fact_extraction',
+        model: model,
+      ) { ai_client.call(messages, model:, reasoning_effort:, event_kind: 'atar_fact_extraction') }
       facts_from(response)
     rescue *OpenaiClient::RETRYABLE_ERRORS => e
       Rails.logger.warn("Public ATAR fact generation failed for ATAR #{ruling.ref}: #{failure_log_context(e)}")

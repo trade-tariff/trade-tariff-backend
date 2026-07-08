@@ -339,6 +339,7 @@ RSpec.describe GenerateSelfText::OtherSelfTextBuilder do
           anything,
           model: 'gpt-4.1-mini-2025-04-14',
           reasoning_effort: nil,
+          event_kind: 'self_text_generation_ai',
         )
       end
 
@@ -371,6 +372,7 @@ RSpec.describe GenerateSelfText::OtherSelfTextBuilder do
           anything,
           model: TradeTariffBackend.ai_model,
           reasoning_effort: nil,
+          event_kind: 'self_text_generation_ai',
         )
       end
     end

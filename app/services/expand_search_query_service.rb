@@ -37,7 +37,20 @@ class ExpandSearchQueryService
     cached = Rails.cache.read(cache_key)
     return Result.new(**cached.symbolize_keys) if cached
 
-    response = OpenaiClient.call(context_for(query), model: configured_model, reasoning_effort: configured_reasoning_effort)
+    response = Search::Instrumentation.api_call(
+      request_id: nil,
+      model: configured_model,
+      attempt_number: 1,
+      operation: 'search_query_expansion',
+      emit_search_failed: false,
+    ) do
+      OpenaiClient.call(
+        context_for(query),
+        model: configured_model,
+        reasoning_effort: configured_reasoning_effort,
+        event_kind: 'search_query_expansion',
+      )
+    end
 
     if response.is_a?(Hash) && response['expanded_query'].present?
       result_hash = { expanded_query: response['expanded_query'], reason: response['reason'] }

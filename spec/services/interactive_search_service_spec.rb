@@ -138,6 +138,7 @@ RSpec.describe InteractiveSearchService do
           a_string_including('you MUST now provide your best answer'),
           model: anything,
           reasoning_effort: anything,
+          event_kind: 'interactive_search_final_answer',
         )
       end
 
@@ -281,6 +282,7 @@ RSpec.describe InteractiveSearchService do
           a_string_including('The previous candidate question repeated'),
           model: 'gpt-5.4',
           reasoning_effort: 'medium',
+          event_kind: 'duplicate_question_retry',
         )
         expect(Search::Instrumentation).to have_received(:api_call).with(
           request_id: request_id,
@@ -449,6 +451,7 @@ RSpec.describe InteractiveSearchService do
           a_string_including('Leather'),
           model: 'gpt-5.4',
           reasoning_effort: 'medium',
+          event_kind: 'interactive_search',
         )
       end
 
@@ -887,6 +890,7 @@ RSpec.describe InteractiveSearchService do
           anything,
           model: 'gpt-4.1-mini-2025-04-14',
           reasoning_effort: nil,
+          event_kind: 'interactive_search',
         )
       end
     end

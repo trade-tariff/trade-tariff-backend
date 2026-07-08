@@ -116,7 +116,11 @@ namespace :self_texts do
 
     generate_texts.each_slice(EmbeddingService::BATCH_SIZE).with_index do |batch, i|
       texts = batch.map(&:self_text)
-      embeddings = service.embed_batch(texts)
+      embeddings = AiUsage::Instrumentation.embedding_api_call(
+        event_kind: 'self_text_embedding_backfill',
+        batch_size: texts.size,
+        model: EmbeddingService::MODEL,
+      ) { service.embed_batch(texts, event_kind: 'self_text_embedding_backfill') }
 
       batch.zip(embeddings).each do |record, embedding|
         update_dataset = GoodsNomenclatureSelfText.where(goods_nomenclature_sid: record.goods_nomenclature_sid)
@@ -139,7 +143,11 @@ namespace :self_texts do
 
     eu_texts.each_slice(EmbeddingService::BATCH_SIZE).with_index do |batch, i|
       texts = batch.map(&:eu_self_text)
-      embeddings = service.embed_batch(texts)
+      embeddings = AiUsage::Instrumentation.embedding_api_call(
+        event_kind: 'eu_self_text_embedding_backfill',
+        batch_size: texts.size,
+        model: EmbeddingService::MODEL,
+      ) { service.embed_batch(texts, event_kind: 'eu_self_text_embedding_backfill') }
 
       batch.zip(embeddings).each do |record, embedding|
         update_dataset = GoodsNomenclatureSelfText.where(goods_nomenclature_sid: record.goods_nomenclature_sid)

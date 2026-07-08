@@ -9,6 +9,11 @@ RSpec.describe OpenaiClient do
           },
         },
       ],
+      'usage' => {
+        'prompt_tokens' => 1_000,
+        'completion_tokens' => 250,
+        'total_tokens' => 1_250,
+      },
     }
   end
 
@@ -26,6 +31,24 @@ RSpec.describe OpenaiClient do
       it 'returns the parsed JSON response' do
         result = client.call(context)
         expect(result).to eq('capital' => 'Paris')
+      end
+
+      it 'attaches token usage and cost metadata to the parsed response' do
+        allow(TradeTariffBackend).to receive(:openai_model_pricing).and_return({
+          TradeTariffBackend.ai_model => { 'input_per_million_tokens' => 2.0, 'output_per_million_tokens' => 8.0 },
+        })
+
+        result = client.call(context, event_kind: 'search_query_expansion')
+
+        expect(AiUsage.metadata_from(result).to_h).to include(
+          model: TradeTariffBackend.ai_model,
+          event_kind: 'search_query_expansion',
+          input_tokens: 1_000,
+          output_tokens: 250,
+          total_tokens: 1_250,
+          total_cost_usd: 0.004,
+          pricing_known: true,
+        )
       end
 
       it 'sends the context as a user message' do
@@ -90,17 +113,44 @@ RSpec.describe OpenaiClient do
     end
 
     context 'when the API returns a 500 error response' do
+      let(:error_body) do
+        {
+          error: 'Internal Server Error',
+          usage: {
+            prompt_tokens: 20,
+            completion_tokens: 0,
+            total_tokens: 20,
+          },
+        }
+      end
+
       before do
         allow(Kernel).to receive(:sleep)
 
         stub_request(:post, "#{api_base_url}/chat/completions")
-          .to_return(status: 500, body: { error: 'Internal Server Error' }.to_json, headers: { 'Content-Type' => 'application/json' })
+          .to_return(status: 500, body: error_body.to_json, headers: { 'Content-Type' => 'application/json' })
       end
 
       it 'raises an ApiError' do
         expect { client.call('test') }.to raise_error(OpenaiClient::ApiError) do |error|
           expect(error.status).to eq(500)
+          expect(error.message).to eq('OpenAI API error status=500')
+          expect(error.message).not_to include('Internal Server Error')
+          expect(error.body['error']).to eq('Internal Server Error')
+          expect(error.body.dig('usage', 'prompt_tokens')).to eq(20)
         end
+      end
+
+      it 'attaches usage metadata to ApiError when the provider returns usage' do
+        expect { client.call('test', model: 'gpt-test', event_kind: 'interactive_search') }
+          .to raise_error(OpenaiClient::ApiError) { |error|
+            expect(error.ai_usage.to_h).to include(
+              model: 'gpt-test',
+              event_kind: 'interactive_search',
+              input_tokens: 20,
+              total_tokens: 20,
+            )
+          }
       end
     end
 
@@ -130,6 +180,11 @@ RSpec.describe OpenaiClient do
               },
             },
           ],
+          'usage' => {
+            'prompt_tokens' => 10,
+            'completion_tokens' => 5,
+            'total_tokens' => 15,
+          },
         }
       end
 
@@ -141,6 +196,17 @@ RSpec.describe OpenaiClient do
       it 'returns the raw string' do
         result = client.call('test')
         expect(result).to eq('not valid json')
+      end
+
+      it 'attaches usage metadata to the raw string response' do
+        result = client.call('test', event_kind: 'label_generation')
+
+        expect(AiUsage.metadata_from(result).to_h).to include(
+          event_kind: 'label_generation',
+          input_tokens: 10,
+          output_tokens: 5,
+          total_tokens: 15,
+        )
       end
     end
 
