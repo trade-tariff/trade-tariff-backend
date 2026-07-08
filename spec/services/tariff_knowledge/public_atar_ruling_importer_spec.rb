@@ -95,6 +95,77 @@ RSpec.describe TariffKnowledge::PublicAtarRulingImporter do
       expect(TariffKnowledge::PublicAtarRuling.by_ref('600015804').first).to be_present
     end
 
+    it 'stores generated derived facts when fact generation is enabled' do
+      source = instance_double(TariffKnowledge::PublicAtarRulingSource)
+      fact_generator = class_double(TariffKnowledge::PublicAtarFactGenerator)
+      atar_ruling = ruling(ref: '600015804')
+      allow(source).to receive(:refs_for_page).with(1).and_return(%w[600015804])
+      allow(source).to receive(:refs_for_page).with(2).and_return([])
+      allow(source).to receive(:ruling_for_ref).with('600015804').and_return(atar_ruling)
+      allow(fact_generator).to receive(:call).with(atar_ruling).and_return(['microwaveable body warmer'])
+
+      result = described_class.new(source:, fact_generator:).call(max_pages: 2, generate_derived_facts: true)
+
+      imported = TariffKnowledge::PublicAtarRuling.by_ref('600015804').first
+      expect(imported.derived_facts).to eq(['microwaveable body warmer'])
+      expect(result.derived_facts_generated_count).to eq(1)
+    end
+
+    it 'skips generation when existing derived facts are present' do
+      create(:tariff_knowledge_public_atar_ruling, ref: '600015804', derived_facts: Sequel.pg_array(['existing fact'], :text))
+      source = instance_double(TariffKnowledge::PublicAtarRulingSource)
+      fact_generator = class_double(TariffKnowledge::PublicAtarFactGenerator)
+      atar_ruling = ruling(ref: '600015804', description: 'Updated description')
+      allow(source).to receive(:refs_for_page).with(1).and_return(%w[600015804])
+      allow(source).to receive(:refs_for_page).with(2).and_return([])
+      allow(source).to receive(:ruling_for_ref).with('600015804').and_return(atar_ruling)
+      allow(fact_generator).to receive(:call).with(atar_ruling).and_return(nil)
+
+      result = described_class.new(source:, fact_generator:).call(max_pages: 2, generate_derived_facts: true)
+
+      imported = TariffKnowledge::PublicAtarRuling.by_ref('600015804').first
+      expect(imported.description).to eq('Updated description')
+      expect(imported.derived_facts).to eq(['existing fact'])
+      expect(result.derived_facts_skipped_count).to eq(1)
+      expect(fact_generator).not_to have_received(:call)
+    end
+
+    it 'preserves existing derived facts when generation fails' do
+      create(:tariff_knowledge_public_atar_ruling, ref: '600015804', derived_facts: Sequel.pg_array([], :text))
+      source = instance_double(TariffKnowledge::PublicAtarRulingSource)
+      fact_generator = class_double(TariffKnowledge::PublicAtarFactGenerator)
+      atar_ruling = ruling(ref: '600015804', description: 'Updated description')
+      allow(source).to receive(:refs_for_page).with(1).and_return(%w[600015804])
+      allow(source).to receive(:refs_for_page).with(2).and_return([])
+      allow(source).to receive(:ruling_for_ref).with('600015804').and_return(atar_ruling)
+      allow(fact_generator).to receive(:call).with(atar_ruling).and_return(nil)
+
+      result = described_class.new(source:, fact_generator:).call(max_pages: 2, generate_derived_facts: true)
+
+      imported = TariffKnowledge::PublicAtarRuling.by_ref('600015804').first
+      expect(imported.description).to eq('Updated description')
+      expect(imported.derived_facts).to eq([])
+      expect(result.derived_facts_failed_count).to eq(1)
+    end
+
+    it 'preserves existing derived facts when generation returns no usable facts' do
+      create(:tariff_knowledge_public_atar_ruling, ref: '600015804', derived_facts: Sequel.pg_array([], :text))
+      source = instance_double(TariffKnowledge::PublicAtarRulingSource)
+      fact_generator = class_double(TariffKnowledge::PublicAtarFactGenerator)
+      atar_ruling = ruling(ref: '600015804', description: 'Updated description')
+      allow(source).to receive(:refs_for_page).with(1).and_return(%w[600015804])
+      allow(source).to receive(:refs_for_page).with(2).and_return([])
+      allow(source).to receive(:ruling_for_ref).with('600015804').and_return(atar_ruling)
+      allow(fact_generator).to receive(:call).with(atar_ruling).and_return([])
+
+      result = described_class.new(source:, fact_generator:).call(max_pages: 2, generate_derived_facts: true)
+
+      imported = TariffKnowledge::PublicAtarRuling.by_ref('600015804').first
+      expect(imported.description).to eq('Updated description')
+      expect(imported.derived_facts).to eq([])
+      expect(result.derived_facts_empty_count).to eq(1)
+    end
+
     it 'honours the requested import limit across listing pages' do
       source = instance_double(TariffKnowledge::PublicAtarRulingSource)
       allow(source).to receive(:refs_for_page).with(1).and_return(%w[600015804 600015805])

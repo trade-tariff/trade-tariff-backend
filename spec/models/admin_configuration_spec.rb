@@ -689,6 +689,11 @@ RSpec.describe AdminConfiguration do
         result = described_class.nested_options_value('expand_model')
         expect(result).to eq({ selected: 'gpt-4.1-mini-2025-04-14', sub_values: {} })
       end
+
+      it 'returns the default ATAR fact model with high reasoning_effort' do
+        result = described_class.nested_options_value('atar_fact_model')
+        expect(result).to eq({ selected: 'gpt-5.5', sub_values: { 'reasoning_effort' => 'high' } })
+      end
     end
 
     context 'when config record exists' do
