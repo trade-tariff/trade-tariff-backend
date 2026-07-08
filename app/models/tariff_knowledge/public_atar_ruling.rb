@@ -39,5 +39,9 @@ module TariffKnowledge
 
       errors.add(:goods_nomenclature_item_id, 'must match the normalized commodity code') if goods_nomenclature_item_id != commodity_code.ljust(10, '0')
     end
+
+    def search_terms
+      (Array(keywords) + Array(derived_facts)).compact_blank.uniq
+    end
   end
 end
