@@ -108,7 +108,7 @@ resource "aws_cloudwatch_dashboard" "ai_costs" {
             EOT
           }
         }
-      ],
+      ]
     )
   })
 }
