@@ -52,5 +52,9 @@ RSpec.describe Api::V2::Headings::HeadingSerializer do
 
   describe '#serializable_hash' do
     it { is_expected.to include_json(expected_pattern) }
+
+    it 'does not include duty calculator metadata' do
+      expect(serializer.dig('data', 'meta')).to be_nil
+    end
   end
 end

@@ -107,6 +107,55 @@ RSpec.describe 'Headings', swagger_doc: 'v2/swagger.json', type: :request do
                          },
                        },
                      },
+                     meta: {
+                       type: :object,
+                       nullable: true,
+                       description: 'Present for declarable heading responses. Omitted for non-declarable heading responses.',
+                       properties: {
+                         duty_calculator: {
+                           type: :object,
+                           description: 'Metadata used by frontend consumers to decide whether a duty calculator journey can be offered for a declarable heading.',
+                           properties: {
+                             applicable_additional_codes: {
+                               type: :object,
+                               description: 'Additional code options derived from applicable import measures.',
+                               additionalProperties: true,
+                             },
+                             applicable_measure_units: {
+                               type: :object,
+                               description: 'Measure unit options derived from applicable import measures.',
+                               additionalProperties: true,
+                             },
+                             applicable_vat_options: {
+                               type: :object,
+                               description: 'VAT options derived from applicable import measures.',
+                               additionalProperties: true,
+                             },
+                             entry_price_system: {
+                               type: :boolean,
+                               description: 'Whether an Entry Price System journey may be required.',
+                             },
+                             meursing_code: {
+                               type: :boolean,
+                               description: 'Whether Meursing additional code information may be required.',
+                             },
+                             source: {
+                               type: :string,
+                               enum: %w[uk xi],
+                               description: 'Tariff source for the response.',
+                             },
+                             trade_defence: {
+                               type: :boolean,
+                               description: 'Whether applicable import measures include trade defence measures.',
+                             },
+                             zero_mfn_duty: {
+                               type: :boolean,
+                               description: 'Whether every third-country import measure has zero MFN duty.',
+                             },
+                           },
+                         },
+                       },
+                     },
                    },
                  },
                  included: {
@@ -123,7 +172,7 @@ RSpec.describe 'Headings', swagger_doc: 'v2/swagger.json', type: :request do
                  },
                }
 
-        let(:heading) { create(:heading, :with_chapter, :with_description) }
+        let(:heading) { create(:heading, :with_chapter, :with_description, :with_indent, :declarable) }
         let(:id) { heading.goods_nomenclature_item_id.first(4) }
 
         run_test!
