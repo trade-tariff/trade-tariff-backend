@@ -29,6 +29,10 @@ class AdminConfiguration < Sequel::Model(Sequel[:admin_configurations].qualify(:
       selected: 'gpt-5.4',
       sub_values: { 'reasoning_effort' => 'high' },
     },
+    'atar_fact_model' => {
+      selected: 'gpt-5.5',
+      sub_values: { 'reasoning_effort' => 'high' },
+    },
   }.freeze
 
   GENERIC_DESCRIPTION_INTERCEPT_MESSAGE = <<~MARKDOWN.strip.freeze
@@ -147,6 +151,7 @@ class AdminConfiguration < Sequel::Model(Sequel[:admin_configurations].qualify(:
     'other_self_text_batch_size' => 5,
     'non_other_self_text_model' => NESTED_OPTION_DEFAULTS['non_other_self_text_model'][:selected],
     'non_other_self_text_batch_size' => 15,
+    'atar_fact_model' => NESTED_OPTION_DEFAULTS['atar_fact_model'][:selected],
   }.freeze
 
   plugin :auto_validations, not_null: :presence
