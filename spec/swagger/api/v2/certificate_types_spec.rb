@@ -42,6 +42,8 @@ RSpec.describe 'Certificate Types', swagger_doc: 'v2/swagger.json', type: :reque
 
         run_test!
       end
+
+      standard_error_responses
     end
   end
 end

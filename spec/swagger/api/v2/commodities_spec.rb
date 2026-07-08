@@ -218,12 +218,15 @@ RSpec.describe 'Commodities', swagger_doc: 'v2/swagger.json', type: :request do
       end
 
       response '404', 'commodity not found' do
-        schema '$ref' => '#/components/schemas/SimpleErrorResponse'
+        schema '$ref' => '#/components/schemas/StandardErrorResponse'
 
         let(:id) { '9999999999' }
 
         run_test!
       end
+
+      standard_bad_request_response
+      standard_unprocessable_content_response
     end
   end
 

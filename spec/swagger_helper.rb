@@ -164,8 +164,47 @@ module SwaggerSecurityParameters
   # rubocop:enable Naming/MethodName
 end
 
+module SwaggerErrorResponses
+  def standard_bad_request_response
+    response '400', 'bad request' do
+      schema '$ref' => '#/components/schemas/StandardErrorResponse'
+
+      it 'documents the error response schema' do |example|
+        expect(example.metadata.dig(:response, :schema, '$ref')).to eq('#/components/schemas/StandardErrorResponse')
+      end
+    end
+  end
+
+  def standard_not_found_response
+    response '404', 'not found' do
+      schema '$ref' => '#/components/schemas/StandardErrorResponse'
+
+      it 'documents the error response schema' do |example|
+        expect(example.metadata.dig(:response, :schema, '$ref')).to eq('#/components/schemas/StandardErrorResponse')
+      end
+    end
+  end
+
+  def standard_unprocessable_content_response
+    response '422', 'unprocessable content' do
+      schema '$ref' => '#/components/schemas/StandardErrorResponse'
+
+      it 'documents the error response schema' do |example|
+        expect(example.metadata.dig(:response, :schema, '$ref')).to eq('#/components/schemas/StandardErrorResponse')
+      end
+    end
+  end
+
+  def standard_error_responses
+    standard_bad_request_response
+    standard_not_found_response
+    standard_unprocessable_content_response
+  end
+end
+
 RSpec.configure do |config|
   config.extend JsonapiSwaggerParameters
+  config.extend SwaggerErrorResponses
   config.include SwaggerSecurityParameters, type: :request
 
   config.openapi_root = Rails.root.join('swagger').to_s
@@ -292,9 +331,16 @@ RSpec.configure do |config|
           },
         },
         schemas: {
+          StandardErrorResponse: {
+            oneOf: [
+              { '$ref' => '#/components/schemas/JsonApiErrorResponse' },
+              { '$ref' => '#/components/schemas/SimpleErrorResponse' },
+            ],
+            description: 'Error response returned by documented V2 endpoint failures.',
+          },
           SimpleErrorResponse: {
             type: :object,
-            description: 'Error response returned by shared API rescue handlers when a request cannot be processed.',
+            description: 'Error response returned by shared API rescue handlers.',
             properties: {
               error: {
                 type: :string,
@@ -319,7 +365,10 @@ RSpec.configure do |config|
                   type: :object,
                   properties: {
                     status: {
-                      type: :string,
+                      oneOf: [
+                        { type: :string },
+                        { type: :integer },
+                      ],
                       description: 'HTTP status code associated with the error, when supplied by the endpoint.',
                     },
                     title: {
@@ -355,7 +404,13 @@ RSpec.configure do |config|
                 items: {
                   type: :object,
                   properties: {
-                    status: { type: :string, description: 'HTTP status code associated with the error, when supplied by the endpoint.' },
+                    status: {
+                      oneOf: [
+                        { type: :string },
+                        { type: :integer },
+                      ],
+                      description: 'HTTP status code associated with the error, when supplied by the endpoint.',
+                    },
                     title: { type: :string, description: 'Short error title or affected attribute, when supplied by the endpoint.' },
                     detail: { type: :string, description: 'Human-readable explanation of the error.' },
                     source: {

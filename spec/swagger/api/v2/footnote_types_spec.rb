@@ -43,6 +43,8 @@ RSpec.describe 'Footnote Types', swagger_doc: 'v2/swagger.json', type: :request 
 
         run_test!
       end
+
+      standard_error_responses
     end
   end
 end
