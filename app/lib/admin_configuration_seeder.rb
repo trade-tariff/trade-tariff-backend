@@ -1,47 +1,53 @@
+require_relative 'admin_configuration_seeder/config_registry'
+
 module AdminConfigurationSeeder
-  PROMPT_PATH = Pathname.new(__dir__).join('admin_configuration_seeder/prompts').freeze
-
-  MODEL_LABELS = {
-    'gpt-4.1-2025-04-14' => 'GPT-4.1 (1M context)',
-    'gpt-4.1-mini-2025-04-14' => 'GPT-4.1 mini (1M context)',
-    'gpt-4.1-nano-2025-04-14' => 'GPT-4.1 nano (1M context)',
-    'gpt-4o' => 'GPT-4o (multimodal)',
-    'gpt-4o-mini' => 'GPT-4o mini',
-    'gpt-5-2025-08-07' => 'GPT-5 (base)',
-    'gpt-5-mini-2025-08-07' => 'GPT-5 mini (fast)',
-    'gpt-5-nano-2025-08-07' => 'GPT-5 nano (fastest)',
-    'gpt-5.1-2025-11-13' => 'GPT-5.1 (extended caching & coding)',
-    'gpt-5.2' => 'GPT-5.2',
-    'gpt-5.4' => 'GPT-5.4',
-    'gpt-5.5' => 'GPT-5.5 (latest flagship)',
-    'o3-2025-04-16' => 'o3 (full reasoning)',
-    'o3-pro' => 'o3-pro (complex reasoning)',
-    'o4-mini-2025-04-16' => 'o4-mini (small reasoning)',
-  }.freeze
-
-  PROMPT_FILES = {
-    atar_fact_context_markdown: 'atar_fact_context.md',
-    duplicate_question_guard_context_markdown: 'duplicate_question_guard_context.md',
-    expand_query_context_markdown: 'expand_query_context.md',
-    label_context_markdown: 'label_context.md',
-    non_other_self_text_context_markdown: 'non_other_self_text_context.md',
-    other_self_text_context_markdown: 'other_self_text_context.md',
-    search_context_markdown: 'search_context.md',
-  }.freeze
-
 module_function
 
-  def model_label(key)
-    MODEL_LABELS.fetch(key, key)
+  def seed
+    created = ConfigRegistry.configs.sum { |attrs| create_or_patch(attrs) }
+    created += patch_retrieval_method
+
+    output "  created #{created} configuration(s)" if created.positive?
   end
 
-  PROMPT_FILES.each_key do |method_name|
-    define_singleton_method(method_name) do
-      prompt(method_name)
+  def create_or_patch(attrs)
+    config = AdminConfiguration.where(name: attrs[:name]).first
+    return create_config(attrs) unless config
+
+    patch_config_type(config, attrs)
+  end
+
+  def create_config(attrs)
+    AdminConfiguration.create(attrs.merge(area: 'classification'))
+    output "  created: #{attrs[:name]}"
+    1
+  end
+
+  def patch_config_type(config, attrs)
+    if config.config_type == attrs[:config_type]
+      output "  skip: #{attrs[:name]} (already exists)"
+      return 0
     end
+
+    config.update(config_type: attrs[:config_type], value: attrs[:value])
+    output "  patched: #{attrs[:name]} (config type)"
+    1
   end
 
-  def prompt(name)
-    PROMPT_PATH.join(PROMPT_FILES.fetch(name)).read.strip
+  def patch_retrieval_method
+    retrieval = AdminConfiguration.where(name: 'retrieval_method').first
+    return 0 unless retrieval
+
+    options = retrieval.value['options'] || []
+    return 0 if options.any? { |option| option['key'] == 'hybrid' }
+
+    options << { 'key' => 'hybrid', 'label' => 'Hybrid (text + vector with RRF fusion)' }
+    retrieval.update(value: Sequel.pg_jsonb_wrap(retrieval.value.to_hash.merge('options' => options)))
+    output '  patched: retrieval_method (added hybrid option)'
+    1
+  end
+
+  def output(message)
+    $stdout.puts(message)
   end
 end
