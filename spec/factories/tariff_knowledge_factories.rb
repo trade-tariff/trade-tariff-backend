@@ -54,6 +54,7 @@ FactoryBot.define do
     description { 'Venini, Cardin lights - Set of five.' }
     keywords { Sequel.pg_array(['CEILING LIGHTS', 'OF GLASS'], :text) }
     justification { 'Classification has been determined in accordance with GIR 1.' }
+    derived_facts { Sequel.pg_array([], :text) }
     validity_start_date { Date.new(2026, 6, 26) }
     validity_end_date { Date.new(2029, 6, 25) }
     source_url { "https://www.tax.service.gov.uk/search-for-advance-tariff-rulings/ruling/#{ref}" }

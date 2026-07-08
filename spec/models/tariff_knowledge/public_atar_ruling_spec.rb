@@ -26,6 +26,12 @@ RSpec.describe TariffKnowledge::PublicAtarRuling do
       expect(ruling).to be_valid
     end
 
+    it 'allows rulings with AI-generated derived facts' do
+      ruling = build(:tariff_knowledge_public_atar_ruling, derived_facts: Sequel.pg_array(['Murano glass lighting'], :text))
+
+      expect(ruling).to be_valid
+    end
+
     it 'validates normalized commodity association keys' do
       ruling = build(
         :tariff_knowledge_public_atar_ruling,
