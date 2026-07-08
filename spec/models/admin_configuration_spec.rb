@@ -471,6 +471,9 @@ RSpec.describe AdminConfiguration do
     it 'returns static values directly' do
       expect(described_class.default_for('opensearch_result_limit')).to eq(50)
       expect(described_class.default_for('input_sanitiser_max_length')).to eq(1000)
+      expect(described_class.default_for('expand_search_enabled')).to be(true)
+      expect(described_class.default_for('expand_search_when_needed_enabled')).to be(true)
+      expect(described_class.default_for('refine_search_with_answers_enabled')).to be(true)
     end
 
     it 'returns the current description intercept template copy' do
@@ -526,7 +529,9 @@ RSpec.describe AdminConfiguration do
   describe '.enabled?' do
     context 'when config record is missing' do
       it 'returns the default value' do
-        expect(described_class.enabled?('expand_search_enabled')).to be false
+        expect(described_class.enabled?('expand_search_enabled')).to be true
+        expect(described_class.enabled?('expand_search_when_needed_enabled')).to be true
+        expect(described_class.enabled?('refine_search_with_answers_enabled')).to be true
         expect(described_class.enabled?('interactive_search_enabled')).to be true
         expect(described_class.enabled?('interactive_search_duplicate_question_guard_enabled')).to be true
       end
