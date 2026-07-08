@@ -1,5 +1,19 @@
 # rubocop:disable RSpec/DescribeClass
 RSpec.describe 'tariff_knowledge rake tasks' do
+  def public_atar_import_result(**overrides)
+    TariffKnowledge::PublicAtarRulingImporter::Result.new(**{
+      seen_count: 2,
+      created_count: 2,
+      updated_count: 0,
+      failed_count: 0,
+      refresh_goods_nomenclature_item_ids: %w[6302100000],
+      derived_facts_generated_count: 0,
+      derived_facts_empty_count: 0,
+      derived_facts_failed_count: 0,
+      derived_facts_skipped_count: 0,
+    }.merge(overrides))
+  end
+
   after do
     %w[
       tariff_knowledge:populate
@@ -94,7 +108,7 @@ RSpec.describe 'tariff_knowledge rake tasks' do
   describe 'tariff_knowledge:atars:preload' do
     it 'imports the public ATAR preload file' do
       allow(TariffKnowledge::PublicAtarRulingImporter).to receive(:import_file)
-        .and_return(TariffKnowledge::PublicAtarRulingImporter::Result.new(seen_count: 2, created_count: 2, updated_count: 0, failed_count: 0, refresh_goods_nomenclature_item_ids: %w[6302100000]))
+        .and_return(public_atar_import_result)
       allow(TariffKnowledge::PublicAtarSearchRefresh).to receive(:call).and_return([1])
 
       suppress_output { Rake::Task['tariff_knowledge:atars:preload'].invoke }
@@ -118,7 +132,7 @@ RSpec.describe 'tariff_knowledge rake tasks' do
   describe 'tariff_knowledge:atars:import' do
     it 'imports public ATAR rulings inline' do
       allow(TariffKnowledge::PublicAtarRulingImporter).to receive(:call)
-        .and_return(TariffKnowledge::PublicAtarRulingImporter::Result.new(seen_count: 2, created_count: 1, updated_count: 1, failed_count: 0, refresh_goods_nomenclature_item_ids: %w[6302100000]))
+        .and_return(public_atar_import_result(created_count: 1, updated_count: 1))
       allow(TariffKnowledge::PublicAtarSearchRefresh).to receive(:call).and_return([1])
 
       suppress_output { Rake::Task['tariff_knowledge:atars:import'].invoke }

@@ -2,8 +2,19 @@ require 'json'
 
 module TariffKnowledge
   class PublicAtarRulingImporter
-    Result = Data.define(:seen_count, :created_count, :updated_count, :failed_count, :refresh_goods_nomenclature_item_ids)
-    UpsertResult = Data.define(:action, :refresh_goods_nomenclature_item_ids)
+    Result = Data.define(
+      :seen_count,
+      :created_count,
+      :updated_count,
+      :failed_count,
+      :refresh_goods_nomenclature_item_ids,
+      :derived_facts_generated_count,
+      :derived_facts_empty_count,
+      :derived_facts_failed_count,
+      :derived_facts_skipped_count,
+    )
+    UpsertResult = Data.define(:action, :refresh_goods_nomenclature_item_ids, :fact_generation_status)
+    FactGenerationResult = Data.define(:attributes, :status)
 
     DEFAULT_PRELOAD_PATH = Rails.root.join('db/tariff_knowledge/public_atar_rulings_preload.json')
 
@@ -11,11 +22,12 @@ module TariffKnowledge
 
     def self.import_file(...) = new.import_file(...)
 
-    def initialize(source: nil)
+    def initialize(source: nil, fact_generator: PublicAtarFactGenerator)
       @source = source
+      @fact_generator = fact_generator
     end
 
-    def call(limit: nil, max_pages: 50, request_delay: PublicAtarRulingSource::DEFAULT_REQUEST_DELAY, max_retries: PublicAtarRulingSource::DEFAULT_MAX_RETRIES)
+    def call(limit: nil, max_pages: 50, request_delay: PublicAtarRulingSource::DEFAULT_REQUEST_DELAY, max_retries: PublicAtarRulingSource::DEFAULT_MAX_RETRIES, generate_derived_facts: false)
       sync_source = source || PublicAtarRulingSource.new(
         limit:,
         max_pages:,
@@ -26,6 +38,10 @@ module TariffKnowledge
       created_count = 0
       updated_count = 0
       failed_count = 0
+      derived_facts_generated_count = 0
+      derived_facts_empty_count = 0
+      derived_facts_failed_count = 0
+      derived_facts_skipped_count = 0
       refresh_goods_nomenclature_item_ids = []
       remaining = limit
 
@@ -37,9 +53,23 @@ module TariffKnowledge
         seen_count += refs.size
 
         refs.each do |ref|
-          upsert_result = upsert_ruling(sync_source.ruling_for_ref(ref))
+          ruling = sync_source.ruling_for_ref(ref)
+          upsert_result = upsert_ruling(
+            ruling,
+            generate_derived_facts:,
+          )
           created_count += 1 if upsert_result.action == :created
           updated_count += 1 if upsert_result.action == :updated
+          case upsert_result.fact_generation_status
+          when :generated
+            derived_facts_generated_count += 1
+          when :empty
+            derived_facts_empty_count += 1
+          when :failed
+            derived_facts_failed_count += 1
+          when :skipped
+            derived_facts_skipped_count += 1
+          end
           refresh_goods_nomenclature_item_ids.concat(upsert_result.refresh_goods_nomenclature_item_ids)
         rescue StandardError => e
           failed_count += 1
@@ -52,7 +82,7 @@ module TariffKnowledge
         end
       end
 
-      Result.new(seen_count:, created_count:, updated_count:, failed_count:, refresh_goods_nomenclature_item_ids: refresh_goods_nomenclature_item_ids.uniq)
+      Result.new(seen_count:, created_count:, updated_count:, failed_count:, refresh_goods_nomenclature_item_ids: refresh_goods_nomenclature_item_ids.uniq, derived_facts_generated_count:, derived_facts_empty_count:, derived_facts_failed_count:, derived_facts_skipped_count:)
     end
 
     def import_file(path: DEFAULT_PRELOAD_PATH)
@@ -73,15 +103,17 @@ module TariffKnowledge
         Rails.logger.warn("Failed to import public ATAR #{attributes['ref'] || 'unknown'}: #{e.class}: #{e.message}")
       end
 
-      Result.new(seen_count: rows.size, created_count:, updated_count:, failed_count:, refresh_goods_nomenclature_item_ids: refresh_goods_nomenclature_item_ids.uniq)
+      Result.new(seen_count: rows.size, created_count:, updated_count:, failed_count:, refresh_goods_nomenclature_item_ids: refresh_goods_nomenclature_item_ids.uniq, derived_facts_generated_count: 0, derived_facts_empty_count: 0, derived_facts_failed_count: 0, derived_facts_skipped_count: 0)
     end
 
   private
 
-    attr_reader :source
+    attr_reader :source, :fact_generator
 
-    def upsert_ruling(ruling, derived_fact_attributes: nil)
+    def upsert_ruling(ruling, derived_fact_attributes: nil, generate_derived_facts: false)
       existing = PublicAtarRuling.by_ref(ruling.ref).first
+      fact_generation_result = generated_fact_attributes_for(ruling, existing:, generate: generate_derived_facts)
+      derived_fact_attributes ||= fact_generation_result.attributes
       now = Time.zone.now
       action = existing ? :updated : :created
       row = row_for(ruling, existing:, now:, derived_fact_attributes:)
@@ -91,7 +123,7 @@ module TariffKnowledge
                        .insert_conflict(target: :ref, update: update_values(update_derived_facts: derived_fact_attributes.present?))
                        .insert(row)
 
-      UpsertResult.new(action:, refresh_goods_nomenclature_item_ids:)
+      UpsertResult.new(action:, refresh_goods_nomenclature_item_ids:, fact_generation_status: fact_generation_result.status)
     end
 
     def search_refresh_item_ids(existing, row)
@@ -167,6 +199,20 @@ module TariffKnowledge
       {
         derived_facts: Sequel.pg_array(Array(derived_facts).compact_blank, :text),
       }
+    end
+
+    def generated_fact_attributes_for(ruling, existing:, generate:)
+      return FactGenerationResult.new(attributes: nil, status: :skipped) unless generate
+      return FactGenerationResult.new(attributes: nil, status: :skipped) if existing&.derived_facts.present?
+
+      facts = fact_generator.call(ruling)
+      return FactGenerationResult.new(attributes: nil, status: :failed) unless facts
+      return FactGenerationResult.new(attributes: nil, status: :empty) if facts.blank?
+
+      FactGenerationResult.new(
+        attributes: { derived_facts: Sequel.pg_array(Array(facts).compact_blank, :text) },
+        status: :generated,
+      )
     end
 
     def parse_date(value)

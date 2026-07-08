@@ -134,7 +134,10 @@ class OpenaiClient
   end
 
   MODEL_CONFIGS = {
-    # GPT-5.4 (latest flagship, 1M context)
+    # GPT-5.5 (latest flagship, 1M context)
+    'gpt-5.5' => { reasoning_levels: %w[none low medium high xhigh] },
+
+    # GPT-5.4 (1M context)
     'gpt-5.4' => { reasoning_levels: %w[none low medium high xhigh] },
 
     # GPT-5 Series
