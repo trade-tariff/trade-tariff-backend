@@ -4,30 +4,8 @@ module GoodsNomenclatures
       extend ActiveSupport::Concern
 
       included do
-        one_to_many :measures,
-                    primary_key: :goods_nomenclature_sid,
-                    key: :goods_nomenclature_sid,
-                    class_name: '::Measure',
-                    read_only: true do |ds|
-          ds.with_actual(Measure)
-            .dedupe_similar
-            .with_regulation_dates_query
-            .without_excluded_types
-        end
-
-        one_to_many :overview_measures,
-                    primary_key: :goods_nomenclature_sid,
-                    key: :goods_nomenclature_sid,
-                    class_name: '::Measure',
-                    read_only: true do |ds|
-          ds.with_actual(Measure)
-            .dedupe_similar
-            .with_regulation_dates_query
-            .without_excluded_types
-            .overview
-        end
-
-        def_column_accessor :leaf
+        register_measure_associations
+        register_leaf_column
 
         dataset_module do
           def with_leaf_column
@@ -43,6 +21,37 @@ module GoodsNomenclatures
               .non_grouping
               .where(tree_node__child_sid: nil)
           end
+        end
+      end
+
+      module ClassMethods
+        def register_measure_associations
+          one_to_many :measures,
+                      primary_key: :goods_nomenclature_sid,
+                      key: :goods_nomenclature_sid,
+                      class_name: '::Measure',
+                      read_only: true do |ds|
+            ds.with_actual(Measure)
+              .dedupe_similar
+              .with_regulation_dates_query
+              .without_excluded_types
+          end
+
+          one_to_many :overview_measures,
+                      primary_key: :goods_nomenclature_sid,
+                      key: :goods_nomenclature_sid,
+                      class_name: '::Measure',
+                      read_only: true do |ds|
+            ds.with_actual(Measure)
+              .dedupe_similar
+              .with_regulation_dates_query
+              .without_excluded_types
+              .overview
+          end
+        end
+
+        def register_leaf_column
+          def_column_accessor :leaf
         end
       end
     end
