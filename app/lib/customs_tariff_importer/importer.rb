@@ -48,35 +48,7 @@ module CustomsTariffImporter
           document_created_on: fetched.published_on,
         )
 
-        extracted.chapters.each do |chapter_id, content|
-          CustomsTariffChapterNote.create(
-            customs_tariff_update_version: update.version,
-            chapter_id:,
-            content:,
-            validity_start_date: update.validity_start_date,
-            status: CustomsTariffChapterNote::PENDING,
-          )
-        end
-
-        extracted.sections.each do |section_id, content|
-          CustomsTariffSectionNote.create(
-            customs_tariff_update_version: update.version,
-            section_id:,
-            content:,
-            validity_start_date: update.validity_start_date,
-            status: CustomsTariffSectionNote::PENDING,
-          )
-        end
-
-        extracted.general_rules.each do |rule_label, content|
-          CustomsTariffGeneralRule.create(
-            customs_tariff_update_version: update.version,
-            rule_label:,
-            content:,
-            validity_start_date: update.validity_start_date,
-            status: CustomsTariffGeneralRule::PENDING,
-          )
-        end
+        create_notes(update, extracted)
       end
 
       duration_ms = ((Process.clock_gettime(Process::CLOCK_MONOTONIC) - start_time) * 1000).round(2)
@@ -91,6 +63,48 @@ module CustomsTariffImporter
       )
       record_failure(fetched&.version, e.message)
       Result.new(status: :failed, version: fetched&.version, error: e.message)
+    end
+
+    def create_notes(update, extracted)
+      create_chapter_notes(update, extracted.chapters)
+      create_section_notes(update, extracted.sections)
+      create_general_rules(update, extracted.general_rules)
+    end
+
+    def create_chapter_notes(update, chapters)
+      chapters.each do |chapter_id, content|
+        CustomsTariffChapterNote.create(
+          customs_tariff_update_version: update.version,
+          chapter_id:,
+          content:,
+          validity_start_date: update.validity_start_date,
+          status: CustomsTariffChapterNote::PENDING,
+        )
+      end
+    end
+
+    def create_section_notes(update, sections)
+      sections.each do |section_id, content|
+        CustomsTariffSectionNote.create(
+          customs_tariff_update_version: update.version,
+          section_id:,
+          content:,
+          validity_start_date: update.validity_start_date,
+          status: CustomsTariffSectionNote::PENDING,
+        )
+      end
+    end
+
+    def create_general_rules(update, general_rules)
+      general_rules.each do |rule_label, content|
+        CustomsTariffGeneralRule.create(
+          customs_tariff_update_version: update.version,
+          rule_label:,
+          content:,
+          validity_start_date: update.validity_start_date,
+          status: CustomsTariffGeneralRule::PENDING,
+        )
+      end
     end
 
     def record_failure(version, message)

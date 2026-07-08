@@ -23,35 +23,49 @@ module CustomsTariffImporter
         CustomsTariffChapterNote.where(customs_tariff_update_version: update.version).delete
         CustomsTariffGeneralRule.where(customs_tariff_update_version: update.version).delete
 
-        extracted.sections.each do |section_id, note_content|
-          CustomsTariffSectionNote.create(
-            customs_tariff_update_version: update.version,
-            section_id:,
-            content: note_content,
-            validity_start_date: update.validity_start_date,
-            status: CustomsTariffSectionNote::PENDING,
-          )
-        end
+        create_notes(update, extracted)
+      end
+    end
 
-        extracted.chapters.each do |chapter_id, note_content|
-          CustomsTariffChapterNote.create(
-            customs_tariff_update_version: update.version,
-            chapter_id:,
-            content: note_content,
-            validity_start_date: update.validity_start_date,
-            status: CustomsTariffChapterNote::PENDING,
-          )
-        end
+    def create_notes(update, extracted)
+      create_section_notes(update, extracted.sections)
+      create_chapter_notes(update, extracted.chapters)
+      create_general_rules(update, extracted.general_rules)
+    end
 
-        extracted.general_rules.each do |rule_label, note_content|
-          CustomsTariffGeneralRule.create(
-            customs_tariff_update_version: update.version,
-            rule_label:,
-            content: note_content,
-            validity_start_date: update.validity_start_date,
-            status: CustomsTariffGeneralRule::PENDING,
-          )
-        end
+    def create_section_notes(update, sections)
+      sections.each do |section_id, note_content|
+        CustomsTariffSectionNote.create(
+          customs_tariff_update_version: update.version,
+          section_id:,
+          content: note_content,
+          validity_start_date: update.validity_start_date,
+          status: CustomsTariffSectionNote::PENDING,
+        )
+      end
+    end
+
+    def create_chapter_notes(update, chapters)
+      chapters.each do |chapter_id, note_content|
+        CustomsTariffChapterNote.create(
+          customs_tariff_update_version: update.version,
+          chapter_id:,
+          content: note_content,
+          validity_start_date: update.validity_start_date,
+          status: CustomsTariffChapterNote::PENDING,
+        )
+      end
+    end
+
+    def create_general_rules(update, general_rules)
+      general_rules.each do |rule_label, note_content|
+        CustomsTariffGeneralRule.create(
+          customs_tariff_update_version: update.version,
+          rule_label:,
+          content: note_content,
+          validity_start_date: update.validity_start_date,
+          status: CustomsTariffGeneralRule::PENDING,
+        )
       end
     end
   end
