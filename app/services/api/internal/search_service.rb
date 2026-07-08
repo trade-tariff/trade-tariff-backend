@@ -41,6 +41,7 @@ module Api
         ::Search::Instrumentation.interactive_configuration_used(
           request_id:,
           query: q,
+          skip_question: @skip_question,
           configuration: diagnostics_configuration,
         )
 
