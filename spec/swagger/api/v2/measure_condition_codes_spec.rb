@@ -44,6 +44,8 @@ RSpec.describe 'Measure Condition Codes', swagger_doc: 'v2/swagger.json', type: 
 
         run_test!
       end
+
+      standard_error_responses
     end
   end
 end

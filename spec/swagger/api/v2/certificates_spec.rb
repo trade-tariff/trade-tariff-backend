@@ -52,24 +52,6 @@ RSpec.describe 'Certificates', swagger_doc: 'v2/swagger.json', type: :request do
     },
   }.freeze
 
-  search_validation_error_schema = {
-    type: :object,
-    required: %w[errors],
-    properties: {
-      errors: {
-        type: :array,
-        items: {
-          type: :object,
-          properties: {
-            status: { type: :integer, enum: [422], description: 'HTTP status code for the validation error.' },
-            title: { type: :string, description: 'Validation message.' },
-            detail: { type: :string, description: 'Human-readable validation error detail.' },
-          },
-        },
-      },
-    },
-  }.freeze
-
   path '/api/certificates' do
     parameter name: :Accept, in: :header, required: true,
               schema: { type: :string, enum: ['application/vnd.hmrc.2.0+json'] },
@@ -96,6 +78,8 @@ RSpec.describe 'Certificates', swagger_doc: 'v2/swagger.json', type: :request do
 
         run_test!
       end
+
+      standard_error_responses
     end
   end
 
@@ -136,12 +120,15 @@ RSpec.describe 'Certificates', swagger_doc: 'v2/swagger.json', type: :request do
       end
 
       response '422', 'invalid certificate search parameters' do
-        schema search_validation_error_schema
+        schema '$ref' => '#/components/schemas/StandardErrorResponse'
 
         let(:type) { 'Y' }
 
         run_test!
       end
+
+      standard_bad_request_response
+      standard_not_found_response
     end
   end
 end

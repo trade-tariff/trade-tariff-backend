@@ -35,6 +35,18 @@ RSpec.describe 'swagger helper configuration' do
     )
   end
 
+  it 'defines a reusable standard error schema for priority endpoint errors' do
+    schema = components.fetch(:schemas).fetch(:StandardErrorResponse)
+
+    expect(schema).to include(
+      oneOf: [
+        { '$ref' => '#/components/schemas/JsonApiErrorResponse' },
+        { '$ref' => '#/components/schemas/SimpleErrorResponse' },
+      ],
+      description: 'Error response returned by documented V2 endpoint failures.',
+    )
+  end
+
   it 'defines a reusable simple error schema that matches shared rescue handlers' do
     schema = components.fetch(:schemas).fetch(:SimpleErrorResponse)
 
@@ -51,7 +63,13 @@ RSpec.describe 'swagger helper configuration' do
 
     expect(schema).to include(type: :object, required: %w[errors])
     expect(error.fetch(:properties)).to include(
-      status: { type: :string, description: 'HTTP status code associated with the error, when supplied by the endpoint.' },
+      status: {
+        oneOf: [
+          { type: :string },
+          { type: :integer },
+        ],
+        description: 'HTTP status code associated with the error, when supplied by the endpoint.',
+      },
       title: { type: :string, description: 'Short error title or affected attribute, when supplied by the endpoint.' },
       detail: { type: :string, description: 'Human-readable explanation of the error.' },
       source: {
@@ -99,7 +117,7 @@ RSpec.describe 'swagger helper configuration' do
     expect(attributes.fetch('declarable').fetch('description')).to include('true when this commodity can be declared')
     expect(relationships.fetch('import_measures').fetch('description')).to include('Import duties, controls, restrictions, quotas, and other import measures')
     expect(relationships.fetch('export_measures').fetch('description')).to include('Export controls, restrictions, duties, and other export measures')
-    expect(operation.dig('responses', '404', 'content', 'application/json', 'schema', '$ref')).to eq('#/components/schemas/SimpleErrorResponse')
+    expect(operation.dig('responses', '404', 'content', 'application/json', 'schema', '$ref')).to eq('#/components/schemas/StandardErrorResponse')
   end
 
   it 'documents search for both GET and POST requests' do
@@ -123,7 +141,32 @@ RSpec.describe 'swagger helper configuration' do
     expect(certificates_search.fetch('description')).to include('Search certificate document codes')
     expect(footnotes_search.fetch('description')).to include('Search footnotes attached to goods nomenclature or measures')
     expect(condition_codes.fetch('description')).to include('List measure condition codes used in measure conditions')
-    expect(certificates_search.dig('responses', '422', 'content', 'application/json', 'schema', 'properties', 'errors')).to be_present
-    expect(footnotes_search.dig('responses', '422', 'content', 'application/json', 'schema', 'properties', 'errors')).to be_present
+    expect(certificates_search.dig('responses', '422', 'content', 'application/json', 'schema', '$ref')).to eq('#/components/schemas/StandardErrorResponse')
+    expect(footnotes_search.dig('responses', '422', 'content', 'application/json', 'schema', '$ref')).to eq('#/components/schemas/StandardErrorResponse')
+  end
+
+  it 'documents standard error responses for priority endpoints' do
+    generated_doc = JSON.parse(Rails.root.join('swagger/v2/swagger.json').read)
+    priority_operations = [
+      ['/api/commodities/{id}', 'get'],
+      ['/api/search', 'get'],
+      ['/api/search', 'post'],
+      ['/api/certificate_types', 'get'],
+      ['/api/certificates', 'get'],
+      ['/api/certificates/search', 'get'],
+      ['/api/footnote_types', 'get'],
+      ['/api/footnotes/search', 'get'],
+      ['/api/measure_condition_codes', 'get'],
+    ]
+
+    priority_operations.each do |path, method|
+      operation = generated_doc.dig('paths', path, method)
+
+      %w[400 404 422].each do |status|
+        expect(operation.dig('responses', status, 'content', 'application/json', 'schema', '$ref')).to eq(
+          '#/components/schemas/StandardErrorResponse',
+        )
+      end
+    end
   end
 end

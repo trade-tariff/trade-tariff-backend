@@ -149,6 +149,8 @@ RSpec.describe 'Search', swagger_doc: 'v2/swagger.json', type: :request do
 
         run_test!
       end
+
+      standard_error_responses
     end
 
     post 'Search tariff classifications with a JSON body' do
@@ -179,6 +181,8 @@ RSpec.describe 'Search', swagger_doc: 'v2/swagger.json', type: :request do
 
         run_test!
       end
+
+      standard_error_responses
     end
   end
 end
