@@ -60,10 +60,12 @@ module TariffSynchronizer
         get(tariff_update.file_path)
       end
 
-      def file_presigned_url(file_path)
+      def file_presigned_url(file_path, response_content_disposition: nil)
         if Rails.env.production?
           with_s3_retry(operation: 'file_presigned_url', file_path:) do
-            bucket.object(file_path).presigned_url('get')
+            params = {}
+            params[:response_content_disposition] = response_content_disposition if response_content_disposition
+            bucket.object(file_path).presigned_url(:get, **params)
           end
         else
           file_path

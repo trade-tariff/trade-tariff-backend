@@ -14,6 +14,16 @@ module Api
           )
         end
 
+        def redirect
+          filename = ExchangeRateFile.filename_for_download(type, format, year, month)
+          presigned_url = TariffSynchronizer::FileService.file_presigned_url(
+            file.object_key,
+            response_content_disposition: "attachment; filename=#{filename}",
+          )
+
+          redirect_to presigned_url, allow_other_host: true
+        end
+
         private
 
         def validate_id

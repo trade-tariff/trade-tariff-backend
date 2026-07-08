@@ -21,7 +21,11 @@ V2Api.routes.draw do
       if TradeTariffBackend.uk?
         namespace :exchange_rates do
           get 'period_lists(/:year)', to: 'period_lists#show', as: :period_list
-          resources :files, only: [:show]
+          resources :files, only: [:show] do
+            member do
+              get :redirect
+            end
+          end
         end
 
         resources :exchange_rates, only: [:show]
