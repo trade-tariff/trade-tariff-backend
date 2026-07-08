@@ -72,7 +72,6 @@ namespace :swagger do
       enquiry_form/submissions_controller.rb
       errors_controller.rb
       notifications_controller.rb
-      search_controller.rb
     ].freeze
 
     # Controllers whose actions are documented together in one combined spec

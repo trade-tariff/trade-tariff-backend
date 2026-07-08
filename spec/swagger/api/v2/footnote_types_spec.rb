@@ -6,13 +6,13 @@ RSpec.describe 'Footnote Types', swagger_doc: 'v2/swagger.json', type: :request 
   path '/api/footnote_types' do
     parameter name: :Accept, in: :header, required: true,
               schema: { type: :string, enum: ['application/vnd.hmrc.2.0+json'] },
-              description: 'API version negotiation header'
+              description: 'Accept header for V2 JSON responses. Use `application/vnd.hmrc.2.0+json`.'
 
     get 'List all footnote types' do
       tags 'Footnotes'
       produces 'application/json'
       jsonapi_query_parameters(includes: [])
-      description 'Returns all footnote types with their descriptions.'
+      description 'List footnote type IDs used to group footnotes.'
       operationId 'listFootnoteTypes'
 
       response '200', 'footnote types listed' do
@@ -24,13 +24,13 @@ RSpec.describe 'Footnote Types', swagger_doc: 'v2/swagger.json', type: :request 
                    items: {
                      type: :object,
                      properties: {
-                       id: { type: :string },
-                       type: { type: :string, enum: %w[footnote_type] },
+                       id: { type: :string, description: 'Footnote type ID.' },
+                       type: { type: :string, enum: %w[footnote_type], description: 'JSON:API resource type.' },
                        attributes: {
                          type: :object,
                          properties: {
-                           footnote_type_id: { type: :string, nullable: true },
-                           description: { type: :string, nullable: true },
+                           footnote_type_id: { type: :string, nullable: true, description: 'Footnote type ID.' },
+                           description: { type: :string, nullable: true, description: 'Footnote type description.' },
                          },
                        },
                      },
@@ -43,6 +43,8 @@ RSpec.describe 'Footnote Types', swagger_doc: 'v2/swagger.json', type: :request 
 
         run_test!
       end
+
+      standard_error_responses
     end
   end
 end
