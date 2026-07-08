@@ -21,6 +21,8 @@ RSpec.describe Api::Internal::SearchService do
   before do
     allow(AdminConfiguration).to receive(:option_value).and_call_original
     allow(AdminConfiguration).to receive(:option_value).with('retrieval_method').and_return('opensearch')
+    allow(AdminConfiguration).to receive(:enabled?).and_call_original
+    allow(AdminConfiguration).to receive(:enabled?).with('expand_search_when_needed_enabled').and_return(false)
     allow(ExpandSearchQueryService).to receive(:call).and_wrap_original do |_method, query|
       ExpandSearchQueryService::Result.new(expanded_query: query, reason: nil)
     end
@@ -1192,6 +1194,7 @@ RSpec.describe Api::Internal::SearchService do
         allow(AdminConfiguration).to receive(:option_value).with('retrieval_method').and_return('vector')
         allow(AdminConfiguration).to receive(:enabled?).and_call_original
         allow(AdminConfiguration).to receive(:enabled?).with('expand_search_enabled').and_return(true)
+        allow(AdminConfiguration).to receive(:enabled?).with('expand_search_when_needed_enabled').and_return(false)
         allow(ExpandSearchQueryService).to receive(:call)
           .and_return(ExpandSearchQueryService::Result.new(
                         expanded_query: 'pure-bred breeding horses',
@@ -1288,6 +1291,7 @@ RSpec.describe Api::Internal::SearchService do
         allow(AdminConfiguration).to receive(:option_value).with('retrieval_method').and_return('hybrid')
         allow(AdminConfiguration).to receive(:enabled?).and_call_original
         allow(AdminConfiguration).to receive(:enabled?).with('expand_search_enabled').and_return(true)
+        allow(AdminConfiguration).to receive(:enabled?).with('expand_search_when_needed_enabled').and_return(false)
         allow(ExpandSearchQueryService).to receive(:call)
           .and_return(ExpandSearchQueryService::Result.new(
                         expanded_query: 'pure-bred breeding horses',
@@ -1418,6 +1422,7 @@ RSpec.describe Api::Internal::SearchService do
       before do
         allow(AdminConfiguration).to receive(:enabled?).and_call_original
         allow(AdminConfiguration).to receive(:enabled?).with('expand_search_enabled').and_return(true)
+        allow(AdminConfiguration).to receive(:enabled?).with('expand_search_when_needed_enabled').and_return(false)
         allow(ExpandSearchQueryService).to receive(:call)
           .and_return(ExpandSearchQueryService::Result.new(
                         expanded_query: 'portable data processing machine',
@@ -1469,6 +1474,7 @@ RSpec.describe Api::Internal::SearchService do
       before do
         allow(AdminConfiguration).to receive(:enabled?).and_call_original
         allow(AdminConfiguration).to receive(:enabled?).with('expand_search_enabled').and_return(true)
+        allow(AdminConfiguration).to receive(:enabled?).with('expand_search_when_needed_enabled').and_return(false)
         allow(AdminConfiguration).to receive(:enabled?).with('refine_search_with_answers_enabled').and_return(true)
         allow(ExpandSearchQueryService).to receive(:call)
         allow(Search::GoodsNomenclatureQuery).to receive(:new).and_call_original
