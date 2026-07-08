@@ -7,7 +7,7 @@ class DescriptionIntercept < Sequel::Model
   plugin :has_paper_trail
   skip_auto_validations(:not_null)
 
-  dataset_module do
+  module DatasetFilters
     def search(query)
       return self if query.blank?
 
@@ -56,6 +56,10 @@ class DescriptionIntercept < Sequel::Model
     def boolean_filter_enabled?(value)
       ActiveModel::Type::Boolean.new.cast(value)
     end
+  end
+
+  dataset_module do
+    include DatasetFilters
   end
 
   def self.for_search(query, source:)

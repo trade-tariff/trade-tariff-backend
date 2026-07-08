@@ -49,7 +49,7 @@ class TariffChange < Sequel::Model
     end
   end
 
-  dataset_module do
+  module DatasetMethods
     def on_date(date)
       where(operation_date: date)
     end
@@ -89,6 +89,10 @@ class TariffChange < Sequel::Model
         Sequel.lit("metadata->'measure'->>'measure_type_id'") => measure_type_id,
       )
     end
+  end
+
+  dataset_module do
+    include DatasetMethods
   end
 
   def measure_metadata
