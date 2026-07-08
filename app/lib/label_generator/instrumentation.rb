@@ -1,4 +1,5 @@
 require 'active_support/notifications'
+require_relative '../timed_instrumentation'
 
 module LabelGenerator
   module Instrumentation
@@ -35,37 +36,15 @@ module LabelGenerator
       )
     end
 
-    def api_call(batch_size:, model:, page_number:)
-      instrument('api_call_started', batch_size:, model:, page_number:)
-
-      start_time = Process.clock_gettime(Process::CLOCK_MONOTONIC)
-      result = yield
-      duration = Process.clock_gettime(Process::CLOCK_MONOTONIC) - start_time
-
-      results_count = result.is_a?(Hash) ? Array.wrap(result['data']).size : 0
-
-      instrument(
-        'api_call_completed',
-        batch_size:,
-        model:,
-        page_number:,
-        results_count:,
-        duration_ms: (duration * 1000).round(2),
+    def api_call(batch_size:, model:, page_number:, &block)
+      TimedInstrumentation.call(
+        instrumenter: method(:instrument),
+        started_event: 'api_call_started',
+        completed_event: 'api_call_completed',
+        failed_event: 'api_call_failed',
+        payload: { batch_size:, model:, page_number: },
+        completed_payload: ->(result) { { results_count: result.is_a?(Hash) ? Array.wrap(result['data']).size : 0 } }, &block
       )
-
-      result
-    rescue StandardError => e
-      duration = Process.clock_gettime(Process::CLOCK_MONOTONIC) - start_time
-      instrument(
-        'api_call_failed',
-        batch_size:,
-        model:,
-        page_number:,
-        error_class: e.class.name,
-        error_message: e.message,
-        duration_ms: (duration * 1000).round(2),
-      )
-      raise
     end
 
     def label_saved(label, page_number:)
@@ -115,35 +94,15 @@ module LabelGenerator
       )
     end
 
-    def embedding_api_call(batch_size:, model:)
-      instrument('embedding_api_call_started', batch_size:, model:)
-
-      start_time = Process.clock_gettime(Process::CLOCK_MONOTONIC)
-      result = yield
-      duration = Process.clock_gettime(Process::CLOCK_MONOTONIC) - start_time
-
-      instrument(
-        'embedding_api_call_completed',
-        batch_size:,
-        model:,
-        duration_ms: (duration * 1000).round(2),
+    def embedding_api_call(batch_size:, model:, &block)
+      TimedInstrumentation.call(
+        instrumenter: method(:instrument),
+        started_event: 'embedding_api_call_started',
+        completed_event: 'embedding_api_call_completed',
+        failed_event: 'embedding_api_call_failed',
+        payload: { batch_size:, model: },
+        failed_payload: ->(error) { { http_status: error.respond_to?(:response) ? error.response&.dig(:status) : nil } }, &block
       )
-
-      result
-    rescue StandardError => e
-      duration = Process.clock_gettime(Process::CLOCK_MONOTONIC) - start_time
-      http_status = e.respond_to?(:response) ? e.response&.dig(:status) : nil
-
-      instrument(
-        'embedding_api_call_failed',
-        batch_size:,
-        model:,
-        error_class: e.class.name,
-        error_message: e.message,
-        duration_ms: (duration * 1000).round(2),
-        http_status:,
-      )
-      raise
     end
   end
 end

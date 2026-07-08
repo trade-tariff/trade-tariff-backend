@@ -1,4 +1,5 @@
 require 'active_support/notifications'
+require_relative '../timed_instrumentation'
 
 module SelfTextGenerator
   module Instrumentation
@@ -34,41 +35,15 @@ module SelfTextGenerator
       )
     end
 
-    def api_call(batch_size:, model:, chapter_code:)
-      instrument('api_call_started', batch_size:, model:, chapter_code:)
-
-      start_time = Process.clock_gettime(Process::CLOCK_MONOTONIC)
-      result = yield
-      duration = Process.clock_gettime(Process::CLOCK_MONOTONIC) - start_time
-
-      instrument(
-        'api_call_completed',
-        batch_size:,
-        model:,
-        chapter_code:,
-        duration_ms: (duration * 1000).round(2),
+    def api_call(batch_size:, model:, chapter_code:, &block)
+      TimedInstrumentation.call(
+        instrumenter: method(:instrument),
+        started_event: 'api_call_started',
+        completed_event: 'api_call_completed',
+        failed_event: 'api_call_failed',
+        payload: { batch_size:, model:, chapter_code: },
+        failed_payload: method(:http_status_payload), &block
       )
-
-      result
-    rescue StandardError => e
-      duration = Process.clock_gettime(Process::CLOCK_MONOTONIC) - start_time
-      http_status = if e.respond_to?(:http_status)
-                      e.http_status
-                    else
-                      e.respond_to?(:response) ? e.response&.dig(:status) : nil
-                    end
-
-      instrument(
-        'api_call_failed',
-        batch_size:,
-        model:,
-        chapter_code:,
-        error_class: e.class.name,
-        error_message: e.message,
-        duration_ms: (duration * 1000).round(2),
-        http_status:,
-      )
-      raise
     end
 
     def scoring_started(chapter_code:, total_records:)
@@ -96,41 +71,15 @@ module SelfTextGenerator
       )
     end
 
-    def embedding_api_call(batch_size:, model:, chapter_code:)
-      instrument('embedding_api_call_started', batch_size:, model:, chapter_code:)
-
-      start_time = Process.clock_gettime(Process::CLOCK_MONOTONIC)
-      result = yield
-      duration = Process.clock_gettime(Process::CLOCK_MONOTONIC) - start_time
-
-      instrument(
-        'embedding_api_call_completed',
-        batch_size:,
-        model:,
-        chapter_code:,
-        duration_ms: (duration * 1000).round(2),
+    def embedding_api_call(batch_size:, model:, chapter_code:, &block)
+      TimedInstrumentation.call(
+        instrumenter: method(:instrument),
+        started_event: 'embedding_api_call_started',
+        completed_event: 'embedding_api_call_completed',
+        failed_event: 'embedding_api_call_failed',
+        payload: { batch_size:, model:, chapter_code: },
+        failed_payload: method(:http_status_payload), &block
       )
-
-      result
-    rescue StandardError => e
-      duration = Process.clock_gettime(Process::CLOCK_MONOTONIC) - start_time
-      http_status = if e.respond_to?(:http_status)
-                      e.http_status
-                    else
-                      e.respond_to?(:response) ? e.response&.dig(:status) : nil
-                    end
-
-      instrument(
-        'embedding_api_call_failed',
-        batch_size:,
-        model:,
-        chapter_code:,
-        error_class: e.class.name,
-        error_message: e.message,
-        duration_ms: (duration * 1000).round(2),
-        http_status:,
-      )
-      raise
     end
 
     def embedding_api_retry(attempt:, delay:, error:)
@@ -149,6 +98,16 @@ module SelfTextGenerator
 
     def reindex_completed
       instrument('reindex_completed')
+    end
+
+    def http_status_payload(error)
+      {
+        http_status: if error.respond_to?(:http_status)
+                       error.http_status
+                     else
+                       error.respond_to?(:response) ? error.response&.dig(:status) : nil
+                     end,
+      }
     end
   end
 end
