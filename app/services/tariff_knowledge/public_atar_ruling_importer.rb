@@ -64,7 +64,7 @@ module TariffKnowledge
 
       rows.each do |attributes|
         ruling = ruling_from_hash(attributes)
-        upsert_result = upsert_ruling(ruling)
+        upsert_result = upsert_ruling(ruling, derived_fact_attributes: derived_fact_attributes_from_hash(attributes))
         created_count += 1 if upsert_result.action == :created
         updated_count += 1 if upsert_result.action == :updated
         refresh_goods_nomenclature_item_ids.concat(upsert_result.refresh_goods_nomenclature_item_ids)
@@ -80,15 +80,15 @@ module TariffKnowledge
 
     attr_reader :source
 
-    def upsert_ruling(ruling)
+    def upsert_ruling(ruling, derived_fact_attributes: nil)
       existing = PublicAtarRuling.by_ref(ruling.ref).first
       now = Time.zone.now
       action = existing ? :updated : :created
-      row = row_for(ruling, existing:, now:)
+      row = row_for(ruling, existing:, now:, derived_fact_attributes:)
       refresh_goods_nomenclature_item_ids = search_refresh_item_ids(existing, row)
 
       PublicAtarRuling.dataset
-                       .insert_conflict(target: :ref, update: update_values)
+                       .insert_conflict(target: :ref, update: update_values(update_derived_facts: derived_fact_attributes.present?))
                        .insert(row)
 
       UpsertResult.new(action:, refresh_goods_nomenclature_item_ids:)
@@ -100,8 +100,8 @@ module TariffKnowledge
       [existing.goods_nomenclature_item_id, row[:goods_nomenclature_item_id]].compact.uniq
     end
 
-    def row_for(ruling, existing:, now:)
-      {
+    def row_for(ruling, existing:, now:, derived_fact_attributes:)
+      row = {
         ref: ruling.ref,
         commodity_code: ruling.commodity_code,
         goods_nomenclature_item_id: ruling.goods_nomenclature_item_id,
@@ -118,10 +118,12 @@ module TariffKnowledge
         created_at: now,
         updated_at: now,
       }
+      row.merge!(derived_fact_attributes) if derived_fact_attributes.present?
+      row
     end
 
-    def update_values
-      {
+    def update_values(update_derived_facts:)
+      values = {
         commodity_code: Sequel[:excluded][:commodity_code],
         goods_nomenclature_item_id: Sequel[:excluded][:goods_nomenclature_item_id],
         description: Sequel[:excluded][:description],
@@ -135,6 +137,10 @@ module TariffKnowledge
         fetched_at: Sequel[:excluded][:fetched_at],
         updated_at: Sequel[:excluded][:updated_at],
       }
+
+      values[:derived_facts] = Sequel[:excluded][:derived_facts] if update_derived_facts
+
+      values
     end
 
     def ruling_from_hash(attributes)
@@ -150,6 +156,17 @@ module TariffKnowledge
         source_url: attributes.fetch('source_url'),
         raw_fields: attributes.fetch('raw_fields'),
       )
+    end
+
+    def derived_fact_attributes_from_hash(attributes)
+      return unless attributes.key?('derived_facts')
+
+      derived_facts = attributes.fetch('derived_facts')
+      return if derived_facts.nil?
+
+      {
+        derived_facts: Sequel.pg_array(Array(derived_facts).compact_blank, :text),
+      }
     end
 
     def parse_date(value)

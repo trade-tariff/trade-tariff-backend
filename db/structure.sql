@@ -7983,6 +7983,7 @@ CREATE TABLE uk.tariff_knowledge_public_atar_rulings (
     fetched_at timestamp without time zone NOT NULL,
     created_at timestamp without time zone NOT NULL,
     updated_at timestamp without time zone NOT NULL,
+    derived_facts text[] DEFAULT '{}'::text[] NOT NULL,
     CONSTRAINT tariff_knowledge_public_atars_commodity_code_format CHECK ((commodity_code ~ '^[0-9]{6}([0-9]{2}){0,2}$'::text)),
     CONSTRAINT tariff_knowledge_public_atars_goods_nomenclature_item_id_format CHECK (((goods_nomenclature_item_id)::text ~ '^[0-9]{10}$'::text)),
     CONSTRAINT tariff_knowledge_public_atars_normalized_goods_nomenclature_ite CHECK (((goods_nomenclature_item_id)::text = rpad(commodity_code, 10, '0'::text)))
@@ -14290,6 +14291,13 @@ CREATE INDEX tariff_knowledge_public_atar_rulings_keywords_index ON uk.tariff_kn
 
 
 --
+-- Name: tariff_knowledge_public_atar_rulings_derived_facts_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX tariff_knowledge_public_atar_rulings_derived_facts_index ON uk.tariff_knowledge_public_atar_rulings USING gin (derived_facts);
+
+
+--
 -- Name: tariff_knowledge_public_atar_rulings_raw_fields_index; Type: INDEX; Schema: uk; Owner: -
 --
 
@@ -14750,3 +14758,4 @@ INSERT INTO "schema_migrations" ("filename") VALUES ('20260519120000_add_tariff_
 INSERT INTO "schema_migrations" ("filename") VALUES ('20260609120000_create_tariff_knowledge_graph.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20260610100000_create_search_analytics_snapshots.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20260626120000_create_tariff_knowledge_public_atar_rulings.rb');
+INSERT INTO "schema_migrations" ("filename") VALUES ('20260708130000_add_derived_facts_to_public_atar_rulings.rb');

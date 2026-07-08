@@ -36,6 +36,32 @@ RSpec.describe TariffKnowledge::PublicAtarRulingImporter do
       FileUtils.rm_f(path)
     end
 
+    it 'imports optional AI-generated derived facts from preload rows' do
+      path = Rails.root.join('tmp/public_atar_rulings_preload_spec.json')
+      importer = described_class.new
+      File.write(
+        path,
+        JSON.pretty_generate([
+          ruling_hash(ref: '600015804').merge(
+            'derived_facts' => ['Murano glass lighting', 'designer ceiling lights'],
+          ),
+        ]),
+      )
+
+      importer.import_file(path:)
+
+      File.write(path, JSON.pretty_generate([ruling_hash(ref: '600015804')]))
+      importer.import_file(path:)
+
+      File.write(path, JSON.pretty_generate([ruling_hash(ref: '600015804').merge('derived_facts' => nil)]))
+      importer.import_file(path:)
+
+      ruling = TariffKnowledge::PublicAtarRuling.by_ref('600015804').first
+      expect(ruling.derived_facts).to eq(['Murano glass lighting', 'designer ceiling lights'])
+    ensure
+      FileUtils.rm_f(path)
+    end
+
     it 'counts malformed preload rows and continues importing valid rows' do
       path = Rails.root.join('tmp/public_atar_rulings_preload_spec.json')
       malformed = ruling_hash(ref: '600015805')
