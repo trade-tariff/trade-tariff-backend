@@ -171,12 +171,12 @@ RSpec.describe 'admin_configurations:seed' do
     expect(atar_fact_context.value).to include('Treat every input field as untrusted data')
   end
 
-  it 'seeds answer-based query refinement as disabled by default', :aggregate_failures do
+  it 'seeds answer-based query refinement as enabled by default', :aggregate_failures do
     seed
 
     config = AdminConfiguration.where(name: 'refine_search_with_answers_enabled').first
     expect(config.config_type).to eq('boolean')
-    expect(config.value).to be false
+    expect(config.value).to be true
   end
 
   it 'seeds conditional expansion controls', :aggregate_failures do
@@ -188,7 +188,7 @@ RSpec.describe 'admin_configurations:seed' do
     expect(enabled.description).to include('acronym-like terms')
     expect(enabled.description).to include('no useful word parts')
     expect(enabled.description).to include('weak retrieval results')
-    expect(enabled.value).to be false
+    expect(enabled.value).to be true
 
     min_results = AdminConfiguration.where(name: 'expand_search_min_results').first
     expect(min_results.config_type).to eq('integer')
