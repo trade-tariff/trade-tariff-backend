@@ -18,9 +18,7 @@ module ElasticsearchHelpers
   def index_model(model)
     index_class = INDEX_CLASS_MAP[model.class.name]
 
-    if index_class
-      TradeTariffBackend.search_client.index(index_class, model)
-    end
+    TradeTariffBackend.search_client.index(index_class, model) if index_class
 
     index_search_suggestion(model)
   rescue OpenSearch::Transport::Transport::Errors::NotFound
@@ -31,9 +29,7 @@ module ElasticsearchHelpers
   def delete_model_from_index(model)
     index_class = INDEX_CLASS_MAP[model.class.name]
 
-    if index_class
-      TradeTariffBackend.search_client.delete(index_class, model)
-    end
+    TradeTariffBackend.search_client.delete(index_class, model) if index_class
 
     delete_search_suggestion(model)
   rescue OpenSearch::Transport::Transport::Errors::NotFound
