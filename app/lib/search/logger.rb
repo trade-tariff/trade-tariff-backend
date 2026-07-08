@@ -264,7 +264,7 @@ module Search
       error log_entry(data, event)
     end
 
-    private
+  private
 
     def log_entry(data, event)
       entry = data.merge(

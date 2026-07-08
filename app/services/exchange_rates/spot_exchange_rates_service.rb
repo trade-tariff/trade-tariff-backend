@@ -28,7 +28,7 @@ module ExchangeRates
         .sort_by { |rate| [rate.country_description, rate.currency_description] }
     end
 
-    private
+  private
 
     attr_reader :sample_date, :download
   end

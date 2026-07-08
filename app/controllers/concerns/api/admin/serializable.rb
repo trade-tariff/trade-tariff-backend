@@ -3,7 +3,7 @@ module Api
     module Serializable
       extend ActiveSupport::Concern
 
-      private
+    private
 
       def serialize(*args)
         serializer_class.new(*args).serializable_hash

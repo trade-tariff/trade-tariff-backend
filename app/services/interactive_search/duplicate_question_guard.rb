@@ -47,7 +47,7 @@ module InteractiveSearch
       allowed_result(suspicious: true, signals: signals, reason: validation['reason'])
     end
 
-    private
+  private
 
     attr_reader :query, :effective_query, :answers, :candidate_question, :request_id, :attempt_number
 

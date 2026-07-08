@@ -26,7 +26,7 @@ class NotificationsWorker
     raise
   end
 
-  private
+private
 
   def notification_data(notification_id)
     data = TradeTariffBackend.redis.get("notification_#{notification_id}")

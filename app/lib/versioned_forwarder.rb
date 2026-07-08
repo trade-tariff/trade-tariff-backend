@@ -10,7 +10,7 @@ class VersionedForwarder
     Rails.application.call(env)
   end
 
-  private
+private
 
   def transform_env(env, service, version, path)
     format = format_from(env)

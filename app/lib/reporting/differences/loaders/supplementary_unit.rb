@@ -17,7 +17,7 @@ module Reporting
           [self.class.name, source, target].join('_')
         end
 
-        private
+      private
 
         attr_reader :source, :target, :report
 
@@ -61,7 +61,7 @@ module Reporting
 
         delegate :hash, to: :to_row
 
-        private
+      private
 
         attr_reader :measure
 

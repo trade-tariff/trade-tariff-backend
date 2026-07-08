@@ -24,7 +24,7 @@ module ExchangeRates
       end
     end
 
-    private
+  private
 
     def send_request(path)
       response = client.get(path)

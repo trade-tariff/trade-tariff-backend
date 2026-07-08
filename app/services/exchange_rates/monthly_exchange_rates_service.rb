@@ -37,8 +37,8 @@ module ExchangeRates
       ).call
     end
 
-      # Moved this as couldnt find where rates is called outside and as a service should probably have only 1 call action
-    private
+    # Moved this as couldnt find where rates is called outside and as a service should probably have only 1 call action
+  private
 
     def rates
       @rates ||= ::ExchangeRateCurrencyRate

@@ -57,7 +57,7 @@ class CdsImporter
          format_date(quota_definition.validity_end_date)]
       end
 
-      private
+    private
 
       def quota_balance_event_string(quota_balance_events)
         if quota_balance_events.blank?

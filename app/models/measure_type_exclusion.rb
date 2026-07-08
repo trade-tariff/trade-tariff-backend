@@ -35,7 +35,7 @@ class MeasureTypeExclusion
       exclusions_by_service[service] ||= parse_file(SOURCES.fetch(service))
     end
 
-    private
+  private
 
     def parse_file(file)
       data = {}

@@ -311,7 +311,7 @@ module Reporting
       Reporting::SupplementaryUnits.get_xi_link_today
     end
 
-    private
+  private
 
     def object_key
       self.class.send(:object_key)
@@ -346,7 +346,7 @@ module Reporting
         end
       end
 
-      private
+    private
 
       def object_key
         "#{service}/reporting/#{year}/#{month}/#{day}/differences_#{now.strftime('%Y-%m-%d')}.xlsx"

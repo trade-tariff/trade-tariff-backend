@@ -5,7 +5,7 @@ module Api
         render json: Api::V2::MeasureActionSerializer.new(measure_actions).serializable_hash
       end
 
-      private
+    private
 
       def measure_actions
         MeasureAction

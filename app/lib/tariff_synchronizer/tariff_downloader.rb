@@ -31,7 +31,7 @@ module TariffSynchronizer
       persist_exception_for_review(e)
     end
 
-    private
+  private
 
     def create_entry
       return if tariff_update.present?

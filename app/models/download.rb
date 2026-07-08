@@ -1,5 +1,5 @@
 class Download < Sequel::Model
-  private
+private
 
   def validate
     self.whodunnit ||= TradeTariffRequest.whodunnit

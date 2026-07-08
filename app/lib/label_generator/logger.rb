@@ -163,7 +163,7 @@ module LabelGenerator
       )
     end
 
-    private
+  private
 
     def log_entry(data)
       data.merge(

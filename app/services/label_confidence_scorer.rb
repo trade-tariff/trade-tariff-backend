@@ -31,7 +31,7 @@ class LabelConfidenceScorer
     raise
   end
 
-  private
+private
 
   attr_reader :embedding_service
 

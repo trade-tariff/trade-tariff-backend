@@ -19,7 +19,7 @@ class OpensearchRetrievalService
     Result.new(results: hits.map { |h| build_result_from_hit(h) }, expanded_query: @expanded_query)
   end
 
-  private
+private
 
   def run_search(expanded_query)
     results = search_with_configured_labels do

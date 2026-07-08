@@ -104,7 +104,7 @@ module TenDigitGoodsNomenclature
       goods_nomenclature_item_id
     end
 
-    private
+  private
 
     def harmonised_system_code
       goods_nomenclature_item_id.first(6)

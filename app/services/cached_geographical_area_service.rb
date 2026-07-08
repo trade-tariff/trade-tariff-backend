@@ -39,7 +39,7 @@ class CachedGeographicalAreaService
     end
   end
 
-  private
+private
 
   attr_reader :actual_date, :countries, :exclude_none
 

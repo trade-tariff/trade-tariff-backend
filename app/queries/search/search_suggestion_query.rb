@@ -35,7 +35,7 @@ module Search
       }
     end
 
-    private
+  private
 
     # Boosts documents whose value exactly matches the query string (case-insensitive).
     # This ensures 100% character matches always rank first.

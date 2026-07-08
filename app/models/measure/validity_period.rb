@@ -17,7 +17,7 @@ class Measure
       generating_regulation.presence&.effective_end_date
     end
 
-    private
+  private
 
     attr_reader :measure
 

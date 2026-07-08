@@ -20,7 +20,7 @@ module Api
         end
       end
 
-      private
+    private
 
       def all_changes
         [

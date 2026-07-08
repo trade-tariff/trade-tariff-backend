@@ -7,7 +7,7 @@ module PaperTrail
       end
     end
 
-    private
+  private
 
     def tracked_models
       Sequel::Plugins::HasPaperTrail.tracked_models

@@ -10,7 +10,7 @@ class CachedCommodityService
       end
     end
 
-    private
+  private
 
     attr_reader :presented_commodity
 

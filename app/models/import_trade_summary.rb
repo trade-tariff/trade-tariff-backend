@@ -33,7 +33,7 @@ class ImportTradeSummary
     end
   end
 
-  private
+private
 
   def third_country_measures
     @third_country_measures ||= import_measures

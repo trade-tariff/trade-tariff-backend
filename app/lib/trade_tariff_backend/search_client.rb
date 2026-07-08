@@ -98,7 +98,7 @@ module TradeTariffBackend
       }.merge(search_operation_options))
     end
 
-    private
+  private
 
     def index_instance(index)
       index.is_a?(Class) ? index.new : index

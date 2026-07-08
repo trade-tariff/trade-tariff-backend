@@ -7,7 +7,7 @@ module Api
         render json: Api::Admin::Commodities::CommoditySerializer.new(@commodity).serializable_hash
       end
 
-      private
+    private
 
       def find_commodity
         @commodity = GoodsNomenclature

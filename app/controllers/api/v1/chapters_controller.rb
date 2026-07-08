@@ -46,7 +46,7 @@ module Api
         render json: serialized_result
       end
 
-      private
+    private
 
       def chapter
         @chapter ||= Chapter.actual

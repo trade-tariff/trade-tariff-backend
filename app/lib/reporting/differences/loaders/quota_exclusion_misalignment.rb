@@ -17,7 +17,7 @@ module Reporting
           rows
         end
 
-        private
+      private
 
         def misaligned_rows
           TimeMachine.at(report.as_of) do

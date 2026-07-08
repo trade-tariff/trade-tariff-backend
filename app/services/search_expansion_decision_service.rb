@@ -33,7 +33,7 @@ class SearchExpansionDecisionService
     decision
   end
 
-  private
+private
 
   attr_reader :query, :results, :request_id
 

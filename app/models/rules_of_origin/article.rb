@@ -16,7 +16,7 @@ module RulesOfOrigin
                              .map { |f| new scheme:, article: f.chomp('.md') }
       end
 
-      private
+    private
 
       def articles_path(scheme)
         scheme.scheme_set.base_path.join('articles', scheme.scheme_code)

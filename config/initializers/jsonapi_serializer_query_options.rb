@@ -14,7 +14,7 @@ module JsonapiSerializerQueryOptions
     super(resource, options)
   end
 
-  private
+private
 
   def validate_requested_includes!(includes)
     relationships = self.class.relationships_to_serialize || {}

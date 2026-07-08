@@ -24,7 +24,7 @@ class SearchSuggestionPopulatorService
     SearchSuggestion.restrict_primary_key
   end
 
-  private
+private
 
   def clear_old_suggestions
     handle_expired_goods_nomenclature

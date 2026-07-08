@@ -17,7 +17,7 @@ module Reporting
           rows
         end
 
-        private
+      private
 
         def each_row
           each_declarable do |declarable|

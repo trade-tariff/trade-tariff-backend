@@ -1,7 +1,7 @@
 module JsonapiCacheKey
   include JsonapiQueryOptions
 
-  private
+private
 
   def jsonapi_cache_key_suffix
     return if jsonapi_query_options.blank?

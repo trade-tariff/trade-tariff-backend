@@ -63,7 +63,7 @@ class OpenaiClient
     end
   end
 
-  private
+private
 
   def raise_on_error!(response)
     if response.status == 429

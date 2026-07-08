@@ -57,7 +57,7 @@ class RelabelGoodsNomenclaturePageWorker
     raise
   end
 
-  private
+private
 
   def save_label(label, page_number:)
     unless label.valid?

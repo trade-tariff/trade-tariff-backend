@@ -74,7 +74,7 @@ class EmbeddingService
     embeddings
   end
 
-  private
+private
 
   def with_retry
     attempts = 0

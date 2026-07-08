@@ -116,7 +116,7 @@ module CustomsTariffImporter
       )
     end
 
-    private
+  private
 
     def log_entry(data)
       data.merge(service: 'customs_tariff_importer', timestamp: Time.current.iso8601).to_json

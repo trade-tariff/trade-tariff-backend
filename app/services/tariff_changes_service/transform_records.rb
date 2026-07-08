@@ -18,7 +18,7 @@ class TariffChangesService
       transform_records(tariff_changes)
     end
 
-    private
+  private
 
     attr_accessor :geo_area_cache, :gn_descriptions_cache
 

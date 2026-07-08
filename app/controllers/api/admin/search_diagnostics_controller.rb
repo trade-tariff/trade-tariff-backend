@@ -15,7 +15,7 @@ module Api
         render json: error_response(e.message, status: :unprocessable_content), status: :unprocessable_content
       end
 
-      private
+    private
 
       def error_response(message, status:)
         {

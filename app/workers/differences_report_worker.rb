@@ -11,7 +11,7 @@ class DifferencesReportWorker
     end
   end
 
-  private
+private
 
   def generate_differences
     Reporting::Differences.generate

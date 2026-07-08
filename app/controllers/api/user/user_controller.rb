@@ -7,7 +7,7 @@ module Api
 
       no_caching
 
-      private
+    private
 
       def actual_date
         super(Time.zone.yesterday)

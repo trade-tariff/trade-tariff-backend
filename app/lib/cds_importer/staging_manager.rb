@@ -85,7 +85,7 @@ class CdsImporter
       @staged_tables.clear
     end
 
-    private
+  private
 
     # Staging table names are short fixed-length identifiers so they are
     # always under PostgreSQL's 63-character limit, regardless of how long the

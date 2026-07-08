@@ -24,7 +24,7 @@ class LabelSuggestionsUpdaterService
     SearchSuggestion.restrict_primary_key
   end
 
-  private
+private
 
   def delete_existing_label_suggestions
     SearchSuggestion

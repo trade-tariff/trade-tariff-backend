@@ -16,7 +16,7 @@ module Api
         end
       end
 
-      private
+    private
 
       def error_response(period)
         {

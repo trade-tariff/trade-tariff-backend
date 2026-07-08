@@ -71,7 +71,7 @@ class GoodsNomenclatureSelfText < Sequel::Model
         .limit(limit)
     end
 
-    private
+  private
 
     def generated_content_table
       Sequel[:goods_nomenclature_self_texts]
@@ -117,7 +117,7 @@ class GoodsNomenclatureSelfText < Sequel::Model
       stale_records.size
     end
 
-    private
+  private
 
     def with_self_text(sids)
       where(goods_nomenclature_sid: sids)

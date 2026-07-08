@@ -7,7 +7,7 @@ module Reporting
         delegate :each_chapter,
                  to: :report
 
-        private
+      private
 
         def data
           acc = []

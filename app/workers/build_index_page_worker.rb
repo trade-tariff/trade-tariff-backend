@@ -24,7 +24,7 @@ class BuildIndexPageWorker
     raise IndexingError, "Failed building index: #{index_namespace}/#{index_name} - page #{page_number}"
   end
 
-  private
+private
 
   def serialize_for(operation, index, entries)
     entries.each_with_object([]) do |model, memo|

@@ -24,7 +24,7 @@ class CdsImporter
       process_batch
     end
 
-    private
+  private
 
     def process_batch
       save_batch

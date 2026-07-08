@@ -5,7 +5,7 @@ module Api
         render json: serialized_collection
       end
 
-      private
+    private
 
       def serialized_collection
         GoodsNomenclatures::GoodsNomenclatureLabelSerializer.new(

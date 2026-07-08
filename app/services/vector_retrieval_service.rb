@@ -31,7 +31,7 @@ class VectorRetrievalService
     end
   end
 
-  private
+private
 
   def apply_score_threshold(rows)
     threshold = AdminConfiguration.integer_value('vector_score_threshold') / 100.0

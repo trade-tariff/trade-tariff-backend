@@ -18,7 +18,7 @@ class MeasureUnitService
     end
   end
 
-  private
+private
 
   attr_reader :measures
 

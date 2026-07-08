@@ -9,7 +9,7 @@ class ExchangeRateService
     cached_exchange_rates || fetched_exchange_rates
   end
 
-  private
+private
 
   def cached_exchange_rates(ignore_expiry: false)
     response = TradeTariffBackend.redis.get(REDIS_KEY)

@@ -15,7 +15,7 @@ class MeursingMeasureComponentResolverService
     end
   end
 
-  private
+private
 
   attr_reader :root_measure, :meursing_measures
 

@@ -78,7 +78,7 @@ module Api
         end
       end
 
-      private
+    private
 
       def chapter
         scope = Chapter

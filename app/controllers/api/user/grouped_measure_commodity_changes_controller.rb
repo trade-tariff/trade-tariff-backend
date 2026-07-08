@@ -9,7 +9,7 @@ module Api
         render json: Api::User::GroupedMeasureCommodityChangeSerializer.new(grouped_measure_commodity_change, serializer_options).serializable_hash
       end
 
-      private
+    private
 
       def grouped_measure_commodity_change
         TariffChanges::GroupedMeasureCommodityChange.from_id(id)

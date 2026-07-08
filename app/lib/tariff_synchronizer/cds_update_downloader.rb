@@ -28,7 +28,7 @@ module TariffSynchronizer
       end
     end
 
-    private
+  private
 
     # Example:
     # { "filename"=>"tariff_dailyExtract_v1_20191009T235959.gzip",

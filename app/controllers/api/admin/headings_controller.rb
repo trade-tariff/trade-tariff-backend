@@ -8,7 +8,7 @@ module Api
         render json: Api::Admin::Headings::HeadingSerializer.new(presented_heading, options).serializable_hash
       end
 
-      private
+    private
 
       def presented_heading
         Api::Admin::Headings::HeadingPresenter.new(heading, search_reference_counts)

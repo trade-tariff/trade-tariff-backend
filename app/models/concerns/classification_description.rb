@@ -18,7 +18,7 @@ module ClassificationDescription
     description&.match(/^other$/i)
   end
 
-  private
+private
 
   def collect_other_chain(description)
     all_other = true

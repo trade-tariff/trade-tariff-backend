@@ -40,7 +40,7 @@ module Api
         head :no_content
       end
 
-      private
+    private
 
       def find_record
         resource_class.with_pk!(params[:id])
