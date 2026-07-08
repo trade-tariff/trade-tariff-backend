@@ -22,8 +22,8 @@ class CompositeSearchTextBuilder
   def self.batch(self_text_records)
     return {} if self_text_records.empty?
 
-    sids = self_text_records.map(&:goods_nomenclature_sid)
-    goods_nomenclature_item_ids = self_text_records.map(&:goods_nomenclature_item_id).compact
+    sids = self_text_records.map(&:goods_nomenclature_sid).uniq
+    goods_nomenclature_item_ids = self_text_records.filter_map(&:goods_nomenclature_item_id).uniq
 
     labels_by_sid = GoodsNomenclatureLabel
       .where(goods_nomenclature_sid: sids)
@@ -32,10 +32,11 @@ class CompositeSearchTextBuilder
     atar_keywords_by_item_id = TariffKnowledge::PublicAtarRuling
       .actual
       .where(goods_nomenclature_item_id: goods_nomenclature_item_ids)
-      .select(:goods_nomenclature_item_id, :keywords)
+      .select(:goods_nomenclature_item_id, :keywords, :derived_facts)
+      .order(:goods_nomenclature_item_id, :ref)
       .all
       .group_by(&:goods_nomenclature_item_id)
-      .transform_values { |rulings| rulings.flat_map(&:keywords).compact_blank.uniq }
+      .transform_values { |rulings| rulings.flat_map(&:search_terms).compact_blank.uniq }
 
     gns_by_sid = GoodsNomenclature
       .where(goods_nomenclature_sid: sids)

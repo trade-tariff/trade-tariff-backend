@@ -76,4 +76,16 @@ RSpec.describe TariffKnowledge::PublicAtarRuling do
       end
     end
   end
+
+  describe '#search_terms' do
+    it 'combines keywords and derived facts for search surfaces' do
+      ruling = build(
+        :tariff_knowledge_public_atar_ruling,
+        keywords: Sequel.pg_array(['riding horses', '', 'show ponies'], :text),
+        derived_facts: Sequel.pg_array(['equestrian sports', 'show ponies'], :text),
+      )
+
+      expect(ruling.search_terms).to eq(['riding horses', 'show ponies', 'equestrian sports'])
+    end
+  end
 end

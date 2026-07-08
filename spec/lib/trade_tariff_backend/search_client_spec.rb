@@ -57,4 +57,32 @@ RSpec.describe TradeTariffBackend::SearchClient do
       end
     end
   end
+
+  describe '#reindex' do
+    let(:indices) { instance_double(OpenSearch::API::Indices::IndicesClient) }
+    let(:opensearch_client) { instance_double(OpenSearch::Client, indices:) }
+    let(:search_client) { described_class.new(opensearch_client) }
+    let(:index_class) do
+      Class.new do
+        def name = 'tariff-test-index-uk'
+        def name_without_namespace = 'TestIndex'
+        def definition = { mappings: { properties: {} } }
+        def total_pages = 2
+      end
+    end
+
+    before do
+      allow(indices).to receive(:exists).with(index: 'tariff-test-index-uk').and_return(false)
+      allow(indices).to receive(:create)
+      allow(BuildIndexPageWorker).to receive(:perform_async)
+    end
+
+    it 'accepts an index class and reindexes using an index instance' do
+      search_client.reindex(index_class)
+
+      expect(indices).to have_received(:create).with(index: 'tariff-test-index-uk', body: { mappings: { properties: {} } })
+      expect(BuildIndexPageWorker).to have_received(:perform_async).with('search', 'TestIndex', 1)
+      expect(BuildIndexPageWorker).to have_received(:perform_async).with('search', 'TestIndex', 2)
+    end
+  end
 end

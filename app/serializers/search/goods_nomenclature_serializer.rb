@@ -78,7 +78,7 @@ module Search
     end
 
     def atar_keywords_part
-      keywords = public_atar_rulings.flat_map(&:keywords).compact_blank.uniq
+      keywords = public_atar_rulings.flat_map(&:search_terms).compact_blank.uniq
       keywords.presence
     end
   end
