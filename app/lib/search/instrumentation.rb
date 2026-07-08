@@ -87,7 +87,8 @@ module Search
           iteration:,
           effective_query:,
           operation:,
-        }.merge(error_payload_for_result(result)),
+          event_kind: operation,
+        }.merge(error_payload_for_result(result)).merge(AiUsage.payload_from(result)),
       )
 
       result
@@ -105,9 +106,10 @@ module Search
           iteration:,
           effective_query:,
           operation:,
-        }.merge(truncate_error_payload(e.message)),
+          event_kind: operation,
+        }.merge(truncate_error_payload(AiUsage.safe_error_message(e))).merge(AiUsage.payload_from_error(e)),
       )
-      search_failed(request_id:, error_type: e.class.name, error_message: e.message, search_type: 'interactive') if emit_search_failed
+      search_failed(request_id:, error_type: e.class.name, error_message: AiUsage.safe_error_message(e), search_type: 'interactive') if emit_search_failed
       raise
     end
 

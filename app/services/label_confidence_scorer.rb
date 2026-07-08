@@ -115,7 +115,7 @@ class LabelConfidenceScorer
       batch_embeddings = LabelGenerator::Instrumentation.embedding_api_call(
         batch_size: batch.size,
         model: EmbeddingService::MODEL,
-      ) { embedding_service.embed_batch(batch) }
+      ) { embedding_service.embed_batch(batch, event_kind: 'label_scoring_embedding') }
 
       all_embeddings.concat(batch_embeddings)
     end

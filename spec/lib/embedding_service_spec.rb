@@ -10,6 +10,10 @@ RSpec.describe EmbeddingService do
     let(:response_body) do
       {
         'data' => [{ 'index' => 0, 'embedding' => embedding }],
+        'usage' => {
+          'prompt_tokens' => 42,
+          'total_tokens' => 42,
+        },
       }
     end
 
@@ -36,6 +40,25 @@ RSpec.describe EmbeddingService do
       expect(WebMock).to have_requested(:post, "#{api_base_url}/embeddings")
         .with(body: hash_including('input' => ['Live horses']))
     end
+
+    it 'attaches embedding token usage and cost metadata to the returned vector' do
+      allow(TradeTariffBackend).to receive(:openai_model_pricing).and_return({
+        'text-embedding-3-small' => { 'input_per_million_tokens' => 0.02 },
+      })
+
+      result = service.embed('Live horses', event_kind: 'label_scoring_embedding')
+
+      expect(AiUsage.metadata_from(result).to_h).to include(
+        model: 'text-embedding-3-small',
+        event_kind: 'label_scoring_embedding',
+        input_tokens: 42,
+        output_tokens: 0,
+        total_tokens: 42,
+        input_cost_usd: 0.00000084,
+        total_cost_usd: 0.00000084,
+        pricing_known: true,
+      )
+    end
   end
 
   describe '#embed_batch' do
@@ -44,6 +67,10 @@ RSpec.describe EmbeddingService do
       let(:response_body) do
         {
           'data' => embeddings.each_with_index.map { |emb, i| { 'index' => i, 'embedding' => emb } },
+          'usage' => {
+            'prompt_tokens' => 9,
+            'total_tokens' => 9,
+          },
         }
       end
 
@@ -60,6 +87,17 @@ RSpec.describe EmbeddingService do
       it 'preserves order based on index' do
         result = service.embed_batch(%w[one two three])
         expect(result).to eq(embeddings)
+      end
+
+      it 'attaches batch usage metadata to the returned embeddings array' do
+        result = service.embed_batch(%w[one two three], event_kind: 'self_text_scoring_embedding')
+
+        expect(AiUsage.metadata_from(result).to_h).to include(
+          event_kind: 'self_text_scoring_embedding',
+          input_tokens: 9,
+          output_tokens: 0,
+          total_tokens: 9,
+        )
       end
     end
 
@@ -126,6 +164,26 @@ RSpec.describe EmbeddingService do
         result = service.embed_batch(%w[test])
         expect(result).to eq([embedding])
         expect(WebMock).to have_requested(:post, "#{api_base_url}/embeddings").times(2)
+      end
+
+      it 'emits retry instrumentation with the embedding event kind' do
+        events = []
+        subscriber = ActiveSupport::Notifications.subscribe('embedding_api_retry.ai_usage') do |*args|
+          events << ActiveSupport::Notifications::Event.new(*args)
+        end
+
+        service.embed_batch(%w[test], event_kind: 'label_scoring_embedding')
+
+        expect(events.size).to eq(1)
+        expect(events.first.payload).to include(
+          event_kind: 'label_scoring_embedding',
+          batch_size: 1,
+          model: 'text-embedding-3-small',
+          attempt: 1,
+          error_class: 'EmbeddingService::ServerError',
+        )
+      ensure
+        ActiveSupport::Notifications.unsubscribe(subscriber) if subscriber
       end
     end
 

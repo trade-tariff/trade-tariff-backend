@@ -260,7 +260,7 @@ RSpec.describe GoodsNomenclatureSelfText do
 
     before do
       allow(EmbeddingService).to receive(:new).and_return(embedding_service)
-      allow(embedding_service).to receive(:embed_batch) { |texts| texts.map { Array.new(1536, 0.0) } }
+      allow(embedding_service).to receive(:embed_batch) { |texts, **_kwargs| texts.map { Array.new(1536, 0.0) } }
     end
 
     it 'updates search_text and search_embedding for records with self_text' do
@@ -271,6 +271,29 @@ RSpec.describe GoodsNomenclatureSelfText do
       record.reload
       expect(record.search_text).to be_present
       expect(record.search_embedding).to be_present
+    end
+
+    it 'instruments composite search embedding generation with an event kind' do
+      record = create(:goods_nomenclature_self_text, self_text: 'Widgets for manufacturing')
+      events = []
+      subscriber = ActiveSupport::Notifications.subscribe('embedding_api_call_completed.ai_usage') do |*args|
+        events << ActiveSupport::Notifications::Event.new(*args)
+      end
+
+      described_class.regenerate_search_embeddings([record.goods_nomenclature_sid])
+
+      expect(embedding_service).to have_received(:embed_batch).with(
+        [a_string_including('Widgets for manufacturing')],
+        event_kind: 'composite_search_embedding',
+      )
+      expect(events.size).to eq(1)
+      expect(events.first.payload).to include(
+        event_kind: 'composite_search_embedding',
+        batch_size: 1,
+        model: EmbeddingService::MODEL,
+      )
+    ensure
+      ActiveSupport::Notifications.unsubscribe(subscriber) if subscriber
     end
 
     it 'skips embedding when composite text matches stored search_text' do

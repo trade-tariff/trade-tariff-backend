@@ -84,6 +84,7 @@ RSpec.describe TariffKnowledge::PublicAtarFactGenerator do
       ),
       model: 'gpt-5.5',
       reasoning_effort: 'high',
+      event_kind: 'atar_fact_extraction',
     )
   end
 

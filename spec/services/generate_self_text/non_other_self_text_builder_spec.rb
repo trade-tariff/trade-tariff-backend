@@ -98,6 +98,17 @@ RSpec.describe GenerateSelfText::NonOtherSelfTextBuilder do
       expect(result[:processed]).to eq(2)
     end
 
+    it 'passes the non-Other AI event kind to the AI client' do
+      result
+
+      expect(ai_client).to have_received(:call).with(
+        anything,
+        model: 'gpt-5.2',
+        reasoning_effort: 'low',
+        event_kind: 'self_text_generation_ai_non_other',
+      )
+    end
+
     context 'when eu_self_text is available' do
       before do
         allow(SelfTextLookupService).to receive(:lookup)
