@@ -44,56 +44,69 @@ module Api
         )
 
         ::Search::Instrumentation.search(request_id:, query: q, search_type: 'interactive') do
-          exact = find_exact_match
-          if exact
-            ::Search::Instrumentation.exact_match_selected(
-              request_id:,
-              search_type: 'interactive',
-              query: q,
-              match_source: @exact_match_source,
-              matched_value: @exact_matched_value,
-              result: exact,
-            )
-
-            next [with_description_intercept_meta(GoodsNomenclatureSearchSerializer.serialize([exact])),
-                  completion_payload(result_count: 1, results_type: 'exact_match')]
-          end
-
-          retrieval = retrieve_short_list
-
-          if retrieval.goods_nomenclatures.empty?
-            next [empty_response, completion_payload(result_count: 0, results_type: retrieval.results_type)]
-          end
-
-          interactive_result = run_interactive_search(
-            retrieval.goods_nomenclatures,
-            retrieval.expanded_query,
-          )
-
-          response = build_response(
-            retrieval.goods_nomenclatures,
-            interactive_result,
-            retrieval.expanded_query,
-          )
-          emit_evaluation_trace(
-            retrieval: retrieval,
-            interactive_result: interactive_result,
-          )
-          completion = completion_payload(
-            result_count: response[:data]&.size || 0,
-            total_attempts: interactive_result&.attempt,
-            total_questions: answers.size,
-            final_result_type: interactive_result&.type&.to_s,
-            results_type: retrieval.results_type,
-            max_score: retrieval.max_score,
-            error_message: interactive_result&.type == :error ? interactive_result.data[:message] : nil,
-          )
-
-          [response, completion]
+          search_result
         end
       end
 
     private
+
+      def search_result
+        exact = find_exact_match
+        return exact_match_response(exact) if exact
+
+        retrieval = retrieve_short_list
+        return empty_retrieval_response(retrieval) if retrieval.goods_nomenclatures.empty?
+
+        interactive_search_response(retrieval)
+      end
+
+      def exact_match_response(exact)
+        ::Search::Instrumentation.exact_match_selected(
+          request_id:,
+          search_type: 'interactive',
+          query: q,
+          match_source: @exact_match_source,
+          matched_value: @exact_matched_value,
+          result: exact,
+        )
+
+        [
+          with_description_intercept_meta(GoodsNomenclatureSearchSerializer.serialize([exact])),
+          completion_payload(result_count: 1, results_type: 'exact_match'),
+        ]
+      end
+
+      def empty_retrieval_response(retrieval)
+        [empty_response, completion_payload(result_count: 0, results_type: retrieval.results_type)]
+      end
+
+      def interactive_search_response(retrieval)
+        interactive_result = run_interactive_search(
+          retrieval.goods_nomenclatures,
+          retrieval.expanded_query,
+        )
+
+        response = build_response(
+          retrieval.goods_nomenclatures,
+          interactive_result,
+          retrieval.expanded_query,
+        )
+        emit_evaluation_trace(retrieval:, interactive_result:)
+
+        [response, interactive_completion_payload(response, retrieval, interactive_result)]
+      end
+
+      def interactive_completion_payload(response, retrieval, interactive_result)
+        completion_payload(
+          result_count: response[:data]&.size || 0,
+          total_attempts: interactive_result&.attempt,
+          total_questions: answers.size,
+          final_result_type: interactive_result&.type&.to_s,
+          results_type: retrieval.results_type,
+          max_score: retrieval.max_score,
+          error_message: interactive_result&.type == :error ? interactive_result.data[:message] : nil,
+        )
+      end
 
       def completion_payload(**payload)
         return payload unless description_intercept
