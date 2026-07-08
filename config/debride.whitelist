@@ -218,6 +218,10 @@ Measure#terminated
 Measure#valid_to
 Measure#with_geographical_area
 Measure#with_measure_type
+Measure::DatasetFilters#terminated
+Measure::DatasetFilters#valid_to
+Measure::DatasetFilters#with_geographical_area
+Measure::DatasetFilters#with_measure_type
 MeasureCondition#before_create
 MeasureCondition#condition
 MeasureCondition#measure_condition_component_ids

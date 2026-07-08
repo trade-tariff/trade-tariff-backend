@@ -218,7 +218,7 @@ class Measure < Sequel::Model
     result.compact
   end
 
-  dataset_module do
+  module DatasetFilters
     def with_additional_code_sid(additional_code_sid)
       return self if additional_code_sid.blank?
 
@@ -438,6 +438,10 @@ class Measure < Sequel::Model
       conditions = pairs.map { |a, b| Sequel.expr(col_a => a) & Sequel.expr(col_b => b) }
       where(conditions.reduce(:|))
     end
+  end
+
+  dataset_module do
+    include DatasetFilters
   end
 
   def_column_accessor :effective_end_date, :effective_start_date
