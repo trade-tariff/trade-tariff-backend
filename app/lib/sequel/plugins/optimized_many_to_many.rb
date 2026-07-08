@@ -1,9 +1,7 @@
 # lib/sequel/plugins/optimized_many_to_many.rb
 module Sequel
   module Plugins
-    module OptimizedManyToMany
-      EagerLoadQuery = Data.define(:sql, :bind_args, :left_keys, :left_pks)
-
+    module OptimizedManyToManySqlHelpers
     module_function
 
       def join_conditions(right_key, right_pk, join_table, target_table, db = Sequel::Model.db)
@@ -58,6 +56,12 @@ module Sequel
           table
         end
       end
+    end
+
+    module OptimizedManyToManyQueries
+      EagerLoadQuery = Data.define(:sql, :bind_args, :left_keys, :left_pks)
+
+    module_function
 
       def eager_loader_query(reflection, ids)
         associated_class = reflection.associated_class
@@ -68,8 +72,8 @@ module Sequel
         target_table = associated_class.table_name
         right_pks = Array(reflection[:right_primary_key])
         order = reflection[:order]
-        join_conditions = join_conditions(right_keys, right_pks, join_table, target_table)
-        order_sql = qualify_order(order, target_table, associated_class)
+        join_conditions = OptimizedManyToManySqlHelpers.join_conditions(right_keys, right_pks, join_table, target_table)
+        order_sql = OptimizedManyToManySqlHelpers.qualify_order(order, target_table, associated_class)
         fk_selects = left_keys.map { |lk| "#{join_table}.#{lk} AS x_fk_#{lk}" }.join(', ')
 
         if left_pks.size == 1
@@ -82,7 +86,7 @@ module Sequel
       def simple_eager_loader_query(join_table, left_keys, left_pks, target_table, fk_selects, join_conditions, order_sql, ids)
         sql = <<~SQL.strip
           SELECT #{target_table}.*, #{fk_selects}
-          FROM #{table_ref(join_table)}
+          FROM #{OptimizedManyToManySqlHelpers.table_ref(join_table)}
           JOIN #{target_table} ON #{join_conditions}
           WHERE #{join_table}.#{left_keys.first} = ANY(?)
           #{order_sql ? "ORDER BY #{order_sql}" : ''}
@@ -103,7 +107,7 @@ module Sequel
           )
           SELECT #{target_table}.*, #{fk_selects}
           FROM #{target_table}
-          JOIN #{table_ref(join_table)} ON #{join_conditions}
+          JOIN #{OptimizedManyToManySqlHelpers.table_ref(join_table)} ON #{join_conditions}
           JOIN filter_ids ON #{join_predicates}
           #{order_sql ? "ORDER BY #{order_sql}" : ''}
         SQL
@@ -130,6 +134,50 @@ module Sequel
         end
       end
 
+      def dataset_proc
+        proc do |r|
+          associated_class = r.associated_class
+          left_pks = Array(r[:left_primary_key])
+          join_table = r[:join_table]
+          left_keys = Array(r[:left_key])
+          right_keys = Array(r[:right_key])
+          right_pks = Array(r[:right_primary_key])
+          order = r[:order]
+          target_table = associated_class.table_name
+
+          join_conditions = OptimizedManyToManySqlHelpers.join_conditions(right_keys, right_pks, join_table, target_table)
+          order_sql = OptimizedManyToManySqlHelpers.qualify_order(order, target_table, associated_class)
+          where_sql = OptimizedManyToManySqlHelpers.where_conditions(join_table, left_keys)
+
+          sql = <<~SQL.strip
+            SELECT #{target_table}.*
+            FROM #{target_table}
+            JOIN #{OptimizedManyToManySqlHelpers.table_ref(join_table)} ON #{join_conditions}
+            WHERE #{where_sql} = #{left_pks.size == 1 ? '?' : "(#{(['?'] * left_pks.size).join(', ')})"}
+            #{order_sql ? "ORDER BY #{order_sql}" : ''}
+          SQL
+
+          # Build bind arguments (support composite keys)
+          bind_args = Array(left_pks).map { |pk| send(pk) }
+          associated_class.with_sql(sql, *bind_args)
+        end
+      end
+
+      def eager_loader_proc(assoc_name, model_class)
+        proc do |eo|
+          refl = model_class.association_reflection(assoc_name)
+          associated_class = refl.associated_class
+          query = eager_loader_query(refl, eo[:id_map].keys)
+          dataset = associated_class.with_sql(query.sql, *query.bind_args)
+          records = dataset.all
+
+          eager_load_nested_associations(associated_class, eo[:associations], records)
+          assign_eager_loaded_associations(eo[:rows], records, assoc_name, query.left_keys, query.left_pks)
+        end
+      end
+    end
+
+    module OptimizedManyToMany
       module ClassMethods
         def many_to_many(name, opts = OPTS, &block)
           opts = opts.dup
@@ -152,45 +200,11 @@ module Sequel
         end
 
         def pg_optimized_many_to_many_dataset_proc
-          proc do |r|
-            associated_class = r.associated_class
-            left_pks = Array(r[:left_primary_key])
-            join_table = r[:join_table]
-            left_keys = Array(r[:left_key])
-            right_keys = Array(r[:right_key])
-            right_pks = Array(r[:right_primary_key])
-            order = r[:order]
-            target_table = associated_class.table_name
-
-            join_conditions = OptimizedManyToMany.join_conditions(right_keys, right_pks, join_table, target_table)
-            order_sql = OptimizedManyToMany.qualify_order(order, target_table, associated_class)
-            where_sql = OptimizedManyToMany.where_conditions(join_table, left_keys)
-
-            sql = <<~SQL.strip
-              SELECT #{target_table}.*
-              FROM #{target_table}
-              JOIN #{OptimizedManyToMany.table_ref(join_table)} ON #{join_conditions}
-              WHERE #{where_sql} = #{left_pks.size == 1 ? '?' : "(#{(['?'] * left_pks.size).join(', ')})"}
-              #{order_sql ? "ORDER BY #{order_sql}" : ''}
-            SQL
-
-            # Build bind arguments (support composite keys)
-            bind_args = Array(left_pks).map { |pk| send(pk) }
-            associated_class.with_sql(sql, *bind_args)
-          end
+          OptimizedManyToManyQueries.dataset_proc
         end
 
         def pg_optimized_many_to_many_eager_loader_proc(assoc_name, model_class)
-          proc do |eo|
-            refl = model_class.association_reflection(assoc_name)
-            associated_class = refl.associated_class
-            query = OptimizedManyToMany.eager_loader_query(refl, eo[:id_map].keys)
-            dataset = associated_class.with_sql(query.sql, *query.bind_args)
-            records = dataset.all
-
-            OptimizedManyToMany.eager_load_nested_associations(associated_class, eo[:associations], records)
-            OptimizedManyToMany.assign_eager_loaded_associations(eo[:rows], records, assoc_name, query.left_keys, query.left_pks)
-          end
+          OptimizedManyToManyQueries.eager_loader_proc(assoc_name, model_class)
         end
       end
     end

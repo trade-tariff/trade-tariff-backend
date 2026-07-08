@@ -1,4 +1,4 @@
-module GreenLanesTasks
+module GreenLanesCategorisationTasks
 module_function
 
   def generate_categorisation_data
@@ -23,6 +23,10 @@ module_function
       theme: row['Theme'].to_s.strip,
     }
   end
+end
+
+module GreenLanesThemeTasks
+module_function
 
   def import_themes
     raise 'Not in XI environment' unless TradeTariffBackend.xi?
@@ -68,6 +72,10 @@ module_function
     instance.category = section
     instance.save(raise_on_failure: true)
   end
+end
+
+module GreenLanesCategoryAssessmentTasks
+module_function
 
   def import_category_assessments
     raise 'Only supported on XI service' unless TradeTariffBackend.xi?
@@ -176,6 +184,10 @@ module_function
     assessment.regulation_role = trade_remedy.measure_generating_regulation_role
     assessment
   end
+end
+
+module GreenLanesCsvAssessmentTasks
+module_function
 
   def add_pseudo_measures
     pseudo_measure_data.each { |row| add_pseudo_measure(row) }
@@ -264,31 +276,31 @@ end
 namespace :green_lanes do
   desc 'Convert a CSV of the categorisation data to JSON format CSVFILE=path/to/file.csv'
   task generate_categorisation_data: :environment do
-    GreenLanesTasks.generate_categorisation_data
+    GreenLanesCategorisationTasks.generate_categorisation_data
   end
 
   desc 'Import Themes data'
   task import_themes: :environment do
-    GreenLanesTasks.import_themes
+    GreenLanesThemeTasks.import_themes
   end
 
   desc 'Import CategoryAssessments data'
   task import_category_assessments: :environment do
-    GreenLanesTasks.import_category_assessments
+    GreenLanesCategoryAssessmentTasks.import_category_assessments
   end
 
   desc 'Import Trade Remedies CategoryAssessments data'
   task import_tr_category_assessments: :environment do
-    GreenLanesTasks.import_tr_category_assessments
+    GreenLanesCategoryAssessmentTasks.import_tr_category_assessments
   end
 
   desc 'Add pseudo measures PSEUDO_MEASURE_CSV_FILE=path/to/file.csv'
   task add_pseudo_measures: :environment do
-    GreenLanesTasks.add_pseudo_measures
+    GreenLanesCsvAssessmentTasks.add_pseudo_measures
   end
 
   desc 'Add CategoryAssessments CATEGORY_ASSESSMENT_CSV_FILE=path/to/file.csv'
   task import_csv_category_assessments: :environment do
-    GreenLanesTasks.import_csv_category_assessments
+    GreenLanesCsvAssessmentTasks.import_csv_category_assessments
   end
 end

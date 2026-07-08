@@ -11,7 +11,7 @@
 #   rake tariff:sync:reset_failed
 #   rake tariff:sync:force_apply    FILENAME=tariff_dailyExtract_v1_20240101T000000.gzip CONFIRM=yes
 
-module TariffSyncToolingTasks
+module TariffSyncStatusTasks
 module_function
 
   def status
@@ -45,6 +45,10 @@ module_function
       puts "      #{update.exception_class}" if include_error && update.exception_class.present?
     end
   end
+end
+
+module TariffSyncFailureTasks
+module_function
 
   def failures
     failed = TariffSynchronizer::BaseUpdate.failed.ascending.all
@@ -138,11 +142,15 @@ module_function
   rescue JSON::ParserError
     puts update.inserts
   end
+end
+
+module TariffSyncInspectionTasks
+module_function
 
   def inspect_file
     require 'zip'
 
-    update = update_from_env_filename
+    update = TariffSyncFailureTasks.update_from_env_filename
     abort "File not found at path: #{update.file_path}" unless TariffSynchronizer::FileService.file_exists?(update.file_path)
 
     print_file_inspection_header(update)
@@ -195,6 +203,10 @@ module_function
       puts sprintf('%-55s %6d', key, count)
     end
   end
+end
+
+module TariffSyncRecoveryTasks
+module_function
 
   def reset_failed
     failed = TariffSynchronizer::BaseUpdate.failed.all
@@ -246,16 +258,16 @@ end
 namespace :tariff do
   namespace :sync do
     desc 'Show current synchronisation status for UK (CDS) and XI (TARIC) services'
-    task(status: %i[environment class_eager_load]) { TariffSyncToolingTasks.status }
+    task(status: %i[environment class_eager_load]) { TariffSyncStatusTasks.status }
     desc 'List all failed updates with error summary'
-    task(failures: %i[environment class_eager_load]) { TariffSyncToolingTasks.failures }
+    task(failures: %i[environment class_eager_load]) { TariffSyncFailureTasks.failures }
     desc 'Show full failure detail for one update. Set FILENAME= to the full filename.'
-    task(failure_detail: %i[environment class_eager_load]) { TariffSyncToolingTasks.failure_detail }
+    task(failure_detail: %i[environment class_eager_load]) { TariffSyncFailureTasks.failure_detail }
     desc 'Parse a file and summarise its contents without applying. Set FILENAME= to the full filename.'
-    task(inspect_file: %i[environment class_eager_load]) { TariffSyncToolingTasks.inspect_file }
+    task(inspect_file: %i[environment class_eager_load]) { TariffSyncInspectionTasks.inspect_file }
     desc 'Reset all failed updates to pending so they can be retried after a fix'
-    task(reset_failed: %i[environment class_eager_load]) { TariffSyncToolingTasks.reset_failed }
+    task(reset_failed: %i[environment class_eager_load]) { TariffSyncRecoveryTasks.reset_failed }
     desc 'DANGER: Mark a failed update as applied without importing its data. Set FILENAME= and CONFIRM=yes.'
-    task(force_apply: %i[environment class_eager_load]) { TariffSyncToolingTasks.force_apply }
+    task(force_apply: %i[environment class_eager_load]) { TariffSyncRecoveryTasks.force_apply }
   end
 end

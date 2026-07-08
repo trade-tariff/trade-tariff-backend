@@ -1,7 +1,7 @@
 class V2Api < ::Rails::Engine
 end
 
-module V2ApiRoutes
+module V2SectionRoutes
   def draw_v2_section_routes
     resources :sections, only: %i[index show] do
       collection { get :tree }
@@ -15,7 +15,9 @@ module V2ApiRoutes
       end
     end
   end
+end
 
+module V2GoodsRoutes
   def draw_v2_goods_routes
     resources :headings, only: [:show], constraints: { id: /\d{4}/ } do
       member do
@@ -34,7 +36,9 @@ module V2ApiRoutes
       resources :validity_periods, only: [:index]
     end
   end
+end
 
+module V2LookupRoutes
   def draw_v2_lookup_routes
     resources :geographical_areas, only: %i[index show] do
       collection { get :countries }
@@ -45,7 +49,9 @@ module V2ApiRoutes
     resources :preference_codes, only: %i[index show]
     resources :monetary_exchange_rates, only: [:index]
   end
+end
 
+module V2MeasureRoutes
   def draw_v2_measure_routes
     resources(:updates, only: []) { collection { get :latest } }
     resources :search_references, only: [:index]
@@ -63,7 +69,9 @@ module V2ApiRoutes
     resources :footnote_types, only: [:index]
     resources(:chemicals, only: %i[index show]) { collection { get :search } }
   end
+end
 
+module V2ExchangeRateRoutes
   def draw_v2_exchange_rate_routes
     return unless TradeTariffBackend.uk?
 
@@ -74,7 +82,9 @@ module V2ApiRoutes
 
     resources :exchange_rates, only: [:show]
   end
+end
 
+module V2RulesOfOriginRoutes
   def draw_v2_rules_of_origin_routes
     scope module: :rules_of_origin do
       resources :rules_of_origin_schemes, controller: 'schemes', only: %i[index]
@@ -86,7 +96,9 @@ module V2ApiRoutes
           as: :product_specific_rules
     end
   end
+end
 
+module V2NewsRoutes
   def draw_v2_news_routes
     return unless Rails.env.development? || TradeTariffBackend.uk?
 
@@ -101,7 +113,9 @@ module V2ApiRoutes
     get '/news_items/:id', to: 'news/items#show', as: nil
     get '/news_items', to: 'news/items#index', as: nil
   end
+end
 
+module V2SearchRoutes
   def draw_v2_search_routes
     get '/changes(/:as_of)', to: 'changes#index', as: :changes, constraints: { as_of: /\d{4}-\d{1,2}-\d{1,2}/ }
     post 'search' => 'search#search'
@@ -113,7 +127,9 @@ module V2ApiRoutes
       resources :queries, only: %i[create]
     end
   end
+end
 
+module V2GoodsNomenclatureRoutes
   def draw_v2_goods_nomenclature_routes
     get '/headings/:id/tree' => 'headings#tree'
     get 'goods_nomenclatures/section/:position', to: 'goods_nomenclatures#show_by_section', constraints: { position: /\d+/ }
@@ -121,7 +137,9 @@ module V2ApiRoutes
     get 'goods_nomenclatures/heading/:heading_id', to: 'goods_nomenclatures#show_by_heading', constraints: { heading_id: /\d{4}/ }
     get 'goods_nomenclatures/:id', to: 'goods_nomenclatures#show', constraints: { id: /\d{4,10}/ }
   end
+end
 
+module V2GreenLanesRoutes
   def draw_v2_green_lanes_routes
     namespace :green_lanes do
       resources :goods_nomenclatures, only: %i[show], constraints: { id: /\d{4,10}/ }
@@ -129,7 +147,9 @@ module V2ApiRoutes
       resources :faq_feedback, only: %i[create index show]
     end
   end
+end
 
+module V2ErrorRoutes
   def draw_v2_error_routes
     match '/400', to: 'errors#bad_request', via: :all
     match '/404', to: 'errors#not_found', via: :all
@@ -142,29 +162,44 @@ module V2ApiRoutes
   end
 end
 
-V2Api.routes.draw do
-  extend V2ApiRoutes
+module V2RouteRoot
+  def draw_v2_routes
+    get 'healthcheck' => 'healthcheck#index'
 
-  get 'healthcheck' => 'healthcheck#index'
-
-  namespace :api, defaults: { format: 'json' }, path: '/' do
-    scope module: :v2 do
-      resources :notifications, only: %i[create]
-      draw_v2_section_routes
-      draw_v2_exchange_rate_routes
-      draw_v2_goods_routes
-      draw_v2_lookup_routes
-      draw_v2_measure_routes
-      draw_v2_rules_of_origin_routes
-      draw_v2_news_routes
-      get 'live_issues', to: 'live_issues#index'
-      namespace :enquiry_form do
-        resources :submissions, only: %i[create]
+    namespace :api, defaults: { format: 'json' }, path: '/' do
+      scope module: :v2 do
+        resources :notifications, only: %i[create]
+        draw_v2_section_routes
+        draw_v2_exchange_rate_routes
+        draw_v2_goods_routes
+        draw_v2_lookup_routes
+        draw_v2_measure_routes
+        draw_v2_rules_of_origin_routes
+        draw_v2_news_routes
+        get 'live_issues', to: 'live_issues#index'
+        namespace(:enquiry_form) { resources :submissions, only: %i[create] }
+        draw_v2_search_routes
+        draw_v2_goods_nomenclature_routes
+        draw_v2_green_lanes_routes
+        draw_v2_error_routes
       end
-      draw_v2_search_routes
-      draw_v2_goods_nomenclature_routes
-      draw_v2_green_lanes_routes
-      draw_v2_error_routes
     end
   end
+end
+
+V2Api.routes.draw do
+  extend V2RouteRoot
+  extend V2SectionRoutes
+  extend V2GoodsRoutes
+  extend V2LookupRoutes
+  extend V2MeasureRoutes
+  extend V2ExchangeRateRoutes
+  extend V2RulesOfOriginRoutes
+  extend V2NewsRoutes
+  extend V2SearchRoutes
+  extend V2GoodsNomenclatureRoutes
+  extend V2GreenLanesRoutes
+  extend V2ErrorRoutes
+
+  draw_v2_routes
 end

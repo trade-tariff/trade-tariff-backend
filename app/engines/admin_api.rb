@@ -1,7 +1,7 @@
 class AdminApi < ::Rails::Engine
 end
 
-module AdminApiRoutes
+module AdminApiRouteRoot
   def draw_admin_api_routes
     namespace :api, defaults: { format: 'json' }, path: '' do
       scope module: :admin do
@@ -17,7 +17,9 @@ module AdminApiRoutes
       draw_admin_named_routes
     end
   end
+end
 
+module AdminApiCatalogueRoutes
   def draw_admin_catalogue_routes
     resources :sections, only: %i[index show] do
       scope module: 'sections', constraints: { id: /\d+/ } do
@@ -48,7 +50,9 @@ module AdminApiRoutes
       end
     end
   end
+end
 
+module AdminApiSearchAndReportRoutes
   def draw_admin_search_and_report_routes
     resources :updates, only: %i[index show]
     resources :rollbacks, only: %i[create index]
@@ -68,7 +72,9 @@ module AdminApiRoutes
       end
     end
   end
+end
 
+module AdminApiGoodsContentRoutes
   def draw_admin_goods_content_routes
     resources :goods_nomenclatures, only: [], constraints: { id: /\d+/ } do
       scope module: 'goods_nomenclatures' do
@@ -107,7 +113,9 @@ module AdminApiRoutes
       get :versions
     end
   end
+end
 
+module AdminApiCustomsTariffUpdateRoutes
   def draw_customs_tariff_update_routes
     get 'customs_tariff_updates', to: 'customs_tariff_updates#index'
     get 'customs_tariff_updates/:version', to: 'customs_tariff_updates#show', constraints: { version: /\d+\.\d+/ }
@@ -160,7 +168,9 @@ module AdminApiRoutes
   def customs_tariff_update_constraints
     { customs_tariff_update_version: /[^\/]+/ }
   end
+end
 
+module AdminApiNamedRoutes
   def draw_admin_named_routes
     namespace :admin, path: '' do
       draw_uk_admin_routes
@@ -207,7 +217,12 @@ module AdminApiRoutes
 end
 
 AdminApi.routes.draw do
-  extend AdminApiRoutes
+  extend AdminApiRouteRoot
+  extend AdminApiCatalogueRoutes
+  extend AdminApiSearchAndReportRoutes
+  extend AdminApiGoodsContentRoutes
+  extend AdminApiCustomsTariffUpdateRoutes
+  extend AdminApiNamedRoutes
 
   draw_admin_api_routes
 end

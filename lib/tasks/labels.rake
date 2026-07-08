@@ -1,4 +1,4 @@
-module LabelsTasks
+module LabelsCoverageTasks
 module_function
 
   def coverage
@@ -34,6 +34,10 @@ module_function
     puts "  Context drifted:   #{stats[:drifted_count]}"
     puts "Coverage:            #{stats[:coverage]}%"
   end
+end
+
+module LabelsLifecycleTasks
+module_function
 
   def generate
     puts 'Enqueuing label generation...'
@@ -108,14 +112,22 @@ module_function
       puts "  #{job.klass} args=#{job.args} (enqueued #{Time.zone.at(job.enqueued_at)}) [#{job.queue}]"
     end
   end
+end
+
+module LabelsGapTasks
+module_function
 
   def gaps
     TimeMachine.now do
-      context = label_gap_context
-      print_chapter_gap_summary(context)
-      print_heading_gap_details(context)
+      context = LabelsGapSummaryTasks.label_gap_context
+      LabelsGapSummaryTasks.print_chapter_gap_summary(context)
+      LabelsGapDetailTasks.print_heading_gap_details(context)
     end
   end
+end
+
+module LabelsGapSummaryTasks
+module_function
 
   def label_gap_context
     goods_nomenclatures_table = Sequel[:goods_nomenclatures]
@@ -207,6 +219,10 @@ module_function
 
     { total:, missing:, stale:, drifted:, work:, coverage: }
   end
+end
+
+module LabelsGapDetailTasks
+module_function
 
   def print_heading_gap_details(context)
     if gap_chapters(context[:chapter_stats]).any?
@@ -318,6 +334,10 @@ module_function
       .all
       .to_h { |item| [item.goods_nomenclature_sid, item.description&.truncate(80) || '?'] }
   end
+end
+
+module LabelsLifecycleTasks
+module_function
 
   def score
     sids = GoodsNomenclatureLabel.select_map(:goods_nomenclature_sid)
@@ -378,26 +398,26 @@ end
 
 namespace :labels do
   desc 'Show label coverage statistics'
-  task(coverage: :environment) { LabelsTasks.coverage }
+  task(coverage: :environment) { LabelsCoverageTasks.coverage }
 
   desc 'Enqueue label generation for all goods nomenclatures'
-  task(generate: :environment) { LabelsTasks.generate }
+  task(generate: :environment) { LabelsLifecycleTasks.generate }
 
   desc 'Load and verify CN2026 self-texts'
-  task(load_self_texts: :environment) { LabelsTasks.load_self_texts }
+  task(load_self_texts: :environment) { LabelsLifecycleTasks.load_self_texts }
 
   desc 'Mark all labels stale and re-label (CHAPTER=02 to scope by chapter)'
-  task(relabel: :environment) { LabelsTasks.relabel }
+  task(relabel: :environment) { LabelsLifecycleTasks.relabel }
 
   desc 'Show busy and queued label generation workers'
-  task(status: :environment) { LabelsTasks.status }
+  task(status: :environment) { LabelsLifecycleTasks.status }
 
   desc 'Show label gaps, stale and context-drifted records by chapter and heading (CHAPTER=XX to filter)'
-  task(gaps: :environment) { LabelsTasks.gaps }
+  task(gaps: :environment) { LabelsGapTasks.gaps }
 
   desc 'Score all labels (embed label terms and compare against self-text embeddings)'
-  task(score: :environment) { LabelsTasks.score }
+  task(score: :environment) { LabelsLifecycleTasks.score }
 
   desc 'Delete all labels and regenerate with contextual descriptions'
-  task(nuke_and_regenerate: :environment) { LabelsTasks.nuke_and_regenerate }
+  task(nuke_and_regenerate: :environment) { LabelsLifecycleTasks.nuke_and_regenerate }
 end

@@ -218,7 +218,21 @@ class Measure < Sequel::Model
     result.compact
   end
 
-  module DatasetFilters
+  module DatasetPairConditionFilters
+  private
+
+    # Builds an OR-combined Sequel condition from a collection of [col_a, col_b]
+    # value pairs and applies it as a WHERE clause. Returns the dataset unchanged
+    # if the pairs collection is empty.
+    def combine_pair_conditions(pairs, col_a, col_b)
+      return self if pairs.none?
+
+      conditions = pairs.map { |a, b| Sequel.expr(col_a => a) & Sequel.expr(col_b => b) }
+      where(conditions.reduce(:|))
+    end
+  end
+
+  module DatasetAdditionalCodeFilters
     def with_additional_code_sid(additional_code_sid)
       return self if additional_code_sid.blank?
 
@@ -261,7 +275,9 @@ class Measure < Sequel::Model
         :measure_conditions__certificate_code,
       )
     end
+  end
 
+  module DatasetFootnoteFilters
     def join_footnotes
       association_right_join(:footnotes)
         .exclude(measures__measure_sid: nil)
@@ -290,7 +306,9 @@ class Measure < Sequel::Model
     def with_measure_type(condition_measure_type)
       where(measures__measure_type_id: condition_measure_type.to_s)
     end
+  end
 
+  module DatasetDateFilters
     def valid_to(last_effective_timestamp)
       where('measures.validity_start_date <= ?', last_effective_timestamp)
     end
@@ -349,7 +367,9 @@ class Measure < Sequel::Model
           end
         end
     end
+  end
 
+  module DatasetSeasonalAndOverviewFilters
     def with_seasonal_measures(measure_type_ids, geographical_area_ids)
       start_of_range = Time.zone.today.beginning_of_year
       end_of_range = Time.zone.today.end_of_year + 1.year
@@ -426,22 +446,14 @@ class Measure < Sequel::Model
 
       exclude(exclusion_criteria)
     end
-
-  private
-
-    # Builds an OR-combined Sequel condition from a collection of [col_a, col_b]
-    # value pairs and applies it as a WHERE clause. Returns the dataset unchanged
-    # if the pairs collection is empty.
-    def combine_pair_conditions(pairs, col_a, col_b)
-      return self if pairs.none?
-
-      conditions = pairs.map { |a, b| Sequel.expr(col_a => a) & Sequel.expr(col_b => b) }
-      where(conditions.reduce(:|))
-    end
   end
 
   dataset_module do
-    include DatasetFilters
+    include DatasetPairConditionFilters
+    include DatasetAdditionalCodeFilters
+    include DatasetFootnoteFilters
+    include DatasetDateFilters
+    include DatasetSeasonalAndOverviewFilters
   end
 
   def_column_accessor :effective_end_date, :effective_start_date

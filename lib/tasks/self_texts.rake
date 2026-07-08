@@ -1,4 +1,4 @@
-module SelfTextsTasks
+module SelfTextsCoverageTasks
 module_function
 
   def coverage
@@ -35,6 +35,10 @@ module_function
     puts 'By generation type:'
     stats[:by_type].each { |row| puts "  #{row[:generation_type]}: #{row[:count]}" }
   end
+end
+
+module SelfTextsGenerationTasks
+module_function
 
   def regenerate
     dataset = GoodsNomenclatureSelfText.where(stale: false, manually_edited: false)
@@ -71,6 +75,10 @@ module_function
     GenerateSelfTextWorker.perform_async
     puts 'Done. Check Sidekiq for progress.'
   end
+end
+
+module SelfTextsEuReferenceTasks
+module_function
 
   def populate_eu_references
     require 'csv'
@@ -116,6 +124,10 @@ module_function
       stats[:skipped_no_match] += 1 if existing.zero?
     end
   end
+end
+
+module SelfTextsEmbeddingTasks
+module_function
 
   def generate_embeddings
     service = EmbeddingService.new
@@ -153,6 +165,10 @@ module_function
       PaperTrail::BulkVersioning.record_current_versions_for_dataset!(model: GoodsNomenclatureSelfText, dataset: update_dataset)
     end
   end
+end
+
+module SelfTextsCleanupTasks
+module_function
 
   def fix_encoding_artefacts
     sanitiser = GenerateSelfText::EncodingArtefactSanitiser
@@ -180,6 +196,10 @@ module_function
     SelfTextConfidenceScorer.new.score(sids)
     puts 'Scoring complete.'
   end
+end
+
+module SelfTextsStatusTasks
+module_function
 
   def status
     require 'json'
@@ -213,14 +233,22 @@ module_function
     chapter = Chapter.where(goods_nomenclature_sid: sid).first
     chapter ? "#{chapter.goods_nomenclature_item_id.first(2)} - #{chapter.description}" : "sid=#{sid}"
   end
+end
+
+module SelfTextsGapTasks
+module_function
 
   def gaps
     TimeMachine.now do
-      context = gap_context
-      print_gap_chapter_summary(context)
-      print_gap_heading_details(context)
+      context = SelfTextsGapSummaryTasks.gap_context
+      SelfTextsGapSummaryTasks.print_gap_chapter_summary(context)
+      SelfTextsGapDetailTasks.print_gap_heading_details(context)
     end
   end
+end
+
+module SelfTextsGapSummaryTasks
+module_function
 
   def gap_context
     goods_nomenclatures_table = Sequel[:goods_nomenclatures]
@@ -294,6 +322,10 @@ module_function
 
     { total:, missing:, stale:, work:, coverage: }
   end
+end
+
+module SelfTextsGapDetailTasks
+module_function
 
   def print_gap_heading_details(context)
     if gap_chapters(context[:chapter_stats]).any?
@@ -395,6 +427,10 @@ module_function
       .all
       .to_h { |item| [item.goods_nomenclature_sid, item.description&.truncate(80) || '?'] }
   end
+end
+
+module SelfTextsValidationTasks
+module_function
 
   def validate
     threshold = ENV.fetch('THRESHOLD', '0.7').to_f
@@ -478,23 +514,23 @@ end
 
 namespace :self_texts do
   desc('Show self-text coverage statistics')
-  task(coverage: :environment) { SelfTextsTasks.coverage }
+  task(coverage: :environment) { SelfTextsCoverageTasks.coverage }
   desc('Regenerate all self-texts by marking them stale and re-enqueuing')
-  task(regenerate: :environment) { SelfTextsTasks.regenerate }
+  task(regenerate: :environment) { SelfTextsGenerationTasks.regenerate }
   desc('Generate self-texts for all chapters (background) or a single chapter (inline with CHAPTER=XX)')
-  task(generate: :environment) { SelfTextsTasks.generate }
+  task(generate: :environment) { SelfTextsGenerationTasks.generate }
   desc('Populate EU reference self-texts from CSV into existing generated rows')
-  task(populate_eu_references: :environment) { SelfTextsTasks.populate_eu_references }
+  task(populate_eu_references: :environment) { SelfTextsEuReferenceTasks.populate_eu_references }
   desc('Generate embeddings for self-texts and EU references via OpenAI')
-  task(generate_embeddings: :environment) { SelfTextsTasks.generate_embeddings }
+  task(generate_embeddings: :environment) { SelfTextsEmbeddingTasks.generate_embeddings }
   desc('Fix encoding artefacts (e.g. pure9e -> puree) in existing AI-generated self-texts')
-  task(fix_encoding_artefacts: :environment) { SelfTextsTasks.fix_encoding_artefacts }
+  task(fix_encoding_artefacts: :environment) { SelfTextsCleanupTasks.fix_encoding_artefacts }
   desc('Score all self-texts (populate EU refs, generate embeddings, compute confidence)')
-  task(score: :environment) { SelfTextsTasks.score }
+  task(score: :environment) { SelfTextsCleanupTasks.score }
   desc('Show busy and queued self-text generation workers with chapter details')
-  task(status: :environment) { SelfTextsTasks.status }
+  task(status: :environment) { SelfTextsStatusTasks.status }
   desc('Show self-text gaps and stale records grouped by chapter and heading (CHAPTER=XX to filter)')
-  task(gaps: :environment) { SelfTextsTasks.gaps }
+  task(gaps: :environment) { SelfTextsGapTasks.gaps }
   desc('Validate generated self-texts - report similarity and coherence scores')
-  task(validate: :environment) { SelfTextsTasks.validate }
+  task(validate: :environment) { SelfTextsValidationTasks.validate }
 end
