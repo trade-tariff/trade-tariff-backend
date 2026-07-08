@@ -157,6 +157,7 @@ RSpec.describe 'swagger helper configuration' do
       ['/api/footnote_types', 'get'],
       ['/api/footnotes/search', 'get'],
       ['/api/measure_condition_codes', 'get'],
+      ['/api/additional_codes/search', 'get'],
     ]
 
     priority_operations.each do |path, method|

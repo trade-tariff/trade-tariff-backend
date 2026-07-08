@@ -87,7 +87,7 @@ RSpec.describe 'Additional Codes', swagger_doc: 'v2/swagger.json', type: :reques
       end
 
       response '422', 'invalid search params description required when type and code are blank' do
-        schema '$ref' => '#/components/schemas/JsonApiErrorResponse'
+        schema '$ref' => '#/components/schemas/StandardErrorResponse'
 
         let(:description) { nil }
         let(:type) { nil }
@@ -95,6 +95,9 @@ RSpec.describe 'Additional Codes', swagger_doc: 'v2/swagger.json', type: :reques
 
         run_test!
       end
+
+      standard_bad_request_response
+      standard_not_found_response
     end
   end
 end
