@@ -127,11 +127,6 @@ Style/StringLiterals:
 
 # Legacy spec-shape policy cop with many existing offenses; left disabled until
 # specs can be refactored in targeted behaviour-preserving changes.
-RSpec/IndexedLet:
-  Enabled: false
-
-# Legacy spec-shape policy cop with many existing offenses; left disabled until
-# specs can be refactored in targeted behaviour-preserving changes.
 RSpec/MultipleExpectations:
   Enabled: false
 

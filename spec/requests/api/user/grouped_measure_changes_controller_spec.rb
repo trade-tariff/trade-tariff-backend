@@ -9,8 +9,8 @@ RSpec.describe Api::User::GroupedMeasureChangesController do
   describe '#index' do
     let(:measure_changes_service) { instance_double(Api::User::GroupedMeasureChangesService) }
     let(:geographical_area) { create(:geographical_area, :with_description, geographical_area_id: 'GB') }
-    let(:excluded_area_1) { create(:geographical_area, :with_description, geographical_area_id: 'FR') }
-    let(:excluded_area_2) { create(:geographical_area, :with_description, geographical_area_id: 'DE') }
+    let(:first_excluded_area) { create(:geographical_area, :with_description, geographical_area_id: 'FR') }
+    let(:second_excluded_area) { create(:geographical_area, :with_description, geographical_area_id: 'DE') }
     let(:grouped_measure_change) do
       TariffChanges::GroupedMeasureChange.new(
         trade_direction: 'import',

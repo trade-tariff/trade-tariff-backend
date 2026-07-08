@@ -10,8 +10,8 @@ RSpec.describe TariffChanges::GroupedMeasureChange do
 
   let(:excluded_area_ids) { %w[FR DE] }
   let!(:geographical_area) { create(:geographical_area, :with_description, geographical_area_id: 'GB') }
-  let!(:excluded_area_1) { create(:geographical_area, :with_description, geographical_area_id: 'FR') }
-  let!(:excluded_area_2) { create(:geographical_area, :with_description, geographical_area_id: 'DE') }
+  let!(:first_excluded_area) { create(:geographical_area, :with_description, geographical_area_id: 'FR') }
+  let!(:second_excluded_area) { create(:geographical_area, :with_description, geographical_area_id: 'DE') }
 
   describe '#geographical_area' do
     context 'when geographical_area_id is present' do
@@ -61,7 +61,7 @@ RSpec.describe TariffChanges::GroupedMeasureChange do
     context 'when excluded_geographical_area_ids is an array' do
       it 'returns the corresponding GeographicalAreas' do
         result = grouped_measure_change.excluded_geographical_areas
-        expect(result).to contain_exactly(excluded_area_1, excluded_area_2)
+        expect(result).to contain_exactly(first_excluded_area, second_excluded_area)
       end
 
       it 'returns areas ordered by geographical_area_id' do
@@ -81,7 +81,7 @@ RSpec.describe TariffChanges::GroupedMeasureChange do
 
       it 'converts to array and returns the corresponding GeographicalArea' do
         result = grouped_measure_change.excluded_geographical_areas
-        expect(result).to contain_exactly(excluded_area_1)
+        expect(result).to contain_exactly(first_excluded_area)
       end
     end
 
@@ -90,7 +90,7 @@ RSpec.describe TariffChanges::GroupedMeasureChange do
 
       it 'filters out nil values and returns valid GeographicalAreas' do
         result = grouped_measure_change.excluded_geographical_areas
-        expect(result).to contain_exactly(excluded_area_1, excluded_area_2)
+        expect(result).to contain_exactly(first_excluded_area, second_excluded_area)
       end
     end
 
@@ -123,7 +123,7 @@ RSpec.describe TariffChanges::GroupedMeasureChange do
 
       it 'returns only the existing GeographicalAreas' do
         result = grouped_measure_change.excluded_geographical_areas
-        expect(result).to contain_exactly(excluded_area_1, excluded_area_2)
+        expect(result).to contain_exactly(first_excluded_area, second_excluded_area)
       end
     end
 

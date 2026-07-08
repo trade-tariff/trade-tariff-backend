@@ -486,21 +486,21 @@ RSpec.describe SearchService do
       before do
         create :search_suggestion,
                :search_reference,
-               goods_nomenclature: heading1,
+               goods_nomenclature: first_heading,
                value: 'acid oil'
 
         create :search_suggestion,
                :search_reference,
-               goods_nomenclature: heading2,
+               goods_nomenclature: second_heading,
                value: 'other kind of oil'
       end
 
-      let!(:heading1) do
+      let!(:first_heading) do
         create :heading, :with_description,
                goods_nomenclature_item_id: '2851000000',
                description: 'Test 1'
       end
-      let!(:heading2) do
+      let!(:second_heading) do
         create :heading, :with_description,
                goods_nomenclature_item_id: '2920000000',
                description: 'Test 2'
@@ -511,7 +511,7 @@ RSpec.describe SearchService do
           type: 'exact_match',
           entry: {
             endpoint: 'headings',
-            id: heading1.goods_nomenclature_item_id.first(4),
+            id: first_heading.goods_nomenclature_item_id.first(4),
           }.ignore_extra_keys!,
         }.ignore_extra_keys!
       end
