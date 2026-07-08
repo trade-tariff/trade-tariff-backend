@@ -34,55 +34,8 @@ module TariffKnowledge
         request_delay:,
         max_retries:,
       )
-      seen_count = 0
-      created_count = 0
-      updated_count = 0
-      failed_count = 0
-      derived_facts_generated_count = 0
-      derived_facts_empty_count = 0
-      derived_facts_failed_count = 0
-      derived_facts_skipped_count = 0
-      refresh_goods_nomenclature_item_ids = []
-      remaining = limit
 
-      (1..max_pages).each do |page|
-        refs = sync_source.refs_for_page(page)
-        break if refs.empty?
-
-        refs = refs.first(remaining) if remaining
-        seen_count += refs.size
-
-        refs.each do |ref|
-          ruling = sync_source.ruling_for_ref(ref)
-          upsert_result = upsert_ruling(
-            ruling,
-            generate_derived_facts:,
-          )
-          created_count += 1 if upsert_result.action == :created
-          updated_count += 1 if upsert_result.action == :updated
-          case upsert_result.fact_generation_status
-          when :generated
-            derived_facts_generated_count += 1
-          when :empty
-            derived_facts_empty_count += 1
-          when :failed
-            derived_facts_failed_count += 1
-          when :skipped
-            derived_facts_skipped_count += 1
-          end
-          refresh_goods_nomenclature_item_ids.concat(upsert_result.refresh_goods_nomenclature_item_ids)
-        rescue StandardError => e
-          failed_count += 1
-          Rails.logger.warn("Failed to import public ATAR #{ref}: #{e.class}: #{e.message}")
-        end
-
-        if remaining
-          remaining -= refs.size
-          break if remaining <= 0
-        end
-      end
-
-      Result.new(seen_count:, created_count:, updated_count:, failed_count:, refresh_goods_nomenclature_item_ids: refresh_goods_nomenclature_item_ids.uniq, derived_facts_generated_count:, derived_facts_empty_count:, derived_facts_failed_count:, derived_facts_skipped_count:)
+      import_source(sync_source, limit:, max_pages:, generate_derived_facts:)
     end
 
     def import_file(path: DEFAULT_PRELOAD_PATH)
@@ -109,6 +62,66 @@ module TariffKnowledge
   private
 
     attr_reader :source, :fact_generator
+
+    def import_source(sync_source, limit:, max_pages:, generate_derived_facts:)
+      stats = source_import_stats
+      remaining = limit
+
+      (1..max_pages).each do |page|
+        refs = sync_source.refs_for_page(page)
+        break if refs.empty?
+
+        refs = refs.first(remaining) if remaining
+        import_refs(sync_source, refs, stats, generate_derived_facts:)
+
+        if remaining
+          remaining -= refs.size
+          break if remaining <= 0
+        end
+      end
+
+      source_import_result(stats)
+    end
+
+    def source_import_stats
+      {
+        seen_count: 0,
+        created_count: 0,
+        updated_count: 0,
+        failed_count: 0,
+        derived_facts_generated_count: 0,
+        derived_facts_empty_count: 0,
+        derived_facts_failed_count: 0,
+        derived_facts_skipped_count: 0,
+        refresh_goods_nomenclature_item_ids: [],
+      }
+    end
+
+    def import_refs(sync_source, refs, stats, generate_derived_facts:)
+      stats[:seen_count] += refs.size
+
+      refs.each do |ref|
+        upsert_result = upsert_ruling(
+          sync_source.ruling_for_ref(ref),
+          generate_derived_facts:,
+        )
+        record_upsert(stats, upsert_result)
+      rescue StandardError => e
+        stats[:failed_count] += 1
+        Rails.logger.warn("Failed to import public ATAR #{ref}: #{e.class}: #{e.message}")
+      end
+    end
+
+    def record_upsert(stats, upsert_result)
+      stats[:created_count] += 1 if upsert_result.action == :created
+      stats[:updated_count] += 1 if upsert_result.action == :updated
+      stats[:"derived_facts_#{upsert_result.fact_generation_status}_count"] += 1
+      stats[:refresh_goods_nomenclature_item_ids].concat(upsert_result.refresh_goods_nomenclature_item_ids)
+    end
+
+    def source_import_result(stats)
+      Result.new(**stats.merge(refresh_goods_nomenclature_item_ids: stats[:refresh_goods_nomenclature_item_ids].uniq))
+    end
 
     def upsert_ruling(ruling, derived_fact_attributes: nil, generate_derived_facts: false)
       existing = PublicAtarRuling.by_ref(ruling.ref).first
