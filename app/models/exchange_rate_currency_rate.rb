@@ -26,7 +26,7 @@ class ExchangeRateCurrencyRate < Sequel::Model
     sprintf('%.4f', rate)
   end
 
-  dataset_module do
+  module DatasetMethods
     def with_applicable_date
       with(
         :exchange_rate_currency_rates,
@@ -108,6 +108,10 @@ class ExchangeRateCurrencyRate < Sequel::Model
       )
       .order(Sequel.desc(:applicable_date))
     end
+  end
+
+  dataset_module do
+    include DatasetMethods
   end
 
   class << self
