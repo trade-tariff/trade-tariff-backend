@@ -17,7 +17,9 @@ RSpec.describe PrewarmCommoditiesWorker do
   let(:commodity) { build(:commodity, goods_nomenclature_item_id: '0101210000', producline_suffix: '80') }
   let(:preconfigured_commodity) { build(:commodity, goods_nomenclature_item_id: preconfigured_id, producline_suffix: '80') }
   let(:query_scope) { instance_double(Sequel::Dataset, all: [commodity, preconfigured_commodity]) }
-  let(:actual_commodities) { double('Commodity.actual', by_codes: query_scope) }
+  # Commodity.actual returns the model dataset class (with by_codes from dataset_module),
+  # not bare Sequel::Dataset — double that class so verification stays accurate.
+  let(:actual_commodities) { instance_double(Commodity.dataset.class, by_codes: query_scope) }
   let(:cached_commodity_service) { instance_double(CachedCommodityService, call: true) }
 
   before do
