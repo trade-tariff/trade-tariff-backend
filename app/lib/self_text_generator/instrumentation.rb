@@ -40,8 +40,10 @@ module SelfTextGenerator
         started_event: 'api_call_started',
         completed_event: 'api_call_completed',
         failed_event: 'api_call_failed',
-        payload: { batch_size:, model:, chapter_code:, event_kind: },
-        completed_payload: ->(result) { AiUsage.payload_from(result) },
+        payload: { batch_size:, model:, chapter_code: },
+        completed_payload: lambda { |result|
+          { event_kind: }.merge(AiUsage.payload_from(result))
+        },
         failed_payload: lambda { |error|
           http_status = if error.respond_to?(:http_status)
                           error.http_status
@@ -51,6 +53,7 @@ module SelfTextGenerator
           {
             error_message: AiUsage.safe_error_message(error),
             http_status:,
+            event_kind:,
           }.merge(AiUsage.payload_from_error(error))
         },
         &block
