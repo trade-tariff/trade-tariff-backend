@@ -2,8 +2,8 @@ RSpec.describe TariffKnowledge::NoteStructureValidator do
   describe '.call' do
     def fragment(sequence, content)
       Data.define(:key, :content).new(
-        "note_fragment:customs_tariff_chapter_note:1.31:72:#{sequence}",
-        content,
+        key: "note_fragment:customs_tariff_chapter_note:1.31:72:#{sequence}",
+        content:,
       )
     end
 

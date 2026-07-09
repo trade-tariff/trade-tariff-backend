@@ -75,7 +75,7 @@ module TariffKnowledge
 
       return marker if DEFAULT_MARKERS.fetch(:bullet).fetch(:tokens).include?(marker)
 
-      marker.delete_prefix('(').delete_suffix('.').delete_suffix(')').delete_suffix(')')
+      marker.delete_prefix('(').delete_suffix('.').delete_suffix(')')
     end
   end
 end

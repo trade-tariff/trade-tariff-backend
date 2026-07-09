@@ -1,7 +1,10 @@
 RSpec.describe TariffKnowledge::NoteStructureParser do
   describe '.call' do
     def fragment(sequence, content)
-      Data.define(:key, :content).new("note_fragment:customs_tariff_chapter_note:1.31:72:#{sequence}", content)
+      Data.define(:key, :content).new(
+        key: "note_fragment:customs_tariff_chapter_note:1.31:72:#{sequence}",
+        content:,
+      )
     end
 
     it 'builds scoped trees for repeated marker paths under headings' do
