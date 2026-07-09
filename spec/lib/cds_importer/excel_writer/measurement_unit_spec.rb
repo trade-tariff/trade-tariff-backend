@@ -12,7 +12,7 @@ RSpec.describe CdsImporter::ExcelWriter::MeasurementUnit do
     )
   end
 
-  let(:measurement_unit2) do
+  let(:second_measurement_unit) do
     instance_double(
       MeasurementUnit,
       class: instance_double(Class, name: 'MeasurementUnit'),
@@ -31,7 +31,7 @@ RSpec.describe CdsImporter::ExcelWriter::MeasurementUnit do
     )
   end
 
-  let(:description2) do
+  let(:second_description) do
     instance_double(
       MeasurementUnitDescription,
       class: instance_double(Class, name: 'MeasurementUnitDescription'),
@@ -55,7 +55,7 @@ RSpec.describe CdsImporter::ExcelWriter::MeasurementUnit do
     end
 
     context 'when there are empty fields in measurement unit' do
-      let(:models) { [measurement_unit2] }
+      let(:models) { [second_measurement_unit] }
 
       it 'returns a correctly formatted data row' do
         row = mapper.data_row
@@ -69,7 +69,7 @@ RSpec.describe CdsImporter::ExcelWriter::MeasurementUnit do
     end
 
     context 'when the description is empty' do
-      let(:models) { [measurement_unit2, description2] }
+      let(:models) { [second_measurement_unit, second_description] }
 
       it 'returns a correctly formatted data row' do
         row = mapper.data_row
