@@ -66,7 +66,7 @@ module News
       URI.join(TradeTariffBackend.frontend_host, '/news/stories/', slug).to_s
     end
 
-    dataset_module do
+    module DatasetFilters
       def descending
         order(Sequel.desc(:start_date), Sequel.desc(:id))
       end
@@ -139,6 +139,10 @@ module News
       def latest_change
         order(Sequel.desc(:updated_at)).first
       end
+    end
+
+    dataset_module do
+      include DatasetFilters
     end
 
   private
