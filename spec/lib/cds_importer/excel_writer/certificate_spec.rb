@@ -13,7 +13,7 @@ RSpec.describe CdsImporter::ExcelWriter::Certificate do
     )
   end
 
-  let(:certificate_type2) do
+  let(:second_certificate_type) do
     instance_double(
       Certificate,
       class: instance_double(Class, name: 'Certificate'),
@@ -37,7 +37,7 @@ RSpec.describe CdsImporter::ExcelWriter::Certificate do
     )
   end
 
-  let(:description_period2) do
+  let(:second_description_period) do
     instance_double(
       CertificateDescriptionPeriod,
       class: instance_double(Class, name: 'CertificateDescriptionPeriod'),
@@ -60,7 +60,7 @@ RSpec.describe CdsImporter::ExcelWriter::Certificate do
     )
   end
 
-  let(:description2) do
+  let(:second_description) do
     instance_double(
       CertificateDescription,
       class: instance_double(Class, name: 'CertificateDescription'),
@@ -73,7 +73,7 @@ RSpec.describe CdsImporter::ExcelWriter::Certificate do
 
   describe '#data_row' do
     context 'when all fields are valid' do
-      let(:models) { [certificate_type, description, description_period, description2, description_period2] }
+      let(:models) { [certificate_type, description, description_period, second_description, second_description_period] }
 
       it 'returns a correctly formatted data row' do
         row = mapper.data_row
@@ -103,7 +103,7 @@ RSpec.describe CdsImporter::ExcelWriter::Certificate do
     end
 
     context 'when there are empty fields' do
-      let(:models) { [certificate_type2] }
+      let(:models) { [second_certificate_type] }
 
       it 'returns a correctly formatted data row' do
         row = mapper.data_row

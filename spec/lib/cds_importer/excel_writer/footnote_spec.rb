@@ -13,7 +13,7 @@ RSpec.describe CdsImporter::ExcelWriter::Footnote do
     )
   end
 
-  let(:footnote_type2) do
+  let(:second_footnote_type) do
     instance_double(
       Footnote,
       class: instance_double(Class, name: 'Footnote'),
@@ -37,7 +37,7 @@ RSpec.describe CdsImporter::ExcelWriter::Footnote do
     )
   end
 
-  let(:description_period2) do
+  let(:second_description_period) do
     instance_double(
       FootnoteDescriptionPeriod,
       class: instance_double(Class, name: 'FootnoteDescriptionPeriod'),
@@ -60,7 +60,7 @@ RSpec.describe CdsImporter::ExcelWriter::Footnote do
     )
   end
 
-  let(:description2) do
+  let(:second_description) do
     instance_double(
       FootnoteDescription,
       class: instance_double(Class, name: 'FootnoteDescription'),
@@ -73,7 +73,7 @@ RSpec.describe CdsImporter::ExcelWriter::Footnote do
 
   describe '#data_row' do
     context 'when all fields are valid' do
-      let(:models) { [footnote_type, description, description_period, description2, description_period2] }
+      let(:models) { [footnote_type, description, description_period, second_description, second_description_period] }
 
       it 'returns a correctly formatted data row' do
         row = mapper.data_row
@@ -105,7 +105,7 @@ RSpec.describe CdsImporter::ExcelWriter::Footnote do
     end
 
     context 'when there are empty fields' do
-      let(:models) { [footnote_type2] }
+      let(:models) { [second_footnote_type] }
 
       it 'returns a correctly formatted data row' do
         row = mapper.data_row

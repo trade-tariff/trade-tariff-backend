@@ -15,7 +15,7 @@ RSpec.describe CdsImporter::ExcelWriter::BaseRegulation do
     )
   end
 
-  let(:base_regulation2) do
+  let(:second_base_regulation) do
     instance_double(
       BaseRegulation,
       class: instance_double(Class, name: 'BaseRegulation'),
@@ -46,7 +46,7 @@ RSpec.describe CdsImporter::ExcelWriter::BaseRegulation do
     end
 
     context 'when there are empty fields in base regulation' do
-      let(:models) { [base_regulation2] }
+      let(:models) { [second_base_regulation] }
 
       it 'returns a correctly formatted data row' do
         row = mapper.data_row

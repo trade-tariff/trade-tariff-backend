@@ -19,7 +19,7 @@ RSpec.describe CdsImporter::ExcelWriter::MeasureType do
     )
   end
 
-  let(:measure_type2) do
+  let(:second_measure_type) do
     instance_double(
       MeasureType,
       class: instance_double(Class, name: 'MeasureType'),
@@ -45,7 +45,7 @@ RSpec.describe CdsImporter::ExcelWriter::MeasureType do
     )
   end
 
-  let(:description2) do
+  let(:second_description) do
     instance_double(
       MeasureTypeDescription,
       class: instance_double(Class, name: 'MeasureTypeDescription'),
@@ -75,7 +75,7 @@ RSpec.describe CdsImporter::ExcelWriter::MeasureType do
     end
 
     context 'when there are empty fields in measure type' do
-      let(:models) { [measure_type2] }
+      let(:models) { [second_measure_type] }
 
       it 'returns a correctly formatted data row' do
         row = mapper.data_row
@@ -95,7 +95,7 @@ RSpec.describe CdsImporter::ExcelWriter::MeasureType do
     end
 
     context 'when the description is empty' do
-      let(:models) { [measure_type2, description2] }
+      let(:models) { [second_measure_type, second_description] }
 
       it 'returns a correctly formatted data row' do
         row = mapper.data_row
