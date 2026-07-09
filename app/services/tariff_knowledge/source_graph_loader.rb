@@ -138,18 +138,19 @@ module TariffKnowledge
     end
 
     def delete_stale_note_block_edges(source_node, current_block_nodes)
-      stale_block_edges = Edge
+      stale_block_ids = Edge
         .where(source_node_id: source_node.id, relationship_type: Edge::CONTAINS)
         .association_join(:target_node)
         .where(target_node__node_type: Node::NOTE_BLOCK)
       current_block_node_ids = current_block_nodes.map(&:id)
-      stale_block_edges = stale_block_edges.exclude(target_node_id: current_block_node_ids) if current_block_node_ids.any?
+      stale_block_ids = stale_block_ids.exclude(target_node_id: current_block_node_ids) if current_block_node_ids.any?
+      stale_block_ids = stale_block_ids.select_map(:target_node_id)
+      return if stale_block_ids.empty?
 
-      Node.where(id: stale_block_edges.select_map(:target_node_id)).each do |block_node|
-        delete_stale_edges(source_node: block_node, relationship_type: Edge::CONTAINS)
-        delete_stale_edges(source_node: block_node, relationship_type: Edge::APPLIES_TO)
-        delete_stale_edges(source_node: block_node, relationship_type: Edge::REFERENCES)
-      end
+      Edge.where(
+        source_node_id: stale_block_ids,
+        relationship_type: [Edge::CONTAINS, Edge::APPLIES_TO, Edge::REFERENCES],
+      ).delete
     end
 
     def load_fragment(source_association, source, source_node, content, index)
