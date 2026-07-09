@@ -34,10 +34,10 @@ RSpec.describe Api::V1::SectionsController do
   end
 
   describe 'GET #index' do
-    let!(:chapter1) { create :chapter, :with_section }
-    let!(:chapter2) { create :chapter, :with_section }
-    let(:section1)  { chapter1.section }
-    let(:section2)  { chapter2.section }
+    let!(:first_chapter) { create :chapter, :with_section }
+    let!(:second_chapter) { create :chapter, :with_section }
+    let(:first_section) { first_chapter.section }
+    let(:second_section) { second_chapter.section }
 
     let(:pattern) do
       [

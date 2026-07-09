@@ -43,7 +43,7 @@ module Search
       }
     end
 
-    private
+  private
 
     def index
       @index ||= GoodsNomenclatureIndex.new
@@ -126,6 +126,7 @@ module Search
       fields = %w[
         search_references^5
         description^3
+        atar_keywords^2
         ancestor_descriptions
       ]
 

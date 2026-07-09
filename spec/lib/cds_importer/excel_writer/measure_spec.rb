@@ -18,7 +18,7 @@ RSpec.describe CdsImporter::ExcelWriter::Measure do
     )
   end
 
-  let(:measure2) do
+  let(:second_measure) do
     instance_double(
       Measure,
       class: instance_double(Class, name: 'Measure'),
@@ -79,7 +79,7 @@ RSpec.describe CdsImporter::ExcelWriter::Measure do
     )
   end
 
-  let(:condition2) do
+  let(:second_condition) do
     instance_double(
       MeasureCondition,
       class: instance_double(Class, name: 'MeasureCondition'),
@@ -125,7 +125,7 @@ RSpec.describe CdsImporter::ExcelWriter::Measure do
 
     context 'when descriptions not found' do
       let(:models) do
-        [measure2, measure_component, excluded_geo_area, footnote, condition2]
+        [second_measure, measure_component, excluded_geo_area, footnote, second_condition]
       end
 
       it 'returns just the id' do

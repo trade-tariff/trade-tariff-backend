@@ -314,6 +314,37 @@ RSpec.describe Api::V2::QuotasController, type: :request do
       end
     end
 
+    context 'when specifying an empty includes list in the query params' do
+      let(:params) do
+        {
+          year: [
+            Time.zone.today.year.to_s,
+          ],
+          include: '',
+        }
+      end
+
+      it 'returns quota definitions without included resources' do
+        get '/uk/api/quotas/search.json', params: params, headers: request_headers(format: :json)
+
+        expect(JSON.parse(response.body)).not_to have_key('included')
+      end
+
+      it 'does not request eager loading full quota balance events' do
+        allow(QuotaSearchService).to receive(:new).and_call_original
+
+        get '/uk/api/quotas/search.json', params: params, headers: request_headers(format: :json)
+
+        expect(QuotaSearchService).to have_received(:new).with(
+          anything,
+          anything,
+          anything,
+          anything,
+          include_quota_balance_events: false,
+        )
+      end
+    end
+
     context 'when order_number is not 6 digits' do
       let(:params) { { year: [Time.zone.today.year.to_s], order_number: '0500' } }
 

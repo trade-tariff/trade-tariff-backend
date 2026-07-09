@@ -37,7 +37,7 @@ class SelfTextConfidenceScorer
     raise
   end
 
-  private
+private
 
   attr_reader :embedding_service
 
@@ -97,7 +97,7 @@ class SelfTextConfidenceScorer
         batch_size: texts.size,
         model: EmbeddingService::MODEL,
         chapter_code: @chapter_code,
-      ) { embedding_service.embed_batch(texts) }
+      ) { embedding_service.embed_batch(texts, event_kind: 'self_text_scoring_embedding') }
 
       pairs = batch.zip(embeddings).select { |_record, embedding| embedding }
       next if pairs.empty?
@@ -135,7 +135,7 @@ class SelfTextConfidenceScorer
         batch_size: ancestor_texts.size,
         model: EmbeddingService::MODEL,
         chapter_code: @chapter_code,
-      ) { embedding_service.embed_batch(ancestor_texts) }
+      ) { embedding_service.embed_batch(ancestor_texts, event_kind: 'self_text_scoring_embedding') }
 
       pairs = batch.zip(ancestor_embeddings).select { |_record, embedding| embedding }
       next if pairs.empty?

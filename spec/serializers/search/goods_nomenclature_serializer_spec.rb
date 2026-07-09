@@ -89,6 +89,33 @@ RSpec.describe Search::GoodsNomenclatureSerializer do
       end
     end
 
+    context 'with public ATAR rulings' do
+      before do
+        create(:tariff_knowledge_public_atar_ruling,
+               commodity_code: '0101210000',
+               goods_nomenclature_item_id: commodity.goods_nomenclature_item_id,
+               keywords: Sequel.pg_array(['riding horses', 'show ponies', '', 'riding horses'], :text),
+               derived_facts: Sequel.pg_array(['equestrian sports', 'show ponies', ''], :text))
+        commodity.reload
+      end
+
+      it 'includes unique nonblank ATAR keywords and derived facts for OpenSearch' do
+        expect(result[:atar_keywords]).to eq(['riding horses', 'show ponies', 'equestrian sports'])
+      end
+
+      it 'includes derived facts when no official keywords are present' do
+        TariffKnowledge::PublicAtarRuling.dataset.delete
+        create(:tariff_knowledge_public_atar_ruling,
+               commodity_code: '0101210000',
+               goods_nomenclature_item_id: commodity.goods_nomenclature_item_id,
+               keywords: Sequel.pg_array([], :text),
+               derived_facts: Sequel.pg_array(['equestrian sports'], :text))
+        commodity.reload
+
+        expect(result[:atar_keywords]).to eq(['equestrian sports'])
+      end
+    end
+
     context 'without labels' do
       it 'does not include labels key' do
         expect(result[:labels]).to be_nil

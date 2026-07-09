@@ -22,13 +22,13 @@ module HeadingService
       end
     end
 
-    private
+  private
 
     def each_heading
       Chapter.actual.non_hidden.all do |chapter|
         headings = Chapter.actual
                           .where(goods_nomenclature_sid: chapter.goods_nomenclature_sid)
-                          .eager(*Serialization::NsNondeclarableService::HEADING_EAGER_LOAD)
+                          .eager(*Serialization::NsNondeclarableService.heading_eager_load)
                           .take
                           .children
 

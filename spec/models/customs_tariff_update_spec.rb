@@ -28,6 +28,20 @@ RSpec.describe CustomsTariffUpdate do
         expect(described_class.failed.all).to contain_exactly(failed)
       end
     end
+
+    describe '.latest' do
+      it 'returns the latest non-failed update for the current TimeMachine date' do
+        older_update = create(:customs_tariff_update, version: '1.30', validity_start_date: Date.new(2026, 1, 22))
+        latest_update = create(:customs_tariff_update, version: '1.31', validity_start_date: Date.new(2026, 4, 1))
+        create(:customs_tariff_update, :failed, version: '1.32', validity_start_date: Date.new(2026, 6, 1))
+        create(:customs_tariff_update, version: '1.33', validity_start_date: Date.new(2026, 8, 1))
+
+        update = TimeMachine.at(Date.new(2026, 7, 1)) { described_class.latest.first }
+
+        expect(update).to eq(latest_update)
+        expect(update).not_to eq(older_update)
+      end
+    end
   end
 
   describe 'associations' do

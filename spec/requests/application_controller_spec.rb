@@ -69,14 +69,22 @@ RSpec.describe ApplicationController, type: :request do
       end
     end
 
+    context 'with Link header' do
+      it 'includes the API docs link header on every response' do
+        api_get('/uk/api/healthcheck')
+
+        expect(response.headers['Link']).to eq('<https://api-docs.trade-tariff.service.gov.uk/llms.txt>; rel="describedby"')
+      end
+    end
+
     context 'with request logging payload' do
-      def process_action_payload_for(params:)
+      def process_action_payload_for(params:, headers: {})
         events = []
         subscriber = ActiveSupport::Notifications.subscribe('process_action.action_controller') do |*args|
           events << ActiveSupport::Notifications::Event.new(*args)
         end
 
-        api_get('/uk/api/healthcheck', params:)
+        api_get('/uk/api/healthcheck', params:, headers:)
 
         events.last.payload
       ensure
@@ -101,6 +109,49 @@ RSpec.describe ApplicationController, type: :request do
 
         expect(payload[:request_id]).to be_present
         expect(payload[:request_id].length).to be <= ApplicationController::MAX_LOGGED_REQUEST_ID_LENGTH
+      end
+
+      it 'classifies requests from the frontend user agent' do
+        payload = process_action_payload_for(
+          params: { request_id: 'search-request-id' },
+          headers: { 'HTTP_USER_AGENT' => 'TradeTariffFrontend/a4d021c2' },
+        )
+
+        expect(payload[:request_source]).to eq('frontend')
+      end
+
+      it 'classifies non-frontend requests as backend_only' do
+        payload = process_action_payload_for(
+          params: { request_id: 'search-request-id' },
+          headers: { 'HTTP_USER_AGENT' => 'curl/8.0.1' },
+        )
+
+        expect(payload[:request_source]).to eq('backend_only')
+      end
+
+      it 'prefers the original user agent header for request source classification' do
+        payload = process_action_payload_for(
+          params: { request_id: 'search-request-id' },
+          headers: {
+            'HTTP_X_ORIGINAL_USER_AGENT' => 'TradeTariffFrontend/a4d021c2',
+            'HTTP_USER_AGENT' => 'curl/8.0.1',
+          },
+        )
+
+        expect(payload[:user_agent]).to eq('TradeTariffFrontend/a4d021c2')
+        expect(payload[:request_source]).to eq('frontend')
+      end
+
+      it 'classifies blank user agents as backend_only' do
+        payload = process_action_payload_for(
+          params: { request_id: 'search-request-id' },
+          headers: {
+            'HTTP_X_ORIGINAL_USER_AGENT' => '',
+            'HTTP_USER_AGENT' => '',
+          },
+        )
+
+        expect(payload[:request_source]).to eq('backend_only')
       end
     end
   end

@@ -293,20 +293,20 @@ RSpec.describe PublicUsers::User do
     describe '.matching_chapters' do
       subject(:dataset) { described_class.matching_chapters(chapters) }
 
-      let(:user_with_chapter_1) { create(:public_user, :with_chapters_preference, chapters: '01') }
-      let(:user_with_chapter_2_3) { create(:public_user, :with_chapters_preference, chapters: '02,03') }
-      let(:user_with_chapter_3_4) { create(:public_user, :with_chapters_preference, chapters: '03,04') }
-      let(:user_with_chapter_4) { create(:public_user, :with_chapters_preference, chapters: '04') }
-      let(:user_with_chapter_1_2_3_4) { create(:public_user, :with_chapters_preference, chapters: '01,02,03,04') }
+      let(:first_user_with_chapter) { create(:public_user, :with_chapters_preference, chapters: '01') }
+      let(:user_with_chapters_two_and_three) { create(:public_user, :with_chapters_preference, chapters: '02,03') }
+      let(:user_with_chapters_three_and_four) { create(:public_user, :with_chapters_preference, chapters: '03,04') }
+      let(:fourth_user_with_chapter) { create(:public_user, :with_chapters_preference, chapters: '04') }
+      let(:user_with_chapters_one_to_four) { create(:public_user, :with_chapters_preference, chapters: '01,02,03,04') }
       let(:user_with_nil_preference) { create(:public_user, :with_chapters_preference, chapters: nil) }
       let(:user_with_empty_preference) { create(:public_user, :with_chapters_preference, chapters: '') }
 
       before do
-        user_with_chapter_1
-        user_with_chapter_2_3
-        user_with_chapter_3_4
-        user_with_chapter_4
-        user_with_chapter_1_2_3_4
+        first_user_with_chapter
+        user_with_chapters_two_and_three
+        user_with_chapters_three_and_four
+        fourth_user_with_chapter
+        user_with_chapters_one_to_four
         user_with_nil_preference
         user_with_empty_preference
       end
@@ -316,11 +316,11 @@ RSpec.describe PublicUsers::User do
 
         it 'returns all users' do
           expect(dataset).to contain_exactly(
-            user_with_chapter_1,
-            user_with_chapter_2_3,
-            user_with_chapter_3_4,
-            user_with_chapter_4,
-            user_with_chapter_1_2_3_4,
+            first_user_with_chapter,
+            user_with_chapters_two_and_three,
+            user_with_chapters_three_and_four,
+            fourth_user_with_chapter,
+            user_with_chapters_one_to_four,
             user_with_nil_preference,
             user_with_empty_preference,
           )
@@ -332,11 +332,11 @@ RSpec.describe PublicUsers::User do
 
         it 'returns all users' do
           expect(dataset).to contain_exactly(
-            user_with_chapter_1,
-            user_with_chapter_2_3,
-            user_with_chapter_3_4,
-            user_with_chapter_4,
-            user_with_chapter_1_2_3_4,
+            first_user_with_chapter,
+            user_with_chapters_two_and_three,
+            user_with_chapters_three_and_four,
+            fourth_user_with_chapter,
+            user_with_chapters_one_to_four,
             user_with_nil_preference,
             user_with_empty_preference,
           )
@@ -347,7 +347,7 @@ RSpec.describe PublicUsers::User do
         let(:chapters) { %w[01] }
 
         it 'returns expected users' do
-          expect(dataset).to contain_exactly(user_with_chapter_1, user_with_chapter_1_2_3_4, user_with_nil_preference, user_with_empty_preference)
+          expect(dataset).to contain_exactly(first_user_with_chapter, user_with_chapters_one_to_four, user_with_nil_preference, user_with_empty_preference)
         end
       end
 
@@ -355,7 +355,7 @@ RSpec.describe PublicUsers::User do
         let(:chapters) { '01' }
 
         it 'returns expected users' do
-          expect(dataset).to contain_exactly(user_with_chapter_1, user_with_chapter_1_2_3_4, user_with_nil_preference, user_with_empty_preference)
+          expect(dataset).to contain_exactly(first_user_with_chapter, user_with_chapters_one_to_four, user_with_nil_preference, user_with_empty_preference)
         end
       end
 
@@ -363,7 +363,7 @@ RSpec.describe PublicUsers::User do
         let(:chapters) { %w[01 02] }
 
         it 'returns expected users' do
-          expect(dataset).to contain_exactly(user_with_chapter_1, user_with_chapter_2_3, user_with_chapter_1_2_3_4, user_with_nil_preference, user_with_empty_preference)
+          expect(dataset).to contain_exactly(first_user_with_chapter, user_with_chapters_two_and_three, user_with_chapters_one_to_four, user_with_nil_preference, user_with_empty_preference)
         end
       end
     end

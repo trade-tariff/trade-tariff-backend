@@ -1,7 +1,7 @@
 RSpec.describe Api::V2::ChemicalsController, type: :request do
-  let(:chemical1) { create :chemical, :with_name }
+  let(:named_chemical) { create :chemical, :with_name }
   let(:goods_nomenclature) { create :goods_nomenclature }
-  let(:chemical_gn_association) { create :chemicals_goods_nomenclatures, chemical_id: chemical1.id, goods_nomenclature_sid: goods_nomenclature.goods_nomenclature_sid }
+  let(:chemical_gn_association) { create :chemicals_goods_nomenclatures, chemical_id: named_chemical.id, goods_nomenclature_sid: goods_nomenclature.goods_nomenclature_sid }
 
   let(:api_short_object_pattern) do
     {
@@ -151,7 +151,7 @@ RSpec.describe Api::V2::ChemicalsController, type: :request do
 
   context 'with the `:id` (i.e., CAS number) parameter, GET #show' do
     it 'returns one record' do
-      get "/uk/api/chemicals/#{chemical1.cas}.json", headers: request_headers(format: :json)
+      get "/uk/api/chemicals/#{named_chemical.cas}.json", headers: request_headers(format: :json)
 
       expect(response.body).to match_json_expression api_long_object_pattern
     end
@@ -159,7 +159,7 @@ RSpec.describe Api::V2::ChemicalsController, type: :request do
 
   context 'with the `:cas` (i.e., CAS number) parameter, GET #search' do
     it 'returns all matching records (which should normally be one record), as a collection' do
-      get '/uk/api/chemicals/search.json', params: { cas: chemical1.cas }, headers: request_headers(format: :json)
+      get '/uk/api/chemicals/search.json', params: { cas: named_chemical.cas }, headers: request_headers(format: :json)
 
       expect(response.body).to match_json_expression search_long_collection_pattern
     end
@@ -167,7 +167,7 @@ RSpec.describe Api::V2::ChemicalsController, type: :request do
 
   context 'with the `:name` (i.e., partial chemical name) parameter, GET #search' do
     it 'returns all matching records as a collection' do
-      get '/uk/api/chemicals/search.json', params: { name: chemical1.name[1..5] }, headers: request_headers(format: :json)
+      get '/uk/api/chemicals/search.json', params: { name: named_chemical.name[1..5] }, headers: request_headers(format: :json)
 
       expect(response.body).to match_json_expression search_long_collection_pattern
     end

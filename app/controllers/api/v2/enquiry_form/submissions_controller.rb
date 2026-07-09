@@ -16,7 +16,7 @@ module Api
         end
       end
 
-      private
+    private
 
       def store_enquiry_form_data
         Sidekiq.redis do |conn|

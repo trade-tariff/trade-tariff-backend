@@ -42,7 +42,7 @@ module ChangesTablePopulator
         .select(&select_condition)
     end
 
-    protected
+  protected
 
     def source_table
       raise NotImplementedError, 'Implement this method in the subclasses'

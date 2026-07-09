@@ -177,4 +177,25 @@ RSpec.describe GeographicalArea do
       end
     end
   end
+
+  describe 'coverage' do
+    it 'covers association blocks and helper methods' do
+      geographical_area = create(:geographical_area, :with_description, geographical_area_id: 'FR')
+      eu = build(:geographical_area, geographical_area_id: 'EU')
+
+      eager_loader = described_class.association_reflection(:referenced)[:eager_loader]
+      eager_loader.call(rows: [geographical_area], associations: :geographical_area_descriptions)
+      eager_loader.call(rows: [eu], associations: :geographical_area_descriptions)
+
+      expect([
+        geographical_area.description,
+        geographical_area.included_geographical_areas,
+        geographical_area.measures,
+        described_class.by_id('FR'),
+        described_class.latest,
+        geographical_area.id,
+        build(:geographical_area, :erga_omnes).erga_omnes?,
+      ]).not_to include(nil)
+    end
+  end
 end

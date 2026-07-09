@@ -14,7 +14,7 @@ class AdditionalCodeFinderService
     )
   end
 
-  private
+private
 
   attr_reader :code, :type, :description
 

@@ -13,7 +13,7 @@ RSpec.describe CdsImporter::ExcelWriter::QuotaOrderNumber do
     )
   end
 
-  let(:quota_order_number2) do
+  let(:second_quota_order_number) do
     instance_double(
       QuotaOrderNumber,
       class: instance_double(Class, name: 'QuotaOrderNumber'),
@@ -41,7 +41,7 @@ RSpec.describe CdsImporter::ExcelWriter::QuotaOrderNumber do
     end
 
     context 'when there are empty fields in quota order number' do
-      let(:models) { [quota_order_number2] }
+      let(:models) { [second_quota_order_number] }
 
       it 'returns a correctly formatted data row' do
         row = mapper.data_row

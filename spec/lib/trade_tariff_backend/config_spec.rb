@@ -197,6 +197,28 @@ RSpec.describe TradeTariffBackend::Config do
         expect(config.environment.to_s).to eq('local')
       end
     end
+
+    describe '.promote_customs_tariff_notes?' do
+      it 'returns true in development' do
+        ENV['ENVIRONMENT'] = 'development'
+        expect(config.promote_customs_tariff_notes?).to be true
+      end
+
+      it 'returns true in staging' do
+        ENV['ENVIRONMENT'] = 'staging'
+        expect(config.promote_customs_tariff_notes?).to be true
+      end
+
+      it 'returns false in production' do
+        ENV['ENVIRONMENT'] = 'production'
+        expect(config.promote_customs_tariff_notes?).to be false
+      end
+
+      it 'returns true locally' do
+        ENV.delete('ENVIRONMENT')
+        expect(config.promote_customs_tariff_notes?).to be true
+      end
+    end
   end
 
   describe 'OpenSearch config' do
@@ -370,6 +392,16 @@ RSpec.describe TradeTariffBackend::Config do
       it 'defaults to openai API' do
         ENV.delete('OPENAI_API_BASE_URL')
         expect(config.openai_api_base_url).to eq('https://api.openai.com/v1')
+      end
+    end
+
+    describe '.openai_model_pricing' do
+      it 'loads reviewed model pricing from application config' do
+        expect(config.openai_model_pricing).to include(
+          'text-embedding-3-small' => {
+            'input_per_million_tokens' => 0.02,
+          },
+        )
       end
     end
   end

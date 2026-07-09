@@ -11,6 +11,7 @@ RSpec.describe 'Updates', swagger_doc: 'v2/swagger.json', type: :request do
     get 'Retrieve the latest tariff updates' do
       tags 'Updates'
       produces 'application/json'
+      jsonapi_query_parameters(includes: [])
       description 'Returns the most recently applied tariff update records.'
       operationId 'getLatestUpdates'
 

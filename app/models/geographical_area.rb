@@ -146,7 +146,7 @@ class GeographicalArea < Sequel::Model
     actual_eu.contained_geographical_areas.map(&:geographical_area_id)
   end
 
-  private
+private
 
   def referenced_id
     REFERENCED_GEOGRAPHICAL_AREAS[geographical_area_id]

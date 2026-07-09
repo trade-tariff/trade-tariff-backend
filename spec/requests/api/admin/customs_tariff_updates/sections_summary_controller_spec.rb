@@ -51,6 +51,10 @@ RSpec.describe Api::Admin::CustomsTariffUpdates::SectionsSummaryController do
 
     context 'when chapter notes exist in the update' do
       before do
+        create(:chapter, :chapter01).tap do |chapter|
+          chapter.add_section(sections.first)
+          chapter.save
+        end
         create(:customs_tariff_chapter_note, customs_tariff_update: approved_update, chapter_id: '01',
                                              content: 'Old chapter 1 content long enough for comparison')
         create(:customs_tariff_chapter_note, customs_tariff_update: pending_update, chapter_id: '01',
@@ -58,9 +62,6 @@ RSpec.describe Api::Admin::CustomsTariffUpdates::SectionsSummaryController do
       end
 
       it 'returns chapter_notes_total and chapter_notes_changed for the section containing chapter 01' do
-        pending 'chapter_to_section_map relies on chapters_sections join table populated with real tariff data; ' \
-                'may be empty in test environment causing counts to be 0'
-
         get "/uk/admin/customs_tariff_updates/#{pending_update.version}/sections_summary.json",
             headers: request_headers(format: :json)
 

@@ -93,8 +93,8 @@ RSpec.describe LabelBatchPresenter do
     end
 
     context 'with multiple commodities in a batch' do
-      let(:commodity2) { create(:commodity, :with_description) }
-      let(:batch) { [commodity, commodity2] }
+      let(:second_commodity) { create(:commodity, :with_description) }
+      let(:batch) { [commodity, second_commodity] }
 
       before do
         create(:goods_nomenclature_self_text,
@@ -102,14 +102,14 @@ RSpec.describe LabelBatchPresenter do
                goods_nomenclature_item_id: commodity.goods_nomenclature_item_id,
                self_text: 'First self-text')
         create(:goods_nomenclature_self_text,
-               goods_nomenclature_sid: commodity2.goods_nomenclature_sid,
-               goods_nomenclature_item_id: commodity2.goods_nomenclature_item_id,
+               goods_nomenclature_sid: second_commodity.goods_nomenclature_sid,
+               goods_nomenclature_item_id: second_commodity.goods_nomenclature_item_id,
                self_text: 'Second self-text')
       end
 
       it 'batch-loads all self-texts' do
         expect(presenter.contextual_description_for(commodity)).to eq('First self-text')
-        expect(presenter.contextual_description_for(commodity2)).to eq('Second self-text')
+        expect(presenter.contextual_description_for(second_commodity)).to eq('Second self-text')
       end
     end
   end

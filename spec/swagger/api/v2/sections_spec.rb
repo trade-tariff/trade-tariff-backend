@@ -12,6 +12,7 @@ RSpec.describe 'Sections', swagger_doc: 'v2/swagger.json', type: :request do
     get 'List all sections' do
       tags 'Sections'
       produces 'application/json'
+      jsonapi_query_parameters(includes: [])
       description 'Returns all sections of the tariff. Sections group chapters into broad categories of goods.'
       operationId 'listSections'
 
@@ -62,6 +63,7 @@ RSpec.describe 'Sections', swagger_doc: 'v2/swagger.json', type: :request do
     get 'Retrieve a section' do
       tags 'Sections'
       produces 'application/json'
+      jsonapi_query_parameters(includes: %w[chapters chapters.guides])
       description 'Returns a single section including its chapters and any associated guides.'
       operationId 'getSection'
 
@@ -163,6 +165,7 @@ RSpec.describe 'Sections', swagger_doc: 'v2/swagger.json', type: :request do
     get 'List chapters in a section' do
       tags 'Sections'
       produces 'application/json'
+      jsonapi_query_parameters(includes: [])
       description 'Returns all chapters belonging to a section.'
       operationId 'listSectionChapters'
 

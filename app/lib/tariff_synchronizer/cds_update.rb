@@ -68,7 +68,7 @@ module TariffSynchronizer
       filename.sub('.gzip', '')
     end
 
-    private
+  private
 
     def check_oplog_inserts
       return if filesize <= TradeTariffBackend.empty_file_size_threshold

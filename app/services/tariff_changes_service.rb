@@ -7,6 +7,12 @@
 class TariffChangesService
   FALLBACK_START_DATE = Date.new(2024, 12, 31).freeze
 
+  # Frozen snapshot of a GoodsNomenclature at a specific point in time, used to
+  # capture declarability at the correct TimeMachine date.
+  ParentSnapshot = Data.define(:goods_nomenclature_sid, :goods_nomenclature_item_id, :validity_start_date, :validity_end_date, :declarable) do
+    def declarable? = declarable
+  end
+
   # Generates TariffChange records for the given date.
   # If no date is provided, it generates for all pending changes and all dates since the last change
   def self.generate(date = nil)
@@ -87,6 +93,8 @@ class TariffChangesService
       add_change_record(change, change[:goods_nomenclature_item_id], change[:object_sid])
     end
 
+    add_parent_declarability_transition_records
+
     @changes[:commodity_descriptions].each do |change|
       next if matching_commodity_change?(change[:goods_nomenclature_sid], change[:action])
 
@@ -121,6 +129,103 @@ class TariffChangesService
           declarables_for(goods_nomenclatures[goods_nomenclature_sid])
         end
       end
+    end
+  end
+
+  def add_parent_declarability_transition_records
+    parent_declarability_transition_changes.each do |change|
+      next if matching_commodity_change?(change[:goods_nomenclature_sid], change[:action])
+
+      add_change_record(change, change[:goods_nomenclature_item_id], change[:goods_nomenclature_sid])
+    end
+  end
+
+  def parent_declarability_transition_changes
+    parent_declarability_child_changes.filter_map { |child_change|
+      parent_declarability_transition_for(child_change)
+    }.uniq { |change| [change[:goods_nomenclature_sid], change[:action], change[:date_of_effect]] }
+  end
+
+  def parent_declarability_child_changes
+    @parent_declarability_child_changes ||= GoodsNomenclature.operation_klass
+      .where(operation_date: date)
+      .filter_map do |op_record|
+        next if op_record.record.nil?
+
+        change = TariffChangesService::CommodityChanges.new(op_record.record, date).analyze
+        next if change.nil?
+
+        next unless [BaseChanges::CREATION, BaseChanges::ENDING].include?(change[:action])
+        next if change[:object_sid].blank? || change[:date_of_effect].blank?
+
+        change
+      end
+  end
+
+  def parent_declarability_transition_for(child_change)
+    child_effective_date = child_change[:date_of_effect]
+
+    before_date, after_date =
+      if child_change[:action] == BaseChanges::CREATION
+        [child_effective_date - 1.day, child_effective_date]
+      else
+        [child_effective_date, child_effective_date + 1.day]
+      end
+
+    parent = parent_for_child_at(child_change[:object_sid], child_effective_date)
+    return if parent.nil?
+
+    previous_parent = goods_nomenclature_at(parent.goods_nomenclature_sid, before_date)
+    current_parent = goods_nomenclature_at(parent.goods_nomenclature_sid, after_date)
+
+    previous_declarable = previous_parent&.declarable? || false
+    current_declarable = current_parent&.declarable? || false
+    return if previous_declarable == current_declarable
+
+    action = previous_declarable ? BaseChanges::ENDING : BaseChanges::CREATION
+    date_of_effect = previous_declarable ? before_date : after_date
+
+    {
+      type: 'Commodity',
+      object_sid: parent.goods_nomenclature_sid,
+      goods_nomenclature_item_id: parent.goods_nomenclature_item_id,
+      goods_nomenclature_sid: parent.goods_nomenclature_sid,
+      action:,
+      date_of_effect:,
+      validity_start_date: action == BaseChanges::CREATION ? date_of_effect : current_parent&.validity_start_date&.to_date,
+      validity_end_date: action == BaseChanges::ENDING ? date_of_effect : current_parent&.validity_end_date&.to_date,
+    }
+  end
+
+  def parent_for_child_at(child_sid, snapshot_date)
+    @parent_for_child_at_cache ||= {}
+    cache_key = [child_sid, snapshot_date.to_date]
+    return @parent_for_child_at_cache[cache_key] if @parent_for_child_at_cache.key?(cache_key)
+
+    @parent_for_child_at_cache[cache_key] = TimeMachine.at(snapshot_date) do
+      GoodsNomenclature.where(goods_nomenclature_sid: child_sid).actual.eager(:parent).first&.parent
+    end
+  end
+
+  def goods_nomenclature_at(goods_nomenclature_sid, snapshot_date)
+    @goods_nomenclature_at_cache ||= {}
+    cache_key = [goods_nomenclature_sid, snapshot_date.to_date]
+    return @goods_nomenclature_at_cache[cache_key] if @goods_nomenclature_at_cache.key?(cache_key)
+
+    @goods_nomenclature_at_cache[cache_key] = TimeMachine.at(snapshot_date) do
+      gn = GoodsNomenclature.where(goods_nomenclature_sid: goods_nomenclature_sid).actual.first
+      next nil if gn.nil?
+
+      # Evaluate declarable? here, inside the TimeMachine block, so that
+      # leaf? -> children.empty? queries at the correct point-in-time snapshot.
+      # Captured in a frozen value object to avoid re-querying outside this block.
+      ParentSnapshot.new(
+        goods_nomenclature_sid: gn.goods_nomenclature_sid,
+        goods_nomenclature_item_id: gn.goods_nomenclature_item_id,
+        validity_start_date: gn.validity_start_date,
+        validity_end_date: gn.validity_end_date,
+        declarable: gn.declarable?,
+      )
     end
   end
 

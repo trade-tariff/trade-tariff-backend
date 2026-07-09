@@ -1,4 +1,6 @@
 class CachedGeographicalAreaService
+  include JsonapiCacheKey
+
   GLOBALLY_EXCLUDED_GEOGRAPHICAL_AREA_IDS = %w[
     EU
     GG
@@ -37,7 +39,7 @@ class CachedGeographicalAreaService
     end
   end
 
-  private
+private
 
   attr_reader :actual_date, :countries, :exclude_none
 
@@ -62,7 +64,9 @@ class CachedGeographicalAreaService
   end
 
   def cache_key
-    "_geographical-areas-#{actual_date}-#{countries}-#{exclude_none}"
+    with_jsonapi_cache_key_suffix(
+      "_geographical-areas-#{actual_date}-#{countries}-#{exclude_none}",
+    )
   end
 
   def country_geographical_areas

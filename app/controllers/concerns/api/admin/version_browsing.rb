@@ -3,7 +3,7 @@ module Api
     module VersionBrowsing
       extend ActiveSupport::Concern
 
-      private
+    private
 
       def serializer_options
         { meta: version_meta }

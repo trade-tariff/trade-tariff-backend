@@ -1,4 +1,6 @@
 class CachedQuotaOrderNumberService
+  include JsonapiCacheKey
+
   DEFAULT_INCLUDES = %w[quota_definition quota_definition.measures].freeze
   EAGER_LOAD = {
     quota_definition: {
@@ -19,14 +21,14 @@ class CachedQuotaOrderNumberService
     end
   end
 
-  private
+private
 
   def quota_order_numbers
     QuotaOrderNumber.with_quota_definitions.eager(EAGER_LOAD).all
   end
 
   def cache_key
-    "_quota-order-numbers-#{actual_date}"
+    with_jsonapi_cache_key_suffix("_quota-order-numbers-#{actual_date}")
   end
 
   def actual_date

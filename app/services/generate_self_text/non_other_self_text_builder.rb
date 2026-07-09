@@ -1,12 +1,13 @@
 module GenerateSelfText
   class NonOtherSelfTextBuilder < BaseSelfTextBuilder
-    private
+  private
 
     def select_segments(segments)
       segments.reject { |s| s[:node][:is_other] || s[:node][:goods_nomenclature_class] == 'Chapter' }
     end
 
     def generation_type = 'ai_non_other'
+    def self_text_event_kind = 'self_text_generation_ai_non_other'
     def system_prompt_config_key = 'non_other_self_text_context'
     def model_config_key = 'non_other_self_text_model'
     def batch_size_config_key = 'non_other_self_text_batch_size'

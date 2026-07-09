@@ -8,6 +8,7 @@ module CustomsTariffImporter
     CHAPTER_PATTERN          = /\ACHAPTER\s+(\d+)\z/
     CHAPTER_NOTES_PATTERN    = /\AChapter\s+[Nn]otes?\z/i
     ADDITIONAL_NOTES_PATTERN = /\AAdditional\s+[Cc]hapter\s+[Nn]otes?\z/i
+    ADDITIONAL_SECTION_NOTES_PATTERN = /\AAdditional\s+[Ss]ection\s+[Nn]otes?\z/i
     SUBHEADING_NOTES_PATTERN = /\ASubheading\s+[Nn]otes?\z/i
     SECTION_NOTES_PATTERN    = /\ASection\s+[Nn]otes?\z/i
     GENERAL_RULES_PATTERN    = /\AGeneral\s+Interpretive\s+Rules?\z/i
@@ -15,12 +16,14 @@ module CustomsTariffImporter
     COMMODITY_CODE_PATTERN   = /\A\d{10}\z/
     PART_BOUNDARY_PATTERN    = /\APART\s+\w+/i
     NUMBERED_NOTE_PATTERN    = /\A1\.\s*[A-Za-z(]/
+    SINGLETON_EXPRESSION_WRAPPER_CHAPTERS = %w[74 78 80].freeze
 
     Result = Data.define(:chapters, :sections, :general_rules)
 
     def initialize(version, docx_content)
       @version = version
       @docx_content = docx_content
+      @formatter = Formatter.new
     end
 
     def call
@@ -46,7 +49,7 @@ module CustomsTariffImporter
       raise
     end
 
-    private
+  private
 
     def read_document_xml
       xml_content = nil
@@ -68,12 +71,7 @@ module CustomsTariffImporter
     end
 
     def extract_paragraphs(xml)
-      doc = Nokogiri::XML(xml)
-      doc.xpath('//w:p', WORD_NS).map do |para|
-        style = para.at_xpath('.//w:pStyle', WORD_NS)&.attr('w:val').to_s
-        text = para.xpath('.//w:t', WORD_NS).map(&:text).join.strip
-        { style:, text: }
-      end
+      @formatter.extract_paragraphs(xml)
     end
 
     def parse_notes(paragraphs)
@@ -85,8 +83,11 @@ module CustomsTariffImporter
       @chapters        = {}
       @sections        = {}
       @general_rules   = {}
+      @current_paragraph = nil
+      @formatter.reset_note_formatting_context
 
       paragraphs.each do |para|
+        @current_paragraph = para
         send(:"handle_#{@state}", para[:text])
       end
 
@@ -136,7 +137,7 @@ module CustomsTariffImporter
         @note_lines = []
         @state = :in_section
       elsif text.present? || (@note_lines.any? && @note_lines.last.present?)
-        @note_lines << text
+        append_note_line(text)
       end
     end
 
@@ -170,7 +171,7 @@ module CustomsTariffImporter
         finalize_section_note
         @state = :skipping
       elsif text.present? || (@note_lines.any? && @note_lines.last.present?)
-        @note_lines << text
+        append_note_line(text)
       end
     end
 
@@ -182,13 +183,16 @@ module CustomsTariffImporter
         @note_lines = []
         @state = :collecting_chapter
       elsif text.match?(ADDITIONAL_NOTES_PATTERN)
-        @note_lines = [text]
+        @note_lines = []
+        append_note_line(text)
         @state = :collecting_chapter
       elsif text.match?(SUBHEADING_NOTES_PATTERN)
-        @note_lines = [text]
+        @note_lines = []
+        append_note_line(text)
         @state = :collecting_chapter
       elsif text.match?(NUMBERED_NOTE_PATTERN)
-        @note_lines = [text]
+        @note_lines = []
+        append_note_line(text)
         @state = :collecting_chapter
       elsif (m = text.match(CHAPTER_PATTERN))
         finalize_chapter_note
@@ -208,7 +212,7 @@ module CustomsTariffImporter
         @note_lines = []
         @state = :skipping
       elsif text.match?(ADDITIONAL_NOTES_PATTERN)
-        @note_lines << text
+        append_note_line(text)
       elsif (m = text.match(CHAPTER_PATTERN))
         finalize_chapter_note
         @current_chapter = sprintf('%02d', m[1].to_i)
@@ -220,7 +224,7 @@ module CustomsTariffImporter
         @note_lines = []
         @state = :in_section
       elsif text.present? || (@note_lines.any? && @note_lines.last.present?)
-        @note_lines << text
+        append_note_line(text)
       end
     end
 
@@ -239,19 +243,21 @@ module CustomsTariffImporter
     def finalize_chapter_note
       return if @current_chapter.nil?
 
-      content = @note_lines.join("\n").strip
+      content = @formatter.normalize_note_lines(@note_lines, chapter: true, current_chapter: @current_chapter).join("\n").strip
       @chapters[@current_chapter] = content if content.present?
       @current_chapter = nil
       @note_lines = []
+      @formatter.reset_note_formatting_context
     end
 
     def finalize_section_note
       return if @current_section.nil?
 
-      content = @note_lines.join("\n").strip
+      content = @formatter.normalize_note_lines(@note_lines, section: true).join("\n").strip
       @sections[RomanNumerals::Converter.to_decimal(@current_section)] = content if content.present?
       @current_section = nil
       @note_lines = []
+      @formatter.reset_note_formatting_context
     end
 
     def finalize_rule
@@ -261,6 +267,11 @@ module CustomsTariffImporter
       @general_rules[@current_rule] = content if content.present?
       @current_rule = nil
       @note_lines = []
+      @formatter.reset_note_formatting_context
+    end
+
+    def append_note_line(text)
+      @formatter.append_note_line(@note_lines, text, paragraph: @current_paragraph)
     end
   end
 end

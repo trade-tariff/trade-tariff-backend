@@ -5,7 +5,7 @@ class AdminConfiguration
   # config_type. Included as a private mixin on AdminConfiguration; not
   # intended for use outside that class.
   module ValueValidator
-    private
+  private
 
     def validate_value_for_type
       return if config_type.blank?
@@ -30,16 +30,14 @@ class AdminConfiguration
 
     def validate_boolean_value
       normalized = self[:value]
-      return if normalized.nil?
-      return if normalized.is_a?(Sequel::Postgres::JSONBObject)
+      return if normalized.nil? || normalized.is_a?(Sequel::Postgres::JSONBObject)
 
       errors.add(:value, t('value.invalid_boolean')) unless [true, false].include?(normalized)
     end
 
     def validate_integer_value
       val = @raw_value
-      return if val.nil?
-      return if val.is_a?(Sequel::Postgres::JSONBObject)
+      return if val.nil? || val.is_a?(Sequel::Postgres::JSONBObject)
 
       errors.add(:value, t('value.invalid_integer')) unless val.to_s.match?(/\A-?\d+\z/)
     end
@@ -52,30 +50,16 @@ class AdminConfiguration
     end
 
     def validate_options_value
-      val = self[:value]
-      return if val.nil?
-
-      hash = case val
-             when Hash then val
-             when Sequel::Postgres::JSONBHash then val.to_hash
-             when Sequel::Postgres::JSONBObject then return
-             else return errors.add(:value, t('value.invalid_options'))
-             end
+      hash = value_hash(t('value.invalid_options'))
+      return if hash.nil?
 
       options = hash['options']
       errors.add(:value, t('value.no_options')) unless options.is_a?(Array) && options.any?
     end
 
     def validate_nested_options_value
-      val = self[:value]
-      return if val.nil?
-
-      hash = case val
-             when Hash then val
-             when Sequel::Postgres::JSONBHash then val.to_hash
-             when Sequel::Postgres::JSONBObject then return
-             else return errors.add(:value, t('value.invalid_nested_options'))
-             end
+      hash = value_hash(t('value.invalid_nested_options'))
+      return if hash.nil?
 
       options = hash['options']
       errors.add(:value, t('value.no_options')) unless options.is_a?(Array) && options.any?
@@ -85,15 +69,8 @@ class AdminConfiguration
     end
 
     def validate_multi_options_value
-      val = self[:value]
-      return if val.nil?
-
-      hash = case val
-             when Hash then val
-             when Sequel::Postgres::JSONBHash then val.to_hash
-             when Sequel::Postgres::JSONBObject then return
-             else return errors.add(:value, t('value.invalid_options'))
-             end
+      hash = value_hash(t('value.invalid_options'))
+      return if hash.nil?
 
       options = hash['options']
       unless options.is_a?(Array) && options.any?
@@ -116,10 +93,7 @@ class AdminConfiguration
       return errors.add(:value, 'must be a map of object templates') unless templates.is_a?(Hash) && templates.present?
 
       templates.each do |key, template|
-        unless key.to_s.match?(/\A[a-z][a-z0-9_]*\z/)
-          errors.add(:value, 'template keys must be lowercase snake case')
-          next
-        end
+        next errors.add(:value, 'template keys must be lowercase snake case') unless key.to_s.match?(/\A[a-z][a-z0-9_]*\z/)
 
         validate_object_template(key, template)
       end
@@ -135,9 +109,18 @@ class AdminConfiguration
       errors.add(:value, "#{key} description is required") if template['description'].blank?
 
       attrs = template['attributes']
-      unless attrs.is_a?(Hash)
-        errors.add(:value, "#{key} attributes must be a map")
-      end
+      errors.add(:value, "#{key} attributes must be a map") unless attrs.is_a?(Hash)
+    end
+
+    def value_hash(invalid_message)
+      val = self[:value]
+      return if val.nil?
+      return val if val.is_a?(Hash)
+      return val.to_hash if val.is_a?(Sequel::Postgres::JSONBHash)
+      return if val.is_a?(Sequel::Postgres::JSONBObject)
+
+      errors.add(:value, invalid_message)
+      nil
     end
 
     def hash_value

@@ -45,7 +45,7 @@ module GeneratedContentLifecycle
     update(expired: true)
   end
 
-  private
+private
 
   def manual_edit_attributes(attributes)
     attributes.merge(

@@ -18,7 +18,7 @@ RSpec.describe CdsImporter::ExcelWriter::QuotaDefinition do
     )
   end
 
-  let(:balance_event1) do
+  let(:first_balance_event) do
     instance_double(
       QuotaBalanceEvent,
       class: instance_double(Class, name: 'QuotaBalanceEvent'),
@@ -28,7 +28,7 @@ RSpec.describe CdsImporter::ExcelWriter::QuotaDefinition do
     )
   end
 
-  let(:balance_event2) do
+  let(:second_balance_event) do
     instance_double(
       QuotaBalanceEvent,
       class: instance_double(Class, name: 'QuotaBalanceEvent'),
@@ -38,7 +38,7 @@ RSpec.describe CdsImporter::ExcelWriter::QuotaDefinition do
     )
   end
 
-  let(:models) { [quota_definition, balance_event1, balance_event2] }
+  let(:models) { [quota_definition, first_balance_event, second_balance_event] }
 
   describe '#data_row' do
     let!(:measures) do

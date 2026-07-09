@@ -2,13 +2,14 @@ require 'active_support/notifications'
 
 module Search
   module Instrumentation
-    module_function
+  module_function
 
     ERROR_MESSAGE_MAX_LENGTH = 500
     MAX_LOGGED_RESULTS = 50
+    EVALUATION_TRACE_VERSION = 'classification_evaluation_trace.v1'.freeze
 
     def instrument(event_name, payload = {}, &block)
-      ActiveSupport::Notifications.instrument("#{event_name}.search", with_request_id(payload), &block)
+      ActiveSupport::Notifications.instrument("#{event_name}.search", with_request_context(payload), &block)
     end
 
     def search_started(request_id:, query:, search_type:)
@@ -69,7 +70,7 @@ module Search
       instrument('query_expansion_decided', request_id:, search_type: 'interactive', query:, expand:, reason:, result_count:, max_score:)
     end
 
-    def api_call(request_id:, model:, attempt_number:, iteration: nil, effective_query: nil)
+    def api_call(request_id:, model:, attempt_number:, iteration: nil, effective_query: nil, operation: 'interactive_search', emit_search_failed: true)
       start_time = Process.clock_gettime(Process::CLOCK_MONOTONIC)
       result = yield
       duration = Process.clock_gettime(Process::CLOCK_MONOTONIC) - start_time
@@ -85,7 +86,9 @@ module Search
           attempt_number:,
           iteration:,
           effective_query:,
-        }.merge(error_payload_for_result(result)),
+          operation:,
+          event_kind: operation,
+        }.merge(error_payload_for_result(result)).merge(AiUsage.payload_from(result)),
       )
 
       result
@@ -102,9 +105,11 @@ module Search
           attempt_number:,
           iteration:,
           effective_query:,
-        }.merge(truncate_error_payload(e.message)),
+          operation:,
+          event_kind: operation,
+        }.merge(truncate_error_payload(AiUsage.safe_error_message(e))).merge(AiUsage.payload_from_error(e)),
       )
-      search_failed(request_id:, error_type: e.class.name, error_message: e.message, search_type: 'interactive')
+      search_failed(request_id:, error_type: e.class.name, error_message: AiUsage.safe_error_message(e), search_type: 'interactive') if emit_search_failed
       raise
     end
 
@@ -175,6 +180,66 @@ module Search
       payload = { request_id:, search_type: 'interactive', answer_count:, confidence_levels:, attempt_number:, iteration:, effective_query: }
       payload[:details] = { answers: answers } if answers
       instrument('answer_returned', payload)
+    end
+
+    def evaluation_trace_returned(request_id:, query:, effective_query:, iteration:, answer_count:, retrieval_method:, results_type:, candidates:, final_result_type:, ranked_answers:, questions:, error_message:, ranking_source:, model:, result_limit:)
+      candidate_summaries = summarize_results(candidates)
+      ranked_answer_summaries = summarize_ranked_answers(ranked_answers)
+      question_summaries = summarize_questions(questions)
+
+      instrument(
+        'evaluation_trace_returned',
+        request_id:,
+        search_type: 'interactive',
+        trace_version: EVALUATION_TRACE_VERSION,
+        query:,
+        effective_query:,
+        iteration:,
+        answer_count:,
+        retrieval_method:,
+        results_type:,
+        candidate_count: Array(candidates).size,
+        logged_candidate_count: candidate_summaries.size,
+        candidates_truncated: candidate_summaries.size < Array(candidates).size,
+        final_result_type:,
+        ranked_answer_count: Array(ranked_answers).size,
+        logged_ranked_answer_count: ranked_answer_summaries.size,
+        ranked_answers_truncated: ranked_answer_summaries.size < Array(ranked_answers).size,
+        question_count: Array(questions).size,
+        logged_question_count: question_summaries.size,
+        questions_truncated: question_summaries.size < Array(questions).size,
+        confidence_levels: confidence_levels_for(ranked_answer_summaries),
+        ranking_source:,
+        model:,
+        result_limit:,
+        details: {
+          candidates: candidate_summaries,
+          ranked_answers: ranked_answer_summaries,
+          questions: question_summaries,
+        }.compact_blank,
+        **truncate_error_payload(error_message),
+      )
+    end
+
+    def duplicate_question_guard_checked(request_id:, attempt_number:, allowed:, duplicate:, suspicious:, signals:, reason:, iteration: nil, effective_query: nil, duplicate_of_question: nil, duplicate_of_answer: nil)
+      reason_payload = truncate_reason_payload(reason)
+
+      instrument(
+        'duplicate_question_guard_checked',
+        request_id:,
+        search_type: 'interactive',
+        attempt_number:,
+        iteration:,
+        effective_query:,
+        allowed:,
+        duplicate:,
+        suspicious:,
+        signals:,
+        reason: reason_payload[:reason],
+        reason_truncated: reason_payload[:reason_truncated],
+        duplicate_of_question:,
+        duplicate_of_answer:,
+      )
     end
 
     def search_completed(request_id:, search_type:, total_duration_ms:, result_count:, query: nil, total_attempts: nil, total_questions: nil, final_result_type: nil, results_type: nil, max_score: nil, error_message: nil, description_intercept: nil)
@@ -259,6 +324,7 @@ module Search
       return 'error' if parsed.is_a?(Hash) && parsed['error'].present?
       return 'answers' if parsed.is_a?(Hash) && parsed['answers'].present?
       return 'questions' if parsed.is_a?(Hash) && parsed['questions'].is_a?(Array) && parsed['questions'].any?
+      return 'duplicate_validation' if parsed.is_a?(Hash) && [true, false].include?(parsed['duplicate'])
 
       'unknown'
     rescue StandardError
@@ -289,10 +355,28 @@ module Search
       }
     end
 
-    def with_request_id(payload)
+    def truncate_reason_payload(reason)
+      return { reason: nil, reason_truncated: false } if reason.blank?
+
+      message = reason.to_s
+      {
+        reason: message.first(ERROR_MESSAGE_MAX_LENGTH),
+        reason_truncated: message.length > ERROR_MESSAGE_MAX_LENGTH,
+      }
+    end
+
+    def with_request_context(payload)
       return payload unless payload.key?(:request_id)
 
-      payload.merge(request_id: payload[:request_id].presence || TradeTariffRequest.request_id.presence || SecureRandom.uuid)
+      payload
+        .merge(request_id: payload[:request_id].presence || TradeTariffRequest.request_id.presence || SecureRandom.uuid)
+        .merge(request_source_payload)
+    end
+
+    def request_source_payload
+      return {} if TradeTariffRequest.request_source.blank?
+
+      { request_source: TradeTariffRequest.request_source }
     end
 
     def summarize_classic_fuzzy_results(results)
@@ -338,6 +422,30 @@ module Search
       Array(results).first(MAX_LOGGED_RESULTS).map { |result| result_summary(result) }
     end
 
+    def summarize_ranked_answers(answers)
+      Array(answers).first(MAX_LOGGED_RESULTS).filter_map do |answer|
+        next unless answer.respond_to?(:[])
+
+        summary = {
+          commodity_code: answer[:commodity_code] || answer['commodity_code'],
+          confidence: answer[:confidence] || answer['confidence'],
+        }.compact_blank
+        summary.presence
+      end
+    end
+
+    def summarize_questions(questions)
+      Array(questions).first(MAX_LOGGED_RESULTS).filter_map do |question|
+        next unless question.respond_to?(:[])
+
+        summary = {
+          question: question[:question] || question['question'],
+          options: question[:options] || question['options'],
+        }.compact_blank
+        summary.presence
+      end
+    end
+
     def result_summary(result)
       {
         target_endpoint: result_endpoint(result),
@@ -352,6 +460,10 @@ module Search
         self_text_id: result.try(:goods_nomenclature_sid) || result.try(:id),
         label_id: result.try(:goods_nomenclature_sid) || result.try(:id),
       }.compact_blank
+    end
+
+    def confidence_levels_for(answers)
+      answers.filter_map { |answer| answer[:confidence] || answer['confidence'] }.tally
     end
 
     def result_endpoint(result)

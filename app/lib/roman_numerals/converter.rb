@@ -17,17 +17,6 @@ module RomanNumerals
     }
 
     class << self
-      def to_roman(value)
-        result = ''
-        @base_digits.keys.reverse_each do |decimal|
-          while value >= decimal
-            value -= decimal
-            result += @base_digits[decimal]
-          end
-        end
-        result
-      end
-
       def to_decimal(value)
         return value.to_i if already_decimal?(value)
 

@@ -11,6 +11,7 @@ RSpec.describe 'Chapters', swagger_doc: 'v2/swagger.json', type: :request do
     get 'List all chapters' do
       tags 'Chapters'
       produces 'application/json'
+      jsonapi_query_parameters(includes: [])
       description 'Returns all chapters of the tariff.'
       operationId 'listChapters'
 
@@ -57,6 +58,7 @@ RSpec.describe 'Chapters', swagger_doc: 'v2/swagger.json', type: :request do
     get 'Retrieve a chapter' do
       tags 'Chapters'
       produces 'application/json'
+      jsonapi_query_parameters(includes: %w[section guides headings headings.children])
       description 'Returns a single chapter including its headings, section, and guides.'
       operationId 'getChapter'
 
@@ -174,6 +176,7 @@ RSpec.describe 'Chapters', swagger_doc: 'v2/swagger.json', type: :request do
     get 'List changes for a chapter' do
       tags 'Chapters'
       produces 'application/json'
+      jsonapi_query_parameters(includes: JsonapiSwaggerParameters::CHANGE_INCLUDES)
       description 'Returns the changelog for a chapter.'
       operationId 'listChapterChanges'
 

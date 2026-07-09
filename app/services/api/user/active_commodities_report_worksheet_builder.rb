@@ -46,7 +46,7 @@ module Api
         set_column_widths(sheet)
       end
 
-      private
+    private
 
       attr_reader :report_rows, :workbook
 

@@ -49,7 +49,7 @@ class CdsImporter
          geo_area.parent_geographical_area_group_sid]
       end
 
-      private
+    private
 
       def geographical_area(geo_area_sid)
         ga = ::GeographicalArea

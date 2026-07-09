@@ -11,6 +11,7 @@ RSpec.describe 'Additional Code Types', swagger_doc: 'v2/swagger.json', type: :r
     get 'List all additional code types' do
       tags 'Additional Codes'
       produces 'application/json'
+      jsonapi_query_parameters(includes: [])
       description 'Returns all additional code types.'
       operationId 'listAdditionalCodeTypes'
 

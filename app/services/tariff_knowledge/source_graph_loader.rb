@@ -9,8 +9,7 @@ module TariffKnowledge
     # treating ordinary prose as a list marker.
     LIST_MARKER_PATTERN = /\A(?:ij|\(?[a-z]\)?|[ivx]+|\d+)\.\z/i
     TRAILING_LIST_MARKER_PATTERN = /\A(.+?)\s+((?:ij|\(?[a-z]\)?|[ivx]+|\d+)\.)\z/im
-    USABLE_UPDATE_STATUSES = [CustomsTariffUpdate::APPROVED].freeze
-    USABLE_SOURCE_STATUSES = %w[approved].freeze
+    EXCLUDED_UPDATE_STATUSES = [CustomsTariffUpdate::FAILED].freeze
 
     RangeReference = Data.define(:type, :code)
     SourceAssociation = Data.define(:association, :label, :identifier, :title)
@@ -41,7 +40,7 @@ module TariffKnowledge
     end
 
     def call
-      update = latest_approved_update
+      update = latest_usable_update
       return unless update
 
       Node.db.transaction do
@@ -57,27 +56,25 @@ module TariffKnowledge
 
   private
 
-    def latest_approved_update
-      # The graph represents the tariff source set we are prepared to expose to
-      # generated classification context. Use one approved update snapshot only;
-      # mixing pending files or older approved files would make note provenance
-      # hard to reason about and could surface source text that is not current.
+    def latest_usable_update
+      # Failed imports may be partial or empty. Any other imported update is a
+      # complete tariff source snapshot and Appendix 5a precedence is handled by
+      # selecting the latest current snapshot, not by approval state.
       TimeMachine.at(@time_machine_date ||= Time.current) do
         CustomsTariffUpdate
           .actual
-          .where(status: USABLE_UPDATE_STATUSES)
+          .exclude(status: EXCLUDED_UPDATE_STATUSES)
           .order(Sequel.desc(:validity_start_date))
           .first
       end
     end
 
     def sources_for(source_association, update)
-      TimeMachine.at(@time_machine_date ||= Time.current) { approved_sources_for_update(source_association, update) }
+      TimeMachine.at(@time_machine_date ||= Time.current) { sources_for_update(source_association, update) }
     end
 
-    def approved_sources_for_update(source_association, update)
+    def sources_for_update(source_association, update)
       update.public_send(:"#{source_association.association}_dataset")
-            .where(status: USABLE_SOURCE_STATUSES)
     end
 
     def load_source(source_association, source)

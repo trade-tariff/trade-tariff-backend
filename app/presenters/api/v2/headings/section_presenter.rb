@@ -3,7 +3,7 @@ module Api
     module Headings
       class SectionPresenter < SimpleDelegator
         def section_note
-          super&.content
+          public_section_note&.content
         end
       end
     end

@@ -306,7 +306,7 @@ RSpec.describe TariffKnowledge::CompressedNoteGenerator do
       expect(TariffKnowledge::CompressedNote.usable_for_search.by_sids([123]).all).to be_empty
     end
 
-    it 'ignores fragments from old source versions' do
+    it 'ignores fragments from old source versions based on latest non-failed update' do
       create(
         :customs_tariff_update,
         :approved,
@@ -316,7 +316,6 @@ RSpec.describe TariffKnowledge::CompressedNoteGenerator do
       )
       create(
         :customs_tariff_update,
-        :approved,
         version: '1.31',
         validity_start_date: 1.day.ago,
       )

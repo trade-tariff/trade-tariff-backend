@@ -148,10 +148,6 @@ module TariffSynchronizer
     raise
   end
 
-  def initial_update_date_for(update_type)
-    send("#{update_type}_initial_update_date")
-  end
-
   def update_type
     TradeTariffBackend.uk? ? CdsUpdate : TaricUpdate
   end

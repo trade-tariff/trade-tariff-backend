@@ -3,7 +3,17 @@ RSpec.describe Api::V2::ChaptersController do
     let(:heading) { create :heading, :with_chapter }
     let(:chapter) { heading.reload.chapter }
     let!(:section) { chapter.section }
-    let!(:section_note) { create :section_note, section_id: section.id }
+    let!(:customs_tariff_update) { create(:customs_tariff_update, :approved) }
+    let!(:customs_tariff_chapter_note) do
+      create(:customs_tariff_chapter_note, :approved,
+             customs_tariff_update:,
+             chapter_id: chapter.short_code)
+    end
+    let!(:customs_tariff_section_note) do
+      create(:customs_tariff_section_note, :approved,
+             customs_tariff_update:,
+             section_id: section.id)
+    end
 
     let(:pattern) do
       {
@@ -15,7 +25,7 @@ RSpec.describe Api::V2::ChaptersController do
             goods_nomenclature_item_id: chapter.goods_nomenclature_item_id,
             description: chapter.description,
             formatted_description: chapter.formatted_description,
-            chapter_note: chapter.chapter_note.content,
+            chapter_note: customs_tariff_chapter_note.content,
             forum_url: chapter.forum_link&.url,
             section_id: section.id,
             validity_start_date: chapter.validity_start_date,
@@ -56,7 +66,7 @@ RSpec.describe Api::V2::ChaptersController do
               position: section.position,
               title: section.title,
               numeral: section.numeral,
-              section_note: section_note.content,
+              section_note: customs_tariff_section_note.content,
             },
           },
           {
@@ -124,28 +134,28 @@ RSpec.describe Api::V2::ChaptersController do
   end
 
   describe 'GET #index' do
-    let!(:chapter1) { create :chapter, :with_section, :with_note }
-    let!(:chapter2) { create :chapter, :with_section, :with_note }
+    let!(:first_chapter) { create :chapter, :with_section, :with_note }
+    let!(:second_chapter) { create :chapter, :with_section, :with_note }
 
     let(:pattern) do
       {
         data: [
           {
-            id: chapter1.goods_nomenclature_sid.to_s,
+            id: first_chapter.goods_nomenclature_sid.to_s,
             type: 'chapter',
             attributes: {
-              goods_nomenclature_sid: chapter1.goods_nomenclature_sid,
-              goods_nomenclature_item_id: chapter1.goods_nomenclature_item_id,
-              formatted_description: chapter1.formatted_description,
+              goods_nomenclature_sid: first_chapter.goods_nomenclature_sid,
+              goods_nomenclature_item_id: first_chapter.goods_nomenclature_item_id,
+              formatted_description: first_chapter.formatted_description,
             },
           },
           {
-            id: chapter2.goods_nomenclature_sid.to_s,
+            id: second_chapter.goods_nomenclature_sid.to_s,
             type: 'chapter',
             attributes: {
-              goods_nomenclature_sid: chapter2.goods_nomenclature_sid,
-              goods_nomenclature_item_id: chapter2.goods_nomenclature_item_id,
-              formatted_description: chapter2.formatted_description,
+              goods_nomenclature_sid: second_chapter.goods_nomenclature_sid,
+              goods_nomenclature_item_id: second_chapter.goods_nomenclature_item_id,
+              formatted_description: second_chapter.formatted_description,
             },
           },
         ],
@@ -156,6 +166,85 @@ RSpec.describe Api::V2::ChaptersController do
       get '/uk/api/chapters.json', headers: request_headers(format: :json)
 
       expect(response.body).to match_json_expression pattern
+    end
+
+    it 'returns only requested sparse fields for chapter resources' do
+      get '/uk/api/chapters.json',
+          params: { fields: { chapter: 'formatted_description' } },
+          headers: request_headers(format: :json)
+
+      attributes = JSON.parse(response.body).fetch('data').first.fetch('attributes')
+
+      expect(attributes).to eq(
+        'formatted_description' => first_chapter.formatted_description,
+      )
+    end
+  end
+
+  describe 'GET #show with JSON:API include params' do
+    let(:heading) { create :heading, :with_chapter }
+    let(:chapter) { heading.reload.chapter }
+
+    it 'includes only the requested relationships as compound documents' do
+      get "/uk/api/chapters/#{chapter.to_param}.json",
+          params: { include: 'section' },
+          headers: request_headers(format: :json)
+
+      included_types = JSON.parse(response.body).fetch('included').pluck('type')
+
+      expect(included_types).to contain_exactly('section')
+    end
+
+    it 'does not load headings when sparse fields exclude the headings relationship' do
+      allow(Api::V2::Chapters::ChapterPresenter).to receive(:new).and_call_original
+
+      get "/uk/api/chapters/#{chapter.to_param}.json",
+          params: { fields: { chapter: 'description' } },
+          headers: request_headers(format: :json)
+
+      expect(response).to have_http_status(:ok)
+      expect(Api::V2::Chapters::ChapterPresenter)
+        .to have_received(:new)
+        .with(instance_of(Chapter), [])
+    end
+
+    it 'does not issue a headings query when sparse fields only request scalar chapter data' do
+      chapter
+      Rails.cache.clear
+
+      sql = []
+      subscriber = ActiveSupport::Notifications.subscribe(/sql\.sequel/) do |*args|
+        event = ActiveSupport::Notifications::Event.new(*args)
+        sql << event.payload[:sql].to_s
+      end
+
+      begin
+        get "/uk/api/chapters/#{chapter.to_param}.json",
+            params: { fields: { chapter: 'goods_nomenclature_item_id' } },
+            headers: request_headers(format: :json)
+      ensure
+        ActiveSupport::Notifications.unsubscribe(subscriber)
+      end
+
+      expect(response).to have_http_status(:ok)
+      goods_nomenclature_queries = sql.grep(/FROM "?goods_nomenclatures"?/i)
+      expect(goods_nomenclature_queries.size).to eq(1)
+      forbidden_sql = sql.grep(/goods_nomenclature_descriptions|chapter_notes|section_notes|guides/i)
+      expect(forbidden_sql).to be_empty
+    end
+
+    it 'does not load headings when the include parameter is empty' do
+      allow(Api::V2::Chapters::ChapterPresenter).to receive(:new).and_call_original
+
+      get "/uk/api/chapters/#{chapter.to_param}.json",
+          params: { include: '' },
+          headers: request_headers(format: :json)
+
+      expect(response).to have_http_status(:ok)
+      expect(JSON.parse(response.body)).not_to have_key('included')
+      expect(Api::V2::Chapters::ChapterPresenter)
+        .to have_received(:new)
+        .with(instance_of(Chapter), [])
     end
   end
 

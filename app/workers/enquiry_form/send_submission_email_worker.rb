@@ -40,7 +40,7 @@ class EnquiryForm::SendSubmissionEmailWorker
     client.send_email(ENV['ENQUIRY_FORM_EMAIL'], TEMPLATE_ID, personalisation, nil, reference)
   end
 
-  private
+private
 
   def enquiry_form_data(reference)
     data = Sidekiq.redis { |conn| conn.get(self.class.cache_key(reference)) }

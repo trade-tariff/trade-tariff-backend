@@ -9,7 +9,7 @@ module Api
         render json: serialize_errors(e)
       end
 
-      private
+    private
 
       def live_issues
         @live_issues ||= LiveIssue.dataset

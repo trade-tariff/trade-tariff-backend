@@ -55,6 +55,7 @@ RSpec.describe 'Goods Nomenclatures', swagger_doc: 'v2/swagger.json', type: :req
     get 'Retrieve a goods nomenclature by id' do
       tags 'Goods Nomenclatures'
       produces 'application/json'
+      jsonapi_query_parameters(includes: %w[parent])
       description 'Returns a single goods nomenclature item by its SID.'
       operationId 'getGoodsNomenclature'
 
@@ -90,6 +91,7 @@ RSpec.describe 'Goods Nomenclatures', swagger_doc: 'v2/swagger.json', type: :req
     get 'List goods nomenclatures for a section' do
       tags 'Goods Nomenclatures'
       produces 'application/json'
+      jsonapi_query_parameters(includes: [])
       description 'Returns all goods nomenclature items belonging to a section.'
       operationId 'getGoodsNomenclatureBySection'
 
@@ -122,6 +124,7 @@ RSpec.describe 'Goods Nomenclatures', swagger_doc: 'v2/swagger.json', type: :req
     get 'List goods nomenclatures for a chapter' do
       tags 'Goods Nomenclatures'
       produces 'application/json'
+      jsonapi_query_parameters(includes: [])
       description 'Returns all goods nomenclature items belonging to a chapter.'
       operationId 'getGoodsNomenclatureByChapter'
 
@@ -154,6 +157,7 @@ RSpec.describe 'Goods Nomenclatures', swagger_doc: 'v2/swagger.json', type: :req
     get 'List goods nomenclatures for a heading' do
       tags 'Goods Nomenclatures'
       produces 'application/json'
+      jsonapi_query_parameters(includes: [])
       description 'Returns all goods nomenclature items belonging to a heading.'
       operationId 'getGoodsNomenclatureByHeading'
 

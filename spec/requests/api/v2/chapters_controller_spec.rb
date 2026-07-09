@@ -41,6 +41,91 @@ RSpec.describe Api::V2::ChaptersController, :v2 do
           expires_at:,
         )
     end
+
+    context 'when customs tariff notes are promoted' do
+      let!(:customs_tariff_update) { create(:customs_tariff_update, :approved) }
+
+      before do
+        Rails.cache.clear
+        create(:chapter_note, chapter_id: chapter.short_code, content: 'Legacy chapter note')
+        create(:customs_tariff_chapter_note, :approved,
+               customs_tariff_update:,
+               chapter_id: chapter.short_code,
+               content: 'Imported chapter note')
+        allow(TradeTariffBackend).to receive(:promote_customs_tariff_notes?).and_return(true)
+      end
+
+      it 'returns the imported chapter note' do
+        api_get "/uk/api/chapters/#{chapter.short_code}"
+
+        expect(JSON.parse(response.body).dig('data', 'attributes', 'chapter_note')).to eq('Imported chapter note')
+      end
+
+      context 'when a newer non-failed update exists' do
+        let!(:customs_tariff_update) do
+          create(:customs_tariff_update, :approved,
+                 version: '1.29',
+                 validity_start_date: 2.months.ago.to_date)
+        end
+        let!(:older_update) do
+          create(:customs_tariff_update, :approved,
+                 version: '1.30',
+                 validity_start_date: 1.month.ago.to_date)
+        end
+        let!(:latest_update) do
+          create(:customs_tariff_update,
+                 version: '1.31',
+                 validity_start_date: Time.zone.today)
+        end
+        let!(:failed_update) do
+          create(:customs_tariff_update, :failed,
+                 version: '1.32',
+                 validity_start_date: Time.zone.today)
+        end
+
+        before do
+          Rails.cache.clear
+          create(:customs_tariff_chapter_note, :approved,
+                 customs_tariff_update: older_update,
+                 chapter_id: chapter.short_code,
+                 content: 'Older approved chapter note')
+          create(:customs_tariff_chapter_note,
+                 customs_tariff_update: latest_update,
+                 chapter_id: chapter.short_code,
+                 content: 'Latest pending chapter note')
+          create(:customs_tariff_chapter_note,
+                 customs_tariff_update: failed_update,
+                 chapter_id: chapter.short_code,
+                 content: 'Failed update chapter note')
+        end
+
+        it 'returns the chapter note from the latest non-failed update' do
+          api_get "/uk/api/chapters/#{chapter.short_code}"
+
+          expect(JSON.parse(response.body).dig('data', 'attributes', 'chapter_note')).to eq('Latest pending chapter note')
+        end
+      end
+    end
+
+    context 'when customs tariff notes are not promoted' do
+      let!(:legacy_note) { create(:chapter_note, chapter_id: chapter.short_code, content: 'Legacy chapter note') }
+      let!(:customs_tariff_update) { create(:customs_tariff_update, :approved) }
+
+      before do
+        Rails.cache.clear
+        create(:customs_tariff_chapter_note, :approved,
+               customs_tariff_update:,
+               chapter_id: chapter.short_code,
+               content: 'Imported chapter note')
+        allow(TradeTariffBackend).to receive(:promote_customs_tariff_notes?).and_return(false)
+      end
+
+      it 'returns the legacy chapter note' do
+        api_get "/uk/api/chapters/#{chapter.short_code}"
+
+        expect(JSON.parse(response.body).dig('data', 'attributes', 'chapter_note')).to eq(legacy_note.content)
+      end
+    end
   end
 
   describe 'GET #changes' do

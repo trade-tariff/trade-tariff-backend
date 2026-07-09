@@ -192,7 +192,7 @@ class MeasureCondition < Sequel::Model
     (exemption_class? && !is_exempting_certificate_overridden?) || (!exemption_class? && is_exempting_certificate_overridden?)
   end
 
-  private
+private
 
   def is_threshold?
     condition_duty_amount.present?

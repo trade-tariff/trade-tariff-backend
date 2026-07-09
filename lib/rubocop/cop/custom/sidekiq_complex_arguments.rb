@@ -30,7 +30,7 @@ module RuboCop
           end
         end
 
-        private
+      private
 
         def check_argument(arg)
           # We strictly forbid Hash literals and Array literals

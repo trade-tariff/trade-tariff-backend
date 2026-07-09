@@ -5,7 +5,7 @@ module Api
         render json: Api::Admin::GoodsNomenclatureAutocompleteSerializer.new(results).serializable_hash
       end
 
-      private
+    private
 
       def results
         @results ||= SearchSuggestion

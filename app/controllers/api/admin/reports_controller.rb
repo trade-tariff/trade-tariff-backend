@@ -34,7 +34,7 @@ module Api
         head :accepted
       end
 
-      private
+    private
 
       def report
         @report ||= Reporting::AdminReportRegistry.fetch!(params[:id])

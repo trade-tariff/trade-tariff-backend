@@ -40,7 +40,7 @@ module Api
           end
         end
 
-        private
+      private
 
         attr_reader :measure
 

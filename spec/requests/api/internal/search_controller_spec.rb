@@ -2,6 +2,8 @@ RSpec.describe Api::Internal::SearchController, :internal do
   before do
     allow(AdminConfiguration).to receive(:option_value).and_call_original
     allow(AdminConfiguration).to receive(:option_value).with('retrieval_method').and_return('opensearch')
+    allow(AdminConfiguration).to receive(:enabled?).and_call_original
+    allow(AdminConfiguration).to receive(:enabled?).with('expand_search_when_needed_enabled').and_return(false)
     allow(ExpandSearchQueryService).to receive(:call).and_wrap_original do |_method, query|
       ExpandSearchQueryService::Result.new(expanded_query: query, reason: nil)
     end

@@ -2,7 +2,7 @@ require 'active_support/notifications'
 
 module LabelGenerator
   module Instrumentation
-    module_function
+  module_function
 
     def instrument(event_name, payload = {}, &block)
       ActiveSupport::Notifications.instrument("#{event_name}.label_generator", payload, &block)
@@ -46,11 +46,14 @@ module LabelGenerator
 
       instrument(
         'api_call_completed',
-        batch_size:,
-        model:,
-        page_number:,
-        results_count:,
-        duration_ms: (duration * 1000).round(2),
+        {
+          batch_size:,
+          model:,
+          page_number:,
+          results_count:,
+          duration_ms: (duration * 1000).round(2),
+          event_kind: 'label_generation',
+        }.merge(AiUsage.payload_from(result)),
       )
 
       result
@@ -58,12 +61,15 @@ module LabelGenerator
       duration = Process.clock_gettime(Process::CLOCK_MONOTONIC) - start_time
       instrument(
         'api_call_failed',
-        batch_size:,
-        model:,
-        page_number:,
-        error_class: e.class.name,
-        error_message: e.message,
-        duration_ms: (duration * 1000).round(2),
+        {
+          batch_size:,
+          model:,
+          page_number:,
+          error_class: e.class.name,
+          error_message: AiUsage.safe_error_message(e),
+          duration_ms: (duration * 1000).round(2),
+          event_kind: 'label_generation',
+        }.merge(AiUsage.payload_from_error(e)),
       )
       raise
     end
@@ -124,9 +130,12 @@ module LabelGenerator
 
       instrument(
         'embedding_api_call_completed',
-        batch_size:,
-        model:,
-        duration_ms: (duration * 1000).round(2),
+        {
+          batch_size:,
+          model:,
+          duration_ms: (duration * 1000).round(2),
+          event_kind: 'label_scoring_embedding',
+        }.merge(AiUsage.payload_from(result)),
       )
 
       result
@@ -136,12 +145,15 @@ module LabelGenerator
 
       instrument(
         'embedding_api_call_failed',
-        batch_size:,
-        model:,
-        error_class: e.class.name,
-        error_message: e.message,
-        duration_ms: (duration * 1000).round(2),
-        http_status:,
+        {
+          batch_size:,
+          model:,
+          error_class: e.class.name,
+          error_message: AiUsage.safe_error_message(e),
+          duration_ms: (duration * 1000).round(2),
+          http_status:,
+          event_kind: 'label_scoring_embedding',
+        }.merge(AiUsage.payload_from_error(e)),
       )
       raise
     end

@@ -38,10 +38,6 @@ module Reporting
         end
       end
 
-      def get_today
-        Reporting.get_published(object_key)
-      end
-
       def get_xi_today
         Reporting.get_published(xi_object_key)
       end
@@ -58,7 +54,7 @@ module Reporting
         Reporting.published_link(xi_object_key)
       end
 
-      private
+    private
 
       def goods_nomenclatures
         Chapter

@@ -93,7 +93,7 @@ class VersionDiffService
     }
   end
 
-  private
+private
 
   def extract_virtual_fields(obj)
     return {} unless @item_type == 'AdminConfiguration'

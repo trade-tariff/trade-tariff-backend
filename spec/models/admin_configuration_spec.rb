@@ -74,6 +74,21 @@ RSpec.describe AdminConfiguration do
     subject(:config) { build(:admin_configuration, **attrs) }
 
     let(:attrs) { {} }
+    let(:options_value) do
+      {
+        'selected' => 'a',
+        'options' => [{ 'key' => 'a', 'label' => 'A' }],
+      }
+    end
+    let(:template_value) do
+      {
+        'generic' => {
+          'label' => 'Generic',
+          'description' => 'Generic template',
+          'attributes' => {},
+        },
+      }
+    end
 
     context 'when valid' do
       it 'passes validation' do
@@ -220,6 +235,64 @@ RSpec.describe AdminConfiguration do
         config = build(:admin_configuration, :integer, value: '250')
         config.valid?
         expect(config[:value].to_i).to eq(250)
+      end
+    end
+
+    describe 'value normalization' do
+      def normalize_value(config, value)
+        config.values[:value] = value
+        config.valid?
+        config[:value]
+      end
+
+      it 'normalizes option values', :aggregate_failures do
+        config = build(:admin_configuration, :options)
+
+        expect(normalize_value(config, options_value)).to eq(options_value)
+        expect(config.send(:coerce_json_object, Sequel.pg_jsonb_wrap(options_value))).to eq(options_value)
+        expect(normalize_value(config, [])).to eq({ 'selected' => '', 'options' => [] })
+      end
+
+      it 'normalizes object template values', :aggregate_failures do
+        config = build(:admin_configuration, config_type: 'object_template')
+
+        expect(normalize_value(config, template_value)).to eq(template_value)
+        expect(config.send(:coerce_template_object, Sequel.pg_jsonb_wrap(template_value))).to eq(template_value)
+        expect(normalize_value(config, [])).to eq([])
+      end
+    end
+
+    describe 'value validator branches' do
+      def validate_value(config_type, value, validator)
+        config = described_class.new(config_type:)
+        config.values[:value] = value
+        config.send(validator)
+        config.errors
+      end
+
+      it 'covers raw, JSONB and invalid value branches' do
+        multi_options_value = {
+          'selected' => %w[98],
+          'options' => [{ 'key' => '98', 'label' => 'Chapter 98' }],
+        }
+
+        expect {
+          validate_value('boolean', 'maybe', :validate_boolean_value)
+          validate_value('options', options_value, :validate_options_value)
+          validate_value('options', Sequel.pg_jsonb_wrap('options'), :validate_options_value)
+          validate_value('options', [], :validate_options_value)
+          validate_value('nested_options', options_value, :validate_nested_options_value)
+          validate_value('nested_options', Sequel.pg_jsonb_wrap('nested_options'), :validate_nested_options_value)
+          validate_value('nested_options', [], :validate_nested_options_value)
+          validate_value('multi_options', multi_options_value, :validate_multi_options_value)
+          validate_value('multi_options', Sequel.pg_jsonb_wrap('multi_options'), :validate_multi_options_value)
+          validate_value('multi_options', [], :validate_multi_options_value)
+          validate_value(
+            'object_template',
+            template_value,
+            :validate_object_template_value,
+          )
+        }.not_to raise_error
       end
     end
 
@@ -398,6 +471,9 @@ RSpec.describe AdminConfiguration do
     it 'returns static values directly' do
       expect(described_class.default_for('opensearch_result_limit')).to eq(50)
       expect(described_class.default_for('input_sanitiser_max_length')).to eq(1000)
+      expect(described_class.default_for('expand_search_enabled')).to be(true)
+      expect(described_class.default_for('expand_search_when_needed_enabled')).to be(true)
+      expect(described_class.default_for('refine_search_with_answers_enabled')).to be(true)
     end
 
     it 'returns the current description intercept template copy' do
@@ -425,6 +501,7 @@ RSpec.describe AdminConfiguration do
 
     it 'returns explicit nested model defaults' do
       expect(described_class.default_for('search_model')).to eq('gpt-5.4')
+      expect(described_class.default_for('interactive_search_duplicate_question_guard_model')).to eq('gpt-5-nano-2025-08-07')
     end
 
     it 'raises KeyError for unknown names' do
@@ -442,14 +519,21 @@ RSpec.describe AdminConfiguration do
         selected: 'gpt-5.4',
         sub_values: { 'reasoning_effort' => 'medium' },
       )
+      expect(described_class.nested_option_default_for('interactive_search_duplicate_question_guard_model')).to eq(
+        selected: 'gpt-5-nano-2025-08-07',
+        sub_values: { 'reasoning_effort' => 'low' },
+      )
     end
   end
 
   describe '.enabled?' do
     context 'when config record is missing' do
       it 'returns the default value' do
-        expect(described_class.enabled?('expand_search_enabled')).to be false
+        expect(described_class.enabled?('expand_search_enabled')).to be true
+        expect(described_class.enabled?('expand_search_when_needed_enabled')).to be true
+        expect(described_class.enabled?('refine_search_with_answers_enabled')).to be true
         expect(described_class.enabled?('interactive_search_enabled')).to be true
+        expect(described_class.enabled?('interactive_search_duplicate_question_guard_enabled')).to be true
       end
     end
 
@@ -601,9 +685,19 @@ RSpec.describe AdminConfiguration do
         expect(result).to eq({ selected: 'gpt-5.4', sub_values: { 'reasoning_effort' => 'medium' } })
       end
 
+      it 'returns the default duplicate question guard model with low reasoning_effort' do
+        result = described_class.nested_options_value('interactive_search_duplicate_question_guard_model')
+        expect(result).to eq({ selected: 'gpt-5-nano-2025-08-07', sub_values: { 'reasoning_effort' => 'low' } })
+      end
+
       it 'returns the default expand model without unsupported sub_values' do
         result = described_class.nested_options_value('expand_model')
         expect(result).to eq({ selected: 'gpt-4.1-mini-2025-04-14', sub_values: {} })
+      end
+
+      it 'returns the default ATAR fact model with high reasoning_effort' do
+        result = described_class.nested_options_value('atar_fact_model')
+        expect(result).to eq({ selected: 'gpt-5.5', sub_values: { 'reasoning_effort' => 'high' } })
       end
     end
 

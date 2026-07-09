@@ -14,7 +14,12 @@ class LabelService
     result = nil
 
     LabelGenerator::Instrumentation.api_call(batch_size: batch.size, model:, page_number:) do
-      result = TradeTariffBackend.ai_client.call(context_for(batch), model: model, reasoning_effort: reasoning_effort)
+      result = TradeTariffBackend.ai_client.call(
+        context_for(batch),
+        model: model,
+        reasoning_effort: reasoning_effort,
+        event_kind: 'label_generation',
+      )
       result
     end
 
@@ -50,7 +55,7 @@ class LabelService
 
   attr_reader :last_ai_response
 
-  private
+private
 
   attr_reader :batch, :page_number
 

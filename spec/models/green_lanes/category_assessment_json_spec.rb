@@ -1,4 +1,20 @@
 RSpec.describe GreenLanes::CategoryAssessmentJson do
+  describe 'coverage' do
+    it 'covers category assessment loading and excluded geographical area ids' do
+      bucket = instance_double(Aws::S3::Bucket, present?: true)
+      categorisation = described_class.new
+
+      allow(Rails.application.config).to receive(:persistence_bucket).and_return(bucket, nil)
+      allow(described_class).to receive_messages(load_from_s3: :s3, load_from_file: :file)
+      allow(categorisation).to receive(:excluded_geographical_areas)
+        .and_return([instance_double(GeographicalArea, geographical_area_id: 'FR')])
+
+      expect([described_class.load_category_assessment,
+              described_class.load_category_assessment,
+              categorisation.excluded_geographical_area_ids]).to eq([:s3, :file, %w[FR]])
+    end
+  end
+
   describe '.load_from_string' do
     subject(:categorisation) { described_class.load_from_string json_string }
 
@@ -124,8 +140,9 @@ RSpec.describe GreenLanes::CategoryAssessmentJson do
     end
   end
 
-  # rubocop:disable RSpec/AnyInstance
   describe '.load_from_s3' do
+    let(:bucket) { instance_double(Aws::S3::Bucket) }
+    let(:s3_object) { instance_double(Aws::S3::Object) }
     let(:json_string) do
       '[{
           "category": "1",
@@ -138,11 +155,19 @@ RSpec.describe GreenLanes::CategoryAssessmentJson do
         }]'
     end
 
+    before do
+      allow(Rails.application.config).to receive(:persistence_bucket).and_return(bucket)
+    end
+
     context 'when the file exists in S3' do
       subject(:s3_categories) { described_class.load_from_s3 }
 
+      let(:body) { instance_double(StringIO, read: json_string) }
+      let(:response) { instance_double(Aws::S3::Types::GetObjectOutput, body:) }
+
       before do
-        allow_any_instance_of(Aws::S3::Object).to receive_message_chain(:get, :body, :read).and_return(json_string)
+        allow(bucket).to receive(:object).with(described_class::CATEGORISATION_OBJECT_KEY).and_return(s3_object)
+        allow(s3_object).to receive(:get).and_return(response)
       end
 
       it { is_expected.to be_an Array }
@@ -153,7 +178,8 @@ RSpec.describe GreenLanes::CategoryAssessmentJson do
 
     context 'when the specified file key does not exist in S3' do
       before do
-        allow_any_instance_of(Aws::S3::Bucket).to receive(:object).and_raise(Aws::S3::Errors::NoSuchKey.new({}, 'File not found'))
+        allow(bucket).to receive(:object).with(described_class::CATEGORISATION_OBJECT_KEY).and_return(s3_object)
+        allow(s3_object).to receive(:get).and_raise(Aws::S3::Errors::NoSuchKey.new({}, 'File not found'))
       end
 
       it 'raise InvalidFile error' do
@@ -161,7 +187,6 @@ RSpec.describe GreenLanes::CategoryAssessmentJson do
       end
     end
   end
-  # rubocop:enable RSpec/AnyInstance
 
   describe '.filter' do
     before { described_class.load_from_file test_file }

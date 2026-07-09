@@ -83,8 +83,6 @@ module Reporting
       measure__regulation__url
     ].freeze
 
-    CELL_TYPES = Array.new(HEADER_ROW.size, :string).freeze
-
     COLUMN_WIDTHS = [
       20,  # trackedmodel_ptr_id
       20,  # commodity__sid
@@ -113,15 +111,7 @@ module Reporting
       30,  # measure__regulation__url
     ].freeze
 
-    AUTOFILTER_CELL_RANGE = 'A1:Y1'.freeze
-
     class << self
-      def profile
-        profile_mem_report('DeclarableDuties') do
-          generate
-        end
-      end
-
       def generate
         with_report_logging do
           workbook = instrument_report_step('open_workbook') do
@@ -186,7 +176,7 @@ module Reporting
         end
       end
 
-      private
+    private
 
       def build_row_for(declarable, measure)
         HEADER_ROW.map do |header|

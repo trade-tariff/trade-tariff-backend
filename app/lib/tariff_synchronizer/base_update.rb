@@ -68,10 +68,6 @@ module TariffSynchronizer
         where(state: [PENDING_STATE, FAILED_STATE])
       end
 
-      def applied_or_failed
-        where(state: [APPLIED_STATE, FAILED_STATE])
-      end
-
       def oldest_pending
         pending.ascending.first
       end
@@ -166,7 +162,7 @@ module TariffSynchronizer
       ].map(&:to_s).join('-')
     end
 
-    private
+  private
 
     def record_state_change(to_state:)
       TariffUpdateStateChange.insert(
@@ -192,7 +188,7 @@ module TariffSynchronizer
         download_start_date(initial_date:)..download_end_date
       end
 
-      private
+    private
 
       def download_end_date
         Time.zone.today

@@ -75,6 +75,10 @@ module TradeTariffBackend
       ENV.fetch('ENVIRONMENT', Rails.env)
     end
 
+    def promote_customs_tariff_notes?
+      !environment.production?
+    end
+
     def currency
       SERVICE_CURRENCIES.fetch(service, 'GBP')
     end
@@ -272,12 +276,16 @@ module TradeTariffBackend
       ENV.fetch('OPENAI_API_OPEN_TIMEOUT', '60').to_i
     end
 
+    def openai_model_pricing
+      Rails.application.config.x.openai_model_pricing || {}
+    end
+
     # Goods nomenclature
     def goods_nomenclature_label_page_size
       ENV.fetch('GOODS_NOMENCLATURE_LABEL_PAGE_SIZE', '10').to_i
     end
 
-    private
+  private
 
     # Parse a comma-separated email list, or a JSON hash whose values are
     # email addresses (the format used when the secret is injected directly

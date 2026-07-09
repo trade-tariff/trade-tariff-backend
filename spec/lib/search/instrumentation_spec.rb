@@ -1,4 +1,6 @@
 RSpec.describe Search::Instrumentation do
+  before { TradeTariffRequest.request_source = nil }
+
   describe '.search_started' do
     it 'instruments the search_started event' do
       allow(ActiveSupport::Notifications).to receive(:instrument)
@@ -24,6 +26,21 @@ RSpec.describe Search::Instrumentation do
         request_id: 'current-request-id',
         query: 'horses',
         search_type: 'interactive',
+      )
+    end
+
+    it 'adds the current request source to the search event payload' do
+      allow(ActiveSupport::Notifications).to receive(:instrument)
+      TradeTariffRequest.request_source = 'frontend'
+
+      described_class.search_started(request_id: 'req-1', query: 'horses', search_type: 'interactive')
+
+      expect(ActiveSupport::Notifications).to have_received(:instrument).with(
+        'search_started.search',
+        request_id: 'req-1',
+        query: 'horses',
+        search_type: 'interactive',
+        request_source: 'frontend',
       )
     end
   end
@@ -126,6 +143,41 @@ RSpec.describe Search::Instrumentation do
         hash_including(duration_ms: a_kind_of(Float)),
       )
     end
+
+    it 'caps ranked answer details and exposes truncation metadata' do
+      captured_payload = nil
+      allow(ActiveSupport::Notifications).to receive(:instrument) { |_, payload| captured_payload = payload }
+      ranked_answers = (1..51).map do |index|
+        { commodity_code: index.to_s.rjust(10, '0'), confidence: 'possible', raw_response: 'not logged' }
+      end
+
+      described_class.evaluation_trace_returned(
+        request_id: 'req-1',
+        query: 'handbag',
+        effective_query: 'handbag',
+        iteration: 1,
+        answer_count: 0,
+        retrieval_method: 'opensearch',
+        results_type: 'opensearch',
+        candidates: [],
+        final_result_type: 'answers',
+        ranked_answers: ranked_answers,
+        questions: [],
+        error_message: nil,
+        ranking_source: 'model_answers',
+        model: 'gpt-5.2',
+        result_limit: 0,
+      )
+
+      expect(captured_payload).to include(
+        ranked_answer_count: 51,
+        logged_ranked_answer_count: 50,
+        ranked_answers_truncated: true,
+        confidence_levels: { 'possible' => 50 },
+      )
+      expect(captured_payload[:details][:ranked_answers]).to all(include(:commodity_code, :confidence))
+      expect(captured_payload[:details][:ranked_answers]).not_to include(include(:raw_response))
+    end
   end
 
   describe '.query_refined' do
@@ -200,6 +252,47 @@ RSpec.describe Search::Instrumentation do
           model: 'gpt-4',
           attempt_number: 1,
           duration_ms: a_kind_of(Float),
+          operation: 'interactive_search',
+          event_kind: 'interactive_search',
+        ),
+      )
+    end
+
+    it 'includes AI usage and cost metadata from the response' do
+      allow(ActiveSupport::Notifications).to receive(:instrument)
+      response = AiUsage.attach_metadata(
+        { 'answer' => 'ai response' },
+        AiUsage::Metadata.new(
+          provider: 'openai',
+          model: 'gpt-4',
+          event_kind: 'interactive_search_final_answer',
+          input_tokens: 1_000,
+          output_tokens: 200,
+          total_tokens: 1_200,
+          input_cost_usd: 0.002,
+          output_cost_usd: 0.0016,
+          total_cost_usd: 0.0036,
+          pricing_known: true,
+        ),
+      )
+
+      described_class.api_call(
+        request_id: 'req-1',
+        model: 'gpt-4',
+        attempt_number: 1,
+        operation: 'interactive_search_final_answer',
+      ) { response }
+
+      expect(ActiveSupport::Notifications).to have_received(:instrument).with(
+        'api_call_completed.search',
+        hash_including(
+          provider: 'openai',
+          event_kind: 'interactive_search_final_answer',
+          input_tokens: 1_000,
+          output_tokens: 200,
+          total_tokens: 1_200,
+          total_cost_usd: 0.0036,
+          pricing_known: true,
         ),
       )
     end
@@ -221,6 +314,48 @@ RSpec.describe Search::Instrumentation do
       )
     end
 
+    it 'includes AI usage metadata on failed provider calls when available' do
+      allow(ActiveSupport::Notifications).to receive(:instrument)
+      error = OpenaiClient::ApiError.new(
+        status: 500,
+        body: { 'usage' => { 'prompt_tokens' => 75, 'completion_tokens' => 0, 'total_tokens' => 75 } },
+        ai_usage: AiUsage::Metadata.new(
+          provider: 'openai',
+          model: 'gpt-4',
+          event_kind: 'interactive_search',
+          input_tokens: 75,
+          output_tokens: 0,
+          total_tokens: 75,
+          input_cost_usd: nil,
+          output_cost_usd: nil,
+          total_cost_usd: nil,
+          pricing_known: false,
+        ),
+      )
+
+      expect {
+        described_class.api_call(request_id: 'req-1', model: 'gpt-4', attempt_number: 1) { raise error }
+      }.to raise_error(OpenaiClient::ApiError)
+
+      expect(ActiveSupport::Notifications).to have_received(:instrument).with(
+        'api_call_completed.search',
+        hash_including(
+          response_type: 'error',
+          error_message: 'OpenAI API error status=500',
+          provider: 'openai',
+          event_kind: 'interactive_search',
+          input_tokens: 75,
+          total_tokens: 75,
+          pricing_known: false,
+        ),
+      )
+
+      expect(ActiveSupport::Notifications).not_to have_received(:instrument).with(
+        anything,
+        hash_including(error_message: a_string_including('usage')),
+      )
+    end
+
     it 'includes truncated error details when the model returns an error payload' do
       allow(ActiveSupport::Notifications).to receive(:instrument)
       error_message = 'x' * 550
@@ -235,6 +370,27 @@ RSpec.describe Search::Instrumentation do
           response_type: 'error',
           error_message: ('x' * 500),
           error_message_truncated: true,
+        ),
+      )
+    end
+
+    it 'classifies duplicate validator responses distinctly' do
+      allow(ActiveSupport::Notifications).to receive(:instrument)
+
+      described_class.api_call(
+        request_id: 'req-1',
+        model: 'gpt-5-nano-2025-08-07',
+        attempt_number: 2,
+        operation: 'duplicate_question_validator',
+      ) do
+        '{"duplicate": false, "reason": "New dimension"}'
+      end
+
+      expect(ActiveSupport::Notifications).to have_received(:instrument).with(
+        'api_call_completed.search',
+        hash_including(
+          response_type: 'duplicate_validation',
+          operation: 'duplicate_question_validator',
         ),
       )
     end
@@ -494,6 +650,141 @@ RSpec.describe Search::Instrumentation do
         iteration: 2,
         effective_query: 'handbag Leather',
         details: { answers: [{ commodity_code: '0101210000', confidence: 'strong' }] },
+      )
+    end
+  end
+
+  describe '.evaluation_trace_returned' do
+    it 'instruments a consolidated eval trace event' do
+      allow(ActiveSupport::Notifications).to receive(:instrument)
+      candidates = [
+        GoodsNomenclatureResult.new(
+          id: 1,
+          goods_nomenclature_item_id: '4202210000',
+          goods_nomenclature_sid: 1,
+          producline_suffix: '80',
+          goods_nomenclature_class: 'Commodity',
+          description: 'Leather handbags',
+          formatted_description: 'Leather handbags',
+          self_text: 'Generated self text',
+          classification_description: 'Leather handbags',
+          full_description: 'Leather handbags',
+          heading_description: nil,
+          declarable: true,
+          score: 10.5,
+          confidence: nil,
+        ),
+      ]
+
+      described_class.evaluation_trace_returned(
+        request_id: 'req-1',
+        query: 'handbag',
+        effective_query: 'handbag Leather',
+        iteration: 2,
+        answer_count: 1,
+        retrieval_method: 'opensearch',
+        results_type: 'opensearch',
+        candidates: candidates,
+        final_result_type: 'answers',
+        ranked_answers: [{ commodity_code: '4202210000', confidence: 'strong', explanation: 'Do not log this' }],
+        questions: [],
+        error_message: nil,
+        ranking_source: 'model_answers',
+        model: 'gpt-5.2',
+        result_limit: 3,
+      )
+
+      expect(ActiveSupport::Notifications).to have_received(:instrument).with(
+        'evaluation_trace_returned.search',
+        hash_including(
+          request_id: 'req-1',
+          search_type: 'interactive',
+          trace_version: 'classification_evaluation_trace.v1',
+          query: 'handbag',
+          effective_query: 'handbag Leather',
+          iteration: 2,
+          answer_count: 1,
+          retrieval_method: 'opensearch',
+          results_type: 'opensearch',
+          candidate_count: 1,
+          logged_candidate_count: 1,
+          candidates_truncated: false,
+          final_result_type: 'answers',
+          ranked_answer_count: 1,
+          logged_ranked_answer_count: 1,
+          ranked_answers_truncated: false,
+          question_count: 0,
+          logged_question_count: 0,
+          questions_truncated: false,
+          confidence_levels: { 'strong' => 1 },
+          ranking_source: 'model_answers',
+          model: 'gpt-5.2',
+          result_limit: 3,
+          details: {
+            candidates: [hash_including(goods_nomenclature_item_id: '4202210000', score: 10.5)],
+            ranked_answers: [{ commodity_code: '4202210000', confidence: 'strong' }],
+          },
+        ),
+      )
+    end
+  end
+
+  describe '.duplicate_question_guard_checked' do
+    it 'instruments the duplicate_question_guard_checked event' do
+      allow(ActiveSupport::Notifications).to receive(:instrument)
+
+      described_class.duplicate_question_guard_checked(
+        request_id: 'req-1',
+        attempt_number: 4,
+        iteration: 4,
+        effective_query: 'multimeter leads Other instrument',
+        allowed: false,
+        duplicate: true,
+        suspicious: true,
+        signals: %w[repeated_selected_answer broad_item_identity_stem],
+        reason: 'Repeats a previous item-identity question',
+        duplicate_of_question: 'Which best describes the imported item itself?',
+        duplicate_of_answer: 'Another electrical measuring or checking instrument',
+      )
+
+      expect(ActiveSupport::Notifications).to have_received(:instrument).with(
+        'duplicate_question_guard_checked.search',
+        request_id: 'req-1',
+        search_type: 'interactive',
+        attempt_number: 4,
+        iteration: 4,
+        effective_query: 'multimeter leads Other instrument',
+        allowed: false,
+        duplicate: true,
+        suspicious: true,
+        signals: %w[repeated_selected_answer broad_item_identity_stem],
+        reason: 'Repeats a previous item-identity question',
+        reason_truncated: false,
+        duplicate_of_question: 'Which best describes the imported item itself?',
+        duplicate_of_answer: 'Another electrical measuring or checking instrument',
+      )
+    end
+
+    it 'truncates long guard reasons' do
+      allow(ActiveSupport::Notifications).to receive(:instrument)
+
+      described_class.duplicate_question_guard_checked(
+        request_id: 'req-1',
+        attempt_number: 4,
+        effective_query: 'multimeter leads',
+        allowed: true,
+        duplicate: false,
+        suspicious: true,
+        signals: %w[repeated_selected_answer],
+        reason: 'x' * 550,
+      )
+
+      expect(ActiveSupport::Notifications).to have_received(:instrument).with(
+        'duplicate_question_guard_checked.search',
+        hash_including(
+          reason: 'x' * 500,
+          reason_truncated: true,
+        ),
       )
     end
   end

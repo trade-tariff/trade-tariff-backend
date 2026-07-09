@@ -11,7 +11,7 @@ module Api
         { errors: }
       end
 
-      private
+    private
 
       def errors
         @records.each_with_object([]) do |record, acc|

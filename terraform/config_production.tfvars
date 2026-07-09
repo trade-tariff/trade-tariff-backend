@@ -1,15 +1,76 @@
-region                  = "eu-west-2"
-environment             = "production"
-cpu                     = 2048
-memory                  = 4096
-service_count           = 4
-backend_uk_min_capacity = 4
-backend_xi_min_capacity = 2
-max_capacity            = 16
-# Temporarily pinned autoscaling cooldown values in Production to preserve existing behaviour while testing changes in dev and staging
-# Can also remove those variables (in variables.tf) if we decide to keep the default cooldown values
-scale_in_cooldown  = 0
-scale_out_cooldown = 0
+region        = "eu-west-2"
+environment   = "production"
+cpu           = 2048
+memory        = 4096
+service_count = 3
+min_capacity  = 2
+max_capacity  = 16
 
 enable_alarms               = true
 enable_observability_alerts = true
+
+backend_uk_scheduled_scaling_actions = {
+
+  midnight_scale_up = {
+    schedule     = "cron(55 23 * * ? *)"
+    min_capacity = 4
+    max_capacity = 16
+  }
+
+  midnight_scale_down = {
+    schedule     = "cron(40 0 * * ? *)"
+    min_capacity = 2
+    max_capacity = 16
+  }
+
+  threeam_scale_up = {
+    schedule     = "cron(55 2 * * ? *)"
+    min_capacity = 4
+    max_capacity = 16
+  }
+
+  threeam_scale_down = {
+    schedule     = "cron(40 3 * * ? *)"
+    min_capacity = 2
+    max_capacity = 16
+  }
+
+  fiveam_scale_up = {
+    schedule     = "cron(50 4 * * ? *)"
+    min_capacity = 4
+    max_capacity = 16
+  }
+
+  fiveam_scale_down = {
+    schedule     = "cron(0 7 * * ? *)"
+    min_capacity = 2
+    max_capacity = 16
+  }
+}
+
+backend_xi_scheduled_scaling_actions = {
+
+  midnight_scale_up = {
+    schedule     = "cron(0 0 * * ? *)"
+    min_capacity = 4
+    max_capacity = 16
+  }
+
+  midnight_scale_down = {
+    schedule     = "cron(45 0 * * ? *)"
+    min_capacity = 2
+    max_capacity = 16
+  }
+
+  threeam_scale_up = {
+    schedule     = "cron(50 2 * * ? *)"
+    min_capacity = 5
+    max_capacity = 16
+  }
+
+  threeam_scale_down = {
+    schedule     = "cron(15 4 * * ? *)"
+    min_capacity = 2
+    max_capacity = 16
+  }
+}

@@ -22,7 +22,7 @@ class GenerateSelfTextWorker
     end
   end
 
-  private
+private
 
   def chapters_needing_work
     gn = Sequel[:goods_nomenclatures]

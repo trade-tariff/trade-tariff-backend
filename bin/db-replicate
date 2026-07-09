@@ -15,54 +15,256 @@ declare -A ACCOUNT_IDS=(
     ["production"]="382373577178"
 )
 
-if [ -z "$ENVIRONMENT" ]; then
-  echo "You need to set the ENVIRONMENT environment variable."
-  exit 1
-fi
+RETRY_MAX_ATTEMPTS=${RETRY_MAX_ATTEMPTS:-6}
+RETRY_INITIAL_DELAY_SECONDS=${RETRY_INITIAL_DELAY_SECONDS:-5}
+SERVICES_STOPPED=false
+
+require_env() {
+    local missing=false
+
+    for name in "$@"; do
+        if [ -z "${!name:-}" ]; then
+            echo "You need to set the $name environment variable." >&2
+            missing=true
+        fi
+    done
+
+    if [ "$missing" = true ]; then
+        exit 1
+    fi
+}
+
+require_known_environment() {
+    if [ -z "${ACCOUNT_IDS[$ENVIRONMENT]+set}" ]; then
+        echo "Unsupported ENVIRONMENT '$ENVIRONMENT'. Expected one of: ${!ACCOUNT_IDS[*]}." >&2
+        exit 1
+    fi
+}
+
+require_non_production_target() {
+    if [ "$ENVIRONMENT" = "production" ]; then
+        echo "ENVIRONMENT cannot be production for database replication." >&2
+        exit 1
+    fi
+}
+
+require_env \
+    ENVIRONMENT \
+    CLUSTER_NAME \
+    SERVICES \
+    DB_DUMP_USER \
+    DB_DUMP_PASSWORD \
+    DB_DUMP_SERVER \
+    RESTORE_FILE \
+    DATABASE_URL
+
+validate_positive_integer() {
+    local name=$1
+    local value=${!name}
+
+    if [[ ! "$value" =~ ^[1-9][0-9]*$ ]]; then
+        echo "$name must be a positive integer." >&2
+        exit 1
+    fi
+}
+
+require_known_environment
+require_non_production_target
+validate_positive_integer RETRY_MAX_ATTEMPTS
+validate_positive_integer RETRY_INITIAL_DELAY_SECONDS
+
+retry_command() {
+    local description=$1
+    shift
+    local attempt=1
+    local delay=$RETRY_INITIAL_DELAY_SECONDS
+    local status
+
+    until "$@"; do
+        status=$?
+
+        if [ "$attempt" -ge "$RETRY_MAX_ATTEMPTS" ]; then
+            echo "$description failed after $attempt attempts." >&2
+            return "$status"
+        fi
+
+        echo "$description failed on attempt $attempt. Retrying in ${delay}s." >&2
+        sleep "$delay"
+        attempt=$((attempt + 1))
+        delay=$((delay * 2))
+    done
+}
+
+get_desired_count_for_service_once() {
+    local service=$1
+    local desired_count
+    local status
+
+    desired_count=$(aws ecs describe-services --cluster "$CLUSTER_NAME" \
+        --services "$service" \
+        --query 'services[0].desiredCount' \
+        --output text)
+    status=$?
+
+    if [ "$status" -ne 0 ]; then
+        return "$status"
+    fi
+
+    if [[ ! "$desired_count" =~ ^[0-9]+$ ]]; then
+        echo "Desired count for $service was not numeric: $desired_count" >&2
+        return 1
+    fi
+
+    echo "$desired_count"
+}
 
 get_desired_count_for_service() {
     local service=$1
 
-    aws ecs describe-services --cluster "$CLUSTER_NAME" \
-        --services "$service" \
-        --query 'services[0].desiredCount' \
-        --output text
+    retry_command "Get desired count for $service" \
+        get_desired_count_for_service_once "$service"
+}
+
+set_desired_count_for_service_to_once() {
+    local service=$1
+    local desired_count=$2
+    local status
+
+    aws ecs update-service --cluster "$CLUSTER_NAME" \
+        --service "$service" \
+        --desired-count "$desired_count" > /dev/null
+    status=$?
+
+    if [ "$status" -ne 0 ]; then
+        return "$status"
+    fi
+
+    if [ "$desired_count" -eq 0 ]; then
+        SERVICES_STOPPED=true
+    fi
+
+    aws ecs wait services-stable --cluster "$CLUSTER_NAME" \
+        --services "$service"
+    status=$?
+
+    if [ "$status" -ne 0 ]; then
+        return "$status"
+    fi
 }
 
 set_desired_count_for_service_to() {
     local service=$1
     local desired_count=$2
 
-    aws ecs update-service --cluster "$CLUSTER_NAME" \
-        --service "$service" \
-        --desired-count "$desired_count" > /dev/null
+    retry_command "Set desired count for $service to $desired_count" \
+        set_desired_count_for_service_to_once "$service" "$desired_count"
 }
 
-stop_services() {
-  for service in $SERVICES; do
-      SERVICE_COUNTS[$service]=$(get_desired_count_for_service "$service")
+restart_stopped_services_on_failure() {
+    local status=$?
 
-      set_desired_count_for_service_to "$service" 0
+    if [ "$status" -ne 0 ] && [ "$SERVICES_STOPPED" = true ]; then
+        echo "Replication failed. Starting stopped services before exiting." >&2
+
+        if ! start_services; then
+            echo "Failed to restart all stopped services after replication failure." >&2
+        fi
+    fi
+
+    exit "$status"
+}
+
+trap restart_stopped_services_on_failure EXIT
+
+stop_services() {
+  local desired_count
+  local status=0
+
+  for service in $SERVICES; do
+      if desired_count=$(get_desired_count_for_service "$service"); then
+          SERVICE_COUNTS[$service]=$desired_count
+      else
+          status=$?
+          echo "Failed to get desired count for $service." >&2
+          continue
+      fi
+
+      if set_desired_count_for_service_to "$service" 0; then
+          :
+      else
+          status=$?
+          echo "Failed to stop $service." >&2
+      fi
   done
 
-  sleep 20 # Give the services time to stop
+  return "$status"
+}
+
+download_database_dump_once() {
+  local dump_file=$1
+
+  curl --fail --silent --show-error \
+    -u "$DB_DUMP_USER":"$DB_DUMP_PASSWORD" \
+    --output "$dump_file" \
+    "$DB_DUMP_SERVER""$RESTORE_FILE"
+}
+
+restore_database_dump_once() {
+  local dump_file=$1
+
+  gzip -dc "$dump_file" | psql --single-transaction -v ON_ERROR_STOP=1 "$DATABASE_URL"
+}
+
+cleanup_dump_file() {
+  local dump_file=$1
+
+  retry_command "Remove temporary database dump" rm -f "$dump_file"
 }
 
 restore_database() {
-  curl --silent -u "$DB_DUMP_USER":"$DB_DUMP_PASSWORD" "$DB_DUMP_SERVER""$RESTORE_FILE" | gzip -d | psql "$DATABASE_URL"
+  local dump_file
+  local status
+
+  dump_file=$(retry_command "Create temporary database dump file" mktemp) || return $?
+
+  retry_command "Download database dump" download_database_dump_once "$dump_file" || {
+    status=$?
+    cleanup_dump_file "$dump_file" || \
+      echo "Failed to remove temporary database dump $dump_file." >&2
+    return "$status"
+  }
+
+  retry_command "Restore database" restore_database_dump_once "$dump_file" || {
+    status=$?
+    cleanup_dump_file "$dump_file" || \
+      echo "Failed to remove temporary database dump $dump_file." >&2
+    return "$status"
+  }
+
+  cleanup_dump_file "$dump_file"
 }
 
 start_services() {
+  local status=0
+
   for service in $SERVICES; do
       local desired_count
-      desired_count=${SERVICE_COUNTS[$service]}
 
-      if [ "$desired_count" -eq 0 ]; then
-          desired_count=1
+      if [ -z "${SERVICE_COUNTS[$service]+set}" ]; then
+          continue
       fi
 
-      set_desired_count_for_service_to "$service" "$desired_count"
+      desired_count=${SERVICE_COUNTS[$service]}
+
+      if set_desired_count_for_service_to "$service" "$desired_count"; then
+          :
+      else
+          status=$?
+          echo "Failed to start $service with desired count $desired_count." >&2
+      fi
   done
+
+  return "$status"
 }
 
 lookup_persistence_bucket() {
@@ -78,7 +280,8 @@ sync_buckets() {
   source_bucket="$(lookup_persistence_bucket "$1")"
   target_bucket="$(lookup_persistence_bucket "$2")"
 
-  aws s3 sync "$source_bucket/data/exchange_rates/" "$target_bucket/data/exchange_rates/"
+  retry_command "Sync exchange rates from $1 to $2" \
+    aws s3 sync "$source_bucket/data/exchange_rates/" "$target_bucket/data/exchange_rates/"
 }
 
 echo "Stopping services $SERVICES"
@@ -90,6 +293,7 @@ echo "SQL backup restored successfully"
 
 echo "Starting services  $SERVICES"
 start_services
+SERVICES_STOPPED=false
 
 echo "Syncing exchange rates"
 

@@ -1,6 +1,11 @@
 class TradeTariffRequest < ActiveSupport::CurrentAttributes
+  FRONTEND_USER_AGENT_PREFIX = 'TradeTariffFrontend/'.freeze
+  FRONTEND_REQUEST_SOURCE = 'frontend'.freeze
+  BACKEND_ONLY_REQUEST_SOURCE = 'backend_only'.freeze
+
   attribute :whodunnit,
             :request_id,
+            :request_source,
             :green_lanes,
             :time_machine_now,
             # Controls how TimeMachine filters associated records in queries.
@@ -13,4 +18,12 @@ class TradeTariffRequest < ActiveSupport::CurrentAttributes
             # Controls whether label fields (known_brands, colloquial_terms, synonyms)
             # are included in search suggestion queries
             :search_labels_enabled
+
+  def self.request_source_for_user_agent(user_agent)
+    if user_agent.to_s.start_with?(FRONTEND_USER_AGENT_PREFIX)
+      FRONTEND_REQUEST_SOURCE
+    else
+      BACKEND_ONLY_REQUEST_SOURCE
+    end
+  end
 end

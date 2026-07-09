@@ -20,6 +20,7 @@ RSpec.describe 'Simplified Procedural Code Measures', swagger_doc: 'v2/swagger.j
     get 'List simplified procedural code measures' do
       tags 'Simplified Procedural Codes'
       produces 'application/json'
+      jsonapi_query_parameters(includes: [])
       description 'Returns measures associated with simplified procedural codes. Without a code filter, returns all codes merged with null measures.'
       operationId 'listSimplifiedProceduralCodeMeasures'
 

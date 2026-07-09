@@ -79,6 +79,12 @@ data "aws_iam_policy_document" "task" {
   }
 
   statement {
+    effect    = "Allow"
+    actions   = ["cloudwatch:PutMetricData"]
+    resources = ["*"]
+  }
+
+  statement {
     effect = "Allow"
     actions = [
       "s3:ListBucket",

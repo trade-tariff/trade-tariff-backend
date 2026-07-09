@@ -2,7 +2,7 @@ module Api
   module Admin
     module Commodities
       class SearchReferencesController < Api::Admin::SearchReferencesBaseController
-        private
+      private
 
         def search_reference_collection
           commodity_or_subheading.search_references_dataset
@@ -10,10 +10,6 @@ module Api
 
         def search_reference_resource_association_hash
           { referenced: commodity_or_subheading }
-        end
-
-        def collection_url
-          [:admin, commodity.to_admin_param, @search_reference]
         end
 
         def commodity_or_subheading

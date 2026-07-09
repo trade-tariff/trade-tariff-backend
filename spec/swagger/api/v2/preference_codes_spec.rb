@@ -26,6 +26,7 @@ RSpec.describe 'Preference Codes', swagger_doc: 'v2/swagger.json', type: :reques
     get 'List all preference codes' do
       tags 'Preference Codes'
       produces 'application/json'
+      jsonapi_query_parameters(includes: [])
       description 'Returns all preference codes loaded from the preference codes reference file.'
       operationId 'listPreferenceCodes'
 
@@ -55,6 +56,7 @@ RSpec.describe 'Preference Codes', swagger_doc: 'v2/swagger.json', type: :reques
     get 'Retrieve a preference code' do
       tags 'Preference Codes'
       produces 'application/json'
+      jsonapi_query_parameters(includes: [])
       description 'Returns a single preference code by its code value.'
       operationId 'getPreferenceCode'
 

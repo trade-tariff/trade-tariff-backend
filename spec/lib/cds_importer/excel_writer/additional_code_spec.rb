@@ -13,7 +13,7 @@ RSpec.describe CdsImporter::ExcelWriter::AdditionalCode do
     )
   end
 
-  let(:additional_code_type2) do
+  let(:second_additional_code_type) do
     instance_double(
       AdditionalCode,
       class: instance_double(Class, name: 'AdditionalCode'),
@@ -50,7 +50,7 @@ RSpec.describe CdsImporter::ExcelWriter::AdditionalCode do
     )
   end
 
-  let(:description_period2) do
+  let(:second_description_period) do
     instance_double(
       AdditionalCodeDescriptionPeriod,
       class: instance_double(Class, name: 'AdditionalCodeDescriptionPeriod'),
@@ -63,7 +63,7 @@ RSpec.describe CdsImporter::ExcelWriter::AdditionalCode do
     )
   end
 
-  let(:description2) do
+  let(:second_description) do
     instance_double(
       AdditionalCodeDescription,
       class: instance_double(Class, name: 'AdditionalCodeDescription'),
@@ -77,7 +77,7 @@ RSpec.describe CdsImporter::ExcelWriter::AdditionalCode do
 
   describe '#data_row' do
     context 'when all fields are valid' do
-      let(:models) { [additional_code_type, description, description_period, description2, description_period2] }
+      let(:models) { [additional_code_type, description, description_period, second_description, second_description_period] }
 
       it 'returns a correctly formatted data row' do
         row = mapper.data_row
@@ -107,7 +107,7 @@ RSpec.describe CdsImporter::ExcelWriter::AdditionalCode do
     end
 
     context 'when there are empty fields' do
-      let(:models) { [additional_code_type2, description_period] }
+      let(:models) { [second_additional_code_type, description_period] }
 
       it 'returns a correctly formatted data row' do
         row = mapper.data_row

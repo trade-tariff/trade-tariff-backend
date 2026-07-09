@@ -17,12 +17,20 @@ class AdminConfiguration < Sequel::Model(Sequel[:admin_configurations].qualify(:
       selected: 'gpt-5.4',
       sub_values: { 'reasoning_effort' => 'medium' },
     },
+    'interactive_search_duplicate_question_guard_model' => {
+      selected: 'gpt-5-nano-2025-08-07',
+      sub_values: { 'reasoning_effort' => 'low' },
+    },
     'other_self_text_model' => {
       selected: 'gpt-5.4',
       sub_values: { 'reasoning_effort' => 'high' },
     },
     'non_other_self_text_model' => {
       selected: 'gpt-5.4',
+      sub_values: { 'reasoning_effort' => 'high' },
+    },
+    'atar_fact_model' => {
+      selected: 'gpt-5.5',
       sub_values: { 'reasoning_effort' => 'high' },
     },
   }.freeze
@@ -104,16 +112,17 @@ class AdminConfiguration < Sequel::Model(Sequel[:admin_configurations].qualify(:
         },
       },
     },
-    'expand_search_enabled' => false,
+    'expand_search_enabled' => true,
     'expand_search_min_results' => 5,
     'expand_search_min_score' => 5,
-    'expand_search_when_needed_enabled' => false,
+    'expand_search_when_needed_enabled' => true,
     'search_compressed_notes_enabled' => false,
     'expand_model' => NESTED_OPTION_DEFAULTS['expand_model'][:selected],
     'interactive_search_enabled' => true,
+    'interactive_search_duplicate_question_guard_enabled' => true,
     'interactive_search_excluded_chapters' => %w[98 99].freeze,
     'interactive_search_max_questions' => 7,
-    'refine_search_with_answers_enabled' => false,
+    'refine_search_with_answers_enabled' => true,
     'label_model' => NESTED_OPTION_DEFAULTS['label_model'][:selected],
     'label_page_size' => -> { TradeTariffBackend.goods_nomenclature_label_page_size },
     'opensearch_result_limit' => 50,
@@ -122,6 +131,7 @@ class AdminConfiguration < Sequel::Model(Sequel[:admin_configurations].qualify(:
     'pos_search_enabled' => true,
     'search_labels_enabled' => true,
     'search_non_declarables' => false,
+    'interactive_search_duplicate_question_guard_model' => NESTED_OPTION_DEFAULTS['interactive_search_duplicate_question_guard_model'][:selected],
     'search_model' => NESTED_OPTION_DEFAULTS['search_model'][:selected],
     'search_result_limit' => 0,
     'suggest_results_limit' => 10,
@@ -141,6 +151,7 @@ class AdminConfiguration < Sequel::Model(Sequel[:admin_configurations].qualify(:
     'other_self_text_batch_size' => 5,
     'non_other_self_text_model' => NESTED_OPTION_DEFAULTS['non_other_self_text_model'][:selected],
     'non_other_self_text_batch_size' => 15,
+    'atar_fact_model' => NESTED_OPTION_DEFAULTS['atar_fact_model'][:selected],
   }.freeze
 
   plugin :auto_validations, not_null: :presence
@@ -326,7 +337,7 @@ class AdminConfiguration < Sequel::Model(Sequel[:admin_configurations].qualify(:
     val == true
   end
 
-  private
+private
 
   def validate_unique_name
     if self.class.where(name: name).any?

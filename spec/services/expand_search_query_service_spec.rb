@@ -34,6 +34,7 @@ RSpec.describe ExpandSearchQueryService do
           a_string_including('laptop'),
           model: 'gpt-4.1-mini-2025-04-14',
           reasoning_effort: nil,
+          event_kind: 'search_query_expansion',
         )
       end
     end
@@ -184,6 +185,7 @@ RSpec.describe ExpandSearchQueryService do
           anything,
           model: 'gpt-4.1-mini-2025-04-14',
           reasoning_effort: nil,
+          event_kind: 'search_query_expansion',
         )
       end
     end
@@ -202,6 +204,7 @@ RSpec.describe ExpandSearchQueryService do
           'Custom prompt for: laptop',
           model: 'gpt-4.1-mini-2025-04-14',
           reasoning_effort: nil,
+          event_kind: 'search_query_expansion',
         )
       end
     end

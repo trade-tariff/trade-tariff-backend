@@ -24,7 +24,7 @@ class AiResponseSanitizer
     end
   end
 
-  private
+private
 
   def sanitize(value)
     case value

@@ -3,6 +3,10 @@ inherit_gem:
     - config/default.yml
     - config/rails.yml
 
+inherit_mode:
+  merge:
+    - Exclude
+
 plugins:
   - rubocop-rspec
   - rubocop-performance
@@ -12,6 +16,8 @@ require:
 
 AllCops:
   Exclude:
+    - ".bundle/**/*"
+    - ".direnv/**/*"
     - "db/schema.rb"
     - "vendor/**/*"
     - "bin/**"
@@ -44,15 +50,16 @@ RSpec/VariableName:
 Layout/LineLength:
   Max: 120
 
-Layout/AccessModifierIndentation:
-  Enabled: false
-
 Metrics/AbcSize:
   Max: 20
 
+# Legacy codebase-wide policy cop with many existing offenses; left disabled
+# until it can be split into focused refactors.
 Metrics/BlockLength:
   Enabled: false
 
+# Legacy codebase-wide policy cop with many existing offenses; left disabled
+# until it can be split into focused refactors.
 Metrics/ModuleLength:
   Enabled: false
 
@@ -74,13 +81,14 @@ RSpec/ContextWording:
 RSpec/MultipleMemoizedHelpers:
   Max: 10
 
+# Legacy spec-shape policy cop with many existing offenses; left disabled until
+# specs can be refactored in targeted behaviour-preserving changes.
 RSpec/ExampleLength:
   Enabled: false
 
+# Legacy spec-shape policy cop with many existing offenses; left disabled until
+# specs can be refactored in targeted behaviour-preserving changes.
 RSpec/NestedGroups:
-  Enabled: false
-
-Rails/FilePath:
   Enabled: false
 
 # swagger:generate intentionally omits :environment — rswag:specs:swaggerize
@@ -89,24 +97,21 @@ Rails/RakeEnvironment:
   Exclude:
     - 'lib/tasks/swagger.rake'
 
+# This application uses Sequel datasets rather than ActiveRecord relations.
 Rails/FindEach:
   Enabled: false
 
-Rails/ActiveRecordAliases:
+# This application uses Sequel rather than ActiveRecord.
+Rails/FindBy:
   Enabled: false
 
-Rails/CreateTableWithTimestamps:
-  Enabled: false # doesn't recognise
-
-Rails/FindBy:
-  Enabled: false # We use sequel not active record
-
+# Sequel persistence methods do not have the same semantics as ActiveRecord's
+# bang/non-bang persistence methods.
 Rails/SaveBang:
   Enabled: false
 
-Rails/UniqueValidationWithoutIndex:
-  Enabled: false
-
+# Legacy codebase-wide documentation policy cop with many existing offenses;
+# left disabled until documentation standards can be introduced deliberately.
 Style/Documentation:
   Enabled: false
 
@@ -120,12 +125,8 @@ Style/OptionalBooleanParameter:
 Style/StringLiterals:
   EnforcedStyle: single_quotes
 
-RSpec/MessageChain:
-  Enabled: false
-
-RSpec/IndexedLet:
-  Enabled: false
-
+# Legacy spec-shape policy cop with many existing offenses; left disabled until
+# specs can be refactored in targeted behaviour-preserving changes.
 RSpec/MultipleExpectations:
   Enabled: false
 

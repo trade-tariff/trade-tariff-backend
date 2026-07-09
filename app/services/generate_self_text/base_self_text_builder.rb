@@ -60,7 +60,7 @@ module GenerateSelfText
       stats
     end
 
-    private
+  private
 
     attr_reader :chapter, :generated_texts
 
@@ -90,7 +90,8 @@ module GenerateSelfText
         batch_size: batch.size,
         model: model,
         chapter_code: chapter.short_code,
-      ) { TradeTariffBackend.ai_client.call(messages, model: model, reasoning_effort: reasoning_effort) }
+        event_kind: self_text_event_kind,
+      ) { TradeTariffBackend.ai_client.call(messages, model: model, reasoning_effort: reasoning_effort, event_kind: self_text_event_kind) }
 
       descriptions = parse_response(response)
 
@@ -124,6 +125,10 @@ module GenerateSelfText
       end
 
       ScoreSelfTextBatchWorker.perform_async(batch_sids, chapter.short_code) if batch_sids.any?
+    end
+
+    def self_text_event_kind
+      'self_text_generation_ai'
     end
 
     def build_messages(batch)

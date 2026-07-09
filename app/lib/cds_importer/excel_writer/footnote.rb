@@ -40,7 +40,7 @@ class CdsImporter
          periodic_description(footnote_description_periods, footnote_descriptions, &method(:period_matches?))]
       end
 
-      private
+    private
 
       def period_matches?(period, description)
         period.footnote_description_period_sid == description.footnote_description_period_sid &&

@@ -49,7 +49,7 @@ module Api
         render 'api/v1/changes/changes'
       end
 
-      private
+    private
 
       def find_commodity
         @commodity = Commodity.actual

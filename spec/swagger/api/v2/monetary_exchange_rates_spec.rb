@@ -11,6 +11,7 @@ RSpec.describe 'Monetary Exchange Rates', swagger_doc: 'v2/swagger.json', type: 
     get 'List monetary exchange rates' do
       tags 'Exchange Rates'
       produces 'application/json'
+      jsonapi_query_parameters(includes: [])
       description 'Returns GBP monetary exchange rates from the last 5 years, ordered by validity start date.'
       operationId 'listMonetaryExchangeRates'
 

@@ -22,7 +22,7 @@ module Api
         render json: serialized_quota_definitions
       end
 
-      private
+    private
 
       def validate_order_number
         return if params[:order_number].blank?
@@ -63,7 +63,7 @@ module Api
       end
 
       def valid_includes
-        return DEFAULT_INCLUDES if include_params.empty?
+        return DEFAULT_INCLUDES unless params.key?(:include)
 
         valid_resources = include_params.select { |resource| ALLOWED_INCLUDES.include?(resource) }
 

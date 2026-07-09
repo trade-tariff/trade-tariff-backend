@@ -14,6 +14,7 @@ RSpec.describe 'Headings', swagger_doc: 'v2/swagger.json', type: :request do
     get 'Retrieve a heading' do
       tags 'Headings'
       produces 'application/json'
+      jsonapi_query_parameters(includes: JsonapiSwaggerParameters::HEADING_INCLUDES)
       description 'Returns a single heading. The response uses either HeadingSerializer (non-declarable) or DeclarableHeadingSerializer (declarable) depending on the heading type.'
       operationId 'getHeading'
 
@@ -147,6 +148,7 @@ RSpec.describe 'Headings', swagger_doc: 'v2/swagger.json', type: :request do
     get 'List commodities for a heading' do
       tags 'Headings'
       produces 'application/json'
+      jsonapi_query_parameters(includes: JsonapiSwaggerParameters::HEADING_INCLUDES)
       description 'Returns a heading with its full commodity tree.'
       operationId 'listHeadingCommodities'
 
@@ -184,6 +186,7 @@ RSpec.describe 'Headings', swagger_doc: 'v2/swagger.json', type: :request do
     get 'List changes for a heading' do
       tags 'Headings'
       produces 'application/json'
+      jsonapi_query_parameters(includes: JsonapiSwaggerParameters::CHANGE_INCLUDES)
       description 'Returns the changelog for a heading.'
       operationId 'listHeadingChanges'
 

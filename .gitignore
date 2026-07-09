@@ -52,6 +52,7 @@ searches_without_match_or_synonym.csv
 
 .direnv
 .envrc
+/.pre-commit-config-nix.yaml
 
 /config/master.key
 /ctrf

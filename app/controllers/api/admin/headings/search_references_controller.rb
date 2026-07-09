@@ -2,7 +2,7 @@ module Api
   module Admin
     module Headings
       class SearchReferencesController < Api::Admin::SearchReferencesBaseController
-        private
+      private
 
         def search_reference_collection
           heading.search_references_dataset
@@ -10,10 +10,6 @@ module Api
 
         def search_reference_resource_association_hash
           { referenced: heading }
-        end
-
-        def collection_url
-          [:admin, heading, @search_reference]
         end
 
         def heading

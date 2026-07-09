@@ -117,7 +117,7 @@ module TariffKnowledge
       @current_source_version = TimeMachine.at(@time_machine_date ||= Time.current) do
         CustomsTariffUpdate
           .actual
-          .where(status: SourceGraphLoader::USABLE_UPDATE_STATUSES)
+          .exclude(status: SourceGraphLoader::EXCLUDED_UPDATE_STATUSES)
           .order(Sequel.desc(:validity_start_date))
           .get(:version)
       end

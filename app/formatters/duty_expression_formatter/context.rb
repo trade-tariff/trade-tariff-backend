@@ -49,7 +49,7 @@ DutyExpressionFormatter::Context = Data.define(
       )
     end
 
-    private
+  private
 
     def verbose_context_values(verbose, measurement_unit, measurement_unit_qualifier, monetary_unit, duty_amount)
       return [nil, nil] unless verbose

@@ -1,20 +1,21 @@
 class OpenaiClient
   class ApiError < StandardError
-    attr_reader :status, :body
+    attr_reader :status, :body, :ai_usage
 
-    def initialize(status:, body:)
+    def initialize(status:, body:, ai_usage: nil)
       @status = status
       @body = body
-      super("OpenAI API error (HTTP #{status}): #{body}")
+      @ai_usage = ai_usage
+      super("OpenAI API error status=#{status}")
     end
   end
 
   class RateLimitError < ApiError
     attr_reader :retry_after
 
-    def initialize(status:, body:, retry_after: nil)
+    def initialize(status:, body:, retry_after: nil, ai_usage: nil)
       @retry_after = retry_after&.to_f
-      super(status: status, body: body)
+      super(status: status, body: body, ai_usage:)
     end
   end
 
@@ -30,7 +31,7 @@ class OpenaiClient
     Net::OpenTimeout,
   ].freeze
 
-  def call(context, model: nil, reasoning_effort: nil)
+  def call(context, model: nil, reasoning_effort: nil, event_kind: nil)
     messages = if context.is_a?(Array)
                  context
                else
@@ -51,27 +52,42 @@ class OpenaiClient
     with_retry do
       response = self.class.client.post('chat/completions', body)
 
-      raise_on_error!(response) unless response.success?
+      raise_on_error!(response, model:, event_kind:) unless response.success?
 
       json = response.body.dig('choices', 0, 'message', 'content') || ''
 
-      begin
+      result = begin
         JSON.parse(json)
       rescue StandardError
         json
       end
+
+      AiUsage.attach_metadata(result, usage_metadata(response.body, model:, event_kind:))
     end
   end
 
-  private
+private
 
-  def raise_on_error!(response)
+  def raise_on_error!(response, model: nil, event_kind: nil)
+    ai_usage = usage_metadata(response.body, model:, event_kind:)
+
     if response.status == 429
       retry_after = response.headers['Retry-After'] || response.headers['retry-after']
-      raise RateLimitError.new(status: response.status, body: response.body, retry_after: retry_after)
+      raise RateLimitError.new(status: response.status, body: response.body, retry_after: retry_after, ai_usage:)
     end
 
-    raise ApiError.new(status: response.status, body: response.body)
+    raise ApiError.new(status: response.status, body: response.body, ai_usage:)
+  end
+
+  def usage_metadata(body, model:, event_kind:)
+    return unless body.respond_to?(:to_h)
+
+    body = body.to_h
+    error = body['error']
+    usage = body['usage'] || (error['usage'] if error.is_a?(Hash))
+    return unless usage
+
+    AiUsage.metadata_for(model:, event_kind:, usage:)
   end
 
   def with_retry
@@ -104,9 +120,9 @@ class OpenaiClient
   end
 
   class << self
-    def call(context, model: nil, reasoning_effort: nil)
+    def call(context, model: nil, reasoning_effort: nil, event_kind: nil)
       instrument do
-        new.call(context, model: model, reasoning_effort: reasoning_effort)
+        new.call(context, model: model, reasoning_effort: reasoning_effort, event_kind:)
       end
     end
 
@@ -134,7 +150,10 @@ class OpenaiClient
   end
 
   MODEL_CONFIGS = {
-    # GPT-5.4 (latest flagship, 1M context)
+    # GPT-5.5 (latest flagship, 1M context)
+    'gpt-5.5' => { reasoning_levels: %w[none low medium high xhigh] },
+
+    # GPT-5.4 (1M context)
     'gpt-5.4' => { reasoning_levels: %w[none low medium high xhigh] },
 
     # GPT-5 Series

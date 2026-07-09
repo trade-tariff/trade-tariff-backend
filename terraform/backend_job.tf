@@ -1,5 +1,5 @@
 module "backend-job" {
-  source = "git@github.com:trade-tariff/trade-tariff-platform-terraform-modules.git//aws/ecs-service?ref=aws/ecs-service-v3.0.1"
+  source = "git@github.com:trade-tariff/trade-tariff-platform-terraform-modules.git//aws/ecs-service?ref=aws/ecs-service-v3.2.0"
 
   region = var.region
 
@@ -30,7 +30,8 @@ module "backend-job" {
   scale_in_cooldown  = var.scale_in_cooldown
   scale_out_cooldown = var.scale_out_cooldown
 
-  sns_topic_arns = [data.aws_sns_topic.slack_topic.arn]
+  sns_topic_arns               = [data.aws_sns_topic.slack_topic.arn]
+  observability_sns_topic_arns = var.enable_observability_alerts ? [data.aws_sns_topic.slack_observability_topic[0].arn] : null
 }
 
 resource "aws_cloudwatch_event_rule" "database_backup" {
@@ -68,8 +69,73 @@ resource "aws_cloudwatch_event_target" "database_backup" {
   }
 }
 
+resource "aws_cloudwatch_event_rule" "database_backup_freshness_check" {
+  count = var.enable_alarms ? 1 : 0
+
+  name                = "backend-database-backup-freshness-check-${var.environment}"
+  description         = "Checks database backup freshness for ${var.environment}"
+  schedule_expression = "cron(0 6 * * ? *)"
+  state               = "ENABLED"
+}
+
+resource "aws_cloudwatch_event_target" "database_backup_freshness_check" {
+  count = var.enable_alarms ? 1 : 0
+
+  rule     = aws_cloudwatch_event_rule.database_backup_freshness_check[0].name
+  arn      = data.aws_ecs_cluster.this.arn
+  role_arn = aws_iam_role.eventbridge_ecs.arn
+
+  input = jsonencode({
+    containerOverrides = [{
+      name    = "backend-job"
+      command = ["/bin/sh", "-c", "./bin/check-database-backup-freshness --publish"]
+      environment = [
+        { name = "S3_BUCKET", value = "trade-tariff-database-backups-${local.account_id}" }
+      ]
+    }]
+  })
+
+  ecs_target {
+    task_count          = 1
+    task_definition_arn = data.aws_ecs_task_definition.backend_job.arn
+    launch_type         = "FARGATE"
+    network_configuration {
+      subnets          = data.aws_subnets.private.ids
+      security_groups  = [data.aws_security_group.this.id]
+      assign_public_ip = false
+    }
+  }
+}
+
+resource "aws_cloudwatch_metric_alarm" "database_backup_freshness" {
+  count = var.enable_alarms ? 1 : 0
+
+  alarm_name          = "backend-database-backup-freshness-${var.environment}"
+  alarm_description   = "Alerts when the latest ${var.environment} database backup is stale, missing, or has not reported freshness."
+  comparison_operator = "LessThanThreshold"
+  evaluation_periods  = 1
+  datapoints_to_alarm = 1
+  threshold           = 1
+  treat_missing_data  = "breaching"
+
+  namespace   = "TradeTariff/DatabaseBackup"
+  metric_name = "DatabaseBackupFreshnessOk"
+  statistic   = "Minimum"
+  period      = 86400
+  unit        = "Count"
+
+  dimensions = {
+    Environment = var.environment
+    Bucket      = "trade-tariff-database-backups-${local.account_id}"
+    LatestKey   = "tariff-merged-${var.environment}.sql.gz"
+  }
+
+  alarm_actions = [data.aws_sns_topic.slack_topic.arn]
+  ok_actions    = [data.aws_sns_topic.slack_topic.arn]
+}
+
 resource "aws_cloudwatch_event_rule" "database_replication" {
-  count = var.environment != "production" ? 1 : 0
+  count = var.enable_database_replication ? 1 : 0
 
   name                = "backend-database-replication-${var.environment}"
   description         = "Triggers weekday database replication for ${var.environment}"
@@ -78,7 +144,7 @@ resource "aws_cloudwatch_event_rule" "database_replication" {
 }
 
 resource "aws_cloudwatch_event_target" "database_replication" {
-  count = var.environment != "production" ? 1 : 0
+  count = var.enable_database_replication ? 1 : 0
 
   rule     = aws_cloudwatch_event_rule.database_replication[0].name
   arn      = data.aws_ecs_cluster.this.arn
@@ -87,7 +153,7 @@ resource "aws_cloudwatch_event_target" "database_replication" {
   input = jsonencode({
     containerOverrides = [{
       name    = "backend-job"
-      command = ["/bin/sh", "-c", "./bin/db-replicate"]
+      command = ["/bin/sh", "-c", "exec ./bin/db-replicate"]
     }]
   })
 

@@ -2,7 +2,7 @@ module Api
   module Admin
     module Chapters
       class SearchReferencesController < Api::Admin::SearchReferencesBaseController
-        private
+      private
 
         def search_reference_collection
           chapter.search_references_dataset
@@ -10,10 +10,6 @@ module Api
 
         def search_reference_resource_association_hash
           { referenced: chapter }
-        end
-
-        def collection_url
-          [:admin, chapter, @search_reference]
         end
 
         def chapter

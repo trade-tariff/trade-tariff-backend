@@ -12,7 +12,7 @@ class ValidityPeriodSerializerService
     ).serializable_hash
   end
 
-  private
+private
 
   attr_reader :params
 

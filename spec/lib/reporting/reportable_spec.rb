@@ -11,7 +11,7 @@ RSpec.describe Reporting::Reportable do
         end
 
         class << self
-          private
+        private
 
           def object_key
             'uk/reporting/2026/03/23/dummy.csv'

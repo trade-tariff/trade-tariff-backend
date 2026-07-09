@@ -23,13 +23,13 @@ RSpec.describe GreenLanes::PermutationCalculatorService do
     end
 
     context 'with related measures' do
-      let(:measures) { [measure, measure2] }
+      let(:measures) { [measure, second_measure] }
 
       let :measure do
         create :measure, :with_additional_code, :with_measure_type, :with_base_regulation
       end
 
-      let :measure2 do
+      let :second_measure do
         create :measure, measure_type_id: measure.measure_type_id,
                          generating_regulation: measure.generating_regulation,
                          additional_code_sid: measure.additional_code_sid,

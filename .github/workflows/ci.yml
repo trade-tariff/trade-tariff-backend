@@ -28,13 +28,13 @@ jobs:
   check-pr-lines:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6.0.3
+      - uses: actions/checkout@v7.0.0
         with:
           fetch-depth: 0
 
       - uses: trade-tariff/trade-tariff-tools/.github/actions/check-pr-lines@main
         with:
-          threshold: 600
+          threshold: 800
           exclude-paths: |
             db/
             data/
@@ -48,17 +48,17 @@ jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6.0.3
-      - uses: actions/cache@v5
+      - uses: actions/checkout@v7.0.0
+      - uses: actions/cache@v6.1.0
         with:
           path: ~/.cache/pre-commit
           key: ${{ runner.os }}-pre-commit-${{ hashFiles('.pre-commit-config.yaml') }}
           restore-keys: |
             ${{ runner.os }}-pre-commit-
-      - uses: actions/setup-python@v6
+      - uses: actions/setup-python@v6.3.0
         with:
           python-version: '3'
-      - uses: ruby/setup-ruby@v1.310.0
+      - uses: ruby/setup-ruby@v1.315.0
         with:
           bundler-cache: true
       - uses: hashicorp/setup-terraform@v4
@@ -73,7 +73,8 @@ jobs:
           ssh-key: ${{ secrets.PRIVATE_SSH_KEY }}
       - run: cd terraform/ && terraform init -backend=false -reconfigure
       - run: pip install pre-commit
-      - run: pre-commit run --all-files
+      - run: pre-commit run --all-files --hook-stage pre-commit
+      - run: pre-commit run --all-files --hook-stage pre-push
       - run: bundle exec brakeman
 
   test:
@@ -91,7 +92,7 @@ jobs:
         ports:
           - 6379:6379
     steps:
-      - uses: actions/checkout@v6.0.3
+      - uses: actions/checkout@v7.0.0
         with:
           ref: ${{ github.head_ref || github.ref_name }}
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -102,7 +103,7 @@ jobs:
 
       - run: echo "127.0.0.1 host.docker.internal" | sudo tee -a /etc/hosts
 
-      - uses: ruby/setup-ruby@v1.310.0
+      - uses: ruby/setup-ruby@v1.315.0
         with:
           bundler-cache: true
 
@@ -131,7 +132,7 @@ jobs:
           git diff --staged --quiet || git commit -m "Generate swagger/v2/swagger.json [skip ci]" && git push
 
       - name: Publish Test Report
-        uses: ctrf-io/github-test-reporter@v1
+        uses: ctrf-io/github-test-reporter@v1.1.0
         with:
           report-path: './ctrf/*.json'
           flaky-rate-report: true

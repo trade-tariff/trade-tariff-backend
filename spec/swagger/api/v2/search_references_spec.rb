@@ -14,6 +14,7 @@ RSpec.describe 'Search References', swagger_doc: 'v2/swagger.json', type: :reque
     get 'List search references' do
       tags 'Search References'
       produces 'application/json'
+      jsonapi_query_parameters(includes: [])
       description 'Returns search references optionally filtered by first letter.'
       operationId 'listSearchReferences'
 

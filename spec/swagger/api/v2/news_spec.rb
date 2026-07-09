@@ -23,6 +23,7 @@ RSpec.describe 'News', swagger_doc: 'v2/swagger.json', type: :request do
     get 'List news items' do
       tags 'News'
       produces 'application/json'
+      jsonapi_query_parameters(includes: %w[collections])
       description 'Returns paginated news items with collection relationships.'
       operationId 'listNewsItems'
 
@@ -86,6 +87,7 @@ RSpec.describe 'News', swagger_doc: 'v2/swagger.json', type: :request do
     get 'Retrieve a news item' do
       tags 'News'
       produces 'application/json'
+      jsonapi_query_parameters(includes: %w[collections])
       description 'Returns a single news item. Accepts either a numeric ID or a slug string.'
       operationId 'getNewsItem'
 
@@ -135,6 +137,7 @@ RSpec.describe 'News', swagger_doc: 'v2/swagger.json', type: :request do
     get 'List news collections' do
       tags 'News'
       produces 'application/json'
+      jsonapi_query_parameters(includes: [])
       description 'Returns all published news collections.'
       operationId 'listNewsCollections'
 
@@ -180,6 +183,7 @@ RSpec.describe 'News', swagger_doc: 'v2/swagger.json', type: :request do
     get 'List news years' do
       tags 'News'
       produces 'application/json'
+      jsonapi_query_parameters(includes: [])
       description 'Returns distinct years for which updates-page news items exist in published collections.'
       operationId 'listNewsYears'
 

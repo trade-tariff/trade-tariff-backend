@@ -17,6 +17,7 @@ RSpec.describe 'Description Intercepts', swagger_doc: 'v2/swagger.json', type: :
     get 'List description intercepts' do
       tags 'Description Intercepts'
       produces 'application/json'
+      jsonapi_query_parameters(includes: [])
       description 'Returns description intercepts, optionally filtered by source and excluded state.'
       operationId 'listDescriptionIntercepts'
 

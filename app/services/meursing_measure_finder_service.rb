@@ -23,7 +23,7 @@ class MeursingMeasureFinderService
       .select(&method(:relevant_for_country?))
   end
 
-  private
+private
 
   attr_reader :root_measure, :additional_code_id
 

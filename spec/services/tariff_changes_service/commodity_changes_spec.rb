@@ -34,15 +34,16 @@ RSpec.describe TariffChangesService::CommodityChanges do
     end
 
     context 'with declarable and non-declarable goods nomenclatures' do
-      before do
-        create(:commodity, operation_date: date)
-      end
+      let!(:declarable_commodity) { create(:commodity, :declarable, operation_date: date) }
+      let!(:non_declarable_commodity) { create(:commodity, :non_declarable, operation_date: date) }
 
       it 'only analyzes declarable goods nomenclatures' do
         results = described_class.collect(date)
 
-        expect(results.size).to be >= 1
-        expect(results.all? { |result| result[:type] == 'Commodity' }).to be true
+        returned_sids = results.map { |result| result[:goods_nomenclature_sid] }
+
+        expect(returned_sids).to include(declarable_commodity.goods_nomenclature_sid)
+        expect(returned_sids).not_to include(non_declarable_commodity.goods_nomenclature_sid)
       end
     end
   end

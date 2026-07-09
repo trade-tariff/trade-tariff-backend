@@ -17,7 +17,7 @@ module ContentAddressableId
     @id ||= Digest::MD5.hexdigest(addressable_content)
   end
 
-  private
+private
 
   def addressable_content
     addressable_fields = self.class.content_addressable_fields

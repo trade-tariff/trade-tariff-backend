@@ -33,6 +33,7 @@ RSpec.describe 'Measure Types', swagger_doc: 'v2/swagger.json', type: :request d
     get 'List all measure types' do
       tags 'Measure Types'
       produces 'application/json'
+      jsonapi_query_parameters(includes: [])
       description 'Returns all current measure types with their series descriptions.'
       operationId 'listMeasureTypes'
 
@@ -64,6 +65,7 @@ RSpec.describe 'Measure Types', swagger_doc: 'v2/swagger.json', type: :request d
     get 'Retrieve a measure type' do
       tags 'Measure Types'
       produces 'application/json'
+      jsonapi_query_parameters(includes: [])
       description 'Returns a single measure type by its ID.'
       operationId 'getMeasureType'
 

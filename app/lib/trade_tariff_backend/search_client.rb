@@ -1,7 +1,5 @@
 module TradeTariffBackend
   class SearchClient < SimpleDelegator
-    SEARCH_SERVER_CONFIG_FILE = Rails.root.join('config/elasticsearch_server_options.yml')
-
     # Raised if Elasticsearch returns an error from query
     QueryError = Class.new(StandardError)
 
@@ -36,6 +34,8 @@ module TradeTariffBackend
     end
 
     def reindex(index)
+      index = index_instance(index)
+
       drop_index(index)
       create_index(index)
       build_index(index)
@@ -46,6 +46,8 @@ module TradeTariffBackend
     end
 
     def update(index)
+      index = index_instance(index)
+
       create_index(index)
       build_index(index)
     end
@@ -94,6 +96,12 @@ module TradeTariffBackend
         index: index_name,
         id: model_id,
       }.merge(search_operation_options))
+    end
+
+  private
+
+    def index_instance(index)
+      index.is_a?(Class) ? index.new : index
     end
   end
 end

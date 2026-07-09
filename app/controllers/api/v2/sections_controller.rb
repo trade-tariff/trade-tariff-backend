@@ -2,9 +2,7 @@ module Api
   module V2
     class SectionsController < ApiController
       def index
-        @sections = Section
-          .eager({ chapters: [:chapter_note] }, :section_note)
-          .all
+        @sections = sections_dataset.all
 
         respond_to do |format|
           format.csv do
@@ -22,7 +20,9 @@ module Api
       def show
         return head :bad_request unless params[:id].to_s.match?(/\A\d+\z/)
 
-        @section = Section.where(position: params[:id].to_i).take
+        @section = sections_dataset
+          .where(position: params[:id].to_i)
+          .take
 
         options = { is_collection: false }
         options[:include] = [:chapters, 'chapters.guides']
@@ -46,6 +46,32 @@ module Api
           format.any do
             render json: Api::V2::Chapters::ChapterListSerializer.new(chapters).serializable_hash
           end
+        end
+      end
+
+    private
+
+      def chapter_note_eager_load
+        TradeTariffBackend.promote_customs_tariff_notes? ? :customs_tariff_chapter_note : :chapter_note
+      end
+
+      def section_note_eager_load
+        TradeTariffBackend.promote_customs_tariff_notes? ? :customs_tariff_section_note : :section_note
+      end
+
+      def sections_dataset
+        eager_loads = []
+        eager_loads << { chapters: [chapter_note_eager_load] } if section_chapter_fields_requested?
+        eager_loads << section_note_eager_load if jsonapi_field_requested?(:section, :section_note)
+
+        return Section if eager_loads.empty?
+
+        Section.eager(*eager_loads)
+      end
+
+      def section_chapter_fields_requested?
+        %i[chapters chapter_from chapter_to].any? do |field|
+          jsonapi_field_requested?(:section, field)
         end
       end
     end

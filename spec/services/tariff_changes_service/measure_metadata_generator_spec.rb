@@ -30,32 +30,32 @@ RSpec.describe TariffChangesService::MeasureMetadataGenerator do
       end
 
       context 'when measure has excluded geographical areas' do
-        let(:excluded_area1) { create(:geographical_area) }
-        let(:excluded_area2) { create(:geographical_area) }
-        let(:excluded_area3) { create(:geographical_area) }
+        let(:first_excluded_area) { create(:geographical_area) }
+        let(:second_excluded_area) { create(:geographical_area) }
+        let(:third_excluded_area) { create(:geographical_area) }
 
         before do
           create(:measure_excluded_geographical_area,
                  measure_sid: measure.measure_sid,
-                 excluded_geographical_area: excluded_area2.geographical_area_id,
-                 geographical_area_sid: excluded_area2.geographical_area_sid)
+                 excluded_geographical_area: second_excluded_area.geographical_area_id,
+                 geographical_area_sid: second_excluded_area.geographical_area_sid)
           create(:measure_excluded_geographical_area,
                  measure_sid: measure.measure_sid,
-                 excluded_geographical_area: excluded_area1.geographical_area_id,
-                 geographical_area_sid: excluded_area1.geographical_area_sid)
+                 excluded_geographical_area: first_excluded_area.geographical_area_id,
+                 geographical_area_sid: first_excluded_area.geographical_area_sid)
           create(:measure_excluded_geographical_area,
                  measure_sid: measure.measure_sid,
-                 excluded_geographical_area: excluded_area3.geographical_area_id,
-                 geographical_area_sid: excluded_area3.geographical_area_sid)
+                 excluded_geographical_area: third_excluded_area.geographical_area_id,
+                 geographical_area_sid: third_excluded_area.geographical_area_sid)
         end
 
         it 'includes all excluded geographical area ids' do
           metadata = described_class.call(measure.measure_sid)
 
           expect(metadata['measure']['excluded_geographical_area_ids']).to include(
-            excluded_area1.geographical_area_id,
-            excluded_area2.geographical_area_id,
-            excluded_area3.geographical_area_id,
+            first_excluded_area.geographical_area_id,
+            second_excluded_area.geographical_area_id,
+            third_excluded_area.geographical_area_id,
           )
         end
 

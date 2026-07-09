@@ -34,7 +34,7 @@ class SelfTextLookupService
       self_texts.size
     end
 
-    private
+  private
 
     def load_self_texts
       path = csv_path

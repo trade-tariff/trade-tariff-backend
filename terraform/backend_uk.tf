@@ -1,5 +1,5 @@
 module "backend_uk" {
-  source = "git@github.com:trade-tariff/trade-tariff-platform-terraform-modules.git//aws/ecs-service?ref=aws/ecs-service-v3.1.0"
+  source = "git@github.com:trade-tariff/trade-tariff-platform-terraform-modules.git//aws/ecs-service?ref=aws/ecs-service-v3.2.0"
 
   region = var.region
 
@@ -32,7 +32,7 @@ module "backend_uk" {
   enable_ecs_exec = true
 
   has_autoscaler     = local.has_autoscaler
-  min_capacity       = var.backend_uk_min_capacity
+  min_capacity       = var.min_capacity
   max_capacity       = var.max_capacity
   scale_in_cooldown  = var.scale_in_cooldown
   scale_out_cooldown = var.scale_out_cooldown
@@ -47,6 +47,9 @@ module "backend_uk" {
       target_value = 70
     }
   }
+
+  scheduled_actions_enabled = length(var.backend_uk_scheduled_scaling_actions) > 0
+  scheduled_scaling_actions = var.backend_uk_scheduled_scaling_actions
 
   enable_alarms       = var.enable_alarms
   cpu_alarm_threshold = 85 # Temporarily set higher to avoid alarm noise during load testing, will be adjusted based on observed metrics after testing is complete.

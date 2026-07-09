@@ -10,7 +10,7 @@ class TreeIntegrityCheckWorker
     check(28)
   end
 
-  private
+private
 
   def check(days_from_now = 0)
     date = (Time.zone.today + days_from_now.days).to_date

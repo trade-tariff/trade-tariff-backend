@@ -1,3 +1,16 @@
+module "ai_costs_dashboard" {
+  source = "./modules/ai_costs_dashboard"
+
+  environment    = var.environment
+  log_group_name = "platform-logs-${var.environment}"
+  region         = var.region
+}
+
+output "ai_costs_dashboard_url" {
+  description = "URL to the AI Costs CloudWatch dashboard"
+  value       = module.ai_costs_dashboard.dashboard_url
+}
+
 module "label_generator_dashboard" {
   source = "./modules/label_generator_dashboard"
 

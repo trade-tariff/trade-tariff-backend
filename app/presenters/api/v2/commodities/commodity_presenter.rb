@@ -5,25 +5,15 @@ module Api
         include SpecialNature
 
         attr_reader :commodity,
-                    :footnotes,
-                    :import_measures,
-                    :export_measures,
-                    :unit_measures
+                    :measures
 
         delegate :id, to: :import_trade_summary, prefix: true
+        delegate :filtering_by_country?, to: :measures
 
         def initialize(commodity, measures)
           super(commodity)
           @commodity = commodity
-          @footnotes = commodity.footnotes + commodity.heading.footnotes
-          @filtering_by_country = measures.filtering_by_country?
-          @import_measures = measures.select(&:import).map do |measure|
-            Api::V2::Measures::MeasurePresenter.new(measure, self)
-          end
-          @export_measures = measures.select(&:export).map do |measure|
-            Api::V2::Measures::MeasurePresenter.new(measure, self)
-          end
-          @unit_measures = @import_measures.select(&:expresses_unit?)
+          @measures = measures
         end
 
         def consigned
@@ -34,12 +24,28 @@ module Api
           footnotes.map(&:id)
         end
 
+        def footnotes
+          @footnotes ||= commodity.footnotes + commodity.heading.footnotes
+        end
+
         def import_measure_ids
           import_measures.map(&:measure_sid)
         end
 
+        def import_measures
+          @import_measures ||= measures.select(&:import).map do |measure|
+            Api::V2::Measures::MeasurePresenter.new(measure, self)
+          end
+        end
+
         def export_measure_ids
           export_measures.map(&:measure_sid)
+        end
+
+        def export_measures
+          @export_measures ||= measures.select(&:export).map do |measure|
+            Api::V2::Measures::MeasurePresenter.new(measure, self)
+          end
         end
 
         def heading_id
@@ -95,6 +101,10 @@ module Api
           MeasureUnitService.new(unit_measures).call
         end
 
+        def unit_measures
+          @unit_measures ||= import_measures.select(&:expresses_unit?)
+        end
+
         def applicable_vat_options
           ApplicableVatOptionsService.new(import_measures).call
         end
@@ -106,10 +116,6 @@ module Api
         def authorised_use_provisions_submission?
           @authorised_use_provisions_submission ||=
             filtering_by_country? && import_measures.any?(&:authorised_use_provisions_submission?)
-        end
-
-        def filtering_by_country?
-          @filtering_by_country
         end
       end
     end

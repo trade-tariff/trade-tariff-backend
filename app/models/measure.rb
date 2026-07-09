@@ -2,8 +2,6 @@ class Measure < Sequel::Model
   include Orderable
 
   BASE_REGULATION_ROLE = 1
-  PROVISIONAL_ANTIDUMPING_ROLE = 2
-  DEFINITIVE_ANTIDUMPING_ROLE = 3
   MODIFICATION_REGULATION_ROLE = 4
 
   # Number of days in a standard year and a leap year — used to exclude
@@ -293,45 +291,16 @@ class Measure < Sequel::Model
       where(measures__measure_type_id: condition_measure_type.to_s)
     end
 
-    def valid_since(first_effective_timestamp)
-      where('measures.validity_start_date >= ?', first_effective_timestamp)
-    end
-
     def valid_to(last_effective_timestamp)
       where('measures.validity_start_date <= ?', last_effective_timestamp)
-    end
-
-    def valid_before(last_effective_timestamp)
-      where('measures.validity_start_date < ?', last_effective_timestamp)
-    end
-
-    def valid_from(timestamp)
-      where('measures.validity_start_date >= ?', timestamp)
-    end
-
-    def not_terminated
-      where('measures.validity_end_date IS NULL')
     end
 
     def terminated
       where('measures.validity_end_date IS NOT NULL')
     end
 
-    def with_gono_id(goods_nomenclature_item_id)
-      where(goods_nomenclature_item_id:)
-    end
-
-    def with_tariff_measure_number(tariff_measure_number)
-      where(tariff_measure_number:)
-    end
-
     def with_geographical_area(area)
       where(geographical_area_id: area)
-    end
-
-    def with_duty_amount(amount)
-      join_table(:left, MeasureComponent, measures__measure_sid: :measure_components__measure_sid)
-      .where(measure_components__duty_amount: amount)
     end
 
     def effective_start_date_column
@@ -458,7 +427,7 @@ class Measure < Sequel::Model
       exclude(exclusion_criteria)
     end
 
-    private
+  private
 
     # Builds an OR-combined Sequel condition from a collection of [col_a, col_b]
     # value pairs and applies it as a WHERE clause. Returns the dataset unchanged

@@ -36,7 +36,7 @@ class ImportCustomsTariffDocumentWorker
     raise
   end
 
-  private
+private
 
   def notify_completed(imported_count:, skipped_count:, failed_count:, review_backlog:)
     return unless imported_count.positive? || failed_count.positive?

@@ -1,24 +1,24 @@
 RSpec.describe Chapter do
   describe 'Associations' do
     context 'with headings' do
-      let!(:chapter)  { create :chapter }
+      let!(:chapter) { create :chapter }
 
-      let!(:heading1) do
+      let!(:first_heading) do
         create :heading, goods_nomenclature_item_id: "#{chapter.goods_nomenclature_item_id.first(2)}10000000",
                          validity_start_date: 10.years.ago,
                          validity_end_date: nil
       end
-      let!(:heading2) do
+      let!(:second_heading) do
         create :heading, goods_nomenclature_item_id: "#{chapter.goods_nomenclature_item_id.first(2)}20000000",
                          validity_start_date: 2.years.ago,
                          validity_end_date: nil
       end
-      let!(:heading3) do
+      let!(:third_heading) do
         create :heading, goods_nomenclature_item_id: "#{chapter.goods_nomenclature_item_id.first(2)}30000000",
                          validity_start_date: 10.years.ago,
                          validity_end_date: 8.years.ago
       end
-      let!(:heading4) do
+      let!(:fourth_heading) do
         create :heading, goods_nomenclature_item_id: "#{chapter.goods_nomenclature_item_id.first(2)}40000000",
                          validity_start_date: 10.years.ago,
                          validity_end_date: nil
@@ -26,7 +26,7 @@ RSpec.describe Chapter do
 
       before do
         # Hidden goods nomenclature
-        create :hidden_goods_nomenclature, goods_nomenclature_item_id: heading4.goods_nomenclature_item_id
+        create :hidden_goods_nomenclature, goods_nomenclature_item_id: fourth_heading.goods_nomenclature_item_id
       end
 
       around do |example|
@@ -36,19 +36,19 @@ RSpec.describe Chapter do
       end
 
       it 'returns headings matched by part of own goods nomenclature item id' do
-        expect(chapter.headings).to include heading1
+        expect(chapter.headings).to include first_heading
       end
 
       it 'returns relevant by actual time headings' do
-        expect(chapter.headings).to include heading2
+        expect(chapter.headings).to include second_heading
       end
 
       it 'does not return heading that is irrelevant to given time' do
-        expect(chapter.headings).not_to include heading3
+        expect(chapter.headings).not_to include third_heading
       end
 
       it 'does not include hidden commodity' do
-        expect(chapter.headings).not_to include heading4
+        expect(chapter.headings).not_to include fourth_heading
       end
     end
   end
@@ -58,6 +58,67 @@ RSpec.describe Chapter do
 
     it 'defaults to zero' do
       expect(chapter.number_indents).to eq 0
+    end
+  end
+
+  describe '#customs_tariff_chapter_note' do
+    let!(:chapter) { create(:chapter, goods_nomenclature_item_id: '0100000000') }
+
+    around { |example| TimeMachine.now { example.run } }
+
+    it 'returns the note from the currently actual non-failed update' do
+      older = create(:customs_tariff_update, validity_start_date: 1.month.ago, validity_end_date: 1.day.ago)
+      newer = create(:customs_tariff_update, validity_start_date: Time.zone.today)
+      create(:customs_tariff_chapter_note, customs_tariff_update: older, chapter_id: chapter.short_code)
+      note = create(:customs_tariff_chapter_note, customs_tariff_update: newer, chapter_id: chapter.short_code)
+
+      expect(chapter.customs_tariff_chapter_note.id).to eq(note.id)
+    end
+
+    it 'returns pending notes' do
+      update = create(:customs_tariff_update)
+      note = create(:customs_tariff_chapter_note, customs_tariff_update: update, chapter_id: chapter.short_code)
+
+      expect(chapter.customs_tariff_chapter_note.id).to eq(note.id)
+    end
+
+    it 'ignores notes from failed updates' do
+      failed_update = create(:customs_tariff_update, :failed, validity_start_date: Time.zone.today)
+      create(:customs_tariff_chapter_note, customs_tariff_update: failed_update, chapter_id: chapter.short_code)
+
+      expect(chapter.customs_tariff_chapter_note).to be_nil
+    end
+  end
+
+  describe '#public_chapter_note' do
+    let!(:chapter) { create(:chapter, goods_nomenclature_item_id: '0100000000') }
+    let!(:legacy_note) { create(:chapter_note, chapter_id: chapter.short_code, content: 'Legacy chapter note') }
+    let!(:customs_tariff_update) { create(:customs_tariff_update, :approved) }
+    let!(:customs_tariff_note) do
+      create(:customs_tariff_chapter_note, :approved,
+             customs_tariff_update:,
+             chapter_id: chapter.short_code,
+             content: 'Imported chapter note')
+    end
+
+    context 'when promoted notes are enabled' do
+      before do
+        allow(TradeTariffBackend).to receive(:promote_customs_tariff_notes?).and_return(true)
+      end
+
+      it 'returns the customs tariff note' do
+        expect(chapter.public_chapter_note).to eq(customs_tariff_note)
+      end
+    end
+
+    context 'when promoted notes are disabled' do
+      before do
+        allow(TradeTariffBackend).to receive(:promote_customs_tariff_notes?).and_return(false)
+      end
+
+      it 'returns the legacy note' do
+        expect(chapter.public_chapter_note).to eq(legacy_note)
+      end
     end
   end
 
@@ -143,23 +204,23 @@ RSpec.describe Chapter do
   end
 
   describe '.by_code' do
-    let!(:chapter1) { create(:chapter, goods_nomenclature_item_id: '1200000000') }
-    let!(:chapter2) { create(:chapter, goods_nomenclature_item_id: '2100000000') }
+    let!(:first_chapter) { create(:chapter, goods_nomenclature_item_id: '1200000000') }
+    let!(:second_chapter) { create(:chapter, goods_nomenclature_item_id: '2100000000') }
 
     it 'returns chapters filtered by goods_nomenclature_item_id', :aggregate_failures do
       chapters = described_class.by_code('12')
-      expect(chapters).to include(chapter1)
-      expect(chapters).not_to include(chapter2)
+      expect(chapters).to include(first_chapter)
+      expect(chapters).not_to include(second_chapter)
     end
   end
 
   describe 'first & last heading' do
     let(:chapter) { create :chapter, goods_nomenclature_item_id: '1200000000' }
-    let!(:heading1) do
+    let!(:first_heading) do
       create :heading, goods_nomenclature_item_id: "#{chapter.goods_nomenclature_item_id.first(2)}10000000",
                        validity_end_date: nil
     end
-    let!(:heading2) do
+    let!(:second_heading) do
       create :heading, goods_nomenclature_item_id: "#{chapter.goods_nomenclature_item_id.first(2)}30000000",
                        validity_end_date: nil
     end
@@ -170,25 +231,25 @@ RSpec.describe Chapter do
 
     describe '#first_heading' do
       it 'returns first heading ordered by goods_nomenclature_item_id' do
-        expect(chapter.first_heading).to eq(heading1)
+        expect(chapter.first_heading).to eq(first_heading)
       end
     end
 
     describe '#last_heading' do
       it 'returns last heading ordered by goods_nomenclature_item_id' do
-        expect(chapter.last_heading).to eq(heading2)
+        expect(chapter.last_heading).to eq(second_heading)
       end
     end
 
     describe '#headings_from' do
       it 'returns first heading short_code' do
-        expect(chapter.headings_from).to eq(heading1.short_code)
+        expect(chapter.headings_from).to eq(first_heading.short_code)
       end
     end
 
     describe '#headings_to' do
       it 'returns last heading short_code' do
-        expect(chapter.headings_to).to eq(heading2.short_code)
+        expect(chapter.headings_to).to eq(second_heading.short_code)
       end
     end
   end

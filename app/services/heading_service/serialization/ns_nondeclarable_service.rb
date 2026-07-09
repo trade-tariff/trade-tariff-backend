@@ -1,6 +1,8 @@
 module HeadingService
   module Serialization
     class NsNondeclarableService
+      include JsonapiQueryOptions
+
       OPTIONS = {
         is_collection: false,
         include: [
@@ -31,7 +33,7 @@ module HeadingService
         additional_code: [],
       }.freeze
 
-      HEADING_EAGER_LOAD = [
+      BASE_HEADING_EAGER_LOAD = [
         :goods_nomenclature_descriptions,
         {
           footnotes: :footnote_descriptions,
@@ -52,6 +54,21 @@ module HeadingService
           ],
         },
       ].freeze
+      RELATIONSHIP_FIELDS = %i[
+        chapter
+        commodities
+        footnotes
+        section
+      ].freeze
+      DESCRIPTION_FIELDS = %i[
+        description
+        description_plain
+        formatted_description
+      ].freeze
+
+      def self.heading_eager_load
+        BASE_HEADING_EAGER_LOAD
+      end
 
       attr_reader :heading
 
@@ -65,7 +82,13 @@ module HeadingService
     private
 
       def eager_reload?
-        @eager_reload
+        @eager_reload && heading_eager_reload_required?
+      end
+
+      def heading_eager_reload_required?
+        (RELATIONSHIP_FIELDS + DESCRIPTION_FIELDS).any? do |field|
+          jsonapi_field_requested?(:heading, field)
+        end
       end
 
       def presented_heading
@@ -83,7 +106,7 @@ module HeadingService
         Heading.actual
                .non_hidden
                .where(goods_nomenclature_sid: heading.goods_nomenclature_sid)
-               .eager(*HEADING_EAGER_LOAD)
+               .eager(*self.class.heading_eager_load)
                .take
       end
     end

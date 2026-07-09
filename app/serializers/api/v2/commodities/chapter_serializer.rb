@@ -11,8 +11,8 @@ module Api
         attributes :goods_nomenclature_item_id, :description, :formatted_description,
                    :validity_start_date, :validity_end_date
 
-        attribute :chapter_note, if: proc { |chapter| chapter.chapter_note.present? } do |chapter|
-          chapter.chapter_note.content
+        attribute :chapter_note, if: proc { |chapter| chapter.public_chapter_note.present? } do |chapter|
+          chapter.public_chapter_note.content
         end
 
         has_many :guides, serializer: Api::V2::GuideSerializer

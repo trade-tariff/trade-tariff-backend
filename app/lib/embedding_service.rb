@@ -27,11 +27,14 @@ class EmbeddingService
   class ServerError < ApiError; end
   class ClientError < ApiError; end
 
-  def embed(text)
-    embed_batch([text]).first
+  def embed(text, event_kind: nil)
+    embeddings = embed_batch([text], event_kind:)
+    embedding = embeddings.first
+    AiUsage.attach_metadata(embedding, AiUsage.metadata_from(embeddings)) if embedding
+    embedding
   end
 
-  def embed_batch(texts)
+  def embed_batch(texts, event_kind: nil)
     present_indices = []
     filtered_texts = []
 
@@ -45,9 +48,10 @@ class EmbeddingService
     return Array.new(texts.size) if filtered_texts.empty?
 
     embeddings = Array.new(texts.size)
+    usage = nil
 
     filtered_texts.each_slice(BATCH_SIZE).each_with_index do |batch, slice_index|
-      response = with_retry do
+      response = with_retry(event_kind:, batch_size: batch.size) do
         resp = client.post('embeddings', { model: MODEL, input: batch }.to_json)
 
         if RETRYABLE_HTTP_STATUSES.include?(resp.status)
@@ -58,6 +62,8 @@ class EmbeddingService
       end
 
       if response.success?
+        usage = AiUsage.merge_metadata(usage, usage_metadata(response.body, event_kind:))
+
         batch_embeddings = response.body['data']
           .sort_by { |d| d['index'] }
           .map { |d| d['embedding'] }
@@ -71,12 +77,20 @@ class EmbeddingService
       end
     end
 
-    embeddings
+    AiUsage.attach_metadata(embeddings, usage)
   end
 
-  private
+private
 
-  def with_retry
+  def usage_metadata(body, event_kind:)
+    usage = body.to_h['usage']
+    return unless usage
+
+    usage = usage.to_h.merge('completion_tokens' => 0) unless usage.to_h.key?('completion_tokens')
+    AiUsage.metadata_for(model: MODEL, event_kind:, usage:)
+  end
+
+  def with_retry(event_kind:, batch_size:)
     attempts = 0
 
     begin
@@ -85,7 +99,14 @@ class EmbeddingService
     rescue *RETRYABLE_ERRORS, ServerError => e
       if attempts < MAX_RETRIES
         delay = RETRY_DELAY * (2**(attempts - 1))
-        SelfTextGenerator::Instrumentation.embedding_api_retry(attempt: attempts, delay:, error: e)
+        AiUsage::Instrumentation.embedding_api_retry(
+          event_kind:,
+          batch_size:,
+          model: MODEL,
+          attempt: attempts,
+          delay:,
+          error: e,
+        )
         Kernel.sleep delay
         retry
       else

@@ -41,7 +41,7 @@ module Api
         ).serializable_hash, status: :ok
       end
 
-      private
+    private
 
       def non_restorable_keys(klass)
         pk_cols = Array(klass.primary_key).map(&:to_s)

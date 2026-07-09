@@ -19,6 +19,7 @@ RSpec.describe Api::Admin::CustomsTariffUpdates::ChapterNotesController do
 
       expect(response.status).to eq(200)
       note = JSON.parse(response.body)['data'].find { |n| n.dig('attributes', 'chapter_id') == '01' }
+      expect(note['id']).to eq('01')
       expect(note.dig('attributes', 'file_diff', 'changed_fields')).to include('content')
     end
 
@@ -95,7 +96,7 @@ RSpec.describe Api::Admin::CustomsTariffUpdates::ChapterNotesController do
     let!(:note)   { create(:customs_tariff_chapter_note, customs_tariff_update: update) }
 
     it 'returns the note with a versions array' do
-      get "/uk/admin/customs_tariff_updates/#{update.version}/chapter_notes/#{note.id}.json",
+      get "/uk/admin/customs_tariff_updates/#{update.version}/chapter_notes/#{note.chapter_id}.json",
           headers: request_headers(format: :json)
 
       expect(response.status).to eq(200)
@@ -113,7 +114,7 @@ RSpec.describe Api::Admin::CustomsTariffUpdates::ChapterNotesController do
       end
 
       it 'returns file_diff instead of versions' do
-        get "/uk/admin/customs_tariff_updates/#{update.version}/chapter_notes/#{note.id}.json",
+        get "/uk/admin/customs_tariff_updates/#{update.version}/chapter_notes/#{note.chapter_id}.json",
             params: { compare_version: compare_update.version },
             headers: request_headers(format: :json)
 
@@ -130,27 +131,27 @@ RSpec.describe Api::Admin::CustomsTariffUpdates::ChapterNotesController do
     let!(:note)   { create(:customs_tariff_chapter_note, customs_tariff_update: update) }
 
     it 'destroys the note and returns 204' do
-      delete "/uk/admin/customs_tariff_updates/#{update.version}/chapter_notes/#{note.id}.json",
+      delete "/uk/admin/customs_tariff_updates/#{update.version}/chapter_notes/#{note.chapter_id}.json",
              headers: request_headers(format: :json)
 
       expect(response.status).to eq(204)
       expect(CustomsTariffChapterNote.where(id: note.id).first).to be_nil
     end
 
-    it 'returns 422 and does not destroy when the parent update is rejected' do
+    it 'destroys when the parent update is rejected' do
       update.update(status: CustomsTariffUpdate::REJECTED)
 
-      delete "/uk/admin/customs_tariff_updates/#{update.version}/chapter_notes/#{note.id}.json",
+      delete "/uk/admin/customs_tariff_updates/#{update.version}/chapter_notes/#{note.chapter_id}.json",
              headers: request_headers(format: :json)
 
-      expect(response.status).to eq(422)
-      expect(CustomsTariffChapterNote.where(id: note.id).first).not_to be_nil
+      expect(response.status).to eq(204)
+      expect(CustomsTariffChapterNote.where(id: note.id).first).to be_nil
     end
 
     it 'returns 404 when the note does not belong to the update' do
       other_update = create(:customs_tariff_update)
 
-      delete "/uk/admin/customs_tariff_updates/#{other_update.version}/chapter_notes/#{note.id}.json",
+      delete "/uk/admin/customs_tariff_updates/#{other_update.version}/chapter_notes/#{note.chapter_id}.json",
              headers: request_headers(format: :json)
 
       expect(response.status).to eq(404)
@@ -176,10 +177,10 @@ RSpec.describe Api::Admin::CustomsTariffUpdates::ChapterNotesController do
       expect(note.validity_start_date).to eq(update.validity_start_date)
     end
 
-    it 'returns 422 when the parent update is rejected' do
+    it 'creates when the parent update is rejected' do
       update.update(status: CustomsTariffUpdate::REJECTED)
-      expect { make_request }.not_to(change(CustomsTariffChapterNote, :count))
-      expect(response.status).to eq(422)
+      expect { make_request }.to change(CustomsTariffChapterNote, :count).by(1)
+      expect(response.status).to eq(201)
     end
 
     it 'returns 422 on duplicate (update_version, chapter_id)' do
@@ -194,7 +195,7 @@ RSpec.describe Api::Admin::CustomsTariffUpdates::ChapterNotesController do
     let!(:note)   { create(:customs_tariff_chapter_note, customs_tariff_update: update) }
 
     it 'updates the content' do
-      patch "/uk/admin/customs_tariff_updates/#{update.version}/chapter_notes/#{note.id}.json",
+      patch "/uk/admin/customs_tariff_updates/#{update.version}/chapter_notes/#{note.chapter_id}.json",
             params: { data: { type: 'customs_tariff_chapter_note', attributes: { content: 'Updated content' } } },
             headers: request_headers(format: :json), as: :json
 
@@ -202,19 +203,34 @@ RSpec.describe Api::Admin::CustomsTariffUpdates::ChapterNotesController do
       expect(note.reload.content).to eq('Updated content')
     end
 
-    it 'returns 422 when the parent update is rejected' do
+    it 'updates when following the JSON:API id from the index response' do
+      get "/uk/admin/customs_tariff_updates/#{update.version}/chapter_notes.json",
+          headers: request_headers(format: :json)
+
+      response_id = JSON.parse(response.body).dig('data', 0, 'id')
+
+      patch "/uk/admin/customs_tariff_updates/#{update.version}/chapter_notes/#{response_id}.json",
+            params: { data: { type: 'customs_tariff_chapter_note', attributes: { content: 'Updated via response id' } } },
+            headers: request_headers(format: :json), as: :json
+
+      expect(response.status).to eq(200)
+      expect(note.reload.content).to eq('Updated via response id')
+    end
+
+    it 'updates when the parent update is rejected' do
       update.update(status: CustomsTariffUpdate::REJECTED)
 
-      patch "/uk/admin/customs_tariff_updates/#{update.version}/chapter_notes/#{note.id}.json",
+      patch "/uk/admin/customs_tariff_updates/#{update.version}/chapter_notes/#{note.chapter_id}.json",
             params: { data: { type: 'customs_tariff_chapter_note', attributes: { content: 'Updated' } } },
             headers: request_headers(format: :json), as: :json
 
-      expect(response.status).to eq(422)
+      expect(response.status).to eq(200)
+      expect(note.reload.content).to eq('Updated')
     end
 
     it 'creates a Version record on successful save' do
       expect {
-        patch "/uk/admin/customs_tariff_updates/#{update.version}/chapter_notes/#{note.id}.json",
+        patch "/uk/admin/customs_tariff_updates/#{update.version}/chapter_notes/#{note.chapter_id}.json",
               params: { data: { type: 'customs_tariff_chapter_note', attributes: { content: 'Versioned' } } },
               headers: request_headers(format: :json), as: :json
       }.to change { Version.where(item_type: 'CustomsTariffChapterNote', item_id: note.id.to_s).count }.by(1)

@@ -33,6 +33,7 @@ RSpec.describe 'Rules of Origin', swagger_doc: 'v2/swagger.json', type: :request
     get 'List all rules of origin schemes' do
       tags 'Rules of Origin'
       produces 'application/json'
+      jsonapi_query_parameters(includes: JsonapiSwaggerParameters::RULES_OF_ORIGIN_MINIMAL_INCLUDES)
       description 'Returns all rules of origin schemes with their links and origin reference documents.'
       operationId 'listRulesOfOriginSchemes'
 
@@ -65,6 +66,7 @@ RSpec.describe 'Rules of Origin', swagger_doc: 'v2/swagger.json', type: :request
     get 'List rules of origin schemes for a heading and country' do
       tags 'Rules of Origin'
       produces 'application/json'
+      jsonapi_query_parameters(includes: JsonapiSwaggerParameters::RULES_OF_ORIGIN_FULL_INCLUDES)
       description 'Returns rules of origin schemes applicable to a heading/country combination, including rules, articles, and proofs.'
       operationId 'getRulesOfOriginForHeading'
 
@@ -97,6 +99,7 @@ RSpec.describe 'Rules of Origin', swagger_doc: 'v2/swagger.json', type: :request
     get 'List product-specific rules for a commodity' do
       tags 'Rules of Origin'
       produces 'application/json'
+      jsonapi_query_parameters(includes: JsonapiSwaggerParameters::RULES_OF_ORIGIN_FULL_INCLUDES)
       description 'Returns all rules of origin schemes with product-specific rule sets filtered to the given commodity code.'
       operationId 'getProductSpecificRules'
 

@@ -6,21 +6,22 @@ RSpec.describe 'Footnotes', swagger_doc: 'v2/swagger.json', type: :request do
   path '/api/footnotes/search' do
     parameter name: :Accept, in: :header, required: true,
               schema: { type: :string, enum: ['application/vnd.hmrc.2.0+json'] },
-              description: 'API version negotiation header'
+              description: 'Accept header for V2 JSON responses. Use `application/vnd.hmrc.2.0+json`.'
     parameter name: :description, in: :query, required: false,
               schema: { type: :string },
-              description: 'Filter by footnote description (partial match)'
+              description: 'Partial footnote description to search for. Required when `type` and `code` are both omitted.'
     parameter name: :type, in: :query, required: false,
               schema: { type: :string },
-              description: 'Filter by footnote type ID'
+              description: 'Footnote type ID. Must be supplied with `code` when used.'
     parameter name: :code, in: :query, required: false,
               schema: { type: :string },
-              description: 'Filter by footnote code'
+              description: 'Footnote code within the footnote type. Must be supplied with `type` when used.'
 
     get 'Search footnotes' do
       tags 'Footnotes'
       produces 'application/json'
-      description 'Returns footnotes matching the search parameters, including related goods nomenclatures.'
+      jsonapi_query_parameters(includes: %w[goods_nomenclatures])
+      description 'Search footnotes attached to goods nomenclature or measures by description, or by type and code together. Results can include related goods nomenclatures.'
       operationId 'searchFootnotes'
 
       response '200', 'footnotes found' do
@@ -32,18 +33,18 @@ RSpec.describe 'Footnotes', swagger_doc: 'v2/swagger.json', type: :request do
                    items: {
                      type: :object,
                      properties: {
-                       id: { type: :string },
-                       type: { type: :string, enum: %w[footnote] },
+                       id: { type: :string, description: 'Combined footnote type and footnote code.' },
+                       type: { type: :string, enum: %w[footnote], description: 'JSON:API resource type.' },
                        attributes: {
                          type: :object,
                          properties: {
-                           code: { type: :string, nullable: true },
-                           footnote_type_id: { type: :string, nullable: true },
-                           footnote_id: { type: :string, nullable: true },
-                           description: { type: :string, nullable: true },
-                           formatted_description: { type: :string, nullable: true },
-                           validity_start_date: { type: :string, nullable: true, format: 'date-time' },
-                           validity_end_date: { type: :string, nullable: true, format: 'date-time' },
+                           code: { type: :string, nullable: true, description: 'Combined footnote type and footnote ID.' },
+                           footnote_type_id: { type: :string, nullable: true, description: 'Footnote type ID.' },
+                           footnote_id: { type: :string, nullable: true, description: 'Footnote code within the footnote type.' },
+                           description: { type: :string, nullable: true, description: 'Footnote description.' },
+                           formatted_description: { type: :string, nullable: true, description: 'Footnote description formatted for display.' },
+                           validity_start_date: { type: :string, nullable: true, format: 'date-time', description: 'Date and time from which this footnote is valid.' },
+                           validity_end_date: { type: :string, nullable: true, format: 'date-time', description: 'Date and time after which this footnote is no longer valid, or null when current.' },
                          },
                        },
                      },
@@ -55,6 +56,17 @@ RSpec.describe 'Footnotes', swagger_doc: 'v2/swagger.json', type: :request do
 
         run_test!
       end
+
+      response '422', 'invalid footnote search parameters' do
+        schema '$ref' => '#/components/schemas/StandardErrorResponse'
+
+        let(:type) { 'TN' }
+
+        run_test!
+      end
+
+      standard_bad_request_response
+      standard_not_found_response
     end
   end
 end

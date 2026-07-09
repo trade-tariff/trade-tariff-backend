@@ -33,6 +33,15 @@ RSpec.describe Search::Logger do
       expect(json['service']).to eq('search')
       expect(json['timestamp']).to be_present
     end
+
+    it 'uses the event payload request source when present' do
+      TradeTariffRequest.request_source = 'backend_only'
+      logger_instance.public_send(method_name, build_event(event_name, payload.merge(request_source: 'frontend')))
+      json = parsed_log_output
+      expect(json['request_source']).to eq('frontend')
+    ensure
+      TradeTariffRequest.request_source = nil
+    end
   end
 
   describe '#search_started' do
@@ -48,6 +57,16 @@ RSpec.describe Search::Logger do
       expect(json['request_id']).to eq('req-1')
       expect(json['query']).to eq('horses')
       expect(json['search_type']).to eq('interactive')
+    end
+
+    it 'preserves nil logged fields when request source is absent' do
+      TradeTariffRequest.request_source = nil
+
+      logger_instance.search_started(build_event('search_started', payload.merge(query: nil)))
+
+      json = parsed_log_output
+      expect(json).to include('query' => nil)
+      expect(json).not_to have_key('request_source')
     end
   end
 
@@ -137,7 +156,7 @@ RSpec.describe Search::Logger do
 
   describe '#api_call_completed' do
     let(:payload) do
-      { request_id: 'req-1', model: 'gpt-4', duration_ms: 2500.0, response_type: 'answers', attempt_number: 1 }
+      { request_id: 'req-1', model: 'gpt-4', duration_ms: 2500.0, response_type: 'answers', attempt_number: 1, operation: 'interactive_search' }
     end
 
     it_behaves_like 'a search log entry', :api_call_completed, 'api_call_completed',
@@ -145,7 +164,8 @@ RSpec.describe Search::Logger do
                       model: 'gpt-4',
                       duration_ms: 2500.0,
                       response_type: 'answers',
-                      attempt_number: 1 }
+                      attempt_number: 1,
+                      operation: 'interactive_search' }
 
     it 'logs correct fields' do
       logger_instance.api_call_completed(build_event('api_call_completed', payload))
@@ -155,6 +175,7 @@ RSpec.describe Search::Logger do
       expect(json['duration_ms']).to eq(2500.0)
       expect(json['response_type']).to eq('answers')
       expect(json['attempt_number']).to eq(1)
+      expect(json['operation']).to eq('interactive_search')
     end
 
     it 'logs error details when present' do
@@ -203,6 +224,108 @@ RSpec.describe Search::Logger do
       expect(json['answer_count']).to eq(3)
       expect(json['confidence_levels']).to eq({ 'strong' => 1, 'good' => 2 })
       expect(json['attempt_number']).to eq(2)
+    end
+  end
+
+  describe '#evaluation_trace_returned' do
+    let(:payload) do
+      {
+        request_id: 'req-1',
+        search_type: 'interactive',
+        trace_version: 'classification_evaluation_trace.v1',
+        query: 'handbag',
+        effective_query: 'handbag Leather',
+        iteration: 2,
+        answer_count: 1,
+        retrieval_method: 'opensearch',
+        results_type: 'opensearch',
+        candidate_count: 1,
+        logged_candidate_count: 1,
+        candidates_truncated: false,
+        final_result_type: 'answers',
+        ranked_answer_count: 1,
+        logged_ranked_answer_count: 1,
+        ranked_answers_truncated: false,
+        question_count: 0,
+        logged_question_count: 0,
+        questions_truncated: false,
+        confidence_levels: { 'strong' => 1 },
+        ranking_source: 'model_answers',
+        model: 'gpt-5.2',
+        result_limit: 3,
+        details: {
+          candidates: [{ goods_nomenclature_item_id: '4202210000', score: 10.5 }],
+          ranked_answers: [{ commodity_code: '4202210000', confidence: 'strong' }],
+        },
+      }
+    end
+
+    it_behaves_like 'a search log entry', :evaluation_trace_returned, 'evaluation_trace_returned',
+                    { request_id: 'req-1', trace_version: 'classification_evaluation_trace.v1' }
+
+    it 'logs the consolidated trace fields' do
+      logger_instance.evaluation_trace_returned(build_event('evaluation_trace_returned', payload))
+      json = parsed_log_output
+
+      expect(json['event']).to eq('evaluation_trace_returned')
+      expect(json['trace_version']).to eq('classification_evaluation_trace.v1')
+      expect(json['effective_query']).to eq('handbag Leather')
+      expect(json['iteration']).to eq(2)
+      expect(json['candidate_count']).to eq(1)
+      expect(json['logged_candidate_count']).to eq(1)
+      expect(json['candidates_truncated']).to be(false)
+      expect(json['ranked_answer_count']).to eq(1)
+      expect(json['logged_ranked_answer_count']).to eq(1)
+      expect(json['ranked_answers_truncated']).to be(false)
+      expect(json['question_count']).to eq(0)
+      expect(json['logged_question_count']).to eq(0)
+      expect(json['questions_truncated']).to be(false)
+      expect(json['confidence_levels']).to eq({ 'strong' => 1 })
+      expect(json['ranking_source']).to eq('model_answers')
+      expect(json['details']['ranked_answers']).to eq([{ 'commodity_code' => '4202210000', 'confidence' => 'strong' }])
+    end
+  end
+
+  describe '#duplicate_question_guard_checked' do
+    let(:payload) do
+      {
+        request_id: 'req-1',
+        attempt_number: 4,
+        allowed: false,
+        duplicate: true,
+        suspicious: true,
+        signals: %w[repeated_selected_answer broad_item_identity_stem],
+        reason: 'Repeats a previous item-identity question',
+        reason_truncated: false,
+        duplicate_of_question: 'Which best describes the imported item itself?',
+        duplicate_of_answer: 'Another electrical measuring or checking instrument',
+      }
+    end
+
+    it_behaves_like 'a search log entry', :duplicate_question_guard_checked, 'duplicate_question_guard_checked',
+                    { request_id: 'req-1',
+                      attempt_number: 4,
+                      allowed: false,
+                      duplicate: true,
+                      suspicious: true,
+                      signals: %w[repeated_selected_answer broad_item_identity_stem],
+                      reason: 'Repeats a previous item-identity question',
+                      reason_truncated: false,
+                      duplicate_of_question: 'Which best describes the imported item itself?',
+                      duplicate_of_answer: 'Another electrical measuring or checking instrument' }
+
+    it 'logs correct fields' do
+      logger_instance.duplicate_question_guard_checked(build_event('duplicate_question_guard_checked', payload))
+      json = parsed_log_output
+      expect(json['event']).to eq('duplicate_question_guard_checked')
+      expect(json['allowed']).to be(false)
+      expect(json['duplicate']).to be(true)
+      expect(json['suspicious']).to be(true)
+      expect(json['signals']).to eq(%w[repeated_selected_answer broad_item_identity_stem])
+      expect(json['reason']).to eq('Repeats a previous item-identity question')
+      expect(json['reason_truncated']).to be(false)
+      expect(json['duplicate_of_question']).to eq('Which best describes the imported item itself?')
+      expect(json['duplicate_of_answer']).to eq('Another electrical measuring or checking instrument')
     end
   end
 

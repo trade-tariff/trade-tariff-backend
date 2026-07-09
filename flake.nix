@@ -2,25 +2,36 @@
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
     flake-utils.url = "github:numtide/flake-utils";
+    pre-commit-hooks = {
+      url = "github:cachix/git-hooks.nix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
     nixpkgs-ruby = {
       url = "github:bobvanderlinden/nixpkgs-ruby";
       inputs.nixpkgs.follows = "nixpkgs";
       inputs.flake-utils.follows = "flake-utils";
     };
+    trade-tariff-tools = {
+      url = "github:trade-tariff/trade-tariff-tools/main";
+      flake = false;
+    };
   };
 
   outputs =
     {
-      self,
       nixpkgs,
       flake-utils,
+      pre-commit-hooks,
       nixpkgs-ruby,
+      trade-tariff-tools,
+      ...
     }:
     flake-utils.lib.eachDefaultSystem (
       system:
       let
         pkgs = import nixpkgs {
-          system = system;
+          inherit system;
+          config.allowUnfree = true;
           overlays = [ nixpkgs-ruby.overlays.default ];
         };
 
@@ -149,84 +160,84 @@
         '';
 
         opensearch-start = pkgs.writeShellScriptBin "opensearch-start" ''
-          set -euo pipefail
+                    set -euo pipefail
 
-          runtime_dir="$PWD/.nix/opensearch"
-          home="$runtime_dir/home"
-          config="$runtime_dir/config"
-          data="$runtime_dir/data"
-          logs="$runtime_dir/logs"
-          store_marker="$runtime_dir/store-path"
+                    runtime_dir="$PWD/.nix/opensearch"
+                    home="$runtime_dir/home"
+                    config="$runtime_dir/config"
+                    data="$runtime_dir/data"
+                    logs="$runtime_dir/logs"
+                    store_marker="$runtime_dir/store-path"
 
-          mkdir -p "$runtime_dir" "$config" "$data" "$logs"
+                    mkdir -p "$runtime_dir" "$config" "$data" "$logs"
 
-          if [ ! -f "$store_marker" ] || [ "$(cat "$store_marker")" != "${pkgs.opensearch}" ]; then
-            rm -rf "$home"
-            mkdir -p "$home/bin"
+                    if [ ! -f "$store_marker" ] || [ "$(cat "$store_marker")" != "${pkgs.opensearch}" ]; then
+                      rm -rf "$home"
+                      mkdir -p "$home/bin"
 
-            ln -sfn "${pkgs.opensearch}/agent" "$home/agent"
-            ln -sfn "${pkgs.opensearch}/lib" "$home/lib"
-            ln -sfn "${pkgs.opensearch}/modules" "$home/modules"
-            ln -sfn "${pkgs.opensearch}/plugins" "$home/plugins"
+                      ln -sfn "${pkgs.opensearch}/agent" "$home/agent"
+                      ln -sfn "${pkgs.opensearch}/lib" "$home/lib"
+                      ln -sfn "${pkgs.opensearch}/modules" "$home/modules"
+                      ln -sfn "${pkgs.opensearch}/plugins" "$home/plugins"
 
-            ${pkgs.gnused}/bin/sed "s|${pkgs.opensearch}|$home|g" \
-              "${pkgs.opensearch}/bin/.opensearch-wrapped" > "$home/bin/.opensearch-wrapped"
-            ${pkgs.gnused}/bin/sed "s|${pkgs.opensearch}|$home|g" \
-              "${pkgs.opensearch}/bin/opensearch-keystore" > "$home/bin/opensearch-keystore"
+                      ${pkgs.gnused}/bin/sed "s|${pkgs.opensearch}|$home|g" \
+                        "${pkgs.opensearch}/bin/.opensearch-wrapped" > "$home/bin/.opensearch-wrapped"
+                      ${pkgs.gnused}/bin/sed "s|${pkgs.opensearch}|$home|g" \
+                        "${pkgs.opensearch}/bin/opensearch-keystore" > "$home/bin/opensearch-keystore"
 
-            cp "${pkgs.opensearch}/bin/opensearch-env" "$home/bin/opensearch-env"
-            cp "${pkgs.opensearch}/bin/opensearch-env-from-file" "$home/bin/opensearch-env-from-file"
-            chmod +x "$home/bin/.opensearch-wrapped" "$home/bin/opensearch-keystore" \
-              "$home/bin/opensearch-env" "$home/bin/opensearch-env-from-file"
+                      cp "${pkgs.opensearch}/bin/opensearch-env" "$home/bin/opensearch-env"
+                      cp "${pkgs.opensearch}/bin/opensearch-env-from-file" "$home/bin/opensearch-env-from-file"
+                      chmod +x "$home/bin/.opensearch-wrapped" "$home/bin/opensearch-keystore" \
+                        "$home/bin/opensearch-env" "$home/bin/opensearch-env-from-file"
 
-            cat > "$home/bin/opensearch-cli" <<'OPENSEARCH_CLI'
-#!/usr/bin/env bash
-set -e -o pipefail
+                      cat > "$home/bin/opensearch-cli" <<'OPENSEARCH_CLI'
+          #!/usr/bin/env bash
+          set -e -o pipefail
 
-source "$(dirname "$0")"/opensearch-env
+          source "$(dirname "$0")"/opensearch-env
 
-if [ -z "$OPENSEARCH_TMPDIR" ]; then
-  OPENSEARCH_TMPDIR="$("$JAVA" "$XSHARE" -cp "$OPENSEARCH_CLASSPATH" org.opensearch.tools.launchers.TempDirectory)"
-fi
-
-if [ -n "''${OPENSEARCH_ADDITIONAL_CLASSPATH_DIRECTORIES:-}" ]; then
-  for directory in $OPENSEARCH_ADDITIONAL_CLASSPATH_DIRECTORIES; do
-    OPENSEARCH_CLASSPATH="$OPENSEARCH_CLASSPATH:$OPENSEARCH_HOME/$directory/*"
-  done
-fi
-
-exec "$JAVA" "$XSHARE" \
-  -Dopensearch.path.home="$OPENSEARCH_HOME" \
-  -Dopensearch.path.conf="$OPENSEARCH_PATH_CONF" \
-  -Dopensearch.distribution.type="$OPENSEARCH_DISTRIBUTION_TYPE" \
-  -Dopensearch.bundled_jdk="$OPENSEARCH_BUNDLED_JDK" \
-  -cp "$OPENSEARCH_CLASSPATH" \
-  "$OPENSEARCH_MAIN_CLASS" \
-  "$@"
-OPENSEARCH_CLI
-            chmod +x "$home/bin/opensearch-cli"
-
-            echo "${pkgs.opensearch}" > "$store_marker"
+          if [ -z "$OPENSEARCH_TMPDIR" ]; then
+            OPENSEARCH_TMPDIR="$("$JAVA" "$XSHARE" -cp "$OPENSEARCH_CLASSPATH" org.opensearch.tools.launchers.TempDirectory)"
           fi
 
-          ${pkgs.gnused}/bin/sed "s|logs/gc.log|$logs/gc.log|g" \
-            "${pkgs.opensearch}/config/jvm.options" > "$config/jvm.options"
-          rm -f "$config/opensearch.yml" "$config/log4j2.properties"
-          cp "${pkgs.opensearch}/config/opensearch.yml" "$config/opensearch.yml"
-          cp "${pkgs.opensearch}/config/log4j2.properties" "$config/log4j2.properties"
+          if [ -n "''${OPENSEARCH_ADDITIONAL_CLASSPATH_DIRECTORIES:-}" ]; then
+            for directory in $OPENSEARCH_ADDITIONAL_CLASSPATH_DIRECTORIES; do
+              OPENSEARCH_CLASSPATH="$OPENSEARCH_CLASSPATH:$OPENSEARCH_HOME/$directory/*"
+            done
+          fi
 
-          exec env \
-            JAVA_HOME="${pkgs.jdk21_headless.home}" \
-            OPENSEARCH_PATH_CONF="$config" \
-            OPENSEARCH_JAVA_OPTS="''${OPENSEARCH_JAVA_OPTS:--Xms512m -Xmx512m}" \
-            "$home/bin/.opensearch-wrapped" \
-            -E discovery.type=single-node \
-            -E plugins.security.disabled=true \
-            -E path.data="$data" \
-            -E path.logs="$logs" \
-            -E http.port="''${OPENSEARCH_PORT:-9200}" \
-            -E network.host="''${OPENSEARCH_HOST:-127.0.0.1}" \
+          exec "$JAVA" "$XSHARE" \
+            -Dopensearch.path.home="$OPENSEARCH_HOME" \
+            -Dopensearch.path.conf="$OPENSEARCH_PATH_CONF" \
+            -Dopensearch.distribution.type="$OPENSEARCH_DISTRIBUTION_TYPE" \
+            -Dopensearch.bundled_jdk="$OPENSEARCH_BUNDLED_JDK" \
+            -cp "$OPENSEARCH_CLASSPATH" \
+            "$OPENSEARCH_MAIN_CLASS" \
             "$@"
+          OPENSEARCH_CLI
+                      chmod +x "$home/bin/opensearch-cli"
+
+                      echo "${pkgs.opensearch}" > "$store_marker"
+                    fi
+
+                    ${pkgs.gnused}/bin/sed "s|logs/gc.log|$logs/gc.log|g" \
+                      "${pkgs.opensearch}/config/jvm.options" > "$config/jvm.options"
+                    rm -f "$config/opensearch.yml" "$config/log4j2.properties"
+                    cp "${pkgs.opensearch}/config/opensearch.yml" "$config/opensearch.yml"
+                    cp "${pkgs.opensearch}/config/log4j2.properties" "$config/log4j2.properties"
+
+                    exec env \
+                      JAVA_HOME="${pkgs.jdk21_headless.home}" \
+                      OPENSEARCH_PATH_CONF="$config" \
+                      OPENSEARCH_JAVA_OPTS="''${OPENSEARCH_JAVA_OPTS:--Xms512m -Xmx512m}" \
+                      "$home/bin/.opensearch-wrapped" \
+                      -E discovery.type=single-node \
+                      -E plugins.security.disabled=true \
+                      -E path.data="$data" \
+                      -E path.logs="$logs" \
+                      -E http.port="''${OPENSEARCH_PORT:-9200}" \
+                      -E network.host="''${OPENSEARCH_HOST:-127.0.0.1}" \
+                      "$@"
         '';
 
         redis-start = pkgs.writeShellScriptBin "redis-start" ''
@@ -242,9 +253,14 @@ OPENSEARCH_CLI
         '';
 
         lint = pkgs.writeShellScriptBin "lint" ''
-          changed_files=$(git diff --name-only --diff-filter=ACM --merge-base main)
+          mapfile -t changed_files < <(git diff --name-only --diff-filter=ACM --merge-base main)
 
-          bundle exec rubocop --autocorrect-all --force-exclusion $changed_files Gemfile
+          if [ ''${#changed_files[@]} -eq 0 ]; then
+            echo "No changed files to lint."
+            exit 0
+          fi
+
+          pre-commit run --files "''${changed_files[@]}"
         '';
 
         init = pkgs.writeShellScriptBin "init" ''
@@ -255,6 +271,164 @@ OPENSEARCH_CLI
           cd terraform
           terraform init -backend=false -reconfigure -upgrade
         '';
+
+        preCommitCheck = pre-commit-hooks.lib.${system}.run {
+          src = ./.;
+          configPath = ".pre-commit-config-nix.yaml";
+          default_stages = [ "pre-commit" ];
+          hooks = {
+            actionlint = {
+              enable = true;
+              stages = [ "pre-commit" ];
+            };
+            check-added-large-files = {
+              enable = true;
+              stages = [ "pre-commit" ];
+            };
+            check-case-conflicts = {
+              enable = true;
+              stages = [ "pre-commit" ];
+            };
+            check-merge-conflicts = {
+              enable = true;
+              stages = [ "pre-commit" ];
+            };
+            check-yaml = {
+              enable = true;
+              excludes = [
+                "^db/"
+                "^config/sidekiq\\.yml$"
+              ];
+              stages = [ "pre-commit" ];
+            };
+            deadnix = {
+              enable = true;
+              stages = [ "pre-commit" ];
+            };
+            detect-private-keys = {
+              enable = true;
+              stages = [ "pre-commit" ];
+            };
+            end-of-file-fixer = {
+              enable = true;
+              excludes = [
+                "^db/"
+                "^config/credentials\\.yml\\.enc$"
+              ];
+              stages = [ "pre-commit" ];
+            };
+            nixfmt-rfc-style = {
+              package = pre-commit-hooks.inputs.nixpkgs.legacyPackages.${system}.nixfmt;
+              enable = true;
+              stages = [ "pre-commit" ];
+            };
+            shellcheck = {
+              enable = true;
+              args = [ "--severity=warning" ];
+              stages = [ "pre-commit" ];
+            };
+            sort-file-contents = {
+              enable = true;
+              files = "^\\.env\\.(development|test)$";
+              stages = [ "pre-commit" ];
+            };
+            statix = {
+              enable = true;
+              settings.ignore = [ "{.direnv,.nix,.worktrees}/**" ];
+              stages = [ "pre-commit" ];
+            };
+            terraform-format = {
+              enable = true;
+              package = pkgs.terraform;
+              stages = [ "pre-commit" ];
+            };
+            terraform-validate = {
+              enable = true;
+              package = pkgs.terraform;
+              entry = ''
+                bash -c '
+                  set -uo pipefail
+                  status=0
+
+                  while read -r dir; do
+                    lockfile="$dir/.terraform.lock.hcl"
+                    backup=$(mktemp)
+                    had_lockfile=false
+
+                    if [ -f "$lockfile" ]; then
+                      cp "$lockfile" "$backup"
+                      had_lockfile=true
+                    fi
+
+                    ${pkgs.terraform}/bin/terraform -chdir="$dir" init -backend=false
+                    init_status=$?
+
+                    if [ "$init_status" -eq 0 ]; then
+                      ${pkgs.terraform}/bin/terraform -chdir="$dir" validate
+                      validate_status=$?
+                    else
+                      validate_status=$init_status
+                    fi
+
+                    if [ "$had_lockfile" = true ]; then
+                      cp "$backup" "$lockfile"
+                    else
+                      rm -f "$lockfile"
+                    fi
+                    rm -f "$backup"
+
+                    if [ "$validate_status" -ne 0 ]; then
+                      status=$validate_status
+                    fi
+                  done < <(for arg in "$@"; do dirname "$arg"; done | sort | uniq)
+
+                  exit "$status"
+                ' --
+              '';
+              stages = [ "pre-commit" ];
+            };
+            tflint = {
+              enable = true;
+              stages = [ "pre-commit" ];
+            };
+            trim-trailing-whitespace = {
+              enable = true;
+              excludes = [ "^db/" ];
+              stages = [ "pre-commit" ];
+            };
+            trufflehog = {
+              enable = true;
+              stages = [ "pre-commit" ];
+            };
+
+            debride = {
+              enable = true;
+              name = "debride";
+              description = "Run Debride before pushing";
+              entry = "${trade-tariff-tools}/.github/actions/debride/debride-check";
+              pass_filenames = false;
+              stages = [ "pre-push" ];
+            };
+
+            rubocop = {
+              enable = true;
+              name = "rubocop";
+              description = "Run RuboCop through Bundler on changed Ruby files";
+              entry = ''
+                bash -c '
+                  changed_files=$(git diff --name-only --diff-filter=ACM --merge-base main | grep -E "\\.(rb|rake)$|^(Gemfile|Rakefile|config\\.ru)$" || true)
+
+                  if [ -n "$changed_files" ]; then
+                    bundle exec rubocop --autocorrect --force-exclusion $changed_files
+                  fi
+                '
+              '';
+              files = "\\.(rb|rake)$|^(Gemfile|Rakefile|config\\.ru)$";
+              pass_filenames = false;
+              stages = [ "pre-commit" ];
+            };
+          };
+        };
       in
       {
         devShells.default = pkgs.mkShell {
@@ -380,10 +554,6 @@ OPENSEARCH_CLI
                 run_setup_step "Loading development structure" bundle exec rails db:structure:load || fail_worktree_setup
                 run_setup_step "Creating test database" env RAILS_ENV=test bundle exec rails db:create || fail_worktree_setup
                 run_setup_step "Loading test structure" env RAILS_ENV=test bundle exec rails db:structure:load || fail_worktree_setup
-
-                # Pre-commit hooks (only on first entry after worktree add)
-                run_setup_step "Installing pre-commit hooks" pre-commit install --install-hooks || fail_worktree_setup
-
                 touch "$MARKER"
                 echo ""
                 echo "==> Worktree first-time setup complete."
@@ -393,12 +563,36 @@ OPENSEARCH_CLI
                 export BUNDLE_IGNORE_CONFIG=1
               fi
             fi
+
+            ${preCommitCheck.shellHook}
+            export PATH=${pkgs.writeShellScriptBin "pre-commit" ''
+              set -euo pipefail
+
+              has_config=false
+              for arg in "$@"; do
+                case "$arg" in
+                  -c|--config|--config=*)
+                    has_config=true
+                    ;;
+                esac
+              done
+
+              if [ "$has_config" = true ]; then
+                exec ${preCommitCheck.config.package}/bin/pre-commit "$@"
+              fi
+
+              if [ "''${1:-}" = "run" ]; then
+                shift
+                exec ${preCommitCheck.config.package}/bin/pre-commit run --config .pre-commit-config-nix.yaml "$@"
+              fi
+
+              exec ${preCommitCheck.config.package}/bin/pre-commit "$@"
+            ''}/bin:$PATH
           '';
 
-          buildInputs = [
+          buildInputs = preCommitCheck.enabledPackages ++ [
             init
             lint
-            pkgs.pre-commit
             pkgs.pkg-config
             pkgs.python3
             pkgs.opensearch

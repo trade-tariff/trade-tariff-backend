@@ -141,7 +141,7 @@ module News
       end
     end
 
-    private
+  private
 
     def normalise_ids(ids)
       Array.wrap(ids).map(&:presence).compact.map(&:to_i).uniq

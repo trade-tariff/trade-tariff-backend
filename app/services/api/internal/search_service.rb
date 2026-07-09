@@ -75,6 +75,10 @@ module Api
             interactive_result,
             retrieval.expanded_query,
           )
+          emit_evaluation_trace(
+            retrieval: retrieval,
+            interactive_result: interactive_result,
+          )
           completion = completion_payload(
             result_count: response[:data]&.size || 0,
             total_attempts: interactive_result&.attempt,
@@ -89,12 +93,52 @@ module Api
         end
       end
 
-      private
+    private
 
       def completion_payload(**payload)
         return payload unless description_intercept
 
         payload.merge(description_intercept:)
+      end
+
+      def emit_evaluation_trace(retrieval:, interactive_result:)
+        return unless interactive_result
+
+        ::Search::Instrumentation.evaluation_trace_returned(
+          request_id: request_id,
+          query: q,
+          effective_query: retrieval.expanded_query,
+          iteration: interactive_result.attempt,
+          answer_count: answers.size,
+          retrieval_method: retrieval_method,
+          results_type: retrieval.results_type,
+          candidates: retrieval.goods_nomenclatures,
+          final_result_type: interactive_result.type&.to_s,
+          ranked_answers: evaluation_ranked_answers(interactive_result),
+          questions: evaluation_questions(interactive_result),
+          error_message: evaluation_error_message(interactive_result),
+          ranking_source: interactive_result.ranking_source,
+          model: interactive_result.model,
+          result_limit: interactive_result.result_limit,
+        )
+      end
+
+      def evaluation_ranked_answers(interactive_result)
+        return [] unless interactive_result.type == :answers
+
+        Array(interactive_result.data)
+      end
+
+      def evaluation_questions(interactive_result)
+        return [] unless interactive_result.type == :questions
+
+        Array(interactive_result.data)
+      end
+
+      def evaluation_error_message(interactive_result)
+        return unless interactive_result.type == :error
+
+        interactive_result.data[:message]
       end
 
       def retrieve_short_list
@@ -288,6 +332,7 @@ module Api
           opensearch_result_limit: opensearch_result_limit,
           search_result_limit: AdminConfiguration.integer_value('search_result_limit'),
           interactive_search_enabled: AdminConfiguration.enabled?('interactive_search_enabled'),
+          interactive_search_duplicate_question_guard_enabled: AdminConfiguration.enabled?('interactive_search_duplicate_question_guard_enabled'),
           interactive_search_max_questions: AdminConfiguration.integer_value('interactive_search_max_questions'),
           expand_search_enabled: AdminConfiguration.enabled?('expand_search_enabled'),
           expand_search_when_needed_enabled: AdminConfiguration.enabled?('expand_search_when_needed_enabled'),
@@ -302,6 +347,7 @@ module Api
           vector_score_threshold: AdminConfiguration.integer_value('vector_score_threshold'),
           vector_ef_search: AdminConfiguration.integer_value('vector_ef_search'),
           rrf_k: AdminConfiguration.integer_value('rrf_k'),
+          interactive_search_duplicate_question_guard_model: model_configuration('interactive_search_duplicate_question_guard_model'),
           search_model: model_configuration('search_model'),
           expand_model: model_configuration('expand_model'),
           filter_prefixes: filter_prefixes,

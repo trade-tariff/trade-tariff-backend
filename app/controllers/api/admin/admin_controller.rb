@@ -8,7 +8,7 @@ module Api
 
       no_caching
 
-      private
+    private
 
       def set_paper_trail_whodunnit
         TradeTariffRequest.whodunnit = request.headers['X-Whodunnit']

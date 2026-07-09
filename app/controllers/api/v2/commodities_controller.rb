@@ -21,7 +21,7 @@ module Api
         render json: Api::V2::Changes::ChangeSerializer.new(@changes.changes, options).serializable_hash
       end
 
-      private
+    private
 
       def find_commodity
         @commodity = Commodity.actual

@@ -19,7 +19,7 @@ module Api
           render json: serialize(faq_feedback)
         end
 
-        private
+      private
 
         def faq_feedback_params
           params.require(:data).require(:attributes).permit(

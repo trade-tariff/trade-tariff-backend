@@ -27,6 +27,7 @@ RSpec.describe 'Chemicals', swagger_doc: 'v2/swagger.json', type: :request do
     get 'List all chemicals' do
       tags 'Chemicals'
       produces 'application/json'
+      jsonapi_query_parameters(includes: [])
       description 'Returns all chemicals with their CAS numbers and names.'
       operationId 'listChemicals'
 
@@ -67,6 +68,7 @@ RSpec.describe 'Chemicals', swagger_doc: 'v2/swagger.json', type: :request do
     get 'Search chemicals' do
       tags 'Chemicals'
       produces 'application/json'
+      jsonapi_query_parameters(includes: %w[goods_nomenclatures chemical_names])
       description 'Returns chemicals matching the search query.'
       operationId 'searchChemicals'
 
@@ -99,6 +101,7 @@ RSpec.describe 'Chemicals', swagger_doc: 'v2/swagger.json', type: :request do
     get 'Retrieve a chemical' do
       tags 'Chemicals'
       produces 'application/json'
+      jsonapi_query_parameters(includes: %w[goods_nomenclatures chemical_names])
       description 'Returns a single chemical by its CAS number.'
       operationId 'getChemical'
 

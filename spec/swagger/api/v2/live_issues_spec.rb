@@ -14,6 +14,7 @@ RSpec.describe 'Live Issues', swagger_doc: 'v2/swagger.json', type: :request do
     get 'List live issues' do
       tags 'Live Issues'
       produces 'application/json'
+      jsonapi_query_parameters(includes: [])
       description 'Returns current live service issues, optionally filtered by status.'
       operationId 'listLiveIssues'
 

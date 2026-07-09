@@ -1,5 +1,9 @@
 class InteractiveSearchService
-  Result = Data.define(:type, :data, :attempt, :model, :result_limit)
+  Result = Data.define(:type, :data, :attempt, :model, :result_limit, :ranking_source) do
+    def initialize(type:, data:, attempt:, model:, result_limit:, ranking_source: nil)
+      super
+    end
+  end
 
   CONFIDENCE_ORDER = %w[strong good possible].freeze
   UNCERTAINTY_OPTION_PATTERNS = [
@@ -31,24 +35,7 @@ class InteractiveSearchService
     return no_results_error if no_results?
     return final_answer if max_questions_reached?
 
-    response = Search::Instrumentation.api_call(
-      request_id: request_id,
-      model: configured_model,
-      attempt_number: attempt,
-      iteration: attempt,
-      effective_query: expanded_query,
-    ) { OpenaiClient.call(build_context, model: configured_model, reasoning_effort: configured_reasoning_effort) }
-    parsed = ExtractBottomJson.call(response)
-
-    if parsed['error'].present?
-      error_result(parsed['error'])
-    elsif parsed['answers'].present?
-      answers_result(parsed['answers'])
-    elsif has_questions?(parsed)
-      questions_result(parsed)
-    else
-      best_available_answers
-    end
+    handle_parsed_response(parse_model_response(build_context, operation: 'interactive_search'))
   rescue StandardError => e
     Search::Instrumentation.search_failed(
       request_id: request_id,
@@ -65,7 +52,7 @@ class InteractiveSearchService
     end
   end
 
-  private
+private
 
   attr_reader :query, :expanded_query, :opensearch_results, :answers, :request_id, :attempt
 
@@ -111,12 +98,12 @@ class InteractiveSearchService
   end
 
   def build_context
-    context = context_with_compressed_notes(configured_context.to_s)
-    context
+    context_with_compressed_notes(configured_context.to_s)
       .gsub('%{search_input}', query.to_s)
       .gsub('%{expanded_query}', expanded_query.to_s)
       .gsub('%{answers_opensearch}', format_opensearch_results.to_s)
       .gsub('%{questions}', format_questions_and_answers.to_s)
+      .gsub('%{general_rules}', Search::GeneralRulesPresenter.new.to_s)
   end
 
   def context_with_compressed_notes(context)
@@ -228,6 +215,7 @@ class InteractiveSearchService
       attempt: attempt,
       model: configured_model,
       result_limit: configured_result_limit,
+      ranking_source: 'single_result',
     )
   end
 
@@ -238,19 +226,13 @@ class InteractiveSearchService
       attempt: attempt,
       model: configured_model,
       result_limit: configured_result_limit,
+      ranking_source: 'no_results',
     )
   end
 
   def final_answer
     context = build_context + FINAL_ANSWER_INSTRUCTION
-    response = Search::Instrumentation.api_call(
-      request_id: request_id,
-      model: configured_model,
-      attempt_number: attempt,
-      iteration: attempt,
-      effective_query: expanded_query,
-    ) { OpenaiClient.call(context, model: configured_model, reasoning_effort: configured_reasoning_effort) }
-    parsed = ExtractBottomJson.call(response)
+    parsed = parse_model_response(context, operation: 'interactive_search_final_answer')
 
     if parsed['answers'].present?
       answers_result(parsed['answers'])
@@ -261,7 +243,32 @@ class InteractiveSearchService
     end
   end
 
-  def best_available_answers
+  def parse_model_response(context, operation:)
+    response = Search::Instrumentation.api_call(
+      request_id: request_id,
+      model: configured_model,
+      attempt_number: attempt,
+      iteration: attempt,
+      effective_query: expanded_query,
+      operation: operation,
+    ) { OpenaiClient.call(context, model: configured_model, reasoning_effort: configured_reasoning_effort, event_kind: operation) }
+
+    ExtractBottomJson.call(response)
+  end
+
+  def handle_parsed_response(parsed, duplicate_retry: false)
+    if parsed['error'].present?
+      error_result(parsed['error'])
+    elsif parsed['answers'].present?
+      answers_result(parsed['answers'])
+    elsif has_questions?(parsed)
+      questions_result(parsed, duplicate_retry: duplicate_retry)
+    else
+      best_available_answers
+    end
+  end
+
+  def best_available_answers(ranking_source: 'best_available_fallback')
     limit = configured_result_limit
     results_to_process = limit.zero? ? opensearch_results : opensearch_results.first(limit)
     top_results = results_to_process.map.with_index do |result, index|
@@ -277,6 +284,7 @@ class InteractiveSearchService
       attempt: attempt,
       model: configured_model,
       result_limit: limit,
+      ranking_source: ranking_source,
     )
   end
 
@@ -287,12 +295,13 @@ class InteractiveSearchService
       attempt: attempt,
       model: configured_model,
       result_limit: configured_result_limit,
+      ranking_source: 'model_error',
     )
   end
 
   def answers_result(ai_answers)
     filtered = filter_hallucinated_codes(ai_answers)
-    return best_available_answers if filtered.empty?
+    return best_available_answers(ranking_source: 'filtered_hallucinated_answers') if filtered.empty?
 
     limit = configured_result_limit
     normalized = filtered.map do |answer|
@@ -313,6 +322,7 @@ class InteractiveSearchService
       attempt: attempt,
       model: configured_model,
       result_limit: limit,
+      ranking_source: 'model_answers',
     )
   end
 
@@ -327,9 +337,28 @@ class InteractiveSearchService
     parsed['questions'].is_a?(Array) && parsed['questions'].any?
   end
 
-  def questions_result(parsed)
+  def questions_result(parsed, duplicate_retry: false)
     questions = extract_questions(parsed)
     return best_available_answers if questions.empty?
+
+    question = questions.first
+    guard_result = InteractiveSearch::DuplicateQuestionGuard.call(
+      query: query,
+      effective_query: expanded_query,
+      answers: answers,
+      candidate_question: question,
+      request_id: request_id,
+      attempt_number: attempt,
+    )
+
+    if guard_result.duplicate?
+      return best_available_answers if duplicate_retry
+
+      return handle_parsed_response(
+        parse_model_response(duplicate_retry_context(question, guard_result), operation: 'duplicate_question_retry'),
+        duplicate_retry: true,
+      )
+    end
 
     Search::Instrumentation.question_returned(
       request_id: request_id,
@@ -342,11 +371,36 @@ class InteractiveSearchService
 
     Result.new(
       type: :questions,
-      data: questions.first(1),
+      data: [question],
       attempt: attempt,
       model: configured_model,
       result_limit: configured_result_limit,
+      ranking_source: 'model_questions',
     )
+  end
+
+  def duplicate_retry_context(question, guard_result)
+    <<~PROMPT
+      #{build_context}
+
+      The previous candidate question repeated a classification distinction that the user has already answered.
+      Do not ask that question again, and do not ask another question with the same material distinction.
+
+      Repeated candidate question:
+      #{question.to_json}
+
+      Duplicate guard diagnostics:
+      #{duplicate_guard_diagnostics(guard_result).to_json}
+
+      Ask one new, concrete narrowing question only if it uses a different classification dimension. Otherwise return the best answers from the OpenSearch results.
+    PROMPT
+  end
+
+  def duplicate_guard_diagnostics(guard_result)
+    {
+      reason: guard_result.reason,
+      signals: guard_result.signals,
+    }
   end
 
   def extract_questions(parsed)

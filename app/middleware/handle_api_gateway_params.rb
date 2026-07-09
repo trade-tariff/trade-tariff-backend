@@ -33,7 +33,7 @@ class HandleApiGatewayParams
     [status, headers, body]
   end
 
-  private
+private
 
   def build_nested(key, value)
     keys = key.split(SEPARATOR)

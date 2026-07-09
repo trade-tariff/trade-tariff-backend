@@ -116,7 +116,7 @@ module RulesOfOrigin
       !(validity_start_date&.>(Time.zone.now) || validity_end_date&.<(Time.zone.now))
     end
 
-    private
+  private
 
     def new_proof(proof_attrs)
       Proof.new proof_attrs.merge(scheme: self)

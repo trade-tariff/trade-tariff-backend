@@ -14,6 +14,7 @@ RSpec.describe 'Measures', swagger_doc: 'v2/swagger.json', type: :request do
     get 'Retrieve a measure' do
       tags 'Measures'
       produces 'application/json'
+      jsonapi_query_parameters(includes: JsonapiSwaggerParameters::MEASURE_INCLUDES)
       description 'Returns a single measure including its duty expression, conditions, components, and geographical area.'
       operationId 'getMeasure'
 

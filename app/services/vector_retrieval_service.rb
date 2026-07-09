@@ -10,7 +10,11 @@ class VectorRetrievalService
   end
 
   def call
-    query_embedding = embedding_service.embed(@query)
+    query_embedding = AiUsage::Instrumentation.embedding_api_call(
+      event_kind: 'vector_search_query_embedding',
+      batch_size: 1,
+      model: EmbeddingService::MODEL,
+    ) { embedding_service.embed(@query, event_kind: 'vector_search_query_embedding') }
     vector_literal = "'[#{query_embedding.join(',')}]'::vector"
 
     ranked_rows = fetch_ranked_sids(vector_literal)
@@ -31,7 +35,7 @@ class VectorRetrievalService
     end
   end
 
-  private
+private
 
   def apply_score_threshold(rows)
     threshold = AdminConfiguration.integer_value('vector_score_threshold') / 100.0

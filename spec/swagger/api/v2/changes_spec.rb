@@ -30,6 +30,7 @@ RSpec.describe 'Changes', swagger_doc: 'v2/swagger.json', type: :request do
     get 'List recent tariff changes' do
       tags 'Changes'
       produces 'application/json'
+      jsonapi_query_parameters(includes: [])
       description 'Returns recent tariff changes. The data array may be empty if no changes exist for the current date.'
       operationId 'listChanges'
 
@@ -61,6 +62,7 @@ RSpec.describe 'Changes', swagger_doc: 'v2/swagger.json', type: :request do
     get 'List tariff changes for a date' do
       tags 'Changes'
       produces 'application/json'
+      jsonapi_query_parameters(includes: [])
       description 'Returns tariff changes for the specified date. The data array may be empty if no changes exist for that date.'
       operationId 'listChangesAsOf'
 

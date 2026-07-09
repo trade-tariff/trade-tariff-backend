@@ -110,7 +110,7 @@ module GreenLanesUpdatesPublisher
       queries.flat_map { |query| fetch_updates(query) }
     end
 
-    private
+  private
 
     def fetch_updates(query)
       dataset = DB.fetch(

@@ -2,8 +2,8 @@ RSpec.describe Api::User::TargetsFilterService::MyCommoditiesTargetsFilterServic
   let(:subscription) { create(:user_subscription, subscription_type: Subscriptions::Type.my_commodities) }
   let(:service) { described_class.new(subscription) }
 
-  let(:commodity1) { create(:commodity, goods_nomenclature_sid: 123) }
-  let(:commodity2) { create(:commodity, goods_nomenclature_sid: 456) }
+  let(:first_commodity) { create(:commodity, goods_nomenclature_sid: 123) }
+  let(:second_commodity) { create(:commodity, goods_nomenclature_sid: 456) }
 
   let(:active_commodities_service) { instance_double(Api::User::ActiveCommoditiesService) }
 
@@ -43,7 +43,7 @@ RSpec.describe Api::User::TargetsFilterService::MyCommoditiesTargetsFilterServic
         allow(active_commodities_service)
           .to receive(:active_commodities)
           .with(page: 1, per_page: 20)
-          .and_return([[commodity1, commodity2], 2])
+          .and_return([[first_commodity, second_commodity], 2])
       end
 
       it 'maps commodities into subscription targets' do
@@ -51,7 +51,7 @@ RSpec.describe Api::User::TargetsFilterService::MyCommoditiesTargetsFilterServic
 
         expect(total).to eq(2)
         expect(targets.first.target_type).to eq('commodity')
-        expect(targets.first.commodity).to eq(commodity1)
+        expect(targets.first.commodity).to eq(first_commodity)
       end
     end
 

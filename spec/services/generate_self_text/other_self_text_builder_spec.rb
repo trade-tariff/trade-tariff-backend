@@ -184,7 +184,7 @@ RSpec.describe GenerateSelfText::OtherSelfTextBuilder do
     end
 
     context 'when AI returns fewer descriptions than targets' do
-      let(:other_commodity2) do
+      let(:second_other_commodity) do
         create(:commodity, :with_description,
                description: 'Other',
                parent: heading)
@@ -203,7 +203,7 @@ RSpec.describe GenerateSelfText::OtherSelfTextBuilder do
       end
 
       before do
-        other_commodity2
+        second_other_commodity
         allow(ai_client).to receive(:call).and_return(partial_response)
       end
 
@@ -339,6 +339,7 @@ RSpec.describe GenerateSelfText::OtherSelfTextBuilder do
           anything,
           model: 'gpt-4.1-mini-2025-04-14',
           reasoning_effort: nil,
+          event_kind: 'self_text_generation_ai',
         )
       end
 
@@ -371,6 +372,7 @@ RSpec.describe GenerateSelfText::OtherSelfTextBuilder do
           anything,
           model: TradeTariffBackend.ai_model,
           reasoning_effort: nil,
+          event_kind: 'self_text_generation_ai',
         )
       end
     end

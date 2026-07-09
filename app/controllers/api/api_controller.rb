@@ -19,7 +19,12 @@ module Api
       render json: serializer.serialized_errors({ error: exception.message, url: request.url }), status: :bad_request
     end
 
-    protected
+    rescue_from JSONAPI::Serializer::UnsupportedIncludeError do |exception|
+      serializer = TradeTariffBackend.error_serializer(request)
+      render json: serializer.serialized_errors({ error: exception.message, url: request.url }), status: :bad_request
+    end
+
+  protected
 
     def current_page
       Integer(params[:page] || 1)
