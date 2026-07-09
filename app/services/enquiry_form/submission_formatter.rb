@@ -116,7 +116,7 @@ class EnquiryForm::SubmissionFormatter
     values.map { |value| csv_value(value) }
   end
 
-  private
+private
 
   attr_reader :enquiry_form_data
 

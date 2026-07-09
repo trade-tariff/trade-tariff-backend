@@ -14,7 +14,7 @@
 #   Array(nil)                # => []
 Aws::ActionMailer::SESV2::Mailer.prepend(
   Module.new do
-    private
+  private
 
     def to_addresses(message)
       Array(super)

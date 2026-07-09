@@ -57,7 +57,7 @@ module Api
           render json: serialize(goods_nomenclature_label.reload), status: :ok
         end
 
-        private
+      private
 
         def serialize(label, options = {})
           Api::Admin::GoodsNomenclatures::GoodsNomenclatureLabelSerializer

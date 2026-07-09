@@ -14,7 +14,7 @@ class CertificateFinderService
     )
   end
 
-  private
+private
 
   attr_reader :type, :code, :description
 

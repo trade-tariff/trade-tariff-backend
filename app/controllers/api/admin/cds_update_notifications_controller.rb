@@ -12,7 +12,7 @@ module Api
         end
       end
 
-      private
+    private
 
       def cds_update_notification_params
         params.require(:data).permit(:type, attributes: %i[filename])

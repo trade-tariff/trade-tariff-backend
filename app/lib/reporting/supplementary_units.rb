@@ -65,7 +65,7 @@ module Reporting
         Reporting.published_link(xi_object_key)
       end
 
-      private
+    private
 
       def rows
         Measure

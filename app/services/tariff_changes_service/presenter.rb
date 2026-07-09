@@ -91,7 +91,7 @@ class TariffChangesService
       "#{commodity_api_base_url}?#{query}"
     end
 
-    private
+  private
 
     def commodity_base_url
       "https://www.trade-tariff.service.gov.uk/commodities/#{goods_nomenclature_item_id}"

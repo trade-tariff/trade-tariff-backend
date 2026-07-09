@@ -26,7 +26,7 @@ class SearchService
       }.merge(results)
     end
 
-    private
+  private
 
     def query_options
       {}

@@ -17,7 +17,7 @@ module Api
         end
       end
 
-      private
+    private
 
       def measures(page, per_page)
         grouped_measure_change = TariffChanges::GroupedMeasureChange.from_id(id)

@@ -40,7 +40,7 @@ module ElasticsearchHelpers
     TradeTariffBackend.search_client.reindex_all
   end
 
-  private
+private
 
   def index_search_suggestion(model)
     index = Search::SearchSuggestionsIndex.new

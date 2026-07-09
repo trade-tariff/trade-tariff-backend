@@ -21,7 +21,7 @@ class CachedQuotaOrderNumberService
     end
   end
 
-  private
+private
 
   def quota_order_numbers
     QuotaOrderNumber.with_quota_definitions.eager(EAGER_LOAD).all

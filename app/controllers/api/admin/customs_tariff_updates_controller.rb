@@ -13,7 +13,7 @@ module Api
         render json: Api::Admin::CustomsTariffUpdateSerializer.new(customs_tariff_update, is_collection: false).serializable_hash
       end
 
-      private
+    private
 
       def updates
         @updates ||= CustomsTariffUpdate

@@ -28,7 +28,7 @@ module Api
         { query: sanitised }
       end
 
-      private
+    private
 
       def enabled?
         AdminConfiguration.enabled?('input_sanitiser_enabled')

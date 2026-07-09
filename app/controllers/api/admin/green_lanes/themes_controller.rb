@@ -8,7 +8,7 @@ module Api
           render json: serialize(themes.to_a)
         end
 
-        private
+      private
 
         def themes
           @themes ||= ::GreenLanes::Theme.order(Sequel.asc(:section), Sequel.asc(:subsection))

@@ -71,7 +71,7 @@ class MeasurementUnit < Sequel::Model
       @measurement_units ||= JSON.parse(File.read(Rails.root.join(MEASUREMENT_UNIT_OVERLAY_FILE)))
     end
 
-    private
+  private
 
     def compound_units_for(unit)
       unit['compound_units'].flat_map do |unit_key|

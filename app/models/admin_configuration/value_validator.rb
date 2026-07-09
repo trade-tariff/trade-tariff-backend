@@ -5,7 +5,7 @@ class AdminConfiguration
   # config_type. Included as a private mixin on AdminConfiguration; not
   # intended for use outside that class.
   module ValueValidator
-    private
+  private
 
     def validate_value_for_type
       return if config_type.blank?

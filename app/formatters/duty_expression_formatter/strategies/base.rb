@@ -5,7 +5,7 @@ class DutyExpressionFormatter::Strategies::Base
     @context = context
   end
 
-  private
+private
 
   attr_reader :context
 

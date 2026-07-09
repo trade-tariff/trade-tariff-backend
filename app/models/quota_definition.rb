@@ -199,7 +199,7 @@ class QuotaDefinition < Sequel::Model
     quota_critical_events&.map(&:quota_definition_sid)
   end
 
-  private
+private
 
   def suspension_period_active?
     if last_suspension_period.present?

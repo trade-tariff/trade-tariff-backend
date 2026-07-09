@@ -14,7 +14,7 @@ class ClearCacheControl
     [status, headers, body]
   end
 
-  private
+private
 
   def frontend_request?(env)
     env[HTTP_USER_AGENT].to_s.start_with?(FRONTEND_USER_AGENT)

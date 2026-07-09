@@ -58,7 +58,7 @@ class CdsImporter
          measure.measure_sid]
       end
 
-      private
+    private
 
       def measure_type(measure_type_id)
         mt = ::MeasureType.find(measure_type_id: measure_type_id)

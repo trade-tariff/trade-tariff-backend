@@ -14,7 +14,7 @@ module Api
           )
         end
 
-        private
+      private
 
         def validate_id
           raise Sequel::RecordNotFound unless id.match?(/\A(monthly_csv_hmrc|monthly_csv|monthly_xml|average_csv|spot_csv)_\d{4}-\d{1,2}\z/)

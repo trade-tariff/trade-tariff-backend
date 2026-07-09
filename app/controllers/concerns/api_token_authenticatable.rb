@@ -26,7 +26,7 @@ module ApiTokenAuthenticatable
       true
     end
 
-    private
+  private
 
     def api_tokens
       @api_tokens ||= read_tokens

@@ -93,7 +93,7 @@ module Api
         end
       end
 
-      private
+    private
 
       def completion_payload(**payload)
         return payload unless description_intercept

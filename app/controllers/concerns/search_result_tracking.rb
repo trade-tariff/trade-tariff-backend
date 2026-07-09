@@ -3,7 +3,7 @@ module SearchResultTracking
 
   SEARCH_REQUEST_ID_HEADER = 'X-Search-Request-Id'.freeze
 
-  private
+private
 
   def track_result_selected
     rid = search_request_id

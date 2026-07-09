@@ -22,7 +22,7 @@ module ExchangeRates
       end
     end
 
-    private
+  private
 
     attr_reader :rates, :date, :type, :sample_date
 

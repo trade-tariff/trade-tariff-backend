@@ -34,7 +34,7 @@ jobs:
 
       - uses: trade-tariff/trade-tariff-tools/.github/actions/check-pr-lines@main
         with:
-          threshold: 600
+          threshold: 800
           exclude-paths: |
             db/
             data/

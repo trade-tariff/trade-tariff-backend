@@ -12,7 +12,7 @@ module Reporting
           rows
         end
 
-        private
+      private
 
         def each_row
           ::BadQuotaAssociation.actual.each do |bad_quota_association|

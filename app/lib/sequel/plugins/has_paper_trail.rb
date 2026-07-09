@@ -41,7 +41,7 @@ module Sequel
           true
         end
 
-        private
+      private
 
         def register_model(model)
           @tracked_models |= [model]
@@ -61,7 +61,7 @@ module Sequel
           Thread.current[paper_trail_disabled_key] == true
         end
 
-        private
+      private
 
         def paper_trail_disabled_key
           :"paper_trail_disabled_#{name}"
@@ -89,7 +89,7 @@ module Sequel
           create_version('destroy')
         end
 
-        private
+      private
 
         def create_version(event)
           return if model.paper_trail_disabled?

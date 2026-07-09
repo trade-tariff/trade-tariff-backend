@@ -52,7 +52,7 @@ module Reporting
         end
       end
 
-      private
+    private
 
       def serialized_assessments
         Api::V2::GreenLanes::CategoryAssessmentSerializer.new(

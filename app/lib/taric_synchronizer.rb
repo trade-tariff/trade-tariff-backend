@@ -71,7 +71,7 @@ class TaricSynchronizer
       rollback_updates(TaricUpdate, rollback_date, keep:)
     end
 
-    private
+  private
 
     def sync_variables_set?
       username.present? && password.present? && host.present?

@@ -15,7 +15,7 @@ class LoopingSequence
     self
   end
 
-  private
+private
 
   attr_accessor :enumerator
   attr_writer :value

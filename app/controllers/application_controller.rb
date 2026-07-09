@@ -22,7 +22,7 @@ class ApplicationController < ActionController::API
     head :ok
   end
 
-  protected
+protected
 
   def jsonapi_serializer_options(default_include: nil, **options)
     options = options.dup
@@ -54,7 +54,7 @@ class ApplicationController < ActionController::API
     payload[:client_id] = request.headers['HTTP_X_CLIENT_ID']
   end
 
-  private
+private
 
   def actual_date(default = Time.zone.today)
     as_of_param = params[:as_of].to_s

@@ -18,7 +18,7 @@ module ExchangeRates
       end
     end
 
-    private
+  private
 
     def monthly_rate_type?
       @type == ExchangeRateCurrencyRate::MONTHLY_RATE_TYPE

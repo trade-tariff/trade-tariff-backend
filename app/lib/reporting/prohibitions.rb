@@ -151,7 +151,7 @@ module Reporting
         end
       end
 
-      private
+    private
 
       def build_row_for(declarable, measure)
         HEADER_ROW.map do |header|

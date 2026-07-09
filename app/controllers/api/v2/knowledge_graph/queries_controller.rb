@@ -14,7 +14,7 @@ module Api
           end
         end
 
-        private
+      private
 
         def attributes
           params.fetch(:data, {}).fetch(:attributes, {}).to_unsafe_h

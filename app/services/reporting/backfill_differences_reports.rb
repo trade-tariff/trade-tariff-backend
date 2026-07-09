@@ -49,7 +49,7 @@ module Reporting
       summary
     end
 
-    private
+  private
 
     ReportSource = Data.define(:date, :key)
     Worksheet = Data.define(:worksheet, :worksheet_name, :subtext)

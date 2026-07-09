@@ -9,7 +9,7 @@ module Api
 
         before_action :check_service, :authenticate, :set_request_scope
 
-        protected
+      protected
 
         def append_info_to_payload(payload)
           super
@@ -17,7 +17,7 @@ module Api
           payload[:auth_type] = @auth_type
         end
 
-        private
+      private
 
         def check_service
           if TradeTariffBackend.uk?

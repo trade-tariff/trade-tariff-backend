@@ -7,7 +7,7 @@ module Api
         render json: serialized_exchange_rate_collection
       end
 
-      private
+    private
 
       def serialized_exchange_rate_collection
         ExchangeRates::ExchangeRateCollectionSerializer.new(

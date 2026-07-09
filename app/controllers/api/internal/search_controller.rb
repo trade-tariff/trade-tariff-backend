@@ -15,7 +15,7 @@ module Api
         render json: Api::Internal::SuggestionsService.new(params).call
       end
 
-      private
+    private
 
       def search_params
         params.permit(:q, :as_of, :request_id, :expanded_query, answers: %i[question answer options])

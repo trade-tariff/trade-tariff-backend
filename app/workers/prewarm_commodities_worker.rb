@@ -61,7 +61,7 @@ class PrewarmCommoditiesWorker
     @client ||= Aws::CloudWatchLogs::Client.new
   end
 
-  private
+private
 
   def preconfigured_goods_nomenclature_item_ids
     ENV.fetch('PREWARM_COMMODITY_IDS', '')

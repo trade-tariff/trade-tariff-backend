@@ -27,7 +27,7 @@ class GreenLanesUpdatesWorker
     end
   end
 
-  private
+private
 
   def create_automated_ca(updates)
     created_updates = updates.select do |update|

@@ -11,7 +11,7 @@ module Api
         render json: serialize
       end
 
-      private
+    private
 
       def tariff_changes
         @tariff_changes ||= Api::User::GroupedMeasureChangesService.new(current_user, id, actual_date).call(page: current_page, per_page:)

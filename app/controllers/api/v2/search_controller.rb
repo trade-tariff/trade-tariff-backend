@@ -22,7 +22,7 @@ module Api
         render json: results
       end
 
-      private
+    private
 
       def classic_result_metrics(results)
         return { result_count: 0 } unless results.is_a?(Hash) && results[:data].is_a?(Hash)

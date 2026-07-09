@@ -40,7 +40,7 @@ class Measure
       "#{measurement_unit.description} (#{measurement_unit.abbreviation})"
     end
 
-    private
+  private
 
     attr_reader :measure
 

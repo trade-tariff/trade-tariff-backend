@@ -2,7 +2,7 @@ module GenerateSelfText
   class OtherSelfTextBuilder < BaseSelfTextBuilder
     OTHER_PATTERN = SegmentExtractor::OTHER_PATTERN
 
-    private
+  private
 
     def select_segments(segments)
       segments.select { |s| s[:node][:is_other] }

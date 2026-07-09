@@ -16,7 +16,7 @@ RSpec::Matchers.define :eq_pk do
     end
   end
 
-  private
+private
 
   def model_id(model)
     "#{model.class}:#{model.pk}"

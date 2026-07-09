@@ -36,7 +36,7 @@ module Api
         )
       end
 
-      private
+    private
 
       def empty_response
         {

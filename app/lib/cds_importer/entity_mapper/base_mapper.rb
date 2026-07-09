@@ -88,7 +88,7 @@ class CdsImporter
           "#{mapping_path.to_s.length}#{name}"
         end
 
-        protected
+      protected
 
         def before_oplog_inserts(&block)
           before_oplog_inserts_callbacks << block
@@ -144,7 +144,7 @@ class CdsImporter
         @xml_node['filename']
       end
 
-      private
+    private
 
       def build_instance(values)
         unmapped_values = values

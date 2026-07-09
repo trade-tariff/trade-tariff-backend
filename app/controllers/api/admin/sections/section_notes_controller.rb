@@ -42,7 +42,7 @@ module Api
           head :no_content
         end
 
-        private
+      private
 
         def section_note_params
           params.require(:data).permit(:type, attributes: [:content])

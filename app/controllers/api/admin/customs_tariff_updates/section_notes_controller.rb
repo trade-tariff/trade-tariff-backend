@@ -95,7 +95,7 @@ module Api
                  status: :unprocessable_content
         end
 
-        private
+      private
 
         def compare_notes_index
           if params[:compare_version].present?

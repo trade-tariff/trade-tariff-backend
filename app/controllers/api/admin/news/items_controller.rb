@@ -8,7 +8,7 @@ module Api
           render json: serialize(news_items.to_a, pagination_meta)
         end
 
-        private
+      private
 
         def serializer_class = Api::Admin::News::ItemSerializer
         def resource_class = ::News::Item

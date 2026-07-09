@@ -2,7 +2,7 @@ module Api
   module Admin
     module Commodities
       class SearchReferencesController < Api::Admin::SearchReferencesBaseController
-        private
+      private
 
         def search_reference_collection
           commodity_or_subheading.search_references_dataset

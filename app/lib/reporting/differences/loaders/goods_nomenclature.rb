@@ -16,7 +16,7 @@ module Reporting
           [self.class.name, source, target].join('_')
         end
 
-        private
+      private
 
         def data
           all_missing = source_goods_nomenclatures.keys - target_goods_nomenclatures.keys
@@ -73,7 +73,7 @@ module Reporting
           ]
         end
 
-        private
+      private
 
         attr_reader :goods_nomenclature
 

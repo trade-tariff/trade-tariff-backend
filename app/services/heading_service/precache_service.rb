@@ -22,7 +22,7 @@ module HeadingService
       end
     end
 
-    private
+  private
 
     def each_heading
       Chapter.actual.non_hidden.all do |chapter|

@@ -52,7 +52,7 @@ class InteractiveSearchService
     end
   end
 
-  private
+private
 
   attr_reader :query, :expanded_query, :opensearch_results, :answers, :request_id, :attempt
 

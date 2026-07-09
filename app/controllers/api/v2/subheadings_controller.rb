@@ -9,7 +9,7 @@ module Api
         render json: cached_subheading
       end
 
-      private
+    private
 
       def cached_subheading
         CachedSubheadingService.new(

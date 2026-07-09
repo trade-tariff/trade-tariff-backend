@@ -27,7 +27,7 @@ module Api
           end
         end
 
-        private
+      private
 
         def record_count
           update_notifications.pagination_record_count

@@ -68,7 +68,7 @@ class Measure
       @meursing_measures ||= MeursingMeasureFinderService.new(measure, meursing_additional_code_id).call
     end
 
-    private
+  private
 
     attr_reader :measure
 

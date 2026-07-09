@@ -11,7 +11,7 @@ class FaqFeedbackReportWorker
     end
   end
 
-  private
+private
 
   def send_faq_feedback_report_email
     FaqFeedbackMailer.faq_feedback_message.deliver_now

@@ -5,7 +5,7 @@ module Api
         render json: Api::V2::MeasureSerializer.new(presented_measure, serializer_options)
       end
 
-      private
+    private
 
       def presented_measure
         measure = Measure.actual

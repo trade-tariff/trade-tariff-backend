@@ -35,7 +35,7 @@ class CustomJobLogger < ::Sidekiq::JobLogger
     raise e
   end
 
-  private
+private
 
   def query_count
     ::SequelRails::Railties::LogSubscriber.count

@@ -10,7 +10,7 @@ class EnquiryForm::CsvGeneratorService
     end
   end
 
-  private
+private
 
   def formatter
     @formatter ||= EnquiryForm::SubmissionFormatter.new(@enquiry_form_data)
