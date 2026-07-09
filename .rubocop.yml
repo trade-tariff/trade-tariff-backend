@@ -80,8 +80,6 @@ RSpec/ExampleLength:
 RSpec/NestedGroups:
   Enabled: false
 
-Rails/FilePath:
-  Enabled: false
 
 # swagger:generate intentionally omits :environment — rswag:specs:swaggerize
 # runs rspec in a subprocess and does not need Rails loaded in this process.
