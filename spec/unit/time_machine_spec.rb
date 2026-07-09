@@ -16,7 +16,7 @@ RSpec.describe TimeMachine do
       end
     end
 
-    it 'sets date to current date if argument is errorenous', :aggregate_failures do
+    it 'sets date to current date if argument is erroneous', :aggregate_failures do
       described_class.at('#&$*(#)') do
         expect(Commodity.actual.all).to     include first_commodity
         expect(Commodity.actual.all).not_to include second_commodity
