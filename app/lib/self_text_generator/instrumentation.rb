@@ -1,4 +1,5 @@
 require 'active_support/notifications'
+require_relative '../timed_instrumentation'
 
 module SelfTextGenerator
   module Instrumentation
@@ -34,47 +35,27 @@ module SelfTextGenerator
       )
     end
 
-    def api_call(batch_size:, model:, chapter_code:, event_kind: 'self_text_generation_ai')
-      instrument('api_call_started', batch_size:, model:, chapter_code:)
-
-      start_time = Process.clock_gettime(Process::CLOCK_MONOTONIC)
-      result = yield
-      duration = Process.clock_gettime(Process::CLOCK_MONOTONIC) - start_time
-
-      instrument(
-        'api_call_completed',
-        {
-          batch_size:,
-          model:,
-          chapter_code:,
-          duration_ms: (duration * 1000).round(2),
-          event_kind:,
-        }.merge(AiUsage.payload_from(result)),
+    def api_call(batch_size:, model:, chapter_code:, event_kind: 'self_text_generation_ai', &block)
+      TimedInstrumentation.call(
+        instrumenter: method(:instrument),
+        started_event: 'api_call_started',
+        completed_event: 'api_call_completed',
+        failed_event: 'api_call_failed',
+        payload: { batch_size:, model:, chapter_code:, event_kind: },
+        completed_payload: ->(result) { AiUsage.payload_from(result) },
+        failed_payload: lambda { |error|
+          http_status = if error.respond_to?(:http_status)
+                          error.http_status
+                        else
+                          error.respond_to?(:response) ? error.response&.dig(:status) : nil
+                        end
+          {
+            error_message: AiUsage.safe_error_message(error),
+            http_status:,
+          }.merge(AiUsage.payload_from_error(error))
+        },
+        &block
       )
-
-      result
-    rescue StandardError => e
-      duration = Process.clock_gettime(Process::CLOCK_MONOTONIC) - start_time
-      http_status = if e.respond_to?(:http_status)
-                      e.http_status
-                    else
-                      e.respond_to?(:response) ? e.response&.dig(:status) : nil
-                    end
-
-      instrument(
-        'api_call_failed',
-        {
-          batch_size:,
-          model:,
-          chapter_code:,
-          error_class: e.class.name,
-          error_message: AiUsage.safe_error_message(e),
-          duration_ms: (duration * 1000).round(2),
-          http_status:,
-          event_kind:,
-        }.merge(AiUsage.payload_from_error(e)),
-      )
-      raise
     end
 
     def scoring_started(chapter_code:, total_records:)
