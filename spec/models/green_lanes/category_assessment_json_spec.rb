@@ -178,7 +178,8 @@ RSpec.describe GreenLanes::CategoryAssessmentJson do
 
     context 'when the specified file key does not exist in S3' do
       before do
-        allow(bucket).to receive(:object).and_raise(Aws::S3::Errors::NoSuchKey.new({}, 'File not found'))
+        allow(bucket).to receive(:object).with(described_class::CATEGORISATION_OBJECT_KEY).and_return(s3_object)
+        allow(s3_object).to receive(:get).and_raise(Aws::S3::Errors::NoSuchKey.new({}, 'File not found'))
       end
 
       it 'raise InvalidFile error' do
