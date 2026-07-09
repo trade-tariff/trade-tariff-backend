@@ -39,7 +39,7 @@ module AdminConfigurationSeeder
     end
 
     def prompt(name)
-      @prompts[name] ||= PROMPT_PATH.join(PROMPT_FILES.fetch(name)).read.strip
+      @prompts[name] ||= PROMPT_PATH.join(PROMPT_FILES.fetch(name)).read.strip.freeze
     end
   end
 end
