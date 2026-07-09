@@ -120,8 +120,6 @@ Style/OptionalBooleanParameter:
 Style/StringLiterals:
   EnforcedStyle: single_quotes
 
-RSpec/MessageChain:
-  Enabled: false
 
 RSpec/IndexedLet:
   Enabled: false
