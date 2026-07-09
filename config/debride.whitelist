@@ -41,6 +41,7 @@ Api::V2::ExactSearchPresenter#entry
 Api::V2::FootnoteSearch::FootnotePresenter#goods_nomenclature_ids
 Api::V2::FuzzySearchPresenter#goods_nomenclature_match
 Api::V2::FuzzySearchPresenter#reference_match
+Api::V2::ExchangeRates::FilesController#redirect
 Api::V2::GoodsNomenclaturesController#show_by_chapter
 Api::V2::GoodsNomenclaturesController#show_by_heading
 Api::V2::GoodsNomenclaturesController#show_by_section
