@@ -100,6 +100,12 @@ RSpec.describe Api::V2::HeadingsController, type: :request do
           end
 
           it { expect(api_response.body).to match_json_expression(pattern) }
+
+          it 'does not include duty calculator metadata' do
+            parsed_body = JSON.parse(api_response.body)
+
+            expect(parsed_body.dig('data', 'meta')).to be_nil
+          end
         end
 
         context 'when heading is present and commodity has hidden commodities' do
