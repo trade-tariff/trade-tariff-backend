@@ -6,7 +6,7 @@ module Reporting
 
         include Reporting::Differences::Loaders::Helpers
 
-        private
+      private
 
         def data
           acc = []

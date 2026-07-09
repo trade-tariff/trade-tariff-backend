@@ -3,7 +3,7 @@ module Api
     class GoodsNomenclatureSelfTextsController < AdminController
       include GeneratedContentListing
 
-      private
+    private
 
       def model_class
         GoodsNomenclatureSelfText

@@ -47,7 +47,7 @@ module DescriptionIntercepts
       failure_result
     end
 
-    private
+  private
 
     def parse_rows
       csv = CSV.parse(@csv_content, headers: true, skip_blanks: true)

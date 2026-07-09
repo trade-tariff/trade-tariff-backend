@@ -11,7 +11,7 @@ module Api
           render json: serialize(collection.to_a, options)
         end
 
-        private
+      private
 
         def serializer_class = Api::Admin::GreenLanes::MeasureTypeMappingSerializer
         def resource_class = ::GreenLanes::IdentifiedMeasureTypeCategoryAssessment

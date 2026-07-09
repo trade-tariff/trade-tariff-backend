@@ -2,7 +2,7 @@ module Api
   module Admin
     module CustomsTariffUpdates
       class BaseController < AdminController
-        private
+      private
 
         def customs_tariff_update
           @customs_tariff_update ||= CustomsTariffUpdate

@@ -5,7 +5,7 @@ module Api
         render json: Api::V2::Footnotes::FootnoteTypeSerializer.new(footnote_types, {}).serializable_hash
       end
 
-      private
+    private
 
       def footnote_types
         FootnoteType.eager(:footnote_type_description).all

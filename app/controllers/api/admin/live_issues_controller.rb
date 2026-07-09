@@ -35,7 +35,7 @@ module Api
         head :no_content
       end
 
-      private
+    private
 
       def serializer_class = Api::Admin::LiveIssueSerializer
 

@@ -18,7 +18,7 @@ module CustomsTariffImporter
           normalize_visual_numbering(text, current_paragraph)
         end
 
-        private
+      private
 
         def normalize_source_bullet_marker(text)
           return text unless text.match?(SOURCE_BULLET_MARKER_PATTERN)

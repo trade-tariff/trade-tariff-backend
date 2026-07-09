@@ -5,7 +5,7 @@ module Api
         render json: serialized_simplified_procedural_code_measures
       end
 
-      private
+    private
 
       def serialized_simplified_procedural_code_measures
         Api::V2::SimplifiedProceduralCodeMeasureSerializer.new(all_simplified_procedural_code_measures)

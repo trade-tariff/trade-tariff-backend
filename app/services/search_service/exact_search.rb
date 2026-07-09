@@ -32,7 +32,7 @@ class SearchService
       }
     end
 
-    private
+  private
 
     def find_search_suggestion(query)
       filter = { value: singular_and_plural(query) }

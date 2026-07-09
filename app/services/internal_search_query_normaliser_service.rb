@@ -14,7 +14,7 @@ class InternalSearchQueryNormaliserService
     Result.new(query: query, expanded_query: expanded_query)
   end
 
-  private
+private
 
   attr_reader :query, :request_id
 

@@ -16,7 +16,7 @@ class TreeIntegrityCheckingService
     @failures.empty?
   end
 
-  private
+private
 
   def check_for_tree_break!(chapter)
     chapter.descendants.each do |descendant|

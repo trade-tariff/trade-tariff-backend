@@ -5,7 +5,7 @@ module Api
         render json: serialized_chemicals
       end
 
-      private
+    private
 
       def serialized_chemicals
         Api::V2::FullChemicalSerializer.new(full_chemicals).serializable_hash

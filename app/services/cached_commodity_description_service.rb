@@ -67,7 +67,7 @@ class CachedCommodityDescriptionService
   end
   private_class_method :cache_key
 
-  private
+private
 
   attr_reader :code
 

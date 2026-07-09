@@ -30,7 +30,7 @@ class RelabelGoodsNomenclatureWorker
     end
   end
 
-  private
+private
 
   def configured_page_size
     config = AdminConfiguration.classification.by_name('label_page_size')

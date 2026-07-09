@@ -14,7 +14,7 @@ class HealthcheckController < ApplicationController
     render json: resultz
   end
 
-  private
+private
 
   def result
     @result ||= Healthcheck.check

@@ -26,7 +26,7 @@ module TariffSynchronizer
       download(@update.next_rollover_update)
     end
 
-    private
+  private
 
     def download(update)
       TariffDownloader.new(

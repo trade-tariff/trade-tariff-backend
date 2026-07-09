@@ -23,7 +23,7 @@ class ClearCacheWorker
     Sidekiq::Client.enqueue_in(1.minute, InvalidateCacheWorker)
   end
 
-  private
+private
 
   def clear_frontend_cache
     Rails.logger.info 'Clearing frontend cache'

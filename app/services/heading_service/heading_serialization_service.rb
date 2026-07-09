@@ -42,7 +42,7 @@ module HeadingService
       end
     end
 
-    private
+  private
 
     attr_reader :heading, :actual_date, :filters
 

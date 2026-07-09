@@ -58,7 +58,7 @@ module Api
         respond_with @search_reference
       end
 
-      private
+    private
 
       def search_references
         @search_references ||= search_reference_collection.by_title.all

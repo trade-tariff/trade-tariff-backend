@@ -162,7 +162,7 @@ module SelfTextGenerator
       info log_entry(event: 'reindex_completed')
     end
 
-    private
+  private
 
     def log_entry(data)
       data.merge(

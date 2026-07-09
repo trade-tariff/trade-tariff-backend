@@ -66,7 +66,7 @@ class GoodsNomenclatureLabel < Sequel::Model
       end
     end
 
-    private
+  private
 
     def generated_content_table
       Sequel[:goods_nomenclature_labels]

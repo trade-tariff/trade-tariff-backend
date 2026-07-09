@@ -49,7 +49,7 @@ module Api
         end
       end
 
-      private
+    private
 
       def chapter_note_eager_load
         TradeTariffBackend.promote_customs_tariff_notes? ? :customs_tariff_chapter_note : :chapter_note

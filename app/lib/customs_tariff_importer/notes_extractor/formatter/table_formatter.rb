@@ -14,7 +14,7 @@ module CustomsTariffImporter
           ['', markdown_table_row(header), markdown_table_separator(header.length), *body.map { |row| markdown_table_row(row) }, '']
         end
 
-        private
+      private
 
         def table_row_cells(row)
           row.xpath('./w:tc', WORD_NS).flat_map do |cell|

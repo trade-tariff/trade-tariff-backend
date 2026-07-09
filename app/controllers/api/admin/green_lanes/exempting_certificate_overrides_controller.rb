@@ -10,7 +10,7 @@ module Api
           render json: serialize(collection.to_a, pagination_meta)
         end
 
-        private
+      private
 
         def serializer_class = Api::Admin::GreenLanes::ExemptingCertificateOverrideSerializer
         def resource_class = ::GreenLanes::ExemptingCertificateOverride

@@ -95,7 +95,7 @@ module Api
       end
       helper_method :api_path_builder
 
-      private
+    private
 
       def respond_with(commodities)
         @commodities = commodities

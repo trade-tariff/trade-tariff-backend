@@ -28,7 +28,7 @@ class FootnoteFinderService
     )
   end
 
-  private
+private
 
   attr_reader :type, :id, :description
 

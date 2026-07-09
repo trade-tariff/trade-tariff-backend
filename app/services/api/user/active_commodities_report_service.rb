@@ -27,7 +27,7 @@ module Api
         workbook
       end
 
-      private
+    private
 
       attr_reader :active_codes, :expired_codes, :invalid_codes
 

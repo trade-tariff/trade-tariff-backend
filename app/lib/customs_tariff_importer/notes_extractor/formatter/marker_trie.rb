@@ -123,7 +123,7 @@ module CustomsTariffImporter
 
         private_class_method :parsed_line
 
-        private
+      private
 
         def child_marker_context?(formatted, paragraph_indent_level, paragraph_first_line_indent_level)
           (paragraph_indent_level.positive? && formatted.match?(SOURCE_CHILD_MARKER_LINE_PATTERN)) ||

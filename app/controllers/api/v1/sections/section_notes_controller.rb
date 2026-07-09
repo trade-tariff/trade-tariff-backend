@@ -15,7 +15,7 @@ module Api
           respond_with @section_note
         end
 
-        private
+      private
 
         def section_note_params
           params.require(:section_note).permit(:content)

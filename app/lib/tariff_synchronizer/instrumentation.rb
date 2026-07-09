@@ -2,7 +2,7 @@ require 'active_support/notifications'
 
 module TariffSynchronizer
   module Instrumentation
-    module_function
+  module_function
 
     def instrument(event_name, payload = {}, &block)
       payload[:service] ||= TradeTariffBackend.service

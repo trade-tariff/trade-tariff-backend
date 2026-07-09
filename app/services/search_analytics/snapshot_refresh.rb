@@ -23,7 +23,7 @@ module SearchAnalytics
       end
     end
 
-    private
+  private
 
     attr_reader :query_class, :now, :periods
 

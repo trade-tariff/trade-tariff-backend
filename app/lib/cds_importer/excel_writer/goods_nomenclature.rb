@@ -48,7 +48,7 @@ class CdsImporter
         description.present?
       end
 
-      private
+    private
 
       def description
         grouped = models.group_by { |model| model.class.name }

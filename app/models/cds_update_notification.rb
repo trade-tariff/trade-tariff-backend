@@ -18,7 +18,7 @@ class CdsUpdateNotification < Sequel::Model
     errors.add(:filename, 'must refer to an existing CDS update') unless TariffSynchronizer::CdsUpdate.where(filename: filename).count.positive?
   end
 
-  private
+private
 
   def must_have(attribute)
     errors.add(attribute, "Can't be blank") if send(attribute).blank?

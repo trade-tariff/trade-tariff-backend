@@ -81,7 +81,7 @@ class AdditionalCode < Sequel::Model
       overrides_for(code).dup
     end
 
-    private
+  private
 
     def overrides_for(code)
       additional_codes.dig('code_overrides', code) || {}

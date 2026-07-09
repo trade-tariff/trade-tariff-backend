@@ -5,7 +5,7 @@ class Rollback < Sequel::Model
     end
   end
 
-  private
+private
 
   def validate
     self.whodunnit ||= TradeTariffRequest.whodunnit

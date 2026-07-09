@@ -66,7 +66,7 @@ class OpenaiClient
     end
   end
 
-  private
+private
 
   def raise_on_error!(response, model: nil, event_kind: nil)
     ai_usage = usage_metadata(response.body, model:, event_kind:)

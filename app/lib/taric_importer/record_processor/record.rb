@@ -34,7 +34,7 @@ class TaricImporter
         @attributes = default_attributes.merge(attrs)
       end
 
-      private
+    private
 
       def default_attributes
         klass.columns.reduce({}) do |memo, column_name|

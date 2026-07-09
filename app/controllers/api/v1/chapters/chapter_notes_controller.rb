@@ -15,7 +15,7 @@ module Api
           respond_with @chapter_note
         end
 
-        private
+      private
 
         def chapter_note_params
           params.require(:chapter_note).permit(:content)

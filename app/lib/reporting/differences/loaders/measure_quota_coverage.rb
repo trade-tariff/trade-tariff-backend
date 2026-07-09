@@ -13,7 +13,7 @@ module Reporting
           @end_of_year = Time.zone.today.end_of_year
         end
 
-        private
+      private
 
         attr_reader :report
 

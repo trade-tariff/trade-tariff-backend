@@ -91,7 +91,7 @@ module Reporting
         end
       end
 
-      private
+    private
 
       def build_row_for(goods_nomenclature)
         overview_measures = goods_nomenclature.applicable_overview_measures

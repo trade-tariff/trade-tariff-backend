@@ -245,7 +245,7 @@ RSpec.describe VectorRetrievalService do
     end
   end
 
-  private
+private
 
   def populate_search_embedding(sid, embedding)
     vector_literal = "'[#{embedding.join(',')}]'::vector"

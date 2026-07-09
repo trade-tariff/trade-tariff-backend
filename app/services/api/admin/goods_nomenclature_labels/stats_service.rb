@@ -26,7 +26,7 @@ module Api
           )
         end
 
-        private
+      private
 
         def total_goods_nomenclatures
           base_dataset.count

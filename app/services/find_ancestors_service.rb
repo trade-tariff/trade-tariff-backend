@@ -9,7 +9,7 @@ class FindAncestorsService
     goods_nomenclature.ancestors.dup.push(goods_nomenclature).map(&:goods_nomenclature_item_id)
   end
 
-  private
+private
 
   def goods_nomenclature
     goods_nomenclature_class.by_code(goods_nomenclature_item_id).take

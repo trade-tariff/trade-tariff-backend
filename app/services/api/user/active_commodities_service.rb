@@ -207,7 +207,7 @@ module Api
         [materialize_with_nulls(paginated_codes), total]
       end
 
-      private
+    private
 
       # --- Core data loaders ---
 

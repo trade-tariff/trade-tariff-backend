@@ -47,7 +47,7 @@ module Reporting
       false
     end
 
-    private
+  private
 
     def reporting_cdn_host?
       TradeTariffBackend.reporting_cdn_host.present?

@@ -31,7 +31,7 @@ class DataMigrator < SequelRails::Migrations
       migrator_class.new(::Sequel::Model.db, migrations_dir, default_opts)
     end
 
-    private
+  private
 
     def default_opts
       ::Sequel::OPTS.merge(

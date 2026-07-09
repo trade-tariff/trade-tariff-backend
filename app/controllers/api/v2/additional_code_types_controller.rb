@@ -5,7 +5,7 @@ module Api
         render json: Api::V2::AdditionalCodes::AdditionalCodeTypeSerializer.new(additional_code_types, {}).serializable_hash
       end
 
-      private
+    private
 
       def additional_code_types
         AdditionalCodeType.all

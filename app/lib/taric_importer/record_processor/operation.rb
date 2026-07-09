@@ -28,7 +28,7 @@ class TaricImporter
         raise NotImplementedError
       end
 
-      private
+    private
 
       def ignore_presence_errors?
         TaricSynchronizer.ignore_presence_errors

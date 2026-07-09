@@ -14,7 +14,7 @@ class ApplicableVatOptionsService
     end
   end
 
-  private
+private
 
   def measures
     @measures.select(&:vat?)

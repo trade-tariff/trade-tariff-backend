@@ -48,7 +48,7 @@ module Reporting
         all.find { |report| report.id == id.to_s } || raise(Sequel::NoMatchingRow)
       end
 
-      private
+    private
 
       def definitions
         [

@@ -30,7 +30,7 @@ module Reporting
         end
       end
 
-      private
+    private
 
       def open_workbook
         instrument_report_step('open_workbook') do

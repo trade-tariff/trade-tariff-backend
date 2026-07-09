@@ -11,7 +11,7 @@ class LiveIssue < Sequel::Model(Sequel[:live_issues].qualify(:public))
     errors.add(:commodities, 'must contain 10 digit commodity codes') if invalid_commodity_codes?
   end
 
-  private
+private
 
   def invalid_commodity_codes?
     return false if commodities.blank?

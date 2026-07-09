@@ -3,7 +3,7 @@ require_relative 'logger'
 
 module AiUsage
   module Instrumentation
-    module_function
+  module_function
 
     def instrument(event_name, payload = {}, &block)
       ActiveSupport::Notifications.instrument("#{event_name}.ai_usage", payload, &block)

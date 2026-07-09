@@ -38,7 +38,7 @@ module AdminListingDataset
     end
   end
 
-  private
+private
 
   def generated_content_table
     raise NotImplementedError, "#{self.class} must define #generated_content_table"

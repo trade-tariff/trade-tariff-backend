@@ -6,7 +6,7 @@ module Api
 
         before_action :validate_exchange_rate_type
 
-        private
+      private
 
         def validate_exchange_rate_type
           raise NotImplementedError, type unless valid_exchange_rate_type?
