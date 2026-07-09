@@ -9,16 +9,19 @@ module TimedInstrumentation
     result = yield
     duration_ms = duration_since(start_time)
 
-    instrumenter.call(completed_event, payload.merge(duration_ms:, **completed_payload_for(completed_payload, result)))
+    instrumenter.call(
+      completed_event,
+      payload.merge(**completed_payload_for(completed_payload, result), duration_ms:),
+    )
 
     result
   rescue StandardError => e
     instrumenter.call(
       failed_event,
       payload.merge(
+        **payload_for(failed_payload, e),
         error_class: e.class.name,
         duration_ms: duration_since(start_time),
-        **payload_for(failed_payload, e),
       ),
     )
     raise
