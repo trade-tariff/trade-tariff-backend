@@ -2,7 +2,7 @@ require 'active_support/notifications'
 
 module SelfTextGenerator
   module Instrumentation
-  module_function
+    module_function
 
     def instrument(event_name, payload = {}, &block)
       ActiveSupport::Notifications.instrument("#{event_name}.self_text_generator", payload, &block)
