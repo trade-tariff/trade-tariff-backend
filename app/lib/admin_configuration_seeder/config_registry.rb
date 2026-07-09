@@ -29,7 +29,7 @@ module AdminConfigurationSeeder
     end
 
     def model_options_with_reasoning
-      OpenaiClient::MODEL_CONFIGS.keys.sort.map do |key|
+      @model_options_with_reasoning ||= OpenaiClient::MODEL_CONFIGS.keys.sort.map do |key|
         levels = OpenaiClient::MODEL_CONFIGS[key][:reasoning_levels]
         {
           'key' => key,
