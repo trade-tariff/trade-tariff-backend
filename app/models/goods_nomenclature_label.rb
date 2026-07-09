@@ -19,7 +19,7 @@ class GoodsNomenclatureLabel < Sequel::Model
     validates_presence :labels
   end
 
-  dataset_module do
+  module DatasetMethods
     include AdminListingDataset
 
     def by_sid(sid)
@@ -92,6 +92,10 @@ class GoodsNomenclatureLabel < Sequel::Model
         END
       SQL
     end
+  end
+
+  dataset_module do
+    include DatasetMethods
   end
 
   def score
