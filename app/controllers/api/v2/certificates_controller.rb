@@ -13,7 +13,7 @@ module Api
         render json: serialized_list_of_certificates
       end
 
-      private
+    private
 
       def serialized_list_of_certificates
         Api::V2::Certificates::CertificateListSerializer.new(

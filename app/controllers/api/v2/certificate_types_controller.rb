@@ -5,7 +5,7 @@ module Api
         render json: Api::V2::Certificates::CertificateTypeSerializer.new(certificate_types, {}).serializable_hash
       end
 
-      private
+    private
 
       def certificate_types
         CertificateType.eager(:certificate_type_description).all

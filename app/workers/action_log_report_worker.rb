@@ -21,7 +21,7 @@ class ActionLogReportWorker
     ActionLogMailer.daily_report(csv_data, yesterday.strftime('%Y-%m-%d')).deliver_now
   end
 
-  private
+private
 
   def generate_csv(action_logs)
     CSV.generate do |csv|

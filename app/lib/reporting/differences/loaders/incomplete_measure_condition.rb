@@ -4,7 +4,7 @@ module Reporting
       class IncompleteMeasureCondition
         include Reporting::Differences::Loaders::Helpers
 
-        private
+      private
 
         def data
           acc = []

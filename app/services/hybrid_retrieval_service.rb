@@ -43,7 +43,7 @@ class HybridRetrievalService
     Result.new(results: merged, expanded_query: @expanded_query, source_results: opensearch_items + vector_items)
   end
 
-  private
+private
 
   def run_concurrent_retrievals
     opensearch_thread = Thread.new { run_leg(:opensearch) }

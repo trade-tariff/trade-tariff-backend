@@ -38,7 +38,7 @@ module GenerateSelfText
       end
     end
 
-    private
+  private
 
     attr_reader :chapter, :self_texts
 

@@ -42,7 +42,7 @@ module CustomsTariffImporter
       raise
     end
 
-    private
+  private
 
     def all_docx_links(html)
       doc = Nokogiri::HTML(html)

@@ -2,7 +2,7 @@
 module Sequel
   module Plugins
     module OptimizedManyToMany
-      module_function
+    module_function
 
       def join_conditions(right_key, right_pk, join_table, target_table, db = Sequel::Model.db)
         join_table_name = extract_table_name(join_table)

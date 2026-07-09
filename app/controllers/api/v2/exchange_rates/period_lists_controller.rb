@@ -8,7 +8,7 @@ module Api
           render json: serialized_period_list
         end
 
-        private
+      private
 
         def serialized_period_list
           ExchangeRates::ExchangeRatePeriodListSerializer.new(

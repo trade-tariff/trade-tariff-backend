@@ -2,7 +2,7 @@ require 'active_support/notifications'
 
 module Search
   module Instrumentation
-    module_function
+  module_function
 
     ERROR_MESSAGE_MAX_LENGTH = 500
     MAX_LOGGED_RESULTS = 50

@@ -1,5 +1,5 @@
 module AdminConfigurationSeeder
-  module_function
+module_function
 
   def model_label(key)
     labels = {

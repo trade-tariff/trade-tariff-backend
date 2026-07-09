@@ -49,7 +49,7 @@ module CustomsTariffImporter
       raise
     end
 
-    private
+  private
 
     def read_document_xml
       xml_content = nil

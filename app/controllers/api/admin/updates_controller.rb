@@ -13,7 +13,7 @@ module Api
         render json: Api::Admin::TariffUpdateSerializer.new(update).serializable_hash
       end
 
-      private
+    private
 
       def collection
         @collection ||= TariffSynchronizer::BaseUpdate.eager(:presence_errors)

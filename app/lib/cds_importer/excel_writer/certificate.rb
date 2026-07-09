@@ -38,7 +38,7 @@ class CdsImporter
          periodic_description(certificate_description_periods, certificate_descriptions, &method(:period_matches?))]
       end
 
-      private
+    private
 
       def period_matches?(period, description)
         period.certificate_description_period_sid == description.certificate_description_period_sid &&

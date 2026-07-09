@@ -133,7 +133,7 @@ class CachedCommodityService
     ResponseFilter.new(cached_data, geographical_area_id).call
   end
 
-  private
+private
 
   attr_reader :actual_date, :filters
 

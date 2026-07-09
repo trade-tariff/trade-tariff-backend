@@ -32,7 +32,7 @@ module Api
           render json: serialized_quota_definition
         end
 
-        private
+      private
 
         def serialized_quota_definitions
           Api::Admin::QuotaOrderNumbers::QuotaDefinitionSerializer.new(quota_definitions, serializer_options)

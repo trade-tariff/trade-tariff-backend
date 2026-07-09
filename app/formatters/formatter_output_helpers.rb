@@ -1,5 +1,5 @@
 module FormatterOutputHelpers
-  private
+private
 
   def formatted_amount_fragment(formatter_class, amount, formatted:)
     prettified_amount = formatter_class.prettify(amount).to_s

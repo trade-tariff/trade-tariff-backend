@@ -42,7 +42,7 @@ class GovukNotifier
     )
   end
 
-  private
+private
 
   def api_key
     @api_key ||= ENV['GOVUK_NOTIFY_API_KEY']

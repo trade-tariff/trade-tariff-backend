@@ -65,7 +65,7 @@ module RulesOfOrigin
     class InvalidParams < ArgumentError; end
     class InvalidFilter < ArgumentError; end
 
-    private
+  private
 
     def filter=(filter)
       raise InvalidFilter unless filter.is_a?(Hash)

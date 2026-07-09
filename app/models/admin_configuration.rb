@@ -337,7 +337,7 @@ class AdminConfiguration < Sequel::Model(Sequel[:admin_configurations].qualify(:
     val == true
   end
 
-  private
+private
 
   def validate_unique_name
     if self.class.where(name: name).any?

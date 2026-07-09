@@ -61,7 +61,7 @@ module Api
           head :no_content
         end
 
-        private
+      private
 
         def measures
           @measures ||= ::GreenLanes::Measure.eager(MEASURE_EAGER_GRAPH).order.paginate(current_page, per_page)

@@ -2,7 +2,7 @@ module Api
   module Admin
     module Chapters
       class SearchReferencesController < Api::Admin::SearchReferencesBaseController
-        private
+      private
 
         def search_reference_collection
           chapter.search_references_dataset

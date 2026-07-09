@@ -1,6 +1,6 @@
 module GenerateSelfText
   class NonOtherSelfTextBuilder < BaseSelfTextBuilder
-    private
+  private
 
     def select_segments(segments)
       segments.reject { |s| s[:node][:is_other] || s[:node][:goods_nomenclature_class] == 'Chapter' }

@@ -8,7 +8,7 @@ module Search
       rendered_rules
     end
 
-    private
+  private
 
     def rules
       @rules ||= CustomsTariffGeneralRule.latest_rules

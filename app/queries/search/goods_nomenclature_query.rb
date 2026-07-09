@@ -43,7 +43,7 @@ module Search
       }
     end
 
-    private
+  private
 
     def index
       @index ||= GoodsNomenclatureIndex.new

@@ -111,7 +111,7 @@ class CdsImporter
     attr_reader :key, :instance, :mapper, :element_id
   end
 
-  private
+private
 
   attr_reader :oplog_inserts
 

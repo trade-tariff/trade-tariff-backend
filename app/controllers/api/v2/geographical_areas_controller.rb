@@ -13,7 +13,7 @@ module Api
         render json: CachedGeographicalAreaService.new(actual_date, exclude_none:, countries: true).call
       end
 
-      private
+    private
 
       def serialized_geographical_area
         Api::V2::GeographicalAreaTreeSerializer.new(

@@ -23,7 +23,7 @@ class TariffChangesService
       }
     end
 
-    private
+  private
 
     def measure
       @measure ||= begin

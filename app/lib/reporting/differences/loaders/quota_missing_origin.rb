@@ -15,7 +15,7 @@ module Reporting
           rows
         end
 
-        private
+      private
 
         def each_row
           TimeMachine.at(report.as_of) do

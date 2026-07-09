@@ -80,7 +80,7 @@ class EmbeddingService
     AiUsage.attach_metadata(embeddings, usage)
   end
 
-  private
+private
 
   def usage_metadata(body, event_kind:)
     usage = body.to_h['usage']

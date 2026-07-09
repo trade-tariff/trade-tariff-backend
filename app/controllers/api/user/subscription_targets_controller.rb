@@ -23,7 +23,7 @@ module Api
                   disposition: "attachment; filename=commodity_watch_list-your_codes_#{filename_date}.xlsx"
       end
 
-      private
+    private
 
       def filter_params
         params.fetch(:filter, {}).permit(:active_commodities_type)

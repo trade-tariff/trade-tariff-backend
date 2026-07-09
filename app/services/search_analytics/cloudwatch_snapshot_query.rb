@@ -46,7 +46,7 @@ module SearchAnalytics
       raise QueryError, e.message
     end
 
-    private
+  private
 
     attr_reader :period, :client, :now
 
@@ -233,7 +233,7 @@ module SearchAnalytics
         }
       end
 
-      private
+    private
 
       attr_reader :period, :volume_rows, :zero_result_rows, :summary_all_latency_rows, :summary_view_latency_rows, :source_all_latency_rows, :source_view_latency_rows, :selection_rows, :selection_trend_rows, :improvement_term_rows
 

@@ -15,7 +15,7 @@ class Appendix5aPopulatorService
     Rails.logger.info 'Finished populating Appendix 5a'
   end
 
-  private
+private
 
   def removed_guidance
     @removed_guidance ||= begin

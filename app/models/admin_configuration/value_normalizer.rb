@@ -5,7 +5,7 @@ class AdminConfiguration
   # appropriate for each config_type. Included as a private mixin on
   # AdminConfiguration; not intended for use outside that class.
   module ValueNormalizer
-    private
+  private
 
     def normalize_value!
       val = self[:value]

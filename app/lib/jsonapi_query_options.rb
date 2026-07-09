@@ -1,5 +1,5 @@
 module JsonapiQueryOptions
-  private
+private
 
   def jsonapi_query_options
     Thread.current[:jsonapi_query_options] || {}

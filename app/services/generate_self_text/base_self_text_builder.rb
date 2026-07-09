@@ -60,7 +60,7 @@ module GenerateSelfText
       stats
     end
 
-    private
+  private
 
     attr_reader :chapter, :generated_texts
 

@@ -26,7 +26,7 @@ module TariffSynchronizer
       ActiveSupport::Notifications.unsubscribe(@presence_errors_subscriber)
     end
 
-    private
+  private
 
     # Tracks the last 10 SQL queries executed during the import.
     # These are logged if there is an exception.

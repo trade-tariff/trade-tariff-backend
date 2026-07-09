@@ -27,7 +27,7 @@ module Api
         end
       end
 
-      private
+    private
 
       def search_service
         @search_service ||= ChemicalSearchService.new(params, current_page, per_page)

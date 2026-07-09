@@ -15,7 +15,7 @@ module Search
       end
     end
 
-    private
+  private
 
     def title_indexed
       SearchNegationService.new(title).call

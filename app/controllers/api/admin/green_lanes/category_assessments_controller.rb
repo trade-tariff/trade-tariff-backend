@@ -83,7 +83,7 @@ module Api
           end
         end
 
-        private
+      private
 
         def ca_params
           params.require(:data).require(:attributes).permit(

@@ -109,7 +109,7 @@ module TariffSynchronizer
         end
       end
 
-      private
+    private
 
       def with_s3_retry(operation:, file_path:)
         attempts = 0

@@ -22,7 +22,7 @@ module Api
         render json: serialized_quota_definitions
       end
 
-      private
+    private
 
       def validate_order_number
         return if params[:order_number].blank?

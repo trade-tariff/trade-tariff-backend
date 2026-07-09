@@ -32,7 +32,7 @@ class GoodsNomenclatureReconciliationWorker
     mark_labels_stale(all_sids)
   end
 
-  private
+private
 
   def detect_changes
     (detect_going_live + detect_inserted_today).uniq { |sid, type, _| [sid, type] }

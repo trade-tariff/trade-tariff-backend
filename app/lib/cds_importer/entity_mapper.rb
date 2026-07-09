@@ -57,7 +57,7 @@ class CdsImporter
       end
     end
 
-    private
+  private
 
     def implicit_deletes_enabled?
       return file_date < TradeTariffBackend.implicit_deletion_cutoff if file_date

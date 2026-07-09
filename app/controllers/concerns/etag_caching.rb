@@ -12,7 +12,7 @@ module EtagCaching
     before_action :set_cache_headers, if: :http_caching_enabled?
   end
 
-  protected
+protected
 
   def set_cache_headers
     if request.get? || request.head?

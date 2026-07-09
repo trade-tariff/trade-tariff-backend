@@ -28,7 +28,7 @@ class HandleGoodsNomenclature
     [status, headers, response]
   end
 
-  private
+private
 
   def path_incorrectly_matches_commodity?(path)
     return false unless path.include?('commodities')

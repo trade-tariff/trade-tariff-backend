@@ -273,7 +273,7 @@ module Reporting
           end
         end
 
-        private
+      private
 
         attr_reader :report
 

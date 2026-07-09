@@ -25,7 +25,7 @@ class ExpandSearchQueryService
     end
   end
 
-  private
+private
 
   attr_reader :query
 

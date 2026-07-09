@@ -45,7 +45,7 @@ class CdsImporter
       notify_slack_app(e, @filename)
     end
 
-    private
+  private
 
     attr_reader :workbook, :filename, :package, :bold_style, :regular_style
 

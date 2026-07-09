@@ -58,7 +58,7 @@ module GreenLanes
       end
     end
 
-    private
+  private
 
     def declarable?
       gn = GoodsNomenclature

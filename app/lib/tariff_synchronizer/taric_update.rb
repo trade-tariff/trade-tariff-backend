@@ -59,7 +59,7 @@ module TariffSynchronizer
         current_update.next_update
       end
 
-      private
+    private
 
       def sequence_applicable_updates
         descending.where(state: SEQUENCE_APPLICABLE_STATES).limit(SEQUENCE_APPLICABLE_UPDATE_LIMIT)

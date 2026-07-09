@@ -6,7 +6,7 @@ module Api
           DutyExpressionFormatter.format(duty_expression_formatter_options)
         end
 
-        private
+      private
 
         def duty_expression_formatter_options
           # There is no possibility of a meursing measure component being at the front of the sequence of components

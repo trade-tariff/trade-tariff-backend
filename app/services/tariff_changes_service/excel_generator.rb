@@ -26,7 +26,7 @@ class TariffChangesService
       workbook
     end
 
-    private
+  private
 
     def setup_sheet_formatting(sheet)
       sheet.set_default_row(40, 0)

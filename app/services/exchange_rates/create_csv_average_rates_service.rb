@@ -30,7 +30,7 @@ module ExchangeRates
       end
     end
 
-    private
+  private
 
     attr_reader :data
 

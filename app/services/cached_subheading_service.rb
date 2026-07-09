@@ -50,7 +50,7 @@ class CachedSubheadingService
     )
   end
 
-  private
+private
 
   def presented_subheading
     Api::V2::Subheadings::SubheadingPresenter.new(ns_eager_loaded_subheading)
