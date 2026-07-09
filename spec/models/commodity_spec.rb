@@ -7,22 +7,22 @@ RSpec.describe Commodity do
 
   describe 'associations' do
     describe '#heading' do
-      let!(:gono1) do
+      let!(:matching_goods_nomenclature) do
         create :commodity, validity_start_date: Date.new(1999, 1, 1),
                            validity_end_date: Date.new(2013, 1, 1)
       end
-      let!(:heading1) do
-        create :heading, goods_nomenclature_item_id: "#{gono1.goods_nomenclature_item_id.first(4)}000000",
+      let!(:matching_heading) do
+        create :heading, goods_nomenclature_item_id: "#{matching_goods_nomenclature.goods_nomenclature_item_id.first(4)}000000",
                          validity_start_date: Date.new(1991, 1, 1),
                          validity_end_date: Date.new(2002, 1, 1),
                          producline_suffix: GoodsNomenclature::NON_GROUPING_PRODUCTLINE_SUFFIX
       end
 
       before do
-        create :commodity, goods_nomenclature_item_id: gono1.goods_nomenclature_item_id,
+        create :commodity, goods_nomenclature_item_id: matching_goods_nomenclature.goods_nomenclature_item_id,
                            validity_start_date: Date.new(2005, 1, 1),
                            validity_end_date: Date.new(2013, 1, 1)
-        create :heading, goods_nomenclature_item_id: "#{gono1.goods_nomenclature_item_id.first(4)}000000",
+        create :heading, goods_nomenclature_item_id: "#{matching_goods_nomenclature.goods_nomenclature_item_id.first(4)}000000",
                          validity_start_date: Date.new(2002, 1, 1),
                          validity_end_date: Date.new(2014, 1, 1),
                          producline_suffix: GoodsNomenclature::NON_GROUPING_PRODUCTLINE_SUFFIX
@@ -31,7 +31,7 @@ RSpec.describe Commodity do
       context 'when fetching a chapter on a given day' do
         it 'fetches correct chapter' do
           TimeMachine.at('2000-1-1') do
-            expect(gono1.reload.heading.pk).to eq heading1.pk
+            expect(matching_goods_nomenclature.reload.heading.pk).to eq matching_heading.pk
           end
         end
       end
@@ -66,17 +66,17 @@ RSpec.describe Commodity do
 
     describe '#chapter' do
       before do
-        create :heading, goods_nomenclature_item_id: gono1.goods_nomenclature_item_id,
+        create :heading, goods_nomenclature_item_id: matching_goods_nomenclature.goods_nomenclature_item_id,
                          validity_start_date: Date.new(2005, 1, 1),
                          validity_end_date: Date.new(2013, 1, 1)
       end
 
-      let!(:gono1) do
+      let!(:matching_goods_nomenclature) do
         create :heading, validity_start_date: Date.new(1999, 1, 1),
                          validity_end_date: Date.new(2013, 1, 1)
       end
-      let!(:chapter1) do
-        create :chapter, goods_nomenclature_item_id: "#{gono1.goods_nomenclature_item_id.first(2)}00000000",
+      let!(:matching_chapter) do
+        create :chapter, goods_nomenclature_item_id: "#{matching_goods_nomenclature.goods_nomenclature_item_id.first(2)}00000000",
                          validity_start_date: Date.new(1991, 1, 1),
                          validity_end_date: Date.new(2002, 1, 1)
       end
@@ -84,7 +84,7 @@ RSpec.describe Commodity do
       context 'when fetching actual' do
         it 'fetches correct chapter' do
           TimeMachine.at('2000-1-1') do
-            expect(gono1.reload.chapter.pk).to eq chapter1.pk
+            expect(matching_goods_nomenclature.reload.chapter.pk).to eq matching_chapter.pk
           end
         end
       end
