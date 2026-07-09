@@ -129,8 +129,10 @@ module TariffKnowledge
 
       contains_edges = Edge.by_relationship(Edge::CONTAINS).where(target_node_id: fragment_node_ids).all
       source_nodes = nodes_by_id(contains_edges.map(&:source_node_id), Node.where(node_type: Node::NOTE_SOURCE))
+
       contains_edges.each_with_object({}) do |edge, grouped|
-        grouped[edge.target_node_id] = source_nodes[edge.source_node_id]
+        source_node = source_nodes[edge.source_node_id]
+        grouped[edge.target_node_id] = source_node if source_node
       end
     end
 
