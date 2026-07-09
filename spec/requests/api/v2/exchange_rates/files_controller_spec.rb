@@ -169,6 +169,14 @@ RSpec.describe Api::V2::ExchangeRates::FilesController, :v2 do
       end
     end
 
+    context 'when requesting the public frontend redirect URL' do
+      before { get "/uk/api/exchange_rates/files/monthly_csv_#{year}-#{month}/redirect.csv" }
+
+      it 'redirects to the presigned S3 URL' do
+        expect(response).to redirect_to(presigned_url)
+      end
+    end
+
     context 'when requesting an invalid type' do
       before { api_get redirect_api_exchange_rates_file_path("non_existing_type_#{year}-#{month}", format: :csv) }
 
