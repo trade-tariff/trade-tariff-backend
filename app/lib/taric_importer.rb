@@ -59,7 +59,7 @@ class TaricImporter
       raise ImportException
     end
 
-    private
+  private
 
     def taric_failed_log(exception, hash)
       "Taric import failed: #{exception}".tap do |message|
@@ -70,7 +70,7 @@ class TaricImporter
     end
   end
 
-  private
+private
 
   attr_reader :oplog_inserts
 

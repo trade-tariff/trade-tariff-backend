@@ -7,7 +7,7 @@ module Api
         render json: Api::Admin::SearchReferences::SearchReferenceListSerializer.new(search_references).serializable_hash
       end
 
-      private
+    private
 
       def letter
         params.dig(:query, :letter) || ''

@@ -74,7 +74,7 @@ module CustomsTariffImporter
         @current_chapter = nil
       end
 
-      private
+    private
 
       def paragraph_block(para)
         style = para.at_xpath('./w:pPr/w:pStyle', WORD_NS)&.attr('w:val').to_s

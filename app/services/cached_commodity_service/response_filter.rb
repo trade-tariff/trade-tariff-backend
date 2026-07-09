@@ -22,7 +22,7 @@ class CachedCommodityService
       @hash
     end
 
-    private
+  private
 
     attr_reader :measure_meta, :geographical_area_id
 

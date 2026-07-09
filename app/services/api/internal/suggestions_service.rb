@@ -23,7 +23,7 @@ module Api
         SearchSuggestionSerializer.new(suggestions).serializable_hash
       end
 
-      private
+    private
 
       def suggest_results_limit
         AdminConfiguration.integer_value('suggest_results_limit')

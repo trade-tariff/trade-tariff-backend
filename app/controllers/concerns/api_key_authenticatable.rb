@@ -2,7 +2,7 @@ module ApiKeyAuthenticatable
   extend ActiveSupport::Concern
 
   included do
-    private
+  private
 
     def authenticate_with_api_keys
       provided_key = request.headers['X-Api-Key']

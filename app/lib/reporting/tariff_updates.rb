@@ -87,7 +87,7 @@ module Reporting
         end
       end
 
-      private
+    private
 
       def tariff_updates
         previous_month = Time.zone.today.last_month

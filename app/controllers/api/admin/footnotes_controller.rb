@@ -26,7 +26,7 @@ module Api
         end
       end
 
-      private
+    private
 
       def footnote_params
         params.require(:data).permit(:type, attributes: [:description])

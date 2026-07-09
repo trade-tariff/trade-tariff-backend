@@ -38,7 +38,7 @@ class SimplifiedProceduralCode < Sequel::Model
       end
     end
 
-    private
+  private
 
     def to_null_measure(record)
       SimplifiedProceduralCodeMeasure.unrestrict_primary_key

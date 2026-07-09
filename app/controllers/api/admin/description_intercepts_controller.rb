@@ -53,7 +53,7 @@ module Api
         render json: Api::Admin::VersionSerializer.new(versions).serializable_hash
       end
 
-      private
+    private
 
       def serializer_class
         Api::Admin::DescriptionInterceptSerializer

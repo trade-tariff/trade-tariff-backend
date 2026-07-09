@@ -14,7 +14,7 @@ module Api
         }
       end
 
-      private
+    private
 
       attr_reader :subscription
 

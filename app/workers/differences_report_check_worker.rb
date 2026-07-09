@@ -15,7 +15,7 @@ class DifferencesReportCheckWorker
     notify if last_log.before?(Date.current.beginning_of_week)
   end
 
-  private
+private
 
   def notify
     SlackNotifierService.call(

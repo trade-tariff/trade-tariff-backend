@@ -38,7 +38,7 @@ module Reporting
           rows
         end
 
-        private
+      private
 
         def each_row
           start_time = Time.zone.now

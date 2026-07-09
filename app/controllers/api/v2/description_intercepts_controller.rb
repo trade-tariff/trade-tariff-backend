@@ -5,7 +5,7 @@ module Api
         render json: Api::V2::DescriptionInterceptSerializer.new(description_intercepts).serializable_hash
       end
 
-      private
+    private
 
       def description_intercepts
         DescriptionIntercept

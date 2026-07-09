@@ -15,7 +15,7 @@ class ChemicalSearchService
     fetch_by_cas || fetch_by_name
   end
 
-  private
+private
 
   def fetch_by_cas
     cas = cas_cleaned

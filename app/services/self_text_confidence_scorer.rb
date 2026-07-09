@@ -37,7 +37,7 @@ class SelfTextConfidenceScorer
     raise
   end
 
-  private
+private
 
   attr_reader :embedding_service
 

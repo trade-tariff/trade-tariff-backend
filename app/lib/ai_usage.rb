@@ -2,7 +2,7 @@ module AiUsage
   LOG_FIELDS = %i[provider model event_kind input_tokens output_tokens total_tokens input_cost_usd output_cost_usd total_cost_usd pricing_known].freeze
   Metadata = Data.define(*LOG_FIELDS)
 
-  module_function
+module_function
 
   def metadata_for(model:, event_kind:, usage:)
     usage = normalize_usage(usage)

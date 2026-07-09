@@ -4,7 +4,7 @@ module Reporting
       class Hierarchy
         include Reporting::Differences::Loaders::Helpers
 
-        private
+      private
 
         def data
           matching_goods_nomenclature = uk_goods_nomenclature_ids.keys & xi_goods_nomenclature_ids.keys

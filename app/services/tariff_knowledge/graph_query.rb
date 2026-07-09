@@ -66,7 +66,7 @@ module TariffKnowledge
       }
     end
 
-    private
+  private
 
     attr_reader :attributes, :errors, :truncated, :truncation_reason
 

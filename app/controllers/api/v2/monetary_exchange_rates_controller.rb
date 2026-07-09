@@ -5,7 +5,7 @@ module Api
         render json: Api::V2::MonetaryExchangeRateSerializer.new(rates_last_five_years).serializable_hash
       end
 
-      private
+    private
 
       def rates_last_five_years
         jan_five_years_ago = Time.zone.now.beginning_of_year - 5.years

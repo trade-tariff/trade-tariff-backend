@@ -9,7 +9,7 @@ class TaricImporter
         :create
       end
 
-      private
+    private
 
       def get_model_record
         klass.new

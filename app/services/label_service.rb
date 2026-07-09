@@ -55,7 +55,7 @@ class LabelService
 
   attr_reader :last_ai_response
 
-  private
+private
 
   attr_reader :batch, :page_number
 

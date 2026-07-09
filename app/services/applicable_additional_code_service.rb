@@ -15,7 +15,7 @@ class ApplicableAdditionalCodeService
     end
   end
 
-  private
+private
 
   def applicable_additional_codes
     unique_applicable_measures.each_with_object({}) do |measure, acc|

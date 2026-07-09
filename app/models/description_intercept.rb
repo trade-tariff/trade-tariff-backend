@@ -123,7 +123,7 @@ class DescriptionIntercept < Sequel::Model
     super
   end
 
-  private
+private
 
   def validate_filter_prefixes
     prefixes = Array(filter_prefixes)

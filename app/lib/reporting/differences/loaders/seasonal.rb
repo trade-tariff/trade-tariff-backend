@@ -12,7 +12,7 @@ module Reporting
           no_duty: 'No duty found',
         }.freeze
 
-        private
+      private
 
         def data
           acc = []

@@ -58,7 +58,7 @@ class CompositeSearchTextBuilder
     end
   end
 
-  private
+private
 
   attr_reader :self_text_record, :labels, :search_references, :atar_keywords
 

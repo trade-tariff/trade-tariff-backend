@@ -62,7 +62,7 @@ module Api
           render json: serialize(self_text_record.reload), status: :ok
         end
 
-        private
+      private
 
         def serialize(record, options = {})
           GoodsNomenclatureSelfTextSerializer.new(record, options).serializable_hash

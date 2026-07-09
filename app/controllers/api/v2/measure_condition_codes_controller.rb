@@ -5,7 +5,7 @@ module Api
         render json: Api::V2::MeasureConditionCodeSerializer.new(measure_condition_codes).serializable_hash
       end
 
-      private
+    private
 
       def measure_condition_codes
         MeasureConditionCode

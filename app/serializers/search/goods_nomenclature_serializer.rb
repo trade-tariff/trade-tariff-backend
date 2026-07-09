@@ -28,7 +28,7 @@ module Search
       }.compact
     end
 
-    private
+  private
 
     def description
       SearchNegationService.new(full_description).call

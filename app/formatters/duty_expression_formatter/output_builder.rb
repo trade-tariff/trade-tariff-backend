@@ -16,7 +16,7 @@ class DutyExpressionFormatter::OutputBuilder
     strategy_for(context).call
   end
 
-  private
+private
 
   attr_reader :context
 

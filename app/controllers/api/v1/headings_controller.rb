@@ -96,7 +96,7 @@ module Api
         @heading = non_declarable_heading
       end
 
-      private
+    private
 
       def heading
         @heading ||= if base_heading.declarable?

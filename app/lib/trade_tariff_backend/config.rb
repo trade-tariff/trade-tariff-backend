@@ -285,7 +285,7 @@ module TradeTariffBackend
       ENV.fetch('GOODS_NOMENCLATURE_LABEL_PAGE_SIZE', '10').to_i
     end
 
-    private
+  private
 
     # Parse a comma-separated email list, or a JSON hash whose values are
     # email addresses (the format used when the secret is injected directly

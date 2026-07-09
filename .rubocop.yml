@@ -44,9 +44,6 @@ RSpec/VariableName:
 Layout/LineLength:
   Max: 120
 
-Layout/AccessModifierIndentation:
-  Enabled: false
-
 Metrics/AbcSize:
   Max: 20
 

@@ -54,7 +54,7 @@ module SearchDiagnostics
       raise QueryError, e.message
     end
 
-    private
+  private
 
     attr_reader :request_id, :lookback_hours, :limit, :client, :now
 

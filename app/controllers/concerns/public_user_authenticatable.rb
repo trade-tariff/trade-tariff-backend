@@ -10,7 +10,7 @@ module PublicUserAuthenticatable
   }.freeze
 
   included do
-    private
+  private
 
     attr_reader :current_user
 

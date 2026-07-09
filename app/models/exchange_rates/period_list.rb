@@ -27,7 +27,7 @@ module ExchangeRates
         period_list
       end
 
-      private
+    private
 
       def periods_for(type, year)
         year = default_year(year, type)

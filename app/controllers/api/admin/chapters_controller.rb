@@ -14,7 +14,7 @@ module Api
         render json: Api::Admin::Chapters::ChapterSerializer.new(chapter, options).serializable_hash
       end
 
-      private
+    private
 
       def chapter
         @chapter = Chapter

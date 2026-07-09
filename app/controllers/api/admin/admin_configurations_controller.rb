@@ -21,7 +21,7 @@ module Api
         end
       end
 
-      private
+    private
 
       def configurations
         @configurations ||= AdminConfiguration.all

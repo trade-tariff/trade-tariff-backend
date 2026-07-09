@@ -4,7 +4,7 @@ class SlackNotifierService
       notifier.presence&.ping(message)
     end
 
-    private
+  private
 
     def notifier
       Rails.application.config.slack_notifier

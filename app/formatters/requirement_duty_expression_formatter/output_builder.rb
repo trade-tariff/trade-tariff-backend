@@ -15,7 +15,7 @@ class RequirementDutyExpressionFormatter::OutputBuilder
     [amount_fragment, unit_fragment].compact
   end
 
-  private
+private
 
   attr_reader :context
 

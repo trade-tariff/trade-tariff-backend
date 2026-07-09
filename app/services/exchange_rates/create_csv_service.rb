@@ -27,7 +27,7 @@ module ExchangeRates
       end
     end
 
-    private
+  private
 
     def build_row(rate)
       [

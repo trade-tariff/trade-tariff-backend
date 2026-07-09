@@ -9,7 +9,7 @@ module Api
         end
       end
 
-      private
+    private
 
       def serialized_footnotes
         Api::V2::Footnotes::FootnoteSerializer.new(

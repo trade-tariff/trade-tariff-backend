@@ -40,7 +40,7 @@ class Notification
     super(except:).with_indifferent_access
   end
 
-  private
+private
 
   def personalisation_structure
     return unless personalisation.is_a?(Hash)

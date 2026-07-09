@@ -9,7 +9,7 @@ module Api
         render json: preference_code
       end
 
-      private
+    private
 
       def preference_codes
         PreferenceCodeSerializer.new(PreferenceCode.all).serializable_hash

@@ -33,7 +33,7 @@ class ReportWorker
     raise failures.first[:error] if failures.any?
   end
 
-  private
+private
 
   def generate_report?(report)
     return true unless report == Reporting::TariffUpdates

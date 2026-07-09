@@ -7,7 +7,7 @@ module Api
         render json: serialized_search_references
       end
 
-      private
+    private
 
       def serialized_search_references
         Api::V2::SearchReferenceSerializer.new(search_references).serializable_hash

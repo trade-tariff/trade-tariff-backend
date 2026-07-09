@@ -15,7 +15,7 @@ module CustomsTariffImporter
       documents.map { |doc| import_document(doc) }
     end
 
-    private
+  private
 
     def import_document(fetched)
       if CustomsTariffUpdate.exclude(status: CustomsTariffUpdate::FAILED).where(version: fetched.version).any?

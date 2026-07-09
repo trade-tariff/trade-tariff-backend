@@ -16,7 +16,7 @@ class Measure
       contained_area_ids.include?(country_id)
     end
 
-    private
+  private
 
     attr_reader :measure
 

@@ -3,7 +3,7 @@ module Api
     module QueryProcessing
       include CustomRegex
 
-      private
+    private
 
       def process_query(term)
         return '' if term.blank?

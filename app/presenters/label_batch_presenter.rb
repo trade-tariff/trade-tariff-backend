@@ -26,7 +26,7 @@ class LabelBatchPresenter < SimpleDelegator
       DescriptionHtmlFormatter.call(goods_nomenclature.ancestor_chain_description)
   end
 
-  private
+private
 
   def load_self_texts(batch)
     sids = batch.map(&:goods_nomenclature_sid)

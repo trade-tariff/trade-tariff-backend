@@ -12,7 +12,7 @@ module CustomsTariffImporter
       end
     end
 
-    private
+  private
 
     def reimport(update)
       content = TariffSynchronizer::FileService.get(update.s3_path).read

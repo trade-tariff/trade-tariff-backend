@@ -23,7 +23,7 @@ module ExchangeRates
       upload_average_rate_file(countries_and_rate)
     end
 
-    private
+  private
 
     attr_reader :force_run, :selected_date
 

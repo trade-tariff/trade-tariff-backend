@@ -68,7 +68,7 @@ class QuotaSearchService
     @pagination_record_count ||= count_total_records
   end
 
-  private
+private
 
   attr_reader :attributes
 

@@ -31,7 +31,7 @@ module Formatter
     end
   end
 
-  private
+private
 
   def result_of_attribute_or_method_call(field_name)
     self[field_name.to_s].presence ||

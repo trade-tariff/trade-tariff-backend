@@ -10,7 +10,7 @@ module Api
           render json: serialize(exemptions.to_a, pagination_meta)
         end
 
-        private
+      private
 
         def serializer_class = Api::Admin::GreenLanes::ExemptionSerializer
         def resource_class = ::GreenLanes::Exemption

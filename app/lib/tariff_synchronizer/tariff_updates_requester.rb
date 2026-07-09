@@ -52,7 +52,7 @@ module TariffSynchronizer
       raise RetriableDownloadError, @url
     end
 
-    private
+  private
 
     def send_request
       uri = URI(@url)

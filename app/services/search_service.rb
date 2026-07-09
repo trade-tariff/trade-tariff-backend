@@ -65,7 +65,7 @@ class SearchService
     false
   end
 
-  private
+private
 
   def perform
     @result = if SearchService::RogueSearchService.call(q)

@@ -18,7 +18,7 @@ class SuggestionsService
     suggestions
   end
 
-  private
+private
 
   def build_goods_nomenclatures_search_suggestions
     GoodsNomenclature

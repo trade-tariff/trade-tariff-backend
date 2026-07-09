@@ -2,7 +2,7 @@ require 'active_support/notifications'
 
 module CustomsTariffImporter
   module Instrumentation
-    module_function
+  module_function
 
     def instrument(event_name, payload = {}, &block)
       ActiveSupport::Notifications.instrument("#{event_name}.customs_tariff_importer", payload, &block)

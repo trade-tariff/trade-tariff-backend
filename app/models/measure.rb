@@ -427,7 +427,7 @@ class Measure < Sequel::Model
       exclude(exclusion_criteria)
     end
 
-    private
+  private
 
     # Builds an OR-combined Sequel condition from a collection of [col_a, col_b]
     # value pairs and applies it as a WHERE clause. Returns the dataset unchanged

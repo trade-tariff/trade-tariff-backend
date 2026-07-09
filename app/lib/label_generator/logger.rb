@@ -171,7 +171,7 @@ module LabelGenerator
       error log_entry(data)
     end
 
-    private
+  private
 
     def log_entry(data)
       data.merge(

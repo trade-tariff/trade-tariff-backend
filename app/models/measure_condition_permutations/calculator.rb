@@ -24,7 +24,7 @@ module MeasureConditionPermutations
       end
     end
 
-    private
+  private
 
     def measure_conditions
       @measure_conditions ||= @measure.measure_conditions.reject(&:is_excluded_condition?)

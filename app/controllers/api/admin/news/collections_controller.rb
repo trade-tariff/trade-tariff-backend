@@ -8,7 +8,7 @@ module Api
           render json: serialize(::News::Collection.all)
         end
 
-        private
+      private
 
         def serializer_class = Api::Admin::News::CollectionSerializer
         def resource_class = ::News::Collection

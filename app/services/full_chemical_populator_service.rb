@@ -10,7 +10,7 @@ class FullChemicalPopulatorService
     FullChemical.restrict_primary_key
   end
 
-  private
+private
 
   def process_full_chemicals_in_chunks
     chunk = []

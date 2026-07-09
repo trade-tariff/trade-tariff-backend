@@ -19,7 +19,7 @@ module Api
         end
       end
 
-      private
+    private
 
       def notification
         @notification ||= Notification.new(notification_params)
