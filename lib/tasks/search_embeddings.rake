@@ -1,5 +1,5 @@
 module SearchEmbeddingsRakeTasks
-  module_function
+module_function
 
   def generate
     sids = GoodsNomenclatureSelfText
@@ -47,7 +47,7 @@ module SearchEmbeddingsRakeTasks
 end
 
 module SearchEmbeddingsCoverageRakeTasks
-  module_function
+module_function
 
   def coverage
     TimeMachine.now do
@@ -106,7 +106,7 @@ module SearchEmbeddingsCoverageRakeTasks
 end
 
 module SearchEmbeddingsGapsRakeTasks
-  module_function
+module_function
 
   def gaps
     TimeMachine.now do

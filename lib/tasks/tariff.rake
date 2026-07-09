@@ -1,5 +1,5 @@
 module TariffRakeTasks
-  module_function
+module_function
 
   def jobs
     require 'sidekiq/api'

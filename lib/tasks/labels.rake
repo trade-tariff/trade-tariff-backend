@@ -1,5 +1,5 @@
 module LabelsTasks
-  module_function
+module_function
 
   def coverage
     TimeMachine.now do

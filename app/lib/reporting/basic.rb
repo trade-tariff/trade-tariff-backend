@@ -62,36 +62,45 @@ module Reporting
 
           log_report_metric('rows_written', rows.size)
 
-          csv_data = instrument_report_step('serialize_csv', rows_written: rows.size) do
-            CSV.generate(write_headers: true, headers: HEADER_ROW) do |csv|
-              rows.each do |row|
-                csv << row
-              end
-            end
-          end
-
+          csv_data = serialize_csv(rows)
           return if rows.empty?
 
           log_report_metric('output_bytes', csv_data.bytesize)
+          publish_csv(csv_data)
+        end
+      end
 
-          if Rails.env.development?
-            instrument_report_step('write_local_file', output_bytes: csv_data.bytesize) do
-              File.write(File.basename(object_key), csv_data)
-            end
-          end
+    private
 
-          if Rails.env.production?
-            instrument_report_step('upload', output_bytes: csv_data.bytesize) do
-              object.put(
-                body: csv_data,
-                content_type: 'text/csv',
-              )
+      def serialize_csv(rows)
+        instrument_report_step('serialize_csv', rows_written: rows.size) do
+          CSV.generate(write_headers: true, headers: HEADER_ROW) do |csv|
+            rows.each do |row|
+              csv << row
             end
           end
         end
       end
 
-    private
+      def publish_csv(csv_data)
+        write_local_file(csv_data) if Rails.env.development?
+        upload(csv_data) if Rails.env.production?
+      end
+
+      def write_local_file(csv_data)
+        instrument_report_step('write_local_file', output_bytes: csv_data.bytesize) do
+          File.write(File.basename(object_key), csv_data)
+        end
+      end
+
+      def upload(csv_data)
+        instrument_report_step('upload', output_bytes: csv_data.bytesize) do
+          object.put(
+            body: csv_data,
+            content_type: 'text/csv',
+          )
+        end
+      end
 
       def build_row_for(goods_nomenclature)
         overview_measures = goods_nomenclature.applicable_overview_measures
