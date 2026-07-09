@@ -19,7 +19,7 @@ class FullChemical < Sequel::Model
     validates_presence :name
   end
 
-  dataset_module do
+  module DatasetFilters
     def with_filter(filters)
       return [] if filters.empty?
 
@@ -71,5 +71,9 @@ class FullChemical < Sequel::Model
     end
 
     delegate :table_name, to: :model
+  end
+
+  dataset_module do
+    include DatasetFilters
   end
 end
