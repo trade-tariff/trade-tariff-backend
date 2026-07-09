@@ -1,3 +1,5 @@
+require 'pathname'
+require 'yaml'
 require_relative 'prompt_registry'
 
 module AdminConfigurationSeeder
