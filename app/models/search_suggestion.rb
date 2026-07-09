@@ -50,7 +50,7 @@ class SearchSuggestion < Sequel::Model
                                      ds.with_actual(GoodsNomenclature)
                                    end
 
-  dataset_module do
+  module DatasetMethods
     def without_labels
       exclude(type: LABEL_TYPES)
     end
@@ -168,6 +168,10 @@ class SearchSuggestion < Sequel::Model
     def with_score(query)
       select_append(Sequel.function(:similarity, :value, query).as(:score))
     end
+  end
+
+  dataset_module do
+    include DatasetMethods
   end
 
   class << self
