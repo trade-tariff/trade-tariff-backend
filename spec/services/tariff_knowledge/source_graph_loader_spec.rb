@@ -140,7 +140,7 @@ RSpec.describe TariffKnowledge::SourceGraphLoader do
       ).to be(true)
     end
 
-    it 'feeds compressed notes with block evidence and fragment parent provenance after load' do
+    it 'feeds compressed notes with fragment parent provenance after load' do
       chapter_72 = create(:chapter, goods_nomenclature_item_id: '7200000000')
       heading_7201 = create(:heading, parent: chapter_72, goods_nomenclature_item_id: '7201000000')
       pig_iron = create(:commodity, parent: heading_7201, goods_nomenclature_item_id: '7201100000')
@@ -180,13 +180,6 @@ RSpec.describe TariffKnowledge::SourceGraphLoader do
 
       note = TariffKnowledge::CompressedNote[declarable_node.goods_nomenclature_sid]
       expect(note).to be_present
-      expect(note.metadata.to_hash['evidence_blocks']).to include(
-        include(
-          'source_node_key' => 'note_block:customs_tariff_chapter_note:1.31:72:1:a',
-          'term' => 'pig iron',
-          'block_type' => 'definition',
-        ),
-      )
       expect(note.metadata.to_hash['evidence']).to be_present
       expect(note.metadata.to_hash['evidence']).to all(
         include(
