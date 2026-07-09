@@ -1,7 +1,7 @@
 RSpec.describe TariffKnowledge::NoteMarkerClassifier do
   describe '.call' do
     def fragment(key, content)
-      Data.define(:key, :content).new(key, content)
+      Data.define(:key, :content).new(key:, content:)
     end
 
     it 'classifies markdown headings' do

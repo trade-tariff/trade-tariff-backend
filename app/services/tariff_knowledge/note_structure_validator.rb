@@ -45,16 +45,16 @@ module TariffKnowledge
 
       orphan_event_keys = tree.orphans.map { |event| event.fragment.key }
       duplicate_block_keys = duplicate_keys(blocks.map(&:key))
-      uncontained_fragment_keys = uncontained_fragment_keys(source_fragments, blocks, tree.events)
+      uncontained_keys = uncontained_fragment_keys(source_fragments, blocks, tree.events)
 
       issues << issue('warning', 'orphan_events', "#{orphan_event_keys.count} events could not attach to a note block", 'fragment_keys' => orphan_event_keys) if orphan_event_keys.any?
       issues << issue('error', 'duplicate_block_keys', "#{duplicate_block_keys.count} duplicate note block keys were emitted", 'block_keys' => duplicate_block_keys) if duplicate_block_keys.any?
-      if uncontained_fragment_keys.any?
+      if uncontained_keys.any?
         issues << issue(
           'warning',
           'uncontained_fragments',
-          "#{uncontained_fragment_keys.count} fragments were not contained by any emitted note block",
-          'fragment_keys' => uncontained_fragment_keys,
+          "#{uncontained_keys.count} fragments were not contained by any emitted note block",
+          'fragment_keys' => uncontained_keys,
         )
       end
 
@@ -69,7 +69,7 @@ module TariffKnowledge
         orphan_event_count: orphan_event_keys.count,
         orphan_event_keys:,
         duplicate_block_keys:,
-        uncontained_fragment_keys:,
+        uncontained_fragment_keys: uncontained_keys,
         issues:,
       )
     end
