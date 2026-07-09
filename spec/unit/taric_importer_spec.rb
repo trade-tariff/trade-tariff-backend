@@ -5,9 +5,9 @@ RSpec.describe TaricImporter do
 
   describe '#import' do
     let(:example_date) { Date.new(2013, 8, 2) }
-    let(:example_date2) { Date.new(2014, 8, 2) }
+    let(:second_example_date) { Date.new(2014, 8, 2) }
     let(:taric_update) { create :taric_update, example_date: }
-    let(:taric_update2) { create :taric_update, example_date: example_date2 }
+    let(:second_taric_update) { create :taric_update, example_date: second_example_date }
 
     before do
       ExplicitAbrogationRegulation.unrestrict_primary_key
@@ -43,7 +43,7 @@ RSpec.describe TaricImporter do
         Measure.unrestrict_primary_key
         allow(taric_update).to receive(:file_path)
           .and_return('spec/fixtures/taric_samples/create_measure.xml')
-        allow(taric_update2).to receive(:file_path)
+        allow(second_taric_update).to receive(:file_path)
           .and_return('spec/fixtures/taric_samples/update_measure.xml')
       end
 
@@ -56,7 +56,7 @@ RSpec.describe TaricImporter do
 
       it 'imports single Measure and updates it' do
         described_class.new(taric_update).import
-        described_class.new(taric_update2).import
+        described_class.new(second_taric_update).import
         expect(Measure.count).to eq 1
       end
 
@@ -75,11 +75,11 @@ RSpec.describe TaricImporter do
 
       it 'creates two Measure::Operation(oplog) entries after update', :aggregate_failures do
         described_class.new(taric_update).import
-        described_class.new(taric_update2).import
+        described_class.new(second_taric_update).import
 
         expect(Measure::Operation.count).to eq 2
 
-        update = Measure::Operation.where(operation: 'U', measure_sid: '3318239', operation_date: example_date2).first
+        update = Measure::Operation.where(operation: 'U', measure_sid: '3318239', operation_date: second_example_date).first
         expect(update).to be_present
         expect(update.validity_end_date).to be_present
       end

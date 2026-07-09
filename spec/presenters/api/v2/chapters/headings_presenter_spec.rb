@@ -18,10 +18,10 @@ RSpec.describe Api::V2::Chapters::HeadingPresenter do
     end
 
     context 'when some are nested' do
-      let(:headings) { [nongrouping1, grouping] + nongrouping }
-      let(:nongrouping1) { build :heading, :non_grouping }
+      let(:headings) { [first_nongrouping_heading, grouping] + nongrouping }
+      let(:first_nongrouping_heading) { build :heading, :non_grouping }
 
-      it { is_expected.to eq(nongrouping1 => nil, grouping => nongrouping) }
+      it { is_expected.to eq(first_nongrouping_heading => nil, grouping => nongrouping) }
     end
 
     context 'when pls decreases again' do
@@ -34,10 +34,10 @@ RSpec.describe Api::V2::Chapters::HeadingPresenter do
 
     context 'with multiple trees in set' do
       let(:second_grouping) { build :heading, :grouping }
-      let(:nongrouping2) { build_list :heading, 2, :non_grouping }
-      let(:headings) { [grouping] + nongrouping + [second_grouping] + nongrouping2 }
+      let(:second_nongrouping_headings) { build_list :heading, 2, :non_grouping }
+      let(:headings) { [grouping] + nongrouping + [second_grouping] + second_nongrouping_headings }
 
-      it { is_expected.to eq grouping => nongrouping, second_grouping => nongrouping2 }
+      it { is_expected.to eq grouping => nongrouping, second_grouping => second_nongrouping_headings }
     end
   end
 
