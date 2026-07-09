@@ -67,10 +67,14 @@ module Api
             next [empty_response, completion_payload(result_count: 0, results_type: retrieval.results_type)]
           end
 
-          interactive_result = @skip_question ? nil : run_interactive_search(
-            retrieval.goods_nomenclatures,
-            retrieval.expanded_query,
-          )
+          interactive_result = if @skip_question
+                                 nil
+                               else
+                                 run_interactive_search(
+                                   retrieval.goods_nomenclatures,
+                                   retrieval.expanded_query,
+                                 )
+                               end
 
           response = build_response(
             retrieval.goods_nomenclatures,

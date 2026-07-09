@@ -1128,6 +1128,41 @@ RSpec.describe Api::Internal::SearchService do
       end
     end
 
+    context 'when skip_question is true' do
+      let(:opensearch_response) do
+        {
+          'hits' => {
+            'hits' => [
+              {
+                '_score' => 10.0,
+                '_source' => {
+                  'goods_nomenclature_sid' => 1,
+                  'goods_nomenclature_item_id' => '4202210000',
+                  'producline_suffix' => '80',
+                  'goods_nomenclature_class' => 'Commodity',
+                  'description' => 'leather handbags',
+                  'formatted_description' => 'Leather handbags',
+                  'declarable' => true,
+                },
+              },
+            ],
+          },
+        }
+      end
+
+      before do
+        allow(TradeTariffBackend.search_client).to receive(:search).and_return(opensearch_response)
+        allow(InteractiveSearchService).to receive(:call).and_return(nil)
+      end
+
+      it 'skips interactive search and omits interactive meta' do
+        result = described_class.new(q: 'handbag', skip_question: true).call
+
+        expect(InteractiveSearchService).not_to have_received(:call)
+        expect(result[:meta]).to be_nil
+      end
+    end
+
     context 'when interactive search returns nil (disabled or error)' do
       let(:opensearch_response) do
         {
