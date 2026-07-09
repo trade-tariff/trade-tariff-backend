@@ -1,12 +1,12 @@
 RSpec.describe Api::User::CommodityChangesSerializer do
-  let(:tariff_change1) { build(:tariff_change, id: 1) }
-  let(:tariff_change2) { build(:tariff_change, id: 2) }
+  let(:first_tariff_change) { build(:tariff_change, id: 1) }
+  let(:second_tariff_change) { build(:tariff_change, id: 2) }
   let(:object) do
     TariffChanges::GroupedCommodityChange.new(
       id: 'ending',
       description: 'desc',
       count: 2,
-      tariff_changes: [tariff_change1, tariff_change2],
+      tariff_changes: [first_tariff_change, second_tariff_change],
     )
   end
   let(:serializer) { described_class.new([object]) }

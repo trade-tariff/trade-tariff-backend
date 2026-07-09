@@ -543,11 +543,11 @@ RSpec.describe GoodsNomenclature do
 
     context 'when the description is not "other"' do
       let(:goods_nomenclature) { create(:goods_nomenclature, :with_description, description: 'bar') }
-      let(:ancestor1) {  create(:goods_nomenclature, :with_description, description: 'foo') }
-      let(:ancestor2) {  create(:goods_nomenclature, :with_description, description: 'bar') }
+      let(:first_ancestor) { create(:goods_nomenclature, :with_description, description: 'foo') }
+      let(:second_ancestor) { create(:goods_nomenclature, :with_description, description: 'bar') }
 
       before do
-        allow(goods_nomenclature).to receive(:ancestors).and_return([ancestor1, ancestor2])
+        allow(goods_nomenclature).to receive(:ancestors).and_return([first_ancestor, second_ancestor])
       end
 
       it { is_expected.to eq('Bar') }
@@ -555,11 +555,11 @@ RSpec.describe GoodsNomenclature do
 
     context 'when the description is "other"' do
       let(:goods_nomenclature) { create(:goods_nomenclature, :with_description, description: 'other') }
-      let(:ancestor1) {  create(:goods_nomenclature, :with_description, description: 'foo') }
-      let(:ancestor2) {  create(:goods_nomenclature, :with_description, description: 'bar') }
+      let(:first_ancestor) { create(:goods_nomenclature, :with_description, description: 'foo') }
+      let(:second_ancestor) { create(:goods_nomenclature, :with_description, description: 'bar') }
 
       before do
-        allow(goods_nomenclature).to receive(:ancestors).and_return([ancestor1, ancestor2])
+        allow(goods_nomenclature).to receive(:ancestors).and_return([first_ancestor, second_ancestor])
       end
 
       it { is_expected.to eq('Bar > Other') }

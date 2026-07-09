@@ -1,6 +1,6 @@
 RSpec.describe Api::V2::FootnoteTypesController, type: :request do
   describe '#index' do
-    let(:footnote_type_1) { create :footnote_type }
+    let(:first_footnote_type) { create :footnote_type }
     let(:pattern) do
       {
         "data": [{
@@ -29,13 +29,13 @@ RSpec.describe Api::V2::FootnoteTypesController, type: :request do
                  }],
       }
     end
-    let(:footnote_type_2) { create :footnote_type }
-    let(:footnote_type_3) { create :footnote_type }
+    let(:second_footnote_type) { create :footnote_type }
+    let(:third_footnote_type) { create :footnote_type }
 
     before do
-      create :footnote_type_description, footnote_type_id: footnote_type_1.footnote_type_id
-      create :footnote_type_description, footnote_type_id: footnote_type_2.footnote_type_id
-      create :footnote_type_description, footnote_type_id: footnote_type_3.footnote_type_id
+      create :footnote_type_description, footnote_type_id: first_footnote_type.footnote_type_id
+      create :footnote_type_description, footnote_type_id: second_footnote_type.footnote_type_id
+      create :footnote_type_description, footnote_type_id: third_footnote_type.footnote_type_id
     end
 
     it 'returns all footnote types' do

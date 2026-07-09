@@ -159,11 +159,11 @@ RSpec.describe Commodity do
   end
 
   describe '.by_code' do
-    let(:commodity1) { create(:commodity, goods_nomenclature_item_id: '123') }
-    let(:commodity2) { create(:commodity, goods_nomenclature_item_id: '456') }
+    let(:first_commodity) { create(:commodity, goods_nomenclature_item_id: '123') }
+    let(:second_commodity) { create(:commodity, goods_nomenclature_item_id: '456') }
 
-    it { expect(described_class.by_code('123')).to include(commodity1) }
-    it { expect(described_class.by_code('123')).not_to include(commodity2) }
+    it { expect(described_class.by_code('123')).to include(first_commodity) }
+    it { expect(described_class.by_code('123')).not_to include(second_commodity) }
   end
 
   describe '.by_productline_suffix' do
