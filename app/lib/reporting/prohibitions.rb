@@ -95,63 +95,79 @@ module Reporting
     class << self
       def generate
         with_report_logging do
-          workbook = instrument_report_step('open_workbook') do
-            if Rails.env.development?
-              FileUtils.rm(filename) if File.exist?(filename)
-              FastExcel.open(filename, constant_memory: true)
-            else
-              FastExcel.open(constant_memory: true)
-            end
-          end
-
+          workbook = open_workbook
           bold_format = instrument_report_step('add_format') { workbook.add_format(bold: true) }
-
-          worksheet = instrument_report_step('setup_worksheet') do
-            sheet = workbook.add_worksheet(Time.zone.today.iso8601)
-
-            COLUMN_WIDTHS.each_with_index do |width, index|
-              sheet.set_column_width(index, width)
-            end
-
-            sheet.append_row(HEADER_ROW, bold_format)
-            sheet.freeze_panes(1, 0)
-            sheet.autofilter(0, 1, 1, 25)
-            sheet
-          end
-
-          rows_written = instrument_report_step('append_rows') do
-            count = 0
-
-            each_declarable_and_measure do |declarable, measure|
-              row = build_row_for(declarable, measure)
-              worksheet.append_row(row)
-              count += 1
-            end
-
-            count
-          end
+          worksheet = setup_worksheet(workbook, bold_format)
+          rows_written = append_rows(worksheet)
 
           log_report_metric('rows_written', rows_written)
 
-          workbook_data = instrument_report_step('close_workbook', rows_written:) do
-            workbook.close
-            Rails.env.production? ? workbook.read_string : nil
-          end
-
-          if workbook_data
-            log_report_metric('output_bytes', workbook_data.bytesize)
-
-            instrument_report_step('upload', rows_written:, output_bytes: workbook_data.bytesize) do
-              object.put(
-                body: workbook_data,
-                content_type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-              )
-            end
-          end
+          workbook_data = close_workbook(workbook, rows_written)
+          upload(workbook_data, rows_written) if workbook_data
         end
       end
 
     private
+
+      def open_workbook
+        instrument_report_step('open_workbook') do
+          if Rails.env.development?
+            FileUtils.rm(filename) if File.exist?(filename)
+            FastExcel.open(filename, constant_memory: true)
+          else
+            FastExcel.open(constant_memory: true)
+          end
+        end
+      end
+
+      def setup_worksheet(workbook, bold_format)
+        instrument_report_step('setup_worksheet') do
+          sheet = workbook.add_worksheet(Time.zone.today.iso8601)
+          configure_worksheet(sheet, bold_format)
+          sheet
+        end
+      end
+
+      def configure_worksheet(sheet, bold_format)
+        COLUMN_WIDTHS.each_with_index do |width, index|
+          sheet.set_column_width(index, width)
+        end
+
+        sheet.append_row(HEADER_ROW, bold_format)
+        sheet.freeze_panes(1, 0)
+        sheet.autofilter(0, 1, 1, 25)
+      end
+
+      def append_rows(worksheet)
+        instrument_report_step('append_rows') do
+          count = 0
+
+          each_declarable_and_measure do |declarable, measure|
+            worksheet.append_row(build_row_for(declarable, measure))
+            count += 1
+          end
+
+          count
+        end
+      end
+
+      def close_workbook(workbook, rows_written)
+        instrument_report_step('close_workbook', rows_written:) do
+          workbook.close
+          Rails.env.production? ? workbook.read_string : nil
+        end
+      end
+
+      def upload(workbook_data, rows_written)
+        log_report_metric('output_bytes', workbook_data.bytesize)
+
+        instrument_report_step('upload', rows_written:, output_bytes: workbook_data.bytesize) do
+          object.put(
+            body: workbook_data,
+            content_type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+          )
+        end
+      end
 
       def build_row_for(declarable, measure)
         HEADER_ROW.map do |header|
