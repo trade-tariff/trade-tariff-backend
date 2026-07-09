@@ -100,36 +100,36 @@ RSpec.describe Api::V2::SectionsController do
   end
 
   describe '#index' do
-    before { create :section_note, section_id: section1.id }
+    before { create :section_note, section_id: first_section.id }
 
-    let!(:section1)  { create(:chapter, :with_section).section }
-    let!(:section2)  { create(:chapter, :with_section).section }
+    let!(:first_section) { create(:chapter, :with_section).section }
+    let!(:second_section) { create(:chapter, :with_section).section }
 
     let(:pattern) do
       {
         data: [
           {
-            id: section1.id.to_s,
+            id: first_section.id.to_s,
             type: 'section',
             attributes: {
-              id: section1.id,
-              position: section1.position,
-              title: section1.title,
-              numeral: section1.numeral,
-              chapter_from: section1.chapter_from,
-              chapter_to: section1.chapter_to,
+              id: first_section.id,
+              position: first_section.position,
+              title: first_section.title,
+              numeral: first_section.numeral,
+              chapter_from: first_section.chapter_from,
+              chapter_to: first_section.chapter_to,
             },
           },
           {
-            id: section2.id.to_s,
+            id: second_section.id.to_s,
             type: 'section',
             attributes: {
-              id: section2.id,
-              position: section2.position,
-              title: section2.title,
-              numeral: section2.numeral,
-              chapter_from: section2.chapter_from,
-              chapter_to: section2.chapter_to,
+              id: second_section.id,
+              position: second_section.position,
+              title: second_section.title,
+              numeral: second_section.numeral,
+              chapter_from: second_section.chapter_from,
+              chapter_to: second_section.chapter_to,
             },
           },
         ],

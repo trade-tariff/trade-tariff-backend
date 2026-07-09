@@ -56,7 +56,7 @@ RSpec.describe GoodsNomenclatures::NestedSet do
         subheading = create(:subheading, parent: heading)
         subsubheading = create(:subheading, parent: subheading)
         commodity1 = create(:commodity, parent: subsubheading)
-        commodity2 = create(:commodity, parent: subsubheading)
+        second_commodity = create(:commodity, parent: subsubheading)
         commodity3 = create(:commodity, parent: subheading)
         second_tree = create(:subheading, :with_chapter_and_heading, :with_children)
 
@@ -66,7 +66,7 @@ RSpec.describe GoodsNomenclatures::NestedSet do
           subheading:,
           subsubheading:,
           commodity1:,
-          commodity2:,
+          second_commodity:,
           commodity3:,
           second_tree:,
         }
@@ -204,10 +204,10 @@ RSpec.describe GoodsNomenclatures::NestedSet do
       end
 
       describe '#descendants' do
-        it_behaves_like 'it has descendants', 'chapter', :chapter, %i[heading subheading subsubheading commodity1 commodity2 commodity3]
-        it_behaves_like 'it has descendants', 'heading', :heading, %i[subheading subsubheading commodity1 commodity2 commodity3]
-        it_behaves_like 'it has descendants', 'subheading', :subheading, %i[subsubheading commodity1 commodity2 commodity3]
-        it_behaves_like 'it has descendants', 'nested subheading', :subsubheading, %i[commodity1 commodity2]
+        it_behaves_like 'it has descendants', 'chapter', :chapter, %i[heading subheading subsubheading commodity1 second_commodity commodity3]
+        it_behaves_like 'it has descendants', 'heading', :heading, %i[subheading subsubheading commodity1 second_commodity commodity3]
+        it_behaves_like 'it has descendants', 'subheading', :subheading, %i[subsubheading commodity1 second_commodity commodity3]
+        it_behaves_like 'it has descendants', 'nested subheading', :subsubheading, %i[commodity1 second_commodity]
         it_behaves_like 'it has descendants', 'leaf commodity', :commodity1, %i[]
         it_behaves_like 'it has descendants', 'second leaf commodity', :commodity3, %i[]
 
@@ -222,7 +222,7 @@ RSpec.describe GoodsNomenclatures::NestedSet do
         context 'with hidden_goods_nomenclatures' do
           before do
             create :hidden_goods_nomenclature,
-                   goods_nomenclature_item_id: tree[:commodity2].goods_nomenclature_item_id
+                   goods_nomenclature_item_id: tree[:second_commodity].goods_nomenclature_item_id
           end
 
           it_behaves_like 'it has descendants', 'nested subheading', :subsubheading, %i[commodity1]
@@ -244,13 +244,13 @@ RSpec.describe GoodsNomenclatures::NestedSet do
           context 'for eager loaded goods_nomenclatures childs descendants' do
             subject { eager_loaded.associations[:children].first.associations[:descendants] }
 
-            it { is_expected.to eq_pk tree.values_at(:commodity1, :commodity2) }
+            it { is_expected.to eq_pk tree.values_at(:commodity1, :second_commodity) }
           end
 
           context 'for eager loaded goods nomenclatures childs children' do
             subject { eager_loaded.associations[:children].first.associations[:children] }
 
-            it { is_expected.to eq_pk [tree[:commodity1], tree[:commodity2]] }
+            it { is_expected.to eq_pk [tree[:commodity1], tree[:second_commodity]] }
           end
 
           context 'for eager loaded goods nomenclatures childs parent' do
@@ -306,7 +306,7 @@ RSpec.describe GoodsNomenclatures::NestedSet do
         it_behaves_like 'it has children', 'chapter', :chapter, %i[heading]
         it_behaves_like 'it has children', 'heading', :heading, %i[subheading]
         it_behaves_like 'it has children', 'subheading', :subheading, %i[subsubheading commodity3]
-        it_behaves_like 'it has children', 'nested subheading', :subsubheading, %i[commodity1 commodity2]
+        it_behaves_like 'it has children', 'nested subheading', :subsubheading, %i[commodity1 second_commodity]
         it_behaves_like 'it has children', 'leaf commodity', :commodity1, %i[]
         it_behaves_like 'it has children', 'second leaf commodity', :commodity3, %i[]
 
@@ -347,7 +347,7 @@ RSpec.describe GoodsNomenclatures::NestedSet do
                  number_indents: 2
 
           create :goods_nomenclature_indent,
-                 goods_nomenclature: tree[:commodity2],
+                 goods_nomenclature: tree[:second_commodity],
                  validity_start_date: 1.week.ago.at_beginning_of_day,
                  number_indents: 2
         end
@@ -365,15 +365,15 @@ RSpec.describe GoodsNomenclatures::NestedSet do
         end
 
         describe '#descendants' do
-          it_behaves_like 'it has descendants', 'heading', :heading, %i[subheading subsubheading commodity1 commodity2 commodity3]
+          it_behaves_like 'it has descendants', 'heading', :heading, %i[subheading subsubheading commodity1 second_commodity commodity3]
           it_behaves_like 'it has descendants', 'subheading', :subheading, %i[]
-          it_behaves_like 'it has descendants', 'nested subheading', :subsubheading, %i[commodity1 commodity2 commodity3]
+          it_behaves_like 'it has descendants', 'nested subheading', :subsubheading, %i[commodity1 second_commodity commodity3]
         end
 
         describe '#children' do
           it_behaves_like 'it has children', 'heading', :heading, %i[subheading subsubheading]
           it_behaves_like 'it has children', 'subheading', :subheading, %i[]
-          it_behaves_like 'it has children', 'nested subheading', :subsubheading, %i[commodity1 commodity2 commodity3]
+          it_behaves_like 'it has children', 'nested subheading', :subsubheading, %i[commodity1 second_commodity commodity3]
         end
 
         context 'when accessing historical data via TimeMachine' do
@@ -396,15 +396,15 @@ RSpec.describe GoodsNomenclatures::NestedSet do
           end
 
           describe '#descendants' do
-            it_behaves_like 'it has descendants', 'heading', :heading, %i[subheading subsubheading commodity1 commodity2 commodity3]
-            it_behaves_like 'it has descendants', 'subheading', :subheading, %i[subsubheading commodity1 commodity2 commodity3]
-            it_behaves_like 'it has descendants', 'nested subheading', :subsubheading, %i[commodity1 commodity2]
+            it_behaves_like 'it has descendants', 'heading', :heading, %i[subheading subsubheading commodity1 second_commodity commodity3]
+            it_behaves_like 'it has descendants', 'subheading', :subheading, %i[subsubheading commodity1 second_commodity commodity3]
+            it_behaves_like 'it has descendants', 'nested subheading', :subsubheading, %i[commodity1 second_commodity]
           end
 
           describe '#children' do
             it_behaves_like 'it has children', 'heading', :heading, %i[subheading]
             it_behaves_like 'it has children', 'subheading', :subheading, %i[subsubheading commodity3]
-            it_behaves_like 'it has children', 'nested subheading', :subsubheading, %i[commodity1 commodity2]
+            it_behaves_like 'it has children', 'nested subheading', :subsubheading, %i[commodity1 second_commodity]
           end
         end
 

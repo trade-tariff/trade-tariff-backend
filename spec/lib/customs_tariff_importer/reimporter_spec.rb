@@ -94,20 +94,20 @@ RSpec.describe CustomsTariffImporter::Reimporter do
     end
 
     context 'when there are multiple updates' do
-      let(:update2) do
+      let(:second_update) do
         create(:customs_tariff_update,
                version: '1.30',
                status: CustomsTariffUpdate::PENDING,
                validity_start_date: Date.new(2026, 3, 1),
                s3_path: 'data/customs_tariff_documents/UKGT_1.30.docx')
       end
-      let(:docx_io2) { build_docx('SECTION II', 'Section Notes', 'Vegetable products are classified here.', 'CHAPTER 6') }
+      let(:second_docx_io) { build_docx('SECTION II', 'Section Notes', 'Vegetable products are classified here.', 'CHAPTER 6') }
 
       before do
-        update2
+        second_update
         allow(TariffSynchronizer::FileService).to receive(:get)
-          .with(update2.s3_path)
-          .and_return(docx_io2)
+          .with(second_update.s3_path)
+          .and_return(second_docx_io)
       end
 
       it 'reimports notes for every non-failed update' do

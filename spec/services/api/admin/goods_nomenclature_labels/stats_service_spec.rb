@@ -24,13 +24,13 @@ RSpec.describe Api::Admin::GoodsNomenclatureLabels::StatsService do
     end
 
     context 'when there are labels with various attributes' do
-      let(:commodity1) { create :commodity }
-      let(:commodity2) { create :commodity }
-      let(:commodity3) { create :commodity }
+      let(:first_commodity) { create :commodity }
+      let(:second_commodity) { create :commodity }
+      let(:third_commodity) { create :commodity }
 
       before do
         create :goods_nomenclature_label,
-               goods_nomenclature: commodity1,
+               goods_nomenclature: first_commodity,
                labels: {
                  'description' => 'A product description',
                  'known_brands' => [],
@@ -39,7 +39,7 @@ RSpec.describe Api::Admin::GoodsNomenclatureLabels::StatsService do
                }
 
         create :goods_nomenclature_label,
-               goods_nomenclature: commodity2,
+               goods_nomenclature: second_commodity,
                labels: {
                  'description' => '',
                  'known_brands' => %w[BrandA BrandB],
@@ -48,7 +48,7 @@ RSpec.describe Api::Admin::GoodsNomenclatureLabels::StatsService do
                }
 
         create :goods_nomenclature_label,
-               goods_nomenclature: commodity3,
+               goods_nomenclature: third_commodity,
                labels: {
                  'description' => 'Full description',
                  'known_brands' => %w[Brand],
@@ -79,16 +79,16 @@ RSpec.describe Api::Admin::GoodsNomenclatureLabels::StatsService do
     end
 
     context 'when distinguishing AI-created from human-edited' do
-      let(:commodity1) { create :commodity }
-      let(:commodity2) { create :commodity }
+      let(:first_commodity) { create :commodity }
+      let(:second_commodity) { create :commodity }
 
       before do
         create :goods_nomenclature_label,
-               goods_nomenclature: commodity1,
+               goods_nomenclature: first_commodity,
                labels: { 'description' => 'AI description' }
 
         create :goods_nomenclature_label,
-               goods_nomenclature: commodity2,
+               goods_nomenclature: second_commodity,
                labels: { 'description' => 'Human edited' },
                manually_edited: true
       end

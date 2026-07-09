@@ -139,19 +139,19 @@ RSpec.describe GoodsNomenclatures::TreeNode do
   end
 
   describe '.ancestor_node_constraints' do
-    subject { described_class.ancestor_node_constraints(table1, table2) }
+    subject { described_class.ancestor_node_constraints(first_table, second_table) }
 
-    let(:table1) { GoodsNomenclatures::TreeNodeAlias.new(:table1) }
-    let(:table2) { GoodsNomenclatures::TreeNodeAlias.new(:table2) }
+    let(:first_table) { GoodsNomenclatures::TreeNodeAlias.new(:first_table) }
+    let(:second_table) { GoodsNomenclatures::TreeNodeAlias.new(:second_table) }
 
     it { is_expected.to be_instance_of Sequel::SQL::BooleanExpression }
   end
 
   describe '.descendant_node_constraints' do
-    subject { described_class.descendant_node_constraints(table1, table2) }
+    subject { described_class.descendant_node_constraints(first_table, second_table) }
 
-    let(:table1) { GoodsNomenclatures::TreeNodeAlias.new(:table1) }
-    let(:table2) { GoodsNomenclatures::TreeNodeAlias.new(:table2) }
+    let(:first_table) { GoodsNomenclatures::TreeNodeAlias.new(:first_table) }
+    let(:second_table) { GoodsNomenclatures::TreeNodeAlias.new(:second_table) }
 
     it { is_expected.to be_instance_of Sequel::SQL::BooleanExpression }
   end

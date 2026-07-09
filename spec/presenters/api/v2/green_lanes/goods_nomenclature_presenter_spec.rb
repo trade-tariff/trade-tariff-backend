@@ -113,14 +113,14 @@ RSpec.describe Api::V2::GreenLanes::GoodsNomenclaturePresenter do
     subject { presenter.descendant_category_assessments }
 
     let(:gn) { create :goods_nomenclature, :with_ancestors, :with_children }
-    let(:measures) { [measure, measure2] }
+    let(:measures) { [measure, second_measure] }
 
     let :measure do
       create :measure, goods_nomenclature: gn.children.first,
                        generating_regulation: create(:base_regulation)
     end
 
-    let :measure2 do
+    let :second_measure do
       create :measure, goods_nomenclature: gn.children.first.children.first,
                        generating_regulation: create(:base_regulation)
     end
@@ -136,7 +136,7 @@ RSpec.describe Api::V2::GreenLanes::GoodsNomenclaturePresenter do
         create_list :category_assessment, 1, measure: measures.first
       end
 
-      let :measure2 do
+      let :second_measure do
         create :measure, goods_nomenclature: gn.children.first.children.first,
                          measure_type_id: measure.measure_type_id,
                          generating_regulation: measure.generating_regulation,
@@ -151,7 +151,7 @@ RSpec.describe Api::V2::GreenLanes::GoodsNomenclaturePresenter do
         create_list :category_assessment, 1, measure: measures.first
       end
 
-      let :measure2 do
+      let :second_measure do
         create :measure, goods_nomenclature: gn.children.first.children.first,
                          measure_type_id: measure.measure_type_id,
                          generating_regulation: measure.generating_regulation
