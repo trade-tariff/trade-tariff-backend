@@ -305,7 +305,7 @@ module TariffKnowledge
       phrase = query_phrase
       return false if phrase.blank?
 
-      text.to_s.squish.downcase.include?(phrase)
+      text.to_s.squish.downcase.match?(/\b#{Regexp.escape(phrase)}\b/)
     end
 
     def block_term_phrase_match?(term)
