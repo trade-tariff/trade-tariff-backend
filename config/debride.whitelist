@@ -510,3 +510,4 @@ TradeTariffBackend::SearchResponse#hits
 TradeTariffBackend::TariffUpdateEventListener#subscribe!
 VersionedAcceptHeader#matches?
 main#SidekiqDeathHandler
+TariffKnowledge::Node#note_blocks
