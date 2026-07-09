@@ -354,6 +354,85 @@ RSpec.describe TariffKnowledge::RelevantNoteFragmentSelector do
     expect(contexts.first[:fragments].first[:why_relevant]).to include('exact phrase match iron in term')
   end
 
+  it 'does not award exact phrase score when a single-word query only matches inside a longer word' do
+    ironic_note = create(
+      :tariff_knowledge_compressed_note,
+      goods_nomenclature_item_id: '7201200000',
+      content: 'compressed note ironic substring',
+      context_hash: Digest::SHA256.hexdigest('compressed note ironic substring'),
+      metadata: Sequel.pg_jsonb_wrap(
+        'evidence_blocks' => [
+          {
+            'source_node_key' => 'note_block:customs_tariff_chapter_note:1.31:72:1:z',
+            'source_title' => 'ironic',
+            'source_context' => 'ironic: A longer word that only contains the query as a substring.',
+            'block_type' => 'definition',
+            'term' => 'ironic',
+            'source_type' => 'customs_tariff_chapter_note',
+            'source_id' => '72',
+            'fragment_node_keys' => [],
+          },
+        ],
+      ),
+    )
+
+    contexts = described_class.call(
+      query: 'iron',
+      search_results: [
+        search_result_class.new(
+          goods_nomenclature_item_id: '7201200000',
+          description: 'Non-alloy pig iron',
+          full_description: nil,
+          score: 10,
+        ),
+      ],
+      notes_by_item_id: { '7201200000' => ironic_note },
+    )
+
+    why_relevant = contexts.flat_map { |context| context[:fragments] }.map { |fragment| fragment[:why_relevant] }
+    expect(why_relevant).not_to include(a_string_including('exact phrase match iron'))
+
+    # Multi-token queries do not suppress block matches, so a prefix phrase such as
+    # "iron plate" would still receive EXACT_PHRASE_SCORE against "iron plated" under
+    # String#include?. Word-boundary matching rejects that false positive.
+    plated_note = create(
+      :tariff_knowledge_compressed_note,
+      goods_nomenclature_item_id: '7201500000',
+      content: 'compressed note iron plated substring',
+      context_hash: Digest::SHA256.hexdigest('compressed note iron plated substring'),
+      metadata: Sequel.pg_jsonb_wrap(
+        'evidence_blocks' => [
+          {
+            'source_node_key' => 'note_block:customs_tariff_chapter_note:1.31:72:1:y',
+            'source_title' => 'iron plated',
+            'source_context' => 'iron plated: Products finished by iron plating.',
+            'block_type' => 'definition',
+            'term' => 'iron plated',
+            'source_type' => 'customs_tariff_chapter_note',
+            'source_id' => '72',
+            'fragment_node_keys' => [],
+          },
+        ],
+      ),
+    )
+
+    plated_contexts = described_class.call(
+      query: 'iron plate',
+      search_results: [
+        search_result_class.new(
+          goods_nomenclature_item_id: '7201500000',
+          description: 'Iron plate products',
+          full_description: nil,
+          score: 10,
+        ),
+      ],
+      notes_by_item_id: { '7201500000' => plated_note },
+    )
+
+    plated_why = plated_contexts.flat_map { |context| context[:fragments] }.map { |fragment| fragment[:why_relevant] }
+    expect(plated_why.join('; ')).not_to include('exact phrase match iron plate')
+  end
+
   it 'does not emit full compressed note content' do
     contexts = described_class.call(
       query:,
