@@ -196,6 +196,7 @@ GoodsNomenclature#has_chemicals
 GoodsNomenclatureLabel#before_validation
 GoodsNomenclatureLabel#goods_nomenclature=
 GoodsNomenclatureSelfText#needs_review
+GoodsNomenclatureSelfText::DatasetMethods#needs_review
 GreenLanes::CategoryAssessment#latest
 GreenLanes::CategoryAssessment#regulation=
 GreenLanes::CategoryAssessmentJson#additional_codes=
@@ -433,6 +434,7 @@ SearchService#persisted?
 SearchService#q=
 SearchService#resource_id=
 SearchSuggestion#goods_nomenclature_autocomplete
+SearchSuggestion::DatasetMethods#goods_nomenclature_autocomplete
 SearchValidator#code=
 Section#chapter_from
 Section#chapter_to
@@ -462,6 +464,7 @@ TaricImporter::XmlParser::Reader#characters
 TaricImporter::XmlParser::Reader#end_element
 TaricImporter::XmlParser::Reader#start_element
 TariffChange#with_measure_type
+TariffChange::DatasetMethods#with_measure_type
 TariffChanges::GroupedCommodityChange#tariff_change_ids
 TariffChangesJobStatus#changes_pending?
 TariffChangesService::BaseChanges#change=
