@@ -140,6 +140,62 @@ RSpec.describe TariffKnowledge::SourceGraphLoader do
       ).to be(true)
     end
 
+    it 'feeds compressed notes with block evidence and fragment parent provenance after load' do
+      chapter_72 = create(:chapter, goods_nomenclature_item_id: '7200000000')
+      heading_7201 = create(:heading, parent: chapter_72, goods_nomenclature_item_id: '7201000000')
+      pig_iron = create(:commodity, parent: heading_7201, goods_nomenclature_item_id: '7201100000')
+      GoodsNomenclatures::TreeNode.refresh!
+      TariffKnowledge::DeclarableNodeLoader.call
+      create(
+        :customs_tariff_chapter_note,
+        :approved,
+        customs_tariff_update: update,
+        chapter_id: '72',
+        content: [
+          '1. In this chapter the following expressions have the meanings hereby assigned to them:',
+          '',
+          'a. pig Iron',
+          '',
+          'Iron-carbon alloys not usefully malleable, containing more than 2 % by weight of carbon.',
+          '',
+          'Heading 7201 covers pig iron.',
+        ].join("\n"),
+      )
+
+      described_class.call
+
+      declarable_node = TariffKnowledge::Node.goods_nomenclatures
+        .where(goods_nomenclature_item_id: pig_iron.goods_nomenclature_item_id)
+        .first
+      block_node = TariffKnowledge::Node.by_key('note_block:customs_tariff_chapter_note:1.31:72:1:a').first
+      expect(block_node).to be_present
+      expect(
+        TariffKnowledge::Edge
+          .by_relationship(TariffKnowledge::Edge::APPLIES_TO)
+          .where(source_node_id: block_node.id)
+          .count,
+      ).to eq(0)
+
+      TariffKnowledge::CompressedNoteGenerator.call(goods_nomenclature_sids: [declarable_node.goods_nomenclature_sid])
+
+      note = TariffKnowledge::CompressedNote[declarable_node.goods_nomenclature_sid]
+      expect(note).to be_present
+      expect(note.metadata.to_hash['evidence_blocks']).to include(
+        include(
+          'source_node_key' => 'note_block:customs_tariff_chapter_note:1.31:72:1:a',
+          'term' => 'pig iron',
+          'block_type' => 'definition',
+        ),
+      )
+      expect(note.metadata.to_hash['evidence']).to be_present
+      expect(note.metadata.to_hash['evidence']).to all(
+        include(
+          'parent_source_node_key' => 'note_source:customs_tariff_chapter_note:1.31:72',
+          'parent_source_title' => 'Chapter 72 notes',
+        ),
+      )
+    end
+
     it 'removes stale block links when reloading changed source content' do
       note = create(
         :customs_tariff_chapter_note,
