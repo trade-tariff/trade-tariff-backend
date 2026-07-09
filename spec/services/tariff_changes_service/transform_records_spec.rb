@@ -127,31 +127,31 @@ RSpec.describe TariffChangesService::TransformRecords do
     end
 
     context 'when filtering by goods_nomenclature_sids' do
-      let(:goods_nomenclature_sids) { [goods_nomenclature1.goods_nomenclature_sid] }
-      let(:goods_nomenclature1) do
+      let(:goods_nomenclature_sids) { [first_goods_nomenclature.goods_nomenclature_sid] }
+      let(:first_goods_nomenclature) do
         create(:goods_nomenclature,
                goods_nomenclature_item_id: '0101010100',
                validity_start_date: 1.day.ago)
       end
-      let(:goods_nomenclature2) do
+      let(:second_goods_nomenclature) do
         create(:goods_nomenclature,
                goods_nomenclature_item_id: '0202020200',
                validity_start_date: 1.day.ago)
       end
 
       before do
-        goods_nomenclature1
-        goods_nomenclature2
-        create(:goods_nomenclature_description, goods_nomenclature_sid: goods_nomenclature1.goods_nomenclature_sid)
-        create(:goods_nomenclature_description, goods_nomenclature_sid: goods_nomenclature2.goods_nomenclature_sid)
+        first_goods_nomenclature
+        second_goods_nomenclature
+        create(:goods_nomenclature_description, goods_nomenclature_sid: first_goods_nomenclature.goods_nomenclature_sid)
+        create(:goods_nomenclature_description, goods_nomenclature_sid: second_goods_nomenclature.goods_nomenclature_sid)
         create(:tariff_change,
                operation_date: operation_date,
-               goods_nomenclature_sid: goods_nomenclature1.goods_nomenclature_sid,
-               goods_nomenclature_item_id: goods_nomenclature1.goods_nomenclature_item_id)
+               goods_nomenclature_sid: first_goods_nomenclature.goods_nomenclature_sid,
+               goods_nomenclature_item_id: first_goods_nomenclature.goods_nomenclature_item_id)
         create(:tariff_change,
                operation_date: operation_date,
-               goods_nomenclature_sid: goods_nomenclature2.goods_nomenclature_sid,
-               goods_nomenclature_item_id: goods_nomenclature2.goods_nomenclature_item_id)
+               goods_nomenclature_sid: second_goods_nomenclature.goods_nomenclature_sid,
+               goods_nomenclature_item_id: second_goods_nomenclature.goods_nomenclature_item_id)
       end
 
       it 'returns only tariff changes matching the given sids' do

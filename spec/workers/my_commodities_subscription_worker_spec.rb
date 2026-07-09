@@ -6,18 +6,18 @@ RSpec.describe MyCommoditiesSubscriptionWorker, type: :worker do
 
   describe '#perform' do
     context 'when users have tariff changes on the date' do
-      let(:user1) { create(:public_user, :with_my_commodities_subscription) }
-      let(:user2) { create(:public_user, :with_my_commodities_subscription) }
+      let(:first_user) { create(:public_user, :with_my_commodities_subscription) }
+      let(:second_user) { create(:public_user, :with_my_commodities_subscription) }
 
       before do
         allow(TariffChangesJobStatus).to receive(:for_date).and_return(status)
-        # Create subscription targets for user1
-        subscription1 = PublicUsers::Subscription.where(user_id: user1.id, subscription_type_id: Subscriptions::Type.my_commodities.id).first
+        # Create subscription targets for first_user
+        subscription1 = PublicUsers::Subscription.where(user_id: first_user.id, subscription_type_id: Subscriptions::Type.my_commodities.id).first
         create(:subscription_target, user_subscriptions_uuid: subscription1.uuid, target_id: '1000')
         create(:subscription_target, user_subscriptions_uuid: subscription1.uuid, target_id: '2000')
 
-        # Create subscription targets for user2
-        subscription2 = PublicUsers::Subscription.where(user_id: user2.id, subscription_type_id: Subscriptions::Type.my_commodities.id).first
+        # Create subscription targets for second_user
+        subscription2 = PublicUsers::Subscription.where(user_id: second_user.id, subscription_type_id: Subscriptions::Type.my_commodities.id).first
         create(:subscription_target, user_subscriptions_uuid: subscription2.uuid, target_id: '3000')
 
         # Create tariff changes for the date
@@ -31,8 +31,8 @@ RSpec.describe MyCommoditiesSubscriptionWorker, type: :worker do
       it 'queues email worker for each user with changes' do
         instance.perform(date)
 
-        expect(MyCommoditiesEmailWorker).to have_received(:perform_async).with(user1.id, '08/12/2025', 2)
-        expect(MyCommoditiesEmailWorker).to have_received(:perform_async).with(user2.id, '08/12/2025', 1)
+        expect(MyCommoditiesEmailWorker).to have_received(:perform_async).with(first_user.id, '08/12/2025', 2)
+        expect(MyCommoditiesEmailWorker).to have_received(:perform_async).with(second_user.id, '08/12/2025', 1)
         expect(status).to have_received(:mark_emails_sent!)
       end
     end

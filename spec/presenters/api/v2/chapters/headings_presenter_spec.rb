@@ -25,19 +25,19 @@ RSpec.describe Api::V2::Chapters::HeadingPresenter do
     end
 
     context 'when pls decreases again' do
-      let(:grouping2) { build :heading, :grouping }
-      let(:grouping3) { build :heading, :grouping }
-      let(:headings) { [grouping] + nongrouping + [grouping2, grouping3] }
+      let(:second_grouping) { build :heading, :grouping }
+      let(:third_grouping) { build :heading, :grouping }
+      let(:headings) { [grouping] + nongrouping + [second_grouping, third_grouping] }
 
-      it { is_expected.to eq grouping => nongrouping, grouping2 => nil, grouping3 => nil }
+      it { is_expected.to eq grouping => nongrouping, second_grouping => nil, third_grouping => nil }
     end
 
     context 'with multiple trees in set' do
-      let(:grouping2) { build :heading, :grouping }
+      let(:second_grouping) { build :heading, :grouping }
       let(:nongrouping2) { build_list :heading, 2, :non_grouping }
-      let(:headings) { [grouping] + nongrouping + [grouping2] + nongrouping2 }
+      let(:headings) { [grouping] + nongrouping + [second_grouping] + nongrouping2 }
 
-      it { is_expected.to eq grouping => nongrouping, grouping2 => nongrouping2 }
+      it { is_expected.to eq grouping => nongrouping, second_grouping => nongrouping2 }
     end
   end
 

@@ -134,28 +134,28 @@ RSpec.describe Api::V2::ChaptersController do
   end
 
   describe 'GET #index' do
-    let!(:chapter1) { create :chapter, :with_section, :with_note }
-    let!(:chapter2) { create :chapter, :with_section, :with_note }
+    let!(:first_chapter) { create :chapter, :with_section, :with_note }
+    let!(:second_chapter) { create :chapter, :with_section, :with_note }
 
     let(:pattern) do
       {
         data: [
           {
-            id: chapter1.goods_nomenclature_sid.to_s,
+            id: first_chapter.goods_nomenclature_sid.to_s,
             type: 'chapter',
             attributes: {
-              goods_nomenclature_sid: chapter1.goods_nomenclature_sid,
-              goods_nomenclature_item_id: chapter1.goods_nomenclature_item_id,
-              formatted_description: chapter1.formatted_description,
+              goods_nomenclature_sid: first_chapter.goods_nomenclature_sid,
+              goods_nomenclature_item_id: first_chapter.goods_nomenclature_item_id,
+              formatted_description: first_chapter.formatted_description,
             },
           },
           {
-            id: chapter2.goods_nomenclature_sid.to_s,
+            id: second_chapter.goods_nomenclature_sid.to_s,
             type: 'chapter',
             attributes: {
-              goods_nomenclature_sid: chapter2.goods_nomenclature_sid,
-              goods_nomenclature_item_id: chapter2.goods_nomenclature_item_id,
-              formatted_description: chapter2.formatted_description,
+              goods_nomenclature_sid: second_chapter.goods_nomenclature_sid,
+              goods_nomenclature_item_id: second_chapter.goods_nomenclature_item_id,
+              formatted_description: second_chapter.formatted_description,
             },
           },
         ],
@@ -176,7 +176,7 @@ RSpec.describe Api::V2::ChaptersController do
       attributes = JSON.parse(response.body).fetch('data').first.fetch('attributes')
 
       expect(attributes).to eq(
-        'formatted_description' => chapter1.formatted_description,
+        'formatted_description' => first_chapter.formatted_description,
       )
     end
   end

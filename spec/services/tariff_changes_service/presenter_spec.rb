@@ -342,8 +342,8 @@ RSpec.describe TariffChangesService::Presenter do
       end
 
       context 'when excluded_geographical_areas are provided' do
-        let(:excluded_area_1) { create(:geographical_area, :with_description, geographical_area_id: 'DE') }
-        let(:excluded_area_2) { create(:geographical_area, :with_description, geographical_area_id: 'IT') }
+        let(:first_excluded_area) { create(:geographical_area, :with_description, geographical_area_id: 'DE') }
+        let(:second_excluded_area) { create(:geographical_area, :with_description, geographical_area_id: 'IT') }
         let(:tariff_change) do
           create(:tariff_change,
                  type: 'Measure',
@@ -352,21 +352,21 @@ RSpec.describe TariffChangesService::Presenter do
                  metadata: {
                    'measure' => {
                      'geographical_area_id' => geo_area.geographical_area_id,
-                     'excluded_geographical_area_ids' => [excluded_area_1.geographical_area_id, excluded_area_2.geographical_area_id],
+                     'excluded_geographical_area_ids' => [first_excluded_area.geographical_area_id, second_excluded_area.geographical_area_id],
                    },
                  })
         end
         let(:geo_area_cache) do
           {
             geo_area.geographical_area_id => geo_area,
-            excluded_area_1.geographical_area_id => excluded_area_1,
-            excluded_area_2.geographical_area_id => excluded_area_2,
+            first_excluded_area.geographical_area_id => first_excluded_area,
+            second_excluded_area.geographical_area_id => second_excluded_area,
           }
         end
 
         before do
-          allow(excluded_area_1.geographical_area_description).to receive(:description).and_return('Germany')
-          allow(excluded_area_2.geographical_area_description).to receive(:description).and_return('Italy')
+          allow(first_excluded_area.geographical_area_description).to receive(:description).and_return('Germany')
+          allow(second_excluded_area.geographical_area_description).to receive(:description).and_return('Italy')
         end
 
         it 'includes excluded areas in the result' do
