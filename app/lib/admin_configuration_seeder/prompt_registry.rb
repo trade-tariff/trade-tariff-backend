@@ -1,5 +1,3 @@
-require 'pathname'
-
 module AdminConfigurationSeeder
   module PromptRegistry
     PROMPT_PATH = Pathname.new(__dir__).join('prompts').freeze
