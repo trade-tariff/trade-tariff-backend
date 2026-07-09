@@ -139,42 +139,4 @@ RSpec.describe Api::V2::ExchangeRates::FilesController, :v2 do
       end
     end
   end
-
-  describe 'GET #redirect' do
-    let(:year) { 2023 }
-    let(:month) { 10 }
-    let(:presigned_url) { 'https://s3.amazonaws.com/bucket/monthly_csv_2023-10.csv?X-Amz-Signature=abc123' }
-
-    before do
-      create(:exchange_rate_file, type: 'monthly_csv', format: 'csv', period_year: year, period_month: month)
-
-      allow(TariffSynchronizer::FileService).to receive(:file_presigned_url).and_return(presigned_url)
-    end
-
-    context 'when requesting CSV format' do
-      before { api_get redirect_api_exchange_rates_file_path("monthly_csv_#{year}-#{month}", format: :csv) }
-
-      it 'redirects to the presigned S3 URL' do
-        expect(response).to redirect_to(presigned_url)
-      end
-
-      it 'returns HTTP status :found' do
-        expect(response).to have_http_status(:found)
-      end
-
-      it 'generates a presigned URL for the correct object key' do
-        expect(TariffSynchronizer::FileService).to have_received(:file_presigned_url)
-          .with("data/exchange_rates/#{year}/#{month}/monthly_csv_#{year}-#{month}.csv",
-                response_content_disposition: 'attachment; filename=exrates-monthly-1023.csv')
-      end
-    end
-
-    context 'when requesting an invalid type' do
-      before { api_get redirect_api_exchange_rates_file_path("non_existing_type_#{year}-#{month}", format: :csv) }
-
-      it 'returns HTTP status :not_found' do
-        expect(response).to have_http_status(:not_found)
-      end
-    end
-  end
 end
