@@ -95,53 +95,51 @@ module_function
   rescue ArgumentError
     raise ArgumentError, "#{name} must be numeric"
   end
-  namespace :note_structures do
-    print_issue_counts = lambda do |label, values|
-      counts = values.tally
-      puts "#{label}: none" if counts.empty?
-      counts.sort.each { |value, count| puts "#{value}: #{count}" }
+
+  def validate_note_structures
+    update = TimeMachine.at(Time.current) do
+      CustomsTariffUpdate
+        .actual
+        .exclude(status: CustomsTariffUpdate::FAILED)
+        .order(Sequel.desc(:validity_start_date))
+        .first
     end
+    results = update ? validate_chapter_notes(update) : []
 
-    print_report = lambda do |results|
-      issues = results.flat_map(&:issues)
-      puts "Validated #{results.count} tariff knowledge note sources"
-      puts "Issues: #{issues.count}"
-      print_issue_counts.call('Severity', issues.map(&:severity))
-      print_issue_counts.call('Code', issues.map(&:code))
+    print_note_structure_report(results)
+    abort 'Note structure validation reported issues.' if ENV['FAIL_ON_ISSUES'] == 'true' && results.any? { |result| result.issues.any? }
+  end
 
-      issues.first(10).each_with_index do |issue, index|
-        result = results.find { |candidate| candidate.issues.include?(issue) }
-        puts "#{index + 1}. Chapter #{result.source_id} #{issue.severity}/#{issue.code}: #{issue.message}"
+  def validate_chapter_notes(update)
+    TimeMachine.at(Time.current) do
+      update.customs_tariff_chapter_notes_dataset.order(:chapter_id).map do |note|
+        TariffKnowledge::NoteStructureValidator.call(
+          source_type: 'customs_tariff_chapter_note',
+          source_id: note.chapter_id,
+          source_version: update.version,
+          content: note.content,
+        )
       end
     end
+  end
 
-    validate_chapter_notes = lambda do |update|
-      TimeMachine.at(Time.current) do
-        update.customs_tariff_chapter_notes_dataset.order(:chapter_id).map do |note|
-          TariffKnowledge::NoteStructureValidator.call(
-            source_type: 'customs_tariff_chapter_note',
-            source_id: note.chapter_id,
-            source_version: update.version,
-            content: note.content,
-          )
-        end
-      end
+  def print_note_structure_report(results)
+    issues = results.flat_map(&:issues)
+    puts "Validated #{results.count} tariff knowledge note sources"
+    puts "Issues: #{issues.count}"
+    print_issue_counts('Severity', issues.map(&:severity))
+    print_issue_counts('Code', issues.map(&:code))
+
+    issues.first(10).each_with_index do |issue, index|
+      result = results.find { |candidate| candidate.issues.include?(issue) }
+      puts "#{index + 1}. Chapter #{result.source_id} #{issue.severity}/#{issue.code}: #{issue.message}"
     end
+  end
 
-    desc 'Validate parsed tariff knowledge note structures. Set FAIL_ON_ISSUES=true to fail when issues are reported.'
-    task validate: :environment do
-      update = TimeMachine.at(Time.current) do
-        CustomsTariffUpdate
-          .actual
-          .exclude(status: CustomsTariffUpdate::FAILED)
-          .order(Sequel.desc(:validity_start_date))
-          .first
-      end
-      results = update ? validate_chapter_notes.call(update) : []
-
-      print_report.call(results)
-      abort 'Note structure validation reported issues.' if ENV['FAIL_ON_ISSUES'] == 'true' && results.any? { |result| result.issues.any? }
-    end
+  def print_issue_counts(label, values)
+    counts = values.tally
+    puts "#{label}: none" if counts.empty?
+    counts.sort.each { |value, count| puts "#{value}: #{count}" }
   end
 end
 
@@ -193,4 +191,9 @@ end
 desc 'Enqueue public ATAR ruling import'
 task 'tariff_knowledge:atars:enqueue' => :environment do
   TariffKnowledgeRakeTasks.enqueue_atar_import
+end
+
+desc 'Validate parsed tariff knowledge note structures. Set FAIL_ON_ISSUES=true to fail when issues are reported.'
+task 'tariff_knowledge:note_structures:validate' => :environment do
+  TariffKnowledgeRakeTasks.validate_note_structures
 end
