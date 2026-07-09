@@ -1,7 +1,7 @@
 module ExchangeRatesRakeTasks
   FILE_TYPES = %w[monthly_csv monthly_xml monthly_csv_hmrc].freeze
 
-  module_function
+module_function
 
   def rebuild_old_monthly_rates
     require_monthly_env!

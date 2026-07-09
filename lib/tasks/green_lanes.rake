@@ -1,5 +1,5 @@
 module GreenLanesTasks
-  module_function
+module_function
 
   def generate_categorisation_data
     raise "Cannot read file '#{ENV['CSVFILE']}'" unless File.file?(ENV['CSVFILE'].to_s)

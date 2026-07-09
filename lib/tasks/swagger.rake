@@ -61,7 +61,7 @@ module SwaggerRakeTasks
   CONTROLLER_ROOT = File.expand_path('../../app/controllers/api/v2', __dir__)
   SPEC_ROOT = File.expand_path('../../spec/swagger/api/v2', __dir__)
 
-  module_function
+module_function
 
   def generate
     ENV['PATTERN'] = Dir.glob(SWAGGER_SPEC_PATTERN).reject { |path| DRAFT_SWAGGER_SPECS.include?(path) }.join(',')
