@@ -97,13 +97,7 @@ module_function
   end
 
   def validate_note_structures
-    update = TimeMachine.at(Time.current) do
-      CustomsTariffUpdate
-        .actual
-        .exclude(status: CustomsTariffUpdate::FAILED)
-        .order(Sequel.desc(:validity_start_date))
-        .first
-    end
+    update = TimeMachine.at(Time.current) { CustomsTariffUpdate.latest.first }
     results = update ? validate_chapter_notes(update) : []
 
     print_note_structure_report(results)
