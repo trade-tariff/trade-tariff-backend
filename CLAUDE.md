@@ -1,37 +1,55 @@
-# Claude Code Instructions
+# Agent Instructions
 
-Use `docs/README.md` as the first repository map and `docs/architecture/README.md` for system boundaries.
+Use these instructions for Codex and other agentic coding tools working in this repository.
 
-This is a Rails API backed by Sequel/PostgreSQL, Redis, Sidekiq, and OpenSearch. Service-specific behaviour is controlled by `SERVICE=uk` or `SERVICE=xi`.
+## Start Here
 
-Before changing code:
+Read these first:
 
-- Identify the route, controller, service/query/model, serializer, and tests involved.
-- Verify generated explanations against source files.
+- `docs/README.md`
+- `docs/architecture/README.md`
+- `docs/development-and-delivery.md`
+- `docs/code-wiki.md`
+- `README.md`
+
+The application is a Rails API using Sequel, PostgreSQL, Redis, Sidekiq, and OpenSearch. It runs in UK or XI service mode via `SERVICE`.
+
+## Working Rules
+
+- Keep scope tight and prefer simple changes.
+- Before changing code, identify the route, controller, service/query/model, serializer, and tests involved.
+- Verify generated or AI-suggested claims against source code and tests.
 - Write controller coverage as request specs under `spec/requests/`. Do not add new files under `spec/controllers/`; when touching legacy controller specs, migrate the coverage into request specs and remove the controller spec.
 - Request specs must use concrete paths or route helpers, not controller-style action symbols such as `get :show`.
-- Treat swagger specs under `spec/swagger/api/v2/` as API documentation coverage, not a replacement for request specs.
 - Use Ruby data classes such as `Data.define` for simple value objects. Do not introduce `Struct`.
-- Read the relevant architecture or domain doc before editing tariff data, search, sync, caching, Green Lanes, rules of origin, exchange rates, or API documentation.
-- Run project commands directly by default. If you use Nix/direnv locally, `direnv exec <repo-path> <command>` is also fine.
+- For public V2 API changes, update swagger specs under `spec/swagger/api/v2/`.
+- Treat swagger specs under `spec/swagger/api/v2/` as API documentation coverage, not a replacement for request specs.
+- Do not manually edit generated `swagger/v2/swagger.json` for endpoint changes.
+- Run project commands normally with Bundler (`bundle exec`, `bin/*`, `rspec`, and so on) unless you are using the optional Nix/direnv local setup.
+- **Nix/direnv only:** if you use a local gitignored `.envrc` (for example after `direnv allow` with the repo flake), non-interactive agent shells should run commands via `direnv exec <repo-path> <command>` so hooks and tools match that environment. This is not required for non-Nix workflows.
 - Use `rg` for code search.
+- Read the relevant architecture or domain doc before editing tariff data, search, sync, caching, Green Lanes, rules of origin, exchange rates, or API documentation.
+- Treat tariff data, measures, quotas, duties, certificates, rules of origin, auth, and sync logic as high-risk areas.
 
-Before opening a PR:
+## PR Risk Labels
 
-- Use `.github/pull_request_template.md` as the canonical risk decision tree.
-- Fill in the Risk section and apply exactly one matching GitHub label: `low-risk` for green, `medium-risk` for amber, or `high-risk` for red.
-- Treat dependency bumps with no API changes, copy/content changes, read-only observability, tests-only changes, additive config with safe defaults, covered refactors with no behaviour change, Terraform changes with no resource recreation, and non-destructive S3 lifecycle rules as typical `low-risk` changes.
-- Treat commodity code lookup, measure type, declarable goods, quota, duty calculation, OpenSearch indexing, consumed API endpoint, live feature flag, networking, security group, IAM, CI/CD, deployment ordering, S3 access-control, resource replacement, and deprecation changes as typical `medium-risk` changes that need a team conversation before merging.
-- Treat destructive database migrations, measure/condition/footnote processing, CDS or HMRC upstream sync, hard-to-rollback production AWS, secrets or credential handling, legally significant regulatory content, and significant architecture changes as typical `high-risk` changes that require explicit approval from Thor or Neil.
-- If the risk rating changes during review, remove the old risk label and apply the new one.
+When opening a PR, use `.github/pull_request_template.md` as the canonical risk decision tree. Fill in the Risk section and apply exactly one matching GitHub label:
 
-Useful docs:
+- `low-risk` for green changes: standard review. Typical examples include dependency bumps with no API changes, copy/content changes, read-only observability, tests-only changes, additive config with safe defaults, covered refactors with no behaviour change, Terraform changes with no resource recreation, and non-destructive S3 lifecycle rules.
+- `medium-risk` for amber changes: socialise with the team before merging. Typical examples include commodity code lookup, measure type, declarable goods, quota, or duty calculation changes; OpenSearch indexing changes; new or modified consumed API endpoints; feature flags affecting live journeys; networking, security group, IAM, CI/CD, deployment ordering, S3 access-control, resource replacement, or deprecation changes.
+- `high-risk` for red changes: requires explicit approval from Thor or Neil before merging. Typical examples include destructive database migrations, changes to how measures, conditions, or footnotes are processed or surfaced, CDS or HMRC upstream sync changes, production AWS changes that cannot be easily rolled back, secrets or credential handling changes, legally significant trader-facing regulatory content changes, and significant architectural shifts.
 
-- `docs/development-and-delivery.md`
-- `docs/confluence.md`
-- `docs/code-wiki.md`
-- `docs/architecture/request-routing.md`
-- `docs/architecture/data-import-and-sync.md`
-- `docs/architecture/search-and-indexing.md`
-- `docs/architecture/caching-and-background-jobs.md`
-- `docs/architecture/api-documentation.md`
+Do not apply more than one risk label to the same PR. If the risk rating changes during review, remove the old risk label and apply the new one.
+
+## Key Entry Points
+
+- Routes: `config/routes.rb` and `app/engines/`
+- Public V2 controllers: `app/controllers/api/v2/`
+- Admin controllers: `app/controllers/api/admin/`
+- Models: `app/models/`
+- Services: `app/services/`
+- Import and sync: `app/lib/`, `lib/tasks/tariff.rake`
+- Search: `app/services/search_service.rb`, `app/indexes/search/`, `app/queries/search/`
+- Workers: `app/workers/`, `config/sidekiq.yml`
+- API docs: `spec/swagger/api/v2/`, `lib/tasks/swagger.rake`
+- Wider platform context: `docs/confluence.md`
