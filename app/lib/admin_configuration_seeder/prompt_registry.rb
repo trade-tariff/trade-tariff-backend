@@ -32,6 +32,8 @@ module AdminConfigurationSeeder
       search_context_markdown: 'search_context.md',
     }.freeze
 
+    @prompts = {}
+
   module_function
 
     def model_label(key)
@@ -39,7 +41,7 @@ module AdminConfigurationSeeder
     end
 
     def prompt(name)
-      PROMPT_PATH.join(PROMPT_FILES.fetch(name)).read.strip
+      @prompts[name] ||= PROMPT_PATH.join(PROMPT_FILES.fetch(name)).read.strip
     end
   end
 end
