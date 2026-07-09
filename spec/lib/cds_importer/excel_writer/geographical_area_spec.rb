@@ -26,7 +26,7 @@ RSpec.describe CdsImporter::ExcelWriter::GeographicalArea do
     )
   end
 
-  let(:description_period2) do
+  let(:second_description_period) do
     instance_double(
       GeographicalAreaDescriptionPeriod,
       class: instance_double(Class, name: 'GeographicalAreaDescriptionPeriod'),
@@ -49,7 +49,7 @@ RSpec.describe CdsImporter::ExcelWriter::GeographicalArea do
     )
   end
 
-  let(:description2) do
+  let(:second_description) do
     instance_double(
       GeographicalAreaDescription,
       class: instance_double(Class, name: 'GeographicalAreaDescription'),
@@ -72,7 +72,7 @@ RSpec.describe CdsImporter::ExcelWriter::GeographicalArea do
     )
   end
 
-  let(:geo_area_membership2) do
+  let(:second_geo_area_membership) do
     instance_double(
       GeographicalAreaMembership,
       class: instance_double(Class, name: 'GeographicalAreaMembership'),
@@ -86,9 +86,9 @@ RSpec.describe CdsImporter::ExcelWriter::GeographicalArea do
 
   describe '#data_row' do
     context 'when all fields are valid' do
-      let(:models) { [geo_area, description, description_period, description2, description_period2, geo_area_membership, geo_area_membership2] }
+      let(:models) { [geo_area, description, description_period, second_description, second_description_period, geo_area_membership, second_geo_area_membership] }
       let!(:membership) { create(:geographical_area, :with_description, geographical_area_sid: 4) }
-      let!(:membership2) { create(:geographical_area, :with_description, geographical_area_sid: 5) }
+      let!(:second_membership) { create(:geographical_area, :with_description, geographical_area_sid: 5) }
 
       it 'returns a correctly formatted data row' do
         row = mapper.data_row
@@ -99,8 +99,8 @@ RSpec.describe CdsImporter::ExcelWriter::GeographicalArea do
         expect(row[3]).to eq('01/01/2025')
         expect(row[4]).to eq('31/12/2025')
         expect(row[5]).to eq("01/01/2025\nCountries - export restriction protective equipment R2020/204\n02/02/2023\nCountries - export restriction protective equipment R 2020/568\n")
-        expect(row[6]).to eq("01/07/2025 : #{membership2.description}\n")
-        expect(row[7]).to eq("01/01/2025 to 30/06/2025 : #{membership.description}\n01/07/2025 : #{membership2.description}\n")
+        expect(row[6]).to eq("01/07/2025 : #{second_membership.description}\n")
+        expect(row[7]).to eq("01/01/2025 to 30/06/2025 : #{membership.description}\n01/07/2025 : #{second_membership.description}\n")
         expect(row[8]).to eq(3)
       end
     end

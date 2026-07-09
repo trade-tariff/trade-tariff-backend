@@ -177,8 +177,8 @@ RSpec.describe RelabelGoodsNomenclaturePageWorker, type: :worker do
     end
 
     context 'with multiple labels (mixed success and failure)' do
-      let(:commodity2) { create(:commodity) }
-      let(:sids) { [commodity.goods_nomenclature_sid, commodity2.goods_nomenclature_sid] }
+      let(:second_commodity) { create(:commodity) }
+      let(:sids) { [commodity.goods_nomenclature_sid, second_commodity.goods_nomenclature_sid] }
 
       let(:valid_label) do
         GoodsNomenclatureLabel.build(commodity, ai_response['data'].first)
@@ -186,7 +186,7 @@ RSpec.describe RelabelGoodsNomenclaturePageWorker, type: :worker do
 
       let(:invalid_label) do
         GoodsNomenclatureLabel.new(
-          goods_nomenclature: commodity2,
+          goods_nomenclature: second_commodity,
           labels: nil,
         )
       end

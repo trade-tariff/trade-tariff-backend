@@ -15,7 +15,7 @@ RSpec.describe CdsImporter::ExcelWriter::GoodsNomenclature do
     )
   end
 
-  let(:goods_nomenclature2) do
+  let(:second_goods_nomenclature) do
     instance_double(
       GoodsNomenclature,
       class: instance_double(Class, name: 'GoodsNomenclature'),
@@ -42,7 +42,7 @@ RSpec.describe CdsImporter::ExcelWriter::GoodsNomenclature do
     )
   end
 
-  let(:description_period2) do
+  let(:second_description_period) do
     instance_double(
       GoodsNomenclatureDescriptionPeriod,
       class: instance_double(Class, name: 'GoodsNomenclatureDescriptionPeriod'),
@@ -67,7 +67,7 @@ RSpec.describe CdsImporter::ExcelWriter::GoodsNomenclature do
     )
   end
 
-  let(:description2) do
+  let(:second_description) do
     instance_double(
       GoodsNomenclatureDescription,
       class: instance_double(Class, name: 'GoodsNomenclatureDescription'),
@@ -81,7 +81,7 @@ RSpec.describe CdsImporter::ExcelWriter::GoodsNomenclature do
 
   describe '#data_row' do
     context 'when all fields are valid' do
-      let(:models) { [goods_nomenclature, description, description_period, description2, description_period2] }
+      let(:models) { [goods_nomenclature, description, description_period, second_description, second_description_period] }
 
       it 'returns a correctly formatted data row' do
         row = mapper.data_row
@@ -115,7 +115,7 @@ RSpec.describe CdsImporter::ExcelWriter::GoodsNomenclature do
     end
 
     context 'when there are empty fields' do
-      let(:models) { [goods_nomenclature2] }
+      let(:models) { [second_goods_nomenclature] }
 
       it 'returns a correctly formatted data row' do
         row = mapper.data_row

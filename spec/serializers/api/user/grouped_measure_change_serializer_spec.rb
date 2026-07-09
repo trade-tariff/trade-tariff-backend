@@ -124,13 +124,13 @@ RSpec.describe Api::User::GroupedMeasureChangeSerializer do
 
       it 'includes the commodity data' do
         commodity1 = create(:goods_nomenclature, goods_nomenclature_item_id: '1234567890')
-        commodity2 = create(:goods_nomenclature, goods_nomenclature_item_id: '9876543210')
+        second_commodity = create(:goods_nomenclature, goods_nomenclature_item_id: '9876543210')
 
         serializable.grouped_measure_commodity_changes.each do |change|
           if change.goods_nomenclature_item_id == '1234567890'
             change.commodity = commodity1
           elsif change.goods_nomenclature_item_id == '9876543210'
-            change.commodity = commodity2
+            change.commodity = second_commodity
           end
         end
 

@@ -124,13 +124,13 @@ RSpec.describe CustomsTariffImporter::Importer do
     end
 
     context 'when two documents are returned' do
-      let(:docx_content_2) { 'fake docx binary content v2' }
-      let(:fetched_result_2) do
+      let(:second_docx_content) { 'fake docx binary content v2' }
+      let(:second_fetched_result) do
         CustomsTariffImporter::DocumentFetcher::Result.new(
-          content: docx_content_2,
+          content: second_docx_content,
           url: 'https://assets.publishing.service.gov.uk/media/def456/UKGT_1.31.docx',
           version: '1.31',
-          checksum: Digest::SHA256.hexdigest(docx_content_2),
+          checksum: Digest::SHA256.hexdigest(second_docx_content),
           published_on: Date.new(2026, 3, 3),
           entry_into_force_on: Date.new(2026, 4, 1),
         )
@@ -138,7 +138,7 @@ RSpec.describe CustomsTariffImporter::Importer do
 
       before do
         allow(CustomsTariffImporter::DocumentFetcher).to receive(:new).and_return(
-          instance_double(CustomsTariffImporter::DocumentFetcher, call: [fetched_result, fetched_result_2]),
+          instance_double(CustomsTariffImporter::DocumentFetcher, call: [fetched_result, second_fetched_result]),
         )
       end
 
