@@ -11,7 +11,7 @@ module TimedInstrumentation
 
     instrumenter.call(
       completed_event,
-      payload.merge(**completed_payload_for(completed_payload, result), duration_ms:),
+      payload.merge(completed_payload_for(completed_payload, result), duration_ms:),
     )
 
     result
@@ -19,7 +19,7 @@ module TimedInstrumentation
     instrumenter.call(
       failed_event,
       payload.merge(
-        **payload_for(failed_payload, e),
+        payload_for(failed_payload, e),
         error_class: e.class.name,
         duration_ms: duration_since(start_time),
       ),
