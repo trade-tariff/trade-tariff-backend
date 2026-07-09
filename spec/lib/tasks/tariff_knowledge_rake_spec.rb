@@ -169,11 +169,8 @@ RSpec.describe 'tariff_knowledge rake tasks' do
   end
 
   describe 'tariff_knowledge:note_structures:validate' do
-    it 'validates current chapter notes and prints a concise report' do
-      update = create(:customs_tariff_update, version: '1.31', validity_start_date: 1.day.ago)
-      create(:customs_tariff_update, :failed, version: '1.32', validity_start_date: Time.zone.today)
-      note = create(:customs_tariff_chapter_note, customs_tariff_update: update, chapter_id: '72', content: '1. Definitions.')
-      result = TariffKnowledge::NoteStructureValidator::Result.new(
+    def validation_result(issues: [])
+      TariffKnowledge::NoteStructureValidator::Result.new(
         source_type: 'customs_tariff_chapter_note',
         source_id: '72',
         source_version: '1.31',
@@ -184,20 +181,35 @@ RSpec.describe 'tariff_knowledge rake tasks' do
         orphan_event_count: 0,
         orphan_event_keys: [],
         duplicate_block_keys: [],
-        uncontained_fragment_keys: %w[fragment-key],
-        issues: [
-          TariffKnowledge::NoteStructureValidator::Issue.new(
-            severity: 'warning',
-            code: 'uncontained_fragments',
-            message: '1 fragments were not contained by any emitted note block',
-            details: { 'fragment_keys' => %w[fragment-key] },
-          ),
-        ],
+        uncontained_fragment_keys: issues.any? ? %w[fragment-key] : [],
+        issues:,
       )
+    end
+
+    def uncontained_fragment_issue
+      TariffKnowledge::NoteStructureValidator::Issue.new(
+        severity: 'warning',
+        code: 'uncontained_fragments',
+        message: '1 fragments were not contained by any emitted note block',
+        details: { 'fragment_keys' => %w[fragment-key] },
+      )
+    end
+
+    it 'validates current chapter notes and prints a concise report' do
+      update = create(:customs_tariff_update, version: '1.31', validity_start_date: 1.day.ago)
+      create(:customs_tariff_update, :failed, version: '1.32', validity_start_date: Time.zone.today)
+      note = create(:customs_tariff_chapter_note, customs_tariff_update: update, chapter_id: '72', content: '1. Definitions.')
+      result = validation_result(issues: [uncontained_fragment_issue])
 
       allow(TariffKnowledge::NoteStructureValidator).to receive(:call).and_return(result)
 
-      output = capture_output { Rake::Task['tariff_knowledge:note_structures:validate'].invoke }
+      expect { Rake::Task['tariff_knowledge:note_structures:validate'].invoke }
+        .to output(a_string_including(
+                     'Validated 1 tariff knowledge note sources',
+                     'warning: 1',
+                     'uncontained_fragments: 1',
+                     'Chapter 72',
+                   )).to_stdout
 
       expect(TariffKnowledge::NoteStructureValidator).to have_received(:call).with(
         source_type: 'customs_tariff_chapter_note',
@@ -205,21 +217,28 @@ RSpec.describe 'tariff_knowledge rake tasks' do
         source_version: update.version,
         content: note.content,
       )
-      expect(output).to include('Validated 1 tariff knowledge note sources')
-      expect(output).to include('warning: 1')
-      expect(output).to include('uncontained_fragments: 1')
-      expect(output).to include('Chapter 72')
     end
-  end
 
-  def capture_output
-    original_stdout = $stdout
-    output = StringIO.new
-    $stdout = output
-    yield
-    output.string
-  ensure
-    $stdout = original_stdout
+    it 'aborts when FAIL_ON_ISSUES is true and validation reports issues' do
+      update = create(:customs_tariff_update, version: '1.31', validity_start_date: 1.day.ago)
+      create(:customs_tariff_chapter_note, customs_tariff_update: update, chapter_id: '72', content: '1. Definitions.')
+      result = validation_result(issues: [uncontained_fragment_issue])
+
+      allow(TariffKnowledge::NoteStructureValidator).to receive(:call).and_return(result)
+      original_value = ENV.fetch('FAIL_ON_ISSUES', nil)
+      ENV['FAIL_ON_ISSUES'] = 'true'
+
+      expect {
+        expect { Rake::Task['tariff_knowledge:note_structures:validate'].invoke }
+          .to raise_error(SystemExit, /Note structure validation reported issues/)
+      }.to output(a_string_including('Validated 1 tariff knowledge note sources')).to_stdout
+    ensure
+      if original_value
+        ENV['FAIL_ON_ISSUES'] = original_value
+      else
+        ENV.delete('FAIL_ON_ISSUES')
+      end
+    end
   end
 end
 # rubocop:enable RSpec/DescribeClass
