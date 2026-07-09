@@ -63,7 +63,7 @@ RSpec.describe TariffKnowledge::SourceGraphLoader do
       expect(applied_codes).to contain_exactly('0101210000', '0101290000')
     end
 
-    it 'creates note block nodes and propagates contained fragment applicability and references' do
+    it 'creates note block nodes contained by the source without full-chapter applicability fan-out' do
       chapter_72 = create(:chapter, goods_nomenclature_item_id: '7200000000')
       create(:heading, parent: chapter_72, goods_nomenclature_item_id: '7201000000')
       GoodsNomenclatures::TreeNode.refresh!
@@ -128,8 +128,16 @@ RSpec.describe TariffKnowledge::SourceGraphLoader do
       contained_fragment_nodes.each do |fragment_node|
         expect(edge_exists?(block_node, fragment_node, TariffKnowledge::Edge::CONTAINS)).to be(true)
       end
-      expect(edge_exists?(block_node, heading_7201_node, TariffKnowledge::Edge::APPLIES_TO)).to be(true)
-      expect(edge_exists?(reference_block_node, range_node, TariffKnowledge::Edge::REFERENCES)).to be(true)
+      # Blocks must not inherit full-chapter APPLIES_TO (or range REFERENCES) from
+      # every contained fragment — that multiplies edge fan-out by block count.
+      expect(edge_exists?(block_node, heading_7201_node, TariffKnowledge::Edge::APPLIES_TO)).to be(false)
+      expect(edge_exists?(reference_block_node, range_node, TariffKnowledge::Edge::REFERENCES)).to be(false)
+      # Fragments still carry applicability / references for generation-time joins.
+      expect(
+        contained_fragment_nodes.any? do |fragment_node|
+          edge_exists?(fragment_node, heading_7201_node, TariffKnowledge::Edge::APPLIES_TO)
+        end,
+      ).to be(true)
     end
 
     it 'removes stale block links when reloading changed source content' do

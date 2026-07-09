@@ -126,26 +126,15 @@ module TariffKnowledge
         relationship_type: Edge::CONTAINS,
         current_target_node_ids: contained_fragments.map(&:id),
       )
-
-      propagate_fragment_edges(block_node, contained_fragments, Edge::APPLIES_TO)
-      propagate_fragment_edges(block_node, contained_fragments, Edge::REFERENCES)
+      # Do not copy full-chapter (or full-tariff) APPLIES_TO / REFERENCES targets
+      # onto each block — that multiplies edge fan-out by definition-block count.
+      # Compressed notes resolve block evidence via:
+      #   declarable <- fragment APPLIES_TO/range <- block CONTAINS fragment
+      # Clear any legacy propagated edges from older loads.
+      delete_stale_edges(source_node: block_node, relationship_type: Edge::APPLIES_TO)
+      delete_stale_edges(source_node: block_node, relationship_type: Edge::REFERENCES)
 
       block_node
-    end
-
-    def propagate_fragment_edges(block_node, contained_fragments, relationship_type)
-      target_node_ids = Edge
-        .where(source_node_id: contained_fragments.map(&:id), relationship_type:)
-        .select_map(:target_node_id)
-        .uniq
-      target_nodes = Node.where(id: target_node_ids)
-
-      upsert_edges(block_node, target_nodes, relationship_type)
-      delete_stale_edges(
-        source_node: block_node,
-        relationship_type:,
-        current_target_node_ids: target_node_ids,
-      )
     end
 
     def delete_stale_note_block_edges(source_node, current_block_nodes)

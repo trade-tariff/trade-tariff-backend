@@ -115,17 +115,35 @@ module TariffKnowledge
     end
 
     def block_evidence_by_declarable_node_id(declarable_nodes, apply_edges)
-      declarable_node_ids = declarable_nodes.map(&:id)
-      return {} if declarable_node_ids.empty?
+      return {} if declarable_nodes.empty?
 
-      block_nodes = current_block_nodes(apply_edges.map(&:source_node_id))
+      # Blocks are not given full-chapter APPLIES_TO edges. Resolve them through
+      # contained fragments that already apply (or expand) to the declarable:
+      #   declarable <- APPLIES_TO/range <- fragment <- CONTAINS <- block
       apply_edges_by_target_id = apply_edges.group_by(&:target_node_id)
+      fragment_nodes = current_fragment_nodes(apply_edges.map(&:source_node_id))
+      return {} if fragment_nodes.empty?
+
+      contains_edges = Edge.by_relationship(Edge::CONTAINS).where(target_node_id: fragment_nodes.keys).all
+      block_nodes = current_block_nodes(contains_edges.map(&:source_node_id))
+      return {} if block_nodes.empty?
+
+      block_ids_by_fragment_id = contains_edges.each_with_object(Hash.new { |h, k| h[k] = [] }) do |edge, grouped|
+        next unless block_nodes[edge.source_node_id]
+
+        grouped[edge.target_node_id] << edge.source_node_id
+      end
 
       declarable_nodes.each_with_object({}) do |declarable_node, grouped|
-        block_evidence = apply_edges_by_target_id
+        applicable_fragment_ids = apply_edges_by_target_id
           .fetch(declarable_node.id, [])
-          .filter_map { |edge| block_nodes[edge.source_node_id] }
-          .uniq(&:id)
+          .map(&:source_node_id)
+          .select { |source_node_id| fragment_nodes[source_node_id] }
+
+        block_evidence = applicable_fragment_ids
+          .flat_map { |fragment_id| block_ids_by_fragment_id.fetch(fragment_id, []) }
+          .uniq
+          .filter_map { |block_id| block_nodes[block_id] }
           .sort_by { |block_node| [block_node.source_type.to_s, block_node.source_id.to_s, block_node.key.to_s] }
 
         grouped[declarable_node.id] = block_evidence if block_evidence.any?
@@ -165,10 +183,16 @@ module TariffKnowledge
       fragment_node_ids = fragment_nodes.map(&:id).uniq
       return {} if fragment_node_ids.empty?
 
+      # Fragments may also be CONTAINED by note blocks. Only NOTE_SOURCE parents
+      # are provenance for evidence metadata; block membership must not overwrite
+      # (or nil out) that parent when multi-parent CONTAINS edges exist.
       contains_edges = Edge.by_relationship(Edge::CONTAINS).where(target_node_id: fragment_node_ids).all
       source_nodes = nodes_by_id(contains_edges.map(&:source_node_id), Node.where(node_type: Node::NOTE_SOURCE))
       contains_edges.each_with_object({}) do |edge, grouped|
-        grouped[edge.target_node_id] = source_nodes[edge.source_node_id]
+        source_node = source_nodes[edge.source_node_id]
+        next unless source_node
+
+        grouped[edge.target_node_id] = source_node
       end
     end
 

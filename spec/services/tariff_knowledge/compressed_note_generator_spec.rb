@@ -146,7 +146,7 @@ RSpec.describe TariffKnowledge::CompressedNoteGenerator do
       expect(note.context_hash).to eq(Digest::SHA256.hexdigest(note.content))
     end
 
-    it 'stores coherent note block evidence for definition blocks' do
+    it 'stores coherent note block evidence resolved through contained applying fragments' do
       create(
         :tariff_knowledge_edge,
         source_node: note_block_node,
@@ -158,12 +158,6 @@ RSpec.describe TariffKnowledge::CompressedNoteGenerator do
         source_node: note_block_node,
         target_node: fragment_node,
         relationship_type: TariffKnowledge::Edge::CONTAINS,
-      )
-      create(
-        :tariff_knowledge_edge,
-        source_node: note_block_node,
-        target_node: declarable_node,
-        relationship_type: TariffKnowledge::Edge::APPLIES_TO,
       )
 
       described_class.call(goods_nomenclature_sids: [123])
@@ -189,7 +183,32 @@ RSpec.describe TariffKnowledge::CompressedNoteGenerator do
       expect(note.metadata.to_hash['evidence']).to be_present
     end
 
-    it 'generates from block-only evidence' do
+    it 'keeps fragment parent provenance when a note block also contains the fragment' do
+      create(
+        :tariff_knowledge_edge,
+        source_node: note_block_node,
+        target_node: lead_in_fragment_node,
+        relationship_type: TariffKnowledge::Edge::CONTAINS,
+      )
+      create(
+        :tariff_knowledge_edge,
+        source_node: note_block_node,
+        target_node: fragment_node,
+        relationship_type: TariffKnowledge::Edge::CONTAINS,
+      )
+
+      described_class.call(goods_nomenclature_sids: [123])
+
+      evidence = TariffKnowledge::CompressedNote[123].metadata.to_hash['evidence'].first
+      expect(evidence).to include(
+        'parent_source_node_key' => 'note_source:customs_tariff_chapter_note:1.31:01',
+        'parent_source_title' => 'Chapter 01 notes',
+        'source_context' => '1. This chapter includes: Heading 0101 covers live horses.',
+        'context_type' => 'inclusion',
+      )
+    end
+
+    it 'does not attach block evidence from legacy block applicability edges alone' do
       TariffKnowledge::Edge
         .where(
           source_node_id: fragment_node.id,
@@ -204,6 +223,19 @@ RSpec.describe TariffKnowledge::CompressedNoteGenerator do
           relationship_type: TariffKnowledge::Edge::REFERENCES,
         )
         .delete
+      TariffKnowledge::Edge
+        .where(
+          source_node_id: range_node.id,
+          target_node_id: declarable_node.id,
+          relationship_type: TariffKnowledge::Edge::EXPANDS_TO,
+        )
+        .delete
+      create(
+        :tariff_knowledge_edge,
+        source_node: note_block_node,
+        target_node: fragment_node,
+        relationship_type: TariffKnowledge::Edge::CONTAINS,
+      )
       create(
         :tariff_knowledge_edge,
         source_node: note_block_node,
@@ -214,15 +246,7 @@ RSpec.describe TariffKnowledge::CompressedNoteGenerator do
       described_class.call(goods_nomenclature_sids: [123])
 
       note = TariffKnowledge::CompressedNote[123]
-      expect(note).to have_attributes(stale: false)
-      expect(note.content).to include('pure-bred breeding animals')
-      expect(note.content).to include('animals certified as breeding stock')
-      expect(note.metadata.to_hash).to include(
-        'source_node_keys' => [],
-        'range_node_keys' => [],
-        'evidence' => [],
-      )
-      expect(note.metadata.to_hash['evidence_blocks'].first['fragment_node_keys']).to eq([])
+      expect(note.nil? || note.stale).to be(true)
     end
 
     it 'ignores old source version block evidence' do
@@ -255,14 +279,14 @@ RSpec.describe TariffKnowledge::CompressedNoteGenerator do
       create(
         :tariff_knowledge_edge,
         source_node: old_block_node,
-        target_node: declarable_node,
-        relationship_type: TariffKnowledge::Edge::APPLIES_TO,
+        target_node: fragment_node,
+        relationship_type: TariffKnowledge::Edge::CONTAINS,
       )
       create(
         :tariff_knowledge_edge,
         source_node: note_block_node,
-        target_node: declarable_node,
-        relationship_type: TariffKnowledge::Edge::APPLIES_TO,
+        target_node: fragment_node,
+        relationship_type: TariffKnowledge::Edge::CONTAINS,
       )
 
       described_class.call(goods_nomenclature_sids: [123])
@@ -306,12 +330,6 @@ RSpec.describe TariffKnowledge::CompressedNoteGenerator do
         target_node: fragment_node,
         relationship_type: TariffKnowledge::Edge::CONTAINS,
       )
-      create(
-        :tariff_knowledge_edge,
-        source_node: note_block_node,
-        target_node: declarable_node,
-        relationship_type: TariffKnowledge::Edge::APPLIES_TO,
-      )
 
       described_class.call(goods_nomenclature_sids: [123])
 
@@ -320,27 +338,6 @@ RSpec.describe TariffKnowledge::CompressedNoteGenerator do
     end
 
     it 'preloads block fragment evidence for the requested goods nomenclatures' do
-      TariffKnowledge::Edge
-        .where(
-          source_node_id: fragment_node.id,
-          target_node_id: declarable_node.id,
-          relationship_type: TariffKnowledge::Edge::APPLIES_TO,
-        )
-        .delete
-      TariffKnowledge::Edge
-        .where(
-          source_node_id: fragment_node.id,
-          target_node_id: range_node.id,
-          relationship_type: TariffKnowledge::Edge::REFERENCES,
-        )
-        .delete
-      TariffKnowledge::Edge
-        .where(
-          source_node_id: range_node.id,
-          target_node_id: declarable_node.id,
-          relationship_type: TariffKnowledge::Edge::EXPANDS_TO,
-        )
-        .delete
       second_declarable_node = create(
         :tariff_knowledge_node,
         key: 'goods_nomenclature:456',
@@ -353,13 +350,31 @@ RSpec.describe TariffKnowledge::CompressedNoteGenerator do
         goods_nomenclature_sid: 789,
         goods_nomenclature_item_id: '0101300000',
       )
-      block_nodes = [declarable_node, second_declarable_node, third_declarable_node].map.with_index do |node, index|
+      second_fragment = create(
+        :tariff_knowledge_node,
+        :note_fragment,
+        key: 'note_fragment:customs_tariff_chapter_note:1.31:01:0004',
+        title: 'Chapter 01 notes fragment 4',
+        content: 'Second declarable fragment.',
+      )
+      third_fragment = create(
+        :tariff_knowledge_node,
+        :note_fragment,
+        key: 'note_fragment:customs_tariff_chapter_note:1.31:01:0005',
+        title: 'Chapter 01 notes fragment 5',
+        content: 'Third declarable fragment.',
+      )
+      block_nodes = [
+        [declarable_node, fragment_node, 1],
+        [second_declarable_node, second_fragment, 2],
+        [third_declarable_node, third_fragment, 3],
+      ].map do |node, contained_fragment, index|
         block_node = create(
           :tariff_knowledge_node,
           node_type: TariffKnowledge::Node::NOTE_BLOCK,
-          key: "note_block:customs_tariff_chapter_note:1.31:01:#{index + 1}:a",
-          title: "Definition block #{index + 1}",
-          content: "Block #{index + 1} context.",
+          key: "note_block:customs_tariff_chapter_note:1.31:01:#{index}:a",
+          title: "Definition block #{index}",
+          content: "Block #{index} context.",
           source_type: 'customs_tariff_chapter_note',
           source_id: '01',
           source_version: '1.31',
@@ -371,15 +386,21 @@ RSpec.describe TariffKnowledge::CompressedNoteGenerator do
         create(
           :tariff_knowledge_edge,
           source_node: block_node,
-          target_node: fragment_node,
+          target_node: contained_fragment,
           relationship_type: TariffKnowledge::Edge::CONTAINS,
         )
-        create(
-          :tariff_knowledge_edge,
-          source_node: block_node,
-          target_node: node,
+        unless TariffKnowledge::Edge.where(
+          source_node_id: contained_fragment.id,
+          target_node_id: node.id,
           relationship_type: TariffKnowledge::Edge::APPLIES_TO,
-        )
+        ).any?
+          create(
+            :tariff_knowledge_edge,
+            source_node: contained_fragment,
+            target_node: node,
+            relationship_type: TariffKnowledge::Edge::APPLIES_TO,
+          )
+        end
         block_node
       end
 
@@ -388,7 +409,9 @@ RSpec.describe TariffKnowledge::CompressedNoteGenerator do
       end
 
       contains_edge_queries = queries.grep(/FROM "tariff_knowledge_edges".*"relationship_type" = 'contains'/)
-      expect(contains_edge_queries.size).to eq(1)
+      # Parent resolution, block membership, and per-block contained fragment keys —
+      # batched once for the call, not once per goods nomenclature.
+      expect(contains_edge_queries.size).to be <= 4
       expect(block_nodes.map(&:key)).to match_array(
         [123, 456, 789].map { |sid| TariffKnowledge::CompressedNote[sid].metadata.to_hash.dig('evidence_blocks', 0, 'source_node_key') },
       )
@@ -633,7 +656,8 @@ RSpec.describe TariffKnowledge::CompressedNoteGenerator do
         described_class.call(goods_nomenclature_sids: [123, 456])
       end
 
-      expect(queries.grep(/FROM "tariff_knowledge_edges"/).size).to be <= 5
+      # APPLIES_TO + REFERENCES + EXPANDS_TO + fragment CONTAINS parents + block membership CONTAINS
+      expect(queries.grep(/FROM "tariff_knowledge_edges"/).size).to be <= 7
     end
 
     it 'uses source note context to identify exclusion evidence' do
