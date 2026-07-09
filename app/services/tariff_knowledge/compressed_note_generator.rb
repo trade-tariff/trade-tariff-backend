@@ -118,8 +118,10 @@ module TariffKnowledge
       return {} if declarable_nodes.empty?
 
       # Blocks are not given full-chapter APPLIES_TO edges. Resolve them through
-      # contained fragments that already apply (or expand) to the declarable:
-      #   declarable <- APPLIES_TO/range <- fragment <- CONTAINS <- block
+      # contained fragments that already APPLIES_TO the declarable:
+      #   declarable <- APPLIES_TO <- fragment <- CONTAINS <- block
+      # Range REFERENCES/EXPANDS_TO is used for fragment evidence context elsewhere,
+      # not for block applicability here.
       apply_edges_by_target_id = apply_edges.group_by(&:target_node_id)
       fragment_nodes = current_fragment_nodes(apply_edges.map(&:source_node_id))
       return {} if fragment_nodes.empty?
