@@ -125,6 +125,33 @@ RSpec.describe TariffKnowledge::CompressedNoteGenerator do
       expect(note.context_hash).to eq(Digest::SHA256.hexdigest(note.content))
     end
 
+    it 'keeps note-source parent provenance when a note block also contains the fragment' do
+      block_node = create(
+        :tariff_knowledge_node,
+        node_type: TariffKnowledge::Node::NOTE_BLOCK,
+        key: 'note_block:customs_tariff_chapter_note:1.31:01:1:a',
+        title: 'pure-bred breeding animals',
+        goods_nomenclature_sid: nil,
+        goods_nomenclature_item_id: nil,
+        producline_suffix: nil,
+        goods_nomenclature_type: nil,
+      )
+      create(
+        :tariff_knowledge_edge,
+        source_node: block_node,
+        target_node: fragment_node,
+        relationship_type: TariffKnowledge::Edge::CONTAINS,
+      )
+
+      described_class.call(goods_nomenclature_sids: [123])
+
+      evidence = TariffKnowledge::CompressedNote[123].metadata.to_hash['evidence'].first
+      expect(evidence).to include(
+        'parent_source_node_key' => 'note_source:customs_tariff_chapter_note:1.31:01',
+        'parent_source_title' => 'Chapter 01 notes',
+      )
+    end
+
     it 'includes fragments that directly apply to the declarable without an explicit range reference' do
       scoped_fragment_node = create(
         :tariff_knowledge_node,
