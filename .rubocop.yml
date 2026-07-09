@@ -118,8 +118,6 @@ Style/StringLiterals:
 RSpec/MessageChain:
   Enabled: false
 
-RSpec/IndexedLet:
-  Enabled: false
 
 RSpec/MultipleExpectations:
   Enabled: false

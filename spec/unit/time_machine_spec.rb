@@ -1,9 +1,9 @@
 RSpec.describe TimeMachine do
-  let!(:commodity1) do
+  let!(:first_commodity) do
     create :commodity, validity_start_date: Time.zone.now.ago(1.day),
                        validity_end_date: Time.zone.now.in(1.day)
   end
-  let!(:commodity2) do
+  let!(:second_commodity) do
     create :commodity, validity_start_date: Time.zone.now.ago(20.days),
                        validity_end_date: Time.zone.now.ago(10.days)
   end
@@ -11,22 +11,22 @@ RSpec.describe TimeMachine do
   describe '.at' do
     it 'sets date to current date if argument is blank', :aggregate_failures do
       described_class.at(nil) do
-        expect(Commodity.actual.all).to     include commodity1
-        expect(Commodity.actual.all).not_to include commodity2
+        expect(Commodity.actual.all).to     include first_commodity
+        expect(Commodity.actual.all).not_to include second_commodity
       end
     end
 
     it 'sets date to current date if argument is errorenous', :aggregate_failures do
       described_class.at('#&$*(#)') do
-        expect(Commodity.actual.all).to     include commodity1
-        expect(Commodity.actual.all).not_to include commodity2
+        expect(Commodity.actual.all).to     include first_commodity
+        expect(Commodity.actual.all).not_to include second_commodity
       end
     end
 
     it 'parses and sets valid date from argument', :aggregate_failures do
       described_class.at(Time.zone.now.ago(15.days).to_s) do
-        expect(Commodity.actual.all).not_to include commodity1
-        expect(Commodity.actual.all).to     include commodity2
+        expect(Commodity.actual.all).not_to include first_commodity
+        expect(Commodity.actual.all).to     include second_commodity
       end
     end
   end
@@ -34,8 +34,8 @@ RSpec.describe TimeMachine do
   describe '.now' do
     it 'sets date to current date', :aggregate_failures do
       described_class.now do
-        expect(Commodity.actual.all).to     include commodity1
-        expect(Commodity.actual.all).not_to include commodity2
+        expect(Commodity.actual.all).to     include first_commodity
+        expect(Commodity.actual.all).not_to include second_commodity
       end
     end
   end

@@ -91,28 +91,28 @@ RSpec.describe TariffChange do
     let(:operation_date) { Date.new(2025, 1, 15) }
 
     context 'when there are tariff changes for the given operation date' do
-      let(:matching_change1) { create(:tariff_change, operation_date: operation_date) }
-      let(:matching_change2) { create(:tariff_change, operation_date: operation_date) }
+      let(:first_matching_change) { create(:tariff_change, operation_date: operation_date) }
+      let(:second_matching_change) { create(:tariff_change, operation_date: operation_date) }
       let(:non_matching_change) { create(:tariff_change, operation_date: operation_date + 1.day) }
 
       it 'deletes all tariff changes for that date' do
-        matching_change1 # ensure record exists
-        matching_change2 # ensure record exists
+        first_matching_change # ensure record exists
+        second_matching_change # ensure record exists
         expect { described_class.delete_for(operation_date: operation_date) }
           .to change(described_class, :count).by(-2)
       end
 
       it 'does not delete tariff changes for other dates' do
-        matching_change1 # ensure records exist
-        matching_change2 # ensure records exist
+        first_matching_change # ensure records exist
+        second_matching_change # ensure records exist
         described_class.delete_for(operation_date: operation_date)
 
         expect(described_class.where(id: non_matching_change.id).first).not_to be_nil
       end
 
       it 'returns the number of deleted records' do
-        matching_change1 # ensure records exist
-        matching_change2 # ensure records exist
+        first_matching_change # ensure records exist
+        second_matching_change # ensure records exist
         result = described_class.delete_for(operation_date: operation_date)
 
         expect(result).to eq(2)
@@ -170,15 +170,15 @@ RSpec.describe TariffChange do
   end
 
   describe '.measures' do
-    let!(:measure_change1) { create(:tariff_change, type: 'Measure') }
-    let!(:measure_change2) { create(:tariff_change, type: 'Measure') }
+    let!(:first_measure_change) { create(:tariff_change, type: 'Measure') }
+    let!(:second_measure_change) { create(:tariff_change, type: 'Measure') }
     let!(:commodity_change) { create(:tariff_change, type: 'Commodity') }
     let!(:other_change) { create(:tariff_change, type: 'SomeOtherType') }
 
     it 'returns only tariff changes with type Measure' do
       result = described_class.measures.all
 
-      expect(result).to contain_exactly(measure_change1, measure_change2)
+      expect(result).to contain_exactly(first_measure_change, second_measure_change)
       expect(result).not_to include(commodity_change, other_change)
     end
 
@@ -194,13 +194,13 @@ RSpec.describe TariffChange do
       operation_date = Date.current
       different_date = Date.current + 1.day
 
-      measure_change1.update(operation_date: operation_date)
-      measure_change2.update(operation_date: different_date)
+      first_measure_change.update(operation_date: operation_date)
+      second_measure_change.update(operation_date: different_date)
 
       result = described_class.measures.where(operation_date: operation_date).all
 
-      expect(result).to contain_exactly(measure_change1)
-      expect(result).not_to include(measure_change2)
+      expect(result).to contain_exactly(first_measure_change)
+      expect(result).not_to include(second_measure_change)
     end
   end
 

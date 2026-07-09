@@ -33,10 +33,10 @@ RSpec.describe ClassificationDescription do
     context 'when the description is "other" and there are ancestors' do
       let(:description) { 'Other' }
 
-      let(:ancestor1) { instance_double(GoodsNomenclature, formatted_description: 'Foo') }
-      let(:ancestor2) { instance_double(GoodsNomenclature, formatted_description: 'Bar') }
+      let(:first_ancestor) { instance_double(GoodsNomenclature, formatted_description: 'Foo') }
+      let(:second_ancestor) { instance_double(GoodsNomenclature, formatted_description: 'Bar') }
 
-      let(:ancestors) { [ancestor1, ancestor2] }
+      let(:ancestors) { [first_ancestor, second_ancestor] }
 
       it 'returns the chain until the first non-other ancestor' do
         expect(descriptions).to eq(%w[Bar Other])
@@ -46,10 +46,10 @@ RSpec.describe ClassificationDescription do
     context 'when ALL ancestors are "other"' do
       let(:description) { 'Other' }
 
-      let(:ancestor1) { instance_double(GoodsNomenclature, formatted_description: 'Other') }
-      let(:ancestor2) { instance_double(GoodsNomenclature, formatted_description: 'Other') }
+      let(:first_ancestor) { instance_double(GoodsNomenclature, formatted_description: 'Other') }
+      let(:second_ancestor) { instance_double(GoodsNomenclature, formatted_description: 'Other') }
 
-      let(:ancestors) { [ancestor1, ancestor2] }
+      let(:ancestors) { [first_ancestor, second_ancestor] }
 
       it 'prepends heading as fallback' do
         expect(descriptions).to eq(%w[Heading Other Other Other])
@@ -59,10 +59,10 @@ RSpec.describe ClassificationDescription do
     context 'when ALL ancestors are "other" and heading is nil' do
       let(:description) { 'Other' }
 
-      let(:ancestor1) { instance_double(GoodsNomenclature, formatted_description: 'Other') }
-      let(:ancestor2) { instance_double(GoodsNomenclature, formatted_description: 'Other') }
+      let(:first_ancestor) { instance_double(GoodsNomenclature, formatted_description: 'Other') }
+      let(:second_ancestor) { instance_double(GoodsNomenclature, formatted_description: 'Other') }
 
-      let(:ancestors) { [ancestor1, ancestor2] }
+      let(:ancestors) { [first_ancestor, second_ancestor] }
       let(:heading) { nil }
 
       before do
@@ -101,8 +101,8 @@ RSpec.describe ClassificationDescription do
 
     context 'when description is "other" with a non-other ancestor' do
       let(:description) { 'Other' }
-      let(:ancestor1) { instance_double(GoodsNomenclature, description: 'Live horses') }
-      let(:ancestors) { [ancestor1] }
+      let(:first_ancestor) { instance_double(GoodsNomenclature, description: 'Live horses') }
+      let(:ancestors) { [first_ancestor] }
 
       it 'chains ancestor > Other' do
         expect(raw_desc).to eq('Live horses > Other')
@@ -111,8 +111,8 @@ RSpec.describe ClassificationDescription do
 
     context 'when all ancestors are "other"' do
       let(:description) { 'Other' }
-      let(:ancestor1) { instance_double(GoodsNomenclature, description: 'Other') }
-      let(:ancestors) { [ancestor1] }
+      let(:first_ancestor) { instance_double(GoodsNomenclature, description: 'Other') }
+      let(:ancestors) { [first_ancestor] }
 
       it 'prepends heading as fallback' do
         expect(raw_desc).to eq('Heading > Other > Other')
