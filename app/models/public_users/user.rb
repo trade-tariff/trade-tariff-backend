@@ -11,7 +11,7 @@ module PublicUsers
 
     attr_writer :email
 
-    dataset_module do
+    module DatasetFilters
       def active
         where(deleted: false)
       end
@@ -54,6 +54,10 @@ module PublicUsers
           .exclude(Sequel[:users][:id] => PublicUsers::Subscription.select(:user_id))
           .where { created_at < 72.hours.ago }
       end
+    end
+
+    dataset_module do
+      include DatasetFilters
     end
 
     def email
