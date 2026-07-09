@@ -41,15 +41,17 @@ module LabelGenerator
         started_event: 'api_call_started',
         completed_event: 'api_call_completed',
         failed_event: 'api_call_failed',
-        payload: { batch_size:, model:, page_number:, event_kind: 'label_generation' },
+        payload: { batch_size:, model:, page_number: },
         completed_payload: lambda { |result|
           {
             results_count: result.is_a?(Hash) ? Array.wrap(result['data']).size : 0,
+            event_kind: 'label_generation',
           }.merge(AiUsage.payload_from(result))
         },
         failed_payload: lambda { |error|
           {
             error_message: AiUsage.safe_error_message(error),
+            event_kind: 'label_generation',
           }.merge(AiUsage.payload_from_error(error))
         },
         &block

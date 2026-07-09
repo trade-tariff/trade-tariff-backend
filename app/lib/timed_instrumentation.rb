@@ -16,7 +16,6 @@ module TimedInstrumentation
       failed_event,
       payload.merge(
         error_class: e.class.name,
-        error_message: e.message,
         duration_ms: duration_since(start_time),
         **payload_for(failed_payload, e),
       ),
