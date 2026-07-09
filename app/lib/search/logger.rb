@@ -103,6 +103,7 @@ module Search
         request_id: event.payload[:request_id],
         search_type: event.payload[:search_type],
         query: event.payload[:query],
+        skip_question: event.payload[:skip_question],
         details: event.payload[:details],
       }, event)
     end

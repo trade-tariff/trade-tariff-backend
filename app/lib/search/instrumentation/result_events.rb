@@ -32,12 +32,13 @@ module Search
         )
       end
 
-      def interactive_configuration_used(request_id:, query:, configuration:)
+      def interactive_configuration_used(request_id:, query:, skip_question:, configuration:)
         instrument(
           'interactive_configuration_used',
           request_id:,
           search_type: 'interactive',
           query:,
+          skip_question:,
           details: configuration,
         )
       end

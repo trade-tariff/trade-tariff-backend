@@ -22,6 +22,7 @@ module Api
         @request_id = params[:request_id].presence || TradeTariffRequest.request_id.presence || SecureRandom.uuid
         TradeTariffRequest.request_id ||= @request_id
         @expanded_query = params[:expanded_query].to_s.strip.presence
+        @skip_question = params[:skip_question]
       end
 
       def call
@@ -40,6 +41,7 @@ module Api
         ::Search::Instrumentation.interactive_configuration_used(
           request_id:,
           query: q,
+          skip_question: @skip_question,
           configuration: diagnostics_configuration,
         )
 
@@ -81,10 +83,14 @@ module Api
       end
 
       def interactive_search_response(retrieval)
-        interactive_result = run_interactive_search(
-          retrieval.goods_nomenclatures,
-          retrieval.expanded_query,
-        )
+        interactive_result = if @skip_question
+                               nil
+                             else
+                               run_interactive_search(
+                                 retrieval.goods_nomenclatures,
+                                 retrieval.expanded_query,
+                                 )
+                             end
 
         response = build_response(
           retrieval.goods_nomenclatures,

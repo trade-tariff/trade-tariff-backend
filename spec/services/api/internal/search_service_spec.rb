@@ -58,6 +58,7 @@ RSpec.describe Api::Internal::SearchService do
       expect(Search::Instrumentation).to have_received(:interactive_configuration_used).with(
         request_id: anything,
         query: 'multimeter leads',
+        skip_question: nil,
         configuration: hash_including(
           interactive_search_duplicate_question_guard_enabled: true,
           interactive_search_duplicate_question_guard_model: {
@@ -1164,6 +1165,41 @@ RSpec.describe Api::Internal::SearchService do
         described_class.new(q: 'handbag').call
 
         expect(Search::Instrumentation).not_to have_received(:evaluation_trace_returned)
+      end
+    end
+
+    context 'when skip_question is true' do
+      let(:opensearch_response) do
+        {
+          'hits' => {
+            'hits' => [
+              {
+                '_score' => 10.0,
+                '_source' => {
+                  'goods_nomenclature_sid' => 1,
+                  'goods_nomenclature_item_id' => '4202210000',
+                  'producline_suffix' => '80',
+                  'goods_nomenclature_class' => 'Commodity',
+                  'description' => 'leather handbags',
+                  'formatted_description' => 'Leather handbags',
+                  'declarable' => true,
+                },
+              },
+            ],
+          },
+        }
+      end
+
+      before do
+        allow(TradeTariffBackend.search_client).to receive(:search).and_return(opensearch_response)
+        allow(InteractiveSearchService).to receive(:call).and_return(nil)
+      end
+
+      it 'skips interactive search and omits interactive meta' do
+        result = described_class.new(q: 'handbag', skip_question: true).call
+
+        expect(InteractiveSearchService).not_to have_received(:call)
+        expect(result[:meta]).to be_nil
       end
     end
 
