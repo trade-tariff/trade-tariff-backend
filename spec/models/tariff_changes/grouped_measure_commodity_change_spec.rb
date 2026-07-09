@@ -524,11 +524,11 @@ RSpec.describe TariffChanges::GroupedMeasureCommodityChange do
         )
       end
 
-      let(:import_measure_type_2) { create(:measure_type, :import, measure_type_id: '999') }
-      let(:measure_4) do
+      let(:secondary_import_measure_type) { create(:measure_type, :import, measure_type_id: '999') }
+      let(:secondary_import_measure) do
         create(:measure,
                measure_sid: 400,
-               measure_type_id: import_measure_type_2.measure_type_id,
+               measure_type_id: secondary_import_measure_type.measure_type_id,
                geographical_area_id: 'GB',
                geographical_area_sid: geographical_area.geographical_area_sid)
       end
@@ -536,18 +536,18 @@ RSpec.describe TariffChanges::GroupedMeasureCommodityChange do
       before do
         geographical_area
         import_measure_type
-        import_measure_type_2
+        secondary_import_measure_type
 
         create(:tariff_change,
                type: 'Measure',
-               object_sid: measure_4.measure_sid,
+               object_sid: secondary_import_measure.measure_sid,
                operation_date: date,
                goods_nomenclature_item_id: '1234567890',
                metadata: {
                  'measure' => {
-                   'measure_type_id' => measure_4.measure_type_id,
-                   'trade_movement_code' => import_measure_type_2.trade_movement_code,
-                   'geographical_area_id' => measure_4.geographical_area_id,
+                   'measure_type_id' => secondary_import_measure.measure_type_id,
+                   'trade_movement_code' => secondary_import_measure_type.trade_movement_code,
+                   'geographical_area_id' => secondary_import_measure.geographical_area_id,
                    'excluded_geographical_area_ids' => [],
                  },
                })
@@ -577,10 +577,10 @@ RSpec.describe TariffChanges::GroupedMeasureCommodityChange do
         result = grouped_commodity_change.measure_changes(date)
 
         expect(result).to be_a(Hash)
-        expect(result.keys).to contain_exactly(import_measure_type.description, import_measure_type_2.description)
+        expect(result.keys).to contain_exactly(import_measure_type.description, secondary_import_measure_type.description)
 
         expect(result[import_measure_type.description]).to all(be_a(Hash))
-        expect(result[import_measure_type_2.description]).to all(be_a(Hash))
+        expect(result[secondary_import_measure_type.description]).to all(be_a(Hash))
 
         expect(result.values.flatten).to all(
           include(:measure_sid, :date_of_effect, :change_type, :additional_code, :quota_order_number),
