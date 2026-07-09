@@ -38,7 +38,7 @@ RSpec.describe FactoryBot do
         names = shared_sequence_names.select { |name| content.match?(/sequence\(\s*:#{name}\b/) }
         next if names.empty?
 
-        [path.delete_prefix("#{Rails.root}/"), names]
+        [Pathname.new(path).relative_path_from(Rails.root).to_s, names]
       end
 
       expect(offenders).to eq([]), <<~MESSAGE
