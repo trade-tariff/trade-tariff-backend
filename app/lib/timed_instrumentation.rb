@@ -1,5 +1,5 @@
 module TimedInstrumentation
-  module_function
+module_function
 
   def call(instrumenter:, started_event:, completed_event:, failed_event:, payload:, completed_payload: nil, failed_payload: nil)
     start_time = nil
