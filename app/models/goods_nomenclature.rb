@@ -144,7 +144,7 @@ class GoodsNomenclature < Sequel::Model
     '_' * (10 - suffix.length) + suffix
   end
 
-  dataset_module do
+  module DatasetFilters
     def by_codes(codes)
       where(goods_nomenclatures__goods_nomenclature_item_id: codes)
     end
@@ -196,6 +196,10 @@ class GoodsNomenclature < Sequel::Model
 
       where(combined_conditions)
     end
+  end
+
+  dataset_module do
+    include DatasetFilters
   end
 
   def number_indents
