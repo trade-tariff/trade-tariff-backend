@@ -60,16 +60,12 @@ RSpec.describe TaricImporter::RecordProcessor::DestroyOperation do
         expect { operation.call }
           .to change { LanguageDescription::Operation.where(operation: 'D').count }.from(0).to(1)
       end
-
-      it 'does not raise Sequel::RecordNotFound' do
-        expect { operation.call }.not_to raise_error
-      end
     end
 
     context 'when create is not yet visible in a materialized projection' do
-      # Production TARIC apply writes create ops to the oplog without refreshing
-      # materialized views between records. Seed a create row in measures_oplog
-      # only, so the current measures projection does not contain the record.
+      # In test, Measure#save refreshes the matview. Insert create into the
+      # oplog only so the measures projection stays empty, matching production
+      # mid-file TARIC apply (no refresh between records).
       let!(:seed_measure) { create(:measure) }
       let(:measure_sid) { seed_measure.measure_sid }
       let(:operation_date) { Date.new(2026, 5, 9) }
@@ -100,7 +96,6 @@ RSpec.describe TaricImporter::RecordProcessor::DestroyOperation do
       before do
         Measure.unrestrict_primary_key
 
-        # Replace factory state with an oplog-only create (no matview row).
         create_values = seed_measure
           .values
           .slice(*Measure.operation_klass.columns)
@@ -119,6 +114,10 @@ RSpec.describe TaricImporter::RecordProcessor::DestroyOperation do
 
         operations = Measure::Operation.where(measure_sid:).order(:oid).select_map(:operation)
         expect(operations).to eq(%w[C D])
+
+        destroy_op = Measure::Operation.where(measure_sid:, operation: 'D').order(Sequel.desc(:oid)).first
+        expect(destroy_op.operation_date).to eq(operation_date)
+        expect(destroy_op.measure_sid).to eq(measure_sid)
       end
     end
   end

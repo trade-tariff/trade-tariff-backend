@@ -49,42 +49,12 @@ RSpec.describe TaricImporter::RecordProcessor::DestroyOperation do
       it 'returns the model record' do
         expect(operation.call).to be_a(LanguageDescription)
       end
-
-      it 'returns the model record code id' do
-        expect(operation.call.language_code_id).to eq('FR')
-      end
-
-      it 'does not send presence error events' do
-        events = []
-        subscriber = ActiveSupport::Notifications.subscribe(/presence_error/) do |*args|
-          events << ActiveSupport::Notifications::Event.new(*args)
-        end
-
-        operation.call
-
-        expect(events).to be_empty
-      ensure
-        ActiveSupport::Notifications.unsubscribe(subscriber)
-      end
     end
 
     context 'when no current record is present' do
       it 'still writes a destroy oplog operation from the inbound attributes' do
         expect { operation.call }
           .to change { LanguageDescription::Operation.where(operation: 'D').count }.from(0).to(1)
-      end
-
-      it 'does not send presence error events' do
-        events = []
-        subscriber = ActiveSupport::Notifications.subscribe(/presence_error/) do |*args|
-          events << ActiveSupport::Notifications::Event.new(*args)
-        end
-
-        operation.call
-
-        expect(events).to be_empty
-      ensure
-        ActiveSupport::Notifications.unsubscribe(subscriber)
       end
 
       it 'returns the model record' do

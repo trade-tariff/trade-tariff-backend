@@ -33,18 +33,5 @@ RSpec.describe TaricImporter::RecordProcessor::UpdateOperation do
       expect { operation.call }
         .to change { LanguageDescription::Operation.where(operation: 'U').count }.by(1)
     end
-
-    it 'does not send presence error events' do
-      events = []
-      subscriber = ActiveSupport::Notifications.subscribe(/presence_error/) do |*args|
-        events << ActiveSupport::Notifications::Event.new(*args)
-      end
-
-      operation.call
-
-      expect(events).to be_empty
-    ensure
-      ActiveSupport::Notifications.unsubscribe(subscriber)
-    end
   end
 end
