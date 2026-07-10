@@ -33,32 +33,34 @@ module TenDigitGoodsNomenclature
     def operation=(operation)
       self[:operation] = operation.to_s.first.upcase
     end
+  end
 
-    def to_param
-      code
-    end
+  def to_param
+    code
+  end
 
-    def code
+  def code
+    goods_nomenclature_item_id
+  end
+
+  def short_code
+    if declarable?
       goods_nomenclature_item_id
+    else
+      specific_system_short_code
     end
+  end
 
-    def short_code
-      if declarable?
-        goods_nomenclature_item_id
-      else
-        specific_system_short_code
-      end
+  def specific_system_short_code
+    case goods_nomenclature_item_id
+    when /^\d+0000$/ then harmonised_system_code
+    when /^\d+00$/ then combined_nomenclature_code
+    else taric_code
     end
+  end
 
-    def specific_system_short_code
-      case goods_nomenclature_item_id
-      when /^\d+0000$/ then harmonised_system_code
-      when /^\d+00$/ then combined_nomenclature_code
-      else taric_code
-      end
-    end
-
-    def self.changes_for(depth = 0, conditions = {})
+  class_methods do
+    def changes_for(depth = 0, conditions = {})
       operation_klass.select(
         Sequel.as(Sequel.cast_string('Commodity'), :model),
         :oid,
@@ -70,52 +72,52 @@ module TenDigitGoodsNomenclature
         .limit(TradeTariffBackend.change_count)
         .order(Sequel.desc(:operation_date, nulls: :last))
     end
+  end
 
-    def changes(depth = 1)
-      operation_klass.select(
-        Sequel.as(Sequel.cast_string('GoodsNomenclature'), :model),
-        :oid,
-        :operation_date,
-        :operation,
-        Sequel.as(depth, :depth),
-      ).where(pk_hash)
-        .union(
-          Measure.changes_for(
-            depth + 1,
-            Sequel.qualify(:measures_oplog, :goods_nomenclature_item_id) => goods_nomenclature_item_id,
-          ),
-        )
-            .from_self
-            .where(Sequel.~(operation_date: nil))
-            .tap! { |criteria|
-              # if Commodity did not come from initial seed, filter by its
-              # create/update date
-              criteria.where { |o| o.>=(:operation_date, operation_date) } if operation_date.present?
-            }
-              .limit(TradeTariffBackend.change_count)
-              .order(Sequel.desc(:operation_date, nulls: :last), Sequel.desc(:depth))
-    end
+  def changes(depth = 1)
+    operation_klass.select(
+      Sequel.as(Sequel.cast_string('GoodsNomenclature'), :model),
+      :oid,
+      :operation_date,
+      :operation,
+      Sequel.as(depth, :depth),
+    ).where(pk_hash)
+     .union(
+       Measure.changes_for(
+         depth + 1,
+         Sequel.qualify(:measures_oplog, :goods_nomenclature_item_id) => goods_nomenclature_item_id,
+       ),
+     )
+     .from_self
+     .where(Sequel.~(operation_date: nil))
+     .tap! { |criteria|
+       # if Commodity did not come from initial seed, filter by its
+       # create/update date
+       criteria.where { |o| o.>=(:operation_date, operation_date) } if operation_date.present?
+     }
+     .limit(TradeTariffBackend.change_count)
+     .order(Sequel.desc(:operation_date, nulls: :last), Sequel.desc(:depth))
+  end
 
-    def goods_nomenclature_class
-      declarable? ? 'Commodity' : 'Subheading'
-    end
+  def goods_nomenclature_class
+    declarable? ? 'Commodity' : 'Subheading'
+  end
 
-    def to_admin_param
-      goods_nomenclature_item_id
-    end
+  def to_admin_param
+    goods_nomenclature_item_id
+  end
 
-  private
+private
 
-    def harmonised_system_code
-      goods_nomenclature_item_id.first(6)
-    end
+  def harmonised_system_code
+    goods_nomenclature_item_id.first(6)
+  end
 
-    def combined_nomenclature_code
-      goods_nomenclature_item_id.first(8)
-    end
+  def combined_nomenclature_code
+    goods_nomenclature_item_id.first(8)
+  end
 
-    def taric_code
-      goods_nomenclature_item_id
-    end
+  def taric_code
+    goods_nomenclature_item_id
   end
 end
