@@ -73,6 +73,52 @@ RSpec.configure do |config|
   config.openapi_root = Rails.root.join('swagger').to_s
 
   config.openapi_specs = {
+    'v3/swagger.json' => {
+      openapi: '3.0.1',
+      info: {
+        title: 'UK Trade Tariff API V3',
+        version: 'v3',
+        description: <<~DESC,
+          GOV.UK Online Trade Tariff API V3. Flat JSON responses designed for
+          third-party developers and LLM/AI agents. No JSONAPI envelope.
+          Anonymous access — no authentication required.
+          Version negotiated via Accept header (application/vnd.hmrc.3.0+json)
+          or URL path prefix (/uk/api/v3/).
+        DESC
+        contact: {
+          name: 'Trade Tariff Support',
+          url: 'https://www.trade-tariff.service.gov.uk',
+        },
+        license: {
+          name: 'MIT',
+          url: 'https://opensource.org/licenses/MIT',
+        },
+      },
+      servers: [
+        { url: "#{TARIFF_API_HOST}/uk", description: 'Production (UK Global Tariff)' },
+        { url: "#{TARIFF_API_HOST}/xi", description: 'Production (Northern Ireland Tariff)' },
+      ],
+      components: {
+        schemas: {
+          error_response: {
+            type: :object,
+            required: %w[error message status],
+            properties: {
+              error: { type: :string },
+              message: { type: :string },
+              status: { type: :integer },
+            },
+          },
+          meta: {
+            type: :object,
+            required: %w[total],
+            properties: {
+              total: { type: :integer, description: 'Total number of items in the collection' },
+            },
+          },
+        },
+      },
+    },
     'v2/swagger.json' => {
       openapi: '3.0.1',
       info: {
