@@ -38,8 +38,8 @@ module GoodsNomenclatures
           end
         end
 
-        @associations[:children] ||= grouped_by_child.map do |child, childs_descendants|
-          child.recursive_descendant_populator(childs_descendants, self)
+        @associations[:children] ||= grouped_by_child.map do |child, child_descendants|
+          child.recursive_descendant_populator(child_descendants, self)
 
           child
         end
