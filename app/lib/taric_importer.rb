@@ -24,7 +24,6 @@ class TaricImporter
         create: { count: 0, duration: 0 },
         update: { count: 0, duration: 0 },
         destroy: { count: 0, duration: 0 },
-        destroy_missing: { count: 0, duration: 0 },
         skipped: { count: 0, duration: 0 },
       },
       total_count: 0,

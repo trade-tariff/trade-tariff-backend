@@ -33,5 +33,26 @@ RSpec.describe TaricImporter::RecordProcessor::UpdateOperation do
       expect { operation.call }
         .to change { LanguageDescription::Operation.where(operation: 'U').count }.by(1)
     end
+
+    context 'when a primary key field is missing from the inbound attributes' do
+      let(:record) do
+        TaricImporter::RecordProcessor::Record.new(
+          'transaction_id' => '31946',
+          'record_code' => '130',
+          'subrecord_code' => '05',
+          'record_sequence_number' => '1',
+          'update_type' => '1',
+          'language_description' => {
+            'language_code_id' => nil,
+            'language_id' => 'EN',
+            'description' => 'French!',
+          },
+        )
+      end
+
+      it 'raises rather than writing a partial oplog row' do
+        expect { operation.call }.to raise_error(ArgumentError, /missing primary key fields/)
+      end
+    end
   end
 end
