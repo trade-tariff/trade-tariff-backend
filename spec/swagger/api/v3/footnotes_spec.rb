@@ -62,7 +62,10 @@ RSpec.describe 'Footnotes V3', swagger_doc: 'v3/swagger.json', type: :request do
                  meta: { '$ref' => '#/components/schemas/meta' },
                }
 
-        before { create(:footnote_type, :with_description) }
+        before do
+          footnote_type = create(:footnote_type)
+          create(:footnote_type_description, footnote_type_id: footnote_type.footnote_type_id)
+        end
 
         run_test!
       end

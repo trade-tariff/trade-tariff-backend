@@ -14,6 +14,9 @@ AdminConfigurationSeeder#non_other_self_text_context_markdown
 AdminConfigurationSeeder#other_self_text_context_markdown
 AdminConfigurationSeeder#search_context_markdown
 AdminConfigurationSeeder#seed
+Api::V3::BaseController#render_bad_request
+Api::V3::BaseController#render_internal_server_error
+Api::V3::BaseController#render_not_found
 Api::Admin::DescriptionInterceptsController#bulk_import
 Api::Admin::GoodsNomenclatures::GoodsNomenclatureLabelsController#approve
 Api::Admin::GoodsNomenclatures::GoodsNomenclatureLabelsController#regenerate
