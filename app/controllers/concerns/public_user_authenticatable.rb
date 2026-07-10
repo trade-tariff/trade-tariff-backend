@@ -9,6 +9,8 @@ module PublicUserAuthenticatable
     missing_jwks_keys: 'Unable to verify token',
   }.freeze
 
+private
+
   attr_reader :current_user
 
   def authenticate!
@@ -23,10 +25,6 @@ module PublicUserAuthenticatable
       render_authentication_error(:missing_token)
     end
   end
-
-  private :authenticate!, :current_user
-
-private
 
   def authenticate_user_token
     result = Api::User::UserService.find(user_token)

@@ -5,6 +5,8 @@ module ApiTokenAuthenticatable
     include ActionController::HttpAuthentication::Token::ControllerMethods
   end
 
+private
+
   def authenticate!
     return if Rails.env.development?
 
@@ -26,8 +28,6 @@ module ApiTokenAuthenticatable
 
     true
   end
-
-private
 
   def api_tokens
     @api_tokens ||= read_tokens
