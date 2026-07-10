@@ -225,10 +225,6 @@ Measure#meursing
 Measure#origin
 Measure#resolved_duty_expression
 Measure#suspending_regulation_id
-Measure#terminated
-Measure#valid_to
-Measure#with_geographical_area
-Measure#with_measure_type
 Measure::DatasetFilters#terminated
 Measure::DatasetFilters#valid_to
 Measure::DatasetFilters#with_geographical_area
