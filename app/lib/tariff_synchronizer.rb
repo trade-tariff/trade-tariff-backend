@@ -68,7 +68,10 @@ module TariffSynchronizer
 
       date = Date.parse(rollback_date.to_s)
       updates = update_type.where { issue_date > date }
-      update_filenames = updates.pluck(:filename)
+      # Count before the transaction — updates may be deleted when keep is false.
+      files_count = updates.count
+      # TARIC deletes by operation_date; only CDS needs filenames in memory.
+      update_filenames = update_type == TaricUpdate ? [] : updates.pluck(:filename)
 
       Sequel::Model.db.transaction do
         oplog_based_models.each do |model|
@@ -91,7 +94,7 @@ module TariffSynchronizer
       TariffSynchronizer::Instrumentation.rollback_completed(
         rollback_date: date.iso8601,
         duration_ms:,
-        files_count: update_filenames.size,
+        files_count:,
       )
     end
   rescue Redlock::LockError
