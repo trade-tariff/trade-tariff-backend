@@ -28,11 +28,11 @@ module TenDigitGoodsNomenclature
     end
 
     delegate :section, :section_id, to: :chapter, allow_nil: true
-  end
 
-  # See oplog sequel plugin
-  def operation=(operation)
-    self[:operation] = operation.to_s.first.upcase
+    # See oplog sequel plugin
+    def operation=(operation)
+      self[:operation] = operation.to_s.first.upcase
+    end
   end
 
   def to_param
