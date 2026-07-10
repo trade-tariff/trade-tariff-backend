@@ -14,7 +14,7 @@ module Api
       def headings
         chapter = Chapter.actual
           .by_code(chapter_id)
-          .eager(:headings)
+          .eager(headings: :goods_nomenclature_descriptions)
           .take
         raise Sequel::RecordNotFound, "Chapter #{chapter_id} not found" if chapter.nil?
 
