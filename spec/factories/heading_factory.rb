@@ -35,6 +35,12 @@ FactoryBot.define do
       end
     end
 
+    trait :with_commodities do
+      after(:create) do |heading, _evaluator|
+        create(:commodity, :with_description, parent: heading)
+      end
+    end
+
     trait :heading101 do
       goods_nomenclature_item_id { '0101000000' }
     end
