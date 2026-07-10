@@ -467,4 +467,175 @@ RSpec.describe TradeTariffBackend::Config do
       end
     end
   end
+
+  describe 'Redis config' do
+    describe '.redis_config' do
+      it 'uses REDIS_URL and test redis db in test' do
+        ENV['REDIS_URL'] = 'redis://example:6379'
+        ENV['TEST_ENV_NUMBER'] = '2'
+        expect(config.redis_config).to eq(url: 'redis://example:6379', db: 3, id: nil)
+      end
+    end
+
+    describe '.sidekiq_redis_config' do
+      it 'prefers SIDEKIQ_REDIS_URL when set' do
+        ENV['SIDEKIQ_REDIS_URL'] = 'redis://sidekiq:6379'
+        ENV['REDIS_URL'] = 'redis://fallback:6379'
+        ENV['TEST_ENV_NUMBER'] = '0'
+        expect(config.sidekiq_redis_config).to include(
+          url: 'redis://sidekiq:6379',
+          db: 1,
+          timeout: 5,
+          reconnect_attempts: [0.1, 0.5, 1.0],
+        )
+      end
+
+      it 'falls back to REDIS_URL when SIDEKIQ_REDIS_URL is unset' do
+        ENV.delete('SIDEKIQ_REDIS_URL')
+        ENV['REDIS_URL'] = 'redis://fallback:6379'
+        ENV['TEST_ENV_NUMBER'] = '0'
+        expect(config.sidekiq_redis_config[:url]).to eq('redis://fallback:6379')
+      end
+    end
+
+    describe '.frontend_redis_url' do
+      it 'defaults to docker host redis' do
+        ENV.delete('FRONTEND_REDIS_URL')
+        expect(config.frontend_redis_url).to eq('redis://host.docker.internal:6379')
+      end
+
+      it 'returns configured URL' do
+        ENV['FRONTEND_REDIS_URL'] = 'redis://frontend:6379'
+        expect(config.frontend_redis_url).to eq('redis://frontend:6379')
+      end
+    end
+  end
+
+  describe 'identity secrets' do
+    describe '.identity_encryption_secret' do
+      it 'reads IDENTITY_ENCRYPTION_SECRET from ENV' do
+        ENV['IDENTITY_ENCRYPTION_SECRET'] = 'secret-value'
+        expect(config.identity_encryption_secret).to eq('secret-value')
+      end
+    end
+
+    describe '.identity_api_host' do
+      it 'reads IDENTITY_API_HOST from ENV' do
+        ENV['IDENTITY_API_HOST'] = 'https://identity.example'
+        expect(config.identity_api_host).to eq('https://identity.example')
+      end
+    end
+
+    describe '.identity_api_key' do
+      it 'reads IDENTITY_API_KEY from ENV' do
+        ENV['IDENTITY_API_KEY'] = 'api-key'
+        expect(config.identity_api_key).to eq('api-key')
+      end
+    end
+
+    describe '.cognito_user_pool_id' do
+      it 'reads COGNITO_USER_POOL_ID from ENV' do
+        ENV['COGNITO_USER_POOL_ID'] = 'pool-id'
+        expect(config.cognito_user_pool_id).to eq('pool-id')
+      end
+    end
+  end
+
+  describe 'email addresses' do
+    describe '.from_email' do
+      it 'reads TARIFF_FROM_EMAIL from ENV' do
+        ENV['TARIFF_FROM_EMAIL'] = 'from@example.com'
+        expect(config.from_email).to eq('from@example.com')
+      end
+    end
+
+    describe '.admin_email' do
+      it 'reads TARIFF_SYNC_EMAIL from ENV' do
+        ENV['TARIFF_SYNC_EMAIL'] = 'admin@example.com'
+        expect(config.admin_email).to eq('admin@example.com')
+      end
+    end
+
+    describe '.support_email' do
+      it 'reads TARIFF_SUPPORT_EMAIL from ENV' do
+        ENV['TARIFF_SUPPORT_EMAIL'] = 'support@example.com'
+        expect(config.support_email).to eq('support@example.com')
+      end
+    end
+
+    describe '.management_email' do
+      it 'reads TARIFF_MANAGEMENT_EMAIL from ENV' do
+        ENV['TARIFF_MANAGEMENT_EMAIL'] = 'mgmt@example.com'
+        expect(config.management_email).to eq('mgmt@example.com')
+      end
+    end
+
+    describe '.cds_updates_send_email' do
+      it 'defaults to false' do
+        ENV.delete('CDS_UPDATES_SEND_MAIL')
+        expect(config.cds_updates_send_email).to be false
+      end
+
+      it 'returns true when enabled' do
+        ENV['CDS_UPDATES_SEND_MAIL'] = 'true'
+        expect(config.cds_updates_send_email).to be true
+      end
+    end
+
+    describe '.myott_report_email' do
+      it 'reads MYOTT_REPORT_EMAIL from ENV' do
+        ENV['MYOTT_REPORT_EMAIL'] = 'myott@example.com'
+        expect(config.myott_report_email).to eq('myott@example.com')
+      end
+    end
+  end
+
+  describe 'API tokens and XE credentials' do
+    describe '.api_tokens' do
+      it 'reads GREEN_LANES_API_TOKENS from ENV' do
+        ENV['GREEN_LANES_API_TOKENS'] = 'token-a,token-b'
+        expect(config.api_tokens).to eq('token-a,token-b')
+      end
+    end
+
+    describe '.xe_api_username' do
+      it 'reads XE_API_USERNAME from ENV' do
+        ENV['XE_API_USERNAME'] = 'xe-user'
+        expect(config.xe_api_username).to eq('xe-user')
+      end
+    end
+
+    describe '.xe_api_password' do
+      it 'reads XE_API_PASSWORD from ENV' do
+        ENV['XE_API_PASSWORD'] = 'xe-pass'
+        expect(config.xe_api_password).to eq('xe-pass')
+      end
+    end
+
+    describe '.openai_user' do
+      it 'defaults to hmrc-ott' do
+        ENV.delete('OPENAI_USER')
+        expect(config.openai_user).to eq('hmrc-ott')
+      end
+
+      it 'returns configured user' do
+        ENV['OPENAI_USER'] = 'custom-user'
+        expect(config.openai_user).to eq('custom-user')
+      end
+    end
+
+    describe '.openai_api_key' do
+      it 'reads OPENAI_API_KEY from ENV' do
+        ENV['OPENAI_API_KEY'] = 'sk-test'
+        expect(config.openai_api_key).to eq('sk-test')
+      end
+    end
+
+    describe '.slack_web_hook_url' do
+      it 'reads SLACK_WEB_HOOK_URL from ENV' do
+        ENV['SLACK_WEB_HOOK_URL'] = 'https://hooks.slack.example/abc'
+        expect(config.slack_web_hook_url).to eq('https://hooks.slack.example/abc')
+      end
+    end
+  end
 end
