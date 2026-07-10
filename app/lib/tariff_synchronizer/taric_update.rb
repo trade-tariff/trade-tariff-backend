@@ -66,10 +66,7 @@ module TariffSynchronizer
       end
     end
 
-    def clear_errors
-      # Presence-error diagnostics were removed after TARIC destroy/update no
-      # longer depend on the current materialized projection.
-    end
+    def clear_errors; end
 
     def to_param
       filename.sub('.xml', '')
