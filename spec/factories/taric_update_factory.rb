@@ -26,7 +26,8 @@ FactoryBot.define do
 
     trait :with_measure do
       after :create do |taric_update, _evaluator|
-        create :measure, operation_date: taric_update.issue_date, filename: taric_update.filename
+        # TARIC imports leave filename null on oplog rows; rollback uses operation_date.
+        create :measure, operation_date: taric_update.issue_date, filename: nil
       end
     end
   end

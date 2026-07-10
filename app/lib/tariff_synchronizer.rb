@@ -72,9 +72,7 @@ module TariffSynchronizer
 
       Sequel::Model.db.transaction do
         oplog_based_models.each do |model|
-          model.operation_klass
-               .where(filename: update_filenames)
-               .delete
+          delete_oplog_rows_for_rollback(model, update_type, update_filenames, date)
         end
 
         TariffChangesJobStatus.find(operation_date: date)&.mark_changes_pending!
@@ -159,6 +157,18 @@ module TariffSynchronizer
   def oplog_based_models
     sequel_models.select do |model|
       model.plugins.include?(Sequel::Plugins::Oplog)
+    end
+  end
+
+  # CDS stamps filename on oplog inserts and rolls back by filename.
+  # TARIC does not populate filename; roll back by operation_date (indexed).
+  def delete_oplog_rows_for_rollback(model, update_type, update_filenames, date)
+    dataset = model.operation_klass
+
+    if update_type == TaricUpdate
+      dataset.where(Sequel[:operation_date] > date).delete
+    else
+      dataset.where(filename: update_filenames).delete
     end
   end
 
