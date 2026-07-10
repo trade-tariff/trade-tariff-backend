@@ -182,13 +182,20 @@ module_function
       counts[type] += 1
     end
 
-    return puts '(No records found - file may use a different XML structure)' if counts.empty?
-
-    print_counts('Total transaction records', 'Record Type', counts)
+    puts "Total transaction records: #{counts.values.sum}\n\n"
+    if counts.any?
+      print_counts_table('Record Type', counts)
+    else
+      puts '(No records found - file may use a different XML structure)'
+    end
   end
 
   def print_counts(total_label, column_label, counts)
     puts "#{total_label}: #{counts.values.sum}\n\n"
+    print_counts_table(column_label, counts)
+  end
+
+  def print_counts_table(column_label, counts)
     puts sprintf('%-55s %6s', column_label, 'Count')
     puts '-' * 63
     counts.sort_by { |_, value| -value }.each do |key, count|
