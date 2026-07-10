@@ -334,6 +334,45 @@ RSpec.describe GoodsNomenclatures::NestedSet do
         end
       end
 
+      describe '#historical_children' do
+        it 'returns the same immediate children as #children at the current point in time' do
+          expect(tree[:subheading].historical_children.map(&:goods_nomenclature_sid))
+            .to eq(tree[:subheading].children.map(&:goods_nomenclature_sid))
+        end
+
+        it 'returns direct children only (not deeper descendants)' do
+          expect(tree[:heading].historical_children.map(&:goods_nomenclature_sid))
+            .to eq([tree[:subheading].goods_nomenclature_sid])
+        end
+
+        it 'supports eager loading from a real dataset query' do
+          loaded = GoodsNomenclature
+            .where(goods_nomenclature_sid: tree[:subheading].goods_nomenclature_sid)
+            .eager(:historical_children)
+            .all
+            .first
+
+          expect(loaded.associations[:historical_children].map(&:goods_nomenclature_sid))
+            .to match_array(tree[:subheading].children.map(&:goods_nomenclature_sid))
+        end
+
+        context 'when outside of TimeMachine' do
+          before { TradeTariffRequest.time_machine_now = nil }
+
+          around { |example| TimeMachine.no_time_machine { example.run } }
+
+          it 'still loads historical children without requiring a point-in-time date' do
+            expect(tree[:subheading].historical_children.map(&:goods_nomenclature_sid))
+              .to contain_exactly(tree[:subsubheading].goods_nomenclature_sid, tree[:commodity3].goods_nomenclature_sid)
+          end
+
+          it 'does not raise DateNotSet (unlike #children)' do
+            expect { tree[:subheading].historical_children }.not_to raise_error
+            expect { tree[:subheading].children }.to raise_exception described_class::DateNotSet
+          end
+        end
+      end
+
       describe 'with time machine' do
         before do
           create :goods_nomenclature_indent,
