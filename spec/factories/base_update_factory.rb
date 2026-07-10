@@ -40,9 +40,10 @@ FactoryBot.define do
       applied
 
       after(:create) do |update, _evaluator|
+        # CDS stamps filename; TARIC leaves it null and relies on operation_date for rollback.
         create(
           :measure,
-          filename: update.filename,
+          filename: update.is_a?(TariffSynchronizer::TaricUpdate) ? nil : update.filename,
           operation_date: update.issue_date,
         )
       end

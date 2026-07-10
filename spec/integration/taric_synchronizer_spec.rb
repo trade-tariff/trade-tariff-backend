@@ -95,13 +95,21 @@ RSpec.describe TaricSynchronizer do
       end
 
       context 'when successful run' do
+        let!(:measure_today) do
+          create :measure, operation_date: Time.zone.today, filename: nil
+        end
+        let!(:measure_older) do
+          create :measure, operation_date: 2.days.ago.to_date, filename: nil
+        end
+
         before do
           data_migrations
           described_class.rollback(Time.zone.yesterday, keep: true)
         end
 
-        it_with_refresh_materialized_view 'removes entries from oplog tables' do
-          expect(Measure).to be_none
+        it_with_refresh_materialized_view 'removes oplog rows with operation_date after the rollback date' do
+          expect(Measure::Operation.where(measure_sid: measure_today.measure_sid)).to be_none
+          expect(Measure::Operation.where(measure_sid: measure_older.measure_sid)).to be_present
         end
 
         it 'marks Taric updates as pending' do
