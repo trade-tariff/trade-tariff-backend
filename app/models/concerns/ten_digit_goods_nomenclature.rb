@@ -82,21 +82,21 @@ module TenDigitGoodsNomenclature
       :operation,
       Sequel.as(depth, :depth),
     ).where(pk_hash)
-      .union(
-        Measure.changes_for(
-          depth + 1,
-          Sequel.qualify(:measures_oplog, :goods_nomenclature_item_id) => goods_nomenclature_item_id,
-        ),
-      )
-          .from_self
-          .where(Sequel.~(operation_date: nil))
-          .tap! { |criteria|
-            # if Commodity did not come from initial seed, filter by its
-            # create/update date
-            criteria.where { |o| o.>=(:operation_date, operation_date) } if operation_date.present?
-          }
-            .limit(TradeTariffBackend.change_count)
-            .order(Sequel.desc(:operation_date, nulls: :last), Sequel.desc(:depth))
+     .union(
+       Measure.changes_for(
+         depth + 1,
+         Sequel.qualify(:measures_oplog, :goods_nomenclature_item_id) => goods_nomenclature_item_id,
+       ),
+     )
+     .from_self
+     .where(Sequel.~(operation_date: nil))
+     .tap! { |criteria|
+       # if Commodity did not come from initial seed, filter by its
+       # create/update date
+       criteria.where { |o| o.>=(:operation_date, operation_date) } if operation_date.present?
+     }
+     .limit(TradeTariffBackend.change_count)
+     .order(Sequel.desc(:operation_date, nulls: :last), Sequel.desc(:depth))
   end
 
   def goods_nomenclature_class
