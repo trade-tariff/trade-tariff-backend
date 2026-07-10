@@ -16,7 +16,10 @@ RSpec.describe 'GET /uk/api/v3/footnotes', type: :request do
   end
 
   describe 'footnote_types index' do
-    before { create(:footnote_type, :with_description) }
+    before do
+      footnote_type = create(:footnote_type)
+      create(:footnote_type_description, footnote_type_id: footnote_type.footnote_type_id)
+    end
 
     it 'returns 200 with data array' do
       get '/uk/api/v3/footnote_types', headers: headers

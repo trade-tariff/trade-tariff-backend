@@ -2,7 +2,7 @@ module Api
   module V3
     class FootnoteTypesController < BaseController
       def index
-        footnote_types = FootnoteType.actual
+        footnote_types = FootnoteType
           .eager(:footnote_type_description)
           .order(Sequel.asc(:footnote_type_id))
           .all
