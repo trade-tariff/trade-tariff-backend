@@ -77,6 +77,15 @@ RSpec.describe ApplicationController, type: :request do
       end
     end
 
+    context 'with security headers', :aggregate_failures do
+      it 'includes the default security headers on every response' do
+        api_get('/uk/api/healthcheck')
+
+        expect(response.headers['X-Frame-Options']).to eq('DENY')
+        expect(response.headers['Content-Security-Policy']).to eq("default-src 'none'; frame-ancestors 'none'")
+      end
+    end
+
     context 'with request logging payload' do
       def process_action_payload_for(params:, headers: {})
         events = []
