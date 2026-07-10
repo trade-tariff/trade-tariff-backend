@@ -21,7 +21,7 @@ RSpec.describe ClearCacheWorker, type: :worker do
     allow(cache_store).to receive(:clear)
     allow(TradeTariffBackend.frontend_redis).to receive(:flushdb)
     allow(Sidekiq::Client).to receive(:enqueue)
-    allow(Sidekiq::Client).to receive(:enqueue_in)
+    allow(InvalidateCacheWorker).to receive(:perform_async)
     allow(ActiveSupport::Notifications).to receive(:instrument).and_call_original
     allow(ActiveSupport::Notifications).to receive(:instrument).with(
       TradeTariffBackend::TariffUpdateEventListener::TARIFF_CACHE_CLEARED,
@@ -81,7 +81,7 @@ RSpec.describe ClearCacheWorker, type: :worker do
   it { expect(Sidekiq::Client).to have_received(:enqueue).with(PrewarmQuotaOrderNumbersWorker) }
   it { expect(Sidekiq::Client).to have_received(:enqueue).with(PrewarmCommoditiesWorker) }
   it { expect(Sidekiq::Client).to have_received(:enqueue).with(ReindexModelsWorker) }
-  it { expect(Sidekiq::Client).to have_received(:enqueue_in).with(1.minute, InvalidateCacheWorker) }
+  it { expect(InvalidateCacheWorker).to have_received(:perform_async) }
 
   it 'instruments the tariff cache cleared event' do
     expect(ActiveSupport::Notifications).to have_received(:instrument).with(

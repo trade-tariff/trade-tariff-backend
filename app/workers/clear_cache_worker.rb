@@ -18,9 +18,8 @@ class ClearCacheWorker
     Sidekiq::Client.enqueue(PrewarmCommoditiesWorker)
     Sidekiq::Client.enqueue(ReindexModelsWorker)
 
-    # NOTE: Make sure caches have been refreshed before invalidating the CDN
-    #       otherwise we serve up stale responses.
-    Sidekiq::Client.enqueue_in(1.minute, InvalidateCacheWorker)
+    # Queue CDN invalidation as part of clear cache (after local caches are flushed).
+    InvalidateCacheWorker.perform_async
   end
 
 private
