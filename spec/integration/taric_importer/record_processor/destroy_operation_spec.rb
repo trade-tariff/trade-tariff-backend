@@ -30,10 +30,12 @@ RSpec.describe TaricImporter::RecordProcessor::DestroyOperation do
         LanguageDescription.unrestrict_primary_key
       end
 
-      it 'identifies as create operation' do
+      it 'writes a destroy operation for the record' do
         operation.call
 
-        expect(LanguageDescription.count).to eq 0
+        expect(
+          LanguageDescription::Operation.where(operation: 'D').count,
+        ).to eq 1
       end
 
       it 'sets destroy operation date to operation_date' do
@@ -50,8 +52,69 @@ RSpec.describe TaricImporter::RecordProcessor::DestroyOperation do
     end
 
     context 'when record missing for destroy' do
-      it 'raises Sequel::RecordNotFound exception' do
-        expect { operation.call }.to raise_error(Sequel::RecordNotFound)
+      before do
+        LanguageDescription.unrestrict_primary_key
+      end
+
+      it 'writes a destroy operation from inbound attributes' do
+        expect { operation.call }
+          .to change { LanguageDescription::Operation.where(operation: 'D').count }.from(0).to(1)
+      end
+    end
+
+    context 'when create is only present in the oplog' do
+      let!(:seed_measure) { create(:measure) }
+      let(:measure_sid) { seed_measure.measure_sid }
+      let(:operation_date) { Date.new(2026, 5, 9) }
+
+      let(:destroy_record) do
+        TaricImporter::RecordProcessor::Record.new(
+          'transaction_id' => '2',
+          'record_code' => '430',
+          'subrecord_code' => '00',
+          'record_sequence_number' => '2',
+          'update_type' => '2',
+          'measure' => measure_attributes,
+        )
+      end
+
+      let(:measure_attributes) do
+        seed_measure
+          .values
+          .except(:oid, :operation, :operation_date, :filename, :created_at)
+          .transform_keys(&:to_s)
+          .merge(
+            'measure_sid' => measure_sid.to_s,
+            'validity_start_date' => seed_measure.validity_start_date&.iso8601,
+            'validity_end_date' => seed_measure.validity_end_date&.iso8601,
+          )
+      end
+
+      before do
+        Measure.unrestrict_primary_key
+
+        create_values = seed_measure
+          .values
+          .slice(*Measure.operation_klass.columns)
+          .except(:oid)
+          .merge(operation: 'C', operation_date:)
+
+        Measure::Operation.where(measure_sid:).delete
+        Measure.refresh!(concurrently: false)
+        Measure::Operation.insert(create_values)
+      end
+
+      it 'preserves same-file create then destroy as ordered oplog operations', :aggregate_failures do
+        expect(Measure.where(measure_sid:).first).to be_nil
+
+        described_class.new(destroy_record, operation_date).call
+
+        operations = Measure::Operation.where(measure_sid:).order(:oid).select_map(:operation)
+        expect(operations).to eq(%w[C D])
+
+        destroy_op = Measure::Operation.where(measure_sid:, operation: 'D').order(Sequel.desc(:oid)).first
+        expect(destroy_op.operation_date).to eq(operation_date)
+        expect(destroy_op.measure_sid).to eq(measure_sid)
       end
     end
   end

@@ -384,6 +384,17 @@ RSpec.describe Sequel::Plugins::Oplog do
       end
     end
   end
+
+  describe '#write_oplog_operation!' do
+    it 'appends create, update, and destroy rows without requiring a projection hit', :aggregate_failures do
+      TestRecord.new(id: 7, name: 'Seven', description: 'created').write_oplog_operation!(:create)
+      TestRecord.new(id: 7, name: 'Seven updated', description: 'updated').write_oplog_operation!(:update)
+      TestRecord.new(id: 7, name: 'Seven updated', description: 'updated').write_oplog_operation!(:destroy)
+
+      expect(TestRecord::Operation.where(id: 7).order(:oid).select_map(:operation)).to eq(%w[C U D])
+      expect(TestRecord::Operation.where(id: 7, operation: 'U').first.name).to eq('Seven updated')
+    end
+  end
 end
 
 # rubocop:enable Style/ConstantDefinitionInBlock

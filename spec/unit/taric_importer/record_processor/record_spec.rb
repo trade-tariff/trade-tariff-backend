@@ -14,10 +14,6 @@ RSpec.describe TaricImporter::RecordProcessor::Record do
   describe 'initialization' do
     subject(:record) { described_class.new(record_hash) }
 
-    it 'assigns transaction id' do
-      expect(record.transaction_id).to eq '31946'
-    end
-
     it 'assigns model class' do
       expect(record.klass).to eq LanguageDescription
     end

@@ -3,8 +3,7 @@ class TaricImporter
     class Operation
       attr_reader :record, :operation_date
 
-      delegate :primary_key, :klass, to: :record
-      delegate :instrument, to: ActiveSupport::Notifications
+      delegate :klass, :primary_key, to: :record
 
       def initialize(record, operation_date)
         @record = record
@@ -30,30 +29,20 @@ class TaricImporter
 
     private
 
-      def ignore_presence_errors?
-        TaricSynchronizer.ignore_presence_errors
+      def write_from_transaction
+        ensure_primary_key_present!
+
+        model = klass.new(attributes)
+        model.write_oplog_operation!(to_oplog_operation)
+        model
       end
 
-      # Sometimes update operations go in wrong order (not chronologically, e.g. 'update' operation goes before 'create').
-      # We decided to have ability to not break import process:
-      #   set env TARIFF_IGNORE_PRESENCE_ERRORS=1 to ignore Sequel::RecordNotFound on update
-      # We also decided to create new record if it does not exist
-      def get_model_record
-        filters = attributes.slice(*primary_key).symbolize_keys
-        if ignore_presence_errors?
-          klass.filter(filters).first
-        else
-          klass.filter(filters).take
-        end
-      end
+      def ensure_primary_key_present!
+        missing = Array(primary_key).select { |key| attributes[key].blank? }
+        return if missing.empty?
 
-      def log_presence_error
-        details = record.attributes.merge(
-          transaction_id: record.transaction_id,
-          operation_date:,
-          operation: to_oplog_operation,
-        )
-        instrument('presence_error.taric_importer', klass: klass.to_s, details:)
+        raise ArgumentError,
+              "TARIC #{to_oplog_operation} for #{klass} missing primary key fields: #{missing.join(', ')}"
       end
     end
   end

@@ -128,8 +128,8 @@ module Sequel
           nil
         end
 
-        def _insert_raw(_dataset)
-          self.operation = :create
+        def write_oplog_operation!(operation)
+          self.operation = operation
 
           values = self.values.slice(*operation_klass.columns).except(:oid)
           if operation_klass.columns.include?(:created_at)
@@ -137,28 +137,18 @@ module Sequel
           end
 
           operation_klass.insert(values)
+        end
+
+        def _insert_raw(_dataset)
+          write_oplog_operation!(:create)
         end
 
         def _destroy_delete
-          self.operation = :destroy
-
-          values = self.values.slice(*operation_klass.columns).except(:oid)
-          if operation_klass.columns.include?(:created_at)
-            values[:created_at] = operation_klass.dataset.current_datetime
-          end
-
-          operation_klass.insert(values)
+          write_oplog_operation!(:destroy)
         end
 
         def _update_columns(_columns)
-          self.operation = :update
-
-          values = self.values.slice(*operation_klass.columns).except(:oid)
-          if operation_klass.columns.include?(:created_at)
-            values[:created_at] = operation_klass.dataset.current_datetime
-          end
-
-          operation_klass.insert(values)
+          write_oplog_operation!(:update)
         end
 
         # NOTE: This method is called by Sequel::Model#_refresh after we save a new record.
