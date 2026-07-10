@@ -31,7 +31,13 @@ module RequestSpecHelper
   end
 
   def request_api_version
-    described_class.name.start_with?('Api::V1::') ? 1 : 2
+    if described_class.name.start_with?('Api::V1::')
+      1
+    elsif described_class.name.start_with?('Api::V3::')
+      3
+    else
+      2
+    end
   end
 
 private
