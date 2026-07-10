@@ -128,12 +128,6 @@ module Sequel
           nil
         end
 
-        # Append a create/update/destroy row to the model's oplog table from the
-        # current in-memory attributes. Does not require a row in any current
-        # projection (plain table or materialized view).
-        #
-        # Prefer this over calling Sequel private hooks when hydrating from an
-        # inbound feed (TARIC/CDS) that already carries the full operation.
         def write_oplog_operation!(operation)
           self.operation = operation
 

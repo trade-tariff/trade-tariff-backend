@@ -64,10 +64,7 @@ RSpec.describe TaricImporter::RecordProcessor::UpdateOperation do
       end
     end
 
-    context 'when create is not yet visible in a materialized projection' do
-      # In test, Measure#save refreshes the matview. Insert create into the
-      # oplog only so the measures projection stays empty, matching production
-      # mid-file TARIC apply (no refresh between records).
+    context 'when create is only present in the oplog' do
       let!(:seed_measure) { create(:measure) }
       let(:measure_sid) { seed_measure.measure_sid }
       let(:operation_date) { Date.new(2026, 5, 9) }
