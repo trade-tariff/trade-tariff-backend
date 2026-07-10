@@ -89,7 +89,7 @@ module Api
                                run_interactive_search(
                                  retrieval.goods_nomenclatures,
                                  retrieval.expanded_query,
-                                 )
+                               )
                              end
 
         response = build_response(
