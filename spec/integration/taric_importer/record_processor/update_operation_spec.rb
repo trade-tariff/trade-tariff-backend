@@ -25,9 +25,11 @@ RSpec.describe TaricImporter::RecordProcessor::UpdateOperation do
         create_language_description_record
       end
 
-      it 'identifies as create operation' do
+      it 'writes an update operation with the new attributes' do
         operation.call
-        expect(LanguageDescription.first.description).to eq 'French!'
+        expect(
+          LanguageDescription::Operation.where(operation: 'U').order(Sequel.desc(:oid)).first.description,
+        ).to eq 'French!'
       end
 
       it 'returns model instance' do
@@ -43,33 +45,34 @@ RSpec.describe TaricImporter::RecordProcessor::UpdateOperation do
     end
 
     context 'when record for update is missing' do
-      it 'raises Sequel::RecordNotFound exception' do
-        expect { operation.call }.to raise_error(Sequel::RecordNotFound)
+      it 'writes an update operation from inbound attributes' do
+        expect { operation.call }
+          .to change { LanguageDescription::Operation.where(operation: 'U').count }.from(0).to(1)
       end
 
-      context 'with ignoring presence errors' do
-        before do
-          allow(TaricSynchronizer).to receive(:ignore_presence_errors).and_return(true)
+      it 'does not raise Sequel::RecordNotFound' do
+        expect { operation.call }.not_to raise_error
+      end
+
+      it 'does not fall back to CreateOperation' do
+        allow(TaricImporter::RecordProcessor::CreateOperation).to receive(:new)
+
+        operation.call
+
+        expect(TaricImporter::RecordProcessor::CreateOperation).not_to have_received(:new)
+      end
+
+      it 'does not send presence error events' do
+        events = []
+        subscriber = ActiveSupport::Notifications.subscribe(/presence_error/) do |*args|
+          events << ActiveSupport::Notifications::Event.new(*args)
         end
 
-        it 'creates new record' do
-          expect { operation.call }.to change(LanguageDescription, :count).from(0).to(1)
-        end
+        operation.call
 
-        it 'sends presence error events' do
-          allow(operation).to receive(:log_presence_error)
-          operation.call
-          expect(operation).to have_received(:log_presence_error)
-        end
-
-        it 'invokes CreateOperation' do
-          instance = instance_double(TaricImporter::RecordProcessor::CreateOperation)
-          allow(TaricImporter::RecordProcessor::CreateOperation).to receive(:new).and_return(instance)
-          allow(instance).to receive(:call)
-          operation.call
-
-          expect(instance).to have_received(:call)
-        end
+        expect(events).to be_empty
+      ensure
+        ActiveSupport::Notifications.unsubscribe(subscriber)
       end
     end
 

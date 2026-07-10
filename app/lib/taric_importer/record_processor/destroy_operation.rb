@@ -2,13 +2,12 @@ class TaricImporter
   class RecordProcessor
     class DestroyOperation < Operation
       def call
-        model = get_model_record
-        if model
-          model.set(attributes.except(*primary_key).symbolize_keys)
-          model.destroy
-        else
-          log_presence_error
-        end
+        # Build from the inbound TARIC attributes and write a destroy oplog entry.
+        # Do not look up the current materialized projection first: same-file
+        # create/destroy sequences are valid and the create is not visible until
+        # views are refreshed after the full update file is applied.
+        model = klass.new(attributes)
+        model.destroy
         model
       end
 
