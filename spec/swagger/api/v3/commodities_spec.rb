@@ -54,10 +54,7 @@ RSpec.describe 'Commodities V3', swagger_doc: 'v3/swagger.json', type: :request 
       tags 'Commodities'
       produces 'application/json'
       operationId 'listCommodityMeasuresV3'
-      description 'Returns import and export measures applicable to this commodity on the current date. Use ?as_of=YYYY-MM-DD for a historic date.'
-
-      parameter name: :as_of, in: :query, schema: { type: :string, format: :date },
-                required: false, description: 'Date to evaluate measures against (ISO 8601). Defaults to today.'
+      description 'Returns import and export measures applicable to this commodity.'
 
       response '200', 'measures listed' do
         schema type: :object,
