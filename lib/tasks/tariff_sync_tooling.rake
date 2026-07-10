@@ -63,8 +63,6 @@ module_function
     puts "  Updated at      : #{update.updated_at}"
     puts "  Error           : #{update.exception_class}" if update.exception_class.present?
 
-    presence_count = update.presence_errors.count
-    puts "  Presence errors : #{presence_count}" if presence_count.positive?
     puts
   end
 
@@ -72,7 +70,6 @@ module_function
     update = update_from_env_filename
     print_failure_detail_header(update)
     print_exception_detail(update)
-    print_presence_errors(update)
     print_previous_import_counts(update)
   end
 
@@ -116,18 +113,6 @@ module_function
 
     puts "\n=== Last SQL Queries ===\n\n"
     puts update.exception_queries
-  end
-
-  def print_presence_errors(update)
-    presence_errors = update.presence_errors
-    return if presence_errors.empty?
-
-    puts "\n=== Presence Errors (#{presence_errors.count} total, showing first 10) ===\n\n"
-    presence_errors.first(10).each_with_index do |error, index|
-      puts "#{index + 1}. #{error.model_name}"
-      puts error.details.inspect
-      puts
-    end
   end
 
   def print_previous_import_counts(update)

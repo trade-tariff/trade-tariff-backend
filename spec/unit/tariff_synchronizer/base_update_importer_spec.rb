@@ -40,14 +40,14 @@ RSpec.describe TariffSynchronizer::BaseUpdateImporter do
       expect(taric_update.exception_queries).to include('(Sequel::Postgres::Database) ROLLBACK')
     end
 
-    it 'subscribes to all events' do
+    it 'subscribes to SQL query tracking events' do
       allow(ActiveSupport::Notifications).to receive(:subscribe)
       allow(taric_update).to receive(:import!).and_return(true)
 
       base_update_importer.apply
 
       expect(ActiveSupport::Notifications).to have_received(:subscribe).with(/sql\.sequel/)
-      expect(ActiveSupport::Notifications).to have_received(:subscribe).with(/presence_error/)
+      expect(ActiveSupport::Notifications).not_to have_received(:subscribe).with(/presence_error/)
       expect(ActiveSupport::Notifications).not_to have_received(:subscribe).with(/cds_error/)
     end
 

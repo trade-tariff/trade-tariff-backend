@@ -12,34 +12,6 @@
   <% end %>
 </ul>
 
-<% if @presence_errors.to_a.any? %>
-  <table>
-    <thead>
-    <tr>
-      <th>Model</th>
-      <th>Details</th>
-    </tr>
-    </thead>
-    <tbody>
-    <% @presence_errors.each do |record| %>
-      <tr>
-        <td>
-          <strong><%= record.model_name %></strong>
-        </td>
-
-        <td>
-          <%= record.details.inspect %>
-        </td>
-      </tr>
-    <% end %>
-    </tbody>
-  </table>
-<% else %>
-  <p>
-    <strong>No presence errors found.</strong>
-  </p>
-<% end %>
-
 <% if @import_warnings.any? %>
   <table>
     <thead>

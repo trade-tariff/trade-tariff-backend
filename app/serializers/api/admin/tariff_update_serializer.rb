@@ -21,8 +21,6 @@ module Api
                  :exception_queries,
                  :exception_class,
                  :file_presigned_url
-
-      has_many :presence_errors, serializer: Api::Admin::PresenceErrorSerializer
     end
   end
 end

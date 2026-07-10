@@ -13,7 +13,6 @@ module TariffSynchronizer
       return unless @base_update.pending?
 
       track_latest_sql_queries
-      keep_record_of_presence_errors
 
       @base_update.import!
     rescue StandardError => e
@@ -23,7 +22,6 @@ module TariffSynchronizer
       notify_exception(e)
     ensure
       ActiveSupport::Notifications.unsubscribe(@sql_subscriber)
-      ActiveSupport::Notifications.unsubscribe(@presence_errors_subscriber)
     end
 
   private
@@ -45,19 +43,6 @@ module TariffSynchronizer
                   class_name: event.payload[:name],
                   sql: event.payload[:sql].squeeze(' '),
                   binds:),
-        )
-      end
-    end
-
-    def keep_record_of_presence_errors
-      @presence_errors_subscriber = ActiveSupport::Notifications.subscribe(/presence_error/) do |*args|
-        event = ActiveSupport::Notifications::Event.new(*args)
-        klass = event.payload[:klass]
-        details = event.payload[:details]
-        TariffSynchronizer::TariffUpdatePresenceError.create(
-          base_update: @base_update,
-          model_name: klass,
-          details: details.to_json,
         )
       end
     end

@@ -109,22 +109,11 @@ RSpec.describe 'tariff:sync:failures' do
   end
 
   context 'with a failed TARIC update' do
-    let!(:failed_taric) { create(:taric_update, :failed, issue_date: Date.current) }
+    before { create(:taric_update, :failed, issue_date: Date.current) }
 
     it 'shows XI/TARIC as the service' do
       expect { Rake::Task['tariff:sync:failures'].invoke }
         .to output(/XI\/TARIC/).to_stdout
-    end
-
-    it 'shows the presence error count when present' do
-      TariffSynchronizer::TariffUpdatePresenceError.create(
-        tariff_update_filename: failed_taric.filename,
-        model_name: 'GoodsNomenclature',
-        details: { some: 'detail' },
-      )
-
-      expect { Rake::Task['tariff:sync:failures'].invoke }
-        .to output(/Presence errors\s+: 1/).to_stdout
     end
   end
 end
@@ -212,30 +201,6 @@ RSpec.describe 'tariff:sync:failure_detail' do
     it 'shows XI (TARIC) as the service' do
       expect { Rake::Task['tariff:sync:failure_detail'].invoke }
         .to output(/XI \(TARIC\)/).to_stdout
-    end
-
-    context 'with associated presence errors' do
-      let(:output) do
-        original_stdout = $stdout
-        $stdout = StringIO.new
-        Rake::Task['tariff:sync:failure_detail'].invoke
-        $stdout.string
-      ensure
-        $stdout = original_stdout
-      end
-
-      before do
-        TariffSynchronizer::TariffUpdatePresenceError.create(
-          tariff_update_filename: update.filename,
-          model_name: 'GoodsNomenclature',
-          details: { some: 'detail' },
-        )
-      end
-
-      it 'shows presence errors with model name', :aggregate_failures do
-        expect(output).to match(/Presence Errors/)
-        expect(output).to match(/GoodsNomenclature/)
-      end
     end
   end
 end

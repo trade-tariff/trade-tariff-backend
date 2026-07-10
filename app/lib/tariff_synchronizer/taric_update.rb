@@ -67,7 +67,8 @@ module TariffSynchronizer
     end
 
     def clear_errors
-      presence_errors_dataset.destroy
+      # Presence-error diagnostics were removed after TARIC destroy/update no
+      # longer depend on the current materialized projection.
     end
 
     def to_param
