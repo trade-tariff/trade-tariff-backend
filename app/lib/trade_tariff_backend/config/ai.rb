@@ -1,6 +1,6 @@
 module TradeTariffBackend
   module Config
-    module AI
+    module Ai
       def ai_model
         ENV.fetch('AI_MODEL', 'gpt-5.2')
       end

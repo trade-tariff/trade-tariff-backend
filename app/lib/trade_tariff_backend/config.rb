@@ -15,7 +15,7 @@ require_relative 'config/xe'
 
 module TradeTariffBackend
   module Config
-    include AI
+    include Ai
     include Alcohol
     include Authentication
     include Email
@@ -28,6 +28,6 @@ module TradeTariffBackend
     include ServiceContext
     include Slack
     include TariffSync
-    include XE
+    include Xe
   end
 end

@@ -1,6 +1,6 @@
 module TradeTariffBackend
   module Config
-    module XE
+    module Xe
       def xe_api_url
         ENV.fetch('XE_API_URL', 'https://xecdapi.xe.com')
       end
