@@ -43,15 +43,29 @@ RSpec.describe TaricImporter::RecordProcessor::UpdateOperation do
           'record_sequence_number' => '1',
           'update_type' => '1',
           'language_description' => {
-            'language_code_id' => nil,
+            'language_code_id' => language_code_id,
             'language_id' => 'EN',
             'description' => 'French!',
           },
         )
       end
 
-      it 'raises rather than writing a partial oplog row' do
-        expect { operation.call }.to raise_error(ArgumentError, /missing primary key fields/)
+      shared_examples 'rejects incomplete primary key' do
+        it 'raises rather than writing a partial oplog row' do
+          expect { operation.call }.to raise_error(ArgumentError, /missing primary key fields/)
+        end
+      end
+
+      context 'when the field is nil' do
+        let(:language_code_id) { nil }
+
+        include_examples 'rejects incomplete primary key'
+      end
+
+      context 'when the field is blank' do
+        let(:language_code_id) { '' }
+
+        include_examples 'rejects incomplete primary key'
       end
     end
   end

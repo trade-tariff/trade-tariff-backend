@@ -38,7 +38,7 @@ class TaricImporter
       end
 
       def ensure_primary_key_present!
-        missing = Array(primary_key).select { |key| attributes[key].nil? }
+        missing = Array(primary_key).select { |key| attributes[key].blank? }
         return if missing.empty?
 
         raise ArgumentError,
