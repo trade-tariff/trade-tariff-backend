@@ -92,7 +92,7 @@ module SearchAnalytics
 
     def volume_query
       <<~QUERY
-        fields @timestamp, event, search_type, request_source
+        fields @timestamp, event, search_type
         | #{log_stream_filter}
         | #{base_search_filter}
         | fields if(ispresent(request_source), request_source, "unknown") as request_source
@@ -102,7 +102,7 @@ module SearchAnalytics
 
     def zero_result_query
       <<~QUERY
-        fields @timestamp, event, search_type, result_count, request_source
+        fields @timestamp, event, search_type, result_count
         | #{log_stream_filter}
         | filter service = "search" and event = "search_completed" and result_count = 0
         | fields if(ispresent(request_source), request_source, "unknown") as request_source
@@ -130,7 +130,7 @@ module SearchAnalytics
 
     def source_all_latency_query
       <<~QUERY
-        fields event, total_duration_ms, request_source
+        fields event, total_duration_ms
         | #{log_stream_filter}
         | #{base_search_filter} and ispresent(total_duration_ms)
         | fields if(ispresent(request_source), request_source, "unknown") as request_source
@@ -140,7 +140,7 @@ module SearchAnalytics
 
     def source_view_latency_query
       <<~QUERY
-        fields event, search_type, total_duration_ms, request_source
+        fields event, search_type, total_duration_ms
         | #{log_stream_filter}
         | #{base_search_filter} and ispresent(total_duration_ms)
         | fields if(ispresent(request_source), request_source, "unknown") as request_source
@@ -157,7 +157,7 @@ module SearchAnalytics
 
     def selection_query(selectable_condition)
       <<~QUERY
-        fields request_id, event, search_type, result_count, results_type, request_source
+        fields request_id, event, search_type, result_count, results_type
         | #{log_stream_filter}
         | filter service = "search" and ispresent(request_id) and (event = "result_selected" or (event = "search_completed" and result_count > 0 and #{selectable_condition}))
         | fields if(event = "result_selected", 1, 0) as result_selection_marker
