@@ -1,3 +1,5 @@
+require 'rails_helper'
+
 RSpec.describe Api::Admin::CustomsTariffUpdatesController do
   describe 'GET #index' do
     before { create(:customs_tariff_update) }
@@ -25,7 +27,7 @@ RSpec.describe Api::Admin::CustomsTariffUpdatesController do
     let!(:update) { create(:customs_tariff_update) }
 
     it 'returns the update' do
-      get "/uk/admin/customs_tariff_updates/#{update.version}.json", headers: request_headers(format: :json)
+      get "/uk/admin/customs_tariff_updates/#{update.version}", headers: request_headers(format: :json)
 
       expect(response.status).to eq(200)
       data = JSON.parse(response.body)['data']
