@@ -91,6 +91,10 @@
       cron: "0 9 * * *"
       description: "Checks GOV.UK for a new Customs Tariff document version and imports it"
       enabled: <%= ENV.fetch('SERVICE', 'uk') == 'uk' %>
+    ImportXiCnDocumentWorker:
+      cron: "0 9 * * *"
+      description: "Checks EUR-Lex for new CN editions and imports section/chapter/GRI notes into the XI schema"
+      enabled: <%= ENV.fetch('SERVICE', 'uk') == 'xi' %>
     RefreshTariffKnowledgeCompressedNotesWorker:
       cron: "0 3 * * *"
       description: "Refreshes tariff knowledge graph and compressed notes for current declarable goods"

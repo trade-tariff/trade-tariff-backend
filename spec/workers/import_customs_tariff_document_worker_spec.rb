@@ -1,11 +1,24 @@
 RSpec.describe ImportCustomsTariffDocumentWorker, type: :worker do
   subject(:perform) { described_class.new.perform }
 
+  let(:importer_double) { instance_double(CustomsTariffImporter::Importer) }
+
   before do
+    allow(TradeTariffBackend).to receive(:uk?).and_return(true)
+    allow(CustomsTariffImporter::Importer).to receive(:new).and_return(importer_double)
     allow(SlackNotifierService).to receive(:call)
     allow(CustomsTariffImporter::Instrumentation).to receive(:import_run_started)
     allow(CustomsTariffImporter::Instrumentation).to receive(:import_run_completed)
     allow(CustomsTariffImporter::Instrumentation).to receive(:import_run_failed)
+  end
+
+  context 'when SERVICE is not uk' do
+    before { allow(TradeTariffBackend).to receive(:uk?).and_return(false) }
+
+    it 'is a no-op' do
+      perform
+      expect(CustomsTariffImporter::Importer).not_to have_received(:new)
+    end
   end
 
   def result(status:, version: nil, error: nil)

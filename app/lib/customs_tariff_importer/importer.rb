@@ -1,6 +1,6 @@
 module CustomsTariffImporter
   class Importer
-    S3_KEY_PREFIX = 'data/customs_tariff_documents'.freeze
+    S3_KEY_PREFIX = 'data/customs_tariff_documents/uk'.freeze
 
     Result = Data.define(:status, :version, :error) do
       def initialize(status:, version: nil, error: nil)

@@ -1,3 +1,5 @@
+require 'rails_helper'
+
 RSpec.describe Api::Admin::CustomsTariffUpdates::SectionsSummaryController do
   around { |example| TimeMachine.now { example.run } }
 
@@ -50,6 +52,8 @@ RSpec.describe Api::Admin::CustomsTariffUpdates::SectionsSummaryController do
     end
 
     context 'when chapter notes exist in the update' do
+      let!(:chapter) { create(:chapter, :chapter01, :with_section) }
+
       before do
         create(:customs_tariff_chapter_note, customs_tariff_update: approved_update, chapter_id: '01',
                                              content: 'Old chapter 1 content long enough for comparison')
@@ -58,13 +62,10 @@ RSpec.describe Api::Admin::CustomsTariffUpdates::SectionsSummaryController do
       end
 
       it 'returns chapter_notes_total and chapter_notes_changed for the section containing chapter 01' do
-        pending 'chapter_to_section_map relies on chapters_sections join table populated with real tariff data; ' \
-                'may be empty in test environment causing counts to be 0'
-
         get "/uk/admin/customs_tariff_updates/#{pending_update.version}/sections_summary.json",
             headers: request_headers(format: :json)
 
-        row = JSON.parse(response.body)['data'].find { |r| r.dig('attributes', 'section_id') == sections.first.id }
+        row = JSON.parse(response.body)['data'].find { |r| r.dig('attributes', 'section_id') == chapter.sections.first.id }
         expect(row.dig('attributes', 'chapter_notes_total')).to eq(1)
         expect(row.dig('attributes', 'chapter_notes_changed')).to eq(1)
       end
