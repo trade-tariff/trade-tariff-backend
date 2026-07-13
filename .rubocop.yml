@@ -53,15 +53,24 @@ Layout/LineLength:
 Metrics/AbcSize:
   Max: 20
 
-# Legacy codebase-wide policy cop with many existing offenses; left disabled
-# until it can be split into focused refactors.
+# Re-enabled after warehouse extracts. Remaining long files are excluded with
+# reasons until dedicated follow-ups (engines route DSL, rake namespaces, CDS
+# synchronizer, nested-set association blocks).
 Metrics/BlockLength:
-  Enabled: false
+  Enabled: true
+  Exclude:
+    - 'app/engines/**/*' # Rails routing DSL; deferred engines extract
+    - 'app/models/goods_nomenclatures/nested_set/**/*' # Sequel association blocks
+    # Reinforce AllCops excludes (BlockLength historically tripped migrations when enabled)
+    - 'db/migrate/**/*'
+    - 'db/data_migrations/**/*'
+    - 'bin/**/*'
 
-# Legacy codebase-wide policy cop with many existing offenses; left disabled
-# until it can be split into focused refactors.
 Metrics/ModuleLength:
-  Enabled: false
+  Enabled: true
+  Exclude:
+    - 'lib/tasks/**/*' # Rake namespaces are intentionally large modules
+    - 'app/lib/tariff_synchronizer.rb' # Deferred high-risk CDS apply/rollback extract
 
 RSpec/SpecFilePathFormat:
   Enabled: true
