@@ -1,4 +1,6 @@
 require 'active_support/notifications'
+require_relative 'instrumentation/generation_events'
+require_relative 'instrumentation/scoring_events'
 
 module SelfTextGenerator
   module Instrumentation
