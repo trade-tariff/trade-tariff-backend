@@ -168,7 +168,6 @@ module SearchAnalytics
             earliest(request_source) as source by request_id
         | filter selectable_searches > 0
         | stats sum(result_selections) as selected, sum(selectable_searches) as selectable by source
-        | fields selected, selectable, source as request_source
       QUERY
     end
 
@@ -180,7 +179,7 @@ module SearchAnalytics
             'earliest(request_source) as source, max(@timestamp) as @t by request_id',
           )
           .sub(
-            "| stats sum(result_selections) as selected, sum(selectable_searches) as selectable by source\n| fields selected, selectable, source as request_source",
+            '| stats sum(result_selections) as selected, sum(selectable_searches) as selectable by source',
             "| stats sum(result_selections) as selected by datefloor(@t, #{bucket_period}) as @timestamp",
           )
       end
@@ -457,7 +456,9 @@ module SearchAnalytics
         rows.select { |row| row_matches_view?(row, view) }
       end
 
-      def source_key(row) = row['request_source'].presence || 'unknown'
+      # Selection queries expose the request source as `source` because CloudWatch
+      # rejects regrouping by an aggregate alias that reuses `request_source`.
+      def source_key(row) = row['request_source'].presence || row['source'].presence || 'unknown'
 
       def row_matches_view?(row, view) = VIEW_SEARCH_TYPES.fetch(view, [view]).include?(row_search_type(row))
 
