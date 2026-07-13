@@ -165,9 +165,10 @@ module SearchAnalytics
         | fields if(ispresent(request_source), request_source, "unknown") as request_source
         | stats sum(result_selection_marker) as result_selections,
             sum(selectable_search_marker) as selectable_searches,
-            earliest(request_source) as request_source by request_id
+            earliest(request_source) as source by request_id
         | filter selectable_searches > 0
-        | stats sum(result_selections) as selected, sum(selectable_searches) as selectable by request_source
+        | stats sum(result_selections) as selected, sum(selectable_searches) as selectable by source
+        | fields selected, selectable, source as request_source
       QUERY
     end
 
@@ -175,11 +176,11 @@ module SearchAnalytics
       selection_queries.transform_values do |query|
         query
           .sub(
-            'earliest(request_source) as request_source by request_id',
-            'earliest(request_source) as request_source, max(@timestamp) as @t by request_id',
+            'earliest(request_source) as source by request_id',
+            'earliest(request_source) as source, max(@timestamp) as @t by request_id',
           )
           .sub(
-            '| stats sum(result_selections) as selected, sum(selectable_searches) as selectable by request_source',
+            "| stats sum(result_selections) as selected, sum(selectable_searches) as selectable by source\n| fields selected, selectable, source as request_source",
             "| stats sum(result_selections) as selected by datefloor(@t, #{bucket_period}) as @timestamp",
           )
       end

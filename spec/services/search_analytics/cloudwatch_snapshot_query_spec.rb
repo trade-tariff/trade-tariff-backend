@@ -113,14 +113,39 @@ RSpec.describe SearchAnalytics::CloudwatchSnapshotQuery do
     ).twice
     expect(client).to have_received(:start_query).with(
       hash_including(
-        query_string: a_string_including('earliest(request_source) as request_source'),
+        query_string: a_string_including('earliest(request_source) as source by request_id'),
       ),
-    ).exactly(4).times
+    ).exactly(2).times
+    expect(client).to have_received(:start_query).with(
+      hash_including(
+        query_string: a_string_including('earliest(request_source) as source, max(@timestamp) as @t by request_id'),
+      ),
+    ).twice
+    expect(client).to have_received(:start_query).with(
+      hash_including(
+        query_string: a_string_including('| stats sum(result_selections) as selected, sum(selectable_searches) as selectable by source'),
+      ),
+    ).twice
+    expect(client).to have_received(:start_query).with(
+      hash_including(
+        query_string: a_string_including('| fields selected, selectable, source as request_source'),
+      ),
+    ).twice
     expect(client).to have_received(:start_query).with(
       hash_including(
         query_string: a_string_including('datefloor(@t, 1h) as @timestamp'),
       ),
     ).twice
+    expect(client).not_to have_received(:start_query).with(
+      hash_including(
+        query_string: a_string_including('earliest(request_source) as request_source by request_id'),
+      ),
+    )
+    expect(client).not_to have_received(:start_query).with(
+      hash_including(
+        query_string: a_string_including('sum(selectable_searches) as selectable by request_source'),
+      ),
+    )
     expect(client).to have_received(:start_query).with(
       hash_including(
         query_string: a_string_matching(/stats pct\(total_duration_ms, 90\) as p90_latency_ms\s*$/),
