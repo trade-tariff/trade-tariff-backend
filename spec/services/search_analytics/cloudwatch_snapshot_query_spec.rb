@@ -56,11 +56,11 @@ RSpec.describe SearchAnalytics::CloudwatchSnapshotQuery do
         result_row('search_type' => 'interactive', 'request_source' => 'frontend', 'p90_latency_ms' => '2100'),
       ),
       complete_response(
-        result_row('request_source' => 'frontend', 'selected' => '2', 'selectable' => '35'),
-        result_row('request_source' => 'backend_only', 'selected' => '1', 'selectable' => '7'),
+        result_row('source' => 'frontend', 'selected' => '2', 'selectable' => '35'),
+        result_row('source' => 'backend_only', 'selected' => '1', 'selectable' => '7'),
         result_row('selected' => '1', 'selectable' => '5'),
       ),
-      complete_response(result_row('request_source' => 'frontend', 'selected' => '2', 'selectable' => '8')),
+      complete_response(result_row('source' => 'frontend', 'selected' => '2', 'selectable' => '8')),
       complete_response(result_row('@timestamp' => '2026-06-10 09:00:00.000', 'selected' => '4')),
       complete_response(result_row('@timestamp' => '2026-06-10 09:00:00.000', 'selected' => '2')),
       complete_response(
@@ -126,11 +126,11 @@ RSpec.describe SearchAnalytics::CloudwatchSnapshotQuery do
         query_string: a_string_including('| stats sum(result_selections) as selected, sum(selectable_searches) as selectable by source'),
       ),
     ).twice
-    expect(client).to have_received(:start_query).with(
+    expect(client).not_to have_received(:start_query).with(
       hash_including(
         query_string: a_string_including('| fields selected, selectable, source as request_source'),
       ),
-    ).twice
+    )
     expect(client).to have_received(:start_query).with(
       hash_including(
         query_string: a_string_including('datefloor(@t, 1h) as @timestamp'),
