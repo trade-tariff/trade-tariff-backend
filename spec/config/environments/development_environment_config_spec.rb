@@ -2,7 +2,11 @@ require 'rails_helper'
 require_relative '../../../config/environments/development_environment_config'
 
 RSpec.describe DevelopmentEnvironmentConfig do
-  subject(:config) { ActiveSupport::OrderedOptions.new.tap { |c| c.action_controller = ActiveSupport::OrderedOptions.new } }
+  subject(:config) do
+    ActiveSupport::OrderedOptions.new.tap do |c|
+      c.action_controller = ActiveSupport::OrderedOptions.new
+    end
+  end
 
   before do
     config.action_mailer = ActiveSupport::OrderedOptions.new
