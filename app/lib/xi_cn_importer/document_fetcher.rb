@@ -84,22 +84,22 @@ module XiCnImporter
 
     private
 
-def sparql_results
-  uri = URI(SPARQL_ENDPOINT)
+    def sparql_results
+      uri = URI(SPARQL_ENDPOINT)
 
-  response = Net::HTTP.start(uri.host, uri.port,
-                             use_ssl: uri.scheme == 'https',
-                             open_timeout: OPEN_TIMEOUT,
-                             read_timeout: READ_TIMEOUT) do |http|
-    request = Net::HTTP::Post.new(uri.request_uri)
-    request.set_form_data('query' => SPARQL_QUERY, 'format' => 'application/sparql-results+json')
-    http.request(request)
-  end
+      response = Net::HTTP.start(uri.host, uri.port,
+                                 use_ssl: uri.scheme == 'https',
+                                 open_timeout: OPEN_TIMEOUT,
+                                 read_timeout: READ_TIMEOUT) do |http|
+        request = Net::HTTP::Post.new(uri.request_uri)
+        request.set_form_data('query' => SPARQL_QUERY, 'format' => 'application/sparql-results+json')
+        http.request(request)
+      end
 
-  raise "SPARQL request failed: HTTP #{response.code}" unless response.is_a?(Net::HTTPSuccess)
+      raise "SPARQL request failed: HTTP #{response.code}" unless response.is_a?(Net::HTTPSuccess)
 
-  JSON.parse(response.body).dig('results', 'bindings') || []
-end
+      JSON.parse(response.body).dig('results', 'bindings') || []
+    end
 
     def fetch_html(url, redirect_count: 0)
       raise "Too many redirects fetching #{url}" if redirect_count > MAX_REDIRECTS
