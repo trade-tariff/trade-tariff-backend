@@ -5,6 +5,9 @@ on:
     types:
       - labeled
       - unlabeled
+  pull_request_review:
+    types:
+      - submitted
   workflow_run:
     workflows:
       - 'ci'
@@ -21,6 +24,6 @@ jobs:
     uses: trade-tariff/trade-tariff-tools/.github/workflows/auto-merge-low-risk.yml@main
     with:
       label: low-risk
-      merge-method: merge
+      merge-method: rebase
     secrets:
       github-token: ${{ secrets.PULL_REQUEST_PAT }}
