@@ -14,7 +14,7 @@ RSpec.describe XiCnImporter::Importer do
       celex:,
       force_date:,
       publication_date: Date.new(2025, 10, 31),
-      cellar_url: 'http://publications.europa.eu/resource/cellar/abc.0006.03/DOC_1',
+      cellar_url: 'https://publications.europa.eu/resource/cellar/abc.0006.03/DOC_1',
       html_content:,
       pdf_content:,
       pdf_checksum:,

@@ -13,19 +13,17 @@ class ImportXiCnDocumentWorker
 
     duration_ms    = ((Process.clock_gettime(Process::CLOCK_MONOTONIC) - start_time) * 1000).round(2)
     imported_count = results.count { |r| r.status == :imported }
-    skipped_count  = results.count { |r| r.status == :skipped }
     failed_count   = results.count { |r| r.status == :failed }
     review_backlog = CustomsTariffUpdate.pending.count
 
     XiCnImporter::Instrumentation.import_run_completed(
       imported: imported_count,
-      skipped: skipped_count,
       failed: failed_count,
       duration_ms:,
       review_backlog:,
     )
 
-    notify_completed(imported_count:, skipped_count:, failed_count:, review_backlog:)
+    notify_completed(imported_count:, failed_count:, review_backlog:)
   rescue StandardError => e
     XiCnImporter::Instrumentation.import_run_failed(
       error_class: e.class.name,
@@ -37,14 +35,14 @@ class ImportXiCnDocumentWorker
 
   private
 
-  def notify_completed(imported_count:, skipped_count:, failed_count:, review_backlog:)
+  def notify_completed(imported_count:, failed_count:, review_backlog:)
     return unless imported_count.positive? || failed_count.positive?
 
     status = failed_count.positive? ? 'completed with failures' : 'completed'
 
     notify_slack(
       "XI CN document import #{status}. " \
-      "imported: #{imported_count}, skipped: #{skipped_count}, failed: #{failed_count}, " \
+      "imported: #{imported_count}, failed: #{failed_count}, " \
       "pending review: #{review_backlog}",
     )
   end

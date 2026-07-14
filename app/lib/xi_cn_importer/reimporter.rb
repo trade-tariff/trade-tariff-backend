@@ -3,6 +3,8 @@ require 'net/http'
 module XiCnImporter
   class Reimporter
     MAX_REDIRECTS = 5
+    OPEN_TIMEOUT  = 10
+    READ_TIMEOUT  = 30
     S3_KEY_PREFIX = 'data/customs_tariff_documents/xi'.freeze
 
     def call(version: nil)
@@ -15,9 +17,11 @@ module XiCnImporter
 
           reimport(update)
         rescue StandardError => e
-          XiCnImporter::Logger.log(:error, 'Reimport failed', version: update.version,
-                                                              error_class: e.class.name,
-                                                              error_message: e.message)
+          XiCnImporter::Instrumentation.reimport_failed(
+            version: update.version,
+            error_class: e.class.name,
+            error_message: e.message,
+          )
         end
       end
     end
@@ -27,6 +31,10 @@ module XiCnImporter
     def reimport(update)
       html_content = fetch_html(update.source_url)
       extracted    = NotesExtractor.new(update.version, html_content).call
+
+      if extracted.chapters.empty? && extracted.sections.empty? && extracted.general_rules.empty?
+        raise "Empty extract for #{update.version} — refusing to wipe notes"
+      end
 
       CustomsTariffUpdate.db.transaction do
         CustomsTariffSectionNote.where(customs_tariff_update_version: update.version).delete
@@ -69,12 +77,12 @@ module XiCnImporter
       raise 'Too many redirects' if redirect_count > MAX_REDIRECTS
 
       uri      = URI(url)
-      response = Net::HTTP.start(uri.host, uri.port, use_ssl: uri.scheme == 'https') do |http|
+      response = Net::HTTP.start(uri.host, uri.port, use_ssl: uri.scheme == 'https', open_timeout: OPEN_TIMEOUT, read_timeout: READ_TIMEOUT) do |http|
         http.get(uri.request_uri, 'Accept' => 'application/xhtml+xml')
       end
 
       case response
-      when Net::HTTPSuccess     then response.body
+      when Net::HTTPSuccess then response.body
       when Net::HTTPRedirection
         location = response['location']
         fetch_html(URI.join(url, location).to_s, redirect_count: redirect_count + 1)

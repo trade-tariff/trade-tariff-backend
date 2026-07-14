@@ -26,11 +26,11 @@ RSpec.describe XiCnImporter::DocumentFetcher do
       .to_return(status: 200, body: sparql_response_body,
                  headers: { 'Content-Type' => 'application/sparql-results+json' })
 
-    stub_request(:get, 'http://publications.europa.eu/resource/cellar/abc123def456.0006.03/DOC_1')
+    stub_request(:get, 'https://publications.europa.eu/resource/cellar/abc123def456.0006.03/DOC_1')
       .with(headers: { 'Accept' => 'application/xhtml+xml' })
       .to_return(status: 200, body: html_body)
 
-    stub_request(:get, 'http://publications.europa.eu/resource/cellar/abc123def456.0006.01/DOC_1')
+    stub_request(:get, 'https://publications.europa.eu/resource/cellar/abc123def456.0006.01/DOC_1')
       .to_return(status: 200, body: pdf_body, headers: { 'Content-Type' => 'application/pdf' })
   end
 
@@ -51,7 +51,7 @@ RSpec.describe XiCnImporter::DocumentFetcher do
 
     it 'stores the Cellar URL as cellar_url' do
       result = fetcher.call.first
-      expect(result.cellar_url).to eq 'http://publications.europa.eu/resource/cellar/abc123def456.0006.03/DOC_1'
+      expect(result.cellar_url).to eq 'https://publications.europa.eu/resource/cellar/abc123def456.0006.03/DOC_1'
     end
 
     context 'when the version is already imported (not failed)' do

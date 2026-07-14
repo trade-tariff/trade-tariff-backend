@@ -4,8 +4,13 @@ RSpec.describe XiCnImporter::Reimporter do
   subject(:reimporter) { described_class.new }
 
   let(:celex)  { '32025R1926' }
-  let(:update) { create(:customs_tariff_update, version: celex, source_url: 'http://cellar.example.com/doc') }
-  let(:html)   { '<html><body></body></html>' }
+  let(:update) do
+    create(:customs_tariff_update,
+           version: celex,
+           source_url: 'http://cellar.example.com/doc',
+           s3_path: "data/customs_tariff_documents/xi/CN_#{celex}.pdf")
+  end
+  let(:html) { '<html><body></body></html>' }
 
   let(:extracted) do
     XiCnImporter::NotesExtractor::Result.new(
@@ -49,13 +54,36 @@ RSpec.describe XiCnImporter::Reimporter do
       it 'is a no-op when the version does not exist' do
         expect { reimporter.call(version: 'nonexistent') }.not_to raise_error
       end
+
+      context 'when the extractor returns an empty result' do
+        before do
+          allow(XiCnImporter::NotesExtractor).to receive(:new).and_return(
+            instance_double(XiCnImporter::NotesExtractor,
+                            call: XiCnImporter::NotesExtractor::Result.new(
+                              sections: {}, chapters: {}, general_rules: {},
+                            )),
+          )
+          create(:customs_tariff_section_note, customs_tariff_update: update, section_id: 1, content: 'existing')
+        end
+
+        it 'raises rather than wiping notes' do
+          expect { reimporter.call(version: celex) }.to raise_error(/Empty extract/)
+        end
+
+        it 'leaves existing notes intact' do
+          reimporter.call(version: celex)
+        rescue RuntimeError
+          expect(CustomsTariffSectionNote.where(customs_tariff_update_version: celex).count).to eq 1
+        end
+      end
     end
 
     context 'without a version (reimport all)' do
       let(:second_update) do
         create(:customs_tariff_update,
                version: '32024R1234',
-               source_url: 'http://cellar.example.com/doc2')
+               source_url: 'http://cellar.example.com/doc2',
+               s3_path: 'data/customs_tariff_documents/xi/CN_32024R1234.pdf')
       end
 
       before do

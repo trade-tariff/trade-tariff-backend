@@ -5,9 +5,11 @@ require 'net/http'
 module XiCnImporter
   class DocumentFetcher
     SPARQL_ENDPOINT      = 'https://publications.europa.eu/webapi/rdf/sparql'.freeze
-    CELLAR_HTML_TEMPLATE = 'http://publications.europa.eu/resource/cellar/%s.0006.03/DOC_1'.freeze
-    CELLAR_PDF_TEMPLATE  = 'http://publications.europa.eu/resource/cellar/%s.0006.01/DOC_1'.freeze
+    CELLAR_HTML_TEMPLATE = 'https://publications.europa.eu/resource/cellar/%s.0006.03/DOC_1'.freeze
+    CELLAR_PDF_TEMPLATE  = 'https://publications.europa.eu/resource/cellar/%s.0006.01/DOC_1'.freeze
     MAX_REDIRECTS = 5
+    OPEN_TIMEOUT  = 10
+    READ_TIMEOUT  = 30
 
     SPARQL_QUERY = <<~SPARQL.freeze
       PREFIX cdm: <http://publications.europa.eu/ontology/cdm#>
@@ -94,7 +96,7 @@ module XiCnImporter
       raise "Too many redirects fetching #{url}" if redirect_count > MAX_REDIRECTS
 
       uri      = URI(url)
-      response = Net::HTTP.start(uri.host, uri.port, use_ssl: uri.scheme == 'https') do |http|
+      response = Net::HTTP.start(uri.host, uri.port, use_ssl: uri.scheme == 'https', open_timeout: OPEN_TIMEOUT, read_timeout: READ_TIMEOUT) do |http|
         http.get(uri.request_uri, 'Accept' => 'application/xhtml+xml')
       end
 
@@ -113,7 +115,7 @@ module XiCnImporter
       raise "Too many redirects fetching #{url}" if redirect_count > MAX_REDIRECTS
 
       uri      = URI(url)
-      response = Net::HTTP.start(uri.host, uri.port, use_ssl: uri.scheme == 'https') do |http|
+      response = Net::HTTP.start(uri.host, uri.port, use_ssl: uri.scheme == 'https', open_timeout: OPEN_TIMEOUT, read_timeout: READ_TIMEOUT) do |http|
         http.get(uri.request_uri)
       end
 

@@ -35,11 +35,9 @@ RSpec.describe ImportXiCnDocumentWorker do
       end
     end
 
-    context 'when all documents are skipped' do
+    context 'when no new documents are found' do
       before do
-        allow(importer_double).to receive(:call).and_return([
-          XiCnImporter::Importer::Result.new(status: :skipped, celex: '32025R1926'),
-        ])
+        allow(importer_double).to receive(:call).and_return([])
       end
 
       it 'does not send a Slack notification' do
