@@ -99,9 +99,13 @@ module XiCnImporter
       end
 
       case response
-      when Net::HTTPSuccess     then response.body
-      when Net::HTTPRedirection then fetch_html(response['location'], redirect_count: redirect_count + 1)
-      else raise "Failed to fetch #{url}: HTTP #{response.code}"
+      when Net::HTTPSuccess
+        response.body
+      when Net::HTTPRedirection
+        location = response['location']
+        fetch_html(URI.join(url, location).to_s, redirect_count: redirect_count + 1)
+      else
+        raise "Failed to fetch #{url}: HTTP #{response.code}"
       end
     end
 
@@ -114,9 +118,13 @@ module XiCnImporter
       end
 
       case response
-      when Net::HTTPSuccess     then response.body
-      when Net::HTTPRedirection then fetch_binary(response['location'], redirect_count: redirect_count + 1)
-      else raise "Failed to fetch #{url}: HTTP #{response.code}"
+      when Net::HTTPSuccess
+        response.body
+      when Net::HTTPRedirection
+        location = response['location']
+        fetch_binary(URI.join(url, location).to_s, redirect_count: redirect_count + 1)
+      else
+        raise "Failed to fetch #{url}: HTTP #{response.code}"
       end
     end
   end
