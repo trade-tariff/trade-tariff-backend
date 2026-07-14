@@ -22,7 +22,7 @@ module Api
         @request_id = params[:request_id].presence || TradeTariffRequest.request_id.presence || SecureRandom.uuid
         TradeTariffRequest.request_id ||= @request_id
         @expanded_query = params[:expanded_query].to_s.strip.presence
-        @skip_question = params[:skip_question]
+        @skip_question = params[:skip_question].nil? ? nil : ActiveModel::Type::Boolean.new.cast(params[:skip_question])
       end
 
       def call
