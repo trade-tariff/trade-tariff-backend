@@ -7,10 +7,10 @@ RSpec.describe XiCnImporter::Reimporter do
   let(:update) do
     create(:customs_tariff_update,
            version: celex,
-           source_url: 'http://cellar.example.com/doc',
            s3_path: "data/customs_tariff_documents/xi/CN_#{celex}.pdf")
   end
   let(:html) { '<html><body></body></html>' }
+  let(:html_io) { StringIO.new(html) }
 
   let(:extracted) do
     XiCnImporter::NotesExtractor::Result.new(
@@ -22,9 +22,9 @@ RSpec.describe XiCnImporter::Reimporter do
 
   before do
     update
-    stub_request(:get, 'http://cellar.example.com/doc')
-      .with(headers: { 'Accept' => 'application/xhtml+xml' })
-      .to_return(status: 200, body: html)
+    allow(TariffSynchronizer::FileService).to receive(:get)
+      .with("data/customs_tariff_documents/xi/CN_#{celex}.xhtml")
+      .and_return(html_io)
 
     allow(XiCnImporter::NotesExtractor).to receive(:new).and_return(
       instance_double(XiCnImporter::NotesExtractor, call: extracted),
@@ -46,9 +46,11 @@ RSpec.describe XiCnImporter::Reimporter do
         expect(notes.first.content).to eq 'Section content.'
       end
 
-      it 'fetches HTML from the stored source_url' do
+      it 'reads XHTML from S3 rather than fetching from Cellar' do
         reimporter.call(version: celex)
-        expect(WebMock).to have_requested(:get, 'http://cellar.example.com/doc')
+        expect(TariffSynchronizer::FileService)
+          .to have_received(:get)
+          .with("data/customs_tariff_documents/xi/CN_#{celex}.xhtml")
       end
 
       it 'is a no-op when the version does not exist' do
@@ -79,17 +81,18 @@ RSpec.describe XiCnImporter::Reimporter do
     end
 
     context 'without a version (reimport all)' do
+      let(:second_celex) { '32024R1234' }
       let(:second_update) do
         create(:customs_tariff_update,
-               version: '32024R1234',
-               source_url: 'http://cellar.example.com/doc2',
-               s3_path: 'data/customs_tariff_documents/xi/CN_32024R1234.pdf')
+               version: second_celex,
+               s3_path: "data/customs_tariff_documents/xi/CN_#{second_celex}.pdf")
       end
 
       before do
         second_update
-        stub_request(:get, 'http://cellar.example.com/doc2')
-          .to_return(status: 200, body: html)
+        allow(TariffSynchronizer::FileService).to receive(:get)
+          .with("data/customs_tariff_documents/xi/CN_#{second_celex}.xhtml")
+          .and_return(StringIO.new(html))
       end
 
       it 'reimports all non-failed updates' do

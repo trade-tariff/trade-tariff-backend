@@ -18,8 +18,10 @@ module XiCnImporter
     private
 
     def import_document(fetched)
-      s3_path = "#{S3_KEY_PREFIX}/CN_#{fetched.celex}.pdf"
+      s3_path      = "#{S3_KEY_PREFIX}/CN_#{fetched.celex}.pdf"
+      html_s3_path = "#{S3_KEY_PREFIX}/CN_#{fetched.celex}.xhtml"
       TariffSynchronizer::FileService.write_file(s3_path, fetched.pdf_content)
+      TariffSynchronizer::FileService.write_file(html_s3_path, fetched.html_content)
 
       extracted = NotesExtractor.new(fetched.celex, fetched.html_content).call
 

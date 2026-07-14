@@ -1,10 +1,5 @@
-require 'net/http'
-
 module XiCnImporter
   class Reimporter
-    MAX_REDIRECTS = 5
-    OPEN_TIMEOUT  = 10
-    READ_TIMEOUT  = 30
     S3_KEY_PREFIX = 'data/customs_tariff_documents/xi'.freeze
 
     def call(version: nil)
@@ -29,7 +24,8 @@ module XiCnImporter
     private
 
     def reimport(update)
-      html_content = fetch_html(update.source_url)
+      html_s3_path = "#{S3_KEY_PREFIX}/CN_#{update.version}.xhtml"
+      html_content = TariffSynchronizer::FileService.get(html_s3_path).read
       extracted    = NotesExtractor.new(update.version, html_content).call
 
       if extracted.chapters.empty? && extracted.sections.empty? && extracted.general_rules.empty?
@@ -70,23 +66,6 @@ module XiCnImporter
             status: CustomsTariffGeneralRule::PENDING,
           )
         end
-      end
-    end
-
-    def fetch_html(url, redirect_count: 0)
-      raise 'Too many redirects' if redirect_count > MAX_REDIRECTS
-
-      uri      = URI(url)
-      response = Net::HTTP.start(uri.host, uri.port, use_ssl: uri.scheme == 'https', open_timeout: OPEN_TIMEOUT, read_timeout: READ_TIMEOUT) do |http|
-        http.get(uri.request_uri, 'Accept' => 'application/xhtml+xml')
-      end
-
-      case response
-      when Net::HTTPSuccess then response.body
-      when Net::HTTPRedirection
-        location = response['location']
-        fetch_html(URI.join(url, location).to_s, redirect_count: redirect_count + 1)
-      else raise "Failed to fetch #{url}: HTTP #{response.code}"
       end
     end
   end

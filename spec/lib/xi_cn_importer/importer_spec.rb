@@ -47,6 +47,13 @@ RSpec.describe XiCnImporter::Importer do
         .with("data/customs_tariff_documents/xi/CN_#{celex}.pdf", pdf_content)
     end
 
+    it 'writes the XHTML to S3 at the XI prefix path' do
+      importer.call
+      expect(TariffSynchronizer::FileService)
+        .to have_received(:write_file)
+        .with("data/customs_tariff_documents/xi/CN_#{celex}.xhtml", html_content)
+    end
+
     it 'creates a CustomsTariffUpdate with status pending' do
       expect { importer.call }
         .to change { CustomsTariffUpdate.where(version: celex).count }.by(1)
