@@ -29,20 +29,6 @@ Rails.application.routes.draw do
   mount V2Api => '/uk/api', as: 'uk_v2_versioned_api', constraints: VersionedAcceptHeader.new(version: 2.0) if TradeTariffBackend.uk?
   mount V2Api => '/xi/api', as: 'xi_v2_versioned_api', constraints: VersionedAcceptHeader.new(version: 2.0) if TradeTariffBackend.xi?
 
-  # V3 routes — Accept header versioning
-  if TradeTariffBackend.uk?
-    mount V3Api => '/uk/api', as: 'uk_v3_versioned_api',
-          constraints: VersionedAcceptHeader.new(version: 3.0)
-  end
-  if TradeTariffBackend.xi?
-    mount V3Api => '/xi/api', as: 'xi_v3_versioned_api',
-          constraints: VersionedAcceptHeader.new(version: 3.0)
-  end
-
-  # V3 routes — URL path versioning (no Accept constraint needed)
-  mount V3Api => '/uk/api/v3', as: 'uk_v3_path_api' if TradeTariffBackend.uk?
-  mount V3Api => '/xi/api/v3', as: 'xi_v3_path_api' if TradeTariffBackend.xi?
-
   match '(/:service)/api/v:version(/*path)',
         via: :all,
         to: VersionedForwarder.new,
