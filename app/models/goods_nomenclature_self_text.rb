@@ -60,7 +60,11 @@ class GoodsNomenclatureSelfText < Sequel::Model
       distance_expr = Sequel.lit("goods_nomenclature_self_texts.search_embedding <=> #{vector_literal}")
 
       exclude(search_embedding: nil)
-        .association_join(:goods_nomenclature)
+        .join(
+          :goods_nomenclatures,
+          { Sequel[:goods_nomenclature][:goods_nomenclature_sid] => Sequel[:goods_nomenclature_self_texts][:goods_nomenclature_sid] },
+          table_alias: :goods_nomenclature,
+        )
         .where(goods_nomenclature__producline_suffix: GoodsNomenclature::NON_GROUPING_PRODUCTLINE_SUFFIX)
         .where { GoodsNomenclature.validity_dates_filter(:goods_nomenclature) }
         .exclude(goods_nomenclature__goods_nomenclature_item_id: HiddenGoodsNomenclature.codes)

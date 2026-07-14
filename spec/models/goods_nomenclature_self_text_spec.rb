@@ -80,6 +80,17 @@ RSpec.describe GoodsNomenclatureSelfText do
     end
   end
 
+  describe '.vector_search' do
+    it 'joins goods nomenclatures directly so vector ordering can use the HNSW index' do
+      vector_literal = "'[#{Array.new(1536, 0).join(',')}]'::vector"
+
+      sql = described_class.vector_search(vector_literal, limit: 10).sql
+
+      expect(sql).to include('INNER JOIN "goods_nomenclatures" AS "goods_nomenclature"')
+      expect(sql).not_to include('INNER JOIN (SELECT * FROM "goods_nomenclatures" ORDER BY')
+    end
+  end
+
   describe '.admin_listing' do
     let(:commodity) { create(:goods_nomenclature, producline_suffix: GoodsNomenclature::NON_GROUPING_PRODUCTLINE_SUFFIX) }
 
