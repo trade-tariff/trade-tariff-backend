@@ -54,7 +54,7 @@ RSpec.describe CustomsTariffImporter::Importer do
       it 'archives the document to S3' do
         results
         expect(TariffSynchronizer::FileService).to have_received(:write_file).with(
-          'data/customs_tariff_documents/UKGT_1.30.docx',
+          'data/customs_tariff_documents/uk/UKGT_1.30.docx',
           docx_content,
         )
       end

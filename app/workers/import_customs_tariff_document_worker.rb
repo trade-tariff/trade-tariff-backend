@@ -7,6 +7,8 @@ class ImportCustomsTariffDocumentWorker
   sidekiq_options queue: :default, retry: false, slack_alerts: false
 
   def perform
+    return unless TradeTariffBackend.uk?
+
     start_time = Process.clock_gettime(Process::CLOCK_MONOTONIC)
     CustomsTariffImporter::Instrumentation.import_run_started
 

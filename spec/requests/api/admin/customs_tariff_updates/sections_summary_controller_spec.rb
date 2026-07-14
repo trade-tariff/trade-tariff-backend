@@ -1,3 +1,5 @@
+require 'rails_helper'
+
 RSpec.describe Api::Admin::CustomsTariffUpdates::SectionsSummaryController do
   around { |example| TimeMachine.now { example.run } }
 
@@ -50,6 +52,8 @@ RSpec.describe Api::Admin::CustomsTariffUpdates::SectionsSummaryController do
     end
 
     context 'when chapter notes exist in the update' do
+      let!(:chapter) { create(:chapter, :chapter01, :with_section) }
+
       before do
         create(:chapter, :chapter01).tap do |chapter|
           chapter.add_section(sections.first)
@@ -65,7 +69,7 @@ RSpec.describe Api::Admin::CustomsTariffUpdates::SectionsSummaryController do
         get "/uk/admin/customs_tariff_updates/#{pending_update.version}/sections_summary.json",
             headers: request_headers(format: :json)
 
-        row = JSON.parse(response.body)['data'].find { |r| r.dig('attributes', 'section_id') == sections.first.id }
+        row = JSON.parse(response.body)['data'].find { |r| r.dig('attributes', 'section_id') == chapter.sections.first.id }
         expect(row.dig('attributes', 'chapter_notes_total')).to eq(1)
         expect(row.dig('attributes', 'chapter_notes_changed')).to eq(1)
       end
