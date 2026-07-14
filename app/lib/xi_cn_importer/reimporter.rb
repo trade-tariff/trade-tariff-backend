@@ -3,13 +3,16 @@ require 'net/http'
 module XiCnImporter
   class Reimporter
     MAX_REDIRECTS = 5
+    S3_KEY_PREFIX = 'data/customs_tariff_documents/xi'.freeze
 
     def call(version: nil)
       if version
         update = CustomsTariffUpdate.first(version:)
-        reimport(update) if update
+        reimport(update) if update && update.s3_path&.start_with?("#{S3_KEY_PREFIX}/")
       else
         CustomsTariffUpdate.exclude(status: CustomsTariffUpdate::FAILED).each do |update|
+          next unless update.s3_path&.start_with?("#{S3_KEY_PREFIX}/")
+
           reimport(update)
         rescue StandardError => e
           XiCnImporter::Logger.log(:error, 'Reimport failed', version: update.version,
