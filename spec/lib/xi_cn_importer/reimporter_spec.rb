@@ -73,8 +73,7 @@ RSpec.describe XiCnImporter::Reimporter do
         end
 
         it 'leaves existing notes intact' do
-          reimporter.call(version: celex)
-        rescue RuntimeError
+          expect { reimporter.call(version: celex) }.to raise_error(/Empty extract/)
           expect(CustomsTariffSectionNote.where(customs_tariff_update_version: celex).count).to eq 1
         end
       end
