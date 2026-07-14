@@ -87,11 +87,6 @@ RSpec.describe ApplicationController, type: :request do
     end
 
     context 'with request logging payload' do
-      def jwt_with_claims(claims)
-        payload = Base64.urlsafe_encode64(claims.to_json, padding: false)
-        "header.#{payload}.signature"
-      end
-
       def process_action_payload_for(params:, headers: {})
         events = []
         subscriber = ActiveSupport::Notifications.subscribe('process_action.action_controller') do |*args|
@@ -166,97 +161,6 @@ RSpec.describe ApplicationController, type: :request do
         )
 
         expect(payload[:request_source]).to eq('backend_only')
-      end
-
-      it 'extracts client_id from a Bearer JWT with a client_id claim' do
-        token = jwt_with_claims('client_id' => 'my-client', 'sub' => 'my-subject')
-        payload = process_action_payload_for(
-          params: {},
-          headers: { 'Authorization' => "Bearer #{token}" },
-        )
-
-        expect(payload[:client_id]).to eq('my-client')
-      end
-
-      it 'falls back to sub when the JWT has no client_id claim' do
-        token = jwt_with_claims('sub' => 'my-subject')
-        payload = process_action_payload_for(
-          params: {},
-          headers: { 'Authorization' => "Bearer #{token}" },
-        )
-
-        expect(payload[:client_id]).to eq('my-subject')
-      end
-
-      it 'sets client_id to nil when the Authorization header is absent' do
-        payload = process_action_payload_for(params: {}, headers: {})
-
-        expect(payload[:client_id]).to be_nil
-      end
-
-      it 'sets client_id to nil for a non-JWT bearer token with no X-Client-Id header' do
-        payload = process_action_payload_for(
-          params: {},
-          headers: { 'Authorization' => 'Bearer not-a-jwt' },
-        )
-
-        expect(payload[:client_id]).to be_nil
-      end
-
-      it 'falls back to X-Client-Id header when no JWT is present' do
-        payload = process_action_payload_for(
-          params: {},
-          headers: { 'X-Client-Id' => 'apigw-key-id-abc123' },
-        )
-
-        expect(payload[:client_id]).to eq('apigw-key-id-abc123')
-      end
-
-      it 'prefers JWT client_id over X-Client-Id header' do
-        token = jwt_with_claims('client_id' => 'jwt-client')
-        payload = process_action_payload_for(
-          params: {},
-          headers: {
-            'Authorization' => "Bearer #{token}",
-            'X-Client-Id' => 'apigw-key-id-abc123',
-          },
-        )
-
-        expect(payload[:client_id]).to eq('jwt-client')
-      end
-    end
-
-    context 'with logger tagging' do
-      def jwt_with_claims(claims)
-        payload = Base64.urlsafe_encode64(claims.to_json, padding: false)
-        "header.#{payload}.signature"
-      end
-
-      it 'tags log output with client_id from the Bearer JWT' do
-        token = jwt_with_claims('client_id' => 'tagged-client')
-        tagged_with = nil
-
-        allow(Rails.logger).to receive(:tagged) do |tag, &block|
-          tagged_with = tag
-          block.call
-        end
-
-        api_get('/uk/api/healthcheck', headers: { 'Authorization' => "Bearer #{token}" })
-
-        expect(tagged_with).to eq('tagged-client')
-      end
-
-      it 'tags log output with "anonymous" when no token is present' do
-        tagged_with = nil
-
-        allow(Rails.logger).to receive(:tagged) do |tag, &block|
-          tagged_with = tag
-          block.call
-        end
-
-        api_get('/uk/api/healthcheck')
-
-        expect(tagged_with).to eq('anonymous')
       end
     end
   end
