@@ -21,7 +21,7 @@ module XiCnImporter
         ].compact.join("\n\n")
       end
 
-      private
+    private
 
       # ── Chapter notes (before "### Additional Notes") ───────────────────────
       # Standard EU formatting artefacts: (a)→a) marker style, punctuation spacing,
