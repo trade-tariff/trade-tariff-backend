@@ -64,7 +64,7 @@ module XiCnImporter
           end
         end
 
-        private
+      private
 
         def header_row?(cells)
           cells.any? do |cell|
