@@ -21,6 +21,9 @@ permissions:
 
 jobs:
   auto-merge:
+    if: >-
+      github.event_name != 'pull_request_review' ||
+      github.event.review.user.login == 'copilot-pull-request-reviewer[bot]'
     uses: trade-tariff/trade-tariff-tools/.github/workflows/auto-merge-low-risk.yml@main
     with:
       label: low-risk
