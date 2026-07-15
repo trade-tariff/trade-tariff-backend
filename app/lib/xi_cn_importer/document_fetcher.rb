@@ -82,7 +82,7 @@ module XiCnImporter
       raise
     end
 
-    private
+  private
 
     def sparql_results
       uri = URI(SPARQL_ENDPOINT)

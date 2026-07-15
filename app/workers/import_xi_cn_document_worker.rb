@@ -33,7 +33,7 @@ class ImportXiCnDocumentWorker
     raise
   end
 
-  private
+private
 
   def notify_completed(imported_count:, failed_count:, review_backlog:)
     return unless imported_count.positive? || failed_count.positive?
@@ -41,14 +41,14 @@ class ImportXiCnDocumentWorker
     status = failed_count.positive? ? 'completed with failures' : 'completed'
 
     notify_slack(
-      "XI CN document import #{status}. " \
+      "XI Combined Nomenclature document import #{status}. " \
       "imported: #{imported_count}, failed: #{failed_count}, " \
       "pending review: #{review_backlog}",
     )
   end
 
   def notify_failed(error)
-    notify_slack("XI CN document import failed. #{error.class}: #{error.message}")
+    notify_slack("XI Combined Nomenclature document import failed. #{error.class}: #{error.message}")
   end
 
   def notify_slack(message)
