@@ -4,7 +4,7 @@ FactoryBot.define do
     validity_start_date { Time.zone.today }
     status { CustomsTariffUpdate::PENDING }
     source_url { 'https://assets.publishing.service.gov.uk/media/abc123/UKGT_1.30.docx' }
-    s3_path { "data/customs_tariff_documents/UKGT_#{version}.docx" }
+    s3_path { "data/customs_tariff_documents/uk/UKGT_#{version}.docx" }
     file_checksum { SecureRandom.hex(32) }
     document_created_on { Time.zone.today }
 
