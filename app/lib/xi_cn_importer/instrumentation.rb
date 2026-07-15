@@ -36,7 +36,7 @@ module XiCnImporter
       instrument('reimport_failed', version:, error_class:, error_message:)
     end
 
-    private
+  private
 
     def instrument(event, payload = {})
       ActiveSupport::Notifications.instrument("#{event}.#{NAMESPACE}", payload)

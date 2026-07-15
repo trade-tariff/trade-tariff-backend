@@ -36,7 +36,7 @@ module XiCnImporter
       Result.new(chapters: @chapters, sections: @sections, general_rules: @general_rules)
     end
 
-    private
+  private
 
     # --- Node dispatch ---
 
