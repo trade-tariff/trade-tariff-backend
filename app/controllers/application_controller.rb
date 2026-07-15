@@ -13,6 +13,7 @@ class ApplicationController < ActionController::API
 
   before_action :set_trade_tariff_request_id
   before_action :maintenance_mode_if_active
+  around_action :tag_logs_with_client_id
   around_action :configure_time_machine
   around_action :apply_jsonapi_query_options
   after_action  :check_query_count, if: -> { TradeTariffBackend.check_query_count? }
@@ -51,7 +52,7 @@ protected
     payload[:request_id] = logged_request_id
     payload[:user_agent] = request_user_agent
     payload[:request_source] = TradeTariffRequest.request_source
-    payload[:client_id] = request.headers['HTTP_X_CLIENT_ID']
+    payload[:client_id] = TradeTariffRequest.client_id
   end
 
 private
@@ -125,9 +126,29 @@ private
     self.class.name.start_with?('Api::V2::')
   end
 
+  def tag_logs_with_client_id(&block)
+    Rails.logger.tagged(TradeTariffRequest.client_id || 'anonymous', &block)
+  end
+
   def set_trade_tariff_request_id
     TradeTariffRequest.request_id = params[:request_id].presence || request.request_id
     TradeTariffRequest.request_source = TradeTariffRequest.request_source_for_user_agent(request_user_agent)
+    TradeTariffRequest.client_id =
+      extract_client_id_from_jwt(request.headers['Authorization']) ||
+      request.headers['X-Client-Id']
+  end
+
+  def extract_client_id_from_jwt(authorization_header)
+    return nil unless authorization_header&.start_with?('Bearer ')
+
+    token = authorization_header.delete_prefix('Bearer ')
+    segments = token.split('.')
+    return nil unless segments.length == 3
+
+    payload = JSON.parse(Base64.urlsafe_decode64(segments[1]))
+    payload['client_id'] || payload['sub']
+  rescue ArgumentError, JSON::ParserError
+    nil
   end
 
   def set_api_docs_link_header
