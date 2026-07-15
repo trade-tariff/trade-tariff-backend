@@ -67,7 +67,7 @@ module XiCnImporter
       )
     end
 
-    private
+  private
 
     def log_entry(data)
       data.merge(service: 'xi_cn_importer', timestamp: Time.current.iso8601).to_json

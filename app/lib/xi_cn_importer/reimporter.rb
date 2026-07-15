@@ -21,7 +21,7 @@ module XiCnImporter
       end
     end
 
-    private
+  private
 
     def reimport(update)
       html_s3_path = "#{S3_KEY_PREFIX}/CN_#{update.version}.xhtml"

@@ -15,7 +15,7 @@ module XiCnImporter
       documents.map { |doc| import_document(doc) }
     end
 
-    private
+  private
 
     def import_document(fetched)
       s3_path      = "#{S3_KEY_PREFIX}/CN_#{fetched.celex}.pdf"
