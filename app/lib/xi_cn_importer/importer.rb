@@ -26,50 +26,7 @@ module XiCnImporter
       extracted = NotesExtractor.new(fetched.celex, fetched.html_content).call
 
       start_time = Process.clock_gettime(Process::CLOCK_MONOTONIC)
-
-      CustomsTariffUpdate.db.transaction do
-        CustomsTariffUpdate.failed.where(version: fetched.celex).delete
-
-        update = CustomsTariffUpdate.create(
-          version: fetched.celex,
-          validity_start_date: fetched.force_date,
-          status: CustomsTariffUpdate::PENDING,
-          source_url: fetched.cellar_url,
-          s3_path:,
-          file_checksum: fetched.pdf_checksum,
-          document_created_on: fetched.publication_date,
-        )
-
-        extracted.sections.each do |section_id, content|
-          CustomsTariffSectionNote.create(
-            customs_tariff_update_version: update.version,
-            section_id:,
-            content:,
-            validity_start_date: update.validity_start_date,
-            status: CustomsTariffSectionNote::PENDING,
-          )
-        end
-
-        extracted.chapters.each do |chapter_id, content|
-          CustomsTariffChapterNote.create(
-            customs_tariff_update_version: update.version,
-            chapter_id:,
-            content:,
-            validity_start_date: update.validity_start_date,
-            status: CustomsTariffChapterNote::PENDING,
-          )
-        end
-
-        extracted.general_rules.each do |rule_label, content|
-          CustomsTariffGeneralRule.create(
-            customs_tariff_update_version: update.version,
-            rule_label:,
-            content:,
-            validity_start_date: update.validity_start_date,
-            status: CustomsTariffGeneralRule::PENDING,
-          )
-        end
-      end
+      persist_document(fetched, extracted, s3_path)
 
       duration_ms = ((Process.clock_gettime(Process::CLOCK_MONOTONIC) - start_time) * 1000).round(2)
       Instrumentation.document_imported(celex: fetched.celex, duration_ms:)
@@ -83,6 +40,64 @@ module XiCnImporter
       )
       record_failure(fetched&.celex, e.message)
       Result.new(status: :failed, celex: fetched&.celex, error: e.message)
+    end
+
+    def persist_document(fetched, extracted, s3_path)
+      CustomsTariffUpdate.db.transaction do
+        CustomsTariffUpdate.failed.where(version: fetched.celex).delete
+        update = create_update(fetched, s3_path)
+        persist_sections(update, extracted.sections)
+        persist_chapters(update, extracted.chapters)
+        persist_general_rules(update, extracted.general_rules)
+      end
+    end
+
+    def create_update(fetched, s3_path)
+      CustomsTariffUpdate.create(
+        version: fetched.celex,
+        validity_start_date: fetched.force_date,
+        status: CustomsTariffUpdate::PENDING,
+        source_url: fetched.cellar_url,
+        s3_path:,
+        file_checksum: fetched.pdf_checksum,
+        document_created_on: fetched.publication_date,
+      )
+    end
+
+    def persist_sections(update, sections)
+      sections.each do |section_id, content|
+        CustomsTariffSectionNote.create(
+          customs_tariff_update_version: update.version,
+          section_id:,
+          content:,
+          validity_start_date: update.validity_start_date,
+          status: CustomsTariffSectionNote::PENDING,
+        )
+      end
+    end
+
+    def persist_chapters(update, chapters)
+      chapters.each do |chapter_id, content|
+        CustomsTariffChapterNote.create(
+          customs_tariff_update_version: update.version,
+          chapter_id:,
+          content:,
+          validity_start_date: update.validity_start_date,
+          status: CustomsTariffChapterNote::PENDING,
+        )
+      end
+    end
+
+    def persist_general_rules(update, general_rules)
+      general_rules.each do |rule_label, content|
+        CustomsTariffGeneralRule.create(
+          customs_tariff_update_version: update.version,
+          rule_label:,
+          content:,
+          validity_start_date: update.validity_start_date,
+          status: CustomsTariffGeneralRule::PENDING,
+        )
+      end
     end
 
     def record_failure(celex, message)

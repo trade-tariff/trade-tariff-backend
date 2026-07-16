@@ -61,7 +61,6 @@ Metrics/BlockLength:
     - 'app/engines/admin_api.rb'
     - 'app/engines/v1_api.rb'
     - 'app/engines/v2_api.rb'
-    - 'app/lib/xi_cn_importer/importer.rb'
     - 'app/lib/xi_cn_importer/notes_extractor/formatter.rb'
 
 # The listed files are known hotspots; this cop is enforced everywhere else.
