@@ -10,6 +10,15 @@ module XiCnImporter
         :note_indent,
       )
       private_constant :AdditionalNotesIndentationState
+      ChapterNotesIndentationState = Data.define(
+        :list_indent,
+        :inside_uppercase_sub,
+        :inside_numbered_note,
+        :uppercase_sub_indent,
+        :uppercase_dot_indent,
+        :note_indent,
+      )
+      private_constant :ChapterNotesIndentationState
 
       def call(content)
         return content if content.blank?
@@ -157,44 +166,38 @@ module XiCnImporter
       # code block. First confirmed: Chapter 12 notes 3 and 4.
       # Resets on "2. Next note" (digit) or "### Subheading notes" headers.
       def indent_note_continuations(lines)
-        list_indent = 0
-        inside_uppercase_sub = false
-        inside_numbered_note = false
-        uppercase_sub_indent = 0
-        uppercase_dot_indent = 0
-        note_indent = 3
+        state = initial_chapter_notes_indentation_state
 
         lines.map do |line|
-          stripped       = line.lstrip
-          current_indent = line[/\A( *)/, 1].length
+          formatted_line, state = indent_note_continuation(line, state)
+          formatted_line
+        end
+      end
 
-          if stripped.start_with?('###')
-            list_indent = 0
-            inside_uppercase_sub = false
-            inside_numbered_note = false
-            uppercase_sub_indent = 0
-            uppercase_dot_indent = 0
-            note_indent = 3
-            line
-          elsif stripped.match?(NUMBERED_UPPERCASE_SUB_PATTERN) && current_indent.zero?
-            inside_uppercase_sub = true
-            inside_numbered_note = true
-            list_indent = 0
-            uppercase_sub_indent = 0
-            uppercase_dot_indent = 0
-            note_indent = stripped.match(/\A(\d+)\./)[1].length + 2
-            line
-          elsif stripped.match?(/\A\d+\./) && current_indent.zero?
-            list_indent = 0
-            inside_uppercase_sub = false
-            inside_numbered_note = true
-            uppercase_sub_indent = 0
-            uppercase_dot_indent = 0
-            note_indent = stripped.match(/\A(\d+)\./)[1].length + 2
-            line
-          elsif current_indent.zero? && inside_uppercase_sub && stripped.match?(/\A\([A-Z]+\)\s/)
-            "   #{stripped}"
-          elsif current_indent < note_indent && inside_numbered_note && list_indent.zero? && !stripped.empty?
+      def indent_note_continuation(line, state)
+        stripped = line.lstrip
+        current_indent = line[/\A( *)/, 1].length
+
+        if stripped.start_with?('###')
+          [line, initial_chapter_notes_indentation_state]
+        elsif stripped.match?(NUMBERED_UPPERCASE_SUB_PATTERN) && current_indent.zero?
+          state = reset_chapter_notes_indentation_state(
+            state,
+            inside_uppercase_sub: true,
+            note_indent: stripped.match(/\A(\d+)\./)[1].length + 2,
+          )
+          [line, state]
+        elsif stripped.match?(/\A\d+\./) && current_indent.zero?
+          state = reset_chapter_notes_indentation_state(
+            state,
+            inside_uppercase_sub: false,
+            note_indent: stripped.match(/\A(\d+)\./)[1].length + 2,
+          )
+          [line, state]
+        elsif current_indent.zero? && state.inside_uppercase_sub && stripped.match?(/\A\([A-Z]+\)\s/)
+          ["   #{stripped}", state]
+        elsif current_indent < state.note_indent && state.inside_numbered_note && state.list_indent.zero? && !stripped.empty?
+          formatted_line =
             if stripped.start_with?('|')
               line
             elsif stripped.match?(/\A[a-z]+\) /) && current_indent.zero?
@@ -202,63 +205,89 @@ module XiCnImporter
               # single-digit note, or will be handled by align_orphaned_list_markers).
               line
             else
-              ' ' * note_indent + stripped
+              ' ' * state.note_indent + stripped
             end
-          elsif stripped.match?(/\A\([A-Z]+\)\s/) && current_indent.positive?
-            uppercase_sub_indent = current_indent
-            list_indent = 0
-            line
-          elsif line.match?(/\A {1,}[a-z]+\) /)
-            if uppercase_sub_indent.positive? && current_indent > uppercase_sub_indent
-              list_indent = uppercase_sub_indent
-              ' ' * uppercase_sub_indent + stripped
-            elsif uppercase_dot_indent.positive?
-              # Inside A./B. dot-sub-section: clamp to uppercase_dot_indent + 2 to keep
-              # below the govspeak code-block threshold (8+ spaces inside a numbered list
-              # item triggers a scrollable pre block).
-              list_indent = uppercase_dot_indent + 2
-              inside_uppercase_sub = false
-              ' ' * list_indent + stripped
-            elsif list_indent.positive? && current_indent > list_indent
-              # Letter-list item arrived deeper than the current list level (e.g. roman numeral
-              # ii)/iii) at 8 spaces when the enclosing a)/b) list is at 4 spaces). Pull back.
-              ' ' * list_indent + stripped
-            else
-              list_indent = current_indent
-              inside_uppercase_sub = false
-              line
-            end
-          elsif stripped.match?(/\A[A-Z]\.\s/) && current_indent.positive?
-            uppercase_dot_indent = current_indent
-            line
-          elsif current_indent > list_indent && list_indent.positive? && uppercase_dot_indent.zero? && stripped.match?(/\A\(\d+\) /)
-            # Pull over-deep (N) items back to list_indent — but NOT inside an A./B.
-            # dot-sub-section where they are legitimately one level below the letter-list.
-            ' ' * list_indent + stripped
-          elsif current_indent > list_indent && list_indent.positive? && uppercase_dot_indent.positive? && stripped.match?(/\A\(\d+\) /)
-            # Inside A./B.: clamp (N) items to the same level as the letter-list
-            # (uppercase_dot_indent + 2) so they don't trigger a govspeak code block.
-            ' ' * (uppercase_dot_indent + 2) + stripped
-          elsif current_indent > list_indent && list_indent.positive? && stripped.start_with?('- ')
-            ' ' * list_indent + stripped
-          elsif current_indent > list_indent && list_indent.positive? && !stripped.empty?
-            stripped.start_with?('|') ? line : ' ' * list_indent + stripped
-          elsif current_indent < list_indent && list_indent.positive? && stripped.start_with?('|')
-            ' ' * list_indent + stripped
-          elsif current_indent.zero? && list_indent.positive? && !stripped.empty?
+
+          [formatted_line, state]
+        elsif stripped.match?(/\A\([A-Z]+\)\s/) && current_indent.positive?
+          [line, state.with(uppercase_sub_indent: current_indent, list_indent: 0)]
+        elsif line.match?(/\A {1,}[a-z]+\) /)
+          if state.uppercase_sub_indent.positive? && current_indent > state.uppercase_sub_indent
+            state = state.with(list_indent: state.uppercase_sub_indent)
+            [' ' * state.uppercase_sub_indent + stripped, state]
+          elsif state.uppercase_dot_indent.positive?
+            # Inside A./B. dot-sub-section: clamp to uppercase_dot_indent + 2 to keep
+            # below the govspeak code-block threshold (8+ spaces inside a numbered list
+            # item triggers a scrollable pre block).
+            state = state.with(
+              list_indent: state.uppercase_dot_indent + 2,
+              inside_uppercase_sub: false,
+            )
+            [' ' * state.list_indent + stripped, state]
+          elsif state.list_indent.positive? && current_indent > state.list_indent
+            # Letter-list item arrived deeper than the current list level (e.g. roman numeral
+            # ii)/iii) at 8 spaces when the enclosing a)/b) list is at 4 spaces). Pull back.
+            [' ' * state.list_indent + stripped, state]
+          else
+            [line, state.with(list_indent: current_indent, inside_uppercase_sub: false)]
+          end
+        elsif stripped.match?(/\A[A-Z]\.\s/) && current_indent.positive?
+          [line, state.with(uppercase_dot_indent: current_indent)]
+        elsif current_indent > state.list_indent && state.list_indent.positive? &&
+            state.uppercase_dot_indent.zero? && stripped.match?(/\A\(\d+\) /)
+          # Pull over-deep (N) items back to list_indent — but NOT inside an A./B.
+          # dot-sub-section where they are legitimately one level below the letter-list.
+          [' ' * state.list_indent + stripped, state]
+        elsif current_indent > state.list_indent && state.list_indent.positive? &&
+            state.uppercase_dot_indent.positive? && stripped.match?(/\A\(\d+\) /)
+          # Inside A./B.: clamp (N) items to the same level as the letter-list
+          # (uppercase_dot_indent + 2) so they don't trigger a govspeak code block.
+          [' ' * (state.uppercase_dot_indent + 2) + stripped, state]
+        elsif current_indent > state.list_indent && state.list_indent.positive? && stripped.start_with?('- ')
+          [' ' * state.list_indent + stripped, state]
+        elsif current_indent > state.list_indent && state.list_indent.positive? && !stripped.empty?
+          formatted_line = stripped.start_with?('|') ? line : ' ' * state.list_indent + stripped
+          [formatted_line, state]
+        elsif current_indent < state.list_indent && state.list_indent.positive? && stripped.start_with?('|')
+          [' ' * state.list_indent + stripped, state]
+        elsif current_indent.zero? && state.list_indent.positive? && !stripped.empty?
+          formatted_line =
             if stripped.match?(/\A\([a-z]+\)/) || stripped.start_with?('|')
               line
-            elsif uppercase_dot_indent.positive?
+            elsif state.uppercase_dot_indent.positive?
               # Inside an A./B. dot-sub-section: raise 0-indent continuation to the
               # sub-section level rather than all the way to the letter-list indent.
-              ' ' * uppercase_dot_indent + stripped
+              ' ' * state.uppercase_dot_indent + stripped
             else
-              ' ' * list_indent + stripped
+              ' ' * state.list_indent + stripped
             end
-          else
-            line
-          end
+
+          [formatted_line, state]
+        else
+          [line, state]
         end
+      end
+
+      def initial_chapter_notes_indentation_state
+        ChapterNotesIndentationState.new(
+          list_indent: 0,
+          inside_uppercase_sub: false,
+          inside_numbered_note: false,
+          uppercase_sub_indent: 0,
+          uppercase_dot_indent: 0,
+          note_indent: 3,
+        )
+      end
+
+      def reset_chapter_notes_indentation_state(state, inside_uppercase_sub:, note_indent:)
+        state.with(
+          list_indent: 0,
+          inside_uppercase_sub:,
+          inside_numbered_note: true,
+          uppercase_sub_indent: 0,
+          uppercase_dot_indent: 0,
+          note_indent:,
+        )
       end
 
       # EU XHTML can produce the first item in a chapter-note sub-list at 0 indent while
