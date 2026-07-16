@@ -6,6 +6,7 @@ module Search
     extend QueryEvents
     extend ApiEvents
     extend ResultEvents
+    extend NoteEvidenceEvents
     extend EvaluationEvents
     extend PayloadHelpers
     extend ClassicResultSummaries

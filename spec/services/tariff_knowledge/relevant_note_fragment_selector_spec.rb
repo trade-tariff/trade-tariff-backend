@@ -77,6 +77,188 @@ RSpec.describe TariffKnowledge::RelevantNoteFragmentSelector do
     expect(fragment_texts).not_to include(a_string_including('candles'))
   end
 
+  it 'explains selected and omitted evidence without changing the prompt contexts' do
+    selection = described_class.call_with_diagnostics(
+      query:,
+      search_results:,
+      notes_by_item_id: { '9506911000' => note },
+    )
+
+    expect(selection.contexts).to eq(
+      described_class.call(
+        query:,
+        search_results:,
+        notes_by_item_id: { '9506911000' => note },
+      ),
+    )
+    expect(selection.diagnostics).to include(
+      status: 'selected',
+      considered_note_count: 1,
+      considered_evidence_count: 3,
+      selected_note_count: 1,
+      selected_evidence_count: 2,
+      omitted_evidence_count: 1,
+      omitted_evidence_truncated: false,
+      limits: {
+        minimum_score: described_class::MIN_SCORE,
+        per_note: described_class::MAX_FRAGMENTS_PER_NOTE,
+        total: described_class::MAX_TOTAL_FRAGMENTS,
+      },
+    )
+
+    selected = selection.diagnostics[:selected_contexts].first
+    expect(selected).to include(
+      context_hash: context_hash,
+      commodity_codes: %w[9506911000],
+    )
+    expect(selected[:evidence]).to all(include(
+                                         :source_node_key,
+                                         :source_type,
+                                         :source_id,
+                                         :source_version,
+                                         :score,
+                                         :score_reasons,
+                                         :graph_paths,
+                                         decision: 'selected',
+                                       ))
+    expect(selected[:evidence].pluck(:text)).to contain_exactly(
+      a_string_including('sports footwear'),
+      a_string_including('general physical exercise'),
+    )
+
+    omitted = selection.diagnostics[:omitted_evidence].sole
+    expect(omitted).to include(
+      context_hash: context_hash,
+      source_node_key: 'note_fragment:customs_tariff_chapter_note:1.31:95:0002',
+      decision: 'omitted',
+      omission_reason: 'below_minimum_score',
+    )
+  end
+
+  it 'distinguishes absent compressed notes from ineligible evidence' do
+    absent = described_class.call_with_diagnostics(
+      query:,
+      search_results:,
+      notes_by_item_id: {},
+    )
+    ineligible = described_class.call_with_diagnostics(
+      query:,
+      search_results:,
+      notes_by_item_id: { '9506911000' => create_note_with_evidence('9506911000', evidence_for('note_fragment:customs_tariff_chapter_note:1.31:95:0999', 'Candles only.', 'reference')) },
+    )
+
+    expect(absent.diagnostics[:status]).to eq('no_compressed_notes')
+    expect(ineligible.diagnostics[:status]).to eq('no_eligible_evidence')
+  end
+
+  it 'reports equal-score context duplicates accurately' do
+    shared_evidence = evidence_for(
+      'note_fragment:customs_tariff_chapter_note:1.31:95:0032',
+      'Heading 9506 includes articles and equipment for general physical exercise',
+      'inclusion',
+      range_type: 'heading',
+      range_code: '9506',
+    )
+    first_note = create_note_with_evidence('9506911000', shared_evidence)
+    second_note = create_note_with_evidence('6403999110', shared_evidence).tap do |duplicate|
+      duplicate.update(context_hash: first_note.context_hash)
+    end
+
+    selection = described_class.call_with_diagnostics(
+      query:,
+      search_results:,
+      notes_by_item_id: { '9506911000' => first_note, '6403999110' => second_note },
+    )
+
+    expect(selection.diagnostics[:omitted_evidence]).to include(
+      include(
+        source_node_key: shared_evidence['source_node_key'],
+        omission_reason: 'duplicate_same_score',
+      ),
+    )
+  end
+
+  it 'bounds block fragment keys in diagnostics' do
+    block_note = create(
+      :tariff_knowledge_compressed_note,
+      goods_nomenclature_item_id: '7201200000',
+      content: 'compressed note bounded block keys',
+      metadata: Sequel.pg_jsonb_wrap(
+        'evidence_blocks' => [
+          {
+            'source_node_key' => 'note_block:customs_tariff_chapter_note:1.31:72:1:a',
+            'source_title' => 'pig iron',
+            'source_context' => 'pig iron means iron-carbon alloys containing more than 2% carbon.',
+            'block_type' => 'definition',
+            'term' => 'pig iron',
+            'source_type' => 'customs_tariff_chapter_note',
+            'source_id' => '72',
+            'source_version' => '1.31',
+            'fragment_node_keys' => Array.new(25) { |index| "fragment-#{index}" },
+          },
+        ],
+      ),
+    )
+
+    selection = described_class.call_with_diagnostics(
+      query: 'pig iron',
+      search_results: [
+        search_result_class.new(
+          goods_nomenclature_item_id: '7201200000',
+          description: 'Non-alloy pig iron',
+          full_description: nil,
+          score: 10,
+        ),
+      ],
+      notes_by_item_id: { '7201200000' => block_note },
+    )
+    evidence = selection.diagnostics.dig(:selected_contexts, 0, :evidence, 0)
+
+    expect(evidence[:fragment_node_keys].size).to eq(described_class::MAX_LOGGED_FRAGMENT_NODE_KEYS)
+    expect(evidence[:fragment_node_keys_truncated]).to be(true)
+  end
+
+  it 'bounds omitted evidence while retaining samples from each omission reason' do
+    below_minimum = Array.new(25) do |index|
+      evidence_for(
+        "note_fragment:customs_tariff_chapter_note:1.31:95:low#{index}",
+        "Candles only #{index}.",
+        'reference',
+      )
+    end
+    eligible = Array.new(3) do |index|
+      evidence_for(
+        "note_fragment:customs_tariff_chapter_note:1.31:95:eligible#{index}",
+        "Heading 9506 includes exercise articles #{index}.",
+        'inclusion',
+        range_type: 'heading',
+        range_code: '9506',
+      )
+    end
+    note = create(
+      :tariff_knowledge_compressed_note,
+      goods_nomenclature_item_id: '9506911000',
+      content: 'compressed note with many omissions',
+      metadata: Sequel.pg_jsonb_wrap('evidence' => below_minimum + eligible),
+    )
+
+    selection = described_class.call_with_diagnostics(
+      query:,
+      search_results:,
+      notes_by_item_id: { '9506911000' => note },
+    )
+
+    expect(selection.diagnostics).to include(
+      omitted_evidence_count: 26,
+      logged_omitted_evidence_count: described_class::MAX_LOGGED_OMITTED_EVIDENCE,
+      omitted_evidence_truncated: true,
+    )
+    expect(selection.diagnostics[:omitted_evidence].pluck(:omission_reason)).to include(
+      'below_minimum_score',
+      'per_note_limit',
+    )
+  end
+
   it 'prefers exact query definition blocks over generic chapter exclusions' do
     pig_iron_note = create(
       :tariff_knowledge_compressed_note,
@@ -556,8 +738,8 @@ RSpec.describe TariffKnowledge::RelevantNoteFragmentSelector do
     expect(contexts.first[:fragments].first[:source_ref]).to eq('chapter 95 note')
   end
 
-  it 'caps total emitted fragments across all selected notes' do
-    contexts = described_class.call(
+  it 'caps total emitted fragments across all selected notes and explains the omissions' do
+    selection = described_class.call_with_diagnostics(
       query: 'plastic exercise article',
       search_results: Array.new(5) do |index|
         search_result_class.new(
@@ -573,7 +755,8 @@ RSpec.describe TariffKnowledge::RelevantNoteFragmentSelector do
       end,
     )
 
-    expect(contexts.sum { |context| context[:fragments].size }).to eq(described_class::MAX_TOTAL_FRAGMENTS)
+    expect(selection.contexts.sum { |context| context[:fragments].size }).to eq(described_class::MAX_TOTAL_FRAGMENTS)
+    expect(selection.diagnostics[:omitted_evidence]).to include(include(omission_reason: 'total_evidence_limit'))
   end
 
   it 'applies the global fragment cap to the highest scoring notes first' do

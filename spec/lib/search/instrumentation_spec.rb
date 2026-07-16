@@ -959,6 +959,54 @@ RSpec.describe Search::Instrumentation do
     end
   end
 
+  describe '.note_evidence_evaluated' do
+    it 'instruments bounded note evidence diagnostics' do
+      allow(ActiveSupport::Notifications).to receive(:instrument)
+      diagnostics = {
+        status: 'selected',
+        considered_note_count: 2,
+        considered_evidence_count: 5,
+        selected_note_count: 1,
+        selected_evidence_count: 2,
+        omitted_evidence_count: 3,
+        logged_omitted_evidence_count: 3,
+        omitted_evidence_truncated: false,
+        selected_contexts: [{ context_hash: 'hash-1' }],
+      }
+
+      described_class.note_evidence_evaluated(
+        request_id: 'req-1',
+        query: 'pig iron',
+        effective_query: 'pig iron primary forms',
+        iteration: 2,
+        attempt_number: 2,
+        operation: 'duplicate_question_retry',
+        enabled: true,
+        diagnostics:,
+      )
+
+      expect(ActiveSupport::Notifications).to have_received(:instrument).with(
+        'note_evidence_evaluated.search',
+        hash_including(
+          request_id: 'req-1',
+          search_type: 'interactive',
+          attempt_number: 2,
+          operation: 'duplicate_question_retry',
+          note_evidence_enabled: true,
+          note_evidence_status: 'selected',
+          considered_note_count: 2,
+          considered_evidence_count: 5,
+          selected_note_count: 1,
+          selected_evidence_count: 2,
+          omitted_evidence_count: 3,
+          logged_omitted_evidence_count: 3,
+          omitted_evidence_truncated: false,
+          details: diagnostics,
+        ),
+      )
+    end
+  end
+
   describe '.search_failed' do
     it 'instruments the search_failed event' do
       allow(ActiveSupport::Notifications).to receive(:instrument)

@@ -108,6 +108,29 @@ module Search
       }, event)
     end
 
+    def note_evidence_evaluated(event)
+      info log_entry({
+        event: 'note_evidence_evaluated',
+        request_id: event.payload[:request_id],
+        search_type: event.payload[:search_type],
+        query: event.payload[:query],
+        effective_query: event.payload[:effective_query],
+        iteration: event.payload[:iteration],
+        attempt_number: event.payload[:attempt_number],
+        operation: event.payload[:operation],
+        note_evidence_enabled: event.payload[:note_evidence_enabled],
+        note_evidence_status: event.payload[:note_evidence_status],
+        considered_note_count: event.payload[:considered_note_count],
+        considered_evidence_count: event.payload[:considered_evidence_count],
+        selected_note_count: event.payload[:selected_note_count],
+        selected_evidence_count: event.payload[:selected_evidence_count],
+        omitted_evidence_count: event.payload[:omitted_evidence_count],
+        logged_omitted_evidence_count: event.payload[:logged_omitted_evidence_count],
+        omitted_evidence_truncated: event.payload[:omitted_evidence_truncated],
+        details: event.payload[:details],
+      }, event)
+    end
+
     def retrieval_results_returned(event)
       info log_entry({
         event: 'retrieval_results_returned',

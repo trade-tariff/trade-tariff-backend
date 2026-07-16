@@ -141,7 +141,7 @@ private
   def format_compressed_notes = compressed_note_contexts.to_json
 
   def compressed_notes_by_item_id
-    return {} unless AdminConfiguration.enabled?('search_compressed_notes_enabled')
+    return {} unless compressed_notes_enabled?
 
     @compressed_notes_by_item_id ||= begin
       item_ids = opensearch_results.map(&:goods_nomenclature_item_id).compact_blank.uniq
@@ -153,6 +153,8 @@ private
       end
     end
   end
+
+  def compressed_notes_enabled? = AdminConfiguration.enabled?('search_compressed_notes_enabled')
 
   def compressed_note_contexts
     return @compressed_note_contexts if defined?(@compressed_note_contexts)
@@ -172,7 +174,24 @@ private
     end
   end
 
-  def selected_compressed_note_contexts = @selected_compressed_note_contexts ||= TariffKnowledge::RelevantNoteFragmentSelector.call(query:, search_results: opensearch_results, notes_by_item_id: compressed_notes_by_item_id)
+  def selected_compressed_note_contexts = compressed_note_selection.contexts
+
+  def compressed_note_selection
+    @compressed_note_selection ||= TariffKnowledge::RelevantNoteFragmentSelector.call_with_diagnostics(
+      query:,
+      search_results: opensearch_results,
+      notes_by_item_id: compressed_notes_by_item_id,
+    )
+  end
+
+  def note_evidence_diagnostics
+    diagnostics = compressed_note_selection.diagnostics.deep_dup
+    diagnostics[:status] = 'disabled' unless compressed_notes_enabled?
+    diagnostics[:selected_contexts] = diagnostics[:selected_contexts].map do |context|
+      context.merge(note_ref: compressed_note_ref(context[:context_hash]))
+    end
+    diagnostics
+  end
 
   def compressed_note_ref(compressed_note_key)
     @compressed_note_refs ||= {}
@@ -244,6 +263,16 @@ private
   end
 
   def parse_model_response(context, operation:)
+    Search::Instrumentation.note_evidence_evaluated(
+      request_id:,
+      query:,
+      effective_query: expanded_query,
+      iteration: attempt,
+      attempt_number: attempt,
+      operation:,
+      enabled: compressed_notes_enabled?,
+      diagnostics: note_evidence_diagnostics,
+    )
     response = Search::Instrumentation.api_call(
       request_id: request_id,
       model: configured_model,
