@@ -196,7 +196,8 @@ RSpec.describe 'self_texts rake tasks' do
 
     after { Rake::Task['self_texts:generate_embeddings'].reenable }
 
-    let(:embedding) { Array.new(1536) { 0.1 } }
+    let(:embedding_for) { ->(text) { Array.new(1536) { text.length / 100.0 } } }
+    let(:embedding) { embedding_for.call('Live horses') }
     let(:api_base_url) { 'https://api.openai.com/v1' }
 
     before do
@@ -205,8 +206,9 @@ RSpec.describe 'self_texts rake tasks' do
       stub_request(:post, "#{api_base_url}/embeddings")
         .to_return do |request|
           body = JSON.parse(request.body)
-          count = body['input'].size
-          data = Array.new(count) { |i| { 'index' => i, 'embedding' => embedding } }
+          data = body['input'].each_with_index.map do |text, index|
+            { 'index' => index, 'embedding' => embedding_for.call(text) }
+          end
           { status: 200, body: { 'data' => data }.to_json, headers: { 'Content-Type' => 'application/json' } }
         end
     end
@@ -217,6 +219,53 @@ RSpec.describe 'self_texts rake tasks' do
       generate_embeddings
 
       expect(WebMock).to have_requested(:post, "#{api_base_url}/embeddings").at_least_once
+    end
+
+    it 'persists generated and EU embeddings and versions each update' do
+      record = create(:goods_nomenclature_self_text,
+                      self_text: 'Live horses',
+                      eu_self_text: 'EU live horses')
+      version_count = record.versions.count
+
+      generate_embeddings
+
+      expect(record.reload.embedding).to eq(embedding_for.call('Live horses').to_json)
+      expect(record.eu_embedding).to eq(embedding_for.call('EU live horses').to_json)
+      expect(record.versions.count).to eq(version_count + 2)
+      expect(record.versions.order(:id).last(2).map(&:event)).to eq(%w[update update])
+    end
+
+    it 'preserves existing embeddings and version history' do
+      stored_embedding = Sequel.lit("'[#{embedding.join(',')}]'::vector")
+      record = create(:goods_nomenclature_self_text,
+                      self_text: 'Live horses',
+                      eu_self_text: 'EU live horses',
+                      embedding: stored_embedding,
+                      eu_embedding: stored_embedding)
+      record.reload
+      generated_embedding = record.embedding
+      eu_embedding = record.eu_embedding
+      version_count = record.versions.count
+
+      generate_embeddings
+
+      expect(WebMock).not_to have_requested(:post, "#{api_base_url}/embeddings")
+      expect(record.reload).to have_attributes(embedding: generated_embedding, eu_embedding: eu_embedding)
+      expect(record.versions.count).to eq(version_count)
+    end
+
+    it 'processes generated embeddings in batches and reports progress' do
+      stub_const('EmbeddingService::BATCH_SIZE', 2)
+      records = ['Batch one', 'Second batch record', 'Final record'].map do |text|
+        create(:goods_nomenclature_self_text, self_text: text, eu_self_text: nil)
+      end
+
+      expect { Rake::Task['self_texts:generate_embeddings'].invoke }
+        .to output(/Generated: 2\/3 embedded.*Generated: 3\/3 embedded/m).to_stdout
+      expect(WebMock).to have_requested(:post, "#{api_base_url}/embeddings").twice
+      expect(records.map { |record| record.reload.embedding }).to eq(
+        records.map { |record| embedding_for.call(record.self_text).to_json },
+      )
     end
 
     it 'instruments generated and EU embedding backfill batches with event kinds' do
