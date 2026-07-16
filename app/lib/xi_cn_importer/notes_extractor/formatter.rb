@@ -3,6 +3,13 @@ module XiCnImporter
     class Formatter
       ADDITIONAL_NOTES_DIVIDER = '### Additional Notes'.freeze
       NUMBERED_UPPERCASE_SUB_PATTERN = /\A\d+\.\s+\([A-Z]+\)\s/
+      AdditionalNotesIndentationState = Data.define(
+        :inside_sub_section,
+        :inside_numbered_note,
+        :inside_dash_bullet,
+        :note_indent,
+      )
+      private_constant :AdditionalNotesIndentationState
 
       def call(content)
         return content if content.blank?
@@ -389,57 +396,64 @@ module XiCnImporter
       #
       # NOTE: convert_emdash_bullet must run before this method so — bullets are already - .
       def normalise_additional_notes_indentation(lines)
-        inside_sub_section = false
-        inside_numbered_note = false
-        inside_dash_bullet = false
-        note_indent = 3
+        state = AdditionalNotesIndentationState.new(
+          inside_sub_section: false,
+          inside_numbered_note: false,
+          inside_dash_bullet: false,
+          note_indent: 3,
+        )
 
         lines.map do |line|
-          stripped = line.lstrip
-          current_indent = line[/\A( *)/, 1].length
-
-          if stripped.match?(/\A\([a-z]+\)(?:[\s,]|\z)/)
-            inside_sub_section = true
-            inside_dash_bullet = false
-            ' ' * note_indent + stripped
-          elsif stripped.match?(/\A[A-Z]\.(?:\s|\z)/)
-            inside_sub_section = true
-            inside_dash_bullet = false
-            ' ' * note_indent + stripped
-          elsif stripped.match?(/\A\d+\.\s+[A-Z]\./)
-            inside_sub_section = false
-            inside_numbered_note = true
-            inside_dash_bullet = false
-            note_indent = stripped.match(/\A(\d+)\./)[1].length + 2
-            line
-          elsif stripped.match?(/\A\d+\.\s/) && current_indent.zero?
-            inside_numbered_note = true
-            inside_sub_section = false
-            inside_dash_bullet = false
-            note_indent = stripped.match(/\A(\d+)\./)[1].length + 2
-            line
-          elsif current_indent.positive? && stripped.start_with?('- ')
-            inside_dash_bullet = true
-            "      #{stripped}"
-          elsif current_indent.positive? && stripped.match?(/\A\d+\./)
-            "      #{stripped}"
-          elsif line.empty?
-            line
-          elsif inside_dash_bullet && !inside_sub_section && !stripped.empty? && current_indent < 6
-            "         #{stripped}"
-          elsif inside_sub_section && current_indent < note_indent && !stripped.match?(/\A\d/)
-            ' ' * note_indent + stripped
-          elsif inside_numbered_note && current_indent < note_indent && !stripped.match?(/\A\d/) && !stripped.start_with?('- ')
-            ' ' * note_indent + stripped
-          elsif current_indent > 6
-            # Over-indented plain text from XHTML nesting artefacts (e.g. continuation
-            # paragraphs nested one level deeper than the bullet list they follow).
-            # Cap at 6 spaces — the deepest meaningful indent in Additional Notes.
-            "      #{stripped}"
-          else
-            line
-          end
+          formatted_line, state = normalise_additional_note_indentation(line, state)
+          formatted_line
         end
+      end
+
+      def normalise_additional_note_indentation(line, state)
+        stripped = line.lstrip
+        current_indent = line[/\A( *)/, 1].length
+
+        if stripped.match?(/\A\([a-z]+\)(?:[\s,]|\z)/)
+          state = state.with(inside_sub_section: true, inside_dash_bullet: false)
+          [' ' * state.note_indent + stripped, state]
+        elsif stripped.match?(/\A[A-Z]\.(?:\s|\z)/)
+          state = state.with(inside_sub_section: true, inside_dash_bullet: false)
+          [' ' * state.note_indent + stripped, state]
+        elsif stripped.match?(/\A\d+\.\s+[A-Z]\./)
+          state = numbered_additional_note_state(state, stripped)
+          [line, state]
+        elsif stripped.match?(/\A\d+\.\s/) && current_indent.zero?
+          state = numbered_additional_note_state(state, stripped)
+          [line, state]
+        elsif current_indent.positive? && stripped.start_with?('- ')
+          ["      #{stripped}", state.with(inside_dash_bullet: true)]
+        elsif current_indent.positive? && stripped.match?(/\A\d+\./)
+          ["      #{stripped}", state]
+        elsif line.empty?
+          [line, state]
+        elsif state.inside_dash_bullet && !state.inside_sub_section && !stripped.empty? && current_indent < 6
+          ["         #{stripped}", state]
+        elsif state.inside_sub_section && current_indent < state.note_indent && !stripped.match?(/\A\d/)
+          [' ' * state.note_indent + stripped, state]
+        elsif state.inside_numbered_note && current_indent < state.note_indent && !stripped.match?(/\A\d/) && !stripped.start_with?('- ')
+          [' ' * state.note_indent + stripped, state]
+        elsif current_indent > 6
+          # Over-indented plain text from XHTML nesting artefacts (e.g. continuation
+          # paragraphs nested one level deeper than the bullet list they follow).
+          # Cap at 6 spaces — the deepest meaningful indent in Additional Notes.
+          ["      #{stripped}", state]
+        else
+          [line, state]
+        end
+      end
+
+      def numbered_additional_note_state(state, stripped)
+        state.with(
+          inside_sub_section: false,
+          inside_numbered_note: true,
+          inside_dash_bullet: false,
+          note_indent: stripped.match(/\A(\d+)\./)[1].length + 2,
+        )
       end
 
       # EU source uses — (em-dash) as a list bullet; convert to govspeak markdown dash
