@@ -225,39 +225,5 @@ RSpec.describe ApplicationController, type: :request do
         expect(payload[:client_id]).to eq('jwt-client')
       end
     end
-
-    context 'with logger tagging' do
-      def jwt_with_claims(claims)
-        payload = Base64.urlsafe_encode64(claims.to_json, padding: false)
-        "header.#{payload}.signature"
-      end
-
-      it 'tags log output with client_id from the Bearer JWT' do
-        token = jwt_with_claims('client_id' => 'tagged-client')
-        tagged_with = nil
-
-        allow(Rails.logger).to receive(:tagged) do |tag, &block|
-          tagged_with = tag
-          block.call
-        end
-
-        api_get('/uk/api/healthcheck', headers: { 'Authorization' => "Bearer #{token}" })
-
-        expect(tagged_with).to eq('tagged-client')
-      end
-
-      it 'tags log output with "anonymous" when no token is present' do
-        tagged_with = nil
-
-        allow(Rails.logger).to receive(:tagged) do |tag, &block|
-          tagged_with = tag
-          block.call
-        end
-
-        api_get('/uk/api/healthcheck')
-
-        expect(tagged_with).to eq('anonymous')
-      end
-    end
   end
 end

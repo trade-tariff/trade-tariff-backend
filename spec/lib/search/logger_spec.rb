@@ -42,6 +42,15 @@ RSpec.describe Search::Logger do
     ensure
       TradeTariffRequest.request_source = nil
     end
+
+    it 'includes client ID as a structured field' do
+      TradeTariffRequest.client_id = 'api-client'
+      logger_instance.public_send(method_name, build_event(event_name, payload))
+      json = parsed_log_output
+      expect(json['client_id']).to eq('api-client')
+    ensure
+      TradeTariffRequest.client_id = nil
+    end
   end
 
   describe '#search_started' do

@@ -71,6 +71,16 @@ RSpec.describe ProductionEnvironmentConfig do
     end
   end
 
+  describe '.configure_logging' do
+    it 'configures an untagged logger so JSON fields remain queryable' do
+      described_class.configure_logging(config)
+
+      expect(config.logger).to be_a(ActiveSupport::Logger)
+      expect(config.logger).not_to be_a(ActiveSupport::TaggedLogging)
+      expect(config.log_tags).to be_nil
+    end
+  end
+
   describe '.truncate_lograge_exception_message' do
     subject(:truncate) { described_class.truncate_lograge_exception_message }
 
