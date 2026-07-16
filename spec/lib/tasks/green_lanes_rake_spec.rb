@@ -68,5 +68,81 @@ RSpec.describe 'green_lanes rake tasks' do
     expect(output_path).to exist
     expect(output_path.read).to eq(JSON.pretty_generate(expected))
   end
+
+  context 'when importing themes' do
+    let(:task) { Rake::Task['green_lanes:import_themes'] }
+    let(:source_path) { root.join('data/green_lanes/themes.html') }
+
+    before do
+      allow(TradeTariffBackend).to receive(:xi?).and_return(true)
+    end
+
+    it 'loads the Rails environment' do
+      expect(task.prerequisites).to include('environment')
+    end
+
+    it 'rejects execution outside the XI service' do
+      allow(TradeTariffBackend).to receive(:xi?).and_return(false)
+
+      expect { task.invoke }
+        .to raise_error(RuntimeError, 'Not in XI environment')
+    end
+
+    it 'rejects a missing themes file' do
+      expect { task.invoke }
+        .to raise_error(RuntimeError, "Cannot read file '#{source_path}'")
+    end
+
+    it 'rolls back the document when a later theme is malformed' do
+      existing = create(
+        :green_lanes_theme,
+        section: 1,
+        subsection: 1,
+        theme: 'Original theme',
+        description: 'Original description',
+        category: 2,
+      )
+      source_path.dirname.mkpath
+      source_path.write <<~HTML
+        <div id="anx_IV">
+          <p class="oj-ti-grseq-1">Category 1</p>
+          <table><tr><td>1.</td><td>Updated theme</td></tr></table>
+          <table><tr><td>2.</td><td>New theme</td></tr></table>
+          <table><tr><td>3.</td></tr></table>
+        </div>
+      HTML
+
+      expect { task.invoke }.to raise_error(StandardError)
+      expect(existing.refresh.values).to include(
+        theme: 'Original theme',
+        description: 'Original description',
+        category: 2,
+      )
+      expect(GreenLanes::Theme.count).to eq(1)
+    end
+
+    it 'creates and updates themes from the Annex IV document' do
+      existing = create(:green_lanes_theme, section: 1, subsection: 1, category: 2)
+      long_description = 'A' * 260
+      source_path.dirname.mkpath
+      source_path.write <<~HTML
+        <div id="anx_IV">
+          <p class="oj-ti-grseq-1">Category 1</p>
+          <table><tr><td>1.</td><td> Updated theme </td></tr></table>
+          <table><tr><td>2.</td><td>#{long_description}</td></tr></table>
+          <p class="oj-ti-grseq-1">Category 2</p>
+          <table><tr><td>1.</td><td>Second category</td></tr></table>
+        </div>
+      HTML
+
+      task.invoke
+
+      themes = GreenLanes::Theme.order(:section, :subsection).all
+      expect(themes.map { |theme| [theme.section, theme.subsection] }).to eq([[1, 1], [1, 2], [2, 1]])
+      expect(existing.refresh.values).to include(theme: 'Updated theme', description: 'Updated theme', category: 1)
+      expect(themes.second.values).to include(theme: long_description.slice(0, 254), description: long_description, category: 1)
+      expect(themes.third.values).to include(theme: 'Second category', description: 'Second category', category: 2)
+    end
+  end
 end
 # rubocop:enable RSpec/DescribeClass
