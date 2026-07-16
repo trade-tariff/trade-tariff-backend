@@ -50,6 +50,32 @@ RSpec.describe SearchDiagnostics::RequestLogLookup do
           result_field('search_type', 'interactive'),
           result_field('result_count', '1'),
         ],
+        [
+          result_field('@timestamp', '2026-06-05 09:59:01.500'),
+          result_field('@message', {
+            service: 'search',
+            event: 'note_evidence_evaluated',
+            request_id:,
+            search_type: 'interactive',
+            query: 'pig iron',
+            iteration: 1,
+            note_evidence_status: 'selected',
+            details: {
+              selected_contexts: [
+                {
+                  context_hash: 'hash-1',
+                  note_ref: 'compressed_note_1',
+                  evidence: [{ source_node_key: 'note_block:chapter:72:1:a', score: 35 }],
+                },
+              ],
+            },
+          }.to_json),
+          result_field('event', 'note_evidence_evaluated'),
+          result_field('request_id', request_id),
+          result_field('search_type', 'interactive'),
+          result_field('note_evidence_status', 'selected'),
+          result_field('details', '{"selected_contexts":"projected-string-must-not-win"}'),
+        ],
       ],
     )
   end
@@ -82,6 +108,15 @@ RSpec.describe SearchDiagnostics::RequestLogLookup do
             'logged_ranked_answer_count',
             'ranked_answers_truncated',
             'ranking_source',
+            'note_evidence_enabled',
+            'note_evidence_status',
+            'considered_note_count',
+            'considered_evidence_count',
+            'selected_note_count',
+            'selected_evidence_count',
+            'omitted_evidence_count',
+            'logged_omitted_evidence_count',
+            'omitted_evidence_truncated',
             'filter service = "search"',
             'request_id = "request-123"',
             "limit #{described_class::DEFAULT_LIMIT}",
@@ -109,8 +144,25 @@ RSpec.describe SearchDiagnostics::RequestLogLookup do
     it 'returns classic and internal search events scoped by the same request id key' do
       events = lookup.call.events
 
-      expect(events.map(&:search_type)).to eq(%w[classic interactive])
+      expect(events.map(&:search_type)).to eq(%w[classic interactive interactive])
       expect(events.map { |event| event.fields['request_id'] }).to all(eq(request_id))
+    end
+
+    it 'preserves nested note evidence from the structured log message' do
+      event = lookup.call.events.find { |candidate| candidate.event == 'note_evidence_evaluated' }
+
+      expect(event.fields).to include(
+        'note_evidence_status' => 'selected',
+        'details' => {
+          'selected_contexts' => [
+            {
+              'context_hash' => 'hash-1',
+              'note_ref' => 'compressed_note_1',
+              'evidence' => [{ 'source_node_key' => 'note_block:chapter:72:1:a', 'score' => 35 }],
+            },
+          ],
+        },
+      )
     end
 
     context 'when CloudWatch is still running the query' do

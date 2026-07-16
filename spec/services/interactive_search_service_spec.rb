@@ -40,6 +40,7 @@ RSpec.describe InteractiveSearchService do
     allow(Search::Instrumentation).to receive(:question_returned)
     allow(Search::Instrumentation).to receive(:answer_returned)
     allow(Search::Instrumentation).to receive(:duplicate_question_guard_checked)
+    allow(Search::Instrumentation).to receive(:note_evidence_evaluated)
     allow(Search::Instrumentation).to receive(:search_failed)
     create(:admin_configuration, :boolean, name: 'interactive_search_enabled', value: true, area: 'classification')
     create(:admin_configuration, :integer, name: 'interactive_search_max_questions', value: 3, area: 'classification')
@@ -291,6 +292,14 @@ RSpec.describe InteractiveSearchService do
           iteration: 4,
           effective_query: expanded_query,
           operation: 'duplicate_question_retry',
+        )
+        expect(Search::Instrumentation).to have_received(:note_evidence_evaluated).with(
+          hash_including(
+            request_id: request_id,
+            iteration: 4,
+            attempt_number: 4,
+            operation: 'duplicate_question_retry',
+          ),
         )
       end
 
@@ -548,6 +557,26 @@ RSpec.describe InteractiveSearchService do
       expect(context_arg).to include('OpenSearch results:')
     end
 
+    it 'records that note evidence was disabled for the prompt' do
+      result
+
+      expect(Search::Instrumentation).to have_received(:note_evidence_evaluated).with(
+        request_id: 'test-request-123',
+        query: 'leather handbag',
+        effective_query: 'leather handbag travel bag accessory',
+        iteration: 1,
+        attempt_number: 1,
+        operation: 'interactive_search',
+        enabled: false,
+        diagnostics: include(
+          status: 'disabled',
+          considered_note_count: 0,
+          selected_note_count: 0,
+          selected_contexts: [],
+        ),
+      )
+    end
+
     context 'when the configured prompt wraps compressed notes in marker lines' do
       let(:default_search_context) do
         <<~CONTEXT
@@ -787,6 +816,40 @@ RSpec.describe InteractiveSearchService do
         expect(context_arg).not_to include('Historic heading 4202 evidence should not be used.')
         expect(context_arg).not_to include('Rejected notes should not be consumed.')
         expect(context_arg.scan('Heading 4202 includes handbags with outer surface of leather.').size).to eq(1)
+      end
+
+      it 'records the exact selected prompt evidence for the request iteration' do
+        result
+
+        expect(Search::Instrumentation).to have_received(:note_evidence_evaluated).with(
+          request_id: 'test-request-123',
+          query: 'leather handbag',
+          effective_query: 'leather handbag travel bag accessory',
+          iteration: 1,
+          attempt_number: 1,
+          operation: 'interactive_search',
+          enabled: true,
+          diagnostics: include(
+            status: 'selected',
+            selected_note_count: 1,
+            selected_evidence_count: 1,
+            selected_contexts: contain_exactly(
+              include(
+                context_hash: Digest::SHA256.hexdigest('Includes handbags with outer surface of leather. Excludes plastic sheeting.'),
+                note_ref: 'compressed_note_1',
+                commodity_codes: contain_exactly('4202210000', '4202290000'),
+                evidence: contain_exactly(
+                  include(
+                    evidence_kind: 'note_fragment',
+                    source_node_key: 'note_fragment:customs_tariff_chapter_note:1.31:42:0001',
+                    text: 'Heading 4202 includes handbags with outer surface of leather.',
+                    decision: 'selected',
+                  ),
+                ),
+              ),
+            ),
+          ),
+        )
       end
 
       context 'when the configured prompt has no compressed notes placeholder' do

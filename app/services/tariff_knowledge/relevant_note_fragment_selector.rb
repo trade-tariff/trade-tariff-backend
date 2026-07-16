@@ -1,11 +1,17 @@
 module TariffKnowledge
   class RelevantNoteFragmentSelector
+    Selection = Data.define(:contexts, :diagnostics)
+
     # The classifier prompt needs source evidence, not complete compressed notes.
     # These caps keep one broad chapter/section note from dominating the prompt:
     # at most two fragments may come from one compressed note, and at most eight
     # fragments are emitted for the whole candidate set.
     MAX_FRAGMENTS_PER_NOTE = 2
     MAX_TOTAL_FRAGMENTS = 8
+    MAX_LOGGED_OMITTED_EVIDENCE = 20
+    MAX_LOGGED_FRAGMENT_NODE_KEYS = 20
+    DUPLICATE_OMISSION_REASONS = %w[duplicate_same_score duplicate_lower_score].freeze
+    OMISSION_REASON_ORDER = %w[below_minimum_score per_note_limit total_evidence_limit duplicate_same_score duplicate_lower_score].freeze
 
     # A fragment must show more than generic relevance before it is emitted.
     # For example, an exclusion fragment starts at 3 points, so it still needs
@@ -43,7 +49,50 @@ module TariffKnowledge
     ].freeze
     STOP_WORDS = %w[above an and are article articles as at be by chapter chapters code codes for from goods has have heading headings in into is it its kind made nomenclature of on or other purposes than that the this to use used with without].to_set.freeze
 
-    def self.call(...) = new(...).call
+    class << self
+      def call(...) = new(...).call.contexts
+
+      def call_with_diagnostics(...) = new(...).call
+    end
+
+    class OmissionCollector
+      attr_reader :count
+
+      def initialize(limit:, reason_order:)
+        @limit = limit
+        @reason_order = reason_order
+        @count = 0
+        @counts = Hash.new(0)
+        @samples = Hash.new { |hash, reason| hash[reason] = [] }
+      end
+
+      def add(reason)
+        @count += 1
+        @counts[reason] += 1
+        @samples[reason] << yield if @samples[reason].size < limit
+      end
+
+      def count_for(*reasons) = reasons.sum { |reason| @counts[reason] }
+
+      def logged
+        ordered_reasons = reason_order.select { |reason| @samples.key?(reason) } + (@samples.keys - reason_order)
+        queues = ordered_reasons.index_with { |reason| @samples[reason].dup }
+        entries = ordered_reasons.filter_map { |reason| queues[reason].shift }
+
+        ordered_reasons.cycle do |reason|
+          break if entries.size >= limit || queues.values.all?(&:empty?)
+
+          entry = queues[reason].shift
+          entries << entry if entry
+        end
+
+        entries
+      end
+
+    private
+
+      attr_reader :limit, :reason_order
+    end
 
     def initialize(query:, search_results:, notes_by_item_id:)
       @query = query.to_s
@@ -52,38 +101,127 @@ module TariffKnowledge
     end
 
     def call
+      @omissions = OmissionCollector.new(limit: MAX_LOGGED_OMITTED_EVIDENCE, reason_order: OMISSION_REASON_ORDER)
       contexts = notes_by_item_id.each_with_object({}) do |(item_id, note), grouped|
         group = grouped[note.context_hash] ||= { key: note.context_hash, commodity_codes: [], fragments: {} }
         group[:commodity_codes] << item_id
         scored_fragments(note).each do |fragment|
           current = group[:fragments][fragment[:key]]
-          group[:fragments][fragment[:key]] = fragment if current.nil? || fragment[:score] > current[:score]
+          if current.nil?
+            group[:fragments][fragment[:key]] = fragment
+          elsif fragment[:score] > current[:score]
+            record_omission(current, note.context_hash, 'duplicate_lower_score')
+            group[:fragments][fragment[:key]] = fragment
+          else
+            reason = fragment[:score] == current[:score] ? 'duplicate_same_score' : 'duplicate_lower_score'
+            record_omission(fragment, note.context_hash, reason)
+          end
         end
       end
 
-      cap_total_fragments(contexts.values.filter_map { |context| selected_context(context) })
+      build_selection(contexts.values)
     end
 
   private
 
-    attr_reader :query, :search_results, :notes_by_item_id
+    attr_reader :query, :search_results, :notes_by_item_id, :omissions
 
-    def selected_context(context)
-      fragments = context[:fragments].values.select { |fragment| fragment[:score] >= MIN_SCORE }
-        .sort_by { |fragment| [-fragment[:score], fragment[:source].to_s, fragment[:key].to_s] }.first(MAX_FRAGMENTS_PER_NOTE)
-        .map { |fragment| fragment.except(:key) }
-      { key: context[:key], commodity_codes: context[:commodity_codes].uniq, fragments: } if fragments.any?
+    def build_selection(grouped_contexts)
+      eligible_contexts = []
+
+      grouped_contexts.each do |context|
+        ranked = context[:fragments].values.sort_by { |fragment| [-fragment[:score], fragment[:source].to_s, fragment[:key].to_s] }
+        below_minimum, eligible = ranked.partition { |fragment| fragment[:score] < MIN_SCORE }
+        selected_for_note = eligible.first(MAX_FRAGMENTS_PER_NOTE)
+
+        below_minimum.each { |fragment| record_omission(fragment, context[:key], 'below_minimum_score') }
+        eligible.drop(MAX_FRAGMENTS_PER_NOTE).each { |fragment| record_omission(fragment, context[:key], 'per_note_limit') }
+        eligible_contexts << context.merge(selected: selected_for_note) if selected_for_note.any?
+      end
+
+      contexts, selected_diagnostics = apply_total_limit(eligible_contexts)
+      logged_omitted = omissions.logged
+
+      Selection.new(
+        contexts:,
+        diagnostics: {
+          status: selection_status(grouped_contexts, contexts),
+          considered_note_count: grouped_contexts.size,
+          considered_evidence_count: grouped_contexts.sum { |context| context[:fragments].size } + omissions.count_for(*DUPLICATE_OMISSION_REASONS),
+          selected_note_count: contexts.size,
+          selected_evidence_count: contexts.sum { |context| context[:fragments].size },
+          omitted_evidence_count: omissions.count,
+          logged_omitted_evidence_count: logged_omitted.size,
+          omitted_evidence_truncated: logged_omitted.size < omissions.count,
+          limits: {
+            minimum_score: MIN_SCORE,
+            per_note: MAX_FRAGMENTS_PER_NOTE,
+            total: MAX_TOTAL_FRAGMENTS,
+          },
+          selected_contexts: selected_diagnostics,
+          omitted_evidence: logged_omitted,
+        },
+      )
     end
 
-    def cap_total_fragments(contexts)
+    def apply_total_limit(contexts)
       remaining = MAX_TOTAL_FRAGMENTS
+      prompt_contexts = []
+      diagnostic_contexts = []
+
       contexts
-        .sort_by { |context| [-context[:fragments].first[:score], context[:key].to_s] }
-        .filter_map do |context|
-          fragments = context[:fragments].first(remaining)
-          remaining -= fragments.size
-          context.merge(fragments:) if fragments.any?
+        .sort_by { |context| [-context[:selected].first[:score], context[:key].to_s] }
+        .each do |context|
+          selected = context[:selected].first(remaining)
+          context[:selected].drop(remaining).each { |fragment| record_omission(fragment, context[:key], 'total_evidence_limit') }
+          remaining -= selected.size
+          next if selected.empty?
+
+          commodity_codes = context[:commodity_codes].uniq
+          prompt_contexts << {
+            key: context[:key],
+            commodity_codes:,
+            fragments: selected.map { |fragment| prompt_fragment(fragment) },
+          }
+          diagnostic_contexts << {
+            context_hash: context[:key],
+            commodity_codes:,
+            evidence: selected.map { |fragment| selected_evidence(fragment, context[:key]) },
+          }
         end
+
+      [prompt_contexts, diagnostic_contexts]
+    end
+
+    def selection_status(grouped_contexts, contexts)
+      return 'no_compressed_notes' if grouped_contexts.empty?
+      return 'selected' if contexts.any?
+
+      'no_eligible_evidence'
+    end
+
+    def record_omission(fragment, context_hash, reason)
+      omissions.add(reason) { omitted_evidence(fragment, context_hash, reason) }
+    end
+
+    def prompt_fragment(fragment)
+      fragment.slice(:source, :source_ref, :type, :text, :score, :why_relevant)
+    end
+
+    def selected_evidence(fragment, context_hash)
+      diagnostic_evidence(fragment, context_hash).merge(decision: 'selected')
+    end
+
+    def omitted_evidence(fragment, context_hash, reason)
+      diagnostic_evidence(fragment, context_hash).merge(decision: 'omitted', omission_reason: reason)
+    end
+
+    def diagnostic_evidence(fragment, context_hash)
+      fragment.except(:key, :why_relevant).merge(
+        context_hash:,
+        source_node_key: fragment[:key],
+        score_reasons: fragment[:score_reasons],
+      )
     end
 
     def scored_fragments(note)
@@ -98,11 +236,19 @@ module TariffKnowledge
         score, reasons = score_block(evidence_block, source_text)
         {
           key: evidence_block['source_node_key'],
+          evidence_kind: 'note_block',
           source: evidence_block['source_title'],
           source_ref: source_reference(evidence_block),
+          source_type: evidence_block['source_type'],
+          source_id: evidence_block['source_id'],
+          source_version: evidence_block['source_version'],
           type: evidence_block['block_type'],
+          fragment_node_keys: Array(evidence_block['fragment_node_keys']).first(MAX_LOGGED_FRAGMENT_NODE_KEYS),
+          fragment_node_keys_truncated: Array(evidence_block['fragment_node_keys']).size > MAX_LOGGED_FRAGMENT_NODE_KEYS,
+          graph_paths: [%w[contains contains applies_to]],
           text: source_text.truncate(MAX_FRAGMENT_CHARS, omission: '...'),
           score:,
+          score_reasons: reasons,
           why_relevant: reasons.join('; '),
         }
       end
@@ -119,14 +265,33 @@ module TariffKnowledge
         score, reasons = score_fragment(evidence_record, text)
         {
           key: evidence_record['source_node_key'],
+          evidence_kind: 'note_fragment',
           source: evidence_record['source_title'] || fragment_node&.title,
           source_ref: source_reference(evidence_record),
+          source_type: evidence_record['source_type'],
+          source_id: evidence_record['source_id'],
+          source_version: evidence_record['source_version'],
+          parent_source_node_key: evidence_record['parent_source_node_key'],
+          parent_source_title: evidence_record['parent_source_title'],
           type: evidence_record['context_type'],
+          range_node_key: evidence_record['range_node_key'],
+          range_type: evidence_record['range_type'],
+          range_code: evidence_record['range_code'],
+          graph_paths: fragment_graph_paths(evidence_record),
           text: text.truncate(MAX_FRAGMENT_CHARS, omission: '...'),
           score:,
+          score_reasons: reasons,
           why_relevant: reasons.join('; '),
         }
       end
+    end
+
+    def fragment_graph_paths(evidence_record)
+      paths = []
+      relationships = Array(evidence_record['relationships'])
+      paths << %w[contains applies_to] if relationships.include?(Edge::APPLIES_TO)
+      paths << %w[contains references expands_to] if evidence_record['range_node_key'].present? || evidence_record['range_type'].present?
+      paths.presence || [%w[contains applies_to]]
     end
 
     def fragment_node_for(evidence_record)

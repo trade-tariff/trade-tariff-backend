@@ -286,6 +286,55 @@ RSpec.describe Search::Logger do
     end
   end
 
+  describe '#note_evidence_evaluated' do
+    let(:payload) do
+      {
+        request_id: 'req-1',
+        search_type: 'interactive',
+        query: 'pig iron',
+        effective_query: 'pig iron primary forms',
+        iteration: 2,
+        attempt_number: 2,
+        operation: 'duplicate_question_retry',
+        note_evidence_enabled: true,
+        note_evidence_status: 'selected',
+        considered_note_count: 2,
+        considered_evidence_count: 5,
+        selected_note_count: 1,
+        selected_evidence_count: 2,
+        omitted_evidence_count: 3,
+        logged_omitted_evidence_count: 3,
+        omitted_evidence_truncated: false,
+        details: { selected_contexts: [{ context_hash: 'hash-1' }] },
+      }
+    end
+
+    it_behaves_like 'a search log entry', :note_evidence_evaluated, 'note_evidence_evaluated',
+                    { request_id: 'req-1', note_evidence_status: 'selected' }
+
+    it 'logs the selection counts and nested evidence' do
+      logger_instance.note_evidence_evaluated(build_event('note_evidence_evaluated', payload))
+      json = parsed_log_output
+
+      expect(json).to include(
+        'event' => 'note_evidence_evaluated',
+        'request_id' => 'req-1',
+        'attempt_number' => 2,
+        'operation' => 'duplicate_question_retry',
+        'note_evidence_enabled' => true,
+        'note_evidence_status' => 'selected',
+        'considered_note_count' => 2,
+        'considered_evidence_count' => 5,
+        'selected_note_count' => 1,
+        'selected_evidence_count' => 2,
+        'omitted_evidence_count' => 3,
+        'logged_omitted_evidence_count' => 3,
+        'omitted_evidence_truncated' => false,
+      )
+      expect(json.dig('details', 'selected_contexts')).to eq([{ 'context_hash' => 'hash-1' }])
+    end
+  end
+
   describe '#duplicate_question_guard_checked' do
     let(:payload) do
       {

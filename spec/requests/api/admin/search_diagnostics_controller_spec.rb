@@ -19,12 +19,53 @@ RSpec.describe Api::Admin::SearchDiagnosticsController do
               'query' => 'horse',
             },
           ),
+          SearchDiagnostics::RequestLogLookup::Event.new(
+            timestamp: '2026-06-05 09:59:01.000',
+            event: 'note_evidence_evaluated',
+            search_type: 'interactive',
+            message: '{"event":"note_evidence_evaluated"}',
+            fields: {
+              'event' => 'note_evidence_evaluated',
+              'request_id' => 'request-123',
+              'search_type' => 'interactive',
+              'note_evidence_status' => 'selected',
+              'details' => {
+                'selected_contexts' => [
+                  {
+                    'context_hash' => 'hash-1',
+                    'note_ref' => 'compressed_note_1',
+                    'evidence' => [{ 'source_node_key' => 'note_block:chapter:72:1:a' }],
+                  },
+                ],
+              },
+            },
+          ),
         ],
       )
     end
 
     before do
       allow(SearchDiagnostics::RequestLogLookup).to receive(:call).and_return(diagnostic)
+    end
+
+    it 'returns nested note evidence diagnostics unchanged' do
+      get '/uk/admin/search_diagnostics/request-123.json', headers: request_headers(format: :json)
+
+      note_event = response.parsed_body.dig('data', 'attributes', 'events').find do |event|
+        event['event'] == 'note_evidence_evaluated'
+      end
+      expect(note_event['fields']).to include(
+        'note_evidence_status' => 'selected',
+        'details' => {
+          'selected_contexts' => [
+            {
+              'context_hash' => 'hash-1',
+              'note_ref' => 'compressed_note_1',
+              'evidence' => [{ 'source_node_key' => 'note_block:chapter:72:1:a' }],
+            },
+          ],
+        },
+      )
     end
 
     it 'returns search diagnostics for the request id' do
