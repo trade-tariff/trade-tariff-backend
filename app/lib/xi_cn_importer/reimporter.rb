@@ -37,15 +37,7 @@ module XiCnImporter
         CustomsTariffChapterNote.where(customs_tariff_update_version: update.version).delete
         CustomsTariffGeneralRule.where(customs_tariff_update_version: update.version).delete
 
-        extracted.sections.each do |section_id, note_content|
-          CustomsTariffSectionNote.create(
-            customs_tariff_update_version: update.version,
-            section_id:,
-            content: note_content,
-            validity_start_date: update.validity_start_date,
-            status: CustomsTariffSectionNote::PENDING,
-          )
-        end
+        create_section_notes(update, extracted.sections)
 
         extracted.chapters.each do |chapter_id, note_content|
           CustomsTariffChapterNote.create(
@@ -66,6 +58,18 @@ module XiCnImporter
             status: CustomsTariffGeneralRule::PENDING,
           )
         end
+      end
+    end
+
+    def create_section_notes(update, sections)
+      sections.each do |section_id, note_content|
+        CustomsTariffSectionNote.create(
+          customs_tariff_update_version: update.version,
+          section_id:,
+          content: note_content,
+          validity_start_date: update.validity_start_date,
+          status: CustomsTariffSectionNote::PENDING,
+        )
       end
     end
   end
