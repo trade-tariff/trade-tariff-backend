@@ -73,48 +73,8 @@ module_function
   end
 
   def populate_eu_references
-    require 'csv'
-
     csv_path = Rails.root.join('data/CN2026_SelfText_EN_DE_FR.csv')
-    missing_csv!(csv_path) unless File.exist?(csv_path)
-
-    stats = { updated: 0, skipped_no_match: 0, skipped_blank: 0 }
-    CSV.foreach(csv_path, headers: true) { |row| populate_eu_reference(row, stats) }
-    puts "EU references populated: #{stats[:updated]} updated, #{stats[:skipped_no_match]} no matching generated text, #{stats[:skipped_blank]} blank"
-  end
-
-  def missing_csv!(csv_path)
-    puts "CSV not found at #{csv_path}"
-    exit 1
-  end
-
-  def populate_eu_reference(row, stats)
-    code = row['CN_CODE']
-    eu_text = row['SelfText_EN']&.strip
-
-    return stats[:skipped_blank] += 1 if code.blank? || eu_text.blank?
-
-    normalized = code.gsub(/\s/, '').ljust(10, '0')
-    dataset = eu_reference_update_dataset(normalized, eu_text)
-    item_ids = dataset.select_map(:goods_nomenclature_sid)
-    count = dataset.update(eu_self_text: eu_text, eu_embedding: nil)
-    PaperTrail::BulkVersioning.record_current_versions_for_item_ids!(model: GoodsNomenclatureSelfText, item_ids:) if count.positive?
-    update_eu_reference_stats(stats, normalized, count)
-  end
-
-  def eu_reference_update_dataset(normalized, eu_text)
-    GoodsNomenclatureSelfText
-      .where(goods_nomenclature_item_id: normalized)
-      .where(Sequel.|({ eu_self_text: nil }, Sequel.~(eu_self_text: eu_text)))
-  end
-
-  def update_eu_reference_stats(stats, normalized, count)
-    if count.positive?
-      stats[:updated] += count
-    else
-      existing = GoodsNomenclatureSelfText.where(goods_nomenclature_item_id: normalized).count
-      stats[:skipped_no_match] += 1 if existing.zero?
-    end
+    EuReferenceSelfTextImporter.call(csv_path)
   end
 
   def generate_embeddings
