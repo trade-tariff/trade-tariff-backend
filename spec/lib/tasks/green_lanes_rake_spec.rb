@@ -144,5 +144,109 @@ RSpec.describe 'green_lanes rake tasks' do
       expect(themes.third.values).to include(theme: 'Second category', description: 'Second category', category: 2)
     end
   end
+
+  context 'when importing category assessments' do
+    let(:task) { Rake::Task['green_lanes:import_category_assessments'] }
+    let(:records) { [] }
+
+    before do
+      allow(TradeTariffBackend).to receive(:xi?).and_return(true)
+      allow(GreenLanes::CategoryAssessmentJson).to receive(:all).and_return(records)
+    end
+
+    it 'loads the Rails environment' do
+      expect(task.prerequisites).to include('environment')
+    end
+
+    it 'rejects execution outside the XI service' do
+      allow(TradeTariffBackend).to receive(:xi?).and_return(false)
+
+      expect { task.invoke }
+        .to raise_error(RuntimeError, 'Only supported on XI service')
+    end
+
+    it 'skips category 3 and records without a theme' do
+      records << category_assessment_json(category: 3, theme: '3.1.Category 3')
+      records << category_assessment_json(category: 1, theme: nil)
+
+      expect { task.invoke }
+        .to output(/MISSING THEME, SKIPPING:/).to_stdout
+      expect(GreenLanes::CategoryAssessment.count).to be_zero
+    end
+
+    it 'creates assessments using existing and new themes and resolves regulation roles' do
+      existing_theme = create(:green_lanes_theme, section: 1, subsection: 2, category: 1)
+      modification = create(:modification_regulation, modification_regulation_id: 'R1234567')
+      base = create(:base_regulation, base_regulation_id: 'R2345678', base_regulation_role: 7)
+      records << category_assessment_json(
+        category: 1,
+        measure_type_id: '551',
+        regulation_id: modification.modification_regulation_id,
+        theme: '1.2.Existing theme',
+      )
+      records << category_assessment_json(
+        category: 2,
+        measure_type_id: '552',
+        regulation_id: 'R7654321',
+        theme: '2.4.Created theme',
+      )
+      records << category_assessment_json(
+        category: 1,
+        measure_type_id: '553',
+        regulation_id: base.base_regulation_id,
+        theme: '1.2.Existing theme',
+      )
+      records << records.first.dup
+
+      task.invoke
+
+      assessments = GreenLanes::CategoryAssessment.order(:measure_type_id).all
+      expect(assessments.map { |assessment| [assessment.measure_type_id, assessment.regulation_role] })
+        .to eq([['551', modification.modification_regulation_role], ['552', 1], ['553', base.base_regulation_role]])
+      expect(assessments.first.theme).to eq(existing_theme)
+      expect(assessments.second.theme.values)
+        .to include(section: 2, subsection: 4, category: 2, theme: 'Created theme', description: 'Created theme')
+    end
+
+    it 'leaves matching assessments unchanged' do
+      theme = create(:green_lanes_theme, section: 1, subsection: 2, category: 1)
+      assessment = create(:category_assessment, theme:)
+      records << category_assessment_json(
+        category: 1,
+        measure_type_id: assessment.measure_type_id,
+        regulation_id: assessment.regulation_id,
+        theme: '1.2.Existing theme',
+      )
+
+      expect { task.invoke }.not_to(change { assessment.refresh.values })
+      expect(GreenLanes::CategoryAssessment.count).to eq(1)
+    end
+
+    it 'rolls back the import when an existing assessment has a different theme' do
+      original_theme = create(:green_lanes_theme, section: 1, subsection: 1, category: 1)
+      conflicting_theme = create(:green_lanes_theme, section: 1, subsection: 2, category: 1)
+      assessment = create(:category_assessment, theme: original_theme)
+      records << category_assessment_json(category: 2, measure_type_id: '552', regulation_id: 'R7654321', theme: '2.4.New theme')
+      records << category_assessment_json(
+        category: 1,
+        measure_type_id: assessment.measure_type_id,
+        regulation_id: assessment.regulation_id,
+        theme: "1.#{conflicting_theme.subsection}.Conflicting theme",
+      )
+
+      expect { task.invoke }.to raise_error(RuntimeError, 'Inconsistent theme')
+      expect(GreenLanes::CategoryAssessment.all).to contain_exactly(assessment)
+      expect(GreenLanes::Theme.order(:section, :subsection).all).to eq([original_theme, conflicting_theme])
+    end
+  end
+
+  def category_assessment_json(overrides = {})
+    GreenLanes::CategoryAssessmentJson.new({
+      category: 1,
+      measure_type_id: '550',
+      regulation_id: 'R0000001',
+      theme: '1.1.Theme',
+    }.merge(overrides))
+  end
 end
 # rubocop:enable RSpec/DescribeClass
