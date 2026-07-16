@@ -23,7 +23,10 @@ module TariffKnowledge
       'inclusion' => 2,
       'reference' => 1,
     }.freeze
-    RANGE_MATCH_SCORE = 8
+    RANGE_MATCH_SCORES = {
+      'heading' => 12,
+      'chapter' => 6,
+    }.freeze
     MENTIONED_RANGE_SCORE = 4
     MAX_MENTIONED_RANGE_SCORE = 12
     QUERY_TERM_SCORE = 2
@@ -108,6 +111,7 @@ module TariffKnowledge
         group = grouped[note.context_hash] ||= { key: note.context_hash, commodity_codes: [], fragments: {} }
         group[:commodity_codes] << item_id
         scored_fragments(note).each do |fragment|
+          fragment = fragment.merge(best_candidate_rank: candidate_rank(item_id))
           @considered_association_count += 1
           @considered_source_node_keys << fragment[:key]
           current = group[:fragments][fragment[:key]]
@@ -149,12 +153,13 @@ module TariffKnowledge
           end
 
           record_omission(candidate, context[:key], 'duplicate_source_node', retained_source_node_key: current[:key])
-          strongest, other = [current, candidate].sort_by { |record| [-record[:score], record[:owning_context_hash].to_s] }
+          strongest, other = [current, candidate].sort_by { |record| fragment_sort_key(record) }
           retained[fragment[:key]] = strongest.merge(
             context_hashes: (current[:context_hashes] + candidate[:context_hashes]).uniq,
             commodity_codes: (current[:commodity_codes] + candidate[:commodity_codes]).uniq,
             graph_paths: (Array(current[:graph_paths]) + Array(candidate[:graph_paths])).uniq,
             score_reasons: (Array(strongest[:score_reasons]) + Array(other[:score_reasons])).uniq,
+            best_candidate_rank: [current[:best_candidate_rank], candidate[:best_candidate_rank]].compact.min,
           )
         end
       end
@@ -202,7 +207,7 @@ module TariffKnowledge
       eligible_contexts = []
 
       grouped_contexts.each do |context|
-        ranked = context[:fragments].values.sort_by { |fragment| [-fragment[:score], fragment[:source].to_s, fragment[:key].to_s] }
+        ranked = context[:fragments].values.sort_by { |fragment| fragment_sort_key(fragment) }
         below_minimum, eligible = ranked.partition { |fragment| fragment[:score] < MIN_SCORE }
         selected_for_note = eligible.first(MAX_FRAGMENTS_PER_NOTE)
 
@@ -245,7 +250,7 @@ module TariffKnowledge
       diagnostic_contexts = []
 
       contexts
-        .sort_by { |context| [-context[:selected].first[:score], context[:key].to_s] }
+        .sort_by { |context| fragment_sort_key(context[:selected].first) + [context[:key].to_s] }
         .each do |context|
           selected = context[:selected].first(remaining)
           context[:selected].drop(remaining).each { |fragment| record_omission(fragment, context[:key], 'total_evidence_limit') }
@@ -331,6 +336,7 @@ module TariffKnowledge
           score:,
           score_reasons: reasons,
           why_relevant: reasons.join('; '),
+          range_specificity: range_specificity(evidence_block, source_text),
         }
       end
     end
@@ -363,6 +369,7 @@ module TariffKnowledge
           score:,
           score_reasons: reasons,
           why_relevant: reasons.join('; '),
+          range_specificity: range_specificity(evidence_record, text),
         }
       end
     end
@@ -446,7 +453,39 @@ module TariffKnowledge
     def range_match_rule(evidence_record)
       return unless range_match?(evidence_record)
 
-      [RANGE_MATCH_SCORE, "references retrieved #{evidence_record['range_type']} #{evidence_record['range_code']}"]
+      [RANGE_MATCH_SCORES.fetch(evidence_record['range_type'], 0), "references retrieved #{evidence_record['range_type']} #{evidence_record['range_code']}"]
+    end
+
+    def range_specificity(evidence_record, text)
+      return "direct_#{evidence_record['range_type']}" if range_match?(evidence_record)
+      return 'mentioned_heading' if candidate_headings.any? { |code| explicit_range_mention?(text, 'heading', code) }
+      return 'mentioned_chapter' if candidate_chapters.any? { |code| explicit_range_mention?(text, 'chapter', code) }
+
+      'generic'
+    end
+
+    def range_specificity_rank(fragment)
+      {
+        'direct_heading' => 2,
+        'mentioned_heading' => 1,
+        'direct_chapter' => 0,
+        'mentioned_chapter' => 0,
+        'generic' => 0,
+      }.fetch(fragment[:range_specificity], 0)
+    end
+
+    def fragment_sort_key(fragment)
+      [
+        -range_specificity_rank(fragment),
+        -fragment[:score],
+        fragment[:best_candidate_rank] || candidate_item_ids.size + 1,
+        fragment[:source].to_s,
+        fragment[:key].to_s,
+      ]
+    end
+
+    def explicit_range_mention?(text, type, code)
+      text.to_s.match?(/\b#{Regexp.escape(type)}s?\s+#{Regexp.escape(code)}\b/i)
     end
 
     def mentioned_range_rule(text)
@@ -611,6 +650,11 @@ module TariffKnowledge
     def candidate_ranges = @candidate_ranges ||= (candidate_chapters + candidate_headings).uniq
 
     def candidate_item_ids = @candidate_item_ids ||= search_results.map(&:goods_nomenclature_item_id).compact_blank.uniq
+
+    def candidate_rank(item_id)
+      index = candidate_item_ids.index(item_id)
+      index ? index + 1 : candidate_item_ids.size + 1
+    end
 
     class Bm25Scorer
       K1 = 1.2
