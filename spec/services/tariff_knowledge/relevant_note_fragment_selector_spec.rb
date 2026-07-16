@@ -259,6 +259,22 @@ RSpec.describe TariffKnowledge::RelevantNoteFragmentSelector do
     )
   end
 
+  it 'bounds omitted evidence when distinct omission reasons exceed the limit' do
+    collector = described_class::OmissionCollector.new(
+      limit: 2,
+      reason_order: %w[first second third],
+    )
+
+    %w[first second third].each do |reason|
+      collector.add(reason) { { omission_reason: reason } }
+    end
+
+    expect(collector.logged).to eq([
+      { omission_reason: 'first' },
+      { omission_reason: 'second' },
+    ])
+  end
+
   it 'prefers exact query definition blocks over generic chapter exclusions' do
     pig_iron_note = create(
       :tariff_knowledge_compressed_note,
