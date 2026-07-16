@@ -95,8 +95,11 @@ RSpec.describe TariffKnowledge::RelevantNoteFragmentSelector do
       status: 'selected',
       considered_note_count: 1,
       considered_evidence_count: 3,
+      considered_association_count: 3,
+      considered_distinct_source_count: 3,
       selected_note_count: 1,
       selected_evidence_count: 2,
+      selected_distinct_source_count: 2,
       omitted_evidence_count: 1,
       omitted_evidence_truncated: false,
       limits: {
