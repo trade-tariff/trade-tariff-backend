@@ -1,51 +1,6 @@
 module GreenLanesTasks
 module_function
 
-  def import_themes
-    raise 'Not in XI environment' unless TradeTariffBackend.xi?
-
-    source_file = Rails.root.join('data/green_lanes/themes.html')
-    raise "Cannot read file '#{source_file}'" unless File.file?(source_file)
-
-    existing_themes = GreenLanes::Theme.all.index_by { |theme| [theme.section, theme.subsection] }
-
-    GreenLanes::Theme.db.transaction do
-      import_theme_nodes(Nokogiri::HTML(source_file.open), existing_themes)
-    end
-  end
-
-  def import_theme_nodes(source_doc, existing_themes)
-    section = nil
-    source_doc.css('div#anx_IV p.oj-ti-grseq-1,div#anx_IV table').each do |node|
-      section = import_theme_node(node, section, existing_themes)
-    end
-  end
-
-  def import_theme_node(node, section, existing_themes)
-    case node.name
-    when 'p'
-      node.content.strip.gsub(/Category /, '').to_i
-    when 'table'
-      import_theme_table(node, section, existing_themes)
-      section
-    else
-      puts 'Unknown element, skipping'
-      section
-    end
-  end
-
-  def import_theme_table(node, section, existing_themes)
-    cells = node.css('td')
-    subsection = cells[0].content.strip.gsub(/\.$/, '').to_i
-    description = cells[1].content.strip
-    instance = existing_themes[[section, subsection]] || GreenLanes::Theme.new(section:, subsection:)
-
-    instance.theme = description.slice(0, 254)
-    instance.description = description
-    instance.category = section
-    instance.save(raise_on_failure: true)
-  end
-
   def import_category_assessments
     raise 'Only supported on XI service' unless TradeTariffBackend.xi?
 
@@ -246,7 +201,7 @@ namespace :green_lanes do
 
   desc 'Import Themes data'
   task import_themes: :environment do
-    GreenLanesTasks.import_themes
+    GreenLanes::ThemeImporter.call
   end
 
   desc 'Import CategoryAssessments data'
