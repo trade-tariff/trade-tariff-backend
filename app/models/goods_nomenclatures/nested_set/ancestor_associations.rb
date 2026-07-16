@@ -4,23 +4,31 @@ module GoodsNomenclatures
       extend ActiveSupport::Concern
 
       included do
-        one_to_one :tree_node, key: :goods_nomenclature_sid,
-                               class_name: 'GoodsNomenclatures::TreeNode',
-                               reciprocal: :goods_nomenclature,
-                               graph_use_association_block: true,
-                               read_only: true do |ds|
+        AncestorAssociations.register_tree_node(self)
+        AncestorAssociations.register_ancestors(self)
+        AncestorAssociations.register_parent(self)
+      end
+
+      def self.register_tree_node(model)
+        model.one_to_one :tree_node, key: :goods_nomenclature_sid,
+                                     class_name: 'GoodsNomenclatures::TreeNode',
+                                     reciprocal: :goods_nomenclature,
+                                     graph_use_association_block: true,
+                                     read_only: true do |ds|
           ds.with_actual(GoodsNomenclatures::TreeNode)
         end
+      end
 
-        many_to_many :ancestors,
-                     left_primary_key: :goods_nomenclature_sid,
-                     left_key: Sequel.qualify(:origin_nodes, :goods_nomenclature_sid),
-                     right_primary_key: :goods_nomenclature_sid,
-                     right_key: :goods_nomenclature_sid,
-                     class_name: '::GoodsNomenclature',
-                     join_table: Sequel.as(:goods_nomenclature_tree_nodes, :ancestor_nodes),
-                     after_load: :recursive_ancestor_populator,
-                     read_only: true do |ds|
+      def self.register_ancestors(model)
+        model.many_to_many :ancestors,
+                           left_primary_key: :goods_nomenclature_sid,
+                           left_key: Sequel.qualify(:origin_nodes, :goods_nomenclature_sid),
+                           right_primary_key: :goods_nomenclature_sid,
+                           right_key: :goods_nomenclature_sid,
+                           class_name: '::GoodsNomenclature',
+                           join_table: Sequel.as(:goods_nomenclature_tree_nodes, :ancestor_nodes),
+                           after_load: :recursive_ancestor_populator,
+                           read_only: true do |ds|
           raise DateNotSet unless TimeMachine.date_is_set?
 
           ds.order(:ancestor_nodes__position)
@@ -36,15 +44,17 @@ module GoodsNomenclatures
                 TreeNode.ancestor_node_constraints(origin, ancestors)
             end
         end
+      end
 
-        one_through_one :parent,
-                        left_primary_key: :goods_nomenclature_sid,
-                        left_key: Sequel.qualify(:origin_nodes, :goods_nomenclature_sid),
-                        right_primary_key: :goods_nomenclature_sid,
-                        right_key: :goods_nomenclature_sid,
-                        class_name: '::GoodsNomenclature',
-                        join_table: Sequel.as(:goods_nomenclature_tree_nodes, :parent_nodes),
-                        read_only: true do |ds|
+      def self.register_parent(model)
+        model.one_through_one :parent,
+                              left_primary_key: :goods_nomenclature_sid,
+                              left_key: Sequel.qualify(:origin_nodes, :goods_nomenclature_sid),
+                              right_primary_key: :goods_nomenclature_sid,
+                              right_key: :goods_nomenclature_sid,
+                              class_name: '::GoodsNomenclature',
+                              join_table: Sequel.as(:goods_nomenclature_tree_nodes, :parent_nodes),
+                              read_only: true do |ds|
           raise DateNotSet unless TimeMachine.date_is_set?
 
           ds.order(:parent_nodes__position)
