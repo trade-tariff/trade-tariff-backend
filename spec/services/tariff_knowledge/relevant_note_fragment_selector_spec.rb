@@ -822,6 +822,72 @@ RSpec.describe TariffKnowledge::RelevantNoteFragmentSelector do
     expect(contexts).to be_empty
   end
 
+  it 'selects a source node once when it is reached through different compressed note contexts' do
+    shared = evidence_for(
+      'note_fragment:customs_tariff_chapter_note:1.31:95:shared',
+      'Heading 9506 includes articles and equipment for general physical exercise.',
+      'inclusion',
+      range_type: 'heading',
+      range_code: '9506',
+    )
+    first_note = create_note_with_evidence('9506911000', shared)
+    second_note = create_note_with_evidence('6403999110', shared)
+
+    selection = described_class.call_with_diagnostics(
+      query:,
+      search_results:,
+      notes_by_item_id: { '9506911000' => first_note, '6403999110' => second_note },
+    )
+
+    expect(selection.contexts.sum { |context| context[:fragments].size }).to eq(1)
+    expect(selection.contexts.first[:commodity_codes]).to contain_exactly('9506911000', '6403999110')
+    expect(selection.diagnostics[:selected_contexts].flat_map { |context| context[:evidence] }).to contain_exactly(
+      include(
+        source_node_key: shared['source_node_key'],
+        context_hashes: contain_exactly(first_note.context_hash, second_note.context_hash),
+        commodity_codes: contain_exactly('9506911000', '6403999110'),
+      ),
+    )
+  end
+
+  it 'does not send a fragment when its text is already contained by a selected note block' do
+    fragment_key = 'note_fragment:customs_tariff_chapter_note:1.31:72:0069'
+    repeated_text = 'Pig iron means iron-carbon alloys containing more than 2% carbon.'
+    note = create(
+      :tariff_knowledge_compressed_note,
+      goods_nomenclature_item_id: '7201200000',
+      content: 'compressed pig iron note',
+      metadata: Sequel.pg_jsonb_wrap(
+        'evidence_blocks' => [{
+          'source_node_key' => 'note_block:customs_tariff_chapter_note:1.31:72:1:a',
+          'source_title' => 'pig iron',
+          'source_context' => "Definitions. #{repeated_text}",
+          'block_type' => 'definition',
+          'term' => 'pig iron',
+          'source_type' => 'customs_tariff_chapter_note',
+          'source_id' => '72',
+          'fragment_node_keys' => [fragment_key],
+        }],
+        'evidence' => [evidence_for(fragment_key, repeated_text, 'inclusion', source_id: '72')],
+      ),
+    )
+
+    selection = described_class.call_with_diagnostics(
+      query: 'pig iron',
+      search_results: [search_result_class.new(goods_nomenclature_item_id: '7201200000', description: 'Pig iron', full_description: nil, score: 10)],
+      notes_by_item_id: { '7201200000' => note },
+    )
+
+    expect(selection.contexts.sum { |context| context[:fragments].size }).to eq(1)
+    expect(selection.diagnostics[:omitted_evidence]).to include(
+      include(
+        source_node_key: fragment_key,
+        omission_reason: 'contained_text_duplicate',
+        retained_source_node_key: 'note_block:customs_tariff_chapter_note:1.31:72:1:a',
+      ),
+    )
+  end
+
   def evidence_for(key, text, context_type, range_type: nil, range_code: nil, source_type: 'customs_tariff_chapter_note', source_id: '95')
     {
       'source_node_key' => key,
