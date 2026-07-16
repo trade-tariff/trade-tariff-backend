@@ -87,6 +87,13 @@ RSpec.describe Api::Internal::AtarsController do
       expect(response).to have_http_status(:bad_request)
     end
 
+    it 'counts repeated references once when enforcing the filter limit' do
+      get collection_path, params: { refs: Array.new(251, earlier_ruling.ref).join(',') }
+
+      expect(response).to have_http_status(:ok)
+      expect(response.parsed_body['data'].pluck('id')).to eq([earlier_ruling.ref])
+    end
+
     it 'caps oversized pages and normalises invalid page numbers' do
       get collection_path, params: { page: -5, per_page: 10_000 }
 
