@@ -284,6 +284,23 @@ module Search
       info log_entry(data, event)
     end
 
+    def query_guardrail_decided(event)
+      info log_entry({
+        event: 'query_guardrail_decided',
+        request_id: event.payload[:request_id],
+        search_type: event.payload[:search_type],
+        query: event.payload[:query],
+        effective_query: event.payload[:effective_query],
+        iteration: event.payload[:iteration],
+        variant: event.payload[:variant],
+        enabled: event.payload[:enabled],
+        accepted: event.payload[:accepted],
+        max_score: event.payload[:max_score],
+        threshold: event.payload[:threshold],
+        reason: event.payload[:reason],
+      }, event)
+    end
+
     def result_selected(event)
       info log_entry({
         event: 'result_selected',

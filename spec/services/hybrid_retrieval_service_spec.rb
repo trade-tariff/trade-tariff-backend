@@ -34,6 +34,11 @@ RSpec.describe HybridRetrievalService do
     ]
   end
 
+  let(:vector_max_score) { 0.31 }
+  let(:vector_diagnostics) do
+    VectorRetrievalService::Result.new(results: vector_results, max_score: vector_max_score)
+  end
+
   let(:expanded_query) { 'expanded horses' }
 
   let(:opensearch_result) do
@@ -45,11 +50,15 @@ RSpec.describe HybridRetrievalService do
 
   before do
     allow(OpensearchRetrievalService).to receive(:call).and_return(opensearch_result)
-    allow(VectorRetrievalService).to receive(:call).and_return(vector_results)
+    allow(VectorRetrievalService).to receive(:call_with_diagnostics).and_return(vector_diagnostics)
+    allow(AdminConfiguration).to receive(:enabled?).and_call_original
+    allow(AdminConfiguration).to receive(:enabled?).with('hybrid_query_guardrail_enabled').and_return(false)
     allow(AdminConfiguration).to receive(:integer_value).and_call_original
     allow(AdminConfiguration).to receive(:integer_value).with('rrf_k').and_return(60)
+    allow(AdminConfiguration).to receive(:integer_value).with('hybrid_query_guardrail_threshold').and_return(32)
     allow(Search::Instrumentation).to receive(:retrieval_leg_completed)
     allow(Search::Instrumentation).to receive(:retrieval_results_returned)
+    allow(Search::Instrumentation).to receive(:query_guardrail_decided)
   end
 
   describe '#call' do
@@ -63,7 +72,9 @@ RSpec.describe HybridRetrievalService do
       expect(OpensearchRetrievalService).to have_received(:call).with(
         query: 'horses', expanded_query: expanded_query, as_of: as_of, request_id: nil, limit: 30,
       )
-      expect(VectorRetrievalService).to have_received(:call).with(query: expanded_query, limit: 30, request_id: nil)
+      expect(VectorRetrievalService).to have_received(:call_with_diagnostics).with(
+        query: expanded_query, limit: 30, request_id: nil,
+      )
     end
 
     it 'passes filter prefixes to both retrieval legs' do
@@ -75,7 +86,7 @@ RSpec.describe HybridRetrievalService do
         query: 'horses', expanded_query: expanded_query,
         as_of: as_of, request_id: nil, limit: 30, filter_prefixes: %w[0101]
       )
-      expect(VectorRetrievalService).to have_received(:call).with(
+      expect(VectorRetrievalService).to have_received(:call_with_diagnostics).with(
         query: expanded_query, limit: 30, filter_prefixes: %w[0101], request_id: nil,
       )
     end
@@ -120,6 +131,68 @@ RSpec.describe HybridRetrievalService do
       described_class.call(query: 'horses', as_of: Time.zone.today)
 
       expect(AdminConfiguration).to have_received(:integer_value).with('rrf_k')
+    end
+
+    context 'when the hybrid query guardrail is enabled' do
+      before do
+        allow(AdminConfiguration).to receive(:enabled?).with('hybrid_query_guardrail_enabled').and_return(true)
+      end
+
+      it 'returns no suggestions when the raw vector score is below the configured threshold' do
+        result = described_class.call(
+          query: 'book a dentist appointment', expanded_query: expanded_query, as_of: Time.zone.today,
+        )
+
+        expect(result.results).to be_empty
+        expect(Search::Instrumentation).to have_received(:query_guardrail_decided).with(
+          request_id: nil,
+          query: 'book a dentist appointment',
+          effective_query: 'expanded horses',
+          iteration: nil,
+          enabled: true,
+          accepted: false,
+          max_score: 0.31,
+          threshold: 0.32,
+          reason: 'below_threshold',
+        )
+      end
+
+      it 'returns the merged suggestions when the raw vector score meets the configured threshold' do
+        allow(VectorRetrievalService).to receive(:call_with_diagnostics).and_return(
+          VectorRetrievalService::Result.new(results: vector_results, max_score: 0.32),
+        )
+
+        result = described_class.call(query: 'horses', as_of: Time.zone.today)
+
+        expect(result.results).not_to be_empty
+        expect(Search::Instrumentation).to have_received(:query_guardrail_decided).with(
+          hash_including(accepted: true, max_score: 0.32, threshold: 0.32, reason: 'accepted'),
+        )
+      end
+
+      it 'distinguishes no eligible vector candidates from a low score' do
+        allow(VectorRetrievalService).to receive(:call_with_diagnostics).and_return(
+          VectorRetrievalService::Result.new(results: [], max_score: nil),
+        )
+
+        result = described_class.call(query: 'book a dentist appointment', as_of: Time.zone.today)
+
+        expect(result.results).to be_empty
+        expect(Search::Instrumentation).to have_received(:query_guardrail_decided).with(
+          hash_including(accepted: false, max_score: nil, reason: 'no_vector_candidates'),
+        )
+      end
+
+      it 'fails closed when the vector score needed by the guardrail is unavailable' do
+        allow(VectorRetrievalService).to receive(:call_with_diagnostics).and_raise(StandardError, 'vector down')
+
+        result = described_class.call(query: 'horses', as_of: Time.zone.today)
+
+        expect(result.results).to be_empty
+        expect(Search::Instrumentation).to have_received(:query_guardrail_decided).with(
+          hash_including(accepted: false, max_score: nil, reason: 'vector_unavailable'),
+        )
+      end
     end
 
     it 'emits retrieval_leg_completed for both legs' do
@@ -173,7 +246,7 @@ RSpec.describe HybridRetrievalService do
 
     context 'when vector leg fails' do
       before do
-        allow(VectorRetrievalService).to receive(:call).and_raise(StandardError, 'vector down')
+        allow(VectorRetrievalService).to receive(:call_with_diagnostics).and_raise(StandardError, 'vector down')
       end
 
       it 'falls back to opensearch results' do
@@ -204,7 +277,7 @@ RSpec.describe HybridRetrievalService do
     context 'when both legs fail' do
       before do
         allow(OpensearchRetrievalService).to receive(:call).and_raise(StandardError, 'opensearch down')
-        allow(VectorRetrievalService).to receive(:call).and_raise(StandardError, 'vector down')
+        allow(VectorRetrievalService).to receive(:call_with_diagnostics).and_raise(StandardError, 'vector down')
       end
 
       it 'raises a retrieval failure' do

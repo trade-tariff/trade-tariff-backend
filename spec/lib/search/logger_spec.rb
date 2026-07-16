@@ -579,6 +579,41 @@ RSpec.describe Search::Logger do
     end
   end
 
+  describe '#query_guardrail_decided' do
+    let(:payload) do
+      {
+        request_id: 'req-1',
+        search_type: 'interactive',
+        query: 'book a dentist appointment',
+        effective_query: 'dentist appointment',
+        iteration: 2,
+        variant: 'fixed_vector_score',
+        enabled: true,
+        accepted: false,
+        max_score: 0.31,
+        threshold: 0.32,
+        reason: 'below_threshold',
+      }
+    end
+
+    it 'logs the attributable query guardrail decision' do
+      logger_instance.query_guardrail_decided(build_event('query_guardrail_decided', payload))
+
+      expect(parsed_log_output).to include(
+        'event' => 'query_guardrail_decided',
+        'request_id' => 'req-1',
+        'effective_query' => 'dentist appointment',
+        'iteration' => 2,
+        'variant' => 'fixed_vector_score',
+        'enabled' => true,
+        'accepted' => false,
+        'max_score' => 0.31,
+        'threshold' => 0.32,
+        'reason' => 'below_threshold',
+      )
+    end
+  end
+
   describe '#result_selected' do
     let(:payload) { { request_id: 'req-1', goods_nomenclature_item_id: '4202210000', goods_nomenclature_class: 'Commodity' } }
 

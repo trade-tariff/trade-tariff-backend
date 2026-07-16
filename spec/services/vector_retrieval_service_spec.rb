@@ -81,6 +81,24 @@ RSpec.describe VectorRetrievalService do
       expect(results).to be_empty
     end
 
+    it 'excludes non-declarable candidates from the diagnostic maximum score' do
+      heading = create(:heading, :with_description, :non_declarable,
+                       goods_nomenclature_item_id: '0101000000',
+                       producline_suffix: GoodsNomenclature::NON_GROUPING_PRODUCTLINE_SUFFIX)
+
+      create(:goods_nomenclature_self_text,
+             goods_nomenclature_sid: heading.goods_nomenclature_sid,
+             goods_nomenclature_item_id: heading.goods_nomenclature_item_id,
+             self_text: 'Live horses heading')
+
+      populate_search_embedding(heading.goods_nomenclature_sid, query_embedding)
+
+      result = service.call_with_diagnostics
+
+      expect(result.results).to be_empty
+      expect(result.max_score).to be_nil
+    end
+
     context 'when search_non_declarables is enabled' do
       before do
         allow(AdminConfiguration).to receive(:enabled?).and_call_original
@@ -198,6 +216,25 @@ RSpec.describe VectorRetrievalService do
         results = service.call
 
         expect(results).to be_empty
+      end
+
+      it 'exposes the maximum raw score before candidate filtering for hybrid query controls' do
+        commodity = create(:commodity, :with_description, :declarable,
+                           goods_nomenclature_item_id: '0101210000',
+                           producline_suffix: GoodsNomenclature::NON_GROUPING_PRODUCTLINE_SUFFIX)
+
+        create(:goods_nomenclature_self_text,
+               goods_nomenclature_sid: commodity.goods_nomenclature_sid,
+               goods_nomenclature_item_id: commodity.goods_nomenclature_item_id,
+               self_text: 'Pure-bred breeding horses')
+
+        populate_search_embedding(commodity.goods_nomenclature_sid, query_embedding)
+        allow(AdminConfiguration).to receive(:integer_value).with('vector_score_threshold').and_return(101)
+
+        result = service.call_with_diagnostics
+
+        expect(result.results).to be_empty
+        expect(result.max_score).to be_within(0.0001).of(1.0)
       end
     end
 
