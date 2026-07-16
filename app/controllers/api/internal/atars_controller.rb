@@ -42,11 +42,11 @@ module Api
       def filtered_dataset
         return source_dataset unless params.key?(:refs)
 
-        references = params[:refs].to_s.split(',').map(&:strip).compact_blank
+        references = params[:refs].to_s.split(',').map(&:strip).compact_blank.uniq
         raise ActionController::BadRequest, 'refs must contain at least one reference' if references.empty?
         raise ActionController::BadRequest, "refs cannot contain more than #{MAX_REFERENCES} references" if references.size > MAX_REFERENCES
 
-        source_dataset.where(ref: references.uniq)
+        source_dataset.where(ref: references)
       end
 
       def current_page
