@@ -53,6 +53,8 @@ Layout/LineLength:
 Metrics/AbcSize:
   Max: 20
 
+# The listed files are known hotspots; this cop is enforced everywhere else.
+# Remove each entry as its hotspot is refactored.
 Metrics/BlockLength:
   Enabled: true
   Exclude:
@@ -66,6 +68,8 @@ Metrics/BlockLength:
     - 'app/models/goods_nomenclatures/nested_set/descendant_associations.rb'
     - 'app/models/goods_nomenclatures/nested_set/measure_associations.rb'
 
+# The listed files are known hotspots; this cop is enforced everywhere else.
+# Remove each entry as its hotspot is refactored.
 Metrics/ModuleLength:
   Enabled: true
   Exclude:
