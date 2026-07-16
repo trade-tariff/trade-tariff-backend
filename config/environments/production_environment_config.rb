@@ -26,7 +26,7 @@ module ProductionEnvironmentConfig
     end
 
     def configure_logging(config)
-      config.logger = ActiveSupport::TaggedLogging.new(ActiveSupport::Logger.new($stdout))
+      config.logger = ActiveSupport::Logger.new($stdout)
       config.lograge.enabled = true
       config.lograge.formatter = Lograge::Formatters::Logstash.new
       config.lograge.custom_options = lograge_custom_options
@@ -35,7 +35,6 @@ module ProductionEnvironmentConfig
         HealthcheckController#checkz
       ]
       config.silence_healthcheck_path = '/healthcheckz'
-      config.log_tags = [:request_id]
       config.log_level = ENV.fetch('RAILS_LOG_LEVEL', 'info')
       config.active_support.deprecation = :notify
     end

@@ -13,7 +13,6 @@ class ApplicationController < ActionController::API
 
   before_action :set_trade_tariff_request_id
   before_action :maintenance_mode_if_active
-  around_action :tag_logs_with_client_id
   around_action :configure_time_machine
   around_action :apply_jsonapi_query_options
   after_action  :check_query_count, if: -> { TradeTariffBackend.check_query_count? }
@@ -124,10 +123,6 @@ private
 
   def v2_api_controller?
     self.class.name.start_with?('Api::V2::')
-  end
-
-  def tag_logs_with_client_id(&block)
-    Rails.logger.tagged(TradeTariffRequest.client_id || 'anonymous', &block)
   end
 
   def set_trade_tariff_request_id

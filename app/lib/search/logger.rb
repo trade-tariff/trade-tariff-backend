@@ -297,6 +297,8 @@ module Search
         timestamp: Time.current.iso8601,
       )
       entry[:request_source] = event.payload[:request_source] if event.payload[:request_source].present?
+      client_id = event.payload[:client_id].presence || TradeTariffRequest.client_id.presence
+      entry[:client_id] = client_id if client_id
       entry.to_json
     end
 
