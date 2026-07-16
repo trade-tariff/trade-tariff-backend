@@ -4,15 +4,21 @@ module GoodsNomenclatures
       extend ActiveSupport::Concern
 
       included do
-        many_to_many :descendants,
-                     left_primary_key: :goods_nomenclature_sid,
-                     left_key: Sequel.qualify(:origin_nodes, :goods_nomenclature_sid),
-                     right_primary_key: :goods_nomenclature_sid,
-                     right_key: :goods_nomenclature_sid,
-                     class_name: '::GoodsNomenclature',
-                     join_table: Sequel.as(:goods_nomenclature_tree_nodes, :descendant_nodes),
-                     after_load: :recursive_descendant_populator,
-                     read_only: true do |ds|
+        DescendantAssociations.register_descendants(self)
+        DescendantAssociations.register_children(self)
+        DescendantAssociations.register_historical_children(self)
+      end
+
+      def self.register_descendants(model)
+        model.many_to_many :descendants,
+                           left_primary_key: :goods_nomenclature_sid,
+                           left_key: Sequel.qualify(:origin_nodes, :goods_nomenclature_sid),
+                           right_primary_key: :goods_nomenclature_sid,
+                           right_key: :goods_nomenclature_sid,
+                           class_name: '::GoodsNomenclature',
+                           join_table: Sequel.as(:goods_nomenclature_tree_nodes, :descendant_nodes),
+                           after_load: :recursive_descendant_populator,
+                           read_only: true do |ds|
           raise DateNotSet unless TimeMachine.date_is_set?
 
           ds.non_hidden
@@ -28,15 +34,17 @@ module GoodsNomenclatures
                 TreeNode.descendant_node_constraints(origin, descendants)
             end
         end
+      end
 
-        many_to_many :children,
-                     left_primary_key: :goods_nomenclature_sid,
-                     left_key: Sequel.qualify(:origin_nodes, :goods_nomenclature_sid),
-                     right_primary_key: :goods_nomenclature_sid,
-                     right_key: :goods_nomenclature_sid,
-                     class_name: '::GoodsNomenclature',
-                     join_table: Sequel.as(:goods_nomenclature_tree_nodes, :child_nodes),
-                     read_only: true do |ds|
+      def self.register_children(model)
+        model.many_to_many :children,
+                           left_primary_key: :goods_nomenclature_sid,
+                           left_key: Sequel.qualify(:origin_nodes, :goods_nomenclature_sid),
+                           right_primary_key: :goods_nomenclature_sid,
+                           right_key: :goods_nomenclature_sid,
+                           class_name: '::GoodsNomenclature',
+                           join_table: Sequel.as(:goods_nomenclature_tree_nodes, :child_nodes),
+                           read_only: true do |ds|
           raise DateNotSet unless TimeMachine.date_is_set?
 
           ds.non_hidden
@@ -52,15 +60,17 @@ module GoodsNomenclatures
                 TreeNode.descendant_node_constraints(origin, children)
             end
         end
+      end
 
-        many_to_many :historical_children,
-                     left_primary_key: :goods_nomenclature_sid,
-                     left_key: Sequel.qualify(:origin_nodes, :goods_nomenclature_sid),
-                     right_primary_key: :goods_nomenclature_sid,
-                     right_key: :goods_nomenclature_sid,
-                     class_name: '::GoodsNomenclature',
-                     join_table: Sequel.as(:goods_nomenclature_tree_nodes, :child_nodes),
-                     read_only: true do |ds|
+      def self.register_historical_children(model)
+        model.many_to_many :historical_children,
+                           left_primary_key: :goods_nomenclature_sid,
+                           left_key: Sequel.qualify(:origin_nodes, :goods_nomenclature_sid),
+                           right_primary_key: :goods_nomenclature_sid,
+                           right_key: :goods_nomenclature_sid,
+                           class_name: '::GoodsNomenclature',
+                           join_table: Sequel.as(:goods_nomenclature_tree_nodes, :child_nodes),
+                           read_only: true do |ds|
           ds.non_hidden
             .order(:child_nodes__position)
             .select_append(:child_nodes__depth, :child_nodes__number_indents)

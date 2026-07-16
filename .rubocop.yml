@@ -64,7 +64,6 @@ Metrics/BlockLength:
     - 'app/lib/xi_cn_importer/importer.rb'
     - 'app/lib/xi_cn_importer/notes_extractor/formatter.rb'
     - 'app/models/goods_nomenclatures/nested_set/ancestor_associations.rb'
-    - 'app/models/goods_nomenclatures/nested_set/descendant_associations.rb'
     - 'app/models/goods_nomenclatures/nested_set/measure_associations.rb'
 
 # The listed files are known hotspots; this cop is enforced everywhere else.
