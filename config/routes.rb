@@ -22,7 +22,9 @@ Rails.application.routes.draw do
   mount UserApi => '/uk/user', as: 'uk_user_api' if TradeTariffBackend.uk?
 
   # V1 routes - disabled
-  v1_gone = ->(_env) { [404, { 'Content-Type' => 'application/json' }, ['{"errors":[{"detail":"This version of the API is no longer supported. Please upgrade to v2. See https://docs.trade-tariff.service.gov.uk/reference.html"}]}']] }
+  v1_gone_body = { errors: [{ detail: 'This version of the API is no longer supported. Please upgrade to v2. ' \
+                                      'See https://docs.trade-tariff.service.gov.uk/reference.html' }] }.to_json
+  v1_gone = ->(_env) { [404, { 'Content-Type' => 'application/json' }, [v1_gone_body]] }
   match '(/:service)/api/v1(/*path)', via: :all, to: v1_gone, constraints: { service: /uk|xi/ }
   match '/uk/api/*path', via: :all, to: v1_gone, constraints: VersionedAcceptHeader.new(version: 1.0)
   match '/xi/api/*path', via: :all, to: v1_gone, constraints: VersionedAcceptHeader.new(version: 1.0)

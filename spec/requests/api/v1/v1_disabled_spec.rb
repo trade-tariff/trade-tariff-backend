@@ -1,18 +1,25 @@
 RSpec.describe 'V1 API disabled' do
   let(:v1_headers) { { 'Accept' => 'application/vnd.hmrc.1.0+json', 'Content-Type' => 'application/json' } }
   let(:no_headers) { { 'Content-Type' => 'application/json' } }
+  let(:expected_error) { 'This version of the API is no longer supported. Please upgrade to v2. See https://docs.trade-tariff.service.gov.uk/reference.html' }
 
   shared_examples 'returns 404 for V1 requests' do |path|
     it "returns 404 for #{path} with V1 Accept header" do
       get path, headers: v1_headers
+
       expect(response).to have_http_status(:not_found)
+      expect(response.content_type).to include('application/json')
+      expect(JSON.parse(response.body)).to include('errors' => [{ 'detail' => expected_error }])
     end
   end
 
   shared_examples 'returns 404 for URL-versioned V1 requests' do |path|
     it "returns 404 for #{path} without Accept header" do
       get path, headers: no_headers
+
       expect(response).to have_http_status(:not_found)
+      expect(response.content_type).to include('application/json')
+      expect(JSON.parse(response.body)).to include('errors' => [{ 'detail' => expected_error }])
     end
   end
 
