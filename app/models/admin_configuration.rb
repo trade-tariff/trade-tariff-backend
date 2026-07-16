@@ -146,6 +146,8 @@ class AdminConfiguration < Sequel::Model(Sequel[:admin_configurations].qualify(:
     'input_sanitiser_enabled' => true,
     'input_sanitiser_max_length' => 1000,
     'retrieval_method' => 'hybrid',
+    'hybrid_query_guardrail_enabled' => false,
+    'hybrid_query_guardrail_threshold' => 32,
     'rrf_k' => 60,
     'vector_ef_search' => 100,
     'vector_score_threshold' => 35,

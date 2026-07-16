@@ -629,6 +629,60 @@ RSpec.describe Search::Instrumentation do
     end
   end
 
+  describe '.query_guardrail_decided' do
+    it 'instruments the configured variant, score, threshold, and decision' do
+      allow(ActiveSupport::Notifications).to receive(:instrument)
+
+      described_class.query_guardrail_decided(
+        request_id: 'req-1',
+        query: 'book a dentist appointment',
+        effective_query: 'dentist appointment',
+        iteration: 2,
+        enabled: true,
+        accepted: false,
+        max_score: 0.31,
+        threshold: 0.32,
+        reason: 'below_threshold',
+      )
+
+      expect(ActiveSupport::Notifications).to have_received(:instrument).with(
+        'query_guardrail_decided.search',
+        request_id: 'req-1',
+        search_type: 'interactive',
+        query: 'book a dentist appointment',
+        effective_query: 'dentist appointment',
+        iteration: 2,
+        variant: 'fixed_vector_score',
+        enabled: true,
+        accepted: false,
+        max_score: 0.31,
+        threshold: 0.32,
+        reason: 'below_threshold',
+      )
+    end
+
+    it 'identifies disabled decisions as the control variant' do
+      allow(ActiveSupport::Notifications).to receive(:instrument)
+
+      described_class.query_guardrail_decided(
+        request_id: 'req-1',
+        query: 'horses',
+        effective_query: 'horses',
+        iteration: 1,
+        enabled: false,
+        accepted: true,
+        max_score: 0.55,
+        threshold: nil,
+        reason: 'disabled',
+      )
+
+      expect(ActiveSupport::Notifications).to have_received(:instrument).with(
+        'query_guardrail_decided.search',
+        hash_including(variant: 'control', enabled: false, accepted: true, reason: 'disabled'),
+      )
+    end
+  end
+
   describe '.question_returned' do
     it 'instruments the question_returned event' do
       allow(ActiveSupport::Notifications).to receive(:instrument)

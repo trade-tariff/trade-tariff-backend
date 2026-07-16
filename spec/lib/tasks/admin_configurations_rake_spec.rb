@@ -21,6 +21,8 @@ RSpec.describe 'admin_configurations:seed' do
       expand_search_min_results
       expand_search_min_score
       expand_search_when_needed_enabled
+      hybrid_query_guardrail_enabled
+      hybrid_query_guardrail_threshold
       input_sanitiser_enabled
       input_sanitiser_max_length
       interactive_search_duplicate_question_guard_context
@@ -389,6 +391,18 @@ RSpec.describe 'admin_configurations:seed' do
     expect(config.config_type).to eq('integer')
     expect(config.area).to eq('classification')
     expect(config.value).to eq(AdminConfiguration.default_for('rrf_k'))
+  end
+
+  it 'seeds the hybrid query guardrail disabled with its separately configurable threshold', :aggregate_failures do
+    seed
+
+    enabled = AdminConfiguration.where(name: 'hybrid_query_guardrail_enabled').first
+    threshold = AdminConfiguration.where(name: 'hybrid_query_guardrail_threshold').first
+
+    expect(enabled.config_type).to eq('boolean')
+    expect(enabled.value).to be(false)
+    expect(threshold.config_type).to eq('integer')
+    expect(threshold.value).to eq(32)
   end
 
   it 'seeds suggestion toggle configs as booleans', :aggregate_failures do

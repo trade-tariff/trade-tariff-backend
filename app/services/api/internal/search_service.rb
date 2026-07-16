@@ -367,11 +367,14 @@ module Api
           vector_score_threshold: AdminConfiguration.integer_value('vector_score_threshold'),
           vector_ef_search: AdminConfiguration.integer_value('vector_ef_search'),
           rrf_k: AdminConfiguration.integer_value('rrf_k'),
+          hybrid_query_guardrail_threshold: AdminConfiguration.integer_value('hybrid_query_guardrail_threshold'),
           interactive_search_duplicate_question_guard_model: model_configuration('interactive_search_duplicate_question_guard_model'),
           search_model: model_configuration('search_model'),
           expand_model: model_configuration('expand_model'),
           filter_prefixes: filter_prefixes,
-        }.compact_blank
+        }.compact_blank.tap do |configuration|
+          configuration[:hybrid_query_guardrail_enabled] = AdminConfiguration.enabled?('hybrid_query_guardrail_enabled')
+        end
       end
 
       def model_configuration(name)

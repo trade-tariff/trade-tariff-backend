@@ -78,6 +78,14 @@
   config_type: integer
   description: "Reciprocal rank fusion constant used by hybrid retrieval: score = 1/(rank + k). Higher values flatten rank differences."
   string_default: rrf_k
+- name: hybrid_query_guardrail_enabled
+  config_type: boolean
+  description: "Reject hybrid retrieval queries whose raw maximum vector similarity is below the separately configured query-level threshold. Defaults off so current search behaviour is preserved."
+  default: hybrid_query_guardrail_enabled
+- name: hybrid_query_guardrail_threshold
+  config_type: integer
+  description: "Minimum raw maximum vector similarity (0-100) required for a hybrid query when the query guardrail is enabled. This is separate from the vector candidate threshold."
+  string_default: hybrid_query_guardrail_threshold
 - name: vector_ef_search
   config_type: integer
   description: "HNSW ef_search value used by vector retrieval, including the vector leg of hybrid retrieval. Higher values may improve recall at the cost of latency."

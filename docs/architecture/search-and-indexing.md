@@ -55,6 +55,17 @@ Relevant code paths include:
 - `app/workers/relabel_goods_nomenclature_worker.rb`
 - `app/workers/goods_nomenclature_reconciliation_worker.rb`
 
+## Hybrid Query Guardrail
+
+Hybrid retrieval can apply a query-level quality guardrail after both retrieval legs have completed and before results are returned. It uses the highest raw vector similarity for an eligible commodity, before the separate per-candidate vector threshold is applied.
+
+The guardrail is controlled through admin configuration:
+
+- `hybrid_query_guardrail_enabled` defaults to off, preserving the existing hybrid behaviour.
+- `hybrid_query_guardrail_threshold` defaults to `32`, representing a similarity of `0.32`.
+
+When enabled, hybrid retrieval returns no suggestions if the maximum score is below the threshold, no eligible vector candidate exists, or the vector leg is unavailable. The `query_guardrail_decided.search` instrumentation event records the effective variant, score, threshold, outcome, and reason so A/B-test results can be attributed to the control.
+
 Guided classification search can also attach bounded chapter- and section-note evidence to retrieved candidates. [Tariff knowledge notes](../tariff-knowledge-notes.md) documents extraction, graph edges, compressed-note materialisation and deduplication, prompt selection, and request-ID diagnostics.
 
 ## Query Expansion Deadline

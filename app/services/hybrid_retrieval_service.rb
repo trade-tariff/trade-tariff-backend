@@ -26,9 +26,18 @@ class HybridRetrievalService
     end
 
     opensearch_items = opensearch_leg.value&.results || []
-    vector_items = vector_leg.value || []
+    vector_items = vector_leg.value&.results || []
 
     merged = rrf_merge(opensearch_items, vector_items)
+    decision = query_guardrail_decision(vector_leg)
+    merged = [] unless decision[:accepted]
+    Search::Instrumentation.query_guardrail_decided(
+      request_id: @request_id,
+      query: @query,
+      effective_query: @expanded_query,
+      iteration: @iteration,
+      **decision,
+    )
     Search::Instrumentation.retrieval_results_returned(
       request_id: @request_id,
       query: @query,
@@ -60,12 +69,12 @@ private
       when :opensearch
         OpensearchRetrievalService.call(**opensearch_args)
       when :vector
-        VectorRetrievalService.call(**vector_args)
+        VectorRetrievalService.call_with_diagnostics(**vector_args)
       end
     end
 
     duration_ms = ((Process.clock_gettime(Process::CLOCK_MONOTONIC) - start) * 1000).round(2)
-    count = leg == :opensearch ? result&.results&.size || 0 : result&.size || 0
+    count = result&.results&.size || 0
 
     Search::Instrumentation.retrieval_leg_completed(
       request_id: @request_id, leg: leg, duration_ms: duration_ms, result_count: count, status: 'success',
@@ -79,7 +88,7 @@ private
       stage: 'before_rrf',
       leg: leg,
       iteration: @iteration,
-      results: leg == :opensearch ? result&.results || [] : result || [],
+      results: result&.results || [],
     )
 
     LegResult.new(value: result, error: nil)
@@ -135,6 +144,25 @@ private
     scores
       .sort_by { |_sid, score| -score }
       .map { |sid, score| build_result(items_by_sid[sid], score) }
+  end
+
+  def query_guardrail_decision(vector_leg)
+    enabled = AdminConfiguration.enabled?('hybrid_query_guardrail_enabled')
+    max_score = vector_leg.value&.max_score
+    return { enabled:, accepted: true, max_score:, threshold: nil, reason: 'disabled' } unless enabled
+
+    threshold = AdminConfiguration.integer_value('hybrid_query_guardrail_threshold') / 100.0
+    reason = if vector_leg.error
+               'vector_unavailable'
+             elsif max_score.nil?
+               'no_vector_candidates'
+             elsif max_score >= threshold
+               'accepted'
+             else
+               'below_threshold'
+             end
+
+    { enabled:, accepted: reason == 'accepted', max_score:, threshold:, reason: }
   end
 
   def build_result(item, score)
