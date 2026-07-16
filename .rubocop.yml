@@ -73,7 +73,6 @@ Metrics/BlockLength:
 Metrics/ModuleLength:
   Enabled: true
   Exclude:
-    - 'app/lib/sequel/plugins/optimized_many_to_many.rb'
     - 'app/lib/tariff_synchronizer.rb'
     - 'app/models/measure.rb'
     - 'lib/tasks/green_lanes.rake'
