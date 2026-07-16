@@ -1,68 +1,6 @@
 module GreenLanesTasks
 module_function
 
-  def import_category_assessments
-    raise 'Only supported on XI service' unless TradeTariffBackend.xi?
-
-    themes = GreenLanes::Theme.all.index_by { |theme| [theme.section, theme.subsection] }
-    assessments = GreenLanes::CategoryAssessment.all.index_by { |assessment| category_assessment_key(assessment) }
-
-    GreenLanes::CategoryAssessment.db.transaction do
-      GreenLanes::CategoryAssessmentJson.all.each do |json_ca|
-        import_category_assessment(json_ca, themes, assessments)
-      end
-    end
-  end
-
-  def category_assessment_key(assessment)
-    [assessment.measure_type_id, assessment.regulation_id]
-  end
-
-  def import_category_assessment(json_ca, themes, assessments)
-    return if json_ca.category.to_s == '3'
-    return puts "MISSING THEME, SKIPPING: #{json_ca.inspect}" if json_ca.theme.blank?
-
-    key = [json_ca.measure_type_id, json_ca.regulation_id]
-    assessment = assessments[key] || build_category_assessment(json_ca)
-    theme = category_assessment_theme(json_ca, themes)
-
-    if assessment.id.nil?
-      assessment.theme = theme
-      assessment.save(validate: true)
-    elsif assessment.theme != theme
-      raise 'Inconsistent theme'
-    end
-
-    assessments[key] = assessment
-  end
-
-  def build_category_assessment(json_ca)
-    assessment = GreenLanes::CategoryAssessment.new
-    assessment.measure_type_id = json_ca.measure_type_id
-    assessment.regulation_id = json_ca.regulation_id
-    regulation = ModificationRegulation.actual.where(modification_regulation_id: json_ca.regulation_id).all.last
-    regulation ||= BaseRegulation.actual.where(base_regulation_id: json_ca.regulation_id).all.last
-    assessment.regulation_role = regulation&.role || 1
-    assessment
-  end
-
-  def category_assessment_theme(json_ca, themes)
-    section, subsection, theme_name = json_ca.theme.split('.', 3)
-    theme_key = [section.to_i, subsection.to_i]
-    themes[theme_key] ||= build_theme(section, subsection, json_ca.category, theme_name)
-  end
-
-  def build_theme(section, subsection, category, theme_name)
-    GreenLanes::Theme.new.tap do |theme|
-      theme.section = section
-      theme.subsection = subsection
-      theme.category = category
-      theme.theme = theme_name
-      theme.description = theme_name
-      theme.save(validate: true)
-    end
-  end
-
   def import_tr_category_assessments
     raise 'Only supported on XI service' unless TradeTariffBackend.xi?
 
@@ -143,11 +81,9 @@ module_function
   end
 
   def csv_category_assessment_data
-    if Rails.application.config.persistence_bucket.present?
-      s3_csv('data/categorisation/category_assessment.csv')
-    else
-      local_category_assessment_csv
-    end
+    return s3_csv('data/categorisation/category_assessment.csv') if Rails.application.config.persistence_bucket.present?
+
+    local_category_assessment_csv
   end
 
   def local_category_assessment_csv
@@ -206,7 +142,7 @@ namespace :green_lanes do
 
   desc 'Import CategoryAssessments data'
   task import_category_assessments: :environment do
-    GreenLanesTasks.import_category_assessments
+    GreenLanes::CategoryAssessmentImporter.call { |json_ca| puts "MISSING THEME, SKIPPING: #{json_ca.inspect}" }
   end
 
   desc 'Import Trade Remedies CategoryAssessments data'
