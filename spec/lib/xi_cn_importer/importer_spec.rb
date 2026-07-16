@@ -37,6 +37,8 @@ RSpec.describe XiCnImporter::Importer do
       instance_double(XiCnImporter::NotesExtractor, call: extracted_result),
     )
     allow(TariffSynchronizer::FileService).to receive(:write_file)
+    allow(XiCnImporter::Instrumentation).to receive(:document_imported)
+    allow(XiCnImporter::Instrumentation).to receive(:document_import_failed)
   end
 
   describe '#call' do
@@ -54,26 +56,125 @@ RSpec.describe XiCnImporter::Importer do
         .with("data/customs_tariff_documents/xi/CN_#{celex}.xhtml", html_content)
     end
 
-    it 'creates a CustomsTariffUpdate with status pending' do
+    it 'persists the update attributes' do
       expect { importer.call }
         .to change { CustomsTariffUpdate.where(version: celex).count }.by(1)
 
       update = CustomsTariffUpdate.first(version: celex)
-      expect(update.status).to eq CustomsTariffUpdate::PENDING
-      expect(update.validity_start_date).to eq force_date
+      expect(update).to have_attributes(
+        version: celex,
+        validity_start_date: force_date,
+        status: CustomsTariffUpdate::PENDING,
+        source_url: fetched_result.cellar_url,
+        s3_path: "data/customs_tariff_documents/xi/CN_#{celex}.pdf",
+        file_checksum: pdf_checksum,
+        document_created_on: fetched_result.publication_date,
+      )
     end
 
-    it 'creates chapter, section, and general rule notes' do
+    it 'persists the note attributes', :aggregate_failures do
       importer.call
-      expect(CustomsTariffChapterNote.where(customs_tariff_update_version: celex).count).to eq 1
-      expect(CustomsTariffSectionNote.where(customs_tariff_update_version: celex).count).to eq 1
-      expect(CustomsTariffGeneralRule.where(customs_tariff_update_version: celex).count).to eq 1
+
+      sections = CustomsTariffSectionNote.where(customs_tariff_update_version: celex).all
+      chapters = CustomsTariffChapterNote.where(customs_tariff_update_version: celex).all
+      general_rules = CustomsTariffGeneralRule.where(customs_tariff_update_version: celex).all
+
+      expect(sections).to contain_exactly(
+        have_attributes(
+          customs_tariff_update_version: celex,
+          section_id: 1,
+          content: extracted_result.sections.fetch(1),
+          validity_start_date: force_date,
+          status: CustomsTariffSectionNote::PENDING,
+        ),
+      )
+      expect(chapters).to contain_exactly(
+        have_attributes(
+          customs_tariff_update_version: celex,
+          chapter_id: '01',
+          content: extracted_result.chapters.fetch('01'),
+          validity_start_date: force_date,
+          status: CustomsTariffChapterNote::PENDING,
+        ),
+      )
+      expect(general_rules).to contain_exactly(
+        have_attributes(
+          customs_tariff_update_version: celex,
+          rule_label: '1',
+          content: extracted_result.general_rules.fetch('1'),
+          validity_start_date: force_date,
+          status: CustomsTariffGeneralRule::PENDING,
+        ),
+      )
     end
 
     it 'returns :imported status' do
       results = importer.call
       expect(results.first.status).to eq :imported
       expect(results.first.celex).to eq celex
+    end
+
+    it 'instruments a successful import' do
+      importer.call
+
+      expect(XiCnImporter::Instrumentation).to have_received(:document_imported).with(
+        celex:,
+        duration_ms: a_kind_of(Numeric),
+      ).once
+      expect(XiCnImporter::Instrumentation).not_to have_received(:document_import_failed)
+    end
+
+    context 'with a pre-existing failed update' do
+      before do
+        CustomsTariffUpdate.create(
+          version: celex,
+          validity_start_date: 1.year.ago.to_date,
+          status: CustomsTariffUpdate::FAILED,
+          import_error: 'previous failure',
+        )
+      end
+
+      it 'replaces it with one pending update' do
+        importer.call
+
+        updates = CustomsTariffUpdate.where(version: celex).all
+        expect(updates).to contain_exactly(
+          have_attributes(status: CustomsTariffUpdate::PENDING, import_error: nil),
+        )
+      end
+    end
+
+    context 'when a later note write fails' do
+      before do
+        allow(CustomsTariffChapterNote).to receive(:create)
+          .and_raise(RuntimeError, 'persistence error')
+      end
+
+      it 'rolls back before recording failure', :aggregate_failures do
+        results = importer.call
+
+        updates = CustomsTariffUpdate.where(version: celex).all
+        expect(results.first).to have_attributes(
+          status: :failed,
+          celex:,
+          error: 'persistence error',
+        )
+        expect(updates).to contain_exactly(
+          have_attributes(
+            status: CustomsTariffUpdate::FAILED,
+            import_error: 'persistence error',
+          ),
+        )
+        expect(CustomsTariffSectionNote.where(customs_tariff_update_version: celex).count).to eq 0
+        expect(CustomsTariffChapterNote.where(customs_tariff_update_version: celex).count).to eq 0
+        expect(CustomsTariffGeneralRule.where(customs_tariff_update_version: celex).count).to eq 0
+        expect(XiCnImporter::Instrumentation).to have_received(:document_import_failed).with(
+          celex:,
+          error_class: 'RuntimeError',
+          error_message: 'persistence error',
+        ).once
+        expect(XiCnImporter::Instrumentation).not_to have_received(:document_imported)
+      end
     end
 
     context 'when extraction raises an error' do
@@ -93,16 +194,28 @@ RSpec.describe XiCnImporter::Importer do
         expect(update.status).to eq CustomsTariffUpdate::FAILED
       end
 
+      it 'instruments the failed import' do
+        importer.call
+
+        expect(XiCnImporter::Instrumentation).to have_received(:document_import_failed).with(
+          celex:,
+          error_class: 'RuntimeError',
+          error_message: 'parse error',
+        ).once
+        expect(XiCnImporter::Instrumentation).not_to have_received(:document_imported)
+      end
+
       context 'when a pre-existing FAILED record exists' do
         it 'refreshes the error message and timestamp' do
           old_error = 'previous import error'
-          old_timestamp = 2.days.ago
-          CustomsTariffUpdate.create(
-            version: celex,
-            validity_start_date: old_timestamp.to_date,
-            status: CustomsTariffUpdate::FAILED,
-            import_error: old_error,
-          )
+          old_updated_at = travel_to 2.days.ago do
+            CustomsTariffUpdate.create(
+              version: celex,
+              validity_start_date: Time.zone.today,
+              status: CustomsTariffUpdate::FAILED,
+              import_error: old_error,
+            ).updated_at
+          end
 
           travel_to 1.day.ago do
             importer.call
@@ -111,7 +224,7 @@ RSpec.describe XiCnImporter::Importer do
           update = CustomsTariffUpdate.first(version: celex)
           expect(update.status).to eq CustomsTariffUpdate::FAILED
           expect(update.import_error).to eq 'parse error'
-          expect(update.updated_at).to be > old_timestamp
+          expect(update.updated_at).to be > old_updated_at
         end
       end
     end
