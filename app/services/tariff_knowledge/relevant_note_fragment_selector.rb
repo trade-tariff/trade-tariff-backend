@@ -10,8 +10,8 @@ module TariffKnowledge
     MAX_TOTAL_FRAGMENTS = 8
     MAX_LOGGED_OMITTED_EVIDENCE = 20
     MAX_LOGGED_FRAGMENT_NODE_KEYS = 20
-    DUPLICATE_OMISSION_REASONS = %w[duplicate_same_score duplicate_lower_score].freeze
-    OMISSION_REASON_ORDER = %w[below_minimum_score per_note_limit total_evidence_limit duplicate_same_score duplicate_lower_score].freeze
+    DUPLICATE_OMISSION_REASONS = %w[duplicate_same_score duplicate_lower_score duplicate_source_node contained_text_duplicate].freeze
+    OMISSION_REASON_ORDER = %w[below_minimum_score per_note_limit total_evidence_limit duplicate_same_score duplicate_lower_score duplicate_source_node contained_text_duplicate].freeze
 
     # A fragment must show more than generic relevance before it is emitted.
     # For example, an exclusion fragment starts at 3 points, so it still needs
@@ -102,10 +102,14 @@ module TariffKnowledge
 
     def call
       @omissions = OmissionCollector.new(limit: MAX_LOGGED_OMITTED_EVIDENCE, reason_order: OMISSION_REASON_ORDER)
+      @considered_association_count = 0
+      @considered_source_node_keys = Set.new
       contexts = notes_by_item_id.each_with_object({}) do |(item_id, note), grouped|
         group = grouped[note.context_hash] ||= { key: note.context_hash, commodity_codes: [], fragments: {} }
         group[:commodity_codes] << item_id
         scored_fragments(note).each do |fragment|
+          @considered_association_count += 1
+          @considered_source_node_keys << fragment[:key]
           current = group[:fragments][fragment[:key]]
           if current.nil?
             group[:fragments][fragment[:key]] = fragment
@@ -118,13 +122,81 @@ module TariffKnowledge
           end
         end
       end
+      @considered_context_count = contexts.size
 
-      build_selection(contexts.values)
+      build_selection(deduplicate_source_evidence(contexts.values))
     end
 
   private
 
-    attr_reader :query, :search_results, :notes_by_item_id, :omissions
+    attr_reader :query, :search_results, :notes_by_item_id, :omissions, :considered_association_count, :considered_source_node_keys, :considered_context_count
+
+    def deduplicate_source_evidence(contexts)
+      retained = {}
+
+      contexts.each do |context|
+        context[:fragments].each_value do |fragment|
+          candidate = fragment.merge(
+            context_hashes: [context[:key]],
+            commodity_codes: context[:commodity_codes].uniq,
+            owning_context_hash: context[:key],
+          )
+          current = retained[fragment[:key]]
+
+          if current.nil?
+            retained[fragment[:key]] = candidate
+            next
+          end
+
+          record_omission(candidate, context[:key], 'duplicate_source_node', retained_source_node_key: current[:key])
+          strongest, other = [current, candidate].sort_by { |record| [-record[:score], record[:owning_context_hash].to_s] }
+          retained[fragment[:key]] = strongest.merge(
+            context_hashes: (current[:context_hashes] + candidate[:context_hashes]).uniq,
+            commodity_codes: (current[:commodity_codes] + candidate[:commodity_codes]).uniq,
+            graph_paths: (Array(current[:graph_paths]) + Array(candidate[:graph_paths])).uniq,
+            score_reasons: (Array(strongest[:score_reasons]) + Array(other[:score_reasons])).uniq,
+          )
+        end
+      end
+
+      remove_contained_text_duplicates(retained.values).group_by { |fragment| fragment[:owning_context_hash] }.map do |context_hash, fragments|
+        {
+          key: context_hash,
+          commodity_codes: fragments.flat_map { |fragment| fragment[:commodity_codes] }.uniq,
+          fragments: fragments.index_by { |fragment| fragment[:key] },
+        }
+      end
+    end
+
+    def remove_contained_text_duplicates(fragments)
+      omitted_keys = Set.new
+
+      fragments.select { |fragment| fragment[:evidence_kind] == 'note_block' }.each do |block|
+        fragments.select { |fragment| fragment[:evidence_kind] == 'note_fragment' }.each do |fragment|
+          next if omitted_keys.include?(block[:key]) || omitted_keys.include?(fragment[:key])
+          next unless contained_text?(block[:text], fragment[:text])
+
+          retained, omitted = prefer_specific_fragment?(fragment) ? [fragment, block] : [block, fragment]
+          omitted_keys << omitted[:key]
+          record_omission(
+            omitted,
+            omitted[:owning_context_hash],
+            'contained_text_duplicate',
+            retained_source_node_key: retained[:key],
+          )
+        end
+      end
+
+      fragments.reject { |fragment| omitted_keys.include?(fragment[:key]) }
+    end
+
+    def contained_text?(first, second)
+      first = first.to_s.squish.downcase
+      second = second.to_s.squish.downcase
+      first.present? && second.present? && (first.include?(second) || second.include?(first))
+    end
+
+    def prefer_specific_fragment?(fragment) = fragment[:range_type] == 'heading'
 
     def build_selection(grouped_contexts)
       eligible_contexts = []
@@ -146,10 +218,13 @@ module TariffKnowledge
         contexts:,
         diagnostics: {
           status: selection_status(grouped_contexts, contexts),
-          considered_note_count: grouped_contexts.size,
-          considered_evidence_count: grouped_contexts.sum { |context| context[:fragments].size } + omissions.count_for(*DUPLICATE_OMISSION_REASONS),
+          considered_note_count: considered_context_count,
+          considered_evidence_count: considered_association_count,
+          considered_association_count: considered_association_count,
+          considered_distinct_source_count: considered_source_node_keys.size,
           selected_note_count: contexts.size,
           selected_evidence_count: contexts.sum { |context| context[:fragments].size },
+          selected_distinct_source_count: contexts.sum { |context| context[:fragments].size },
           omitted_evidence_count: omissions.count,
           logged_omitted_evidence_count: logged_omitted.size,
           omitted_evidence_truncated: logged_omitted.size < omissions.count,
@@ -200,8 +275,8 @@ module TariffKnowledge
       'no_eligible_evidence'
     end
 
-    def record_omission(fragment, context_hash, reason)
-      omissions.add(reason) { omitted_evidence(fragment, context_hash, reason) }
+    def record_omission(fragment, context_hash, reason, retained_source_node_key: nil)
+      omissions.add(reason) { omitted_evidence(fragment, context_hash, reason, retained_source_node_key:) }
     end
 
     def prompt_fragment(fragment)
@@ -212,13 +287,19 @@ module TariffKnowledge
       diagnostic_evidence(fragment, context_hash).merge(decision: 'selected')
     end
 
-    def omitted_evidence(fragment, context_hash, reason)
-      diagnostic_evidence(fragment, context_hash).merge(decision: 'omitted', omission_reason: reason)
+    def omitted_evidence(fragment, context_hash, reason, retained_source_node_key: nil)
+      diagnostic_evidence(fragment, context_hash).merge(
+        decision: 'omitted',
+        omission_reason: reason,
+        retained_source_node_key:,
+      ).compact
     end
 
     def diagnostic_evidence(fragment, context_hash)
       fragment.except(:key, :why_relevant).merge(
         context_hash:,
+        context_hashes: fragment[:context_hashes] || [context_hash],
+        commodity_codes: fragment[:commodity_codes],
         source_node_key: fragment[:key],
         score_reasons: fragment[:score_reasons],
       )
