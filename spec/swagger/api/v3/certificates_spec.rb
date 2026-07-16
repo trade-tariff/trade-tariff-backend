@@ -6,7 +6,6 @@ RSpec.describe 'Certificates V3', swagger_doc: 'v3/swagger.json', type: :request
   path '/api/v3/certificates' do
     get 'List all certificates' do
       tags 'Certificates'
-      produces 'application/json'
       operationId 'listCertificatesV3'
 
       response '200', 'certificates listed' do
@@ -39,7 +38,6 @@ RSpec.describe 'Certificates V3', swagger_doc: 'v3/swagger.json', type: :request
   path '/api/v3/certificate_types' do
     get 'List all certificate types' do
       tags 'Certificates'
-      produces 'application/json'
       operationId 'listCertificateTypesV3'
 
       response '200', 'certificate types listed' do

@@ -2,7 +2,10 @@ module Api
   module V3
     class GeographicalAreasController < BaseController
       def index
-        render json: CachedGeographicalAreaService.new(actual_date, exclude_none: false, countries: false).call
+        areas = GeographicalArea.actual
+          .eager(:geographical_area_descriptions)
+          .all
+        render json: Api::V3::GeographicalAreaSerializer.collection(areas)
       end
 
       def show

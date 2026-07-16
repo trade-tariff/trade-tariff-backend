@@ -6,7 +6,6 @@ RSpec.describe 'Measure Types V3', swagger_doc: 'v3/swagger.json', type: :reques
   path '/api/v3/measure_types' do
     get 'List all measure types' do
       tags 'Measure Types'
-      produces 'application/json'
       operationId 'listMeasureTypesV3'
 
       response '200', 'measure types listed' do
@@ -47,7 +46,6 @@ RSpec.describe 'Measure Types V3', swagger_doc: 'v3/swagger.json', type: :reques
 
     get 'Retrieve a measure type' do
       tags 'Measure Types'
-      produces 'application/json'
       operationId 'getMeasureTypeV3'
 
       response '200', 'measure type found' do

@@ -6,7 +6,6 @@ RSpec.describe 'Footnotes V3', swagger_doc: 'v3/swagger.json', type: :request do
   path '/api/v3/footnotes' do
     get 'List all footnotes' do
       tags 'Footnotes'
-      produces 'application/json'
       operationId 'listFootnotesV3'
 
       response '200', 'footnotes listed' do
@@ -39,7 +38,6 @@ RSpec.describe 'Footnotes V3', swagger_doc: 'v3/swagger.json', type: :request do
   path '/api/v3/footnote_types' do
     get 'List all footnote types' do
       tags 'Footnotes'
-      produces 'application/json'
       operationId 'listFootnoteTypesV3'
 
       response '200', 'footnote types listed' do

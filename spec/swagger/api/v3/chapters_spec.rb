@@ -9,7 +9,6 @@ RSpec.describe 'Chapters V3', swagger_doc: 'v3/swagger.json', type: :request do
 
     get 'Retrieve a chapter' do
       tags 'Chapters'
-      produces 'application/json'
       operationId 'getChapterV3'
 
       response '200', 'chapter found' do
@@ -45,7 +44,6 @@ RSpec.describe 'Chapters V3', swagger_doc: 'v3/swagger.json', type: :request do
 
     get 'List headings in a chapter' do
       tags 'Chapters'
-      produces 'application/json'
       operationId 'listChapterHeadingsV3'
 
       response '200', 'headings listed' do

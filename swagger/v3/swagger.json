@@ -66,9 +66,6 @@
           "Certificates"
         ],
         "operationId": "listCertificateTypesV3",
-        "produces": [
-          "application/json"
-        ],
         "responses": {
           "200": {
             "description": "certificate types listed",
@@ -124,9 +121,6 @@
           "Certificates"
         ],
         "operationId": "listCertificatesV3",
-        "produces": [
-          "application/json"
-        ],
         "responses": {
           "200": {
             "description": "certificates listed",
@@ -185,9 +179,6 @@
           "Chapters"
         ],
         "operationId": "getChapterV3",
-        "produces": [
-          "application/json"
-        ],
         "parameters": [
           {
             "name": "id",
@@ -270,9 +261,6 @@
           "Chapters"
         ],
         "operationId": "listChapterHeadingsV3",
-        "produces": [
-          "application/json"
-        ],
         "parameters": [
           {
             "name": "id",
@@ -347,9 +335,6 @@
           "Commodities"
         ],
         "operationId": "getCommodityV3",
-        "produces": [
-          "application/json"
-        ],
         "parameters": [
           {
             "name": "id",
@@ -450,9 +435,6 @@
           "Commodities"
         ],
         "operationId": "listCommodityMeasuresV3",
-        "produces": [
-          "application/json"
-        ],
         "description": "Returns import and export measures applicable to this commodity.",
         "parameters": [
           {
@@ -587,9 +569,6 @@
           "Exchange Rates"
         ],
         "operationId": "listExchangeRatesV3",
-        "produces": [
-          "application/json"
-        ],
         "description": "Returns available exchange rate periods. UK service only. Use the year and type parameters to filter.",
         "parameters": [
           {
@@ -665,9 +644,6 @@
           "Footnotes"
         ],
         "operationId": "listFootnoteTypesV3",
-        "produces": [
-          "application/json"
-        ],
         "responses": {
           "200": {
             "description": "footnote types listed",
@@ -727,9 +703,6 @@
           "Footnotes"
         ],
         "operationId": "listFootnotesV3",
-        "produces": [
-          "application/json"
-        ],
         "responses": {
           "200": {
             "description": "footnotes listed",
@@ -788,9 +761,6 @@
           "Geographical Areas"
         ],
         "operationId": "listGeographicalAreasV3",
-        "produces": [
-          "application/json"
-        ],
         "responses": {
           "200": {
             "description": "areas listed",
@@ -812,9 +782,6 @@
           "Geographical Areas"
         ],
         "operationId": "getGeographicalAreaV3",
-        "produces": [
-          "application/json"
-        ],
         "parameters": [
           {
             "name": "id",
@@ -888,9 +855,6 @@
           "Headings"
         ],
         "operationId": "getHeadingV3",
-        "produces": [
-          "application/json"
-        ],
         "parameters": [
           {
             "name": "id",
@@ -968,9 +932,6 @@
           "Headings"
         ],
         "operationId": "listHeadingCommoditiesV3",
-        "produces": [
-          "application/json"
-        ],
         "parameters": [
           {
             "name": "id",
@@ -1056,9 +1017,6 @@
           "Measure Types"
         ],
         "operationId": "listMeasureTypesV3",
-        "produces": [
-          "application/json"
-        ],
         "responses": {
           "200": {
             "description": "measure types listed",
@@ -1138,9 +1096,6 @@
           "Measure Types"
         ],
         "operationId": "getMeasureTypeV3",
-        "produces": [
-          "application/json"
-        ],
         "parameters": [
           {
             "name": "id",
@@ -1227,9 +1182,6 @@
           "Quotas"
         ],
         "operationId": "listQuotaOrderNumbersV3",
-        "produces": [
-          "application/json"
-        ],
         "description": "Returns quota order numbers. Useful for looking up quota identifiers before fetching quota details.",
         "responses": {
           "200": {
@@ -1252,9 +1204,6 @@
           "Reports"
         ],
         "operationId": "listReportsV3",
-        "produces": [
-          "application/json"
-        ],
         "description": "Extensible reports namespace. Returns the list of available reports. Currently empty - reports will be added incrementally.",
         "responses": {
           "200": {
@@ -1270,7 +1219,8 @@
                   "properties": {
                     "data": {
                       "type": "array",
-                      "items": {},
+                      "items": {
+                      },
                       "description": "Available reports (empty at launch)"
                     },
                     "meta": {
@@ -1291,9 +1241,6 @@
           "Search"
         ],
         "operationId": "searchV3",
-        "produces": [
-          "application/json"
-        ],
         "description": "Full-text search across commodity codes, chapter and heading descriptions. Returns ranked results. Powered by OpenSearch.",
         "parameters": [
           {
@@ -1327,9 +1274,6 @@
           "Sections"
         ],
         "operationId": "listSectionsV3",
-        "produces": [
-          "application/json"
-        ],
         "description": "Returns all tariff sections. Sections group chapters into broad categories of goods.",
         "responses": {
           "200": {
@@ -1400,9 +1344,6 @@
           "Sections"
         ],
         "operationId": "getSectionV3",
-        "produces": [
-          "application/json"
-        ],
         "parameters": [
           {
             "name": "id",
@@ -1477,9 +1418,6 @@
           "Sections"
         ],
         "operationId": "listSectionChaptersV3",
-        "produces": [
-          "application/json"
-        ],
         "parameters": [
           {
             "name": "id",
@@ -1553,9 +1491,6 @@
           "Subheadings"
         ],
         "operationId": "getSubheadingV3",
-        "produces": [
-          "application/json"
-        ],
         "parameters": [
           {
             "name": "id",
@@ -1640,9 +1575,6 @@
           "Subheadings"
         ],
         "operationId": "listSubheadingCommoditiesV3",
-        "produces": [
-          "application/json"
-        ],
         "parameters": [
           {
             "name": "id",

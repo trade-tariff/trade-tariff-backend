@@ -4,7 +4,7 @@ module Api
       def show
         chapter = Chapter.actual
           .by_code(chapter_id)
-          .eager(:chapter_note, :sections)
+          .eager(:chapter_note, :customs_tariff_chapter_note, :sections)
           .take
         raise Sequel::RecordNotFound, "Chapter #{chapter_id} not found" if chapter.nil?
 

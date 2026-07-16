@@ -6,7 +6,6 @@ RSpec.describe 'Search V3', swagger_doc: 'v3/swagger.json', type: :request do
   path '/api/v3/search' do
     get 'Search the tariff' do
       tags 'Search'
-      produces 'application/json'
       operationId 'searchV3'
       description 'Full-text search across commodity codes, chapter and heading descriptions. Returns ranked results. Powered by OpenSearch.'
 

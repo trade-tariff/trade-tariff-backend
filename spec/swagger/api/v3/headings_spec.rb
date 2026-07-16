@@ -9,7 +9,6 @@ RSpec.describe 'Headings V3', swagger_doc: 'v3/swagger.json', type: :request do
 
     get 'Retrieve a heading' do
       tags 'Headings'
-      produces 'application/json'
       operationId 'getHeadingV3'
 
       response '200', 'heading found' do
@@ -46,7 +45,6 @@ RSpec.describe 'Headings V3', swagger_doc: 'v3/swagger.json', type: :request do
 
     get 'List commodities under a heading' do
       tags 'Headings'
-      produces 'application/json'
       operationId 'listHeadingCommoditiesV3'
 
       response '200', 'commodities listed' do

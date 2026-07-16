@@ -15,6 +15,11 @@ module Api
           validity_end_date: @area.validity_end_date,
         }
       end
+
+      def self.collection(areas)
+        list = areas.map { |a| new(a).call }
+        { data: list, meta: { total: list.size } }
+      end
     end
   end
 end

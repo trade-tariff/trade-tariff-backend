@@ -6,7 +6,6 @@ RSpec.describe 'Geographical Areas V3', swagger_doc: 'v3/swagger.json', type: :r
   path '/api/v3/geographical_areas' do
     get 'List all geographical areas' do
       tags 'Geographical Areas'
-      produces 'application/json'
       operationId 'listGeographicalAreasV3'
 
       response '200', 'areas listed' do
@@ -25,7 +24,6 @@ RSpec.describe 'Geographical Areas V3', swagger_doc: 'v3/swagger.json', type: :r
 
     get 'Retrieve a geographical area' do
       tags 'Geographical Areas'
-      produces 'application/json'
       operationId 'getGeographicalAreaV3'
 
       response '200', 'area found' do

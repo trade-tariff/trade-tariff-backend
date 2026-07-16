@@ -9,7 +9,6 @@ RSpec.describe 'Commodities V3', swagger_doc: 'v3/swagger.json', type: :request 
 
     get 'Retrieve a commodity' do
       tags 'Commodities'
-      produces 'application/json'
       operationId 'getCommodityV3'
 
       response '200', 'commodity found' do
@@ -52,7 +51,6 @@ RSpec.describe 'Commodities V3', swagger_doc: 'v3/swagger.json', type: :request 
 
     get 'List measures on a commodity' do
       tags 'Commodities'
-      produces 'application/json'
       operationId 'listCommodityMeasuresV3'
       description 'Returns import and export measures applicable to this commodity.'
 

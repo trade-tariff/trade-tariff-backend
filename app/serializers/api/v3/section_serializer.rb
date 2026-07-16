@@ -13,7 +13,7 @@ module Api
           position: @section.position,
           chapter_from: @section.chapter_from,
           chapter_to: @section.chapter_to,
-          section_note: @section.section_note&.content,
+          section_note: @section.public_section_note&.content,
         }
       end
 

@@ -8,7 +8,7 @@ RSpec.describe 'V3 error handling', type: :request do
       # Unknown V3 routes fall through to the global exception handler chain,
       # which may return 404 or 500 depending on middleware. HTTP error status
       # is the contract; the exact code is environment-dependent.
-      expect(response).to have_http_status(:error)
+      expect(response.status).to be >= 400
     end
   end
 end

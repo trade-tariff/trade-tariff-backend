@@ -6,7 +6,6 @@ RSpec.describe 'Exchange Rates V3', swagger_doc: 'v3/swagger.json', type: :reque
   path '/api/v3/exchange_rates' do
     get 'List exchange rate periods' do
       tags 'Exchange Rates'
-      produces 'application/json'
       operationId 'listExchangeRatesV3'
       description 'Returns available exchange rate periods. UK service only. Use the year and type parameters to filter.'
 

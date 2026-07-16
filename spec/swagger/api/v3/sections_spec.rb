@@ -6,7 +6,6 @@ RSpec.describe 'Sections V3', swagger_doc: 'v3/swagger.json', type: :request do
   path '/api/v3/sections' do
     get 'List all sections' do
       tags 'Sections'
-      produces 'application/json'
       description 'Returns all tariff sections. Sections group chapters into broad categories of goods.'
       operationId 'listSectionsV3'
 
@@ -46,7 +45,6 @@ RSpec.describe 'Sections V3', swagger_doc: 'v3/swagger.json', type: :request do
 
     get 'Retrieve a section' do
       tags 'Sections'
-      produces 'application/json'
       operationId 'getSectionV3'
 
       response '200', 'section found' do
@@ -81,7 +79,6 @@ RSpec.describe 'Sections V3', swagger_doc: 'v3/swagger.json', type: :request do
 
     get 'List chapters in a section' do
       tags 'Sections'
-      produces 'application/json'
       operationId 'listSectionChaptersV3'
 
       response '200', 'chapters listed' do

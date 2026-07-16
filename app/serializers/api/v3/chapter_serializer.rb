@@ -13,7 +13,7 @@ module Api
           formatted_description: @chapter.formatted_description,
           validity_start_date: @chapter.validity_start_date,
           validity_end_date: @chapter.validity_end_date,
-          chapter_note: @chapter.chapter_note&.content,
+          chapter_note: @chapter.public_chapter_note&.content,
           section_id: @chapter.section&.id,
         }
       end
