@@ -26,7 +26,7 @@ module ProductionEnvironmentConfig
     end
 
     def configure_logging(config)
-      config.logger = ActiveSupport::Logger.new($stdout)
+      config.logger = ActiveSupport::TaggedLogging.new(ActiveSupport::Logger.new($stdout))
       config.lograge.enabled = true
       config.lograge.formatter = Lograge::Formatters::Logstash.new
       config.lograge.custom_options = lograge_custom_options
