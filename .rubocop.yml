@@ -75,7 +75,6 @@ Metrics/ModuleLength:
   Exclude:
     - 'app/lib/tariff_synchronizer.rb'
     - 'app/models/measure.rb'
-    - 'lib/tasks/green_lanes.rake'
     - 'lib/tasks/labels.rake'
     - 'lib/tasks/self_texts.rake'
     - 'lib/tasks/tariff_knowledge.rake'
