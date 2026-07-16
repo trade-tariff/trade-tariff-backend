@@ -10,19 +10,17 @@ class EuReferenceSelfTextImporter
   end
 
   def call
-    missing_csv! unless File.exist?(csv_path)
+    missing_csv! unless File.exist?(@csv_path)
 
     stats = { updated: 0, skipped_no_match: 0, skipped_blank: 0 }
-    CSV.foreach(csv_path, headers: true) { |row| populate_eu_reference(row, stats) }
+    CSV.foreach(@csv_path, headers: true) { |row| populate_eu_reference(row, stats) }
     $stdout.puts "EU references populated: #{stats[:updated]} updated, #{stats[:skipped_no_match]} no matching generated text, #{stats[:skipped_blank]} blank"
   end
 
 private
 
-  attr_reader :csv_path
-
   def missing_csv!
-    $stdout.puts "CSV not found at #{csv_path}"
+    $stdout.puts "CSV not found at #{@csv_path}"
     raise SystemExit.new(1, 'exit')
   end
 
