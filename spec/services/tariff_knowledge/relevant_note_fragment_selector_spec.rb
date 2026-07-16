@@ -888,6 +888,56 @@ RSpec.describe TariffKnowledge::RelevantNoteFragmentSelector do
     )
   end
 
+  it 'ranks a direct heading relationship ahead of a broader direct chapter relationship' do
+    heading_key = 'note_fragment:customs_tariff_chapter_note:1.31:95:heading'
+    chapter_key = 'note_fragment:customs_tariff_chapter_note:1.31:95:chapter'
+    note = create(
+      :tariff_knowledge_compressed_note,
+      goods_nomenclature_item_id: '9506911000',
+      content: 'specificity ordering note',
+      metadata: Sequel.pg_jsonb_wrap('evidence' => [
+        evidence_for(chapter_key, 'Chapter 95 includes various articles.', 'exclusion', range_type: 'chapter', range_code: '95'),
+        evidence_for(heading_key, 'The legal scope of heading 9506.', 'reference', range_type: 'heading', range_code: '9506'),
+      ]),
+    )
+
+    selection = described_class.call_with_diagnostics(
+      query: 'exercise apparatus',
+      search_results: [search_results.first],
+      notes_by_item_id: { '9506911000' => note },
+    )
+
+    expect(selection.contexts.first[:fragments].first[:source]).to eq('heading')
+    expect(selection.diagnostics.dig(:selected_contexts, 0, :evidence, 0)).to include(
+      source_node_key: heading_key,
+      range_specificity: 'direct_heading',
+    )
+  end
+
+  it 'uses retrieval rank to order equally relevant source evidence' do
+    higher_ranked_note = create_note_with_evidence(
+      '9506911000',
+      evidence_for('note_fragment:customs_tariff_chapter_note:1.31:95:higher', 'Heading 9506 includes exercise apparatus.', 'inclusion', range_type: 'heading', range_code: '9506'),
+    )
+    lower_ranked_note = create_note_with_evidence(
+      '9506999000',
+      evidence_for('note_fragment:customs_tariff_chapter_note:1.31:95:lower', 'Heading 9506 includes exercise equipment.', 'inclusion', range_type: 'heading', range_code: '9506'),
+    )
+    ranked_results = [
+      search_result_class.new(goods_nomenclature_item_id: '9506911000', description: 'Higher ranked', full_description: nil, score: 10),
+      search_result_class.new(goods_nomenclature_item_id: '9506999000', description: 'Lower ranked', full_description: nil, score: 9),
+    ]
+
+    selection = described_class.call_with_diagnostics(
+      query: 'exercise',
+      search_results: ranked_results,
+      notes_by_item_id: { '9506999000' => lower_ranked_note, '9506911000' => higher_ranked_note },
+    )
+
+    expect(selection.contexts.first[:key]).to eq(higher_ranked_note.context_hash)
+    expect(selection.diagnostics.dig(:selected_contexts, 0, :evidence, 0)).to include(best_candidate_rank: 1)
+  end
+
   def evidence_for(key, text, context_type, range_type: nil, range_code: nil, source_type: 'customs_tariff_chapter_note', source_id: '95')
     {
       'source_node_key' => key,
