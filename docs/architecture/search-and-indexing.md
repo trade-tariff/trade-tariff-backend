@@ -45,3 +45,5 @@ Relevant code paths include:
 - `app/workers/generate_self_text_worker.rb`
 - `app/workers/relabel_goods_nomenclature_worker.rb`
 - `app/workers/goods_nomenclature_reconciliation_worker.rb`
+
+Guided classification search can also attach bounded chapter- and section-note evidence to retrieved candidates. [Tariff knowledge notes](../tariff-knowledge-notes.md) documents extraction, graph edges, compressed-note materialisation and deduplication, prompt selection, and request-ID diagnostics.
