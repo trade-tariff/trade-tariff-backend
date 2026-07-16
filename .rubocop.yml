@@ -53,15 +53,30 @@ Layout/LineLength:
 Metrics/AbcSize:
   Max: 20
 
-# Legacy codebase-wide policy cop with many existing offenses; left disabled
-# until it can be split into focused refactors.
 Metrics/BlockLength:
-  Enabled: false
+  Enabled: true
+  Exclude:
+    - 'app/engines/admin_api.rb'
+    - 'app/engines/v1_api.rb'
+    - 'app/engines/v2_api.rb'
+    - 'app/lib/xi_cn_importer/importer.rb'
+    - 'app/lib/xi_cn_importer/notes_extractor/formatter.rb'
+    - 'app/lib/xi_cn_importer/reimporter.rb'
+    - 'app/models/goods_nomenclatures/nested_set/ancestor_associations.rb'
+    - 'app/models/goods_nomenclatures/nested_set/descendant_associations.rb'
+    - 'app/models/goods_nomenclatures/nested_set/measure_associations.rb'
 
-# Legacy codebase-wide policy cop with many existing offenses; left disabled
-# until it can be split into focused refactors.
 Metrics/ModuleLength:
-  Enabled: false
+  Enabled: true
+  Exclude:
+    - 'app/lib/sequel/plugins/optimized_many_to_many.rb'
+    - 'app/lib/tariff_synchronizer.rb'
+    - 'app/models/measure.rb'
+    - 'lib/tasks/green_lanes.rake'
+    - 'lib/tasks/labels.rake'
+    - 'lib/tasks/self_texts.rake'
+    - 'lib/tasks/tariff_knowledge.rake'
+    - 'lib/tasks/tariff_sync_tooling.rake'
 
 RSpec/SpecFilePathFormat:
   Enabled: true
