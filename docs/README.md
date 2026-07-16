@@ -20,6 +20,7 @@ This directory is the starting point for understanding the Trade Tariff Backend 
 - [Exchange rates](exchange_rates.md)
 - [Reporting](reporting.md)
 - [Generated classification content lifecycle](generated-classification-content-lifecycle.md)
+- [Internal ATAR API](internal-atar-api.md)
 - [Green lanes API keys](green_lanes_api_keys.md)
 
 ## Operational Entry Points
