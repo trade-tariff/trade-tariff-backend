@@ -77,7 +77,7 @@ module TariffKnowledge
       def logged
         ordered_reasons = reason_order.select { |reason| @samples.key?(reason) } + (@samples.keys - reason_order)
         queues = ordered_reasons.index_with { |reason| @samples[reason].dup }
-        entries = ordered_reasons.filter_map { |reason| queues[reason].shift }
+        entries = ordered_reasons.first(limit).filter_map { |reason| queues[reason].shift }
 
         ordered_reasons.cycle do |reason|
           break if entries.size >= limit || queues.values.all?(&:empty?)
