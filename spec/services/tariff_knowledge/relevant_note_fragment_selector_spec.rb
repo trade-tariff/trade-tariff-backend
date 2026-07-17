@@ -144,6 +144,17 @@ RSpec.describe TariffKnowledge::RelevantNoteFragmentSelector do
       search_results:,
       notes_by_item_id: {},
     )
+    empty_note = create(
+      :tariff_knowledge_compressed_note,
+      goods_nomenclature_item_id: '9506911000',
+      content: 'compressed note without evidence',
+      metadata: Sequel.pg_jsonb_wrap('evidence' => [], 'evidence_blocks' => []),
+    )
+    empty = described_class.call_with_diagnostics(
+      query:,
+      search_results:,
+      notes_by_item_id: { '9506911000' => empty_note },
+    )
     ineligible = described_class.call_with_diagnostics(
       query:,
       search_results:,
@@ -151,6 +162,7 @@ RSpec.describe TariffKnowledge::RelevantNoteFragmentSelector do
     )
 
     expect(absent.diagnostics[:status]).to eq('no_compressed_notes')
+    expect(empty.diagnostics).to include(status: 'no_eligible_evidence', considered_note_count: 1)
     expect(ineligible.diagnostics[:status]).to eq('no_eligible_evidence')
   end
 
