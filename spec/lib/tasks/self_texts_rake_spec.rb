@@ -466,5 +466,111 @@ RSpec.describe 'self_texts rake tasks' do
       ActiveSupport::Notifications.unsubscribe(subscriber) if subscriber
     end
   end
+
+  describe 'self_texts:validate' do
+    subject(:validate) { task.invoke }
+
+    let(:task) { Rake::Task['self_texts:validate'] }
+    let!(:original_threshold) { [ENV.key?('THRESHOLD'), ENV['THRESHOLD']] }
+
+    after do
+      task.reenable
+      threshold_was_set, threshold = original_threshold
+      threshold_was_set ? ENV['THRESHOLD'] = threshold : ENV.delete('THRESHOLD')
+    end
+
+    it 'reports both empty score sets' do
+      ENV.delete('THRESHOLD')
+
+      expect(task.prerequisites).to include('environment')
+      expect { validate }.to output(<<~OUTPUT).to_stdout
+        ================================================================================
+        PART A: EU Reference Comparison (similarity_score)
+        ================================================================================
+        No similarity scores found. Run self_texts:score first.
+
+        ================================================================================
+        PART B: Coherence Check (no EU reference)
+        ================================================================================
+        No coherence scores found. Run self_texts:score first.
+      OUTPUT
+    end
+
+    it 'reports independently ranked score sets' do
+      ENV['THRESHOLD'] = '0.7'
+      create(:goods_nomenclature_self_text,
+             goods_nomenclature_item_id: '0101010000',
+             self_text: 'Lowest similarity text',
+             eu_self_text: 'Lowest similarity EU text',
+             similarity_score: 0.1,
+             coherence_score: 1.0)
+      create(:goods_nomenclature_self_text,
+             goods_nomenclature_item_id: '0202020000',
+             self_text: 'Middle score text',
+             eu_self_text: 'Middle score EU text',
+             similarity_score: 0.5,
+             coherence_score: 0.6)
+      create(:goods_nomenclature_self_text,
+             goods_nomenclature_item_id: '0303030000',
+             self_text: 'Lowest coherence text',
+             eu_self_text: 'Highest similarity EU text',
+             similarity_score: 0.9,
+             coherence_score: 0.2)
+      create(:goods_nomenclature_self_text,
+             goods_nomenclature_item_id: '0404040000',
+             self_text: 'Unscored text',
+             eu_self_text: 'Unscored EU text')
+
+      expect { validate }.to output(<<~OUTPUT).to_stdout
+        ================================================================================
+        PART A: EU Reference Comparison (similarity_score)
+        ================================================================================
+        Total pairs: 3
+        Mean similarity: 0.5
+        Median: 0.5
+        P5: 0.14
+        P95: 0.86
+        Below 0.7: 2
+
+        Bottom 20 lowest-similarity pairs:
+        --------------------------------------------------------------------------------
+        1. [0101010000] similarity=0.1
+           Generated: Lowest similarity text
+           EU:        Lowest similarity EU text
+
+        2. [0202020000] similarity=0.5
+           Generated: Middle score text
+           EU:        Middle score EU text
+
+        3. [0303030000] similarity=0.9
+           Generated: Lowest coherence text
+           EU:        Highest similarity EU text
+
+        Below threshold: 2 records
+
+        ================================================================================
+        PART B: Coherence Check (no EU reference)
+        ================================================================================
+        Total gap nodes: 3
+        Mean coherence: 0.6
+        Median: 0.6
+        P5: 0.24
+        P95: 0.96
+        Below 0.7: 2
+
+        Bottom 20 lowest-coherence gap nodes:
+        --------------------------------------------------------------------------------
+        1. [0303030000] coherence=0.2
+           Generated: Lowest coherence text
+
+        2. [0202020000] coherence=0.6
+           Generated: Middle score text
+
+        3. [0101010000] coherence=1.0
+           Generated: Lowest similarity text
+
+      OUTPUT
+    end
+  end
 end
 # rubocop:enable RSpec/DescribeClass
