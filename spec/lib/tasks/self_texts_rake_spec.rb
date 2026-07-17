@@ -52,6 +52,56 @@ RSpec.describe 'self_texts rake tasks' do
     end
   end
 
+  describe 'self_texts:regenerate' do
+    subject(:regenerate) { Rake::Task['self_texts:regenerate'].invoke }
+
+    after { Rake::Task['self_texts:regenerate'].reenable }
+
+    it 'marks unedited current self-texts stale, versions them, and enqueues regeneration' do
+      eligible = create_list(:goods_nomenclature_self_text, 2)
+      eligible << create(:goods_nomenclature_self_text, :expired)
+      manually_edited = create(:goods_nomenclature_self_text, :manually_edited)
+      already_stale = create(:goods_nomenclature_self_text, :stale)
+      allow(GenerateSelfTextWorker).to receive(:perform_async) do
+        eligible.each do |record|
+          version = record.refresh.versions.order(:id).last
+          expect(record.stale).to be(true)
+          expect(version).to have_attributes(event: 'update')
+          expect(version.object['stale']).to be(true)
+        end
+      end
+
+      expect { regenerate }
+        .to output(<<~OUTPUT).to_stdout
+          Marked 3 self-texts as stale.
+          Enqueued regeneration. Check Sidekiq for progress.
+        OUTPUT
+        .and change(Version, :count).by(3)
+
+      expect(eligible.map { |record| record.refresh.stale }).to all(be(true))
+      expect(eligible.last.expired).to be(true)
+      expect(manually_edited.refresh.stale).to be(false)
+      expect(already_stale.refresh.stale).to be(true)
+      expect(GenerateSelfTextWorker).to have_received(:perform_async).with(no_args).once
+    end
+
+    it 'still enqueues regeneration without creating versions when no records change' do
+      create(:goods_nomenclature_self_text, :manually_edited)
+      create(:goods_nomenclature_self_text, :stale)
+      allow(GenerateSelfTextWorker).to receive(:perform_async)
+      version_count = Version.count
+
+      expect { regenerate }
+        .to output(<<~OUTPUT).to_stdout
+          Marked 0 self-texts as stale.
+          Enqueued regeneration. Check Sidekiq for progress.
+        OUTPUT
+
+      expect(Version.count).to eq(version_count)
+      expect(GenerateSelfTextWorker).to have_received(:perform_async).with(no_args).once
+    end
+  end
+
   describe 'self_texts:populate_eu_references' do
     subject(:populate) do
       suppress_output { Rake::Task['self_texts:populate_eu_references'].invoke }
