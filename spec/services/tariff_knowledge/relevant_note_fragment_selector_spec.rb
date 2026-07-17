@@ -374,7 +374,7 @@ RSpec.describe TariffKnowledge::RelevantNoteFragmentSelector do
     )
 
     contexts = described_class.call(
-      query: 'pig iron',
+      query: 'blast-furnace crude iron Non-alloy pig iron in pigs, blocks or other primary forms',
       search_results: [
         search_result_class.new(
           goods_nomenclature_item_id: '7201200000',
@@ -387,7 +387,7 @@ RSpec.describe TariffKnowledge::RelevantNoteFragmentSelector do
     )
 
     expect(contexts.first[:fragments].first[:source]).to eq('pig iron')
-    expect(contexts.first[:fragments].first[:why_relevant]).to include('exact term match pig iron')
+    expect(contexts.first[:fragments].first[:why_relevant]).to include('query contains definition term pig iron')
   end
 
   it 'ranks exact term definition blocks ahead of longer phrase-containing terms' do

@@ -441,6 +441,8 @@ module TariffKnowledge
 
       if exact_query_phrase?(evidence_block['term']) && block_term_phrase_match?(evidence_block['term'])
         score, reasons = add_score(score, reasons, EXACT_PHRASE_SCORE, "exact phrase match #{query_phrase} in term")
+      elsif evidence_block['block_type'] == 'definition' && query_contains_definition_term?(evidence_block['term'])
+        score, reasons = add_score(score, reasons, EXACT_PHRASE_SCORE, "query contains definition term #{evidence_block['term'].to_s.squish.downcase}")
       elsif !suppressed_single_word_match && exact_query_phrase?(text)
         score, reasons = add_score(score, reasons, EXACT_PHRASE_SCORE, "exact phrase match #{query_phrase}")
       end
@@ -502,9 +504,17 @@ module TariffKnowledge
 
       suppressed_single_word_match = suppress_single_word_block_match?(evidence_block['term'])
       return 'exact_phrase' if exact_query_phrase?(evidence_block['term']) && block_term_phrase_match?(evidence_block['term'])
+      return 'exact_phrase' if evidence_block['block_type'] == 'definition' && query_contains_definition_term?(evidence_block['term'])
       return 'exact_phrase' if !suppressed_single_word_match && exact_query_phrase?(text)
 
       nil
+    end
+
+    def query_contains_definition_term?(term)
+      term_phrase = term.to_s.squish.downcase
+      return false if ordered_tokens(term_phrase).size < 2
+
+      query_phrase.match?(/\b#{Regexp.escape(term_phrase)}\b/)
     end
 
     def explicit_range_mention?(text, type, code)
