@@ -57,7 +57,7 @@ RSpec.describe 'self_texts rake tasks' do
 
     after { Rake::Task['self_texts:regenerate'].reenable }
 
-    it 'marks unedited current self-texts stale, versions them, and enqueues regeneration' do
+    it 'marks unedited non-stale self-texts stale, versions them, and enqueues regeneration' do
       eligible = create_list(:goods_nomenclature_self_text, 2)
       eligible << create(:goods_nomenclature_self_text, :expired)
       manually_edited = create(:goods_nomenclature_self_text, :manually_edited)
