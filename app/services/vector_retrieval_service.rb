@@ -30,16 +30,19 @@ class VectorRetrievalService
     vector_literal = "'[#{query_embedding.join(',')}]'::vector"
 
     ranked_rows = fetch_ranked_sids(vector_literal)
-    ordered_sids = ranked_rows.map { |row| row[:goods_nomenclature_sid] }
-    gn_by_sid = load_goods_nomenclatures(ordered_sids)
-    ranked_rows = eligible_ranked_rows(ranked_rows, gn_by_sid)
+    ranked_rows = eligible_ranked_rows(ranked_rows)
     max_score = ranked_rows.first&.[](:score)&.to_f
     ranked_rows = apply_score_threshold(ranked_rows)
+    return Result.new(results: [], max_score:) if ranked_rows.empty?
 
     scores_by_sid = ranked_rows.each_with_object({}) { |r, h| h[r[:goods_nomenclature_sid]] = r[:score]&.to_f }
     ordered_sids = ranked_rows.map { |r| r[:goods_nomenclature_sid] }
+    gn_by_sid = load_goods_nomenclatures(ordered_sids)
 
-    results = ordered_sids.map { |sid| build_result(gn_by_sid.fetch(sid), scores_by_sid[sid]) }
+    results = ordered_sids.filter_map do |sid|
+      goods_nomenclature = gn_by_sid[sid]
+      build_result(goods_nomenclature, scores_by_sid[sid]) if goods_nomenclature
+    end
 
     Result.new(results:, max_score:)
   end
@@ -51,13 +54,20 @@ private
     rows.select { |r| r[:score].to_f >= threshold }
   end
 
-  def eligible_ranked_rows(rows, gn_by_sid)
-    include_non_declarables = search_non_declarables?
+  def eligible_ranked_rows(rows)
+    return rows if search_non_declarables?
 
-    rows.select do |row|
-      goods_nomenclature = gn_by_sid[row[:goods_nomenclature_sid]]
-      goods_nomenclature && (include_non_declarables || goods_nomenclature.declarable?)
-    end
+    sids = rows.map { |row| row[:goods_nomenclature_sid] }
+    eligible_sids = GoodsNomenclature
+      .actual
+      .declarable
+      .where(goods_nomenclatures__goods_nomenclature_sid: sids)
+      .then { |dataset| apply_filter_prefixes(dataset, Sequel[:goods_nomenclatures][:goods_nomenclature_item_id]) }
+      .unordered
+      .select_map(Sequel[:goods_nomenclatures][:goods_nomenclature_sid])
+      .to_set
+
+    rows.select { |row| eligible_sids.include?(row[:goods_nomenclature_sid]) }
   end
 
   def fetch_ranked_sids(vector_literal)

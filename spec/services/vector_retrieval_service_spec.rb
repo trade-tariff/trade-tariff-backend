@@ -231,10 +231,21 @@ RSpec.describe VectorRetrievalService do
         populate_search_embedding(commodity.goods_nomenclature_sid, query_embedding)
         allow(AdminConfiguration).to receive(:integer_value).with('vector_score_threshold').and_return(101)
 
-        result = service.call_with_diagnostics
+        sql = []
+        subscriber = ActiveSupport::Notifications.subscribe(/sql\.sequel/) do |*args|
+          event = ActiveSupport::Notifications::Event.new(*args)
+          sql << event.payload[:sql].to_s
+        end
+
+        begin
+          result = service.call_with_diagnostics
+        ensure
+          ActiveSupport::Notifications.unsubscribe(subscriber)
+        end
 
         expect(result.results).to be_empty
         expect(result.max_score).to be_within(0.0001).of(1.0)
+        expect(sql.grep(/goods_nomenclature_descriptions|goods_nomenclature_description_periods/i)).to be_empty
       end
     end
 
