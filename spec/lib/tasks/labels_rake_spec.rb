@@ -61,6 +61,47 @@ RSpec.describe 'labels tasks' do
          Total\s+needing\s+work:\s+3/mx,
       ).to_stdout
     end
+
+    it 'scopes chapter, heading, and commodity output to the requested chapter' do
+      included = create(:commodity, goods_nomenclature_item_id: '0101210000')
+      excluded = create(:commodity, goods_nomenclature_item_id: '0201290000')
+      ENV['CHAPTER'] = '01'
+
+      expected_output = satisfy do |output|
+        expect(output).to match(/^01\s+\?\s+1\s+1\s+0\s+0\s+1\s+0\.0%/)
+        expect(output).to match(/^-- Chapter 01: \? --$/)
+        expect(output).to match(/^\s+0101\s+\?\s+1\s+0\s+0\s+1$/)
+        expect(output).to include(included.goods_nomenclature_item_id)
+        expect(output).not_to match(/^02\s+/)
+        expect(output).not_to include('-- Chapter 02:', '  0201 ', excluded.goods_nomenclature_item_id)
+      end
+
+      expect { gaps }.to output(expected_output).to_stdout
+    end
+
+    it 'excludes manually edited labels from stale and context-drift work' do
+      missing = create(:commodity, goods_nomenclature_item_id: '0101210000')
+      manually_stale = create(:commodity, goods_nomenclature_item_id: '0101220000')
+      manually_drifted = create(:commodity, goods_nomenclature_item_id: '0101230000')
+
+      create(:goods_nomenclature_label, :stale, :manually_edited, goods_nomenclature: manually_stale)
+      create(:goods_nomenclature_self_text, goods_nomenclature: manually_drifted, self_text: 'Changed context')
+      create(
+        :goods_nomenclature_label,
+        :manually_edited,
+        goods_nomenclature: manually_drifted,
+        context_hash: Digest::SHA256.hexdigest('Old context'),
+      )
+
+      expected_output = satisfy do |output|
+        expect(output).to match(/^01\s+\?\s+3\s+1\s+0\s+0\s+1\s+66\.7%/)
+        expect(output).to match(/^TOTAL\s+3\s+1\s+0\s+0\s+1\s+66\.7%/)
+        expect(output).to include(missing.goods_nomenclature_item_id, 'Total needing work: 1')
+        expect(output).not_to include(manually_stale.goods_nomenclature_item_id, manually_drifted.goods_nomenclature_item_id)
+      end
+
+      expect { gaps }.to output(expected_output).to_stdout
+    end
   end
 end
 # rubocop:enable RSpec/DescribeClass
