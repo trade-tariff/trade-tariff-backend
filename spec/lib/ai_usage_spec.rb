@@ -50,6 +50,26 @@ RSpec.describe AiUsage do
       )
     end
 
+    it 'does not report a negative cost when cached tokens exceed input tokens' do
+      usage = described_class.metadata_for(
+        model: 'gpt-test',
+        event_kind: 'interactive_search',
+        usage: {
+          'prompt_tokens' => 100,
+          'prompt_tokens_details' => { 'cached_tokens' => 150 },
+          'completion_tokens' => 0,
+          'total_tokens' => 100,
+        },
+      )
+
+      expect(usage.to_h).to include(
+        input_cost_usd: 0.000075,
+        cached_input_cost_usd: 0.000075,
+        total_cost_usd: 0.000075,
+        pricing_known: true,
+      )
+    end
+
     it 'marks unknown model pricing without treating it as zero-cost' do
       usage = described_class.metadata_for(
         model: 'unpriced-model',

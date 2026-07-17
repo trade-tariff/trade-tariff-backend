@@ -9,7 +9,7 @@ module_function
     pricing = pricing_for(model)
     input_price, cached_input_price, output_price = %w[input_per_million_tokens cached_input_per_million_tokens output_per_million_tokens].map { |key| price_for(pricing, key) }
     input_tokens, cached_input_tokens, output_tokens = usage.values_at(:input_tokens, :cached_input_tokens, :output_tokens)
-    uncached_input_tokens = input_tokens && input_tokens - cached_input_tokens.to_i
+    uncached_input_tokens = input_tokens && [input_tokens - cached_input_tokens.to_i, 0].max
     uncached_input_cost = cost_for(uncached_input_tokens, input_price)
     cached_input_cost = cost_for(cached_input_tokens, cached_input_price)
     input_cost = sum_cost(uncached_input_cost, cached_input_cost)
