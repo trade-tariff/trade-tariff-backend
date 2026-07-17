@@ -852,6 +852,18 @@ RSpec.describe InteractiveSearchService do
         )
       end
 
+      it 'selects compressed note evidence using the expanded query for the current iteration' do
+        allow(TariffKnowledge::RelevantNoteFragmentSelector).to receive(:call_with_diagnostics).and_call_original
+
+        result
+
+        expect(TariffKnowledge::RelevantNoteFragmentSelector).to have_received(:call_with_diagnostics).with(
+          query: expanded_query,
+          search_results: opensearch_results,
+          notes_by_item_id: hash_including('4202210000', '4202290000'),
+        )
+      end
+
       context 'when the configured prompt has no compressed notes placeholder' do
         let(:default_search_context) do
           <<~CONTEXT
