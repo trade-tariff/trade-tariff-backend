@@ -289,8 +289,8 @@ module TariffKnowledge
       [prompt_contexts, diagnostic_contexts]
     end
 
-    def selection_status(grouped_contexts, contexts)
-      return 'no_compressed_notes' if grouped_contexts.empty?
+    def selection_status(_grouped_contexts, contexts)
+      return 'no_compressed_notes' if considered_context_count.zero?
       return 'selected' if contexts.any?
 
       'no_eligible_evidence'
