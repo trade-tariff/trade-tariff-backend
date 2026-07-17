@@ -335,6 +335,61 @@ RSpec.describe TariffKnowledge::RelevantNoteFragmentSelector do
     expect(first_fragment[:score]).to be > described_class::MIN_SCORE
   end
 
+  it 'prefers an exact query definition over heading-specific evidence' do
+    pig_iron_note = create(
+      :tariff_knowledge_compressed_note,
+      goods_nomenclature_item_id: '7201200000',
+      content: 'compressed note with competing heading evidence',
+      metadata: Sequel.pg_jsonb_wrap(
+        'evidence_blocks' => [
+          {
+            'source_node_key' => 'note_block:customs_tariff_chapter_note:1.31:72:1:a',
+            'source_title' => 'pig iron',
+            'source_context' => 'Pig iron means iron-carbon alloys not usefully malleable, containing more than 2 % carbon.',
+            'block_type' => 'definition',
+            'term' => 'pig iron',
+            'source_type' => 'customs_tariff_chapter_note',
+            'source_id' => '72',
+            'source_version' => '1.31',
+            'fragment_node_keys' => [],
+          },
+        ],
+        'evidence' => [
+          evidence_for(
+            'note_fragment:customs_tariff_chapter_note:1.31:72:0101',
+            'Heading 7201 includes products in primary forms.',
+            'inclusion',
+            range_type: 'heading',
+            range_code: '7201',
+          ),
+          evidence_for(
+            'note_fragment:customs_tariff_chapter_note:1.31:72:0102',
+            'Products of heading 7201 are classified by composition.',
+            'reference',
+            range_type: 'heading',
+            range_code: '7201',
+          ),
+        ],
+      ),
+    )
+
+    contexts = described_class.call(
+      query: 'pig iron',
+      search_results: [
+        search_result_class.new(
+          goods_nomenclature_item_id: '7201200000',
+          description: 'Non-alloy pig iron in pigs, blocks or other primary forms',
+          full_description: nil,
+          score: 10,
+        ),
+      ],
+      notes_by_item_id: { '7201200000' => pig_iron_note },
+    )
+
+    expect(contexts.first[:fragments].first[:source]).to eq('pig iron')
+    expect(contexts.first[:fragments].first[:why_relevant]).to include('exact term match pig iron')
+  end
+
   it 'ranks exact term definition blocks ahead of longer phrase-containing terms' do
     pig_iron_note = create(
       :tariff_knowledge_compressed_note,
