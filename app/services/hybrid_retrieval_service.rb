@@ -28,9 +28,8 @@ class HybridRetrievalService
     opensearch_items = opensearch_leg.value&.results || []
     vector_items = vector_leg.value&.results || []
 
-    merged = rrf_merge(opensearch_items, vector_items)
     decision = query_guardrail_decision(vector_leg)
-    merged = [] unless decision[:accepted]
+    merged = decision[:accepted] ? rrf_merge(opensearch_items, vector_items) : []
     Search::Instrumentation.query_guardrail_decided(
       request_id: @request_id,
       query: @query,

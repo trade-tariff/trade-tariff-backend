@@ -155,6 +155,7 @@ RSpec.describe HybridRetrievalService do
           threshold: 0.32,
           reason: 'below_threshold',
         )
+        expect(AdminConfiguration).not_to have_received(:integer_value).with('rrf_k')
       end
 
       it 'returns the merged suggestions when the raw vector score meets the configured threshold' do
