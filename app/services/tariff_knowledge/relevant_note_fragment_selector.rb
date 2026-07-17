@@ -38,6 +38,10 @@ module TariffKnowledge
     MAX_BM25_SCORE = 8
     MAX_REASON_CODES = 4
     MAX_REASON_TERMS = 5
+    QUERY_SPECIFICITY_RANKS = {
+      'exact_term' => 2,
+      'exact_phrase' => 1,
+    }.freeze
 
     # Rules are evaluated in this order so range evidence wins first, then text
     # mentions of retrieved chapters/headings, then query-language overlap, with
@@ -308,7 +312,7 @@ module TariffKnowledge
     end
 
     def diagnostic_evidence(fragment, context_hash)
-      fragment.except(:key, :why_relevant).merge(
+      fragment.except(:key, :why_relevant, :query_specificity).merge(
         context_hash:,
         context_hashes: fragment[:context_hashes] || [context_hash],
         commodity_codes: fragment[:commodity_codes],
@@ -343,6 +347,7 @@ module TariffKnowledge
           score:,
           score_reasons: reasons,
           why_relevant: reasons.join('; '),
+          query_specificity: block_query_specificity(evidence_block, source_text),
           range_specificity: range_specificity(evidence_block, source_text),
         }
       end
@@ -483,12 +488,23 @@ module TariffKnowledge
 
     def fragment_sort_key(fragment)
       [
+        -QUERY_SPECIFICITY_RANKS.fetch(fragment[:query_specificity], 0),
         -range_specificity_rank(fragment),
         -fragment[:score],
         fragment[:best_candidate_rank] || candidate_item_ids.size + 1,
         fragment[:source].to_s,
         fragment[:key].to_s,
       ]
+    end
+
+    def block_query_specificity(evidence_block, text)
+      return 'exact_term' if exact_query_term?(evidence_block['term'])
+
+      suppressed_single_word_match = suppress_single_word_block_match?(evidence_block['term'])
+      return 'exact_phrase' if exact_query_phrase?(evidence_block['term']) && block_term_phrase_match?(evidence_block['term'])
+      return 'exact_phrase' if !suppressed_single_word_match && exact_query_phrase?(text)
+
+      nil
     end
 
     def explicit_range_mention?(text, type, code)
