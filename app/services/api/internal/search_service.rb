@@ -256,7 +256,8 @@ module Api
         result = HybridRetrievalService.call(
           query: q, expanded_query: search_expanded_query,
           as_of: as_of, request_id: request_id, limit: opensearch_result_limit,
-          filter_prefixes: filter_prefixes, iteration: search_iteration
+          filter_prefixes: filter_prefixes, iteration: search_iteration,
+          search_type: 'interactive'
         )
 
         RetrievalResult.new(

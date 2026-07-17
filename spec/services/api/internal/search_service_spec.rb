@@ -1361,7 +1361,11 @@ RSpec.describe Api::Internal::SearchService do
         described_class.new(q: 'horses').call
 
         expect(HybridRetrievalService).to have_received(:call).with(
-          hash_including(query: 'horses', expanded_query: 'pure-bred breeding horses'),
+          hash_including(
+            query: 'horses',
+            expanded_query: 'pure-bred breeding horses',
+            search_type: 'interactive',
+          ),
         )
       end
 

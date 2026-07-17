@@ -635,6 +635,7 @@ RSpec.describe Search::Instrumentation do
 
       described_class.query_guardrail_decided(
         request_id: 'req-1',
+        search_type: 'interactive',
         query: 'book a dentist appointment',
         effective_query: 'dentist appointment',
         iteration: 2,
@@ -666,19 +667,30 @@ RSpec.describe Search::Instrumentation do
 
       described_class.query_guardrail_decided(
         request_id: 'req-1',
+        search_type: 'interactive',
         query: 'horses',
         effective_query: 'horses',
         iteration: 1,
         enabled: false,
         accepted: true,
         max_score: 0.55,
-        threshold: nil,
+        threshold: 0.32,
         reason: 'disabled',
       )
 
       expect(ActiveSupport::Notifications).to have_received(:instrument).with(
         'query_guardrail_decided.search',
-        hash_including(variant: 'control', enabled: false, accepted: true, reason: 'disabled'),
+        request_id: 'req-1',
+        search_type: 'interactive',
+        query: 'horses',
+        effective_query: 'horses',
+        iteration: 1,
+        variant: 'control',
+        enabled: false,
+        accepted: true,
+        max_score: 0.55,
+        threshold: 0.32,
+        reason: 'disabled',
       )
     end
   end
