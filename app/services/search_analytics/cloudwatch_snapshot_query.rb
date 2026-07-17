@@ -34,6 +34,8 @@ module SearchAnalytics
         summary_view_latency_rows: run_query(summary_view_latency_query),
         source_all_latency_rows: run_query(source_all_latency_query),
         source_view_latency_rows: run_query(source_view_latency_query),
+        ai_cost_summary_rows: run_query(ai_cost_summary_query),
+        ai_cost_trend_rows: run_query(ai_cost_trend_query),
         selection_rows: selection_queries.flat_map { |view, query| run_query(query).map { |row| row.merge('selectable_search_type' => view) } },
         selection_trend_rows: selection_trend_queries.flat_map { |view, query| run_query(query).map { |row| row.merge('selectable_search_type' => view) } },
         improvement_term_rows: improvement_term_queries.flat_map { |term_type, query| run_query(query).map { |row| row.merge('term_type' => term_type) } },
@@ -148,6 +150,62 @@ module SearchAnalytics
       QUERY
     end
 
+    def ai_cost_summary_query
+      <<~QUERY
+        fields request_id, service, event, event_kind, total_tokens, total_cost_usd, pricing_known
+        | #{log_stream_filter}
+        | #{search_ai_cost_filter}
+        | fields if(pricing_known = true and ispresent(total_cost_usd), total_cost_usd, 0) as known_cost_usd
+        | fields if(pricing_known = true and ispresent(total_cost_usd), 1, 0) as priced_call
+        | fields if(pricing_known = true and ispresent(total_cost_usd), 0, 1) as unpriced_call
+        | stats sum(known_cost_usd) as request_cost_usd,
+            sum(priced_call) as priced_calls,
+            sum(unpriced_call) as unpriced_calls by request_id
+        | stats sum(request_cost_usd) as total_cost_usd,
+            avg(request_cost_usd) as average_cost_usd,
+            pct(request_cost_usd, 50) as p50_cost_usd,
+            pct(request_cost_usd, 90) as p90_cost_usd,
+            count(*) as assisted_searches,
+            sum(priced_calls) as priced_calls,
+            sum(unpriced_calls) as unpriced_calls
+      QUERY
+    end
+
+    def ai_cost_trend_query
+      <<~QUERY
+        fields @timestamp, request_id, service, event, event_kind, input_tokens, cached_input_tokens, output_tokens, total_tokens, input_cost_usd, cached_input_cost_usd, output_cost_usd, total_cost_usd, pricing_known
+        | #{log_stream_filter}
+        | #{search_ai_cost_filter}
+        | fields if(pricing_known = true and service = "search", input_cost_usd, 0) as model_input_cost_usd
+        | fields if(pricing_known = true and service = "search", cached_input_cost_usd, 0) as cached_input_cost_usd
+        | fields if(pricing_known = true and service = "search", output_cost_usd, 0) as model_output_cost_usd
+        | fields if(pricing_known = true and service = "ai_usage", total_cost_usd, 0) as embedding_cost_usd
+        | fields if(pricing_known = true and ispresent(total_cost_usd), total_cost_usd, 0) as known_cost_usd
+        | fields if(pricing_known = true and ispresent(total_cost_usd), 1, 0) as priced_call
+        | fields if(pricing_known = true and ispresent(total_cost_usd), 0, 1) as unpriced_call
+        | stats sum(model_input_cost_usd) as input_cost_usd,
+            sum(cached_input_cost_usd) as cached_input_cost_usd,
+            sum(model_output_cost_usd) as output_cost_usd,
+            sum(embedding_cost_usd) as embedding_cost_usd,
+            sum(known_cost_usd) as total_cost_usd,
+            sum(input_tokens) as input_tokens,
+            sum(cached_input_tokens) as cached_input_tokens,
+            sum(output_tokens) as output_tokens,
+            sum(total_tokens) as total_tokens,
+            count(*) as calls,
+            sum(priced_call) as priced_calls,
+            sum(unpriced_call) as unpriced_calls by #{bucket_expression}, event_kind
+      QUERY
+    end
+
+    def search_ai_cost_filter
+      <<~FILTER.squish
+        filter ispresent(request_id) and ispresent(total_tokens) and
+          ((service = "search" and event = "api_call_completed") or
+          (service = "ai_usage" and event = "embedding_api_call_completed" and event_kind = "vector_search_query_embedding"))
+      FILTER
+    end
+
     def selection_queries
       {
         'classic' => selection_query('search_type = "classic" and results_type = "fuzzy_search"'),
@@ -209,7 +267,7 @@ module SearchAnalytics
     end
 
     class Aggregate
-      def initialize(period:, volume_rows:, zero_result_rows:, summary_all_latency_rows:, summary_view_latency_rows:, source_all_latency_rows:, source_view_latency_rows:, selection_rows:, selection_trend_rows:, improvement_term_rows:)
+      def initialize(period:, volume_rows:, zero_result_rows:, summary_all_latency_rows:, summary_view_latency_rows:, source_all_latency_rows:, source_view_latency_rows:, ai_cost_summary_rows:, ai_cost_trend_rows:, selection_rows:, selection_trend_rows:, improvement_term_rows:)
         @period = period
         @volume_rows = volume_rows
         @zero_result_rows = zero_result_rows
@@ -217,6 +275,8 @@ module SearchAnalytics
         @summary_view_latency_rows = summary_view_latency_rows
         @source_all_latency_rows = source_all_latency_rows
         @source_view_latency_rows = source_view_latency_rows
+        @ai_cost_summary_rows = ai_cost_summary_rows
+        @ai_cost_trend_rows = ai_cost_trend_rows
         @selection_rows = selection_rows
         @selection_trend_rows = selection_trend_rows
         @improvement_term_rows = improvement_term_rows
@@ -229,13 +289,14 @@ module SearchAnalytics
           'trends' => trends(view),
           'comparisons' => comparisons,
           'request_sources' => request_sources(view),
+          'ai_costs' => ai_costs(view),
           'improvement_terms' => improvement_terms(view),
         }
       end
 
     private
 
-      attr_reader :period, :volume_rows, :zero_result_rows, :summary_all_latency_rows, :summary_view_latency_rows, :source_all_latency_rows, :source_view_latency_rows, :selection_rows, :selection_trend_rows, :improvement_term_rows
+      attr_reader :period, :volume_rows, :zero_result_rows, :summary_all_latency_rows, :summary_view_latency_rows, :source_all_latency_rows, :source_view_latency_rows, :ai_cost_summary_rows, :ai_cost_trend_rows, :selection_rows, :selection_trend_rows, :improvement_term_rows
 
       def summary(view)
         searches = search_count(view)
@@ -256,6 +317,81 @@ module SearchAnalytics
           'volume' => volume_trend,
           'outcomes' => outcome_trend(view),
         }
+      end
+
+      def ai_costs(view)
+        return empty_ai_costs if view == 'classic'
+
+        {
+          'summary' => ai_cost_summary,
+          'trend' => ai_cost_trend,
+          'operations' => ai_cost_operations,
+        }
+      end
+
+      def empty_ai_costs
+        {
+          'summary' => ai_cost_summary({}),
+          'trend' => [],
+          'operations' => [],
+        }
+      end
+
+      def ai_cost_summary(row = ai_cost_summary_rows.first || {})
+        priced_calls = integer(row['priced_calls'])
+        unpriced_calls = integer(row['unpriced_calls'])
+        calls = priced_calls + unpriced_calls
+
+        {
+          'total_cost_usd' => decimal_number(row['total_cost_usd']),
+          'assisted_searches' => integer(row['assisted_searches']),
+          'average_cost_usd' => decimal_number(row['average_cost_usd']),
+          'p50_cost_usd' => decimal_number(row['p50_cost_usd']),
+          'p90_cost_usd' => decimal_number(row['p90_cost_usd']),
+          'priced_calls' => priced_calls,
+          'unpriced_calls' => unpriced_calls,
+          'pricing_coverage' => calls.positive? ? (priced_calls.to_f / calls).round(4) : nil,
+          'complete' => unpriced_calls.zero?,
+        }
+      end
+
+      def ai_cost_trend
+        buckets.map do |bucket|
+          rows = ai_cost_trend_rows.select { |row| iso8601(row['@timestamp']) == bucket }
+
+          {
+            'bucket' => bucket,
+            'input_cost_usd' => sum_decimal(rows, 'input_cost_usd'),
+            'output_cost_usd' => sum_decimal(rows, 'output_cost_usd'),
+            'embedding_cost_usd' => sum_decimal(rows, 'embedding_cost_usd'),
+            'total_cost_usd' => sum_decimal(rows, 'total_cost_usd'),
+          }
+        end
+      end
+
+      def ai_cost_operations
+        rows_by_event_kind = ai_cost_trend_rows.group_by { |row| row['event_kind'].to_s }
+
+        operations = rows_by_event_kind.filter_map do |event_kind, rows|
+          next if event_kind.blank?
+
+          {
+            'event_kind' => event_kind,
+            'calls' => sum_integer(rows, 'calls'),
+            'input_tokens' => sum_integer(rows, 'input_tokens'),
+            'cached_input_tokens' => sum_integer(rows, 'cached_input_tokens'),
+            'output_tokens' => sum_integer(rows, 'output_tokens'),
+            'total_tokens' => sum_integer(rows, 'total_tokens'),
+            'input_cost_usd' => sum_decimal(rows, 'input_cost_usd'),
+            'output_cost_usd' => sum_decimal(rows, 'output_cost_usd'),
+            'embedding_cost_usd' => sum_decimal(rows, 'embedding_cost_usd'),
+            'total_cost_usd' => sum_decimal(rows, 'total_cost_usd'),
+            'priced_calls' => sum_integer(rows, 'priced_calls'),
+            'unpriced_calls' => sum_integer(rows, 'unpriced_calls'),
+          }
+        end
+
+        operations.sort_by { |row| [-row['total_cost_usd'], row['event_kind']] }
       end
 
       def volume_trend
@@ -442,7 +578,7 @@ module SearchAnalytics
       end
 
       def buckets
-        @buckets ||= (volume_rows + zero_result_rows + selection_trend_rows)
+        @buckets ||= (volume_rows + zero_result_rows + selection_trend_rows + ai_cost_trend_rows)
           .filter_map { |row| iso8601(row['@timestamp']) }
           .uniq
           .sort
@@ -474,6 +610,18 @@ module SearchAnalytics
         Float(value || 0).to_i
       rescue ArgumentError, TypeError
         0
+      end
+
+      def sum_integer(rows, key) = rows.sum { |row| integer(row[key]) }
+
+      def sum_decimal(rows, key) = decimal_number(rows.sum { |row| decimal(row[key]) })
+
+      def decimal_number(value) = decimal(value).round(8).to_f
+
+      def decimal(value)
+        BigDecimal(value.to_s)
+      rescue ArgumentError, TypeError
+        0.to_d
       end
 
       def iso8601(value)
