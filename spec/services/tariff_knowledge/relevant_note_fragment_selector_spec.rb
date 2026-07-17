@@ -853,6 +853,30 @@ RSpec.describe TariffKnowledge::RelevantNoteFragmentSelector do
     )
   end
 
+  it 'records the weaker association as omitted when a later duplicate is stronger' do
+    key = 'note_fragment:customs_tariff_chapter_note:1.31:95:stronger-duplicate'
+    weaker_note = create_note_with_evidence('6403999110', evidence_for(key, 'Generic exercise reference.', 'reference'))
+    stronger_note = create_note_with_evidence(
+      '9506911000',
+      evidence_for(key, 'Heading 9506 includes exercise apparatus.', 'inclusion', range_type: 'heading', range_code: '9506'),
+    )
+
+    selection = described_class.call_with_diagnostics(
+      query:,
+      search_results:,
+      notes_by_item_id: { '6403999110' => weaker_note, '9506911000' => stronger_note },
+    )
+
+    expect(selection.diagnostics[:omitted_evidence]).to include(
+      include(
+        context_hash: weaker_note.context_hash,
+        source_node_key: key,
+        omission_reason: 'duplicate_source_node',
+        retained_source_node_key: key,
+      ),
+    )
+  end
+
   it 'does not send a fragment when its text is already contained by a selected note block' do
     fragment_key = 'note_fragment:customs_tariff_chapter_note:1.31:72:0069'
     repeated_text = 'Pig iron means iron-carbon alloys containing more than 2% carbon.'

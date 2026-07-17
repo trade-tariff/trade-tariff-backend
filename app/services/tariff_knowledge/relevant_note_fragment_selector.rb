@@ -149,8 +149,8 @@ module TariffKnowledge
             next
           end
 
-          record_omission(candidate, context[:key], 'duplicate_source_node', retained_source_node_key: current[:key])
           strongest, other = [current, candidate].sort_by { |record| fragment_sort_key(record) }
+          record_omission(other, other[:owning_context_hash], 'duplicate_source_node', retained_source_node_key: strongest[:key])
           retained[fragment[:key]] = strongest.merge(
             context_hashes: (current[:context_hashes] + candidate[:context_hashes]).uniq,
             commodity_codes: (current[:commodity_codes] + candidate[:commodity_codes]).uniq,
