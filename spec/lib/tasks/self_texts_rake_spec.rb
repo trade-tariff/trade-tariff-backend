@@ -2,6 +2,56 @@
 require 'csv'
 
 RSpec.describe 'self_texts rake tasks' do
+  describe 'self_texts:coverage' do
+    subject(:coverage) { Rake::Task['self_texts:coverage'].invoke }
+
+    after { Rake::Task['self_texts:coverage'].reenable }
+
+    it 'reports coverage, stale records, and generation-type counts' do
+      create(:chapter)
+      generated = create(:commodity)
+      stale = create(:commodity)
+      create(:commodity)
+      create(:goods_nomenclature_self_text,
+             goods_nomenclature: generated,
+             generation_type: 'mechanical')
+      create(:goods_nomenclature_self_text,
+             :stale,
+             goods_nomenclature: stale,
+             generation_type: 'ai')
+
+      expect { coverage }.to output(<<~OUTPUT).to_stdout
+        Self-Text Coverage Statistics
+        ------------------------------
+        Total GN (excl. chapters): 3
+        With self-text:            2
+        Missing:                   1
+        Coverage:                  66.67%
+        Stale:                     1
+        Needing work:              2
+
+        By generation type:
+          ai: 1
+          mechanical: 1
+      OUTPUT
+    end
+
+    it 'reports zero coverage when there are no goods nomenclatures' do
+      expect { coverage }.to output(<<~OUTPUT).to_stdout
+        Self-Text Coverage Statistics
+        ------------------------------
+        Total GN (excl. chapters): 0
+        With self-text:            0
+        Missing:                   0
+        Coverage:                  0%
+        Stale:                     0
+        Needing work:              0
+
+        By generation type:
+      OUTPUT
+    end
+  end
+
   describe 'self_texts:populate_eu_references' do
     subject(:populate) do
       suppress_output { Rake::Task['self_texts:populate_eu_references'].invoke }
