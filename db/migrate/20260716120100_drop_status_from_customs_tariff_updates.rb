@@ -4,6 +4,6 @@ Sequel.migration do
   end
 
   down do
-    alter_table(:customs_tariff_updates) { add_column :status, String, null: false, default: 'pending' }
+    alter_table(:customs_tariff_updates) { add_column :status, String, null: false, default: 'awaiting_approval' }
   end
 end
