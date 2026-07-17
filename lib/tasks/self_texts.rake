@@ -2,38 +2,7 @@ module SelfTextsTasks
 module_function
 
   def coverage
-    TimeMachine.now { print_coverage_stats(coverage_stats) }
-  end
-
-  def coverage_stats
-    total_gn = GoodsNomenclature.actual.non_hidden.count - Chapter.actual.count
-    total_self_texts = GoodsNomenclatureSelfText.count
-    missing = total_gn - total_self_texts
-    stale = GoodsNomenclatureSelfText.where(stale: true).count
-
-    {
-      total_gn:,
-      total_self_texts:,
-      missing:,
-      stale:,
-      needing_work: missing + stale,
-      coverage: total_gn.positive? ? (total_self_texts * 100.0 / total_gn).round(2) : 0,
-      by_type: GoodsNomenclatureSelfText.group_and_count(:generation_type).order(:generation_type).all,
-    }
-  end
-
-  def print_coverage_stats(stats)
-    puts 'Self-Text Coverage Statistics'
-    puts '-' * 30
-    puts "Total GN (excl. chapters): #{stats[:total_gn]}"
-    puts "With self-text:            #{stats[:total_self_texts]}"
-    puts "Missing:                   #{stats[:missing]}"
-    puts "Coverage:                  #{stats[:coverage]}%"
-    puts "Stale:                     #{stats[:stale]}"
-    puts "Needing work:              #{stats[:needing_work]}"
-    puts
-    puts 'By generation type:'
-    stats[:by_type].each { |row| puts "  #{row[:generation_type]}: #{row[:count]}" }
+    SelfTextCoverageReporter.call
   end
 
   def regenerate
