@@ -29,6 +29,20 @@ RSpec.describe Api::Admin::SearchAnalyticsController do
           'backend_only' => { 'searches' => 320 },
           'unknown' => { 'searches' => 5 },
         },
+        'ai_costs' => {
+          'summary' => {
+            'total_cost_usd' => 0.0102,
+            'assisted_searches' => 2,
+            'pricing_coverage' => 0.8,
+            'complete' => false,
+          },
+          'trend' => [
+            { 'bucket' => '2026-06-10T09:00:00Z', 'input_cost_usd' => 0.004, 'output_cost_usd' => 0.006, 'embedding_cost_usd' => 0.0002 },
+          ],
+          'operations' => [
+            { 'event_kind' => 'interactive_search', 'calls' => 4, 'total_tokens' => 2_500, 'total_cost_usd' => 0.01 },
+          ],
+        },
         'improvement_terms' => [
           { 'query' => 'trainers', 'zero_results' => 18 },
         ],
@@ -100,6 +114,30 @@ RSpec.describe Api::Admin::SearchAnalyticsController do
               unknown: {
                 searches: 5,
               },
+            },
+            ai_costs: {
+              summary: {
+                total_cost_usd: 0.0102,
+                assisted_searches: 2,
+                pricing_coverage: 0.8,
+                complete: false,
+              },
+              trend: [
+                {
+                  bucket: '2026-06-10T09:00:00Z',
+                  input_cost_usd: 0.004,
+                  output_cost_usd: 0.006,
+                  embedding_cost_usd: 0.0002,
+                },
+              ],
+              operations: [
+                {
+                  event_kind: 'interactive_search',
+                  calls: 4,
+                  total_tokens: 2_500,
+                  total_cost_usd: 0.01,
+                },
+              ],
             },
             improvement_terms: [
               {
