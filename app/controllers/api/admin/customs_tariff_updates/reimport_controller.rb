@@ -3,7 +3,6 @@ module Api
     module CustomsTariffUpdates
       class ReimportController < BaseController
         def create
-          # No status guard — reimport is a recovery tool that must work on any update status
           worker = TradeTariffBackend.xi? ? XiCnReimportWorker : CustomsTariffReimportWorker
           worker.perform_async(customs_tariff_update.version)
           head :accepted

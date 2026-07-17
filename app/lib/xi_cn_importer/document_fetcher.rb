@@ -48,7 +48,7 @@ module XiCnImporter
         pub_date   = binding.dig('pub_date', 'value')&.then { |d| Date.parse(d) }
 
         next if CustomsTariffUpdate
-                  .exclude(status: CustomsTariffUpdate::FAILED)
+                  .imported
                   .where(version: celex)
                   .any?
 

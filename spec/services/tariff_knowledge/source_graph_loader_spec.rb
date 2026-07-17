@@ -640,68 +640,56 @@ RSpec.describe TariffKnowledge::SourceGraphLoader do
         .to eq('Heading 0101 covers current horses.')
     end
 
-    it 'uses pending and rejected updates as source graph versions' do
-      rejected_update = create(
+    it 'uses the most recently dated imported update as the source graph version' do
+      older_update = create(
         :customs_tariff_update,
-        :rejected,
         version: '1.32',
         validity_start_date: 1.day.ago,
       )
-      pending_update = create(
+      newer_update = create(
         :customs_tariff_update,
         version: '1.33',
         validity_start_date: Time.zone.today,
       )
       create(
         :customs_tariff_chapter_note,
-        :approved,
-        customs_tariff_update: update,
+        customs_tariff_update: older_update,
         chapter_id: '01',
-        content: 'Heading 0101 covers approved update horses.',
+        content: 'Heading 0101 covers older update horses.',
       )
       create(
         :customs_tariff_chapter_note,
-        :approved,
-        customs_tariff_update: rejected_update,
+        customs_tariff_update: newer_update,
         chapter_id: '01',
-        content: 'Heading 0101 covers rejected update horses.',
-      )
-      create(
-        :customs_tariff_chapter_note,
-        :approved,
-        customs_tariff_update: pending_update,
-        chapter_id: '01',
-        content: 'Heading 0101 covers pending update horses.',
+        content: 'Heading 0101 covers newer update horses.',
       )
 
       described_class.call
 
       expect(TariffKnowledge::Node.where(node_type: TariffKnowledge::Node::NOTE_SOURCE).select_map(:source_version))
-        .to contain_exactly(pending_update.version)
+        .to contain_exactly(newer_update.version)
       expect(TariffKnowledge::Node.by_key('note_source:customs_tariff_chapter_note:1.33:01').first.content)
-        .to eq('Heading 0101 covers pending update horses.')
+        .to eq('Heading 0101 covers newer update horses.')
     end
 
-    it 'loads note sources regardless of row status from the selected update' do
+    it 'loads all chapter notes from the selected update' do
       create(
         :customs_tariff_chapter_note,
-        :approved,
         customs_tariff_update: update,
         chapter_id: '01',
-        content: 'Heading 0101 covers approved source horses.',
+        content: 'Heading 0101 covers source horses.',
       )
       create(
         :customs_tariff_chapter_note,
         customs_tariff_update: update,
         chapter_id: '02',
-        content: 'Heading 0201 covers pending source cattle.',
+        content: 'Heading 0201 covers source cattle.',
       )
       create(
         :customs_tariff_chapter_note,
-        :rejected,
         customs_tariff_update: update,
         chapter_id: '03',
-        content: 'Heading 0201 covers rejected source cattle.',
+        content: 'Heading 0301 covers source sheep.',
       )
 
       described_class.call

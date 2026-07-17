@@ -1837,7 +1837,6 @@ CREATE TABLE uk.customs_tariff_chapter_notes (
     customs_tariff_update_version text NOT NULL,
     chapter_id character varying(2) NOT NULL,
     content text NOT NULL,
-    status text DEFAULT 'pending'::text NOT NULL,
     validity_start_date date,
     validity_end_date date
 );
@@ -1866,7 +1865,6 @@ CREATE TABLE uk.customs_tariff_general_rules (
     customs_tariff_update_version text NOT NULL,
     rule_label character varying(10) NOT NULL,
     content text NOT NULL,
-    status text DEFAULT 'pending'::text NOT NULL,
     validity_start_date date,
     validity_end_date date
 );
@@ -1895,7 +1893,6 @@ CREATE TABLE uk.customs_tariff_section_notes (
     customs_tariff_update_version text NOT NULL,
     section_id integer NOT NULL,
     content text NOT NULL,
-    status text DEFAULT 'pending'::text NOT NULL,
     validity_start_date date,
     validity_end_date date
 );
@@ -1923,7 +1920,6 @@ CREATE TABLE uk.customs_tariff_updates (
     version text NOT NULL,
     validity_start_date date NOT NULL,
     validity_end_date date,
-    status text DEFAULT 'awaiting_approval'::text NOT NULL,
     source_url text,
     s3_path text,
     file_checksum text,
@@ -14759,3 +14755,5 @@ INSERT INTO "schema_migrations" ("filename") VALUES ('20260609120000_create_tari
 INSERT INTO "schema_migrations" ("filename") VALUES ('20260610100000_create_search_analytics_snapshots.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20260626120000_create_tariff_knowledge_public_atar_rulings.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20260708130000_add_derived_facts_to_public_atar_rulings.rb');
+INSERT INTO "schema_migrations" ("filename") VALUES ('20260716120000_drop_status_from_customs_tariff_note_tables.rb');
+INSERT INTO "schema_migrations" ("filename") VALUES ('20260716120100_drop_status_from_customs_tariff_updates.rb');

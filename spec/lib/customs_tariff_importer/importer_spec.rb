@@ -59,10 +59,10 @@ RSpec.describe CustomsTariffImporter::Importer do
         )
       end
 
-      it 'creates a CustomsTariffUpdate record with pending status' do
+      it 'creates a CustomsTariffUpdate record without an import error' do
         expect { results }.to change(CustomsTariffUpdate, :count).by(1)
         update = CustomsTariffUpdate.where(version: '1.30').first
-        expect(update.status).to eq(CustomsTariffUpdate::PENDING)
+        expect(update.import_error).to be_nil
         expect(update.file_checksum).to eq(checksum)
       end
 
@@ -93,25 +93,22 @@ RSpec.describe CustomsTariffImporter::Importer do
         expect(CustomsTariffGeneralRule.where(customs_tariff_update_version: '1.30').count).to eq(2)
       end
 
-      it 'creates chapter notes with the update validity_start_date and pending status' do
+      it 'creates chapter notes with the update validity_start_date' do
         results
         note = CustomsTariffChapterNote.where(customs_tariff_update_version: '1.30').first
         expect(note.validity_start_date).to eq(entry_into_force_on)
-        expect(note.status).to eq(CustomsTariffChapterNote::PENDING)
       end
 
-      it 'creates section notes with the update validity_start_date and pending status' do
+      it 'creates section notes with the update validity_start_date' do
         results
         note = CustomsTariffSectionNote.where(customs_tariff_update_version: '1.30').first
         expect(note.validity_start_date).to eq(entry_into_force_on)
-        expect(note.status).to eq(CustomsTariffSectionNote::PENDING)
       end
 
-      it 'creates general rules with the update validity_start_date and pending status' do
+      it 'creates general rules with the update validity_start_date' do
         results
         rule = CustomsTariffGeneralRule.where(customs_tariff_update_version: '1.30').first
         expect(rule.validity_start_date).to eq(entry_into_force_on)
-        expect(rule.status).to eq(CustomsTariffGeneralRule::PENDING)
       end
 
       it 'emits a document_imported instrumentation event' do

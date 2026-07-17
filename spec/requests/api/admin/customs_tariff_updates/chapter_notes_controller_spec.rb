@@ -138,8 +138,8 @@ RSpec.describe Api::Admin::CustomsTariffUpdates::ChapterNotesController do
       expect(CustomsTariffChapterNote.where(id: note.id).first).to be_nil
     end
 
-    it 'destroys when the parent update is rejected' do
-      update.update(status: CustomsTariffUpdate::REJECTED)
+    it 'destroys when the parent update has an import error' do
+      update.update(import_error: 'Import failed')
 
       delete "/uk/admin/customs_tariff_updates/#{update.version}/chapter_notes/#{note.chapter_id}.json",
              headers: request_headers(format: :json)
@@ -173,12 +173,11 @@ RSpec.describe Api::Admin::CustomsTariffUpdates::ChapterNotesController do
       expect(response.status).to eq(201)
       note = CustomsTariffChapterNote.order(Sequel.desc(:id)).first
       expect(note.chapter_id).to eq('03')
-      expect(note.status).to eq(CustomsTariffChapterNote::PENDING)
       expect(note.validity_start_date).to eq(update.validity_start_date)
     end
 
-    it 'creates when the parent update is rejected' do
-      update.update(status: CustomsTariffUpdate::REJECTED)
+    it 'creates when the parent update has an import error' do
+      update.update(import_error: 'Import failed')
       expect { make_request }.to change(CustomsTariffChapterNote, :count).by(1)
       expect(response.status).to eq(201)
     end
@@ -217,8 +216,8 @@ RSpec.describe Api::Admin::CustomsTariffUpdates::ChapterNotesController do
       expect(note.reload.content).to eq('Updated via response id')
     end
 
-    it 'updates when the parent update is rejected' do
-      update.update(status: CustomsTariffUpdate::REJECTED)
+    it 'updates when the parent update has an import error' do
+      update.update(import_error: 'Import failed')
 
       patch "/uk/admin/customs_tariff_updates/#{update.version}/chapter_notes/#{note.chapter_id}.json",
             params: { data: { type: 'customs_tariff_chapter_note', attributes: { content: 'Updated' } } },

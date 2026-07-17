@@ -40,9 +40,10 @@ RSpec.describe ImportXiCnDocumentWorker do
         allow(importer_double).to receive(:call).and_return([])
       end
 
-      it 'does not send a Slack notification' do
+      it 'sends a "Nothing new to import." Slack notification' do
         worker.perform
-        expect(SlackNotifierService).not_to have_received(:call)
+        expect(SlackNotifierService).to have_received(:call)
+          .with(a_string_including('Nothing new to import'))
       end
     end
 

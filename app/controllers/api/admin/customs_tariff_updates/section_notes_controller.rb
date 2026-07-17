@@ -72,7 +72,6 @@ module Api
             section_id: create_params[:section_id].to_i,
             content: create_params[:content],
             validity_start_date: customs_tariff_update.validity_start_date,
-            status: CustomsTariffSectionNote::PENDING,
           )
 
           if note.save(raise_on_failure: false)
@@ -116,7 +115,7 @@ module Api
         def previous_notes_index
           current_date = customs_tariff_update.validity_start_date
           prev = CustomsTariffUpdate
-            .exclude(status: CustomsTariffUpdate::FAILED)
+            .imported
             .where { validity_start_date < current_date }
             .order(Sequel.desc(:validity_start_date))
             .first

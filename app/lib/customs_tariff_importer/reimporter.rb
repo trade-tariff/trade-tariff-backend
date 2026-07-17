@@ -6,7 +6,7 @@ module CustomsTariffImporter
         update = CustomsTariffUpdate.first(version:)
         reimport(update) if update # no-op if the version does not exist
       else
-        CustomsTariffUpdate.exclude(status: CustomsTariffUpdate::FAILED).each do |update|
+        CustomsTariffUpdate.imported.each do |update|
           reimport(update)
         end
       end
@@ -40,7 +40,6 @@ module CustomsTariffImporter
           section_id:,
           content: note_content,
           validity_start_date: update.validity_start_date,
-          status: CustomsTariffSectionNote::PENDING,
         )
       end
     end
@@ -52,7 +51,6 @@ module CustomsTariffImporter
           chapter_id:,
           content: note_content,
           validity_start_date: update.validity_start_date,
-          status: CustomsTariffChapterNote::PENDING,
         )
       end
     end
@@ -64,7 +62,6 @@ module CustomsTariffImporter
           rule_label:,
           content: note_content,
           validity_start_date: update.validity_start_date,
-          status: CustomsTariffGeneralRule::PENDING,
         )
       end
     end

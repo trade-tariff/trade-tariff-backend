@@ -10,10 +10,8 @@ module CustomsTariffImporter
       info log_entry(
         event: 'import_run_completed',
         imported: event.payload[:imported],
-        skipped: event.payload[:skipped],
         failed: event.payload[:failed],
         duration_ms: event.payload[:duration_ms],
-        review_backlog: event.payload[:review_backlog],
       )
     end
 
@@ -92,17 +90,6 @@ module CustomsTariffImporter
         version: event.payload[:version],
         error_class: event.payload[:error_class],
         error_message: event.payload[:error_message],
-      )
-    end
-
-    def status_changed(event)
-      info log_entry(
-        event: 'status_changed',
-        version: event.payload[:version],
-        from_status: event.payload[:from_status],
-        to_status: event.payload[:to_status],
-        whodunnit: event.payload[:whodunnit],
-        review_backlog: event.payload[:review_backlog],
       )
     end
 

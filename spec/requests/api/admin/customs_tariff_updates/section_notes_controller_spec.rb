@@ -184,8 +184,8 @@ RSpec.describe Api::Admin::CustomsTariffUpdates::SectionNotesController do
       expect(note.reload.content).to eq('Updated via response id')
     end
 
-    it 'updates when the parent update is rejected' do
-      update.update(status: CustomsTariffUpdate::REJECTED)
+    it 'updates when the parent update has an import error' do
+      update.update(import_error: 'Import failed')
 
       patch "/uk/admin/customs_tariff_updates/#{update.version}/section_notes/#{note.section_id}.json",
             params: { data: { type: 'customs_tariff_section_note', attributes: { content: 'Updated' } } },
@@ -217,8 +217,8 @@ RSpec.describe Api::Admin::CustomsTariffUpdates::SectionNotesController do
       expect(CustomsTariffSectionNote.where(id: note.id).first).to be_nil
     end
 
-    it 'destroys when the parent update is rejected' do
-      update.update(status: CustomsTariffUpdate::REJECTED)
+    it 'destroys when the parent update has an import error' do
+      update.update(import_error: 'Import failed')
 
       delete "/uk/admin/customs_tariff_updates/#{update.version}/section_notes/#{note.section_id}.json",
              headers: request_headers(format: :json)
@@ -252,7 +252,7 @@ RSpec.describe Api::Admin::CustomsTariffUpdates::SectionNotesController do
       expect(attrs['content']).to eq('Manually added note content here')
     end
 
-    it 'sets status to pending and copies validity_start_date from the update' do
+    it 'copies validity_start_date from the update' do
       post "/uk/admin/customs_tariff_updates/#{update.version}/section_notes.json",
            params: { data: { type: 'customs_tariff_section_note',
                              attributes: { section_id: 8, content: 'Some note content here' } } },
@@ -261,12 +261,11 @@ RSpec.describe Api::Admin::CustomsTariffUpdates::SectionNotesController do
       note = CustomsTariffSectionNote.where(
         customs_tariff_update_version: update.version, section_id: 8,
       ).first
-      expect(note.status).to eq(CustomsTariffSectionNote::PENDING)
       expect(note.validity_start_date).to eq(Date.new(2026, 3, 1))
     end
 
-    it 'creates when the parent update is rejected' do
-      update.update(status: CustomsTariffUpdate::REJECTED)
+    it 'creates when the parent update has an import error' do
+      update.update(import_error: 'Import failed')
 
       post "/uk/admin/customs_tariff_updates/#{update.version}/section_notes.json",
            params: { data: { type: 'customs_tariff_section_note',

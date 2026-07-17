@@ -18,12 +18,12 @@ module CustomsTariffImporter
   private
 
     def import_document(fetched)
-      if CustomsTariffUpdate.exclude(status: CustomsTariffUpdate::FAILED).where(version: fetched.version).any?
+      if CustomsTariffUpdate.imported.where(version: fetched.version).any?
         Instrumentation.document_skipped(version: fetched.version, reason: :already_imported)
         return Result.new(status: :skipped, version: fetched.version)
       end
 
-      if CustomsTariffUpdate.where(file_checksum: fetched.checksum).any?
+      if CustomsTariffUpdate.imported.where(file_checksum: fetched.checksum).any?
         Instrumentation.document_skipped(version: fetched.version, reason: :duplicate_content)
         return Result.new(status: :duplicate_content, version: fetched.version)
       end
@@ -41,7 +41,6 @@ module CustomsTariffImporter
         update = CustomsTariffUpdate.create(
           version: fetched.version,
           validity_start_date: fetched.entry_into_force_on || fetched.published_on || Time.zone.today,
-          status: CustomsTariffUpdate::PENDING,
           source_url: fetched.url,
           s3_path:,
           file_checksum: fetched.checksum,
@@ -78,7 +77,6 @@ module CustomsTariffImporter
           chapter_id:,
           content:,
           validity_start_date: update.validity_start_date,
-          status: CustomsTariffChapterNote::PENDING,
         )
       end
     end
@@ -90,7 +88,6 @@ module CustomsTariffImporter
           section_id:,
           content:,
           validity_start_date: update.validity_start_date,
-          status: CustomsTariffSectionNote::PENDING,
         )
       end
     end
@@ -102,19 +99,18 @@ module CustomsTariffImporter
           rule_label:,
           content:,
           validity_start_date: update.validity_start_date,
-          status: CustomsTariffGeneralRule::PENDING,
         )
       end
     end
 
     def record_failure(version, message)
       return if version.blank?
-      return if CustomsTariffUpdate.where(version:).any?
+      return if CustomsTariffUpdate.imported.where(version:).any?
 
+      CustomsTariffUpdate.failed.where(version:).delete
       CustomsTariffUpdate.create(
         version:,
         validity_start_date: Time.zone.today,
-        status: CustomsTariffUpdate::FAILED,
         import_error: message,
       )
     rescue StandardError => e

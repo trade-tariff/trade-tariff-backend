@@ -55,7 +55,7 @@ RSpec.describe XiCnImporter::DocumentFetcher do
     end
 
     context 'when the version is already imported (not failed)' do
-      before { create(:customs_tariff_update, version: '32025R1926', status: CustomsTariffUpdate::PENDING) }
+      before { create(:customs_tariff_update, version: '32025R1926') }
 
       it 'skips the version and returns an empty array' do
         expect(fetcher.call).to be_empty

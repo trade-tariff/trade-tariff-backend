@@ -8,8 +8,8 @@ module XiCnImporter
       instrument('import_run_started')
     end
 
-    def import_run_completed(imported:, failed:, duration_ms:, review_backlog:)
-      instrument('import_run_completed', imported:, failed:, duration_ms:, review_backlog:)
+    def import_run_completed(imported:, failed:, duration_ms:)
+      instrument('import_run_completed', imported:, failed:, duration_ms:)
     end
 
     def import_run_failed(error_class:, error_message:)

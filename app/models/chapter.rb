@@ -25,11 +25,7 @@ class Chapter < GoodsNomenclature
   one_to_one :chapter_note, primary_key: :chapter_short_code
   one_to_one :customs_tariff_chapter_note, key: :chapter_id, primary_key: :chapter_short_code do |ds|
     ds.where(
-      customs_tariff_update_version: CustomsTariffUpdate.actual
-        .exclude(status: CustomsTariffUpdate::FAILED)
-        .order(Sequel.desc(:validity_start_date))
-        .select(:version)
-        .limit(1),
+      customs_tariff_update_version: CustomsTariffUpdate.latest.select(:version).limit(1),
     )
   end
 

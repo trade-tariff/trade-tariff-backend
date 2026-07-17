@@ -7,7 +7,7 @@ module XiCnImporter
         update = CustomsTariffUpdate.first(version:)
         reimport(update) if update && update.s3_path&.start_with?("#{S3_KEY_PREFIX}/")
       else
-        CustomsTariffUpdate.exclude(status: CustomsTariffUpdate::FAILED).each do |update|
+        CustomsTariffUpdate.imported.each do |update|
           next unless update.s3_path&.start_with?("#{S3_KEY_PREFIX}/")
 
           reimport(update)
@@ -45,7 +45,6 @@ module XiCnImporter
             chapter_id:,
             content: note_content,
             validity_start_date: update.validity_start_date,
-            status: CustomsTariffChapterNote::PENDING,
           )
         end
 
@@ -55,7 +54,6 @@ module XiCnImporter
             rule_label:,
             content: note_content,
             validity_start_date: update.validity_start_date,
-            status: CustomsTariffGeneralRule::PENDING,
           )
         end
       end
@@ -68,7 +66,6 @@ module XiCnImporter
           section_id:,
           content: note_content,
           validity_start_date: update.validity_start_date,
-          status: CustomsTariffSectionNote::PENDING,
         )
       end
     end
