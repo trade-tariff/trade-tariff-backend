@@ -178,7 +178,7 @@ private
 
   def compressed_note_selection
     @compressed_note_selection ||= TariffKnowledge::RelevantNoteFragmentSelector.call_with_diagnostics(
-      query:,
+      query: expanded_query,
       search_results: opensearch_results,
       notes_by_item_id: compressed_notes_by_item_id,
     )
