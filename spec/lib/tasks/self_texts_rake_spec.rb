@@ -1,5 +1,6 @@
 # rubocop:disable RSpec/DescribeClass
 require 'csv'
+require 'stringio'
 
 RSpec.describe 'self_texts rake tasks' do
   describe 'self_texts:coverage' do
@@ -464,6 +465,158 @@ RSpec.describe 'self_texts rake tasks' do
       )
     ensure
       ActiveSupport::Notifications.unsubscribe(subscriber) if subscriber
+    end
+  end
+
+  describe 'self_texts:gaps' do
+    subject(:gaps) { task.invoke }
+
+    let(:task) { Rake::Task['self_texts:gaps'] }
+    let!(:original_chapter) { [ENV.key?('CHAPTER'), ENV['CHAPTER']] }
+    let(:report) do
+      original_stdout = $stdout
+      captured_stdout = StringIO.new
+      $stdout = captured_stdout
+      gaps
+      captured_stdout.string
+    ensure
+      $stdout = original_stdout
+    end
+
+    after do
+      task.reenable
+      chapter_was_set, chapter = original_chapter
+      chapter_was_set ? ENV['CHAPTER'] = chapter : ENV.delete('CHAPTER')
+    end
+
+    it 'reports an empty dataset as having no gaps' do
+      ENV.delete('CHAPTER')
+
+      expect { gaps }.to output(<<~OUTPUT).to_stdout
+        Self-Text Gaps and Stale Records by Chapter
+        ====================================================================================================
+        Ch   Description                                         Total   Miss  Stale   Work   Cov %
+        ----------------------------------------------------------------------------------------------------
+        ----------------------------------------------------------------------------------------------------
+        TOTAL                                                        0      0      0      0    0.0%
+
+        No gaps found - full coverage, nothing stale!
+      OUTPUT
+    end
+
+    it 'reports full coverage without printing heading details' do
+      ENV.delete('CHAPTER')
+      create(:chapter, :with_description, goods_nomenclature_item_id: '0100000000', description: 'Live animals')
+      heading = create(:heading, :with_description, goods_nomenclature_item_id: '0101000000', description: 'Horses')
+      commodity = create(:commodity, goods_nomenclature_item_id: '0101210000')
+      create(:goods_nomenclature_self_text, goods_nomenclature: heading)
+      create(:goods_nomenclature_self_text, goods_nomenclature: commodity)
+
+      expect(task.prerequisites).to include('environment')
+      expect { gaps }.to output(<<~OUTPUT).to_stdout
+        Self-Text Gaps and Stale Records by Chapter
+        ====================================================================================================
+        Ch   Description                                         Total   Miss  Stale   Work   Cov %
+        ----------------------------------------------------------------------------------------------------
+        01   Live animals                                            2      0      0      0  100.0%
+        ----------------------------------------------------------------------------------------------------
+        TOTAL                                                        2      0      0      0  100.0%
+
+        No gaps found - full coverage, nothing stale!
+      OUTPUT
+    end
+
+    it 'groups missing and stale records by chapter and heading in item order' do
+      ENV.delete('CHAPTER')
+      create(:chapter, :with_description, goods_nomenclature_item_id: '0100000000', description: 'Live animals')
+      horses = create(:heading, :with_description, goods_nomenclature_item_id: '0101000000', description: 'Horses')
+      create(:commodity, :with_description,
+             goods_nomenclature_item_id: '0101210000', description: 'Pure-bred horses')
+      create(:commodity, :with_description,
+             goods_nomenclature_item_id: '0101210000',
+             producline_suffix: '10',
+             description: 'Breeding horses')
+      stale_horse = create(:commodity, :with_description,
+                           goods_nomenclature_item_id: '0101290000', description: 'Other horses')
+      create(:goods_nomenclature_self_text, goods_nomenclature: horses)
+      create(:goods_nomenclature_self_text, :stale, goods_nomenclature: stale_horse)
+
+      create(:chapter, :with_description, goods_nomenclature_item_id: '0200000000', description: 'Meat')
+      bovine_meat = create(:heading, :with_description, goods_nomenclature_item_id: '0201000000', description: 'Bovine meat')
+      create(:commodity, :with_description, goods_nomenclature_item_id: '0201100000', description: 'Carcases')
+      create(:goods_nomenclature_self_text, goods_nomenclature: bovine_meat)
+
+      expect(report.lines.map(&:rstrip).join("\n")).to eq(<<~OUTPUT.chomp)
+        Self-Text Gaps and Stale Records by Chapter
+        ====================================================================================================
+        Ch   Description                                         Total   Miss  Stale   Work   Cov %
+        ----------------------------------------------------------------------------------------------------
+        01   Live animals                                            4      2      1      3   50.0%
+        02   Meat                                                    2      1      0      1   50.0%
+        ----------------------------------------------------------------------------------------------------
+        TOTAL                                                        6      3      1      4   50.0%
+
+        Self-Texts Needing Work by Heading
+        ==========================================================================================
+        Head   Description                                          Miss  Stale   Work
+        ------------------------------------------------------------------------------------------
+        -- Chapter 01: Live animals --
+          0101 Horses                                                2      1      3
+        -- Chapter 02: Meat --
+          0201 Bovine meat                                           1      0      1
+
+        All Goods Nomenclatures Needing Work (ordered by item_id, producline_suffix)
+        ==============================================================================================================
+        Item ID      PLS  Reason  Description
+        --------------------------------------------------------------------------------------------------------------
+        0101210000   10   missing Breeding horses
+        0101210000   80   missing Pure-bred horses
+        0101290000   80   stale   Other horses
+        0201100000   80   missing Carcases
+        --------------------------------------------------------------------------------------------------------------
+        Total needing work: 4
+      OUTPUT
+
+      work_detail_lines = report.lines.grep(/\A(?:0101210000|0101290000|0201100000)/)
+      expect(work_detail_lines.map { |line| line.chomp.length }).to eq([106, 106, 106, 106])
+      expect(work_detail_lines).to all(match(/ +\n\z/))
+    end
+
+    it 'limits every report section to the selected chapter' do
+      ENV['CHAPTER'] = '02'
+      create(:chapter, :with_description, goods_nomenclature_item_id: '0100000000', description: 'Live animals')
+      create(:commodity, :with_description, goods_nomenclature_item_id: '0101210000', description: 'Horses')
+      create(:chapter, :with_description, goods_nomenclature_item_id: '0200000000', description: 'Meat')
+      create(:commodity, :with_description, goods_nomenclature_item_id: '0201100000', description: 'Carcases')
+
+      expect(report.lines.map(&:rstrip).join("\n")).to eq(<<~OUTPUT.chomp)
+        Self-Text Gaps and Stale Records by Chapter
+        ====================================================================================================
+        Ch   Description                                         Total   Miss  Stale   Work   Cov %
+        ----------------------------------------------------------------------------------------------------
+        02   Meat                                                    1      1      0      1    0.0%
+        ----------------------------------------------------------------------------------------------------
+        TOTAL                                                        1      1      0      1    0.0%
+
+        Self-Texts Needing Work by Heading
+        ==========================================================================================
+        Head   Description                                          Miss  Stale   Work
+        ------------------------------------------------------------------------------------------
+        -- Chapter 02: Meat --
+          0201 ?                                                     1      0      1
+
+        All Goods Nomenclatures Needing Work (ordered by item_id, producline_suffix)
+        ==============================================================================================================
+        Item ID      PLS  Reason  Description
+        --------------------------------------------------------------------------------------------------------------
+        0201100000   80   missing Carcases
+        --------------------------------------------------------------------------------------------------------------
+        Total needing work: 1
+      OUTPUT
+
+      work_detail_line = report.lines.find { |line| line.start_with?('0201100000') }
+      expect(work_detail_line.chomp.length).to eq(106)
+      expect(work_detail_line).to match(/ +\n\z/)
     end
   end
 
