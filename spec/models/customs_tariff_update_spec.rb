@@ -1,37 +1,23 @@
 RSpec.describe CustomsTariffUpdate do
   describe 'dataset scopes' do
-    let!(:pending)  { create(:customs_tariff_update, status: CustomsTariffUpdate::PENDING) }
-    let!(:approved) { create(:customs_tariff_update, :approved) }
-    let!(:rejected) { create(:customs_tariff_update, :rejected) }
-    let!(:failed)   { create(:customs_tariff_update, :failed) }
-
-    describe '.pending' do
-      it 'returns only pending records' do
-        expect(described_class.pending.all).to contain_exactly(pending)
-      end
-    end
-
-    describe '.approved' do
-      it 'returns only approved records' do
-        expect(described_class.approved.all).to contain_exactly(approved)
-      end
-    end
-
-    describe '.rejected' do
-      it 'returns only rejected records' do
-        expect(described_class.rejected.all).to contain_exactly(rejected)
-      end
-    end
+    let!(:imported_update) { create(:customs_tariff_update) }
+    let!(:failed_update)   { create(:customs_tariff_update, :failed) }
 
     describe '.failed' do
-      it 'returns only failed records' do
-        expect(described_class.failed.all).to contain_exactly(failed)
+      it 'returns only records with an import error' do
+        expect(described_class.failed.all).to contain_exactly(failed_update)
+      end
+    end
+
+    describe '.imported' do
+      it 'returns only records without an import error' do
+        expect(described_class.imported.all).to contain_exactly(imported_update)
       end
     end
 
     describe '.latest' do
-      it 'returns the latest non-failed update for the current TimeMachine date' do
-        older_update = create(:customs_tariff_update, version: '1.30', validity_start_date: Date.new(2026, 1, 22))
+      it 'returns the latest imported update for the current TimeMachine date' do
+        older_update  = create(:customs_tariff_update, version: '1.30', validity_start_date: Date.new(2026, 1, 22))
         latest_update = create(:customs_tariff_update, version: '1.31', validity_start_date: Date.new(2026, 4, 1))
         create(:customs_tariff_update, :failed, version: '1.32', validity_start_date: Date.new(2026, 6, 1))
         create(:customs_tariff_update, version: '1.33', validity_start_date: Date.new(2026, 8, 1))

@@ -14,16 +14,14 @@ class ImportXiCnDocumentWorker
     duration_ms    = ((Process.clock_gettime(Process::CLOCK_MONOTONIC) - start_time) * 1000).round(2)
     imported_count = results.count { |r| r.status == :imported }
     failed_count   = results.count { |r| r.status == :failed }
-    review_backlog = CustomsTariffUpdate.pending.count
 
     XiCnImporter::Instrumentation.import_run_completed(
       imported: imported_count,
       failed: failed_count,
       duration_ms:,
-      review_backlog:,
     )
 
-    notify_completed(imported_count:, failed_count:, review_backlog:)
+    notify_completed(results)
   rescue StandardError => e
     XiCnImporter::Instrumentation.import_run_failed(
       error_class: e.class.name,
@@ -35,16 +33,27 @@ class ImportXiCnDocumentWorker
 
 private
 
-  def notify_completed(imported_count:, failed_count:, review_backlog:)
-    return unless imported_count.positive? || failed_count.positive?
+  def notify_completed(results)
+    imported = results.select { |r| r.status == :imported }
+    failed   = results.select { |r| r.status == :failed }
 
-    status = failed_count.positive? ? 'completed with failures' : 'completed'
+    if imported.empty? && failed.empty?
+      notify_slack('XI Combined Nomenclature document import completed. Nothing new to import.')
+      return
+    end
 
-    notify_slack(
-      "XI Combined Nomenclature document import #{status}. " \
-      "imported: #{imported_count}, failed: #{failed_count}, " \
-      "pending review: #{review_backlog}",
-    )
+    lines = []
+    imported.each { |r| lines << "  • CELEX ID: #{r.celex} ✓" }
+    failed.each   { |r| lines << "  • CELEX ID: #{r.celex} ✗ #{r.error}" }
+
+    counts = []
+    counts << "imported: #{imported.count}" if imported.any?
+    counts << "failed: #{failed.count}" if failed.any?
+
+    status = failed.any? ? 'completed with failures' : 'completed'
+    header = "XI Combined Nomenclature document import #{status}. #{counts.join(', ')}"
+
+    notify_slack([header, *lines].join("\n"))
   end
 
   def notify_failed(error)

@@ -14,21 +14,17 @@ class ImportCustomsTariffDocumentWorker
 
     results = CustomsTariffImporter::Importer.new.call
 
-    duration_ms = ((Process.clock_gettime(Process::CLOCK_MONOTONIC) - start_time) * 1000).round(2)
+    duration_ms    = ((Process.clock_gettime(Process::CLOCK_MONOTONIC) - start_time) * 1000).round(2)
     imported_count = results.count { |r| r.status == :imported }
-    skipped_count = results.count { |r| %i[skipped duplicate_content].include?(r.status) }
-    failed_count = results.count { |r| r.status == :failed }
-    review_backlog = CustomsTariffUpdate.pending.count
+    failed_count   = results.count { |r| r.status == :failed }
 
     CustomsTariffImporter::Instrumentation.import_run_completed(
       imported: imported_count,
-      skipped: skipped_count,
       failed: failed_count,
       duration_ms:,
-      review_backlog:,
     )
 
-    notify_completed(imported_count:, skipped_count:, failed_count:, review_backlog:)
+    notify_completed(results)
   rescue StandardError => e
     CustomsTariffImporter::Instrumentation.import_run_failed(
       error_class: e.class.name,
@@ -40,22 +36,31 @@ class ImportCustomsTariffDocumentWorker
 
 private
 
-  def notify_completed(imported_count:, skipped_count:, failed_count:, review_backlog:)
-    return unless imported_count.positive? || failed_count.positive?
+  def notify_completed(results)
+    imported = results.select { |r| r.status == :imported }
+    failed   = results.select { |r| r.status == :failed }
 
-    status = failed_count.positive? ? 'completed with failures' : 'completed'
+    if imported.empty? && failed.empty?
+      notify_slack('Customs tariff document import completed. Nothing new to import.')
+      return
+    end
 
-    notify_slack(
-      "Customs tariff document import #{status}. " \
-      "imported: #{imported_count}, skipped: #{skipped_count}, failed: #{failed_count}, " \
-      "pending review: #{review_backlog}",
-    )
+    lines = []
+    imported.each { |r| lines << "  • Version ID: #{r.version} ✓" }
+    failed.each   { |r| lines << "  • Version ID: #{r.version} ✗ #{r.error}" }
+
+    counts = []
+    counts << "imported: #{imported.count}" if imported.any?
+    counts << "failed: #{failed.count}" if failed.any?
+
+    status = failed.any? ? 'completed with failures' : 'completed'
+    header = "Customs tariff document import #{status}. #{counts.join(', ')}"
+
+    notify_slack([header, *lines].join("\n"))
   end
 
   def notify_failed(error)
-    notify_slack(
-      "Customs tariff document import failed. #{error.class}: #{error.message}",
-    )
+    notify_slack("Customs tariff document import failed. #{error.class}: #{error.message}")
   end
 
   def notify_slack(message)

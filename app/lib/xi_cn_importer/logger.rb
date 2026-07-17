@@ -12,7 +12,6 @@ module XiCnImporter
         imported: event.payload[:imported],
         failed: event.payload[:failed],
         duration_ms: event.payload[:duration_ms],
-        review_backlog: event.payload[:review_backlog],
       )
     end
 

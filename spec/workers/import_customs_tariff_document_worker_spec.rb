@@ -39,15 +39,11 @@ RSpec.describe ImportCustomsTariffDocumentWorker, type: :worker do
     end
 
     it 'emits import_run_completed with correct counts' do
-      create(:customs_tariff_update)
-
       perform
       expect(CustomsTariffImporter::Instrumentation).to have_received(:import_run_completed).with(
         imported: 1,
-        skipped: 0,
         failed: 0,
         duration_ms: a_kind_of(Float),
-        review_backlog: 1,
       )
     end
 
@@ -55,7 +51,7 @@ RSpec.describe ImportCustomsTariffDocumentWorker, type: :worker do
       perform
 
       expect(SlackNotifierService).to have_received(:call).with(
-        include('Customs tariff document import completed', 'imported: 1', 'skipped: 0', 'failed: 0'),
+        include('Customs tariff document import completed', 'imported: 1', 'Version ID: 1.30 ✓'),
       )
     end
 
@@ -80,17 +76,19 @@ RSpec.describe ImportCustomsTariffDocumentWorker, type: :worker do
       )
     end
 
-    it 'emits import_run_completed with skipped: 1' do
+    it 'emits import_run_completed with imported: 0, failed: 0' do
       perform
       expect(CustomsTariffImporter::Instrumentation).to have_received(:import_run_completed).with(
-        hash_including(imported: 0, skipped: 1, failed: 0),
+        hash_including(imported: 0, failed: 0),
       )
     end
 
-    it 'does not notify Slack' do
+    it 'sends a "Nothing new to import." Slack notification' do
       perform
 
-      expect(SlackNotifierService).not_to have_received(:call)
+      expect(SlackNotifierService).to have_received(:call).with(
+        include('Nothing new to import'),
+      )
     end
   end
 
@@ -105,7 +103,7 @@ RSpec.describe ImportCustomsTariffDocumentWorker, type: :worker do
     it 'emits import_run_completed with failed: 1' do
       perform
       expect(CustomsTariffImporter::Instrumentation).to have_received(:import_run_completed).with(
-        hash_including(imported: 0, skipped: 0, failed: 1),
+        hash_including(imported: 0, failed: 1),
       )
     end
 

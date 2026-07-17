@@ -64,7 +64,7 @@ RSpec.describe XiCnImporter::Importer do
       expect(update).to have_attributes(
         version: celex,
         validity_start_date: force_date,
-        status: CustomsTariffUpdate::PENDING,
+        import_error: nil,
         source_url: fetched_result.cellar_url,
         s3_path: "data/customs_tariff_documents/xi/CN_#{celex}.pdf",
         file_checksum: pdf_checksum,
@@ -85,7 +85,6 @@ RSpec.describe XiCnImporter::Importer do
           section_id: 1,
           content: extracted_result.sections.fetch(1),
           validity_start_date: force_date,
-          status: CustomsTariffSectionNote::PENDING,
         ),
       )
       expect(chapters).to contain_exactly(
@@ -94,7 +93,6 @@ RSpec.describe XiCnImporter::Importer do
           chapter_id: '01',
           content: extracted_result.chapters.fetch('01'),
           validity_start_date: force_date,
-          status: CustomsTariffChapterNote::PENDING,
         ),
       )
       expect(general_rules).to contain_exactly(
@@ -103,7 +101,6 @@ RSpec.describe XiCnImporter::Importer do
           rule_label: '1',
           content: extracted_result.general_rules.fetch('1'),
           validity_start_date: force_date,
-          status: CustomsTariffGeneralRule::PENDING,
         ),
       )
     end
@@ -129,17 +126,16 @@ RSpec.describe XiCnImporter::Importer do
         CustomsTariffUpdate.create(
           version: celex,
           validity_start_date: 1.year.ago.to_date,
-          status: CustomsTariffUpdate::FAILED,
           import_error: 'previous failure',
         )
       end
 
-      it 'replaces it with one pending update' do
+      it 'replaces it with one imported update' do
         importer.call
 
         updates = CustomsTariffUpdate.where(version: celex).all
         expect(updates).to contain_exactly(
-          have_attributes(status: CustomsTariffUpdate::PENDING, import_error: nil),
+          have_attributes(import_error: nil),
         )
       end
     end
@@ -160,10 +156,7 @@ RSpec.describe XiCnImporter::Importer do
           error: 'persistence error',
         )
         expect(updates).to contain_exactly(
-          have_attributes(
-            status: CustomsTariffUpdate::FAILED,
-            import_error: 'persistence error',
-          ),
+          have_attributes(import_error: 'persistence error'),
         )
         expect(CustomsTariffSectionNote.where(customs_tariff_update_version: celex).count).to eq 0
         expect(CustomsTariffChapterNote.where(customs_tariff_update_version: celex).count).to eq 0
@@ -188,10 +181,10 @@ RSpec.describe XiCnImporter::Importer do
         expect(results.first.error).to eq 'parse error'
       end
 
-      it 'creates a failed CustomsTariffUpdate' do
+      it 'creates a failed CustomsTariffUpdate with the import error' do
         importer.call
         update = CustomsTariffUpdate.first(version: celex)
-        expect(update.status).to eq CustomsTariffUpdate::FAILED
+        expect(update.import_error).to eq 'parse error'
       end
 
       it 'instruments the failed import' do
@@ -205,14 +198,13 @@ RSpec.describe XiCnImporter::Importer do
         expect(XiCnImporter::Instrumentation).not_to have_received(:document_imported)
       end
 
-      context 'when a pre-existing FAILED record exists' do
+      context 'when a pre-existing failed record exists' do
         it 'refreshes the error message and timestamp' do
           old_error = 'previous import error'
           old_updated_at = travel_to 2.days.ago do
             CustomsTariffUpdate.create(
               version: celex,
               validity_start_date: Time.zone.today,
-              status: CustomsTariffUpdate::FAILED,
               import_error: old_error,
             ).updated_at
           end
@@ -222,7 +214,6 @@ RSpec.describe XiCnImporter::Importer do
           end
 
           update = CustomsTariffUpdate.first(version: celex)
-          expect(update.status).to eq CustomsTariffUpdate::FAILED
           expect(update.import_error).to eq 'parse error'
           expect(update.updated_at).to be > old_updated_at
         end

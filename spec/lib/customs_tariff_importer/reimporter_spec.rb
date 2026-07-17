@@ -23,7 +23,6 @@ RSpec.describe CustomsTariffImporter::Reimporter do
   let(:update) do
     create(:customs_tariff_update,
            version: '1.31',
-           status: CustomsTariffUpdate::APPROVED,
            validity_start_date: Date.new(2026, 4, 1),
            s3_path: 'data/customs_tariff_documents/UKGT_1.31.docx')
   end
@@ -64,14 +63,10 @@ RSpec.describe CustomsTariffImporter::Reimporter do
         expect(chapter_note.content).to eq('All live animals are classified here.')
       end
 
-      it 'sets newly created notes to pending status' do
+      it 'creates notes without a status column' do
         reimporter.call
-
-        statuses = CustomsTariffSectionNote
-          .where(customs_tariff_update_version: update.version)
-          .select_map(:status)
-
-        expect(statuses).to all(eq(CustomsTariffSectionNote::PENDING))
+        note = CustomsTariffSectionNote.where(customs_tariff_update_version: update.version).first
+        expect(note.content).to eq('Live animals note.')
       end
     end
 
@@ -97,7 +92,6 @@ RSpec.describe CustomsTariffImporter::Reimporter do
       let(:second_update) do
         create(:customs_tariff_update,
                version: '1.30',
-               status: CustomsTariffUpdate::PENDING,
                validity_start_date: Date.new(2026, 3, 1),
                s3_path: 'data/customs_tariff_documents/UKGT_1.30.docx')
       end
@@ -118,8 +112,8 @@ RSpec.describe CustomsTariffImporter::Reimporter do
       end
     end
 
-    context 'when an update has FAILED status' do
-      before { update.update(status: CustomsTariffUpdate::FAILED) }
+    context 'when an update has import_error set' do
+      before { update.update(import_error: 'previous failure') }
 
       it 'skips failed updates' do
         allow(TariffSynchronizer::FileService).to receive(:get)
@@ -132,7 +126,6 @@ RSpec.describe CustomsTariffImporter::Reimporter do
       let(:other_update) do
         create(:customs_tariff_update,
                version: '1.30',
-               status: CustomsTariffUpdate::PENDING,
                validity_start_date: Date.new(2026, 3, 1),
                s3_path: 'data/customs_tariff_documents/UKGT_1.30.docx')
       end
@@ -152,8 +145,8 @@ RSpec.describe CustomsTariffImporter::Reimporter do
         expect(CustomsTariffSectionNote.where(customs_tariff_update_version: other_update.version).count).to eq(0)
       end
 
-      it 'reimports a FAILED update (no status filtering in single-version mode)' do
-        update.update(status: CustomsTariffUpdate::FAILED)
+      it 'reimports an update with import_error set (no filtering in single-version mode)' do
+        update.update(import_error: 'previous failure')
 
         reimporter.call(version: update.version)
 

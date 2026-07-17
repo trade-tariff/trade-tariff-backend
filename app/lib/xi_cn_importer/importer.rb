@@ -56,7 +56,6 @@ module XiCnImporter
       CustomsTariffUpdate.create(
         version: fetched.celex,
         validity_start_date: fetched.force_date,
-        status: CustomsTariffUpdate::PENDING,
         source_url: fetched.cellar_url,
         s3_path:,
         file_checksum: fetched.pdf_checksum,
@@ -71,7 +70,6 @@ module XiCnImporter
           section_id:,
           content:,
           validity_start_date: update.validity_start_date,
-          status: CustomsTariffSectionNote::PENDING,
         )
       end
     end
@@ -83,7 +81,6 @@ module XiCnImporter
           chapter_id:,
           content:,
           validity_start_date: update.validity_start_date,
-          status: CustomsTariffChapterNote::PENDING,
         )
       end
     end
@@ -95,20 +92,18 @@ module XiCnImporter
           rule_label:,
           content:,
           validity_start_date: update.validity_start_date,
-          status: CustomsTariffGeneralRule::PENDING,
         )
       end
     end
 
     def record_failure(celex, message)
       return if celex.blank?
-      return if CustomsTariffUpdate.exclude(status: CustomsTariffUpdate::FAILED).where(version: celex).any?
+      return if CustomsTariffUpdate.imported.where(version: celex).any?
 
-      CustomsTariffUpdate.where(version: celex, status: CustomsTariffUpdate::FAILED).delete
+      CustomsTariffUpdate.failed.where(version: celex).delete
       CustomsTariffUpdate.create(
         version: celex,
         validity_start_date: Time.zone.today,
-        status: CustomsTariffUpdate::FAILED,
         import_error: message,
       )
     rescue StandardError => e

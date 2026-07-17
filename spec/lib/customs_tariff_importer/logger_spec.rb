@@ -30,12 +30,14 @@ RSpec.describe CustomsTariffImporter::Logger do
 
       log_subscriber.import_run_completed(build_event(
                                             'import_run_completed',
-                                            payload: { imported: 2, skipped: 1, failed: 0, duration_ms: 3500.0, review_backlog: 3 },
+                                            payload: { imported: 2, failed: 0, duration_ms: 3500.0 },
                                           ))
 
       expect(log_subscriber).to have_received(:info) do |json|
         entry = JSON.parse(json)
-        expect(entry).to include('imported' => 2, 'skipped' => 1, 'failed' => 0, 'duration_ms' => 3500.0, 'review_backlog' => 3)
+        expect(entry).to include('imported' => 2, 'failed' => 0, 'duration_ms' => 3500.0)
+        expect(entry).not_to have_key('skipped')
+        expect(entry).not_to have_key('review_backlog')
       end
     end
   end
@@ -181,29 +183,6 @@ RSpec.describe CustomsTariffImporter::Logger do
       expect(log_subscriber).to have_received(:error) do |json|
         entry = JSON.parse(json)
         expect(entry).to include('event' => 'document_import_failed', 'version' => '1.30', 'error_class' => 'ActiveRecord::RecordInvalid')
-      end
-    end
-  end
-
-  describe '#status_changed' do
-    it 'logs the status transition and operator' do
-      allow(log_subscriber).to receive(:info)
-
-      log_subscriber.status_changed(build_event(
-                                      'status_changed',
-                                      payload: { version: '1.30', from_status: 'pending', to_status: 'approved', whodunnit: 'user-1', review_backlog: 2 },
-                                    ))
-
-      expect(log_subscriber).to have_received(:info) do |json|
-        entry = JSON.parse(json)
-        expect(entry).to include(
-          'event' => 'status_changed',
-          'version' => '1.30',
-          'from_status' => 'pending',
-          'to_status' => 'approved',
-          'whodunnit' => 'user-1',
-          'review_backlog' => 2,
-        )
       end
     end
   end

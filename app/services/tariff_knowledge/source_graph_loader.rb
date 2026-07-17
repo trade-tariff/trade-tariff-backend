@@ -2,8 +2,6 @@ module TariffKnowledge
   class SourceGraphLoader
     BATCH_SIZE = 500
 
-    EXCLUDED_UPDATE_STATUSES = [CustomsTariffUpdate::FAILED].freeze
-
     RangeReference = Data.define(:type, :code)
     SourceAssociation = Data.define(:association, :label, :identifier, :title)
 
@@ -54,11 +52,7 @@ module TariffKnowledge
       # complete tariff source snapshot and Appendix 5a precedence is handled by
       # selecting the latest current snapshot, not by approval state.
       TimeMachine.at(@time_machine_date ||= Time.current) do
-        CustomsTariffUpdate
-          .actual
-          .exclude(status: EXCLUDED_UPDATE_STATUSES)
-          .order(Sequel.desc(:validity_start_date))
-          .first
+        CustomsTariffUpdate.latest.first
       end
     end
 

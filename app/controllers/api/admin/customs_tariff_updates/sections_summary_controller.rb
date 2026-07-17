@@ -111,7 +111,7 @@ module Api
           @previous_update ||= begin
             current_date = customs_tariff_update.validity_start_date
             CustomsTariffUpdate
-              .exclude(status: CustomsTariffUpdate::FAILED)
+              .imported
               .where { validity_start_date < current_date }
               .order(Sequel.desc(:validity_start_date))
               .first
