@@ -2,7 +2,7 @@ RSpec.describe AiUsage do
   describe '.metadata_for' do
     before do
       allow(TradeTariffBackend).to receive(:openai_model_pricing).and_return({
-        'gpt-test' => { 'input_per_million_tokens' => 2.0, 'output_per_million_tokens' => 8.0 },
+        'gpt-test' => { 'input_per_million_tokens' => 2.0, 'cached_input_per_million_tokens' => 0.5, 'output_per_million_tokens' => 8.0 },
       })
     end
 
@@ -18,11 +18,34 @@ RSpec.describe AiUsage do
         model: 'gpt-test',
         event_kind: 'interactive_search',
         input_tokens: 1_000,
+        cached_input_tokens: nil,
         output_tokens: 250,
         total_tokens: 1_250,
         input_cost_usd: 0.002,
+        cached_input_cost_usd: nil,
         output_cost_usd: 0.002,
         total_cost_usd: 0.004,
+        pricing_known: true,
+      )
+    end
+
+    it 'charges cached input tokens at the configured discounted rate' do
+      usage = described_class.metadata_for(
+        model: 'gpt-test',
+        event_kind: 'interactive_search',
+        usage: {
+          'prompt_tokens' => 1_000,
+          'prompt_tokens_details' => { 'cached_tokens' => 400 },
+          'completion_tokens' => 250,
+          'total_tokens' => 1_250,
+        },
+      )
+
+      expect(usage.to_h).to include(
+        cached_input_tokens: 400,
+        input_cost_usd: 0.0014,
+        cached_input_cost_usd: 0.0002,
+        total_cost_usd: be_within(1e-12).of(0.0034),
         pricing_known: true,
       )
     end
@@ -107,9 +130,11 @@ RSpec.describe AiUsage do
         model: 'gpt-test',
         event_kind: 'search_query_expansion',
         input_tokens: 10,
+        cached_input_tokens: nil,
         output_tokens: 5,
         total_tokens: 15,
         input_cost_usd: nil,
+        cached_input_cost_usd: nil,
         output_cost_usd: nil,
         total_cost_usd: nil,
         pricing_known: false,

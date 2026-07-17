@@ -76,6 +76,25 @@ RSpec.describe SearchDiagnostics::RequestLogLookup do
           result_field('note_evidence_status', 'selected'),
           result_field('details', '{"selected_contexts":"projected-string-must-not-win"}'),
         ],
+        [
+          result_field('@timestamp', '2026-06-05 09:59:01.750'),
+          result_field('@message', {
+            service: 'ai_usage',
+            event: 'embedding_api_call_completed',
+            request_id:,
+            event_kind: 'vector_search_query_embedding',
+            model: 'text-embedding-3-small',
+            input_tokens: 10,
+            total_tokens: 10,
+            input_cost_usd: 0.0000002,
+            total_cost_usd: 0.0000002,
+            pricing_known: true,
+          }.to_json),
+          result_field('event', 'embedding_api_call_completed'),
+          result_field('request_id', request_id),
+          result_field('event_kind', 'vector_search_query_embedding'),
+          result_field('total_cost_usd', '0.0000002'),
+        ],
       ],
     )
   end
@@ -120,7 +139,12 @@ RSpec.describe SearchDiagnostics::RequestLogLookup do
             'omitted_evidence_count',
             'logged_omitted_evidence_count',
             'omitted_evidence_truncated',
-            'filter service = "search"',
+            'cached_input_tokens',
+            'cached_input_cost_usd',
+            'total_cost_usd',
+            'service = "search"',
+            'service = "ai_usage"',
+            'event_kind = "vector_search_query_embedding"',
             'request_id = "request-123"',
             "limit #{described_class::DEFAULT_LIMIT}",
           ),
@@ -147,8 +171,19 @@ RSpec.describe SearchDiagnostics::RequestLogLookup do
     it 'returns classic and internal search events scoped by the same request id key' do
       events = lookup.call.events
 
-      expect(events.map(&:search_type)).to eq(%w[classic interactive interactive])
+      expect(events.map(&:search_type)).to eq(['classic', 'interactive', 'interactive', nil])
       expect(events.map { |event| event.fields['request_id'] }).to all(eq(request_id))
+    end
+
+    it 'returns request-correlated vector embedding costs' do
+      event = lookup.call.events.find { |candidate| candidate.event == 'embedding_api_call_completed' }
+
+      expect(event.fields).to include(
+        'event_kind' => 'vector_search_query_embedding',
+        'input_tokens' => 10,
+        'total_cost_usd' => '0.0000002',
+        'pricing_known' => true,
+      )
     end
 
     it 'preserves nested note evidence from the structured log message' do

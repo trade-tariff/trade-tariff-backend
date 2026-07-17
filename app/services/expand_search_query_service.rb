@@ -4,8 +4,9 @@ class ExpandSearchQueryService
 
   Result = Data.define(:expanded_query, :reason)
 
-  def initialize(query)
+  def initialize(query, request_id: nil)
     @query = query.to_s.strip
+    @request_id = request_id
   end
 
   def call
@@ -16,8 +17,8 @@ class ExpandSearchQueryService
   end
 
   class << self
-    def call(query)
-      new(query).call
+    def call(query, request_id: nil)
+      new(query, request_id:).call
     end
 
     def clear_cache!
@@ -27,7 +28,7 @@ class ExpandSearchQueryService
 
 private
 
-  attr_reader :query
+  attr_reader :query, :request_id
 
   def numeric_code?
     NUMERIC_CODE_PATTERN.match?(query)
@@ -38,7 +39,7 @@ private
     return Result.new(**cached.symbolize_keys) if cached
 
     response = Search::Instrumentation.api_call(
-      request_id: nil,
+      request_id:,
       model: configured_model,
       attempt_number: 1,
       operation: 'search_query_expansion',
@@ -61,7 +62,7 @@ private
     end
   rescue StandardError => e
     Search::Instrumentation.search_failed(
-      request_id: nil,
+      request_id:,
       error_type: e.class.name,
       error_message: e.message,
       search_type: 'expand_query',

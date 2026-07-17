@@ -63,7 +63,7 @@ RSpec.describe HybridRetrievalService do
       expect(OpensearchRetrievalService).to have_received(:call).with(
         query: 'horses', expanded_query: expanded_query, as_of: as_of, request_id: nil, limit: 30,
       )
-      expect(VectorRetrievalService).to have_received(:call).with(query: expanded_query, limit: 30)
+      expect(VectorRetrievalService).to have_received(:call).with(query: expanded_query, limit: 30, request_id: nil)
     end
 
     it 'passes filter prefixes to both retrieval legs' do
@@ -76,7 +76,7 @@ RSpec.describe HybridRetrievalService do
         as_of: as_of, request_id: nil, limit: 30, filter_prefixes: %w[0101]
       )
       expect(VectorRetrievalService).to have_received(:call).with(
-        query: expanded_query, limit: 30, filter_prefixes: %w[0101],
+        query: expanded_query, limit: 30, filter_prefixes: %w[0101], request_id: nil,
       )
     end
 

@@ -558,6 +558,12 @@ RSpec.describe InteractiveSearchService do
     end
 
     it 'records that note evidence was disabled for the prompt' do
+      create(:admin_configuration,
+             :boolean,
+             name: 'search_compressed_notes_enabled',
+             value: false,
+             area: 'classification')
+
       result
 
       expect(Search::Instrumentation).to have_received(:note_evidence_evaluated).with(

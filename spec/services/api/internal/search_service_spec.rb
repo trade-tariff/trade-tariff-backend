@@ -23,7 +23,8 @@ RSpec.describe Api::Internal::SearchService do
     allow(AdminConfiguration).to receive(:option_value).with('retrieval_method').and_return('opensearch')
     allow(AdminConfiguration).to receive(:enabled?).and_call_original
     allow(AdminConfiguration).to receive(:enabled?).with('expand_search_when_needed_enabled').and_return(false)
-    allow(ExpandSearchQueryService).to receive(:call).and_wrap_original do |_method, query|
+    allow(AdminConfiguration).to receive(:enabled?).with('search_compressed_notes_enabled').and_return(false)
+    allow(ExpandSearchQueryService).to receive(:call).and_wrap_original do |_method, query, **_options|
       ExpandSearchQueryService::Result.new(expanded_query: query, reason: nil)
     end
     allow(InteractiveSearchService).to receive(:call).and_return(nil)
@@ -730,7 +731,7 @@ RSpec.describe Api::Internal::SearchService do
       it 'calls ExpandSearchQueryService' do
         described_class.new(q: 'laptop').call
 
-        expect(ExpandSearchQueryService).to have_received(:call).with('laptop')
+        expect(ExpandSearchQueryService).to have_received(:call).with('laptop', request_id: a_kind_of(String))
       end
 
       it 'appends answer text before expanding the query' do
@@ -739,7 +740,7 @@ RSpec.describe Api::Internal::SearchService do
 
         described_class.new(q: 'handbag', answers: answers).call
 
-        expect(ExpandSearchQueryService).to have_received(:call).with('handbag Leather')
+        expect(ExpandSearchQueryService).to have_received(:call).with('handbag Leather', request_id: a_kind_of(String))
       end
     end
 
@@ -785,7 +786,7 @@ RSpec.describe Api::Internal::SearchService do
       it 'runs expansion after the initial result set is judged weak' do
         result = described_class.new(q: 'CBD oil').call
 
-        expect(ExpandSearchQueryService).to have_received(:call).with('CBD oil')
+        expect(ExpandSearchQueryService).to have_received(:call).with('CBD oil', request_id: a_kind_of(String))
         expect(TradeTariffBackend.search_client).to have_received(:search).twice
         expect(result[:data].first[:attributes][:goods_nomenclature_item_id]).to eq('3304990000')
       end
@@ -1242,7 +1243,7 @@ RSpec.describe Api::Internal::SearchService do
       it 'expands the query before vector retrieval' do
         described_class.new(q: 'horses').call
 
-        expect(ExpandSearchQueryService).to have_received(:call).with('horses')
+        expect(ExpandSearchQueryService).to have_received(:call).with('horses', request_id: a_kind_of(String))
       end
 
       it 'calls VectorRetrievalService with the expanded query' do

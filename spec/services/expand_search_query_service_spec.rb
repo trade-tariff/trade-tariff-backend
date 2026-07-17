@@ -1,5 +1,5 @@
 RSpec.describe ExpandSearchQueryService do
-  subject(:result) { described_class.call(query) }
+  subject(:result) { described_class.call(query, request_id: 'request-123') }
 
   let(:ai_response) do
     {
@@ -35,6 +35,16 @@ RSpec.describe ExpandSearchQueryService do
           model: 'gpt-4.1-mini-2025-04-14',
           reasoning_effort: nil,
           event_kind: 'search_query_expansion',
+        )
+      end
+
+      it 'correlates the model call with the search request' do
+        allow(Search::Instrumentation).to receive(:api_call).and_call_original
+
+        result
+
+        expect(Search::Instrumentation).to have_received(:api_call).with(
+          hash_including(request_id: 'request-123', operation: 'search_query_expansion'),
         )
       end
     end
@@ -152,7 +162,7 @@ RSpec.describe ExpandSearchQueryService do
         result
 
         expect(Search::Instrumentation).to have_received(:search_failed).with(
-          request_id: nil,
+          request_id: 'request-123',
           error_type: 'Faraday::TimeoutError',
           error_message: anything,
           search_type: 'expand_query',

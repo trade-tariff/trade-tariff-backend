@@ -91,6 +91,14 @@ RSpec.describe 'admin_configurations:seed' do
     expect(config.value['escalation']['attributes']['message']).to include('{{enquiries_email}}')
   end
 
+  it 'enables compressed-note evidence with production-safe guidance' do
+    seed
+
+    config = AdminConfiguration.where(name: 'search_compressed_notes_enabled').first
+    expect(config.value).to be true
+    expect(config.description).to eq('Include relevant current approved compressed tariff-note evidence in guided-search model prompts.')
+  end
+
   it 'seeds nested_options configs with sorted model options', :aggregate_failures do
     seed
 
@@ -184,10 +192,10 @@ RSpec.describe 'admin_configurations:seed' do
 
     enabled = AdminConfiguration.where(name: 'expand_search_when_needed_enabled').first
     expect(enabled.config_type).to eq('boolean')
-    expect(enabled.description).to include('Requires expand_search_enabled')
+    expect(enabled.description).to include('When AI expansion is enabled')
     expect(enabled.description).to include('acronym-like terms')
-    expect(enabled.description).to include('no useful word parts')
-    expect(enabled.description).to include('weak retrieval results')
+    expect(enabled.description).to include('no significant tagged words')
+    expect(enabled.description).to include('too few results')
     expect(enabled.value).to be true
 
     min_results = AdminConfiguration.where(name: 'expand_search_min_results').first

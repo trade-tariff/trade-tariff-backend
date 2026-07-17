@@ -24,7 +24,7 @@ private
     result = Search::Instrumentation.query_expanded(
       request_id: request_id,
       original_query: query,
-    ) { ExpandSearchQueryService.call(query) }
+    ) { ExpandSearchQueryService.call(query, request_id:) }
 
     result.expanded_query
   end

@@ -26,6 +26,7 @@ module AiUsage
         batch_size: event.payload[:batch_size],
         model: event.payload[:model],
         duration_ms: event.payload[:duration_ms],
+        request_id: event.payload[:request_id],
       }
       add_ai_usage_fields!(data, event)
       data
