@@ -48,12 +48,16 @@ RSpec.describe TaricImporter do
 
       it 'imports single Measure' do
         described_class.new(taric_update).import
+        Measure.refresh!(concurrently: false)
+
         expect(Measure.count).to eq 1
       end
 
       it 'imports single Measure and updates it' do
         described_class.new(taric_update).import
         described_class.new(second_taric_update).import
+        Measure.refresh!(concurrently: false)
+
         expect(Measure.count).to eq 1
       end
 
