@@ -891,6 +891,36 @@ RSpec.describe TariffKnowledge::RelevantNoteFragmentSelector do
     )
   end
 
+  it 'keeps matching text from a fragment that is not contained by the block' do
+    repeated_text = 'Iron alloys containing more than 2% carbon.'
+    note = create(
+      :tariff_knowledge_compressed_note,
+      goods_nomenclature_item_id: '7201200000',
+      content: 'unrelated matching text note',
+      metadata: Sequel.pg_jsonb_wrap(
+        'evidence_blocks' => [{
+          'source_node_key' => 'note_block:customs_tariff_chapter_note:1.31:72:1:a',
+          'source_title' => 'pig iron',
+          'source_context' => repeated_text,
+          'block_type' => 'definition',
+          'term' => 'pig iron',
+          'source_type' => 'customs_tariff_chapter_note',
+          'source_id' => '72',
+          'fragment_node_keys' => [],
+        }],
+        'evidence' => [evidence_for('note_fragment:customs_tariff_chapter_note:1.31:73:0001', repeated_text, 'inclusion', source_id: '73')],
+      ),
+    )
+
+    selection = described_class.call_with_diagnostics(
+      query: 'pig iron alloys',
+      search_results: [search_result_class.new(goods_nomenclature_item_id: '7201200000', description: 'Pig iron alloys', full_description: nil, score: 10)],
+      notes_by_item_id: { '7201200000' => note },
+    )
+
+    expect(selection.contexts.sum { |context| context[:fragments].size }).to eq(2)
+  end
+
   it 'ranks a direct heading relationship ahead of a broader direct chapter relationship' do
     heading_key = 'note_fragment:customs_tariff_chapter_note:1.31:95:heading'
     chapter_key = 'note_fragment:customs_tariff_chapter_note:1.31:95:chapter'

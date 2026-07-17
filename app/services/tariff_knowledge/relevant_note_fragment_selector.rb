@@ -179,6 +179,7 @@ module TariffKnowledge
       fragments.select { |fragment| fragment[:evidence_kind] == 'note_block' }.each do |block|
         fragments.select { |fragment| fragment[:evidence_kind] == 'note_fragment' }.each do |fragment|
           next if omitted_keys.include?(block[:key]) || omitted_keys.include?(fragment[:key])
+          next unless block_contains_fragment?(block, fragment)
           next unless contained_text?(block[:text], fragment[:text])
 
           retained, omitted = prefer_specific_fragment?(fragment) ? [fragment, block] : [block, fragment]
@@ -193,6 +194,10 @@ module TariffKnowledge
       end
 
       fragments.reject { |fragment| omitted_keys.include?(fragment[:key]) }
+    end
+
+    def block_contains_fragment?(block, fragment)
+      Array(block[:fragment_node_keys]).include?(fragment[:key]) || fragment[:parent_source_node_key] == block[:key]
     end
 
     def contained_text?(first, second)
