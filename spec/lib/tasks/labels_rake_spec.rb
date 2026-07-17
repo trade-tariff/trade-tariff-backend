@@ -103,5 +103,194 @@ RSpec.describe 'labels tasks' do
       expect { gaps }.to output(expected_output).to_stdout
     end
   end
+
+  describe 'labels:nuke_and_regenerate' do
+    subject(:nuke_and_regenerate) { task.invoke }
+
+    let(:task) { Rake::Task['labels:nuke_and_regenerate'] }
+    let(:temp_dir) { Dir.mktmpdir('labels-rake-spec') }
+    let(:csv_path) { File.join(temp_dir, 'self_texts.csv') }
+    let(:csv_contents) do
+      <<~CSV
+        CN_CODE,SelfText_EN
+        0101 21 00,Pure-bred breeding horses
+        8471300000,Portable digital computers
+      CSV
+    end
+
+    around do |example|
+      original_csv_path_env = ENV.fetch('CSV_PATH', nil)
+      original_confirm_env = ENV.fetch('CONFIRM', nil)
+      csv_path_was_defined = SelfTextLookupService.instance_variable_defined?(:@csv_path)
+      self_texts_were_defined = SelfTextLookupService.instance_variable_defined?(:@self_texts)
+      original_csv_path = SelfTextLookupService.instance_variable_get(:@csv_path)
+      original_self_texts = SelfTextLookupService.instance_variable_get(:@self_texts)
+
+      example.run
+    ensure
+      task.reenable
+      FileUtils.remove_entry(temp_dir) if File.exist?(temp_dir)
+      original_csv_path_env ? ENV['CSV_PATH'] = original_csv_path_env : ENV.delete('CSV_PATH')
+      original_confirm_env ? ENV['CONFIRM'] = original_confirm_env : ENV.delete('CONFIRM')
+
+      if csv_path_was_defined
+        SelfTextLookupService.instance_variable_set(:@csv_path, original_csv_path)
+      elsif SelfTextLookupService.instance_variable_defined?(:@csv_path)
+        SelfTextLookupService.remove_instance_variable(:@csv_path)
+      end
+
+      if self_texts_were_defined
+        SelfTextLookupService.instance_variable_set(:@self_texts, original_self_texts)
+      elsif SelfTextLookupService.instance_variable_defined?(:@self_texts)
+        SelfTextLookupService.remove_instance_variable(:@self_texts)
+      end
+    end
+
+    before do
+      ENV['CSV_PATH'] = csv_path
+      ENV.delete('CONFIRM')
+      allow(RelabelGoodsNomenclatureWorker).to receive(:perform_async).with(no_args)
+      allow(PaperTrail::BulkVersioning).to receive(:record_destroy_versions_for_dataset!).and_call_original
+    end
+
+    context 'when the CSV is missing' do
+      it 'exits before reloading, deleting, versioning, or enqueuing' do
+        label = create(:goods_nomenclature_label)
+        version_count = Version.count
+        allow(SelfTextLookupService).to receive(:reload!).and_call_original
+
+        expected_output = <<~OUTPUT
+          Loading self-texts from #{csv_path}...
+          ERROR: Self-texts CSV not found at #{csv_path}
+          Set CSV_PATH environment variable or place file at data/CN2026_SelfText_EN_DE_FR.csv
+        OUTPUT
+        exit_with_status_one = raise_error(SystemExit) do |error|
+          expect(error.status).to eq(1)
+        end
+
+        expect { nuke_and_regenerate }
+          .to output(expected_output).to_stdout
+          .and exit_with_status_one
+
+        expect(SelfTextLookupService).not_to have_received(:reload!)
+        expect(GoodsNomenclatureLabel[label.goods_nomenclature_sid]).to be_present
+        expect(Version.count).to eq(version_count)
+        expect(PaperTrail::BulkVersioning).not_to have_received(:record_destroy_versions_for_dataset!)
+        expect(RelabelGoodsNomenclatureWorker).not_to have_received(:perform_async)
+      end
+    end
+
+    context 'when confirmation is not exactly true' do
+      before do
+        File.write(csv_path, csv_contents)
+        ENV['CONFIRM'] = confirmation if confirmation
+      end
+
+      shared_examples 'rejected regeneration' do
+        it 'loads the CSV, warns, and exits without changing labels or enqueuing' do
+          label = create(:goods_nomenclature_label)
+          version_count = Version.count
+
+          expected_output = <<~OUTPUT
+            Loading self-texts from #{csv_path}...
+            Loaded 2 self-texts
+
+            WARNING: This will delete ALL existing labels and regenerate them.
+            Set CONFIRM=true to proceed.
+          OUTPUT
+          exit_with_status_one = raise_error(SystemExit) do |error|
+            expect(error.status).to eq(1)
+          end
+
+          expect { nuke_and_regenerate }
+            .to output(expected_output).to_stdout
+            .and exit_with_status_one
+
+          expect(SelfTextLookupService.count).to eq(2)
+          expect(SelfTextLookupService.lookup('0101210000')).to eq('Pure-bred breeding horses')
+          expect(GoodsNomenclatureLabel[label.goods_nomenclature_sid]).to be_present
+          expect(Version.count).to eq(version_count)
+          expect(PaperTrail::BulkVersioning).not_to have_received(:record_destroy_versions_for_dataset!)
+          expect(RelabelGoodsNomenclatureWorker).not_to have_received(:perform_async)
+        end
+      end
+
+      context 'when confirmation is missing' do
+        let(:confirmation) { nil }
+
+        include_examples 'rejected regeneration'
+      end
+
+      context "when confirmation is 'false'" do
+        let(:confirmation) { 'false' }
+
+        include_examples 'rejected regeneration'
+      end
+    end
+
+    context 'when regeneration is confirmed' do
+      before do
+        File.write(csv_path, csv_contents)
+        ENV['CONFIRM'] = 'true'
+      end
+
+      it 'versions every label before deleting it, then enqueues generation' do
+        labels = [
+          create(:goods_nomenclature_label, goods_nomenclature_item_id: '0101210000'),
+          create(:goods_nomenclature_label, goods_nomenclature_item_id: '8471300000'),
+        ]
+        label_item_ids = labels.map { |label| label.goods_nomenclature_sid.to_s }
+        events = []
+
+        allow(PaperTrail::BulkVersioning).to receive(:record_destroy_versions_for_dataset!).and_wrap_original do |method, dataset:|
+          events << [:version, dataset.select_map(:goods_nomenclature_sid).map(&:to_s)]
+          method.call(dataset:)
+        end
+        allow(RelabelGoodsNomenclatureWorker).to receive(:perform_async).with(no_args) do
+          destroy_version_item_ids = Version.where(item_type: 'GoodsNomenclatureLabel', event: 'destroy').select_map(:item_id)
+          events << [:enqueue, GoodsNomenclatureLabel.count, destroy_version_item_ids]
+        end
+
+        expect { nuke_and_regenerate }.to output(<<~OUTPUT).to_stdout
+          Loading self-texts from #{csv_path}...
+          Loaded 2 self-texts
+
+          Deleting all labels...
+          Deleted 2 labels
+
+          Enqueuing label generation...
+          Enqueuing label generation...
+          Done. Check Sidekiq for progress.
+        OUTPUT
+
+        expect(events.map(&:first)).to eq(%i[version enqueue])
+        expect(events.first.second).to match_array(label_item_ids)
+        expect(events.second.second).to be_zero
+        expect(events.second.third).to match_array(label_item_ids)
+        expect(GoodsNomenclatureLabel.count).to be_zero
+        expect(RelabelGoodsNomenclatureWorker).to have_received(:perform_async).with(no_args).once
+      end
+
+      it 'skips destroy versioning with no labels but still reports zero and enqueues' do
+        destroy_version_count = Version.where(item_type: 'GoodsNomenclatureLabel', event: 'destroy').count
+
+        expect { nuke_and_regenerate }.to output(<<~OUTPUT).to_stdout
+          Loading self-texts from #{csv_path}...
+          Loaded 2 self-texts
+
+          Deleting all labels...
+          Deleted 0 labels
+
+          Enqueuing label generation...
+          Enqueuing label generation...
+          Done. Check Sidekiq for progress.
+        OUTPUT
+
+        expect(Version.where(item_type: 'GoodsNomenclatureLabel', event: 'destroy').count).to eq(destroy_version_count)
+        expect(PaperTrail::BulkVersioning).not_to have_received(:record_destroy_versions_for_dataset!)
+        expect(RelabelGoodsNomenclatureWorker).to have_received(:perform_async).with(no_args).once
+      end
+    end
+  end
 end
 # rubocop:enable RSpec/DescribeClass
