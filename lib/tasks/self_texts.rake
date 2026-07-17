@@ -6,14 +6,7 @@ module_function
   end
 
   def regenerate
-    dataset = GoodsNomenclatureSelfText.where(stale: false, manually_edited: false)
-    item_ids = dataset.select_map(:goods_nomenclature_sid)
-    count = dataset.update(stale: true)
-    PaperTrail::BulkVersioning.record_current_versions_for_item_ids!(model: GoodsNomenclatureSelfText, item_ids:) if count.positive?
-    puts "Marked #{count} self-texts as stale."
-
-    GenerateSelfTextWorker.perform_async
-    puts 'Enqueued regeneration. Check Sidekiq for progress.'
+    SelfTextRegenerator.call
   end
 
   def generate
