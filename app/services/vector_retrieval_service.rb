@@ -1,12 +1,13 @@
 class VectorRetrievalService
-  def self.call(query:, limit: 80, filter_prefixes: [])
-    new(query:, limit:, filter_prefixes:).call
+  def self.call(query:, limit: 80, filter_prefixes: [], request_id: nil)
+    new(query:, limit:, filter_prefixes:, request_id:).call
   end
 
-  def initialize(query:, limit: 80, filter_prefixes: [])
+  def initialize(query:, limit: 80, filter_prefixes: [], request_id: nil)
     @query = query
     @limit = limit
     @filter_prefixes = Array(filter_prefixes).compact_blank
+    @request_id = request_id
   end
 
   def call
@@ -14,6 +15,7 @@ class VectorRetrievalService
       event_kind: 'vector_search_query_embedding',
       batch_size: 1,
       model: EmbeddingService::MODEL,
+      request_id: @request_id,
     ) { embedding_service.embed(@query, event_kind: 'vector_search_query_embedding') }
     vector_literal = "'[#{query_embedding.join(',')}]'::vector"
 

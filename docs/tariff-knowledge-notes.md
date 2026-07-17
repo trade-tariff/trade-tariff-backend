@@ -131,7 +131,7 @@ GET /uk/admin/search_diagnostics/:request_id.json
 GET /xi/admin/search_diagnostics/:request_id.json
 ```
 
-`SearchDiagnostics::RequestLogLookup` searches the environment's `platform-logs-*` CloudWatch log group, parses the structured JSON message, and preserves the nested `details` object for the admin application. The default lookback is 72 hours; callers can request 1–168 hours and 1–500 results.
+`SearchDiagnostics::RequestLogLookup` searches the environment's `platform-logs-*` CloudWatch log group for search events and the request-correlated vector-embedding usage event. It parses the structured JSON message, preserves the nested `details` object, and returns token and cost fields so the admin application can show the journey's AI usage. The default lookback is 72 hours; callers can request 1–168 hours and 1–500 results.
 
 When investigating a journey, read the events in timestamp order and match `note_evidence_evaluated.iteration`, `attempt_number`, and `operation` with the retrieval, question, answer, and API-call events. This distinguishes the normal prompt, final-answer prompt, and duplicate-question retry even when they occur in the same iteration. The selected evidence is what reached that model prompt; omitted evidence explains what was considered but did not reach it.
 

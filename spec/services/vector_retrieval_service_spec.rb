@@ -1,5 +1,5 @@
 RSpec.describe VectorRetrievalService do
-  subject(:service) { described_class.new(query: 'live horses', limit: 10) }
+  subject(:service) { described_class.new(query: 'live horses', limit: 10, request_id: 'request-123') }
 
   let(:embedding_service) { instance_double(EmbeddingService) }
   let(:query_embedding) { Array.new(1536) { rand(-1.0..1.0) } }
@@ -29,6 +29,7 @@ RSpec.describe VectorRetrievalService do
         event_kind: 'vector_search_query_embedding',
         batch_size: 1,
         model: EmbeddingService::MODEL,
+        request_id: 'request-123',
       )
     ensure
       ActiveSupport::Notifications.unsubscribe(subscriber) if subscriber

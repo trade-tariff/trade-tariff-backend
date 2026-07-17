@@ -1,86 +1,86 @@
 - name: description_intercept_templates
   config_type: object_template
-  description: Named templates used by the description intercept bulk import. CSV uploads provide term and template only.
+  description: Named sets of default intercept attributes selected by template key during bulk import. CSV uploads provide only the search term and template key.
   default: description_intercept_templates
 - name: expand_search_enabled
   config_type: boolean
-  description: Expand search queries using AI to translate everyday language into tariff terminology before searching
+  description: Allow guided search to use AI to translate eligible queries into tariff terminology before retrieval.
   default: expand_search_enabled
 - name: expand_search_when_needed_enabled
   config_type: boolean
-  description: "Requires expand_search_enabled. Only expand search queries when simple heuristics suggest expansion is useful: acronym-like terms, no useful word parts from POS tagging, low result count, or low top score from weak retrieval results"
+  description: "When AI expansion is enabled, run an unexpanded retrieval first and expand only for uppercase acronym-like terms, queries with no significant tagged words, too few results, or a low top score. Disable to expand every eligible query."
   default: expand_search_when_needed_enabled
 - name: expand_search_min_results
   config_type: integer
-  description: Minimum number of retrieval results required before conditional query expansion is skipped
+  description: Minimum number of preliminary retrieval results needed to skip conditional AI query expansion.
   string_default: expand_search_min_results
 - name: expand_search_min_score
   config_type: integer
-  description: Minimum top retrieval score required before conditional query expansion is skipped
+  description: Minimum top score from preliminary retrieval needed to skip conditional AI query expansion.
   string_default: expand_search_min_score
 - name: expand_model
   config_type: nested_options
-  description: AI model used for search query expansion
+  description: OpenAI model and reasoning effort used to expand guided-search queries.
   nested_option: expand_model
 - name: expand_query_context
   config_type: markdown
-  description: System prompt sent to the AI model when expanding search queries
+  description: Prompt template sent to the configured model when expanding a guided-search query.
   prompt: expand_query_context
 - name: search_compressed_notes_enabled
   config_type: boolean
-  description: Include current approved compressed notes in the internal search LLM context. Only enable this in staging.
+  description: Include relevant current approved compressed tariff-note evidence in guided-search model prompts.
   default: search_compressed_notes_enabled
 - name: interactive_search_enabled
   config_type: boolean
-  description: Enable interactive Q&A to help traders narrow down commodity codes through clarifying questions
+  description: Allow guided search to ask model-generated clarifying questions and rank candidate commodity codes. When disabled, retrieval results are returned without interactive model processing.
   default: interactive_search_enabled
 - name: interactive_search_duplicate_question_guard_enabled
   config_type: boolean
-  description: Detect and retry repeated interactive search questions before showing them to traders
+  description: Validate suspicious repeated guided-search questions with a second model and retry questions judged to duplicate an answered distinction.
   default: interactive_search_duplicate_question_guard_enabled
 - name: interactive_search_duplicate_question_guard_context
   config_type: markdown
-  description: System prompt sent to the cheap AI model when validating whether a suspicious interactive search question repeats an already answered classification distinction
+  description: Prompt template used to decide whether a suspicious guided-search question repeats an already answered classification distinction.
   prompt: duplicate_question_guard_context
 - name: interactive_search_duplicate_question_guard_model
   config_type: nested_options
-  description: Cheap AI model used to validate whether a suspicious interactive search question repeats an already answered classification distinction
+  description: OpenAI model and reasoning effort used to validate suspected duplicate guided-search questions.
   nested_option: interactive_search_duplicate_question_guard_model
 - name: interactive_search_excluded_chapters
   config_type: multi_options
-  description: Chapters excluded from guided search results
+  description: Chapters excluded from guided-search exact matches, retrieval candidates, generated self-text candidates, and configurable suggestions.
   chapter_options: true
 - name: interactive_search_max_questions
   config_type: integer
-  description: Maximum number of clarifying questions to ask before forcing a best-guess answer from the AI
+  description: Maximum number of answered clarifying questions accepted before guided search asks the model for a final answer.
   string_default: interactive_search_max_questions
 - name: refine_search_with_answers_enabled
   config_type: boolean
-  description: Append answered interactive search question values to the retrieval query so each iteration targets the shortlist more closely
+  description: Append unique answered values to the retrieval query on later guided-search iterations.
   default: refine_search_with_answers_enabled
 - name: input_sanitiser_enabled
   config_type: boolean
-  description: Sanitise and validate search queries before AI processing. Strips HTML, rejects non-printable characters, and enforces a maximum query length.
+  description: Sanitise guided-search input before exact matching, retrieval, or AI processing by stripping HTML, normalising whitespace, rejecting non-printable characters, and enforcing the configured length limit.
   default: input_sanitiser_enabled
 - name: input_sanitiser_max_length
   config_type: integer
-  description: Maximum allowed character length for search queries when input sanitiser is enabled
+  description: Maximum guided-search query length when sanitising is enabled, capped by the application at 1000 characters.
   string_default: input_sanitiser_max_length
 - name: retrieval_method
   config_type: options
-  description: "Search retrieval method: opensearch uses traditional text search, vector uses pgvector cosine similarity, and hybrid runs both and fuses with RRF. Query expansion runs before the selected retrieval method."
+  description: "Guided-search retrieval method: opensearch uses text search, vector uses pgvector similarity, and hybrid runs both legs and fuses them with reciprocal rank fusion. Conditional query expansion may run a preliminary retrieval before the final retrieval."
   retrieval_method_options: true
 - name: rrf_k
   config_type: integer
-  description: "Reciprocal Rank Fusion constant (k). Controls how much lower-ranked results are penalised: score = 1/(rank + k). Higher k flattens rank differences. Typical range 1-100. Only applies when retrieval_method is hybrid."
+  description: "Reciprocal rank fusion constant used by hybrid retrieval: score = 1/(rank + k). Higher values flatten rank differences."
   string_default: rrf_k
 - name: vector_ef_search
   config_type: integer
-  description: "HNSW ef_search parameter for pgvector queries. Controls the recall/speed tradeoff: higher values search more candidates and improve recall at the cost of latency. Typical range 40-200. Only applies when retrieval_method is vector."
+  description: "HNSW ef_search value used by vector retrieval, including the vector leg of hybrid retrieval. Higher values may improve recall at the cost of latency."
   string_default: vector_ef_search
 - name: vector_score_threshold
   config_type: integer
-  description: "Minimum cosine similarity score (0-100) for vector search results. Results below this threshold are discarded before AI processing. Based on empirical analysis: good queries score 47-70, junk queries score 13-35. Default 35 provides clean separation."
+  description: "Minimum cosine similarity percentage retained by vector retrieval, including the vector leg of hybrid retrieval. Lower-scoring candidates are discarded before fusion or interactive processing."
   string_default: vector_score_threshold
 - name: label_context
   config_type: markdown
@@ -92,23 +92,23 @@
   nested_option: label_model
 - name: label_page_size
   config_type: integer
-  description: Number of commodities processed per batch during AI labelling
+  description: Number of goods nomenclatures queued in each background AI-labelling page.
   string_default: label_page_size
 - name: opensearch_result_limit
   config_type: integer
-  description: Maximum number of OpenSearch results fetched for AI processing during interactive search
+  description: Maximum candidates retrieved per guided-search leg before interactive processing or hybrid fusion.
   string_default: opensearch_result_limit
 - name: pos_noun_boost
   config_type: integer
-  description: Boost factor for nouns in POS-tagged search queries. Higher values make noun matches dominate scoring.
+  description: OpenSearch boost applied to required noun terms when part-of-speech search is enabled.
   string_default: pos_noun_boost
 - name: pos_qualifier_boost
   config_type: integer
-  description: Boost factor for qualifiers (adjectives, past participles, gerunds) in POS-tagged search queries.
+  description: OpenSearch boost applied to optional adjective, participle, and gerund terms when part-of-speech search is enabled.
   string_default: pos_qualifier_boost
 - name: pos_search_enabled
   config_type: boolean
-  description: Use part-of-speech tagging to structure search queries. Nouns become required terms, modifiers become optional. When disabled, falls back to a single multi-match query.
+  description: Structure the OpenSearch retrieval leg using tagged required nouns and optional modifiers. Disable to use the unstructured multi-match query.
   default: pos_search_enabled
 - name: other_self_text_batch_size
   config_type: integer
@@ -148,7 +148,7 @@
   prompt: search_context
 - name: search_labels_enabled
   config_type: boolean
-  description: Include AI-generated labels (brands, synonyms, colloquial terms) in search queries
+  description: Search label-enriched index fields during the OpenSearch retrieval leg, including OpenSearch within hybrid retrieval.
   default: search_labels_enabled
 - name: search_model
   config_type: nested_options
@@ -156,33 +156,33 @@
   nested_option: search_model
 - name: search_result_limit
   config_type: integer
-  description: Maximum number of commodity code suggestions shown during interactive Q&A. The frontend uses this to decide how to display results (e.g. as a shortlist or expanded view).
+  description: Maximum ranked commodity-code answers returned by guided search. Zero returns all valid model answers or fallback candidates.
   string_default: search_result_limit
 - name: suggest_results_limit
   config_type: integer
-  description: Maximum number of search suggestions returned by the internal suggestions endpoint
+  description: Maximum number of matches returned by the internal search-suggestions endpoint.
   string_default: suggest_results_limit
 - name: suggest_chemical_cas
   config_type: boolean
-  description: Enable CAS Registry Number suggestions and exact match redirects in internal search
+  description: Allow CAS Registry Number records in internal suggestions and guided-search exact matching.
   default: suggest_chemical_cas
 - name: suggest_chemical_cus
   config_type: boolean
-  description: Enable CUS identifier suggestions and exact match redirects in internal search
+  description: Allow CUS identifier records in internal suggestions and guided-search exact matching.
   default: suggest_chemical_cus
 - name: suggest_chemical_names
   config_type: boolean
-  description: Enable chemical substance name suggestions and exact match redirects in internal search
+  description: Allow chemical-name records in internal suggestions and guided-search exact matching.
   default: suggest_chemical_names
 - name: suggest_colloquial_terms
   config_type: boolean
-  description: Enable AI-generated colloquial term suggestions and exact match redirects in internal search
+  description: Allow generated colloquial-term labels in internal suggestions and guided-search exact matching.
   default: suggest_colloquial_terms
 - name: suggest_known_brands
   config_type: boolean
-  description: Enable AI-generated known brand suggestions and exact match redirects in internal search
+  description: Allow generated known-brand labels in internal suggestions and guided-search exact matching.
   default: suggest_known_brands
 - name: suggest_synonyms
   config_type: boolean
-  description: Enable AI-generated synonym suggestions and exact match redirects in internal search
+  description: Allow generated synonym labels in internal suggestions and guided-search exact matching.
   default: suggest_synonyms

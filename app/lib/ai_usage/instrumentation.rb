@@ -9,12 +9,12 @@ module AiUsage
       ActiveSupport::Notifications.instrument("#{event_name}.ai_usage", payload, &block)
     end
 
-    def api_call(event_kind:, model:, batch_size: nil, &block)
-      call('api_call', event_kind:, batch_size:, model:, &block)
+    def api_call(event_kind:, model:, batch_size: nil, request_id: nil, &block)
+      call('api_call', event_kind:, batch_size:, model:, request_id:, &block)
     end
 
-    def embedding_api_call(event_kind:, batch_size:, model:, &block)
-      call('embedding_api_call', event_kind:, batch_size:, model:, &block)
+    def embedding_api_call(event_kind:, batch_size:, model:, request_id: nil, &block)
+      call('embedding_api_call', event_kind:, batch_size:, model:, request_id:, &block)
     end
 
     def embedding_api_retry(event_kind:, batch_size:, model:, attempt:, delay:, error:)
@@ -30,21 +30,21 @@ module AiUsage
       )
     end
 
-    def call(event_prefix, event_kind:, batch_size:, model:)
+    def call(event_prefix, event_kind:, batch_size:, model:, request_id: nil)
       start_time = Process.clock_gettime(Process::CLOCK_MONOTONIC)
       result = yield
       duration = Process.clock_gettime(Process::CLOCK_MONOTONIC) - start_time
 
       instrument(
         "#{event_prefix}_completed",
-        event_payload(event_kind:, batch_size:, model:, duration:).merge(AiUsage.payload_from(result)),
+        event_payload(event_kind:, batch_size:, model:, duration:, request_id:).merge(AiUsage.payload_from(result)),
       )
       result
     rescue StandardError => e
       duration = Process.clock_gettime(Process::CLOCK_MONOTONIC) - start_time
       instrument(
         "#{event_prefix}_failed",
-        event_payload(event_kind:, batch_size:, model:, duration:).merge(
+        event_payload(event_kind:, batch_size:, model:, duration:, request_id:).merge(
           error_class: e.class.name,
           error_message: AiUsage.safe_error_message(e),
         ).merge(AiUsage.payload_from_error(e)),
@@ -52,12 +52,13 @@ module AiUsage
       raise
     end
 
-    def event_payload(event_kind:, batch_size:, model:, duration:)
+    def event_payload(event_kind:, batch_size:, model:, duration:, request_id:)
       {
         event_kind:,
         batch_size:,
         model:,
         duration_ms: (duration * 1000).round(2),
+        request_id:,
       }
     end
   end

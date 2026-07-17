@@ -202,6 +202,7 @@ module Api
           query: search_expanded_query,
           limit: opensearch_result_limit,
           filter_prefixes: filter_prefixes,
+          request_id: request_id,
         )
         ::Search::Instrumentation.retrieval_results_returned(
           request_id: request_id,
@@ -304,7 +305,7 @@ module Api
         result = ::Search::Instrumentation.query_expanded(
           request_id: request_id,
           original_query: query,
-        ) { ExpandSearchQueryService.call(query) }
+        ) { ExpandSearchQueryService.call(query, request_id:) }
 
         result.expanded_query
       end

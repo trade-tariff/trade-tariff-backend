@@ -108,7 +108,7 @@ private
   end
 
   def vector_args
-    args = { query: @expanded_query, limit: @limit }
+    args = { query: @expanded_query, limit: @limit, request_id: @request_id }
     args[:filter_prefixes] = @filter_prefixes if @filter_prefixes.present?
     args
   end
