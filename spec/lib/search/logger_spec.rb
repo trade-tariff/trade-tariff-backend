@@ -602,6 +602,8 @@ RSpec.describe Search::Logger do
       expect(parsed_log_output).to include(
         'event' => 'query_guardrail_decided',
         'request_id' => 'req-1',
+        'search_type' => 'interactive',
+        'query' => 'book a dentist appointment',
         'effective_query' => 'dentist appointment',
         'iteration' => 2,
         'variant' => 'fixed_vector_score',

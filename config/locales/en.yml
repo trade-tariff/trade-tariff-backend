@@ -23,6 +23,7 @@ en:
             blank: must not be blank
             invalid_boolean: must be true or false
             invalid_integer: "must be a whole number"
+            out_of_range: "must be between %{min} and %{max}"
             invalid_options: must be a hash with selected and options keys
             no_options: must include an options array
             invalid_nested_options: must be a hash with selected and options keys

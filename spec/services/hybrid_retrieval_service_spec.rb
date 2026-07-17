@@ -127,6 +127,34 @@ RSpec.describe HybridRetrievalService do
       expect(result.expanded_query).to eq(expanded_query)
     end
 
+    it 'attributes guardrail telemetry to the calling search journey' do
+      described_class.call(query: 'horses', as_of: Time.zone.today, search_type: 'classification')
+
+      expect(Search::Instrumentation).to have_received(:query_guardrail_decided).with(
+        hash_including(search_type: 'classification'),
+      )
+    end
+
+    it 'emits an attributable control decision with the configured threshold' do
+      described_class.call(
+        query: 'horses', expanded_query: expanded_query, as_of: Time.zone.today,
+        request_id: 'req-1', iteration: 2
+      )
+
+      expect(Search::Instrumentation).to have_received(:query_guardrail_decided).with(
+        request_id: 'req-1',
+        search_type: 'interactive',
+        query: 'horses',
+        effective_query: expanded_query,
+        iteration: 2,
+        enabled: false,
+        accepted: true,
+        max_score: 0.31,
+        threshold: 0.32,
+        reason: 'disabled',
+      )
+    end
+
     it 'reads rrf_k from AdminConfiguration' do
       described_class.call(query: 'horses', as_of: Time.zone.today)
 
@@ -146,6 +174,7 @@ RSpec.describe HybridRetrievalService do
         expect(result.results).to be_empty
         expect(Search::Instrumentation).to have_received(:query_guardrail_decided).with(
           request_id: nil,
+          search_type: 'interactive',
           query: 'book a dentist appointment',
           effective_query: 'expanded horses',
           iteration: nil,
@@ -168,6 +197,16 @@ RSpec.describe HybridRetrievalService do
         expect(result.results).not_to be_empty
         expect(Search::Instrumentation).to have_received(:query_guardrail_decided).with(
           hash_including(accepted: true, max_score: 0.32, threshold: 0.32, reason: 'accepted'),
+        )
+      end
+
+      it 'falls back to the default threshold if persisted configuration is out of range' do
+        allow(AdminConfiguration).to receive(:integer_value).with('hybrid_query_guardrail_threshold').and_return(101)
+
+        described_class.call(query: 'horses', as_of: Time.zone.today)
+
+        expect(Search::Instrumentation).to have_received(:query_guardrail_decided).with(
+          hash_including(accepted: false, threshold: 0.32, reason: 'below_threshold'),
         )
       end
 

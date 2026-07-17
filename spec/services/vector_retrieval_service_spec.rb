@@ -99,6 +99,16 @@ RSpec.describe VectorRetrievalService do
       expect(result.max_score).to be_nil
     end
 
+    it 'does not query eligibility when vector search returns no candidates' do
+      allow(GoodsNomenclature).to receive(:actual).and_call_original
+
+      result = service.call_with_diagnostics
+
+      expect(result.results).to be_empty
+      expect(result.max_score).to be_nil
+      expect(GoodsNomenclature).not_to have_received(:actual)
+    end
+
     context 'when search_non_declarables is enabled' do
       before do
         allow(AdminConfiguration).to receive(:enabled?).and_call_original
@@ -212,10 +222,12 @@ RSpec.describe VectorRetrievalService do
         # Identical embeddings produce a perfect cosine similarity of 1.0,
         # so threshold must exceed 100 to filter them out
         allow(AdminConfiguration).to receive(:integer_value).with('vector_score_threshold').and_return(101)
+        allow(GoodsNomenclature).to receive(:actual).and_call_original
 
         results = service.call
 
         expect(results).to be_empty
+        expect(GoodsNomenclature).not_to have_received(:actual)
       end
 
       it 'exposes the maximum raw score before candidate filtering for hybrid query controls' do
@@ -246,6 +258,31 @@ RSpec.describe VectorRetrievalService do
         expect(result.results).to be_empty
         expect(result.max_score).to be_within(0.0001).of(1.0)
         expect(sql.grep(/goods_nomenclature_descriptions|goods_nomenclature_description_periods/i)).to be_empty
+      end
+
+      it 'uses the highest eligible raw score across multiple candidates' do
+        low_score_commodity = create(:commodity, :with_description, :declarable,
+                                     goods_nomenclature_item_id: '0101210001',
+                                     producline_suffix: GoodsNomenclature::NON_GROUPING_PRODUCTLINE_SUFFIX)
+        high_score_commodity = create(:commodity, :with_description, :declarable,
+                                      goods_nomenclature_item_id: '0101210002',
+                                      producline_suffix: GoodsNomenclature::NON_GROUPING_PRODUCTLINE_SUFFIX)
+
+        [low_score_commodity, high_score_commodity].each do |commodity|
+          create(:goods_nomenclature_self_text,
+                 goods_nomenclature_sid: commodity.goods_nomenclature_sid,
+                 goods_nomenclature_item_id: commodity.goods_nomenclature_item_id,
+                 self_text: 'Pure-bred breeding horses')
+        end
+
+        populate_search_embedding(low_score_commodity.goods_nomenclature_sid, query_embedding.map(&:-@))
+        populate_search_embedding(high_score_commodity.goods_nomenclature_sid, query_embedding)
+        allow(AdminConfiguration).to receive(:integer_value).with('vector_score_threshold').and_return(101)
+
+        result = described_class.call_with_diagnostics(query: 'live horses')
+
+        expect(result.results).to be_empty
+        expect(result.max_score).to be_within(0.0001).of(1.0)
       end
     end
 

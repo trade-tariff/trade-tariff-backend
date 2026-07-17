@@ -228,6 +228,27 @@ RSpec.describe AdminConfiguration do
           expect(config.errors[:value]).to be_present
         end
       end
+
+      context 'with the hybrid query guardrail threshold' do
+        let(:value) { 50 }
+        let(:attrs) do
+          {
+            name: 'hybrid_query_guardrail_threshold',
+            config_type: 'integer',
+            value: value,
+          }
+        end
+
+        it 'accepts the inclusive 0 to 100 range', :aggregate_failures do
+          expect(config.set(value: 0)).to be_valid
+          expect(config.set(value: 100)).to be_valid
+        end
+
+        it 'rejects values outside the 0 to 100 range', :aggregate_failures do
+          expect(config.set(value: -1)).not_to be_valid
+          expect(config.set(value: 101)).not_to be_valid
+        end
+      end
     end
 
     describe 'integer normalization' do

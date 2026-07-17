@@ -59,11 +59,11 @@ module Search
         )
       end
 
-      def query_guardrail_decided(request_id:, query:, effective_query:, iteration:, enabled:, accepted:, max_score:, threshold:, reason:)
+      def query_guardrail_decided(request_id:, search_type:, query:, effective_query:, iteration:, enabled:, accepted:, max_score:, threshold:, reason:)
         instrument(
           'query_guardrail_decided',
           request_id:,
-          search_type: 'interactive',
+          search_type:,
           query:,
           effective_query:,
           iteration:,
