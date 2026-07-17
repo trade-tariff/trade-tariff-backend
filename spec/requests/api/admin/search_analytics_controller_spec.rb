@@ -159,6 +159,31 @@ RSpec.describe Api::Admin::SearchAnalyticsController do
       expect(response.parsed_body.dig('data', 'id')).to eq('uk-24h-all')
     end
 
+    it 'returns a stable empty AI cost contract for snapshots created before cost collection' do
+      SearchAnalyticsSnapshot.latest_for(service: TradeTariffBackend.service, period: '24h', view: 'all')
+        .update(payload: payload.except('ai_costs'))
+
+      get '/uk/admin/search_analytics.json',
+          params: { period: '24h', view: 'all' },
+          headers: request_headers(format: :json)
+
+      expect(response.parsed_body.dig('data', 'attributes', 'ai_costs')).to eq(
+        'summary' => {
+          'total_cost_usd' => 0.0,
+          'assisted_searches' => 0,
+          'average_cost_usd' => 0.0,
+          'p50_cost_usd' => 0.0,
+          'p90_cost_usd' => 0.0,
+          'priced_calls' => 0,
+          'unpriced_calls' => 0,
+          'pricing_coverage' => nil,
+          'complete' => true,
+        },
+        'trend' => [],
+        'operations' => [],
+      )
+    end
+
     context 'when no cached snapshot exists' do
       before do
         SearchAnalyticsSnapshot.dataset.delete
