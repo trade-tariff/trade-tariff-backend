@@ -104,6 +104,9 @@ RSpec.describe 'labels tasks' do
     end
   end
 
+  require 'fileutils'
+  require 'tmpdir'
+
   describe 'labels:nuke_and_regenerate' do
     subject(:nuke_and_regenerate) { task.invoke }
 
