@@ -29,6 +29,10 @@ module TradeTariffBackend
         ENV.fetch('CDS_IMPORT_BATCH_SIZE', '100').to_i
       end
 
+      def taric_importer_batch_size
+        ENV.fetch('TARIC_IMPORT_BATCH_SIZE', '100').to_i
+      end
+
       def implicit_deletion_cutoff
         Date.parse(ENV.fetch('IMPLICIT_DELETION_CUTOFF', '2024-03-25'))
       end
