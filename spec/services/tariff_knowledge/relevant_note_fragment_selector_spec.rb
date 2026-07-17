@@ -995,6 +995,31 @@ RSpec.describe TariffKnowledge::RelevantNoteFragmentSelector do
     expect(selection.diagnostics.dig(:selected_contexts, 0, :evidence, 0)).to include(best_candidate_rank: 1)
   end
 
+  it 'keeps the best retrieval rank when duplicate evidence shares a context' do
+    evidence = evidence_for(
+      'note_fragment:customs_tariff_chapter_note:1.31:95:shared',
+      'Heading 9506 includes exercise apparatus.',
+      'inclusion',
+      range_type: 'heading',
+      range_code: '9506',
+    )
+    lower_ranked_note = create_note_with_evidence('9506999000', evidence)
+    higher_ranked_note = create_note_with_evidence('9506911000', evidence)
+    higher_ranked_note.update(context_hash: lower_ranked_note.context_hash)
+    ranked_results = [
+      search_result_class.new(goods_nomenclature_item_id: '9506911000', description: 'Higher ranked', full_description: nil, score: 10),
+      search_result_class.new(goods_nomenclature_item_id: '9506999000', description: 'Lower ranked', full_description: nil, score: 9),
+    ]
+
+    selection = described_class.call_with_diagnostics(
+      query: 'exercise',
+      search_results: ranked_results,
+      notes_by_item_id: { '9506999000' => lower_ranked_note, '9506911000' => higher_ranked_note },
+    )
+
+    expect(selection.diagnostics.dig(:selected_contexts, 0, :evidence, 0)).to include(best_candidate_rank: 1)
+  end
+
   def evidence_for(key, text, context_type, range_type: nil, range_code: nil, source_type: 'customs_tariff_chapter_note', source_id: '95')
     {
       'source_node_key' => key,

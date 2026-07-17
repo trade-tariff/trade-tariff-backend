@@ -116,10 +116,15 @@ module TariffKnowledge
             group[:fragments][fragment[:key]] = fragment
           elsif fragment[:score] > current[:score]
             record_omission(current, note.context_hash, 'duplicate_lower_score')
-            group[:fragments][fragment[:key]] = fragment
+            group[:fragments][fragment[:key]] = fragment.merge(
+              best_candidate_rank: [current[:best_candidate_rank], fragment[:best_candidate_rank]].compact.min,
+            )
           else
             reason = fragment[:score] == current[:score] ? 'duplicate_same_score' : 'duplicate_lower_score'
             record_omission(fragment, note.context_hash, reason)
+            group[:fragments][fragment[:key]] = current.merge(
+              best_candidate_rank: [current[:best_candidate_rank], fragment[:best_candidate_rank]].compact.min,
+            )
           end
         end
       end
@@ -400,7 +405,7 @@ module TariffKnowledge
       # - references are weaker context, so +1
       #
       # Relevance then comes from links to the current classification problem:
-      # - +8 when the evidence range directly matches a candidate chapter/heading
+      # - +12 for a direct heading match or +6 for a direct chapter match
       # - up to +12 when the text mentions candidate chapter/heading ranges
       # - up to +10 when legal text overlaps with meaningful query terms
       # - +1 as a small same-chapter tie-breaker for chapter-note evidence only
