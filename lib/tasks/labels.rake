@@ -156,6 +156,7 @@ module_function
   def label_gap_chapter_stats(base, goods_nomenclatures_table, expressions)
     base
       .select_group(Sequel.function(:substr, goods_nomenclatures_table[:goods_nomenclature_item_id], 1, 2).as(:ch))
+      .select_append { count(Sequel.lit('*')).as(total) }
       .select_append { count(Sequel.case([[expressions[:unlabeled], 1]], nil)).as(missing) }
       .select_append { count(Sequel.case([[expressions[:stale], 1]], nil)).as(stale) }
       .select_append { count(Sequel.case([[expressions[:drifted], 1]], nil)).as(drifted) }
