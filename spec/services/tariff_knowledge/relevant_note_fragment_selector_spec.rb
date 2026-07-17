@@ -154,6 +154,24 @@ RSpec.describe TariffKnowledge::RelevantNoteFragmentSelector do
     expect(ineligible.diagnostics[:status]).to eq('no_eligible_evidence')
   end
 
+  it 'counts selected source nodes distinctly across diagnostic contexts' do
+    selector = described_class.new(query:, search_results:, notes_by_item_id: {})
+    allow(selector).to receive(:apply_total_limit).and_return(
+      [
+        [{ key: 'context-1', commodity_codes: [], fragments: [{}, {}] }],
+        [
+          { context_hash: 'context-1', commodity_codes: [], evidence: [{ source_node_key: 'shared-source' }] },
+          { context_hash: 'context-2', commodity_codes: [], evidence: [{ source_node_key: 'shared-source' }] },
+        ],
+      ],
+    )
+
+    selection = selector.call
+
+    expect(selection.diagnostics[:selected_evidence_count]).to eq(2)
+    expect(selection.diagnostics[:selected_distinct_source_count]).to eq(1)
+  end
+
   it 'reports equal-score context duplicates accurately' do
     shared_evidence = evidence_for(
       'note_fragment:customs_tariff_chapter_note:1.31:95:0032',
@@ -948,7 +966,7 @@ RSpec.describe TariffKnowledge::RelevantNoteFragmentSelector do
           'term' => 'pig iron',
           'source_type' => 'customs_tariff_chapter_note',
           'source_id' => '72',
-          'fragment_node_keys' => [fragment_key],
+          'fragment_node_keys' => Array.new(described_class::MAX_LOGGED_FRAGMENT_NODE_KEYS) { |index| "unrelated-fragment-#{index}" } + [fragment_key],
         }],
         'evidence' => [evidence_for(fragment_key, repeated_text, 'inclusion', source_id: '72')],
       ),
