@@ -10,7 +10,6 @@ module TariffKnowledge
     MAX_TOTAL_FRAGMENTS = 8
     MAX_LOGGED_OMITTED_EVIDENCE = 20
     MAX_LOGGED_FRAGMENT_NODE_KEYS = 20
-    DUPLICATE_OMISSION_REASONS = %w[duplicate_same_score duplicate_lower_score duplicate_source_node contained_text_duplicate].freeze
     OMISSION_REASON_ORDER = %w[below_minimum_score per_note_limit total_evidence_limit duplicate_same_score duplicate_lower_score duplicate_source_node contained_text_duplicate].freeze
 
     # A fragment must show more than generic relevance before it is emitted.
@@ -74,8 +73,6 @@ module TariffKnowledge
         @counts[reason] += 1
         @samples[reason] << yield if @samples[reason].size < limit
       end
-
-      def count_for(*reasons) = reasons.sum { |reason| @counts[reason] }
 
       def logged
         ordered_reasons = reason_order.select { |reason| @samples.key?(reason) } + (@samples.keys - reason_order)
