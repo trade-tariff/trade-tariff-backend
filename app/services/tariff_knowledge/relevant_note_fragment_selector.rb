@@ -203,7 +203,7 @@ module TariffKnowledge
     end
 
     def block_contains_fragment?(block, fragment)
-      Array(block[:fragment_node_keys]).include?(fragment[:key]) || fragment[:parent_source_node_key] == block[:key]
+      Array(block[:all_fragment_node_keys]).include?(fragment[:key]) || fragment[:parent_source_node_key] == block[:key]
     end
 
     def contained_text?(first, second)
@@ -240,7 +240,12 @@ module TariffKnowledge
           considered_distinct_source_count: considered_source_node_keys.size,
           selected_note_count: contexts.size,
           selected_evidence_count: contexts.sum { |context| context[:fragments].size },
-          selected_distinct_source_count: contexts.sum { |context| context[:fragments].size },
+          selected_distinct_source_count: selected_diagnostics
+            .flat_map { |context| context[:evidence] }
+            .pluck(:source_node_key)
+            .compact
+            .uniq
+            .size,
           omitted_evidence_count: omissions.count,
           logged_omitted_evidence_count: logged_omitted.size,
           omitted_evidence_truncated: logged_omitted.size < omissions.count,
@@ -312,7 +317,7 @@ module TariffKnowledge
     end
 
     def diagnostic_evidence(fragment, context_hash)
-      fragment.except(:key, :why_relevant, :query_specificity).merge(
+      fragment.except(:key, :why_relevant, :query_specificity, :all_fragment_node_keys).merge(
         context_hash:,
         context_hashes: fragment[:context_hashes] || [context_hash],
         commodity_codes: fragment[:commodity_codes],
@@ -340,6 +345,7 @@ module TariffKnowledge
           source_id: evidence_block['source_id'],
           source_version: evidence_block['source_version'],
           type: evidence_block['block_type'],
+          all_fragment_node_keys: Array(evidence_block['fragment_node_keys']),
           fragment_node_keys: Array(evidence_block['fragment_node_keys']).first(MAX_LOGGED_FRAGMENT_NODE_KEYS),
           fragment_node_keys_truncated: Array(evidence_block['fragment_node_keys']).size > MAX_LOGGED_FRAGMENT_NODE_KEYS,
           graph_paths: [%w[contains contains applies_to]],
