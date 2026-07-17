@@ -102,6 +102,86 @@ RSpec.describe 'self_texts rake tasks' do
     end
   end
 
+  describe 'self_texts:generate' do
+    subject(:generate) { Rake::Task['self_texts:generate'].invoke }
+
+    let(:task) { Rake::Task['self_texts:generate'] }
+    let!(:original_chapter) { ENV.fetch('CHAPTER', nil) }
+
+    before do
+      allow(GenerateSelfTextWorker).to receive(:perform_async)
+      allow(GenerateSelfText::OtherSelfTextBuilder).to receive(:call)
+      allow(GenerateSelfText::NonOtherSelfTextBuilder).to receive(:call)
+    end
+
+    after do
+      task.reenable
+      original_chapter ? ENV['CHAPTER'] = original_chapter : ENV.delete('CHAPTER')
+    end
+
+    context 'without a chapter code' do
+      before { ENV.delete('CHAPTER') }
+
+      it 'enqueues generation for all chapters' do
+        expect { generate }.to output(<<~OUTPUT).to_stdout
+          Enqueuing self-text generation for all chapters...
+          Done. Check Sidekiq for progress.
+        OUTPUT
+
+        expect(GenerateSelfTextWorker).to have_received(:perform_async).once
+        expect(GenerateSelfTextWorker).to have_received(:perform_async).with(no_args).once
+        expect(GenerateSelfText::OtherSelfTextBuilder).not_to have_received(:call)
+        expect(GenerateSelfText::NonOtherSelfTextBuilder).not_to have_received(:call)
+      end
+    end
+
+    context 'with an existing chapter code' do
+      let(:chapter_code) { '42' }
+      let!(:chapter) { create(:chapter, goods_nomenclature_item_id: '4200000000') }
+      let!(:expired_chapter) do
+        create(:chapter, :expired, goods_nomenclature_item_id: '4200000000')
+      end
+      let(:other_result) { { processed: 2, failed: 0 } }
+      let(:non_other_result) { { processed: 3, failed: 0 } }
+
+      before do
+        ENV['CHAPTER'] = chapter_code
+        allow(GenerateSelfText::OtherSelfTextBuilder).to receive(:call).and_return(other_result)
+        allow(GenerateSelfText::NonOtherSelfTextBuilder).to receive(:call).and_return(non_other_result)
+      end
+
+      it 'generates both kinds of self-text inline for the actual chapter' do
+        expect { generate }.to output(<<~OUTPUT).to_stdout
+          Generating self-texts for chapter 42...
+          Other AI: #{other_result.inspect}
+          Non-Other AI: #{non_other_result.inspect}
+        OUTPUT
+
+        expect(GenerateSelfText::OtherSelfTextBuilder).to have_received(:call).with(chapter).once.ordered
+        expect(GenerateSelfText::NonOtherSelfTextBuilder).to have_received(:call).with(chapter).once.ordered
+        expect(GenerateSelfText::OtherSelfTextBuilder).to have_received(:call).once
+        expect(GenerateSelfText::NonOtherSelfTextBuilder).to have_received(:call).once
+        expect(GenerateSelfText::OtherSelfTextBuilder).not_to have_received(:call).with(expired_chapter)
+        expect(GenerateSelfText::NonOtherSelfTextBuilder).not_to have_received(:call).with(expired_chapter)
+        expect(GenerateSelfTextWorker).not_to have_received(:perform_async)
+      end
+    end
+
+    context 'with a missing chapter code' do
+      before { ENV['CHAPTER'] = '98' }
+
+      it 'raises before generating or enqueuing self-texts' do
+        expect { generate }
+          .to output('').to_stdout
+          .and raise_error(Sequel::RecordNotFound)
+
+        expect(GenerateSelfText::OtherSelfTextBuilder).not_to have_received(:call)
+        expect(GenerateSelfText::NonOtherSelfTextBuilder).not_to have_received(:call)
+        expect(GenerateSelfTextWorker).not_to have_received(:perform_async)
+      end
+    end
+  end
+
   describe 'self_texts:populate_eu_references' do
     subject(:populate) do
       suppress_output { Rake::Task['self_texts:populate_eu_references'].invoke }
