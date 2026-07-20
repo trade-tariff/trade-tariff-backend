@@ -32,11 +32,14 @@ RSpec.describe 'config/sidekiq.yml' do
     expect(schedule).not_to include('CreateTariffKnowledgeDeclarableNodesWorker')
   end
 
-  it 'keeps tariff knowledge compressed note refresh disabled outside staging' do
+  it 'schedules the tariff knowledge compressed note refresh pipeline in production' do
     schedule = sidekiq_schedule(environment: 'production')
 
     expect(schedule).to include(
-      'RefreshTariffKnowledgeCompressedNotesWorker' => include('enabled' => false),
+      'RefreshTariffKnowledgeCompressedNotesWorker' => include(
+        'cron' => '0 3 * * *',
+        'enabled' => true,
+      ),
     )
   end
 
