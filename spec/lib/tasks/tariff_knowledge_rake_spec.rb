@@ -132,25 +132,35 @@ RSpec.describe 'tariff_knowledge rake tasks' do
 
   describe 'tariff_knowledge:atars:import' do
     around do |example|
-      original_request_delay = [false, nil]
-      original_request_delay = [ENV.key?('ATAR_REQUEST_DELAY'), ENV['ATAR_REQUEST_DELAY']]
+      original_values = {}
+      names = %w[ATAR_LIMIT ATAR_MAX_PAGES ATAR_REQUEST_DELAY ATAR_MAX_RETRIES]
+      original_values = names.index_with { |name| [ENV.key?(name), ENV[name]] }
+      names.each { |name| ENV.delete(name) }
+
       example.run
     ensure
-      if original_request_delay.first
-        ENV['ATAR_REQUEST_DELAY'] = original_request_delay.last
-      else
-        ENV.delete('ATAR_REQUEST_DELAY')
+      original_values.each do |name, (present, value)|
+        present ? ENV[name] = value : ENV.delete(name)
       end
     end
 
     it 'imports public ATAR rulings inline' do
-      allow(TariffKnowledge::PublicAtarRulingImporter).to receive(:call)
-        .and_return(public_atar_import_result(created_count: 1, updated_count: 1))
+      allow(TariffKnowledge::PublicAtarRulingImporter).to receive(:call).with(
+        limit: nil,
+        max_pages: 50,
+        request_delay: TariffKnowledge::PublicAtarRulingSource::DEFAULT_REQUEST_DELAY,
+        max_retries: TariffKnowledge::PublicAtarRulingSource::DEFAULT_MAX_RETRIES,
+      ).and_return(public_atar_import_result(created_count: 1, updated_count: 1))
       allow(TariffKnowledge::PublicAtarSearchRefresh).to receive(:call).and_return([1])
 
       suppress_output { Rake::Task['tariff_knowledge:atars:import'].invoke }
 
-      expect(TariffKnowledge::PublicAtarRulingImporter).to have_received(:call)
+      expect(TariffKnowledge::PublicAtarRulingImporter).to have_received(:call).with(
+        limit: nil,
+        max_pages: 50,
+        request_delay: TariffKnowledge::PublicAtarRulingSource::DEFAULT_REQUEST_DELAY,
+        max_retries: TariffKnowledge::PublicAtarRulingSource::DEFAULT_MAX_RETRIES,
+      )
       expect(TariffKnowledge::PublicAtarSearchRefresh).to have_received(:call).with(%w[6302100000])
     end
 
