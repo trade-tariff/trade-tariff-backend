@@ -62,13 +62,6 @@ Metrics/BlockLength:
     - 'app/engines/v1_api.rb'
     - 'app/engines/v2_api.rb'
 
-# The listed files are known hotspots; this cop is enforced everywhere else.
-# Remove each entry as its hotspot is refactored.
-Metrics/ModuleLength:
-  Enabled: true
-  Exclude:
-    - 'app/lib/tariff_synchronizer.rb'
-
 RSpec/SpecFilePathFormat:
   Enabled: true
   Exclude:
