@@ -131,6 +131,18 @@ RSpec.describe 'tariff_knowledge rake tasks' do
   end
 
   describe 'tariff_knowledge:atars:import' do
+    around do |example|
+      original_request_delay = [false, nil]
+      original_request_delay = [ENV.key?('ATAR_REQUEST_DELAY'), ENV['ATAR_REQUEST_DELAY']]
+      example.run
+    ensure
+      if original_request_delay.first
+        ENV['ATAR_REQUEST_DELAY'] = original_request_delay.last
+      else
+        ENV.delete('ATAR_REQUEST_DELAY')
+      end
+    end
+
     it 'imports public ATAR rulings inline' do
       allow(TariffKnowledge::PublicAtarRulingImporter).to receive(:call)
         .and_return(public_atar_import_result(created_count: 1, updated_count: 1))
@@ -155,6 +167,32 @@ RSpec.describe 'tariff_knowledge rake tasks' do
       else
         ENV.delete('ATAR_MAX_PAGES')
       end
+    end
+
+    it 'rejects a non-numeric request delay before importing or refreshing search' do
+      allow(TariffKnowledge::PublicAtarRulingImporter).to receive(:call)
+      allow(TariffKnowledge::PublicAtarSearchRefresh).to receive(:call)
+      ENV['ATAR_REQUEST_DELAY'] = 'not-a-number'
+
+      expect {
+        suppress_output { Rake::Task['tariff_knowledge:atars:import'].invoke }
+      }.to raise_error(ArgumentError, 'ATAR_REQUEST_DELAY must be numeric')
+
+      expect(TariffKnowledge::PublicAtarRulingImporter).not_to have_received(:call)
+      expect(TariffKnowledge::PublicAtarSearchRefresh).not_to have_received(:call)
+    end
+
+    it 'rejects a negative request delay before importing or refreshing search' do
+      allow(TariffKnowledge::PublicAtarRulingImporter).to receive(:call)
+      allow(TariffKnowledge::PublicAtarSearchRefresh).to receive(:call)
+      ENV['ATAR_REQUEST_DELAY'] = '-0.1'
+
+      expect {
+        suppress_output { Rake::Task['tariff_knowledge:atars:import'].invoke }
+      }.to raise_error(ArgumentError, 'ATAR_REQUEST_DELAY must be numeric')
+
+      expect(TariffKnowledge::PublicAtarRulingImporter).not_to have_received(:call)
+      expect(TariffKnowledge::PublicAtarSearchRefresh).not_to have_received(:call)
     end
   end
 
