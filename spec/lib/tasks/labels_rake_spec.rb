@@ -107,6 +107,105 @@ RSpec.describe 'labels tasks' do
   require 'fileutils'
   require 'tmpdir'
 
+  describe 'labels:load_self_texts' do
+    subject(:load_self_texts) { task.invoke }
+
+    let(:task) { Rake::Task['labels:load_self_texts'] }
+    let(:temp_dir) { Dir.mktmpdir('labels-rake-spec') }
+    let(:csv_path) { File.join(temp_dir, 'self_texts.csv') }
+
+    around do |example|
+      original_csv_path_env = ENV.fetch('CSV_PATH', nil)
+      csv_path_was_defined = SelfTextLookupService.instance_variable_defined?(:@csv_path)
+      self_texts_were_defined = SelfTextLookupService.instance_variable_defined?(:@self_texts)
+      original_csv_path = SelfTextLookupService.instance_variable_get(:@csv_path)
+      original_self_texts = SelfTextLookupService.instance_variable_get(:@self_texts)
+
+      example.run
+    ensure
+      task.reenable
+      FileUtils.remove_entry(temp_dir) if File.exist?(temp_dir)
+      original_csv_path_env.nil? ? ENV.delete('CSV_PATH') : ENV['CSV_PATH'] = original_csv_path_env
+
+      if csv_path_was_defined
+        SelfTextLookupService.instance_variable_set(:@csv_path, original_csv_path)
+      elsif SelfTextLookupService.instance_variable_defined?(:@csv_path)
+        SelfTextLookupService.remove_instance_variable(:@csv_path)
+      end
+
+      if self_texts_were_defined
+        SelfTextLookupService.instance_variable_set(:@self_texts, original_self_texts)
+      elsif SelfTextLookupService.instance_variable_defined?(:@self_texts)
+        SelfTextLookupService.remove_instance_variable(:@self_texts)
+      end
+    end
+
+    it 'selects a nonblank CSV_PATH, reloads normalized lookups, and prints the fixed samples in order' do
+      File.write(csv_path, <<~CSV)
+        CN_CODE,SelfText_EN
+        0101 21 00,Pure-bred breeding horses
+        8471300000,Portable digital computers
+      CSV
+      ENV['CSV_PATH'] = csv_path
+      allow(SelfTextLookupService).to receive(:reload!).and_call_original
+
+      expect { load_self_texts }.to output(<<~OUTPUT).to_stdout
+        Loading self-texts from #{csv_path}...
+        Loaded 2 self-texts
+
+        Sample lookups:
+          0101210000: Pure-bred breeding horses
+          0102292100: (not found)
+          8471300000: Portable digital computers
+      OUTPUT
+
+      expect(SelfTextLookupService.csv_path).to eq(csv_path)
+      expect(SelfTextLookupService.count).to eq(2)
+      expect(SelfTextLookupService.lookup('0101210000')).to eq('Pure-bred breeding horses')
+      expect(SelfTextLookupService).to have_received(:reload!).once
+    end
+
+    it 'keeps an already configured CSV path when CSV_PATH is blank' do
+      File.write(csv_path, <<~CSV)
+        CN_CODE,SelfText_EN
+        0101 21 00,Configured breeding horses
+      CSV
+      SelfTextLookupService.csv_path = csv_path
+      SelfTextLookupService.instance_variable_set(:@self_texts, { '0101210000' => 'Stale cached text' })
+      ENV['CSV_PATH'] = ''
+
+      expect { load_self_texts }.to output(<<~OUTPUT).to_stdout
+        Loading self-texts from #{csv_path}...
+        Loaded 1 self-texts
+
+        Sample lookups:
+          0101210000: Configured breeding horses
+          0102292100: (not found)
+          8471300000: (not found)
+      OUTPUT
+
+      expect(SelfTextLookupService.csv_path).to eq(csv_path)
+      expect(SelfTextLookupService.lookup('0101210000')).to eq('Configured breeding horses')
+    end
+
+    it 'reports empty lookups without exiting when the selected CSV is missing' do
+      ENV['CSV_PATH'] = csv_path
+
+      expect { load_self_texts }.to output(<<~OUTPUT).to_stdout
+        Loading self-texts from #{csv_path}...
+        Loaded 0 self-texts
+
+        Sample lookups:
+          0101210000: (not found)
+          0102292100: (not found)
+          8471300000: (not found)
+      OUTPUT
+
+      expect(SelfTextLookupService.csv_path).to eq(csv_path)
+      expect(SelfTextLookupService.count).to be_zero
+    end
+  end
+
   describe 'labels:nuke_and_regenerate' do
     subject(:nuke_and_regenerate) { task.invoke }
 
