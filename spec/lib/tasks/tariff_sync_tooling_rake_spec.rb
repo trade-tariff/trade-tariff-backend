@@ -202,6 +202,20 @@ RSpec.describe 'tariff:sync:failure_detail' do
     it 'does not show CDS error details' do
       expect(output).not_to match(/CDS Record Errors/)
     end
+
+    context 'with malformed stored counts' do
+      let(:malformed_inserts) { '{"operations":' }
+
+      before { update.update(inserts: malformed_inserts) }
+
+      it 'shows the raw stored value' do
+        expect(output).to include(<<~OUTPUT)
+          === Previous Import Operation Counts ===
+
+          #{malformed_inserts}
+        OUTPUT
+      end
+    end
   end
 
   context 'with a failed TARIC update' do
@@ -348,6 +362,24 @@ RSpec.describe 'tariff:sync:inspect_file' do
       expect(output).to match(/Total transaction records: 3/)
       expect(output).to match(/GoodsNomenclature\s+2/)
       expect(output).to match(/Measure\s+1/)
+    end
+
+    context 'without transaction records' do
+      let(:taric_xml) { StringIO.new('<envelope/>') }
+
+      it 'shows the exact empty-file summary' do
+        expect(output).to eq(<<~OUTPUT)
+          === File Inspection: #{update.filename} ===
+
+          State      : P
+          Issue date : #{update.issue_date}
+          File size  : 2048 bytes
+
+          Total transaction records: 0
+
+          (No records found - file may use a different XML structure)
+        OUTPUT
+      end
     end
   end
 end
