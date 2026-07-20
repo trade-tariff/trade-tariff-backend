@@ -70,7 +70,6 @@ Metrics/ModuleLength:
     - 'app/lib/tariff_synchronizer.rb'
     - 'app/models/measure.rb'
     - 'lib/tasks/tariff_knowledge.rake'
-    - 'lib/tasks/tariff_sync_tooling.rake'
 
 RSpec/SpecFilePathFormat:
   Enabled: true

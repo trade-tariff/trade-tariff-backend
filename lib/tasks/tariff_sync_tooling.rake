@@ -69,74 +69,9 @@ module_function
   end
 
   def failure_detail
-    update = update_from_env_filename
-    print_failure_detail_header(update)
-    print_exception_detail(update)
-    print_presence_errors(update)
-    print_previous_import_counts(update)
-  end
-
-  def update_from_env_filename
-    filename = ENV['FILENAME']
-    abort 'Set FILENAME= to the full update filename (e.g. tariff_dailyExtract_v1_20240101T000000.gzip).' unless filename
-
-    TariffSynchronizer::BaseUpdate.where(filename:).first || abort("No update found with filename: #{filename}")
-  end
-
-  def print_failure_detail_header(update)
-    service = update.is_a?(TariffSynchronizer::CdsUpdate) ? 'UK (CDS)' : 'XI (TARIC)'
-    puts "=== Failure Detail: #{update.filename} ===\n\n"
-    puts "Service    : #{service}"
-    puts "State      : #{update.state}"
-    puts "Issue date : #{update.issue_date}"
-    puts "File size  : #{update.filesize ? "#{update.filesize} bytes" : 'unknown'}"
-    puts "Created at : #{update.created_at}"
-    puts "Updated at : #{update.updated_at}"
-  end
-
-  def print_exception_detail(update)
-    return if update.exception_class.blank?
-
-    puts "\n=== Exception ===\n\n"
-    puts update.exception_class
-    puts
-    print_exception_backtrace(update)
-    print_exception_queries(update)
-  end
-
-  def print_exception_backtrace(update)
-    return if update.exception_backtrace.blank?
-
-    puts "=== Backtrace (first 20 lines) ===\n\n"
-    update.exception_backtrace.split("\n").first(20).each { |line| puts line }
-  end
-
-  def print_exception_queries(update)
-    return if update.exception_queries.blank?
-
-    puts "\n=== Last SQL Queries ===\n\n"
-    puts update.exception_queries
-  end
-
-  def print_presence_errors(update)
-    presence_errors = update.presence_errors
-    return if presence_errors.empty?
-
-    puts "\n=== Presence Errors (#{presence_errors.count} total, showing first 10) ===\n\n"
-    presence_errors.first(10).each_with_index do |error, index|
-      puts "#{index + 1}. #{error.model_name}"
-      puts error.details.inspect
-      puts
-    end
-  end
-
-  def print_previous_import_counts(update)
-    return if update.inserts.blank?
-
-    puts "\n=== Previous Import Operation Counts ===\n\n"
-    puts JSON.pretty_generate(JSON.parse(update.inserts))
-  rescue JSON::ParserError
-    puts update.inserts
+    TariffSyncFailureDetailReporter.call
+  rescue TariffSyncFailureDetailReporter::Error => e
+    abort e.message
   end
 
   def inspect_file
