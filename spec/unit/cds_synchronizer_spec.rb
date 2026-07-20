@@ -131,30 +131,61 @@ RSpec.describe CdsSynchronizer, :truncation do
 
   describe '.rollback' do
     let(:rollback_attributes) { attributes_for :rollback }
+    let(:rollback_date) { Date.yesterday }
 
     before do
       allow(TradeTariffBackend).to receive(:service).and_return('uk')
-      create :cds_update, :applied, :with_measure, example_date: Date.yesterday
+      create :cds_update, :applied, :with_measure, example_date: rollback_date
       create :cds_update, :applied, :with_measure, example_date: Time.zone.today
     end
 
     it 'performs a rollback' do
       Sidekiq.testing!(:inline) do
         expect {
-          create(:rollback, date: Date.yesterday.beginning_of_day)
+          create(:rollback, date: rollback_date.beginning_of_day)
         }.to change(Measure, :count).from(2).to(1)
       end
     end
 
     it 'marks tariff changes as pending' do
-      tariff_change_job = TariffChangesJobStatus.create(operation_date: Date.yesterday)
+      tariff_change_job = TariffChangesJobStatus.create(operation_date: rollback_date)
       tariff_change_job.mark_changes_generated!
 
       Sidekiq.testing!(:inline) do
-        create(:rollback, date: Date.yesterday.beginning_of_day)
+        create(:rollback, date: rollback_date.beginning_of_day)
       end
 
       expect(tariff_change_job.reload).to be_changes_pending
+    end
+
+    it 'emits lock and completion instrumentation with the affected file count', :aggregate_failures do
+      allow(TariffSynchronizer::Instrumentation).to receive(:lock_acquired)
+      allow(TariffSynchronizer::Instrumentation).to receive(:rollback_completed)
+      allow(TradeTariffBackend).to receive(:with_redis_lock).and_yield
+
+      described_class.rollback(rollback_date, keep: true)
+
+      expect(TariffSynchronizer::Instrumentation).to have_received(:lock_acquired).with(phase: 'rollback')
+      expect(TariffSynchronizer::Instrumentation).to have_received(:rollback_completed).with(
+        rollback_date: rollback_date.iso8601,
+        duration_ms: be_a(Numeric),
+        files_count: 1,
+      )
+    end
+
+    context 'when the Redis lock cannot be acquired' do
+      before do
+        allow(TradeTariffBackend).to receive(:with_redis_lock).and_raise(Redlock::LockError, 'tariff-lock')
+        allow(TariffSynchronizer::Instrumentation).to receive(:lock_failed)
+        allow(TariffSynchronizer::Instrumentation).to receive(:rollback_completed)
+      end
+
+      it 'leaves tariff data unchanged and emits lock-failure instrumentation', :aggregate_failures do
+        expect { described_class.rollback(rollback_date) }.not_to change(Measure, :count)
+
+        expect(TariffSynchronizer::Instrumentation).to have_received(:lock_failed).with(phase: 'rollback')
+        expect(TariffSynchronizer::Instrumentation).not_to have_received(:rollback_completed)
+      end
     end
   end
 
