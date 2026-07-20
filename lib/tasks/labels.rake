@@ -42,21 +42,7 @@ module_function
   end
 
   def load_self_texts
-    csv_path = ENV['CSV_PATH']
-    SelfTextLookupService.csv_path = csv_path if csv_path.present?
-
-    puts "Loading self-texts from #{SelfTextLookupService.csv_path}..."
-    SelfTextLookupService.reload!
-    puts "Loaded #{SelfTextLookupService.count} self-texts"
-    print_sample_self_text_lookups
-  end
-
-  def print_sample_self_text_lookups
-    puts "\nSample lookups:"
-    %w[0101210000 0102292100 8471300000].each do |code|
-      text = SelfTextLookupService.lookup(code)
-      puts "  #{code}: #{text || '(not found)'}"
-    end
+    LabelSelfTextLoader.call
   end
 
   def relabel
@@ -130,43 +116,7 @@ module_function
   end
 
   def nuke_and_regenerate
-    load_self_texts_for_regeneration
-    confirm_regeneration!
-    delete_labels
-    generate
-  end
-
-  def load_self_texts_for_regeneration
-    csv_path = ENV['CSV_PATH']
-    SelfTextLookupService.csv_path = csv_path if csv_path.present?
-    puts "Loading self-texts from #{SelfTextLookupService.csv_path}..."
-
-    unless File.exist?(SelfTextLookupService.csv_path)
-      puts "ERROR: Self-texts CSV not found at #{SelfTextLookupService.csv_path}"
-      puts 'Set CSV_PATH environment variable or place file at data/CN2026_SelfText_EN_DE_FR.csv'
-      exit 1
-    end
-
-    SelfTextLookupService.reload!
-    puts "Loaded #{SelfTextLookupService.count} self-texts"
-  end
-
-  def confirm_regeneration!
-    return if ENV['CONFIRM'] == 'true'
-
-    puts "\nWARNING: This will delete ALL existing labels and regenerate them."
-    puts 'Set CONFIRM=true to proceed.'
-    exit 1
-  end
-
-  def delete_labels
-    puts "\nDeleting all labels..."
-    label_dataset = GoodsNomenclatureLabel.dataset
-    deleted_count = label_dataset.count
-    PaperTrail::BulkVersioning.record_destroy_versions_for_dataset!(dataset: label_dataset) if deleted_count.positive?
-    label_dataset.delete
-    puts "Deleted #{deleted_count} labels"
-    puts "\nEnqueuing label generation..."
+    LabelRegenerator.call
   end
 end
 
