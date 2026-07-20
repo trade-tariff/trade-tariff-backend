@@ -98,7 +98,7 @@
     RefreshTariffKnowledgeCompressedNotesWorker:
       cron: "0 3 * * *"
       description: "Refreshes tariff knowledge graph and compressed notes for current declarable goods"
-      enabled: <%= ENV.fetch('SERVICE', 'uk') == 'uk' && ENV.fetch('ENVIRONMENT', 'local') == 'staging' %>
+      enabled: <%= ENV.fetch('SERVICE', 'uk') == 'uk' %>
     ImportPublicAtarRulingsWorker:
       cron: "30 3 * * *"
       queue: within_1_day
