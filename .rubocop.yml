@@ -69,7 +69,6 @@ Metrics/ModuleLength:
   Exclude:
     - 'app/lib/tariff_synchronizer.rb'
     - 'app/models/measure.rb'
-    - 'lib/tasks/tariff_knowledge.rake'
 
 RSpec/SpecFilePathFormat:
   Enabled: true

@@ -48,7 +48,7 @@ module_function
   def import_atars
     return unless uk_service?
 
-    result = TariffKnowledge::PublicAtarRulingImporter.call(public_atar_import_options)
+    result = TariffKnowledge::PublicAtarRulingImporter.call(**TariffKnowledge::PublicAtarImportOptions.call)
     refreshed_sids = TariffKnowledge::PublicAtarSearchRefresh.call(result.refresh_goods_nomenclature_item_ids)
     puts "Public ATAR import complete: #{result.seen_count} seen, #{result.created_count} created, #{result.updated_count} updated, #{result.failed_count} failed."
     puts "Public ATAR search refresh complete: #{refreshed_sids.size} goods nomenclatures refreshed or queued."
@@ -66,34 +66,6 @@ module_function
 
     puts 'Skipping public ATAR import outside UK service mode.'
     false
-  end
-
-  def public_atar_import_options
-    {
-      limit: integer_env('ATAR_LIMIT', nil),
-      max_pages: integer_env('ATAR_MAX_PAGES', 50),
-      request_delay: float_env('ATAR_REQUEST_DELAY', TariffKnowledge::PublicAtarRulingSource::DEFAULT_REQUEST_DELAY),
-      max_retries: integer_env('ATAR_MAX_RETRIES', TariffKnowledge::PublicAtarRulingSource::DEFAULT_MAX_RETRIES),
-    }
-  end
-
-  def integer_env(name, default = nil, min: 1)
-    value = ENV.fetch(name, default)
-    return if value.blank?
-
-    Integer(value).tap do |integer|
-      raise ArgumentError, "#{name} must be at least #{min}" if integer < min
-    end
-  rescue ArgumentError
-    raise ArgumentError, "#{name} must be an integer"
-  end
-
-  def float_env(name, default, min: 0.0)
-    Float(ENV.fetch(name, default)).tap do |number|
-      raise ArgumentError, "#{name} must be at least #{min}" if number < min
-    end
-  rescue ArgumentError
-    raise ArgumentError, "#{name} must be numeric"
   end
 
   def validate_note_structures
