@@ -47,20 +47,17 @@ RSpec/VariableName:
   Exclude:
     - 'spec/swagger/**/*'
 
-Layout/LineLength:
-  Max: 120
-
-Metrics/AbcSize:
-  Max: 20
-
-# The listed files are known hotspots; this cop is enforced everywhere else.
-# Remove each entry as its hotspot is refactored.
+# Rails route manifests are declarative DSL containers. Block length does not
+# provide useful signal inside them, while the cop remains enforced elsewhere.
 Metrics/BlockLength:
   Enabled: true
   Exclude:
     - 'app/engines/admin_api.rb'
     - 'app/engines/v1_api.rb'
     - 'app/engines/v2_api.rb'
+
+Metrics/ModuleLength:
+  Enabled: true
 
 RSpec/SpecFilePathFormat:
   Enabled: true
@@ -108,14 +105,6 @@ Rails/FindBy:
 # bang/non-bang persistence methods.
 Rails/SaveBang:
   Enabled: false
-
-# Legacy codebase-wide documentation policy cop with many existing offenses;
-# left disabled until documentation standards can be introduced deliberately.
-Style/Documentation:
-  Enabled: false
-
-Style/GuardClause:
-  MinBodyLength: 2
 
 Style/OptionalBooleanParameter:
   Exclude:
