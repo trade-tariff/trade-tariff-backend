@@ -53,6 +53,47 @@ RSpec.describe Measure do
     it { is_expected.to have_attributes args: coalesced_columns }
   end
 
+  describe '.with_measure_type' do
+    subject(:measure_sids) { described_class.with_measure_type('103').select_map(:measure_sid) }
+
+    let!(:matching_measure) { create(:measure, measure_type_id: '103') }
+
+    before { create(:measure, measure_type_id: '104') }
+
+    it { is_expected.to contain_exactly(matching_measure.measure_sid) }
+  end
+
+  describe '.valid_to' do
+    subject(:measure_sids) { described_class.valid_to(cutoff).select_map(:measure_sid) }
+
+    let(:cutoff) { Time.zone.parse('2026-07-20 12:00:00') }
+    let!(:matching_measure) { create(:measure, validity_start_date: cutoff) }
+
+    before { create(:measure, validity_start_date: cutoff + 1.second) }
+
+    it { is_expected.to contain_exactly(matching_measure.measure_sid) }
+  end
+
+  describe '.terminated' do
+    subject(:measure_sids) { described_class.terminated.select_map(:measure_sid) }
+
+    let!(:matching_measure) { create(:measure, validity_end_date: Time.zone.now) }
+
+    before { create(:measure, validity_end_date: nil) }
+
+    it { is_expected.to contain_exactly(matching_measure.measure_sid) }
+  end
+
+  describe '.with_geographical_area' do
+    subject(:measure_sids) { described_class.with_geographical_area('FR').select_map(:measure_sid) }
+
+    let!(:matching_measure) { create(:measure, geographical_area_id: 'FR') }
+
+    before { create(:measure, geographical_area_id: 'DE') }
+
+    it { is_expected.to contain_exactly(matching_measure.measure_sid) }
+  end
+
   shared_examples 'includes measure type' do |measure_type, geographical_area|
     context %(with measures of type #{MeasureType.const_get(measure_type).first} are included#{" for #{geographical_area}" if geographical_area}) do
       let(:geographical_area_id) { geographical_area } if geographical_area
