@@ -3,12 +3,13 @@ RSpec.describe PrewarmCommoditiesWorker do
 
   let(:client) { instance_double(Aws::CloudWatchLogs::Client) }
   let(:cached_commodity_service) { instance_double(CachedCommodityService, call: true) }
-
-  def start_query_response
-    instance_double(Aws::CloudWatchLogs::Types::StartQueryResponse, query_id: 'query-123')
+  let(:commodities) do
+    {
+      requested: build(:commodity, goods_nomenclature_item_id: '0101210000', producline_suffix: '80'),
+      preconfigured: build(:commodity, goods_nomenclature_item_id: '0202301000', producline_suffix: '80'),
+    }
   end
-
-  def query_results_response
+  let(:query_results_response) do
     instance_double(
       Aws::CloudWatchLogs::Types::GetQueryResultsResponse,
       status: 'Complete',
@@ -20,11 +21,8 @@ RSpec.describe PrewarmCommoditiesWorker do
   end
 
   before do
-    commodities = [
-      build(:commodity, goods_nomenclature_item_id: '0101210000', producline_suffix: '80'),
-      build(:commodity, goods_nomenclature_item_id: '0202301000', producline_suffix: '80'),
-    ]
-    query_scope = instance_double(Sequel::Dataset, all: commodities)
+    start_query_response = instance_double(Aws::CloudWatchLogs::Types::StartQueryResponse, query_id: 'query-123')
+    query_scope = instance_double(Sequel::Dataset, all: commodities.values)
     # Commodity.actual returns a model dataset (Sequel::Dataset subclass with
     # by_codes), not bare Sequel::Dataset.
     actual_commodities = instance_double(Commodity.dataset.class, by_codes: query_scope)
@@ -43,10 +41,7 @@ RSpec.describe PrewarmCommoditiesWorker do
       worker.perform
 
       expect(client).to have_received(:start_query)
-      expect(CachedCommodityService).to have_received(:new).with(
-        an_object_having_attributes(goods_nomenclature_item_id: '0101210000'),
-        Date.current,
-      )
+      expect(CachedCommodityService).to have_received(:new).with(commodities.fetch(:requested), Date.current)
       expect(cached_commodity_service).to have_received(:call)
       expect(TimeMachine).to have_received(:now)
     end
@@ -92,14 +87,8 @@ RSpec.describe PrewarmCommoditiesWorker do
       worker.perform
 
       expect(Commodity).to have_received(:actual)
-      expect(CachedCommodityService).to have_received(:new).with(
-        an_object_having_attributes(goods_nomenclature_item_id: '0202301000'),
-        Date.current,
-      )
-      expect(CachedCommodityService).to have_received(:new).with(
-        an_object_having_attributes(goods_nomenclature_item_id: '0101210000'),
-        Date.current,
-      )
+      expect(CachedCommodityService).to have_received(:new).with(commodities.fetch(:preconfigured), Date.current)
+      expect(CachedCommodityService).to have_received(:new).with(commodities.fetch(:requested), Date.current)
     end
 
     context 'when commodity list is empty' do
@@ -109,7 +98,7 @@ RSpec.describe PrewarmCommoditiesWorker do
           status: 'Complete',
           results: [],
         )
-        allow(client).to receive_messages(start_query: start_query_response, get_query_results: empty_query_results_response)
+        allow(client).to receive(:get_query_results).and_return(empty_query_results_response)
       end
 
       it 'returns early when no ids are available from any source' do
@@ -135,10 +124,7 @@ RSpec.describe PrewarmCommoditiesWorker do
           Sidekiq.default_configuration.logger = original_logger
         end
 
-        expect(CachedCommodityService).to have_received(:new).with(
-          an_object_having_attributes(goods_nomenclature_item_id: '0202301000'),
-          Date.current,
-        )
+        expect(CachedCommodityService).to have_received(:new).with(commodities.fetch(:preconfigured), Date.current)
       end
     end
   end
