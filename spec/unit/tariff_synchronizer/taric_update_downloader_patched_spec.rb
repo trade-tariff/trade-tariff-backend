@@ -50,7 +50,6 @@ RSpec.describe TariffSynchronizer::TaricUpdateDownloaderPatched do
           TariffSynchronizer::TaricUpdate,
         ).once.ordered
       end
-      # rubocop:enable RSpec/MultipleExpectations
     end
   end
 end

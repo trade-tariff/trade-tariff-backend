@@ -1,4 +1,3 @@
-# rubocop:disable RSpec/DescribeClass
 require 'csv'
 require 'fileutils'
 require 'tmpdir'
@@ -249,4 +248,3 @@ RSpec.describe 'green_lanes rake tasks' do
     }.merge(overrides))
   end
 end
-# rubocop:enable RSpec/DescribeClass

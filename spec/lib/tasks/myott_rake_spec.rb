@@ -1,4 +1,4 @@
-RSpec.describe 'myott:send_watchlist_survey' do # rubocop:disable RSpec/DescribeClass
+RSpec.describe 'myott:send_watchlist_survey' do
   subject(:send_watchlist_survey) { Rake::Task['myott:send_watchlist_survey'].invoke }
 
   let!(:user_with_stop_press_subscription) { create(:public_user, :with_active_stop_press_subscription) }

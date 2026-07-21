@@ -2,7 +2,7 @@
 
 require 'rails_helper'
 
-RSpec.describe 'ses_v2_to_addresses_coercion initializer' do # rubocop:disable RSpec/DescribeClass
+RSpec.describe 'ses_v2_to_addresses_coercion initializer' do
   # The mail gem normalises a single-recipient To: header to a plain String.
   # The SES v2 delivery method passes message.to directly to the AWS SDK,
   # which requires an Array. This spec verifies that the prepended module

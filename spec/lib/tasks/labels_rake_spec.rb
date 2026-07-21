@@ -1,4 +1,3 @@
-# rubocop:disable RSpec/DescribeClass
 RSpec.describe 'labels tasks' do
   around do |example|
     original_chapter = ENV.fetch('CHAPTER', nil)
@@ -395,4 +394,3 @@ RSpec.describe 'labels tasks' do
     end
   end
 end
-# rubocop:enable RSpec/DescribeClass

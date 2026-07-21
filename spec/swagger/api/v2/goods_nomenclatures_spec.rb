@@ -1,7 +1,7 @@
 require 'swagger_helper'
 
 RSpec.describe 'Goods Nomenclatures', swagger_doc: 'v2/swagger.json', type: :request do
-  let(:Accept) { 'application/vnd.hmrc.2.0+json' }
+  let(:accept) { 'application/vnd.hmrc.2.0+json' }
 
   goods_nomenclature_item_schema = {
     type: :object,
@@ -45,7 +45,7 @@ RSpec.describe 'Goods Nomenclatures', swagger_doc: 'v2/swagger.json', type: :req
   }.freeze
 
   path '/api/goods_nomenclatures/{id}' do
-    parameter name: :Accept, in: :header, required: true,
+    parameter name: :Accept, getter: :accept, in: :header, required: true,
               schema: { type: :string, enum: ['application/vnd.hmrc.2.0+json'] },
               description: 'API version negotiation header'
     parameter name: :id, in: :path, required: true,
@@ -81,7 +81,7 @@ RSpec.describe 'Goods Nomenclatures', swagger_doc: 'v2/swagger.json', type: :req
   end
 
   path '/api/goods_nomenclatures/section/{position}' do
-    parameter name: :Accept, in: :header, required: true,
+    parameter name: :Accept, getter: :accept, in: :header, required: true,
               schema: { type: :string, enum: ['application/vnd.hmrc.2.0+json'] },
               description: 'API version negotiation header'
     parameter name: :position, in: :path, required: true,
@@ -114,7 +114,7 @@ RSpec.describe 'Goods Nomenclatures', swagger_doc: 'v2/swagger.json', type: :req
   end
 
   path '/api/goods_nomenclatures/chapter/{chapter_id}' do
-    parameter name: :Accept, in: :header, required: true,
+    parameter name: :Accept, getter: :accept, in: :header, required: true,
               schema: { type: :string, enum: ['application/vnd.hmrc.2.0+json'] },
               description: 'API version negotiation header'
     parameter name: :chapter_id, in: :path, required: true,
@@ -147,7 +147,7 @@ RSpec.describe 'Goods Nomenclatures', swagger_doc: 'v2/swagger.json', type: :req
   end
 
   path '/api/goods_nomenclatures/heading/{heading_id}' do
-    parameter name: :Accept, in: :header, required: true,
+    parameter name: :Accept, getter: :accept, in: :header, required: true,
               schema: { type: :string, enum: ['application/vnd.hmrc.2.0+json'] },
               description: 'API version negotiation header'
     parameter name: :heading_id, in: :path, required: true,

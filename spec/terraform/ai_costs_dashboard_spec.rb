@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-RSpec.describe 'AI costs dashboard Terraform' do # rubocop:disable RSpec/DescribeClass
+RSpec.describe 'AI costs dashboard Terraform' do
   let(:dashboards_tf) { Rails.root.join('terraform/dashboards.tf').read }
   let(:module_main_tf) { Rails.root.join('terraform/modules/ai_costs_dashboard/main.tf').read }
 

@@ -1,4 +1,3 @@
-# rubocop:disable RSpec/DescribeClass
 RSpec.describe 'tariff_knowledge rake tasks' do
   def public_atar_import_result(**overrides)
     TariffKnowledge::PublicAtarRulingImporter::Result.new(**{
@@ -289,4 +288,3 @@ RSpec.describe 'tariff_knowledge rake tasks' do
     end
   end
 end
-# rubocop:enable RSpec/DescribeClass

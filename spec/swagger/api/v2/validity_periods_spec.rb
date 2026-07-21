@@ -1,7 +1,7 @@
 require 'swagger_helper'
 
 RSpec.describe 'Validity Periods', swagger_doc: 'v2/swagger.json', type: :request do
-  let(:Accept) { 'application/vnd.hmrc.2.0+json' }
+  let(:accept) { 'application/vnd.hmrc.2.0+json' }
 
   validity_period_item_schema = {
     type: :object,
@@ -38,7 +38,7 @@ RSpec.describe 'Validity Periods', swagger_doc: 'v2/swagger.json', type: :reques
   }.freeze
 
   path '/api/headings/{heading_id}/validity_periods' do
-    parameter name: :Accept, in: :header, required: true,
+    parameter name: :Accept, getter: :accept, in: :header, required: true,
               schema: { type: :string, enum: ['application/vnd.hmrc.2.0+json'] },
               description: 'API version negotiation header'
     parameter name: :heading_id, in: :path, required: true,
@@ -71,7 +71,7 @@ RSpec.describe 'Validity Periods', swagger_doc: 'v2/swagger.json', type: :reques
   end
 
   path '/api/subheadings/{subheading_id}/validity_periods' do
-    parameter name: :Accept, in: :header, required: true,
+    parameter name: :Accept, getter: :accept, in: :header, required: true,
               schema: { type: :string, enum: ['application/vnd.hmrc.2.0+json'] },
               description: 'API version negotiation header'
     parameter name: :subheading_id, in: :path, required: true,
@@ -104,7 +104,7 @@ RSpec.describe 'Validity Periods', swagger_doc: 'v2/swagger.json', type: :reques
   end
 
   path '/api/commodities/{commodity_id}/validity_periods' do
-    parameter name: :Accept, in: :header, required: true,
+    parameter name: :Accept, getter: :accept, in: :header, required: true,
               schema: { type: :string, enum: ['application/vnd.hmrc.2.0+json'] },
               description: 'API version negotiation header'
     parameter name: :commodity_id, in: :path, required: true,

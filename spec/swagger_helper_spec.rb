@@ -1,8 +1,6 @@
 require 'swagger_helper'
 
-# rubocop:disable RSpec/DescribeClass
 RSpec.describe 'swagger helper configuration' do
-  # rubocop:enable RSpec/DescribeClass
   subject(:swagger_doc) { RSpec.configuration.openapi_specs.fetch('v2/swagger.json') }
 
   let(:components) { swagger_doc.fetch(:components) }

@@ -246,5 +246,4 @@ RSpec.describe TaricSynchronizer, :truncation do
     end
   end
 end
-# rubocop:enable RSpec/MultipleExpectations
 # rubocop:enable RSpec/AnyInstance

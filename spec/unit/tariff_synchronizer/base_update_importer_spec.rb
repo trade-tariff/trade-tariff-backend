@@ -64,5 +64,4 @@ RSpec.describe TariffSynchronizer::BaseUpdateImporter do
       expect(email.encoded).to include('(Sequel::Postgres::Database) ROLLBACK')
     end
   end
-  # rubocop:enable RSpec/MultipleExpectations
 end

@@ -3,7 +3,6 @@
 require 'erb'
 require 'yaml'
 
-# rubocop:disable RSpec/DescribeClass
 RSpec.describe 'Database configuration' do
   subject(:production_config) do
     YAML.safe_load(
@@ -75,4 +74,3 @@ RSpec.describe 'Database configuration' do
       .fetch(:application_name)
   end
 end
-# rubocop:enable RSpec/DescribeClass

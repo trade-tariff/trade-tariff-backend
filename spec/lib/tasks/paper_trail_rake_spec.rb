@@ -1,4 +1,3 @@
-# rubocop:disable RSpec/DescribeClass
 RSpec.describe 'paper_trail:reset_initial_versions' do
   subject(:run_task) { suppress_output { Rake::Task['paper_trail:reset_initial_versions'].invoke } }
 
@@ -37,4 +36,3 @@ RSpec.describe 'paper_trail:reset_initial_versions' do
     expect(service).to have_received(:call)
   end
 end
-# rubocop:enable RSpec/DescribeClass

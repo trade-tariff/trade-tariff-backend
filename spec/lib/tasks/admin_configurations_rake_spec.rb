@@ -1,4 +1,3 @@
-# rubocop:disable RSpec/DescribeClass
 RSpec.describe 'admin_configurations:seed' do
   subject(:seed) do
     suppress_output { Rake::Task['admin_configurations:seed'].invoke }
@@ -402,4 +401,3 @@ RSpec.describe 'admin_configurations:seed' do
     expect(AdminConfiguration.where(name: 'description_intercept_templates').first.config_type).to eq('object_template')
   end
 end
-# rubocop:enable RSpec/DescribeClass
