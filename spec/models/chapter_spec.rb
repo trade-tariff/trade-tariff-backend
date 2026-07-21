@@ -254,6 +254,17 @@ RSpec.describe Chapter do
     end
   end
 
+  describe 'first and last heading when there are no headings' do
+    let(:chapter) { create :chapter, goods_nomenclature_item_id: '9900000000' }
+
+    it 'returns explicit null headings and nil bounds', :aggregate_failures do
+      expect(chapter.first_heading).to be_a(NullGoodsNomenclature)
+      expect(chapter.last_heading).to be_a(NullGoodsNomenclature)
+      expect(chapter.headings_from).to be_nil
+      expect(chapter.headings_to).to be_nil
+    end
+  end
+
   describe '#short_code' do
     let!(:chapter) { create :chapter, goods_nomenclature_item_id: '1200000000' }
 

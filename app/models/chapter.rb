@@ -78,11 +78,11 @@ class Chapter < GoodsNomenclature
   end
 
   def first_heading
-    headings.min_by(&:goods_nomenclature_item_id) || NullObject.new
+    headings.min_by(&:goods_nomenclature_item_id) || NullGoodsNomenclature.new
   end
 
   def last_heading
-    headings.max_by(&:goods_nomenclature_item_id) || NullObject.new
+    headings.max_by(&:goods_nomenclature_item_id) || NullGoodsNomenclature.new
   end
 
   def headings_from

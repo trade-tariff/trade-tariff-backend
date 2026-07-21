@@ -104,4 +104,17 @@ RSpec.describe Section do
       end
     end
   end
+
+  describe 'first and last chapter' do
+    let(:section) { create(:section) }
+
+    context 'when the section has no chapters' do
+      it 'returns explicit null chapters and nil bounds', :aggregate_failures do
+        expect(section.first_chapter).to be_a(NullGoodsNomenclature)
+        expect(section.last_chapter).to be_a(NullGoodsNomenclature)
+        expect(section.chapter_from).to be_nil
+        expect(section.chapter_to).to be_nil
+      end
+    end
+  end
 end
