@@ -29,6 +29,34 @@ RSpec.describe TimeMachine do
         expect(Commodity.actual.all).to     include second_commodity
       end
     end
+
+    it 'uses the configured time zone for a date string with an explicit offset', :aggregate_failures do
+      described_class.at('2024-06-01T12:34:56+01:00') do
+        point_in_time = described_class.point_in_time
+
+        expect(point_in_time).to be_a(ActiveSupport::TimeWithZone)
+        expect(point_in_time).to eq(Time.iso8601('2024-06-01T12:34:56+01:00'))
+        expect(point_in_time.time_zone).to eq(Time.zone)
+      end
+    end
+
+    it 'parses a Date at midnight' do
+      described_class.at(Date.new(2024, 6, 1)) do
+        expect(described_class.point_in_time).to eq(Time.zone.local(2024, 6, 1))
+      end
+    end
+
+    it 'restores the outer point in time after nested travel' do
+      described_class.at('2024-06-01') do
+        outer_point_in_time = described_class.point_in_time
+
+        described_class.at('2025-07-02') do
+          expect(described_class.point_in_time).to eq(Time.zone.local(2025, 7, 2))
+        end
+
+        expect(described_class.point_in_time).to eq(outer_point_in_time)
+      end
+    end
   end
 
   describe '.now' do
