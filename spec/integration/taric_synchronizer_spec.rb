@@ -128,12 +128,12 @@ RSpec.describe TaricSynchronizer do
           allow(Measure).to receive(:operation_klass).and_raise(StandardError)
         end
 
-        it 'leaves Taric updates in applid state' do
+        it 'leaves Taric updates in applied state' do
           expect { described_class.rollback(Time.zone.yesterday, keep: true) }.to raise_error(StandardError)
           expect(update.reload).to be_applied
         end
 
-        it 'leaves both todays and the earlier data migration record' do
+        it "leaves both today's and the earlier data migration record" do
           expect { described_class.rollback(Time.zone.yesterday, keep: true) }.to raise_error(StandardError)
           expect(DataMigration.count).to be 2
         end
