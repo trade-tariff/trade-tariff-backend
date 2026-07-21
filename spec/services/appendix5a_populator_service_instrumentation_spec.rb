@@ -1,6 +1,4 @@
 RSpec.describe Appendix5aPopulatorService do
-  subject(:call) { service.call }
-
   before do
     stub_const('TestDatabase', Class.new do
       def transaction; end
@@ -35,25 +33,25 @@ RSpec.describe Appendix5aPopulatorService do
       changed_guidance: [],
       removed_guidance: [],
     )
-    allow(mail_message).to receive(:instance_variable_get).with(:@smtp_envelope_to).and_return(nil)
+    allow(message_delivery.message).to receive(:instance_variable_get).with(:@smtp_envelope_to).and_return(nil)
   end
 
   let(:service) { described_class.new }
   let(:logger) { instance_spy(Logger) }
   let(:db) { instance_double(TestDatabase, transaction: true) }
-  let(:message_delivery) { instance_double(ActionMailer::MessageDelivery, message: mail_message, deliver_now: true) }
-  let(:mail_message) do
-    instance_double(
+  let(:message_delivery) do
+    mail_message = instance_double(
       Mail::Message,
       to: ['cupid@example.com'],
       smtp_envelope_to: ['cupid@example.com'],
       delivery_handler: instance_double(TestDeliveryHandler, class: double(name: 'Appendix5aMailer')),
       delivery_method: instance_double(TestDeliveryMethod, class: double(name: 'Aws::ActionMailer::SESV2::Mailer')),
     )
+    instance_double(ActionMailer::MessageDelivery, message: mail_message, deliver_now: true)
   end
 
   it 'logs mail delivery state before delivery' do
-    call
+    service.call
 
     expect(logger).to have_received(:info).with(include('Appendix5a mail delivery before_deliver'))
     expect(message_delivery).to have_received(:deliver_now)
@@ -64,11 +62,11 @@ RSpec.describe Appendix5aPopulatorService do
 
     before do
       allow(message_delivery).to receive(:deliver_now).and_raise(delivery_error)
-      allow(mail_message).to receive(:instance_variable_get).with(:@smtp_envelope_to).and_return('cupid@example.com')
+      allow(message_delivery.message).to receive(:instance_variable_get).with(:@smtp_envelope_to).and_return('cupid@example.com')
     end
 
     it 'logs the failed delivery state and re-raises the original exception' do
-      expect { call }.to raise_error(delivery_error)
+      expect { service.call }.to raise_error(delivery_error)
 
       expect(logger).to have_received(:error).with(include('Appendix5a mail delivery deliver_failed'))
     end

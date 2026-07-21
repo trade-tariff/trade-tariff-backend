@@ -3,28 +3,18 @@ RSpec.describe StopPressEmailWorker, type: :worker do
 
   let(:stop_press) { create(:news_item) }
   let(:user) { create(:public_user, :with_active_stop_press_subscription) }
-  let(:client) { instance_double(GovukNotifier) }
-  let(:email_address) { 'test@example.com' }
-  let(:notification_id) { SecureRandom.uuid }
-  let(:notify_response) { instance_double(GovukNotifierAudit, notification_uuid: notification_id) }
-
-  before do
-    allow(IdentityApiClient).to receive(:get_email).and_return(email_address)
-    allow(GovukNotifier).to receive(:new).and_return(client)
-    allow(PublicUsers::User).to receive(:active).and_return(instance_double(Sequel::Dataset, :[] => user))
-    allow(client).to receive(:send_email).and_return(notify_response)
-    allow(client).to receive(:schedule_status_check)
-  end
 
   describe '#perform' do
-    let(:expected_personalisation) do
-      {
-        stop_press_title: stop_press.title,
-        stop_press_link: "#{stop_press.public_url}?utm_source=private+beta&utm_medium=email&utm_campaign=stop+press+notification",
-        subscription_reason: 'This is a non-chapter specific update from the UK Trade Tariff Service',
-        site_url: "#{URI.join(TradeTariffBackend.frontend_host, 'subscriptions/')}?utm_source=private+beta&utm_medium=email&utm_campaign=stop+press+notification",
-        unsubscribe_url: "#{URI.join(TradeTariffBackend.frontend_host, 'subscriptions/unsubscribe/', user.stop_press_subscription.uuid)}?utm_source=private+beta&utm_medium=email&utm_campaign=stop+press+notification",
-      }
+    let(:client) { instance_double(GovukNotifier) }
+    let(:email_address) { 'test@example.com' }
+    let(:notify_response) { instance_double(GovukNotifierAudit, notification_uuid: SecureRandom.uuid) }
+
+    before do
+      allow(IdentityApiClient).to receive(:get_email).and_return(email_address)
+      allow(GovukNotifier).to receive(:new).and_return(client)
+      allow(PublicUsers::User).to receive(:active).and_return(instance_double(Sequel::Dataset, :[] => user))
+      allow(client).to receive(:send_email).and_return(notify_response)
+      allow(client).to receive(:schedule_status_check)
     end
 
     it 'gets user email address' do
@@ -34,6 +24,14 @@ RSpec.describe StopPressEmailWorker, type: :worker do
     end
 
     it 'sends request to client' do
+      expected_personalisation = {
+        stop_press_title: stop_press.title,
+        stop_press_link: "#{stop_press.public_url}?utm_source=private+beta&utm_medium=email&utm_campaign=stop+press+notification",
+        subscription_reason: 'This is a non-chapter specific update from the UK Trade Tariff Service',
+        site_url: "#{URI.join(TradeTariffBackend.frontend_host, 'subscriptions/')}?utm_source=private+beta&utm_medium=email&utm_campaign=stop+press+notification",
+        unsubscribe_url: "#{URI.join(TradeTariffBackend.frontend_host, 'subscriptions/unsubscribe/', user.stop_press_subscription.uuid)}?utm_source=private+beta&utm_medium=email&utm_campaign=stop+press+notification",
+      }
+
       instance.perform(stop_press.id, user.id)
 
       expect(client).to have_received(:send_email).with(email_address, StopPressEmailWorker::TEMPLATE_ID, expected_personalisation, StopPressEmailWorker::REPLY_TO_ID, nil)

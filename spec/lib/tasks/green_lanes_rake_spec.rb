@@ -6,9 +6,10 @@ RSpec.describe 'green_lanes rake tasks' do
   let(:task) { Rake::Task['green_lanes:generate_categorisation_data'] }
   let(:tempdir) { Dir.mktmpdir }
   let(:root) { Pathname.new(tempdir) }
-  let(:input_path) { root.join('categorisation.csv') }
-  let(:output_path) { root.join('data/green_lanes/categories.json') }
   let!(:original_csvfile) { ENV.fetch('CSVFILE', nil) }
+
+  def input_path = root.join('categorisation.csv')
+  def output_path = root.join('data/green_lanes/categories.json')
 
   before do
     allow(Rails).to receive(:root).and_return(root)
@@ -70,7 +71,8 @@ RSpec.describe 'green_lanes rake tasks' do
 
   context 'when importing themes' do
     let(:task) { Rake::Task['green_lanes:import_themes'] }
-    let(:source_path) { root.join('data/green_lanes/themes.html') }
+
+    def source_path = root.join('data/green_lanes/themes.html')
 
     before do
       allow(TradeTariffBackend).to receive(:xi?).and_return(true)

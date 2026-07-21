@@ -1,11 +1,10 @@
 RSpec.describe Api::V2::GreenLanes::CategoryAssessmentPresenter do
-  subject(:presented) { described_class.new(assessment, permutations.first, assessment.measures) }
+  subject(:presented) do
+    permutation = GreenLanes::PermutationCalculatorService.new(assessment.measures).call.first
+    described_class.new(assessment, permutation, assessment.measures)
+  end
 
   let(:assessment) { create :category_assessment, :with_measures, measures_count: 2 }
-
-  let :permutations do
-    GreenLanes::PermutationCalculatorService.new(assessment.measures).call
-  end
 
   it { is_expected.to have_attributes id: /^[0-9a-f]{32}$/ }
   it { is_expected.to have_attributes category_assessment_id: assessment.id }

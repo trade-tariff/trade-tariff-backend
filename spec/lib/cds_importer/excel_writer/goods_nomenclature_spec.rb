@@ -1,87 +1,60 @@
 RSpec.describe CdsImporter::ExcelWriter::GoodsNomenclature do
   subject(:mapper) { described_class.new(models) }
 
-  let(:goods_nomenclature) do
-    instance_double(
-      GoodsNomenclature,
-      class: instance_double(Class, name: 'GoodsNomenclature'),
-      goods_nomenclature_item_id: '0102901010',
-      producline_suffix: GoodsNomenclature::NON_GROUPING_PRODUCTLINE_SUFFIX,
-      statistical_indicator: 0,
-      goods_nomenclature_sid: 1,
-      operation: 'C',
-      validity_start_date: Time.utc(2025, 1, 1, 0, 0, 0),
-      validity_end_date: Time.utc(2025, 12, 31, 23, 59, 59),
-    )
-  end
-
-  let(:second_goods_nomenclature) do
-    instance_double(
-      GoodsNomenclature,
-      class: instance_double(Class, name: 'GoodsNomenclature'),
-      goods_nomenclature_item_id: '0104108000',
-      producline_suffix: '90',
-      statistical_indicator: 1,
-      goods_nomenclature_sid: 2,
-      operation: 'C',
-      validity_start_date: nil,
-      validity_end_date: nil,
-    )
-  end
-
-  let(:description_period) do
-    instance_double(
-      GoodsNomenclatureDescriptionPeriod,
-      class: instance_double(Class, name: 'GoodsNomenclatureDescriptionPeriod'),
-      goods_nomenclature_description_period_sid: 1,
-      goods_nomenclature_sid: 1,
-      productline_suffix: GoodsNomenclature::NON_GROUPING_PRODUCTLINE_SUFFIX,
-      goods_nomenclature_item_id: '0102901010',
-      validity_start_date: Time.utc(2025, 1, 1, 0, 0, 0),
-      validity_end_date: Time.utc(2025, 12, 31, 23, 59, 59),
-    )
-  end
-
-  let(:second_description_period) do
-    instance_double(
-      GoodsNomenclatureDescriptionPeriod,
-      class: instance_double(Class, name: 'GoodsNomenclatureDescriptionPeriod'),
-      goods_nomenclature_description_period_sid: 2,
-      goods_nomenclature_sid: 2,
-      productline_suffix: '90',
-      goods_nomenclature_item_id: '0104108000',
-      validity_start_date: Time.utc(2023, 2, 2, 0, 0, 0),
-      validity_end_date: Time.utc(2025, 12, 31, 23, 59, 59),
-    )
-  end
-
-  let(:description) do
-    instance_double(
-      GoodsNomenclatureDescription,
-      class: instance_double(Class, name: 'GoodsNomenclatureDescription'),
-      goods_nomenclature_description_period_sid: 1,
-      goods_nomenclature_sid: 1,
-      productline_suffix: GoodsNomenclature::NON_GROUPING_PRODUCTLINE_SUFFIX,
-      goods_nomenclature_item_id: '0102901010',
-      description: 'Pure-bred breeding animals',
-    )
-  end
-
-  let(:second_description) do
-    instance_double(
-      GoodsNomenclatureDescription,
-      class: instance_double(Class, name: 'GoodsNomenclatureDescription'),
-      goods_nomenclature_description_period_sid: 2,
-      goods_nomenclature_sid: 2,
-      productline_suffix: '90',
-      goods_nomenclature_item_id: '0104108000',
-      description: 'Other',
-    )
+  def model(model_class, **attributes)
+    instance_double(model_class, class: instance_double(Class, name: model_class.name), **attributes)
   end
 
   describe '#data_row' do
     context 'when all fields are valid' do
-      let(:models) { [goods_nomenclature, description, description_period, second_description, second_description_period] }
+      let(:models) do
+        [
+          model(
+            GoodsNomenclature,
+            goods_nomenclature_item_id: '0102901010',
+            producline_suffix: GoodsNomenclature::NON_GROUPING_PRODUCTLINE_SUFFIX,
+            statistical_indicator: 0,
+            goods_nomenclature_sid: 1,
+            operation: 'C',
+            validity_start_date: Time.utc(2025, 1, 1, 0, 0, 0),
+            validity_end_date: Time.utc(2025, 12, 31, 23, 59, 59),
+          ),
+          model(
+            GoodsNomenclatureDescription,
+            goods_nomenclature_description_period_sid: 1,
+            goods_nomenclature_sid: 1,
+            productline_suffix: GoodsNomenclature::NON_GROUPING_PRODUCTLINE_SUFFIX,
+            goods_nomenclature_item_id: '0102901010',
+            description: 'Pure-bred breeding animals',
+          ),
+          model(
+            GoodsNomenclatureDescriptionPeriod,
+            goods_nomenclature_description_period_sid: 1,
+            goods_nomenclature_sid: 1,
+            productline_suffix: GoodsNomenclature::NON_GROUPING_PRODUCTLINE_SUFFIX,
+            goods_nomenclature_item_id: '0102901010',
+            validity_start_date: Time.utc(2025, 1, 1, 0, 0, 0),
+            validity_end_date: Time.utc(2025, 12, 31, 23, 59, 59),
+          ),
+          model(
+            GoodsNomenclatureDescription,
+            goods_nomenclature_description_period_sid: 2,
+            goods_nomenclature_sid: 2,
+            productline_suffix: '90',
+            goods_nomenclature_item_id: '0104108000',
+            description: 'Other',
+          ),
+          model(
+            GoodsNomenclatureDescriptionPeriod,
+            goods_nomenclature_description_period_sid: 2,
+            goods_nomenclature_sid: 2,
+            productline_suffix: '90',
+            goods_nomenclature_item_id: '0104108000',
+            validity_start_date: Time.utc(2023, 2, 2, 0, 0, 0),
+            validity_end_date: Time.utc(2025, 12, 31, 23, 59, 59),
+          ),
+        ]
+      end
 
       it 'returns a correctly formatted data row' do
         row = mapper.data_row
@@ -98,7 +71,18 @@ RSpec.describe CdsImporter::ExcelWriter::GoodsNomenclature do
     end
 
     context 'when there is no description' do
-      let(:models) { [goods_nomenclature] }
+      let(:models) do
+        [model(
+          GoodsNomenclature,
+          goods_nomenclature_item_id: '0102901010',
+          producline_suffix: GoodsNomenclature::NON_GROUPING_PRODUCTLINE_SUFFIX,
+          statistical_indicator: 0,
+          goods_nomenclature_sid: 1,
+          operation: 'C',
+          validity_start_date: Time.utc(2025, 1, 1, 0, 0, 0),
+          validity_end_date: Time.utc(2025, 12, 31, 23, 59, 59),
+        )]
+      end
 
       it 'returns a correctly formatted data row' do
         row = mapper.data_row
@@ -115,7 +99,18 @@ RSpec.describe CdsImporter::ExcelWriter::GoodsNomenclature do
     end
 
     context 'when there are empty fields' do
-      let(:models) { [second_goods_nomenclature] }
+      let(:models) do
+        [model(
+          GoodsNomenclature,
+          goods_nomenclature_item_id: '0104108000',
+          producline_suffix: '90',
+          statistical_indicator: 1,
+          goods_nomenclature_sid: 2,
+          operation: 'C',
+          validity_start_date: nil,
+          validity_end_date: nil,
+        )]
+      end
 
       it 'returns a correctly formatted data row' do
         row = mapper.data_row

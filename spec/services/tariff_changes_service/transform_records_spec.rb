@@ -1,18 +1,17 @@
 RSpec.describe TariffChangesService::TransformRecords do
-  subject(:service) { described_class.new(operation_date, goods_nomenclature_sids) }
+  subject(:service) { described_class.new(operation_date) }
 
   let(:operation_date) { Date.parse('2024-08-12') }
-  let(:goods_nomenclature_sids) { nil }
 
   describe '.call' do
     it 'creates an instance and calls #call' do
-      instance = described_class.new(operation_date, goods_nomenclature_sids)
-      allow(described_class).to receive(:new).with(operation_date, goods_nomenclature_sids).and_return(instance)
+      instance = described_class.new(operation_date)
+      allow(described_class).to receive(:new).with(operation_date, nil).and_return(instance)
       allow(instance).to receive(:call).and_return([])
 
-      result = described_class.call(operation_date, goods_nomenclature_sids)
+      result = described_class.call(operation_date, nil)
 
-      expect(described_class).to have_received(:new).with(operation_date, goods_nomenclature_sids)
+      expect(described_class).to have_received(:new).with(operation_date, nil)
       expect(instance).to have_received(:call)
       expect(result).to eq([])
     end
@@ -47,12 +46,6 @@ RSpec.describe TariffChangesService::TransformRecords do
                goods_nomenclature_item_id: '0101010100',
                validity_start_date: 1.day.ago)
       end
-      let(:goods_nomenclature_description) do
-        create(:goods_nomenclature_description,
-               goods_nomenclature_sid: goods_nomenclature.goods_nomenclature_sid,
-               goods_nomenclature_item_id: goods_nomenclature.goods_nomenclature_item_id,
-               description: 'Live horses')
-      end
       let(:tariff_change) do
         create(:tariff_change,
                operation_date: operation_date,
@@ -65,7 +58,10 @@ RSpec.describe TariffChangesService::TransformRecords do
 
       before do
         goods_nomenclature
-        goods_nomenclature_description
+        create(:goods_nomenclature_description,
+               goods_nomenclature_sid: goods_nomenclature.goods_nomenclature_sid,
+               goods_nomenclature_item_id: goods_nomenclature.goods_nomenclature_item_id,
+               description: 'Live horses')
         tariff_change
       end
 
@@ -127,7 +123,10 @@ RSpec.describe TariffChangesService::TransformRecords do
     end
 
     context 'when filtering by goods_nomenclature_sids' do
-      let(:goods_nomenclature_sids) { [first_goods_nomenclature.goods_nomenclature_sid] }
+      subject(:service) do
+        described_class.new(operation_date, [first_goods_nomenclature.goods_nomenclature_sid])
+      end
+
       let(:first_goods_nomenclature) do
         create(:goods_nomenclature,
                goods_nomenclature_item_id: '0101010100',
@@ -228,21 +227,12 @@ RSpec.describe TariffChangesService::TransformRecords do
     end
 
     context 'when tariff change has measure metadata' do
-      let(:measure_type) { create(:measure_type, trade_movement_code: 0) }
-      let(:measure) { create(:measure, measure_type: measure_type) }
+      let(:measure) do
+        measure_type = create(:measure_type, trade_movement_code: 0)
+        create(:measure, measure_type:)
+      end
       let(:goods_nomenclature) { create(:goods_nomenclature, goods_nomenclature_sid: measure.goods_nomenclature_sid) }
       let(:geographical_area) { create(:geographical_area, :with_description, geographical_area_id: 'FR') }
-      let(:metadata) do
-        {
-          'measure' => {
-            'measure_type_id' => measure.measure_type_id,
-            'trade_movement_code' => 0,
-            'geographical_area_id' => geographical_area.geographical_area_id,
-            'excluded_geographical_area_ids' => [],
-            'additional_code' => 'A123',
-          },
-        }.to_json
-      end
       let(:tariff_change) do
         create(:tariff_change,
                operation_date: operation_date,
@@ -251,7 +241,15 @@ RSpec.describe TariffChangesService::TransformRecords do
                object_sid: measure.measure_sid,
                goods_nomenclature_item_id: goods_nomenclature.goods_nomenclature_item_id,
                goods_nomenclature_sid: goods_nomenclature.goods_nomenclature_sid,
-               metadata: metadata)
+               metadata: {
+                 'measure' => {
+                   'measure_type_id' => measure.measure_type_id,
+                   'trade_movement_code' => 0,
+                   'geographical_area_id' => geographical_area.geographical_area_id,
+                   'excluded_geographical_area_ids' => [],
+                   'additional_code' => 'A123',
+                 },
+               }.to_json)
       end
 
       before do

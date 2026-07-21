@@ -18,7 +18,6 @@ RSpec.describe Api::Admin::CustomsTariffUpdates::SectionsSummaryController do
 
     context 'when a section note exists in the update' do
       let(:section_with_note)    { sections.first }
-      let(:section_without_note) { sections.second }
 
       let!(:pending_note) do
         create(:customs_tariff_section_note, customs_tariff_update: pending_update,
@@ -45,7 +44,7 @@ RSpec.describe Api::Admin::CustomsTariffUpdates::SectionsSummaryController do
         get "/uk/admin/customs_tariff_updates/#{pending_update.version}/sections_summary.json",
             headers: request_headers(format: :json)
 
-        row = JSON.parse(response.body)['data'].find { |r| r.dig('attributes', 'section_id') == section_without_note.id }
+        row = JSON.parse(response.body)['data'].find { |r| r.dig('attributes', 'section_id') == sections.second.id }
         expect(row.dig('attributes', 'section_note_status')).to eq('absent')
         expect(row.dig('attributes', 'section_note_id')).to be_nil
       end
@@ -80,14 +79,13 @@ RSpec.describe Api::Admin::CustomsTariffUpdates::SectionsSummaryController do
       # New code: previous_update finds previous_pending → notes found → status = 'changed'
       let!(:previous_pending) { create(:customs_tariff_update, validity_start_date: 5.days.ago) }
       let!(:current_update)   { create(:customs_tariff_update, validity_start_date: 4.days.ago) }
-      let(:section)           { sections.last }
 
       before do
         create(:customs_tariff_section_note, customs_tariff_update: previous_pending,
-                                             section_id: section.id,
+                                             section_id: sections.last.id,
                                              content: 'Previous content long enough for text diff service to handle')
         create(:customs_tariff_section_note, customs_tariff_update: current_update,
-                                             section_id: section.id,
+                                             section_id: sections.last.id,
                                              content: 'Current content long enough for text diff service to handle')
       end
 
@@ -95,7 +93,7 @@ RSpec.describe Api::Admin::CustomsTariffUpdates::SectionsSummaryController do
         get "/uk/admin/customs_tariff_updates/#{current_update.version}/sections_summary.json",
             headers: request_headers(format: :json)
 
-        row = JSON.parse(response.body)['data'].find { |r| r.dig('attributes', 'section_id') == section.id }
+        row = JSON.parse(response.body)['data'].find { |r| r.dig('attributes', 'section_id') == sections.last.id }
         expect(row.dig('attributes', 'section_note_status')).to eq('changed')
       end
     end
@@ -104,15 +102,14 @@ RSpec.describe Api::Admin::CustomsTariffUpdates::SectionsSummaryController do
       # failed_update (5.days.ago) is skipped; older_pending (6.days.ago) is used as baseline.
       let!(:older_pending)  { create(:customs_tariff_update, validity_start_date: 6.days.ago) }
       let!(:current_update) { create(:customs_tariff_update, validity_start_date: 4.days.ago) }
-      let(:section)         { sections.last }
 
       before do
         create(:customs_tariff_update, :failed, validity_start_date: 5.days.ago)
         create(:customs_tariff_section_note, customs_tariff_update: older_pending,
-                                             section_id: section.id,
+                                             section_id: sections.last.id,
                                              content: 'Older content long enough for text diff service to handle it')
         create(:customs_tariff_section_note, customs_tariff_update: current_update,
-                                             section_id: section.id,
+                                             section_id: sections.last.id,
                                              content: 'Current content long enough for text diff service to handle it')
       end
 
@@ -120,7 +117,7 @@ RSpec.describe Api::Admin::CustomsTariffUpdates::SectionsSummaryController do
         get "/uk/admin/customs_tariff_updates/#{current_update.version}/sections_summary.json",
             headers: request_headers(format: :json)
 
-        row = JSON.parse(response.body)['data'].find { |r| r.dig('attributes', 'section_id') == section.id }
+        row = JSON.parse(response.body)['data'].find { |r| r.dig('attributes', 'section_id') == sections.last.id }
         expect(row.dig('attributes', 'section_note_status')).to eq('changed')
       end
     end

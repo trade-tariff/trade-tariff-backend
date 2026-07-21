@@ -1,79 +1,54 @@
 RSpec.describe CdsImporter::ExcelWriter::Footnote do
   subject(:mapper) { described_class.new(models) }
 
-  let(:footnote_type) do
-    instance_double(
-      Footnote,
-      class: instance_double(Class, name: 'Footnote'),
-      footnote_type_id: 'PN',
-      footnote_id: '2',
-      operation: 'C',
-      validity_start_date: Time.utc(2025, 1, 1, 0, 0, 0),
-      validity_end_date: Time.utc(2025, 12, 31, 23, 59, 59),
-    )
-  end
-
-  let(:second_footnote_type) do
-    instance_double(
-      Footnote,
-      class: instance_double(Class, name: 'Footnote'),
-      footnote_type_id: 'PN',
-      footnote_id: '2',
-      operation: 'C',
-      validity_start_date: nil,
-      validity_end_date: nil,
-    )
-  end
-
-  let(:description_period) do
-    instance_double(
-      FootnoteDescriptionPeriod,
-      class: instance_double(Class, name: 'FootnoteDescriptionPeriod'),
-      footnote_description_period_sid: 1,
-      footnote_type_id: 'PN',
-      footnote_id: '2',
-      validity_start_date: Time.utc(2025, 1, 1, 0, 0, 0),
-      validity_end_date: Time.utc(2025, 12, 31, 23, 59, 59),
-    )
-  end
-
-  let(:second_description_period) do
-    instance_double(
-      FootnoteDescriptionPeriod,
-      class: instance_double(Class, name: 'FootnoteDescriptionPeriod'),
-      footnote_description_period_sid: 2,
-      footnote_type_id: 'PN',
-      footnote_id: '2',
-      validity_start_date: Time.utc(2023, 2, 2, 0, 0, 0),
-      validity_end_date: Time.utc(2025, 12, 31, 23, 59, 59),
-    )
-  end
-
-  let(:description) do
-    instance_double(
-      FootnoteDescription,
-      class: instance_double(Class, name: 'FootnoteDescription'),
-      footnote_description_period_sid: 1,
-      footnote_type_id: 'PN',
-      footnote_id: '2',
-      description: 'Within the limits of an annual Community ceiling.',
-    )
-  end
-
-  let(:second_description) do
-    instance_double(
-      FootnoteDescription,
-      class: instance_double(Class, name: 'FootnoteDescription'),
-      footnote_description_period_sid: 2,
-      footnote_type_id: 'PN',
-      footnote_id: '2',
-      description: 'Per 1% by weight of sucrose.',
-    )
+  def model(model_class, **attributes)
+    instance_double(model_class, class: instance_double(Class, name: model_class.name), **attributes)
   end
 
   describe '#data_row' do
     context 'when all fields are valid' do
-      let(:models) { [footnote_type, description, description_period, second_description, second_description_period] }
+      let(:models) do
+        [
+          model(
+            Footnote,
+            footnote_type_id: 'PN',
+            footnote_id: '2',
+            operation: 'C',
+            validity_start_date: Time.utc(2025, 1, 1, 0, 0, 0),
+            validity_end_date: Time.utc(2025, 12, 31, 23, 59, 59),
+          ),
+          model(
+            FootnoteDescription,
+            footnote_description_period_sid: 1,
+            footnote_type_id: 'PN',
+            footnote_id: '2',
+            description: 'Within the limits of an annual Community ceiling.',
+          ),
+          model(
+            FootnoteDescriptionPeriod,
+            footnote_description_period_sid: 1,
+            footnote_type_id: 'PN',
+            footnote_id: '2',
+            validity_start_date: Time.utc(2025, 1, 1, 0, 0, 0),
+            validity_end_date: Time.utc(2025, 12, 31, 23, 59, 59),
+          ),
+          model(
+            FootnoteDescription,
+            footnote_description_period_sid: 2,
+            footnote_type_id: 'PN',
+            footnote_id: '2',
+            description: 'Per 1% by weight of sucrose.',
+          ),
+          model(
+            FootnoteDescriptionPeriod,
+            footnote_description_period_sid: 2,
+            footnote_type_id: 'PN',
+            footnote_id: '2',
+            validity_start_date: Time.utc(2023, 2, 2, 0, 0, 0),
+            validity_end_date: Time.utc(2025, 12, 31, 23, 59, 59),
+          ),
+        ]
+      end
 
       it 'returns a correctly formatted data row' do
         row = mapper.data_row
@@ -89,7 +64,16 @@ RSpec.describe CdsImporter::ExcelWriter::Footnote do
     end
 
     context 'when there is no description' do
-      let(:models) { [footnote_type] }
+      let(:models) do
+        [model(
+          Footnote,
+          footnote_type_id: 'PN',
+          footnote_id: '2',
+          operation: 'C',
+          validity_start_date: Time.utc(2025, 1, 1, 0, 0, 0),
+          validity_end_date: Time.utc(2025, 12, 31, 23, 59, 59),
+        )]
+      end
 
       it 'returns a correctly formatted data row' do
         row = mapper.data_row
@@ -105,7 +89,16 @@ RSpec.describe CdsImporter::ExcelWriter::Footnote do
     end
 
     context 'when there are empty fields' do
-      let(:models) { [second_footnote_type] }
+      let(:models) do
+        [model(
+          Footnote,
+          footnote_type_id: 'PN',
+          footnote_id: '2',
+          operation: 'C',
+          validity_start_date: nil,
+          validity_end_date: nil,
+        )]
+      end
 
       it 'returns a correctly formatted data row' do
         row = mapper.data_row

@@ -14,8 +14,6 @@ RSpec.describe Api::V2::GeographicalAreasController do
   let(:region_geographical_area) { create(:geographical_area, :with_description, :region, geographical_area_id: 'AF') }
   let(:globally_excluded_area) { create(:geographical_area, :with_description, :globally_excluded) }
 
-  let(:actual_date) { Time.zone.today }
-
   describe 'GET countries' do
     subject(:api_response) do
       make_request
@@ -34,7 +32,7 @@ RSpec.describe Api::V2::GeographicalAreasController do
     it 'caches the serialized countries' do
       api_response
 
-      expect(Rails.cache).to have_received(:fetch).with("_geographical-areas-#{actual_date}-true-false", expires_in: 24.hours)
+      expect(Rails.cache).to have_received(:fetch).with("_geographical-areas-#{Time.zone.today}-true-false", expires_in: 24.hours)
     end
 
     context 'when the exclude none filter is passed' do
@@ -55,7 +53,7 @@ RSpec.describe Api::V2::GeographicalAreasController do
       it 'caches the serialized geographical_areas' do
         api_response
 
-        expect(Rails.cache).to have_received(:fetch).with("_geographical-areas-#{actual_date}-true-true", expires_in: 24.hours)
+        expect(Rails.cache).to have_received(:fetch).with("_geographical-areas-#{Time.zone.today}-true-true", expires_in: 24.hours)
       end
     end
   end
@@ -78,7 +76,7 @@ RSpec.describe Api::V2::GeographicalAreasController do
     it 'caches the serialized geographical_areas' do
       api_response
 
-      expect(Rails.cache).to have_received(:fetch).with("_geographical-areas-#{actual_date}-false-false", expires_in: 24.hours)
+      expect(Rails.cache).to have_received(:fetch).with("_geographical-areas-#{Time.zone.today}-false-false", expires_in: 24.hours)
     end
 
     context 'when there are children geographical areas' do
@@ -130,7 +128,7 @@ RSpec.describe Api::V2::GeographicalAreasController do
       it 'caches the serialized geographical_areas' do
         api_response
 
-        expect(Rails.cache).to have_received(:fetch).with("_geographical-areas-#{actual_date}-false-true", expires_in: 24.hours)
+        expect(Rails.cache).to have_received(:fetch).with("_geographical-areas-#{Time.zone.today}-false-true", expires_in: 24.hours)
       end
     end
   end

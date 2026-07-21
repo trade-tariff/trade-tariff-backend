@@ -31,57 +31,49 @@ RSpec.describe CachedCommodityService do
   end
 
   describe '#call' do
-    let!(:de_measure) do
-      create(
-        :measure,
-        :with_measure_components,
-        :with_base_regulation,
-        measure_type_id: '142',
-        goods_nomenclature: commodity,
-        goods_nomenclature_item_id: commodity.goods_nomenclature_item_id,
-        goods_nomenclature_sid: commodity.goods_nomenclature_sid,
-        for_geo_area: de_area,
-        duty_amount: 2.5,
-      ).tap(&:reload)
-    end
-    let!(:ro_measure) do
-      create(
-        :measure,
-        :with_measure_components,
-        :with_base_regulation,
-        measure_type_id: '142',
-        goods_nomenclature: commodity,
-        goods_nomenclature_item_id: commodity.goods_nomenclature_item_id,
-        goods_nomenclature_sid: commodity.goods_nomenclature_sid,
-        for_geo_area: ro_area,
-        duty_amount: 0.0,
-      ).tap(&:reload)
-    end
-    let!(:erga_omnes_measure) do
-      create(
-        :measure,
-        :with_measure_components,
-        :with_base_regulation,
-        measure_type_id: '103',
-        goods_nomenclature: commodity,
-        goods_nomenclature_item_id: commodity.goods_nomenclature_item_id,
-        goods_nomenclature_sid: commodity.goods_nomenclature_sid,
-        for_geo_area: erga_omnes_area,
-        national: true,
-        duty_amount: 4.0,
-      ).tap(&:reload)
-    end
-    let!(:erga_omnes_area) { create(:geographical_area, :erga_omnes, :with_description) }
-    let!(:de_area) { create(:geographical_area, :country, :with_description, geographical_area_id: 'DE') }
-    let!(:ro_area) { create(:geographical_area, :country, :with_description, geographical_area_id: 'RO') }
-
-    # MeasureType records must be created before measures because FactoryBot
-    # skips the measure_type association block when measure_type_id is overridden
-    before do
+    let!(:measure_fixture) do
+      # MeasureType records must exist before measures because FactoryBot skips
+      # the association block when measure_type_id is overridden.
       create(:duty_expression, :with_description, duty_expression_id: '01')
       create(:measure_type, measure_type_id: '103', trade_movement_code: 0)
       create(:measure_type, measure_type_id: '142', trade_movement_code: 0)
+
+      areas = {
+        erga_omnes: create(:geographical_area, :erga_omnes, :with_description),
+        de: create(:geographical_area, :country, :with_description, geographical_area_id: 'DE'),
+        ro: create(:geographical_area, :country, :with_description, geographical_area_id: 'RO'),
+      }
+
+      measures = {
+        de: create_cached_measure(commodity, areas[:de], measure_type_id: '142', duty_amount: 2.5),
+        ro: create_cached_measure(commodity, areas[:ro], measure_type_id: '142', duty_amount: 0.0),
+        erga_omnes: create_cached_measure(
+          commodity,
+          areas[:erga_omnes],
+          measure_type_id: '103',
+          duty_amount: 4.0,
+          national: true,
+        ),
+      }
+
+      { areas:, measures: }
     end
+
+    def create_cached_measure(commodity, geographical_area, **attributes)
+      create(
+        :measure,
+        :with_measure_components,
+        :with_base_regulation,
+        goods_nomenclature: commodity,
+        goods_nomenclature_item_id: commodity.goods_nomenclature_item_id,
+        goods_nomenclature_sid: commodity.goods_nomenclature_sid,
+        for_geo_area: geographical_area,
+        **attributes,
+      ).tap(&:reload)
+    end
+
+    def cached_measure(name) = measure_fixture[:measures].fetch(name)
+    def geographical_area(name) = measure_fixture[:areas].fetch(name)
 
     context 'when loading the commodity for serialization' do
       let(:commodity) { create(:commodity, :with_chapter_and_heading, :with_full_chemicals) }
@@ -203,9 +195,9 @@ RSpec.describe CachedCommodityService do
           import_sids = result[:data][:relationships][:import_measures][:data].map { |r| r[:id].to_i }
 
           expect(import_sids).to include(
-            erga_omnes_measure.measure_sid,
-            ro_measure.measure_sid,
-            de_measure.measure_sid,
+            cached_measure(:erga_omnes).measure_sid,
+            cached_measure(:ro).measure_sid,
+            cached_measure(:de).measure_sid,
           )
         end
       end
@@ -217,8 +209,8 @@ RSpec.describe CachedCommodityService do
           result = service.call
           import_sids = result[:data][:relationships][:import_measures][:data].map { |r| r[:id].to_i }
 
-          expect(import_sids).to include(erga_omnes_measure.measure_sid, ro_measure.measure_sid)
-          expect(import_sids).not_to include(de_measure.measure_sid)
+          expect(import_sids).to include(cached_measure(:erga_omnes).measure_sid, cached_measure(:ro).measure_sid)
+          expect(import_sids).not_to include(cached_measure(:de).measure_sid)
         end
 
         it 'removes DE measure from included array' do
@@ -227,9 +219,9 @@ RSpec.describe CachedCommodityService do
             .select { |e| e[:type] == :measure }
             .map { |e| e[:id].to_i }
 
-          expect(included_measure_sids).to include(erga_omnes_measure.measure_sid)
-          expect(included_measure_sids).to include(ro_measure.measure_sid)
-          expect(included_measure_sids).not_to include(de_measure.measure_sid)
+          expect(included_measure_sids).to include(cached_measure(:erga_omnes).measure_sid)
+          expect(included_measure_sids).to include(cached_measure(:ro).measure_sid)
+          expect(included_measure_sids).not_to include(cached_measure(:de).measure_sid)
         end
       end
 
@@ -240,8 +232,8 @@ RSpec.describe CachedCommodityService do
           result = service.call
           import_sids = result[:data][:relationships][:import_measures][:data].map { |r| r[:id].to_i }
 
-          expect(import_sids).to include(erga_omnes_measure.measure_sid, de_measure.measure_sid)
-          expect(import_sids).not_to include(ro_measure.measure_sid)
+          expect(import_sids).to include(cached_measure(:erga_omnes).measure_sid, cached_measure(:de).measure_sid)
+          expect(import_sids).not_to include(cached_measure(:ro).measure_sid)
         end
       end
     end
@@ -330,9 +322,9 @@ RSpec.describe CachedCommodityService do
             .select { |e| e[:type] == :duty_expression }
             .map { |e| e[:id] }
 
-          expect(duty_expr_ids).to include("#{erga_omnes_measure.measure_sid}-duty_expression")
-          expect(duty_expr_ids).to include("#{ro_measure.measure_sid}-duty_expression")
-          expect(duty_expr_ids).not_to include("#{de_measure.measure_sid}-duty_expression")
+          expect(duty_expr_ids).to include("#{cached_measure(:erga_omnes).measure_sid}-duty_expression")
+          expect(duty_expr_ids).to include("#{cached_measure(:ro).measure_sid}-duty_expression")
+          expect(duty_expr_ids).not_to include("#{cached_measure(:de).measure_sid}-duty_expression")
         end
 
         it 'preserves shared non-measure entries' do
@@ -382,7 +374,7 @@ RSpec.describe CachedCommodityService do
             goods_nomenclature: commodity,
             goods_nomenclature_item_id: commodity.goods_nomenclature_item_id,
             goods_nomenclature_sid: commodity.goods_nomenclature_sid,
-            for_geo_area: erga_omnes_area,
+            for_geo_area: geographical_area(:erga_omnes),
           ).tap(&:reload)
 
           loaded_commodity = nil

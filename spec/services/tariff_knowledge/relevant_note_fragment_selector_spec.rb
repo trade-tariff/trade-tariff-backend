@@ -18,13 +18,12 @@ RSpec.describe TariffKnowledge::RelevantNoteFragmentSelector do
   end
   let(:query) { 'children exercise stepper with adjustable resistance' }
   let(:note_content) { 'Full Chapter 95 note content should not be emitted by the selector.' }
-  let(:context_hash) { Digest::SHA256.hexdigest(note_content) }
   let(:note) do
     create(
       :tariff_knowledge_compressed_note,
       goods_nomenclature_item_id: '9506911000',
       content: note_content,
-      context_hash:,
+      context_hash: Digest::SHA256.hexdigest(note_content),
       metadata: Sequel.pg_jsonb_wrap(
         'evidence' => [
           evidence_for(
@@ -111,7 +110,7 @@ RSpec.describe TariffKnowledge::RelevantNoteFragmentSelector do
 
     selected = selection.diagnostics[:selected_contexts].first
     expect(selected).to include(
-      context_hash: context_hash,
+      context_hash: note.context_hash,
       commodity_codes: %w[9506911000],
     )
     expect(selected[:evidence]).to all(include(
@@ -131,7 +130,7 @@ RSpec.describe TariffKnowledge::RelevantNoteFragmentSelector do
 
     omitted = selection.diagnostics[:omitted_evidence].sole
     expect(omitted).to include(
-      context_hash: context_hash,
+      context_hash: note.context_hash,
       source_node_key: 'note_fragment:customs_tariff_chapter_note:1.31:95:0002',
       decision: 'omitted',
       omission_reason: 'below_minimum_score',

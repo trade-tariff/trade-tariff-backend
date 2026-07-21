@@ -238,13 +238,12 @@ RSpec.describe Api::Admin::GreenLanes::CategoryAssessmentsController, :admin do
   describe 'POST to #add_exemption' do
     let(:exemption) { create :green_lanes_exemption }
 
-    let(:id) { category.id }
-    let(:exemption_id) { exemption.id }
+    let(:request_ids) { { category_assessment: category.id, exemption: exemption.id } }
 
     let(:make_request) do
-      authenticated_post exemptions_api_admin_green_lanes_category_assessment_path(id, format: :json), params: {
-        id:,
-        exemption_id:,
+      authenticated_post exemptions_api_admin_green_lanes_category_assessment_path(request_ids[:category_assessment], format: :json), params: {
+        id: request_ids[:category_assessment],
+        exemption_id: request_ids[:exemption],
       }
     end
 
@@ -254,14 +253,14 @@ RSpec.describe Api::Admin::GreenLanes::CategoryAssessmentsController, :admin do
     end
 
     context 'with unknown exemption' do
-      let(:exemption_id) { 9999 }
+      let(:request_ids) { super().merge(exemption: 9999) }
 
       it { is_expected.to have_http_status :not_found }
       it { expect { api_response }.not_to change(category.reload, :regulation_role) }
     end
 
     context 'with unknown category assessment' do
-      let(:id) { 9999 }
+      let(:request_ids) { super().merge(category_assessment: 9999) }
 
       it { is_expected.to have_http_status :not_found }
       it { expect { api_response }.not_to change(category.reload, :regulation_role) }

@@ -1,100 +1,64 @@
 RSpec.describe CdsImporter::ExcelWriter::Measure do
   subject(:mapper) { described_class.new(models) }
 
-  let(:measure) do
-    instance_double(
-      Measure,
-      class: instance_double(Class, name: 'Measure'),
-      operation: 'C',
-      goods_nomenclature_item_id: '0101210000',
-      additional_code_type_id: 'X',
-      additional_code_id: '999',
-      measure_type_id: 'ATT',
-      geographical_area_sid: 1,
-      ordernumber: '123456',
-      validity_start_date: Date.new(2025, 1, 1),
-      validity_end_date: Date.new(2025, 12, 31),
-      measure_sid: 111,
-    )
-  end
-
-  let(:second_measure) do
-    instance_double(
-      Measure,
-      class: instance_double(Class, name: 'Measure'),
-      operation: 'C',
-      goods_nomenclature_item_id: '0101210000',
-      additional_code_type_id: 'X',
-      additional_code_id: '999',
-      measure_type_id: '112',
-      geographical_area_sid: 2,
-      ordernumber: '123456',
-      validity_start_date: nil,
-      validity_end_date: nil,
-      measure_sid: 111,
-    )
-  end
-
-  let(:measure_component) do
-    instance_double(
-      MeasureComponent,
-      class: instance_double(Class, name: 'MeasureComponent'),
-      operation: 'C',
-      duty_expression_id: '01',
-      duty_amount: 5.5,
-      monetary_unit_code: '',
-      measurement_unit_code: '',
-      measurement_unit_qualifier_code: '',
-    )
-  end
-
-  let(:excluded_geo_area) do
-    instance_double(
-      MeasureExcludedGeographicalArea,
-      class: instance_double(Class, name: 'MeasureExcludedGeographicalArea'),
-      operation: 'C',
-      excluded_geographical_area: 'EU',
-    )
-  end
-
-  let(:footnote) do
-    instance_double(
-      FootnoteAssociationMeasure,
-      class: instance_double(Class, name: 'FootnoteAssociationMeasure'),
-      operation: 'C',
-      footnote_type_id: 'X',
-      footnote_id: '123',
-    )
-  end
-
-  let(:condition) do
-    instance_double(
-      MeasureCondition,
-      class: instance_double(Class, name: 'MeasureCondition'),
-      operation: 'C',
-      certificate_type_code: 'A',
-      certificate_code: '001',
-      condition_code: '10',
-      action_code: '01',
-    )
-  end
-
-  let(:second_condition) do
-    instance_double(
-      MeasureCondition,
-      class: instance_double(Class, name: 'MeasureCondition'),
-      operation: 'C',
-      certificate_type_code: 'A',
-      certificate_code: '001',
-      condition_code: '20',
-      action_code: '02',
-    )
-  end
-
-  let(:models) do
-    [measure, measure_component, excluded_geo_area, footnote, condition]
-  end
+  let(:models) { measure_models }
   let(:geographical_area) { create(:geographical_area, :with_description, geographical_area_sid: 1) }
+
+  def measure_models(measure: {}, component: {}, excluded_area: {}, footnote: {}, condition: {})
+    [
+      model_double(
+        Measure,
+        {
+          operation: 'C',
+          goods_nomenclature_item_id: '0101210000',
+          additional_code_type_id: 'X',
+          additional_code_id: '999',
+          measure_type_id: 'ATT',
+          geographical_area_sid: 1,
+          ordernumber: '123456',
+          validity_start_date: Date.new(2025, 1, 1),
+          validity_end_date: Date.new(2025, 12, 31),
+          measure_sid: 111,
+        }.merge(measure),
+      ),
+      model_double(
+        MeasureComponent,
+        {
+          operation: 'C',
+          duty_expression_id: '01',
+          duty_amount: 5.5,
+          monetary_unit_code: '',
+          measurement_unit_code: '',
+          measurement_unit_qualifier_code: '',
+        }.merge(component),
+      ),
+      model_double(
+        MeasureExcludedGeographicalArea,
+        { operation: 'C', excluded_geographical_area: 'EU' }.merge(excluded_area),
+      ),
+      model_double(
+        FootnoteAssociationMeasure,
+        { operation: 'C', footnote_type_id: 'X', footnote_id: '123' }.merge(footnote),
+      ),
+      model_double(
+        MeasureCondition,
+        {
+          operation: 'C',
+          certificate_type_code: 'A',
+          certificate_code: '001',
+          condition_code: '10',
+          action_code: '01',
+        }.merge(condition),
+      ),
+    ]
+  end
+
+  def model_double(model_class, attributes)
+    instance_double(
+      model_class,
+      { class: instance_double(Class, name: model_class.name) }.merge(attributes),
+    )
+  end
 
   before do
     create(:measure_type, measure_type_id: 'ATT', measure_type_description: 'Supplementary amount')
@@ -125,7 +89,15 @@ RSpec.describe CdsImporter::ExcelWriter::Measure do
 
     context 'when descriptions not found' do
       let(:models) do
-        [second_measure, measure_component, excluded_geo_area, footnote, second_condition]
+        measure_models(
+          measure: {
+            measure_type_id: '112',
+            geographical_area_sid: 2,
+            validity_start_date: nil,
+            validity_end_date: nil,
+          },
+          condition: { condition_code: '20', action_code: '02' },
+        )
       end
 
       it 'returns just the id' do
@@ -138,13 +110,7 @@ RSpec.describe CdsImporter::ExcelWriter::Measure do
     end
 
     context 'when conditions are deleted' do
-      let(:condition) do
-        instance_double(
-          MeasureCondition,
-          class: instance_double(Class, name: 'MeasureCondition'),
-          operation: 'D',
-        )
-      end
+      let(:models) { measure_models(condition: { operation: 'D' }) }
 
       it 'omits them from the string' do
         expect(mapper.data_row[11]).to eq('')
@@ -152,13 +118,7 @@ RSpec.describe CdsImporter::ExcelWriter::Measure do
     end
 
     context 'when footnotes are deleted' do
-      let(:footnote) do
-        instance_double(
-          FootnoteAssociationMeasure,
-          class: instance_double(Class, name: 'FootnoteAssociationMeasure'),
-          operation: 'D',
-        )
-      end
+      let(:models) { measure_models(footnote: { operation: 'D' }) }
 
       it 'omits them from the string' do
         expect(mapper.data_row[10]).to eq('')
@@ -166,13 +126,7 @@ RSpec.describe CdsImporter::ExcelWriter::Measure do
     end
 
     context 'when excluded areas are deleted' do
-      let(:excluded_geo_area) do
-        instance_double(
-          MeasureExcludedGeographicalArea,
-          class: instance_double(Class, name: 'MeasureExcludedGeographicalArea'),
-          operation: 'D',
-        )
-      end
+      let(:models) { measure_models(excluded_area: { operation: 'D' }) }
 
       it 'omits them from the string' do
         expect(mapper.data_row[9]).to eq('')

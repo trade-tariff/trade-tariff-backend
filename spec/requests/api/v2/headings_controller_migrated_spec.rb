@@ -6,11 +6,12 @@ RSpec.describe Api::V2::HeadingsController, type: :request do
     end
 
     let(:make_request) do
-      get "/uk/api/headings/#{id}", params: { filter: }, headers: request_headers
+      get "/uk/api/headings/#{request_parameters[:id]}",
+          params: { filter: request_parameters[:filter] },
+          headers: request_headers
     end
 
-    let(:id) { heading.short_code }
-    let(:filter) { {} }
+    let(:request_parameters) { { id: heading.short_code, filter: {} } }
 
     let(:heading) do
       create(
@@ -40,12 +41,12 @@ RSpec.describe Api::V2::HeadingsController, type: :request do
       end
 
       context 'when filtering by a specific geographical area' do
-        let(:filter) { { geographical_area_id: 'BR' } }
+        let(:request_parameters) { super().merge(filter: { geographical_area_id: 'BR' }) }
 
         it 'calls the Rails cache with the correct key' do
           api_response
 
-          expected_hash = Digest::MD5.hexdigest(filter.to_json)
+          expected_hash = Digest::MD5.hexdigest(request_parameters[:filter].to_json)
           cache_suffix = '-v1'
 
           expect(Rails.cache).to have_received(:fetch).with(
@@ -56,7 +57,7 @@ RSpec.describe Api::V2::HeadingsController, type: :request do
       end
 
       context 'when the heading does not exist' do
-        let(:id) { heading.short_code.next }
+        let(:request_parameters) { super().merge(id: heading.short_code.next) }
 
         it { expect(api_response).to have_http_status(:not_found) }
       end
@@ -131,7 +132,7 @@ RSpec.describe Api::V2::HeadingsController, type: :request do
         end
 
         context 'when the record is not present' do
-          let(:id) { heading.short_code.next }
+          let(:request_parameters) { super().merge(id: heading.short_code.next) }
 
           it { expect(api_response).to have_http_status(:not_found) }
         end
@@ -213,11 +214,9 @@ RSpec.describe Api::V2::HeadingsController, type: :request do
         :non_declarable,
         :with_description,
         :with_chapter,
-        operation_date: heading_operation_date
+        operation_date: Time.zone.today
       )
     end
-
-    let(:heading_operation_date) { Time.zone.today }
 
     context 'when changes happened after chapter creation' do
       let(:pattern) do
@@ -261,7 +260,6 @@ RSpec.describe Api::V2::HeadingsController, type: :request do
     end
 
     context 'when changes happened before requested date' do
-      let(:heading_operation_date) { Time.zone.today }
       let(:as_of) { Time.zone.yesterday.iso8601 }
 
       let(:pattern) do
@@ -275,16 +273,15 @@ RSpec.describe Api::V2::HeadingsController, type: :request do
     end
 
     context 'when changes include deleted record' do
-      before { measure.destroy }
-
-      let(:measure) do
-        create(
+      before do
+        measure = create(
           :measure,
           :with_measure_type,
           goods_nomenclature_sid: heading.goods_nomenclature_sid,
           goods_nomenclature_item_id: heading.goods_nomenclature_item_id,
-          operation_date: heading_operation_date,
+          operation_date: heading.operation_date,
         )
+        measure.destroy
       end
 
       let(:pattern) do

@@ -1,8 +1,6 @@
 RSpec.describe GenerateSelfText::SegmentExtractor do
   describe '.call' do
-    subject(:segments) { described_class.call(chapter, self_texts:) }
-
-    let(:self_texts) { {} }
+    subject(:segments) { described_class.call(chapter, self_texts: {}) }
 
     let(:chapter) { create(:chapter, :with_description, description: 'Live animals') }
 
@@ -222,6 +220,8 @@ RSpec.describe GenerateSelfText::SegmentExtractor do
     end
 
     context 'with self_texts injected' do
+      subject(:segments) { described_class.call(chapter, self_texts:) }
+
       let(:self_texts) do
         { chapter.goods_nomenclature_sid => 'Chapter self text' }
       end
@@ -289,30 +289,23 @@ RSpec.describe GenerateSelfText::SegmentExtractor do
     end
 
     context 'with a deeper hierarchy' do
-      let(:subheading) do
-        create(:goods_nomenclature, :with_description,
-               description: 'Horses for breeding',
-               parent: heading)
-      end
-
-      let(:deep_commodity) do
-        create(:commodity, :with_description,
-               description: 'Stallions',
-               parent: subheading)
-      end
-
-      before do
-        subheading
-        deep_commodity
+      let!(:deep_hierarchy) do
+        subheading = create(:goods_nomenclature, :with_description,
+                            description: 'Horses for breeding',
+                            parent: heading)
+        deep_commodity = create(:commodity, :with_description,
+                                description: 'Stallions',
+                                parent: subheading)
+        { subheading:, deep_commodity: }
       end
 
       it 'walks the full ancestor chain' do
-        segment = segment_for_sid(deep_commodity.goods_nomenclature_sid)
+        segment = segment_for_sid(deep_hierarchy[:deep_commodity].goods_nomenclature_sid)
 
         expect(segment[:ancestor_chain].map { |a| a[:sid] }).to eq([
           chapter.goods_nomenclature_sid,
           heading.goods_nomenclature_sid,
-          subheading.goods_nomenclature_sid,
+          deep_hierarchy[:subheading].goods_nomenclature_sid,
         ])
       end
     end

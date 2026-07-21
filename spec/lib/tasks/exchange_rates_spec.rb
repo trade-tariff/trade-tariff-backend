@@ -5,14 +5,8 @@ RSpec.describe ExchangeRates do
   describe 'Remove and rebuild old monthly rates' do
     subject(:rebuild_old_monthly_rates) { Rake::Task['exchange_rates:rebuild_old_monthly_rates'].invoke }
 
-    # Set env variables
-    let(:month_start_period) { '8' }
-    let(:year_start_period) { '2023' }
-    let(:month_end_period) { '10' }
-    let(:year_end_period) { '2023' }
-    let(:currency_code) { 'EUR' }
-    let(:period_start) { Date.new(year_start_period.to_i, month_start_period.to_i) }
-    let(:period_end) { Date.new(year_end_period.to_i, month_end_period.to_i) }
+    let(:period_start) { Date.new(2023, 8) }
+    let(:period_end) { Date.new(2023, 10) }
 
     before do
       # different_currency_exchange_rate
@@ -66,44 +60,44 @@ RSpec.describe ExchangeRates do
       create(:exchange_rate_file,
              # new file wont be this size to check recreation
              file_size: 99_999_999,
-             period_month: month_start_period,
-             period_year: year_start_period)
+             period_month: 8,
+             period_year: 2023)
 
       # deleted_exchange_rate_file_end
       create(:exchange_rate_file,
              file_size: 99_999_999,
-             period_month: month_end_period,
-             period_year: year_end_period)
+             period_month: 10,
+             period_year: 2023)
 
       # non_deleted_exchange_rate_file_beginning
       create(:exchange_rate_file,
              file_size: 99_999_999,
-             period_month: month_start_period.to_i - 1,
-             period_year: year_start_period.to_i)
+             period_month: 7,
+             period_year: 2023)
 
       # non_deleted_exchange_rate_file_beginning_xml
       create(:exchange_rate_file,
              file_size: 99_999_999,
              type: 'monthly_xml',
              format: 'xml',
-             period_month: month_start_period.to_i - 1,
-             period_year: year_start_period.to_i)
+             period_month: 7,
+             period_year: 2023)
 
       # non_deleted_exchange_rate_file_end
       create(:exchange_rate_file,
              file_size: 99_999_999,
-             period_month: month_end_period.to_i + 1,
-             period_year: year_end_period.to_i)
+             period_month: 11,
+             period_year: 2023)
 
       # This is more extra test to ensure this file is deleted
       create(:exchange_rate_file,
              period_month: 7, period_year: 2023, type: 'monthly_csv_hmrc')
 
-      ENV['MONTH_START_PERIOD'] = month_start_period
-      ENV['YEAR_START_PERIOD'] = year_start_period
-      ENV['MONTH_END_PERIOD'] = month_end_period
-      ENV['YEAR_END_PERIOD'] = year_end_period
-      ENV['CURRENCY_CODE'] = currency_code
+      ENV['MONTH_START_PERIOD'] = '8'
+      ENV['YEAR_START_PERIOD'] = '2023'
+      ENV['MONTH_END_PERIOD'] = '10'
+      ENV['YEAR_END_PERIOD'] = '2023'
+      ENV['CURRENCY_CODE'] = 'EUR'
 
       allow(TariffSynchronizer::FileService).to receive(:delete_file)
       allow(TariffSynchronizer::FileService).to receive(:write_file)

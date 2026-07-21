@@ -2,9 +2,6 @@ RSpec.describe Api::User::TargetsFilterService::MyCommoditiesTargetsFilterServic
   let(:subscription) { create(:user_subscription, subscription_type: Subscriptions::Type.my_commodities) }
   let(:service) { described_class.new(subscription) }
 
-  let(:first_commodity) { create(:commodity, goods_nomenclature_sid: 123) }
-  let(:second_commodity) { create(:commodity, goods_nomenclature_sid: 456) }
-
   let(:active_commodities_service) { instance_double(Api::User::ActiveCommoditiesService) }
 
   before do
@@ -16,8 +13,6 @@ RSpec.describe Api::User::TargetsFilterService::MyCommoditiesTargetsFilterServic
 
   describe '#call' do
     context 'when filter is nil' do
-      let(:filter_type) { nil }
-
       let!(:subscription_targets) do
         [
           create(:subscription_target, user_subscriptions_uuid: subscription.uuid, target_id: '123'),
@@ -26,14 +21,15 @@ RSpec.describe Api::User::TargetsFilterService::MyCommoditiesTargetsFilterServic
       end
 
       it 'returns existing subscription targets' do
-        targets, total = service.call(filter_type, 1, 20)
+        targets, total = service.call(nil, 1, 20)
         expect(targets.map(&:id)).to match_array(subscription_targets.map(&:id))
         expect(total).to eq(2)
       end
     end
 
     context 'when filter is active' do
-      let(:filter_type) { :active }
+      let(:first_commodity) { create(:commodity, goods_nomenclature_sid: 123) }
+      let(:second_commodity) { create(:commodity, goods_nomenclature_sid: 456) }
 
       before do
         allow(active_commodities_service).to receive(:respond_to?)
@@ -47,7 +43,7 @@ RSpec.describe Api::User::TargetsFilterService::MyCommoditiesTargetsFilterServic
       end
 
       it 'maps commodities into subscription targets' do
-        targets, total = service.call(filter_type, 1, 20)
+        targets, total = service.call(:active, 1, 20)
 
         expect(total).to eq(2)
         expect(targets.first.target_type).to eq('commodity')
@@ -56,15 +52,13 @@ RSpec.describe Api::User::TargetsFilterService::MyCommoditiesTargetsFilterServic
     end
 
     context 'when filter does not exist' do
-      let(:filter_type) { :not_a_real_filter }
-
       before do
         allow(active_commodities_service).to receive(:respond_to?)
           .and_return(false)
       end
 
       it 'returns empty results' do
-        targets, total = service.call(filter_type, 1, 20)
+        targets, total = service.call(:not_a_real_filter, 1, 20)
         expect(targets).to eq([])
         expect(total).to eq(0)
       end

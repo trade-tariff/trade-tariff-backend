@@ -1,44 +1,38 @@
 RSpec.describe InteractiveSearch::DuplicateQuestionGuard do
-  subject(:result) do
-    described_class.call(
-      query: query,
-      effective_query: effective_query,
-      answers: answers,
-      candidate_question: candidate_question,
-      request_id: request_id,
-      attempt_number: attempt_number,
-    )
-  end
+  subject(:result) { described_class.call(**request) }
 
-  let(:query) { 'Universal Probe Test Leads Cable Digital Multimeter 1000V 10A Cat.2 for Electrical Testing (2 Pcs)' }
-  let(:effective_query) { "#{query} Another electrical measuring or checking instrument" }
-  let(:request_id) { '946abaa4-f4e4-4924-a876-de8dd51cde8f' }
-  let(:attempt_number) { 4 }
-  let(:answers) do
-    [
-      {
-        question: 'What best describes the goods being imported?',
-        answer: 'Another electrical measuring or checking instrument',
-      },
-      {
-        question: 'Which of these best describes what is actually included in the imported product?',
-        answer: 'Another electrical measuring or checking instrument',
-      },
-      {
-        question: 'Which best describes the imported item itself?',
-        answer: 'Another electrical measuring or checking instrument',
-      },
-    ]
-  end
-  let(:candidate_question) do
+  let(:request) { duplicate_question_request }
+
+  def duplicate_question_request
+    query = 'Universal Probe Test Leads Cable Digital Multimeter 1000V 10A Cat.2 for Electrical Testing (2 Pcs)'
     {
-      question: 'Which of these best matches the item being imported?',
-      options: [
-        'A digital multimeter instrument',
-        'A pair of multimeter test leads/probes with connectors',
-        'Another electrical measuring or checking instrument',
-        'An insulated electrical cable with connectors, not specifically for a measuring instrument',
+      query:,
+      effective_query: "#{query} Another electrical measuring or checking instrument",
+      request_id: '946abaa4-f4e4-4924-a876-de8dd51cde8f',
+      attempt_number: 4,
+      answers: [
+        {
+          question: 'What best describes the goods being imported?',
+          answer: 'Another electrical measuring or checking instrument',
+        },
+        {
+          question: 'Which of these best describes what is actually included in the imported product?',
+          answer: 'Another electrical measuring or checking instrument',
+        },
+        {
+          question: 'Which best describes the imported item itself?',
+          answer: 'Another electrical measuring or checking instrument',
+        },
       ],
+      candidate_question: {
+        question: 'Which of these best matches the item being imported?',
+        options: [
+          'A digital multimeter instrument',
+          'A pair of multimeter test leads/probes with connectors',
+          'Another electrical measuring or checking instrument',
+          'An insulated electrical cable with connectors, not specifically for a measuring instrument',
+        ],
+      },
     }
   end
 
@@ -84,8 +78,8 @@ RSpec.describe InteractiveSearch::DuplicateQuestionGuard do
     allow(OpenaiClient).to receive(:call)
 
     narrowing_result = described_class.call(
-      query: query,
-      effective_query: effective_query,
+      query: request[:query],
+      effective_query: request[:effective_query],
       answers: [
         {
           question: 'Which best describes the item being imported?',
@@ -101,7 +95,7 @@ RSpec.describe InteractiveSearch::DuplicateQuestionGuard do
           'Calibration component',
         ],
       },
-      request_id: request_id,
+      request_id: request[:request_id],
       attempt_number: 2,
     )
 
@@ -141,8 +135,8 @@ RSpec.describe InteractiveSearch::DuplicateQuestionGuard do
     expect(OpenaiClient).to have_received(:call).with(
       a_string_including(
         'Custom validator prompt',
-        query,
-        effective_query,
+        request[:query],
+        request[:effective_query],
         '"question":"What best describes the goods being imported?"',
         '"question":"Which of these best matches the item being imported?"',
         '"options":["A digital multimeter instrument"',
@@ -175,7 +169,7 @@ RSpec.describe InteractiveSearch::DuplicateQuestionGuard do
           'Composition leather',
         ],
       },
-      request_id: request_id,
+      request_id: request[:request_id],
       attempt_number: 2,
     )
 
@@ -189,8 +183,8 @@ RSpec.describe InteractiveSearch::DuplicateQuestionGuard do
     )
 
     reworded_result = described_class.call(
-      query: query,
-      effective_query: effective_query,
+      query: request[:query],
+      effective_query: request[:effective_query],
       answers: [
         {
           question: 'Which best describes the goods being imported?',
@@ -205,7 +199,7 @@ RSpec.describe InteractiveSearch::DuplicateQuestionGuard do
           'Testing cable kit',
         ],
       },
-      request_id: request_id,
+      request_id: request[:request_id],
       attempt_number: 2,
     )
 
@@ -219,8 +213,8 @@ RSpec.describe InteractiveSearch::DuplicateQuestionGuard do
     )
 
     category_result = described_class.call(
-      query: query,
-      effective_query: effective_query,
+      query: request[:query],
+      effective_query: request[:effective_query],
       answers: [
         {
           question: 'What type of goods are these?',
@@ -235,7 +229,7 @@ RSpec.describe InteractiveSearch::DuplicateQuestionGuard do
           'Testing cable kit',
         ],
       },
-      request_id: request_id,
+      request_id: request[:request_id],
       attempt_number: 2,
     )
 
@@ -265,7 +259,7 @@ RSpec.describe InteractiveSearch::DuplicateQuestionGuard do
           'Composition leather',
         ],
       },
-      request_id: request_id,
+      request_id: request[:request_id],
       attempt_number: 2,
     )
 
@@ -295,7 +289,7 @@ RSpec.describe InteractiveSearch::DuplicateQuestionGuard do
           'Composition leather',
         ],
       },
-      request_id: request_id,
+      request_id: request[:request_id],
       attempt_number: 2,
     )
 
@@ -319,8 +313,8 @@ RSpec.describe InteractiveSearch::DuplicateQuestionGuard do
     )
 
     continuation_result = described_class.call(
-      query: query,
-      effective_query: effective_query,
+      query: request[:query],
+      effective_query: request[:effective_query],
       answers: [
         {
           question: 'Which best describes the item being imported?',
@@ -336,7 +330,7 @@ RSpec.describe InteractiveSearch::DuplicateQuestionGuard do
           'Another part or accessory for electrical measuring/checking instruments',
         ],
       },
-      request_id: request_id,
+      request_id: request[:request_id],
       attempt_number: 2,
     )
 

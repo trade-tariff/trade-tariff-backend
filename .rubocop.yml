@@ -64,7 +64,6 @@ RSpec/ContextWording:
 
 RSpec/MultipleMemoizedHelpers:
   Enabled: true
-  Max: 10
 
 # swagger:generate intentionally omits :environment — rswag:specs:swaggerize
 # runs rspec in a subprocess and does not need Rails loaded in this process.

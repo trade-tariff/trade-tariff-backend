@@ -23,9 +23,8 @@ RSpec.describe GenerateSelfText::NonOtherSelfTextBuilder do
     end
 
     let(:ai_client) { instance_double(OpenaiClient) }
-    let(:system_prompt_text) { 'You are an expert in the UK Trade Tariff.' }
 
-    let(:successful_response) do
+    def successful_response
       proc { |messages, **_opts|
         user_content = JSON.parse(messages.last[:content])
         sids = user_content.map { |s| s['sid'] }
@@ -49,7 +48,7 @@ RSpec.describe GenerateSelfText::NonOtherSelfTextBuilder do
              name: 'non_other_self_text_context',
              config_type: 'markdown',
              description: 'System prompt for non-Other self-text generation',
-             value: system_prompt_text)
+             value: 'You are an expert in the UK Trade Tariff.')
 
       create(:admin_configuration,
              name: 'non_other_self_text_model',
@@ -144,7 +143,7 @@ RSpec.describe GenerateSelfText::NonOtherSelfTextBuilder do
     end
 
     context 'when AI response contains encoding artefacts' do
-      let(:successful_response) do
+      def successful_response
         proc { |messages, **_opts|
           user_content = JSON.parse(messages.last[:content])
           sids = user_content.map { |s| s['sid'] }

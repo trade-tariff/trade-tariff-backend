@@ -1,92 +1,71 @@
 RSpec.describe CdsImporter::ExcelWriter::GeographicalArea do
   subject(:mapper) { described_class.new(models) }
 
-  let(:geo_area) do
-    instance_double(
-      GeographicalArea,
-      class: instance_double(Class, name: 'GeographicalArea'),
-      geographical_area_id: '3001',
-      geographical_area_sid: 1,
-      parent_geographical_area_group_sid: 3,
-      operation: 'C',
-      validity_start_date: Time.utc(2025, 1, 1, 0, 0, 0),
-      validity_end_date: Time.utc(2025, 12, 31, 23, 59, 59),
-    )
-  end
-
-  let(:description_period) do
-    instance_double(
-      GeographicalAreaDescriptionPeriod,
-      class: instance_double(Class, name: 'GeographicalAreaDescriptionPeriod'),
-      geographical_area_description_period_sid: 1,
-      geographical_area_sid: 1,
-      geographical_area_id: '3001',
-      validity_start_date: Time.utc(2025, 1, 1, 0, 0, 0),
-      validity_end_date: Time.utc(2025, 12, 31, 23, 59, 59),
-    )
-  end
-
-  let(:second_description_period) do
-    instance_double(
-      GeographicalAreaDescriptionPeriod,
-      class: instance_double(Class, name: 'GeographicalAreaDescriptionPeriod'),
-      geographical_area_description_period_sid: 2,
-      geographical_area_sid: 1,
-      geographical_area_id: '3001',
-      validity_start_date: Time.utc(2023, 2, 2, 0, 0, 0),
-      validity_end_date: Time.utc(2025, 12, 31, 23, 59, 59),
-    )
-  end
-
-  let(:description) do
-    instance_double(
-      GeographicalAreaDescription,
-      class: instance_double(Class, name: 'GeographicalAreaDescription'),
-      geographical_area_description_period_sid: 1,
-      geographical_area_sid: 1,
-      geographical_area_id: '3001',
-      description: 'Countries - export restriction protective equipment R2020/204',
-    )
-  end
-
-  let(:second_description) do
-    instance_double(
-      GeographicalAreaDescription,
-      class: instance_double(Class, name: 'GeographicalAreaDescription'),
-      geographical_area_description_period_sid: 2,
-      geographical_area_sid: 1,
-      geographical_area_id: '3001',
-      description: 'Countries - export restriction protective equipment R 2020/568',
-    )
-  end
-
-  let(:geo_area_membership) do
-    instance_double(
-      GeographicalAreaMembership,
-      class: instance_double(Class, name: 'GeographicalAreaMembership'),
-      geographical_area_group_sid: 4,
-      geographical_area_sid: 1,
-      operation: 'C',
-      validity_start_date: Time.utc(2025, 1, 1, 0, 0, 0),
-      validity_end_date: Time.utc(2025, 6, 30, 23, 59, 59),
-    )
-  end
-
-  let(:second_geo_area_membership) do
-    instance_double(
-      GeographicalAreaMembership,
-      class: instance_double(Class, name: 'GeographicalAreaMembership'),
-      geographical_area_group_sid: 5,
-      geographical_area_sid: 1,
-      operation: 'C',
-      validity_start_date: Time.utc(2025, 7, 1, 0, 0, 0),
-      validity_end_date: nil,
-    )
+  def model(model_class, **attributes)
+    instance_double(model_class, class: instance_double(Class, name: model_class.name), **attributes)
   end
 
   describe '#data_row' do
     context 'when all fields are valid' do
-      let(:models) { [geo_area, description, description_period, second_description, second_description_period, geo_area_membership, second_geo_area_membership] }
+      let(:models) do
+        [
+          model(
+            GeographicalArea,
+            geographical_area_id: '3001',
+            geographical_area_sid: 1,
+            parent_geographical_area_group_sid: 3,
+            operation: 'C',
+            validity_start_date: Time.utc(2025, 1, 1, 0, 0, 0),
+            validity_end_date: Time.utc(2025, 12, 31, 23, 59, 59),
+          ),
+          model(
+            GeographicalAreaDescription,
+            geographical_area_description_period_sid: 1,
+            geographical_area_sid: 1,
+            geographical_area_id: '3001',
+            description: 'Countries - export restriction protective equipment R2020/204',
+          ),
+          model(
+            GeographicalAreaDescriptionPeriod,
+            geographical_area_description_period_sid: 1,
+            geographical_area_sid: 1,
+            geographical_area_id: '3001',
+            validity_start_date: Time.utc(2025, 1, 1, 0, 0, 0),
+            validity_end_date: Time.utc(2025, 12, 31, 23, 59, 59),
+          ),
+          model(
+            GeographicalAreaDescription,
+            geographical_area_description_period_sid: 2,
+            geographical_area_sid: 1,
+            geographical_area_id: '3001',
+            description: 'Countries - export restriction protective equipment R 2020/568',
+          ),
+          model(
+            GeographicalAreaDescriptionPeriod,
+            geographical_area_description_period_sid: 2,
+            geographical_area_sid: 1,
+            geographical_area_id: '3001',
+            validity_start_date: Time.utc(2023, 2, 2, 0, 0, 0),
+            validity_end_date: Time.utc(2025, 12, 31, 23, 59, 59),
+          ),
+          model(
+            GeographicalAreaMembership,
+            geographical_area_group_sid: 4,
+            geographical_area_sid: 1,
+            operation: 'C',
+            validity_start_date: Time.utc(2025, 1, 1, 0, 0, 0),
+            validity_end_date: Time.utc(2025, 6, 30, 23, 59, 59),
+          ),
+          model(
+            GeographicalAreaMembership,
+            geographical_area_group_sid: 5,
+            geographical_area_sid: 1,
+            operation: 'C',
+            validity_start_date: Time.utc(2025, 7, 1, 0, 0, 0),
+            validity_end_date: nil,
+          ),
+        ]
+      end
       let!(:membership) { create(:geographical_area, :with_description, geographical_area_sid: 4) }
       let!(:second_membership) { create(:geographical_area, :with_description, geographical_area_sid: 5) }
 
@@ -106,7 +85,17 @@ RSpec.describe CdsImporter::ExcelWriter::GeographicalArea do
     end
 
     context 'when there is no description' do
-      let(:models) { [geo_area] }
+      let(:models) do
+        [model(
+          GeographicalArea,
+          geographical_area_id: '3001',
+          geographical_area_sid: 1,
+          parent_geographical_area_group_sid: 3,
+          operation: 'C',
+          validity_start_date: Time.utc(2025, 1, 1, 0, 0, 0),
+          validity_end_date: Time.utc(2025, 12, 31, 23, 59, 59),
+        )]
+      end
 
       it 'returns a correctly formatted data row' do
         row = mapper.data_row
@@ -125,9 +114,8 @@ RSpec.describe CdsImporter::ExcelWriter::GeographicalArea do
 
     context 'when there are empty fields' do
       let(:models) do
-        [instance_double(
+        [model(
           GeographicalArea,
-          class: instance_double(Class, name: 'GeographicalArea'),
           geographical_area_id: '1005',
           geographical_area_sid: 2,
           parent_geographical_area_group_sid: 3,

@@ -1,5 +1,4 @@
 RSpec.describe LabelService do
-  let(:batch) { [goods_nomenclature] }
   let(:goods_nomenclature) do
     instance_double(
       GoodsNomenclature,
@@ -12,9 +11,6 @@ RSpec.describe LabelService do
   end
   let(:ai_client) { instance_double(OpenaiClient) }
   let(:label) { instance_double(GoodsNomenclatureLabel) }
-  let(:label_context) do
-    'Generate labels for the following UK trade tariff commodities. Return JSON with a "data" array.'
-  end
 
   before do
     allow(TradeTariffBackend).to receive(:ai_client).and_return(ai_client)
@@ -22,7 +18,12 @@ RSpec.describe LabelService do
     allow(GoodsNomenclatureSelfText).to receive(:where).and_return(
       instance_double(Sequel::Dataset, select_map: []),
     )
-    create(:admin_configuration, name: 'label_context', value: label_context, area: 'classification')
+    create(
+      :admin_configuration,
+      name: 'label_context',
+      value: 'Generate labels for the following UK trade tariff commodities. Return JSON with a "data" array.',
+      area: 'classification',
+    )
   end
 
   describe '#call' do
@@ -45,7 +46,7 @@ RSpec.describe LabelService do
     end
 
     it 'calls the AI client with the labelling context' do
-      described_class.new(batch).call
+      described_class.new([goods_nomenclature]).call
 
       expect(ai_client).to have_received(:call) do |context|
         expect(context).to include('Generate labels for the following UK trade tariff commodities')
@@ -53,7 +54,7 @@ RSpec.describe LabelService do
     end
 
     it 'builds labels for each item returned by the AI' do
-      described_class.new(batch).call
+      described_class.new([goods_nomenclature]).call
 
       expect(GoodsNomenclatureLabel).to have_received(:build).with(
         goods_nomenclature,
@@ -63,7 +64,7 @@ RSpec.describe LabelService do
     end
 
     it 'returns an array of labels' do
-      result = described_class.new(batch).call
+      result = described_class.new([goods_nomenclature]).call
 
       expect(result).to eq([label])
     end
@@ -72,7 +73,7 @@ RSpec.describe LabelService do
       let(:ai_response) { {} }
 
       it 'returns an empty array' do
-        result = described_class.new(batch).call
+        result = described_class.new([goods_nomenclature]).call
 
         expect(result).to eq([])
       end
@@ -82,7 +83,7 @@ RSpec.describe LabelService do
       let(:ai_response) { { 'data' => nil } }
 
       it 'returns an empty array' do
-        result = described_class.new(batch).call
+        result = described_class.new([goods_nomenclature]).call
 
         expect(result).to eq([])
       end
@@ -94,7 +95,7 @@ RSpec.describe LabelService do
       end
 
       it 'extracts the JSON and builds labels' do
-        described_class.new(batch).call
+        described_class.new([goods_nomenclature]).call
 
         expect(GoodsNomenclatureLabel).to have_received(:build)
       end
@@ -106,7 +107,7 @@ RSpec.describe LabelService do
       end
 
       it 'uses the array as data and builds labels' do
-        described_class.new(batch).call
+        described_class.new([goods_nomenclature]).call
 
         expect(GoodsNomenclatureLabel).to have_received(:build)
       end
@@ -116,7 +117,7 @@ RSpec.describe LabelService do
       let(:ai_response) { 'Unparseable' }
 
       it 'returns an empty array' do
-        result = described_class.new(batch).call
+        result = described_class.new([goods_nomenclature]).call
 
         expect(result).to eq([])
       end
@@ -124,7 +125,7 @@ RSpec.describe LabelService do
       it 'logs an error' do
         allow(Rails.logger).to receive(:error)
 
-        described_class.new(batch).call
+        described_class.new([goods_nomenclature]).call
 
         expect(Rails.logger).to have_received(:error).with(/unexpected response type/)
       end
@@ -139,13 +140,13 @@ RSpec.describe LabelService do
     end
 
     it 'creates an instance and calls it' do
-      expect(described_class.call(batch)).to eq([])
+      expect(described_class.call([goods_nomenclature])).to eq([])
     end
 
     it 'instruments the API call' do
       allow(LabelGenerator::Instrumentation).to receive(:api_call).and_call_original
 
-      described_class.call(batch)
+      described_class.call([goods_nomenclature])
 
       expect(LabelGenerator::Instrumentation).to have_received(:api_call).with(
         batch_size: 1,

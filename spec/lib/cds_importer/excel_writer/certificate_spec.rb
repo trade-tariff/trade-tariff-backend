@@ -1,79 +1,54 @@
 RSpec.describe CdsImporter::ExcelWriter::Certificate do
   subject(:mapper) { described_class.new(models) }
 
-  let(:certificate_type) do
-    instance_double(
-      Certificate,
-      class: instance_double(Class, name: 'Certificate'),
-      certificate_type_code: 'C',
-      certificate_code: '121',
-      operation: 'C',
-      validity_start_date: Time.utc(2025, 1, 1, 0, 0, 0),
-      validity_end_date: Time.utc(2025, 12, 31, 23, 59, 59),
-    )
-  end
-
-  let(:second_certificate_type) do
-    instance_double(
-      Certificate,
-      class: instance_double(Class, name: 'Certificate'),
-      certificate_type_code: 'L',
-      certificate_code: '212',
-      operation: 'C',
-      validity_start_date: nil,
-      validity_end_date: nil,
-    )
-  end
-
-  let(:description_period) do
-    instance_double(
-      CertificateDescriptionPeriod,
-      class: instance_double(Class, name: 'CertificateDescriptionPeriod'),
-      certificate_description_period_sid: 1,
-      certificate_type_code: 'C',
-      certificate_code: '121',
-      validity_start_date: Time.utc(2025, 1, 1, 0, 0, 0),
-      validity_end_date: Time.utc(2025, 12, 31, 23, 59, 59),
-    )
-  end
-
-  let(:second_description_period) do
-    instance_double(
-      CertificateDescriptionPeriod,
-      class: instance_double(Class, name: 'CertificateDescriptionPeriod'),
-      certificate_description_period_sid: 2,
-      certificate_type_code: 'C',
-      certificate_code: '121',
-      validity_start_date: Time.utc(2023, 2, 2, 0, 0, 0),
-      validity_end_date: Time.utc(2025, 12, 31, 23, 59, 59),
-    )
-  end
-
-  let(:description) do
-    instance_double(
-      CertificateDescription,
-      class: instance_double(Class, name: 'CertificateDescription'),
-      certificate_description_period_sid: 1,
-      certificate_type_code: 'C',
-      certificate_code: '121',
-      description: 'Information document',
-    )
-  end
-
-  let(:second_description) do
-    instance_double(
-      CertificateDescription,
-      class: instance_double(Class, name: 'CertificateDescription'),
-      certificate_description_period_sid: 2,
-      certificate_type_code: 'C',
-      certificate_code: '121',
-      description: 'T5 control copy',
-    )
+  def model(model_class, **attributes)
+    instance_double(model_class, class: instance_double(Class, name: model_class.name), **attributes)
   end
 
   describe '#data_row' do
     context 'when all fields are valid' do
-      let(:models) { [certificate_type, description, description_period, second_description, second_description_period] }
+      let(:models) do
+        [
+          model(
+            Certificate,
+            certificate_type_code: 'C',
+            certificate_code: '121',
+            operation: 'C',
+            validity_start_date: Time.utc(2025, 1, 1, 0, 0, 0),
+            validity_end_date: Time.utc(2025, 12, 31, 23, 59, 59),
+          ),
+          model(
+            CertificateDescription,
+            certificate_description_period_sid: 1,
+            certificate_type_code: 'C',
+            certificate_code: '121',
+            description: 'Information document',
+          ),
+          model(
+            CertificateDescriptionPeriod,
+            certificate_description_period_sid: 1,
+            certificate_type_code: 'C',
+            certificate_code: '121',
+            validity_start_date: Time.utc(2025, 1, 1, 0, 0, 0),
+            validity_end_date: Time.utc(2025, 12, 31, 23, 59, 59),
+          ),
+          model(
+            CertificateDescription,
+            certificate_description_period_sid: 2,
+            certificate_type_code: 'C',
+            certificate_code: '121',
+            description: 'T5 control copy',
+          ),
+          model(
+            CertificateDescriptionPeriod,
+            certificate_description_period_sid: 2,
+            certificate_type_code: 'C',
+            certificate_code: '121',
+            validity_start_date: Time.utc(2023, 2, 2, 0, 0, 0),
+            validity_end_date: Time.utc(2025, 12, 31, 23, 59, 59),
+          ),
+        ]
+      end
 
       it 'returns a correctly formatted data row' do
         row = mapper.data_row
@@ -88,7 +63,16 @@ RSpec.describe CdsImporter::ExcelWriter::Certificate do
     end
 
     context 'when there is no description' do
-      let(:models) { [certificate_type] }
+      let(:models) do
+        [model(
+          Certificate,
+          certificate_type_code: 'C',
+          certificate_code: '121',
+          operation: 'C',
+          validity_start_date: Time.utc(2025, 1, 1, 0, 0, 0),
+          validity_end_date: Time.utc(2025, 12, 31, 23, 59, 59),
+        )]
+      end
 
       it 'returns a correctly formatted data row' do
         row = mapper.data_row
@@ -103,7 +87,16 @@ RSpec.describe CdsImporter::ExcelWriter::Certificate do
     end
 
     context 'when there are empty fields' do
-      let(:models) { [second_certificate_type] }
+      let(:models) do
+        [model(
+          Certificate,
+          certificate_type_code: 'L',
+          certificate_code: '212',
+          operation: 'C',
+          validity_start_date: nil,
+          validity_end_date: nil,
+        )]
+      end
 
       it 'returns a correctly formatted data row' do
         row = mapper.data_row

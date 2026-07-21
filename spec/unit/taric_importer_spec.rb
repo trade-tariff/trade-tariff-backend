@@ -36,9 +36,6 @@ RSpec.describe TaricImporter do
     end
 
     context 'when importing a complex record' do
-      let(:taric_file_path) { 'spec/fixtures/taric_samples/create_measure.xml' }
-      let(:taric_update_path) { 'spec/fixtures/taric_samples/update_measure.xml' }
-
       before do
         Measure.unrestrict_primary_key
         allow(taric_update).to receive(:file_path)

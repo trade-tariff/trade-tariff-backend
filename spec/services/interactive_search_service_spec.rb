@@ -2,27 +2,27 @@ RSpec.describe InteractiveSearchService do
   subject(:result) { described_class.call(**params) }
 
   let(:search_result_class) { Data.define(:goods_nomenclature_item_id, :description, :full_description, :score) }
-  let(:params) do
+  let(:params) { search_params }
+
+  def search_params(**overrides)
     {
-      query: query,
-      expanded_query: expanded_query,
-      opensearch_results: opensearch_results,
-      answers: answers,
-      request_id: request_id,
-    }
+      query: 'leather handbag',
+      expanded_query: 'leather handbag travel bag accessory',
+      opensearch_results: default_search_results,
+      answers: [],
+      request_id: 'test-request-123',
+    }.merge(overrides)
   end
-  let(:query) { 'leather handbag' }
-  let(:expanded_query) { 'leather handbag travel bag accessory' }
-  let(:request_id) { 'test-request-123' }
-  let(:answers) { [] }
-  let(:opensearch_results) do
+
+  def default_search_results
     [
       build_result('4202210000', 'Handbags with outer surface of leather', 10.5),
       build_result('4202220000', 'Handbags with outer surface of plastic', 8.3),
       build_result('4202290000', 'Other handbags', 6.1),
     ]
   end
-  let(:default_search_context) do
+
+  def default_search_context
     <<~CONTEXT
       You are a UK trade tariff classification assistant.
       General rules: %{general_rules}
@@ -83,8 +83,10 @@ RSpec.describe InteractiveSearchService do
     end
 
     context 'when there is a single search result' do
-      let(:opensearch_results) do
-        [build_result('4202210000', 'Handbags with outer surface of leather', 10.5)]
+      let(:params) do
+        search_params(
+          opensearch_results: [build_result('4202210000', 'Handbags with outer surface of leather', 10.5)],
+        )
       end
 
       it 'returns an answers result immediately' do
@@ -103,7 +105,7 @@ RSpec.describe InteractiveSearchService do
     end
 
     context 'when there are no search results' do
-      let(:opensearch_results) { [] }
+      let(:params) { search_params(opensearch_results: []) }
 
       it 'returns an error result' do
         expect(result.type).to eq(:error)
@@ -115,12 +117,12 @@ RSpec.describe InteractiveSearchService do
     end
 
     context 'when max questions reached' do
-      let(:answers) do
-        [
+      let(:params) do
+        search_params(answers: [
           { question: 'Q1', answer: 'A1' },
           { question: 'Q2', answer: 'A2' },
           { question: 'Q3', answer: 'A3' },
-        ]
+        ])
       end
 
       let(:ai_response) do
@@ -151,11 +153,11 @@ RSpec.describe InteractiveSearchService do
         result
 
         expect(Search::Instrumentation).to have_received(:api_call).with(
-          request_id: request_id,
+          request_id: params[:request_id],
           model: 'gpt-5.4',
           attempt_number: 4,
           iteration: 4,
-          effective_query: expanded_query,
+          effective_query: params[:expanded_query],
           operation: 'interactive_search_final_answer',
         )
       end
@@ -216,30 +218,33 @@ RSpec.describe InteractiveSearchService do
           hash_including(
             attempt_number: 1,
             iteration: 1,
-            effective_query: expanded_query,
+            effective_query: params[:expanded_query],
           ),
         )
       end
     end
 
     context 'when AI returns a duplicate question' do
-      let(:query) { 'Universal Probe Test Leads Cable Digital Multimeter 1000V 10A Cat.2 for Electrical Testing (2 Pcs)' }
-      let(:expanded_query) { "#{query} Another electrical measuring or checking instrument" }
-      let(:answers) do
-        [
-          {
-            question: 'What best describes the goods being imported?',
-            answer: 'Another electrical measuring or checking instrument',
-          },
-          {
-            question: 'Which of these best describes what is actually included in the imported product?',
-            answer: 'Another electrical measuring or checking instrument',
-          },
-          {
-            question: 'Which best describes the imported item itself?',
-            answer: 'Another electrical measuring or checking instrument',
-          },
-        ]
+      let(:params) do
+        query = 'Universal Probe Test Leads Cable Digital Multimeter 1000V 10A Cat.2 for Electrical Testing (2 Pcs)'
+        search_params(
+          query:,
+          expanded_query: "#{query} Another electrical measuring or checking instrument",
+          answers: [
+            {
+              question: 'What best describes the goods being imported?',
+              answer: 'Another electrical measuring or checking instrument',
+            },
+            {
+              question: 'Which of these best describes what is actually included in the imported product?',
+              answer: 'Another electrical measuring or checking instrument',
+            },
+            {
+              question: 'Which best describes the imported item itself?',
+              answer: 'Another electrical measuring or checking instrument',
+            },
+          ],
+        )
       end
       let(:duplicate_question_response) do
         <<~JSON
@@ -286,16 +291,16 @@ RSpec.describe InteractiveSearchService do
           event_kind: 'duplicate_question_retry',
         )
         expect(Search::Instrumentation).to have_received(:api_call).with(
-          request_id: request_id,
+          request_id: params[:request_id],
           model: 'gpt-5.4',
           attempt_number: 4,
           iteration: 4,
-          effective_query: expanded_query,
+          effective_query: params[:expanded_query],
           operation: 'duplicate_question_retry',
         )
         expect(Search::Instrumentation).to have_received(:note_evidence_evaluated).with(
           hash_including(
-            request_id: request_id,
+            request_id: params[:request_id],
             iteration: 4,
             attempt_number: 4,
             operation: 'duplicate_question_retry',
@@ -442,8 +447,8 @@ RSpec.describe InteractiveSearchService do
     end
 
     context 'when processing follow-up with previous answers' do
-      let(:answers) do
-        [{ question: 'What is the material?', answer: 'Leather' }]
+      let(:params) do
+        search_params(answers: [{ question: 'What is the material?', answer: 'Leather' }])
       end
       let(:ai_response) do
         '{"answers": [{"commodity_code": "4202210000", "confidence": "Strong"}]}'
@@ -475,7 +480,7 @@ RSpec.describe InteractiveSearchService do
           hash_including(
             attempt_number: 2,
             iteration: 2,
-            effective_query: expanded_query,
+            effective_query: params[:expanded_query],
           ),
         )
       end
@@ -644,12 +649,12 @@ RSpec.describe InteractiveSearchService do
       end
 
       context 'when max questions have been reached' do
-        let(:answers) do
-          [
+        let(:params) do
+          search_params(answers: [
             { question: 'Q1', answer: 'A1' },
             { question: 'Q2', answer: 'A2' },
             { question: 'Q3', answer: 'A3' },
-          ]
+          ])
         end
 
         it 'includes the rules in the final answer prompt once' do
@@ -764,11 +769,11 @@ RSpec.describe InteractiveSearchService do
       end
 
       context 'when no compressed notes qualify' do
-        let(:opensearch_results) do
-          [
+        let(:params) do
+          search_params(opensearch_results: [
             build_result('4202230000', 'Handbags with outer surface of textile materials', 7.1),
             build_result('4202240000', 'Other handbags', 6.8),
-          ]
+          ])
         end
 
         it 'removes the compressed notes line instead of sending an empty array' do
@@ -864,8 +869,8 @@ RSpec.describe InteractiveSearchService do
         result
 
         expect(TariffKnowledge::RelevantNoteFragmentSelector).to have_received(:call_with_diagnostics).with(
-          query: expanded_query,
-          search_results: opensearch_results,
+          query: params[:expanded_query],
+          search_results: params[:opensearch_results],
           notes_by_item_id: hash_including('4202210000', '4202290000'),
         )
       end
@@ -894,11 +899,11 @@ RSpec.describe InteractiveSearchService do
     end
 
     context 'when results have full_description' do
-      let(:opensearch_results) do
-        [
+      let(:params) do
+        search_params(opensearch_results: [
           build_result('4202210000', 'Other', 10.5, full_description: 'Handbags - Of leather or composition leather'),
           build_result('4202220000', 'Other', 8.3, full_description: 'Handbags - Of plastic sheeting or textile materials'),
-        ]
+        ])
       end
 
       it 'uses full_description in the context sent to the AI' do
@@ -925,11 +930,11 @@ RSpec.describe InteractiveSearchService do
     end
 
     context 'when results have no full_description' do
-      let(:opensearch_results) do
-        [
+      let(:params) do
+        search_params(opensearch_results: [
           build_result('4202210000', 'Handbags with outer surface of leather', 10.5),
           build_result('4202220000', 'Handbags with outer surface of plastic', 8.3),
-        ]
+        ])
       end
 
       it 'falls back to description' do
@@ -1009,7 +1014,7 @@ RSpec.describe InteractiveSearchService do
     end
 
     context 'when expanded_query is the same as the original query' do
-      let(:expanded_query) { 'leather handbag' }
+      let(:params) { search_params(expanded_query: 'leather handbag') }
 
       before do
         AdminConfiguration.where(name: 'search_context').first.update(
@@ -1028,7 +1033,7 @@ RSpec.describe InteractiveSearchService do
     end
 
     context 'when expanded_query is nil' do
-      let(:expanded_query) { nil }
+      let(:params) { search_params(expanded_query: nil) }
 
       before do
         AdminConfiguration.where(name: 'search_context').first.update(

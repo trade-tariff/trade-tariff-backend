@@ -1,21 +1,15 @@
 RSpec.describe CustomsTariffImporter::Importer do
   subject(:results) { described_class.new.call }
 
-  let(:docx_content) { 'fake docx binary content' }
-  let(:docx_url)     { 'https://assets.publishing.service.gov.uk/media/abc123/UKGT_1.30.docx' }
-  let(:version)      { '1.30' }
-  let(:checksum)     { Digest::SHA256.hexdigest(docx_content) }
-  let(:published_on)        { Date.new(2026, 1, 14) }
-  let(:entry_into_force_on) { Date.new(2026, 1, 22) }
-
   let(:fetched_result) do
+    content = 'fake docx binary content'
     CustomsTariffImporter::DocumentFetcher::Result.new(
-      content: docx_content,
-      url: docx_url,
-      version:,
-      checksum:,
-      published_on:,
-      entry_into_force_on:,
+      content:,
+      url: 'https://assets.publishing.service.gov.uk/media/abc123/UKGT_1.30.docx',
+      version: '1.30',
+      checksum: Digest::SHA256.hexdigest(content),
+      published_on: Date.new(2026, 1, 14),
+      entry_into_force_on: Date.new(2026, 1, 22),
     )
   end
 
@@ -55,7 +49,7 @@ RSpec.describe CustomsTariffImporter::Importer do
         results
         expect(TariffSynchronizer::FileService).to have_received(:write_file).with(
           'data/customs_tariff_documents/uk/UKGT_1.30.docx',
-          docx_content,
+          fetched_result.content,
         )
       end
 
@@ -63,19 +57,19 @@ RSpec.describe CustomsTariffImporter::Importer do
         expect { results }.to change(CustomsTariffUpdate, :count).by(1)
         update = CustomsTariffUpdate.where(version: '1.30').first
         expect(update.import_error).to be_nil
-        expect(update.file_checksum).to eq(checksum)
+        expect(update.file_checksum).to eq(fetched_result.checksum)
       end
 
       it 'sets validity_start_date to entry_into_force_on' do
         results
         update = CustomsTariffUpdate.where(version: '1.30').first
-        expect(update.validity_start_date).to eq(entry_into_force_on)
+        expect(update.validity_start_date).to eq(fetched_result.entry_into_force_on)
       end
 
       it 'sets document_created_on to the dated (published) date' do
         results
         update = CustomsTariffUpdate.where(version: '1.30').first
-        expect(update.document_created_on).to eq(published_on)
+        expect(update.document_created_on).to eq(fetched_result.published_on)
       end
 
       it 'creates associated chapter notes' do
@@ -96,19 +90,19 @@ RSpec.describe CustomsTariffImporter::Importer do
       it 'creates chapter notes with the update validity_start_date' do
         results
         note = CustomsTariffChapterNote.where(customs_tariff_update_version: '1.30').first
-        expect(note.validity_start_date).to eq(entry_into_force_on)
+        expect(note.validity_start_date).to eq(fetched_result.entry_into_force_on)
       end
 
       it 'creates section notes with the update validity_start_date' do
         results
         note = CustomsTariffSectionNote.where(customs_tariff_update_version: '1.30').first
-        expect(note.validity_start_date).to eq(entry_into_force_on)
+        expect(note.validity_start_date).to eq(fetched_result.entry_into_force_on)
       end
 
       it 'creates general rules with the update validity_start_date' do
         results
         rule = CustomsTariffGeneralRule.where(customs_tariff_update_version: '1.30').first
-        expect(rule.validity_start_date).to eq(entry_into_force_on)
+        expect(rule.validity_start_date).to eq(fetched_result.entry_into_force_on)
       end
 
       it 'emits a document_imported instrumentation event' do
@@ -180,7 +174,7 @@ RSpec.describe CustomsTariffImporter::Importer do
     end
 
     context 'when a different version with the same content has been imported' do
-      before { create(:customs_tariff_update, version: '1.29', file_checksum: checksum) }
+      before { create(:customs_tariff_update, version: '1.29', file_checksum: fetched_result.checksum) }
 
       it 'returns a duplicate_content result' do
         expect(results.first.status).to eq(:duplicate_content)

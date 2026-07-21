@@ -4,12 +4,6 @@ RSpec.describe Api::V2::GreenLanes::FaqFeedbackController, :v2 do
     response
   end
 
-  let(:json_response) { JSON.parse(api_response.body) }
-  let(:faq_feedback) { create :green_lanes_faq_feedback }
-  let :authorization do
-    ActionController::HttpAuthentication::Token.encode_credentials('Trade-Tariff-Test')
-  end
-
   before do
     allow(TradeTariffBackend).to receive(:uk?).and_return(false)
   end
@@ -30,7 +24,7 @@ RSpec.describe Api::V2::GreenLanes::FaqFeedbackController, :v2 do
 
     let(:headers) do
       {
-        'HTTP_AUTHORIZATION' => authorization,
+        'HTTP_AUTHORIZATION' => ActionController::HttpAuthentication::Token.encode_credentials('Trade-Tariff-Test'),
         'Accept' => 'application/vnd.hmrc.2.0+json',
         'Content-Type' => 'application/json',
       }
@@ -48,7 +42,7 @@ RSpec.describe Api::V2::GreenLanes::FaqFeedbackController, :v2 do
       it { is_expected.to have_http_status :unprocessable_content }
 
       it 'returns errors for faq_feedback' do
-        expect(json_response).to include('errors')
+        expect(JSON.parse(api_response.body)).to include('errors')
       end
     end
   end

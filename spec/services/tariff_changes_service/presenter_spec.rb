@@ -1,31 +1,17 @@
 RSpec.describe TariffChangesService::Presenter do
+  subject(:presenter) { described_class.new(tariff_change) }
+
   let(:goods_nomenclature) { create(:commodity, :declarable, validity_start_date: Date.new(2024, 1, 1)) }
-  let!(:measure_type) { create(:measure_type, trade_movement_code: 0) }
-  let!(:measure) { create(:measure, measure_type:, measure_type_id: measure_type.measure_type_id, goods_nomenclature:) }
-  let(:geo_area) { create(:geographical_area, :with_description, geographical_area_id: 'FR') }
   let(:tariff_change) do
     create(:tariff_change,
            type: 'Measure',
-           object_sid: measure.measure_sid,
            goods_nomenclature_sid: goods_nomenclature.goods_nomenclature_sid,
            goods_nomenclature_item_id: goods_nomenclature.goods_nomenclature_item_id,
-           metadata: {
-             'measure' => {
-               'measure_type_id' => measure_type.measure_type_id,
-               'trade_movement_code' => measure_type.trade_movement_code,
-               'geographical_area_id' => geo_area.geographical_area_id,
-               'excluded_geographical_area_ids' => [],
-             },
-           })
+           metadata: {})
   end
-  let(:geo_area_cache) { { geo_area.geographical_area_id => geo_area } }
-  let(:presenter) { described_class.new(tariff_change, geo_area_cache) }
 
   before do
-    allow(tariff_change).to receive_messages(
-      goods_nomenclature: goods_nomenclature,
-      measure: measure,
-    )
+    allow(tariff_change).to receive(:goods_nomenclature).and_return(goods_nomenclature)
   end
 
   describe '#type' do
@@ -47,8 +33,6 @@ RSpec.describe TariffChangesService::Presenter do
   end
 
   describe '#classification_description' do
-    let(:goods_nomenclature_description) { instance_double(GoodsNomenclatureDescription, csv_formatted_description: 'Live horses, asses, mules and hinnies') }
-
     before do
       allow(TimeMachine).to receive(:at).and_yield
       allow(goods_nomenclature).to receive(:classification_description).and_return('Live horses, asses, mules and hinnies')
@@ -106,7 +90,11 @@ RSpec.describe TariffChangesService::Presenter do
       end
     end
 
-    context 'when measure is present' do
+    context 'when a measure is present' do
+      let(:measure_type) { create(:measure_type, trade_movement_code: 0) }
+      let(:measure) do
+        create(:measure, measure_type_id: measure_type.measure_type_id, goods_nomenclature:)
+      end
       let(:tariff_change) do
         create(:tariff_change,
                type: 'Measure',
@@ -122,47 +110,32 @@ RSpec.describe TariffChangesService::Presenter do
                  },
                })
       end
-      let(:presenter) { described_class.new(tariff_change, geo_area_cache) }
 
       before do
         allow(measure).to receive(:measure_type).and_return(measure_type)
-        allow(measure_type).to receive(:description).and_return('Third country duty')
         allow(tariff_change).to receive(:measure).and_return(measure)
       end
 
-      it 'returns the measure type description' do
-        result = presenter.measure_type
-        expect(result).to eq('Third country duty')
-      end
-    end
+      context 'when the measure type has a description' do
+        before do
+          allow(measure_type).to receive(:description).and_return('Third country duty')
+        end
 
-    context 'when measure type has no description' do
-      let(:tariff_change) do
-        create(:tariff_change,
-               type: 'Measure',
-               object_sid: measure.measure_sid,
-               goods_nomenclature_sid: goods_nomenclature.goods_nomenclature_sid,
-               goods_nomenclature_item_id: goods_nomenclature.goods_nomenclature_item_id,
-               metadata: {
-                 'measure' => {
-                   'measure_type_id' => measure_type.measure_type_id,
-                   'trade_movement_code' => measure_type.trade_movement_code,
-                   'geographical_area_id' => measure.geographical_area_id,
-                   'excluded_geographical_area_ids' => [],
-                 },
-               })
-      end
-      let(:presenter) { described_class.new(tariff_change, geo_area_cache) }
-
-      before do
-        allow(measure).to receive(:measure_type).and_return(measure_type)
-        allow(measure_type).to receive(:description).and_return(nil)
-        allow(tariff_change).to receive(:measure).and_return(measure)
+        it 'returns the measure type description' do
+          result = presenter.measure_type
+          expect(result).to eq('Third country duty')
+        end
       end
 
-      it 'returns nil' do
-        result = presenter.measure_type
-        expect(result).to be_nil
+      context 'when the measure type has no description' do
+        before do
+          allow(measure_type).to receive(:description).and_return(nil)
+        end
+
+        it 'returns nil' do
+          result = presenter.measure_type
+          expect(result).to be_nil
+        end
       end
     end
   end
@@ -275,6 +248,24 @@ RSpec.describe TariffChangesService::Presenter do
   end
 
   describe '#geo_area' do
+    subject(:presenter) do
+      described_class.new(tariff_change, { geo_area.geographical_area_id => geo_area })
+    end
+
+    let(:geo_area) { create(:geographical_area, :with_description, geographical_area_id: 'FR') }
+    let(:tariff_change) do
+      create(:tariff_change,
+             type: 'Measure',
+             goods_nomenclature_sid: goods_nomenclature.goods_nomenclature_sid,
+             goods_nomenclature_item_id: goods_nomenclature.goods_nomenclature_item_id,
+             metadata: {
+               'measure' => {
+                 'geographical_area_id' => geo_area.geographical_area_id,
+                 'excluded_geographical_area_ids' => [],
+               },
+             })
+    end
+
     context 'when geographical_area_id is blank' do
       let(:tariff_change) do
         create(:tariff_change,
@@ -329,7 +320,6 @@ RSpec.describe TariffChangesService::Presenter do
                    },
                  })
         end
-        let(:geo_area_cache) { { geo_area.geographical_area_id => geo_area } }
 
         before do
           allow(geo_area).to receive(:erga_omnes?).and_return(true)
@@ -342,8 +332,16 @@ RSpec.describe TariffChangesService::Presenter do
       end
 
       context 'when excluded_geographical_areas are provided' do
-        let(:first_excluded_area) { create(:geographical_area, :with_description, geographical_area_id: 'DE') }
-        let(:second_excluded_area) { create(:geographical_area, :with_description, geographical_area_id: 'IT') }
+        subject(:presenter) do
+          described_class.new(tariff_change, excluded_areas.merge(geo_area.geographical_area_id => geo_area))
+        end
+
+        let(:excluded_areas) do
+          {
+            'DE' => create_geo_area('DE', 'Germany'),
+            'IT' => create_geo_area('IT', 'Italy'),
+          }
+        end
         let(:tariff_change) do
           create(:tariff_change,
                  type: 'Measure',
@@ -352,21 +350,9 @@ RSpec.describe TariffChangesService::Presenter do
                  metadata: {
                    'measure' => {
                      'geographical_area_id' => geo_area.geographical_area_id,
-                     'excluded_geographical_area_ids' => [first_excluded_area.geographical_area_id, second_excluded_area.geographical_area_id],
+                     'excluded_geographical_area_ids' => excluded_areas.keys,
                    },
                  })
-        end
-        let(:geo_area_cache) do
-          {
-            geo_area.geographical_area_id => geo_area,
-            first_excluded_area.geographical_area_id => first_excluded_area,
-            second_excluded_area.geographical_area_id => second_excluded_area,
-          }
-        end
-
-        before do
-          allow(first_excluded_area.geographical_area_description).to receive(:description).and_return('Germany')
-          allow(second_excluded_area.geographical_area_description).to receive(:description).and_return('Italy')
         end
 
         it 'includes excluded areas in the result' do
@@ -376,20 +362,12 @@ RSpec.describe TariffChangesService::Presenter do
       end
 
       context 'when measure applies to all countries apart from ALL excluded_geographical_areas in the EU and some that are not EU' do
-        let(:geo_area) { create(:geographical_area, :with_description, geographical_area_id: '1011') }
-        let(:excluded_areas) do
-          {
-            'DE' => 'Germany',
-            'IT' => 'Italy',
-            'UK' => 'United Kingdom',
-            'CH' => 'Switzerland',
-            'NO' => 'Norway',
-          }
+        subject(:presenter) do
+          geo_area_cache = excluded_areas.merge(geo_area.geographical_area_id => geo_area)
+          described_class.new(tariff_change, geo_area_cache, %w[DE IT])
         end
 
-        let(:excluded_area_ids) { excluded_areas.keys }
-        let(:eu_member_ids) { %w[DE IT] }
-
+        let(:geo_area) { create(:geographical_area, :with_description, geographical_area_id: '1011') }
         let(:tariff_change) do
           create(:tariff_change,
                  type: 'Measure',
@@ -398,27 +376,26 @@ RSpec.describe TariffChangesService::Presenter do
                  metadata: {
                    'measure' => {
                      'geographical_area_id' => geo_area.geographical_area_id,
-                     'excluded_geographical_area_ids' => excluded_area_ids,
+                     'excluded_geographical_area_ids' => excluded_areas.keys,
                    },
                  })
         end
-
-        let(:geo_area_cache) do
-          excluded_areas.each_with_object({ geo_area.geographical_area_id => geo_area }) do |(id, description), cache|
-            area = create(:geographical_area, :with_description, geographical_area_id: id)
-            allow(area.geographical_area_description).to receive(:description).and_return(description)
-            cache[id] = area
-          end
+        let(:excluded_areas) do
+          {
+            'DE' => create_geo_area('DE', 'Germany'),
+            'IT' => create_geo_area('IT', 'Italy'),
+            'UK' => create_geo_area('UK', 'United Kingdom'),
+            'CH' => create_geo_area('CH', 'Switzerland'),
+            'NO' => create_geo_area('NO', 'Norway'),
+          }
         end
-
-        let(:presenter) { described_class.new(tariff_change, geo_area_cache, eu_member_ids) }
 
         before do
           eu_group = create(:geographical_area, :group, geographical_area_id: '1013')
 
           # pseudo EU with just DE and IT as members for testing
           %w[DE IT].each do |country_id|
-            area = geo_area_cache[country_id]
+            area = excluded_areas[country_id]
             create(:geographical_area_membership,
                    geographical_area_sid: area.geographical_area_sid,
                    geographical_area_group_sid: eu_group.geographical_area_sid)
@@ -453,8 +430,16 @@ RSpec.describe TariffChangesService::Presenter do
     end
 
     context 'with complex scenario: erga_omnes with exclusions' do
+      subject(:presenter) do
+        geo_area_cache = {
+          geo_area.geographical_area_id => geo_area,
+          excluded_area.geographical_area_id => excluded_area,
+        }
+        described_class.new(tariff_change, geo_area_cache)
+      end
+
       let(:geo_area) { create(:geographical_area, :erga_omnes, :with_description) }
-      let(:excluded_area) { create(:geographical_area, :with_description, geographical_area_id: 'US') }
+      let(:excluded_area) { create_geo_area('US', 'United States') }
       let(:tariff_change) do
         create(:tariff_change,
                type: 'Measure',
@@ -467,22 +452,21 @@ RSpec.describe TariffChangesService::Presenter do
                  },
                })
       end
-      let(:geo_area_cache) do
-        {
-          geo_area.geographical_area_id => geo_area,
-          excluded_area.geographical_area_id => excluded_area,
-        }
-      end
 
       before do
         allow(geo_area).to receive(:erga_omnes?).and_return(true)
-        allow(excluded_area.geographical_area_description).to receive(:description).and_return('United States')
       end
 
       it 'returns All countries with exclusions' do
         result = presenter.geo_area
         expect(result).to eq("All countries (#{geo_area.id}) excluding United States")
       end
+    end
+  end
+
+  def create_geo_area(id, description)
+    create(:geographical_area, :with_description, geographical_area_id: id).tap do |area|
+      allow(area.geographical_area_description).to receive(:description).and_return(description)
     end
   end
 

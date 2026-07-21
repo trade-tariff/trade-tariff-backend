@@ -1,6 +1,5 @@
 RSpec.describe Api::V2::ChaptersController, :v2 do
   let(:now) { Time.zone.today }
-  let(:expires_at) { now.end_of_day }
 
   before do
     allow(Rails.cache).to receive(:fetch).and_call_original
@@ -14,7 +13,7 @@ RSpec.describe Api::V2::ChaptersController, :v2 do
         .to have_received(:fetch)
         .with(
           "_chapters-#{now.iso8601}/v2",
-          expires_at:,
+          expires_at: now.end_of_day,
         )
     end
 
@@ -38,7 +37,7 @@ RSpec.describe Api::V2::ChaptersController, :v2 do
         .to have_received(:fetch)
         .with(
           "_chapter-#{chapter.short_code}-#{now.iso8601}/v2",
-          expires_at:,
+          expires_at: now.end_of_day,
         )
     end
 
@@ -67,11 +66,6 @@ RSpec.describe Api::V2::ChaptersController, :v2 do
                  version: '1.29',
                  validity_start_date: 2.months.ago.to_date)
         end
-        let!(:older_update) do
-          create(:customs_tariff_update, :approved,
-                 version: '1.30',
-                 validity_start_date: 1.month.ago.to_date)
-        end
         let!(:latest_update) do
           create(:customs_tariff_update,
                  version: '1.31',
@@ -85,6 +79,9 @@ RSpec.describe Api::V2::ChaptersController, :v2 do
 
         before do
           Rails.cache.clear
+          older_update = create(:customs_tariff_update, :approved,
+                                version: '1.30',
+                                validity_start_date: 1.month.ago.to_date)
           create(:customs_tariff_chapter_note, :approved,
                  customs_tariff_update: older_update,
                  chapter_id: chapter.short_code,
@@ -138,7 +135,7 @@ RSpec.describe Api::V2::ChaptersController, :v2 do
         .to have_received(:fetch)
         .with(
           "_chapter-#{chapter.short_code}-#{now.iso8601}/changes-v2",
-          expires_at:,
+          expires_at: now.end_of_day,
         )
     end
   end

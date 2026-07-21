@@ -3,14 +3,12 @@ RSpec.describe Api::User::GroupedMeasureChangesController do
 
   before do
     allow(Api::User::GroupedMeasureChangesService).to receive(:new).and_return(measure_changes_service)
-    allow(measure_changes_service).to receive(:call).and_return(expected_response)
   end
 
   describe '#index' do
-    let(:measure_changes_service) { instance_double(Api::User::GroupedMeasureChangesService) }
-    let(:geographical_area) { create(:geographical_area, :with_description, geographical_area_id: 'GB') }
-    let(:first_excluded_area) { create(:geographical_area, :with_description, geographical_area_id: 'FR') }
-    let(:second_excluded_area) { create(:geographical_area, :with_description, geographical_area_id: 'DE') }
+    let(:measure_changes_service) do
+      instance_double(Api::User::GroupedMeasureChangesService, call: [grouped_measure_change])
+    end
     let(:grouped_measure_change) do
       TariffChanges::GroupedMeasureChange.new(
         trade_direction: 'import',
@@ -19,7 +17,12 @@ RSpec.describe Api::User::GroupedMeasureChangesController do
         excluded_geographical_area_ids: %w[FR DE],
       )
     end
-    let(:expected_response) { [grouped_measure_change] }
+
+    before do
+      create(:geographical_area, :with_description, geographical_area_id: 'GB')
+      create(:geographical_area, :with_description, geographical_area_id: 'FR')
+      create(:geographical_area, :with_description, geographical_area_id: 'DE')
+    end
 
     context 'when authenticated' do
       before { get '/uk/user/grouped_measure_changes', headers: request_headers }
@@ -90,10 +93,8 @@ RSpec.describe Api::User::GroupedMeasureChangesController do
     end
 
     context 'when service returns different data structure' do
-      let(:expected_response) { [] } # Empty array of GroupedMeasureChange objects
-
       before do
-        allow(measure_changes_service).to receive(:call).and_return(expected_response)
+        allow(measure_changes_service).to receive(:call).and_return([])
         get '/uk/user/grouped_measure_changes', headers: request_headers
       end
 
@@ -136,7 +137,9 @@ RSpec.describe Api::User::GroupedMeasureChangesController do
   end
 
   describe '#show' do
-    let(:measure_changes_service) { instance_double(Api::User::GroupedMeasureChangesService) }
+    let(:measure_changes_service) do
+      instance_double(Api::User::GroupedMeasureChangesService, call: grouped_measure_change)
+    end
     let(:id) { 'import_GB_FR-DE' }
 
     let(:grouped_measure_change) do
@@ -151,7 +154,6 @@ RSpec.describe Api::User::GroupedMeasureChangesController do
         ],
       )
     end
-    let(:expected_response) { grouped_measure_change }
 
     context 'when authenticated and id is provided' do
       before { get "/uk/user/grouped_measure_changes/#{id}", headers: request_headers }
@@ -186,15 +188,13 @@ RSpec.describe Api::User::GroupedMeasureChangesController do
     end
 
     context 'when custom as_of date is provided' do
-      let(:custom_date) { '2024-01-15' }
-
-      before { get "/uk/user/grouped_measure_changes/#{id}", params: { as_of: custom_date }, headers: request_headers }
+      before { get "/uk/user/grouped_measure_changes/#{id}", params: { as_of: '2024-01-15' }, headers: request_headers }
 
       it 'calls the service with the custom as_of date' do
         expect(Api::User::GroupedMeasureChangesService).to have_received(:new).with(
           an_instance_of(PublicUsers::User),
           id,
-          Date.parse(custom_date),
+          Date.parse('2024-01-15'),
         )
       end
     end

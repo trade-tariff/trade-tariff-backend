@@ -1,17 +1,17 @@
 RSpec.describe CompositeSearchTextBuilder do
-  subject(:builder) { described_class.new(self_text_record, labels: label, search_references: refs, atar_keywords: atar_keywords) }
-
-  let(:self_text_record) do
-    build(:goods_nomenclature_self_text,
-          goods_nomenclature_sid: 1,
-          self_text: 'Live horses (excl. for slaughter)')
-  end
-
-  let(:label) { nil }
-  let(:refs) { nil }
-  let(:atar_keywords) { nil }
-
   describe '#call' do
+    subject(:builder) { described_class.new(self_text_record, labels: label, search_references: refs, atar_keywords: atar_keywords) }
+
+    let(:self_text_record) do
+      build(:goods_nomenclature_self_text,
+            goods_nomenclature_sid: 1,
+            self_text: 'Live horses (excl. for slaughter)')
+    end
+
+    let(:label) { nil }
+    let(:refs) { nil }
+    let(:atar_keywords) { nil }
+
     context 'with only a self-text description' do
       it 'returns just the description' do
         expect(builder.call).to eq('Live horses (excl. for slaughter)')

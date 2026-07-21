@@ -2,7 +2,6 @@ RSpec.describe ClearCacheWorker, type: :worker do
   subject(:worker) { described_class.new }
 
   let(:redis) { instance_double(Redis) }
-  let(:redis_pool) { instance_double(ConnectionPool) }
   let(:cache_store) { instance_double(ActiveSupport::Cache::RedisCacheStore) }
   let(:namespace) { 'test-namespace' }
 
@@ -15,6 +14,7 @@ RSpec.describe ClearCacheWorker, type: :worker do
   end
 
   before do
+    redis_pool = instance_double(ConnectionPool)
     allow(Rails).to receive(:cache).and_return(cache_store)
     allow(cache_store).to receive_messages(redis: redis_pool, options: { namespace: namespace })
     allow(redis_pool).to receive(:with).and_yield(redis)

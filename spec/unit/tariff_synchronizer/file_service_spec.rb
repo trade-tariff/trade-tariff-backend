@@ -1,6 +1,4 @@
 RSpec.describe TariffSynchronizer::FileService do
-  let(:base_update) { create :base_update }
-
   context 'when development' do
     describe '.write_file' do
       it 'Saves the file in the local filesystem', :aggregate_failures do
@@ -32,6 +30,8 @@ RSpec.describe TariffSynchronizer::FileService do
     end
 
     describe '.file_as_stringio' do
+      let(:base_update) { create :base_update }
+
       it 'returns a IO object with the associated file info', :aggregate_failures do
         allow(base_update).to receive(:file_path).and_return('spec/fixtures/hello_world.txt')
         result = described_class.file_as_stringio(base_update)
@@ -86,6 +86,8 @@ RSpec.describe TariffSynchronizer::FileService do
     end
 
     describe '.file_as_stringio' do
+      let(:base_update) { create :base_update }
+
       it 'calls amazon s3 to get the object with the same file_path and returns a string io', :aggregate_failures do
         aws_object_output = instance_double(Aws::S3::Types::GetObjectOutput)
 
@@ -101,17 +103,13 @@ RSpec.describe TariffSynchronizer::FileService do
     end
 
     describe 'S3 retry behaviour' do
-      let(:transient_error) { Aws::S3::Errors::ServiceUnavailable.new(nil, 'Service Unavailable') }
-      let(:non_transient_error) { Aws::S3::Errors::NoSuchKey.new(nil, 'Not Found') }
-      let(:access_denied_error) { Aws::S3::Errors::AccessDenied.new(nil, 'Access Denied') }
-      let(:network_error) { Seahorse::Client::NetworkingError.new(RuntimeError.new('connection timeout')) }
-
       before do
         # Prevent real sleeps during retries
         allow(described_class).to receive(:s3_backoff)
       end
 
       context 'when a transient error occurs then succeeds' do
+        let(:transient_error) { Aws::S3::Errors::ServiceUnavailable.new(nil, 'Service Unavailable') }
         let(:aws_object_output) { instance_double(Aws::S3::Types::GetObjectOutput, body: 'content') }
 
         before do
@@ -141,6 +139,8 @@ RSpec.describe TariffSynchronizer::FileService do
       end
 
       context 'when a transient error persists beyond S3_MAX_RETRIES' do
+        let(:transient_error) { Aws::S3::Errors::ServiceUnavailable.new(nil, 'Service Unavailable') }
+
         before do
           allow(aws_object).to receive(:get).and_raise(transient_error)
         end
@@ -168,6 +168,8 @@ RSpec.describe TariffSynchronizer::FileService do
       end
 
       context 'when a non-transient error (NoSuchKey) occurs' do
+        let(:non_transient_error) { Aws::S3::Errors::NoSuchKey.new(nil, 'Not Found') }
+
         before do
           allow(aws_object).to receive(:get).and_raise(non_transient_error)
         end
@@ -195,6 +197,8 @@ RSpec.describe TariffSynchronizer::FileService do
       end
 
       context 'when a non-transient error (AccessDenied) occurs' do
+        let(:access_denied_error) { Aws::S3::Errors::AccessDenied.new(nil, 'Access Denied') }
+
         before do
           allow(aws_object).to receive(:get).and_raise(access_denied_error)
         end
@@ -208,6 +212,8 @@ RSpec.describe TariffSynchronizer::FileService do
       end
 
       context 'when a network error occurs' do
+        let(:network_error) { Seahorse::Client::NetworkingError.new(RuntimeError.new('connection timeout')) }
+
         before do
           allow(aws_object).to receive(:get).and_raise(network_error)
         end
@@ -221,6 +227,8 @@ RSpec.describe TariffSynchronizer::FileService do
       end
 
       context 'when write_file encounters a transient error' do
+        let(:transient_error) { Aws::S3::Errors::ServiceUnavailable.new(nil, 'Service Unavailable') }
+
         before do
           allow(aws_object).to receive(:put).and_raise(transient_error)
         end

@@ -8,7 +8,8 @@ RSpec.describe Api::Admin::CustomsTariffUpdates::SectionNotesController do
       create(:customs_tariff_section_note, customs_tariff_update: approved_update, section_id: 1,
                                            content: 'Old content that is long enough to be text-diffed by the service version one')
     end
-    let!(:pending_note) do
+
+    before do
       create(:customs_tariff_section_note, customs_tariff_update: pending_update, section_id: 1,
                                            content: 'New content that is long enough to be text-diffed by the service version two')
     end
@@ -24,7 +25,9 @@ RSpec.describe Api::Admin::CustomsTariffUpdates::SectionNotesController do
     end
 
     it 'returns file_diff as empty hash when content is identical' do
-      pending_note.update(content: approved_note.content)
+      CustomsTariffSectionNote
+        .first(customs_tariff_update_version: pending_update.version, section_id: 1)
+        .update(content: approved_note.content)
 
       get "/uk/admin/customs_tariff_updates/#{pending_update.version}/section_notes.json",
           headers: request_headers(format: :json)

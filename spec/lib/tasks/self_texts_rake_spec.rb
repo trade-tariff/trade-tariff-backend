@@ -136,33 +136,26 @@ RSpec.describe 'self_texts rake tasks' do
     end
 
     context 'with an existing chapter code' do
-      let(:chapter_code) { '42' }
       let!(:chapter) { create(:chapter, goods_nomenclature_item_id: '4200000000') }
-      let!(:expired_chapter) do
-        create(:chapter, :expired, goods_nomenclature_item_id: '4200000000')
-      end
-      let(:other_result) { { processed: 2, failed: 0 } }
-      let(:non_other_result) { { processed: 3, failed: 0 } }
 
       before do
-        ENV['CHAPTER'] = chapter_code
-        allow(GenerateSelfText::OtherSelfTextBuilder).to receive(:call).and_return(other_result)
-        allow(GenerateSelfText::NonOtherSelfTextBuilder).to receive(:call).and_return(non_other_result)
+        ENV['CHAPTER'] = '42'
+        create(:chapter, :expired, goods_nomenclature_item_id: '4200000000')
+        allow(GenerateSelfText::OtherSelfTextBuilder).to receive(:call).and_return(processed: 2, failed: 0)
+        allow(GenerateSelfText::NonOtherSelfTextBuilder).to receive(:call).and_return(processed: 3, failed: 0)
       end
 
       it 'generates both kinds of self-text inline for the actual chapter' do
         expect { generate }.to output(<<~OUTPUT).to_stdout
           Generating self-texts for chapter 42...
-          Other AI: #{other_result.inspect}
-          Non-Other AI: #{non_other_result.inspect}
+          Other AI: #{{ processed: 2, failed: 0 }.inspect}
+          Non-Other AI: #{{ processed: 3, failed: 0 }.inspect}
         OUTPUT
 
         expect(GenerateSelfText::OtherSelfTextBuilder).to have_received(:call).with(chapter).once.ordered
         expect(GenerateSelfText::NonOtherSelfTextBuilder).to have_received(:call).with(chapter).once.ordered
         expect(GenerateSelfText::OtherSelfTextBuilder).to have_received(:call).once
         expect(GenerateSelfText::NonOtherSelfTextBuilder).to have_received(:call).once
-        expect(GenerateSelfText::OtherSelfTextBuilder).not_to have_received(:call).with(expired_chapter)
-        expect(GenerateSelfText::NonOtherSelfTextBuilder).not_to have_received(:call).with(expired_chapter)
         expect(GenerateSelfTextWorker).not_to have_received(:perform_async)
       end
     end

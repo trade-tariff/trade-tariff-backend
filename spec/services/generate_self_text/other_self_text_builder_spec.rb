@@ -16,17 +16,9 @@ RSpec.describe GenerateSelfText::OtherSelfTextBuilder do
              parent: heading)
     end
 
-    let(:named_sibling) do
-      create(:commodity, :with_description,
-             description: 'Pure-bred breeding animals',
-             parent: heading)
-    end
-
     let(:ai_client) { instance_double(OpenaiClient) }
-    let(:system_prompt_text) { 'You are an expert in the UK Trade Tariff.' }
-    let(:seed_self_text_context) { true }
 
-    let(:successful_response) do
+    def successful_response
       {
         'descriptions' => [
           {
@@ -39,16 +31,16 @@ RSpec.describe GenerateSelfText::OtherSelfTextBuilder do
     end
 
     before do
-      named_sibling
+      create(:commodity, :with_description,
+             description: 'Pure-bred breeding animals',
+             parent: heading)
       other_commodity
 
-      if seed_self_text_context
-        create(:admin_configuration,
-               name: 'other_self_text_context',
-               config_type: 'markdown',
-               description: 'System prompt for self-text generation',
-               value: system_prompt_text)
-      end
+      create(:admin_configuration,
+             name: 'other_self_text_context',
+             config_type: 'markdown',
+             description: 'System prompt for self-text generation',
+             value: 'You are an expert in the UK Trade Tariff.')
 
       create(:admin_configuration,
              name: 'other_self_text_model',
@@ -98,19 +90,14 @@ RSpec.describe GenerateSelfText::OtherSelfTextBuilder do
     end
 
     context 'with batch sizing' do
-      let(:other_commodities) do
+      before do
         Array.new(6) do
           create(:commodity, :with_description,
                  description: 'Other',
                  parent: heading)
         end
-      end
-
-      before do
         allow(AdminConfiguration).to receive(:integer_value)
           .with('other_self_text_batch_size').and_return(3)
-
-        other_commodities
 
         allow(ai_client).to receive(:call) do |messages, **_opts|
           user_content = JSON.parse(messages.last[:content])
@@ -184,27 +171,19 @@ RSpec.describe GenerateSelfText::OtherSelfTextBuilder do
     end
 
     context 'when AI returns fewer descriptions than targets' do
-      let(:second_other_commodity) do
-        create(:commodity, :with_description,
-               description: 'Other',
-               parent: heading)
-      end
-
-      let(:partial_response) do
-        {
-          'descriptions' => [
-            {
-              'sid' => other_commodity.goods_nomenclature_sid,
-              'contextualised_description' => 'Live horses (excl. pure-bred for breeding)',
-              'excluded_siblings' => ['Pure-bred breeding animals'],
-            },
-          ],
-        }.to_json
-      end
-
       before do
-        second_other_commodity
-        allow(ai_client).to receive(:call).and_return(partial_response)
+        create(:commodity, :with_description, description: 'Other', parent: heading)
+        allow(ai_client).to receive(:call).and_return(
+          {
+            'descriptions' => [
+              {
+                'sid' => other_commodity.goods_nomenclature_sid,
+                'contextualised_description' => 'Live horses (excl. pure-bred for breeding)',
+                'excluded_siblings' => ['Pure-bred breeding animals'],
+              },
+            ],
+          }.to_json,
+        )
       end
 
       it 'counts missing targets as failed' do
@@ -243,37 +222,18 @@ RSpec.describe GenerateSelfText::OtherSelfTextBuilder do
       end
     end
 
-    context 'with a cascading Other chain' do # rubocop:disable RSpec/MultipleMemoizedHelpers
-      let(:other_heading) do
-        create(:heading, :with_description,
-               description: 'Other',
-               parent: chapter)
-      end
-
-      let(:child_under_other) do
-        create(:commodity, :with_description,
-               description: 'Other',
-               parent: other_heading)
-      end
-
-      let(:sibling_heading) do
-        create(:heading, :with_description,
-               description: 'Horses',
-               parent: chapter)
-      end
-
-      let(:sibling_of_child) do
-        create(:commodity, :with_description,
-               description: 'Widgets',
-               parent: other_heading)
+    context 'with a cascading Other chain' do
+      let!(:cascade) do
+        other_heading = create(:heading, :with_description, description: 'Other', parent: chapter)
+        {
+          other_heading:,
+          child: create(:commodity, :with_description, description: 'Other', parent: other_heading),
+          sibling_heading: create(:heading, :with_description, description: 'Horses', parent: chapter),
+          sibling_of_child: create(:commodity, :with_description, description: 'Widgets', parent: other_heading),
+        }
       end
 
       before do
-        sibling_heading
-        other_heading
-        sibling_of_child
-        child_under_other
-
         call_count = 0
         allow(ai_client).to receive(:call) do |messages, **_opts|
           call_count += 1
@@ -294,8 +254,8 @@ RSpec.describe GenerateSelfText::OtherSelfTextBuilder do
       it 'resolves parent Other before child Other' do
         result
 
-        parent_record = GoodsNomenclatureSelfText[other_heading.goods_nomenclature_sid]
-        child_record = GoodsNomenclatureSelfText[child_under_other.goods_nomenclature_sid]
+        parent_record = GoodsNomenclatureSelfText[cascade[:other_heading].goods_nomenclature_sid]
+        child_record = GoodsNomenclatureSelfText[cascade[:child].goods_nomenclature_sid]
 
         expect(parent_record).not_to be_nil
         expect(child_record).not_to be_nil
@@ -348,13 +308,15 @@ RSpec.describe GenerateSelfText::OtherSelfTextBuilder do
 
         expect(ai_client).to have_received(:call) do |messages, **_opts|
           system_msg = messages.find { |m| m[:role] == 'system' }
-          expect(system_msg[:content]).to eq(system_prompt_text)
+          expect(system_msg[:content]).to eq('You are an expert in the UK Trade Tariff.')
         end
       end
     end
 
     context 'when other_self_text_context config is missing' do
-      let(:seed_self_text_context) { false }
+      before do
+        AdminConfiguration.where(name: 'other_self_text_context').delete
+      end
 
       it 'raises an error with a helpful message' do
         expect { result }.to raise_error(RuntimeError, /other_self_text_context admin configuration not found/)

@@ -1,53 +1,8 @@
-# rubocop:disable RSpec/MultipleMemoizedHelpers
 RSpec.describe QuotaSearchService do
-  subject(:service) { described_class.new(filter, current_page, per_page, Time.zone.today) }
+  subject(:service) { described_class.new(filter, 1, 20, Time.zone.today) }
 
   around do |example|
     TimeMachine.now { example.run }
-  end
-
-  let(:validity_start_date) { Time.zone.yesterday }
-  let(:first_quota_order_number) { create :quota_order_number }
-  let!(:first_measure) { create :measure, :with_goods_nomenclature, ordernumber: first_quota_order_number.quota_order_number_id, validity_start_date: }
-  let!(:first_quota_definition) do
-    create :quota_definition,
-           quota_order_number_sid: first_quota_order_number.quota_order_number_sid,
-           quota_order_number_id: first_quota_order_number.quota_order_number_id,
-           critical_state: 'Y',
-           validity_start_date:
-  end
-  let!(:first_quota_order_number_origin) do
-    create :quota_order_number_origin,
-           :with_geographical_area,
-           quota_order_number_sid: first_quota_order_number.quota_order_number_sid
-  end
-  let!(:duplicate_measure) { create :measure, :with_goods_nomenclature, ordernumber: first_quota_order_number.quota_order_number_id, validity_start_date: validity_start_date + 1.hour }
-
-  let(:second_quota_order_number) { create :quota_order_number }
-  let(:second_measure_goods_nomenclature) { create :goods_nomenclature, parent: create(:heading) }
-  let!(:second_measure) { create :measure, goods_nomenclature: second_measure_goods_nomenclature, ordernumber: second_quota_order_number.quota_order_number_id, validity_start_date: }
-  let!(:second_quota_definition) do
-    create :quota_definition,
-           quota_order_number_sid: second_quota_order_number.quota_order_number_sid,
-           quota_order_number_id: second_quota_order_number.quota_order_number_id,
-           critical_state: 'N',
-           validity_start_date:
-  end
-  let(:geographical_area_with_members) { create(:geographical_area, :with_members) }
-  let(:geographical_area_member) { geographical_area_with_members.contained_geographical_areas.first }
-  let!(:second_quota_order_number_origin) do
-    create(
-      :quota_order_number_origin,
-      geographical_area: geographical_area_with_members,
-      quota_order_number_sid: second_quota_order_number.quota_order_number_sid,
-    )
-  end
-  let(:current_page) { 1 }
-  let(:per_page) { 20 }
-
-  before do
-    first_measure.update(geographical_area_id: first_quota_order_number_origin.geographical_area_id)
-    second_measure.update(geographical_area_id: second_quota_order_number_origin.geographical_area_id)
   end
 
   describe '#status' do
@@ -59,51 +14,53 @@ RSpec.describe QuotaSearchService do
   end
 
   describe '#call' do
+    let!(:quota_fixtures) { create_quota_fixtures }
+
     context 'when filtering by a quota order number id' do
-      let(:filter) { { 'order_number' => duplicate_measure.ordernumber } }
+      let(:filter) { { 'order_number' => quota_fixtures[:first][:duplicate_measure].ordernumber } }
 
       it 'returns the correct quota definition' do
-        expect(service.call).to eq([first_quota_definition])
+        expect(service.call).to eq([quota_fixtures[:first][:definition]])
       end
     end
 
     context 'when filtering by a fully-qualified goods_nomenclature_item_id' do
-      let(:filter) { { 'goods_nomenclature_item_id' => first_measure.goods_nomenclature_item_id } }
+      let(:filter) { { 'goods_nomenclature_item_id' => quota_fixtures[:first][:measure].goods_nomenclature_item_id } }
 
       it 'returns the correct quota definition' do
-        expect(service.call).to eq([first_quota_definition])
+        expect(service.call).to eq([quota_fixtures[:first][:definition]])
       end
     end
 
     context 'when filtering by a NOT fully-qualified goods_nomenclature_item_id' do
-      let(:filter) { { 'goods_nomenclature_item_id' => first_measure.goods_nomenclature_item_id[0..6] } }
+      let(:filter) { { 'goods_nomenclature_item_id' => quota_fixtures[:first][:measure].goods_nomenclature_item_id[0..6] } }
 
       it 'returns the correct quota definition' do
-        expect(service.call).to eq([first_quota_definition])
+        expect(service.call).to eq([quota_fixtures[:first][:definition]])
       end
     end
 
     context 'when filtering by the geographical_area_id' do
-      let(:filter) { { 'geographical_area_id' => first_quota_order_number_origin.geographical_area_id } }
+      let(:filter) { { 'geographical_area_id' => quota_fixtures[:first][:origin].geographical_area_id } }
 
       it_with_refresh_materialized_view 'returns the correct quota definition' do
-        expect(service.call).to eq([first_quota_definition])
+        expect(service.call).to eq([quota_fixtures[:first][:definition]])
       end
     end
 
     context 'when filtering by the geographical_area_id of a member' do
-      let(:filter) { { 'geographical_area_id' => geographical_area_member.geographical_area_id } }
+      let(:filter) { { 'geographical_area_id' => quota_fixtures[:second][:geographical_area_member].geographical_area_id } }
 
       it_with_refresh_materialized_view 'returns the correct quota definition' do
-        expect(service.call).to eq([second_quota_definition])
+        expect(service.call).to eq([quota_fixtures[:second][:definition]])
       end
     end
 
     context 'when filtering by the order number' do
-      let(:filter) { { 'order_number' => first_quota_order_number.quota_order_number_id } }
+      let(:filter) { { 'order_number' => quota_fixtures[:first][:order_number].quota_order_number_id } }
 
       it 'returns the correct quota definition' do
-        expect(service.call).to eq([first_quota_definition])
+        expect(service.call).to eq([quota_fixtures[:first][:definition]])
       end
     end
 
@@ -111,7 +68,7 @@ RSpec.describe QuotaSearchService do
       let(:filter) { { 'critical' => 'Y' } }
 
       it 'returns the correct quota definition' do
-        expect(service.call).to eq([first_quota_definition])
+        expect(service.call).to eq([quota_fixtures[:first][:definition]])
       end
     end
 
@@ -119,11 +76,11 @@ RSpec.describe QuotaSearchService do
       let(:filter) { { 'status' => 'exhausted' } }
 
       before do
-        create :quota_exhaustion_event, quota_definition: first_quota_definition
+        create :quota_exhaustion_event, quota_definition: quota_fixtures[:first][:definition]
       end
 
       it 'returns the correct quota definition' do
-        expect(service.call).to eq([first_quota_definition])
+        expect(service.call).to eq([quota_fixtures[:first][:definition]])
       end
     end
 
@@ -131,11 +88,11 @@ RSpec.describe QuotaSearchService do
       let(:filter) { { 'status' => 'not_exhausted' } }
 
       before do
-        create :quota_exhaustion_event, quota_definition: first_quota_definition
+        create :quota_exhaustion_event, quota_definition: quota_fixtures[:first][:definition]
       end
 
       it 'returns the correct quota definition' do
-        expect(service.call).to eq([second_quota_definition])
+        expect(service.call).to eq([quota_fixtures[:second][:definition]])
       end
     end
 
@@ -144,13 +101,13 @@ RSpec.describe QuotaSearchService do
 
       before do
         create :quota_blocking_period,
-               quota_definition_sid: first_quota_definition.quota_definition_sid,
+               quota_definition_sid: quota_fixtures[:first][:definition].quota_definition_sid,
                blocking_start_date: Time.zone.today,
                blocking_end_date: 1.year.from_now
       end
 
       it 'returns the correct quota definition' do
-        expect(service.call).to eq([first_quota_definition])
+        expect(service.call).to eq([quota_fixtures[:first][:definition]])
       end
     end
 
@@ -159,13 +116,13 @@ RSpec.describe QuotaSearchService do
 
       before do
         create :quota_blocking_period,
-               quota_definition_sid: first_quota_definition.quota_definition_sid,
+               quota_definition_sid: quota_fixtures[:first][:definition].quota_definition_sid,
                blocking_start_date: Time.zone.today,
                blocking_end_date: 1.year.from_now
       end
 
       it 'returns the correct quota definition' do
-        expect(service.call).to eq([second_quota_definition])
+        expect(service.call).to eq([quota_fixtures[:second][:definition]])
       end
     end
 
@@ -191,6 +148,10 @@ RSpec.describe QuotaSearchService do
 
     let(:filter) { {} }
 
+    before do
+      create_quota_fixtures
+    end
+
     context 'with records' do
       it { is_expected.to eq 2 }
     end
@@ -209,5 +170,66 @@ RSpec.describe QuotaSearchService do
       end
     end
   end
+
+  def create_quota_fixtures
+    {
+      first: create_quota_fixture(critical_state: 'Y', duplicate_measure: true),
+      second: create_quota_fixture(critical_state: 'N', geographical_area_with_members: true),
+    }
+  end
+
+  def create_quota_fixture(critical_state:, duplicate_measure: false, geographical_area_with_members: false)
+    validity_start_date = Time.zone.yesterday
+    order_number = create(:quota_order_number)
+    measure = if duplicate_measure
+                create(
+                  :measure,
+                  :with_goods_nomenclature,
+                  ordernumber: order_number.quota_order_number_id,
+                  validity_start_date:,
+                )
+              else
+                goods_nomenclature = create(:goods_nomenclature, parent: create(:heading))
+                create(
+                  :measure,
+                  goods_nomenclature:,
+                  ordernumber: order_number.quota_order_number_id,
+                  validity_start_date:,
+                )
+              end
+    definition = create(
+      :quota_definition,
+      quota_order_number_sid: order_number.quota_order_number_sid,
+      quota_order_number_id: order_number.quota_order_number_id,
+      critical_state:,
+      validity_start_date:,
+    )
+    geographical_area = create(
+      :geographical_area,
+      *(:with_members if geographical_area_with_members),
+    )
+    origin = create(
+      :quota_order_number_origin,
+      geographical_area:,
+      quota_order_number_sid: order_number.quota_order_number_sid,
+    )
+    measure.update(geographical_area_id: origin.geographical_area_id)
+
+    fixture = {
+      order_number:,
+      measure:,
+      definition:,
+      origin:,
+      geographical_area_member: geographical_area.contained_geographical_areas.first,
+    }
+    if duplicate_measure
+      fixture[:duplicate_measure] = create(
+        :measure,
+        :with_goods_nomenclature,
+        ordernumber: order_number.quota_order_number_id,
+        validity_start_date: validity_start_date + 1.hour,
+      )
+    end
+    fixture
+  end
 end
-# rubocop:enable RSpec/MultipleMemoizedHelpers

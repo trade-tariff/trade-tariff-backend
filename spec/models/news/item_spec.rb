@@ -308,29 +308,25 @@ RSpec.describe News::Item do
     describe '.for_chapters' do
       subject(:result) { described_class.for_chapters(chapters) }
 
-      let(:first_item_with_chapters) { create(:news_item, chapters: '01') }
-      let(:second_item_with_chapters) { create(:news_item, chapters: '02') }
-      let(:item_with_chapters_one_and_two) { create(:news_item, chapters: '01,02') }
-      let(:item_with_chapters_three_and_four) { create(:news_item, chapters: '03,04') }
-      let(:item_with_nil_chapters) { create(:news_item, chapters: nil) }
-      let(:item_with_empty_chapters) { create(:news_item, chapters: '') }
-
-      before do
-        first_item_with_chapters
-        second_item_with_chapters
-        item_with_chapters_one_and_two
-        item_with_chapters_three_and_four
-        item_with_nil_chapters
-        item_with_empty_chapters
+      let!(:chapter_items) do
+        {
+          first: create(:news_item, chapters: '01'),
+          second: create(:news_item, chapters: '02'),
+          first_and_second: create(:news_item, chapters: '01,02'),
+          third_and_fourth: create(:news_item, chapters: '03,04'),
+          none: create(:news_item, chapters: nil),
+          empty: create(:news_item, chapters: ''),
+        }
       end
+
+      def chapter_item(name) = chapter_items.fetch(name)
 
       context 'when chapters parameter is blank' do
         let(:chapters) { nil }
 
         it 'returns all items' do
           expect(result.count).to eq(6)
-          expect(result).to include(first_item_with_chapters, second_item_with_chapters, item_with_chapters_one_and_two,
-                                    item_with_chapters_three_and_four, item_with_nil_chapters, item_with_empty_chapters)
+          expect(result).to include(*chapter_items.values)
         end
       end
 
@@ -339,8 +335,7 @@ RSpec.describe News::Item do
 
         it 'returns all items' do
           expect(result.count).to eq(6)
-          expect(result).to include(first_item_with_chapters, second_item_with_chapters, item_with_chapters_one_and_two,
-                                    item_with_chapters_three_and_four, item_with_nil_chapters, item_with_empty_chapters)
+          expect(result).to include(*chapter_items.values)
         end
       end
 
@@ -348,16 +343,16 @@ RSpec.describe News::Item do
         let(:chapters) { '01' }
 
         it 'returns items that include that chapter' do
-          expect(result).to include(first_item_with_chapters, item_with_chapters_one_and_two)
-          expect(result).not_to include(second_item_with_chapters, item_with_chapters_three_and_four)
+          expect(result).to include(chapter_item(:first), chapter_item(:first_and_second))
+          expect(result).not_to include(chapter_item(:second), chapter_item(:third_and_fourth))
         end
 
         it 'includes items with nil chapters' do
-          expect(result).to include(item_with_nil_chapters)
+          expect(result).to include(chapter_item(:none))
         end
 
         it 'includes items with empty chapters' do
-          expect(result).to include(item_with_empty_chapters)
+          expect(result).to include(chapter_item(:empty))
         end
       end
 
@@ -365,16 +360,16 @@ RSpec.describe News::Item do
         let(:chapters) { '01,02' }
 
         it 'returns items that include any of those chapters' do
-          expect(result).to include(first_item_with_chapters, second_item_with_chapters, item_with_chapters_one_and_two)
-          expect(result).not_to include(item_with_chapters_three_and_four)
+          expect(result).to include(chapter_item(:first), chapter_item(:second), chapter_item(:first_and_second))
+          expect(result).not_to include(chapter_item(:third_and_fourth))
         end
 
         it 'includes items with nil chapters' do
-          expect(result).to include(item_with_nil_chapters)
+          expect(result).to include(chapter_item(:none))
         end
 
         it 'includes items with empty chapters' do
-          expect(result).to include(item_with_empty_chapters)
+          expect(result).to include(chapter_item(:empty))
         end
       end
 
@@ -382,9 +377,13 @@ RSpec.describe News::Item do
         let(:chapters) { '05,06' }
 
         it 'returns only items with nil or empty chapters' do
-          expect(result).to include(item_with_nil_chapters, item_with_empty_chapters)
-          expect(result).not_to include(first_item_with_chapters, second_item_with_chapters,
-                                        item_with_chapters_one_and_two, item_with_chapters_three_and_four)
+          expect(result).to include(chapter_item(:none), chapter_item(:empty))
+          expect(result).not_to include(
+            chapter_item(:first),
+            chapter_item(:second),
+            chapter_item(:first_and_second),
+            chapter_item(:third_and_fourth),
+          )
         end
       end
 
@@ -392,8 +391,8 @@ RSpec.describe News::Item do
         let(:chapters) { ' 01 , 02 ' }
 
         it 'trims spaces and returns items that include any of those chapters' do
-          expect(result).to include(first_item_with_chapters, second_item_with_chapters, item_with_chapters_one_and_two)
-          expect(result).not_to include(item_with_chapters_three_and_four)
+          expect(result).to include(chapter_item(:first), chapter_item(:second), chapter_item(:first_and_second))
+          expect(result).not_to include(chapter_item(:third_and_fourth))
         end
       end
     end

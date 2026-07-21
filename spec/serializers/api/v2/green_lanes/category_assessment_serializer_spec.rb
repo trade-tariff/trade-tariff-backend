@@ -18,8 +18,8 @@ RSpec.describe Api::V2::GreenLanes::CategoryAssessmentSerializer do
     Api::V2::GreenLanes::CategoryAssessmentPresenter.wrap(category_assessment).first
   end
 
-  let(:expected_pattern) do
-    {
+  it 'serializes the category assessment and included resources' do
+    expected_pattern = {
       data: {
         id: be_a(String),
         type: 'category_assessment',
@@ -102,9 +102,9 @@ RSpec.describe Api::V2::GreenLanes::CategoryAssessmentSerializer do
         },
       ],
     }
-  end
 
-  it { is_expected.to include_json(expected_pattern) }
+    expect(serialized).to include_json(expected_pattern)
+  end
 
   describe 'measures relationship' do
     context 'with measures' do

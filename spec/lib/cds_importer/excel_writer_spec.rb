@@ -2,30 +2,6 @@ RSpec.describe CdsImporter::ExcelWriter do
   subject(:writer) { described_class.new(filename) }
 
   let(:filename) { 'test.xlsx' }
-  let(:first_entity) do
-    instance_double(
-      CdsImporter::CdsEntity,
-      key: 'K',
-      element_id: 'E1',
-      instance: 'I1',
-    )
-  end
-  let(:second_entity) do
-    instance_double(
-      CdsImporter::CdsEntity,
-      key: 'K',
-      element_id: 'E2',
-      instance: 'I2',
-    )
-  end
-  let(:third_entity) do
-    instance_double(
-      CdsImporter::CdsEntity,
-      key: 'NotExist',
-      element_id: 'E2',
-      instance: 'I2',
-    )
-  end
   let(:excel) do
     instance_double(CdsImporter::ExcelWriter::QuotaDefinition,
                     valid?: true,
@@ -40,6 +16,10 @@ RSpec.describe CdsImporter::ExcelWriter do
                  table_span: [],
                  column_widths: [],
                  new: excel)
+  end
+
+  def cds_entity(key: 'K', element_id: 'E1', instance: 'I1')
+    instance_double(CdsImporter::CdsEntity, key:, element_id:, instance:)
   end
 
   before do
@@ -64,7 +44,7 @@ RSpec.describe CdsImporter::ExcelWriter do
   describe 'process_record' do
     context 'when xml_element_id is nil' do
       it 'sets key, xml_element_id, and adds the instance' do
-        writer.process_record(first_entity)
+        writer.process_record(cds_entity)
 
         expect(excel_class).not_to have_received(:sheet_name)
         expect(writer.instance_variable_get(:@key)).to eq('K')
@@ -75,8 +55,8 @@ RSpec.describe CdsImporter::ExcelWriter do
 
     context 'when xml_element_id changes' do
       it 'writes existing instances and resets before adding new one' do
-        writer.process_record(first_entity)
-        writer.process_record(second_entity)
+        writer.process_record(cds_entity)
+        writer.process_record(cds_entity(element_id: 'E2', instance: 'I2'))
 
         expect(excel).to have_received(:data_row)
         expect(writer.instance_variable_get(:@key)).to eq('K')
@@ -87,8 +67,9 @@ RSpec.describe CdsImporter::ExcelWriter do
 
     context 'when xml_element_id stays the same' do
       it 'does not call write and accumulates instances' do
-        writer.process_record(first_entity)
-        writer.process_record(first_entity)
+        entity = cds_entity
+        writer.process_record(entity)
+        writer.process_record(entity)
 
         expect(excel_class).not_to have_received(:sheet_name)
         expect(writer.instance_variable_get(:@instances)).to eq(%w[I1 I1])
@@ -98,8 +79,8 @@ RSpec.describe CdsImporter::ExcelWriter do
 
   describe 'handle invalid cds entity' do
     it 'handles key that not mapped' do
-      writer.process_record(third_entity)
-      writer.process_record(first_entity)
+      writer.process_record(cds_entity(key: 'NotExist', element_id: 'E2', instance: 'I2'))
+      writer.process_record(cds_entity)
 
       expect(excel_class).not_to have_received(:sheet_name)
       expect(writer.instance_variable_get(:@key)).to eq('K')

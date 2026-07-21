@@ -5,8 +5,7 @@ RSpec.describe MyCommoditiesEmailWorker, type: :worker do
   let(:date) { '08/12/2025' }
   let(:count) { 5 }
   let(:mock_notifier) { instance_double(GovukNotifier) }
-  let(:notification_id) { SecureRandom.uuid }
-  let(:notify_response) { instance_double(GovukNotifierAudit, notification_uuid: notification_id) }
+  let(:notify_response) { instance_double(GovukNotifierAudit, notification_uuid: SecureRandom.uuid) }
 
   before do
     allow(IdentityApiClient).to receive(:get_email).and_return('test@example.com')
