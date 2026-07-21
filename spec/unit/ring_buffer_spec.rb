@@ -1,4 +1,13 @@
 RSpec.describe RingBuffer do
+  describe '.new' do
+    subject(:ring_buffer) { described_class.new(2) }
+
+    it 'initializes an empty bounded array', :aggregate_failures do
+      expect(ring_buffer).to eq([])
+      expect(ring_buffer.max_size).to eq(2)
+    end
+  end
+
   describe '#push' do
     let(:ring_buffer) { described_class.new(2) }
 

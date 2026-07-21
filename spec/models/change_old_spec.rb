@@ -9,6 +9,12 @@ RSpec.describe ChangeOld do
     )
   end
 
+  describe '#model' do
+    it 'resolves the supplied model name' do
+      expect(change_old.model).to eq(Measure)
+    end
+  end
+
   describe '#operation_record' do
     it 'returns relevant models operation record' do
       expect(change_old.operation_record).to eq measure.source
