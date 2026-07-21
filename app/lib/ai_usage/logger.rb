@@ -33,7 +33,9 @@ module AiUsage
     end
 
     def log_entry(data)
-      data.merge(service: 'ai_usage', timestamp: Time.current.iso8601).to_json
+      entry = data.merge(service: 'ai_usage', timestamp: Time.current.iso8601)
+      entry[:experiment] = TradeTariffRequest.experiment if TradeTariffRequest.experiment.present?
+      entry.to_json
     end
 
     def add_ai_usage_fields!(data, event)

@@ -1,6 +1,6 @@
 # search_experiment_dashboard
 
-CloudWatch Logs Insights dashboard for a selected search experiment cohort.
+CloudWatch Logs Insights dashboard for reviewing a labelled production-UAT search cohort. It summarises request outcomes, latency, AI usage and cost, search behaviour, and request IDs for diagnostic follow-up.
 
 <!-- BEGIN_TF_DOCS -->
 ## Requirements
