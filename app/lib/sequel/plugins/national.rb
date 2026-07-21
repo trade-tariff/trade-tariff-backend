@@ -5,9 +5,7 @@ module Sequel
         def national
           pk = Sequel.qualify(model.table_name, model.primary_key)
 
-          # rubocop:disable Style/NumericPredicate
-          where { pk < 0 }.order(pk.desc)
-          # rubocop:enable Style/NumericPredicate
+          where(pk => ...0).order(pk.desc)
         end
       end
 

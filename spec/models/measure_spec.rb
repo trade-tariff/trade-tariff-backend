@@ -1548,15 +1548,33 @@ RSpec.describe Measure do
   end
 
   describe '.national' do
-    let(:national_measure) { create(:measure, :national) }
-    let(:non_national_measure) { create(:measure) }
+    let!(:latest_national_measure) { create(:measure, :national, measure_sid: -2) }
+    let!(:earliest_national_measure) { create(:measure, :national, measure_sid: -10) }
 
-    before do
-      national_measure
-      non_national_measure
+    before { create(:measure, measure_sid: 5) }
+
+    it 'returns negative SIDs in descending order' do
+      expect(described_class.national.all).to eq([latest_national_measure, earliest_national_measure])
+    end
+  end
+
+  describe '.next_national_sid' do
+    context 'with existing national measures' do
+      before do
+        create(:measure, :national, measure_sid: -2)
+        create(:measure, :national, measure_sid: -10)
+      end
+
+      it 'returns the next SID below the current range' do
+        expect(described_class.next_national_sid).to eq(-11)
+      end
     end
 
-    it { expect(described_class.national.all).to eq([national_measure]) }
+    context 'without existing national measures' do
+      it 'starts the national SID range at minus one' do
+        expect(described_class.next_national_sid).to eq(-1)
+      end
+    end
   end
 
   describe '#category_assessments' do
