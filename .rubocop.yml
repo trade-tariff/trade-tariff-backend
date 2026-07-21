@@ -55,14 +55,6 @@ Metrics/BlockLength:
 Metrics/ModuleLength:
   Enabled: true
 
-RSpec/SpecFilePathFormat:
-  Enabled: true
-  Exclude:
-    - spec/presenters/**/*
-    - spec/serializers/**/*
-    - spec/requests/**/*
-    - spec/swagger/**/*
-
 RSpec/ContextWording:
   Prefixes:
     - when
