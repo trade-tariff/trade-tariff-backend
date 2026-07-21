@@ -1,83 +1,58 @@
 RSpec.describe CdsImporter::ExcelWriter::AdditionalCode do
   subject(:mapper) { described_class.new(models) }
 
-  let(:additional_code_type) do
-    instance_double(
-      AdditionalCode,
-      class: instance_double(Class, name: 'AdditionalCode'),
-      additional_code_type_id: 'A',
-      additional_code: '507',
-      operation: 'C',
-      validity_start_date: Time.utc(2025, 1, 1, 0, 0, 0),
-      validity_end_date: Time.utc(2025, 12, 31, 23, 59, 59),
-    )
-  end
-
-  let(:second_additional_code_type) do
-    instance_double(
-      AdditionalCode,
-      class: instance_double(Class, name: 'AdditionalCode'),
-      additional_code_type_id: 'A',
-      additional_code: '507',
-      operation: 'U',
-      validity_start_date: nil,
-      validity_end_date: nil,
-    )
-  end
-
-  let(:description_period) do
-    instance_double(
-      AdditionalCodeDescriptionPeriod,
-      class: instance_double(Class, name: 'AdditionalCodeDescriptionPeriod'),
-      additional_code_description_period_sid: 1,
-      additional_code_sid: 1,
-      additional_code_type_id: 'A',
-      additional_code: '507',
-      validity_start_date: Time.utc(2025, 1, 1, 0, 0, 0),
-      validity_end_date: Time.utc(2025, 12, 31, 23, 59, 59),
-    )
-  end
-
-  let(:description) do
-    instance_double(
-      AdditionalCodeDescription,
-      class: instance_double(Class, name: 'AdditionalCodeDescription'),
-      additional_code_description_period_sid: 1,
-      additional_code_sid: 1,
-      additional_code_type_id: 'A',
-      additional_code: '507',
-      description: 'Other',
-    )
-  end
-
-  let(:second_description_period) do
-    instance_double(
-      AdditionalCodeDescriptionPeriod,
-      class: instance_double(Class, name: 'AdditionalCodeDescriptionPeriod'),
-      additional_code_description_period_sid: 2,
-      additional_code_sid: 1,
-      additional_code_type_id: 'A',
-      additional_code: '507',
-      validity_start_date: Time.utc(2025, 1, 1, 0, 0, 0),
-      validity_end_date: Time.utc(2025, 12, 31, 23, 59, 59),
-    )
-  end
-
-  let(:second_description) do
-    instance_double(
-      AdditionalCodeDescription,
-      class: instance_double(Class, name: 'AdditionalCodeDescription'),
-      additional_code_description_period_sid: 2,
-      additional_code_sid: 1,
-      additional_code_type_id: 'A',
-      additional_code: '507',
-      description: 'Brother Industries Ltd.',
-    )
+  def model(model_class, **attributes)
+    instance_double(model_class, class: instance_double(Class, name: model_class.name), **attributes)
   end
 
   describe '#data_row' do
     context 'when all fields are valid' do
-      let(:models) { [additional_code_type, description, description_period, second_description, second_description_period] }
+      let(:models) do
+        [
+          model(
+            AdditionalCode,
+            additional_code_type_id: 'A',
+            additional_code: '507',
+            operation: 'C',
+            validity_start_date: Time.utc(2025, 1, 1, 0, 0, 0),
+            validity_end_date: Time.utc(2025, 12, 31, 23, 59, 59),
+          ),
+          model(
+            AdditionalCodeDescription,
+            additional_code_description_period_sid: 1,
+            additional_code_sid: 1,
+            additional_code_type_id: 'A',
+            additional_code: '507',
+            description: 'Other',
+          ),
+          model(
+            AdditionalCodeDescriptionPeriod,
+            additional_code_description_period_sid: 1,
+            additional_code_sid: 1,
+            additional_code_type_id: 'A',
+            additional_code: '507',
+            validity_start_date: Time.utc(2025, 1, 1, 0, 0, 0),
+            validity_end_date: Time.utc(2025, 12, 31, 23, 59, 59),
+          ),
+          model(
+            AdditionalCodeDescription,
+            additional_code_description_period_sid: 2,
+            additional_code_sid: 1,
+            additional_code_type_id: 'A',
+            additional_code: '507',
+            description: 'Brother Industries Ltd.',
+          ),
+          model(
+            AdditionalCodeDescriptionPeriod,
+            additional_code_description_period_sid: 2,
+            additional_code_sid: 1,
+            additional_code_type_id: 'A',
+            additional_code: '507',
+            validity_start_date: Time.utc(2025, 1, 1, 0, 0, 0),
+            validity_end_date: Time.utc(2025, 12, 31, 23, 59, 59),
+          ),
+        ]
+      end
 
       it 'returns a correctly formatted data row' do
         row = mapper.data_row
@@ -92,7 +67,16 @@ RSpec.describe CdsImporter::ExcelWriter::AdditionalCode do
     end
 
     context 'when there is no description' do
-      let(:models) { [additional_code_type] }
+      let(:models) do
+        [model(
+          AdditionalCode,
+          additional_code_type_id: 'A',
+          additional_code: '507',
+          operation: 'C',
+          validity_start_date: Time.utc(2025, 1, 1, 0, 0, 0),
+          validity_end_date: Time.utc(2025, 12, 31, 23, 59, 59),
+        )]
+      end
 
       it 'returns a correctly formatted data row' do
         row = mapper.data_row
@@ -107,7 +91,27 @@ RSpec.describe CdsImporter::ExcelWriter::AdditionalCode do
     end
 
     context 'when there are empty fields' do
-      let(:models) { [second_additional_code_type, description_period] }
+      let(:models) do
+        [
+          model(
+            AdditionalCode,
+            additional_code_type_id: 'A',
+            additional_code: '507',
+            operation: 'U',
+            validity_start_date: nil,
+            validity_end_date: nil,
+          ),
+          model(
+            AdditionalCodeDescriptionPeriod,
+            additional_code_description_period_sid: 1,
+            additional_code_sid: 1,
+            additional_code_type_id: 'A',
+            additional_code: '507',
+            validity_start_date: Time.utc(2025, 1, 1, 0, 0, 0),
+            validity_end_date: Time.utc(2025, 12, 31, 23, 59, 59),
+          ),
+        ]
+      end
 
       it 'returns a correctly formatted data row' do
         row = mapper.data_row

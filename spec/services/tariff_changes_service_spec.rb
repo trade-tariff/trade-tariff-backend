@@ -1,8 +1,6 @@
 RSpec.describe TariffChangesService do
-  let(:date) { Date.new(2025, 1, 15) }
-  let(:service) { described_class.new(date) }
-
   describe '.generate' do
+    let(:date) { Date.new(2025, 1, 15) }
     let(:service) { instance_double(described_class) }
     let(:last_change_date) { Time.zone.today - 5.days }
 
@@ -136,19 +134,18 @@ RSpec.describe TariffChangesService do
 
     context 'when user is provided' do
       let(:user) { create(:public_user) }
-      let(:commodity_ids) { [12_345, 67_890] }
       let(:user_change_records) { [{ dummy: 'user_data' }] }
 
       before do
-        allow(user).to receive(:target_ids_for_my_commodities).and_return(commodity_ids)
-        allow(TariffChangesService::TransformRecords).to receive(:call).with(date, commodity_ids).and_return(user_change_records)
+        allow(user).to receive(:target_ids_for_my_commodities).and_return([12_345, 67_890])
+        allow(TariffChangesService::TransformRecords).to receive(:call).with(date, [12_345, 67_890]).and_return(user_change_records)
         allow(TariffChangesService::ExcelGenerator).to receive(:call).with(user_change_records, date).and_return(package)
       end
 
       it 'transforms records with user commodity ids' do
         described_class.generate_report_for(date, user)
 
-        expect(TariffChangesService::TransformRecords).to have_received(:call).with(date, commodity_ids)
+        expect(TariffChangesService::TransformRecords).to have_received(:call).with(date, [12_345, 67_890])
       end
 
       it 'generates Excel package with the user-filtered records' do
@@ -160,6 +157,9 @@ RSpec.describe TariffChangesService do
   end
 
   describe '#initialize' do
+    let(:date) { Date.new(2025, 1, 15) }
+    let(:service) { described_class.new(date) }
+
     it 'sets the date and initializes empty collections' do
       expect(service.date).to eq(date)
       expect(service.tariff_change_records).to eq([])
@@ -168,9 +168,8 @@ RSpec.describe TariffChangesService do
   end
 
   describe '#all_changes' do
-    let(:commodity_changes) { [commodity_change] }
-    let(:commodity_description_changes) { [commodity_description_change] }
-    let(:measure_changes) { [measure_change] }
+    let(:date) { Date.new(2025, 1, 15) }
+    let(:service) { described_class.new(date) }
     let(:commodity_change) do
       {
         type: 'Commodity',
@@ -208,9 +207,9 @@ RSpec.describe TariffChangesService do
     end
 
     before do
-      allow(TariffChangesService::CommodityChanges).to receive(:collect).with(date).and_return(commodity_changes)
-      allow(TariffChangesService::CommodityDescriptionChanges).to receive(:collect).with(date).and_return(commodity_description_changes)
-      allow(TariffChangesService::MeasureChanges).to receive(:collect).with(date).and_return(measure_changes)
+      allow(TariffChangesService::CommodityChanges).to receive(:collect).with(date).and_return([commodity_change])
+      allow(TariffChangesService::CommodityDescriptionChanges).to receive(:collect).with(date).and_return([commodity_description_change])
+      allow(TariffChangesService::MeasureChanges).to receive(:collect).with(date).and_return([measure_change])
     end
 
     it 'executes within a TimeMachine context' do
@@ -417,42 +416,37 @@ RSpec.describe TariffChangesService do
   end
 
   describe '#generate_commodity_change_records' do
-    let(:commodity_change) do
+    let(:date) { Date.new(2025, 1, 15) }
+    let(:service) { described_class.new(date) }
+    let(:changes) do
       {
-        type: 'Commodity',
-        goods_nomenclature_item_id: '0101010100',
-        object_sid: 12_345,
+        commodities: [{
+          type: 'Commodity',
+          goods_nomenclature_item_id: '0101010100',
+          object_sid: 12_345,
+        }],
+        commodity_descriptions: [{
+          type: 'CommodityDescription',
+          goods_nomenclature_item_id: '0102020200',
+          object_sid: 23_456,
+          goods_nomenclature_sid: 23_456,
+          action: 'update',
+        }],
+        measures: [{
+          type: 'Measure',
+          object_sid: 54_321,
+          goods_nomenclature_sid: 67_890,
+        }],
       }
     end
-    let(:commodity_description_change) do
-      {
-        type: 'CommodityDescription',
-        goods_nomenclature_item_id: '0102020200',
-        object_sid: 23_456,
-        goods_nomenclature_sid: 23_456,
-        action: 'update',
-      }
-    end
-    let(:measure_change) do
-      {
-        type: 'Measure',
-        object_sid: 54_321,
-        goods_nomenclature_sid: 67_890,
-      }
-    end
-    let(:goods_nomenclature) { create(:commodity, :declarable, goods_nomenclature_sid: 67_890) }
-    let(:descendant) { create(:commodity, :declarable) }
 
     before do
-      service.instance_variable_set(:@changes, {
-        commodities: [commodity_change],
-        commodity_descriptions: [commodity_description_change],
-        measures: [measure_change],
-      })
+      service.instance_variable_set(:@changes, changes)
     end
 
     context 'when processing commodity changes' do
       it 'adds change records for each commodity change' do
+        commodity_change = changes[:commodities].first
         allow(service).to receive(:parent_declarability_transition_changes).and_return([])
 
         service.generate_commodity_change_records
@@ -469,6 +463,7 @@ RSpec.describe TariffChangesService do
 
     context 'when processing commodity description changes' do
       it 'adds change records for commodity description changes' do
+        commodity_description_change = changes[:commodity_descriptions].first
         allow(service).to receive(:parent_declarability_transition_changes).and_return([])
 
         service.generate_commodity_change_records
@@ -483,6 +478,7 @@ RSpec.describe TariffChangesService do
       end
 
       it 'skips commodity description changes when there is a matching commodity change' do
+        commodity_description_change = changes[:commodity_descriptions].first
         allow(service).to receive(:parent_declarability_transition_changes).and_return([])
         allow(service).to receive(:matching_commodity_change?).with(commodity_description_change[:goods_nomenclature_sid], commodity_description_change[:action]).and_return(true)
 
@@ -498,15 +494,13 @@ RSpec.describe TariffChangesService do
         it 'does not add measure change records but processes other changes' do
           allow(service).to receive(:parent_declarability_transition_changes).and_return([])
           # Create a measure change that references a non-existent goods_nomenclature_sid
-          service.instance_variable_set(:@changes, {
-            commodities: [commodity_change],
-            commodity_descriptions: [commodity_description_change],
-            measures: [{
-              type: 'Measure',
-              object_sid: 54_321,
-              goods_nomenclature_sid: 99_999,
-            }],
-          })
+          service.instance_variable_set(:@changes, changes.merge(
+                                                     measures: [{
+                                                       type: 'Measure',
+                                                       object_sid: 54_321,
+                                                       goods_nomenclature_sid: 99_999,
+                                                     }],
+                                                   ))
 
           initial_count = service.tariff_change_records.count
           service.generate_commodity_change_records
@@ -517,6 +511,8 @@ RSpec.describe TariffChangesService do
       end
 
       context 'when goods nomenclature is declarable' do
+        let(:goods_nomenclature) { create(:commodity, :declarable, goods_nomenclature_sid: 67_890) }
+
         before do
           goods_nomenclature
         end
@@ -614,6 +610,8 @@ RSpec.describe TariffChangesService do
       end
 
       context 'when there is a matching commodity change' do
+        let(:goods_nomenclature) { create(:commodity, :declarable, goods_nomenclature_sid: 67_890) }
+
         before do
           goods_nomenclature
         end
@@ -742,11 +740,11 @@ RSpec.describe TariffChangesService do
   # mocked unit specs cannot reach.
   describe 'parent declarability (integration)' do
     let(:operation_date) { Date.new(2025, 1, 15) }
-    let(:effective_date) { operation_date + 5.days }
     let(:int_service) { described_class.new(operation_date) }
 
     describe '#parent_for_child_at' do
       context 'when child is imported before its validity starts' do
+        let(:effective_date) { operation_date + 5.days }
         let!(:parent_node) do
           create(:commodity, :declarable, validity_start_date: operation_date - 2.years)
         end
@@ -773,6 +771,7 @@ RSpec.describe TariffChangesService do
 
     describe '#parent_declarability_transition_for' do
       context 'when a non-declarable child is imported before its validity starts' do
+        let(:effective_date) { operation_date + 5.days }
         let!(:parent_node) do
           create(:commodity, :declarable, validity_start_date: operation_date - 2.years)
         end
@@ -836,45 +835,50 @@ RSpec.describe TariffChangesService do
   end
 
   describe '#add_change_record' do
-    let(:change) do
-      {
-        type: 'Commodity',
-        object_sid: 98_765,
-        action: 'creation',
-        date_of_effect: date,
-        validity_start_date: date,
-        validity_end_date: nil,
-      }
-    end
-    let(:gn_item_id) { '0101010100' }
-    let(:gn_sid) { 12_345 }
+    let(:date) { Date.new(2025, 1, 15) }
+    let(:service) { described_class.new(date) }
 
-    it 'adds a properly formatted change record with created_at timestamp' do
-      freeze_time do
-        service.add_change_record(change, gn_item_id, gn_sid)
-
-        expected_record = {
+    context 'with a commodity change' do
+      let(:change) do
+        {
           type: 'Commodity',
           object_sid: 98_765,
-          goods_nomenclature_item_id: '0101010100',
-          goods_nomenclature_sid: 12_345,
           action: 'creation',
-          operation_date: date,
           date_of_effect: date,
           validity_start_date: date,
           validity_end_date: nil,
         }
-
-        expect(service.tariff_change_records).to include(expected_record)
       end
-    end
+      let(:gn_item_id) { '0101010100' }
+      let(:gn_sid) { 12_345 }
 
-    it 'appends to existing records' do
-      service.instance_variable_set(:@tariff_change_records, [{ existing: 'record' }])
+      it 'adds a properly formatted change record with created_at timestamp' do
+        freeze_time do
+          service.add_change_record(change, gn_item_id, gn_sid)
 
-      service.add_change_record(change, gn_item_id, gn_sid)
+          expected_record = {
+            type: 'Commodity',
+            object_sid: 98_765,
+            goods_nomenclature_item_id: '0101010100',
+            goods_nomenclature_sid: 12_345,
+            action: 'creation',
+            operation_date: date,
+            date_of_effect: date,
+            validity_start_date: date,
+            validity_end_date: nil,
+          }
 
-      expect(service.tariff_change_records.size).to eq(2)
+          expect(service.tariff_change_records).to include(expected_record)
+        end
+      end
+
+      it 'appends to existing records' do
+        service.instance_variable_set(:@tariff_change_records, [{ existing: 'record' }])
+
+        service.add_change_record(change, gn_item_id, gn_sid)
+
+        expect(service.tariff_change_records.size).to eq(2)
+      end
     end
 
     context 'when change type is Measure' do
@@ -891,7 +895,7 @@ RSpec.describe TariffChangesService do
       end
 
       it 'includes JSONB metadata for measure changes' do
-        service.add_change_record(measure_change, gn_item_id, gn_sid)
+        service.add_change_record(measure_change, '0101010100', 12_345)
 
         measure_record = service.tariff_change_records.find { |r| r[:type] == 'Measure' }
         expect(measure_record[:metadata]).to be_present
@@ -918,7 +922,7 @@ RSpec.describe TariffChangesService do
         end
 
         it 'includes empty metadata' do
-          service.add_change_record(measure_change, gn_item_id, gn_sid)
+          service.add_change_record(measure_change, '0101010100', 12_345)
 
           measure_record = service.tariff_change_records.find { |r| r[:type] == 'Measure' }
           expect(measure_record[:metadata]).to eq({})
@@ -928,6 +932,8 @@ RSpec.describe TariffChangesService do
   end
 
   describe '#matching_commodity_change?' do
+    let(:date) { Date.new(2025, 1, 15) }
+    let(:service) { described_class.new(date) }
     let(:goods_nomenclature_sid) { 12_345 }
 
     before do
@@ -981,6 +987,9 @@ RSpec.describe TariffChangesService do
   end
 
   describe 'error handling' do
+    let(:date) { Date.new(2025, 1, 15) }
+    let(:service) { described_class.new(date) }
+
     before do
       allow(TariffChangesService::CommodityChanges).to receive(:collect).with(date).and_return([])
       allow(TariffChangesService::CommodityDescriptionChanges).to receive(:collect).with(date).and_return([])

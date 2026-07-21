@@ -1,21 +1,27 @@
 RSpec.describe SearchDiagnostics::RequestLogLookup do
   subject(:lookup) do
     described_class.new(
-      request_id:,
-      lookback_hours:,
-      limit:,
+      **request,
       client:,
-      now:,
     )
   end
 
-  let(:request_id) { 'request-123' }
-  let(:lookback_hours) { nil }
-  let(:limit) { nil }
+  let(:request) do
+    {
+      request_id: 'request-123',
+      lookback_hours: nil,
+      limit: nil,
+      now: Time.zone.parse('2026-06-05 10:00:00 UTC'),
+    }
+  end
   let(:client) { instance_double(Aws::CloudWatchLogs::Client) }
-  let(:now) { Time.zone.parse('2026-06-05 10:00:00 UTC') }
-  let(:start_query_response) { instance_double(Aws::CloudWatchLogs::Types::StartQueryResponse, query_id: 'query-123') }
-  let(:query_results_response) do
+
+  def start_query_response
+    instance_double(Aws::CloudWatchLogs::Types::StartQueryResponse, query_id: 'query-123')
+  end
+
+  def query_results_response
+    request_id = request[:request_id]
     instance_double(
       Aws::CloudWatchLogs::Types::GetQueryResultsResponse,
       status: 'Complete',
@@ -110,8 +116,8 @@ RSpec.describe SearchDiagnostics::RequestLogLookup do
       expect(client).to have_received(:start_query).with(
         hash_including(
           log_group_name: described_class::SEARCH_LOG_GROUP_NAME,
-          start_time: (now - described_class::DEFAULT_LOOKBACK_HOURS.hours).to_i,
-          end_time: now.to_i,
+          start_time: (request[:now] - described_class::DEFAULT_LOOKBACK_HOURS.hours).to_i,
+          end_time: request[:now].to_i,
           query_string: a_string_including(
             'base_query',
             'effective_query',
@@ -155,7 +161,7 @@ RSpec.describe SearchDiagnostics::RequestLogLookup do
     it 'returns structured log events' do
       result = lookup.call
 
-      expect(result.request_id).to eq(request_id)
+      expect(result.request_id).to eq(request[:request_id])
       expect(result.log_group_name).to eq(described_class::SEARCH_LOG_GROUP_NAME)
       expect(result.start_time).to eq('2026-06-02T10:00:00Z')
       expect(result.end_time).to eq('2026-06-05T10:00:00Z')
@@ -163,7 +169,7 @@ RSpec.describe SearchDiagnostics::RequestLogLookup do
       expect(result.events.first.search_type).to eq('classic')
       expect(result.events.first.fields).to include(
         'query' => 'horse',
-        'request_id' => request_id,
+        'request_id' => request[:request_id],
         'result_count' => '3',
       )
     end
@@ -172,7 +178,7 @@ RSpec.describe SearchDiagnostics::RequestLogLookup do
       events = lookup.call.events
 
       expect(events.map(&:search_type)).to eq(['classic', 'interactive', 'interactive', nil])
-      expect(events.map { |event| event.fields['request_id'] }).to all(eq(request_id))
+      expect(events.map { |event| event.fields['request_id'] }).to all(eq(request[:request_id]))
     end
 
     it 'returns request-correlated vector embedding costs' do
@@ -251,15 +257,14 @@ RSpec.describe SearchDiagnostics::RequestLogLookup do
     end
 
     context 'with bounded params' do
-      let(:lookback_hours) { 999 }
-      let(:limit) { 999 }
+      let(:request) { super().merge(lookback_hours: 999, limit: 999) }
 
       it 'clamps the lookback and limit' do
         lookup.call
 
         expect(client).to have_received(:start_query).with(
           hash_including(
-            start_time: (now - described_class::MAX_LOOKBACK_HOURS.hours).to_i,
+            start_time: (request[:now] - described_class::MAX_LOOKBACK_HOURS.hours).to_i,
             query_string: a_string_including("limit #{described_class::MAX_LIMIT}"),
           ),
         )
@@ -267,7 +272,7 @@ RSpec.describe SearchDiagnostics::RequestLogLookup do
     end
 
     context 'with a blank request id' do
-      let(:request_id) { ' ' }
+      let(:request) { super().merge(request_id: ' ') }
 
       it 'raises an argument error' do
         expect { lookup }.to raise_error(ArgumentError, 'request_id is required')

@@ -1,7 +1,6 @@
 RSpec.describe Api::V2::ChemicalsController, type: :request do
   let(:named_chemical) { create :chemical, :with_name }
   let(:goods_nomenclature) { create :goods_nomenclature }
-  let(:chemical_gn_association) { create :chemicals_goods_nomenclatures, chemical_id: named_chemical.id, goods_nomenclature_sid: goods_nomenclature.goods_nomenclature_sid }
 
   let(:api_short_object_pattern) do
     {
@@ -139,7 +138,13 @@ RSpec.describe Api::V2::ChemicalsController, type: :request do
     }
   end
 
-  before { chemical_gn_association }
+  before do
+    create(
+      :chemicals_goods_nomenclatures,
+      chemical_id: named_chemical.id,
+      goods_nomenclature_sid: goods_nomenclature.goods_nomenclature_sid,
+    )
+  end
 
   context 'without parameters, GET #index' do
     it 'returns chemicals as a collection' do

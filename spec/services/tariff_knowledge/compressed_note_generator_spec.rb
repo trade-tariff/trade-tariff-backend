@@ -1,58 +1,6 @@
 RSpec.describe TariffKnowledge::CompressedNoteGenerator do
   describe '.call' do
-    let(:declarable_node) do
-      create(
-        :tariff_knowledge_node,
-        key: 'goods_nomenclature:123',
-        goods_nomenclature_sid: 123,
-        goods_nomenclature_item_id: '0101210000',
-        content: '0100000000: Live animals > 0101000000: Live horses, asses, mules and hinnies > 0101210000: Pure-bred breeding animals',
-      )
-    end
-    let(:range_node) do
-      create(
-        :tariff_knowledge_node,
-        node_type: TariffKnowledge::Node::RANGE,
-        key: 'range:heading:0101',
-        title: 'Heading 0101',
-        goods_nomenclature_sid: nil,
-        goods_nomenclature_item_id: nil,
-        producline_suffix: nil,
-        goods_nomenclature_type: nil,
-        metadata: Sequel.pg_jsonb_wrap({ 'range_type' => 'heading', 'code' => '0101' }),
-      )
-    end
-    let(:source_node) do
-      create(
-        :tariff_knowledge_node,
-        node_type: TariffKnowledge::Node::NOTE_SOURCE,
-        key: 'note_source:customs_tariff_chapter_note:1.31:01',
-        title: 'Chapter 01 notes',
-        content: "1. This chapter includes:\n\nHeading 0101 covers live horses.",
-        goods_nomenclature_sid: nil,
-        goods_nomenclature_item_id: nil,
-        producline_suffix: nil,
-        goods_nomenclature_type: nil,
-      )
-    end
-    let(:lead_in_fragment_node) do
-      create(
-        :tariff_knowledge_node,
-        :note_fragment,
-        key: 'note_fragment:customs_tariff_chapter_note:1.31:01:0001',
-        title: 'Chapter 01 notes fragment 1',
-        content: '1. This chapter includes:',
-      )
-    end
-    let(:fragment_node) do
-      create(
-        :tariff_knowledge_node,
-        :note_fragment,
-        key: 'note_fragment:customs_tariff_chapter_note:1.31:01:0002',
-        title: 'Chapter 01 notes fragment 2',
-        content: 'Heading 0101 covers live horses.',
-      )
-    end
+    let!(:note_graph) { create_note_graph }
     let(:note_block_node) do
       create(
         :tariff_knowledge_node,
@@ -75,35 +23,90 @@ RSpec.describe TariffKnowledge::CompressedNoteGenerator do
       )
     end
 
+    def create_note_graph
+      declarable = create(
+        :tariff_knowledge_node,
+        key: 'goods_nomenclature:123',
+        goods_nomenclature_sid: 123,
+        goods_nomenclature_item_id: '0101210000',
+        content: '0100000000: Live animals > 0101000000: Live horses, asses, mules and hinnies > 0101210000: Pure-bred breeding animals',
+      )
+      range = create(
+        :tariff_knowledge_node,
+        node_type: TariffKnowledge::Node::RANGE,
+        key: 'range:heading:0101',
+        title: 'Heading 0101',
+        goods_nomenclature_sid: nil,
+        goods_nomenclature_item_id: nil,
+        producline_suffix: nil,
+        goods_nomenclature_type: nil,
+        metadata: Sequel.pg_jsonb_wrap({ 'range_type' => 'heading', 'code' => '0101' }),
+      )
+      source = create(
+        :tariff_knowledge_node,
+        node_type: TariffKnowledge::Node::NOTE_SOURCE,
+        key: 'note_source:customs_tariff_chapter_note:1.31:01',
+        title: 'Chapter 01 notes',
+        content: "1. This chapter includes:\n\nHeading 0101 covers live horses.",
+        goods_nomenclature_sid: nil,
+        goods_nomenclature_item_id: nil,
+        producline_suffix: nil,
+        goods_nomenclature_type: nil,
+      )
+      lead_in_fragment = create(
+        :tariff_knowledge_node,
+        :note_fragment,
+        key: 'note_fragment:customs_tariff_chapter_note:1.31:01:0001',
+        title: 'Chapter 01 notes fragment 1',
+        content: '1. This chapter includes:',
+      )
+      fragment = create(
+        :tariff_knowledge_node,
+        :note_fragment,
+        key: 'note_fragment:customs_tariff_chapter_note:1.31:01:0002',
+        title: 'Chapter 01 notes fragment 2',
+        content: 'Heading 0101 covers live horses.',
+      )
+      {
+        declarable:,
+        range:,
+        source:,
+        lead_in_fragment:,
+        fragment:,
+      }
+    end
+
+    def node(name) = note_graph.fetch(name)
+
     before do
       create(
         :tariff_knowledge_edge,
-        source_node:,
-        target_node: lead_in_fragment_node,
+        source_node: node(:source),
+        target_node: node(:lead_in_fragment),
         relationship_type: TariffKnowledge::Edge::CONTAINS,
       )
       create(
         :tariff_knowledge_edge,
-        source_node:,
-        target_node: fragment_node,
+        source_node: node(:source),
+        target_node: node(:fragment),
         relationship_type: TariffKnowledge::Edge::CONTAINS,
       )
       create(
         :tariff_knowledge_edge,
-        source_node: fragment_node,
-        target_node: range_node,
+        source_node: node(:fragment),
+        target_node: node(:range),
         relationship_type: TariffKnowledge::Edge::REFERENCES,
       )
       create(
         :tariff_knowledge_edge,
-        source_node: range_node,
-        target_node: declarable_node,
+        source_node: node(:range),
+        target_node: node(:declarable),
         relationship_type: TariffKnowledge::Edge::EXPANDS_TO,
       )
       create(
         :tariff_knowledge_edge,
-        source_node: fragment_node,
-        target_node: declarable_node,
+        source_node: node(:fragment),
+        target_node: node(:declarable),
         relationship_type: TariffKnowledge::Edge::APPLIES_TO,
       )
     end
@@ -150,13 +153,13 @@ RSpec.describe TariffKnowledge::CompressedNoteGenerator do
       create(
         :tariff_knowledge_edge,
         source_node: note_block_node,
-        target_node: lead_in_fragment_node,
+        target_node: node(:lead_in_fragment),
         relationship_type: TariffKnowledge::Edge::CONTAINS,
       )
       create(
         :tariff_knowledge_edge,
         source_node: note_block_node,
-        target_node: fragment_node,
+        target_node: node(:fragment),
         relationship_type: TariffKnowledge::Edge::CONTAINS,
       )
 
@@ -187,13 +190,13 @@ RSpec.describe TariffKnowledge::CompressedNoteGenerator do
       create(
         :tariff_knowledge_edge,
         source_node: note_block_node,
-        target_node: lead_in_fragment_node,
+        target_node: node(:lead_in_fragment),
         relationship_type: TariffKnowledge::Edge::CONTAINS,
       )
       create(
         :tariff_knowledge_edge,
         source_node: note_block_node,
-        target_node: fragment_node,
+        target_node: node(:fragment),
         relationship_type: TariffKnowledge::Edge::CONTAINS,
       )
 
@@ -211,35 +214,35 @@ RSpec.describe TariffKnowledge::CompressedNoteGenerator do
     it 'does not attach block evidence from legacy block applicability edges alone' do
       TariffKnowledge::Edge
         .where(
-          source_node_id: fragment_node.id,
-          target_node_id: declarable_node.id,
+          source_node_id: node(:fragment).id,
+          target_node_id: node(:declarable).id,
           relationship_type: TariffKnowledge::Edge::APPLIES_TO,
         )
         .delete
       TariffKnowledge::Edge
         .where(
-          source_node_id: fragment_node.id,
-          target_node_id: range_node.id,
+          source_node_id: node(:fragment).id,
+          target_node_id: node(:range).id,
           relationship_type: TariffKnowledge::Edge::REFERENCES,
         )
         .delete
       TariffKnowledge::Edge
         .where(
-          source_node_id: range_node.id,
-          target_node_id: declarable_node.id,
+          source_node_id: node(:range).id,
+          target_node_id: node(:declarable).id,
           relationship_type: TariffKnowledge::Edge::EXPANDS_TO,
         )
         .delete
       create(
         :tariff_knowledge_edge,
         source_node: note_block_node,
-        target_node: fragment_node,
+        target_node: node(:fragment),
         relationship_type: TariffKnowledge::Edge::CONTAINS,
       )
       create(
         :tariff_knowledge_edge,
         source_node: note_block_node,
-        target_node: declarable_node,
+        target_node: node(:declarable),
         relationship_type: TariffKnowledge::Edge::APPLIES_TO,
       )
 
@@ -279,13 +282,13 @@ RSpec.describe TariffKnowledge::CompressedNoteGenerator do
       create(
         :tariff_knowledge_edge,
         source_node: old_block_node,
-        target_node: fragment_node,
+        target_node: node(:fragment),
         relationship_type: TariffKnowledge::Edge::CONTAINS,
       )
       create(
         :tariff_knowledge_edge,
         source_node: note_block_node,
-        target_node: fragment_node,
+        target_node: node(:fragment),
         relationship_type: TariffKnowledge::Edge::CONTAINS,
       )
 
@@ -327,7 +330,7 @@ RSpec.describe TariffKnowledge::CompressedNoteGenerator do
       create(
         :tariff_knowledge_edge,
         source_node: note_block_node,
-        target_node: fragment_node,
+        target_node: node(:fragment),
         relationship_type: TariffKnowledge::Edge::CONTAINS,
       )
 
@@ -365,7 +368,7 @@ RSpec.describe TariffKnowledge::CompressedNoteGenerator do
         content: 'Third declarable fragment.',
       )
       block_nodes = [
-        [declarable_node, fragment_node, 1],
+        [node(:declarable), node(:fragment), 1],
         [second_declarable_node, second_fragment, 2],
         [third_declarable_node, third_fragment, 3],
       ].map do |node, contained_fragment, index|
@@ -428,7 +431,7 @@ RSpec.describe TariffKnowledge::CompressedNoteGenerator do
       create(
         :tariff_knowledge_edge,
         source_node: scoped_fragment_node,
-        target_node: declarable_node,
+        target_node: node(:declarable),
         relationship_type: TariffKnowledge::Edge::APPLIES_TO,
       )
 
@@ -467,7 +470,7 @@ RSpec.describe TariffKnowledge::CompressedNoteGenerator do
       create(
         :tariff_knowledge_edge,
         source_node: general_rule_fragment_node,
-        target_node: declarable_node,
+        target_node: node(:declarable),
         relationship_type: TariffKnowledge::Edge::APPLIES_TO,
       )
 
@@ -491,22 +494,22 @@ RSpec.describe TariffKnowledge::CompressedNoteGenerator do
     it 'does not include referenced fragments that do not directly apply to the declarable' do
       TariffKnowledge::Edge
         .where(
-          source_node_id: fragment_node.id,
-          target_node_id: range_node.id,
+          source_node_id: node(:fragment).id,
+          target_node_id: node(:range).id,
           relationship_type: TariffKnowledge::Edge::REFERENCES,
         )
         .delete
       TariffKnowledge::Edge
         .where(
-          source_node_id: range_node.id,
-          target_node_id: declarable_node.id,
+          source_node_id: node(:range).id,
+          target_node_id: node(:declarable).id,
           relationship_type: TariffKnowledge::Edge::EXPANDS_TO,
         )
         .delete
       TariffKnowledge::Edge
         .where(
-          source_node_id: fragment_node.id,
-          target_node_id: declarable_node.id,
+          source_node_id: node(:fragment).id,
+          target_node_id: node(:declarable).id,
           relationship_type: TariffKnowledge::Edge::APPLIES_TO,
         )
         .delete
@@ -520,13 +523,13 @@ RSpec.describe TariffKnowledge::CompressedNoteGenerator do
       create(
         :tariff_knowledge_edge,
         source_node: non_applicable_fragment_node,
-        target_node: range_node,
+        target_node: node(:range),
         relationship_type: TariffKnowledge::Edge::REFERENCES,
       )
       create(
         :tariff_knowledge_edge,
-        source_node: range_node,
-        target_node: declarable_node,
+        source_node: node(:range),
+        target_node: node(:declarable),
         relationship_type: TariffKnowledge::Edge::EXPANDS_TO,
       )
 
@@ -537,7 +540,7 @@ RSpec.describe TariffKnowledge::CompressedNoteGenerator do
 
     it 'updates generated notes when the graph context changes' do
       described_class.call(goods_nomenclature_sids: [123])
-      fragment_node.update(content: 'Heading 0101 covers live horses and asses.')
+      node(:fragment).update(content: 'Heading 0101 covers live horses and asses.')
 
       described_class.call(goods_nomenclature_sids: [123])
 
@@ -590,7 +593,7 @@ RSpec.describe TariffKnowledge::CompressedNoteGenerator do
         expired: false,
         needs_review: false,
       )
-      TariffKnowledge::Edge.where(target_node_id: declarable_node.id).delete
+      TariffKnowledge::Edge.where(target_node_id: node(:declarable).id).delete
 
       described_class.call(goods_nomenclature_sids: [123])
 
@@ -622,7 +625,7 @@ RSpec.describe TariffKnowledge::CompressedNoteGenerator do
       create(
         :tariff_knowledge_edge,
         source_node: old_fragment_node,
-        target_node: declarable_node,
+        target_node: node(:declarable),
         relationship_type: TariffKnowledge::Edge::APPLIES_TO,
       )
 
@@ -641,13 +644,13 @@ RSpec.describe TariffKnowledge::CompressedNoteGenerator do
       )
       create(
         :tariff_knowledge_edge,
-        source_node: range_node,
+        source_node: node(:range),
         target_node: second_declarable_node,
         relationship_type: TariffKnowledge::Edge::EXPANDS_TO,
       )
       create(
         :tariff_knowledge_edge,
-        source_node: fragment_node,
+        source_node: node(:fragment),
         target_node: second_declarable_node,
         relationship_type: TariffKnowledge::Edge::APPLIES_TO,
       )
@@ -661,8 +664,8 @@ RSpec.describe TariffKnowledge::CompressedNoteGenerator do
     end
 
     it 'uses source note context to identify exclusion evidence' do
-      source_node.update(content: "1. This chapter does not cover:\n\nHeading 0101 covers live horses.")
-      lead_in_fragment_node.update(content: '1. This chapter does not cover:')
+      node(:source).update(content: "1. This chapter does not cover:\n\nHeading 0101 covers live horses.")
+      node(:lead_in_fragment).update(content: '1. This chapter does not cover:')
 
       described_class.call(goods_nomenclature_sids: [123])
 
@@ -672,8 +675,8 @@ RSpec.describe TariffKnowledge::CompressedNoteGenerator do
     end
 
     it 'derives source context from graph fragment order when content has been merged' do
-      source_node.update(content: "1. This chapter includes:\n\nii.\n\nHeading 0101 covers live horses.")
-      fragment_node.update(content: 'ii. Heading 0101 covers live horses.')
+      node(:source).update(content: "1. This chapter includes:\n\nii.\n\nHeading 0101 covers live horses.")
+      node(:fragment).update(content: 'ii. Heading 0101 covers live horses.')
 
       described_class.call(goods_nomenclature_sids: [123])
 

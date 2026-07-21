@@ -28,11 +28,6 @@ RSpec.describe Api::V2::SectionsController, :v2 do
                  version: '1.29',
                  validity_start_date: 2.months.ago.to_date)
         end
-        let!(:older_update) do
-          create(:customs_tariff_update, :approved,
-                 version: '1.30',
-                 validity_start_date: 1.month.ago.to_date)
-        end
         let!(:latest_update) do
           create(:customs_tariff_update,
                  version: '1.31',
@@ -45,6 +40,9 @@ RSpec.describe Api::V2::SectionsController, :v2 do
         end
 
         before do
+          older_update = create(:customs_tariff_update, :approved,
+                                version: '1.30',
+                                validity_start_date: 1.month.ago.to_date)
           create(:customs_tariff_section_note, :approved,
                  customs_tariff_update: older_update,
                  section_id: section.id,

@@ -250,10 +250,7 @@ RSpec.describe TariffChanges::GroupedMeasureCommodityChange do
   describe '#measure_changes' do
     let(:date) { Date.parse('2023-01-15') }
     let(:geographical_area) { create(:geographical_area, geographical_area_id: 'GB') }
-    let(:first_excluded_area) { create(:geographical_area, geographical_area_id: 'FR') }
-    let(:second_excluded_area) { create(:geographical_area, geographical_area_id: 'DE') }
     let(:import_measure_type) { create(:measure_type, :import) }
-    let(:export_measure_type) { create(:measure_type, :export) }
 
     context 'when grouped_measure_change is nil' do
       subject(:grouped_commodity_change) do
@@ -270,58 +267,61 @@ RSpec.describe TariffChanges::GroupedMeasureCommodityChange do
     end
 
     context 'when grouped_measure_change exists' do
-      let(:first_measure) do
-        create(:measure,
-               measure_sid: 100,
-               measure_type_id: import_measure_type.measure_type_id,
-               geographical_area_id: 'GB',
-               geographical_area_sid: geographical_area.geographical_area_sid)
-      end
-
-      let(:second_measure) do
-        create(:measure,
-               measure_sid: 200,
-               measure_type_id: export_measure_type.measure_type_id,
-               geographical_area_id: 'GB',
-               geographical_area_sid: geographical_area.geographical_area_sid)
-      end
-
-      let(:third_measure) do
-        create(:measure,
-               measure_sid: 300,
-               measure_type_id: import_measure_type.measure_type_id,
-               geographical_area_id: 'US')
+      let(:export_measure_type) { create(:measure_type, :export) }
+      let(:measures) do
+        {
+          first: create(
+            :measure,
+            measure_sid: 100,
+            measure_type_id: import_measure_type.measure_type_id,
+            geographical_area_id: 'GB',
+            geographical_area_sid: geographical_area.geographical_area_sid,
+          ),
+          second: create(
+            :measure,
+            measure_sid: 200,
+            measure_type_id: export_measure_type.measure_type_id,
+            geographical_area_id: 'GB',
+            geographical_area_sid: geographical_area.geographical_area_sid,
+          ),
+          third: create(
+            :measure,
+            measure_sid: 300,
+            measure_type_id: import_measure_type.measure_type_id,
+            geographical_area_id: 'US',
+          ),
+        }
       end
 
       before do
         geographical_area
-        first_excluded_area
-        second_excluded_area
+        create(:geographical_area, geographical_area_id: 'FR')
+        create(:geographical_area, geographical_area_id: 'DE')
         import_measure_type
         export_measure_type
 
         create(:measure_excluded_geographical_area,
-               measure_sid: first_measure.measure_sid,
+               measure_sid: measures[:first].measure_sid,
                excluded_geographical_area: 'FR')
         create(:measure_excluded_geographical_area,
-               measure_sid: first_measure.measure_sid,
+               measure_sid: measures[:first].measure_sid,
                excluded_geographical_area: 'DE')
 
         create(:tariff_change,
                type: 'Measure',
-               object_sid: first_measure.measure_sid,
+               object_sid: measures[:first].measure_sid,
                operation_date: date,
                goods_nomenclature_item_id: '1234567890')
 
         create(:tariff_change,
                type: 'Measure',
-               object_sid: second_measure.measure_sid,
+               object_sid: measures[:second].measure_sid,
                operation_date: date,
                goods_nomenclature_item_id: '1234567890')
 
         create(:tariff_change,
                type: 'Measure',
-               object_sid: third_measure.measure_sid,
+               object_sid: measures[:third].measure_sid,
                operation_date: date,
                goods_nomenclature_item_id: '1234567890')
       end
@@ -381,7 +381,7 @@ RSpec.describe TariffChanges::GroupedMeasureCommodityChange do
                  date_of_effect: Date.parse('2023-01-10'),
                  goods_nomenclature_item_id: '1234567890')
 
-          late_change = TariffChange.find(type: 'Measure', object_sid: first_measure.measure_sid, operation_date: date)
+          late_change = TariffChange.find(type: 'Measure', object_sid: measures[:first].measure_sid, operation_date: date)
           late_change.update(date_of_effect: Date.parse('2023-01-20'))
 
           result = grouped_commodity_change.measure_changes(date)
@@ -506,10 +506,8 @@ RSpec.describe TariffChanges::GroupedMeasureCommodityChange do
           )
         end
 
-        let(:different_date) { Date.parse('2023-01-16') }
-
         it 'returns empty hash when no tariff changes match the date' do
-          result = grouped_commodity_change.measure_changes(different_date)
+          result = grouped_commodity_change.measure_changes(Date.parse('2023-01-16'))
 
           expect(result).to eq({})
         end

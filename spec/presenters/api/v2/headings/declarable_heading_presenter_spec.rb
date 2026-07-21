@@ -151,46 +151,33 @@ RSpec.describe Api::V2::Headings::DeclarableHeadingPresenter do
   describe '#special_nature?' do
     let(:presenter) { described_class.new(heading.reload, measure_collection) }
 
-    let(:measures_special_nature) do
-      create_list(
-        :measure, 1,
-        :with_measure_conditions,
-        :with_special_nature,
-        goods_nomenclature_sid: heading.goods_nomenclature_sid,
-        geographical_area_id: 'PK'
-      )
-    end
-
-    let(:measures_not_special_nature) do
-      create_list(
-        :measure, 1,
-        :with_measure_conditions,
-        goods_nomenclature_sid: heading.goods_nomenclature_sid,
-        geographical_area_id: 'CN'
-      )
+    def create_special_nature_measure(goods_nomenclature, special:, geographical_area_id:)
+      traits = [:with_measure_conditions]
+      traits << :with_special_nature if special
+      create(:measure, *traits,
+             goods_nomenclature_sid: goods_nomenclature.goods_nomenclature_sid,
+             geographical_area_id:)
     end
 
     context 'when filtering by country' do
-      let(:geographical_area_id) { 'CN' }
-
       context 'when heading has at least one measure condition containing special nature certificate' do
-        let(:measure_collection) { MeasureCollection.new measures_special_nature, geographical_area_id: }
+        let(:measures) { [create_special_nature_measure(heading, special: true, geographical_area_id: 'PK')] }
+        let(:measure_collection) { MeasureCollection.new measures, geographical_area_id: 'CN' }
 
-        it { expect(presenter.special_nature?(measures_special_nature.first)).to be(true) }
+        it { expect(presenter.special_nature?(measures.first)).to be(true) }
       end
 
       context 'when heading does not have any measure conditions containing special nature certificate' do
-        let(:measure_collection) { MeasureCollection.new measures_not_special_nature, geographical_area_id: }
+        let(:measures) { [create_special_nature_measure(heading, special: false, geographical_area_id: 'CN')] }
+        let(:measure_collection) { MeasureCollection.new measures, geographical_area_id: 'CN' }
 
-        it { expect(presenter.special_nature?(measures_not_special_nature.first)).to be(false) }
+        it { expect(presenter.special_nature?(measures.first)).to be(false) }
       end
     end
 
     context 'when not filtering by country' do
-      let(:geographical_area_id) { nil }
-
       context 'when heading has at least one measure condition containing special nature certificate' do
-        let(:measure_collection) { MeasureCollection.new measures, geographical_area_id: }
+        let(:measure_collection) { MeasureCollection.new measures, geographical_area_id: nil }
 
         let(:measures) do
           create_list(
@@ -206,7 +193,7 @@ RSpec.describe Api::V2::Headings::DeclarableHeadingPresenter do
       end
 
       context 'when heading does not have any measure conditions containing special nature certificate' do
-        let(:measure_collection) { MeasureCollection.new measures, geographical_area_id: }
+        let(:measure_collection) { MeasureCollection.new measures, geographical_area_id: nil }
 
         let(:measures) do
           create_list(
@@ -221,15 +208,27 @@ RSpec.describe Api::V2::Headings::DeclarableHeadingPresenter do
       end
 
       context 'when heading has some non country specific measure conditions containing special nature certificate' do
-        let(:measure_collection) { MeasureCollection.new measures_not_special_nature + measures_special_nature, geographical_area_id: }
+        let(:measures) do
+          [
+            create_special_nature_measure(heading, special: true, geographical_area_id: 'PK'),
+            create_special_nature_measure(heading, special: false, geographical_area_id: 'CN'),
+          ]
+        end
+        let(:measure_collection) { MeasureCollection.new measures, geographical_area_id: nil }
 
-        it { expect(presenter.special_nature?(measures_not_special_nature.first)).to be(false) }
+        it { expect(presenter.special_nature?(measures.last)).to be(false) }
       end
 
       context 'when heading has some country specific measure conditions containing special nature certificate' do
-        let(:measure_collection) { MeasureCollection.new measures_not_special_nature + measures_special_nature, geographical_area_id: }
+        let(:measures) do
+          [
+            create_special_nature_measure(heading, special: true, geographical_area_id: 'PK'),
+            create_special_nature_measure(heading, special: false, geographical_area_id: 'CN'),
+          ]
+        end
+        let(:measure_collection) { MeasureCollection.new measures, geographical_area_id: nil }
 
-        it { expect(presenter.special_nature?(measures_special_nature.first)).to be(true) }
+        it { expect(presenter.special_nature?(measures.first)).to be(true) }
       end
     end
   end

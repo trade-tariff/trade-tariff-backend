@@ -7,24 +7,23 @@ RSpec.describe 'Classification Search', skip: 'Draft MCP API docs are held back 
     parameter name: :Accept, getter: :accept, in: :header, required: true,
               schema: { type: :string, enum: ['application/vnd.hmrc.2.0+json'] },
               description: 'API version negotiation header'
-    parameter name: :q, in: :query, required: true,
-              schema: { type: :string },
-              description: 'Product description to search for classification candidates'
-    parameter name: :limit, in: :query, required: false,
-              schema: { type: :integer, minimum: 1, maximum: 50 },
-              description: 'Maximum number of candidates to return'
-    parameter name: :as_of, in: :query, required: false,
-              schema: { type: :string, format: :date },
-              description: 'Return data as it appeared on this date'
-    parameter name: :expanded_query, in: :query, required: false,
-              schema: { type: :string },
-              description: 'Optional expanded query text to use for retrieval'
-
     get 'Get hybrid classification candidates' do
       tags 'Classification Search'
       produces 'application/json'
       description 'Returns a hybrid semantic shortlist of candidate goods nomenclatures for a product description.'
       operationId 'classificationSearch'
+      parameter name: :q, in: :query, required: true,
+                schema: { type: :string },
+                description: 'Product description to search for classification candidates'
+      parameter name: :limit, in: :query, required: false,
+                schema: { type: :integer, minimum: 1, maximum: 50 },
+                description: 'Maximum number of candidates to return'
+      parameter name: :as_of, in: :query, required: false,
+                schema: { type: :string, format: :date },
+                description: 'Return data as it appeared on this date'
+      parameter name: :expanded_query, in: :query, required: false,
+                schema: { type: :string },
+                description: 'Optional expanded query text to use for retrieval'
 
       response '200', 'classification candidates found' do
         schema type: :object,
@@ -111,10 +110,6 @@ RSpec.describe 'Classification Search', skip: 'Draft MCP API docs are held back 
                }
 
         let(:body) { { q: 'wireless headphones', limit: 5 } }
-        let(:q) { nil }
-        let(:limit) { nil }
-        let(:as_of) { nil }
-        let(:expanded_query) { nil }
 
         before do
           allow(Api::V2::ClassificationSearchService).to receive(:new).and_return(

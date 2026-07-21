@@ -1,37 +1,52 @@
 RSpec.describe TariffSynchronizer::TariffDownloader do
   describe '#perform' do
-    subject(:perform) { described_class.new(filename, url, date, update_klass).perform }
+    subject(:perform) do
+      described_class.new(
+        download_attributes[:filename],
+        download_attributes[:url],
+        download_attributes[:date],
+        update_klass,
+      ).perform
+    end
 
-    let(:filename) { 'foo.xml.gzip' }
-    let(:url) { 'https://example.com/download-the-file' }
-    let(:date) { Date.current }
+    let(:download_attributes) do
+      {
+        filename: 'foo.xml.gzip',
+        url: 'https://example.com/download-the-file',
+        date: Date.current,
+      }
+    end
     let(:update_klass) { TariffSynchronizer::CdsUpdate }
 
     context 'when any part of the download process propagates an exception' do
       before do
         allow(TariffSynchronizer::TariffUpdatesRequester)
           .to receive(:perform)
-          .with(url)
+          .with(download_attributes[:url])
           .and_raise(StandardError, 'Something went wrong')
       end
-
-      let(:response) { build(:response, :not_found) }
 
       it { expect { perform }.to change { update_klass.where(state: TariffSynchronizer::BaseUpdate::FAILED_STATE).count }.by(1) }
     end
 
     context 'when the file is already downloaded' do
-      let(:file_path) { File.join(TariffSynchronizer.root_path, 'cds', filename) }
+      let(:file_path) { File.join(TariffSynchronizer.root_path, 'cds', download_attributes[:filename]) }
 
       before do
         allow(TariffSynchronizer::FileService).to receive(:file_exists?).with(file_path).and_return(true)
         allow(TariffSynchronizer::FileService).to receive(:file_size).with(file_path).and_return(1)
-        allow(TariffSynchronizer::TariffUpdatesRequester).to receive(:perform).with(url)
+        allow(TariffSynchronizer::TariffUpdatesRequester).to receive(:perform).with(download_attributes[:url])
       end
 
       context 'when an update already exists' do
         before do
-          create(:cds_update, :pending, filename:, issue_date: date, filesize: 1)
+          create(
+            :cds_update,
+            :pending,
+            filename: download_attributes[:filename],
+            issue_date: download_attributes[:date],
+            filesize: 1,
+          )
         end
 
         it { expect { perform }.not_to change(update_klass, :count) }
@@ -54,7 +69,7 @@ RSpec.describe TariffSynchronizer::TariffDownloader do
 
     context 'when the file has not been downloaded yet' do
       before do
-        allow(TariffSynchronizer::TariffUpdatesRequester).to receive(:perform).with(url).and_return(response)
+        allow(TariffSynchronizer::TariffUpdatesRequester).to receive(:perform).with(download_attributes[:url]).and_return(response)
       end
 
       context 'when the download response is empty' do
@@ -84,7 +99,7 @@ RSpec.describe TariffSynchronizer::TariffDownloader do
       end
 
       context 'when the download response is successful' do
-        let(:file_path) { File.join(TariffSynchronizer.root_path, update_klass.update_type.to_s, filename) }
+        let(:file_path) { File.join(TariffSynchronizer.root_path, update_klass.update_type.to_s, download_attributes[:filename]) }
 
         before do
           allow(TariffSynchronizer::FileService).to receive(:write_file).with(file_path, be_a(String))
@@ -108,7 +123,7 @@ RSpec.describe TariffSynchronizer::TariffDownloader do
             expect { perform }
               .to change {
                 TariffSynchronizer::TariffUpdateStateChange.where(
-                  tariff_update_filename: filename,
+                  tariff_update_filename: download_attributes[:filename],
                   to_state: TariffSynchronizer::BaseUpdate::PENDING_STATE,
                 ).count
               }.by(1)
@@ -143,7 +158,11 @@ RSpec.describe TariffSynchronizer::TariffDownloader do
 
           it 'persists the exception for review' do
             perform
-            update = update_klass.find(filename:, update_type: update_klass.name, issue_date: date)
+            update = update_klass.find(
+              filename: download_attributes[:filename],
+              update_type: update_klass.name,
+              issue_date: download_attributes[:date],
+            )
             expect(update.exception_class).to include('TariffDownloaderZipError')
           end
 
@@ -156,7 +175,7 @@ RSpec.describe TariffSynchronizer::TariffDownloader do
             perform
 
             transitions = TariffSynchronizer::TariffUpdateStateChange
-                            .where(tariff_update_filename: filename)
+                            .where(tariff_update_filename: download_attributes[:filename])
                             .order(:created_at)
                             .all
 

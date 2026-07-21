@@ -18,14 +18,13 @@ RSpec.shared_examples_for 'a user controller subscription type update' do |subsc
       }
     end
 
-    let(:token) do
-      {
-        'sub' => user.external_id,
-        'email' => 'alice@example.com',
-      }
+    let(:verify_result) do
+      CognitoTokenVerifier::Result.new(
+        valid: true,
+        payload: { 'sub' => user.external_id, 'email' => 'alice@example.com' },
+        reason: nil,
+      )
     end
-
-    let(:verify_result) { CognitoTokenVerifier::Result.new(valid: true, payload: token, reason: nil) }
 
     before do
       allow(CognitoTokenVerifier).to receive(:verify_id_token).and_return(verify_result)

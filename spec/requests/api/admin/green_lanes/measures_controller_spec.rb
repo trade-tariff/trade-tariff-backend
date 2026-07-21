@@ -84,28 +84,26 @@ RSpec.describe Api::Admin::GreenLanes::MeasuresController, :admin do
   end
 
   describe 'PATCH to #update' do
-    let(:new_category_assessment) { create :category_assessment }
-
     let(:make_request) do
-      authenticated_patch api_admin_green_lanes_measure_path(id, format: :json), params: {
+      authenticated_patch api_admin_green_lanes_measure_path(request_attributes[:id], format: :json), params: {
         data: {
           type: :green_lanes_measure,
-          attributes: { category_assessment_id: new_category_assessment_id },
+          attributes: { category_assessment_id: request_attributes[:category_assessment_id] },
         },
       }
     end
 
     context 'with valid params' do
-      let(:id) { measure.id }
-      let(:new_category_assessment_id) { new_category_assessment.id }
+      let(:request_attributes) do
+        { id: measure.id, category_assessment_id: create(:category_assessment).id }
+      end
 
       it { is_expected.to have_http_status :success }
       it { expect { api_response }.not_to change(measure.reload, :productline_suffix) }
     end
 
     context 'with invalid params' do
-      let(:id) { measure.id }
-      let(:new_category_assessment_id) { nil }
+      let(:request_attributes) { { id: measure.id, category_assessment_id: nil } }
 
       it { is_expected.to have_http_status :unprocessable_content }
 
@@ -115,8 +113,9 @@ RSpec.describe Api::Admin::GreenLanes::MeasuresController, :admin do
     end
 
     context 'with unknown exemption' do
-      let(:id) { 9999 }
-      let(:new_category_assessment_id) { new_category_assessment.id }
+      let(:request_attributes) do
+        { id: 9999, category_assessment_id: create(:category_assessment).id }
+      end
 
       it { is_expected.to have_http_status :not_found }
       it { expect { api_response }.not_to change(measure.reload, :productline_suffix) }

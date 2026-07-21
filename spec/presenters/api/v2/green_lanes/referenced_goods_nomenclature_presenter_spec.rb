@@ -1,11 +1,12 @@
 RSpec.describe Api::V2::GreenLanes::ReferencedGoodsNomenclaturePresenter do
-  subject(:presenter) { described_class.new(gn, geo_area_id) }
-
   let(:gn) { create :goods_nomenclature, :with_measures }
-  let(:geo_area_id) { nil }
 
-  it { is_expected.to have_attributes goods_nomenclature_sid: gn.goods_nomenclature_sid }
-  it { is_expected.to have_attributes parent_sid: nil }
+  describe 'basic attributes' do
+    subject(:presenter) { described_class.new(gn, nil) }
+
+    it { is_expected.to have_attributes goods_nomenclature_sid: gn.goods_nomenclature_sid }
+    it { is_expected.to have_attributes parent_sid: nil }
+  end
 
   describe '#supplementary_measure_unit' do
     subject(:presented) { described_class.new(gn, requested_geo_area) }

@@ -1,27 +1,18 @@
 RSpec.describe Api::V2::ChangesController do
-  let(:no_changes_response) { { 'data' => [] } }
-  let(:goods_nomenclature_item_id) { nil }
-  let(:goods_nomenclature_sid) { nil }
-  let(:productline_suffix) { nil }
-  let(:end_line) { nil }
-  let(:change_type) { nil }
-  let(:change_date) { Time.zone.today.strftime('%Y-%m-%d') }
-
-  let(:expected_change_response) do
+  def expected_change_response(change, change_type)
     {
       'data' => [{
-        'id' => goods_nomenclature_sid.to_s,
+        'id' => change.goods_nomenclature_sid.to_s,
         'type' => 'change',
         'attributes' => {
-          'goods_nomenclature_item_id' => goods_nomenclature_item_id,
-          'goods_nomenclature_sid' => goods_nomenclature_sid,
-          'productline_suffix' => productline_suffix,
-          'end_line' => end_line,
-          'change_date' => change_date,
+          'goods_nomenclature_item_id' => change.goods_nomenclature_item_id,
+          'goods_nomenclature_sid' => change.goods_nomenclature_sid,
+          'productline_suffix' => change.productline_suffix,
+          'end_line' => true,
+          'change_date' => Time.zone.today.strftime('%Y-%m-%d'),
           'change_type' => change_type,
         },
       }],
-
     }
   end
 
@@ -38,17 +29,12 @@ RSpec.describe Api::V2::ChangesController do
       let(:json) { JSON.parse(response.body) }
 
       it 'returns an empty array' do
-        expect(json).to eq(no_changes_response)
+        expect(json).to eq('data' => [])
       end
     end
 
     context 'when a commodity change exists for the day' do
       let!(:change) { create :change, change_date: Time.zone.today }
-      let(:goods_nomenclature_item_id) { change.goods_nomenclature_item_id }
-      let(:goods_nomenclature_sid) { change.goods_nomenclature_sid }
-      let(:productline_suffix) { change.productline_suffix }
-      let(:change_type) { 'commodity' }
-      let(:end_line) { true }
 
       context 'when on the same day' do
         before { get '/uk/api/changes.json', headers: request_headers(format: :json) }
@@ -56,7 +42,7 @@ RSpec.describe Api::V2::ChangesController do
         let(:json) { JSON.parse(response.body) }
 
         it 'returns the correct code' do
-          expect(json).to eq(expected_change_response)
+          expect(json).to eq(expected_change_response(change, 'commodity'))
         end
       end
 
@@ -66,18 +52,13 @@ RSpec.describe Api::V2::ChangesController do
         let(:json) { JSON.parse(response.body) }
 
         it 'returns the expired code' do
-          expect(json).to eq(no_changes_response)
+          expect(json).to eq('data' => [])
         end
       end
     end
 
     context 'when a measure change exists for the day' do
       let!(:change) { create :change_measure, change_date: Time.zone.today }
-      let(:goods_nomenclature_item_id) { change.goods_nomenclature_item_id }
-      let(:goods_nomenclature_sid) { change.goods_nomenclature_sid }
-      let(:productline_suffix) { change.productline_suffix }
-      let(:change_type) { 'measure' }
-      let(:end_line) { true }
 
       context 'when on the same day' do
         before { get '/uk/api/changes.json', headers: request_headers(format: :json) }
@@ -85,7 +66,7 @@ RSpec.describe Api::V2::ChangesController do
         let(:json) { JSON.parse(response.body) }
 
         it 'returns the correct code' do
-          expect(json).to eq(expected_change_response)
+          expect(json).to eq(expected_change_response(change, 'measure'))
         end
       end
 
@@ -95,7 +76,7 @@ RSpec.describe Api::V2::ChangesController do
         let(:json) { JSON.parse(response.body) }
 
         it 'returns the expired code' do
-          expect(json).to eq(no_changes_response)
+          expect(json).to eq('data' => [])
         end
       end
     end

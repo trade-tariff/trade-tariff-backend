@@ -10,7 +10,6 @@ RSpec.describe XiCnImporter::Reimporter do
            s3_path: "data/customs_tariff_documents/xi/CN_#{celex}.pdf")
   end
   let(:html) { '<html><body></body></html>' }
-  let(:html_io) { StringIO.new(html) }
 
   let(:extracted) do
     XiCnImporter::NotesExtractor::Result.new(
@@ -24,7 +23,7 @@ RSpec.describe XiCnImporter::Reimporter do
     update
     allow(TariffSynchronizer::FileService).to receive(:get)
       .with("data/customs_tariff_documents/xi/CN_#{celex}.xhtml")
-      .and_return(html_io)
+      .and_return(StringIO.new(html))
 
     allow(XiCnImporter::NotesExtractor).to receive(:new).and_return(
       instance_double(XiCnImporter::NotesExtractor, call: extracted),
@@ -80,17 +79,16 @@ RSpec.describe XiCnImporter::Reimporter do
     end
 
     context 'without a version (reimport all)' do
-      let(:second_celex) { '32024R1234' }
       let(:second_update) do
         create(:customs_tariff_update,
-               version: second_celex,
-               s3_path: "data/customs_tariff_documents/xi/CN_#{second_celex}.pdf")
+               version: '32024R1234',
+               s3_path: 'data/customs_tariff_documents/xi/CN_32024R1234.pdf')
       end
 
       before do
         second_update
         allow(TariffSynchronizer::FileService).to receive(:get)
-          .with("data/customs_tariff_documents/xi/CN_#{second_celex}.xhtml")
+          .with("data/customs_tariff_documents/xi/CN_#{second_update.version}.xhtml")
           .and_return(StringIO.new(html))
       end
 

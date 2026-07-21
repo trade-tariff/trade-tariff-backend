@@ -3,10 +3,9 @@ RSpec.describe Api::User::GroupedMeasureChangesService do
 
   let(:user) { create(:public_user) }
   let(:date) { Date.current }
-  let(:user_commodity_code_sids) { [123_456, 987_654] }
 
   before do
-    allow(user).to receive(:target_ids_for_my_commodities).and_return(user_commodity_code_sids)
+    allow(user).to receive(:target_ids_for_my_commodities).and_return([123_456, 987_654])
   end
 
   describe '#initialize' do
@@ -36,14 +35,14 @@ RSpec.describe Api::User::GroupedMeasureChangesService do
       subject(:service) { described_class.new(user, 'import_GB_FR-DE', date) }
 
       let(:eu_area) { create(:geographical_area, :with_description, geographical_area_id: 'GB') }
-      let(:france) { create(:geographical_area, :with_description, geographical_area_id: 'FR') }
-      let(:germany) { create(:geographical_area, :with_description, geographical_area_id: 'DE') }
       let(:import_measure_type) { create(:measure_type, :import) }
       let(:measure) { create(:measure, measure_sid: 100, for_geo_area: eu_area, measure_type_id: import_measure_type.measure_type_id) }
 
       before do
-        create(:measure_excluded_geographical_area, measure: measure, excluded_geographical_area: france.geographical_area_id)
-        create(:measure_excluded_geographical_area, measure: measure, excluded_geographical_area: germany.geographical_area_id)
+        create(:geographical_area, :with_description, geographical_area_id: 'FR')
+        create(:geographical_area, :with_description, geographical_area_id: 'DE')
+        create(:measure_excluded_geographical_area, measure: measure, excluded_geographical_area: 'FR')
+        create(:measure_excluded_geographical_area, measure: measure, excluded_geographical_area: 'DE')
 
         tc1 = create(:tariff_change, type: 'Measure', object_sid: 100, operation_date: date, goods_nomenclature_sid: 123_456, goods_nomenclature_item_id: '1234567890')
         tc2 = create(:tariff_change, type: 'Measure', object_sid: 100, operation_date: date, goods_nomenclature_sid: 987_654, goods_nomenclature_item_id: '9876543210')
@@ -122,7 +121,7 @@ RSpec.describe Api::User::GroupedMeasureChangesService do
             type: 'Measure',
             object_sid: measure.measure_sid,
             operation_date: date,
-            goods_nomenclature_sid: user_commodity_code_sids.first,
+            goods_nomenclature_sid: 123_456,
             goods_nomenclature_item_id: '1234567890',
             metadata: {
               'measure' => {
@@ -205,7 +204,7 @@ RSpec.describe Api::User::GroupedMeasureChangesService do
             type: 'Measure',
             object_sid: 400,
             operation_date: date,
-            goods_nomenclature_sid: user_commodity_code_sids.first,
+            goods_nomenclature_sid: 123_456,
             goods_nomenclature_item_id: '1234567890',
             metadata: {
               'measure' => {

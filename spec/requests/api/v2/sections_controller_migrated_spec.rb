@@ -2,12 +2,11 @@ RSpec.describe Api::V2::SectionsController do
   describe '#show' do
     let(:heading) { create :heading, :with_chapter }
     let(:chapter) { heading.reload.chapter }
-    let(:chapter_guide) { chapter.guides.first }
     let(:section) { chapter.section }
-    let!(:customs_tariff_update) { create(:customs_tariff_update, :approved) }
     let!(:customs_tariff_section_note) do
+      customs_tariff_update = create(:customs_tariff_update, :approved)
       create(:customs_tariff_section_note, :approved,
-             customs_tariff_update:,
+             customs_tariff_update: customs_tariff_update,
              section_id: section.id)
     end
 
@@ -55,7 +54,7 @@ RSpec.describe Api::V2::SectionsController do
               guides: {
                 data: [
                   {
-                    id: chapter_guide.id.to_s,
+                    id: chapter.guides.first.id.to_s,
                     type: 'guide',
                   },
                 ],
@@ -63,11 +62,11 @@ RSpec.describe Api::V2::SectionsController do
             },
           },
           {
-            id: chapter_guide.id.to_s,
+            id: chapter.guides.first.id.to_s,
             type: 'guide',
             attributes: {
-              title: chapter_guide.title,
-              url: chapter_guide.url,
+              title: chapter.guides.first.title,
+              url: chapter.guides.first.url,
             },
           },
         ],

@@ -84,7 +84,7 @@ RSpec.describe Api::V2::EnquiryForm::SubmissionsController, :v2 do
     end
 
     context 'with revised enquiry payload combinations on the original endpoint' do
-      let(:large_text) do
+      def large_text
         [
           'Lorem Ipsum is simply dummy text of the printing and typesetting industry.',
           'It has survived not only five centuries, but also the leap into electronic typesetting.',
@@ -92,7 +92,7 @@ RSpec.describe Api::V2::EnquiryForm::SubmissionsController, :v2 do
         ].join("\n\n").then { |text| (text * 30).first(5_000) }
       end
 
-      let(:contact_variants) do
+      def contact_variants
         optional_values = {
           name: 'Jane Doe',
           company_name: 'Jane Ltd.',
@@ -104,7 +104,7 @@ RSpec.describe Api::V2::EnquiryForm::SubmissionsController, :v2 do
         end
       end
 
-      let(:generic_categories) do
+      def generic_categories
         %w[
           import_duties_and_quota
           origin
@@ -115,7 +115,7 @@ RSpec.describe Api::V2::EnquiryForm::SubmissionsController, :v2 do
         ]
       end
 
-      let(:classification_optional_variants) do
+      def classification_optional_variants
         optional_values = {
           goods_used_for: large_text,
           goods_function: large_text,
@@ -128,7 +128,7 @@ RSpec.describe Api::V2::EnquiryForm::SubmissionsController, :v2 do
         end
       end
 
-      let(:commodity_code_variants) do
+      def commodity_code_variants
         [
           { has_commodity_code: 'no', commodity_code: '' },
           { has_commodity_code: 'yes', commodity_code: '2005590000' },

@@ -8,7 +8,8 @@ RSpec.describe Api::Admin::CustomsTariffUpdates::ChapterNotesController do
       create(:customs_tariff_chapter_note, customs_tariff_update: approved_update, chapter_id: '01',
                                            content: 'Old chapter content that is long enough to text-diff properly')
     end
-    let!(:pending_note) do
+
+    before do
       create(:customs_tariff_chapter_note, customs_tariff_update: pending_update, chapter_id: '01',
                                            content: 'New chapter content that is long enough to text-diff properly')
     end
@@ -24,7 +25,9 @@ RSpec.describe Api::Admin::CustomsTariffUpdates::ChapterNotesController do
     end
 
     it 'returns file_diff as empty hash when content is identical' do
-      pending_note.update(content: approved_note.content)
+      CustomsTariffChapterNote
+        .first(customs_tariff_update_version: pending_update.version, chapter_id: '01')
+        .update(content: approved_note.content)
 
       get "/uk/admin/customs_tariff_updates/#{pending_update.version}/chapter_notes.json",
           headers: request_headers(format: :json)

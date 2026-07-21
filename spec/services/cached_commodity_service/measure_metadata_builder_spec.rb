@@ -1,7 +1,9 @@
 RSpec.describe CachedCommodityService::MeasureMetadataBuilder do
-  subject(:builder) { described_class.new(presented_commodity) }
-
-  let(:actual_date) { Time.zone.today }
+  subject(:result) do
+    measures = MeasureCollection.new(commodity.reload.applicable_measures, {}).apply_excise_filter
+    presented_commodity = Api::V2::Commodities::CommodityPresenter.new(commodity, measures)
+    described_class.new(presented_commodity).build
+  end
 
   let!(:commodity) { create(:commodity, :with_chapter_and_heading) }
 
@@ -9,15 +11,8 @@ RSpec.describe CachedCommodityService::MeasureMetadataBuilder do
     create(:geographical_area, :country, :with_description, geographical_area_id: 'RO')
   end
 
-  let(:erga_omnes_area) do
-    create(:geographical_area, :erga_omnes, :with_description)
-  end
-
-  let(:measure_type) do
-    create(:measure_type, measure_type_id: '103', trade_movement_code: 0)
-  end
-
   let!(:measure) do
+    create(:measure_type, measure_type_id: '103', trade_movement_code: 0)
     create(
       :measure,
       :with_measure_conditions,
@@ -27,16 +22,11 @@ RSpec.describe CachedCommodityService::MeasureMetadataBuilder do
       goods_nomenclature_sid: commodity.goods_nomenclature_sid,
       geographical_area_id: geographical_area.geographical_area_id,
       geographical_area_sid: geographical_area.geographical_area_sid,
-      measure_type_id: measure_type.measure_type_id,
+      measure_type_id: '103',
     )
   end
 
-  let(:measures) { MeasureCollection.new(commodity.reload.applicable_measures, {}).apply_excise_filter }
-  let(:presented_commodity) { Api::V2::Commodities::CommodityPresenter.new(commodity, measures) }
-
   describe '#build' do
-    let(:result) { builder.build }
-
     it 'returns a hash keyed by measure_sid' do
       expect(result.keys).to all(be_a(Integer))
     end
@@ -53,7 +43,7 @@ RSpec.describe CachedCommodityService::MeasureMetadataBuilder do
 
     it 'extracts measure_type_id' do
       meta = result[measure.measure_sid]
-      expect(meta[:measure_type_id]).to eq(measure_type.measure_type_id)
+      expect(meta[:measure_type_id]).to eq('103')
     end
 
     it 'extracts excluded_geographical_area_ids as an array' do
@@ -139,7 +129,7 @@ RSpec.describe CachedCommodityService::MeasureMetadataBuilder do
     end
 
     context 'with an erga omnes measure' do
-      let(:geographical_area) { erga_omnes_area }
+      let(:geographical_area) { create(:geographical_area, :erga_omnes, :with_description) }
 
       it 'marks erga_omnes as true' do
         meta = result[measure.measure_sid]

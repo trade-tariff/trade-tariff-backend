@@ -1,12 +1,11 @@
 RSpec.describe Api::V2::QuotasController, type: :request do
   describe 'GET /quotas/search.json' do
-    let(:validity_start_date) { Date.new(Time.zone.today.year, 1, 1) }
     let(:quota_order_number) { create :quota_order_number }
     let!(:measure) do
       create(
         :measure,
         ordernumber: quota_order_number.quota_order_number_id,
-        validity_start_date:,
+        validity_start_date: Date.new(Time.zone.today.year, 1, 1),
         goods_nomenclature:,
       )
     end
@@ -17,7 +16,7 @@ RSpec.describe Api::V2::QuotasController, type: :request do
              quota_order_number_sid: quota_order_number.quota_order_number_sid,
              quota_order_number_id: quota_order_number.quota_order_number_id,
              critical_state: 'Y',
-             validity_start_date:)
+             validity_start_date: Date.new(Time.zone.today.year, 1, 1))
 
       quota_order_number_origin = create(:quota_order_number_origin, :with_geographical_area, :with_quota_order_number_origin_exclusion,
                                          quota_order_number_sid: quota_order_number.quota_order_number_sid)
@@ -29,7 +28,7 @@ RSpec.describe Api::V2::QuotasController, type: :request do
     context 'when not specifying an includes list in the query params' do
       let(:params) { { year: [Time.zone.today.year.to_s] } }
 
-      let(:pattern) do
+      def expected_response
         {
           data: [
             {
@@ -187,7 +186,7 @@ RSpec.describe Api::V2::QuotasController, type: :request do
       it 'returns api_response found quotas' do
         get '/uk/api/quotas/search.json', params: params, headers: request_headers(format: :json)
 
-        expect(response.body).to match_json_expression pattern
+        expect(response.body).to match_json_expression expected_response
       end
 
       it 'does not request eager loading full quota balance events' do
@@ -215,7 +214,7 @@ RSpec.describe Api::V2::QuotasController, type: :request do
         }
       end
 
-      let(:pattern) do
+      def expected_response
         {
           data: [
             {
@@ -285,7 +284,7 @@ RSpec.describe Api::V2::QuotasController, type: :request do
         it 'returns api_response found quotas with the allowed resources' do
           get '/uk/api/quotas/search.json', params: params, headers: request_headers(format: :json)
 
-          expect(response.body).to match_json_expression pattern
+          expect(response.body).to match_json_expression expected_response
         end
 
         it 'requests eager loading full quota balance events' do

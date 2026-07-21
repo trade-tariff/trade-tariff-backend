@@ -2,7 +2,6 @@ RSpec.describe Api::User::UserService do
   describe '.find_or_create' do
     let(:external_id) { 'test-user-123' }
     let(:email) { 'test@example.com' }
-    let(:valid_payload) { { 'sub' => external_id, 'email' => email } }
     let(:token) { 'valid.jwt.token' }
 
     before do
@@ -72,7 +71,13 @@ RSpec.describe Api::User::UserService do
     end
 
     context 'when token verification succeeds' do
-      let(:valid_result) { CognitoTokenVerifier::Result.new(valid: true, payload: valid_payload, reason: nil) }
+      let(:valid_result) do
+        CognitoTokenVerifier::Result.new(
+          valid: true,
+          payload: { 'sub' => external_id, 'email' => email },
+          reason: nil,
+        )
+      end
 
       before do
         allow(CognitoTokenVerifier).to receive(:verify_id_token).with(token).and_return(valid_result)
@@ -159,26 +164,31 @@ RSpec.describe Api::User::UserService do
       end
 
       context 'when payload has different email formats' do
-        let(:email_with_plus) { 'test+label@example.com' }
-        let(:payload_with_plus) { { 'sub' => external_id, 'email' => email_with_plus } }
-        let(:result_with_plus) { CognitoTokenVerifier::Result.new(valid: true, payload: payload_with_plus, reason: nil) }
+        let(:valid_result) do
+          CognitoTokenVerifier::Result.new(
+            valid: true,
+            payload: { 'sub' => external_id, 'email' => 'test+label@example.com' },
+            reason: nil,
+          )
+        end
 
         before do
-          allow(CognitoTokenVerifier).to receive(:verify_id_token).with(token).and_return(result_with_plus)
+          allow(CognitoTokenVerifier).to receive(:verify_id_token).with(token).and_return(valid_result)
         end
 
         it 'correctly sets the email from the payload' do
           result = described_class.find_or_create(token)
-          expect(result.email).to eq(email_with_plus)
+          expect(result.email).to eq('test+label@example.com')
         end
       end
 
       context 'when payload is missing email' do
-        let(:payload_without_email) { { 'sub' => external_id } }
-        let(:result_without_email) { CognitoTokenVerifier::Result.new(valid: true, payload: payload_without_email, reason: nil) }
+        let(:valid_result) do
+          CognitoTokenVerifier::Result.new(valid: true, payload: { 'sub' => external_id }, reason: nil)
+        end
 
         before do
-          allow(CognitoTokenVerifier).to receive(:verify_id_token).with(token).and_return(result_without_email)
+          allow(CognitoTokenVerifier).to receive(:verify_id_token).with(token).and_return(valid_result)
           allow(IdentityApiClient).to receive(:get_email).with(external_id).and_return(nil)
         end
 
@@ -190,11 +200,12 @@ RSpec.describe Api::User::UserService do
       end
 
       context 'when payload is missing sub' do
-        let(:payload_without_sub) { { 'email' => email } }
-        let(:result_without_sub) { CognitoTokenVerifier::Result.new(valid: true, payload: payload_without_sub, reason: nil) }
+        let(:valid_result) do
+          CognitoTokenVerifier::Result.new(valid: true, payload: { 'email' => email }, reason: nil)
+        end
 
         before do
-          allow(CognitoTokenVerifier).to receive(:verify_id_token).with(token).and_return(result_without_sub)
+          allow(CognitoTokenVerifier).to receive(:verify_id_token).with(token).and_return(valid_result)
         end
 
         it 'creates user with nil external_id' do
@@ -221,7 +232,6 @@ RSpec.describe Api::User::UserService do
   describe '.find' do
     let(:external_id) { 'test-user-123' }
     let(:email) { 'test@example.com' }
-    let(:valid_payload) { { 'sub' => external_id, 'email' => email } }
     let(:token) { 'valid.jwt.token' }
 
     context 'when token verification fails' do
@@ -239,7 +249,13 @@ RSpec.describe Api::User::UserService do
     end
 
     context 'when token verification succeeds' do
-      let(:valid_result) { CognitoTokenVerifier::Result.new(valid: true, payload: valid_payload, reason: nil) }
+      let(:valid_result) do
+        CognitoTokenVerifier::Result.new(
+          valid: true,
+          payload: { 'sub' => external_id, 'email' => email },
+          reason: nil,
+        )
+      end
 
       before do
         allow(CognitoTokenVerifier).to receive(:verify_id_token).with(token).and_return(valid_result)
@@ -278,7 +294,6 @@ RSpec.describe Api::User::UserService do
   describe '.create' do
     let(:external_id) { 'new-user-123' }
     let(:email) { 'new@example.com' }
-    let(:valid_payload) { { 'sub' => external_id, 'email' => email } }
     let(:token) { 'valid.jwt.token' }
 
     context 'when token verification fails' do
@@ -302,7 +317,13 @@ RSpec.describe Api::User::UserService do
     end
 
     context 'when token verification succeeds' do
-      let(:valid_result) { CognitoTokenVerifier::Result.new(valid: true, payload: valid_payload, reason: nil) }
+      let(:valid_result) do
+        CognitoTokenVerifier::Result.new(
+          valid: true,
+          payload: { 'sub' => external_id, 'email' => email },
+          reason: nil,
+        )
+      end
 
       before do
         allow(CognitoTokenVerifier).to receive(:verify_id_token).with(token).and_return(valid_result)

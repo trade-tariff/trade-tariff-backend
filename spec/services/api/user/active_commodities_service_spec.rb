@@ -1,28 +1,31 @@
 RSpec.describe Api::User::ActiveCommoditiesService do
   subject(:service) { described_class.new(subscription) }
 
-  let(:target_ids) { [123, 456, 789, 321, 654, 655] }
-  let(:commodity_codes) { %w[1234567890 1234567891 1234567892 1234567893 1234567894 1234560000] }
-  let(:subscription) { create(:user_subscription, metadata: { commodity_codes: commodity_codes }) }
-
-  let(:expected_active_codes) { %w[1234567890] }
-  let(:expected_expired_codes) { %w[1234560000 1234567891 1234567894] }
-  let(:expected_invalid_codes) { %w[1234567892 1234567893] }
+  let(:subscription) do
+    create(:user_subscription, metadata: { commodity_codes: commodity_fixture.pluck(:code) })
+  end
+  let(:commodity_fixture) do
+    [
+      { sid: 123, code: '1234567890', status: :active, factory: %i[commodity actual] },
+      { sid: 456, code: '1234567891', status: :expired, factory: %i[commodity expired] },
+      { sid: 789, code: '1234567892', status: :invalid },
+      { sid: 321, code: '1234567893', status: :invalid },
+      { sid: 654, code: '1234567894', status: :expired, factory: %i[subheading expired with_children] },
+      { sid: 655, code: '1234560000', status: :expired, factory: %i[subheading expired non_declarable with_children] },
+    ]
+  end
 
   before do
     TradeTariffRequest.time_machine_now = Time.current
 
-    target_ids.each do |target_id|
+    commodity_fixture.each do |item|
       create(:subscription_target,
              user_subscriptions_uuid: subscription.uuid,
-             target_id: target_id,
+             target_id: item[:sid],
              target_type: 'commodity')
-    end
 
-    create(:commodity, :actual, goods_nomenclature_item_id: '1234567890', goods_nomenclature_sid: 123)
-    create(:commodity, :expired, goods_nomenclature_item_id: '1234567891', goods_nomenclature_sid: 456)
-    create(:subheading, :expired, :with_children, goods_nomenclature_item_id: '1234567894', goods_nomenclature_sid: 654)
-    create(:subheading, :expired, :non_declarable, :with_children, goods_nomenclature_item_id: '1234560000', goods_nomenclature_sid: 655)
+      create(*item[:factory], goods_nomenclature_item_id: item[:code], goods_nomenclature_sid: item[:sid]) if item[:factory]
+    end
 
     # Clear both Rails cache and instance variables to ensure fresh data
     Rails.cache.delete('myott_all_active_commodities')
@@ -246,21 +249,21 @@ RSpec.describe Api::User::ActiveCommoditiesService do
 
   describe '#initialize' do
     it 'sets uploaded commodity codes from subscription metadata' do
-      expect(service.uploaded_commodity_codes).to eq(commodity_codes)
+      expect(service.uploaded_commodity_codes).to eq(commodity_fixture.pluck(:code))
     end
 
     it 'sets subscription target ids from subscription targets' do
-      expect(service.subscription_target_ids.sort).to eq(target_ids.sort)
+      expect(service.subscription_target_ids.sort).to eq(commodity_fixture.pluck(:sid).sort)
     end
   end
 
   describe '#call' do
     let(:expected_result) do
       {
-        active: expected_active_codes.count,
-        expired: expected_expired_codes.count,
-        invalid: expected_invalid_codes.count,
-        total: expected_active_codes.count + expected_expired_codes.count,
+        active: commodity_fixture.count { |item| item[:status] == :active },
+        expired: commodity_fixture.count { |item| item[:status] == :expired },
+        invalid: commodity_fixture.count { |item| item[:status] == :invalid },
+        total: commodity_fixture.count { |item| item[:status] != :invalid },
       }
     end
 
@@ -287,7 +290,7 @@ RSpec.describe Api::User::ActiveCommoditiesService do
     end
 
     context 'when subscription has no targets' do
-      let(:no_target_subscription) { create(:user_subscription, metadata: { commodity_codes: commodity_codes }) }
+      let(:no_target_subscription) { create(:user_subscription, metadata: { commodity_codes: commodity_fixture.pluck(:code) }) }
       let(:no_target_service) { described_class.new(no_target_subscription) }
 
       it 'returns zero counts for active and expired, all invalid' do
@@ -295,7 +298,7 @@ RSpec.describe Api::User::ActiveCommoditiesService do
         expect(result).to eq({
           active: 0,
           expired: 0,
-          invalid: commodity_codes.count,
+          invalid: commodity_fixture.count,
           total: 0,
         })
       end
@@ -321,19 +324,22 @@ RSpec.describe Api::User::ActiveCommoditiesService do
     it 'returns paginated active commodities with correct total' do
       commodities, total = service.active_commodities(page: 1, per_page: 10)
       expect(total).to eq(1)
-      expect(commodities.map(&:goods_nomenclature_item_id)).to eq(expected_active_codes)
+      expected_codes = commodity_fixture.filter_map { |item| item[:code] if item[:status] == :active }.sort
+      expect(commodities.map(&:goods_nomenclature_item_id)).to eq(expected_codes)
     end
 
     it 'returns paginated expired commodities with correct total' do
       commodities, total = service.expired_commodities(page: 1, per_page: 10)
       expect(total).to eq(3)
-      expect(commodities.map(&:goods_nomenclature_item_id)).to eq(expected_expired_codes)
+      expected_codes = commodity_fixture.filter_map { |item| item[:code] if item[:status] == :expired }.sort
+      expect(commodities.map(&:goods_nomenclature_item_id)).to eq(expected_codes)
     end
 
     it 'returns paginated invalid commodities with correct total' do
       commodities, total = service.invalid_commodities(page: 1, per_page: 10)
       expect(total).to eq(2)
-      expect(commodities.map(&:goods_nomenclature_item_id)).to eq(expected_invalid_codes)
+      expected_codes = commodity_fixture.filter_map { |item| item[:code] if item[:status] == :invalid }.sort
+      expect(commodities.map(&:goods_nomenclature_item_id)).to eq(expected_codes)
     end
   end
 

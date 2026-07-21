@@ -1,32 +1,23 @@
 RSpec.describe Api::User::MyCommoditiesMetaService do
-  let(:subscription) do
-    create(:user_subscription,
-           subscription_type_id: Subscriptions::Type.my_commodities.id,
-           metadata: { 'commodity_codes' => %w[1234567890 1234567891 9999999999] })
-  end
+  let!(:subscription_data) do
+    subscription = create(
+      :user_subscription,
+      subscription_type_id: Subscriptions::Type.my_commodities.id,
+      metadata: { 'commodity_codes' => %w[1234567890 1234567891 9999999999] },
+    )
+    active = create(:commodity, :actual, goods_nomenclature_item_id: '1234567890')
+    expired = create(:commodity, :expired, goods_nomenclature_item_id: '1234567891')
 
-  let!(:commodity_active) do
-    create(:commodity, :actual,
-           goods_nomenclature_item_id: '1234567890')
-  end
+    [active, expired].each do |commodity|
+      create(
+        :subscription_target,
+        user_subscriptions_uuid: subscription.uuid,
+        target_id: commodity.goods_nomenclature_sid,
+        target_type: 'commodity',
+      )
+    end
 
-  let!(:commodity_expired) do
-    create(:commodity, :expired,
-           goods_nomenclature_item_id: '1234567891')
-  end
-
-  let!(:targets) do
-    [
-      create(:subscription_target,
-             user_subscriptions_uuid: subscription.uuid,
-             target_id: commodity_active.goods_nomenclature_sid,
-             target_type: 'commodity'),
-      create(:subscription_target,
-             user_subscriptions_uuid: subscription.uuid,
-             target_id: commodity_expired.goods_nomenclature_sid,
-             target_type: 'commodity'),
-
-    ]
+    { subscription: }
   end
 
   let(:active_commodities_result) do
@@ -55,10 +46,9 @@ RSpec.describe Api::User::MyCommoditiesMetaService do
     }
   end
 
-  let(:service) { described_class.new(subscription) }
+  let(:service) { described_class.new(subscription_data[:subscription]) }
 
   before do
-    targets
     service_double = instance_double(Api::User::ActiveCommoditiesService, call: active_commodities_result)
     allow(Api::User::ActiveCommoditiesService)
       .to receive(:new)
