@@ -5,11 +5,7 @@ Sequel.migration do
     %i[customs_tariff_section_notes customs_tariff_chapter_notes customs_tariff_general_rules].each do |table|
       run <<~SQL
         UPDATE #{table}
-        SET validity_start_date = customs_tariff_updates.validity_start_date,
-            status = CASE customs_tariff_updates.status
-                       WHEN 'failed' THEN 'pending'
-                       ELSE customs_tariff_updates.status
-                     END
+        SET validity_start_date = customs_tariff_updates.validity_start_date
         FROM customs_tariff_updates
         WHERE #{table}.customs_tariff_update_version = customs_tariff_updates.version
           AND #{table}.validity_start_date IS NULL
