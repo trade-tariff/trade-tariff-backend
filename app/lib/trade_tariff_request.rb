@@ -7,6 +7,7 @@ class TradeTariffRequest < ActiveSupport::CurrentAttributes
             :request_id,
             :request_source,
             :client_id,
+            :experiment,
             :green_lanes,
             :time_machine_now,
             # Controls how TimeMachine filters associated records in queries.

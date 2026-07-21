@@ -52,6 +52,7 @@ protected
     payload[:user_agent] = request_user_agent
     payload[:request_source] = TradeTariffRequest.request_source
     payload[:client_id] = TradeTariffRequest.client_id
+    payload[:experiment] = TradeTariffRequest.experiment if TradeTariffRequest.experiment.present?
   end
 
 private
@@ -128,6 +129,7 @@ private
   def set_trade_tariff_request_id
     TradeTariffRequest.request_id = params[:request_id].presence || request.request_id
     TradeTariffRequest.request_source = TradeTariffRequest.request_source_for_user_agent(request_user_agent)
+    TradeTariffRequest.experiment = params[:experiment].presence
     TradeTariffRequest.client_id =
       extract_client_id_from_jwt(request.headers['Authorization']) ||
       request.headers['X-Client-Id']
