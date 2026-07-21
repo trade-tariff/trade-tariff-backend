@@ -51,6 +51,15 @@ RSpec.describe Search::Logger do
     ensure
       TradeTariffRequest.client_id = nil
     end
+
+    it 'includes the current experiment as a structured field' do
+      TradeTariffRequest.experiment = 'trstd-trdr'
+      logger_instance.public_send(method_name, build_event(event_name, payload))
+      json = parsed_log_output
+      expect(json['experiment']).to eq('trstd-trdr')
+    ensure
+      TradeTariffRequest.experiment = nil
+    end
   end
 
   describe '#search_started' do

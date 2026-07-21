@@ -111,6 +111,12 @@ RSpec.describe ApplicationController, type: :request do
         expect(payload[:request_id]).to eq('search-request-id')
       end
 
+      it 'adds the experiment label to the action controller payload' do
+        payload = process_action_payload_for(params: { experiment: 'trstd-trdr' })
+
+        expect(payload[:experiment]).to eq('trstd-trdr')
+      end
+
       it 'bounds request_id values added to the action controller payload' do
         long_request_id = 'a' * 101
         payload = process_action_payload_for(params: { request_id: long_request_id })
