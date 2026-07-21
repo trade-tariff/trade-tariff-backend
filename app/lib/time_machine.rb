@@ -1,5 +1,3 @@
-require 'date'
-
 module TimeMachine
   def self.no_time_machine
     previous = TradeTariffRequest.time_machine_now
@@ -17,9 +15,7 @@ module TimeMachine
   def self.at(datetime)
     datetime = Time.current if datetime.blank?
     datetime = begin
-      # rubocop:disable Style/DateTime
-      DateTime.parse(datetime.to_s)
-      # rubocop:enable Style/DateTime
+      Time.zone.parse(datetime.to_s) || Time.current
     rescue ArgumentError
       Time.current
     end
