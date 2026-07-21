@@ -2,10 +2,10 @@ require 'swagger_helper'
 
 RSpec.describe 'Sections', swagger_doc: 'v2/swagger.json', type: :request do
   # Provides Accept header for all requests in this file.
-  let(:Accept) { 'application/vnd.hmrc.2.0+json' }
+  let(:accept) { 'application/vnd.hmrc.2.0+json' }
 
   path '/api/sections' do
-    parameter name: :Accept, in: :header, required: true,
+    parameter name: :Accept, getter: :accept, in: :header, required: true,
               schema: { type: :string, enum: ['application/vnd.hmrc.2.0+json'] },
               description: 'API version negotiation header'
 
@@ -53,7 +53,7 @@ RSpec.describe 'Sections', swagger_doc: 'v2/swagger.json', type: :request do
   end
 
   path '/api/sections/{id}' do
-    parameter name: :Accept, in: :header, required: true,
+    parameter name: :Accept, getter: :accept, in: :header, required: true,
               schema: { type: :string, enum: ['application/vnd.hmrc.2.0+json'] },
               description: 'API version negotiation header'
     parameter name: :id, in: :path, required: true,
@@ -155,7 +155,7 @@ RSpec.describe 'Sections', swagger_doc: 'v2/swagger.json', type: :request do
   end
 
   path '/api/sections/{id}/chapters' do
-    parameter name: :Accept, in: :header, required: true,
+    parameter name: :Accept, getter: :accept, in: :header, required: true,
               schema: { type: :string, enum: ['application/vnd.hmrc.2.0+json'] },
               description: 'API version negotiation header'
     parameter name: :id, in: :path, required: true,

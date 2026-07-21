@@ -75,9 +75,24 @@ module_function
   def post_process
     return unless File.exist?(SWAGGER_JSON_PATH)
 
-    doc = JSON.parse(File.read(SWAGGER_JSON_PATH))
+    doc = remove_rswag_getters(JSON.parse(File.read(SWAGGER_JSON_PATH)))
     doc['paths'] = public_paths(doc['paths']) if doc['paths']
     File.write(SWAGGER_JSON_PATH, "#{JSON.pretty_generate(doc)}\n")
+  end
+
+  def remove_rswag_getters(value)
+    # `getter` maps OpenAPI names to Ruby helpers while specs run, but is not
+    # part of the OpenAPI schema and rswag retains it on path-level parameters.
+    case value
+    when Hash
+      value.each_with_object({}) do |(key, child), result|
+        result[key] = remove_rswag_getters(child) unless key == 'getter'
+      end
+    when Array
+      value.map { |child| remove_rswag_getters(child) }
+    else
+      value
+    end
   end
 
   def public_paths(paths)

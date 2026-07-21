@@ -129,6 +129,7 @@ RSpec.configure do |config|
         parameters: {
           accept_header: {
             name: 'Accept',
+            getter: :accept,
             in: :header,
             required: true,
             schema: {

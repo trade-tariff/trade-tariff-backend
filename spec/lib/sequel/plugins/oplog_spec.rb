@@ -1,6 +1,6 @@
-# rubocop:disable Style/ConstantDefinitionInBlock
-# rubocop:disable Style/BeforeAfterAll
-# rubocop:disable Style/LeakyConstantDeclaration
+# rubocop:disable Lint/ConstantDefinitionInBlock
+# rubocop:disable RSpec/BeforeAfterAll
+# rubocop:disable RSpec/LeakyConstantDeclaration
 
 RSpec.describe Sequel::Plugins::Oplog do
   before(:all) do
@@ -397,6 +397,6 @@ RSpec.describe Sequel::Plugins::Oplog do
   end
 end
 
-# rubocop:enable Style/ConstantDefinitionInBlock
-# rubocop:enable Style/BeforeAfterAll
-# rubocop:enable Style/LeakyConstantDeclaration
+# rubocop:enable Lint/ConstantDefinitionInBlock
+# rubocop:enable RSpec/BeforeAfterAll
+# rubocop:enable RSpec/LeakyConstantDeclaration

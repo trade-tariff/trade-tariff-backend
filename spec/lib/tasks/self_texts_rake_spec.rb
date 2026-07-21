@@ -1,4 +1,3 @@
-# rubocop:disable RSpec/DescribeClass
 require 'csv'
 require 'stringio'
 
@@ -726,4 +725,3 @@ RSpec.describe 'self_texts rake tasks' do
     end
   end
 end
-# rubocop:enable RSpec/DescribeClass

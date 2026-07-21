@@ -3,7 +3,7 @@
 require 'open3'
 require 'tmpdir'
 
-RSpec.describe 'bin/db-replicate' do # rubocop:disable RSpec/DescribeClass
+RSpec.describe 'bin/db-replicate' do
   let(:script_path) { File.expand_path('../../bin/db-replicate', __dir__) }
   let(:tempdir) { Dir.mktmpdir }
 

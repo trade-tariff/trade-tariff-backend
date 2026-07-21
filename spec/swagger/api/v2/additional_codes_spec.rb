@@ -1,7 +1,7 @@
 require 'swagger_helper'
 
 RSpec.describe 'Additional Codes', swagger_doc: 'v2/swagger.json', type: :request do
-  let(:Accept) { 'application/vnd.hmrc.2.0+json' }
+  let(:accept) { 'application/vnd.hmrc.2.0+json' }
 
   path '/api/additional_codes/search' do
     parameter '$ref' => '#/components/parameters/accept_header'

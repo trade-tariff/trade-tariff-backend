@@ -1,16 +1,16 @@
 require 'swagger_helper'
 
 RSpec.describe 'Exchange Rates', swagger_doc: 'v2/swagger.json', type: :request do
-  let(:Accept) { 'application/vnd.hmrc.2.0+json' }
+  let(:accept) { 'application/vnd.hmrc.2.0+json' }
 
   path '/api/exchange_rates/{id}' do
-    parameter name: :Accept, in: :header, required: true,
+    parameter name: :Accept, getter: :accept, in: :header, required: true,
               schema: { type: :string, enum: ['application/vnd.hmrc.2.0+json'] },
               description: 'API version negotiation header'
     parameter name: :id, in: :path, required: true,
               schema: { type: :string, pattern: '^\d{4}-\d{1,2}$' },
               description: 'Year and month in "YYYY-M" format (e.g. "2024-3")'
-    parameter name: 'filter[type]', in: :query, required: true,
+    parameter name: 'filter[type]', getter: :filter_type, in: :query, required: true,
               schema: { type: :string, enum: %w[monthly spot average] },
               description: 'Rate type to retrieve'
 
@@ -67,14 +67,14 @@ RSpec.describe 'Exchange Rates', swagger_doc: 'v2/swagger.json', type: :request 
         end
 
         let(:id) { '2024-3' }
-        let(:'filter[type]') { 'monthly' }
+        let(:filter_type) { 'monthly' }
 
         run_test!
       end
 
       response '404', 'invalid year/month format' do
         let(:id) { 'invalid' }
-        let(:'filter[type]') { 'monthly' }
+        let(:filter_type) { 'monthly' }
 
         run_test!
       end
@@ -82,13 +82,13 @@ RSpec.describe 'Exchange Rates', swagger_doc: 'v2/swagger.json', type: :request 
   end
 
   path '/api/exchange_rates/period_lists/{year}' do
-    parameter name: :Accept, in: :header, required: true,
+    parameter name: :Accept, getter: :accept, in: :header, required: true,
               schema: { type: :string, enum: ['application/vnd.hmrc.2.0+json'] },
               description: 'API version negotiation header'
     parameter name: :year, in: :path, required: true,
               schema: { type: :integer },
               description: 'Four-digit year to filter periods (e.g. 2024)'
-    parameter name: 'filter[type]', in: :query, required: true,
+    parameter name: 'filter[type]', getter: :filter_type, in: :query, required: true,
               schema: { type: :string, enum: %w[monthly spot average] },
               description: 'Rate type'
 
@@ -143,7 +143,7 @@ RSpec.describe 'Exchange Rates', swagger_doc: 'v2/swagger.json', type: :request 
         end
 
         let(:year) { 2024 }
-        let(:'filter[type]') { 'monthly' }
+        let(:filter_type) { 'monthly' }
 
         run_test!
       end

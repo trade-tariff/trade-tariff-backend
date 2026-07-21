@@ -1,7 +1,7 @@
-# rubocop:disable Style/InstanceVariable
-# rubocop:disable Style/ConstantDefinitionInBlock
-# rubocop:disable Style/BeforeAfterAll
-# rubocop:disable Style/LeakyConstantDeclaration
+# rubocop:disable RSpec/InstanceVariable
+# rubocop:disable Lint/ConstantDefinitionInBlock
+# rubocop:disable RSpec/BeforeAfterAll
+# rubocop:disable RSpec/LeakyConstantDeclaration
 
 RSpec.describe Sequel::Plugins::OptimizedManyToMany do
   before(:all) do
@@ -293,7 +293,7 @@ RSpec.describe Sequel::Plugins::OptimizedManyToMany do
     end
   end
 end
-# rubocop:enable Style/InstanceVariable
-# rubocop:enable Style/ConstantDefinitionInBlock
-# rubocop:enable Style/BeforeAfterAll
-# rubocop:enable Style/LeakyConstantDeclaration
+# rubocop:enable RSpec/InstanceVariable
+# rubocop:enable Lint/ConstantDefinitionInBlock
+# rubocop:enable RSpec/BeforeAfterAll
+# rubocop:enable RSpec/LeakyConstantDeclaration

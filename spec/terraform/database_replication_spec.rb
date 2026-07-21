@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-RSpec.describe 'database replication Terraform' do # rubocop:disable RSpec/DescribeClass
+RSpec.describe 'database replication Terraform' do
   let(:backend_job_tf) { Rails.root.join('terraform/backend_job.tf').read }
 
   it 'execs the replication script from the EventBridge task override' do

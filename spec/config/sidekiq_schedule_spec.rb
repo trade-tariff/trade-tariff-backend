@@ -1,7 +1,6 @@
 require 'erb'
 require 'yaml'
 
-# rubocop:disable RSpec/DescribeClass
 RSpec.describe 'config/sidekiq.yml' do
   def sidekiq_schedule(environment:, service: 'uk')
     original_environment = ENV.fetch('ENVIRONMENT', nil)
@@ -59,4 +58,3 @@ RSpec.describe 'config/sidekiq.yml' do
     end
   end
 end
-# rubocop:enable RSpec/DescribeClass

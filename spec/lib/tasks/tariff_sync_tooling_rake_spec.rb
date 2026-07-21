@@ -1,4 +1,4 @@
-# rubocop:disable RSpec/DescribeClass, RSpec/MultipleDescribes
+# rubocop:disable RSpec/MultipleDescribes
 require 'zip'
 
 RSpec.describe 'tariff:sync:status' do
@@ -509,4 +509,4 @@ RSpec.describe 'tariff:sync:force_apply' do
     end
   end
 end
-# rubocop:enable RSpec/DescribeClass, RSpec/MultipleDescribes
+# rubocop:enable RSpec/MultipleDescribes

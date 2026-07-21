@@ -2,6 +2,7 @@ inherit_gem:
   rubocop-govuk:
     - config/default.yml
     - config/rails.yml
+    - config/rspec.yml
 
 inherit_mode:
   merge:
@@ -42,11 +43,6 @@ RSpec:
         - it_with_refresh_materialized_view
         - run_test!
 
-# rswag requires let names to match HTTP header names (e.g. let(:Accept)), which are PascalCase.
-RSpec/VariableName:
-  Exclude:
-    - 'spec/swagger/**/*'
-
 # Rails route manifests are declarative DSL containers. Block length does not
 # provide useful signal inside them, while the cop remains enforced elsewhere.
 Metrics/BlockLength:
@@ -75,17 +71,8 @@ RSpec/ContextWording:
     - for
 
 RSpec/MultipleMemoizedHelpers:
+  Enabled: true
   Max: 10
-
-# Legacy spec-shape policy cop with many existing offenses; left disabled until
-# specs can be refactored in targeted behaviour-preserving changes.
-RSpec/ExampleLength:
-  Enabled: false
-
-# Legacy spec-shape policy cop with many existing offenses; left disabled until
-# specs can be refactored in targeted behaviour-preserving changes.
-RSpec/NestedGroups:
-  Enabled: false
 
 # swagger:generate intentionally omits :environment — rswag:specs:swaggerize
 # runs rspec in a subprocess and does not need Rails loaded in this process.
@@ -112,11 +99,6 @@ Style/OptionalBooleanParameter:
 
 Style/StringLiterals:
   EnforcedStyle: single_quotes
-
-# Legacy spec-shape policy cop with many existing offenses; left disabled until
-# specs can be refactored in targeted behaviour-preserving changes.
-RSpec/MultipleExpectations:
-  Enabled: false
 
 Custom/SidekiqComplexArguments:
   Enabled: true
