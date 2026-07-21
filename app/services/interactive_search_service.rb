@@ -98,12 +98,24 @@ private
   end
 
   def build_context
-    context_with_compressed_notes(configured_context.to_s)
+    context = context_with_compressed_notes(configured_context.to_s)
       .gsub('%{search_input}', query.to_s)
       .gsub('%{expanded_query}', expanded_query.to_s)
       .gsub('%{answers_opensearch}', format_opensearch_results.to_s)
       .gsub('%{questions}', format_questions_and_answers.to_s)
-      .gsub('%{general_rules}', Search::GeneralRulesPresenter.new.to_s)
+    context_with_general_rules(context)
+  end
+
+  def context_with_general_rules(context)
+    return remove_general_rules_section(context) unless general_rules_enabled?
+
+    context.gsub('%{general_rules}', Search::GeneralRulesPresenter.new.to_s)
+  end
+
+  def remove_general_rules_section(context)
+    context
+      .gsub(/^## General Rules of Interpretation\n+%\{general_rules\}\n*/, '')
+      .gsub(/^.*%\{general_rules\}.*$\n?/, '')
   end
 
   def context_with_compressed_notes(context)
@@ -156,6 +168,8 @@ private
 
   def compressed_notes_enabled? = AdminConfiguration.enabled?('search_compressed_notes_enabled')
 
+  def general_rules_enabled? = AdminConfiguration.enabled?('search_general_rules_enabled')
+
   def compressed_note_contexts
     return @compressed_note_contexts if defined?(@compressed_note_contexts)
 
@@ -181,7 +195,14 @@ private
       query: expanded_query,
       search_results: opensearch_results,
       notes_by_item_id: compressed_notes_by_item_id,
+      source_types: compressed_note_source_types,
     )
+  end
+
+  def compressed_note_source_types
+    source_types = %w[customs_tariff_chapter_note customs_tariff_section_note]
+    source_types << 'customs_tariff_general_rule' if general_rules_enabled?
+    source_types
   end
 
   def note_evidence_diagnostics

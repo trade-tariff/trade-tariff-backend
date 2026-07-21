@@ -533,7 +533,8 @@ RSpec.describe AdminConfiguration do
         expect(described_class.enabled?('expand_search_when_needed_enabled')).to be true
         expect(described_class.enabled?('refine_search_with_answers_enabled')).to be true
         expect(described_class.enabled?('interactive_search_enabled')).to be true
-        expect(described_class.enabled?('search_compressed_notes_enabled')).to be true
+        expect(described_class.enabled?('search_compressed_notes_enabled')).to be false
+        expect(described_class.enabled?('search_general_rules_enabled')).to be false
         expect(described_class.enabled?('interactive_search_duplicate_question_guard_enabled')).to be true
       end
     end

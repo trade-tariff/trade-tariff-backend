@@ -613,10 +613,38 @@ RSpec.describe InteractiveSearchService do
       end
     end
 
-    context 'when general rules are available' do
+    context 'when general rules are disabled by default' do
+      let(:default_search_context) { AdminConfigurationSeeder.search_context_markdown }
+      let(:general_rules_presenter) { instance_double(Search::GeneralRulesPresenter, to_s: 'GIR source text') }
+
+      before do
+        allow(Search::GeneralRulesPresenter).to receive(:new)
+          .and_return(general_rules_presenter)
+      end
+
+      it 'does not load or include general rules' do
+        result
+
+        context_arg = nil
+        expect(OpenaiClient).to have_received(:call) do |context, **_opts|
+          context_arg = context
+        end
+
+        expect(Search::GeneralRulesPresenter).not_to have_received(:new)
+        expect(context_arg).not_to include('GIR source text')
+        expect(context_arg).not_to include('General Rules of Interpretation')
+      end
+    end
+
+    context 'when general rules are enabled and available' do
       let(:general_rules_presenter) { instance_double(Search::GeneralRulesPresenter, to_s: "Current General Rules of Interpretation:\nUse headings first.") }
 
       before do
+        create(:admin_configuration,
+               :boolean,
+               name: 'search_general_rules_enabled',
+               value: true,
+               area: 'classification')
         allow(Search::GeneralRulesPresenter).to receive(:new)
           .and_return(general_rules_presenter)
       end
@@ -692,6 +720,15 @@ RSpec.describe InteractiveSearchService do
               'context_type' => 'inclusion',
               'range_type' => 'heading',
               'range_code' => '4202',
+              'relationships' => [TariffKnowledge::Edge::APPLIES_TO],
+            },
+            {
+              'source_node_key' => 'note_fragment:customs_tariff_general_rule:1.31:1:0001',
+              'source_type' => 'customs_tariff_general_rule',
+              'source_id' => '1',
+              'source_title' => 'General Interpretive Rule 1 fragment 1',
+              'source_context' => 'Leather handbag travel bag accessories must be classified according to the headings.',
+              'context_type' => 'reference',
               'relationships' => [TariffKnowledge::Edge::APPLIES_TO],
             },
           ],
@@ -829,6 +866,29 @@ RSpec.describe InteractiveSearchService do
         expect(context_arg.scan('Heading 4202 includes handbags with outer surface of leather.').size).to eq(1)
       end
 
+      it 'includes compressed GIR evidence only when the general-rules gate is enabled' do
+        create(:admin_configuration,
+               :boolean,
+               name: 'search_general_rules_enabled',
+               value: true,
+               area: 'classification')
+
+        result
+
+        context_arg = nil
+        expect(OpenaiClient).to have_received(:call) do |context, **_opts|
+          context_arg = context
+        end
+        parsed_notes = JSON.parse(context_arg.match(/Relevant compressed notes: (.+?)OpenSearch/m)[1])
+
+        expect(parsed_notes.first['fragments']).to include(
+          include(
+            'source' => 'General Interpretive Rule 1 fragment 1',
+            'text' => 'Leather handbag travel bag accessories must be classified according to the headings.',
+          ),
+        )
+      end
+
       it 'records the exact selected prompt evidence for the request iteration' do
         result
 
@@ -872,6 +932,7 @@ RSpec.describe InteractiveSearchService do
           query: params[:expanded_query],
           search_results: params[:opensearch_results],
           notes_by_item_id: hash_including('4202210000', '4202290000'),
+          source_types: %w[customs_tariff_chapter_note customs_tariff_section_note],
         )
       end
 

@@ -98,10 +98,11 @@ module TariffKnowledge
       attr_reader :limit, :reason_order
     end
 
-    def initialize(query:, search_results:, notes_by_item_id:)
+    def initialize(query:, search_results:, notes_by_item_id:, source_types: nil)
       @query = query.to_s
       @search_results = search_results
       @notes_by_item_id = notes_by_item_id
+      @source_types = source_types&.to_set
     end
 
     def call
@@ -139,7 +140,7 @@ module TariffKnowledge
 
   private
 
-    attr_reader :query, :search_results, :notes_by_item_id, :omissions, :considered_association_count, :considered_source_node_keys, :considered_context_count
+    attr_reader :query, :search_results, :notes_by_item_id, :source_types, :omissions, :considered_association_count, :considered_source_node_keys, :considered_context_count
 
     def deduplicate_source_evidence(contexts)
       retained = {}
@@ -605,9 +606,16 @@ module TariffKnowledge
       end
     end
 
-    def fragment_evidence_records(note) = Array(note.metadata.to_h['evidence'])
+    def fragment_evidence_records(note) = evidence_records_for(note, 'evidence')
 
-    def block_evidence_records(note) = Array(note.metadata.to_h['evidence_blocks'])
+    def block_evidence_records(note) = evidence_records_for(note, 'evidence_blocks')
+
+    def evidence_records_for(note, key)
+      records = Array(note.metadata.to_h[key])
+      return records unless source_types
+
+      records.select { |record| source_types.include?(record['source_type']) }
+    end
 
     def fallback_fragment_keys(note)
       fragment_evidence_records(note).filter_map do |evidence_record|

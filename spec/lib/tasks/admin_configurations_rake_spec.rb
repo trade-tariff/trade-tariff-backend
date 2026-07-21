@@ -7,8 +7,8 @@ RSpec.describe 'admin_configurations:seed' do
     Rake::Task['admin_configurations:seed'].reenable
   end
 
-  it 'creates all 47 admin configurations', :aggregate_failures do
-    expect { seed }.to change(AdminConfiguration, :count).by(47)
+  it 'creates all 48 admin configurations', :aggregate_failures do
+    expect { seed }.to change(AdminConfiguration, :count).by(48)
 
     names = AdminConfiguration.order(:name).select_map(:name)
     expect(names).to eq(%w[
@@ -47,6 +47,7 @@ RSpec.describe 'admin_configurations:seed' do
       rrf_k
       search_compressed_notes_enabled
       search_context
+      search_general_rules_enabled
       search_labels_enabled
       search_model
       search_result_limit
@@ -90,12 +91,16 @@ RSpec.describe 'admin_configurations:seed' do
     expect(config.value['escalation']['attributes']['message']).to include('{{enquiries_email}}')
   end
 
-  it 'enables compressed-note evidence with production-safe guidance' do
+  it 'disables tariff-note and general-rule evidence by default', :aggregate_failures do
     seed
 
-    config = AdminConfiguration.where(name: 'search_compressed_notes_enabled').first
-    expect(config.value).to be true
-    expect(config.description).to eq('Include relevant current approved compressed tariff-note evidence in guided-search model prompts.')
+    notes_config = AdminConfiguration.where(name: 'search_compressed_notes_enabled').first
+    expect(notes_config.value).to be false
+    expect(notes_config.description).to eq('Include relevant current approved compressed tariff-note evidence in guided-search model prompts.')
+
+    rules_config = AdminConfiguration.where(name: 'search_general_rules_enabled').first
+    expect(rules_config.value).to be false
+    expect(rules_config.description).to eq('Include current General Rules of Interpretation in guided-search model prompts.')
   end
 
   it 'seeds nested_options configs with sorted model options', :aggregate_failures do
@@ -397,7 +402,7 @@ RSpec.describe 'admin_configurations:seed' do
   it 'patches existing configurations when their type changes' do
     create(:admin_configuration, name: 'description_intercept_templates', config_type: 'string', value: 'legacy')
 
-    expect { seed }.to change(AdminConfiguration, :count).by(46)
+    expect { seed }.to change(AdminConfiguration, :count).by(47)
     expect(AdminConfiguration.where(name: 'description_intercept_templates').first.config_type).to eq('object_template')
   end
 end
