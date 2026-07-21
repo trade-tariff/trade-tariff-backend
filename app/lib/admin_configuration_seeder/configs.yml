@@ -30,6 +30,10 @@
   config_type: boolean
   description: Include relevant current approved compressed tariff-note evidence in guided-search model prompts.
   default: search_compressed_notes_enabled
+- name: search_general_rules_enabled
+  config_type: boolean
+  description: Include current General Rules of Interpretation in guided-search model prompts.
+  default: search_general_rules_enabled
 - name: interactive_search_enabled
   config_type: boolean
   description: Allow guided search to ask model-generated clarifying questions and rank candidate commodity codes. When disabled, retrieval results are returned without interactive model processing.
