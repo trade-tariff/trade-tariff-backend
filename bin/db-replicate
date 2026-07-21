@@ -274,7 +274,7 @@ lookup_persistence_bucket() {
   echo "s3://trade-tariff-persistence-$account_id"
 }
 
-sync_buckets() {
+sync_exchange_rates() {
   local source_bucket
   local target_bucket
   source_bucket="$(lookup_persistence_bucket "$1")"
@@ -282,6 +282,19 @@ sync_buckets() {
 
   retry_command "Sync exchange rates from $1 to $2" \
     aws s3 sync "$source_bucket/data/exchange_rates/" "$target_bucket/data/exchange_rates/"
+}
+
+sync_delta_files() {
+  local source_bucket
+  local target_bucket
+  source_bucket="$(lookup_persistence_bucket "$1")"
+  target_bucket="$(lookup_persistence_bucket "$2")"
+
+  retry_command "Sync taric delta files from $1 to $2" \
+    aws s3 sync "$source_bucket/data/taric/" "$target_bucket/data/taric/"
+
+  retry_command "Sync cds delta files from $1 to $2" \
+    aws s3 sync "$source_bucket/data/cds/" "$target_bucket/data/cds/"
 }
 
 echo "Stopping services $SERVICES"
@@ -297,9 +310,15 @@ SERVICES_STOPPED=false
 
 echo "Syncing exchange rates"
 
-sync_buckets "production" "$ENVIRONMENT"
+sync_exchange_rates "production" "$ENVIRONMENT"
 
 echo "Exchange rates synced successfully"
+
+echo "Syncing delta files"
+
+sync_delta_files "production" "$ENVIRONMENT"
+
+echo "Delta files synced successfully"
 
 END_TIME=$(date +%s)
 ELAPSED_TIME=$((END_TIME - START_TIME))
