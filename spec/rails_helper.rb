@@ -30,7 +30,6 @@ RSpec.configure do |config|
   config.alias_it_should_behave_like_to :it_is_associated, 'it is associated'
   config.include RequestSpecHelper, type: :request
   config.include SynchronizerHelper
-  config.include RescueHelper
   config.include ActiveSupport::Testing::TimeHelpers
 
   config.include_context 'with fake global rules of origin data'

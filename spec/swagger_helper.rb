@@ -21,10 +21,19 @@ module JsonapiSwaggerParameters
 end
 
 module SwaggerSecurityParameters
-  # Rswag reads header parameters by method name, including OpenAPI header casing.
-  # rubocop:disable Naming/MethodName
-  define_method(:Authorization) { 'Bearer test-token' }
-  # rubocop:enable Naming/MethodName
+  AUTHORIZATION_HEADER = :Authorization
+
+  # Rswag dispatches OAuth-derived header names as messages and does not expose
+  # the `getter:` override supported by ordinary OpenAPI parameters.
+  def method_missing(method_name, ...)
+    return 'Bearer test-token' if method_name == AUTHORIZATION_HEADER
+
+    super
+  end
+
+  def respond_to_missing?(method_name, include_private = false)
+    method_name == AUTHORIZATION_HEADER || super
+  end
 end
 
 module SwaggerErrorResponses

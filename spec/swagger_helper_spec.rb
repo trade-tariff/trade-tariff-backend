@@ -5,6 +5,20 @@ RSpec.describe 'swagger helper configuration' do
 
   let(:components) { swagger_doc.fetch(:components) }
 
+  describe SwaggerSecurityParameters do
+    subject(:security_parameters) { helper_class.new }
+
+    let(:helper_class) { Class.new { include SwaggerSecurityParameters } }
+
+    it 'responds to the OAuth header message required by rswag' do
+      expect(security_parameters).to respond_to(:Authorization)
+    end
+
+    it 'provides the test bearer token through the OAuth header message' do
+      expect(security_parameters.public_send(:Authorization)).to eq('Bearer test-token')
+    end
+  end
+
   it 'sets public endpoints to require read-only OAuth scope by default' do
     expect(swagger_doc.fetch(:security)).to eq(
       [

@@ -1,10 +1,26 @@
-# rubocop:disable RSpec/InstanceVariable
-# rubocop:disable Lint/ConstantDefinitionInBlock
-# rubocop:disable RSpec/BeforeAfterAll
-# rubocop:disable RSpec/LeakyConstantDeclaration
-
 RSpec.describe Sequel::Plugins::OptimizedManyToMany do
-  before(:all) do
+  let(:parent_one) { Parent.create(name: 'P1') }
+  let(:parent_two) { Parent.create(name: 'P2') }
+  let(:child_one) { Child.create(name: 'C1') }
+
+  before do
+    create_schema
+    define_models
+    create_fixture_records
+  end
+
+  def create_fixture_records
+    child_one
+    child_two = Child.create(name: 'C2')
+    child_three = Child.create(name: 'C3')
+
+    Sequel::Model.db[:parents_children].insert(parent_id: parent_one.id, child_id: child_one.id)
+    Sequel::Model.db[:parents_children].insert(parent_id: parent_one.id, child_id: child_two.id)
+    Sequel::Model.db[:parents_children].insert(parent_id: parent_two.id, child_id: child_three.id)
+    Grandchild.create(name: 'G1', child: child_one)
+  end
+
+  def create_schema
     db = Sequel::Model.db
     db.extension :pg_array
 
@@ -50,65 +66,41 @@ RSpec.describe Sequel::Plugins::OptimizedManyToMany do
       String  :postcode, null: false
       foreign_key :parent_id, :parents, on_delete: :cascade
     end
-
-    class Parent < Sequel::Model(:parents)
-      many_to_many :children,
-                   class: 'Child',
-                   join_table: :parents_children,
-                   left_key: :parent_id,
-                   left_primary_key: :id,
-                   right_key: :child_id,
-                   right_primary_key: :id,
-                   use_optimized: false
-    end
-
-    class Child < Sequel::Model(:children)
-      many_to_many :parents,
-                   class: 'Parent',
-                   join_table: :parents_children,
-                   left_key: :parent_id,
-                   left_primary_key: :id,
-                   right_key: :child_id,
-                   right_primary_key: :id,
-                   use_optimized: false
-
-      one_to_many :grandchildren, key: :child_id
-    end
-
-    class Grandchild < Sequel::Model(:grandchildren)
-      many_to_one :child
-    end
-
-    class Address < Sequel::Model(:addresses)
-      unrestrict_primary_key
-      set_primary_key %i[number postcode]
-    end
   end
 
-  before do
-    Sequel::Model.db[:parents_children].delete
-    Child.dataset.delete
-    Parent.dataset.delete
-    Grandchild.dataset.delete
+  def define_models
+    stub_const('Parent', Class.new(Sequel::Model(:parents)))
+    stub_const('Child', Class.new(Sequel::Model(:children)))
+    stub_const('Grandchild', Class.new(Sequel::Model(:grandchildren)))
+    stub_const('Address', Class.new(Sequel::Model(:addresses)))
 
-    @p1 = Parent.create(name: 'P1')
-    @p2 = Parent.create(name: 'P2')
+    Parent.many_to_many :children,
+                        class: 'Child',
+                        join_table: :parents_children,
+                        left_key: :parent_id,
+                        left_primary_key: :id,
+                        right_key: :child_id,
+                        right_primary_key: :id,
+                        use_optimized: false
 
-    @c1 = Child.create(name: 'C1')
-    @c2 = Child.create(name: 'C2')
-    @c3 = Child.create(name: 'C3')
-
-    Sequel::Model.db[:parents_children].insert(parent_id: @p1.id, child_id: @c1.id)
-    Sequel::Model.db[:parents_children].insert(parent_id: @p1.id, child_id: @c2.id)
-    Sequel::Model.db[:parents_children].insert(parent_id: @p2.id, child_id: @c3.id)
-
-    @g1 = Grandchild.create(name: 'G1', child: @c1)
+    Child.many_to_many :parents,
+                       class: 'Parent',
+                       join_table: :parents_children,
+                       left_key: :parent_id,
+                       left_primary_key: :id,
+                       right_key: :child_id,
+                       right_primary_key: :id,
+                       use_optimized: false
+    Child.one_to_many :grandchildren, key: :child_id
+    Grandchild.many_to_one :child
+    Address.unrestrict_primary_key
+    Address.set_primary_key %i[number postcode]
   end
 
   describe 'inbuilt many_to_many load' do
     it 'loads associated children normally' do
-      expect(@p1.children.map(&:name)).to contain_exactly('C1', 'C2')
-      expect(@p2.children.map(&:name)).to contain_exactly('C3')
+      expect(parent_one.children.map(&:name)).to contain_exactly('C1', 'C2')
+      expect(parent_two.children.map(&:name)).to contain_exactly('C3')
     end
   end
 
@@ -125,13 +117,13 @@ RSpec.describe Sequel::Plugins::OptimizedManyToMany do
     end
 
     it 'loads children with custom dataset' do
-      expect(@p1.optimized_children.map(&:name)).to contain_exactly('C1', 'C2')
+      expect(parent_one.optimized_children.map(&:name)).to contain_exactly('C1', 'C2')
     end
 
     it 'eager loads children with optimized' do
       parents = Parent.eager(:optimized_children).all
-      expect(parents.find { |p| p.id == @p1.id }.optimized_children.map(&:name)).to contain_exactly('C1', 'C2')
-      expect(parents.find { |p| p.id == @p2.id }.optimized_children.map(&:name)).to contain_exactly('C3')
+      expect(parents.find { |p| p.id == parent_one.id }.optimized_children.map(&:name)).to contain_exactly('C1', 'C2')
+      expect(parents.find { |p| p.id == parent_two.id }.optimized_children.map(&:name)).to contain_exactly('C3')
     end
   end
 
@@ -149,13 +141,13 @@ RSpec.describe Sequel::Plugins::OptimizedManyToMany do
     end
 
     it 'loads children with custom dataset' do
-      expect(@p1.optimized_children.map(&:name)).to eq(%w[C2 C1])
+      expect(parent_one.optimized_children.map(&:name)).to eq(%w[C2 C1])
     end
 
     it 'eager loads children with optimized' do
       parents = Parent.eager(:optimized_children).all
-      expect(parents.find { |p| p.id == @p1.id }.optimized_children.map(&:name)).to eq(%w[C2 C1])
-      expect(parents.find { |p| p.id == @p2.id }.optimized_children.map(&:name)).to contain_exactly('C3')
+      expect(parents.find { |p| p.id == parent_one.id }.optimized_children.map(&:name)).to eq(%w[C2 C1])
+      expect(parents.find { |p| p.id == parent_two.id }.optimized_children.map(&:name)).to contain_exactly('C3')
     end
   end
 
@@ -173,13 +165,13 @@ RSpec.describe Sequel::Plugins::OptimizedManyToMany do
     end
 
     it 'loads children with custom dataset' do
-      expect(@p1.optimized_children.map(&:name)).to eq(%w[C1 C2])
+      expect(parent_one.optimized_children.map(&:name)).to eq(%w[C1 C2])
     end
 
     it 'eager loads children with optimized' do
       parents = Parent.eager(:optimized_children).all
-      expect(parents.find { |p| p.id == @p1.id }.optimized_children.map(&:name)).to eq(%w[C1 C2])
-      expect(parents.find { |p| p.id == @p2.id }.optimized_children.map(&:name)).to contain_exactly('C3')
+      expect(parents.find { |p| p.id == parent_one.id }.optimized_children.map(&:name)).to eq(%w[C1 C2])
+      expect(parents.find { |p| p.id == parent_two.id }.optimized_children.map(&:name)).to contain_exactly('C3')
     end
   end
 
@@ -198,8 +190,8 @@ RSpec.describe Sequel::Plugins::OptimizedManyToMany do
 
     it 'uses normal dataset but optimized eager loader' do
       parents = Parent.eager(:cte_children).all
-      expect(parents.find { |p| p.id == @p1.id }.cte_children.map(&:name)).to contain_exactly('C1', 'C2')
-      expect(parents.find { |p| p.id == @p2.id }.cte_children.map(&:name)).to contain_exactly('C3')
+      expect(parents.find { |p| p.id == parent_one.id }.cte_children.map(&:name)).to contain_exactly('C1', 'C2')
+      expect(parents.find { |p| p.id == parent_two.id }.cte_children.map(&:name)).to contain_exactly('C3')
     end
   end
 
@@ -224,8 +216,8 @@ RSpec.describe Sequel::Plugins::OptimizedManyToMany do
 
     it 'eager loads nested associations (cte_children → grandchildren)' do
       parents = Parent.eager(cte_children: :grandchildren).all
-      p1 = parents.find { |p| p.id == @p1.id }
-      c1 = p1.cte_children.find { |c| c.id == @c1.id }
+      p1 = parents.find { |p| p.id == parent_one.id }
+      c1 = p1.cte_children.find { |c| c.id == child_one.id }
       expect(c1.grandchildren.map(&:name)).to eq(%w[G1])
     end
   end
@@ -241,26 +233,43 @@ RSpec.describe Sequel::Plugins::OptimizedManyToMany do
                           right_primary_key: %i[number postcode],
                           use_optimized: true
 
-      @a1 = Address.create(number: 1, postcode: 'A1')
-      @a2 = Address.create(number: 2, postcode: 'A2')
-      @a3 = Address.create(number: 3, postcode: 'A3')
+      address_one = Address.create(number: 1, postcode: 'A1')
+      address_two = Address.create(number: 2, postcode: 'A2')
+      address_three = Address.create(number: 3, postcode: 'A3')
 
-      Sequel::Model.db[:parents_addresses].insert(parent_id: @p1.id, number: @a1.number, postcode: @a1.postcode)
-      Sequel::Model.db[:parents_addresses].insert(parent_id: @p1.id, number: @a2.number, postcode: @a2.postcode)
-      Sequel::Model.db[:parents_addresses].insert(parent_id: @p2.id, number: @a3.number, postcode: @a3.postcode)
+      Sequel::Model.db[:parents_addresses].insert(
+        parent_id: parent_one.id,
+        number: address_one.number,
+        postcode: address_one.postcode,
+      )
+      Sequel::Model.db[:parents_addresses].insert(
+        parent_id: parent_one.id,
+        number: address_two.number,
+        postcode: address_two.postcode,
+      )
+      Sequel::Model.db[:parents_addresses].insert(
+        parent_id: parent_two.id,
+        number: address_three.number,
+        postcode: address_three.postcode,
+      )
     end
 
     it 'loads address with custom dataset' do
-      expect(@p1.addresses.map(&:number)).to contain_exactly(1, 2)
+      expect(parent_one.addresses.map(&:number)).to contain_exactly(1, 2)
     end
 
     it 'eager loads associations (parent → addresses)' do
       parents = Parent.eager(:addresses).all
-      expect(parents.find { |p| p.id == @p1.id }.addresses.map(&:number)).to contain_exactly(1, 2)
+      eager_parent = parents.find { |parent| parent.id == parent_one.id }
+
+      expect(eager_parent.addresses.map(&:number)).to contain_exactly(1, 2)
     end
   end
 
   describe 'with composite left primary key and use_optimized: true' do
+    let(:address_three) { Address.create(number: 3, postcode: 'A3') }
+    let(:parent_three) { Parent.create(name: 'P3') }
+
     before do
       Address.many_to_many :people,
                            class: 'Parent',
@@ -271,29 +280,34 @@ RSpec.describe Sequel::Plugins::OptimizedManyToMany do
                            left_primary_key: %i[number postcode],
                            use_optimized: true
 
-      @a1 = Address.create(number: 1, postcode: 'A1')
-      @a2 = Address.create(number: 2, postcode: 'A2')
-      @a3 = Address.create(number: 3, postcode: 'A3')
-
-      @p3 = Parent.create(name: 'P3')
-
-      Sequel::Model.db[:parents_addresses].insert(parent_id: @p1.id, number: @a1.number, postcode: @a1.postcode)
-      Sequel::Model.db[:parents_addresses].insert(parent_id: @p1.id, number: @a2.number, postcode: @a2.postcode)
-      Sequel::Model.db[:parents_addresses].insert(parent_id: @p2.id, number: @a3.number, postcode: @a3.postcode)
-      Sequel::Model.db[:parents_addresses].insert(parent_id: @p3.id, number: @a3.number, postcode: @a3.postcode)
+      insert_parent_address(parent_one, Address.create(number: 1, postcode: 'A1'))
+      insert_parent_address(parent_one, Address.create(number: 2, postcode: 'A2'))
+      insert_parent_address(parent_two, address_three)
+      insert_parent_address(parent_three, address_three)
     end
 
     it 'loads people with custom dataset' do
-      expect(@a3.people.map(&:id)).to eq([@p2.id, @p3.id])
+      expect(address_three.people.map(&:id)).to eq([parent_two.id, parent_three.id])
     end
 
     it 'eager loads associations (address → people)' do
       addresses = Address.eager(:people).all
-      expect(addresses.find { |a| a.number == @a3.number && a.postcode == @a3.postcode }.people.map(&:id)).to contain_exactly(@p2.id, @p3.id)
+      eager_address = addresses.find do |address|
+        address.number == address_three.number && address.postcode == address_three.postcode
+      end
+
+      expect(eager_address.people.map(&:id)).to contain_exactly(
+        parent_two.id,
+        parent_three.id,
+      )
     end
   end
+
+  def insert_parent_address(parent, address)
+    Sequel::Model.db[:parents_addresses].insert(
+      parent_id: parent.id,
+      number: address.number,
+      postcode: address.postcode,
+    )
+  end
 end
-# rubocop:enable RSpec/InstanceVariable
-# rubocop:enable Lint/ConstantDefinitionInBlock
-# rubocop:enable RSpec/BeforeAfterAll
-# rubocop:enable RSpec/LeakyConstantDeclaration
