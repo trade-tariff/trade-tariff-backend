@@ -1,5 +1,6 @@
-# rubocop:disable Rails/ApplicationController
-class ErrorsController < ActionController::Base
+class ErrorsController < ActionController::API
+  include ActionController::MimeResponds
+
   def bad_request
     respond_to_error \
       :bad_request,
@@ -70,4 +71,3 @@ private
     match&.[](:version) || VersionedAcceptHeader::DEFAULT_VERSION
   end
 end
-# rubocop:enable Rails/ApplicationController

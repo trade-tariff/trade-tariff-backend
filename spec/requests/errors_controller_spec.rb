@@ -6,6 +6,21 @@ RSpec.describe ErrorsController do
 
   let(:json_response) { JSON.parse(api_response.body) }
 
+  describe 'controller boundary' do
+    it 'uses the minimal API controller stack' do
+      expect(described_class.superclass).to eq(ActionController::API)
+    end
+
+    it 'does not run application callbacks while rendering an error' do
+      allow(MaintenanceMode).to receive(:check!)
+
+      get '/uk/api/404.json'
+
+      expect(MaintenanceMode).not_to have_received(:check!)
+      expect(response.headers).not_to include('Link')
+    end
+  end
+
   shared_examples 'a json error response' do |status_code, message|
     it { is_expected.to have_http_status status_code }
     it { is_expected.to have_attributes media_type: 'application/json' }
