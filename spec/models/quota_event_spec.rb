@@ -35,10 +35,12 @@ RSpec.describe QuotaEvent do
     end
 
     context 'when no events exist' do
-      it 'returns NullObject' do
-        expect(
-          described_class.last_for(99_999, Time.zone.today),
-        ).to be_a(NullObject)
+      subject(:last_event) { described_class.last_for(99_999, Time.zone.today) }
+
+      it 'returns a blank null quota event without a status', :aggregate_failures do
+        expect(last_event).to be_a(NullQuotaEvent)
+        expect(last_event).to be_blank
+        expect(last_event.status).to be_nil
       end
     end
   end

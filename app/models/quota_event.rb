@@ -16,7 +16,7 @@ class QuotaEvent
     if event.present?
       event_class_for(event[:event_type])
     else
-      NullObject.new
+      NullQuotaEvent.new
     end
   end
 

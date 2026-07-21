@@ -42,11 +42,11 @@ class Section < Sequel::Model
   end
 
   def first_chapter
-    chapters.first || NullObject.new
+    chapters.first || NullGoodsNomenclature.new
   end
 
   def last_chapter
-    chapters.last || NullObject.new
+    chapters.last || NullGoodsNomenclature.new
   end
 
   def chapter_from

@@ -49,5 +49,31 @@ RSpec.describe Api::User::SubscriptionTarget::CommoditySerializer do
     it 'includes validity_end_date attribute' do
       expect(serialized[:data][:attributes]).to include(:validity_end_date)
     end
+
+    context 'with a null commodity' do
+      let(:serializable) do
+        PublicUsers::NullCommodity.new(goods_nomenclature_item_id: '9999999999')
+      end
+
+      let(:expected) do
+        {
+          data: {
+            id: 'null_9999999999',
+            type: :commodity,
+            attributes: {
+              chapter: nil,
+              heading: nil,
+              goods_nomenclature_item_id: '9999999999',
+              classification_description: '',
+              validity_end_date: nil,
+            },
+          },
+        }
+      end
+
+      it 'preserves the invalid-code fallback representation' do
+        expect(serialized).to eq(expected)
+      end
+    end
   end
 end
