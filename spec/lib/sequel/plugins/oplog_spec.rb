@@ -1,9 +1,10 @@
-# rubocop:disable Lint/ConstantDefinitionInBlock
-# rubocop:disable RSpec/BeforeAfterAll
-# rubocop:disable RSpec/LeakyConstantDeclaration
-
 RSpec.describe Sequel::Plugins::Oplog do
-  before(:all) do
+  before do
+    create_schema
+    define_models
+  end
+
+  def create_schema
     db = Sequel::Model.db
 
     db.drop_table?(:test_records_oplog, cascade: true)
@@ -47,23 +48,16 @@ RSpec.describe Sequel::Plugins::Oplog do
       String :operation
       DateTime :operation_date
     end
-
-    class TestRecord < Sequel::Model(:test_records)
-      plugin :oplog, primary_key: :id
-      unrestrict_primary_key
-    end
-
-    class CompositeTestRecord < Sequel::Model(:composite_test_records)
-      plugin :oplog, primary_key: %i[part_a part_b]
-      unrestrict_primary_key
-    end
   end
 
-  before do
-    Sequel::Model.db[:test_records_oplog].truncate(restart: true, cascade: true)
-    Sequel::Model.db[:test_records].truncate(restart: true, cascade: true)
-    Sequel::Model.db[:composite_test_records_oplog].truncate(restart: true, cascade: true)
-    Sequel::Model.db[:composite_test_records].truncate(restart: true, cascade: true)
+  def define_models
+    stub_const('TestRecord', Class.new(Sequel::Model(:test_records)))
+    stub_const('CompositeTestRecord', Class.new(Sequel::Model(:composite_test_records)))
+
+    TestRecord.plugin :oplog, primary_key: :id
+    TestRecord.unrestrict_primary_key
+    CompositeTestRecord.plugin :oplog, primary_key: %i[part_a part_b]
+    CompositeTestRecord.unrestrict_primary_key
   end
 
   describe '#previous_record' do
@@ -396,7 +390,3 @@ RSpec.describe Sequel::Plugins::Oplog do
     end
   end
 end
-
-# rubocop:enable Lint/ConstantDefinitionInBlock
-# rubocop:enable RSpec/BeforeAfterAll
-# rubocop:enable RSpec/LeakyConstantDeclaration

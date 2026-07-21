@@ -19,12 +19,8 @@ AllCops:
   Exclude:
     - ".bundle/**/*"
     - ".direnv/**/*"
-    - "db/schema.rb"
-    - "vendor/**/*"
-    - "bin/**"
     - "db/migrate/*"
     - "db/data_migrations/*"
-    - "tmp/**/*"
     - "config/puma.rb"
 
 RSpec:

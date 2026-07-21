@@ -1,4 +1,3 @@
-# rubocop:disable RSpec/AnyInstance
 RSpec.describe TaricSynchronizer, :truncation do
   describe '.update_type' do
     it 'always returns TaricUpdate regardless of the SERVICE env var' do
@@ -73,9 +72,12 @@ RSpec.describe TaricSynchronizer, :truncation do
     end
 
     context 'when a download exception' do
+      let(:connection) { instance_double(Faraday::Connection) }
+
       before do
         allow(described_class).to receive(:sync_variables_set?).and_return(true)
-        allow_any_instance_of(Faraday::Connection).to receive(:get).and_raise(Faraday::Error, 'Foo')
+        allow(Faraday).to receive(:new).and_return(connection)
+        allow(connection).to receive(:get).and_raise(Faraday::Error, 'Foo')
       end
 
       it 'raises a retriable download error and emits a download_retried event' do
@@ -105,8 +107,10 @@ RSpec.describe TaricSynchronizer, :truncation do
     end
 
     context 'when successful' do
+      let(:taric_importer) { instance_double(TaricImporter, import: nil) }
+
       before do
-        allow_any_instance_of(TaricImporter).to receive(:import)
+        allow(TaricImporter).to receive(:new).and_return(taric_importer)
         allow(TariffSynchronizer::TariffLogger).to receive(:failed_update)
         allow(TradeTariffBackend).to receive(:service).and_return('xi')
         applied_update
@@ -246,4 +250,3 @@ RSpec.describe TaricSynchronizer, :truncation do
     end
   end
 end
-# rubocop:enable RSpec/AnyInstance

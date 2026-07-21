@@ -29,11 +29,11 @@ RSpec.describe TaricSynchronizer do
 
         it 'marks taric update to be pending' do
           expect(taric_update).to be_pending
-          rescuing { described_class.apply }
+          expect { described_class.apply }.not_to raise_error
         end
 
         it 'marks taric update as failed' do
-          rescuing { described_class.apply }
+          expect { described_class.apply }.not_to raise_error
           expect(taric_update.reload).to be_failed
         end
       end
@@ -126,15 +126,15 @@ RSpec.describe TaricSynchronizer do
           data_migrations
 
           allow(Measure).to receive(:operation_klass).and_raise(StandardError)
-
-          rescuing { described_class.rollback(Time.zone.yesterday, keep: true) }
         end
 
         it 'leaves Taric updates in applid state' do
+          expect { described_class.rollback(Time.zone.yesterday, keep: true) }.to raise_error(StandardError)
           expect(update.reload).to be_applied
         end
 
         it 'leaves both todays and the earlier data migration record' do
+          expect { described_class.rollback(Time.zone.yesterday, keep: true) }.to raise_error(StandardError)
           expect(DataMigration.count).to be 2
         end
       end

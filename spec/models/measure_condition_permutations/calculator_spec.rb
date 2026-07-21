@@ -7,7 +7,6 @@ RSpec.describe MeasureConditionPermutations::Calculator do
   end
 
   describe 'filtering measure_conditions' do
-    # rubocop:disable RSpec/LetSetup
     subject :measure_conditions do
       calculator.permutation_groups
                 .flat_map(&:permutations)
@@ -15,19 +14,27 @@ RSpec.describe MeasureConditionPermutations::Calculator do
     end
 
     shared_examples 'an included measure condition' do
-      it { expect(measure_conditions).to include(measure_condition) }
+      it do
+        expected_condition = measure_condition
+
+        expect(measure_conditions).to include(expected_condition)
+      end
     end
 
     shared_examples_for 'an excluded measure condition' do
-      it { expect(measure_conditions).not_to include(measure_condition) }
+      it do
+        excluded_condition = measure_condition
+
+        expect(measure_conditions).not_to include(excluded_condition)
+      end
     end
 
     it_behaves_like 'an included measure condition' do
-      let!(:measure_condition) { measure.measure_conditions.first }
+      let(:measure_condition) { measure.measure_conditions.first }
     end
 
     it_behaves_like 'an included measure condition' do
-      let!(:measure_condition) do
+      let(:measure_condition) do
         create(
           :measure_condition,
           :negative,
@@ -38,7 +45,7 @@ RSpec.describe MeasureConditionPermutations::Calculator do
     end
 
     it_behaves_like 'an included measure condition' do
-      let!(:measure_condition) do
+      let(:measure_condition) do
         create(
           :measure_condition,
           :negative,
@@ -49,7 +56,7 @@ RSpec.describe MeasureConditionPermutations::Calculator do
     end
 
     it_behaves_like 'an included measure condition' do
-      let!(:measure_condition) do
+      let(:measure_condition) do
         create(
           :measure_condition,
           :negative,
@@ -60,7 +67,7 @@ RSpec.describe MeasureConditionPermutations::Calculator do
     end
 
     it_behaves_like 'an excluded measure condition' do
-      let!(:measure_condition) do
+      let(:measure_condition) do
         create(
           :measure_condition,
           :negative,
@@ -70,7 +77,7 @@ RSpec.describe MeasureConditionPermutations::Calculator do
     end
 
     it_behaves_like 'an excluded measure condition' do
-      let!(:measure_condition) do
+      let(:measure_condition) do
         create(
           :measure_condition,
           :cds_waiver,
@@ -80,7 +87,7 @@ RSpec.describe MeasureConditionPermutations::Calculator do
     end
 
     it_behaves_like 'an excluded measure condition' do
-      let!(:measure_condition) do
+      let(:measure_condition) do
         create(
           :measure_condition,
           :negative,
@@ -88,7 +95,6 @@ RSpec.describe MeasureConditionPermutations::Calculator do
         )
       end
     end
-    # rubocop:enable RSpec/LetSetup
   end
 
   describe '#permutation_groups' do

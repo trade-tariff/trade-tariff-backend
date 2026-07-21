@@ -3,6 +3,9 @@ RSpec.describe TariffSynchronizer::CdsUpdateDownloader do
   let(:downloader) { described_class.new(example_date) }
 
   describe '#perform' do
+    let(:response) { instance_double(Net::HTTPResponse, body: body.to_json) }
+    let(:tariff_downloader) { instance_double(TariffSynchronizer::TariffDownloader, perform: nil) }
+
     let(:body) do
       [{
         'filename' => 'tariff_dailyExtract_v1_20201010T235959.gzip',
@@ -22,13 +25,8 @@ RSpec.describe TariffSynchronizer::CdsUpdateDownloader do
     end
 
     before do
-      # rubocop:disable RSpec/VerifiedDoubleReference
-      allow(downloader).to receive(:response) { instance_double('Response', body: body.to_json) }
-      # rubocop:enable RSpec/VerifiedDoubleReference
-
-      # rubocop:disable RSpec/AnyInstance
-      allow_any_instance_of(TariffSynchronizer::TariffDownloader).to receive(:perform)
-      # rubocop:enable RSpec/AnyInstance
+      allow(downloader).to receive(:response).and_return(response)
+      allow(TariffSynchronizer::TariffDownloader).to receive(:new).and_return(tariff_downloader)
     end
 
     it 'emits a download_started instrumentation event' do
@@ -39,14 +37,6 @@ RSpec.describe TariffSynchronizer::CdsUpdateDownloader do
 
     context 'when response contains example_date' do
       it 'calls TariffDownloader for requested date..5 days ago', :aggregate_failures do
-        allow(TariffSynchronizer::TariffDownloader).to receive(:new).with(
-          body[0]['filename'], body[0]['downloadURL'], example_date, TariffSynchronizer::CdsUpdate
-        ).and_call_original
-
-        allow(TariffSynchronizer::TariffDownloader).to receive(:new).with(
-          body[1]['filename'], body[1]['downloadURL'], example_date - 5.days, TariffSynchronizer::CdsUpdate
-        ).and_call_original
-
         downloader.perform
 
         expect(TariffSynchronizer::TariffDownloader).to have_received(:new).with(

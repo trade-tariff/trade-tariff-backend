@@ -63,15 +63,13 @@ RSpec.describe GreenLanes::Measure do
 
       it { is_expected.to be_instance_of Commodity }
 
-      # rubocop:disable RSpec::EmptyExampleGroup
       context 'with expired goods_nomenclature' do
         before { gn.update(validity_end_date: 2.days.ago) }
 
         it_with_refresh_materialized_view 'returns nil' do
-          expect(measure.goods_nomenclature).to be nil
+          expect(measure.goods_nomenclature).to be_nil
         end
       end
-      # rubocop:enable RSpec::EmptyExampleGroup
     end
 
     describe '#geographical_area' do
