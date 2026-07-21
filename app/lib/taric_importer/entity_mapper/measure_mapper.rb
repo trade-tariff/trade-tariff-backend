@@ -1,9 +1,11 @@
+# frozen_string_literal: true
+
 class TaricImporter
-  module AttributeMutatorOverrides
-    class MeasureAttributeMutator
-      # Avoid naming conflicts with associations.
-      # Follow rails conventions where foreign keys are postfixed with '_id'
-      def self.mutate(attributes)
+  class EntityMapper
+    class MeasureMapper < BaseMapper
+      self.entity_class = 'Measure'
+
+      def mutate(attributes)
         attributes['measure_type_id'] = attributes.delete('measure_type')
         attributes['additional_code_id'] = attributes.delete('additional_code')
         attributes['geographical_area_id'] = attributes.delete('geographical_area')
