@@ -1,3 +1,5 @@
+require 'open3'
+
 RSpec.describe TradeTariffBackend::SearchResponse do
   subject(:response) { described_class.new(response_data) }
 
@@ -101,6 +103,21 @@ RSpec.describe TradeTariffBackend::SearchResponse do
   describe 'jsonapi-serializer compatibility' do
     it 'does not respond to :map' do
       expect(response.respond_to?(:map)).to be false
+    end
+  end
+
+  describe 'standalone loading' do
+    it 'works before Rails loads' do
+      file = Rails.root.join('app/lib/trade_tariff_backend/search_response.rb')
+      script = <<~RUBY
+        require #{file.to_s.inspect}
+        response = TradeTariffBackend::SearchResponse.new('status' => 'ok')
+        puts response['status']
+      RUBY
+      output, error, status = Open3.capture3(RbConfig.ruby, '-e', script)
+
+      expect(status).to be_success, error
+      expect(output).to eq("ok\n")
     end
   end
 end

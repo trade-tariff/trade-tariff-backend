@@ -1,6 +1,6 @@
-# rubocop:disable Lint/DuplicateMethods
 class ChangeOld
-  attr_accessor :model, :oid, :operation_date, :operation
+  attr_reader :model
+  attr_accessor :oid, :operation_date, :operation
 
   def initialize(attributes = {})
     attributes.each do |attribute, value|
@@ -40,4 +40,3 @@ private
     "#{model}::Operation".constantize
   end
 end
-# rubocop:enable Lint/DuplicateMethods

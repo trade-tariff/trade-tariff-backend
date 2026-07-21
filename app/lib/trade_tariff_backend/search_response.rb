@@ -1,15 +1,17 @@
+require 'forwardable'
+
 module TradeTariffBackend
   # Wraps a raw OpenSearch response hash, providing explicit access to the
   # fields callers actually need. Does not inherit from Hash or include
   # Enumerable, so jsonapi-serializer treats it as a single record rather
   # than a collection.
   class SearchResponse
+    extend Forwardable
+
+    def_delegator :@data, :[]
+
     def initialize(data)
       @data = data
-    end
-
-    def [](key) # rubocop:disable Rails/Delegate -- this file loads before Rails; delegate is unavailable
-      @data[key]
     end
 
     def dig(*keys)
