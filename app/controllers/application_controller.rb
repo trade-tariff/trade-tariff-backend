@@ -2,6 +2,7 @@ class ApplicationController < ActionController::API
   include JsonapiQueryOptions
 
   MAX_LOGGED_REQUEST_ID_LENGTH = 100
+  MAX_LOGGED_EXPERIMENT_LENGTH = 64
 
   include ActionController::Helpers
   include ::ActionController::MimeResponds
@@ -129,7 +130,7 @@ private
   def set_trade_tariff_request_id
     TradeTariffRequest.request_id = params[:request_id].presence || request.request_id
     TradeTariffRequest.request_source = TradeTariffRequest.request_source_for_user_agent(request_user_agent)
-    TradeTariffRequest.experiment = params[:experiment].presence
+    TradeTariffRequest.experiment = logged_experiment
     TradeTariffRequest.client_id =
       extract_client_id_from_jwt(request.headers['Authorization']) ||
       request.headers['X-Client-Id']
@@ -154,6 +155,13 @@ private
 
   def logged_request_id
     (TradeTariffRequest.request_id.presence || request.request_id).to_s.first(MAX_LOGGED_REQUEST_ID_LENGTH)
+  end
+
+  def logged_experiment
+    experiment = params[:experiment]
+    return unless experiment.is_a?(String) && experiment.length <= MAX_LOGGED_EXPERIMENT_LENGTH
+
+    experiment.presence
   end
 
   def request_user_agent
