@@ -21,7 +21,6 @@ AllCops:
     - ".direnv/**/*"
     - "db/migrate/*"
     - "db/data_migrations/*"
-    - "config/puma.rb"
 
 RSpec:
   Language:

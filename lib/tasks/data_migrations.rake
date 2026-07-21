@@ -1,4 +1,5 @@
-task 'data:migrate:load' => :environment do # rubocop:disable Rake/Desc
+desc 'Load the data migration environment'
+task 'data:migrate:load' => :environment do
   require 'data_migrator'
   db_for_current_env
 end

@@ -171,7 +171,7 @@ module Reporting
           @report = report
         end
 
-        def add_worksheet(data) # rubocop:disable Lint/UnusedMethodArgument
+        def add_worksheet(_data)
           worksheet = workbook.get_worksheet_by_name(name)
           dashboard_styles = build_dashboard_styles
 
