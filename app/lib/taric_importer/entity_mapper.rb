@@ -9,11 +9,12 @@ class TaricImporter
     def initialize(record_hash, issue_date:)
       @record_hash = record_hash
       @issue_date = issue_date
-      @record = RecordProcessor::Record.new(record_hash)
+      @record = Record.new(record_hash)
     end
 
     def build
       validate_transaction!
+      assign_national_sid_if_missing!
       validate_primary_key!
 
       instance = record.klass.new(
@@ -71,6 +72,13 @@ class TaricImporter
 
       raise ArgumentError,
             'TARIC transaction does not have required attributes'
+    end
+
+    def assign_national_sid_if_missing!
+      return unless operation == :create
+      return unless record.klass.respond_to?(:assign_national_sid_if_missing)
+
+      record.klass.assign_national_sid_if_missing(record.attributes)
     end
 
     def validate_primary_key!

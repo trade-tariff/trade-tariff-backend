@@ -89,4 +89,54 @@ RSpec.describe TaricImporter::EntityMapper do
         .to raise_error(TaricImporter::UnknownOperationError)
     end
   end
+
+  context 'when creating a national MeasureCondition with no sid in the source data' do
+    let(:record_hash) do
+      {
+        'transaction_id' => '13924774',
+        'record_code' => '350',
+        'subrecord_code' => '00',
+        'record_sequence_number' => '74',
+        'update_type' => '3',
+        'measure_condition' => {
+          'measure_sid' => '3318239',
+          'condition_code' => 'B',
+          'component_sequence_number' => '1',
+          'action_code' => '01',
+        },
+      }
+    end
+
+    before { MeasureCondition.unrestrict_primary_key }
+
+    it 'assigns a national (negative) sid, since writes no longer go through a before_create hook' do
+      expect(entity.instance.measure_condition_sid).to be_present
+      expect(entity.instance.measure_condition_sid).to be < 0
+    end
+  end
+
+  context 'when creating a MeasureCondition that already has a sid in the source data' do
+    let(:record_hash) do
+      {
+        'transaction_id' => '13924775',
+        'record_code' => '350',
+        'subrecord_code' => '00',
+        'record_sequence_number' => '75',
+        'update_type' => '3',
+        'measure_condition' => {
+          'measure_condition_sid' => '555',
+          'measure_sid' => '3318239',
+          'condition_code' => 'B',
+          'component_sequence_number' => '1',
+          'action_code' => '01',
+        },
+      }
+    end
+
+    before { MeasureCondition.unrestrict_primary_key }
+
+    it 'keeps the sid from the source data unchanged' do
+      expect(entity.instance.measure_condition_sid.to_s).to eq('555')
+    end
+  end
 end

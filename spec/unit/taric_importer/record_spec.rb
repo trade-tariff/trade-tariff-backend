@@ -1,4 +1,4 @@
-RSpec.describe TaricImporter::RecordProcessor::Record do
+RSpec.describe TaricImporter::Record do
   let(:record_hash) do
     { 'transaction_id' => '31946',
       'record_code' => '130',
@@ -48,7 +48,7 @@ RSpec.describe TaricImporter::RecordProcessor::Record do
         end
 
         stub_const(
-          'TaricImporter::RecordProcessor::AttributeMutatorOverrides::LanguageDescriptionAttributeMutator',
+          'TaricImporter::AttributeMutatorOverrides::LanguageDescriptionAttributeMutator',
           ovverriding_mutator_class,
         )
       end
