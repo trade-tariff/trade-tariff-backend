@@ -78,7 +78,10 @@ V2Api.routes.draw do
       resources :search_references, only: [:index]
 
       resources :quotas, only: [] do
-        collection { get :search }
+        collection do
+          get :search
+          get :utilization_summary, to: 'quotas/utilization_summary#index'
+        end
       end
 
       resources :certificates, only: [:index] do
@@ -98,6 +101,7 @@ V2Api.routes.draw do
       resources :measures, only: %i[show], constraints: { id: /-?\d+/ } do
         collection do
           get :search
+          get :diff, to: 'measures/diff#index'
         end
       end
 

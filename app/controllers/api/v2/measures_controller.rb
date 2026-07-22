@@ -6,16 +6,20 @@ module Api
       end
 
       def search
-        render json: Api::V2::Measures::MeasureSearchResultSerializer.new(
-          measures,
-          meta: pagination_meta,
-        ).serializable_hash
+        if summary_mode?
+          render json: { meta: search_service.summarize }
+        else
+          render json: Api::V2::Measures::MeasureSearchResultSerializer.new(
+            measures,
+            meta: pagination_meta,
+          ).serializable_hash
+        end
       end
 
     private
 
       def measures
-        TimeMachine.now { search_service.call }
+        search_service.call
       end
 
       def search_service
@@ -23,6 +27,7 @@ module Api
           filters: filter_params,
           page: current_page,
           per_page:,
+          as_of:,
         )
       end
 
@@ -31,21 +36,35 @@ module Api
           :geographical_area_id,
           :has_no_geographical_exclusions,
           :has_no_exemption_conditions,
+          :has_ad_valorem,
           :trade_direction,
           :commodity_code_prefix,
+          :regulation_id,
           measure_type_series: [],
           measure_type_ids: [],
+          measure_condition_codes: [],
         ).to_h.with_indifferent_access
       end
 
       def pagination_meta
         {
+          as_of: as_of.to_date.iso8601,
           pagination: {
             page: current_page,
             per_page:,
             total_count: search_service.pagination_record_count,
           },
         }
+      end
+
+      def summary_mode?
+        params[:summary].to_s == 'true'
+      end
+
+      def as_of
+        @as_of ||= params[:as_of].present? ? Date.parse(params[:as_of]) : Time.current
+      rescue ArgumentError
+        Time.current
       end
 
       def per_page

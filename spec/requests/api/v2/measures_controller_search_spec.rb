@@ -155,5 +155,107 @@ RSpec.describe Api::V2::MeasuresController do
         expect(result.dig('attributes', 'has_geographical_exclusions')).to be(true)
       end
     end
+
+    context 'when filtering by measure_condition_codes' do
+      let!(:licensed_measure) do
+        create(:measure, :with_measure_conditions, condition_code: 'B')
+      end
+      let!(:unlicensed_measure) { create(:measure) }
+
+      let(:params) { { filter: { measure_condition_codes: %w[B] } } }
+
+      before { do_request }
+
+      it 'returns only measures with the specified condition code' do
+        ids = json['data'].map { |m| m['id'].to_i }
+        expect(ids).to include(licensed_measure.measure_sid)
+        expect(ids).not_to include(unlicensed_measure.measure_sid)
+      end
+    end
+
+    context 'when filtering by regulation_id' do
+      let(:regulation_id) { 'R0101234' }
+      let!(:target_measure) { create(:measure, measure_generating_regulation_id: regulation_id) }
+      let!(:other_measure) { create(:measure) }
+
+      let(:params) { { filter: { regulation_id: } } }
+
+      before { do_request }
+
+      it 'returns only measures for the regulation' do
+        ids = json['data'].map { |m| m['id'].to_i }
+        expect(ids).to include(target_measure.measure_sid)
+        expect(ids).not_to include(other_measure.measure_sid)
+      end
+    end
+
+    context 'when filtering by has_ad_valorem' do
+      let!(:ad_valorem_measure) do
+        create(:measure, :with_measure_components, monetary_unit_code: nil, measurement_unit_code: nil,
+                                                   measurement_unit_qualifier_code: nil)
+      end
+      let!(:specific_measure) do
+        create(:measure, :with_measure_components, monetary_unit_code: 'GBP')
+      end
+
+      let(:params) { { filter: { has_ad_valorem: 'true' } } }
+
+      before { do_request }
+
+      it 'returns only measures with ad valorem components' do
+        ids = json['data'].map { |m| m['id'].to_i }
+        expect(ids).to include(ad_valorem_measure.measure_sid)
+        expect(ids).not_to include(specific_measure.measure_sid)
+      end
+    end
+
+    context 'when using as_of param' do
+      let(:past_date) { 5.years.ago.to_date }
+      let!(:expired_measure) do
+        create(:measure,
+               validity_start_date: past_date - 1.year,
+               validity_end_date: past_date - 1.day,
+               measure_type_series_id: 'A')
+      end
+      let!(:current_measure) { create(:measure, measure_type_series_id: 'A') }
+
+      before do
+        get '/uk/api/measures/search',
+            params: { as_of: past_date.iso8601, filter: { measure_type_series: %w[A] } },
+            headers: request_headers(format: :json)
+      end
+
+      it 'returns measures valid at the specified date' do
+        ids = json['data'].map { |m| m['id'].to_i }
+        expect(ids).to include(expired_measure.measure_sid)
+        expect(ids).not_to include(current_measure.measure_sid)
+      end
+
+      it 'includes the as_of date in meta' do
+        expect(json.dig('meta', 'as_of')).to eq(past_date.iso8601)
+      end
+    end
+
+    context 'when summary mode is enabled' do
+      before do
+        create(:measure, measure_type_series_id: 'A')
+        create(:measure, measure_type_series_id: 'A')
+        create(:measure, measure_type_series_id: 'C')
+        get '/uk/api/measures/search',
+            params: { summary: 'true' },
+            headers: request_headers(format: :json)
+      end
+
+      it 'returns summary meta instead of data array' do
+        expect(json).to have_key('meta')
+        expect(json).not_to have_key('data')
+      end
+
+      it 'includes total_count and by_series breakdown' do
+        expect(json.dig('meta', 'total_count')).to eq(3)
+        expect(json.dig('meta', 'by_series', 'A')).to eq(2)
+        expect(json.dig('meta', 'by_series', 'C')).to eq(1)
+      end
+    end
   end
 end

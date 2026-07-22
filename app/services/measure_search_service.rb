@@ -14,24 +14,60 @@ class MeasureSearchService
 
   attr_reader :filters, :current_page, :per_page
 
-  def initialize(filters:, page:, per_page:)
+  def initialize(filters:, page:, per_page:, as_of: nil)
     @filters = filters
     @current_page = page.to_i.clamp(1, Float::INFINITY)
     @per_page = per_page.to_i.clamp(1, MAX_PER_PAGE)
+    @as_of = as_of
   end
 
   def call
-    base_scope.eager(EAGER_GRAPH)
-              .order(:measure_type_id, :geographical_area_id, :goods_nomenclature_item_id)
-              .paginate(current_page, per_page, pagination_record_count)
-              .all
+    TimeMachine.at(as_of_or_now) do
+      base_scope.eager(EAGER_GRAPH)
+                .order(:measure_type_id, :geographical_area_id, :goods_nomenclature_item_id)
+                .paginate(current_page, per_page, pagination_record_count)
+                .all
+    end
+  end
+
+  def summarize
+    TimeMachine.at(as_of_or_now) do
+      scope = base_scope
+
+      type_series_map = MeasureType.select_map(%i[measure_type_id measure_type_series_id]).to_h
+
+      type_id_counts = scope.naked
+                            .group_and_count(:measure_type_id)
+                            .map { [_1[:measure_type_id], _1[:count]] }
+                            .to_h
+
+      by_geo = scope.naked
+                    .group_and_count(:geographical_area_id)
+                    .map { [_1[:geographical_area_id], _1[:count]] }
+                    .to_h
+
+      by_series = type_id_counts.each_with_object(Hash.new(0)) do |(type_id, count), acc|
+        series = type_series_map[type_id]
+        acc[series] += count if series
+      end
+
+      {
+        total_count: type_id_counts.values.sum,
+        by_series:,
+        by_geographical_area: by_geo,
+      }
+    end
   end
 
   def pagination_record_count
-    @pagination_record_count ||= base_scope.count
+    @pagination_record_count ||= TimeMachine.at(as_of_or_now) { base_scope.count }
   end
 
 private
+
+  def as_of_or_now
+    @as_of || Time.current
+  end
 
   def base_scope
     scope = Measure.actual
@@ -41,7 +77,10 @@ private
     scope = apply_no_geographical_exclusions_filter(scope)
     scope = apply_no_exemption_conditions_filter(scope)
     scope = apply_trade_direction_filter(scope)
-    apply_commodity_prefix_filter(scope)
+    scope = apply_commodity_prefix_filter(scope)
+    scope = apply_condition_code_filter(scope)
+    scope = apply_regulation_id_filter(scope)
+    apply_has_ad_valorem_filter(scope)
   end
 
   def apply_series_filter(scope)
@@ -96,5 +135,26 @@ private
     return scope unless prefix.length.between?(2, 10)
 
     scope.where(Sequel.like(:goods_nomenclature_item_id, "#{prefix}%"))
+  end
+
+  def apply_condition_code_filter(scope)
+    codes = Array(filters[:measure_condition_codes]).map(&:upcase).reject(&:blank?)
+    return scope if codes.empty?
+
+    scope.where(measure_sid: MeasureCondition.where(condition_code: codes).select(:measure_sid))
+  end
+
+  def apply_regulation_id_filter(scope)
+    regulation_id = filters[:regulation_id].presence
+    return scope if regulation_id.nil?
+
+    scope.where(measure_generating_regulation_id: regulation_id)
+  end
+
+  def apply_has_ad_valorem_filter(scope)
+    return scope unless filters[:has_ad_valorem].to_s == 'true'
+
+    # Ad valorem components have no monetary_unit_code (percentage-based duties)
+    scope.where(measure_sid: MeasureComponent.where(monetary_unit_code: nil).select(:measure_sid))
   end
 end
