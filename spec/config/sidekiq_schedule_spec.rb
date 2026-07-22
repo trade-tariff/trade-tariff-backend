@@ -42,14 +42,14 @@ RSpec.describe 'config/sidekiq.yml' do
     )
   end
 
-  it 'schedules search analytics snapshot refreshes for each backend service' do
+  it 'schedules search analytics snapshot refreshes on Saturdays for each backend service' do
     uk_schedule = sidekiq_schedule(environment: 'production', service: 'uk')
     xi_schedule = sidekiq_schedule(environment: 'production', service: 'xi')
 
     [uk_schedule, xi_schedule].each do |schedule|
       expect(schedule).to include(
         'SearchAnalyticsSnapshotWorker' => include(
-          'cron' => '0 4 * * *',
+          'cron' => '0 4 * * 6',
           'queue' => 'within_1_day',
           'description' => 'Refreshes cached aggregate search analytics snapshots',
         ),
