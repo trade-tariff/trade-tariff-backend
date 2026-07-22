@@ -112,14 +112,12 @@ private
         mapper = oplog_event.payload[:mapper]
         operation = oplog_event.payload[:operation]
         entity_class = mapper.entity_class
-        mapping_path = mapper.mapping_path
 
         oplog_inserts[:operations][operation][entity_class] ||= {}
         oplog_inserts[:operations][operation][entity_class][:count] ||= 0
         oplog_inserts[:operations][operation][entity_class][:duration] ||= 0
         oplog_inserts[:operations][operation][entity_class][:count] += count
         oplog_inserts[:operations][operation][entity_class][:duration] += duration
-        oplog_inserts[:operations][operation][entity_class][:mapping_path] = mapping_path
 
         oplog_inserts[:operations][operation][:count] += count
         oplog_inserts[:operations][operation][:duration] += duration

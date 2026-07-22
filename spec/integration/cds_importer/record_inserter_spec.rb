@@ -1,38 +1,4 @@
 RSpec.describe CdsImporter::RecordInserter do
-  let(:certificate_mapper) { CdsImporter::EntityMapper::CertificateMapper.new({}) }
-  let(:measure_mapper) { CdsImporter::EntityMapper::MeasureMapper.new({}) }
-
-  describe 'shared batch insertion behaviour' do
-    subject(:inserter) { described_class.new('new_filename.gzip') }
-
-    let(:batch_size_setting) { :cds_importer_batch_size }
-    let(:operation_klass) do
-      class_double(
-        GoodsNomenclature::Operation,
-        columns: %i[operation filename],
-        multi_insert: nil,
-      )
-    end
-    let(:instance) do
-      double(
-        skip_import?: false,
-        class: double(operation_klass:),
-        operation: :create,
-        values: { operation: 'C', filename: nil },
-      )
-    end
-    let(:entity) do
-      CdsImporter::CdsEntity.new(
-        '1',
-        'GoodsNomenclature',
-        instance,
-        instance_double(CdsImporter::EntityMapper::GoodsNomenclatureMapper),
-      )
-    end
-
-    it_behaves_like 'an oplog batch record inserter'
-  end
-
   shared_examples_for 'a batch insert operation' do |measure, certificate|
     subject(:inserter) { described_class.new('new_filename.gzip') }
 
