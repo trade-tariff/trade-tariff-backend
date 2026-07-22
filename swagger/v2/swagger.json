@@ -1077,6 +1077,180 @@
         }
       }
     },
+    "/api/changes_by_period": {
+      "parameters": [
+        {
+          "name": "Accept",
+          "in": "header",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "enum": [
+              "application/vnd.hmrc.2.0+json"
+            ]
+          },
+          "description": "API version negotiation header"
+        },
+        {
+          "name": "from_date",
+          "in": "query",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "date"
+          },
+          "description": "Start of date range (inclusive, YYYY-MM-DD)"
+        },
+        {
+          "name": "to_date",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "string",
+            "format": "date"
+          },
+          "description": "End of date range (inclusive, YYYY-MM-DD; defaults to today)"
+        },
+        {
+          "name": "page",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "integer"
+          },
+          "description": "Page number (default: 1)"
+        },
+        {
+          "name": "per_page",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "integer"
+          },
+          "description": "Results per page (default: 25, max: 100)"
+        }
+      ],
+      "get": {
+        "summary": "List tariff changes for a date range",
+        "tags": [
+          "Changes"
+        ],
+        "description": "Returns goods nomenclature changes that occurred within the specified date range. Paginated.",
+        "operationId": "listChangesByPeriod",
+        "responses": {
+          "200": {
+            "description": "changes listed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data",
+                    "meta"
+                  ],
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string"
+                          },
+                          "type": {
+                            "type": "string",
+                            "enum": [
+                              "change"
+                            ]
+                          },
+                          "attributes": {
+                            "type": "object",
+                            "properties": {
+                              "goods_nomenclature_item_id": {
+                                "type": "string",
+                                "nullable": true
+                              },
+                              "goods_nomenclature_sid": {
+                                "type": "integer",
+                                "nullable": true
+                              },
+                              "productline_suffix": {
+                                "type": "string",
+                                "nullable": true
+                              },
+                              "end_line": {
+                                "type": "boolean",
+                                "nullable": true
+                              },
+                              "change_type": {
+                                "type": "string",
+                                "nullable": true
+                              },
+                              "change_date": {
+                                "type": "string",
+                                "nullable": true,
+                                "format": "date"
+                              }
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "meta": {
+                      "type": "object",
+                      "properties": {
+                        "from_date": {
+                          "type": "string",
+                          "format": "date"
+                        },
+                        "to_date": {
+                          "type": "string",
+                          "format": "date"
+                        },
+                        "pagination": {
+                          "type": "object",
+                          "properties": {
+                            "page": {
+                              "type": "integer"
+                            },
+                            "per_page": {
+                              "type": "integer"
+                            },
+                            "total_count": {
+                              "type": "integer"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "unprocessable content",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StandardErrorResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StandardErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/chapters": {
       "parameters": [
         {
@@ -4678,6 +4852,199 @@
         }
       }
     },
+    "/api/measures/diff": {
+      "parameters": [
+        {
+          "name": "Accept",
+          "in": "header",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "enum": [
+              "application/vnd.hmrc.2.0+json"
+            ]
+          },
+          "description": "API version negotiation header"
+        },
+        {
+          "name": "from_date",
+          "in": "query",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "date"
+          },
+          "description": "Start of date range (inclusive, YYYY-MM-DD)"
+        },
+        {
+          "name": "to_date",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "string",
+            "format": "date"
+          },
+          "description": "End of date range (inclusive, YYYY-MM-DD; defaults to today)"
+        },
+        {
+          "name": "page",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "integer"
+          },
+          "description": "Page number (default: 1)"
+        },
+        {
+          "name": "per_page",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "integer"
+          },
+          "description": "Results per page (default: 25, max: 100)"
+        }
+      ],
+      "get": {
+        "summary": "List measure create/update/delete operations for a date range",
+        "tags": [
+          "Measures"
+        ],
+        "description": "Returns measure CUD (create/update/delete) operations that occurred within the specified date range. Paginated.",
+        "operationId": "listMeasuresDiff",
+        "responses": {
+          "200": {
+            "description": "operations listed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data",
+                    "meta"
+                  ],
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string"
+                          },
+                          "type": {
+                            "type": "string",
+                            "enum": [
+                              "measure_operation"
+                            ]
+                          },
+                          "attributes": {
+                            "type": "object",
+                            "properties": {
+                              "measure_sid": {
+                                "type": "integer",
+                                "nullable": true
+                              },
+                              "measure_type_id": {
+                                "type": "string",
+                                "nullable": true
+                              },
+                              "goods_nomenclature_item_id": {
+                                "type": "string",
+                                "nullable": true
+                              },
+                              "geographical_area_id": {
+                                "type": "string",
+                                "nullable": true
+                              },
+                              "validity_start_date": {
+                                "type": "string",
+                                "nullable": true,
+                                "format": "date-time"
+                              },
+                              "validity_end_date": {
+                                "type": "string",
+                                "nullable": true,
+                                "format": "date-time"
+                              },
+                              "measure_generating_regulation_id": {
+                                "type": "string",
+                                "nullable": true
+                              },
+                              "operation_date": {
+                                "type": "string",
+                                "nullable": true,
+                                "format": "date"
+                              },
+                              "operation": {
+                                "type": "string",
+                                "enum": [
+                                  "created",
+                                  "updated",
+                                  "deleted"
+                                ],
+                                "nullable": true
+                              }
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "meta": {
+                      "type": "object",
+                      "properties": {
+                        "from_date": {
+                          "type": "string",
+                          "format": "date"
+                        },
+                        "to_date": {
+                          "type": "string",
+                          "format": "date"
+                        },
+                        "pagination": {
+                          "type": "object",
+                          "properties": {
+                            "page": {
+                              "type": "integer"
+                            },
+                            "per_page": {
+                              "type": "integer"
+                            },
+                            "total_count": {
+                              "type": "integer"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "unprocessable content",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StandardErrorResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StandardErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/measures/{id}": {
       "parameters": [
         {
@@ -5328,6 +5695,189 @@
         }
       }
     },
+    "/api/quota_order_numbers/{quota_order_number_id}/utilization": {
+      "parameters": [
+        {
+          "name": "Accept",
+          "in": "header",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "enum": [
+              "application/vnd.hmrc.2.0+json"
+            ]
+          },
+          "description": "API version negotiation header"
+        },
+        {
+          "name": "quota_order_number_id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "pattern": "^\\d{6}$"
+          },
+          "description": "Six-digit quota order number (e.g. \"094011\")"
+        },
+        {
+          "name": "from_date",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "string",
+            "format": "date"
+          },
+          "description": "Start of reporting period (YYYY-MM-DD; defaults to start of current year)"
+        },
+        {
+          "name": "to_date",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "string",
+            "format": "date"
+          },
+          "description": "End of reporting period (YYYY-MM-DD; defaults to today)"
+        }
+      ],
+      "get": {
+        "summary": "Quota utilization for a quota order number",
+        "tags": [
+          "Quotas"
+        ],
+        "description": "Returns utilization figures for each definition under a quota order number within the requested date range. Includes balance event history.",
+        "operationId": "getQuotaOrderNumberUtilization",
+        "responses": {
+          "200": {
+            "description": "utilization data returned",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data",
+                    "meta"
+                  ],
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string"
+                          },
+                          "type": {
+                            "type": "string",
+                            "enum": [
+                              "quota_utilization"
+                            ]
+                          },
+                          "attributes": {
+                            "type": "object",
+                            "properties": {
+                              "quota_order_number_id": {
+                                "type": "string",
+                                "nullable": true
+                              },
+                              "quota_definition_sid": {
+                                "type": "integer",
+                                "nullable": true
+                              },
+                              "validity_start_date": {
+                                "type": "string",
+                                "nullable": true,
+                                "format": "date-time"
+                              },
+                              "validity_end_date": {
+                                "type": "string",
+                                "nullable": true,
+                                "format": "date-time"
+                              },
+                              "status": {
+                                "type": "string",
+                                "nullable": true
+                              },
+                              "measurement_unit_code": {
+                                "type": "string",
+                                "nullable": true
+                              },
+                              "quota_type": {
+                                "type": "string",
+                                "nullable": true
+                              },
+                              "initial_volume": {
+                                "type": "number",
+                                "nullable": true
+                              },
+                              "current_balance": {
+                                "type": "number",
+                                "nullable": true
+                              },
+                              "volume_used": {
+                                "type": "number",
+                                "nullable": true
+                              },
+                              "utilization_percentage": {
+                                "type": "number",
+                                "nullable": true
+                              },
+                              "balance_event_summary": {
+                                "type": "array",
+                                "items": {
+                                  "type": "object",
+                                  "properties": {
+                                    "occurrence_timestamp": {
+                                      "type": "string",
+                                      "nullable": true,
+                                      "format": "date-time"
+                                    },
+                                    "new_balance": {
+                                      "type": "number",
+                                      "nullable": true
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "meta": {
+                      "type": "object",
+                      "properties": {
+                        "quota_order_number_id": {
+                          "type": "string"
+                        },
+                        "from_date": {
+                          "type": "string",
+                          "format": "date"
+                        },
+                        "to_date": {
+                          "type": "string",
+                          "format": "date"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StandardErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/quotas/search": {
       "parameters": [
         {
@@ -5501,6 +6051,175 @@
           },
           "400": {
             "description": "invalid order_number — must be exactly 6 digits"
+          }
+        }
+      }
+    },
+    "/api/quotas/utilization_summary": {
+      "parameters": [
+        {
+          "name": "Accept",
+          "in": "header",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "enum": [
+              "application/vnd.hmrc.2.0+json"
+            ]
+          },
+          "description": "API version negotiation header"
+        },
+        {
+          "name": "filter[measurement_unit_code]",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "string"
+          },
+          "description": "Filter by measurement unit code (case-insensitive, e.g. \"KGM\")"
+        },
+        {
+          "name": "filter[quota_type]",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "string",
+            "enum": [
+              "licensed",
+              "fcfs"
+            ]
+          },
+          "description": "Filter by quota type: \"licensed\" (3rd character of order number is 4) or \"fcfs\" (first come, first served)"
+        },
+        {
+          "name": "page",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "integer"
+          },
+          "description": "Page number (default: 1)"
+        },
+        {
+          "name": "per_page",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "integer"
+          },
+          "description": "Results per page (default: 25, max: 100)"
+        }
+      ],
+      "get": {
+        "summary": "Portfolio-level quota utilization summary",
+        "tags": [
+          "Quotas"
+        ],
+        "description": "Returns current utilization figures for all quota definitions across the whole tariff. Paginated. Supports filtering by measurement unit or quota type.",
+        "operationId": "listQuotaUtilizationSummary",
+        "responses": {
+          "200": {
+            "description": "utilization summary listed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data",
+                    "meta"
+                  ],
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string"
+                          },
+                          "type": {
+                            "type": "string",
+                            "enum": [
+                              "quota_utilization_summary"
+                            ]
+                          },
+                          "attributes": {
+                            "type": "object",
+                            "properties": {
+                              "quota_order_number_id": {
+                                "type": "string",
+                                "nullable": true
+                              },
+                              "quota_definition_sid": {
+                                "type": "integer",
+                                "nullable": true
+                              },
+                              "validity_start_date": {
+                                "type": "string",
+                                "nullable": true,
+                                "format": "date-time"
+                              },
+                              "validity_end_date": {
+                                "type": "string",
+                                "nullable": true,
+                                "format": "date-time"
+                              },
+                              "status": {
+                                "type": "string",
+                                "nullable": true
+                              },
+                              "measurement_unit_code": {
+                                "type": "string",
+                                "nullable": true
+                              },
+                              "quota_type": {
+                                "type": "string",
+                                "nullable": true
+                              },
+                              "initial_volume": {
+                                "type": "number",
+                                "nullable": true
+                              },
+                              "current_balance": {
+                                "type": "number",
+                                "nullable": true
+                              },
+                              "volume_used": {
+                                "type": "number",
+                                "nullable": true
+                              },
+                              "utilization_percentage": {
+                                "type": "number",
+                                "nullable": true
+                              }
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "meta": {
+                      "type": "object",
+                      "properties": {
+                        "pagination": {
+                          "type": "object",
+                          "properties": {
+                            "page": {
+                              "type": "integer"
+                            },
+                            "per_page": {
+                              "type": "integer"
+                            },
+                            "total_count": {
+                              "type": "integer"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
           }
         }
       }
