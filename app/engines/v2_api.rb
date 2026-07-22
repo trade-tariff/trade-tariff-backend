@@ -90,8 +90,18 @@ V2Api.routes.draw do
       resources :measure_actions, only: %i[index]
       resources :measure_condition_codes, only: %i[index]
       resources :quota_order_numbers, only: %i[index]
+      get 'quota_order_numbers/:quota_order_number_id/utilization',
+          to: 'quota_order_numbers/utilization#show',
+          constraints: { quota_order_number_id: /\d{6}/ },
+          as: :quota_order_number_utilization
       resources :measure_types, only: %i[index show]
-      resources :measures, only: %i[show], constraints: { id: /-?\d+/ }
+      resources :measures, only: %i[show], constraints: { id: /-?\d+/ } do
+        collection do
+          get :search
+        end
+      end
+
+      get 'changes_by_period', to: 'changes_by_period#index'
 
       resources :additional_codes, only: [] do
         collection { get :search }
