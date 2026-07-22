@@ -47,3 +47,33 @@ Relevant code paths include:
 - `app/workers/goods_nomenclature_reconciliation_worker.rb`
 
 Guided classification search can also attach bounded chapter- and section-note evidence to retrieved candidates. [Tariff knowledge notes](../tariff-knowledge-notes.md) documents extraction, graph edges, compressed-note materialisation and deduplication, prompt selection, and request-ID diagnostics.
+
+## Query Expansion Deadline
+
+Uncached guided-search query expansion has a fixed five-second operation-specific deadline.
+
+The deadline covers the OpenAI connection, response wait, retry backoff, and all retry attempts. Each attempt receives only the operation's remaining budget. When the deadline expires, expansion returns the original query and conditional search retains its preliminary retrieval. No background work continues, so a late response cannot populate the expansion cache or start another retrieval.
+
+Expected deadline fallback emits `query_expansion_timed_out` rather than `search_failed`. Its structured fields are `request_id`, `search_type`, `timeout_ms`, `elapsed_ms`, `model`, and `fallback_outcome`; the event does not contain the query. `fallback_outcome` is `original_query`, which is the direct result of the expansion service. Conditional search can then retain its preliminary retrieval. Use expansion-specific `api_call_completed` events as the uncached-attempt denominator and `query_expansion_timed_out` as the timeout numerator. End-to-end latency remains available as `total_duration_ms` on `search_completed`.
+
+Example CloudWatch Logs Insights queries for rollout monitoring:
+
+```text
+filter service = "search"
+  and (event = "query_expansion_timed_out"
+       or (event = "api_call_completed" and operation = "search_query_expansion"))
+| fields if(event = "query_expansion_timed_out", 1, 0) as timeout,
+         if(event = "api_call_completed", 1, 0) as uncached_expansion
+| stats sum(timeout) as timeouts,
+        sum(uncached_expansion) as uncached_expansions,
+        100.0 * sum(timeout) / sum(uncached_expansion) as timeout_rate_pct
+```
+
+```text
+filter service = "search" and event = "search_completed" and search_type = "interactive"
+| stats pct(total_duration_ms, 50) as p50_ms,
+        pct(total_duration_ms, 95) as p95_ms,
+        pct(total_duration_ms, 99) as p99_ms
+```
+
+Validate the behaviour in staging before production. Record the timeout count/rate, end-to-end p50/p95/p99, and a sample of the preliminary-result quality.

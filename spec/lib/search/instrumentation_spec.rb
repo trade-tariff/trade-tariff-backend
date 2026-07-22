@@ -237,6 +237,30 @@ RSpec.describe Search::Instrumentation do
     end
   end
 
+  describe '.query_expansion_timed_out' do
+    it 'instruments the timeout without a query' do
+      allow(ActiveSupport::Notifications).to receive(:instrument)
+
+      described_class.query_expansion_timed_out(
+        request_id: 'req-1',
+        timeout_ms: 5000,
+        elapsed_ms: 5010.0,
+        model: 'gpt-4.1-mini-2025-04-14',
+        fallback_outcome: 'preliminary_results',
+      )
+
+      expect(ActiveSupport::Notifications).to have_received(:instrument).with(
+        'query_expansion_timed_out.search',
+        request_id: 'req-1',
+        search_type: 'interactive',
+        timeout_ms: 5000,
+        elapsed_ms: 5010.0,
+        model: 'gpt-4.1-mini-2025-04-14',
+        fallback_outcome: 'preliminary_results',
+      )
+    end
+  end
+
   describe '.api_call' do
     it 'instruments the api_call_completed event and returns the result' do
       allow(ActiveSupport::Notifications).to receive(:instrument)

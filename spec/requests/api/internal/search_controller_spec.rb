@@ -124,6 +124,52 @@ RSpec.describe Api::Internal::SearchController, :internal do
       end
     end
 
+    context 'when query expansion times out' do
+      before do
+        index = Search::GoodsNomenclatureIndex.new
+
+        TradeTariffBackend.search_client.index_by_name(
+          index.name,
+          98_765,
+          {
+            goods_nomenclature_sid: 98_765,
+            goods_nomenclature_item_id: '8479899790',
+            producline_suffix: '80',
+            goods_nomenclature_class: 'Commodity',
+            description: 'slow expansion widget',
+            formatted_description: 'Slow expansion widget',
+            full_description: 'Slow expansion widget',
+            heading_description: 'Machines and mechanical appliances',
+            declarable: true,
+            validity_start_date: Time.zone.today.iso8601,
+          },
+        )
+        TradeTariffBackend.search_client.indices.refresh(index: 'tariff-test-*')
+
+        allow(AdminConfiguration).to receive(:enabled?).with('expand_search_enabled').and_return(true)
+        allow(AdminConfiguration).to receive(:enabled?).with('expand_search_when_needed_enabled').and_return(true)
+        allow(AdminConfiguration).to receive(:integer_value).and_call_original
+        allow(AdminConfiguration).to receive(:integer_value).with('expand_search_min_results').and_return(5)
+        allow(AdminConfiguration).to receive(:integer_value).with('expand_search_min_score').and_return(5)
+        allow(ExpandSearchQueryService).to receive(:call).and_call_original
+        allow(OpenaiClient).to receive(:call).and_raise(
+          OpenaiClient::DeadlineExceeded.new(timeout_seconds: 5, elapsed_seconds: 5),
+        )
+        allow(Search::Instrumentation).to receive(:search_failed)
+        allow(TradeTariffBackend.search_client).to receive(:search).and_call_original
+      end
+
+      it 'returns the preliminary results successfully' do
+        post api_search_path(format: :json), params: { q: 'slow expansion widget', request_id: 'timeout-request' }
+
+        payload = JSON.parse(response.body)
+        expect(response).to have_http_status(:ok)
+        expect(payload.dig('data', 0, 'attributes', 'goods_nomenclature_item_id')).to eq('8479899790')
+        expect(TradeTariffBackend.search_client).to have_received(:search).once
+        expect(Search::Instrumentation).not_to have_received(:search_failed)
+      end
+    end
+
     context 'when exact match via padded numeric code' do
       before do
         chapter = create(:chapter, :with_description,

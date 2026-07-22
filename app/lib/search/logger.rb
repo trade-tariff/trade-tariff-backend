@@ -51,6 +51,18 @@ module Search
       }, event)
     end
 
+    def query_expansion_timed_out(event)
+      info log_entry({
+        event: 'query_expansion_timed_out',
+        request_id: event.payload[:request_id],
+        search_type: event.payload[:search_type],
+        timeout_ms: event.payload[:timeout_ms],
+        elapsed_ms: event.payload[:elapsed_ms],
+        model: event.payload[:model],
+        fallback_outcome: event.payload[:fallback_outcome],
+      }, event)
+    end
+
     def api_call_completed(event)
       data = {
         event: 'api_call_completed',
