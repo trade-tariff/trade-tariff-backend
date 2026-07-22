@@ -3,6 +3,10 @@ RSpec.describe SearchAnalyticsSnapshotWorker, type: :worker do
     expect(described_class.sidekiq_options['queue']).to eq(:within_1_day)
   end
 
+  it 'does not retry failures' do
+    expect(described_class.sidekiq_options['retry']).to be(false)
+  end
+
   describe '#perform' do
     it 'delegates to the snapshot refresh service' do
       refresh = instance_double(SearchAnalytics::SnapshotRefresh, call: true)
