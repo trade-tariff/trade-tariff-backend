@@ -29,7 +29,7 @@ RSpec.describe Api::V2::QuotaOrderNumbers::UtilizationController do
       end
     end
 
-    context 'when the quota order number exists with a definition' do
+    context 'when the quota order number exists with a definition', :truncation do
       let(:order_number_id) { '094011' }
       let(:initial_volume) { 10_000.0 }
 
@@ -59,7 +59,7 @@ RSpec.describe Api::V2::QuotaOrderNumbers::UtilizationController do
       end
     end
 
-    context 'when balance events exist in the requested range' do
+    context 'when balance events exist in the requested range', :truncation do
       let(:order_number_id) { '094012' }
       let(:initial_volume) { 1000.0 }
       let(:params) do
