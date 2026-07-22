@@ -37,10 +37,6 @@ class TaricImporter
       mapper.klass.to_s
     end
 
-    def mapping_path
-      nil
-    end
-
     class << self
       def mapper_for(klass)
         all_mappers.find { |mapper| mapper.entity_class == klass.to_s } || BaseMapper
