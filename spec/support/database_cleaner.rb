@@ -10,12 +10,25 @@ truncation_tables = db.fetch(<<~SQL).map { |row| row[:qualified_name] }
     AND pg_class.relname NOT IN ('schema_info', 'schema_migrations', 'ar_internal_metadata')
 SQL
 
+materialized_views = db.fetch(<<~SQL).map { |row| row[:qualified_name] }
+  SELECT quote_ident(pg_namespace.nspname) || '.' || quote_ident(pg_class.relname) AS qualified_name
+  FROM pg_class
+  INNER JOIN pg_namespace ON pg_namespace.oid = pg_class.relnamespace
+  WHERE pg_class.relkind = 'm'
+    AND pg_namespace.nspname NOT IN ('pg_catalog', 'information_schema')
+    AND pg_namespace.nspname NOT LIKE 'pg_toast%'
+SQL
+
 truncate_all_tables = lambda do
   next if truncation_tables.empty?
 
   db.run <<~SQL
     TRUNCATE TABLE #{truncation_tables.join(', ')} RESTART IDENTITY CASCADE
   SQL
+end
+
+refresh_all_matviews = lambda do
+  materialized_views.each { |view| db.run "REFRESH MATERIALIZED VIEW #{view}" }
 end
 
 RSpec.configure do |config|
@@ -29,12 +42,15 @@ RSpec.configure do |config|
 
   config.before(:suite) do
     truncate_all_tables.call
+    refresh_all_matviews.call
   end
 
   config.around(:each, :truncation) do |example|
     truncate_all_tables.call
+    refresh_all_matviews.call
     example.run
     truncate_all_tables.call
+    refresh_all_matviews.call
   end
 
   config.around do |example|
