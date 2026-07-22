@@ -13,7 +13,6 @@ RSpec.describe TaricImporter::RecordInserter do
     instance_double(
       TaricImporter::EntityMapper,
       entity_class: 'Measure',
-      mapping_path: nil,
     )
   end
   let(:instance) do
