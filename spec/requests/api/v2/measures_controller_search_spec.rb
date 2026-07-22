@@ -214,7 +214,7 @@ RSpec.describe Api::V2::MeasuresController do
       let!(:expired_measure) do
         create(:measure,
                validity_start_date: past_date - 1.year,
-               validity_end_date: past_date - 1.day,
+               validity_end_date: past_date,
                measure_type_series_id: 'A')
       end
       let!(:current_measure) { create(:measure, measure_type_series_id: 'A') }

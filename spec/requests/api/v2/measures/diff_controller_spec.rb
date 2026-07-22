@@ -49,8 +49,13 @@ RSpec.describe Api::V2::Measures::DiffController do
       let(:params) { { from_date: from.iso8601, to_date: Time.zone.today.iso8601 } }
 
       before do
-        # Creating a measure writes a 'C' oplog entry via the oplog plugin
-        create(:measure, validity_start_date: from + 1.day)
+        Measure::Operation.insert(
+          measure_sid: 90_000_001,
+          goods_nomenclature_item_id: '0101210000',
+          geographical_area_id: '1011',
+          operation: 'C',
+          operation_date: Date.current,
+        )
         do_request
       end
 
@@ -67,7 +72,7 @@ RSpec.describe Api::V2::Measures::DiffController do
         expect(attrs['operation']).to be_in(%w[created updated deleted])
       end
 
-      it 'includes date range and pagination in meta' do
+      it 'includes pagination in meta' do
         expect(json.dig('meta', 'pagination', 'total_count')).to be >= 1
       end
     end
@@ -76,7 +81,14 @@ RSpec.describe Api::V2::Measures::DiffController do
       let(:from) { 7.days.ago.to_date }
 
       before do
-        3.times { create(:measure, validity_start_date: from + 1.day) }
+        3.times do |i|
+          Measure::Operation.insert(
+            measure_sid: 90_000_010 + i,
+            goods_nomenclature_item_id: '0101210000',
+            operation: 'C',
+            operation_date: Date.current,
+          )
+        end
         get '/uk/api/measures/diff',
             params: { from_date: from.iso8601, to_date: Time.zone.today.iso8601, per_page: 2, page: 1 },
             headers: request_headers(format: :json)
