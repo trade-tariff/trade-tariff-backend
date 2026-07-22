@@ -156,18 +156,18 @@ module SearchAnalytics
         | #{log_stream_filter}
         | #{search_ai_cost_filter}
         | fields if(pricing_known = true and ispresent(total_cost_usd), total_cost_usd, 0) as known_cost_usd
-        | fields if(pricing_known = true and ispresent(total_cost_usd), 1, 0) as priced_call
-        | fields if(pricing_known = true and ispresent(total_cost_usd), 0, 1) as unpriced_call
+        | fields if(pricing_known = true and ispresent(total_cost_usd), 1, 0) as priced
+        | fields if(pricing_known = true and ispresent(total_cost_usd), 0, 1) as unpriced
         | stats sum(known_cost_usd) as request_cost_usd,
-            sum(priced_call) as priced_calls,
-            sum(unpriced_call) as unpriced_calls by request_id
+            sum(priced) as request_priced_calls,
+            sum(unpriced) as request_unpriced_calls by request_id
         | stats sum(request_cost_usd) as total_cost_usd,
             avg(request_cost_usd) as average_cost_usd,
             pct(request_cost_usd, 50) as p50_cost_usd,
             pct(request_cost_usd, 90) as p90_cost_usd,
             count(*) as assisted_searches,
-            sum(priced_calls) as priced_calls,
-            sum(unpriced_calls) as unpriced_calls
+            sum(request_priced_calls) as priced_calls,
+            sum(request_unpriced_calls) as unpriced_calls
       QUERY
     end
 
