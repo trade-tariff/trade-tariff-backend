@@ -790,6 +790,20 @@ RSpec.describe Api::Internal::SearchService do
         expect(TradeTariffBackend.search_client).to have_received(:search).twice
         expect(result[:data].first[:attributes][:goods_nomenclature_item_id]).to eq('3304990000')
       end
+
+      context 'when expansion returns the original query' do
+        before do
+          allow(ExpandSearchQueryService).to receive(:call)
+            .and_return(ExpandSearchQueryService::Result.new(expanded_query: 'CBD oil', reason: nil))
+        end
+
+        it 'retains the preliminary retrieval' do
+          result = described_class.new(q: 'CBD oil').call
+
+          expect(TradeTariffBackend.search_client).to have_received(:search).once
+          expect(result[:data]).to be_empty
+        end
+      end
     end
 
     context 'when answer-based query refinement is enabled' do

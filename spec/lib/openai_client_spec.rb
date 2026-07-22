@@ -297,6 +297,101 @@ RSpec.describe OpenaiClient do
         expect { client.call('test') }.to raise_error(OpenaiClient::ApiError)
       end
     end
+
+    context 'with an operation timeout' do
+      let(:connection) { instance_double(Faraday::Connection) }
+      let(:response) { instance_double(Faraday::Response, success?: true, body: response_body) }
+      let(:operation_state) { { now: 0.0, request_timeouts: [] } }
+
+      before do
+        allow(described_class).to receive(:client).and_return(connection)
+        allow(Process).to receive(:clock_gettime).with(Process::CLOCK_MONOTONIC) { operation_state[:now] }
+        allow(Kernel).to receive(:sleep) { |delay| operation_state[:now] += delay }
+      end
+
+      it 'caps the combined transport timeouts to the budget' do
+        allow(connection).to receive(:post) do |_path, _body, &configure|
+          options = Faraday::RequestOptions.new
+          configure.call(instance_double(Faraday::Request, options:))
+          operation_state[:request_timeouts] << [options.timeout, options.open_timeout]
+          response
+        end
+
+        client.call('test', timeout: 5)
+
+        expect(operation_state[:request_timeouts]).to eq([[3.75, 1.25]])
+        expect(operation_state[:request_timeouts].first.sum).to eq(5.0)
+      end
+
+      it 'retries within the remaining budget' do
+        attempts = 0
+        allow(connection).to receive(:post) do |_path, _body, &configure|
+          attempts += 1
+          options = Faraday::RequestOptions.new
+          configure.call(instance_double(Faraday::Request, options:))
+          operation_state[:request_timeouts] << options.timeout
+          raise Faraday::SSLError, 'transient' if attempts == 1
+
+          response
+        end
+
+        result = client.call('test', timeout: 5)
+
+        expect(result).to eq('capital' => 'Paris')
+        expect(operation_state[:request_timeouts]).to eq([3.75, 2.25])
+      end
+
+      it 'stops when retry backoff exhausts the budget' do
+        allow(connection).to receive(:post) do |_path, _body, &configure|
+          options = Faraday::RequestOptions.new
+          configure.call(instance_double(Faraday::Request, options:))
+          operation_state[:request_timeouts] << options.timeout
+          raise Faraday::SSLError, 'transient'
+        end
+
+        expect { client.call('test', timeout: 1) }
+          .to raise_error(OpenaiClient::DeadlineExceeded) { |error|
+            expect(error.elapsed_seconds).to eq(0.0)
+            expect(error.message).to include('1000ms deadline')
+          }
+
+        expect(operation_state[:request_timeouts]).to eq([0.75])
+        expect(Kernel).not_to have_received(:sleep)
+      end
+
+      it 'converts transport expiry into a deadline error' do
+        allow(connection).to receive(:post) do |_path, _body, &configure|
+          options = Faraday::RequestOptions.new
+          configure.call(instance_double(Faraday::Request, options:))
+          operation_state[:request_timeouts] << options.timeout
+          operation_state[:now] = 5.0
+          raise Faraday::TimeoutError, 'execution expired'
+        end
+
+        expect { client.call('test', timeout: 5) }
+          .to raise_error(OpenaiClient::DeadlineExceeded)
+
+        expect(operation_state[:request_timeouts]).to eq([3.75])
+        expect(Kernel).not_to have_received(:sleep)
+      end
+
+      it 'rejects a response that completes after the operation deadline' do
+        allow(connection).to receive(:post) do |_path, _body, &configure|
+          options = Faraday::RequestOptions.new
+          configure.call(instance_double(Faraday::Request, options:))
+          operation_state[:request_timeouts] << options.timeout
+          operation_state[:now] = 5.01
+          response
+        end
+
+        expect { client.call('test', timeout: 5) }
+          .to raise_error(OpenaiClient::DeadlineExceeded) { |error|
+            expect(error.elapsed_seconds).to eq(5.01)
+          }
+
+        expect(operation_state[:request_timeouts]).to eq([3.75])
+      end
+    end
   end
 
   describe '.call' do

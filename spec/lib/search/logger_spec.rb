@@ -172,6 +172,40 @@ RSpec.describe Search::Logger do
     end
   end
 
+  describe '#query_expansion_timed_out' do
+    let(:payload) do
+      {
+        request_id: 'req-1',
+        timeout_ms: 5000,
+        elapsed_ms: 5010.0,
+        model: 'gpt-4.1-mini-2025-04-14',
+        fallback_outcome: 'preliminary_results',
+      }
+    end
+
+    it_behaves_like 'a search log entry', :query_expansion_timed_out, 'query_expansion_timed_out',
+                    { request_id: 'req-1',
+                      timeout_ms: 5000,
+                      elapsed_ms: 5010.0,
+                      model: 'gpt-4.1-mini-2025-04-14',
+                      fallback_outcome: 'preliminary_results' }
+
+    it 'logs safe timeout fields' do
+      logger_instance.query_expansion_timed_out(build_event('query_expansion_timed_out', payload))
+
+      json = parsed_log_output
+      expect(json).to include(
+        'event' => 'query_expansion_timed_out',
+        'request_id' => 'req-1',
+        'timeout_ms' => 5000,
+        'elapsed_ms' => 5010.0,
+        'model' => 'gpt-4.1-mini-2025-04-14',
+        'fallback_outcome' => 'preliminary_results',
+      )
+      expect(json).not_to have_key('query')
+    end
+  end
+
   describe '#api_call_completed' do
     let(:payload) do
       { request_id: 'req-1', model: 'gpt-4', duration_ms: 2500.0, response_type: 'answers', attempt_number: 1, operation: 'interactive_search' }

@@ -35,6 +35,7 @@ RSpec.describe ExpandSearchQueryService do
           model: 'gpt-4.1-mini-2025-04-14',
           reasoning_effort: nil,
           event_kind: 'search_query_expansion',
+          timeout: 5.0,
         )
       end
 
@@ -169,6 +170,41 @@ RSpec.describe ExpandSearchQueryService do
         )
       end
     end
+
+    context 'when the expansion deadline expires' do
+      let(:query) { 'laptop' }
+      let(:deadline_error) do
+        OpenaiClient::DeadlineExceeded.new(timeout_seconds: 5, elapsed_seconds: 5.01)
+      end
+
+      before do
+        allow(OpenaiClient).to receive(:call).and_raise(deadline_error)
+        allow(Search::Instrumentation).to receive(:query_expansion_timed_out)
+        allow(Search::Instrumentation).to receive(:search_failed)
+      end
+
+      it 'falls back to the original query' do
+        expect(result.expanded_query).to eq('laptop')
+      end
+
+      it 'emits timeout telemetry' do
+        result
+
+        expect(Search::Instrumentation).to have_received(:query_expansion_timed_out).with(
+          request_id: 'request-123',
+          timeout_ms: 5000,
+          elapsed_ms: 5010.0,
+          model: 'gpt-4.1-mini-2025-04-14',
+          fallback_outcome: 'original_query',
+        )
+      end
+
+      it 'does not emit search_failed' do
+        result
+
+        expect(Search::Instrumentation).not_to have_received(:search_failed)
+      end
+    end
   end
 
   describe 'AdminConfiguration integration' do
@@ -196,6 +232,7 @@ RSpec.describe ExpandSearchQueryService do
           model: 'gpt-4.1-mini-2025-04-14',
           reasoning_effort: nil,
           event_kind: 'search_query_expansion',
+          timeout: 5.0,
         )
       end
     end
@@ -215,6 +252,7 @@ RSpec.describe ExpandSearchQueryService do
           model: 'gpt-4.1-mini-2025-04-14',
           reasoning_effort: nil,
           event_kind: 'search_query_expansion',
+          timeout: 5.0,
         )
       end
     end
@@ -290,6 +328,24 @@ RSpec.describe ExpandSearchQueryService do
       end
 
       it 'does not cache the failure' do
+        described_class.call(query)
+
+        allow(OpenaiClient).to receive(:call).and_return(ai_response)
+
+        described_class.call(query)
+
+        expect(OpenaiClient).to have_received(:call).twice
+      end
+    end
+
+    context 'when the expansion deadline expires' do
+      before do
+        allow(OpenaiClient).to receive(:call).and_raise(
+          OpenaiClient::DeadlineExceeded.new(timeout_seconds: 5, elapsed_seconds: 5),
+        )
+      end
+
+      it 'does not cache the fallback' do
         described_class.call(query)
 
         allow(OpenaiClient).to receive(:call).and_return(ai_response)
