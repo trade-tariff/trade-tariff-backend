@@ -1,0 +1,20 @@
+# Guided-search lexical synonyms
+#
+# Keep rules contextual. Broad acronym rules can dilute search relevance.
+# The original phrase is retained and alternatives are appended for OpenSearch
+# only. Vector retrieval continues to use the unmodified semantic query.
+#
+# Equivalent rule:
+#   term, equivalent term
+#
+# Directional rule:
+#   input phrase => input phrase, lexical alternative
+
+ABV => ABV, alcohol by volume
+HEPA filter => HEPA filter, high efficiency particulate air filter
+HDMI cable => HDMI cable, high definition multimedia interface cable
+LED lamp => LED lamp, light emitting diode lamp
+RFID reader => RFID reader, radio frequency identification reader
+RFID tag => RFID tag, radio frequency identification tag
+USB cable => USB cable, universal serial bus cable
+USB connector => USB connector, universal serial bus connector

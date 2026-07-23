@@ -36,8 +36,18 @@ module Search
         result
       end
 
-      def query_expansion_decided(request_id:, query:, expand:, reason:, result_count:, max_score:)
-        instrument('query_expansion_decided', request_id:, search_type: 'interactive', query:, expand:, reason:, result_count:, max_score:)
+      def query_expansion_decided(request_id:, query:, expand:, reason:, decider_version:, result_count:, max_score:)
+        instrument(
+          'query_expansion_decided',
+          request_id:,
+          search_type: 'interactive',
+          query:,
+          expand:,
+          reason:,
+          decider_version:,
+          result_count:,
+          max_score:,
+        )
       end
 
       def query_expansion_timed_out(request_id:, timeout_ms:, elapsed_ms:, model:, fallback_outcome:)

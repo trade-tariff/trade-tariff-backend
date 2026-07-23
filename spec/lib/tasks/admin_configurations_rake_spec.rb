@@ -17,6 +17,7 @@ RSpec.describe 'admin_configurations:seed' do
       description_intercept_templates
       expand_model
       expand_query_context
+      expand_search_decider
       expand_search_enabled
       expand_search_min_results
       expand_search_min_score
@@ -215,10 +216,18 @@ RSpec.describe 'admin_configurations:seed' do
   it 'seeds conditional expansion controls', :aggregate_failures do
     seed
 
+    decider = AdminConfiguration.where(name: 'expand_search_decider').first
+    expect(decider.config_type).to eq('options')
+    expect(decider.value['selected']).to eq('v1')
+    expect(decider.value['options']).to eq([
+      { 'key' => 'v1', 'label' => 'V1: casing and retrieval evidence' },
+      { 'key' => 'v2', 'label' => 'V2: targeted synonyms and retrieval evidence' },
+    ])
+
     enabled = AdminConfiguration.where(name: 'expand_search_when_needed_enabled').first
     expect(enabled.config_type).to eq('boolean')
     expect(enabled.description).to include('When AI expansion is enabled')
-    expect(enabled.description).to include('acronym-like terms')
+    expect(enabled.description).to include('selected expansion strategy')
     expect(enabled.description).to include('no significant tagged words')
     expect(enabled.description).to include('too few results')
     expect(enabled.value).to be true
@@ -476,5 +485,21 @@ RSpec.describe 'admin_configurations:seed' do
 
     expect { seed }.to change(AdminConfiguration, :count).by(50)
     expect(AdminConfiguration.where(name: 'description_intercept_templates').first.config_type).to eq('object_template')
+  end
+
+  it 'refreshes descriptions without replacing an existing selected value' do
+    create(
+      :admin_configuration,
+      :boolean,
+      name: 'expand_search_when_needed_enabled',
+      description: 'Legacy description',
+      value: false,
+    )
+
+    seed
+
+    config = AdminConfiguration.where(name: 'expand_search_when_needed_enabled').first
+    expect(config.description).to include('selected expansion strategy')
+    expect(config.value).to be(false)
   end
 end
