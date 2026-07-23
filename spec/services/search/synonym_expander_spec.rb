@@ -48,4 +48,42 @@ RSpec.describe Search::SynonymExpander do
     expect(described_class.call('replacement HEPA filter'))
       .to eq('replacement HEPA filter high efficiency particulate air filter')
   end
+
+  it 'parses each rules file once when requests initialise it concurrently' do
+    source_class = Class.new do
+      attr_reader :reads
+
+      def initialize(path)
+        @path = path
+        @reads = 0
+        @mutex = Mutex.new
+      end
+
+      def to_s
+        'concurrent-search-synonyms'
+      end
+
+      def each_line
+        @mutex.synchronize { @reads += 1 }
+        sleep(0.01)
+        @path.each_line
+      end
+    end
+    rules_source = source_class.new(rules_path)
+    ready = Queue.new
+    start = Queue.new
+
+    threads = Array.new(8) do
+      Thread.new do
+        ready << true
+        start.pop
+        described_class.call('HEPA filter', rules_path: rules_source)
+      end
+    end
+    8.times { ready.pop }
+    8.times { start << true }
+
+    expect(threads.map(&:value)).to all(include('high efficiency particulate air filter'))
+    expect(rules_source.reads).to eq(1)
+  end
 end

@@ -33,13 +33,19 @@ module_function
 
     return refresh_nested_options(config, attrs) if config.config_type == 'nested_options'
 
-    if config.description == attrs[:description]
+    updates = {}
+    updates[:description] = attrs[:description] if config.description != attrs[:description]
+
+    refreshed_value = refresh_options(config.value, attrs[:value])
+    updates[:value] = refreshed_value if config.value != refreshed_value
+
+    if updates.empty?
       output "  skip: #{attrs[:name]} (already exists)"
       return 0
     end
 
-    config.update(description: attrs[:description])
-    output "  patched: #{attrs[:name]} (description)"
+    config.update(updates)
+    output "  patched: #{attrs[:name]} (definition)"
     1
   end
 
@@ -50,6 +56,15 @@ module_function
     config.update(value: Sequel.pg_jsonb_wrap(value))
     output "  patched: #{attrs[:name]} (options)"
     1
+  end
+
+  def refresh_options(current_value, seeded_value)
+    return current_value unless seeded_value.is_a?(Hash) && seeded_value.key?('options')
+
+    current = current_value.respond_to?(:to_hash) ? current_value.to_hash : {}
+    selected = current.fetch('selected', seeded_value['selected'])
+
+    Sequel.pg_jsonb_wrap(current.merge('selected' => selected, 'options' => seeded_value['options']))
   end
 
   def patch_retrieval_method

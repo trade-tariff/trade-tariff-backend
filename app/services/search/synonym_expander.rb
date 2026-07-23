@@ -3,6 +3,7 @@ module Search
     InvalidRule = Class.new(StandardError)
     Rule = Data.define(:term, :alternatives)
     DEFAULT_RULES_PATH = Rails.root.join('config/search_synonyms.txt').freeze
+    RULES_MUTEX = Mutex.new
 
     class << self
       def call(query, rules_path: DEFAULT_RULES_PATH)
@@ -12,8 +13,10 @@ module Search
     private
 
       def rules_for(path)
-        @rules_by_path ||= {}
-        @rules_by_path[path.to_s] ||= parse(path)
+        RULES_MUTEX.synchronize do
+          @rules_by_path ||= {}
+          @rules_by_path[path.to_s] ||= parse(path)
+        end
       end
 
       def parse(path)
