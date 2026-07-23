@@ -502,4 +502,28 @@ RSpec.describe 'admin_configurations:seed' do
     expect(config.description).to include('selected expansion strategy')
     expect(config.value).to be(false)
   end
+
+  it 'refreshes options without replacing an existing selected value' do
+    config = create(
+      :admin_configuration,
+      name: 'expand_search_decider',
+      config_type: 'options',
+      description: 'Legacy description',
+      value: {
+        'selected' => 'v2',
+        'options' => [{ 'key' => 'v1', 'label' => 'Legacy V1' }],
+      },
+    )
+    AdminConfiguration.where(id: config.id)
+      .update(value: Sequel.pg_jsonb_wrap('selected' => 'v2'))
+
+    seed
+
+    config = AdminConfiguration.where(name: 'expand_search_decider').first
+    expect(config.value['selected']).to eq('v2')
+    expect(config.value['options']).to eq([
+      { 'key' => 'v1', 'label' => 'V1: casing and retrieval evidence' },
+      { 'key' => 'v2', 'label' => 'V2: targeted synonyms and retrieval evidence' },
+    ])
+  end
 end
