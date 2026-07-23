@@ -6,9 +6,13 @@
   config_type: boolean
   description: Allow guided search to use AI to translate eligible queries into tariff terminology before retrieval.
   default: expand_search_enabled
+- name: expand_search_decider
+  config_type: options
+  description: "Guided-search expansion strategy. V1 selects AI expansion from casing and retrieval evidence. V2 applies targeted lexical synonyms and selects AI expansion from retrieval evidence without using casing."
+  expansion_decider_options: true
 - name: expand_search_when_needed_enabled
   config_type: boolean
-  description: "When AI expansion is enabled, run an unexpanded retrieval first and expand only for uppercase acronym-like terms, queries with no significant tagged words, too few results, or a low top score. Disable to expand every eligible query."
+  description: "When AI expansion is enabled, run a preliminary retrieval first and use the selected expansion strategy to decide from casing and/or retrieval evidence. Retrieval evidence includes no significant tagged words, too few results, or a low top score. Disable to expand every eligible query."
   default: expand_search_when_needed_enabled
 - name: expand_search_min_results
   config_type: integer

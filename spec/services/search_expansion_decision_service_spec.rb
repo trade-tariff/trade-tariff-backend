@@ -15,6 +15,7 @@ RSpec.describe SearchExpansionDecisionService do
   before do
     allow(AdminConfiguration).to receive(:enabled?).and_call_original
     allow(AdminConfiguration).to receive(:integer_value).and_call_original
+    allow(AdminConfiguration).to receive(:option_value).and_call_original
     allow(Search::Instrumentation).to receive(:query_expansion_decided).and_call_original
   end
 
@@ -50,6 +51,35 @@ RSpec.describe SearchExpansionDecisionService do
     end
 
     it 'expands acronym-like query tokens' do
+      allow(AdminConfiguration).to receive(:option_value).with('expand_search_decider').and_return('v1')
+
+      result = described_class.call(query: 'CBD oil', results: results, request_id: 'req-1')
+
+      expect(result.expand?).to be(true)
+      expect(result.reason).to eq('non_word_token')
+    end
+
+    it 'does not use casing as an expansion reason with the v2 decider' do
+      allow(AdminConfiguration).to receive(:option_value).with('expand_search_decider').and_return('v2')
+
+      result = described_class.call(query: 'CBD oil', results: results, request_id: 'req-1')
+
+      expect(result.expand?).to be(false)
+      expect(result.reason).to eq('sufficient_results')
+    end
+
+    it 'still expands weak uppercase queries with the v2 decider' do
+      allow(AdminConfiguration).to receive(:option_value).with('expand_search_decider').and_return('v2')
+
+      result = described_class.call(query: 'CBD oil', results: [build_result(score: 12.5)], request_id: 'req-1')
+
+      expect(result.expand?).to be(true)
+      expect(result.reason).to eq('low_result_count')
+    end
+
+    it 'falls back to the v1 decider for an unknown configured version' do
+      allow(AdminConfiguration).to receive(:option_value).with('expand_search_decider').and_return('unknown')
+
       result = described_class.call(query: 'CBD oil', results: results, request_id: 'req-1')
 
       expect(result.expand?).to be(true)
@@ -98,6 +128,7 @@ RSpec.describe SearchExpansionDecisionService do
         query: 'laptop',
         expand: false,
         reason: 'sufficient_results',
+        decider_version: 'v1',
         result_count: 5,
         max_score: 12.5,
       )

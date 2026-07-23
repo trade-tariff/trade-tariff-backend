@@ -493,6 +493,7 @@ RSpec.describe AdminConfiguration do
       expect(described_class.default_for('opensearch_result_limit')).to eq(50)
       expect(described_class.default_for('input_sanitiser_max_length')).to eq(1000)
       expect(described_class.default_for('expand_search_enabled')).to be(true)
+      expect(described_class.default_for('expand_search_decider')).to eq('v1')
       expect(described_class.default_for('expand_search_when_needed_enabled')).to be(true)
       expect(described_class.default_for('refine_search_with_answers_enabled')).to be(true)
     end
@@ -596,6 +597,7 @@ RSpec.describe AdminConfiguration do
     context 'when config record is missing' do
       it 'returns the default value' do
         expect(described_class.option_value('search_model')).to eq('gpt-5.4')
+        expect(described_class.option_value('expand_search_decider')).to eq('v1')
       end
     end
 

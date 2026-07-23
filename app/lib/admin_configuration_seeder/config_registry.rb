@@ -13,7 +13,8 @@ module AdminConfigurationSeeder
     def materialize_config(definition)
       attrs = definition.transform_keys(&:to_sym)
       value = config_value(attrs)
-      attrs.except(:default, :string_default, :prompt, :nested_option, :chapter_options, :retrieval_method_options)
+      attrs.except(:default, :string_default, :prompt, :nested_option, :chapter_options, :retrieval_method_options,
+                   :expansion_decider_options)
            .merge(value:)
     end
 
@@ -24,6 +25,7 @@ module AdminConfigurationSeeder
       return nested_option_value(attrs[:nested_option]) if attrs[:nested_option]
       return chapter_options_value if attrs[:chapter_options]
       return retrieval_method_value if attrs[:retrieval_method_options]
+      return expansion_decider_value if attrs[:expansion_decider_options]
 
       attrs[:value]
     end
@@ -67,6 +69,16 @@ module AdminConfigurationSeeder
           { 'key' => 'opensearch', 'label' => 'OpenSearch (text search)' },
           { 'key' => 'vector', 'label' => 'pgvector (cosine similarity)' },
           { 'key' => 'hybrid', 'label' => 'Hybrid (text + vector with RRF fusion)' },
+        ],
+      }
+    end
+
+    def expansion_decider_value
+      {
+        'selected' => AdminConfiguration.default_for('expand_search_decider'),
+        'options' => [
+          { 'key' => 'v1', 'label' => 'V1: casing and retrieval evidence' },
+          { 'key' => 'v2', 'label' => 'V2: targeted synonyms and retrieval evidence' },
         ],
       }
     end

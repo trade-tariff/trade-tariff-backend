@@ -147,6 +147,7 @@ RSpec.describe Search::Logger do
         query: 'CBD oil',
         expand: true,
         reason: 'non_word_token',
+        decider_version: 'v1',
         result_count: 3,
         max_score: 4.5,
       }
@@ -157,6 +158,7 @@ RSpec.describe Search::Logger do
                       query: 'CBD oil',
                       expand: true,
                       reason: 'non_word_token',
+                      decider_version: 'v1',
                       result_count: 3,
                       max_score: 4.5 }
 
@@ -167,6 +169,7 @@ RSpec.describe Search::Logger do
       expect(json['query']).to eq('CBD oil')
       expect(json['expand']).to be(true)
       expect(json['reason']).to eq('non_word_token')
+      expect(json['decider_version']).to eq('v1')
       expect(json['result_count']).to eq(3)
       expect(json['max_score']).to eq(4.5)
     end

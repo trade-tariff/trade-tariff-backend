@@ -15,7 +15,7 @@ module_function
     config = AdminConfiguration.where(name: attrs[:name]).first
     return create_config(attrs) unless config
 
-    patch_config_type(config, attrs)
+    patch_config(config, attrs)
   end
 
   def create_config(attrs)
@@ -24,16 +24,22 @@ module_function
     1
   end
 
-  def patch_config_type(config, attrs)
-    if config.config_type == attrs[:config_type]
-      return refresh_nested_options(config, attrs) if config.config_type == 'nested_options'
+  def patch_config(config, attrs)
+    if config.config_type != attrs[:config_type]
+      config.update(config_type: attrs[:config_type], value: attrs[:value], description: attrs[:description])
+      output "  patched: #{attrs[:name]} (config type)"
+      return 1
+    end
 
+    return refresh_nested_options(config, attrs) if config.config_type == 'nested_options'
+
+    if config.description == attrs[:description]
       output "  skip: #{attrs[:name]} (already exists)"
       return 0
     end
 
-    config.update(config_type: attrs[:config_type], value: attrs[:value])
-    output "  patched: #{attrs[:name]} (config type)"
+    config.update(description: attrs[:description])
+    output "  patched: #{attrs[:name]} (description)"
     1
   end
 

@@ -46,6 +46,7 @@ module Search
         query: event.payload[:query],
         expand: event.payload[:expand],
         reason: event.payload[:reason],
+        decider_version: event.payload[:decider_version],
         result_count: event.payload[:result_count],
         max_score: event.payload[:max_score],
       }, event)

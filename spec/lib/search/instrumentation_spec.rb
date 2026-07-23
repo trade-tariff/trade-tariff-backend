@@ -220,6 +220,7 @@ RSpec.describe Search::Instrumentation do
         query: 'CBD oil',
         expand: true,
         reason: 'non_word_token',
+        decider_version: 'v1',
         result_count: 3,
         max_score: 4.5,
       )
@@ -231,6 +232,7 @@ RSpec.describe Search::Instrumentation do
         query: 'CBD oil',
         expand: true,
         reason: 'non_word_token',
+        decider_version: 'v1',
         result_count: 3,
         max_score: 4.5,
       )

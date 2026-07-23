@@ -76,6 +76,30 @@ RSpec.describe HybridRetrievalService do
       )
     end
 
+    it 'uses a separate lexical query for OpenSearch while preserving the semantic vector query' do
+      as_of = Time.zone.today
+      lexical_query = 'HEPA filter high efficiency particulate air filter'
+
+      result = described_class.call(
+        query: 'HEPA filter',
+        expanded_query: 'HEPA filter',
+        lexical_query: lexical_query,
+        as_of: as_of,
+      )
+
+      expect(OpensearchRetrievalService).to have_received(:call).with(
+        query: 'HEPA filter', expanded_query: lexical_query, as_of: as_of, request_id: nil, limit: 30,
+      )
+      expect(VectorRetrievalService).to have_received(:call).with(query: 'HEPA filter', limit: 30, request_id: nil)
+      expect(result.expanded_query).to eq('HEPA filter')
+      expect(Search::Instrumentation).to have_received(:retrieval_results_returned).with(
+        hash_including(stage: 'before_rrf', leg: :opensearch, effective_query: lexical_query),
+      )
+      expect(Search::Instrumentation).to have_received(:retrieval_results_returned).with(
+        hash_including(stage: 'before_rrf', leg: :vector, effective_query: 'HEPA filter'),
+      )
+    end
+
     it 'passes filter prefixes to both retrieval legs' do
       as_of = Time.zone.today
 

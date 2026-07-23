@@ -64,6 +64,7 @@ RSpec.describe Api::Internal::SearchService do
         query: 'multimeter leads',
         skip_question: nil,
         configuration: hash_including(
+          expand_search_decider: 'v1',
           interactive_search_duplicate_question_guard_enabled: true,
           hybrid_query_guardrail_enabled: false,
           hybrid_query_guardrail_threshold: 32,
@@ -797,6 +798,37 @@ RSpec.describe Api::Internal::SearchService do
         expect(result[:data].first[:attributes][:goods_nomenclature_item_id]).to eq('3304990000')
       end
 
+      it 'uses lexical synonyms before retaining evidence-based AI fallback with the v2 decider' do
+        allow(AdminConfiguration).to receive(:option_value).with('expand_search_decider').and_return('v2')
+        allow(Search::SynonymExpander).to receive(:call) do |query|
+          query == 'CBD oil' ? 'CBD oil cannabidiol' : query
+        end
+        allow(Search::GoodsNomenclatureQuery).to receive(:new).and_call_original
+
+        described_class.new(q: 'CBD oil').call
+
+        expect(Search::GoodsNomenclatureQuery).to have_received(:new).with(
+          'CBD oil',
+          anything,
+          hash_including(expanded_query: 'CBD oil cannabidiol'),
+        )
+        expect(ExpandSearchQueryService).to have_received(:call).with('CBD oil', request_id: a_kind_of(String))
+        expect(Search::GoodsNomenclatureQuery).to have_received(:new).with(
+          'CBD oil',
+          anything,
+          hash_including(expanded_query: 'cannabidiol oil'),
+        )
+      end
+
+      it 'does not apply lexical synonyms with the v1 decider' do
+        allow(AdminConfiguration).to receive(:option_value).with('expand_search_decider').and_return('v1')
+        allow(Search::SynonymExpander).to receive(:call)
+
+        described_class.new(q: 'CBD oil').call
+
+        expect(Search::SynonymExpander).not_to have_received(:call)
+      end
+
       context 'when expansion returns the original query' do
         before do
           allow(ExpandSearchQueryService).to receive(:call)
@@ -1406,6 +1438,28 @@ RSpec.describe Api::Internal::SearchService do
               max_score: 250.0,
             ),
           )
+        end
+
+        context 'with the v2 decider' do
+          before do
+            allow(AdminConfiguration).to receive(:option_value).with('expand_search_decider').and_return('v2')
+            allow(Search::SynonymExpander).to receive(:call)
+              .with('horses')
+              .and_return('horses equines')
+          end
+
+          it 'passes targeted synonyms to the lexical leg without changing the semantic query' do
+            described_class.new(q: 'horses').call
+
+            expect(HybridRetrievalService).to have_received(:call).with(
+              hash_including(
+                query: 'horses',
+                expanded_query: 'horses',
+                lexical_query: 'horses equines',
+              ),
+            )
+            expect(ExpandSearchQueryService).not_to have_received(:call)
+          end
         end
 
         context 'when source retrieval results contain duplicate goods nomenclatures' do

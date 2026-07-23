@@ -97,3 +97,23 @@ filter service = "search" and event = "search_completed" and search_type = "inte
 ```
 
 Validate the behaviour in staging before production. Record the timeout count/rate, end-to-end p50/p95/p99, and a sample of the preliminary-result quality.
+
+## Query Expansion Strategies
+
+The `expand_search_decider` admin configuration selects the conditional-expansion strategy:
+
+- `v1` is the default. It preserves the existing behaviour, selecting AI expansion for uppercase acronym-like tokens as well as weak retrieval evidence.
+- `v2` applies the targeted rules in `config/search_synonyms.txt` to the OpenSearch query and selects AI expansion from retrieval evidence without treating casing as a signal.
+
+Selecting `v2` does not disable AI expansion. Queries with no significant tagged words, too few preliminary results, or a low top score continue through the normal AI-expansion path and retain the five-second deadline.
+
+In hybrid retrieval, mechanical synonyms affect only the lexical OpenSearch leg. The vector leg and interactive-search context retain the original query, or the AI-expanded semantic query when evidence-based expansion runs. This prevents generic words from a synonym’s full form from shifting the query embedding.
+
+The synonym file accepts equivalent rules and directional rules:
+
+```text
+term, equivalent term
+input phrase => input phrase, lexical alternative
+```
+
+Rules are matched case-insensitively against complete terms or phrases. Keep mappings contextual: prefer `HEPA filter` or `USB connector` to broad rules for `HEPA` or `USB`.

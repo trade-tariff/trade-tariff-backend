@@ -113,6 +113,7 @@ class AdminConfiguration < Sequel::Model(Sequel[:admin_configurations].qualify(:
       },
     },
     'expand_search_enabled' => true,
+    'expand_search_decider' => 'v1',
     'expand_search_min_results' => 5,
     'expand_search_min_score' => 5,
     'expand_search_when_needed_enabled' => true,
