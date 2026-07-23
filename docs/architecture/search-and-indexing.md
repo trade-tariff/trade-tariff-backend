@@ -35,6 +35,13 @@ The higher-level `tariff:reindex` task delegates to `TradeTariffBackend.reindex`
 
 Generated self-texts, labels, and embeddings support search quality. The lifecycle is documented in [Generated classification content lifecycle](../generated-classification-content-lifecycle.md).
 
+Public ATAR keywords and derived facts are excluded from OpenSearch documents, OpenSearch queries, and composite search embeddings unless the `search_atars_enabled` admin configuration is enabled. The setting defaults to `false`. After changing it, rebuild both search representations so stored documents and embeddings match the configured value:
+
+```sh
+bin/rake opensearch:search:recreate_all
+bin/rake search_embeddings:generate
+```
+
 Relevant code paths include:
 
 - `app/services/generate_self_text/`

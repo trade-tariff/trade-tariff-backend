@@ -116,6 +116,7 @@ class AdminConfiguration < Sequel::Model(Sequel[:admin_configurations].qualify(:
     'expand_search_min_results' => 5,
     'expand_search_min_score' => 5,
     'expand_search_when_needed_enabled' => true,
+    'search_atars_enabled' => false,
     'search_compressed_notes_enabled' => false,
     'search_general_rules_enabled' => false,
     'expand_model' => NESTED_OPTION_DEFAULTS['expand_model'][:selected],

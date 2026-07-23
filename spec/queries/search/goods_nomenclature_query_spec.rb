@@ -52,7 +52,14 @@ RSpec.describe Search::GoodsNomenclatureQuery do
           expect(multi_match[:fields]).to include('ancestor_descriptions')
         end
 
-        it 'searches public ATAR keywords' do
+        it 'does not search public ATAR keywords by default' do
+          expect(multi_match[:fields]).not_to include('atar_keywords^2')
+        end
+
+        it 'searches public ATAR keywords when ATaR search is enabled' do
+          allow(AdminConfiguration).to receive(:enabled?).and_call_original
+          allow(AdminConfiguration).to receive(:enabled?).with('search_atars_enabled').and_return(true)
+
           expect(multi_match[:fields]).to include('atar_keywords^2')
         end
       end

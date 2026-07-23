@@ -150,6 +150,10 @@
   config_type: markdown
   description: System prompt sent to the AI model during interactive search
   prompt: search_context
+- name: search_atars_enabled
+  config_type: boolean
+  description: Include public ATAR keywords and derived facts in OpenSearch retrieval and composite search embeddings.
+  default: search_atars_enabled
 - name: search_labels_enabled
   config_type: boolean
   description: Search label-enriched index fields during the OpenSearch retrieval leg, including OpenSearch within hybrid retrieval.

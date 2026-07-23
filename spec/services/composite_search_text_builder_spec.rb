@@ -208,7 +208,7 @@ RSpec.describe CompositeSearchTextBuilder do
       expect(result[commodity.goods_nomenclature_sid]).to include('References: fridges')
     end
 
-    it 'includes public ATAR keywords for the matching goods nomenclature item id' do
+    it 'omits public ATAR search terms by default' do
       commodity = create(:commodity, :with_description, :declarable,
                          goods_nomenclature_item_id: '6302100000')
       self_text = create(:goods_nomenclature_self_text,
@@ -223,50 +223,75 @@ RSpec.describe CompositeSearchTextBuilder do
 
       result = described_class.batch([self_text])
 
-      expect(result[commodity.goods_nomenclature_sid]).to include('ATAR keywords: cotton sheets, bed linen, hotel bedding')
+      expect(result[commodity.goods_nomenclature_sid]).not_to include('ATAR keywords:')
     end
 
-    it 'includes public ATAR derived facts when no official keywords are present' do
-      commodity = create(:commodity, :with_description, :declarable,
-                         goods_nomenclature_item_id: '6302100000')
-      self_text = create(:goods_nomenclature_self_text,
-                         goods_nomenclature_sid: commodity.goods_nomenclature_sid,
-                         goods_nomenclature_item_id: commodity.goods_nomenclature_item_id,
-                         self_text: 'Bed linen commodity')
-      create(:tariff_knowledge_public_atar_ruling,
-             commodity_code: '630210',
-             goods_nomenclature_item_id: commodity.goods_nomenclature_item_id,
-             keywords: Sequel.pg_array([], :text),
-             derived_facts: Sequel.pg_array(['hotel bedding'], :text))
+    context 'when ATaR search is enabled' do
+      before do
+        allow(AdminConfiguration).to receive(:enabled?).and_call_original
+        allow(AdminConfiguration).to receive(:enabled?).with('search_atars_enabled').and_return(true)
+      end
 
-      result = described_class.batch([self_text])
+      it 'includes public ATAR keywords for the matching goods nomenclature item id' do
+        commodity = create(:commodity, :with_description, :declarable,
+                           goods_nomenclature_item_id: '6302100000')
+        self_text = create(:goods_nomenclature_self_text,
+                           goods_nomenclature_sid: commodity.goods_nomenclature_sid,
+                           goods_nomenclature_item_id: commodity.goods_nomenclature_item_id,
+                           self_text: 'Bed linen commodity')
+        create(:tariff_knowledge_public_atar_ruling,
+               commodity_code: '630210',
+               goods_nomenclature_item_id: commodity.goods_nomenclature_item_id,
+               keywords: Sequel.pg_array(['cotton sheets', 'bed linen'], :text),
+               derived_facts: Sequel.pg_array(['hotel bedding', 'bed linen'], :text))
 
-      expect(result[commodity.goods_nomenclature_sid]).to include('ATAR keywords: hotel bedding')
-    end
+        result = described_class.batch([self_text])
 
-    it 'orders public ATAR search terms by ruling reference' do
-      commodity = create(:commodity, :with_description, :declarable,
-                         goods_nomenclature_item_id: '6302100000')
-      self_text = create(:goods_nomenclature_self_text,
-                         goods_nomenclature_sid: commodity.goods_nomenclature_sid,
-                         goods_nomenclature_item_id: commodity.goods_nomenclature_item_id,
-                         self_text: 'Bed linen commodity')
-      create(:tariff_knowledge_public_atar_ruling,
-             ref: '600015804',
-             commodity_code: '630210',
-             goods_nomenclature_item_id: commodity.goods_nomenclature_item_id,
-             keywords: Sequel.pg_array(['later keyword'], :text),
-             derived_facts: Sequel.pg_array(['later fact'], :text))
-      create(:tariff_knowledge_public_atar_ruling,
-             ref: '600004365',
-             commodity_code: '630210',
-             goods_nomenclature_item_id: commodity.goods_nomenclature_item_id,
-             keywords: Sequel.pg_array(['earlier keyword'], :text),
-             derived_facts: Sequel.pg_array(['earlier fact'], :text))
+        expect(result[commodity.goods_nomenclature_sid]).to include('ATAR keywords: cotton sheets, bed linen, hotel bedding')
+      end
 
-      result = described_class.batch([self_text])
+      it 'includes public ATAR derived facts when no official keywords are present' do
+        commodity = create(:commodity, :with_description, :declarable,
+                           goods_nomenclature_item_id: '6302100000')
+        self_text = create(:goods_nomenclature_self_text,
+                           goods_nomenclature_sid: commodity.goods_nomenclature_sid,
+                           goods_nomenclature_item_id: commodity.goods_nomenclature_item_id,
+                           self_text: 'Bed linen commodity')
+        create(:tariff_knowledge_public_atar_ruling,
+               commodity_code: '630210',
+               goods_nomenclature_item_id: commodity.goods_nomenclature_item_id,
+               keywords: Sequel.pg_array([], :text),
+               derived_facts: Sequel.pg_array(['hotel bedding'], :text))
 
-      expect(result[commodity.goods_nomenclature_sid]).to include('ATAR keywords: earlier keyword, earlier fact, later keyword, later fact')
+        result = described_class.batch([self_text])
+
+        expect(result[commodity.goods_nomenclature_sid]).to include('ATAR keywords: hotel bedding')
+      end
+
+      it 'orders public ATAR search terms by ruling reference' do
+        commodity = create(:commodity, :with_description, :declarable,
+                           goods_nomenclature_item_id: '6302100000')
+        self_text = create(:goods_nomenclature_self_text,
+                           goods_nomenclature_sid: commodity.goods_nomenclature_sid,
+                           goods_nomenclature_item_id: commodity.goods_nomenclature_item_id,
+                           self_text: 'Bed linen commodity')
+        create(:tariff_knowledge_public_atar_ruling,
+               ref: '600015804',
+               commodity_code: '630210',
+               goods_nomenclature_item_id: commodity.goods_nomenclature_item_id,
+               keywords: Sequel.pg_array(['later keyword'], :text),
+               derived_facts: Sequel.pg_array(['later fact'], :text))
+        create(:tariff_knowledge_public_atar_ruling,
+               ref: '600004365',
+               commodity_code: '630210',
+               goods_nomenclature_item_id: commodity.goods_nomenclature_item_id,
+               keywords: Sequel.pg_array(['earlier keyword'], :text),
+               derived_facts: Sequel.pg_array(['earlier fact'], :text))
+
+        result = described_class.batch([self_text])
+
+        expect(result[commodity.goods_nomenclature_sid]).to include('ATAR keywords: earlier keyword, earlier fact, later keyword, later fact')
+      end
     end
   end
 end
