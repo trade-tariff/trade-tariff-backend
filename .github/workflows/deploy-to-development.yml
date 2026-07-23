@@ -39,3 +39,32 @@ jobs:
         with:
           service-names: backend-uk backend-xi worker-uk worker-xi
           environment: development
+
+  validate-cloudwatch-queries:
+    if: >
+      github.event_name == 'workflow_dispatch' ||
+      contains(github.event.pull_request.labels.*.name, 'needs-deployment')
+    needs: deploy
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7.0.0
+
+      - uses: ruby/setup-ruby@v1.319.0
+        with:
+          bundler-cache: true
+
+      - id: environment-config
+        uses: trade-tariff/trade-tariff-tools/.github/actions/configure-environment@main
+        with:
+          app-name: tariff-backend
+          environment: development
+
+      - uses: aws-actions/configure-aws-credentials@v6
+        with:
+          aws-region: eu-west-2
+          role-to-assume: ${{ steps.environment-config.outputs.deploy-role-arn }}
+
+      - name: Validate CloudWatch queries
+        env:
+          CLOUDWATCH_QUERY_VALIDATION_LOG_GROUP: ${{ steps.environment-config.outputs.log-group }}
+        run: bundle exec rake search_analytics:validate_cloudwatch_queries
