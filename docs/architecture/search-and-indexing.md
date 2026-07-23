@@ -38,7 +38,9 @@ Generated self-texts, labels, and embeddings support search quality. The lifecyc
 Public ATAR keywords and derived facts are excluded from OpenSearch documents, OpenSearch queries, and composite search embeddings unless the `search_atars_enabled` admin configuration is enabled. The setting defaults to `false`. After changing it, rebuild both search representations so stored documents and embeddings match the configured value:
 
 ```sh
-bin/rake opensearch:search:recreate_all
+# Wait at least 150 seconds after changing the setting so the production
+# admin-configuration cache has expired.
+INDEX=Search::GoodsNomenclatureIndex bin/rake opensearch:search:recreate
 bin/rake search_embeddings:generate
 ```
 

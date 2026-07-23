@@ -10,7 +10,11 @@ module TariffKnowledge
 
     def call
       return [] if goods_nomenclature_item_ids.empty?
-      return [] unless AdminConfiguration.enabled?('search_atars_enabled')
+
+      unless AdminConfiguration.enabled?('search_atars_enabled')
+        log_disabled
+        return []
+      end
 
       sids = []
       goods_nomenclature_item_ids.each_slice(BATCH_SIZE) do |item_id_batch|
@@ -31,10 +35,14 @@ module TariffKnowledge
 
     attr_reader :goods_nomenclature_item_ids
 
+    def log_disabled
+      count = goods_nomenclature_item_ids.size
+      item_id_label = count == 1 ? 'item ID' : 'item IDs'
+      Rails.logger.info("Skipping public ATAR search refresh because search_atars_enabled is disabled (#{count} changed #{item_id_label})")
+    end
+
     def matching_goods_nomenclatures(item_ids)
       TimeMachine.now do
-        index = Search::GoodsNomenclatureIndex.new
-
         GoodsNomenclature
           .actual
           .with_leaf_column
@@ -45,12 +53,15 @@ module TariffKnowledge
     end
 
     def bulk_reindex(goods_nomenclatures)
-      index = Search::GoodsNomenclatureIndex.new
       TradeTariffBackend.search_client.bulk(
         {
           body: goods_nomenclatures.map { |goods_nomenclature| bulk_operation(index, goods_nomenclature) },
         }.merge(TradeTariffBackend.search_client.search_operation_options),
       )
+    end
+
+    def index
+      @index ||= Search::GoodsNomenclatureIndex.new
     end
 
     def bulk_operation(index, goods_nomenclature)

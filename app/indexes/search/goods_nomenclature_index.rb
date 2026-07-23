@@ -60,8 +60,12 @@ module Search
         { ancestors: %i[goods_nomenclature_descriptions search_references] },
         { heading: [:goods_nomenclature_descriptions] },
       ]
-      associations << :public_atar_rulings if AdminConfiguration.enabled?('search_atars_enabled')
+      associations << :public_atar_rulings if search_atars_enabled?
       associations
+    end
+
+    def serialize_record(record)
+      serializer.new(record, include_atars: search_atars_enabled?).as_json
     end
 
     def dataset_page(page_number)
@@ -79,6 +83,14 @@ module Search
       TimeMachine.now do
         (dataset.with_leaf_column.count / page_size.to_f).ceil
       end
+    end
+
+  private
+
+    def search_atars_enabled?
+      return @search_atars_enabled if defined?(@search_atars_enabled)
+
+      @search_atars_enabled = AdminConfiguration.enabled?('search_atars_enabled')
     end
   end
 end
