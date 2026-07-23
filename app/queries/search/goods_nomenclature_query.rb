@@ -123,23 +123,25 @@ module Search
     end
 
     def search_fields
-      fields = %w[
-        search_references^5
-        description^3
-        ancestor_descriptions
-      ]
-      fields << 'atar_keywords^2' if AdminConfiguration.enabled?('search_atars_enabled')
-
-      if SearchLabels.enabled?
-        fields += %w[
-          labels.known_brands^2
-          labels.colloquial_terms^2
-          labels.synonyms^1.5
-          labels.description
+      @search_fields ||= begin
+        fields = %w[
+          search_references^5
+          description^3
+          ancestor_descriptions
         ]
-      end
+        fields << 'atar_keywords^2' if AdminConfiguration.enabled?('search_atars_enabled')
 
-      fields
+        if SearchLabels.enabled?
+          fields += %w[
+            labels.known_brands^2
+            labels.colloquial_terms^2
+            labels.synonyms^1.5
+            labels.description
+          ]
+        end
+
+        fields
+      end
     end
 
     def hidden_goods_nomenclature_filter

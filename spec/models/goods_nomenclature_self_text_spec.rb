@@ -377,6 +377,31 @@ RSpec.describe GoodsNomenclatureSelfText do
       expect(record.reload.search_text).to include('ATAR keywords: cotton sheets')
     end
 
+    it 'removes public ATAR keywords after ATaR search is disabled' do
+      search_atars_enabled = true
+      allow(AdminConfiguration).to receive(:enabled?).and_call_original
+      allow(AdminConfiguration).to receive(:enabled?).with('search_atars_enabled') { search_atars_enabled }
+
+      commodity = create(:commodity, :with_description, :declarable, goods_nomenclature_item_id: '6302100000')
+      record = create(:goods_nomenclature_self_text,
+                      goods_nomenclature: commodity,
+                      goods_nomenclature_item_id: commodity.goods_nomenclature_item_id,
+                      self_text: 'Bed linen')
+      create(:tariff_knowledge_public_atar_ruling,
+             commodity_code: '630210',
+             goods_nomenclature_item_id: commodity.goods_nomenclature_item_id,
+             keywords: Sequel.pg_array(['cotton sheets'], :text))
+
+      described_class.regenerate_search_embeddings([record.goods_nomenclature_sid])
+      expect(record.reload.search_text).to include('ATAR keywords: cotton sheets')
+
+      search_atars_enabled = false
+      described_class.regenerate_search_embeddings([record.goods_nomenclature_sid])
+
+      expect(embedding_service).to have_received(:embed_batch).twice
+      expect(record.reload.search_text).not_to include('ATAR keywords:')
+    end
+
     it 're-embeds when search_embedding is nil even if search_text matches' do
       record = create(:goods_nomenclature_self_text, self_text: 'Widgets for manufacturing')
 

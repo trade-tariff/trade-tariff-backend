@@ -123,6 +123,16 @@ RSpec.describe Search::GoodsNomenclatureQuery do
       it 'has no must clauses in the inner bool' do
         expect(pos_clause.dig(:bool, :must)).to be_nil
       end
+
+      it 'resolves the ATaR configuration once per query' do
+        allow(AdminConfiguration).to receive(:enabled?).and_call_original
+        allow(Search::GoodsNomenclatureIndex).to receive(:new)
+          .and_return(instance_double(Search::GoodsNomenclatureIndex, name: 'goods-nomenclatures-test'))
+
+        query
+
+        expect(AdminConfiguration).to have_received(:enabled?).with('search_atars_enabled').once
+      end
     end
 
     context 'with noun + noun query (steel pipe)' do

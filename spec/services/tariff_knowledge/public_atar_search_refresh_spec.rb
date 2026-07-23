@@ -49,6 +49,7 @@ RSpec.describe TariffKnowledge::PublicAtarSearchRefresh do
     context 'when ATaR search is disabled' do
       before do
         allow(AdminConfiguration).to receive(:enabled?).with('search_atars_enabled').and_return(false)
+        allow(Rails.logger).to receive(:info)
       end
 
       it 'skips OpenSearch and embedding refreshes' do
@@ -59,6 +60,9 @@ RSpec.describe TariffKnowledge::PublicAtarSearchRefresh do
         expect(result).to eq([])
         expect(search_client).not_to have_received(:bulk)
         expect(ScoreLabelBatchWorker).not_to have_received(:perform_async)
+        expect(Rails.logger).to have_received(:info).with(
+          'Skipping public ATAR search refresh because search_atars_enabled is disabled (1 changed item ID)',
+        )
       end
     end
   end
