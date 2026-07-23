@@ -5,3 +5,6 @@ needs-deployment:
       - "db/**"
       - "Dockerfile"
       - "terraform/**"
+      - "app/services/search_analytics/**"
+      - "app/workers/search_analytics_snapshot_worker.rb"
+      - "lib/tasks/search_analytics.rake"

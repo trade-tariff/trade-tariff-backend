@@ -120,6 +120,30 @@ RSpec.describe SearchAnalytics::CloudwatchSnapshotQuery do
     )
   end
 
+  describe '.query_definitions' do
+    subject(:definitions) { described_class.query_definitions(period: '24h') }
+
+    it 'returns every named query executed by the snapshot' do
+      expect(definitions.keys).to contain_exactly(
+        'volume',
+        'zero_results',
+        'summary_all_latency',
+        'summary_view_latency',
+        'source_all_latency',
+        'source_view_latency',
+        'ai_cost_summary',
+        'ai_cost_trend',
+        'classic_selections',
+        'internal_selections',
+        'classic_selection_trend',
+        'internal_selection_trend',
+        'search_term_improvements',
+        'item_id_improvements',
+      )
+      expect(definitions.values).to all(be_a(String).and(be_present))
+    end
+  end
+
   it 'uses aggregate CloudWatch stats queries for the period window' do
     payloads
 

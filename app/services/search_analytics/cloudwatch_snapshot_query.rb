@@ -17,6 +17,8 @@ module SearchAnalytics
 
     def self.call(period:, client: self.client, now: Time.current) = new(period:, client:, now:).call
 
+    def self.query_definitions(period:) = new(period:, client: nil).query_definitions
+
     def self.client = @client ||= Aws::CloudWatchLogs::Client.new
 
     def initialize(period:, client: self.class.client, now: Time.current)
@@ -26,19 +28,23 @@ module SearchAnalytics
     end
 
     def call
+      queries = query_definitions
       aggregate = Aggregate.new(
         period:,
-        volume_rows: run_query(volume_query),
-        zero_result_rows: run_query(zero_result_query),
-        summary_all_latency_rows: run_query(summary_all_latency_query),
-        summary_view_latency_rows: run_query(summary_view_latency_query),
-        source_all_latency_rows: run_query(source_all_latency_query),
-        source_view_latency_rows: run_query(source_view_latency_query),
-        ai_cost_summary_rows: run_query(ai_cost_summary_query),
-        ai_cost_trend_rows: run_query(ai_cost_trend_query),
-        selection_rows: selection_queries.flat_map { |view, query| run_query(query).map { |row| row.merge('selectable_search_type' => view) } },
-        selection_trend_rows: selection_trend_queries.flat_map { |view, query| run_query(query).map { |row| row.merge('selectable_search_type' => view) } },
-        improvement_term_rows: improvement_term_queries.flat_map { |term_type, query| run_query(query).map { |row| row.merge('term_type' => term_type) } },
+        volume_rows: run_query(queries.fetch('volume')),
+        zero_result_rows: run_query(queries.fetch('zero_results')),
+        summary_all_latency_rows: run_query(queries.fetch('summary_all_latency')),
+        summary_view_latency_rows: run_query(queries.fetch('summary_view_latency')),
+        source_all_latency_rows: run_query(queries.fetch('source_all_latency')),
+        source_view_latency_rows: run_query(queries.fetch('source_view_latency')),
+        ai_cost_summary_rows: run_query(queries.fetch('ai_cost_summary')),
+        ai_cost_trend_rows: run_query(queries.fetch('ai_cost_trend')),
+        selection_rows: %w[classic internal].flat_map { |view| run_query(queries.fetch("#{view}_selections")).map { |row| row.merge('selectable_search_type' => view) } },
+        selection_trend_rows: %w[classic internal].flat_map { |view| run_query(queries.fetch("#{view}_selection_trend")).map { |row| row.merge('selectable_search_type' => view) } },
+        improvement_term_rows: {
+          'search_terms' => 'search_term_improvements',
+          'item_ids' => 'item_id_improvements',
+        }.flat_map { |term_type, name| run_query(queries.fetch(name)).map { |row| row.merge('term_type' => term_type) } },
       )
 
       VIEWS.index_with { |view| aggregate.payload_for(view) }
@@ -46,6 +52,25 @@ module SearchAnalytics
       raise
     rescue StandardError => e
       raise QueryError, e.message
+    end
+
+    def query_definitions
+      {
+        'volume' => volume_query,
+        'zero_results' => zero_result_query,
+        'summary_all_latency' => summary_all_latency_query,
+        'summary_view_latency' => summary_view_latency_query,
+        'source_all_latency' => source_all_latency_query,
+        'source_view_latency' => source_view_latency_query,
+        'ai_cost_summary' => ai_cost_summary_query,
+        'ai_cost_trend' => ai_cost_trend_query,
+        'classic_selections' => selection_queries.fetch('classic'),
+        'internal_selections' => selection_queries.fetch('internal'),
+        'classic_selection_trend' => selection_trend_queries.fetch('classic'),
+        'internal_selection_trend' => selection_trend_queries.fetch('internal'),
+        'search_term_improvements' => improvement_term_queries.fetch('search_terms'),
+        'item_id_improvements' => improvement_term_queries.fetch('item_ids'),
+      }
     end
 
   private
