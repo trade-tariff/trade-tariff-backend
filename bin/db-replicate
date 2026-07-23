@@ -18,6 +18,8 @@ declare -A ACCOUNT_IDS=(
 RETRY_MAX_ATTEMPTS=${RETRY_MAX_ATTEMPTS:-6}
 RETRY_INITIAL_DELAY_SECONDS=${RETRY_INITIAL_DELAY_SECONDS:-5}
 SERVICES_STOPPED=false
+RESTORE_PHASE=before_restore
+REPLICATION_LOCK_PID=
 
 require_env() {
     local missing=false
@@ -160,11 +162,52 @@ set_desired_count_for_service_to() {
         set_desired_count_for_service_to_once "$service" "$desired_count"
 }
 
-restart_stopped_services_on_failure() {
+release_replication_lock() {
+    if [ -n "$REPLICATION_LOCK_PID" ]; then
+        kill "$REPLICATION_LOCK_PID" 2>/dev/null || true
+        wait "$REPLICATION_LOCK_PID" 2>/dev/null || true
+        REPLICATION_LOCK_PID=
+    fi
+}
+
+acquire_replication_lock() {
+    local acquired
+    local lock_query
+
+    lock_query="SELECT pg_try_advisory_lock(hashtextextended('trade-tariff-database-replication', 0));"
+
+    coproc REPLICATION_LOCK {
+        psql -X -qAt "$DATABASE_URL"
+    }
+
+    printf '%s\n' "$lock_query" >&"${REPLICATION_LOCK[1]}"
+
+    if ! IFS= read -r acquired <&"${REPLICATION_LOCK[0]}"; then
+        echo "Failed to acquire the database replication lock." >&2
+        release_replication_lock
+        return 1
+    fi
+
+    if [ "$acquired" != "t" ]; then
+        echo "Another database replication is already running." >&2
+        release_replication_lock
+        return 1
+    fi
+}
+
+cleanup_on_exit() {
     local status=$?
 
+    trap - EXIT
+    release_replication_lock
+
     if [ "$status" -ne 0 ] && [ "$SERVICES_STOPPED" = true ]; then
-        echo "Replication failed. Starting stopped services before exiting." >&2
+        if [ "$RESTORE_PHASE" = "post_restore" ]; then
+            echo "Post-restore maintenance failed after the core database committed. Leaving services stopped." >&2
+            exit "$status"
+        fi
+
+        echo "Replication failed before post-restore maintenance committed. Starting stopped services before exiting." >&2
 
         if ! start_services; then
             echo "Failed to restart all stopped services after replication failure." >&2
@@ -174,7 +217,7 @@ restart_stopped_services_on_failure() {
     exit "$status"
 }
 
-trap restart_stopped_services_on_failure EXIT
+trap cleanup_on_exit EXIT
 
 stop_services() {
   local desired_count
@@ -209,10 +252,41 @@ download_database_dump_once() {
     "$DB_DUMP_SERVER""$RESTORE_FILE"
 }
 
-restore_database_dump_once() {
+stream_core_database_dump() {
   local dump_file=$1
 
-  gzip -dc "$dump_file" | psql --single-transaction -v ON_ERROR_STOP=1 "$DATABASE_URL"
+  gzip -dc "$dump_file" |
+    awk '
+      /^-- TRADE_TARIFF_POST_RESTORE_START$/ {
+        post_restore = 1
+        next
+      }
+
+      !post_restore && /^VACUUM FULL ANALYZE;$/ {
+        post_restore = 1
+      }
+
+      !post_restore &&
+      /^DROP EVENT TRIGGER / &&
+      !/^DROP EVENT TRIGGER IF EXISTS / {
+        sub(/^DROP EVENT TRIGGER /, "DROP EVENT TRIGGER IF EXISTS ")
+      }
+
+      !post_restore {
+        print
+      }
+    '
+}
+
+restore_core_database_dump() {
+  local dump_file=$1
+
+  stream_core_database_dump "$dump_file" |
+    psql --single-transaction -v ON_ERROR_STOP=1 "$DATABASE_URL"
+}
+
+run_post_restore_maintenance() {
+  psql -v ON_ERROR_STOP=1 "$DATABASE_URL" < "$(dirname "$0")/after.sql"
 }
 
 cleanup_dump_file() {
@@ -234,13 +308,25 @@ restore_database() {
     return "$status"
   }
 
-  retry_command "Restore database" restore_database_dump_once "$dump_file" || {
+  RESTORE_PHASE=core_restore
+
+  restore_core_database_dump "$dump_file" || {
     status=$?
     cleanup_dump_file "$dump_file" || \
       echo "Failed to remove temporary database dump $dump_file." >&2
     return "$status"
   }
 
+  RESTORE_PHASE=post_restore
+
+  run_post_restore_maintenance || {
+    status=$?
+    cleanup_dump_file "$dump_file" || \
+      echo "Failed to remove temporary database dump $dump_file." >&2
+    return "$status"
+  }
+
+  RESTORE_PHASE=ready
   cleanup_dump_file "$dump_file"
 }
 
@@ -296,6 +382,9 @@ sync_delta_files() {
   retry_command "Sync cds delta files from $1 to $2" \
     aws s3 sync "$source_bucket/data/cds/" "$target_bucket/data/cds/"
 }
+
+echo "Acquiring database replication lock"
+acquire_replication_lock
 
 echo "Stopping services $SERVICES"
 stop_services
