@@ -43,7 +43,10 @@ jobs:
   validate-cloudwatch-queries:
     if: >
       github.event_name == 'workflow_dispatch' ||
-      contains(github.event.pull_request.labels.*.name, 'needs-deployment')
+      (
+        github.event.pull_request.head.repo.full_name == github.repository &&
+        contains(github.event.pull_request.labels.*.name, 'needs-deployment')
+      )
     needs: deploy
     runs-on: ubuntu-latest
     steps:

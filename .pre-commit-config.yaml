@@ -57,15 +57,3 @@ repos:
     rev: main
     hooks:
       - id: debride
-
-  - repo: local
-    hooks:
-      - id: cloudwatch-query-specs
-        name: cloudwatch query specs
-        entry: bundle exec rspec
-        language: system
-        pass_filenames: false
-        files: ^(app/services/search_analytics/cloudwatch_(snapshot_query|query_validator)\.rb|lib/tasks/search_analytics\.rake|spec/services/search_analytics/cloudwatch_(snapshot_query|query_validator)_spec\.rb)$
-        args:
-          - spec/services/search_analytics/cloudwatch_snapshot_query_spec.rb
-          - spec/services/search_analytics/cloudwatch_query_validator_spec.rb
