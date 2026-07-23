@@ -8,7 +8,7 @@
   default: expand_search_enabled
 - name: expand_search_decider
   config_type: options
-  description: "Guided-search expansion strategy. V1 selects AI expansion from casing and retrieval evidence. V2 applies targeted lexical synonyms and selects AI expansion from retrieval evidence without using casing."
+  description: "Guided-search expansion strategy. V1 selects AI expansion from casing and retrieval evidence. V2 applies targeted retrieval synonyms and selects AI expansion from retrieval evidence without using casing."
   expansion_decider_options: true
 - name: expand_search_when_needed_enabled
   config_type: boolean

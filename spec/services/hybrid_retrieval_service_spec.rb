@@ -76,27 +76,27 @@ RSpec.describe HybridRetrievalService do
       )
     end
 
-    it 'uses a separate lexical query for OpenSearch while preserving the semantic vector query' do
+    it 'uses the synonym-expanded query for both retrieval legs while preserving the semantic query' do
       as_of = Time.zone.today
-      lexical_query = 'HEPA filter high efficiency particulate air filter'
+      retrieval_query = 'HEPA filter high efficiency particulate air filter'
 
       result = described_class.call(
         query: 'HEPA filter',
         expanded_query: 'HEPA filter',
-        lexical_query: lexical_query,
+        retrieval_query: retrieval_query,
         as_of: as_of,
       )
 
       expect(OpensearchRetrievalService).to have_received(:call).with(
-        query: 'HEPA filter', expanded_query: lexical_query, as_of: as_of, request_id: nil, limit: 30,
+        query: 'HEPA filter', expanded_query: retrieval_query, as_of: as_of, request_id: nil, limit: 30,
       )
-      expect(VectorRetrievalService).to have_received(:call).with(query: 'HEPA filter', limit: 30, request_id: nil)
+      expect(VectorRetrievalService).to have_received(:call).with(query: retrieval_query, limit: 30, request_id: nil)
       expect(result.expanded_query).to eq('HEPA filter')
       expect(Search::Instrumentation).to have_received(:retrieval_results_returned).with(
-        hash_including(stage: 'before_rrf', leg: :opensearch, effective_query: lexical_query),
+        hash_including(stage: 'before_rrf', leg: :opensearch, effective_query: retrieval_query),
       )
       expect(Search::Instrumentation).to have_received(:retrieval_results_returned).with(
-        hash_including(stage: 'before_rrf', leg: :vector, effective_query: 'HEPA filter'),
+        hash_including(stage: 'before_rrf', leg: :vector, effective_query: retrieval_query),
       )
     end
 

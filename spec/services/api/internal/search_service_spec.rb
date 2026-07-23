@@ -77,6 +77,18 @@ RSpec.describe Api::Internal::SearchService do
       expect(captured_configuration.fetch(:hybrid_query_guardrail_enabled)).to be(false)
     end
 
+    it 'reports the effective decider when the configured version is invalid' do
+      allow(AdminConfiguration).to receive(:option_value).with('expand_search_decider').and_return('unknown')
+      allow(Search::Instrumentation).to receive(:interactive_configuration_used)
+      allow(TradeTariffBackend.search_client).to receive(:search).and_return({ 'hits' => { 'hits' => [] } })
+
+      described_class.new(q: 'multimeter leads').call
+
+      expect(Search::Instrumentation).to have_received(:interactive_configuration_used).with(
+        hash_including(configuration: hash_including(expand_search_decider: 'v1')),
+      )
+    end
+
     context 'when exact match via search_reference suggestion' do
       let!(:heading) do
         create(:heading, :with_description,
@@ -798,7 +810,7 @@ RSpec.describe Api::Internal::SearchService do
         expect(result[:data].first[:attributes][:goods_nomenclature_item_id]).to eq('3304990000')
       end
 
-      it 'uses lexical synonyms before retaining evidence-based AI fallback with the v2 decider' do
+      it 'uses retrieval synonyms before retaining evidence-based AI fallback with the v2 decider' do
         allow(AdminConfiguration).to receive(:option_value).with('expand_search_decider').and_return('v2')
         allow(Search::SynonymExpander).to receive(:call) do |query|
           query == 'CBD oil' ? 'CBD oil cannabidiol' : query
@@ -820,7 +832,7 @@ RSpec.describe Api::Internal::SearchService do
         )
       end
 
-      it 'does not apply lexical synonyms with the v1 decider' do
+      it 'does not apply retrieval synonyms with the v1 decider' do
         allow(AdminConfiguration).to receive(:option_value).with('expand_search_decider').and_return('v1')
         allow(Search::SynonymExpander).to receive(:call)
 
@@ -1306,6 +1318,22 @@ RSpec.describe Api::Internal::SearchService do
         )
       end
 
+      it 'applies v2 synonyms to vector retrieval while preserving the semantic query' do
+        allow(AdminConfiguration).to receive(:option_value).with('expand_search_decider').and_return('v2')
+        allow(Search::SynonymExpander).to receive(:call)
+          .with('pure-bred breeding horses')
+          .and_return('pure-bred breeding horses equines')
+
+        described_class.new(q: 'horses').call
+
+        expect(VectorRetrievalService).to have_received(:call).with(
+          hash_including(query: 'pure-bred breeding horses equines'),
+        )
+        expect(InteractiveSearchService).to have_received(:call).with(
+          hash_including(expanded_query: 'pure-bred breeding horses'),
+        )
+      end
+
       it 'does not call OpenSearch' do
         allow(TradeTariffBackend.search_client).to receive(:search)
 
@@ -1448,14 +1476,14 @@ RSpec.describe Api::Internal::SearchService do
               .and_return('horses equines')
           end
 
-          it 'passes targeted synonyms to the lexical leg without changing the semantic query' do
+          it 'passes targeted synonyms to both retrieval legs without changing the semantic query' do
             described_class.new(q: 'horses').call
 
             expect(HybridRetrievalService).to have_received(:call).with(
               hash_including(
                 query: 'horses',
                 expanded_query: 'horses',
-                lexical_query: 'horses equines',
+                retrieval_query: 'horses equines',
               ),
             )
             expect(ExpandSearchQueryService).not_to have_received(:call)

@@ -1,14 +1,14 @@
-# Guided-search lexical synonyms
+# Guided-search retrieval synonyms
 #
 # Keep rules contextual. Broad acronym rules can dilute search relevance.
 # The original phrase is retained and alternatives are appended for OpenSearch
-# only. Vector retrieval continues to use the unmodified semantic query.
+# and vector retrieval. Interactive questioning keeps the semantic query.
 #
 # Equivalent rule:
 #   term, equivalent term
 #
 # Directional rule:
-#   input phrase => input phrase, lexical alternative
+#   input phrase => input phrase, synonym alternative
 
 ABV => ABV, alcohol by volume
 HEPA filter => HEPA filter, high efficiency particulate air filter
