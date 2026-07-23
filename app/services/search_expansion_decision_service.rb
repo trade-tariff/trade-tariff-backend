@@ -14,6 +14,11 @@ class SearchExpansionDecisionService
     new(query:, results:, request_id:).call
   end
 
+  def self.decider_version
+    configured_version = AdminConfiguration.option_value('expand_search_decider')
+    DECIDERS.key?(configured_version) ? configured_version : 'v1'
+  end
+
   def initialize(query:, results: nil, request_id: nil)
     @query = query.to_s
     @results = Array(results)
@@ -57,8 +62,7 @@ private
   end
 
   def decider_version
-    configured_version = AdminConfiguration.option_value('expand_search_decider')
-    DECIDERS.key?(configured_version) ? configured_version : 'v1'
+    self.class.decider_version
   end
 
   def result(expand, reason)

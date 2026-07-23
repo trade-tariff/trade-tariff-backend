@@ -103,11 +103,11 @@ Validate the behaviour in staging before production. Record the timeout count/ra
 The `expand_search_decider` admin configuration selects the conditional-expansion strategy:
 
 - `v1` is the default. It preserves the existing behaviour, selecting AI expansion for uppercase acronym-like tokens as well as weak retrieval evidence.
-- `v2` applies the targeted rules in `config/search_synonyms.txt` to the OpenSearch query and selects AI expansion from retrieval evidence without treating casing as a signal.
+- `v2` applies the targeted rules in `config/search_synonyms.txt` to retrieval queries and selects AI expansion from retrieval evidence without treating casing as a signal.
 
 Selecting `v2` does not disable AI expansion. Queries with no significant tagged words, too few preliminary results, or a low top score continue through the normal AI-expansion path and retain the five-second deadline.
 
-In hybrid retrieval, mechanical synonyms affect only the lexical OpenSearch leg. The vector leg and interactive-search context retain the original query, or the AI-expanded semantic query when evidence-based expansion runs. This prevents generic words from a synonym’s full form from shifting the query embedding.
+Mechanical synonyms are applied to both OpenSearch and vector retrieval. The interactive-search context retains the original query, or the AI-expanded semantic query when evidence-based expansion runs. Per-leg retrieval telemetry records the effective synonym-expanded query.
 
 The synonym file accepts equivalent rules and directional rules:
 

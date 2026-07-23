@@ -198,8 +198,9 @@ module Api
       end
 
       def vector_short_list(search_expanded_query)
+        search_retrieval_query = retrieval_query_with_synonyms(search_expanded_query)
         goods_nomenclatures = VectorRetrievalService.call(
-          query: search_expanded_query,
+          query: search_retrieval_query,
           limit: opensearch_result_limit,
           filter_prefixes: filter_prefixes,
           request_id: request_id,
@@ -207,7 +208,7 @@ module Api
         ::Search::Instrumentation.retrieval_results_returned(
           request_id: request_id,
           query: q,
-          effective_query: search_expanded_query,
+          effective_query: search_retrieval_query,
           search_type: 'interactive',
           retrieval_method: 'vector',
           stage: 'returned',
@@ -226,9 +227,9 @@ module Api
       end
 
       def opensearch_short_list(search_expanded_query)
-        search_lexical_query = lexical_query(search_expanded_query)
+        search_retrieval_query = retrieval_query_with_synonyms(search_expanded_query)
         result = OpensearchRetrievalService.call(
-          query: q, expanded_query: search_lexical_query,
+          query: q, expanded_query: search_retrieval_query,
           as_of: as_of, request_id: request_id, limit: opensearch_result_limit,
           filter_prefixes: filter_prefixes
         )
@@ -254,10 +255,10 @@ module Api
       end
 
       def hybrid_short_list(search_expanded_query)
-        search_lexical_query = lexical_query(search_expanded_query)
+        search_retrieval_query = retrieval_query_with_synonyms(search_expanded_query)
         result = HybridRetrievalService.call(
           query: q, expanded_query: search_expanded_query,
-          lexical_query: search_lexical_query,
+          retrieval_query: search_retrieval_query,
           as_of: as_of, request_id: request_id, limit: opensearch_result_limit,
           filter_prefixes: filter_prefixes, iteration: search_iteration,
           search_type: 'interactive'
@@ -297,14 +298,14 @@ module Api
           AdminConfiguration.enabled?('expand_search_when_needed_enabled')
       end
 
-      def lexical_query(search_expanded_query)
+      def retrieval_query_with_synonyms(search_expanded_query)
         return search_expanded_query unless expansion_decider_version == 'v2'
 
         ::Search::SynonymExpander.call(search_expanded_query)
       end
 
       def expansion_decider_version
-        @expansion_decider_version ||= AdminConfiguration.option_value('expand_search_decider')
+        @expansion_decider_version ||= SearchExpansionDecisionService.decider_version
       end
 
       def normalised_query

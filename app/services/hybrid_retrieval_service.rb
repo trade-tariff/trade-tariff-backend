@@ -3,14 +3,14 @@ class HybridRetrievalService
   LegResult = Data.define(:value, :error)
   Result = Data.define(:results, :expanded_query, :source_results)
 
-  def self.call(query:, as_of:, expanded_query: nil, lexical_query: nil, request_id: nil, limit: 30, filter_prefixes: [], iteration: nil, search_type: 'interactive')
-    new(query:, as_of:, expanded_query:, lexical_query:, request_id:, limit:, filter_prefixes:, iteration:, search_type:).call
+  def self.call(query:, as_of:, expanded_query: nil, retrieval_query: nil, request_id: nil, limit: 30, filter_prefixes: [], iteration: nil, search_type: 'interactive')
+    new(query:, as_of:, expanded_query:, retrieval_query:, request_id:, limit:, filter_prefixes:, iteration:, search_type:).call
   end
 
-  def initialize(query:, as_of:, expanded_query: nil, lexical_query: nil, request_id: nil, limit: 30, filter_prefixes: [], iteration: nil, search_type: 'interactive')
+  def initialize(query:, as_of:, expanded_query: nil, retrieval_query: nil, request_id: nil, limit: 30, filter_prefixes: [], iteration: nil, search_type: 'interactive')
     @query = query
     @expanded_query = expanded_query.presence || query
-    @lexical_query = lexical_query.presence || @expanded_query
+    @retrieval_query = retrieval_query.presence || @expanded_query
     @as_of = as_of
     @request_id = request_id
     @limit = limit
@@ -84,7 +84,7 @@ private
     Search::Instrumentation.retrieval_results_returned(
       request_id: @request_id,
       query: @query,
-      effective_query: effective_query_for(leg),
+      effective_query: @retrieval_query,
       search_type: @search_type,
       retrieval_method: 'hybrid',
       stage: 'before_rrf',
@@ -109,7 +109,7 @@ private
   def opensearch_args
     args = {
       query: @query,
-      expanded_query: @lexical_query,
+      expanded_query: @retrieval_query,
       as_of: @as_of,
       request_id: @request_id,
       limit: @limit,
@@ -119,13 +119,9 @@ private
   end
 
   def vector_args
-    args = { query: @expanded_query, limit: @limit, request_id: @request_id }
+    args = { query: @retrieval_query, limit: @limit, request_id: @request_id }
     args[:filter_prefixes] = @filter_prefixes if @filter_prefixes.present?
     args
-  end
-
-  def effective_query_for(leg)
-    leg == :opensearch ? @lexical_query : @expanded_query
   end
 
   def rrf_merge(opensearch_items, vector_items)
