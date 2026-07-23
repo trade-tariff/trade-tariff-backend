@@ -3,9 +3,9 @@
 module SearchAnalytics
   class CloudwatchQueryValidator
     LOOKBACK = 5.minutes
-    QUERY_MAX_POLLS = 60
-    QUERY_POLL_INTERVAL_SECONDS = 1
-    TERMINAL_FAILURE_STATUSES = %w[Failed Cancelled Timeout Unknown].freeze
+    QUERY_MAX_POLLS = CloudwatchSnapshotQuery::QUERY_MAX_POLLS
+    QUERY_POLL_INTERVAL_SECONDS = CloudwatchSnapshotQuery::QUERY_POLL_INTERVAL_SECONDS
+    TERMINAL_FAILURE_STATUSES = CloudwatchSnapshotQuery::TERMINAL_FAILURE_STATUSES
     ValidationError = Class.new(StandardError)
     QueryError = Class.new(StandardError)
 
@@ -67,12 +67,12 @@ module SearchAnalytics
         status = client.get_query_results(query_id:).status
         return if status == 'Complete'
 
-        raise QueryError, "CloudWatch query #{status}" if TERMINAL_FAILURE_STATUSES.include?(status)
+        raise QueryError, "CloudWatch query #{status} (query ID: #{query_id})" if TERMINAL_FAILURE_STATUSES.include?(status)
 
         Kernel.sleep QUERY_POLL_INTERVAL_SECONDS
       end
 
-      raise QueryError, 'CloudWatch query timed out while polling'
+      raise QueryError, "CloudWatch query timed out while polling (query ID: #{query_id})"
     end
 
     def compile_error_message(error)

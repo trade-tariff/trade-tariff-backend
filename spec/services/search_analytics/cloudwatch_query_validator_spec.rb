@@ -24,6 +24,11 @@ RSpec.describe SearchAnalytics::CloudwatchQueryValidator do
     )
   end
 
+  it 'uses the snapshot query polling policy' do
+    expect(described_class::QUERY_MAX_POLLS).to eq(SearchAnalytics::CloudwatchSnapshotQuery::QUERY_MAX_POLLS)
+    expect(described_class::QUERY_POLL_INTERVAL_SECONDS).to eq(SearchAnalytics::CloudwatchSnapshotQuery::QUERY_POLL_INTERVAL_SECONDS)
+  end
+
   it 'executes every distinct generated query against development AWS' do
     expect(validate).to be(true)
     expect(SearchAnalytics::CloudwatchSnapshotQuery).to have_received(:query_definitions).with(period: '24h')
@@ -67,9 +72,24 @@ RSpec.describe SearchAnalytics::CloudwatchQueryValidator do
 
     expect { validate }.to raise_error(
       described_class::ValidationError,
-      a_string_including('24h/volume: CloudWatch query Failed'),
+      a_string_including('24h/volume: CloudWatch query Failed (query ID: query-id)'),
     )
     expect(client).to have_received(:start_query).twice
+  end
+
+  it 'reports a timeout after the configured polling limit' do
+    stub_const("#{described_class}::QUERY_MAX_POLLS", 2)
+    allow(Kernel).to receive(:sleep)
+    allow(client).to receive(:get_query_results).and_return(
+      instance_double(Aws::CloudWatchLogs::Types::GetQueryResultsResponse, status: 'Running'),
+    )
+
+    expect { validate }.to raise_error(
+      described_class::ValidationError,
+      a_string_including('CloudWatch query timed out while polling (query ID: query-id)'),
+    )
+    expect(client).to have_received(:get_query_results).exactly(4).times
+    expect(Kernel).to have_received(:sleep).exactly(4).times
   end
 
   it 'includes AWS compile details for malformed queries' do
