@@ -10,6 +10,7 @@ module TariffKnowledge
 
     def call
       return [] if goods_nomenclature_item_ids.empty?
+      return [] unless AdminConfiguration.enabled?('search_atars_enabled')
 
       sids = []
       goods_nomenclature_item_ids.each_slice(BATCH_SIZE) do |item_id_batch|

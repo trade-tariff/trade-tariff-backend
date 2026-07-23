@@ -78,6 +78,8 @@ module Search
     end
 
     def atar_keywords_part
+      return unless AdminConfiguration.enabled?('search_atars_enabled')
+
       keywords = public_atar_rulings.flat_map(&:search_terms).compact_blank.uniq
       keywords.presence
     end

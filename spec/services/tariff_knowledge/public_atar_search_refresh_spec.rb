@@ -5,6 +5,8 @@ RSpec.describe TariffKnowledge::PublicAtarSearchRefresh do
     before do
       allow(TradeTariffBackend).to receive(:search_client).and_return(search_client)
       allow(ScoreLabelBatchWorker).to receive(:perform_async)
+      allow(AdminConfiguration).to receive(:enabled?).and_call_original
+      allow(AdminConfiguration).to receive(:enabled?).with('search_atars_enabled').and_return(true)
     end
 
     it 'indexes matching goods nomenclatures and queues embedding regeneration' do
@@ -42,6 +44,22 @@ RSpec.describe TariffKnowledge::PublicAtarSearchRefresh do
       expect(result).to eq([commodity.goods_nomenclature_sid])
       expect(search_client).to have_received(:bulk).once
       expect(ScoreLabelBatchWorker).to have_received(:perform_async).with([commodity.goods_nomenclature_sid])
+    end
+
+    context 'when ATaR search is disabled' do
+      before do
+        allow(AdminConfiguration).to receive(:enabled?).with('search_atars_enabled').and_return(false)
+      end
+
+      it 'skips OpenSearch and embedding refreshes' do
+        commodity = create(:commodity, :with_description, :declarable, goods_nomenclature_item_id: '6302100000')
+
+        result = described_class.call([commodity.goods_nomenclature_item_id])
+
+        expect(result).to eq([])
+        expect(search_client).not_to have_received(:bulk)
+        expect(ScoreLabelBatchWorker).not_to have_received(:perform_async)
+      end
     end
   end
 end

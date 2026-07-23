@@ -51,9 +51,16 @@ RSpec.describe Search::GoodsNomenclatureIndex do
         :goods_nomenclature_indents,
         :goods_nomenclature_descriptions,
         :goods_nomenclature_label,
-        :public_atar_rulings,
         :search_references,
       )
+      expect(associations).not_to include(:public_atar_rulings)
+    end
+
+    it 'includes public ATAR rulings when ATaR search is enabled' do
+      allow(AdminConfiguration).to receive(:enabled?).and_call_original
+      allow(AdminConfiguration).to receive(:enabled?).with('search_atars_enabled').and_return(true)
+
+      expect(instance.eager_load.flatten).to include(:public_atar_rulings)
     end
 
     it 'includes ancestors with descriptions' do

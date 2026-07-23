@@ -126,9 +126,9 @@ module Search
       fields = %w[
         search_references^5
         description^3
-        atar_keywords^2
         ancestor_descriptions
       ]
+      fields << 'atar_keywords^2' if AdminConfiguration.enabled?('search_atars_enabled')
 
       if SearchLabels.enabled?
         fields += %w[

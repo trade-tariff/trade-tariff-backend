@@ -332,7 +332,31 @@ RSpec.describe GoodsNomenclatureSelfText do
       expect(embedding_service).to have_received(:embed_batch).twice
     end
 
-    it 're-embeds when public ATAR keywords change the composite search text' do
+    it 'does not re-embed when public ATAR keywords change while ATaR search is disabled' do
+      commodity = create(:commodity, :with_description, :declarable, goods_nomenclature_item_id: '6302100000')
+      record = create(:goods_nomenclature_self_text,
+                      goods_nomenclature: commodity,
+                      goods_nomenclature_item_id: commodity.goods_nomenclature_item_id,
+                      self_text: 'Bed linen')
+
+      described_class.regenerate_search_embeddings([record.goods_nomenclature_sid])
+      expect(embedding_service).to have_received(:embed_batch).once
+
+      create(:tariff_knowledge_public_atar_ruling,
+             commodity_code: '630210',
+             goods_nomenclature_item_id: commodity.goods_nomenclature_item_id,
+             keywords: Sequel.pg_array(['cotton sheets'], :text))
+
+      described_class.regenerate_search_embeddings([record.goods_nomenclature_sid])
+
+      expect(embedding_service).to have_received(:embed_batch).once
+      expect(record.reload.search_text).not_to include('ATAR keywords:')
+    end
+
+    it 're-embeds when public ATAR keywords change while ATaR search is enabled' do
+      allow(AdminConfiguration).to receive(:enabled?).and_call_original
+      allow(AdminConfiguration).to receive(:enabled?).with('search_atars_enabled').and_return(true)
+
       commodity = create(:commodity, :with_description, :declarable, goods_nomenclature_item_id: '6302100000')
       record = create(:goods_nomenclature_self_text,
                       goods_nomenclature: commodity,
