@@ -92,6 +92,14 @@ RSpec.describe 'search experiment dashboard Terraform' do
     expect(module_main_tf).not_to include('stats count(*) as searches by event, search_type, bin(1h)')
   end
 
+  it 'gives detailed diagnostics enough horizontal space' do
+    expect(module_main_tf).to match(/width\s+= 12\n\s+height\s+= 6\n\s+properties = \{\n\s+title\s+= "Total AI Cost by Operation"/)
+    expect(module_main_tf).to match(/width\s+= 12\n\s+height\s+= 6\n\s+properties = \{\n\s+title\s+= "AI Token Totals by Operation"/)
+    expect(module_main_tf).to match(/width\s+= 16\n\s+height\s+= 6\n\s+properties = \{\n\s+title\s+= "AI API Latency \(p50\/p90\/p99\)"/)
+    expect(module_main_tf).to match(/width\s+= 24\n\s+height\s+= 6\n\s+properties = \{\n\s+title\s+= "Questions and Answers"/)
+    expect(module_main_tf).to include('| fields details.questions.0.question as question,')
+  end
+
   it 'uses a single outcome dimension for the result-type pie chart' do
     expect(module_main_tf).to include('stats count(*) as searches by final_result_type')
     expect(module_main_tf).not_to include('by search_type, results_type, final_result_type')
