@@ -36,7 +36,7 @@ resource "aws_cloudwatch_dashboard" "search_experiment" {
           properties = {
             markdown = join("\n", [
               "## Trade Tariff Search Production UAT",
-              "All widgets are scoped to the experiment label selected above. Requests and distinct guided-search browser sessions are reported separately. One browser session can contain multiple requests.",
+              "All widgets are scoped to the experiment label selected above. Requests and estimated distinct guided-search browser sessions are reported separately. One browser session can contain multiple requests. CloudWatch may approximate high-cardinality counts.",
               "**Start here:** Set the dashboard time range to the UAT window, then review volume, reliability, latency, outcomes, questions, search terms, and costs.",
               "**Investigate:** copy the request ID into admin search diagnostics to reconstruct an individual request.",
               "**Related:** [Search Overview](${local.search_dashboard_url}) | [Search Operations](${local.search_operations_dashboard_url}) | [Search Quality](${local.search_quality_dashboard_url})",
@@ -49,7 +49,7 @@ resource "aws_cloudwatch_dashboard" "search_experiment" {
           type   = "log"
           x      = 0
           y      = 2
-          width  = 6
+          width  = 8
           height = 6
           properties = {
             title  = "UAT Period Totals"
@@ -58,22 +58,23 @@ resource "aws_cloudwatch_dashboard" "search_experiment" {
             query  = <<-EOT
               ${local.source}
               | ${local.experiment_filter}
-              | filter (service = "search" and event in ["search_completed", "search_failed", "result_selected"])
-                  or (event = "guided_search.journey" and ispresent(browser_session_id))
-              | stats count_distinct(browser_session_id) as distinct_browser_sessions,
+              | fields case(event = "guided_search.journey" and schema_version = 1 and browser_session_id like /^v1:[0-9a-f]{64}$/, browser_session_id) as guided_search_browser_session_id
+              | filter (service = "search" and event in ["search_completed", "search_failed"])
+                  or ispresent(guided_search_browser_session_id)
+              | stats count_distinct(guided_search_browser_session_id) as estimated_browser_sessions,
                   sum(if(event = "search_completed", 1, 0)) as completed_requests,
                   sum(if(event = "search_failed", 1, 0)) as hard_failures,
                   sum(if(event = "search_completed" and final_result_type = "error", 1, 0)) as error_outcomes,
                   sum(if(event = "search_completed" and result_count = 0, 1, 0)) as zero_result_requests,
-                  sum(if(event = "result_selected", 1, 0)) as selections
+                  sum(if(event = "guided_search.journey" and outcome = "result_selected", 1, 0)) as selections
             EOT
           }
         },
         {
           type   = "log"
-          x      = 6
+          x      = 8
           y      = 2
-          width  = 9
+          width  = 8
           height = 6
           properties = {
             title  = "Hourly Request Volume"
@@ -89,9 +90,9 @@ resource "aws_cloudwatch_dashboard" "search_experiment" {
         },
         {
           type   = "log"
-          x      = 15
+          x      = 16
           y      = 2
-          width  = 9
+          width  = 8
           height = 6
           properties = {
             title  = "E2E Latency (p50/p90/p99)"
@@ -334,8 +335,9 @@ resource "aws_cloudwatch_dashboard" "search_experiment" {
             region = var.region
             query  = <<-EOT
               ${local.source}
-              | ${local.search_filter} and event = "result_selected"
-              | stats count(*) as selections by goods_nomenclature_item_id, goods_nomenclature_class
+              | ${local.experiment_filter} and event = "guided_search.journey" and schema_version = 1 and outcome = "result_selected"
+              | filter browser_session_id like /^v1:[0-9a-f]{64}$/
+              | stats count(*) as selections by goods_nomenclature_item_id, confidence
               | sort selections desc
               | limit 30
             EOT
@@ -355,7 +357,7 @@ resource "aws_cloudwatch_dashboard" "search_experiment" {
             query  = <<-EOT
               ${local.source}
               | ${local.experiment_filter}
-              | fields @timestamp, request_id, service, event, event_kind, search_type, query, effective_query, question_count, answer_count, total_questions, result_count, results_type, final_result_type, total_duration_ms, duration_ms, operation, model, total_tokens, total_cost_usd, error_message, details
+              | fields @timestamp, request_id, service, event, schema_version, outcome, destination, result_rank, confidence, used_dont_know, client_elapsed_ms, client_navigation_ms, event_kind, search_type, query, effective_query, question_count, option_count, answer_count, total_questions, result_count, results_type, final_result_type, total_duration_ms, duration_ms, operation, model, total_tokens, total_cost_usd, error_message, details
               | sort @timestamp desc
               | limit 100
             EOT
