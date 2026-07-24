@@ -117,10 +117,16 @@ RSpec.describe 'search experiment dashboard Terraform' do
     expect(recent_uat_events_query).not_to include('browser_session_id')
   end
 
-  it 'shows provider latency by operation so slow requests can be diagnosed' do
+  it 'shows overall provider latency percentiles as a comparable time series' do
     expect(module_main_tf).to include('AI API Latency (p50/p90/p99)')
     expect(module_main_tf).to include('pct(duration_ms, 50) as p50')
-    expect(module_main_tf).to include('by operation, bin(1h)')
+    expect(widget_query('AI API Latency (p50/p90/p99)')).to include('by bin(1h)')
+    expect(widget_query('AI API Latency (p50/p90/p99)')).not_to include('by operation, bin(1h)')
+  end
+
+  it 'renders latency percentiles together instead of splitting them into dimension panes' do
+    expect(widget_query('E2E Latency (p50/p90/p99)')).to include('by bin(1h)')
+    expect(widget_query('E2E Latency (p50/p90/p99)')).not_to include('by search_type, bin(1h)')
   end
 
   it 'uses renderable hourly request volume series' do
