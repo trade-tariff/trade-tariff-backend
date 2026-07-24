@@ -59,47 +59,47 @@ RSpec.describe SearchAnalytics::CloudwatchSnapshotQuery do
       ),
       complete_response(
         result_row(
-          'total_cost_usd' => '0.0102',
-          'average_cost_usd' => '0.0051',
-          'p50_cost_usd' => '0.0048',
-          'p90_cost_usd' => '0.0075',
-          'assisted_searches' => '2',
-          'priced_calls' => '4',
-          'unpriced_calls' => '1',
+          'aggregated_total_cost_usd' => '0.0102',
+          'aggregated_average_cost_usd' => '0.0051',
+          'aggregated_p50_cost_usd' => '0.0048',
+          'aggregated_p90_cost_usd' => '0.0075',
+          'aggregated_assisted_searches' => '2',
+          'aggregated_priced_calls' => '4',
+          'aggregated_unpriced_calls' => '1',
         ),
       ),
       complete_response(
         result_row(
           '@timestamp' => '2026-06-10 09:00:00.000',
           'event_kind' => 'interactive_search',
-          'input_cost_usd' => '0.004',
-          'cached_input_cost_usd' => '0.0002',
-          'output_cost_usd' => '0.006',
-          'embedding_cost_usd' => '0',
-          'total_cost_usd' => '0.01',
-          'input_tokens' => '2000',
-          'cached_input_tokens' => '400',
-          'output_tokens' => '500',
-          'total_tokens' => '2500',
-          'calls' => '4',
-          'priced_calls' => '3',
-          'unpriced_calls' => '1',
+          'aggregated_input_cost_usd' => '0.004',
+          'aggregated_cached_input_cost_usd' => '0.0002',
+          'aggregated_output_cost_usd' => '0.006',
+          'aggregated_embedding_cost_usd' => '0',
+          'aggregated_total_cost_usd' => '0.01',
+          'aggregated_input_tokens' => '2000',
+          'aggregated_cached_input_tokens' => '400',
+          'aggregated_output_tokens' => '500',
+          'aggregated_total_tokens' => '2500',
+          'aggregated_calls' => '4',
+          'aggregated_priced_calls' => '3',
+          'aggregated_unpriced_calls' => '1',
         ),
         result_row(
           '@timestamp' => '2026-06-10 09:00:00.000',
           'event_kind' => 'vector_search_query_embedding',
-          'input_cost_usd' => '0',
-          'cached_input_cost_usd' => '0',
-          'output_cost_usd' => '0',
-          'embedding_cost_usd' => '0.0002',
-          'total_cost_usd' => '0.0002',
-          'input_tokens' => '10000',
-          'cached_input_tokens' => '0',
-          'output_tokens' => '0',
-          'total_tokens' => '10000',
-          'calls' => '1',
-          'priced_calls' => '1',
-          'unpriced_calls' => '0',
+          'aggregated_input_cost_usd' => '0',
+          'aggregated_cached_input_cost_usd' => '0',
+          'aggregated_output_cost_usd' => '0',
+          'aggregated_embedding_cost_usd' => '0.0002',
+          'aggregated_total_cost_usd' => '0.0002',
+          'aggregated_input_tokens' => '10000',
+          'aggregated_cached_input_tokens' => '0',
+          'aggregated_output_tokens' => '0',
+          'aggregated_total_tokens' => '10000',
+          'aggregated_calls' => '1',
+          'aggregated_priced_calls' => '1',
+          'aggregated_unpriced_calls' => '0',
         ),
       ),
       complete_response(
@@ -204,7 +204,11 @@ RSpec.describe SearchAnalytics::CloudwatchSnapshotQuery do
     )
     expect(client).to have_received(:start_query).with(
       hash_including(
-        query_string: a_string_including('stats sum(request_cost_usd) as total_cost_usd'),
+        query_string: a_string_including(
+          'stats sum(request_cost_usd) as aggregated_total_cost_usd',
+          'avg(request_cost_usd) as aggregated_average_cost_usd',
+          'count(*) as aggregated_assisted_searches',
+        ),
       ),
     ).once
     expect(client).to have_received(:start_query).with(
@@ -214,7 +218,11 @@ RSpec.describe SearchAnalytics::CloudwatchSnapshotQuery do
     ).twice
     expect(client).to have_received(:start_query).with(
       hash_including(
-        query_string: a_string_including('sum(embedding_cost_usd) as embedding_cost_usd'),
+        query_string: a_string_including(
+          'as model_embedding_cost_usd',
+          'sum(model_embedding_cost_usd) as aggregated_embedding_cost_usd',
+          'sum(known_cost_usd) as aggregated_total_cost_usd',
+        ),
       ),
     ).once
     expect(client).to have_received(:start_query).with(
