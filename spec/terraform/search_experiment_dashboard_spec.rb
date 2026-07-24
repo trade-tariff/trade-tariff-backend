@@ -26,7 +26,7 @@ RSpec.describe 'search experiment dashboard Terraform' do
 
   it 'covers experiment usage, performance, outcomes, questions, searches, and AI costs' do
     expect(module_main_tf).to include('UAT Period Totals')
-    expect(module_main_tf).to include('E2E Latency (p50/p90/p99)')
+    expect(module_main_tf).to include('E2E Latency in seconds (p50/p90/p99)')
     expect(module_main_tf).to include('Final Result Types')
     expect(module_main_tf).to include('Questions per Search')
     expect(module_main_tf).to include('Top Search Terms')
@@ -118,15 +118,15 @@ RSpec.describe 'search experiment dashboard Terraform' do
   end
 
   it 'shows overall provider latency percentiles as a comparable time series' do
-    expect(module_main_tf).to include('AI API Latency (p50/p90/p99)')
-    expect(module_main_tf).to include('pct(duration_ms, 50) as p50')
-    expect(widget_query('AI API Latency (p50/p90/p99)')).to include('by bin(1h)')
-    expect(widget_query('AI API Latency (p50/p90/p99)')).not_to include('by operation, bin(1h)')
+    expect(module_main_tf).to include('AI API Latency in seconds (p50/p90/p99)')
+    expect(module_main_tf).to include('pct(duration_ms / 1000, 50) as p50_seconds')
+    expect(widget_query('AI API Latency in seconds (p50/p90/p99)')).to include('by bin(1h)')
+    expect(widget_query('AI API Latency in seconds (p50/p90/p99)')).not_to include('by operation, bin(1h)')
   end
 
   it 'renders latency percentiles together instead of splitting them into dimension panes' do
-    expect(widget_query('E2E Latency (p50/p90/p99)')).to include('by bin(1h)')
-    expect(widget_query('E2E Latency (p50/p90/p99)')).not_to include('by search_type, bin(1h)')
+    expect(widget_query('E2E Latency in seconds (p50/p90/p99)')).to include('by bin(1h)')
+    expect(widget_query('E2E Latency in seconds (p50/p90/p99)')).not_to include('by search_type, bin(1h)')
   end
 
   it 'uses renderable hourly request volume series' do
@@ -140,7 +140,7 @@ RSpec.describe 'search experiment dashboard Terraform' do
     expect(module_main_tf).to match(/width\s+= 8\n\s+height\s+= 6\n\s+properties = \{\n\s+title\s+= "UAT Period Totals"/)
     expect(module_main_tf).to match(/width\s+= 12\n\s+height\s+= 6\n\s+properties = \{\n\s+title\s+= "Total AI Cost by Operation"/)
     expect(module_main_tf).to match(/width\s+= 12\n\s+height\s+= 6\n\s+properties = \{\n\s+title\s+= "AI Token Totals by Operation"/)
-    expect(module_main_tf).to match(/width\s+= 16\n\s+height\s+= 6\n\s+properties = \{\n\s+title\s+= "AI API Latency \(p50\/p90\/p99\)"/)
+    expect(module_main_tf).to match(/width\s+= 16\n\s+height\s+= 6\n\s+properties = \{\n\s+title\s+= "AI API Latency in seconds \(p50\/p90\/p99\)"/)
     expect(module_main_tf).to match(/width\s+= 24\n\s+height\s+= 6\n\s+properties = \{\n\s+title\s+= "Questions and Answers"/)
     expect(module_main_tf).to include('| fields details.questions.0.question as question,')
   end

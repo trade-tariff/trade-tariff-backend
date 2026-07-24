@@ -95,13 +95,13 @@ resource "aws_cloudwatch_dashboard" "search_experiment" {
           width  = 8
           height = 6
           properties = {
-            title  = "E2E Latency (p50/p90/p99)"
+            title  = "E2E Latency in seconds (p50/p90/p99)"
             region = var.region
             view   = "timeSeries"
             query  = <<-EOT
               ${local.source}
               | ${local.search_filter} and event = "search_completed"
-              | stats pct(total_duration_ms, 50) as p50, pct(total_duration_ms, 90) as p90, pct(total_duration_ms, 99) as p99 by bin(1h)
+              | stats pct(total_duration_ms / 1000, 50) as p50_seconds, pct(total_duration_ms / 1000, 90) as p90_seconds, pct(total_duration_ms / 1000, 99) as p99_seconds by bin(1h)
             EOT
           }
         },
@@ -174,13 +174,13 @@ resource "aws_cloudwatch_dashboard" "search_experiment" {
           width  = 16
           height = 6
           properties = {
-            title  = "AI API Latency (p50/p90/p99)"
+            title  = "AI API Latency in seconds (p50/p90/p99)"
             region = var.region
             view   = "timeSeries"
             query  = <<-EOT
               ${local.source}
               | ${local.search_filter} and event = "api_call_completed"
-              | stats pct(duration_ms, 50) as p50, pct(duration_ms, 90) as p90, pct(duration_ms, 99) as p99 by bin(1h)
+              | stats pct(duration_ms / 1000, 50) as p50_seconds, pct(duration_ms / 1000, 90) as p90_seconds, pct(duration_ms / 1000, 99) as p99_seconds by bin(1h)
             EOT
           }
         },

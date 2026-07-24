@@ -59,13 +59,13 @@ resource "aws_cloudwatch_dashboard" "label_generator" {
           width  = 6
           height = 6
           properties = {
-            title  = "API Latency (p50/p90)"
+            title  = "API Latency in seconds (p50/p90)"
             region = var.region
             view   = "timeSeries"
             query  = <<-EOT
               ${local.source}
               | ${local.service_filter} and event = "api_call_completed"
-              | stats pct(duration_ms, 50) as p50, pct(duration_ms, 90) as p90 by bin(1h)
+              | stats pct(duration_ms / 1000, 50) as p50_seconds, pct(duration_ms / 1000, 90) as p90_seconds by bin(1h)
             EOT
           }
         },
@@ -114,13 +114,13 @@ resource "aws_cloudwatch_dashboard" "label_generator" {
           width  = 12
           height = 6
           properties = {
-            title  = "Page Processing Percentiles (ms)"
+            title  = "Page Processing in seconds (p50/p90/p99)"
             region = var.region
             view   = "timeSeries"
             query  = <<-EOT
               ${local.source}
               | ${local.service_filter} and event = "page_completed"
-              | stats pct(duration_ms, 50) as p50, pct(duration_ms, 90) as p90, pct(duration_ms, 99) as p99 by bin(1h)
+              | stats pct(duration_ms / 1000, 50) as p50_seconds, pct(duration_ms / 1000, 90) as p90_seconds, pct(duration_ms / 1000, 99) as p99_seconds by bin(1h)
             EOT
           }
         },
@@ -131,13 +131,13 @@ resource "aws_cloudwatch_dashboard" "label_generator" {
           width  = 12
           height = 6
           properties = {
-            title  = "API Latency Percentiles (ms)"
+            title  = "API Latency in seconds (p50/p90/p99)"
             region = var.region
             view   = "timeSeries"
             query  = <<-EOT
               ${local.source}
               | ${local.service_filter} and event = "api_call_completed"
-              | stats pct(duration_ms, 50) as p50, pct(duration_ms, 90) as p90, pct(duration_ms, 99) as p99 by bin(1h)
+              | stats pct(duration_ms / 1000, 50) as p50_seconds, pct(duration_ms / 1000, 90) as p90_seconds, pct(duration_ms / 1000, 99) as p99_seconds by bin(1h)
             EOT
           }
         }
