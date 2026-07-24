@@ -70,7 +70,7 @@ resource "aws_cloudwatch_dashboard" "search_experiment" {
           type   = "log"
           x      = 6
           y      = 2
-          width  = 6
+          width  = 9
           height = 6
           properties = {
             title  = "Hourly Request Volume"
@@ -86,9 +86,9 @@ resource "aws_cloudwatch_dashboard" "search_experiment" {
         },
         {
           type   = "log"
-          x      = 12
+          x      = 15
           y      = 2
-          width  = 6
+          width  = 9
           height = 6
           properties = {
             title  = "E2E Latency (p50/p90/p99)"
@@ -101,11 +101,13 @@ resource "aws_cloudwatch_dashboard" "search_experiment" {
             EOT
           }
         },
+      ],
+      [
         {
           type   = "log"
-          x      = 18
-          y      = 2
-          width  = 6
+          x      = 0
+          y      = 8
+          width  = 12
           height = 6
           properties = {
             title  = "Total AI Cost by Operation"
@@ -122,13 +124,11 @@ resource "aws_cloudwatch_dashboard" "search_experiment" {
             EOT
           }
         },
-      ],
-      [
         {
           type   = "log"
-          x      = 0
+          x      = 12
           y      = 8
-          width  = 8
+          width  = 12
           height = 6
           properties = {
             title  = "AI Token Totals by Operation"
@@ -145,8 +145,8 @@ resource "aws_cloudwatch_dashboard" "search_experiment" {
         },
         {
           type   = "log"
-          x      = 8
-          y      = 8
+          x      = 0
+          y      = 14
           width  = 8
           height = 6
           properties = {
@@ -165,9 +165,9 @@ resource "aws_cloudwatch_dashboard" "search_experiment" {
         },
         {
           type   = "log"
-          x      = 16
-          y      = 8
-          width  = 8
+          x      = 8
+          y      = 14
+          width  = 16
           height = 6
           properties = {
             title  = "AI API Latency (p50/p90/p99)"
@@ -185,7 +185,7 @@ resource "aws_cloudwatch_dashboard" "search_experiment" {
         {
           type   = "log"
           x      = 0
-          y      = 14
+          y      = 20
           width  = 8
           height = 6
           properties = {
@@ -202,7 +202,7 @@ resource "aws_cloudwatch_dashboard" "search_experiment" {
         {
           type   = "log"
           x      = 8
-          y      = 14
+          y      = 20
           width  = 8
           height = 6
           properties = {
@@ -220,7 +220,7 @@ resource "aws_cloudwatch_dashboard" "search_experiment" {
         {
           type   = "log"
           x      = 16
-          y      = 14
+          y      = 20
           width  = 8
           height = 6
           properties = {
@@ -239,8 +239,8 @@ resource "aws_cloudwatch_dashboard" "search_experiment" {
         {
           type   = "log"
           x      = 0
-          y      = 20
-          width  = 8
+          y      = 26
+          width  = 12
           height = 6
           properties = {
             title  = "Top Search Terms"
@@ -256,34 +256,9 @@ resource "aws_cloudwatch_dashboard" "search_experiment" {
         },
         {
           type   = "log"
-          x      = 8
-          y      = 20
-          width  = 8
-          height = 6
-          properties = {
-            title  = "Questions and Answers"
-            region = var.region
-            query  = <<-EOT
-              ${local.source}
-              | ${local.search_filter} and event in ["question_returned", "answer_returned"]
-              | fields event,
-                  details.questions.0.question as question,
-                  details.answers.0.commodity_code as top_commodity_code,
-                  details.answers.0.confidence as top_confidence,
-                  answer_count,
-                  effective_query,
-                  request_id,
-                  @timestamp
-              | sort @timestamp desc
-              | limit 50
-            EOT
-          }
-        },
-        {
-          type   = "log"
-          x      = 16
-          y      = 20
-          width  = 8
+          x      = 12
+          y      = 26
+          width  = 12
           height = 6
           properties = {
             title  = "Errors"
@@ -303,7 +278,34 @@ resource "aws_cloudwatch_dashboard" "search_experiment" {
         {
           type   = "log"
           x      = 0
-          y      = 26
+          y      = 32
+          width  = 24
+          height = 6
+          properties = {
+            title  = "Questions and Answers"
+            region = var.region
+            query  = <<-EOT
+              ${local.source}
+              | ${local.search_filter} and event in ["question_returned", "answer_returned"]
+              | fields details.questions.0.question as question,
+                  details.answers.0.commodity_code as top_commodity_code,
+                  details.answers.0.confidence as top_confidence,
+                  answer_count,
+                  event,
+                  effective_query,
+                  request_id,
+                  @timestamp
+              | sort @timestamp desc
+              | limit 50
+            EOT
+          }
+        },
+      ],
+      [
+        {
+          type   = "log"
+          x      = 0
+          y      = 38
           width  = 12
           height = 6
           properties = {
@@ -321,7 +323,7 @@ resource "aws_cloudwatch_dashboard" "search_experiment" {
         {
           type   = "log"
           x      = 12
-          y      = 26
+          y      = 38
           width  = 12
           height = 6
           properties = {
@@ -341,7 +343,7 @@ resource "aws_cloudwatch_dashboard" "search_experiment" {
         {
           type   = "log"
           x      = 0
-          y      = 32
+          y      = 44
           width  = 24
           height = 8
           properties = {
