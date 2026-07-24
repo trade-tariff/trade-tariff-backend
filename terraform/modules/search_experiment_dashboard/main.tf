@@ -259,7 +259,6 @@ resource "aws_cloudwatch_dashboard" "search_experiment" {
           properties = {
             title  = "AI Token Totals by Operation"
             region = var.region
-            view   = "bar"
             query  = <<-EOT
               ${local.source}
               | ${local.ai_cost_filter}
