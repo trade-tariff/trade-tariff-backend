@@ -3,7 +3,7 @@ locals {
   source            = "SOURCE '${var.log_group_name}'"
   experiment_filter = "filter experiment = \"EXPERIMENT_LABEL\""
   search_filter     = "${local.experiment_filter} and service = \"search\""
-  ai_cost_filter    = "${local.experiment_filter} and ((service = \"search\" and event = \"api_call_completed\") or (service = \"ai_usage\" and event = \"embedding_api_call_completed\" and event_kind = \"vector_search_query_embedding\"))"
+  ai_cost_filter    = "filter event in [\"api_call_completed\", \"embedding_api_call_completed\"]\n              | ${local.experiment_filter} and ((service = \"search\" and event = \"api_call_completed\") or (service = \"ai_usage\" and event = \"embedding_api_call_completed\" and event_kind = \"vector_search_query_embedding\"))"
 
   search_dashboard_url            = "https://${var.region}.console.aws.amazon.com/cloudwatch/home?region=${var.region}#dashboards:name=Search-${var.environment}"
   search_operations_dashboard_url = "https://${var.region}.console.aws.amazon.com/cloudwatch/home?region=${var.region}#dashboards:name=SearchOperations-${var.environment}"
@@ -79,7 +79,8 @@ resource "aws_cloudwatch_dashboard" "search_experiment" {
             query  = <<-EOT
               ${local.source}
               | ${local.search_filter} and event in ["search_completed", "search_failed"]
-              | stats count(*) as searches by event, search_type, bin(1h)
+              | stats sum(if(event = "search_completed", 1, 0)) as completed_requests,
+                  sum(if(event = "search_failed", 1, 0)) as failed_requests by search_type, bin(1h)
             EOT
           }
         },
@@ -114,7 +115,8 @@ resource "aws_cloudwatch_dashboard" "search_experiment" {
               ${local.source}
               | ${local.ai_cost_filter}
               | fields if(ispresent(operation), operation, event_kind) as ai_operation
-              | filter pricing_known = true and ispresent(total_cost_usd)
+              | filter pricing_known
+              | filter ispresent(total_cost_usd)
               | stats sum(total_cost_usd) as total_cost_usd by ai_operation, model
               | sort total_cost_usd desc
             EOT
@@ -154,7 +156,7 @@ resource "aws_cloudwatch_dashboard" "search_experiment" {
               ${local.source}
               | ${local.ai_cost_filter}
               | fields if(ispresent(operation), operation, event_kind) as ai_operation
-              | filter pricing_known = false or not ispresent(total_cost_usd)
+              | filter not pricing_known or not ispresent(total_cost_usd)
               | stats count(*) as events, sum(total_tokens) as total_tokens, sum(total_cost_usd) as partial_cost_usd by ai_operation, model
               | sort events desc, partial_cost_usd desc, total_tokens desc
               | limit 50
@@ -264,7 +266,14 @@ resource "aws_cloudwatch_dashboard" "search_experiment" {
             query  = <<-EOT
               ${local.source}
               | ${local.search_filter} and event in ["question_returned", "answer_returned"]
-              | fields @timestamp, request_id, event, effective_query, question_count, answer_count, confidence_levels, attempt_number, iteration, details
+              | fields event,
+                  details.questions.0.question as question,
+                  details.answers.0.commodity_code as top_commodity_code,
+                  details.answers.0.confidence as top_confidence,
+                  answer_count,
+                  effective_query,
+                  request_id,
+                  @timestamp
               | sort @timestamp desc
               | limit 50
             EOT

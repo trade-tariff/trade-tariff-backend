@@ -44,17 +44,21 @@ RSpec.describe 'search experiment dashboard Terraform' do
   end
 
   it 'separates period cost and token totals and exposes incomplete pricing' do
+    expect(module_main_tf).to include('event in [\\"api_call_completed\\", \\"embedding_api_call_completed\\"]')
     expect(module_main_tf).to include('service = \\"ai_usage\\" and event = \\"embedding_api_call_completed\\"')
     expect(module_main_tf).to include('event_kind = \\"vector_search_query_embedding\\"')
     expect(module_main_tf).to include('if(ispresent(operation), operation, event_kind) as ai_operation')
     expect(module_main_tf).to include('Total AI Cost by Operation')
-    expect(module_main_tf).to include('filter pricing_known = true and ispresent(total_cost_usd)')
+    expect(module_main_tf).to include('| filter pricing_known')
+    expect(module_main_tf).to include('| filter ispresent(total_cost_usd)')
     expect(module_main_tf).to include('stats sum(total_cost_usd) as total_cost_usd by ai_operation, model')
     expect(module_main_tf).to include('AI Token Totals by Operation')
     expect(module_main_tf).to include('sum(input_tokens) as input_tokens')
     expect(module_main_tf).to include('sum(output_tokens) as output_tokens')
     expect(module_main_tf).to include('Unknown Pricing Events')
-    expect(module_main_tf).to include('pricing_known = false or not ispresent(total_cost_usd)')
+    expect(module_main_tf).to include('not pricing_known or not ispresent(total_cost_usd)')
+    expect(module_main_tf).not_to include('pricing_known = true')
+    expect(module_main_tf).not_to include('pricing_known = false')
     expect(module_main_tf).not_to include('AI Tokens and Cost')
   end
 
@@ -67,6 +71,9 @@ RSpec.describe 'search experiment dashboard Terraform' do
     expect(module_main_tf).to include('as selections')
     expect(module_main_tf).to include('Questions and Answers')
     expect(module_main_tf).to include('event in ["question_returned", "answer_returned"]')
+    expect(module_main_tf).to include('details.questions.0.question as question')
+    expect(module_main_tf).to include('details.answers.0.commodity_code as top_commodity_code')
+    expect(module_main_tf).to include('details.answers.0.confidence as top_confidence')
     expect(module_main_tf).to include('Selected Results')
     expect(module_main_tf).to include('goods_nomenclature_item_id')
     expect(module_main_tf).to include('Top Zero-Result Terms')
@@ -76,6 +83,13 @@ RSpec.describe 'search experiment dashboard Terraform' do
     expect(module_main_tf).to include('AI API Latency (p50/p90/p99)')
     expect(module_main_tf).to include('pct(duration_ms, 50) as p50')
     expect(module_main_tf).to include('by operation, bin(1h)')
+  end
+
+  it 'uses renderable hourly request volume series' do
+    expect(module_main_tf).to include('sum(if(event = "search_completed", 1, 0)) as completed_requests')
+    expect(module_main_tf).to include('sum(if(event = "search_failed", 1, 0)) as failed_requests')
+    expect(module_main_tf).to include('as failed_requests by search_type, bin(1h)')
+    expect(module_main_tf).not_to include('stats count(*) as searches by event, search_type, bin(1h)')
   end
 
   it 'uses a single outcome dimension for the result-type pie chart' do
