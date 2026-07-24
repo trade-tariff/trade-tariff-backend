@@ -17,7 +17,7 @@ module AdminConfigurationSeeder
       'gpt-5.5' => 'GPT-5.5',
       'gpt-5.6' => 'GPT-5.6 Sol (latest flagship)',
       'gpt-5.6-terra' => 'GPT-5.6 Terra (balanced)',
-      'gpt-5.6-luna' => 'GPT-5.6 Luna (fastest)',
+      'gpt-5.6-luna' => 'GPT-5.6 Luna (cost-efficient)',
       'o3-2025-04-16' => 'o3 (full reasoning)',
       'o3-pro' => 'o3-pro (complex reasoning)',
       'o4-mini-2025-04-16' => 'o4-mini (small reasoning)',

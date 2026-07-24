@@ -120,7 +120,7 @@ RSpec.describe 'admin_configurations:seed' do
       },
       {
         'key' => 'gpt-5.6-luna',
-        'label' => 'GPT-5.6 Luna (fastest)',
+        'label' => 'GPT-5.6 Luna (cost-efficient)',
         'sub_options' => { 'reasoning_effort' => %w[none low medium high xhigh max] },
       },
     ]
@@ -426,6 +426,35 @@ RSpec.describe 'admin_configurations:seed' do
 
     expect { suppress_output { Rake::Task['admin_configurations:seed'].invoke } }
       .not_to change(AdminConfiguration, :count)
+  end
+
+  it 'refreshes model options without changing the operator selection' do
+    seed
+
+    config = AdminConfiguration.where(name: 'search_model').first
+    legacy_value = config.value.to_hash.merge(
+      'selected' => 'gpt-5.4',
+      'sub_values' => { 'reasoning_effort' => 'high' },
+      'options' => config.value['options'].reject { |option| option['key'].start_with?('gpt-5.6') },
+    )
+    config.update(value: Sequel.pg_jsonb_wrap(legacy_value))
+
+    Rake::Task['admin_configurations:seed'].reenable
+    expect { suppress_output { Rake::Task['admin_configurations:seed'].invoke } }.not_to change(AdminConfiguration, :count)
+
+    refreshed_value = config.refresh.value.to_hash
+    expect(refreshed_value).to include(
+      'selected' => 'gpt-5.4',
+      'sub_values' => { 'reasoning_effort' => 'high' },
+    )
+    expect(refreshed_value['options']).to include(
+      hash_including('key' => 'gpt-5.6', 'label' => 'GPT-5.6 Sol (latest flagship)'),
+      hash_including('key' => 'gpt-5.6-terra', 'label' => 'GPT-5.6 Terra (balanced)'),
+      hash_including('key' => 'gpt-5.6-luna', 'label' => 'GPT-5.6 Luna (cost-efficient)'),
+    )
+
+    Rake::Task['admin_configurations:seed'].reenable
+    expect { suppress_output { Rake::Task['admin_configurations:seed'].invoke } }.not_to(change { config.refresh.value.to_hash })
   end
 
   it 'patches existing configurations when their type changes' do

@@ -7,14 +7,26 @@ development: &pricing
     input_per_million_tokens: 5.0
     cached_input_per_million_tokens: 0.5
     output_per_million_tokens: 30.0
+    cache_write_input_multiplier: 1.25
+    long_context_input_token_threshold: 272000
+    long_context_input_multiplier: 2.0
+    long_context_output_multiplier: 1.5
   gpt-5.6-terra:
     input_per_million_tokens: 2.5
     cached_input_per_million_tokens: 0.25
     output_per_million_tokens: 15.0
+    cache_write_input_multiplier: 1.25
+    long_context_input_token_threshold: 272000
+    long_context_input_multiplier: 2.0
+    long_context_output_multiplier: 1.5
   gpt-5.6-luna:
     input_per_million_tokens: 1.0
     cached_input_per_million_tokens: 0.1
     output_per_million_tokens: 6.0
+    cache_write_input_multiplier: 1.25
+    long_context_input_token_threshold: 272000
+    long_context_input_multiplier: 2.0
+    long_context_output_multiplier: 1.5
   gpt-5.5:
     input_per_million_tokens: 5.0
     cached_input_per_million_tokens: 0.5

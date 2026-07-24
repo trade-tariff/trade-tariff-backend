@@ -2,7 +2,15 @@ RSpec.describe AiUsage do
   describe '.metadata_for' do
     before do
       allow(TradeTariffBackend).to receive(:openai_model_pricing).and_return({
-        'gpt-test' => { 'input_per_million_tokens' => 2.0, 'cached_input_per_million_tokens' => 0.5, 'output_per_million_tokens' => 8.0 },
+        'gpt-test' => {
+          'input_per_million_tokens' => 2.0,
+          'cached_input_per_million_tokens' => 0.5,
+          'output_per_million_tokens' => 8.0,
+          'cache_write_input_multiplier' => 1.25,
+          'long_context_input_token_threshold' => 272_000,
+          'long_context_input_multiplier' => 2.0,
+          'long_context_output_multiplier' => 1.5,
+        },
       })
     end
 
@@ -48,6 +56,141 @@ RSpec.describe AiUsage do
         total_cost_usd: be_within(1e-12).of(0.0034),
         pricing_known: true,
       )
+    end
+
+    it 'charges cache-write tokens at the configured input multiplier' do
+      usage = described_class.metadata_for(
+        model: 'gpt-test',
+        event_kind: 'interactive_search',
+        usage: {
+          'prompt_tokens' => 1_000,
+          'prompt_tokens_details' => {
+            'cached_tokens' => 400,
+            'cache_write_tokens' => 200,
+          },
+          'completion_tokens' => 250,
+          'total_tokens' => 1_250,
+        },
+      )
+
+      expect(usage.to_h).to include(
+        cached_input_tokens: 400,
+        cache_write_input_tokens: 200,
+        input_cost_usd: 0.0015,
+        cached_input_cost_usd: 0.0002,
+        cache_write_input_cost_usd: 0.0005,
+        total_cost_usd: be_within(1e-12).of(0.0035),
+        pricing_known: true,
+      )
+    end
+
+    it 'uses standard prices at the long-context threshold' do
+      usage = described_class.metadata_for(
+        model: 'gpt-test',
+        event_kind: 'interactive_search',
+        usage: {
+          'prompt_tokens' => 272_000,
+          'completion_tokens' => 100,
+          'total_tokens' => 272_100,
+        },
+      )
+
+      expect(usage.to_h).to include(
+        input_cost_usd: 0.544,
+        output_cost_usd: 0.0008,
+        total_cost_usd: be_within(1e-12).of(0.5448),
+        pricing_known: true,
+      )
+    end
+
+    it 'applies long-context prices above the input-token threshold' do
+      usage = described_class.metadata_for(
+        model: 'gpt-test',
+        event_kind: 'interactive_search',
+        usage: {
+          'prompt_tokens' => 272_001,
+          'completion_tokens' => 100,
+          'total_tokens' => 272_101,
+        },
+      )
+
+      expect(usage.to_h).to include(
+        input_cost_usd: 1.088004,
+        output_cost_usd: 0.0012,
+        total_cost_usd: be_within(1e-12).of(1.089204),
+        pricing_known: true,
+      )
+    end
+
+    it 'applies long-context pricing to uncached, cached and cache-write input' do
+      usage = described_class.metadata_for(
+        model: 'gpt-test',
+        event_kind: 'interactive_search',
+        usage: {
+          'prompt_tokens' => 272_001,
+          'prompt_tokens_details' => {
+            'cached_tokens' => 400,
+            'cache_write_tokens' => 200,
+          },
+          'completion_tokens' => 100,
+          'total_tokens' => 272_101,
+        },
+      )
+
+      expect(usage.to_h).to include(
+        input_cost_usd: be_within(1e-12).of(1.087004),
+        cached_input_cost_usd: 0.0004,
+        cache_write_input_cost_usd: 0.001,
+        output_cost_usd: 0.0012,
+        total_cost_usd: be_within(1e-12).of(1.088204),
+        pricing_known: true,
+      )
+    end
+
+    it 'marks pricing unknown when cache-write tokens have no valid multiplier' do
+      allow(TradeTariffBackend).to receive(:openai_model_pricing).and_return({
+        'gpt-test' => {
+          'input_per_million_tokens' => 2.0,
+          'cached_input_per_million_tokens' => 0.5,
+          'output_per_million_tokens' => 8.0,
+          'cache_write_input_multiplier' => 'invalid',
+        },
+      })
+
+      usage = described_class.metadata_for(
+        model: 'gpt-test',
+        event_kind: 'interactive_search',
+        usage: {
+          'prompt_tokens' => 100,
+          'prompt_tokens_details' => { 'cache_write_tokens' => 20 },
+          'completion_tokens' => 0,
+        },
+      )
+
+      expect(usage.to_h).to include(
+        cache_write_input_cost_usd: nil,
+        pricing_known: false,
+      )
+    end
+
+    it 'marks long-context pricing unknown when a required multiplier is missing' do
+      allow(TradeTariffBackend).to receive(:openai_model_pricing).and_return({
+        'gpt-test' => {
+          'input_per_million_tokens' => 2.0,
+          'cached_input_per_million_tokens' => 0.5,
+          'output_per_million_tokens' => 8.0,
+          'long_context_input_token_threshold' => 272_000,
+          'long_context_input_multiplier' => 2.0,
+        },
+      })
+
+      usage = described_class.metadata_for(
+        model: 'gpt-test',
+        event_kind: 'interactive_search',
+        usage: { 'prompt_tokens' => 272_001, 'completion_tokens' => 100 },
+      )
+
+      expect(usage.pricing_known).to be false
     end
 
     it 'does not report a negative cost when cached tokens exceed input tokens' do
