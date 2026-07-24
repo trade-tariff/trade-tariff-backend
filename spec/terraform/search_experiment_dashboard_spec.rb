@@ -161,7 +161,10 @@ RSpec.describe 'search experiment dashboard Terraform' do
       'case(outcome = "dont_know" or (outcome = "page_visible" and destination = "question"), request_id) as question_request_id',
     )
     expect(dont_know_query).to include(
-      'requests_using_dont_know * 100 / requests_shown_questions as request_usage_rate_percent',
+      'count_distinct(dont_know_request_id) * 100 / count_distinct(question_request_id) as request_usage_rate_percent',
+    )
+    expect(dont_know_query).not_to include(
+      'fields dont_know_uses, requests_using_dont_know, requests_shown_questions,',
     )
   end
 
@@ -240,9 +243,16 @@ RSpec.describe 'search experiment dashboard Terraform' do
     expect(module_main_tf).to include('| fields event_payload.details.questions[0].question as question,')
   end
 
-  it 'uses a single outcome dimension for the result-type pie chart' do
-    expect(module_main_tf).to include('stats count(*) as searches by final_result_type')
-    expect(module_main_tf).not_to include('by search_type, results_type, final_result_type')
+  it 'labels every outcome in the result-type pie chart' do
+    final_result_types_query = widget_query('Final Result Types')
+
+    expect(final_result_types_query).to include(
+      'case(ispresent(final_result_type), final_result_type, result_count = 0, "no_results", "results_without_questions") as final_result_category',
+    )
+    expect(final_result_types_query).to include(
+      'stats count(*) as searches by final_result_category',
+    )
+    expect(final_result_types_query).not_to include('searches by final_result_type')
   end
 
   it 'is discoverable from the search overview dashboard' do

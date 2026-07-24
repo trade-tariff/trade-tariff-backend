@@ -182,10 +182,9 @@ resource "aws_cloudwatch_dashboard" "search_experiment" {
                   case(outcome = "dont_know" or (outcome = "page_visible" and destination = "question"), request_id) as question_request_id
               | stats sum(if(outcome = "dont_know", 1, 0)) as dont_know_uses,
                   count_distinct(dont_know_request_id) as requests_using_dont_know,
-                  count_distinct(question_request_id) as requests_shown_questions
+                  count_distinct(question_request_id) as requests_shown_questions,
+                  count_distinct(dont_know_request_id) * 100 / count_distinct(question_request_id) as request_usage_rate_percent
               | filter requests_shown_questions > 0
-              | fields dont_know_uses, requests_using_dont_know, requests_shown_questions,
-                  requests_using_dont_know * 100 / requests_shown_questions as request_usage_rate_percent
             EOT
           }
         },
@@ -322,7 +321,8 @@ resource "aws_cloudwatch_dashboard" "search_experiment" {
             query  = <<-EOT
               ${local.source}
               | ${local.search_filter} and event = "search_completed"
-              | stats count(*) as searches by final_result_type
+              | fields case(ispresent(final_result_type), final_result_type, result_count = 0, "no_results", "results_without_questions") as final_result_category
+              | stats count(*) as searches by final_result_category
             EOT
           }
         },
