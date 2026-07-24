@@ -63,6 +63,15 @@ RSpec.describe 'search experiment dashboard Terraform' do
     expect(module_main_tf).not_to include('AI Tokens and Cost')
   end
 
+  it 'shows token totals as one readable table' do
+    token_widget = widget_definition('AI Token Totals by Operation')
+
+    expect(token_widget).not_to include('view   = "bar"')
+    expect(token_widget).to include(
+      'stats sum(input_tokens) as input_tokens, sum(output_tokens) as output_tokens, sum(total_tokens) as total_tokens by ai_operation, model',
+    )
+  end
+
   it 'summarises the UAT period and exposes the behaviour needed for diagnosis' do
     uat_period_totals_query = widget_query('UAT Period Totals')
 
@@ -264,6 +273,13 @@ RSpec.describe 'search experiment dashboard Terraform' do
     module_main_tf.match(/title\s+= "#{Regexp.escape(title)}".*?query\s+= <<-EOT\n(.*?)\n\s+EOT/m).then do |match|
       expect(match).to be_present
       match[1]
+    end
+  end
+
+  def widget_definition(title)
+    module_main_tf.match(/properties = \{\n\s+title\s+= "#{Regexp.escape(title)}".*?\n\s+EOT/m).then do |match|
+      expect(match).to be_present
+      match[0]
     end
   end
 end
