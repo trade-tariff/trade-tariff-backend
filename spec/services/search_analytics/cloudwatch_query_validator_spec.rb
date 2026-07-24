@@ -89,7 +89,7 @@ RSpec.describe SearchAnalytics::CloudwatchQueryValidator do
       a_string_including('CloudWatch query timed out while polling (query ID: query-id)'),
     )
     expect(client).to have_received(:get_query_results).exactly(4).times
-    expect(Kernel).to have_received(:sleep).exactly(4).times
+    expect(Kernel).to have_received(:sleep).exactly(2).times
   end
 
   it 'includes AWS compile details for malformed queries' do
