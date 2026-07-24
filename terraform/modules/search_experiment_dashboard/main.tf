@@ -36,7 +36,7 @@ resource "aws_cloudwatch_dashboard" "search_experiment" {
           properties = {
             markdown = join("\n", [
               "## Trade Tariff Search Production UAT",
-              "All widgets are scoped to the experiment label selected above. Requests are counted, not unique users.",
+              "All widgets are scoped to the experiment label selected above. Requests and distinct guided-search browser sessions are reported separately. One browser session can contain multiple requests.",
               "**Start here:** Set the dashboard time range to the UAT window, then review volume, reliability, latency, outcomes, questions, search terms, and costs.",
               "**Investigate:** copy the request ID into admin search diagnostics to reconstruct an individual request.",
               "**Related:** [Search Overview](${local.search_dashboard_url}) | [Search Operations](${local.search_operations_dashboard_url}) | [Search Quality](${local.search_quality_dashboard_url})",
@@ -57,8 +57,11 @@ resource "aws_cloudwatch_dashboard" "search_experiment" {
             view   = "bar"
             query  = <<-EOT
               ${local.source}
-              | ${local.search_filter} and event in ["search_completed", "search_failed", "result_selected"]
-              | stats sum(if(event = "search_completed", 1, 0)) as completed_requests,
+              | ${local.experiment_filter}
+              | filter (service = "search" and event in ["search_completed", "search_failed", "result_selected"])
+                  or (event = "guided_search.journey" and ispresent(browser_session_id))
+              | stats count_distinct(browser_session_id) as distinct_browser_sessions,
+                  sum(if(event = "search_completed", 1, 0)) as completed_requests,
                   sum(if(event = "search_failed", 1, 0)) as hard_failures,
                   sum(if(event = "search_completed" and final_result_type = "error", 1, 0)) as error_outcomes,
                   sum(if(event = "search_completed" and result_count = 0, 1, 0)) as zero_result_requests,
