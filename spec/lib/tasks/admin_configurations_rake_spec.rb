@@ -107,6 +107,23 @@ RSpec.describe 'admin_configurations:seed' do
   it 'seeds nested_options configs with sorted model options', :aggregate_failures do
     seed
 
+    expected_latest_options = [
+      {
+        'key' => 'gpt-5.6',
+        'label' => 'GPT-5.6 Sol (latest flagship)',
+        'sub_options' => { 'reasoning_effort' => %w[none low medium high xhigh max] },
+      },
+      {
+        'key' => 'gpt-5.6-terra',
+        'label' => 'GPT-5.6 Terra (balanced)',
+        'sub_options' => { 'reasoning_effort' => %w[none low medium high xhigh max] },
+      },
+      {
+        'key' => 'gpt-5.6-luna',
+        'label' => 'GPT-5.6 Luna (fastest)',
+        'sub_options' => { 'reasoning_effort' => %w[none low medium high xhigh max] },
+      },
+    ]
     expected_defaults = {
       'expand_model' => AdminConfiguration.nested_option_default_for('expand_model'),
       'label_model' => AdminConfiguration.nested_option_default_for('label_model'),
@@ -126,6 +143,7 @@ RSpec.describe 'admin_configurations:seed' do
 
       option_keys = config.value['options'].map { |o| o['key'] }
       expect(option_keys).to eq(option_keys.sort)
+      expect(config.value['options']).to include(*expected_latest_options)
 
       OpenaiClient::MODEL_CONFIGS.each_key do |model_key|
         expect(option_keys).to include(model_key)
