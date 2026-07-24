@@ -26,12 +26,23 @@ module_function
 
   def patch_config_type(config, attrs)
     if config.config_type == attrs[:config_type]
+      return refresh_nested_options(config, attrs) if config.config_type == 'nested_options'
+
       output "  skip: #{attrs[:name]} (already exists)"
       return 0
     end
 
     config.update(config_type: attrs[:config_type], value: attrs[:value])
     output "  patched: #{attrs[:name]} (config type)"
+    1
+  end
+
+  def refresh_nested_options(config, attrs)
+    value = config.value.to_hash.merge('options' => attrs[:value]['options'])
+    return 0 if value == config.value.to_hash
+
+    config.update(value: Sequel.pg_jsonb_wrap(value))
+    output "  patched: #{attrs[:name]} (options)"
     1
   end
 

@@ -74,11 +74,13 @@ RSpec.describe SearchAnalytics::CloudwatchSnapshotQuery do
           'event_kind' => 'interactive_search',
           'aggregated_input_cost_usd' => '0.004',
           'aggregated_cached_input_cost_usd' => '0.0002',
+          'aggregated_cache_write_input_cost_usd' => '0.0005',
           'aggregated_output_cost_usd' => '0.006',
           'aggregated_embedding_cost_usd' => '0',
           'aggregated_total_cost_usd' => '0.01',
           'aggregated_input_tokens' => '2000',
           'aggregated_cached_input_tokens' => '400',
+          'aggregated_cache_write_input_tokens' => '200',
           'aggregated_output_tokens' => '500',
           'aggregated_total_tokens' => '2500',
           'aggregated_calls' => '4',
@@ -90,11 +92,13 @@ RSpec.describe SearchAnalytics::CloudwatchSnapshotQuery do
           'event_kind' => 'vector_search_query_embedding',
           'aggregated_input_cost_usd' => '0',
           'aggregated_cached_input_cost_usd' => '0',
+          'aggregated_cache_write_input_cost_usd' => '0',
           'aggregated_output_cost_usd' => '0',
           'aggregated_embedding_cost_usd' => '0.0002',
           'aggregated_total_cost_usd' => '0.0002',
           'aggregated_input_tokens' => '10000',
           'aggregated_cached_input_tokens' => '0',
+          'aggregated_cache_write_input_tokens' => '0',
           'aggregated_output_tokens' => '0',
           'aggregated_total_tokens' => '10000',
           'aggregated_calls' => '1',
@@ -354,6 +358,8 @@ RSpec.describe SearchAnalytics::CloudwatchSnapshotQuery do
       {
         'bucket' => '2026-06-10T09:00:00Z',
         'input_cost_usd' => 0.004,
+        'cached_input_cost_usd' => 0.0002,
+        'cache_write_input_cost_usd' => 0.0005,
         'output_cost_usd' => 0.006,
         'embedding_cost_usd' => 0.0002,
         'total_cost_usd' => 0.0102,
@@ -361,7 +367,7 @@ RSpec.describe SearchAnalytics::CloudwatchSnapshotQuery do
     )
     expect(payloads.dig('all', 'ai_costs', 'operations')).to match(
       [
-        include('event_kind' => 'interactive_search', 'calls' => 4, 'total_tokens' => 2500, 'input_cost_usd' => 0.004, 'output_cost_usd' => 0.006, 'embedding_cost_usd' => 0.0, 'total_cost_usd' => 0.01, 'unpriced_calls' => 1),
+        include('event_kind' => 'interactive_search', 'calls' => 4, 'total_tokens' => 2500, 'cached_input_tokens' => 400, 'cache_write_input_tokens' => 200, 'input_cost_usd' => 0.004, 'cached_input_cost_usd' => 0.0002, 'cache_write_input_cost_usd' => 0.0005, 'output_cost_usd' => 0.006, 'embedding_cost_usd' => 0.0, 'total_cost_usd' => 0.01, 'unpriced_calls' => 1),
         include('event_kind' => 'vector_search_query_embedding', 'calls' => 1, 'total_tokens' => 10_000, 'input_cost_usd' => 0.0, 'output_cost_usd' => 0.0, 'embedding_cost_usd' => 0.0002, 'total_cost_usd' => 0.0002, 'unpriced_calls' => 0),
       ],
     )

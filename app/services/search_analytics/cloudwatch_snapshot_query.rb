@@ -14,6 +14,7 @@ module SearchAnalytics
     AGGREGATED_COST_FIELDS = %w[
       input_cost_usd
       cached_input_cost_usd
+      cache_write_input_cost_usd
       output_cost_usd
       embedding_cost_usd
       total_cost_usd
@@ -23,6 +24,7 @@ module SearchAnalytics
       assisted_searches
       input_tokens
       cached_input_tokens
+      cache_write_input_tokens
       output_tokens
       total_tokens
       calls
@@ -216,11 +218,12 @@ module SearchAnalytics
 
     def ai_cost_trend_query
       <<~QUERY
-        fields @timestamp, request_id, service, event, event_kind, input_tokens, cached_input_tokens, output_tokens, total_tokens, input_cost_usd, cached_input_cost_usd, output_cost_usd, total_cost_usd, pricing_known
+        fields @timestamp, request_id, service, event, event_kind, input_tokens, cached_input_tokens, cache_write_input_tokens, output_tokens, total_tokens, input_cost_usd, cached_input_cost_usd, cache_write_input_cost_usd, output_cost_usd, total_cost_usd, pricing_known
         | #{log_stream_filter}
         | #{search_ai_cost_filter}
         | fields if(pricing_known = true and service = "search", input_cost_usd, 0) as model_input_cost_usd
         | fields if(pricing_known = true and service = "search", cached_input_cost_usd, 0) as model_cached_input_cost_usd
+        | fields if(pricing_known = true and service = "search", cache_write_input_cost_usd, 0) as model_cache_write_input_cost_usd
         | fields if(pricing_known = true and service = "search", output_cost_usd, 0) as model_output_cost_usd
         | fields if(pricing_known = true and service = "ai_usage", total_cost_usd, 0) as model_embedding_cost_usd
         | fields if(pricing_known = true and ispresent(total_cost_usd), total_cost_usd, 0) as known_cost_usd
@@ -228,11 +231,13 @@ module SearchAnalytics
         | fields if(pricing_known = true and ispresent(total_cost_usd), 0, 1) as unpriced_call
         | stats sum(model_input_cost_usd) as aggregated_input_cost_usd,
             sum(model_cached_input_cost_usd) as aggregated_cached_input_cost_usd,
+            sum(model_cache_write_input_cost_usd) as aggregated_cache_write_input_cost_usd,
             sum(model_output_cost_usd) as aggregated_output_cost_usd,
             sum(model_embedding_cost_usd) as aggregated_embedding_cost_usd,
             sum(known_cost_usd) as aggregated_total_cost_usd,
             sum(input_tokens) as aggregated_input_tokens,
             sum(cached_input_tokens) as aggregated_cached_input_tokens,
+            sum(cache_write_input_tokens) as aggregated_cache_write_input_tokens,
             sum(output_tokens) as aggregated_output_tokens,
             sum(total_tokens) as aggregated_total_tokens,
             count(*) as aggregated_calls,
@@ -405,6 +410,8 @@ module SearchAnalytics
           {
             'bucket' => bucket,
             'input_cost_usd' => sum_decimal(rows, 'input_cost_usd'),
+            'cached_input_cost_usd' => sum_decimal(rows, 'cached_input_cost_usd'),
+            'cache_write_input_cost_usd' => sum_decimal(rows, 'cache_write_input_cost_usd'),
             'output_cost_usd' => sum_decimal(rows, 'output_cost_usd'),
             'embedding_cost_usd' => sum_decimal(rows, 'embedding_cost_usd'),
             'total_cost_usd' => sum_decimal(rows, 'total_cost_usd'),
@@ -423,9 +430,12 @@ module SearchAnalytics
             'calls' => sum_integer(rows, 'calls'),
             'input_tokens' => sum_integer(rows, 'input_tokens'),
             'cached_input_tokens' => sum_integer(rows, 'cached_input_tokens'),
+            'cache_write_input_tokens' => sum_integer(rows, 'cache_write_input_tokens'),
             'output_tokens' => sum_integer(rows, 'output_tokens'),
             'total_tokens' => sum_integer(rows, 'total_tokens'),
             'input_cost_usd' => sum_decimal(rows, 'input_cost_usd'),
+            'cached_input_cost_usd' => sum_decimal(rows, 'cached_input_cost_usd'),
+            'cache_write_input_cost_usd' => sum_decimal(rows, 'cache_write_input_cost_usd'),
             'output_cost_usd' => sum_decimal(rows, 'output_cost_usd'),
             'embedding_cost_usd' => sum_decimal(rows, 'embedding_cost_usd'),
             'total_cost_usd' => sum_decimal(rows, 'total_cost_usd'),
