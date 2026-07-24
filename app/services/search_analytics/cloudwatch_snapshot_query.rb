@@ -11,6 +11,24 @@ module SearchAnalytics
       'classic' => %w[classic],
       'internal' => %w[interactive internal],
     }.freeze
+    AGGREGATED_COST_FIELDS = %w[
+      input_cost_usd
+      cached_input_cost_usd
+      output_cost_usd
+      embedding_cost_usd
+      total_cost_usd
+      average_cost_usd
+      p50_cost_usd
+      p90_cost_usd
+      assisted_searches
+      input_tokens
+      cached_input_tokens
+      output_tokens
+      total_tokens
+      calls
+      priced_calls
+      unpriced_calls
+    ].index_by { |field| "aggregated_#{field}" }.freeze
     VIEWS = %w[all classic internal].freeze
     REQUEST_SOURCES = %w[frontend backend_only unknown].freeze
     QueryError = Class.new(StandardError)
@@ -106,7 +124,7 @@ module SearchAnalytics
     def normalise_field(field)
       return '@timestamp' if field.to_s.start_with?('bin(')
 
-      field
+      AGGREGATED_COST_FIELDS.fetch(field, field)
     end
 
     def bucket_expression = period.bucket_size == 'hour' ? 'bin(1h)' : 'bin(1d)'
@@ -186,13 +204,13 @@ module SearchAnalytics
         | stats sum(known_cost_usd) as request_cost_usd,
             sum(priced) as request_priced_calls,
             sum(unpriced) as request_unpriced_calls by request_id
-        | stats sum(request_cost_usd) as total_cost_usd,
-            avg(request_cost_usd) as average_cost_usd,
-            pct(request_cost_usd, 50) as p50_cost_usd,
-            pct(request_cost_usd, 90) as p90_cost_usd,
-            count(*) as assisted_searches,
-            sum(request_priced_calls) as priced_calls,
-            sum(request_unpriced_calls) as unpriced_calls
+        | stats sum(request_cost_usd) as aggregated_total_cost_usd,
+            avg(request_cost_usd) as aggregated_average_cost_usd,
+            pct(request_cost_usd, 50) as aggregated_p50_cost_usd,
+            pct(request_cost_usd, 90) as aggregated_p90_cost_usd,
+            count(*) as aggregated_assisted_searches,
+            sum(request_priced_calls) as aggregated_priced_calls,
+            sum(request_unpriced_calls) as aggregated_unpriced_calls
       QUERY
     end
 
@@ -202,24 +220,24 @@ module SearchAnalytics
         | #{log_stream_filter}
         | #{search_ai_cost_filter}
         | fields if(pricing_known = true and service = "search", input_cost_usd, 0) as model_input_cost_usd
-        | fields if(pricing_known = true and service = "search", cached_input_cost_usd, 0) as cached_input_cost_usd
+        | fields if(pricing_known = true and service = "search", cached_input_cost_usd, 0) as model_cached_input_cost_usd
         | fields if(pricing_known = true and service = "search", output_cost_usd, 0) as model_output_cost_usd
-        | fields if(pricing_known = true and service = "ai_usage", total_cost_usd, 0) as embedding_cost_usd
+        | fields if(pricing_known = true and service = "ai_usage", total_cost_usd, 0) as model_embedding_cost_usd
         | fields if(pricing_known = true and ispresent(total_cost_usd), total_cost_usd, 0) as known_cost_usd
         | fields if(pricing_known = true and ispresent(total_cost_usd), 1, 0) as priced_call
         | fields if(pricing_known = true and ispresent(total_cost_usd), 0, 1) as unpriced_call
-        | stats sum(model_input_cost_usd) as input_cost_usd,
-            sum(cached_input_cost_usd) as cached_input_cost_usd,
-            sum(model_output_cost_usd) as output_cost_usd,
-            sum(embedding_cost_usd) as embedding_cost_usd,
-            sum(known_cost_usd) as total_cost_usd,
-            sum(input_tokens) as input_tokens,
-            sum(cached_input_tokens) as cached_input_tokens,
-            sum(output_tokens) as output_tokens,
-            sum(total_tokens) as total_tokens,
-            count(*) as calls,
-            sum(priced_call) as priced_calls,
-            sum(unpriced_call) as unpriced_calls by #{bucket_expression}, event_kind
+        | stats sum(model_input_cost_usd) as aggregated_input_cost_usd,
+            sum(model_cached_input_cost_usd) as aggregated_cached_input_cost_usd,
+            sum(model_output_cost_usd) as aggregated_output_cost_usd,
+            sum(model_embedding_cost_usd) as aggregated_embedding_cost_usd,
+            sum(known_cost_usd) as aggregated_total_cost_usd,
+            sum(input_tokens) as aggregated_input_tokens,
+            sum(cached_input_tokens) as aggregated_cached_input_tokens,
+            sum(output_tokens) as aggregated_output_tokens,
+            sum(total_tokens) as aggregated_total_tokens,
+            count(*) as aggregated_calls,
+            sum(priced_call) as aggregated_priced_calls,
+            sum(unpriced_call) as aggregated_unpriced_calls by #{bucket_expression}, event_kind
       QUERY
     end
 
