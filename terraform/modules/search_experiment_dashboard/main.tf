@@ -111,6 +111,129 @@ resource "aws_cloudwatch_dashboard" "search_experiment" {
           type   = "log"
           x      = 0
           y      = 8
+          width  = 6
+          height = 6
+          properties = {
+            title  = "Estimated Unique Browser Sessions"
+            region = var.region
+            query  = <<-EOT
+              ${local.source}
+              | ${local.experiment_filter} and event = "guided_search.journey" and schema_version = 1
+              | filter browser_session_id like /^v1:[0-9a-f]{64}$/
+              | stats count_distinct(browser_session_id) as estimated_browser_sessions
+            EOT
+          }
+        },
+        {
+          type   = "log"
+          x      = 6
+          y      = 8
+          width  = 10
+          height = 6
+          properties = {
+            title  = "Guided Search Page Destinations"
+            region = var.region
+            query  = <<-EOT
+              ${local.source}
+              | ${local.experiment_filter} and event = "guided_search.journey" and schema_version = 1 and outcome = "page_visible"
+              | filter browser_session_id like /^v1:[0-9a-f]{64}$/
+              | stats count(*) as page_views, count_distinct(request_id) as distinct_requests,
+                  count_distinct(browser_session_id) as estimated_browser_sessions by destination
+              | sort page_views desc
+            EOT
+          }
+        },
+        {
+          type   = "log"
+          x      = 16
+          y      = 8
+          width  = 8
+          height = 6
+          properties = {
+            title  = "Guided Search Errors and Fallbacks"
+            region = var.region
+            query  = <<-EOT
+              ${local.source}
+              | ${local.experiment_filter}
+              | filter (event = "guided_search.journey" and schema_version = 1 and outcome in ["input_error", "backend_error", "no_results", "unknown_results", "blocking_guidance"])
+                  or (service = "search" and event = "search_failed")
+                  or (service = "search" and event = "search_completed" and final_result_type = "error")
+              | fields if(event = "guided_search.journey", outcome, if(event = "search_failed", "search_failed", "error_result")) as error_or_fallback
+              | stats count(*) as events, count_distinct(request_id) as distinct_requests by error_or_fallback
+              | sort events desc
+            EOT
+          }
+        },
+      ],
+      [
+        {
+          type   = "log"
+          x      = 0
+          y      = 14
+          width  = 8
+          height = 6
+          properties = {
+            title  = "I Don't Know Usage"
+            region = var.region
+            query  = <<-EOT
+              ${local.source}
+              | ${local.experiment_filter} and event = "guided_search.journey" and schema_version = 1 and outcome in ["page_visible", "dont_know"]
+              | fields if(outcome = "dont_know", request_id) as dont_know_request_id,
+                  if(outcome = "dont_know" or (outcome = "page_visible" and destination = "question"), request_id) as question_request_id
+              | stats sum(if(outcome = "dont_know", 1, 0)) as dont_know_uses,
+                  count_distinct(dont_know_request_id) as requests_using_dont_know,
+                  count_distinct(question_request_id) as requests_shown_questions
+              | filter requests_shown_questions > 0
+              | fields dont_know_uses, requests_using_dont_know, requests_shown_questions,
+                  requests_using_dont_know * 100 / requests_shown_questions as request_usage_rate_percent
+            EOT
+          }
+        },
+        {
+          type   = "log"
+          x      = 8
+          y      = 14
+          width  = 8
+          height = 6
+          properties = {
+            title  = "Client Navigation Time in seconds by Destination (p50/p90/p99)"
+            region = var.region
+            query  = <<-EOT
+              ${local.source}
+              | ${local.experiment_filter} and event = "guided_search.journey" and schema_version = 1 and outcome = "page_visible"
+              | filter ispresent(client_navigation_ms)
+              | stats pct(client_navigation_ms / 1000, 50) as p50_seconds,
+                  pct(client_navigation_ms / 1000, 90) as p90_seconds,
+                  pct(client_navigation_ms / 1000, 99) as p99_seconds by destination
+              | sort p90_seconds desc
+            EOT
+          }
+        },
+        {
+          type   = "log"
+          x      = 16
+          y      = 14
+          width  = 8
+          height = 6
+          properties = {
+            title  = "Question Response Time in seconds (p50/p90/p99)"
+            region = var.region
+            query  = <<-EOT
+              ${local.source}
+              | ${local.experiment_filter} and event = "guided_search.journey" and schema_version = 1
+              | filter ispresent(client_elapsed_ms)
+              | stats pct(client_elapsed_ms / 1000, 50) as p50_seconds,
+                  pct(client_elapsed_ms / 1000, 90) as p90_seconds,
+                  pct(client_elapsed_ms / 1000, 99) as p99_seconds
+            EOT
+          }
+        },
+      ],
+      [
+        {
+          type   = "log"
+          x      = 0
+          y      = 20
           width  = 12
           height = 6
           properties = {
@@ -131,7 +254,7 @@ resource "aws_cloudwatch_dashboard" "search_experiment" {
         {
           type   = "log"
           x      = 12
-          y      = 8
+          y      = 20
           width  = 12
           height = 6
           properties = {
@@ -150,7 +273,7 @@ resource "aws_cloudwatch_dashboard" "search_experiment" {
         {
           type   = "log"
           x      = 0
-          y      = 14
+          y      = 26
           width  = 8
           height = 6
           properties = {
@@ -170,7 +293,7 @@ resource "aws_cloudwatch_dashboard" "search_experiment" {
         {
           type   = "log"
           x      = 8
-          y      = 14
+          y      = 26
           width  = 16
           height = 6
           properties = {
@@ -189,7 +312,7 @@ resource "aws_cloudwatch_dashboard" "search_experiment" {
         {
           type   = "log"
           x      = 0
-          y      = 20
+          y      = 32
           width  = 8
           height = 6
           properties = {
@@ -206,7 +329,7 @@ resource "aws_cloudwatch_dashboard" "search_experiment" {
         {
           type   = "log"
           x      = 8
-          y      = 20
+          y      = 32
           width  = 8
           height = 6
           properties = {
@@ -224,7 +347,7 @@ resource "aws_cloudwatch_dashboard" "search_experiment" {
         {
           type   = "log"
           x      = 16
-          y      = 20
+          y      = 32
           width  = 8
           height = 6
           properties = {
@@ -243,7 +366,7 @@ resource "aws_cloudwatch_dashboard" "search_experiment" {
         {
           type   = "log"
           x      = 0
-          y      = 26
+          y      = 38
           width  = 12
           height = 6
           properties = {
@@ -261,7 +384,7 @@ resource "aws_cloudwatch_dashboard" "search_experiment" {
         {
           type   = "log"
           x      = 12
-          y      = 26
+          y      = 38
           width  = 12
           height = 6
           properties = {
@@ -282,16 +405,18 @@ resource "aws_cloudwatch_dashboard" "search_experiment" {
         {
           type   = "log"
           x      = 0
-          y      = 32
+          y      = 44
           width  = 24
           height = 6
           properties = {
-            title  = "Questions and Answers"
+            title  = "Questions and Answer Options"
             region = var.region
             query  = <<-EOT
               ${local.source}
               | ${local.search_filter} and event in ["question_returned", "answer_returned"]
-              | fields details.questions.0.question as question,
+              | fields jsonParse(@message) as event_payload
+              | fields event_payload.details.questions[0].question as question,
+                  jsonStringify(event_payload.details.questions[0].options) as answer_options,
                   details.answers.0.commodity_code as top_commodity_code,
                   details.answers.0.confidence as top_confidence,
                   answer_count,
@@ -299,6 +424,7 @@ resource "aws_cloudwatch_dashboard" "search_experiment" {
                   effective_query,
                   request_id,
                   @timestamp
+              | display @timestamp, request_id, event, effective_query, question, answer_options, top_commodity_code, top_confidence, answer_count
               | sort @timestamp desc
               | limit 50
             EOT
@@ -309,7 +435,7 @@ resource "aws_cloudwatch_dashboard" "search_experiment" {
         {
           type   = "log"
           x      = 0
-          y      = 38
+          y      = 50
           width  = 12
           height = 6
           properties = {
@@ -327,7 +453,7 @@ resource "aws_cloudwatch_dashboard" "search_experiment" {
         {
           type   = "log"
           x      = 12
-          y      = 38
+          y      = 50
           width  = 12
           height = 6
           properties = {
@@ -348,7 +474,7 @@ resource "aws_cloudwatch_dashboard" "search_experiment" {
         {
           type   = "log"
           x      = 0
-          y      = 44
+          y      = 56
           width  = 24
           height = 8
           properties = {
