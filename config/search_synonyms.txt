@@ -18,3 +18,17 @@ RFID reader => RFID reader, radio frequency identification reader
 RFID tag => RFID tag, radio frequency identification tag
 USB cable => USB cable, universal serial bus cable
 USB connector => USB connector, universal serial bus connector
+
+# Reviewed spelling and trade terminology
+vacum cleaner => vacum cleaner, vacuum cleaner
+vermeil ring => vermeil ring, gold plated silver ring
+vermeil necklace => vermeil necklace, gold plated silver necklace
+
+# Reviewed product and professional terminology from FPO declarations
+Invisalign system => Invisalign system, clear dental aligner
+ClearCorrect => ClearCorrect, clear dental aligner
+Vivera => Vivera, orthodontic retainer, orthopaedic appliance
+PTCA dilatation => PTCA dilatation, percutaneous transluminal coronary angioplasty catheter
+Cricut Joy Xtra => Cricut Joy Xtra, electronic cutting machine
+Denon Perl => Denon Perl, wireless earbuds
+Ledger Flex => Ledger Flex, hardware wallet

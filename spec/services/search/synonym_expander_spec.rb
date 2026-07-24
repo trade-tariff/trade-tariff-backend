@@ -49,6 +49,35 @@ RSpec.describe Search::SynonymExpander do
       .to eq('replacement HEPA filter high efficiency particulate air filter')
   end
 
+  describe 'reviewed production rules' do
+    {
+      'robotic vacum cleaner with mop function' =>
+        'robotic vacum cleaner with mop function vacuum cleaner',
+      'vermeil ring' =>
+        'vermeil ring gold plated silver ring',
+      'vermeil necklace' =>
+        'vermeil necklace gold plated silver necklace',
+      'Invisalign system comprehensive' =>
+        'Invisalign system comprehensive clear dental aligner',
+      'ClearCorrect aligner' =>
+        'ClearCorrect aligner clear dental aligner',
+      'Vivera retainers' =>
+        'Vivera retainers orthodontic retainer orthopaedic appliance',
+      'PTCA dilatation catheter' =>
+        'PTCA dilatation catheter percutaneous transluminal coronary angioplasty catheter',
+      'Cricut Joy Xtra' =>
+        'Cricut Joy Xtra electronic cutting machine',
+      'Denon Perl' =>
+        'Denon Perl wireless earbuds',
+      'Ledger Flex' =>
+        'Ledger Flex hardware wallet',
+    }.each do |query, expanded_query|
+      it "expands #{query}" do
+        expect(described_class.call(query)).to eq(expanded_query)
+      end
+    end
+  end
+
   it 'parses each rules file once when requests initialise it concurrently' do
     source_class = Class.new do
       attr_reader :reads
