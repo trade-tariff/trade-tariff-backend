@@ -182,9 +182,10 @@ resource "aws_cloudwatch_dashboard" "search_experiment" {
                   case(outcome = "dont_know" or (outcome = "page_visible" and destination = "question"), request_id) as question_request_id
               | stats sum(if(outcome = "dont_know", 1, 0)) as dont_know_uses,
                   count_distinct(dont_know_request_id) as requests_using_dont_know,
-                  count_distinct(question_request_id) as requests_shown_questions,
-                  count_distinct(dont_know_request_id) * 100 / count_distinct(question_request_id) as request_usage_rate_percent
+                  count_distinct(question_request_id) as requests_shown_questions
               | filter requests_shown_questions > 0
+              | fields requests_using_dont_know * 100 / requests_shown_questions as request_usage_rate_percent
+              | display dont_know_uses, requests_using_dont_know, requests_shown_questions, request_usage_rate_percent
             EOT
           }
         },
