@@ -7,7 +7,7 @@ RSpec.describe ChangesTablePopulator::MeasureCreatedOrUpdated do
         db[:measures_oplog].delete
       end
 
-      it 'doesn\'t extract changes' do
+      it_with_refresh_materialized_view 'doesn\'t extract changes' do
         expect { described_class.populate }.not_to change(Change, :count)
       end
     end
