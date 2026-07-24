@@ -735,6 +735,15 @@ RSpec.describe Api::Internal::SearchService do
 
         expect(ExpandSearchQueryService).not_to have_received(:call)
       end
+
+      it 'does not apply retrieval synonyms with the v2 decider' do
+        allow(AdminConfiguration).to receive(:option_value).with('expand_search_decider').and_return('v2')
+        allow(Search::SynonymExpander).to receive(:call)
+
+        described_class.new(q: 'laptop').call
+
+        expect(Search::SynonymExpander).not_to have_received(:call)
+      end
     end
 
     context 'when expand_search_enabled is true' do

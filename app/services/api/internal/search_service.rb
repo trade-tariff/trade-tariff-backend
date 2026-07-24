@@ -299,6 +299,7 @@ module Api
       end
 
       def retrieval_query_with_synonyms(search_expanded_query)
+        return search_expanded_query unless AdminConfiguration.enabled?('expand_search_enabled')
         return search_expanded_query unless expansion_decider_version == 'v2'
 
         ::Search::SynonymExpander.call(search_expanded_query)
