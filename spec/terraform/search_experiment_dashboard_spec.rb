@@ -36,7 +36,7 @@ RSpec.describe 'search experiment dashboard Terraform' do
 
   it 'explains how to interpret and investigate the production UAT cohort' do
     expect(module_main_tf).to include('Production UAT')
-    expect(module_main_tf).to include('Requests and distinct guided-search browser sessions are reported separately.')
+    expect(module_main_tf).to include('Requests and estimated distinct guided-search browser sessions are reported separately.')
     expect(module_main_tf).to include('One browser session can contain multiple requests.')
     expect(module_main_tf).to include('Set the dashboard time range to the UAT window')
     expect(module_main_tf).to include('copy the request ID into admin search diagnostics')
@@ -64,12 +64,14 @@ RSpec.describe 'search experiment dashboard Terraform' do
   end
 
   it 'summarises the UAT period and exposes the behaviour needed for diagnosis' do
+    uat_period_totals_query = widget_query('UAT Period Totals')
+
     expect(module_main_tf).to include('UAT Period Totals')
-    expect(module_main_tf).to include('as completed_requests')
-    expect(module_main_tf).to include('as hard_failures')
-    expect(module_main_tf).to include('as error_outcomes')
-    expect(module_main_tf).to include('as zero_result_requests')
-    expect(module_main_tf).to include('as selections')
+    expect(uat_period_totals_query).to include('sum(if(event = "search_completed", 1, 0)) as completed_requests')
+    expect(uat_period_totals_query).to include('sum(if(event = "search_failed", 1, 0)) as hard_failures')
+    expect(uat_period_totals_query).to include('sum(if(event = "search_completed" and final_result_type = "error", 1, 0)) as error_outcomes')
+    expect(uat_period_totals_query).to include('sum(if(event = "search_completed" and result_count = 0, 1, 0)) as zero_result_requests')
+    expect(uat_period_totals_query).to include('sum(if(event = "guided_search.journey" and outcome = "result_selected", 1, 0)) as selections')
     expect(module_main_tf).to include('Questions and Answers')
     expect(module_main_tf).to include('event in ["question_returned", "answer_returned"]')
     expect(module_main_tf).to include('details.questions.0.question as question')
@@ -80,9 +82,39 @@ RSpec.describe 'search experiment dashboard Terraform' do
     expect(module_main_tf).to include('Top Zero-Result Terms')
   end
 
-  it 'reports distinct guided-search browser sessions alongside request totals' do
-    expect(module_main_tf).to include('event = "guided_search.journey" and ispresent(browser_session_id)')
-    expect(module_main_tf).to include('count_distinct(browser_session_id) as distinct_browser_sessions')
+  it 'reports estimated browser sessions from valid v1 guided-search events' do
+    uat_period_totals_query = widget_query('UAT Period Totals')
+
+    expect(uat_period_totals_query).to include('${local.experiment_filter}')
+    expect(uat_period_totals_query).to include('service = "search" and event in ["search_completed", "search_failed"]')
+    expect(uat_period_totals_query).to include(
+      'case(event = "guided_search.journey" and schema_version = 1 and browser_session_id like /^v1:[0-9a-f]{64}$/, browser_session_id) as guided_search_browser_session_id',
+    )
+    expect(uat_period_totals_query).to include('or ispresent(guided_search_browser_session_id)')
+    expect(uat_period_totals_query).to include(
+      'count_distinct(guided_search_browser_session_id) as estimated_browser_sessions',
+    )
+  end
+
+  it 'uses frontend journey events for guided-search result selections' do
+    selected_results_query = widget_query('Selected Results')
+
+    expect(selected_results_query).to include('${local.experiment_filter}')
+    expect(selected_results_query).to include(
+      'event = "guided_search.journey" and schema_version = 1 and outcome = "result_selected"',
+    )
+    expect(selected_results_query).to include('browser_session_id like /^v1:[0-9a-f]{64}$/')
+    expect(selected_results_query).to include('stats count(*) as selections by goods_nomenclature_item_id, confidence')
+    expect(selected_results_query).not_to include('${local.search_filter}')
+  end
+
+  it 'shows journey diagnostics without exposing browser session identifiers' do
+    recent_uat_events_query = widget_query('Recent UAT Events')
+
+    expect(recent_uat_events_query).to include(
+      'outcome, destination, result_rank, confidence, used_dont_know, client_elapsed_ms, client_navigation_ms',
+    )
+    expect(recent_uat_events_query).not_to include('browser_session_id')
   end
 
   it 'shows provider latency by operation so slow requests can be diagnosed' do
@@ -99,6 +131,7 @@ RSpec.describe 'search experiment dashboard Terraform' do
   end
 
   it 'gives detailed diagnostics enough horizontal space' do
+    expect(module_main_tf).to match(/width\s+= 8\n\s+height\s+= 6\n\s+properties = \{\n\s+title\s+= "UAT Period Totals"/)
     expect(module_main_tf).to match(/width\s+= 12\n\s+height\s+= 6\n\s+properties = \{\n\s+title\s+= "Total AI Cost by Operation"/)
     expect(module_main_tf).to match(/width\s+= 12\n\s+height\s+= 6\n\s+properties = \{\n\s+title\s+= "AI Token Totals by Operation"/)
     expect(module_main_tf).to match(/width\s+= 16\n\s+height\s+= 6\n\s+properties = \{\n\s+title\s+= "AI API Latency \(p50\/p90\/p99\)"/)
@@ -114,5 +147,12 @@ RSpec.describe 'search experiment dashboard Terraform' do
   it 'is discoverable from the search overview dashboard' do
     expect(search_dashboard_tf).to include('Search Experiments')
     expect(search_dashboard_tf).to include('SearchExperiment-${var.environment}')
+  end
+
+  def widget_query(title)
+    module_main_tf.match(/title\s+= "#{Regexp.escape(title)}".*?query\s+= <<-EOT\n(.*?)\n\s+EOT/m).then do |match|
+      expect(match).to be_present
+      match[1]
+    end
   end
 end
