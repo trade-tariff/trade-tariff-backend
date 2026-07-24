@@ -170,10 +170,13 @@ RSpec.describe 'search experiment dashboard Terraform' do
       'case(outcome = "dont_know" or (outcome = "page_visible" and destination = "question"), request_id) as question_request_id',
     )
     expect(dont_know_query).to include(
-      'count_distinct(dont_know_request_id) * 100 / count_distinct(question_request_id) as request_usage_rate_percent',
+      'requests_using_dont_know * 100 / requests_shown_questions as request_usage_rate_percent',
     )
-    expect(dont_know_query).not_to include(
-      'fields dont_know_uses, requests_using_dont_know, requests_shown_questions,',
+    expect(dont_know_query).to include(
+      'filter requests_shown_questions > 0',
+    )
+    expect(dont_know_query).to include(
+      'display dont_know_uses, requests_using_dont_know, requests_shown_questions, request_usage_rate_percent',
     )
   end
 
