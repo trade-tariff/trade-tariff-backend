@@ -55,13 +55,13 @@ resource "aws_cloudwatch_dashboard" "search_operations" {
           width  = 6
           height = 6
           properties = {
-            title  = "E2E Latency (p50/p90/p99)"
+            title  = "E2E Latency in seconds (p50/p90/p99)"
             region = var.region
             view   = "timeSeries"
             query  = <<-EOT
               ${local.source}
               | ${local.service_filter} and event = "search_completed"
-              | stats pct(total_duration_ms, 50) as p50, pct(total_duration_ms, 90) as p90, pct(total_duration_ms, 99) as p99 by bin(1h)
+              | stats pct(total_duration_ms / 1000, 50) as p50_seconds, pct(total_duration_ms / 1000, 90) as p90_seconds, pct(total_duration_ms / 1000, 99) as p99_seconds by bin(1h)
             EOT
           }
         },
@@ -72,13 +72,13 @@ resource "aws_cloudwatch_dashboard" "search_operations" {
           width  = 6
           height = 6
           properties = {
-            title  = "AI API Latency (p50/p90/p99)"
+            title  = "AI API Latency in seconds (p50/p90/p99)"
             region = var.region
             view   = "timeSeries"
             query  = <<-EOT
               ${local.source}
               | ${local.service_filter} and event = "api_call_completed"
-              | stats pct(duration_ms, 50) as p50, pct(duration_ms, 90) as p90, pct(duration_ms, 99) as p99 by bin(1h)
+              | stats pct(duration_ms / 1000, 50) as p50_seconds, pct(duration_ms / 1000, 90) as p90_seconds, pct(duration_ms / 1000, 99) as p99_seconds by bin(1h)
             EOT
           }
         },
@@ -108,13 +108,13 @@ resource "aws_cloudwatch_dashboard" "search_operations" {
           width  = 8
           height = 6
           properties = {
-            title  = "Query Expansion Volume"
+            title  = "Query Expansion Volume and Average Duration in seconds"
             region = var.region
             view   = "timeSeries"
             query  = <<-EOT
               ${local.source}
               | ${local.service_filter} and event = "query_expanded"
-              | stats count(*) as expansions, avg(duration_ms) as avg_duration_ms by bin(1h)
+              | stats count(*) as expansions, avg(duration_ms / 1000) as avg_duration_seconds by bin(1h)
             EOT
           }
         },
@@ -161,13 +161,13 @@ resource "aws_cloudwatch_dashboard" "search_operations" {
           width  = 8
           height = 6
           properties = {
-            title  = "Hybrid Leg Latency (p50/p90)"
+            title  = "Hybrid Leg Latency in seconds (p50/p90)"
             region = var.region
             view   = "timeSeries"
             query  = <<-EOT
               ${local.source}
               | ${local.service_filter} and event = "retrieval_leg_completed"
-              | stats pct(duration_ms, 50) as p50, pct(duration_ms, 90) as p90 by leg, bin(1h)
+              | stats pct(duration_ms / 1000, 50) as p50_seconds, pct(duration_ms / 1000, 90) as p90_seconds by leg, bin(1h)
             EOT
           }
         },
@@ -214,12 +214,12 @@ resource "aws_cloudwatch_dashboard" "search_operations" {
           width  = 8
           height = 6
           properties = {
-            title  = "Query Expansion Detail"
+            title  = "Query Expansion Detail in seconds"
             region = var.region
             query  = <<-EOT
               ${local.source}
               | ${local.service_filter} and event = "query_expanded"
-              | stats count(*) as expansions, avg(duration_ms) as avg_ms by reason
+              | stats count(*) as expansions, avg(duration_ms / 1000) as avg_seconds by reason
               | sort expansions desc
             EOT
           }
@@ -270,13 +270,13 @@ resource "aws_cloudwatch_dashboard" "search_operations" {
           width  = 8
           height = 6
           properties = {
-            title  = "Duplicate Guard AI Latency"
+            title  = "Duplicate Guard AI Latency in seconds"
             region = var.region
             view   = "timeSeries"
             query  = <<-EOT
               ${local.source}
               | ${local.service_filter} and event = "api_call_completed" and operation in ["duplicate_question_validator", "duplicate_question_retry"]
-              | stats pct(duration_ms, 50) as p50, pct(duration_ms, 90) as p90, pct(duration_ms, 99) as p99 by operation, bin(1h)
+              | stats pct(duration_ms / 1000, 50) as p50_seconds, pct(duration_ms / 1000, 90) as p90_seconds, pct(duration_ms / 1000, 99) as p99_seconds by operation, bin(1h)
             EOT
           }
         },

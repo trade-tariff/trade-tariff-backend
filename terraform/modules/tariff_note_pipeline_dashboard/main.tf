@@ -73,13 +73,13 @@ resource "aws_cloudwatch_dashboard" "tariff_note_pipeline" {
           width  = 6
           height = 6
           properties = {
-            title  = "Duration: Run p50/p90/p99 (ms)"
+            title  = "Run Duration in seconds (p50/p90/p99)"
             region = var.region
             view   = "timeSeries"
             query  = <<-EOT
               ${local.source}
               | ${local.service_filter} and event = "import_run_completed"
-              | stats pct(duration_ms, 50) as p50, pct(duration_ms, 90) as p90, pct(duration_ms, 99) as p99 by bin(1h)
+              | stats pct(duration_ms / 1000, 50) as p50_seconds, pct(duration_ms / 1000, 90) as p90_seconds, pct(duration_ms / 1000, 99) as p99_seconds by bin(1h)
             EOT
           }
         },
@@ -112,13 +112,13 @@ resource "aws_cloudwatch_dashboard" "tariff_note_pipeline" {
           width  = 8
           height = 6
           properties = {
-            title  = "Fetch Duration p50/p90/p99 (ms)"
+            title  = "Fetch Duration in seconds (p50/p90/p99)"
             region = var.region
             view   = "timeSeries"
             query  = <<-EOT
               ${local.source}
               | ${local.service_filter} and event = "document_fetched"
-              | stats pct(duration_ms, 50) as p50, pct(duration_ms, 90) as p90, pct(duration_ms, 99) as p99 by bin(1h)
+              | stats pct(duration_ms / 1000, 50) as p50_seconds, pct(duration_ms / 1000, 90) as p90_seconds, pct(duration_ms / 1000, 99) as p99_seconds by bin(1h)
             EOT
           }
         },
@@ -129,13 +129,13 @@ resource "aws_cloudwatch_dashboard" "tariff_note_pipeline" {
           width  = 8
           height = 6
           properties = {
-            title  = "Parse Duration p50/p90/p99 (ms)"
+            title  = "Parse Duration in seconds (p50/p90/p99)"
             region = var.region
             view   = "timeSeries"
             query  = <<-EOT
               ${local.source}
               | ${local.service_filter} and event = "document_parsed"
-              | stats pct(duration_ms, 50) as p50, pct(duration_ms, 90) as p90, pct(duration_ms, 99) as p99 by bin(1h)
+              | stats pct(duration_ms / 1000, 50) as p50_seconds, pct(duration_ms / 1000, 90) as p90_seconds, pct(duration_ms / 1000, 99) as p99_seconds by bin(1h)
             EOT
           }
         },
@@ -146,13 +146,13 @@ resource "aws_cloudwatch_dashboard" "tariff_note_pipeline" {
           width  = 8
           height = 6
           properties = {
-            title  = "Document Import Duration p50/p90/p99 (ms)"
+            title  = "Document Import Duration in seconds (p50/p90/p99)"
             region = var.region
             view   = "timeSeries"
             query  = <<-EOT
               ${local.source}
               | ${local.service_filter} and event = "document_imported"
-              | stats pct(duration_ms, 50) as p50, pct(duration_ms, 90) as p90, pct(duration_ms, 99) as p99 by bin(1h)
+              | stats pct(duration_ms / 1000, 50) as p50_seconds, pct(duration_ms / 1000, 90) as p90_seconds, pct(duration_ms / 1000, 99) as p99_seconds by bin(1h)
             EOT
           }
         }
