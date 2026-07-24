@@ -72,9 +72,9 @@ RSpec.describe 'search experiment dashboard Terraform' do
     expect(uat_period_totals_query).to include('sum(if(event = "search_completed" and final_result_type = "error", 1, 0)) as error_outcomes')
     expect(uat_period_totals_query).to include('sum(if(event = "search_completed" and result_count = 0, 1, 0)) as zero_result_requests')
     expect(uat_period_totals_query).to include('sum(if(event = "guided_search.journey" and outcome = "result_selected", 1, 0)) as selections')
-    expect(module_main_tf).to include('Questions and Answers')
+    expect(module_main_tf).to include('Questions and Answer Options')
     expect(module_main_tf).to include('event in ["question_returned", "answer_returned"]')
-    expect(module_main_tf).to include('details.questions.0.question as question')
+    expect(module_main_tf).to include('event_payload.details.questions[0].question as question')
     expect(module_main_tf).to include('details.answers.0.commodity_code as top_commodity_code')
     expect(module_main_tf).to include('details.answers.0.confidence as top_confidence')
     expect(module_main_tf).to include('Selected Results')
@@ -93,6 +93,98 @@ RSpec.describe 'search experiment dashboard Terraform' do
     expect(uat_period_totals_query).to include('or ispresent(guided_search_browser_session_id)')
     expect(uat_period_totals_query).to include(
       'count_distinct(guided_search_browser_session_id) as estimated_browser_sessions',
+    )
+  end
+
+  it 'makes estimated browser sessions directly visible without exposing identifiers' do
+    unique_sessions_query = widget_query('Estimated Unique Browser Sessions')
+
+    expect(module_main_tf).to match(
+      /title\s+= "Estimated Unique Browser Sessions"\n\s+region = var\.region\n\s+query\s+= <<-EOT/,
+    )
+    expect(unique_sessions_query).to include('${local.experiment_filter}')
+    expect(unique_sessions_query).to include(
+      'event = "guided_search.journey" and schema_version = 1',
+    )
+    expect(unique_sessions_query).to include('browser_session_id like /^v1:[0-9a-f]{64}$/')
+    expect(unique_sessions_query).to include(
+      'count_distinct(browser_session_id) as estimated_browser_sessions',
+    )
+    expect(unique_sessions_query).not_to include('| fields browser_session_id')
+  end
+
+  it 'breaks browser-confirmed page destinations down by views, requests, and sessions' do
+    destinations_query = widget_query('Guided Search Page Destinations')
+
+    expect(destinations_query).to include('outcome = "page_visible"')
+    expect(destinations_query).to include('browser_session_id like /^v1:[0-9a-f]{64}$/')
+    expect(destinations_query).to include(
+      'stats count(*) as page_views, count_distinct(request_id) as distinct_requests,',
+    )
+    expect(destinations_query).to include(
+      'count_distinct(browser_session_id) as estimated_browser_sessions by destination',
+    )
+  end
+
+  it 'combines frontend journey errors and backend search failures by outcome' do
+    errors_query = widget_query('Guided Search Errors and Fallbacks')
+
+    expect(errors_query).to include(
+      'event = "guided_search.journey" and schema_version = 1 and outcome in ["input_error", "backend_error", "no_results", "unknown_results", "blocking_guidance"]',
+    )
+    expect(errors_query).to include('service = "search" and event = "search_failed"')
+    expect(errors_query).to include(
+      'service = "search" and event = "search_completed" and final_result_type = "error"',
+    )
+    expect(errors_query).to include(
+      'stats count(*) as events, count_distinct(request_id) as distinct_requests by error_or_fallback',
+    )
+  end
+
+  it 'reports dont-know usage and rate against displayed questions' do
+    dont_know_query = widget_query("I Don't Know Usage")
+
+    expect(dont_know_query).to include('outcome in ["page_visible", "dont_know"]')
+    expect(dont_know_query).to include(
+      'sum(if(outcome = "dont_know", 1, 0)) as dont_know_uses',
+    )
+    expect(dont_know_query).to include(
+      'count_distinct(dont_know_request_id) as requests_using_dont_know',
+    )
+    expect(dont_know_query).to include(
+      'count_distinct(question_request_id) as requests_shown_questions',
+    )
+    expect(dont_know_query).to include(
+      'if(outcome = "dont_know" or (outcome = "page_visible" and destination = "question"), request_id) as question_request_id',
+    )
+    expect(dont_know_query).to include(
+      'requests_using_dont_know * 100 / requests_shown_questions as request_usage_rate_percent',
+    )
+  end
+
+  it 'shows client journey timings in explicitly labelled seconds' do
+    navigation_query = widget_query('Client Navigation Time in seconds by Destination (p50/p90/p99)')
+    question_query = widget_query('Question Response Time in seconds (p50/p90/p99)')
+
+    expect(navigation_query).to include('outcome = "page_visible"')
+    expect(navigation_query).to include(
+      'pct(client_navigation_ms / 1000, 50) as p50_seconds',
+    )
+    expect(navigation_query).to include('by destination')
+    expect(question_query).to include('ispresent(client_elapsed_ms)')
+    expect(question_query).to include(
+      'pct(client_elapsed_ms / 1000, 50) as p50_seconds',
+    )
+    expect(question_query).not_to include('by question_count')
+  end
+
+  it 'shows the answer options returned with each question' do
+    questions_query = widget_query('Questions and Answer Options')
+
+    expect(questions_query).to include('jsonParse(@message) as event_payload')
+    expect(questions_query).to include('event_payload.details.questions[0].question as question')
+    expect(questions_query).to include(
+      'jsonStringify(event_payload.details.questions[0].options) as answer_options',
     )
   end
 
@@ -141,8 +233,8 @@ RSpec.describe 'search experiment dashboard Terraform' do
     expect(module_main_tf).to match(/width\s+= 12\n\s+height\s+= 6\n\s+properties = \{\n\s+title\s+= "Total AI Cost by Operation"/)
     expect(module_main_tf).to match(/width\s+= 12\n\s+height\s+= 6\n\s+properties = \{\n\s+title\s+= "AI Token Totals by Operation"/)
     expect(module_main_tf).to match(/width\s+= 16\n\s+height\s+= 6\n\s+properties = \{\n\s+title\s+= "AI API Latency in seconds \(p50\/p90\/p99\)"/)
-    expect(module_main_tf).to match(/width\s+= 24\n\s+height\s+= 6\n\s+properties = \{\n\s+title\s+= "Questions and Answers"/)
-    expect(module_main_tf).to include('| fields details.questions.0.question as question,')
+    expect(module_main_tf).to match(/width\s+= 24\n\s+height\s+= 6\n\s+properties = \{\n\s+title\s+= "Questions and Answer Options"/)
+    expect(module_main_tf).to include('| fields event_payload.details.questions[0].question as question,')
   end
 
   it 'uses a single outcome dimension for the result-type pie chart' do
