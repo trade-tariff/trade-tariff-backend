@@ -36,7 +36,8 @@ RSpec.describe 'search experiment dashboard Terraform' do
 
   it 'explains how to interpret and investigate the production UAT cohort' do
     expect(module_main_tf).to include('Production UAT')
-    expect(module_main_tf).to include('Requests are counted, not unique users')
+    expect(module_main_tf).to include('Requests and distinct guided-search browser sessions are reported separately.')
+    expect(module_main_tf).to include('One browser session can contain multiple requests.')
     expect(module_main_tf).to include('Set the dashboard time range to the UAT window')
     expect(module_main_tf).to include('copy the request ID into admin search diagnostics')
     expect(module_main_tf).to include('Recent UAT Events')
@@ -77,6 +78,11 @@ RSpec.describe 'search experiment dashboard Terraform' do
     expect(module_main_tf).to include('Selected Results')
     expect(module_main_tf).to include('goods_nomenclature_item_id')
     expect(module_main_tf).to include('Top Zero-Result Terms')
+  end
+
+  it 'reports distinct guided-search browser sessions alongside request totals' do
+    expect(module_main_tf).to include('event = "guided_search.journey" and ispresent(browser_session_id)')
+    expect(module_main_tf).to include('count_distinct(browser_session_id) as distinct_browser_sessions')
   end
 
   it 'shows provider latency by operation so slow requests can be diagnosed' do
