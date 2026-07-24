@@ -178,8 +178,8 @@ resource "aws_cloudwatch_dashboard" "search_experiment" {
             query  = <<-EOT
               ${local.source}
               | ${local.experiment_filter} and event = "guided_search.journey" and schema_version = 1 and outcome in ["page_visible", "dont_know"]
-              | fields if(outcome = "dont_know", request_id) as dont_know_request_id,
-                  if(outcome = "dont_know" or (outcome = "page_visible" and destination = "question"), request_id) as question_request_id
+              | fields case(outcome = "dont_know", request_id) as dont_know_request_id,
+                  case(outcome = "dont_know" or (outcome = "page_visible" and destination = "question"), request_id) as question_request_id
               | stats sum(if(outcome = "dont_know", 1, 0)) as dont_know_uses,
                   count_distinct(dont_know_request_id) as requests_using_dont_know,
                   count_distinct(question_request_id) as requests_shown_questions
