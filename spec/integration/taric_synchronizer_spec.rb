@@ -40,8 +40,9 @@ RSpec.describe TaricSynchronizer do
 
       context 'when elasticsearch is buggy' do
         before do
-          allow_any_instance_of(TaricImporter::EntityMapper).to receive(:build) # rubocop:disable RSpec/AnyInstance
-            .and_raise OpenSearch::Transport::Transport::SnifferTimeoutError
+          entity_mapper = instance_double(TaricImporter::EntityMapper)
+          allow(TaricImporter::EntityMapper).to receive(:new).and_return(entity_mapper)
+          allow(entity_mapper).to receive(:build).and_raise(OpenSearch::Transport::Transport::SnifferTimeoutError)
 
           allow(TariffSynchronizer::TaricUpdate).to receive(:find).and_return(nil)
         end
@@ -57,8 +58,9 @@ RSpec.describe TaricSynchronizer do
 
       context 'when we have a timeout' do
         before do
-          allow_any_instance_of(TaricImporter::EntityMapper).to receive(:build) # rubocop:disable RSpec/AnyInstance
-            .and_raise Timeout::Error
+          entity_mapper = instance_double(TaricImporter::EntityMapper)
+          allow(TaricImporter::EntityMapper).to receive(:new).and_return(entity_mapper)
+          allow(entity_mapper).to receive(:build).and_raise(Timeout::Error)
 
           allow(TariffSynchronizer::TaricUpdate).to receive(:find).and_return(nil)
         end

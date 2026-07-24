@@ -516,4 +516,3 @@ VersionedAcceptHeader#matches?
 main#SidekiqDeathHandler
 TariffKnowledge::Node#note_blocks
 ChangeOld#operation_date=
-TariffChangesService::BaseChanges#record=
