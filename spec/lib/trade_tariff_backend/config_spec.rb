@@ -398,6 +398,21 @@ RSpec.describe TradeTariffBackend::Config do
     describe '.openai_model_pricing' do
       it 'loads reviewed model pricing from application config' do
         expect(config.openai_model_pricing).to include(
+          'gpt-5.6' => {
+            'input_per_million_tokens' => 5.0,
+            'cached_input_per_million_tokens' => 0.5,
+            'output_per_million_tokens' => 30.0,
+          },
+          'gpt-5.6-terra' => {
+            'input_per_million_tokens' => 2.5,
+            'cached_input_per_million_tokens' => 0.25,
+            'output_per_million_tokens' => 15.0,
+          },
+          'gpt-5.6-luna' => {
+            'input_per_million_tokens' => 1.0,
+            'cached_input_per_million_tokens' => 0.1,
+            'output_per_million_tokens' => 6.0,
+          },
           'gpt-5.4' => {
             'input_per_million_tokens' => 2.5,
             'cached_input_per_million_tokens' => 0.25,

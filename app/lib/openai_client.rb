@@ -214,7 +214,12 @@ private
   end
 
   MODEL_CONFIGS = {
-    # GPT-5.5 (latest flagship, 1M context)
+    # GPT-5.6 family (1M context)
+    'gpt-5.6' => { reasoning_levels: %w[none low medium high xhigh max] },
+    'gpt-5.6-terra' => { reasoning_levels: %w[none low medium high xhigh max] },
+    'gpt-5.6-luna' => { reasoning_levels: %w[none low medium high xhigh max] },
+
+    # GPT-5.5 (1M context)
     'gpt-5.5' => { reasoning_levels: %w[none low medium high xhigh] },
 
     # GPT-5.4 (1M context)

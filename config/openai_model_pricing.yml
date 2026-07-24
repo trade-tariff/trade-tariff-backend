@@ -3,6 +3,18 @@
 # Models missing from this file are still reported with token usage and
 # pricing_known=false so they remain visible in the AI costs dashboard.
 development: &pricing
+  gpt-5.6:
+    input_per_million_tokens: 5.0
+    cached_input_per_million_tokens: 0.5
+    output_per_million_tokens: 30.0
+  gpt-5.6-terra:
+    input_per_million_tokens: 2.5
+    cached_input_per_million_tokens: 0.25
+    output_per_million_tokens: 15.0
+  gpt-5.6-luna:
+    input_per_million_tokens: 1.0
+    cached_input_per_million_tokens: 0.1
+    output_per_million_tokens: 6.0
   gpt-5.5:
     input_per_million_tokens: 5.0
     cached_input_per_million_tokens: 0.5
