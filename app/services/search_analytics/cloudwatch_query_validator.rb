@@ -63,13 +63,13 @@ module SearchAnalytics
     end
 
     def await_completion(query_id)
-      QUERY_MAX_POLLS.times do
+      QUERY_MAX_POLLS.times do |poll|
         status = client.get_query_results(query_id:).status
-        return if status == 'Complete'
+        return true if status == 'Complete'
 
         raise QueryError, "CloudWatch query #{status} (query ID: #{query_id})" if TERMINAL_FAILURE_STATUSES.include?(status)
 
-        Kernel.sleep QUERY_POLL_INTERVAL_SECONDS
+        Kernel.sleep QUERY_POLL_INTERVAL_SECONDS unless poll == QUERY_MAX_POLLS - 1
       end
 
       raise QueryError, "CloudWatch query timed out while polling (query ID: #{query_id})"
