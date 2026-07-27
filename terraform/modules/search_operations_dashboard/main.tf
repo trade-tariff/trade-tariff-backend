@@ -255,8 +255,11 @@ resource "aws_cloudwatch_dashboard" "search_operations" {
             query  = <<-EOT
               ${local.source}
               | ${local.service_filter} and event = "search_started"
-              | fields @timestamp, query, request_source, search_type, request_id
-              | sort @timestamp desc
+              | stats latest(@timestamp) as latest_timestamp, latest(query) as query,
+                  latest(request_source) as request_source, latest(search_type) as search_type
+                by request_id
+              | display latest_timestamp, query, request_source, search_type, request_id
+              | sort latest_timestamp desc
               | limit 30
             EOT
           }

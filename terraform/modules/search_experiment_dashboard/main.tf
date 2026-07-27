@@ -375,7 +375,7 @@ resource "aws_cloudwatch_dashboard" "search_experiment" {
             query  = <<-EOT
               ${local.source}
               | ${local.search_filter} and event = "search_started"
-              | stats count(*) as searches by query, search_type
+              | stats count_distinct(request_id) as searches by query, search_type
               | sort searches desc
               | limit 30
             EOT
