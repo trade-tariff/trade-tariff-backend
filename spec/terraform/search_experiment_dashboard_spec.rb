@@ -3,6 +3,7 @@
 RSpec.describe 'search experiment dashboard Terraform' do
   let(:dashboards_tf) { Rails.root.join('terraform/dashboards.tf').read }
   let(:module_main_tf) { Rails.root.join('terraform/modules/search_experiment_dashboard/main.tf').read }
+  let(:operations_dashboard_tf) { Rails.root.join('terraform/modules/search_operations_dashboard/main.tf').read }
   let(:search_dashboard_tf) { Rails.root.join('terraform/modules/search_dashboard/main.tf').read }
 
   it 'wires the search experiment dashboard into the dashboard stack' do
@@ -207,6 +208,27 @@ RSpec.describe 'search experiment dashboard Terraform' do
     )
   end
 
+  it 'counts started searches once per request' do
+    top_search_terms_query = widget_query('Top Search Terms')
+
+    expect(top_search_terms_query).to include(
+      'stats count_distinct(request_id) as searches by query, search_type',
+    )
+    expect(top_search_terms_query).not_to include('stats count(*) as searches')
+  end
+
+  it 'lists each recent started search once' do
+    recent_searches_query = operations_widget_query('Recent Searches')
+
+    expect(recent_searches_query).to include(
+      'stats latest(@timestamp) as latest_timestamp, latest(query) as query,',
+    )
+    expect(recent_searches_query).to include('by request_id')
+    expect(recent_searches_query).to include(
+      'display latest_timestamp, query, request_source, search_type, request_id',
+    )
+  end
+
   it 'uses frontend journey events for guided-search result selections' do
     selected_results_query = widget_query('Selected Results')
 
@@ -284,6 +306,13 @@ RSpec.describe 'search experiment dashboard Terraform' do
     module_main_tf.match(/properties = \{\n\s+title\s+= "#{Regexp.escape(title)}".*?\n\s+EOT/m).then do |match|
       expect(match).to be_present
       match[0]
+    end
+  end
+
+  def operations_widget_query(title)
+    operations_dashboard_tf.match(/title\s+= "#{Regexp.escape(title)}".*?query\s+= <<-EOT\n(.*?)\n\s+EOT/m).then do |match|
+      expect(match).to be_present
+      match[1]
     end
   end
 end
