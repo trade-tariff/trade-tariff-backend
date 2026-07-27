@@ -54,8 +54,8 @@ RSpec.describe 'search experiment dashboard Terraform' do
     expect(module_main_tf).to include('| filter ispresent(total_cost_usd)')
     expect(module_main_tf).to include('stats sum(total_cost_usd) as total_cost_usd by ai_operation, model')
     expect(module_main_tf).to include('AI Token Totals by Operation')
-    expect(module_main_tf).to include('sum(input_tokens) as input_tokens')
-    expect(module_main_tf).to include('sum(output_tokens) as output_tokens')
+    expect(module_main_tf).to include('sum(input_tokens) as input_token_total')
+    expect(module_main_tf).to include('sum(output_tokens) as output_token_total')
     expect(module_main_tf).to include('Unknown Pricing Events')
     expect(module_main_tf).to include('not pricing_known or not ispresent(total_cost_usd)')
     expect(module_main_tf).not_to include('pricing_known = true')
@@ -68,8 +68,9 @@ RSpec.describe 'search experiment dashboard Terraform' do
 
     expect(token_widget).not_to include('view   = "bar"')
     expect(token_widget).to include(
-      'stats sum(input_tokens) as input_tokens, sum(output_tokens) as output_tokens, sum(total_tokens) as total_tokens by ai_operation, model',
+      'stats sum(input_tokens) as input_token_total, sum(output_tokens) as output_token_total, sum(total_tokens) as token_total by ai_operation, model',
     )
+    expect(token_widget).to include('| sort token_total desc')
   end
 
   it 'summarises the UAT period and exposes the behaviour needed for diagnosis' do
