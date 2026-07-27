@@ -264,8 +264,8 @@ resource "aws_cloudwatch_dashboard" "search_experiment" {
               ${local.source}
               | ${local.ai_cost_filter}
               | fields if(ispresent(operation), operation, event_kind) as ai_operation
-              | stats sum(input_tokens) as input_tokens, sum(output_tokens) as output_tokens, sum(total_tokens) as total_tokens by ai_operation, model
-              | sort total_tokens desc
+              | stats sum(input_tokens) as input_token_total, sum(output_tokens) as output_token_total, sum(total_tokens) as token_total by ai_operation, model
+              | sort token_total desc
             EOT
           }
         },
