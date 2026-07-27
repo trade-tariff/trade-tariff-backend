@@ -7,11 +7,12 @@ class TaricImporter
         attr_accessor :entity_class
       end
 
-      attr_reader :record_hash, :klass
+      attr_reader :record_hash, :klass, :national_sid_counter
 
-      def initialize(record_hash, klass)
+      def initialize(record_hash, klass, national_sid_counter: nil)
         @record_hash = record_hash
         @klass = klass
+        @national_sid_counter = national_sid_counter
       end
 
       def primary_key
@@ -23,7 +24,8 @@ class TaricImporter
       # synthesis)
       def attributes(operation)
         @attributes ||= {}
-        @attributes[operation] ||= before_build(default_attributes.merge(mutate(record_hash.values.last)), operation)
+        attrs = record_hash.values.last.dup
+        @attributes[operation] ||= before_build(default_attributes.merge(mutate(attrs)), operation)
       end
 
       def mutate(attributes) = attributes

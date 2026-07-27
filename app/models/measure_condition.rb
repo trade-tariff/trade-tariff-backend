@@ -72,13 +72,10 @@ class MeasureCondition < Sequel::Model
 
   delegate :positive_action?, to: :measure_action, allow_nil: true
 
-  # Called explicitly by TaricImporter::EntityMapper before a create-operation
-  # instance is built, since writes now go through a raw batched insert
-  # (TariffSynchronizer::Import::BatchRecordInserter) rather than Sequel's
-  # model lifecycle - there is no before_create hook to rely on anymore.
-  def self.assign_national_sid_if_missing(attributes)
-    attributes['measure_condition_sid'] = next_national_sid if attributes['measure_condition_sid'].blank?
-    attributes
+  def before_create
+    self.measure_condition_sid ||= self.class.next_national_sid
+
+    super
   end
 
   def document_code

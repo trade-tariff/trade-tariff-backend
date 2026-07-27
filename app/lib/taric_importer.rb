@@ -3,6 +3,7 @@ require 'nokogiri'
 require 'taric_importer/xml_parser'
 require 'taric_importer/entity_mapper'
 require 'taric_importer/record_inserter'
+require 'taric_importer/national_sid_counter'
 
 class TaricImporter
   class ImportException < StandardError
@@ -46,7 +47,7 @@ class TaricImporter
     handlers = @handler_classes.map do |handler_class|
       handler_class.new(filename, staging_manager: @staging_manager)
     end
-    handler = XmlProcessor.new(@taric_update.issue_date, handlers:)
+    handler = XmlProcessor.new(@taric_update.issue_date, handlers:, national_sid_counter: NationalSidCounter.new)
     file = TariffSynchronizer::FileService.file_as_stringio(@taric_update)
     TaricImporter::XmlParser::Reader.new(file, 'record', handler).parse
     handler.after_parse
@@ -58,14 +59,15 @@ class TaricImporter
   end
 
   class XmlProcessor
-    def initialize(issue_date, handlers:)
+    def initialize(issue_date, handlers:, national_sid_counter:)
       @issue_date = issue_date
       @handlers = handlers
+      @national_sid_counter = national_sid_counter
     end
 
     def process_xml_node(hash_from_node)
       EntityMapper
-        .new(hash_from_node, issue_date: @issue_date)
+        .new(hash_from_node, issue_date: @issue_date, national_sid_counter: @national_sid_counter)
         .build do |entity|
         @handlers.each do |handler|
           handler.process_record(entity)

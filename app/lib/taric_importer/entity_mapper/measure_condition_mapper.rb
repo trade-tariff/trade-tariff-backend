@@ -7,8 +7,10 @@ class TaricImporter
 
       def before_build(attributes, operation)
         return attributes unless operation == :create
+        return attributes if attributes['measure_condition_sid'].present?
 
-        MeasureCondition.assign_national_sid_if_missing(attributes)
+        attributes['measure_condition_sid'] = national_sid_counter.next_for(MeasureCondition)
+        attributes
       end
     end
   end
