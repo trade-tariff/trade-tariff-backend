@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-RSpec.describe CdsImporter::StagingManager do
+RSpec.describe TariffSynchronizer::StagingManager do
   subject(:manager) { described_class.new }
 
   # A real lightweight oplog table to test against in the DB.
