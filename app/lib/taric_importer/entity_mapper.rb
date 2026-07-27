@@ -8,12 +8,12 @@ class TaricImporter
       '3' => :create,
     }.freeze
 
-    def initialize(record_hash, issue_date:)
+    def initialize(record_hash, issue_date:, national_sid_counter: nil)
       @record_hash = record_hash
       @issue_date = issue_date
 
       klass = record_hash.keys.last.classify.constantize
-      @mapper = self.class.mapper_for(klass).new(record_hash, klass)
+      @mapper = self.class.mapper_for(klass).new(record_hash, klass, national_sid_counter:)
     end
 
     def build

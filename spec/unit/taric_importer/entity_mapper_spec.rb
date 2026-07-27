@@ -5,8 +5,11 @@ RSpec.describe TaricImporter::EntityMapper do
     described_class.new(
       record_hash,
       issue_date: Date.new(2013, 8, 2),
+      national_sid_counter:,
     )
   end
+
+  let(:national_sid_counter) { TaricImporter::NationalSidCounter.new }
 
   let(:record_hash) do
     {
@@ -90,6 +93,47 @@ RSpec.describe TaricImporter::EntityMapper do
     end
   end
 
+  context 'when the transaction id is missing' do
+    let(:record_hash) do
+      {
+        'record_code' => '430',
+        'subrecord_code' => '00',
+        'record_sequence_number' => '73',
+        'update_type' => '3',
+        'measure' => {
+          'measure_sid' => '3318239',
+        },
+      }
+    end
+
+    it 'raises an error' do
+      expect { mapper.build }
+        .to raise_error(ArgumentError, 'TARIC transaction does not have required attributes')
+    end
+  end
+
+  context 'when the primary key is missing' do
+    let(:record_hash) do
+      {
+        'transaction_id' => '13924773',
+        'record_code' => '430',
+        'subrecord_code' => '00',
+        'record_sequence_number' => '73',
+        'update_type' => '3',
+        'measure' => {
+          'measure_type' => '475',
+          'geographical_area' => 'US',
+          'goods_nomenclature_item_id' => '1202410000',
+        },
+      }
+    end
+
+    it 'raises an error' do
+      expect { mapper.build }
+        .to raise_error(ArgumentError, 'TARIC create for Measure missing primary key: measure_sid')
+    end
+  end
+
   context 'when creating a national MeasureCondition with no sid in the source data' do
     let(:record_hash) do
       {
@@ -112,6 +156,40 @@ RSpec.describe TaricImporter::EntityMapper do
     it 'assigns a national (negative) sid, since writes no longer go through a before_create hook' do
       expect(entity.instance.measure_condition_sid).to be_present
       expect(entity.instance.measure_condition_sid).to be < 0
+    end
+  end
+
+  context 'when two national MeasureConditions are mapped in the same import before either is persisted' do
+    let(:record_hash_for) do
+      lambda do |transaction_id, record_sequence_number|
+        {
+          'transaction_id' => transaction_id,
+          'record_code' => '350',
+          'subrecord_code' => '00',
+          'record_sequence_number' => record_sequence_number,
+          'update_type' => '3',
+          'measure_condition' => {
+            'measure_sid' => '3318239',
+            'condition_code' => 'B',
+            'component_sequence_number' => '1',
+            'action_code' => '01',
+          },
+        }
+      end
+    end
+
+    before { MeasureCondition.unrestrict_primary_key }
+
+    it 'assigns each a distinct negative sid instead of colliding' do
+      first_mapper = described_class.new(record_hash_for.call('13924774', '74'), issue_date: Date.new(2013, 8, 2), national_sid_counter:)
+      second_mapper = described_class.new(record_hash_for.call('13924775', '75'), issue_date: Date.new(2013, 8, 2), national_sid_counter:)
+
+      first_entity = nil
+      second_entity = nil
+      first_mapper.build { |result| first_entity = result }
+      second_mapper.build { |result| second_entity = result }
+
+      expect(first_entity.instance.measure_condition_sid).not_to eq(second_entity.instance.measure_condition_sid)
     end
   end
 
