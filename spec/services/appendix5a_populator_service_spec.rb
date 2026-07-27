@@ -2,16 +2,6 @@ RSpec.describe Appendix5aPopulatorService do
   describe '#call' do
     subject(:call) { described_class.new.call }
 
-    let(:mail_message) do
-      instance_double(
-        Mail::Message,
-        to: ['cupid@example.com'],
-        smtp_envelope_to: ['cupid@example.com'],
-        delivery_handler: instance_double(Appendix5aMailer, class: double(name: 'Appendix5aMailer')),
-        delivery_method: instance_double(Aws::ActionMailer::SESV2::Mailer, class: double(name: 'Aws::ActionMailer::SESV2::Mailer')),
-      )
-    end
-    let(:message_delivery) { instance_double(ActionMailer::MessageDelivery, message: mail_message, deliver_now: true) }
     let!(:existing_guidance) do
       create(
         :appendix_5a,
@@ -19,12 +9,13 @@ RSpec.describe Appendix5aPopulatorService do
       )
     end
     let(:change_guidance_values) { change { existing_guidance.reload.values } }
+    let(:cupid_emails) { %w[cupid@example.com backup@example.com] }
 
     before do
       allow(Appendix5a).to receive(:fetch_latest).and_return(new_guidance)
       allow(SlackNotifierService).to receive(:call).and_call_original
-      allow(Appendix5aMailer).to receive(:appendix5a_notify_message).and_return(message_delivery)
-      allow(mail_message).to receive(:instance_variable_get).with(:@smtp_envelope_to).and_return(nil)
+      allow(TradeTariffBackend).to receive(:cupid_team_to_emails).and_return(cupid_emails)
+      allow(Appendix5aEmailWorker).to receive(:perform_async)
     end
 
     context 'when the latest guidance has changed' do
@@ -48,10 +39,12 @@ RSpec.describe Appendix5aPopulatorService do
           .with('Appendix 5a has been updated with 0 new, 1 changed and 0 removed guidance documents')
       end
 
-      it 'sends an email notification' do
+      it 'sends an email notification to each configured recipient' do
         call
-        expect(Appendix5aMailer).to have_received(:appendix5a_notify_message)
-          .with(0, 1, 0)
+
+        cupid_emails.each do |email|
+          expect(Appendix5aEmailWorker).to have_received(:perform_async).with(email, 0, 1, 0)
+        end
       end
     end
 
@@ -76,7 +69,7 @@ RSpec.describe Appendix5aPopulatorService do
 
       it 'does not send an email' do
         call
-        expect(Appendix5aMailer).not_to have_received(:appendix5a_notify_message)
+        expect(Appendix5aEmailWorker).not_to have_received(:perform_async)
       end
     end
 
@@ -95,10 +88,12 @@ RSpec.describe Appendix5aPopulatorService do
           .with('Appendix 5a has been updated with 0 new, 0 changed and 1 removed guidance documents')
       end
 
-      it 'sends an email notification' do
+      it 'sends an email notification to each configured recipient' do
         call
-        expect(Appendix5aMailer).to have_received(:appendix5a_notify_message)
-          .with(0, 0, 1)
+
+        cupid_emails.each do |email|
+          expect(Appendix5aEmailWorker).to have_received(:perform_async).with(email, 0, 0, 1)
+        end
       end
     end
 
@@ -126,10 +121,12 @@ RSpec.describe Appendix5aPopulatorService do
           .with('Appendix 5a has been updated with 1 new, 0 changed and 0 removed guidance documents')
       end
 
-      it 'sends an email notification' do
+      it 'sends an email notification to each configured recipient' do
         call
-        expect(Appendix5aMailer).to have_received(:appendix5a_notify_message)
-          .with(1, 0, 0)
+
+        cupid_emails.each do |email|
+          expect(Appendix5aEmailWorker).to have_received(:perform_async).with(email, 1, 0, 0)
+        end
       end
     end
   end
