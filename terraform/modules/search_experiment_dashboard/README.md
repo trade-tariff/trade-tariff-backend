@@ -1,6 +1,10 @@
 # search_experiment_dashboard
 
-CloudWatch Logs Insights dashboard for reviewing a labelled production-UAT search cohort. It summarises request outcomes, latency, AI usage and cost, search behaviour, and request IDs for diagnostic follow-up.
+CloudWatch Logs Insights dashboard for reviewing a labelled production-UAT search cohort. It consumes version 1 `guided_search.journey` events to summarise estimated distinct observed browser sessions, browser-confirmed page destinations, frontend errors and fallbacks, “I don’t know” usage, client journey timing, and guided-search selections alongside request outcomes, latency, AI usage and cost, search behaviour, and request IDs for diagnostic follow-up.
+
+The “I don’t know” request usage rate compares distinct requests that used the option with distinct requests known to have shown a question. An “I don’t know” interaction itself is treated as proof that its request showed a question, so best-effort browser events and dashboard time-window boundaries cannot produce a rate above 100%.
+
+The final-result pie chart keeps the recorded `questions`, `answers`, and `error` outcomes. Completed searches without a recorded final result type are labelled `no_results` when they returned nothing and `results_without_questions` otherwise, rather than appearing as an unnamed category.
 
 <!-- BEGIN_TF_DOCS -->
 ## Requirements

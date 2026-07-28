@@ -16,6 +16,13 @@ module TariffSynchronizer
 
       def after_parse
         process_batch
+      rescue StandardError => e
+        "Taric import failed: #{e}".tap do |message|
+          message << "\n Batch failed with ids:\n #{record_batch.map(&:element_id).join(', ')}"
+          message << "\n Backtrace:\n #{e.backtrace.join("\n")}"
+          Rails.logger.error message
+        end
+        raise e
       end
 
     private
