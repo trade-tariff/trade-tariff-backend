@@ -142,6 +142,30 @@ RSpec.describe 'database replication with PostgreSQL' do
     Open3.capture3(env, replicate_script, chdir: Rails.root.to_s)
   end
 
+  def run_backup
+    FileUtils.mkdir_p(File.join(tempdir, 'bin'))
+
+    write_executable('aws', <<~'BASH')
+      #!/usr/bin/env bash
+      set -euo pipefail
+
+      if [[ "$1 $2 $3" == "s3 cp -" ]]; then
+        cat > "$DUMP_FIXTURE"
+      fi
+    BASH
+
+    env = {
+      'PATH' => "#{tempdir}/bin:#{ENV.fetch('PATH')}",
+      'DUMP_FIXTURE' => dump_file,
+      'ENVIRONMENT' => 'production',
+      'S3_BUCKET' => 'test-backups',
+      'DATABASE_URL' => target_database,
+      'PGUSER' => database_user,
+    }
+
+    Open3.capture3(env, backup_script, chdir: Rails.root.to_s)
+  end
+
   before do
     @replicate_script = Rails.root.join('bin/db-replicate').to_s
     @backup_script = Rails.root.join('bin/backup-database').to_s
@@ -262,6 +286,31 @@ RSpec.describe 'database replication with PostgreSQL' do
       stdin.close
       Process.kill('TERM', wait_thread.pid) if wait_thread.alive?
     end
+  end
+
+  it 'restores a dump produced by the real backup pipeline' do
+    psql(target_database, <<~SQL)
+      CREATE SCHEMA xi;
+      CREATE TABLE xi.restore_probe(value text);
+      INSERT INTO xi.restore_probe VALUES ('from-backup');
+    SQL
+
+    _stdout, backup_stderr, backup_status = run_backup
+    expect(backup_status).to be_success, backup_stderr
+
+    psql(target_database, <<~SQL)
+      UPDATE restore_probe SET value = 'changed-after-backup';
+      UPDATE xi.restore_probe SET value = 'changed-after-backup';
+      REFRESH MATERIALIZED VIEW restore_probe_view;
+    SQL
+    install_replication_boundary_stubs
+
+    _stdout, replication_stderr, replication_status = run_replication
+
+    expect(replication_status).to be_success, replication_stderr
+    expect(query(target_database, 'TABLE restore_probe')).to eq('old')
+    expect(query(target_database, 'TABLE xi.restore_probe')).to eq('from-backup')
+    expect(query(target_database, 'TABLE restore_probe_view')).to eq('old')
   end
 
   it 'emits a restartable dump with an explicit maintenance boundary' do
