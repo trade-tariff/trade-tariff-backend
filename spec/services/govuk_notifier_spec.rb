@@ -94,4 +94,12 @@ RSpec.describe GovukNotifier do
       expect(GovukNotifierStatusCheckWorker).not_to have_received(:perform_in)
     end
   end
+
+  describe 'failure status constants' do
+    it 'matches the GOV.UK Notify API status strings' do
+      expect(GovukNotifier::PERMANENT_FAILURE).to eq('permanent-failure')
+      expect(GovukNotifier::TEMPORARY_FAILURE).to eq('temporary-failure')
+      expect(GovukNotifier::TECHNICAL_FAILURE).to eq('technical-failure')
+    end
+  end
 end

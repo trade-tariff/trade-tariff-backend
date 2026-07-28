@@ -13,6 +13,7 @@ RSpec.describe 'Notify configuration' do
         NOTIFY_CONFIGURATION.dig(:templates, :enquiry_form, :submission),
         NOTIFY_CONFIGURATION.dig(:templates, :myott, :tariff_change),
         NOTIFY_CONFIGURATION.dig(:reply_to, :tariff_management),
+        NOTIFY_CONFIGURATION.dig(:templates, :notifications, :appendix5a),
       ]
     RUBY
     output, error, status = Open3.capture3({ 'ENVIRONMENT' => environment }, RbConfig.ruby, '-e', script)
@@ -30,6 +31,7 @@ RSpec.describe 'Notify configuration' do
         104e74e3-8f43-4642-a594-4d4ef931b121
         5db33f13-7235-4ed8-b704-e3fddc01ee09
         61e19d5e-4fae-4b7e-aa2e-cd05a87f4cf8
+        PENDING_APPENDIX5A_PRODUCTION_TEMPLATE_UUID
       ])
     end
   end
@@ -42,6 +44,7 @@ RSpec.describe 'Notify configuration' do
         6033e45a-7029-4c5a-b4d3-e52ba111c9b4
         53c88c0c-69be-4375-829f-c6fbb1b9e2ef
         ed4f4168-e8c5-4b80-94b9-050c86a40f0f
+        PENDING_APPENDIX5A_STAGING_TEMPLATE_UUID
       ])
     end
   end
@@ -52,6 +55,7 @@ RSpec.describe 'Notify configuration' do
         180f1b06-3d77-4da5-9b19-2101a74fd1b8
         d25ab0ca-0114-47dc-954a-488516301580
         e780283a-471f-42ae-a573-4364ef604fea
+        7b53d787-2659-4cd2-9e45-afe93ad61eec
       ])
     end
   end

@@ -5,7 +5,11 @@ class Appendix5aEmailWorker
 
   def perform(recipient_index, new_count, changed_count, removed_count)
     email = TradeTariffBackend.cupid_team_to_emails[recipient_index]
-    return if email.blank?
+
+    if email.blank?
+      Rails.logger.error("appendix5a_notification_send skipped: recipient index #{recipient_index} no longer resolves to a configured email")
+      return
+    end
 
     personalisation = {
       new_count:,
@@ -14,7 +18,17 @@ class Appendix5aEmailWorker
       support_email: TradeTariffBackend.support_email,
     }
 
-    client.send_email(email, TEMPLATE_ID, personalisation, nil, nil)
+    notification = client.send_email(email, TEMPLATE_ID, personalisation, nil, nil)
+
+    begin
+      Appendix5aNotificationStatusCheckWorker.perform_in(
+        GovukNotifierStatusCheckWorker::CHECK_DELAY,
+        recipient_index,
+        notification.notification_uuid,
+      )
+    rescue StandardError => e
+      Rails.logger.error("appendix5a_notification_status_check_schedule_failed: recipient_index=#{recipient_index} #{e.class.name}: #{e.message}")
+    end
   end
 
   def client
