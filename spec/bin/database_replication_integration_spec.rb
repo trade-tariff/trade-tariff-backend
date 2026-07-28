@@ -10,6 +10,7 @@ RSpec.describe 'database replication with PostgreSQL' do
               :command_log,
               :database_user,
               :dump_file,
+              :real_pg_dump,
               :real_psql,
               :replicate_script,
               :target_database,
@@ -145,6 +146,12 @@ RSpec.describe 'database replication with PostgreSQL' do
   def run_backup(source_database)
     FileUtils.mkdir_p(File.join(tempdir, 'bin'))
 
+    write_executable('pg_dump', <<~'BASH')
+      #!/usr/bin/env bash
+      set -euo pipefail
+      exec "$REAL_PG_DUMP" "$@"
+    BASH
+
     write_executable('aws', <<~'BASH')
       #!/usr/bin/env bash
       set -euo pipefail
@@ -157,6 +164,7 @@ RSpec.describe 'database replication with PostgreSQL' do
     env = {
       'PATH' => "#{tempdir}/bin:#{ENV.fetch('PATH')}",
       'DUMP_FIXTURE' => dump_file,
+      'REAL_PG_DUMP' => real_pg_dump,
       'ENVIRONMENT' => 'production',
       'S3_BUCKET' => 'test-backups',
       'DATABASE_URL' => source_database,
@@ -193,6 +201,10 @@ RSpec.describe 'database replication with PostgreSQL' do
                       .split(File::PATH_SEPARATOR)
                       .map { |directory| File.join(directory, 'psql') }
                       .find { |path| File.executable?(path) }
+    @real_pg_dump = ENV.fetch('PATH')
+                       .split(File::PATH_SEPARATOR)
+                       .map { |directory| File.join(directory, 'pg_dump') }
+                       .find { |path| File.executable?(path) }
 
     create_target_database
   end
