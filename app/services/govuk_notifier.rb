@@ -4,6 +4,8 @@ class GovukNotifier
   class NoTemplateFoundError < StandardError; end
 
   PERMANENT_FAILURE = 'permanent-failure'.freeze
+  TEMPORARY_FAILURE = 'temporary-failure'.freeze
+  TECHNICAL_FAILURE = 'technical-failure'.freeze
 
   def initialize(client: nil)
     @client = client || Notifications::Client.new(api_key)
