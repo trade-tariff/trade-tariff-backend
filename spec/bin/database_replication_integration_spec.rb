@@ -319,10 +319,12 @@ RSpec.describe 'database replication with PostgreSQL' do
           ON ddl_command_end EXECUTE FUNCTION noop_event_trigger();
       SQL
 
+      expect(query(source_database, 'TABLE restore_probe')).to eq('from-backup')
+
       _stdout, backup_stderr, backup_status = run_backup(source_database)
       expect(backup_status).to be_success, backup_stderr
       backup_sql = Zlib::GzipReader.open(dump_file, &:read)
-      expect(backup_sql).to include('COPY public.restore_probe')
+      expect(backup_sql).to include('COPY public.restore_probe'), backup_stderr
       expect(backup_sql).to include("from-backup\n")
 
       install_replication_boundary_stubs
