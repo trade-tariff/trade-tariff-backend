@@ -142,7 +142,7 @@ RSpec.describe 'database replication with PostgreSQL' do
     Open3.capture3(env, replicate_script, chdir: Rails.root.to_s)
   end
 
-  def run_backup
+  def run_backup(source_database)
     FileUtils.mkdir_p(File.join(tempdir, 'bin'))
 
     write_executable('aws', <<~'BASH')
@@ -159,7 +159,7 @@ RSpec.describe 'database replication with PostgreSQL' do
       'DUMP_FIXTURE' => dump_file,
       'ENVIRONMENT' => 'production',
       'S3_BUCKET' => 'test-backups',
-      'DATABASE_URL' => target_database,
+      'DATABASE_URL' => source_database,
       'PGUSER' => database_user,
     }
 
@@ -289,28 +289,37 @@ RSpec.describe 'database replication with PostgreSQL' do
   end
 
   it 'restores a dump produced by the real backup pipeline' do
-    psql(target_database, <<~SQL)
-      CREATE SCHEMA xi;
-      CREATE TABLE xi.restore_probe(value text);
-      INSERT INTO xi.restore_probe VALUES ('from-backup');
-    SQL
+    source_database = "replication_source_#{SecureRandom.hex(6)}"
+    run_command('createdb', '--username', database_user, source_database)
 
-    _stdout, backup_stderr, backup_status = run_backup
-    expect(backup_status).to be_success, backup_stderr
+    begin
+      psql(source_database, <<~SQL)
+        CREATE TABLE restore_probe(value text);
+        INSERT INTO restore_probe VALUES ('from-backup');
+        CREATE MATERIALIZED VIEW restore_probe_view AS
+          SELECT value FROM restore_probe;
+        CREATE SCHEMA xi;
+        CREATE TABLE xi.restore_probe(value text);
+        INSERT INTO xi.restore_probe VALUES ('from-backup');
+        CREATE FUNCTION noop_event_trigger() RETURNS event_trigger
+          LANGUAGE plpgsql AS $$ BEGIN END; $$;
+        CREATE EVENT TRIGGER reassign_owned
+          ON ddl_command_end EXECUTE FUNCTION noop_event_trigger();
+      SQL
 
-    psql(target_database, <<~SQL)
-      UPDATE restore_probe SET value = 'changed-after-backup';
-      UPDATE xi.restore_probe SET value = 'changed-after-backup';
-      REFRESH MATERIALIZED VIEW restore_probe_view;
-    SQL
-    install_replication_boundary_stubs
+      _stdout, backup_stderr, backup_status = run_backup(source_database)
+      expect(backup_status).to be_success, backup_stderr
 
-    _stdout, replication_stderr, replication_status = run_replication
+      install_replication_boundary_stubs
+      _stdout, replication_stderr, replication_status = run_replication
 
-    expect(replication_status).to be_success, replication_stderr
-    expect(query(target_database, 'TABLE restore_probe')).to eq('old')
-    expect(query(target_database, 'TABLE xi.restore_probe')).to eq('from-backup')
-    expect(query(target_database, 'TABLE restore_probe_view')).to eq('old')
+      expect(replication_status).to be_success, replication_stderr
+      expect(query(target_database, 'TABLE restore_probe')).to eq('from-backup')
+      expect(query(target_database, 'TABLE xi.restore_probe')).to eq('from-backup')
+      expect(query(target_database, 'TABLE restore_probe_view')).to eq('from-backup')
+    ensure
+      run_command('dropdb', '--username', database_user, '--if-exists', '--force', source_database)
+    end
   end
 
   it 'emits a restartable dump with an explicit maintenance boundary' do
