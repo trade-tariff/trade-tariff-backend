@@ -164,11 +164,12 @@ module TariffSynchronizer
       self.inserts = @oplog_inserts.to_json
     end
 
-    def check_oplog_inserts
-      return if @oplog_inserts[:total_count].positive?
+def check_oplog_inserts
+  total_count = @oplog_inserts&.fetch(:total_count, 0).to_i
+  return if total_count.positive?
 
-      alert_potential_failed_import
-    end
+  alert_potential_failed_import
+end
 
     def alert_potential_failed_import
       NewRelic::Agent.notice_error \
