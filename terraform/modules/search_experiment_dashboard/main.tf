@@ -315,14 +315,14 @@ resource "aws_cloudwatch_dashboard" "search_experiment" {
           width  = 8
           height = 6
           properties = {
-            title  = "Final Result Types"
+            title  = "Search Response Types"
             region = var.region
             view   = "pie"
             query  = <<-EOT
               ${local.source}
               | ${local.search_filter} and event = "search_completed"
-              | fields case(ispresent(final_result_type), final_result_type, result_count = 0, "no_results", "results_without_questions") as final_result_category
-              | stats count(*) as searches by final_result_category
+              | fields case(final_result_type = "answers", "suggested results", final_result_type = "questions", "questions", final_result_type = "error", "errors", result_count = 0, "no results", "results without questions") as search_response_type
+              | stats count(*) as completed_searches by search_response_type
             EOT
           }
         },
