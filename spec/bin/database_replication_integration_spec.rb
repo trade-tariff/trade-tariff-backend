@@ -309,6 +309,9 @@ RSpec.describe 'database replication with PostgreSQL' do
 
       _stdout, backup_stderr, backup_status = run_backup(source_database)
       expect(backup_status).to be_success, backup_stderr
+      backup_sql = Zlib::GzipReader.open(dump_file, &:read)
+      expect(backup_sql).to include('COPY public.restore_probe')
+      expect(backup_sql).to include("from-backup\n")
 
       install_replication_boundary_stubs
       _stdout, replication_stderr, replication_status = run_replication
