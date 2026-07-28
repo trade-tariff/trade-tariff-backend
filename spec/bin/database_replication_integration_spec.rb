@@ -10,6 +10,7 @@ RSpec.describe 'database replication with PostgreSQL' do
               :command_log,
               :database_user,
               :dump_file,
+              :pg_dump_container,
               :real_pg_dump,
               :real_psql,
               :replicate_script,
@@ -149,6 +150,11 @@ RSpec.describe 'database replication with PostgreSQL' do
     write_executable('pg_dump', <<~'BASH')
       #!/usr/bin/env bash
       set -euo pipefail
+
+      if [[ -n "${PG_DUMP_CONTAINER:-}" ]]; then
+        exec docker exec --env "PGUSER=$PGUSER" "$PG_DUMP_CONTAINER" pg_dump "$@"
+      fi
+
       exec "$REAL_PG_DUMP" "$@"
     BASH
 
@@ -164,6 +170,7 @@ RSpec.describe 'database replication with PostgreSQL' do
     env = {
       'PATH' => "#{tempdir}/bin:#{ENV.fetch('PATH')}",
       'DUMP_FIXTURE' => dump_file,
+      'PG_DUMP_CONTAINER' => pg_dump_container.to_s,
       'REAL_PG_DUMP' => real_pg_dump,
       'ENVIRONMENT' => 'production',
       'S3_BUCKET' => 'test-backups',
@@ -205,6 +212,18 @@ RSpec.describe 'database replication with PostgreSQL' do
                        .split(File::PATH_SEPARATOR)
                        .map { |directory| File.join(directory, 'pg_dump') }
                        .find { |path| File.executable?(path) }
+    server_major = query('postgres', 'SHOW server_version_num').to_i / 10_000
+    client_major = run_command(real_pg_dump, '--version')[/\d+/].to_i
+    @pg_dump_container = if server_major != client_major
+                           run_command(
+                             'docker',
+                             'ps',
+                             '--filter',
+                             'publish=5432',
+                             '--format',
+                             '{{.ID}}',
+                           ).lines.first&.strip
+                         end
 
     create_target_database
   end
@@ -386,5 +405,44 @@ RSpec.describe 'database replication with PostgreSQL' do
     expect(uploaded_dump).to include('DROP SCHEMA IF EXISTS xi CASCADE;')
     expect(uploaded_dump).not_to include('IF EXISTS IF EXISTS')
     expect(uploaded_dump).to include("-- TRADE_TARIFF_POST_RESTORE_START\n")
+  end
+
+  it 'does not replace the latest backup when pg_dump fails' do
+    FileUtils.mkdir_p(File.join(tempdir, 'bin'))
+
+    write_executable('pg_dump', <<~'BASH')
+      #!/usr/bin/env bash
+      printf '%s\n' '-- incomplete dump'
+      exit 42
+    BASH
+
+    write_executable('gzip', <<~'BASH')
+      #!/usr/bin/env bash
+      exec cat
+    BASH
+
+    write_executable('aws', <<~'BASH')
+      #!/usr/bin/env bash
+      set -euo pipefail
+      echo "$*" >> "$TMPDIR/aws-commands.log"
+      cat > /dev/null
+    BASH
+
+    env = {
+      'PATH' => "#{tempdir}/bin:#{ENV.fetch('PATH')}",
+      'TMPDIR' => tempdir,
+      'ENVIRONMENT' => 'production',
+      'S3_BUCKET' => 'test-backups',
+      'DATABASE_URL' => target_database,
+      'PGUSER' => database_user,
+    }
+
+    _stdout, _stderr, status = Open3.capture3(env, backup_script, chdir: Rails.root.to_s)
+    aws_commands = File.readlines(File.join(tempdir, 'aws-commands.log'), chomp: true)
+
+    expect(status.exitstatus).to eq(2)
+    expect(aws_commands).not_to include(
+      's3 cp - s3://test-backups/tariff-merged-production.sql.gz',
+    )
   end
 end
