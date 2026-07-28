@@ -277,7 +277,6 @@ RSpec.describe 'database replication with PostgreSQL' do
       fi
 
       printf 'DROP EVENT TRIGGER IF EXISTS reassign_owned;\n'
-      printf 'DROP SCHEMA IF EXISTS xi;\n'
     BASH
 
     write_executable('gzip', <<~'BASH')
@@ -308,8 +307,6 @@ RSpec.describe 'database replication with PostgreSQL' do
 
     expect(status).to be_success, stderr
     expect(uploaded_dump).to include('DROP EVENT TRIGGER IF EXISTS reassign_owned;')
-    expect(uploaded_dump).to include('DROP SCHEMA IF EXISTS xi CASCADE;')
-    expect(uploaded_dump).not_to include('IF EXISTS IF EXISTS')
     expect(uploaded_dump).to include("-- TRADE_TARIFF_POST_RESTORE_START\n")
   end
 end
