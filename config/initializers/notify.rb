@@ -10,7 +10,7 @@ NOTIFY_CONFIGURATION =
           tariff_change: '5db33f13-7235-4ed8-b704-e3fddc01ee09',
         },
         notifications: {
-          appendix5a: 'PENDING_APPENDIX5A_PRODUCTION_TEMPLATE_UUID', # TODO: replace before deploying to production
+          appendix5a: 'c35e387b-a2b8-4308-997c-06e1f3b36900',
         },
       },
       reply_to: {
@@ -28,7 +28,7 @@ NOTIFY_CONFIGURATION =
           tariff_change: '53c88c0c-69be-4375-829f-c6fbb1b9e2ef',
         },
         notifications: {
-          appendix5a: 'PENDING_APPENDIX5A_STAGING_TEMPLATE_UUID', # TODO: replace before deploying to staging
+          appendix5a: '943fd08f-d9f0-47e0-b9dd-40284f308414',
         },
       },
       reply_to: {
