@@ -107,7 +107,7 @@ RSpec.describe TaricSynchronizer, :truncation do
     end
 
     context 'when successful' do
-      let(:taric_importer) { instance_double(TaricImporter, import: nil) }
+      let(:taric_importer) { instance_double(TaricImporter, import: { total_count: 1, total_duration: 0 }) }
 
       before do
         allow(TaricImporter).to receive(:new).and_return(taric_importer)
