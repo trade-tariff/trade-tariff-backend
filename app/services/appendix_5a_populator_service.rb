@@ -88,9 +88,16 @@ private
 
     SlackNotifierService.call(message)
 
-    TradeTariffBackend.cupid_team_to_emails.each do |email|
+    emails = TradeTariffBackend.cupid_team_to_emails
+
+    if emails.empty?
+      Rails.logger.error 'Appendix 5a guidance changed but CUPID_TEAM_TO_EMAILS is not configured — no notification emails were sent'
+      return
+    end
+
+    emails.each_index do |recipient_index|
       Appendix5aEmailWorker.perform_async(
-        email,
+        recipient_index,
         added_guidance.count,
         changed_guidance.count,
         removed_guidance.count,

@@ -42,8 +42,8 @@ RSpec.describe Appendix5aPopulatorService do
       it 'sends an email notification to each configured recipient' do
         call
 
-        cupid_emails.each do |email|
-          expect(Appendix5aEmailWorker).to have_received(:perform_async).with(email, 0, 1, 0)
+        cupid_emails.each_index do |recipient_index|
+          expect(Appendix5aEmailWorker).to have_received(:perform_async).with(recipient_index, 0, 1, 0)
         end
       end
     end
@@ -91,8 +91,8 @@ RSpec.describe Appendix5aPopulatorService do
       it 'sends an email notification to each configured recipient' do
         call
 
-        cupid_emails.each do |email|
-          expect(Appendix5aEmailWorker).to have_received(:perform_async).with(email, 0, 0, 1)
+        cupid_emails.each_index do |recipient_index|
+          expect(Appendix5aEmailWorker).to have_received(:perform_async).with(recipient_index, 0, 0, 1)
         end
       end
     end
@@ -124,9 +124,48 @@ RSpec.describe Appendix5aPopulatorService do
       it 'sends an email notification to each configured recipient' do
         call
 
-        cupid_emails.each do |email|
-          expect(Appendix5aEmailWorker).to have_received(:perform_async).with(email, 1, 0, 0)
+        cupid_emails.each_index do |recipient_index|
+          expect(Appendix5aEmailWorker).to have_received(:perform_async).with(recipient_index, 1, 0, 0)
         end
+      end
+    end
+
+    context 'when no recipients are configured' do
+      let(:cupid_emails) { [] }
+      let(:new_guidance) do
+        {
+          '1123' => {
+            'guidance_cds' => 'bar',
+          },
+        }
+      end
+
+      it 'logs an error and does not raise' do
+        allow(Rails.logger).to receive(:error)
+
+        call
+
+        expect(Rails.logger).to have_received(:error).with(
+          'Appendix 5a guidance changed but CUPID_TEAM_TO_EMAILS is not configured — no notification emails were sent',
+        )
+      end
+
+      it 'still changes the guidance' do
+        expect { call }.to change_guidance_values
+      end
+
+      it 'still notifies slack' do
+        call
+
+        expect(SlackNotifierService)
+          .to have_received(:call)
+          .with('Appendix 5a has been updated with 0 new, 1 changed and 0 removed guidance documents')
+      end
+
+      it 'does not enqueue any email worker jobs' do
+        call
+
+        expect(Appendix5aEmailWorker).not_to have_received(:perform_async)
       end
     end
   end
