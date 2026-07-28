@@ -28,7 +28,7 @@ RSpec.describe 'search experiment dashboard Terraform' do
   it 'covers experiment usage, performance, outcomes, questions, searches, and AI costs' do
     expect(module_main_tf).to include('UAT Period Totals')
     expect(module_main_tf).to include('E2E Latency in seconds (p50/p90/p99)')
-    expect(module_main_tf).to include('Final Result Types')
+    expect(module_main_tf).to include('Search Response Types')
     expect(module_main_tf).to include('Questions per Search')
     expect(module_main_tf).to include('Top Search Terms')
     expect(module_main_tf).to include('Total AI Cost by Operation')
@@ -278,16 +278,16 @@ RSpec.describe 'search experiment dashboard Terraform' do
     expect(module_main_tf).to include('| fields event_payload.details.questions[0].question as question,')
   end
 
-  it 'labels every outcome in the result-type pie chart' do
-    final_result_types_query = widget_query('Final Result Types')
+  it 'uses plain-language labels for every search response type' do
+    search_response_types_query = widget_query('Search Response Types')
 
-    expect(final_result_types_query).to include(
-      'case(ispresent(final_result_type), final_result_type, result_count = 0, "no_results", "results_without_questions") as final_result_category',
+    expect(search_response_types_query).to include(
+      'case(final_result_type = "answers", "suggested results", final_result_type = "questions", "questions", final_result_type = "error", "errors", result_count = 0, "no results", "results without questions") as search_response_type',
     )
-    expect(final_result_types_query).to include(
-      'stats count(*) as searches by final_result_category',
+    expect(search_response_types_query).to include(
+      'stats count(*) as completed_searches by search_response_type',
     )
-    expect(final_result_types_query).not_to include('searches by final_result_type')
+    expect(module_main_tf).not_to include('Final Result Types')
   end
 
   it 'is discoverable from the search overview dashboard' do
