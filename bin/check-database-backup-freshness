@@ -86,11 +86,6 @@ format_duration() {
   local minutes
   local seconds
 
-  if [ "$total_seconds" = "unknown" ]; then
-    echo "unknown"
-    return
-  fi
-
   days=$((total_seconds / 86400))
   hours=$(((total_seconds % 86400) / 3600))
   minutes=$(((total_seconds % 3600) / 60))
@@ -185,16 +180,12 @@ head_object_last_modified() {
 }
 
 epoch_for_timestamp() {
-  local timestamp=$1
-  local timestamp_without_colon_offset
-
-  if date -d "$timestamp" +%s >/dev/null 2>&1; then
-    date -d "$timestamp" +%s
-    return
-  fi
-
-  timestamp_without_colon_offset=$(echo "$timestamp" | sed -E 's/([+-][0-9]{2}):([0-9]{2})$/\1\2/')
-  date -j -f "%Y-%m-%dT%H:%M:%S%z" "$timestamp_without_colon_offset" +%s
+  # Turns an S3 timestamp like "2026-07-28T02:14:33+00:00" into a Unix epoch
+  # so we can subtract to work out how old a backup is
+  #
+  # Use ruby here to enfore a consistent date parsing across all OS's
+  # instead of rely on os's `date` which has variations in flags and naming between OS's
+  ruby -rtime -e 'print Time.parse(ARGV[0]).to_i' "$1"
 }
 
 archive_key_for_epoch() {
@@ -216,6 +207,43 @@ archive_key_for_epoch() {
   echo "$(TZ="$BACKUP_ARCHIVE_TIME_ZONE" date -r "$archive_epoch" +"%Y/%m/%d")/tariff-merged-${ENVIRONMENT}.sql.gz"
 }
 
+# Looks for the archive copy of the latest backup, trying the upload completion
+# date first and then the day before, because a backup that crosses midnight
+# archives under the earlier date. Sets archive_key, archive_last_modified,
+# freshness_ok and reasons. Returns non-zero only when S3 fails for a reason
+# other than the object being absent.
+check_archive_for_epoch() {
+  local latest_epoch=$1
+  local candidate_keys=()
+  local candidate
+  local offset
+  local status
+
+  for offset in 0 -86400; do
+    candidate=$(archive_key_for_epoch "$latest_epoch" "$offset")
+    candidate_keys+=("$candidate")
+    archive_key=$candidate
+
+    if archive_last_modified=$(head_object_last_modified "$candidate"); then
+      if [ "$(epoch_for_timestamp "$archive_last_modified")" -lt "$latest_epoch" ]; then
+        freshness_ok=0
+        reasons+=("archive key $candidate is older than latest key $LATEST_KEY")
+      fi
+
+      return 0
+    else
+      # $? here is the status of the condition. Read it inside the else branch:
+      # after a plain if/fi with no else, $? is the status of the if itself.
+      status=$?
+
+      [ "$status" -eq 1 ] || return "$status"
+    fi
+  done
+
+  freshness_ok=0
+  reasons+=("archive keys ${candidate_keys[0]} and ${candidate_keys[1]} are missing")
+}
+
 reasons=()
 freshness_ok=1
 now_epoch=$(date +%s)
@@ -229,43 +257,7 @@ if latest_last_modified=$(head_object_last_modified "$LATEST_KEY"); then
     reasons+=("latest object is ${latest_age_seconds}s old, over threshold ${BACKUP_FRESHNESS_THRESHOLD_SECONDS}s")
   fi
 
-  archive_key=$(archive_key_for_epoch "$latest_epoch")
-
-  if archive_last_modified=$(head_object_last_modified "$archive_key"); then
-    archive_epoch=$(epoch_for_timestamp "$archive_last_modified")
-
-    if [ "$archive_epoch" -lt "$latest_epoch" ]; then
-      freshness_ok=0
-      reasons+=("archive key $archive_key is older than latest key $LATEST_KEY")
-    fi
-  else
-    status=$?
-
-    if [ "$status" -eq 1 ]; then
-      expected_archive_key=$archive_key
-      archive_key=$(archive_key_for_epoch "$latest_epoch" -86400)
-
-      if archive_last_modified=$(head_object_last_modified "$archive_key"); then
-        archive_epoch=$(epoch_for_timestamp "$archive_last_modified")
-
-        if [ "$archive_epoch" -lt "$latest_epoch" ]; then
-          freshness_ok=0
-          reasons+=("archive key $archive_key is older than latest key $LATEST_KEY")
-        fi
-      else
-        status=$?
-
-        if [ "$status" -eq 1 ]; then
-          freshness_ok=0
-          reasons+=("archive keys $expected_archive_key and $archive_key are missing")
-        else
-          exit "$status"
-        fi
-      fi
-    else
-      exit "$status"
-    fi
-  fi
+  check_archive_for_epoch "$latest_epoch" || exit $?
 else
   status=$?
 
