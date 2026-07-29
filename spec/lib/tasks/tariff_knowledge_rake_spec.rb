@@ -97,7 +97,7 @@ RSpec.describe 'tariff_knowledge rake tasks' do
     it 'runs compressed note refresh inline' do
       allow(TariffKnowledge::CompressedNoteRefresh)
         .to receive(:call)
-        .and_return(TariffKnowledge::CompressedNoteRefresh::Result.new(goods_nomenclature_count: 2, expired_note_count: 1))
+        .and_return(TariffKnowledge::CompressedNoteRefresh::Result.new(goods_nomenclature_count: 2, expired_note_count: 1, skipped: false))
 
       suppress_output { Rake::Task['tariff_knowledge:compressed_notes:refresh:run'].invoke }
 
