@@ -34,9 +34,8 @@ RSpec.describe HybridRetrievalService do
     ]
   end
 
-  let(:vector_max_score) { 0.31 }
   let(:vector_diagnostics) do
-    VectorRetrievalService::Result.new(results: vector_results, max_score: vector_max_score)
+    VectorRetrievalService::Result.new(results: vector_results, max_score: 0.31)
   end
 
   let(:expanded_query) { 'expanded horses' }
