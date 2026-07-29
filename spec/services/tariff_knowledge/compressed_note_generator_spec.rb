@@ -600,13 +600,11 @@ RSpec.describe TariffKnowledge::CompressedNoteGenerator do
       )
 
       allow(TariffKnowledge::CompressedNote).to receive(:by_sids).and_wrap_original do |original, *args|
-        dataset = original.call(*args)
-        stale_records = dataset.all
+        stale_records = original.call(*args).all
         TariffKnowledge::CompressedNote
           .where(goods_nomenclature_sid: 123)
           .update(content: 'Admin edited content', manually_edited: true)
-        allow(dataset).to receive(:all).and_return(stale_records)
-        dataset
+        instance_double(Sequel::Dataset, all: stale_records)
       end
 
       described_class.call(goods_nomenclature_sids: [123])
