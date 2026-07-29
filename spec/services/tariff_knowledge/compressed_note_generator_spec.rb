@@ -577,6 +577,33 @@ RSpec.describe TariffKnowledge::CompressedNoteGenerator do
         .to eq('Reviewed human content')
     end
 
+    it 'does not overwrite a note edited by an admin between prefetch and upsert' do
+      create(
+        :tariff_knowledge_compressed_note,
+        goods_nomenclature_sid: 123,
+        goods_nomenclature_item_id: '0101210000',
+        content: 'Original generated content',
+        manually_edited: false,
+      )
+
+      allow(TariffKnowledge::CompressedNote).to receive(:by_sids).and_wrap_original do |original, *args|
+        dataset = original.call(*args)
+        stale_records = dataset.all
+        TariffKnowledge::CompressedNote
+          .where(goods_nomenclature_sid: 123)
+          .update(content: 'Admin edited content', manually_edited: true)
+        allow(dataset).to receive(:all).and_return(stale_records)
+        dataset
+      end
+
+      described_class.call(goods_nomenclature_sids: [123])
+
+      expect(TariffKnowledge::CompressedNote[123]).to have_attributes(
+        content: 'Admin edited content',
+        manually_edited: true,
+      )
+    end
+
     it 'marks manually edited notes stale when graph context changes' do
       create(
         :tariff_knowledge_compressed_note,
