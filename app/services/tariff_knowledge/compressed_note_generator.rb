@@ -345,7 +345,7 @@ module TariffKnowledge
       return mark_note_stale_if_context_changed(existing_note, attributes[:context_hash]) if existing_note&.manually_edited
 
       if existing_note
-        existing_note.update(attributes)
+        existing_note.this.where(manually_edited: false).update(attributes)
       else
         CompressedNote.create(attributes.merge(goods_nomenclature_sid: declarable_node.goods_nomenclature_sid))
       end

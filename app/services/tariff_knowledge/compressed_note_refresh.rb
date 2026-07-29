@@ -23,11 +23,12 @@ module TariffKnowledge
         CompressedNoteGenerator.call(goods_nomenclature_sids: sids)
       end
 
+      expired_note_count = expire_non_current_notes(current_sids)
       store_fingerprint(current_version, current_sids)
 
       Result.new(
         goods_nomenclature_count: current_sids.size,
-        expired_note_count: expire_non_current_notes(current_sids),
+        expired_note_count: expired_note_count,
       )
     end
 

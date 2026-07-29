@@ -103,6 +103,24 @@ RSpec.describe TariffKnowledge::CompressedNoteRefresh do
       end
     end
 
+    context 'when expiring stale notes fails' do
+      let(:cache) { ActiveSupport::Cache::MemoryStore.new }
+      let(:refresh_instance) { described_class.new }
+
+      before do
+        allow(Rails).to receive(:cache).and_return(cache)
+        create(:commodity, parent: heading, goods_nomenclature_sid: 123, goods_nomenclature_item_id: '0101210000')
+        GoodsNomenclatures::TreeNode.refresh!
+        allow(refresh_instance).to receive(:expire_non_current_notes).and_raise(Sequel::DatabaseError)
+        allow(described_class).to receive(:new).and_return(refresh_instance)
+      end
+
+      it 'does not cache the fingerprint so the next run performs a full refresh' do
+        expect { described_class.call }.to raise_error(Sequel::DatabaseError)
+        expect(cache.read(described_class::FINGERPRINT_CACHE_KEY)).to be_nil
+      end
+    end
+
     context 'when the declarable sids change between runs' do
       let(:cache) { ActiveSupport::Cache::MemoryStore.new }
 
