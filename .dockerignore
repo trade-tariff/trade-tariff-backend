@@ -32,7 +32,6 @@ backup.sql
 config/master.key
 coverage
 ctrf
-data
 docs
 flake.lock
 flake.nix
@@ -41,6 +40,16 @@ spec
 terraform
 tmp
 vendor/bundle
+
+# Local CDS/TARIC dumps and other bulk data under data/ —
+# keep committed runtime files at data/*.json, data/*.csv, data/green_lanes/, etc.
+data/cds
+data/cds_snapshot
+data/cds_updates
+data/customs_tariff_documents
+data/exchange_rates
+data/taric
+data/failed-measures-report*
 
 # Reporting ignores
 category_assessments_*.json
