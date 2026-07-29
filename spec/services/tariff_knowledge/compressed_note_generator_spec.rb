@@ -556,10 +556,23 @@ RSpec.describe TariffKnowledge::CompressedNoteGenerator do
         content: 'Old content',
         stale: false,
       )
+      create(
+        :tariff_knowledge_node,
+        key: 'goods_nomenclature:456',
+        goods_nomenclature_sid: 456,
+        goods_nomenclature_item_id: '0101290000',
+      )
+      create(
+        :tariff_knowledge_compressed_note,
+        goods_nomenclature_sid: 456,
+        goods_nomenclature_item_id: '0101290000',
+        content: 'Old content 2',
+        stale: false,
+      )
 
-      expect(TariffKnowledge::CompressedNote).not_to receive(:[])
+      queries = sql_queries { described_class.call(goods_nomenclature_sids: [123, 456]) }
 
-      described_class.call(goods_nomenclature_sids: [123])
+      expect(queries.grep(/FROM "tariff_knowledge_compressed_notes"/).size).to eq(1)
     end
 
     it 'does not overwrite manually edited notes' do

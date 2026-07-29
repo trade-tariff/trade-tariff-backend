@@ -309,7 +309,7 @@ module TariffKnowledge
                 .insert(values)
                 .first
 
-      Node.call(row)
+      Node.load(row)
     end
 
     def upsert_edge(source_node, target_node, relationship_type)
