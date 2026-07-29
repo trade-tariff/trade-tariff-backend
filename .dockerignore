@@ -1,4 +1,5 @@
 *.log
+.bundle
 .byebug_history
 .data
 .devcontainer
@@ -11,6 +12,7 @@
 .git
 .github
 .gitignore
+.gitnexus
 .markdownlint.yaml
 .nix
 .pre-commit-config.yaml
@@ -18,6 +20,7 @@
 .rubocop.yml
 .ruby-lsp
 .tool-versions
+.worktrees
 .yarn-integrity
 CODEOWNERS
 Dockerfile
@@ -25,9 +28,11 @@ LICENCE.txt
 Makefile
 Procfile.dev
 README.md
+backup.sql
 config/master.key
 coverage
 ctrf
+data
 docs
 flake.lock
 flake.nix
