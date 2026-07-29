@@ -25,6 +25,9 @@ jobs:
       environment: development
       test-flavour: none
       migrate: true
+      # Override tools@main hardcode (still 3.22) until tools alpine PR merges.
+      # Last ALPINE_VERSION build-arg wins in docker build.
+      build-args: ALPINE_VERSION=3.24
     secrets:
       slack-webhook: ${{ secrets.SLACK_WEBHOOK }}
       ssh-key: ${{ secrets.PRIVATE_SSH_KEY }}
