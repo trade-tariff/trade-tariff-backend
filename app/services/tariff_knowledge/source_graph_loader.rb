@@ -296,7 +296,6 @@ module TariffKnowledge
     end
 
     def upsert_node(attributes)
-      key = attributes.fetch(:key)
       now = Time.zone.now
       values = attributes.merge(
         metadata: Sequel.pg_jsonb(attributes.fetch(:metadata, { 'loader' => self.class.name })),
@@ -304,11 +303,13 @@ module TariffKnowledge
         updated_at: now,
       )
 
-      Node.dataset
-          .insert_conflict(target: :key, update: node_update_values)
-          .insert(values)
+      row = Node.dataset
+                .returning
+                .insert_conflict(target: :key, update: node_update_values)
+                .insert(values)
+                .first
 
-      Node.by_key(key).first
+      Node.call(row)
     end
 
     def upsert_edge(source_node, target_node, relationship_type)

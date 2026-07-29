@@ -791,6 +791,20 @@ RSpec.describe TariffKnowledge::SourceGraphLoader do
       expect(edge_exists?(source_node, stale_fragment_node, TariffKnowledge::Edge::CONTAINS)).to be(false)
     end
 
+    it 'upserts nodes without a follow-up select query' do
+      create(
+        :customs_tariff_chapter_note,
+        :approved,
+        customs_tariff_update: update,
+        chapter_id: '01',
+        content: 'Chapter content.',
+      )
+
+      expect(TariffKnowledge::Node).not_to receive(:by_key)
+
+      described_class.call
+    end
+
     it 'removes stale range references when fragment content changes' do
       note = create(
         :customs_tariff_chapter_note,

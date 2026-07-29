@@ -548,6 +548,20 @@ RSpec.describe TariffKnowledge::CompressedNoteGenerator do
         .to include('horses and asses')
     end
 
+    it 'fetches existing notes for the batch in one query rather than per-node lookups' do
+      create(
+        :tariff_knowledge_compressed_note,
+        goods_nomenclature_sid: 123,
+        goods_nomenclature_item_id: '0101210000',
+        content: 'Old content',
+        stale: false,
+      )
+
+      expect(TariffKnowledge::CompressedNote).not_to receive(:[])
+
+      described_class.call(goods_nomenclature_sids: [123])
+    end
+
     it 'does not overwrite manually edited notes' do
       create(
         :tariff_knowledge_compressed_note,
