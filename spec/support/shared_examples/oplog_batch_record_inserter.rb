@@ -56,4 +56,14 @@ RSpec.shared_examples 'an oplog batch record inserter' do
 
     expect { inserter.after_parse }.to raise_error(Sequel::UniqueConstraintViolation, duplicate_key_message)
   end
+
+  it 'inserts every record exactly once across full batches and the trailing partial batch' do
+    inserted_rows = []
+    allow(operation_klass).to receive(:multi_insert) { |rows| inserted_rows.concat(rows) }
+    total_records = 5 # batch_size is 2: two full batches, then one trailing record
+    total_records.times { inserter.process_record(entity) }
+    inserter.after_parse
+    expect(operation_klass).to have_received(:multi_insert).exactly(3).times
+    expect(inserted_rows.size).to eq(total_records)
+  end
 end
