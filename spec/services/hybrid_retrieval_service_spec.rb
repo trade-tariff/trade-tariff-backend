@@ -90,7 +90,7 @@ RSpec.describe HybridRetrievalService do
       expect(OpensearchRetrievalService).to have_received(:call).with(
         query: 'HEPA filter', expanded_query: retrieval_query, as_of: as_of, request_id: nil, limit: 30,
       )
-      expect(VectorRetrievalService).to have_received(:call).with(query: retrieval_query, limit: 30, request_id: nil)
+      expect(VectorRetrievalService).to have_received(:call_with_diagnostics).with(query: retrieval_query, limit: 30, request_id: nil)
       expect(result.expanded_query).to eq('HEPA filter')
       expect(Search::Instrumentation).to have_received(:retrieval_results_returned).with(
         hash_including(stage: 'before_rrf', leg: :opensearch, effective_query: retrieval_query),
