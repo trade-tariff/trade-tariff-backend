@@ -80,7 +80,7 @@ module TariffSynchronizer
       # Wrap the entire TARIC import in a single transaction so that all
       # TARIC-transaction records from one file are applied atomically — either
       # all land in the oplog tables or none do.  This mirrors the atomicity
-      # that CdsUpdate#import! provides via StagingManager.
+      # that CdsUpdateImporter provides via StagingManager.
       #
       # Note: BaseUpdateImporter used to provide this transaction wrapper for
       # all update types.  It was removed there to allow CDS to use its own

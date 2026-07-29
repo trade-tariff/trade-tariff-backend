@@ -18,7 +18,8 @@ RSpec.describe CdsUpdatesSynchronizerWorker, type: :worker do
 
       allow(TaricSynchronizer).to receive(:download)
       allow(TaricSynchronizer).to receive(:apply).and_return(changes_applied)
-      allow(CdsSynchronizer).to receive(:download)
+      allow(TariffSynchronizer::CdsUpdateDownloader).to receive(:download)
+      allow(TariffSynchronizer::CdsUpdateDownloader).to receive(:downloaded_todays_file?)
       allow(CdsSynchronizer).to receive(:apply).and_return(changes_applied)
 
       allow(ActiveSupport::Notifications).to receive(:instrument).and_call_original
@@ -43,13 +44,13 @@ RSpec.describe CdsUpdatesSynchronizerWorker, type: :worker do
 
     context 'with todays file missing' do
       before do
-        allow(TariffSynchronizer::CdsUpdate).to receive(:downloaded_todays_file?).and_return(false)
+        allow(TariffSynchronizer::CdsUpdateDownloader).to receive(:downloaded_todays_file?).and_return(false)
 
         perform
       end
 
       context 'when before cut off time' do
-        it { expect(CdsSynchronizer).to have_received(:download) }
+        it { expect(TariffSynchronizer::CdsUpdateDownloader).to have_received(:download) }
         it { expect(CdsSynchronizer).not_to have_received(:apply) }
 
         it { expect(TaricSynchronizer).not_to have_received(:download) }
@@ -79,7 +80,7 @@ RSpec.describe CdsUpdatesSynchronizerWorker, type: :worker do
       context 'when after cut off time' do
         let(:cut_off_time) { 5.minutes.ago }
 
-        it { expect(CdsSynchronizer).to have_received(:download) }
+        it { expect(TariffSynchronizer::CdsUpdateDownloader).to have_received(:download) }
         it { expect(CdsSynchronizer).to have_received(:apply) }
 
         it { expect(TaricSynchronizer).not_to have_received(:download) }
@@ -105,7 +106,7 @@ RSpec.describe CdsUpdatesSynchronizerWorker, type: :worker do
       context 'when before cut off but check disabled' do
         subject(:perform) { described_class.new.perform(false) }
 
-        it { expect(CdsSynchronizer).to have_received(:download) }
+        it { expect(TariffSynchronizer::CdsUpdateDownloader).to have_received(:download) }
         it { expect(CdsSynchronizer).to have_received(:apply) }
 
         it { expect(TaricSynchronizer).not_to have_received(:download) }
@@ -131,13 +132,13 @@ RSpec.describe CdsUpdatesSynchronizerWorker, type: :worker do
 
     context 'with todays file present' do
       before do
-        allow(TariffSynchronizer::CdsUpdate).to receive(:downloaded_todays_file?)
+        allow(TariffSynchronizer::CdsUpdateDownloader).to receive(:downloaded_todays_file?)
                                      .and_return(true)
 
         perform
       end
 
-      it { expect(CdsSynchronizer).to have_received(:download) }
+      it { expect(TariffSynchronizer::CdsUpdateDownloader).to have_received(:download) }
       it { expect(CdsSynchronizer).to have_received(:apply) }
 
       it { expect(TaricSynchronizer).not_to have_received(:download) }
@@ -156,20 +157,20 @@ RSpec.describe CdsUpdatesSynchronizerWorker, type: :worker do
       context 'with reapply_data_migrations option' do
         subject(:perform) { described_class.new.perform(true, true) }
 
-        it { expect(CdsSynchronizer).to have_received(:download) }
+        it { expect(TariffSynchronizer::CdsUpdateDownloader).to have_received(:download) }
         it { expect(DataMigrator).to have_received(:migrate_up!).with(nil) }
       end
 
       context 'with no updates applied' do
         let(:changes_applied) { nil }
 
-        it { expect(CdsSynchronizer).to have_received(:download) }
+        it { expect(TariffSynchronizer::CdsUpdateDownloader).to have_received(:download) }
         it { expect(CdsSynchronizer).to have_received(:apply) }
 
         context 'with reapply_data_migrations option' do
           subject(:perform) { described_class.new.perform(true, true) }
 
-          it { expect(CdsSynchronizer).to have_received(:download) }
+          it { expect(TariffSynchronizer::CdsUpdateDownloader).to have_received(:download) }
           it { expect(DataMigrator).not_to have_received(:migrate_up!) }
         end
       end
@@ -177,7 +178,8 @@ RSpec.describe CdsUpdatesSynchronizerWorker, type: :worker do
 
     context 'when ListDownloadFailedError is raised it creates a retry job' do
       before do
-        allow(CdsSynchronizer).to receive(:download).and_raise TariffSynchronizer::CdsUpdateDownloader::ListDownloadFailedError
+        allow(TariffSynchronizer::CdsUpdateDownloader).to receive(:download)
+          .and_raise TariffSynchronizer::CdsUpdateDownloader::ListDownloadFailedError
 
         perform
       end
@@ -187,8 +189,8 @@ RSpec.describe CdsUpdatesSynchronizerWorker, type: :worker do
 
     context 'when a retriable download error is raised' do
       before do
-        allow(TariffSynchronizer::CdsUpdate).to receive(:downloaded_todays_file?).and_return(true)
-        allow(CdsSynchronizer).to receive(:download)
+        allow(TariffSynchronizer::CdsUpdateDownloader).to receive(:downloaded_todays_file?).and_return(true)
+        allow(TariffSynchronizer::CdsUpdateDownloader).to receive(:download)
           .and_raise(TariffSynchronizer::TariffUpdatesRequester::RetriableDownloadError, 'http://example/file')
       end
 

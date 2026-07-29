@@ -12,61 +12,13 @@ RSpec.describe CdsSynchronizer, :truncation do
   end
 
   describe '.download' do
-    context 'when sync variables are set' do
-      before do
-        allow(described_class).to receive(:sync_variables_set?).and_return(true)
-      end
+    it 'delegates to CdsUpdateDownloader' do
+      allow(TariffSynchronizer::CdsUpdateDownloader).to receive(:download)
 
-      it 'invokes update downloading/syncing on all update types' do
-        allow(TariffSynchronizer::CdsUpdate).to receive(:sync).and_return(true)
+      described_class.download
 
-        described_class.download
-
-        expect(TariffSynchronizer::CdsUpdate).to have_received(:sync)
-      end
-
-      it 'emits a download_completed instrumentation event' do
-        allow(TariffSynchronizer::CdsUpdate).to receive(:sync).and_return(true)
-        allow(TariffSynchronizer::Instrumentation).to receive(:download_completed)
-
-        described_class.download
-
-        expect(TariffSynchronizer::Instrumentation).to have_received(:download_completed)
-      end
-    end
-
-    context 'when sync variables are not set' do
-      before do
-        allow(described_class).to receive(:sync_variables_set?).and_return(false)
-      end
-
-      it 'does not start sync process' do
-        allow(TariffSynchronizer::CdsUpdate).to receive(:sync)
-
-        described_class.download
-
-        expect(TariffSynchronizer::CdsUpdate).not_to have_received(:sync)
-      end
-
-      it 'emits a sync_run_failed instrumentation event' do
-        allow(TariffSynchronizer::Instrumentation).to receive(:sync_run_failed)
-
-        described_class.download
-
-        expect(TariffSynchronizer::Instrumentation).to have_received(:sync_run_failed)
-      end
-    end
-
-    context 'when a download exception' do
-      before do
-        allow(described_class).to receive(:sync_variables_set?).and_return(true)
-        allow(TariffSynchronizer::CdsUpdate).to receive(:sync)
-          .and_raise(TariffSynchronizer::TariffUpdatesRequester::RetriableDownloadError.new('url'))
-      end
-
-      it 'raises a retriable download error ending the process' do
-        expect { described_class.download }.to raise_error TariffSynchronizer::TariffUpdatesRequester::RetriableDownloadError
-      end
+      expect(TariffSynchronizer::CdsUpdateDownloader).to have_received(:download)
+        .with(initial_date: described_class.initial_update_date)
     end
   end
 

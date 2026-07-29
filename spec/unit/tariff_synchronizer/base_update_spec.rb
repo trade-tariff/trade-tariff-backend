@@ -104,29 +104,9 @@ RSpec.describe TariffSynchronizer::BaseUpdate do
 
       let(:initial_date) { Date.new(2012, 6, 6) }
     end
-
-    it_behaves_like 'an applicable download date range', :cds_update do
-      subject(:applicable_download_date_range) { TariffSynchronizer::CdsUpdate.applicable_download_date_range(initial_date: Date.new(2020, 9, 1)) }
-
-      let(:initial_date) { Date.new(2020, 9, 1) }
-    end
   end
 
   describe '.sync' do
-    it 'calls the download method for each date for the last 20 days to the current date' do
-      create :cds_update, :applied, issue_date: 1.day.ago.to_date
-
-      (20.days.ago.to_date..Time.zone.today).each do |download_date|
-        allow(TariffSynchronizer::CdsUpdateDownloader).to receive(:new).with(download_date).and_return(instance_double(TariffSynchronizer::CdsUpdateDownloader, perform: nil))
-      end
-
-      TariffSynchronizer::CdsUpdate.sync(initial_date: 20.days.ago.to_date)
-
-      (20.days.ago.to_date..Time.zone.today).each do |download_date|
-        expect(TariffSynchronizer::CdsUpdateDownloader).to have_received(:new).with(download_date)
-      end
-    end
-  end
 
   describe '.oldest_pending' do
     subject(:oldest_pending) { described_class.oldest_pending }
