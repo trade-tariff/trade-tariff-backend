@@ -96,10 +96,32 @@ RSpec.describe TariffKnowledge::CompressedNoteRefresh do
         expect(TariffKnowledge::CompressedNoteGenerator).to have_received(:call).once
       end
 
-      it 'returns zero counts' do
+      it 'returns zero counts and marks the result as skipped' do
         result = described_class.call
 
-        expect(result).to have_attributes(goods_nomenclature_count: 0, expired_note_count: 0)
+        expect(result).to have_attributes(goods_nomenclature_count: 0, expired_note_count: 0, skipped: true)
+      end
+    end
+
+    context 'when the source version changes but the declarable sids are unchanged' do
+      let(:cache) { ActiveSupport::Cache::MemoryStore.new }
+      let(:refresh_instance) { described_class.new }
+
+      before do
+        allow(Rails).to receive(:cache).and_return(cache)
+        create(:commodity, parent: heading, goods_nomenclature_sid: 123, goods_nomenclature_item_id: '0101210000')
+        GoodsNomenclatures::TreeNode.refresh!
+        described_class.call
+        allow(refresh_instance).to receive(:current_source_version).and_return('new-version')
+        allow(described_class).to receive(:new).and_return(refresh_instance)
+      end
+
+      it 'runs all sub-services again' do
+        described_class.call
+
+        expect(TariffKnowledge::DeclarableNodeLoader).to have_received(:call).twice
+        expect(TariffKnowledge::SourceGraphLoader).to have_received(:call).twice
+        expect(TariffKnowledge::CompressedNoteGenerator).to have_received(:call).twice
       end
     end
 

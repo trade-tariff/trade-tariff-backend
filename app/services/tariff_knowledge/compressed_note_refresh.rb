@@ -3,7 +3,7 @@ module TariffKnowledge
     BATCH_SIZE = 500
     FINGERPRINT_CACHE_KEY = 'tariff_knowledge:compressed_note_refresh:fingerprint'.freeze
 
-    Result = Data.define(:goods_nomenclature_count, :expired_note_count)
+    Result = Data.define(:goods_nomenclature_count, :expired_note_count, :skipped)
 
     def self.call
       new.call
@@ -13,7 +13,7 @@ module TariffKnowledge
       current_version = current_source_version
       current_sids    = current_goods_nomenclature_sids
 
-      return Result.new(goods_nomenclature_count: 0, expired_note_count: 0) \
+      return Result.new(goods_nomenclature_count: 0, expired_note_count: 0, skipped: true) \
         if fingerprint_unchanged?(current_version, current_sids)
 
       DeclarableNodeLoader.call
@@ -29,6 +29,7 @@ module TariffKnowledge
       Result.new(
         goods_nomenclature_count: current_sids.size,
         expired_note_count: expired_note_count,
+        skipped: false,
       )
     end
 

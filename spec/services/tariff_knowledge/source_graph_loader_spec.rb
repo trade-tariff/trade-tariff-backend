@@ -800,9 +800,13 @@ RSpec.describe TariffKnowledge::SourceGraphLoader do
         content: 'Chapter content.',
       )
 
-      expect(TariffKnowledge::Node).not_to receive(:by_key)
+      queries = sql_queries { described_class.call }
 
-      described_class.call
+      node_inserts = queries.count { |q| q.include?('INSERT INTO "tariff_knowledge_nodes"') }
+      node_key_lookups = queries.count { |q| q.include?('FROM "tariff_knowledge_nodes"') && q.include?('"key"') }
+
+      expect(node_inserts).to be_positive
+      expect(node_key_lookups).to eq(0)
     end
 
     it 'removes stale range references when fragment content changes' do
@@ -826,6 +830,21 @@ RSpec.describe TariffKnowledge::SourceGraphLoader do
       expect(edge_exists?(fragment_node, current_range_node, TariffKnowledge::Edge::REFERENCES)).to be(true)
       expect(edge_exists?(fragment_node, stale_range_node, TariffKnowledge::Edge::REFERENCES)).to be(false)
     end
+  end
+
+  def sql_queries
+    queries = []
+    logger = Logger.new(StringIO.new)
+    logger.formatter = proc do |_severity, _datetime, _progname, message|
+      queries << message
+      nil
+    end
+
+    Sequel::Model.db.loggers << logger
+    yield
+    queries
+  ensure
+    Sequel::Model.db.loggers.delete(logger)
   end
 
   def edge_exists?(source_node, target_node, relationship_type)
