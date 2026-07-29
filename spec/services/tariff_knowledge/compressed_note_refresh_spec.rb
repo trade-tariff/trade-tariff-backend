@@ -77,5 +77,51 @@ RSpec.describe TariffKnowledge::CompressedNoteRefresh do
 
       expect(TariffKnowledge::CompressedNote[999].expired).to be(true)
     end
+
+    context 'when the source version and declarable sids are unchanged since the last run' do
+      let(:cache) { ActiveSupport::Cache::MemoryStore.new }
+
+      before do
+        allow(Rails).to receive(:cache).and_return(cache)
+        create(:commodity, parent: heading, goods_nomenclature_sid: 123, goods_nomenclature_item_id: '0101210000')
+        GoodsNomenclatures::TreeNode.refresh!
+        described_class.call
+      end
+
+      it 'skips DeclarableNodeLoader, SourceGraphLoader, and CompressedNoteGenerator' do
+        described_class.call
+
+        expect(TariffKnowledge::DeclarableNodeLoader).to have_received(:call).once
+        expect(TariffKnowledge::SourceGraphLoader).to have_received(:call).once
+        expect(TariffKnowledge::CompressedNoteGenerator).to have_received(:call).once
+      end
+
+      it 'returns zero counts' do
+        result = described_class.call
+
+        expect(result).to have_attributes(goods_nomenclature_count: 0, expired_note_count: 0)
+      end
+    end
+
+    context 'when the declarable sids change between runs' do
+      let(:cache) { ActiveSupport::Cache::MemoryStore.new }
+
+      before do
+        allow(Rails).to receive(:cache).and_return(cache)
+        create(:commodity, parent: heading, goods_nomenclature_sid: 123, goods_nomenclature_item_id: '0101210000')
+        GoodsNomenclatures::TreeNode.refresh!
+        described_class.call
+        create(:commodity, parent: heading, goods_nomenclature_sid: 124, goods_nomenclature_item_id: '0101290000')
+        GoodsNomenclatures::TreeNode.refresh!
+      end
+
+      it 'runs all sub-services again' do
+        described_class.call
+
+        expect(TariffKnowledge::DeclarableNodeLoader).to have_received(:call).twice
+        expect(TariffKnowledge::SourceGraphLoader).to have_received(:call).twice
+        expect(TariffKnowledge::CompressedNoteGenerator).to have_received(:call).twice
+      end
+    end
   end
 end
