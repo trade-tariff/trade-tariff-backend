@@ -1,6 +1,6 @@
 # Build compilation image
 ARG RUBY_VERSION=4.0.6
-ARG ALPINE_VERSION=3.23
+ARG ALPINE_VERSION=3.24
 
 FROM ruby:${RUBY_VERSION}-alpine${ALPINE_VERSION} AS builder
 
