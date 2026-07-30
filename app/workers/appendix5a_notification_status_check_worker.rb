@@ -1,7 +1,8 @@
 class Appendix5aNotificationStatusCheckWorker
   include Sidekiq::Worker
 
-  sidekiq_options queue: :default
+  # Cap retries: Notify status checks must not use Sidekiq's default (25).
+  sidekiq_options queue: :default, retry: 3
 
   FAILURE_STATUSES = [
     GovukNotifier::PERMANENT_FAILURE,

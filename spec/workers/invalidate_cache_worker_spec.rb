@@ -1,8 +1,6 @@
 RSpec.describe InvalidateCacheWorker, type: :worker do
   subject(:worker) { described_class.new }
 
-  let(:client) { Aws::CloudFront::Client.new(stub_responses: true) }
-
   let(:base_distribution) do
     {
       id: 'DEFAULT123',
@@ -25,6 +23,13 @@ RSpec.describe InvalidateCacheWorker, type: :worker do
       is_ipv6_enabled: true,
       staging: false,
     }
+  end
+  let(:client) { Aws::CloudFront::Client.new(stub_responses: true) }
+
+  describe 'sidekiq options' do
+    it 'caps retries below Sidekiq default' do
+      expect(described_class.sidekiq_options['retry']).to eq(3)
+    end
   end
 
   describe '#perform' do

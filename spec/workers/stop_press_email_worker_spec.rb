@@ -4,6 +4,12 @@ RSpec.describe StopPressEmailWorker, type: :worker do
   let(:stop_press) { create(:news_item) }
   let(:user) { create(:public_user, :with_active_stop_press_subscription) }
 
+  describe 'sidekiq options' do
+    it 'caps retries below Sidekiq default' do
+      expect(described_class.sidekiq_options['retry']).to eq(3)
+    end
+  end
+
   describe '#perform' do
     let(:client) { instance_double(GovukNotifier) }
     let(:email_address) { 'test@example.com' }

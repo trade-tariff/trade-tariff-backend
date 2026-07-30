@@ -1,6 +1,9 @@
 class MyCommoditiesSubscriptionWorker
   include Sidekiq::Worker
 
+  # Orchestrator only enqueues children; keep retries low to limit duplicate fan-out.
+  sidekiq_options retry: 3
+
   def perform(date = Time.zone.yesterday.iso8601)
     @date = Date.parse(date)
     queue

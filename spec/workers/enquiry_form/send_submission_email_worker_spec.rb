@@ -1,8 +1,7 @@
 RSpec.describe EnquiryForm::SendSubmissionEmailWorker, type: :worker do
   subject(:worker) { described_class.new }
 
-  let(:reference) { 'ABC12345' }
-
+  let(:notifier_client) { instance_double(GovukNotifier, send_email: true) }
   let(:form_data) do
     {
       name: 'John Doe',
@@ -15,8 +14,11 @@ RSpec.describe EnquiryForm::SendSubmissionEmailWorker, type: :worker do
       created_at: '2025-08-15 10:00',
     }
   end
+  let(:reference) { 'ABC12345' }
 
-  let(:notifier_client) { instance_double(GovukNotifier, send_email: true) }
+  after do
+    Sidekiq.redis { |conn| conn.del(described_class.cache_key(reference)) }
+  end
 
   before do
     Sidekiq.redis { |conn| conn.set(described_class.cache_key(reference), form_data.to_json, ex: 3600) }
@@ -24,8 +26,10 @@ RSpec.describe EnquiryForm::SendSubmissionEmailWorker, type: :worker do
     allow(GovukNotifier).to receive(:new).and_return(notifier_client)
   end
 
-  after do
-    Sidekiq.redis { |conn| conn.del(described_class.cache_key(reference)) }
+  describe 'sidekiq options' do
+    it 'caps retries below Sidekiq default' do
+      expect(described_class.sidekiq_options['retry']).to eq(3)
+    end
   end
 
   describe '#perform' do

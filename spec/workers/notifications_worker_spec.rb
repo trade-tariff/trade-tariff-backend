@@ -1,6 +1,12 @@
 RSpec.describe NotificationsWorker, type: :worker do
   subject(:worker) { described_class.new }
 
+  describe 'sidekiq options' do
+    it 'caps retries below Sidekiq default' do
+      expect(described_class.sidekiq_options['retry']).to eq(3)
+    end
+  end
+
   describe '#perform' do
     let(:notification_id) { SecureRandom.uuid }
 
