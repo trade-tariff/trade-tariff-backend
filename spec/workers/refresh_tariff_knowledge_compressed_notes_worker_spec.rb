@@ -1,11 +1,27 @@
 RSpec.describe RefreshTariffKnowledgeCompressedNotesWorker, type: :worker do
   describe '#perform' do
-    it 'delegates compressed note refresh' do
-      allow(TariffKnowledge::CompressedNoteRefresh).to receive(:call)
+    let(:worker) { described_class.new }
 
-      described_class.new.perform
+    it 'logs a skipped message when the fingerprint is unchanged' do
+      result = TariffKnowledge::CompressedNoteRefresh::Result.new(
+        goods_nomenclature_count: 0, expired_note_count: 0, skipped: true,
+      )
+      allow(TariffKnowledge::CompressedNoteRefresh).to receive(:call).and_return(result)
 
-      expect(TariffKnowledge::CompressedNoteRefresh).to have_received(:call)
+      expect(worker.logger).to receive(:info).with(/skipped/)
+
+      worker.perform
+    end
+
+    it 'logs a completion message with counts when the full run completes' do
+      result = TariffKnowledge::CompressedNoteRefresh::Result.new(
+        goods_nomenclature_count: 42, expired_note_count: 3, skipped: false,
+      )
+      allow(TariffKnowledge::CompressedNoteRefresh).to receive(:call).and_return(result)
+
+      expect(worker.logger).to receive(:info).with(/42.*3|3.*42|complete/)
+
+      worker.perform
     end
   end
 

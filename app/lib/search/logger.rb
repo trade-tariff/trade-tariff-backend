@@ -46,6 +46,7 @@ module Search
         query: event.payload[:query],
         expand: event.payload[:expand],
         reason: event.payload[:reason],
+        decider_version: event.payload[:decider_version],
         result_count: event.payload[:result_count],
         max_score: event.payload[:max_score],
       }, event)
@@ -282,6 +283,23 @@ module Search
       }
       add_error_fields!(data, event)
       info log_entry(data, event)
+    end
+
+    def query_guardrail_decided(event)
+      info log_entry({
+        event: 'query_guardrail_decided',
+        request_id: event.payload[:request_id],
+        search_type: event.payload[:search_type],
+        query: event.payload[:query],
+        effective_query: event.payload[:effective_query],
+        iteration: event.payload[:iteration],
+        variant: event.payload[:variant],
+        enabled: event.payload[:enabled],
+        accepted: event.payload[:accepted],
+        max_score: event.payload[:max_score],
+        threshold: event.payload[:threshold],
+        reason: event.payload[:reason],
+      }, event)
     end
 
     def result_selected(event)

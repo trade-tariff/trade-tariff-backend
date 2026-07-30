@@ -7,8 +7,8 @@ RSpec.describe 'admin_configurations:seed' do
     Rake::Task['admin_configurations:seed'].reenable
   end
 
-  it 'creates all 49 admin configurations', :aggregate_failures do
-    expect { seed }.to change(AdminConfiguration, :count).by(49)
+  it 'creates all 52 admin configurations', :aggregate_failures do
+    expect { seed }.to change(AdminConfiguration, :count).by(52)
 
     names = AdminConfiguration.order(:name).select_map(:name)
     expect(names).to eq(%w[
@@ -17,10 +17,13 @@ RSpec.describe 'admin_configurations:seed' do
       description_intercept_templates
       expand_model
       expand_query_context
+      expand_search_decider
       expand_search_enabled
       expand_search_min_results
       expand_search_min_score
       expand_search_when_needed_enabled
+      hybrid_query_guardrail_enabled
+      hybrid_query_guardrail_threshold
       input_sanitiser_enabled
       input_sanitiser_max_length
       interactive_search_duplicate_question_guard_context
@@ -213,10 +216,18 @@ RSpec.describe 'admin_configurations:seed' do
   it 'seeds conditional expansion controls', :aggregate_failures do
     seed
 
+    decider = AdminConfiguration.where(name: 'expand_search_decider').first
+    expect(decider.config_type).to eq('options')
+    expect(decider.value['selected']).to eq('v1')
+    expect(decider.value['options']).to eq([
+      { 'key' => 'v1', 'label' => 'V1: casing and retrieval evidence' },
+      { 'key' => 'v2', 'label' => 'V2: targeted synonyms and retrieval evidence' },
+    ])
+
     enabled = AdminConfiguration.where(name: 'expand_search_when_needed_enabled').first
     expect(enabled.config_type).to eq('boolean')
     expect(enabled.description).to include('When AI expansion is enabled')
-    expect(enabled.description).to include('acronym-like terms')
+    expect(enabled.description).to include('selected expansion strategy')
     expect(enabled.description).to include('no significant tagged words')
     expect(enabled.description).to include('too few results')
     expect(enabled.value).to be true
@@ -391,6 +402,18 @@ RSpec.describe 'admin_configurations:seed' do
     expect(config.value).to eq(AdminConfiguration.default_for('rrf_k'))
   end
 
+  it 'seeds the hybrid query guardrail disabled with its separately configurable threshold', :aggregate_failures do
+    seed
+
+    enabled = AdminConfiguration.where(name: 'hybrid_query_guardrail_enabled').first
+    threshold = AdminConfiguration.where(name: 'hybrid_query_guardrail_threshold').first
+
+    expect(enabled.config_type).to eq('boolean')
+    expect(enabled.value).to be(false)
+    expect(threshold.config_type).to eq('integer')
+    expect(threshold.value).to eq(32)
+  end
+
   it 'seeds suggestion toggle configs as booleans', :aggregate_failures do
     seed
 
@@ -460,7 +483,47 @@ RSpec.describe 'admin_configurations:seed' do
   it 'patches existing configurations when their type changes' do
     create(:admin_configuration, name: 'description_intercept_templates', config_type: 'string', value: 'legacy')
 
-    expect { seed }.to change(AdminConfiguration, :count).by(48)
+    expect { seed }.to change(AdminConfiguration, :count).by(51)
     expect(AdminConfiguration.where(name: 'description_intercept_templates').first.config_type).to eq('object_template')
+  end
+
+  it 'refreshes descriptions without replacing an existing selected value' do
+    create(
+      :admin_configuration,
+      :boolean,
+      name: 'expand_search_when_needed_enabled',
+      description: 'Legacy description',
+      value: false,
+    )
+
+    seed
+
+    config = AdminConfiguration.where(name: 'expand_search_when_needed_enabled').first
+    expect(config.description).to include('selected expansion strategy')
+    expect(config.value).to be(false)
+  end
+
+  it 'refreshes options without replacing an existing selected value' do
+    config = create(
+      :admin_configuration,
+      name: 'expand_search_decider',
+      config_type: 'options',
+      description: 'Legacy description',
+      value: {
+        'selected' => 'v2',
+        'options' => [{ 'key' => 'v1', 'label' => 'Legacy V1' }],
+      },
+    )
+    AdminConfiguration.where(id: config.id)
+      .update(value: Sequel.pg_jsonb_wrap('selected' => 'v2'))
+
+    seed
+
+    config = AdminConfiguration.where(name: 'expand_search_decider').first
+    expect(config.value['selected']).to eq('v2')
+    expect(config.value['options']).to eq([
+      { 'key' => 'v1', 'label' => 'V1: casing and retrieval evidence' },
+      { 'key' => 'v2', 'label' => 'V2: targeted synonyms and retrieval evidence' },
+    ])
   end
 end

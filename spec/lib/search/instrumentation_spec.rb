@@ -220,6 +220,7 @@ RSpec.describe Search::Instrumentation do
         query: 'CBD oil',
         expand: true,
         reason: 'non_word_token',
+        decider_version: 'v1',
         result_count: 3,
         max_score: 4.5,
       )
@@ -231,6 +232,7 @@ RSpec.describe Search::Instrumentation do
         query: 'CBD oil',
         expand: true,
         reason: 'non_word_token',
+        decider_version: 'v1',
         result_count: 3,
         max_score: 4.5,
       )
@@ -625,6 +627,72 @@ RSpec.describe Search::Instrumentation do
           result_count: 1,
           details: { results: [hash_including(goods_nomenclature_item_id: '0101210000', score: 12.5)] },
         ),
+      )
+    end
+  end
+
+  describe '.query_guardrail_decided' do
+    it 'instruments the configured variant, score, threshold, and decision' do
+      allow(ActiveSupport::Notifications).to receive(:instrument)
+
+      described_class.query_guardrail_decided(
+        request_id: 'req-1',
+        search_type: 'interactive',
+        query: 'book a dentist appointment',
+        effective_query: 'dentist appointment',
+        iteration: 2,
+        enabled: true,
+        accepted: false,
+        max_score: 0.31,
+        threshold: 0.32,
+        reason: 'below_threshold',
+      )
+
+      expect(ActiveSupport::Notifications).to have_received(:instrument).with(
+        'query_guardrail_decided.search',
+        request_id: 'req-1',
+        search_type: 'interactive',
+        query: 'book a dentist appointment',
+        effective_query: 'dentist appointment',
+        iteration: 2,
+        variant: 'fixed_vector_score',
+        enabled: true,
+        accepted: false,
+        max_score: 0.31,
+        threshold: 0.32,
+        reason: 'below_threshold',
+      )
+    end
+
+    it 'identifies disabled decisions as the control variant' do
+      allow(ActiveSupport::Notifications).to receive(:instrument)
+
+      described_class.query_guardrail_decided(
+        request_id: 'req-1',
+        search_type: 'interactive',
+        query: 'horses',
+        effective_query: 'horses',
+        iteration: 1,
+        enabled: false,
+        accepted: true,
+        max_score: 0.55,
+        threshold: 0.32,
+        reason: 'disabled',
+      )
+
+      expect(ActiveSupport::Notifications).to have_received(:instrument).with(
+        'query_guardrail_decided.search',
+        request_id: 'req-1',
+        search_type: 'interactive',
+        query: 'horses',
+        effective_query: 'horses',
+        iteration: 1,
+        variant: 'control',
+        enabled: false,
+        accepted: true,
+        max_score: 0.55,
+        threshold: 0.32,
+        reason: 'disabled',
       )
     end
   end

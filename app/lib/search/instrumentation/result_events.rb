@@ -59,6 +59,23 @@ module Search
         )
       end
 
+      def query_guardrail_decided(request_id:, search_type:, query:, effective_query:, iteration:, enabled:, accepted:, max_score:, threshold:, reason:)
+        instrument(
+          'query_guardrail_decided',
+          request_id:,
+          search_type:,
+          query:,
+          effective_query:,
+          iteration:,
+          variant: enabled ? 'fixed_vector_score' : 'control',
+          enabled:,
+          accepted:,
+          max_score:,
+          threshold:,
+          reason:,
+        )
+      end
+
       def question_returned(request_id:, question_count:, attempt_number:, iteration: nil, effective_query: nil, questions: nil)
         payload = { request_id:, search_type: 'interactive', question_count:, attempt_number:, iteration:, effective_query: }
         payload[:details] = { questions: questions } if questions

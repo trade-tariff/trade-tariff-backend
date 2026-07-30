@@ -198,8 +198,9 @@ module Api
       end
 
       def vector_short_list(search_expanded_query)
+        search_retrieval_query = retrieval_query_with_synonyms(search_expanded_query)
         goods_nomenclatures = VectorRetrievalService.call(
-          query: search_expanded_query,
+          query: search_retrieval_query,
           limit: opensearch_result_limit,
           filter_prefixes: filter_prefixes,
           request_id: request_id,
@@ -207,7 +208,7 @@ module Api
         ::Search::Instrumentation.retrieval_results_returned(
           request_id: request_id,
           query: q,
-          effective_query: search_expanded_query,
+          effective_query: search_retrieval_query,
           search_type: 'interactive',
           retrieval_method: 'vector',
           stage: 'returned',
@@ -226,8 +227,9 @@ module Api
       end
 
       def opensearch_short_list(search_expanded_query)
+        search_retrieval_query = retrieval_query_with_synonyms(search_expanded_query)
         result = OpensearchRetrievalService.call(
-          query: q, expanded_query: search_expanded_query,
+          query: q, expanded_query: search_retrieval_query,
           as_of: as_of, request_id: request_id, limit: opensearch_result_limit,
           filter_prefixes: filter_prefixes
         )
@@ -246,17 +248,20 @@ module Api
         RetrievalResult.new(
           goods_nomenclatures: result.results,
           max_score: result.results.map(&:score).compact.max,
-          expanded_query: result.expanded_query,
+          expanded_query: search_expanded_query,
           results_type: 'opensearch',
           decision_results: result.results,
         )
       end
 
       def hybrid_short_list(search_expanded_query)
+        search_retrieval_query = retrieval_query_with_synonyms(search_expanded_query)
         result = HybridRetrievalService.call(
           query: q, expanded_query: search_expanded_query,
+          retrieval_query: search_retrieval_query,
           as_of: as_of, request_id: request_id, limit: opensearch_result_limit,
-          filter_prefixes: filter_prefixes, iteration: search_iteration
+          filter_prefixes: filter_prefixes, iteration: search_iteration,
+          search_type: 'interactive'
         )
 
         RetrievalResult.new(
@@ -291,6 +296,17 @@ module Api
         expanded_query.blank? &&
           AdminConfiguration.enabled?('expand_search_enabled') &&
           AdminConfiguration.enabled?('expand_search_when_needed_enabled')
+      end
+
+      def retrieval_query_with_synonyms(search_expanded_query)
+        return search_expanded_query unless AdminConfiguration.enabled?('expand_search_enabled')
+        return search_expanded_query unless expansion_decider_version == 'v2'
+
+        ::Search::SynonymExpander.call(search_expanded_query)
+      end
+
+      def expansion_decider_version
+        @expansion_decider_version ||= SearchExpansionDecisionService.decider_version
       end
 
       def normalised_query
@@ -355,6 +371,7 @@ module Api
           interactive_search_duplicate_question_guard_enabled: AdminConfiguration.enabled?('interactive_search_duplicate_question_guard_enabled'),
           interactive_search_max_questions: AdminConfiguration.integer_value('interactive_search_max_questions'),
           expand_search_enabled: AdminConfiguration.enabled?('expand_search_enabled'),
+          expand_search_decider: expansion_decider_version,
           expand_search_when_needed_enabled: AdminConfiguration.enabled?('expand_search_when_needed_enabled'),
           expand_search_min_results: AdminConfiguration.integer_value('expand_search_min_results'),
           expand_search_min_score: AdminConfiguration.integer_value('expand_search_min_score'),
@@ -367,11 +384,14 @@ module Api
           vector_score_threshold: AdminConfiguration.integer_value('vector_score_threshold'),
           vector_ef_search: AdminConfiguration.integer_value('vector_ef_search'),
           rrf_k: AdminConfiguration.integer_value('rrf_k'),
+          hybrid_query_guardrail_threshold: AdminConfiguration.integer_value('hybrid_query_guardrail_threshold'),
           interactive_search_duplicate_question_guard_model: model_configuration('interactive_search_duplicate_question_guard_model'),
           search_model: model_configuration('search_model'),
           expand_model: model_configuration('expand_model'),
           filter_prefixes: filter_prefixes,
-        }.compact_blank
+        }.compact_blank.tap do |configuration|
+          configuration[:hybrid_query_guardrail_enabled] = AdminConfiguration.enabled?('hybrid_query_guardrail_enabled')
+        end
       end
 
       def model_configuration(name)

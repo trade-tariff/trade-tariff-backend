@@ -25,6 +25,9 @@ jobs:
       environment: development
       test-flavour: none
       migrate: true
+      # Override tools@main hardcode (still 3.22) until tools alpine PR merges.
+      # Last ALPINE_VERSION build-arg wins in docker build.
+      build-args: ALPINE_VERSION=3.24
     secrets:
       slack-webhook: ${{ secrets.SLACK_WEBHOOK }}
       ssh-key: ${{ secrets.PRIVATE_SSH_KEY }}
@@ -50,9 +53,9 @@ jobs:
     needs: deploy
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v7.0.0
+      - uses: actions/checkout@v7.0.1
 
-      - uses: ruby/setup-ruby@v1.319.0
+      - uses: ruby/setup-ruby@v1.321.0
         with:
           bundler-cache: true
 

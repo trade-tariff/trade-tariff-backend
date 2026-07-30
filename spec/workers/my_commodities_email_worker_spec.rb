@@ -15,6 +15,12 @@ RSpec.describe MyCommoditiesEmailWorker, type: :worker do
     allow(mock_notifier).to receive(:schedule_status_check)
   end
 
+  describe 'sidekiq options' do
+    it 'caps retries below Sidekiq default' do
+      expect(described_class.sidekiq_options['retry']).to eq(3)
+    end
+  end
+
   describe '#perform' do
     context 'when all parameters are valid' do
       it 'sends an email to the user' do

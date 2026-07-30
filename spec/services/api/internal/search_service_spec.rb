@@ -51,7 +51,10 @@ RSpec.describe Api::Internal::SearchService do
     end
 
     it 'emits interactive configuration diagnostics including the duplicate question guard gate' do
-      allow(Search::Instrumentation).to receive(:interactive_configuration_used)
+      captured_configuration = nil
+      allow(Search::Instrumentation).to receive(:interactive_configuration_used) do |configuration:, **|
+        captured_configuration = configuration
+      end
       allow(TradeTariffBackend.search_client).to receive(:search).and_return({ 'hits' => { 'hits' => [] } })
 
       described_class.new(q: 'multimeter leads').call
@@ -61,12 +64,28 @@ RSpec.describe Api::Internal::SearchService do
         query: 'multimeter leads',
         skip_question: nil,
         configuration: hash_including(
+          expand_search_decider: 'v1',
           interactive_search_duplicate_question_guard_enabled: true,
+          hybrid_query_guardrail_enabled: false,
+          hybrid_query_guardrail_threshold: 32,
           interactive_search_duplicate_question_guard_model: {
             selected: 'gpt-5-nano-2025-08-07',
             reasoning_effort: 'low',
           },
         ),
+      )
+      expect(captured_configuration.fetch(:hybrid_query_guardrail_enabled)).to be(false)
+    end
+
+    it 'reports the effective decider when the configured version is invalid' do
+      allow(AdminConfiguration).to receive(:option_value).with('expand_search_decider').and_return('unknown')
+      allow(Search::Instrumentation).to receive(:interactive_configuration_used)
+      allow(TradeTariffBackend.search_client).to receive(:search).and_return({ 'hits' => { 'hits' => [] } })
+
+      described_class.new(q: 'multimeter leads').call
+
+      expect(Search::Instrumentation).to have_received(:interactive_configuration_used).with(
+        hash_including(configuration: hash_including(expand_search_decider: 'v1')),
       )
     end
 
@@ -716,6 +735,15 @@ RSpec.describe Api::Internal::SearchService do
 
         expect(ExpandSearchQueryService).not_to have_received(:call)
       end
+
+      it 'does not apply retrieval synonyms with the v2 decider' do
+        allow(AdminConfiguration).to receive(:option_value).with('expand_search_decider').and_return('v2')
+        allow(Search::SynonymExpander).to receive(:call)
+
+        described_class.new(q: 'laptop').call
+
+        expect(Search::SynonymExpander).not_to have_received(:call)
+      end
     end
 
     context 'when expand_search_enabled is true' do
@@ -789,6 +817,37 @@ RSpec.describe Api::Internal::SearchService do
         expect(ExpandSearchQueryService).to have_received(:call).with('CBD oil', request_id: a_kind_of(String))
         expect(TradeTariffBackend.search_client).to have_received(:search).twice
         expect(result[:data].first[:attributes][:goods_nomenclature_item_id]).to eq('3304990000')
+      end
+
+      it 'uses retrieval synonyms before retaining evidence-based AI fallback with the v2 decider' do
+        allow(AdminConfiguration).to receive(:option_value).with('expand_search_decider').and_return('v2')
+        allow(Search::SynonymExpander).to receive(:call) do |query|
+          query == 'CBD oil' ? 'CBD oil cannabidiol' : query
+        end
+        allow(Search::GoodsNomenclatureQuery).to receive(:new).and_call_original
+
+        described_class.new(q: 'CBD oil').call
+
+        expect(Search::GoodsNomenclatureQuery).to have_received(:new).with(
+          'CBD oil',
+          anything,
+          hash_including(expanded_query: 'CBD oil cannabidiol'),
+        )
+        expect(ExpandSearchQueryService).to have_received(:call).with('CBD oil', request_id: a_kind_of(String))
+        expect(Search::GoodsNomenclatureQuery).to have_received(:new).with(
+          'CBD oil',
+          anything,
+          hash_including(expanded_query: 'cannabidiol oil'),
+        )
+      end
+
+      it 'does not apply retrieval synonyms with the v1 decider' do
+        allow(AdminConfiguration).to receive(:option_value).with('expand_search_decider').and_return('v1')
+        allow(Search::SynonymExpander).to receive(:call)
+
+        described_class.new(q: 'CBD oil').call
+
+        expect(Search::SynonymExpander).not_to have_received(:call)
       end
 
       context 'when expansion returns the original query' do
@@ -1268,6 +1327,22 @@ RSpec.describe Api::Internal::SearchService do
         )
       end
 
+      it 'applies v2 synonyms to vector retrieval while preserving the semantic query' do
+        allow(AdminConfiguration).to receive(:option_value).with('expand_search_decider').and_return('v2')
+        allow(Search::SynonymExpander).to receive(:call)
+          .with('pure-bred breeding horses')
+          .and_return('pure-bred breeding horses equines')
+
+        described_class.new(q: 'horses').call
+
+        expect(VectorRetrievalService).to have_received(:call).with(
+          hash_including(query: 'pure-bred breeding horses equines'),
+        )
+        expect(InteractiveSearchService).to have_received(:call).with(
+          hash_including(expanded_query: 'pure-bred breeding horses'),
+        )
+      end
+
       it 'does not call OpenSearch' do
         allow(TradeTariffBackend.search_client).to receive(:search)
 
@@ -1355,7 +1430,11 @@ RSpec.describe Api::Internal::SearchService do
         described_class.new(q: 'horses').call
 
         expect(HybridRetrievalService).to have_received(:call).with(
-          hash_including(query: 'horses', expanded_query: 'pure-bred breeding horses'),
+          hash_including(
+            query: 'horses',
+            expanded_query: 'pure-bred breeding horses',
+            search_type: 'interactive',
+          ),
         )
       end
 
@@ -1396,6 +1475,28 @@ RSpec.describe Api::Internal::SearchService do
               max_score: 250.0,
             ),
           )
+        end
+
+        context 'with the v2 decider' do
+          before do
+            allow(AdminConfiguration).to receive(:option_value).with('expand_search_decider').and_return('v2')
+            allow(Search::SynonymExpander).to receive(:call)
+              .with('horses')
+              .and_return('horses equines')
+          end
+
+          it 'passes targeted synonyms to both retrieval legs without changing the semantic query' do
+            described_class.new(q: 'horses').call
+
+            expect(HybridRetrievalService).to have_received(:call).with(
+              hash_including(
+                query: 'horses',
+                expanded_query: 'horses',
+                retrieval_query: 'horses equines',
+              ),
+            )
+            expect(ExpandSearchQueryService).not_to have_received(:call)
+          end
         end
 
         context 'when source retrieval results contain duplicate goods nomenclatures' do

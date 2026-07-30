@@ -1,6 +1,12 @@
 class VectorRetrievalService
+  Result = Data.define(:results, :max_score)
+
   def self.call(query:, limit: 80, filter_prefixes: [], request_id: nil)
     new(query:, limit:, filter_prefixes:, request_id:).call
+  end
+
+  def self.call_with_diagnostics(query:, limit: 80, filter_prefixes: [], request_id: nil)
+    new(query:, limit:, filter_prefixes:, request_id:).call_with_diagnostics
   end
 
   def initialize(query:, limit: 80, filter_prefixes: [], request_id: nil)
@@ -11,6 +17,24 @@ class VectorRetrievalService
   end
 
   def call
+    ranked_rows = apply_score_threshold(fetch_ranked_rows_for_query)
+    return [] if ranked_rows.empty?
+
+    build_results(ranked_rows, enforce_eligibility: true)
+  end
+
+  def call_with_diagnostics
+    ranked_rows = eligible_ranked_rows(fetch_ranked_rows_for_query)
+    max_score = ranked_rows.first&.[](:score)&.to_f
+    ranked_rows = apply_score_threshold(ranked_rows)
+    return Result.new(results: [], max_score:) if ranked_rows.empty?
+
+    Result.new(results: build_results(ranked_rows), max_score:)
+  end
+
+private
+
+  def fetch_ranked_rows_for_query
     query_embedding = AiUsage::Instrumentation.embedding_api_call(
       event_kind: 'vector_search_query_embedding',
       batch_size: 1,
@@ -19,29 +43,43 @@ class VectorRetrievalService
     ) { embedding_service.embed(@query, event_kind: 'vector_search_query_embedding') }
     vector_literal = "'[#{query_embedding.join(',')}]'::vector"
 
-    ranked_rows = fetch_ranked_sids(vector_literal)
-    ranked_rows = apply_score_threshold(ranked_rows)
-    return [] if ranked_rows.empty?
-
-    scores_by_sid = ranked_rows.each_with_object({}) { |r, h| h[r[:goods_nomenclature_sid]] = r[:score]&.to_f }
-    ordered_sids = ranked_rows.map { |r| r[:goods_nomenclature_sid] }
-
-    gn_by_sid = load_goods_nomenclatures(ordered_sids)
-
-    ordered_sids.filter_map do |sid|
-      gn = gn_by_sid[sid]
-      next unless gn
-      next if !search_non_declarables? && !gn.declarable?
-
-      build_result(gn, scores_by_sid[sid])
-    end
+    fetch_ranked_sids(vector_literal)
   end
 
-private
+  def build_results(ranked_rows, enforce_eligibility: false)
+    scores_by_sid = ranked_rows.each_with_object({}) { |r, h| h[r[:goods_nomenclature_sid]] = r[:score]&.to_f }
+    ordered_sids = ranked_rows.map { |r| r[:goods_nomenclature_sid] }
+    gn_by_sid = load_goods_nomenclatures(ordered_sids)
+    include_non_declarables = search_non_declarables? if enforce_eligibility
+
+    ordered_sids.filter_map do |sid|
+      goods_nomenclature = gn_by_sid[sid]
+      next unless goods_nomenclature
+      next if enforce_eligibility && !include_non_declarables && !goods_nomenclature.declarable?
+
+      build_result(goods_nomenclature, scores_by_sid[sid])
+    end
+  end
 
   def apply_score_threshold(rows)
     threshold = AdminConfiguration.integer_value('vector_score_threshold') / 100.0
     rows.select { |r| r[:score].to_f >= threshold }
+  end
+
+  def eligible_ranked_rows(rows)
+    return rows if rows.empty? || search_non_declarables?
+
+    sids = rows.map { |row| row[:goods_nomenclature_sid] }
+    eligible_sids = GoodsNomenclature
+      .actual
+      .declarable
+      .where(goods_nomenclatures__goods_nomenclature_sid: sids)
+      .then { |dataset| apply_filter_prefixes(dataset, Sequel[:goods_nomenclatures][:goods_nomenclature_item_id]) }
+      .unordered
+      .select_map(Sequel[:goods_nomenclatures][:goods_nomenclature_sid])
+      .to_set
+
+    rows.select { |row| eligible_sids.include?(row[:goods_nomenclature_sid]) }
   end
 
   def fetch_ranked_sids(vector_literal)

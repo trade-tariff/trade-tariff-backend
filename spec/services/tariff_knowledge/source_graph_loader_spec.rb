@@ -791,6 +791,24 @@ RSpec.describe TariffKnowledge::SourceGraphLoader do
       expect(edge_exists?(source_node, stale_fragment_node, TariffKnowledge::Edge::CONTAINS)).to be(false)
     end
 
+    it 'upserts nodes without a follow-up select query' do
+      create(
+        :customs_tariff_chapter_note,
+        :approved,
+        customs_tariff_update: update,
+        chapter_id: '01',
+        content: 'Chapter content.',
+      )
+
+      queries = sql_queries { described_class.call }
+
+      node_inserts = queries.count { |q| q.include?('INSERT INTO "tariff_knowledge_nodes"') }
+      node_key_lookups = queries.count { |q| q.include?('FROM "tariff_knowledge_nodes"') && q.include?('"key"') }
+
+      expect(node_inserts).to be_positive
+      expect(node_key_lookups).to eq(0)
+    end
+
     it 'removes stale range references when fragment content changes' do
       note = create(
         :customs_tariff_chapter_note,
@@ -812,6 +830,21 @@ RSpec.describe TariffKnowledge::SourceGraphLoader do
       expect(edge_exists?(fragment_node, current_range_node, TariffKnowledge::Edge::REFERENCES)).to be(true)
       expect(edge_exists?(fragment_node, stale_range_node, TariffKnowledge::Edge::REFERENCES)).to be(false)
     end
+  end
+
+  def sql_queries
+    queries = []
+    logger = Logger.new(StringIO.new)
+    logger.formatter = proc do |_severity, _datetime, _progname, message|
+      queries << message
+      nil
+    end
+
+    Sequel::Model.db.loggers << logger
+    yield
+    queries
+  ensure
+    Sequel::Model.db.loggers.delete(logger)
   end
 
   def edge_exists?(source_node, target_node, relationship_type)

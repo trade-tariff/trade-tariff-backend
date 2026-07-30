@@ -10,6 +10,8 @@ RSpec.describe 'database replication with PostgreSQL' do
               :command_log,
               :database_user,
               :dump_file,
+              :pg_dump_container,
+              :real_pg_dump,
               :real_psql,
               :replicate_script,
               :target_database,
@@ -142,6 +144,43 @@ RSpec.describe 'database replication with PostgreSQL' do
     Open3.capture3(env, replicate_script, chdir: Rails.root.to_s)
   end
 
+  def run_backup(source_database)
+    FileUtils.mkdir_p(File.join(tempdir, 'bin'))
+
+    write_executable('pg_dump', <<~'BASH')
+      #!/usr/bin/env bash
+      set -euo pipefail
+
+      if [[ -n "${PG_DUMP_CONTAINER:-}" ]]; then
+        exec docker exec --env "PGUSER=$PGUSER" "$PG_DUMP_CONTAINER" pg_dump "$@"
+      fi
+
+      exec "$REAL_PG_DUMP" "$@"
+    BASH
+
+    write_executable('aws', <<~'BASH')
+      #!/usr/bin/env bash
+      set -euo pipefail
+
+      if [[ "$1 $2 $3" == "s3 cp -" ]]; then
+        cat > "$DUMP_FIXTURE"
+      fi
+    BASH
+
+    env = {
+      'PATH' => "#{tempdir}/bin:#{ENV.fetch('PATH')}",
+      'DUMP_FIXTURE' => dump_file,
+      'PG_DUMP_CONTAINER' => pg_dump_container.to_s,
+      'REAL_PG_DUMP' => real_pg_dump,
+      'ENVIRONMENT' => 'production',
+      'S3_BUCKET' => 'test-backups',
+      'DATABASE_URL' => source_database,
+      'PGUSER' => database_user,
+    }
+
+    Open3.capture3(env, backup_script, chdir: Rails.root.to_s)
+  end
+
   before do
     @replicate_script = Rails.root.join('bin/db-replicate').to_s
     @backup_script = Rails.root.join('bin/backup-database').to_s
@@ -169,6 +208,22 @@ RSpec.describe 'database replication with PostgreSQL' do
                       .split(File::PATH_SEPARATOR)
                       .map { |directory| File.join(directory, 'psql') }
                       .find { |path| File.executable?(path) }
+    @real_pg_dump = ENV.fetch('PATH')
+                       .split(File::PATH_SEPARATOR)
+                       .map { |directory| File.join(directory, 'pg_dump') }
+                       .find { |path| File.executable?(path) }
+    server_major = query('postgres', 'SHOW server_version_num').to_i / 10_000
+    client_major = run_command(real_pg_dump, '--version')[/\d+/].to_i
+    @pg_dump_container = if server_major != client_major
+                           run_command(
+                             'docker',
+                             'ps',
+                             '--filter',
+                             'publish=5432',
+                             '--format',
+                             '{{.ID}}',
+                           ).lines.first&.strip
+                         end
 
     create_target_database
   end
@@ -264,6 +319,45 @@ RSpec.describe 'database replication with PostgreSQL' do
     end
   end
 
+  it 'restores a dump produced by the real backup pipeline' do
+    source_database = "replication_source_#{SecureRandom.hex(6)}"
+    run_command('createdb', '--username', database_user, source_database)
+
+    begin
+      psql(source_database, <<~SQL)
+        CREATE TABLE restore_probe(value text);
+        INSERT INTO restore_probe VALUES ('from-backup');
+        CREATE MATERIALIZED VIEW restore_probe_view AS
+          SELECT value FROM restore_probe;
+        CREATE SCHEMA xi;
+        CREATE TABLE xi.restore_probe(value text);
+        INSERT INTO xi.restore_probe VALUES ('from-backup');
+        CREATE FUNCTION noop_event_trigger() RETURNS event_trigger
+          LANGUAGE plpgsql AS $$ BEGIN END; $$;
+        CREATE EVENT TRIGGER reassign_owned
+          ON ddl_command_end EXECUTE FUNCTION noop_event_trigger();
+      SQL
+
+      expect(query(source_database, 'TABLE restore_probe')).to eq('from-backup')
+
+      _stdout, backup_stderr, backup_status = run_backup(source_database)
+      expect(backup_status).to be_success, backup_stderr
+      backup_sql = Zlib::GzipReader.open(dump_file, &:read)
+      expect(backup_sql).to include('COPY public.restore_probe'), backup_stderr
+      expect(backup_sql).to include("from-backup\n")
+
+      install_replication_boundary_stubs
+      _stdout, replication_stderr, replication_status = run_replication
+
+      expect(replication_status).to be_success, replication_stderr
+      expect(query(target_database, 'TABLE restore_probe')).to eq('from-backup')
+      expect(query(target_database, 'TABLE xi.restore_probe')).to eq('from-backup')
+      expect(query(target_database, 'TABLE restore_probe_view')).to eq('from-backup')
+    ensure
+      run_command('dropdb', '--username', database_user, '--if-exists', '--force', source_database)
+    end
+  end
+
   it 'emits a restartable dump with an explicit maintenance boundary' do
     FileUtils.mkdir_p(File.join(tempdir, 'bin'))
 
@@ -311,5 +405,44 @@ RSpec.describe 'database replication with PostgreSQL' do
     expect(uploaded_dump).to include('DROP SCHEMA IF EXISTS xi CASCADE;')
     expect(uploaded_dump).not_to include('IF EXISTS IF EXISTS')
     expect(uploaded_dump).to include("-- TRADE_TARIFF_POST_RESTORE_START\n")
+  end
+
+  it 'does not replace the latest backup when pg_dump fails' do
+    FileUtils.mkdir_p(File.join(tempdir, 'bin'))
+
+    write_executable('pg_dump', <<~'BASH')
+      #!/usr/bin/env bash
+      printf '%s\n' '-- incomplete dump'
+      exit 42
+    BASH
+
+    write_executable('gzip', <<~'BASH')
+      #!/usr/bin/env bash
+      exec cat
+    BASH
+
+    write_executable('aws', <<~'BASH')
+      #!/usr/bin/env bash
+      set -euo pipefail
+      echo "$*" >> "$TMPDIR/aws-commands.log"
+      cat > /dev/null
+    BASH
+
+    env = {
+      'PATH' => "#{tempdir}/bin:#{ENV.fetch('PATH')}",
+      'TMPDIR' => tempdir,
+      'ENVIRONMENT' => 'production',
+      'S3_BUCKET' => 'test-backups',
+      'DATABASE_URL' => target_database,
+      'PGUSER' => database_user,
+    }
+
+    _stdout, _stderr, status = Open3.capture3(env, backup_script, chdir: Rails.root.to_s)
+    aws_commands = File.readlines(File.join(tempdir, 'aws-commands.log'), chomp: true)
+
+    expect(status.exitstatus).to eq(2)
+    expect(aws_commands).not_to include(
+      's3 cp - s3://test-backups/tariff-merged-production.sql.gz',
+    )
   end
 end

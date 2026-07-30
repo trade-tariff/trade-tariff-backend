@@ -1,6 +1,9 @@
 class StopPressSubscriptionWorker
   include Sidekiq::Worker
 
+  # Orchestrator only enqueues children; keep retries low to limit duplicate fan-out.
+  sidekiq_options retry: 3
+
   def perform(stop_press_id)
     @stop_press = News::Item.find(id: stop_press_id)
     queue

@@ -1,6 +1,9 @@
 class RemoveFailedSubscribersWorker
   include Sidekiq::Worker
 
+  # Soft-deletes are mostly idempotent; keep retries low vs Sidekiq default (25).
+  sidekiq_options retry: 3
+
   def perform
     return unless TradeTariffBackend.uk?
 

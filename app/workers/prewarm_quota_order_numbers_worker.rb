@@ -1,7 +1,8 @@
 class PrewarmQuotaOrderNumbersWorker
   include Sidekiq::Worker
 
-  sidekiq_options queue: :sync, retry: true
+  # Cap retries: retry: true uses Sidekiq's default (~25).
+  sidekiq_options queue: :sync, retry: 3
 
   def perform
     TimeMachine.now do

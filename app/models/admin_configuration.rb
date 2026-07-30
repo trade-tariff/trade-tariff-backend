@@ -113,6 +113,7 @@ class AdminConfiguration < Sequel::Model(Sequel[:admin_configurations].qualify(:
       },
     },
     'expand_search_enabled' => true,
+    'expand_search_decider' => 'v1',
     'expand_search_min_results' => 5,
     'expand_search_min_score' => 5,
     'expand_search_when_needed_enabled' => true,
@@ -146,6 +147,8 @@ class AdminConfiguration < Sequel::Model(Sequel[:admin_configurations].qualify(:
     'input_sanitiser_enabled' => true,
     'input_sanitiser_max_length' => 1000,
     'retrieval_method' => 'hybrid',
+    'hybrid_query_guardrail_enabled' => false,
+    'hybrid_query_guardrail_threshold' => 32,
     'rrf_k' => 60,
     'vector_ef_search' => 100,
     'vector_score_threshold' => 35,
@@ -301,6 +304,7 @@ class AdminConfiguration < Sequel::Model(Sequel[:admin_configurations].qualify(:
     validates_includes %w[string markdown boolean options multi_options integer nested_options object_template], :config_type
     validate_unique_name if new?
     validate_value_for_type
+    validate_hybrid_query_guardrail_threshold
   end
 
   def before_validation
@@ -347,8 +351,14 @@ private
     end
   end
 
-  def t(key)
-    I18n.t("sequel.errors.models.admin_configuration.#{key}")
+  def validate_hybrid_query_guardrail_threshold
+    return unless name == 'hybrid_query_guardrail_threshold' && config_type == 'integer'
+
+    errors.add(:value, t('value.out_of_range', min: 0, max: 100)) unless (0..100).cover?(self[:value].to_i)
+  end
+
+  def t(key, **options)
+    I18n.t("sequel.errors.models.admin_configuration.#{key}", **options)
   end
 
   def clear_expand_search_cache_if_needed

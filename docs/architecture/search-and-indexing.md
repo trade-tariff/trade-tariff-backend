@@ -55,6 +55,17 @@ Relevant code paths include:
 - `app/workers/relabel_goods_nomenclature_worker.rb`
 - `app/workers/goods_nomenclature_reconciliation_worker.rb`
 
+## Hybrid Query Guardrail
+
+Hybrid retrieval can apply a query-level quality guardrail after both retrieval legs have completed and before results are returned. It uses the highest raw vector similarity for an eligible commodity, before the separate per-candidate vector threshold is applied.
+
+The guardrail is controlled through admin configuration:
+
+- `hybrid_query_guardrail_enabled` defaults to off, preserving the existing hybrid behaviour.
+- `hybrid_query_guardrail_threshold` defaults to `32`, representing a similarity of `0.32`.
+
+When enabled, hybrid retrieval returns no suggestions if the maximum score is below the threshold, no eligible vector candidate exists, or the vector leg is unavailable. The `query_guardrail_decided.search` instrumentation event records the effective variant, score, threshold, outcome, and reason so A/B-test results can be attributed to the control.
+
 Guided classification search can also attach bounded chapter- and section-note evidence to retrieved candidates. [Tariff knowledge notes](../tariff-knowledge-notes.md) documents extraction, graph edges, compressed-note materialisation and deduplication, prompt selection, and request-ID diagnostics.
 
 ## Query Expansion Deadline
@@ -86,3 +97,23 @@ filter service = "search" and event = "search_completed" and search_type = "inte
 ```
 
 Validate the behaviour in staging before production. Record the timeout count/rate, end-to-end p50/p95/p99, and a sample of the preliminary-result quality.
+
+## Query Expansion Strategies
+
+The `expand_search_decider` admin configuration selects the conditional-expansion strategy:
+
+- `v1` is the default. It preserves the existing behaviour, selecting AI expansion for uppercase acronym-like tokens as well as weak retrieval evidence.
+- `v2` applies the targeted rules in `config/search_synonyms.txt` to retrieval queries and selects AI expansion from retrieval evidence without treating casing as a signal.
+
+Selecting `v2` does not disable AI expansion. Queries with no significant tagged words, too few preliminary results, or a low top score continue through the normal AI-expansion path and retain the five-second deadline.
+
+Mechanical synonyms are applied to both OpenSearch and vector retrieval. The interactive-search context retains the original query, or the AI-expanded semantic query when evidence-based expansion runs. Per-leg retrieval telemetry records the effective synonym-expanded query.
+
+The synonym file accepts equivalent rules and directional rules:
+
+```text
+term, equivalent term
+input phrase => input phrase, lexical alternative
+```
+
+Rules are matched case-insensitively against complete terms or phrases. Keep mappings contextual: prefer `HEPA filter` or `USB connector` to broad rules for `HEPA` or `USB`.

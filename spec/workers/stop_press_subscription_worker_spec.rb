@@ -4,6 +4,12 @@ RSpec.describe StopPressSubscriptionWorker, type: :worker do
   let(:stop_press) { create(:news_item) }
   let(:user) { create(:public_user, :with_active_stop_press_subscription) }
 
+  describe 'sidekiq options' do
+    it 'caps retries below Sidekiq default' do
+      expect(described_class.sidekiq_options['retry']).to eq(3)
+    end
+  end
+
   describe '#perform' do
     it 'returns users with active stop press subscriptions matching chapters', :aggregate_failures do
       allow(stop_press).to receive_messages(emailable?: true, chapters: '01, 02')

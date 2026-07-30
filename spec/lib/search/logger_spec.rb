@@ -147,6 +147,7 @@ RSpec.describe Search::Logger do
         query: 'CBD oil',
         expand: true,
         reason: 'non_word_token',
+        decider_version: 'v1',
         result_count: 3,
         max_score: 4.5,
       }
@@ -157,6 +158,7 @@ RSpec.describe Search::Logger do
                       query: 'CBD oil',
                       expand: true,
                       reason: 'non_word_token',
+                      decider_version: 'v1',
                       result_count: 3,
                       max_score: 4.5 }
 
@@ -167,6 +169,7 @@ RSpec.describe Search::Logger do
       expect(json['query']).to eq('CBD oil')
       expect(json['expand']).to be(true)
       expect(json['reason']).to eq('non_word_token')
+      expect(json['decider_version']).to eq('v1')
       expect(json['result_count']).to eq(3)
       expect(json['max_score']).to eq(4.5)
     end
@@ -576,6 +579,43 @@ RSpec.describe Search::Logger do
       expect(json['status']).to eq('error')
       expect(json['error_message']).to eq('vector down')
       expect(json['error_message_truncated']).to be(false)
+    end
+  end
+
+  describe '#query_guardrail_decided' do
+    let(:payload) do
+      {
+        request_id: 'req-1',
+        search_type: 'interactive',
+        query: 'book a dentist appointment',
+        effective_query: 'dentist appointment',
+        iteration: 2,
+        variant: 'fixed_vector_score',
+        enabled: true,
+        accepted: false,
+        max_score: 0.31,
+        threshold: 0.32,
+        reason: 'below_threshold',
+      }
+    end
+
+    it 'logs the attributable query guardrail decision' do
+      logger_instance.query_guardrail_decided(build_event('query_guardrail_decided', payload))
+
+      expect(parsed_log_output).to include(
+        'event' => 'query_guardrail_decided',
+        'request_id' => 'req-1',
+        'search_type' => 'interactive',
+        'query' => 'book a dentist appointment',
+        'effective_query' => 'dentist appointment',
+        'iteration' => 2,
+        'variant' => 'fixed_vector_score',
+        'enabled' => true,
+        'accepted' => false,
+        'max_score' => 0.31,
+        'threshold' => 0.32,
+        'reason' => 'below_threshold',
+      )
     end
   end
 

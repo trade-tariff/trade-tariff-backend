@@ -10533,6 +10533,13 @@ CREATE UNIQUE INDEX user_subscriptions_target_unique_idx ON public.user_subscrip
 
 
 --
+-- Name: user_action_logs_created_at_index; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX user_action_logs_created_at_index ON public.user_action_logs USING btree (created_at);
+
+
+--
 -- Name: abrogation_regulation_id; Type: INDEX; Schema: uk; Owner: -
 --
 
@@ -14757,3 +14764,4 @@ INSERT INTO "schema_migrations" ("filename") VALUES ('20260626120000_create_tari
 INSERT INTO "schema_migrations" ("filename") VALUES ('20260708130000_add_derived_facts_to_public_atar_rulings.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20260716120000_drop_status_from_customs_tariff_note_tables.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20260716120100_drop_status_from_customs_tariff_updates.rb');
+INSERT INTO "schema_migrations" ("filename") VALUES ('20260730140000_add_created_at_index_to_user_action_logs.rb');
