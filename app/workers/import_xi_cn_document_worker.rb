@@ -34,26 +34,11 @@ class ImportXiCnDocumentWorker
 private
 
   def notify_completed(results)
-    imported = results.select { |r| r.status == :imported }
-    failed   = results.select { |r| r.status == :failed }
+    failed = results.select { |r| r.status == :failed }
+    return unless failed.any?
 
-    if imported.empty? && failed.empty?
-      notify_slack('XI Combined Nomenclature document import completed. Nothing new to import.')
-      return
-    end
-
-    lines = []
-    imported.each { |r| lines << "  • CELEX ID: #{r.celex} ✓" }
-    failed.each   { |r| lines << "  • CELEX ID: #{r.celex} ✗ #{r.error}" }
-
-    counts = []
-    counts << "imported: #{imported.count}" if imported.any?
-    counts << "failed: #{failed.count}" if failed.any?
-
-    status = failed.any? ? 'completed with failures' : 'completed'
-    header = "XI Combined Nomenclature document import #{status}. #{counts.join(', ')}"
-
-    notify_slack([header, *lines].join("\n"))
+    lines = failed.map { |r| "  • CELEX ID: #{r.celex} ✗ #{r.error}" }
+    notify_slack(['XI Combined Nomenclature document import completed with failures.', *lines].join("\n"))
   end
 
   def notify_failed(error)

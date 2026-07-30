@@ -9,16 +9,6 @@ class SpotExchangeRatesWorker
     return unless today_is_specific_date?(sample_date, 3, 31) || today_is_specific_date?(sample_date, 12, 31)
 
     ExchangeRates::SpotExchangeRatesService.new(sample_date, download: true).call
-
-    notify
-  end
-
-  def notify
-    message = 'Spot rates for the current month have been added and are accessible for viewing at /exchange_rates.'
-
-    logger.info message
-
-    SlackNotifierService.call(message)
   end
 
   def today_is_specific_date?(date, month, day)

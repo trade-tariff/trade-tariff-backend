@@ -11,16 +11,9 @@ RSpec.describe ClearInvalidSearchReferences, type: :worker do
 
     it { expect { do_perform }.to change(SearchReference, :count).by(-1) }
 
-    it 'sends a slack notification about expiring search references' do
-      allow(SlackNotifierService).to receive(:call).and_call_original
+    it 'does not send a Slack notification' do
+      expect(SlackNotifierService).not_to receive(:call)
       do_perform
-      expect(SlackNotifierService).to have_received(:call).with(match(/foo/))
-    end
-
-    it 'does not send a slack notification about non-expiring search references' do
-      allow(SlackNotifierService).to receive(:call).and_call_original
-      do_perform
-      expect(SlackNotifierService).not_to have_received(:call).with(match(/bar/))
     end
   end
 
@@ -34,10 +27,9 @@ RSpec.describe ClearInvalidSearchReferences, type: :worker do
 
     it { expect { do_perform }.not_to change(SearchReference, :count) }
 
-    it 'does not send a slack notification' do
-      allow(SlackNotifierService).to receive(:call).and_call_original
+    it 'does not send a Slack notification' do
+      expect(SlackNotifierService).not_to receive(:call)
       do_perform
-      expect(SlackNotifierService).not_to have_received(:call)
     end
   end
 end

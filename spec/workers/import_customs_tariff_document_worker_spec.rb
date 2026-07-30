@@ -47,24 +47,9 @@ RSpec.describe ImportCustomsTariffDocumentWorker, type: :worker do
       )
     end
 
-    it 'notifies Slack that the import completed successfully' do
+    it 'does not send a Slack notification for a successful import' do
       perform
-
-      expect(SlackNotifierService).to have_received(:call).with(
-        include('Customs tariff document import completed', 'imported: 1', 'Version ID: 1.30 ✓'),
-      )
-    end
-
-    context 'when Slack notification fails' do
-      before do
-        allow(SlackNotifierService).to receive(:call).and_raise(Slack::Notifier::APIError, 'Slack timeout')
-      end
-
-      it 'does not fail the import job' do
-        expect { perform }.not_to raise_error
-
-        expect(CustomsTariffImporter::Instrumentation).to have_received(:import_run_completed)
-      end
+      expect(SlackNotifierService).not_to have_received(:call)
     end
   end
 
@@ -83,12 +68,9 @@ RSpec.describe ImportCustomsTariffDocumentWorker, type: :worker do
       )
     end
 
-    it 'sends a "Nothing new to import." Slack notification' do
+    it 'does not send a Slack notification when there is nothing to import' do
       perform
-
-      expect(SlackNotifierService).to have_received(:call).with(
-        include('Nothing new to import'),
-      )
+      expect(SlackNotifierService).not_to have_received(:call)
     end
   end
 
@@ -111,8 +93,19 @@ RSpec.describe ImportCustomsTariffDocumentWorker, type: :worker do
       perform
 
       expect(SlackNotifierService).to have_received(:call).with(
-        include('Customs tariff document import completed with failures', 'failed: 1'),
+        include('Customs tariff document import completed with failures', 'Version ID:'),
       )
+    end
+
+    context 'when Slack notification fails' do
+      before do
+        allow(SlackNotifierService).to receive(:call).and_raise(Slack::Notifier::APIError, 'Slack timeout')
+      end
+
+      it 'does not fail the import job' do
+        expect { perform }.not_to raise_error
+        expect(CustomsTariffImporter::Instrumentation).to have_received(:import_run_completed)
+      end
     end
   end
 

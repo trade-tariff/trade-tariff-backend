@@ -37,26 +37,11 @@ class ImportCustomsTariffDocumentWorker
 private
 
   def notify_completed(results)
-    imported = results.select { |r| r.status == :imported }
-    failed   = results.select { |r| r.status == :failed }
+    failed = results.select { |r| r.status == :failed }
+    return unless failed.any?
 
-    if imported.empty? && failed.empty?
-      notify_slack('Customs tariff document import completed. Nothing new to import.')
-      return
-    end
-
-    lines = []
-    imported.each { |r| lines << "  • Version ID: #{r.version} ✓" }
-    failed.each   { |r| lines << "  • Version ID: #{r.version} ✗ #{r.error}" }
-
-    counts = []
-    counts << "imported: #{imported.count}" if imported.any?
-    counts << "failed: #{failed.count}" if failed.any?
-
-    status = failed.any? ? 'completed with failures' : 'completed'
-    header = "Customs tariff document import #{status}. #{counts.join(', ')}"
-
-    notify_slack([header, *lines].join("\n"))
+    lines = failed.map { |r| "  • Version ID: #{r.version} ✗ #{r.error}" }
+    notify_slack(['Customs tariff document import completed with failures.', *lines].join("\n"))
   end
 
   def notify_failed(error)

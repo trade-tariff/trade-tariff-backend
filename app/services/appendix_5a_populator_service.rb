@@ -89,8 +89,6 @@ private
 
     Rails.logger.info message
 
-    notify_slack(message)
-
     emails = TradeTariffBackend.cupid_team_to_emails
 
     if emails.empty?
