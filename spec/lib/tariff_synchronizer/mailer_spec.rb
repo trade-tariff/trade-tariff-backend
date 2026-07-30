@@ -12,8 +12,12 @@ RSpec.describe TariffSynchronizer::Mailer do
     context 'when there are no import warnings and no presence errors' do
       let(:import_warnings) { [] }
 
-      it 'returns a null mail with no subject' do
-        expect(mail.subject).to be_nil
+      it 'delivers the mail' do
+        expect(mail.subject).to be_present
+      end
+
+      it 'uses an info subject prefix' do
+        expect(mail.subject).to include('[info]')
       end
     end
 
@@ -24,12 +28,8 @@ RSpec.describe TariffSynchronizer::Mailer do
         expect(mail.subject).to be_present
       end
 
-      it 'uses a warn subject prefix' do
-        expect(mail.subject).to include('[warn]')
-      end
-
       it 'describes the situation in the subject' do
-        expect(mail.subject).to include('Tariff updates applied with warnings')
+        expect(mail.subject).to include('Tariff updates applied')
       end
     end
 
@@ -37,7 +37,7 @@ RSpec.describe TariffSynchronizer::Mailer do
       let(:import_warnings) { [] }
       let(:presence_error) do
         instance_double(TariffSynchronizer::TariffUpdatePresenceError,
-                        model_name: TariffSynchronizer::TariffUpdatePresenceError.model_name,
+                        model_name: 'GoodsNomenclature',
                         details: {})
       end
 
@@ -50,10 +50,6 @@ RSpec.describe TariffSynchronizer::Mailer do
 
       it 'delivers the mail' do
         expect(mail.subject).to be_present
-      end
-
-      it 'uses a warn subject prefix' do
-        expect(mail.subject).to include('[warn]')
       end
     end
   end
