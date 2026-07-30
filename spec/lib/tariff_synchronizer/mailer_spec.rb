@@ -35,7 +35,7 @@ RSpec.describe TariffSynchronizer::Mailer do
 
     context 'when presence errors exist and ignore_presence_errors is enabled' do
       let(:import_warnings) { [] }
-      let(:presence_error) { instance_double(TariffSynchronizer::TariffUpdatePresenceError) }
+      let(:presence_error) { instance_double(TariffSynchronizer::TariffUpdatePresenceError, details: {}) }
 
       before do
         allow(TaricSynchronizer).to receive(:ignore_presence_errors).and_return(true)
