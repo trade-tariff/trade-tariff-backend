@@ -1,6 +1,9 @@
 class Appendix5aEmailWorker
   include Sidekiq::Worker
 
+  # Cap retries: Notify outages must not use Sidekiq's default (25) and crowd the default queue.
+  sidekiq_options retry: 3
+
   TEMPLATE_ID = NOTIFY_CONFIGURATION.dig(:templates, :notifications, :appendix5a)
 
   def perform(recipient_index, new_count, changed_count, removed_count)

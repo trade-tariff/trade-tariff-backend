@@ -13,6 +13,12 @@ RSpec.describe Appendix5aEmailWorker, type: :worker do
     allow(Appendix5aNotificationStatusCheckWorker).to receive(:perform_in)
   end
 
+  describe 'sidekiq options' do
+    it 'caps retries below Sidekiq default' do
+      expect(described_class.sidekiq_options['retry']).to eq(3)
+    end
+  end
+
   describe '#perform' do
     it 'resolves the recipient email from configured index and sends via GovukNotifier' do
       worker.perform(0, 2, 3, 1)

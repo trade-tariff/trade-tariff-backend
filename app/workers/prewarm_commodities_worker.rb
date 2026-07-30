@@ -1,7 +1,9 @@
 class PrewarmCommoditiesWorker
   include Sidekiq::Worker
 
-  sidekiq_options queue: :sync, retry: true
+  # Best-effort cache warm (CloudWatch poll can sleep up to ~60s). Prefer
+  # within_1_hour so long polls do not contend with the hot sync queue.
+  sidekiq_options queue: :within_1_hour, retry: true
 
   DEFAULT_LOOKBACK_HOURS = 24
   DEFAULT_LIMIT = 1000

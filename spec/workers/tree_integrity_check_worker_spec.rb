@@ -1,6 +1,12 @@
 RSpec.describe TreeIntegrityCheckWorker, type: :worker do
   let(:date) { Time.zone.today }
 
+  describe 'sidekiq options' do
+    it 'uses a single retry' do
+      expect(described_class.sidekiq_options['retry']).to eq(1)
+    end
+  end
+
   describe '#perform' do
     before do
       allow(::NewRelic::Agent).to receive(:notice_error)

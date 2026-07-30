@@ -1,7 +1,8 @@
 class TreeIntegrityCheckWorker
   include Sidekiq::Worker
 
-  sidekiq_options queue: :sync
+  # Integrity check is scheduled weekly; avoid Sidekiq default (25) retries.
+  sidekiq_options queue: :sync, retry: 1
 
   def perform
     check(7)

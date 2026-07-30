@@ -6,6 +6,12 @@ RSpec.describe RemoveFailedSubscribersWorker, type: :worker do
     allow(PublicUsers::User).to receive(:failed_subscribers).and_return([user])
   end
 
+  describe 'sidekiq options' do
+    it 'caps retries below Sidekiq default' do
+      expect(described_class.sidekiq_options['retry']).to eq(3)
+    end
+  end
+
   it 'calls soft_delete! on all failed subscribers' do
     described_class.new.perform
     expect(user).to have_received(:soft_delete!)

@@ -13,6 +13,12 @@ RSpec.describe Appendix5aNotificationStatusCheckWorker, type: :worker do
     allow(Rails.logger).to receive(:error)
   end
 
+  describe 'sidekiq options' do
+    it 'caps retries below Sidekiq default' do
+      expect(described_class.sidekiq_options['retry']).to eq(3)
+    end
+  end
+
   context 'when notification_uuid is blank' do
     it 'does nothing' do
       worker.perform(recipient_index, nil)

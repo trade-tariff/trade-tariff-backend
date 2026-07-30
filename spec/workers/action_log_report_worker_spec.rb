@@ -1,4 +1,10 @@
 RSpec.describe ActionLogReportWorker do
+  describe 'sidekiq options' do
+    it 'uses a single delayed retry' do
+      expect(described_class.sidekiq_options['retry']).to eq(1)
+    end
+  end
+
   describe '#perform' do
     subject(:worker) { described_class.new }
 

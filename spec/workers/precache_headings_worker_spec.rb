@@ -1,6 +1,12 @@
 RSpec.describe PrecacheHeadingsWorker, type: :worker do
   let(:date) { Time.zone.today }
 
+  describe 'sidekiq options' do
+    it 'caps retries below Sidekiq default' do
+      expect(described_class.sidekiq_options['retry']).to eq(3)
+    end
+  end
+
   describe '#perform' do
     before do
       allow(Rails.cache).to receive(:write).and_call_original

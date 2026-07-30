@@ -4,6 +4,12 @@ RSpec.describe MyCommoditiesSubscriptionWorker, type: :worker do
   let(:date) { '2025-12-08' }
   let(:status) { instance_double(TariffChangesJobStatus, mark_emails_sent!: true) }
 
+  describe 'sidekiq options' do
+    it 'caps retries below Sidekiq default' do
+      expect(described_class.sidekiq_options['retry']).to eq(3)
+    end
+  end
+
   describe '#perform' do
     context 'when users have tariff changes on the date' do
       let(:first_user) { create(:public_user, :with_my_commodities_subscription) }
