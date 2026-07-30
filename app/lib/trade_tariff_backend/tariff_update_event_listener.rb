@@ -18,7 +18,7 @@ module TradeTariffBackend
       ClearInvalidSearchReferences.perform_async
       TreeIntegrityCheckWorker.perform_async
       PopulateChangesTableWorker.perform_async
-      ReportWorker.perform_async
+      ReportWorker.perform_in(15.minutes)
 
       if payload[:service] == 'xi'
         # NOTE: Delayed to allow materialized views to finish populating before
