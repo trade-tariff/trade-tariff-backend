@@ -48,12 +48,16 @@ RSpec.describe TaricImporter do
 
       it 'imports single Measure' do
         described_class.new(taric_update).import
+        Measure.refresh!(concurrently: false)
+
         expect(Measure.count).to eq 1
       end
 
       it 'imports single Measure and updates it' do
         described_class.new(taric_update).import
         described_class.new(second_taric_update).import
+        Measure.refresh!(concurrently: false)
+
         expect(Measure.count).to eq 1
       end
 
@@ -79,6 +83,70 @@ RSpec.describe TaricImporter do
         update = Measure::Operation.where(operation: 'U', measure_sid: '3318239', operation_date: second_example_date).first
         expect(update).to be_present
         expect(update.validity_end_date).to be_present
+      end
+    end
+
+    context 'when a file creates and destroys the same Measure' do
+      before do
+        Measure.unrestrict_primary_key
+        allow(taric_update).to receive(:file_path)
+          .and_return('spec/fixtures/taric_samples/create_then_destroy_measure.xml')
+      end
+
+      after { Measure.restrict_primary_key }
+
+      it 'records a clean create-then-destroy oplog sequence, not a rollback or a dropped destroy' do
+        described_class.new(taric_update).import
+
+        operations = Measure::Operation.where(measure_sid: '4264227').order(:oid).map { |op| op[:operation] }
+        expect(operations).to eq(%w[C D])
+      end
+    end
+
+    context 'when a file creates and updates the same Measure' do
+      before do
+        Measure.unrestrict_primary_key
+        allow(taric_update).to receive(:file_path)
+          .and_return('spec/fixtures/taric_samples/create_then_update_measure.xml')
+      end
+
+      after { Measure.restrict_primary_key }
+
+      it 'records a clean create-then-update oplog sequence, not a duplicate create' do
+        described_class.new(taric_update).import
+
+        operations = Measure::Operation.where(measure_sid: '4263779').order(:oid).map { |op| op[:operation] }
+        expect(operations).to eq(%w[C U])
+      end
+    end
+
+    context 'when a create and its later destroy land in different batches' do
+      before do
+        Measure.unrestrict_primary_key
+        # batch_size 1 forces every record to flush in its own batch, so this
+        # exercises the batch-flush boundary itself - unlike a larger batch
+        # size, where create+destroy would still land in separate multi_insert
+        # calls anyway, just because chunk_while splits by operation type.
+        allow(TradeTariffBackend).to receive(:taric_importer_batch_size).and_return(1)
+        allow(taric_update).to receive(:file_path)
+          .and_return('spec/fixtures/taric_samples/create_then_destroy_measure_batch_boundary.xml')
+      end
+
+      after { Measure.restrict_primary_key }
+
+      it 'still preserves oplog order across the batch flush boundary' do
+        described_class.new(taric_update).import
+
+        operations = Measure::Operation.where(measure_sid: '4264227').order(:oid).map { |op| op[:operation] }
+        expect(operations).to eq(%w[C D])
+      end
+
+      it 'flushes each record in its own batch, proving the boundary was actually exercised' do
+        allow(Measure::Operation).to receive(:multi_insert).and_call_original
+
+        described_class.new(taric_update).import
+
+        expect(Measure::Operation).to have_received(:multi_insert).exactly(3).times
       end
     end
 

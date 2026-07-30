@@ -470,6 +470,7 @@ TariffChangesJobStatus#changes_pending?
 TariffChangesService::BaseChanges#change=
 TariffChangesService::BaseChanges#changes=
 TariffChangesService::BaseChanges#date=
+TariffChangesService::BaseChanges#record=
 TariffChangesService::ExcelGenerator#change_records
 TariffChangesService::ExcelGenerator#change_records=
 TariffChangesService::ExcelGenerator#date=
@@ -514,3 +515,4 @@ TradeTariffBackend::TariffUpdateEventListener#subscribe!
 VersionedAcceptHeader#matches?
 main#SidekiqDeathHandler
 TariffKnowledge::Node#note_blocks
+ChangeOld#operation_date=

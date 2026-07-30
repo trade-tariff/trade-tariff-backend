@@ -61,16 +61,45 @@ RSpec.describe TradeTariffBackend::Config do
       end
     end
 
-    describe '.cds_importer_batch_size' do
+    shared_examples 'a configurable batch size' do
       it 'defaults to 100' do
-        ENV.delete('CDS_IMPORT_BATCH_SIZE')
-        expect(config.cds_importer_batch_size).to eq(100)
+        ENV.delete(env_var)
+        expect(config.public_send(method_name)).to eq(100)
       end
 
       it 'returns configured value as integer' do
-        ENV['CDS_IMPORT_BATCH_SIZE'] = '250'
-        expect(config.cds_importer_batch_size).to eq(250)
+        ENV[env_var] = '250'
+        expect(config.public_send(method_name)).to eq(250)
       end
+
+      it 'falls back to 100 when configured value is zero' do
+        ENV[env_var] = '0'
+        expect(config.public_send(method_name)).to eq(100)
+      end
+
+      it 'falls back to 100 when configured value is negative' do
+        ENV[env_var] = '-5'
+        expect(config.public_send(method_name)).to eq(100)
+      end
+
+      it 'falls back to 100 when configured value is not numeric' do
+        ENV[env_var] = 'abc'
+        expect(config.public_send(method_name)).to eq(100)
+      end
+    end
+
+    describe '.cds_importer_batch_size' do
+      let(:env_var) { 'CDS_IMPORT_BATCH_SIZE' }
+      let(:method_name) { :cds_importer_batch_size }
+
+      it_behaves_like 'a configurable batch size'
+    end
+
+    describe '.taric_importer_batch_size' do
+      let(:env_var) { 'TARIC_IMPORT_BATCH_SIZE' }
+      let(:method_name) { :taric_importer_batch_size }
+
+      it_behaves_like 'a configurable batch size'
     end
 
     describe '.implicit_deletion_cutoff' do
