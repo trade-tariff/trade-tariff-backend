@@ -218,6 +218,7 @@ check_archive_for_epoch() {
   local candidate
   local offset
   local status
+  local archive_epoch
 
   for offset in 0 -86400; do
     candidate=$(archive_key_for_epoch "$latest_epoch" "$offset")
@@ -225,7 +226,13 @@ check_archive_for_epoch() {
     archive_key=$candidate
 
     if archive_last_modified=$(head_object_last_modified "$candidate"); then
-      if [ "$(epoch_for_timestamp "$archive_last_modified")" -lt "$latest_epoch" ]; then
+      # errexit does not apply inside an if condition, so an unparseable timestamp fails silently.
+      if ! archive_epoch=$(epoch_for_timestamp "$archive_last_modified") || [ -z "$archive_epoch" ]; then
+        echo "Unable to parse archive LastModified '$archive_last_modified' for $candidate." >&2
+        return 2
+      fi
+
+      if [ "$archive_epoch" -lt "$latest_epoch" ]; then
         freshness_ok=0
         reasons+=("archive key $candidate is older than latest key $LATEST_KEY")
       fi
