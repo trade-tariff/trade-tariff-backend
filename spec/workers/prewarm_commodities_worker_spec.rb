@@ -40,6 +40,10 @@ RSpec.describe PrewarmCommoditiesWorker do
     it 'runs on within_1_hour so CloudWatch polling does not block the sync queue' do
       expect(described_class.sidekiq_options['queue']).to eq(:within_1_hour)
     end
+
+    it 'caps retries below Sidekiq default' do
+      expect(described_class.sidekiq_options['retry']).to eq(3)
+    end
   end
 
   describe '#perform' do
