@@ -4,6 +4,7 @@ RSpec.describe TradeTariffBackend::TariffUpdateEventListener do
     allow(ClearInvalidSearchReferences).to receive(:perform_async)
     allow(TreeIntegrityCheckWorker).to receive(:perform_async)
     allow(PopulateChangesTableWorker).to receive(:perform_async)
+    allow(ReportWorker).to receive(:perform_async)
     allow(GreenLanesUpdatesWorker).to receive(:perform_in)
     allow(PopulateTariffChangesWorker).to receive(:perform_async)
   end
@@ -16,6 +17,7 @@ RSpec.describe TradeTariffBackend::TariffUpdateEventListener do
       it { expect(ClearInvalidSearchReferences).to have_received(:perform_async) }
       it { expect(TreeIntegrityCheckWorker).to have_received(:perform_async) }
       it { expect(PopulateChangesTableWorker).to have_received(:perform_async) }
+      it { expect(ReportWorker).to have_received(:perform_async) }
       it { expect(GreenLanesUpdatesWorker).not_to have_received(:perform_in) }
     end
 
@@ -26,6 +28,7 @@ RSpec.describe TradeTariffBackend::TariffUpdateEventListener do
       it { expect(ClearInvalidSearchReferences).to have_received(:perform_async) }
       it { expect(TreeIntegrityCheckWorker).to have_received(:perform_async) }
       it { expect(PopulateChangesTableWorker).to have_received(:perform_async) }
+      it { expect(ReportWorker).to have_received(:perform_async) }
       it { expect(GreenLanesUpdatesWorker).to have_received(:perform_in).with(15.minutes, '2024-01-15') }
     end
   end
