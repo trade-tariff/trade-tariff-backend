@@ -98,7 +98,7 @@ RSpec.describe 'search experiment dashboard Terraform' do
     expect(module_main_tf).to include('details.answers.0.confidence as top_confidence')
     expect(module_main_tf).to include('Selected Results')
     expect(module_main_tf).to include('goods_nomenclature_item_id')
-    expect(module_main_tf).to include('Top Zero-Result Terms')
+    expect(module_main_tf).to include('Top Product-Zero Terms')
   end
 
   it 'reports estimated browser sessions from valid v1 guided-search events' do
