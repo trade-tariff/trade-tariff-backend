@@ -133,21 +133,26 @@ RSpec.describe Api::V2::SearchController do
                   'headings' => [{ '_score' => 10.0, '_source' => { 'goods_nomenclature_item_id' => '0101000000' } }],
                   'chapters' => [],
                   'commodities' => [],
+                  'sections' => [{ '_score' => 1.0 }],
                 },
                 reference_match: {
                   'chapters' => [{ '_score' => 8.0, '_source' => { 'goods_nomenclature_item_id' => '0100000000' } }],
                   'headings' => [],
                   'commodities' => [],
+                  'sections' => [],
                 },
               },
             },
           }
         end
 
-        it 'counts total hits and reports zero commodity hits' do
+        it 'counts hits by tariff level' do
           expect(metrics).to include(
-            result_count: 2,
+            result_count: 3,
+            chapter_result_count: 1,
+            heading_result_count: 1,
             commodity_result_count: 0,
+            other_result_count: 1,
             results_type: :fuzzy_search,
           )
         end
@@ -179,7 +184,13 @@ RSpec.describe Api::V2::SearchController do
         end
 
         it 'counts commodity hits in both total and commodity metrics' do
-          expect(metrics).to include(result_count: 2, commodity_result_count: 2)
+          expect(metrics).to include(
+            result_count: 2,
+            chapter_result_count: 0,
+            heading_result_count: 0,
+            commodity_result_count: 2,
+            other_result_count: 0,
+          )
         end
       end
 
@@ -196,8 +207,38 @@ RSpec.describe Api::V2::SearchController do
           }
         end
 
-        it 'reports a successful match for both counts' do
-          expect(metrics).to include(result_count: 1, commodity_result_count: 1)
+        it 'attributes the exact match to the target endpoint level' do
+          expect(metrics).to include(
+            result_count: 1,
+            chapter_result_count: 0,
+            heading_result_count: 0,
+            commodity_result_count: 1,
+            other_result_count: 0,
+          )
+        end
+      end
+
+      context 'with an exact chapter search' do
+        let(:results) do
+          {
+            data: {
+              type: :exact_search,
+              attributes: {
+                type: 'exact_match',
+                entry: { endpoint: 'chapters', id: '01' },
+              },
+            },
+          }
+        end
+
+        it 'attributes the exact match to chapter_result_count' do
+          expect(metrics).to include(
+            result_count: 1,
+            chapter_result_count: 1,
+            heading_result_count: 0,
+            commodity_result_count: 0,
+            other_result_count: 0,
+          )
         end
       end
     end
