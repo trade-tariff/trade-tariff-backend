@@ -81,8 +81,11 @@ RSpec.describe 'search experiment dashboard Terraform' do
     expect(uat_period_totals_query).to include('sum(if(event = "search_completed", 1, 0)) as completed_requests')
     expect(uat_period_totals_query).to include('sum(if(event = "search_failed", 1, 0)) as hard_failures')
     expect(uat_period_totals_query).to include('sum(if(event = "search_completed" and final_result_type = "error", 1, 0)) as error_outcomes')
-    expect(uat_period_totals_query).to include('commodity_result_count = 0')
+    expect(uat_period_totals_query).to include('${local.zero_result_condition}')
     expect(uat_period_totals_query).to include('zero_result_requests')
+    expect(module_main_tf).to include('search_type = \\"classic\\"')
+    expect(module_main_tf).to include('search_type = \\"interactive\\" or search_type = \\"internal\\"')
+    expect(module_main_tf).to include('commodity_result_count = 0')
     expect(uat_period_totals_query).to include('sum(if(event = "guided_search.journey" and outcome = "result_selected", 1, 0)) as selections')
     expect(module_main_tf).to include('Questions and Answer Options')
     expect(module_main_tf).to include('event in ["question_returned", "answer_returned"]')
@@ -283,7 +286,7 @@ RSpec.describe 'search experiment dashboard Terraform' do
     search_response_types_query = widget_query('Search Response Types')
 
     expect(search_response_types_query).to include(
-      'case(final_result_type = "answers", "suggested results", final_result_type = "questions", "questions", final_result_type = "error", "errors", result_count = 0, "no results", "results without questions") as search_response_type',
+      'case(final_result_type = "answers", "suggested results", final_result_type = "questions", "questions", final_result_type = "error", "errors", ${local.zero_result_condition}, "no results", "results without questions") as search_response_type',
     )
     expect(search_response_types_query).to include(
       'stats count(*) as completed_searches by search_response_type',

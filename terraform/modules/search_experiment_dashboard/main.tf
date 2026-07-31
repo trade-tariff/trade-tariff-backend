@@ -4,9 +4,11 @@ locals {
   experiment_filter = "filter experiment = \"EXPERIMENT_LABEL\""
   search_filter     = "${local.experiment_filter} and service = \"search\""
   ai_cost_filter    = "filter event in [\"api_call_completed\", \"embedding_api_call_completed\"]\n              | ${local.experiment_filter} and ((service = \"search\" and event = \"api_call_completed\") or (service = \"ai_usage\" and event = \"embedding_api_call_completed\" and event_kind = \"vector_search_query_embedding\"))"
-  # Classic fuzzy product-quality zero means no commodity hits even when headings/chapters matched.
-  # Fall back to result_count for historical logs before commodity_result_count existed.
-  zero_result_condition = "((ispresent(commodity_result_count) and commodity_result_count = 0) or (not ispresent(commodity_result_count) and result_count = 0))"
+  # Covers both classic and interactive/internal on shared widgets:
+  # - classic: product-quality zero = no commodity hits (even if headings/chapters matched)
+  # - interactive/internal: zero = no returned results (result_count = 0)
+  # Historical classic logs without commodity_result_count fall back to result_count = 0.
+  zero_result_condition = "((search_type = \"classic\" and ((ispresent(commodity_result_count) and commodity_result_count = 0) or (not ispresent(commodity_result_count) and result_count = 0))) or ((search_type = \"interactive\" or search_type = \"internal\") and result_count = 0))"
 
   search_dashboard_url            = "https://${var.region}.console.aws.amazon.com/cloudwatch/home?region=${var.region}#dashboards:name=Search-${var.environment}"
   search_operations_dashboard_url = "https://${var.region}.console.aws.amazon.com/cloudwatch/home?region=${var.region}#dashboards:name=SearchOperations-${var.environment}"
@@ -40,6 +42,7 @@ resource "aws_cloudwatch_dashboard" "search_experiment" {
             markdown = join("\n", [
               "## Trade Tariff Search Production UAT",
               "All widgets are scoped to the experiment label selected above. Requests and estimated distinct guided-search browser sessions are reported separately. One browser session can contain multiple requests. CloudWatch may approximate high-cardinality counts.",
+              "**Zero-result definition:** classic = no commodity hits; interactive/internal = no returned results. Shared widgets break series down by `search_type` where relevant.",
               "**Start here:** Set the dashboard time range to the UAT window, then review volume, reliability, latency, outcomes, questions, search terms, and costs.",
               "**Investigate:** copy the request ID into admin search diagnostics to reconstruct an individual request.",
               "**Related:** [Search Overview](${local.search_dashboard_url}) | [Search Operations](${local.search_operations_dashboard_url}) | [Search Quality](${local.search_quality_dashboard_url})",
@@ -68,7 +71,7 @@ resource "aws_cloudwatch_dashboard" "search_experiment" {
                   sum(if(event = "search_completed", 1, 0)) as completed_requests,
                   sum(if(event = "search_failed", 1, 0)) as hard_failures,
                   sum(if(event = "search_completed" and final_result_type = "error", 1, 0)) as error_outcomes,
-                  sum(if(event = "search_completed" and ((ispresent(commodity_result_count) and commodity_result_count = 0) or (not ispresent(commodity_result_count) and result_count = 0)), 1, 0)) as zero_result_requests,
+                  sum(if(event = "search_completed" and ${local.zero_result_condition}, 1, 0)) as zero_result_requests,
                   sum(if(event = "guided_search.journey" and outcome = "result_selected", 1, 0)) as selections
             EOT
           }
@@ -324,7 +327,7 @@ resource "aws_cloudwatch_dashboard" "search_experiment" {
             query  = <<-EOT
               ${local.source}
               | ${local.search_filter} and event = "search_completed"
-              | fields case(final_result_type = "answers", "suggested results", final_result_type = "questions", "questions", final_result_type = "error", "errors", result_count = 0, "no results", "results without questions") as search_response_type
+              | fields case(final_result_type = "answers", "suggested results", final_result_type = "questions", "questions", final_result_type = "error", "errors", ${local.zero_result_condition}, "no results", "results without questions") as search_response_type
               | stats count(*) as completed_searches by search_response_type
             EOT
           }
@@ -360,7 +363,7 @@ resource "aws_cloudwatch_dashboard" "search_experiment" {
             query  = <<-EOT
               ${local.source}
               | ${local.search_filter} and event = "search_completed"
-              | stats avg(result_count) as average, median(result_count) as median, sum(if((ispresent(commodity_result_count) and commodity_result_count = 0) or (not ispresent(commodity_result_count) and result_count = 0), 1, 0)) as zero_results by search_type, bin(1h)
+              | stats avg(result_count) as average, median(result_count) as median, avg(commodity_result_count) as average_commodity, sum(if(${local.zero_result_condition}, 1, 0)) as zero_results by search_type, bin(1h)
             EOT
           }
         },

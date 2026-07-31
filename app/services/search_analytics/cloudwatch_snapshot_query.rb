@@ -147,10 +147,18 @@ module SearchAnalytics
       QUERY
     end
 
-    # Classic fuzzy product-quality zero means no commodity hits (commodity_result_count = 0),
-    # even when headings/chapters matched. Fall back to result_count for pre-field logs.
+    # Shared by classic + interactive/internal dashboards and admin analytics.
+    # - classic: product-quality zero = no commodity hits (even if headings/chapters matched)
+    # - interactive/internal: zero = no returned results (result_count = 0)
+    # Historical classic logs without commodity_result_count fall back to result_count = 0.
     def zero_result_condition
-      '((ispresent(commodity_result_count) and commodity_result_count = 0) or (not ispresent(commodity_result_count) and result_count = 0))'
+      <<~CONDITION.squish
+        (
+          (search_type = "classic" and ((ispresent(commodity_result_count) and commodity_result_count = 0) or (not ispresent(commodity_result_count) and result_count = 0)))
+          or
+          ((search_type = "interactive" or search_type = "internal") and result_count = 0)
+        )
+      CONDITION
     end
 
     def zero_result_query

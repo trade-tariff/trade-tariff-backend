@@ -2,9 +2,11 @@ locals {
   dashboard_name = var.dashboard_name != null ? var.dashboard_name : "Search-${var.environment}"
   source         = "SOURCE '${var.log_group_name}'"
   service_filter = "filter service = \"search\""
-  # Classic fuzzy product-quality zero means no commodity hits even when headings/chapters matched.
-  # Fall back to result_count for historical logs before commodity_result_count existed.
-  zero_result_condition = "((ispresent(commodity_result_count) and commodity_result_count = 0) or (not ispresent(commodity_result_count) and result_count = 0))"
+  # Covers both classic and interactive/internal on shared widgets:
+  # - classic: product-quality zero = no commodity hits (even if headings/chapters matched)
+  # - interactive/internal: zero = no returned results (result_count = 0)
+  # Historical classic logs without commodity_result_count fall back to result_count = 0.
+  zero_result_condition = "((search_type = \"classic\" and ((ispresent(commodity_result_count) and commodity_result_count = 0) or (not ispresent(commodity_result_count) and result_count = 0))) or ((search_type = \"interactive\" or search_type = \"internal\") and result_count = 0))"
 
   search_operations_dashboard_url = "https://${var.region}.console.aws.amazon.com/cloudwatch/home?region=${var.region}#dashboards:name=SearchOperations-${var.environment}"
   search_quality_dashboard_url    = "https://${var.region}.console.aws.amazon.com/cloudwatch/home?region=${var.region}#dashboards:name=SearchQuality-${var.environment}"
@@ -29,7 +31,8 @@ resource "aws_cloudwatch_dashboard" "search" {
             markdown = join("\n", [
               "## Trade Tariff Search Overview",
               "Long-range search health dashboard for quarter-scale trend viewing. Follows the RED method (Rate, Errors, Duration).",
-              "**Healthy:** p90 latency < 5s, hard failures stay low, zero-result trends stable, and selections broadly track search volume.",
+              "**Healthy:** p90 latency < 5s, hard failures stay low, zero-result trends stable by search type, and selections broadly track search volume.",
+              "**Zero-result definition:** classic = no commodity hits; interactive/internal = no returned results.",
               "**Start here:** use this dashboard for 3-month trends. Open Operations for active troubleshooting and Quality for intercepts, zero-result terms, and result behaviour.",
               "**Related:** [Search Operations](${local.search_operations_dashboard_url}) | [Search Quality](${local.search_quality_dashboard_url}) | [Search Experiments](${local.search_experiment_dashboard_url}) | [Label Generator](${local.label_dashboard_url}) | [Self-Text Generator](${local.self_text_dashboard_url})",
             ])
@@ -185,13 +188,13 @@ resource "aws_cloudwatch_dashboard" "search" {
           width  = 12
           height = 6
           properties = {
-            title  = "Average Result Count"
+            title  = "Average Result Count by Search Type"
             region = var.region
             view   = "timeSeries"
             query  = <<-EOT
               ${local.source}
               | ${local.service_filter} and event = "search_completed"
-              | stats avg(result_count) as avg_results, median(result_count) as median_results by bin(1d)
+              | stats avg(result_count) as avg_results, median(result_count) as median_results, avg(commodity_result_count) as avg_commodity_results by search_type, bin(1d)
             EOT
           }
         },
