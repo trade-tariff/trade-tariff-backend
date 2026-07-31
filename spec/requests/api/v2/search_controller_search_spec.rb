@@ -27,6 +27,47 @@ RSpec.describe Api::V2::SearchController do
       )
     end
 
+    it 'emits classic level counts on search_completed for the request path' do
+      allow(ActiveSupport::Notifications).to receive(:instrument).and_call_original
+      fuzzy_payload = {
+        data: {
+          type: :fuzzy_search,
+          attributes: {
+            goods_nomenclature_match: {
+              'headings' => [{ '_score' => 10.0, '_source' => { 'goods_nomenclature_item_id' => '0101000000' } }],
+              'chapters' => [],
+              'commodities' => [],
+              'sections' => [],
+            },
+            reference_match: {
+              'chapters' => [{ '_score' => 8.0, '_source' => { 'goods_nomenclature_item_id' => '0100000000' } }],
+              'headings' => [],
+              'commodities' => [],
+              'sections' => [],
+            },
+          },
+        },
+      }
+      search_service = instance_double(SearchService, to_json: fuzzy_payload)
+      allow(SearchService).to receive(:new).and_return(search_service)
+
+      post '/uk/api/search', params: { q: 'horse', request_id: 'metrics-request-id' }, headers: request_headers, as: :json
+
+      expect(ActiveSupport::Notifications).to have_received(:instrument).with(
+        'search_completed.search',
+        hash_including(
+          request_id: 'metrics-request-id',
+          search_type: 'classic',
+          result_count: 2,
+          chapter_result_count: 1,
+          heading_result_count: 1,
+          commodity_result_count: 0,
+          other_result_count: 0,
+          results_type: :fuzzy_search,
+        ),
+      )
+    end
+
     context 'when an exact match' do
       before do
         goods_nomenclature = create :chapter, goods_nomenclature_item_id: '0100000000'

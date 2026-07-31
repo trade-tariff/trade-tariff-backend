@@ -29,12 +29,16 @@ locals {
   # Classic free-text fuzzy/null cohort (excludes exact code matches).
   classic_non_numeric_fuzzy_condition = "(search_type = \"classic\" and ${local.non_numeric_query_condition} and (not ispresent(results_type) or results_type != \"exact_search\"))"
 
-  # Internal free-text guided-search cohort (backend internal search path).
-  internal_non_numeric_condition = "(search_type = \"internal\" and ${local.non_numeric_query_condition})"
+  # Guided free-text cohort. Api::Internal::SearchService and InteractiveSearchService
+  # both emit search_type = "interactive" today; keep "internal" for forward-compat with
+  # analytics views that treat interactive|internal as the guided path.
+  interactive_non_numeric_condition = "((search_type = \"interactive\" or search_type = \"internal\") and ${local.non_numeric_query_condition})"
 
   # Product-zero numerators for those cohorts (definitions differ by search type).
+  # classic_empty_commodity_only is only safe after classic_non_numeric_fuzzy_condition
+  # (exact matches already excluded by that cohort filter).
   classic_empty_commodity_only = "((ispresent(commodity_result_count) and commodity_result_count = 0) or (not ispresent(commodity_result_count) and result_count = 0))"
-  internal_no_results_only     = "(result_count = 0)"
+  interactive_no_results_only  = "(result_count = 0)"
 
   search_dashboard_url            = "https://${var.region}.console.aws.amazon.com/cloudwatch/home?region=${var.region}#dashboards:name=Search-${var.environment}"
   search_operations_dashboard_url = "https://${var.region}.console.aws.amazon.com/cloudwatch/home?region=${var.region}#dashboards:name=SearchOperations-${var.environment}"
@@ -59,7 +63,7 @@ resource "aws_cloudwatch_dashboard" "search_quality" {
               "**Classic product zero:** fuzzy/null with zero commodity hits (`commodity_result_count = 0`) — empty “Best commodity matches”. Exact matches are not zeros.",
               "**Classic empty kinds (pie):** split into **no results** (`result_count = 0`) vs **no commodities, other hits** (headings/chapters/sections only).",
               "**Interactive/internal zero:** no returned results (`result_count = 0`). Counted separately from classic commodity empties.",
-              "**Non-numeric fuzzy rates (separate widgets):** free-text only (`query not like /^[0-9 .-]+$/`). Classic = empty commodity % of non-exact free-text; internal = empty result % of free-text guided search.",
+              "**Non-numeric free-text rates:** free-text only (`query not like /^[0-9 .-]+$/`). Classic = empty commodity % of non-exact free-text; interactive/internal = empty result % of free-text guided search (logs use `search_type=interactive`).",
               "**Healthy:** empty-commodity terms stay stable, result types remain consistent, intercept matches track expected terms, and interactive outcomes do not skew towards errors.",
               "**Start here:** classic outcome pies and empty-result widgets first, then intercept and selection drill-downs.",
               "**Related:** [Search Overview](${local.search_dashboard_url}) | [Search Operations](${local.search_operations_dashboard_url})",
@@ -272,13 +276,13 @@ resource "aws_cloudwatch_dashboard" "search_quality" {
           width  = 8
           height = 6
           properties = {
-            title  = "Internal Product-Zero Rate (non-numeric)"
+            title  = "Interactive/Internal Product-Zero Rate (non-numeric)"
             region = var.region
             view   = "timeSeries"
             query  = <<-EOT
               ${local.source}
-              | ${local.service_filter} and event = "search_completed" and ${local.internal_non_numeric_condition}
-              | stats sum(if(${local.internal_no_results_only}, 1, 0)) * 100.0 / count(*) as no_results_rate_pct by bin(1h)
+              | ${local.service_filter} and event = "search_completed" and ${local.interactive_non_numeric_condition}
+              | stats sum(if(${local.interactive_no_results_only}, 1, 0)) * 100.0 / count(*) as no_results_rate_pct by bin(1h)
             EOT
           }
         },

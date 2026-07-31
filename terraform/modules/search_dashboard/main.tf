@@ -34,9 +34,9 @@ resource "aws_cloudwatch_dashboard" "search" {
             markdown = join("\n", [
               "## Trade Tariff Search Overview",
               "Long-range search health dashboard for quarter-scale trend viewing. Follows the RED method (Rate, Errors, Duration).",
-              "**Healthy:** p90 latency < 5s, hard failures stay low, zero-result trends stable by search type, and selections broadly track search volume.",
-              "**Product zeros:** classic = fuzzy/null with zero commodity hits (empty Best commodity matches; includes fully empty and headings/chapters-only); interactive/internal = no returned results. See Search Quality for classic empty-kind pies.",
-              "**Start here:** use this dashboard for 3-month trends. Open Operations for active troubleshooting and Quality for intercepts, zero-result terms, and result behaviour.",
+              "**Healthy:** p90 latency < 5s, hard failures stay low, product-zero trends stable by search type, and selections broadly track search volume.",
+              "**Product zeros:** classic = fuzzy/null with zero commodity hits (empty Best commodity matches; includes fully empty and headings/chapters-only); interactive/internal = no returned results. See Search Quality for classic empty-kind pies and free-text rates.",
+              "**Start here:** use this dashboard for 3-month trends. Open Operations for active troubleshooting and Quality for intercepts, product-zero terms, and result behaviour.",
               "**Related:** [Search Operations](${local.search_operations_dashboard_url}) | [Search Quality](${local.search_quality_dashboard_url}) | [Search Experiments](${local.search_experiment_dashboard_url}) | [Label Generator](${local.label_dashboard_url}) | [Self-Text Generator](${local.self_text_dashboard_url})",
             ])
           }
@@ -174,7 +174,7 @@ resource "aws_cloudwatch_dashboard" "search" {
           width  = 12
           height = 6
           properties = {
-            title  = "Zero-Result Searches"
+            title  = "Product-Zero Searches"
             region = var.region
             view   = "timeSeries"
             query  = <<-EOT
