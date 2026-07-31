@@ -476,6 +476,46 @@ RSpec.describe Search::Logger do
     end
   end
 
+  describe '#fuzzy_results_returned' do
+    let(:payload) do
+      {
+        request_id: 'req-1',
+        search_type: 'classic',
+        query: 'horses',
+        result_count: 3,
+        chapter_result_count: 1,
+        heading_result_count: 2,
+        commodity_result_count: 0,
+        other_result_count: 0,
+        details: { goods_nomenclature_match: { 'headings' => [] } },
+      }
+    end
+
+    it_behaves_like 'a search log entry', :fuzzy_results_returned, 'fuzzy_results_returned',
+                    {
+                      request_id: 'req-1',
+                      search_type: 'classic',
+                      query: 'horses',
+                      result_count: 3,
+                      chapter_result_count: 1,
+                      heading_result_count: 2,
+                      commodity_result_count: 0,
+                      other_result_count: 0,
+                    }
+
+    it 'logs tariff-level result counts' do
+      logger_instance.fuzzy_results_returned(build_event('fuzzy_results_returned', payload))
+      json = parsed_log_output
+
+      expect(json['event']).to eq('fuzzy_results_returned')
+      expect(json['result_count']).to eq(3)
+      expect(json['chapter_result_count']).to eq(1)
+      expect(json['heading_result_count']).to eq(2)
+      expect(json['commodity_result_count']).to eq(0)
+      expect(json['other_result_count']).to eq(0)
+    end
+  end
+
   describe '#search_completed' do
     let(:payload) do
       { request_id: 'req-1',

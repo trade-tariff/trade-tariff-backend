@@ -157,6 +157,7 @@ RSpec.describe SearchAnalytics::CloudwatchSnapshotQuery do
       ).to all(include(
                  'search_type = "classic"',
                  'commodity_result_count = 0',
+                 'results_type != "exact_search"',
                  'not ispresent(commodity_result_count) and result_count = 0',
                  'search_type = "interactive" or search_type = "internal"',
                  'result_count = 0',

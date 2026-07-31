@@ -86,6 +86,8 @@ RSpec.describe 'search experiment dashboard Terraform' do
     expect(module_main_tf).to include('search_type = \\"classic\\"')
     expect(module_main_tf).to include('search_type = \\"interactive\\" or search_type = \\"internal\\"')
     expect(module_main_tf).to include('commodity_result_count = 0')
+    expect(module_main_tf).to include('results_type != \\"exact_search\\"')
+    expect(module_main_tf).to include('not ispresent(commodity_result_count) and result_count = 0')
     expect(uat_period_totals_query).to include('sum(if(event = "guided_search.journey" and outcome = "result_selected", 1, 0)) as selections')
     expect(module_main_tf).to include('Questions and Answer Options')
     expect(module_main_tf).to include('event in ["question_returned", "answer_returned"]')

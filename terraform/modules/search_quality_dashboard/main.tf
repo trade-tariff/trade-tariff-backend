@@ -3,10 +3,13 @@ locals {
   source         = "SOURCE '${var.log_group_name}'"
   service_filter = "filter service = \"search\""
   # Covers both classic and interactive/internal on shared widgets:
-  # - classic: product-quality zero = no commodity hits (even if headings/chapters matched)
+  # - classic: product-quality zero = no commodity hits on non-exact searches
+  #   (fuzzy headings/chapters-only). Exact heading/chapter hits are not quality zeros.
   # - interactive/internal: zero = no returned results (result_count = 0)
   # Historical classic logs without commodity_result_count fall back to result_count = 0.
-  zero_result_condition = "((search_type = \"classic\" and ((ispresent(commodity_result_count) and commodity_result_count = 0) or (not ispresent(commodity_result_count) and result_count = 0))) or ((search_type = \"interactive\" or search_type = \"internal\") and result_count = 0))"
+  # Keep in sync with SearchAnalytics::CloudwatchSnapshotQuery#zero_result_condition
+  # and the other search_*_dashboard modules.
+  zero_result_condition = "((search_type = \"classic\" and ((ispresent(commodity_result_count) and commodity_result_count = 0 and (not ispresent(results_type) or results_type != \"exact_search\")) or (not ispresent(commodity_result_count) and result_count = 0))) or ((search_type = \"interactive\" or search_type = \"internal\") and result_count = 0))"
 
   search_dashboard_url            = "https://${var.region}.console.aws.amazon.com/cloudwatch/home?region=${var.region}#dashboards:name=Search-${var.environment}"
   search_operations_dashboard_url = "https://${var.region}.console.aws.amazon.com/cloudwatch/home?region=${var.region}#dashboards:name=SearchOperations-${var.environment}"
@@ -28,7 +31,7 @@ resource "aws_cloudwatch_dashboard" "search_quality" {
             markdown = join("\n", [
               "## Trade Tariff Search Quality",
               "Behaviour and product-quality dashboard for search outcomes, zero-result terms, intercepts, and result selection patterns across **classic** and **interactive/internal** search.",
-              "**Zero-result definition:** classic = no commodity hits (`commodity_result_count = 0`, even when headings/chapters matched); interactive/internal = no returned results (`result_count = 0`).",
+              "**Zero-result definition:** classic = no commodity hits on non-exact searches (`commodity_result_count = 0`, even when fuzzy headings/chapters matched; successful exact heading/chapter hits are excluded); interactive/internal = no returned results (`result_count = 0`).",
               "**Healthy:** zero-result terms stay stable by search type, result types remain consistent, intercept matches track expected terms, and interactive outcomes do not skew towards errors.",
               "**Start here:** check result-type and zero-result widgets first, then inspect intercept and selection drill-downs below.",
               "**Related:** [Search Overview](${local.search_dashboard_url}) | [Search Operations](${local.search_operations_dashboard_url})",
@@ -175,8 +178,7 @@ resource "aws_cloudwatch_dashboard" "search_quality" {
             query  = <<-EOT
               ${local.source}
               | ${local.service_filter} and event = "search_completed"
-              | stats sum(if(${local.zero_result_condition}, 1, 0)) as zero_results, count(*) as completed by search_type, bin(1h)
-              | fields search_type, zero_results / completed * 100 as zero_result_rate_pct, @timestamp
+              | stats sum(if(${local.zero_result_condition}, 1, 0)) * 100.0 / count(*) as zero_result_rate_pct by search_type, bin(1h)
             EOT
           }
         },
