@@ -4,7 +4,7 @@ CloudWatch Logs Insights dashboard for reviewing a labelled production-UAT searc
 
 The “I don’t know” request usage rate compares distinct requests that used the option with distinct requests known to have shown a question. An “I don’t know” interaction itself is treated as proof that its request showed a question, so best-effort browser events and dashboard time-window boundaries cannot produce a rate above 100%.
 
-The final-result pie chart keeps the recorded `questions`, `answers`, and `error` outcomes. Completed searches without a recorded final result type are labelled `no results` when they match the shared empty-result condition (classic: fuzzy/null with zero commodity hits; interactive/internal: `result_count = 0`) and `results without questions` otherwise, rather than appearing as an unnamed category.
+The final-result pie chart keeps the recorded `questions`, `answers`, and `error` outcomes. Completed searches without a recorded final result type are labelled `no results` when they match the shared empty-result condition (classic: fuzzy/null with zero commodity hits; interactive: `result_count = 0`) and `results without questions` otherwise, rather than appearing as an unnamed category.
 
 <!-- BEGIN_TF_DOCS -->
 ## Requirements

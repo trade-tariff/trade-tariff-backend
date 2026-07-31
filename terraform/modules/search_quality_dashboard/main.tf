@@ -14,10 +14,11 @@ locals {
   # Classic completely empty bag (subset of empty commodities when the new field is present).
   classic_no_results_condition = "(search_type = \"classic\" and result_count = 0)"
 
-  # Interactive/internal empty: no returned results at all.
+  # Interactive empty results: result_count = 0.
+  # Logs use search_type=interactive; keep "internal" in the filter for forward-compat only.
   interactive_no_results_condition = "((search_type = \"interactive\" or search_type = \"internal\") and result_count = 0)"
 
-  # Shared rate/term widgets: classic uses empty-commodity product metric; interactive uses no results.
+  # Shared rate/term widgets: classic uses empty-commodity metric; interactive uses no results.
   # Keep in sync with SearchAnalytics::CloudwatchSnapshotQuery#zero_result_condition
   # and the other search_*_dashboard modules.
   zero_result_condition = "(${local.classic_empty_commodity_condition} or ${local.interactive_no_results_condition})"
@@ -29,9 +30,8 @@ locals {
   # Classic free-text fuzzy/null cohort (excludes exact code matches).
   classic_non_numeric_fuzzy_condition = "(search_type = \"classic\" and ${local.non_numeric_query_condition} and (not ispresent(results_type) or results_type != \"exact_search\"))"
 
-  # Guided free-text cohort. Api::Internal::SearchService and InteractiveSearchService
-  # both emit search_type = "interactive" today; keep "internal" for forward-compat with
-  # analytics views that treat interactive|internal as the guided path.
+  # Interactive free-text cohort. Guided search logs search_type=interactive today;
+  # "internal" remains in the filter only for forward-compat.
   interactive_non_numeric_condition = "((search_type = \"interactive\" or search_type = \"internal\") and ${local.non_numeric_query_condition})"
 
   # Empty-result numerators for those cohorts (definitions differ by search type).
@@ -59,11 +59,11 @@ resource "aws_cloudwatch_dashboard" "search_quality" {
           properties = {
             markdown = join("\n", [
               "## Trade Tariff Search Quality",
-              "Behaviour and product-quality dashboard for search outcomes, empty-result terms, intercepts, and result selection patterns across **classic** and **interactive/internal** search.",
+              "Behaviour and product-quality dashboard for search outcomes, empty-result terms, intercepts, and result selection patterns across **classic** and **interactive** search.",
               "**Classic empty commodity results:** fuzzy/null with zero commodity hits (`commodity_result_count = 0`) — empty “Best commodity matches”. Exact matches are not counted.",
               "**Classic empty kinds (pie):** split into **no results** (`result_count = 0`) vs **no commodities, other hits** (headings/chapters/sections only).",
-              "**Interactive/internal empty results:** no returned results (`result_count = 0`). Counted separately from classic empty commodity results.",
-              "**Non-numeric free-text rates:** free-text only (`query not like /^[0-9 .-]+$/`). Classic = empty commodity % of non-exact free-text; interactive/internal = empty result % of free-text guided search (logs use `search_type=interactive`).",
+              "**Interactive empty results:** no returned results (`result_count = 0`). Counted separately from classic empty commodity results.",
+              "**Non-numeric free-text rates:** free-text only (`query not like /^[0-9 .-]+$/`). Classic = empty commodity % of non-exact free-text; interactive = empty result % of free-text guided search.",
               "**Healthy:** empty-commodity terms stay stable, result types remain consistent, intercept matches track expected terms, and interactive outcomes do not skew towards errors.",
               "**Start here:** classic outcome pies and empty commodity/empty result widgets first, then intercept and selection drill-downs.",
               "**Related:** [Search Overview](${local.search_dashboard_url}) | [Search Operations](${local.search_operations_dashboard_url})",
@@ -276,7 +276,7 @@ resource "aws_cloudwatch_dashboard" "search_quality" {
           width  = 8
           height = 6
           properties = {
-            title  = "Interactive/Internal Empty Results Rate (non-numeric)"
+            title  = "Interactive Empty Results Rate (non-numeric)"
             region = var.region
             view   = "timeSeries"
             query  = <<-EOT

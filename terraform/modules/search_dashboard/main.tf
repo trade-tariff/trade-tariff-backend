@@ -4,7 +4,8 @@ locals {
   service_filter = "filter service = \"search\""
   # Classic empty commodity results: fuzzy/null with commodity_result_count = 0 (empty Best commodity matches).
   # Includes completely empty results and headings/chapters-only; excludes exact matches.
-  # Interactive/internal empty results: result_count = 0. Historical classic falls back to result_count = 0.
+  # Interactive empty results: result_count = 0 (filter also accepts search_type=internal for forward-compat).
+  # Historical classic falls back to result_count = 0.
   # Keep in sync with SearchAnalytics::CloudwatchSnapshotQuery#zero_result_condition
   # and the other search_*_dashboard modules.
   classic_empty_commodity_condition = "(search_type = \"classic\" and ((ispresent(commodity_result_count) and commodity_result_count = 0 and (not ispresent(results_type) or results_type != \"exact_search\")) or (not ispresent(commodity_result_count) and result_count = 0)))"
@@ -35,7 +36,7 @@ resource "aws_cloudwatch_dashboard" "search" {
               "## Trade Tariff Search Overview",
               "Long-range search health dashboard for quarter-scale trend viewing. Follows the RED method (Rate, Errors, Duration).",
               "**Healthy:** p90 latency < 5s, hard failures stay low, empty commodity/empty result trends stable by search type, and selections broadly track search volume.",
-              "**Empty commodity results (classic):** fuzzy/null with zero commodity hits (empty Best commodity matches; includes fully empty and headings/chapters-only). **Empty results (interactive/internal):** no returned results. See Search Quality for classic empty-kind pies and free-text rates.",
+              "**Empty commodity results (classic):** fuzzy/null with zero commodity hits (empty Best commodity matches; includes fully empty and headings/chapters-only). **Empty results (interactive):** no returned results. See Search Quality for classic empty-kind pies and free-text rates.",
               "**Start here:** use this dashboard for 3-month trends. Open Operations for active troubleshooting and Quality for intercepts, empty commodity/empty result terms, and result behaviour.",
               "**Related:** [Search Operations](${local.search_operations_dashboard_url}) | [Search Quality](${local.search_quality_dashboard_url}) | [Search Experiments](${local.search_experiment_dashboard_url}) | [Label Generator](${local.label_dashboard_url}) | [Self-Text Generator](${local.self_text_dashboard_url})",
             ])
