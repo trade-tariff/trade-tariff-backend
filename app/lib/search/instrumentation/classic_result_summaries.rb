@@ -93,10 +93,6 @@ module Search
         total = nested_result_count(results)
         named.merge(other_result_count: [total - named_total, 0].max)
       end
-
-      def nested_commodity_result_count(results)
-        nested_level_result_count(results, :commodities)
-      end
     end
   end
 end
