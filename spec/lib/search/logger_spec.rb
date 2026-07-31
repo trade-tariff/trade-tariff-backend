@@ -497,10 +497,18 @@ RSpec.describe Search::Logger do
                       final_result_type: 'answers',
                       total_duration_ms: 3000.0,
                       result_count: 5,
-                      commodity_result_count: 5 }
+                      chapter_result_count: 0,
+                      heading_result_count: 0,
+                      commodity_result_count: 5,
+                      other_result_count: 0 }
 
     it 'logs correct fields' do
-      payload[:commodity_result_count] = 5
+      payload.merge!(
+        chapter_result_count: 1,
+        heading_result_count: 2,
+        commodity_result_count: 5,
+        other_result_count: 0,
+      )
       logger_instance.search_completed(build_event('search_completed', payload))
       json = parsed_log_output
       expect(json['event']).to eq('search_completed')
@@ -508,7 +516,10 @@ RSpec.describe Search::Logger do
       expect(json['search_type']).to eq('interactive')
       expect(json['total_duration_ms']).to eq(3000.0)
       expect(json['result_count']).to eq(5)
+      expect(json['chapter_result_count']).to eq(1)
+      expect(json['heading_result_count']).to eq(2)
       expect(json['commodity_result_count']).to eq(5)
+      expect(json['other_result_count']).to eq(0)
       expect(json['total_attempts']).to eq(2)
     end
 

@@ -55,6 +55,12 @@ module Search
         end
       end
 
+      NAMED_NESTED_LEVELS = {
+        chapters: :chapter_result_count,
+        headings: :heading_result_count,
+        commodities: :commodity_result_count,
+      }.freeze
+
       def nested_result_count(results)
         return 0 unless results.is_a?(Hash)
 
@@ -66,15 +72,30 @@ module Search
         end
       end
 
-      def nested_commodity_result_count(results)
+      def nested_level_result_count(results, level)
         return 0 unless results.is_a?(Hash)
 
+        level_key = level.to_s
         %i[goods_nomenclature_match reference_match].sum do |match_type|
           groups = results[match_type] || results[match_type.to_s]
           next 0 unless groups.respond_to?(:[])
 
-          Array(groups[:commodities] || groups['commodities']).size
+          Array(groups[level_key] || groups[level_key.to_sym]).size
         end
+      end
+
+      def nested_level_result_counts(results)
+        named = NAMED_NESTED_LEVELS.each_with_object({}) do |(level, key), memo|
+          memo[key] = nested_level_result_count(results, level)
+        end
+
+        named_total = named.values.sum
+        total = nested_result_count(results)
+        named.merge(other_result_count: [total - named_total, 0].max)
+      end
+
+      def nested_commodity_result_count(results)
+        nested_level_result_count(results, :commodities)
       end
     end
   end

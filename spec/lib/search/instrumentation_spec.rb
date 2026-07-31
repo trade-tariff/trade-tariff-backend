@@ -67,7 +67,10 @@ RSpec.describe Search::Instrumentation do
           query: 'horses',
           search_type: 'interactive',
           result_count: 5,
+          chapter_result_count: 0,
+          heading_result_count: 0,
           commodity_result_count: 5,
+          other_result_count: 0,
           total_duration_ms: a_kind_of(Float),
         ),
       )
@@ -100,7 +103,18 @@ RSpec.describe Search::Instrumentation do
       allow(ActiveSupport::Notifications).to receive(:instrument)
 
       described_class.search(request_id: 'req-1', query: 'q', search_type: 'classic') do
-        ['result', { result_count: 3, commodity_result_count: 0, results_type: :fuzzy_search, max_score: 12.5 }]
+        [
+          'result',
+          {
+            result_count: 3,
+            chapter_result_count: 1,
+            heading_result_count: 2,
+            commodity_result_count: 0,
+            other_result_count: 0,
+            results_type: :fuzzy_search,
+            max_score: 12.5,
+          },
+        ]
       end
 
       expect(ActiveSupport::Notifications).to have_received(:instrument).with(
@@ -109,7 +123,10 @@ RSpec.describe Search::Instrumentation do
           results_type: :fuzzy_search,
           max_score: 12.5,
           result_count: 3,
+          chapter_result_count: 1,
+          heading_result_count: 2,
           commodity_result_count: 0,
+          other_result_count: 0,
         ),
       )
     end
@@ -524,7 +541,10 @@ RSpec.describe Search::Instrumentation do
           request_id: 'req-1',
           search_type: 'classic',
           result_count: 2,
+          chapter_result_count: 1,
+          heading_result_count: 1,
           commodity_result_count: 0,
+          other_result_count: 0,
           details: {
             goods_nomenclature_match: {
               'chapters' => [
@@ -541,7 +561,7 @@ RSpec.describe Search::Instrumentation do
       )
     end
 
-    it 'counts commodity hits separately from total fuzzy hits' do
+    it 'counts hits by tariff level separately from the total' do
       allow(ActiveSupport::Notifications).to receive(:instrument)
 
       described_class.fuzzy_results_returned(
@@ -549,11 +569,17 @@ RSpec.describe Search::Instrumentation do
         query: 'horse',
         results: {
           goods_nomenclature_match: {
+            'chapters' => [
+              { '_score' => 7.0, '_source' => { 'goods_nomenclature_item_id' => '0100000000' } },
+            ],
             'headings' => [
               { '_score' => 11.0, '_source' => { 'goods_nomenclature_item_id' => '0101000000' } },
             ],
             'commodities' => [
               { '_score' => 12.5, '_source' => { 'goods_nomenclature_item_id' => '0101210000' } },
+            ],
+            'sections' => [
+              { '_score' => 5.0, '_source' => { 'id' => 1 } },
             ],
           },
           reference_match: {
@@ -566,7 +592,13 @@ RSpec.describe Search::Instrumentation do
 
       expect(ActiveSupport::Notifications).to have_received(:instrument).with(
         'fuzzy_results_returned.search',
-        hash_including(result_count: 3, commodity_result_count: 2),
+        hash_including(
+          result_count: 5,
+          chapter_result_count: 1,
+          heading_result_count: 1,
+          commodity_result_count: 2,
+          other_result_count: 1,
+        ),
       )
     end
 
@@ -593,7 +625,10 @@ RSpec.describe Search::Instrumentation do
         'fuzzy_results_returned.search',
         hash_including(
           result_count: 60,
+          chapter_result_count: 0,
+          heading_result_count: 0,
           commodity_result_count: 60,
+          other_result_count: 0,
           details: hash_including(
             goods_nomenclature_match: hash_including('commodities' => have_attributes(size: 50)),
           ),
@@ -1010,7 +1045,10 @@ RSpec.describe Search::Instrumentation do
         final_result_type: 'answers',
         total_duration_ms: 1500.0,
         result_count: 3,
+        chapter_result_count: 0,
+        heading_result_count: 0,
         commodity_result_count: 3,
+        other_result_count: 0,
         description_intercept_matched: true,
         description_intercept_term: 'gift',
         description_intercept_excluded: false,
@@ -1022,7 +1060,7 @@ RSpec.describe Search::Instrumentation do
       )
     end
 
-    it 'preserves an explicit commodity_result_count for classic fuzzy completions' do
+    it 'preserves an explicit per-level breakdown for classic fuzzy completions' do
       allow(ActiveSupport::Notifications).to receive(:instrument)
 
       described_class.search_completed(
@@ -1031,7 +1069,10 @@ RSpec.describe Search::Instrumentation do
         search_type: 'classic',
         total_duration_ms: 120.0,
         result_count: 4,
+        chapter_result_count: 1,
+        heading_result_count: 3,
         commodity_result_count: 0,
+        other_result_count: 0,
         results_type: :fuzzy_search,
       )
 
@@ -1039,7 +1080,10 @@ RSpec.describe Search::Instrumentation do
         'search_completed.search',
         hash_including(
           result_count: 4,
+          chapter_result_count: 1,
+          heading_result_count: 3,
           commodity_result_count: 0,
+          other_result_count: 0,
           results_type: :fuzzy_search,
         ),
       )
