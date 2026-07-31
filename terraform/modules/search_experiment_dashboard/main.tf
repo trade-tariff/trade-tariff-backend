@@ -6,7 +6,8 @@ locals {
   ai_cost_filter    = "filter event in [\"api_call_completed\", \"embedding_api_call_completed\"]\n              | ${local.experiment_filter} and ((service = \"search\" and event = \"api_call_completed\") or (service = \"ai_usage\" and event = \"embedding_api_call_completed\" and event_kind = \"vector_search_query_embedding\"))"
   # Classic empty commodity results: fuzzy/null with commodity_result_count = 0 (empty Best commodity matches).
   # Includes completely empty results and headings/chapters-only; excludes exact matches.
-  # Interactive/internal empty results: result_count = 0. Historical classic falls back to result_count = 0.
+  # Interactive empty results: result_count = 0 (filter also accepts search_type=internal for forward-compat).
+  # Historical classic falls back to result_count = 0.
   # Keep in sync with SearchAnalytics::CloudwatchSnapshotQuery#zero_result_condition
   # and the other search_*_dashboard modules.
   classic_empty_commodity_condition = "(search_type = \"classic\" and ((ispresent(commodity_result_count) and commodity_result_count = 0 and (not ispresent(results_type) or results_type != \"exact_search\")) or (not ispresent(commodity_result_count) and result_count = 0)))"
@@ -45,7 +46,7 @@ resource "aws_cloudwatch_dashboard" "search_experiment" {
             markdown = join("\n", [
               "## Trade Tariff Search Production UAT",
               "All widgets are scoped to the experiment label selected above. Requests and estimated distinct guided-search browser sessions are reported separately. One browser session can contain multiple requests. CloudWatch may approximate high-cardinality counts.",
-              "**Empty commodity results (classic):** fuzzy/null with zero commodity hits (empty Best commodity matches). **Empty results (interactive/internal):** no returned results. Shared widgets break series down by `search_type` where relevant.",
+              "**Empty commodity results (classic):** fuzzy/null with zero commodity hits (empty Best commodity matches). **Empty results (interactive):** no returned results. Shared widgets break series down by `search_type` where relevant.",
               "**Start here:** Set the dashboard time range to the UAT window, then review volume, reliability, latency, outcomes, questions, search terms, and costs.",
               "**Investigate:** copy the request ID into admin search diagnostics to reconstruct an individual request.",
               "**Related:** [Search Overview](${local.search_dashboard_url}) | [Search Operations](${local.search_operations_dashboard_url}) | [Search Quality](${local.search_quality_dashboard_url})",

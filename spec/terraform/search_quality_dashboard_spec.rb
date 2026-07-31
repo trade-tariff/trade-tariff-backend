@@ -40,15 +40,15 @@ RSpec.describe 'search quality dashboard Terraform' do
     expect(module_main_tf).to include('Classic Search Outcomes')
     expect(module_main_tf).to include('Classic Empty Kinds')
     expect(module_main_tf).to include('Classic Empty Commodity Rate (non-numeric fuzzy)')
-    expect(module_main_tf).to include('Interactive/Internal Empty Results Rate (non-numeric)')
+    expect(module_main_tf).to include('Interactive Empty Results Rate (non-numeric)')
     expect(module_main_tf).to include('Empty Commodity / Empty Results Rate (by search type)')
     expect(module_main_tf).to include('classic_non_numeric_fuzzy_condition')
     expect(module_main_tf).to include('interactive_non_numeric_condition')
     expect(module_main_tf).to include('search_type = \\"interactive\\" or search_type = \\"internal\\"')
   end
 
-  it 'keeps free-text guided empty results rate on interactive|internal search types' do
-    interactive_rate = widget_query(module_main_tf, 'Interactive/Internal Empty Results Rate (non-numeric)')
+  it 'keeps free-text guided empty results rate on interactive search types' do
+    interactive_rate = widget_query(module_main_tf, 'Interactive Empty Results Rate (non-numeric)')
 
     expect(interactive_rate).to include('${local.interactive_non_numeric_condition}')
     expect(interactive_rate).to include('${local.interactive_no_results_only}')
@@ -70,7 +70,7 @@ RSpec.describe 'search quality dashboard Terraform' do
     [
       'Classic Empty Rates',
       'Classic Empty Commodity Rate (non-numeric fuzzy)',
-      'Interactive/Internal Empty Results Rate (non-numeric)',
+      'Interactive Empty Results Rate (non-numeric)',
       'Empty Commodity / Empty Results Rate (by search type)',
     ].each do |title|
       query = widget_query(module_main_tf, title)

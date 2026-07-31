@@ -147,7 +147,7 @@ module SearchAnalytics
       QUERY
     end
 
-    # Shared by classic + interactive/internal dashboards and admin analytics.
+    # Shared by classic + interactive dashboards and admin analytics.
     #
     # Classic empty commodity results = fuzzy/null with commodity_result_count = 0
     # (empty "Best commodity matches"). That includes:
@@ -155,7 +155,7 @@ module SearchAnalytics
     #   - headings/chapters/other hits only (result_count > 0)
     # Exact matches are never empty-commodity results.
     #
-    # Interactive/internal zero = result_count = 0 (counted separately by search_type).
+    # Interactive empty results = result_count = 0 (filter also accepts search_type=internal).
     # Historical classic logs without commodity_result_count fall back to result_count = 0.
     # Keep in sync with terraform/modules/search_*_dashboard zero_result_condition locals.
     def zero_result_condition
