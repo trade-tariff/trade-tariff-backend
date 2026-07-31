@@ -5,7 +5,7 @@ require 'date'
 require 'open3'
 require 'tmpdir'
 
-RSpec.describe 'bin/check-database-backup-freshness' do # rubocop:disable RSpec/DescribeClass
+RSpec.describe 'bin/check-database-backup-freshness' do
   let(:script_path) { File.expand_path('../../bin/check-database-backup-freshness', __dir__) }
   let(:tempdir) { Dir.mktmpdir }
   # The script derives the archive key from the backup's Europe/London date.
