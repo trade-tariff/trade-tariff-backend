@@ -26,10 +26,15 @@ locals {
   # Digits, spaces, dots, and hyphens alone count as numeric/code lookups.
   non_numeric_query_condition = "(ispresent(query) and query not like /^[0-9 .-]+$/)"
 
-  # Non-numeric fuzzy cohort for product-quality rates:
-  # - classic: free-text fuzzy/null (exclude exact code matches)
-  # - interactive/internal: free-text guided search
-  non_numeric_fuzzy_condition = "(${local.non_numeric_query_condition} and ((search_type = \"classic\" and (not ispresent(results_type) or results_type != \"exact_search\")) or search_type = \"interactive\" or search_type = \"internal\"))"
+  # Classic free-text fuzzy/null cohort (excludes exact code matches).
+  classic_non_numeric_fuzzy_condition = "(search_type = \"classic\" and ${local.non_numeric_query_condition} and (not ispresent(results_type) or results_type != \"exact_search\"))"
+
+  # Internal free-text guided-search cohort (backend internal search path).
+  internal_non_numeric_condition = "(search_type = \"internal\" and ${local.non_numeric_query_condition})"
+
+  # Product-zero numerators for those cohorts (definitions differ by search type).
+  classic_empty_commodity_only = "((ispresent(commodity_result_count) and commodity_result_count = 0) or (not ispresent(commodity_result_count) and result_count = 0))"
+  internal_no_results_only     = "(result_count = 0)"
 
   search_dashboard_url            = "https://${var.region}.console.aws.amazon.com/cloudwatch/home?region=${var.region}#dashboards:name=Search-${var.environment}"
   search_operations_dashboard_url = "https://${var.region}.console.aws.amazon.com/cloudwatch/home?region=${var.region}#dashboards:name=SearchOperations-${var.environment}"
@@ -54,7 +59,7 @@ resource "aws_cloudwatch_dashboard" "search_quality" {
               "**Classic product zero:** fuzzy/null with zero commodity hits (`commodity_result_count = 0`) — empty “Best commodity matches”. Exact matches are not zeros.",
               "**Classic empty kinds (pie):** split into **no results** (`result_count = 0`) vs **no commodities, other hits** (headings/chapters/sections only).",
               "**Interactive/internal zero:** no returned results (`result_count = 0`). Counted separately from classic commodity empties.",
-              "**Non-numeric fuzzy rate:** product-zero % among free-text queries only (`query not like /^[0-9 .-]+$/`), excluding classic exact code matches. This is the free-text quality cohort.",
+              "**Non-numeric fuzzy rates (separate widgets):** free-text only (`query not like /^[0-9 .-]+$/`). Classic = empty commodity % of non-exact free-text; internal = empty result % of free-text guided search.",
               "**Healthy:** empty-commodity terms stay stable, result types remain consistent, intercept matches track expected terms, and interactive outcomes do not skew towards errors.",
               "**Start here:** classic outcome pies and empty-result widgets first, then intercept and selection drill-downs.",
               "**Related:** [Search Overview](${local.search_dashboard_url}) | [Search Operations](${local.search_operations_dashboard_url})",
@@ -250,13 +255,13 @@ resource "aws_cloudwatch_dashboard" "search_quality" {
           width  = 8
           height = 6
           properties = {
-            title  = "Product-Zero Rate (all queries)"
+            title  = "Classic Product-Zero Rate (non-numeric fuzzy)"
             region = var.region
             view   = "timeSeries"
             query  = <<-EOT
               ${local.source}
-              | ${local.service_filter} and event = "search_completed"
-              | stats sum(if(${local.zero_result_condition}, 1, 0)) * 100.0 / count(*) as product_zero_rate_pct by search_type, bin(1h)
+              | ${local.service_filter} and event = "search_completed" and ${local.classic_non_numeric_fuzzy_condition}
+              | stats sum(if(${local.classic_empty_commodity_only}, 1, 0)) * 100.0 / count(*) as empty_commodity_rate_pct by bin(1h)
             EOT
           }
         },
@@ -267,13 +272,13 @@ resource "aws_cloudwatch_dashboard" "search_quality" {
           width  = 8
           height = 6
           properties = {
-            title  = "Product-Zero Rate (non-numeric fuzzy)"
+            title  = "Internal Product-Zero Rate (non-numeric)"
             region = var.region
             view   = "timeSeries"
             query  = <<-EOT
               ${local.source}
-              | ${local.service_filter} and event = "search_completed" and ${local.non_numeric_fuzzy_condition}
-              | stats sum(if(${local.zero_result_condition}, 1, 0)) * 100.0 / count(*) as product_zero_rate_pct by search_type, bin(1h)
+              | ${local.service_filter} and event = "search_completed" and ${local.internal_non_numeric_condition}
+              | stats sum(if(${local.internal_no_results_only}, 1, 0)) * 100.0 / count(*) as no_results_rate_pct by bin(1h)
             EOT
           }
         },
@@ -283,6 +288,25 @@ resource "aws_cloudwatch_dashboard" "search_quality" {
           type   = "log"
           x      = 0
           y      = 26
+          width  = 24
+          height = 6
+          properties = {
+            title  = "Product-Zero Rate (all queries by search type)"
+            region = var.region
+            view   = "timeSeries"
+            query  = <<-EOT
+              ${local.source}
+              | ${local.service_filter} and event = "search_completed"
+              | stats sum(if(${local.zero_result_condition}, 1, 0)) * 100.0 / count(*) as product_zero_rate_pct by search_type, bin(1h)
+            EOT
+          }
+        },
+      ],
+      [
+        {
+          type   = "log"
+          x      = 0
+          y      = 32
           width  = 8
           height = 6
           properties = {
@@ -299,7 +323,7 @@ resource "aws_cloudwatch_dashboard" "search_quality" {
         {
           type   = "log"
           x      = 8
-          y      = 26
+          y      = 32
           width  = 8
           height = 6
           properties = {
@@ -316,7 +340,7 @@ resource "aws_cloudwatch_dashboard" "search_quality" {
         {
           type   = "log"
           x      = 16
-          y      = 26
+          y      = 32
           width  = 8
           height = 6
           properties = {
@@ -336,7 +360,7 @@ resource "aws_cloudwatch_dashboard" "search_quality" {
         {
           type   = "log"
           x      = 0
-          y      = 32
+          y      = 38
           width  = 8
           height = 6
           properties = {
@@ -353,7 +377,7 @@ resource "aws_cloudwatch_dashboard" "search_quality" {
         {
           type   = "log"
           x      = 8
-          y      = 32
+          y      = 38
           width  = 8
           height = 6
           properties = {
@@ -371,7 +395,7 @@ resource "aws_cloudwatch_dashboard" "search_quality" {
         {
           type   = "log"
           x      = 16
-          y      = 32
+          y      = 38
           width  = 8
           height = 6
           properties = {
@@ -391,7 +415,7 @@ resource "aws_cloudwatch_dashboard" "search_quality" {
         {
           type   = "log"
           x      = 0
-          y      = 38
+          y      = 44
           width  = 12
           height = 6
           properties = {
@@ -408,7 +432,7 @@ resource "aws_cloudwatch_dashboard" "search_quality" {
         {
           type   = "log"
           x      = 12
-          y      = 38
+          y      = 44
           width  = 6
           height = 6
           properties = {
@@ -425,7 +449,7 @@ resource "aws_cloudwatch_dashboard" "search_quality" {
         {
           type   = "log"
           x      = 18
-          y      = 38
+          y      = 44
           width  = 6
           height = 6
           properties = {
@@ -444,7 +468,7 @@ resource "aws_cloudwatch_dashboard" "search_quality" {
         {
           type   = "log"
           x      = 0
-          y      = 44
+          y      = 50
           width  = 8
           height = 6
           properties = {
@@ -461,7 +485,7 @@ resource "aws_cloudwatch_dashboard" "search_quality" {
         {
           type   = "log"
           x      = 8
-          y      = 44
+          y      = 50
           width  = 8
           height = 6
           properties = {
@@ -483,7 +507,7 @@ resource "aws_cloudwatch_dashboard" "search_quality" {
         {
           type   = "log"
           x      = 16
-          y      = 44
+          y      = 50
           width  = 8
           height = 6
           properties = {
@@ -504,7 +528,7 @@ resource "aws_cloudwatch_dashboard" "search_quality" {
         {
           type   = "log"
           x      = 0
-          y      = 50
+          y      = 56
           width  = 24
           height = 6
           properties = {
@@ -524,7 +548,7 @@ resource "aws_cloudwatch_dashboard" "search_quality" {
         {
           type   = "log"
           x      = 0
-          y      = 56
+          y      = 62
           width  = 24
           height = 6
           properties = {
