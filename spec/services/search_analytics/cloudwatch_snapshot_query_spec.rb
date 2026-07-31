@@ -147,11 +147,20 @@ RSpec.describe SearchAnalytics::CloudwatchSnapshotQuery do
       expect(definitions.values).to all(be_a(String).and(be_present))
     end
 
-    it 'treats classic fuzzy zero results as empty commodity hits with historical fallback' do
-      expect(definitions.fetch('zero_results')).to include('commodity_result_count = 0')
-      expect(definitions.fetch('zero_results')).to include('not ispresent(commodity_result_count) and result_count = 0')
-      expect(definitions.fetch('search_term_improvements')).to include('commodity_result_count = 0')
-      expect(definitions.fetch('item_id_improvements')).to include('commodity_result_count = 0')
+    it 'defines zero results separately for classic and interactive/internal search' do
+      expect(
+        [
+          definitions.fetch('zero_results'),
+          definitions.fetch('search_term_improvements'),
+          definitions.fetch('item_id_improvements'),
+        ],
+      ).to all(include(
+                 'search_type = "classic"',
+                 'commodity_result_count = 0',
+                 'not ispresent(commodity_result_count) and result_count = 0',
+                 'search_type = "interactive" or search_type = "internal"',
+                 'result_count = 0',
+               ))
     end
   end
 
