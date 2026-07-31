@@ -28,6 +28,7 @@ module Search
           search_type: 'classic',
           query:,
           result_count: nested_result_count(results),
+          commodity_result_count: nested_commodity_result_count(results),
           details: summarize_classic_fuzzy_results(results),
         )
       end

@@ -4,6 +4,9 @@ locals {
   experiment_filter = "filter experiment = \"EXPERIMENT_LABEL\""
   search_filter     = "${local.experiment_filter} and service = \"search\""
   ai_cost_filter    = "filter event in [\"api_call_completed\", \"embedding_api_call_completed\"]\n              | ${local.experiment_filter} and ((service = \"search\" and event = \"api_call_completed\") or (service = \"ai_usage\" and event = \"embedding_api_call_completed\" and event_kind = \"vector_search_query_embedding\"))"
+  # Classic fuzzy product-quality zero means no commodity hits even when headings/chapters matched.
+  # Fall back to result_count for historical logs before commodity_result_count existed.
+  zero_result_condition = "((ispresent(commodity_result_count) and commodity_result_count = 0) or (not ispresent(commodity_result_count) and result_count = 0))"
 
   search_dashboard_url            = "https://${var.region}.console.aws.amazon.com/cloudwatch/home?region=${var.region}#dashboards:name=Search-${var.environment}"
   search_operations_dashboard_url = "https://${var.region}.console.aws.amazon.com/cloudwatch/home?region=${var.region}#dashboards:name=SearchOperations-${var.environment}"
@@ -65,7 +68,7 @@ resource "aws_cloudwatch_dashboard" "search_experiment" {
                   sum(if(event = "search_completed", 1, 0)) as completed_requests,
                   sum(if(event = "search_failed", 1, 0)) as hard_failures,
                   sum(if(event = "search_completed" and final_result_type = "error", 1, 0)) as error_outcomes,
-                  sum(if(event = "search_completed" and result_count = 0, 1, 0)) as zero_result_requests,
+                  sum(if(event = "search_completed" and ((ispresent(commodity_result_count) and commodity_result_count = 0) or (not ispresent(commodity_result_count) and result_count = 0)), 1, 0)) as zero_result_requests,
                   sum(if(event = "guided_search.journey" and outcome = "result_selected", 1, 0)) as selections
             EOT
           }
@@ -357,7 +360,7 @@ resource "aws_cloudwatch_dashboard" "search_experiment" {
             query  = <<-EOT
               ${local.source}
               | ${local.search_filter} and event = "search_completed"
-              | stats avg(result_count) as average, median(result_count) as median, sum(if(result_count = 0, 1, 0)) as zero_results by search_type, bin(1h)
+              | stats avg(result_count) as average, median(result_count) as median, sum(if((ispresent(commodity_result_count) and commodity_result_count = 0) or (not ispresent(commodity_result_count) and result_count = 0), 1, 0)) as zero_results by search_type, bin(1h)
             EOT
           }
         },
@@ -443,7 +446,7 @@ resource "aws_cloudwatch_dashboard" "search_experiment" {
             region = var.region
             query  = <<-EOT
               ${local.source}
-              | ${local.search_filter} and event = "search_completed" and result_count = 0
+              | ${local.search_filter} and event = "search_completed" and ${local.zero_result_condition}
               | stats count(*) as searches by query, search_type
               | sort searches desc
               | limit 30

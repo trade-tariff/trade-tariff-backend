@@ -146,6 +146,13 @@ RSpec.describe SearchAnalytics::CloudwatchSnapshotQuery do
       )
       expect(definitions.values).to all(be_a(String).and(be_present))
     end
+
+    it 'treats classic fuzzy zero results as empty commodity hits with historical fallback' do
+      expect(definitions.fetch('zero_results')).to include('commodity_result_count = 0')
+      expect(definitions.fetch('zero_results')).to include('not ispresent(commodity_result_count) and result_count = 0')
+      expect(definitions.fetch('search_term_improvements')).to include('commodity_result_count = 0')
+      expect(definitions.fetch('item_id_improvements')).to include('commodity_result_count = 0')
+    end
   end
 
   it 'uses aggregate CloudWatch stats queries for the period window' do

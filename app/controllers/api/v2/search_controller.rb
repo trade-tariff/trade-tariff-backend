@@ -25,13 +25,17 @@ module Api
     private
 
       def classic_result_metrics(results)
-        return { result_count: 0 } unless results.is_a?(Hash) && results[:data].is_a?(Hash)
+        return { result_count: 0, commodity_result_count: 0 } unless results.is_a?(Hash) && results[:data].is_a?(Hash)
 
         attributes = results[:data][:attributes]
         results_type = results[:data][:type]
+        result_count = classic_result_count(attributes, results_type)
 
         {
-          result_count: classic_result_count(attributes, results_type),
+          result_count:,
+          # Classic fuzzy "zero results" for product quality means no commodity hits,
+          # even when headings/chapters/other tariff levels matched.
+          commodity_result_count: classic_commodity_result_count(attributes, results_type),
           results_type: results_type,
           max_score: classic_max_score(attributes),
         }
@@ -42,6 +46,14 @@ module Api
 
         MATCH_TYPES.product(LEVELS).sum do |match, level|
           attributes&.dig(match)&.dig(level)&.size || 0
+        end
+      end
+
+      def classic_commodity_result_count(attributes, results_type)
+        return 1 if results_type == :exact_search
+
+        MATCH_TYPES.sum do |match|
+          attributes&.dig(match)&.dig('commodities')&.size || 0
         end
       end
 

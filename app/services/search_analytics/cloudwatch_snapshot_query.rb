@@ -147,11 +147,17 @@ module SearchAnalytics
       QUERY
     end
 
+    # Classic fuzzy product-quality zero means no commodity hits (commodity_result_count = 0),
+    # even when headings/chapters matched. Fall back to result_count for pre-field logs.
+    def zero_result_condition
+      '((ispresent(commodity_result_count) and commodity_result_count = 0) or (not ispresent(commodity_result_count) and result_count = 0))'
+    end
+
     def zero_result_query
       <<~QUERY
-        fields @timestamp, event, search_type, result_count
+        fields @timestamp, event, search_type, result_count, commodity_result_count
         | #{log_stream_filter}
-        | filter service = "search" and event = "search_completed" and result_count = 0
+        | filter service = "search" and event = "search_completed" and #{zero_result_condition}
         | fields if(ispresent(request_source), request_source, "unknown") as request_source
         | stats count(*) as zero_results by #{bucket_expression}, search_type, request_source
       QUERY
@@ -301,9 +307,9 @@ module SearchAnalytics
     def improvement_terms_query(term_filter: nil)
       [
         <<~QUERY,
-          fields query, search_type, result_count
+          fields query, search_type, result_count, commodity_result_count
           | #{log_stream_filter}
-          | filter service = "search" and event = "search_completed" and result_count = 0 and ispresent(query)
+          | filter service = "search" and event = "search_completed" and #{zero_result_condition} and ispresent(query)
         QUERY
         ("| filter #{term_filter}\n" if term_filter.present?),
         <<~QUERY,

@@ -117,6 +117,90 @@ RSpec.describe Api::V2::SearchController do
       it { expect(response).to have_http_status(:ok) }
       it { expect(response.body).to match_json_expression(pattern) }
     end
+
+    context 'when measuring classic result metrics' do
+      subject(:metrics) { controller.send(:classic_result_metrics, results) }
+
+      let(:controller) { described_class.new }
+
+      context 'with fuzzy headings but no commodities' do
+        let(:results) do
+          {
+            data: {
+              type: :fuzzy_search,
+              attributes: {
+                goods_nomenclature_match: {
+                  'headings' => [{ '_score' => 10.0, '_source' => { 'goods_nomenclature_item_id' => '0101000000' } }],
+                  'chapters' => [],
+                  'commodities' => [],
+                },
+                reference_match: {
+                  'chapters' => [{ '_score' => 8.0, '_source' => { 'goods_nomenclature_item_id' => '0100000000' } }],
+                  'headings' => [],
+                  'commodities' => [],
+                },
+              },
+            },
+          }
+        end
+
+        it 'counts total hits and reports zero commodity hits' do
+          expect(metrics).to include(
+            result_count: 2,
+            commodity_result_count: 0,
+            results_type: :fuzzy_search,
+          )
+        end
+      end
+
+      context 'with fuzzy commodity hits' do
+        let(:results) do
+          {
+            data: {
+              type: :fuzzy_search,
+              attributes: {
+                goods_nomenclature_match: {
+                  'commodities' => [
+                    { '_score' => 12.0, '_source' => { 'goods_nomenclature_item_id' => '0101210000' } },
+                  ],
+                  'headings' => [],
+                  'chapters' => [],
+                },
+                reference_match: {
+                  'commodities' => [
+                    { '_score' => 9.0, '_source' => { 'goods_nomenclature_item_id' => '0101290000' } },
+                  ],
+                  'headings' => [],
+                  'chapters' => [],
+                },
+              },
+            },
+          }
+        end
+
+        it 'counts commodity hits in both total and commodity metrics' do
+          expect(metrics).to include(result_count: 2, commodity_result_count: 2)
+        end
+      end
+
+      context 'with an exact search' do
+        let(:results) do
+          {
+            data: {
+              type: :exact_search,
+              attributes: {
+                type: 'exact_match',
+                entry: { endpoint: 'commodities', id: '0101210000' },
+              },
+            },
+          }
+        end
+
+        it 'reports a successful match for both counts' do
+          expect(metrics).to include(result_count: 1, commodity_result_count: 1)
+        end
+      end
+    end
   end
 
   describe 'GET /search_suggestions' do
