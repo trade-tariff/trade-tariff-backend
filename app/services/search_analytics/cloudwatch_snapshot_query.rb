@@ -148,10 +148,14 @@ module SearchAnalytics
     end
 
     # Shared by classic + interactive/internal dashboards and admin analytics.
-    # - classic: product-quality zero = no commodity hits on non-exact searches
-    #   (fuzzy headings/chapters-only match). Successful exact heading/chapter hits
-    #   are not quality zeros even though commodity_result_count is 0.
-    # - interactive/internal: zero = no returned results (result_count = 0)
+    #
+    # Classic product zero = fuzzy/null with commodity_result_count = 0
+    # (empty "Best commodity matches"). That includes:
+    #   - completely empty results (result_count = 0)
+    #   - headings/chapters/other hits only (result_count > 0)
+    # Exact matches are never product zeros.
+    #
+    # Interactive/internal zero = result_count = 0 (counted separately by search_type).
     # Historical classic logs without commodity_result_count fall back to result_count = 0.
     # Keep in sync with terraform/modules/search_*_dashboard zero_result_condition locals.
     def zero_result_condition

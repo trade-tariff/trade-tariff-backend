@@ -2,14 +2,14 @@ locals {
   dashboard_name = var.dashboard_name != null ? var.dashboard_name : "Search-${var.environment}"
   source         = "SOURCE '${var.log_group_name}'"
   service_filter = "filter service = \"search\""
-  # Covers both classic and interactive/internal on shared widgets:
-  # - classic: product-quality zero = no commodity hits on non-exact searches
-  #   (fuzzy headings/chapters-only). Exact heading/chapter hits are not quality zeros.
-  # - interactive/internal: zero = no returned results (result_count = 0)
-  # Historical classic logs without commodity_result_count fall back to result_count = 0.
+  # Classic product zero: fuzzy/null with commodity_result_count = 0 (empty Best commodity matches).
+  # Includes completely empty results and headings/chapters-only; excludes exact matches.
+  # Interactive/internal zero: result_count = 0. Historical classic falls back to result_count = 0.
   # Keep in sync with SearchAnalytics::CloudwatchSnapshotQuery#zero_result_condition
   # and the other search_*_dashboard modules.
-  zero_result_condition = "((search_type = \"classic\" and ((ispresent(commodity_result_count) and commodity_result_count = 0 and (not ispresent(results_type) or results_type != \"exact_search\")) or (not ispresent(commodity_result_count) and result_count = 0))) or ((search_type = \"interactive\" or search_type = \"internal\") and result_count = 0))"
+  classic_empty_commodity_condition = "(search_type = \"classic\" and ((ispresent(commodity_result_count) and commodity_result_count = 0 and (not ispresent(results_type) or results_type != \"exact_search\")) or (not ispresent(commodity_result_count) and result_count = 0)))"
+  interactive_no_results_condition  = "((search_type = \"interactive\" or search_type = \"internal\") and result_count = 0)"
+  zero_result_condition             = "(${local.classic_empty_commodity_condition} or ${local.interactive_no_results_condition})"
 
   search_operations_dashboard_url = "https://${var.region}.console.aws.amazon.com/cloudwatch/home?region=${var.region}#dashboards:name=SearchOperations-${var.environment}"
   search_quality_dashboard_url    = "https://${var.region}.console.aws.amazon.com/cloudwatch/home?region=${var.region}#dashboards:name=SearchQuality-${var.environment}"
@@ -35,7 +35,7 @@ resource "aws_cloudwatch_dashboard" "search" {
               "## Trade Tariff Search Overview",
               "Long-range search health dashboard for quarter-scale trend viewing. Follows the RED method (Rate, Errors, Duration).",
               "**Healthy:** p90 latency < 5s, hard failures stay low, zero-result trends stable by search type, and selections broadly track search volume.",
-              "**Zero-result definition:** classic = no commodity hits on non-exact searches (fuzzy headings/chapters-only); interactive/internal = no returned results.",
+              "**Product zeros:** classic = fuzzy/null with zero commodity hits (empty Best commodity matches; includes fully empty and headings/chapters-only); interactive/internal = no returned results. See Search Quality for classic empty-kind pies.",
               "**Start here:** use this dashboard for 3-month trends. Open Operations for active troubleshooting and Quality for intercepts, zero-result terms, and result behaviour.",
               "**Related:** [Search Operations](${local.search_operations_dashboard_url}) | [Search Quality](${local.search_quality_dashboard_url}) | [Search Experiments](${local.search_experiment_dashboard_url}) | [Label Generator](${local.label_dashboard_url}) | [Self-Text Generator](${local.self_text_dashboard_url})",
             ])
