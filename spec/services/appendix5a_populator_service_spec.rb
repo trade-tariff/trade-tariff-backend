@@ -16,8 +16,7 @@ RSpec.describe Appendix5aPopulatorService do
       allow(Appendix5a).to receive(:fetch_latest).and_return(new_guidance)
       allow(SlackNotifierService).to receive(:call).and_call_original
       allow(TradeTariffBackend).to receive(:cupid_team_to_emails).and_return(cupid_emails)
-      allow(Appendix5aEmailWorker).to receive(:perform_async)
-      allow(service).to receive(:sleep)
+      allow(Notifications::EmailWorker).to receive(:perform_async)
     end
 
     context 'when the latest guidance has changed' do
@@ -41,11 +40,38 @@ RSpec.describe Appendix5aPopulatorService do
           .with('Appendix 5a has been updated with 0 new, 1 changed and 0 removed guidance documents')
       end
 
-      it 'sends an email notification to each configured recipient' do
+      it 'sends an email notification to each configured recipient with a String-keyed personalisation hash' do
         call
 
-        cupid_emails.each_index do |recipient_index|
-          expect(Appendix5aEmailWorker).to have_received(:perform_async).with(recipient_index, 0, 1, 0)
+        cupid_emails.each_with_index do |email, recipient_index|
+          expect(Notifications::EmailWorker).to have_received(:perform_async).with(
+            email,
+            described_class::TEMPLATE_ID,
+            {
+              'new_count' => 0,
+              'changed_count' => 1,
+              'removed_count' => 0,
+              'support_email' => TradeTariffBackend.support_email,
+            },
+            'Appendix5aNotificationStatusCheckWorker',
+            [recipient_index],
+          )
+        end
+      end
+
+      it 'enqueues via the real Sidekiq perform_async boundary without raising (Sidekiq.strict_args! guard)' do
+        allow(Notifications::EmailWorker).to receive(:perform_async).and_call_original
+
+        Sidekiq::Testing.fake! do
+          Notifications::EmailWorker.jobs.clear
+
+          expect { call }.not_to raise_error
+
+          expect(Notifications::EmailWorker.jobs.size).to eq(cupid_emails.size)
+          Notifications::EmailWorker.jobs.each do |job|
+            personalisation = job['args'][2]
+            expect(personalisation.keys).to all(be_a(String))
+          end
         end
       end
 
@@ -62,9 +88,7 @@ RSpec.describe Appendix5aPopulatorService do
         it 'still enqueues notifications for every configured recipient' do
           call
 
-          cupid_emails.each_index do |recipient_index|
-            expect(Appendix5aEmailWorker).to have_received(:perform_async).with(recipient_index, 0, 1, 0)
-          end
+          expect(Notifications::EmailWorker).to have_received(:perform_async).exactly(cupid_emails.size).times
         end
 
         it 'logs the slack failure' do
@@ -98,7 +122,7 @@ RSpec.describe Appendix5aPopulatorService do
 
       it 'does not send an email' do
         call
-        expect(Appendix5aEmailWorker).not_to have_received(:perform_async)
+        expect(Notifications::EmailWorker).not_to have_received(:perform_async)
       end
     end
 
@@ -120,8 +144,12 @@ RSpec.describe Appendix5aPopulatorService do
       it 'sends an email notification to each configured recipient' do
         call
 
-        cupid_emails.each_index do |recipient_index|
-          expect(Appendix5aEmailWorker).to have_received(:perform_async).with(recipient_index, 0, 0, 1)
+        cupid_emails.each_with_index do |email, recipient_index|
+          expect(Notifications::EmailWorker).to have_received(:perform_async).with(
+            email, described_class::TEMPLATE_ID,
+            { 'new_count' => 0, 'changed_count' => 0, 'removed_count' => 1, 'support_email' => TradeTariffBackend.support_email },
+            'Appendix5aNotificationStatusCheckWorker', [recipient_index]
+          )
         end
       end
     end
@@ -153,8 +181,12 @@ RSpec.describe Appendix5aPopulatorService do
       it 'sends an email notification to each configured recipient' do
         call
 
-        cupid_emails.each_index do |recipient_index|
-          expect(Appendix5aEmailWorker).to have_received(:perform_async).with(recipient_index, 1, 0, 0)
+        cupid_emails.each_with_index do |email, recipient_index|
+          expect(Notifications::EmailWorker).to have_received(:perform_async).with(
+            email, described_class::TEMPLATE_ID,
+            { 'new_count' => 1, 'changed_count' => 0, 'removed_count' => 0, 'support_email' => TradeTariffBackend.support_email },
+            'Appendix5aNotificationStatusCheckWorker', [recipient_index]
+          )
         end
       end
     end
@@ -194,11 +226,12 @@ RSpec.describe Appendix5aPopulatorService do
       it 'does not enqueue any email worker jobs' do
         call
 
-        expect(Appendix5aEmailWorker).not_to have_received(:perform_async)
+        expect(Notifications::EmailWorker).not_to have_received(:perform_async)
       end
     end
 
-    context 'when enqueuing fails transiently then succeeds' do
+    context 'when a recipient index no longer resolves to a configured email' do
+      let(:cupid_emails) { ['cupid@example.com', ''] }
       let(:new_guidance) do
         {
           '1123' => {
@@ -207,104 +240,15 @@ RSpec.describe Appendix5aPopulatorService do
         }
       end
 
-      before do
-        call_count = 0
-        allow(Appendix5aEmailWorker).to receive(:perform_async) do
-          call_count += 1
-          raise StandardError, 'connection refused' if call_count == 1
-        end
-      end
+      it 'skips that recipient via Notifications::Instrumentation.send_skipped and does not enqueue an email for them' do
+        allow(Notifications::Instrumentation).to receive(:send_skipped)
 
-      it 'retries and eventually enqueues every recipient' do
         call
 
-        expect(Appendix5aEmailWorker).to have_received(:perform_async).with(0, 0, 1, 0).exactly(2).times
-        expect(Appendix5aEmailWorker).to have_received(:perform_async).with(1, 0, 1, 0).exactly(1).time
-      end
-
-      it 'sleeps between retry passes' do
-        call
-
-        expect(service).to have_received(:sleep).with(30.seconds)
-      end
-
-      it 'does not send a failure alert once retries succeed' do
-        call
-
-        expect(SlackNotifierService).not_to have_received(:call).with(a_string_including('failed to enqueue'))
-      end
-    end
-
-    context 'when enqueuing repeatedly fails for one recipient' do
-      let(:new_guidance) do
-        {
-          '1123' => {
-            'guidance_cds' => 'bar',
-          },
-        }
-      end
-
-      before do
-        allow(Appendix5aEmailWorker).to receive(:perform_async) do |recipient_index, *|
-          raise StandardError, 'connection refused' if recipient_index == 1
-        end
-        allow(Rails.logger).to receive(:error)
-      end
-
-      it 'gives up after 3 attempts and logs an error for the failing recipient' do
-        call
-
-        expect(Appendix5aEmailWorker).to have_received(:perform_async).with(1, 0, 1, 0).exactly(3).times
-        expect(Rails.logger).to have_received(:error).with(
-          a_string_including('appendix5a_notification_enqueue failed', 'recipient_index: 1', 'attempt: 3'),
+        expect(Notifications::Instrumentation).to have_received(:send_skipped).with(
+          pipeline: 'appendix5a', identifier: 1, reason: 'recipient_not_configured',
         )
-      end
-
-      it 'alerts slack naming the failing recipient index' do
-        call
-
-        expect(SlackNotifierService).to have_received(:call).with(a_string_including('recipient index 1'))
-      end
-
-      it 'still enqueues the recipient that succeeded' do
-        call
-
-        expect(Appendix5aEmailWorker).to have_received(:perform_async).with(0, 0, 1, 0).once
-      end
-    end
-
-    context 'when enqueuing fails for every recipient on every attempt' do
-      let(:new_guidance) do
-        {
-          '1123' => {
-            'guidance_cds' => 'bar',
-          },
-        }
-      end
-
-      before do
-        allow(Appendix5aEmailWorker).to receive(:perform_async).and_raise(StandardError, 'connection refused')
-        allow(Rails.logger).to receive(:error)
-      end
-
-      it 'retries every recipient the maximum number of times' do
-        call
-
-        cupid_emails.each_index do |recipient_index|
-          expect(Appendix5aEmailWorker).to have_received(:perform_async).with(recipient_index, 0, 1, 0).exactly(3).times
-        end
-      end
-
-      it 'sleeps between passes but not after the final attempt' do
-        call
-
-        expect(service).to have_received(:sleep).with(30.seconds).exactly(2).times
-      end
-
-      it 'alerts slack naming every failing recipient index' do
-        call
-
-        expect(SlackNotifierService).to have_received(:call).with(a_string_including('recipient index 0, 1'))
+        expect(Notifications::EmailWorker).to have_received(:perform_async).once
       end
     end
   end
