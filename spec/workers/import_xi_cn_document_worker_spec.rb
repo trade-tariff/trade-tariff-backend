@@ -9,6 +9,7 @@ RSpec.describe ImportXiCnDocumentWorker do
     allow(TradeTariffBackend).to receive(:xi?).and_return(true)
     allow(XiCnImporter::Importer).to receive(:new).and_return(importer_double)
     allow(SlackNotifierService).to receive(:call)
+    allow(CustomsTariffUpdateNotifierService).to receive(:new).and_return(instance_double(CustomsTariffUpdateNotifierService, call: nil))
   end
 
   describe '#perform' do
@@ -33,6 +34,82 @@ RSpec.describe ImportXiCnDocumentWorker do
         expect(SlackNotifierService).to have_received(:call)
           .with(a_string_including('imported: 1'))
       end
+
+      it 'calls CustomsTariffUpdateNotifierService for the imported celex id' do
+        allow(CustomsTariffUpdateNotifierService).to receive(:new).and_return(instance_double(CustomsTariffUpdateNotifierService, call: nil))
+
+        worker.perform
+
+        expect(CustomsTariffUpdateNotifierService).to have_received(:new).with('32025R1926')
+      end
+    end
+
+    context 'when the notifier raises for one of several imported results' do
+      before do
+        allow(importer_double).to receive(:call).and_return([
+          XiCnImporter::Importer::Result.new(status: :imported, celex: '32025R1926'),
+          XiCnImporter::Importer::Result.new(status: :imported, celex: '32025R1927'),
+        ])
+
+        notifier_1926 = instance_double(CustomsTariffUpdateNotifierService)
+        allow(notifier_1926).to receive(:call).and_raise(RuntimeError, 'notify boom')
+        notifier_1927 = instance_double(CustomsTariffUpdateNotifierService, call: nil)
+
+        allow(CustomsTariffUpdateNotifierService).to receive(:new).with('32025R1926').and_return(notifier_1926)
+        allow(CustomsTariffUpdateNotifierService).to receive(:new).with('32025R1927').and_return(notifier_1927)
+        allow(Rails.logger).to receive(:error)
+      end
+
+      it 'still reports the import as completed successfully' do
+        worker.perform
+
+        expect(SlackNotifierService).to have_received(:call).with(
+          a_string_including('imported: 2'),
+        )
+      end
+
+      it 'does not re-raise the notifier error' do
+        expect { worker.perform }.not_to raise_error
+      end
+
+      it 'still calls the notifier for the later document even though the earlier one raised' do
+        worker.perform
+
+        expect(CustomsTariffUpdateNotifierService).to have_received(:new).with('32025R1926')
+        expect(CustomsTariffUpdateNotifierService).to have_received(:new).with('32025R1927')
+      end
+
+      it 'logs the failure with identifying detail via Rails.logger.error' do
+        worker.perform
+
+        expect(Rails.logger).to have_received(:error).with(
+          a_string_including('32025R1926', 'RuntimeError', 'notify boom'),
+        )
+      end
+
+      it 'posts a distinct Slack message making clear the import succeeded but the notification failed' do
+        worker.perform
+
+        expect(SlackNotifierService).to have_received(:call).with(
+          a_string_including('notification failed', '32025R1926'),
+        )
+      end
+    end
+
+    context 'when a document import fails' do
+      before do
+        allow(importer_double).to receive(:call).and_return([
+          XiCnImporter::Importer::Result.new(status: :failed, error: 'HTTP 503'),
+        ])
+      end
+
+      it 'does not call CustomsTariffUpdateNotifierService' do
+        allow(CustomsTariffUpdateNotifierService).to receive(:new)
+
+        worker.perform
+
+        expect(CustomsTariffUpdateNotifierService).not_to have_received(:new)
+      end
     end
 
     context 'when no new documents are found' do
@@ -44,6 +121,14 @@ RSpec.describe ImportXiCnDocumentWorker do
         worker.perform
         expect(SlackNotifierService).to have_received(:call)
           .with(a_string_including('Nothing new to import'))
+      end
+
+      it 'does not call CustomsTariffUpdateNotifierService' do
+        allow(CustomsTariffUpdateNotifierService).to receive(:new)
+
+        worker.perform
+
+        expect(CustomsTariffUpdateNotifierService).not_to have_received(:new)
       end
     end
 
