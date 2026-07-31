@@ -2,14 +2,25 @@ locals {
   dashboard_name = var.dashboard_name != null ? var.dashboard_name : "SearchQuality-${var.environment}"
   source         = "SOURCE '${var.log_group_name}'"
   service_filter = "filter service = \"search\""
-  # Covers both classic and interactive/internal on shared widgets:
-  # - classic: product-quality zero = no commodity hits on non-exact searches
-  #   (fuzzy headings/chapters-only). Exact heading/chapter hits are not quality zeros.
-  # - interactive/internal: zero = no returned results (result_count = 0)
+
+  # Classic product-quality empty commodities: fuzzy/null searches with commodity_result_count = 0.
+  # That is "Best commodity matches" empty — includes both:
+  #   - completely empty results (result_count = 0)
+  #   - headings/chapters/other hits only (result_count > 0, commodity_result_count = 0)
+  # Exact matches are never product zeros, even when commodity_result_count is 0.
   # Historical classic logs without commodity_result_count fall back to result_count = 0.
+  classic_empty_commodity_condition = "(search_type = \"classic\" and ((ispresent(commodity_result_count) and commodity_result_count = 0 and (not ispresent(results_type) or results_type != \"exact_search\")) or (not ispresent(commodity_result_count) and result_count = 0)))"
+
+  # Classic completely empty bag (subset of empty commodities when the new field is present).
+  classic_no_results_condition = "(search_type = \"classic\" and result_count = 0)"
+
+  # Interactive/internal empty: no returned results at all.
+  interactive_no_results_condition = "((search_type = \"interactive\" or search_type = \"internal\") and result_count = 0)"
+
+  # Shared rate/term widgets: classic uses empty-commodity product metric; interactive uses no results.
   # Keep in sync with SearchAnalytics::CloudwatchSnapshotQuery#zero_result_condition
   # and the other search_*_dashboard modules.
-  zero_result_condition = "((search_type = \"classic\" and ((ispresent(commodity_result_count) and commodity_result_count = 0 and (not ispresent(results_type) or results_type != \"exact_search\")) or (not ispresent(commodity_result_count) and result_count = 0))) or ((search_type = \"interactive\" or search_type = \"internal\") and result_count = 0))"
+  zero_result_condition = "(${local.classic_empty_commodity_condition} or ${local.interactive_no_results_condition})"
 
   search_dashboard_url            = "https://${var.region}.console.aws.amazon.com/cloudwatch/home?region=${var.region}#dashboards:name=Search-${var.environment}"
   search_operations_dashboard_url = "https://${var.region}.console.aws.amazon.com/cloudwatch/home?region=${var.region}#dashboards:name=SearchOperations-${var.environment}"
@@ -30,10 +41,12 @@ resource "aws_cloudwatch_dashboard" "search_quality" {
           properties = {
             markdown = join("\n", [
               "## Trade Tariff Search Quality",
-              "Behaviour and product-quality dashboard for search outcomes, zero-result terms, intercepts, and result selection patterns across **classic** and **interactive/internal** search.",
-              "**Zero-result definition:** classic = no commodity hits on non-exact searches (`commodity_result_count = 0`, even when fuzzy headings/chapters matched; successful exact heading/chapter hits are excluded); interactive/internal = no returned results (`result_count = 0`).",
-              "**Healthy:** zero-result terms stay stable by search type, result types remain consistent, intercept matches track expected terms, and interactive outcomes do not skew towards errors.",
-              "**Start here:** check result-type and zero-result widgets first, then inspect intercept and selection drill-downs below.",
+              "Behaviour and product-quality dashboard for search outcomes, empty-result terms, intercepts, and result selection patterns across **classic** and **interactive/internal** search.",
+              "**Classic product zero:** fuzzy/null with zero commodity hits (`commodity_result_count = 0`) — empty “Best commodity matches”. Exact matches are not zeros.",
+              "**Classic empty kinds (pie):** split into **no results** (`result_count = 0`) vs **no commodities, other hits** (headings/chapters/sections only).",
+              "**Interactive/internal zero:** no returned results (`result_count = 0`). Counted separately from classic commodity empties.",
+              "**Healthy:** empty-commodity terms stay stable, result types remain consistent, intercept matches track expected terms, and interactive outcomes do not skew towards errors.",
+              "**Start here:** classic outcome pies and empty-result widgets first, then intercept and selection drill-downs.",
               "**Related:** [Search Overview](${local.search_dashboard_url}) | [Search Operations](${local.search_operations_dashboard_url})",
             ])
           }
@@ -100,13 +113,14 @@ resource "aws_cloudwatch_dashboard" "search_quality" {
           width  = 8
           height = 6
           properties = {
-            title  = "Zero-Result Searches by Type"
+            title  = "Classic Search Outcomes"
             region = var.region
             view   = "pie"
             query  = <<-EOT
               ${local.source}
-              | ${local.service_filter} and event = "search_completed" and ${local.zero_result_condition}
-              | stats count(*) as searches by search_type
+              | ${local.service_filter} and event = "search_completed" and search_type = "classic"
+              | fields case(results_type = "exact_search", "exact match", ispresent(commodity_result_count) and commodity_result_count > 0, "has commodities", ispresent(commodity_result_count) and commodity_result_count = 0 and result_count > 0, "no commodities (other hits)", result_count = 0, "no results", "other") as classic_outcome
+              | stats count(*) as searches by classic_outcome
             EOT
           }
         },
@@ -117,7 +131,44 @@ resource "aws_cloudwatch_dashboard" "search_quality" {
           width  = 8
           height = 6
           properties = {
-            title  = "Top 30 Zero-Result Search Terms"
+            title  = "Classic Empty Kinds"
+            region = var.region
+            view   = "pie"
+            query  = <<-EOT
+              ${local.source}
+              | ${local.service_filter} and event = "search_completed" and ${local.classic_empty_commodity_condition}
+              | fields case(result_count = 0, "no results", ispresent(commodity_result_count) and commodity_result_count = 0 and result_count > 0, "no commodities (other hits)", "other empty") as empty_kind
+              | stats count(*) as searches by empty_kind
+            EOT
+          }
+        },
+        {
+          type   = "log"
+          x      = 16
+          y      = 8
+          width  = 8
+          height = 6
+          properties = {
+            title  = "Product Zeros by Search Type"
+            region = var.region
+            view   = "pie"
+            query  = <<-EOT
+              ${local.source}
+              | ${local.service_filter} and event = "search_completed" and ${local.zero_result_condition}
+              | stats count(*) as searches by search_type
+            EOT
+          }
+        },
+      ],
+      [
+        {
+          type   = "log"
+          x      = 0
+          y      = 14
+          width  = 8
+          height = 6
+          properties = {
+            title  = "Top 30 Product-Zero Search Terms"
             region = var.region
             query  = <<-EOT
               ${local.source}
@@ -130,19 +181,36 @@ resource "aws_cloudwatch_dashboard" "search_quality" {
         },
         {
           type   = "log"
-          x      = 16
-          y      = 8
+          x      = 8
+          y      = 14
           width  = 8
           height = 6
           properties = {
-            title  = "Recent Zero-Result Searches"
+            title  = "Recent Product-Zero Searches"
             region = var.region
             query  = <<-EOT
               ${local.source}
               | ${local.service_filter} and event = "search_completed" and ${local.zero_result_condition}
-              | fields @timestamp, query, request_source, search_type, request_id, result_count, chapter_result_count, heading_result_count, commodity_result_count, other_result_count
+              | fields @timestamp, query, request_source, search_type, request_id, results_type, result_count, chapter_result_count, heading_result_count, commodity_result_count, other_result_count
               | sort @timestamp desc
               | limit 30
+            EOT
+          }
+        },
+        {
+          type   = "log"
+          x      = 16
+          y      = 14
+          width  = 8
+          height = 6
+          properties = {
+            title  = "Classic Empty Rates"
+            region = var.region
+            view   = "timeSeries"
+            query  = <<-EOT
+              ${local.source}
+              | ${local.service_filter} and event = "search_completed" and search_type = "classic"
+              | stats sum(if(${local.classic_empty_commodity_condition}, 1, 0)) * 100.0 / count(*) as empty_commodity_rate_pct, sum(if(${local.classic_no_results_condition}, 1, 0)) * 100.0 / count(*) as no_results_rate_pct by bin(1h)
             EOT
           }
         },
@@ -151,7 +219,7 @@ resource "aws_cloudwatch_dashboard" "search_quality" {
         {
           type   = "log"
           x      = 0
-          y      = 14
+          y      = 20
           width  = 12
           height = 6
           properties = {
@@ -168,17 +236,17 @@ resource "aws_cloudwatch_dashboard" "search_quality" {
         {
           type   = "log"
           x      = 12
-          y      = 14
+          y      = 20
           width  = 12
           height = 6
           properties = {
-            title  = "Zero-Result Rate by Search Type"
+            title  = "Product-Zero Rate by Search Type"
             region = var.region
             view   = "timeSeries"
             query  = <<-EOT
               ${local.source}
               | ${local.service_filter} and event = "search_completed"
-              | stats sum(if(${local.zero_result_condition}, 1, 0)) * 100.0 / count(*) as zero_result_rate_pct by search_type, bin(1h)
+              | stats sum(if(${local.zero_result_condition}, 1, 0)) * 100.0 / count(*) as product_zero_rate_pct by search_type, bin(1h)
             EOT
           }
         },
@@ -187,7 +255,7 @@ resource "aws_cloudwatch_dashboard" "search_quality" {
         {
           type   = "log"
           x      = 0
-          y      = 20
+          y      = 26
           width  = 8
           height = 6
           properties = {
@@ -204,7 +272,7 @@ resource "aws_cloudwatch_dashboard" "search_quality" {
         {
           type   = "log"
           x      = 8
-          y      = 20
+          y      = 26
           width  = 8
           height = 6
           properties = {
@@ -221,7 +289,7 @@ resource "aws_cloudwatch_dashboard" "search_quality" {
         {
           type   = "log"
           x      = 16
-          y      = 20
+          y      = 26
           width  = 8
           height = 6
           properties = {
@@ -241,7 +309,7 @@ resource "aws_cloudwatch_dashboard" "search_quality" {
         {
           type   = "log"
           x      = 0
-          y      = 26
+          y      = 32
           width  = 8
           height = 6
           properties = {
@@ -258,7 +326,7 @@ resource "aws_cloudwatch_dashboard" "search_quality" {
         {
           type   = "log"
           x      = 8
-          y      = 26
+          y      = 32
           width  = 8
           height = 6
           properties = {
@@ -276,7 +344,7 @@ resource "aws_cloudwatch_dashboard" "search_quality" {
         {
           type   = "log"
           x      = 16
-          y      = 26
+          y      = 32
           width  = 8
           height = 6
           properties = {
@@ -296,7 +364,7 @@ resource "aws_cloudwatch_dashboard" "search_quality" {
         {
           type   = "log"
           x      = 0
-          y      = 32
+          y      = 38
           width  = 12
           height = 6
           properties = {
@@ -313,7 +381,7 @@ resource "aws_cloudwatch_dashboard" "search_quality" {
         {
           type   = "log"
           x      = 12
-          y      = 32
+          y      = 38
           width  = 6
           height = 6
           properties = {
@@ -330,7 +398,7 @@ resource "aws_cloudwatch_dashboard" "search_quality" {
         {
           type   = "log"
           x      = 18
-          y      = 32
+          y      = 38
           width  = 6
           height = 6
           properties = {
@@ -349,7 +417,7 @@ resource "aws_cloudwatch_dashboard" "search_quality" {
         {
           type   = "log"
           x      = 0
-          y      = 38
+          y      = 44
           width  = 8
           height = 6
           properties = {
@@ -366,7 +434,7 @@ resource "aws_cloudwatch_dashboard" "search_quality" {
         {
           type   = "log"
           x      = 8
-          y      = 38
+          y      = 44
           width  = 8
           height = 6
           properties = {
@@ -388,7 +456,7 @@ resource "aws_cloudwatch_dashboard" "search_quality" {
         {
           type   = "log"
           x      = 16
-          y      = 38
+          y      = 44
           width  = 8
           height = 6
           properties = {
@@ -409,7 +477,7 @@ resource "aws_cloudwatch_dashboard" "search_quality" {
         {
           type   = "log"
           x      = 0
-          y      = 44
+          y      = 50
           width  = 24
           height = 6
           properties = {
@@ -429,7 +497,7 @@ resource "aws_cloudwatch_dashboard" "search_quality" {
         {
           type   = "log"
           x      = 0
-          y      = 50
+          y      = 56
           width  = 24
           height = 6
           properties = {

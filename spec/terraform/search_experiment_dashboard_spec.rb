@@ -85,6 +85,8 @@ RSpec.describe 'search experiment dashboard Terraform' do
     expect(uat_period_totals_query).to include('zero_result_requests')
     expect(module_main_tf).to include('search_type = \\"classic\\"')
     expect(module_main_tf).to include('search_type = \\"interactive\\" or search_type = \\"internal\\"')
+    expect(module_main_tf).to include('classic_empty_commodity_condition')
+    expect(module_main_tf).to include('interactive_no_results_condition')
     expect(module_main_tf).to include('commodity_result_count = 0')
     expect(module_main_tf).to include('results_type != \\"exact_search\\"')
     expect(module_main_tf).to include('not ispresent(commodity_result_count) and result_count = 0')
