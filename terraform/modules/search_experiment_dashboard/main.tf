@@ -448,7 +448,7 @@ resource "aws_cloudwatch_dashboard" "search_experiment" {
           width  = 12
           height = 6
           properties = {
-            title  = "Top Zero-Result Terms"
+            title  = "Top Product-Zero Terms"
             region = var.region
             query  = <<-EOT
               ${local.source}
