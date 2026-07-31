@@ -503,7 +503,7 @@ RSpec.describe AdminConfiguration do
 
       expect(templates['generic']['attributes']['message']).to include(
         '## What if I need more help?',
-        'Guidance on classifying products can be found in [help on using the tariff (opens in new tab)]',
+        'Guidance on classifying products can be found in [help on using the tariff (opens in new tab)]({{help_url}})',
         '- structure of commodity codes',
         '- the information you need to classify a product',
         '- detailed guidance on hard to classify products',

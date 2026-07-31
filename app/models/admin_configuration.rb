@@ -58,7 +58,7 @@ class AdminConfiguration < Sequel::Model(Sequel[:admin_configurations].qualify(:
 
     ## What if I need more help?
 
-    Guidance on classifying products can be found in [help on using the tariff (opens in new tab)](https://www.gov.uk/guidance/classification-of-goods/) where you can find information about:
+    Guidance on classifying products can be found in [help on using the tariff (opens in new tab)]({{help_url}}) where you can find information about:
 
     - structure of commodity codes
     - the information you need to classify a product

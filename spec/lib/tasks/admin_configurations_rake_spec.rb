@@ -82,7 +82,7 @@ RSpec.describe 'admin_configurations:seed' do
       'guidance_location' => 'interstitial',
       'sources' => %w[guided_search fpo_search],
     )
-    expect(config.value['generic']['attributes']['message']).to include('Guidance on classifying products can be found in [help on using the tariff (opens in new tab)]')
+    expect(config.value['generic']['attributes']['message']).to include('Guidance on classifying products can be found in [help on using the tariff (opens in new tab)]({{help_url}})')
     expect(config.value['escalation']['label']).to eq('Escalation guidance')
     expect(config.value['escalation']['attributes']).to include(
       'excluded' => true,
