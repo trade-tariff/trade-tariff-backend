@@ -11,6 +11,7 @@ NOTIFY_CONFIGURATION =
         },
         notifications: {
           appendix5a: 'c35e387b-a2b8-4308-997c-06e1f3b36900',
+          customs_tariff_update: '02da9ea8-4919-45af-a9d4-68c908f49c9c',
         },
       },
       reply_to: {
@@ -29,6 +30,7 @@ NOTIFY_CONFIGURATION =
         },
         notifications: {
           appendix5a: '943fd08f-d9f0-47e0-b9dd-40284f308414',
+          customs_tariff_update: 'eae01fd6-3e73-4a21-83ed-175eec3701c5',
         },
       },
       reply_to: {
@@ -47,6 +49,7 @@ NOTIFY_CONFIGURATION =
         },
         notifications: {
           appendix5a: '7b53d787-2659-4cd2-9e45-afe93ad61eec',
+          customs_tariff_update: 'b99d0cef-0dce-414f-b3e2-28cf25075a43',
         },
       },
       reply_to: {
