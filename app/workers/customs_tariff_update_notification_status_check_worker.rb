@@ -1,7 +1,7 @@
 class CustomsTariffUpdateNotificationStatusCheckWorker
   include Sidekiq::Worker
 
-  sidekiq_options queue: :default
+  sidekiq_options queue: :default, retry: 3
 
   PIPELINE = 'customs_tariff_update'.freeze
 

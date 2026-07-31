@@ -2,7 +2,7 @@ module Notifications
   class EmailWorker
     include Sidekiq::Worker
 
-    sidekiq_options queue: :default
+    sidekiq_options queue: :default, retry: 3
 
     def perform(email, template_id, personalisation, status_check_worker_class, status_check_args)
       notification = client.send_email(email, template_id, personalisation, nil, nil)
