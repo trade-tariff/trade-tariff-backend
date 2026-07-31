@@ -7,7 +7,7 @@ locals {
   # That is "Best commodity matches" empty — includes both:
   #   - completely empty results (result_count = 0)
   #   - headings/chapters/other hits only (result_count > 0, commodity_result_count = 0)
-  # Exact matches are never product zeros, even when commodity_result_count is 0.
+  # Exact matches are never empty-commodity results, even when commodity_result_count is 0.
   # Historical classic logs without commodity_result_count fall back to result_count = 0.
   classic_empty_commodity_condition = "(search_type = \"classic\" and ((ispresent(commodity_result_count) and commodity_result_count = 0 and (not ispresent(results_type) or results_type != \"exact_search\")) or (not ispresent(commodity_result_count) and result_count = 0)))"
 
@@ -34,7 +34,7 @@ locals {
   # analytics views that treat interactive|internal as the guided path.
   interactive_non_numeric_condition = "((search_type = \"interactive\" or search_type = \"internal\") and ${local.non_numeric_query_condition})"
 
-  # Product-zero numerators for those cohorts (definitions differ by search type).
+  # Empty-result numerators for those cohorts (definitions differ by search type).
   # classic_empty_commodity_only is only safe after classic_non_numeric_fuzzy_condition
   # (exact matches already excluded by that cohort filter).
   classic_empty_commodity_only = "((ispresent(commodity_result_count) and commodity_result_count = 0) or (not ispresent(commodity_result_count) and result_count = 0))"
@@ -60,12 +60,12 @@ resource "aws_cloudwatch_dashboard" "search_quality" {
             markdown = join("\n", [
               "## Trade Tariff Search Quality",
               "Behaviour and product-quality dashboard for search outcomes, empty-result terms, intercepts, and result selection patterns across **classic** and **interactive/internal** search.",
-              "**Classic product zero:** fuzzy/null with zero commodity hits (`commodity_result_count = 0`) — empty “Best commodity matches”. Exact matches are not zeros.",
+              "**Classic empty commodity results:** fuzzy/null with zero commodity hits (`commodity_result_count = 0`) — empty “Best commodity matches”. Exact matches are not counted.",
               "**Classic empty kinds (pie):** split into **no results** (`result_count = 0`) vs **no commodities, other hits** (headings/chapters/sections only).",
-              "**Interactive/internal zero:** no returned results (`result_count = 0`). Counted separately from classic commodity empties.",
+              "**Interactive/internal empty results:** no returned results (`result_count = 0`). Counted separately from classic empty commodity results.",
               "**Non-numeric free-text rates:** free-text only (`query not like /^[0-9 .-]+$/`). Classic = empty commodity % of non-exact free-text; interactive/internal = empty result % of free-text guided search (logs use `search_type=interactive`).",
               "**Healthy:** empty-commodity terms stay stable, result types remain consistent, intercept matches track expected terms, and interactive outcomes do not skew towards errors.",
-              "**Start here:** classic outcome pies and empty-result widgets first, then intercept and selection drill-downs.",
+              "**Start here:** classic outcome pies and empty commodity/empty result widgets first, then intercept and selection drill-downs.",
               "**Related:** [Search Overview](${local.search_dashboard_url}) | [Search Operations](${local.search_operations_dashboard_url})",
             ])
           }
@@ -168,7 +168,7 @@ resource "aws_cloudwatch_dashboard" "search_quality" {
           width  = 8
           height = 6
           properties = {
-            title  = "Product Zeros by Search Type"
+            title  = "Empty Commodity / Empty Results by Search Type"
             region = var.region
             view   = "pie"
             query  = <<-EOT
@@ -187,7 +187,7 @@ resource "aws_cloudwatch_dashboard" "search_quality" {
           width  = 8
           height = 6
           properties = {
-            title  = "Top 30 Product-Zero Search Terms"
+            title  = "Top 30 Empty Commodity / Empty Result Terms"
             region = var.region
             query  = <<-EOT
               ${local.source}
@@ -205,7 +205,7 @@ resource "aws_cloudwatch_dashboard" "search_quality" {
           width  = 8
           height = 6
           properties = {
-            title  = "Recent Product-Zero Searches"
+            title  = "Recent Empty Commodity / Empty Result Searches"
             region = var.region
             query  = <<-EOT
               ${local.source}
@@ -259,7 +259,7 @@ resource "aws_cloudwatch_dashboard" "search_quality" {
           width  = 8
           height = 6
           properties = {
-            title  = "Classic Product-Zero Rate (non-numeric fuzzy)"
+            title  = "Classic Empty Commodity Rate (non-numeric fuzzy)"
             region = var.region
             view   = "timeSeries"
             query  = <<-EOT
@@ -276,7 +276,7 @@ resource "aws_cloudwatch_dashboard" "search_quality" {
           width  = 8
           height = 6
           properties = {
-            title  = "Interactive/Internal Product-Zero Rate (non-numeric)"
+            title  = "Interactive/Internal Empty Results Rate (non-numeric)"
             region = var.region
             view   = "timeSeries"
             query  = <<-EOT
@@ -295,13 +295,13 @@ resource "aws_cloudwatch_dashboard" "search_quality" {
           width  = 24
           height = 6
           properties = {
-            title  = "Product-Zero Rate (all queries by search type)"
+            title  = "Empty Commodity / Empty Results Rate (by search type)"
             region = var.region
             view   = "timeSeries"
             query  = <<-EOT
               ${local.source}
               | ${local.service_filter} and event = "search_completed"
-              | stats sum(if(${local.zero_result_condition}, 1, 0)) * 100.0 / count(*) as product_zero_rate_pct by search_type, bin(1h)
+              | stats sum(if(${local.zero_result_condition}, 1, 0)) * 100.0 / count(*) as empty_result_rate_pct by search_type, bin(1h)
             EOT
           }
         },
