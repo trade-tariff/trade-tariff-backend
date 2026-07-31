@@ -149,11 +149,11 @@ module SearchAnalytics
 
     # Shared by classic + interactive/internal dashboards and admin analytics.
     #
-    # Classic product zero = fuzzy/null with commodity_result_count = 0
+    # Classic empty commodity results = fuzzy/null with commodity_result_count = 0
     # (empty "Best commodity matches"). That includes:
     #   - completely empty results (result_count = 0)
     #   - headings/chapters/other hits only (result_count > 0)
-    # Exact matches are never product zeros.
+    # Exact matches are never empty-commodity results.
     #
     # Interactive/internal zero = result_count = 0 (counted separately by search_type).
     # Historical classic logs without commodity_result_count fall back to result_count = 0.
