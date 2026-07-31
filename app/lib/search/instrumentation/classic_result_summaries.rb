@@ -56,42 +56,44 @@ module Search
       end
 
       NAMED_NESTED_LEVELS = {
-        chapters: :chapter_result_count,
-        headings: :heading_result_count,
-        commodities: :commodity_result_count,
+        'chapters' => :chapter_result_count,
+        'headings' => :heading_result_count,
+        'commodities' => :commodity_result_count,
       }.freeze
 
-      def nested_result_count(results)
-        return 0 unless results.is_a?(Hash)
+      EMPTY_NESTED_LEVEL_COUNTS = {
+        result_count: 0,
+        chapter_result_count: 0,
+        heading_result_count: 0,
+        commodity_result_count: 0,
+        other_result_count: 0,
+      }.freeze
 
-        %i[goods_nomenclature_match reference_match].sum do |match_type|
+      # Single pass over both match groups: total + named levels + residual other.
+      def nested_result_metrics(results)
+        return EMPTY_NESTED_LEVEL_COUNTS.dup unless results.is_a?(Hash)
+
+        counts = EMPTY_NESTED_LEVEL_COUNTS.dup
+
+        %i[goods_nomenclature_match reference_match].each do |match_type|
           groups = results[match_type] || results[match_type.to_s]
-          next 0 unless groups.respond_to?(:each_value)
+          next unless groups.respond_to?(:each_pair)
 
-          groups.each_value.sum { |hits| Array(hits).size }
-        end
-      end
+          groups.each_pair do |level, hits|
+            size = Array(hits).size
+            next if size.zero?
 
-      def nested_level_result_count(results, level)
-        return 0 unless results.is_a?(Hash)
-
-        level_key = level.to_s
-        %i[goods_nomenclature_match reference_match].sum do |match_type|
-          groups = results[match_type] || results[match_type.to_s]
-          next 0 unless groups.respond_to?(:[])
-
-          Array(groups[level_key] || groups[level_key.to_sym]).size
-        end
-      end
-
-      def nested_level_result_counts(results)
-        named = NAMED_NESTED_LEVELS.each_with_object({}) do |(level, key), memo|
-          memo[key] = nested_level_result_count(results, level)
+            counts[:result_count] += size
+            key = NAMED_NESTED_LEVELS[level.to_s]
+            if key
+              counts[key] += size
+            else
+              counts[:other_result_count] += size
+            end
+          end
         end
 
-        named_total = named.values.sum
-        total = nested_result_count(results)
-        named.merge(other_result_count: [total - named_total, 0].max)
+        counts
       end
     end
   end
