@@ -2,6 +2,9 @@ locals {
   dashboard_name = var.dashboard_name != null ? var.dashboard_name : "SearchQuality-${var.environment}"
   source         = "SOURCE '${var.log_group_name}'"
   service_filter = "filter service = \"search\""
+  # Classic fuzzy product-quality zero means no commodity hits even when headings/chapters matched.
+  # Fall back to result_count for historical logs before commodity_result_count existed.
+  zero_result_condition = "((ispresent(commodity_result_count) and commodity_result_count = 0) or (not ispresent(commodity_result_count) and result_count = 0))"
 
   search_dashboard_url            = "https://${var.region}.console.aws.amazon.com/cloudwatch/home?region=${var.region}#dashboards:name=Search-${var.environment}"
   search_operations_dashboard_url = "https://${var.region}.console.aws.amazon.com/cloudwatch/home?region=${var.region}#dashboards:name=SearchOperations-${var.environment}"
@@ -96,7 +99,7 @@ resource "aws_cloudwatch_dashboard" "search_quality" {
             view   = "pie"
             query  = <<-EOT
               ${local.source}
-              | ${local.service_filter} and event = "search_completed" and result_count = 0
+              | ${local.service_filter} and event = "search_completed" and ${local.zero_result_condition}
               | stats count(*) as searches by search_type
             EOT
           }
@@ -112,7 +115,7 @@ resource "aws_cloudwatch_dashboard" "search_quality" {
             region = var.region
             query  = <<-EOT
               ${local.source}
-              | ${local.service_filter} and event = "search_completed" and result_count = 0
+              | ${local.service_filter} and event = "search_completed" and ${local.zero_result_condition}
               | stats count(*) as searches by query
               | sort searches desc
               | limit 30
@@ -130,8 +133,8 @@ resource "aws_cloudwatch_dashboard" "search_quality" {
             region = var.region
             query  = <<-EOT
               ${local.source}
-              | ${local.service_filter} and event = "search_completed" and result_count = 0
-              | fields @timestamp, query, request_source, search_type, request_id
+              | ${local.service_filter} and event = "search_completed" and ${local.zero_result_condition}
+              | fields @timestamp, query, request_source, search_type, request_id, result_count, commodity_result_count
               | sort @timestamp desc
               | limit 30
             EOT

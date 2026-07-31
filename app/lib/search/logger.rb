@@ -106,6 +106,7 @@ module Search
         search_type: event.payload[:search_type],
         query: event.payload[:query],
         result_count: event.payload[:result_count],
+        commodity_result_count: event.payload[:commodity_result_count],
         details: event.payload[:details],
       }, event)
     end
@@ -263,6 +264,7 @@ module Search
         final_result_type: event.payload[:final_result_type],
         total_duration_ms: event.payload[:total_duration_ms],
         result_count: event.payload[:result_count],
+        commodity_result_count: event.payload[:commodity_result_count],
       }
       data[:results_type] = event.payload[:results_type] if event.payload[:results_type]
       data[:max_score] = event.payload[:max_score] if event.payload[:max_score]

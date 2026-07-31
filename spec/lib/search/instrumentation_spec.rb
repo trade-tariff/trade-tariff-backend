@@ -67,6 +67,7 @@ RSpec.describe Search::Instrumentation do
           query: 'horses',
           search_type: 'interactive',
           result_count: 5,
+          commodity_result_count: 5,
           total_duration_ms: a_kind_of(Float),
         ),
       )
@@ -99,7 +100,7 @@ RSpec.describe Search::Instrumentation do
       allow(ActiveSupport::Notifications).to receive(:instrument)
 
       described_class.search(request_id: 'req-1', query: 'q', search_type: 'classic') do
-        ['result', { result_count: 3, results_type: :fuzzy_search, max_score: 12.5 }]
+        ['result', { result_count: 3, commodity_result_count: 0, results_type: :fuzzy_search, max_score: 12.5 }]
       end
 
       expect(ActiveSupport::Notifications).to have_received(:instrument).with(
@@ -107,6 +108,8 @@ RSpec.describe Search::Instrumentation do
         hash_including(
           results_type: :fuzzy_search,
           max_score: 12.5,
+          result_count: 3,
+          commodity_result_count: 0,
         ),
       )
     end
@@ -521,6 +524,7 @@ RSpec.describe Search::Instrumentation do
           request_id: 'req-1',
           search_type: 'classic',
           result_count: 2,
+          commodity_result_count: 0,
           details: {
             goods_nomenclature_match: {
               'chapters' => [
@@ -534,6 +538,35 @@ RSpec.describe Search::Instrumentation do
             },
           },
         ),
+      )
+    end
+
+    it 'counts commodity hits separately from total fuzzy hits' do
+      allow(ActiveSupport::Notifications).to receive(:instrument)
+
+      described_class.fuzzy_results_returned(
+        request_id: 'req-1',
+        query: 'horse',
+        results: {
+          goods_nomenclature_match: {
+            'headings' => [
+              { '_score' => 11.0, '_source' => { 'goods_nomenclature_item_id' => '0101000000' } },
+            ],
+            'commodities' => [
+              { '_score' => 12.5, '_source' => { 'goods_nomenclature_item_id' => '0101210000' } },
+            ],
+          },
+          reference_match: {
+            'commodities' => [
+              { '_score' => 9.0, '_source' => { 'reference' => { 'goods_nomenclature_item_id' => '0101290000' } } },
+            ],
+          },
+        },
+      )
+
+      expect(ActiveSupport::Notifications).to have_received(:instrument).with(
+        'fuzzy_results_returned.search',
+        hash_including(result_count: 3, commodity_result_count: 2),
       )
     end
 
@@ -560,6 +593,7 @@ RSpec.describe Search::Instrumentation do
         'fuzzy_results_returned.search',
         hash_including(
           result_count: 60,
+          commodity_result_count: 60,
           details: hash_including(
             goods_nomenclature_match: hash_including('commodities' => have_attributes(size: 50)),
           ),
@@ -976,6 +1010,7 @@ RSpec.describe Search::Instrumentation do
         final_result_type: 'answers',
         total_duration_ms: 1500.0,
         result_count: 3,
+        commodity_result_count: 3,
         description_intercept_matched: true,
         description_intercept_term: 'gift',
         description_intercept_excluded: false,
@@ -984,6 +1019,29 @@ RSpec.describe Search::Instrumentation do
         description_intercept_guidance_level: 'info',
         description_intercept_guidance_location: 'results',
         description_intercept_escalate_to_webchat: false,
+      )
+    end
+
+    it 'preserves an explicit commodity_result_count for classic fuzzy completions' do
+      allow(ActiveSupport::Notifications).to receive(:instrument)
+
+      described_class.search_completed(
+        request_id: 'req-1',
+        query: 'horse',
+        search_type: 'classic',
+        total_duration_ms: 120.0,
+        result_count: 4,
+        commodity_result_count: 0,
+        results_type: :fuzzy_search,
+      )
+
+      expect(ActiveSupport::Notifications).to have_received(:instrument).with(
+        'search_completed.search',
+        hash_including(
+          result_count: 4,
+          commodity_result_count: 0,
+          results_type: :fuzzy_search,
+        ),
       )
     end
 

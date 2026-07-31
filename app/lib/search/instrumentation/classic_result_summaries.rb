@@ -65,6 +65,17 @@ module Search
           groups.each_value.sum { |hits| Array(hits).size }
         end
       end
+
+      def nested_commodity_result_count(results)
+        return 0 unless results.is_a?(Hash)
+
+        %i[goods_nomenclature_match reference_match].sum do |match_type|
+          groups = results[match_type] || results[match_type.to_s]
+          next 0 unless groups.respond_to?(:[])
+
+          Array(groups[:commodities] || groups['commodities']).size
+        end
+      end
     end
   end
 end
