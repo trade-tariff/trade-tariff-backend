@@ -91,6 +91,15 @@ RSpec.describe TaricImporter::EntityMapper do
       expect { mapper.build }
         .to raise_error(TaricImporter::UnknownOperationError)
     end
+
+    it 'carries the taric source, a descriptive message and the failing record as context', :aggregate_failures do
+      expect { mapper.build }.to raise_error(TaricImporter::UnknownOperationError) do |caught|
+        expect(caught.source).to eq(:taric)
+        expect(caught.message).to eq('Unknown TARIC operation: 9')
+        expect(caught.context).to eq(transaction: record_hash)
+        expect(caught.original).to be_nil
+      end
+    end
   end
 
   context 'when the transaction id is missing' do

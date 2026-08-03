@@ -80,4 +80,26 @@ RSpec.describe TariffSynchronizer::BaseUpdateImporter do
 
     it_behaves_like 'a base update importer'
   end
+
+  context 'with a TARIC update that fails with a nested import error', :truncation do
+    let(:update) { create :taric_update, :pending }
+
+    before do
+      allow(TradeTariffBackend).to receive(:service).and_return('xi')
+      ExplicitAbrogationRegulation.unrestrict_primary_key
+      allow(update).to receive(:file_path)
+        .and_return('spec/fixtures/taric_samples/unknown_record.xml')
+    end
+
+    after { ExplicitAbrogationRegulation.restrict_primary_key }
+
+    it 'persists the specific inner error, not the generic outer wrapper', :aggregate_failures do
+      base_update_importer.apply
+
+      expect(update.reload).to be_failed
+      expect(update.exception_class).to include('TaricImporter::UnknownOperationError')
+      expect(update.exception_class).to include('Unknown TARIC operation:')
+      expect(update.exception_class).not_to include('TARIC record import failed')
+    end
+  end
 end

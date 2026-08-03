@@ -4,12 +4,9 @@ require_relative 'cds_importer/xml_parser'
 require 'zip'
 
 class CdsImporter
-  class ImportException < StandardError
-    attr_reader :original
-
-    def initialize(msg = 'CdsImporter::ImportException', original = $ERROR_INFO)
-      super(msg)
-      @original = original
+  class ImportException < TariffSynchronizer::Import::Error
+    def initialize(message:, original: nil, context: {})
+      super(message:, source: :cds, original:, context:)
     end
   end
 
@@ -82,20 +79,15 @@ class CdsImporter
         end
       end
     rescue StandardError => e
-      cds_failed_log(e, key, hash_from_node)
-      raise ImportException
+      raise ImportException.new(
+        message: 'CDS record import failed',
+        original: e,
+        context: { key:, transaction: hash_from_node },
+      ), cause: e
     end
 
     def after_parse
       @handlers.each(&:after_parse)
-    end
-
-    def cds_failed_log(exception, key, hash)
-      "Cds import failed: #{exception}".tap do |message|
-        message << "\n Failed object: #{key}\n #{hash}"
-        message << "\n Backtrace:\n #{exception.backtrace.join("\n")}"
-        Rails.logger.error message
-      end
     end
   end
 

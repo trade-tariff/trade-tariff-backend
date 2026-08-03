@@ -83,11 +83,25 @@ RSpec.describe CdsImporter do
 
       before do
         allow(CdsImporter::EntityMapper).to receive(:new).and_return(entity_mapper)
-        allow(entity_mapper).to receive(:build).and_raise(StandardError)
+        allow(entity_mapper).to receive(:build).and_raise(StandardError, 'entity mapper exploded')
       end
 
       it 'raises ImportException' do
         expect { processor.process_xml_node('AdditionalCode', {}) }.to raise_error(CdsImporter::ImportException)
+      end
+
+      it 'wraps the original error with source, context and cause', :aggregate_failures do
+        hash_from_node = { 'foo' => 'bar' }
+
+        expect { processor.process_xml_node('AdditionalCode', hash_from_node) }
+          .to raise_error(CdsImporter::ImportException) do |caught|
+            expect(caught.message).to eq('CDS record import failed')
+            expect(caught.source).to eq(:cds)
+            expect(caught.original).to be_a(StandardError)
+            expect(caught.original.message).to eq('entity mapper exploded')
+            expect(caught.context).to eq(key: 'AdditionalCode', transaction: hash_from_node)
+            expect(caught.cause).to eq(caught.original)
+          end
       end
     end
   end

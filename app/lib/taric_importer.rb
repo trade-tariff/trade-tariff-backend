@@ -6,12 +6,9 @@ require 'taric_importer/record_inserter'
 require 'taric_importer/national_sid_counter'
 
 class TaricImporter
-  class ImportException < StandardError
-    attr_reader :original
-
-    def initialize(msg = 'TaricImporter::ImportException', original = $ERROR_INFO)
-      super(msg)
-      @original = original
+  class ImportException < TariffSynchronizer::Import::Error
+    def initialize(message:, original: nil, context: {})
+      super(message:, source: :taric, original:, context:)
     end
   end
 
@@ -74,22 +71,15 @@ class TaricImporter
         end
       end
     rescue StandardError => e
-      taric_failed_log(e, hash_from_node)
-      raise ImportException
+      raise ImportException.new(
+        message: 'TARIC record import failed',
+        original: e,
+        context: { transaction: hash_from_node },
+      ), cause: e
     end
 
     def after_parse
       @handlers.each(&:after_parse)
-    end
-
-  private
-
-    def taric_failed_log(exception, hash)
-      "Taric import failed: #{exception}".tap do |message|
-        message << "\n Failed transaction:\n #{hash}"
-        message << "\n Backtrace:\n #{exception.backtrace.join("\n")}"
-        Rails.logger.error message
-      end
     end
   end
 

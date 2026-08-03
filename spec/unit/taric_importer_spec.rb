@@ -176,13 +176,26 @@ RSpec.describe TaricImporter do
       end
     end
 
-    context 'on an unexpected update operation type'
+    context 'with an unexpected update operation type' do
+      it 'logs both the inner UnknownOperationError and the outer wrapper', :aggregate_failures do
+        allow(Rails.logger).to receive(:error)
+        importer = described_class.new(taric_update)
 
-    it 'logs an error event', :aggregate_failures do
-      allow(Rails.logger).to receive(:error)
-      importer = described_class.new(taric_update)
-      expect { importer.import }.to raise_error TaricImporter::ImportException
-      expect(Rails.logger).to have_received(:error).with(include('Unexpected Taric operation type:'))
+        expect { importer.import }.to raise_error TaricImporter::ImportException
+
+        expect(Rails.logger).to have_received(:error).with(include('Unknown TARIC operation:')).twice
+      end
+
+      it 'wraps the specific UnknownOperationError as the original, not a generic error', :aggregate_failures do
+        importer = described_class.new(taric_update)
+
+        expect { importer.import }.to raise_error(TaricImporter::ImportException) do |caught|
+          expect(caught.message).to eq('TARIC record import failed')
+          expect(caught.original).to be_a(TaricImporter::UnknownOperationError)
+          expect(caught.original.message).to include('Unknown TARIC operation:')
+          expect(caught.cause).to eq(caught.original)
+        end
+      end
     end
   end
 end
