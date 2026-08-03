@@ -8,12 +8,39 @@ RSpec.describe Reporting do
   end
 
   describe '.get_published' do
-    before do
-      stub_request(:get, cdn_url).to_return(status: 200, body: 'csv-data')
+    context 'when the report exists on the CDN' do
+      before do
+        stub_request(:get, cdn_url).to_return(status: 200, body: 'csv-data')
+      end
+
+      it 'fetches report content from the reporting CDN' do
+        expect(described_class.get_published(object_key)).to eq('csv-data')
+      end
     end
 
-    it 'fetches report content from the reporting CDN' do
-      expect(described_class.get_published(object_key)).to eq('csv-data')
+    context 'when the report is missing from the CDN' do
+      before do
+        stub_request(:get, cdn_url).to_return(
+          status: 404,
+          body: '<?xml version="1.0" encoding="UTF-8"?><Error><Code>NoSuchKey</Code></Error>',
+        )
+      end
+
+      it 'raises a fetch error naming the url and status' do
+        expect { described_class.get_published(object_key) }
+          .to raise_error(Reporting::FetchError, "GET #{cdn_url} returned HTTP 404")
+      end
+    end
+
+    context 'when the CDN returns a server error' do
+      before do
+        stub_request(:get, cdn_url).to_return(status: 503, body: 'Service Unavailable')
+      end
+
+      it 'raises a fetch error naming the url and status' do
+        expect { described_class.get_published(object_key) }
+          .to raise_error(Reporting::FetchError, "GET #{cdn_url} returned HTTP 503")
+      end
     end
   end
 

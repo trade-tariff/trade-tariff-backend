@@ -1,7 +1,11 @@
 class DifferencesReportWorker
   include Sidekiq::Worker
 
-  sidekiq_options retry: 1, retry_in: 1.hour
+  # retry_in is not a Sidekiq option; sidekiq_retry_in is the supported way to
+  # delay retries, giving a late report publication time to appear.
+  sidekiq_options retry: 2
+
+  sidekiq_retry_in { 1.hour.to_i }
 
   def perform(deliver_email = true)
     differences = generate_differences
