@@ -1,12 +1,12 @@
 # frozen_string_literal: true
 
-class CdsImporter
-  # Coordinates writing CDS import data to UNLOGGED staging tables, then
+module TariffSynchronizer
+  # Coordinates writing import data to UNLOGGED staging tables, then
   # promoting the staged rows into the real oplog tables in a single atomic
   # transaction.
   #
   # Why UNLOGGED?  PostgreSQL UNLOGGED tables bypass the write-ahead log
-  # (WAL).  A full CDS daily extract can touch tens of thousands of rows
+  # (WAL).  A full CDS/TARIC daily extract can touch tens of thousands of rows
   # across 50+ oplog tables.  Writing all of that inside one WAL-logged
   # transaction means PostgreSQL must hold every dirty page in shared_buffers
   # (or spill to temp files) until COMMIT — the source of the nightly memory
@@ -80,7 +80,7 @@ class CdsImporter
       @staged_tables.each_value do |staging_table|
         Sequel::Model.db.run("DROP TABLE IF EXISTS #{staging_table}")
       rescue StandardError => e
-        Rails.logger.warn "CdsImporter::StagingManager: failed to drop #{staging_table}: #{e.message}"
+        Rails.logger.warn "StagingManager: failed to drop #{staging_table}: #{e.message}"
       end
       @staged_tables.clear
     end

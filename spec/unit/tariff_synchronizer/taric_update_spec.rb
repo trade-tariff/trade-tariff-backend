@@ -44,7 +44,7 @@ RSpec.describe TariffSynchronizer::TaricUpdate do
     end
 
     before do
-      allow(TaricImporter).to receive(:new).with(taric_update).and_return(taric_importer)
+      allow(TaricImporter).to receive(:new).with(taric_update, staging_manager: instance_of(TariffSynchronizer::StagingManager)).and_return(taric_importer)
       allow(taric_importer).to receive(:import).and_return(inserted_oplog_records)
       allow(taric_update).to receive(:file_path).and_return('spec/fixtures/taric_samples/insert_record.xml')
     end

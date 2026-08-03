@@ -30,7 +30,7 @@ module TariffSynchronizer
     end
 
     def import!
-      staging_manager = CdsImporter::StagingManager.new
+      staging_manager = StagingManager.new
       started_at = Process.clock_gettime(Process::CLOCK_MONOTONIC)
 
       @oplog_inserts = CdsImporter.new(self, staging_manager:).import
