@@ -18,6 +18,12 @@ class TaricUpdatesSynchronizerWorker
 
     TariffSynchronizer::Instrumentation.apply_started(pending_count: TariffSynchronizer::BaseUpdate.pending.count)
     unless TaricSynchronizer.apply # return if nothing changed
+      # A quiet day (nothing pending, nothing failed - e.g. no TARIC files at
+      # weekends) must still generate the daily reports, or Monday's
+      # differences report finds no XI CSVs. Skipped when updates are pending
+      # or failed so reports are never built from broken data.
+      ReportWorker.perform_in(15.minutes) if TariffSynchronizer::BaseUpdate.pending_or_failed.none?
+
       emit_sync_run_completed(start_time)
       return
     end
