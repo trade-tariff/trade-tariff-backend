@@ -18,7 +18,7 @@ module TariffSynchronizer
       @base_update.import!
     rescue StandardError => e
       @base_update.mark_as_failed
-      e = e.original if e.respond_to?(:original) && e.original
+      e = TariffSynchronizer::Import::Error.unwrap(e)
       persist_exception_for_review(e)
       notify_exception(e)
     ensure

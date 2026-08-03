@@ -87,4 +87,37 @@ RSpec.describe TariffSynchronizer::Import::Error do
       expect(Rails.logger).to have_received(:error).with(satisfy { |message| !message.include?('Backtrace:') })
     end
   end
+
+  describe '.unwrap' do
+    it 'returns the exception unchanged when it has no original' do
+      error = described_class.new(message: 'boom', source: :taric)
+
+      expect(described_class.unwrap(error)).to eq(error)
+    end
+
+    it 'returns a plain exception unchanged, since it does not respond to #original' do
+      error = StandardError.new('plain failure')
+
+      expect(described_class.unwrap(error)).to eq(error)
+    end
+
+    it 'unwraps a single level to the original cause' do
+      root_cause = StandardError.new('root cause')
+      wrapper = described_class.new(message: 'wrapper', source: :taric, original: root_cause)
+
+      expect(described_class.unwrap(wrapper)).to eq(root_cause)
+    end
+
+    it 'unwraps arbitrarily many nested layers down to the innermost cause', :aggregate_failures do
+      root_cause = StandardError.new('root cause')
+      inner = described_class.new(message: 'inner', source: :taric, original: root_cause)
+      middle = described_class.new(message: 'middle', source: :taric, original: inner)
+      outer = described_class.new(message: 'outer', source: :taric, original: middle)
+
+      unwrapped = described_class.unwrap(outer)
+
+      expect(unwrapped).to eq(root_cause)
+      expect(unwrapped.message).to eq('root cause')
+    end
+  end
 end

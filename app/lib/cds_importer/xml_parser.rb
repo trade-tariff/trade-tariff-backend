@@ -67,7 +67,7 @@ class CdsImporter
       end
 
       def error(msg)
-        raise(CdsImporter::ImportException, msg)
+        raise CdsImporter::ImportException.new(message: msg)
       end
     end
   end

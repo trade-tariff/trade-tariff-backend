@@ -7,7 +7,9 @@ require 'taric_importer/national_sid_counter'
 
 class TaricImporter
   class ImportException < TariffSynchronizer::Import::Error
-    def initialize(message:, original: nil, context: {})
+    DEFAULT_MESSAGE = 'TARIC record import failed'.freeze
+
+    def initialize(message: DEFAULT_MESSAGE, original: nil, context: {})
       super(message:, source: :taric, original:, context:)
     end
   end
@@ -72,7 +74,6 @@ class TaricImporter
       end
     rescue StandardError => e
       raise ImportException.new(
-        message: 'TARIC record import failed',
         original: e,
         context: { transaction: hash_from_node },
       ), cause: e

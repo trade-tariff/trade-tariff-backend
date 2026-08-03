@@ -5,6 +5,14 @@ module TariffSynchronizer
     class Error < StandardError
       attr_reader :original, :source, :context
 
+      # Follows a chain of wrapped exceptions (however many layers deep) down to the
+      # innermost one, so callers never surface a generic wrapper's message by mistake.
+      def self.unwrap(exception)
+        exception = exception.original while exception.respond_to?(:original) && exception.original
+
+        exception
+      end
+
       def initialize(message:, source:, original: nil, context: {})
         super(message)
         @source = source

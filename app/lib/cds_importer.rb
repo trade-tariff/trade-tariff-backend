@@ -5,11 +5,16 @@ require 'zip'
 
 class CdsImporter
   class ImportException < TariffSynchronizer::Import::Error
-    def initialize(message:, original: nil, context: {})
+    DEFAULT_MESSAGE = 'CDS record import failed'.freeze
+
+    def initialize(message: DEFAULT_MESSAGE, original: nil, context: {})
       super(message:, source: :cds, original:, context:)
     end
   end
 
+  # Unlike TaricImporter::UnknownOperationError, this is never raised: CDS's EntityMapper
+  # dispatches per record type via constant lookup rather than fetching an update_type, so
+  # there's no unknown-operation code path here to wire it up to.
   class UnknownOperationError < ImportException
   end
 
@@ -80,7 +85,6 @@ class CdsImporter
       end
     rescue StandardError => e
       raise ImportException.new(
-        message: 'CDS record import failed',
         original: e,
         context: { key:, transaction: hash_from_node },
       ), cause: e

@@ -9,12 +9,7 @@ module TariffSynchronizer
 
     def exception(exception, update, database_queries)
       @failed_file_path = update.file_path
-      @exception = exception
-
-      if exception.respond_to?(:original) && exception.original.presence
-        @exception = exception.original.presence
-      end
-
+      @exception = TariffSynchronizer::Import::Error.unwrap(exception)
       @database_queries = database_queries
 
       mail subject: "#{subject_prefix(:error)} Failed Trade Tariff update"
