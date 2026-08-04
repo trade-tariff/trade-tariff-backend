@@ -35,7 +35,16 @@ RSpec.describe EvaluationRun do
 
   it 'refuses to delete an experiment that still has runs' do
     create(:evaluation_run, evaluation_experiment: experiment, status: 'queued', triggered_by: 'operator')
-    expect { experiment.destroy }.to raise_error(Sequel::ForeignKeyConstraintViolation)
+
+    # Postgres 18 reworded RESTRICT-action FK violation messages to
+    # "violates RESTRICT setting of foreign key constraint" (was "violates
+    # foreign key constraint" on 15/16/17). Sequel 5.106.0 classifies this
+    # error by matching text against the raw message, so on 18 it falls back
+    # to the generic Sequel::DatabaseError instead of the specific
+    # Sequel::ForeignKeyConstraintViolation subclass. Both wordings still
+    # contain "foreign key constraint", so assert on that plus the common
+    # ancestor class rather than the version-dependent subclass.
+    expect { experiment.destroy }.to raise_error(Sequel::DatabaseError, /foreign key constraint/)
   end
 
   it 'rejects a status outside the documented lifecycle at the database level' do
