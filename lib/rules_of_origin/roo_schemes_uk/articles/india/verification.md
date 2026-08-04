@@ -93,4 +93,3 @@ $LegislativeList
 
 * 22. The customs authorities of the Parties shall bear their own costs in carrying out the activities referred to in this Article.
 $EndLegislativeList
-
