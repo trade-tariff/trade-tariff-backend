@@ -81,10 +81,17 @@ RSpec.describe TariffSynchronizer::Import::Error do
       expect(Rails.logger).to have_received(:error).with(include('Backtrace:'))
     end
 
-    it 'omits the backtrace section when neither the wrapper nor an original exception has one' do
+    it 'falls back to the caller at construction time when there is no original, since ' \
+       "self.backtrace is nil until this exception is actually raised, which hasn't happened yet" do
       described_class.new(message: 'boom', source: :taric)
 
-      expect(Rails.logger).to have_received(:error).with(satisfy { |message| !message.include?('Backtrace:') })
+      expect(Rails.logger).to have_received(:error).with(include('Backtrace:'))
+    end
+
+    it 'points that fallback backtrace at the real construction call site, not a blank one' do
+      described_class.new(message: 'boom', source: :taric)
+
+      expect(Rails.logger).to have_received(:error).with(include(__FILE__))
     end
   end
 

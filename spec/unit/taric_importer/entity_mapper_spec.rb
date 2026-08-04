@@ -100,6 +100,13 @@ RSpec.describe TaricImporter::EntityMapper do
         expect(caught.original).to be_nil
       end
     end
+
+    it 'logs a backtrace even though there is no original exception to take one from' do
+      allow(Rails.logger).to receive(:error)
+      expect { mapper.build }.to raise_error(TaricImporter::UnknownOperationError)
+
+      expect(Rails.logger).to have_received(:error).with(include('Backtrace:'))
+    end
   end
 
   context 'when the transaction id is missing' do

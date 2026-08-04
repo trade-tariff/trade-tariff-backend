@@ -18,6 +18,10 @@ module TariffSynchronizer
         @source = source
         @original = original
         @context = context
+        # self.backtrace is nil until this exception is actually raised, which hasn't
+        # happened yet at construction time - caller is the best available stand-in,
+        # and matches what self.backtrace will show once `raise` does populate it.
+        set_backtrace(original&.backtrace || caller)
         log!
       end
 
@@ -30,8 +34,6 @@ module TariffSynchronizer
       def log_message
         lines = ["#{source.to_s.capitalize} import failed: #{original || message}"]
         context.each { |key, value| lines << "#{key.to_s.tr('_', ' ').capitalize}: #{value}" }
-
-        backtrace = (original || self).backtrace
         lines << "Backtrace:\n#{backtrace.join("\n")}" if backtrace
 
         lines.join("\n")
