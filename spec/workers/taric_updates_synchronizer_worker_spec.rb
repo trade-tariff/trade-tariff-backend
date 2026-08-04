@@ -18,6 +18,8 @@ RSpec.describe TaricUpdatesSynchronizerWorker, type: :worker do
       allow(TaricSynchronizer).to receive(:apply).and_return(changes_applied)
       allow(CdsSynchronizer).to receive(:download)
       allow(CdsSynchronizer).to receive(:apply).and_return(changes_applied)
+      allow(ReportWorker).to receive(:perform_in)
+      allow(TariffSynchronizer::BaseUpdate).to receive(:pending_or_failed).and_return(pending_or_failed)
 
       allow(TradeTariffBackend).to receive(:service).and_return(service)
 
@@ -34,6 +36,7 @@ RSpec.describe TaricUpdatesSynchronizerWorker, type: :worker do
     end
 
     let(:changes_applied) { true }
+    let(:pending_or_failed) { instance_double(Sequel::Dataset, none?: true) }
 
     context 'when on the xi service' do
       before { perform }
@@ -74,11 +77,23 @@ RSpec.describe TaricUpdatesSynchronizerWorker, type: :worker do
         it { expect(TaricSynchronizer).to have_received(:download) }
         it { expect(TaricSynchronizer).to have_received(:apply) }
 
+        it 'schedules report generation for the quiet day' do
+          expect(ReportWorker).to have_received(:perform_in).with(15.minutes)
+        end
+
         context 'with reapply_data_migrations option' do
           subject(:perform) { described_class.new.perform(true) }
 
           it { expect(TaricSynchronizer).to have_received(:download) }
           it { expect(DataMigrator).not_to have_received(:migrate_up!) }
+        end
+
+        context 'with pending or failed updates present' do
+          let(:pending_or_failed) { instance_double(Sequel::Dataset, none?: false) }
+
+          it 'does not schedule report generation' do
+            expect(ReportWorker).not_to have_received(:perform_in)
+          end
         end
       end
     end
