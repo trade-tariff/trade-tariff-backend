@@ -11,8 +11,6 @@ module EvaluationConfiguration
     vector_ef_search
     search_non_declarables
     filter_prefixes
-    tariff_note_evidence_enabled
-    gir_evidence_enabled
     search_compressed_notes_enabled
     search_general_rules_enabled
   ].freeze
