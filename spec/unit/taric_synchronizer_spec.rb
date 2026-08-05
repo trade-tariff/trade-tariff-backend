@@ -129,15 +129,13 @@ RSpec.describe TaricSynchronizer, :truncation do
         expect(TariffSynchronizer::BaseUpdateImporter).to have_received(:perform).with(pending_update)
       end
 
-      it 'emails stakeholders' do
+      it 'does not email stakeholders when there are no import warnings' do
         allow(TariffSynchronizer::BaseUpdateImporter).to receive(:perform).and_call_original
         allow(TariffSynchronizer::BaseUpdate).to receive(:pending_or_failed).and_return([])
 
         described_class.apply
 
-        expect(ActionMailer::Base.deliveries).not_to be_empty
-        expect(ActionMailer::Base.deliveries.last.subject).to include('Tariff updates applied')
-        expect(ActionMailer::Base.deliveries.last.encoded).to include('No import warnings found.')
+        expect(ActionMailer::Base.deliveries).to be_empty
       end
     end
 

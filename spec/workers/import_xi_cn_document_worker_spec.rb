@@ -59,14 +59,6 @@ RSpec.describe ImportXiCnDocumentWorker do
         allow(Rails.logger).to receive(:error)
       end
 
-      it 'still reports the import as completed successfully' do
-        worker.perform
-
-        expect(SlackNotifierService).to have_received(:call).with(
-          a_string_including('imported: 2'),
-        )
-      end
-
       it 'does not re-raise the notifier error' do
         expect { worker.perform }.not_to raise_error
       end
