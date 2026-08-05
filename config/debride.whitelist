@@ -515,6 +515,8 @@ TradeTariffBackend::SearchClient#delete_by_name
 TradeTariffBackend::SearchClient#index_by_name
 TradeTariffBackend::SearchResponse#hits
 TradeTariffBackend::TariffUpdateEventListener#subscribe!
+VatGuidance::ImmutableRecord#before_destroy
+VatGuidance::ImmutableRecord#before_update
 VersionedAcceptHeader#matches?
 main#SidekiqDeathHandler
 TariffKnowledge::Node#note_blocks
