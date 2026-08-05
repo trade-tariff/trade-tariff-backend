@@ -73,8 +73,7 @@ RSpec.describe Api::V2::ExchangeRatesController, :v2 do
 
       let(:pattern) do
         {
-          error: 'not found',
-          url: 'http://www.example.com/uk/api/exchange_rates/2023idadas-6?filter%5Btype%5D=monthly',
+          errors: [{ detail: 'not found' }],
         }
       end
 
@@ -96,8 +95,7 @@ RSpec.describe Api::V2::ExchangeRatesController, :v2 do
 
       let(:pattern) do
         {
-          'error' => 'invalid',
-          'url' => 'http://www.example.com/uk/api/exchange_rates/2023-6?filter%5Btype%5D=invalid',
+          errors: [{ detail: 'invalid' }],
         }
       end
 
