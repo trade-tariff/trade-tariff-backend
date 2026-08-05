@@ -28,6 +28,8 @@ The service catalogue groups OTT capabilities into areas that map back to this b
 
 Confluence platform docs describe the applications as ECS Fargate services deployed through GitHub Actions, with PostgreSQL, Redis/Valkey, OpenSearch, CloudFront, S3, and AWS-managed secrets around them.
 
+UK and XI run as separate web and Sidekiq services (`SERVICE=uk` / `SERVICE=xi`) against a single shared Postgres instance, split into `uk`, `xi`, and `public` schemas. `SERVICE` sets the connection's `search_path` (`config/database.yml`), so most Sequel models resolve to the schema matching whichever service is running. A small set of models opt out of this and are hardcoded to the `uk` schema instead (`Sequel::Model(Sequel[:table].qualify(:uk))`) - `AdminConfiguration` and the `Evaluation*` models - because that data is meant to be a single shared source of truth read and written by both services, not duplicated per schema. Migrations for those tables must run with the default `SERVICE=uk`; running them under `SERVICE=xi` creates the table in the wrong schema and leaves the xi service unable to find it.
+
 For this repository, verify platform details in:
 
 - `.github/workflows/`
