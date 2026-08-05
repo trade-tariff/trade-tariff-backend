@@ -22,7 +22,7 @@ RSpec.describe TariffSynchronizer::TariffLogger, :truncation do
 
   describe '.apply' do
     let(:update_names) { %w[2024-01-01_xi_taric_update.xml] }
-    let(:mail_double) { instance_double(Mail::Message, deliver_now: nil) }
+    let(:mail_double) { instance_double(ActionMailer::MessageDelivery, deliver_now: nil) }
 
     before do
       allow(TariffSynchronizer::Mailer).to receive(:applied).and_return(mail_double)

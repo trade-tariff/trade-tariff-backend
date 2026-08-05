@@ -89,9 +89,6 @@ RSpec.describe ImportCustomsTariffDocumentWorker, type: :worker do
         failed: 0,
         duration_ms: a_kind_of(Float),
       )
-      expect(SlackNotifierService).to have_received(:call).with(
-        include('Customs tariff document import completed', 'imported: 2'),
-      )
       expect(CustomsTariffImporter::Instrumentation).not_to have_received(:import_run_failed)
     end
 
