@@ -1,6 +1,4 @@
 module EvaluationConfiguration
-  class OverrideValidationError < StandardError; end
-
   ALLOWED_OVERRIDE_KEYS = %w[
     question_model
     simulator_model

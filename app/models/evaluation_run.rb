@@ -1,4 +1,6 @@
 class EvaluationRun < Sequel::Model(Sequel[:evaluation_runs].qualify(:uk))
+  plugin :validation_helpers
+
   STATUSES = %w[queued running completed partially_failed failed cancelled].freeze
 
   many_to_one :evaluation_experiment, key: :experiment_id
@@ -6,8 +8,8 @@ class EvaluationRun < Sequel::Model(Sequel[:evaluation_runs].qualify(:uk))
 
   def validate
     super
-    errors.add(:status, "must be one of #{STATUSES.join(', ')}") unless STATUSES.include?(status)
-    errors.add(:experiment_id, 'is required') if experiment_id.nil?
+    validates_includes STATUSES, :status
+    validates_presence :experiment_id
   end
 
   def self.start!(experiment:, triggered_by:, run_time_overrides: {})

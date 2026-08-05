@@ -10,8 +10,8 @@ class EvaluationResult < Sequel::Model(Sequel[:evaluation_results].qualify(:uk))
 
     dataset
       .insert_conflict(target: IDENTITY_COLUMNS, update: update_payload)
+      .returning
       .insert(values)
-
-    first(run_id: run.id, source_id:, persona:)
+      .first
   end
 end
