@@ -8,10 +8,12 @@ class EvaluationResult < Sequel::Model(Sequel[:evaluation_results].qualify(:uk))
     values = new(payload).values
     update_payload = values.reject { |key, _| IDENTITY_COLUMNS.include?(key) }
 
-    dataset
-      .insert_conflict(target: IDENTITY_COLUMNS, update: update_payload)
-      .returning
-      .insert(values)
-      .first
+    row = dataset
+          .insert_conflict(target: IDENTITY_COLUMNS, update: update_payload)
+          .returning
+          .insert(values)
+          .first
+
+    load(row)
   end
 end
