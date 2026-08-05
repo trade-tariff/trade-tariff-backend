@@ -299,8 +299,6 @@ GEM
     puma (8.0.2)
       nio4r (~> 2.0)
     raabro (1.4.0)
-    rabl (0.17.0)
-      activesupport (>= 2.3.14)
     racc (1.8.1)
     rack (3.2.6)
     rack-attack (6.8.0)
@@ -538,7 +536,6 @@ DEPENDENCIES
   pg
   pry-rails
   puma
-  rabl
   rack-attack
   rack-timeout
   rails
