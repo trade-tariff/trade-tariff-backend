@@ -28,5 +28,9 @@ class TaricImporter
         count: group.size,
       }
     end
+
+    def default_operation_keys
+      TaricImporter::OPERATION_KEYS
+    end
   end
 end

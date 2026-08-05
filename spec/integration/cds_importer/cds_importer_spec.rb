@@ -10,7 +10,7 @@ RSpec.describe CdsImporter do
     it 'creates new instance of XmlProcessor' do
       allow(CdsImporter::XmlProcessor).to receive(:new).and_call_original
       allow(CdsImporter::ExcelWriter).to receive(:new).with(cds_update.filename).and_call_original
-      allow(CdsImporter::RecordInserter).to receive(:new).with(cds_update.filename, staging_manager: nil).and_call_original
+      allow(CdsImporter::RecordInserter).to receive(:new).with(cds_update.filename, staging_manager: nil, tracker: kind_of(TariffSynchronizer::Import::OperationTracker)).and_call_original
 
       importer.import
       expect(CdsImporter::XmlProcessor).to have_received(:new).with(cds_update.filename, kind_of(Array))
@@ -34,12 +34,21 @@ RSpec.describe CdsImporter do
       expect(importer.import).to eql(expected_default_oplog_inserts)
     end
 
-    it 'subscribes to oplog events' do
+    it 'does not use a global notification subscription to calculate the result' do
       allow(ActiveSupport::Notifications).to receive(:subscribe).and_call_original
 
       importer.import
 
-      expect(ActiveSupport::Notifications).to have_received(:subscribe).with('cds_importer.import.operations')
+      expect(ActiveSupport::Notifications).not_to have_received(:subscribe).with('cds_importer.import.operations')
+    end
+
+    it 'still publishes notifications for external observability' do
+      allow(ActiveSupport::Notifications).to receive(:instrument).and_call_original
+      footnote_update = TariffSynchronizer::CdsUpdate.new(filename: 'footnote.gzip')
+
+      described_class.new(footnote_update).import
+
+      expect(ActiveSupport::Notifications).to have_received(:instrument).with('cds_importer.import.operations', anything).at_least(:once)
     end
 
     context 'when importing a footnote with a long description' do

@@ -21,30 +21,21 @@ class TaricImporter
     TaricImporter::RecordInserter,
   ].freeze
 
+  OPERATION_KEYS = %i[create update destroy skipped].freeze
+
   def initialize(taric_update, handler_classes: DEFAULT_HANDLER_CLASSES, staging_manager: nil)
     @taric_update = taric_update
     @handler_classes = handler_classes
     @staging_manager = staging_manager
-    @oplog_inserts = {
-      operations: {
-        create: { count: 0, duration: 0 },
-        update: { count: 0, duration: 0 },
-        destroy: { count: 0, duration: 0 },
-        skipped: { count: 0, duration: 0 },
-      },
-      total_count: 0,
-      total_duration: 0,
-    }
+    @tracker = TariffSynchronizer::Import::OperationTracker.new(operation_keys: OPERATION_KEYS)
   end
 
   def import
-    subscription = nil
     filename = determine_filename(@taric_update.file_path)
     return unless proceed_with_import?(filename)
 
-    subscription = subscribe_to_oplog_inserts
     handlers = @handler_classes.map do |handler_class|
-      handler_class.new(filename, staging_manager: @staging_manager)
+      handler_class.new(filename, staging_manager: @staging_manager, tracker: @tracker)
     end
     handler = XmlProcessor.new(@taric_update.issue_date, handlers:, national_sid_counter: NationalSidCounter.new)
     file = TariffSynchronizer::FileService.file_as_stringio(@taric_update)
@@ -52,9 +43,7 @@ class TaricImporter
     handler.after_parse
     post_import(file_path: @taric_update.file_path, filename:)
 
-    @oplog_inserts
-  ensure
-    ActiveSupport::Notifications.unsubscribe(subscription) if subscription
+    @tracker.result
   end
 
   class XmlProcessor
@@ -92,34 +81,6 @@ class TaricImporter
   )
 
 private
-
-  attr_reader :oplog_inserts
-
-  def subscribe_to_oplog_inserts
-    ActiveSupport::Notifications.subscribe('taric_importer.import.operations') do |*args|
-      oplog_event = ActiveSupport::Notifications::Event.new(*args)
-
-      count = oplog_event.payload[:count]
-      if count.positive?
-        duration = oplog_event.duration
-        mapper = oplog_event.payload[:mapper]
-        operation = oplog_event.payload[:operation]
-        entity_class = mapper.entity_class
-
-        oplog_inserts[:operations][operation][entity_class] ||= {}
-        oplog_inserts[:operations][operation][entity_class][:count] ||= 0
-        oplog_inserts[:operations][operation][entity_class][:duration] ||= 0
-        oplog_inserts[:operations][operation][entity_class][:count] += count
-        oplog_inserts[:operations][operation][entity_class][:duration] += duration
-
-        oplog_inserts[:operations][operation][:count] += count
-        oplog_inserts[:operations][operation][:duration] += duration
-
-        oplog_inserts[:total_count] += count
-        oplog_inserts[:total_duration] += duration
-      end
-    end
-  end
 
   def proceed_with_import?(filename)
     return true unless TradeTariffBackend.uk?
