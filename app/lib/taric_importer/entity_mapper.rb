@@ -55,10 +55,10 @@ class TaricImporter
 
     def operation
       OPERATION_MAP.fetch(record_hash['update_type']) do
-        Rails.logger.error "Unexpected Taric operation type: #{record_hash}"
-
-        raise TaricImporter::UnknownOperationError,
-              "Unknown TARIC operation: #{record_hash['update_type']}"
+        raise TaricImporter::UnknownOperationError.new(
+          message: "Unknown TARIC operation: #{record_hash['update_type']}",
+          context: { transaction: record_hash },
+        )
       end
     end
 

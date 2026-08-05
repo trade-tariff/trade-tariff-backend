@@ -69,7 +69,7 @@ class TaricImporter
       end
 
       def error(msg)
-        raise(TaricImporter::ImportException, msg)
+        raise TaricImporter::ImportException.new(message: msg)
       end
 
     private
