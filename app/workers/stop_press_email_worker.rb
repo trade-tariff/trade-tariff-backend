@@ -1,6 +1,9 @@
 class StopPressEmailWorker
   include Sidekiq::Worker
 
+  # Cap retries: Notify outages must not use Sidekiq's default (25) and crowd the default queue.
+  sidekiq_options retry: 3
+
   TEMPLATE_ID = NOTIFY_CONFIGURATION.dig(:templates, :myott, :stop_press)
   REPLY_TO_ID = NOTIFY_CONFIGURATION.dig(:reply_to, :tariff_management)
 

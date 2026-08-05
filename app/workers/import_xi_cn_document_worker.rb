@@ -1,3 +1,6 @@
+require_relative '../lib/xi_cn_importer/instrumentation'
+require_relative '../lib/xi_cn_importer/logger'
+
 class ImportXiCnDocumentWorker
   include Sidekiq::Worker
 
@@ -22,6 +25,7 @@ class ImportXiCnDocumentWorker
     )
 
     notify_completed(results)
+    notify_update_recipients(results)
   rescue StandardError => e
     XiCnImporter::Instrumentation.import_run_failed(
       error_class: e.class.name,
@@ -32,6 +36,20 @@ class ImportXiCnDocumentWorker
   end
 
 private
+
+  def notify_update_recipients(results)
+    results.select { |r| r.status == :imported }.each do |result|
+      CustomsTariffUpdateNotifierService.new(result.celex).call
+    rescue StandardError => e
+      Rails.logger.error(
+        "customs_tariff_update_notifier_failed: celex=#{result.celex} error_class=#{e.class.name} error_message=#{e.message}",
+      )
+      notify_slack(
+        'XI Combined Nomenclature document import succeeded, but sending the update notification failed for ' \
+        "CELEX ID #{result.celex}. #{e.class}: #{e.message}",
+      )
+    end
+  end
 
   def notify_completed(results)
     failed = results.select { |r| r.status == :failed }

@@ -146,6 +146,23 @@ RSpec.describe SearchAnalytics::CloudwatchSnapshotQuery do
       )
       expect(definitions.values).to all(be_a(String).and(be_present))
     end
+
+    it 'defines zero results separately for classic and interactive/internal search' do
+      expect(
+        [
+          definitions.fetch('zero_results'),
+          definitions.fetch('search_term_improvements'),
+          definitions.fetch('item_id_improvements'),
+        ],
+      ).to all(include(
+                 'search_type = "classic"',
+                 'commodity_result_count = 0',
+                 'results_type != "exact_search"',
+                 'not ispresent(commodity_result_count) and result_count = 0',
+                 'search_type = "interactive" or search_type = "internal"',
+                 'result_count = 0',
+               ))
+    end
   end
 
   it 'uses aggregate CloudWatch stats queries for the period window' do

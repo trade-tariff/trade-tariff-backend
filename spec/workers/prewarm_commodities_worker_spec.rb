@@ -36,6 +36,16 @@ RSpec.describe PrewarmCommoditiesWorker do
     allow(ENV).to receive(:fetch).with('PREWARM_COMMODITY_IDS', '').and_return('')
   end
 
+  describe 'sidekiq options' do
+    it 'runs on within_1_hour so CloudWatch polling does not block the sync queue' do
+      expect(described_class.sidekiq_options['queue']).to eq(:within_1_hour)
+    end
+
+    it 'caps retries below Sidekiq default' do
+      expect(described_class.sidekiq_options['retry']).to eq(3)
+    end
+  end
+
   describe '#perform' do
     it 'queries CloudWatch and prewarms cached commodities' do
       worker.perform

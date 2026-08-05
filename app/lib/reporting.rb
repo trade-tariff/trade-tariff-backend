@@ -1,6 +1,10 @@
 module Reporting
   extend Reportable
 
+  # Raised when a published report cannot be fetched from the reporting CDN,
+  # so callers fail loudly instead of parsing an error page as report content.
+  class FetchError < StandardError; end
+
   class << self
     def get(object_key)
       if Rails.env.production?
@@ -29,7 +33,12 @@ module Reporting
     def get_published(object_key)
       return get(object_key) unless reporting_cdn_host?
 
-      Faraday.get(published_link(object_key)).body
+      url = published_link(object_key)
+      response = Faraday.get(url)
+
+      raise FetchError, "GET #{url} returned HTTP #{response.status}" unless response.success?
+
+      response.body
     end
 
     def published_link(object_key)

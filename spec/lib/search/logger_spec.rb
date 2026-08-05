@@ -476,6 +476,46 @@ RSpec.describe Search::Logger do
     end
   end
 
+  describe '#fuzzy_results_returned' do
+    let(:payload) do
+      {
+        request_id: 'req-1',
+        search_type: 'classic',
+        query: 'horses',
+        result_count: 3,
+        chapter_result_count: 1,
+        heading_result_count: 2,
+        commodity_result_count: 0,
+        other_result_count: 0,
+        details: { goods_nomenclature_match: { 'headings' => [] } },
+      }
+    end
+
+    it_behaves_like 'a search log entry', :fuzzy_results_returned, 'fuzzy_results_returned',
+                    {
+                      request_id: 'req-1',
+                      search_type: 'classic',
+                      query: 'horses',
+                      result_count: 3,
+                      chapter_result_count: 1,
+                      heading_result_count: 2,
+                      commodity_result_count: 0,
+                      other_result_count: 0,
+                    }
+
+    it 'logs tariff-level result counts' do
+      logger_instance.fuzzy_results_returned(build_event('fuzzy_results_returned', payload))
+      json = parsed_log_output
+
+      expect(json['event']).to eq('fuzzy_results_returned')
+      expect(json['result_count']).to eq(3)
+      expect(json['chapter_result_count']).to eq(1)
+      expect(json['heading_result_count']).to eq(2)
+      expect(json['commodity_result_count']).to eq(0)
+      expect(json['other_result_count']).to eq(0)
+    end
+  end
+
   describe '#search_completed' do
     let(:payload) do
       { request_id: 'req-1',
@@ -496,9 +536,19 @@ RSpec.describe Search::Logger do
                       total_questions: 1,
                       final_result_type: 'answers',
                       total_duration_ms: 3000.0,
-                      result_count: 5 }
+                      result_count: 5,
+                      chapter_result_count: 0,
+                      heading_result_count: 0,
+                      commodity_result_count: 5,
+                      other_result_count: 0 }
 
     it 'logs correct fields' do
+      payload.merge!(
+        chapter_result_count: 1,
+        heading_result_count: 2,
+        commodity_result_count: 5,
+        other_result_count: 0,
+      )
       logger_instance.search_completed(build_event('search_completed', payload))
       json = parsed_log_output
       expect(json['event']).to eq('search_completed')
@@ -506,6 +556,10 @@ RSpec.describe Search::Logger do
       expect(json['search_type']).to eq('interactive')
       expect(json['total_duration_ms']).to eq(3000.0)
       expect(json['result_count']).to eq(5)
+      expect(json['chapter_result_count']).to eq(1)
+      expect(json['heading_result_count']).to eq(2)
+      expect(json['commodity_result_count']).to eq(5)
+      expect(json['other_result_count']).to eq(0)
       expect(json['total_attempts']).to eq(2)
     end
 

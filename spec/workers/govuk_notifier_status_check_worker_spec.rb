@@ -11,6 +11,12 @@ RSpec.describe GovukNotifierStatusCheckWorker, type: :worker do
     allow(notifier).to receive(:get_email_status).and_return(status)
   end
 
+  describe 'sidekiq options' do
+    it 'caps retries below Sidekiq default' do
+      expect(described_class.sidekiq_options['retry']).to eq(3)
+    end
+  end
+
   context 'when notification id is blank' do
     it 'does nothing' do
       worker.perform(user.id, nil)

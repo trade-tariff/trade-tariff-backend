@@ -1,19 +1,20 @@
 require_relative 'cds_importer/entity_mapper'
-require_relative 'cds_importer/staging_manager'
 require_relative 'cds_importer/xml_parser'
 
 require 'zip'
 
 class CdsImporter
-  class ImportException < StandardError
-    attr_reader :original
+  class ImportException < TariffSynchronizer::Import::Error
+    DEFAULT_MESSAGE = 'CDS record import failed'.freeze
 
-    def initialize(msg = 'CdsImporter::ImportException', original = $ERROR_INFO)
-      super(msg)
-      @original = original
+    def initialize(message: DEFAULT_MESSAGE, original: nil, context: {})
+      super(message:, source: :cds, original:, context:)
     end
   end
 
+  # Unlike TaricImporter::UnknownOperationError, this is never raised: CDS's EntityMapper
+  # dispatches per record type via constant lookup rather than fetching an update_type, so
+  # there's no unknown-operation code path here to wire it up to.
   class UnknownOperationError < ImportException
   end
 
@@ -83,20 +84,14 @@ class CdsImporter
         end
       end
     rescue StandardError => e
-      cds_failed_log(e, key, hash_from_node)
-      raise ImportException
+      raise ImportException.new(
+        original: e,
+        context: { key:, transaction: hash_from_node },
+      ), cause: e
     end
 
     def after_parse
       @handlers.each(&:after_parse)
-    end
-
-    def cds_failed_log(exception, key, hash)
-      "Cds import failed: #{exception}".tap do |message|
-        message << "\n Failed object: #{key}\n #{hash}"
-        message << "\n Backtrace:\n #{exception.backtrace.join("\n")}"
-        Rails.logger.error message
-      end
     end
   end
 

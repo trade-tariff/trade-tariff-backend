@@ -3,6 +3,18 @@ module Api
     class SearchController < ApiController
       MATCH_TYPES = %i[goods_nomenclature_match reference_match].freeze
       LEVELS = %w[sections chapters headings commodities].freeze
+      NAMED_LEVEL_COUNT_KEYS = {
+        'chapters' => :chapter_result_count,
+        'headings' => :heading_result_count,
+        'commodities' => :commodity_result_count,
+      }.freeze
+      OTHER_LEVELS = (LEVELS - NAMED_LEVEL_COUNT_KEYS.keys).freeze
+      EMPTY_LEVEL_COUNTS = {
+        chapter_result_count: 0,
+        heading_result_count: 0,
+        commodity_result_count: 0,
+        other_result_count: 0,
+      }.freeze
 
       no_caching
 
@@ -25,30 +37,69 @@ module Api
     private
 
       def classic_result_metrics(results)
-        return { result_count: 0 } unless results.is_a?(Hash) && results[:data].is_a?(Hash)
+        return { result_count: 0, **EMPTY_LEVEL_COUNTS } unless results.is_a?(Hash) && results[:data].is_a?(Hash)
 
         attributes = results[:data][:attributes]
         results_type = results[:data][:type]
+        level_counts = classic_level_counts(attributes, results_type)
 
         {
-          result_count: classic_result_count(attributes, results_type),
+          result_count: classic_result_count(level_counts, results_type),
+          **level_counts,
           results_type: results_type,
-          max_score: classic_max_score(attributes),
+          max_score: classic_max_score(attributes, results_type),
         }
       end
 
-      def classic_result_count(attributes, results_type)
+      def classic_result_count(level_counts, results_type)
         return 1 if results_type == :exact_search
 
-        MATCH_TYPES.product(LEVELS).sum do |match, level|
-          attributes&.dig(match)&.dig(level)&.size || 0
+        level_counts.values.sum
+      end
+
+      def classic_level_counts(attributes, results_type)
+        return classic_exact_level_counts(attributes) if results_type == :exact_search
+
+        named = NAMED_LEVEL_COUNT_KEYS.each_with_object({}) do |(level, key), memo|
+          memo[key] = classic_level_result_count(attributes, level)
+        end
+
+        named.merge(
+          # Sections and any future non-chapter/heading/commodity groups listed in LEVELS.
+          other_result_count: OTHER_LEVELS.sum { |level| classic_level_result_count(attributes, level) },
+        )
+      end
+
+      def classic_level_result_count(attributes, level)
+        MATCH_TYPES.sum do |match|
+          attributes&.dig(match, level)&.size || 0
         end
       end
 
-      def classic_max_score(attributes)
-        MATCH_TYPES.product(LEVELS).map { |match, level|
-          attributes&.dig(match)&.dig(level)&.first&.dig('_score') || 0
-        }.max
+      def classic_exact_level_counts(attributes)
+        endpoint = (attributes&.dig(:entry, :endpoint) || attributes&.dig('entry', 'endpoint')).to_s
+        key =
+          case endpoint
+          when 'chapters' then :chapter_result_count
+          when 'headings' then :heading_result_count
+          when 'commodities', 'subheadings' then :commodity_result_count
+          else :other_result_count
+          end
+
+        EMPTY_LEVEL_COUNTS.merge(key => 1)
+      end
+
+      def classic_max_score(attributes, results_type)
+        return 0 if results_type == :exact_search
+
+        max = 0
+        MATCH_TYPES.each do |match|
+          LEVELS.each do |level|
+            score = attributes&.dig(match, level)&.first&.dig('_score') || 0
+            max = score if score > max
+          end
+        end
+        max
       end
 
       def matching_suggestions

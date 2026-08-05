@@ -147,11 +147,36 @@ module SearchAnalytics
       QUERY
     end
 
+    # Shared by classic + interactive dashboards and admin analytics.
+    #
+    # Classic empty commodity results = fuzzy/null with commodity_result_count = 0
+    # (empty "Best commodity matches"). That includes:
+    #   - completely empty results (result_count = 0)
+    #   - headings/chapters/other hits only (result_count > 0)
+    # Exact matches are never empty-commodity results.
+    #
+    # Interactive empty results = result_count = 0 (filter also accepts search_type=internal).
+    # Historical classic logs without commodity_result_count fall back to result_count = 0.
+    # Keep in sync with terraform/modules/search_*_dashboard zero_result_condition locals.
+    def zero_result_condition
+      <<~CONDITION.squish
+        (
+          (search_type = "classic" and (
+            (ispresent(commodity_result_count) and commodity_result_count = 0 and (not ispresent(results_type) or results_type != "exact_search"))
+            or
+            (not ispresent(commodity_result_count) and result_count = 0)
+          ))
+          or
+          ((search_type = "interactive" or search_type = "internal") and result_count = 0)
+        )
+      CONDITION
+    end
+
     def zero_result_query
       <<~QUERY
-        fields @timestamp, event, search_type, result_count
+        fields @timestamp, event, search_type, result_count, commodity_result_count
         | #{log_stream_filter}
-        | filter service = "search" and event = "search_completed" and result_count = 0
+        | filter service = "search" and event = "search_completed" and #{zero_result_condition}
         | fields if(ispresent(request_source), request_source, "unknown") as request_source
         | stats count(*) as zero_results by #{bucket_expression}, search_type, request_source
       QUERY
@@ -301,9 +326,9 @@ module SearchAnalytics
     def improvement_terms_query(term_filter: nil)
       [
         <<~QUERY,
-          fields query, search_type, result_count
+          fields query, search_type, result_count, commodity_result_count
           | #{log_stream_filter}
-          | filter service = "search" and event = "search_completed" and result_count = 0 and ispresent(query)
+          | filter service = "search" and event = "search_completed" and #{zero_result_condition} and ispresent(query)
         QUERY
         ("| filter #{term_filter}\n" if term_filter.present?),
         <<~QUERY,

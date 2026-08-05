@@ -6,6 +6,12 @@ RSpec.describe ExternalUserDeletionWorker, type: :worker do
     allow(PublicUsers::User).to receive(:[]).with(user.id).and_return(user)
   end
 
+  describe 'sidekiq options' do
+    it 'caps retries below Sidekiq default' do
+      expect(described_class.sidekiq_options['retry']).to eq(3)
+    end
+  end
+
   context 'when user is not deleted' do
     it 'returns without doing anything' do
       allow(user).to receive(:deleted).and_return(false)

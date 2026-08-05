@@ -1,24 +1,30 @@
 require 'nokogiri'
 
-require 'taric_importer/transaction'
-require 'taric_importer/record_processor'
 require 'taric_importer/xml_parser'
+require 'taric_importer/entity_mapper'
+require 'taric_importer/record_inserter'
+require 'taric_importer/national_sid_counter'
 
 class TaricImporter
-  class ImportException < StandardError
-    attr_reader :original
+  class ImportException < TariffSynchronizer::Import::Error
+    DEFAULT_MESSAGE = 'TARIC record import failed'.freeze
 
-    def initialize(msg = 'TaricImporter::ImportException', original = $ERROR_INFO)
-      super(msg)
-      @original = original
+    def initialize(message: DEFAULT_MESSAGE, original: nil, context: {})
+      super(message:, source: :taric, original:, context:)
     end
   end
 
   class UnknownOperationError < ImportException
   end
 
-  def initialize(taric_update)
+  DEFAULT_HANDLER_CLASSES = [
+    TaricImporter::RecordInserter,
+  ].freeze
+
+  def initialize(taric_update, handler_classes: DEFAULT_HANDLER_CLASSES, staging_manager: nil)
     @taric_update = taric_update
+    @handler_classes = handler_classes
+    @staging_manager = staging_manager
     @oplog_inserts = {
       operations: {
         create: { count: 0, duration: 0 },
@@ -32,42 +38,58 @@ class TaricImporter
   end
 
   def import
+    subscription = nil
     filename = determine_filename(@taric_update.file_path)
     return unless proceed_with_import?(filename)
 
-    subscribe_to_oplog_inserts
-
-    handler = XmlProcessor.new(@taric_update.issue_date)
+    subscription = subscribe_to_oplog_inserts
+    handlers = @handler_classes.map do |handler_class|
+      handler_class.new(filename, staging_manager: @staging_manager)
+    end
+    handler = XmlProcessor.new(@taric_update.issue_date, handlers:, national_sid_counter: NationalSidCounter.new)
     file = TariffSynchronizer::FileService.file_as_stringio(@taric_update)
     TaricImporter::XmlParser::Reader.new(file, 'record', handler).parse
+    handler.after_parse
     post_import(file_path: @taric_update.file_path, filename:)
 
     @oplog_inserts
+  ensure
+    ActiveSupport::Notifications.unsubscribe(subscription) if subscription
   end
 
   class XmlProcessor
-    def initialize(issue_date)
+    def initialize(issue_date, handlers:, national_sid_counter:)
       @issue_date = issue_date
+      @handlers = handlers
+      @national_sid_counter = national_sid_counter
     end
 
     def process_xml_node(hash_from_node)
-      transaction = Transaction.new(hash_from_node, @issue_date)
-      transaction.persist
+      EntityMapper
+        .new(hash_from_node, issue_date: @issue_date, national_sid_counter: @national_sid_counter)
+        .build do |entity|
+        @handlers.each do |handler|
+          handler.process_record(entity)
+        end
+      end
     rescue StandardError => e
-      taric_failed_log(e, hash_from_node)
-      raise ImportException
+      raise ImportException.new(
+        original: e,
+        context: { transaction: hash_from_node },
+      ), cause: e
     end
 
-  private
-
-    def taric_failed_log(exception, hash)
-      "Taric import failed: #{exception}".tap do |message|
-        message << "\n Failed transaction:\n #{hash}"
-        message << "\n Backtrace:\n #{exception.backtrace.join("\n")}"
-        Rails.logger.error message
-      end
+    def after_parse
+      @handlers.each(&:after_parse)
     end
   end
+
+  TaricEntity = Data.define(
+    :element_id,
+    :key,
+    :instance,
+    :mapper,
+  )
 
 private
 
@@ -80,8 +102,9 @@ private
       count = oplog_event.payload[:count]
       if count.positive?
         duration = oplog_event.duration
+        mapper = oplog_event.payload[:mapper]
         operation = oplog_event.payload[:operation]
-        entity_class = oplog_event.payload[:entity_class].to_s
+        entity_class = mapper.entity_class
 
         oplog_inserts[:operations][operation][entity_class] ||= {}
         oplog_inserts[:operations][operation][entity_class][:count] ||= 0

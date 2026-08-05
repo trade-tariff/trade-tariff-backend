@@ -22,12 +22,13 @@ module Search
       end
 
       def fuzzy_results_returned(request_id:, query:, results:)
+        metrics = nested_result_metrics(results)
         instrument(
           'fuzzy_results_returned',
           request_id:,
           search_type: 'classic',
           query:,
-          result_count: nested_result_count(results),
+          **metrics,
           details: summarize_classic_fuzzy_results(results),
         )
       end

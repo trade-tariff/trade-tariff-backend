@@ -10,6 +10,9 @@ class EnquiryForm::SendSubmissionEmailWorker
 
   include Sidekiq::Worker
 
+  # Cap retries: Notify outages must not use Sidekiq's default (25) and crowd the default queue.
+  sidekiq_options retry: 3
+
   def perform(reference)
     form_data = enquiry_form_data(reference)
 

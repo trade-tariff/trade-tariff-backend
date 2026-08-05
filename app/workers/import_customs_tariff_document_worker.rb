@@ -25,6 +25,7 @@ class ImportCustomsTariffDocumentWorker
     )
 
     notify_completed(results)
+    notify_update_recipients(results)
   rescue StandardError => e
     CustomsTariffImporter::Instrumentation.import_run_failed(
       error_class: e.class.name,
@@ -35,6 +36,20 @@ class ImportCustomsTariffDocumentWorker
   end
 
 private
+
+  def notify_update_recipients(results)
+    results.select { |r| r.status == :imported }.each do |result|
+      CustomsTariffUpdateNotifierService.new(result.version).call
+    rescue StandardError => e
+      Rails.logger.error(
+        "customs_tariff_update_notifier_failed: version=#{result.version} error_class=#{e.class.name} error_message=#{e.message}",
+      )
+      notify_slack(
+        'Customs tariff document import succeeded, but sending the update notification failed for ' \
+        "version #{result.version}. #{e.class}: #{e.message}",
+      )
+    end
+  end
 
   def notify_completed(results)
     failed = results.select { |r| r.status == :failed }
