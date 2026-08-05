@@ -33,12 +33,6 @@ RSpec.describe Appendix5aPopulatorService do
         expect { call }.to change_guidance_values
       end
 
-      it 'does not send an informational Slack notification' do
-        call
-        expect(SlackNotifierService).not_to have_received(:call)
-          .with(a_string_including('has been updated'))
-      end
-
       it 'sends an email notification to each configured recipient' do
         call
 

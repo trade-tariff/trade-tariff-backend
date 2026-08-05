@@ -46,7 +46,7 @@ module TariffSynchronizer
       if TaricSynchronizer.ignore_presence_errors
         @presence_errors = TariffSynchronizer::TariffUpdatePresenceError.where(tariff_update_filename: update_names)
       end
-      mail subject: "#{subject_prefix(:info)} Tariff updates applied"
+      mail subject: "#{subject_prefix(:warn)} Tariff updates applied"
     end
 
     def cds_updates(file_date, excel, file_name)

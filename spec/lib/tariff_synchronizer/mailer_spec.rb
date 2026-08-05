@@ -9,23 +9,15 @@ RSpec.describe TariffSynchronizer::Mailer do
       allow(TariffSynchronizer::TariffUpdatePresenceError).to receive(:where).and_return([])
     end
 
-    context 'when there are no import warnings and no presence errors' do
-      let(:import_warnings) { [] }
-
-      it 'delivers the mail' do
-        expect(mail.subject).to be_present
-      end
-
-      it 'uses an info subject prefix' do
-        expect(mail.subject).to include('[info]')
-      end
-    end
-
     context 'when there are import warnings' do
       let(:import_warnings) { [{ message: 'Unexpected element', xml_node: '<foo/>' }] }
 
       it 'delivers the mail' do
         expect(mail.subject).to be_present
+      end
+
+      it 'uses a warn subject prefix' do
+        expect(mail.subject).to include('[warn]')
       end
 
       it 'describes the situation in the subject' do

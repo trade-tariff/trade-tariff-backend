@@ -6,6 +6,7 @@ RSpec.describe AverageExchangeRatesWorker, type: :worker do
   describe '#perform' do
     before do
       allow(ExchangeRates::CreateAverageExchangeRatesService).to receive(:call).with(force_run: false, selected_date: today).and_return(true)
+      allow(SlackNotifierService).to receive(:call)
       perform
     end
 
@@ -14,7 +15,7 @@ RSpec.describe AverageExchangeRatesWorker, type: :worker do
     end
 
     it 'does not send a Slack notification' do
-      expect(SlackNotifierService).not_to receive(:call)
+      expect(SlackNotifierService).not_to have_received(:call)
     end
   end
 end
