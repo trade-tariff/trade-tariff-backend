@@ -6,22 +6,39 @@ module VatGuidance
   class ContextGraphBuilder
     SCHEMA_VERSION = 1
     HEADING_SELECTOR = (2..6).map { |level| "h#{level}" }.join(',').freeze
-    SECTION_REFERENCE_PATTERN = /\b(?:paragraph|section)s?\s+((?:\d+(?:\.\d+)*(?:\s*(?:,|and|to|-)\s*\d+(?:\.\d+)*)*))/i
-    NOTICE_NUMBER_PATTERN = /\b(\d{3})\s*\/\s*(\d+[A-Z]?)\b/i
+    SECTION_REFERENCE_PATTERN = %r{
+      \b(?:paragraph|section)s?\s+
+      ((?:\d+(?:\.\d+)*[A-Z]?(?:\(\d+\))*(?:\s*(?:,|and|or|to|-)\s*\d+(?:\.\d+)*[A-Z]?(?:\(\d+\))*)*))
+    }ix
+    NOTICE_NUMBER_PATTERN = /\b(?:(\d{3})\s*\/\s*(\d+[A-Z]?)|(\d{3}[A-Z]))\b/i
+    BARE_NOTICE_NUMBER_PATTERN = /\bNotice\s+(\d{3})\b/i
 
     Section = Data.define(:node, :element, :number)
 
-    def initialize(payloads)
+    def initialize(
+      payloads,
+      commodity_contexts: [],
+      source_failures: {},
+      path_aliases: {},
+      root_paths: nil
+    )
       @payloads = payloads.map(&:deep_stringify_keys)
+      @commodity_contexts = commodity_contexts.map(&:deep_stringify_keys)
+      @source_failures = source_failures.stringify_keys
+      @path_aliases = path_aliases.stringify_keys
+      @root_paths = root_paths || @payloads.map { |payload| payload.fetch('base_path') }
     end
 
     def call
       build_documents_and_sections
       build_reference_edges
+      build_commodity_context
+      finalise_edges
 
       graph = {
         'schema_version' => SCHEMA_VERSION,
-        'root_document_ids' => @documents.map { |document| document.fetch('id') },
+        'root_document_ids' => @root_paths.filter_map { |path| @document_by_path[path]&.fetch('id') },
+        'commodity_node_ids' => @commodity_contexts.map { |context| commodity_id(context.fetch('commodity_code')) },
         'documents' => @documents,
         'nodes' => (@nodes + @external_nodes.values).sort_by { |node| node.fetch('id') },
         'edges' => @edges.sort_by { |edge| edge.fetch('id') },
@@ -48,6 +65,13 @@ module VatGuidance
         @document_by_notice_number[document['notice_number']] = document if document['notice_number']
         add_document_node(document)
         add_section_nodes(document, payload.dig('details', 'body').to_s)
+      end
+      add_path_aliases
+    end
+
+    def add_path_aliases
+      @path_aliases.each do |requested_path, canonical_path|
+        @document_by_path[requested_path] = @document_by_path[canonical_path] if @document_by_path[canonical_path]
       end
     end
 
@@ -150,10 +174,84 @@ module VatGuidance
       @edges = []
       @external_nodes = {}
       @sections.each do |section|
-        linked_text = section.element.css('a[href]').map { |link| normalise_text(link.text) }.to_set
+        linked_section_numbers = section.element.css('a[href]').flat_map do |link|
+          referenced_section_numbers(link.text)
+        end
+        linked_section_numbers = linked_section_numbers.to_set
         section.element.css('a[href]').each { |link| add_link_edge(section, link) }
-        add_prose_edges(section, linked_text)
+        add_prose_edges(section, linked_section_numbers)
       end
+    end
+
+    def build_commodity_context
+      add_chapter_nodes
+      @commodity_contexts.each do |context|
+        node = commodity_node(context)
+        @nodes << node
+        context.fetch('evidence').each { |evidence| add_evidence_edge(node, evidence) }
+      end
+    end
+
+    def add_chapter_nodes
+      @commodity_contexts.group_by { |context| context.fetch('chapter') }.each do |chapter, contexts|
+        label = contexts.first.fetch('chapter_label')
+        @nodes << {
+          'id' => chapter_id(chapter),
+          'node_type' => 'commodity_chapter',
+          'document_id' => nil,
+          'guide_key' => nil,
+          'section_key' => nil,
+          'heading' => "Chapter #{chapter} — #{label}",
+          'heading_level' => nil,
+          'parent_id' => nil,
+          'source_url' => nil,
+          'content_html' => nil,
+          'content_sha256' => sha256("#{chapter}:#{label}"),
+          'chapter' => chapter,
+        }
+      end
+    end
+
+    def commodity_node(context)
+      code = context.fetch('commodity_code')
+      {
+        'id' => commodity_id(code),
+        'node_type' => 'commodity',
+        'document_id' => nil,
+        'guide_key' => nil,
+        'section_key' => nil,
+        'heading' => context.fetch('label'),
+        'heading_level' => nil,
+        'parent_id' => chapter_id(context.fetch('chapter')),
+        'source_url' => nil,
+        'content_html' => nil,
+        'content_sha256' => sha256(canonical_json(context.except('evidence'))),
+        'chapter' => context.fetch('chapter'),
+        'commodity_code' => code,
+      }
+    end
+
+    def add_evidence_edge(source, evidence)
+      target = @nodes.find do |node|
+        node['node_type'] == 'section' &&
+          node['guide_key'] == evidence.fetch('guide_key') &&
+          node['section_key'] == evidence.fetch('section_key')
+      end
+      resolved = if target
+                   resolved_target(target)
+                 else
+                   unresolved_target("#{evidence.fetch('guide_key')}##{evidence.fetch('section_key')}")
+                 end
+      add_edge(
+        source,
+        resolved,
+        'guidance_evidence',
+        "#{evidence.fetch('guide_key')}##{evidence.fetch('section_key')}",
+        target&.fetch('source_url', nil),
+      )
+    end
+
+    def finalise_edges
       @edges = @edges.uniq { |edge| [edge['source_id'], edge['target_id'], edge['reference_kind'], edge['reference_text']] }
       @edges.each_with_index { |edge, index| edge['id'] = sprintf('reference-%04d', index + 1) }
     end
@@ -166,20 +264,131 @@ module VatGuidance
       add_edge(section.node, target, 'hyperlink', normalise_text(link.text), href)
     end
 
-    def add_prose_edges(section, linked_text)
+    def add_prose_edges(section, linked_section_numbers)
       fragment = Nokogiri::HTML.fragment(section.node.fetch('content_html'))
-      fragment.css('a').remove
-      text = fragment.text
+      fragment.css('a').each { |link| link.replace(" #{link.text} ") }
+      text = normalise_text(fragment.text)
 
-      text.scan(SECTION_REFERENCE_PATTERN).flatten.each do |expression|
+      text.to_enum(:scan, SECTION_REFERENCE_PATTERN).each do
+        match = Regexp.last_match
+        expression = match[1]
+        expression_numbers = referenced_section_numbers(expression)
+        next if expression_numbers.all? { |number| linked_section_numbers.include?(number) }
+
+        if statutory_reference?(text, match)
+          add_statutory_edge(section, text, match)
+          next
+        end
+
+        referenced_notice = referenced_notice_number(text, match)
+        if referenced_notice
+          add_notice_reference_edges(section, expression, referenced_notice)
+          next
+        end
+
         expand_section_numbers(expression, section.node.fetch('document_id')).each do |number|
           target = resolve_section_number(section.node.fetch('document_id'), number)
           reference_text = "section #{number}"
-          next if linked_text.include?(reference_text)
 
           add_edge(section.node, target, 'prose_section_reference', reference_text, nil)
         end
       end
+    end
+
+    def statutory_reference?(text, match)
+      preceding_text = text[[match.begin(0) - 240, 0].max...match.begin(0)]
+      following_text = text[match.end(0)...[match.end(0) + 180, text.length].min]
+
+      preceding_text.match?(/\b(?:Act|Regulations?|Order)(?:\s+\d{4})?\s+\z/i) ||
+        preceding_text.match?(/\b(?:Act|Regulations?|Order)(?:\s+\d{4})?\s*[:,]\s*.{0,220}\z/i) ||
+        following_text.match?(/\A\s+of\b.{0,140}\b(?:Act|Regulations?|Order)(?:\s+\d{4})?\b/i)
+    end
+
+    def add_statutory_edge(section, text, match)
+      citation = sentence_containing(text, match.begin(0), match.end(0))
+      id = "statutory-reference:#{sha256(citation)}"
+      @external_nodes[id] ||= {
+        'id' => id,
+        'node_type' => 'statutory_reference',
+        'document_id' => id,
+        'guide_key' => nil,
+        'section_key' => nil,
+        'heading' => citation,
+        'heading_level' => nil,
+        'parent_id' => nil,
+        'source_url' => nil,
+        'content_html' => nil,
+        'content_sha256' => sha256(citation),
+      }
+      add_edge(
+        section.node,
+        resolved_target(@external_nodes.fetch(id)),
+        'statutory_reference',
+        normalise_text(match[0]),
+        nil,
+      )
+    end
+
+    def sentence_containing(text, start_index, end_index)
+      sentence_start = text.rindex(/[.!?]/, start_index - 1)&.next || 0
+      sentence_end = text.index(/[.!?]/, end_index) || text.length
+      normalise_text(text[sentence_start...sentence_end])
+    end
+
+    def referenced_notice_number(text, match)
+      sentence = sentence_containing(text, match.begin(0), match.end(0))
+      preceding_text = text[[match.begin(0) - 120, 0].max...match.begin(0)]
+      preceding_notice = notice_number(preceding_text)
+      return preceding_notice if preceding_notice
+
+      following_text = text[match.end(0)...[match.end(0) + 180, text.length].min]
+      following_notice = notice_number(following_text) if following_text.match?(/\A\s+of\b/i)
+      return following_notice if following_notice
+
+      notice_numbers = text.scan(BARE_NOTICE_NUMBER_PATTERN).flatten.uniq
+      notice_numbers.first if sentence.match?(/\bVAT guide\b/i) && notice_numbers.one?
+    end
+
+    def add_notice_reference_edges(section, expression, notice)
+      target_document = @document_by_notice_number[notice]
+      if target_document
+        expand_section_numbers(expression, target_document.fetch('id')).each do |number|
+          add_edge(
+            section.node,
+            resolve_section_number(target_document.fetch('id'), number),
+            'prose_cross_document_reference',
+            "VAT Notice #{notice}, section #{number}",
+            nil,
+          )
+        end
+      else
+        add_notice_reference_edge(section, expression, notice)
+      end
+    end
+
+    def add_notice_reference_edge(section, expression, notice)
+      reference = "VAT Notice #{notice}, section #{expression}"
+      id = "notice-reference:#{notice.downcase}##{slug(expression)}"
+      @external_nodes[id] ||= {
+        'id' => id,
+        'node_type' => 'notice_reference',
+        'document_id' => id,
+        'guide_key' => "vat-notice-#{notice.tr('/', '-').downcase}",
+        'section_key' => expression,
+        'heading' => reference,
+        'heading_level' => nil,
+        'parent_id' => nil,
+        'source_url' => nil,
+        'content_html' => nil,
+        'content_sha256' => sha256(reference),
+      }
+      add_edge(
+        section.node,
+        resolved_target(@external_nodes.fetch(id)),
+        'prose_notice_reference',
+        reference,
+        nil,
+      )
     end
 
     def resolve_link(source_document_id, href, label)
@@ -195,7 +404,7 @@ module VatGuidance
       if target_document
         target_node = @node_by_document_and_anchor[[target_document.fetch('id'), fragment]]
         return resolved_target(target_node) if target_node
-        return unresolved_target("#{target_document.fetch('id')}##{fragment}") if fragment
+        return unresolved_target("#{target_document.fetch('id')}##{fragment}", document_id: target_document.fetch('id')) if fragment
 
         return resolved_target(@node_by_document_and_anchor.fetch([target_document.fetch('id'), nil]))
       end
@@ -209,21 +418,22 @@ module VatGuidance
       section = @sections.find do |candidate|
         candidate.node.fetch('document_id') == document_id && candidate.number == number
       end
-      section ? resolved_target(section.node) : unresolved_target("#{document_id}#section-#{number}")
+      section ? resolved_target(section.node) : unresolved_target("#{document_id}#section-#{number}", document_id:)
     end
 
     def resolved_target(node)
       { node:, resolution: 'resolved' }
     end
 
-    def unresolved_target(identifier)
-      { node: nil, id: "unresolved:#{identifier}", resolution: 'unresolved' }
+    def unresolved_target(identifier, document_id: nil)
+      { node: nil, id: "unresolved:#{identifier}", document_id:, resolution: 'unresolved' }
     end
 
     def external_target(href, label)
       url = normalise_url(href)
       id = "external:#{url}"
-      @external_nodes[id] ||= {
+      failure = @source_failures[URI.parse(url).path]
+      node = {
         'id' => id,
         'node_type' => 'external_reference',
         'document_id' => id,
@@ -236,12 +446,17 @@ module VatGuidance
         'content_html' => nil,
         'content_sha256' => nil,
       }
-      resolved_target(@external_nodes.fetch(id))
+      node['fetch_error'] = failure if failure
+      @external_nodes[id] ||= node
+      {
+        node: @external_nodes.fetch(id),
+        resolution: failure ? 'unresolved' : 'resolved',
+      }
     end
 
     def add_edge(source, target, kind, text, href)
       target_id = target[:node]&.fetch('id') || target.fetch(:id)
-      target_document_id = target[:node]&.fetch('document_id')
+      target_document_id = target[:node]&.fetch('document_id') || target[:document_id]
       @edges << {
         'id' => nil,
         'source_id' => source.fetch('id'),
@@ -250,7 +465,7 @@ module VatGuidance
         'reference_text' => text,
         'href' => href,
         'resolution' => target.fetch(:resolution),
-        'cross_document' => target_document_id.present? && target_document_id != source.fetch('document_id'),
+        'cross_document' => source['document_id'].present? && target_document_id.present? && target_document_id != source['document_id'],
       }
     end
 
@@ -258,6 +473,8 @@ module VatGuidance
       edges = graph.fetch('edges')
       {
         'documents_captured' => graph.fetch('documents').length,
+        'commodity_chapters_captured' => graph.fetch('nodes').count { |node| node['node_type'] == 'commodity_chapter' },
+        'commodities_captured' => graph.fetch('nodes').count { |node| node['node_type'] == 'commodity' },
         'sections_captured' => graph.fetch('nodes').count { |node| node['node_type'] == 'section' },
         'reference_edges' => edges.length,
         'cross_document_edges' => edges.count { |edge| edge['cross_document'] },
@@ -273,7 +490,7 @@ module VatGuidance
     end
 
     def expand_section_numbers(expression, document_id)
-      numbers = expression.scan(/\d+(?:\.\d+)*/)
+      numbers = referenced_section_numbers(expression)
       return numbers unless expression.match?(/\bto\b|-/) && numbers.length == 2
 
       available = @sections.filter_map do |section|
@@ -284,6 +501,10 @@ module VatGuidance
       return numbers unless start_index && end_index && start_index <= end_index
 
       available[start_index..end_index]
+    end
+
+    def referenced_section_numbers(text)
+      text.to_s.scan(/\d+(?:\.\d+)*[A-Z]?(?:\(\d+\))*/i)
     end
 
     def unique_anchor(document_id, requested_anchor)
@@ -304,6 +525,14 @@ module VatGuidance
       "document:#{canonical_path}"
     end
 
+    def chapter_id(chapter)
+      "commodity-chapter:#{chapter}"
+    end
+
+    def commodity_id(code)
+      "commodity:#{code}"
+    end
+
     def guide_key(title)
       number = notice_number(title)
       number ? "vat-notice-#{number.tr('/', '-').downcase}" : slug(title)
@@ -311,11 +540,13 @@ module VatGuidance
 
     def notice_number(text)
       match = text.to_s.match(NOTICE_NUMBER_PATTERN)
-      match && "#{match[1]}/#{match[2].upcase}"
+      return match[3]&.upcase || "#{match[1]}/#{match[2].upcase}" if match
+
+      text.to_s.match(BARE_NOTICE_NUMBER_PATTERN)&.[](1)
     end
 
     def heading_number(text)
-      text.to_s.match(/\A\s*(\d+(?:\.\d+)*)\b/)&.[](1)
+      text.to_s.match(/\A\s*(\d+(?:\.\d+)*[A-Z]?(?:\(\d+\))*)\b/i)&.[](1)
     end
 
     def slug(text)
@@ -324,6 +555,7 @@ module VatGuidance
 
     def normalise_url(href)
       uri = URI.parse(href)
+      return URI.join('https://www.gov.uk', href).to_s if uri.host.nil? && href.start_with?('/')
       return href unless uri.is_a?(URI::HTTP)
 
       uri.scheme = 'https' if uri.host == 'www.gov.uk'
