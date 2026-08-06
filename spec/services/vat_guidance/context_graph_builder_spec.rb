@@ -73,11 +73,112 @@ RSpec.describe VatGuidance::ContextGraphBuilder do
     expect(graph.dig('summary', 'unresolved_references')).to eq(1)
   end
 
+  it 'classifies statutory citations without treating them as notice sections' do
+    legislation = content_payload(
+      title: 'Legislation references (VAT Notice 700/1)',
+      path: '/guidance/legislation-references',
+      body: <<~HTML,
+        <div class="govspeak">
+          <h2 id="law">1. Law</h2>
+          <p>The VAT Act 1994, section 29A applies.</p>
+          <p>Section 105(1) of the Civil Aviation Act 1982 also applies.</p>
+        </div>
+      HTML
+    )
+    legislation_graph = described_class.new([legislation]).call
+
+    expect(legislation_graph.fetch('edges')).to include(
+      include('reference_kind' => 'statutory_reference', 'reference_text' => 'section 29A'),
+      include('reference_kind' => 'statutory_reference', 'reference_text' => 'Section 105(1)'),
+    )
+    expect(legislation_graph.fetch('edges')).not_to include(
+      include('reference_kind' => 'prose_section_reference', 'target_id' => end_with('#section-29')),
+      include('reference_kind' => 'prose_section_reference', 'target_id' => end_with('#section-105')),
+    )
+    expect(legislation_graph.dig('summary', 'unresolved_references')).to eq(0)
+  end
+
+  it 'records official sources that could not be fetched as unresolved findings' do
+    missing_path = '/guidance/withdrawn-vat-notice'
+    payload = content_payload(
+      title: 'Source notice (VAT Notice 700/1)',
+      path: '/guidance/source-notice',
+      body: %(<div class="govspeak"><h2 id="source">1. Source</h2><a href="#{missing_path}">Withdrawn</a></div>),
+    )
+    failed_graph = described_class.new(
+      [payload],
+      source_failures: { missing_path => 'HTTP 404' },
+    ).call
+
+    expect(failed_graph.fetch('nodes')).to include(
+      include('source_url' => "https://www.gov.uk#{missing_path}", 'fetch_error' => 'HTTP 404'),
+    )
+    expect(failed_graph.fetch('edges')).to include(
+      include('href' => missing_path, 'resolution' => 'unresolved'),
+    )
+  end
+
   it 'is deterministic and carries a digest of the complete graph' do
     rebuilt = described_class.new([protective_equipment, food]).call
 
     expect(rebuilt).to eq(graph)
     expect(graph.fetch('content_sha256')).to match(/\A[0-9a-f]{64}\z/)
+  end
+
+  it 'derives a stable guide key for a VAT notice without a slash' do
+    aviation = content_payload(
+      title: 'Ships, trains, aircraft and associated services (VAT Notice 744C)',
+      path: '/guidance/ships-aircraft-and-associated-services-notice-744c',
+      body: '<div class="govspeak"><h2 id="aircraft">3. Aircraft</h2></div>',
+    )
+
+    document = described_class.new([aviation]).call.fetch('documents').first
+
+    expect(document).to include('guide_key' => 'vat-notice-744c', 'notice_number' => '744C')
+  end
+
+  it 'adds commodity chapters, commodity nodes and resolved guidance evidence edges' do
+    commodity_context = {
+      'chapter' => '20',
+      'chapter_label' => 'Prepared food',
+      'commodity_code' => '2005202000',
+      'label' => 'Packaged potato crisps',
+      'evidence' => [
+        {
+          'guide_key' => 'vat-notice-701-23',
+          'section_key' => 'overview',
+        },
+      ],
+    }
+    commodity_graph = described_class.new(
+      [protective_equipment],
+      commodity_contexts: [commodity_context],
+    ).call
+
+    expect(commodity_graph.fetch('nodes')).to include(
+      include(
+        'id' => 'commodity-chapter:20',
+        'node_type' => 'commodity_chapter',
+        'heading' => 'Chapter 20 — Prepared food',
+      ),
+      include(
+        'id' => 'commodity:2005202000',
+        'node_type' => 'commodity',
+        'parent_id' => 'commodity-chapter:20',
+      ),
+    )
+    expect(commodity_graph.fetch('edges')).to include(
+      include(
+        'source_id' => 'commodity:2005202000',
+        'target_id' => end_with('#overview'),
+        'reference_kind' => 'guidance_evidence',
+        'resolution' => 'resolved',
+      ),
+    )
+    expect(commodity_graph.fetch('summary')).to include(
+      'commodity_chapters_captured' => 1,
+      'commodities_captured' => 1,
+    )
   end
 
   def content_payload(title:, path:, body:)
