@@ -16,13 +16,13 @@ module Api
           def create
             experiment = EvaluationExperiment.with_pk!(create_params[:experiment_id])
 
-            created = EvaluationRun.start!(
+            evaluation_run = EvaluationRun.start!(
               experiment:,
               triggered_by: create_params[:triggered_by],
               run_time_overrides: create_params[:configuration_overrides] || {},
             )
 
-            render json: serialize(created), status: :created
+            render json: serialize(evaluation_run), status: :created
           end
 
           def update

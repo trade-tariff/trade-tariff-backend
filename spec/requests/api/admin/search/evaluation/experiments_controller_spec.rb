@@ -43,7 +43,8 @@ RSpec.describe Api::Admin::Search::Evaluation::ExperimentsController, :admin do
   end
 
   describe 'POST #create' do
-    let(:make_request) { authenticated_post api_admin_search_evaluation_experiments_path(format: :json), params: params }
+    let(:make_request) { authenticated_post api_admin_search_evaluation_experiments_path(format: :json), params:, headers: }
+    let(:headers) { {} }
 
     context 'with valid params' do
       let(:params) do
@@ -66,6 +67,25 @@ RSpec.describe Api::Admin::Search::Evaluation::ExperimentsController, :admin do
       it 'persists the configuration_overrides hash' do
         api_response
         expect(json_response['data']['attributes']['configuration_overrides']).to eq('simulator_model' => 'gpt-4o-mini')
+      end
+    end
+
+    context 'when the request carries an X-Whodunnit header' do
+      let(:headers) { { 'X-Whodunnit' => 'operator-1' } }
+      let(:params) { { data: { type: :experiment, attributes: { name: 'baseline-gpt4o' } } } }
+
+      it 'sets created_by from the header rather than the request body' do
+        api_response
+        expect(json_response['data']['attributes']['created_by']).to eq('operator-1')
+      end
+    end
+
+    context 'when the request body attempts to set created_by directly' do
+      let(:params) { { data: { type: :experiment, attributes: { name: 'baseline-gpt4o', created_by: 'spoofed-user' } } } }
+
+      it 'ignores the client-supplied value' do
+        api_response
+        expect(json_response['data']['attributes']['created_by']).to be_nil
       end
     end
 

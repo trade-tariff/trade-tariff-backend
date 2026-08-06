@@ -12,7 +12,7 @@ module Api
           end
 
           def create
-            experiment = EvaluationExperiment.new(experiment_params)
+            experiment = EvaluationExperiment.new(experiment_params.merge(created_by: TradeTariffRequest.whodunnit))
 
             if experiment.valid? && experiment.save
               render json: serialize(experiment), status: :created
@@ -45,7 +45,7 @@ module Api
 
           def experiment_params
             params.require(:data).require(:attributes).permit(
-              :name, :description, :enabled, :created_by,
+              :name, :description, :enabled,
               configuration_overrides: {}, default_scope: {}
             ).to_h
           end
