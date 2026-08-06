@@ -2,13 +2,12 @@ class CdsImporter
   class RecordInserter
     SKIPPED_OPERATION = :skipped
 
-    delegate :instrument, to: ActiveSupport::Notifications
-
-    def initialize(filename, staging_manager: nil)
+    def initialize(filename, staging_manager: nil, tracker: nil)
       @count = 0
       @record_batch = []
       @filename = filename
       @staging_manager = staging_manager
+      @tracker = tracker || TariffSynchronizer::Import::OperationTracker.new(operation_keys: CdsImporter::OPERATION_KEYS)
     end
 
     def process_record(cds_entity)
@@ -48,11 +47,9 @@ class CdsImporter
 
       grouped_batch.each do |operation_klass, group|
         first_entity = group.first
-        instrument('cds_importer.import.operations', mapper: first_entity.mapper, operation: first_entity.instance.operation, count: group.size) do
+        tracker.track('cds_importer.import.operations', mapper: first_entity.mapper, operation: first_entity.instance.operation, count: group.size) do
           save_group(operation_klass, group)
         end
-      rescue StandardError
-        raise
       end
     end
 
@@ -77,10 +74,10 @@ class CdsImporter
     end
 
     def instrument_skip_record(record, mapper)
-      instrument('cds_importer.import.operations', mapper:, operation: SKIPPED_OPERATION, count: 1, record:)
+      tracker.record('cds_importer.import.operations', mapper:, operation: SKIPPED_OPERATION, count: 1, record:)
     end
 
-    attr_reader :record_batch, :filename
+    attr_reader :record_batch, :filename, :tracker
 
     def logger_enabled?
       CdsSynchronizer.cds_logger_enabled

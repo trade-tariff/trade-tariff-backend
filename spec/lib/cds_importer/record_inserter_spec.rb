@@ -13,7 +13,7 @@ RSpec.describe CdsImporter::RecordInserter do
       values: { goods_nomenclature_item_id: '0101210000' },
     )
 
-    CdsImporter::CdsEntity.new('1', 'GoodsNomenclature', instance, instance_double(CdsImporter::EntityMapper::GoodsNomenclatureMapper))
+    CdsImporter::CdsEntity.new('1', 'GoodsNomenclature', instance, instance_double(CdsImporter::EntityMapper::GoodsNomenclatureMapper, entity_class: 'GoodsNomenclature', mapping_path: nil))
   end
 
   describe '#after_parse' do

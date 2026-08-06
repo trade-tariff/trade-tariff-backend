@@ -1,12 +1,11 @@
 module TariffSynchronizer
   module Import
     class BatchRecordInserter
-      delegate :instrument, to: ActiveSupport::Notifications
-
-      def initialize(filename, staging_manager: nil)
+      def initialize(filename, staging_manager: nil, tracker: nil)
         @record_batch = []
         @filename = filename
         @staging_manager = staging_manager
+        @tracker = tracker || OperationTracker.new(operation_keys: default_operation_keys)
       end
 
       def process_record(entity)
@@ -27,7 +26,7 @@ module TariffSynchronizer
 
     private
 
-      attr_reader :filename, :record_batch, :staging_manager
+      attr_reader :filename, :record_batch, :staging_manager, :tracker
 
       def process_batch
         save_batch
@@ -41,7 +40,7 @@ module TariffSynchronizer
           first_entity = group.first
           operation_klass = first_entity.instance.class.operation_klass
 
-          instrument(event_name, event_payload(first_entity, group)) do
+          tracker.track(event_name, **event_payload(first_entity, group)) do
             save_group(operation_klass, group)
           end
         end
@@ -80,7 +79,7 @@ module TariffSynchronizer
 
       def instrument_skipped_records
         record_batch.each do |entity|
-          instrument(event_name, skipped_event_payload(entity)) if skip_record?(entity)
+          tracker.record(event_name, **skipped_event_payload(entity)) if skip_record?(entity)
         end
       end
 
@@ -113,6 +112,10 @@ module TariffSynchronizer
       end
 
       def grouped_records(_records)
+        raise NotImplementedError
+      end
+
+      def default_operation_keys
         raise NotImplementedError
       end
     end
