@@ -29,10 +29,9 @@ RSpec.describe ImportXiCnDocumentWorker do
         ])
       end
 
-      it 'sends a Slack notification with import counts' do
+      it 'does not send a Slack notification for a successful import' do
         worker.perform
-        expect(SlackNotifierService).to have_received(:call)
-          .with(a_string_including('imported: 1'))
+        expect(SlackNotifierService).not_to have_received(:call)
       end
 
       it 'calls CustomsTariffUpdateNotifierService for the imported celex id' do
@@ -58,14 +57,6 @@ RSpec.describe ImportXiCnDocumentWorker do
         allow(CustomsTariffUpdateNotifierService).to receive(:new).with('32025R1926').and_return(notifier_1926)
         allow(CustomsTariffUpdateNotifierService).to receive(:new).with('32025R1927').and_return(notifier_1927)
         allow(Rails.logger).to receive(:error)
-      end
-
-      it 'still reports the import as completed successfully' do
-        worker.perform
-
-        expect(SlackNotifierService).to have_received(:call).with(
-          a_string_including('imported: 2'),
-        )
       end
 
       it 'does not re-raise the notifier error' do
@@ -96,31 +87,28 @@ RSpec.describe ImportXiCnDocumentWorker do
       end
     end
 
-    context 'when a document import fails' do
-      before do
-        allow(importer_double).to receive(:call).and_return([
-          XiCnImporter::Importer::Result.new(status: :failed, error: 'HTTP 503'),
-        ])
-      end
-
-      it 'does not call CustomsTariffUpdateNotifierService' do
-        allow(CustomsTariffUpdateNotifierService).to receive(:new)
-
-        worker.perform
-
-        expect(CustomsTariffUpdateNotifierService).not_to have_received(:new)
-      end
-    end
-
     context 'when no new documents are found' do
       before do
         allow(importer_double).to receive(:call).and_return([])
       end
 
-      it 'sends a "Nothing new to import." Slack notification' do
+      it 'does not send a Slack notification when there is nothing to import' do
+        worker.perform
+        expect(SlackNotifierService).not_to have_received(:call)
+      end
+    end
+
+    context 'when a document import fails' do
+      before do
+        allow(importer_double).to receive(:call).and_return([
+          XiCnImporter::Importer::Result.new(status: :failed, celex: '32025R1926', error: 'HTTP 503'),
+        ])
+      end
+
+      it 'sends a failure Slack notification' do
         worker.perform
         expect(SlackNotifierService).to have_received(:call)
-          .with(a_string_including('Nothing new to import'))
+          .with(a_string_including('XI Combined Nomenclature document import completed with failures', 'CELEX ID:'))
       end
 
       it 'does not call CustomsTariffUpdateNotifierService' do

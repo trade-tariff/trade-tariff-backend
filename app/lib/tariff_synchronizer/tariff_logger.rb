@@ -5,6 +5,13 @@ module TariffSynchronizer
     class << self
       # All pending updates applied
       def apply(update_names, import_warnings = [])
+        has_presence_errors = TaricSynchronizer.ignore_presence_errors &&
+          TariffSynchronizer::TariffUpdatePresenceError
+            .where(tariff_update_filename: update_names)
+            .any?
+
+        return unless import_warnings.any? || has_presence_errors
+
         Mailer.applied(update_names, import_warnings).deliver_now
       end
 

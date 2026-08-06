@@ -32,14 +32,6 @@ RSpec.describe Appendix5aPopulatorService do
         expect { call }.to change_guidance_values
       end
 
-      it 'notifies slack' do
-        call
-
-        expect(SlackNotifierService)
-          .to have_received(:call)
-          .with('Appendix 5a has been updated with 0 new, 1 changed and 0 removed guidance documents')
-      end
-
       it 'sends an email notification to each configured recipient with a String-keyed personalisation hash' do
         call
 
@@ -72,31 +64,6 @@ RSpec.describe Appendix5aPopulatorService do
             personalisation = job['args'][2]
             expect(personalisation.keys).to all(be_a(String))
           end
-        end
-      end
-
-      context 'when SlackNotifierService raises on the summary message' do
-        before do
-          allow(SlackNotifierService).to receive(:call).and_raise(StandardError, 'slack unavailable')
-          allow(Rails.logger).to receive(:error)
-        end
-
-        it 'does not raise' do
-          expect { call }.not_to raise_error
-        end
-
-        it 'still enqueues notifications for every configured recipient' do
-          call
-
-          expect(Notifications::EmailWorker).to have_received(:perform_async).exactly(cupid_emails.size).times
-        end
-
-        it 'logs the slack failure' do
-          call
-
-          expect(Rails.logger).to have_received(:error).with(
-            a_string_including('appendix5a_notification_slack_failed', 'StandardError', 'slack unavailable'),
-          )
         end
       end
     end
@@ -133,14 +100,6 @@ RSpec.describe Appendix5aPopulatorService do
         expect { call }.to change(Appendix5a, :count).by(-1)
       end
 
-      it 'notifies slack' do
-        call
-
-        expect(SlackNotifierService)
-          .to have_received(:call)
-          .with('Appendix 5a has been updated with 0 new, 0 changed and 1 removed guidance documents')
-      end
-
       it 'sends an email notification to each configured recipient' do
         call
 
@@ -168,14 +127,6 @@ RSpec.describe Appendix5aPopulatorService do
 
       it 'adds new guidance' do
         expect { call }.to change(Appendix5a, :count).by(1)
-      end
-
-      it 'notifies slack' do
-        call
-
-        expect(SlackNotifierService)
-          .to have_received(:call)
-          .with('Appendix 5a has been updated with 1 new, 0 changed and 0 removed guidance documents')
       end
 
       it 'sends an email notification to each configured recipient' do
@@ -213,14 +164,6 @@ RSpec.describe Appendix5aPopulatorService do
 
       it 'still changes the guidance' do
         expect { call }.to change_guidance_values
-      end
-
-      it 'still notifies slack' do
-        call
-
-        expect(SlackNotifierService)
-          .to have_received(:call)
-          .with('Appendix 5a has been updated with 0 new, 1 changed and 0 removed guidance documents')
       end
 
       it 'does not enqueue any email worker jobs' do
