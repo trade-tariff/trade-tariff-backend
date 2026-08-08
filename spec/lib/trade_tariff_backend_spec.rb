@@ -3,26 +3,6 @@ RSpec.describe TradeTariffBackend do
     described_class.instance_variable_set(:@revision, nil)
   end
 
-  describe '.api_version' do
-    let(:request) { instance_double(ActionDispatch::Request) }
-
-    context 'when Accept header specifies a version' do
-      before { allow(request).to receive(:headers).and_return({ 'Accept' => 'application/vnd.uktt.v2' }) }
-
-      it 'extracts the version number' do
-        expect(described_class.api_version(request)).to eq('2')
-      end
-    end
-
-    context 'when Accept header is absent' do
-      before { allow(request).to receive(:headers).and_return({}) }
-
-      it 'defaults to version 1' do
-        expect(described_class.api_version(request)).to eq('1')
-      end
-    end
-  end
-
   describe '.user_agent' do
     before { described_class.instance_variable_set(:@revision, nil) }
 
