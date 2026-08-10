@@ -2,6 +2,7 @@ RSpec.describe ImportCustomsTariffDocumentWorker, type: :worker do
   subject(:perform) { described_class.new.perform }
 
   let(:importer_double) { instance_double(CustomsTariffImporter::Importer) }
+  let(:cloudwatch_client) { instance_double(Aws::CloudWatch::Client) }
 
   before do
     allow(TradeTariffBackend).to receive(:uk?).and_return(true)
@@ -11,6 +12,8 @@ RSpec.describe ImportCustomsTariffDocumentWorker, type: :worker do
     allow(CustomsTariffImporter::Instrumentation).to receive(:import_run_completed)
     allow(CustomsTariffImporter::Instrumentation).to receive(:import_run_failed)
     allow(CustomsTariffUpdateNotifierService).to receive(:new).and_return(instance_double(CustomsTariffUpdateNotifierService, call: nil))
+    allow(Aws::CloudWatch::Client).to receive(:new).and_return(cloudwatch_client)
+    allow(cloudwatch_client).to receive(:put_metric_data)
   end
 
   context 'when SERVICE is not uk' do
@@ -19,6 +22,11 @@ RSpec.describe ImportCustomsTariffDocumentWorker, type: :worker do
     it 'is a no-op' do
       perform
       expect(CustomsTariffImporter::Importer).not_to have_received(:new)
+    end
+
+    it 'does not emit a heartbeat' do
+      perform
+      expect(cloudwatch_client).not_to have_received(:put_metric_data)
     end
   end
 
@@ -242,6 +250,35 @@ RSpec.describe ImportCustomsTariffDocumentWorker, type: :worker do
       it 're-raises the original import error' do
         expect { perform }.to raise_error(RuntimeError, 'catastrophic failure')
       end
+    end
+
+    it 'does not emit a heartbeat' do
+      expect { perform }.to raise_error(RuntimeError)
+      expect(cloudwatch_client).not_to have_received(:put_metric_data)
+    end
+  end
+
+  describe 'heartbeat on success' do
+    before do
+      allow(importer_double).to receive(:call).and_return([result(status: :skipped, version: '1.30')])
+    end
+
+    it 'emits a JobSuccess heartbeat to TradeTariff/ScheduledJobs' do
+      perform
+
+      expect(cloudwatch_client).to have_received(:put_metric_data).with(
+        namespace: 'TradeTariff/ScheduledJobs',
+        metric_data: [{
+          metric_name: 'JobSuccess',
+          value: 1,
+          unit: 'Count',
+          dimensions: [
+            { name: 'Job', value: 'ImportCustomsTariffDocumentWorker' },
+            { name: 'Service', value: TradeTariffBackend.service },
+            { name: 'Environment', value: Rails.env },
+          ],
+        }],
+      )
     end
   end
 end

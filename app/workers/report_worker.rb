@@ -1,5 +1,6 @@
 class ReportWorker
   include Sidekiq::Worker
+  include ScheduledJobHeartbeat
 
   sidekiq_options retry: false
 
@@ -31,6 +32,8 @@ class ReportWorker
     schedule_differences_generation if trigger_differences_report
 
     raise failures.first[:error] if failures.any?
+
+    record_heartbeat
   end
 
 private

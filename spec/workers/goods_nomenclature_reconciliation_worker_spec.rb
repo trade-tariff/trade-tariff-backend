@@ -1,6 +1,7 @@
 RSpec.describe GoodsNomenclatureReconciliationWorker, type: :worker do
   describe '#perform' do
     let(:embedding_service) { instance_double(EmbeddingService) }
+    let(:cloudwatch_client) { instance_double(Aws::CloudWatch::Client) }
 
     before do
       allow(GenerateSelfText::OtherSelfTextBuilder).to receive(:call)
@@ -8,6 +9,8 @@ RSpec.describe GoodsNomenclatureReconciliationWorker, type: :worker do
       allow(RelabelGoodsNomenclatureWorker).to receive(:perform_async)
       allow(EmbeddingService).to receive(:new).and_return(embedding_service)
       allow(embedding_service).to receive(:embed_batch) { |texts| texts.map { Array.new(1536, 0.0) } }
+      allow(Aws::CloudWatch::Client).to receive(:new).and_return(cloudwatch_client)
+      allow(cloudwatch_client).to receive(:put_metric_data)
     end
 
     context 'when there are no changes' do
@@ -15,6 +18,14 @@ RSpec.describe GoodsNomenclatureReconciliationWorker, type: :worker do
         described_class.new.perform
 
         expect(GenerateSelfText::OtherSelfTextBuilder).not_to have_received(:call)
+      end
+
+      it 'still emits a heartbeat' do
+        described_class.new.perform
+
+        expect(cloudwatch_client).to have_received(:put_metric_data).with(
+          hash_including(namespace: 'TradeTariff/ScheduledJobs'),
+        )
       end
     end
 
@@ -383,6 +394,20 @@ RSpec.describe GoodsNomenclatureReconciliationWorker, type: :worker do
           .first
 
         expect(self_text.stale).to be true
+      end
+    end
+
+    describe 'heartbeat' do
+      it 'emits a JobSuccess heartbeat when changes are detected' do
+        create(:goods_nomenclature,
+               goods_nomenclature_item_id: '1500000000',
+               validity_start_date: Date.current)
+
+        described_class.new.perform
+
+        expect(cloudwatch_client).to have_received(:put_metric_data).with(
+          hash_including(namespace: 'TradeTariff/ScheduledJobs'),
+        )
       end
     end
   end
