@@ -33,8 +33,6 @@ Api::User::ActiveCommoditiesService#expired_commodities
 Api::User::ActiveCommoditiesService#invalid_commodities
 Api::User::SubscriptionTargetSerializer#target_object
 Api::User::SubscriptionsController#create_batch
-Api::V1::HeadingsController#tree
-Api::V1::SectionsController#tree
 Api::V2::AdditionalCodeSearch::AdditionalCodePresenter#goods_nomenclature_ids
 Api::V2::CertificateSearch::CertificatePresenter#goods_nomenclature_ids
 Api::V2::Chapters::ChapterPresenter#heading_ids

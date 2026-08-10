@@ -54,7 +54,6 @@ gem 'slack-notifier'
 # API related
 gem 'jsonapi-serializer'
 gem 'jwt'
-gem 'rabl'
 gem 'responders'
 
 group :development do

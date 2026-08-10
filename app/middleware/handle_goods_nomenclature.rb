@@ -1,11 +1,8 @@
 # frozen_string_literal: true
 
-# Historically the Tariff has always supported requests to the commodity endpoint
-# for chapters and headings with their full 10 digits as their id value in both V1
-# and V2.
-#
-# This implementation adjusts the path to the /headings or /chapters endpoints
-# and uses the short code form for these parts of the hierarchy
+# The Tariff supports requests to the commodity endpoint for chapters and headings
+# using their full 10-digit id. This middleware adjusts the path to the /headings
+# or /chapters endpoints and uses the short code form for these parts of the hierarchy.
 class HandleGoodsNomenclature
   CHAPTER_REGEX = /\d{2}0{8}/
   HEADING_REGEX = /\d{4}0{6}/
