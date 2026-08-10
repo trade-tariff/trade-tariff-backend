@@ -105,3 +105,6 @@
       queue: within_1_day
       description: "Imports public Advance Tariff Rulings for tariff knowledge retrieval"
       enabled: <%= ENV.fetch('SERVICE', 'uk') == 'uk' %>
+    SidekiqQueueMetricsWorker:
+      cron: "*/5 * * * *"
+      description: "Emits Sidekiq queue depth and latency as CloudWatch custom metrics every 5 minutes"
