@@ -14,10 +14,12 @@ class GovukNotifierStatusCheckWorker
     return if user.nil?
     return if user.deleted
 
-    status = GovukNotifier.new.get_email_status(notification_id)
+    status = Notifications::DeliveryStatusChecker.new(
+      notification_id,
+      pipeline: 'my_ott',
+      identifier: user_id,
+    ).call
 
-    if status == GovukNotifier::PERMANENT_FAILURE
-      user.invalidate!
-    end
+    user.invalidate! if status == GovukNotifier::PERMANENT_FAILURE
   end
 end
