@@ -73,7 +73,7 @@ RSpec.describe Api::Admin::Search::Evaluation::RunsController, :admin do
       end
 
       it { is_expected.to have_http_status :unprocessable_content }
-      it { expect(json_response['error']).to include('use_kg_context') }
+      it { expect(json_response.dig('errors', 0, 'detail')).to include('use_kg_context') }
       it { expect { api_response }.not_to change(EvaluationRun, :count) }
     end
   end
