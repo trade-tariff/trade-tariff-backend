@@ -98,6 +98,26 @@ RSpec.describe VatGuidance::ContextGraphBuilder do
     expect(legislation_graph.dig('summary', 'unresolved_references')).to eq(0)
   end
 
+  it 'captures a statutory citation at the start of a guidance section' do
+    legislation = content_payload(
+      title: 'Legislation references (VAT Notice 700/1)',
+      path: '/guidance/legislation-references',
+      body: <<~HTML,
+        <div class="govspeak">
+          <p>Section 105(1) of the Civil Aviation Act 1982 applies. Further guidance follows.</p>
+        </div>
+      HTML
+    )
+    legislation_graph = described_class.new([legislation]).call
+
+    expect(legislation_graph.fetch('nodes')).to include(
+      include(
+        'node_type' => 'statutory_reference',
+        'heading' => 'Section 105(1) of the Civil Aviation Act 1982 applies',
+      ),
+    )
+  end
+
   it 'records official sources that could not be fetched as unresolved findings' do
     missing_path = '/guidance/withdrawn-vat-notice'
     payload = content_payload(

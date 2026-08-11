@@ -330,7 +330,7 @@ module VatGuidance
     end
 
     def sentence_containing(text, start_index, end_index)
-      sentence_start = text.rindex(/[.!?]/, start_index - 1)&.next || 0
+      sentence_start = start_index.zero? ? 0 : (text.rindex(/[.!?]/, start_index - 1)&.next || 0)
       sentence_end = text.index(/[.!?]/, end_index) || text.length
       normalise_text(text[sentence_start...sentence_end])
     end
