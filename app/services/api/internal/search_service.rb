@@ -23,6 +23,8 @@ module Api
         TradeTariffRequest.request_id ||= @request_id
         @expanded_query = params[:expanded_query].to_s.strip.presence
         @skip_question = params[:skip_question].nil? ? nil : ActiveModel::Type::Boolean.new.cast(params[:skip_question])
+        @configuration_overrides = params[:configuration_overrides] || {}
+        @search_type = params[:search_type] || 'interactive'
       end
 
       def call
@@ -45,7 +47,7 @@ module Api
           configuration: diagnostics_configuration,
         )
 
-        ::Search::Instrumentation.search(request_id:, query: q, search_type: 'interactive') do
+        ::Search::Instrumentation.search(request_id:, query: q, search_type: @search_type) do
           search_result
         end
       end
@@ -65,7 +67,7 @@ module Api
       def exact_match_response(exact)
         ::Search::Instrumentation.exact_match_selected(
           request_id:,
-          search_type: 'interactive',
+          search_type: @search_type,
           query: q,
           match_source: @exact_match_source,
           matched_value: @exact_matched_value,
@@ -204,12 +206,15 @@ module Api
           limit: opensearch_result_limit,
           filter_prefixes: filter_prefixes,
           request_id: request_id,
+          vector_score_threshold: @configuration_overrides['vector_score_threshold'],
+          vector_ef_search: @configuration_overrides['vector_ef_search'],
+          search_non_declarables: @configuration_overrides['search_non_declarables'],
         )
         ::Search::Instrumentation.retrieval_results_returned(
           request_id: request_id,
           query: q,
           effective_query: search_retrieval_query,
-          search_type: 'interactive',
+          search_type: @search_type,
           retrieval_method: 'vector',
           stage: 'returned',
           leg: 'vector',
@@ -237,7 +242,7 @@ module Api
           request_id: request_id,
           query: q,
           effective_query: result.expanded_query,
-          search_type: 'interactive',
+          search_type: @search_type,
           retrieval_method: 'opensearch',
           stage: 'returned',
           leg: 'opensearch',
@@ -261,7 +266,11 @@ module Api
           retrieval_query: search_retrieval_query,
           as_of: as_of, request_id: request_id, limit: opensearch_result_limit,
           filter_prefixes: filter_prefixes, iteration: search_iteration,
-          search_type: 'interactive'
+          search_type: @search_type,
+          rrf_k: @configuration_overrides['rrf_k'],
+          vector_score_threshold: @configuration_overrides['vector_score_threshold'],
+          vector_ef_search: @configuration_overrides['vector_ef_search'],
+          search_non_declarables: @configuration_overrides['search_non_declarables']
         )
 
         RetrievalResult.new(
@@ -289,7 +298,7 @@ module Api
       end
 
       def opensearch_result_limit
-        AdminConfiguration.integer_value('opensearch_result_limit')
+        @configuration_overrides['candidate_limit'] || AdminConfiguration.integer_value('opensearch_result_limit')
       end
 
       def conditional_expansion_enabled?
@@ -369,29 +378,42 @@ module Api
           search_result_limit: AdminConfiguration.integer_value('search_result_limit'),
           interactive_search_enabled: AdminConfiguration.enabled?('interactive_search_enabled'),
           interactive_search_duplicate_question_guard_enabled: AdminConfiguration.enabled?('interactive_search_duplicate_question_guard_enabled'),
-          interactive_search_max_questions: AdminConfiguration.integer_value('interactive_search_max_questions'),
+          interactive_search_max_questions: @configuration_overrides['max_rounds'] || AdminConfiguration.integer_value('interactive_search_max_questions'),
           expand_search_enabled: AdminConfiguration.enabled?('expand_search_enabled'),
           expand_search_decider: expansion_decider_version,
           expand_search_when_needed_enabled: AdminConfiguration.enabled?('expand_search_when_needed_enabled'),
           expand_search_min_results: AdminConfiguration.integer_value('expand_search_min_results'),
           expand_search_min_score: AdminConfiguration.integer_value('expand_search_min_score'),
           refine_search_with_answers_enabled: AdminConfiguration.enabled?('refine_search_with_answers_enabled'),
-          search_non_declarables: AdminConfiguration.enabled?('search_non_declarables'),
           search_labels_enabled: AdminConfiguration.enabled?('search_labels_enabled'),
           pos_search_enabled: AdminConfiguration.enabled?('pos_search_enabled'),
           pos_noun_boost: AdminConfiguration.integer_value('pos_noun_boost'),
           pos_qualifier_boost: AdminConfiguration.integer_value('pos_qualifier_boost'),
-          vector_score_threshold: AdminConfiguration.integer_value('vector_score_threshold'),
-          vector_ef_search: AdminConfiguration.integer_value('vector_ef_search'),
-          rrf_k: AdminConfiguration.integer_value('rrf_k'),
+          vector_score_threshold: @configuration_overrides['vector_score_threshold'] || AdminConfiguration.integer_value('vector_score_threshold'),
+          vector_ef_search: @configuration_overrides['vector_ef_search'] || AdminConfiguration.integer_value('vector_ef_search'),
+          rrf_k: @configuration_overrides['rrf_k'] || AdminConfiguration.integer_value('rrf_k'),
           hybrid_query_guardrail_threshold: AdminConfiguration.integer_value('hybrid_query_guardrail_threshold'),
           interactive_search_duplicate_question_guard_model: model_configuration('interactive_search_duplicate_question_guard_model'),
-          search_model: model_configuration('search_model'),
+          search_model: diagnostics_search_model,
           expand_model: model_configuration('expand_model'),
           filter_prefixes: filter_prefixes,
         }.compact_blank.tap do |configuration|
           configuration[:hybrid_query_guardrail_enabled] = AdminConfiguration.enabled?('hybrid_query_guardrail_enabled')
+          configuration[:search_non_declarables] = diagnostics_search_non_declarables
         end
+      end
+
+      def diagnostics_search_non_declarables
+        return @configuration_overrides['search_non_declarables'] unless @configuration_overrides['search_non_declarables'].nil?
+
+        AdminConfiguration.enabled?('search_non_declarables')
+      end
+
+      def diagnostics_search_model
+        config = model_configuration('search_model')
+        return config if @configuration_overrides['question_model'].blank?
+
+        config.merge(selected: @configuration_overrides['question_model'])
       end
 
       def model_configuration(name)
@@ -512,6 +534,11 @@ module Api
           opensearch_results: goods_nomenclatures,
           answers: answers,
           request_id: request_id,
+          max_rounds: @configuration_overrides['max_rounds'],
+          question_model: @configuration_overrides['question_model'],
+          search_compressed_notes_enabled: @configuration_overrides['search_compressed_notes_enabled'],
+          search_general_rules_enabled: @configuration_overrides['search_general_rules_enabled'],
+          search_type: @search_type,
         )
       end
 

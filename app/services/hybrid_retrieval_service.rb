@@ -3,11 +3,11 @@ class HybridRetrievalService
   LegResult = Data.define(:value, :error)
   Result = Data.define(:results, :expanded_query, :source_results)
 
-  def self.call(query:, as_of:, expanded_query: nil, retrieval_query: nil, request_id: nil, limit: 30, filter_prefixes: [], iteration: nil, search_type: 'interactive')
-    new(query:, as_of:, expanded_query:, retrieval_query:, request_id:, limit:, filter_prefixes:, iteration:, search_type:).call
+  def self.call(query:, as_of:, expanded_query: nil, retrieval_query: nil, request_id: nil, limit: 30, filter_prefixes: [], iteration: nil, search_type: 'interactive', rrf_k: nil, vector_score_threshold: nil, vector_ef_search: nil, search_non_declarables: nil)
+    new(query:, as_of:, expanded_query:, retrieval_query:, request_id:, limit:, filter_prefixes:, iteration:, search_type:, rrf_k:, vector_score_threshold:, vector_ef_search:, search_non_declarables:).call
   end
 
-  def initialize(query:, as_of:, expanded_query: nil, retrieval_query: nil, request_id: nil, limit: 30, filter_prefixes: [], iteration: nil, search_type: 'interactive')
+  def initialize(query:, as_of:, expanded_query: nil, retrieval_query: nil, request_id: nil, limit: 30, filter_prefixes: [], iteration: nil, search_type: 'interactive', rrf_k: nil, vector_score_threshold: nil, vector_ef_search: nil, search_non_declarables: nil)
     @query = query
     @expanded_query = expanded_query.presence || query
     @retrieval_query = retrieval_query.presence || @expanded_query
@@ -17,6 +17,10 @@ class HybridRetrievalService
     @filter_prefixes = Array(filter_prefixes).compact_blank
     @iteration = iteration
     @search_type = search_type
+    @rrf_k = rrf_k
+    @vector_score_threshold = vector_score_threshold
+    @vector_ef_search = vector_ef_search
+    @search_non_declarables = search_non_declarables
   end
 
   def call
@@ -121,11 +125,14 @@ private
   def vector_args
     args = { query: @retrieval_query, limit: @limit, request_id: @request_id }
     args[:filter_prefixes] = @filter_prefixes if @filter_prefixes.present?
+    args[:vector_score_threshold] = @vector_score_threshold unless @vector_score_threshold.nil?
+    args[:vector_ef_search] = @vector_ef_search unless @vector_ef_search.nil?
+    args[:search_non_declarables] = @search_non_declarables unless @search_non_declarables.nil?
     args
   end
 
   def rrf_merge(opensearch_items, vector_items)
-    k = AdminConfiguration.integer_value('rrf_k')
+    k = @rrf_k || AdminConfiguration.integer_value('rrf_k')
     scores = Hash.new(0.0)
     items_by_sid = {}
 

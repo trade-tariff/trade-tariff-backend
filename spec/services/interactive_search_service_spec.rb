@@ -65,6 +65,54 @@ RSpec.describe InteractiveSearchService do
   end
 
   describe '.call' do
+    context 'when max_rounds is passed explicitly' do
+      it 'reaches the final-answer path using the given max_rounds instead of interactive_search_max_questions' do
+        allow(OpenaiClient).to receive(:call).and_return('{"answers": [{"commodity_code": "4202210000", "confidence": "strong"}]}')
+
+        described_class.call(**search_params(max_rounds: 0))
+
+        expect(Search::Instrumentation).to have_received(:api_call).with(hash_including(operation: 'interactive_search_final_answer'))
+      end
+    end
+
+    context 'when question_model is passed explicitly' do
+      it 'uses the given question_model instead of the configured search_model' do
+        allow(OpenaiClient).to receive(:call).and_return('{"answers": [{"commodity_code": "4202210000", "confidence": "strong"}]}')
+
+        described_class.call(**search_params(question_model: 'gpt-4o-mini'))
+
+        expect(OpenaiClient).to have_received(:call).with(
+          anything, model: 'gpt-4o-mini', reasoning_effort: 'medium', event_kind: 'interactive_search'
+        )
+      end
+    end
+
+    context 'when search_type is passed explicitly and the call raises' do
+      it 'tags the failure instrumentation with the given search_type instead of the hardcoded default' do
+        allow(OpenaiClient).to receive(:call).and_raise(StandardError, 'boom')
+        allow(Search::Instrumentation).to receive(:search_failed)
+
+        described_class.call(**search_params(search_type: 'evaluation'))
+
+        expect(Search::Instrumentation).to have_received(:search_failed).with(
+          hash_including(search_type: 'evaluation'),
+        )
+      end
+    end
+
+    context 'when search_type is not given' do
+      it 'still tags failure instrumentation as interactive, reproducing today\'s exact behaviour' do
+        allow(OpenaiClient).to receive(:call).and_raise(StandardError, 'boom')
+        allow(Search::Instrumentation).to receive(:search_failed)
+
+        described_class.call(**search_params)
+
+        expect(Search::Instrumentation).to have_received(:search_failed).with(
+          hash_including(search_type: 'interactive'),
+        )
+      end
+    end
+
     context 'when feature is disabled' do
       before do
         config = AdminConfiguration.where(name: 'interactive_search_enabled').first
@@ -547,6 +595,53 @@ RSpec.describe InteractiveSearchService do
 
     before do
       allow(OpenaiClient).to receive(:call).and_return(ai_response)
+    end
+
+    context 'when search_compressed_notes_enabled is passed explicitly' do
+      it 'records note evidence as enabled without needing a search_compressed_notes_enabled AdminConfiguration record' do
+        described_class.call(**search_params(search_compressed_notes_enabled: true))
+
+        expect(Search::Instrumentation).to have_received(:note_evidence_evaluated).with(
+          hash_including(enabled: true),
+        )
+      end
+
+      it 'records note evidence as disabled for an explicit false override, even when AdminConfiguration says true' do
+        create(:admin_configuration, :boolean, name: 'search_compressed_notes_enabled', value: true, area: 'classification')
+        allow(AdminConfiguration).to receive(:enabled?).and_call_original
+
+        described_class.call(**search_params(search_compressed_notes_enabled: false))
+
+        expect(Search::Instrumentation).to have_received(:note_evidence_evaluated).with(
+          hash_including(enabled: false),
+        )
+        expect(AdminConfiguration).not_to have_received(:enabled?).with('search_compressed_notes_enabled')
+      end
+    end
+
+    context 'when search_general_rules_enabled is passed explicitly' do
+      let(:default_search_context) { AdminConfigurationSeeder.search_context_markdown }
+      let(:general_rules_presenter) { instance_double(Search::GeneralRulesPresenter, to_s: "Current General Rules of Interpretation:\nUse headings first.") }
+
+      before do
+        allow(Search::GeneralRulesPresenter).to receive(:new).and_return(general_rules_presenter)
+      end
+
+      it 'includes general rules without needing a search_general_rules_enabled AdminConfiguration record' do
+        described_class.call(**search_params(search_general_rules_enabled: true))
+
+        expect(Search::GeneralRulesPresenter).to have_received(:new)
+      end
+
+      it 'excludes general rules for an explicit false override, even when AdminConfiguration says true' do
+        create(:admin_configuration, :boolean, name: 'search_general_rules_enabled', value: true, area: 'classification')
+        allow(AdminConfiguration).to receive(:enabled?).and_call_original
+
+        described_class.call(**search_params(search_general_rules_enabled: false))
+
+        expect(Search::GeneralRulesPresenter).not_to have_received(:new)
+        expect(AdminConfiguration).not_to have_received(:enabled?).with('search_general_rules_enabled')
+      end
     end
 
     it 'removes the compressed notes line when no compressed note contexts are selected' do

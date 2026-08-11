@@ -8,7 +8,6 @@ module EvaluationConfiguration
     vector_score_threshold
     vector_ef_search
     search_non_declarables
-    filter_prefixes
     search_compressed_notes_enabled
     search_general_rules_enabled
   ].freeze

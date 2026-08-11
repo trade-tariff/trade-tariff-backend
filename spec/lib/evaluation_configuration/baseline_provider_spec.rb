@@ -54,10 +54,9 @@ RSpec.describe EvaluationConfiguration::BaselineProvider do
       expect(described_class.call['question_model']).to eq('gpt-5.4')
     end
 
-    it 'omits simulator_model and filter_prefixes entirely, since neither has a real backend source' do
+    it 'omits simulator_model entirely, since it has no real backend source' do
       result = described_class.call
       expect(result).not_to have_key('simulator_model')
-      expect(result).not_to have_key('filter_prefixes')
     end
 
     it 'returns exactly the 9 keys with a real backend source' do
