@@ -1,8 +1,9 @@
 module Api
   module V2
     module Categorisation
-      # See GoodsNomenclaturesController — reachable via API Gateway (tariff/categorisation
-      # scope) instead of the legacy static API key/token.
+      # Same behaviour as GreenLanes::FaqFeedbackController, but reachable through
+      # API Gateway under the tariff/categorisation OAuth scope instead of the legacy
+      # static API key/token. The two routes run in parallel during the migration.
       class FaqFeedbackController < GreenLanes::FaqFeedbackController
         skip_before_action :authenticate
       end
