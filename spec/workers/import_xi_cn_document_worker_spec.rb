@@ -4,12 +4,15 @@ RSpec.describe ImportXiCnDocumentWorker do
   subject(:worker) { described_class.new }
 
   let(:importer_double) { instance_double(XiCnImporter::Importer) }
+  let(:cloudwatch_client) { instance_double(Aws::CloudWatch::Client) }
 
   before do
     allow(TradeTariffBackend).to receive(:xi?).and_return(true)
     allow(XiCnImporter::Importer).to receive(:new).and_return(importer_double)
     allow(SlackNotifierService).to receive(:call)
     allow(CustomsTariffUpdateNotifierService).to receive(:new).and_return(instance_double(CustomsTariffUpdateNotifierService, call: nil))
+    allow(Aws::CloudWatch::Client).to receive(:new).and_return(cloudwatch_client)
+    allow(cloudwatch_client).to receive(:put_metric_data)
   end
 
   describe '#perform' do
@@ -19,6 +22,11 @@ RSpec.describe ImportXiCnDocumentWorker do
       it 'does nothing' do
         worker.perform
         expect(XiCnImporter::Importer).not_to have_received(:new)
+      end
+
+      it 'does not emit a heartbeat' do
+        worker.perform
+        expect(cloudwatch_client).not_to have_received(:put_metric_data)
       end
     end
 
@@ -129,6 +137,35 @@ RSpec.describe ImportXiCnDocumentWorker do
         expect { worker.perform }.to raise_error(RuntimeError)
         expect(SlackNotifierService).to have_received(:call)
           .with(a_string_including('failed'))
+      end
+
+      it 'does not emit a heartbeat' do
+        expect { worker.perform }.to raise_error(RuntimeError)
+        expect(cloudwatch_client).not_to have_received(:put_metric_data)
+      end
+    end
+
+    describe 'heartbeat on success' do
+      before do
+        allow(importer_double).to receive(:call).and_return([])
+      end
+
+      it 'emits a JobSuccess heartbeat to TradeTariff/ScheduledJobs' do
+        worker.perform
+
+        expect(cloudwatch_client).to have_received(:put_metric_data).with(
+          namespace: 'TradeTariff/ScheduledJobs',
+          metric_data: [{
+            metric_name: 'JobSuccess',
+            value: 1,
+            unit: 'Count',
+            dimensions: [
+              { name: 'Job', value: 'ImportXiCnDocumentWorker' },
+              { name: 'Service', value: TradeTariffBackend.service },
+              { name: 'Environment', value: ENV.fetch('ENVIRONMENT', 'local') },
+            ],
+          }],
+        )
       end
     end
   end

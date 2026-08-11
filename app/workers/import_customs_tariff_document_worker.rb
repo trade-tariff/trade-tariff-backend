@@ -3,6 +3,7 @@ require_relative '../lib/customs_tariff_importer/logger'
 
 class ImportCustomsTariffDocumentWorker
   include Sidekiq::Worker
+  include ScheduledJobHeartbeat
 
   sidekiq_options queue: :default, retry: false, slack_alerts: false
 
@@ -26,6 +27,7 @@ class ImportCustomsTariffDocumentWorker
 
     notify_completed(results)
     notify_update_recipients(results)
+    record_heartbeat
   rescue StandardError => e
     CustomsTariffImporter::Instrumentation.import_run_failed(
       error_class: e.class.name,
