@@ -33,31 +33,8 @@ class TaricSynchronizer
       TariffSynchronizer::TaricUpdate
     end
 
-    # Download pending updates for TARIC and CDS data
-    # Gets latest downloaded file present in (inbox/failbox/processed) and tries
-    # to download any further updates to current day.
     def download
-      unless sync_variables_set?
-        TariffSynchronizer::Instrumentation.sync_run_failed(
-          phase: 'download',
-          error_class: 'ConfigurationError',
-          error_message: 'Missing: Tariff sync environment variables: TARIFF_SYNC_USERNAME, TARIFF_SYNC_PASSWORD, TARIFF_SYNC_HOST and TARIFF_SYNC_EMAIL.',
-        )
-        return
-      end
-
-      TradeTariffBackend.with_redis_lock do
-        TariffSynchronizer::Instrumentation.lock_acquired(phase: 'download')
-
-        start_time = Process.clock_gettime(Process::CLOCK_MONOTONIC)
-        TradeTariffBackend.patch_broken_taric_downloads? ? TariffSynchronizer::TaricUpdate.sync_patched : TariffSynchronizer::TaricUpdate.sync(initial_date: initial_update_date)
-
-        duration_ms = ((Process.clock_gettime(Process::CLOCK_MONOTONIC) - start_time) * 1000).round(2)
-        TariffSynchronizer::Instrumentation.download_completed(
-          duration_ms:,
-          files_count: TariffSynchronizer::TaricUpdate.pending.count,
-        )
-      end
+      TariffSynchronizer::TaricUpdateDownloader.download(initial_date: initial_update_date)
     end
 
     def apply
@@ -69,12 +46,6 @@ class TaricSynchronizer
     # NOTE: this does not remove records from initial seed
     def rollback(rollback_date, keep: false)
       rollback_updates(TaricUpdate, rollback_date, keep:)
-    end
-
-  private
-
-    def sync_variables_set?
-      username.present? && password.present? && host.present?
     end
   end
 end

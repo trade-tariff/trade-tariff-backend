@@ -1,7 +1,85 @@
 module TariffSynchronizer
   # Download pending updates TARIC files
   class TaricUpdateDownloader
+    DOWNLOAD_FROM = BaseUpdate::DOWNLOAD_FROM
+
     delegate :taric_query_url_template, :taric_update_url_template, :host, to: TaricSynchronizer
+
+    class << self
+      def download(initial_date: TaricSynchronizer.initial_update_date)
+        unless sync_variables_set?
+          Instrumentation.sync_run_failed(
+            phase: 'download',
+            error_class: 'ConfigurationError',
+            error_message: 'Missing: Tariff sync environment variables: TARIFF_SYNC_USERNAME, TARIFF_SYNC_PASSWORD, TARIFF_SYNC_HOST and TARIFF_SYNC_EMAIL.',
+          )
+          return
+        end
+
+        TradeTariffBackend.with_redis_lock do
+          Instrumentation.lock_acquired(phase: 'download')
+
+          start_time = Process.clock_gettime(Process::CLOCK_MONOTONIC)
+          if TradeTariffBackend.patch_broken_taric_downloads?
+            sync_patched
+          else
+            sync(initial_date:)
+          end
+
+          duration_ms = ((Process.clock_gettime(Process::CLOCK_MONOTONIC) - start_time) * 1000).round(2)
+          Instrumentation.download_completed(
+            duration_ms:,
+            files_count: TaricUpdate.pending.count,
+          )
+        end
+      end
+
+      def sync(initial_date:)
+        applicable_download_date_range(initial_date:).each { |issue_date| new(issue_date).perform }
+      end
+
+      def sync_patched
+        update = applicable_update
+        return if update.blank?
+
+        TaricUpdateDownloaderPatched.new(update).perform
+      end
+
+      def applicable_download_date_range(initial_date:)
+        download_start_date(initial_date:)..download_end_date
+      end
+
+      def applicable_update
+        current_update = TaricUpdate.most_recent_pending || TaricUpdate.most_recent_applied
+
+        return nil if current_update.blank?
+        return nil unless TaricUpdate.correct_filename_sequence?
+
+        current_update.next_update
+      end
+
+    private
+
+      def sync_variables_set?
+        TaricSynchronizer.username.present? &&
+          TaricSynchronizer.password.present? &&
+          TaricSynchronizer.host.present?
+      end
+
+      def download_end_date
+        Time.zone.today
+      end
+
+      def download_start_date(initial_date:)
+        if TaricUpdate.pending_applied_or_failed.count.zero?
+          initial_date
+        else
+          last_download = TaricUpdate.oldest_pending || TaricUpdate.most_recent_applied || TaricUpdate.most_recent_failed
+
+          [last_download.issue_date, DOWNLOAD_FROM.ago.to_date].min
+        end
+      end
+    end
 
     attr_reader :date, :url
 

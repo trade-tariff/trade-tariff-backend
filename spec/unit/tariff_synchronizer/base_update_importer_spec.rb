@@ -7,12 +7,12 @@ RSpec.describe TariffSynchronizer::BaseUpdateImporter do
       allow(TradeTariffBackend).to receive(:service).and_return('xi')
     end
 
-    it 'calls the import! method to the object' do
-      allow(taric_update).to receive(:import!)
+    it 'delegates import to TaricUpdateImporter' do
+      allow(TariffSynchronizer::TaricUpdateImporter).to receive(:perform)
 
       base_update_importer.apply
 
-      expect(taric_update).to have_received(:import!)
+      expect(TariffSynchronizer::TaricUpdateImporter).to have_received(:perform).with(taric_update)
     end
 
     context 'with a pending CDS update' do
@@ -30,18 +30,18 @@ RSpec.describe TariffSynchronizer::BaseUpdateImporter do
       end
     end
 
-    it 'do not call the import! method to the object if is not pending' do
-      allow(taric_update).to receive(:import!)
+    it 'do not call TaricUpdateImporter if the update is not pending' do
+      allow(TariffSynchronizer::TaricUpdateImporter).to receive(:perform)
 
       taric_update.mark_as_failed
 
-      expect(taric_update).not_to have_received(:import!)
-
       base_update_importer.apply
+
+      expect(TariffSynchronizer::TaricUpdateImporter).not_to have_received(:perform)
     end
 
     it 'marks the record as failed if an error occurs' do
-      allow(taric_update).to receive(:import!).and_raise(Sequel::Rollback)
+      allow(TariffSynchronizer::TaricUpdateImporter).to receive(:perform).and_raise(Sequel::Rollback)
       base_update_importer.apply
 
       expect(taric_update.reload).to be_failed
@@ -57,7 +57,7 @@ RSpec.describe TariffSynchronizer::BaseUpdateImporter do
 
     it 'subscribes to all events' do
       allow(ActiveSupport::Notifications).to receive(:subscribe)
-      allow(taric_update).to receive(:import!).and_return(true)
+      allow(TariffSynchronizer::TaricUpdateImporter).to receive(:perform)
 
       base_update_importer.apply
 

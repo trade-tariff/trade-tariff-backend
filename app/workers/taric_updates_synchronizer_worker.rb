@@ -14,7 +14,7 @@ class TaricUpdatesSynchronizerWorker
     TariffSynchronizer::Instrumentation.sync_run_started(triggered_by: self.class.name)
     TariffSynchronizer::Instrumentation.download_started
 
-    TaricSynchronizer.download
+    taric_update_downloader.download(initial_date: TaricSynchronizer.initial_update_date)
 
     TariffSynchronizer::Instrumentation.apply_started(pending_count: TariffSynchronizer::BaseUpdate.pending.count)
     unless TaricSynchronizer.apply # return if nothing changed
@@ -47,6 +47,10 @@ class TaricUpdatesSynchronizerWorker
   end
 
 private
+
+  def taric_update_downloader
+    TariffSynchronizer::TaricUpdateDownloader
+  end
 
   def emit_sync_run_completed(start_time)
     duration_ms = ((Process.clock_gettime(Process::CLOCK_MONOTONIC) - start_time) * 1000).round(2)

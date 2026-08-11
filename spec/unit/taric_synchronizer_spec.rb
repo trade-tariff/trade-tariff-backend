@@ -12,80 +12,13 @@ RSpec.describe TaricSynchronizer, :truncation do
   end
 
   describe '.download' do
-    context 'when sync variables are set' do
-      before do
-        allow(described_class).to receive(:sync_variables_set?).and_return(true)
-      end
+    it 'delegates to TaricUpdateDownloader' do
+      allow(TariffSynchronizer::TaricUpdateDownloader).to receive(:download)
 
-      it 'invokes update downloading/syncing on all update types' do
-        allow(TariffSynchronizer::TaricUpdate).to receive(:sync).and_return(true)
+      described_class.download
 
-        described_class.download
-
-        expect(TariffSynchronizer::TaricUpdate).to have_received(:sync)
-      end
-
-      it 'emits a download_completed instrumentation event' do
-        allow(TariffSynchronizer::TaricUpdate).to receive(:sync).and_return(true)
-        allow(TariffSynchronizer::Instrumentation).to receive(:download_completed)
-
-        described_class.download
-
-        expect(TariffSynchronizer::Instrumentation).to have_received(:download_completed)
-      end
-
-      context 'when patch_broken_taric_downloads is set to true' do
-        before do
-          allow(TradeTariffBackend).to receive(:patch_broken_taric_downloads?).and_return(true)
-        end
-
-        it 'invokes update downloading/syncing on all update types' do
-          allow(TariffSynchronizer::TaricUpdate).to receive(:sync_patched).and_return(true)
-
-          described_class.download
-
-          expect(TariffSynchronizer::TaricUpdate).to have_received(:sync_patched)
-        end
-      end
-    end
-
-    context 'when sync variables are not set' do
-      before do
-        allow(described_class).to receive(:sync_variables_set?).and_return(false)
-      end
-
-      it 'does not start sync process' do
-        allow(TariffSynchronizer::TaricUpdate).to receive(:sync)
-
-        described_class.download
-
-        expect(TariffSynchronizer::TaricUpdate).not_to have_received(:sync)
-      end
-
-      it 'emits a sync_run_failed instrumentation event' do
-        allow(TariffSynchronizer::Instrumentation).to receive(:sync_run_failed)
-
-        described_class.download
-
-        expect(TariffSynchronizer::Instrumentation).to have_received(:sync_run_failed)
-      end
-    end
-
-    context 'when a download exception' do
-      let(:connection) { instance_double(Faraday::Connection) }
-
-      before do
-        allow(described_class).to receive(:sync_variables_set?).and_return(true)
-        allow(Faraday).to receive(:new).and_return(connection)
-        allow(connection).to receive(:get).and_raise(Faraday::Error, 'Foo')
-      end
-
-      it 'raises a retriable download error and emits a download_retried event' do
-        allow(TariffSynchronizer::Instrumentation).to receive(:download_retried)
-
-        expect { described_class.download }.to raise_error TariffSynchronizer::TariffUpdatesRequester::RetriableDownloadError
-        expect(TariffSynchronizer::Instrumentation).to have_received(:download_retried)
-      end
+      expect(TariffSynchronizer::TaricUpdateDownloader).to have_received(:download)
+        .with(initial_date: described_class.initial_update_date)
     end
   end
 
