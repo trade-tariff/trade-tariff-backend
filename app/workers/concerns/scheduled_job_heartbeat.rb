@@ -11,7 +11,7 @@ module ScheduledJobHeartbeat
         dimensions: [
           { name: 'Job', value: self.class.name },
           { name: 'Service', value: TradeTariffBackend.service },
-          { name: 'Environment', value: Rails.env },
+          { name: 'Environment', value: ENV.fetch('ENVIRONMENT', 'local') },
         ],
       }],
     )

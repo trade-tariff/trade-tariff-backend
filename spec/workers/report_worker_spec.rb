@@ -140,7 +140,7 @@ RSpec.describe ReportWorker, type: :worker do
             dimensions: [
               { name: 'Job', value: 'ReportWorker' },
               { name: 'Service', value: 'uk' },
-              { name: 'Environment', value: Rails.env },
+              { name: 'Environment', value: ENV.fetch('ENVIRONMENT', 'local') },
             ],
           }],
         )

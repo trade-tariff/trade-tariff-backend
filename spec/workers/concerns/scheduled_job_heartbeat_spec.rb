@@ -27,7 +27,7 @@ RSpec.describe ScheduledJobHeartbeat do
           dimensions: [
             { name: 'Job', value: 'TestWorker' },
             { name: 'Service', value: 'uk' },
-            { name: 'Environment', value: Rails.env },
+            { name: 'Environment', value: ENV.fetch('ENVIRONMENT', 'local') },
           ],
         }],
       )

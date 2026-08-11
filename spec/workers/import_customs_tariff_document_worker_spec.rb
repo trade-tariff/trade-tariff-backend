@@ -275,7 +275,7 @@ RSpec.describe ImportCustomsTariffDocumentWorker, type: :worker do
           dimensions: [
             { name: 'Job', value: 'ImportCustomsTariffDocumentWorker' },
             { name: 'Service', value: TradeTariffBackend.service },
-            { name: 'Environment', value: Rails.env },
+            { name: 'Environment', value: ENV.fetch('ENVIRONMENT', 'local') },
           ],
         }],
       )
