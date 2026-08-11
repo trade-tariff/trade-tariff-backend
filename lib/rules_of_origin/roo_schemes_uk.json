@@ -5445,6 +5445,64 @@
                 "2059",
                 "2060"
             ]
+        },
+        {
+            "scheme_code": "india",
+            "validity_start_date": "2026-07-15",
+            "validity_end_date": null,
+            "title": "COMPREHENSIVE ECONOMIC AND TRADE AGREEMENT BETWEEN THE GOVERNMENT OF THE UNITED KINGDOM OF GREAT BRITAIN AND NORTHERN IRELAND AND THE GOVERNMENT OF THE REPUBLIC OF INDIA",
+            "proofs": [
+                {
+                    "summary": "Origin declaration - Article 15 1 (a) (i) (ORD) must follow the appropriate prescribed structure as set out in Annex B (Origin Declaration Template)",
+                    "subtext": "",
+                    "proof_class": "origin-declaration",
+                    "detail": ""
+                },
+                {
+                    "summary": "Certificate of origin - Article 15 1 (a) (ii) (ORD) must follow the appropriate prescribed structure as set out in Annex C (Certificate of Origin Template)",
+                    "subtext": "",
+                    "proof_class": "certificate-of-origin",
+                    "detail": ""
+                },
+                {
+                    "summary": "importer’s knowledge under article 15 1 (a) (iii) ORD",
+                    "subtext": "",
+                    "proof_class": "importers-knowledge",
+                    "detail": ""
+                }
+            ],
+            "proof_codes": {
+                "DE 2/3": "One of the following proofs of origin codes together with an appropriate status code:\n\n9001 – Origin Declaration\n\nN954 – Certification of Origin\n\nU112 – Importers Knowledge",
+                "DE 4/17": "The data element must include a preference code in the 300 series\n\nFurther information on completing data elements can be found here: The following contains the above codes, but the descriptions are currently being updated.\n\n[https://www.gov.uk/government/publications/cds-uk-trade-tariff-volume-3-import-declaration-completion-guide/uk-trade-tariff-cds-volume-3-import-declaration-completion-guide](https://www.gov.uk/government/publications/cds-uk-trade-tariff-volume-3-import-declaration-completion-guide/uk-trade-tariff-cds-volume-3-import-declaration-completion-guide)"
+            },
+            "cumulation_methods": {
+                "bilateral": {
+                    "countries": [
+                        "GB",
+                        "IN"
+                    ]
+                }
+            },
+            "ord": {
+                "ord_title": "Origin Reference Document implementing the Comprehensive Economic and Trade Agreement between the Government of the United Kingdom of Great Britain and Northern Ireland and the Government of the Republic of India signed on 24 July 2025 (“the India Origin Reference Document”)",
+                "ord_version": "1.0",
+                "ord_date": "13 January 2026",
+                "ord_original": "The_India_Origin_Reference_Document_v_1.0.docx"
+            },
+            "introductory_notes_file": "india_intro.md",
+            "links": [
+                {
+                    "text": "Comprehensive Economic and Trade Agreement between the United Kingdom of Great Britain and Northern Ireland and India",
+                    "url": "https://www.gov.uk/government/collections/comprehensive-economic-and-trade-agreement-between-the-united-kingdom-of-great-britain-and-northern-ireland-and-india"
+                },
+                {
+                    "text": "UK-India CETA origin declaration - GOV.UK",
+                    "url": "https://www.gov.uk/government/publications/uk-india-ceta-origin-declaration"
+                }
+            ],
+            "countries": [
+                "IN"
+            ]
         }
     ],
     "proof_urls": {
