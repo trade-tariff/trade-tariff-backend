@@ -55,7 +55,7 @@ RSpec.describe VatGuidance::ContextGraphSource do
     )
     stub_request(:get, content_api_url(redirecting_path)).to_return(
       status: 303,
-      headers: { 'Location' => content_api_url(canonical_path) },
+      headers: { 'Location' => "/api/content#{canonical_path}" },
     )
     stub_content_api(canonical_path, content_payload(canonical_path))
     stub_request(:get, content_api_url(missing_path)).to_return(status: 404)
@@ -63,6 +63,29 @@ RSpec.describe VatGuidance::ContextGraphSource do
     expect(result.payloads.pluck('base_path')).to include(canonical_path)
     expect(result.path_aliases).to include(redirecting_path => canonical_path)
     expect(result.failures.fetch(missing_path)).to include('HTTP 404')
+  end
+
+  it 'follows absolute Content API redirects' do
+    root_path = described_class::DOCUMENT_PATHS.fetch('701-23')
+    canonical_path = '/guidance/canonical-vat-notice'
+    stub_request(:get, content_api_url(root_path)).to_return(
+      status: 301,
+      headers: { 'Location' => content_api_url(canonical_path) },
+    )
+    stub_content_api(canonical_path, content_payload(canonical_path))
+
+    expect(result.payloads.pluck('base_path')).to include(canonical_path)
+    expect(result.path_aliases).to include(root_path => canonical_path)
+  end
+
+  it 'rejects redirects outside the GOV.UK Content API' do
+    root_path = described_class::DOCUMENT_PATHS.fetch('701-23')
+    stub_request(:get, content_api_url(root_path)).to_return(
+      status: 302,
+      headers: { 'Location' => '//example.com/api/content/untrusted' },
+    )
+
+    expect { result }.to raise_error(described_class::FetchError, /redirected outside/)
   end
 
   it 'fails the build when a required root document cannot be fetched' do
