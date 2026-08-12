@@ -44,6 +44,12 @@ jobs:
             "name": "tariff-identity",
             "repo": "trade-tariff/identity",
             "service-names": ["identity"]
+          },
+          {
+            "name": "tariff-dev-hub",
+            "repo": "trade-tariff/trade-tariff-dev-hub",
+            "migrate": true,
+            "service-names": ["dev-hub"]
           }
         ]
       test-flavour: tariff
