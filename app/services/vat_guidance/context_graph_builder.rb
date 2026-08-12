@@ -338,7 +338,10 @@ module VatGuidance
     def referenced_notice_number(text, match)
       sentence = sentence_containing(text, match.begin(0), match.end(0))
       preceding_text = text[[match.begin(0) - 120, 0].max...match.begin(0)]
-      preceding_notice = notice_number(preceding_text)
+      preceding_citation = preceding_text.match(
+        /(?:VAT\s+)?Notice\s+(?:\d{3}\s*\/\s*\d+[A-Z]?|\d{3}[A-Z])\s*,?\s*\z/i,
+      )
+      preceding_notice = notice_number(preceding_citation[0]) if preceding_citation
       return preceding_notice if preceding_notice
 
       following_text = text[match.end(0)...[match.end(0) + 180, text.length].min]
@@ -450,7 +453,7 @@ module VatGuidance
       @external_nodes[id] ||= node
       {
         node: @external_nodes.fetch(id),
-        resolution: failure ? 'unresolved' : 'resolved',
+        resolution: 'unresolved',
       }
     end
 

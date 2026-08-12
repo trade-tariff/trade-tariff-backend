@@ -34,16 +34,35 @@ RSpec.describe 'VAT guidance context packets artifact' do
     )
   end
 
+  it 'has one evidence-expanded packet for each Chapter 20 and Chapter 84 commodity' do
+    packets = artifact.fetch('commodity_packets')
+
+    expect(packets.map { |packet| packet.dig('source', 'node_id') }).to match_array(graph.fetch('commodity_node_ids'))
+    expect(packets.group_by { |packet| packet.dig('source', 'chapter') }.transform_values(&:length)).to eq(
+      '20' => 3,
+      '84' => 3,
+    )
+    expect(packets.sum { |packet| packet.fetch('references').length }).to eq(22)
+    expect(packets).to all(satisfy do |packet|
+      packet.dig('source', 'node_type') == 'commodity' &&
+        packet.dig('source', 'commodity_code').present? &&
+        packet.fetch('unresolved_references').empty?
+    end)
+  end
+
   it 'binds the artifact and every packet to deterministic content digests' do
     expect(artifact.fetch('source_graph_sha256')).to eq(graph.fetch('content_sha256'))
     expect(artifact.fetch('content_sha256')).to eq(digest(artifact.except('content_sha256')))
     expect(artifact.fetch('packets')).to all(satisfy do |packet|
       packet.fetch('content_sha256') == digest(packet.except('content_sha256'))
     end)
+    expect(artifact.fetch('commodity_packets')).to all(satisfy do |packet|
+      packet.fetch('content_sha256') == digest(packet.except('content_sha256'))
+    end)
   end
 
   it 'preserves anchors and supplies every expanded reference target as readable content' do
-    artifact.fetch('packets').each do |packet|
+    all_packets.each do |packet|
       source = packet.fetch('source')
       content = packet.fetch('content')
 
@@ -56,6 +75,16 @@ RSpec.describe 'VAT guidance context packets artifact' do
       expect(content).to all(include('node_id', 'document_id', 'section_key', 'source_url', 'text'))
       expect(packet.fetch('references').flat_map { |reference| reference.fetch('expanded_node_ids') })
         .to all(be_in(content.pluck('node_id')))
+    end
+  end
+
+  it 'bounds every packet and never silently retains an empty resolved expansion' do
+    all_packets.each do |packet|
+      expect(packet.dig('context_budget', 'included_content_characters')).to be <=
+        packet.dig('context_budget', 'maximum_content_characters')
+      expect(packet.fetch('references')).to all(satisfy do |reference|
+        reference.fetch('expanded_node_ids').any? || reference.fetch('omitted_node_ids').any?
+      end)
     end
   end
 
@@ -75,6 +104,10 @@ RSpec.describe 'VAT guidance context packets artifact' do
 
   def digest(value)
     Digest::SHA256.hexdigest(JSON.generate(deep_sort(value)))
+  end
+
+  def all_packets
+    artifact.fetch('packets') + artifact.fetch('commodity_packets')
   end
 
   def deep_sort(value)

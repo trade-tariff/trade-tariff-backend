@@ -42,6 +42,9 @@ namespace :vat_guidance do
     puts "Sections by notice: #{summary.fetch('sections_by_notice')}"
     puts "Packets with referenced content: #{summary.fetch('packets_with_referenced_content')}"
     puts "Packets with unresolved references: #{summary.fetch('packets_with_unresolved_references')}"
+    puts "Commodity packets: #{summary.fetch('commodity_packets')}"
+    puts "Commodities by chapter: #{summary.fetch('commodities_by_chapter')}"
+    puts "Commodity evidence references: #{summary.fetch('commodity_evidence_references')}"
   end
 end
 # rubocop:enable Metrics/BlockLength

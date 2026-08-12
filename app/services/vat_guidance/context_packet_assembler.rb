@@ -3,7 +3,8 @@ require 'nokogiri'
 
 module VatGuidance
   class ContextPacketAssembler
-    SCHEMA_VERSION = 1
+    SCHEMA_VERSION = 2
+    MAX_CONTENT_CHARACTERS = 80_000
     TARGET_NOTICE_NUMBERS = %w[701/23 701/14 709/1].freeze
     COMPARISON_SECTION_ID =
       'document:/guidance/catering-takeaway-food-and-vat-notice-7091#information-in-this-notice'.freeze
@@ -13,11 +14,13 @@ module VatGuidance
       prose_notice_reference
       prose_cross_document_reference
       statutory_reference
+      guidance_evidence
     ].freeze
 
-    def initialize(graph, comparison_section_id: COMPARISON_SECTION_ID)
+    def initialize(graph, comparison_section_id: COMPARISON_SECTION_ID, max_content_characters: MAX_CONTENT_CHARACTERS)
       @graph = graph.deep_stringify_keys
       @comparison_section_id = comparison_section_id
+      @max_content_characters = max_content_characters
       @nodes_by_id = @graph.fetch('nodes').index_by { |node| node.fetch('id') }
       @documents_by_id = @graph.fetch('documents').index_by { |document| document.fetch('id') }
       @outgoing_edges = @graph.fetch('edges').group_by { |edge| edge.fetch('source_id') }
@@ -26,6 +29,7 @@ module VatGuidance
     def call
       validate_graph!
       packets = source_sections.map { |section| assemble(section, include_references: true) }
+      commodity_packets = source_commodities.map { |commodity| assemble(commodity, include_references: true) }
       comparison_source = @nodes_by_id.fetch(@comparison_section_id)
 
       artifact = {
@@ -34,6 +38,7 @@ module VatGuidance
         'target_notice_numbers' => TARGET_NOTICE_NUMBERS,
         'traversal_policy' => traversal_policy,
         'packets' => packets,
+        'commodity_packets' => commodity_packets,
         'comparisons' => [
           {
             'source_node_id' => comparison_source.fetch('id'),
@@ -44,7 +49,7 @@ module VatGuidance
             end,
           },
         ],
-        'summary' => summary(packets),
+        'summary' => summary(packets, commodity_packets),
       }
       artifact['content_sha256'] = sha256(canonical_json(artifact))
       artifact
@@ -73,12 +78,30 @@ module VatGuidance
       }.sort_by { |node| node.fetch('id') }
     end
 
+    def source_commodities
+      commodity_ids = @graph.fetch('commodity_node_ids', []).to_set
+      @graph.fetch('nodes').select { |node|
+        node['node_type'] == 'commodity' && commodity_ids.include?(node['id'])
+      }.sort_by { |node| node.fetch('id') }
+    end
+
     def assemble(source, include_references:)
       edges = include_references ? followed_edges(source) : []
       references = edges.map { |edge| reference(edge) }
-      included_nodes = [content_node(source, role: 'source')]
-      included_nodes.concat(references.flat_map { |item| item.fetch('content') })
-      included_nodes = included_nodes.uniq { |node| node.fetch('node_id') }
+      empty_references, references = references.partition { |item| item.fetch('content').empty? }
+      candidates = source_content(source) + references.flat_map { |item| item.fetch('content') }
+      included_nodes, omissions = apply_content_budget(candidates)
+      included_node_ids = included_nodes.pluck('node_id').to_set
+      references.each do |item|
+        expanded_node_ids = item.fetch('content').pluck('node_id') & included_node_ids.to_a
+        item['expanded_node_ids'] = expanded_node_ids
+        item['omitted_node_ids'] = item.fetch('content').pluck('node_id') - expanded_node_ids
+      end
+      empty_reference_findings = empty_references.map do |item|
+        item.except('content', 'expanded_node_ids').merge(
+          'resolution_issue' => 'resolved_target_has_no_expandable_content',
+        )
+      end
 
       packet = {
         'packet_id' => packet_id(source.fetch('id'), include_references: include_references),
@@ -86,7 +109,13 @@ module VatGuidance
         'source' => anchor_for(source),
         'content' => included_nodes,
         'references' => references.map { |item| item.except('content') },
-        'unresolved_references' => unresolved_references(source),
+        'unresolved_references' => unresolved_references(source) + empty_reference_findings,
+        'context_budget' => {
+          'maximum_content_characters' => @max_content_characters,
+          'included_content_characters' => included_nodes.sum { |node| node.fetch('text').length },
+          'unit' => 'characters',
+        },
+        'omissions' => omissions,
       }
       packet['content_sha256'] = sha256(canonical_json(packet))
       packet
@@ -113,7 +142,7 @@ module VatGuidance
       content = if target['node_type'] == 'document'
                   document_sections(target.fetch('id')).map { |node| content_node(node, role: 'referenced') }
                 else
-                  [content_node(target, role: 'referenced')]
+                  expandable_section_nodes(target).map { |node| content_node(node, role: 'referenced') }
                 end
 
       edge.slice('target_id', 'reference_kind', 'reference_text', 'href', 'cross_document').merge(
@@ -139,6 +168,10 @@ module VatGuidance
         'source_url' => node['source_url'],
         'text' => readable_text(node),
         'content_sha256' => node['content_sha256'],
+        'node_type' => node['node_type'],
+        'parent_id' => node['parent_id'],
+        'chapter' => node['chapter'],
+        'commodity_code' => node['commodity_code'],
       }
     end
 
@@ -146,11 +179,93 @@ module VatGuidance
       html = node['content_html']
       return node['heading'].to_s if html.blank?
 
-      Nokogiri::HTML.fragment(html).text.squish
+      render_html(Nokogiri::HTML.fragment(html)).strip
+    end
+
+    def render_html(node)
+      case node.name
+      when 'text'
+        node.text.gsub(/\s+/, ' ')
+      when 'table'
+        render_table(node)
+      when 'ul', 'ol'
+        render_list(node)
+      when 'li'
+        node.children.map { |child| render_html(child) }.join.strip
+      when 'p', 'div', 'section', 'article', 'blockquote'
+        "#{node.children.map { |child| render_html(child) }.join.strip}\n\n"
+      when 'h1', 'h2', 'h3', 'h4', 'h5', 'h6'
+        "#{'#' * node.name.delete_prefix('h').to_i} #{node.text.squish}\n\n"
+      when 'br'
+        "\n"
+      else
+        node.children.map { |child| render_html(child) }.join
+      end
+    end
+
+    def render_table(table)
+      rows = table.css('tr').map { |row|
+        row.xpath('./th|./td').map { |cell| cell.text.squish.gsub('|', '\\|') }
+      }.reject(&:empty?)
+      return '' if rows.empty?
+
+      width = rows.map(&:length).max
+      rows.map! { |row| row.fill('', row.length...width) }
+      header = rows.shift
+      lines = [header, Array.new(width, '---'), *rows]
+      "#{lines.map { |row| "| #{row.join(' | ')} |" }.join("\n")}\n\n"
+    end
+
+    def render_list(list)
+      items = list.xpath('./li').map.with_index do |item, index|
+        marker = list.name == 'ol' ? "#{index + 1}." : '-'
+        "#{marker} #{render_html(item)}"
+      end
+      "#{items.join("\n")}\n\n"
+    end
+
+    def source_content(source)
+      expandable_section_nodes(source).map { |node| content_node(node, role: 'source') }
+    end
+
+    def expandable_section_nodes(section)
+      return [section] if section['content_html'].present?
+
+      [section, *descendant_sections(section.fetch('id'))]
+    end
+
+    def descendant_sections(parent_id)
+      children = @graph.fetch('nodes').select { |node|
+        node['node_type'] == 'section' && node['parent_id'] == parent_id
+      }.sort_by { |node| node.fetch('id') }
+      children.flat_map { |child| [child, *descendant_sections(child.fetch('id'))] }
+    end
+
+    def apply_content_budget(candidates)
+      remaining = @max_content_characters
+      included = []
+      omissions = []
+      candidates.uniq { |node| node.fetch('node_id') }.each_with_index do |node, index|
+        length = node.fetch('text').length
+        if index.zero? || length <= remaining
+          included << node
+          remaining -= length
+        else
+          omissions << {
+            'node_id' => node.fetch('node_id'),
+            'document_id' => node.fetch('document_id'),
+            'reason' => 'content_character_budget_exceeded',
+            'content_characters' => length,
+          }
+        end
+      end
+      [included, omissions]
     end
 
     def anchor_for(node)
-      node.slice('guide_key', 'section_key', 'source_url').merge(
+      node.slice(
+        'node_type', 'guide_key', 'section_key', 'source_url', 'parent_id', 'chapter', 'commodity_code'
+      ).merge(
         'node_id' => node.fetch('id'),
         'document_id' => node.fetch('document_id'),
         'heading' => node.fetch('heading'),
@@ -163,12 +278,14 @@ module VatGuidance
         'followed_reference_kinds' => FOLLOWED_REFERENCE_KINDS,
         'resolved_references_only' => true,
         'document_target_expansion' => 'all anchored sections in the referenced document',
+        'maximum_content_characters' => @max_content_characters,
+        'budget_strategy' => 'Always include the source node, then include direct referenced nodes in deterministic order while they fit; record skipped nodes in omissions.',
         'transitive_references' => false,
         'rationale' => 'Direct references supply the context explicitly requested by a section; stopping after one hop bounds packet size and prevents unrelated reference chains from dominating the source text.',
       }
     end
 
-    def summary(packets)
+    def summary(packets, commodity_packets)
       {
         'packets' => packets.length,
         'sections_by_notice' => TARGET_NOTICE_NUMBERS.index_with do |notice_number|
@@ -177,6 +294,10 @@ module VatGuidance
         end,
         'packets_with_referenced_content' => packets.count { |packet| packet.fetch('content').length > 1 },
         'packets_with_unresolved_references' => packets.count { |packet| packet.fetch('unresolved_references').any? },
+        'commodity_packets' => commodity_packets.length,
+        'commodities_by_chapter' => commodity_packets.group_by { |packet| packet.dig('source', 'chapter') }
+          .transform_values(&:length),
+        'commodity_evidence_references' => commodity_packets.sum { |packet| packet.fetch('references').length },
       }
     end
 
