@@ -118,6 +118,129 @@ RSpec.describe VatGuidance::ContextGraphBuilder do
     )
   end
 
+  it 'does not suppress statutory citations when unrelated links contain the same number' do
+    legislation = content_payload(
+      title: 'Legislation references (VAT Notice 700/1)',
+      path: '/guidance/legislation-references',
+      body: <<~HTML,
+        <div class="govspeak">
+          <h2 id="law">1. Law</h2>
+          <p><a href="#footnote-105">Footnote 105(1)</a></p>
+          <p>Section 105(1) of the Civil Aviation Act 1982 applies.</p>
+        </div>
+      HTML
+    )
+    legislation_graph = described_class.new([legislation]).call
+
+    expect(legislation_graph.fetch('edges')).to include(
+      include('reference_kind' => 'statutory_reference', 'reference_text' => 'Section 105(1)'),
+    )
+  end
+
+  it 'does not suppress notice citations when unrelated links contain the same section number' do
+    source_notice = content_payload(
+      title: 'Source references (VAT Notice 700/1)',
+      path: '/guidance/source-references',
+      body: <<~HTML,
+        <div class="govspeak">
+          <h2 id="references">1. References</h2>
+          <p><a href="#footnote-3">Footnote 3</a></p>
+          <p>VAT Notice 701/14, section 3 applies.</p>
+        </div>
+      HTML
+    )
+    target_notice = content_payload(
+      title: 'Target guidance (VAT Notice 701/14)',
+      path: '/guidance/target-guidance',
+      body: <<~HTML,
+        <div class="govspeak">
+          <h2 id="target-section">3. Target section</h2>
+        </div>
+      HTML
+    )
+    notice_graph = described_class.new([source_notice, target_notice]).call
+
+    expect(notice_graph.fetch('edges')).to include(
+      include(
+        'target_id' => end_with('#target-section'),
+        'reference_kind' => 'prose_cross_document_reference',
+        'reference_text' => 'VAT Notice 701/14, section 3',
+      ),
+    )
+  end
+
+  it 'suppresses only the section numbers that are already hyperlinked' do
+    partially_linked = content_payload(
+      title: 'Partially linked sections (VAT Notice 700/1)',
+      path: '/guidance/partially-linked-sections',
+      body: <<~HTML,
+        <div class="govspeak">
+          <h2 id="summary">1. Summary</h2>
+          <p>Read sections <a href="#twelve">12</a>, 13 and 14.</p>
+          <h2 id="twelve">12. Twelve</h2>
+          <h2 id="thirteen">13. Thirteen</h2>
+          <h2 id="fourteen">14. Fourteen</h2>
+        </div>
+      HTML
+    )
+    partially_linked_graph = described_class.new([partially_linked]).call
+    section_edges = partially_linked_graph.fetch('edges').select do |edge|
+      edge.fetch('source_id').end_with?('#summary')
+    end
+
+    expect(section_edges).to include(
+      include('target_id' => end_with('#twelve'), 'reference_kind' => 'hyperlink'),
+      include('target_id' => end_with('#thirteen'), 'reference_kind' => 'prose_section_reference'),
+      include('target_id' => end_with('#fourteen'), 'reference_kind' => 'prose_section_reference'),
+    )
+    expect(section_edges).not_to include(
+      include('target_id' => end_with('#twelve'), 'reference_kind' => 'prose_section_reference'),
+    )
+  end
+
+  it 'does not treat bare statutory-style numbers as VAT notice numbers' do
+    payload = content_payload(
+      title: 'Number references (VAT Notice 700/1)',
+      path: '/guidance/number-references',
+      body: <<~HTML,
+        <div class="govspeak">
+          <h2 id="summary">1. Summary</h2>
+          <p>Regulation 105A applies. Read section 3.</p>
+          <h2 id="details">3. Details</h2>
+        </div>
+      HTML
+    )
+    number_graph = described_class.new([payload]).call
+
+    expect(number_graph.fetch('edges')).to include(
+      include('target_id' => end_with('#details'), 'reference_kind' => 'prose_section_reference'),
+    )
+    expect(number_graph.fetch('nodes')).not_to include(include('node_type' => 'notice_reference'))
+  end
+
+  it 'resolves section numbers case-insensitively' do
+    payload = content_payload(
+      title: 'Lettered sections (VAT Notice 700/1)',
+      path: '/guidance/lettered-sections',
+      body: <<~HTML,
+        <div class="govspeak">
+          <h2 id="summary">1. Summary</h2>
+          <p>Read section 29A.</p>
+          <h2 id="lettered">29a. Lettered section</h2>
+        </div>
+      HTML
+    )
+    lettered_graph = described_class.new([payload]).call
+
+    expect(lettered_graph.fetch('edges')).to include(
+      include(
+        'target_id' => end_with('#lettered'),
+        'reference_kind' => 'prose_section_reference',
+        'resolution' => 'resolved',
+      ),
+    )
+  end
+
   it 'records official sources that could not be fetched as unresolved findings' do
     missing_path = '/guidance/withdrawn-vat-notice'
     payload = content_payload(
@@ -198,6 +321,28 @@ RSpec.describe VatGuidance::ContextGraphBuilder do
     expect(commodity_graph.fetch('summary')).to include(
       'commodity_chapters_captured' => 1,
       'commodities_captured' => 1,
+    )
+  end
+
+  it 'fails when curated commodity evidence does not resolve to a section' do
+    commodity_context = {
+      'chapter' => '20',
+      'chapter_label' => 'Prepared food',
+      'commodity_code' => '2005202000',
+      'label' => 'Packaged potato crisps',
+      'evidence' => [
+        {
+          'guide_key' => 'vat-notice-701-23',
+          'section_key' => 'missing-section',
+        },
+      ],
+    }
+
+    expect {
+      described_class.new([protective_equipment], commodity_contexts: [commodity_context]).call
+    }.to raise_error(
+      RuntimeError,
+      'Unresolved commodity evidence vat-notice-701-23#missing-section for commodity:2005202000',
     )
   end
 

@@ -103,7 +103,7 @@ module VatGuidance
       if response.is_a?(Net::HTTPRedirection)
         raise FetchError, "GET #{uri} exceeded the redirect limit" if redirects_remaining.zero?
 
-        redirected_uri = URI(response.fetch('location'))
+        redirected_uri = uri.merge(response.fetch('location'))
         unless redirected_uri.host == GOVUK_HOST && redirected_uri.path.start_with?('/api/content/')
           raise FetchError, "GET #{uri} redirected outside the GOV.UK Content API"
         end

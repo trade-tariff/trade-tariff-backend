@@ -10,7 +10,7 @@ module VatGuidance
       \b(?:paragraph|section)s?\s+
       ((?:\d+(?:\.\d+)*[A-Z]?(?:\(\d+\))*(?:\s*(?:,|and|or|to|-)\s*\d+(?:\.\d+)*[A-Z]?(?:\(\d+\))*)*))
     }ix
-    NOTICE_NUMBER_PATTERN = /\b(?:(\d{3})\s*\/\s*(\d+[A-Z]?)|(\d{3}[A-Z]))\b/i
+    NOTICE_NUMBER_PATTERN = /\b(?:(\d{3})\s*\/\s*(\d+[A-Z]?)|(?<=Notice\s)(\d{3}[A-Z]))\b/i
     BARE_NOTICE_NUMBER_PATTERN = /\bNotice\s+(\d{3})\b/i
 
     Section = Data.define(:node, :element, :number)
@@ -237,17 +237,17 @@ module VatGuidance
           node['guide_key'] == evidence.fetch('guide_key') &&
           node['section_key'] == evidence.fetch('section_key')
       end
-      resolved = if target
-                   resolved_target(target)
-                 else
-                   unresolved_target("#{evidence.fetch('guide_key')}##{evidence.fetch('section_key')}")
-                 end
+      unless target
+        raise "Unresolved commodity evidence #{evidence.fetch('guide_key')}##{evidence.fetch('section_key')} " \
+              "for #{source.fetch('id')}"
+      end
+
       add_edge(
         source,
-        resolved,
+        resolved_target(target),
         'guidance_evidence',
         "#{evidence.fetch('guide_key')}##{evidence.fetch('section_key')}",
-        target&.fetch('source_url', nil),
+        target.fetch('source_url'),
       )
     end
 
@@ -272,8 +272,6 @@ module VatGuidance
       text.to_enum(:scan, SECTION_REFERENCE_PATTERN).each do
         match = Regexp.last_match
         expression = match[1]
-        expression_numbers = referenced_section_numbers(expression)
-        next if expression_numbers.all? { |number| linked_section_numbers.include?(number) }
 
         if statutory_reference?(text, match)
           add_statutory_edge(section, text, match)
@@ -287,6 +285,8 @@ module VatGuidance
         end
 
         expand_section_numbers(expression, section.node.fetch('document_id')).each do |number|
+          next if linked_section_numbers.include?(number)
+
           target = resolve_section_number(section.node.fetch('document_id'), number)
           reference_text = "section #{number}"
 
@@ -504,7 +504,7 @@ module VatGuidance
     end
 
     def referenced_section_numbers(text)
-      text.to_s.scan(/\d+(?:\.\d+)*[A-Z]?(?:\(\d+\))*/i)
+      text.to_s.scan(/\d+(?:\.\d+)*[A-Z]?(?:\(\d+\))*/i).map(&:upcase)
     end
 
     def unique_anchor(document_id, requested_anchor)
@@ -546,7 +546,7 @@ module VatGuidance
     end
 
     def heading_number(text)
-      text.to_s.match(/\A\s*(\d+(?:\.\d+)*[A-Z]?(?:\(\d+\))*)\b/i)&.[](1)
+      text.to_s.match(/\A\s*(\d+(?:\.\d+)*[A-Z]?(?:\(\d+\))*)\b/i)&.[](1)&.upcase
     end
 
     def slug(text)
