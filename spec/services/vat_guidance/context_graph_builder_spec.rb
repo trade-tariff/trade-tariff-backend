@@ -174,6 +174,32 @@ RSpec.describe VatGuidance::ContextGraphBuilder do
     )
   end
 
+  it 'keeps a reference to an uncaptured notice section unresolved' do
+    source_notice = content_payload(
+      title: 'Source references (VAT Notice 700/1)',
+      path: '/guidance/source-references',
+      body: <<~HTML,
+        <div class="govspeak">
+          <h2 id="references">1. References</h2>
+          <p>VAT Notice 701/99, section 3 applies.</p>
+        </div>
+      HTML
+    )
+
+    notice_graph = described_class.new([source_notice]).call
+
+    expect(notice_graph.fetch('nodes')).to include(
+      include('node_type' => 'notice_reference', 'heading' => 'VAT Notice 701/99, section 3'),
+    )
+    expect(notice_graph.fetch('edges')).to include(
+      include(
+        'target_id' => 'notice-reference:701/99#3',
+        'reference_kind' => 'prose_notice_reference',
+        'resolution' => 'unresolved',
+      ),
+    )
+  end
+
   it 'keeps a section reference local when an earlier sentence links to another notice' do
     source_notice = content_payload(
       title: 'Catering (VAT Notice 709/1)',

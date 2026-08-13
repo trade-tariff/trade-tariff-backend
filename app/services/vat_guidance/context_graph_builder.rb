@@ -387,7 +387,7 @@ module VatGuidance
       }
       add_edge(
         section.node,
-        resolved_target(@external_nodes.fetch(id)),
+        { node: @external_nodes.fetch(id), resolution: 'unresolved' },
         'prose_notice_reference',
         reference,
         nil,

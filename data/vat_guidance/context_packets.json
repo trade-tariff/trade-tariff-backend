@@ -1,6 +1,6 @@
 {
   "schema_version": 2,
-  "source_graph_sha256": "04a723e691c3e8b140312ad58690ac02dcd84725c5ae011e81620e239217f3b4",
+  "source_graph_sha256": "f42bcb82fff81deb429a39a056a98c716616b00b28248a49c19c2babe9199e8d",
   "target_notice_numbers": [
     "701/23",
     "701/14",
@@ -38401,21 +38401,6 @@
         },
         {
           "role": "referenced",
-          "node_id": "notice-reference:701/15#2-2",
-          "document_id": "notice-reference:701/15#2-2",
-          "guide_key": "vat-notice-701-15",
-          "section_key": "2.2",
-          "heading": "VAT Notice 701/15, section 2.2",
-          "source_url": null,
-          "text": "VAT Notice 701/15, section 2.2",
-          "content_sha256": "23b38c56dea607369419e70d369b8ded388cafe4d006e1843c8df223b3f4d9f9",
-          "node_type": "notice_reference",
-          "parent_id": null,
-          "chapter": null,
-          "commodity_code": null
-        },
-        {
-          "role": "referenced",
           "node_id": "document:/guidance/food-products-and-vat-notice-70114#food-not-supplied-in-the-course-of-catering",
           "document_id": "document:/guidance/food-products-and-vat-notice-70114",
           "guide_key": "vat-notice-701-14",
@@ -38432,17 +38417,6 @@
       ],
       "references": [
         {
-          "target_id": "notice-reference:701/15#2-2",
-          "reference_kind": "prose_notice_reference",
-          "reference_text": "VAT Notice 701/15, section 2.2",
-          "href": null,
-          "cross_document": true,
-          "expanded_node_ids": [
-            "notice-reference:701/15#2-2"
-          ],
-          "omitted_node_ids": []
-        },
-        {
           "target_id": "document:/guidance/food-products-and-vat-notice-70114#food-not-supplied-in-the-course-of-catering",
           "reference_kind": "prose_section_reference",
           "reference_text": "section 2.2",
@@ -38455,6 +38429,13 @@
         }
       ],
       "unresolved_references": [
+        {
+          "target_id": "notice-reference:701/15#2-2",
+          "reference_kind": "prose_notice_reference",
+          "reference_text": "VAT Notice 701/15, section 2.2",
+          "href": null,
+          "cross_document": true
+        },
         {
           "target_id": "document:/government/publications/vat-notice-70115-animals-and-animal-food",
           "reference_kind": "hyperlink",
@@ -38474,11 +38455,11 @@
       ],
       "context_budget": {
         "maximum_content_characters": 80000,
-        "included_content_characters": 3756,
+        "included_content_characters": 3726,
         "unit": "characters"
       },
       "omissions": [],
-      "content_sha256": "2f8033e70384902995d4c29b8076b99072bebc6883acbcbb3b42d40d6822562a"
+      "content_sha256": "41554ea2bc970d0562a08dc9a74039f7c09d33714ff08d05b4e1ffa793f4546f"
     },
     {
       "packet_id": "context-packet:c14c2fdc6058ce31b214e2fb19cb0227c5af953f5b6b19113510ff0548851f15",
@@ -47443,5 +47424,5 @@
     },
     "commodity_evidence_references": 22
   },
-  "content_sha256": "56426f3714ed1ff28690c1945ca9983905d17280459710f50eee74be9375db0e"
+  "content_sha256": "21332494ec4d9709eff1b270d1db4d01315d4349cf0b3a918983173315fe5ebe"
 }

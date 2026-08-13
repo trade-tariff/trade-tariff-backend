@@ -31118,7 +31118,7 @@
       "reference_kind": "prose_notice_reference",
       "reference_text": "VAT Notice 701/15, section 2.2",
       "href": null,
-      "resolution": "resolved",
+      "resolution": "unresolved",
       "cross_document": true
     },
     {
@@ -38238,7 +38238,7 @@
       "reference_kind": "prose_notice_reference",
       "reference_text": "VAT Notice 706/2, section 5.1",
       "href": null,
-      "resolution": "resolved",
+      "resolution": "unresolved",
       "cross_document": true
     },
     {
@@ -40628,7 +40628,7 @@
       "reference_kind": "prose_notice_reference",
       "reference_text": "VAT Notice 700/1, section 6",
       "href": null,
-      "resolution": "resolved",
+      "resolution": "unresolved",
       "cross_document": true
     },
     {
@@ -41268,7 +41268,7 @@
       "reference_kind": "prose_notice_reference",
       "reference_text": "VAT Notice 700/7, section 2.2 and 2.3",
       "href": null,
-      "resolution": "resolved",
+      "resolution": "unresolved",
       "cross_document": true
     },
     {
@@ -41678,7 +41678,7 @@
       "reference_kind": "prose_notice_reference",
       "reference_text": "VAT Notice 700/45, section 4",
       "href": null,
-      "resolution": "resolved",
+      "resolution": "unresolved",
       "cross_document": true
     },
     {
@@ -42018,7 +42018,7 @@
       "reference_kind": "prose_notice_reference",
       "reference_text": "VAT Notice 742A, section 13.7",
       "href": null,
-      "resolution": "resolved",
+      "resolution": "unresolved",
       "cross_document": true
     },
     {
@@ -42498,7 +42498,7 @@
       "reference_kind": "prose_notice_reference",
       "reference_text": "VAT Notice 700/63, section 8",
       "href": null,
-      "resolution": "resolved",
+      "resolution": "unresolved",
       "cross_document": true
     },
     {
@@ -42538,7 +42538,7 @@
       "reference_kind": "prose_notice_reference",
       "reference_text": "VAT Notice 700/45, section 4",
       "href": null,
-      "resolution": "resolved",
+      "resolution": "unresolved",
       "cross_document": true
     },
     {
@@ -42568,7 +42568,7 @@
       "reference_kind": "prose_notice_reference",
       "reference_text": "VAT Notice 700/45, section 4",
       "href": null,
-      "resolution": "resolved",
+      "resolution": "unresolved",
       "cross_document": true
     },
     {
@@ -44218,7 +44218,7 @@
       "reference_kind": "prose_notice_reference",
       "reference_text": "VAT Notice 700/56, section 1.4",
       "href": null,
-      "resolution": "resolved",
+      "resolution": "unresolved",
       "cross_document": true
     },
     {
@@ -44348,7 +44348,7 @@
       "reference_kind": "prose_notice_reference",
       "reference_text": "VAT Notice 726, section 6",
       "href": null,
-      "resolution": "resolved",
+      "resolution": "unresolved",
       "cross_document": true
     },
     {
@@ -46188,7 +46188,7 @@
       "reference_kind": "prose_notice_reference",
       "reference_text": "VAT Notice 700/1, section 6",
       "href": null,
-      "resolution": "resolved",
+      "resolution": "unresolved",
       "cross_document": true
     },
     {
@@ -46338,7 +46338,7 @@
       "reference_kind": "prose_notice_reference",
       "reference_text": "VAT Notice 700/7, section 8 and 9",
       "href": null,
-      "resolution": "resolved",
+      "resolution": "unresolved",
       "cross_document": true
     },
     {
@@ -46478,7 +46478,7 @@
       "reference_kind": "prose_notice_reference",
       "reference_text": "VAT Notice 700/7, section 7",
       "href": null,
-      "resolution": "resolved",
+      "resolution": "unresolved",
       "cross_document": true
     },
     {
@@ -46488,7 +46488,7 @@
       "reference_kind": "prose_notice_reference",
       "reference_text": "VAT Notice 700/7, section 7.3",
       "href": null,
-      "resolution": "resolved",
+      "resolution": "unresolved",
       "cross_document": true
     },
     {
@@ -46508,7 +46508,7 @@
       "reference_kind": "prose_notice_reference",
       "reference_text": "VAT Notice 700/7, section 8 and 9",
       "href": null,
-      "resolution": "resolved",
+      "resolution": "unresolved",
       "cross_document": true
     },
     {
@@ -46558,7 +46558,7 @@
       "reference_kind": "prose_notice_reference",
       "reference_text": "VAT Notice 700/7, section 9.5",
       "href": null,
-      "resolution": "resolved",
+      "resolution": "unresolved",
       "cross_document": true
     },
     {
@@ -47178,7 +47178,7 @@
       "reference_kind": "prose_notice_reference",
       "reference_text": "VAT Notice 727/5, section 4.5",
       "href": null,
-      "resolution": "resolved",
+      "resolution": "unresolved",
       "cross_document": true
     },
     {
@@ -51699,7 +51699,7 @@
     "sections_captured": 1976,
     "reference_edges": 2099,
     "cross_document_edges": 982,
-    "unresolved_references": 615
+    "unresolved_references": 633
   },
-  "content_sha256": "04a723e691c3e8b140312ad58690ac02dcd84725c5ae011e81620e239217f3b4"
+  "content_sha256": "f42bcb82fff81deb429a39a056a98c716616b00b28248a49c19c2babe9199e8d"
 }
