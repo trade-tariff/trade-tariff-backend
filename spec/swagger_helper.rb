@@ -130,6 +130,7 @@ RSpec.configure do |config|
                 scopes: {
                   'tariff/read' => 'Read public Trade Tariff API data.',
                   'tariff/write' => 'Write Trade Tariff API data where an endpoint explicitly supports it.',
+                  'tariff/categorisation' => 'Read Categorisation API data (Northern Ireland only). Issued separately from tariff/read and tariff/write.',
                 },
               },
             },
