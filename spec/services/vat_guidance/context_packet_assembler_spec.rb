@@ -102,14 +102,14 @@ RSpec.describe VatGuidance::ContextPacketAssembler do
   it 'preserves table columns and list items as Markdown' do
     source = graph.fetch('nodes').find { |item| item.fetch('id') == source_id }
     source['content_html'] = <<~HTML
-      <table><tr><th>Food</th><th>VAT rate</th></tr><tr><td>Cold takeaway</td><td>Zero-rated</td></tr></table>
+      <table><tr><th>Food</th><th>VAT rate</th></tr><tr><td>Cold takeaway | C:\\menu</td><td>Zero-rated</td></tr></table>
       <ul><li>Check the product</li><li>Check how it is supplied</li></ul>
     HTML
 
     text = packet_for(source_id).fetch('content').first.fetch('text')
 
     expect(text).to include(
-      "| Food | VAT rate |\n| --- | --- |\n| Cold takeaway | Zero-rated |",
+      "| Food | VAT rate |\n| --- | --- |\n| Cold takeaway \\| C:\\\\menu | Zero-rated |",
       "- Check the product\n- Check how it is supplied",
     )
   end

@@ -205,7 +205,7 @@ module VatGuidance
 
     def render_table(table)
       rows = table.css('tr').map { |row|
-        row.xpath('./th|./td').map { |cell| cell.text.squish.gsub('|', '\\|') }
+        row.xpath('./th|./td').map { |cell| escape_markdown_table_cell(cell.text.squish) }
       }.reject(&:empty?)
       return '' if rows.empty?
 
@@ -214,6 +214,10 @@ module VatGuidance
       header = rows.shift
       lines = [header, Array.new(width, '---'), *rows]
       "#{lines.map { |row| "| #{row.join(' | ')} |" }.join("\n")}\n\n"
+    end
+
+    def escape_markdown_table_cell(text)
+      text.each_char.map { |character| %w[\\ |].include?(character) ? "\\#{character}" : character }.join
     end
 
     def render_list(list)
