@@ -202,6 +202,29 @@ RSpec.describe HybridRetrievalService do
       )
     end
 
+    it 'relays search_non_declarables to the opensearch leg as well as the vector leg' do
+      as_of = Time.zone.today
+
+      described_class.call(
+        query: 'horses', expanded_query: expanded_query, as_of: as_of, search_non_declarables: true,
+      )
+
+      expect(OpensearchRetrievalService).to have_received(:call).with(
+        query: 'horses', expanded_query: expanded_query, as_of: as_of, request_id: nil, limit: 30,
+        search_non_declarables: true
+      )
+    end
+
+    it 'does not pass search_non_declarables to the opensearch leg when not overridden' do
+      as_of = Time.zone.today
+
+      described_class.call(query: 'horses', expanded_query: expanded_query, as_of: as_of)
+
+      expect(OpensearchRetrievalService).to have_received(:call).with(
+        query: 'horses', expanded_query: expanded_query, as_of: as_of, request_id: nil, limit: 30,
+      )
+    end
+
     context 'when the hybrid query guardrail is enabled' do
       before do
         allow(AdminConfiguration).to receive(:enabled?).with('hybrid_query_guardrail_enabled').and_return(true)

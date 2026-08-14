@@ -236,7 +236,8 @@ module Api
         result = OpensearchRetrievalService.call(
           query: q, expanded_query: search_retrieval_query,
           as_of: as_of, request_id: request_id, limit: opensearch_result_limit,
-          filter_prefixes: filter_prefixes
+          filter_prefixes: filter_prefixes,
+          search_non_declarables: @configuration_overrides['search_non_declarables']
         )
         ::Search::Instrumentation.retrieval_results_returned(
           request_id: request_id,

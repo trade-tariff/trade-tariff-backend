@@ -1802,6 +1802,18 @@ RSpec.describe Api::Internal::SearchService do
         expect(OpensearchRetrievalService).to have_received(:call).with(hash_including(limit: 5))
       end
 
+      it 'passes search_non_declarables through to OpensearchRetrievalService for retrieval_method: opensearch' do
+        described_class.new(q: 'horses', configuration_overrides: { 'search_non_declarables' => true }).call
+
+        expect(OpensearchRetrievalService).to have_received(:call).with(hash_including(search_non_declarables: true))
+      end
+
+      it "defaults search_non_declarables to nil for OpensearchRetrievalService when not given, reproducing today's behaviour" do
+        described_class.new(q: 'horses').call
+
+        expect(OpensearchRetrievalService).to have_received(:call).with(hash_including(search_non_declarables: nil))
+      end
+
       it 'passes max_rounds, question_model, search_compressed_notes_enabled and search_general_rules_enabled through to InteractiveSearchService' do
         described_class.new(
           q: 'horses',

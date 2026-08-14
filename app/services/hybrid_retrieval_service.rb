@@ -119,6 +119,7 @@ private
       limit: @limit,
     }
     args[:filter_prefixes] = @filter_prefixes if @filter_prefixes.present?
+    args[:search_non_declarables] = @search_non_declarables unless @search_non_declarables.nil?
     args
   end
 
