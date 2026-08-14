@@ -26,11 +26,11 @@ RSpec.describe Api::Admin::Search::Evaluation::ConfigurationsController, :admin 
       )
     end
 
-    it 'returns exactly the 11 allowed override keys' do
+    it 'returns exactly the 10 allowed override keys' do
       api_response
       expect(json_response['allowed_overrides']).to contain_exactly(
         'question_model', 'simulator_model', 'candidate_limit', 'max_rounds', 'rrf_k',
-        'vector_score_threshold', 'vector_ef_search', 'search_non_declarables', 'filter_prefixes',
+        'vector_score_threshold', 'vector_ef_search', 'search_non_declarables',
         'search_compressed_notes_enabled', 'search_general_rules_enabled'
       )
     end

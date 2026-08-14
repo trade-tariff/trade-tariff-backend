@@ -163,6 +163,7 @@ AdminApi.routes.draw do
           resources :runs, only: %i[index show create update]
           resources :results, only: %i[index show create]
           resource :configuration, only: [:show]
+          resources :searches, only: [:create]
         end
       end
     end

@@ -1,9 +1,8 @@
 module EvaluationConfiguration
   class BaselineProvider
     def self.call
-      # Baseline includes 9 of 11 ALLOWED_OVERRIDE_KEYS. simulator_model is omitted
+      # Baseline includes 9 of 10 ALLOWED_OVERRIDE_KEYS. simulator_model is omitted
       # because production uses real humans (no backend model config; orchestration choice).
-      # filter_prefixes is omitted because it's already a plain request param (override-only).
       {
         'rrf_k' => AdminConfiguration.integer_value('rrf_k'),
         'vector_score_threshold' => AdminConfiguration.integer_value('vector_score_threshold'),

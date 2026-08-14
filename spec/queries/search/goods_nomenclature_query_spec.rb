@@ -515,12 +515,24 @@ RSpec.describe Search::GoodsNomenclatureQuery do
       expect(chapter_filter.dig(:bool, :must_not, :terms, :chapter_short_code)).to eq(%w[98 99])
     end
 
-    it 'filters to only declarable goods nomenclatures' do
+    it 'filters to only declarable goods nomenclatures by default' do
       must_clauses = query.dig(:body, :query, :bool, :must)
       declarable_filter = must_clauses.find { |c| c.dig(:term, :declarable) }
 
       expect(declarable_filter).to be_present
       expect(declarable_filter).to eq({ term: { declarable: true } })
+    end
+
+    context 'when search_non_declarables is true' do
+      let(:query_options) { super().merge(search_non_declarables: true) }
+
+      it 'omits the declarable filter, leaving the query shape otherwise unchanged' do
+        must_clauses = query.dig(:body, :query, :bool, :must)
+        declarable_filter = must_clauses.find { |c| c.dig(:term, :declarable) }
+
+        expect(declarable_filter).to be_nil
+        expect(must_clauses).not_to include(nil)
+      end
     end
 
     it 'includes validity date filter' do

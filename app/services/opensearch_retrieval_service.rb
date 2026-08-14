@@ -1,17 +1,18 @@
 class OpensearchRetrievalService
   Result = Data.define(:results, :expanded_query)
 
-  def self.call(query:, as_of:, expanded_query: nil, request_id: nil, limit: 30, filter_prefixes: [])
-    new(query:, as_of:, expanded_query:, request_id:, limit:, filter_prefixes:).call
+  def self.call(query:, as_of:, expanded_query: nil, request_id: nil, limit: 30, filter_prefixes: [], search_non_declarables: nil)
+    new(query:, as_of:, expanded_query:, request_id:, limit:, filter_prefixes:, search_non_declarables:).call
   end
 
-  def initialize(query:, as_of:, expanded_query: nil, request_id: nil, limit: 30, filter_prefixes: [])
+  def initialize(query:, as_of:, expanded_query: nil, request_id: nil, limit: 30, filter_prefixes: [], search_non_declarables: nil)
     @query = query
     @as_of = as_of
     @expanded_query = expanded_query.presence || query
     @request_id = request_id
     @limit = limit
     @filter_prefixes = Array(filter_prefixes).compact_blank
+    @search_non_declarables = search_non_declarables
   end
 
   def call
@@ -33,11 +34,18 @@ private
           noun_boost: pos_noun_boost,
           qualifier_boost: pos_qualifier_boost,
           filter_prefixes: @filter_prefixes,
+          search_non_declarables: search_non_declarables?,
         ).query,
       )
     end
 
     results.dig('hits', 'hits') || []
+  end
+
+  def search_non_declarables?
+    return @search_non_declarables unless @search_non_declarables.nil?
+
+    AdminConfiguration.enabled?('search_non_declarables')
   end
 
   def pos_search_enabled?

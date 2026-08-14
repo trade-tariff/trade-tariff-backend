@@ -286,6 +286,76 @@ RSpec.describe VectorRetrievalService do
       end
     end
 
+    context 'when overrides are passed explicitly' do
+      it 'uses the given vector_score_threshold instead of reading AdminConfiguration' do
+        commodity = create(:commodity, :with_description, :declarable,
+                           goods_nomenclature_item_id: '0101210000',
+                           producline_suffix: GoodsNomenclature::NON_GROUPING_PRODUCTLINE_SUFFIX)
+        create(:goods_nomenclature_self_text,
+               goods_nomenclature_sid: commodity.goods_nomenclature_sid,
+               goods_nomenclature_item_id: commodity.goods_nomenclature_item_id,
+               self_text: 'Pure-bred breeding horses')
+        populate_search_embedding(commodity.goods_nomenclature_sid, query_embedding)
+        allow(AdminConfiguration).to receive(:integer_value).and_call_original
+
+        service = described_class.new(query: 'live horses', limit: 10, request_id: 'request-123', vector_score_threshold: 101)
+        results = service.call
+
+        expect(results).to be_empty
+        expect(AdminConfiguration).not_to have_received(:integer_value).with('vector_score_threshold')
+      end
+
+      it 'uses the given search_non_declarables instead of reading AdminConfiguration' do
+        heading = create(:heading, :with_description, :non_declarable,
+                         goods_nomenclature_item_id: '0101000000',
+                         producline_suffix: GoodsNomenclature::NON_GROUPING_PRODUCTLINE_SUFFIX)
+        create(:goods_nomenclature_self_text,
+               goods_nomenclature_sid: heading.goods_nomenclature_sid,
+               goods_nomenclature_item_id: heading.goods_nomenclature_item_id,
+               self_text: 'Live horses heading')
+        populate_search_embedding(heading.goods_nomenclature_sid, query_embedding)
+        allow(AdminConfiguration).to receive(:enabled?).and_call_original
+
+        service = described_class.new(query: 'live horses', limit: 10, request_id: 'request-123', search_non_declarables: true)
+        results = service.call
+
+        expect(results).not_to be_empty
+        expect(AdminConfiguration).not_to have_received(:enabled?).with('search_non_declarables')
+      end
+
+      it 'uses the given search_non_declarables: false instead of reading AdminConfiguration' do
+        heading = create(:heading, :with_description, :non_declarable,
+                         goods_nomenclature_item_id: '0101000000',
+                         producline_suffix: GoodsNomenclature::NON_GROUPING_PRODUCTLINE_SUFFIX)
+        create(:goods_nomenclature_self_text,
+               goods_nomenclature_sid: heading.goods_nomenclature_sid,
+               goods_nomenclature_item_id: heading.goods_nomenclature_item_id,
+               self_text: 'Live horses heading')
+        populate_search_embedding(heading.goods_nomenclature_sid, query_embedding)
+        # Stub AdminConfiguration to say non-declarables SHOULD be included, so that a
+        # regression to `@search_non_declarables || AdminConfiguration.enabled?(...)`
+        # (which treats `false` as "not given" because `false` is falsy in Ruby) would
+        # incorrectly fall through to this stub and include the non-declarable heading.
+        allow(AdminConfiguration).to receive(:enabled?).and_call_original
+        allow(AdminConfiguration).to receive(:enabled?).with('search_non_declarables').and_return(true)
+
+        service = described_class.new(query: 'live horses', limit: 10, request_id: 'request-123', search_non_declarables: false)
+        results = service.call
+
+        expect(results).to be_empty
+        expect(AdminConfiguration).not_to have_received(:enabled?).with('search_non_declarables')
+      end
+
+      it 'uses the given vector_ef_search instead of reading AdminConfiguration' do
+        allow(AdminConfiguration).to receive(:integer_value).and_call_original
+
+        service = described_class.new(query: 'live horses', limit: 10, request_id: 'request-123', vector_ef_search: 200)
+        service.call
+
+        expect(AdminConfiguration).not_to have_received(:integer_value).with('vector_ef_search')
+      end
+    end
+
     it 'respects the limit parameter' do
       3.times do |i|
         code = "010121000#{i}"
