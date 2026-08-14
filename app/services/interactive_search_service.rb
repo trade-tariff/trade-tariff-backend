@@ -90,7 +90,27 @@ private
   end
 
   def configured_reasoning_effort
-    model_config[:sub_values]['reasoning_effort']
+    return model_config[:sub_values]['reasoning_effort'] if @question_model.blank?
+
+    reasoning_effort_for_question_model
+  end
+
+  # Only reachable with a @question_model that is a recognised OpenaiClient::MODEL_CONFIGS
+  # key, because EvaluationConfiguration::AllowlistValidator rejects unrecognised
+  # question_model overrides before InteractiveSearchService is ever called. If that
+  # validation is ever removed, MODEL_CONFIGS.dig below would silently treat an unknown
+  # model as non-reasoning (returning nil) rather than raising.
+  def reasoning_effort_for_question_model
+    reasoning_levels = OpenaiClient::MODEL_CONFIGS.dig(@question_model, :reasoning_levels) || []
+    return nil if reasoning_levels.empty?
+
+    configured_effort = model_config[:sub_values]['reasoning_effort']
+    return configured_effort if reasoning_levels.include?(configured_effort)
+
+    # The globally configured reasoning_effort isn't valid for this overridden model
+    # (e.g. configured model uses 'xhigh' but the override only supports up to 'high').
+    # Fall back to the first/most conservative level rather than sending an invalid value.
+    reasoning_levels.first
   end
 
   def configured_context

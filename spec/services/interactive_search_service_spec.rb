@@ -82,8 +82,78 @@ RSpec.describe InteractiveSearchService do
         described_class.call(**search_params(question_model: 'gpt-4o-mini'))
 
         expect(OpenaiClient).to have_received(:call).with(
-          anything, model: 'gpt-4o-mini', reasoning_effort: 'medium', event_kind: 'interactive_search'
+          anything, model: 'gpt-4o-mini', reasoning_effort: anything, event_kind: 'interactive_search'
         )
+      end
+
+      # See "reasoning_effort" contexts below for the exact effort value expected
+      # in each scenario (no override, non-reasoning model, compatible/incompatible
+      # reasoning levels) — this fixes a bug where an overridden question_model could
+      # be sent a reasoning_effort value it does not support.
+
+      context 'without a question_model override' do
+        it 'sends the configured search_model reasoning_effort unchanged' do
+          allow(OpenaiClient).to receive(:call).and_return('{"answers": [{"commodity_code": "4202210000", "confidence": "strong"}]}')
+
+          described_class.call(**search_params)
+
+          expect(OpenaiClient).to have_received(:call).with(
+            anything, model: 'gpt-5.4', reasoning_effort: 'medium', event_kind: 'interactive_search'
+          )
+        end
+      end
+
+      context 'when overridden to a non-reasoning model' do
+        it 'omits reasoning_effort instead of reusing the configured search_model value' do
+          allow(OpenaiClient).to receive(:call).and_return('{"answers": [{"commodity_code": "4202210000", "confidence": "strong"}]}')
+
+          described_class.call(**search_params(question_model: 'gpt-4o-mini'))
+
+          expect(OpenaiClient).to have_received(:call).with(
+            anything, model: 'gpt-4o-mini', reasoning_effort: nil, event_kind: 'interactive_search'
+          )
+        end
+      end
+
+      context 'when overridden to a reasoning model whose levels include the configured effort' do
+        it 'passes the configured reasoning_effort through unchanged' do
+          allow(OpenaiClient).to receive(:call).and_return('{"answers": [{"commodity_code": "4202210000", "confidence": "strong"}]}')
+
+          # Default configured search_model reasoning_effort is 'medium' (NESTED_OPTION_DEFAULTS),
+          # and gpt-5.2's reasoning_levels (%w[none low medium high]) include 'medium'.
+          described_class.call(**search_params(question_model: 'gpt-5.2'))
+
+          expect(OpenaiClient).to have_received(:call).with(
+            anything, model: 'gpt-5.2', reasoning_effort: 'medium', event_kind: 'interactive_search'
+          )
+        end
+      end
+
+      context 'when overridden to a reasoning model whose levels do not include the configured effort' do
+        before do
+          create(:admin_configuration, :nested_options,
+                 name: 'search_model',
+                 area: 'classification',
+                 value: {
+                   'selected' => 'gpt-5.5',
+                   'sub_values' => { 'reasoning_effort' => 'xhigh' },
+                   'options' => [
+                     { 'key' => 'gpt-5.5', 'label' => 'GPT-5.5', 'sub_options' => {} },
+                   ],
+                 })
+        end
+
+        it 'falls back to the most conservative level supported by the overridden model' do
+          allow(OpenaiClient).to receive(:call).and_return('{"answers": [{"commodity_code": "4202210000", "confidence": "strong"}]}')
+
+          # gpt-5.2's reasoning_levels (%w[none low medium high]) do not include the
+          # configured 'xhigh', so the most conservative level ('none') is used instead.
+          described_class.call(**search_params(question_model: 'gpt-5.2'))
+
+          expect(OpenaiClient).to have_received(:call).with(
+            anything, model: 'gpt-5.2', reasoning_effort: 'none', event_kind: 'interactive_search'
+          )
+        end
       end
     end
 
