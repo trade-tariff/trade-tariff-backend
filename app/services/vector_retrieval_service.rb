@@ -1,19 +1,22 @@
 class VectorRetrievalService
   Result = Data.define(:results, :max_score)
 
-  def self.call(query:, limit: 80, filter_prefixes: [], request_id: nil)
-    new(query:, limit:, filter_prefixes:, request_id:).call
+  def self.call(query:, limit: 80, filter_prefixes: [], request_id: nil, vector_score_threshold: nil, vector_ef_search: nil, search_non_declarables: nil)
+    new(query:, limit:, filter_prefixes:, request_id:, vector_score_threshold:, vector_ef_search:, search_non_declarables:).call
   end
 
-  def self.call_with_diagnostics(query:, limit: 80, filter_prefixes: [], request_id: nil)
-    new(query:, limit:, filter_prefixes:, request_id:).call_with_diagnostics
+  def self.call_with_diagnostics(query:, limit: 80, filter_prefixes: [], request_id: nil, vector_score_threshold: nil, vector_ef_search: nil, search_non_declarables: nil)
+    new(query:, limit:, filter_prefixes:, request_id:, vector_score_threshold:, vector_ef_search:, search_non_declarables:).call_with_diagnostics
   end
 
-  def initialize(query:, limit: 80, filter_prefixes: [], request_id: nil)
+  def initialize(query:, limit: 80, filter_prefixes: [], request_id: nil, vector_score_threshold: nil, vector_ef_search: nil, search_non_declarables: nil)
     @query = query
     @limit = limit
     @filter_prefixes = Array(filter_prefixes).compact_blank
     @request_id = request_id
+    @vector_score_threshold = vector_score_threshold
+    @vector_ef_search = vector_ef_search
+    @search_non_declarables = search_non_declarables
   end
 
   def call
@@ -62,7 +65,7 @@ private
   end
 
   def apply_score_threshold(rows)
-    threshold = AdminConfiguration.integer_value('vector_score_threshold') / 100.0
+    threshold = (@vector_score_threshold || AdminConfiguration.integer_value('vector_score_threshold')) / 100.0
     rows.select { |r| r[:score].to_f >= threshold }
   end
 
@@ -83,7 +86,7 @@ private
   end
 
   def fetch_ranked_sids(vector_literal)
-    ef_search = AdminConfiguration.integer_value('vector_ef_search')
+    ef_search = @vector_ef_search || AdminConfiguration.integer_value('vector_ef_search')
 
     db.transaction do
       db.run("SET LOCAL hnsw.ef_search = #{ef_search.to_i}")
@@ -136,6 +139,8 @@ private
   end
 
   def search_non_declarables?
+    return @search_non_declarables unless @search_non_declarables.nil?
+
     AdminConfiguration.enabled?('search_non_declarables')
   end
 

@@ -60,6 +60,18 @@ _If the API consumer determines that no Category Assessments apply, then the Goo
 
 To achieve this the relevant measures are grouped together according to those with the same groups of exemptions (and geographical areas) and a separate CA is presented for each of these permutations.
 
+## API Access / Routing
+
+The Green Lanes/Categorisation API is XI-only. There is no UK equivalent and none is needed — the categorisation only has meaning for goods moving between GB and NI under the Windsor Framework, so there is nothing for a UK-side route to serve.
+
+This is enforced in code, not just by convention: `Api::V2::GreenLanes::BaseController#check_service` (`app/controllers/api/v2/green_lanes/base_controller.rb`) raises `ActionController::RoutingError` (404) whenever `TradeTariffBackend.uk?` is true, regardless of URL prefix (added in HOTT-4856, #1670).
+
+### Categorisation routes (API Gateway migration)
+
+`app/engines/v2_api.rb` also mounts a parallel `namespace :categorisation` alongside `namespace :green_lanes` (HMRC-2476, #3637). The `Api::V2::Categorisation::*` controllers subclass their `GreenLanes::*` equivalents and only `skip_before_action :authenticate` — auth is instead handled by API Gateway's `tariff/categorisation` OAuth scope in front of these routes, replacing the legacy static API key/token used by `green_lanes`. Because they subclass `GreenLanes::*`, they inherit `check_service`, so `/xi/api/categorisation/*` is XI-only for the same reason as `/xi/api/green_lanes/*`, with no extra guard needed.
+
+The `green_lanes` routes remain in place for backward compatibility and should be removed once existing consumers migrate to `categorisation`.
+
 ## Pseudo Measures and Pseudo Exemptions
 
 These are custom data points built by OTT to handle policies that don't explicitly appear in the EU tariff but are relevant under the Windsor Framework.

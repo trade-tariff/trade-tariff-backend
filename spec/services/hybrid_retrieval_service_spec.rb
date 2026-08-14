@@ -184,6 +184,47 @@ RSpec.describe HybridRetrievalService do
       expect(AdminConfiguration).to have_received(:integer_value).with('rrf_k')
     end
 
+    it 'uses an explicitly passed rrf_k instead of reading AdminConfiguration' do
+      described_class.call(query: 'horses', as_of: Time.zone.today, rrf_k: 5)
+
+      expect(AdminConfiguration).not_to have_received(:integer_value).with('rrf_k')
+    end
+
+    it 'relays vector-specific overrides to the vector leg' do
+      described_class.call(
+        query: 'horses', expanded_query: expanded_query, as_of: Time.zone.today,
+        vector_score_threshold: 40, vector_ef_search: 150, search_non_declarables: true
+      )
+
+      expect(VectorRetrievalService).to have_received(:call_with_diagnostics).with(
+        query: expanded_query, limit: 30, request_id: nil,
+        vector_score_threshold: 40, vector_ef_search: 150, search_non_declarables: true
+      )
+    end
+
+    it 'relays search_non_declarables to the opensearch leg as well as the vector leg' do
+      as_of = Time.zone.today
+
+      described_class.call(
+        query: 'horses', expanded_query: expanded_query, as_of: as_of, search_non_declarables: true,
+      )
+
+      expect(OpensearchRetrievalService).to have_received(:call).with(
+        query: 'horses', expanded_query: expanded_query, as_of: as_of, request_id: nil, limit: 30,
+        search_non_declarables: true
+      )
+    end
+
+    it 'does not pass search_non_declarables to the opensearch leg when not overridden' do
+      as_of = Time.zone.today
+
+      described_class.call(query: 'horses', expanded_query: expanded_query, as_of: as_of)
+
+      expect(OpensearchRetrievalService).to have_received(:call).with(
+        query: 'horses', expanded_query: expanded_query, as_of: as_of, request_id: nil, limit: 30,
+      )
+    end
+
     context 'when the hybrid query guardrail is enabled' do
       before do
         allow(AdminConfiguration).to receive(:enabled?).with('hybrid_query_guardrail_enabled').and_return(true)

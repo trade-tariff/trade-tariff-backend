@@ -59,6 +59,81 @@ RSpec.describe OpensearchRetrievalService do
       end
     end
 
+    context 'with search_non_declarables' do
+      let(:opensearch_response) { { 'hits' => { 'hits' => [] } } }
+
+      it 'filters to declarable results by default' do
+        described_class.call(query: 'toys', as_of: Time.zone.today)
+
+        expect(TradeTariffBackend.search_client).to have_received(:search).with(
+          hash_including(
+            body: hash_including(
+              query: hash_including(
+                bool: hash_including(
+                  must: include({ term: { declarable: true } }),
+                ),
+              ),
+            ),
+          ),
+        )
+      end
+
+      it 'reads the default from AdminConfiguration when not overridden' do
+        allow(AdminConfiguration).to receive(:enabled?).and_call_original
+        allow(AdminConfiguration).to receive(:enabled?).with('search_non_declarables').and_return(true)
+
+        described_class.call(query: 'toys', as_of: Time.zone.today)
+
+        expect(TradeTariffBackend.search_client).to have_received(:search).with(
+          hash_including(
+            body: hash_including(
+              query: hash_including(
+                bool: hash_including(
+                  must: satisfy { |clauses| clauses.none? { |c| c.dig(:term, :declarable) } },
+                ),
+              ),
+            ),
+          ),
+        )
+      end
+
+      it 'omits the declarable filter when search_non_declarables: true is given explicitly' do
+        described_class.call(query: 'toys', as_of: Time.zone.today, search_non_declarables: true)
+
+        expect(TradeTariffBackend.search_client).to have_received(:search).with(
+          hash_including(
+            body: hash_including(
+              query: hash_including(
+                bool: hash_including(
+                  must: satisfy { |clauses| clauses.none? { |c| c.dig(:term, :declarable) } },
+                ),
+              ),
+            ),
+          ),
+        )
+      end
+
+      it 'uses an explicit search_non_declarables: false instead of reading AdminConfiguration' do
+        allow(AdminConfiguration).to receive(:enabled?).and_call_original
+        allow(AdminConfiguration).to receive(:enabled?).with('search_non_declarables').and_return(true)
+
+        described_class.call(query: 'toys', as_of: Time.zone.today, search_non_declarables: false)
+
+        expect(AdminConfiguration).not_to have_received(:enabled?).with('search_non_declarables')
+        expect(TradeTariffBackend.search_client).to have_received(:search).with(
+          hash_including(
+            body: hash_including(
+              query: hash_including(
+                bool: hash_including(
+                  must: include({ term: { declarable: true } }),
+                ),
+              ),
+            ),
+          ),
+        )
+      end
+    end
+
     context 'with filter prefixes' do
       let(:opensearch_response) { { 'hits' => { 'hits' => [] } } }
 
