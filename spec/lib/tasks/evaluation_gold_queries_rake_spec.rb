@@ -5,7 +5,6 @@ RSpec.describe 'tariff:evaluation:generate_gold_queries rake task' do
   after { Rake::Task['tariff:evaluation:generate_gold_queries'].reenable }
 
   around do |example|
-    original_values = {}
     names = %w[RESET LIMIT]
     original_values = names.index_with { |name| [ENV.key?(name), ENV[name]] }
     names.each { |name| ENV.delete(name) }
