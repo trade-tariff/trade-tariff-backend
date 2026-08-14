@@ -37,6 +37,13 @@ RSpec.describe Api::Admin::Search::Evaluation::SearchesController, :admin do
       it { expect(json_response).to include('errors') }
     end
 
+    context 'with an allowed key but an invalid value' do
+      let(:params) { { q: 'horses', configuration_overrides: { 'rrf_k' => 'abc' } } }
+
+      it { is_expected.to have_http_status :unprocessable_content }
+      it { expect(json_response).to include('errors') }
+    end
+
     context 'with an allowed configuration_overrides key' do
       let(:params) { { q: 'horses', configuration_overrides: { 'candidate_limit' => 5 } } }
 
