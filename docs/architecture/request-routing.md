@@ -24,6 +24,8 @@ Routes are explicitly mounted under `/uk` and `/xi` where the service mode allow
 
 `app/engines/v2_api.rb` defines the public V2 API surface. It includes tariff hierarchy endpoints, measures, quotas, certificates, search, rules of origin, news, exchange rates, Green Lanes, changes, and error responses.
 
+Green Lanes (and its parallel `categorisation` namespace, added for the API Gateway OAuth migration) is the one V2 surface restricted to XI service mode at the controller level rather than just by mount point — see `docs/green-lanes.md#api-access--routing` for the mechanism and why no UK-side routing exists or is needed.
+
 Most V2 routes map to controllers under `app/controllers/api/v2/`. Serialisation usually flows through `app/serializers/api/v2/` and presenter classes under `app/presenters/api/v2/`.
 
 ## Admin, Internal, and User APIs
