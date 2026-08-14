@@ -163,7 +163,7 @@ V2Api.routes.draw do
 
         resources :themes, only: %i[index]
 
-        resources :faq_feedback, only: %i[create index show]
+        resources :faq_feedback, only: %i[create index]
       end
 
       # Parallel route for the same Categorisation API, authenticated via API Gateway's
@@ -174,7 +174,7 @@ V2Api.routes.draw do
 
         resources :themes, only: %i[index]
 
-        resources :faq_feedback, only: %i[create index show]
+        resources :faq_feedback, only: %i[create index]
       end
 
       match '/400', to: 'errors#bad_request', via: :all
