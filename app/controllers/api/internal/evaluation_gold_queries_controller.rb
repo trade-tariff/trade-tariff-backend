@@ -18,7 +18,7 @@ module Api
         id = Integer(params[:id], exception: false)
         raise Sequel::NoMatchingRow unless id
 
-        render json: serializer_class.new(EvaluationGoldQuery.where(id:).first!).serializable_hash
+        render json: serializer_class.new(EvaluationGoldQuery.where(id:, active: true).first!).serializable_hash
       end
 
     private

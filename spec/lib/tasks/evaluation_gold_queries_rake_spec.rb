@@ -144,6 +144,19 @@ RSpec.describe 'tariff:evaluation:generate_gold_queries rake task' do
     }.to raise_error(ArgumentError, 'LIMIT must be a positive integer')
   end
 
+  it 'does not wipe existing rows when RESET=true is combined with an invalid LIMIT' do
+    existing = create(:tariff_knowledge_public_atar_ruling, ref: '600000026')
+    create(:evaluation_gold_query, source_type: 'atar', source_id: existing.ref, persona: 'emu_generic')
+
+    ENV['RESET'] = 'true'
+    ENV['LIMIT'] = '0'
+
+    expect {
+      suppress_output { Rake::Task['tariff:evaluation:generate_gold_queries'].invoke }
+    }.to raise_error(ArgumentError, 'LIMIT must be a positive integer')
+    expect(EvaluationGoldQuery.count).to eq(1)
+  end
+
   it 'processes a deterministic subset ordered by ref when LIMIT is set' do
     create(:tariff_knowledge_public_atar_ruling, ref: '600000024')
     create(:tariff_knowledge_public_atar_ruling, ref: '600000022')

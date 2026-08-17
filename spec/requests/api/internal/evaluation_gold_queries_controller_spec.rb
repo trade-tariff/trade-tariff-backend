@@ -93,6 +93,14 @@ RSpec.describe Api::Internal::EvaluationGoldQueriesController do
       expect(response).to have_http_status(:not_found)
     end
 
+    it 'returns not found for an inactive row, matching index excluding it too' do
+      record = create(:evaluation_gold_query, active: false)
+
+      get "/uk/internal/evaluation_gold_queries/#{record.id}.json"
+
+      expect(response).to have_http_status(:not_found)
+    end
+
     it 'returns not found for a non-integer id instead of a 500' do
       get '/uk/internal/evaluation_gold_queries/abc.json'
 

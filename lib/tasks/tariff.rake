@@ -86,15 +86,17 @@ module_function
     # (unset) is additive: only ATaRs missing at least one of the 3 personas are
     # processed, so re-running is safe and cheap.
     reset = ENV['RESET'] == 'true'
-    EvaluationGoldQuery.dataset.delete if reset
 
     # LIMIT (one-off invocation flag, same convention as RESET above — never a
     # persisted .env value) caps how many ATaRs get processed in this invocation.
     # Unset means unlimited, so normal runs are unaffected. 0/negative are rejected
     # with a clear message instead of reaching Sequel's .limit with a bad value,
-    # which raises a confusing low-level error.
+    # which raises a confusing low-level error. Validated before the RESET wipe below
+    # so a bad LIMIT can't delete the whole gold set and then abort without replacing it.
     limit = Integer(ENV['LIMIT'], exception: false) if ENV['LIMIT'].present?
     raise ArgumentError, 'LIMIT must be a positive integer' if ENV['LIMIT'].present? && (limit.nil? || limit < 1)
+
+    EvaluationGoldQuery.dataset.delete if reset
 
     # An inactive row (active: false) makes its ATaR look incomplete again so it gets
     # reprocessed; GoldQueryGenerator#persist repairs and reactivates it. Persona-filtered

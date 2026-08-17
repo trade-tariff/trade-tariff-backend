@@ -221,6 +221,32 @@ RSpec.describe Evaluation::GoldQueryGenerator do
     end
   end
 
+  context 'when the ORDINARY tier is a single word' do
+    before { allow(ai_client).to receive(:call).and_return(accepted_tiers.merge('ordinary' => 'linen')) }
+
+    it 'rejects it — ORDINARY requires 2-6 words, unlike GENERIC' do
+      expect(result).to be_nil
+    end
+  end
+
+  context 'when the SPECIFIC tier is only 3 words' do
+    before { allow(ai_client).to receive(:call).and_return(accepted_tiers.merge('specific' => 'printed cotton linen')) }
+
+    it 'rejects it — SPECIFIC requires 4-10 words' do
+      expect(result).to be_nil
+    end
+  end
+
+  context 'when two tiers come back identical' do
+    before do
+      allow(ai_client).to receive(:call).and_return(accepted_tiers.merge('ordinary' => 'printed cotton bed linen set'))
+    end
+
+    it 'rejects the whole attempt even though each tier individually passes its own filter' do
+      expect(result).to be_nil
+    end
+  end
+
   describe 'the acceptability filter' do
     before { allow(ai_client).to receive(:call).and_return(accepted_tiers.merge('generic' => rejected_generic)) }
 

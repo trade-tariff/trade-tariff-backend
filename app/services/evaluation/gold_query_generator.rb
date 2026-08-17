@@ -11,6 +11,13 @@ module Evaluation
       'ordinary' => 'emu_ordinary',
       'specific' => 'emu_specific',
     }.freeze
+    # Word-count ranges matching the per-tier limits stated in SYSTEM_PROMPT below —
+    # keep the two in sync if either changes.
+    TIER_WORD_RANGE = {
+      'generic' => 1..3,
+      'ordinary' => 2..6,
+      'specific' => 4..10,
+    }.freeze
 
     # Ported verbatim from ai-search-evaluation-suite's apps/product/backend/intercepts.py
     # (_TIERED_SYSTEM) — deliberately not rewritten, see design doc.
@@ -100,21 +107,28 @@ module Evaluation
 
       tiers = TIERS.index_with { |tier| clean(response[tier]) }
       return unless tiers.all? { |tier, query| acceptable?(query, tier) }
+      return if duplicate_across_tiers?(tiers)
 
       tiers
+    end
+
+    # Distinct tiers exist to test search at different specificity levels — a repeated
+    # phrase across two tiers (the model echoing itself) defeats that, even though each
+    # one individually passes the per-tier acceptability check.
+    def duplicate_across_tiers?(tiers)
+      normalised = tiers.values.map(&:downcase)
+      normalised.uniq.size != normalised.size
     end
 
     def clean(value)
       value.to_s.strip.gsub(/\A["'.,;:\s]+|["'.,;:\s]+\z/, '')
     end
 
-    def acceptable?(query, _tier)
+    def acceptable?(query, tier)
       return false if query.blank?
 
-      # No lower bound: the GENERIC tier is explicitly allowed to be one word
-      # (see the system prompt above), so a per-tier minimum isn't safe here.
       words = query.split
-      return false if words.size > 12
+      return false unless TIER_WORD_RANGE.fetch(tier).cover?(words.size)
       return false if FORBIDDEN_QUERY_TOKENS.match?(query)
 
       source_prefix = source_text[0, 60].downcase
