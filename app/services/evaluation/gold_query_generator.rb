@@ -111,8 +111,10 @@ module Evaluation
     def acceptable?(query, _tier)
       return false if query.blank?
 
+      # No lower bound: the GENERIC tier is explicitly allowed to be one word
+      # (see the system prompt above), so a per-tier minimum isn't safe here.
       words = query.split
-      return false if words.size < 2 || words.size > 12
+      return false if words.size > 12
       return false if FORBIDDEN_QUERY_TOKENS.match?(query)
 
       source_prefix = source_text[0, 60].downcase

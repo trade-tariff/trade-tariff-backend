@@ -149,7 +149,7 @@ RSpec.describe Evaluation::GoldQueryGenerator do
   context 'when the first attempt fails the acceptability filter and the second succeeds' do
     before do
       allow(ai_client).to receive(:call).and_return(
-        { 'generic' => 'other', 'ordinary' => 'cotton bed sheets', 'specific' => 'printed cotton bed linen set' },
+        { 'generic' => 'excluding bed linen', 'ordinary' => 'cotton bed sheets', 'specific' => 'printed cotton bed linen set' },
         accepted_tiers,
       )
     end
@@ -213,6 +213,14 @@ RSpec.describe Evaluation::GoldQueryGenerator do
     end
   end
 
+  context 'when the GENERIC tier is a single word' do
+    before { allow(ai_client).to receive(:call).and_return(accepted_tiers.merge('generic' => 'linen')) }
+
+    it 'accepts it, matching the system prompt allowing 1-3 words for GENERIC' do
+      expect(result).to eq(accepted_tiers.merge('generic' => 'linen'))
+    end
+  end
+
   describe 'the acceptability filter' do
     before { allow(ai_client).to receive(:call).and_return(accepted_tiers.merge('generic' => rejected_generic)) }
 
@@ -224,8 +232,8 @@ RSpec.describe Evaluation::GoldQueryGenerator do
       end
     end
 
-    context 'when a tier is a single word' do
-      let(:rejected_generic) { 'linen' }
+    context 'when a tier is over the word limit' do
+      let(:rejected_generic) { 'a b c d e f g h i j k l m' }
 
       it 'rejects the whole attempt' do
         expect(result).to be_nil
