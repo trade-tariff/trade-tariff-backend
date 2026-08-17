@@ -55,4 +55,53 @@ RSpec.describe EvaluationRun do
       )
     }.to raise_error(Sequel::CheckConstraintViolation)
   end
+
+  it 'enforces idempotency_key uniqueness at the database level' do
+    described_class.db[:evaluation_runs].insert(
+      experiment_id: experiment.id, status: 'queued', triggered_by: 'operator',
+      effective_configuration: Sequel.pg_jsonb({}), idempotency_key: 'dupe-key'
+    )
+
+    expect {
+      described_class.db[:evaluation_runs].insert(
+        experiment_id: experiment.id, status: 'queued', triggered_by: 'operator',
+        effective_configuration: Sequel.pg_jsonb({}), idempotency_key: 'dupe-key'
+      )
+    }.to raise_error(Sequel::UniqueConstraintViolation)
+  end
+
+  describe '.start!' do
+    it 'creates a new run and stores the idempotency_key' do
+      run = described_class.start!(experiment:, triggered_by: 'operator', idempotency_key: 'key-1')
+
+      expect(run.idempotency_key).to eq('key-1')
+      expect(described_class.count).to eq(1)
+    end
+
+    it 'returns the existing run instead of creating a second one when the key repeats' do
+      first_run = described_class.start!(experiment:, triggered_by: 'operator', idempotency_key: 'key-2')
+
+      second_run = described_class.start!(experiment:, triggered_by: 'operator', idempotency_key: 'key-2')
+
+      expect(second_run.id).to eq(first_run.id)
+      expect(described_class.count).to eq(1)
+    end
+
+    it 'creates a separate run for a different idempotency_key' do
+      described_class.start!(experiment:, triggered_by: 'operator', idempotency_key: 'key-3a')
+      described_class.start!(experiment:, triggered_by: 'operator', idempotency_key: 'key-3b')
+
+      expect(described_class.count).to eq(2)
+    end
+
+    it 'returns the racing request run instead of raising when a concurrent create wins the unique-constraint race' do
+      racing_run = create(:evaluation_run, evaluation_experiment: experiment, idempotency_key: 'race-key')
+      allow(described_class).to receive(:find_by_idempotency_key).and_return(nil, racing_run)
+      allow(described_class).to receive(:create).and_raise(Sequel::UniqueConstraintViolation.new('duplicate key'))
+
+      result = described_class.start!(experiment:, triggered_by: 'operator', idempotency_key: 'race-key')
+
+      expect(result).to eq(racing_run)
+    end
+  end
 end

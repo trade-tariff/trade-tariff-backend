@@ -10,7 +10,49 @@ RSpec.describe Api::Admin::Search::Evaluation::RunsController, :admin do
   let(:experiment) { create(:evaluation_experiment, configuration_overrides: { 'simulator_model' => 'gpt-4o-mini' }) }
 
   describe 'POST #create' do
-    let(:make_request) { authenticated_post api_admin_search_evaluation_runs_path(format: :json), params: params }
+    let(:idempotency_key) { SecureRandom.uuid }
+    let(:make_request) do
+      authenticated_post api_admin_search_evaluation_runs_path(format: :json),
+                         params: params, headers: { 'Idempotency-Key' => idempotency_key }
+    end
+
+    context 'without an Idempotency-Key header' do
+      let(:params) { { data: { type: :run, attributes: { experiment_id: experiment.id, triggered_by: 'operator' } } } }
+      let(:make_request) { authenticated_post api_admin_search_evaluation_runs_path(format: :json), params: params }
+
+      it { is_expected.to have_http_status :bad_request }
+      it { expect { api_response }.not_to change(EvaluationRun, :count) }
+    end
+
+    context 'when retried with the same Idempotency-Key' do
+      let(:params) { { data: { type: :run, attributes: { experiment_id: experiment.id, triggered_by: 'operator' } } } }
+
+      it 'returns the original run instead of creating a second one' do
+        api_response
+        first_id = json_response['data']['id']
+
+        authenticated_post api_admin_search_evaluation_runs_path(format: :json),
+                           params: params, headers: { 'Idempotency-Key' => idempotency_key }
+        second_id = JSON.parse(response.body)['data']['id']
+
+        expect(response).to have_http_status(:created)
+        expect(second_id).to eq(first_id)
+        expect(EvaluationRun.count).to eq(1)
+      end
+    end
+
+    context 'when sent twice with different Idempotency-Key values' do
+      let(:params) { { data: { type: :run, attributes: { experiment_id: experiment.id, triggered_by: 'operator' } } } }
+
+      it 'creates two separate runs' do
+        api_response
+
+        authenticated_post api_admin_search_evaluation_runs_path(format: :json),
+                           params: params, headers: { 'Idempotency-Key' => SecureRandom.uuid }
+
+        expect(EvaluationRun.count).to eq(2)
+      end
+    end
 
     context 'with a valid experiment and no run-time overrides' do
       let(:params) do

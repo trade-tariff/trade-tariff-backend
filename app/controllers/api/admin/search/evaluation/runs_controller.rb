@@ -19,6 +19,7 @@ module Api
             evaluation_run = EvaluationRun.start!(
               experiment:,
               triggered_by: create_params[:triggered_by],
+              idempotency_key: idempotency_key!,
               run_time_overrides: create_params[:configuration_overrides] || {},
             )
 
@@ -55,6 +56,16 @@ module Api
 
           def run
             @run ||= EvaluationRun.with_pk!(params[:id])
+          end
+
+          # Required so retrying a create request (timeout, dropped response) can be
+          # told apart from a deliberate second run of the same experiment — see
+          # EvaluationRun.start!.
+          def idempotency_key!
+            key = request.headers['Idempotency-Key']
+            raise ActionController::BadRequest, 'Idempotency-Key header is required' if key.blank?
+
+            key
           end
 
           def create_params

@@ -2227,6 +2227,7 @@ CREATE TABLE uk.evaluation_runs (
     error_summary text,
     aggregate_metrics jsonb DEFAULT '{}'::jsonb NOT NULL,
     created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    idempotency_key text,
     CONSTRAINT evaluation_runs_status_check CHECK ((status = ANY (ARRAY['queued'::text, 'running'::text, 'completed'::text, 'partially_failed'::text, 'failed'::text, 'cancelled'::text])))
 );
 
@@ -11438,6 +11439,13 @@ CREATE INDEX evaluation_runs_experiment_id_index ON uk.evaluation_runs USING btr
 
 
 --
+-- Name: evaluation_runs_idempotency_key_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE UNIQUE INDEX evaluation_runs_idempotency_key_index ON uk.evaluation_runs USING btree (idempotency_key);
+
+
+--
 -- Name: evaluation_runs_question_model_index; Type: INDEX; Schema: uk; Owner: -
 --
 
@@ -14986,3 +14994,4 @@ INSERT INTO "schema_migrations" ("filename") VALUES ('20260730140000_add_created
 INSERT INTO "schema_migrations" ("filename") VALUES ('20260803000001_create_evaluation_experiments.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20260803000002_create_evaluation_runs.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20260803000003_create_evaluation_results.rb');
+INSERT INTO "schema_migrations" ("filename") VALUES ('20260817163645_add_idempotency_key_to_evaluation_runs.rb');
