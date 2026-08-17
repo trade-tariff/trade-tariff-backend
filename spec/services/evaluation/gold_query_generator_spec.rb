@@ -273,5 +273,30 @@ RSpec.describe Evaluation::GoldQueryGenerator do
         expect(result).to be_nil
       end
     end
+
+    context 'when a tier contains the banned word "other"' do
+      let(:rejected_generic) { 'other linen' }
+
+      it 'rejects the whole attempt, matching SYSTEM_PROMPT explicitly banning it' do
+        expect(result).to be_nil
+      end
+    end
+  end
+
+  context 'when a tier value is not a String' do
+    before { allow(ai_client).to receive(:call).and_return(accepted_tiers.merge('generic' => %w[linen])) }
+
+    it 'rejects the whole attempt instead of coercing it into a fake-looking query' do
+      expect(result).to be_nil
+      expect(EvaluationGoldQuery.where(source_id: '600014988').count).to eq(0)
+    end
+  end
+
+  context 'when a tier value is a number' do
+    before { allow(ai_client).to receive(:call).and_return(accepted_tiers.merge('generic' => 123)) }
+
+    it 'rejects the whole attempt instead of coercing it into a fake-looking query' do
+      expect(result).to be_nil
+    end
   end
 end
