@@ -135,7 +135,7 @@ module Evaluation
     def persist(tiers)
       EvaluationGoldQuery.db.transaction do
         tiers.each do |tier, query|
-          EvaluationGoldQuery.dataset.insert_conflict(target: EvaluationGoldQuery::IDENTITY_COLUMNS).insert(
+          values = {
             source_type: 'atar',
             source_id: atar_ruling.ref,
             persona: PERSONA_FOR_TIER.fetch(tier),
@@ -145,7 +145,21 @@ module Evaluation
             notes: 'ported emulator',
             generator: MODEL,
             created_at: Time.current,
-          )
+          }
+
+          # update_where restricts the upsert to conflicting rows that are currently
+          # inactive, so a deactivated tier gets repaired with this fresh generation
+          # (and reactivated), while an already-active row — however this generation
+          # attempt happened to reword it — is left exactly as it was.
+          update_values = values
+                           .except(*EvaluationGoldQuery::IDENTITY_COLUMNS)
+                           .each_with_object(active: true) { |(column, _), update| update[column] = Sequel[:excluded][column] }
+
+          EvaluationGoldQuery.dataset.insert_conflict(
+            target: EvaluationGoldQuery::IDENTITY_COLUMNS,
+            update: update_values,
+            update_where: { Sequel[:evaluation_gold_queries][:active] => false },
+          ).insert(values)
         end
       end
     end

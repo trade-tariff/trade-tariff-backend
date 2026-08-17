@@ -78,6 +78,51 @@ RSpec.describe Evaluation::GoldQueryGenerator do
     end
   end
 
+  context 'when an existing row for a persona is inactive' do
+    before do
+      create(
+        :evaluation_gold_query,
+        source_type: 'atar',
+        source_id: '600014988',
+        persona: 'emu_specific',
+        query: 'stale rejected query',
+        expected_code: '0000000000',
+        active: false,
+      )
+      allow(ai_client).to receive(:call).and_return(accepted_tiers)
+    end
+
+    it 'reactivates the row and overwrites it with the fresh generation' do
+      result
+
+      row = EvaluationGoldQuery.where(source_type: 'atar', source_id: '600014988', persona: 'emu_specific').first
+      expect(row.active).to be(true)
+      expect(row.query).to eq('printed cotton bed linen set')
+      expect(row.expected_code).to eq('6302100000')
+    end
+  end
+
+  context 'when an existing row for a persona is already active' do
+    before do
+      create(
+        :evaluation_gold_query,
+        source_type: 'atar',
+        source_id: '600014988',
+        persona: 'emu_specific',
+        query: 'previously approved query',
+        expected_code: '6302100000',
+      )
+      allow(ai_client).to receive(:call).and_return(accepted_tiers)
+    end
+
+    it 'leaves the active row untouched instead of overwriting it with a new generation' do
+      result
+
+      row = EvaluationGoldQuery.where(source_type: 'atar', source_id: '600014988', persona: 'emu_specific').first
+      expect(row.query).to eq('previously approved query')
+    end
+  end
+
   context 'when the commodity code has no matching goods_nomenclature_description row' do
     let(:ruling) do
       create(

@@ -96,12 +96,13 @@ module_function
     limit = Integer(ENV['LIMIT'], exception: false) if ENV['LIMIT'].present?
     raise ArgumentError, 'LIMIT must be a positive integer' if ENV['LIMIT'].present? && (limit.nil? || limit < 1)
 
-    # An inactive gold query row (active: false) makes its ATaR look incomplete again
-    # and get reprocessed below, but the row itself is never touched: persist's
-    # ON CONFLICT DO NOTHING means an inactive row is neither updated nor reactivated,
-    # and a new row can't be inserted in its place either.
+    # An inactive row (active: false) makes its ATaR look incomplete again so it gets
+    # reprocessed; GoldQueryGenerator#persist repairs and reactivates it. Persona-filtered
+    # (not just any 3+ active rows) so an unexpected persona can't stand in for a still-
+    # missing one — the unique index on (source_type, source_id, persona) caps each
+    # required persona at one row.
     complete_refs = EvaluationGoldQuery
-                    .where(source_type: 'atar', active: true)
+                    .where(source_type: 'atar', active: true, persona: Evaluation::GoldQueryGenerator::PERSONA_FOR_TIER.values)
                     .group(:source_id)
                     .having { count.function.* >= Evaluation::GoldQueryGenerator::TIERS.size }
                     .select(:source_id)

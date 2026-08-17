@@ -40,12 +40,35 @@ RSpec.describe 'tariff:evaluation:generate_gold_queries rake task' do
     expect(Evaluation::GoldQueryGenerator).not_to have_received(:call).with(complete)
   end
 
-  it 'treats an ATaR with a deactivated persona row as incomplete, so it gets regenerated' do
+  it 'treats an ATaR with a deactivated persona row as incomplete, regenerates it, and reactivates the row' do
     ruling = create(:tariff_knowledge_public_atar_ruling, ref: '600000010')
     %w[emu_generic emu_ordinary].each do |persona|
       create(:evaluation_gold_query, source_type: 'atar', source_id: ruling.ref, persona:)
     end
-    create(:evaluation_gold_query, source_type: 'atar', source_id: ruling.ref, persona: 'emu_specific', active: false)
+    create(:evaluation_gold_query, source_type: 'atar', source_id: ruling.ref, persona: 'emu_specific', active: false, query: 'stale')
+    allow(Evaluation::GoldQueryGenerator).to receive(:call) do |r|
+      { 'generic' => 'x', 'ordinary' => 'y', 'specific' => 'z' }.tap do
+        EvaluationGoldQuery.dataset.insert_conflict(
+          target: EvaluationGoldQuery::IDENTITY_COLUMNS,
+          update: { query: Sequel[:excluded][:query], active: true },
+          update_where: { Sequel[:evaluation_gold_queries][:active] => false },
+        ).insert(source_type: 'atar', source_id: r.ref, persona: 'emu_specific', query: 'z', expected_code: '0000000000')
+      end
+    end
+
+    suppress_output { Rake::Task['tariff:evaluation:generate_gold_queries'].invoke }
+
+    expect(Evaluation::GoldQueryGenerator).to have_received(:call).once.with(ruling)
+    row = EvaluationGoldQuery.where(source_type: 'atar', source_id: ruling.ref, persona: 'emu_specific').first
+    expect(row.active).to be(true)
+    expect(row.query).to eq('z')
+  end
+
+  it 'treats an ATaR with an unexpected persona value as incomplete, even with 3+ active rows' do
+    ruling = create(:tariff_knowledge_public_atar_ruling, ref: '600000025')
+    %w[emu_generic emu_ordinary unexpected_persona].each do |persona|
+      create(:evaluation_gold_query, source_type: 'atar', source_id: ruling.ref, persona:)
+    end
     allow(Evaluation::GoldQueryGenerator).to receive(:call).and_return(
       { 'generic' => 'x', 'ordinary' => 'y', 'specific' => 'z' },
     )
