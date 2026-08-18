@@ -86,13 +86,60 @@ RSpec.describe EvaluationRun do
     end
 
     it 'returns the racing request run instead of raising when a concurrent create wins the unique-constraint race' do
-      racing_run = create(:evaluation_run, evaluation_experiment: experiment, idempotency_key: 'race-key')
+      racing_run = create(
+        :evaluation_run, evaluation_experiment: experiment, triggered_by: 'operator', idempotency_key: 'race-key',
+                         configuration_digest: EvaluationConfiguration::DigestCalculator.call(
+                           EvaluationConfiguration::Merger.call(EvaluationConfiguration::BaselineProvider.call, experiment.configuration_overrides),
+                         )
+      )
       allow(described_class).to receive(:find_by_idempotency_key).and_return(nil, racing_run)
       allow(described_class).to receive(:create).and_raise(Sequel::UniqueConstraintViolation.new('duplicate key'))
 
       result = described_class.start!(experiment:, triggered_by: 'operator', idempotency_key: 'race-key')
 
       expect(result).to eq(racing_run)
+    end
+
+    it 'raises IdempotencyKeyConflict instead of returning the wrong run when the key repeats with a different experiment' do
+      key = SecureRandom.uuid
+      described_class.start!(experiment:, triggered_by: 'operator', idempotency_key: key)
+      other_experiment = create(:evaluation_experiment, name: 'other-experiment')
+
+      expect {
+        described_class.start!(experiment: other_experiment, triggered_by: 'operator', idempotency_key: key)
+      }.to raise_error(EvaluationRun::IdempotencyKeyConflict, /experiment_id/)
+    end
+
+    it 'raises IdempotencyKeyConflict instead of returning the wrong run when the key repeats with a different triggered_by' do
+      key = SecureRandom.uuid
+      described_class.start!(experiment:, triggered_by: 'operator', idempotency_key: key)
+
+      expect {
+        described_class.start!(experiment:, triggered_by: 'scheduler', idempotency_key: key)
+      }.to raise_error(EvaluationRun::IdempotencyKeyConflict, /triggered_by/)
+    end
+
+    it 'raises IdempotencyKeyConflict instead of returning the wrong run when the key repeats with different run-time overrides' do
+      key = SecureRandom.uuid
+      described_class.start!(experiment:, triggered_by: 'operator', idempotency_key: key)
+
+      expect {
+        described_class.start!(
+          experiment:, triggered_by: 'operator', idempotency_key: key,
+          run_time_overrides: { 'simulator_model' => 'gpt-4o' }
+        )
+      }.to raise_error(EvaluationRun::IdempotencyKeyConflict, /configuration/)
+    end
+
+    it 'raises IdempotencyKeyConflict instead of returning the wrong run when a racing request actually differs' do
+      key = SecureRandom.uuid
+      racing_run = create(:evaluation_run, evaluation_experiment: experiment, triggered_by: 'scheduler', idempotency_key: key)
+      allow(described_class).to receive(:find_by_idempotency_key).and_return(nil, racing_run)
+      allow(described_class).to receive(:create).and_raise(Sequel::UniqueConstraintViolation.new('duplicate key'))
+
+      expect {
+        described_class.start!(experiment:, triggered_by: 'operator', idempotency_key: key)
+      }.to raise_error(EvaluationRun::IdempotencyKeyConflict, /triggered_by/)
     end
   end
 end

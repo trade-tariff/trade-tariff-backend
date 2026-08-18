@@ -54,6 +54,22 @@ RSpec.describe Api::Admin::Search::Evaluation::RunsController, :admin do
       end
     end
 
+    context 'when the same Idempotency-Key is reused for a different experiment' do
+      let(:params) { { data: { type: :run, attributes: { experiment_id: experiment.id, triggered_by: 'operator' } } } }
+
+      it 'returns 409 instead of the first run, and does not create a second one' do
+        api_response
+        other_experiment = create(:evaluation_experiment)
+
+        authenticated_post api_admin_search_evaluation_runs_path(format: :json),
+                           params: { data: { type: :run, attributes: { experiment_id: other_experiment.id, triggered_by: 'operator' } } },
+                           headers: { 'Idempotency-Key' => idempotency_key }
+
+        expect(response).to have_http_status(:conflict)
+        expect(EvaluationRun.count).to eq(1)
+      end
+    end
+
     context 'with a valid experiment and no run-time overrides' do
       let(:params) do
         { data: { type: :run, attributes: { experiment_id: experiment.id, triggered_by: 'operator' } } }
