@@ -81,8 +81,13 @@ module RulesOfOrigin
 
     def validate!
       if heading_code.present? || country_code.present?
-        raise InvalidParams unless HEADING_CHECKER.match?(heading_code)
-        raise InvalidParams unless COUNTRY_CHECKER.match?(country_code)
+        unless HEADING_CHECKER.match?(heading_code)
+          raise InvalidParams, "heading_code is invalid: expected a 6-digit code, got #{heading_code.inspect}"
+        end
+
+        unless COUNTRY_CHECKER.match?(country_code)
+          raise InvalidParams, "country_code is invalid: expected a 2-letter ISO code, got #{country_code.inspect}"
+        end
       end
     end
   end
