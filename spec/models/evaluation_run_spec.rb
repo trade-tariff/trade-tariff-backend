@@ -55,4 +55,18 @@ RSpec.describe EvaluationRun do
       )
     }.to raise_error(Sequel::CheckConstraintViolation)
   end
+
+  it 'enforces idempotency_key uniqueness at the database level' do
+    described_class.db[:evaluation_runs].insert(
+      experiment_id: experiment.id, status: 'queued', triggered_by: 'operator',
+      effective_configuration: Sequel.pg_jsonb({}), idempotency_key: 'dupe-key'
+    )
+
+    expect {
+      described_class.db[:evaluation_runs].insert(
+        experiment_id: experiment.id, status: 'queued', triggered_by: 'operator',
+        effective_configuration: Sequel.pg_jsonb({}), idempotency_key: 'dupe-key'
+      )
+    }.to raise_error(Sequel::UniqueConstraintViolation)
+  end
 end

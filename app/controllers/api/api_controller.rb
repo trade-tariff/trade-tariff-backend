@@ -29,6 +29,11 @@ module Api
       render json: serializer.serialized_errors({ error: exception.message, url: request.url }), status: :unprocessable_content
     end
 
+    rescue_from EvaluationRun::IdempotencyKeyConflict do |exception|
+      serializer = TradeTariffBackend.error_serializer(request)
+      render json: serializer.serialized_errors({ error: exception.message, url: request.url }), status: :conflict
+    end
+
   protected
 
     def current_page

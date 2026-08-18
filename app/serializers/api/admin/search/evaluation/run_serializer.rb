@@ -24,7 +24,8 @@ module Api
                      :error_count,
                      :error_summary,
                      :aggregate_metrics,
-                     :created_at
+                     :created_at,
+                     :idempotency_key
         end
       end
     end

@@ -10,7 +10,133 @@ RSpec.describe Api::Admin::Search::Evaluation::RunsController, :admin do
   let(:experiment) { create(:evaluation_experiment, configuration_overrides: { 'simulator_model' => 'gpt-4o-mini' }) }
 
   describe 'POST #create' do
-    let(:make_request) { authenticated_post api_admin_search_evaluation_runs_path(format: :json), params: params }
+    let(:idempotency_key) { SecureRandom.uuid }
+    let(:make_request) do
+      authenticated_post api_admin_search_evaluation_runs_path(format: :json),
+                         params: params, headers: { 'Idempotency-Key' => idempotency_key }
+    end
+
+    context 'without an Idempotency-Key header' do
+      let(:params) { { data: { type: :run, attributes: { experiment_id: experiment.id, triggered_by: 'operator' } } } }
+      let(:make_request) { authenticated_post api_admin_search_evaluation_runs_path(format: :json), params: params }
+
+      it { is_expected.to have_http_status :bad_request }
+      it { expect { api_response }.not_to change(EvaluationRun, :count) }
+    end
+
+    context 'when retried with the same Idempotency-Key' do
+      let(:params) { { data: { type: :run, attributes: { experiment_id: experiment.id, triggered_by: 'operator' } } } }
+
+      it 'returns the original run instead of creating a second one' do
+        api_response
+        first_id = json_response['data']['id']
+
+        authenticated_post api_admin_search_evaluation_runs_path(format: :json),
+                           params: params, headers: { 'Idempotency-Key' => idempotency_key }
+        second_id = JSON.parse(response.body)['data']['id']
+
+        expect(response).to have_http_status(:created)
+        expect(second_id).to eq(first_id)
+        expect(EvaluationRun.count).to eq(1)
+      end
+    end
+
+    context 'when sent twice with different Idempotency-Key values' do
+      let(:params) { { data: { type: :run, attributes: { experiment_id: experiment.id, triggered_by: 'operator' } } } }
+
+      it 'creates two separate runs' do
+        api_response
+
+        authenticated_post api_admin_search_evaluation_runs_path(format: :json),
+                           params: params, headers: { 'Idempotency-Key' => SecureRandom.uuid }
+
+        expect(EvaluationRun.count).to eq(2)
+      end
+    end
+
+    context 'when the same Idempotency-Key is reused for a different experiment' do
+      let(:params) { { data: { type: :run, attributes: { experiment_id: experiment.id, triggered_by: 'operator' } } } }
+
+      it 'returns 409 instead of the first run, and does not create a second one' do
+        api_response
+        other_experiment = create(:evaluation_experiment)
+
+        authenticated_post api_admin_search_evaluation_runs_path(format: :json),
+                           params: { data: { type: :run, attributes: { experiment_id: other_experiment.id, triggered_by: 'operator' } } },
+                           headers: { 'Idempotency-Key' => idempotency_key }
+
+        expect(response).to have_http_status(:conflict)
+        expect(EvaluationRun.count).to eq(1)
+      end
+    end
+
+    context 'when the same Idempotency-Key is reused with different run-time overrides' do
+      let(:params) { { data: { type: :run, attributes: { experiment_id: experiment.id, triggered_by: 'operator' } } } }
+
+      it 'returns 409 instead of the first run, and does not create a second one' do
+        api_response
+
+        authenticated_post api_admin_search_evaluation_runs_path(format: :json),
+                           params: {
+                             data: {
+                               type: :run,
+                               attributes: {
+                                 experiment_id: experiment.id,
+                                 triggered_by: 'operator',
+                                 configuration_overrides: { 'simulator_model' => 'gpt-4o' },
+                               },
+                             },
+                           },
+                           headers: { 'Idempotency-Key' => idempotency_key }
+
+        expect(response).to have_http_status(:conflict)
+        expect(EvaluationRun.count).to eq(1)
+      end
+    end
+
+    context 'when retried with the same Idempotency-Key and the same run-time overrides, after an unrelated admin setting changed' do
+      let(:params) do
+        {
+          data: {
+            type: :run,
+            attributes: {
+              experiment_id: experiment.id,
+              triggered_by: 'operator',
+              configuration_overrides: { 'simulator_model' => 'gpt-4o' },
+            },
+          },
+        }
+      end
+
+      it 'still returns the original run — the retry is identical, only unrelated server state changed' do
+        api_response
+        first_id = json_response['data']['id']
+
+        create(:admin_configuration, :integer, name: 'interactive_search_max_questions', value: 9)
+
+        authenticated_post api_admin_search_evaluation_runs_path(format: :json),
+                           params: params, headers: { 'Idempotency-Key' => idempotency_key }
+
+        expect(response).to have_http_status(:created)
+        expect(json_response['data']['id']).to eq(first_id)
+        expect(EvaluationRun.count).to eq(1)
+      end
+    end
+
+    context 'with an Idempotency-Key over 255 characters' do
+      let(:params) { { data: { type: :run, attributes: { experiment_id: experiment.id, triggered_by: 'operator' } } } }
+      let(:idempotency_key) { 'a' * 256 }
+
+      it { is_expected.to have_http_status :bad_request }
+      it { expect { api_response }.not_to change(EvaluationRun, :count) }
+    end
+
+    context 'with an Idempotency-Key of exactly 255 characters' do
+      let(:params) { { data: { type: :run, attributes: { experiment_id: experiment.id, triggered_by: 'operator' } } } }
+      let(:idempotency_key) { 'a' * 255 }
+
+      it { is_expected.to have_http_status :created }
+    end
 
     context 'with a valid experiment and no run-time overrides' do
       let(:params) do
