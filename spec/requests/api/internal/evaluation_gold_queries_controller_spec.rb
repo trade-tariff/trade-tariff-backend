@@ -36,6 +36,7 @@ RSpec.describe Api::Internal::EvaluationGoldQueriesController do
         'persona' => 'emu_generic',
         'query' => 'bed linen',
         'expected_code' => '6302100000',
+        'expected_code_digits' => 10,
         'expected_description' => 'Bed linen, of cotton',
         'notes' => 'ported emulator',
         'generator' => 'gpt-5-mini',
@@ -74,6 +75,19 @@ RSpec.describe Api::Internal::EvaluationGoldQueriesController do
       get '/xi/internal/evaluation_gold_queries.json'
 
       expect(response).to have_http_status(:not_found)
+    end
+
+    it 'surfaces expected_code_digits so a consumer can detect a short (non-10-digit) expected_code without inferring it from length' do
+      short_code_row = create(
+        :evaluation_gold_query,
+        source_type: 'atar', source_id: '600000099', persona: 'emu_generic', expected_code: '63021000',
+      )
+
+      get collection_path, params: { source_ids: short_code_row.source_id }
+
+      attrs = response.parsed_body['data'].first.fetch('attributes')
+      expect(attrs['expected_code']).to eq('63021000')
+      expect(attrs['expected_code_digits']).to eq(8)
     end
   end
 

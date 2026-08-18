@@ -39,6 +39,16 @@ RSpec.describe EvaluationGoldQuery do
     expect(record.active).to be true
   end
 
+  it 'reports expected_code_digits as the literal length of expected_code, preserving native ATaR granularity' do
+    full_leaf = build(:evaluation_gold_query, expected_code: '6302100000')
+    heading_level = build(:evaluation_gold_query, expected_code: '63021000')
+    chapter_level = build(:evaluation_gold_query, expected_code: '630210')
+
+    expect(full_leaf.expected_code_digits).to eq(10)
+    expect(heading_level.expected_code_digits).to eq(8)
+    expect(chapter_level.expected_code_digits).to eq(6)
+  end
+
   it 'enforces uniqueness on (source_type, source_id, persona) at the database level' do
     create(:evaluation_gold_query, source_type: 'atar', source_id: '600000001', persona: 'emu_generic')
 

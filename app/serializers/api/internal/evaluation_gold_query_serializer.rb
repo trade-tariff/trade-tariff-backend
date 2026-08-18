@@ -10,6 +10,7 @@ module Api
                  :persona,
                  :query,
                  :expected_code,
+                 :expected_code_digits,
                  :expected_description,
                  :notes,
                  :generator,

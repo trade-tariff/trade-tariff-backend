@@ -64,6 +64,34 @@ RSpec.describe Evaluation::GoldQueryGenerator do
       expect(rows.map(&:generator).uniq).to eq(['gpt-5-mini-2025-08-07'])
     end
 
+    context 'when the ATaR ruling only classified to heading level (8 digits, not a full 10-digit leaf)' do
+      let(:ruling) do
+        create(
+          :tariff_knowledge_public_atar_ruling,
+          ref: '600014988',
+          commodity_code: '63021000',
+          description: 'Bed linen woven from cotton fabric, printed with a floral pattern.',
+          justification: 'Classified in accordance with GIR 1.',
+        )
+      end
+
+      it 'stores expected_code at the ruling\'s native 8-digit granularity, never right-padded to a 10-digit leaf' do
+        result
+
+        rows = EvaluationGoldQuery.where(source_type: 'atar', source_id: '600014988').all
+        # Must equal the RAW ruling.commodity_code, never ruling.goods_nomenclature_item_id
+        # (the DB-level right-padded value) — right-padding an 8-digit code can land on a
+        # non-declarable intermediate node with several declarable descendants, which
+        # would silently become the wrong exact-match target for anything scoring against
+        # this row later (e.g. AI-1073). expected_code_digits (see EvaluationGoldQuery)
+        # is how a consumer is meant to detect this, not by inferring it from length
+        # themselves.
+        expect(rows.map(&:expected_code).uniq).to eq(%w[63021000])
+        expect(rows.first.expected_code_digits).to eq(8)
+        expect(ruling.goods_nomenclature_item_id).to eq('6302100000') # sanity: DB-level padding exists but is NOT what got persisted
+      end
+    end
+
     it 'calls the AI client once with the tiered prompt and the ATaR description' do
       result
 
