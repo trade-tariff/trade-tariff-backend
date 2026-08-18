@@ -86,12 +86,7 @@ RSpec.describe EvaluationRun do
     end
 
     it 'returns the racing request run instead of raising when a concurrent create wins the unique-constraint race' do
-      racing_run = create(
-        :evaluation_run, evaluation_experiment: experiment, triggered_by: 'operator', idempotency_key: 'race-key',
-                         configuration_digest: EvaluationConfiguration::DigestCalculator.call(
-                           EvaluationConfiguration::Merger.call(EvaluationConfiguration::BaselineProvider.call, experiment.configuration_overrides),
-                         )
-      )
+      racing_run = create(:evaluation_run, evaluation_experiment: experiment, triggered_by: 'operator', idempotency_key: 'race-key')
       allow(described_class).to receive(:find_by_idempotency_key).and_return(nil, racing_run)
       allow(described_class).to receive(:create).and_raise(Sequel::UniqueConstraintViolation.new('duplicate key'))
 
@@ -128,7 +123,39 @@ RSpec.describe EvaluationRun do
           experiment:, triggered_by: 'operator', idempotency_key: key,
           run_time_overrides: { 'simulator_model' => 'gpt-4o' }
         )
-      }.to raise_error(EvaluationRun::IdempotencyKeyConflict, /configuration/)
+      }.to raise_error(EvaluationRun::IdempotencyKeyConflict, /run_time_overrides/)
+    end
+
+    it 'returns the original run on retry even though the experiment configuration_overrides changed in between' do
+      key = SecureRandom.uuid
+      first_run = described_class.start!(experiment:, triggered_by: 'operator', idempotency_key: key)
+
+      # Simulates an operator editing the experiment (PATCH .../experiments/:id) between
+      # the original request and a retry of it — the retry itself sends the exact same
+      # inputs (same experiment_id, same triggered_by, same run_time_overrides), so it
+      # must still return the original run, not a conflict. Comparing anything DERIVED
+      # from experiment.configuration_overrides (effective_configuration/digest) would
+      # wrongly reject this, because that derived value has now changed underneath it.
+      experiment.update(configuration_overrides: { 'simulator_model' => 'gpt-4o' })
+
+      retried_run = described_class.start!(experiment: experiment.reload, triggered_by: 'operator', idempotency_key: key)
+
+      expect(retried_run.id).to eq(first_run.id)
+    end
+
+    it 'returns the original run on retry even though the admin-config baseline changed in between, and never re-resolves it' do
+      key = SecureRandom.uuid
+      baseline_a = { 'rrf_k' => 60 }
+      baseline_b = { 'rrf_k' => 120 }
+      allow(EvaluationConfiguration::BaselineProvider).to receive(:call).and_return(baseline_a, baseline_b)
+
+      first_run = described_class.start!(experiment:, triggered_by: 'operator', idempotency_key: key)
+      retried_run = described_class.start!(experiment:, triggered_by: 'operator', idempotency_key: key)
+
+      expect(retried_run.id).to eq(first_run.id)
+      # Only the FIRST call should ever resolve a baseline — a genuine replay is detected
+      # from literal request inputs alone and returns before touching the baseline at all.
+      expect(EvaluationConfiguration::BaselineProvider).to have_received(:call).once
     end
 
     it 'raises IdempotencyKeyConflict instead of returning the wrong run when a racing request actually differs' do

@@ -4,6 +4,13 @@ module Api
       module Evaluation
         class RunsController < AdminController
           RECONCILING_STATUSES = %w[completed partially_failed failed cancelled].freeze
+          # evaluation_runs.idempotency_key is an unbounded `text` column with a unique
+          # btree index on it — Postgres btree entries are capped at roughly a third of a
+          # page (~2.7KB on the default 8KB page size), so a sufficiently large header
+          # value would fail the INSERT with an unhandled 500 instead of a clean 400. 255
+          # is generous headroom for any real idempotency key (a UUID is 36 characters)
+          # while staying nowhere near that limit.
+          MAX_IDEMPOTENCY_KEY_LENGTH = 255
 
           def index
             render json: serialize(runs.all, is_collection: true, meta: pagination_meta)
@@ -64,6 +71,9 @@ module Api
           def idempotency_key!
             key = request.headers['Idempotency-Key']
             raise ActionController::BadRequest, 'Idempotency-Key header is required' if key.blank?
+            if key.length > MAX_IDEMPOTENCY_KEY_LENGTH
+              raise ActionController::BadRequest, "Idempotency-Key must be #{MAX_IDEMPOTENCY_KEY_LENGTH} characters or fewer"
+            end
 
             key
           end
