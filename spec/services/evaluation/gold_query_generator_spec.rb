@@ -74,6 +74,7 @@ RSpec.describe Evaluation::GoldQueryGenerator do
         ),
         model: 'gpt-5-mini-2025-08-07',
         event_kind: 'evaluation_gold_query_generation',
+        timeout: 60,
       )
     end
   end
@@ -187,6 +188,21 @@ RSpec.describe Evaluation::GoldQueryGenerator do
     end
   end
 
+  context 'when the AI client exceeds its per-attempt deadline on every attempt' do
+    before do
+      allow(ai_client).to receive(:call).and_raise(
+        OpenaiClient::DeadlineExceeded.new(timeout_seconds: 60, elapsed_seconds: 60.4),
+      )
+      allow(Rails.logger).to receive(:warn)
+    end
+
+    it 'returns nil without raising (DeadlineExceeded is not a raw RETRYABLE_ERRORS member), and logs the elapsed time' do
+      expect(result).to be_nil
+      expect(ai_client).to have_received(:call).exactly(3).times
+      expect(Rails.logger).to have_received(:warn).with(/elapsed=60\.4s/).exactly(3).times
+    end
+  end
+
   context 'when persisting fails partway through the tiers' do
     before do
       allow(ai_client).to receive(:call).and_return(accepted_tiers)
@@ -270,6 +286,38 @@ RSpec.describe Evaluation::GoldQueryGenerator do
       let(:rejected_generic) { 'linen 6302 fabric' }
 
       it 'rejects the whole attempt' do
+        expect(result).to be_nil
+      end
+    end
+
+    context 'when a heading number is glued directly onto a letter prefix, with no space' do
+      let(:rejected_generic) { 'HS6302 linen' }
+
+      it 'still rejects it (a 4+ digit run is forbidden regardless of what immediately precedes it)' do
+        expect(result).to be_nil
+      end
+    end
+
+    context 'when a CN code is glued directly onto its prefix, with no space' do
+      let(:rejected_generic) { 'CN6302 linen' }
+
+      it 'still rejects it' do
+        expect(result).to be_nil
+      end
+    end
+
+    context 'when "heading" is glued directly onto its number, with no space' do
+      let(:rejected_generic) { 'heading6302 linen' }
+
+      it 'still rejects it' do
+        expect(result).to be_nil
+      end
+    end
+
+    context 'when a tier contains a full CAS registry number' do
+      let(:rejected_generic) { 'CAS 50-00-0 dye' }
+
+      it 'rejects it (the whole hyphenated number is consumed, not just its first digit)' do
         expect(result).to be_nil
       end
     end
