@@ -14,7 +14,7 @@ RSpec.describe TaricUpdatesSynchronizerWorker, type: :worker do
     subject(:perform) { described_class.new.perform }
 
     before do
-      allow(TaricSynchronizer).to receive(:download)
+      allow(TariffSynchronizer::TaricUpdateDownloader).to receive(:download)
       allow(TaricSynchronizer).to receive(:apply).and_return(changes_applied)
       allow(CdsSynchronizer).to receive(:download)
       allow(CdsSynchronizer).to receive(:apply).and_return(changes_applied)
@@ -40,7 +40,7 @@ RSpec.describe TaricUpdatesSynchronizerWorker, type: :worker do
 
       let(:service) { 'xi' }
 
-      it { expect(TaricSynchronizer).to have_received(:download) }
+      it { expect(TariffSynchronizer::TaricUpdateDownloader).to have_received(:download) }
       it { expect(TaricSynchronizer).to have_received(:apply) }
 
       it { expect(CdsSynchronizer).not_to have_received(:download) }
@@ -64,20 +64,20 @@ RSpec.describe TaricUpdatesSynchronizerWorker, type: :worker do
       context 'with reapply_data_migrations option' do
         subject(:perform) { described_class.new.perform(true) }
 
-        it { expect(TaricSynchronizer).to have_received(:download) }
+        it { expect(TariffSynchronizer::TaricUpdateDownloader).to have_received(:download) }
         it { expect(DataMigrator).to have_received(:migrate_up!).with(nil) }
       end
 
       context 'with no updates applied' do
         let(:changes_applied) { nil }
 
-        it { expect(TaricSynchronizer).to have_received(:download) }
+        it { expect(TariffSynchronizer::TaricUpdateDownloader).to have_received(:download) }
         it { expect(TaricSynchronizer).to have_received(:apply) }
 
         context 'with reapply_data_migrations option' do
           subject(:perform) { described_class.new.perform(true) }
 
-          it { expect(TaricSynchronizer).to have_received(:download) }
+          it { expect(TariffSynchronizer::TaricUpdateDownloader).to have_received(:download) }
           it { expect(DataMigrator).not_to have_received(:migrate_up!) }
         end
       end
@@ -87,7 +87,7 @@ RSpec.describe TaricUpdatesSynchronizerWorker, type: :worker do
       let(:service) { 'xi' }
 
       before do
-        allow(TaricSynchronizer).to receive(:download)
+        allow(TariffSynchronizer::TaricUpdateDownloader).to receive(:download)
           .and_raise(TariffSynchronizer::TariffUpdatesRequester::RetriableDownloadError, 'http://example/file')
       end
 

@@ -32,6 +32,8 @@ module TariffSynchronizer
       case @base_update
       when CdsUpdate
         CdsUpdateImporter.perform(@base_update)
+      when TaricUpdate
+        TaricUpdateImporter.perform(@base_update)
       else
         @base_update.import!
       end

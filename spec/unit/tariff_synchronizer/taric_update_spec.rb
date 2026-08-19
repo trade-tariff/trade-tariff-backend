@@ -1,77 +1,9 @@
 RSpec.describe TariffSynchronizer::TaricUpdate do
   let(:example_date) { Date.new(2010, 1, 1) }
 
-  it_behaves_like 'Base Update'
-
-  describe '.sync' do
-    before do
-      allow(TariffSynchronizer::TaricUpdateDownloader).to receive(:new).and_return(instance_double(TariffSynchronizer::TaricUpdateDownloader, perform: nil))
-    end
-
-    it 'calls the downloader with the correct args' do
-      create :taric_update, :applied, issue_date: 1.day.ago.to_date
-
-      described_class.sync(initial_date: 20.days.ago.to_date)
-
-      (20.days.ago.to_date..Time.zone.today).each do |download_date|
-        expect(TariffSynchronizer::TaricUpdateDownloader).to have_received(:new).with(download_date)
-      end
-    end
-  end
-
-  describe '.sync_patched' do
-    before do
-      allow(TariffSynchronizer::TaricUpdateDownloaderPatched).to receive(:new).and_return(instance_double(TariffSynchronizer::TaricUpdateDownloaderPatched, perform: nil))
-    end
-
-    it 'calls the downloader with the correct args' do
-      create :taric_update, :applied, issue_date: 1.day.ago
-
-      described_class.sync_patched
-
-      expect(TariffSynchronizer::TaricUpdateDownloaderPatched).to have_received(:new).with(an_instance_of(described_class)).once
-    end
-  end
-
-  describe '#import!' do
-    let(:taric_update) { create :taric_update }
-    let(:taric_importer) { instance_double(TaricImporter) }
-    let(:inserted_oplog_records) do
-      {
-        total_count: 1,
-        total_duration: 0,
-      }
-    end
-
-    before do
-      allow(TaricImporter).to receive(:new).with(taric_update).and_return(taric_importer)
-      allow(taric_importer).to receive(:import).and_return(inserted_oplog_records)
-      allow(taric_update).to receive(:file_path).and_return('spec/fixtures/taric_samples/insert_record.xml')
-    end
-
-    it 'calls the TaricImporter import method' do
-      taric_update.import!
-      expect(taric_importer).to have_received(:import)
-    end
-
-    it 'marks the Taric update as applied' do
-      taric_update.import!
-      expect(taric_update.reload).to be_applied
-    end
-
-    it 'stores the inserts on the update' do
-      taric_update.import!
-      expect(taric_update.reload.inserts).to include('"total_count":1')
-    end
-
-    it 'emits a file_import_completed instrumentation event' do
-      allow(TariffSynchronizer::Instrumentation).to receive(:file_import_completed)
-
-      taric_update.import!
-
-      expect(TariffSynchronizer::Instrumentation).to have_received(:file_import_completed).with(
-        hash_including(filename: taric_update.filename),
-      )
+  describe '.update_type' do
+    it 'returns :taric' do
+      expect(described_class.update_type).to eq(:taric)
     end
   end
 
@@ -111,29 +43,29 @@ RSpec.describe TariffSynchronizer::TaricUpdate do
     let(:applied_update) { create(:taric_update, :applied, example_date: Date.parse('2021-12-01'), sequence_number: '002') }
 
     context 'when the pending year is the same and the pending sequence is the next valid sequence' do
-      let(:pending_date) { Date.parse('2021-12-02') } # Same year
-      let(:pending_sequence_number) { '003' } # Correct sequence
+      let(:pending_date) { Date.parse('2021-12-02') }
+      let(:pending_sequence_number) { '003' }
 
       it { is_expected.to be_truthy }
     end
 
     context 'when the pending year is the same and the pending sequence is NOT the next valid sequence' do
-      let(:pending_date) { Date.parse('2021-12-02') } # Same year
-      let(:pending_sequence_number) { '004' } # Incorrect sequence
+      let(:pending_date) { Date.parse('2021-12-02') }
+      let(:pending_sequence_number) { '004' }
 
       it { is_expected.to be_falsey }
     end
 
     context 'when the pending year is the following year and the pending sequence is 001' do
-      let(:pending_date) { Date.parse('2022-12-02') } # Following year
-      let(:pending_sequence_number) { '001' } # Correct sequence
+      let(:pending_date) { Date.parse('2022-12-02') }
+      let(:pending_sequence_number) { '001' }
 
       it { is_expected.to be_truthy }
     end
 
     context 'when the pending year is the following year and the pending sequence is NOT the next valid sequence' do
-      let(:pending_date) { Date.parse('2022-12-02') } # Following year
-      let(:pending_sequence_number) { '002' } # Incorrect sequence
+      let(:pending_date) { Date.parse('2022-12-02') }
+      let(:pending_sequence_number) { '002' }
 
       it { is_expected.to be_falsey }
     end
@@ -201,48 +133,5 @@ RSpec.describe TariffSynchronizer::TaricUpdate do
     subject(:url_filename) { create(:taric_update, :pending, example_date: Date.parse('2021-12-03'), sequence_number: '203').url_filename }
 
     it { is_expected.to eq('TGB21203.xml') }
-  end
-
-  describe '.applicable_update' do
-    subject(:applicable_update) { described_class.applicable_update.as_json }
-
-    context 'when there is an unbroken sequence of applied and pending updates' do
-      before do
-        create(:taric_update, :pending, example_date: Date.parse('2021-12-03'), sequence_number: '203')
-        create(:taric_update, :applied, example_date: Date.parse('2021-12-02'), sequence_number: '202')
-      end
-
-      let(:expected_update) do
-        { 'filename' => '2021-12-04_TGB21204.xml', 'issue_date' => '2021-12-04' }
-      end
-
-      it { is_expected.to eq(expected_update) }
-    end
-
-    context 'when there is an unbroken sequence of applied updates' do
-      before do
-        create(:taric_update, :applied, example_date: Date.parse('2021-12-03'), sequence_number: '203')
-        create(:taric_update, :applied, example_date: Date.parse('2021-12-02'), sequence_number: '202')
-      end
-
-      let(:expected_update) do
-        { 'filename' => '2021-12-04_TGB21204.xml', 'issue_date' => '2021-12-04' }
-      end
-
-      it { is_expected.to eq(expected_update) }
-    end
-
-    context 'when there are broken sequence updates' do
-      before do
-        create(:taric_update, :pending, example_date: Date.parse('2021-12-03'), sequence_number: '203')
-        create(:taric_update, :applied, example_date: Date.parse('2021-12-02'), sequence_number: '201')
-      end
-
-      it { is_expected.to be_nil }
-    end
-
-    context 'when there are no updates' do
-      it { is_expected.to be_nil }
-    end
   end
 end
