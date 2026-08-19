@@ -29,8 +29,8 @@ RSpec.describe News::Item do
 
     it {
       expect(errors).to include(start_date: [
-        "cannot be dated more than #{described_class::MAX_YEARS_IN_FUTURE} years in the future",
         'is not present',
+        "cannot be dated more than #{described_class::MAX_YEARS_IN_FUTURE} years in the future",
       ])
     }
 

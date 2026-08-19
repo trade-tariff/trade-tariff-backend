@@ -50,7 +50,6 @@ module News
       validates_unique :slug
       validates_presence :precis if show_on_updates_page
       validates_presence :collection_ids, message: 'must include at least one collection'
-      validates_presence :start_date
 
       unless valid_date?(start_date)
         errors.add(:start_date, "cannot be dated more than #{MAX_YEARS_IN_FUTURE} years in the future")
@@ -177,7 +176,7 @@ module News
     def valid_date?(date)
       return false unless date
 
-      max_future_date = (date + MAX_YEARS_IN_FUTURE.years).to_date
+      max_future_date = (Time.zone.today + MAX_YEARS_IN_FUTURE.years).to_date
       date <= max_future_date
     end
   end
