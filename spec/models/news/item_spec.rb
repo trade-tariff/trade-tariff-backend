@@ -28,10 +28,7 @@ RSpec.describe News::Item do
     it { is_expected.to include(show_on_home_page: ['is not present']) }
 
     it {
-      expect(errors).to include(start_date: [
-        'is not present',
-        "cannot be dated more than #{described_class::MAX_YEARS_IN_FUTURE} years in the future",
-      ])
+      expect(errors[:start_date]).to contain_exactly('is not present', "cannot be dated more than #{described_class::MAX_YEARS_IN_FUTURE} years in the future")
     }
 
     it { is_expected.not_to include(end_date: ['is not present']) }
