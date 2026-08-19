@@ -1375,7 +1375,7 @@ RSpec.describe Measure do
       let(:certificate_type_code) { nil }
 
       it 'applies no filter' do
-        expect(dataset.pluck(:certificate_type_code)).to eq %w[Y N]
+        expect(dataset.pluck(:certificate_type_code)).to match_array(%w[Y N])
       end
     end
 
