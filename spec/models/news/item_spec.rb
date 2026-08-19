@@ -37,7 +37,7 @@ RSpec.describe News::Item do
     it { is_expected.not_to include(end_date: ['is not present']) }
 
     context 'with malformed start date' do
-      let(:instance) { described_class.new start_date: Date.new(3000, 1, 1) }
+      let(:instance) { described_class.new start_date: (Time.zone.today + 10.years) }
 
       it { is_expected.to include(start_date: ['cannot be dated more than 2 years in the future']) }
     end
