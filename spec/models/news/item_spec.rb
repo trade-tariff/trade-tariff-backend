@@ -26,8 +26,27 @@ RSpec.describe News::Item do
     it { is_expected.to include(show_on_xi: ['is not present']) }
     it { is_expected.to include(show_on_updates_page: ['is not present']) }
     it { is_expected.to include(show_on_home_page: ['is not present']) }
-    it { is_expected.to include(start_date: ['is not present']) }
+
+    it {
+      expect(errors).to include(start_date: [
+        "cannot be dated more than #{described_class::MAX_YEARS_IN_FUTURE} years in the future",
+        'is not present',
+      ])
+    }
+
     it { is_expected.not_to include(end_date: ['is not present']) }
+
+    context 'with malformed start date' do
+      let(:instance) { described_class.new start_date: Date.new(3000, 1, 1) }
+
+      it { is_expected.to include(start_date: ['cannot be dated more than 2 years in the future']) }
+    end
+
+    context 'with malformed end date' do
+      let(:instance) { described_class.new start_date: Time.zone.today, end_date: Time.zone.yesterday }
+
+      it { is_expected.to include(end_date: ['must be after start date']) }
+    end
 
     context 'with blank strings' do
       let(:instance) { described_class.new title: '', content: '' }
