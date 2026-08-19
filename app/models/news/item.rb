@@ -176,6 +176,9 @@ module News
     def valid_date?(date)
       max_future_date = (date + MAX_YEARS_IN_FUTURE.years).to_date
 
+      puts "date: #{date}"
+      puts "max_future_date: #{max_future_date}"
+
       date <= max_future_date
     end
   end
