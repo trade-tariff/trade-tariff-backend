@@ -6248,9 +6248,10 @@
           "in": "path",
           "required": true,
           "schema": {
-            "type": "string"
+            "type": "string",
+            "pattern": "^\\d{6}$"
           },
-          "description": "Heading code (e.g. \"0101\")"
+          "description": "The 6 digit subheading of the goods being traded (e.g. \"010121\")"
         },
         {
           "name": "country_code",
@@ -6318,6 +6319,16 @@
                       }
                     }
                   }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "invalid heading_code — must be exactly 6 digits",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StandardErrorResponse"
                 }
               }
             }
