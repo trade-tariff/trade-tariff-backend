@@ -1,3 +1,7 @@
+require_relative 'cds_importer/entity_mapper'
+require_relative 'cds_importer/staging_manager'
+require_relative 'cds_importer/xml_parser'
+
 require 'zip'
 
 class CdsImporter

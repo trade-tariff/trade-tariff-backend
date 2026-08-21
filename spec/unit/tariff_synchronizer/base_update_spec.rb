@@ -298,4 +298,5 @@ RSpec.describe TariffSynchronizer::BaseUpdate do
       it { expect(described_class.by_filename(xi_update.to_param)).to be_a(TariffSynchronizer::TaricUpdate) }
     end
   end
-end
+  end
+  end
