@@ -3,7 +3,7 @@ module Search
     NOISE_TAGS = %w[cc dt det in to prp prp$ md ex pdt wp wp$ wdt wrb].freeze
 
     attr_reader :query_string, :date, :expanded_query, :pos_search, :size,
-                :noun_boost, :qualifier_boost, :filter_prefixes
+                :noun_boost, :qualifier_boost, :filter_prefixes, :search_non_declarables
 
     class << self
       def tagger
@@ -11,7 +11,7 @@ module Search
       end
     end
 
-    def initialize(query_string, date, size:, noun_boost:, qualifier_boost:, expanded_query: nil, pos_search: true, filter_prefixes: [])
+    def initialize(query_string, date, size:, noun_boost:, qualifier_boost:, expanded_query: nil, pos_search: true, filter_prefixes: [], search_non_declarables: false)
       @query_string = query_string
       @date = date
       @expanded_query = expanded_query
@@ -20,6 +20,7 @@ module Search
       @noun_boost = noun_boost
       @qualifier_boost = qualifier_boost
       @filter_prefixes = Array(filter_prefixes).compact_blank
+      @search_non_declarables = search_non_declarables
     end
 
     def query
@@ -123,23 +124,25 @@ module Search
     end
 
     def search_fields
-      fields = %w[
-        search_references^5
-        description^3
-        atar_keywords^2
-        ancestor_descriptions
-      ]
-
-      if SearchLabels.enabled?
-        fields += %w[
-          labels.known_brands^2
-          labels.colloquial_terms^2
-          labels.synonyms^1.5
-          labels.description
+      @search_fields ||= begin
+        fields = %w[
+          search_references^5
+          description^3
+          ancestor_descriptions
         ]
-      end
+        fields << 'atar_keywords^2' if AdminConfiguration.enabled?('search_atars_enabled')
 
-      fields
+        if SearchLabels.enabled?
+          fields += %w[
+            labels.known_brands^2
+            labels.colloquial_terms^2
+            labels.synonyms^1.5
+            labels.description
+          ]
+        end
+
+        fields
+      end
     end
 
     def hidden_goods_nomenclature_filter
@@ -167,6 +170,8 @@ module Search
     end
 
     def declarable_filter
+      return nil if search_non_declarables
+
       { term: { declarable: true } }
     end
 

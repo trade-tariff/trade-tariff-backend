@@ -3,18 +3,24 @@ class HybridRetrievalService
   LegResult = Data.define(:value, :error)
   Result = Data.define(:results, :expanded_query, :source_results)
 
-  def self.call(query:, as_of:, expanded_query: nil, request_id: nil, limit: 30, filter_prefixes: [], iteration: nil)
-    new(query:, as_of:, expanded_query:, request_id:, limit:, filter_prefixes:, iteration:).call
+  def self.call(query:, as_of:, expanded_query: nil, retrieval_query: nil, request_id: nil, limit: 30, filter_prefixes: [], iteration: nil, search_type: 'interactive', rrf_k: nil, vector_score_threshold: nil, vector_ef_search: nil, search_non_declarables: nil)
+    new(query:, as_of:, expanded_query:, retrieval_query:, request_id:, limit:, filter_prefixes:, iteration:, search_type:, rrf_k:, vector_score_threshold:, vector_ef_search:, search_non_declarables:).call
   end
 
-  def initialize(query:, as_of:, expanded_query: nil, request_id: nil, limit: 30, filter_prefixes: [], iteration: nil)
+  def initialize(query:, as_of:, expanded_query: nil, retrieval_query: nil, request_id: nil, limit: 30, filter_prefixes: [], iteration: nil, search_type: 'interactive', rrf_k: nil, vector_score_threshold: nil, vector_ef_search: nil, search_non_declarables: nil)
     @query = query
     @expanded_query = expanded_query.presence || query
+    @retrieval_query = retrieval_query.presence || @expanded_query
     @as_of = as_of
     @request_id = request_id
     @limit = limit
     @filter_prefixes = Array(filter_prefixes).compact_blank
     @iteration = iteration
+    @search_type = search_type
+    @rrf_k = rrf_k
+    @vector_score_threshold = vector_score_threshold
+    @vector_ef_search = vector_ef_search
+    @search_non_declarables = search_non_declarables
   end
 
   def call
@@ -26,14 +32,23 @@ class HybridRetrievalService
     end
 
     opensearch_items = opensearch_leg.value&.results || []
-    vector_items = vector_leg.value || []
+    vector_items = vector_leg.value&.results || []
 
-    merged = rrf_merge(opensearch_items, vector_items)
+    decision = query_guardrail_decision(vector_leg)
+    merged = decision[:accepted] ? rrf_merge(opensearch_items, vector_items) : []
+    Search::Instrumentation.query_guardrail_decided(
+      request_id: @request_id,
+      search_type: @search_type,
+      query: @query,
+      effective_query: @expanded_query,
+      iteration: @iteration,
+      **decision,
+    )
     Search::Instrumentation.retrieval_results_returned(
       request_id: @request_id,
       query: @query,
       effective_query: @expanded_query,
-      search_type: 'interactive',
+      search_type: @search_type,
       retrieval_method: 'hybrid',
       stage: 'after_rrf',
       iteration: @iteration,
@@ -60,12 +75,12 @@ private
       when :opensearch
         OpensearchRetrievalService.call(**opensearch_args)
       when :vector
-        VectorRetrievalService.call(**vector_args)
+        VectorRetrievalService.call_with_diagnostics(**vector_args)
       end
     end
 
     duration_ms = ((Process.clock_gettime(Process::CLOCK_MONOTONIC) - start) * 1000).round(2)
-    count = leg == :opensearch ? result&.results&.size || 0 : result&.size || 0
+    count = result&.results&.size || 0
 
     Search::Instrumentation.retrieval_leg_completed(
       request_id: @request_id, leg: leg, duration_ms: duration_ms, result_count: count, status: 'success',
@@ -73,13 +88,13 @@ private
     Search::Instrumentation.retrieval_results_returned(
       request_id: @request_id,
       query: @query,
-      effective_query: @expanded_query,
-      search_type: 'interactive',
+      effective_query: @retrieval_query,
+      search_type: @search_type,
       retrieval_method: 'hybrid',
       stage: 'before_rrf',
       leg: leg,
       iteration: @iteration,
-      results: leg == :opensearch ? result&.results || [] : result || [],
+      results: result&.results || [],
     )
 
     LegResult.new(value: result, error: nil)
@@ -98,23 +113,27 @@ private
   def opensearch_args
     args = {
       query: @query,
-      expanded_query: @expanded_query,
+      expanded_query: @retrieval_query,
       as_of: @as_of,
       request_id: @request_id,
       limit: @limit,
     }
     args[:filter_prefixes] = @filter_prefixes if @filter_prefixes.present?
+    args[:search_non_declarables] = @search_non_declarables unless @search_non_declarables.nil?
     args
   end
 
   def vector_args
-    args = { query: @expanded_query, limit: @limit, request_id: @request_id }
+    args = { query: @retrieval_query, limit: @limit, request_id: @request_id }
     args[:filter_prefixes] = @filter_prefixes if @filter_prefixes.present?
+    args[:vector_score_threshold] = @vector_score_threshold unless @vector_score_threshold.nil?
+    args[:vector_ef_search] = @vector_ef_search unless @vector_ef_search.nil?
+    args[:search_non_declarables] = @search_non_declarables unless @search_non_declarables.nil?
     args
   end
 
   def rrf_merge(opensearch_items, vector_items)
-    k = AdminConfiguration.integer_value('rrf_k')
+    k = @rrf_k || AdminConfiguration.integer_value('rrf_k')
     scores = Hash.new(0.0)
     items_by_sid = {}
 
@@ -135,6 +154,31 @@ private
     scores
       .sort_by { |_sid, score| -score }
       .map { |sid, score| build_result(items_by_sid[sid], score) }
+  end
+
+  def query_guardrail_decision(vector_leg)
+    enabled = AdminConfiguration.enabled?('hybrid_query_guardrail_enabled')
+    max_score = vector_leg.value&.max_score
+    threshold = query_guardrail_threshold
+    return { enabled:, accepted: true, max_score:, threshold:, reason: 'disabled' } unless enabled
+
+    reason = if vector_leg.error
+               'vector_unavailable'
+             elsif max_score.nil?
+               'no_vector_candidates'
+             elsif max_score >= threshold
+               'accepted'
+             else
+               'below_threshold'
+             end
+
+    { enabled:, accepted: reason == 'accepted', max_score:, threshold:, reason: }
+  end
+
+  def query_guardrail_threshold
+    percentage = AdminConfiguration.integer_value('hybrid_query_guardrail_threshold')
+    percentage = AdminConfiguration.default_for('hybrid_query_guardrail_threshold') unless (0..100).cover?(percentage)
+    percentage / 100.0
   end
 
   def build_result(item, score)

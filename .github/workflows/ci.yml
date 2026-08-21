@@ -28,7 +28,7 @@ jobs:
   check-pr-lines:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v7.0.0
+      - uses: actions/checkout@v7.0.1
         with:
           fetch-depth: 0
 
@@ -48,17 +48,17 @@ jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v7.0.0
+      - uses: actions/checkout@v7.0.1
       - uses: actions/cache@v6.1.0
         with:
           path: ~/.cache/pre-commit
           key: ${{ runner.os }}-pre-commit-${{ hashFiles('.pre-commit-config.yaml') }}
           restore-keys: |
             ${{ runner.os }}-pre-commit-
-      - uses: actions/setup-python@v6.3.0
+      - uses: actions/setup-python@v7.0.0
         with:
           python-version: '3'
-      - uses: ruby/setup-ruby@v1.316.0
+      - uses: ruby/setup-ruby@v1.321.0
         with:
           bundler-cache: true
       - uses: hashicorp/setup-terraform@v4
@@ -92,7 +92,7 @@ jobs:
         ports:
           - 6379:6379
     steps:
-      - uses: actions/checkout@v7.0.0
+      - uses: actions/checkout@v7.0.1
         with:
           ref: ${{ github.head_ref || github.ref_name }}
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -103,7 +103,7 @@ jobs:
 
       - run: echo "127.0.0.1 host.docker.internal" | sudo tee -a /etc/hosts
 
-      - uses: ruby/setup-ruby@v1.316.0
+      - uses: ruby/setup-ruby@v1.321.0
         with:
           bundler-cache: true
 

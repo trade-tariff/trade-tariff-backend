@@ -1,4 +1,6 @@
 class CachedCommodityDescriptionService
+  include HtmlToPlainText
+
   CACHE_VERSION = '1'.freeze
   CACHE_PREFIX = "_commodity-description-v#{CACHE_VERSION}".freeze
   CACHE_EXPIRY = 30.days.freeze
@@ -154,16 +156,6 @@ private
       .each_with_object({}) do |record, descriptions|
         descriptions[record.goods_nomenclature_item_id] = html_to_plain_text(record.formatted_description.to_s)
       end
-  end
-
-  def html_to_plain_text(text)
-    with_line_breaks = text.to_s.gsub(%r{<br\s*/?>}i, "\n")
-    sanitized_text = html_sanitizer.sanitize(with_line_breaks)
-    CGI.unescapeHTML(sanitized_text)
-  end
-
-  def html_sanitizer
-    @html_sanitizer ||= Rails::HTML5::FullSanitizer.new
   end
 
   def other_description?(description)

@@ -2,6 +2,15 @@ locals {
   dashboard_name = var.dashboard_name != null ? var.dashboard_name : "Search-${var.environment}"
   source         = "SOURCE '${var.log_group_name}'"
   service_filter = "filter service = \"search\""
+  # Classic empty commodity results: fuzzy/null with commodity_result_count = 0 (empty Best commodity matches).
+  # Includes completely empty results and headings/chapters-only; excludes exact matches.
+  # Interactive empty results: result_count = 0 (filter also accepts search_type=internal for forward-compat).
+  # Historical classic falls back to result_count = 0.
+  # Keep in sync with SearchAnalytics::CloudwatchSnapshotQuery#zero_result_condition
+  # and the other search_*_dashboard modules.
+  classic_empty_commodity_condition = "(search_type = \"classic\" and ((ispresent(commodity_result_count) and commodity_result_count = 0 and (not ispresent(results_type) or results_type != \"exact_search\")) or (not ispresent(commodity_result_count) and result_count = 0)))"
+  interactive_no_results_condition  = "((search_type = \"interactive\" or search_type = \"internal\") and result_count = 0)"
+  zero_result_condition             = "(${local.classic_empty_commodity_condition} or ${local.interactive_no_results_condition})"
 
   search_operations_dashboard_url = "https://${var.region}.console.aws.amazon.com/cloudwatch/home?region=${var.region}#dashboards:name=SearchOperations-${var.environment}"
   search_quality_dashboard_url    = "https://${var.region}.console.aws.amazon.com/cloudwatch/home?region=${var.region}#dashboards:name=SearchQuality-${var.environment}"
@@ -26,8 +35,9 @@ resource "aws_cloudwatch_dashboard" "search" {
             markdown = join("\n", [
               "## Trade Tariff Search Overview",
               "Long-range search health dashboard for quarter-scale trend viewing. Follows the RED method (Rate, Errors, Duration).",
-              "**Healthy:** p90 latency < 5s, hard failures stay low, zero-result trends stable, and selections broadly track search volume.",
-              "**Start here:** use this dashboard for 3-month trends. Open Operations for active troubleshooting and Quality for intercepts, zero-result terms, and result behaviour.",
+              "**Healthy:** p90 latency < 5s, hard failures stay low, empty commodity/empty result trends stable by search type, and selections broadly track search volume.",
+              "**Empty commodity results (classic):** fuzzy/null with zero commodity hits (empty Best commodity matches; includes fully empty and headings/chapters-only). **Empty results (interactive):** no returned results. See Search Quality for classic empty-kind pies and free-text rates.",
+              "**Start here:** use this dashboard for 3-month trends. Open Operations for active troubleshooting and Quality for intercepts, empty commodity/empty result terms, and result behaviour.",
               "**Related:** [Search Operations](${local.search_operations_dashboard_url}) | [Search Quality](${local.search_quality_dashboard_url}) | [Search Experiments](${local.search_experiment_dashboard_url}) | [Label Generator](${local.label_dashboard_url}) | [Self-Text Generator](${local.self_text_dashboard_url})",
             ])
           }
@@ -112,13 +122,13 @@ resource "aws_cloudwatch_dashboard" "search" {
           width  = 8
           height = 6
           properties = {
-            title  = "E2E Latency (p50/p90)"
+            title  = "E2E Latency in seconds (p50/p90)"
             region = var.region
             view   = "timeSeries"
             query  = <<-EOT
               ${local.source}
               | ${local.service_filter} and event = "search_completed"
-              | stats pct(total_duration_ms, 50) as p50, pct(total_duration_ms, 90) as p90 by bin(1d)
+              | stats pct(total_duration_ms / 1000, 50) as p50_seconds, pct(total_duration_ms / 1000, 90) as p90_seconds by bin(1d)
             EOT
           }
         },
@@ -129,13 +139,13 @@ resource "aws_cloudwatch_dashboard" "search" {
           width  = 8
           height = 6
           properties = {
-            title  = "AI API Latency (p50/p90)"
+            title  = "AI API Latency in seconds (p50/p90)"
             region = var.region
             view   = "timeSeries"
             query  = <<-EOT
               ${local.source}
               | ${local.service_filter} and event = "api_call_completed"
-              | stats pct(duration_ms, 50) as p50, pct(duration_ms, 90) as p90 by bin(1d)
+              | stats pct(duration_ms / 1000, 50) as p50_seconds, pct(duration_ms / 1000, 90) as p90_seconds by bin(1d)
             EOT
           }
         },
@@ -165,12 +175,12 @@ resource "aws_cloudwatch_dashboard" "search" {
           width  = 12
           height = 6
           properties = {
-            title  = "Zero-Result Searches"
+            title  = "Empty Commodity / Empty Result Searches"
             region = var.region
             view   = "timeSeries"
             query  = <<-EOT
               ${local.source}
-              | ${local.service_filter} and event = "search_completed" and result_count = 0
+              | ${local.service_filter} and event = "search_completed" and ${local.zero_result_condition}
               | stats count(*) as searches by search_type, bin(1d)
             EOT
           }
@@ -182,13 +192,13 @@ resource "aws_cloudwatch_dashboard" "search" {
           width  = 12
           height = 6
           properties = {
-            title  = "Average Result Count"
+            title  = "Average Result Count by Search Type"
             region = var.region
             view   = "timeSeries"
             query  = <<-EOT
               ${local.source}
               | ${local.service_filter} and event = "search_completed"
-              | stats avg(result_count) as avg_results, median(result_count) as median_results by bin(1d)
+              | stats avg(result_count) as avg_results, median(result_count) as median_results, avg(commodity_result_count) as avg_commodity_results by search_type, bin(1d)
             EOT
           }
         },

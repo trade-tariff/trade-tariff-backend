@@ -25,6 +25,9 @@ jobs:
       environment: development
       test-flavour: none
       migrate: true
+      # Override tools@main hardcode (still 3.22) until tools alpine PR merges.
+      # Last ALPINE_VERSION build-arg wins in docker build.
+      build-args: ALPINE_VERSION=3.24
     secrets:
       slack-webhook: ${{ secrets.SLACK_WEBHOOK }}
       ssh-key: ${{ secrets.PRIVATE_SSH_KEY }}
@@ -39,3 +42,35 @@ jobs:
         with:
           service-names: backend-uk backend-xi worker-uk worker-xi
           environment: development
+
+  validate-cloudwatch-queries:
+    if: >
+      github.event_name == 'workflow_dispatch' ||
+      (
+        github.event.pull_request.head.repo.full_name == github.repository &&
+        contains(github.event.pull_request.labels.*.name, 'needs-deployment')
+      )
+    needs: deploy
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7.0.1
+
+      - uses: ruby/setup-ruby@v1.321.0
+        with:
+          bundler-cache: true
+
+      - id: environment-config
+        uses: trade-tariff/trade-tariff-tools/.github/actions/configure-environment@main
+        with:
+          app-name: tariff-backend
+          environment: development
+
+      - uses: aws-actions/configure-aws-credentials@v6
+        with:
+          aws-region: eu-west-2
+          role-to-assume: ${{ steps.environment-config.outputs.deploy-role-arn }}
+
+      - name: Validate CloudWatch queries
+        env:
+          CLOUDWATCH_QUERY_VALIDATION_LOG_GROUP: ${{ steps.environment-config.outputs.log-group }}
+        run: bundle exec rake search_analytics:validate_cloudwatch_queries

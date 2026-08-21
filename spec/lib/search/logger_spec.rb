@@ -147,6 +147,7 @@ RSpec.describe Search::Logger do
         query: 'CBD oil',
         expand: true,
         reason: 'non_word_token',
+        decider_version: 'v1',
         result_count: 3,
         max_score: 4.5,
       }
@@ -157,6 +158,7 @@ RSpec.describe Search::Logger do
                       query: 'CBD oil',
                       expand: true,
                       reason: 'non_word_token',
+                      decider_version: 'v1',
                       result_count: 3,
                       max_score: 4.5 }
 
@@ -167,8 +169,43 @@ RSpec.describe Search::Logger do
       expect(json['query']).to eq('CBD oil')
       expect(json['expand']).to be(true)
       expect(json['reason']).to eq('non_word_token')
+      expect(json['decider_version']).to eq('v1')
       expect(json['result_count']).to eq(3)
       expect(json['max_score']).to eq(4.5)
+    end
+  end
+
+  describe '#query_expansion_timed_out' do
+    let(:payload) do
+      {
+        request_id: 'req-1',
+        timeout_ms: 5000,
+        elapsed_ms: 5010.0,
+        model: 'gpt-4.1-mini-2025-04-14',
+        fallback_outcome: 'preliminary_results',
+      }
+    end
+
+    it_behaves_like 'a search log entry', :query_expansion_timed_out, 'query_expansion_timed_out',
+                    { request_id: 'req-1',
+                      timeout_ms: 5000,
+                      elapsed_ms: 5010.0,
+                      model: 'gpt-4.1-mini-2025-04-14',
+                      fallback_outcome: 'preliminary_results' }
+
+    it 'logs safe timeout fields' do
+      logger_instance.query_expansion_timed_out(build_event('query_expansion_timed_out', payload))
+
+      json = parsed_log_output
+      expect(json).to include(
+        'event' => 'query_expansion_timed_out',
+        'request_id' => 'req-1',
+        'timeout_ms' => 5000,
+        'elapsed_ms' => 5010.0,
+        'model' => 'gpt-4.1-mini-2025-04-14',
+        'fallback_outcome' => 'preliminary_results',
+      )
+      expect(json).not_to have_key('query')
     end
   end
 
@@ -439,6 +476,46 @@ RSpec.describe Search::Logger do
     end
   end
 
+  describe '#fuzzy_results_returned' do
+    let(:payload) do
+      {
+        request_id: 'req-1',
+        search_type: 'classic',
+        query: 'horses',
+        result_count: 3,
+        chapter_result_count: 1,
+        heading_result_count: 2,
+        commodity_result_count: 0,
+        other_result_count: 0,
+        details: { goods_nomenclature_match: { 'headings' => [] } },
+      }
+    end
+
+    it_behaves_like 'a search log entry', :fuzzy_results_returned, 'fuzzy_results_returned',
+                    {
+                      request_id: 'req-1',
+                      search_type: 'classic',
+                      query: 'horses',
+                      result_count: 3,
+                      chapter_result_count: 1,
+                      heading_result_count: 2,
+                      commodity_result_count: 0,
+                      other_result_count: 0,
+                    }
+
+    it 'logs tariff-level result counts' do
+      logger_instance.fuzzy_results_returned(build_event('fuzzy_results_returned', payload))
+      json = parsed_log_output
+
+      expect(json['event']).to eq('fuzzy_results_returned')
+      expect(json['result_count']).to eq(3)
+      expect(json['chapter_result_count']).to eq(1)
+      expect(json['heading_result_count']).to eq(2)
+      expect(json['commodity_result_count']).to eq(0)
+      expect(json['other_result_count']).to eq(0)
+    end
+  end
+
   describe '#search_completed' do
     let(:payload) do
       { request_id: 'req-1',
@@ -459,9 +536,19 @@ RSpec.describe Search::Logger do
                       total_questions: 1,
                       final_result_type: 'answers',
                       total_duration_ms: 3000.0,
-                      result_count: 5 }
+                      result_count: 5,
+                      chapter_result_count: 0,
+                      heading_result_count: 0,
+                      commodity_result_count: 5,
+                      other_result_count: 0 }
 
     it 'logs correct fields' do
+      payload.merge!(
+        chapter_result_count: 1,
+        heading_result_count: 2,
+        commodity_result_count: 5,
+        other_result_count: 0,
+      )
       logger_instance.search_completed(build_event('search_completed', payload))
       json = parsed_log_output
       expect(json['event']).to eq('search_completed')
@@ -469,6 +556,10 @@ RSpec.describe Search::Logger do
       expect(json['search_type']).to eq('interactive')
       expect(json['total_duration_ms']).to eq(3000.0)
       expect(json['result_count']).to eq(5)
+      expect(json['chapter_result_count']).to eq(1)
+      expect(json['heading_result_count']).to eq(2)
+      expect(json['commodity_result_count']).to eq(5)
+      expect(json['other_result_count']).to eq(0)
       expect(json['total_attempts']).to eq(2)
     end
 
@@ -542,6 +633,43 @@ RSpec.describe Search::Logger do
       expect(json['status']).to eq('error')
       expect(json['error_message']).to eq('vector down')
       expect(json['error_message_truncated']).to be(false)
+    end
+  end
+
+  describe '#query_guardrail_decided' do
+    let(:payload) do
+      {
+        request_id: 'req-1',
+        search_type: 'interactive',
+        query: 'book a dentist appointment',
+        effective_query: 'dentist appointment',
+        iteration: 2,
+        variant: 'fixed_vector_score',
+        enabled: true,
+        accepted: false,
+        max_score: 0.31,
+        threshold: 0.32,
+        reason: 'below_threshold',
+      }
+    end
+
+    it 'logs the attributable query guardrail decision' do
+      logger_instance.query_guardrail_decided(build_event('query_guardrail_decided', payload))
+
+      expect(parsed_log_output).to include(
+        'event' => 'query_guardrail_decided',
+        'request_id' => 'req-1',
+        'search_type' => 'interactive',
+        'query' => 'book a dentist appointment',
+        'effective_query' => 'dentist appointment',
+        'iteration' => 2,
+        'variant' => 'fixed_vector_score',
+        'enabled' => true,
+        'accepted' => false,
+        'max_score' => 0.31,
+        'threshold' => 0.32,
+        'reason' => 'below_threshold',
+      )
     end
   end
 

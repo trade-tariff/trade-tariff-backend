@@ -52,9 +52,9 @@ RSpec.describe Api::Admin::CustomsTariffUpdates::SectionsSummaryController do
 
     context 'when chapter notes exist in the update' do
       before do
-        create(:chapter, :chapter01).tap do |chapter|
-          chapter.add_section(sections.first)
-          chapter.save
+        create(:chapter, :chapter01).tap do |c|
+          c.add_section(sections.first)
+          c.save
         end
         create(:customs_tariff_chapter_note, customs_tariff_update: approved_update, chapter_id: '01',
                                              content: 'Old chapter 1 content long enough for comparison')

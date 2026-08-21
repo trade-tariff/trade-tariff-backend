@@ -85,6 +85,15 @@ psql -h localhost tariff_development < tariff-merged-staging.sql
    - `bundle exec sidekiq`
 3. Run the rails server as normal - `bin/rails s`
 
+`SERVICE` controls the Postgres `search_path` (see `config/database.yml`), so
+migrations run under `SERVICE=xi` create tables in the `xi` schema. A few
+models (`AdminConfiguration`, `EvaluationExperiment`, `EvaluationRun`,
+`EvaluationResult`) are hardcoded to the `uk` schema instead, because they're
+shared across both services rather than duplicated per-service. Always run
+migrations for those with the default `SERVICE=uk` - migrating them under
+`SERVICE=xi` will not create the tables they actually query, and you'll see
+`relation "uk.<table>" does not exist` errors from the xi service instead.
+
 ### Performing daily updates
 
 These are run daily by a background job, `CdsUpdatesSynchronizerWorker` or

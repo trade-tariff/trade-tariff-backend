@@ -15,7 +15,7 @@ module_function
     config = AdminConfiguration.where(name: attrs[:name]).first
     return create_config(attrs) unless config
 
-    patch_config_type(config, attrs)
+    patch_config(config, attrs)
   end
 
   def create_config(attrs)
@@ -24,15 +24,47 @@ module_function
     1
   end
 
-  def patch_config_type(config, attrs)
-    if config.config_type == attrs[:config_type]
+  def patch_config(config, attrs)
+    if config.config_type != attrs[:config_type]
+      config.update(config_type: attrs[:config_type], value: attrs[:value], description: attrs[:description])
+      output "  patched: #{attrs[:name]} (config type)"
+      return 1
+    end
+
+    return refresh_nested_options(config, attrs) if config.config_type == 'nested_options'
+
+    updates = {}
+    updates[:description] = attrs[:description] if config.description != attrs[:description]
+
+    refreshed_value = refresh_options(config.value, attrs[:value])
+    updates[:value] = refreshed_value if config.value != refreshed_value
+
+    if updates.empty?
       output "  skip: #{attrs[:name]} (already exists)"
       return 0
     end
 
-    config.update(config_type: attrs[:config_type], value: attrs[:value])
-    output "  patched: #{attrs[:name]} (config type)"
+    config.update(updates)
+    output "  patched: #{attrs[:name]} (definition)"
     1
+  end
+
+  def refresh_nested_options(config, attrs)
+    value = config.value.to_hash.merge('options' => attrs[:value]['options'])
+    return 0 if value == config.value.to_hash
+
+    config.update(value: Sequel.pg_jsonb_wrap(value))
+    output "  patched: #{attrs[:name]} (options)"
+    1
+  end
+
+  def refresh_options(current_value, seeded_value)
+    return current_value unless seeded_value.is_a?(Hash) && seeded_value.key?('options')
+
+    current = current_value.respond_to?(:to_hash) ? current_value.to_hash : {}
+    selected = current.fetch('selected', seeded_value['selected'])
+
+    Sequel.pg_jsonb_wrap(current.merge('selected' => selected, 'options' => seeded_value['options']))
   end
 
   def patch_retrieval_method

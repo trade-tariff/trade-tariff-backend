@@ -1,5 +1,9 @@
+require_relative '../lib/xi_cn_importer/instrumentation'
+require_relative '../lib/xi_cn_importer/logger'
+
 class ImportXiCnDocumentWorker
   include Sidekiq::Worker
+  include ScheduledJobHeartbeat
 
   sidekiq_options queue: :default, retry: false, slack_alerts: false
 
@@ -22,6 +26,8 @@ class ImportXiCnDocumentWorker
     )
 
     notify_completed(results)
+    notify_update_recipients(results)
+    record_heartbeat
   rescue StandardError => e
     XiCnImporter::Instrumentation.import_run_failed(
       error_class: e.class.name,
@@ -33,27 +39,26 @@ class ImportXiCnDocumentWorker
 
 private
 
-  def notify_completed(results)
-    imported = results.select { |r| r.status == :imported }
-    failed   = results.select { |r| r.status == :failed }
-
-    if imported.empty? && failed.empty?
-      notify_slack('XI Combined Nomenclature document import completed. Nothing new to import.')
-      return
+  def notify_update_recipients(results)
+    results.select { |r| r.status == :imported }.each do |result|
+      CustomsTariffUpdateNotifierService.new(result.celex).call
+    rescue StandardError => e
+      Rails.logger.error(
+        "customs_tariff_update_notifier_failed: celex=#{result.celex} error_class=#{e.class.name} error_message=#{e.message}",
+      )
+      notify_slack(
+        'XI Combined Nomenclature document import succeeded, but sending the update notification failed for ' \
+        "CELEX ID #{result.celex}. #{e.class}: #{e.message}",
+      )
     end
+  end
 
-    lines = []
-    imported.each { |r| lines << "  • CELEX ID: #{r.celex} ✓" }
-    failed.each   { |r| lines << "  • CELEX ID: #{r.celex} ✗ #{r.error}" }
+  def notify_completed(results)
+    failed = results.select { |r| r.status == :failed }
+    return unless failed.any?
 
-    counts = []
-    counts << "imported: #{imported.count}" if imported.any?
-    counts << "failed: #{failed.count}" if failed.any?
-
-    status = failed.any? ? 'completed with failures' : 'completed'
-    header = "XI Combined Nomenclature document import #{status}. #{counts.join(', ')}"
-
-    notify_slack([header, *lines].join("\n"))
+    lines = failed.map { |r| "  • CELEX ID: #{r.celex} ✗ #{r.error}" }
+    notify_slack(['XI Combined Nomenclature document import completed with failures.', *lines].join("\n"))
   end
 
   def notify_failed(error)

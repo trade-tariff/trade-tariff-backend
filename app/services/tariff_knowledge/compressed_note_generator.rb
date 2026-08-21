@@ -10,6 +10,11 @@ module TariffKnowledge
 
     def call
       nodes = declarable_nodes
+      existing_notes = CompressedNote
+        .by_sids(nodes.map(&:goods_nomenclature_sid))
+        .all
+        .index_by(&:goods_nomenclature_sid)
+
       apply_edges = apply_edges_for_declarable_nodes(nodes)
       evidence_by_node_id = evidence_by_declarable_node_id(nodes, apply_edges)
       block_evidence_by_node_id = block_evidence_by_declarable_node_id(nodes, apply_edges)
@@ -21,6 +26,7 @@ module TariffKnowledge
           evidence_by_node_id.fetch(declarable_node.id, []),
           block_evidence_by_node_id.fetch(declarable_node.id, []),
           contained_fragment_key_lookup,
+          existing_notes[declarable_node.goods_nomenclature_sid],
         )
       end
     end
@@ -35,8 +41,8 @@ module TariffKnowledge
           .all
     end
 
-    def generate_for(declarable_node, evidence, block_evidence, contained_fragment_keys_by_block_node_id)
-      return mark_existing_note_stale(declarable_node) if evidence.empty? && block_evidence.empty?
+    def generate_for(declarable_node, evidence, block_evidence, contained_fragment_keys_by_block_node_id, existing_note)
+      return mark_existing_note_stale(existing_note) if evidence.empty? && block_evidence.empty?
 
       content = evidence.any? ? content_for(declarable_node, evidence) : block_content_for(block_evidence)
       attributes = {
@@ -56,7 +62,7 @@ module TariffKnowledge
         expired: false,
       }
 
-      upsert_note(declarable_node, attributes)
+      upsert_note(declarable_node, attributes, existing_note)
     end
 
     def apply_edges_for_declarable_nodes(declarable_nodes)
@@ -335,19 +341,18 @@ module TariffKnowledge
       end
     end
 
-    def upsert_note(declarable_node, attributes)
-      note = CompressedNote[declarable_node.goods_nomenclature_sid]
-      return mark_note_stale_if_context_changed(note, attributes[:context_hash]) if note&.manually_edited
+    def upsert_note(declarable_node, attributes, existing_note)
+      return mark_note_stale_if_context_changed(existing_note, attributes[:context_hash]) if existing_note&.manually_edited
 
-      if note
-        note.update(attributes)
+      if existing_note
+        existing_note.this.where(manually_edited: false).update(attributes)
       else
         CompressedNote.create(attributes.merge(goods_nomenclature_sid: declarable_node.goods_nomenclature_sid))
       end
     end
 
-    def mark_existing_note_stale(declarable_node)
-      CompressedNote[declarable_node.goods_nomenclature_sid]&.mark_stale!
+    def mark_existing_note_stale(existing_note)
+      existing_note&.mark_stale!
       nil
     end
 

@@ -3,7 +3,8 @@ class GovukNotifierStatusCheckWorker
 
   CHECK_DELAY = 10.minutes
 
-  sidekiq_options queue: :default
+  # Cap retries: Notify status checks must not use Sidekiq's default (25).
+  sidekiq_options queue: :default, retry: 3
 
   def perform(user_id, notification_id)
     return if notification_id.blank?
@@ -13,10 +14,12 @@ class GovukNotifierStatusCheckWorker
     return if user.nil?
     return if user.deleted
 
-    status = GovukNotifier.new.get_email_status(notification_id)
+    status = Notifications::DeliveryStatusChecker.new(
+      notification_id,
+      pipeline: 'my_ott',
+      identifier: user_id,
+    ).call
 
-    if status == GovukNotifier::PERMANENT_FAILURE
-      user.invalidate!
-    end
+    user.invalidate! if status == GovukNotifier::PERMANENT_FAILURE
   end
 end

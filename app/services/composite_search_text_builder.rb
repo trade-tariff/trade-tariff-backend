@@ -29,14 +29,19 @@ class CompositeSearchTextBuilder
       .where(goods_nomenclature_sid: sids)
       .as_hash(:goods_nomenclature_sid)
 
-    atar_keywords_by_item_id = TariffKnowledge::PublicAtarRuling
-      .actual
-      .where(goods_nomenclature_item_id: goods_nomenclature_item_ids)
-      .select(:goods_nomenclature_item_id, :keywords, :derived_facts)
-      .order(:goods_nomenclature_item_id, :ref)
-      .all
-      .group_by(&:goods_nomenclature_item_id)
-      .transform_values { |rulings| rulings.flat_map(&:search_terms).compact_blank.uniq }
+    atar_keywords_by_item_id =
+      if AdminConfiguration.enabled?('search_atars_enabled')
+        TariffKnowledge::PublicAtarRuling
+          .actual
+          .where(goods_nomenclature_item_id: goods_nomenclature_item_ids)
+          .select(:goods_nomenclature_item_id, :keywords, :derived_facts)
+          .order(:goods_nomenclature_item_id, :ref)
+          .all
+          .group_by(&:goods_nomenclature_item_id)
+          .transform_values { |rulings| rulings.flat_map(&:search_terms).compact_blank.uniq }
+      else
+        {}
+      end
 
     gns_by_sid = GoodsNomenclature
       .where(goods_nomenclature_sid: sids)

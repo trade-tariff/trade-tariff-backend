@@ -548,6 +548,33 @@ RSpec.describe TariffKnowledge::CompressedNoteGenerator do
         .to include('horses and asses')
     end
 
+    it 'fetches existing notes for the batch in one query rather than per-node lookups' do
+      create(
+        :tariff_knowledge_compressed_note,
+        goods_nomenclature_sid: 123,
+        goods_nomenclature_item_id: '0101210000',
+        content: 'Old content',
+        stale: false,
+      )
+      create(
+        :tariff_knowledge_node,
+        key: 'goods_nomenclature:456',
+        goods_nomenclature_sid: 456,
+        goods_nomenclature_item_id: '0101290000',
+      )
+      create(
+        :tariff_knowledge_compressed_note,
+        goods_nomenclature_sid: 456,
+        goods_nomenclature_item_id: '0101290000',
+        content: 'Old content 2',
+        stale: false,
+      )
+
+      queries = sql_queries { described_class.call(goods_nomenclature_sids: [123, 456]) }
+
+      expect(queries.grep(/FROM "tariff_knowledge_compressed_notes"/).size).to eq(1)
+    end
+
     it 'does not overwrite manually edited notes' do
       create(
         :tariff_knowledge_compressed_note,
@@ -561,6 +588,31 @@ RSpec.describe TariffKnowledge::CompressedNoteGenerator do
 
       expect(TariffKnowledge::CompressedNote[123].content)
         .to eq('Reviewed human content')
+    end
+
+    it 'does not overwrite a note edited by an admin between prefetch and upsert' do
+      create(
+        :tariff_knowledge_compressed_note,
+        goods_nomenclature_sid: 123,
+        goods_nomenclature_item_id: '0101210000',
+        content: 'Original generated content',
+        manually_edited: false,
+      )
+
+      allow(TariffKnowledge::CompressedNote).to receive(:by_sids).and_wrap_original do |original, *args|
+        stale_records = original.call(*args).all
+        TariffKnowledge::CompressedNote
+          .where(goods_nomenclature_sid: 123)
+          .update(content: 'Admin edited content', manually_edited: true)
+        instance_double(Sequel::Dataset, all: stale_records)
+      end
+
+      described_class.call(goods_nomenclature_sids: [123])
+
+      expect(TariffKnowledge::CompressedNote[123]).to have_attributes(
+        content: 'Admin edited content',
+        manually_edited: true,
+      )
     end
 
     it 'marks manually edited notes stale when graph context changes' do

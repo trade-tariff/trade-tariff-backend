@@ -27,6 +27,47 @@ RSpec.describe Api::V2::SearchController do
       )
     end
 
+    it 'emits classic level counts on search_completed for the request path' do
+      allow(ActiveSupport::Notifications).to receive(:instrument).and_call_original
+      fuzzy_payload = {
+        data: {
+          type: :fuzzy_search,
+          attributes: {
+            goods_nomenclature_match: {
+              'headings' => [{ '_score' => 10.0, '_source' => { 'goods_nomenclature_item_id' => '0101000000' } }],
+              'chapters' => [],
+              'commodities' => [],
+              'sections' => [],
+            },
+            reference_match: {
+              'chapters' => [{ '_score' => 8.0, '_source' => { 'goods_nomenclature_item_id' => '0100000000' } }],
+              'headings' => [],
+              'commodities' => [],
+              'sections' => [],
+            },
+          },
+        },
+      }
+      search_service = instance_double(SearchService, to_json: fuzzy_payload)
+      allow(SearchService).to receive(:new).and_return(search_service)
+
+      post '/uk/api/search', params: { q: 'horse', request_id: 'metrics-request-id' }, headers: request_headers, as: :json
+
+      expect(ActiveSupport::Notifications).to have_received(:instrument).with(
+        'search_completed.search',
+        hash_including(
+          request_id: 'metrics-request-id',
+          search_type: 'classic',
+          result_count: 2,
+          chapter_result_count: 1,
+          heading_result_count: 1,
+          commodity_result_count: 0,
+          other_result_count: 0,
+          results_type: :fuzzy_search,
+        ),
+      )
+    end
+
     context 'when an exact match' do
       before do
         goods_nomenclature = create :chapter, goods_nomenclature_item_id: '0100000000'
@@ -116,6 +157,252 @@ RSpec.describe Api::V2::SearchController do
 
       it { expect(response).to have_http_status(:ok) }
       it { expect(response.body).to match_json_expression(pattern) }
+    end
+
+    context 'when measuring classic result metrics' do
+      subject(:metrics) { controller.send(:classic_result_metrics, results) }
+
+      let(:controller) { described_class.new }
+
+      context 'with fuzzy headings but no commodities' do
+        let(:results) do
+          {
+            data: {
+              type: :fuzzy_search,
+              attributes: {
+                goods_nomenclature_match: {
+                  'headings' => [{ '_score' => 10.0, '_source' => { 'goods_nomenclature_item_id' => '0101000000' } }],
+                  'chapters' => [],
+                  'commodities' => [],
+                  'sections' => [{ '_score' => 1.0 }],
+                },
+                reference_match: {
+                  'chapters' => [{ '_score' => 8.0, '_source' => { 'goods_nomenclature_item_id' => '0100000000' } }],
+                  'headings' => [],
+                  'commodities' => [],
+                  'sections' => [],
+                },
+              },
+            },
+          }
+        end
+
+        it 'counts hits by tariff level' do
+          expect(metrics).to include(
+            result_count: 3,
+            chapter_result_count: 1,
+            heading_result_count: 1,
+            commodity_result_count: 0,
+            other_result_count: 1,
+            results_type: :fuzzy_search,
+          )
+        end
+      end
+
+      context 'with fuzzy commodity hits' do
+        let(:results) do
+          {
+            data: {
+              type: :fuzzy_search,
+              attributes: {
+                goods_nomenclature_match: {
+                  'commodities' => [
+                    { '_score' => 12.0, '_source' => { 'goods_nomenclature_item_id' => '0101210000' } },
+                  ],
+                  'headings' => [],
+                  'chapters' => [],
+                },
+                reference_match: {
+                  'commodities' => [
+                    { '_score' => 9.0, '_source' => { 'goods_nomenclature_item_id' => '0101290000' } },
+                  ],
+                  'headings' => [],
+                  'chapters' => [],
+                },
+              },
+            },
+          }
+        end
+
+        it 'counts commodity hits in both total and commodity metrics' do
+          expect(metrics).to include(
+            result_count: 2,
+            chapter_result_count: 0,
+            heading_result_count: 0,
+            commodity_result_count: 2,
+            other_result_count: 0,
+          )
+        end
+      end
+
+      context 'with an exact search' do
+        let(:results) do
+          {
+            data: {
+              type: :exact_search,
+              attributes: {
+                type: 'exact_match',
+                entry: { endpoint: 'commodities', id: '0101210000' },
+              },
+            },
+          }
+        end
+
+        it 'attributes the exact match to the target endpoint level' do
+          expect(metrics).to include(
+            result_count: 1,
+            chapter_result_count: 0,
+            heading_result_count: 0,
+            commodity_result_count: 1,
+            other_result_count: 0,
+          )
+        end
+      end
+
+      context 'with an exact chapter search' do
+        let(:results) do
+          {
+            data: {
+              type: :exact_search,
+              attributes: {
+                type: 'exact_match',
+                entry: { endpoint: 'chapters', id: '01' },
+              },
+            },
+          }
+        end
+
+        it 'attributes the exact match to chapter_result_count' do
+          expect(metrics).to include(
+            result_count: 1,
+            chapter_result_count: 1,
+            heading_result_count: 0,
+            commodity_result_count: 0,
+            other_result_count: 0,
+          )
+        end
+      end
+
+      context 'with an exact heading search' do
+        let(:results) do
+          {
+            data: {
+              type: :exact_search,
+              attributes: {
+                type: 'exact_match',
+                entry: { endpoint: 'headings', id: '0101' },
+              },
+            },
+          }
+        end
+
+        it 'attributes the exact match to heading_result_count' do
+          expect(metrics).to include(
+            result_count: 1,
+            chapter_result_count: 0,
+            heading_result_count: 1,
+            commodity_result_count: 0,
+            other_result_count: 0,
+          )
+        end
+      end
+
+      context 'with an exact subheading search' do
+        let(:results) do
+          {
+            data: {
+              type: :exact_search,
+              attributes: {
+                type: 'exact_match',
+                entry: { endpoint: 'subheadings', id: '0101210000-80' },
+              },
+            },
+          }
+        end
+
+        it 'counts subheadings with commodities for product-quality metrics' do
+          expect(metrics).to include(
+            result_count: 1,
+            chapter_result_count: 0,
+            heading_result_count: 0,
+            commodity_result_count: 1,
+            other_result_count: 0,
+          )
+        end
+      end
+
+      context 'with an exact search to an unknown endpoint' do
+        let(:results) do
+          {
+            data: {
+              type: :exact_search,
+              attributes: {
+                type: 'exact_match',
+                entry: { endpoint: 'sections', id: '1' },
+              },
+            },
+          }
+        end
+
+        it 'buckets the match into other_result_count' do
+          expect(metrics).to include(
+            result_count: 1,
+            chapter_result_count: 0,
+            heading_result_count: 0,
+            commodity_result_count: 0,
+            other_result_count: 1,
+          )
+        end
+      end
+
+      context 'with a non-hash payload' do
+        let(:results) { 'not a search payload' }
+
+        it 'returns zeroed level counts so logs always expose the fields' do
+          expect(metrics).to eq(
+            result_count: 0,
+            chapter_result_count: 0,
+            heading_result_count: 0,
+            commodity_result_count: 0,
+            other_result_count: 0,
+          )
+        end
+      end
+
+      context 'with empty fuzzy arrays' do
+        let(:results) do
+          {
+            data: {
+              type: :fuzzy_search,
+              attributes: {
+                goods_nomenclature_match: {
+                  'chapters' => [],
+                  'headings' => [],
+                  'commodities' => [],
+                  'sections' => [],
+                },
+                reference_match: {
+                  'chapters' => [],
+                  'headings' => [],
+                  'commodities' => [],
+                  'sections' => [],
+                },
+              },
+            },
+          }
+        end
+
+        it 'returns zero totals and zero level counts' do
+          expect(metrics).to include(
+            result_count: 0,
+            chapter_result_count: 0,
+            heading_result_count: 0,
+            commodity_result_count: 0,
+            other_result_count: 0,
+            results_type: :fuzzy_search,
+          )
+        end
+      end
     end
   end
 

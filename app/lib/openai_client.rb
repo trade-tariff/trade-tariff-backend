@@ -19,6 +19,15 @@ class OpenaiClient
     end
   end
 
+  class DeadlineExceeded < StandardError
+    attr_reader :elapsed_seconds
+
+    def initialize(timeout_seconds:, elapsed_seconds:)
+      @elapsed_seconds = elapsed_seconds.to_f
+      super("OpenAI operation exceeded #{(timeout_seconds.to_f * 1000).round}ms deadline")
+    end
+  end
+
   MAX_RETRIES = 3
   MAX_RETRY_DELAY = 60 # seconds
   RETRY_DELAY = 2 # seconds
@@ -31,7 +40,12 @@ class OpenaiClient
     Net::OpenTimeout,
   ].freeze
 
-  def call(context, model: nil, reasoning_effort: nil, event_kind: nil)
+  def call(context, model: nil, reasoning_effort: nil, event_kind: nil, timeout: nil)
+    timeout = timeout.to_f if timeout.present?
+    timeout = nil unless timeout&.positive?
+    started_at = monotonic_time
+    deadline = started_at + timeout if timeout
+
     messages = if context.is_a?(Array)
                  context
                else
@@ -49,8 +63,8 @@ class OpenaiClient
     body[:reasoning_effort] = reasoning_effort if reasoning_effort.present?
     body = body.to_json
 
-    with_retry do
-      response = self.class.client.post('chat/completions', body)
+    with_retry(deadline:, timeout:, started_at:) do |remaining|
+      response = post(body, remaining:)
 
       raise_on_error!(response, model:, event_kind:) unless response.success?
 
@@ -67,6 +81,25 @@ class OpenaiClient
   end
 
 private
+
+  def post(body, remaining:)
+    return self.class.client.post('chat/completions', body) unless remaining
+
+    timeout, open_timeout = transport_timeouts(remaining)
+
+    self.class.client.post('chat/completions', body) do |request|
+      request.options.timeout = timeout
+      request.options.open_timeout = open_timeout
+    end
+  end
+
+  def transport_timeouts(remaining)
+    timeout = TradeTariffBackend.openai_api_timeout.to_f
+    open_timeout = TradeTariffBackend.openai_api_open_timeout.to_f
+    scale = [remaining / (timeout + open_timeout), 1.0].min
+
+    [timeout * scale, open_timeout * scale]
+  end
 
   def raise_on_error!(response, model: nil, event_kind: nil)
     ai_usage = usage_metadata(response.body, model:, event_kind:)
@@ -90,15 +123,31 @@ private
     AiUsage.metadata_for(model:, event_kind:, usage:)
   end
 
-  def with_retry
+  def with_retry(deadline:, timeout:, started_at:)
     attempts = 0
 
     begin
       attempts += 1
-      yield
+      remaining = remaining_time(deadline)
+      raise_deadline!(timeout:, started_at:) if deadline && remaining <= 0
+
+      result = yield remaining
+      raise_deadline!(timeout:, started_at:) if deadline && remaining_time(deadline) <= 0
+
+      result
     rescue *RETRYABLE_ERRORS => e
+      raise_deadline!(timeout:, started_at:) if deadline && remaining_time(deadline) <= 0
+
       if attempts < MAX_RETRIES
         delay = calculate_retry_delay(attempts, e)
+
+        if deadline
+          remaining = remaining_time(deadline)
+          if delay >= remaining
+            raise_deadline!(timeout:, started_at:)
+          end
+        end
+
         Rails.logger.warn "OpenaiClient: #{e.class} on attempt #{attempts}, retrying in #{delay}s..."
         Kernel.sleep delay
         retry
@@ -107,6 +156,21 @@ private
         raise
       end
     end
+  end
+
+  def remaining_time(deadline)
+    deadline && deadline - monotonic_time
+  end
+
+  def raise_deadline!(timeout:, started_at:)
+    raise DeadlineExceeded.new(
+      timeout_seconds: timeout,
+      elapsed_seconds: monotonic_time - started_at,
+    )
+  end
+
+  def monotonic_time
+    Process.clock_gettime(Process::CLOCK_MONOTONIC)
   end
 
   def calculate_retry_delay(attempts, error)
@@ -120,9 +184,9 @@ private
   end
 
   class << self
-    def call(context, model: nil, reasoning_effort: nil, event_kind: nil)
+    def call(context, model: nil, reasoning_effort: nil, event_kind: nil, timeout: nil)
       instrument do
-        new.call(context, model: model, reasoning_effort: reasoning_effort, event_kind:)
+        new.call(context, model: model, reasoning_effort: reasoning_effort, event_kind:, timeout:)
       end
     end
 
@@ -150,7 +214,12 @@ private
   end
 
   MODEL_CONFIGS = {
-    # GPT-5.5 (latest flagship, 1M context)
+    # GPT-5.6 family (1M context)
+    'gpt-5.6' => { reasoning_levels: %w[none low medium high xhigh max] },
+    'gpt-5.6-terra' => { reasoning_levels: %w[none low medium high xhigh max] },
+    'gpt-5.6-luna' => { reasoning_levels: %w[none low medium high xhigh max] },
+
+    # GPT-5.5 (1M context)
     'gpt-5.5' => { reasoning_levels: %w[none low medium high xhigh] },
 
     # GPT-5.4 (1M context)

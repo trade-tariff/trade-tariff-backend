@@ -11,11 +11,33 @@ module SearchAnalytics
       'classic' => %w[classic],
       'internal' => %w[interactive internal],
     }.freeze
+    AGGREGATED_COST_FIELDS = %w[
+      input_cost_usd
+      cached_input_cost_usd
+      cache_write_input_cost_usd
+      output_cost_usd
+      embedding_cost_usd
+      total_cost_usd
+      average_cost_usd
+      p50_cost_usd
+      p90_cost_usd
+      assisted_searches
+      input_tokens
+      cached_input_tokens
+      cache_write_input_tokens
+      output_tokens
+      total_tokens
+      calls
+      priced_calls
+      unpriced_calls
+    ].index_by { |field| "aggregated_#{field}" }.freeze
     VIEWS = %w[all classic internal].freeze
     REQUEST_SOURCES = %w[frontend backend_only unknown].freeze
     QueryError = Class.new(StandardError)
 
     def self.call(period:, client: self.client, now: Time.current) = new(period:, client:, now:).call
+
+    def self.query_definitions(period:) = new(period:, client: nil).query_definitions
 
     def self.client = @client ||= Aws::CloudWatchLogs::Client.new
 
@@ -26,19 +48,23 @@ module SearchAnalytics
     end
 
     def call
+      queries = query_definitions
       aggregate = Aggregate.new(
         period:,
-        volume_rows: run_query(volume_query),
-        zero_result_rows: run_query(zero_result_query),
-        summary_all_latency_rows: run_query(summary_all_latency_query),
-        summary_view_latency_rows: run_query(summary_view_latency_query),
-        source_all_latency_rows: run_query(source_all_latency_query),
-        source_view_latency_rows: run_query(source_view_latency_query),
-        ai_cost_summary_rows: run_query(ai_cost_summary_query),
-        ai_cost_trend_rows: run_query(ai_cost_trend_query),
-        selection_rows: selection_queries.flat_map { |view, query| run_query(query).map { |row| row.merge('selectable_search_type' => view) } },
-        selection_trend_rows: selection_trend_queries.flat_map { |view, query| run_query(query).map { |row| row.merge('selectable_search_type' => view) } },
-        improvement_term_rows: improvement_term_queries.flat_map { |term_type, query| run_query(query).map { |row| row.merge('term_type' => term_type) } },
+        volume_rows: run_query(queries.fetch('volume')),
+        zero_result_rows: run_query(queries.fetch('zero_results')),
+        summary_all_latency_rows: run_query(queries.fetch('summary_all_latency')),
+        summary_view_latency_rows: run_query(queries.fetch('summary_view_latency')),
+        source_all_latency_rows: run_query(queries.fetch('source_all_latency')),
+        source_view_latency_rows: run_query(queries.fetch('source_view_latency')),
+        ai_cost_summary_rows: run_query(queries.fetch('ai_cost_summary')),
+        ai_cost_trend_rows: run_query(queries.fetch('ai_cost_trend')),
+        selection_rows: %w[classic internal].flat_map { |view| run_query(queries.fetch("#{view}_selections")).map { |row| row.merge('selectable_search_type' => view) } },
+        selection_trend_rows: %w[classic internal].flat_map { |view| run_query(queries.fetch("#{view}_selection_trend")).map { |row| row.merge('selectable_search_type' => view) } },
+        improvement_term_rows: {
+          'search_terms' => 'search_term_improvements',
+          'item_ids' => 'item_id_improvements',
+        }.flat_map { |term_type, name| run_query(queries.fetch(name)).map { |row| row.merge('term_type' => term_type) } },
       )
 
       VIEWS.index_with { |view| aggregate.payload_for(view) }
@@ -46,6 +72,25 @@ module SearchAnalytics
       raise
     rescue StandardError => e
       raise QueryError, e.message
+    end
+
+    def query_definitions
+      {
+        'volume' => volume_query,
+        'zero_results' => zero_result_query,
+        'summary_all_latency' => summary_all_latency_query,
+        'summary_view_latency' => summary_view_latency_query,
+        'source_all_latency' => source_all_latency_query,
+        'source_view_latency' => source_view_latency_query,
+        'ai_cost_summary' => ai_cost_summary_query,
+        'ai_cost_trend' => ai_cost_trend_query,
+        'classic_selections' => selection_queries.fetch('classic'),
+        'internal_selections' => selection_queries.fetch('internal'),
+        'classic_selection_trend' => selection_trend_queries.fetch('classic'),
+        'internal_selection_trend' => selection_trend_queries.fetch('internal'),
+        'search_term_improvements' => improvement_term_queries.fetch('search_terms'),
+        'item_id_improvements' => improvement_term_queries.fetch('item_ids'),
+      }
     end
 
   private
@@ -81,7 +126,7 @@ module SearchAnalytics
     def normalise_field(field)
       return '@timestamp' if field.to_s.start_with?('bin(')
 
-      field
+      AGGREGATED_COST_FIELDS.fetch(field, field)
     end
 
     def bucket_expression = period.bucket_size == 'hour' ? 'bin(1h)' : 'bin(1d)'
@@ -102,11 +147,36 @@ module SearchAnalytics
       QUERY
     end
 
+    # Shared by classic + interactive dashboards and admin analytics.
+    #
+    # Classic empty commodity results = fuzzy/null with commodity_result_count = 0
+    # (empty "Best commodity matches"). That includes:
+    #   - completely empty results (result_count = 0)
+    #   - headings/chapters/other hits only (result_count > 0)
+    # Exact matches are never empty-commodity results.
+    #
+    # Interactive empty results = result_count = 0 (filter also accepts search_type=internal).
+    # Historical classic logs without commodity_result_count fall back to result_count = 0.
+    # Keep in sync with terraform/modules/search_*_dashboard zero_result_condition locals.
+    def zero_result_condition
+      <<~CONDITION.squish
+        (
+          (search_type = "classic" and (
+            (ispresent(commodity_result_count) and commodity_result_count = 0 and (not ispresent(results_type) or results_type != "exact_search"))
+            or
+            (not ispresent(commodity_result_count) and result_count = 0)
+          ))
+          or
+          ((search_type = "interactive" or search_type = "internal") and result_count = 0)
+        )
+      CONDITION
+    end
+
     def zero_result_query
       <<~QUERY
-        fields @timestamp, event, search_type, result_count
+        fields @timestamp, event, search_type, result_count, commodity_result_count
         | #{log_stream_filter}
-        | filter service = "search" and event = "search_completed" and result_count = 0
+        | filter service = "search" and event = "search_completed" and #{zero_result_condition}
         | fields if(ispresent(request_source), request_source, "unknown") as request_source
         | stats count(*) as zero_results by #{bucket_expression}, search_type, request_source
       QUERY
@@ -156,45 +226,48 @@ module SearchAnalytics
         | #{log_stream_filter}
         | #{search_ai_cost_filter}
         | fields if(pricing_known = true and ispresent(total_cost_usd), total_cost_usd, 0) as known_cost_usd
-        | fields if(pricing_known = true and ispresent(total_cost_usd), 1, 0) as priced_call
-        | fields if(pricing_known = true and ispresent(total_cost_usd), 0, 1) as unpriced_call
+        | fields if(pricing_known = true and ispresent(total_cost_usd), 1, 0) as priced
+        | fields if(pricing_known = true and ispresent(total_cost_usd), 0, 1) as unpriced
         | stats sum(known_cost_usd) as request_cost_usd,
-            sum(priced_call) as priced_calls,
-            sum(unpriced_call) as unpriced_calls by request_id
-        | stats sum(request_cost_usd) as total_cost_usd,
-            avg(request_cost_usd) as average_cost_usd,
-            pct(request_cost_usd, 50) as p50_cost_usd,
-            pct(request_cost_usd, 90) as p90_cost_usd,
-            count(*) as assisted_searches,
-            sum(priced_calls) as priced_calls,
-            sum(unpriced_calls) as unpriced_calls
+            sum(priced) as request_priced_calls,
+            sum(unpriced) as request_unpriced_calls by request_id
+        | stats sum(request_cost_usd) as aggregated_total_cost_usd,
+            avg(request_cost_usd) as aggregated_average_cost_usd,
+            pct(request_cost_usd, 50) as aggregated_p50_cost_usd,
+            pct(request_cost_usd, 90) as aggregated_p90_cost_usd,
+            count(*) as aggregated_assisted_searches,
+            sum(request_priced_calls) as aggregated_priced_calls,
+            sum(request_unpriced_calls) as aggregated_unpriced_calls
       QUERY
     end
 
     def ai_cost_trend_query
       <<~QUERY
-        fields @timestamp, request_id, service, event, event_kind, input_tokens, cached_input_tokens, output_tokens, total_tokens, input_cost_usd, cached_input_cost_usd, output_cost_usd, total_cost_usd, pricing_known
+        fields @timestamp, request_id, service, event, event_kind, input_tokens, cached_input_tokens, cache_write_input_tokens, output_tokens, total_tokens, input_cost_usd, cached_input_cost_usd, cache_write_input_cost_usd, output_cost_usd, total_cost_usd, pricing_known
         | #{log_stream_filter}
         | #{search_ai_cost_filter}
         | fields if(pricing_known = true and service = "search", input_cost_usd, 0) as model_input_cost_usd
-        | fields if(pricing_known = true and service = "search", cached_input_cost_usd, 0) as cached_input_cost_usd
+        | fields if(pricing_known = true and service = "search", cached_input_cost_usd, 0) as model_cached_input_cost_usd
+        | fields if(pricing_known = true and service = "search", cache_write_input_cost_usd, 0) as model_cache_write_input_cost_usd
         | fields if(pricing_known = true and service = "search", output_cost_usd, 0) as model_output_cost_usd
-        | fields if(pricing_known = true and service = "ai_usage", total_cost_usd, 0) as embedding_cost_usd
+        | fields if(pricing_known = true and service = "ai_usage", total_cost_usd, 0) as model_embedding_cost_usd
         | fields if(pricing_known = true and ispresent(total_cost_usd), total_cost_usd, 0) as known_cost_usd
         | fields if(pricing_known = true and ispresent(total_cost_usd), 1, 0) as priced_call
         | fields if(pricing_known = true and ispresent(total_cost_usd), 0, 1) as unpriced_call
-        | stats sum(model_input_cost_usd) as input_cost_usd,
-            sum(cached_input_cost_usd) as cached_input_cost_usd,
-            sum(model_output_cost_usd) as output_cost_usd,
-            sum(embedding_cost_usd) as embedding_cost_usd,
-            sum(known_cost_usd) as total_cost_usd,
-            sum(input_tokens) as input_tokens,
-            sum(cached_input_tokens) as cached_input_tokens,
-            sum(output_tokens) as output_tokens,
-            sum(total_tokens) as total_tokens,
-            count(*) as calls,
-            sum(priced_call) as priced_calls,
-            sum(unpriced_call) as unpriced_calls by #{bucket_expression}, event_kind
+        | stats sum(model_input_cost_usd) as aggregated_input_cost_usd,
+            sum(model_cached_input_cost_usd) as aggregated_cached_input_cost_usd,
+            sum(model_cache_write_input_cost_usd) as aggregated_cache_write_input_cost_usd,
+            sum(model_output_cost_usd) as aggregated_output_cost_usd,
+            sum(model_embedding_cost_usd) as aggregated_embedding_cost_usd,
+            sum(known_cost_usd) as aggregated_total_cost_usd,
+            sum(input_tokens) as aggregated_input_tokens,
+            sum(cached_input_tokens) as aggregated_cached_input_tokens,
+            sum(cache_write_input_tokens) as aggregated_cache_write_input_tokens,
+            sum(output_tokens) as aggregated_output_tokens,
+            sum(total_tokens) as aggregated_total_tokens,
+            count(*) as aggregated_calls,
+            sum(priced_call) as aggregated_priced_calls,
+            sum(unpriced_call) as aggregated_unpriced_calls by #{bucket_expression}, event_kind
       QUERY
     end
 
@@ -253,9 +326,9 @@ module SearchAnalytics
     def improvement_terms_query(term_filter: nil)
       [
         <<~QUERY,
-          fields query, search_type, result_count
+          fields query, search_type, result_count, commodity_result_count
           | #{log_stream_filter}
-          | filter service = "search" and event = "search_completed" and result_count = 0 and ispresent(query)
+          | filter service = "search" and event = "search_completed" and #{zero_result_condition} and ispresent(query)
         QUERY
         ("| filter #{term_filter}\n" if term_filter.present?),
         <<~QUERY,
@@ -362,6 +435,8 @@ module SearchAnalytics
           {
             'bucket' => bucket,
             'input_cost_usd' => sum_decimal(rows, 'input_cost_usd'),
+            'cached_input_cost_usd' => sum_decimal(rows, 'cached_input_cost_usd'),
+            'cache_write_input_cost_usd' => sum_decimal(rows, 'cache_write_input_cost_usd'),
             'output_cost_usd' => sum_decimal(rows, 'output_cost_usd'),
             'embedding_cost_usd' => sum_decimal(rows, 'embedding_cost_usd'),
             'total_cost_usd' => sum_decimal(rows, 'total_cost_usd'),
@@ -380,9 +455,12 @@ module SearchAnalytics
             'calls' => sum_integer(rows, 'calls'),
             'input_tokens' => sum_integer(rows, 'input_tokens'),
             'cached_input_tokens' => sum_integer(rows, 'cached_input_tokens'),
+            'cache_write_input_tokens' => sum_integer(rows, 'cache_write_input_tokens'),
             'output_tokens' => sum_integer(rows, 'output_tokens'),
             'total_tokens' => sum_integer(rows, 'total_tokens'),
             'input_cost_usd' => sum_decimal(rows, 'input_cost_usd'),
+            'cached_input_cost_usd' => sum_decimal(rows, 'cached_input_cost_usd'),
+            'cache_write_input_cost_usd' => sum_decimal(rows, 'cache_write_input_cost_usd'),
             'output_cost_usd' => sum_decimal(rows, 'output_cost_usd'),
             'embedding_cost_usd' => sum_decimal(rows, 'embedding_cost_usd'),
             'total_cost_usd' => sum_decimal(rows, 'total_cost_usd'),

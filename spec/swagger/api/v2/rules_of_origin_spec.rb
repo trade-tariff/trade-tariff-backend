@@ -57,8 +57,8 @@ RSpec.describe 'Rules of Origin', swagger_doc: 'v2/swagger.json', type: :request
               schema: { type: :string, enum: ['application/vnd.hmrc.2.0+json'] },
               description: 'API version negotiation header'
     parameter name: :heading_code, in: :path, required: true,
-              schema: { type: :string },
-              description: 'Heading code (e.g. "0101")'
+              schema: { type: :string, pattern: '^\d{6}$' },
+              description: 'The 6 digit subheading of the goods being traded (e.g. "010121")'
     parameter name: :country_code, in: :path, required: true,
               schema: { type: :string },
               description: 'ISO 2-letter country code (e.g. "TR")'
@@ -81,6 +81,15 @@ RSpec.describe 'Rules of Origin', swagger_doc: 'v2/swagger.json', type: :request
                }
 
         let(:heading_code) { roo_heading_code }
+        let(:country_code) { roo_country_code }
+
+        run_test!
+      end
+
+      response '400', 'invalid heading_code — must be exactly 6 digits' do
+        schema '$ref' => '#/components/schemas/StandardErrorResponse'
+
+        let(:heading_code) { '0101' }
         let(:country_code) { roo_country_code }
 
         run_test!

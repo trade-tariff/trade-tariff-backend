@@ -67,6 +67,7 @@ RSpec.describe 'Classification search API' do
         as_of: Time.zone.today,
         request_id: 'test-request-id',
         limit: 5,
+        search_type: 'classification',
       )
     end
 

@@ -78,3 +78,4 @@ terraform/modules/*/.terraform.lock.hcl
 
 .codex
 docs/superpowers/
+.superpowers/

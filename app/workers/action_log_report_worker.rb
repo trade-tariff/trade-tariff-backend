@@ -3,6 +3,9 @@ require 'csv'
 class ActionLogReportWorker
   include Sidekiq::Worker
 
+  # Report jobs: one delayed retry, avoid Sidekiq default (25).
+  sidekiq_options retry: 1, retry_in: 1.hour
+
   def perform
     return unless TradeTariffBackend.uk?
 
@@ -10,10 +13,10 @@ class ActionLogReportWorker
     start_date = 1.month.ago.beginning_of_day
     end_date = yesterday.end_of_day
 
+    # Stream the dataset (no .all) so large months do not load entirely into memory.
     action_logs = PublicUsers::ActionLog
-                    .where(Sequel.lit('created_at >= ? AND created_at <= ?', start_date, end_date))
+                    .where(created_at: start_date..end_date)
                     .order(:id)
-                    .all
 
     return if action_logs.empty?
 

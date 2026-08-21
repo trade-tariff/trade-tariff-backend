@@ -30,6 +30,20 @@ RSpec.describe Api::V2::RulesOfOrigin::SchemesController, :v2 do
       it_behaves_like 'a successful jsonapi response'
     end
 
+    context 'with an invalid heading code' do
+      let(:heading_code) { '0101' }
+
+      it { expect(api_response).to have_http_status :bad_request }
+      it { expect(JSON.parse(api_response.body)['errors'].first['detail']).to include 'heading_code' }
+    end
+
+    context 'with an invalid country code' do
+      let(:country_code) { 'USA' }
+
+      it { expect(api_response).to have_http_status :bad_request }
+      it { expect(JSON.parse(api_response.body)['errors'].first['detail']).to include 'country_code' }
+    end
+
     context 'with path params' do
       let :make_request do
         api_get api_rules_of_origin_path(heading_code:, country_code:, format: :json)

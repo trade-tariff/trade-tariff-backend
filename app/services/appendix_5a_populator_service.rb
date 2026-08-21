@@ -1,4 +1,9 @@
+require_relative '../lib/notifications/instrumentation'
+require_relative '../lib/notifications/logger'
+
 class Appendix5aPopulatorService
+  TEMPLATE_ID = NOTIFY_CONFIGURATION.dig(:templates, :notifications, :appendix5a)
+
   def call
     Rails.logger.info 'Populating Appendix 5a'
 
@@ -86,63 +91,49 @@ private
 
     Rails.logger.info message
 
-    SlackNotifierService.call(message)
-    message_delivery = Appendix5aMailer.appendix5a_notify_message(
-      added_guidance.count,
-      changed_guidance.count,
-      removed_guidance.count,
-    )
+    emails = TradeTariffBackend.cupid_team_to_emails
 
-    log_mail_delivery_state('before_deliver', message_delivery)
-    message_delivery.deliver_now
+    if emails.empty?
+      Rails.logger.error 'Appendix 5a guidance changed but CUPID_TEAM_TO_EMAILS is not configured — no notification emails were sent'
+      return
+    end
+
+    enqueue_notifications(emails.each_index.to_a, added_guidance.count, changed_guidance.count, removed_guidance.count)
+  end
+
+  def enqueue_notifications(pending, new_count, changed_count, removed_count)
+    Notifications::EnqueueService.new(pending, pipeline: 'appendix5a') { |recipient_index|
+      send_to_recipient(recipient_index, new_count, changed_count, removed_count)
+    }.call
+  end
+
+  def send_to_recipient(recipient_index, new_count, changed_count, removed_count)
+    email = TradeTariffBackend.cupid_team_to_emails[recipient_index]
+
+    if email.blank?
+      Notifications::Instrumentation.send_skipped(pipeline: 'appendix5a', identifier: recipient_index, reason: 'recipient_not_configured')
+      return
+    end
+
+    personalisation = {
+      'new_count' => new_count,
+      'changed_count' => changed_count,
+      'removed_count' => removed_count,
+      'support_email' => TradeTariffBackend.support_email,
+    }
+
+    status_check_args = [recipient_index]
+
+    Notifications::EmailWorker.perform_async(email, TEMPLATE_ID, personalisation, 'Appendix5aNotificationStatusCheckWorker', status_check_args)
+  end
+
+  def notify_slack(message)
+    SlackNotifierService.call(message)
   rescue StandardError => e
-    log_mail_delivery_state('deliver_failed', message_delivery, exception: e)
-    raise
+    Rails.logger.error("appendix5a_notification_slack_failed: #{e.class.name}: #{e.message}")
   end
 
   def no_guidance_changes?
     added_guidance.empty? && changed_guidance.empty? && removed_guidance.empty?
-  end
-
-  def log_mail_delivery_state(state, message_delivery, exception: nil)
-    mail_message = message_delivery&.message
-    smtp_envelope_to = mail_message&.instance_variable_get(:@smtp_envelope_to)
-
-    payload = {
-      event: 'appendix5a_mail_delivery',
-      state:,
-      message_delivery_class: message_delivery&.class&.name,
-      message_object_id: mail_message&.object_id,
-      to: address_metadata(mail_message&.to),
-      smtp_envelope_to: address_metadata(mail_message&.smtp_envelope_to),
-      smtp_envelope_to_ivar: address_metadata(smtp_envelope_to),
-      delivery_handler_class: mail_message&.delivery_handler&.class&.name,
-      delivery_method_class: mail_message&.delivery_method&.class&.name,
-      exception_class: exception&.class&.name,
-      exception_message: exception&.message,
-    }.compact
-
-    log_message = "Appendix5a mail delivery #{state}: #{payload}"
-    exception.nil? ? Rails.logger.info(log_message) : Rails.logger.error(log_message)
-  end
-
-  def address_metadata(value)
-    case value
-    when nil
-      { class: 'NilClass', empty: true }
-    when Array
-      {
-        class: 'Array',
-        empty: value.empty?,
-        count: value.length,
-        member_classes: value.map { |entry| entry.class.name }.uniq,
-      }
-    else
-      {
-        class: value.class.name,
-        empty: value.respond_to?(:empty?) ? value.empty? : false,
-        count: value.respond_to?(:to_a) ? value.to_a.length : nil,
-      }.compact
-    end
   end
 end

@@ -3,6 +3,7 @@ require_relative '../lib/customs_tariff_importer/logger'
 
 class ImportCustomsTariffDocumentWorker
   include Sidekiq::Worker
+  include ScheduledJobHeartbeat
 
   sidekiq_options queue: :default, retry: false, slack_alerts: false
 
@@ -25,6 +26,8 @@ class ImportCustomsTariffDocumentWorker
     )
 
     notify_completed(results)
+    notify_update_recipients(results)
+    record_heartbeat
   rescue StandardError => e
     CustomsTariffImporter::Instrumentation.import_run_failed(
       error_class: e.class.name,
@@ -36,27 +39,26 @@ class ImportCustomsTariffDocumentWorker
 
 private
 
-  def notify_completed(results)
-    imported = results.select { |r| r.status == :imported }
-    failed   = results.select { |r| r.status == :failed }
-
-    if imported.empty? && failed.empty?
-      notify_slack('Customs tariff document import completed. Nothing new to import.')
-      return
+  def notify_update_recipients(results)
+    results.select { |r| r.status == :imported }.each do |result|
+      CustomsTariffUpdateNotifierService.new(result.version).call
+    rescue StandardError => e
+      Rails.logger.error(
+        "customs_tariff_update_notifier_failed: version=#{result.version} error_class=#{e.class.name} error_message=#{e.message}",
+      )
+      notify_slack(
+        'Customs tariff document import succeeded, but sending the update notification failed for ' \
+        "version #{result.version}. #{e.class}: #{e.message}",
+      )
     end
+  end
 
-    lines = []
-    imported.each { |r| lines << "  • Version ID: #{r.version} ✓" }
-    failed.each   { |r| lines << "  • Version ID: #{r.version} ✗ #{r.error}" }
+  def notify_completed(results)
+    failed = results.select { |r| r.status == :failed }
+    return unless failed.any?
 
-    counts = []
-    counts << "imported: #{imported.count}" if imported.any?
-    counts << "failed: #{failed.count}" if failed.any?
-
-    status = failed.any? ? 'completed with failures' : 'completed'
-    header = "Customs tariff document import #{status}. #{counts.join(', ')}"
-
-    notify_slack([header, *lines].join("\n"))
+    lines = failed.map { |r| "  • Version ID: #{r.version} ✗ #{r.error}" }
+    notify_slack(['Customs tariff document import completed with failures.', *lines].join("\n"))
   end
 
   def notify_failed(error)

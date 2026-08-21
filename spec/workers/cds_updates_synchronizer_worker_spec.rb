@@ -21,6 +21,8 @@ RSpec.describe CdsUpdatesSynchronizerWorker, type: :worker do
       allow(TariffSynchronizer::CdsUpdateDownloader).to receive(:download)
       allow(TariffSynchronizer::CdsUpdateDownloader).to receive(:downloaded_todays_file?)
       allow(CdsSynchronizer).to receive(:apply).and_return(changes_applied)
+      allow(ReportWorker).to receive(:perform_in)
+      allow(TariffSynchronizer::BaseUpdate).to receive(:pending_or_failed).and_return(pending_or_failed)
 
       allow(ActiveSupport::Notifications).to receive(:instrument).and_call_original
       allow(ActiveSupport::Notifications).to receive(:instrument).with(
@@ -39,6 +41,7 @@ RSpec.describe CdsUpdatesSynchronizerWorker, type: :worker do
     end
 
     let(:changes_applied) { true }
+    let(:pending_or_failed) { instance_double(Sequel::Dataset, none?: true) }
     let(:service) { 'uk' }
     let(:cut_off_time) { Time.zone.now.end_of_day }
 
@@ -167,11 +170,23 @@ RSpec.describe CdsUpdatesSynchronizerWorker, type: :worker do
         it { expect(TariffSynchronizer::CdsUpdateDownloader).to have_received(:download) }
         it { expect(CdsSynchronizer).to have_received(:apply) }
 
+        it 'schedules report generation for the quiet day' do
+          expect(ReportWorker).to have_received(:perform_in).with(15.minutes)
+        end
+
         context 'with reapply_data_migrations option' do
           subject(:perform) { described_class.new.perform(true, true) }
 
           it { expect(TariffSynchronizer::CdsUpdateDownloader).to have_received(:download) }
           it { expect(DataMigrator).not_to have_received(:migrate_up!) }
+        end
+
+        context 'with pending or failed updates present' do
+          let(:pending_or_failed) { instance_double(Sequel::Dataset, none?: false) }
+
+          it 'does not schedule report generation' do
+            expect(ReportWorker).not_to have_received(:perform_in)
+          end
         end
       end
     end

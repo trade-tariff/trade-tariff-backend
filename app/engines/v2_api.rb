@@ -163,7 +163,18 @@ V2Api.routes.draw do
 
         resources :themes, only: %i[index]
 
-        resources :faq_feedback, only: %i[create index show]
+        resources :faq_feedback, only: %i[create index]
+      end
+
+      # Parallel route for the same Categorisation API, authenticated via API Gateway's
+      # tariff/categorisation OAuth scope instead of green_lanes' static API key/token.
+      # Remove the green_lanes routes above once consumers have migrated.
+      namespace :categorisation do
+        resources :goods_nomenclatures, only: %i[show], constraints: { id: /\d{4,10}/ }
+
+        resources :themes, only: %i[index]
+
+        resources :faq_feedback, only: %i[create index]
       end
 
       match '/400', to: 'errors#bad_request', via: :all

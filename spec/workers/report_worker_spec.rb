@@ -3,6 +3,7 @@ RSpec.describe ReportWorker, type: :worker do
 
   describe '#perform' do
     let(:date) { '2023-10-30' } # a monday
+    let(:cloudwatch_client) { instance_double(Aws::CloudWatch::Client) }
 
     before do
       allow(Reporting::Commodities).to receive(:generate)
@@ -15,6 +16,8 @@ RSpec.describe ReportWorker, type: :worker do
       allow(Reporting::TariffUpdates).to receive(:generate)
       allow(DifferencesReportWorker).to receive(:perform_in).and_call_original
       allow(TradeTariffBackend).to receive(:service).and_return(service)
+      allow(Aws::CloudWatch::Client).to receive(:new).and_return(cloudwatch_client)
+      allow(cloudwatch_client).to receive(:put_metric_data)
       travel_to Date.parse(date).beginning_of_day
     end
 
@@ -114,6 +117,33 @@ RSpec.describe ReportWorker, type: :worker do
         expect { worker.perform }.to raise_error(Sequel::DatabaseConnectionError)
 
         expect(Rails.logger).to have_received(:error).with(/DeclarableDuties.*failed/)
+      end
+
+      it 'does not emit a heartbeat' do
+        expect { worker.perform }.to raise_error(Sequel::DatabaseConnectionError)
+        expect(cloudwatch_client).not_to have_received(:put_metric_data)
+      end
+    end
+
+    describe 'heartbeat on success' do
+      let(:service) { 'uk' }
+
+      before { worker.perform }
+
+      it 'emits a JobSuccess heartbeat to TradeTariff/ScheduledJobs' do
+        expect(cloudwatch_client).to have_received(:put_metric_data).with(
+          namespace: 'TradeTariff/ScheduledJobs',
+          metric_data: [{
+            metric_name: 'JobSuccess',
+            value: 1,
+            unit: 'Count',
+            dimensions: [
+              { name: 'Job', value: 'ReportWorker' },
+              { name: 'Service', value: 'uk' },
+              { name: 'Environment', value: ENV.fetch('ENVIRONMENT', 'local') },
+            ],
+          }],
+        )
       end
     end
   end

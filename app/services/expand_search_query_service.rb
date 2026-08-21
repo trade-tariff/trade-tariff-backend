@@ -1,6 +1,8 @@
 class ExpandSearchQueryService
   NUMERIC_CODE_PATTERN = /\A\d+\z/
   CACHE_TTL = 7.days
+  EXPANSION_TIMEOUT_SECONDS = 5.0
+  EXPANSION_TIMEOUT_MS = (EXPANSION_TIMEOUT_SECONDS * 1000).to_i
 
   Result = Data.define(:expanded_query, :reason)
 
@@ -50,6 +52,7 @@ private
         model: configured_model,
         reasoning_effort: configured_reasoning_effort,
         event_kind: 'search_query_expansion',
+        timeout: EXPANSION_TIMEOUT_SECONDS,
       )
     end
 
@@ -60,6 +63,15 @@ private
     else
       unchanged_result
     end
+  rescue OpenaiClient::DeadlineExceeded => e
+    Search::Instrumentation.query_expansion_timed_out(
+      request_id:,
+      timeout_ms: EXPANSION_TIMEOUT_MS,
+      elapsed_ms: (e.elapsed_seconds * 1000).round(2),
+      model: configured_model,
+      fallback_outcome: 'original_query',
+    )
+    unchanged_result
   rescue StandardError => e
     Search::Instrumentation.search_failed(
       request_id:,

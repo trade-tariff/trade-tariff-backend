@@ -6,9 +6,13 @@
   config_type: boolean
   description: Allow guided search to use AI to translate eligible queries into tariff terminology before retrieval.
   default: expand_search_enabled
+- name: expand_search_decider
+  config_type: options
+  description: "Guided-search expansion strategy. V1 selects AI expansion from casing and retrieval evidence. V2 applies targeted retrieval synonyms and selects AI expansion from retrieval evidence without using casing."
+  expansion_decider_options: true
 - name: expand_search_when_needed_enabled
   config_type: boolean
-  description: "When AI expansion is enabled, run an unexpanded retrieval first and expand only for uppercase acronym-like terms, queries with no significant tagged words, too few results, or a low top score. Disable to expand every eligible query."
+  description: "When AI expansion is enabled, run a preliminary retrieval first and use the selected expansion strategy to decide from casing and/or retrieval evidence. Retrieval evidence includes no significant tagged words, too few results, or a low top score. Disable to expand every eligible query."
   default: expand_search_when_needed_enabled
 - name: expand_search_min_results
   config_type: integer
@@ -78,6 +82,14 @@
   config_type: integer
   description: "Reciprocal rank fusion constant used by hybrid retrieval: score = 1/(rank + k). Higher values flatten rank differences."
   string_default: rrf_k
+- name: hybrid_query_guardrail_enabled
+  config_type: boolean
+  description: "Reject hybrid retrieval queries whose raw maximum vector similarity is below the separately configured query-level threshold. Defaults off so current search behaviour is preserved."
+  default: hybrid_query_guardrail_enabled
+- name: hybrid_query_guardrail_threshold
+  config_type: integer
+  description: "Minimum raw maximum vector similarity (0-100) required for a hybrid query when the query guardrail is enabled. This is separate from the vector candidate threshold."
+  string_default: hybrid_query_guardrail_threshold
 - name: vector_ef_search
   config_type: integer
   description: "HNSW ef_search value used by vector retrieval, including the vector leg of hybrid retrieval. Higher values may improve recall at the cost of latency."
@@ -150,6 +162,10 @@
   config_type: markdown
   description: System prompt sent to the AI model during interactive search
   prompt: search_context
+- name: search_atars_enabled
+  config_type: boolean
+  description: Include public ATAR keywords and derived facts in OpenSearch retrieval and composite search embeddings.
+  default: search_atars_enabled
 - name: search_labels_enabled
   config_type: boolean
   description: Search label-enriched index fields during the OpenSearch retrieval leg, including OpenSearch within hybrid retrieval.

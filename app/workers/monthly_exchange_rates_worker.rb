@@ -11,18 +11,7 @@ class MonthlyExchangeRatesWorker
 
     ExchangeRates::MonthlyExchangeRatesService.new(date, sample_date, download: true).call
 
-    notify
     email_files_to_hmrc(date)
-  end
-
-  def notify
-    return unless ENV.fetch('ENVIRONMENT', '') == 'production'
-
-    message = 'Exchange rates for the current month have been added and are accessible for viewing at /exchange_rates.'
-
-    logger.info message
-
-    SlackNotifierService.call(message)
   end
 
   def email_files_to_hmrc(date)

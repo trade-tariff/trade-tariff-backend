@@ -61,16 +61,45 @@ RSpec.describe TradeTariffBackend::Config do
       end
     end
 
-    describe '.cds_importer_batch_size' do
+    shared_examples 'a configurable batch size' do
       it 'defaults to 100' do
-        ENV.delete('CDS_IMPORT_BATCH_SIZE')
-        expect(config.cds_importer_batch_size).to eq(100)
+        ENV.delete(env_var)
+        expect(config.public_send(method_name)).to eq(100)
       end
 
       it 'returns configured value as integer' do
-        ENV['CDS_IMPORT_BATCH_SIZE'] = '250'
-        expect(config.cds_importer_batch_size).to eq(250)
+        ENV[env_var] = '250'
+        expect(config.public_send(method_name)).to eq(250)
       end
+
+      it 'falls back to 100 when configured value is zero' do
+        ENV[env_var] = '0'
+        expect(config.public_send(method_name)).to eq(100)
+      end
+
+      it 'falls back to 100 when configured value is negative' do
+        ENV[env_var] = '-5'
+        expect(config.public_send(method_name)).to eq(100)
+      end
+
+      it 'falls back to 100 when configured value is not numeric' do
+        ENV[env_var] = 'abc'
+        expect(config.public_send(method_name)).to eq(100)
+      end
+    end
+
+    describe '.cds_importer_batch_size' do
+      let(:env_var) { 'CDS_IMPORT_BATCH_SIZE' }
+      let(:method_name) { :cds_importer_batch_size }
+
+      it_behaves_like 'a configurable batch size'
+    end
+
+    describe '.taric_importer_batch_size' do
+      let(:env_var) { 'TARIC_IMPORT_BATCH_SIZE' }
+      let(:method_name) { :taric_importer_batch_size }
+
+      it_behaves_like 'a configurable batch size'
     end
 
     describe '.implicit_deletion_cutoff' do
@@ -398,6 +427,33 @@ RSpec.describe TradeTariffBackend::Config do
     describe '.openai_model_pricing' do
       it 'loads reviewed model pricing from application config' do
         expect(config.openai_model_pricing).to include(
+          'gpt-5.6' => {
+            'input_per_million_tokens' => 5.0,
+            'cached_input_per_million_tokens' => 0.5,
+            'output_per_million_tokens' => 30.0,
+            'cache_write_input_multiplier' => 1.25,
+            'long_context_input_token_threshold' => 272_000,
+            'long_context_input_multiplier' => 2.0,
+            'long_context_output_multiplier' => 1.5,
+          },
+          'gpt-5.6-terra' => {
+            'input_per_million_tokens' => 2.5,
+            'cached_input_per_million_tokens' => 0.25,
+            'output_per_million_tokens' => 15.0,
+            'cache_write_input_multiplier' => 1.25,
+            'long_context_input_token_threshold' => 272_000,
+            'long_context_input_multiplier' => 2.0,
+            'long_context_output_multiplier' => 1.5,
+          },
+          'gpt-5.6-luna' => {
+            'input_per_million_tokens' => 1.0,
+            'cached_input_per_million_tokens' => 0.1,
+            'output_per_million_tokens' => 6.0,
+            'cache_write_input_multiplier' => 1.25,
+            'long_context_input_token_threshold' => 272_000,
+            'long_context_input_multiplier' => 2.0,
+            'long_context_output_multiplier' => 1.5,
+          },
           'gpt-5.4' => {
             'input_per_million_tokens' => 2.5,
             'cached_input_per_million_tokens' => 0.25,

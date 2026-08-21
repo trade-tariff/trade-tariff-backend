@@ -2,6 +2,7 @@ RSpec.describe ImportCustomsTariffDocumentWorker, type: :worker do
   subject(:perform) { described_class.new.perform }
 
   let(:importer_double) { instance_double(CustomsTariffImporter::Importer) }
+  let(:cloudwatch_client) { instance_double(Aws::CloudWatch::Client) }
 
   before do
     allow(TradeTariffBackend).to receive(:uk?).and_return(true)
@@ -10,6 +11,9 @@ RSpec.describe ImportCustomsTariffDocumentWorker, type: :worker do
     allow(CustomsTariffImporter::Instrumentation).to receive(:import_run_started)
     allow(CustomsTariffImporter::Instrumentation).to receive(:import_run_completed)
     allow(CustomsTariffImporter::Instrumentation).to receive(:import_run_failed)
+    allow(CustomsTariffUpdateNotifierService).to receive(:new).and_return(instance_double(CustomsTariffUpdateNotifierService, call: nil))
+    allow(Aws::CloudWatch::Client).to receive(:new).and_return(cloudwatch_client)
+    allow(cloudwatch_client).to receive(:put_metric_data)
   end
 
   context 'when SERVICE is not uk' do
@@ -18,6 +22,11 @@ RSpec.describe ImportCustomsTariffDocumentWorker, type: :worker do
     it 'is a no-op' do
       perform
       expect(CustomsTariffImporter::Importer).not_to have_received(:new)
+    end
+
+    it 'does not emit a heartbeat' do
+      perform
+      expect(cloudwatch_client).not_to have_received(:put_metric_data)
     end
   end
 
@@ -47,24 +56,92 @@ RSpec.describe ImportCustomsTariffDocumentWorker, type: :worker do
       )
     end
 
-    it 'notifies Slack that the import completed successfully' do
+    it 'does not send a Slack notification for a successful import' do
+      perform
+      expect(SlackNotifierService).not_to have_received(:call)
+    end
+
+    it 'calls CustomsTariffUpdateNotifierService for the imported version' do
+      allow(CustomsTariffUpdateNotifierService).to receive(:new).and_return(instance_double(CustomsTariffUpdateNotifierService, call: nil))
+
       perform
 
-      expect(SlackNotifierService).to have_received(:call).with(
-        include('Customs tariff document import completed', 'imported: 1', 'Version ID: 1.30 ✓'),
+      expect(CustomsTariffUpdateNotifierService).to have_received(:new).with('1.30')
+    end
+  end
+
+  context 'when the notifier raises for one of several imported results' do
+    before do
+      allow(CustomsTariffImporter::Importer).to receive(:new).and_return(
+        instance_double(CustomsTariffImporter::Importer,
+                        call: [
+                          result(status: :imported, version: '1.30'),
+                          result(status: :imported, version: '1.31'),
+                        ]),
+      )
+
+      notifier_1_30 = instance_double(CustomsTariffUpdateNotifierService)
+      allow(notifier_1_30).to receive(:call).and_raise(RuntimeError, 'notify boom')
+      notifier_1_31 = instance_double(CustomsTariffUpdateNotifierService, call: nil)
+
+      allow(CustomsTariffUpdateNotifierService).to receive(:new).with('1.30').and_return(notifier_1_30)
+      allow(CustomsTariffUpdateNotifierService).to receive(:new).with('1.31').and_return(notifier_1_31)
+      allow(Rails.logger).to receive(:error)
+    end
+
+    it 'still reports the import as completed successfully' do
+      perform
+
+      expect(CustomsTariffImporter::Instrumentation).to have_received(:import_run_completed).with(
+        imported: 2,
+        failed: 0,
+        duration_ms: a_kind_of(Float),
+      )
+      expect(CustomsTariffImporter::Instrumentation).not_to have_received(:import_run_failed)
+    end
+
+    it 'does not re-raise the notifier error' do
+      expect { perform }.not_to raise_error
+    end
+
+    it 'still calls the notifier for the later document even though the earlier one raised' do
+      perform
+
+      expect(CustomsTariffUpdateNotifierService).to have_received(:new).with('1.30')
+      expect(CustomsTariffUpdateNotifierService).to have_received(:new).with('1.31')
+    end
+
+    it 'logs the failure with identifying detail via Rails.logger.error' do
+      perform
+
+      expect(Rails.logger).to have_received(:error).with(
+        a_string_including('1.30', 'RuntimeError', 'notify boom'),
       )
     end
 
-    context 'when Slack notification fails' do
-      before do
-        allow(SlackNotifierService).to receive(:call).and_raise(Slack::Notifier::APIError, 'Slack timeout')
-      end
+    it 'posts a distinct Slack message making clear the import succeeded but the notification failed' do
+      perform
 
-      it 'does not fail the import job' do
-        expect { perform }.not_to raise_error
+      expect(SlackNotifierService).to have_received(:call).with(
+        a_string_including('notification failed', '1.30'),
+      )
+    end
+  end
 
-        expect(CustomsTariffImporter::Instrumentation).to have_received(:import_run_completed)
-      end
+  context 'when a document is skipped for duplicate content' do
+    before do
+      allow(CustomsTariffImporter::Importer).to receive(:new).and_return(
+        instance_double(CustomsTariffImporter::Importer,
+                        call: [result(status: :duplicate_content, version: '1.30')]),
+      )
+    end
+
+    it 'does not call CustomsTariffUpdateNotifierService' do
+      allow(CustomsTariffUpdateNotifierService).to receive(:new)
+
+      perform
+
+      expect(CustomsTariffUpdateNotifierService).not_to have_received(:new)
     end
   end
 
@@ -83,12 +160,17 @@ RSpec.describe ImportCustomsTariffDocumentWorker, type: :worker do
       )
     end
 
-    it 'sends a "Nothing new to import." Slack notification' do
+    it 'does not send a Slack notification when there is nothing to import' do
+      perform
+      expect(SlackNotifierService).not_to have_received(:call)
+    end
+
+    it 'does not call CustomsTariffUpdateNotifierService' do
+      allow(CustomsTariffUpdateNotifierService).to receive(:new)
+
       perform
 
-      expect(SlackNotifierService).to have_received(:call).with(
-        include('Nothing new to import'),
-      )
+      expect(CustomsTariffUpdateNotifierService).not_to have_received(:new)
     end
   end
 
@@ -111,8 +193,27 @@ RSpec.describe ImportCustomsTariffDocumentWorker, type: :worker do
       perform
 
       expect(SlackNotifierService).to have_received(:call).with(
-        include('Customs tariff document import completed with failures', 'failed: 1'),
+        include('Customs tariff document import completed with failures', 'Version ID:'),
       )
+    end
+
+    it 'does not call CustomsTariffUpdateNotifierService' do
+      allow(CustomsTariffUpdateNotifierService).to receive(:new)
+
+      perform
+
+      expect(CustomsTariffUpdateNotifierService).not_to have_received(:new)
+    end
+
+    context 'when Slack notification fails' do
+      before do
+        allow(SlackNotifierService).to receive(:call).and_raise(Slack::Notifier::APIError, 'Slack timeout')
+      end
+
+      it 'does not fail the import job' do
+        expect { perform }.not_to raise_error
+        expect(CustomsTariffImporter::Instrumentation).to have_received(:import_run_completed)
+      end
     end
   end
 
@@ -149,6 +250,35 @@ RSpec.describe ImportCustomsTariffDocumentWorker, type: :worker do
       it 're-raises the original import error' do
         expect { perform }.to raise_error(RuntimeError, 'catastrophic failure')
       end
+    end
+
+    it 'does not emit a heartbeat' do
+      expect { perform }.to raise_error(RuntimeError)
+      expect(cloudwatch_client).not_to have_received(:put_metric_data)
+    end
+  end
+
+  describe 'heartbeat on success' do
+    before do
+      allow(importer_double).to receive(:call).and_return([result(status: :skipped, version: '1.30')])
+    end
+
+    it 'emits a JobSuccess heartbeat to TradeTariff/ScheduledJobs' do
+      perform
+
+      expect(cloudwatch_client).to have_received(:put_metric_data).with(
+        namespace: 'TradeTariff/ScheduledJobs',
+        metric_data: [{
+          metric_name: 'JobSuccess',
+          value: 1,
+          unit: 'Count',
+          dimensions: [
+            { name: 'Job', value: 'ImportCustomsTariffDocumentWorker' },
+            { name: 'Service', value: TradeTariffBackend.service },
+            { name: 'Environment', value: ENV.fetch('ENVIRONMENT', 'local') },
+          ],
+        }],
+      )
     end
   end
 end

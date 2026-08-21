@@ -40,7 +40,7 @@ module Search
         )
       end
 
-      def search_completed(request_id:, search_type:, total_duration_ms:, result_count:, query: nil, total_attempts: nil, total_questions: nil, final_result_type: nil, results_type: nil, max_score: nil, error_message: nil, description_intercept: nil)
+      def search_completed(request_id:, search_type:, total_duration_ms:, result_count:, query: nil, total_attempts: nil, total_questions: nil, final_result_type: nil, results_type: nil, max_score: nil, error_message: nil, description_intercept: nil, commodity_result_count: nil, chapter_result_count: nil, heading_result_count: nil, other_result_count: nil)
         payload = {
           request_id:,
           query:,
@@ -50,6 +50,12 @@ module Search
           final_result_type:,
           total_duration_ms:,
           result_count:,
+          # Classic fuzzy supplies an explicit per-level breakdown. Interactive/internal
+          # completions treat result_count as commodity-equivalent and leave other levels at 0.
+          chapter_result_count: chapter_result_count || 0,
+          heading_result_count: heading_result_count || 0,
+          commodity_result_count: commodity_result_count.nil? ? result_count : commodity_result_count,
+          other_result_count: other_result_count || 0,
         }
         payload[:results_type] = results_type if results_type
         payload[:max_score] = max_score if max_score

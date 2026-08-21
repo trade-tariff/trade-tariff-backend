@@ -15,6 +15,7 @@ gem 'sequel-rails'
 # File uploads and AWS
 gem 'aws-actionmailer-ses'
 gem 'aws-sdk-cloudfront'
+gem 'aws-sdk-cloudwatch'
 gem 'aws-sdk-cloudwatchlogs'
 gem 'aws-sdk-rails'
 gem 'aws-sdk-s3'
@@ -54,7 +55,6 @@ gem 'slack-notifier'
 # API related
 gem 'jsonapi-serializer'
 gem 'jwt'
-gem 'rabl'
 gem 'responders'
 
 group :development do
@@ -76,7 +76,6 @@ end
 group :test do
   gem 'brakeman'
   gem 'database_cleaner-sequel'
-  gem 'debride', require: false
   gem 'forgery'
   gem 'json_expressions'
   gem 'parallel_tests'

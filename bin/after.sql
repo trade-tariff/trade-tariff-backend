@@ -230,7 +230,11 @@ BEGIN
     RAISE NOTICE 'Total runtime: %', formatted_duration;
     RAISE NOTICE 'Successfully refreshed: % views', success_count;
     RAISE NOTICE 'Failed refreshes: % views', failure_count;
-    RAISE NOTICE 'Success rate: %', round((success_count::numeric / total_views * 100), 1) || '%';
+    RAISE NOTICE 'Success rate: %',
+        CASE
+            WHEN total_views = 0 THEN 'N/A'
+            ELSE round((success_count::numeric / total_views * 100), 1) || '%'
+        END;
 
     IF failure_count > 0 THEN
         RAISE NOTICE 'Failed views: %', array_to_string(failed_views, ', ');

@@ -1,19 +1,19 @@
 RSpec.describe TariffSynchronizer::BaseUpdateImporter do
-  let(:taric_update) { create :taric_update, :pending }
-  let(:base_update_importer) { described_class.new(taric_update) }
+  let(:base_update_importer) { described_class.new(update) }
 
-  describe '#apply', :truncation do
-    before do
-      allow(TradeTariffBackend).to receive(:service).and_return('xi')
-    end
+  shared_examples 'a base update importer' do
+    describe '#apply', :truncation do
+      before do
+        allow(TradeTariffBackend).to receive(:service).and_return(service)
+      end
 
-    it 'calls the import! method to the object' do
-      allow(taric_update).to receive(:import!)
+      it 'calls the import! method to the object' do
+        allow(update).to receive(:import!)
 
-      base_update_importer.apply
+        base_update_importer.apply
 
-      expect(taric_update).to have_received(:import!)
-    end
+        expect(update).to have_received(:import!)
+      end
 
     context 'with a pending CDS update' do
       let(:cds_update) { create :cds_update, :pending }
@@ -33,50 +33,88 @@ RSpec.describe TariffSynchronizer::BaseUpdateImporter do
     it 'do not call the import! method to the object if is not pending' do
       allow(taric_update).to receive(:import!)
 
-      taric_update.mark_as_failed
+        update.mark_as_failed
 
-      expect(taric_update).not_to have_received(:import!)
+        expect(update).not_to have_received(:import!)
 
-      base_update_importer.apply
+        base_update_importer.apply
+      end
+
+      it 'marks the record as failed if an error occurs' do
+        allow(update).to receive(:import!).and_raise(Sequel::Rollback)
+        base_update_importer.apply
+
+        expect(update.reload).to be_failed
+      end
+
+      it 'updates the record with the exception if an error occurs', :aggregate_failures do
+        base_update_importer.apply
+
+        expect(update.reload).to be_failed
+        expect(update.exception_backtrace).to include(backtrace_fragment)
+        expect(update.exception_queries).to include('UPDATE "tariff_updates" SET "state" = \'F\'')
+      end
+
+      it 'subscribes to all events' do
+        allow(ActiveSupport::Notifications).to receive(:subscribe)
+        allow(update).to receive(:import!).and_return(true)
+
+        base_update_importer.apply
+
+        expect(ActiveSupport::Notifications).to have_received(:subscribe).with(/sql\.sequel/)
+        expect(ActiveSupport::Notifications).to have_received(:subscribe).with(/presence_error/)
+        expect(ActiveSupport::Notifications).not_to have_received(:subscribe).with(/cds_error/)
+      end
+
+      it 'emits instrumentation event and sends an email', :aggregate_failures do
+        allow(TariffSynchronizer::Instrumentation).to receive(:file_import_failed)
+        base_update_importer.apply
+
+        expect(TariffSynchronizer::Instrumentation).to have_received(:file_import_failed)
+
+        expect(ActionMailer::Base.deliveries).not_to be_empty
+        email = ActionMailer::Base.deliveries.last
+        expect(email.subject).to include('Failed Trade Tariff update')
+        expect(email.encoded).to include('Backtrace')
+      end
+    end
+  end
+
+  context 'with a TARIC update' do
+    let(:update) { create :taric_update, :pending }
+    let(:service) { 'xi' }
+    let(:backtrace_fragment) { 'lib/taric_importer.rb:' }
+
+    it_behaves_like 'a base update importer'
+  end
+
+  context 'with a CDS update' do
+    let(:update) { create :cds_update, :pending, filesize: 999_999 }
+    let(:service) { 'uk' }
+    let(:backtrace_fragment) { 'lib/cds_importer.rb:' }
+
+    it_behaves_like 'a base update importer'
+  end
+
+  context 'with a TARIC update that fails with a nested import error', :truncation do
+    let(:update) { create :taric_update, :pending }
+
+    before do
+      allow(TradeTariffBackend).to receive(:service).and_return('xi')
+      ExplicitAbrogationRegulation.unrestrict_primary_key
+      allow(update).to receive(:file_path)
+        .and_return('spec/fixtures/taric_samples/unknown_record.xml')
     end
 
-    it 'marks the record as failed if an error occurs' do
-      allow(taric_update).to receive(:import!).and_raise(Sequel::Rollback)
+    after { ExplicitAbrogationRegulation.restrict_primary_key }
+
+    it 'persists the specific inner error, not the generic outer wrapper', :aggregate_failures do
       base_update_importer.apply
 
-      expect(taric_update.reload).to be_failed
-    end
-
-    it 'updates the record with the exception if an error occurs' do
-      base_update_importer.apply
-
-      expect(taric_update.reload).to be_failed
-      expect(taric_update.exception_backtrace).to include('lib/taric_importer.rb:')
-      expect(taric_update.exception_queries).to include('(Sequel::Postgres::Database) ROLLBACK')
-    end
-
-    it 'subscribes to all events' do
-      allow(ActiveSupport::Notifications).to receive(:subscribe)
-      allow(taric_update).to receive(:import!).and_return(true)
-
-      base_update_importer.apply
-
-      expect(ActiveSupport::Notifications).to have_received(:subscribe).with(/sql\.sequel/)
-      expect(ActiveSupport::Notifications).to have_received(:subscribe).with(/presence_error/)
-      expect(ActiveSupport::Notifications).not_to have_received(:subscribe).with(/cds_error/)
-    end
-
-    it 'emits instrumentation event and sends an email' do
-      allow(TariffSynchronizer::Instrumentation).to receive(:file_import_failed)
-      base_update_importer.apply
-
-      expect(TariffSynchronizer::Instrumentation).to have_received(:file_import_failed)
-
-      expect(ActionMailer::Base.deliveries).not_to be_empty
-      email = ActionMailer::Base.deliveries.last
-      expect(email.subject).to include('Failed Trade Tariff update')
-      expect(email.encoded).to include('Backtrace')
-      expect(email.encoded).to include('(Sequel::Postgres::Database) ROLLBACK')
+      expect(update.reload).to be_failed
+      expect(update.exception_class).to include('TaricImporter::UnknownOperationError')
+      expect(update.exception_class).to include('Unknown TARIC operation:')
+      expect(update.exception_class).not_to include('TARIC record import failed')
     end
   end
 end

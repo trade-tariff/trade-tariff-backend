@@ -1,19 +1,20 @@
 require_relative 'cds_importer/entity_mapper'
-require_relative 'cds_importer/staging_manager'
 require_relative 'cds_importer/xml_parser'
 
 require 'zip'
 
 class CdsImporter
-  class ImportException < StandardError
-    attr_reader :original
+  class ImportException < TariffSynchronizer::Import::Error
+    DEFAULT_MESSAGE = 'CDS record import failed'.freeze
 
-    def initialize(msg = 'CdsImporter::ImportException', original = $ERROR_INFO)
-      super(msg)
-      @original = original
+    def initialize(message: DEFAULT_MESSAGE, original: nil, context: {})
+      super(message:, source: :cds, original:, context:)
     end
   end
 
+  # Unlike TaricImporter::UnknownOperationError, this is never raised: CDS's EntityMapper
+  # dispatches per record type via constant lookup rather than fetching an update_type, so
+  # there's no unknown-operation code path here to wire it up to.
   class UnknownOperationError < ImportException
   end
 
@@ -22,35 +23,26 @@ class CdsImporter
     CdsImporter::ExcelWriter,
   ].freeze
 
+  OPERATION_KEYS = %i[create update destroy destroy_missing skipped].freeze
+
   def initialize(cds_update, handler_classes: DEFAULT_HANDLER_CLASSES, staging_manager: nil)
     @cds_update = cds_update
     @handler_classes = handler_classes
     @staging_manager = staging_manager
-    @oplog_inserts = {
-      operations: {
-        create: { count: 0, duration: 0 },
-        update: { count: 0, duration: 0 },
-        destroy: { count: 0, duration: 0 },
-        destroy_missing: { count: 0, duration: 0 },
-        skipped: { count: 0, duration: 0 },
-      },
-      total_count: 0,
-      total_duration: 0,
-    }
+    @tracker = TariffSynchronizer::Import::OperationTracker.new(operation_keys: OPERATION_KEYS)
   end
 
   def import
     zip_file = TariffSynchronizer::FileService.file_as_stringio(@cds_update)
     handlers = @handler_classes.map do |klass|
       if klass == CdsImporter::RecordInserter
-        klass.new(@cds_update.filename, staging_manager: @staging_manager)
+        klass.new(@cds_update.filename, staging_manager: @staging_manager, tracker: @tracker)
       else
         klass.new(@cds_update.filename)
       end
     end
     handler = XmlProcessor.new(@cds_update.filename, handlers)
 
-    subscribe_to_oplog_inserts
     Rails.logger.info "CDS Importer batch size: #{TradeTariffBackend.cds_importer_batch_size}"
 
     Zip::File.open_buffer(zip_file) do |archive|
@@ -65,7 +57,7 @@ class CdsImporter
       end
     end
 
-    @oplog_inserts
+    @tracker.result
   end
 
   class XmlProcessor
@@ -83,20 +75,14 @@ class CdsImporter
         end
       end
     rescue StandardError => e
-      cds_failed_log(e, key, hash_from_node)
-      raise ImportException
+      raise ImportException.new(
+        original: e,
+        context: { key:, transaction: hash_from_node },
+      ), cause: e
     end
 
     def after_parse
       @handlers.each(&:after_parse)
-    end
-
-    def cds_failed_log(exception, key, hash)
-      "Cds import failed: #{exception}".tap do |message|
-        message << "\n Failed object: #{key}\n #{hash}"
-        message << "\n Backtrace:\n #{exception.backtrace.join("\n")}"
-        Rails.logger.error message
-      end
     end
   end
 

@@ -1,0 +1,8 @@
+# Directional phrase
+HEPA filter => HEPA filter, high efficiency particulate air filter
+
+# Equivalent terms
+TV, television
+
+# Identity rules are harmless
+LED => LED

@@ -24,6 +24,21 @@ module Api
       render json: serializer.serialized_errors({ error: exception.message, url: request.url }), status: :bad_request
     end
 
+    rescue_from EvaluationConfiguration::OverrideValidationError do |exception|
+      serializer = TradeTariffBackend.error_serializer(request)
+      render json: serializer.serialized_errors({ error: exception.message, url: request.url }), status: :unprocessable_content
+    end
+
+    rescue_from EvaluationRun::IdempotencyKeyConflict do |exception|
+      serializer = TradeTariffBackend.error_serializer(request)
+      render json: serializer.serialized_errors({ error: exception.message, url: request.url }), status: :conflict
+    end
+
+    rescue_from RulesOfOrigin::Query::InvalidParams do |exception|
+      serializer = TradeTariffBackend.error_serializer(request)
+      render json: serializer.serialized_errors({ error: exception.message, url: request.url }), status: :bad_request
+    end
+
   protected
 
     def current_page

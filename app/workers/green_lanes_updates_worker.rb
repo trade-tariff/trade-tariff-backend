@@ -33,15 +33,33 @@ private
     created_updates = updates.select do |update|
       update.status == ::GreenLanes::UpdateNotification::NotificationStatus::CREATED
     end
+    return if created_updates.empty?
+
+    # Preload lookups once per batch — avoids N+1 per update.
+    measure_type_ids = created_updates.map(&:measure_type_id).uniq
+    identified_by_measure_type = GreenLanes::IdentifiedMeasureTypeCategoryAssessment
+      .where(measure_type_id: measure_type_ids)
+      .all
+      .index_by(&:measure_type_id)
+
+    existing_assessment_keys = GreenLanes::CategoryAssessment
+      .where(measure_type_id: measure_type_ids)
+      .select_map(%i[regulation_id regulation_role measure_type_id])
+      .to_set
+
+    theme_ids = identified_by_measure_type.values.map(&:theme_id).uniq
+    themes_by_id = if theme_ids.empty?
+                     {}
+                   else
+                     GreenLanes::Theme.where(id: theme_ids).all.index_by(&:id)
+                   end
 
     created_updates.each do |update|
-      identified_ca = GreenLanes::IdentifiedMeasureTypeCategoryAssessment.where(measure_type_id: update.measure_type_id).first
-
+      identified_ca = identified_by_measure_type[update.measure_type_id]
       next unless identified_ca
 
-      next if GreenLanes::CategoryAssessment[regulation_id: update.regulation_id,
-                                             regulation_role: update.regulation_role,
-                                             measure_type_id: update.measure_type_id]
+      assessment_key = [update.regulation_id, update.regulation_role, update.measure_type_id]
+      next if existing_assessment_keys.include?(assessment_key)
 
       logger.info "Creating category assessment for #{update.measure_type_id}"
 
@@ -50,9 +68,11 @@ private
                                                       measure_type_id: update.measure_type_id,
                                                       theme_id: identified_ca.theme_id)
       assessment.save(validate: true)
+      existing_assessment_keys << assessment_key
+
       update.status = ::GreenLanes::UpdateNotification::NotificationStatus::CA_CREATED
       update.theme_id = identified_ca.theme_id
-      update.theme = ::GreenLanes::Theme.find(id: identified_ca.theme_id)&.to_s
+      update.theme = themes_by_id[identified_ca.theme_id]&.to_s
     end
   end
 

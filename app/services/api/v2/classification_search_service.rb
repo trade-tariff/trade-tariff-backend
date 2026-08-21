@@ -28,6 +28,7 @@ module Api
           as_of: parse_date(@params[:as_of]),
           request_id: request_id,
           limit: limit,
+          search_type: 'classification',
         )
 
         ClassificationSearchResultSerializer.serialize(

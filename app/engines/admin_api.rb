@@ -156,6 +156,16 @@ AdminApi.routes.draw do
         resources :update_notifications, only: %i[index show update]
         resources :measure_type_mappings, only: %i[index show create destroy]
       end
+
+      namespace :search do
+        namespace :evaluation do
+          resources :experiments, only: %i[index show create update]
+          resources :runs, only: %i[index show create update]
+          resources :results, only: %i[index show create]
+          resource :configuration, only: [:show]
+          resources :searches, only: [:create]
+        end
+      end
     end
   end
 end

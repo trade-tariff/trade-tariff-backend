@@ -1,6 +1,9 @@
 class SynchronizerCheckWorker
   include Sidekiq::Worker
 
+  # Metric-only job; reruns every 30 minutes via scheduler — do not retry-storm.
+  sidekiq_options retry: false
+
   # Sentinel value recorded when no applied updates exist at all, ensuring
   # the NR alert condition fires immediately rather than silently passing.
   NO_SYNC_SENTINEL_MINUTES = 99_999

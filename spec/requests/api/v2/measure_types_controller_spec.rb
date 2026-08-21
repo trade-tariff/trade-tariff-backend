@@ -74,8 +74,7 @@ RSpec.describe Api::V2::MeasureTypesController, type: :request do
 
       let(:pattern) do
         {
-          error: 'not found',
-          url: 'http://www.example.com/uk/api/measure_types/foo.json',
+          errors: [{ detail: 'not found' }],
         }
       end
 

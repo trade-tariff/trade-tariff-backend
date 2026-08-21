@@ -59,47 +59,51 @@ RSpec.describe SearchAnalytics::CloudwatchSnapshotQuery do
       ),
       complete_response(
         result_row(
-          'total_cost_usd' => '0.0102',
-          'average_cost_usd' => '0.0051',
-          'p50_cost_usd' => '0.0048',
-          'p90_cost_usd' => '0.0075',
-          'assisted_searches' => '2',
-          'priced_calls' => '4',
-          'unpriced_calls' => '1',
+          'aggregated_total_cost_usd' => '0.0102',
+          'aggregated_average_cost_usd' => '0.0051',
+          'aggregated_p50_cost_usd' => '0.0048',
+          'aggregated_p90_cost_usd' => '0.0075',
+          'aggregated_assisted_searches' => '2',
+          'aggregated_priced_calls' => '4',
+          'aggregated_unpriced_calls' => '1',
         ),
       ),
       complete_response(
         result_row(
           '@timestamp' => '2026-06-10 09:00:00.000',
           'event_kind' => 'interactive_search',
-          'input_cost_usd' => '0.004',
-          'cached_input_cost_usd' => '0.0002',
-          'output_cost_usd' => '0.006',
-          'embedding_cost_usd' => '0',
-          'total_cost_usd' => '0.01',
-          'input_tokens' => '2000',
-          'cached_input_tokens' => '400',
-          'output_tokens' => '500',
-          'total_tokens' => '2500',
-          'calls' => '4',
-          'priced_calls' => '3',
-          'unpriced_calls' => '1',
+          'aggregated_input_cost_usd' => '0.004',
+          'aggregated_cached_input_cost_usd' => '0.0002',
+          'aggregated_cache_write_input_cost_usd' => '0.0005',
+          'aggregated_output_cost_usd' => '0.006',
+          'aggregated_embedding_cost_usd' => '0',
+          'aggregated_total_cost_usd' => '0.01',
+          'aggregated_input_tokens' => '2000',
+          'aggregated_cached_input_tokens' => '400',
+          'aggregated_cache_write_input_tokens' => '200',
+          'aggregated_output_tokens' => '500',
+          'aggregated_total_tokens' => '2500',
+          'aggregated_calls' => '4',
+          'aggregated_priced_calls' => '3',
+          'aggregated_unpriced_calls' => '1',
         ),
         result_row(
           '@timestamp' => '2026-06-10 09:00:00.000',
           'event_kind' => 'vector_search_query_embedding',
-          'input_cost_usd' => '0',
-          'cached_input_cost_usd' => '0',
-          'output_cost_usd' => '0',
-          'embedding_cost_usd' => '0.0002',
-          'total_cost_usd' => '0.0002',
-          'input_tokens' => '10000',
-          'cached_input_tokens' => '0',
-          'output_tokens' => '0',
-          'total_tokens' => '10000',
-          'calls' => '1',
-          'priced_calls' => '1',
-          'unpriced_calls' => '0',
+          'aggregated_input_cost_usd' => '0',
+          'aggregated_cached_input_cost_usd' => '0',
+          'aggregated_cache_write_input_cost_usd' => '0',
+          'aggregated_output_cost_usd' => '0',
+          'aggregated_embedding_cost_usd' => '0.0002',
+          'aggregated_total_cost_usd' => '0.0002',
+          'aggregated_input_tokens' => '10000',
+          'aggregated_cached_input_tokens' => '0',
+          'aggregated_cache_write_input_tokens' => '0',
+          'aggregated_output_tokens' => '0',
+          'aggregated_total_tokens' => '10000',
+          'aggregated_calls' => '1',
+          'aggregated_priced_calls' => '1',
+          'aggregated_unpriced_calls' => '0',
         ),
       ),
       complete_response(
@@ -118,6 +122,47 @@ RSpec.describe SearchAnalytics::CloudwatchSnapshotQuery do
         result_row('query' => '0101210000', 'search_type' => 'classic', 'zero_results' => '7'),
       ),
     )
+  end
+
+  describe '.query_definitions' do
+    subject(:definitions) { described_class.query_definitions(period: '24h') }
+
+    it 'returns every named query executed by the snapshot' do
+      expect(definitions.keys).to contain_exactly(
+        'volume',
+        'zero_results',
+        'summary_all_latency',
+        'summary_view_latency',
+        'source_all_latency',
+        'source_view_latency',
+        'ai_cost_summary',
+        'ai_cost_trend',
+        'classic_selections',
+        'internal_selections',
+        'classic_selection_trend',
+        'internal_selection_trend',
+        'search_term_improvements',
+        'item_id_improvements',
+      )
+      expect(definitions.values).to all(be_a(String).and(be_present))
+    end
+
+    it 'defines zero results separately for classic and interactive/internal search' do
+      expect(
+        [
+          definitions.fetch('zero_results'),
+          definitions.fetch('search_term_improvements'),
+          definitions.fetch('item_id_improvements'),
+        ],
+      ).to all(include(
+                 'search_type = "classic"',
+                 'commodity_result_count = 0',
+                 'results_type != "exact_search"',
+                 'not ispresent(commodity_result_count) and result_count = 0',
+                 'search_type = "interactive" or search_type = "internal"',
+                 'result_count = 0',
+               ))
+    end
   end
 
   it 'uses aggregate CloudWatch stats queries for the period window' do
@@ -180,7 +225,11 @@ RSpec.describe SearchAnalytics::CloudwatchSnapshotQuery do
     )
     expect(client).to have_received(:start_query).with(
       hash_including(
-        query_string: a_string_including('stats sum(request_cost_usd) as total_cost_usd'),
+        query_string: a_string_including(
+          'stats sum(request_cost_usd) as aggregated_total_cost_usd',
+          'avg(request_cost_usd) as aggregated_average_cost_usd',
+          'count(*) as aggregated_assisted_searches',
+        ),
       ),
     ).once
     expect(client).to have_received(:start_query).with(
@@ -190,7 +239,11 @@ RSpec.describe SearchAnalytics::CloudwatchSnapshotQuery do
     ).twice
     expect(client).to have_received(:start_query).with(
       hash_including(
-        query_string: a_string_including('sum(embedding_cost_usd) as embedding_cost_usd'),
+        query_string: a_string_including(
+          'as model_embedding_cost_usd',
+          'sum(model_embedding_cost_usd) as aggregated_embedding_cost_usd',
+          'sum(known_cost_usd) as aggregated_total_cost_usd',
+        ),
       ),
     ).once
     expect(client).to have_received(:start_query).with(
@@ -322,6 +375,8 @@ RSpec.describe SearchAnalytics::CloudwatchSnapshotQuery do
       {
         'bucket' => '2026-06-10T09:00:00Z',
         'input_cost_usd' => 0.004,
+        'cached_input_cost_usd' => 0.0002,
+        'cache_write_input_cost_usd' => 0.0005,
         'output_cost_usd' => 0.006,
         'embedding_cost_usd' => 0.0002,
         'total_cost_usd' => 0.0102,
@@ -329,7 +384,7 @@ RSpec.describe SearchAnalytics::CloudwatchSnapshotQuery do
     )
     expect(payloads.dig('all', 'ai_costs', 'operations')).to match(
       [
-        include('event_kind' => 'interactive_search', 'calls' => 4, 'total_tokens' => 2500, 'input_cost_usd' => 0.004, 'output_cost_usd' => 0.006, 'embedding_cost_usd' => 0.0, 'total_cost_usd' => 0.01, 'unpriced_calls' => 1),
+        include('event_kind' => 'interactive_search', 'calls' => 4, 'total_tokens' => 2500, 'cached_input_tokens' => 400, 'cache_write_input_tokens' => 200, 'input_cost_usd' => 0.004, 'cached_input_cost_usd' => 0.0002, 'cache_write_input_cost_usd' => 0.0005, 'output_cost_usd' => 0.006, 'embedding_cost_usd' => 0.0, 'total_cost_usd' => 0.01, 'unpriced_calls' => 1),
         include('event_kind' => 'vector_search_query_embedding', 'calls' => 1, 'total_tokens' => 10_000, 'input_cost_usd' => 0.0, 'output_cost_usd' => 0.0, 'embedding_cost_usd' => 0.0002, 'total_cost_usd' => 0.0002, 'unpriced_calls' => 0),
       ],
     )

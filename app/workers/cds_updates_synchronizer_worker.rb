@@ -23,6 +23,13 @@ class CdsUpdatesSynchronizerWorker
 
     TariffSynchronizer::Instrumentation.apply_started(pending_count: TariffSynchronizer::BaseUpdate.pending.count)
     unless CdsSynchronizer.apply # return if nothing changed
+      # A quiet day (nothing pending, nothing failed) must still generate the
+      # daily reports - see TaricUpdatesSynchronizerWorker; without this the
+      # event-driven ReportWorker never runs on zero-apply days. Skipped when
+      # updates are pending or failed so reports are never built from broken
+      # data.
+      ReportWorker.perform_in(15.minutes) if TariffSynchronizer::BaseUpdate.pending_or_failed.none?
+
       emit_sync_run_completed(start_time)
       return
     end

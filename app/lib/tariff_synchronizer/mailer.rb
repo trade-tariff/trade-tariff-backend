@@ -9,12 +9,7 @@ module TariffSynchronizer
 
     def exception(exception, update, database_queries)
       @failed_file_path = update.file_path
-      @exception = exception
-
-      if exception.respond_to?(:original) && exception.original.presence
-        @exception = exception.original.presence
-      end
-
+      @exception = TariffSynchronizer::Import::Error.unwrap(exception)
       @database_queries = database_queries
 
       mail subject: "#{subject_prefix(:error)} Failed Trade Tariff update"
@@ -43,11 +38,10 @@ module TariffSynchronizer
     def applied(update_names, import_warnings)
       @update_names = update_names
       @import_warnings = import_warnings
-      # if 'presence errors' are ignored during tariff update then we can display them in email body
       if TaricSynchronizer.ignore_presence_errors
         @presence_errors = TariffSynchronizer::TariffUpdatePresenceError.where(tariff_update_filename: update_names)
       end
-      mail subject: "#{subject_prefix(:info)} Tariff updates applied"
+      mail subject: "#{subject_prefix(:warn)} Tariff updates applied"
     end
 
     def cds_updates(file_date, excel, file_name)

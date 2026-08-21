@@ -7,8 +7,8 @@ RSpec.describe 'admin_configurations:seed' do
     Rake::Task['admin_configurations:seed'].reenable
   end
 
-  it 'creates all 48 admin configurations', :aggregate_failures do
-    expect { seed }.to change(AdminConfiguration, :count).by(48)
+  it 'creates all 52 admin configurations', :aggregate_failures do
+    expect { seed }.to change(AdminConfiguration, :count).by(52)
 
     names = AdminConfiguration.order(:name).select_map(:name)
     expect(names).to eq(%w[
@@ -17,10 +17,13 @@ RSpec.describe 'admin_configurations:seed' do
       description_intercept_templates
       expand_model
       expand_query_context
+      expand_search_decider
       expand_search_enabled
       expand_search_min_results
       expand_search_min_score
       expand_search_when_needed_enabled
+      hybrid_query_guardrail_enabled
+      hybrid_query_guardrail_threshold
       input_sanitiser_enabled
       input_sanitiser_max_length
       interactive_search_duplicate_question_guard_context
@@ -45,6 +48,7 @@ RSpec.describe 'admin_configurations:seed' do
       refine_search_with_answers_enabled
       retrieval_method
       rrf_k
+      search_atars_enabled
       search_compressed_notes_enabled
       search_context
       search_general_rules_enabled
@@ -106,6 +110,23 @@ RSpec.describe 'admin_configurations:seed' do
   it 'seeds nested_options configs with sorted model options', :aggregate_failures do
     seed
 
+    expected_latest_options = [
+      {
+        'key' => 'gpt-5.6',
+        'label' => 'GPT-5.6 Sol (latest flagship)',
+        'sub_options' => { 'reasoning_effort' => %w[none low medium high xhigh max] },
+      },
+      {
+        'key' => 'gpt-5.6-terra',
+        'label' => 'GPT-5.6 Terra (balanced)',
+        'sub_options' => { 'reasoning_effort' => %w[none low medium high xhigh max] },
+      },
+      {
+        'key' => 'gpt-5.6-luna',
+        'label' => 'GPT-5.6 Luna (cost-efficient)',
+        'sub_options' => { 'reasoning_effort' => %w[none low medium high xhigh max] },
+      },
+    ]
     expected_defaults = {
       'expand_model' => AdminConfiguration.nested_option_default_for('expand_model'),
       'label_model' => AdminConfiguration.nested_option_default_for('label_model'),
@@ -125,6 +146,7 @@ RSpec.describe 'admin_configurations:seed' do
 
       option_keys = config.value['options'].map { |o| o['key'] }
       expect(option_keys).to eq(option_keys.sort)
+      expect(config.value['options']).to include(*expected_latest_options)
 
       OpenaiClient::MODEL_CONFIGS.each_key do |model_key|
         expect(option_keys).to include(model_key)
@@ -194,10 +216,18 @@ RSpec.describe 'admin_configurations:seed' do
   it 'seeds conditional expansion controls', :aggregate_failures do
     seed
 
+    decider = AdminConfiguration.where(name: 'expand_search_decider').first
+    expect(decider.config_type).to eq('options')
+    expect(decider.value['selected']).to eq('v1')
+    expect(decider.value['options']).to eq([
+      { 'key' => 'v1', 'label' => 'V1: casing and retrieval evidence' },
+      { 'key' => 'v2', 'label' => 'V2: targeted synonyms and retrieval evidence' },
+    ])
+
     enabled = AdminConfiguration.where(name: 'expand_search_when_needed_enabled').first
     expect(enabled.config_type).to eq('boolean')
     expect(enabled.description).to include('When AI expansion is enabled')
-    expect(enabled.description).to include('acronym-like terms')
+    expect(enabled.description).to include('selected expansion strategy')
     expect(enabled.description).to include('no significant tagged words')
     expect(enabled.description).to include('too few results')
     expect(enabled.value).to be true
@@ -245,6 +275,16 @@ RSpec.describe 'admin_configurations:seed' do
     expect(config.config_type).to eq('boolean')
     expect(config.area).to eq('classification')
     expect(config.value).to be(AdminConfiguration.default_for('search_labels_enabled'))
+  end
+
+  it 'seeds search_atars_enabled as a boolean config defaulting to false', :aggregate_failures do
+    seed
+
+    config = AdminConfiguration.where(name: 'search_atars_enabled').first
+    expect(config.config_type).to eq('boolean')
+    expect(config.area).to eq('classification')
+    expect(config.value).to be(AdminConfiguration.default_for('search_atars_enabled'))
+    expect(config.value).to be false
   end
 
   it 'seeds expand_search_enabled as a boolean config', :aggregate_failures do
@@ -362,6 +402,18 @@ RSpec.describe 'admin_configurations:seed' do
     expect(config.value).to eq(AdminConfiguration.default_for('rrf_k'))
   end
 
+  it 'seeds the hybrid query guardrail disabled with its separately configurable threshold', :aggregate_failures do
+    seed
+
+    enabled = AdminConfiguration.where(name: 'hybrid_query_guardrail_enabled').first
+    threshold = AdminConfiguration.where(name: 'hybrid_query_guardrail_threshold').first
+
+    expect(enabled.config_type).to eq('boolean')
+    expect(enabled.value).to be(false)
+    expect(threshold.config_type).to eq('integer')
+    expect(threshold.value).to eq(32)
+  end
+
   it 'seeds suggestion toggle configs as booleans', :aggregate_failures do
     seed
 
@@ -399,10 +451,79 @@ RSpec.describe 'admin_configurations:seed' do
       .not_to change(AdminConfiguration, :count)
   end
 
+  it 'refreshes model options without changing the operator selection' do
+    seed
+
+    config = AdminConfiguration.where(name: 'search_model').first
+    legacy_value = config.value.to_hash.merge(
+      'selected' => 'gpt-5.4',
+      'sub_values' => { 'reasoning_effort' => 'high' },
+      'options' => config.value['options'].reject { |option| option['key'].start_with?('gpt-5.6') },
+    )
+    config.update(value: Sequel.pg_jsonb_wrap(legacy_value))
+
+    Rake::Task['admin_configurations:seed'].reenable
+    expect { suppress_output { Rake::Task['admin_configurations:seed'].invoke } }.not_to change(AdminConfiguration, :count)
+
+    refreshed_value = config.refresh.value.to_hash
+    expect(refreshed_value).to include(
+      'selected' => 'gpt-5.4',
+      'sub_values' => { 'reasoning_effort' => 'high' },
+    )
+    expect(refreshed_value['options']).to include(
+      hash_including('key' => 'gpt-5.6', 'label' => 'GPT-5.6 Sol (latest flagship)'),
+      hash_including('key' => 'gpt-5.6-terra', 'label' => 'GPT-5.6 Terra (balanced)'),
+      hash_including('key' => 'gpt-5.6-luna', 'label' => 'GPT-5.6 Luna (cost-efficient)'),
+    )
+
+    Rake::Task['admin_configurations:seed'].reenable
+    expect { suppress_output { Rake::Task['admin_configurations:seed'].invoke } }.not_to(change { config.refresh.value.to_hash })
+  end
+
   it 'patches existing configurations when their type changes' do
     create(:admin_configuration, name: 'description_intercept_templates', config_type: 'string', value: 'legacy')
 
-    expect { seed }.to change(AdminConfiguration, :count).by(47)
+    expect { seed }.to change(AdminConfiguration, :count).by(51)
     expect(AdminConfiguration.where(name: 'description_intercept_templates').first.config_type).to eq('object_template')
+  end
+
+  it 'refreshes descriptions without replacing an existing selected value' do
+    create(
+      :admin_configuration,
+      :boolean,
+      name: 'expand_search_when_needed_enabled',
+      description: 'Legacy description',
+      value: false,
+    )
+
+    seed
+
+    config = AdminConfiguration.where(name: 'expand_search_when_needed_enabled').first
+    expect(config.description).to include('selected expansion strategy')
+    expect(config.value).to be(false)
+  end
+
+  it 'refreshes options without replacing an existing selected value' do
+    config = create(
+      :admin_configuration,
+      name: 'expand_search_decider',
+      config_type: 'options',
+      description: 'Legacy description',
+      value: {
+        'selected' => 'v2',
+        'options' => [{ 'key' => 'v1', 'label' => 'Legacy V1' }],
+      },
+    )
+    AdminConfiguration.where(id: config.id)
+      .update(value: Sequel.pg_jsonb_wrap('selected' => 'v2'))
+
+    seed
+
+    config = AdminConfiguration.where(name: 'expand_search_decider').first
+    expect(config.value['selected']).to eq('v2')
+    expect(config.value['options']).to eq([
+      { 'key' => 'v1', 'label' => 'V1: casing and retrieval evidence' },
+      { 'key' => 'v2', 'label' => 'V2: targeted synonyms and retrieval evidence' },
+    ])
   end
 end

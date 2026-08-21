@@ -1,5 +1,10 @@
 module Search
   class GoodsNomenclatureSerializer < ::Serializer
+    def initialize(record, include_atars: AdminConfiguration.enabled?('search_atars_enabled'))
+      @include_atars = include_atars
+      super(record)
+    end
+
     def serializable_hash(_opts = {})
       {
         # Presentational fields
@@ -78,8 +83,12 @@ module Search
     end
 
     def atar_keywords_part
+      return unless include_atars
+
       keywords = public_atar_rulings.flat_map(&:search_terms).compact_blank.uniq
       keywords.presence
     end
+
+    attr_reader :include_atars
   end
 end

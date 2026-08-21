@@ -1,4 +1,10 @@
 RSpec.describe SynchronizerCheckWorker, type: :worker do
+  describe 'sidekiq options' do
+    it 'does not retry metric-only jobs' do
+      expect(described_class.sidekiq_options['retry']).to be(false)
+    end
+  end
+
   describe '#perform' do
     subject(:perform) { described_class.new.perform }
 

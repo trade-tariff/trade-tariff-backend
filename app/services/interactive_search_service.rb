@@ -20,13 +20,18 @@ class InteractiveSearchService
     IMPORTANT: You have asked the maximum number of questions allowed. Based on the search input, OpenSearch results, and the answers provided so far, you MUST now provide your best answer. Do not ask any more questions. Rank the opensearch results by confidence using the information you have.
   INSTRUCTION
 
-  def initialize(query:, expanded_query:, opensearch_results:, answers: [], request_id: nil)
+  def initialize(query:, expanded_query:, opensearch_results:, answers: [], request_id: nil, max_rounds: nil, question_model: nil, search_compressed_notes_enabled: nil, search_general_rules_enabled: nil, search_type: 'interactive')
     @query = query
     @expanded_query = expanded_query
     @opensearch_results = opensearch_results
     @answers = answers || []
     @request_id = request_id
     @attempt = @answers.size + 1
+    @max_rounds = max_rounds
+    @question_model = question_model
+    @search_compressed_notes_enabled = search_compressed_notes_enabled
+    @search_general_rules_enabled = search_general_rules_enabled
+    @search_type = search_type
   end
 
   def call
@@ -41,7 +46,7 @@ class InteractiveSearchService
       request_id: request_id,
       error_type: e.class.name,
       error_message: e.message,
-      search_type: 'interactive',
+      search_type: @search_type,
     )
     nil
   end
@@ -73,7 +78,7 @@ private
   end
 
   def max_questions
-    AdminConfiguration.integer_value('interactive_search_max_questions')
+    @max_rounds || AdminConfiguration.integer_value('interactive_search_max_questions')
   end
 
   def model_config
@@ -81,11 +86,31 @@ private
   end
 
   def configured_model
-    model_config[:selected]
+    @question_model || model_config[:selected]
   end
 
   def configured_reasoning_effort
-    model_config[:sub_values]['reasoning_effort']
+    return model_config[:sub_values]['reasoning_effort'] if @question_model.blank?
+
+    reasoning_effort_for_question_model
+  end
+
+  # Only reachable with a @question_model that is a recognised OpenaiClient::MODEL_CONFIGS
+  # key, because EvaluationConfiguration::AllowlistValidator rejects unrecognised
+  # question_model overrides before InteractiveSearchService is ever called. If that
+  # validation is ever removed, MODEL_CONFIGS.dig below would silently treat an unknown
+  # model as non-reasoning (returning nil) rather than raising.
+  def reasoning_effort_for_question_model
+    reasoning_levels = OpenaiClient::MODEL_CONFIGS.dig(@question_model, :reasoning_levels) || []
+    return nil if reasoning_levels.empty?
+
+    configured_effort = model_config[:sub_values]['reasoning_effort']
+    return configured_effort if reasoning_levels.include?(configured_effort)
+
+    # The globally configured reasoning_effort isn't valid for this overridden model
+    # (e.g. configured model uses 'xhigh' but the override only supports up to 'high').
+    # Fall back to the first/most conservative level rather than sending an invalid value.
+    reasoning_levels.first
   end
 
   def configured_context
@@ -166,9 +191,17 @@ private
     end
   end
 
-  def compressed_notes_enabled? = AdminConfiguration.enabled?('search_compressed_notes_enabled')
+  def compressed_notes_enabled?
+    return @search_compressed_notes_enabled unless @search_compressed_notes_enabled.nil?
 
-  def general_rules_enabled? = AdminConfiguration.enabled?('search_general_rules_enabled')
+    AdminConfiguration.enabled?('search_compressed_notes_enabled')
+  end
+
+  def general_rules_enabled?
+    return @search_general_rules_enabled unless @search_general_rules_enabled.nil?
+
+    AdminConfiguration.enabled?('search_general_rules_enabled')
+  end
 
   def compressed_note_contexts
     return @compressed_note_contexts if defined?(@compressed_note_contexts)

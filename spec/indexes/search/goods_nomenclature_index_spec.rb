@@ -51,9 +51,25 @@ RSpec.describe Search::GoodsNomenclatureIndex do
         :goods_nomenclature_indents,
         :goods_nomenclature_descriptions,
         :goods_nomenclature_label,
-        :public_atar_rulings,
         :search_references,
       )
+      expect(associations).not_to include(:public_atar_rulings)
+    end
+
+    it 'includes public ATAR rulings when ATaR search is enabled' do
+      allow(AdminConfiguration).to receive(:enabled?).and_call_original
+      allow(AdminConfiguration).to receive(:enabled?).with('search_atars_enabled').and_return(true)
+
+      expect(instance.eager_load.flatten).to include(:public_atar_rulings)
+    end
+
+    it 'resolves the ATaR configuration once per index instance' do
+      allow(AdminConfiguration).to receive(:enabled?).and_call_original
+      allow(AdminConfiguration).to receive(:enabled?).with('search_atars_enabled').and_return(false)
+
+      2.times { instance.eager_load }
+
+      expect(AdminConfiguration).to have_received(:enabled?).with('search_atars_enabled').once
     end
 
     it 'includes ancestors with descriptions' do
@@ -61,6 +77,38 @@ RSpec.describe Search::GoodsNomenclatureIndex do
 
       expect(ancestor_config).to be_present
       expect(ancestor_config[:ancestors]).to include(:goods_nomenclature_descriptions)
+    end
+  end
+
+  describe '#serialize_record' do
+    let(:record) { instance_double(GoodsNomenclature) }
+    let(:serializer) { instance_double(Search::GoodsNomenclatureSerializer, as_json: {}) }
+
+    before do
+      allow(AdminConfiguration).to receive(:enabled?).and_call_original
+    end
+
+    it 'disables ATaR serialization by default' do
+      allow(Search::GoodsNomenclatureSerializer).to receive(:new)
+        .with(record, include_atars: false)
+        .and_return(serializer)
+
+      instance.serialize_record(record)
+
+      expect(Search::GoodsNomenclatureSerializer).to have_received(:new)
+        .with(record, include_atars: false)
+    end
+
+    it 'enables ATaR serialization when configured' do
+      allow(AdminConfiguration).to receive(:enabled?).with('search_atars_enabled').and_return(true)
+      allow(Search::GoodsNomenclatureSerializer).to receive(:new)
+        .with(record, include_atars: true)
+        .and_return(serializer)
+
+      instance.serialize_record(record)
+
+      expect(Search::GoodsNomenclatureSerializer).to have_received(:new)
+        .with(record, include_atars: true)
     end
   end
 end

@@ -46,8 +46,21 @@ module Search
         query: event.payload[:query],
         expand: event.payload[:expand],
         reason: event.payload[:reason],
+        decider_version: event.payload[:decider_version],
         result_count: event.payload[:result_count],
         max_score: event.payload[:max_score],
+      }, event)
+    end
+
+    def query_expansion_timed_out(event)
+      info log_entry({
+        event: 'query_expansion_timed_out',
+        request_id: event.payload[:request_id],
+        search_type: event.payload[:search_type],
+        timeout_ms: event.payload[:timeout_ms],
+        elapsed_ms: event.payload[:elapsed_ms],
+        model: event.payload[:model],
+        fallback_outcome: event.payload[:fallback_outcome],
       }, event)
     end
 
@@ -93,6 +106,10 @@ module Search
         search_type: event.payload[:search_type],
         query: event.payload[:query],
         result_count: event.payload[:result_count],
+        chapter_result_count: event.payload[:chapter_result_count],
+        heading_result_count: event.payload[:heading_result_count],
+        commodity_result_count: event.payload[:commodity_result_count],
+        other_result_count: event.payload[:other_result_count],
         details: event.payload[:details],
       }, event)
     end
@@ -250,6 +267,10 @@ module Search
         final_result_type: event.payload[:final_result_type],
         total_duration_ms: event.payload[:total_duration_ms],
         result_count: event.payload[:result_count],
+        chapter_result_count: event.payload[:chapter_result_count],
+        heading_result_count: event.payload[:heading_result_count],
+        commodity_result_count: event.payload[:commodity_result_count],
+        other_result_count: event.payload[:other_result_count],
       }
       data[:results_type] = event.payload[:results_type] if event.payload[:results_type]
       data[:max_score] = event.payload[:max_score] if event.payload[:max_score]
@@ -270,6 +291,23 @@ module Search
       }
       add_error_fields!(data, event)
       info log_entry(data, event)
+    end
+
+    def query_guardrail_decided(event)
+      info log_entry({
+        event: 'query_guardrail_decided',
+        request_id: event.payload[:request_id],
+        search_type: event.payload[:search_type],
+        query: event.payload[:query],
+        effective_query: event.payload[:effective_query],
+        iteration: event.payload[:iteration],
+        variant: event.payload[:variant],
+        enabled: event.payload[:enabled],
+        accepted: event.payload[:accepted],
+        max_score: event.payload[:max_score],
+        threshold: event.payload[:threshold],
+        reason: event.payload[:reason],
+      }, event)
     end
 
     def result_selected(event)

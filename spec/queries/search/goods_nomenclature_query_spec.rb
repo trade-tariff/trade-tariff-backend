@@ -52,7 +52,14 @@ RSpec.describe Search::GoodsNomenclatureQuery do
           expect(multi_match[:fields]).to include('ancestor_descriptions')
         end
 
-        it 'searches public ATAR keywords' do
+        it 'does not search public ATAR keywords by default' do
+          expect(multi_match[:fields]).not_to include('atar_keywords^2')
+        end
+
+        it 'searches public ATAR keywords when ATaR search is enabled' do
+          allow(AdminConfiguration).to receive(:enabled?).and_call_original
+          allow(AdminConfiguration).to receive(:enabled?).with('search_atars_enabled').and_return(true)
+
           expect(multi_match[:fields]).to include('atar_keywords^2')
         end
       end
@@ -115,6 +122,16 @@ RSpec.describe Search::GoodsNomenclatureQuery do
 
       it 'has no must clauses in the inner bool' do
         expect(pos_clause.dig(:bool, :must)).to be_nil
+      end
+
+      it 'resolves the ATaR configuration once per query' do
+        allow(AdminConfiguration).to receive(:enabled?).and_call_original
+        allow(Search::GoodsNomenclatureIndex).to receive(:new)
+          .and_return(instance_double(Search::GoodsNomenclatureIndex, name: 'goods-nomenclatures-test'))
+
+        query
+
+        expect(AdminConfiguration).to have_received(:enabled?).with('search_atars_enabled').once
       end
     end
 
@@ -498,12 +515,24 @@ RSpec.describe Search::GoodsNomenclatureQuery do
       expect(chapter_filter.dig(:bool, :must_not, :terms, :chapter_short_code)).to eq(%w[98 99])
     end
 
-    it 'filters to only declarable goods nomenclatures' do
+    it 'filters to only declarable goods nomenclatures by default' do
       must_clauses = query.dig(:body, :query, :bool, :must)
       declarable_filter = must_clauses.find { |c| c.dig(:term, :declarable) }
 
       expect(declarable_filter).to be_present
       expect(declarable_filter).to eq({ term: { declarable: true } })
+    end
+
+    context 'when search_non_declarables is true' do
+      let(:query_options) { super().merge(search_non_declarables: true) }
+
+      it 'omits the declarable filter, leaving the query shape otherwise unchanged' do
+        must_clauses = query.dig(:body, :query, :bool, :must)
+        declarable_filter = must_clauses.find { |c| c.dig(:term, :declarable) }
+
+        expect(declarable_filter).to be_nil
+        expect(must_clauses).not_to include(nil)
+      end
     end
 
     it 'includes validity date filter' do

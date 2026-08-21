@@ -1,17 +1,8 @@
 RSpec.describe Appendix5aPopulatorService do
   describe '#call' do
-    subject(:call) { described_class.new.call }
+    subject(:call) { service.call }
 
-    let(:mail_message) do
-      instance_double(
-        Mail::Message,
-        to: ['cupid@example.com'],
-        smtp_envelope_to: ['cupid@example.com'],
-        delivery_handler: instance_double(Appendix5aMailer, class: double(name: 'Appendix5aMailer')),
-        delivery_method: instance_double(Aws::ActionMailer::SESV2::Mailer, class: double(name: 'Aws::ActionMailer::SESV2::Mailer')),
-      )
-    end
-    let(:message_delivery) { instance_double(ActionMailer::MessageDelivery, message: mail_message, deliver_now: true) }
+    let(:service) { described_class.new }
     let!(:existing_guidance) do
       create(
         :appendix_5a,
@@ -19,12 +10,13 @@ RSpec.describe Appendix5aPopulatorService do
       )
     end
     let(:change_guidance_values) { change { existing_guidance.reload.values } }
+    let(:cupid_emails) { %w[cupid@example.com backup@example.com] }
 
     before do
       allow(Appendix5a).to receive(:fetch_latest).and_return(new_guidance)
       allow(SlackNotifierService).to receive(:call).and_call_original
-      allow(Appendix5aMailer).to receive(:appendix5a_notify_message).and_return(message_delivery)
-      allow(mail_message).to receive(:instance_variable_get).with(:@smtp_envelope_to).and_return(nil)
+      allow(TradeTariffBackend).to receive(:cupid_team_to_emails).and_return(cupid_emails)
+      allow(Notifications::EmailWorker).to receive(:perform_async)
     end
 
     context 'when the latest guidance has changed' do
@@ -40,18 +32,39 @@ RSpec.describe Appendix5aPopulatorService do
         expect { call }.to change_guidance_values
       end
 
-      it 'notifies slack' do
+      it 'sends an email notification to each configured recipient with a String-keyed personalisation hash' do
         call
 
-        expect(SlackNotifierService)
-          .to have_received(:call)
-          .with('Appendix 5a has been updated with 0 new, 1 changed and 0 removed guidance documents')
+        cupid_emails.each_with_index do |email, recipient_index|
+          expect(Notifications::EmailWorker).to have_received(:perform_async).with(
+            email,
+            described_class::TEMPLATE_ID,
+            {
+              'new_count' => 0,
+              'changed_count' => 1,
+              'removed_count' => 0,
+              'support_email' => TradeTariffBackend.support_email,
+            },
+            'Appendix5aNotificationStatusCheckWorker',
+            [recipient_index],
+          )
+        end
       end
 
-      it 'sends an email notification' do
-        call
-        expect(Appendix5aMailer).to have_received(:appendix5a_notify_message)
-          .with(0, 1, 0)
+      it 'enqueues via the real Sidekiq perform_async boundary without raising (Sidekiq.strict_args! guard)' do
+        allow(Notifications::EmailWorker).to receive(:perform_async).and_call_original
+
+        Sidekiq::Testing.fake! do
+          Notifications::EmailWorker.jobs.clear
+
+          expect { call }.not_to raise_error
+
+          expect(Notifications::EmailWorker.jobs.size).to eq(cupid_emails.size)
+          Notifications::EmailWorker.jobs.each do |job|
+            personalisation = job['args'][2]
+            expect(personalisation.keys).to all(be_a(String))
+          end
+        end
       end
     end
 
@@ -76,7 +89,7 @@ RSpec.describe Appendix5aPopulatorService do
 
       it 'does not send an email' do
         call
-        expect(Appendix5aMailer).not_to have_received(:appendix5a_notify_message)
+        expect(Notifications::EmailWorker).not_to have_received(:perform_async)
       end
     end
 
@@ -87,18 +100,16 @@ RSpec.describe Appendix5aPopulatorService do
         expect { call }.to change(Appendix5a, :count).by(-1)
       end
 
-      it 'notifies slack' do
+      it 'sends an email notification to each configured recipient' do
         call
 
-        expect(SlackNotifierService)
-          .to have_received(:call)
-          .with('Appendix 5a has been updated with 0 new, 0 changed and 1 removed guidance documents')
-      end
-
-      it 'sends an email notification' do
-        call
-        expect(Appendix5aMailer).to have_received(:appendix5a_notify_message)
-          .with(0, 0, 1)
+        cupid_emails.each_with_index do |email, recipient_index|
+          expect(Notifications::EmailWorker).to have_received(:perform_async).with(
+            email, described_class::TEMPLATE_ID,
+            { 'new_count' => 0, 'changed_count' => 0, 'removed_count' => 1, 'support_email' => TradeTariffBackend.support_email },
+            'Appendix5aNotificationStatusCheckWorker', [recipient_index]
+          )
+        end
       end
     end
 
@@ -118,18 +129,69 @@ RSpec.describe Appendix5aPopulatorService do
         expect { call }.to change(Appendix5a, :count).by(1)
       end
 
-      it 'notifies slack' do
+      it 'sends an email notification to each configured recipient' do
         call
 
-        expect(SlackNotifierService)
-          .to have_received(:call)
-          .with('Appendix 5a has been updated with 1 new, 0 changed and 0 removed guidance documents')
+        cupid_emails.each_with_index do |email, recipient_index|
+          expect(Notifications::EmailWorker).to have_received(:perform_async).with(
+            email, described_class::TEMPLATE_ID,
+            { 'new_count' => 1, 'changed_count' => 0, 'removed_count' => 0, 'support_email' => TradeTariffBackend.support_email },
+            'Appendix5aNotificationStatusCheckWorker', [recipient_index]
+          )
+        end
+      end
+    end
+
+    context 'when no recipients are configured' do
+      let(:cupid_emails) { [] }
+      let(:new_guidance) do
+        {
+          '1123' => {
+            'guidance_cds' => 'bar',
+          },
+        }
       end
 
-      it 'sends an email notification' do
+      it 'logs an error and does not raise' do
+        allow(Rails.logger).to receive(:error)
+
         call
-        expect(Appendix5aMailer).to have_received(:appendix5a_notify_message)
-          .with(1, 0, 0)
+
+        expect(Rails.logger).to have_received(:error).with(
+          'Appendix 5a guidance changed but CUPID_TEAM_TO_EMAILS is not configured — no notification emails were sent',
+        )
+      end
+
+      it 'still changes the guidance' do
+        expect { call }.to change_guidance_values
+      end
+
+      it 'does not enqueue any email worker jobs' do
+        call
+
+        expect(Notifications::EmailWorker).not_to have_received(:perform_async)
+      end
+    end
+
+    context 'when a recipient index no longer resolves to a configured email' do
+      let(:cupid_emails) { ['cupid@example.com', ''] }
+      let(:new_guidance) do
+        {
+          '1123' => {
+            'guidance_cds' => 'bar',
+          },
+        }
+      end
+
+      it 'skips that recipient via Notifications::Instrumentation.send_skipped and does not enqueue an email for them' do
+        allow(Notifications::Instrumentation).to receive(:send_skipped)
+
+        call
+
+        expect(Notifications::Instrumentation).to have_received(:send_skipped).with(
+          pipeline: 'appendix5a', identifier: 1, reason: 'recipient_not_configured',
+        )
+        expect(Notifications::EmailWorker).to have_received(:perform_async).once
       end
     end
   end

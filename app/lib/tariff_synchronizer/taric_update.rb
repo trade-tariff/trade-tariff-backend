@@ -75,25 +75,25 @@ module TariffSynchronizer
     end
 
     def import!
+      staging_manager = StagingManager.new
       started_at = Process.clock_gettime(Process::CLOCK_MONOTONIC)
+      @oplog_inserts = TaricImporter.new(self, staging_manager:).import
+      # Atomically promote all staged rows into the real oplog tables.
+      # This transaction is short: the data is already on disk in the UNLOGGED
+      # staging tables, so it is just a bulk INSERT … SELECT per table.
+      staging_manager.promote!
 
-      # Wrap the entire TARIC import in a single transaction so that all
-      # TARIC-transaction records from one file are applied atomically — either
-      # all land in the oplog tables or none do.  This mirrors the atomicity
-      # that CdsUpdateImporter provides via StagingManager.
-      #
-      # Note: BaseUpdateImporter used to provide this transaction wrapper for
-      # all update types.  It was removed there to allow CDS to use its own
-      # unlogged-staging approach, but TARIC still needs the protection here.
-      Sequel::Model.db.transaction do
-        @oplog_inserts = TaricImporter.new(self).import
-      end
-
+      check_oplog_inserts
       store_oplog_inserts
       mark_as_applied
 
       duration_ms = (Process.clock_gettime(Process::CLOCK_MONOTONIC) - started_at) * 1000
       Instrumentation.file_import_completed(filename:, duration_ms:)
+    ensure
+      # Drop staging tables whether the import succeeded or failed.
+      # If promote! was never called (error during parsing), the real oplog
+      # tables are untouched and no partial data is visible.
+      staging_manager&.cleanup
     end
 
     def filename_sequence
@@ -162,6 +162,18 @@ module TariffSynchronizer
 
     def store_oplog_inserts
       self.inserts = @oplog_inserts.to_json
+    end
+
+    def check_oplog_inserts
+      total_count = @oplog_inserts&.fetch(:total_count, 0).to_i
+      return if total_count.positive?
+
+      alert_potential_failed_import
+    end
+
+    def alert_potential_failed_import
+      NewRelic::Agent.notice_error \
+        "Empty TARIC update - Issue Date: #{issue_date}: Applied: #{Time.zone.today}"
     end
   end
 end

@@ -51,7 +51,10 @@ RSpec.describe Api::Internal::SearchService do
     end
 
     it 'emits interactive configuration diagnostics including the duplicate question guard gate' do
-      allow(Search::Instrumentation).to receive(:interactive_configuration_used)
+      captured_configuration = nil
+      allow(Search::Instrumentation).to receive(:interactive_configuration_used) do |configuration:, **|
+        captured_configuration = configuration
+      end
       allow(TradeTariffBackend.search_client).to receive(:search).and_return({ 'hits' => { 'hits' => [] } })
 
       described_class.new(q: 'multimeter leads').call
@@ -61,13 +64,139 @@ RSpec.describe Api::Internal::SearchService do
         query: 'multimeter leads',
         skip_question: nil,
         configuration: hash_including(
+          expand_search_decider: 'v1',
           interactive_search_duplicate_question_guard_enabled: true,
+          hybrid_query_guardrail_enabled: false,
+          hybrid_query_guardrail_threshold: 32,
           interactive_search_duplicate_question_guard_model: {
             selected: 'gpt-5-nano-2025-08-07',
             reasoning_effort: 'low',
           },
         ),
       )
+      expect(captured_configuration.fetch(:hybrid_query_guardrail_enabled)).to be(false)
+    end
+
+    it 'reports the effective decider when the configured version is invalid' do
+      allow(AdminConfiguration).to receive(:option_value).with('expand_search_decider').and_return('unknown')
+      allow(Search::Instrumentation).to receive(:interactive_configuration_used)
+      allow(TradeTariffBackend.search_client).to receive(:search).and_return({ 'hits' => { 'hits' => [] } })
+
+      described_class.new(q: 'multimeter leads').call
+
+      expect(Search::Instrumentation).to have_received(:interactive_configuration_used).with(
+        hash_including(configuration: hash_including(expand_search_decider: 'v1')),
+      )
+    end
+
+    context 'when diagnostics_configuration reports overridden values for evaluation runs' do
+      before do
+        allow(AdminConfiguration).to receive(:enabled?).and_call_original
+        allow(AdminConfiguration).to receive(:enabled?).with('search_non_declarables').and_return(false)
+        allow(AdminConfiguration).to receive(:integer_value).and_call_original
+        allow(AdminConfiguration).to receive(:integer_value).with('vector_score_threshold').and_return(35)
+        allow(AdminConfiguration).to receive(:integer_value).with('vector_ef_search').and_return(100)
+        allow(AdminConfiguration).to receive(:integer_value).with('rrf_k').and_return(60)
+        allow(AdminConfiguration).to receive(:integer_value).with('interactive_search_max_questions').and_return(7)
+        allow(AdminConfiguration).to receive(:nested_options_value).and_call_original
+        allow(AdminConfiguration).to receive(:nested_options_value).with('search_model')
+          .and_return(selected: 'gpt-5.4', sub_values: { 'reasoning_effort' => 'medium' })
+        allow(TradeTariffBackend.search_client).to receive(:search).and_return({ 'hits' => { 'hits' => [] } })
+      end
+
+      def captured_diagnostics_configuration(overrides)
+        captured = nil
+        allow(Search::Instrumentation).to receive(:interactive_configuration_used) do |configuration:, **|
+          captured = configuration
+        end
+
+        described_class.new(q: 'multimeter leads', configuration_overrides: overrides).call
+
+        captured
+      end
+
+      it 'reflects a search_non_declarables override of false even though AdminConfiguration reports true, proving || is not used' do
+        allow(AdminConfiguration).to receive(:enabled?).with('search_non_declarables').and_return(true)
+
+        configuration = captured_diagnostics_configuration('search_non_declarables' => false)
+
+        expect(configuration.fetch(:search_non_declarables)).to be(false)
+      end
+
+      it 'falls back to AdminConfiguration for search_non_declarables when no override is supplied' do
+        allow(AdminConfiguration).to receive(:enabled?).with('search_non_declarables').and_return(true)
+
+        configuration = captured_diagnostics_configuration({})
+
+        expect(configuration.fetch(:search_non_declarables)).to be(true)
+      end
+
+      it 'reflects a vector_score_threshold override' do
+        configuration = captured_diagnostics_configuration('vector_score_threshold' => 55)
+
+        expect(configuration.fetch(:vector_score_threshold)).to eq(55)
+      end
+
+      it 'falls back to AdminConfiguration for vector_score_threshold when no override is supplied' do
+        configuration = captured_diagnostics_configuration({})
+
+        expect(configuration.fetch(:vector_score_threshold)).to eq(35)
+      end
+
+      it 'reflects a vector_ef_search override' do
+        configuration = captured_diagnostics_configuration('vector_ef_search' => 250)
+
+        expect(configuration.fetch(:vector_ef_search)).to eq(250)
+      end
+
+      it 'falls back to AdminConfiguration for vector_ef_search when no override is supplied' do
+        configuration = captured_diagnostics_configuration({})
+
+        expect(configuration.fetch(:vector_ef_search)).to eq(100)
+      end
+
+      it 'reflects a rrf_k override' do
+        configuration = captured_diagnostics_configuration('rrf_k' => 15)
+
+        expect(configuration.fetch(:rrf_k)).to eq(15)
+      end
+
+      it 'falls back to AdminConfiguration for rrf_k when no override is supplied' do
+        configuration = captured_diagnostics_configuration({})
+
+        expect(configuration.fetch(:rrf_k)).to eq(60)
+      end
+
+      it 'reflects a max_rounds override on interactive_search_max_questions' do
+        configuration = captured_diagnostics_configuration('max_rounds' => 2)
+
+        expect(configuration.fetch(:interactive_search_max_questions)).to eq(2)
+      end
+
+      it 'falls back to AdminConfiguration for interactive_search_max_questions when no max_rounds override is supplied' do
+        configuration = captured_diagnostics_configuration({})
+
+        expect(configuration.fetch(:interactive_search_max_questions)).to eq(7)
+      end
+
+      it 'reflects a question_model override on search_model[:selected] without disturbing the reasoning_effort sub value' do
+        configuration = captured_diagnostics_configuration('question_model' => 'gpt-4o-mini')
+
+        expect(configuration.fetch(:search_model)).to eq(selected: 'gpt-4o-mini', reasoning_effort: 'medium')
+      end
+
+      it 'falls back to AdminConfiguration for search_model when no question_model override is supplied' do
+        configuration = captured_diagnostics_configuration({})
+
+        expect(configuration.fetch(:search_model)).to eq(selected: 'gpt-5.4', reasoning_effort: 'medium')
+      end
+
+      it 'does not let a question_model override leak into expand_model or the duplicate question guard model' do
+        configuration = captured_diagnostics_configuration('question_model' => 'gpt-4o-mini')
+
+        expect(configuration.fetch(:expand_model)).not_to eq(selected: 'gpt-4o-mini', reasoning_effort: 'medium')
+        expect(configuration.fetch(:interactive_search_duplicate_question_guard_model)[:selected]).not_to eq('gpt-4o-mini')
+      end
     end
 
     context 'when exact match via search_reference suggestion' do
@@ -716,6 +845,15 @@ RSpec.describe Api::Internal::SearchService do
 
         expect(ExpandSearchQueryService).not_to have_received(:call)
       end
+
+      it 'does not apply retrieval synonyms with the v2 decider' do
+        allow(AdminConfiguration).to receive(:option_value).with('expand_search_decider').and_return('v2')
+        allow(Search::SynonymExpander).to receive(:call)
+
+        described_class.new(q: 'laptop').call
+
+        expect(Search::SynonymExpander).not_to have_received(:call)
+      end
     end
 
     context 'when expand_search_enabled is true' do
@@ -789,6 +927,51 @@ RSpec.describe Api::Internal::SearchService do
         expect(ExpandSearchQueryService).to have_received(:call).with('CBD oil', request_id: a_kind_of(String))
         expect(TradeTariffBackend.search_client).to have_received(:search).twice
         expect(result[:data].first[:attributes][:goods_nomenclature_item_id]).to eq('3304990000')
+      end
+
+      it 'uses retrieval synonyms before retaining evidence-based AI fallback with the v2 decider' do
+        allow(AdminConfiguration).to receive(:option_value).with('expand_search_decider').and_return('v2')
+        allow(Search::SynonymExpander).to receive(:call) do |query|
+          query == 'CBD oil' ? 'CBD oil cannabidiol' : query
+        end
+        allow(Search::GoodsNomenclatureQuery).to receive(:new).and_call_original
+
+        described_class.new(q: 'CBD oil').call
+
+        expect(Search::GoodsNomenclatureQuery).to have_received(:new).with(
+          'CBD oil',
+          anything,
+          hash_including(expanded_query: 'CBD oil cannabidiol'),
+        )
+        expect(ExpandSearchQueryService).to have_received(:call).with('CBD oil', request_id: a_kind_of(String))
+        expect(Search::GoodsNomenclatureQuery).to have_received(:new).with(
+          'CBD oil',
+          anything,
+          hash_including(expanded_query: 'cannabidiol oil'),
+        )
+      end
+
+      it 'does not apply retrieval synonyms with the v1 decider' do
+        allow(AdminConfiguration).to receive(:option_value).with('expand_search_decider').and_return('v1')
+        allow(Search::SynonymExpander).to receive(:call)
+
+        described_class.new(q: 'CBD oil').call
+
+        expect(Search::SynonymExpander).not_to have_received(:call)
+      end
+
+      context 'when expansion returns the original query' do
+        before do
+          allow(ExpandSearchQueryService).to receive(:call)
+            .and_return(ExpandSearchQueryService::Result.new(expanded_query: 'CBD oil', reason: nil))
+        end
+
+        it 'retains the preliminary retrieval' do
+          result = described_class.new(q: 'CBD oil').call
+
+          expect(TradeTariffBackend.search_client).to have_received(:search).once
+          expect(result[:data]).to be_empty
+        end
       end
     end
 
@@ -1254,6 +1437,22 @@ RSpec.describe Api::Internal::SearchService do
         )
       end
 
+      it 'applies v2 synonyms to vector retrieval while preserving the semantic query' do
+        allow(AdminConfiguration).to receive(:option_value).with('expand_search_decider').and_return('v2')
+        allow(Search::SynonymExpander).to receive(:call)
+          .with('pure-bred breeding horses')
+          .and_return('pure-bred breeding horses equines')
+
+        described_class.new(q: 'horses').call
+
+        expect(VectorRetrievalService).to have_received(:call).with(
+          hash_including(query: 'pure-bred breeding horses equines'),
+        )
+        expect(InteractiveSearchService).to have_received(:call).with(
+          hash_including(expanded_query: 'pure-bred breeding horses'),
+        )
+      end
+
       it 'does not call OpenSearch' do
         allow(TradeTariffBackend.search_client).to receive(:search)
 
@@ -1341,7 +1540,11 @@ RSpec.describe Api::Internal::SearchService do
         described_class.new(q: 'horses').call
 
         expect(HybridRetrievalService).to have_received(:call).with(
-          hash_including(query: 'horses', expanded_query: 'pure-bred breeding horses'),
+          hash_including(
+            query: 'horses',
+            expanded_query: 'pure-bred breeding horses',
+            search_type: 'interactive',
+          ),
         )
       end
 
@@ -1382,6 +1585,28 @@ RSpec.describe Api::Internal::SearchService do
               max_score: 250.0,
             ),
           )
+        end
+
+        context 'with the v2 decider' do
+          before do
+            allow(AdminConfiguration).to receive(:option_value).with('expand_search_decider').and_return('v2')
+            allow(Search::SynonymExpander).to receive(:call)
+              .with('horses')
+              .and_return('horses equines')
+          end
+
+          it 'passes targeted synonyms to both retrieval legs without changing the semantic query' do
+            described_class.new(q: 'horses').call
+
+            expect(HybridRetrievalService).to have_received(:call).with(
+              hash_including(
+                query: 'horses',
+                expanded_query: 'horses',
+                retrieval_query: 'horses equines',
+              ),
+            )
+            expect(ExpandSearchQueryService).not_to have_received(:call)
+          end
         end
 
         context 'when source retrieval results contain duplicate goods nomenclatures' do
@@ -1549,6 +1774,208 @@ RSpec.describe Api::Internal::SearchService do
           'laptop',
           anything,
           hash_including(expanded_query: 'portable data processing machine Personal'),
+        )
+      end
+    end
+
+    context 'when configuration_overrides are supplied' do
+      let(:opensearch_result_item) do
+        retrieval_result_class.new(
+          id: 1, goods_nomenclature_item_id: '0101210000', goods_nomenclature_sid: 1,
+          producline_suffix: '80', goods_nomenclature_class: 'Commodity',
+          description: 'pure-bred breeding horses', formatted_description: 'Pure-bred breeding horses',
+          self_text: 'Pure-bred breeding horses', classification_description: 'Pure-bred breeding horses',
+          full_description: 'Pure-bred breeding horses', heading_description: nil,
+          declarable: true, score: 10.0, confidence: nil
+        )
+      end
+
+      before do
+        allow(OpensearchRetrievalService).to receive(:call).and_return(
+          OpensearchRetrievalService::Result.new(results: [opensearch_result_item], expanded_query: 'horses'),
+        )
+      end
+
+      it 'overrides candidate_limit via opensearch_result_limit' do
+        described_class.new(q: 'horses', configuration_overrides: { 'candidate_limit' => 5 }).call
+
+        expect(OpensearchRetrievalService).to have_received(:call).with(hash_including(limit: 5))
+      end
+
+      it 'passes search_non_declarables through to OpensearchRetrievalService for retrieval_method: opensearch' do
+        described_class.new(q: 'horses', configuration_overrides: { 'search_non_declarables' => true }).call
+
+        expect(OpensearchRetrievalService).to have_received(:call).with(hash_including(search_non_declarables: true))
+      end
+
+      it "defaults search_non_declarables to nil for OpensearchRetrievalService when not given, reproducing today's behaviour" do
+        described_class.new(q: 'horses').call
+
+        expect(OpensearchRetrievalService).to have_received(:call).with(hash_including(search_non_declarables: nil))
+      end
+
+      it 'passes max_rounds, question_model, search_compressed_notes_enabled and search_general_rules_enabled through to InteractiveSearchService' do
+        described_class.new(
+          q: 'horses',
+          configuration_overrides: {
+            'max_rounds' => 1,
+            'question_model' => 'gpt-4o-mini',
+            'search_compressed_notes_enabled' => true,
+            'search_general_rules_enabled' => true,
+          },
+        ).call
+
+        expect(InteractiveSearchService).to have_received(:call).with(
+          hash_including(
+            max_rounds: 1, question_model: 'gpt-4o-mini',
+            search_compressed_notes_enabled: true, search_general_rules_enabled: true
+          ),
+        )
+      end
+
+      it "defaults every override to nil when configuration_overrides is not given, reproducing today's behaviour" do
+        described_class.new(q: 'horses').call
+
+        expect(InteractiveSearchService).to have_received(:call).with(
+          hash_including(max_rounds: nil, question_model: nil, search_compressed_notes_enabled: nil, search_general_rules_enabled: nil),
+        )
+      end
+    end
+
+    context 'when retrieval_method is hybrid and configuration_overrides are supplied' do
+      before do
+        allow(AdminConfiguration).to receive(:option_value).with('retrieval_method').and_return('hybrid')
+        allow(HybridRetrievalService).to receive(:call).and_return(
+          instance_double(HybridRetrievalService::Result, results: [], expanded_query: 'horses', source_results: []),
+        )
+      end
+
+      it 'passes rrf_k, vector_score_threshold, vector_ef_search and search_non_declarables through to HybridRetrievalService' do
+        described_class.new(
+          q: 'horses',
+          configuration_overrides: {
+            'rrf_k' => 30, 'vector_score_threshold' => 40, 'vector_ef_search' => 150, 'search_non_declarables' => true
+          },
+        ).call
+
+        expect(HybridRetrievalService).to have_received(:call).with(
+          hash_including(rrf_k: 30, vector_score_threshold: 40, vector_ef_search: 150, search_non_declarables: true),
+        )
+      end
+
+      it "defaults rrf_k, vector_score_threshold, vector_ef_search and search_non_declarables to nil when configuration_overrides is not given, reproducing today's behaviour" do
+        described_class.new(q: 'horses').call
+
+        expect(HybridRetrievalService).to have_received(:call).with(
+          hash_including(rrf_k: nil, vector_score_threshold: nil, vector_ef_search: nil, search_non_declarables: nil),
+        )
+      end
+    end
+
+    context 'when search_type is passed explicitly' do
+      before do
+        allow(AdminConfiguration).to receive(:option_value).with('retrieval_method').and_return('hybrid')
+        allow(HybridRetrievalService).to receive(:call).and_return(
+          instance_double(HybridRetrievalService::Result, results: [], expanded_query: 'horses', source_results: []),
+        )
+      end
+
+      it 'passes the given search_type through to HybridRetrievalService instead of the interactive default' do
+        described_class.new(q: 'horses', search_type: 'evaluation').call
+
+        expect(HybridRetrievalService).to have_received(:call).with(hash_including(search_type: 'evaluation'))
+      end
+
+      it 'passes the given search_type through to the main search instrumentation span instead of the interactive default' do
+        described_class.new(q: 'horses', search_type: 'evaluation').call
+
+        expect(Search::Instrumentation).to have_received(:search).with(hash_including(search_type: 'evaluation'))
+      end
+    end
+
+    context 'when search_type is not given' do
+      before do
+        allow(AdminConfiguration).to receive(:option_value).with('retrieval_method').and_return('hybrid')
+        allow(HybridRetrievalService).to receive(:call).and_return(
+          instance_double(HybridRetrievalService::Result, results: [], expanded_query: 'horses', source_results: []),
+        )
+      end
+
+      it "defaults to 'interactive', reproducing today's exact behaviour" do
+        described_class.new(q: 'horses').call
+
+        expect(HybridRetrievalService).to have_received(:call).with(hash_including(search_type: 'interactive'))
+      end
+
+      it "defaults the main search instrumentation span's search_type to 'interactive', reproducing today's exact behaviour" do
+        described_class.new(q: 'horses').call
+
+        expect(Search::Instrumentation).to have_received(:search).with(hash_including(search_type: 'interactive'))
+      end
+    end
+
+    context 'when search_type is supplied and an exact match occurs' do
+      let!(:heading) do
+        create(:heading, :with_description,
+               goods_nomenclature_item_id: '0101000000',
+               description: 'live horses')
+      end
+
+      before do
+        create(:search_suggestion, :search_reference,
+               goods_nomenclature: heading,
+               value: 'horse',
+               declarable: true)
+
+        allow(TradeTariffBackend.search_client).to receive(:search)
+        allow(Search::Instrumentation).to receive(:exact_match_selected)
+      end
+
+      it 'passes the given search_type through to exact_match_selected instead of the interactive default' do
+        described_class.new(q: 'horse', search_type: 'evaluation').call
+
+        expect(Search::Instrumentation).to have_received(:exact_match_selected).with(hash_including(search_type: 'evaluation'))
+      end
+
+      it "defaults exact_match_selected's search_type to 'interactive' when not given, reproducing today's behaviour" do
+        described_class.new(q: 'horse').call
+
+        expect(Search::Instrumentation).to have_received(:exact_match_selected).with(hash_including(search_type: 'interactive'))
+      end
+    end
+
+    context 'when search_type is supplied and retrieval_method is opensearch' do
+      let(:opensearch_result_item) do
+        retrieval_result_class.new(
+          id: 1, goods_nomenclature_item_id: '0101210000', goods_nomenclature_sid: 1,
+          producline_suffix: '80', goods_nomenclature_class: 'Commodity',
+          description: 'pure-bred breeding horses', formatted_description: 'Pure-bred breeding horses',
+          self_text: 'Pure-bred breeding horses', classification_description: 'Pure-bred breeding horses',
+          full_description: 'Pure-bred breeding horses', heading_description: nil,
+          declarable: true, score: 10.0, confidence: nil
+        )
+      end
+
+      before do
+        allow(OpensearchRetrievalService).to receive(:call).and_return(
+          OpensearchRetrievalService::Result.new(results: [opensearch_result_item], expanded_query: 'horses'),
+        )
+        allow(Search::Instrumentation).to receive(:retrieval_results_returned)
+      end
+
+      it 'passes the given search_type through to retrieval_results_returned instead of the interactive default' do
+        described_class.new(q: 'horses', search_type: 'evaluation').call
+
+        expect(Search::Instrumentation).to have_received(:retrieval_results_returned).with(
+          hash_including(search_type: 'evaluation', retrieval_method: 'opensearch'),
+        )
+      end
+
+      it "defaults retrieval_results_returned's search_type to 'interactive' when not given, reproducing today's behaviour" do
+        described_class.new(q: 'horses').call
+
+        expect(Search::Instrumentation).to have_received(:retrieval_results_returned).with(
+          hash_including(search_type: 'interactive', retrieval_method: 'opensearch'),
         )
       end
     end

@@ -10,7 +10,7 @@ RSpec.describe CdsImporter do
     it 'creates new instance of XmlProcessor' do
       allow(CdsImporter::XmlProcessor).to receive(:new).and_call_original
       allow(CdsImporter::ExcelWriter).to receive(:new).with(cds_update.filename).and_call_original
-      allow(CdsImporter::RecordInserter).to receive(:new).with(cds_update.filename, staging_manager: nil).and_call_original
+      allow(CdsImporter::RecordInserter).to receive(:new).with(cds_update.filename, staging_manager: nil, tracker: kind_of(TariffSynchronizer::Import::OperationTracker)).and_call_original
 
       importer.import
       expect(CdsImporter::XmlProcessor).to have_received(:new).with(cds_update.filename, kind_of(Array))
@@ -34,12 +34,21 @@ RSpec.describe CdsImporter do
       expect(importer.import).to eql(expected_default_oplog_inserts)
     end
 
-    it 'subscribes to oplog events' do
+    it 'does not use a global notification subscription to calculate the result' do
       allow(ActiveSupport::Notifications).to receive(:subscribe).and_call_original
 
       importer.import
 
-      expect(ActiveSupport::Notifications).to have_received(:subscribe).with('cds_importer.import.operations')
+      expect(ActiveSupport::Notifications).not_to have_received(:subscribe).with('cds_importer.import.operations')
+    end
+
+    it 'still publishes notifications for external observability' do
+      allow(ActiveSupport::Notifications).to receive(:instrument).and_call_original
+      footnote_update = TariffSynchronizer::CdsUpdate.new(filename: 'footnote.gzip')
+
+      described_class.new(footnote_update).import
+
+      expect(ActiveSupport::Notifications).to have_received(:instrument).with('cds_importer.import.operations', anything).at_least(:once)
     end
 
     context 'when importing a footnote with a long description' do
@@ -83,11 +92,25 @@ RSpec.describe CdsImporter do
 
       before do
         allow(CdsImporter::EntityMapper).to receive(:new).and_return(entity_mapper)
-        allow(entity_mapper).to receive(:build).and_raise(StandardError)
+        allow(entity_mapper).to receive(:build).and_raise(StandardError, 'entity mapper exploded')
       end
 
       it 'raises ImportException' do
         expect { processor.process_xml_node('AdditionalCode', {}) }.to raise_error(CdsImporter::ImportException)
+      end
+
+      it 'wraps the original error with source, context and cause', :aggregate_failures do
+        hash_from_node = { 'foo' => 'bar' }
+
+        expect { processor.process_xml_node('AdditionalCode', hash_from_node) }
+          .to raise_error(CdsImporter::ImportException) do |caught|
+            expect(caught.message).to eq('CDS record import failed')
+            expect(caught.source).to eq(:cds)
+            expect(caught.original).to be_a(StandardError)
+            expect(caught.original.message).to eq('entity mapper exploded')
+            expect(caught.context).to eq(key: 'AdditionalCode', transaction: hash_from_node)
+            expect(caught.cause).to eq(caught.original)
+          end
       end
     end
   end

@@ -228,6 +228,27 @@ RSpec.describe AdminConfiguration do
           expect(config.errors[:value]).to be_present
         end
       end
+
+      context 'with the hybrid query guardrail threshold' do
+        let(:value) { 50 }
+        let(:attrs) do
+          {
+            name: 'hybrid_query_guardrail_threshold',
+            config_type: 'integer',
+            value: value,
+          }
+        end
+
+        it 'accepts the inclusive 0 to 100 range', :aggregate_failures do
+          expect(config.set(value: 0)).to be_valid
+          expect(config.set(value: 100)).to be_valid
+        end
+
+        it 'rejects values outside the 0 to 100 range', :aggregate_failures do
+          expect(config.set(value: -1)).not_to be_valid
+          expect(config.set(value: 101)).not_to be_valid
+        end
+      end
     end
 
     describe 'integer normalization' do
@@ -472,6 +493,7 @@ RSpec.describe AdminConfiguration do
       expect(described_class.default_for('opensearch_result_limit')).to eq(50)
       expect(described_class.default_for('input_sanitiser_max_length')).to eq(1000)
       expect(described_class.default_for('expand_search_enabled')).to be(true)
+      expect(described_class.default_for('expand_search_decider')).to eq('v1')
       expect(described_class.default_for('expand_search_when_needed_enabled')).to be(true)
       expect(described_class.default_for('refine_search_with_answers_enabled')).to be(true)
     end
@@ -575,6 +597,7 @@ RSpec.describe AdminConfiguration do
     context 'when config record is missing' do
       it 'returns the default value' do
         expect(described_class.option_value('search_model')).to eq('gpt-5.4')
+        expect(described_class.option_value('expand_search_decider')).to eq('v1')
       end
     end
 

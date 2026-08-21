@@ -1,102 +1,86 @@
 require 'nokogiri'
 
-require 'taric_importer/transaction'
-require 'taric_importer/record_processor'
 require 'taric_importer/xml_parser'
+require 'taric_importer/entity_mapper'
+require 'taric_importer/record_inserter'
+require 'taric_importer/national_sid_counter'
 
 class TaricImporter
-  class ImportException < StandardError
-    attr_reader :original
+  class ImportException < TariffSynchronizer::Import::Error
+    DEFAULT_MESSAGE = 'TARIC record import failed'.freeze
 
-    def initialize(msg = 'TaricImporter::ImportException', original = $ERROR_INFO)
-      super(msg)
-      @original = original
+    def initialize(message: DEFAULT_MESSAGE, original: nil, context: {})
+      super(message:, source: :taric, original:, context:)
     end
   end
 
   class UnknownOperationError < ImportException
   end
 
-  def initialize(taric_update)
+  DEFAULT_HANDLER_CLASSES = [
+    TaricImporter::RecordInserter,
+  ].freeze
+
+  OPERATION_KEYS = %i[create update destroy skipped].freeze
+
+  def initialize(taric_update, handler_classes: DEFAULT_HANDLER_CLASSES, staging_manager: nil)
     @taric_update = taric_update
-    @oplog_inserts = {
-      operations: {
-        create: { count: 0, duration: 0 },
-        update: { count: 0, duration: 0 },
-        destroy: { count: 0, duration: 0 },
-        skipped: { count: 0, duration: 0 },
-      },
-      total_count: 0,
-      total_duration: 0,
-    }
+    @handler_classes = handler_classes
+    @staging_manager = staging_manager
+    @tracker = TariffSynchronizer::Import::OperationTracker.new(operation_keys: OPERATION_KEYS)
   end
 
   def import
     filename = determine_filename(@taric_update.file_path)
     return unless proceed_with_import?(filename)
 
-    subscribe_to_oplog_inserts
-
-    handler = XmlProcessor.new(@taric_update.issue_date)
+    handlers = @handler_classes.map do |handler_class|
+      handler_class.new(filename, staging_manager: @staging_manager, tracker: @tracker)
+    end
+    handler = XmlProcessor.new(@taric_update.issue_date, handlers:, national_sid_counter: NationalSidCounter.new)
     file = TariffSynchronizer::FileService.file_as_stringio(@taric_update)
     TaricImporter::XmlParser::Reader.new(file, 'record', handler).parse
+    handler.after_parse
     post_import(file_path: @taric_update.file_path, filename:)
 
-    @oplog_inserts
+    @tracker.result
   end
 
   class XmlProcessor
-    def initialize(issue_date)
+    def initialize(issue_date, handlers:, national_sid_counter:)
       @issue_date = issue_date
+      @handlers = handlers
+      @national_sid_counter = national_sid_counter
     end
 
     def process_xml_node(hash_from_node)
-      transaction = Transaction.new(hash_from_node, @issue_date)
-      transaction.persist
+      EntityMapper
+        .new(hash_from_node, issue_date: @issue_date, national_sid_counter: @national_sid_counter)
+        .build do |entity|
+        @handlers.each do |handler|
+          handler.process_record(entity)
+        end
+      end
     rescue StandardError => e
-      taric_failed_log(e, hash_from_node)
-      raise ImportException
+      raise ImportException.new(
+        original: e,
+        context: { transaction: hash_from_node },
+      ), cause: e
     end
 
-  private
-
-    def taric_failed_log(exception, hash)
-      "Taric import failed: #{exception}".tap do |message|
-        message << "\n Failed transaction:\n #{hash}"
-        message << "\n Backtrace:\n #{exception.backtrace.join("\n")}"
-        Rails.logger.error message
-      end
+    def after_parse
+      @handlers.each(&:after_parse)
     end
   end
+
+  TaricEntity = Data.define(
+    :element_id,
+    :key,
+    :instance,
+    :mapper,
+  )
 
 private
-
-  attr_reader :oplog_inserts
-
-  def subscribe_to_oplog_inserts
-    ActiveSupport::Notifications.subscribe('taric_importer.import.operations') do |*args|
-      oplog_event = ActiveSupport::Notifications::Event.new(*args)
-
-      count = oplog_event.payload[:count]
-      if count.positive?
-        duration = oplog_event.duration
-        operation = oplog_event.payload[:operation]
-        entity_class = oplog_event.payload[:entity_class].to_s
-
-        oplog_inserts[:operations][operation][entity_class] ||= {}
-        oplog_inserts[:operations][operation][entity_class][:count] ||= 0
-        oplog_inserts[:operations][operation][entity_class][:duration] ||= 0
-        oplog_inserts[:operations][operation][entity_class][:count] += count
-        oplog_inserts[:operations][operation][entity_class][:duration] += duration
-
-        oplog_inserts[:operations][operation][:count] += count
-        oplog_inserts[:operations][operation][:duration] += duration
-
-        oplog_inserts[:total_count] += count
-        oplog_inserts[:total_duration] += duration
-      end
-    end
-  end
 
   def proceed_with_import?(filename)
     return true unless TradeTariffBackend.uk?

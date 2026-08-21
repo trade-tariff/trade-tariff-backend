@@ -13,23 +13,27 @@
 # relabel page worker so they include fresh label data.
 class GoodsNomenclatureReconciliationWorker
   include Sidekiq::Worker
+  include ScheduledJobHeartbeat
 
   sidekiq_options queue: :default, retry: 2
 
   def perform
     affected = detect_changes
-    return if affected.empty?
 
-    chapters = affected.group_by { |_sid, _type, item_id| item_id[0, 2] }
+    unless affected.empty?
+      chapters = affected.group_by { |_sid, _type, item_id| item_id[0, 2] }
 
-    chapters.each do |chapter_code, entries|
-      sids = entries.map(&:first).uniq
-      mark_self_texts_stale(sids)
-      regenerate_self_texts(chapter_code)
+      chapters.each do |chapter_code, entries|
+        sids = entries.map(&:first).uniq
+        mark_self_texts_stale(sids)
+        regenerate_self_texts(chapter_code)
+      end
+
+      all_sids = affected.map(&:first).uniq
+      mark_labels_stale(all_sids)
     end
 
-    all_sids = affected.map(&:first).uniq
-    mark_labels_stale(all_sids)
+    record_heartbeat
   end
 
 private

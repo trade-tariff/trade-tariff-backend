@@ -95,13 +95,13 @@ resource "aws_cloudwatch_dashboard" "tariff_sync" {
           width  = 6
           height = 6
           properties = {
-            title  = "Apply Duration (ms)"
+            title  = "Apply Duration in seconds"
             region = var.region
             view   = "timeSeries"
             query  = <<-EOT
               ${local.source}
               | ${local.service_filter} and event = "apply_completed"
-              | stats max(duration_ms) as max, avg(duration_ms) as avg by bin(1d)
+              | stats max(duration_ms / 1000) as max_seconds, avg(duration_ms / 1000) as avg_seconds by bin(1d)
             EOT
           }
         }
@@ -116,13 +116,13 @@ resource "aws_cloudwatch_dashboard" "tariff_sync" {
           width  = 8
           height = 6
           properties = {
-            title  = "Download Duration (ms)"
+            title  = "Download Duration in seconds"
             region = var.region
             view   = "timeSeries"
             query  = <<-EOT
               ${local.source}
               | ${local.service_filter} and event = "download_completed"
-              | stats max(duration_ms) as max, avg(duration_ms) as avg by bin(1d)
+              | stats max(duration_ms / 1000) as max_seconds, avg(duration_ms / 1000) as avg_seconds by bin(1d)
             EOT
           }
         },
@@ -133,13 +133,13 @@ resource "aws_cloudwatch_dashboard" "tariff_sync" {
           width  = 8
           height = 6
           properties = {
-            title  = "File Import Duration (ms)"
+            title  = "File Import Duration in seconds"
             region = var.region
             view   = "timeSeries"
             query  = <<-EOT
               ${local.source}
               | ${local.service_filter} and event = "file_import_completed"
-              | stats max(duration_ms) as max, avg(duration_ms) as avg by bin(1d)
+              | stats max(duration_ms / 1000) as max_seconds, avg(duration_ms / 1000) as avg_seconds by bin(1d)
             EOT
           }
         },

@@ -22,12 +22,13 @@ module Search
       end
 
       def fuzzy_results_returned(request_id:, query:, results:)
+        metrics = nested_result_metrics(results)
         instrument(
           'fuzzy_results_returned',
           request_id:,
           search_type: 'classic',
           query:,
-          result_count: nested_result_count(results),
+          **metrics,
           details: summarize_classic_fuzzy_results(results),
         )
       end
@@ -56,6 +57,23 @@ module Search
           iteration:,
           result_count: Array(results).size,
           details: { results: summarize_results(results) },
+        )
+      end
+
+      def query_guardrail_decided(request_id:, search_type:, query:, effective_query:, iteration:, enabled:, accepted:, max_score:, threshold:, reason:)
+        instrument(
+          'query_guardrail_decided',
+          request_id:,
+          search_type:,
+          query:,
+          effective_query:,
+          iteration:,
+          variant: enabled ? 'fixed_vector_score' : 'control',
+          enabled:,
+          accepted:,
+          max_score:,
+          threshold:,
+          reason:,
         )
       end
 

@@ -168,7 +168,11 @@ RSpec.describe 'bin/db-replicate' do
         fi
       done
 
-      printf 'dump' > "$output_file"
+      {
+        printf 'CREATE TABLE restored_table(id integer);\n'
+        printf '%s\n' '-- TRADE_TARIFF_POST_RESTORE_START'
+        printf 'VACUUM FULL ANALYZE;\n'
+      } > "$output_file"
     BASH
 
     write_executable "#{tempdir}/bin/gzip", <<~'BASH'
@@ -196,35 +200,37 @@ RSpec.describe 'bin/db-replicate' do
       #!/usr/bin/env bash
       set -euo pipefail
       echo "psql $*" >> "$TMPDIR/commands.log"
-      cat > /dev/null
 
-      if [[ -f "$TMPDIR/simulate_sql_error" ]]; then
-        if [[ "$*" == *"ON_ERROR_STOP=1"* ]]; then
-          echo "simulated SQL error" >&2
-          exit 42
+      if [[ "$*" == *"-qAt"* ]]; then
+        IFS= read -r lock_query
+        echo "lock-query $lock_query" >> "$TMPDIR/commands.log"
+
+        if [[ -f "$TMPDIR/replication_lock_unavailable" ]]; then
+          printf 'f\n'
+        else
+          printf 't\n'
         fi
 
-        echo "simulated SQL error ignored" >&2
+        cat > /dev/null
         exit 0
       fi
 
-      if [[ -f "$TMPDIR/always_fail_psql" ]]; then
-        echo "permanent psql failure" >&2
-        exit 42
-      fi
+      if [[ "$*" == *"--single-transaction"* ]]; then
+        cat > "$TMPDIR/core-restore.sql"
 
-      if [[ -f "$TMPDIR/fail_psql_once" ]]; then
-        attempts_file="$TMPDIR/psql-attempts"
-        attempts=0
-        [[ -f "$attempts_file" ]] && attempts=$(cat "$attempts_file")
-        attempts=$((attempts + 1))
-        echo "$attempts" > "$attempts_file"
+        if [[ -f "$TMPDIR/always_fail_core_restore" ]]; then
+          echo "permanent core restore failure" >&2
+          exit 42
+        fi
+      else
+        cat > "$TMPDIR/post-restore.sql"
 
-        if [[ "$attempts" -eq 1 ]]; then
-          echo "temporary psql failure" >&2
+        if [[ -f "$TMPDIR/always_fail_post_restore" ]]; then
+          echo "permanent post-restore failure" >&2
           exit 42
         fi
       fi
+
     BASH
 
     write_executable "#{tempdir}/bin/sleep", <<~'BASH'
@@ -300,15 +306,41 @@ RSpec.describe 'bin/db-replicate' do
     expect(command_log(tempdir)).to include('sleep 5')
   end
 
-  it 'retries transient database restore failures' do
+  it 'restores the core dump once in a transaction and runs maintenance separately' do
     install_successful_command_stubs
-    touch_flag 'fail_psql_once'
 
     _stdout, stderr, status = run_replicate(tempdir)
 
     expect(status).to be_success, stderr
-    expect(command_log(tempdir).grep(/psql --single-transaction -v ON_ERROR_STOP=1 postgres:\/\/database.example.test\/tariff/).count).to eq(2)
-    expect(command_log(tempdir)).to include('sleep 5')
+    expect(command_log(tempdir).grep(
+      %r{\Apsql --single-transaction -v ON_ERROR_STOP=1 postgres://database\.example\.test/tariff\z},
+    ).count).to eq(1)
+    expect(File.read("#{tempdir}/core-restore.sql")).to include('CREATE TABLE restored_table')
+    expect(File.read("#{tempdir}/core-restore.sql")).not_to include('VACUUM FULL ANALYZE')
+    expect(File.read("#{tempdir}/post-restore.sql")).to include('VACUUM FULL ANALYZE')
+  end
+
+  it 'acquires the replication lock before changing service desired counts' do
+    install_successful_command_stubs
+
+    _stdout, stderr, status = run_replicate(tempdir)
+
+    expect(status).to be_success, stderr
+    commands = command_log(tempdir)
+    expect(commands.index { |command| command.start_with?('lock-query SELECT pg_try_advisory_lock') })
+      .to be < commands.index { |command| command.match?(/aws ecs update-service/) }
+  end
+
+  it 'exits without changing services when another replication holds the lock' do
+    install_successful_command_stubs
+    touch_flag 'replication_lock_unavailable'
+
+    _stdout, stderr, status = run_replicate(tempdir)
+
+    expect(status).not_to be_success
+    expect(stderr).to include('Another database replication is already running')
+    expect(command_log(tempdir).grep(/aws ecs/)).to be_empty
+    expect(command_log(tempdir).grep(/curl/)).to be_empty
   end
 
   it 'retries transient database download failures' do
@@ -322,15 +354,15 @@ RSpec.describe 'bin/db-replicate' do
     expect(command_log(tempdir)).to include('sleep 5')
   end
 
-  it 'retries transient database decompression failures' do
+  it 'does not retry database decompression failures' do
     install_successful_command_stubs
     touch_flag 'fail_gzip_once'
 
     _stdout, stderr, status = run_replicate(tempdir)
 
-    expect(status).to be_success, stderr
-    expect(command_log(tempdir).grep(/gzip -dc/).count).to eq(2)
-    expect(command_log(tempdir)).to include('sleep 5')
+    expect(status).not_to be_success
+    expect(command_log(tempdir).grep(/gzip -dc/).count).to eq(1)
+    expect(stderr).not_to include('Retrying')
   end
 
   it 'retries transient service restart failures' do
@@ -427,33 +459,46 @@ RSpec.describe 'bin/db-replicate' do
     expect(command_log(tempdir).grep(/aws ecs update-service .*backend-web.*--desired-count 2/).count).to be >= 1
   end
 
-  it 'fails restore when psql reports a SQL error' do
+  it 'fails the core restore once when psql reports a SQL error' do
     install_successful_command_stubs
-    touch_flag 'simulate_sql_error'
+    touch_flag 'always_fail_core_restore'
 
     _stdout, stderr, status = run_replicate(tempdir, 'RETRY_MAX_ATTEMPTS' => '2')
 
     expect(status).not_to be_success
-    expect(stderr).to include('Restore database failed after 2 attempts')
-    expect(command_log(tempdir).grep(/psql --single-transaction -v ON_ERROR_STOP=1/).count).to eq(2)
+    expect(stderr).to include('permanent core restore failure')
+    expect(command_log(tempdir).grep(/psql --single-transaction -v ON_ERROR_STOP=1/).count).to eq(1)
     expect(command_log(tempdir).grep(/aws s3 sync/)).to be_empty
   end
 
-  it 'restarts stopped services when database restore ultimately fails' do
+  it 'restarts stopped services when the transactional core restore fails' do
     install_successful_command_stubs
-    touch_flag 'always_fail_psql'
+    touch_flag 'always_fail_core_restore'
 
-    _stdout, stderr, status = run_replicate(tempdir)
+    _stdout, _stderr, status = run_replicate(tempdir)
 
     expect(status).not_to be_success
-    expect(stderr).to include('Restore database failed after')
-    expect(command_log(tempdir).grep(/psql --single-transaction -v ON_ERROR_STOP=1 postgres:\/\/database.example.test\/tariff/).count).to eq(6)
-    expect(command_log(tempdir).grep(/^sleep /)).to include('sleep 5', 'sleep 10', 'sleep 20', 'sleep 40', 'sleep 80')
+    expect(command_log(tempdir).grep(
+      %r{\Apsql --single-transaction -v ON_ERROR_STOP=1 postgres://database\.example\.test/tariff\z},
+    ).count).to eq(1)
     expect(command_log(tempdir).grep(/aws ecs update-service .*backend-web.*--desired-count 2/).count).to eq(1)
     expect(command_log(tempdir).grep(/aws ecs update-service .*backend-worker.*--desired-count 1/).count).to eq(1)
     expect(command_log(tempdir).grep(/aws s3 sync/)).to be_empty
     expect(command_log(tempdir)).to include("rm -f #{tempdir}/database-dump.sql.gz")
     expect(File.exist?("#{tempdir}/database-dump.sql.gz")).to be(false)
+  end
+
+  it 'leaves services stopped when post-restore maintenance fails after the core commits' do
+    install_successful_command_stubs
+    touch_flag 'always_fail_post_restore'
+
+    _stdout, stderr, status = run_replicate(tempdir)
+
+    expect(status).not_to be_success
+    expect(stderr).to include('Post-restore maintenance failed after the core database committed')
+    expect(command_log(tempdir).grep(/aws ecs update-service .*--desired-count 2/)).to be_empty
+    expect(command_log(tempdir).grep(/aws ecs update-service .*--desired-count 1/)).to be_empty
+    expect(command_log(tempdir).grep(/aws s3 sync/)).to be_empty
   end
 
   it 'removes the temporary dump file when database download ultimately fails' do

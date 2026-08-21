@@ -40,7 +40,8 @@
             "tokenUrl": "https://auth.id.trade-tariff.service.gov.uk/oauth2/token",
             "scopes": {
               "tariff/read": "Read public Trade Tariff API data.",
-              "tariff/write": "Write Trade Tariff API data where an endpoint explicitly supports it."
+              "tariff/write": "Write Trade Tariff API data where an endpoint explicitly supports it.",
+              "tariff/categorisation": "Read Categorisation API data (Northern Ireland only). Issued separately from tariff/read and tariff/write."
             }
           }
         }
@@ -482,6 +483,563 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/StandardErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/categorisation/faq_feedback": {
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/accept_header"
+        }
+      ],
+      "get": {
+        "summary": "List Categorisation FAQ feedback",
+        "tags": [
+          "Categorisation"
+        ],
+        "security": [
+          {
+            "oauth2_client_credentials": [
+              "tariff/categorisation"
+            ]
+          }
+        ],
+        "description": "Returns all submitted Categorisation (Green Lanes) FAQ feedback records. Available on the Northern Ireland (XI) service only.",
+        "operationId": "getCategorisationFaqFeedback",
+        "responses": {
+          "200": {
+            "description": "FAQ feedback listed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "required": [
+                          "id",
+                          "type",
+                          "attributes"
+                        ],
+                        "properties": {
+                          "id": {
+                            "type": "string"
+                          },
+                          "type": {
+                            "type": "string",
+                            "enum": [
+                              "green_lanes_faq_feedback"
+                            ]
+                          },
+                          "attributes": {
+                            "type": "object",
+                            "properties": {
+                              "session_id": {
+                                "type": "string"
+                              },
+                              "category_id": {
+                                "type": "integer"
+                              },
+                              "question_id": {
+                                "type": "integer"
+                              },
+                              "useful": {
+                                "type": "boolean"
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Submit Categorisation FAQ feedback",
+        "tags": [
+          "Categorisation"
+        ],
+        "security": [
+          {
+            "oauth2_client_credentials": [
+              "tariff/categorisation"
+            ]
+          }
+        ],
+        "description": "Records whether a Categorisation (Green Lanes) FAQ answer was useful. Available on the Northern Ireland (XI) service only.",
+        "operationId": "postCategorisationFaqFeedback",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": "FAQ feedback recorded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "required": [
+                        "id",
+                        "type",
+                        "attributes"
+                      ],
+                      "properties": {
+                        "id": {
+                          "type": "string"
+                        },
+                        "type": {
+                          "type": "string",
+                          "enum": [
+                            "green_lanes_faq_feedback"
+                          ]
+                        },
+                        "attributes": {
+                          "type": "object",
+                          "properties": {
+                            "session_id": {
+                              "type": "string"
+                            },
+                            "category_id": {
+                              "type": "integer"
+                            },
+                            "question_id": {
+                              "type": "integer"
+                            },
+                            "useful": {
+                              "type": "boolean"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "FAQ feedback invalid",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "errors"
+                  ],
+                  "properties": {
+                    "errors": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "title": {
+                            "type": "string",
+                            "description": "Invalid attribute name."
+                          },
+                          "detail": {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            },
+                            "description": "Validation messages for the attribute."
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "data"
+                ],
+                "properties": {
+                  "data": {
+                    "type": "object",
+                    "required": [
+                      "type",
+                      "attributes"
+                    ],
+                    "properties": {
+                      "type": {
+                        "type": "string",
+                        "enum": [
+                          "green_lanes_faq_feedback"
+                        ]
+                      },
+                      "attributes": {
+                        "type": "object",
+                        "required": [
+                          "session_id",
+                          "category_id",
+                          "question_id",
+                          "useful"
+                        ],
+                        "properties": {
+                          "session_id": {
+                            "type": "string",
+                            "description": "Opaque session identifier supplied by the client."
+                          },
+                          "category_id": {
+                            "type": "integer",
+                            "description": "FAQ category being rated."
+                          },
+                          "question_id": {
+                            "type": "integer",
+                            "description": "FAQ question being rated."
+                          },
+                          "useful": {
+                            "type": "boolean",
+                            "description": "Whether the FAQ answer was useful."
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "required": true,
+          "description": "JSON:API request body containing the feedback to record."
+        }
+      }
+    },
+    "/api/categorisation/goods_nomenclatures/{id}": {
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/accept_header"
+        },
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "pattern": "^\\d{4,10}$"
+          },
+          "description": "Goods nomenclature SID (4-10 digits). Available on the Northern Ireland (XI) service only."
+        },
+        {
+          "name": "filter",
+          "in": "query",
+          "required": false,
+          "style": "deepObject",
+          "explode": true,
+          "schema": {
+            "type": "object",
+            "properties": {
+              "geographical_area_id": {
+                "type": "string"
+              }
+            }
+          },
+          "description": "Optional `filter[geographical_area_id]` to scope applicable category assessments to a geographical area."
+        }
+      ],
+      "get": {
+        "summary": "Retrieve a Categorisation goods nomenclature by id",
+        "tags": [
+          "Categorisation"
+        ],
+        "security": [
+          {
+            "oauth2_client_credentials": [
+              "tariff/categorisation"
+            ]
+          }
+        ],
+        "description": "Returns a single goods nomenclature together with its applicable and descendant category assessments, licences, ancestors, and descendants. Available on the Northern Ireland (XI) service only.",
+        "operationId": "getCategorisationGoodsNomenclature",
+        "responses": {
+          "200": {
+            "description": "goods nomenclature found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "required": [
+                        "id",
+                        "type",
+                        "attributes"
+                      ],
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "description": "Goods nomenclature SID."
+                        },
+                        "type": {
+                          "type": "string",
+                          "enum": [
+                            "goods_nomenclature"
+                          ]
+                        },
+                        "attributes": {
+                          "type": "object",
+                          "properties": {
+                            "goods_nomenclature_sid": {
+                              "type": "integer"
+                            },
+                            "goods_nomenclature_item_id": {
+                              "type": "string"
+                            },
+                            "description": {
+                              "type": "string",
+                              "nullable": true
+                            },
+                            "formatted_description": {
+                              "type": "string",
+                              "nullable": true
+                            },
+                            "validity_start_date": {
+                              "type": "string",
+                              "nullable": true,
+                              "format": "date-time"
+                            },
+                            "validity_end_date": {
+                              "type": "string",
+                              "nullable": true,
+                              "format": "date-time"
+                            },
+                            "description_plain": {
+                              "type": "string",
+                              "nullable": true
+                            },
+                            "producline_suffix": {
+                              "type": "string",
+                              "nullable": true
+                            },
+                            "parent_sid": {
+                              "type": "integer",
+                              "nullable": true
+                            },
+                            "supplementary_measure_unit": {
+                              "type": "string",
+                              "nullable": true
+                            }
+                          }
+                        },
+                        "relationships": {
+                          "type": "object",
+                          "properties": {
+                            "applicable_category_assessments": {
+                              "type": "object",
+                              "properties": {
+                                "data": {
+                                  "type": "array",
+                                  "items": {
+                                    "type": "object",
+                                    "properties": {
+                                      "id": {
+                                        "type": "string"
+                                      },
+                                      "type": {
+                                        "type": "string"
+                                      }
+                                    }
+                                  }
+                                }
+                              }
+                            },
+                            "descendant_category_assessments": {
+                              "type": "object",
+                              "properties": {
+                                "data": {
+                                  "type": "array",
+                                  "items": {
+                                    "type": "object",
+                                    "properties": {
+                                      "id": {
+                                        "type": "string"
+                                      },
+                                      "type": {
+                                        "type": "string"
+                                      }
+                                    }
+                                  }
+                                }
+                              }
+                            },
+                            "ancestors": {
+                              "type": "object",
+                              "properties": {
+                                "data": {
+                                  "type": "array",
+                                  "items": {
+                                    "type": "object",
+                                    "properties": {
+                                      "id": {
+                                        "type": "string"
+                                      },
+                                      "type": {
+                                        "type": "string"
+                                      }
+                                    }
+                                  }
+                                }
+                              }
+                            },
+                            "descendants": {
+                              "type": "object",
+                              "properties": {
+                                "data": {
+                                  "type": "array",
+                                  "items": {
+                                    "type": "object",
+                                    "properties": {
+                                      "id": {
+                                        "type": "string"
+                                      },
+                                      "type": {
+                                        "type": "string"
+                                      }
+                                    }
+                                  }
+                                }
+                              }
+                            },
+                            "licences": {
+                              "type": "object",
+                              "properties": {
+                                "data": {
+                                  "type": "array",
+                                  "items": {
+                                    "type": "object",
+                                    "properties": {
+                                      "id": {
+                                        "type": "string"
+                                      },
+                                      "type": {
+                                        "type": "string"
+                                      }
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "included": {
+                      "type": "array",
+                      "items": {
+                        "type": "object"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "goods nomenclature not found"
+          }
+        }
+      }
+    },
+    "/api/categorisation/themes": {
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/accept_header"
+        }
+      ],
+      "get": {
+        "summary": "List Categorisation themes",
+        "tags": [
+          "Categorisation"
+        ],
+        "security": [
+          {
+            "oauth2_client_credentials": [
+              "tariff/categorisation"
+            ]
+          }
+        ],
+        "description": "Returns all Categorisation (Green Lanes) themes, ordered by section and subsection. Available on the Northern Ireland (XI) service only.",
+        "operationId": "getCategorisationThemes",
+        "responses": {
+          "200": {
+            "description": "themes listed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "required": [
+                          "id",
+                          "type",
+                          "attributes"
+                        ],
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "description": "Theme code, formatted as \"{section}.{subsection}\"."
+                          },
+                          "type": {
+                            "type": "string",
+                            "enum": [
+                              "theme"
+                            ]
+                          },
+                          "attributes": {
+                            "type": "object",
+                            "properties": {
+                              "section": {
+                                "type": "string",
+                                "description": "Same value as `id`."
+                              },
+                              "theme": {
+                                "type": "string",
+                                "description": "Theme description."
+                              },
+                              "category": {
+                                "type": "integer",
+                                "description": "Category assessment risk category (1, 2, or 3)."
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
                 }
               }
             }
@@ -5690,9 +6248,10 @@
           "in": "path",
           "required": true,
           "schema": {
-            "type": "string"
+            "type": "string",
+            "pattern": "^\\d{6}$"
           },
-          "description": "Heading code (e.g. \"0101\")"
+          "description": "The 6 digit subheading of the goods being traded (e.g. \"010121\")"
         },
         {
           "name": "country_code",
@@ -5760,6 +6319,16 @@
                       }
                     }
                   }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "invalid heading_code — must be exactly 6 digits",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StandardErrorResponse"
                 }
               }
             }

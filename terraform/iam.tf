@@ -1,3 +1,11 @@
+locals {
+  production_replication_object_prefixes = [
+    "data/exchange_rates",
+    "data/taric",
+    "data/cds",
+  ]
+}
+
 data "aws_iam_policy_document" "task" {
   statement {
     effect    = "Allow"
@@ -51,11 +59,14 @@ data "aws_iam_policy_document" "task" {
       "s3:ListBucket",
       "s3:GetObject",
     ]
-    # NOTE: READONLY access to production exchange rates for replication
-    resources = [
-      "arn:aws:s3:::trade-tariff-persistence-382373577178",
-      "arn:aws:s3:::trade-tariff-persistence-382373577178/data/exchange_rates/*",
-    ]
+    # NOTE: READONLY access to production data files for replication
+    resources = concat(
+      ["arn:aws:s3:::trade-tariff-persistence-382373577178"],
+      [
+        for prefix in local.production_replication_object_prefixes :
+        "arn:aws:s3:::trade-tariff-persistence-382373577178/${prefix}/*"
+      ],
+    )
   }
 
   statement {
@@ -104,4 +115,15 @@ data "aws_iam_policy_document" "task" {
 resource "aws_iam_policy" "task" {
   name   = "backend-task-role-policy"
   policy = data.aws_iam_policy_document.task.json
+}
+
+check "production_replication_object_prefixes" {
+  assert {
+    condition = toset(local.production_replication_object_prefixes) == toset([
+      "data/exchange_rates",
+      "data/taric",
+      "data/cds",
+    ])
+    error_message = "Production replication read access must cover exchange rate, TARIC, and CDS objects."
+  }
 }
