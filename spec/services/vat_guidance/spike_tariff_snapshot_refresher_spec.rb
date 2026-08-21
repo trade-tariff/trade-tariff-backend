@@ -9,7 +9,25 @@ RSpec.describe VatGuidance::SpikeTariffSnapshotRefresher do
       code = url[%r{/commodities/(\d{10})}, 1]
       unless code
         origin = snapshot.fetch('measures').find { |measure| measure.fetch('source_url') == url }
-        next '{}' if url.include?('/v2/measures/')
+        if url.include?('/v2/measures/')
+          commodity_id = "#{origin.fetch('measure_id')}-commodity"
+          next JSON.generate(
+            'data' => {
+              'type' => 'measure',
+              'id' => origin.fetch('measure_id'),
+              'relationships' => {
+                'goods_nomenclature' => { 'data' => { 'type' => 'commodity', 'id' => commodity_id } },
+              },
+            },
+            'included' => [{
+              'type' => 'commodity',
+              'id' => commodity_id,
+              'attributes' => {
+                'goods_nomenclature_item_id' => origin.fetch('declarable_commodity_codes').sole,
+              },
+            }],
+          )
+        end
 
         included = origin.fetch('declarable_commodity_codes').map do |commodity_code|
           {
@@ -75,5 +93,53 @@ RSpec.describe VatGuidance::SpikeTariffSnapshotRefresher do
     expect {
       described_class.new(snapshot, retrieved_at: '2026-08-20T12:00:00Z', fetcher: bad_fetcher).call
     }.to raise_error(described_class::RefreshError, /inventory mismatch/)
+  end
+
+  it 'fails when a measure endpoint reports a different declarable cohort' do
+    original_fetcher = fetcher
+    bad_fetcher = lambda do |url|
+      body = original_fetcher.call(url)
+      next body unless url.include?('/v2/measures/')
+
+      response = JSON.parse(body)
+      response.fetch('included').sole.fetch('attributes')['goods_nomenclature_item_id'] = '9999999999'
+      JSON.generate(response)
+    end
+
+    expect {
+      described_class.new(snapshot, retrieved_at: '2026-08-20T12:00:00Z', fetcher: bad_fetcher).call
+    }.to raise_error(described_class::RefreshError, /origin cohort mismatch/)
+  end
+
+  it 'fails when a measure endpoint omits its goods nomenclature relationship' do
+    original_fetcher = fetcher
+    bad_fetcher = lambda do |url|
+      body = original_fetcher.call(url)
+      next body unless url.include?('/v2/measures/')
+
+      response = JSON.parse(body)
+      response.fetch('data').fetch('relationships').delete('goods_nomenclature')
+      JSON.generate(response)
+    end
+
+    expect {
+      described_class.new(snapshot, retrieved_at: '2026-08-20T12:00:00Z', fetcher: bad_fetcher).call
+    }.to raise_error(described_class::RefreshError, /origin cohort mismatch/)
+  end
+
+  it 'fails when a measure endpoint does not include the linked commodity' do
+    original_fetcher = fetcher
+    bad_fetcher = lambda do |url|
+      body = original_fetcher.call(url)
+      next body unless url.include?('/v2/measures/')
+
+      response = JSON.parse(body)
+      response.fetch('included').sole['id'] = 'different-commodity'
+      JSON.generate(response)
+    end
+
+    expect {
+      described_class.new(snapshot, retrieved_at: '2026-08-20T12:00:00Z', fetcher: bad_fetcher).call
+    }.to raise_error(described_class::RefreshError, /origin cohort mismatch/)
   end
 end

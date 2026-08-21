@@ -132,6 +132,13 @@ RSpec.describe VatGuidance::CommodityJourneyComposer do
     )
   end
 
+  it 'rejects unknown modes instead of treating them as approved composition' do
+    expect { build_composer(mode: :prodution).call }.to raise_error(
+      described_class::CompositionError,
+      'unsupported composition mode prodution',
+    )
+  end
+
   it 'accepts the same contract when authorised human decisions replace the spike fixture' do
     production_reviews = reviews.deep_dup
     production_reviews['review_mode'] = VatGuidance::ReviewDecisionContract::AUTHORISED_MODE
