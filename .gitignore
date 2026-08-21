@@ -15,6 +15,9 @@ data/*/*
 !data/vat_guidance/context_packets.json
 !data/vat_guidance/question_journey_candidates.json
 !data/vat_guidance/question_journeys.json
+!data/vat_guidance/hmrc_poc.json
+!data/vat_guidance/hmrc_poc.html
+!data/vat_guidance/spike_tariff_snapshot.json
 data/failed-measures-report*
 
 # Environment files
