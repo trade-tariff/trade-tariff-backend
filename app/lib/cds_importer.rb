@@ -96,4 +96,45 @@ class CdsImporter
 
     attr_reader :key, :instance, :mapper, :element_id
   end
+
+  private
+
+  attr_reader :oplog_inserts
+
+  def subscribe_to_oplog_inserts
+    ActiveSupport::Notifications.subscribe('cds_importer.import.operations') do |*args|
+      oplog_event = ActiveSupport::Notifications::Event.new(*args)
+
+      count = oplog_event.payload[:count]
+
+      if count.positive?
+        duration = oplog_event.duration
+        mapper = oplog_event.payload[:mapper]
+        operation = oplog_event.payload[:operation]
+        entity_class = mapper.entity_class
+        mapping_path = mapper.mapping_path
+
+        oplog_inserts[:operations][operation][entity_class] ||= {}
+        oplog_inserts[:operations][operation][entity_class][:count] ||= 0
+        oplog_inserts[:operations][operation][entity_class][:duration] ||= 0
+        oplog_inserts[:operations][operation][entity_class][:count] += count
+        oplog_inserts[:operations][operation][entity_class][:duration] += duration
+        oplog_inserts[:operations][operation][entity_class][:mapping_path] = mapping_path
+
+        # We only accumulate skipped operations because we can work out from the file which record was inserted for non-missing operation types
+        if [CdsImporter::RecordInserter::SKIPPED_OPERATION].include?(operation)
+          record = oplog_event.payload[:record]
+
+          oplog_inserts[:operations][operation][entity_class][:records] ||= []
+          oplog_inserts[:operations][operation][entity_class][:records] << record.identification
+        end
+
+        oplog_inserts[:operations][operation][:count] += count
+        oplog_inserts[:operations][operation][:duration] += duration
+
+        oplog_inserts[:total_count] += count
+        oplog_inserts[:total_duration] += duration
+      end
+    end
+  end
 end

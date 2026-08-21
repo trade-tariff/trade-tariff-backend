@@ -12,7 +12,7 @@ class CdsUpdatesSynchronizerWorker
     TariffSynchronizer::Instrumentation.sync_run_started(triggered_by: self.class.name)
     TariffSynchronizer::Instrumentation.download_started
 
-    CdsSynchronizer.download
+    cds_update_downloader.download(initial_date: CdsSynchronizer.initial_update_date)
 
     if check_for_todays_file &&
         todays_file_has_not_yet_arrived? &&
@@ -71,7 +71,11 @@ private
   end
 
   def todays_file_has_not_yet_arrived?
-    !TariffSynchronizer::CdsUpdate.downloaded_todays_file?
+    !cds_update_downloader.downloaded_todays_file?
+  end
+
+  def cds_update_downloader
+    TariffSynchronizer::CdsUpdateDownloader
   end
 
   def migrate_data

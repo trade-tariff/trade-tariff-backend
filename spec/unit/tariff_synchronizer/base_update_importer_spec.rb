@@ -15,8 +15,23 @@ RSpec.describe TariffSynchronizer::BaseUpdateImporter do
         expect(update).to have_received(:import!)
       end
 
-      it 'do not call the import! method to the object if is not pending' do
-        allow(update).to receive(:import!)
+    context 'with a pending CDS update' do
+      let(:cds_update) { create :cds_update, :pending }
+
+      before do
+        allow(TradeTariffBackend).to receive(:service).and_return('uk')
+        allow(TariffSynchronizer::CdsUpdateImporter).to receive(:perform)
+      end
+
+      it 'delegates import to CdsUpdateImporter' do
+        described_class.new(cds_update).apply
+
+        expect(TariffSynchronizer::CdsUpdateImporter).to have_received(:perform).with(cds_update)
+      end
+    end
+
+    it 'do not call the import! method to the object if is not pending' do
+      allow(taric_update).to receive(:import!)
 
         update.mark_as_failed
 
