@@ -12,7 +12,7 @@ module TariffSynchronizer
       staging_manager = CdsImporter::StagingManager.new
       started_at = Process.clock_gettime(Process::CLOCK_MONOTONIC)
 
-      oplog_inserts = CdsImporter::Importer.new(@cds_update, staging_manager:).import
+      oplog_inserts = CdsImporter.new(@cds_update, staging_manager:).import
 
       staging_manager.promote!
 
