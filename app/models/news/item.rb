@@ -50,12 +50,13 @@ module News
       validates_unique :slug
       validates_presence :precis if show_on_updates_page
       validates_presence :collection_ids, message: 'must include at least one collection'
+      validates_schema_types %i[start_date end_date]
 
-      unless valid_date?(start_date)
+      if !errors.on(:start_date) && !date_within_bounds?(start_date)
         errors.add(:start_date, "cannot be dated more than #{MAX_YEARS_IN_FUTURE} years in the future")
       end
 
-      if !end_date.nil? && (end_date < start_date)
+      if !end_date.nil? && !errors.on(:end_date) && (end_date < start_date)
         errors.add(:end_date, 'must be after start date')
       end
 
@@ -173,7 +174,7 @@ module News
       slug.downcase.gsub(/\s+/, '-').gsub(/[^a-z0-9-]/, '').first(MAX_SLUG_LENGTH)
     end
 
-    def valid_date?(date)
+    def date_within_bounds?(date)
       return false unless date
 
       max_future_date = (Time.zone.today + MAX_YEARS_IN_FUTURE.years).to_date
