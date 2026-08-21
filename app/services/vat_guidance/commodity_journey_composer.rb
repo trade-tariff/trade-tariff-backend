@@ -3,6 +3,7 @@ require 'digest'
 module VatGuidance
   class CommodityJourneyComposer
     CompositionError = Class.new(StandardError)
+    SUPPORTED_MODES = %i[spike production].freeze
 
     def initialize(commodity_code:, rule_order:, paths:, connection_proposals:, review_decisions:, applicable_measure_ids:, mode: :spike)
       @commodity_code = commodity_code
@@ -41,6 +42,8 @@ module VatGuidance
                 :applicable_measure_ids, :mode
 
     def validate_review_mode!
+      raise CompositionError, "unsupported composition mode #{mode}" unless SUPPORTED_MODES.include?(mode)
+
       if mode == :production && review_decisions['review_mode'] != ReviewDecisionContract::AUTHORISED_MODE
         raise CompositionError, 'production composition rejects synthetic review decisions'
       end

@@ -81,7 +81,7 @@ module VatGuidance
       response = JSON.parse(body)
       expected = measure.fetch('declarable_commodity_codes').sort
       observed = if measure.fetch('source_url').include?('/v2/measures/')
-                   measure.fetch('connection_commodity_codes').sort
+                   v2_measure_origin_codes(response)
                  elsif measure.fetch('origin_type') == 'commodity'
                    [response.dig('data', 'attributes', 'goods_nomenclature_item_id')].compact
                  else
@@ -94,6 +94,18 @@ module VatGuidance
                    codes.sort
                  end
       raise RefreshError, "origin cohort mismatch for #{measure.fetch('measure_id')}" unless observed == expected
+    end
+
+    def v2_measure_origin_codes(response)
+      linkage = response.dig('data', 'relationships', 'goods_nomenclature', 'data')
+      return [] unless linkage&.fetch('type', nil) == 'commodity'
+
+      origins = response.fetch('included', []).select do |item|
+        item['type'] == linkage['type'] && item['id'] == linkage['id']
+      end
+      return [] unless origins.one?
+
+      [origins.first.dig('attributes', 'goods_nomenclature_item_id')].compact
     end
 
     def validate_scope!(measures)
