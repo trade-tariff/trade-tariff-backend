@@ -97,5 +97,74 @@ RSpec.describe Api::Admin::Search::Evaluation::SearchesController, :admin do
         )
       end
     end
+
+    context 'when a real interactive search LLM call happens' do
+      let(:params) { { q: 'trainers' } }
+      let(:usage) { { 'prompt_tokens' => 120, 'completion_tokens' => 40, 'total_tokens' => 160 } }
+      let(:ai_response) do
+        AiUsage.attach_metadata(
+          '{"answers": [{"commodity_code": "6404110000", "confidence": "strong"}]}',
+          AiUsage.metadata_for(model: 'gpt-5.2', event_kind: 'interactive_search', usage:),
+        )
+      end
+
+      before do
+        # Index TWO real documents so opensearch_results.size > 1 and
+        # InteractiveSearchService doesn't take the single_result? short
+        # circuit (which makes no LLM call at all, and so would make this
+        # test pass for the wrong reason). Same real-indexing pattern
+        # spec/requests/api/internal/search_controller_spec.rb already uses
+        # (see its 'when query expansion times out' context) — copy that
+        # pattern exactly rather than hand-building GoodsNomenclatureResult
+        # objects, since the serializer touches more fields than are
+        # convenient to fake by hand.
+        index = Search::GoodsNomenclatureIndex.new
+        [
+          { sid: 98_001, item_id: '6404110000', description: 'trainers with rubber sole' },
+          { sid: 98_002, item_id: '6404190000', description: 'trainers with textile upper' },
+        ].each do |doc|
+          TradeTariffBackend.search_client.index_by_name(
+            index.name,
+            doc[:sid],
+            {
+              goods_nomenclature_sid: doc[:sid],
+              goods_nomenclature_item_id: doc[:item_id],
+              producline_suffix: '80',
+              goods_nomenclature_class: 'Commodity',
+              description: doc[:description],
+              formatted_description: doc[:description],
+              full_description: doc[:description],
+              heading_description: 'Footwear',
+              declarable: true,
+              validity_start_date: Time.zone.today.iso8601,
+            },
+          )
+        end
+        TradeTariffBackend.search_client.indices.refresh(index: 'tariff-test-*')
+
+        allow(AdminConfiguration).to receive(:enabled?).and_call_original
+        allow(AdminConfiguration).to receive(:enabled?).with('interactive_search_enabled').and_return(true)
+        allow(OpenaiClient).to receive(:call).and_return(ai_response)
+      end
+
+      it 'includes meta.usage with cost and token data' do
+        api_response
+        usage_meta = json_response.dig('meta', 'usage')
+        expect(usage_meta).to include('total_tokens' => 160)
+        expect(usage_meta).to have_key('total_cost_usd')
+        expect(usage_meta).to have_key('duration_ms')
+      end
+    end
+
+    context 'when no LLM call happens (blank query, no results)' do
+      let(:params) { { q: '' } }
+
+      it 'omits meta.usage entirely' do
+        api_response
+        # `not_include` isn't a real RSpec matcher (no such built-in exists); dig handles
+        # both "meta is absent" and "meta present but without usage" in one assertion.
+        expect(json_response.dig('meta', 'usage')).to be_nil
+      end
+    end
   end
 end
