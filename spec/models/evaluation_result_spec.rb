@@ -48,4 +48,16 @@ RSpec.describe EvaluationResult do
     expect(result.gold_in_top5).to be false
     expect(result.trace).to eq({})
   end
+
+  describe 'provider_calls' do
+    it 'defaults to zero' do
+      result = create(:evaluation_result, evaluation_run: run)
+      expect(result.provider_calls).to eq(0)
+    end
+
+    it 'stores an explicit value' do
+      result = create(:evaluation_result, evaluation_run: run, provider_calls: 3)
+      expect(result.provider_calls).to eq(3)
+    end
+  end
 end

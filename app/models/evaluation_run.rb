@@ -96,6 +96,14 @@ class EvaluationRun < Sequel::Model(Sequel[:evaluation_runs].qualify(:uk))
   end
   private_class_method :resolve_reused_key!
 
+  # aggregate_metrics (jsonb) is deliberately NOT reconciled here. It was
+  # designed to hold harness-specific summary numbers (recall_at_k, mrr,
+  # gold_top1_after_qa rate) imported from the old kg.eval_runs/
+  # kg.e2e_eval_runs tables by AI-1072 (not yet built) — it is not something
+  # live AI-1073 runs compute. Confirmed via grep (2026-08-24): nothing in
+  # this codebase writes aggregate_metrics anywhere; it stays `{}` on every
+  # live run until AI-1072 exists, and even then only applies to imported
+  # rows unless a future decision extends it to live runs too.
   def reconcile_aggregates!
     results = evaluation_results_dataset
 
@@ -104,6 +112,7 @@ class EvaluationRun < Sequel::Model(Sequel[:evaluation_runs].qualify(:uk))
       error_count: results.exclude(error: nil).count,
       total_cost_usd: results.sum(:cost_usd) || 0,
       total_latency_seconds: results.sum(:latency_seconds) || 0,
+      total_provider_calls: results.sum(:provider_calls) || 0,
     )
   end
 end
