@@ -1,0 +1,8 @@
+# OJ citations known NOT to resolve on EUR-Lex (never digitised), by
+# TARIC regulation id. These documents' CELEX-formula links are equally
+# dead, so they keep today's URL rather than claiming a dead citation.
+# Established by the script/oj_citation_audit run of 2026-08-10.
+I0001840
+I0103640
+I0400240
+I9902620
