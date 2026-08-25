@@ -14,6 +14,17 @@ class EvaluationRun < Sequel::Model(Sequel[:evaluation_runs].qualify(:uk))
     validates_presence :experiment_id
   end
 
+  # Stamped from the transition itself, not sent by the caller (unlike completed_at,
+  # which the Python eval client computes and sends explicitly) — this covers every
+  # way a run can reach "running" (the eval client's update_run call today, any future
+  # caller) without each one needing its own clock. `||=` makes it a one-way stamp: a
+  # run already running that gets saved again for an unrelated field (e.g. error_summary
+  # on a transient retry) must not have started_at drift forward.
+  def before_save
+    self.started_at ||= Time.zone.now if status == 'running' && changed_columns.include?(:status)
+    super
+  end
+
   # idempotency_key makes retrying a create request safe: the caller generates one key
   # per logical "start this run" attempt and resends the same value on any retry, so a
   # repeat request returns the run already created instead of inserting a duplicate. A
