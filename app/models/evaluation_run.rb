@@ -52,6 +52,19 @@ class EvaluationRun < Sequel::Model(Sequel[:evaluation_runs].qualify(:uk))
   # lookup below before either has inserted — the loser resolves against the winner's
   # row the same way the pre-insert lookup above would have.
   def self.start!(experiment:, triggered_by:, idempotency_key:, run_time_overrides: {})
+    # Normalized to a plain, string-keyed Hash up front -- experiment.configuration_overrides
+    # and the admin-config baseline are always string-keyed (round-tripped through jsonb /
+    # AdminConfiguration), but a Rails-console caller naturally writes symbol keys
+    # (e.g. { question_model: 'gpt-5.6' }), and an HTTP caller's params can be an
+    # ActionController::Parameters-derived HashWithIndifferentAccess. Without this,
+    # Merger#deep_merge's plain Hash#merge treats 'question_model' and :question_model as
+    # different keys -- the override never actually replaces the baseline value, it just
+    # sits next to it unused, and DigestCalculator#canonicalize's `keys.sort` on the
+    # resulting mixed-type hash raises ArgumentError. Same idiom resolve_reused_key! already
+    # uses for its own comparison, applied here so every use of run_time_overrides in this
+    # method sees the same normalized shape.
+    run_time_overrides = JSON.parse(run_time_overrides.to_json)
+
     existing = find_by_idempotency_key(idempotency_key)
     return resolve_reused_key!(existing, idempotency_key:, experiment:, triggered_by:, run_time_overrides:) if existing
 
