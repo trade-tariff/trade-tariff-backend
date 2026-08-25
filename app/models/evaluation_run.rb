@@ -17,11 +17,15 @@ class EvaluationRun < Sequel::Model(Sequel[:evaluation_runs].qualify(:uk))
   # Stamped from the transition itself, not sent by the caller (unlike completed_at,
   # which the Python eval client computes and sends explicitly) — this covers every
   # way a run can reach "running" (the eval client's update_run call today, any future
-  # caller) without each one needing its own clock. `||=` makes it a one-way stamp: a
-  # run already running that gets saved again for an unrelated field (e.g. error_summary
-  # on a transient retry) must not have started_at drift forward.
+  # caller) without each one needing its own clock. Guarded on changed_columns.include?
+  # (:status), not a bare `status == 'running'` check, so a run already running that
+  # gets saved again for an unrelated field (e.g. error_summary on a transient retry)
+  # does not have started_at drift forward — but a genuine re-transition INTO running
+  # (including from a terminal status, e.g. a completed run being re-executed with the
+  # same run_id — nothing today stops that) always re-stamps, since a stale started_at
+  # next to a fresh completed_at would misreport how long the re-run actually took.
   def before_save
-    self.started_at ||= Time.zone.now if status == 'running' && changed_columns.include?(:status)
+    self.started_at = Time.zone.now if status == 'running' && changed_columns.include?(:status)
     super
   end
 

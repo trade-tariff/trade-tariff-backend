@@ -100,5 +100,21 @@ RSpec.describe EvaluationRun do
       run = create(:evaluation_run, evaluation_experiment: experiment, status: 'running', triggered_by: 'operator')
       expect(run.started_at).not_to be_nil
     end
+
+    it 're-stamps to the new time if a completed run is re-executed and transitions back to running' do
+      # Nothing currently stops a caller from re-running an already-finished
+      # run_id (execute_run.py calls update_run(status="running") unconditionally,
+      # with no check on the run's current status). When that happens, started_at
+      # must reflect the re-run's own start time, not the original run's -- a
+      # stale started_at next to a fresh completed_at would misreport how long
+      # the re-run actually took.
+      run = create(:evaluation_run, evaluation_experiment: experiment, status: 'queued', triggered_by: 'operator')
+
+      travel_to(Time.utc(2026, 8, 25, 9, 0, 0)) { run.update(status: 'running') }
+      travel_to(Time.utc(2026, 8, 25, 9, 5, 0)) { run.update(status: 'completed') }
+      travel_to(Time.utc(2026, 8, 26, 10, 0, 0)) { run.update(status: 'running') }
+
+      expect(run.started_at).to eq(Time.utc(2026, 8, 26, 10, 0, 0))
+    end
   end
 end
