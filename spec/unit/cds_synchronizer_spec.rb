@@ -115,12 +115,12 @@ RSpec.describe CdsSynchronizer, :truncation do
         expect { described_class.apply }.to raise_error(TariffSynchronizer::FailedUpdatesError)
       end
 
-      it "routes the failure notification to #production-alerts slack channel" do
+      it 'routes the failure notification to #production-alerts slack channel' do
         expect { described_class.apply }.to raise_error(TariffSynchronizer::FailedUpdatesError)
 
         expect(SlackNotifierService).to have_received(:call).with(
           text: 'Error TariffSynchronizer::FailedUpdatesError: TariffSynchronizer::FailedUpdatesError',
-          channel: TradeTariffBackend.slack_failures_channel
+          channel: TradeTariffBackend.slack_failures_channel,
         )
       end
     end
