@@ -114,6 +114,17 @@ RSpec.describe CdsSynchronizer, :truncation do
       it 'sends email with the error' do
         expect { described_class.apply }.to raise_error(TariffSynchronizer::FailedUpdatesError)
       end
+
+      it 'routes the failure notification to #production-alerts slack channel' do
+        allow(SlackNotifierService).to receive(:call)
+
+        expect { described_class.apply }.to raise_error(TariffSynchronizer::FailedUpdatesError)
+
+        expect(SlackNotifierService).to have_received(:call).with(
+          text: 'Error TariffSynchronizer::FailedUpdatesError: TariffSynchronizer::FailedUpdatesError',
+          channel: TradeTariffBackend.slack_failures_channel,
+        )
+      end
     end
 
     context 'with only TARIC failed updates present' do
