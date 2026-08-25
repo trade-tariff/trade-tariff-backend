@@ -116,6 +116,8 @@ RSpec.describe CdsSynchronizer, :truncation do
       end
 
       it 'routes the failure notification to #production-alerts slack channel' do
+        allow(SlackNotifierService).to receive(:call)
+
         expect { described_class.apply }.to raise_error(TariffSynchronizer::FailedUpdatesError)
 
         expect(SlackNotifierService).to have_received(:call).with(
