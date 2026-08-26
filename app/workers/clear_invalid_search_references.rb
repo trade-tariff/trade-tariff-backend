@@ -69,7 +69,7 @@ private
   end
 
   def format_list(results)
-    results.map { |result| format_line(result) }.join("\n")
+    results.map { |result| "* #{format_line(result)}" }.join("\n")
   end
 
   def format_line(result)
