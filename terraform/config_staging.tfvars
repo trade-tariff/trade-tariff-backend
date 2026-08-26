@@ -5,3 +5,5 @@ memory        = 2048
 service_count = 4
 min_capacity  = 2
 max_capacity  = 8
+
+enable_database_replication = true
