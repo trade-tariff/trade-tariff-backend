@@ -1,4 +1,5 @@
 # Add "needs-deployment" label to pull requests that should be deployed
+# test: labeler/deploy-to-development race condition check
 needs-deployment:
   - changed-files:
     - any-glob-to-any-file:
