@@ -57,7 +57,8 @@ RUN apk add --no-cache \
     openssl-dev \
     tzdata && \
     cp /usr/share/zoneinfo/Europe/London /etc/localtime && \
-    echo "Europe/London" > /etc/timezone
+    echo "Europe/London" > /etc/timezone && \
+    rm -f /usr/local/lib/ruby/gems/*/specifications/default/json-*.gemspec
 
 RUN bundle config set without 'development test'
 
