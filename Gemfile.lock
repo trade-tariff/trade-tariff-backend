@@ -463,7 +463,7 @@ GEM
     sidekiq-scheduler (6.0.2)
       rufus-scheduler (~> 3.2)
       sidekiq (>= 7.3, < 9)
-    simplecov (1.0.3)
+    simplecov (1.1.1)
     sin_lru_redux (2.5.2)
     slack-notifier (2.4.0)
     thor (1.5.0)
