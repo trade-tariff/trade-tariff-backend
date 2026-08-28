@@ -25,24 +25,13 @@ These can be configured by following the instructions here:
 
 https://transformuk.atlassian.net/wiki/spaces/HO/pages/22447161366/Get+started+developing+on+the+OTT
 
-### DevContainers (recommended)
+### Docker Compose (recommended)
 
-This application supports devcontainers - i.e running the application and your development tools inside Docker.
+You can run the service locally using docker compose with the development stack.
 
-These instructions apply to VSCode, but the DevContainer should work with any tooling:
+<https://github.com/trade-tariff/trade-tariff-development-stack>
 
-Once backing services are running inside Docker:
-
-* Clone this repo to your local machine.
-* Ensure you have the [DevContainer extension](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers) installed in VSCode.
-* Open the folder in VSCode
-* Run "Dev Containers: Open Folder in Container... "
-* Once the container has booted, inside VSCode's terminal, run `bin/setup`
-* Once complete, start the service with `bin/dev`
-
-If commiting / pushing from inside your devcontainer, you may need to share your SSH configuration with your container. Instructions on this can be found [here](https://code.visualstudio.com/remote/advancedcontainers/sharing-git-credentials).
-
-Should you *not* want to use DevContainers, you can setup this up manually:
+Clone the repository and follow the instructions in the README.
 
 ### Manual development (not recommended)
 
