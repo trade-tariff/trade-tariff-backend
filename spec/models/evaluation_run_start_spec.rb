@@ -38,6 +38,24 @@ RSpec.describe EvaluationRun do
       expect(run.question_model).to eq('gpt-4o')
     end
 
+    it 'applies a symbol-keyed run_time_overrides hash the same as a string-keyed one' do
+      # A Rails-console caller naturally writes { question_model: 'gpt-5.6' } (symbol key).
+      # experiment.configuration_overrides and the admin-config baseline are always
+      # string-keyed (round-tripped through jsonb / AdminConfiguration), so without
+      # normalizing run_time_overrides first, Merger#deep_merge's plain Hash#merge sees
+      # 'question_model' and :question_model as two DIFFERENT keys -- the override never
+      # actually replaces the baseline value, it just sits next to it unused, and
+      # DigestCalculator#canonicalize's `keys.sort` on the resulting mixed-type hash
+      # raises ArgumentError ("comparison of String with :question_model failed").
+      run = described_class.start!(
+        experiment:, triggered_by: 'operator', idempotency_key: SecureRandom.uuid,
+        run_time_overrides: { question_model: 'gpt-5.6' }
+      )
+      expect(run.question_model).to eq('gpt-5.6')
+      expect(run.effective_configuration['question_model']).to eq('gpt-5.6')
+      expect(run.configuration_digest).to match(/\A[0-9a-f]{16}\z/)
+    end
+
     it 'stores a 16-character configuration_digest' do
       run = described_class.start!(experiment:, triggered_by: 'operator', idempotency_key: SecureRandom.uuid)
       expect(run.configuration_digest).to match(/\A[0-9a-f]{16}\z/)

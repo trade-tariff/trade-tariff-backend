@@ -1,4 +1,9 @@
 module AiUsage
+  # Field names merged into the 'api_call_completed.search' notification
+  # payload by Search::Instrumentation::ApiEvents#api_call
+  # (app/lib/search/instrumentation/api_events.rb) — also depended on by
+  # Api::Admin::Search::Evaluation::SearchesController#create's usage
+  # subscriber. Renaming a field here needs a check in both places.
   LOG_FIELDS = %i[provider model event_kind input_tokens cached_input_tokens cache_write_input_tokens output_tokens total_tokens input_cost_usd cached_input_cost_usd cache_write_input_cost_usd output_cost_usd total_cost_usd pricing_known].freeze
   Metadata = Data.define(*LOG_FIELDS) do
     def initialize(cache_write_input_tokens: nil, cache_write_input_cost_usd: nil, **attributes)

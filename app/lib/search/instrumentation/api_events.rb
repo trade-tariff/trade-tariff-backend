@@ -7,6 +7,11 @@ module Search
         duration = Process.clock_gettime(Process::CLOCK_MONOTONIC) - start_time
 
         instrument(
+          # NOTE: Api::Admin::Search::Evaluation::SearchesController#create
+          # subscribes to this event ('api_call_completed.search') to build
+          # its meta.usage response field (evaluation cost/latency
+          # tracking). Renaming this event name, or any AiUsage::LOG_FIELDS
+          # key merged below, needs a check there too.
           'api_call_completed',
           {
             request_id:,
@@ -26,6 +31,8 @@ module Search
       rescue StandardError => e
         duration = Process.clock_gettime(Process::CLOCK_MONOTONIC) - start_time
         instrument(
+          # See the success-path instrument() call above for why this event
+          # name/payload shape is depended on outside this file.
           'api_call_completed',
           {
             request_id:,

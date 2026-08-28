@@ -30,12 +30,21 @@ RSpec.describe EvaluationRun do
       expect(run.total_latency_seconds.to_f).to eq(4.0)
     end
 
+    it 'sums provider_calls across results, treating nils as zero' do
+      EvaluationResult.ingest!(run:, source_type: 'atar', source_id: 'A1', persona: 'original', attrs: { expected_code: '1', provider_calls: 2 })
+      EvaluationResult.ingest!(run:, source_type: 'atar', source_id: 'A2', persona: 'original', attrs: { expected_code: '2', provider_calls: 1 })
+
+      run.reconcile_aggregates!
+      expect(run.total_provider_calls).to eq(3)
+    end
+
     it 'resets aggregates to zero when the run has no results' do
       run.reconcile_aggregates!
       expect(run.result_count).to eq(0)
       expect(run.error_count).to eq(0)
       expect(run.total_cost_usd.to_f).to eq(0.0)
       expect(run.total_latency_seconds.to_f).to eq(0.0)
+      expect(run.total_provider_calls).to eq(0)
     end
 
     it 'persists the reconciled values' do

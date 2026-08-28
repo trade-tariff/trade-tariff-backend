@@ -14,6 +14,21 @@ class EvaluationRun < Sequel::Model(Sequel[:evaluation_runs].qualify(:uk))
     validates_presence :experiment_id
   end
 
+  # Stamped from the transition itself, not sent by the caller (unlike completed_at,
+  # which the Python eval client computes and sends explicitly) — this covers every
+  # way a run can reach "running" (the eval client's update_run call today, any future
+  # caller) without each one needing its own clock. Guarded on changed_columns.include?
+  # (:status), not a bare `status == 'running'` check, so a run already running that
+  # gets saved again for an unrelated field (e.g. error_summary on a transient retry)
+  # does not have started_at drift forward — but a genuine re-transition INTO running
+  # (including from a terminal status, e.g. a completed run being re-executed with the
+  # same run_id — nothing today stops that) always re-stamps, since a stale started_at
+  # next to a fresh completed_at would misreport how long the re-run actually took.
+  def before_save
+    self.started_at = Time.zone.now if status == 'running' && changed_columns.include?(:status)
+    super
+  end
+
   # idempotency_key makes retrying a create request safe: the caller generates one key
   # per logical "start this run" attempt and resends the same value on any retry, so a
   # repeat request returns the run already created instead of inserting a duplicate. A
@@ -37,6 +52,19 @@ class EvaluationRun < Sequel::Model(Sequel[:evaluation_runs].qualify(:uk))
   # lookup below before either has inserted — the loser resolves against the winner's
   # row the same way the pre-insert lookup above would have.
   def self.start!(experiment:, triggered_by:, idempotency_key:, run_time_overrides: {})
+    # Normalized to a plain, string-keyed Hash up front -- experiment.configuration_overrides
+    # and the admin-config baseline are always string-keyed (round-tripped through jsonb /
+    # AdminConfiguration), but a Rails-console caller naturally writes symbol keys
+    # (e.g. { question_model: 'gpt-5.6' }), and an HTTP caller's params can be an
+    # ActionController::Parameters-derived HashWithIndifferentAccess. Without this,
+    # Merger#deep_merge's plain Hash#merge treats 'question_model' and :question_model as
+    # different keys -- the override never actually replaces the baseline value, it just
+    # sits next to it unused, and DigestCalculator#canonicalize's `keys.sort` on the
+    # resulting mixed-type hash raises ArgumentError. Same idiom resolve_reused_key! already
+    # uses for its own comparison, applied here so every use of run_time_overrides in this
+    # method sees the same normalized shape.
+    run_time_overrides = JSON.parse(run_time_overrides.to_json)
+
     existing = find_by_idempotency_key(idempotency_key)
     return resolve_reused_key!(existing, idempotency_key:, experiment:, triggered_by:, run_time_overrides:) if existing
 
@@ -96,6 +124,14 @@ class EvaluationRun < Sequel::Model(Sequel[:evaluation_runs].qualify(:uk))
   end
   private_class_method :resolve_reused_key!
 
+  # aggregate_metrics (jsonb) is deliberately NOT reconciled here. It was
+  # designed to hold harness-specific summary numbers (recall_at_k, mrr,
+  # gold_top1_after_qa rate) imported from the old kg.eval_runs/
+  # kg.e2e_eval_runs tables by AI-1072 (not yet built) — it is not something
+  # live AI-1073 runs compute. Confirmed via grep (2026-08-24): nothing in
+  # this codebase writes aggregate_metrics anywhere; it stays `{}` on every
+  # live run until AI-1072 exists, and even then only applies to imported
+  # rows unless a future decision extends it to live runs too.
   def reconcile_aggregates!
     results = evaluation_results_dataset
 
@@ -104,6 +140,7 @@ class EvaluationRun < Sequel::Model(Sequel[:evaluation_runs].qualify(:uk))
       error_count: results.exclude(error: nil).count,
       total_cost_usd: results.sum(:cost_usd) || 0,
       total_latency_seconds: results.sum(:latency_seconds) || 0,
+      total_provider_calls: results.sum(:provider_calls) || 0,
     )
   end
 end

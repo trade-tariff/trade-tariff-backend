@@ -2217,6 +2217,7 @@ CREATE TABLE uk.evaluation_results (
     gold_in_top5 boolean DEFAULT false NOT NULL,
     latency_seconds numeric(10,2),
     cost_usd numeric(10,5),
+    provider_calls integer DEFAULT 0 NOT NULL,
     error text,
     trace jsonb DEFAULT '{}'::jsonb NOT NULL,
     created_at timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL
@@ -15050,3 +15051,4 @@ INSERT INTO "schema_migrations" ("filename") VALUES ('20260803000002_create_eval
 INSERT INTO "schema_migrations" ("filename") VALUES ('20260803000003_create_evaluation_results.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20260817163645_add_idempotency_key_to_evaluation_runs.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20260818120000_add_run_time_overrides_to_evaluation_runs.rb');
+INSERT INTO "schema_migrations" ("filename") VALUES ('20260824120000_add_provider_calls_to_evaluation_results.rb');
