@@ -13,7 +13,7 @@ class EnquiryForm::SendSubmissionEmailWorker
   # Cap retries: Notify outages must not use Sidekiq's default (25) and crowd the default queue.
   sidekiq_options retry: 3
 
-  def perform(reference)
+  def perform(reference, audience = EnquiryForm::Submission::HMRC_AUDIENCE)
     form_data = enquiry_form_data(reference)
 
     if form_data.blank?
@@ -21,9 +21,16 @@ class EnquiryForm::SendSubmissionEmailWorker
       return
     end
 
-    created_at = Time.zone.parse(form_data[:created_at]).in_time_zone('London').strftime('%Y-%m-%d %H:%M')
-    csv_data = ::EnquiryForm::CsvGeneratorService.new(form_data).generate
-    csv_file = Notifications.prepare_upload(StringIO.new(csv_data), filename: "enquiry_form_#{form_data[:reference_number]}.csv")
+    delivery = EnquiryForm::Submission.from(form_data).delivery_for(audience)
+    return if delivery.blank?
+
+    send_email(delivery)
+  end
+
+private
+
+  def send_email(delivery)
+    form_data = delivery.form_data
     formatter = EnquiryForm::SubmissionFormatter.new(form_data)
 
     personalisation = {
@@ -34,16 +41,26 @@ class EnquiryForm::SendSubmissionEmailWorker
       enquiry_category: formatter.notify_category,
       enquiry_description: formatter.enquiry_description,
       reference_number: form_data[:reference_number],
-      created_at: created_at,
-      csv_file: csv_file,
+      search_request_id: form_data[:search_request_id],
+      test_condition: delivery.test_condition,
+      created_at: formatted_created_at(form_data),
+      csv_file: csv_file(form_data),
     }
 
     reference = form_data[:reference_number]
 
-    client.send_email(ENV['ENQUIRY_FORM_EMAIL'], TEMPLATE_ID, personalisation, nil, reference)
+    client.send_email(delivery.recipient, TEMPLATE_ID, personalisation, nil, reference)
   end
 
-private
+  def formatted_created_at(form_data)
+    Time.zone.parse(form_data[:created_at]).in_time_zone('London').strftime('%Y-%m-%d %H:%M')
+  end
+
+  def csv_file(form_data)
+    csv_data = ::EnquiryForm::CsvGeneratorService.new(form_data).generate
+
+    Notifications.prepare_upload(StringIO.new(csv_data), filename: "enquiry_form_#{form_data[:reference_number]}.csv")
+  end
 
   def enquiry_form_data(reference)
     data = Sidekiq.redis { |conn| conn.get(self.class.cache_key(reference)) }

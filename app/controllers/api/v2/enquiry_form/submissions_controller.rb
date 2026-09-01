@@ -5,9 +5,10 @@ module Api
       SubmissionResult = Data.define(:reference_number)
 
       def create
-        store_enquiry_form_data
+        submission = ::EnquiryForm::Submission.from(enquiry_form_data)
 
-        ::EnquiryForm::SendSubmissionEmailWorker.perform_async(reference_number)
+        store_enquiry_form_data(submission)
+        enqueue_submission_emails(submission)
 
         begin
           render json: serialize(SubmissionResult.new(reference_number:)), status: :created
@@ -18,14 +19,20 @@ module Api
 
     private
 
-      def store_enquiry_form_data
+      def store_enquiry_form_data(submission)
         Sidekiq.redis do |conn|
           conn.set(
             ::EnquiryForm::SendSubmissionEmailWorker.cache_key(reference_number),
-            enquiry_form_data.to_json,
+            submission.to_h.to_json,
             ex: CACHE_DURATION.to_i,
           )
         end
+      end
+
+      def enqueue_submission_emails(submission)
+        jobs = submission.audiences.map { |audience| [reference_number, audience] }
+
+        ::EnquiryForm::SendSubmissionEmailWorker.perform_bulk(jobs)
       end
 
       def enquiry_form_params
@@ -37,6 +44,8 @@ module Api
           :enquiry_category,
           :other_category,
           :enquiry_description,
+          :test_condition,
+          :search_request_id,
           :goods_product,
           :goods_made_of,
           :goods_used_for,
