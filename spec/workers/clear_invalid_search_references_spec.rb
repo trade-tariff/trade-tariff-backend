@@ -23,7 +23,7 @@ RSpec.describe ClearInvalidSearchReferences, type: :worker do
       do_perform
 
       expect(notify_double).to have_received(:send_email).with(
-        TradeTariffBackend.support_email,
+        TradeTariffBackend.feedback_email,
         ClearInvalidSearchReferences::TEMPLATE_ID,
         hash_including(
           removed_count: 1,
@@ -96,7 +96,7 @@ RSpec.describe ClearInvalidSearchReferences, type: :worker do
       do_perform
 
       expect(notify_double).to have_received(:send_email).with(
-        TradeTariffBackend.support_email,
+        TradeTariffBackend.feedback_email,
         ClearInvalidSearchReferences::TEMPLATE_ID,
         hash_including(
           removed_count: 0,
@@ -108,9 +108,9 @@ RSpec.describe ClearInvalidSearchReferences, type: :worker do
     end
   end
 
-  context 'when no support email is configured' do
+  context 'when no feedback email is configured' do
     before do
-      allow(TradeTariffBackend).to receive(:support_email).and_return(nil)
+      allow(TradeTariffBackend).to receive(:feedback_email).and_return(nil)
       TimeMachine.now { create(:search_reference, :with_non_current_commodity, title: 'foo') }
     end
 
@@ -151,7 +151,7 @@ RSpec.describe ClearInvalidSearchReferences, type: :worker do
       do_perform
 
       expect(notify_double).to have_received(:send_email).with(
-        TradeTariffBackend.support_email,
+        TradeTariffBackend.feedback_email,
         ClearInvalidSearchReferences::TEMPLATE_ID,
         hash_including(removed_count: 1, expired_list: a_string_including('good')),
       )

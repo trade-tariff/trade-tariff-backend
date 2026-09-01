@@ -41,7 +41,7 @@ private
   end
 
   def notify(removed, flagged)
-    email = TradeTariffBackend.support_email
+    email = TradeTariffBackend.feedback_email
     return if email.blank?
 
     client.send_email(email, TEMPLATE_ID, personalisation(removed, flagged))
