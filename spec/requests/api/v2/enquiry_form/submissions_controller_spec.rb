@@ -8,6 +8,8 @@ RSpec.describe Api::V2::EnquiryForm::SubmissionsController, :v2 do
         email: 'john@example.com',
         enquiry_category: 'Quotas',
         enquiry_description: 'I have a question.',
+        test_condition: 'Interactive search',
+        search_request_id: 'search-request-123',
       }
     end
 
@@ -25,7 +27,7 @@ RSpec.describe Api::V2::EnquiryForm::SubmissionsController, :v2 do
 
       allow(Api::V2::EnquiryForm::SubmissionSerializer).to receive(:new).and_call_original
 
-      allow(::EnquiryForm::SendSubmissionEmailWorker).to receive(:perform_async)
+      allow(::EnquiryForm::SendSubmissionEmailWorker).to receive(:perform_bulk)
     end
 
     after do
@@ -43,7 +45,7 @@ RSpec.describe Api::V2::EnquiryForm::SubmissionsController, :v2 do
       expect(JSON.parse(response.body)['data']['id']).to eq(reference_number)
     end
 
-    it 'caches the data and enqueues the email worker with the reference only' do
+    it 'caches the data and enqueues independent recipient deliveries' do
       post api_enquiry_form_submissions_path,
            params: { data: { attributes: params } },
            headers: headers,
@@ -57,7 +59,23 @@ RSpec.describe Api::V2::EnquiryForm::SubmissionsController, :v2 do
       cached = Sidekiq.redis { |conn| conn.get("enquiry_form_#{reference_number}") }
       expect(JSON.parse(cached, symbolize_names: true)).to eq(expected_payload)
 
-      expect(::EnquiryForm::SendSubmissionEmailWorker).to have_received(:perform_async).with(reference_number)
+      expect(::EnquiryForm::SendSubmissionEmailWorker).to have_received(:perform_bulk).with(
+        [
+          [reference_number, ::EnquiryForm::Submission::HMRC_AUDIENCE],
+          [reference_number, ::EnquiryForm::Submission::TRADE_TARIFF_AUDIENCE],
+        ],
+      )
+    end
+
+    it 'only enqueues the HMRC delivery without a feature flag' do
+      post api_enquiry_form_submissions_path,
+           params: { data: { attributes: params.merge(test_condition: 'none') } },
+           headers: headers,
+           as: :json
+
+      expect(::EnquiryForm::SendSubmissionEmailWorker).to have_received(:perform_bulk).with(
+        [[reference_number, ::EnquiryForm::Submission::HMRC_AUDIENCE]],
+      )
     end
 
     it 'accepts the revised enquiry payload on the original endpoint' do

@@ -10,6 +10,8 @@ RSpec.describe EnquiryForm::SendSubmissionEmailWorker, type: :worker do
       email: 'john@example.com',
       enquiry_category: 'import_duties_and_quota',
       enquiry_description: 'I have a question about quotas',
+      test_condition: 'none',
+      search_request_id: 'search-request-123',
       reference_number: reference,
       created_at: '2025-08-15 10:00',
     }
@@ -54,6 +56,8 @@ RSpec.describe EnquiryForm::SendSubmissionEmailWorker, type: :worker do
           job_title: 'CEO',
           name: 'John Doe',
           reference_number: 'ABC12345',
+          search_request_id: 'search-request-123',
+          test_condition: 'none',
         },
         nil,
         'ABC12345',
@@ -66,6 +70,67 @@ RSpec.describe EnquiryForm::SendSubmissionEmailWorker, type: :worker do
       worker.perform(reference)
 
       expect(StringIO).to have_received(:new).with("Reference,Submission date,Full name,Company name,Job title,Email address,What do you need help with?,How can we help?\nABC12345,2025-08-15 10:00,John Doe,Doe & Co Inc.,CEO,john@example.com,Import duties and quotas,I have a question about quotas\n").twice
+    end
+
+    it 'does not send unflagged enquiries to the Trade Tariff team' do
+      worker.perform(reference, EnquiryForm::Submission::TRADE_TARIFF_AUDIENCE)
+
+      expect(notifier_client).not_to have_received(:send_email)
+    end
+
+    context 'without test context' do
+      let(:form_data) { super().except(:test_condition, :search_request_id) }
+
+      it 'uses the unflagged defaults' do
+        worker.perform(reference)
+
+        expect(notifier_client).to have_received(:send_email).with(
+          'support@example.com',
+          NOTIFY_CONFIGURATION.dig(:templates, :enquiry_form, :submission),
+          hash_including(test_condition: 'none', search_request_id: nil),
+          nil,
+          'ABC12345',
+        )
+        expect(notifier_client).to have_received(:send_email).once
+      end
+    end
+
+    context 'with a flagged test condition' do
+      let(:form_data) { super().merge(test_condition: 'Interactive search') }
+
+      it 'sends the Trade Tariff delivery independently using the configured support email' do
+        allow(TradeTariffBackend).to receive(:support_email).and_return('team@example.com')
+
+        worker.perform(reference, EnquiryForm::Submission::TRADE_TARIFF_AUDIENCE)
+
+        expect(notifier_client).to have_received(:send_email).with(
+          'team@example.com',
+          NOTIFY_CONFIGURATION.dig(:templates, :enquiry_form, :submission),
+          hash_including(test_condition: 'Interactive search', search_request_id: 'search-request-123'),
+          nil,
+          'ABC12345',
+        )
+        expect(notifier_client).to have_received(:send_email).once
+      end
+
+      it 'redacts name and email from the team copy', :aggregate_failures do
+        allow(StringIO).to receive(:new).and_call_original
+        allow(TradeTariffBackend).to receive(:support_email).and_return('team@example.com')
+
+        worker.perform(reference, EnquiryForm::Submission::TRADE_TARIFF_AUDIENCE)
+
+        expect(notifier_client).to have_received(:send_email).with(
+          'team@example.com',
+          NOTIFY_CONFIGURATION.dig(:templates, :enquiry_form, :submission),
+          hash_including(name: nil, email: nil),
+          nil,
+          'ABC12345',
+        )
+        expect(notifier_client).to have_received(:send_email).once
+        expect(StringIO).to have_received(:new).with(
+          "Reference,Submission date,Full name,Company name,Job title,Email address,What do you need help with?,How can we help?\nABC12345,2025-08-15 10:00,,Doe & Co Inc.,CEO,,Import duties and quotas,I have a question about quotas\n",
+        ).twice
+      end
     end
 
     context 'with a classification enquiry' do
