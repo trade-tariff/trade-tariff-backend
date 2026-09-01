@@ -66,6 +66,36 @@ RSpec.describe SearchReferences::InvalidationReasonService do
     end
   end
 
+  context 'when multiple successor rows resolve to the same item id' do
+    let(:commodity) { create(:commodity, validity_end_date: Time.zone.yesterday) }
+    let(:search_reference) { create(:search_reference, referenced: commodity, title: 'superseded item') }
+
+    before do
+      # Two successor rows for the same absorbed commodity, landing on the same
+      # target item id under different productline suffixes (e.g. grouping vs.
+      # non-grouping variants of the successor) — a legitimate duplicate at the
+      # item id level.
+      create(
+        :goods_nomenclature_successor,
+        absorbed_goods_nomenclature_item_id: commodity.goods_nomenclature_item_id,
+        absorbed_productline_suffix: commodity.producline_suffix,
+        goods_nomenclature_item_id: '0101999000',
+        productline_suffix: '10',
+      )
+      create(
+        :goods_nomenclature_successor,
+        absorbed_goods_nomenclature_item_id: commodity.goods_nomenclature_item_id,
+        absorbed_productline_suffix: commodity.producline_suffix,
+        goods_nomenclature_item_id: '0101999000',
+        productline_suffix: '20',
+      )
+    end
+
+    it 'returns each successor item id only once' do
+      expect(result[:successor_ids]).to eq(%w[0101999000])
+    end
+  end
+
   context 'when the associated goods nomenclature is missing' do
     let(:search_reference) do
       search_reference = create(:search_reference, :with_commodity, title: 'missing item')

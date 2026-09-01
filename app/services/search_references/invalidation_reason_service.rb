@@ -90,7 +90,7 @@ module SearchReferences
     def successor_ids
       return [] if goods_nomenclature.blank?
 
-      @successor_ids ||= goods_nomenclature.goods_nomenclature_successors.map(&:goods_nomenclature_item_id)
+      @successor_ids ||= goods_nomenclature.goods_nomenclature_successors.map(&:goods_nomenclature_item_id).uniq
     end
 
     def goods_nomenclature
