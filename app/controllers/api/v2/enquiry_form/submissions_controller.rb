@@ -1,11 +1,14 @@
 module Api
   module V2
     class EnquiryForm::SubmissionsController < ApiController
-      CACHE_DURATION = 1.hour
+      CACHE_DURATION = 1.day
       SubmissionResult = Data.define(:reference_number)
 
       def create
-        submission = ::EnquiryForm::Submission.from(enquiry_form_data)
+        submission = ::EnquiryForm::Submission.from(
+          enquiry_form_data,
+          trusted_context: frontend_authenticated?,
+        )
 
         store_enquiry_form_data(submission)
         enqueue_submission_emails(submission)
@@ -23,16 +26,18 @@ module Api
         Sidekiq.redis do |conn|
           conn.set(
             ::EnquiryForm::SendSubmissionEmailWorker.cache_key(reference_number),
-            submission.to_h.to_json,
+            submission.cache_payload.to_json,
             ex: CACHE_DURATION.to_i,
           )
         end
       end
 
       def enqueue_submission_emails(submission)
-        jobs = submission.audiences.map { |audience| [reference_number, audience] }
+        ::EnquiryForm::SendSubmissionEmailWorker.perform_async(reference_number)
 
-        ::EnquiryForm::SendSubmissionEmailWorker.perform_bulk(jobs)
+        return unless submission.audiences.include?(::EnquiryForm::Submission::TRADE_TARIFF_AUDIENCE)
+
+        ::EnquiryForm::SendTradeTariffSubmissionEmailWorker.perform_in(5.minutes, reference_number)
       end
 
       def enquiry_form_params
@@ -44,7 +49,6 @@ module Api
           :enquiry_category,
           :other_category,
           :enquiry_description,
-          :test_condition,
           :search_request_id,
           :goods_product,
           :goods_made_of,
@@ -54,7 +58,17 @@ module Api
           :goods_packaged,
           :has_commodity_code,
           :commodity_code,
+          feature_flags: [],
         )
+      end
+
+      def frontend_authenticated?
+        provided_token, = ActionController::HttpAuthentication::Token.token_and_options(request)
+        return false if provided_token.blank?
+
+        TradeTariffBackend.api_tokens.to_s.split(',').map(&:strip).reject(&:blank?).any? do |token|
+          ActiveSupport::SecurityUtils.secure_compare(provided_token, token)
+        end
       end
 
       def enquiry_form_data

@@ -1,26 +1,54 @@
-class EnquiryForm::Submission < Data.define(:form_data)
+require 'mail'
+
+class EnquiryForm::Submission < Data.define(:form_data, :trusted_context)
   HMRC_AUDIENCE = 'hmrc'.freeze
   TRADE_TARIFF_AUDIENCE = 'trade_tariff'.freeze
   HMRC_AUDIENCES = [HMRC_AUDIENCE].freeze
   FLAGGED_AUDIENCES = [HMRC_AUDIENCE, TRADE_TARIFF_AUDIENCE].freeze
-  TEAM_REDACTED_FIELDS = %i[name email].freeze
+  CACHE_TRUST_KEY = :frontend_authenticated
+  TEAM_FIELDS = %i[
+    company_name
+    job_title
+    enquiry_category
+    other_category
+    enquiry_description
+    feature_flags
+    search_request_id
+    goods_product
+    goods_made_of
+    goods_used_for
+    goods_function
+    goods_processed
+    goods_packaged
+    has_commodity_code
+    commodity_code
+    reference_number
+    created_at
+  ].freeze
 
   Delivery = Data.define(:audience, :recipient, :form_data, :test_condition)
 
-  def self.from(form_data)
-    new(form_data: form_data.to_h.symbolize_keys.freeze)
+  def self.from(form_data, trusted_context: false)
+    new(form_data: form_data.to_h.symbolize_keys.freeze, trusted_context:)
   end
 
-  def to_h
-    form_data
+  def self.from_cache(cache_payload)
+    form_data = cache_payload.to_h.symbolize_keys
+    trusted_context = form_data.delete(CACHE_TRUST_KEY)
+
+    from(form_data, trusted_context: ActiveModel::Type::Boolean.new.cast(trusted_context))
+  end
+
+  def cache_payload
+    form_data.merge(CACHE_TRUST_KEY => trusted_context)
   end
 
   def test_condition
-    form_data[:test_condition].presence || 'none'
+    feature_flags.map(&:humanize).to_sentence.presence || 'none'
   end
 
   def feature_flagged?
-    test_condition != 'none'
+    trusted_context && feature_flags.any?
   end
 
   def audiences
@@ -37,7 +65,7 @@ class EnquiryForm::Submission < Data.define(:form_data)
       Delivery.new(
         audience:,
         recipient: trade_tariff_recipient,
-        form_data: form_data.except(*TEAM_REDACTED_FIELDS),
+        form_data: form_data.slice(*TEAM_FIELDS),
         test_condition:,
       )
     else
@@ -46,6 +74,10 @@ class EnquiryForm::Submission < Data.define(:form_data)
   end
 
 private
+
+  def feature_flags
+    Array(form_data[:feature_flags]).map(&:to_s).reject(&:blank?)
+  end
 
   def trade_tariff_recipient
     Mail::Address.new(TradeTariffBackend.support_email).address

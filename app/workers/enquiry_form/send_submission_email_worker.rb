@@ -14,6 +14,12 @@ class EnquiryForm::SendSubmissionEmailWorker
   sidekiq_options retry: 3
 
   def perform(reference, audience = EnquiryForm::Submission::HMRC_AUDIENCE)
+    perform_delivery(reference, audience)
+  end
+
+private
+
+  def perform_delivery(reference, audience)
     form_data = enquiry_form_data(reference)
 
     if form_data.blank?
@@ -21,13 +27,12 @@ class EnquiryForm::SendSubmissionEmailWorker
       return
     end
 
-    delivery = EnquiryForm::Submission.from(form_data).delivery_for(audience)
+    delivery = EnquiryForm::Submission.from_cache(form_data).delivery_for(audience)
     return if delivery.blank?
 
-    send_email(delivery)
+    notification = send_email(delivery)
+    schedule_status_check(notification, reference, audience)
   end
-
-private
 
   def send_email(delivery)
     form_data = delivery.form_data
@@ -50,6 +55,20 @@ private
     reference = form_data[:reference_number]
 
     client.send_email(delivery.recipient, TEMPLATE_ID, personalisation, nil, reference)
+  end
+
+  def schedule_status_check(notification, reference, audience)
+    EnquiryForm::NotificationStatusCheckWorker.perform_in(
+      GovukNotifierStatusCheckWorker::CHECK_DELAY,
+      reference,
+      audience,
+      notification.notification_uuid,
+    )
+  rescue StandardError => e
+    Rails.logger.error(
+      "enquiry_form_status_check_schedule_failed: #{e.class.name}: #{e.message} " \
+      "identifier=#{reference}:#{audience}",
+    )
   end
 
   def formatted_created_at(form_data)
