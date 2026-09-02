@@ -19,6 +19,7 @@ module Api
                      :gold_in_top5,
                      :latency_seconds,
                      :cost_usd,
+                     :provider_calls,
                      :error,
                      :trace,
                      :created_at

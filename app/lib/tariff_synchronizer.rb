@@ -90,7 +90,10 @@ module TariffSynchronizer
   end
 
   def notify_slack_app(exception)
-    SlackNotifierService.call("Error #{exception.class}: #{exception.message}")
+    SlackNotifierService.call(
+      text: "Error #{exception.class}: #{exception.message}",
+      channel: TradeTariffBackend.slack_failures_channel,
+    )
   end
 
   def check_sequence

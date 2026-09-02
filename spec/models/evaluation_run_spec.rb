@@ -69,4 +69,52 @@ RSpec.describe EvaluationRun do
       )
     }.to raise_error(Sequel::UniqueConstraintViolation)
   end
+
+  describe 'started_at' do
+    it 'stays nil while a run is queued' do
+      run = create(:evaluation_run, evaluation_experiment: experiment, status: 'queued', triggered_by: 'operator')
+      expect(run.started_at).to be_nil
+    end
+
+    it 'is stamped with the current time when status transitions to running' do
+      run = create(:evaluation_run, evaluation_experiment: experiment, status: 'queued', triggered_by: 'operator')
+
+      travel_to Time.utc(2026, 8, 25, 9, 0, 0) do
+        run.update(status: 'running')
+      end
+
+      expect(run.started_at).to eq(Time.utc(2026, 8, 25, 9, 0, 0))
+    end
+
+    it 'does not move once set, even if the run is saved again while running' do
+      run = create(:evaluation_run, evaluation_experiment: experiment, status: 'queued', triggered_by: 'operator')
+      run.update(status: 'running')
+      first_started_at = run.started_at
+
+      travel_to(first_started_at + 5.minutes) { run.update(error_summary: 'transient retry noted') }
+
+      expect(run.started_at).to eq(first_started_at)
+    end
+
+    it 'is stamped on create when a run is created directly in the running status' do
+      run = create(:evaluation_run, evaluation_experiment: experiment, status: 'running', triggered_by: 'operator')
+      expect(run.started_at).not_to be_nil
+    end
+
+    it 're-stamps to the new time if a completed run is re-executed and transitions back to running' do
+      # Nothing currently stops a caller from re-running an already-finished
+      # run_id (execute_run.py calls update_run(status="running") unconditionally,
+      # with no check on the run's current status). When that happens, started_at
+      # must reflect the re-run's own start time, not the original run's -- a
+      # stale started_at next to a fresh completed_at would misreport how long
+      # the re-run actually took.
+      run = create(:evaluation_run, evaluation_experiment: experiment, status: 'queued', triggered_by: 'operator')
+
+      travel_to(Time.utc(2026, 8, 25, 9, 0, 0)) { run.update(status: 'running') }
+      travel_to(Time.utc(2026, 8, 25, 9, 5, 0)) { run.update(status: 'completed') }
+      travel_to(Time.utc(2026, 8, 26, 10, 0, 0)) { run.update(status: 'running') }
+
+      expect(run.started_at).to eq(Time.utc(2026, 8, 26, 10, 0, 0))
+    end
+  end
 end

@@ -30,6 +30,24 @@ RSpec.describe Api::Admin::Search::Evaluation::ResultsController, :admin do
       end
     end
 
+    context 'with a provider_calls value' do
+      let(:items) do
+        [
+          { run_id: run.id, source_type: 'atar', source_id: 'A1', persona: 'original', expected_code: '8471300000', provider_calls: 2 },
+        ]
+      end
+
+      it 'persists provider_calls' do
+        api_response
+        expect(EvaluationResult.first(run_id: run.id, source_id: 'A1', persona: 'original').provider_calls).to eq(2)
+      end
+
+      it 'returns provider_calls in the serialized response' do
+        api_response
+        expect(json_response['data'][0]['attributes']['provider_calls']).to eq(2)
+      end
+    end
+
     context 'with a mix of valid and invalid items' do
       let(:items) do
         [

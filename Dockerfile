@@ -56,8 +56,12 @@ RUN apk add --no-cache \
     socat \
     openssl-dev \
     tzdata && \
+    apk upgrade --no-cache expat && \
     cp /usr/share/zoneinfo/Europe/London /etc/localtime && \
-    echo "Europe/London" > /etc/timezone
+    echo "Europe/London" > /etc/timezone && \
+    rm -f /usr/local/lib/ruby/gems/*/specifications/default/json-*.gemspec && \
+    rm -rf /usr/local/lib/ruby/gems/*/gems/json-* && \
+    rm -rf /usr/local/lib/ruby/*/json.rb /usr/local/lib/ruby/*/json /usr/local/lib/ruby/*/*-linux-musl/json
 
 RUN bundle config set without 'development test'
 
