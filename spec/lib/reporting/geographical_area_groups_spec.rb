@@ -27,12 +27,11 @@ RSpec.describe Reporting::GeographicalAreaGroups do
     end
 
     context 'when upload fails' do
-      let(:logger) { instance_double(Logger, info: nil, error: nil, debug: nil) }
       let(:error) { StandardError.new('upload failed') }
       let(:s3_object) { instance_double(Aws::S3::Object, put: nil) }
 
       before do
-        allow(Rails).to receive(:logger).and_return(logger)
+        allow(Rails.logger).to receive_messages(info: nil, error: nil)
         allow(described_class).to receive(:object).and_return(s3_object)
         allow(s3_object).to receive(:put).and_raise(error)
       end
@@ -40,7 +39,7 @@ RSpec.describe Reporting::GeographicalAreaGroups do
       it 'logs the failing step and re-raises the error' do
         expect { described_class.generate }.to raise_error(error.class, 'upload failed')
 
-        expect(logger).to have_received(:info).with(
+        expect(Rails.logger).to have_received(:info).with(
           a_string_including(
             'reporting',
             'report="Reporting::GeographicalAreaGroups"',
