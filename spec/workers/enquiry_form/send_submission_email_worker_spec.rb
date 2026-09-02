@@ -327,7 +327,9 @@ RSpec.describe EnquiryForm::SendSubmissionEmailWorker, type: :worker do
       it 'triggers an error message' do
         worker.perform(reference)
 
-        expect(Rails.logger).to have_received(:error).with("EnquiryForm::SendSubmissionEmailWorker: No data found in cache for reference #{reference}")
+        expect(Rails.logger).to have_received(:error).with(
+          "EnquiryForm::SendSubmissionEmailWorker: No data found in cache for reference #{reference} audience=hmrc",
+        )
         expect(notifier_client).not_to have_received(:send_email)
       end
     end

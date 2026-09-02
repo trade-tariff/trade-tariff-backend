@@ -55,4 +55,17 @@ RSpec.describe EnquiryForm::SendTradeTariffSubmissionEmailWorker, type: :worker 
       "Reference,Submission date,Full name,Company name,Job title,Email address,What do you need help with?,How can we help?\nABC12345,2025-08-15 10:00,,Doe & Co Inc.,CEO,,Valuation,I have a question.\n",
     ).twice
   end
+
+  it 'identifies the team worker and audience when the cache entry is missing' do
+    Sidekiq.redis { |conn| conn.del(EnquiryForm::SendSubmissionEmailWorker.cache_key(reference)) }
+    allow(Rails.logger).to receive(:error).and_call_original
+
+    worker.perform(reference)
+
+    expect(Rails.logger).to have_received(:error).with(
+      'EnquiryForm::SendTradeTariffSubmissionEmailWorker: No data found in cache ' \
+      "for reference #{reference} audience=trade_tariff",
+    )
+    expect(notifier_client).not_to have_received(:send_email)
+  end
 end
