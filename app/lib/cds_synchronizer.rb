@@ -19,27 +19,12 @@ class CdsSynchronizer
     end
 
     def download
-      unless sync_variables_set?
-        TariffSynchronizer::Instrumentation.sync_run_failed(
-          phase: 'download',
-          error_class: 'ConfigurationError',
-          error_message: 'Missing: Tariff sync environment variables: HMRC_API_HOST, HMRC_CLIENT_ID and HMRC_CLIENT_SECRET.',
-        )
-        return
-      end
+      TariffSynchronizer::CdsUpdateDownloader.download(initial_date: initial_update_date)
+    end
 
-      TradeTariffBackend.with_redis_lock do
-        TariffSynchronizer::Instrumentation.lock_acquired(phase: 'download')
-
-        start_time = Process.clock_gettime(Process::CLOCK_MONOTONIC)
-        TariffSynchronizer::CdsUpdate.sync(initial_date: initial_update_date)
-
-        duration_ms = ((Process.clock_gettime(Process::CLOCK_MONOTONIC) - start_time) * 1000).round(2)
-        TariffSynchronizer::Instrumentation.download_completed(
-          duration_ms:,
-          files_count: TariffSynchronizer::CdsUpdate.pending.count,
-        )
-      end
+    # CDS files are published with a one-day lag; "today's" file uses yesterday's issue date.
+    def downloaded_todays_file?
+      CdsUpdate.with_issue_date(Time.zone.yesterday).count.positive?
     end
 
     def apply
@@ -48,10 +33,6 @@ class CdsSynchronizer
 
     def rollback(rollback_date, keep: false)
       rollback_updates(CdsUpdate, rollback_date, keep:)
-    end
-
-    def sync_variables_set?
-      ENV['HMRC_API_HOST'].present? && ENV['HMRC_CLIENT_ID'].present? && ENV['HMRC_CLIENT_SECRET'].present?
     end
   end
 end
