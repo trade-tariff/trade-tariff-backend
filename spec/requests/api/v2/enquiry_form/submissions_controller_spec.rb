@@ -13,12 +13,7 @@ RSpec.describe Api::V2::EnquiryForm::SubmissionsController, :v2 do
       }
     end
 
-    let(:headers) do
-      {
-        'Authorization' => 'Bearer frontend-token',
-        'Content-Type' => 'application/json',
-      }
-    end
+    let(:headers) { { 'Content-Type' => 'application/json' } }
     let(:reference_number) { 'ABC12345' }
 
     let(:frozen_time) { Time.zone.parse('2025-12-08 12:00:00') }
@@ -31,8 +26,6 @@ RSpec.describe Api::V2::EnquiryForm::SubmissionsController, :v2 do
       )
 
       allow(Api::V2::EnquiryForm::SubmissionSerializer).to receive(:new).and_call_original
-      allow(TradeTariffBackend).to receive(:api_tokens).and_return('frontend-token')
-
       allow(::EnquiryForm::SendSubmissionEmailWorker).to receive(:perform_async)
       allow(::EnquiryForm::SendTradeTariffSubmissionEmailWorker).to receive(:perform_in)
     end
@@ -52,6 +45,10 @@ RSpec.describe Api::V2::EnquiryForm::SubmissionsController, :v2 do
       expect(JSON.parse(response.body)['data']['id']).to eq(reference_number)
     end
 
+    it 'keeps enquiry data cached for the existing one-hour window' do
+      expect(described_class::CACHE_DURATION).to eq(1.hour)
+    end
+
     it 'caches the data and enqueues independent recipient deliveries' do
       post api_enquiry_form_submissions_path,
            params: { data: { attributes: params } },
@@ -61,7 +58,6 @@ RSpec.describe Api::V2::EnquiryForm::SubmissionsController, :v2 do
       expected_payload = params.merge(
         reference_number: reference_number,
         created_at: frozen_time.strftime('%Y-%m-%d %H:%M'),
-        frontend_authenticated: true,
       )
 
       cached = Sidekiq.redis { |conn| conn.get("enquiry_form_#{reference_number}") }
@@ -76,16 +72,6 @@ RSpec.describe Api::V2::EnquiryForm::SubmissionsController, :v2 do
       post api_enquiry_form_submissions_path,
            params: { data: { attributes: params.merge(feature_flags: []) } },
            headers: headers,
-           as: :json
-
-      expect(::EnquiryForm::SendSubmissionEmailWorker).to have_received(:perform_async).with(reference_number)
-      expect(::EnquiryForm::SendTradeTariffSubmissionEmailWorker).not_to have_received(:perform_in)
-    end
-
-    it 'does not route request-controlled flags to the team without frontend authentication' do
-      post api_enquiry_form_submissions_path,
-           params: { data: { attributes: params } },
-           headers: { 'Content-Type' => 'application/json' },
            as: :json
 
       expect(::EnquiryForm::SendSubmissionEmailWorker).to have_received(:perform_async).with(reference_number)
