@@ -20,8 +20,8 @@ RSpec.describe ApplicationHelper do
           measure.reload
         end
 
-        it 'generates council regulation url' do
-          expect(regulation_url(measure.generating_regulation)).to eql('https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A32017I0353')
+        it 'generates an OJ citation url' do
+          expect(regulation_url(measure.generating_regulation)).to eql('https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=uriserv%3AOJ.C_.2017.353.01.0019.01.ENG')
         end
       end
 
