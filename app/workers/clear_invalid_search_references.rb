@@ -5,8 +5,6 @@ class ClearInvalidSearchReferences
 
   TEMPLATE_ID = NOTIFY_CONFIGURATION.dig(:templates, :search_references, :invalidation_alert)
 
-  REVIEW_REASONS = %i[superseded unknown].freeze
-
   def perform
     removed = []
     flagged = []

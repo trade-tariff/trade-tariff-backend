@@ -14,7 +14,7 @@ NOTIFY_CONFIGURATION =
           customs_tariff_update: '02da9ea8-4919-45af-a9d4-68c908f49c9c',
         },
         search_references: {
-          invalidation_alert: 'TODO-add-production-notify-template-id',
+          invalidation_alert: 'a265f092-5665-4afd-b2c3-052a94f90ad0',
         },
       },
       reply_to: {
@@ -36,7 +36,7 @@ NOTIFY_CONFIGURATION =
           customs_tariff_update: 'eae01fd6-3e73-4a21-83ed-175eec3701c5',
         },
         search_references: {
-          invalidation_alert: 'TODO-add-staging-notify-template-id',
+          invalidation_alert: 'fe20294b-9505-4a97-9eab-c5d5f3781bf9',
         },
       },
       reply_to: {
