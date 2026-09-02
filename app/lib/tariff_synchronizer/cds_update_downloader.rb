@@ -16,7 +16,7 @@ module TariffSynchronizer
             phase: 'download',
             error_class: 'ConfigurationError',
             error_message: 'Missing: Tariff sync environment variables: HMRC_API_HOST, HMRC_CLIENT_ID and HMRC_CLIENT_SECRET.',
-            )
+          )
           return
         end
 
@@ -30,7 +30,7 @@ module TariffSynchronizer
           Instrumentation.download_completed(
             duration_ms:,
             files_count: CdsUpdate.pending.count,
-            )
+          )
         end
       end
 
@@ -42,7 +42,7 @@ module TariffSynchronizer
         download_start_date(initial_date:)..download_end_date
       end
 
-      private
+    private
 
       def sync_variables_set?
         ENV['HMRC_API_HOST'].present? && ENV['HMRC_CLIENT_ID'].present? && ENV['HMRC_CLIENT_SECRET'].present?

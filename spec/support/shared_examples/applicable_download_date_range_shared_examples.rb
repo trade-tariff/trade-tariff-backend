@@ -44,5 +44,4 @@ RSpec.shared_examples_for 'an applicable download date range' do |update_factory
   context 'when there are no updates yet' do
     it { is_expected.to eq(initial_date..today) }
   end
-end# frozen_string_literal: true
-
+end

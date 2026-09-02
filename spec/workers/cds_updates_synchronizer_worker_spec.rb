@@ -6,7 +6,7 @@ RSpec.describe CdsUpdatesSynchronizerWorker, type: :worker do
       expect(ActiveSupport::Notifications).to have_received(:instrument).with(
         TradeTariffBackend::TariffUpdateEventListener::TARIFF_UPDATES_APPLIED,
         service: 'uk',
-        )
+      )
     end
   end
 
@@ -28,7 +28,7 @@ RSpec.describe CdsUpdatesSynchronizerWorker, type: :worker do
       allow(ActiveSupport::Notifications).to receive(:instrument).with(
         TradeTariffBackend::TariffUpdateEventListener::TARIFF_UPDATES_APPLIED,
         anything,
-        )
+      )
 
       migrations_dir = Rails.root.join(file_fixture_path).join('data_migrations')
       allow(DataMigrator).to receive_messages(migrations_dir:, migrate_up!: true)

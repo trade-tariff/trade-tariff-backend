@@ -26,7 +26,7 @@ module TariffSynchronizer
       staging_manager&.cleanup
     end
 
-    private
+  private
 
     def check_oplog_inserts(oplog_inserts)
       return if @cds_update.filesize <= TradeTariffBackend.empty_file_size_threshold

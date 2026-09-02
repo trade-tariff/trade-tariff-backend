@@ -27,6 +27,7 @@ module TariffSynchronizer
     end
 
   private
+
     def import_update
       case @base_update
       when CdsUpdate

@@ -42,7 +42,6 @@ RSpec.describe CdsSynchronizer, :truncation do
     end
   end
 
-
   describe '.apply' do
     let(:applied_update) { create(:cds_update, :applied, example_date: Time.zone.yesterday) }
     let(:pending_update) { create(:cds_update, :pending, example_date: Time.zone.today) }
