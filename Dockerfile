@@ -56,6 +56,7 @@ RUN apk add --no-cache \
     socat \
     openssl-dev \
     tzdata && \
+    apk upgrade --no-cache expat && \
     cp /usr/share/zoneinfo/Europe/London /etc/localtime && \
     echo "Europe/London" > /etc/timezone && \
     rm -f /usr/local/lib/ruby/gems/*/specifications/default/json-*.gemspec && \
