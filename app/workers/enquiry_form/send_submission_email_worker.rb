@@ -30,8 +30,7 @@ private
     delivery = EnquiryForm::Submission.from_cache(form_data).delivery_for(audience)
     return if delivery.blank?
 
-    notification = send_email(delivery)
-    schedule_status_check(notification, reference, audience)
+    send_email(delivery)
   end
 
   def send_email(delivery)
@@ -55,20 +54,6 @@ private
     reference = form_data[:reference_number]
 
     client.send_email(delivery.recipient, TEMPLATE_ID, personalisation, nil, reference)
-  end
-
-  def schedule_status_check(notification, reference, audience)
-    EnquiryForm::NotificationStatusCheckWorker.perform_in(
-      GovukNotifierStatusCheckWorker::CHECK_DELAY,
-      reference,
-      audience,
-      notification.notification_uuid,
-    )
-  rescue StandardError => e
-    Rails.logger.error(
-      "enquiry_form_status_check_schedule_failed: #{e.class.name}: #{e.message} " \
-      "identifier=#{reference}:#{audience}",
-    )
   end
 
   def formatted_created_at(form_data)

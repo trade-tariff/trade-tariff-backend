@@ -1,8 +1,7 @@
 RSpec.describe EnquiryForm::SendSubmissionEmailWorker, type: :worker do
   subject(:worker) { described_class.new }
 
-  let(:notification) { instance_double(GovukNotifierAudit, notification_uuid: 'notification-uuid') }
-  let(:notifier_client) { instance_double(GovukNotifier, send_email: notification) }
+  let(:notifier_client) { instance_double(GovukNotifier, send_email: nil) }
   let(:form_data) do
     {
       name: 'John Doe',
@@ -27,7 +26,6 @@ RSpec.describe EnquiryForm::SendSubmissionEmailWorker, type: :worker do
     Sidekiq.redis { |conn| conn.set(described_class.cache_key(reference), form_data.to_json, ex: 3600) }
 
     allow(GovukNotifier).to receive(:new).and_return(notifier_client)
-    allow(EnquiryForm::NotificationStatusCheckWorker).to receive(:perform_in)
   end
 
   describe 'sidekiq options' do
@@ -64,13 +62,6 @@ RSpec.describe EnquiryForm::SendSubmissionEmailWorker, type: :worker do
         nil,
         'ABC12345',
       )
-
-      expect(EnquiryForm::NotificationStatusCheckWorker).to have_received(:perform_in).with(
-        GovukNotifierStatusCheckWorker::CHECK_DELAY,
-        'ABC12345',
-        EnquiryForm::Submission::HMRC_AUDIENCE,
-        'notification-uuid',
-      )
     end
 
     it 'generates the correct CSV content' do
@@ -105,7 +96,7 @@ RSpec.describe EnquiryForm::SendSubmissionEmailWorker, type: :worker do
     end
 
     context 'with a flagged test condition' do
-      let(:form_data) { super().merge(feature_flags: %w[interactive_search], frontend_authenticated: true) }
+      let(:form_data) { super().merge(feature_flags: %w[interactive_search]) }
 
       it 'still sends the HMRC delivery with contact details' do
         worker.perform(reference)

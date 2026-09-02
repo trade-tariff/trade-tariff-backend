@@ -1,5 +1,5 @@
 RSpec.describe EnquiryForm::Submission do
-  subject(:submission) { described_class.from(form_data, trusted_context:) }
+  subject(:submission) { described_class.from(form_data) }
 
   let(:form_data) do
     {
@@ -10,17 +10,16 @@ RSpec.describe EnquiryForm::Submission do
     }
   end
   let(:feature_flags) { [] }
-  let(:trusted_context) { false }
 
   describe '.from' do
     it 'normalises string keys' do
       submission = described_class.from(form_data.stringify_keys)
 
-      expect(submission.to_h).to eq(form_data: form_data, trusted_context: false)
+      expect(submission.to_h).to eq(form_data: form_data)
     end
 
     it 'provides an explicit backwards-compatible cache payload' do
-      expect(submission.cache_payload).to eq(form_data.merge(frontend_authenticated: false))
+      expect(submission.cache_payload).to eq(form_data)
     end
   end
 
@@ -32,18 +31,10 @@ RSpec.describe EnquiryForm::Submission do
     context 'with a feature flag' do
       let(:feature_flags) { %w[interactive_search] }
 
-      it 'does not trust request-controlled flags' do
-        expect(submission.audiences).to eq([described_class::HMRC_AUDIENCE])
-      end
-
-      context 'with authenticated frontend context' do
-        let(:trusted_context) { true }
-
-        it 'includes independent HMRC and Trade Tariff deliveries' do
-          expect(submission.audiences).to eq(
-            [described_class::HMRC_AUDIENCE, described_class::TRADE_TARIFF_AUDIENCE],
-          )
-        end
+      it 'includes independent HMRC and Trade Tariff deliveries' do
+        expect(submission.audiences).to eq(
+          [described_class::HMRC_AUDIENCE, described_class::TRADE_TARIFF_AUDIENCE],
+        )
       end
     end
   end
@@ -61,7 +52,6 @@ RSpec.describe EnquiryForm::Submission do
 
     context 'with a feature flag' do
       let(:feature_flags) { %w[interactive_search] }
-      let(:trusted_context) { true }
 
       it 'uses the configured support recipient and redacts contact details for Trade Tariff' do
         allow(TradeTariffBackend).to receive(:support_email)
@@ -79,10 +69,7 @@ RSpec.describe EnquiryForm::Submission do
 
       it 'only includes explicitly approved fields in the team copy' do
         allow(TradeTariffBackend).to receive(:support_email).and_return('team@example.com')
-        submission = described_class.from(
-          form_data.merge(future_contact_detail: 'must not leak'),
-          trusted_context: true,
-        )
+        submission = described_class.from(form_data.merge(future_contact_detail: 'must not leak'))
 
         expect(submission.delivery_for(described_class::TRADE_TARIFF_AUDIENCE).form_data)
           .not_to include(:future_contact_detail)

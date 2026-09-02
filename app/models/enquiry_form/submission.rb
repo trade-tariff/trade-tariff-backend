@@ -1,11 +1,10 @@
 require 'mail'
 
-class EnquiryForm::Submission < Data.define(:form_data, :trusted_context)
+class EnquiryForm::Submission < Data.define(:form_data)
   HMRC_AUDIENCE = 'hmrc'.freeze
   TRADE_TARIFF_AUDIENCE = 'trade_tariff'.freeze
   HMRC_AUDIENCES = [HMRC_AUDIENCE].freeze
   FLAGGED_AUDIENCES = [HMRC_AUDIENCE, TRADE_TARIFF_AUDIENCE].freeze
-  CACHE_TRUST_KEY = :frontend_authenticated
   TEAM_FIELDS = %i[
     company_name
     job_title
@@ -28,19 +27,16 @@ class EnquiryForm::Submission < Data.define(:form_data, :trusted_context)
 
   Delivery = Data.define(:audience, :recipient, :form_data, :test_condition)
 
-  def self.from(form_data, trusted_context: false)
-    new(form_data: form_data.to_h.symbolize_keys.freeze, trusted_context:)
+  def self.from(form_data)
+    new(form_data: form_data.to_h.symbolize_keys.freeze)
   end
 
   def self.from_cache(cache_payload)
-    form_data = cache_payload.to_h.symbolize_keys
-    trusted_context = form_data.delete(CACHE_TRUST_KEY)
-
-    from(form_data, trusted_context: ActiveModel::Type::Boolean.new.cast(trusted_context))
+    from(cache_payload)
   end
 
   def cache_payload
-    form_data.merge(CACHE_TRUST_KEY => trusted_context)
+    form_data
   end
 
   def test_condition
@@ -48,7 +44,7 @@ class EnquiryForm::Submission < Data.define(:form_data, :trusted_context)
   end
 
   def feature_flagged?
-    trusted_context && feature_flags.any?
+    feature_flags.any?
   end
 
   def audiences

@@ -2,8 +2,7 @@ RSpec.describe EnquiryForm::SendTradeTariffSubmissionEmailWorker, type: :worker 
   subject(:worker) { described_class.new }
 
   let(:reference) { 'ABC12345' }
-  let(:notification) { instance_double(GovukNotifierAudit, notification_uuid: 'notification-uuid') }
-  let(:notifier_client) { instance_double(GovukNotifier, send_email: notification) }
+  let(:notifier_client) { instance_double(GovukNotifier, send_email: nil) }
   let(:form_data) do
     {
       name: 'John Doe',
@@ -16,25 +15,23 @@ RSpec.describe EnquiryForm::SendTradeTariffSubmissionEmailWorker, type: :worker 
       search_request_id: 'search-request-123',
       reference_number: reference,
       created_at: '2025-08-15 10:00',
-      frontend_authenticated: true,
     }
   end
 
   before do
     Sidekiq.redis do |conn|
-      conn.set(EnquiryForm::SendSubmissionEmailWorker.cache_key(reference), form_data.to_json, ex: 1.day.to_i)
+      conn.set(EnquiryForm::SendSubmissionEmailWorker.cache_key(reference), form_data.to_json, ex: 1.hour.to_i)
     end
     allow(GovukNotifier).to receive(:new).and_return(notifier_client)
     allow(TradeTariffBackend).to receive(:support_email).and_return('team@example.com')
-    allow(EnquiryForm::NotificationStatusCheckWorker).to receive(:perform_in)
   end
 
   after do
     Sidekiq.redis { |conn| conn.del(EnquiryForm::SendSubmissionEmailWorker.cache_key(reference)) }
   end
 
-  it 'has enough retries to bridge a rolling deployment' do
-    expect(described_class.sidekiq_options['retry']).to eq(10)
+  it 'caps retries below Sidekiq default' do
+    expect(described_class.sidekiq_options['retry']).to eq(3)
   end
 
   it 'sends an independently retryable, allowlisted team copy' do

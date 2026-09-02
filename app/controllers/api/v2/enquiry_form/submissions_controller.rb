@@ -1,14 +1,11 @@
 module Api
   module V2
     class EnquiryForm::SubmissionsController < ApiController
-      CACHE_DURATION = 1.day
+      CACHE_DURATION = 1.hour
       SubmissionResult = Data.define(:reference_number)
 
       def create
-        submission = ::EnquiryForm::Submission.from(
-          enquiry_form_data,
-          trusted_context: frontend_authenticated?,
-        )
+        submission = ::EnquiryForm::Submission.from(enquiry_form_data)
 
         store_enquiry_form_data(submission)
         enqueue_submission_emails(submission)
@@ -60,15 +57,6 @@ module Api
           :commodity_code,
           feature_flags: [],
         )
-      end
-
-      def frontend_authenticated?
-        provided_token, = ActionController::HttpAuthentication::Token.token_and_options(request)
-        return false if provided_token.blank?
-
-        TradeTariffBackend.api_tokens.to_s.split(',').map(&:strip).reject(&:blank?).any? do |token|
-          ActiveSupport::SecurityUtils.secure_compare(provided_token, token)
-        end
       end
 
       def enquiry_form_data
