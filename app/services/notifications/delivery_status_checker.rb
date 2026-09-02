@@ -26,7 +26,7 @@ module Notifications
       return if @notification_uuid.blank?
 
       status = GovukNotifier.new.get_email_status(@notification_uuid)
-      return unless FAILURE_STATUSES.include?(status)
+      return status unless FAILURE_STATUSES.include?(status)
 
       Instrumentation.delivery_failed(pipeline: @pipeline, identifier: @identifier, notification_uuid: @notification_uuid, status:)
       notify_slack("#{@pipeline}: notification delivery failed for #{@identifier} (status: #{status}) — check logs")

@@ -19,10 +19,20 @@ RSpec.describe Notifications::DeliveryStatusChecker do
       expect(GovukNotifier).not_to have_received(:new)
     end
 
-    it 'returns nil and does not alert when delivery succeeded' do
+    it 'returns the terminal status and does not alert when delivery succeeded' do
       allow(client).to receive(:get_email_status).and_return('delivered')
 
-      expect(checker.call).to be_nil
+      expect(checker.call).to eq('delivered')
+    end
+
+    it 'returns a pending status without alerting' do
+      allow(client).to receive(:get_email_status).and_return('sending')
+      allow(Notifications::Instrumentation).to receive(:delivery_failed)
+      allow(SlackNotifierService).to receive(:call)
+
+      expect(checker.call).to eq('sending')
+      expect(Notifications::Instrumentation).not_to have_received(:delivery_failed)
+      expect(SlackNotifierService).not_to have_received(:call)
     end
 
     %w[permanent-failure temporary-failure technical-failure].each do |status|
