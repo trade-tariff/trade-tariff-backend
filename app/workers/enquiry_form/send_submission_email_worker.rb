@@ -23,7 +23,9 @@ private
     form_data = enquiry_form_data(reference)
 
     if form_data.blank?
-      Rails.logger.error("EnquiryForm::SendSubmissionEmailWorker: No data found in cache for reference #{reference}")
+      Rails.logger.error(
+        "#{self.class.name}: No data found in cache for reference #{reference} audience=#{audience}",
+      )
       return
     end
 
