@@ -8,12 +8,17 @@ RSpec.describe Api::V2::EnquiryForm::SubmissionsController, :v2 do
         email: 'john@example.com',
         enquiry_category: 'Quotas',
         enquiry_description: 'I have a question.',
-        test_condition: 'Interactive search',
+        feature_flags: %w[interactive_search],
         search_request_id: 'search-request-123',
       }
     end
 
-    let(:headers) { { 'Content-Type' => 'application/json' } }
+    let(:headers) do
+      {
+        'Authorization' => 'Bearer frontend-token',
+        'Content-Type' => 'application/json',
+      }
+    end
     let(:reference_number) { 'ABC12345' }
 
     let(:frozen_time) { Time.zone.parse('2025-12-08 12:00:00') }
@@ -26,8 +31,10 @@ RSpec.describe Api::V2::EnquiryForm::SubmissionsController, :v2 do
       )
 
       allow(Api::V2::EnquiryForm::SubmissionSerializer).to receive(:new).and_call_original
+      allow(TradeTariffBackend).to receive(:api_tokens).and_return('frontend-token')
 
-      allow(::EnquiryForm::SendSubmissionEmailWorker).to receive(:perform_bulk)
+      allow(::EnquiryForm::SendSubmissionEmailWorker).to receive(:perform_async)
+      allow(::EnquiryForm::SendTradeTariffSubmissionEmailWorker).to receive(:perform_in)
     end
 
     after do
@@ -54,28 +61,35 @@ RSpec.describe Api::V2::EnquiryForm::SubmissionsController, :v2 do
       expected_payload = params.merge(
         reference_number: reference_number,
         created_at: frozen_time.strftime('%Y-%m-%d %H:%M'),
+        frontend_authenticated: true,
       )
 
       cached = Sidekiq.redis { |conn| conn.get("enquiry_form_#{reference_number}") }
       expect(JSON.parse(cached, symbolize_names: true)).to eq(expected_payload)
 
-      expect(::EnquiryForm::SendSubmissionEmailWorker).to have_received(:perform_bulk).with(
-        [
-          [reference_number, ::EnquiryForm::Submission::HMRC_AUDIENCE],
-          [reference_number, ::EnquiryForm::Submission::TRADE_TARIFF_AUDIENCE],
-        ],
-      )
+      expect(::EnquiryForm::SendSubmissionEmailWorker).to have_received(:perform_async).with(reference_number)
+      expect(::EnquiryForm::SendTradeTariffSubmissionEmailWorker).to have_received(:perform_in)
+        .with(5.minutes, reference_number)
     end
 
     it 'only enqueues the HMRC delivery without a feature flag' do
       post api_enquiry_form_submissions_path,
-           params: { data: { attributes: params.merge(test_condition: 'none') } },
+           params: { data: { attributes: params.merge(feature_flags: []) } },
            headers: headers,
            as: :json
 
-      expect(::EnquiryForm::SendSubmissionEmailWorker).to have_received(:perform_bulk).with(
-        [[reference_number, ::EnquiryForm::Submission::HMRC_AUDIENCE]],
-      )
+      expect(::EnquiryForm::SendSubmissionEmailWorker).to have_received(:perform_async).with(reference_number)
+      expect(::EnquiryForm::SendTradeTariffSubmissionEmailWorker).not_to have_received(:perform_in)
+    end
+
+    it 'does not route request-controlled flags to the team without frontend authentication' do
+      post api_enquiry_form_submissions_path,
+           params: { data: { attributes: params } },
+           headers: { 'Content-Type' => 'application/json' },
+           as: :json
+
+      expect(::EnquiryForm::SendSubmissionEmailWorker).to have_received(:perform_async).with(reference_number)
+      expect(::EnquiryForm::SendTradeTariffSubmissionEmailWorker).not_to have_received(:perform_in)
     end
 
     it 'accepts the revised enquiry payload on the original endpoint' do

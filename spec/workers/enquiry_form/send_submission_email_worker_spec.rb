@@ -1,7 +1,8 @@
 RSpec.describe EnquiryForm::SendSubmissionEmailWorker, type: :worker do
   subject(:worker) { described_class.new }
 
-  let(:notifier_client) { instance_double(GovukNotifier, send_email: true) }
+  let(:notification) { instance_double(GovukNotifierAudit, notification_uuid: 'notification-uuid') }
+  let(:notifier_client) { instance_double(GovukNotifier, send_email: notification) }
   let(:form_data) do
     {
       name: 'John Doe',
@@ -10,7 +11,7 @@ RSpec.describe EnquiryForm::SendSubmissionEmailWorker, type: :worker do
       email: 'john@example.com',
       enquiry_category: 'import_duties_and_quota',
       enquiry_description: 'I have a question about quotas',
-      test_condition: 'none',
+      feature_flags: [],
       search_request_id: 'search-request-123',
       reference_number: reference,
       created_at: '2025-08-15 10:00',
@@ -26,6 +27,7 @@ RSpec.describe EnquiryForm::SendSubmissionEmailWorker, type: :worker do
     Sidekiq.redis { |conn| conn.set(described_class.cache_key(reference), form_data.to_json, ex: 3600) }
 
     allow(GovukNotifier).to receive(:new).and_return(notifier_client)
+    allow(EnquiryForm::NotificationStatusCheckWorker).to receive(:perform_in)
   end
 
   describe 'sidekiq options' do
@@ -62,6 +64,13 @@ RSpec.describe EnquiryForm::SendSubmissionEmailWorker, type: :worker do
         nil,
         'ABC12345',
       )
+
+      expect(EnquiryForm::NotificationStatusCheckWorker).to have_received(:perform_in).with(
+        GovukNotifierStatusCheckWorker::CHECK_DELAY,
+        'ABC12345',
+        EnquiryForm::Submission::HMRC_AUDIENCE,
+        'notification-uuid',
+      )
     end
 
     it 'generates the correct CSV content' do
@@ -72,14 +81,14 @@ RSpec.describe EnquiryForm::SendSubmissionEmailWorker, type: :worker do
       expect(StringIO).to have_received(:new).with("Reference,Submission date,Full name,Company name,Job title,Email address,What do you need help with?,How can we help?\nABC12345,2025-08-15 10:00,John Doe,Doe & Co Inc.,CEO,john@example.com,Import duties and quotas,I have a question about quotas\n").twice
     end
 
-    it 'does not send unflagged enquiries to the Trade Tariff team' do
-      worker.perform(reference, EnquiryForm::Submission::TRADE_TARIFF_AUDIENCE)
-
+    it 'accepts two-argument jobs from web tasks running the previous release' do
+      expect { worker.perform(reference, EnquiryForm::Submission::TRADE_TARIFF_AUDIENCE) }
+        .not_to raise_error
       expect(notifier_client).not_to have_received(:send_email)
     end
 
     context 'without test context' do
-      let(:form_data) { super().except(:test_condition, :search_request_id) }
+      let(:form_data) { super().except(:feature_flags, :search_request_id) }
 
       it 'uses the unflagged defaults' do
         worker.perform(reference)
@@ -96,40 +105,24 @@ RSpec.describe EnquiryForm::SendSubmissionEmailWorker, type: :worker do
     end
 
     context 'with a flagged test condition' do
-      let(:form_data) { super().merge(test_condition: 'Interactive search') }
+      let(:form_data) { super().merge(feature_flags: %w[interactive_search], frontend_authenticated: true) }
 
-      it 'sends the Trade Tariff delivery independently using the configured support email' do
-        allow(TradeTariffBackend).to receive(:support_email).and_return('team@example.com')
-
-        worker.perform(reference, EnquiryForm::Submission::TRADE_TARIFF_AUDIENCE)
+      it 'still sends the HMRC delivery with contact details' do
+        worker.perform(reference)
 
         expect(notifier_client).to have_received(:send_email).with(
-          'team@example.com',
+          'support@example.com',
           NOTIFY_CONFIGURATION.dig(:templates, :enquiry_form, :submission),
-          hash_including(test_condition: 'Interactive search', search_request_id: 'search-request-123'),
+          hash_including(
+            name: 'John Doe',
+            email: 'john@example.com',
+            test_condition: 'Interactive search',
+            search_request_id: 'search-request-123',
+          ),
           nil,
           'ABC12345',
         )
         expect(notifier_client).to have_received(:send_email).once
-      end
-
-      it 'redacts name and email from the team copy', :aggregate_failures do
-        allow(StringIO).to receive(:new).and_call_original
-        allow(TradeTariffBackend).to receive(:support_email).and_return('team@example.com')
-
-        worker.perform(reference, EnquiryForm::Submission::TRADE_TARIFF_AUDIENCE)
-
-        expect(notifier_client).to have_received(:send_email).with(
-          'team@example.com',
-          NOTIFY_CONFIGURATION.dig(:templates, :enquiry_form, :submission),
-          hash_including(name: nil, email: nil),
-          nil,
-          'ABC12345',
-        )
-        expect(notifier_client).to have_received(:send_email).once
-        expect(StringIO).to have_received(:new).with(
-          "Reference,Submission date,Full name,Company name,Job title,Email address,What do you need help with?,How can we help?\nABC12345,2025-08-15 10:00,,Doe & Co Inc.,CEO,,Import duties and quotas,I have a question about quotas\n",
-        ).twice
       end
     end
 
