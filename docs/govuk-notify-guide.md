@@ -6,7 +6,7 @@
   environment, under `templates`.
 - Template content (subject/body/placeholders) is **not** in this repo — it's managed
   in the Notify dashboard at https://www.notifications.service.gov.uk/your-services
-  (pick the service for the relevant environment). 
+  (pick the service for the relevant environment).
 - `GovukNotifierAudit` records every send (notification UUID, rendered subject/body, template info).
 
 ## Steps
