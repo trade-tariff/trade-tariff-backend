@@ -24,7 +24,7 @@ class CdsSynchronizer
 
     # CDS files are published with a one-day lag; "today's" file uses yesterday's issue date.
     def downloaded_todays_file?
-      CdsUpdate.with_issue_date(Time.zone.yesterday).count.positive?
+      TariffSynchronizer::CdsUpdate.with_issue_date(Time.zone.yesterday).count.positive?
     end
 
     def apply

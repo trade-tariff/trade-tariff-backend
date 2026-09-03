@@ -14,7 +14,7 @@ RSpec.shared_examples_for 'an applicable download date range' do |update_factory
     it { is_expected.to eq(pending_issue_date..today) }
   end
 
-  context 'when choosing a applied update older than the default download from date' do
+  context 'when choosing an applied update older than the default download from date' do
     before do
       create(update_factory, :applied, example_date: applied_issue_date)
       create(update_factory, :failed, example_date: failed_issue_date)
