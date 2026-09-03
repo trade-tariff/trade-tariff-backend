@@ -87,7 +87,7 @@ RSpec.describe EnquiryForm::SendSubmissionEmailWorker, type: :worker do
         expect(notifier_client).to have_received(:send_email).with(
           'support@example.com',
           NOTIFY_CONFIGURATION.dig(:templates, :enquiry_form, :submission),
-          hash_including(test_condition: 'none', search_request_id: nil),
+          hash_including(test_condition: 'none', search_request_id: 'unknown'),
           nil,
           'ABC12345',
         )
