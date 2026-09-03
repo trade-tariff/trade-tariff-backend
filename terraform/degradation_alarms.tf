@@ -2,49 +2,37 @@ locals {
   log_group_name              = "platform-logs-${var.environment}"
   search_operations_dashboard = "SearchOperations-${var.environment}"
 
-  # Metric filters match JSON already emitted by Search::Logger. One CloudWatch
-  # alarm per failure class so a widespread outage pages once instead of per request.
+  # One CloudWatch alarm per search component so a widespread outage pages once.
   search_degradation_alarms = {
-    search_failed = {
-      filter_name         = "search-failed-${var.environment}"
-      pattern             = "{ $.service = \"search\" && $.event = \"search_failed\" }"
-      metric_name         = "SearchFailedCount"
-      alarm_name          = "search-failed-${var.environment}"
-      alarm_description   = "AI-assisted search hard-failed in ${var.environment} (OpenSearch, AI, or query expansion). Owner: Trade Tariff search. First action: dashboard ${local.search_operations_dashboard}, then ${local.log_group_name} filtered by service=search event=search_failed — use request_id and error_type to diagnose."
+    opensearch = {
+      filter_name         = "search-opensearch-error-${var.environment}"
+      pattern             = "{ $.service = \"search\" && $.event = \"retrieval_leg_completed\" && $.leg = \"opensearch\" && $.status = \"error\" }"
+      metric_name         = "SearchOpensearchErrorCount"
+      alarm_name          = "search-opensearch-error-${var.environment}"
+      alarm_description   = "OpenSearch retrieval failed for AI-assisted search in ${var.environment}. Owner: Trade Tariff search. First action: dashboard ${local.search_operations_dashboard} Hybrid Leg Failures, then ${local.log_group_name} filtered by service=search event=retrieval_leg_completed leg=opensearch status=error — use request_id and error_message to diagnose."
       threshold           = 0
       period              = 300
       evaluation_periods  = 1
       datapoints_to_alarm = 1
     }
-    interactive_search_error = {
-      filter_name         = "search-interactive-error-${var.environment}"
-      pattern             = "{ $.service = \"search\" && $.event = \"search_completed\" && $.final_result_type = \"error\" }"
-      metric_name         = "InteractiveSearchErrorCount"
-      alarm_name          = "search-interactive-error-${var.environment}"
-      alarm_description   = "Interactive search completed as an error in ${var.environment}. Owner: Trade Tariff search. First action: dashboard ${local.search_operations_dashboard}, then ${local.log_group_name} filtered by service=search event=search_completed final_result_type=error — use request_id and error_message to diagnose."
+    embedding = {
+      filter_name         = "search-embedding-error-${var.environment}"
+      pattern             = "{ $.service = \"ai_usage\" && $.event = \"embedding_api_call_failed\" && $.event_kind = \"vector_search_query_embedding\" }"
+      metric_name         = "SearchEmbeddingErrorCount"
+      alarm_name          = "search-embedding-error-${var.environment}"
+      alarm_description   = "Query embedding calls failed for AI-assisted search in ${var.environment}. Owner: Trade Tariff search. First action: dashboard ${local.search_operations_dashboard}, then ${local.log_group_name} filtered by service=ai_usage event=embedding_api_call_failed event_kind=vector_search_query_embedding — use request_id, error_class, and error_message to diagnose."
       threshold           = 0
       period              = 300
       evaluation_periods  = 1
       datapoints_to_alarm = 1
     }
-    retrieval_leg_error = {
-      filter_name         = "search-retrieval-leg-error-${var.environment}"
-      pattern             = "{ $.service = \"search\" && $.event = \"retrieval_leg_completed\" && $.status = \"error\" }"
-      metric_name         = "SearchRetrievalLegErrorCount"
-      alarm_name          = "search-retrieval-leg-error-${var.environment}"
-      alarm_description   = "A search retrieval leg (OpenSearch or vector) failed in ${var.environment}. Owner: Trade Tariff search. First action: dashboard ${local.search_operations_dashboard} Hybrid Leg Failures, then ${local.log_group_name} filtered by service=search event=retrieval_leg_completed status=error — use request_id, leg, and error_message to diagnose."
-      threshold           = 2
-      period              = 300
-      evaluation_periods  = 1
-      datapoints_to_alarm = 1
-    }
-    query_expansion_timed_out = {
-      filter_name         = "search-query-expansion-timed-out-${var.environment}"
-      pattern             = "{ $.service = \"search\" && $.event = \"query_expansion_timed_out\" }"
-      metric_name         = "SearchQueryExpansionTimedOutCount"
-      alarm_name          = "search-query-expansion-timed-out-${var.environment}"
-      alarm_description   = "AI query expansion is timing out in ${var.environment} and falling back to the original query. Owner: Trade Tariff search. First action: dashboard ${local.search_operations_dashboard}, then ${local.log_group_name} filtered by service=search event=query_expansion_timed_out — use request_id, model, and fallback_outcome to diagnose."
-      threshold           = 5
+    llm = {
+      filter_name         = "search-llm-error-${var.environment}"
+      pattern             = "{ $.service = \"search\" && $.event = \"api_call_completed\" && $.response_type = \"error\" }"
+      metric_name         = "SearchLlmErrorCount"
+      alarm_name          = "search-llm-error-${var.environment}"
+      alarm_description   = "LLM calls failed for AI-assisted search in ${var.environment} (interactive search, query expansion, or duplicate-question validation). Owner: Trade Tariff search. First action: dashboard ${local.search_operations_dashboard}, then ${local.log_group_name} filtered by service=search event=api_call_completed response_type=error — use request_id, operation, and error_message to diagnose."
+      threshold           = 0
       period              = 300
       evaluation_periods  = 1
       datapoints_to_alarm = 1
