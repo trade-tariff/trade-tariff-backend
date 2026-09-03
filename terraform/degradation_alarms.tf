@@ -64,10 +64,6 @@ resource "aws_cloudwatch_log_metric_filter" "search_degradation" {
     namespace = "TradeTariff/Search"
     value     = "1"
     unit      = "Count"
-
-    dimensions = {
-      Environment = var.environment
-    }
   }
 }
 
@@ -87,10 +83,6 @@ resource "aws_cloudwatch_metric_alarm" "search_degradation" {
   statistic   = "Sum"
   period      = each.value.period
   unit        = "Count"
-
-  dimensions = {
-    Environment = var.environment
-  }
 
   alarm_actions = [data.aws_sns_topic.slack_topic.arn]
   ok_actions    = [data.aws_sns_topic.slack_topic.arn]
