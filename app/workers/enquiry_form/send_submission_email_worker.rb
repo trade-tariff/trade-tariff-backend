@@ -47,7 +47,7 @@ private
       enquiry_category: formatter.notify_category,
       enquiry_description: formatter.enquiry_description,
       reference_number: form_data[:reference_number],
-      search_request_id: form_data[:search_request_id],
+      search_request_id: form_data[:search_request_id].presence || 'unknown',
       test_condition: delivery.test_condition,
       created_at: formatted_created_at(form_data),
       csv_file: csv_file(form_data),
