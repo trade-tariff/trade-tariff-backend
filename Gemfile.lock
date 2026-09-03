@@ -157,7 +157,7 @@ GEM
       dotenv (= 3.2.0)
       railties (>= 6.1)
     drb (2.2.3)
-    engtagger (0.4.3)
+    engtagger (0.4.5)
       sin_lru_redux
     erb (6.0.7)
     erubi (1.13.1)
@@ -465,7 +465,7 @@ GEM
       rufus-scheduler (~> 3.2)
       sidekiq (>= 7.3, < 9)
     simplecov (1.1.1)
-    sin_lru_redux (2.5.2)
+    sin_lru_redux (2.5.3)
     slack-notifier (2.4.0)
     thor (1.5.0)
     timeout (0.6.1)
