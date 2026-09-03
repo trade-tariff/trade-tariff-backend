@@ -28,6 +28,14 @@ module XiCnImporter
       ORDER BY DESC(?force_date)
     SPARQL
 
+    BASE_DELAY  = 2 # seconds
+    private_constant :BASE_DELAY
+
+    MAX_RETRIES = 3
+    private_constant :MAX_RETRIES
+
+    class RetryableHTTPError < StandardError; end
+
     Result = Data.define(
       :celex,
       :force_date,
@@ -82,23 +90,58 @@ module XiCnImporter
       raise
     end
 
-  private
-
     def sparql_results
       uri = URI(SPARQL_ENDPOINT)
 
-      response = Net::HTTP.start(uri.host, uri.port,
-                                 use_ssl: uri.scheme == 'https',
-                                 open_timeout: OPEN_TIMEOUT,
-                                 read_timeout: READ_TIMEOUT) do |http|
-        request = Net::HTTP::Post.new(uri.request_uri)
-        request.set_form_data('query' => SPARQL_QUERY, 'format' => 'application/sparql-results+json')
-        http.request(request)
+      response = with_retries do
+        Net::HTTP.start(
+          uri.host,
+          uri.port,
+          use_ssl: uri.scheme == 'https',
+          open_timeout: OPEN_TIMEOUT,
+          read_timeout: READ_TIMEOUT
+        ) do |http|
+          request = Net::HTTP::Post.new(uri.request_uri)
+          request.set_form_data(
+            'query' => SPARQL_QUERY,
+            'format' => 'application/sparql-results+json'
+          )
+
+          response = http.request(request)
+
+          if retryable_response?(response)
+            raise RetryableHTTPError, "HTTP #{response.code}"
+          end
+
+          response
+        end
       end
 
       raise "SPARQL request failed: HTTP #{response.code}" unless response.is_a?(Net::HTTPSuccess)
 
       JSON.parse(response.body).dig('results', 'bindings') || []
+    end
+
+    def with_retries(max_retries: MAX_RETRIES, base_delay: BASE_DELAY)
+      attempt = 0
+
+      begin
+        yield
+      rescue Net::OpenTimeout, Net::ReadTimeout, Errno::ECONNRESET, SocketError, RetryableHTTPError => e
+        raise if attempt >= max_retries
+
+        Kernel.sleep(backoff_delay(base_delay, attempt))
+        attempt += 1
+        retry
+      end
+    end
+
+    def retryable_response?(response)
+      response.code.to_i.between?(500, 599)
+    end
+
+    def backoff_delay(base_delay, attempt)
+      (base_delay * (2**attempt)) + rand(0.0..0.5)
     end
 
     def fetch_html(url, redirect_count: 0)
