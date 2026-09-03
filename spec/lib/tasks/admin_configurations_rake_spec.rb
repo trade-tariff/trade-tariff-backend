@@ -91,8 +91,9 @@ RSpec.describe 'admin_configurations:seed' do
     )
     expect(config.value['escalation']['attributes']['message']).to include("The product you're searching for is difficult to classify.")
     expect(config.value['escalation']['attributes']['message']).not_to include('{{request_id}}')
-    expect(config.value['escalation']['attributes']['message']).to include('{{webchat_url}}')
-    expect(config.value['escalation']['attributes']['message']).to include('{{enquiries_email}}')
+    expect(config.value['escalation']['attributes']['message']).to include("### Webchat\n\n[Ask HMRC online]({{webchat_url}})")
+    expect(config.value['escalation']['attributes']['message']).to include("### Enquiry form\n\n[Ask a classification question](/enquiry_form)")
+    expect(config.value['escalation']['attributes']['message']).not_to include('{{enquiries_email}}')
   end
 
   it 'disables tariff-note and general-rule evidence by default', :aggregate_failures do
