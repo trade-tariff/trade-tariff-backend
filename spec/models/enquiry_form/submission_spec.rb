@@ -53,7 +53,7 @@ RSpec.describe EnquiryForm::Submission do
     context 'with a feature flag' do
       let(:feature_flags) { %w[interactive_search] }
 
-      it 'uses the configured support recipient and redacts contact details for Trade Tariff' do
+      it 'uses the configured support recipient and masks contact details for Trade Tariff' do
         allow(TradeTariffBackend).to receive(:support_email)
           .and_return('Online Trade Tariff Support <team@example.com>')
 
@@ -62,8 +62,8 @@ RSpec.describe EnquiryForm::Submission do
         expect(delivery).to have_attributes(
           audience: described_class::TRADE_TARIFF_AUDIENCE,
           recipient: 'team@example.com',
+          form_data: hash_including(name: '******', email: '******'),
         )
-        expect(delivery.form_data).not_to include(:name, :email)
         expect(delivery.test_condition).to eq('Interactive search')
       end
 
