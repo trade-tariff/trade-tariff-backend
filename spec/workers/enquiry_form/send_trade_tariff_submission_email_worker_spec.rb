@@ -43,8 +43,8 @@ RSpec.describe EnquiryForm::SendTradeTariffSubmissionEmailWorker, type: :worker 
       'team@example.com',
       NOTIFY_CONFIGURATION.dig(:templates, :enquiry_form, :submission),
       hash_including(
-        name: nil,
-        email: nil,
+        name: '******',
+        email: '******',
         company_name: 'Doe & Co Inc.',
         test_condition: 'Interactive search',
       ),
@@ -52,7 +52,7 @@ RSpec.describe EnquiryForm::SendTradeTariffSubmissionEmailWorker, type: :worker 
       reference,
     )
     expect(StringIO).to have_received(:new).with(
-      "Reference,Submission date,Full name,Company name,Job title,Email address,What do you need help with?,How can we help?\nABC12345,2025-08-15 10:00,,Doe & Co Inc.,CEO,,Valuation,I have a question.\n",
+      "Reference,Submission date,Full name,Company name,Job title,Email address,What do you need help with?,How can we help?\nABC12345,2025-08-15 10:00,******,Doe & Co Inc.,CEO,******,Valuation,I have a question.\n",
     ).twice
   end
 

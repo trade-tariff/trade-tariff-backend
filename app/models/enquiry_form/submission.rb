@@ -3,6 +3,7 @@ require 'mail'
 class EnquiryForm::Submission < Data.define(:form_data)
   HMRC_AUDIENCE = 'hmrc'.freeze
   TRADE_TARIFF_AUDIENCE = 'trade_tariff'.freeze
+  REDACTED_VALUE = '******'.freeze
   HMRC_AUDIENCES = [HMRC_AUDIENCE].freeze
   FLAGGED_AUDIENCES = [HMRC_AUDIENCE, TRADE_TARIFF_AUDIENCE].freeze
   TEAM_FIELDS = %i[
@@ -61,7 +62,7 @@ class EnquiryForm::Submission < Data.define(:form_data)
       Delivery.new(
         audience:,
         recipient: trade_tariff_recipient,
-        form_data: form_data.slice(*TEAM_FIELDS),
+        form_data: form_data.slice(*TEAM_FIELDS).merge(name: REDACTED_VALUE, email: REDACTED_VALUE),
         test_condition:,
       )
     else
