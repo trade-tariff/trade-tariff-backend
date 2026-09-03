@@ -515,9 +515,13 @@ RSpec.describe AdminConfiguration do
 
         You should contact HMRC for help classifying this product.
 
-        **Webchat:** [Ask HMRC online]({{webchat_url}})
+        ### Webchat
 
-        **Email:** [{{enquiries_email}}](mailto:{{enquiries_email}})
+        [Ask HMRC online]({{webchat_url}})
+
+        ### Enquiry form
+
+        [Ask a classification question](/enquiry_form)
       MARKDOWN
     end
 
