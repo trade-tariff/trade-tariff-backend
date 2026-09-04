@@ -636,6 +636,13 @@ RSpec.describe TradeTariffBackend::Config do
       end
     end
 
+    describe '.feedback_email' do
+      it 'reads TARIFF_FEEDBACK_EMAIL from ENV' do
+        ENV['TARIFF_FEEDBACK_EMAIL'] = 'feedback@example.com'
+        expect(config.feedback_email).to eq('feedback@example.com')
+      end
+    end
+
     describe '.cds_updates_send_email' do
       it 'defaults to false' do
         ENV.delete('CDS_UPDATES_SEND_MAIL')

@@ -17,6 +17,10 @@ module TradeTariffBackend
         ENV['TARIFF_MANAGEMENT_EMAIL']
       end
 
+      def feedback_email
+        ENV['TARIFF_FEEDBACK_EMAIL']
+      end
+
       def differences_report_to_emails
         ENV['DIFFERENCES_TO_EMAILS']
       end
