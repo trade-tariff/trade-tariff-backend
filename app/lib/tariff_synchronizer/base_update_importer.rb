@@ -15,7 +15,7 @@ module TariffSynchronizer
       track_latest_sql_queries
       keep_record_of_presence_errors
 
-      @base_update.import!
+      import_update
     rescue StandardError => e
       @base_update.mark_as_failed
       e = TariffSynchronizer::Import::Error.unwrap(e)
@@ -27,6 +27,15 @@ module TariffSynchronizer
     end
 
   private
+
+    def import_update
+      case @base_update
+      when CdsUpdate
+        CdsUpdateImporter.perform(@base_update)
+      else
+        @base_update.import!
+      end
+    end
 
     # Tracks the last 10 SQL queries executed during the import.
     # These are logged if there is an exception.
