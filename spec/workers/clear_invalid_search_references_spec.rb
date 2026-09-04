@@ -142,6 +142,53 @@ RSpec.describe ClearInvalidSearchReferences, type: :worker do
     end
   end
 
+  context 'when the goods nomenclature is unknown' do
+    let(:search_reference) do
+      create(:search_reference, :with_non_current_commodity, title: 'unknown item')
+    end
+
+    before do
+      TimeMachine.now { search_reference }
+
+      # SearchReference.each yields a fresh instance from the DB on each run, so stubbing
+      # current?/referenced on an in-memory object has no effect on what the worker actually
+      # processes. Stub the service call itself instead, matched by title.
+      allow(SearchReferences::InvalidationReasonService).to receive(:call).and_call_original
+      allow(SearchReferences::InvalidationReasonService).to receive(:call)
+        .with(an_object_having_attributes(title: 'unknown item'))
+        .and_return(
+          search_reference_id: search_reference.id,
+          title: 'unknown item',
+          referenced_class: search_reference.referenced_class,
+          productline_suffix: search_reference.productline_suffix,
+          goods_nomenclature_sid: search_reference.goods_nomenclature_sid,
+          goods_nomenclature_item_id: search_reference.goods_nomenclature_item_id,
+          reason: :unknown,
+          reason_label: 'Unknown',
+          auto_deletion: true,
+          removal_alert_required: true,
+          validity_start_date: nil,
+          validity_end_date: nil,
+          successor_ids: [],
+          goods_nomenclature_url: nil,
+        )
+    end
+
+    it 'deletes the unknown search reference and includes it in unknown_list' do
+      expect { do_perform }.to change(SearchReference, :count).by(-1)
+
+      expect(notify_double).to have_received(:send_email).with(
+        TradeTariffBackend.feedback_email,
+        ClearInvalidSearchReferences::TEMPLATE_ID,
+        hash_including(
+          removed_count: 1,
+          has_unknown: true,
+          unknown_list: a_string_including('unknown item'),
+        ),
+      )
+    end
+  end
+
   context 'when processing one search reference raises an error' do
     let(:bad_search_reference) { create(:search_reference, :with_non_current_commodity, title: 'bad') }
     let(:good_search_reference) { create(:search_reference, :with_non_current_commodity, title: 'good') }
