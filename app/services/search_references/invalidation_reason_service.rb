@@ -72,7 +72,7 @@ module SearchReferences
     end
 
     def auto_deletion?
-      %i[missing expired].include?(reason)
+      %i[missing expired superseded unknown].include?(reason)
     end
 
     def removal_alert_required?

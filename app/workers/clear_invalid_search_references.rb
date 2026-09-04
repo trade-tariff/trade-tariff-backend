@@ -7,58 +7,51 @@ class ClearInvalidSearchReferences
 
   def perform
     removed = []
-    flagged = []
 
     SearchReference.each do |search_reference|
-      process(search_reference, removed:, flagged:)
+      process(search_reference, removed:)
     end
 
-    return if removed.empty? && flagged.empty?
+    return if removed.empty?
 
-    logger.info("Removed search references: #{removed.map { |r| format_line(r) }.join('; ')}") if removed.any?
-    logger.info("Flagged search references for review: #{flagged.map { |r| format_line(r) }.join('; ')}") if flagged.any?
+    logger.info("Removed search references: #{removed.map { |r| format_line(r) }.join('; ')}")
 
-    notify(removed, flagged)
+    notify(removed)
   end
 
 private
 
-  def process(search_reference, removed:, flagged:)
+  def process(search_reference, removed:)
     result = SearchReferences::InvalidationReasonService.call(search_reference)
 
     return unless result[:removal_alert_required]
 
-    if result[:auto_deletion]
-      search_reference.delete
-      removed << result
-    else
-      flagged << result
-    end
+    search_reference.delete
+    removed << result
   rescue StandardError => e
     logger.error("ClearInvalidSearchReferences: failed to process search reference #{search_reference.id}: #{e.class.name}: #{e.message}")
   end
 
-  def notify(removed, flagged)
+  def notify(removed)
     email = TradeTariffBackend.feedback_email
     return if email.blank?
 
-    client.send_email(email, TEMPLATE_ID, personalisation(removed, flagged))
+    client.send_email(email, TEMPLATE_ID, personalisation(removed))
   rescue StandardError => e
     logger.error("ClearInvalidSearchReferences: failed to send invalidation alert email: #{e.class.name}: #{e.message}")
   end
 
-  def personalisation(removed, flagged)
+  def personalisation(removed)
     {
       removed_count: removed.size,
-      flagged_count: flagged.size,
       has_missing: by_reason(removed, :missing).any?,
       missing_list: format_list(by_reason(removed, :missing)),
       has_expired: by_reason(removed, :expired).any?,
       expired_list: format_list(by_reason(removed, :expired)),
-      has_superseded: by_reason(flagged, :superseded).any?,
-      superseded_list: format_list(by_reason(flagged, :superseded)),
-      has_unknown: by_reason(flagged, :unknown).any?,
-      unknown_list: format_list(by_reason(flagged, :unknown)),
+      has_superseded: by_reason(removed, :superseded).any?,
+      superseded_list: format_list(by_reason(removed, :superseded)),
+      has_unknown: by_reason(removed, :unknown).any?,
+      unknown_list: format_list(by_reason(removed, :unknown)),
     }
   end
 

@@ -27,7 +27,6 @@ RSpec.describe ClearInvalidSearchReferences, type: :worker do
         ClearInvalidSearchReferences::TEMPLATE_ID,
         hash_including(
           removed_count: 1,
-          flagged_count: 0,
           has_expired: true,
           has_missing: false,
           has_superseded: false,
@@ -88,8 +87,8 @@ RSpec.describe ClearInvalidSearchReferences, type: :worker do
       end
     end
 
-    it 'flags it for review instead of deleting it' do
-      expect { do_perform }.not_to change(SearchReference, :count)
+    it 'deletes the superseded search reference' do
+      expect { do_perform }.to change(SearchReference, :count).by(-1)
     end
 
     it 'sends an invalidation alert email listing it under superseded' do
@@ -99,8 +98,7 @@ RSpec.describe ClearInvalidSearchReferences, type: :worker do
         TradeTariffBackend.feedback_email,
         ClearInvalidSearchReferences::TEMPLATE_ID,
         hash_including(
-          removed_count: 0,
-          flagged_count: 1,
+          removed_count: 1,
           has_superseded: true,
           superseded_list: a_string_including('superseded item', '0101999000'),
         ),

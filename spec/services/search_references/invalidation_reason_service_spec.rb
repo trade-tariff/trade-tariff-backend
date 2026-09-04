@@ -32,10 +32,10 @@ RSpec.describe SearchReferences::InvalidationReasonService do
       )
     end
 
-    it 'returns superseded with the successor id, flagged for review rather than deleted' do
+    it 'returns superseded with the successor id, marked for auto-deletion' do
       expect(result[:reason]).to eq(:superseded)
       expect(result[:reason_label]).to eq('Superseded')
-      expect(result[:auto_deletion]).to be(false)
+      expect(result[:auto_deletion]).to be(true)
       expect(result[:removal_alert_required]).to be(true)
       expect(result[:successor_ids]).to eq(%w[0101999000])
     end
@@ -127,10 +127,10 @@ RSpec.describe SearchReferences::InvalidationReasonService do
 
     before { allow(commodity).to receive(:current?).and_return(false) }
 
-    it 'returns unknown, flagged for review rather than deleted' do
+    it 'returns unknown, marked for auto-deletion' do
       expect(result[:reason]).to eq(:unknown)
       expect(result[:reason_label]).to eq('Unknown')
-      expect(result[:auto_deletion]).to be(false)
+      expect(result[:auto_deletion]).to be(true)
       expect(result[:removal_alert_required]).to be(true)
       expect(result[:successor_ids]).to eq([])
     end
