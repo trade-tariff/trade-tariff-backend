@@ -37,6 +37,26 @@ RSpec.describe ClearInvalidSearchReferences, type: :worker do
     end
   end
 
+  context 'when a search reference has a buildable frontend link' do
+    let(:commodity) { create(:commodity, goods_nomenclature_item_id: '0101110000', validity_end_date: Time.zone.yesterday) }
+
+    before do
+      TimeMachine.now { create(:search_reference, referenced: commodity, title: 'linked item') }
+    end
+
+    it 'includes the goods nomenclature link in the removal list' do
+      do_perform
+
+      expect(notify_double).to have_received(:send_email).with(
+        TradeTariffBackend.feedback_email,
+        ClearInvalidSearchReferences::TEMPLATE_ID,
+        hash_including(
+          expired_list: a_string_including("#{TradeTariffBackend.frontend_host}/commodities/0101110000"),
+        ),
+      )
+    end
+  end
+
   context 'when all search references are current' do
     before do
       TimeMachine.now do

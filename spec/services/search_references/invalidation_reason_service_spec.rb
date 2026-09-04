@@ -135,4 +135,63 @@ RSpec.describe SearchReferences::InvalidationReasonService do
       expect(result[:successor_ids]).to eq([])
     end
   end
+
+  describe 'goods_nomenclature_url' do
+    context 'when the search reference points at a chapter' do
+      let(:search_reference) { create(:search_reference, :with_chapter, title: 'chapter item') }
+
+      it 'builds the chapter page URL under the configured frontend host' do
+        expect(result[:goods_nomenclature_url]).to eq("#{TradeTariffBackend.frontend_host}/chapters/01")
+      end
+    end
+
+    context 'when the search reference points at a heading' do
+      let(:search_reference) { create(:search_reference, :with_heading, title: 'heading item') }
+
+      it 'builds the heading page URL under the configured frontend host' do
+        expect(result[:goods_nomenclature_url]).to eq("#{TradeTariffBackend.frontend_host}/headings/0101")
+      end
+    end
+
+    context 'when the search reference points at a subheading' do
+      let(:search_reference) { create(:search_reference, :with_subheading, title: 'subheading item') }
+
+      it 'builds the subheading page URL from the item id and productline suffix' do
+        expect(result[:goods_nomenclature_url]).to eq("#{TradeTariffBackend.frontend_host}/subheadings/0101210000-10")
+      end
+    end
+
+    context 'when the search reference points at a commodity' do
+      let(:search_reference) { create(:search_reference, :with_commodity, title: 'commodity item') }
+
+      it 'builds the commodity page URL under the configured frontend host' do
+        expect(result[:goods_nomenclature_url]).to eq("#{TradeTariffBackend.frontend_host}/commodities/0101291000")
+      end
+    end
+
+    context 'when FRONTEND_HOST is not configured' do
+      let(:search_reference) { create(:search_reference, :with_commodity, title: 'commodity item') }
+
+      before { allow(TradeTariffBackend).to receive(:frontend_host).and_return(nil) }
+
+      it 'omits the url rather than building a broken one' do
+        expect(result[:goods_nomenclature_url]).to be_nil
+      end
+    end
+
+    context 'when the referenced class has no known frontend path' do
+      let(:search_reference) do
+        search_reference = create(:search_reference, :with_commodity, title: 'unmapped class')
+        # referenced_class is derived from the live referenced association (see
+        # SearchReference#referenced_class), so it has to be stubbed rather than
+        # set directly to simulate an unmapped class.
+        allow(search_reference).to receive(:referenced_class).and_return('GoodsNomenclature')
+        search_reference
+      end
+
+      it 'omits the url rather than building an incomplete one' do
+        expect(result[:goods_nomenclature_url]).to be_nil
+      end
+    end
+  end
 end
