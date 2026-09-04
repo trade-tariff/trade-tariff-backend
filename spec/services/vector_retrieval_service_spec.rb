@@ -424,6 +424,28 @@ RSpec.describe VectorRetrievalService do
       end
     end
 
+    context 'when embedding generation returns the wrong dimensions' do
+      before do
+        allow(embedding_service).to receive(:embed).and_return([0.1])
+      end
+
+      it 'identifies the malformed response at the embedding boundary' do
+        expect { service.call_with_diagnostics }
+          .to raise_error(described_class::EmbeddingGenerationError)
+      end
+    end
+
+    context 'when embedding generation returns a non-numeric value' do
+      before do
+        allow(embedding_service).to receive(:embed).and_return(Array.new(1536, 'invalid'))
+      end
+
+      it 'identifies the malformed response at the embedding boundary' do
+        expect { service.call_with_diagnostics }
+          .to raise_error(described_class::EmbeddingGenerationError)
+      end
+    end
+
     context 'when vector retrieval fails' do
       before do
         allow(GoodsNomenclatureSelfText).to receive(:vector_search).and_raise(Sequel::DatabaseError)
