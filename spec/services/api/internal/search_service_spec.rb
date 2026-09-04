@@ -1631,6 +1631,25 @@ RSpec.describe Api::Internal::SearchService do
           expect(result[:meta]).to eq(search_failures: %w[interactive_search_failed])
         end
 
+        context 'when OpenSearch succeeded with no results' do
+          before do
+            allow(HybridRetrievalService).to receive(:call).and_return(
+              hybrid_result.with(
+                results: hybrid_vector_results,
+                opensearch_results: [],
+                vector_results: hybrid_vector_results,
+              ),
+            )
+          end
+
+          it 'does not mistake an empty OpenSearch result set for a failed leg' do
+            result = described_class.new(q: 'horses').call
+
+            expect(result[:data]).to be_empty
+            expect(result.dig(:meta, :search_failures)).to eq(%w[interactive_search_failed])
+          end
+        end
+
         context 'when OpenSearch also failed' do
           before do
             allow(HybridRetrievalService).to receive(:call) do
