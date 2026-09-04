@@ -9,7 +9,7 @@ locals {
       pattern             = "{ $.service = \"search\" && $.event = \"retrieval_leg_completed\" && $.leg = \"opensearch\" && $.status = \"error\" }"
       metric_name         = "SearchOpensearchErrorCount"
       alarm_name          = "search-opensearch-error-${var.environment}"
-      alarm_description   = "OpenSearch retrieval failed for AI-assisted search in ${var.environment}. Owner: Trade Tariff search. First action: dashboard ${local.search_operations_dashboard} Hybrid Leg Failures, then ${local.log_group_name} filtered by service=search event=retrieval_leg_completed leg=opensearch status=error — use request_id and error_message to diagnose."
+      alarm_description   = "OpenSearch retrieval failed for AI-assisted search in ${var.environment}. Owner: Trade Tariff search. First action: dashboard ${local.search_operations_dashboard} Hybrid Leg Failures, then ${local.log_group_name} filtered by service=search event=retrieval_leg_completed leg=opensearch status=error. Use request_id and error_message to diagnose."
       threshold           = 0
       period              = 300
       evaluation_periods  = 1
@@ -20,7 +20,7 @@ locals {
       pattern             = "{ $.service = \"ai_usage\" && $.event = \"embedding_api_call_failed\" && $.event_kind = \"vector_search_query_embedding\" }"
       metric_name         = "SearchEmbeddingErrorCount"
       alarm_name          = "search-embedding-error-${var.environment}"
-      alarm_description   = "Query embedding calls failed for AI-assisted search in ${var.environment}. Owner: Trade Tariff search. First action: dashboard ${local.search_operations_dashboard}, then ${local.log_group_name} filtered by service=ai_usage event=embedding_api_call_failed event_kind=vector_search_query_embedding — use request_id, error_class, and error_message to diagnose."
+      alarm_description   = "Query embedding calls failed for AI-assisted search in ${var.environment}. Owner: Trade Tariff search. First action: dashboard ${local.search_operations_dashboard}, then ${local.log_group_name} filtered by service=ai_usage event=embedding_api_call_failed event_kind=vector_search_query_embedding. Use request_id, error_class, and error_message to diagnose."
       threshold           = 0
       period              = 300
       evaluation_periods  = 1
@@ -31,7 +31,7 @@ locals {
       pattern             = "{ $.service = \"search\" && $.event = \"api_call_completed\" && $.response_type = \"error\" }"
       metric_name         = "SearchLlmErrorCount"
       alarm_name          = "search-llm-error-${var.environment}"
-      alarm_description   = "LLM calls failed for AI-assisted search in ${var.environment} (interactive search, query expansion, or duplicate-question validation). Owner: Trade Tariff search. First action: dashboard ${local.search_operations_dashboard}, then ${local.log_group_name} filtered by service=search event=api_call_completed response_type=error — use request_id, operation, and error_message to diagnose."
+      alarm_description   = "LLM calls failed for AI-assisted search in ${var.environment} (interactive search, query expansion, or duplicate-question validation). Owner: Trade Tariff search. First action: dashboard ${local.search_operations_dashboard}, then ${local.log_group_name} filtered by service=search event=api_call_completed response_type=error. Use request_id, operation, and error_message to diagnose."
       threshold           = 0
       period              = 300
       evaluation_periods  = 1
