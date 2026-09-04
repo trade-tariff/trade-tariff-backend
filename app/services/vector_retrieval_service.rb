@@ -51,12 +51,15 @@ private
   end
 
   def generate_query_embedding
-    AiUsage::Instrumentation.embedding_api_call(
+    embedding = AiUsage::Instrumentation.embedding_api_call(
       event_kind: 'vector_search_query_embedding',
       batch_size: 1,
       model: EmbeddingService::MODEL,
       request_id: @request_id,
     ) { embedding_service.embed(@query, event_kind: 'vector_search_query_embedding') }
+    raise EmbeddingGenerationError, 'Embedding response was empty' unless embedding.is_a?(Array) && embedding.any?
+
+    embedding
   rescue StandardError => e
     raise EmbeddingGenerationError, e.message
   end

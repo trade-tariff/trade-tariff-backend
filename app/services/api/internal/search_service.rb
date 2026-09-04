@@ -11,8 +11,9 @@ module Api
         :decision_results,
         :opensearch_results,
         :vector_results,
+        :failure_codes,
       ) do
-        def initialize(goods_nomenclatures:, max_score:, expanded_query:, results_type:, decision_results:, opensearch_results: [], vector_results: [])
+        def initialize(goods_nomenclatures:, max_score:, expanded_query:, results_type:, decision_results:, opensearch_results: [], vector_results: [], failure_codes: [])
           super
         end
       end
@@ -99,7 +100,7 @@ module Api
       end
 
       def interactive_search_response(retrieval)
-        interactive_result = if @skip_question || semantic_retrieval_failed?
+        interactive_result = if @skip_question || semantic_retrieval_failed?(retrieval)
                                nil
                              else
                                run_interactive_search(
@@ -108,7 +109,7 @@ module Api
                                )
                              end
 
-        response_results = if source_fallback_required?
+        response_results = if source_fallback_required?(retrieval)
                              preferred_fallback_results(retrieval)
                            else
                              retrieval.goods_nomenclatures
@@ -125,22 +126,24 @@ module Api
         [response, interactive_completion_payload(response, retrieval, interactive_result)]
       end
 
-      def semantic_retrieval_failed?
-        TradeTariffRequest.search_failed?(::Search::FailureCodes::EMBEDDING_GENERATION_FAILED) ||
-          TradeTariffRequest.search_failed?(::Search::FailureCodes::VECTOR_RETRIEVAL_FAILED)
+      def semantic_retrieval_failed?(retrieval)
+        retrieval.failure_codes.intersect?([
+          ::Search::FailureCodes::EMBEDDING_GENERATION_FAILED,
+          ::Search::FailureCodes::VECTOR_RETRIEVAL_FAILED,
+        ])
       end
 
       def interactive_search_failed?
         TradeTariffRequest.search_failed?(::Search::FailureCodes::INTERACTIVE_SEARCH_FAILED)
       end
 
-      def source_fallback_required?
-        semantic_retrieval_failed? || interactive_search_failed?
+      def source_fallback_required?(retrieval)
+        semantic_retrieval_failed?(retrieval) || interactive_search_failed?
       end
 
       def preferred_fallback_results(retrieval)
         return retrieval.goods_nomenclatures unless retrieval.results_type == 'hybrid'
-        return retrieval.vector_results if TradeTariffRequest.search_failed?(::Search::FailureCodes::OPENSEARCH_FAILED)
+        return retrieval.vector_results if retrieval.failure_codes.include?(::Search::FailureCodes::OPENSEARCH_FAILED)
 
         retrieval.opensearch_results
       end
@@ -325,6 +328,7 @@ module Api
           decision_results: hybrid_decision_results(result),
           opensearch_results: result.opensearch_results,
           vector_results: result.vector_results,
+          failure_codes: result.failure_codes,
         )
       end
 

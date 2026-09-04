@@ -1578,7 +1578,11 @@ RSpec.describe Api::Internal::SearchService do
         before do
           allow(HybridRetrievalService).to receive(:call) do
             TradeTariffRequest.record_search_failure(Search::FailureCodes::VECTOR_RETRIEVAL_FAILED)
-            hybrid_result.with(results: hybrid_opensearch_results, vector_results: [])
+            hybrid_result.with(
+              results: hybrid_opensearch_results,
+              vector_results: [],
+              failure_codes: %w[vector_retrieval_failed],
+            )
           end
         end
 
@@ -1596,7 +1600,11 @@ RSpec.describe Api::Internal::SearchService do
         before do
           allow(HybridRetrievalService).to receive(:call) do
             TradeTariffRequest.record_search_failure(Search::FailureCodes::EMBEDDING_GENERATION_FAILED)
-            hybrid_result.with(results: hybrid_opensearch_results, vector_results: [])
+            hybrid_result.with(
+              results: hybrid_opensearch_results,
+              vector_results: [],
+              failure_codes: %w[embedding_generation_failed],
+            )
           end
         end
 
@@ -1654,7 +1662,11 @@ RSpec.describe Api::Internal::SearchService do
           before do
             allow(HybridRetrievalService).to receive(:call) do
               TradeTariffRequest.record_search_failure(Search::FailureCodes::OPENSEARCH_FAILED)
-              hybrid_result.with(results: hybrid_vector_results, opensearch_results: [])
+              hybrid_result.with(
+                results: hybrid_vector_results,
+                opensearch_results: [],
+                failure_codes: %w[opensearch_failed],
+              )
             end
           end
 
@@ -1675,7 +1687,11 @@ RSpec.describe Api::Internal::SearchService do
         before do
           allow(HybridRetrievalService).to receive(:call) do
             TradeTariffRequest.record_search_failure(Search::FailureCodes::OPENSEARCH_FAILED)
-            hybrid_result.with(results: hybrid_vector_results, opensearch_results: [])
+            hybrid_result.with(
+              results: hybrid_vector_results,
+              opensearch_results: [],
+              failure_codes: %w[opensearch_failed],
+            )
           end
         end
 
@@ -1710,6 +1726,34 @@ RSpec.describe Api::Internal::SearchService do
               max_score: 250.0,
             ),
           )
+        end
+
+        it 'uses the final retrieval attempt status for interactive search control' do
+          preliminary_result = hybrid_result.with(
+            results: hybrid_opensearch_results,
+            source_results: [hybrid_source_results.first.with(score: 1.0)],
+            vector_results: [],
+            failure_codes: %w[vector_retrieval_failed],
+          )
+          final_result = hybrid_result.with(failure_codes: [])
+          retrieval_attempt = 0
+          allow(HybridRetrievalService).to receive(:call) do
+            retrieval_attempt += 1
+            if retrieval_attempt == 1
+              TradeTariffRequest.record_search_failure(Search::FailureCodes::VECTOR_RETRIEVAL_FAILED)
+              preliminary_result
+            else
+              final_result
+            end
+          end
+
+          result = described_class.new(q: 'horses').call
+
+          expect(HybridRetrievalService).to have_received(:call).twice
+          expect(InteractiveSearchService).to have_received(:call).with(
+            hash_including(opensearch_results: hybrid_results),
+          )
+          expect(result.dig(:meta, :search_failures)).to eq(%w[vector_retrieval_failed])
         end
 
         context 'with the v2 decider' do
@@ -1973,7 +2017,7 @@ RSpec.describe Api::Internal::SearchService do
         allow(HybridRetrievalService).to receive(:call).and_return(
           instance_double(
             HybridRetrievalService::Result,
-            results: [], expanded_query: 'horses', source_results: [], opensearch_results: [], vector_results: [],
+            results: [], expanded_query: 'horses', source_results: [], opensearch_results: [], vector_results: [], failure_codes: [],
           ),
         )
       end
@@ -2006,7 +2050,7 @@ RSpec.describe Api::Internal::SearchService do
         allow(HybridRetrievalService).to receive(:call).and_return(
           instance_double(
             HybridRetrievalService::Result,
-            results: [], expanded_query: 'horses', source_results: [], opensearch_results: [], vector_results: [],
+            results: [], expanded_query: 'horses', source_results: [], opensearch_results: [], vector_results: [], failure_codes: [],
           ),
         )
       end
@@ -2030,7 +2074,7 @@ RSpec.describe Api::Internal::SearchService do
         allow(HybridRetrievalService).to receive(:call).and_return(
           instance_double(
             HybridRetrievalService::Result,
-            results: [], expanded_query: 'horses', source_results: [], opensearch_results: [], vector_results: [],
+            results: [], expanded_query: 'horses', source_results: [], opensearch_results: [], vector_results: [], failure_codes: [],
           ),
         )
       end

@@ -1,8 +1,8 @@
 class HybridRetrievalService
   AllLegsFailed = Class.new(StandardError)
   LegResult = Data.define(:value, :error, :failure_code)
-  Result = Data.define(:results, :expanded_query, :source_results, :opensearch_results, :vector_results) do
-    def initialize(results:, expanded_query:, source_results:, opensearch_results: [], vector_results: [])
+  Result = Data.define(:results, :expanded_query, :source_results, :opensearch_results, :vector_results, :failure_codes) do
+    def initialize(results:, expanded_query:, source_results:, opensearch_results: [], vector_results: [], failure_codes: [])
       super
     end
   end
@@ -29,7 +29,8 @@ class HybridRetrievalService
 
   def call
     opensearch_leg, vector_leg = run_concurrent_retrievals
-    [opensearch_leg, vector_leg].filter_map(&:failure_code).each do |failure_code|
+    failure_codes = [opensearch_leg, vector_leg].filter_map(&:failure_code)
+    failure_codes.each do |failure_code|
       TradeTariffRequest.record_search_failure(failure_code)
     end
     leg_errors = [opensearch_leg.error, vector_leg.error].compact
@@ -44,7 +45,7 @@ class HybridRetrievalService
     decision = query_guardrail_decision(vector_leg)
     merged = if vector_leg.error
                opensearch_items
-             elsif opensearch_leg.error
+             elsif opensearch_leg.error && decision[:accepted]
                vector_items
              elsif decision[:accepted]
                rrf_merge(opensearch_items, vector_items)
@@ -76,6 +77,7 @@ class HybridRetrievalService
       source_results: opensearch_items + vector_items,
       opensearch_results: opensearch_items,
       vector_results: vector_items,
+      failure_codes: failure_codes,
     )
   end
 

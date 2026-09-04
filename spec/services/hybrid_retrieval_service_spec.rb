@@ -343,6 +343,20 @@ RSpec.describe HybridRetrievalService do
 
         sids = result.results.map(&:goods_nomenclature_sid)
         expect(sids).to eq([2, 4, 1])
+        expect(result.failure_codes).to eq(%w[opensearch_failed])
+      end
+
+      context 'when the query guardrail rejects the vector results' do
+        before do
+          allow(AdminConfiguration).to receive(:enabled?).with('hybrid_query_guardrail_enabled').and_return(true)
+        end
+
+        it 'does not return the rejected vector results' do
+          result = described_class.call(query: 'horses', as_of: Time.zone.today)
+
+          expect(result.results).to be_empty
+          expect(result.failure_codes).to eq(%w[opensearch_failed])
+        end
       end
 
       it 'records the OpenSearch failure' do
@@ -373,6 +387,7 @@ RSpec.describe HybridRetrievalService do
 
         sids = result.results.map(&:goods_nomenclature_sid)
         expect(sids).to eq([1, 2, 3])
+        expect(result.failure_codes).to eq(%w[vector_retrieval_failed])
       end
 
       it 'records the vector retrieval failure' do

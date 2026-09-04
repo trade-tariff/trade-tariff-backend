@@ -445,6 +445,7 @@ RSpec.describe InteractiveSearchService do
 
         expect(result.type).to eq(:answers)
         expect(result.data.first).to eq({ commodity_code: '4202210000', confidence: 'good' })
+        expect(TradeTariffRequest.search_failures).to eq(%w[interactive_search_failed])
       end
 
       it 'returns the duplicate-looking question without retry when the guard is disabled' do
