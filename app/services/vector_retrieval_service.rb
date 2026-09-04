@@ -1,4 +1,6 @@
 class VectorRetrievalService
+  EMBEDDING_DIMENSIONS = 1536
+
   EmbeddingGenerationError = Class.new(StandardError)
   VectorRetrievalError = Class.new(StandardError)
   Result = Data.define(:results, :max_score)
@@ -57,7 +59,10 @@ private
       model: EmbeddingService::MODEL,
       request_id: @request_id,
     ) { embedding_service.embed(@query, event_kind: 'vector_search_query_embedding') }
-    raise EmbeddingGenerationError, 'Embedding response was empty' unless embedding.is_a?(Array) && embedding.any?
+    valid_embedding = embedding.is_a?(Array) &&
+      embedding.size == EMBEDDING_DIMENSIONS &&
+      embedding.all? { |value| value.is_a?(Numeric) && value.real? && value.to_f.finite? }
+    raise EmbeddingGenerationError, 'Embedding response was malformed' unless valid_embedding
 
     embedding
   rescue StandardError => e
