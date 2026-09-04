@@ -2,6 +2,11 @@ name: Deploy to development
 
 on:
   workflow_dispatch:
+    inputs:
+      sha:
+        description: 'Git SHA or ref to deploy (defaults to current HEAD)'
+        type: string
+        required: false
   pull_request:
     types:
       - opened
@@ -28,6 +33,7 @@ jobs:
       # Override tools@main hardcode (still 3.22) until tools alpine PR merges.
       # Last ALPINE_VERSION build-arg wins in docker build.
       build-args: ALPINE_VERSION=3.24
+      checkout-ref: ${{ inputs.sha }}
     secrets:
       slack-webhook: ${{ secrets.SLACK_WEBHOOK }}
       ssh-key: ${{ secrets.PRIVATE_SSH_KEY }}
