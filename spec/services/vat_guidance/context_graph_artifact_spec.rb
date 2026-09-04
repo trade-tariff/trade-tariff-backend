@@ -57,6 +57,28 @@ RSpec.describe 'VAT guidance context graph artifact' do
     end
   end
 
+  it 'does not mark uncaptured external targets as resolved content' do
+    external_node_ids = graph.fetch('nodes').filter_map { |node|
+      node.fetch('id') if node['node_type'] == 'external_reference'
+    }.to_set
+    external_edges = graph.fetch('edges').select { |edge| external_node_ids.include?(edge.fetch('target_id')) }
+
+    expect(external_edges).not_to be_empty
+    expect(external_edges).to all(include('resolution' => 'unresolved'))
+  end
+
+  it 'does not mark uncaptured notice sections as resolved content' do
+    notice_reference_ids = graph.fetch('nodes').filter_map { |node|
+      node.fetch('id') if node['node_type'] == 'notice_reference'
+    }.to_set
+    notice_reference_edges = graph.fetch('edges').select do |edge|
+      notice_reference_ids.include?(edge.fetch('target_id'))
+    end
+
+    expect(notice_reference_edges).not_to be_empty
+    expect(notice_reference_edges).to all(include('resolution' => 'unresolved'))
+  end
+
   it 'classifies root-document legislation separately from broken notice sections' do
     root_statutory_references = graph.fetch('edges').select do |edge|
       edge['reference_kind'] == 'statutory_reference' &&
