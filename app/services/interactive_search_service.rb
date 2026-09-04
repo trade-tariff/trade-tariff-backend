@@ -448,7 +448,10 @@ private
     )
 
     if guard_result.duplicate?
-      return best_available_answers if duplicate_retry
+      if duplicate_retry
+        TradeTariffRequest.record_search_failure(Search::FailureCodes::INTERACTIVE_SEARCH_FAILED)
+        return best_available_answers
+      end
 
       return handle_parsed_response(
         parse_model_response(duplicate_retry_context(question, guard_result), operation: 'duplicate_question_retry'),

@@ -89,6 +89,27 @@ RSpec.describe 'Classification Search', skip: 'Draft MCP API docs are held back 
 
         run_test!
       end
+
+      response '500', 'classification search unavailable' do
+        schema type: :object,
+               required: %w[errors],
+               properties: {
+                 errors: {
+                   type: :array,
+                   items: {
+                     type: :object,
+                     required: %w[status title detail],
+                     properties: {
+                       status: { type: :string, enum: %w[500] },
+                       title: { type: :string, example: 'Classification search failed' },
+                       detail: { type: :string, example: 'Classification search is temporarily unavailable' },
+                     },
+                   },
+                 },
+               }
+
+        run_test!
+      end
     end
 
     post 'Post hybrid classification candidates' do
@@ -135,6 +156,27 @@ RSpec.describe 'Classification Search', skip: 'Draft MCP API docs are held back 
             instance_double(Api::V2::ClassificationSearchService, call: { data: [], meta: { request_id: 'test', retrieval_method: 'hybrid', expanded_query: 'wireless headphones', result_count: 0, max_score: nil, search_failures: [] } }),
           )
         end
+
+        run_test!
+      end
+
+      response '500', 'classification search unavailable' do
+        schema type: :object,
+               required: %w[errors],
+               properties: {
+                 errors: {
+                   type: :array,
+                   items: {
+                     type: :object,
+                     required: %w[status title detail],
+                     properties: {
+                       status: { type: :string, enum: %w[500] },
+                       title: { type: :string, example: 'Classification search failed' },
+                       detail: { type: :string, example: 'Classification search is temporarily unavailable' },
+                     },
+                   },
+                 },
+               }
 
         run_test!
       end

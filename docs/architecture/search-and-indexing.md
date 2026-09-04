@@ -64,7 +64,7 @@ The guardrail is controlled through admin configuration:
 - `hybrid_query_guardrail_enabled` defaults to off, preserving the existing hybrid behaviour.
 - `hybrid_query_guardrail_threshold` defaults to `32`, representing a similarity of `0.32`.
 
-When enabled, hybrid retrieval returns no suggestions if the maximum score is below the threshold, no eligible vector candidate exists, or the vector leg is unavailable. The `query_guardrail_decided.search` instrumentation event records the effective variant, score, threshold, outcome, and reason so A/B-test results can be attributed to the control.
+When enabled, hybrid retrieval returns no suggestions if the maximum score is below the threshold or no eligible vector candidate exists. If vector retrieval is unavailable, OpenSearch results remain available. If OpenSearch is unavailable, vector results are returned only when they pass the guardrail. The `query_guardrail_decided.search` instrumentation event records the effective variant, score, threshold, outcome, and reason so A/B-test results can be attributed to the control.
 
 Guided classification search can also attach bounded chapter- and section-note evidence to retrieved candidates. [Tariff knowledge notes](../tariff-knowledge-notes.md) documents extraction, graph edges, compressed-note materialisation and deduplication, prompt selection, and request-ID diagnostics.
 
