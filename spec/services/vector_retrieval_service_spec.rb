@@ -401,6 +401,30 @@ RSpec.describe VectorRetrievalService do
     end
   end
 
+  describe '#call_with_diagnostics' do
+    context 'when embedding generation fails' do
+      before do
+        allow(embedding_service).to receive(:embed).and_raise(Faraday::TimeoutError)
+      end
+
+      it 'identifies the embedding boundary' do
+        expect { service.call_with_diagnostics }
+          .to raise_error(described_class::EmbeddingGenerationError)
+      end
+    end
+
+    context 'when vector retrieval fails' do
+      before do
+        allow(GoodsNomenclatureSelfText).to receive(:vector_search).and_raise(Sequel::DatabaseError)
+      end
+
+      it 'identifies the retrieval boundary' do
+        expect { service.call_with_diagnostics }
+          .to raise_error(described_class::VectorRetrievalError)
+      end
+    end
+  end
+
 private
 
   def populate_search_embedding(sid, embedding)

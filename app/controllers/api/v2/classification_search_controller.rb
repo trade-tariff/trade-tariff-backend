@@ -11,13 +11,13 @@ module Api
         else
           render json: result
         end
-      rescue HybridRetrievalService::AllLegsFailed => e
+      rescue HybridRetrievalService::AllLegsFailed
         render json: {
           errors: [
             {
               status: '500',
               title: 'Classification search failed',
-              detail: e.message,
+              detail: 'Classification search is temporarily unavailable',
             },
           ],
         }, status: :internal_server_error

@@ -18,6 +18,8 @@ RSpec.describe Api::Internal::SearchService do
     )
   end
 
+  after { TradeTariffRequest.search_failures = nil }
+
   before do
     allow(AdminConfiguration).to receive(:option_value).and_call_original
     allow(AdminConfiguration).to receive(:option_value).with('retrieval_method').and_return('opensearch')
@@ -37,16 +39,16 @@ RSpec.describe Api::Internal::SearchService do
 
   describe '#call' do
     context 'when blank query' do
-      it 'returns empty data' do
+      it 'returns empty data with no failures' do
         result = described_class.new(q: '').call
-        expect(result).to eq(data: [])
+        expect(result).to eq(data: [], meta: { search_failures: [] })
       end
     end
 
     context 'when nil query' do
       it 'returns empty data' do
         result = described_class.new(q: nil).call
-        expect(result).to eq(data: [])
+        expect(result).to eq(data: [], meta: { search_failures: [] })
       end
     end
 
@@ -222,6 +224,7 @@ RSpec.describe Api::Internal::SearchService do
         expect(result[:data][0][:type]).to eq(:heading)
         expect(result[:data][0][:attributes][:goods_nomenclature_item_id]).to eq('0101000000')
         expect(result[:data][0][:attributes][:score]).to be_nil
+        expect(result.dig(:meta, :search_failures)).to eq([])
         expect(TradeTariffBackend.search_client).not_to have_received(:search)
       end
 
@@ -356,7 +359,7 @@ RSpec.describe Api::Internal::SearchService do
       it 'falls through to OpenSearch instead of returning exact match' do
         result = described_class.new(q: '98').call
 
-        expect(result).to eq(data: [])
+        expect(result).to eq(data: [], meta: { search_failures: [] })
         expect(TradeTariffBackend.search_client).to have_received(:search)
       end
     end
@@ -637,7 +640,7 @@ RSpec.describe Api::Internal::SearchService do
 
       it 'returns empty data array' do
         result = described_class.new(q: 'nonexistent').call
-        expect(result).to eq(data: [])
+        expect(result).to eq(data: [], meta: { search_failures: [] })
       end
     end
 
@@ -772,7 +775,7 @@ RSpec.describe Api::Internal::SearchService do
       it 'falls through to OpenSearch instead of returning an exact match' do
         result = described_class.new(q: 'horse').call
 
-        expect(result).to eq(data: [])
+        expect(result).to eq(data: [], meta: { search_failures: [] })
         expect(TradeTariffBackend.search_client).to have_received(:search)
       end
     end
@@ -1339,10 +1342,10 @@ RSpec.describe Api::Internal::SearchService do
         allow(InteractiveSearchService).to receive(:call).and_return(nil)
       end
 
-      it 'does not include interactive_search in meta' do
+      it 'returns no failures without interactive meta' do
         result = described_class.new(q: 'handbag').call
 
-        expect(result[:meta]).to be_nil
+        expect(result[:meta]).to eq(search_failures: [])
       end
 
       it 'does not instrument an evaluation trace' do
@@ -1383,7 +1386,7 @@ RSpec.describe Api::Internal::SearchService do
         result = described_class.new(q: 'handbag', skip_question: true).call
 
         expect(InteractiveSearchService).not_to have_received(:call)
-        expect(result[:meta]).to be_nil
+        expect(result[:meta]).to eq(search_failures: [])
       end
     end
 
@@ -1506,6 +1509,15 @@ RSpec.describe Api::Internal::SearchService do
           )
         end
       end
+      let(:hybrid_result) do
+        HybridRetrievalService::Result.new(
+          results: hybrid_results,
+          expanded_query: 'expanded horses',
+          source_results: hybrid_source_results,
+          opensearch_results: hybrid_opensearch_results,
+          vector_results: hybrid_vector_results,
+        )
+      end
 
       let(:hybrid_source_results) do
         hybrid_results.map.with_index do |result, index|
@@ -1513,13 +1525,12 @@ RSpec.describe Api::Internal::SearchService do
         end
       end
 
-      let(:hybrid_result) do
-        instance_double(
-          HybridRetrievalService::Result,
-          results: hybrid_results,
-          expanded_query: 'expanded horses',
-          source_results: hybrid_source_results,
-        )
+      def hybrid_opensearch_results
+        hybrid_results.first(2)
+      end
+
+      def hybrid_vector_results
+        hybrid_results.last(3)
       end
 
       before do
@@ -1561,6 +1572,101 @@ RSpec.describe Api::Internal::SearchService do
 
         expect(result[:data].length).to eq(5)
         expect(result[:data][0][:attributes][:goods_nomenclature_item_id]).to eq('0101210000')
+      end
+
+      context 'when vector retrieval fails' do
+        before do
+          allow(HybridRetrievalService).to receive(:call) do
+            TradeTariffRequest.record_search_failure(Search::FailureCodes::VECTOR_RETRIEVAL_FAILED)
+            hybrid_result.with(results: hybrid_opensearch_results, vector_results: [])
+          end
+        end
+
+        it 'returns OpenSearch results without attempting interactive search' do
+          result = described_class.new(q: 'horses').call
+
+          expect(InteractiveSearchService).not_to have_received(:call)
+          expect(result[:data].pluck(:attributes).pluck(:goods_nomenclature_item_id))
+            .to eq(hybrid_opensearch_results.map(&:goods_nomenclature_item_id))
+          expect(result.dig(:meta, :search_failures)).to eq(%w[vector_retrieval_failed])
+        end
+      end
+
+      context 'when embedding generation fails' do
+        before do
+          allow(HybridRetrievalService).to receive(:call) do
+            TradeTariffRequest.record_search_failure(Search::FailureCodes::EMBEDDING_GENERATION_FAILED)
+            hybrid_result.with(results: hybrid_opensearch_results, vector_results: [])
+          end
+        end
+
+        it 'returns OpenSearch results without attempting interactive search' do
+          result = described_class.new(q: 'horses').call
+
+          expect(InteractiveSearchService).not_to have_received(:call)
+          expect(result.dig(:meta, :search_failures)).to eq(%w[embedding_generation_failed])
+        end
+      end
+
+      context 'when interactive search fails' do
+        let(:interactive_error) do
+          InteractiveSearchService::Result.new(
+            type: :error, data: { message: 'provider detail' }, attempt: 1,
+            model: 'gpt-5.4', result_limit: 5, ranking_source: 'model_error'
+          )
+        end
+
+        before do
+          allow(InteractiveSearchService).to receive(:call) do
+            TradeTariffRequest.record_search_failure(Search::FailureCodes::INTERACTIVE_SEARCH_FAILED)
+            interactive_error
+          end
+        end
+
+        it 'returns unranked OpenSearch results and exposes only the stable failure code' do
+          result = described_class.new(q: 'horses').call
+
+          expect(result[:data].pluck(:attributes).pluck(:goods_nomenclature_item_id))
+            .to eq(hybrid_opensearch_results.map(&:goods_nomenclature_item_id))
+          expect(result[:meta]).to eq(search_failures: %w[interactive_search_failed])
+        end
+
+        context 'when OpenSearch also failed' do
+          before do
+            allow(HybridRetrievalService).to receive(:call) do
+              TradeTariffRequest.record_search_failure(Search::FailureCodes::OPENSEARCH_FAILED)
+              hybrid_result.with(results: hybrid_vector_results, opensearch_results: [])
+            end
+          end
+
+          it 'returns vector-only results with both failures' do
+            result = described_class.new(q: 'horses').call
+
+            expect(result[:data].pluck(:attributes).pluck(:goods_nomenclature_item_id))
+              .to eq(hybrid_vector_results.map(&:goods_nomenclature_item_id))
+            expect(result.dig(:meta, :search_failures)).to contain_exactly(
+              'opensearch_failed',
+              'interactive_search_failed',
+            )
+          end
+        end
+      end
+
+      context 'when only OpenSearch fails' do
+        before do
+          allow(HybridRetrievalService).to receive(:call) do
+            TradeTariffRequest.record_search_failure(Search::FailureCodes::OPENSEARCH_FAILED)
+            hybrid_result.with(results: hybrid_vector_results, opensearch_results: [])
+          end
+        end
+
+        it 'continues into interactive search with vector candidates' do
+          described_class.new(q: 'horses').call
+
+          expect(InteractiveSearchService).to have_received(:call).with(
+            hash_including(opensearch_results: hybrid_vector_results),
+          )
+        end
       end
 
       context 'when conditional expansion is enabled' do
@@ -1846,7 +1952,10 @@ RSpec.describe Api::Internal::SearchService do
       before do
         allow(AdminConfiguration).to receive(:option_value).with('retrieval_method').and_return('hybrid')
         allow(HybridRetrievalService).to receive(:call).and_return(
-          instance_double(HybridRetrievalService::Result, results: [], expanded_query: 'horses', source_results: []),
+          instance_double(
+            HybridRetrievalService::Result,
+            results: [], expanded_query: 'horses', source_results: [], opensearch_results: [], vector_results: [],
+          ),
         )
       end
 
@@ -1876,7 +1985,10 @@ RSpec.describe Api::Internal::SearchService do
       before do
         allow(AdminConfiguration).to receive(:option_value).with('retrieval_method').and_return('hybrid')
         allow(HybridRetrievalService).to receive(:call).and_return(
-          instance_double(HybridRetrievalService::Result, results: [], expanded_query: 'horses', source_results: []),
+          instance_double(
+            HybridRetrievalService::Result,
+            results: [], expanded_query: 'horses', source_results: [], opensearch_results: [], vector_results: [],
+          ),
         )
       end
 
@@ -1897,7 +2009,10 @@ RSpec.describe Api::Internal::SearchService do
       before do
         allow(AdminConfiguration).to receive(:option_value).with('retrieval_method').and_return('hybrid')
         allow(HybridRetrievalService).to receive(:call).and_return(
-          instance_double(HybridRetrievalService::Result, results: [], expanded_query: 'horses', source_results: []),
+          instance_double(
+            HybridRetrievalService::Result,
+            results: [], expanded_query: 'horses', source_results: [], opensearch_results: [], vector_results: [],
+          ),
         )
       end
 

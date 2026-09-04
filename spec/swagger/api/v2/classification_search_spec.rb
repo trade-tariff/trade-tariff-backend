@@ -59,12 +59,21 @@ RSpec.describe 'Classification Search', skip: 'Draft MCP API docs are held back 
                  },
                  meta: {
                    type: :object,
+                   required: %w[search_failures],
                    properties: {
                      request_id: { type: :string },
                      retrieval_method: { type: :string, enum: %w[hybrid] },
                      expanded_query: { type: :string, nullable: true },
                      result_count: { type: :integer },
                      max_score: { type: :number, nullable: true },
+                     search_failures: {
+                       type: :array,
+                       uniqueItems: true,
+                       items: {
+                         type: :string,
+                         enum: Search::FailureCodes::ALL,
+                       },
+                     },
                    },
                  },
                }
@@ -74,7 +83,7 @@ RSpec.describe 'Classification Search', skip: 'Draft MCP API docs are held back 
 
         before do
           allow(Api::V2::ClassificationSearchService).to receive(:new).and_return(
-            instance_double(Api::V2::ClassificationSearchService, call: { data: [], meta: { request_id: 'test', retrieval_method: 'hybrid', expanded_query: 'wireless headphones', result_count: 0, max_score: nil } }),
+            instance_double(Api::V2::ClassificationSearchService, call: { data: [], meta: { request_id: 'test', retrieval_method: 'hybrid', expanded_query: 'wireless headphones', result_count: 0, max_score: nil, search_failures: [] } }),
           )
         end
 
@@ -106,14 +115,24 @@ RSpec.describe 'Classification Search', skip: 'Draft MCP API docs are held back 
                required: %w[data meta],
                properties: {
                  data: { type: :array },
-                 meta: { type: :object },
+                 meta: {
+                   type: :object,
+                   required: %w[search_failures],
+                   properties: {
+                     search_failures: {
+                       type: :array,
+                       uniqueItems: true,
+                       items: { type: :string, enum: Search::FailureCodes::ALL },
+                     },
+                   },
+                 },
                }
 
         let(:body) { { q: 'wireless headphones', limit: 5 } }
 
         before do
           allow(Api::V2::ClassificationSearchService).to receive(:new).and_return(
-            instance_double(Api::V2::ClassificationSearchService, call: { data: [], meta: { request_id: 'test', retrieval_method: 'hybrid', expanded_query: 'wireless headphones', result_count: 0, max_score: nil } }),
+            instance_double(Api::V2::ClassificationSearchService, call: { data: [], meta: { request_id: 'test', retrieval_method: 'hybrid', expanded_query: 'wireless headphones', result_count: 0, max_score: nil, search_failures: [] } }),
           )
         end
 

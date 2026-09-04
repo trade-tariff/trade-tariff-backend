@@ -42,6 +42,7 @@ class InteractiveSearchService
 
     handle_parsed_response(parse_model_response(build_context, operation: 'interactive_search'))
   rescue StandardError => e
+    record_failure
     Search::Instrumentation.search_failed(
       request_id: request_id,
       error_type: e.class.name,
@@ -312,7 +313,7 @@ private
     elsif parsed['error'].present?
       error_result(parsed['error'])
     else
-      best_available_answers
+      invalid_response_result
     end
   end
 
@@ -347,7 +348,7 @@ private
     elsif has_questions?(parsed)
       questions_result(parsed, duplicate_retry: duplicate_retry)
     else
-      best_available_answers
+      invalid_response_result
     end
   end
 
@@ -372,6 +373,7 @@ private
   end
 
   def error_result(message)
+    record_failure
     Result.new(
       type: :error,
       data: { message: message },
@@ -382,9 +384,20 @@ private
     )
   end
 
+  def invalid_response_result
+    error_result('Interactive search unavailable')
+  end
+
+  def record_failure
+    TradeTariffRequest.record_search_failure(Search::FailureCodes::INTERACTIVE_SEARCH_FAILED)
+  end
+
   def answers_result(ai_answers)
     filtered = filter_hallucinated_codes(ai_answers)
-    return best_available_answers(ranking_source: 'filtered_hallucinated_answers') if filtered.empty?
+    if filtered.empty?
+      record_failure
+      return best_available_answers(ranking_source: 'filtered_hallucinated_answers')
+    end
 
     limit = configured_result_limit
     normalized = filtered.map do |answer|
@@ -422,7 +435,7 @@ private
 
   def questions_result(parsed, duplicate_retry: false)
     questions = extract_questions(parsed)
-    return best_available_answers if questions.empty?
+    return invalid_response_result if questions.empty?
 
     question = questions.first
     guard_result = InteractiveSearch::DuplicateQuestionGuard.call(

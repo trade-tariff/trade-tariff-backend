@@ -48,6 +48,7 @@ module Api
             expanded_query: expanded_query || @query,
             result_count: 0,
             max_score: nil,
+            search_failures: Array(TradeTariffRequest.search_failures),
           },
         }
       end
@@ -59,6 +60,7 @@ module Api
           expanded_query: result.expanded_query,
           result_count: result.results.size,
           max_score: result.results.map(&:score).compact.max,
+          search_failures: Array(TradeTariffRequest.search_failures),
         }
       end
 

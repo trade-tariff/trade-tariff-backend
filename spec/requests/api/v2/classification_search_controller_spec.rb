@@ -54,6 +54,7 @@ RSpec.describe 'Classification search API' do
           'expanded_query' => 'wireless headphones',
           'result_count' => 1,
           'max_score' => 0.03125,
+          'search_failures' => [],
         ),
       )
     end
@@ -80,7 +81,7 @@ RSpec.describe 'Classification search API' do
         expect(response).to have_http_status(:ok)
         expect(JSON.parse(response.body)).to include(
           'data' => [],
-          'meta' => include('retrieval_method' => 'hybrid', 'result_count' => 0),
+          'meta' => include('retrieval_method' => 'hybrid', 'result_count' => 0, 'search_failures' => []),
         )
       end
     end
@@ -110,7 +111,15 @@ RSpec.describe 'Classification search API' do
         make_request
 
         expect(response).to have_http_status(:internal_server_error)
-        expect(JSON.parse(response.body)).to include('errors' => [include('title' => 'Classification search failed')])
+        expect(JSON.parse(response.body)).to include(
+          'errors' => [
+            include(
+              'title' => 'Classification search failed',
+              'detail' => 'Classification search is temporarily unavailable',
+            ),
+          ],
+        )
+        expect(response.body).not_to include('all legs failed')
       end
     end
   end
