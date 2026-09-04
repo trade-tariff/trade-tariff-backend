@@ -61,9 +61,11 @@ private
       Rails.cache.write(cache_key, result_hash, expires_in: CACHE_TTL)
       Result.new(**result_hash)
     else
+      TradeTariffRequest.record_search_failure(Search::FailureCodes::QUERY_EXPANSION_FAILED)
       unchanged_result
     end
   rescue OpenaiClient::DeadlineExceeded => e
+    TradeTariffRequest.record_search_failure(Search::FailureCodes::QUERY_EXPANSION_FAILED)
     Search::Instrumentation.query_expansion_timed_out(
       request_id:,
       timeout_ms: EXPANSION_TIMEOUT_MS,
@@ -73,6 +75,7 @@ private
     )
     unchanged_result
   rescue StandardError => e
+    TradeTariffRequest.record_search_failure(Search::FailureCodes::QUERY_EXPANSION_FAILED)
     Search::Instrumentation.search_failed(
       request_id:,
       error_type: e.class.name,

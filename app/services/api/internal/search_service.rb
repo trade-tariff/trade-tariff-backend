@@ -3,7 +3,19 @@ module Api
     class SearchService
       include QueryProcessing
 
-      RetrievalResult = Data.define(:goods_nomenclatures, :max_score, :expanded_query, :results_type, :decision_results)
+      RetrievalResult = Data.define(
+        :goods_nomenclatures,
+        :max_score,
+        :expanded_query,
+        :results_type,
+        :decision_results,
+        :opensearch_results,
+        :vector_results,
+      ) do
+        def initialize(goods_nomenclatures:, max_score:, expanded_query:, results_type:, decision_results:, opensearch_results: [], vector_results: [])
+          super
+        end
+      end
 
       attr_reader :q, :as_of, :answers, :request_id, :description_intercept, :expanded_query
 
@@ -30,7 +42,7 @@ module Api
       def call
         return @sanitiser_errors if @sanitiser_errors
 
-        return { data: [] } if q.blank?
+        return empty_response if q.blank?
 
         @description_intercept = DescriptionIntercept.for_search(q, source: 'guided_search')
         ::Search::Instrumentation.description_intercept_checked(
@@ -75,7 +87,9 @@ module Api
         )
 
         [
-          with_description_intercept_meta(GoodsNomenclatureSearchSerializer.serialize([exact])),
+          with_search_failures_meta(
+            with_description_intercept_meta(GoodsNomenclatureSearchSerializer.serialize([exact])),
+          ),
           completion_payload(result_count: 1, results_type: 'exact_match'),
         ]
       end
@@ -85,7 +99,7 @@ module Api
       end
 
       def interactive_search_response(retrieval)
-        interactive_result = if @skip_question
+        interactive_result = if @skip_question || semantic_retrieval_failed?
                                nil
                              else
                                run_interactive_search(
@@ -94,14 +108,40 @@ module Api
                                )
                              end
 
+        response_results = if source_fallback_required?
+                             preferred_fallback_results(retrieval)
+                           else
+                             retrieval.goods_nomenclatures
+                           end
+        response_interactive_result = interactive_search_failed? ? nil : interactive_result
+
         response = build_response(
-          retrieval.goods_nomenclatures,
-          interactive_result,
+          response_results,
+          response_interactive_result,
           retrieval.expanded_query,
         )
         emit_evaluation_trace(retrieval:, interactive_result:)
 
         [response, interactive_completion_payload(response, retrieval, interactive_result)]
+      end
+
+      def semantic_retrieval_failed?
+        TradeTariffRequest.search_failed?(::Search::FailureCodes::EMBEDDING_GENERATION_FAILED) ||
+          TradeTariffRequest.search_failed?(::Search::FailureCodes::VECTOR_RETRIEVAL_FAILED)
+      end
+
+      def interactive_search_failed?
+        TradeTariffRequest.search_failed?(::Search::FailureCodes::INTERACTIVE_SEARCH_FAILED)
+      end
+
+      def source_fallback_required?
+        semantic_retrieval_failed? || interactive_search_failed?
+      end
+
+      def preferred_fallback_results(retrieval)
+        retrieval.opensearch_results.presence ||
+          retrieval.vector_results.presence ||
+          retrieval.goods_nomenclatures
       end
 
       def interactive_completion_payload(response, retrieval, interactive_result)
@@ -228,6 +268,7 @@ module Api
           expanded_query: search_expanded_query,
           results_type: 'vector',
           decision_results: goods_nomenclatures,
+          vector_results: goods_nomenclatures,
         )
       end
 
@@ -257,6 +298,7 @@ module Api
           expanded_query: search_expanded_query,
           results_type: 'opensearch',
           decision_results: result.results,
+          opensearch_results: result.results,
         )
       end
 
@@ -280,6 +322,8 @@ module Api
           expanded_query: result.expanded_query,
           results_type: 'hybrid',
           decision_results: hybrid_decision_results(result),
+          opensearch_results: result.opensearch_results,
+          vector_results: result.vector_results,
         )
       end
 
@@ -548,7 +592,7 @@ module Api
         response = GoodsNomenclatureSearchSerializer.serialize(results)
         meta = build_meta(interactive_result, expanded_query)
         response[:meta] = meta if meta.present?
-        response
+        with_search_failures_meta(response)
       end
 
       def build_results_with_confidence(goods_nomenclatures, interactive_result)
@@ -612,7 +656,11 @@ module Api
       end
 
       def empty_response
-        with_description_intercept_meta({ data: [] })
+        with_search_failures_meta(with_description_intercept_meta({ data: [] }))
+      end
+
+      def with_search_failures_meta(response)
+        response.merge(meta: (response[:meta] || {}).merge(search_failures: Array(TradeTariffRequest.search_failures)))
       end
 
       def with_description_intercept_meta(response)

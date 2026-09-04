@@ -1,4 +1,6 @@
 class VectorRetrievalService
+  EmbeddingGenerationError = Class.new(StandardError)
+  VectorRetrievalError = Class.new(StandardError)
   Result = Data.define(:results, :max_score)
 
   def self.call(query:, limit: 80, filter_prefixes: [], request_id: nil, vector_score_threshold: nil, vector_ef_search: nil, search_non_declarables: nil)
@@ -33,20 +35,30 @@ class VectorRetrievalService
     return Result.new(results: [], max_score:) if ranked_rows.empty?
 
     Result.new(results: build_results(ranked_rows), max_score:)
+  rescue EmbeddingGenerationError
+    raise
+  rescue StandardError => e
+    raise VectorRetrievalError, e.message
   end
 
 private
 
   def fetch_ranked_rows_for_query
-    query_embedding = AiUsage::Instrumentation.embedding_api_call(
+    query_embedding = generate_query_embedding
+    vector_literal = "'[#{query_embedding.join(',')}]'::vector"
+
+    fetch_ranked_sids(vector_literal)
+  end
+
+  def generate_query_embedding
+    AiUsage::Instrumentation.embedding_api_call(
       event_kind: 'vector_search_query_embedding',
       batch_size: 1,
       model: EmbeddingService::MODEL,
       request_id: @request_id,
     ) { embedding_service.embed(@query, event_kind: 'vector_search_query_embedding') }
-    vector_literal = "'[#{query_embedding.join(',')}]'::vector"
-
-    fetch_ranked_sids(vector_literal)
+  rescue StandardError => e
+    raise EmbeddingGenerationError, e.message
   end
 
   def build_results(ranked_rows, enforce_eligibility: false)

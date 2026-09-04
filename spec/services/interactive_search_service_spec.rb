@@ -4,6 +4,8 @@ RSpec.describe InteractiveSearchService do
   let(:search_result_class) { Data.define(:goods_nomenclature_item_id, :description, :full_description, :score) }
   let(:params) { search_params }
 
+  after { TradeTariffRequest.search_failures = nil }
+
   def search_params(**overrides)
     {
       query: 'leather handbag',
@@ -198,6 +200,12 @@ RSpec.describe InteractiveSearchService do
         result
         expect(OpenaiClient).not_to have_received(:call)
       end
+
+      it 'does not record a failure' do
+        result
+
+        expect(TradeTariffRequest.search_failures).to be_nil
+      end
     end
 
     context 'when there is a single search result' do
@@ -280,13 +288,13 @@ RSpec.describe InteractiveSearchService do
         )
       end
 
-      it 'falls back to best available answers when AI returns questions' do
+      it 'records a failure when the final-answer response asks another question' do
         allow(OpenaiClient).to receive(:call).and_return(
           '{"questions": [{"question": "What colour?", "options": ["Red", "Blue"]}]}',
         )
 
-        expect(result.type).to eq(:answers)
-        expect(result.data.first[:confidence]).to eq('good')
+        expect(result.type).to eq(:error)
+        expect(TradeTariffRequest.search_failures).to eq(%w[interactive_search_failed])
       end
 
       it 'returns an error result when AI returns a structured error' do
@@ -517,6 +525,12 @@ RSpec.describe InteractiveSearchService do
         expect(result.type).to eq(:answers)
         expect(result.data.first[:commodity_code]).to eq('4202210000')
       end
+
+      it 'records the malformed answers as an interactive search failure' do
+        result
+
+        expect(TradeTariffRequest.search_failures).to eq(%w[interactive_search_failed])
+      end
     end
 
     context 'when AI returns an error' do
@@ -532,6 +546,12 @@ RSpec.describe InteractiveSearchService do
 
       it 'includes the error message' do
         expect(result.data[:message]).to eq('Contradictory answers given')
+      end
+
+      it 'records an interactive search failure' do
+        result
+
+        expect(TradeTariffRequest.search_failures).to eq(%w[interactive_search_failed])
       end
     end
 
@@ -550,6 +570,12 @@ RSpec.describe InteractiveSearchService do
           hash_including(error_type: 'Faraday::TimeoutError', search_type: 'interactive'),
         )
       end
+
+      it 'records an interactive search failure' do
+        result
+
+        expect(TradeTariffRequest.search_failures).to eq(%w[interactive_search_failed])
+      end
     end
 
     context 'when AI returns unparseable response' do
@@ -559,8 +585,9 @@ RSpec.describe InteractiveSearchService do
         allow(OpenaiClient).to receive(:call).and_return(ai_response)
       end
 
-      it 'falls back to best available answers' do
-        expect(result.type).to eq(:answers)
+      it 'returns an error and records an interactive search failure' do
+        expect(result.type).to eq(:error)
+        expect(TradeTariffRequest.search_failures).to eq(%w[interactive_search_failed])
       end
     end
 
@@ -615,6 +642,21 @@ RSpec.describe InteractiveSearchService do
 
       it 'removes uncertainty options but keeps Other as a catch-all option' do
         expect(result.data.first[:options]).to eq(%w[Leather Other])
+      end
+    end
+
+    context 'when AI returns a question without any usable options' do
+      let(:ai_response) do
+        %q({"questions": [{"question": "What is the material?", "options": ["I don't know", "Unknown"]}]})
+      end
+
+      before do
+        allow(OpenaiClient).to receive(:call).and_return(ai_response)
+      end
+
+      it 'records the malformed question as an interactive search failure' do
+        expect(result.type).to eq(:error)
+        expect(TradeTariffRequest.search_failures).to eq(%w[interactive_search_failed])
       end
     end
   end

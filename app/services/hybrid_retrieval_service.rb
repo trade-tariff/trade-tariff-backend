@@ -1,7 +1,11 @@
 class HybridRetrievalService
   AllLegsFailed = Class.new(StandardError)
-  LegResult = Data.define(:value, :error)
-  Result = Data.define(:results, :expanded_query, :source_results)
+  LegResult = Data.define(:value, :error, :failure_code)
+  Result = Data.define(:results, :expanded_query, :source_results, :opensearch_results, :vector_results) do
+    def initialize(results:, expanded_query:, source_results:, opensearch_results: [], vector_results: [])
+      super
+    end
+  end
 
   def self.call(query:, as_of:, expanded_query: nil, retrieval_query: nil, request_id: nil, limit: 30, filter_prefixes: [], iteration: nil, search_type: 'interactive', rrf_k: nil, vector_score_threshold: nil, vector_ef_search: nil, search_non_declarables: nil)
     new(query:, as_of:, expanded_query:, retrieval_query:, request_id:, limit:, filter_prefixes:, iteration:, search_type:, rrf_k:, vector_score_threshold:, vector_ef_search:, search_non_declarables:).call
@@ -25,6 +29,9 @@ class HybridRetrievalService
 
   def call
     opensearch_leg, vector_leg = run_concurrent_retrievals
+    [opensearch_leg, vector_leg].filter_map(&:failure_code).each do |failure_code|
+      TradeTariffRequest.record_search_failure(failure_code)
+    end
     leg_errors = [opensearch_leg.error, vector_leg.error].compact
 
     if leg_errors.size == 2
@@ -35,7 +42,15 @@ class HybridRetrievalService
     vector_items = vector_leg.value&.results || []
 
     decision = query_guardrail_decision(vector_leg)
-    merged = decision[:accepted] ? rrf_merge(opensearch_items, vector_items) : []
+    merged = if vector_leg.error
+               opensearch_items
+             elsif opensearch_leg.error
+               vector_items
+             elsif decision[:accepted]
+               rrf_merge(opensearch_items, vector_items)
+             else
+               []
+             end
     Search::Instrumentation.query_guardrail_decided(
       request_id: @request_id,
       search_type: @search_type,
@@ -55,7 +70,13 @@ class HybridRetrievalService
       results: merged,
     )
 
-    Result.new(results: merged, expanded_query: @expanded_query, source_results: opensearch_items + vector_items)
+    Result.new(
+      results: merged,
+      expanded_query: @expanded_query,
+      source_results: opensearch_items + vector_items,
+      opensearch_results: opensearch_items,
+      vector_results: vector_items,
+    )
   end
 
 private
@@ -97,7 +118,7 @@ private
       results: result&.results || [],
     )
 
-    LegResult.new(value: result, error: nil)
+    LegResult.new(value: result, error: nil, failure_code: nil)
   rescue StandardError => e
     duration_ms = ((Process.clock_gettime(Process::CLOCK_MONOTONIC) - start) * 1000).round(2)
 
@@ -107,7 +128,14 @@ private
     )
 
     Rails.logger.error("HybridRetrievalService #{leg} leg failed: #{e.message}")
-    LegResult.new(value: nil, error: e)
+    LegResult.new(value: nil, error: e, failure_code: failure_code_for(leg, e))
+  end
+
+  def failure_code_for(leg, error)
+    return Search::FailureCodes::OPENSEARCH_FAILED if leg == :opensearch
+    return Search::FailureCodes::EMBEDDING_GENERATION_FAILED if error.is_a?(VectorRetrievalService::EmbeddingGenerationError)
+
+    Search::FailureCodes::VECTOR_RETRIEVAL_FAILED
   end
 
   def opensearch_args
@@ -172,7 +200,7 @@ private
                'below_threshold'
              end
 
-    { enabled:, accepted: reason == 'accepted', max_score:, threshold:, reason: }
+    { enabled:, accepted: reason.in?(%w[accepted vector_unavailable]), max_score:, threshold:, reason: }
   end
 
   def query_guardrail_threshold

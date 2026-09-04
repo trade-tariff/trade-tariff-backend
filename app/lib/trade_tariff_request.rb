@@ -8,6 +8,7 @@ class TradeTariffRequest < ActiveSupport::CurrentAttributes
             :request_source,
             :client_id,
             :experiment,
+            :search_failures,
             :green_lanes,
             :time_machine_now,
             # Controls how TimeMachine filters associated records in queries.
@@ -20,6 +21,18 @@ class TradeTariffRequest < ActiveSupport::CurrentAttributes
             # Controls whether label fields (known_brands, colloquial_terms, synonyms)
             # are included in search suggestion queries
             :search_labels_enabled
+
+  def record_search_failure(code)
+    unless Search::FailureCodes::ALL.include?(code)
+      raise ArgumentError, "Unknown search failure: #{code}"
+    end
+
+    self.search_failures = Array(search_failures) | [code]
+  end
+
+  def search_failed?(code)
+    Array(search_failures).include?(code)
+  end
 
   def self.request_source_for_user_agent(user_agent)
     if user_agent.to_s.start_with?(FRONTEND_USER_AGENT_PREFIX)

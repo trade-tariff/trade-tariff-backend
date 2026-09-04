@@ -68,6 +68,7 @@ RSpec.describe Api::Internal::SearchController, :internal do
               },
             },
           ],
+          'meta' => { 'search_failures' => [] },
         }
       end
 
@@ -113,6 +114,7 @@ RSpec.describe Api::Internal::SearchController, :internal do
               },
             },
           ],
+          'meta' => { 'search_failures' => [] },
         }
       end
 
@@ -165,6 +167,7 @@ RSpec.describe Api::Internal::SearchController, :internal do
         payload = JSON.parse(response.body)
         expect(response).to have_http_status(:ok)
         expect(payload.dig('data', 0, 'attributes', 'goods_nomenclature_item_id')).to eq('8479899790')
+        expect(payload.dig('meta', 'search_failures')).to eq(%w[query_expansion_failed])
         expect(TradeTariffBackend.search_client).to have_received(:search).once
         expect(Search::Instrumentation).not_to have_received(:search_failed)
       end
@@ -204,6 +207,7 @@ RSpec.describe Api::Internal::SearchController, :internal do
               },
             },
           ],
+          'meta' => { 'search_failures' => [] },
         }
       end
 
@@ -217,7 +221,7 @@ RSpec.describe Api::Internal::SearchController, :internal do
 
     context 'when empty query' do
       let(:pattern) do
-        { 'data' => [] }
+        { 'data' => [], 'meta' => { 'search_failures' => [] } }
       end
 
       it 'returns an empty data array' do
@@ -225,6 +229,29 @@ RSpec.describe Api::Internal::SearchController, :internal do
 
         expect(response).to have_http_status(:ok)
         expect(response.body).to match_json_expression(pattern)
+      end
+    end
+
+    context 'when both hybrid retrieval legs fail' do
+      before do
+        service = instance_double(Api::Internal::SearchService)
+        allow(service).to receive(:call).and_raise(HybridRetrievalService::AllLegsFailed, 'provider details')
+        allow(Api::Internal::SearchService).to receive(:new).and_return(service)
+      end
+
+      it 'returns a controlled error without provider details' do
+        post api_search_path(format: :json), params: { q: 'horse' }
+
+        expect(response).to have_http_status(:internal_server_error)
+        expect(response.parsed_body).to eq(
+          'errors' => [
+            {
+              'status' => '500',
+              'title' => 'Search failed',
+              'detail' => 'Search is temporarily unavailable',
+            },
+          ],
+        )
       end
     end
 
@@ -254,6 +281,7 @@ RSpec.describe Api::Internal::SearchController, :internal do
               'guidance_location' => 'interstitial',
               'escalate_to_webchat' => true,
             },
+            'search_failures' => [],
           },
         }
       end
@@ -347,6 +375,7 @@ RSpec.describe Api::Internal::SearchController, :internal do
                 },
               ],
             },
+            'search_failures' => [],
           },
         }
       end

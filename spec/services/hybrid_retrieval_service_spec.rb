@@ -1,4 +1,6 @@
 RSpec.describe HybridRetrievalService do
+  after { TradeTariffRequest.search_failures = nil }
+
   def make_result(sid:, item_id:, score:)
     GoodsNomenclatureResult.new(
       id: sid,
@@ -125,6 +127,13 @@ RSpec.describe HybridRetrievalService do
       result = described_class.call(query: 'horses', as_of: Time.zone.today)
 
       expect(result.source_results).to match_array(opensearch_results + vector_results)
+    end
+
+    it 'preserves each retrieval source' do
+      result = described_class.call(query: 'horses', as_of: Time.zone.today)
+
+      expect(result.opensearch_results).to eq(opensearch_results)
+      expect(result.vector_results).to eq(vector_results)
     end
 
     it 'ranks items in both lists higher than items in only one list' do
@@ -287,14 +296,14 @@ RSpec.describe HybridRetrievalService do
         )
       end
 
-      it 'fails closed when the vector score needed by the guardrail is unavailable' do
+      it 'keeps OpenSearch results when vector retrieval is unavailable' do
         allow(VectorRetrievalService).to receive(:call_with_diagnostics).and_raise(StandardError, 'vector down')
 
         result = described_class.call(query: 'horses', as_of: Time.zone.today)
 
-        expect(result.results).to be_empty
+        expect(result.results).to eq(opensearch_results)
         expect(Search::Instrumentation).to have_received(:query_guardrail_decided).with(
-          hash_including(accepted: false, max_score: nil, reason: 'vector_unavailable'),
+          hash_including(accepted: true, max_score: nil, reason: 'vector_unavailable'),
         )
       end
     end
@@ -336,6 +345,12 @@ RSpec.describe HybridRetrievalService do
         expect(sids).to eq([2, 4, 1])
       end
 
+      it 'records the OpenSearch failure' do
+        described_class.call(query: 'horses', as_of: Time.zone.today)
+
+        expect(TradeTariffRequest.search_failures).to eq(%w[opensearch_failed])
+      end
+
       it 'emits error status for opensearch leg' do
         described_class.call(query: 'horses', as_of: Time.zone.today)
 
@@ -360,6 +375,12 @@ RSpec.describe HybridRetrievalService do
         expect(sids).to eq([1, 2, 3])
       end
 
+      it 'records the vector retrieval failure' do
+        described_class.call(query: 'horses', as_of: Time.zone.today)
+
+        expect(TradeTariffRequest.search_failures).to eq(%w[vector_retrieval_failed])
+      end
+
       it 'still returns the expanded_query passed by internal search' do
         result = described_class.call(query: 'horses', expanded_query: expanded_query, as_of: Time.zone.today)
 
@@ -378,6 +399,19 @@ RSpec.describe HybridRetrievalService do
       end
     end
 
+    context 'when embedding generation fails' do
+      before do
+        allow(VectorRetrievalService).to receive(:call_with_diagnostics)
+          .and_raise(VectorRetrievalService::EmbeddingGenerationError, 'embedding down')
+      end
+
+      it 'records the embedding failure' do
+        described_class.call(query: 'horses', as_of: Time.zone.today)
+
+        expect(TradeTariffRequest.search_failures).to eq(%w[embedding_generation_failed])
+      end
+    end
+
     context 'when both legs fail' do
       before do
         allow(OpensearchRetrievalService).to receive(:call).and_raise(StandardError, 'opensearch down')
@@ -388,6 +422,17 @@ RSpec.describe HybridRetrievalService do
         expect {
           described_class.call(query: 'horses', as_of: Time.zone.today)
         }.to raise_error(described_class::AllLegsFailed, 'Hybrid retrieval failed for all legs: opensearch down; vector down')
+      end
+
+      it 'records both retrieval failures before raising' do
+        expect {
+          described_class.call(query: 'horses', as_of: Time.zone.today)
+        }.to raise_error(described_class::AllLegsFailed)
+
+        expect(TradeTariffRequest.search_failures).to contain_exactly(
+          'opensearch_failed',
+          'vector_retrieval_failed',
+        )
       end
 
       it 'emits error status for both legs' do

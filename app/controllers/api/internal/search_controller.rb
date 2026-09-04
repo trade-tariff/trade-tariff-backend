@@ -9,6 +9,16 @@ module Api
         else
           render json: result
         end
+      rescue HybridRetrievalService::AllLegsFailed
+        render json: {
+          errors: [
+            {
+              status: '500',
+              title: 'Search failed',
+              detail: 'Search is temporarily unavailable',
+            },
+          ],
+        }, status: :internal_server_error
       end
 
       def suggestions

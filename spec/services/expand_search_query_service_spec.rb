@@ -1,6 +1,8 @@
 RSpec.describe ExpandSearchQueryService do
   subject(:result) { described_class.call(query, request_id: 'request-123') }
 
+  after { TradeTariffRequest.search_failures = nil }
+
   let(:ai_response) do
     {
       'expanded_query' => 'Portable automatic data-processing machines',
@@ -66,6 +68,12 @@ RSpec.describe ExpandSearchQueryService do
 
         expect(OpenaiClient).not_to have_received(:call)
       end
+
+      it 'does not record a failure for a stage that was not needed' do
+        result
+
+        expect(TradeTariffRequest.search_failures).to be_nil
+      end
     end
 
     context 'when the query is a short numeric code' do
@@ -121,6 +129,12 @@ RSpec.describe ExpandSearchQueryService do
       it 'returns nil reason' do
         expect(result.reason).to be_nil
       end
+
+      it 'records the expansion failure' do
+        result
+
+        expect(TradeTariffRequest.search_failures).to eq(%w[query_expansion_failed])
+      end
     end
 
     context 'when the AI returns an empty expanded_query' do
@@ -130,6 +144,22 @@ RSpec.describe ExpandSearchQueryService do
       it 'falls back to the original query' do
         expect(result.expanded_query).to eq('laptop')
       end
+
+      it 'records the malformed provider response as an expansion failure' do
+        result
+
+        expect(TradeTariffRequest.search_failures).to eq(%w[query_expansion_failed])
+      end
+    end
+
+    context 'when the AI validly returns the original query' do
+      let(:query) { 'laptop' }
+      let(:ai_response) { { 'expanded_query' => 'laptop', 'reason' => 'already tariff-ready' } }
+
+      it 'does not infer a failure from the unchanged value' do
+        expect(result.expanded_query).to eq('laptop')
+        expect(TradeTariffRequest.search_failures).to be_nil
+      end
     end
 
     context 'when the AI returns nil' do
@@ -138,6 +168,12 @@ RSpec.describe ExpandSearchQueryService do
 
       it 'falls back to the original query' do
         expect(result.expanded_query).to eq('laptop')
+      end
+
+      it 'records the malformed provider response as an expansion failure' do
+        result
+
+        expect(TradeTariffRequest.search_failures).to eq(%w[query_expansion_failed])
       end
     end
 
@@ -155,6 +191,12 @@ RSpec.describe ExpandSearchQueryService do
 
       it 'returns nil reason' do
         expect(result.reason).to be_nil
+      end
+
+      it 'records the expansion failure' do
+        result
+
+        expect(TradeTariffRequest.search_failures).to eq(%w[query_expansion_failed])
       end
 
       it 'emits a search_failed event' do
@@ -185,6 +227,12 @@ RSpec.describe ExpandSearchQueryService do
 
       it 'falls back to the original query' do
         expect(result.expanded_query).to eq('laptop')
+      end
+
+      it 'records the expansion failure' do
+        result
+
+        expect(TradeTariffRequest.search_failures).to eq(%w[query_expansion_failed])
       end
 
       it 'emits timeout telemetry' do
