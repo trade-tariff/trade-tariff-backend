@@ -92,6 +92,7 @@ V2Api.routes.draw do
       resources :quota_order_numbers, only: %i[index]
       resources :measure_types, only: %i[index show]
       resources :measures, only: %i[show], constraints: { id: /-?\d+/ }
+      resource :vat_guidance_demo, only: :show, controller: 'vat_guidance_demo' if TradeTariffBackend.uk?
 
       resources :additional_codes, only: [] do
         collection { get :search }

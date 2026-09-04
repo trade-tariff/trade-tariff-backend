@@ -7841,6 +7841,101 @@
           }
         }
       }
+    },
+    "/api/vat_guidance_demo": {
+      "parameters": [
+        {
+          "name": "Accept",
+          "in": "header",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "enum": [
+              "application/vnd.hmrc.2.0+json"
+            ]
+          },
+          "description": "API version negotiation header"
+        }
+      ],
+      "get": {
+        "summary": "Show the guarded AI-1146 VAT guidance demo artifact",
+        "tags": [
+          "VAT guidance demo"
+        ],
+        "description": "Returns a non-production projection of the AI-1146 composed VAT guidance routes for an explicitly enabled frontend demo.",
+        "operationId": "showVatGuidanceDemo",
+        "responses": {
+          "200": {
+            "description": "demo artifact returned",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "required": [
+                    "data"
+                  ],
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "required": [
+                        "id",
+                        "type",
+                        "attributes"
+                      ],
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "enum": [
+                            "ai-1146"
+                          ]
+                        },
+                        "type": {
+                          "type": "string",
+                          "enum": [
+                            "vat_guidance_demo"
+                          ]
+                        },
+                        "attributes": {
+                          "type": "object",
+                          "required": [
+                            "ticket",
+                            "spike_status",
+                            "composed_commodity_journeys",
+                            "notice_journeys"
+                          ],
+                          "properties": {
+                            "ticket": {
+                              "type": "string",
+                              "enum": [
+                                "AI-1146"
+                              ]
+                            },
+                            "spike_status": {
+                              "type": "object"
+                            },
+                            "composed_commodity_journeys": {
+                              "type": "array",
+                              "items": {
+                                "type": "object"
+                              }
+                            },
+                            "notice_journeys": {
+                              "type": "array",
+                              "items": {
+                                "type": "object"
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
     }
   }
 }
