@@ -139,9 +139,10 @@ module Api
       end
 
       def preferred_fallback_results(retrieval)
-        retrieval.opensearch_results.presence ||
-          retrieval.vector_results.presence ||
-          retrieval.goods_nomenclatures
+        return retrieval.goods_nomenclatures unless retrieval.results_type == 'hybrid'
+        return retrieval.vector_results if TradeTariffRequest.search_failed?(::Search::FailureCodes::OPENSEARCH_FAILED)
+
+        retrieval.opensearch_results
       end
 
       def interactive_completion_payload(response, retrieval, interactive_result)
