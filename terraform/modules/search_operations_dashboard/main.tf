@@ -235,9 +235,9 @@ resource "aws_cloudwatch_dashboard" "search_operations" {
             region = var.region
             query  = <<-EOT
               ${local.source}
-              | ${local.service_filter} and event in ["search_failed", "search_completed"]
-              | filter event = "search_failed" or final_result_type = "error"
-              | fields @timestamp, event, request_source, search_type, error_type, final_result_type, error_message, request_id
+              | ${local.service_filter} and event in ["search_failed", "search_stage_failed", "search_completed"]
+              | filter event in ["search_failed", "search_stage_failed"] or final_result_type = "error"
+              | fields @timestamp, event, request_source, search_type, failure_code, operation, error_type, final_result_type, error_message, request_id
               | sort @timestamp desc
               | limit 20
             EOT
@@ -255,10 +255,10 @@ resource "aws_cloudwatch_dashboard" "search_operations" {
             query  = <<-EOT
               ${local.source}
               | ${local.service_filter} and event = "search_started"
-              | stats latest(@timestamp) as latest_timestamp, latest(query) as query,
-                  latest(request_source) as request_source, latest(search_type) as search_type
+              | stats latest(@timestamp) as latest_timestamp, latest(query) as latest_query,
+                  latest(request_source) as latest_request_source, latest(search_type) as latest_search_type
                 by request_id
-              | display latest_timestamp, query, request_source, search_type, request_id
+              | display latest_timestamp, latest_query, latest_request_source, latest_search_type, request_id
               | sort latest_timestamp desc
               | limit 30
             EOT

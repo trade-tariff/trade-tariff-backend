@@ -229,11 +229,11 @@ RSpec.describe 'search experiment dashboard Terraform' do
     recent_searches_query = operations_widget_query('Recent Searches')
 
     expect(recent_searches_query).to include(
-      'stats latest(@timestamp) as latest_timestamp, latest(query) as query,',
+      'stats latest(@timestamp) as latest_timestamp, latest(query) as latest_query,',
     )
     expect(recent_searches_query).to include('by request_id')
     expect(recent_searches_query).to include(
-      'display latest_timestamp, query, request_source, search_type, request_id',
+      'display latest_timestamp, latest_query, latest_request_source, latest_search_type, request_id',
     )
   end
 

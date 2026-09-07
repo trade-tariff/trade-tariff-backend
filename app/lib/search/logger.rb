@@ -347,14 +347,15 @@ module Search
   private
 
     def log_entry(data, event)
-      entry = data.merge(
+      entry = data.merge(Search::FailureCodes.logging_fields([]), event.payload.slice(*Search::FailureCodes::LOG_FIELDS)).merge(
         service: 'search',
         timestamp: Time.current.iso8601,
       )
       entry[:request_source] = event.payload[:request_source] if event.payload[:request_source].present?
       client_id = event.payload[:client_id].presence || TradeTariffRequest.client_id.presence
       entry[:client_id] = client_id if client_id
-      entry[:experiment] = TradeTariffRequest.experiment if TradeTariffRequest.experiment.present?
+      experiment = event.payload[:experiment].presence || TradeTariffRequest.experiment.presence
+      entry[:experiment] = experiment if experiment
       entry.to_json
     end
 

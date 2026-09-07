@@ -5,6 +5,7 @@ module Search
         start_time = Process.clock_gettime(Process::CLOCK_MONOTONIC)
         result = yield
         duration = Process.clock_gettime(Process::CLOCK_MONOTONIC) - start_time
+        record_api_failure(operation) if determine_response_type(result) == 'error'
 
         instrument(
           # NOTE: Api::Admin::Search::Evaluation::SearchesController#create
@@ -29,6 +30,7 @@ module Search
 
         result
       rescue StandardError => e
+        record_api_failure(operation)
         duration = Process.clock_gettime(Process::CLOCK_MONOTONIC) - start_time
         instrument(
           # See the success-path instrument() call above for why this event
@@ -48,6 +50,11 @@ module Search
           }.merge(truncate_error_payload(AiUsage.safe_error_message(e))).merge(AiUsage.payload_from_error(e)),
         )
         raise
+      end
+
+      def record_api_failure(operation)
+        code = Search::FailureCodes.for_operation(operation)
+        TradeTariffRequest.record_search_failure(code) if code
       end
 
       def determine_response_type(result)

@@ -1,5 +1,6 @@
 RSpec.describe Search::Instrumentation do
-  before { TradeTariffRequest.request_source = nil }
+  before { TradeTariffRequest.reset }
+  after { TradeTariffRequest.reset }
 
   describe '.search_stage_failed' do
     after { TradeTariffRequest.reset }
@@ -39,6 +40,7 @@ RSpec.describe Search::Instrumentation do
         request_id: 'req-1',
         query: 'horses',
         search_type: 'interactive',
+        **Search::FailureCodes.logging_fields([]),
       )
     end
 
@@ -53,6 +55,7 @@ RSpec.describe Search::Instrumentation do
         request_id: 'current-request-id',
         query: 'horses',
         search_type: 'interactive',
+        **Search::FailureCodes.logging_fields([]),
       )
     end
 
@@ -68,6 +71,7 @@ RSpec.describe Search::Instrumentation do
         query: 'horses',
         search_type: 'interactive',
         request_source: 'frontend',
+        **Search::FailureCodes.logging_fields([]),
       )
     end
   end
@@ -86,6 +90,7 @@ RSpec.describe Search::Instrumentation do
         request_id: 'req-1',
         query: 'horses',
         search_type: 'interactive',
+        **Search::FailureCodes.logging_fields([]),
       )
       expect(ActiveSupport::Notifications).to have_received(:instrument).with(
         'search_completed.search',
@@ -254,6 +259,7 @@ RSpec.describe Search::Instrumentation do
         answer_count: 1,
         added_answers: %w[Leather],
         iteration: 2,
+        **Search::FailureCodes.logging_fields([]),
       )
     end
   end
@@ -282,6 +288,7 @@ RSpec.describe Search::Instrumentation do
         decider_version: 'v1',
         result_count: 3,
         max_score: 4.5,
+        **Search::FailureCodes.logging_fields([]),
       )
     end
   end
@@ -306,6 +313,7 @@ RSpec.describe Search::Instrumentation do
         elapsed_ms: 5010.0,
         model: 'gpt-4.1-mini-2025-04-14',
         fallback_outcome: 'preliminary_results',
+        **Search::FailureCodes.logging_fields([]),
       )
     end
   end
@@ -756,6 +764,7 @@ RSpec.describe Search::Instrumentation do
         max_score: 0.31,
         threshold: 0.32,
         reason: 'below_threshold',
+        **Search::FailureCodes.logging_fields([]),
       )
     end
 
@@ -788,6 +797,7 @@ RSpec.describe Search::Instrumentation do
         max_score: 0.55,
         threshold: 0.32,
         reason: 'disabled',
+        **Search::FailureCodes.logging_fields([]),
       )
     end
   end
@@ -814,6 +824,7 @@ RSpec.describe Search::Instrumentation do
         iteration: 1,
         effective_query: 'horses',
         details: { questions: [{ question: 'Material?' }] },
+        **Search::FailureCodes.logging_fields([]),
       )
     end
   end
@@ -842,6 +853,7 @@ RSpec.describe Search::Instrumentation do
         iteration: 2,
         effective_query: 'handbag Leather',
         details: { answers: [{ commodity_code: '0101210000', confidence: 'strong' }] },
+        **Search::FailureCodes.logging_fields([]),
       )
     end
   end
@@ -954,6 +966,7 @@ RSpec.describe Search::Instrumentation do
         reason_truncated: false,
         duplicate_of_question: 'Which best describes the imported item itself?',
         duplicate_of_answer: 'Another electrical measuring or checking instrument',
+        **Search::FailureCodes.logging_fields([]),
       )
     end
 
@@ -997,6 +1010,7 @@ RSpec.describe Search::Instrumentation do
         search_type: 'interactive',
         query: 'horses',
         matched: false,
+        **Search::FailureCodes.logging_fields([]),
       )
     end
 
@@ -1031,6 +1045,7 @@ RSpec.describe Search::Instrumentation do
         guidance_level: 'warning',
         guidance_location: 'interstitial',
         escalate_to_webchat: true,
+        **Search::FailureCodes.logging_fields([]),
       )
     end
   end
@@ -1083,6 +1098,7 @@ RSpec.describe Search::Instrumentation do
         description_intercept_guidance_level: 'info',
         description_intercept_guidance_location: 'results',
         description_intercept_escalate_to_webchat: false,
+        **Search::FailureCodes.logging_fields([]),
       )
     end
 
@@ -1179,6 +1195,7 @@ RSpec.describe Search::Instrumentation do
         request_id: 'req-1',
         goods_nomenclature_item_id: '4202210000',
         goods_nomenclature_class: 'Commodity',
+        **Search::FailureCodes.logging_fields([]),
       )
     end
   end
@@ -1255,6 +1272,7 @@ RSpec.describe Search::Instrumentation do
         error_message: 'connection timed out',
         error_message_truncated: false,
         search_type: 'interactive',
+        **Search::FailureCodes.logging_fields([]).merge(search_degraded: true),
       )
     end
 

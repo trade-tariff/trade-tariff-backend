@@ -1,6 +1,6 @@
 class HybridRetrievalService
   AllLegsFailed = Class.new(StandardError)
-  LegResult = Data.define(:value, :error, :failure_code)
+  LegResult = Data.define(:value, :error, :failure_code, :duration_ms, :failure_codes)
   Result = Data.define(:results, :expanded_query, :source_results, :opensearch_results, :vector_results, :failure_codes) do
     def initialize(results:, expanded_query:, source_results:, opensearch_results: [], vector_results: [], failure_codes: [])
       super
@@ -28,11 +28,15 @@ class HybridRetrievalService
   end
 
   def call
+    initial_failures = Array(TradeTariffRequest.search_failures)
     opensearch_leg, vector_leg = run_concurrent_retrievals
-    failure_codes = [opensearch_leg, vector_leg].filter_map(&:failure_code)
+    legs = [opensearch_leg, vector_leg]
+    failure_codes = (legs.flat_map(&:failure_codes).uniq - initial_failures) | legs.filter_map(&:failure_code)
     failure_codes.each do |failure_code|
       TradeTariffRequest.record_search_failure(failure_code)
     end
+    emit_leg_instrumentation(:opensearch, opensearch_leg)
+    emit_leg_instrumentation(:vector, vector_leg)
     leg_errors = [opensearch_leg.error, vector_leg.error].compact
 
     if leg_errors.size == 2
@@ -114,11 +118,27 @@ private
     end
 
     duration_ms = ((Process.clock_gettime(Process::CLOCK_MONOTONIC) - start) * 1000).round(2)
-    count = result&.results&.size || 0
+    LegResult.new(value: result, error: nil, failure_code: nil, duration_ms:, failure_codes: Array(TradeTariffRequest.search_failures))
+  rescue StandardError => e
+    duration_ms = ((Process.clock_gettime(Process::CLOCK_MONOTONIC) - start) * 1000).round(2)
+    LegResult.new(value: nil, error: e, failure_code: failure_code_for(leg, e), duration_ms:, failure_codes: Array(TradeTariffRequest.search_failures))
+  end
 
+  def emit_leg_instrumentation(leg, leg_result)
+    results = leg_result.value&.results || []
     Search::Instrumentation.retrieval_leg_completed(
-      request_id: @request_id, leg: leg, duration_ms: duration_ms, result_count: count, status: 'success',
+      request_id: @request_id,
+      search_type: @search_type,
+      leg: leg,
+      duration_ms: leg_result.duration_ms,
+      result_count: results.size,
+      status: leg_result.error ? 'error' : 'success',
+      error_message: leg_result.error&.message,
+      failure_code: leg_result.failure_code,
+      error_type: leg_result.error&.class&.name,
     )
+    return if leg_result.error
+
     Search::Instrumentation.retrieval_results_returned(
       request_id: @request_id,
       query: @query,
@@ -128,20 +148,8 @@ private
       stage: 'before_rrf',
       leg: leg,
       iteration: @iteration,
-      results: result&.results || [],
+      results: results,
     )
-
-    LegResult.new(value: result, error: nil, failure_code: nil)
-  rescue StandardError => e
-    duration_ms = ((Process.clock_gettime(Process::CLOCK_MONOTONIC) - start) * 1000).round(2)
-    failure_code = failure_code_for(leg, e)
-
-    Search::Instrumentation.retrieval_leg_completed(
-      request_id: @request_id, leg: leg, duration_ms: duration_ms, result_count: 0, status: 'error',
-      error_message: e.message, failure_code: failure_code, error_type: e.class.name
-    )
-
-    LegResult.new(value: nil, error: e, failure_code: failure_code)
   end
 
   def failure_code_for(leg, error)

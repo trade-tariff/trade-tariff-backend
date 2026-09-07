@@ -22,19 +22,27 @@ module Api
         return @sanitiser_errors if @sanitiser_errors
         return empty_response if @query.blank?
 
-        result = HybridRetrievalService.call(
-          query: @query,
-          expanded_query: expanded_query,
-          as_of: parse_date(@params[:as_of]),
-          request_id: request_id,
-          limit: limit,
-          search_type: 'classification',
-        )
+        ::Search::Instrumentation.search(request_id:, query: @query, search_type: 'classification') do
+          result = HybridRetrievalService.call(
+            query: @query,
+            expanded_query: expanded_query,
+            as_of: parse_date(@params[:as_of]),
+            request_id: request_id,
+            limit: limit,
+            search_type: 'classification',
+          )
 
-        ClassificationSearchResultSerializer.serialize(
-          result.results,
-          meta: response_meta(result),
-        )
+          response = ClassificationSearchResultSerializer.serialize(
+            result.results,
+            meta: response_meta(result),
+          )
+          completion = {
+            result_count: result.results.size,
+            results_type: 'hybrid',
+            max_score: result.results.map(&:score).compact.max,
+          }
+          [response, completion]
+        end
       end
 
     private

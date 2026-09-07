@@ -85,6 +85,16 @@ These alarms count failure events and trigger when any matching event occurs in 
 
 The existing OpenSearch-leg and LLM API-error patterns remain alongside the new stage patterns so older application instances retain their alert coverage during a rolling deployment or rollback. The new vector alarm and unusable-response coverage require the corresponding new application events. Legacy vector errors cannot distinguish embedding generation from database retrieval and are not assigned to the database alarm.
 
+## Search Failure Fields
+
+Search events and search-related AI usage events include `search_degraded` and six explicit boolean fields: `query_expansion_failed`, `embedding_generation_failed`, `vector_retrieval_failed`, `interactive_search_failed`, `duplicate_question_validation_failed`, and `opensearch_failed`. Each field is present as `true` or `false`. Duplicate-question validation failing open has its own code, separate from interactive inference failure. Disabled stages, successful empty results, and query-guardrail decisions do not mark a search as degraded.
+
+Flags describe failures known when each event is emitted. A later failure does not rewrite earlier events. Hybrid completion combines the retrieval legs' flags after both finish. An unclassified hard failure emits `search_failed` with `search_degraded: true` while all stage flags remain false.
+
+Search Operations keeps terminal and recovered stage failures visible in its existing Recent Error Log, including the failure code and operation. General AI cost accounting continues to include billed failures.
+
+To exclude degraded journeys from an experiment cohort, correlate all events sharing a `request_id` within the selected time window. Filtering individual events on `search_degraded` would retain costs and latency recorded before a later failure. The failure fields do not change dashboard cohorts by themselves.
+
 ## Query Expansion Deadline
 
 Uncached guided-search query expansion has a fixed five-second operation-specific deadline.

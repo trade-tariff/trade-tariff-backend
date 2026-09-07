@@ -28,13 +28,18 @@ module AiUsage
         duration_ms: event.payload[:duration_ms],
         request_id: event.payload[:request_id],
       }
+      if Search::FailureCodes.for_operation(event.payload[:event_kind])
+        data.merge!(Search::FailureCodes.logging_fields([]), event.payload.slice(*Search::FailureCodes::LOG_FIELDS))
+        data.merge!(event.payload.slice(:experiment, :request_source, :client_id, :search_type))
+      end
       add_ai_usage_fields!(data, event)
       data
     end
 
     def log_entry(data)
       entry = data.merge(service: 'ai_usage', timestamp: Time.current.iso8601)
-      entry[:experiment] = TradeTariffRequest.experiment if TradeTariffRequest.experiment.present?
+      experiment = data[:experiment].presence || TradeTariffRequest.experiment.presence
+      entry[:experiment] = experiment if experiment
       entry.to_json
     end
 
