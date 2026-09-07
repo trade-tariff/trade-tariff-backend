@@ -1,5 +1,5 @@
 module "backend_xi" {
-  source = "git@github.com:trade-tariff/trade-tariff-platform-terraform-modules.git//aws/ecs-service?ref=aws/ecs-service-v3.2.1"
+  source = "git@github.com:trade-tariff/trade-tariff-platform-terraform-modules.git//aws/ecs-service?ref=HMRC-2677-ecs-readonly-root-filesystem"
 
   region = var.region
 
@@ -30,6 +30,10 @@ module "backend_xi" {
   service_environment_config = local.backend_xi_service_env_vars
 
   enable_ecs_exec = true
+
+  readonly_root_filesystem = true
+  writable_paths           = local.writable_paths
+  container_user           = local.container_user
 
   has_autoscaler     = local.has_autoscaler
   min_capacity       = var.min_capacity

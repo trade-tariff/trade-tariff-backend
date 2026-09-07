@@ -1,5 +1,5 @@
 module "worker_uk" {
-  source = "git@github.com:trade-tariff/trade-tariff-platform-terraform-modules.git//aws/ecs-service?ref=aws/ecs-service-v3.2.1"
+  source = "git@github.com:trade-tariff/trade-tariff-platform-terraform-modules.git//aws/ecs-service?ref=HMRC-2677-ecs-readonly-root-filesystem"
 
   service_name = "worker-uk"
   region       = var.region
@@ -23,6 +23,10 @@ module "worker_uk" {
   task_role_policy_arns = [aws_iam_policy.task.arn]
 
   enable_ecs_exec = true
+
+  readonly_root_filesystem = true
+  writable_paths           = local.worker_writable_paths
+  container_user           = local.container_user
 
   container_entrypoint = [""]
   container_command    = local.worker_command
