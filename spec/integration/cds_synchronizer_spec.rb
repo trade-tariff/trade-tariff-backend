@@ -1,10 +1,11 @@
 RSpec.describe CdsSynchronizer do
   context 'for uk' do
     describe '#apply', :truncation do
-      let!(:cds_update) { create :cds_update, :pending,
-                                 filename: "tariff_dailyExtract_v1_#{example_date.strftime('%Y%m%d')}T123456.gzip",
-                                 example_date: example_date }
-
+      let!(:cds_update) do
+        create :cds_update, :pending,
+               filename: "tariff_dailyExtract_v1_#{example_date.strftime('%Y%m%d')}T123456.gzip",
+               example_date: example_date
+      end
 
       before do
         prepare_synchronizer_folders('cds')
