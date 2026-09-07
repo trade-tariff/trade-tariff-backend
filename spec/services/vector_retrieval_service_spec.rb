@@ -472,15 +472,23 @@ RSpec.describe VectorRetrievalService do
   describe '#call_with_diagnostics' do
     include_examples 'records retrieval failures', :call_with_diagnostics, described_class::VectorRetrievalError
 
-    %w[missing malformed].each do |shape|
+    {
+      missing: [],
+      malformed: [{ index: 0, embedding: [0.1] }],
+      absent_data: nil,
+      invalid_data: {},
+      invalid_entry: [nil],
+      excess_data: [{}, {}],
+    }.each do |shape, data|
       context "when a billed embedding is #{shape}" do
         before do
           EmbeddingService.reset_client!
           allow(EmbeddingService).to receive(:new).and_call_original
-          data = shape == 'missing' ? [] : [{ index: 0, embedding: [0.1] }]
+          body = { data:, usage: { prompt_tokens: 12, total_tokens: 12 } }
+          body.delete(:data) if data.nil?
           stub_request(:post, 'https://api.openai.com/v1/embeddings').to_return(
             status: 200,
-            body: { data:, usage: { prompt_tokens: 12, total_tokens: 12 } }.to_json,
+            body: body.to_json,
             headers: { 'Content-Type' => 'application/json' },
           )
         end

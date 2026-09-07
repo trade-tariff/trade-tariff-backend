@@ -69,9 +69,7 @@ class EmbeddingService
       if response.success?
         usage = AiUsage.merge_metadata(usage, usage_metadata(response.body, event_kind:))
 
-        batch_embeddings = response.body['data']
-          .sort_by { |d| d['index'] }
-          .map { |d| d['embedding'] }
+        batch_embeddings = extract_embeddings(response.body, usage:, expected_size: batch.size)
 
         batch_embeddings.each_with_index do |embedding, i|
           original_index = present_indices[slice_index * BATCH_SIZE + i]
@@ -86,6 +84,15 @@ class EmbeddingService
   end
 
 private
+
+  def extract_embeddings(body, usage:, expected_size:)
+    data = body.fetch('data')
+    raise TypeError unless data.is_a?(Array) && data.size == expected_size
+
+    data.sort_by { |entry| entry['index'] }.map { |entry| entry['embedding'] }
+  rescue StandardError
+    raise ApiError.new('Embedding response was malformed', ai_usage: usage)
+  end
 
   def usage_metadata(body, event_kind:)
     usage = body.to_h['usage']
