@@ -386,6 +386,7 @@ private
     Search::Instrumentation.search_stage_failed(
       request_id:, search_type: @search_type,
       failure_code: Search::FailureCodes::INTERACTIVE_SEARCH_FAILED,
+      operation: 'interactive_search',
       error_type:, error_message: message
     )
   end
