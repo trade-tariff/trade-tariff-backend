@@ -95,11 +95,13 @@ RSpec.describe EmbeddingService do
         expect(result).to eq(embeddings)
       end
 
-      it 'rejects duplicate indices with billed usage intact' do
-        response_body['data'][1]['index'] = 0
-        expect { service.embed_batch(%w[one two three]) }.to raise_error(EmbeddingService::ApiError) { |error|
-          expect(error.ai_usage.total_tokens).to eq(9)
-        }
+      [{ 'index' => 0 }, { 'embedding' => nil }, { 'embedding' => 'invalid' }, { 'embedding' => [0.1] }].each do |invalid_entry|
+        it "rejects #{invalid_entry} with billed usage intact" do
+          response_body['data'][1].merge!(invalid_entry)
+          expect { service.embed_batch(%w[one two three]) }.to raise_error(EmbeddingService::ApiError) { |error|
+            expect(error.ai_usage.total_tokens).to eq(9)
+          }
+        end
       end
 
       it 'attaches batch usage metadata to the returned embeddings array' do
