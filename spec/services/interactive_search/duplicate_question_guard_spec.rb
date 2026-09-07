@@ -1,6 +1,8 @@
 RSpec.describe InteractiveSearch::DuplicateQuestionGuard do
   subject(:result) { described_class.call(**request) }
 
+  after { TradeTariffRequest.search_failures = nil }
+
   let(:request) { duplicate_question_request }
 
   def duplicate_question_request
@@ -305,6 +307,20 @@ RSpec.describe InteractiveSearch::DuplicateQuestionGuard do
     expect(result.suspicious).to be(true)
     expect(result.reason).to eq('validator_unparseable')
     expect(Search::Instrumentation).not_to have_received(:search_failed)
+  end
+
+  it 'records failed validation separately' do
+    allow(OpenaiClient).to receive(:call).and_raise(Faraday::TimeoutError)
+
+    expect(result).to be_allowed
+    expect(TradeTariffRequest.search_failures).to eq(%w[duplicate_question_validation_failed])
+  end
+
+  it 'records malformed validation' do
+    allow(OpenaiClient).to receive(:call).and_return('duplicate' => 'unknown')
+
+    expect(result).to be_allowed
+    expect(TradeTariffRequest.search_failures).to eq(%w[duplicate_question_validation_failed])
   end
 
   it 'allows continuation questions whose options include the previous other-like answer' do

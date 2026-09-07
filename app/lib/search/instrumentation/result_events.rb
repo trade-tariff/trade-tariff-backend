@@ -89,7 +89,7 @@ module Search
         instrument('answer_returned', payload)
       end
 
-      def retrieval_leg_completed(request_id:, leg:, duration_ms:, result_count:, status:, error_message: nil)
+      def retrieval_leg_completed(request_id:, leg:, duration_ms:, result_count:, status:, error_message: nil, failure_code: nil, error_type: nil)
         instrument(
           'retrieval_leg_completed',
           {
@@ -99,7 +99,7 @@ module Search
             duration_ms:,
             result_count:,
             status:,
-          }.merge(truncate_error_payload(error_message)),
+          }.merge({ failure_code:, error_type: }.compact).merge(truncate_error_payload(error_message)),
         )
       end
 

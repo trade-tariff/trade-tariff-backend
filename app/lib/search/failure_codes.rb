@@ -4,6 +4,7 @@ module Search
     EMBEDDING_GENERATION_FAILED = 'embedding_generation_failed'.freeze
     VECTOR_RETRIEVAL_FAILED = 'vector_retrieval_failed'.freeze
     INTERACTIVE_SEARCH_FAILED = 'interactive_search_failed'.freeze
+    DUPLICATE_QUESTION_VALIDATION_FAILED = 'duplicate_question_validation_failed'.freeze
     OPENSEARCH_FAILED = 'opensearch_failed'.freeze
 
     ALL = [
@@ -11,6 +12,7 @@ module Search
       EMBEDDING_GENERATION_FAILED,
       VECTOR_RETRIEVAL_FAILED,
       INTERACTIVE_SEARCH_FAILED,
+      DUPLICATE_QUESTION_VALIDATION_FAILED,
       OPENSEARCH_FAILED,
     ].freeze
   end

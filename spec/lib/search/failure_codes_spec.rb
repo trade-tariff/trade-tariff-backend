@@ -7,6 +7,7 @@ RSpec.describe Search::FailureCodes do
           embedding_generation_failed
           vector_retrieval_failed
           interactive_search_failed
+          duplicate_question_validation_failed
           opensearch_failed
         ],
       )

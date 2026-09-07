@@ -234,7 +234,7 @@ RSpec.describe SearchAnalytics::CloudwatchSnapshotQuery do
     ).once
     expect(client).to have_received(:start_query).with(
       hash_including(
-        query_string: a_string_including('service = "ai_usage" and event = "embedding_api_call_completed"'),
+        query_string: a_string_including('service = "ai_usage" and event in ["embedding_api_call_completed", "embedding_api_call_failed"] and event_kind = "vector_search_query_embedding"'),
       ),
     ).twice
     expect(client).to have_received(:start_query).with(

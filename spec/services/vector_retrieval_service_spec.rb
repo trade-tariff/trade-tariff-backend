@@ -9,7 +9,75 @@ RSpec.describe VectorRetrievalService do
     allow(embedding_service).to receive(:embed).with('live horses', event_kind: 'vector_search_query_embedding').and_return(query_embedding)
   end
 
+  around do |example|
+    TradeTariffRequest.set(search_failures: nil) { example.run }
+  end
+
+  shared_examples 'records retrieval failures' do |entrypoint, retrieval_error_class|
+    context 'when the embedding provider fails' do
+      before { allow(embedding_service).to receive(:embed).and_raise(Faraday::TimeoutError, 'embedding timed out') }
+
+      it 'records only the embedding failure' do
+        events = []
+        subscriber = ActiveSupport::Notifications.subscribe('search_stage_failed.search') do |*args|
+          events << ActiveSupport::Notifications::Event.new(*args)
+        end
+
+        expect { service.public_send(entrypoint) }.to raise_error(described_class::EmbeddingGenerationError)
+
+        expect(TradeTariffRequest.search_failures).to eq(%w[embedding_generation_failed])
+        expect(events).to contain_exactly(
+          have_attributes(payload: hash_including(
+            request_id: 'request-123',
+            failure_code: 'embedding_generation_failed',
+            operation: 'embedding_generation',
+            error_type: 'Faraday::TimeoutError',
+          )),
+        )
+      ensure
+        ActiveSupport::Notifications.unsubscribe(subscriber) if subscriber
+      end
+    end
+
+    context 'when the embedding is malformed' do
+      let(:query_embedding) { nil }
+
+      it 'records only the embedding failure' do
+        expect { service.public_send(entrypoint) }.to raise_error(described_class::EmbeddingGenerationError)
+
+        expect(TradeTariffRequest.search_failures).to eq(%w[embedding_generation_failed])
+      end
+    end
+
+    context 'when the vector database fails' do
+      before { allow(GoodsNomenclatureSelfText).to receive(:vector_search).and_raise(Sequel::DatabaseError, 'vector unavailable') }
+
+      it 'records only the vector failure' do
+        events = []
+        subscriber = ActiveSupport::Notifications.subscribe('search_stage_failed.search') do |*args|
+          events << ActiveSupport::Notifications::Event.new(*args)
+        end
+
+        expect { service.public_send(entrypoint) }.to raise_error(retrieval_error_class, 'vector unavailable')
+
+        expect(TradeTariffRequest.search_failures).to eq(%w[vector_retrieval_failed])
+        expect(events).to contain_exactly(
+          have_attributes(payload: hash_including(
+            request_id: 'request-123',
+            failure_code: 'vector_retrieval_failed',
+            operation: 'vector_retrieval',
+            error_type: 'Sequel::DatabaseError',
+          )),
+        )
+      ensure
+        ActiveSupport::Notifications.unsubscribe(subscriber) if subscriber
+      end
+    end
+  end
+
   describe '#call' do
+    include_examples 'records retrieval failures', :call, Sequel::DatabaseError
+
     it 'embeds the query text' do
       service.call
 
@@ -402,6 +470,35 @@ RSpec.describe VectorRetrievalService do
   end
 
   describe '#call_with_diagnostics' do
+    include_examples 'records retrieval failures', :call_with_diagnostics, described_class::VectorRetrievalError
+
+    context 'when a malformed embedding has usage' do
+      let(:query_embedding) do
+        usage = AiUsage.metadata_for(
+          model: EmbeddingService::MODEL,
+          event_kind: 'vector_search_query_embedding',
+          usage: { 'prompt_tokens' => 12, 'total_tokens' => 12 },
+        )
+        AiUsage.attach_metadata([0.1], usage)
+      end
+
+      it 'retains the billed usage on failure' do
+        events = []
+        subscriber = ActiveSupport::Notifications.subscribe('embedding_api_call_failed.ai_usage') do |*args|
+          events << ActiveSupport::Notifications::Event.new(*args)
+        end
+
+        expect { service.call_with_diagnostics }
+          .to raise_error(described_class::EmbeddingGenerationError)
+
+        expect(events).to contain_exactly(
+          have_attributes(payload: hash_including(total_tokens: 12, total_cost_usd: be_positive)),
+        )
+      ensure
+        ActiveSupport::Notifications.unsubscribe(subscriber) if subscriber
+      end
+    end
+
     context 'when embedding generation fails' do
       before do
         allow(embedding_service).to receive(:embed).and_raise(Faraday::TimeoutError)
@@ -413,36 +510,39 @@ RSpec.describe VectorRetrievalService do
       end
     end
 
-    context 'when embedding generation returns no embedding' do
-      before do
-        allow(embedding_service).to receive(:embed).and_return(nil)
-      end
+    {
+      'no embedding' => nil,
+      'the wrong dimensions' => [0.1],
+      'a non-numeric value' => Array.new(1536, 'invalid'),
+      'a non-real value' => Array.new(1536, Complex(1, 1)),
+      'a NaN value' => Array.new(1536, Float::NAN),
+      'an infinite value' => Array.new(1536, Float::INFINITY),
+    }.each do |description, embedding|
+      context "when embedding generation returns #{description}" do
+        let(:query_embedding) { embedding }
 
-      it 'identifies the malformed response at the embedding boundary' do
-        expect { service.call_with_diagnostics }
-          .to raise_error(described_class::EmbeddingGenerationError)
-      end
-    end
+        it 'emits only a failed embedding event' do
+          events = []
+          subscriber = ActiveSupport::Notifications.subscribe(/embedding_api_call_.*\.ai_usage/) do |*args|
+            events << ActiveSupport::Notifications::Event.new(*args)
+          end
 
-    context 'when embedding generation returns the wrong dimensions' do
-      before do
-        allow(embedding_service).to receive(:embed).and_return([0.1])
-      end
+          expect { service.call_with_diagnostics }
+            .to raise_error(described_class::EmbeddingGenerationError, 'Embedding response was malformed')
 
-      it 'identifies the malformed response at the embedding boundary' do
-        expect { service.call_with_diagnostics }
-          .to raise_error(described_class::EmbeddingGenerationError)
-      end
-    end
-
-    context 'when embedding generation returns a non-numeric value' do
-      before do
-        allow(embedding_service).to receive(:embed).and_return(Array.new(1536, 'invalid'))
-      end
-
-      it 'identifies the malformed response at the embedding boundary' do
-        expect { service.call_with_diagnostics }
-          .to raise_error(described_class::EmbeddingGenerationError)
+          expect(events).to contain_exactly(
+            have_attributes(
+              name: 'embedding_api_call_failed.ai_usage',
+              payload: hash_including(
+                event_kind: 'vector_search_query_embedding',
+                request_id: 'request-123',
+                error_class: 'VectorRetrievalService::EmbeddingGenerationError',
+              ),
+            ),
+          )
+        ensure
+          ActiveSupport::Notifications.unsubscribe(subscriber) if subscriber
+        end
       end
     end
 

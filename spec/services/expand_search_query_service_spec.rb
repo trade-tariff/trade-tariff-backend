@@ -162,6 +162,18 @@ RSpec.describe ExpandSearchQueryService do
       end
     end
 
+    [123, true, %w[laptop], { 'query' => 'laptop' }].each do |malformed_query|
+      context "when expanded_query is #{malformed_query.inspect}" do
+        let(:query) { 'laptop' }
+        let(:ai_response) { { 'expanded_query' => malformed_query } }
+
+        it 'returns the original query', :aggregate_failures do
+          expect(result.expanded_query).to eq('laptop')
+          expect(TradeTariffRequest.search_failures).to eq(%w[query_expansion_failed])
+        end
+      end
+    end
+
     context 'when the AI returns nil' do
       let(:query) { 'laptop' }
       let(:ai_response) { nil }
@@ -199,16 +211,18 @@ RSpec.describe ExpandSearchQueryService do
         expect(TradeTariffRequest.search_failures).to eq(%w[query_expansion_failed])
       end
 
-      it 'emits a search_failed event' do
-        allow(Search::Instrumentation).to receive(:search_failed)
+      it 'emits a search_stage_failed event' do
+        allow(Search::Instrumentation).to receive(:search_stage_failed)
 
         result
 
-        expect(Search::Instrumentation).to have_received(:search_failed).with(
+        expect(Search::Instrumentation).to have_received(:search_stage_failed).with(
           request_id: 'request-123',
           error_type: 'Faraday::TimeoutError',
           error_message: anything,
-          search_type: 'expand_query',
+          search_type: 'interactive',
+          failure_code: 'query_expansion_failed',
+          operation: 'search_query_expansion',
         )
       end
     end
@@ -343,6 +357,24 @@ RSpec.describe ExpandSearchQueryService do
 
       expect(second_result.expanded_query).to eq(first_result.expanded_query)
       expect(second_result.reason).to eq(first_result.reason)
+    end
+
+    it 'replaces malformed cached data', :aggregate_failures do
+      described_class.call(query)
+      allow(memory_store).to receive(:read).and_wrap_original do |original, key, **options|
+        original.call(key, **options).merge(expanded_query: 123)
+      end
+
+      expect(described_class.call(query).expanded_query).to eq(ai_response['expanded_query'])
+      expect(TradeTariffRequest.search_failures).to eq(%w[query_expansion_failed])
+      expect(OpenaiClient).to have_received(:call).twice
+    end
+
+    it 'does not cache malformed expansions' do
+      allow(OpenaiClient).to receive(:call).and_return({ 'expanded_query' => 123 }, ai_response)
+      described_class.call(query)
+
+      expect(described_class.call(query).expanded_query).to eq(ai_response['expanded_query'])
     end
 
     it 'treats queries case-insensitively' do

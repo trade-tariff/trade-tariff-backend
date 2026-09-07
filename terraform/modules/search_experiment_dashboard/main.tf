@@ -3,7 +3,7 @@ locals {
   source            = "SOURCE '${var.log_group_name}'"
   experiment_filter = "filter experiment = \"EXPERIMENT_LABEL\""
   search_filter     = "${local.experiment_filter} and service = \"search\""
-  ai_cost_filter    = "filter event in [\"api_call_completed\", \"embedding_api_call_completed\"]\n              | ${local.experiment_filter} and ((service = \"search\" and event = \"api_call_completed\") or (service = \"ai_usage\" and event = \"embedding_api_call_completed\" and event_kind = \"vector_search_query_embedding\"))"
+  ai_cost_filter    = "filter event in [\"api_call_completed\", \"embedding_api_call_completed\", \"embedding_api_call_failed\"]\n              | ${local.experiment_filter} and ((service = \"search\" and event = \"api_call_completed\") or (service = \"ai_usage\" and event in [\"embedding_api_call_completed\", \"embedding_api_call_failed\"] and event_kind = \"vector_search_query_embedding\"))"
   # Classic empty commodity results: fuzzy/null with commodity_result_count = 0 (empty Best commodity matches).
   # Includes completely empty results and headings/chapters-only; excludes exact matches.
   # Interactive empty results: result_count = 0 (filter also accepts search_type=internal for forward-compat).

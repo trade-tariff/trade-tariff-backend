@@ -42,13 +42,7 @@ class InteractiveSearchService
 
     handle_parsed_response(parse_model_response(build_context, operation: 'interactive_search'))
   rescue StandardError => e
-    record_failure
-    Search::Instrumentation.search_failed(
-      request_id: request_id,
-      error_type: e.class.name,
-      error_message: e.message,
-      search_type: @search_type,
-    )
+    record_failure(e.message, error_type: e.class.name)
     nil
   end
 
@@ -373,7 +367,7 @@ private
   end
 
   def error_result(message)
-    record_failure
+    record_failure(message)
     Result.new(
       type: :error,
       data: { message: message },
@@ -388,8 +382,12 @@ private
     error_result('Interactive search unavailable')
   end
 
-  def record_failure
-    TradeTariffRequest.record_search_failure(Search::FailureCodes::INTERACTIVE_SEARCH_FAILED)
+  def record_failure(message = 'Interactive search response was invalid', error_type: 'InvalidResponse')
+    Search::Instrumentation.search_stage_failed(
+      request_id:, search_type: @search_type,
+      failure_code: Search::FailureCodes::INTERACTIVE_SEARCH_FAILED,
+      error_type:, error_message: message
+    )
   end
 
   def answers_result(ai_answers)
@@ -449,7 +447,7 @@ private
 
     if guard_result.duplicate?
       if duplicate_retry
-        TradeTariffRequest.record_search_failure(Search::FailureCodes::INTERACTIVE_SEARCH_FAILED)
+        record_failure('Interactive search repeated a duplicate question')
         return best_available_answers
       end
 

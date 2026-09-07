@@ -1,7 +1,7 @@
 module Search
   module Instrumentation
     module ApiEvents
-      def api_call(request_id:, model:, attempt_number:, iteration: nil, effective_query: nil, operation: 'interactive_search', emit_search_failed: true)
+      def api_call(request_id:, model:, attempt_number:, iteration: nil, effective_query: nil, operation: 'interactive_search')
         start_time = Process.clock_gettime(Process::CLOCK_MONOTONIC)
         result = yield
         duration = Process.clock_gettime(Process::CLOCK_MONOTONIC) - start_time
@@ -47,7 +47,6 @@ module Search
             event_kind: operation,
           }.merge(truncate_error_payload(AiUsage.safe_error_message(e))).merge(AiUsage.payload_from_error(e)),
         )
-        search_failed(request_id:, error_type: e.class.name, error_message: AiUsage.safe_error_message(e), search_type: 'interactive') if emit_search_failed
         raise
       end
 

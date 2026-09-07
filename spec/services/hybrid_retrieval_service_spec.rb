@@ -63,6 +63,89 @@ RSpec.describe HybridRetrievalService do
   end
 
   describe '#call' do
+    context 'with request attribution' do
+      def request_context
+        {
+          request_id: 'parent-request',
+          experiment: 'search-experiment',
+          request_source: 'frontend',
+          client_id: 'search-client',
+          search_failures: %w[query_expansion_failed],
+        }
+      end
+
+      around do |example|
+        TradeTariffRequest.set(**request_context) { example.run }
+      end
+
+      it 'preserves context in both child threads' do
+        contexts = Queue.new
+        allow(OpensearchRetrievalService).to receive(:call) do
+          contexts << TradeTariffRequest.attributes.slice(*request_context.keys)
+          opensearch_result
+        end
+        allow(VectorRetrievalService).to receive(:call_with_diagnostics) do
+          contexts << TradeTariffRequest.attributes.slice(*request_context.keys)
+          vector_diagnostics
+        end
+
+        described_class.call(query: 'horses', as_of: Time.zone.today, request_id: 'explicit-request')
+
+        expect([contexts.pop, contexts.pop]).to all(eq(request_context.merge(request_id: 'explicit-request')))
+        expect(TradeTariffRequest.attributes.slice(*request_context.keys)).to eq(request_context)
+      end
+
+      it 'restores child context after a failure' do
+        contexts = Queue.new
+        allow(OpensearchRetrievalService).to receive(:call) do
+          contexts << TradeTariffRequest.instance
+          opensearch_result
+        end
+        allow(VectorRetrievalService).to receive(:call_with_diagnostics) do
+          contexts << TradeTariffRequest.instance
+          TradeTariffRequest.record_search_failure(Search::FailureCodes::EMBEDDING_GENERATION_FAILED)
+          raise VectorRetrievalService::EmbeddingGenerationError, 'embedding unavailable'
+        end
+
+        described_class.call(query: 'horses', as_of: Time.zone.today)
+
+        expect([contexts.pop, contexts.pop]).to all(
+          have_attributes(request_id: nil, experiment: nil, request_source: nil, client_id: nil, search_failures: nil),
+        )
+        expect(TradeTariffRequest.search_failures).to contain_exactly('query_expansion_failed', 'embedding_generation_failed')
+      end
+
+      it 'attributes embedding cost logs' do
+        usage = AiUsage.metadata_for(
+          model: EmbeddingService::MODEL,
+          event_kind: 'vector_search_query_embedding',
+          usage: { 'prompt_tokens' => 12, 'total_tokens' => 12 },
+        )
+        embedding = AiUsage.attach_metadata(Array.new(1536, 0.1), usage)
+        allow(EmbeddingService).to receive(:new).and_return(instance_double(EmbeddingService, embed: embedding))
+        allow(VectorRetrievalService).to receive(:call_with_diagnostics).and_call_original
+        logs = []
+        logger = AiUsage::Logger.new
+        allow(logger).to receive(:info) { |entry| logs << JSON.parse(entry) }
+        subscriber = ActiveSupport::Notifications.subscribe('embedding_api_call_completed.ai_usage') do |*args|
+          logger.embedding_api_call_completed(ActiveSupport::Notifications::Event.new(*args))
+        end
+
+        described_class.call(query: 'horses', as_of: Time.zone.today, request_id: 'explicit-request')
+
+        expect(logs).to contain_exactly(
+          hash_including(
+            'request_id' => 'explicit-request',
+            'experiment' => 'search-experiment',
+            'total_tokens' => 12,
+            'total_cost_usd' => be_positive,
+          ),
+        )
+      ensure
+        ActiveSupport::Notifications.unsubscribe(subscriber) if subscriber
+      end
+    end
+
     it 'runs both retrieval legs inside TimeMachine.at(as_of)' do
       as_of = Time.zone.today
       allow(TimeMachine).to receive(:at).with(as_of).and_yield
@@ -369,7 +452,13 @@ RSpec.describe HybridRetrievalService do
         described_class.call(query: 'horses', as_of: Time.zone.today)
 
         expect(Search::Instrumentation).to have_received(:retrieval_leg_completed).with(
-          hash_including(leg: :opensearch, status: 'error', error_message: 'opensearch down'),
+          hash_including(
+            leg: :opensearch,
+            status: 'error',
+            error_message: 'opensearch down',
+            failure_code: 'opensearch_failed',
+            error_type: 'StandardError',
+          ),
         )
         expect(Search::Instrumentation).to have_received(:retrieval_leg_completed).with(
           hash_including(leg: :vector, status: 'success'),
@@ -409,7 +498,13 @@ RSpec.describe HybridRetrievalService do
           hash_including(leg: :opensearch, status: 'success'),
         )
         expect(Search::Instrumentation).to have_received(:retrieval_leg_completed).with(
-          hash_including(leg: :vector, status: 'error', error_message: 'vector down'),
+          hash_including(
+            leg: :vector,
+            status: 'error',
+            error_message: 'vector down',
+            failure_code: 'vector_retrieval_failed',
+            error_type: 'StandardError',
+          ),
         )
       end
     end
@@ -424,6 +519,19 @@ RSpec.describe HybridRetrievalService do
         described_class.call(query: 'horses', as_of: Time.zone.today)
 
         expect(TradeTariffRequest.search_failures).to eq(%w[embedding_generation_failed])
+      end
+
+      it 'identifies the failed embedding leg' do
+        described_class.call(query: 'horses', as_of: Time.zone.today)
+
+        expect(Search::Instrumentation).to have_received(:retrieval_leg_completed).with(
+          hash_including(
+            leg: :vector,
+            status: 'error',
+            failure_code: 'embedding_generation_failed',
+            error_type: 'VectorRetrievalService::EmbeddingGenerationError',
+          ),
+        )
       end
     end
 

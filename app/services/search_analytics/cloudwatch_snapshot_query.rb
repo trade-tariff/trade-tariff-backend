@@ -275,7 +275,7 @@ module SearchAnalytics
       <<~FILTER.squish
         filter ispresent(request_id) and ispresent(total_tokens) and
           ((service = "search" and event = "api_call_completed") or
-          (service = "ai_usage" and event = "embedding_api_call_completed" and event_kind = "vector_search_query_embedding"))
+          (service = "ai_usage" and event in ["embedding_api_call_completed", "embedding_api_call_failed"] and event_kind = "vector_search_query_embedding"))
       FILTER
     end
 

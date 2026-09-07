@@ -46,8 +46,8 @@ RSpec.describe 'search experiment dashboard Terraform' do
   end
 
   it 'separates period cost and token totals and exposes incomplete pricing' do
-    expect(module_main_tf).to include('event in [\\"api_call_completed\\", \\"embedding_api_call_completed\\"]')
-    expect(module_main_tf).to include('service = \\"ai_usage\\" and event = \\"embedding_api_call_completed\\"')
+    expect(module_main_tf).to include('event in [\\"api_call_completed\\", \\"embedding_api_call_completed\\", \\"embedding_api_call_failed\\"]')
+    expect(module_main_tf).to include('service = \\"ai_usage\\" and event in [\\"embedding_api_call_completed\\", \\"embedding_api_call_failed\\"]')
     expect(module_main_tf).to include('event_kind = \\"vector_search_query_embedding\\"')
     expect(module_main_tf).to include('if(ispresent(operation), operation, event_kind) as ai_operation')
     expect(module_main_tf).to include('Total AI Cost by Operation')

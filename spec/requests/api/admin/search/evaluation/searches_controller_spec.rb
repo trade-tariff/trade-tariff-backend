@@ -154,6 +154,29 @@ RSpec.describe Api::Admin::Search::Evaluation::SearchesController, :admin do
         expect(usage_meta).to have_key('total_cost_usd')
         expect(usage_meta).to have_key('duration_ms')
       end
+
+      context 'when the hybrid embedding is malformed' do
+        before do
+          allow(AdminConfiguration).to receive(:option_value).with('retrieval_method').and_return('hybrid')
+          embedding = AiUsage.attach_metadata(
+            [0.1],
+            AiUsage.metadata_for(
+              model: EmbeddingService::MODEL,
+              event_kind: 'vector_search_query_embedding',
+              usage: { 'prompt_tokens' => 42, 'total_tokens' => 42 },
+            ),
+          )
+          allow(EmbeddingService).to receive(:new).and_return(instance_double(EmbeddingService, embed: embedding))
+        end
+
+        it 'includes billed fallback usage' do
+          expect(api_response).to have_http_status(:success)
+          expect(json_response['data']).to be_present
+          expect(json_response.dig('meta', 'search_failures')).to eq(%w[embedding_generation_failed])
+          expect(json_response.dig('meta', 'usage')).to include('total_tokens' => 42, 'provider_calls' => 1)
+          expect(json_response.dig('meta', 'usage', 'total_cost_usd')).to be_positive
+        end
+      end
     end
 
     context 'when an unrelated concurrent search event fires during the request' do
