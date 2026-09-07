@@ -2,6 +2,8 @@ locals {
   log_group_name              = "platform-logs-${var.environment}"
   search_operations_dashboard = "SearchOperations-${var.environment}"
 
+  search_alert_actions = var.enable_observability_alerts ? [data.aws_sns_topic.slack_observability_topic[0].arn] : [data.aws_sns_topic.slack_topic.arn]
+
   # Keep legacy boundary events during rolling deployments and application rollbacks.
   # These count failure events, not requests: a stage and its retrieval leg can
   # both match, but share one alarm per component.
@@ -85,8 +87,8 @@ resource "aws_cloudwatch_metric_alarm" "search_degradation" {
   period      = each.value.period
   unit        = "Count"
 
-  alarm_actions = [data.aws_sns_topic.slack_topic.arn]
-  ok_actions    = [data.aws_sns_topic.slack_topic.arn]
+  alarm_actions = local.search_alert_actions
+  ok_actions    = local.search_alert_actions
 
   depends_on = [aws_cloudwatch_log_metric_filter.search_degradation]
 }
