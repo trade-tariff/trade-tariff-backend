@@ -30,14 +30,14 @@ RSpec.describe Api::Internal::SearchService do
     events = []
     callback = ->(event) { events << event }
     response = ActiveSupport::Notifications.subscribed(callback, /\.search\z/) do
-      described_class.new(q: 'handbag', expanded_query: 'handbag', request_id:).call
+      described_class.new(q: 'handbag', expanded_query: 'handbag', request_id:, search_type: 'evaluation').call
     end
 
     expect(response[:data].size).to eq(2)
     expect(response.dig(:meta, :search_failures)).to eq(%w[interactive_search_failed])
     expect(events.map(&:name).grep(/search_(completed|failed)\.search/)).to eq(['search_completed.search'])
     expect(events.find { |event| event.name == 'search_stage_failed.search' }&.payload).to include(
-      failure_code: 'interactive_search_failed', error_type: 'Faraday::TimeoutError',
+      failure_code: 'interactive_search_failed', error_type: 'Faraday::TimeoutError', search_type: 'evaluation',
     )
   end
 

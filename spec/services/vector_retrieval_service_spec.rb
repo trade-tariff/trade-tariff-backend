@@ -479,6 +479,8 @@ RSpec.describe VectorRetrievalService do
       invalid_data: {},
       invalid_entry: [nil],
       excess_data: [{}, {}],
+      missing_index: [{ embedding: Array.new(1536, 0.1) }],
+      invalid_index: [{ index: 1, embedding: Array.new(1536, 0.1) }],
     }.each do |shape, data|
       context "when a billed embedding is #{shape}" do
         before do

@@ -145,7 +145,7 @@ module InteractiveSearch
     end
 
     def usable_validation?(validation)
-      validation.is_a?(Hash) && [true, false].include?(validation['duplicate'])
+      validation.is_a?(Hash) && validation['error'].blank? && [true, false].include?(validation['duplicate'])
     end
 
     def validator_prompt

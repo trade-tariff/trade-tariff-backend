@@ -9,11 +9,11 @@ module Search
         instrument('search_started', request_id:, query:, search_type:)
       end
 
-      def search(request_id:, query:, search_type:)
+      def search(request_id:, query:, search_type:, &block)
         search_started(request_id:, query:, search_type:)
         start_time = Process.clock_gettime(Process::CLOCK_MONOTONIC)
 
-        result, completion_payload = yield
+        result, completion_payload = TradeTariffRequest.set(search_type:, &block)
 
         duration_ms = ((Process.clock_gettime(Process::CLOCK_MONOTONIC) - start_time) * 1000).round(2)
         search_completed(request_id:, query:, search_type:, total_duration_ms: duration_ms, **(completion_payload || {}))

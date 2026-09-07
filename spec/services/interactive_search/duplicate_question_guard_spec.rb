@@ -316,11 +316,13 @@ RSpec.describe InteractiveSearch::DuplicateQuestionGuard do
     expect(TradeTariffRequest.search_failures).to eq(%w[duplicate_question_validation_failed])
   end
 
-  it 'records malformed validation' do
-    allow(OpenaiClient).to receive(:call).and_return('duplicate' => 'unknown')
+  [{ 'duplicate' => 'unknown' }, { 'duplicate' => true, 'error' => 'unavailable' }].each do |validation|
+    it "records unusable validation #{validation}" do
+      allow(OpenaiClient).to receive(:call).and_return(validation)
 
-    expect(result).to be_allowed
-    expect(TradeTariffRequest.search_failures).to eq(%w[duplicate_question_validation_failed])
+      expect(result).to be_allowed
+      expect(TradeTariffRequest.search_failures).to eq(%w[duplicate_question_validation_failed])
+    end
   end
 
   it 'allows continuation questions whose options include the previous other-like answer' do

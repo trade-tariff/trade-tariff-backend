@@ -82,7 +82,7 @@ RSpec.describe EmbeddingService do
 
       before do
         stub_request(:post, "#{api_base_url}/embeddings")
-          .to_return(status: 200, body: response_body.to_json, headers: { 'Content-Type' => 'application/json' })
+          .to_return { { status: 200, body: response_body.to_json, headers: { 'Content-Type' => 'application/json' } } }
       end
 
       it 'returns embeddings for all texts' do
@@ -93,6 +93,13 @@ RSpec.describe EmbeddingService do
       it 'preserves order based on index' do
         result = service.embed_batch(%w[one two three])
         expect(result).to eq(embeddings)
+      end
+
+      it 'rejects duplicate indices with billed usage intact' do
+        response_body['data'][1]['index'] = 0
+        expect { service.embed_batch(%w[one two three]) }.to raise_error(EmbeddingService::ApiError) { |error|
+          expect(error.ai_usage.total_tokens).to eq(9)
+        }
       end
 
       it 'attaches batch usage metadata to the returned embeddings array' do
