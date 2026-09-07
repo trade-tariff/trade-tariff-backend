@@ -44,6 +44,7 @@ module Search
       end
 
       def with_request_context(payload)
+        payload = payload.merge(search_type: TradeTariffRequest.search_type) if TradeTariffRequest.search_type.present?
         return payload unless payload.key?(:request_id)
 
         payload

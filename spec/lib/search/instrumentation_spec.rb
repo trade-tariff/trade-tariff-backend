@@ -2,9 +2,10 @@ RSpec.describe Search::Instrumentation do
   before { TradeTariffRequest.request_source = nil }
 
   describe '.search_stage_failed' do
-    after { TradeTariffRequest.search_failures = nil }
+    after { TradeTariffRequest.reset }
 
     it 'records bounded stage diagnostics', :aggregate_failures do
+      TradeTariffRequest.search_type = 'evaluation'
       events = []
       subscriber = ->(event) { events << event }
 
@@ -20,6 +21,7 @@ RSpec.describe Search::Instrumentation do
       expect(TradeTariffRequest.search_failures).to eq(%w[query_expansion_failed])
       expect(events.map(&:name)).to eq(['search_stage_failed.search'])
       expect(events.first.payload).to include(
+        search_type: 'evaluation',
         failure_code: 'query_expansion_failed', operation: 'search_query_expansion',
         error_type: 'InvalidResponse', error_message: 'x' * 500, error_message_truncated: true
       )

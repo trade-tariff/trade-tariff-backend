@@ -89,6 +89,7 @@ private
       request_source: TradeTariffRequest.request_source,
       client_id: TradeTariffRequest.client_id,
       experiment: TradeTariffRequest.experiment,
+      search_type: @search_type,
     }
     search_failures = Array(TradeTariffRequest.search_failures)
     threads = %i[opensearch vector].map do |leg|

@@ -70,6 +70,7 @@ RSpec.describe HybridRetrievalService do
           experiment: 'search-experiment',
           request_source: 'frontend',
           client_id: 'search-client',
+          search_type: 'evaluation',
           search_failures: %w[query_expansion_failed],
         }
       end
@@ -89,9 +90,9 @@ RSpec.describe HybridRetrievalService do
           vector_diagnostics
         end
 
-        described_class.call(query: 'horses', as_of: Time.zone.today, request_id: 'explicit-request')
+        described_class.call(query: 'horses', as_of: Time.zone.today, request_id: 'explicit-request', search_type: 'classification')
 
-        expect([contexts.pop, contexts.pop]).to all(eq(request_context.merge(request_id: 'explicit-request')))
+        expect([contexts.pop, contexts.pop]).to all(eq(request_context.merge(request_id: 'explicit-request', search_type: 'classification')))
         expect(TradeTariffRequest.attributes.slice(*request_context.keys)).to eq(request_context)
       end
 

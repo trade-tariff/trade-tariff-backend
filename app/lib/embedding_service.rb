@@ -88,6 +88,7 @@ private
   def extract_embeddings(body, usage:, expected_size:)
     data = body.fetch('data')
     raise TypeError unless data.is_a?(Array) && data.size == expected_size
+    raise TypeError unless data.map { |entry| entry.fetch('index') }.sort.eql?((0...expected_size).to_a)
 
     data.sort_by { |entry| entry['index'] }.map { |entry| entry['embedding'] }
   rescue StandardError
