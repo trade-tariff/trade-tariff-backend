@@ -231,6 +231,12 @@ RSpec.describe SearchAnalytics::CloudwatchSnapshotQuery do
       'selection_rate' => 0.11,
       'p90_latency_ms' => 1000,
     )
+    payloads.each_value do |payload|
+      expect(payload.dig('summary_statuses', 'failure_rate')).to eq(
+        'level' => 'neutral',
+        'message' => 'Known failed or degraded requests are excluded',
+      )
+    end
     expect(payloads.dig('all', 'comparisons', 'classic')).to include(
       'searches' => 49,
       'zero_result_rate' => 0.11,

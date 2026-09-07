@@ -510,19 +510,14 @@ module SearchAnalytics
             'level' => 'neutral',
             'message' => 'Search volume is available for this period',
           },
-          'failure_rate' => status_for_failure_rate(current_summary.fetch('failure_rate')),
+          'failure_rate' => {
+            'level' => 'neutral',
+            'message' => 'Known failed or degraded requests are excluded',
+          },
           'zero_result_rate' => status_for_zero_result_rate(current_summary.fetch('zero_result_rate')),
           'selection_rate' => status_for_selection_rate(current_summary.fetch('selection_rate')),
           'p90_latency_ms' => status_for_latency(current_summary.fetch('p90_latency_ms')),
         }
-      end
-
-      def status_for_failure_rate(value)
-        case value
-        when 0...0.02 then { 'level' => 'good', 'message' => 'Failures are low' }
-        when 0.02...0.05 then { 'level' => 'watch', 'message' => 'Failures are slightly higher than usual' }
-        else { 'level' => 'problem', 'message' => 'Failures are higher than expected' }
-        end
       end
 
       def status_for_zero_result_rate(value)
