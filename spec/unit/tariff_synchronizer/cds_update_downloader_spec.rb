@@ -2,6 +2,99 @@ RSpec.describe TariffSynchronizer::CdsUpdateDownloader do
   let(:example_date) { Date.new(2020, 10, 10) }
   let(:downloader) { described_class.new(example_date) }
 
+  describe '.download' do
+    context 'when sync variables are set' do
+      before do
+        allow(ENV).to receive(:[]).and_call_original
+        allow(ENV).to receive(:[]).with('HMRC_API_HOST').and_return('https://example.com')
+        allow(ENV).to receive(:[]).with('HMRC_CLIENT_ID').and_return('client')
+        allow(ENV).to receive(:[]).with('HMRC_CLIENT_SECRET').and_return('secret')
+        allow(TradeTariffBackend).to receive(:with_redis_lock).and_yield
+      end
+
+      it 'invokes sync within a redis lock' do
+        allow(described_class).to receive(:sync)
+
+        described_class.download(initial_date: Date.new(2020, 9, 1))
+
+        expect(described_class).to have_received(:sync).with(initial_date: Date.new(2020, 9, 1))
+        expect(TradeTariffBackend).to have_received(:with_redis_lock)
+      end
+
+      it 'emits a download_completed instrumentation event' do
+        allow(described_class).to receive(:sync)
+        allow(TariffSynchronizer::Instrumentation).to receive(:download_completed)
+
+        described_class.download(initial_date: Date.new(2020, 9, 1))
+
+        expect(TariffSynchronizer::Instrumentation).to have_received(:download_completed)
+      end
+    end
+
+    context 'when sync variables are not set' do
+      before do
+        allow(ENV).to receive(:[]).and_call_original
+        allow(ENV).to receive(:[]).with('HMRC_API_HOST').and_return(nil)
+      end
+
+      it 'does not start sync process' do
+        allow(described_class).to receive(:sync)
+
+        described_class.download
+
+        expect(described_class).not_to have_received(:sync)
+      end
+
+      it 'emits a sync_run_failed instrumentation event' do
+        allow(TariffSynchronizer::Instrumentation).to receive(:sync_run_failed)
+
+        described_class.download
+
+        expect(TariffSynchronizer::Instrumentation).to have_received(:sync_run_failed)
+      end
+    end
+
+    context 'when a download exception' do
+      before do
+        allow(ENV).to receive(:[]).and_call_original
+        allow(ENV).to receive(:[]).with('HMRC_API_HOST').and_return('https://example.com')
+        allow(ENV).to receive(:[]).with('HMRC_CLIENT_ID').and_return('client')
+        allow(ENV).to receive(:[]).with('HMRC_CLIENT_SECRET').and_return('secret')
+        allow(TradeTariffBackend).to receive(:with_redis_lock).and_yield
+        allow(described_class).to receive(:sync)
+                                    .and_raise(TariffSynchronizer::TariffUpdatesRequester::RetriableDownloadError.new('url'))
+      end
+
+      it 'raises a retriable download error ending the process' do
+        expect { described_class.download }.to raise_error TariffSynchronizer::TariffUpdatesRequester::RetriableDownloadError
+      end
+    end
+  end
+
+  describe '.sync' do
+    it 'calls perform for each date in the applicable download range' do
+      create :cds_update, :applied, issue_date: 1.day.ago.to_date
+
+      (20.days.ago.to_date..Time.zone.today).each do |download_date|
+        allow(described_class).to receive(:new).with(download_date).and_return(instance_double(described_class, perform: nil))
+      end
+
+      described_class.sync(initial_date: 20.days.ago.to_date)
+
+      (20.days.ago.to_date..Time.zone.today).each do |download_date|
+        expect(described_class).to have_received(:new).with(download_date)
+      end
+    end
+  end
+
+  describe '.applicable_download_date_range' do
+    it_behaves_like 'an applicable download date range', :cds_update do
+      subject(:applicable_download_date_range) { described_class.applicable_download_date_range(initial_date: Date.new(2020, 9, 1)) }
+
+      let(:initial_date) { Date.new(2020, 9, 1) }
+    end
+  end
+
   describe '#perform' do
     let(:response) { instance_double(Net::HTTPResponse, body: body.to_json) }
     let(:tariff_downloader) { instance_double(TariffSynchronizer::TariffDownloader, perform: nil) }

@@ -73,12 +73,19 @@ RSpec.describe TariffSynchronizer::BaseUpdateImporter do
     it_behaves_like 'a base update importer'
   end
 
-  context 'with a CDS update' do
-    let(:update) { create :cds_update, :pending, filesize: 999_999 }
-    let(:service) { 'uk' }
-    let(:backtrace_fragment) { 'lib/cds_importer.rb:' }
+  context 'with a pending CDS update' do
+    let(:cds_update) { create :cds_update, :pending }
 
-    it_behaves_like 'a base update importer'
+    before do
+      allow(TradeTariffBackend).to receive(:service).and_return('uk')
+      allow(TariffSynchronizer::CdsUpdateImporter).to receive(:perform)
+    end
+
+    it 'delegates import to CdsUpdateImporter' do
+      described_class.new(cds_update).apply
+
+      expect(TariffSynchronizer::CdsUpdateImporter).to have_received(:perform).with(cds_update)
+    end
   end
 
   context 'with a TARIC update that fails with a nested import error', :truncation do
