@@ -144,3 +144,13 @@ input phrase => input phrase, lexical alternative
 ```
 
 Rules are matched case-insensitively against complete terms or phrases. Keep mappings contextual: prefer `HEPA filter` or `USB connector` to broad rules for `HEPA` or `USB`.
+
+### Search analytics SQL cohorts
+
+Admin analytics snapshots and Search Overview exclude every event for a request ID with a recorded `search_degraded: true`, `search_failed`, or `search_stage_failed` search event in the selected time window. The snapshot failure lookup uses the same UK/XI log stream as its metrics. Missing, null, and empty request IDs remain included, as do historical requests without a linked failure. Use the complete journey window: a failure outside that window cannot exclude an event inside it. Operations, Quality, Experiment, and general AI Costs retain their existing cohorts in this extraction.
+
+The shared `request_exclusion_filter.sql.tftpl` contains the SQL predicate used by Ruby and Terraform, with no inner row limit. Two-stage cost and selection queries place the failure lookup beside the request aggregation subquery to respect CloudWatch SQL's one-level nesting limit. Snapshot payload fields and millisecond units remain unchanged; Overview displays seconds. SQL percentiles use fractions and can differ slightly from QL's approximate percentiles.
+
+Development validation renders the real Terraform widget queries with `search_analytics:render_dashboard_queries`, then executes them and all distinct snapshot queries with `search_analytics:validate_cloudwatch_queries`. Both tasks use `CLOUDWATCH_QUERY_VALIDATION_LOG_GROUP`; `CLOUDWATCH_DASHBOARD_QUERIES_FILE` connects rendering to validation. Rendering does not access AWS. Validation preserves native QL query languages and uses SQL for migrated consumers. AWS documents SQL log widgets through [LogQueryLanguage](https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_cloudwatch.LogQueryLanguage.html) and [LogQueryWidgetProps](https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_cloudwatch.LogQueryWidgetProps.html).
+
+SQL dashboard widgets retain the `SOURCE 'group' |` envelope produced by the [AWS CDK implementation](https://github.com/aws/aws-cdk/issues/34482). The validator checks that source and every SQL FROM group, then removes only the leading dashboard envelope before StartQuery. Direct snapshot SQL obtains its group from FROM. Widget serialization follows that supported representation; validation does not publish a dashboard.

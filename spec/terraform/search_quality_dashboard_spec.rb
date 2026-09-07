@@ -27,7 +27,8 @@ RSpec.describe 'search quality dashboard Terraform' do
     overview_zero = expand_tf_local(overview_main_tf, 'zero_result_condition')
     experiment_zero = expand_tf_local(experiment_main_tf, 'zero_result_condition')
 
-    expect(quality_zero).to eq(overview_zero)
+    quality_sql = quality_zero.tr('"', "'").gsub(/not ispresent\((\w+)\)/, '\\1 IS NULL').gsub(/ispresent\((\w+)\)/, '\\1 IS NOT NULL')
+    expect(quality_sql).to eq(overview_zero)
     expect(quality_zero).to eq(experiment_zero)
     expect(quality_zero).to include('commodity_result_count = 0')
     expect(quality_zero).to include('results_type != "exact_search"')

@@ -1,15 +1,19 @@
 locals {
   dashboard_name = var.dashboard_name != null ? var.dashboard_name : "Search-${var.environment}"
-  source         = "SOURCE '${var.log_group_name}'"
-  service_filter = "filter service = \"search\""
+  source         = "FROM `${var.log_group_name}`"
+  service_filter = "service = 'search' AND ${local.request_exclusion_filter}"
+  request_exclusion_filter = templatefile("${path.module}/../../../app/services/search_analytics/request_exclusion_filter.sql.tftpl", {
+    log_group_name  = var.log_group_name
+    scope_condition = "1 = 1"
+  })
   # Classic empty commodity results: fuzzy/null with commodity_result_count = 0 (empty Best commodity matches).
   # Includes completely empty results and headings/chapters-only; excludes exact matches.
   # Interactive empty results: result_count = 0 (filter also accepts search_type=internal for forward-compat).
   # Historical classic falls back to result_count = 0.
   # Keep in sync with SearchAnalytics::CloudwatchSnapshotQuery#zero_result_condition
   # and the other search_*_dashboard modules.
-  classic_empty_commodity_condition = "(search_type = \"classic\" and ((ispresent(commodity_result_count) and commodity_result_count = 0 and (not ispresent(results_type) or results_type != \"exact_search\")) or (not ispresent(commodity_result_count) and result_count = 0)))"
-  interactive_no_results_condition  = "((search_type = \"interactive\" or search_type = \"internal\") and result_count = 0)"
+  classic_empty_commodity_condition = "(search_type = 'classic' and ((commodity_result_count IS NOT NULL and commodity_result_count = 0 and (results_type IS NULL or results_type != 'exact_search')) or (commodity_result_count IS NULL and result_count = 0)))"
+  interactive_no_results_condition  = "((search_type = 'interactive' or search_type = 'internal') and result_count = 0)"
   zero_result_condition             = "(${local.classic_empty_commodity_condition} or ${local.interactive_no_results_condition})"
 
   search_operations_dashboard_url = "https://${var.region}.console.aws.amazon.com/cloudwatch/home?region=${var.region}#dashboards:name=SearchOperations-${var.environment}"
@@ -22,7 +26,16 @@ locals {
 resource "aws_cloudwatch_dashboard" "search" {
   dashboard_name = local.dashboard_name
 
-  dashboard_body = jsonencode({
+  dashboard_body = jsonencode(local.rendered_dashboard_body)
+}
+
+locals {
+  rendered_dashboard_body = merge(local.dashboard_body, {
+    widgets = [for widget in local.dashboard_body.widgets : widget.type == "log" ? merge(widget, {
+      properties = merge(widget.properties, { queryLanguage = "SQL", query = "SOURCE '${var.log_group_name}' | ${widget.properties.query}" })
+    }) : widget]
+  })
+  dashboard_body = {
     widgets = concat(
       [
         {
@@ -34,7 +47,7 @@ resource "aws_cloudwatch_dashboard" "search" {
           properties = {
             markdown = join("\n", [
               "## Trade Tariff Search Overview",
-              "Long-range search health dashboard for quarter-scale trend viewing. Follows the RED method (Rate, Errors, Duration).",
+              "Long-range search trends excluding every event for request IDs with a recorded search failure in the selected time range. Use the complete journey window; older and uncorrelated logs remain included when no failure can be linked. Operations retains all failures.",
               "**Healthy:** p90 latency < 5s, hard failures stay low, empty commodity/empty result trends stable by search type, and selections broadly track search volume.",
               "**Empty commodity results (classic):** fuzzy/null with zero commodity hits (empty Best commodity matches; includes fully empty and headings/chapters-only). **Empty results (interactive):** no returned results. See Search Quality for classic empty-kind pies and free-text rates.",
               "**Start here:** use this dashboard for 3-month trends. Open Operations for active troubleshooting and Quality for intercepts, empty commodity/empty result terms, and result behaviour.",
@@ -55,10 +68,9 @@ resource "aws_cloudwatch_dashboard" "search" {
             region = var.region
             view   = "timeSeries"
             query  = <<-EOT
-              ${local.source}
-              | ${local.service_filter} and event in ["search_completed", "search_failed"]
-              | fields if(ispresent(request_source), request_source, "unknown") as request_source
-              | stats count(*) as searches by request_source, event, bin(1d)
+              SELECT DATE_TRUNC('DAY', `@timestamp`) AS bucket, COUNT(*) AS searches, COALESCE(request_source, 'unknown') AS request_source, event
+              ${local.source} WHERE ${local.service_filter} AND event IN ('search_completed', 'search_failed')
+              GROUP BY DATE_TRUNC('DAY', `@timestamp`), COALESCE(request_source, 'unknown'), event
             EOT
           }
         },
@@ -73,9 +85,9 @@ resource "aws_cloudwatch_dashboard" "search" {
             region = var.region
             view   = "timeSeries"
             query  = <<-EOT
-              ${local.source}
-              | ${local.service_filter} and event = "search_completed"
-              | stats count(*) as searches by search_type, bin(1d)
+              SELECT DATE_TRUNC('DAY', `@timestamp`) AS bucket, COUNT(*) AS searches, search_type
+              ${local.source} WHERE ${local.service_filter} AND event = 'search_completed'
+              GROUP BY DATE_TRUNC('DAY', `@timestamp`), search_type
             EOT
           }
         },
@@ -90,9 +102,9 @@ resource "aws_cloudwatch_dashboard" "search" {
             region = var.region
             view   = "timeSeries"
             query  = <<-EOT
-              ${local.source}
-              | ${local.service_filter} and event in ["search_completed", "search_failed"]
-              | stats count(*) as count by event, bin(1d)
+              SELECT DATE_TRUNC('DAY', `@timestamp`) AS bucket, COUNT(*) AS count, event
+              ${local.source} WHERE ${local.service_filter} AND event IN ('search_completed', 'search_failed')
+              GROUP BY DATE_TRUNC('DAY', `@timestamp`), event
             EOT
           }
         },
@@ -107,9 +119,9 @@ resource "aws_cloudwatch_dashboard" "search" {
             region = var.region
             view   = "timeSeries"
             query  = <<-EOT
-              ${local.source}
-              | ${local.service_filter} and event in ["search_completed", "result_selected"]
-              | stats count(*) as count by event, bin(1d)
+              SELECT DATE_TRUNC('DAY', `@timestamp`) AS bucket, COUNT(*) AS count, event
+              ${local.source} WHERE ${local.service_filter} AND event IN ('search_completed', 'result_selected')
+              GROUP BY DATE_TRUNC('DAY', `@timestamp`), event
             EOT
           }
         },
@@ -126,9 +138,9 @@ resource "aws_cloudwatch_dashboard" "search" {
             region = var.region
             view   = "timeSeries"
             query  = <<-EOT
-              ${local.source}
-              | ${local.service_filter} and event = "search_completed"
-              | stats pct(total_duration_ms / 1000, 50) as p50_seconds, pct(total_duration_ms / 1000, 90) as p90_seconds by bin(1d)
+              SELECT DATE_TRUNC('DAY', `@timestamp`) AS bucket, PERCENTILE_APPROX(total_duration_ms / 1000, 0.5) AS p50_seconds, PERCENTILE_APPROX(total_duration_ms / 1000, 0.9) AS p90_seconds
+              ${local.source} WHERE ${local.service_filter} AND event = 'search_completed'
+              GROUP BY DATE_TRUNC('DAY', `@timestamp`)
             EOT
           }
         },
@@ -143,9 +155,9 @@ resource "aws_cloudwatch_dashboard" "search" {
             region = var.region
             view   = "timeSeries"
             query  = <<-EOT
-              ${local.source}
-              | ${local.service_filter} and event = "api_call_completed"
-              | stats pct(duration_ms / 1000, 50) as p50_seconds, pct(duration_ms / 1000, 90) as p90_seconds by bin(1d)
+              SELECT DATE_TRUNC('DAY', `@timestamp`) AS bucket, PERCENTILE_APPROX(duration_ms / 1000, 0.5) AS p50_seconds, PERCENTILE_APPROX(duration_ms / 1000, 0.9) AS p90_seconds
+              ${local.source} WHERE ${local.service_filter} AND event = 'api_call_completed'
+              GROUP BY DATE_TRUNC('DAY', `@timestamp`)
             EOT
           }
         },
@@ -160,9 +172,9 @@ resource "aws_cloudwatch_dashboard" "search" {
             region = var.region
             view   = "timeSeries"
             query  = <<-EOT
-              ${local.source}
-              | ${local.service_filter} and event = "query_expanded"
-              | stats count(*) as expansions by bin(1d)
+              SELECT DATE_TRUNC('DAY', `@timestamp`) AS bucket, COUNT(*) AS expansions
+              ${local.source} WHERE ${local.service_filter} AND event = 'query_expanded'
+              GROUP BY DATE_TRUNC('DAY', `@timestamp`)
             EOT
           }
         },
@@ -179,9 +191,9 @@ resource "aws_cloudwatch_dashboard" "search" {
             region = var.region
             view   = "timeSeries"
             query  = <<-EOT
-              ${local.source}
-              | ${local.service_filter} and event = "search_completed" and ${local.zero_result_condition}
-              | stats count(*) as searches by search_type, bin(1d)
+              SELECT DATE_TRUNC('DAY', `@timestamp`) AS bucket, COUNT(*) AS searches, search_type
+              ${local.source} WHERE ${local.service_filter} AND event = 'search_completed' AND ${local.zero_result_condition}
+              GROUP BY DATE_TRUNC('DAY', `@timestamp`), search_type
             EOT
           }
         },
@@ -196,13 +208,13 @@ resource "aws_cloudwatch_dashboard" "search" {
             region = var.region
             view   = "timeSeries"
             query  = <<-EOT
-              ${local.source}
-              | ${local.service_filter} and event = "search_completed"
-              | stats avg(result_count) as avg_results, median(result_count) as median_results, avg(commodity_result_count) as avg_commodity_results by search_type, bin(1d)
+              SELECT DATE_TRUNC('DAY', `@timestamp`) AS bucket, AVG(result_count) AS avg_results, PERCENTILE_APPROX(result_count, 0.5) AS median_results, AVG(commodity_result_count) AS avg_commodity_results, search_type
+              ${local.source} WHERE ${local.service_filter} AND event = 'search_completed'
+              GROUP BY DATE_TRUNC('DAY', `@timestamp`), search_type
             EOT
           }
         },
       ]
     )
-  })
+  }
 }

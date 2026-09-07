@@ -147,6 +147,14 @@ RSpec.describe SearchAnalytics::CloudwatchSnapshotQuery do
       expect(definitions.values).to all(be_a(String).and(be_present))
     end
 
+    it 'excludes complete failed request cohorts within the selected backend stream' do
+      queries = described_class.query_definitions(period: '24h', log_group_name: 'validation-search')
+
+      expect(queries.values).to all(include('FROM `validation-search`', "request_id IS NULL OR request_id = '' OR request_id NOT IN ("))
+      expect(queries.values).to all(include("service = 'search'", "search_degraded = true OR event IN ('search_failed', 'search_stage_failed')"))
+      expect(queries.values.map { |query| query.scan("`@logStream` LIKE '%ecs/backend-uk/%'").size }).to all(eq(2))
+    end
+
     it 'defines zero results separately for classic and interactive/internal search' do
       expect(
         [
@@ -155,127 +163,34 @@ RSpec.describe SearchAnalytics::CloudwatchSnapshotQuery do
           definitions.fetch('item_id_improvements'),
         ],
       ).to all(include(
-                 'search_type = "classic"',
+                 "search_type = 'classic'",
                  'commodity_result_count = 0',
-                 'results_type != "exact_search"',
-                 'not ispresent(commodity_result_count) and result_count = 0',
-                 'search_type = "interactive" or search_type = "internal"',
+                 "results_type != 'exact_search'",
+                 'commodity_result_count IS NULL AND result_count = 0',
+                 "search_type = 'interactive' OR search_type = 'internal'",
                  'result_count = 0',
                ))
     end
   end
 
-  it 'uses aggregate CloudWatch stats queries for the period window' do
+  it 'executes SQL in the period window without an API log-group selector' do
     payloads
 
     expect(client).to have_received(:start_query).with(
-      hash_including(
-        start_time: (now - 24.hours).to_i,
-        end_time: now.to_i,
-        query_string: a_string_including('| stats'),
-      ),
-    ).at_least(:once)
-    expect(client).to have_received(:start_query).with(
-      hash_including(
-        query_string: a_string_including('filter @logStream like "ecs/backend-uk/"'),
-      ),
+      hash_including(start_time: (now - 24.hours).to_i, end_time: now.to_i, query_language: 'SQL'),
     ).exactly(14).times
-    expect(client).not_to have_received(:start_query).with(
-      hash_including(query_string: a_string_including('sort bin(')),
-    )
-    expect(client).to have_received(:start_query).with(
-      hash_including(
-        query_string: a_string_including('search_type = "classic" and results_type = "fuzzy_search"'),
-      ),
-    ).twice
-    expect(client).to have_received(:start_query).with(
-      hash_including(
-        query_string: a_string_including('event = "result_selected" or (event = "search_completed"'),
-      ),
-    ).exactly(4).times
-    expect(client).to have_received(:start_query).with(
-      hash_including(
-        query_string: a_string_including('results_type = "opensearch" or results_type = "vector" or results_type = "hybrid"'),
-      ),
-    ).twice
-    expect(client).to have_received(:start_query).with(
-      hash_including(
-        query_string: a_string_including('max(@timestamp) as @t by request_id'),
-      ),
-    ).twice
-    expect(client).to have_received(:start_query).with(
-      hash_including(
-        query_string: a_string_including('earliest(request_source) as source by request_id'),
-      ),
-    ).exactly(2).times
-    expect(client).to have_received(:start_query).with(
-      hash_including(
-        query_string: a_string_including('earliest(request_source) as source, max(@timestamp) as @t by request_id'),
-      ),
-    ).twice
-    expect(client).to have_received(:start_query).with(
-      hash_including(
-        query_string: a_string_including('| stats sum(result_selections) as selected, sum(selectable_searches) as selectable by source'),
-      ),
-    ).twice
-    expect(client).not_to have_received(:start_query).with(
-      hash_including(
-        query_string: a_string_including('| fields selected, selectable, source as request_source'),
-      ),
-    )
-    expect(client).to have_received(:start_query).with(
-      hash_including(
-        query_string: a_string_including(
-          'stats sum(request_cost_usd) as aggregated_total_cost_usd',
-          'avg(request_cost_usd) as aggregated_average_cost_usd',
-          'count(*) as aggregated_assisted_searches',
-        ),
-      ),
-    ).once
-    expect(client).to have_received(:start_query).with(
-      hash_including(
-        query_string: a_string_including('service = "ai_usage" and event in ["embedding_api_call_completed", "embedding_api_call_failed"] and event_kind = "vector_search_query_embedding"'),
-      ),
-    ).twice
-    expect(client).to have_received(:start_query).with(
-      hash_including(
-        query_string: a_string_including(
-          'as model_embedding_cost_usd',
-          'sum(model_embedding_cost_usd) as aggregated_embedding_cost_usd',
-          'sum(known_cost_usd) as aggregated_total_cost_usd',
-        ),
-      ),
-    ).once
-    expect(client).to have_received(:start_query).with(
-      hash_including(
-        query_string: a_string_including('datefloor(@t, 1h) as @timestamp'),
-      ),
-    ).twice
-    expect(client).not_to have_received(:start_query).with(
-      hash_including(
-        query_string: a_string_including('earliest(request_source) as request_source by request_id'),
-      ),
-    )
-    expect(client).not_to have_received(:start_query).with(
-      hash_including(
-        query_string: a_string_including('sum(selectable_searches) as selectable by request_source'),
-      ),
-    )
-    expect(client).to have_received(:start_query).with(
-      hash_including(
-        query_string: a_string_matching(/stats pct\(total_duration_ms, 90\) as p90_latency_ms\s*$/),
-      ),
-    ).once
-    expect(client).to have_received(:start_query).with(
-      hash_including(
-        query_string: a_string_including('stats pct(total_duration_ms, 90) as p90_latency_ms by request_source'),
-      ),
-    ).once
-    expect(client).not_to have_received(:start_query).with(
-      hash_including(
-        query_string: a_string_including('selected_count'),
-      ),
-    )
+    expect(client).not_to have_received(:start_query).with(hash_including(:log_group_name))
+  end
+
+  it 'keeps request-level cost and selection aggregates before cohort exclusion' do
+    queries = described_class.query_definitions(period: '24h')
+
+    expect(queries.fetch('ai_cost_summary')).to include('AS request_costs', 'aggregated_assisted_searches')
+    expect(queries.fetch('ai_cost_trend')).to include('aggregated_embedding_cost_usd', "DATE_TRUNC('HOUR', `@timestamp`)")
+    expect(queries.fetch('classic_selections')).to include("search_type = 'classic' AND results_type = 'fuzzy_search'", "GET_JSON_OBJECT(`@message`, '$.request_source')")
+    expect(queries.fetch('internal_selections')).to include("results_type IN ('opensearch', 'vector', 'hybrid')")
+    expect(queries.fetch('classic_selection_trend')).to include("DATE_TRUNC('HOUR', latest_timestamp) AS `@timestamp`")
+    expect(queries.fetch('classic_selections')).to match(/GROUP BY request_id\s+\) AS request_selections\s+WHERE selectable_searches > 0 AND \(request_id IS NULL/)
   end
 
   it 'scopes CloudWatch queries to the current backend service log stream' do
@@ -285,7 +200,7 @@ RSpec.describe SearchAnalytics::CloudwatchSnapshotQuery do
 
     expect(client).to have_received(:start_query).with(
       hash_including(
-        query_string: a_string_including('filter @logStream like "ecs/backend-xi/"'),
+        query_string: a_string_including("`@logStream` LIKE '%ecs/backend-xi/%'"),
       ),
     ).exactly(14).times
   end

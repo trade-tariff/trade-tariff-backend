@@ -22,7 +22,11 @@ locals {
 resource "aws_cloudwatch_dashboard" "search_experiment" {
   dashboard_name = local.dashboard_name
 
-  dashboard_body = jsonencode({
+  dashboard_body = jsonencode(local.dashboard_body)
+}
+
+locals {
+  dashboard_body = {
     variables = [
       {
         type         = "pattern"
@@ -501,5 +505,5 @@ resource "aws_cloudwatch_dashboard" "search_experiment" {
         },
       ]
     )
-  })
+  }
 }
