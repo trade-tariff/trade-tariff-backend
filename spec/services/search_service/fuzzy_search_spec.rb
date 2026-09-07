@@ -170,6 +170,7 @@ RSpec.describe SearchService::FuzzySearch do
           error_type: 'OpenSearch::Transport::Transport::Error',
           error_message: 'OpenSearch timeout',
           search_type: 'classic',
+          operation: 'opensearch_retrieval',
         )
       end
     end

@@ -472,30 +472,34 @@ RSpec.describe VectorRetrievalService do
   describe '#call_with_diagnostics' do
     include_examples 'records retrieval failures', :call_with_diagnostics, described_class::VectorRetrievalError
 
-    context 'when a malformed embedding has usage' do
-      let(:query_embedding) do
-        usage = AiUsage.metadata_for(
-          model: EmbeddingService::MODEL,
-          event_kind: 'vector_search_query_embedding',
-          usage: { 'prompt_tokens' => 12, 'total_tokens' => 12 },
-        )
-        AiUsage.attach_metadata([0.1], usage)
-      end
-
-      it 'retains the billed usage on failure' do
-        events = []
-        subscriber = ActiveSupport::Notifications.subscribe('embedding_api_call_failed.ai_usage') do |*args|
-          events << ActiveSupport::Notifications::Event.new(*args)
+    %w[missing malformed].each do |shape|
+      context "when a billed embedding is #{shape}" do
+        before do
+          EmbeddingService.reset_client!
+          allow(EmbeddingService).to receive(:new).and_call_original
+          data = shape == 'missing' ? [] : [{ index: 0, embedding: [0.1] }]
+          stub_request(:post, 'https://api.openai.com/v1/embeddings').to_return(
+            status: 200,
+            body: { data:, usage: { prompt_tokens: 12, total_tokens: 12 } }.to_json,
+            headers: { 'Content-Type' => 'application/json' },
+          )
         end
 
-        expect { service.call_with_diagnostics }
-          .to raise_error(described_class::EmbeddingGenerationError)
+        it 'retains the billed usage on failure' do
+          events = []
+          subscriber = ActiveSupport::Notifications.subscribe('embedding_api_call_failed.ai_usage') do |*args|
+            events << ActiveSupport::Notifications::Event.new(*args)
+          end
 
-        expect(events).to contain_exactly(
-          have_attributes(payload: hash_including(total_tokens: 12, total_cost_usd: be_positive)),
-        )
-      ensure
-        ActiveSupport::Notifications.unsubscribe(subscriber) if subscriber
+          expect { service.call_with_diagnostics }
+            .to raise_error(described_class::EmbeddingGenerationError)
+
+          expect(events).to contain_exactly(
+            have_attributes(payload: hash_including(total_tokens: 12, total_cost_usd: be_positive)),
+          )
+        ensure
+          ActiveSupport::Notifications.unsubscribe(subscriber) if subscriber
+        end
       end
     end
 

@@ -15,6 +15,7 @@ class SearchService
         error_type: e.class.name,
         error_message: e.message,
         search_type: 'classic',
+        operation: 'opensearch_retrieval',
       )
       # OpenSearch transport failures should not prevent the blank-result fallback.
       @results = BLANK_RESULT

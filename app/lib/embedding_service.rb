@@ -16,10 +16,11 @@ class EmbeddingService
   RETRYABLE_HTTP_STATUSES = [429, 500, 502, 503, 504].freeze
 
   class ApiError < StandardError
-    attr_reader :http_status
+    attr_reader :http_status, :ai_usage
 
-    def initialize(message, http_status: nil)
+    def initialize(message, http_status: nil, ai_usage: nil)
       @http_status = http_status
+      @ai_usage = ai_usage
       super(message)
     end
   end
@@ -30,6 +31,10 @@ class EmbeddingService
   def embed(text, event_kind: nil)
     embeddings = embed_batch([text], event_kind:)
     embedding = embeddings.first
+    if embedding.nil? && text.present?
+      raise ApiError.new('Embedding response was malformed', ai_usage: AiUsage.metadata_from(embeddings))
+    end
+
     AiUsage.attach_metadata(embedding, AiUsage.metadata_from(embeddings)) if embedding
     embedding
   end

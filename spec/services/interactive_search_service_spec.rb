@@ -569,7 +569,7 @@ RSpec.describe InteractiveSearchService do
         result
         expect(Search::Instrumentation).to have_received(:search_stage_failed).with(
           hash_including(failure_code: 'interactive_search_failed',
-                         error_type: 'Faraday::TimeoutError', search_type: 'interactive'),
+                         error_type: 'Faraday::TimeoutError', search_type: 'interactive', operation: 'interactive_search'),
         )
       end
 
