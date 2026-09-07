@@ -30,6 +30,7 @@ The application is a Rails API using Sequel, PostgreSQL, Redis, Sidekiq, and Ope
 - Use `rg` for code search.
 - Read the relevant architecture or domain doc before editing tariff data, search, sync, caching, Green Lanes, rules of origin, exchange rates, or API documentation.
 - Treat tariff data, measures, quotas, duties, certificates, rules of origin, auth, and sync logic as high-risk areas.
+- If you're adding caching to the backend service NEVER add caching to the worker clusters since this could break production by exhausting job memory
 
 ## PR Risk Labels
 
