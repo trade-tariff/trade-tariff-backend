@@ -40,4 +40,5 @@ No modules.
 | <a name="output_dashboard_arn"></a> [dashboard\_arn](#output\_dashboard\_arn) | ARN of the CloudWatch dashboard |
 | <a name="output_dashboard_name"></a> [dashboard\_name](#output\_dashboard\_name) | Name of the CloudWatch dashboard |
 | <a name="output_dashboard_url"></a> [dashboard\_url](#output\_dashboard\_url) | URL to the CloudWatch dashboard |
+| <a name="output_queries"></a> [queries](#output\_queries) | Rendered queries and languages for read-only validation |
 <!-- END_TF_DOCS -->
