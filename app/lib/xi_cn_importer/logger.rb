@@ -40,6 +40,39 @@ module XiCnImporter
       )
     end
 
+    def fetch_retry(event)
+      warn log_entry(
+        event: 'fetch_retry',
+        url: event.payload[:url],
+        attempt: event.payload[:attempt],
+        max_attempts: event.payload[:max_attempts],
+        error_class: event.payload[:error_class],
+        error_message: event.payload[:error_message],
+        error_code: event.payload[:error_code],
+        backoff_seconds: event.payload[:backoff_seconds],
+      )
+    end
+
+    def sparql_retry_attempt(event)
+      warn log_entry(
+        event: 'sparql_retry_attempt',
+        attempt: event.payload[:attempt],
+        max_attempts: event.payload[:max_attempts],
+        error_class: event.payload[:error_class],
+        error_message: event.payload[:error_message],
+        error_code: event.payload[:error_code],
+        count: event.payload[:count],
+      )
+    end
+
+    def sparql_success_after_retry(event)
+      info log_entry(
+        event: 'sparql_success_after_retry',
+        retry_attempts: event.payload[:retry_attempts],
+        count: event.payload[:count],
+      )
+    end
+
     def document_imported(event)
       info log_entry(
         event: 'document_imported',
@@ -54,6 +87,15 @@ module XiCnImporter
         celex: event.payload[:celex],
         error_class: event.payload[:error_class],
         error_message: event.payload[:error_message],
+      )
+    end
+
+    def duplicate_notification_attempt(event)
+      warn log_entry(
+        event: 'duplicate_notification_attempt',
+        celex: event.payload[:celex],
+        duplicate_attempt: event.payload[:duplicate_attempt],
+        count: event.payload[:count],
       )
     end
 

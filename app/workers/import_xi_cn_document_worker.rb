@@ -47,7 +47,17 @@ class ImportXiCnDocumentWorker
 private
 
   def notify_update_recipients(results)
+    notification_attempts = Hash.new(0)
+
     results.select { |r| r.status == :imported }.each do |result|
+      notification_attempts[result.celex] += 1
+      if notification_attempts[result.celex] > 1
+        XiCnImporter::Instrumentation.duplicate_notification_attempt(
+          celex: result.celex,
+          duplicate_attempt: notification_attempts[result.celex],
+        )
+      end
+
       CustomsTariffUpdateNotifierService.new(result.celex).call
     rescue StandardError => e
       Rails.logger.error(

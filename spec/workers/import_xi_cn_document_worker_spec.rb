@@ -12,6 +12,7 @@ RSpec.describe ImportXiCnDocumentWorker do
     allow(XiCnImporter::Instrumentation).to receive(:import_run_started)
     allow(XiCnImporter::Instrumentation).to receive(:import_run_completed)
     allow(XiCnImporter::Instrumentation).to receive(:import_run_failed)
+    allow(XiCnImporter::Instrumentation).to receive(:duplicate_notification_attempt)
     allow(SlackNotifierService).to receive(:call)
     allow(CustomsTariffUpdateNotifierService).to receive(:new).and_return(instance_double(CustomsTariffUpdateNotifierService, call: nil))
     allow(Aws::CloudWatch::Client).to receive(:new).and_return(cloudwatch_client)
@@ -78,6 +79,24 @@ RSpec.describe ImportXiCnDocumentWorker do
         allow(CustomsTariffUpdateNotifierService).to receive(:new).with('32025R1926').and_return(notifier_1926)
         allow(CustomsTariffUpdateNotifierService).to receive(:new).with('32025R1927').and_return(notifier_1927)
         allow(Rails.logger).to receive(:error)
+      end
+
+      context 'when imported results contain duplicate CELEX IDs' do
+        before do
+          allow(importer_double).to receive(:call).and_return([
+            XiCnImporter::Importer::Result.new(status: :imported, celex: '32025R1926'),
+            XiCnImporter::Importer::Result.new(status: :imported, celex: '32025R1926'),
+          ])
+        end
+
+        it 'increments the duplicate notification attempt counter' do
+          worker.perform
+
+          expect(XiCnImporter::Instrumentation).to have_received(:duplicate_notification_attempt).with(
+            celex: '32025R1926',
+            duplicate_attempt: 2,
+          )
+        end
       end
 
       it 'does not re-raise the notifier error' do

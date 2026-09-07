@@ -34,7 +34,29 @@ module XiCnImporter
     MAX_RETRIES = 3
     private_constant :MAX_RETRIES
 
-    class RetryableHTTPError < StandardError; end
+    JITTER_RANGE = (0.0..1.0)
+    private_constant :JITTER_RANGE
+
+    TRANSIENT_ERRORS = [
+      Net::OpenTimeout,
+      Net::ReadTimeout,
+      Timeout::Error,
+      Errno::ECONNRESET,
+      Errno::ECONNREFUSED,
+      Errno::ETIMEDOUT,
+      EOFError,
+      SocketError,
+    ].freeze
+    private_constant :TRANSIENT_ERRORS
+
+    class RetryableHTTPError < StandardError
+      attr_reader :http_code
+
+      def initialize(http_code)
+        @http_code = http_code.to_i
+        super("HTTP #{@http_code}")
+      end
+    end
 
     Result = Data.define(
       :celex,
@@ -110,7 +132,8 @@ module XiCnImporter
           response = http.request(request)
 
           if retryable_response?(response)
-            raise RetryableHTTPError, "HTTP #{response.code}"
+            raise RetryableHTTPError, response.code
+
           end
 
           response
@@ -122,15 +145,36 @@ module XiCnImporter
       JSON.parse(response.body).dig('results', 'bindings') || []
     end
 
-    def with_retries(max_retries: MAX_RETRIES, base_delay: BASE_DELAY)
+    def with_retries(url: SPARQL_ENDPOINT, max_retries: MAX_RETRIES, base_delay: BASE_DELAY, jitter_range: JITTER_RANGE)
       attempt = 0
 
       begin
-        yield
-      rescue Net::OpenTimeout, Net::ReadTimeout, Errno::ECONNRESET, SocketError, RetryableHTTPError
+        response = yield
+        Instrumentation.sparql_success_after_retry(retry_attempts: attempt) if sparql_endpoint?(url) && attempt.positive?
+        response
+      rescue *TRANSIENT_ERRORS, RetryableHTTPError => e
         raise if attempt >= max_retries
 
-        Kernel.sleep(backoff_delay(base_delay, attempt))
+        delay = backoff_delay(base_delay, attempt, jitter_range)
+        Instrumentation.fetch_retry(
+          url:,
+          attempt: attempt + 1,
+          max_attempts: max_retries + 1,
+          error_class: e.class.name,
+          error_message: e.message,
+          error_code: error_code_for(e),
+          backoff_seconds: delay.round(3),
+        )
+        if sparql_endpoint?(url)
+          Instrumentation.sparql_retry_attempt(
+            attempt: attempt + 1,
+            max_attempts: max_retries + 1,
+            error_class: e.class.name,
+            error_message: e.message,
+            error_code: error_code_for(e),
+          )
+        end
+        Kernel.sleep(delay)
         attempt += 1
         retry
       end
@@ -140,8 +184,18 @@ module XiCnImporter
       response.code.to_i.between?(500, 599)
     end
 
-    def backoff_delay(base_delay, attempt)
-      (base_delay * (2**attempt)) + rand(0.0..0.5)
+    def backoff_delay(base_delay, attempt, jitter_range)
+      (base_delay * (2**attempt)) + rand(jitter_range)
+    end
+
+    def error_code_for(error)
+      return error.http_code if error.respond_to?(:http_code)
+
+      nil
+    end
+
+    def sparql_endpoint?(url)
+      url == SPARQL_ENDPOINT
     end
 
     def fetch_html(url, redirect_count: 0)

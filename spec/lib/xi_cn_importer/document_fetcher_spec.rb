@@ -30,6 +30,9 @@ RSpec.describe XiCnImporter::DocumentFetcher do
 
   before do
     allow(Kernel).to receive(:sleep)
+    allow(XiCnImporter::Instrumentation).to receive(:fetch_retry)
+    allow(XiCnImporter::Instrumentation).to receive(:sparql_retry_attempt)
+    allow(XiCnImporter::Instrumentation).to receive(:sparql_success_after_retry)
 
     stub_request(:post, described_class::SPARQL_ENDPOINT)
       .to_return(status: 200, body: sparql_response_body,
@@ -95,6 +98,23 @@ RSpec.describe XiCnImporter::DocumentFetcher do
         result = fetcher.call.first
         expect(result.celex).to eq '32025R1926'
         expect(a_request(:post, described_class::SPARQL_ENDPOINT)).to have_been_made.times(2)
+        expect(XiCnImporter::Instrumentation).to have_received(:fetch_retry).with(
+          url: described_class::SPARQL_ENDPOINT,
+          attempt: 1,
+          max_attempts: 4,
+          error_class: 'XiCnImporter::DocumentFetcher::RetryableHTTPError',
+          error_message: 'HTTP 500',
+          error_code: 500,
+          backoff_seconds: be_between(2.0, 3.0),
+        )
+        expect(XiCnImporter::Instrumentation).to have_received(:sparql_retry_attempt).with(
+          attempt: 1,
+          max_attempts: 4,
+          error_class: 'XiCnImporter::DocumentFetcher::RetryableHTTPError',
+          error_message: 'HTTP 500',
+          error_code: 500,
+        )
+        expect(XiCnImporter::Instrumentation).to have_received(:sparql_success_after_retry).with(retry_attempts: 1)
       end
 
       it 'raises after exhausting retries on persistent 5xx' do
@@ -102,6 +122,9 @@ RSpec.describe XiCnImporter::DocumentFetcher do
 
         expect { fetcher.call }.to raise_error(described_class::RetryableHTTPError, 'HTTP 500')
         expect(a_request(:post, described_class::SPARQL_ENDPOINT)).to have_been_made.times(4)
+        expect(XiCnImporter::Instrumentation).to have_received(:fetch_retry).exactly(3).times
+        expect(XiCnImporter::Instrumentation).to have_received(:sparql_retry_attempt).exactly(3).times
+        expect(XiCnImporter::Instrumentation).not_to have_received(:sparql_success_after_retry)
       end
 
       it 'raises immediately without retrying on a client error (4xx)' do
@@ -109,6 +132,9 @@ RSpec.describe XiCnImporter::DocumentFetcher do
 
         expect { fetcher.call }.to raise_error(RuntimeError, 'SPARQL request failed: HTTP 404')
         expect(a_request(:post, described_class::SPARQL_ENDPOINT)).to have_been_made.times(1)
+        expect(XiCnImporter::Instrumentation).not_to have_received(:fetch_retry)
+        expect(XiCnImporter::Instrumentation).not_to have_received(:sparql_retry_attempt)
+        expect(XiCnImporter::Instrumentation).not_to have_received(:sparql_success_after_retry)
       end
     end
 
