@@ -31,10 +31,6 @@ class EmbeddingService
   def embed(text, event_kind: nil)
     embeddings = embed_batch([text], event_kind:)
     embedding = embeddings.first
-    if embedding.nil? && text.present?
-      raise ApiError.new('Embedding response was malformed', ai_usage: AiUsage.metadata_from(embeddings))
-    end
-
     AiUsage.attach_metadata(embedding, AiUsage.metadata_from(embeddings)) if embedding
     embedding
   end
@@ -90,7 +86,12 @@ private
     raise TypeError unless data.is_a?(Array) && data.size == expected_size
     raise TypeError unless data.map { |entry| entry.fetch('index') }.sort.eql?((0...expected_size).to_a)
 
-    data.sort_by { |entry| entry['index'] }.map { |entry| entry['embedding'] }
+    data.sort_by { |entry| entry['index'] }.map do |entry|
+      embedding = entry.fetch('embedding')
+      raise TypeError unless embedding.is_a?(Array) && embedding.size == 1536 && embedding.all? { |value| value.is_a?(Numeric) && value.real? && value.to_f.finite? }
+
+      embedding
+    end
   rescue StandardError
     raise ApiError.new('Embedding response was malformed', ai_usage: usage)
   end
