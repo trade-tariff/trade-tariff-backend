@@ -28,7 +28,7 @@ module XiCnImporter
       ORDER BY DESC(?force_date)
     SPARQL
 
-    BASE_DELAY  = 2 # seconds
+    BASE_DELAY = 2 # seconds
     private_constant :BASE_DELAY
 
     MAX_RETRIES = 3
@@ -99,12 +99,12 @@ module XiCnImporter
           uri.port,
           use_ssl: uri.scheme == 'https',
           open_timeout: OPEN_TIMEOUT,
-          read_timeout: READ_TIMEOUT
+          read_timeout: READ_TIMEOUT,
         ) do |http|
           request = Net::HTTP::Post.new(uri.request_uri)
           request.set_form_data(
             'query' => SPARQL_QUERY,
-            'format' => 'application/sparql-results+json'
+            'format' => 'application/sparql-results+json',
           )
 
           response = http.request(request)
@@ -127,7 +127,7 @@ module XiCnImporter
 
       begin
         yield
-      rescue Net::OpenTimeout, Net::ReadTimeout, Errno::ECONNRESET, SocketError, RetryableHTTPError => e
+      rescue Net::OpenTimeout, Net::ReadTimeout, Errno::ECONNRESET, SocketError, RetryableHTTPError
         raise if attempt >= max_retries
 
         Kernel.sleep(backoff_delay(base_delay, attempt))

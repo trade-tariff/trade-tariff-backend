@@ -15,6 +15,16 @@ RSpec.describe ImportXiCnDocumentWorker do
     allow(cloudwatch_client).to receive(:put_metric_data)
   end
 
+  describe 'sidekiq configuration' do
+    it 'retries 8 times' do
+      expect(described_class.sidekiq_options['retry']).to eq(8)
+    end
+
+    it 'does not enable Sidekiq slack alerts' do
+      expect(described_class.sidekiq_options['slack_alerts']).to be_nil
+    end
+  end
+
   describe '#perform' do
     context 'when SERVICE is not xi' do
       before { allow(TradeTariffBackend).to receive(:xi?).and_return(false) }
@@ -133,10 +143,9 @@ RSpec.describe ImportXiCnDocumentWorker do
         allow(importer_double).to receive(:call).and_raise(RuntimeError, 'network timeout')
       end
 
-      it 'sends a failure Slack notification' do
+      it 'does not send a failure Slack notification' do
         expect { worker.perform }.to raise_error(RuntimeError)
-        expect(SlackNotifierService).to have_received(:call)
-          .with(a_string_including('failed'))
+        expect(SlackNotifierService).not_to have_received(:call)
       end
 
       it 'does not emit a heartbeat' do

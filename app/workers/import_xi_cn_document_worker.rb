@@ -5,7 +5,7 @@ class ImportXiCnDocumentWorker
   include Sidekiq::Worker
   include ScheduledJobHeartbeat
 
-  sidekiq_options queue: :default, retry: false, slack_alerts: false
+  sidekiq_options queue: :default, retry: 8
 
   def perform
     return unless TradeTariffBackend.xi?
@@ -33,7 +33,7 @@ class ImportXiCnDocumentWorker
       error_class: e.class.name,
       error_message: e.message,
     )
-    notify_failed(e)
+
     raise
   end
 
@@ -59,10 +59,6 @@ private
 
     lines = failed.map { |r| "  • CELEX ID: #{r.celex} ✗ #{r.error}" }
     notify_slack(['XI Combined Nomenclature document import completed with failures.', *lines].join("\n"))
-  end
-
-  def notify_failed(error)
-    notify_slack("XI Combined Nomenclature document import failed. #{error.class}: #{error.message}")
   end
 
   def notify_slack(message)
