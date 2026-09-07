@@ -9,6 +9,9 @@ RSpec.describe ImportXiCnDocumentWorker do
   before do
     allow(TradeTariffBackend).to receive(:xi?).and_return(true)
     allow(XiCnImporter::Importer).to receive(:new).and_return(importer_double)
+    allow(XiCnImporter::Instrumentation).to receive(:import_run_started)
+    allow(XiCnImporter::Instrumentation).to receive(:import_run_completed)
+    allow(XiCnImporter::Instrumentation).to receive(:import_run_failed)
     allow(SlackNotifierService).to receive(:call)
     allow(CustomsTariffUpdateNotifierService).to receive(:new).and_return(instance_double(CustomsTariffUpdateNotifierService, call: nil))
     allow(Aws::CloudWatch::Client).to receive(:new).and_return(cloudwatch_client)
@@ -151,6 +154,39 @@ RSpec.describe ImportXiCnDocumentWorker do
       it 'does not emit a heartbeat' do
         expect { worker.perform }.to raise_error(RuntimeError)
         expect(cloudwatch_client).not_to have_received(:put_metric_data)
+      end
+    end
+
+    context 'when the importer raises a unique constraint violation' do
+      before do
+        allow(importer_double).to receive(:call)
+          .and_raise(Sequel::UniqueConstraintViolation, 'duplicate key value violates unique constraint')
+        allow(Rails.logger).to receive(:warn)
+      end
+
+      it 'does not re-raise and therefore avoids Sidekiq retrying the race condition' do
+        expect { worker.perform }.not_to raise_error
+      end
+
+      it 'records a failed import event with the unique-constraint error details' do
+        worker.perform
+
+        expect(XiCnImporter::Instrumentation).to have_received(:import_run_failed).with(
+          error_class: 'Sequel::UniqueConstraintViolation',
+          error_message: 'duplicate key value violates unique constraint',
+        )
+      end
+
+      it 'does not send Slack notifications' do
+        worker.perform
+
+        expect(SlackNotifierService).not_to have_received(:call)
+      end
+
+      it 'emits a heartbeat' do
+        worker.perform
+
+        expect(cloudwatch_client).to have_received(:put_metric_data)
       end
     end
 

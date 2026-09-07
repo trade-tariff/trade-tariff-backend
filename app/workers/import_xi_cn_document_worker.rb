@@ -28,6 +28,13 @@ class ImportXiCnDocumentWorker
     notify_completed(results)
     notify_update_recipients(results)
     record_heartbeat
+  rescue Sequel::UniqueConstraintViolation => e
+    XiCnImporter::Instrumentation.import_run_failed(
+      error_class: e.class.name,
+      error_message: e.message,
+    )
+    Rails.logger.warn("xi_cn_import_unique_constraint: #{e.class}: #{e.message}")
+    record_heartbeat
   rescue StandardError => e
     XiCnImporter::Instrumentation.import_run_failed(
       error_class: e.class.name,
