@@ -89,12 +89,12 @@ module Search
         instrument('answer_returned', payload)
       end
 
-      def retrieval_leg_completed(request_id:, leg:, duration_ms:, result_count:, status:, error_message: nil, failure_code: nil, error_type: nil)
+      def retrieval_leg_completed(request_id:, leg:, duration_ms:, result_count:, status:, error_message: nil, failure_code: nil, error_type: nil, search_type: 'interactive')
         instrument(
           'retrieval_leg_completed',
           {
             request_id:,
-            search_type: 'interactive',
+            search_type:,
             leg:,
             duration_ms:,
             result_count:,

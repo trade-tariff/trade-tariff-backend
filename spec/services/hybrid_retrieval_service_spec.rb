@@ -63,6 +63,54 @@ RSpec.describe HybridRetrievalService do
   end
 
   describe '#call' do
+    context 'with consolidated failure diagnostics' do
+      before do
+        allow(Search::Instrumentation).to receive(:retrieval_leg_completed).and_call_original
+        allow(Search::Instrumentation).to receive(:retrieval_results_returned).and_call_original
+      end
+
+      it 'includes both legs and prior failures' do
+        TradeTariffRequest.record_search_failure(Search::FailureCodes::QUERY_EXPANSION_FAILED)
+        allow(OpensearchRetrievalService).to receive(:call).and_raise(StandardError, 'opensearch down')
+        allow(VectorRetrievalService).to receive(:call_with_diagnostics) do
+          TradeTariffRequest.record_search_failure(Search::FailureCodes::EMBEDDING_GENERATION_FAILED)
+          vector_diagnostics
+        end
+        events = []
+        subscriber = ActiveSupport::Notifications.subscribe(/\A(?:retrieval_leg_completed|retrieval_results_returned)\.search\z/) do |*args|
+          events << ActiveSupport::Notifications::Event.new(*args).payload
+        end
+
+        result = described_class.call(query: 'horses', as_of: Time.zone.today, search_type: 'evaluation')
+
+        expect(result.failure_codes).to contain_exactly('opensearch_failed', 'embedding_generation_failed')
+        expect(TradeTariffRequest.search_failures).to contain_exactly('query_expansion_failed', 'opensearch_failed', 'embedding_generation_failed')
+        expect(events.size).to eq(4)
+        expect(events).to all(
+          include(search_type: 'evaluation', search_degraded: true,
+                  query_expansion_failed: true, opensearch_failed: true, embedding_generation_failed: true),
+        )
+      ensure
+        ActiveSupport::Notifications.unsubscribe(subscriber) if subscriber
+      end
+
+      it 'emits both final snapshots before raising' do
+        allow(OpensearchRetrievalService).to receive(:call).and_raise(StandardError, 'opensearch down')
+        allow(VectorRetrievalService).to receive(:call_with_diagnostics).and_raise(StandardError, 'vector down')
+        events = []
+        subscriber = ActiveSupport::Notifications.subscribe('retrieval_leg_completed.search') do |*args|
+          events << ActiveSupport::Notifications::Event.new(*args).payload
+        end
+
+        expect { described_class.call(query: 'horses', as_of: Time.zone.today) }.to raise_error(described_class::AllLegsFailed)
+
+        expect(events.size).to eq(2)
+        expect(events).to all(include(search_degraded: true, opensearch_failed: true, vector_retrieval_failed: true))
+      ensure
+        ActiveSupport::Notifications.unsubscribe(subscriber) if subscriber
+      end
+    end
+
     context 'with request attribution' do
       def request_context
         {
@@ -111,7 +159,7 @@ RSpec.describe HybridRetrievalService do
         described_class.call(query: 'horses', as_of: Time.zone.today)
 
         expect([contexts.pop, contexts.pop]).to all(
-          have_attributes(request_id: nil, experiment: nil, request_source: nil, client_id: nil, search_failures: nil),
+          have_attributes(request_id: nil, experiment: nil, request_source: nil, client_id: nil, search_type: nil, search_failures: nil),
         )
         expect(TradeTariffRequest.search_failures).to contain_exactly('query_expansion_failed', 'embedding_generation_failed')
       end

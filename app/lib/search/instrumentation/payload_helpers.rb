@@ -44,7 +44,13 @@ module Search
       end
 
       def with_request_context(payload)
-        payload = payload.merge(search_type: TradeTariffRequest.search_type) if TradeTariffRequest.search_type.present?
+        failure_fields = Search::FailureCodes.logging_fields(TradeTariffRequest.search_failures)
+        failure_fields[:search_degraded] ||= payload[:search_degraded] == true
+        payload = payload.merge(failure_fields).merge(
+          { experiment: TradeTariffRequest.experiment,
+            client_id: TradeTariffRequest.client_id,
+            search_type: TradeTariffRequest.search_type }.compact_blank,
+        )
         return payload unless payload.key?(:request_id)
 
         payload
