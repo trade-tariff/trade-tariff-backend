@@ -1,6 +1,15 @@
 RSpec.describe OpensearchRetrievalService do
+  after { TradeTariffRequest.search_failures = nil }
+
   before do
     allow(ExpandSearchQueryService).to receive(:call)
+  end
+
+  it 'records failed retrieval before raising' do
+    allow(TradeTariffBackend.search_client).to receive(:search).and_raise(Faraday::ConnectionFailed, 'unavailable')
+
+    expect { described_class.call(query: 'handbag', as_of: Time.zone.today) }.to raise_error(Faraday::ConnectionFailed)
+    expect(TradeTariffRequest.search_failures).to eq(%w[opensearch_failed])
   end
 
   describe '#call' do

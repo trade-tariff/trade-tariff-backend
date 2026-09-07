@@ -610,6 +610,8 @@ RSpec.describe Search::Logger do
         status: 'error',
         error_message: 'vector down',
         error_message_truncated: false,
+        failure_code: 'vector_retrieval_failed',
+        error_type: 'Sequel::DatabaseError',
       }
     end
 
@@ -629,6 +631,8 @@ RSpec.describe Search::Logger do
       json = parsed_log_output
 
       expect(json['event']).to eq('retrieval_leg_completed')
+      expect(json['failure_code']).to eq('vector_retrieval_failed')
+      expect(json['error_type']).to eq('Sequel::DatabaseError')
       expect(json['leg']).to eq('vector')
       expect(json['status']).to eq('error')
       expect(json['error_message']).to eq('vector down')
@@ -685,6 +689,31 @@ RSpec.describe Search::Logger do
       expect(json['event']).to eq('result_selected')
       expect(json['goods_nomenclature_item_id']).to eq('4202210000')
       expect(json['goods_nomenclature_class']).to eq('Commodity')
+    end
+  end
+
+  describe '#search_stage_failed' do
+    it 'logs the failed component and bounded error with its request attribution' do
+      logger_instance.search_stage_failed(build_event('search_stage_failed', {
+        request_id: 'req-1',
+        search_type: 'interactive',
+        failure_code: 'query_expansion_failed',
+        operation: 'search_query_expansion',
+        error_type: 'InvalidResponse',
+        error_message: 'x' * 500,
+        error_message_truncated: true,
+      }))
+
+      expect(parsed_log_output).to include(
+        'event' => 'search_stage_failed',
+        'request_id' => 'req-1',
+        'search_type' => 'interactive',
+        'failure_code' => 'query_expansion_failed',
+        'operation' => 'search_query_expansion',
+        'error_type' => 'InvalidResponse',
+        'error_message' => 'x' * 500,
+        'error_message_truncated' => true,
+      )
     end
   end
 

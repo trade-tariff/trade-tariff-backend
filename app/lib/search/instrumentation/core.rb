@@ -34,6 +34,16 @@ module Search
           }.merge(truncate_error_payload(error_message)),
         )
       end
+
+      def search_stage_failed(request_id:, search_type:, failure_code:, error_type:, error_message:, operation: nil)
+        TradeTariffRequest.record_search_failure(failure_code)
+        instrument(
+          'search_stage_failed',
+          {
+            request_id:, search_type:, failure_code:, error_type:, operation:
+          }.compact.merge(truncate_error_payload(error_message)),
+        )
+      end
     end
   end
 end

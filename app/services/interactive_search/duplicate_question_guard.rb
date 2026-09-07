@@ -120,7 +120,6 @@ module InteractiveSearch
         iteration: attempt_number,
         effective_query: effective_query,
         operation: 'duplicate_question_validator',
-        emit_search_failed: false,
       ) do
         OpenaiClient.call(
           validator_prompt,
@@ -130,9 +129,19 @@ module InteractiveSearch
         )
       end
       parsed = ExtractBottomJson.call(response)
+      record_validation_failure('Duplicate question validation was malformed') unless usable_validation?(parsed)
       parsed.is_a?(Hash) ? parsed : nil
-    rescue StandardError
+    rescue StandardError => e
+      record_validation_failure(e.message, error_type: e.class.name)
       nil
+    end
+
+    def record_validation_failure(message, error_type: 'InvalidResponse')
+      Search::Instrumentation.search_stage_failed(
+        request_id:, search_type: 'interactive',
+        failure_code: Search::FailureCodes::DUPLICATE_QUESTION_VALIDATION_FAILED,
+        operation: 'duplicate_question_validator', error_type:, error_message: message
+      )
     end
 
     def usable_validation?(validation)

@@ -1,6 +1,31 @@
 RSpec.describe Search::Instrumentation do
   before { TradeTariffRequest.request_source = nil }
 
+  describe '.search_stage_failed' do
+    after { TradeTariffRequest.search_failures = nil }
+
+    it 'records bounded stage diagnostics', :aggregate_failures do
+      events = []
+      subscriber = ->(event) { events << event }
+
+      ActiveSupport::Notifications.subscribed(subscriber, /\.search\z/) do
+        described_class.search_stage_failed(
+          request_id: 'stage-failure', search_type: 'interactive',
+          failure_code: Search::FailureCodes::QUERY_EXPANSION_FAILED,
+          error_type: 'InvalidResponse', error_message: 'x' * 600,
+          operation: 'search_query_expansion'
+        )
+      end
+
+      expect(TradeTariffRequest.search_failures).to eq(%w[query_expansion_failed])
+      expect(events.map(&:name)).to eq(['search_stage_failed.search'])
+      expect(events.first.payload).to include(
+        failure_code: 'query_expansion_failed', operation: 'search_query_expansion',
+        error_type: 'InvalidResponse', error_message: 'x' * 500, error_message_truncated: true
+      )
+    end
+  end
+
   describe '.search_started' do
     it 'instruments the search_started event' do
       allow(ActiveSupport::Notifications).to receive(:instrument)
@@ -356,9 +381,8 @@ RSpec.describe Search::Instrumentation do
         'api_call_completed.search',
         hash_including(response_type: 'error'),
       )
-      expect(ActiveSupport::Notifications).to have_received(:instrument).with(
-        'search_failed.search',
-        hash_including(error_type: 'Faraday::TimeoutError'),
+      expect(ActiveSupport::Notifications).not_to have_received(:instrument).with(
+        'search_failed.search', anything
       )
     end
 

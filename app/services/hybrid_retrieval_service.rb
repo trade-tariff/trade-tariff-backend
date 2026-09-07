@@ -84,10 +84,20 @@ class HybridRetrievalService
 private
 
   def run_concurrent_retrievals
-    opensearch_thread = Thread.new { run_leg(:opensearch) }
-    vector_thread = Thread.new { run_leg(:vector) }
+    request_context = {
+      request_id: @request_id || TradeTariffRequest.request_id,
+      request_source: TradeTariffRequest.request_source,
+      client_id: TradeTariffRequest.client_id,
+      experiment: TradeTariffRequest.experiment,
+    }
+    search_failures = Array(TradeTariffRequest.search_failures)
+    threads = %i[opensearch vector].map do |leg|
+      Thread.new do
+        TradeTariffRequest.set(**request_context, search_failures: search_failures.dup) { run_leg(leg) }
+      end
+    end
 
-    [opensearch_thread.value, vector_thread.value]
+    threads.map(&:value)
   end
 
   def run_leg(leg)
@@ -123,14 +133,14 @@ private
     LegResult.new(value: result, error: nil, failure_code: nil)
   rescue StandardError => e
     duration_ms = ((Process.clock_gettime(Process::CLOCK_MONOTONIC) - start) * 1000).round(2)
+    failure_code = failure_code_for(leg, e)
 
     Search::Instrumentation.retrieval_leg_completed(
       request_id: @request_id, leg: leg, duration_ms: duration_ms, result_count: 0, status: 'error',
-      error_message: e.message
+      error_message: e.message, failure_code: failure_code, error_type: e.class.name
     )
 
-    Rails.logger.error("HybridRetrievalService #{leg} leg failed: #{e.message}")
-    LegResult.new(value: nil, error: e, failure_code: failure_code_for(leg, e))
+    LegResult.new(value: nil, error: e, failure_code: failure_code)
   end
 
   def failure_code_for(leg, error)

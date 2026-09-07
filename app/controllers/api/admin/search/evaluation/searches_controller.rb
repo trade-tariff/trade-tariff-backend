@@ -6,15 +6,16 @@ module Api
           # Matches both sources of per-search LLM/embedding usage:
           #   - api_call_completed.search: interactive-search LLM calls
           #     (Search::Instrumentation::ApiEvents#api_call)
-          #   - embedding_api_call_completed.ai_usage: the query-embedding call
+          #   - embedding_api_call_{completed,failed}.ai_usage: the query-embedding call
           #     vector/hybrid retrieval makes (AiUsage::Instrumentation#embedding_api_call,
           #     via VectorRetrievalService) -- without this, an eval run configured for
           #     vector/hybrid retrieval would silently omit its embedding cost from
           #     meta.usage, biasing cost comparisons against exactly the retrieval
-          #     strategies most worth benchmarking.
+          #     strategies most worth benchmarking. Malformed embedding responses can
+          #     still carry billed usage, so failed calls must also be collected.
           # A Regexp lets one .subscribed call listen to both: Fanout#subscribe only
           # accepts a String, Regexp, or nil pattern, not an array of patterns.
-          USAGE_EVENT_PATTERN = /\A(?:api_call_completed\.search|embedding_api_call_completed\.ai_usage)\z/
+          USAGE_EVENT_PATTERN = /\A(?:api_call_completed\.search|embedding_api_call_(?:completed|failed)\.ai_usage)\z/
 
           def create
             EvaluationConfiguration::AllowlistValidator.call(configuration_overrides)

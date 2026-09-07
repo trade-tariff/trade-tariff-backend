@@ -68,6 +68,23 @@ When enabled, hybrid retrieval returns no suggestions if the maximum score is be
 
 Guided classification search can also attach bounded chapter- and section-note evidence to retrieved candidates. [Tariff knowledge notes](../tariff-knowledge-notes.md) documents extraction, graph edges, compressed-note materialisation and deduplication, prompt selection, and request-ID diagnostics.
 
+## Search Failure Diagnostics and Alarms
+
+Recoverable failures emit `search_stage_failed` with a scalar `failure_code`, the operation, the error type, and a bounded error message. They can be followed by `search_completed` when fallback succeeds. `search_failed` is reserved for a failure escaping the instrumented search boundary. Hybrid retrieval also records each leg's outcome and failure code. A successful retrieval returning no matches is not a retrieval failure.
+
+`terraform/degradation_alarms.tf` defines one alarm for each component when `enable_alarms` is enabled:
+
+| Component | Failure events counted |
+| --- | --- |
+| OpenSearch | `search_stage_failed` with `opensearch_failed`, including direct and classic search, or an unsuccessful OpenSearch retrieval leg |
+| Embedding generation | `embedding_api_call_failed` for `vector_search_query_embedding`, including malformed embedding responses |
+| LLM | An unsuccessful `api_call_completed`, or `search_stage_failed` with `query_expansion_failed`, `interactive_search_failed`, or `duplicate_question_validation_failed`, including unusable responses |
+| Vector database retrieval | `search_stage_failed` or an unsuccessful vector retrieval leg with `vector_retrieval_failed`; embedding failures belong to the separate embedding alarm |
+
+These alarms count failure events and trigger when any matching event occurs in a five-minute period. They are not degraded-request counts: correlated stage and leg/API events can count the same failure more than once. Embedding failures are matched only at their API boundary to avoid counting their vector-leg fallback again. Investigate with the Search Operations dashboard and the event's `request_id`, `failure_code`, `operation`, and error fields.
+
+The existing OpenSearch-leg and LLM API-error patterns remain alongside the new stage patterns so older application instances retain their alert coverage during a rolling deployment or rollback. The new vector alarm and unusable-response coverage require the corresponding new application events. Legacy vector errors cannot distinguish embedding generation from database retrieval and are not assigned to the database alarm.
+
 ## Query Expansion Deadline
 
 Uncached guided-search query expansion has a fixed five-second operation-specific deadline.

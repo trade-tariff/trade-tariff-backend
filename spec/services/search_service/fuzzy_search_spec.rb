@@ -1,4 +1,6 @@
 RSpec.describe SearchService::FuzzySearch do
+  after { TradeTariffRequest.search_failures = nil }
+
   let(:query_string) { 'apples' }
   let(:data_serializer) { Api::V2::SearchSerializationService.new }
 
@@ -147,7 +149,7 @@ RSpec.describe SearchService::FuzzySearch do
       end
 
       before do
-        allow(Search::Instrumentation).to receive(:search_failed)
+        allow(Search::Instrumentation).to receive(:search_stage_failed).and_call_original
         allow(TradeTariffBackend.search_client).to receive(:msearch)
           .and_raise(error)
       end
@@ -159,11 +161,12 @@ RSpec.describe SearchService::FuzzySearch do
         expect(results).to include(SearchService::BaseSearch::BLANK_RESULT)
       end
 
-      it 'emits a search_failed event' do
+      it 'emits a stage failure event' do
         fuzzy_search.serializable_hash
 
-        expect(Search::Instrumentation).to have_received(:search_failed).with(
+        expect(Search::Instrumentation).to have_received(:search_stage_failed).with(
           request_id: 'request-123',
+          failure_code: 'opensearch_failed',
           error_type: 'OpenSearch::Transport::Transport::Error',
           error_message: 'OpenSearch timeout',
           search_type: 'classic',

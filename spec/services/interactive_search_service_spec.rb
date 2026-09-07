@@ -43,7 +43,7 @@ RSpec.describe InteractiveSearchService do
     allow(Search::Instrumentation).to receive(:answer_returned)
     allow(Search::Instrumentation).to receive(:duplicate_question_guard_checked)
     allow(Search::Instrumentation).to receive(:note_evidence_evaluated)
-    allow(Search::Instrumentation).to receive(:search_failed)
+    allow(Search::Instrumentation).to receive(:search_stage_failed).and_call_original
     create(:admin_configuration, :boolean, name: 'interactive_search_enabled', value: true, area: 'classification')
     create(:admin_configuration, :integer, name: 'interactive_search_max_questions', value: 3, area: 'classification')
     create(:admin_configuration, name: 'search_context', value: default_search_context, area: 'classification')
@@ -162,11 +162,11 @@ RSpec.describe InteractiveSearchService do
     context 'when search_type is passed explicitly and the call raises' do
       it 'tags the failure instrumentation with the given search_type instead of the hardcoded default' do
         allow(OpenaiClient).to receive(:call).and_raise(StandardError, 'boom')
-        allow(Search::Instrumentation).to receive(:search_failed)
+        allow(Search::Instrumentation).to receive(:search_stage_failed).and_call_original
 
         described_class.call(**search_params(search_type: 'evaluation'))
 
-        expect(Search::Instrumentation).to have_received(:search_failed).with(
+        expect(Search::Instrumentation).to have_received(:search_stage_failed).with(
           hash_including(search_type: 'evaluation'),
         )
       end
@@ -175,11 +175,11 @@ RSpec.describe InteractiveSearchService do
     context 'when search_type is not given' do
       it 'still tags failure instrumentation as interactive, reproducing today\'s exact behaviour' do
         allow(OpenaiClient).to receive(:call).and_raise(StandardError, 'boom')
-        allow(Search::Instrumentation).to receive(:search_failed)
+        allow(Search::Instrumentation).to receive(:search_stage_failed).and_call_original
 
         described_class.call(**search_params)
 
-        expect(Search::Instrumentation).to have_received(:search_failed).with(
+        expect(Search::Instrumentation).to have_received(:search_stage_failed).with(
           hash_including(search_type: 'interactive'),
         )
       end
@@ -565,10 +565,11 @@ RSpec.describe InteractiveSearchService do
         expect(result).to be_nil
       end
 
-      it 'emits a search_failed event' do
+      it 'emits a stage failure event' do
         result
-        expect(Search::Instrumentation).to have_received(:search_failed).with(
-          hash_including(error_type: 'Faraday::TimeoutError', search_type: 'interactive'),
+        expect(Search::Instrumentation).to have_received(:search_stage_failed).with(
+          hash_including(failure_code: 'interactive_search_failed',
+                         error_type: 'Faraday::TimeoutError', search_type: 'interactive'),
         )
       end
 

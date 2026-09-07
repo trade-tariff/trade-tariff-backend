@@ -289,6 +289,7 @@ module Search
         result_count: event.payload[:result_count],
         status: event.payload[:status],
       }
+      data.merge!(event.payload.slice(:failure_code, :error_type))
       add_error_fields!(data, event)
       info log_entry(data, event)
     end
@@ -326,6 +327,19 @@ module Search
         error_type: event.payload[:error_type],
         search_type: event.payload[:search_type],
       }
+      add_error_fields!(data, event)
+      error log_entry(data, event)
+    end
+
+    def search_stage_failed(event)
+      data = {
+        event: 'search_stage_failed',
+        request_id: event.payload[:request_id],
+        search_type: event.payload[:search_type],
+        failure_code: event.payload[:failure_code],
+        operation: event.payload[:operation],
+        error_type: event.payload[:error_type],
+      }.compact
       add_error_fields!(data, event)
       error log_entry(data, event)
     end

@@ -1,7 +1,15 @@
 class VectorRetrievalService
   EMBEDDING_DIMENSIONS = 1536
 
-  EmbeddingGenerationError = Class.new(StandardError)
+  class EmbeddingGenerationError < StandardError
+    attr_reader :ai_usage
+
+    def initialize(message = nil, ai_usage: nil)
+      super(message)
+      @ai_usage = ai_usage
+    end
+  end
+
   VectorRetrievalError = Class.new(StandardError)
   Result = Data.define(:results, :max_score)
 
@@ -28,6 +36,11 @@ class VectorRetrievalService
     return [] if ranked_rows.empty?
 
     build_results(ranked_rows, enforce_eligibility: true)
+  rescue EmbeddingGenerationError
+    raise
+  rescue StandardError => e
+    record_failure(e, Search::FailureCodes::VECTOR_RETRIEVAL_FAILED, 'vector_retrieval')
+    raise
   end
 
   def call_with_diagnostics
@@ -40,6 +53,7 @@ class VectorRetrievalService
   rescue EmbeddingGenerationError
     raise
   rescue StandardError => e
+    record_failure(e, Search::FailureCodes::VECTOR_RETRIEVAL_FAILED, 'vector_retrieval')
     raise VectorRetrievalError, e.message
   end
 
@@ -53,20 +67,38 @@ private
   end
 
   def generate_query_embedding
-    embedding = AiUsage::Instrumentation.embedding_api_call(
+    AiUsage::Instrumentation.embedding_api_call(
       event_kind: 'vector_search_query_embedding',
       batch_size: 1,
       model: EmbeddingService::MODEL,
       request_id: @request_id,
-    ) { embedding_service.embed(@query, event_kind: 'vector_search_query_embedding') }
-    valid_embedding = embedding.is_a?(Array) &&
-      embedding.size == EMBEDDING_DIMENSIONS &&
-      embedding.all? { |value| value.is_a?(Numeric) && value.real? && value.to_f.finite? }
-    raise EmbeddingGenerationError, 'Embedding response was malformed' unless valid_embedding
+    ) do
+      embedding = embedding_service.embed(@query, event_kind: 'vector_search_query_embedding')
+      valid_embedding = embedding.is_a?(Array) &&
+        embedding.size == EMBEDDING_DIMENSIONS &&
+        embedding.all? { |value| value.is_a?(Numeric) && value.real? && value.to_f.finite? }
+      unless valid_embedding
+        raise EmbeddingGenerationError.new('Embedding response was malformed', ai_usage: AiUsage.metadata_from(embedding))
+      end
 
-    embedding
+      embedding
+    end
   rescue StandardError => e
-    raise EmbeddingGenerationError, e.message
+    record_failure(e, Search::FailureCodes::EMBEDDING_GENERATION_FAILED, 'embedding_generation')
+    raise if e.is_a?(EmbeddingGenerationError)
+
+    raise EmbeddingGenerationError.new(e.message, ai_usage: AiUsage.metadata_from(e))
+  end
+
+  def record_failure(error, failure_code, operation)
+    Search::Instrumentation.search_stage_failed(
+      request_id: @request_id,
+      search_type: 'interactive',
+      failure_code: failure_code,
+      error_type: error.class.name,
+      error_message: error.message,
+      operation: operation,
+    )
   end
 
   def build_results(ranked_rows, enforce_eligibility: false)
