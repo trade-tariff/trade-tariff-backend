@@ -35,16 +35,17 @@ module SearchAnalytics
     REQUEST_SOURCES = %w[frontend backend_only unknown].freeze
     QueryError = Class.new(StandardError)
 
-    def self.call(period:, client: self.client, now: Time.current) = new(period:, client:, now:).call
+    def self.call(period:, client: self.client, now: Time.current, log_group_name: SEARCH_LOG_GROUP_NAME) = new(period:, client:, now:, log_group_name:).call
 
-    def self.query_definitions(period:) = new(period:, client: nil).query_definitions
+    def self.query_definitions(period:, log_group_name: SEARCH_LOG_GROUP_NAME) = new(period:, client: nil, log_group_name:).query_definitions
 
     def self.client = @client ||= Aws::CloudWatchLogs::Client.new
 
-    def initialize(period:, client: self.class.client, now: Time.current)
+    def initialize(period:, client: self.class.client, now: Time.current, log_group_name: SEARCH_LOG_GROUP_NAME)
       @period = Period.for(period:, view: 'all')
       @client = client
       @now = now
+      @log_group_name = log_group_name
     end
 
     def call
@@ -95,11 +96,11 @@ module SearchAnalytics
 
   private
 
-    attr_reader :period, :client, :now
+    attr_reader :period, :client, :now, :log_group_name
 
     def run_query(query_string)
       query_id = client.start_query(
-        log_group_name: SEARCH_LOG_GROUP_NAME,
+        query_language: 'SQL',
         start_time: (now - period.duration).to_i,
         end_time: now.to_i,
         query_string: query_string,
@@ -129,214 +130,159 @@ module SearchAnalytics
       AGGREGATED_COST_FIELDS.fetch(field, field)
     end
 
-    def bucket_expression = period.bucket_size == 'hour' ? 'bin(1h)' : 'bin(1d)'
+    def bucket_expression = "DATE_TRUNC('#{bucket_period}', `@timestamp`)"
 
-    def bucket_period = period.bucket_size == 'hour' ? '1h' : '1d'
+    def bucket_period = period.bucket_size == 'hour' ? 'HOUR' : 'DAY'
 
-    def base_search_filter = 'filter service = "search" and event in ["search_completed", "search_failed"]'
+    def source = "`#{log_group_name}`"
 
-    def log_stream_filter = %(filter @logStream like "ecs/backend-#{TradeTariffBackend.service}/")
+    def base_search_filter = "service = 'search' AND event IN ('search_completed', 'search_failed')"
+
+    def log_stream_filter = "`@logStream` LIKE '%ecs/backend-#{TradeTariffBackend.service}/%'"
+
+    def request_exclusion_filter
+      Rails.root.join('app/services/search_analytics/request_exclusion_filter.sql.tftpl').read
+        .gsub('${log_group_name}', log_group_name)
+        .gsub('${scope_condition}', log_stream_filter)
+    end
 
     def volume_query
       <<~QUERY
-        fields @timestamp, event, search_type
-        | #{log_stream_filter}
-        | #{base_search_filter}
-        | fields if(ispresent(request_source), request_source, "unknown") as request_source
-        | stats count(*) as searches by #{bucket_expression}, search_type, event, request_source
+        SELECT #{bucket_expression} AS `@timestamp`, search_type, event,
+          COALESCE(request_source, 'unknown') AS request_source, COUNT(*) AS searches
+        FROM #{source} WHERE #{log_stream_filter} AND #{base_search_filter} AND #{request_exclusion_filter}
+        GROUP BY #{bucket_expression}, search_type, event, COALESCE(request_source, 'unknown')
       QUERY
     end
 
-    # Shared by classic + interactive dashboards and admin analytics.
-    #
-    # Classic empty commodity results = fuzzy/null with commodity_result_count = 0
-    # (empty "Best commodity matches"). That includes:
-    #   - completely empty results (result_count = 0)
-    #   - headings/chapters/other hits only (result_count > 0)
-    # Exact matches are never empty-commodity results.
-    #
-    # Interactive empty results = result_count = 0 (filter also accepts search_type=internal).
-    # Historical classic logs without commodity_result_count fall back to result_count = 0.
-    # Keep in sync with terraform/modules/search_*_dashboard zero_result_condition locals.
+    # Keep empty-commodity semantics in sync with terraform/modules/search_*_dashboard.
     def zero_result_condition
       <<~CONDITION.squish
-        (
-          (search_type = "classic" and (
-            (ispresent(commodity_result_count) and commodity_result_count = 0 and (not ispresent(results_type) or results_type != "exact_search"))
-            or
-            (not ispresent(commodity_result_count) and result_count = 0)
-          ))
-          or
-          ((search_type = "interactive" or search_type = "internal") and result_count = 0)
-        )
+        ((search_type = 'classic' AND (
+          (commodity_result_count IS NOT NULL AND commodity_result_count = 0 AND (results_type IS NULL OR results_type != 'exact_search'))
+          OR (commodity_result_count IS NULL AND result_count = 0)))
+        OR ((search_type = 'interactive' OR search_type = 'internal') AND result_count = 0))
       CONDITION
     end
 
     def zero_result_query
       <<~QUERY
-        fields @timestamp, event, search_type, result_count, commodity_result_count
-        | #{log_stream_filter}
-        | filter service = "search" and event = "search_completed" and #{zero_result_condition}
-        | fields if(ispresent(request_source), request_source, "unknown") as request_source
-        | stats count(*) as zero_results by #{bucket_expression}, search_type, request_source
+        SELECT #{bucket_expression} AS `@timestamp`, search_type,
+          COALESCE(request_source, 'unknown') AS request_source, COUNT(*) AS zero_results
+        FROM #{source} WHERE #{log_stream_filter} AND service = 'search' AND event = 'search_completed'
+          AND #{zero_result_condition} AND #{request_exclusion_filter}
+        GROUP BY #{bucket_expression}, search_type, COALESCE(request_source, 'unknown')
       QUERY
     end
 
-    def summary_all_latency_query
-      <<~QUERY
-        fields event, total_duration_ms
-        | #{log_stream_filter}
-        | #{base_search_filter} and ispresent(total_duration_ms)
-        | stats pct(total_duration_ms, 90) as p90_latency_ms
-      QUERY
-    end
+    def summary_all_latency_query = latency_query
 
-    def summary_view_latency_query
-      <<~QUERY
-        fields event, search_type, total_duration_ms
-        | #{log_stream_filter}
-        | #{base_search_filter} and ispresent(total_duration_ms)
-        | stats pct(total_duration_ms, 90) as p90_latency_ms by search_type
-      QUERY
-    end
+    def summary_view_latency_query = latency_query('search_type')
 
-    def source_all_latency_query
-      <<~QUERY
-        fields event, total_duration_ms
-        | #{log_stream_filter}
-        | #{base_search_filter} and ispresent(total_duration_ms)
-        | fields if(ispresent(request_source), request_source, "unknown") as request_source
-        | stats pct(total_duration_ms, 90) as p90_latency_ms by request_source
-      QUERY
-    end
+    def source_all_latency_query = latency_query("COALESCE(request_source, 'unknown') AS request_source")
 
-    def source_view_latency_query
+    def source_view_latency_query = latency_query("search_type, COALESCE(request_source, 'unknown') AS request_source")
+
+    def latency_query(dimensions = nil)
       <<~QUERY
-        fields event, search_type, total_duration_ms
-        | #{log_stream_filter}
-        | #{base_search_filter} and ispresent(total_duration_ms)
-        | fields if(ispresent(request_source), request_source, "unknown") as request_source
-        | stats pct(total_duration_ms, 90) as p90_latency_ms by search_type, request_source
+        SELECT PERCENTILE_APPROX(total_duration_ms, 0.9) AS p90_latency_ms#{", #{dimensions}" if dimensions}
+        FROM #{source} WHERE #{log_stream_filter} AND #{base_search_filter}
+          AND total_duration_ms IS NOT NULL AND #{request_exclusion_filter}
+        #{"GROUP BY #{dimensions.delete_suffix(' AS request_source')}" if dimensions}
       QUERY
     end
 
     def ai_cost_summary_query
       <<~QUERY
-        fields request_id, service, event, event_kind, total_tokens, total_cost_usd, pricing_known
-        | #{log_stream_filter}
-        | #{search_ai_cost_filter}
-        | fields if(pricing_known = true and ispresent(total_cost_usd), total_cost_usd, 0) as known_cost_usd
-        | fields if(pricing_known = true and ispresent(total_cost_usd), 1, 0) as priced
-        | fields if(pricing_known = true and ispresent(total_cost_usd), 0, 1) as unpriced
-        | stats sum(known_cost_usd) as request_cost_usd,
-            sum(priced) as request_priced_calls,
-            sum(unpriced) as request_unpriced_calls by request_id
-        | stats sum(request_cost_usd) as aggregated_total_cost_usd,
-            avg(request_cost_usd) as aggregated_average_cost_usd,
-            pct(request_cost_usd, 50) as aggregated_p50_cost_usd,
-            pct(request_cost_usd, 90) as aggregated_p90_cost_usd,
-            count(*) as aggregated_assisted_searches,
-            sum(request_priced_calls) as aggregated_priced_calls,
-            sum(request_unpriced_calls) as aggregated_unpriced_calls
+        SELECT SUM(request_cost_usd) AS aggregated_total_cost_usd,
+          AVG(request_cost_usd) AS aggregated_average_cost_usd,
+          PERCENTILE_APPROX(request_cost_usd, 0.5) AS aggregated_p50_cost_usd,
+          PERCENTILE_APPROX(request_cost_usd, 0.9) AS aggregated_p90_cost_usd,
+          COUNT(*) AS aggregated_assisted_searches,
+          SUM(request_priced_calls) AS aggregated_priced_calls,
+          SUM(request_unpriced_calls) AS aggregated_unpriced_calls
+        FROM (
+          SELECT request_id,
+            SUM(CASE WHEN pricing_known = true AND total_cost_usd IS NOT NULL THEN total_cost_usd ELSE 0 END) AS request_cost_usd,
+            SUM(CASE WHEN pricing_known = true AND total_cost_usd IS NOT NULL THEN 1 ELSE 0 END) AS request_priced_calls,
+            SUM(CASE WHEN pricing_known = true AND total_cost_usd IS NOT NULL THEN 0 ELSE 1 END) AS request_unpriced_calls
+          FROM #{source} WHERE #{log_stream_filter} AND #{search_ai_cost_filter}
+          GROUP BY request_id
+        ) AS request_costs
+        WHERE #{request_exclusion_filter}
       QUERY
     end
 
     def ai_cost_trend_query
       <<~QUERY
-        fields @timestamp, request_id, service, event, event_kind, input_tokens, cached_input_tokens, cache_write_input_tokens, output_tokens, total_tokens, input_cost_usd, cached_input_cost_usd, cache_write_input_cost_usd, output_cost_usd, total_cost_usd, pricing_known
-        | #{log_stream_filter}
-        | #{search_ai_cost_filter}
-        | fields if(pricing_known = true and service = "search", input_cost_usd, 0) as model_input_cost_usd
-        | fields if(pricing_known = true and service = "search", cached_input_cost_usd, 0) as model_cached_input_cost_usd
-        | fields if(pricing_known = true and service = "search", cache_write_input_cost_usd, 0) as model_cache_write_input_cost_usd
-        | fields if(pricing_known = true and service = "search", output_cost_usd, 0) as model_output_cost_usd
-        | fields if(pricing_known = true and service = "ai_usage", total_cost_usd, 0) as model_embedding_cost_usd
-        | fields if(pricing_known = true and ispresent(total_cost_usd), total_cost_usd, 0) as known_cost_usd
-        | fields if(pricing_known = true and ispresent(total_cost_usd), 1, 0) as priced_call
-        | fields if(pricing_known = true and ispresent(total_cost_usd), 0, 1) as unpriced_call
-        | stats sum(model_input_cost_usd) as aggregated_input_cost_usd,
-            sum(model_cached_input_cost_usd) as aggregated_cached_input_cost_usd,
-            sum(model_cache_write_input_cost_usd) as aggregated_cache_write_input_cost_usd,
-            sum(model_output_cost_usd) as aggregated_output_cost_usd,
-            sum(model_embedding_cost_usd) as aggregated_embedding_cost_usd,
-            sum(known_cost_usd) as aggregated_total_cost_usd,
-            sum(input_tokens) as aggregated_input_tokens,
-            sum(cached_input_tokens) as aggregated_cached_input_tokens,
-            sum(cache_write_input_tokens) as aggregated_cache_write_input_tokens,
-            sum(output_tokens) as aggregated_output_tokens,
-            sum(total_tokens) as aggregated_total_tokens,
-            count(*) as aggregated_calls,
-            sum(priced_call) as aggregated_priced_calls,
-            sum(unpriced_call) as aggregated_unpriced_calls by #{bucket_expression}, event_kind
+        SELECT #{bucket_expression} AS `@timestamp`, event_kind,
+          SUM(CASE WHEN pricing_known = true AND service = 'search' THEN input_cost_usd ELSE 0 END) AS aggregated_input_cost_usd,
+          SUM(CASE WHEN pricing_known = true AND service = 'search' THEN cached_input_cost_usd ELSE 0 END) AS aggregated_cached_input_cost_usd,
+          SUM(CASE WHEN pricing_known = true AND service = 'search' THEN cache_write_input_cost_usd ELSE 0 END) AS aggregated_cache_write_input_cost_usd,
+          SUM(CASE WHEN pricing_known = true AND service = 'search' THEN output_cost_usd ELSE 0 END) AS aggregated_output_cost_usd,
+          SUM(CASE WHEN pricing_known = true AND service = 'ai_usage' THEN total_cost_usd ELSE 0 END) AS aggregated_embedding_cost_usd,
+          SUM(CASE WHEN pricing_known = true AND total_cost_usd IS NOT NULL THEN total_cost_usd ELSE 0 END) AS aggregated_total_cost_usd,
+          SUM(input_tokens) AS aggregated_input_tokens, SUM(cached_input_tokens) AS aggregated_cached_input_tokens,
+          SUM(cache_write_input_tokens) AS aggregated_cache_write_input_tokens, SUM(output_tokens) AS aggregated_output_tokens,
+          SUM(total_tokens) AS aggregated_total_tokens, COUNT(*) AS aggregated_calls,
+          SUM(CASE WHEN pricing_known = true AND total_cost_usd IS NOT NULL THEN 1 ELSE 0 END) AS aggregated_priced_calls,
+          SUM(CASE WHEN pricing_known = true AND total_cost_usd IS NOT NULL THEN 0 ELSE 1 END) AS aggregated_unpriced_calls
+        FROM #{source} WHERE #{log_stream_filter} AND #{search_ai_cost_filter} AND #{request_exclusion_filter}
+        GROUP BY #{bucket_expression}, event_kind
       QUERY
     end
 
     def search_ai_cost_filter
       <<~FILTER.squish
-        filter ispresent(request_id) and ispresent(total_tokens) and
-          ((service = "search" and event = "api_call_completed") or
-          (service = "ai_usage" and event in ["embedding_api_call_completed", "embedding_api_call_failed"] and event_kind = "vector_search_query_embedding"))
+        request_id IS NOT NULL AND total_tokens IS NOT NULL
+        AND event IN ('api_call_completed', 'embedding_api_call_completed', 'embedding_api_call_failed')
+        AND ((service = 'search' AND event = 'api_call_completed') OR
+          (service = 'ai_usage' AND event IN ('embedding_api_call_completed', 'embedding_api_call_failed') AND event_kind = 'vector_search_query_embedding'))
       FILTER
     end
 
-    def selection_queries
+    def selection_queries(trend: false)
       {
-        'classic' => selection_query('search_type = "classic" and results_type = "fuzzy_search"'),
-        'internal' => selection_query('(search_type = "interactive" or search_type = "internal") and (results_type = "opensearch" or results_type = "vector" or results_type = "hybrid")'),
+        'classic' => selection_query("search_type = 'classic' AND results_type = 'fuzzy_search'", trend:),
+        'internal' => selection_query("search_type IN ('interactive', 'internal') AND results_type IN ('opensearch', 'vector', 'hybrid')", trend:),
       }
     end
 
-    def selection_query(selectable_condition)
+    # JSON extraction preserves request_source when SQL prunes fields outside GROUP BY.
+    def selection_query(selectable_condition, trend:)
+      dimension = trend ? "DATE_TRUNC('#{bucket_period}', latest_timestamp)" : 'source'
       <<~QUERY
-        fields request_id, event, search_type, result_count, results_type
-        | #{log_stream_filter}
-        | filter service = "search" and ispresent(request_id) and (event = "result_selected" or (event = "search_completed" and result_count > 0 and #{selectable_condition}))
-        | fields if(event = "result_selected", 1, 0) as result_selection_marker
-        | fields if(event = "search_completed" and result_count > 0 and #{selectable_condition}, 1, 0) as selectable_search_marker
-        | fields if(ispresent(request_source), request_source, "unknown") as request_source
-        | stats sum(result_selection_marker) as result_selections,
-            sum(selectable_search_marker) as selectable_searches,
-            earliest(request_source) as source by request_id
-        | filter selectable_searches > 0
-        | stats sum(result_selections) as selected, sum(selectable_searches) as selectable by source
+        SELECT SUM(result_selections) AS selected, SUM(selectable_searches) AS selectable,
+          #{dimension} AS #{trend ? '`@timestamp`' : 'source'}
+        FROM (
+          SELECT request_id, SUM(CASE WHEN event = 'result_selected' THEN 1 ELSE 0 END) AS result_selections,
+            SUM(CASE WHEN event = 'search_completed' AND result_count > 0 AND #{selectable_condition} THEN 1 ELSE 0 END) AS selectable_searches,
+            MIN_BY(COALESCE(GET_JSON_OBJECT(`@message`, '$.request_source'), 'unknown'), `@timestamp`) AS source, MAX(`@timestamp`) AS latest_timestamp
+          FROM #{source} WHERE #{log_stream_filter} AND service = 'search' AND request_id IS NOT NULL
+            AND (event = 'result_selected' OR (event = 'search_completed' AND result_count > 0 AND #{selectable_condition}))
+          GROUP BY request_id
+        ) AS request_selections
+        WHERE selectable_searches > 0 AND #{request_exclusion_filter}
+        GROUP BY #{dimension}
       QUERY
     end
 
-    def selection_trend_queries
-      selection_queries.transform_values do |query|
-        query
-          .sub(
-            'earliest(request_source) as source by request_id',
-            'earliest(request_source) as source, max(@timestamp) as @t by request_id',
-          )
-          .sub(
-            '| stats sum(result_selections) as selected, sum(selectable_searches) as selectable by source',
-            "| stats sum(result_selections) as selected by datefloor(@t, #{bucket_period}) as @timestamp",
-          )
-      end
-    end
+    def selection_trend_queries = selection_queries(trend: true)
 
     def improvement_term_queries
       {
-        'search_terms' => improvement_terms_query(term_filter: 'query not like /^[0-9 .-]+$/'),
-        'item_ids' => improvement_terms_query(term_filter: 'query like /^[0-9 .-]+$/'),
+        'search_terms' => improvement_terms_query(term_filter: "query NOT RLIKE '^[0-9 .-]+$'"),
+        'item_ids' => improvement_terms_query(term_filter: "query RLIKE '^[0-9 .-]+$'"),
       }
     end
 
-    def improvement_terms_query(term_filter: nil)
-      [
-        <<~QUERY,
-          fields query, search_type, result_count, commodity_result_count
-          | #{log_stream_filter}
-          | filter service = "search" and event = "search_completed" and #{zero_result_condition} and ispresent(query)
-        QUERY
-        ("| filter #{term_filter}\n" if term_filter.present?),
-        <<~QUERY,
-          | stats count(*) as zero_results by query, search_type
-          | sort zero_results desc
-          | limit #{IMPROVEMENT_TERM_LIMIT * VIEWS.size}
-        QUERY
-      ].compact.join
+    def improvement_terms_query(term_filter:)
+      <<~QUERY
+        SELECT query, search_type, COUNT(*) AS zero_results
+        FROM #{source} WHERE #{log_stream_filter} AND service = 'search' AND event = 'search_completed'
+          AND #{zero_result_condition} AND query IS NOT NULL AND #{term_filter} AND #{request_exclusion_filter}
+        GROUP BY query, search_type ORDER BY zero_results DESC LIMIT #{IMPROVEMENT_TERM_LIMIT * VIEWS.size}
+      QUERY
     end
 
     class Aggregate

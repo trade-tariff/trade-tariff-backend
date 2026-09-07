@@ -76,7 +76,19 @@ jobs:
           aws-region: eu-west-2
           role-to-assume: ${{ steps.environment-config.outputs.deploy-role-arn }}
 
+      - uses: hashicorp/setup-terraform@v4
+        with:
+          terraform_version: 1.12.2
+          terraform_wrapper: false
+
+      - name: Render dashboard queries
+        env:
+          CLOUDWATCH_QUERY_VALIDATION_LOG_GROUP: ${{ steps.environment-config.outputs.log-group }}
+          CLOUDWATCH_DASHBOARD_QUERIES_FILE: /tmp/search-dashboard-queries.json
+        run: bundle exec rake search_analytics:render_dashboard_queries
+
       - name: Validate CloudWatch queries
         env:
+          CLOUDWATCH_DASHBOARD_QUERIES_FILE: /tmp/search-dashboard-queries.json
           CLOUDWATCH_QUERY_VALIDATION_LOG_GROUP: ${{ steps.environment-config.outputs.log-group }}
         run: bundle exec rake search_analytics:validate_cloudwatch_queries
