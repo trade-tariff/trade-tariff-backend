@@ -13,6 +13,7 @@ This directory is the starting point for understanding the Trade Tariff Backend 
 
 ## Domain Guides
 
+- [AI-assisted search failure and fallback scenarios](search-resilience.md)
 - [Goods Nomenclature Nested Set](goods-nomenclature-nested-set.md)
 - [Caching within the Trade Tariff apps](caching.md)
 - [Windsor Framework - Green Lanes](green-lanes.md)
