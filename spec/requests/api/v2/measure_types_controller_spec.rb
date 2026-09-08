@@ -10,9 +10,10 @@ RSpec.describe Api::V2::MeasureTypesController, type: :request do
     end
     let(:json_body) { JSON.parse(api_response.body)['data'] }
     let(:validity_end_date) { nil }
+    let(:measure_type) { create(:measure_type, :with_measure_type_series_description, validity_end_date:) }
 
     before do
-      create(:measure_type, :with_measure_type_series_description, validity_end_date:)
+      measure_type
 
       allow(TimeMachine).to receive(:at).and_call_original
     end
@@ -27,6 +28,22 @@ RSpec.describe Api::V2::MeasureTypesController, type: :request do
       let(:validity_end_date) { 1.day.ago }
 
       it { expect(json_body).to eq [] }
+    end
+
+    context 'when the measure type has semantic roles' do
+      let(:measure_type) do
+        create(
+          :measure_type,
+          measure_type_id: '110',
+          measure_type_series_id: 'C',
+          validity_end_date:,
+        )
+      end
+
+      it 'includes the semantic roles' do
+        expect(json_body.first.fetch('attributes').fetch('semantic_roles'))
+          .to contain_exactly('supplementary', 'supplementary_unit_import_only')
+      end
     end
   end
 
@@ -60,6 +77,23 @@ RSpec.describe Api::V2::MeasureTypesController, type: :request do
       it { expect(api_response.body).to match_json_expression pattern }
 
       it { is_expected.to have_http_status :success }
+
+      context 'when the measure type has semantic roles' do
+        let(:measure_type) do
+          create(
+            :measure_type,
+            measure_type_id: '110',
+            measure_type_series_id: 'C',
+          )
+        end
+
+        let(:json_body) { JSON.parse(api_response.body).fetch('data') }
+
+        it 'includes the semantic roles' do
+          expect(json_body.fetch('attributes').fetch('semantic_roles'))
+            .to contain_exactly('supplementary', 'supplementary_unit_import_only')
+        end
+      end
     end
 
     context 'when records are not present' do
