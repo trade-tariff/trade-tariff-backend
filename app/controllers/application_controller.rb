@@ -50,6 +50,7 @@ protected
   def append_info_to_payload(payload)
     super
     payload[:request_id] = logged_request_id
+    payload[:remote_ip] = viewer_ip
     payload[:user_agent] = request_user_agent
     payload[:request_source] = TradeTariffRequest.request_source
     payload[:client_id] = TradeTariffRequest.client_id
@@ -166,5 +167,18 @@ private
 
   def request_user_agent
     request.headers['HTTP_X_ORIGINAL_USER_AGENT'].presence || request.env['HTTP_USER_AGENT']
+  end
+
+  # CloudFront-Viewer-Address is "ip:port" (IPv6 bracketed as "[ip]:port"),
+  # and reflects the true end-user IP rather than an untrusted-proxy hop -
+  # request.remote_ip alone would report a CloudFront edge node's IP here,
+  # since Rails' default trusted_proxies doesn't cover CloudFront's public
+  # edge IP ranges. Falls back to request.remote_ip for traffic that doesn't
+  # arrive via CloudFront (e.g. the API Gateway route).
+  def viewer_ip
+    viewer_address = request.headers['CloudFront-Viewer-Address']
+    return request.remote_ip if viewer_address.blank?
+
+    viewer_address.rpartition(':').first.delete_prefix('[').delete_suffix(']')
   end
 end

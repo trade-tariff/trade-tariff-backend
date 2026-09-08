@@ -49,6 +49,7 @@ module ProductionEnvironmentConfig
 
         {
           request_id: event.payload[:request_id],
+          remote_ip: event.payload[:remote_ip],
           auth_type: event.payload[:auth_type],
           client_id: event.payload[:client_id],
           accept: event.payload[:headers]&.[]('HTTP_ACCEPT'),
