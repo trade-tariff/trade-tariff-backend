@@ -48,7 +48,7 @@ locals {
             markdown = join("\n", [
               "## Trade Tariff Search Overview",
               "Long-range search trends excluding every event for request IDs with a recorded search failure in the selected time range. Use the complete journey window; older and uncorrelated logs remain included when no failure can be linked. Operations retains all failures.",
-              "**Healthy:** p90 latency < 5s, hard failures stay low, empty commodity/empty result trends stable by search type, and selections broadly track search volume.",
+              "**Read these trends:** compare latency, empty results and selections within the retained cohort. Use Search Operations for failure counts and operational health; excluded failures cannot be assessed here.",
               "**Empty commodity results (classic):** fuzzy/null with zero commodity hits (empty Best commodity matches; includes fully empty and headings/chapters-only). **Empty results (interactive):** no returned results. See Search Quality for classic empty-kind pies and free-text rates.",
               "**Start here:** use this dashboard for 3-month trends. Open Operations for active troubleshooting and Quality for intercepts, empty commodity/empty result terms, and result behaviour.",
               "**Related:** [Search Operations](${local.search_operations_dashboard_url}) | [Search Quality](${local.search_quality_dashboard_url}) | [Search Experiments](${local.search_experiment_dashboard_url}) | [Label Generator](${local.label_dashboard_url}) | [Self-Text Generator](${local.self_text_dashboard_url})",
