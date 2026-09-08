@@ -1,4 +1,6 @@
 class EmbeddingService
+  include RetrySupport::WithRetry
+
   MODEL = 'text-embedding-3-small'.freeze
   BATCH_SIZE = 100
 
@@ -51,30 +53,23 @@ class EmbeddingService
     usage = nil
 
     filtered_texts.each_slice(BATCH_SIZE).each_with_index do |batch, slice_index|
-      response = with_retry(event_kind:, batch_size: batch.size) do
-        resp = client.post('embeddings', { model: MODEL, input: batch }.to_json)
+      response = with_retry(
+        max_attempts: MAX_RETRIES,
+        retryable_errors: [*RETRYABLE_ERRORS, ServerError],
+        delay_calculator: method(:retry_delay),
+        on_retry: lambda { |attempt:, delay:, error:, **|
+          AiUsage::Instrumentation.embedding_api_retry(
+            event_kind:,
+            batch_size: batch.size,
+            model: MODEL,
+            attempt:,
+            delay:,
+            error:,
+          )
+        },
+      ) { call_embeddings_api(batch) }
 
-        if RETRYABLE_HTTP_STATUSES.include?(resp.status)
-          raise ServerError.new("EmbeddingService API error: #{resp.status}", http_status: resp.status)
-        end
-
-        resp
-      end
-
-      if response.success?
-        usage = AiUsage.merge_metadata(usage, usage_metadata(response.body, event_kind:))
-
-        batch_embeddings = response.body['data']
-          .sort_by { |d| d['index'] }
-          .map { |d| d['embedding'] }
-
-        batch_embeddings.each_with_index do |embedding, i|
-          original_index = present_indices[slice_index * BATCH_SIZE + i]
-          embeddings[original_index] = embedding
-        end
-      else
-        raise ClientError.new("EmbeddingService API error: #{response.status} - #{response.body}", http_status: response.status)
-      end
+      usage = apply_batch_response(response, slice_index, present_indices, embeddings, usage, event_kind)
     end
 
     AiUsage.attach_metadata(embeddings, usage)
@@ -90,28 +85,36 @@ private
     AiUsage.metadata_for(model: MODEL, event_kind:, usage:)
   end
 
-  def with_retry(event_kind:, batch_size:)
-    attempts = 0
+  def retry_delay(attempt, _error)
+    RETRY_DELAY * (2**(attempt - 1))
+  end
 
-    begin
-      attempts += 1
-      yield
-    rescue *RETRYABLE_ERRORS, ServerError => e
-      if attempts < MAX_RETRIES
-        delay = RETRY_DELAY * (2**(attempts - 1))
-        AiUsage::Instrumentation.embedding_api_retry(
-          event_kind:,
-          batch_size:,
-          model: MODEL,
-          attempt: attempts,
-          delay:,
-          error: e,
-        )
-        Kernel.sleep delay
-        retry
-      else
-        raise
+  def call_embeddings_api(batch)
+    resp = client.post('embeddings', { model: MODEL, input: batch }.to_json)
+
+    if RETRYABLE_HTTP_STATUSES.include?(resp.status)
+      raise ServerError.new("EmbeddingService API error: #{resp.status}", http_status: resp.status)
+    end
+
+    resp
+  end
+
+  def apply_batch_response(response, slice_index, present_indices, embeddings, usage, event_kind)
+    if response.success?
+      usage = AiUsage.merge_metadata(usage, usage_metadata(response.body, event_kind:))
+
+      batch_embeddings = response.body['data']
+        .sort_by { |d| d['index'] }
+        .map { |d| d['embedding'] }
+
+      batch_embeddings.each_with_index do |embedding, i|
+        original_index = present_indices[slice_index * BATCH_SIZE + i]
+        embeddings[original_index] = embedding
       end
+
+      usage
+    else
+      raise ClientError.new("EmbeddingService API error: #{response.status} - #{response.body}", http_status: response.status)
     end
   end
 

@@ -164,6 +164,7 @@ RSpec.describe EmbeddingService do
         result = service.embed_batch(%w[test])
         expect(result).to eq([embedding])
         expect(WebMock).to have_requested(:post, "#{api_base_url}/embeddings").times(2)
+        expect(Kernel).to have_received(:sleep).with(2).once
       end
 
       it 'emits retry instrumentation with the embedding event kind' do
@@ -185,6 +186,10 @@ RSpec.describe EmbeddingService do
       ensure
         ActiveSupport::Notifications.unsubscribe(subscriber) if subscriber
       end
+
+      it 'uses the shared retry helper module' do
+        expect(described_class.ancestors).to include(RetrySupport::WithRetry)
+      end
     end
 
     context 'when the API returns a retryable error repeatedly' do
@@ -198,6 +203,8 @@ RSpec.describe EmbeddingService do
       it 'raises after exhausting retries' do
         expect { service.embed_batch(%w[test]) }.to raise_error(EmbeddingService::ServerError, /500/)
         expect(WebMock).to have_requested(:post, "#{api_base_url}/embeddings").times(3)
+        expect(Kernel).to have_received(:sleep).with(2).once
+        expect(Kernel).to have_received(:sleep).with(4).once
       end
 
       it 'includes the http_status on the error' do
@@ -231,6 +238,7 @@ RSpec.describe EmbeddingService do
         result = service.embed_batch(%w[test])
         expect(result).to eq([embedding])
         expect(WebMock).to have_requested(:post, "#{api_base_url}/embeddings").times(2)
+        expect(Kernel).to have_received(:sleep).with(2).once
       end
     end
 

@@ -118,6 +118,8 @@ RSpec.describe XiCnImporter::DocumentFetcher do
       end
 
       it 'raises after exhausting retries on persistent 5xx' do
+        delays = []
+        allow(Kernel).to receive(:sleep) { |delay| delays << delay }
         stub_request(:post, described_class::SPARQL_ENDPOINT).to_return(status: 500)
 
         expect { fetcher.call }.to raise_error(described_class::RetryableHTTPError, 'HTTP 500')
@@ -125,6 +127,10 @@ RSpec.describe XiCnImporter::DocumentFetcher do
         expect(XiCnImporter::Instrumentation).to have_received(:fetch_retry).exactly(3).times
         expect(XiCnImporter::Instrumentation).to have_received(:sparql_retry_attempt).exactly(3).times
         expect(XiCnImporter::Instrumentation).not_to have_received(:sparql_success_after_retry)
+        expect(delays.size).to eq(3)
+        expect(delays[0]).to be_between(2.0, 3.0)
+        expect(delays[1]).to be_between(4.0, 5.0)
+        expect(delays[2]).to be_between(8.0, 9.0)
       end
 
       it 'raises immediately without retrying on a client error (4xx)' do

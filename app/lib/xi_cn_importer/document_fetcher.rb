@@ -4,6 +4,8 @@ require 'net/http'
 
 module XiCnImporter
   class DocumentFetcher
+    include RetrySupport::WithRetry
+
     SPARQL_ENDPOINT      = 'https://publications.europa.eu/webapi/rdf/sparql'.freeze
     CELLAR_HTML_TEMPLATE = 'https://publications.europa.eu/resource/cellar/%s.0006.03/DOC_1'.freeze
     CELLAR_PDF_TEMPLATE  = 'https://publications.europa.eu/resource/cellar/%s.0006.01/DOC_1'.freeze
@@ -115,7 +117,33 @@ module XiCnImporter
     def sparql_results
       uri = URI(SPARQL_ENDPOINT)
 
-      response = with_retries do
+      response = with_retry(
+        max_attempts: MAX_RETRIES + 1,
+        retryable_errors: TRANSIENT_ERRORS + [RetryableHTTPError],
+        delay_calculator: method(:retry_delay),
+        on_retry: lambda { |attempt:, max_attempts:, delay:, error:, **|
+          Instrumentation.fetch_retry(
+            url: SPARQL_ENDPOINT,
+            attempt:,
+            max_attempts:,
+            error_class: error.class.name,
+            error_message: error.message,
+            error_code: error_code_for(error),
+            backoff_seconds: delay.round(3),
+          )
+          Instrumentation.sparql_retry_attempt(
+            attempt:,
+            max_attempts:,
+            error_class: error.class.name,
+            error_message: error.message,
+            error_code: error_code_for(error),
+          )
+        },
+        on_success: lambda { |attempt:, **|
+          retry_attempts = attempt - 1
+          Instrumentation.sparql_success_after_retry(retry_attempts:) if retry_attempts.positive?
+        },
+      ) do
         Net::HTTP.start(
           uri.host,
           uri.port,
@@ -145,57 +173,26 @@ module XiCnImporter
       JSON.parse(response.body).dig('results', 'bindings') || []
     end
 
-    def with_retries(url: SPARQL_ENDPOINT, max_retries: MAX_RETRIES, base_delay: BASE_DELAY, jitter_range: JITTER_RANGE)
-      attempt = 0
-
-      begin
-        response = yield
-        Instrumentation.sparql_success_after_retry(retry_attempts: attempt) if sparql_endpoint?(url) && attempt.positive?
-        response
-      rescue *TRANSIENT_ERRORS, RetryableHTTPError => e
-        raise if attempt >= max_retries
-
-        delay = backoff_delay(base_delay, attempt, jitter_range)
-        Instrumentation.fetch_retry(
-          url:,
-          attempt: attempt + 1,
-          max_attempts: max_retries + 1,
-          error_class: e.class.name,
-          error_message: e.message,
-          error_code: error_code_for(e),
-          backoff_seconds: delay.round(3),
-        )
-        if sparql_endpoint?(url)
-          Instrumentation.sparql_retry_attempt(
-            attempt: attempt + 1,
-            max_attempts: max_retries + 1,
-            error_class: e.class.name,
-            error_message: e.message,
-            error_code: error_code_for(e),
-          )
-        end
-        Kernel.sleep(delay)
-        attempt += 1
-        retry
-      end
-    end
-
     def retryable_response?(response)
       response.code.to_i.between?(500, 599)
     end
 
-    def backoff_delay(base_delay, attempt, jitter_range)
-      (base_delay * (2**attempt)) + rand(jitter_range)
+    def retry_defaults
+      {
+        max_attempts: MAX_RETRIES + 1,
+        retryable_errors: TRANSIENT_ERRORS + [RetryableHTTPError],
+        delay_calculator: method(:retry_delay),
+      }
+    end
+
+    def retry_delay(attempt, _error)
+      (BASE_DELAY * (2**(attempt - 1))) + rand(JITTER_RANGE)
     end
 
     def error_code_for(error)
       return error.http_code if error.respond_to?(:http_code)
 
       nil
-    end
-
-    def sparql_endpoint?(url)
-      url == SPARQL_ENDPOINT
     end
 
     def fetch_html(url, redirect_count: 0)
