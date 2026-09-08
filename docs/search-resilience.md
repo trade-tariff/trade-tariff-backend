@@ -1,6 +1,6 @@
 # AI-assisted search failure and fallback scenarios
 
-Owner: AI-assisted search development team. Reviewed against merged backend and frontend code on 8 September 2026; this is not a record of production deployment or a live failover exercise.
+Owner: AI-assisted search development team.
 
 This is the canonical failure contract for AI-assisted search. Product and support colleagues can start with the outcomes below. Developers and operators can use the metadata, configuration and diagnostic sections to investigate a specific request.
 
@@ -43,7 +43,7 @@ In the table below, the **metadata** column lists the codes in `meta.search_fail
 | OpenSearch and interactive generation fail | `opensearch_failed`, `interactive_search_failed` | 200 with surviving vector results, without interactive metadata | Flags for both codes | One configurable generic warning |
 | OpenSearch and query embedding fail | Request state records `opensearch_failed`, `embedding_generation_failed`; error response does not promise `meta.search_failures` | 500 controlled error | Flags for both codes; terminal `search_failed` | Guided-search error handling, not the successful-response banner contract |
 | OpenSearch and vector retrieval fail | Request state records `opensearch_failed`, `vector_retrieval_failed`; error response does not promise `meta.search_failures` | 500 controlled error | Flags for both codes; terminal `search_failed` | Guided-search error handling, not the successful-response banner contract |
-| Duplicate-question validator fails or returns unusable output | `duplicate_question_validation_failed` | 200; proposed question remains allowed | Flags for this code | Intentionally no configured trader banner for now; retain metadata and investigate |
+| Duplicate-question validator fails or returns unusable output | `duplicate_question_validation_failed` | 200; proposed question remains allowed | Flags for this code | No configured trader banner; failure remains in metadata and diagnostics |
 
 Rows describe outcomes when the named stage is reached. For example, an empty retrieval finishes before interactive generation is attempted. Additional expansion or validation failures can coexist with the other codes; apply the surviving-source rules rather than inventing a new priority for each permutation.
 
@@ -78,13 +78,13 @@ The [duplicate-question guard](../app/services/interactive_search/duplicate_ques
 
 A confirmed duplicate is different: [InteractiveSearchService](../app/services/interactive_search_service.rb) requests another classifier response once. A second confirmed duplicate records `interactive_search_failed`, so the internal search service returns source-specific results without questions or generated confidence. A successful replacement question need not mark the request as failed.
 
-Further validator retry behaviour and investigation remain follow-up work. The current warning omission is accepted: the code is present in response metadata and backend diagnostics, but is not configured for a trader banner.
+The code is present in response metadata and backend diagnostics, but is not configured for a trader banner.
 
 ## Frontend warning ownership and journey state
 
-The frontend owns warning presentation through [config/search_failure_messages.yml](https://github.com/trade-tariff/trade-tariff-frontend/blob/main/config/search_failure_messages.yml). The five configured codes currently use `enabled: true` and `level: warn`. They share one banner headed "Issues with AI-assisted search", with the message "We are aware of some issues affecting AI-assisted search and are working to fix these as soon as possible."
+The frontend owns warning presentation through [config/search_failure_messages.yml](https://github.com/trade-tariff/trade-tariff-frontend/blob/main/config/search_failure_messages.yml). Codes configured with `enabled: true` and `level: warn` share one warning banner. The [frontend translations](https://github.com/trade-tariff/trade-tariff-frontend/blob/main/config/locales/en.yml) own its heading and message.
 
-Changing `enabled` controls a code's warning eligibility. The registry is application configuration, not a backend admin flag. Unknown codes are logged by the frontend and ignored for visible warnings. In particular, `duplicate_question_validation_failed` is currently unconfigured. Showing fewer warnings does not remove backend failure metadata or change retrieval behaviour.
+Changing `enabled` controls a code's warning eligibility. The registry is application configuration, not a backend admin flag. Unknown codes are logged by the frontend and ignored for visible warnings. In particular, `duplicate_question_validation_failed` is unconfigured. Showing fewer warnings does not remove backend failure metadata or change retrieval behaviour.
 
 [InteractiveSearchable](https://github.com/trade-tariff/trade-tariff-frontend/blob/main/app/controllers/concerns/interactive_searchable.rb) retains enabled warning codes in the session by journey request ID, merges them with later responses, and deduplicates them. A later healthy question response does not erase an earlier warning. Retention is bounded to the most recent journeys, and the current journey's stored warnings are cleared at terminal rendering or error handling. Configuration is reapplied when retained codes are read.
 
@@ -147,4 +147,4 @@ Review against these source-backed examples:
 - [Duplicate guard specs](../spec/services/interactive_search/duplicate_question_guard_spec.rb) and [interactive service specs](../spec/services/interactive_search_service_spec.rb): validator failure and confirmed-duplicate handling.
 - [Internal request specs](../spec/requests/api/internal/search_controller_spec.rb) and [V2 request specs](../spec/requests/api/v2/classification_search_controller_spec.rb): HTTP response boundaries.
 
-When changing behaviour, run the relevant full spec groups and verify the frontend journey. Documentation-only changes require source review, link checks and applicable documentation hooks; they do not establish production failover performance.
+When changing behaviour, run the relevant full spec groups and verify the frontend journey.
