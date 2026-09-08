@@ -25,7 +25,7 @@ The following scenarios assume `retrieval_method=hybrid`, with usable surviving 
 | Question or answer generation unavailable | Show keyword/OpenSearch results in reduced guided search | Suppressed |
 | OpenSearch and question/answer generation unavailable | Show surviving vector results in reduced guided search | Suppressed |
 | Both retrieval sources unavailable | Show the guided-search backend-error outcome; no results can be recovered | Unavailable |
-| Duplicate-question validator unavailable | Allow the proposed question through without semantic duplicate validation | Can continue |
+| Duplicate-question validator unavailable | Retry eligible LLM errors using the shared client policy. If retries are exhausted, or validation returns unusable output, allow the proposed question and record the failure in response metadata and diagnostics. No trader banner is configured. | Can continue |
 
 ## Response and diagnostic contract
 
