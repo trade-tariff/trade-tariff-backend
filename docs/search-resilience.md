@@ -47,7 +47,7 @@ In the table below, the **metadata** column lists the codes in `meta.search_fail
 
 Rows describe outcomes when the named stage is reached. For example, an empty retrieval finishes before interactive generation is attempted. Additional expansion or validation failures can coexist with the other codes; apply the surviving-source rules rather than inventing a new priority for each permutation.
 
-The terminal retrieval error is:
+The internal guided-search endpoint returns this terminal retrieval error:
 
 ```json
 {
@@ -60,6 +60,8 @@ The terminal retrieval error is:
   ]
 }
 ```
+
+The V2 classification endpoint also returns HTTP 500, with title `Classification search failed` and detail `Classification search is temporarily unavailable`.
 
 This backend status does not specify the rendered frontend HTTP status. The frontend handles the backend error within guided search. Provider exception details are not part of this error response.
 
