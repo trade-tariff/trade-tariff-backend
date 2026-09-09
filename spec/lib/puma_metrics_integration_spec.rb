@@ -23,7 +23,7 @@ RSpec.describe PumaMetrics do
     expect(status).to be_success, output
   end
 
-  [[0, nil, 'backend-uk'], [1, 'uk', 'backend-uk'], [1, 'xi', 'backend-xi']].each do |worker_count, service, expected_service|
+  [[0, nil, 'backend-uk', 'local'], [1, 'uk', 'backend-uk', 'staging'], [1, 'xi', 'backend-xi', 'staging']].each do |worker_count, service, expected_service, expected_environment|
     context "with #{worker_count} cluster workers and SERVICE=#{service.inspect}" do
       it 'reports recovery across restarts', :aggregate_failures do
         Dir.mktmpdir('puma-metrics') do |dir|
@@ -34,6 +34,7 @@ RSpec.describe PumaMetrics do
           application_config = File.expand_path('../../config/puma.rb', __dir__)
           File.write(config, <<~RUBY)
             instance_eval(File.read(#{application_config.inspect}), #{application_config.inspect})
+            raise 'Metrics boot must not load Rails' if defined?(Rails)
             # Exercise phased restarts explicitly, including the normally preloaded backend.
             preload_app! false if #{(service == 'xi').inspect}
             PumaMetrics.send(:remove_const, :INTERVAL)
@@ -51,7 +52,7 @@ RSpec.describe PumaMetrics do
           RUBY
           reader, writer = IO.pipe
           pid = Process.spawn(
-            { 'PUMA_METRICS_ENABLED' => 'true', 'PUMA_METRICS_SERVICE' => nil, 'SERVICE' => service, 'PUMA_METRICS_ENVIRONMENT' => 'metrics-test', 'RAILS_ENV' => 'test', 'SSL_CERT_PEM' => nil, 'SSL_KEY_PEM' => nil },
+            { 'PUMA_METRICS_ENABLED' => 'true', 'PUMA_METRICS_SERVICE' => nil, 'SERVICE' => service, 'ENVIRONMENT' => service ? expected_environment : nil, 'RAILS_ENV' => 'test', 'SSL_CERT_PEM' => nil, 'SSL_KEY_PEM' => nil },
             RbConfig.ruby, '-S', 'puma', '-C', config,
             out: writer, err: writer, pgroup: true
           )
@@ -63,7 +64,7 @@ RSpec.describe PumaMetrics do
           sample = matching_sample(reader) { |event| event['BusyThreads'] == [1] }
           expect(sample).to include(
             'AvailableThreads' => [0], 'MaxThreads' => [1], 'SaturatedWorkers' => 1,
-            'ReportingWorkers' => 1, 'Service' => expected_service, 'Environment' => 'metrics-test'
+            'ReportingWorkers' => 1, 'Service' => expected_service, 'Environment' => expected_environment
           )
           File.write(release, 'release')
           expect(Timeout.timeout(5) { client.read }).to include('200 OK')
@@ -74,7 +75,7 @@ RSpec.describe PumaMetrics do
           restarted = matching_sample(reader) do |event|
             event['BusyThreads'] == [0] && (phased ? event.dig('workers', 0, 'pid') != sample.dig('workers', 0, 'pid') : event['collector_id'] != sample['collector_id'])
           end
-          expect(restarted).to include('Service' => expected_service, 'Environment' => 'metrics-test', 'ReportingWorkers' => 1)
+          expect(restarted).to include('Service' => expected_service, 'Environment' => expected_environment, 'ReportingWorkers' => 1)
           expect(restarted['collector_id']).to eq(sample['collector_id']) if phased
           client.close
           client = UNIXSocket.new(socket_path)

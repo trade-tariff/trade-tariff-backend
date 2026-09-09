@@ -1,19 +1,18 @@
 # Puma request capacity metrics
 
 The opt-in `PumaMetrics::Plugin` reports web request thread occupancy and queue
-backlog. The implementation is kept identical in the frontend and backend
-repositories. Backend UK and XI report separately; Sidekiq does not run the
+backlog. Collector behaviour is kept aligned in the frontend and backend
+repositories; the plugin's application-environment lookup is repository-specific. Backend UK and XI report separately; Sidekiq does not run the
 Puma server configuration and does not start this reporter.
 
 ## Enable through the application configuration secret
 
-Add these string values to the existing **web application's configuration
+Add this string value to the existing **web application's configuration
 secret**, not to the Sidekiq worker secret:
 
 ```json
 {
-  "PUMA_METRICS_ENABLED": "true",
-  "PUMA_METRICS_ENVIRONMENT": "production"
+  "PUMA_METRICS_ENABLED": "true"
 }
 ```
 
@@ -22,8 +21,13 @@ required. `PUMA_METRICS_SERVICE` is optional: the Puma configuration defaults it
 to `frontend` or `backend-${SERVICE}` (UK when SERVICE is absent). If explicitly
 set, use `frontend`, `backend-uk` or `backend-xi` to match the dashboards.
 
-Set the environment explicitly: staging commonly uses `RAILS_ENV=production`,
-which would otherwise mislabel its metrics. In development use `development`.
+Environment comes from existing application configuration, not a separate
+telemetry setting or `RAILS_ENV`. Frontend uses `TradeTariffFrontend.environment`
+(the existing `ENVIRONMENT`, default `production`). Its config module can load
+in the Puma master without Rails. Backend reads the same existing `ENVIRONMENT`
+source and `local` fallback as `TradeTariffBackend.environment`, without booting
+Rails just to read it. Staging therefore keeps its staging label even when
+`RAILS_ENV=production`. No additional environment key is required.
 
 **Changing the secret alone does not change a running process.** Follow the
 normal deployment/configuration-refresh workflow so the secret values reach
@@ -146,7 +150,7 @@ response times before using these measurements as a go-live gate.
 ## Verification and rollout
 
 1. Deploy code and dashboard through the normal approved workflow, initially
-   outside production. Enable the two keys through the configuration secret.
+   outside production. Enable the reporter through the configuration secret.
 2. Confirm valid `event = "puma.metrics"` JSON records in `platform-logs-<env>`.
    Confirm EMF extraction produces `TradeTariff/Puma` metrics with the expected
    environment and service, not merely log records. Inspect EMF processing
@@ -182,7 +186,7 @@ provider, without AWS credentials or applying resources. These are structural
 assertions, not evidence of deployed EMF extraction or query execution.
 
 The RSpec integration tests launch real Puma in single and cluster modes, check
-default service labels and the explicit environment override, hold a request
+default service labels and existing application environment/defaults, hold a request
 open, then wait for idle recovery. They cover full master and phased worker
 restarts followed by serving and graceful shutdown. The phased scenario
 explicitly disables preloading, including in backend where ordinary phased
@@ -198,7 +202,7 @@ the focused checks in both repositories. No shared package is required.
 From the directory containing both checkouts, compare the shared sources:
 
 ```sh
-for file in lib/puma_metrics.rb spec/lib/puma_metrics_spec.rb \
+for file in spec/lib/puma_metrics_spec.rb \
   terraform/modules/puma_capacity_dashboard/main.tf \
   terraform/modules/puma_capacity_dashboard/variables.tf \
   terraform/modules/puma_capacity_dashboard/tests/dashboard.tftest.hcl; do
@@ -206,8 +210,10 @@ for file in lib/puma_metrics.rb spec/lib/puma_metrics_spec.rb \
 done
 ```
 
-Review the integration specs together: their expected service-label matrix is
-repository-specific; their lifecycle assertions should stay aligned. Keep this
-guide aligned too. Puma registration, dashboard callers and CI Terraform versions
+Review `lib/puma_metrics.rb` together: only the plugin environment lookup should
+differ; collector behaviour stays aligned. The integration specs' expected
+service/environment matrix is repository-specific; their lifecycle assertions
+should stay aligned. Keep this guide aligned too. Puma registration, dashboard
+callers and CI Terraform versions
 remain repository-specific. Compare explicit source files, not generated
 `.terraform` directories or module-local lockfiles.

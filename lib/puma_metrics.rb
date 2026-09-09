@@ -3,8 +3,8 @@ require 'securerandom'
 require 'time'
 require 'puma/plugin'
 
-# Kept identical in trade-tariff-frontend and trade-tariff-backend. No Rails,
-# network calls or request hooks: only the Puma master's cached worker stats.
+# Keep collector behaviour aligned in frontend and backend; only the plugin's
+# environment lookup differs. No Rails, network calls or request hooks.
 class PumaMetrics
   INTERVAL = 10
   MAX_SAMPLE_BYTES = 4096
@@ -149,7 +149,7 @@ private
     def start(launcher)
       reporter = PumaMetrics.new(
         stats: -> { launcher.stats },
-        environment: ENV.fetch('PUMA_METRICS_ENVIRONMENT', ENV.fetch('RAILS_ENV', 'development')),
+        environment: ENV.fetch('ENVIRONMENT', 'local'),
         service: ENV.fetch('PUMA_METRICS_SERVICE'),
         stale_after: [30, launcher.options.fetch(:worker_check_interval, 5) * 3].max,
       )
