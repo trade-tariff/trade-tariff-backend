@@ -153,8 +153,8 @@ private
         service: ENV.fetch('PUMA_METRICS_SERVICE'),
         stale_after: [30, launcher.options.fetch(:worker_check_interval, 5) * 3].max,
       )
+      # Stop only on shutdown: before_restart also fires for phased worker restarts.
       launcher.events.after_stopped { reporter.stop }
-      launcher.events.before_restart { reporter.stop }
       in_background { reporter.run }
     end
   end

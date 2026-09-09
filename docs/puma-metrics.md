@@ -43,7 +43,8 @@ This change does not modify secrets or ECS environment wiring. To disable, set
   cached snapshots, not instantaneous observations at emission time.
 - Unbooted/invalid workers are counted as unready. Workers with check-ins older
   than 30 seconds (or three configured check-in intervals, whichever is larger)
-  are counted as stale, not as idle. Worker age is retained in the log record.
+  are counted as stale, not as idle. Only fresh workers retain PID/index and
+  check-in age in the log record; stale workers contribute to the count only.
 - Emits one raw JSON line in CloudWatch Embedded Metric Format (EMF) to stdout.
   The existing ECS log pipeline must preserve that JSON as the log message.
   EMF extraction uses CloudWatch Logs; the application does not need
@@ -54,9 +55,9 @@ This change does not modify secrets or ECS environment wiring. To disable, set
   Unusual worker counts or oversized labels need the event size reviewed before
   enabling. On transports allowing partial writes, the affected log event may
   be unusable; it is not retried. Missing telemetry must never imply idle capacity.
-- Shutdown/restart callbacks wake and stop the loop using a signal-safe queue.
+- The shutdown callback wakes and stops the loop using a signal-safe queue.
   Phased worker restarts retain the single master collector. Full master
-  restarts create a new collector identity.
+  restarts replace the process image and create a new collector identity.
 
 This adds a small, bounded amount of CPU and log volume, not zero overhead.
 Confirm ingestion and resource overhead in development/staging before production.
@@ -68,7 +69,7 @@ Task/collector UUID and worker PID/index are log properties, not paid metric
 dimensions. Each metric therefore has bounded cardinality across task turnover.
 
 | Metric | Meaning | Useful statistic |
-|---|---|---|
+| --- | --- | --- |
 | `BusyThreads` | `max_threads - pool_capacity`: occupied slots, excluding queued requests | Maximum / Average |
 | `AvailableThreads` | Puma's available pool capacity | Minimum / Average |
 | `MaxThreads` | Configured request slots per worker | Maximum |
@@ -133,13 +134,15 @@ response times before using these measurements as a go-live gate.
    Confirm EMF extraction produces `TradeTariff/Puma` metrics with the expected
    environment and service, not merely log records. Inspect EMF processing
    errors if logs arrive but metrics do not.
-3. Compare reporting workers/task coverage with actual Puma startup logs and
+3. Execute the dashboard's Logs Insights queries and check time-series rendering,
+   not just their presence in the dashboard JSON.
+4. Compare reporting workers/task coverage with actual Puma startup logs and
    ECS task counts. Check that disabled applications and Sidekiq emit nothing.
-4. In a safe environment, hold requests open to occupy all threads; confirm
+5. In a safe environment, hold requests open to occupy all threads; confirm
    available capacity reaches zero and reports recover after release. Backlog
    may remain outside Puma's internal queue, so do not expect every waiting
    client to appear in `Backlog`.
-5. Check restarts and log backpressure do not break serving/shutdown. Compare
+6. Check restarts and log backpressure do not break serving/shutdown. Compare
    CPU/memory/log volume before and after enabling. No production load test is
    authorised by the instrumentation change.
 
@@ -153,6 +156,37 @@ terraform -chdir=terraform/modules/puma_capacity_dashboard validate
 terraform -chdir=terraform/modules/puma_capacity_dashboard test
 ```
 
-The Terraform tests use a mock AWS provider and do not apply resources. The
-RSpec integration tests launch real Puma in single and cluster modes, hold a
-request open, inspect the emitted metrics and verify graceful shutdown.
+The `puma-dashboard-test` CI job runs the Terraform tests using a mock AWS
+provider, without AWS credentials or applying resources. These are structural
+assertions, not evidence of deployed EMF extraction or query execution.
+
+The RSpec integration tests launch real Puma in single and cluster modes, check
+default service labels and the explicit environment override, hold a request
+open, then wait for idle recovery. They cover full master and phased worker
+restarts followed by serving and graceful shutdown. The phased scenario
+explicitly disables preloading, including in backend where ordinary phased
+restarts otherwise fall back to a full restart. Only the test subprocess uses
+a shorter sampling interval.
+
+## Keeping the repository copies in sync
+
+Whoever changes this telemetry owns the paired update in frontend and backend.
+Neither copy is an independent fork: submit companion changes together and run
+the focused checks in both repositories. No shared package is required.
+
+From the directory containing both checkouts, compare the shared sources:
+
+```sh
+for file in lib/puma_metrics.rb spec/lib/puma_metrics_spec.rb \
+  terraform/modules/puma_capacity_dashboard/main.tf \
+  terraform/modules/puma_capacity_dashboard/variables.tf \
+  terraform/modules/puma_capacity_dashboard/tests/dashboard.tftest.hcl; do
+  cmp "trade-tariff-frontend/$file" "trade-tariff-backend/$file" || exit 1
+done
+```
+
+Review the integration specs together: their expected service-label matrix is
+repository-specific; their lifecycle assertions should stay aligned. Keep this
+guide aligned too. Puma registration, dashboard callers and CI Terraform versions
+remain repository-specific. Compare explicit source files, not generated
+`.terraform` directories or module-local lockfiles.

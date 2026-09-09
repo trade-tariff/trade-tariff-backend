@@ -45,6 +45,22 @@ jobs:
             *.lock
             .github
 
+  puma-dashboard-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    defaults:
+      run:
+        working-directory: terraform/modules/puma_capacity_dashboard
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - uses: hashicorp/setup-terraform@v4
+        with:
+          terraform_version: 1.12.2
+      - run: terraform init -backend=false -input=false
+      - run: terraform test -no-color
+
   lint:
     runs-on: ubuntu-latest
     steps:
