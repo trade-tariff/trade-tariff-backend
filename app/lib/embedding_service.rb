@@ -70,7 +70,7 @@ class EmbeddingService
         },
       ) { call_embeddings_api(batch) }
 
-      usage = apply_batch_response(response, slice_index, present_indices, embeddings, usage, event_kind)
+      usage = apply_batch_response(response, slice_index, present_indices, embeddings, usage, event_kind, batch.size)
     end
 
     AiUsage.attach_metadata(embeddings, usage)
@@ -115,14 +115,10 @@ private
     resp
   end
 
-  def apply_batch_response(response, slice_index, present_indices, embeddings, usage, event_kind)
+  def apply_batch_response(response, slice_index, present_indices, embeddings, usage, event_kind, expected_size)
     if response.success?
-      usage = AiUsage.merge_metadata(usage, usage_metadata(response.body, event_kind:))
-
-      batch_embeddings = response.body['data']
-        .sort_by { |d| d['index'] }
-        .map { |d| d['embedding'] }
-
+      usage = AiUsage.merge_metadata(usage, usage_metadata(response.body, event_kind: event_kind))
+      batch_embeddings = extract_embeddings(response.body, usage: usage, expected_size: expected_size)
       batch_embeddings.each_with_index do |embedding, i|
         original_index = present_indices[slice_index * BATCH_SIZE + i]
         embeddings[original_index] = embedding

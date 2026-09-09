@@ -154,6 +154,7 @@ RSpec.describe RetrySupport::WithRetry do
       on_exhausted: ->(**_) { exhausted_called = true },
     ) do |attempt|
       raise retryable_error if attempt == 1
+
       'ok'
     end
 
