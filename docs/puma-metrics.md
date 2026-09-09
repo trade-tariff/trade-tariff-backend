@@ -106,10 +106,27 @@ existing manually managed dashboards or ECS settings:
 - `Puma-frontend-<environment>` in the frontend repository.
 - `Puma-backend-<environment>` in the backend repository (UK and XI sections).
 
-Charts show busiest-worker utilisation, minimum available threads, backlog,
-stale/unready coverage and ECS running/desired tasks. Fleet charts use Logs
-Insights to take one latest snapshot per collector per 10-second bucket before
-summing. These are sampled totals for **reporting workers only**, not exact
+**Start here:** each service has an aligned summary row: queued requests in the
+busiest worker, threads in the least-spare worker, reporting collectors, then
+running/desired ECS tasks. Both backend service summaries appear before any
+diagnostics. The dashboards link to each other and to this guide; there is no
+new shared dashboard resource.
+
+Summary metrics and reporting-collector bins use 60 seconds. A collector seen
+at least once during that minute counts once, even if its workers are stale or
+unready. This is a task-coverage proxy, not an exact simultaneous task count:
+master restarts and rolling replacements can contribute multiple identities.
+Compare it with ECS counts and inspect worker reporting/expected/stale/unready
+coverage in the diagnostics before trusting spare capacity. Missing telemetry
+is not a measured zero; charts do not fill gaps or infer health from an empty
+internal queue. Extrema may come from different workers and different times,
+so matching queue and spare-thread extrema do not establish a correlation.
+
+Diagnostic charts separate thread totals from queued-request totals and use
+explicit worker/service scope. Capacity totals exclude records without worker
+capacity fields rather than aggregating missing capacity into a false zero.
+Fleet charts use Logs Insights to take one latest snapshot per collector per
+10-second bucket before summing. These are sampled totals for **reporting workers only**, not exact
 instantaneous fleet measurements. Sampling boundaries, deployment overlap and
 missing records can distort totals; compare reporting coverage with ECS tasks.
 If all collectors disappear, there is no record to plot: a blank is not zero.
@@ -135,7 +152,11 @@ response times before using these measurements as a go-live gate.
    environment and service, not merely log records. Inspect EMF processing
    errors if logs arrive but metrics do not.
 3. Execute the dashboard's Logs Insights queries and check time-series rendering,
-   not just their presence in the dashboard JSON.
+   not just their presence in the dashboard JSON. Capture staging screenshots for
+   idle, sustained saturation, recovery and missing/partial telemetry. Confirm
+   an operator can identify the affected service and any coverage gap without
+   reading application code. This requires an approved staging rollout; local
+   mock tests are structural checks, not rendered or ingestion evidence.
 4. Compare reporting workers/task coverage with actual Puma startup logs and
    ECS task counts. Check that disabled applications and Sidekiq emit nothing.
 5. In a safe environment, hold requests open to occupy all threads; confirm
