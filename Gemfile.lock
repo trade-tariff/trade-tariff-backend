@@ -1,6 +1,6 @@
 GIT
   remote: https://github.com/willfish/fast_excel.git
-  revision: 54c85d75eb900119034387d6c9bb19e69fad09e9
+  revision: 008ee60e093c3da09f5bd41f4a094ab6a4186095
   branch: master
   specs:
     uber_fast_excel (0.6.0)
