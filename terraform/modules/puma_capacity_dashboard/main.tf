@@ -12,7 +12,8 @@ locals {
   detail_y        = 7 + length(var.services) * 6
   other_app       = var.application == "frontend" ? "backend" : "frontend"
   other_dashboard = "https://${var.region}.console.aws.amazon.com/cloudwatch/home?region=${var.region}#dashboards:name=Puma-${local.other_app}-${var.environment}"
-  guide           = "https://github.com/trade-tariff/trade-tariff-${var.application}/blob/main/docs/puma-metrics.md"
+  guide_file      = var.application == "frontend" ? "puma-capacity-dashboard.md" : "puma-metrics.md"
+  guide           = "https://github.com/trade-tariff/trade-tariff-${var.application}/blob/main/docs/${local.guide_file}"
 }
 
 resource "aws_cloudwatch_dashboard" "puma_capacity" {

@@ -181,7 +181,7 @@ terraform -chdir=terraform/modules/puma_capacity_dashboard validate
 terraform -chdir=terraform/modules/puma_capacity_dashboard test
 ```
 
-The `puma-dashboard-test` CI job runs the Terraform tests using a mock AWS
+The `terraform-test` CI job runs the Terraform tests using a mock AWS
 provider, without AWS credentials or applying resources. These are structural
 assertions, not evidence of deployed EMF extraction or query execution.
 
@@ -209,6 +209,9 @@ for file in spec/lib/puma_metrics_spec.rb \
   cmp "trade-tariff-frontend/$file" "trade-tariff-backend/$file" || exit 1
 done
 ```
+
+The frontend collector and dashboard have separate operational guides; keep the
+shared interpretation and rollout requirements aligned across those guides.
 
 Review `lib/puma_metrics.rb` together: only the plugin environment lookup should
 differ; collector behaviour stays aligned. The integration specs' expected

@@ -25,6 +25,7 @@ Terraform to deploy the service into AWS.
 | <a name="module_backend_uk"></a> [backend\_uk](#module\_backend\_uk) | git@github.com:trade-tariff/trade-tariff-platform-terraform-modules.git//aws/ecs-service | aws/ecs-service-v3.2.1 |
 | <a name="module_backend_xi"></a> [backend\_xi](#module\_backend\_xi) | git@github.com:trade-tariff/trade-tariff-platform-terraform-modules.git//aws/ecs-service | aws/ecs-service-v3.2.1 |
 | <a name="module_label_generator_dashboard"></a> [label\_generator\_dashboard](#module\_label\_generator\_dashboard) | ./modules/label_generator_dashboard | n/a |
+| <a name="module_puma_capacity_dashboard"></a> [puma\_capacity\_dashboard](#module\_puma\_capacity\_dashboard) | ./modules/puma_capacity_dashboard | n/a |
 | <a name="module_search_dashboard"></a> [search\_dashboard](#module\_search\_dashboard) | ./modules/search_dashboard | n/a |
 | <a name="module_search_experiment_dashboard"></a> [search\_experiment\_dashboard](#module\_search\_experiment\_dashboard) | ./modules/search_experiment_dashboard | n/a |
 | <a name="module_search_operations_dashboard"></a> [search\_operations\_dashboard](#module\_search\_operations\_dashboard) | ./modules/search_operations_dashboard | n/a |
@@ -105,6 +106,7 @@ Terraform to deploy the service into AWS.
 | ---- | ----------- |
 | <a name="output_ai_costs_dashboard_url"></a> [ai\_costs\_dashboard\_url](#output\_ai\_costs\_dashboard\_url) | URL to the AI Costs CloudWatch dashboard |
 | <a name="output_label_generator_dashboard_url"></a> [label\_generator\_dashboard\_url](#output\_label\_generator\_dashboard\_url) | URL to the Label Generator CloudWatch dashboard |
+| <a name="output_puma_capacity_dashboard_name"></a> [puma\_capacity\_dashboard\_name](#output\_puma\_capacity\_dashboard\_name) | Dashboard for Puma web request capacity. |
 | <a name="output_search_dashboard_url"></a> [search\_dashboard\_url](#output\_search\_dashboard\_url) | URL to the Search CloudWatch dashboard |
 | <a name="output_search_experiment_dashboard_url"></a> [search\_experiment\_dashboard\_url](#output\_search\_experiment\_dashboard\_url) | URL to the Search Experiment CloudWatch dashboard |
 | <a name="output_search_operations_dashboard_url"></a> [search\_operations\_dashboard\_url](#output\_search\_operations\_dashboard\_url) | URL to the Search Operations CloudWatch dashboard |
