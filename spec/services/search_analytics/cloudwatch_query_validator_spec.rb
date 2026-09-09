@@ -14,9 +14,9 @@ RSpec.describe SearchAnalytics::CloudwatchQueryValidator do
 
   before do
     allow(SearchAnalytics::CloudwatchSnapshotQuery).to receive(:query_definitions).and_return(
-      { 'volume' => 'fields event | stats count(*)' },
-      { 'volume' => 'fields event | stats count(*) by bin(1d)' },
-      { 'volume' => 'fields event | stats count(*) by bin(1d)' },
+      { 'volume' => 'SELECT COUNT(*) FROM `platform-logs-development`' },
+      { 'volume' => "SELECT COUNT(*) FROM `platform-logs-development` GROUP BY DATE_TRUNC('DAY', `@timestamp`)" },
+      { 'volume' => "SELECT COUNT(*) FROM `platform-logs-development` GROUP BY DATE_TRUNC('DAY', `@timestamp`)" },
     )
     allow(client).to receive_messages(
       start_query: instance_double(Aws::CloudWatchLogs::Types::StartQueryResponse, query_id: 'query-id'),
@@ -31,24 +31,48 @@ RSpec.describe SearchAnalytics::CloudwatchQueryValidator do
 
   it 'executes every distinct generated query against development AWS' do
     expect(validate).to be(true)
-    expect(SearchAnalytics::CloudwatchSnapshotQuery).to have_received(:query_definitions).with(period: '24h')
-    expect(SearchAnalytics::CloudwatchSnapshotQuery).to have_received(:query_definitions).with(period: '7d')
-    expect(SearchAnalytics::CloudwatchSnapshotQuery).to have_received(:query_definitions).with(period: '30d')
+    expect(SearchAnalytics::CloudwatchSnapshotQuery).to have_received(:query_definitions).with(period: '24h', log_group_name: 'platform-logs-development')
+    expect(SearchAnalytics::CloudwatchSnapshotQuery).to have_received(:query_definitions).with(period: '7d', log_group_name: 'platform-logs-development')
+    expect(SearchAnalytics::CloudwatchSnapshotQuery).to have_received(:query_definitions).with(period: '30d', log_group_name: 'platform-logs-development')
     expect(client).to have_received(:start_query).with(
-      log_group_name: 'platform-logs-development',
       start_time: (now - 5.minutes).to_i,
       end_time: now.to_i,
-      query_language: 'CWLI',
-      query_string: 'fields event | stats count(*)',
+      query_language: 'SQL',
+      query_string: 'SELECT COUNT(*) FROM `platform-logs-development`',
     ).once
     expect(client).to have_received(:start_query).with(
-      log_group_name: 'platform-logs-development',
       start_time: (now - 5.minutes).to_i,
       end_time: now.to_i,
-      query_language: 'CWLI',
-      query_string: 'fields event | stats count(*) by bin(1d)',
+      query_language: 'SQL',
+      query_string: "SELECT COUNT(*) FROM `platform-logs-development` GROUP BY DATE_TRUNC('DAY', `@timestamp`)",
     ).once
     expect(output.string).to include('Validated 2 distinct CloudWatch queries')
+  end
+
+  it 'validates rendered native dashboard queries alongside SQL snapshots' do
+    described_class.call(log_group_name: 'platform-logs-development', client:, now:, output:,
+                         dashboard_queries: { 'operations' => { 'query_language' => 'CWLI', 'query_string' => "SOURCE 'platform-logs-development' | stats count(*)" } })
+
+    expect(client).to have_received(:start_query).with(hash_including(
+                                                         log_group_name: 'platform-logs-development', query_language: 'CWLI', query_string: 'stats count(*)',
+                                                       ))
+  end
+
+  it 'strips the dashboard source envelope from SQL before calling StartQuery' do
+    described_class.call(log_group_name: 'platform-logs-development', client:, now:, output:,
+                         dashboard_queries: { 'overview' => { 'query_language' => 'SQL', 'query_string' => "SOURCE 'platform-logs-development' | SELECT COUNT(*) FROM `platform-logs-development`" } })
+
+    expect(client).to have_received(:start_query).with(hash_including(query_language: 'SQL', query_string: 'SELECT COUNT(*) FROM `platform-logs-development`')).twice
+    expect(client).not_to have_received(:start_query).with(hash_including(:log_group_name))
+  end
+
+  it 'rejects an unexpected inner SQL source before executing it' do
+    allow(SearchAnalytics::CloudwatchSnapshotQuery).to receive(:query_definitions).and_return(
+      { 'wrong' => 'SELECT request_id FROM `platform-logs-development` WHERE request_id NOT IN (SELECT request_id FROM `production`)' },
+    )
+
+    expect { validate }.to raise_error(described_class::ValidationError, /different log group/)
+    expect(client).not_to have_received(:start_query)
   end
 
   it 'polls until AWS completes the query' do

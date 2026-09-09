@@ -1,10 +1,11 @@
 module Search
   module Instrumentation
     module ApiEvents
-      def api_call(request_id:, model:, attempt_number:, iteration: nil, effective_query: nil, operation: 'interactive_search', emit_search_failed: true)
+      def api_call(request_id:, model:, attempt_number:, iteration: nil, effective_query: nil, operation: 'interactive_search')
         start_time = Process.clock_gettime(Process::CLOCK_MONOTONIC)
         result = yield
         duration = Process.clock_gettime(Process::CLOCK_MONOTONIC) - start_time
+        record_api_failure(operation) if determine_response_type(result) == 'error'
 
         instrument(
           # NOTE: Api::Admin::Search::Evaluation::SearchesController#create
@@ -29,6 +30,7 @@ module Search
 
         result
       rescue StandardError => e
+        record_api_failure(operation)
         duration = Process.clock_gettime(Process::CLOCK_MONOTONIC) - start_time
         instrument(
           # See the success-path instrument() call above for why this event
@@ -47,8 +49,12 @@ module Search
             event_kind: operation,
           }.merge(truncate_error_payload(AiUsage.safe_error_message(e))).merge(AiUsage.payload_from_error(e)),
         )
-        search_failed(request_id:, error_type: e.class.name, error_message: AiUsage.safe_error_message(e), search_type: 'interactive') if emit_search_failed
         raise
+      end
+
+      def record_api_failure(operation)
+        code = Search::FailureCodes.for_operation(operation)
+        TradeTariffRequest.record_search_failure(code) if code
       end
 
       def determine_response_type(result)

@@ -2,6 +2,8 @@
 
 Search combines direct code lookup, OpenSearch-backed fuzzy matching, search references, suggestions, and generated classification content.
 
+For trader outcomes, response metadata, combined failures and warning policy, use the canonical [AI-assisted search resilience contract](../search-resilience.md).
+
 ## Request Flow
 
 Public search routes are defined in `app/engines/v2_api.rb`:
@@ -68,6 +70,33 @@ When enabled, hybrid retrieval returns no suggestions if the maximum score is be
 
 Guided classification search can also attach bounded chapter- and section-note evidence to retrieved candidates. [Tariff knowledge notes](../tariff-knowledge-notes.md) documents extraction, graph edges, compressed-note materialisation and deduplication, prompt selection, and request-ID diagnostics.
 
+## Search Failure Diagnostics and Alarms
+
+Recoverable failures emit `search_stage_failed` with a scalar `failure_code`, the operation, the error type, and a bounded error message. They can be followed by `search_completed` when fallback succeeds. `search_failed` is reserved for a failure escaping the instrumented search boundary. Hybrid retrieval also records each leg's outcome and failure code. A successful retrieval returning no matches is not a retrieval failure.
+
+`terraform/degradation_alarms.tf` defines one alarm for each component when `enable_alarms` is enabled:
+
+| Component | Failure events counted |
+| --- | --- |
+| OpenSearch | `search_stage_failed` with `opensearch_failed`, including direct and classic search, or an unsuccessful OpenSearch retrieval leg |
+| Embedding generation | `embedding_api_call_failed` for `vector_search_query_embedding`, including malformed embedding responses |
+| LLM | An unsuccessful `api_call_completed`, or `search_stage_failed` with `query_expansion_failed`, `interactive_search_failed`, or `duplicate_question_validation_failed`, including unusable responses |
+| Vector database retrieval | `search_stage_failed` or an unsuccessful vector retrieval leg with `vector_retrieval_failed`; embedding failures belong to the separate embedding alarm |
+
+These alarms count failure events and trigger when any matching event occurs in a five-minute period. They are not degraded-request counts: correlated stage and leg/API events can count the same failure more than once. Embedding failures are matched only at their API boundary to avoid counting their vector-leg fallback again. Investigate with the Search Operations dashboard and the event's `request_id`, `failure_code`, `operation`, and error fields.
+
+The existing OpenSearch-leg and LLM API-error patterns remain alongside the new stage patterns so older application instances retain their alert coverage during a rolling deployment or rollback. The new vector alarm and unusable-response coverage require the corresponding new application events. Legacy vector errors cannot distinguish embedding generation from database retrieval and are not assigned to the database alarm.
+
+## Search Failure Fields
+
+Search events and search-related AI usage events include `search_degraded` and six explicit boolean fields: `query_expansion_failed`, `embedding_generation_failed`, `vector_retrieval_failed`, `interactive_search_failed`, `duplicate_question_validation_failed`, and `opensearch_failed`. Each field is present as `true` or `false`. Duplicate-question validation failing open has its own code, separate from interactive inference failure. Disabled stages, successful empty results, and query-guardrail decisions do not mark a search as degraded.
+
+Flags describe failures known when each event is emitted. A later failure does not rewrite earlier events. Hybrid completion combines the retrieval legs' flags after both finish. An unclassified hard failure emits `search_failed` with `search_degraded: true` while all stage flags remain false.
+
+Search Operations keeps terminal and recovered stage failures visible in its existing Recent Error Log, including the failure code and operation. General AI cost accounting continues to include billed failures.
+
+To exclude degraded journeys from an experiment cohort, correlate all events sharing a `request_id` within the selected time window. Filtering individual events on `search_degraded` would retain costs and latency recorded before a later failure. The failure fields do not change dashboard cohorts by themselves.
+
 ## Query Expansion Deadline
 
 Uncached guided-search query expansion has a fixed five-second operation-specific deadline.
@@ -117,3 +146,13 @@ input phrase => input phrase, lexical alternative
 ```
 
 Rules are matched case-insensitively against complete terms or phrases. Keep mappings contextual: prefer `HEPA filter` or `USB connector` to broad rules for `HEPA` or `USB`.
+
+### Search analytics SQL cohorts
+
+Admin analytics snapshots and Search Overview exclude every event for a request ID with a recorded `search_degraded: true`, `search_failed`, or `search_stage_failed` search event in the selected time window. The snapshot failure lookup uses the same UK/XI log stream as its metrics. Missing, null, and empty request IDs remain included, as do historical requests without a linked failure. Use the complete journey window: a failure outside that window cannot exclude an event inside it. Operations, Quality, Experiment, and general AI Costs retain their existing cohorts in this extraction.
+
+The shared `request_exclusion_filter.sql.tftpl` contains the SQL predicate used by Ruby and Terraform, with no inner row limit. Two-stage cost and selection queries place the failure lookup beside the request aggregation subquery to respect CloudWatch SQL's one-level nesting limit. Snapshot payload fields and millisecond units remain unchanged; Overview displays seconds. SQL percentiles use fractions and can differ slightly from QL's approximate percentiles.
+
+Development validation renders the real Terraform widget queries with `search_analytics:render_dashboard_queries`, then executes them and all distinct snapshot queries with `search_analytics:validate_cloudwatch_queries`. Both tasks use `CLOUDWATCH_QUERY_VALIDATION_LOG_GROUP`; `CLOUDWATCH_DASHBOARD_QUERIES_FILE` connects rendering to validation. Rendering does not access AWS. Validation preserves native QL query languages and uses SQL for migrated consumers. AWS documents SQL log widgets through [LogQueryLanguage](https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_cloudwatch.LogQueryLanguage.html) and [LogQueryWidgetProps](https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_cloudwatch.LogQueryWidgetProps.html).
+
+SQL dashboard widgets retain the `SOURCE 'group' |` envelope produced by the [AWS CDK implementation](https://github.com/aws/aws-cdk/issues/34482). The validator checks that source and every SQL FROM group, then removes only the leading dashboard envelope before StartQuery. Direct snapshot SQL obtains its group from FROM. Widget serialization follows that supported representation; validation does not publish a dashboard.

@@ -289,6 +289,7 @@ module Search
         result_count: event.payload[:result_count],
         status: event.payload[:status],
       }
+      data.merge!(event.payload.slice(:failure_code, :error_type))
       add_error_fields!(data, event)
       info log_entry(data, event)
     end
@@ -330,17 +331,31 @@ module Search
       error log_entry(data, event)
     end
 
+    def search_stage_failed(event)
+      data = {
+        event: 'search_stage_failed',
+        request_id: event.payload[:request_id],
+        search_type: event.payload[:search_type],
+        failure_code: event.payload[:failure_code],
+        operation: event.payload[:operation],
+        error_type: event.payload[:error_type],
+      }.compact
+      add_error_fields!(data, event)
+      error log_entry(data, event)
+    end
+
   private
 
     def log_entry(data, event)
-      entry = data.merge(
+      entry = data.merge(Search::FailureCodes.logging_fields([]), event.payload.slice(*Search::FailureCodes::LOG_FIELDS)).merge(
         service: 'search',
         timestamp: Time.current.iso8601,
       )
       entry[:request_source] = event.payload[:request_source] if event.payload[:request_source].present?
       client_id = event.payload[:client_id].presence || TradeTariffRequest.client_id.presence
       entry[:client_id] = client_id if client_id
-      entry[:experiment] = TradeTariffRequest.experiment if TradeTariffRequest.experiment.present?
+      experiment = event.payload[:experiment].presence || TradeTariffRequest.experiment.presence
+      entry[:experiment] = experiment if experiment
       entry.to_json
     end
 

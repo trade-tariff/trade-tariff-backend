@@ -9,11 +9,13 @@ class SearchService
 
       self
     rescue OpenSearch::Transport::Transport::Error => e
-      Search::Instrumentation.search_failed(
+      Search::Instrumentation.search_stage_failed(
         request_id: TradeTariffRequest.request_id,
+        failure_code: Search::FailureCodes::OPENSEARCH_FAILED,
         error_type: e.class.name,
         error_message: e.message,
         search_type: 'classic',
+        operation: 'opensearch_retrieval',
       )
       # OpenSearch transport failures should not prevent the blank-result fallback.
       @results = BLANK_RESULT

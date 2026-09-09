@@ -5112,6 +5112,26 @@
                               "measure_type_series_description": {
                                 "type": "string",
                                 "nullable": true
+                              },
+                              "semantic_roles": {
+                                "type": "array",
+                                "description": "Behavioural roles of this measure type. Empty when none apply.",
+                                "items": {
+                                  "type": "string",
+                                  "enum": [
+                                    "supplementary",
+                                    "supplementary_unit_import_only",
+                                    "safeguard",
+                                    "mfn_no_authorized_use",
+                                    "provides_unit_context",
+                                    "cds_proofs_of_origin",
+                                    "prohibitive"
+                                  ]
+                                },
+                                "example": [
+                                  "supplementary",
+                                  "supplementary_unit_import_only"
+                                ]
                               }
                             }
                           }
@@ -5220,6 +5240,26 @@
                             "measure_type_series_description": {
                               "type": "string",
                               "nullable": true
+                            },
+                            "semantic_roles": {
+                              "type": "array",
+                              "description": "Behavioural roles of this measure type. Empty when none apply.",
+                              "items": {
+                                "type": "string",
+                                "enum": [
+                                  "supplementary",
+                                  "supplementary_unit_import_only",
+                                  "safeguard",
+                                  "mfn_no_authorized_use",
+                                  "provides_unit_context",
+                                  "cds_proofs_of_origin",
+                                  "prohibitive"
+                                ]
+                              },
+                              "example": [
+                                "supplementary",
+                                "supplementary_unit_import_only"
+                              ]
                             }
                           }
                         }

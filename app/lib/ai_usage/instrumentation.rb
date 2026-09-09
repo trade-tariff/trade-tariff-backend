@@ -6,6 +6,9 @@ module AiUsage
   module_function
 
     def instrument(event_name, payload = {}, &block)
+      if Search::FailureCodes.for_operation(payload[:event_kind])
+        payload = Search::Instrumentation.with_request_context(payload.merge(request_id: payload[:request_id]))
+      end
       ActiveSupport::Notifications.instrument("#{event_name}.ai_usage", payload, &block)
     end
 
@@ -41,6 +44,8 @@ module AiUsage
       )
       result
     rescue StandardError => e
+      failure_code = Search::FailureCodes.for_operation(event_kind)
+      TradeTariffRequest.record_search_failure(failure_code) if failure_code
       duration = Process.clock_gettime(Process::CLOCK_MONOTONIC) - start_time
       instrument(
         "#{event_prefix}_failed",

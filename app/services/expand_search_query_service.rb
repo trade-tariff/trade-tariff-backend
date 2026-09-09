@@ -26,6 +26,11 @@ class ExpandSearchQueryService
     def clear_cache!
       Rails.cache.delete_matched('expand_search_query/*')
     end
+
+    def valid_response?(response)
+      response.is_a?(Hash) && response['expanded_query'].is_a?(String) &&
+        response['expanded_query'].present? && response['error'].blank?
+    end
   end
 
 private
@@ -38,14 +43,21 @@ private
 
   def expand_query
     cached = Rails.cache.read(cache_key)
-    return Result.new(**cached.symbolize_keys) if cached
+    if cached
+      cached_response = cached.is_a?(Hash) ? cached.stringify_keys : cached
+      if self.class.valid_response?(cached_response)
+        return Result.new(expanded_query: cached_response['expanded_query'], reason: cached_response['reason'])
+      end
+
+      record_failure('Cached query expansion was malformed')
+      Rails.cache.delete(cache_key)
+    end
 
     response = Search::Instrumentation.api_call(
       request_id:,
       model: configured_model,
       attempt_number: 1,
       operation: 'search_query_expansion',
-      emit_search_failed: false,
     ) do
       OpenaiClient.call(
         context_for(query),
@@ -56,12 +68,12 @@ private
       )
     end
 
-    if response.is_a?(Hash) && response['expanded_query'].present?
+    if self.class.valid_response?(response)
       result_hash = { expanded_query: response['expanded_query'], reason: response['reason'] }
       Rails.cache.write(cache_key, result_hash, expires_in: CACHE_TTL)
       Result.new(**result_hash)
     else
-      TradeTariffRequest.record_search_failure(Search::FailureCodes::QUERY_EXPANSION_FAILED)
+      record_failure('Query expansion response was malformed')
       unchanged_result
     end
   rescue OpenaiClient::DeadlineExceeded => e
@@ -75,14 +87,19 @@ private
     )
     unchanged_result
   rescue StandardError => e
-    TradeTariffRequest.record_search_failure(Search::FailureCodes::QUERY_EXPANSION_FAILED)
-    Search::Instrumentation.search_failed(
-      request_id:,
-      error_type: e.class.name,
-      error_message: e.message,
-      search_type: 'expand_query',
-    )
+    record_failure(e.message, error_type: e.class.name)
     unchanged_result
+  end
+
+  def record_failure(message, error_type: 'InvalidResponse')
+    Search::Instrumentation.search_stage_failed(
+      request_id:,
+      search_type: 'interactive',
+      failure_code: Search::FailureCodes::QUERY_EXPANSION_FAILED,
+      operation: 'search_query_expansion',
+      error_type:,
+      error_message: message,
+    )
   end
 
   def cache_key

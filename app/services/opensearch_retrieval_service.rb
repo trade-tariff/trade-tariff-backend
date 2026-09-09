@@ -18,6 +18,13 @@ class OpensearchRetrievalService
   def call
     hits = run_search(@expanded_query)
     Result.new(results: hits.map { |h| build_result_from_hit(h) }, expanded_query: @expanded_query)
+  rescue StandardError => e
+    Search::Instrumentation.search_stage_failed(
+      request_id: @request_id, search_type: 'interactive',
+      failure_code: Search::FailureCodes::OPENSEARCH_FAILED,
+      operation: 'opensearch_retrieval', error_type: e.class.name, error_message: e.message
+    )
+    raise
   end
 
 private

@@ -2,7 +2,7 @@ class CachedSubheadingService
   include JsonapiCacheKey
 
   TTL = 23.hours # Expire just before the ETL job runs and prewarms expensive subheadings
-  CACHE_VERSION = 1
+  CACHE_VERSION = 2
   RELATIONSHIP_FIELDS = %i[
     ancestors
     chapter

@@ -18,10 +18,11 @@ class EmbeddingService
   RETRYABLE_HTTP_STATUSES = [429, 500, 502, 503, 504].freeze
 
   class ApiError < StandardError
-    attr_reader :http_status
+    attr_reader :http_status, :ai_usage
 
-    def initialize(message, http_status: nil)
+    def initialize(message, http_status: nil, ai_usage: nil)
       @http_status = http_status
+      @ai_usage = ai_usage
       super(message)
     end
   end
@@ -76,6 +77,21 @@ class EmbeddingService
   end
 
 private
+
+  def extract_embeddings(body, usage:, expected_size:)
+    data = body.fetch('data')
+    raise TypeError unless data.is_a?(Array) && data.size == expected_size
+    raise TypeError unless data.map { |entry| entry.fetch('index') }.sort.eql?((0...expected_size).to_a)
+
+    data.sort_by { |entry| entry['index'] }.map do |entry|
+      embedding = entry.fetch('embedding')
+      raise TypeError unless embedding.is_a?(Array) && embedding.size == 1536 && embedding.all? { |value| value.is_a?(Numeric) && value.real? && value.to_f.finite? }
+
+      embedding
+    end
+  rescue StandardError
+    raise ApiError.new('Embedding response was malformed', ai_usage: usage)
+  end
 
   def usage_metadata(body, event_kind:)
     usage = body.to_h['usage']

@@ -9,13 +9,13 @@ RSpec.describe 'CloudWatch dashboard latency units' do
     File.read(path).scan(
       /title\s+= "([^"]+)"(?:(?!title\s+=).)*?query\s+= <<-EOT\n(.*?)\n\s+EOT/m,
     ).filter_map do |title, query|
-      [path, title, query] if query.match?(/\| stats .*duration_ms/)
+      [path, title, query] if query.match?(/(?:\| stats|SELECT).*duration_ms/)
     end
   end
 
   it 'converts every aggregated millisecond duration to a human-scale unit' do
     aggregate_expressions = latency_widgets.flat_map do |_path, _title, query|
-      query.scan(/\b(?:pct|avg|max|min|median)\(([^)]*duration_ms[^)]*)\)/).flatten
+      query.scan(/\b(?:pct|percentile_approx|avg|max|min|median)\(([^)]*duration_ms[^)]*)\)/i).flatten
     end
 
     expect(aggregate_expressions).not_to be_empty
@@ -32,7 +32,7 @@ RSpec.describe 'CloudWatch dashboard latency units' do
   it 'states the unit in every aggregated latency or duration series name' do
     queries = latency_widgets.map { |_path, _title, query| query }
 
-    expect(queries).to all(match(/\bas \w+_(?:seconds|minutes)\b/))
-    expect(queries.join("\n")).not_to match(/\bas (?:p50|p90|p99|max|avg|avg_ms|avg_duration_ms)\b/)
+    expect(queries).to all(match(/\bas \w+_(?:seconds|minutes)\b/i))
+    expect(queries.join("\n")).not_to match(/\bas (?:p50|p90|p99|max|avg|avg_ms|avg_duration_ms)\b/i)
   end
 end

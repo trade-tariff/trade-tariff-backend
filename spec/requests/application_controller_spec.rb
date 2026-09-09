@@ -111,6 +111,33 @@ RSpec.describe ApplicationController, type: :request do
         expect(payload[:request_id]).to eq('search-request-id')
       end
 
+      it 'adds the originating client IP from CloudFront-Viewer-Address to the action controller payload' do
+        payload = process_action_payload_for(
+          params: {},
+          headers: { 'HTTP_CLOUDFRONT_VIEWER_ADDRESS' => '203.0.113.5:54321' },
+        )
+
+        expect(payload[:remote_ip]).to eq('203.0.113.5')
+      end
+
+      it 'strips the brackets from a bracketed IPv6 CloudFront-Viewer-Address' do
+        payload = process_action_payload_for(
+          params: {},
+          headers: { 'HTTP_CLOUDFRONT_VIEWER_ADDRESS' => '[2001:db8::1]:54321' },
+        )
+
+        expect(payload[:remote_ip]).to eq('2001:db8::1')
+      end
+
+      it 'falls back to request.remote_ip when CloudFront-Viewer-Address is absent' do
+        payload = process_action_payload_for(
+          params: {},
+          headers: { 'HTTP_X_FORWARDED_FOR' => '203.0.113.5' },
+        )
+
+        expect(payload[:remote_ip]).to eq('203.0.113.5')
+      end
+
       it 'adds the experiment label to the action controller payload' do
         payload = process_action_payload_for(params: { experiment: 'trstd-trdr' })
 

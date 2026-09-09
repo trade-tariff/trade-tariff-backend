@@ -14,7 +14,8 @@ module Api
                    :order_number_capture_code,
                    :trade_movement_code,
                    :validity_end_date,
-                   :validity_start_date
+                   :validity_start_date,
+                   :semantic_roles
 
         attribute :id, &:measure_type_id
 

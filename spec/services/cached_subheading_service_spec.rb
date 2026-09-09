@@ -75,7 +75,7 @@ RSpec.describe CachedSubheadingService do
     it 'caches with the correct key' do
       allow(Rails.cache).to receive(:fetch).and_call_original
       service.call.to_json
-      expect(Rails.cache).to have_received(:fetch).with("_subheading-#{subheading.goods_nomenclature_sid}-2021-01-01-v1", expires_in: 23.hours)
+      expect(Rails.cache).to have_received(:fetch).with("_subheading-#{subheading.goods_nomenclature_sid}-2021-01-01-v2", expires_in: 23.hours)
     end
 
     context 'with empty include and sparse fields that do not need eager-loaded data' do

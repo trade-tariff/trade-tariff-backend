@@ -11,7 +11,11 @@ locals {
 resource "aws_cloudwatch_dashboard" "ai_costs" {
   dashboard_name = local.dashboard_name
 
-  dashboard_body = jsonencode({
+  dashboard_body = jsonencode(local.dashboard_body)
+}
+
+locals {
+  dashboard_body = {
     widgets = concat(
       [
         {
@@ -110,5 +114,5 @@ resource "aws_cloudwatch_dashboard" "ai_costs" {
         }
       ]
     )
-  })
+  }
 }

@@ -1,12 +1,16 @@
-RSpec.describe TaricSynchronizer do
-  context 'for xi' do
+RSpec.describe CdsSynchronizer do
+  context 'for uk' do
     describe '#apply', :truncation do
-      let!(:taric_update) { create :taric_update, :pending, example_date: }
+      let!(:cds_update) do
+        create :cds_update, :pending,
+               filename: "tariff_dailyExtract_v1_#{example_date.strftime('%Y%m%d')}T123456.gzip",
+               example_date: example_date
+      end
 
       before do
-        prepare_synchronizer_folders('taric')
-        create_taric_file example_date
-        allow(TradeTariffBackend).to receive(:service).and_return('xi')
+        prepare_synchronizer_folders('cds')
+        create_cds_file example_date
+        allow(TradeTariffBackend).to receive(:service).and_return('uk')
       end
 
       after do
@@ -16,39 +20,40 @@ RSpec.describe TaricSynchronizer do
       context 'when everything is fine' do
         it 'applies missing updates' do
           described_class.apply
-          expect(taric_update.reload).to be_applied
+          expect(cds_update.reload).to be_applied
+          expect(Measure::Operation.where(measure_sid: '20186262')).to be_present
         end
       end
 
-      context 'when taric fails' do
+      context 'when cds fails' do
         before do
-          instance = instance_double(TaricImporter)
-          allow(TaricImporter).to receive(:new).and_return(instance)
-          allow(instance).to receive(:import).and_raise(TaricImporter::ImportException)
+          instance = instance_double(CdsImporter)
+          allow(CdsImporter).to receive(:new).and_return(instance)
+          allow(instance).to receive(:import).and_raise(CdsImporter::ImportException)
         end
 
-        it 'marks taric update to be pending' do
-          expect(taric_update).to be_pending
+        it 'marks cds update to be pending' do
+          expect(cds_update).to be_pending
           expect { described_class.apply }.not_to raise_error
         end
 
-        it 'marks taric update as failed' do
+        it 'marks cds update as failed' do
           expect { described_class.apply }.not_to raise_error
-          expect(taric_update.reload).to be_failed
+          expect(cds_update.reload).to be_failed
         end
       end
 
       context 'when elasticsearch is buggy' do
         before do
-          entity_mapper = instance_double(TaricImporter::EntityMapper)
-          allow(TaricImporter::EntityMapper).to receive(:new).and_return(entity_mapper)
+          entity_mapper = instance_double(CdsImporter::EntityMapper)
+          allow(CdsImporter::EntityMapper).to receive(:new).and_return(entity_mapper)
           allow(entity_mapper).to receive(:build).and_raise(OpenSearch::Transport::Transport::SnifferTimeoutError)
 
-          allow(TariffSynchronizer::TaricUpdate).to receive(:find).and_return(nil)
+          allow(TariffSynchronizer::CdsUpdate).to receive(:find).and_return(nil)
         end
 
         it 'stops syncing' do
-          expect(taric_update.reload).not_to be_applied
+          expect(cds_update.reload).not_to be_applied
         end
 
         it 'handles the error without crashing the sync process' do
@@ -58,15 +63,15 @@ RSpec.describe TaricSynchronizer do
 
       context 'when we have a timeout' do
         before do
-          entity_mapper = instance_double(TaricImporter::EntityMapper)
-          allow(TaricImporter::EntityMapper).to receive(:new).and_return(entity_mapper)
+          entity_mapper = instance_double(CdsImporter::EntityMapper)
+          allow(CdsImporter::EntityMapper).to receive(:new).and_return(entity_mapper)
           allow(entity_mapper).to receive(:build).and_raise(Timeout::Error)
 
-          allow(TariffSynchronizer::TaricUpdate).to receive(:find).and_return(nil)
+          allow(TariffSynchronizer::CdsUpdate).to receive(:find).and_return(nil)
         end
 
         it 'stops syncing' do
-          expect(taric_update.reload).not_to be_applied
+          expect(cds_update.reload).not_to be_applied
         end
 
         it 'handles the error without crashing the sync process' do
@@ -76,7 +81,7 @@ RSpec.describe TaricSynchronizer do
     end
 
     describe '.rollback' do
-      let!(:update) { create :taric_update, :applied, issue_date: Time.zone.today }
+      let!(:update) { create :cds_update, :applied, filename: 'rollback.xml', issue_date: Time.zone.today }
 
       let :data_migrations do
         DataMigration.unrestrict_primary_key
@@ -85,15 +90,15 @@ RSpec.describe TaricSynchronizer do
       end
 
       before do
-        allow(TradeTariffBackend).to receive(:service).and_return('xi')
+        allow(TradeTariffBackend).to receive(:service).and_return('uk')
       end
 
       context 'when successful run' do
         let!(:measure_today) do
-          create :measure, operation_date: Time.zone.today, filename: nil
+          create :measure, operation_date: Time.zone.today, filename: 'rollback.xml'
         end
         let!(:measure_older) do
-          create :measure, operation_date: 2.days.ago.to_date, filename: nil
+          create :measure, operation_date: 2.days.ago.to_date, filename: '2_days_ago.xml'
         end
 
         before do
@@ -106,7 +111,7 @@ RSpec.describe TaricSynchronizer do
           expect(Measure::Operation.where(measure_sid: measure_older.measure_sid)).to be_present
         end
 
-        it 'marks Taric updates as pending' do
+        it 'marks Cds updates as pending' do
           expect(update.reload).to be_pending
         end
 
@@ -122,7 +127,7 @@ RSpec.describe TaricSynchronizer do
           allow(Measure).to receive(:operation_klass).and_raise(StandardError)
         end
 
-        it 'leaves Taric updates in applied state' do
+        it 'leaves Cds updates in applied state' do
           expect { described_class.rollback(Time.zone.yesterday, keep: true) }.to raise_error(StandardError)
           expect(update.reload).to be_applied
         end
@@ -142,14 +147,14 @@ RSpec.describe TaricSynchronizer do
           expect(Measure).to be_none
         end
 
-        it 'deletes Taric updates' do
+        it 'deletes Cds updates' do
           expect { update.reload }.to raise_error Sequel::Error
         end
       end
 
       context 'with date passed as string' do
         let!(:older_update) do
-          create :taric_update, :applied, issue_date: 2.days.ago
+          create :cds_update, :applied, issue_date: 2.days.ago
         end
 
         before do
@@ -160,7 +165,7 @@ RSpec.describe TaricSynchronizer do
           expect(Measure).to be_none
         end
 
-        it 'deletes Taric updates' do
+        it 'deletes Cds updates' do
           expect { update.reload }.to raise_error Sequel::Error
         end
 

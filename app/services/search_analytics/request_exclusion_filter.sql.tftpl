@@ -1,0 +1,6 @@
+(request_id IS NULL OR request_id = '' OR request_id NOT IN (
+  SELECT request_id FROM `${log_group_name}`
+  WHERE ${scope_condition}
+    AND service = 'search' AND request_id IS NOT NULL AND request_id != ''
+    AND (search_degraded = true OR event IN ('search_failed', 'search_stage_failed'))
+))

@@ -27,6 +27,12 @@ RSpec.describe EmbeddingService do
       expect(result).to eq(embedding)
     end
 
+    it 'returns nil for blank text without calling the API' do
+      expect(service.embed('')).to be_nil
+      expect(service.embed(nil)).to be_nil
+      expect(WebMock).not_to have_requested(:post, "#{api_base_url}/embeddings")
+    end
+
     it 'sends the correct model' do
       service.embed('Live horses')
 
@@ -76,7 +82,7 @@ RSpec.describe EmbeddingService do
 
       before do
         stub_request(:post, "#{api_base_url}/embeddings")
-          .to_return(status: 200, body: response_body.to_json, headers: { 'Content-Type' => 'application/json' })
+          .to_return { { status: 200, body: response_body.to_json, headers: { 'Content-Type' => 'application/json' } } }
       end
 
       it 'returns embeddings for all texts' do
@@ -87,6 +93,15 @@ RSpec.describe EmbeddingService do
       it 'preserves order based on index' do
         result = service.embed_batch(%w[one two three])
         expect(result).to eq(embeddings)
+      end
+
+      [{ 'index' => 0 }, { 'embedding' => nil }, { 'embedding' => 'invalid' }, { 'embedding' => [0.1] }].each do |invalid_entry|
+        it "rejects #{invalid_entry} with billed usage intact" do
+          response_body['data'][1].merge!(invalid_entry)
+          expect { service.embed_batch(%w[one two three]) }.to raise_error(EmbeddingService::ApiError) { |error|
+            expect(error.ai_usage.total_tokens).to eq(9)
+          }
+        end
       end
 
       it 'attaches batch usage metadata to the returned embeddings array' do

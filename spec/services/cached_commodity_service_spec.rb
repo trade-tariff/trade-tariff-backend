@@ -91,6 +91,15 @@ RSpec.describe CachedCommodityService do
         expect(loaded_commodity.associations).to include(full_chemicals: be_present)
       end
 
+      it 'includes semantic roles on embedded measure types' do
+        measure_type = service.call.fetch(:included).find do |resource|
+          resource[:type].to_s == 'measure_type' && resource[:id] == '103'
+        end
+
+        expect(measure_type.fetch(:attributes).fetch(:semantic_roles))
+          .to contain_exactly('mfn_no_authorized_use', 'provides_unit_context')
+      end
+
       context 'with empty include and sparse fields that do not need eager-loaded associations' do
         around do |example|
           Thread.current[:jsonapi_query_options] = {

@@ -111,6 +111,7 @@ RSpec.describe ProductionEnvironmentConfig do
         ActiveSupport::Notifications::Event,
         payload: {
           request_id: 'req-1',
+          remote_ip: '203.0.113.5',
           auth_type: 'token',
           client_id: 'client',
           headers: { 'HTTP_ACCEPT' => 'application/json' },
@@ -131,6 +132,7 @@ RSpec.describe ProductionEnvironmentConfig do
 
       expect(options).to include(
         request_id: 'req-1',
+        remote_ip: '203.0.113.5',
         auth_type: 'token',
         client_id: 'client',
         accept: 'application/json',

@@ -46,8 +46,8 @@ RSpec.describe 'search experiment dashboard Terraform' do
   end
 
   it 'separates period cost and token totals and exposes incomplete pricing' do
-    expect(module_main_tf).to include('event in [\\"api_call_completed\\", \\"embedding_api_call_completed\\"]')
-    expect(module_main_tf).to include('service = \\"ai_usage\\" and event = \\"embedding_api_call_completed\\"')
+    expect(module_main_tf).to include('event in [\\"api_call_completed\\", \\"embedding_api_call_completed\\", \\"embedding_api_call_failed\\"]')
+    expect(module_main_tf).to include('service = \\"ai_usage\\" and event in [\\"embedding_api_call_completed\\", \\"embedding_api_call_failed\\"]')
     expect(module_main_tf).to include('event_kind = \\"vector_search_query_embedding\\"')
     expect(module_main_tf).to include('if(ispresent(operation), operation, event_kind) as ai_operation')
     expect(module_main_tf).to include('Total AI Cost by Operation')
@@ -229,11 +229,11 @@ RSpec.describe 'search experiment dashboard Terraform' do
     recent_searches_query = operations_widget_query('Recent Searches')
 
     expect(recent_searches_query).to include(
-      'stats latest(@timestamp) as latest_timestamp, latest(query) as query,',
+      'stats latest(@timestamp) as latest_timestamp, latest(query) as latest_query,',
     )
     expect(recent_searches_query).to include('by request_id')
     expect(recent_searches_query).to include(
-      'display latest_timestamp, query, request_source, search_type, request_id',
+      'display latest_timestamp, latest_query, latest_request_source, latest_search_type, request_id',
     )
   end
 
