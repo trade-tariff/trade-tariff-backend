@@ -9,10 +9,24 @@ RSpec.describe ImportXiCnDocumentWorker do
   before do
     allow(TradeTariffBackend).to receive(:xi?).and_return(true)
     allow(XiCnImporter::Importer).to receive(:new).and_return(importer_double)
+    allow(XiCnImporter::Instrumentation).to receive(:import_run_started)
+    allow(XiCnImporter::Instrumentation).to receive(:import_run_completed)
+    allow(XiCnImporter::Instrumentation).to receive(:import_run_failed)
+    allow(XiCnImporter::Instrumentation).to receive(:duplicate_notification_attempt)
     allow(SlackNotifierService).to receive(:call)
     allow(CustomsTariffUpdateNotifierService).to receive(:new).and_return(instance_double(CustomsTariffUpdateNotifierService, call: nil))
     allow(Aws::CloudWatch::Client).to receive(:new).and_return(cloudwatch_client)
     allow(cloudwatch_client).to receive(:put_metric_data)
+  end
+
+  describe 'sidekiq configuration' do
+    it 'retries 8 times' do
+      expect(described_class.sidekiq_options['retry']).to eq(8)
+    end
+
+    it 'does not enable Sidekiq slack alerts' do
+      expect(described_class.sidekiq_options['slack_alerts']).to be_nil
+    end
   end
 
   describe '#perform' do
@@ -65,6 +79,24 @@ RSpec.describe ImportXiCnDocumentWorker do
         allow(CustomsTariffUpdateNotifierService).to receive(:new).with('32025R1926').and_return(notifier_1926)
         allow(CustomsTariffUpdateNotifierService).to receive(:new).with('32025R1927').and_return(notifier_1927)
         allow(Rails.logger).to receive(:error)
+      end
+
+      context 'when imported results contain duplicate CELEX IDs' do
+        before do
+          allow(importer_double).to receive(:call).and_return([
+            XiCnImporter::Importer::Result.new(status: :imported, celex: '32025R1926'),
+            XiCnImporter::Importer::Result.new(status: :imported, celex: '32025R1926'),
+          ])
+        end
+
+        it 'increments the duplicate notification attempt counter' do
+          worker.perform
+
+          expect(XiCnImporter::Instrumentation).to have_received(:duplicate_notification_attempt).with(
+            celex: '32025R1926',
+            duplicate_attempt: 2,
+          )
+        end
       end
 
       it 'does not re-raise the notifier error' do
@@ -133,15 +165,47 @@ RSpec.describe ImportXiCnDocumentWorker do
         allow(importer_double).to receive(:call).and_raise(RuntimeError, 'network timeout')
       end
 
-      it 'sends a failure Slack notification' do
+      it 'does not send a failure Slack notification' do
         expect { worker.perform }.to raise_error(RuntimeError)
-        expect(SlackNotifierService).to have_received(:call)
-          .with(a_string_including('failed'))
+        expect(SlackNotifierService).not_to have_received(:call)
       end
 
       it 'does not emit a heartbeat' do
         expect { worker.perform }.to raise_error(RuntimeError)
         expect(cloudwatch_client).not_to have_received(:put_metric_data)
+      end
+    end
+
+    context 'when the importer raises a unique constraint violation' do
+      before do
+        allow(importer_double).to receive(:call)
+          .and_raise(Sequel::UniqueConstraintViolation, 'duplicate key value violates unique constraint')
+        allow(Rails.logger).to receive(:warn)
+      end
+
+      it 'does not re-raise and therefore avoids Sidekiq retrying the race condition' do
+        expect { worker.perform }.not_to raise_error
+      end
+
+      it 'records a failed import event with the unique-constraint error details' do
+        worker.perform
+
+        expect(XiCnImporter::Instrumentation).to have_received(:import_run_failed).with(
+          error_class: 'Sequel::UniqueConstraintViolation',
+          error_message: 'duplicate key value violates unique constraint',
+        )
+      end
+
+      it 'does not send Slack notifications' do
+        worker.perform
+
+        expect(SlackNotifierService).not_to have_received(:call)
+      end
+
+      it 'emits a heartbeat' do
+        worker.perform
+
+        expect(cloudwatch_client).to have_received(:put_metric_data)
       end
     end
 

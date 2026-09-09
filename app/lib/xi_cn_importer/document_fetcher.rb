@@ -4,6 +4,8 @@ require 'net/http'
 
 module XiCnImporter
   class DocumentFetcher
+    include RetrySupport::WithRetry
+
     SPARQL_ENDPOINT      = 'https://publications.europa.eu/webapi/rdf/sparql'.freeze
     CELLAR_HTML_TEMPLATE = 'https://publications.europa.eu/resource/cellar/%s.0006.03/DOC_1'.freeze
     CELLAR_PDF_TEMPLATE  = 'https://publications.europa.eu/resource/cellar/%s.0006.01/DOC_1'.freeze
@@ -27,6 +29,36 @@ module XiCnImporter
       }
       ORDER BY DESC(?force_date)
     SPARQL
+
+    BASE_DELAY = 2 # seconds
+    private_constant :BASE_DELAY
+
+    MAX_RETRIES = 3
+    private_constant :MAX_RETRIES
+
+    JITTER_RANGE = (0.0..1.0)
+    private_constant :JITTER_RANGE
+
+    TRANSIENT_ERRORS = [
+      Net::OpenTimeout,
+      Net::ReadTimeout,
+      Timeout::Error,
+      Errno::ECONNRESET,
+      Errno::ECONNREFUSED,
+      Errno::ETIMEDOUT,
+      EOFError,
+      SocketError,
+    ].freeze
+    private_constant :TRANSIENT_ERRORS
+
+    class RetryableHTTPError < StandardError
+      attr_reader :http_code
+
+      def initialize(http_code)
+        @http_code = http_code.to_i
+        super("HTTP #{@http_code}")
+      end
+    end
 
     Result = Data.define(
       :celex,
@@ -82,23 +114,85 @@ module XiCnImporter
       raise
     end
 
-  private
-
     def sparql_results
       uri = URI(SPARQL_ENDPOINT)
 
-      response = Net::HTTP.start(uri.host, uri.port,
-                                 use_ssl: uri.scheme == 'https',
-                                 open_timeout: OPEN_TIMEOUT,
-                                 read_timeout: READ_TIMEOUT) do |http|
-        request = Net::HTTP::Post.new(uri.request_uri)
-        request.set_form_data('query' => SPARQL_QUERY, 'format' => 'application/sparql-results+json')
-        http.request(request)
+      response = with_retry(
+        max_attempts: MAX_RETRIES + 1,
+        retryable_errors: TRANSIENT_ERRORS + [RetryableHTTPError],
+        delay_calculator: method(:retry_delay),
+        on_retry: lambda { |attempt:, max_attempts:, delay:, error:, **|
+          Instrumentation.fetch_retry(
+            url: SPARQL_ENDPOINT,
+            attempt:,
+            max_attempts:,
+            error_class: error.class.name,
+            error_message: error.message,
+            error_code: error_code_for(error),
+            backoff_seconds: delay.round(3),
+          )
+          Instrumentation.sparql_retry_attempt(
+            attempt:,
+            max_attempts:,
+            error_class: error.class.name,
+            error_message: error.message,
+            error_code: error_code_for(error),
+          )
+        },
+        on_success: lambda { |attempt:, **|
+          retry_attempts = attempt - 1
+          Instrumentation.sparql_success_after_retry(retry_attempts:) if retry_attempts.positive?
+        },
+      ) do
+        Net::HTTP.start(
+          uri.host,
+          uri.port,
+          use_ssl: uri.scheme == 'https',
+          open_timeout: OPEN_TIMEOUT,
+          read_timeout: READ_TIMEOUT,
+        ) do |http|
+          request = Net::HTTP::Post.new(uri.request_uri)
+          request.set_form_data(
+            'query' => SPARQL_QUERY,
+            'format' => 'application/sparql-results+json',
+          )
+
+          response = http.request(request)
+
+          if retryable_response?(response)
+            raise RetryableHTTPError, response.code
+
+          end
+
+          response
+        end
       end
 
       raise "SPARQL request failed: HTTP #{response.code}" unless response.is_a?(Net::HTTPSuccess)
 
       JSON.parse(response.body).dig('results', 'bindings') || []
+    end
+
+    def retryable_response?(response)
+      response.code.to_i.between?(500, 599)
+    end
+
+    def retry_defaults
+      {
+        max_attempts: MAX_RETRIES + 1,
+        retryable_errors: TRANSIENT_ERRORS + [RetryableHTTPError],
+        delay_calculator: method(:retry_delay),
+      }
+    end
+
+    def retry_delay(attempt, _error)
+      (BASE_DELAY * (2**(attempt - 1))) + rand(JITTER_RANGE)
+    end
+
+    def error_code_for(error)
+      return error.http_code if error.respond_to?(:http_code)
+
+      nil
     end
 
     def fetch_html(url, redirect_count: 0)

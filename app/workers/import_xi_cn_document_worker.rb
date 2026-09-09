@@ -5,7 +5,7 @@ class ImportXiCnDocumentWorker
   include Sidekiq::Worker
   include ScheduledJobHeartbeat
 
-  sidekiq_options queue: :default, retry: false, slack_alerts: false
+  sidekiq_options queue: :default, retry: 8
 
   def perform
     return unless TradeTariffBackend.xi?
@@ -28,19 +28,36 @@ class ImportXiCnDocumentWorker
     notify_completed(results)
     notify_update_recipients(results)
     record_heartbeat
+  rescue Sequel::UniqueConstraintViolation => e
+    XiCnImporter::Instrumentation.import_run_failed(
+      error_class: e.class.name,
+      error_message: e.message,
+    )
+    Rails.logger.warn("xi_cn_import_unique_constraint: #{e.class}: #{e.message}")
+    record_heartbeat
   rescue StandardError => e
     XiCnImporter::Instrumentation.import_run_failed(
       error_class: e.class.name,
       error_message: e.message,
     )
-    notify_failed(e)
+
     raise
   end
 
 private
 
   def notify_update_recipients(results)
+    notification_attempts = Hash.new(0)
+
     results.select { |r| r.status == :imported }.each do |result|
+      notification_attempts[result.celex] += 1
+      if notification_attempts[result.celex] > 1
+        XiCnImporter::Instrumentation.duplicate_notification_attempt(
+          celex: result.celex,
+          duplicate_attempt: notification_attempts[result.celex],
+        )
+      end
+
       CustomsTariffUpdateNotifierService.new(result.celex).call
     rescue StandardError => e
       Rails.logger.error(
@@ -59,10 +76,6 @@ private
 
     lines = failed.map { |r| "  • CELEX ID: #{r.celex} ✗ #{r.error}" }
     notify_slack(['XI Combined Nomenclature document import completed with failures.', *lines].join("\n"))
-  end
-
-  def notify_failed(error)
-    notify_slack("XI Combined Nomenclature document import failed. #{error.class}: #{error.message}")
   end
 
   def notify_slack(message)
