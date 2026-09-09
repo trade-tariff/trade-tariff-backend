@@ -25,6 +25,8 @@ This directory is the starting point for understanding the Trade Tariff Backend 
 
 ## Operational Entry Points
 
+- [Puma request capacity metrics](puma-metrics.md) covers opt-in web worker occupancy, queue backlog and CloudWatch dashboards.
+
 - `README.md` covers local setup and daily update environment variables.
 - `config/sidekiq.yml` lists scheduled background jobs.
 - `lib/tasks/` contains operational Rake tasks for sync, reporting, OpenSearch, labels, self-texts, and other maintenance workflows.
