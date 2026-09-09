@@ -1,3 +1,10 @@
+if ENV['PUMA_METRICS_ENABLED'] == 'true'
+  require_relative '../lib/puma_metrics'
+  ENV['PUMA_METRICS_SERVICE'] ||= "backend-#{ENV.fetch('SERVICE', 'uk')}"
+  Puma::Plugins.register('trade_tariff_metrics', PumaMetrics::Plugin)
+  plugin :trade_tariff_metrics
+end
+
 workers Integer(ENV['WEB_CONCURRENCY'] || 2)
 threads_count = Integer(ENV['MAX_THREADS'] || 6)
 threads threads_count, threads_count
