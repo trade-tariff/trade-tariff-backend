@@ -229,4 +229,55 @@ RSpec.describe MeasureType do
       it { is_expected.not_to be_supplementary }
     end
   end
+
+  describe '#semantic_roles' do
+    {
+      '103' => %w[mfn_no_authorized_use provides_unit_context],
+      '105' => %w[provides_unit_context],
+      '106' => %w[provides_unit_context],
+      '109' => %w[supplementary],
+      '110' => %w[supplementary supplementary_unit_import_only],
+      '111' => %w[supplementary],
+      '122' => %w[provides_unit_context],
+      '123' => %w[provides_unit_context],
+      '141' => %w[provides_unit_context cds_proofs_of_origin],
+      '142' => %w[provides_unit_context cds_proofs_of_origin],
+      '143' => %w[provides_unit_context cds_proofs_of_origin],
+      '144' => [],
+      '145' => %w[provides_unit_context cds_proofs_of_origin],
+      '146' => %w[provides_unit_context cds_proofs_of_origin],
+      '147' => %w[cds_proofs_of_origin],
+      '306' => [],
+      '695' => [],
+      '696' => %w[safeguard],
+      '999' => [],
+    }.each do |measure_type_id, expected_roles|
+      it "returns the expected roles for measure type #{measure_type_id}" do
+        measure_type = build(
+          :measure_type,
+          measure_type_id:,
+          measure_type_series_id: 'C',
+        )
+
+        expect(measure_type.semantic_roles).to match_array(expected_roles)
+      end
+    end
+
+    {
+      'A' => %w[prohibitive],
+      'B' => %w[prohibitive],
+      'C' => [],
+      'Q' => [],
+    }.each do |series_id, expected_roles|
+      it "returns the expected roles for measure type series #{series_id}" do
+        measure_type = build(
+          :measure_type,
+          measure_type_id: '999',
+          measure_type_series_id: series_id,
+        )
+
+        expect(measure_type.semantic_roles).to match_array(expected_roles)
+      end
+    end
+  end
 end

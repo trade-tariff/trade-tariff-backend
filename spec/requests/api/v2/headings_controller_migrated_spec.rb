@@ -32,7 +32,7 @@ RSpec.describe Api::V2::HeadingsController, type: :request do
         api_response
 
         expected_hash = Digest::MD5.hexdigest('{}')
-        cache_suffix = '-v1'
+        cache_suffix = "-#{HeadingService::HeadingSerializationService::CACHE_VERSION}"
 
         expect(Rails.cache).to have_received(:fetch).with(
           "_heading-uk-#{heading.goods_nomenclature_sid}-#{Time.zone.today.iso8601}-false-#{expected_hash}#{cache_suffix}",
@@ -47,7 +47,7 @@ RSpec.describe Api::V2::HeadingsController, type: :request do
           api_response
 
           expected_hash = Digest::MD5.hexdigest(request_parameters[:filter].to_json)
-          cache_suffix = '-v1'
+          cache_suffix = "-#{HeadingService::HeadingSerializationService::CACHE_VERSION}"
 
           expect(Rails.cache).to have_received(:fetch).with(
             "_heading-uk-#{heading.goods_nomenclature_sid}-#{Time.zone.today.iso8601}-false-#{expected_hash}#{cache_suffix}",

@@ -55,6 +55,17 @@ class MeasureType < Sequel::Model
     2 => 'both',
   }.freeze
 
+  SEMANTIC_ROLE_TYPES = {
+    'supplementary' => SUPPLEMENTARY_TYPES,
+    'supplementary_unit_import_only' => %w[110],
+    'safeguard' => %w[696],
+    'mfn_no_authorized_use' => %w[103],
+    'provides_unit_context' => %w[103 105 106 122 123 141 142 143 145 146],
+    'cds_proofs_of_origin' => %w[141 142 143 145 146 147],
+  }.freeze
+
+  PROHIBITIVE_SERIES = %w[A B].freeze
+
   set_primary_key [:measure_type_id]
 
   plugin :time_machine
@@ -143,5 +154,15 @@ class MeasureType < Sequel::Model
 
   def authorised_use_provisions_submission?
     measure_type_id.in?(AUTHORISED_USE_PROVISIONS_SUBMISSION)
+  end
+
+  def semantic_roles
+    roles = SEMANTIC_ROLE_TYPES.filter_map do |role, measure_type_ids|
+      role if measure_type_ids.include?(measure_type_id)
+    end
+
+    roles << 'prohibitive' if PROHIBITIVE_SERIES.include?(measure_type_series_id)
+
+    roles
   end
 end

@@ -2,7 +2,7 @@ module HeadingService
   class HeadingSerializationService
     include JsonapiCacheKey
 
-    CACHE_VERSION = 'v1'.freeze
+    CACHE_VERSION = 'v2'.freeze
 
     class << self
       def cache_key(heading, actual_date, is_declarable, filters)
