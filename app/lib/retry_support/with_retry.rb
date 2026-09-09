@@ -1,6 +1,6 @@
 module RetrySupport
   module WithRetry
-    def with_retry(max_attempts: nil, retryable_errors: nil, delay_calculator: nil, on_retry: nil, on_exhausted: nil, on_success: nil)
+    def with_retry(max_attempts:, retryable_errors:, delay_calculator:, on_retry: nil, on_exhausted: nil, on_success: nil)
       attempts = 0
 
       begin

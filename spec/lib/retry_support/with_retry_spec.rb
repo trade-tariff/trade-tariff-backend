@@ -122,19 +122,48 @@ RSpec.describe RetrySupport::WithRetry do
     expect(success_payload).to include(attempt: 1, max_attempts: 2, result: 'ok')
   end
 
-  context 'when options are omitted' do
-    it 'does not rescue errors without retryable_errors' do
-      attempts = 0
+  it 'does not call on_success when the block ultimately fails and calls on_exhausted' do
+    success_called = false
+    exhausted_payload = nil
 
-      expect {
-        host.with_retry do
-          attempts += 1
-          raise Faraday::TimeoutError, 'timeout'
-        end
-      }.to raise_error(Faraday::TimeoutError)
+    expect {
+      host.with_retry(
+        max_attempts: 2,
+        retryable_errors: [Faraday::TimeoutError],
+        delay_calculator:,
+        on_success: ->(**_) { success_called = true },
+        on_exhausted: ->(**payload) { exhausted_payload = payload },
+      ) do
+        raise retryable_error
+      end
+    }.to raise_error(Faraday::TimeoutError)
 
-      expect(attempts).to eq(1)
-      expect(Kernel).not_to have_received(:sleep)
+    expect(success_called).to be false
+    expect(exhausted_payload).to include(:attempt, :max_attempts, :error)
+  end
+
+  it 'does not call on_exhausted when the operation eventually succeeds' do
+    exhausted_called = false
+    success_payload = nil
+
+    result = host.with_retry(
+      max_attempts: 3,
+      retryable_errors: [Faraday::TimeoutError],
+      delay_calculator:,
+      on_success: ->(**payload) { success_payload = payload },
+      on_exhausted: ->(**_) { exhausted_called = true },
+    ) do |attempt|
+      raise retryable_error if attempt == 1
+      'ok'
     end
+
+    expect(result).to eq('ok')
+    expect(success_payload).to include(:attempt, :max_attempts, :result)
+    expect(exhausted_called).to be false
+  end
+
+  it 'requires retry options to be provided' do
+    expect { host.with_retry { 'ok' } }
+      .to raise_error(ArgumentError, /missing keywords: :max_attempts, :retryable_errors, :delay_calculator/)
   end
 end

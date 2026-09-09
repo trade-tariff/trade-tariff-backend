@@ -284,6 +284,7 @@ RSpec.describe OpenaiClient do
       it 'retries and returns the response' do
         result = client.call('test')
         expect(result).to eq('capital' => 'Paris')
+        expect(Kernel).to have_received(:sleep).with(2).once
       end
     end
 
@@ -295,6 +296,40 @@ RSpec.describe OpenaiClient do
 
       it 'raises ApiError after exhausting retries' do
         expect { client.call('test') }.to raise_error(OpenaiClient::ApiError)
+        expect(WebMock).to have_requested(:post, "#{api_base_url}/chat/completions").times(3)
+        expect(Kernel).to have_received(:sleep).with(2).once
+        expect(Kernel).to have_received(:sleep).with(4).once
+      end
+    end
+
+    context 'when rate-limited and then successful' do
+      before do
+        stub_request(:post, "#{api_base_url}/chat/completions")
+          .to_return(
+            { status: 429, body: { error: 'Rate limit exceeded' }.to_json, headers: { 'Content-Type' => 'application/json', 'Retry-After' => '5' } },
+            { status: 200, body: response_body.to_json, headers: { 'Content-Type' => 'application/json' } },
+          )
+      end
+
+      it 'uses Retry-After delay for retry' do
+        result = client.call('test')
+        expect(result).to eq('capital' => 'Paris')
+        expect(Kernel).to have_received(:sleep).with(5.0).once
+      end
+    end
+
+    context 'when Retry-After exceeds the remaining operation timeout' do
+      before do
+        stub_request(:post, "#{api_base_url}/chat/completions")
+          .to_return(status: 429, body: { error: 'Rate limit exceeded' }.to_json, headers: { 'Content-Type' => 'application/json', 'Retry-After' => '5' })
+      end
+
+      it 'raises DeadlineExceeded without sleeping or retrying' do
+        expect { client.call('test', timeout: 1) }
+          .to raise_error(OpenaiClient::DeadlineExceeded)
+
+        expect(Kernel).not_to have_received(:sleep)
+        expect(WebMock).to have_requested(:post, "#{api_base_url}/chat/completions").once
       end
     end
 
@@ -359,6 +394,16 @@ RSpec.describe OpenaiClient do
         expect(Kernel).not_to have_received(:sleep)
       end
 
+      it 'raises DeadlineExceeded before the first request when the deadline has already elapsed' do
+        allow(Process).to receive(:clock_gettime).with(Process::CLOCK_MONOTONIC).and_return(0.0, 1.01)
+        allow(connection).to receive(:post).and_return(response)
+
+        expect { client.call('test', timeout: 1) }
+          .to raise_error(OpenaiClient::DeadlineExceeded)
+
+        expect(connection).not_to have_received(:post)
+      end
+
       it 'converts transport expiry into a deadline error' do
         allow(connection).to receive(:post) do |_path, _body, &configure|
           options = Faraday::RequestOptions.new
@@ -373,6 +418,25 @@ RSpec.describe OpenaiClient do
 
         expect(operation_state[:request_timeouts]).to eq([3.75])
         expect(Kernel).not_to have_received(:sleep)
+      end
+
+      it 'raises DeadlineExceeded on final failure when the deadline has elapsed' do
+        attempts = 0
+        allow(connection).to receive(:post) do |_path, _body, &configure|
+          attempts += 1
+          options = Faraday::RequestOptions.new
+          configure.call(instance_double(Faraday::Request, options:))
+          operation_state[:request_timeouts] << options.timeout
+          operation_state[:now] = 11.0 if attempts == 3
+          raise Faraday::SSLError, 'transient'
+        end
+
+        expect { client.call('test', timeout: 10) }
+          .to raise_error(OpenaiClient::DeadlineExceeded)
+
+        expect(operation_state[:request_timeouts]).to eq([7.5, 6.0, 3.0])
+        expect(Kernel).to have_received(:sleep).with(2).once
+        expect(Kernel).to have_received(:sleep).with(4).once
       end
 
       it 'rejects a response that completes after the operation deadline' do
