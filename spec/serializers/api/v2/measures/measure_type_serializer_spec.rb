@@ -16,6 +16,7 @@ RSpec.describe Api::V2::Measures::MeasureTypeSerializer do
           trade_movement_code: measure_type.trade_movement_code,
           validity_end_date: measure_type.validity_end_date,
           validity_start_date: measure_type.validity_start_date,
+          semantic_roles: measure_type.semantic_roles,
         },
       },
     }

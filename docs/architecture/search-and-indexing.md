@@ -2,6 +2,8 @@
 
 Search combines direct code lookup, OpenSearch-backed fuzzy matching, search references, suggestions, and generated classification content.
 
+For trader outcomes, response metadata, combined failures and warning policy, use the canonical [AI-assisted search resilience contract](../search-resilience.md).
+
 ## Request Flow
 
 Public search routes are defined in `app/engines/v2_api.rb`:

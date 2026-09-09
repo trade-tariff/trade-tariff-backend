@@ -20,6 +20,23 @@ RSpec.describe 'Measure Types', swagger_doc: 'v2/swagger.json', type: :request d
           validity_start_date: { type: :string, nullable: true, format: 'date-time' },
           validity_end_date: { type: :string, nullable: true, format: 'date-time' },
           measure_type_series_description: { type: :string, nullable: true },
+          semantic_roles: {
+            type: :array,
+            description: 'Behavioural roles of this measure type. Empty when none apply.',
+            items: {
+              type: :string,
+              enum: %w[
+                supplementary
+                supplementary_unit_import_only
+                safeguard
+                mfn_no_authorized_use
+                provides_unit_context
+                cds_proofs_of_origin
+                prohibitive
+              ],
+            },
+            example: %w[supplementary supplementary_unit_import_only],
+          },
         },
       },
     },

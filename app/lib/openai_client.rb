@@ -1,4 +1,6 @@
 class OpenaiClient
+  include RetrySupport::WithRetry
+
   class ApiError < StandardError
     attr_reader :status, :body, :ai_usage
 
@@ -63,19 +65,34 @@ class OpenaiClient
     body[:reasoning_effort] = reasoning_effort if reasoning_effort.present?
     body = body.to_json
 
-    with_retry(deadline:, timeout:, started_at:) do |remaining|
-      response = post(body, remaining:)
+    with_retry(
+      max_attempts: MAX_RETRIES,
+      retryable_errors: RETRYABLE_ERRORS,
+      delay_calculator: method(:calculate_retry_delay),
+      on_retry: lambda { |attempt:, delay:, error:, **|
+        raise_deadline_if_elapsed!(deadline:, timeout:, started_at:)
+        raise_if_delay_exceeds_deadline!(delay:, deadline:, timeout:, started_at:)
+        Rails.logger.warn "OpenaiClient: #{error.class} on attempt #{attempt}, retrying in #{delay}s..."
+      },
+      on_exhausted: lambda { |attempt:, error:, **|
+        raise_deadline_if_elapsed!(deadline:, timeout:, started_at:)
+        Rails.logger.error "OpenaiClient: #{error.class} after #{attempt} attempts, giving up"
+      },
+    ) do
+      remaining = remaining_time(deadline)
+      raise_deadline!(timeout:, started_at:) if deadline && remaining <= 0
 
+      response = post(body, remaining:)
       raise_on_error!(response, model:, event_kind:) unless response.success?
 
       json = response.body.dig('choices', 0, 'message', 'content') || ''
-
       result = begin
         JSON.parse(json)
       rescue StandardError
         json
       end
 
+      raise_deadline!(timeout:, started_at:) if deadline && remaining_time(deadline) <= 0
       AiUsage.attach_metadata(result, usage_metadata(response.body, model:, event_kind:))
     end
   end
@@ -123,39 +140,15 @@ private
     AiUsage.metadata_for(model:, event_kind:, usage:)
   end
 
-  def with_retry(deadline:, timeout:, started_at:)
-    attempts = 0
+  def raise_deadline_if_elapsed!(deadline:, timeout:, started_at:)
+    raise_deadline!(timeout:, started_at:) if deadline && remaining_time(deadline) <= 0
+  end
 
-    begin
-      attempts += 1
-      remaining = remaining_time(deadline)
-      raise_deadline!(timeout:, started_at:) if deadline && remaining <= 0
+  def raise_if_delay_exceeds_deadline!(delay:, deadline:, timeout:, started_at:)
+    return unless deadline
 
-      result = yield remaining
-      raise_deadline!(timeout:, started_at:) if deadline && remaining_time(deadline) <= 0
-
-      result
-    rescue *RETRYABLE_ERRORS => e
-      raise_deadline!(timeout:, started_at:) if deadline && remaining_time(deadline) <= 0
-
-      if attempts < MAX_RETRIES
-        delay = calculate_retry_delay(attempts, e)
-
-        if deadline
-          remaining = remaining_time(deadline)
-          if delay >= remaining
-            raise_deadline!(timeout:, started_at:)
-          end
-        end
-
-        Rails.logger.warn "OpenaiClient: #{e.class} on attempt #{attempts}, retrying in #{delay}s..."
-        Kernel.sleep delay
-        retry
-      else
-        Rails.logger.error "OpenaiClient: #{e.class} after #{attempts} attempts, giving up"
-        raise
-      end
-    end
+    remaining = remaining_time(deadline)
+    raise_deadline!(timeout:, started_at:) if delay >= remaining
   end
 
   def remaining_time(deadline)
