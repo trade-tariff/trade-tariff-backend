@@ -1,4 +1,6 @@
 module IdentityApiClient
+  class DeletionError < StandardError; end
+
   def self.get_email(username)
     return nil unless username
 
@@ -12,7 +14,12 @@ module IdentityApiClient
     return nil unless username
 
     response = user_request(:delete, username)
-    response.success?
+
+    return true if response.success?
+    # Already absent from the identity service, which is the state we wanted.
+    return true if response.status == 404
+
+    raise DeletionError, "Identity deletion for #{username} returned HTTP #{response.status}"
   end
 
   def self.user_request(method, username)

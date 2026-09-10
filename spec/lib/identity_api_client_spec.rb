@@ -59,13 +59,31 @@ RSpec.describe IdentityApiClient do
 
       it { is_expected.to be true }
 
+      context 'when the user is already absent' do
+        before do
+          stub_request(:delete, "#{host}/api/users/#{username}")
+            .to_return(status: 404)
+        end
+
+        it { is_expected.to be true }
+      end
+
       context 'when api errors' do
         before do
           stub_request(:delete, "#{host}/api/users/#{username}")
             .to_return(status: 500)
         end
 
-        it { is_expected.to be false }
+        it { expect { client }.to raise_error(IdentityApiClient::DeletionError, /HTTP 500/) }
+      end
+
+      context 'when the request is rate limited' do
+        before do
+          stub_request(:delete, "#{host}/api/users/#{username}")
+            .to_return(status: 429)
+        end
+
+        it { expect { client }.to raise_error(IdentityApiClient::DeletionError, /HTTP 429/) }
       end
     end
   end

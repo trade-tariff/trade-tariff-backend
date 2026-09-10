@@ -18,9 +18,8 @@ class ExternalUserDeletionWorker
         return
       end
 
-      if IdentityApiClient.delete_user(user.external_id)
-        user.update(external_id: nil)
-      end
+      IdentityApiClient.delete_user(user.external_id)
+      user.update(external_id: nil)
     end
   end
 end

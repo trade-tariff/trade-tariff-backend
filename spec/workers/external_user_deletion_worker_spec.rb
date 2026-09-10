@@ -47,12 +47,24 @@ RSpec.describe ExternalUserDeletionWorker, type: :worker do
       }.to change(user, :external_id).from('abc123').to(nil)
     end
 
-    it 'does not remove external_id if API call fails' do
-      allow(IdentityApiClient).to receive(:delete_user).and_return(false)
+    it 'lets a failed deletion raise so Sidekiq retries it' do
+      allow(IdentityApiClient).to receive(:delete_user)
+        .and_raise(IdentityApiClient::DeletionError, 'Identity deletion for abc123 returned HTTP 429')
 
       expect {
         worker.perform(user.id)
-      }.not_to change(user, :external_id)
+      }.to raise_error(IdentityApiClient::DeletionError)
+    end
+
+    it 'leaves external_id set when the deletion fails' do
+      allow(IdentityApiClient).to receive(:delete_user)
+        .and_raise(IdentityApiClient::DeletionError, 'Identity deletion for abc123 returned HTTP 429')
+
+      expect {
+        worker.perform(user.id)
+      }.to raise_error(IdentityApiClient::DeletionError)
+
+      expect(user.external_id).to eq('abc123')
     end
   end
 
