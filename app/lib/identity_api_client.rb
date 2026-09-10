@@ -1,6 +1,4 @@
 module IdentityApiClient
-  class DeletionError < StandardError; end
-
   def self.get_email(username)
     return nil unless username
 
@@ -9,6 +7,8 @@ module IdentityApiClient
       JSON.parse(response.body)['user']['email']
     end
   end
+
+  class DeletionError < StandardError; end
 
   def self.delete_user(username)
     return nil unless username
