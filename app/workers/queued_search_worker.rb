@@ -29,7 +29,7 @@ private
     context = payload.fetch('context').symbolize_keys
     as_of = context.delete(:as_of)
     params = payload.fetch('params').with_indifferent_access
-    params[:as_of] = as_of if params[:as_of].blank?
+    params[:as_of] = context.delete(:search_as_of) || as_of
     context.merge!(search_failures: [], search_type: nil, search_labels_enabled: nil, time_machine_relevant: nil)
 
     TradeTariffRequest.set(context) do

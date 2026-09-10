@@ -55,7 +55,8 @@ RSpec.describe QueuedSearchWorker, type: :worker do
     end
 
     it 'does not leak context after execution' do
-      previous = TradeTariffRequest.attributes.dup
+      attributes = %i[request_id request_source client_id experiment search_failures search_type search_labels_enabled time_machine_now time_machine_relevant]
+      previous = attributes.index_with { |attribute| TradeTariffRequest.public_send(attribute) }
       allow(service).to receive(:call) do
         TradeTariffRequest.record_search_failure(Search::FailureCodes::OPENSEARCH_FAILED)
         result
@@ -63,7 +64,18 @@ RSpec.describe QueuedSearchWorker, type: :worker do
 
       worker.perform(search.id)
 
-      expect(TradeTariffRequest.attributes).to eq(previous)
+      expect(attributes.index_with { |attribute| TradeTariffRequest.public_send(attribute) }).to eq(previous)
+    end
+
+    it 'restores populated context on failure' do
+      previous = { request_id: 'previous-job', search_failures: [Search::FailureCodes::OPENSEARCH_FAILED] }
+      allow(service).to receive(:call).and_raise(StandardError, 'search error')
+
+      TradeTariffRequest.set(previous) do
+        expect { worker.perform(search.id) }.to raise_error(StandardError, 'search error')
+        expect(TradeTariffRequest.request_id).to eq('previous-job')
+        expect(TradeTariffRequest.search_failures).to eq(previous[:search_failures])
+      end
     end
 
     it 'does not execute duplicate deliveries' do
