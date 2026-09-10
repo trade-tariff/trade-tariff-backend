@@ -59,13 +59,17 @@ RSpec.describe IdentityApiClient do
 
       it { is_expected.to be true }
 
-      context 'when the user is already absent' do
+      # The identity service answers a delete for an unknown user with 200: it
+      # rescues UserNotFoundException and reports success. A 404 therefore means
+      # the request never reached the endpoint, so treating it as a completed
+      # deletion would clear external_id while the Cognito user still exists.
+      context 'when the request does not reach the endpoint' do
         before do
           stub_request(:delete, "#{host}/api/users/#{username}")
             .to_return(status: 404)
         end
 
-        it { is_expected.to be true }
+        it { expect { client }.to raise_error(IdentityApiClient::DeletionError, /HTTP 404/) }
       end
 
       context 'when api errors' do

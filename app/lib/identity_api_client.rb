@@ -16,9 +16,10 @@ module IdentityApiClient
     response = user_request(:delete, username)
 
     return true if response.success?
-    # Already absent from the identity service, which is the state we wanted.
-    return true if response.status == 404
 
+    # No status is treated as an acceptable failure here. The identity service
+    # answers a delete for an unknown user with 200, so anything else means the
+    # deletion did not happen and external_id must stay put.
     raise DeletionError, "Identity deletion for #{username} returned HTTP #{response.status}"
   end
 
