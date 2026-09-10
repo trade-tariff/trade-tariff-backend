@@ -1,0 +1,18 @@
+# OJ citations known NOT to resolve on EUR-Lex (never digitised), by
+# TARIC regulation id. These documents' CELEX-formula links are equally
+# dead, so they keep today's URL rather than claiming a dead citation.
+# Established by the script/oj_citation_audit run of 2026-08-10.
+I0001840
+I0103640
+I0400240
+I9902620
+
+# These do NOT 404 - the constructed citation resolves to a DIFFERENT,
+# unrelated EUR-Lex document (page landed with no reference to the
+# expected OJ issue at all). Worse than a dead link: a trader would be
+# shown the wrong regulation with no indication anything is wrong.
+# CELEX-formula links are equally broken for these (I is not a CELEX
+# type), so denylisting costs nothing.
+# Established by a full re-run of script/oj_citation_audit, 2026-08-26.
+I1401380
+I1401440
