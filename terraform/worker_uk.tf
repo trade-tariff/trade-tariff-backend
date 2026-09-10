@@ -31,7 +31,7 @@ module "worker_uk" {
   container_entrypoint = [""]
   container_command    = local.worker_command
 
-  service_environment_config = local.worker_uk_secret_env_vars
+  service_environment_config = local.worker_uk_service_env_vars
 
   has_autoscaler     = local.has_autoscaler
   min_capacity       = 1

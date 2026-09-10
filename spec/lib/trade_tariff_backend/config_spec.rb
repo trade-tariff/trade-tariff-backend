@@ -599,6 +599,18 @@ RSpec.describe TradeTariffBackend::Config do
       end
     end
 
+    describe '.internal_ca_pem' do
+      it 'unescapes the newlines Secrets Manager stores' do
+        ENV['INTERNAL_CA_PEM'] = '-----BEGIN CERTIFICATE-----\nMIIC\n-----END CERTIFICATE-----'
+        expect(config.internal_ca_pem).to eq("-----BEGIN CERTIFICATE-----\nMIIC\n-----END CERTIFICATE-----")
+      end
+
+      it 'is nil when unset' do
+        ENV['INTERNAL_CA_PEM'] = nil
+        expect(config.internal_ca_pem).to be_nil
+      end
+    end
+
     describe '.cognito_user_pool_id' do
       it 'reads COGNITO_USER_POOL_ID from ENV' do
         ENV['COGNITO_USER_POOL_ID'] = 'pool-id'

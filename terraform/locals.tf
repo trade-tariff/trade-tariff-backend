@@ -21,6 +21,12 @@ locals {
     },
   ]
 
+  internal_ca_env_vars = [
+    {
+      name  = "INTERNAL_CA_PEM"
+      value = local.tls_secret.certificate
+    },
+  ]
 
   worker_uk_secret_value = try(data.aws_secretsmanager_secret_version.backend_uk_worker_configuration.secret_string, "{}")
   worker_uk_secret_map   = jsondecode(local.worker_uk_secret_value)
@@ -30,6 +36,7 @@ locals {
       value = value
     }
   ]
+  worker_uk_service_env_vars = concat(local.worker_uk_secret_env_vars, local.internal_ca_env_vars)
 
   backend_uk_secret_value = try(data.aws_secretsmanager_secret_version.backend_uk_api_configuration.secret_string, "{}")
   backend_uk_secret_map   = jsondecode(local.backend_uk_secret_value)

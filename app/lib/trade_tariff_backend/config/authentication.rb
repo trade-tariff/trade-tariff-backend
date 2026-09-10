@@ -16,6 +16,10 @@ module TradeTariffBackend
       def identity_api_key
         ENV['IDENTITY_API_KEY']
       end
+
+      def internal_ca_pem
+        ENV['INTERNAL_CA_PEM'].presence&.gsub('\n', "\n")
+      end
     end
   end
 end
