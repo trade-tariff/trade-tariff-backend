@@ -4,6 +4,8 @@ Search combines direct code lookup, OpenSearch-backed fuzzy matching, search ref
 
 For trader outcomes, response metadata, combined failures and warning policy, use the canonical [AI-assisted search resilience contract](../search-resilience.md).
 
+For the backend-only asynchronous testing API, payload state machine and polling contract, see [Queued internal search](queued-internal-search.md). Existing synchronous search callers are unchanged.
+
 ## Request Flow
 
 Public search routes are defined in `app/engines/v2_api.rb`:
