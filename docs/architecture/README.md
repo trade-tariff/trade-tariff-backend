@@ -9,6 +9,7 @@ These pages give a code-level map of the Trade Tariff Backend. They describe sta
 - [Request routing](request-routing.md)
 - [Data import and sync](data-import-and-sync.md)
 - [Search and indexing](search-and-indexing.md)
+- [Queued internal search](queued-internal-search.md)
 - [Caching and background jobs](caching-and-background-jobs.md)
 - [API documentation](api-documentation.md)
 
