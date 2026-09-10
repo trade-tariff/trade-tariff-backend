@@ -11,6 +11,32 @@ RSpec.describe QuotaSearchService do
     it 'unescapes status values' do
       expect(service.status).to eq('not_exhausted')
     end
+
+    context 'when status is not included in the allowed values' do
+      let(:filter) { { 'status' => 'not_a_real_status' } }
+
+      it 'raises an invalid status error' do
+        expect { service }.to raise_error(QuotaDefinitionsQuery::InvalidStatus)
+      end
+    end
+
+    context 'when status is blank' do
+      let(:filter) { {} }
+
+      it 'defaults to an empty status' do
+        expect(service.status).to eq('')
+      end
+    end
+
+    QuotaDefinitionsQuery::STATUS_VALUES.each do |status_value|
+      context "when status is #{status_value}" do
+        let(:filter) { { 'status' => status_value } }
+
+        it 'is a valid status' do
+          expect { service }.not_to raise_error
+        end
+      end
+    end
   end
 
   describe '#call' do
@@ -122,6 +148,48 @@ RSpec.describe QuotaSearchService do
       end
 
       it 'returns the correct quota definition' do
+        expect(service.call).to eq([quota_fixtures[:second][:definition]])
+      end
+    end
+
+    context 'when filtering by status suspended' do
+      let(:filter) { { 'status' => 'suspended' } }
+
+      before do
+        create :quota_suspension_period,
+               quota_definition_sid: quota_fixtures[:first][:definition].quota_definition_sid,
+               suspension_start_date: Time.zone.today,
+               suspension_end_date: 1.year.from_now
+      end
+
+      it 'returns the correct quota definition' do
+        expect(service.call).to eq([quota_fixtures[:first][:definition]])
+      end
+    end
+
+    context 'when filtering by status not suspended' do
+      let(:filter) { { 'status' => 'not_suspended' } }
+
+      before do
+        create :quota_suspension_period,
+               quota_definition_sid: quota_fixtures[:first][:definition].quota_definition_sid,
+               suspension_start_date: Time.zone.today,
+               suspension_end_date: 1.year.from_now
+      end
+
+      it 'returns the correct quota definition' do
+        expect(service.call).to eq([quota_fixtures[:second][:definition]])
+      end
+    end
+
+    context 'when filtering by status open' do
+      let(:filter) { { 'status' => 'open' } }
+
+      before do
+        create :quota_exhaustion_event, quota_definition: quota_fixtures[:first][:definition]
+      end
+
+      it 'returns the quota definition that is not exhausted, suspended, blocked or critical' do
         expect(service.call).to eq([quota_fixtures[:second][:definition]])
       end
     end

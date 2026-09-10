@@ -353,5 +353,39 @@ RSpec.describe Api::V2::QuotasController, type: :request do
         expect(response).to have_http_status(:bad_request)
       end
     end
+
+    context 'when status is not one of the allowed values' do
+      let(:params) { { year: [Time.zone.today.year.to_s], status: 'not_a_real_status' } }
+
+      it 'returns 400' do
+        get '/uk/api/quotas/search.json', params: params, headers: request_headers(format: :json)
+
+        expect(response).to have_http_status(:bad_request)
+      end
+    end
+
+    context 'when filtering by a valid status' do
+      QuotaDefinitionsQuery::STATUS_VALUES.each do |status_value|
+        context "with status #{status_value}" do
+          let(:params) { { year: [Time.zone.today.year.to_s], status: status_value } }
+
+          it 'returns a successful response' do
+            get '/uk/api/quotas/search.json', params: params, headers: request_headers(format: :json)
+
+            expect(response).to have_http_status(:ok)
+          end
+        end
+      end
+
+      context 'with a URL-escaped status value (e.g. "not+exhausted")' do
+        let(:params) { { year: [Time.zone.today.year.to_s], status: 'not+exhausted' } }
+
+        it 'returns a successful response' do
+          get '/uk/api/quotas/search.json', params: params, headers: request_headers(format: :json)
+
+          expect(response).to have_http_status(:ok)
+        end
+      end
+    end
   end
 end
