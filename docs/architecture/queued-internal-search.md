@@ -166,10 +166,14 @@ or recovery message. That frontend behaviour is not implemented here.
   terminal result. A late completion cannot recreate an expired key.
 - The result and terminal status are written together, so `completed` never
   means a partially stored result.
-- Request ID, request source, client ID, experiment and the submission's effective
-  date are restored for search execution. Request-local search failure state is
-  isolated and restored afterwards. Missing `as_of` defaults to the submission
-  date, rather than the date a delayed worker eventually starts.
+- Request ID, request source, client ID and experiment are restored for search
+  execution. Request-local search failure state is isolated and restored afterwards.
+- Both date interpretations are captured at submission: `as_of` for the
+  controller's TimeMachine scope and `search_as_of` from the search service's
+  existing `QueryProcessing#parse_date` rules. The worker passes the captured
+  search date to the service instead of parsing the raw input again. Missing or
+  malformed dates therefore fall back to the submission date even across midnight,
+  while valid non-ISO dates retain the synchronous search service's behaviour.
 - Automatic Sidekiq retries are disabled. A failed search requires a new
   submission. If the process is killed after claiming, the payload stays running
   until expiry; this version does not reclaim abandoned work.

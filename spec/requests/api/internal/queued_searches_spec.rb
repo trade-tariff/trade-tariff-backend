@@ -82,6 +82,27 @@ RSpec.describe 'Queued internal searches', :internal do
     end
   end
 
+  describe 'search dates across midnight' do
+    [nil, '', 'not-a-date', '2025-02-30', '2025-01-01', '1 Jan 2025', '9999-01-01'].each do |as_of|
+      it "preserves the synchronous search date for #{as_of.inspect}" do
+        search_dates = []
+        allow(Api::Internal::SearchService).to receive(:new).and_wrap_original do |original, params|
+          original.call(params).tap { |service| search_dates << service.as_of }
+        end
+        travel_to Time.zone.parse('2025-01-02 23:59:00')
+        post '/uk/internal/search', params: { q: '', as_of: }, as: :json
+        post path, params: { q: '', as_of: }, as: :json
+        id = response.parsed_body.fetch('id')
+
+        travel_to Time.zone.parse('2025-01-03 00:01:00')
+        QueuedSearchWorker.new.perform(id)
+
+        expect(search_dates.size).to eq(2)
+        expect(search_dates.last).to eq(search_dates.first)
+      end
+    end
+  end
+
   describe 'GET /uk/internal/queued_searches/:id' do
     it 'reports pending without exposing inputs' do
       allow(Rails.configuration.action_controller).to receive(:perform_caching).and_return(true)
