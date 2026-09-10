@@ -2,8 +2,6 @@ module Api
   module Internal
     class QueuedSearchesController < InternalController
       def create
-        return unavailable unless TradeTariffBackend.queued_search_enabled?
-
         search = QueuedSearch.create(params: search_params.to_h, context: search_context)
         unless QueuedSearchWorker.perform_async(search.id)
           search.delete

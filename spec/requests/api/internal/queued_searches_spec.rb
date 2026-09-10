@@ -11,14 +11,6 @@ RSpec.describe 'Queued internal searches', :internal do
     }
   end
 
-  around do |example|
-    previous = ENV['QUEUED_SEARCH_ENABLED']
-    ENV['QUEUED_SEARCH_ENABLED'] = 'true'
-    example.run
-  ensure
-    ENV['QUEUED_SEARCH_ENABLED'] = previous
-  end
-
   after do
     QueuedSearchWorker.jobs.each do |job|
       QueuedSearch.new(job['args'].first).delete
@@ -26,22 +18,6 @@ RSpec.describe 'Queued internal searches', :internal do
   end
 
   describe 'POST /uk/internal/queued_searches' do
-    context 'when submissions are not enabled' do
-      [nil, 'false', 'invalid'].each do |value|
-        it "rejects without storing or queueing when configured as #{value.inspect}" do
-          ENV['QUEUED_SEARCH_ENABLED'] = value
-          allow(QueuedSearch).to receive(:create).and_call_original
-
-          post path, params: inputs, as: :json
-
-          expect(response).to have_http_status(:service_unavailable)
-          expect(response.parsed_body).not_to have_key('id')
-          expect(QueuedSearch).not_to have_received(:create)
-          expect(QueuedSearchWorker.jobs).to be_empty
-        end
-      end
-    end
-
     it 'stores inputs and queues only the id' do
       post path, params: inputs.merge(configuration_overrides: { candidate_limit: 999 }), as: :json
 
@@ -107,18 +83,6 @@ RSpec.describe 'Queued internal searches', :internal do
   end
 
   describe 'GET /uk/internal/queued_searches/:id' do
-    it 'allows work to finish after disabling submissions' do
-      post path, params: { q: '' }, as: :json
-      id = response.parsed_body.fetch('id')
-      ENV['QUEUED_SEARCH_ENABLED'] = 'false'
-      QueuedSearchWorker.new.perform(id)
-
-      get "#{path}/#{id}"
-
-      expect(response).to have_http_status(:ok)
-      expect(response.parsed_body).to include('id' => id, 'status' => 'completed')
-    end
-
     it 'reports pending without exposing inputs' do
       allow(Rails.configuration.action_controller).to receive(:perform_caching).and_return(true)
       post path, params: inputs, as: :json
