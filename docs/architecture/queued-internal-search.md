@@ -3,7 +3,8 @@
 The queued search API is an additive, backend-only interface for testing an
 asynchronous guided-search journey. Existing synchronous `/internal/search`
 callers and the frontend are unchanged. It reuses `Api::Internal::SearchService`
-rather than introducing a second search implementation.
+rather than introducing a second search implementation. Submissions are disabled
+by default until operators explicitly enable them after the worker rollout.
 
 ## API contract
 
@@ -12,8 +13,12 @@ backend's service mode. The examples below use UK.
 
 ### Submit
 
-`POST /uk/internal/queued_searches` accepts the same top-level inputs and strong
-parameter rules as the existing internal search endpoint:
+`POST /uk/internal/queued_searches` requires `QUEUED_SEARCH_ENABLED=true` in the
+web process environment. Unset, `false` or any other value returns `503` before
+storing a payload or enqueueing a job. The gate does not affect polling or workers.
+
+When enabled, it accepts the same top-level inputs and strong parameter rules as
+the existing internal search endpoint:
 
 - `q`
 - `as_of`
@@ -98,7 +103,8 @@ error, not the exception message, and are re-raised for Sidekiq error reporting.
   Future frontend poller          Backend web / Puma        Sidekiq worker
   ======================          ==================        ==============
 
-  POST queued_searches ----------> Store payload in Redis
+  POST queued_searches ----------> Check submission gate
+                                  Store payload in Redis
                                   Enqueue UUID ------------> Claim payload
   <--------------- 202 + UUID     Release request thread     Mark running
           |                                                       |
@@ -177,6 +183,32 @@ or recovery message. That frontend behaviour is not implemented here.
   an already-running search. The search service's existing downstream timeouts
   still apply, and late results are discarded.
 
+## Rollout and rollback
+
+Normal deployments can overlap old and new web and worker tasks. An old worker
+cannot load `QueuedSearchWorker` and can discard an accepted job because retries
+are disabled. The default-off gate prevents new web tasks from enqueueing during
+that initial mixed-version rollout.
+
+1. Deploy this release with `QUEUED_SEARCH_ENABLED` unset or `false` on every web
+   task. Do not enable it in the initial deployment.
+2. Confirm that **all** workers consuming the relevant service's `default` queue
+   run a release containing `QueuedSearchWorker`, and that old worker tasks have
+   stopped. Verify UK and XI separately if enabling both.
+3. Set `QUEUED_SEARCH_ENABLED=true` in the intended web service's environment and
+   roll its tasks to apply the setting. Only then start controlled submissions.
+   No environment settings are enabled by this code change.
+4. Before rolling back workers to a release without the class, remove the setting
+   or set it to `false` and finish rolling **all** web tasks. Stop external test
+   producers too. Let accepted jobs finish while polling remains available, then
+   roll back workers. Do not roll back to an older web release that accepts
+   submissions without this gate.
+
+The gate is an operator-controlled rollout prerequisite, not automatic worker
+readiness detection. Retained payloads expire without a data migration. For local
+testing, start the matching Sidekiq release before starting the web process with
+`QUEUED_SEARCH_ENABLED=true`.
+
 ## Scope and operational limits
 
 This API uses the existing internal routing/access boundary. UUIDs are opaque
@@ -194,9 +226,8 @@ arbitrary submission rates.
 
 Production adoption still needs capacity/load measurements, suitable worker
 isolation, polling deadlines/backoff, abandoned-job handling and the frontend
-access/recovery journey. Stop test submissions and let work drain before rolling
-back to a release without the worker class; otherwise queued jobs reference an
-unknown class. The retained payloads expire without a data migration.
+access/recovery journey. Follow the gated rollout and drain sequence above before
+changing which worker releases consume the queue.
 
 ## Source and verification
 

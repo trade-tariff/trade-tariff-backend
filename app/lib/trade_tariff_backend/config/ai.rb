@@ -1,6 +1,10 @@
 module TradeTariffBackend
   module Config
     module Ai
+      def queued_search_enabled?
+        ENV.fetch('QUEUED_SEARCH_ENABLED', 'false') == 'true'
+      end
+
       def ai_model
         ENV.fetch('AI_MODEL', 'gpt-5.2')
       end
