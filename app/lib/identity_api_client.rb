@@ -12,11 +12,19 @@ module IdentityApiClient
     raise LookupError, "Identity lookup for #{username} returned HTTP #{response.status}"
   end
 
+  class DeletionError < StandardError; end
+
   def self.delete_user(username)
     return nil unless username
 
     response = user_request(:delete, username)
-    response.success?
+
+    return true if response.success?
+
+    # No status is treated as an acceptable failure here. The identity service
+    # answers a delete for an unknown user with 200, so anything else means the
+    # deletion did not happen and external_id must stay put.
+    raise DeletionError, "Identity deletion for #{username} returned HTTP #{response.status}"
   end
 
   def self.user_request(method, username)
