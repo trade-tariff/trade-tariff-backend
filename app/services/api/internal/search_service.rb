@@ -447,7 +447,7 @@ module Api
           search_model: diagnostics_search_model,
           expand_model: model_configuration('expand_model'),
           filter_prefixes: filter_prefixes,
-        }.compact_blank.tap do |configuration|
+        }.reject { |_key, value| value != false && value.blank? }.tap do |configuration|
           configuration[:hybrid_query_guardrail_enabled] = AdminConfiguration.enabled?('hybrid_query_guardrail_enabled')
           configuration[:search_non_declarables] = diagnostics_search_non_declarables
         end
