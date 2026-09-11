@@ -60,7 +60,11 @@ RSpec.describe EnquiryForm::SendTradeTariffSubmissionEmailWorker, type: :worker 
     Sidekiq.redis { |conn| conn.del(EnquiryForm::SendSubmissionEmailWorker.cache_key(reference)) }
     allow(Rails.logger).to receive(:error).and_call_original
 
-    worker.perform(reference)
+    expect { worker.perform(reference) }.to raise_error(
+      EnquiryForm::SendSubmissionEmailWorker::MissingSubmissionDataError,
+      'EnquiryForm::SendTradeTariffSubmissionEmailWorker: No data found in cache ' \
+      "for reference #{reference} audience=trade_tariff",
+    )
 
     expect(Rails.logger).to have_received(:error).with(
       'EnquiryForm::SendTradeTariffSubmissionEmailWorker: No data found in cache ' \

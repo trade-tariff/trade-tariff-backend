@@ -1,6 +1,13 @@
 require 'notifications/client'
 
 class EnquiryForm::SendSubmissionEmailWorker
+  # The submission body lives only in Redis under a 1 hour TTL, and the API has
+  # already returned 201 with a reference number to a member of the public. A
+  # miss means we cannot deliver that enquiry, so raise: Sidekiq retries, and a
+  # final failure reaches the death handler and New Relic instead of being
+  # recorded as a success.
+  class MissingSubmissionDataError < StandardError; end
+
   CACHE_KEY_PREFIX = 'enquiry_form'.freeze
   TEMPLATE_ID = NOTIFY_CONFIGURATION.dig(:templates, :enquiry_form, :submission)
 
@@ -23,10 +30,11 @@ private
     form_data = enquiry_form_data(reference)
 
     if form_data.blank?
-      Rails.logger.error(
-        "#{self.class.name}: No data found in cache for reference #{reference} audience=#{audience}",
-      )
-      return
+      message = "#{self.class.name}: No data found in cache for reference #{reference} audience=#{audience}"
+
+      Rails.logger.error(message)
+
+      raise MissingSubmissionDataError, message
     end
 
     delivery = EnquiryForm::Submission.from_cache(form_data).delivery_for(audience)
