@@ -24,9 +24,14 @@ module Reporting
         dependencies.to_h { |dependency| [dependency[:id], dependency[:label]] }
       end
 
+      # Each dependency names the exact object key it needs, because the
+      # differences report on the UK service depends on XI reports too. Asking a
+      # report class for available_today? would only ever answer for the running
+      # service, so a missing XI report looked satisfied on the UK admin and the
+      # operator was allowed to trigger a run that then failed in the worker.
       def missing_dependency_ids
         dependencies.filter_map do |dependency|
-          dependency[:report].available_today? ? nil : dependency[:id]
+          Reporting.published_exist?(dependency[:object_key].call) ? nil : dependency[:id]
         end
       end
 
@@ -113,10 +118,10 @@ module Reporting
             generator: -> { Reporting::Differences },
             services: %w[uk],
             dependencies: [
-              { id: 'uk_commodities', label: 'UK commodities report', report: Reporting::Commodities },
-              { id: 'xi_commodities', label: 'XI commodities report', report: Reporting::Commodities },
-              { id: 'uk_supplementary_units', label: 'UK supplementary units report', report: Reporting::SupplementaryUnits },
-              { id: 'xi_supplementary_units', label: 'XI supplementary units report', report: Reporting::SupplementaryUnits },
+              { id: 'uk_commodities', label: 'UK commodities report', object_key: -> { Reporting::Commodities.uk_object_key } },
+              { id: 'xi_commodities', label: 'XI commodities report', object_key: -> { Reporting::Commodities.xi_object_key } },
+              { id: 'uk_supplementary_units', label: 'UK supplementary units report', object_key: -> { Reporting::SupplementaryUnits.uk_object_key } },
+              { id: 'xi_supplementary_units', label: 'XI supplementary units report', object_key: -> { Reporting::SupplementaryUnits.xi_object_key } },
             ],
             email_generator: -> { DifferencesReportWorker.perform_async(true) },
           ),
