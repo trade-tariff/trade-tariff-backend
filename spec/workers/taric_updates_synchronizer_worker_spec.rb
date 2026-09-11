@@ -38,6 +38,40 @@ RSpec.describe TaricUpdatesSynchronizerWorker, type: :worker do
     let(:changes_applied) { true }
     let(:pending_or_failed) { instance_double(Sequel::Dataset, none?: true) }
 
+    context 'when the sync lock is held by another process' do
+      let(:service) { 'xi' }
+
+      before do
+        allow(TaricSynchronizer).to receive(:apply).and_return(TariffSynchronizer::LOCK_UNAVAILABLE)
+        allow(TariffSynchronizer::Instrumentation).to receive(:sync_run_completed)
+        allow(TariffSynchronizer::Instrumentation).to receive(:sync_run_skipped)
+
+        perform
+      end
+
+      it 'does not report a completed sync run' do
+        expect(TariffSynchronizer::Instrumentation).not_to have_received(:sync_run_completed)
+      end
+
+      it 'reports the run as skipped' do
+        expect(TariffSynchronizer::Instrumentation).to have_received(:sync_run_skipped)
+          .with(reason: 'lock_unavailable')
+      end
+
+      it 'does not refresh the materialized views' do
+        expect(GoodsNomenclatures::TreeNode).not_to have_received(:refresh!)
+      end
+
+      it 'does not fire the tariff updates applied event' do
+        expect(ActiveSupport::Notifications).not_to have_received(:instrument)
+          .with(TradeTariffBackend::TariffUpdateEventListener::TARIFF_UPDATES_APPLIED, anything)
+      end
+
+      it 'does not schedule report generation' do
+        expect(ReportWorker).not_to have_received(:perform_in)
+      end
+    end
+
     context 'when on the xi service' do
       before { perform }
 

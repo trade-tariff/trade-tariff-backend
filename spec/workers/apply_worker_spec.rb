@@ -63,6 +63,36 @@ RSpec.describe ApplyWorker, type: :worker do
       end
     end
 
+    context 'when the sync lock is held by another process' do
+      let(:service) { 'uk' }
+
+      before do
+        allow(CdsSynchronizer).to receive(:apply).and_return(TariffSynchronizer::LOCK_UNAVAILABLE)
+        allow(TariffSynchronizer::Instrumentation).to receive(:sync_run_completed)
+        allow(TariffSynchronizer::Instrumentation).to receive(:sync_run_skipped)
+
+        perform
+      end
+
+      it 'does not report a completed sync run' do
+        expect(TariffSynchronizer::Instrumentation).not_to have_received(:sync_run_completed)
+      end
+
+      it 'reports the run as skipped' do
+        expect(TariffSynchronizer::Instrumentation).to have_received(:sync_run_skipped)
+          .with(reason: 'lock_unavailable')
+      end
+
+      it 'does not refresh the materialized views' do
+        expect(MaterializeViewHelper).not_to have_received(:refresh_materialized_view)
+      end
+
+      it 'does not fire the tariff updates applied event' do
+        expect(ActiveSupport::Notifications).not_to have_received(:instrument)
+          .with(TradeTariffBackend::TariffUpdateEventListener::TARIFF_UPDATES_APPLIED, anything)
+      end
+    end
+
     context 'when an error is raised' do
       let(:service) { 'uk' }
 

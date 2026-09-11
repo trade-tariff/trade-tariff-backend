@@ -22,7 +22,16 @@ class CdsUpdatesSynchronizerWorker
     end
 
     TariffSynchronizer::Instrumentation.apply_started(pending_count: TariffSynchronizer::BaseUpdate.pending.count)
-    unless CdsSynchronizer.apply # return if nothing changed
+    apply_result = CdsSynchronizer.apply
+
+    # Another process holds the sync lock, so nothing was applied here. Reporting
+    # a completed run would hide that from the sync log and the age metric.
+    if apply_result == TariffSynchronizer::LOCK_UNAVAILABLE
+      TariffSynchronizer::Instrumentation.sync_run_skipped(reason: 'lock_unavailable')
+      return
+    end
+
+    unless apply_result # return if nothing changed
       # A quiet day (nothing pending, nothing failed) must still generate the
       # daily reports - see TaricUpdatesSynchronizerWorker; without this the
       # event-driven ReportWorker never runs on zero-apply days. Skipped when
@@ -44,14 +53,17 @@ class CdsUpdatesSynchronizerWorker
 
     emit_sync_run_completed(start_time)
   rescue TariffSynchronizer::TariffUpdatesRequester::RetriableDownloadError
-    attempt_reschedule_download!(download_retry_count, check_for_todays_file, reapply_data_migrations)
+    # Nothing left to reschedule means the download has given up for good. Ending
+    # normally here would record a Sidekiq success and freeze UK tariff data at
+    # yesterday's state with no failure alarm, so surface it.
+    raise unless attempt_reschedule_download!(download_retry_count, check_for_todays_file, reapply_data_migrations)
   rescue TariffSynchronizer::CdsUpdateDownloader::ListDownloadFailedError => e
     TariffSynchronizer::Instrumentation.sync_run_failed(
       phase: 'download',
       error_class: e.class.name,
       error_message: e.message,
     )
-    attempt_reschedule!
+    raise unless attempt_reschedule!
   ensure
     Thread.current[:tariff_sync_run_id] = nil
   end
@@ -96,14 +108,17 @@ private
     end
   end
 
+  # True when another attempt has been scheduled, false when the retry budget is
+  # spent and the caller must surface the failure.
   def attempt_reschedule_download!(download_retry_count, check_for_todays_file, reapply_data_migrations)
-    delay = TariffSynchronizer.request_throttle.seconds
-
-    if download_retry_count < TariffSynchronizer.retry_count
-      self.class.perform_in(delay, check_for_todays_file, reapply_data_migrations, download_retry_count + 1)
-      TariffSynchronizer::Instrumentation.download_delayed(retry_at: delay.from_now.iso8601)
-    else
+    if download_retry_count >= TariffSynchronizer.retry_count
       TariffSynchronizer::Instrumentation.download_retry_exhausted(url: 'cds')
+      return false
     end
+
+    delay = TariffSynchronizer.request_throttle.seconds
+    self.class.perform_in(delay, check_for_todays_file, reapply_data_migrations, download_retry_count + 1)
+    TariffSynchronizer::Instrumentation.download_delayed(retry_at: delay.from_now.iso8601)
+    true
   end
 end
