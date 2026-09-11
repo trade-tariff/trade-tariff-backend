@@ -53,14 +53,17 @@ class CdsUpdatesSynchronizerWorker
 
     emit_sync_run_completed(start_time)
   rescue TariffSynchronizer::TariffUpdatesRequester::RetriableDownloadError
-    attempt_reschedule_download!(download_retry_count, check_for_todays_file, reapply_data_migrations)
+    # Nothing left to reschedule means the download has given up for good. Ending
+    # normally here would record a Sidekiq success and freeze UK tariff data at
+    # yesterday's state with no failure alarm, so surface it.
+    raise unless attempt_reschedule_download!(download_retry_count, check_for_todays_file, reapply_data_migrations)
   rescue TariffSynchronizer::CdsUpdateDownloader::ListDownloadFailedError => e
     TariffSynchronizer::Instrumentation.sync_run_failed(
       phase: 'download',
       error_class: e.class.name,
       error_message: e.message,
     )
-    attempt_reschedule!
+    raise unless attempt_reschedule!
   ensure
     Thread.current[:tariff_sync_run_id] = nil
   end
@@ -105,14 +108,17 @@ private
     end
   end
 
+  # True when another attempt has been scheduled, false when the retry budget is
+  # spent and the caller must surface the failure.
   def attempt_reschedule_download!(download_retry_count, check_for_todays_file, reapply_data_migrations)
-    delay = TariffSynchronizer.request_throttle.seconds
-
-    if download_retry_count < TariffSynchronizer.retry_count
-      self.class.perform_in(delay, check_for_todays_file, reapply_data_migrations, download_retry_count + 1)
-      TariffSynchronizer::Instrumentation.download_delayed(retry_at: delay.from_now.iso8601)
-    else
+    if download_retry_count >= TariffSynchronizer.retry_count
       TariffSynchronizer::Instrumentation.download_retry_exhausted(url: 'cds')
+      return false
     end
+
+    delay = TariffSynchronizer.request_throttle.seconds
+    self.class.perform_in(delay, check_for_todays_file, reapply_data_migrations, download_retry_count + 1)
+    TariffSynchronizer::Instrumentation.download_delayed(retry_at: delay.from_now.iso8601)
+    true
   end
 end

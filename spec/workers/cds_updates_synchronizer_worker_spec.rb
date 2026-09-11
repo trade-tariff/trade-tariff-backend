@@ -229,6 +229,25 @@ RSpec.describe CdsUpdatesSynchronizerWorker, type: :worker do
       it { expect(described_class.jobs).to have_attributes length: 1 }
     end
 
+    context 'when ListDownloadFailedError is raised after the cut off time' do
+      let(:cut_off_time) { 5.minutes.ago }
+
+      before do
+        allow(TariffSynchronizer::CdsUpdateDownloader).to receive(:download)
+                                                            .and_raise TariffSynchronizer::CdsUpdateDownloader::ListDownloadFailedError
+      end
+
+      it 'raises rather than ending the job normally' do
+        expect { perform }.to raise_error(TariffSynchronizer::CdsUpdateDownloader::ListDownloadFailedError)
+      end
+
+      it 'does not schedule another attempt', :aggregate_failures do
+        expect { perform }.to raise_error(TariffSynchronizer::CdsUpdateDownloader::ListDownloadFailedError)
+
+        expect(described_class.jobs).to be_empty
+      end
+    end
+
     context 'when a retriable download error is raised' do
       before do
         allow(CdsSynchronizer).to receive(:downloaded_todays_file?).and_return(true)
@@ -254,10 +273,22 @@ RSpec.describe CdsUpdatesSynchronizerWorker, type: :worker do
 
         before { allow(TariffSynchronizer).to receive(:retry_count).and_return(1) }
 
-        it 'does not reschedule the job' do
-          perform
+        it 'raises rather than ending the job normally' do
+          expect { perform }.to raise_error(TariffSynchronizer::TariffUpdatesRequester::RetriableDownloadError)
+        end
+
+        it 'does not reschedule the job', :aggregate_failures do
+          expect { perform }.to raise_error(TariffSynchronizer::TariffUpdatesRequester::RetriableDownloadError)
 
           expect(described_class.jobs).to be_empty
+        end
+
+        it 'still records that the retries are exhausted' do
+          allow(TariffSynchronizer::Instrumentation).to receive(:download_retry_exhausted)
+
+          expect { perform }.to raise_error(TariffSynchronizer::TariffUpdatesRequester::RetriableDownloadError)
+
+          expect(TariffSynchronizer::Instrumentation).to have_received(:download_retry_exhausted).with(url: 'cds')
         end
       end
     end
