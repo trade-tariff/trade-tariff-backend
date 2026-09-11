@@ -54,6 +54,22 @@ module Reporting
         Reporting.published_link(xi_object_key)
       end
 
+      def xi_object_key
+        if Rails.env.development?
+          "commodities_xi_#{now.strftime('%Y_%m_%d')}.csv"
+        else
+          "xi/reporting/#{year}/#{month}/#{day}/commodities_xi_#{now.strftime('%Y_%m_%d')}.csv"
+        end
+      end
+
+      def uk_object_key
+        if Rails.env.development?
+          "commodities_uk_#{now.strftime('%Y_%m_%d')}.csv"
+        else
+          "uk/reporting/#{year}/#{month}/#{day}/commodities_uk_#{now.strftime('%Y_%m_%d')}.csv"
+        end
+      end
+
     private
 
       def goods_nomenclatures
@@ -73,22 +89,6 @@ module Reporting
 
       def object_key
         "#{service}/reporting/#{year}/#{month}/#{day}/commodities_#{service}_#{now.strftime('%Y_%m_%d')}.csv"
-      end
-
-      def xi_object_key
-        if Rails.env.development?
-          "commodities_xi_#{now.strftime('%Y_%m_%d')}.csv"
-        else
-          "xi/reporting/#{year}/#{month}/#{day}/commodities_xi_#{now.strftime('%Y_%m_%d')}.csv"
-        end
-      end
-
-      def uk_object_key
-        if Rails.env.development?
-          "commodities_uk_#{now.strftime('%Y_%m_%d')}.csv"
-        else
-          "uk/reporting/#{year}/#{month}/#{day}/commodities_uk_#{now.strftime('%Y_%m_%d')}.csv"
-        end
       end
     end
   end
