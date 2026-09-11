@@ -324,13 +324,21 @@ RSpec.describe EnquiryForm::SendSubmissionEmailWorker, type: :worker do
         allow(Rails.logger).to receive(:error).and_call_original
       end
 
+      it 'raises so Sidekiq retries rather than recording a success' do
+        expect { worker.perform(reference) }.to raise_error(
+          described_class::MissingSubmissionDataError,
+          "EnquiryForm::SendSubmissionEmailWorker: No data found in cache for reference #{reference} audience=hmrc",
+        )
+
+        expect(notifier_client).not_to have_received(:send_email)
+      end
+
       it 'triggers an error message' do
-        worker.perform(reference)
+        expect { worker.perform(reference) }.to raise_error(described_class::MissingSubmissionDataError)
 
         expect(Rails.logger).to have_received(:error).with(
           "EnquiryForm::SendSubmissionEmailWorker: No data found in cache for reference #{reference} audience=hmrc",
         )
-        expect(notifier_client).not_to have_received(:send_email)
       end
     end
   end
