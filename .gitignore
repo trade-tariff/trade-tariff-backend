@@ -12,6 +12,7 @@ vendor/*
 # Local tariff files
 data/*/*
 !data/vat_guidance/context_graph.json
+!data/vat_guidance/context_packets.json
 data/failed-measures-report*
 
 # Environment files
