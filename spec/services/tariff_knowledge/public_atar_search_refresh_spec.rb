@@ -1,6 +1,7 @@
 RSpec.describe TariffKnowledge::PublicAtarSearchRefresh do
   describe '.call' do
-    let(:search_client) { object_double(TradeTariffBackend.search_client, bulk: true, search_operation_options: { refresh: true }) }
+    let(:bulk_response) { { 'errors' => false, 'items' => [{ 'index' => { '_id' => '1', 'status' => 200 } }] } }
+    let(:search_client) { object_double(TradeTariffBackend.search_client, bulk: bulk_response, search_operation_options: { refresh: true }) }
 
     before do
       allow(TradeTariffBackend).to receive(:search_client).and_return(search_client)
@@ -44,6 +45,40 @@ RSpec.describe TariffKnowledge::PublicAtarSearchRefresh do
       expect(result).to eq([commodity.goods_nomenclature_sid])
       expect(search_client).to have_received(:bulk).once
       expect(ScoreLabelBatchWorker).to have_received(:perform_async).with([commodity.goods_nomenclature_sid])
+    end
+
+    context 'when the bulk response reports per item failures' do
+      let(:bulk_response) do
+        {
+          'errors' => true,
+          'items' => [
+            {
+              'index' => {
+                '_index' => 'tariff-uk-goods_nomenclatures',
+                '_id' => '101',
+                'status' => 400,
+                'error' => { 'type' => 'mapper_parsing_exception', 'reason' => 'failed to parse field' },
+              },
+            },
+          ],
+        }
+      end
+
+      it 'raises rather than reporting a successful refresh' do
+        create(:commodity, :with_description, :declarable, goods_nomenclature_item_id: '6302100000')
+
+        expect { described_class.call(%w[6302100000]) }.to raise_error(
+          TradeTariffBackend::BulkResponse::BulkIndexingError,
+          /PublicAtarSearchRefresh.*mapper_parsing_exception.*101/m,
+        )
+      end
+
+      it 'does not queue embedding regeneration for a batch that failed to index' do
+        create(:commodity, :with_description, :declarable, goods_nomenclature_item_id: '6302100000')
+
+        expect { described_class.call(%w[6302100000]) }.to raise_error(TradeTariffBackend::BulkResponse::BulkIndexingError)
+        expect(ScoreLabelBatchWorker).not_to have_received(:perform_async)
+      end
     end
 
     context 'when ATaR search is disabled' do
