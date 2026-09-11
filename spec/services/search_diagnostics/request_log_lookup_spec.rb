@@ -211,6 +211,52 @@ RSpec.describe SearchDiagnostics::RequestLogLookup do
       )
     end
 
+    context 'with boolean and blank fields' do
+      let(:message_fields) do
+        {
+          pricing_known: false,
+          questions_truncated: true,
+          result_count: 0,
+          reason: nil,
+          query: '',
+          error_message: ' ',
+          added_answers: [],
+          configuration: {},
+          details: { enabled: false, reason: nil, candidates: [] },
+        }
+      end
+      let(:query_results_response) do
+        instance_double(
+          Aws::CloudWatchLogs::Types::GetQueryResultsResponse,
+          status: 'Complete',
+          results: [[
+            result_field('@message', message_fields.to_json),
+            result_field('details', 'projected-details'),
+            result_field('search_type', ''),
+          ]],
+        )
+      end
+
+      it 'preserves booleans and nested details' do
+        expect(lookup.call.events.first.fields).to eq(
+          'pricing_known' => false,
+          'questions_truncated' => true,
+          'result_count' => 0,
+          'details' => { 'enabled' => false, 'reason' => nil, 'candidates' => [] },
+        )
+      end
+
+      [{}, [], [{ enabled: false }]].each do |details|
+        context "with details #{details.inspect}" do
+          let(:message_fields) { super().merge(details:) }
+
+          it 'preserves structured details' do
+            expect(lookup.call.events.first.fields.fetch('details')).to eq(JSON.parse(details.to_json))
+          end
+        end
+      end
+    end
+
     context 'when CloudWatch is still running the query' do
       let(:running_response) do
         instance_double(

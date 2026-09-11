@@ -85,7 +85,7 @@ module SearchDiagnostics
       message_fields = parsed_message_fields(message)
       fields = message_fields
         .merge(raw_fields.except('@message', '@timestamp', '@ptr'))
-        .compact_blank
+        .reject { |_key, value| value != false && value.blank? }
       fields['details'] = message_fields['details'] if message_fields['details'].is_a?(Hash) || message_fields['details'].is_a?(Array)
 
       Event.new(
