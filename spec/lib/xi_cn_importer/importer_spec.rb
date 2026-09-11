@@ -214,5 +214,45 @@ RSpec.describe XiCnImporter::Importer do
         end
       end
     end
+
+    context 'when the extract contains no notes at all' do
+      let(:extracted_result) do
+        XiCnImporter::NotesExtractor::Result.new(sections: {}, chapters: {}, general_rules: {})
+      end
+
+      it 'returns a failed result rather than marking the CELEX imported' do
+        results = importer.call
+        expect(results.first.status).to eq :failed
+        expect(results.first.error).to match(/Empty extract/)
+      end
+
+      it 'leaves the CELEX eligible for reimport on the next run' do
+        importer.call
+        expect(CustomsTariffUpdate.imported.where(version: fetched_result.celex)).to be_empty
+      end
+
+      it 'records the failure reason against the CELEX' do
+        importer.call
+        expect(CustomsTariffUpdate.first(version: fetched_result.celex).import_error).to match(/Empty extract/)
+      end
+
+      it 'creates no notes' do
+        importer.call
+        expect(CustomsTariffSectionNote.where(customs_tariff_update_version: fetched_result.celex).count).to eq 0
+        expect(CustomsTariffChapterNote.where(customs_tariff_update_version: fetched_result.celex).count).to eq 0
+        expect(CustomsTariffGeneralRule.where(customs_tariff_update_version: fetched_result.celex).count).to eq 0
+      end
+
+      it 'instruments the failed import and not a successful one' do
+        importer.call
+
+        expect(XiCnImporter::Instrumentation).to have_received(:document_import_failed).with(
+          celex: fetched_result.celex,
+          error_class: 'RuntimeError',
+          error_message: /Empty extract/,
+        ).once
+        expect(XiCnImporter::Instrumentation).not_to have_received(:document_imported)
+      end
+    end
   end
 end
