@@ -27,10 +27,14 @@ class CustomsTariffUpdateNotifierService
     changes = CustomsTariffUpdateChangeSummary.new(update).call
     personalisation = build_personalisation(update, changes)
 
-    Notifications::EnqueueService.new([@version], pipeline: PIPELINE) { |version|
+    result = Notifications::EnqueueService.new([@version], pipeline: PIPELINE) { |version|
       status_check_args = [version]
       Notifications::EmailWorker.perform_async(email, TEMPLATE_ID, personalisation, 'CustomsTariffUpdateNotificationStatusCheckWorker', status_check_args)
     }.call
+
+    return if result.failed_items.empty?
+
+    raise Notifications::EnqueueService::EnqueueFailedError, result.failure_message
   end
 
 private

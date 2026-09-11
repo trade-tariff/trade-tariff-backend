@@ -102,9 +102,13 @@ private
   end
 
   def enqueue_notifications(pending, new_count, changed_count, removed_count)
-    Notifications::EnqueueService.new(pending, pipeline: 'appendix5a') { |recipient_index|
+    result = Notifications::EnqueueService.new(pending, pipeline: 'appendix5a') { |recipient_index|
       send_to_recipient(recipient_index, new_count, changed_count, removed_count)
     }.call
+
+    return if result.failed_items.empty?
+
+    raise Notifications::EnqueueService::EnqueueFailedError, result.failure_message
   end
 
   def send_to_recipient(recipient_index, new_count, changed_count, removed_count)

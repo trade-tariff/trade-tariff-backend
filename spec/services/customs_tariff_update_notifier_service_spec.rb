@@ -44,6 +44,23 @@ RSpec.describe CustomsTariffUpdateNotifierService do
       end
     end
 
+    context 'when enqueueing exhausts every attempt' do
+      before do
+        allow(TradeTariffBackend).to receive(:support_email).and_return('support@example.com')
+        allow(Notifications::EmailWorker).to receive(:perform_async).and_raise('redis down')
+        allow(Notifications::EnqueueService).to receive(:new).and_wrap_original do |original, items, **options, &block|
+          original.call(items, **options, retry_delay: 0, &block)
+        end
+      end
+
+      it 'raises so the importer records the notification failure instead of completing silently' do
+        expect { service.call }.to raise_error(
+          Notifications::EnqueueService::EnqueueFailedError,
+          "customs_tariff_update: failed to enqueue notification for #{update.version} after 3 attempts",
+        )
+      end
+    end
+
     context 'when a recipient is configured' do
       before { allow(TradeTariffBackend).to receive(:support_email).and_return('recipient@example.com') }
 
