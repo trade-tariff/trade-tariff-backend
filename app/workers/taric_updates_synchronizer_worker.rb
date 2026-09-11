@@ -17,7 +17,16 @@ class TaricUpdatesSynchronizerWorker
     TaricSynchronizer.download
 
     TariffSynchronizer::Instrumentation.apply_started(pending_count: TariffSynchronizer::BaseUpdate.pending.count)
-    unless TaricSynchronizer.apply # return if nothing changed
+    apply_result = TaricSynchronizer.apply
+
+    # Another process holds the sync lock, so nothing was applied here. Reporting
+    # a completed run would hide that from the sync log and the age metric.
+    if apply_result == TariffSynchronizer::LOCK_UNAVAILABLE
+      TariffSynchronizer::Instrumentation.sync_run_skipped(reason: 'lock_unavailable')
+      return
+    end
+
+    unless apply_result # return if nothing changed
       # A quiet day (nothing pending, nothing failed - e.g. no TARIC files at
       # weekends) must still generate the daily reports, or Monday's
       # differences report finds no XI CSVs. Skipped when updates are pending
