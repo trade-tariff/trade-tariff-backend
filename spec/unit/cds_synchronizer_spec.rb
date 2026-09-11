@@ -57,6 +57,21 @@ RSpec.describe CdsSynchronizer, :truncation do
 
         expect(TariffSynchronizer::BaseUpdate).not_to have_received(:failed)
       end
+
+      it 'returns the lock unavailable sentinel rather than a nil no-op' do
+        expect(described_class.apply).to eq(TariffSynchronizer::LOCK_UNAVAILABLE)
+      end
+    end
+
+    context 'when Redis cannot be reached to acquire the lock' do
+      before do
+        allow(TradeTariffBackend).to receive(:with_redis_lock)
+          .and_raise(Redlock::LockAcquisitionError.new('Too many Redis errors', []))
+      end
+
+      it 'lets the infrastructure failure surface' do
+        expect { described_class.apply }.to raise_error(Redlock::LockAcquisitionError)
+      end
     end
 
     context 'with failed CDS updates present' do
@@ -204,14 +219,17 @@ RSpec.describe CdsSynchronizer, :truncation do
     context 'when the Redis lock cannot be acquired' do
       before do
         allow(TradeTariffBackend).to receive(:with_redis_lock).and_raise(Redlock::LockError, 'tariff-lock')
-        allow(TariffSynchronizer::Instrumentation).to receive(:lock_failed)
         allow(TariffSynchronizer::Instrumentation).to receive(:rollback_completed)
       end
 
-      it 'leaves tariff data unchanged and emits lock-failure instrumentation', :aggregate_failures do
-        expect { described_class.rollback(rollback_date) }.not_to change(Measure, :count)
+      it 'raises rather than reporting a rollback that never happened' do
+        expect { described_class.rollback(rollback_date) }.to raise_error(Redlock::LockError)
+      end
 
-        expect(TariffSynchronizer::Instrumentation).to have_received(:lock_failed).with(phase: 'rollback')
+      it 'leaves tariff data unchanged', :aggregate_failures do
+        expect { described_class.rollback(rollback_date) }.to raise_error(Redlock::LockError)
+
+        expect(Measure.count).to eq(2)
         expect(TariffSynchronizer::Instrumentation).not_to have_received(:rollback_completed)
       end
     end

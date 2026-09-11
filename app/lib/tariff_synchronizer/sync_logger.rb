@@ -24,6 +24,15 @@ module TariffSynchronizer
       )
     end
 
+    def sync_run_skipped(event)
+      warn log_entry(
+        event: 'sync_run_skipped',
+        trade_service: event.payload[:service],
+        run_id: event.payload[:run_id],
+        reason: event.payload[:reason],
+      )
+    end
+
     def sync_run_failed(event)
       error log_entry(
         event: 'sync_run_failed',

@@ -29,6 +29,24 @@ RSpec.describe RollbackWorker, type: :worker do
       end
     end
 
+    context 'when the sync lock is held by another process' do
+      before do
+        allow(TradeTariffBackend).to receive(:service).and_return('uk')
+        allow(TradeTariffBackend).to receive(:with_redis_lock).and_raise(Redlock::LockError, 'tariff-lock')
+        allow(TariffSynchronizer::Instrumentation).to receive(:sync_run_completed)
+      end
+
+      it 'raises rather than reporting a rollback that never happened' do
+        expect { described_class.new.perform(date) }.to raise_error(Redlock::LockError)
+      end
+
+      it 'does not report a completed sync run', :aggregate_failures do
+        expect { described_class.new.perform(date) }.to raise_error(Redlock::LockError)
+
+        expect(TariffSynchronizer::Instrumentation).not_to have_received(:sync_run_completed)
+      end
+    end
+
     context 'for uk' do
       before do
         allow(TradeTariffBackend).to receive_messages(service: 'uk')

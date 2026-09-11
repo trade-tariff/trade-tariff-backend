@@ -191,6 +191,33 @@ RSpec.describe CdsUpdatesSynchronizerWorker, type: :worker do
       end
     end
 
+    context 'when the sync lock is held by another process' do
+      before do
+        allow(CdsSynchronizer).to receive_messages(downloaded_todays_file?: true, apply: TariffSynchronizer::LOCK_UNAVAILABLE)
+        allow(TariffSynchronizer::Instrumentation).to receive(:sync_run_completed)
+        allow(TariffSynchronizer::Instrumentation).to receive(:sync_run_skipped)
+
+        perform
+      end
+
+      it 'does not report a completed sync run' do
+        expect(TariffSynchronizer::Instrumentation).not_to have_received(:sync_run_completed)
+      end
+
+      it 'reports the run as skipped' do
+        expect(TariffSynchronizer::Instrumentation).to have_received(:sync_run_skipped)
+          .with(reason: 'lock_unavailable')
+      end
+
+      it 'does not refresh the materialized views' do
+        expect(GoodsNomenclatures::TreeNode).not_to have_received(:refresh!)
+      end
+
+      it 'does not schedule report generation' do
+        expect(ReportWorker).not_to have_received(:perform_in)
+      end
+    end
+
     context 'when ListDownloadFailedError is raised it creates a retry job' do
       before do
         allow(TariffSynchronizer::CdsUpdateDownloader).to receive(:download)

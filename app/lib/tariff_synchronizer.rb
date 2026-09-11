@@ -1,7 +1,16 @@
+# Redlock::LockAcquisitionError is defined inside redlock/client, which the gem
+# autoloads. Require it so the rescue clauses below can always resolve it.
+require 'redlock/client'
+
 module TariffSynchronizer
+  include Apply
   include Rollback
 
   class FailedUpdatesError < StandardError; end
+
+  # Returned when another process already holds the sync lock. Callers must
+  # branch on this rather than treating it as "nothing to apply".
+  LOCK_UNAVAILABLE = :lock_unavailable
 
   delegate :instrument, :subscribe, to: ActiveSupport::Notifications
 
@@ -50,43 +59,15 @@ module TariffSynchronizer
         true
       end
     end
+  rescue Redlock::LockAcquisitionError
+    # A quorum of Redis servers could not be reached. That is an infrastructure
+    # failure, not a concurrent run, so let it surface to Sidekiq and New Relic.
+    raise
   rescue Redlock::LockError
+    # Another process holds the sync lock and is doing the work. Legitimate, but
+    # the caller must not report a completed run off the back of it.
     TariffSynchronizer::Instrumentation.lock_failed(phase: 'apply')
-  end
-
-  # Applies each pending day in order, stopping at the first day that fails. A
-  # failed update leaves a hole in the oplog sequence: later days' UPDATE and
-  # DELETE rows expect the skipped day's inserts, so applying them corrupts data.
-  def apply_each_pending_day(update_type)
-    applied_updates = []
-
-    date_range_since_oldest_pending_update.each do |day|
-      updates = perform_update(update_type, day)
-      applied_updates.concat(updates)
-
-      failed_updates = updates.select(&:failed?)
-      next if failed_updates.none?
-
-      Instrumentation.apply_aborted(filenames: failed_updates.map(&:filename))
-      break
-    end
-
-    applied_updates
-  end
-
-  def date_range_since_oldest_pending_update
-    oldest_pending_update = BaseUpdate.oldest_pending
-    return [] if oldest_pending_update.blank?
-
-    (oldest_pending_update.issue_date..update_to)
-  end
-
-  def perform_update(update_type, day)
-    updates = update_type.pending_at(day).to_a
-    updates.each do |update|
-      Instrumentation.file_import_started(filename: update.filename)
-      BaseUpdateImporter.perform(update)
-    end
+    LOCK_UNAVAILABLE
   end
 
   def check_tariff_updates_failures

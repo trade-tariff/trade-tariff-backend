@@ -22,7 +22,16 @@ class CdsUpdatesSynchronizerWorker
     end
 
     TariffSynchronizer::Instrumentation.apply_started(pending_count: TariffSynchronizer::BaseUpdate.pending.count)
-    unless CdsSynchronizer.apply # return if nothing changed
+    apply_result = CdsSynchronizer.apply
+
+    # Another process holds the sync lock, so nothing was applied here. Reporting
+    # a completed run would hide that from the sync log and the age metric.
+    if apply_result == TariffSynchronizer::LOCK_UNAVAILABLE
+      TariffSynchronizer::Instrumentation.sync_run_skipped(reason: 'lock_unavailable')
+      return
+    end
+
+    unless apply_result # return if nothing changed
       # A quiet day (nothing pending, nothing failed) must still generate the
       # daily reports - see TaricUpdatesSynchronizerWorker; without this the
       # event-driven ReportWorker never runs on zero-apply days. Skipped when

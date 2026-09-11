@@ -20,6 +20,10 @@ module TariffSynchronizer
       instrument('sync_run_completed', duration_ms:, files_downloaded:, files_applied:)
     end
 
+    def sync_run_skipped(reason:)
+      instrument('sync_run_skipped', reason:)
+    end
+
     def sync_run_failed(phase:, error_class:, error_message:)
       instrument('sync_run_failed', phase:, error_class:, error_message:)
     end
