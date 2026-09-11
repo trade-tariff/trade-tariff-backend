@@ -21,7 +21,6 @@ module TariffSynchronizer
   self.exception_retry_count = TradeTariffBackend.exception_retry_count
 
   def apply_updates(update_type)
-    applied_updates = []
     import_warnings = []
 
     start_time = Process.clock_gettime(Process::CLOCK_MONOTONIC)
@@ -39,12 +38,7 @@ module TariffSynchronizer
         import_warnings << event.payload
       end
 
-      date_range = date_range_since_oldest_pending_update
-      date_range.each do |day|
-        applied_updates << perform_update(update_type, day)
-      end
-
-      applied_updates.flatten!
+      applied_updates = apply_each_pending_day(update_type)
 
       if applied_updates.any? && BaseUpdate.pending_or_failed.none?
         duration_ms = ((Process.clock_gettime(Process::CLOCK_MONOTONIC) - start_time) * 1000).round(2)
@@ -60,6 +54,26 @@ module TariffSynchronizer
     TariffSynchronizer::Instrumentation.lock_failed(phase: 'apply')
   end
 
+  # Applies each pending day in order, stopping at the first day that fails. A
+  # failed update leaves a hole in the oplog sequence: later days' UPDATE and
+  # DELETE rows expect the skipped day's inserts, so applying them corrupts data.
+  def apply_each_pending_day(update_type)
+    applied_updates = []
+
+    date_range_since_oldest_pending_update.each do |day|
+      updates = perform_update(update_type, day)
+      applied_updates.concat(updates)
+
+      failed_updates = updates.select(&:failed?)
+      next if failed_updates.none?
+
+      Instrumentation.apply_aborted(filenames: failed_updates.map(&:filename))
+      break
+    end
+
+    applied_updates
+  end
+
   def date_range_since_oldest_pending_update
     oldest_pending_update = BaseUpdate.oldest_pending
     return [] if oldest_pending_update.blank?
@@ -69,12 +83,10 @@ module TariffSynchronizer
 
   def perform_update(update_type, day)
     updates = update_type.pending_at(day).to_a
-    updates.map do |update|
+    updates.each do |update|
       Instrumentation.file_import_started(filename: update.filename)
-
       BaseUpdateImporter.perform(update)
     end
-    updates
   end
 
   def check_tariff_updates_failures

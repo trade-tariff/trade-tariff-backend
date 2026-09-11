@@ -126,6 +126,15 @@ module TariffSynchronizer
       )
     end
 
+    def apply_aborted(event)
+      error log_entry(
+        event: 'apply_aborted',
+        trade_service: event.payload[:service],
+        run_id: event.payload[:run_id],
+        filenames: event.payload[:filenames],
+      )
+    end
+
     def file_import_started(event)
       info log_entry(
         event: 'file_import_started',

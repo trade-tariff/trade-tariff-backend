@@ -64,6 +64,10 @@ module TariffSynchronizer
       instrument('apply_completed', duration_ms:, files_applied:)
     end
 
+    def apply_aborted(filenames:)
+      instrument('apply_aborted', filenames:)
+    end
+
     def file_import_started(filename:)
       instrument('file_import_started', filename:)
     end

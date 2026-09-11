@@ -99,6 +99,51 @@ RSpec.describe CdsSynchronizer, :truncation do
       end
     end
 
+    context 'when an update fails part way through the date range' do
+      let(:first_day) { Time.zone.today - 2 }
+      let(:second_day) { Time.zone.today - 1 }
+
+      before do
+        create(:cds_update, :pending, example_date: first_day)
+        create(:cds_update, :pending, example_date: second_day)
+
+        allow(TradeTariffBackend).to receive(:service).and_return('uk')
+        allow(TradeTariffBackend).to receive(:with_redis_lock).and_yield
+        allow(TariffSynchronizer::BaseUpdateImporter).to receive(:perform) do |update|
+          update.mark_as_failed if update.issue_date == first_day
+        end
+      end
+
+      it 'does not apply the following day on top of the hole' do
+        described_class.apply
+
+        expect(TariffSynchronizer::BaseUpdateImporter).to have_received(:perform).once
+      end
+
+      it 'leaves the following day pending' do
+        described_class.apply
+
+        expect(TariffSynchronizer::CdsUpdate.pending_at(second_day).count).to eq(1)
+      end
+
+      it 'emits an apply_aborted instrumentation event' do
+        allow(TariffSynchronizer::Instrumentation).to receive(:apply_aborted)
+
+        described_class.apply
+
+        expect(TariffSynchronizer::Instrumentation).to have_received(:apply_aborted)
+          .with(filenames: [TariffSynchronizer::CdsUpdate.failed.first.filename])
+      end
+
+      it 'does not report the apply as completed' do
+        allow(TariffSynchronizer::Instrumentation).to receive(:apply_completed)
+
+        described_class.apply
+
+        expect(TariffSynchronizer::Instrumentation).not_to have_received(:apply_completed)
+      end
+    end
+
     context 'with only TARIC failed updates present' do
       before do
         create(:taric_update, :failed, example_date: Time.zone.yesterday)
