@@ -4,6 +4,21 @@ class MyCommoditiesEmailWorker
   # Cap retries: Notify outages must not use Sidekiq's default (25) and crowd the default queue.
   sidekiq_options retry: 3
 
+  # The date the orchestrator hands us, and that we parse back out again here.
+  DATE_FORMAT = '%d/%m/%Y'.freeze
+
+  # MyCommoditiesSubscriptionWorker stamps the date as sent as soon as it has enqueued us,
+  # because enqueuing is all it can observe. When a child gives up for good, put the date
+  # back into TariffChangesJobStatus.pending_emails so PopulateTariffChangesWorker redrives
+  # it, rather than losing the day silently.
+  sidekiq_retries_exhausted do |job, exception|
+    _user_id, date, _changes_count = job['args']
+
+    Sidekiq.logger.error("MyCommoditiesEmailWorker exhausted retries for #{date}: #{exception.message}")
+
+    TariffChangesJobStatus.for_date(Date.strptime(date, DATE_FORMAT)).mark_emails_pending! if date.present?
+  end
+
   TEMPLATE_ID = NOTIFY_CONFIGURATION.dig(:templates, :myott, :tariff_change)
   REPLY_TO_ID = NOTIFY_CONFIGURATION.dig(:reply_to, :tariff_management)
 
