@@ -18,6 +18,15 @@ module CustomsTariffImporter
       content = TariffSynchronizer::FileService.get(update.s3_path).read
       extracted = NotesExtractor.new(update.version, content).call
 
+      # The extractor returns empty hashes rather than raising when no paragraph matches its
+      # heading patterns, so a re-saved .docx with a changed template or heading casing would
+      # otherwise commit the deletes below with nothing to reinsert and wipe every note for
+      # this version. Guard before opening the transaction: there is nothing to roll back yet,
+      # and this depends only on the extract. Mirrors XiCnImporter::Reimporter.
+      if extracted.chapters.empty? && extracted.sections.empty? && extracted.general_rules.empty?
+        raise "Empty extract for #{update.version} — refusing to wipe notes"
+      end
+
       CustomsTariffUpdate.db.transaction do
         CustomsTariffSectionNote.where(customs_tariff_update_version: update.version).delete
         CustomsTariffChapterNote.where(customs_tariff_update_version: update.version).delete

@@ -70,6 +70,34 @@ RSpec.describe CustomsTariffImporter::Reimporter do
       end
     end
 
+    context 'when the document no longer matches the expected headings' do
+      # Simulates GOV.UK re-saving the .docx from a changed template: the headings
+      # are still there for a human reader, but no paragraph matches SECTION_PATTERN,
+      # CHAPTER_PATTERN or GENERAL_RULES_PATTERN, so the extract comes back empty.
+      let(:docx_io) do
+        build_docx(
+          'Section I: Live animals', 'Notes', 'Live animals note.',
+          'Chapter 1: Live animals', 'Notes', 'All live animals are classified here.'
+        )
+      end
+
+      before do
+        create(:customs_tariff_section_note, customs_tariff_update: update, section_id: 1, content: 'Old section note.')
+        create(:customs_tariff_chapter_note, customs_tariff_update: update, chapter_id: '01', content: 'Old chapter note.')
+      end
+
+      it 'raises rather than wiping notes' do
+        expect { reimporter.call(version: update.version) }.to raise_error(/Empty extract/)
+      end
+
+      it 'leaves existing notes intact' do
+        expect { reimporter.call(version: update.version) }.to raise_error(/Empty extract/)
+
+        expect(CustomsTariffSectionNote.where(customs_tariff_update_version: update.version).count).to eq(1)
+        expect(CustomsTariffChapterNote.where(customs_tariff_update_version: update.version).count).to eq(1)
+      end
+    end
+
     context 'when no note records exist yet' do
       it 'inserts extracted notes' do
         expect { reimporter.call }
