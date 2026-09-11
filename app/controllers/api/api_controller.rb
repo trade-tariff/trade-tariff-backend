@@ -34,7 +34,7 @@ module Api
       render json: serializer.serialized_errors({ error: exception.message, url: request.url }), status: :conflict
     end
 
-    rescue_from RulesOfOrigin::Query::InvalidParams do |exception|
+    rescue_from RulesOfOrigin::Query::InvalidParams, QuotaDefinitionsQuery::InvalidStatus do |exception|
       serializer = TradeTariffBackend.error_serializer(request)
       render json: serializer.serialized_errors({ error: exception.message, url: request.url }), status: :bad_request
     end

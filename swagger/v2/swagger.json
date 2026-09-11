@@ -5978,6 +5978,24 @@
           "description": "Filter by validity day (1–31)"
         },
         {
+          "name": "status",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "string",
+            "enum": [
+              "blocked",
+              "exhausted",
+              "not_blocked",
+              "not_exhausted",
+              "suspended",
+              "not_suspended",
+              "open"
+            ]
+          },
+          "description": "Filter by quota status (e.g. \"open\", \"exhausted\", \"blocked\", \"suspended\", etc.)"
+        },
+        {
           "name": "page",
           "in": "query",
           "required": false,
@@ -6098,7 +6116,7 @@
             }
           },
           "400": {
-            "description": "invalid order_number — must be exactly 6 digits"
+            "description": "invalid request — order_number must be exactly 6 digits, and status must be one of the allowed values"
           }
         }
       }
