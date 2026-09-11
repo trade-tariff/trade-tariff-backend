@@ -25,6 +25,10 @@ module XiCnImporter
 
       extracted = NotesExtractor.new(fetched.celex, fetched.html_content).call
 
+      if empty_extract?(extracted)
+        raise "Empty extract for #{fetched.celex}: refusing to import a version with no notes"
+      end
+
       start_time = Process.clock_gettime(Process::CLOCK_MONOTONIC)
       persist_document(fetched, extracted, s3_path)
 
@@ -40,6 +44,15 @@ module XiCnImporter
       )
       record_failure(fetched&.celex, e.message)
       Result.new(status: :failed, celex: fetched&.celex, error: e.message)
+    end
+
+    # A 200 response carrying a placeholder or error page still parses cleanly through the
+    # non-strict Nokogiri::XML in NotesExtractor and yields zero notes. Importing that would
+    # create a CustomsTariffUpdate with no import_error, which CustomsTariffUpdate.imported
+    # treats as a finished version and DocumentFetcher then skips forever. Raising routes this
+    # through the rescue below, which records a failed row so the CELEX is retried next run.
+    def empty_extract?(extracted)
+      extracted.chapters.empty? && extracted.sections.empty? && extracted.general_rules.empty?
     end
 
     def persist_document(fetched, extracted, s3_path)
