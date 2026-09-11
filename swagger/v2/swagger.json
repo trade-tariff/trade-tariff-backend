@@ -6116,7 +6116,7 @@
             }
           },
           "400": {
-            "description": "invalid status — must be one of allowed values"
+            "description": "invalid request — order_number must be exactly 6 digits, and status must be one of the allowed values"
           }
         }
       }

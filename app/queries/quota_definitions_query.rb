@@ -85,32 +85,50 @@ private
     scope.where(sql)
   end
 
-  def apply_exhausted_filter
+  # QuotaDefinition#status considers a quota "Exhausted" only when the most
+  # recent quota event (across all event types - exhaustion, balance,
+  # critical, reopening, unblocking, unsuspension) is an exhaustion event
+  # (see QuotaEvent.last_for / QuotaDefinition#has_exhausted_event?). A
+  # historical exhaustion event that has since been superseded by a newer
+  # reopening or balance event must NOT be treated as exhausted, so we
+  # replicate that "latest event wins" semantics here rather than just
+  # checking whether an exhaustion event exists at all.
+  def latest_quota_event_type_sql
+    unions = QuotaEvent::EVENTS.map { |event_type|
+      table = "quota_#{event_type}_events"
+
+      <<~SQL
+        SELECT '#{event_type}' AS event_type, "#{table}"."occurrence_timestamp"
+          FROM "#{table}"
+         WHERE "#{table}"."quota_definition_sid" = "quota_definitions"."quota_definition_sid"
+           AND "#{table}"."occurrence_timestamp" <= ?
+      SQL
+    }.join("UNION ALL\n")
+
     Sequel.lit(
-      <<~SQL, QuotaDefinition.point_in_time
-        EXISTS (
-        SELECT *
-          FROM "quota_exhaustion_events"
-         WHERE "quota_exhaustion_events"."quota_definition_sid" = "quota_definitions"."quota_definition_sid" AND
-               "quota_exhaustion_events"."occurrence_timestamp" <= ?
-         LIMIT 1
+      <<~SQL, *([QuotaDefinition.point_in_time] * QuotaEvent::EVENTS.length)
+        (
+          SELECT event_type
+            FROM (
+              #{unions}
+            ) latest_quota_events
+           ORDER BY occurrence_timestamp DESC, event_type DESC
+           LIMIT 1
         )
       SQL
     )
   end
 
+  def apply_exhausted_filter
+    latest_event_type = latest_quota_event_type_sql
+
+    Sequel.lit("#{latest_event_type.str} = 'exhaustion'", *latest_event_type.args)
+  end
+
   def apply_not_exhausted_filter
-    Sequel.lit(
-      <<~SQL, QuotaDefinition.point_in_time
-        NOT EXISTS (
-        SELECT *
-          FROM "quota_exhaustion_events"
-         WHERE "quota_exhaustion_events"."quota_definition_sid" = "quota_definitions"."quota_definition_sid" AND
-               "quota_exhaustion_events"."occurrence_timestamp" <= ?
-         LIMIT 1
-        )
-      SQL
-    )
+    latest_event_type = latest_quota_event_type_sql
+
+    Sequel.lit("#{latest_event_type.str} IS DISTINCT FROM 'exhaustion'", *latest_event_type.args)
   end
 
   def apply_blocked_filter

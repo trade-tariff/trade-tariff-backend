@@ -95,16 +95,18 @@ RSpec.describe 'Quotas', swagger_doc: 'v2/swagger.json', type: :request do
         run_test!
       end
 
-      response '400', 'invalid order_number — must be exactly 6 digits' do
-        let(:order_number) { 'invalid' }
+      response '400', 'invalid request — order_number must be exactly 6 digits, and status must be one of the allowed values' do
+        context 'when order_number is not exactly 6 digits' do
+          let(:order_number) { 'invalid' }
 
-        run_test!
-      end
+          run_test!
+        end
 
-      response '400', 'invalid status — must be one of allowed values' do
-        let(:status) { 'invalid_status' }
+        context 'when status is not one of the allowed values' do
+          let(:status) { 'invalid_status' }
 
-        run_test!
+          run_test!
+        end
       end
     end
   end
