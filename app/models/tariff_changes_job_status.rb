@@ -40,6 +40,12 @@ class TariffChangesJobStatus < Sequel::Model(Sequel[:tariff_changes_job_statuses
     update(emails_sent_at: Time.zone.now)
   end
 
+  # Reverses mark_emails_sent! so a date whose emails definitively failed returns to
+  # the pending_emails redrive set. See MyCommoditiesEmailWorker.
+  def mark_emails_pending!
+    update(emails_sent_at: nil)
+  end
+
   def changes_pending?
     changes_generated_at.nil?
   end

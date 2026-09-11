@@ -190,6 +190,26 @@ RSpec.describe TariffChangesJobStatus do
     end
   end
 
+  describe '#mark_emails_pending!' do
+    let(:job_status) { create :tariff_changes_job_status, :with_emails_sent }
+
+    it 'clears emails_sent_at' do
+      expect { job_status.mark_emails_pending! }
+        .to(change { job_status.reload.emails_sent_at }.to(nil))
+    end
+
+    it 'returns the date to the pending_emails redrive set' do
+      expect { job_status.mark_emails_pending! }
+        .to(change { described_class.pending_emails.include?(job_status.operation_date) }
+        .from(false).to(true))
+    end
+
+    it 'does not affect changes_generated_at' do
+      expect { job_status.mark_emails_pending! }
+        .not_to(change { job_status.reload.changes_generated_at })
+    end
+  end
+
   describe 'workflow scenarios' do
     let(:job_status) { create :tariff_changes_job_status, operation_date: Date.current }
 
