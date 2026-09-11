@@ -1,0 +1,3040 @@
+{
+  "source_packets_sha256": "21332494ec4d9709eff1b270d1db4d01315d4349cf0b3a918983173315fe5ebe",
+  "generation_metadata": {
+    "ticket": "AI-1145",
+    "generation_mode": "ai_assisted_human_review",
+    "provider": "OpenAI",
+    "model": "GPT-5 Codex",
+    "prompt_sha256": "018b85cda91dc10f86116227b147e66ffc58b03b9da4fb8fd6e22c2d1b8c989a",
+    "human_review_required": true
+  },
+  "journeys": [
+    {
+      "journey_id": "notice-701-23-industrial-protective-equipment",
+      "source_packet_id": "context-packet:67e28d723ec5825e1773714d78b8d1148b33ccc7c00143ca4f029420c402bd95",
+      "scope": {
+        "type": "notice",
+        "notice_number": "701/23",
+        "label": "2.1 Protective boots and helmets that qualify for zero-rating"
+      },
+      "composition_required": true,
+      "fallthrough_targets": [
+        {
+          "id": "next-applicable-rule",
+          "resolution": "module_boundary",
+          "required_composer": "AI-1146"
+        }
+      ],
+      "root_question_id": "article-kind",
+      "questions": [
+        {
+          "id": "article-kind",
+          "prompt": "Is the article a protective boot or protective helmet rather than a shoe?",
+          "evidence": {
+            "quote": "The zero-rate applies specifically to protective boots and therefore protective shoes are not eligible for zero-rating",
+            "node_id": "document:/guidance/protective-equipment-and-vat-notice-70123#difference-between-a-shoe-and-a-boot",
+            "guide_key": "vat-notice-701-23",
+            "section_key": "difference-between-a-shoe-and-a-boot"
+          },
+          "answers": [
+            {
+              "id": "yes",
+              "label": "Yes",
+              "next": {
+                "type": "question",
+                "id": "regulation-standard"
+              }
+            },
+            {
+              "id": "no",
+              "label": "No",
+              "next": {
+                "type": "fallthrough",
+                "id": "next-applicable-rule",
+                "trader_visible": false,
+                "reason": "This relief rule does not decide supplies outside protective boots and helmets."
+              },
+              "relief_disposition": "declined"
+            }
+          ]
+        },
+        {
+          "id": "regulation-standard",
+          "prompt": "Was it manufactured to standards satisfying regulation 8(2) of the Personal Protective Equipment Regulations 2002?",
+          "evidence": {
+            "quote": "The protective boots and helmets must be manufactured to the standards which satisfy the requirements of regulation 8(2) of the Personal Protective Equipment Regulations 2002.",
+            "node_id": "document:/guidance/protective-equipment-and-vat-notice-70123#regulatory-standards-for-protective-boots-and-helmets",
+            "guide_key": "vat-notice-701-23",
+            "section_key": "regulatory-standards-for-protective-boots-and-helmets"
+          },
+          "answers": [
+            {
+              "id": "yes",
+              "label": "Yes",
+              "next": {
+                "type": "question",
+                "id": "conformity-mark"
+              }
+            },
+            {
+              "id": "no",
+              "label": "No",
+              "next": {
+                "type": "fallthrough",
+                "id": "next-applicable-rule",
+                "trader_visible": false,
+                "reason": "The industrial protective equipment zero-rating rule declines."
+              },
+              "relief_disposition": "declined"
+            }
+          ]
+        },
+        {
+          "id": "conformity-mark",
+          "prompt": "Does it show the required conformity mark?",
+          "evidence": {
+            "quote": "they must show a mark indicating conformity with regulation (8)(2) of the Personal Protective Equipment Regulations 2002",
+            "node_id": "document:/guidance/protective-equipment-and-vat-notice-70123#protective-boots-and-helmets-that-qualify-for-zero-rating",
+            "guide_key": "vat-notice-701-23",
+            "section_key": "protective-boots-and-helmets-that-qualify-for-zero-rating"
+          },
+          "answers": [
+            {
+              "id": "yes",
+              "label": "Yes",
+              "next": {
+                "type": "question",
+                "id": "industrial-use"
+              }
+            },
+            {
+              "id": "no",
+              "label": "No",
+              "next": {
+                "type": "fallthrough",
+                "id": "next-applicable-rule",
+                "trader_visible": false,
+                "reason": "The industrial protective equipment zero-rating rule declines."
+              },
+              "relief_disposition": "declined"
+            }
+          ]
+        },
+        {
+          "id": "industrial-use",
+          "prompt": "Is the boot or helmet for industrial use?",
+          "evidence": {
+            "quote": "Boots and helmets that meet all the other conditions for zero-rating but are not for industrial use, such as motorcycle boots, are standard-rated.",
+            "node_id": "document:/guidance/protective-equipment-and-vat-notice-70123#meaning-of-industrial-use",
+            "guide_key": "vat-notice-701-23",
+            "section_key": "meaning-of-industrial-use"
+          },
+          "answers": [
+            {
+              "id": "yes",
+              "label": "Yes",
+              "next": {
+                "type": "question",
+                "id": "customer-is-employer"
+              }
+            },
+            {
+              "id": "no",
+              "label": "No",
+              "next": {
+                "type": "outcome",
+                "id": "standard-non-industrial"
+              }
+            }
+          ]
+        },
+        {
+          "id": "customer-is-employer",
+          "prompt": "Is the customer an employer buying the items for use by their employees?",
+          "evidence": {
+            "quote": "You cannot zero-rate supplies of protective boots or helmets to an employer for the use by their employees.",
+            "node_id": "document:/guidance/protective-equipment-and-vat-notice-70123#work-out-who-is-being-supplied",
+            "guide_key": "vat-notice-701-23",
+            "section_key": "work-out-who-is-being-supplied"
+          },
+          "answers": [
+            {
+              "id": "yes",
+              "label": "Yes",
+              "next": {
+                "type": "fallthrough",
+                "id": "next-applicable-rule",
+                "trader_visible": false,
+                "reason": "This zero-rating rule declines employer purchases for employees."
+              },
+              "relief_disposition": "declined"
+            },
+            {
+              "id": "no",
+              "label": "No",
+              "next": {
+                "type": "outcome",
+                "id": "zero-industrial-protection"
+              }
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "id": "standard-non-industrial",
+          "treatment": "standard",
+          "basis": "explicit_guidance",
+          "evidence": {
+            "quote": "are not for industrial use, such as motorcycle boots, are standard-rated",
+            "node_id": "document:/guidance/protective-equipment-and-vat-notice-70123#meaning-of-industrial-use",
+            "guide_key": "vat-notice-701-23",
+            "section_key": "meaning-of-industrial-use"
+          }
+        },
+        {
+          "id": "zero-industrial-protection",
+          "treatment": "zero",
+          "basis": "explicit_guidance",
+          "evidence": {
+            "quote": "They are zero-rated when all the following conditions are met",
+            "node_id": "document:/guidance/protective-equipment-and-vat-notice-70123#protective-boots-and-helmets-that-qualify-for-zero-rating",
+            "guide_key": "vat-notice-701-23",
+            "section_key": "protective-boots-and-helmets-that-qualify-for-zero-rating"
+          }
+        }
+      ],
+      "exclusions": [],
+      "relief_rule_ids": []
+    },
+    {
+      "journey_id": "notice-701-23-child-car-seats",
+      "source_packet_id": "context-packet:0585eca47b98c00bf03e73639961c4336b81231e575df268aeadec57157ea211",
+      "scope": {
+        "type": "notice",
+        "notice_number": "701/23",
+        "label": "5. Children’s car seats and travel systems"
+      },
+      "composition_required": true,
+      "fallthrough_targets": [
+        {
+          "id": "next-applicable-rule",
+          "resolution": "module_boundary",
+          "required_composer": "AI-1146"
+        }
+      ],
+      "root_question_id": "qualifying-child-seat",
+      "questions": [
+        {
+          "id": "qualifying-child-seat",
+          "prompt": "Is the product a qualifying safety seat, booster seat or cushion, car-seat base, or lie-flat protective travel system described by this guidance?",
+          "evidence": {
+            "quote": "The following products are ‘children’s car seats’ and are reduced-rated at 5% VAT.",
+            "node_id": "document:/guidance/protective-equipment-and-vat-notice-70123#reduced-rate-childrens-car-seats",
+            "guide_key": "vat-notice-701-23",
+            "section_key": "reduced-rate-childrens-car-seats"
+          },
+          "answers": [
+            {
+              "id": "yes",
+              "label": "Yes",
+              "next": {
+                "type": "outcome",
+                "id": "reduced-child-seat"
+              }
+            },
+            {
+              "id": "no",
+              "label": "No",
+              "next": {
+                "type": "fallthrough",
+                "id": "next-applicable-rule",
+                "trader_visible": false,
+                "reason": "The children's car-seat relief rule does not decide other products."
+              },
+              "relief_disposition": "declined"
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "id": "reduced-child-seat",
+          "treatment": "reduced",
+          "basis": "explicit_guidance",
+          "evidence": {
+            "quote": "The following products are ‘children’s car seats’ and are reduced-rated at 5% VAT.",
+            "node_id": "document:/guidance/protective-equipment-and-vat-notice-70123#reduced-rate-childrens-car-seats",
+            "guide_key": "vat-notice-701-23",
+            "section_key": "reduced-rate-childrens-car-seats"
+          }
+        }
+      ],
+      "exclusions": [
+        {
+          "id": "mixed-travel-system",
+          "reason": "A single treatment cannot express the mixed standard/reduced liability of all travel-system elements.",
+          "evidence": {
+            "quote": "the pram seat is standard-rated and the other 2 elements are reduced-rated",
+            "node_id": "document:/guidance/protective-equipment-and-vat-notice-70123#vat-liability-of-childrens-travel-systems",
+            "guide_key": "vat-notice-701-23",
+            "section_key": "vat-liability-of-childrens-travel-systems"
+          }
+        },
+        {
+          "id": "vehicle-with-seat-supply-assessment",
+          "reason": "The guidance requires a single-versus-multiple-supply assessment before a treatment can be expressed.",
+          "evidence": {
+            "quote": "you must consider your supply in light of VAT Supply and Consideration single or multiple supply",
+            "node_id": "document:/guidance/protective-equipment-and-vat-notice-70123#treatment-of-vehicles-with-a-fitted-childrens-car-seat",
+            "guide_key": "vat-notice-701-23",
+            "section_key": "treatment-of-vehicles-with-a-fitted-childrens-car-seat"
+          }
+        }
+      ],
+      "relief_rule_ids": []
+    },
+    {
+      "journey_id": "notice-701-14-food-exceptions",
+      "source_packet_id": "context-packet:c70202e256f2e9370f03a4549dd2ae21e20c3b76b6a8ddff53452637e8502ebc",
+      "scope": {
+        "type": "notice",
+        "notice_number": "701/14",
+        "label": "2.2 Food not supplied in the course of catering"
+      },
+      "composition_required": false,
+      "root_question_id": "listed-standard-exception",
+      "questions": [
+        {
+          "id": "listed-standard-exception",
+          "prompt": "Does the food fall within one of the standard-rated exceptions listed in section 2.2 and its referenced detail sections?",
+          "evidence": {
+            "quote": "Most food of a kind used for human consumption (read paragraph 2.3 of this guidance) is zero-rated. There are, however, some exceptions",
+            "node_id": "document:/guidance/food-products-and-vat-notice-70114#food-not-supplied-in-the-course-of-catering",
+            "guide_key": "vat-notice-701-14",
+            "section_key": "food-not-supplied-in-the-course-of-catering"
+          },
+          "answers": [
+            {
+              "id": "yes",
+              "label": "Yes",
+              "next": {
+                "type": "outcome",
+                "id": "standard-food-exception"
+              }
+            },
+            {
+              "id": "no",
+              "label": "No",
+              "next": {
+                "type": "outcome",
+                "id": "zero-food-default"
+              }
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "id": "standard-food-exception",
+          "treatment": "standard",
+          "basis": "explicit_guidance",
+          "evidence": {
+            "quote": "You must always standard rate",
+            "node_id": "document:/guidance/food-products-and-vat-notice-70114#food-not-supplied-in-the-course-of-catering",
+            "guide_key": "vat-notice-701-14",
+            "section_key": "food-not-supplied-in-the-course-of-catering"
+          }
+        },
+        {
+          "id": "zero-food-default",
+          "treatment": "zero",
+          "basis": "explicit_guidance",
+          "evidence": {
+            "quote": "Most food of a kind used for human consumption (read paragraph 2.3 of this guidance) is zero-rated.",
+            "node_id": "document:/guidance/food-products-and-vat-notice-70114#food-not-supplied-in-the-course-of-catering",
+            "guide_key": "vat-notice-701-14",
+            "section_key": "food-not-supplied-in-the-course-of-catering"
+          }
+        }
+      ],
+      "exclusions": [],
+      "relief_rule_ids": [],
+      "fallthrough_targets": []
+    },
+    {
+      "journey_id": "notice-709-1-catering-local-only",
+      "comparison_role": "catering_local_only",
+      "source_packet_id": "context-packet:a52c94589cfcc77c84d0ce92e709535206dbb28220ad608010a6a4b76a7b542b",
+      "scope": {
+        "type": "notice",
+        "notice_number": "709/1",
+        "label": "1.1 Information in this notice"
+      },
+      "composition_required": true,
+      "fallthrough_targets": [
+        {
+          "id": "next-applicable-rule",
+          "resolution": "module_boundary",
+          "required_composer": "AI-1146"
+        }
+      ],
+      "root_question_id": "course-of-catering-local",
+      "questions": [
+        {
+          "id": "course-of-catering-local",
+          "prompt": "Is the supply made in the course of catering?",
+          "evidence": {
+            "quote": "Other supplies are standard-rated because they’re made in the course of catering.",
+            "node_id": "document:/guidance/catering-takeaway-food-and-vat-notice-7091#information-in-this-notice",
+            "guide_key": "vat-notice-709-1",
+            "section_key": "information-in-this-notice"
+          },
+          "answers": [
+            {
+              "id": "yes",
+              "label": "Yes",
+              "next": {
+                "type": "outcome",
+                "id": "standard-catering-local"
+              }
+            },
+            {
+              "id": "no",
+              "label": "No",
+              "next": {
+                "type": "fallthrough",
+                "id": "next-applicable-rule",
+                "trader_visible": false,
+                "reason": "The local packet says exceptions exist but does not contain the referenced Food Products rules needed to decide them."
+              },
+              "relief_disposition": "declined"
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "id": "standard-catering-local",
+          "treatment": "standard",
+          "basis": "explicit_guidance",
+          "evidence": {
+            "quote": "Other supplies are standard-rated because they’re made in the course of catering.",
+            "node_id": "document:/guidance/catering-takeaway-food-and-vat-notice-7091#information-in-this-notice",
+            "guide_key": "vat-notice-709-1",
+            "section_key": "information-in-this-notice"
+          }
+        }
+      ],
+      "exclusions": [],
+      "relief_rule_ids": []
+    },
+    {
+      "journey_id": "notice-709-1-catering-reference-expanded",
+      "comparison_role": "catering_reference_expanded",
+      "source_packet_id": "context-packet:9d2bce265c6c9bfc732ed2746a15a5cf25476495878f8cad43aa68a826f69730",
+      "scope": {
+        "type": "notice",
+        "notice_number": "709/1",
+        "label": "1.1 Information in this notice"
+      },
+      "root_question_id": "course-of-catering-expanded",
+      "questions": [
+        {
+          "id": "course-of-catering-expanded",
+          "prompt": "Is the supply made in the course of catering?",
+          "evidence": {
+            "quote": "Other supplies are standard-rated because they’re made in the course of catering.",
+            "node_id": "document:/guidance/catering-takeaway-food-and-vat-notice-7091#information-in-this-notice",
+            "guide_key": "vat-notice-709-1",
+            "section_key": "information-in-this-notice"
+          },
+          "answers": [
+            {
+              "id": "yes",
+              "label": "Yes",
+              "next": {
+                "type": "outcome",
+                "id": "standard-catering-expanded"
+              }
+            },
+            {
+              "id": "no",
+              "label": "No",
+              "next": {
+                "type": "question",
+                "id": "food-standard-exception"
+              }
+            }
+          ]
+        },
+        {
+          "id": "food-standard-exception",
+          "prompt": "Does the item fall within a standard-rated food exception identified by VAT Notice 701/14?",
+          "evidence": {
+            "quote": "Most food of a kind used for human consumption (read paragraph 2.3 of this guidance) is zero-rated. There are, however, some exceptions",
+            "node_id": "document:/guidance/food-products-and-vat-notice-70114#food-not-supplied-in-the-course-of-catering",
+            "guide_key": "vat-notice-701-14",
+            "section_key": "food-not-supplied-in-the-course-of-catering"
+          },
+          "answers": [
+            {
+              "id": "yes",
+              "label": "Yes",
+              "next": {
+                "type": "outcome",
+                "id": "standard-food-exception-expanded"
+              }
+            },
+            {
+              "id": "no",
+              "label": "No",
+              "next": {
+                "type": "outcome",
+                "id": "zero-food-expanded"
+              }
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "id": "standard-catering-expanded",
+          "treatment": "standard",
+          "basis": "explicit_guidance",
+          "evidence": {
+            "quote": "Other supplies are standard-rated because they’re made in the course of catering.",
+            "node_id": "document:/guidance/catering-takeaway-food-and-vat-notice-7091#information-in-this-notice",
+            "guide_key": "vat-notice-709-1",
+            "section_key": "information-in-this-notice"
+          }
+        },
+        {
+          "id": "standard-food-exception-expanded",
+          "treatment": "standard",
+          "basis": "explicit_guidance",
+          "evidence": {
+            "quote": "You must always standard rate",
+            "node_id": "document:/guidance/food-products-and-vat-notice-70114#food-not-supplied-in-the-course-of-catering",
+            "guide_key": "vat-notice-701-14",
+            "section_key": "food-not-supplied-in-the-course-of-catering"
+          }
+        },
+        {
+          "id": "zero-food-expanded",
+          "treatment": "zero",
+          "basis": "explicit_guidance",
+          "evidence": {
+            "quote": "Most food of a kind used for human consumption (read paragraph 2.3 of this guidance) is zero-rated.",
+            "node_id": "document:/guidance/food-products-and-vat-notice-70114#food-not-supplied-in-the-course-of-catering",
+            "guide_key": "vat-notice-701-14",
+            "section_key": "food-not-supplied-in-the-course-of-catering"
+          }
+        }
+      ],
+      "exclusions": [],
+      "relief_rule_ids": [],
+      "composition_required": false,
+      "fallthrough_targets": []
+    },
+    {
+      "journey_id": "commodity-2005202000-potato-crisps",
+      "source_packet_id": "context-packet:90523272e0f13b690faed2926556872c6a1b8aa2edc94243d187f78e74fe3c8a",
+      "scope": {
+        "type": "commodity",
+        "chapter": "20",
+        "commodity_code": "2005202000",
+        "label": "Packaged potato crisps"
+      },
+      "root_question_id": "crisps-catering",
+      "questions": [
+        {
+          "id": "crisps-catering",
+          "prompt": "Are the crisps supplied in the course of catering, including as hot takeaway food?",
+          "evidence": {
+            "quote": "You must always standard rate food supplied in the course of catering including hot take-away food.",
+            "node_id": "document:/guidance/food-products-and-vat-notice-70114#food-supplied-in-the-course-of-catering",
+            "guide_key": "vat-notice-701-14",
+            "section_key": "food-supplied-in-the-course-of-catering"
+          },
+          "answers": [
+            {
+              "id": "yes",
+              "label": "Yes",
+              "next": {
+                "type": "outcome",
+                "id": "crisps-standard-catering"
+              }
+            },
+            {
+              "id": "no",
+              "label": "No",
+              "next": {
+                "type": "question",
+                "id": "crisps-packaged-ready"
+              }
+            }
+          ]
+        },
+        {
+          "id": "crisps-packaged-ready",
+          "prompt": "Is the potato snack pre-packed in a sealed container and ready to eat without further preparation?",
+          "evidence": {
+            "quote": "For standard rating to apply the potato and cereal products must also be packaged and ready to eat without any further preparation by the customer.",
+            "node_id": "document:/guidance/food-products-and-vat-notice-70114#general",
+            "guide_key": "vat-notice-701-14",
+            "section_key": "general"
+          },
+          "answers": [
+            {
+              "id": "yes",
+              "label": "Yes",
+              "next": {
+                "type": "outcome",
+                "id": "crisps-standard-snack"
+              }
+            },
+            {
+              "id": "no",
+              "label": "No",
+              "next": {
+                "type": "fallthrough",
+                "id": "next-applicable-rule",
+                "trader_visible": false,
+                "reason": "The packet makes packaging and readiness necessary for this standard-rating rule but does not establish a terminal treatment when those conditions fail."
+              },
+              "relief_disposition": "declined"
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "id": "crisps-standard-catering",
+          "treatment": "standard",
+          "basis": "explicit_guidance",
+          "evidence": {
+            "quote": "You must always standard rate food supplied in the course of catering including hot take-away food.",
+            "node_id": "document:/guidance/food-products-and-vat-notice-70114#food-supplied-in-the-course-of-catering",
+            "guide_key": "vat-notice-701-14",
+            "section_key": "food-supplied-in-the-course-of-catering"
+          }
+        },
+        {
+          "id": "crisps-standard-snack",
+          "treatment": "standard",
+          "basis": "explicit_guidance",
+          "evidence": {
+            "quote": "potato snacks and similar products, made from potato or from potato flour or potato starch",
+            "node_id": "document:/guidance/food-products-and-vat-notice-70114#general",
+            "guide_key": "vat-notice-701-14",
+            "section_key": "general"
+          }
+        }
+      ],
+      "exclusions": [],
+      "relief_rule_ids": [],
+      "composition_required": true,
+      "fallthrough_targets": [
+        {
+          "id": "next-applicable-rule",
+          "resolution": "module_boundary",
+          "required_composer": "AI-1146"
+        }
+      ]
+    },
+    {
+      "journey_id": "commodity-2008939120-sweetened-dried-cranberries",
+      "source_packet_id": "context-packet:7884f51ee110649f7ae8f581aa509310a0cee2417457d89d5f269a30e915c56c",
+      "scope": {
+        "type": "commodity",
+        "chapter": "20",
+        "commodity_code": "2008939120",
+        "label": "Sweetened dried cranberries"
+      },
+      "composition_required": true,
+      "fallthrough_targets": [
+        {
+          "id": "next-applicable-rule",
+          "resolution": "module_boundary",
+          "required_composer": "AI-1146"
+        }
+      ],
+      "root_question_id": "cranberries-catering",
+      "questions": [
+        {
+          "id": "cranberries-catering",
+          "prompt": "Are the cranberries supplied in the course of catering?",
+          "evidence": {
+            "quote": "You must always standard rate food supplied in the course of catering including hot take-away food.",
+            "node_id": "document:/guidance/food-products-and-vat-notice-70114#food-supplied-in-the-course-of-catering",
+            "guide_key": "vat-notice-701-14",
+            "section_key": "food-supplied-in-the-course-of-catering"
+          },
+          "answers": [
+            {
+              "id": "yes",
+              "label": "Yes",
+              "next": {
+                "type": "outcome",
+                "id": "cranberries-standard-catering"
+              }
+            },
+            {
+              "id": "no",
+              "label": "No",
+              "next": {
+                "type": "question",
+                "id": "cranberries-home-baking"
+              }
+            }
+          ]
+        },
+        {
+          "id": "cranberries-home-baking",
+          "prompt": "Are they held out for sale for both snacking and home baking?",
+          "evidence": {
+            "quote": "Sweet tasting dried fruit held out for sale as snacking and home baking",
+            "node_id": "document:/guidance/food-products-and-vat-notice-70114#confectionery",
+            "guide_key": "vat-notice-701-14",
+            "section_key": "confectionery"
+          },
+          "answers": [
+            {
+              "id": "yes",
+              "label": "Yes",
+              "next": {
+                "type": "outcome",
+                "id": "cranberries-zero-home-baking"
+              }
+            },
+            {
+              "id": "no",
+              "label": "No",
+              "next": {
+                "type": "question",
+                "id": "cranberries-confectionery"
+              }
+            }
+          ]
+        },
+        {
+          "id": "cranberries-confectionery",
+          "prompt": "Are they held out for sale as confectionery?",
+          "evidence": {
+            "quote": "Sweet tasting dried fruit held out for sale as confectionery, snacking",
+            "node_id": "document:/guidance/food-products-and-vat-notice-70114#confectionery",
+            "guide_key": "vat-notice-701-14",
+            "section_key": "confectionery"
+          },
+          "answers": [
+            {
+              "id": "yes",
+              "label": "Yes",
+              "next": {
+                "type": "outcome",
+                "id": "cranberries-standard-confectionery"
+              }
+            },
+            {
+              "id": "no",
+              "label": "No",
+              "next": {
+                "type": "fallthrough",
+                "id": "next-applicable-rule",
+                "trader_visible": false,
+                "reason": "The packet does not safely resolve the overlapping snacking descriptions for this case."
+              },
+              "relief_disposition": "declined"
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "id": "cranberries-standard-catering",
+          "treatment": "standard",
+          "basis": "explicit_guidance",
+          "evidence": {
+            "quote": "You must always standard rate food supplied in the course of catering including hot take-away food.",
+            "node_id": "document:/guidance/food-products-and-vat-notice-70114#food-supplied-in-the-course-of-catering",
+            "guide_key": "vat-notice-701-14",
+            "section_key": "food-supplied-in-the-course-of-catering"
+          }
+        },
+        {
+          "id": "cranberries-zero-home-baking",
+          "treatment": "zero",
+          "basis": "explicit_guidance",
+          "evidence": {
+            "quote": "Sweet tasting dried fruit held out for sale as snacking and home baking",
+            "node_id": "document:/guidance/food-products-and-vat-notice-70114#confectionery",
+            "guide_key": "vat-notice-701-14",
+            "section_key": "confectionery"
+          }
+        },
+        {
+          "id": "cranberries-standard-confectionery",
+          "treatment": "standard",
+          "basis": "explicit_guidance",
+          "evidence": {
+            "quote": "Sweet tasting dried fruit held out for sale as confectionery, snacking",
+            "node_id": "document:/guidance/food-products-and-vat-notice-70114#confectionery",
+            "guide_key": "vat-notice-701-14",
+            "section_key": "confectionery"
+          }
+        }
+      ],
+      "exclusions": [
+        {
+          "id": "ambiguous-snacking-description",
+          "reason": "The same table places sweet dried fruit described for snacking in both treatment columns; human policy review is required before composing the residual path.",
+          "evidence": {
+            "quote": "Sweet tasting dried fruit held out for sale as confectionery, snacking",
+            "node_id": "document:/guidance/food-products-and-vat-notice-70114#confectionery",
+            "guide_key": "vat-notice-701-14",
+            "section_key": "confectionery"
+          }
+        }
+      ],
+      "relief_rule_ids": []
+    },
+    {
+      "journey_id": "commodity-2008979890-prepared-fruit-mixtures",
+      "source_packet_id": "context-packet:83462a91dcd81625011bbaac52ab8d8e6f470f99dae98bb60e1601a05dc6e904",
+      "scope": {
+        "type": "commodity",
+        "chapter": "20",
+        "commodity_code": "2008979890",
+        "label": "Prepared fruit/plant mixtures"
+      },
+      "root_question_id": "fruit-catering",
+      "questions": [
+        {
+          "id": "fruit-catering",
+          "prompt": "Is the product supplied in the course of catering?",
+          "evidence": {
+            "quote": "You must always standard rate food supplied in the course of catering including hot take-away food.",
+            "node_id": "document:/guidance/food-products-and-vat-notice-70114#food-supplied-in-the-course-of-catering",
+            "guide_key": "vat-notice-701-14",
+            "section_key": "food-supplied-in-the-course-of-catering"
+          },
+          "answers": [
+            {
+              "id": "yes",
+              "label": "Yes",
+              "next": {
+                "type": "outcome",
+                "id": "fruit-standard-catering"
+              }
+            },
+            {
+              "id": "no",
+              "label": "No",
+              "next": {
+                "type": "question",
+                "id": "fruit-home-brewing"
+              }
+            }
+          ]
+        },
+        {
+          "id": "fruit-home-brewing",
+          "prompt": "Is it held out for sale specifically for home wine making or brewing?",
+          "evidence": {
+            "quote": "You must also standard rate any general food product that you hold out for sale specifically for home wine making or brewing",
+            "node_id": "document:/guidance/food-products-and-vat-notice-70114#ingredients-for-home-beer-and-wine-making",
+            "guide_key": "vat-notice-701-14",
+            "section_key": "ingredients-for-home-beer-and-wine-making"
+          },
+          "answers": [
+            {
+              "id": "yes",
+              "label": "Yes",
+              "next": {
+                "type": "outcome",
+                "id": "fruit-standard-brewing"
+              }
+            },
+            {
+              "id": "no",
+              "label": "No",
+              "next": {
+                "type": "question",
+                "id": "fruit-confectionery"
+              }
+            }
+          ]
+        },
+        {
+          "id": "fruit-confectionery",
+          "prompt": "Is it an item of sweetened prepared food normally eaten with the fingers or otherwise held out as confectionery?",
+          "evidence": {
+            "quote": "items of sweetened prepared food which is normally eaten with the fingers",
+            "node_id": "document:/guidance/food-products-and-vat-notice-70114#confectionery",
+            "guide_key": "vat-notice-701-14",
+            "section_key": "confectionery"
+          },
+          "answers": [
+            {
+              "id": "yes",
+              "label": "Yes",
+              "next": {
+                "type": "outcome",
+                "id": "fruit-standard-confectionery"
+              }
+            },
+            {
+              "id": "no",
+              "label": "No",
+              "next": {
+                "type": "question",
+                "id": "fruit-human-food"
+              }
+            }
+          ]
+        },
+        {
+          "id": "fruit-human-food",
+          "prompt": "Would the average person, knowing what it is and how it is used, consider it to be food or drink?",
+          "evidence": {
+            "quote": "the average person, knowing what it is and how it’s used, would consider it to be food or drink",
+            "node_id": "document:/guidance/food-products-and-vat-notice-70114#what-does-food-of-a-kind-used-for-human-consumption-mean",
+            "guide_key": "vat-notice-701-14",
+            "section_key": "what-does-food-of-a-kind-used-for-human-consumption-mean"
+          },
+          "answers": [
+            {
+              "id": "yes",
+              "label": "Yes",
+              "next": {
+                "type": "question",
+                "id": "fruit-fit-human"
+              }
+            },
+            {
+              "id": "no",
+              "label": "No",
+              "relief_disposition": "declined",
+              "next": {
+                "type": "fallthrough",
+                "id": "next-applicable-rule",
+                "trader_visible": false,
+                "reason": "The product is outside this packet’s food-of-a-kind rule; a later composer must consider any other applicable rule."
+              }
+            }
+          ]
+        },
+        {
+          "id": "fruit-fit-human",
+          "prompt": "Is it fit for human consumption?",
+          "evidence": {
+            "quote": "it’s fit for human consumption",
+            "node_id": "document:/guidance/food-products-and-vat-notice-70114#what-does-food-of-a-kind-used-for-human-consumption-mean",
+            "guide_key": "vat-notice-701-14",
+            "section_key": "what-does-food-of-a-kind-used-for-human-consumption-mean"
+          },
+          "answers": [
+            {
+              "id": "yes",
+              "label": "Yes",
+              "next": {
+                "type": "outcome",
+                "id": "fruit-zero-food"
+              }
+            },
+            {
+              "id": "no",
+              "label": "No",
+              "next": {
+                "type": "question",
+                "id": "fruit-fit-animal"
+              }
+            }
+          ]
+        },
+        {
+          "id": "fruit-fit-animal",
+          "prompt": "Is it fit for animal consumption?",
+          "evidence": {
+            "quote": "Produce which is unfit for either human or animal consumption (for example, abattoir offal sold for processing into fertiliser) is standard-rated.",
+            "node_id": "document:/guidance/food-products-and-vat-notice-70114#what-does-food-of-a-kind-used-for-human-consumption-mean",
+            "guide_key": "vat-notice-701-14",
+            "section_key": "what-does-food-of-a-kind-used-for-human-consumption-mean"
+          },
+          "answers": [
+            {
+              "id": "yes",
+              "label": "Yes",
+              "relief_disposition": "declined",
+              "next": {
+                "type": "fallthrough",
+                "id": "next-applicable-rule",
+                "trader_visible": false,
+                "reason": "Animal-feed eligibility belongs to VAT Notice 701/15 and must be resolved by the later composer."
+              }
+            },
+            {
+              "id": "no",
+              "label": "No",
+              "next": {
+                "type": "outcome",
+                "id": "fruit-standard-not-food"
+              }
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "id": "fruit-standard-catering",
+          "treatment": "standard",
+          "basis": "explicit_guidance",
+          "evidence": {
+            "quote": "You must always standard rate food supplied in the course of catering including hot take-away food.",
+            "node_id": "document:/guidance/food-products-and-vat-notice-70114#food-supplied-in-the-course-of-catering",
+            "guide_key": "vat-notice-701-14",
+            "section_key": "food-supplied-in-the-course-of-catering"
+          }
+        },
+        {
+          "id": "fruit-standard-brewing",
+          "treatment": "standard",
+          "basis": "explicit_guidance",
+          "evidence": {
+            "quote": "You must also standard rate any general food product that you hold out for sale specifically for home wine making or brewing",
+            "node_id": "document:/guidance/food-products-and-vat-notice-70114#ingredients-for-home-beer-and-wine-making",
+            "guide_key": "vat-notice-701-14",
+            "section_key": "ingredients-for-home-beer-and-wine-making"
+          }
+        },
+        {
+          "id": "fruit-standard-confectionery",
+          "treatment": "standard",
+          "basis": "explicit_guidance",
+          "evidence": {
+            "quote": "Standard-rated confectionery includes chocolates, sweets and candies",
+            "node_id": "document:/guidance/food-products-and-vat-notice-70114#confectionery",
+            "guide_key": "vat-notice-701-14",
+            "section_key": "confectionery"
+          }
+        },
+        {
+          "id": "fruit-zero-food",
+          "treatment": "zero",
+          "basis": "explicit_guidance",
+          "evidence": {
+            "quote": "Most food of a kind used for human consumption (read paragraph 2.3 of this guidance) is zero-rated.",
+            "node_id": "document:/guidance/food-products-and-vat-notice-70114#food-not-supplied-in-the-course-of-catering",
+            "guide_key": "vat-notice-701-14",
+            "section_key": "food-not-supplied-in-the-course-of-catering"
+          }
+        },
+        {
+          "id": "fruit-standard-not-food",
+          "treatment": "standard",
+          "basis": "explicit_guidance",
+          "evidence": {
+            "quote": "Produce which is unfit for either human or animal consumption (for example, abattoir offal sold for processing into fertiliser) is standard-rated.",
+            "node_id": "document:/guidance/food-products-and-vat-notice-70114#what-does-food-of-a-kind-used-for-human-consumption-mean",
+            "guide_key": "vat-notice-701-14",
+            "section_key": "what-does-food-of-a-kind-used-for-human-consumption-mean"
+          }
+        }
+      ],
+      "exclusions": [
+        {
+          "id": "animal-feed-eligibility",
+          "reason": "Produce unfit for human consumption may qualify as animal feeding stuffs under VAT Notice 701/15, which is outside this packet.",
+          "evidence": {
+            "quote": "Some produce that’s unfit for human consumption, such as waste and contaminated food products (including used cooking oil), may be eligible for zero rating as animal feeding stuffs — read Animals and animal food (VAT Notice 701/15).",
+            "node_id": "document:/guidance/food-products-and-vat-notice-70114#what-does-food-of-a-kind-used-for-human-consumption-mean",
+            "guide_key": "vat-notice-701-14",
+            "section_key": "what-does-food-of-a-kind-used-for-human-consumption-mean"
+          }
+        }
+      ],
+      "relief_rule_ids": [],
+      "composition_required": true,
+      "fallthrough_targets": [
+        {
+          "id": "next-applicable-rule",
+          "resolution": "module_boundary",
+          "required_composer": "AI-1146"
+        }
+      ]
+    },
+    {
+      "journey_id": "commodity-8407100010-civil-aircraft-engines",
+      "source_packet_id": "context-packet:a3e7dd1573964733a181f4591f7381ca24f35a84c1b9c7176f5139ca0b08c20c",
+      "scope": {
+        "type": "commodity",
+        "chapter": "84",
+        "commodity_code": "8407100010",
+        "label": "Civil-aircraft engines"
+      },
+      "composition_required": true,
+      "fallthrough_targets": [
+        {
+          "id": "next-applicable-rule",
+          "resolution": "module_boundary",
+          "required_composer": "AI-1146"
+        }
+      ],
+      "root_question_id": "engine-usual-part",
+      "questions": [
+        {
+          "id": "engine-usual-part",
+          "prompt": "Is the engine the sort usually installed or incorporated in a qualifying aircraft's propulsion system?",
+          "evidence": {
+            "quote": "the sort usually installed or incorporated in the propulsion, navigation or communications systems, or the general structure of a qualifying ship or aircraft",
+            "node_id": "document:/guidance/ships-aircraft-and-associated-services-notice-744c#conditions-for-zero-rating",
+            "guide_key": "vat-notice-744c",
+            "section_key": "conditions-for-zero-rating"
+          },
+          "answers": [
+            {
+              "id": "yes",
+              "label": "Yes",
+              "next": {
+                "type": "question",
+                "id": "engine-destination"
+              }
+            },
+            {
+              "id": "no",
+              "label": "No",
+              "next": {
+                "type": "fallthrough",
+                "id": "next-applicable-rule",
+                "trader_visible": false,
+                "reason": "The aircraft parts zero-rating rule declines."
+              },
+              "relief_disposition": "declined"
+            }
+          ]
+        },
+        {
+          "id": "engine-destination",
+          "prompt": "At the time of supply, is it destined for incorporation or installation in a qualifying aircraft?",
+          "evidence": {
+            "quote": "for the incorporation or installation in a qualifying ship or aircraft",
+            "node_id": "document:/guidance/ships-aircraft-and-associated-services-notice-744c#conditions-for-zero-rating",
+            "guide_key": "vat-notice-744c",
+            "section_key": "conditions-for-zero-rating"
+          },
+          "answers": [
+            {
+              "id": "yes",
+              "label": "Yes",
+              "next": {
+                "type": "question",
+                "id": "engine-airline-route"
+              }
+            },
+            {
+              "id": "no",
+              "label": "No",
+              "next": {
+                "type": "fallthrough",
+                "id": "next-applicable-rule",
+                "trader_visible": false,
+                "reason": "The aircraft parts zero-rating rule declines."
+              },
+              "relief_disposition": "declined"
+            }
+          ]
+        },
+        {
+          "id": "engine-airline-route",
+          "prompt": "Is the aircraft used by an airline operating for reward chiefly on international routes?",
+          "evidence": {
+            "quote": "an airline operating for reward chiefly on international routes",
+            "node_id": "document:/guidance/ships-aircraft-and-associated-services-notice-744c#qualifying-aircraft",
+            "guide_key": "vat-notice-744c",
+            "section_key": "qualifying-aircraft"
+          },
+          "answers": [
+            {
+              "id": "yes",
+              "label": "Yes",
+              "next": {
+                "type": "question",
+                "id": "engine-transport-use"
+              }
+            },
+            {
+              "id": "no",
+              "label": "No",
+              "next": {
+                "type": "question",
+                "id": "engine-state-aircraft"
+              }
+            }
+          ]
+        },
+        {
+          "id": "engine-transport-use",
+          "prompt": "Is the aircraft used only for passenger or freight transport purposes?",
+          "evidence": {
+            "quote": "aircraft that are used wholly or partly for purposes, other than for the supply of passenger or freight transport, cannot be considered qualifying aircraft",
+            "node_id": "document:/guidance/ships-aircraft-and-associated-services-notice-744c#qualifying-aircraft-on-international-routes",
+            "guide_key": "vat-notice-744c",
+            "section_key": "qualifying-aircraft-on-international-routes"
+          },
+          "answers": [
+            {
+              "id": "yes",
+              "label": "Yes",
+              "next": {
+                "type": "outcome",
+                "id": "engine-zero"
+              }
+            },
+            {
+              "id": "no",
+              "label": "No",
+              "next": {
+                "type": "fallthrough",
+                "id": "next-applicable-rule",
+                "trader_visible": false,
+                "reason": "The aircraft is not qualifying under this route."
+              },
+              "relief_disposition": "declined"
+            }
+          ]
+        },
+        {
+          "id": "engine-state-aircraft",
+          "prompt": "Is the aircraft used by a state institution?",
+          "evidence": {
+            "quote": "a state institution and is of a weight of not less than 8,000kg",
+            "node_id": "document:/guidance/ships-aircraft-and-associated-services-notice-744c#qualifying-aircraft",
+            "guide_key": "vat-notice-744c",
+            "section_key": "qualifying-aircraft"
+          },
+          "answers": [
+            {
+              "id": "yes",
+              "label": "Yes",
+              "next": {
+                "type": "question",
+                "id": "engine-state-weight"
+              }
+            },
+            {
+              "id": "no",
+              "label": "No",
+              "next": {
+                "type": "fallthrough",
+                "id": "next-applicable-rule",
+                "trader_visible": false,
+                "reason": "The aircraft is not qualifying under this route."
+              },
+              "relief_disposition": "declined"
+            }
+          ]
+        },
+        {
+          "id": "engine-state-weight",
+          "prompt": "Is the aircraft's authorised maximum take-off weight at least 8,000kg?",
+          "evidence": {
+            "quote": "is of a weight of not less than 8,000kg",
+            "node_id": "document:/guidance/ships-aircraft-and-associated-services-notice-744c#qualifying-aircraft",
+            "guide_key": "vat-notice-744c",
+            "section_key": "qualifying-aircraft"
+          },
+          "answers": [
+            {
+              "id": "yes",
+              "label": "Yes",
+              "next": {
+                "type": "question",
+                "id": "engine-state-recreation"
+              }
+            },
+            {
+              "id": "no",
+              "label": "No",
+              "next": {
+                "type": "fallthrough",
+                "id": "next-applicable-rule",
+                "trader_visible": false,
+                "reason": "The aircraft is below the qualifying weight."
+              },
+              "relief_disposition": "declined"
+            }
+          ]
+        },
+        {
+          "id": "engine-state-recreation",
+          "prompt": "Is the aircraft designed or adapted for recreation or pleasure?",
+          "evidence": {
+            "quote": "is neither designed nor adapted for use for recreation or pleasure",
+            "node_id": "document:/guidance/ships-aircraft-and-associated-services-notice-744c#qualifying-aircraft",
+            "guide_key": "vat-notice-744c",
+            "section_key": "qualifying-aircraft"
+          },
+          "answers": [
+            {
+              "id": "yes",
+              "label": "Yes",
+              "next": {
+                "type": "fallthrough",
+                "id": "next-applicable-rule",
+                "trader_visible": false,
+                "reason": "Aircraft designed or adapted for recreation or pleasure do not qualify under this route."
+              },
+              "relief_disposition": "declined"
+            },
+            {
+              "id": "no",
+              "label": "No",
+              "next": {
+                "type": "outcome",
+                "id": "engine-zero"
+              }
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "id": "engine-zero",
+          "treatment": "zero",
+          "basis": "explicit_guidance",
+          "evidence": {
+            "quote": "To qualify for zero rating, both of the following conditions must be met.",
+            "node_id": "document:/guidance/ships-aircraft-and-associated-services-notice-744c#conditions-for-zero-rating",
+            "guide_key": "vat-notice-744c",
+            "section_key": "conditions-for-zero-rating"
+          }
+        }
+      ],
+      "exclusions": [],
+      "relief_rule_ids": []
+    },
+    {
+      "journey_id": "commodity-8409100090-aircraft-engine-parts",
+      "source_packet_id": "context-packet:5066d776bb4b91eab01bd9e2c2689ecf3acc30c879ddf66971e26eb3f27190ff",
+      "scope": {
+        "type": "commodity",
+        "chapter": "84",
+        "commodity_code": "8409100090",
+        "label": "Aircraft-engine parts"
+      },
+      "composition_required": true,
+      "fallthrough_targets": [
+        {
+          "id": "next-applicable-rule",
+          "resolution": "module_boundary",
+          "required_composer": "AI-1146"
+        }
+      ],
+      "root_question_id": "engine-part-usual",
+      "questions": [
+        {
+          "id": "engine-part-usual",
+          "prompt": "Is the part the sort usually installed or incorporated in an aircraft's propulsion system?",
+          "evidence": {
+            "quote": "the sort usually installed or incorporated in the propulsion, navigation or communications systems, or the general structure of a qualifying ship or aircraft",
+            "node_id": "document:/guidance/ships-aircraft-and-associated-services-notice-744c#conditions-for-zero-rating",
+            "guide_key": "vat-notice-744c",
+            "section_key": "conditions-for-zero-rating"
+          },
+          "answers": [
+            {
+              "id": "yes",
+              "label": "Yes",
+              "next": {
+                "type": "question",
+                "id": "engine-part-destination"
+              }
+            },
+            {
+              "id": "no",
+              "label": "No",
+              "next": {
+                "type": "fallthrough",
+                "id": "next-applicable-rule",
+                "trader_visible": false,
+                "reason": "The aircraft parts zero-rating rule declines."
+              },
+              "relief_disposition": "declined"
+            }
+          ]
+        },
+        {
+          "id": "engine-part-destination",
+          "prompt": "At the time of supply, is the part destined for incorporation or installation in a qualifying aircraft?",
+          "evidence": {
+            "quote": "You may zero rate supplies of parts in a supply chain, as long as at the time of supply the part is destined for a qualifying ship or aircraft.",
+            "node_id": "document:/guidance/ships-aircraft-and-associated-services-notice-744c#conditions-for-zero-rating",
+            "guide_key": "vat-notice-744c",
+            "section_key": "conditions-for-zero-rating"
+          },
+          "answers": [
+            {
+              "id": "yes",
+              "label": "Yes",
+              "next": {
+                "type": "question",
+                "id": "engine-part-airline-route"
+              }
+            },
+            {
+              "id": "no",
+              "label": "No",
+              "next": {
+                "type": "fallthrough",
+                "id": "next-applicable-rule",
+                "trader_visible": false,
+                "reason": "The aircraft parts zero-rating rule declines."
+              },
+              "relief_disposition": "declined"
+            }
+          ]
+        },
+        {
+          "id": "engine-part-airline-route",
+          "prompt": "Is the destination aircraft used by an airline operating for reward chiefly on international routes?",
+          "evidence": {
+            "quote": "an airline operating for reward chiefly on international routes",
+            "node_id": "document:/guidance/ships-aircraft-and-associated-services-notice-744c#qualifying-aircraft",
+            "guide_key": "vat-notice-744c",
+            "section_key": "qualifying-aircraft"
+          },
+          "answers": [
+            {
+              "id": "yes",
+              "label": "Yes",
+              "next": {
+                "type": "question",
+                "id": "engine-part-transport-use"
+              }
+            },
+            {
+              "id": "no",
+              "label": "No",
+              "next": {
+                "type": "question",
+                "id": "engine-part-state"
+              }
+            }
+          ]
+        },
+        {
+          "id": "engine-part-transport-use",
+          "prompt": "Is the destination aircraft used only for passenger or freight transport purposes?",
+          "evidence": {
+            "quote": "aircraft that are used wholly or partly for purposes, other than for the supply of passenger or freight transport, cannot be considered qualifying aircraft",
+            "node_id": "document:/guidance/ships-aircraft-and-associated-services-notice-744c#qualifying-aircraft-on-international-routes",
+            "guide_key": "vat-notice-744c",
+            "section_key": "qualifying-aircraft-on-international-routes"
+          },
+          "answers": [
+            {
+              "id": "yes",
+              "label": "Yes",
+              "next": {
+                "type": "outcome",
+                "id": "engine-part-zero"
+              }
+            },
+            {
+              "id": "no",
+              "label": "No",
+              "next": {
+                "type": "fallthrough",
+                "id": "next-applicable-rule",
+                "trader_visible": false,
+                "reason": "The aircraft is not qualifying under the airline route."
+              },
+              "relief_disposition": "declined"
+            }
+          ]
+        },
+        {
+          "id": "engine-part-state",
+          "prompt": "Is the destination aircraft used by a state institution?",
+          "evidence": {
+            "quote": "a state institution and is of a weight of not less than 8,000kg",
+            "node_id": "document:/guidance/ships-aircraft-and-associated-services-notice-744c#qualifying-aircraft",
+            "guide_key": "vat-notice-744c",
+            "section_key": "qualifying-aircraft"
+          },
+          "answers": [
+            {
+              "id": "yes",
+              "label": "Yes",
+              "next": {
+                "type": "question",
+                "id": "engine-part-weight"
+              }
+            },
+            {
+              "id": "no",
+              "label": "No",
+              "next": {
+                "type": "fallthrough",
+                "id": "next-applicable-rule",
+                "trader_visible": false,
+                "reason": "The destination aircraft is not qualifying under this rule."
+              },
+              "relief_disposition": "declined"
+            }
+          ]
+        },
+        {
+          "id": "engine-part-weight",
+          "prompt": "Is the destination aircraft's authorised maximum take-off weight at least 8,000kg?",
+          "evidence": {
+            "quote": "is of a weight of not less than 8,000kg",
+            "node_id": "document:/guidance/ships-aircraft-and-associated-services-notice-744c#qualifying-aircraft",
+            "guide_key": "vat-notice-744c",
+            "section_key": "qualifying-aircraft"
+          },
+          "answers": [
+            {
+              "id": "yes",
+              "label": "Yes",
+              "next": {
+                "type": "question",
+                "id": "engine-part-recreation"
+              }
+            },
+            {
+              "id": "no",
+              "label": "No",
+              "next": {
+                "type": "fallthrough",
+                "id": "next-applicable-rule",
+                "trader_visible": false,
+                "reason": "The destination aircraft is below the qualifying weight."
+              },
+              "relief_disposition": "declined"
+            }
+          ]
+        },
+        {
+          "id": "engine-part-recreation",
+          "prompt": "Is the destination aircraft designed or adapted for recreation or pleasure?",
+          "evidence": {
+            "quote": "is neither designed nor adapted for use for recreation or pleasure",
+            "node_id": "document:/guidance/ships-aircraft-and-associated-services-notice-744c#qualifying-aircraft",
+            "guide_key": "vat-notice-744c",
+            "section_key": "qualifying-aircraft"
+          },
+          "answers": [
+            {
+              "id": "yes",
+              "label": "Yes",
+              "next": {
+                "type": "fallthrough",
+                "id": "next-applicable-rule",
+                "trader_visible": false,
+                "reason": "Aircraft designed or adapted for recreation or pleasure do not qualify under this route."
+              },
+              "relief_disposition": "declined"
+            },
+            {
+              "id": "no",
+              "label": "No",
+              "next": {
+                "type": "outcome",
+                "id": "engine-part-zero"
+              }
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "id": "engine-part-zero",
+          "treatment": "zero",
+          "basis": "explicit_guidance",
+          "evidence": {
+            "quote": "To qualify for zero rating, both of the following conditions must be met.",
+            "node_id": "document:/guidance/ships-aircraft-and-associated-services-notice-744c#conditions-for-zero-rating",
+            "guide_key": "vat-notice-744c",
+            "section_key": "conditions-for-zero-rating"
+          }
+        }
+      ],
+      "exclusions": [],
+      "relief_rule_ids": []
+    },
+    {
+      "journey_id": "commodity-8424100011-aircraft-fire-extinguisher-cylinders",
+      "source_packet_id": "context-packet:3ccd647be99934c07607e4ee60ddcad16595346684b427a823229c17f56138bf",
+      "scope": {
+        "type": "commodity",
+        "chapter": "84",
+        "commodity_code": "8424100011",
+        "label": "Cylinders classified under civil-aircraft fire extinguishers"
+      },
+      "composition_required": true,
+      "fallthrough_targets": [
+        {
+          "id": "next-applicable-rule",
+          "resolution": "module_boundary",
+          "required_composer": "AI-1146"
+        }
+      ],
+      "root_question_id": "cylinder-aircraft-equipment",
+      "questions": [
+        {
+          "id": "cylinder-aircraft-equipment",
+          "prompt": "Is the cylinder the sort usually installed or incorporated in the qualifying aircraft's systems or general structure?",
+          "evidence": {
+            "quote": "the sort usually installed or incorporated in the propulsion, navigation or communications systems, or the general structure of a qualifying ship or aircraft",
+            "node_id": "document:/guidance/ships-aircraft-and-associated-services-notice-744c#conditions-for-zero-rating",
+            "guide_key": "vat-notice-744c",
+            "section_key": "conditions-for-zero-rating"
+          },
+          "answers": [
+            {
+              "id": "yes",
+              "label": "Yes",
+              "next": {
+                "type": "question",
+                "id": "cylinder-destination"
+              }
+            },
+            {
+              "id": "no",
+              "label": "No",
+              "next": {
+                "type": "fallthrough",
+                "id": "next-applicable-rule",
+                "trader_visible": false,
+                "reason": "The aircraft equipment zero-rating rule declines."
+              },
+              "relief_disposition": "declined"
+            }
+          ]
+        },
+        {
+          "id": "cylinder-destination",
+          "prompt": "At the time of supply, is it destined for incorporation or installation in a qualifying aircraft?",
+          "evidence": {
+            "quote": "for the incorporation or installation in a qualifying ship or aircraft",
+            "node_id": "document:/guidance/ships-aircraft-and-associated-services-notice-744c#conditions-for-zero-rating",
+            "guide_key": "vat-notice-744c",
+            "section_key": "conditions-for-zero-rating"
+          },
+          "answers": [
+            {
+              "id": "yes",
+              "label": "Yes",
+              "next": {
+                "type": "question",
+                "id": "cylinder-airline-route"
+              }
+            },
+            {
+              "id": "no",
+              "label": "No",
+              "next": {
+                "type": "fallthrough",
+                "id": "next-applicable-rule",
+                "trader_visible": false,
+                "reason": "The aircraft equipment zero-rating rule declines."
+              },
+              "relief_disposition": "declined"
+            }
+          ]
+        },
+        {
+          "id": "cylinder-airline-route",
+          "prompt": "Is the destination aircraft used by an airline operating for reward chiefly on international routes?",
+          "evidence": {
+            "quote": "an airline operating for reward chiefly on international routes",
+            "node_id": "document:/guidance/ships-aircraft-and-associated-services-notice-744c#qualifying-aircraft",
+            "guide_key": "vat-notice-744c",
+            "section_key": "qualifying-aircraft"
+          },
+          "answers": [
+            {
+              "id": "yes",
+              "label": "Yes",
+              "next": {
+                "type": "question",
+                "id": "cylinder-transport-use"
+              }
+            },
+            {
+              "id": "no",
+              "label": "No",
+              "next": {
+                "type": "question",
+                "id": "cylinder-state"
+              }
+            }
+          ]
+        },
+        {
+          "id": "cylinder-transport-use",
+          "prompt": "Is the destination aircraft used only for passenger or freight transport purposes?",
+          "evidence": {
+            "quote": "aircraft that are used wholly or partly for purposes, other than for the supply of passenger or freight transport, cannot be considered qualifying aircraft",
+            "node_id": "document:/guidance/ships-aircraft-and-associated-services-notice-744c#qualifying-aircraft-on-international-routes",
+            "guide_key": "vat-notice-744c",
+            "section_key": "qualifying-aircraft-on-international-routes"
+          },
+          "answers": [
+            {
+              "id": "yes",
+              "label": "Yes",
+              "next": {
+                "type": "outcome",
+                "id": "cylinder-zero"
+              }
+            },
+            {
+              "id": "no",
+              "label": "No",
+              "next": {
+                "type": "fallthrough",
+                "id": "next-applicable-rule",
+                "trader_visible": false,
+                "reason": "The aircraft is not qualifying under the airline route."
+              },
+              "relief_disposition": "declined"
+            }
+          ]
+        },
+        {
+          "id": "cylinder-state",
+          "prompt": "Is the destination aircraft used by a state institution?",
+          "evidence": {
+            "quote": "a state institution and is of a weight of not less than 8,000kg",
+            "node_id": "document:/guidance/ships-aircraft-and-associated-services-notice-744c#qualifying-aircraft",
+            "guide_key": "vat-notice-744c",
+            "section_key": "qualifying-aircraft"
+          },
+          "answers": [
+            {
+              "id": "yes",
+              "label": "Yes",
+              "next": {
+                "type": "question",
+                "id": "cylinder-weight"
+              }
+            },
+            {
+              "id": "no",
+              "label": "No",
+              "next": {
+                "type": "fallthrough",
+                "id": "next-applicable-rule",
+                "trader_visible": false,
+                "reason": "The destination aircraft is not qualifying under this rule."
+              },
+              "relief_disposition": "declined"
+            }
+          ]
+        },
+        {
+          "id": "cylinder-weight",
+          "prompt": "Is the destination aircraft's authorised maximum take-off weight at least 8,000kg?",
+          "evidence": {
+            "quote": "is of a weight of not less than 8,000kg",
+            "node_id": "document:/guidance/ships-aircraft-and-associated-services-notice-744c#qualifying-aircraft",
+            "guide_key": "vat-notice-744c",
+            "section_key": "qualifying-aircraft"
+          },
+          "answers": [
+            {
+              "id": "yes",
+              "label": "Yes",
+              "next": {
+                "type": "question",
+                "id": "cylinder-recreation"
+              }
+            },
+            {
+              "id": "no",
+              "label": "No",
+              "next": {
+                "type": "fallthrough",
+                "id": "next-applicable-rule",
+                "trader_visible": false,
+                "reason": "The destination aircraft is below the qualifying weight."
+              },
+              "relief_disposition": "declined"
+            }
+          ]
+        },
+        {
+          "id": "cylinder-recreation",
+          "prompt": "Is the destination aircraft designed or adapted for recreation or pleasure?",
+          "evidence": {
+            "quote": "is neither designed nor adapted for use for recreation or pleasure",
+            "node_id": "document:/guidance/ships-aircraft-and-associated-services-notice-744c#qualifying-aircraft",
+            "guide_key": "vat-notice-744c",
+            "section_key": "qualifying-aircraft"
+          },
+          "answers": [
+            {
+              "id": "yes",
+              "label": "Yes",
+              "next": {
+                "type": "fallthrough",
+                "id": "next-applicable-rule",
+                "trader_visible": false,
+                "reason": "Aircraft designed or adapted for recreation or pleasure do not qualify under this route."
+              },
+              "relief_disposition": "declined"
+            },
+            {
+              "id": "no",
+              "label": "No",
+              "next": {
+                "type": "outcome",
+                "id": "cylinder-zero"
+              }
+            }
+          ]
+        }
+      ],
+      "outcomes": [
+        {
+          "id": "cylinder-zero",
+          "treatment": "zero",
+          "basis": "explicit_guidance",
+          "evidence": {
+            "quote": "The following are examples of parts and equipment that may be zero-rated, as long as they meet the conditions set out in paragraph 7.2.",
+            "node_id": "document:/guidance/ships-aircraft-and-associated-services-notice-744c#parts-and-equipment-that-qualify-for-zero-rating",
+            "guide_key": "vat-notice-744c",
+            "section_key": "parts-and-equipment-that-qualify-for-zero-rating"
+          }
+        }
+      ],
+      "exclusions": [],
+      "relief_rule_ids": []
+    }
+  ],
+  "spike_findings": [
+    {
+      "id": "mixed-and-apportioned-supplies",
+      "finding": "Guidance that requires a single/multiple-supply assessment or apportions different treatments cannot be represented by one terminal treatment and is excluded for product decision."
+    },
+    {
+      "id": "catering-reference-expansion",
+      "finding": "The local catering packet permits only the catering question and a standard outcome. Pulling in VAT Notice 701/14 makes the food-exception question and a safe zero-rated branch possible."
+    },
+    {
+      "id": "cranberry-snacking-ambiguity",
+      "finding": "The food guidance table uses overlapping snacking language in both zero and standard columns for sweet dried fruit. The unresolved residual path is recorded for human policy review rather than assigned a treatment."
+    }
+  ],
+  "packet_review_records": [
+    {
+      "packet_id": "context-packet:f4929c80cc13198aef88004367eee2b1e06e2217d8597d683115cf6d2821cd48",
+      "source_packet_sha256": "fce0a7f9595c1a4e1b931d0fd1c05ca7aed268fe5477c291f92f9a332a3e5d46",
+      "status": "no_contract_safe_tree_identified",
+      "journey_ids": [],
+      "finding": "AI-assisted spike review did not identify a contract-safe standalone terminal rule for accounting-for-vat; retained for human review rather than inventing a treatment.",
+      "method": "ai_assisted_human_review"
+    },
+    {
+      "packet_id": "context-packet:8419649cfab060f51eb22e49fbbfc074ebd77d92f0f9c13c559a23b0d491e7c9",
+      "source_packet_sha256": "8c92d73764d3b15e1a59ffb0450810c39fa75716ae69e243ca0ee8e6dc769b07",
+      "status": "no_contract_safe_tree_identified",
+      "journey_ids": [],
+      "finding": "AI-assisted spike review did not produce a contract-safe standalone tree for aircraft-ships-trains-and-other-means-of-transport; recorded packet omissions require human review.",
+      "method": "ai_assisted_human_review"
+    },
+    {
+      "packet_id": "context-packet:b4eb6bbd2880462d0ad28e9be7f3ed944b8b3c1c499937684a4a003795d4dc81",
+      "source_packet_sha256": "f9de1f2b0a3338c40cd275a4b5230b3f5c6d8be7613aef5cf1fc10ea11a63a7a",
+      "status": "no_contract_safe_tree_identified",
+      "journey_ids": [],
+      "finding": "AI-assisted spike review did not identify a contract-safe standalone terminal rule for catering; retained for human review rather than inventing a treatment.",
+      "method": "ai_assisted_human_review"
+    },
+    {
+      "packet_id": "context-packet:57ec8a18b950d6f2523c32cd7ce291b453493e7a1ee1085f8f86be8ccfd4df26",
+      "source_packet_sha256": "faaed83f441db6c76c5703c30c7f7ee10ebf519f3e984a8b6b1af7963d0dd9dc",
+      "status": "no_contract_safe_tree_identified",
+      "journey_ids": [],
+      "finding": "AI-assisted spike review did not identify a contract-safe standalone terminal rule for catering-2; retained for human review rather than inventing a treatment.",
+      "method": "ai_assisted_human_review"
+    },
+    {
+      "packet_id": "context-packet:4507a332f2c8645df623d5887d8d8ec1942ccb6538212e71799e241eb3119595",
+      "source_packet_sha256": "92192e4a4cbb739b75346f1d1437114306bf2d3a8263f3a0b152584256020aca",
+      "status": "no_contract_safe_tree_identified",
+      "journey_ids": [],
+      "finding": "AI-assisted spike review did not identify a contract-safe standalone terminal rule for catering-contracts; retained for human review rather than inventing a treatment.",
+      "method": "ai_assisted_human_review"
+    },
+    {
+      "packet_id": "context-packet:120f1ef0a75afd0397bfdb5ec63ab11857d3b3118e4e2194310282c6dc667bd3",
+      "source_packet_sha256": "9ce6cde477ab591a4417865c2ee189dde7990ad14d084dd13495a416299fa186",
+      "status": "no_contract_safe_tree_identified",
+      "journey_ids": [],
+      "finding": "AI-assisted spike review did not identify a contract-safe standalone terminal rule for catering-for-family-or-employees; retained for human review rather than inventing a treatment.",
+      "method": "ai_assisted_human_review"
+    },
+    {
+      "packet_id": "context-packet:479e2cb78a6c764f9a87d434d0aee357dc3f03b2315d49010456b57a80b309b2",
+      "source_packet_sha256": "c854301ef1760dfc48c4f6af62c4d77c87ba744601b718f2ab2ca47d6c762e84",
+      "status": "no_contract_safe_tree_identified",
+      "journey_ids": [],
+      "finding": "AI-assisted spike review did not produce a contract-safe standalone tree for catering-provided-by-a-catering-contractor-acting-as-agent; recorded packet omissions require human review.",
+      "method": "ai_assisted_human_review"
+    },
+    {
+      "packet_id": "context-packet:827bb270fc89fff14aa23eaf8775e7cdd03c466a64d8e3d0ce53508ad9de86ea",
+      "source_packet_sha256": "7bccf624b9e8f9e5a959610c0c9f7fde6e7852403ccb8ab8da295e3292039699",
+      "status": "no_contract_safe_tree_identified",
+      "journey_ids": [],
+      "finding": "AI-assisted spike review did not identify a contract-safe standalone terminal rule for catering-provided-by-a-catering-contractor-acting-as-both-principal-and-agent; retained for human review rather than inventing a treatment.",
+      "method": "ai_assisted_human_review"
+    },
+    {
+      "packet_id": "context-packet:78f76ec3cf96ab662f4c97fcaefa2fbf01990efda316aab65bb020894233b7a3",
+      "source_packet_sha256": "834eaa6c94152abb824f028b8ea147c6163e2bf048bbb00f90d94aa223069cca",
+      "status": "no_contract_safe_tree_identified",
+      "journey_ids": [],
+      "finding": "AI-assisted spike review did not identify a contract-safe standalone terminal rule for catering-provided-by-a-catering-contractor-acting-as-principal; retained for human review rather than inventing a treatment.",
+      "method": "ai_assisted_human_review"
+    },
+    {
+      "packet_id": "context-packet:6f54ffd50e9704c78593b89dd3bd563133dafe8cf129082564ad38df7c1bae2d",
+      "source_packet_sha256": "d3437eff75869575808ff5632be70a9368c17e50675ebd1fa92ab93bf9e3a505",
+      "status": "no_contract_safe_tree_identified",
+      "journey_ids": [],
+      "finding": "AI-assisted spike review did not identify a contract-safe standalone terminal rule for catering-provided-by-the-owner-of-the-catering-facilities; retained for human review rather than inventing a treatment.",
+      "method": "ai_assisted_human_review"
+    },
+    {
+      "packet_id": "context-packet:2abcd3abb01518205cdc7bc4c15d4098167d9fb8138f655b06d6f79dfe9e0931",
+      "source_packet_sha256": "3bd76f16c3f892011b280422d505789758066d037ae054944522d7d9cbbf6916",
+      "status": "no_contract_safe_tree_identified",
+      "journey_ids": [],
+      "finding": "AI-assisted spike review did not identify a contract-safe standalone terminal rule for condiments; retained for human review rather than inventing a treatment.",
+      "method": "ai_assisted_human_review"
+    },
+    {
+      "packet_id": "context-packet:6cf5cdec3ad67af98a256080522f373e4613598f2a8461c49edf513042f18315",
+      "source_packet_sha256": "7feaee504d8079d6c61907efe3d14cbbaed5d14e4efddd9b211cb41bc23aa993",
+      "status": "no_contract_safe_tree_identified",
+      "journey_ids": [],
+      "finding": "AI-assisted spike review did not identify a contract-safe standalone terminal rule for customerprep; retained for human review rather than inventing a treatment.",
+      "method": "ai_assisted_human_review"
+    },
+    {
+      "packet_id": "context-packet:37839e438accd55f37c30ecfd83f6980fc8199fef219233cf81e787b0db217e6",
+      "source_packet_sha256": "e41ac6d95e15442d2c7a21b164354757938ac25788cc48f14976962b0b6eb918",
+      "status": "no_contract_safe_tree_identified",
+      "journey_ids": [],
+      "finding": "AI-assisted spike review did not identify a contract-safe standalone terminal rule for decide-if-your-supplies-are-in-the-course-of-catering; retained for human review rather than inventing a treatment.",
+      "method": "ai_assisted_human_review"
+    },
+    {
+      "packet_id": "context-packet:6b59aff91a2d00bb5509753872431b640622bb017d71380064a572cbcfe6591c",
+      "source_packet_sha256": "8e4501b5acb2772b671bbc44db6640101bb167de98c748e6a9e001784b2e6659",
+      "status": "no_contract_safe_tree_identified",
+      "journey_ids": [],
+      "finding": "AI-assisted spike review did not identify a contract-safe standalone terminal rule for definition-of-hot; retained for human review rather than inventing a treatment.",
+      "method": "ai_assisted_human_review"
+    },
+    {
+      "packet_id": "context-packet:8af142c223731db21064a71020d15cc0950f9a89d66a09aac4098de3483fceb1",
+      "source_packet_sha256": "c8f071782c0e2c28f85210d9b020cb3c624997db799941f8a2315aac4527c6e5",
+      "status": "no_contract_safe_tree_identified",
+      "journey_ids": [],
+      "finding": "AI-assisted spike review did not identify a contract-safe standalone terminal rule for delivered-sandwiches-and-groceries; retained for human review rather than inventing a treatment.",
+      "method": "ai_assisted_human_review"
+    },
+    {
+      "packet_id": "context-packet:8afa71b1790dbb75e19aa1baef988eb674da8958240e83df50a89ccce0837f3f",
+      "source_packet_sha256": "4903383ccac5a098a2da5a2ab68b484ba70356cb6f6fcbdbfa4122afeeeefd7f",
+      "status": "no_contract_safe_tree_identified",
+      "journey_ids": [],
+      "finding": "AI-assisted spike review did not identify a contract-safe standalone terminal rule for example-1; retained for human review rather than inventing a treatment.",
+      "method": "ai_assisted_human_review"
+    },
+    {
+      "packet_id": "context-packet:eca7b2ff5e96212ab57cf7220888ccc12d9b149b607d72096b5e30cd36b695f4",
+      "source_packet_sha256": "2a56dad35a66e265933a0e366d3625f9e0c358f7a2f3ccd96c1db3c44e2b0d81",
+      "status": "no_contract_safe_tree_identified",
+      "journey_ids": [],
+      "finding": "AI-assisted spike review did not identify a contract-safe standalone terminal rule for example-2; retained for human review rather than inventing a treatment.",
+      "method": "ai_assisted_human_review"
+    },
+    {
+      "packet_id": "context-packet:52810928be7917fccf1590bd577fee9978120283faf40b4b11886167c3710f4c",
+      "source_packet_sha256": "162b20513c4a19d3895359c532d5bc46c92d1bb694882c9e60a42f9dbfee0213",
+      "status": "no_contract_safe_tree_identified",
+      "journey_ids": [],
+      "finding": "AI-assisted spike review did not identify a contract-safe standalone terminal rule for example-3; retained for human review rather than inventing a treatment.",
+      "method": "ai_assisted_human_review"
+    },
+    {
+      "packet_id": "context-packet:01e1a0b751639625bdc06c9882053595347a537d27c1167abd6ca5658c7e71c4",
+      "source_packet_sha256": "708be0d3d6e8e31012396dd8e86ae06fd245229dcc89dc7f88aa511ff3928e27",
+      "status": "no_contract_safe_tree_identified",
+      "journey_ids": [],
+      "finding": "AI-assisted spike review did not identify a contract-safe standalone terminal rule for example-4; retained for human review rather than inventing a treatment.",
+      "method": "ai_assisted_human_review"
+    },
+    {
+      "packet_id": "context-packet:dc5c870159dc3037086eb572cdf07ba98e7bd47f59f4af3e7d609fac2ad242a4",
+      "source_packet_sha256": "23bda4b6388f49189ebf3af6ebc3d7ef58a3fe0fced4697e5fcc511e462dfc93",
+      "status": "no_contract_safe_tree_identified",
+      "journey_ids": [],
+      "finding": "AI-assisted spike review did not identify a contract-safe standalone terminal rule for example-5; retained for human review rather than inventing a treatment.",
+      "method": "ai_assisted_human_review"
+    },
+    {
+      "packet_id": "context-packet:dcb84a42fbe035b1220ff323db2c50531908e44fada8decd60b61facff8db633",
+      "source_packet_sha256": "10ee1345a22e342d648c747877457d1f6d51ced05e37e4ff54e34623a0f6f1b8",
+      "status": "no_contract_safe_tree_identified",
+      "journey_ids": [],
+      "finding": "AI-assisted spike review did not identify a contract-safe standalone terminal rule for example-6; retained for human review rather than inventing a treatment.",
+      "method": "ai_assisted_human_review"
+    },
+    {
+      "packet_id": "context-packet:fa41ec18f120050ce1ebf59b9f7be16627da6fc097fe2413b080b05c88715b80",
+      "source_packet_sha256": "dab6e7eff379211491e7d8d3b6be8ed48a254ee76139058c87e642fe05e3b207",
+      "status": "no_contract_safe_tree_identified",
+      "journey_ids": [],
+      "finding": "AI-assisted spike review did not identify a contract-safe standalone terminal rule for grocery-items-sold-from-catering-outlets; retained for human review rather than inventing a treatment.",
+      "method": "ai_assisted_human_review"
+    },
+    {
+      "packet_id": "context-packet:8fc2d7235cefdfc71c760caeb7bbeeb2c29b84613e55e8d427f1a8a19c01082d",
+      "source_packet_sha256": "4b517bed86abfdbc1a93fb34b3fac2028f6e5a5e52632e97802b37720ad537f3",
+      "status": "no_contract_safe_tree_identified",
+      "journey_ids": [],
+      "finding": "AI-assisted spike review did not produce a contract-safe standalone tree for help-us-improve-this-notice; unresolved packet references require human review.",
+      "method": "ai_assisted_human_review"
+    },
+    {
+      "packet_id": "context-packet:6bd759f80469a0b789a8c4d922bcbf6ab46c15b07cbe7b74c4b2ef55ab7c0131",
+      "source_packet_sha256": "33ecf23425adf36f9b9135f90d71b58158f5b308c0bdeffbf098e750b7b55e96",
+      "status": "no_contract_safe_tree_identified",
+      "journey_ids": [],
+      "finding": "AI-assisted spike review did not produce a contract-safe standalone tree for hospitals; recorded packet omissions require human review.",
+      "method": "ai_assisted_human_review"
+    },
+    {
+      "packet_id": "context-packet:03b04583f4d66be14fe809bde6e027f4a958b514f0fb5421ad10a99b840dabbc",
+      "source_packet_sha256": "cede09004cd60e7a7f7c1950acb66fbe8965287fb10870ca9143ce7da44e3e01",
+      "status": "no_contract_safe_tree_identified",
+      "journey_ids": [],
+      "finding": "AI-assisted spike review did not produce a contract-safe standalone tree for hot-and-cold-food-and-drink-sold-at-the-same-time; recorded packet omissions require human review.",
+      "method": "ai_assisted_human_review"
+    },
+    {
+      "packet_id": "context-packet:0eb1f39f2bd41414f106ab7c4416f2f482ba52e4fbc753d213969dd0a9b06be9",
+      "source_packet_sha256": "fb33158be2c8655c05d500383158e3830fba75574d9f2e379104b3215bfa255b",
+      "status": "no_contract_safe_tree_identified",
+      "journey_ids": [],
+      "finding": "AI-assisted spike review did not identify a contract-safe standalone terminal rule for hot-and-cold-ingredients-supplied-as-a-single-item-of-food; retained for human review rather than inventing a treatment.",
+      "method": "ai_assisted_human_review"
+    },
+    {
+      "packet_id": "context-packet:10b477728bac0dda5c29c69565e52fa3974b78759392b417998fa85776dd787b",
+      "source_packet_sha256": "5124be97c6441a5b508e36afa41b4f0b6fd8a1e20ff3fbb48150b813e5b0e514",
+      "status": "no_contract_safe_tree_identified",
+      "journey_ids": [],
+      "finding": "AI-assisted spike review did not identify a contract-safe standalone terminal rule for hot-take-away-food-and-drink; retained for human review rather than inventing a treatment.",
+      "method": "ai_assisted_human_review"
+    },
+    {
+      "packet_id": "context-packet:f1ab81e9ac0138a29abc2b2a87a2927d9db43ba20b2384cf8cfd6f6f3fd89c47",
+      "source_packet_sha256": "b1f9bea99c15eb2f9f829add583afbfd3f49483d76443f14f149d4b6a7d0595b",
+      "status": "no_contract_safe_tree_identified",
+      "journey_ids": [],
+      "finding": "AI-assisted spike review did not identify a contract-safe standalone terminal rule for hot-takeaway-food-and-drink; retained for human review rather than inventing a treatment.",
+      "method": "ai_assisted_human_review"
+    },
+    {
+      "packet_id": "context-packet:433000fcea4f290bf72205d595fbae358131b8ba388443cc2f953f422008808c",
+      "source_packet_sha256": "b9b4ce3f14c97112d0306ac5b366f97e3a492213471684a5185c0fb794ce2394",
+      "status": "no_contract_safe_tree_identified",
+      "journey_ids": [],
+      "finding": "AI-assisted spike review did not identify a contract-safe standalone terminal rule for how-hmrc-uses-your-information; retained for human review rather than inventing a treatment.",
+      "method": "ai_assisted_human_review"
+    },
+    {
+      "packet_id": "context-packet:de6e00521098e9100e142fb88730b24058d5e5ab15cbefdb02b439cc4f3b12ac",
+      "source_packet_sha256": "42ae650020b52057fd4afba3d60dd0508fc9172bdeaa29590de7a9cdd53d9691",
+      "status": "no_contract_safe_tree_identified",
+      "journey_ids": [],
+      "finding": "AI-assisted spike review did not identify a contract-safe standalone terminal rule for if-you-provide-a-microwave-oven-for-your-customers-to-use; retained for human review rather than inventing a treatment.",
+      "method": "ai_assisted_human_review"
+    },
+    {
+      "packet_id": "context-packet:9d2bce265c6c9bfc732ed2746a15a5cf25476495878f8cad43aa68a826f69730",
+      "source_packet_sha256": "c8f14e982f909b9adfbe32fb1436c693ff2ac5c7c0f72ac1f0e030f188095246",
+      "status": "journey_curated",
+      "journey_ids": [
+        "notice-709-1-catering-reference-expanded"
+      ],
+      "finding": null,
+      "method": "ai_assisted_human_review"
+    },
+    {
+      "packet_id": "context-packet:6679b53cec5da057be9ba8e52969a185b0ca2615290547dc80ac6cbce74f6a4e",
+      "source_packet_sha256": "569f17e6400af9d5f7203d09ce7f36991d7f5f8b90caf1957a5fa031cc565133",
+      "status": "no_contract_safe_tree_identified",
+      "journey_ids": [],
+      "finding": "AI-assisted spike review did not produce a contract-safe standalone tree for invoices-made-out-to-you; recorded packet omissions require human review.",
+      "method": "ai_assisted_human_review"
+    },
+    {
+      "packet_id": "context-packet:c71f02c42e69cc321505c2a70f46b5e6cd54f78d6751358aadb9cd45d8739cfa",
+      "source_packet_sha256": "02024ca083f41ad3070c31e2497483bd64daed0f5ed469c64ce64895dbb0c1cf",
+      "status": "no_contract_safe_tree_identified",
+      "journey_ids": [],
+      "finding": "AI-assisted spike review did not identify a contract-safe standalone terminal rule for invoices-made-out-to-your-principal; retained for human review rather than inventing a treatment.",
+      "method": "ai_assisted_human_review"
+    },
+    {
+      "packet_id": "context-packet:f9e7940f004f9599f2cd0e2e6da230c93341fde3549dac9a34bcf20c9aa25eb6",
+      "source_packet_sha256": "b65381c106cddc2e87c8d5d9fe567b8dfb5e51e7d4968aa12cf2c22f1ffe6a2f",
+      "status": "no_contract_safe_tree_identified",
+      "journey_ids": [],
+      "finding": "AI-assisted spike review did not identify a contract-safe standalone terminal rule for liability-of-takeaway-food-and-drink; retained for human review rather than inventing a treatment.",
+      "method": "ai_assisted_human_review"
+    },
+    {
+      "packet_id": "context-packet:dda38cf3d3374d7bbb5c6090bc433644a5181bc58f46eb7cebc65d1abb964278",
+      "source_packet_sha256": "306747073bdab612037fe678c6919a03905b934093c3db24f79ed9671bf18cc8",
+      "status": "no_contract_safe_tree_identified",
+      "journey_ids": [],
+      "finding": "AI-assisted spike review did not identify a contract-safe standalone terminal rule for meals-supplied-free-of-charge; retained for human review rather than inventing a treatment.",
+      "method": "ai_assisted_human_review"
+    },
+    {
+      "packet_id": "context-packet:75cd739adada098fc1cc50313cfc7f2cdd75d556442ae9234f4e6dfd24414c78",
+      "source_packet_sha256": "652934bc391dba21054aee12aca21361e9ca10536f59dc8c59a8078cb48776d2",
+      "status": "no_contract_safe_tree_identified",
+      "journey_ids": [],
+      "finding": "AI-assisted spike review did not identify a contract-safe standalone terminal rule for packed-lunches; retained for human review rather than inventing a treatment.",
+      "method": "ai_assisted_human_review"
+    },
+    {
+      "packet_id": "context-packet:5db7cf8638b783cbbdce45b992f083d52c9e0bf833661f71c8dfc4844cb01133",
+      "source_packet_sha256": "be9418e8f18a6e00080d6b99868ca20cd303a227b29b5a0f075d2a93c4c07cad",
+      "status": "no_contract_safe_tree_identified",
+      "journey_ids": [],
+      "finding": "AI-assisted spike review did not produce a contract-safe standalone tree for para3-3; unresolved packet references require human review.",
+      "method": "ai_assisted_human_review"
+    },
+    {
+      "packet_id": "context-packet:40e7013c7a98275e414785d8b2b31ed962fbb1e9cdc71baca92939858a32b376",
+      "source_packet_sha256": "d6ebe8245eee4ccc3e3408c7b39497b5141120090017a761fb41e7dbd5c552e9",
+      "status": "no_contract_safe_tree_identified",
+      "journey_ids": [],
+      "finding": "AI-assisted spike review did not identify a contract-safe standalone terminal rule for preamble; retained for human review rather than inventing a treatment.",
+      "method": "ai_assisted_human_review"
+    },
+    {
+      "packet_id": "context-packet:d2bee53e1574355e816448b01712a772c0cb06aef590782de8bf99acffec80ad",
+      "source_packet_sha256": "20ce5ea697dc8db89a0fdf3eeeeb46700b1f0b2da1efd1772e9fe1b8ece99d72",
+      "status": "no_contract_safe_tree_identified",
+      "journey_ids": [],
+      "finding": "AI-assisted spike review did not identify a contract-safe standalone terminal rule for premises; retained for human review rather than inventing a treatment.",
+      "method": "ai_assisted_human_review"
+    },
+    {
+      "packet_id": "context-packet:f6bd3d7bf721c1bebb47f2b3685a7a7a761e40bdbb35b149bc2a98f9bfcc3d46",
+      "source_packet_sha256": "b24abac8517bf007d5cb4b3a82b71e8a8ca88a336d63498c7b6bb82abc360851",
+      "status": "no_contract_safe_tree_identified",
+      "journey_ids": [],
+      "finding": "AI-assisted spike review did not identify a contract-safe standalone terminal rule for premises-2; retained for human review rather than inventing a treatment.",
+      "method": "ai_assisted_human_review"
+    },
+    {
+      "packet_id": "context-packet:ef7534f3de72494d1c8c98b284c23e4a0f40ba0b86664c18dd75f321767056c5",
+      "source_packet_sha256": "7f2150d091d8d0c7f69cf3fef57f72946e21ef7139576dd71e5fb9ab4030c868",
+      "status": "no_contract_safe_tree_identified",
+      "journey_ids": [],
+      "finding": "AI-assisted spike review did not identify a contract-safe standalone terminal rule for profit-and-loss-account; retained for human review rather than inventing a treatment.",
+      "method": "ai_assisted_human_review"
+    },
+    {
+      "packet_id": "context-packet:1430abe5a0e3418aa783780e7b4d6a4e5129b9930149b48e1339c1bbfdca1485",
+      "source_packet_sha256": "8865c33fc4150b64452357fda6c412936c652492010c9bf2446d05906f5e369e",
+      "status": "no_contract_safe_tree_identified",
+      "journey_ids": [],
+      "finding": "AI-assisted spike review did not identify a contract-safe standalone terminal rule for putting-things-right; retained for human review rather than inventing a treatment.",
+      "method": "ai_assisted_human_review"
+    },
+    {
+      "packet_id": "context-packet:c61cf5f7b95a4ed1a96389e533ce2b454c4fe4eeac43d98af13d2b149e8b3539",
+      "source_packet_sha256": "4e432d1458f3942846d8edc2237b5acb09bdb58b84e57b78c7b11c2245ef61c2",
+      "status": "no_contract_safe_tree_identified",
+      "journey_ids": [],
+      "finding": "AI-assisted spike review did not identify a contract-safe standalone terminal rule for retailschemecalc; retained for human review rather than inventing a treatment.",
+      "method": "ai_assisted_human_review"
+    },
+    {
+      "packet_id": "context-packet:35c8ba3fe91d34d91b436b7d5d4a60c13be60797a68c13b8ee389feabaf7b36d",
+      "source_packet_sha256": "0e42b73fa8e201a60ae97cf2c3215497a074216c5dd7163efae15edf34b43c85",
+      "status": "no_contract_safe_tree_identified",
+      "journey_ids": [],
+      "finding": "AI-assisted spike review did not produce a contract-safe standalone tree for schools; recorded packet omissions require human review.",
+      "method": "ai_assisted_human_review"
+    },
+    {
+      "packet_id": "context-packet:3a5b2b1712a45cbfec47f65510cebd6aee081458c89c055f8e1e97323b56c102",
+      "source_packet_sha256": "c1c1b04f0e4b641a6d2889042cb3594d4b059257d248bcaab7633463fbe2be86",
+      "status": "no_contract_safe_tree_identified",
+      "journey_ids": [],
+      "finding": "AI-assisted spike review did not identify a contract-safe standalone terminal rule for section1; retained for human review rather than inventing a treatment.",
+      "method": "ai_assisted_human_review"
+    },
+    {
+      "packet_id": "context-packet:925c057ffd68e82895488c07d4e309d40f87debd4cc71c9b3feea9df3877e9ea",
+      "source_packet_sha256": "0cbcc38b42dda81409ef0baedeb535ee7e051c31f7f5a2d5e82e33742948bcd8",
+      "status": "no_contract_safe_tree_identified",
+      "journey_ids": [],
+      "finding": "AI-assisted spike review did not identify a contract-safe standalone terminal rule for service-charges; retained for human review rather than inventing a treatment.",
+      "method": "ai_assisted_human_review"
+    },
+    {
+      "packet_id": "context-packet:6bc43d79fc64c088d795851b0bea1cc70b68f7a41add3cd86e653d33bb299aa3",
+      "source_packet_sha256": "8f47eec8f20c83881249ebdeae9f92b24b9a28bbb1a53b5836f1377b2bd999d5",
+      "status": "no_contract_safe_tree_identified",
+      "journey_ids": [],
+      "finding": "AI-assisted spike review did not identify a contract-safe standalone terminal rule for studentunions; retained for human review rather than inventing a treatment.",
+      "method": "ai_assisted_human_review"
+    },
+    {
+      "packet_id": "context-packet:73f9287b2030f98b436a8c07c228e1260cb660acd85017b9c7a4ffdf597310da",
+      "source_packet_sha256": "0c864e993dd1df4897f2757c7118c997f7adb6bffbd5de4adb2f157c00db5309",
+      "status": "no_contract_safe_tree_identified",
+      "journey_ids": [],
+      "finding": "AI-assisted spike review did not identify a contract-safe standalone terminal rule for test-1-food-or-drink-heated-for-the-purposes-of-enabling-it-to-be-consumed-hot; retained for human review rather than inventing a treatment.",
+      "method": "ai_assisted_human_review"
+    },
+    {
+      "packet_id": "context-packet:6151fb6ffdc55837dcbb913e4deaab4fbc5675534f5b9ff7ac1e016dafdd1031",
+      "source_packet_sha256": "123faf9b91f8c93735bef94a33c533ba356c8f5be12b62b6d0cef38d6f29bc7f",
+      "status": "no_contract_safe_tree_identified",
+      "journey_ids": [],
+      "finding": "AI-assisted spike review did not identify a contract-safe standalone terminal rule for test-2-food-or-drink-thats-been-heated-to-order; retained for human review rather than inventing a treatment.",
+      "method": "ai_assisted_human_review"
+    },
+    {
+      "packet_id": "context-packet:9147ad2618c100f0525580fe3dc386e3068782fda648cb7603003978d8a97758",
+      "source_packet_sha256": "c30d06eb73917a0d8d6df29e01967ab3161a05111d386d16d781cdeaabfd714e",
+      "status": "no_contract_safe_tree_identified",
+      "journey_ids": [],
+      "finding": "AI-assisted spike review did not identify a contract-safe standalone terminal rule for test-3-food-or-drink-has-been-kept-hot-after-being-heated; retained for human review rather than inventing a treatment.",
+      "method": "ai_assisted_human_review"
+    },
+    {
+      "packet_id": "context-packet:fb8dfd3fe9fb77e41295f7024eddb761f5b7457cb3ed3c95118193791180e89b",
+      "source_packet_sha256": "30996b65b87865895706d2e3618026a303b514e5eb7bdc56c377bb9b3c01dc2b",
+      "status": "no_contract_safe_tree_identified",
+      "journey_ids": [],
+      "finding": "AI-assisted spike review did not identify a contract-safe standalone terminal rule for test-4-food-or-drink-provided-to-a-customer-in-heat-retentive-packaging; retained for human review rather than inventing a treatment.",
+      "method": "ai_assisted_human_review"
+    },
+    {
+      "packet_id": "context-packet:a9a332fc795ae66321e31f32c318fc495e5e952e248b14a7dd4bb60bbd1deca2",
+      "source_packet_sha256": "ca143b13511dd6aa13f8a829725a21781c8b8abb6f68ef45f3ff86cd75cd5851",
+      "status": "no_contract_safe_tree_identified",
+      "journey_ids": [],
+      "finding": "AI-assisted spike review did not identify a contract-safe standalone terminal rule for test-5-food-or-drink-advertised-or-marketed-in-a-way-that-indicates-that-its-supplied-hot; retained for human review rather than inventing a treatment.",
+      "method": "ai_assisted_human_review"
+    },
+    {
+      "packet_id": "context-packet:7283fe2cfc486886e77a8b8b28932774ae863a8d4ca89d77840ef201036eeab7",
+      "source_packet_sha256": "1be8bed9e47441081e1379bab9ee70bf27bcb92d49b04c5bc2e044554d96f04e",
+      "status": "no_contract_safe_tree_identified",
+      "journey_ids": [],
+      "finding": "AI-assisted spike review did not identify a contract-safe standalone terminal rule for types-of-hot-food-or-drink-that-are-not-caught-by-these-tests-and-stay-zero-rated; retained for human review rather than inventing a treatment.",
+      "method": "ai_assisted_human_review"
+    },
+    {
+      "packet_id": "context-packet:5e64507d5faec76d892b3c1836c36ae7b7513d60e09b317ede6f247bae6f5a8a",
+      "source_packet_sha256": "3370f7a0ae20a0812d17900a9553526f4792e4fa38e841d6f6182fb5cbc19aa1",
+      "status": "no_contract_safe_tree_identified",
+      "journey_ids": [],
+      "finding": "AI-assisted spike review did not identify a contract-safe standalone terminal rule for vendingmachines; retained for human review rather than inventing a treatment.",
+      "method": "ai_assisted_human_review"
+    },
+    {
+      "packet_id": "context-packet:7ec94fe2b1c415f0a0e148f16ab1253471fb554e84c6657b2418c0e4108886ad",
+      "source_packet_sha256": "fe12035db623b4c764c8aab95cfe1c12704a7de36db603c9c3f6097ede9e9d50",
+      "status": "no_contract_safe_tree_identified",
+      "journey_ids": [],
+      "finding": "AI-assisted spike review did not identify a contract-safe standalone terminal rule for what-the-tests-are; retained for human review rather than inventing a treatment.",
+      "method": "ai_assisted_human_review"
+    },
+    {
+      "packet_id": "context-packet:bd181d8588e0aa52458fd403a8be3bbff0d4e386cb2bef71873e3bc3bcec7510",
+      "source_packet_sha256": "a6bd6c8e4d8cd1c40219397ac74df6056c2c4129b89e5e7b88c9e5cf2f971f0c",
+      "status": "no_contract_safe_tree_identified",
+      "journey_ids": [],
+      "finding": "AI-assisted spike review did not identify a contract-safe standalone terminal rule for who-should-read-this-notice; retained for human review rather than inventing a treatment.",
+      "method": "ai_assisted_human_review"
+    },
+    {
+      "packet_id": "context-packet:3779ea8ded9f855b59b3329c81ef3f4654256fd5b8e6e5fc194ff98d13ec1432",
+      "source_packet_sha256": "4f37a2959f74e46a2235818a4ab42e43f5fc9a780c2727b7beba98e81c8e6c93",
+      "status": "no_contract_safe_tree_identified",
+      "journey_ids": [],
+      "finding": "AI-assisted spike review did not identify a contract-safe standalone terminal rule for why-you-need-to-work-out-the-premises; retained for human review rather than inventing a treatment.",
+      "method": "ai_assisted_human_review"
+    },
+    {
+      "packet_id": "context-packet:83242835df80588d70dcd698a60b745c297a22bc3883cd33e43ab6a0ce523a8c",
+      "source_packet_sha256": "c317ec26a788213668a08784eac56cbe1cfe44d9c29007496eb3ce4120ace06b",
+      "status": "no_contract_safe_tree_identified",
+      "journey_ids": [],
+      "finding": "AI-assisted spike review did not identify a contract-safe standalone terminal rule for your-fee-for-your-services-to-your-principal; retained for human review rather than inventing a treatment.",
+      "method": "ai_assisted_human_review"
+    },
+    {
+      "packet_id": "context-packet:8ea87db6b1e5eb1f937eb20956ae8146ef1218a8332555fd2e12bf68480fc86c",
+      "source_packet_sha256": "17da9702dfba87f9cda5075e30be1f415b06f6de57ff038fe211ff64238a3a38",
+      "status": "no_contract_safe_tree_identified",
+      "journey_ids": [],
+      "finding": "AI-assisted spike review did not identify a contract-safe standalone terminal rule for your-rights-and-obligations; retained for human review rather than inventing a treatment.",
+      "method": "ai_assisted_human_review"
+    },
+    {
+      "packet_id": "context-packet:2b8ca39074d7a91f3e7abcba4e14ef4ff524d020da9e33a4eec3af12cd65900e",
+      "source_packet_sha256": "27921570a3734b38765f6ce3448804813136aaf503937c85912cb0e2ac3f68a6",
+      "status": "no_contract_safe_tree_identified",
+      "journey_ids": [],
+      "finding": "AI-assisted spike review did not identify a contract-safe standalone terminal rule for additives; retained for human review rather than inventing a treatment.",
+      "method": "ai_assisted_human_review"
+    },
+    {
+      "packet_id": "context-packet:3dcc73cc8c34983d58c2181d8d049aef7585d17f39e637f3234ecf1804b2a7ce",
+      "source_packet_sha256": "30d534839e3dff529a465c50a9b9aa3afc43d86edccc2458596f2783ed1acfc3",
+      "status": "no_contract_safe_tree_identified",
+      "journey_ids": [],
+      "finding": "AI-assisted spike review did not identify a contract-safe standalone terminal rule for alcoholic-beverages; retained for human review rather than inventing a treatment.",
+      "method": "ai_assisted_human_review"
+    },
+    {
+      "packet_id": "context-packet:cc654cbc142f47d4e8a776e0b7014273e77490668f0ea34a4da2266eba19c3c7",
+      "source_packet_sha256": "928dfdc45abe9be9d365ee468a8a4704e1811c8c69a5f4e816d9d3e51d195fe1",
+      "status": "no_contract_safe_tree_identified",
+      "journey_ids": [],
+      "finding": "AI-assisted spike review did not produce a contract-safe standalone tree for bakery-products; unresolved packet references require human review.",
+      "method": "ai_assisted_human_review"
+    },
+    {
+      "packet_id": "context-packet:52493d360b1255fff82d12875f245ba47c409cbaaa4bbed5cd29a95eb6f36113",
+      "source_packet_sha256": "41554ea2bc970d0562a08dc9a74039f7c09d33714ff08d05b4e1ffa793f4546f",
+      "status": "no_contract_safe_tree_identified",
+      "journey_ids": [],
+      "finding": "AI-assisted spike review did not produce a contract-safe standalone tree for basic-foodstuffs; unresolved packet references require human review.",
+      "method": "ai_assisted_human_review"
+    },
+    {
+      "packet_id": "context-packet:c14c2fdc6058ce31b214e2fb19cb0227c5af953f5b6b19113510ff0548851f15",
+      "source_packet_sha256": "488302708cf332466dd3bdc9be7d0efaa14f291f98219976f4479f2d68fd30fd",
+      "status": "no_contract_safe_tree_identified",
+      "journey_ids": [],
+      "finding": "AI-assisted spike review did not identify a contract-safe standalone terminal rule for biscuits; retained for human review rather than inventing a treatment.",
+      "method": "ai_assisted_human_review"
+    },
+    {
+      "packet_id": "context-packet:6c75248fa27ae2198a8cb178fde9ce87862367844c1270d17f05362156257e85",
+      "source_packet_sha256": "03b3a379eb6235a14c96faed44ea31326454b0decb6d850f2a470cf51dabf7a1",
+      "status": "no_contract_safe_tree_identified",
+      "journey_ids": [],
+      "finding": "AI-assisted spike review did not identify a contract-safe standalone terminal rule for cake-decorations; retained for human review rather than inventing a treatment.",
+      "method": "ai_assisted_human_review"
+    },
+    {
+      "packet_id": "context-packet:fbd288f9f648582517efa6e209b8fce4912a9cc4fbc3aa558864cd5056b0fdc9",
+      "source_packet_sha256": "d8d1d99b532838d11bee54e51a5b8d137871c3595f212d4675fd02c7b9bc68ea",
+      "status": "no_contract_safe_tree_identified",
+      "journey_ids": [],
+      "finding": "AI-assisted spike review did not identify a contract-safe standalone terminal rule for cereal-and-fruit-bars; retained for human review rather than inventing a treatment.",
+      "method": "ai_assisted_human_review"
+    },
+    {
+      "packet_id": "context-packet:20c42cfb7a944d6ddd1d6e2cb74e5bb9b18caffab8500f72e13dc491e202cde7",
+      "source_packet_sha256": "01fd2638d32c6dba3ae1113ecb2e86fb32af34f131eb96a80553aaf89f12ebd1",
+      "status": "no_contract_safe_tree_identified",
+      "journey_ids": [],
+      "finding": "AI-assisted spike review did not identify a contract-safe standalone terminal rule for confectionery; retained for human review rather than inventing a treatment.",
+      "method": "ai_assisted_human_review"
+    },
+    {
+      "packet_id": "context-packet:d27544cddb2214bf41b91059211b17505da987fc2613a3b2f2f7ac09defcd63d",
+      "source_packet_sha256": "5258fd3aacf8e46973b7845611eea1df591f866cd8b8d1dc9a4aaef6ea808cc2",
+      "status": "no_contract_safe_tree_identified",
+      "journey_ids": [],
+      "finding": "AI-assisted spike review did not identify a contract-safe standalone terminal rule for creatine; retained for human review rather than inventing a treatment.",
+      "method": "ai_assisted_human_review"
+    },
+    {
+      "packet_id": "context-packet:c32ac5e4c9b3ba02728d277c17e8d59878fede530e8279943b7b158b14f5fda9",
+      "source_packet_sha256": "6d8a9c22897301223bfa546dc949324e369eb527b35c615e1852e24b20388a8b",
+      "status": "no_contract_safe_tree_identified",
+      "journey_ids": [],
+      "finding": "AI-assisted spike review did not identify a contract-safe standalone terminal rule for diabetic-and-hypoallergenic-products; retained for human review rather than inventing a treatment.",
+      "method": "ai_assisted_human_review"
+    },
+    {
+      "packet_id": "context-packet:1e092cf83ff85b7eb12c40dc6ac5ee088c12a7ad29bd5ce5c21a66989fb1873f",
+      "source_packet_sha256": "052d6733dee855b0aefd3e219e8037bd7e4e4728dba079f2a3849066f172935e",
+      "status": "no_contract_safe_tree_identified",
+      "journey_ids": [],
+      "finding": "AI-assisted spike review did not identify a contract-safe standalone terminal rule for drinks; retained for human review rather than inventing a treatment.",
+      "method": "ai_assisted_human_review"
+    },
+    {
+      "packet_id": "context-packet:945018060cfa7051d7e7f699ec982ee456b765bc7bc961c2da15d8015a092e9d",
+      "source_packet_sha256": "442a489e65b548b8522b51f279436e4fe41f8093918c3f50fd1c4614aaa61fed",
+      "status": "no_contract_safe_tree_identified",
+      "journey_ids": [],
+      "finding": "AI-assisted spike review did not produce a contract-safe standalone tree for drinks-which-are-not-beverages; unresolved packet references require human review.",
+      "method": "ai_assisted_human_review"
+    },
+    {
+      "packet_id": "context-packet:746809db81b9b393a086ccd9a681b881a6dc425f720a10b6d8a45fd0680daab0",
+      "source_packet_sha256": "08bccc132d1a8a4e6aa51dbfe4255f041e9dd495f8373f7144f8b1571b534705",
+      "status": "no_contract_safe_tree_identified",
+      "journey_ids": [],
+      "finding": "AI-assisted spike review did not identify a contract-safe standalone terminal rule for food-and-drink-for-religious-and-sacramental-use; retained for human review rather than inventing a treatment.",
+      "method": "ai_assisted_human_review"
+    },
+    {
+      "packet_id": "context-packet:c70202e256f2e9370f03a4549dd2ae21e20c3b76b6a8ddff53452637e8502ebc",
+      "source_packet_sha256": "d244f27decc1e86431b7741549a7a8e8b479f0a68f9f70e0d21ad44decb13bb4",
+      "status": "journey_curated",
+      "journey_ids": [
+        "notice-701-14-food-exceptions"
+      ],
+      "finding": null,
+      "method": "ai_assisted_human_review"
+    },
+    {
+      "packet_id": "context-packet:f83ec05d8a3ccb1befe9dccb46829947c09a5fa059a52acfd45c508e27e09722",
+      "source_packet_sha256": "660b7eeb5f6390fb0da29ab89e5a5fd356cc35f602ab6350f0043f9fba86e8b5",
+      "status": "no_contract_safe_tree_identified",
+      "journey_ids": [],
+      "finding": "AI-assisted spike review did not identify a contract-safe standalone terminal rule for food-packaging; retained for human review rather than inventing a treatment.",
+      "method": "ai_assisted_human_review"
+    },
+    {
+      "packet_id": "context-packet:3dca7f748e450b02987553cf7d98c38c6f962dacac3f440c8894b381d67808b2",
+      "source_packet_sha256": "ba855f50de48e03ee9ab418be9b4c47d322888e1ee98ca7835ce8acebe1ba3a0",
+      "status": "no_contract_safe_tree_identified",
+      "journey_ids": [],
+      "finding": "AI-assisted spike review did not produce a contract-safe standalone tree for food-processing-services; unresolved packet references require human review.",
+      "method": "ai_assisted_human_review"
+    },
+    {
+      "packet_id": "context-packet:b987112d71906b332434c4acec70ed8349689c590caf0d5ac36c1c4d9b0aea0d",
+      "source_packet_sha256": "2fd4ce04546c5a52b9a6508e2161290956f55b239725ecb2853ca8ec6c4bf23b",
+      "status": "no_contract_safe_tree_identified",
+      "journey_ids": [],
+      "finding": "AI-assisted spike review did not identify a contract-safe standalone terminal rule for food-supplements; retained for human review rather than inventing a treatment.",
+      "method": "ai_assisted_human_review"
+    },
+    {
+      "packet_id": "context-packet:4bc94c6ba99bebf55cda07ff004386679f2f2056023d3dec83f564bc0b8beaf6",
+      "source_packet_sha256": "b42f7c0632b37c65d59f3ad970b9aaf332aa79899bdc9eb3146fc713f8a832ac",
+      "status": "no_contract_safe_tree_identified",
+      "journey_ids": [],
+      "finding": "AI-assisted spike review did not produce a contract-safe standalone tree for food-supplied-in-the-course-of-catering; unresolved packet references require human review.",
+      "method": "ai_assisted_human_review"
+    },
+    {
+      "packet_id": "context-packet:97c0e32dccde2a4fe7e93be2e8db21af77b530d328b467c535ab10e6d414cc96",
+      "source_packet_sha256": "a13cbc9c1338b138e2430b9a05e21fc31434371c7e8f6da917acf40413012c72",
+      "status": "no_contract_safe_tree_identified",
+      "journey_ids": [],
+      "finding": "AI-assisted spike review did not identify a contract-safe standalone terminal rule for foods-for-people-made-weak-or-disabled-by-illness-or-injury; retained for human review rather than inventing a treatment.",
+      "method": "ai_assisted_human_review"
+    },
+    {
+      "packet_id": "context-packet:06c35863ec098c26f9032a2ecdc6e80bfa95307350386511ca0dae74aee451a2",
+      "source_packet_sha256": "1f11e7485d3053f862a44ac3fd51ad9e6b54c13cc98ce3b4f4527ad556ef7ab0",
+      "status": "no_contract_safe_tree_identified",
+      "journey_ids": [],
+      "finding": "AI-assisted spike review did not identify a contract-safe standalone terminal rule for general; retained for human review rather than inventing a treatment.",
+      "method": "ai_assisted_human_review"
+    },
+    {
+      "packet_id": "context-packet:fbd46672e922757f33cca13eb6a6d31fa1b364c9753a5033656d58d84177e95f",
+      "source_packet_sha256": "cc4d2d61e3969c3faa738f628cb45a687c82cd809246bed7fa671d2f429de7b5",
+      "status": "no_contract_safe_tree_identified",
+      "journey_ids": [],
+      "finding": "AI-assisted spike review did not identify a contract-safe standalone terminal rule for general-1; retained for human review rather than inventing a treatment.",
+      "method": "ai_assisted_human_review"
+    },
+    {
+      "packet_id": "context-packet:4b191fc7b0a7643cc9109ac8c7af5b65124a988b712e9a2d66b4fd7479afc74b",
+      "source_packet_sha256": "91b9d4f45c960f81ef2e8dfc1971a74031f580a2d804d7c0cfe566166fb46605",
+      "status": "no_contract_safe_tree_identified",
+      "journey_ids": [],
+      "finding": "AI-assisted spike review did not produce a contract-safe standalone tree for general-food-products; unresolved packet references require human review.",
+      "method": "ai_assisted_human_review"
+    },
+    {
+      "packet_id": "context-packet:753e1a24ebcaa188cdf7f73bacaac0ea3e1cc81a84ae5339bb2176e5aa59d4af",
+      "source_packet_sha256": "dbc26a26953a1867d44ac0fa13a75a4afbc678415210cbb93b8d19deb373f4df",
+      "status": "no_contract_safe_tree_identified",
+      "journey_ids": [],
+      "finding": "AI-assisted spike review did not identify a contract-safe standalone terminal rule for general-vat-liability-rules; retained for human review rather than inventing a treatment.",
+      "method": "ai_assisted_human_review"
+    },
+    {
+      "packet_id": "context-packet:0a58d3ff1b3078832ec8960e082105ab419c84607faf2c429d4d544fe1998efc",
+      "source_packet_sha256": "15062d471e93dd2dd022cf507934890c3a91c47e2e15ae23d7e7c043b4439a0d",
+      "status": "no_contract_safe_tree_identified",
+      "journey_ids": [],
+      "finding": "AI-assisted spike review did not produce a contract-safe standalone tree for help-us-improve-this-notice; unresolved packet references require human review.",
+      "method": "ai_assisted_human_review"
+    },
+    {
+      "packet_id": "context-packet:9df0e93bcaaa096993379ed78344db437c7bb7e1dd369ba7178dadbf800f9e13",
+      "source_packet_sha256": "0cf521fc0f7839c142d4333d9d51405fd9e30506dec2e6d5011b9ce8ea8c44a3",
+      "status": "no_contract_safe_tree_identified",
+      "journey_ids": [],
+      "finding": "AI-assisted spike review did not produce a contract-safe standalone tree for hot-food; unresolved packet references require human review.",
+      "method": "ai_assisted_human_review"
+    },
+    {
+      "packet_id": "context-packet:b6a8ba4f477a3597bf6023b42870ca15c61a6ae7910e8a692619b7f6d41a6145",
+      "source_packet_sha256": "941974d232091ec09ebf8af800a383c34f8157ce84d850a2b11a81e6b7f563da",
+      "status": "no_contract_safe_tree_identified",
+      "journey_ids": [],
+      "finding": "AI-assisted spike review did not identify a contract-safe standalone terminal rule for how-hmrc-uses-your-information; retained for human review rather than inventing a treatment.",
+      "method": "ai_assisted_human_review"
+    },
+    {
+      "packet_id": "context-packet:ceb5064c8d3b036d376f0e02829264a1618a1dd444c5d708be2b1237c39ecd07",
+      "source_packet_sha256": "03db5bc96ebb5a77cf45346dd53789acca8a8bbb9071741dc76d71af5ae11155",
+      "status": "no_contract_safe_tree_identified",
+      "journey_ids": [],
+      "finding": "AI-assisted spike review did not identify a contract-safe standalone terminal rule for ice-cream-and-similar-frozen-products; retained for human review rather than inventing a treatment.",
+      "method": "ai_assisted_human_review"
+    },
+    {
+      "packet_id": "context-packet:d55f567292bb0c72b417ef89a8964cf371f1da1d9ca56e054abc533dea743a8a",
+      "source_packet_sha256": "fdc87c5d65da76fe362ef00b0d94d783a2b1fbddfc1af247b01394bbdc0640c0",
+      "status": "no_contract_safe_tree_identified",
+      "journey_ids": [],
+      "finding": "AI-assisted spike review did not identify a contract-safe standalone terminal rule for ingredients; retained for human review rather than inventing a treatment.",
+      "method": "ai_assisted_human_review"
+    },
+    {
+      "packet_id": "context-packet:d95dcc2e78021acc70b40dc1b2cf290f7bc8fa640aad9b281a4bbec215ec6e28",
+      "source_packet_sha256": "8b7e614921b9e5a027fad6027d2a553a92bda2d8e79a2a21e564e8dcd2c27ad2",
+      "status": "no_contract_safe_tree_identified",
+      "journey_ids": [],
+      "finding": "AI-assisted spike review did not produce a contract-safe standalone tree for ingredients-and-additives-used-in-home-cooking-and-baking; unresolved packet references require human review.",
+      "method": "ai_assisted_human_review"
+    },
+    {
+      "packet_id": "context-packet:eb4c9b64a462fac71d25d67190a7b0ef16038c7f417b2979fc4e738897c99376",
+      "source_packet_sha256": "a5b0ab08d356119784980f23d107e9230b0ba64fe82b5c309f83dbd085964c9b",
+      "status": "no_contract_safe_tree_identified",
+      "journey_ids": [],
+      "finding": "AI-assisted spike review did not identify a contract-safe standalone terminal rule for ingredients-for-home-beer-and-wine-making; retained for human review rather than inventing a treatment.",
+      "method": "ai_assisted_human_review"
+    },
+    {
+      "packet_id": "context-packet:dba09f94119187418bd82d43e1ba4e787eee279997f108c08cbd6aeb8c9052e7",
+      "source_packet_sha256": "844de456a0895b951e0498ce3a28e62dc38ffc4554fa99f88cc029f05cf04865",
+      "status": "no_contract_safe_tree_identified",
+      "journey_ids": [],
+      "finding": "AI-assisted spike review did not identify a contract-safe standalone terminal rule for introduction; retained for human review rather than inventing a treatment.",
+      "method": "ai_assisted_human_review"
+    },
+    {
+      "packet_id": "context-packet:5a3ea4cce0de9a905a98d13de9c52edd6cfd64a589f8e124730d46df4dfcd827",
+      "source_packet_sha256": "da3d9d84018b1b99ada6ce4b8148b209802532e81d543b776bf2f0a9a082fcc1",
+      "status": "no_contract_safe_tree_identified",
+      "journey_ids": [],
+      "finding": "AI-assisted spike review did not produce a contract-safe standalone tree for law; unresolved packet references require human review.",
+      "method": "ai_assisted_human_review"
+    },
+    {
+      "packet_id": "context-packet:25aeaa2ae56ff5125a0c0ce71e3dde7a48a3804c5904c023bacd33f64396121e",
+      "source_packet_sha256": "e88fc44c9f45fc614c5845e2c55089272a62d936d425b07de3aa450d53f34d58",
+      "status": "no_contract_safe_tree_identified",
+      "journey_ids": [],
+      "finding": "AI-assisted spike review did not produce a contract-safe standalone tree for mixed-supplies-including-linked-goods; unresolved packet references require human review.",
+      "method": "ai_assisted_human_review"
+    },
+    {
+      "packet_id": "context-packet:626b1b68b4db26cc4ef9828ee0e8c66e950186b4749b4cab5914e359a34784f9",
+      "source_packet_sha256": "23af9be798d30adb90d9c27be98c21338691c8e53a2539435a4ca7a82e32ca19",
+      "status": "no_contract_safe_tree_identified",
+      "journey_ids": [],
+      "finding": "AI-assisted spike review did not identify a contract-safe standalone terminal rule for mixed-supplies-mixtures-promotional-linked-items-and-packaging; retained for human review rather than inventing a treatment.",
+      "method": "ai_assisted_human_review"
+    },
+    {
+      "packet_id": "context-packet:8137f10b0d448562dd5671d4def5353938849fdea75660a34b72e1ac1cafad6c",
+      "source_packet_sha256": "5d3ecbb37f0e3239d77c2ed16862b7127a723ffb273794619fc4a97464cfe839",
+      "status": "no_contract_safe_tree_identified",
+      "journey_ids": [],
+      "finding": "AI-assisted spike review did not produce a contract-safe standalone tree for mixtures-and-assortments; unresolved packet references require human review.",
+      "method": "ai_assisted_human_review"
+    },
+    {
+      "packet_id": "context-packet:e7ab9bf0dc5c49fa595dccd76328b4af6246ab987c9875ffc395f34bab40483e",
+      "source_packet_sha256": "5a4b94303b9d8021f97e4454545e4adb22e00c8fe47e37e58899d878be5fa7a8",
+      "status": "no_contract_safe_tree_identified",
+      "journey_ids": [],
+      "finding": "AI-assisted spike review did not produce a contract-safe standalone tree for non-alcoholic-beverages; unresolved packet references require human review.",
+      "method": "ai_assisted_human_review"
+    },
+    {
+      "packet_id": "context-packet:c67469559026b5c3017ccb646c287e5e6a2d2f02c3efb02417e00475e2879f0d",
+      "source_packet_sha256": "1ca4750e3e235af80fd35f5e13c95db308e75d50bc61adac976fc9ca7a5c72d1",
+      "status": "no_contract_safe_tree_identified",
+      "journey_ids": [],
+      "finding": "AI-assisted spike review did not identify a contract-safe standalone terminal rule for overview; retained for human review rather than inventing a treatment.",
+      "method": "ai_assisted_human_review"
+    },
+    {
+      "packet_id": "context-packet:de6595eaf319352585219fa58e33b7ed04878c3095befd3646b5ed8537d26813",
+      "source_packet_sha256": "157b4663b655f19b1877b72fae9a82a0dc7a7103457a3762d3ca0598b0af1e9f",
+      "status": "no_contract_safe_tree_identified",
+      "journey_ids": [],
+      "finding": "AI-assisted spike review did not identify a contract-safe standalone terminal rule for preamble; retained for human review rather than inventing a treatment.",
+      "method": "ai_assisted_human_review"
+    },
+    {
+      "packet_id": "context-packet:94cb89eed563f58f7caaa6fec3fd4b042ba3e7369007c6a9c8bbdeabf303e053",
+      "source_packet_sha256": "1ed1f23bca1ee2f99bbf298ba6d3060b6be2fa1c7a17d70536bd84d791dd7c5c",
+      "status": "no_contract_safe_tree_identified",
+      "journey_ids": [],
+      "finding": "AI-assisted spike review did not identify a contract-safe standalone terminal rule for processed-foods; retained for human review rather than inventing a treatment.",
+      "method": "ai_assisted_human_review"
+    },
+    {
+      "packet_id": "context-packet:8d273ab1985f80476182de9feccc8fdcd9bc03d1fba0d3fee1ad41fa95ec1390",
+      "source_packet_sha256": "aa05c079035e83690a6a086be4eac403569fdd4fcd25de0fe121de2e97a163f9",
+      "status": "no_contract_safe_tree_identified",
+      "journey_ids": [],
+      "finding": "AI-assisted spike review did not identify a contract-safe standalone terminal rule for products-used-in-commercial-food-manufacture; retained for human review rather than inventing a treatment.",
+      "method": "ai_assisted_human_review"
+    },
+    {
+      "packet_id": "context-packet:8b89d62e261e5d8deba997ee2ad3cf1deee4bc42e4c34c71d1b9f529466e2857",
+      "source_packet_sha256": "71a307a8b77e0a6c45c4bc288f918ce7c82604112cfe51e9ce4393b94733c0ac",
+      "status": "no_contract_safe_tree_identified",
+      "journey_ids": [],
+      "finding": "AI-assisted spike review did not identify a contract-safe standalone terminal rule for putting-things-right; retained for human review rather than inventing a treatment.",
+      "method": "ai_assisted_human_review"
+    },
+    {
+      "packet_id": "context-packet:6152a7856b05edf5c91ead4748bb17d4d716dfc2f364da53b8b72c9c2624b7bf",
+      "source_packet_sha256": "13ed2fb8cbb822c3a2bb09325dc6247bc4440b982a2be8da6f0a9c65260bdf79",
+      "status": "no_contract_safe_tree_identified",
+      "journey_ids": [],
+      "finding": "AI-assisted spike review did not identify a contract-safe standalone terminal rule for savoury-snacks; retained for human review rather than inventing a treatment.",
+      "method": "ai_assisted_human_review"
+    },
+    {
+      "packet_id": "context-packet:6e7c56fbbd7d6dbd7e850b7b3dfb28ed7e2de9403b0e74dbd59723b158341776",
+      "source_packet_sha256": "fb16a93d26b70cced245d6b659a8e6840de2d6c23233eb07480e283d2fab5d34",
+      "status": "no_contract_safe_tree_identified",
+      "journey_ids": [],
+      "finding": "AI-assisted spike review did not identify a contract-safe standalone terminal rule for slimmers-foods; retained for human review rather than inventing a treatment.",
+      "method": "ai_assisted_human_review"
+    },
+    {
+      "packet_id": "context-packet:1dc458abc1e90d0aed8c377b6bc3535f3a8e9a321b229040cbc6d3f123e23137",
+      "source_packet_sha256": "d867db7c3087bf3b26b616a54ee2f169030cb31c022db13eac5377dfc57f0cb1",
+      "status": "no_contract_safe_tree_identified",
+      "journey_ids": [],
+      "finding": "AI-assisted spike review did not identify a contract-safe standalone terminal rule for specialised-products; retained for human review rather than inventing a treatment.",
+      "method": "ai_assisted_human_review"
+    },
+    {
+      "packet_id": "context-packet:c40151538cbcd6e020c1bbe3bf695570df75b4d4f1e0f40390ad039859e94b30",
+      "source_packet_sha256": "00c3d728745210f1488025762ee7528989a33310b5ff6c77e11eecc1f0c4d9ea",
+      "status": "no_contract_safe_tree_identified",
+      "journey_ids": [],
+      "finding": "AI-assisted spike review did not identify a contract-safe standalone terminal rule for sports-energy-and-sports-nutrition-drinks; retained for human review rather than inventing a treatment.",
+      "method": "ai_assisted_human_review"
+    },
+    {
+      "packet_id": "context-packet:080ed887f723b1ea79fc159a04856afe9e642715b11e5e339a557c46e23013a7",
+      "source_packet_sha256": "1dc9cf3317e5b3d680f5f4501167b210a612d4a0f86b4c3c6ea30b664870f71d",
+      "status": "no_contract_safe_tree_identified",
+      "journey_ids": [],
+      "finding": "AI-assisted spike review did not identify a contract-safe standalone terminal rule for sports-products; retained for human review rather than inventing a treatment.",
+      "method": "ai_assisted_human_review"
+    },
+    {
+      "packet_id": "context-packet:d37626be9d8d61c74b56915cd70c01b4358d3575d27fbc3925421c3aaaa1b6ab",
+      "source_packet_sha256": "04daf1ebd01a07b3236bb63f0fa32f5e120cde4e2ebaec63c796e1307dc5f53c",
+      "status": "no_contract_safe_tree_identified",
+      "journey_ids": [],
+      "finding": "AI-assisted spike review did not identify a contract-safe standalone terminal rule for tablets; retained for human review rather than inventing a treatment.",
+      "method": "ai_assisted_human_review"
+    },
+    {
+      "packet_id": "context-packet:800c72b7921b4e57353b7916e45541944a3417757917f0c9d23e288b560672bd",
+      "source_packet_sha256": "53cf6c2ae7ce3d0ce08b06cd6762b084a6756b60e7351133e71aa01e7036e608",
+      "status": "no_contract_safe_tree_identified",
+      "journey_ids": [],
+      "finding": "AI-assisted spike review did not identify a contract-safe standalone terminal rule for this-notice; retained for human review rather than inventing a treatment.",
+      "method": "ai_assisted_human_review"
+    },
+    {
+      "packet_id": "context-packet:5826e9976b9a146cd478376994c6bb33a4f4c0d6be90418a8eb4686f946351ce",
+      "source_packet_sha256": "9fa68116d11f9358ee8ba49f253138f0c8a2892dc3a963859ee2eb9fcb9aff80",
+      "status": "no_contract_safe_tree_identified",
+      "journey_ids": [],
+      "finding": "AI-assisted spike review did not produce a contract-safe standalone tree for what-does-food-of-a-kind-used-for-human-consumption-mean; unresolved packet references require human review.",
+      "method": "ai_assisted_human_review"
+    },
+    {
+      "packet_id": "context-packet:02c4e20d00048a10c432ebcdff0bc0ed80d7327baf7e410bc9689d0c53c0a312",
+      "source_packet_sha256": "fa517c848a3bbd087e6e66bcd03be18cfa14f882b51e01ad918e1669f799cb81",
+      "status": "no_contract_safe_tree_identified",
+      "journey_ids": [],
+      "finding": "AI-assisted spike review did not identify a contract-safe standalone terminal rule for who-should-read-this-notice; retained for human review rather than inventing a treatment.",
+      "method": "ai_assisted_human_review"
+    },
+    {
+      "packet_id": "context-packet:464777e63279e4e0ebaca91101f3fc2c155c5a2589c2ef9011476102957526ac",
+      "source_packet_sha256": "f5e8b440c3acb5eb4ccadd895ffe1336fef70fb6756760e180e21d1858906de5",
+      "status": "no_contract_safe_tree_identified",
+      "journey_ids": [],
+      "finding": "AI-assisted spike review did not identify a contract-safe standalone terminal rule for your-rights-and-obligations; retained for human review rather than inventing a treatment.",
+      "method": "ai_assisted_human_review"
+    },
+    {
+      "packet_id": "context-packet:e3269c7045a23fd0485dfb5d1c6a2ec33a4735daa2a2056f24350f43c416b331",
+      "source_packet_sha256": "c32502e70d6e4d5946c0b3f9e15dde9732eae7211f14c69a60e114824797f00c",
+      "status": "no_contract_safe_tree_identified",
+      "journey_ids": [],
+      "finding": "AI-assisted spike review did not identify a contract-safe standalone terminal rule for about; retained for human review rather than inventing a treatment.",
+      "method": "ai_assisted_human_review"
+    },
+    {
+      "packet_id": "context-packet:d4db0f014392695bc0a2a98a5f49ea366f6a165fa7fbcedb9e50c2223bd25d4d",
+      "source_packet_sha256": "93ccd6978cf61818067cc23a38aa4568e8d135731add11b2ea3d89f69b3e8d5a",
+      "status": "no_contract_safe_tree_identified",
+      "journey_ids": [],
+      "finding": "AI-assisted spike review did not identify a contract-safe standalone terminal rule for booster-cushions; retained for human review rather than inventing a treatment.",
+      "method": "ai_assisted_human_review"
+    },
+    {
+      "packet_id": "context-packet:1e6f1dddefe14d2eb7e62124bf5a466527ff8d80b87c31bcb5e2405bd24dd2e1",
+      "source_packet_sha256": "fa0c6324dc7c0761324ed729aed1da9225de54c2a814667d19738949379e2280",
+      "status": "no_contract_safe_tree_identified",
+      "journey_ids": [],
+      "finding": "AI-assisted spike review did not identify a contract-safe standalone terminal rule for booster-seats; retained for human review rather than inventing a treatment.",
+      "method": "ai_assisted_human_review"
+    },
+    {
+      "packet_id": "context-packet:412c73bf59822e3a57236d00b2880c8c54c19a5da6f03fe4278a53efaa8dc0d9",
+      "source_packet_sha256": "60d7de9859477e6dde3a76df61823e13c4aaa31e11b453e81923e8cb8a3eafe2",
+      "status": "no_contract_safe_tree_identified",
+      "journey_ids": [],
+      "finding": "AI-assisted spike review did not identify a contract-safe standalone terminal rule for car-seat-bases; retained for human review rather than inventing a treatment.",
+      "method": "ai_assisted_human_review"
+    },
+    {
+      "packet_id": "context-packet:0585eca47b98c00bf03e73639961c4336b81231e575df268aeadec57157ea211",
+      "source_packet_sha256": "ed16ce22c12da79b897f7d186f339696ea08aa129e9345e588c00065e5aad52a",
+      "status": "journey_curated",
+      "journey_ids": [
+        "notice-701-23-child-car-seats"
+      ],
+      "finding": null,
+      "method": "ai_assisted_human_review"
+    },
+    {
+      "packet_id": "context-packet:d287786e234546802927d122b81a28a17aa28688f20dd5ef6cb1252a0379a9c0",
+      "source_packet_sha256": "8d86588d4653c1bbc813b36f92cc87285cadb61a1e9ff2c124a16f0b3e1bcfd6",
+      "status": "no_contract_safe_tree_identified",
+      "journey_ids": [],
+      "finding": "AI-assisted spike review did not identify a contract-safe standalone terminal rule for difference-between-a-shoe-and-a-boot; retained for human review rather than inventing a treatment.",
+      "method": "ai_assisted_human_review"
+    },
+    {
+      "packet_id": "context-packet:8cb19325ab31e9550b93a1faa7739ce01b8151458ec36adbef60c63a5cb5872c",
+      "source_packet_sha256": "5abb015bd91dfdf99ecd4a18038c0b45a52ad75f14550b955278fb56c219f46a",
+      "status": "no_contract_safe_tree_identified",
+      "journey_ids": [],
+      "finding": "AI-assisted spike review did not produce a contract-safe standalone tree for help-us-improve-this-notice; unresolved packet references require human review.",
+      "method": "ai_assisted_human_review"
+    },
+    {
+      "packet_id": "context-packet:8b0ca365b6c81fbc25e74012553119ad58c1c4cdc177d7d5fa307c81bfd03339",
+      "source_packet_sha256": "2b50d54c3a9603d564c4f8d4279ebe0eadb930c8a354cbda7eb46a87b55df5c3",
+      "status": "no_contract_safe_tree_identified",
+      "journey_ids": [],
+      "finding": "AI-assisted spike review did not identify a contract-safe standalone terminal rule for how-hmrc-uses-your-information; retained for human review rather than inventing a treatment.",
+      "method": "ai_assisted_human_review"
+    },
+    {
+      "packet_id": "context-packet:9759a1072f1cff8ed81b79560408e97373d044cb37eabafabe1efc9cf3f89ecf",
+      "source_packet_sha256": "0c15a0ef121d583b75d1f1387a157736de83b3e285708568e4c65f0edee0dc45",
+      "status": "no_contract_safe_tree_identified",
+      "journey_ids": [],
+      "finding": "AI-assisted spike review did not identify a contract-safe standalone terminal rule for laws-that-affect-this-notice; retained for human review rather than inventing a treatment.",
+      "method": "ai_assisted_human_review"
+    },
+    {
+      "packet_id": "context-packet:132bb07dbdb71574e839894288d4c3c459a80e5f2d510aa5b7fd66f3eb7ee3dd",
+      "source_packet_sha256": "e7003501eda0bb23ddfaf8d5c178fc402ef868bc8062e6e6b4558d38a774f929",
+      "status": "no_contract_safe_tree_identified",
+      "journey_ids": [],
+      "finding": "AI-assisted spike review did not identify a contract-safe standalone terminal rule for meaning-of-industrial-use; retained for human review rather than inventing a treatment.",
+      "method": "ai_assisted_human_review"
+    },
+    {
+      "packet_id": "context-packet:69be1c97b77e5ea4aa6325118b87ce17c6e4adf446a9ce68b172369e9544af28",
+      "source_packet_sha256": "ab878fada30c134a495fe16ed76c9e2dcaeb4efe23e2bfc40b782d1913df8a08",
+      "status": "no_contract_safe_tree_identified",
+      "journey_ids": [],
+      "finding": "AI-assisted spike review did not identify a contract-safe standalone terminal rule for motorcycle-helmets; retained for human review rather than inventing a treatment.",
+      "method": "ai_assisted_human_review"
+    },
+    {
+      "packet_id": "context-packet:639e865376f8b3aff48febb73c73016d7a58d1b26bd20516fdf3fb5074c0c248",
+      "source_packet_sha256": "7c9d5e0d7774507d428ed4cff13c15f478f97149c2ab17554533d63d6ec93b85",
+      "status": "no_contract_safe_tree_identified",
+      "journey_ids": [],
+      "finding": "AI-assisted spike review did not identify a contract-safe standalone terminal rule for other-reduced-rate-or-zero-rated-protective-equipment; retained for human review rather than inventing a treatment.",
+      "method": "ai_assisted_human_review"
+    },
+    {
+      "packet_id": "context-packet:0130791f625cdfdc8aac8185d187a396ae96199a10fc6216cbd369ed6539f9c6",
+      "source_packet_sha256": "1406cdc583f4ec9d76361a744b9f4e9d9927ea5bf55f80ffc174265764f55953",
+      "status": "no_contract_safe_tree_identified",
+      "journey_ids": [],
+      "finding": "AI-assisted spike review did not identify a contract-safe standalone terminal rule for overview; retained for human review rather than inventing a treatment.",
+      "method": "ai_assisted_human_review"
+    },
+    {
+      "packet_id": "context-packet:768ed216bbb15270805528269a20b42ec8911c95703ff2d2e9904ac586dd186a",
+      "source_packet_sha256": "f4d74f0e6604871c51dc83d969bea12f9618d0531a29482cf08cb9d5cb5bc1eb",
+      "status": "no_contract_safe_tree_identified",
+      "journey_ids": [],
+      "finding": "AI-assisted spike review did not identify a contract-safe standalone terminal rule for pedal-cycle-helmets; retained for human review rather than inventing a treatment.",
+      "method": "ai_assisted_human_review"
+    },
+    {
+      "packet_id": "context-packet:2195197130fa5a06b6a3b5abdb0cfae434f6f76a9b707af9d35f5bf31e8707e8",
+      "source_packet_sha256": "0f0fded807f4412872699573e713cfcc63d14a734f6c51267232fb4d4f76af4d",
+      "status": "no_contract_safe_tree_identified",
+      "journey_ids": [],
+      "finding": "AI-assisted spike review did not identify a contract-safe standalone terminal rule for protective-boots-and-helmets-for-industrial-use; retained for human review rather than inventing a treatment.",
+      "method": "ai_assisted_human_review"
+    },
+    {
+      "packet_id": "context-packet:67e28d723ec5825e1773714d78b8d1148b33ccc7c00143ca4f029420c402bd95",
+      "source_packet_sha256": "a144aaabc7cd4e2e857bd33890f491393ccefff1ab05d83eea61ae73b16e51c5",
+      "status": "journey_curated",
+      "journey_ids": [
+        "notice-701-23-industrial-protective-equipment"
+      ],
+      "finding": null,
+      "method": "ai_assisted_human_review"
+    },
+    {
+      "packet_id": "context-packet:06e7396bdcc774c8c5ec5756b08710e067f4048a82b26ced5fde29d0915185fd",
+      "source_packet_sha256": "7ea611f6f6ed7fee8ffd500796edb55abf935703ca1c4414fda9f8d4396c9743",
+      "status": "no_contract_safe_tree_identified",
+      "journey_ids": [],
+      "finding": "AI-assisted spike review did not identify a contract-safe standalone terminal rule for putting-things-right; retained for human review rather than inventing a treatment.",
+      "method": "ai_assisted_human_review"
+    },
+    {
+      "packet_id": "context-packet:70f174d1e178ec249c46948c102502ee347215f5dcacdca94001e13730861112",
+      "source_packet_sha256": "e884b8fb8f681d62b64f18f814e5e2f79d6e6093595a0e7bba43a5b4fe23a988",
+      "status": "no_contract_safe_tree_identified",
+      "journey_ids": [],
+      "finding": "AI-assisted spike review did not identify a contract-safe standalone terminal rule for reduced-rate-childrens-car-seats; retained for human review rather than inventing a treatment.",
+      "method": "ai_assisted_human_review"
+    },
+    {
+      "packet_id": "context-packet:e8d1e101e8aa30fc822bc9ea6973c83f3ee1377a8260a06f416131f9cb9f861d",
+      "source_packet_sha256": "748b5a7fc82fe3dde7eee6cb474a75304970d1245ec0736bcd8ed19cfbd4a40d",
+      "status": "no_contract_safe_tree_identified",
+      "journey_ids": [],
+      "finding": "AI-assisted spike review did not identify a contract-safe standalone terminal rule for reduced-rated-carrycots-with-restraint-straps; retained for human review rather than inventing a treatment.",
+      "method": "ai_assisted_human_review"
+    },
+    {
+      "packet_id": "context-packet:11e0f9f05e5da40acbe30151396a35fab2f0e7a39b8146d6998658e8dbefa863",
+      "source_packet_sha256": "d12fac2168ba069e8d2b2f7e1c9cdaf9e398b6edd711028ab4cf74a2a38ebe32",
+      "status": "no_contract_safe_tree_identified",
+      "journey_ids": [],
+      "finding": "AI-assisted spike review did not identify a contract-safe standalone terminal rule for regulatory-standards-for-protective-boots-and-helmets; retained for human review rather than inventing a treatment.",
+      "method": "ai_assisted_human_review"
+    },
+    {
+      "packet_id": "context-packet:e685746ed2af066d176b08207761ca5554698f85cabe8f147a6898260bea3af5",
+      "source_packet_sha256": "2fa13ccda80df10c0f2362b1e6b0dc9bd59f5a98c05a688b237decc3fcda9008",
+      "status": "no_contract_safe_tree_identified",
+      "journey_ids": [],
+      "finding": "AI-assisted spike review did not identify a contract-safe standalone terminal rule for safety-seats; retained for human review rather than inventing a treatment.",
+      "method": "ai_assisted_human_review"
+    },
+    {
+      "packet_id": "context-packet:a7261a960ce5fa93a87f0834831d55d4bcdfe44dec67bbfd821d465a22cba5a8",
+      "source_packet_sha256": "196d86a0d54e669f5e4154f4bb40428f34999d81e345ae9efd171b4b76c6c020",
+      "status": "no_contract_safe_tree_identified",
+      "journey_ids": [],
+      "finding": "AI-assisted spike review did not produce a contract-safe standalone tree for treatment-of-vehicles-with-a-fitted-childrens-car-seat; unresolved packet references require human review.",
+      "method": "ai_assisted_human_review"
+    },
+    {
+      "packet_id": "context-packet:c7d2d84b8aabe5e583f7900231af7231d9ddbc0ac33e9075a381691647eaf59b",
+      "source_packet_sha256": "9498a0e81057cce9049aadacf49af5c355955b28c36e5e96bdb5ca64c5740318",
+      "status": "no_contract_safe_tree_identified",
+      "journey_ids": [],
+      "finding": "AI-assisted spike review did not identify a contract-safe standalone terminal rule for users-for-this-notice; retained for human review rather than inventing a treatment.",
+      "method": "ai_assisted_human_review"
+    },
+    {
+      "packet_id": "context-packet:956483e27aae12258c08afba474d265b207a00c282f79116de04bcd5c031be71",
+      "source_packet_sha256": "1a14c82606de3747fddec6fc466355a9f3a2f41fc4cb9413c21e45fc333b486a",
+      "status": "no_contract_safe_tree_identified",
+      "journey_ids": [],
+      "finding": "AI-assisted spike review did not identify a contract-safe standalone terminal rule for vat-liability-of-childrens-travel-systems; retained for human review rather than inventing a treatment.",
+      "method": "ai_assisted_human_review"
+    },
+    {
+      "packet_id": "context-packet:525fb2502f46ff0438a6cf67a208a8b961174161d4256121c6ff6beec317a23e",
+      "source_packet_sha256": "69a88cb4a5396ef65559a58a40ea846d55e20823dc748307edac621a5cae3f93",
+      "status": "no_contract_safe_tree_identified",
+      "journey_ids": [],
+      "finding": "AI-assisted spike review did not identify a contract-safe standalone terminal rule for work-out-who-is-being-supplied; retained for human review rather than inventing a treatment.",
+      "method": "ai_assisted_human_review"
+    },
+    {
+      "packet_id": "context-packet:3d5afcbe3c9bf40b0d9e9a6cfbc31f37ba49c77f40243540f3afc70a9c052dbe",
+      "source_packet_sha256": "b7cbd0f18d0f5e2c9df99079529bfe2fb0f65027075a0df11913be5ffe697bc3",
+      "status": "no_contract_safe_tree_identified",
+      "journey_ids": [],
+      "finding": "AI-assisted spike review did not identify a contract-safe standalone terminal rule for your-rights-and-obligations; retained for human review rather than inventing a treatment.",
+      "method": "ai_assisted_human_review"
+    },
+    {
+      "packet_id": "context-packet:92eb6a04c94e811d0690954c2b95b29f83c869519075e5530fc7f0ee6a7cf4f8",
+      "source_packet_sha256": "004743f6929b9f330dab3ee9c4dca0941a6c37636bce2835307596c42e9c69f6",
+      "status": "no_contract_safe_tree_identified",
+      "journey_ids": [],
+      "finding": "AI-assisted spike review did not identify a contract-safe standalone terminal rule for zero-rated-industrial-helmet-accessories; retained for human review rather than inventing a treatment.",
+      "method": "ai_assisted_human_review"
+    },
+    {
+      "packet_id": "context-packet:09a37e40b5531a0700a8f764eab3a29423edef804e4a74375ae31151877b3830",
+      "source_packet_sha256": "e9d5728195801587600057ec977549af4933a8fcd0f8b8dba6e5a59c8c6f3523",
+      "status": "no_contract_safe_tree_identified",
+      "journey_ids": [],
+      "finding": "AI-assisted spike review did not identify a contract-safe standalone terminal rule for zero-rated-motorcycle-helmet-accessories; retained for human review rather than inventing a treatment.",
+      "method": "ai_assisted_human_review"
+    },
+    {
+      "packet_id": "context-packet:453effd18b34c728722c3d2bb0d4f216ff07bae2a62271d0fb9a16ac522cc99b",
+      "source_packet_sha256": "0f198f5e6442cead9b7303b9a496a6c7c139ff3eed4d3807ab781df30082918e",
+      "status": "no_contract_safe_tree_identified",
+      "journey_ids": [],
+      "finding": "AI-assisted spike review did not identify a contract-safe standalone terminal rule for zero-rated-motorcycle-helmets; retained for human review rather than inventing a treatment.",
+      "method": "ai_assisted_human_review"
+    },
+    {
+      "packet_id": "context-packet:c4d45fffd06e8ab86b201de2bb154478f173f7fe930ea8f14a55524b593eeb4c",
+      "source_packet_sha256": "b2d1dcde245919ef6167143c860226304273f755ea7f922e0a57ace87bc7b1b3",
+      "status": "no_contract_safe_tree_identified",
+      "journey_ids": [],
+      "finding": "AI-assisted spike review did not identify a contract-safe standalone terminal rule for zero-rated-pedal-cycle-helmet-accessories; retained for human review rather than inventing a treatment.",
+      "method": "ai_assisted_human_review"
+    },
+    {
+      "packet_id": "context-packet:3cba57355494ea844589df7c9f02363c0927810d64edf53a506f96e11914ff2d",
+      "source_packet_sha256": "cefb60989c04d3a935e5357334c3596a8e0a8fc791e4c3d9273c86be6c997f34",
+      "status": "no_contract_safe_tree_identified",
+      "journey_ids": [],
+      "finding": "AI-assisted spike review did not identify a contract-safe standalone terminal rule for zero-rated-pedal-cycle-helmets; retained for human review rather than inventing a treatment.",
+      "method": "ai_assisted_human_review"
+    },
+    {
+      "packet_id": "context-packet:90523272e0f13b690faed2926556872c6a1b8aa2edc94243d187f78e74fe3c8a",
+      "source_packet_sha256": "5a69e428d7c693c0e0d3d255673b5ceed9a9b15cb3573859f5b5541ff1bde214",
+      "status": "journey_curated",
+      "journey_ids": [
+        "commodity-2005202000-potato-crisps"
+      ],
+      "finding": null,
+      "method": "ai_assisted_human_review"
+    },
+    {
+      "packet_id": "context-packet:7884f51ee110649f7ae8f581aa509310a0cee2417457d89d5f269a30e915c56c",
+      "source_packet_sha256": "d53a90a6bb8e586da9d91cef279746d1d51432a373cfc10a38dba51bc79370d6",
+      "status": "journey_curated",
+      "journey_ids": [
+        "commodity-2008939120-sweetened-dried-cranberries"
+      ],
+      "finding": null,
+      "method": "ai_assisted_human_review"
+    },
+    {
+      "packet_id": "context-packet:83462a91dcd81625011bbaac52ab8d8e6f470f99dae98bb60e1601a05dc6e904",
+      "source_packet_sha256": "9d24f272516503f1142086eec1b20b20ef77201fd856594cb1408d3282d93cec",
+      "status": "journey_curated",
+      "journey_ids": [
+        "commodity-2008979890-prepared-fruit-mixtures"
+      ],
+      "finding": null,
+      "method": "ai_assisted_human_review"
+    },
+    {
+      "packet_id": "context-packet:a3e7dd1573964733a181f4591f7381ca24f35a84c1b9c7176f5139ca0b08c20c",
+      "source_packet_sha256": "ce012e7801e0d419a37aebd4964d5618bbc30e1e08fd32f6d7fb93b00db98a4e",
+      "status": "journey_curated",
+      "journey_ids": [
+        "commodity-8407100010-civil-aircraft-engines"
+      ],
+      "finding": null,
+      "method": "ai_assisted_human_review"
+    },
+    {
+      "packet_id": "context-packet:5066d776bb4b91eab01bd9e2c2689ecf3acc30c879ddf66971e26eb3f27190ff",
+      "source_packet_sha256": "0d47a128083512dfa01b3dc47a649d6cbfa83f66448c764f612072b1f0d3dfd2",
+      "status": "journey_curated",
+      "journey_ids": [
+        "commodity-8409100090-aircraft-engine-parts"
+      ],
+      "finding": null,
+      "method": "ai_assisted_human_review"
+    },
+    {
+      "packet_id": "context-packet:3ccd647be99934c07607e4ee60ddcad16595346684b427a823229c17f56138bf",
+      "source_packet_sha256": "56195741f6f7f285137febbcb9d94037647fff4bebad931d918dd8d6b86f0aed",
+      "status": "journey_curated",
+      "journey_ids": [
+        "commodity-8424100011-aircraft-fire-extinguisher-cylinders"
+      ],
+      "finding": null,
+      "method": "ai_assisted_human_review"
+    },
+    {
+      "packet_id": "context-packet:a52c94589cfcc77c84d0ce92e709535206dbb28220ad608010a6a4b76a7b542b",
+      "source_packet_sha256": "9ae3a780a1a2a8aa34595f1ea323e51eefa97f01672268c06577362740ec3739",
+      "status": "journey_curated",
+      "journey_ids": [
+        "notice-709-1-catering-local-only"
+      ],
+      "finding": null,
+      "method": "ai_assisted_human_review"
+    }
+  ]
+}
