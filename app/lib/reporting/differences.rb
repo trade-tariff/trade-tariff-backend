@@ -327,7 +327,8 @@ module Reporting
         return if TradeTariffBackend.xi?
 
         with_report_logging do
-          report = instrument_report_step('open_workbook') { new(File.basename(object_key)) }
+          filename = Rails.env.development? ? File.basename(object_key) : nil
+          report = instrument_report_step('open_workbook') { new(filename) }
           workbook = instrument_report_step('render_workbook') { report.generate(only:) }
 
           if Rails.env.production?
