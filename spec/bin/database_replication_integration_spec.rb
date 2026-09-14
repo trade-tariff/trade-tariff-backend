@@ -79,7 +79,8 @@ RSpec.describe 'database replication with PostgreSQL' do
         ON ddl_command_end EXECUTE FUNCTION noop_event_trigger();
     SQL
     dump = sql_transform.call(dump) if sql_transform
-    dump += Rails.root.join('bin/after.sql').read
+    # Legacy dumps have no marker and must retain their original maintenance boundary.
+    dump += "VACUUM FULL ANALYZE;\n"
 
     Zlib::GzipWriter.open(dump_file) { |gzip| gzip.write(dump) }
   end
@@ -253,6 +254,23 @@ RSpec.describe 'database replication with PostgreSQL' do
     SQL
   end
 
+  it 'analyzes without rewriting tables' do
+    original_filenode = query(target_database, "SELECT pg_relation_filenode('restore_probe')")
+    psql(target_database, 'REFRESH MATERIALIZED VIEW restore_probe_view WITH NO DATA')
+
+    run_command(
+      'psql', '-X', '--username', database_user, '-v', 'ON_ERROR_STOP=1',
+      '-d', target_database, '-f', Rails.root.join('bin/after.sql').to_s
+    )
+
+    expect(query(target_database, "SELECT pg_relation_filenode('restore_probe')")).to eq(original_filenode)
+    expect(query(target_database, <<~SQL)).to eq('1')
+      SELECT count(*) FROM pg_stats
+      WHERE schemaname = 'public' AND tablename = 'restore_probe' AND attname = 'value'
+    SQL
+    expect(query(target_database, 'TABLE restore_probe_view')).to eq('old')
+  end
+
   it 'completes post-restore maintenance when there are no materialized views' do
     psql(target_database, 'DROP MATERIALIZED VIEW restore_probe_view')
     build_dump(include_materialized_view: false)
@@ -405,6 +423,8 @@ RSpec.describe 'database replication with PostgreSQL' do
     expect(uploaded_dump).to include('DROP SCHEMA IF EXISTS xi CASCADE;')
     expect(uploaded_dump).not_to include('IF EXISTS IF EXISTS')
     expect(uploaded_dump).to include("-- TRADE_TARIFF_POST_RESTORE_START\n")
+    expect(uploaded_dump).to include("\nANALYZE;\n")
+    expect(uploaded_dump).not_to include('VACUUM')
   end
 
   it 'does not replace the latest backup when pg_dump fails' do

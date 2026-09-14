@@ -171,7 +171,7 @@ RSpec.describe 'bin/db-replicate' do
       {
         printf 'CREATE TABLE restored_table(id integer);\n'
         printf '%s\n' '-- TRADE_TARIFF_POST_RESTORE_START'
-        printf 'VACUUM FULL ANALYZE;\n'
+        printf 'ANALYZE;\n'
       } > "$output_file"
     BASH
 
@@ -316,8 +316,9 @@ RSpec.describe 'bin/db-replicate' do
       %r{\Apsql --single-transaction -v ON_ERROR_STOP=1 postgres://database\.example\.test/tariff\z},
     ).count).to eq(1)
     expect(File.read("#{tempdir}/core-restore.sql")).to include('CREATE TABLE restored_table')
-    expect(File.read("#{tempdir}/core-restore.sql")).not_to include('VACUUM FULL ANALYZE')
-    expect(File.read("#{tempdir}/post-restore.sql")).to include('VACUUM FULL ANALYZE')
+    expect(File.read("#{tempdir}/core-restore.sql")).not_to include('ANALYZE;')
+    expect(File.read("#{tempdir}/post-restore.sql")).to include("\nANALYZE;\n")
+    expect(File.read("#{tempdir}/post-restore.sql")).not_to include('VACUUM')
   end
 
   it 'acquires the replication lock before changing service desired counts' do

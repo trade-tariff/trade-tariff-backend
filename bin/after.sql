@@ -5,7 +5,9 @@
 -- If a refresh fails (e.g., due to locks or errors), it logs a notice and continues.
 -- If a refresh exceeds a timeout (60s) we will backoff retry (up to 3 times)
 
-VACUUM FULL ANALYZE;
+-- Restored tables need planner statistics before the refresh queries run,
+-- not another physical rewrite of their freshly loaded data.
+ANALYZE;
 
 DO $$
 DECLARE
