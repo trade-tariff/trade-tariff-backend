@@ -836,6 +836,96 @@ RSpec.describe CustomsTariffImporter::NotesExtractor do
       end
     end
 
+    describe 'chapter heading capitalisation' do
+      it 'recognises a title case chapter heading' do
+        result = parse(['Chapter 1', 'Chapter Notes', 'Live animal content.'])
+
+        expect(result.chapters['01']).to include('Live animal content.')
+      end
+
+      it 'recognises a lower case chapter heading' do
+        result = parse(['chapter 2', 'Chapter Notes', 'Meat content.'])
+
+        expect(result.chapters['02']).to include('Meat content.')
+      end
+
+      it 'still recognises an upper case chapter heading' do
+        result = parse(['CHAPTER 3', 'Chapter Notes', 'Fish content.'])
+
+        expect(result.chapters['03']).to include('Fish content.')
+      end
+
+      it 'treats a title case chapter heading as a boundary between chapters' do
+        result = parse([
+          'Chapter 1',
+          'Chapter Notes',
+          'Live animal content.',
+          'Chapter 2',
+          'Chapter Notes',
+          'Meat content.',
+        ])
+
+        expect(result.chapters).to eq('01' => 'Live animal content.', '02' => 'Meat content.')
+      end
+
+      it 'recognises a title case chapter heading after a section heading' do
+        result = parse(['SECTION I', 'Chapter 1', 'Chapter Notes', 'Live animal content.'])
+
+        expect(result.chapters['01']).to include('Live animal content.')
+      end
+
+      # The pattern is anchored at both ends, so only a paragraph that is exactly
+      # "Chapter <digits>" is a heading. These are the note lines that mention a
+      # chapter and must keep flowing into the note body.
+      it 'does not treat a title case inline chapter reference as a boundary' do
+        result = parse([
+          'CHAPTER 72',
+          'Chapter Notes',
+          '1. Some definition.',
+          'Chapter 72 does not include products of heading 7301.',
+          'More note text.',
+        ])
+
+        expect(result.chapters['72']).to include('More note text.')
+      end
+
+      it 'does not treat a trailing cross reference as a boundary' do
+        result = parse([
+          'CHAPTER 72',
+          'Chapter Notes',
+          '1. Some definition.',
+          'See Chapter 73',
+          'More note text.',
+        ])
+
+        expect(result.chapters['72']).to include('See Chapter 73', 'More note text.')
+      end
+
+      it 'does not treat a chapter reference ending in punctuation as a boundary' do
+        result = parse([
+          'CHAPTER 72',
+          'Chapter Notes',
+          '1. Some definition.',
+          'Chapter 73.',
+          'More note text.',
+        ])
+
+        expect(result.chapters['72']).to include('Chapter 73.', 'More note text.')
+      end
+
+      it 'does not treat a "Chapter notes" heading as a chapter heading' do
+        result = parse(['CHAPTER 4', 'Chapter notes', 'Dairy content.'])
+
+        expect(result.chapters['04']).to eq('Dairy content.')
+      end
+
+      it 'does not treat a subheading notes heading as a chapter heading' do
+        result = parse(['CHAPTER 5', 'Subheading Notes', 'Subheading content.'])
+
+        expect(result.chapters['05']).to include('Subheading content.')
+      end
+    end
+
     describe 'chapter notes without a "Chapter Notes" heading' do
       it 'starts collecting from "Additional chapter notes" when it is the first heading' do
         result = parse([
