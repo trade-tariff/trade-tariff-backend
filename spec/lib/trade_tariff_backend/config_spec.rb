@@ -320,6 +320,18 @@ RSpec.describe TradeTariffBackend::Config do
         expect(config.slack_failures_channel).to eq('#production-alerts')
       end
     end
+
+    describe '.slack_observability_channel' do
+      it 'defaults to #production-observability' do
+        ENV.delete('SLACK_OBSERVABILITY_CHANNEL')
+        expect(config.slack_observability_channel).to eq('#production-observability')
+      end
+
+      it 'reads SLACK_OBSERVABILITY_CHANNEL from ENV' do
+        ENV['SLACK_OBSERVABILITY_CHANNEL'] = '#non-production-alerts'
+        expect(config.slack_observability_channel).to eq('#non-production-alerts')
+      end
+    end
   end
 
   describe 'reporting CDN host' do
