@@ -13,6 +13,8 @@ vendor/*
 data/*/*
 !data/vat_guidance/context_graph.json
 !data/vat_guidance/context_packets.json
+!data/vat_guidance/question_journey_candidates.json
+!data/vat_guidance/question_journeys.json
 data/failed-measures-report*
 
 # Environment files
