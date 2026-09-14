@@ -4,6 +4,12 @@ class MyCommoditiesSubscriptionWorker
   # Orchestrator only enqueues children; keep retries low to limit duplicate fan-out.
   sidekiq_options retry: 3
 
+  # Stamping only happens once the whole enqueue loop has run without raising. It records
+  # "this date has been handed off", not "every email landed", which is all this worker can
+  # observe. A date with nothing to send is genuinely done, so it is stamped too, otherwise
+  # it would sit in the redrive set forever. Delivery failures are reported back by
+  # MyCommoditiesEmailWorker's sidekiq_retries_exhausted hook, which returns the date to
+  # TariffChangesJobStatus.pending_emails.
   def perform(date = Time.zone.yesterday.iso8601)
     @date = Date.parse(date)
     queue
@@ -12,7 +18,7 @@ class MyCommoditiesSubscriptionWorker
 
   def queue
     users_with_changes.each do |user_id, changes_count|
-      MyCommoditiesEmailWorker.perform_async(user_id, @date.strftime('%d/%m/%Y'), changes_count)
+      MyCommoditiesEmailWorker.perform_async(user_id, @date.strftime(MyCommoditiesEmailWorker::DATE_FORMAT), changes_count)
     end
   end
 

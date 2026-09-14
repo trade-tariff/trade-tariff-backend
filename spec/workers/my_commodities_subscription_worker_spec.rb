@@ -53,7 +53,7 @@ RSpec.describe MyCommoditiesSubscriptionWorker, type: :worker do
         allow(MyCommoditiesEmailWorker).to receive(:perform_async)
       end
 
-      it 'does not queue emails' do
+      it 'does not queue emails and marks the day done, because there is nothing to deliver' do
         instance.perform(date)
 
         expect(MyCommoditiesEmailWorker).not_to have_received(:perform_async)
@@ -71,7 +71,7 @@ RSpec.describe MyCommoditiesSubscriptionWorker, type: :worker do
         allow(MyCommoditiesEmailWorker).to receive(:perform_async)
       end
 
-      it 'does not queue any emails' do
+      it 'does not queue any emails and marks the day done, because there is nothing to deliver' do
         instance.perform(date)
 
         expect(MyCommoditiesEmailWorker).not_to have_received(:perform_async)
@@ -111,11 +111,38 @@ RSpec.describe MyCommoditiesSubscriptionWorker, type: :worker do
         allow(MyCommoditiesEmailWorker).to receive(:perform_async)
       end
 
-      it 'does not queue emails' do
+      it 'does not queue emails and marks the day done, because there is nothing to deliver' do
         instance.perform(date)
 
         expect(MyCommoditiesEmailWorker).not_to have_received(:perform_async)
         expect(status).to have_received(:mark_emails_sent!)
+      end
+    end
+
+    context 'when every queued email exhausts its retries' do
+      let(:user) { create(:public_user, :with_my_commodities_subscription) }
+      let!(:job_status) { create(:tariff_changes_job_status, :pending_email, operation_date: Date.new(2025, 12, 8)) }
+
+      before do
+        subscription = PublicUsers::Subscription.where(user_id: user.id, subscription_type_id: Subscriptions::Type.my_commodities.id).first
+        create(:subscription_target, user_subscriptions_uuid: subscription.uuid, target_id: '1000')
+        create(:tariff_change, operation_date: date, goods_nomenclature_sid: 1000)
+
+        allow(MyCommoditiesEmailWorker).to receive(:perform_async)
+      end
+
+      # This is the silent data-loss regression: the orchestrator cannot know whether a
+      # child ever delivered, so a stamped date must not be a one-way door.
+      it 'leaves the date in the pending_emails redrive set' do
+        instance.perform(date)
+        expect(TariffChangesJobStatus.pending_emails).not_to include(job_status.operation_date)
+
+        MyCommoditiesEmailWorker.sidekiq_retries_exhausted_block.call(
+          { 'args' => [user.id, '08/12/2025', 1] },
+          StandardError.new('Notify is down'),
+        )
+
+        expect(TariffChangesJobStatus.pending_emails).to include(job_status.operation_date)
       end
     end
   end
