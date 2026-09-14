@@ -30,7 +30,7 @@ module TariffSynchronizer
       staging_manager&.cleanup
     end
 
-    private
+  private
 
     def check_oplog_inserts
       total_count = @oplog_inserts&.fetch(:total_count, 0).to_i

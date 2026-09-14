@@ -43,10 +43,10 @@ module TariffSynchronizer
       def sync_variables_set?
         ENV['HMRC_API_HOST'].present? && ENV['HMRC_CLIENT_ID'].present? && ENV['HMRC_CLIENT_SECRET'].present?
       end
-
     end
 
     def initialize(request_date)
+      super()
       @request_date = request_date
     end
 

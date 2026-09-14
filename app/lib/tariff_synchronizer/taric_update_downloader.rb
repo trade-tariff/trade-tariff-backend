@@ -10,7 +10,7 @@ module TariffSynchronizer
             phase: 'download',
             error_class: 'ConfigurationError',
             error_message: 'Missing: Tariff sync environment variables: TARIFF_SYNC_USERNAME, TARIFF_SYNC_PASSWORD, TARIFF_SYNC_HOST and TARIFF_SYNC_EMAIL.',
-            )
+          )
           return
         end
 
@@ -28,7 +28,7 @@ module TariffSynchronizer
           Instrumentation.download_completed(
             duration_ms:,
             files_count: TaricUpdate.pending.count,
-            )
+          )
         end
       end
 
@@ -48,7 +48,7 @@ module TariffSynchronizer
         current_update.next_update
       end
 
-      private
+    private
 
       def update_model
         TaricUpdate
@@ -59,12 +59,12 @@ module TariffSynchronizer
           TaricSynchronizer.password.present? &&
           TaricSynchronizer.host.present?
       end
-
     end
 
     attr_reader :date, :url
 
     def initialize(date)
+      super()
       @date = date
       @url = date_api_url
     end
