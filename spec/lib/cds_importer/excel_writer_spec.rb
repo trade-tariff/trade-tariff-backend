@@ -88,4 +88,164 @@ RSpec.describe CdsImporter::ExcelWriter do
       expect(writer.instance_variable_get(:@instances)).to eq(%w[I1])
     end
   end
+
+  describe 'reporting failures' do
+    let(:mail) { instance_double(ActionMailer::MessageDelivery, deliver_now: true) }
+
+    before do
+      allow(Rails.logger).to receive(:error)
+      allow(Rails.logger).to receive(:warn)
+      allow(NewRelic::Agent).to receive(:notice_error)
+      allow(SlackNotifierService).to receive(:call)
+      allow(ActiveSupport::Notifications).to receive(:instrument).and_call_original
+      allow(TradeTariffBackend).to receive(:cds_updates_send_email).and_return(true)
+      allow(TariffSynchronizer::Mailer).to receive(:cds_updates).and_return(mail)
+      allow(excel_class).to receive(:sort_columns).and_return([])
+    end
+
+    context 'when writing a row raises' do
+      before do
+        allow(excel).to receive(:data_row).and_raise(StandardError, 'boom')
+      end
+
+      it 'logs the error' do
+        writer.process_record(cds_entity)
+        writer.process_record(cds_entity(element_id: 'E2'))
+
+        expect(Rails.logger).to have_received(:error).with(/write error for K in test.xlsx - boom/)
+      end
+
+      it 'records the error in New Relic' do
+        writer.process_record(cds_entity)
+        writer.process_record(cds_entity(element_id: 'E2'))
+
+        expect(NewRelic::Agent).to have_received(:notice_error)
+      end
+
+      it 'instruments the failure event' do
+        writer.process_record(cds_entity)
+        writer.process_record(cds_entity(element_id: 'E2'))
+
+        expect(ActiveSupport::Notifications).to have_received(:instrument).with(
+          described_class::FAILURE_EVENT,
+          hash_including(filename: 'test.xlsx'),
+        )
+      end
+
+      it 'does not raise, so a data import that otherwise succeeded still completes' do
+        writer.process_record(cds_entity)
+
+        expect { writer.process_record(cds_entity(element_id: 'E2')) }.not_to raise_error
+      end
+    end
+
+    context 'when one row failed but the rest of the file wrote cleanly' do
+      before do
+        calls = 0
+        allow(excel).to receive(:data_row) do
+          calls += 1
+          raise StandardError, 'boom' if calls == 1
+
+          []
+        end
+      end
+
+      it 'does not email a report it knows is incomplete' do
+        writer.process_record(cds_entity)
+        writer.process_record(cds_entity(element_id: 'E2'))
+        writer.after_parse
+
+        expect(TariffSynchronizer::Mailer).not_to have_received(:cds_updates)
+      end
+
+      it 'instruments a failure event for the report it did not send' do
+        writer.process_record(cds_entity)
+        writer.process_record(cds_entity(element_id: 'E2'))
+        writer.after_parse
+
+        expect(ActiveSupport::Notifications).to have_received(:instrument).with(
+          described_class::FAILURE_EVENT,
+          hash_including(message: /not sent/),
+        )
+      end
+    end
+
+    context 'when delivering the email raises' do
+      before do
+        allow(mail).to receive(:deliver_now).and_raise(StandardError, 'smtp down')
+      end
+
+      it 'logs the delivery failure' do
+        writer.process_record(cds_entity)
+        writer.after_parse
+
+        expect(Rails.logger).to have_received(:error).with(/delivery failed.*smtp down/)
+      end
+
+      it 'instruments the failure event' do
+        writer.process_record(cds_entity)
+        writer.after_parse
+
+        expect(ActiveSupport::Notifications).to have_received(:instrument).with(
+          described_class::FAILURE_EVENT,
+          hash_including(message: /delivery failed/),
+        )
+      end
+    end
+
+    context 'when building the worksheets raises' do
+      before do
+        allow(excel_class).to receive(:heading).and_raise(StandardError, 'bad sheet')
+      end
+
+      it 'instruments the failure event' do
+        writer.process_record(cds_entity)
+        writer.after_parse
+
+        expect(ActiveSupport::Notifications).to have_received(:instrument).with(
+          described_class::FAILURE_EVENT,
+          hash_including(message: /bad sheet/),
+        )
+      end
+    end
+
+    context 'when a row is not valid' do
+      before do
+        allow(excel).to receive(:valid?).and_return(false)
+      end
+
+      it 'logs the dropped rows' do
+        writer.process_record(cds_entity)
+        writer.after_parse
+
+        expect(Rails.logger).to have_received(:warn).with(/dropped 1 invalid K row/)
+      end
+
+      it 'still sends the report, because an invalid row is a deliberate filter' do
+        writer.process_record(cds_entity)
+        writer.after_parse
+
+        expect(TariffSynchronizer::Mailer).to have_received(:cds_updates)
+      end
+    end
+
+    context 'when everything succeeds' do
+      it 'sends the report' do
+        writer.process_record(cds_entity)
+        writer.after_parse
+
+        expect(TariffSynchronizer::Mailer).to have_received(:cds_updates)
+      end
+
+      it 'instruments no failure event' do
+        writer.process_record(cds_entity)
+        writer.after_parse
+
+        expect(ActiveSupport::Notifications).not_to have_received(:instrument).with(
+          described_class::FAILURE_EVENT,
+          anything,
+        )
+      end
+    end
+  end
 end
