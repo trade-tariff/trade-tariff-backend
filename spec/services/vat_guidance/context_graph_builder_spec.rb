@@ -68,9 +68,14 @@ RSpec.describe VatGuidance::ContextGraphBuilder do
       include('node_type' => 'external_reference', 'source_url' => include('/hmrc-internal-manuals/')),
     )
     expect(graph.fetch('edges')).to include(
+      include(
+        'target_id' => start_with('external:'),
+        'reference_kind' => 'hyperlink',
+        'resolution' => 'unresolved',
+      ),
       include('target_id' => include('missing-anchor'), 'resolution' => 'unresolved'),
     )
-    expect(graph.dig('summary', 'unresolved_references')).to eq(1)
+    expect(graph.dig('summary', 'unresolved_references')).to eq(2)
   end
 
   it 'classifies statutory citations without treating them as notice sections' do
@@ -165,6 +170,62 @@ RSpec.describe VatGuidance::ContextGraphBuilder do
         'target_id' => end_with('#target-section'),
         'reference_kind' => 'prose_cross_document_reference',
         'reference_text' => 'VAT Notice 701/14, section 3',
+      ),
+    )
+  end
+
+  it 'keeps a reference to an uncaptured notice section unresolved' do
+    source_notice = content_payload(
+      title: 'Source references (VAT Notice 700/1)',
+      path: '/guidance/source-references',
+      body: <<~HTML,
+        <div class="govspeak">
+          <h2 id="references">1. References</h2>
+          <p>VAT Notice 701/99, section 3 applies.</p>
+        </div>
+      HTML
+    )
+
+    notice_graph = described_class.new([source_notice]).call
+
+    expect(notice_graph.fetch('nodes')).to include(
+      include('node_type' => 'notice_reference', 'heading' => 'VAT Notice 701/99, section 3'),
+    )
+    expect(notice_graph.fetch('edges')).to include(
+      include(
+        'target_id' => 'notice-reference:701/99#3',
+        'reference_kind' => 'prose_notice_reference',
+        'resolution' => 'unresolved',
+      ),
+    )
+  end
+
+  it 'keeps a section reference local when an earlier sentence links to another notice' do
+    source_notice = content_payload(
+      title: 'Catering (VAT Notice 709/1)',
+      path: '/guidance/catering',
+      body: <<~HTML,
+        <h2 id="vending">2.4 Vending machines</h2>
+        <p>Read <a href="/guidance/food">Food products (VAT Notice 701/14)</a> and section 3.3 for evidence.</p>
+        <p>Read section 5.5 on catering in student unions.</p>
+        <h2 id="student-unions">5.5 Catering provided by student unions</h2>
+        <p>Student union guidance.</p>
+      HTML
+    )
+    food_notice = content_payload(
+      title: 'Food products (VAT Notice 701/14)',
+      path: '/guidance/food',
+      body: '<h2 id="food">Food</h2><p>Food guidance.</p>',
+    )
+
+    local_graph = described_class.new([source_notice, food_notice]).call
+
+    expect(local_graph.fetch('edges')).to include(
+      include(
+        'source_id' => 'document:/guidance/catering#vending',
+        'target_id' => 'document:/guidance/catering#student-unions',
+        'reference_kind' => 'prose_section_reference',
+        'resolution' => 'resolved',
       ),
     )
   end
