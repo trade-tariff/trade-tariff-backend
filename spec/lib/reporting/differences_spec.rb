@@ -3,7 +3,7 @@ RSpec.describe Reporting::Differences do
     include_context 'with a stubbed reporting bucket'
 
     let(:report) { instance_double(described_class) }
-    let(:workbook) { instance_double('FastExcel::Workbook') }
+    let(:workbook) { instance_double(Libxlsxwriter::Workbook) }
 
     before do
       allow(described_class).to receive(:new).and_return(report)
