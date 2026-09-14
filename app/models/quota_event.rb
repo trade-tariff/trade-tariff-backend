@@ -20,6 +20,11 @@ class QuotaEvent
     end
   end
 
+  # Scalar subquery selecting just the latest event_type for embedding in SQL.
+  def self.latest_event_type_dataset(quota_sid, point_in_time)
+    for_quota_definition(quota_sid, point_in_time).select(:event_type).limit(1)
+  end
+
   def self.for_event(event_type, quota_sid, point_in_time)
     event_class_for(event_type).select(:quota_definition_sid,
                                        :occurrence_timestamp,
