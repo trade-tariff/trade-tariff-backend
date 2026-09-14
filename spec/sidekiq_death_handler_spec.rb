@@ -88,4 +88,16 @@ RSpec.describe SidekiqDeathHandler do
       expect(SlackNotifierService).not_to have_received(:call)
     end
   end
+
+  context 'when the job sets slack_channel' do
+    let(:job) { super().merge('slack_channel' => '#tariffs-etl') }
+
+    it 'routes the alert to that channel' do
+      described_class.call(job, exception)
+
+      expect(SlackNotifierService).to have_received(:call).with(
+        hash_including(channel: '#tariffs-etl'),
+      )
+    end
+  end
 end
