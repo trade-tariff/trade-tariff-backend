@@ -1,7 +1,10 @@
 class SlackNotifierService
   class << self
-    def call(message)
-      notifier.presence&.ping(message)
+    def call(message = nil, **options)
+      payload = options.dup
+      payload[:text] = message unless message.nil?
+
+      notifier.presence&.ping(payload)
     end
 
   private

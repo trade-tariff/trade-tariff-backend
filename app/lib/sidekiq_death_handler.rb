@@ -4,9 +4,10 @@ SidekiqDeathHandler = lambda { |job, exception|
 
   error_class = job['error_class'] || exception.class.name
   error_message = job['error_message'] || exception.message
+  channel = job['slack_channel'].presence || TradeTariffBackend.slack_failures_channel
 
   SlackNotifierService.call(
-    channel: TradeTariffBackend.slack_failures_channel,
+    channel:,
     attachments: [
       {
         color: 'danger',
