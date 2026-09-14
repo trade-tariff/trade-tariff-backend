@@ -39,8 +39,6 @@ module TariffSynchronizer
           files_count:,
         )
       end
-    rescue Redlock::LockError
-      TariffSynchronizer::Instrumentation.lock_failed(phase: 'rollback')
     end
 
   private

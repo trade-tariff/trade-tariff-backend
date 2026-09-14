@@ -57,6 +57,21 @@ RSpec.describe CdsSynchronizer, :truncation do
 
         expect(TariffSynchronizer::BaseUpdate).not_to have_received(:failed)
       end
+
+      it 'returns the lock unavailable sentinel rather than a nil no-op' do
+        expect(described_class.apply).to eq(TariffSynchronizer::LOCK_UNAVAILABLE)
+      end
+    end
+
+    context 'when Redis cannot be reached to acquire the lock' do
+      before do
+        allow(TradeTariffBackend).to receive(:with_redis_lock)
+          .and_raise(Redlock::LockAcquisitionError.new('Too many Redis errors', []))
+      end
+
+      it 'lets the infrastructure failure surface' do
+        expect { described_class.apply }.to raise_error(Redlock::LockAcquisitionError)
+      end
     end
 
     context 'with failed CDS updates present' do
@@ -96,6 +111,51 @@ RSpec.describe CdsSynchronizer, :truncation do
           text: 'Error TariffSynchronizer::FailedUpdatesError: TariffSynchronizer::FailedUpdatesError',
           channel: TradeTariffBackend.slack_failures_channel,
         )
+      end
+    end
+
+    context 'when an update fails part way through the date range' do
+      let(:first_day) { Time.zone.today - 2 }
+      let(:second_day) { Time.zone.today - 1 }
+
+      before do
+        create(:cds_update, :pending, example_date: first_day)
+        create(:cds_update, :pending, example_date: second_day)
+
+        allow(TradeTariffBackend).to receive(:service).and_return('uk')
+        allow(TradeTariffBackend).to receive(:with_redis_lock).and_yield
+        allow(TariffSynchronizer::BaseUpdateImporter).to receive(:perform) do |update|
+          update.mark_as_failed if update.issue_date == first_day
+        end
+      end
+
+      it 'does not apply the following day on top of the hole' do
+        described_class.apply
+
+        expect(TariffSynchronizer::BaseUpdateImporter).to have_received(:perform).once
+      end
+
+      it 'leaves the following day pending' do
+        described_class.apply
+
+        expect(TariffSynchronizer::CdsUpdate.pending_at(second_day).count).to eq(1)
+      end
+
+      it 'emits an apply_aborted instrumentation event' do
+        allow(TariffSynchronizer::Instrumentation).to receive(:apply_aborted)
+
+        described_class.apply
+
+        expect(TariffSynchronizer::Instrumentation).to have_received(:apply_aborted)
+          .with(filenames: [TariffSynchronizer::CdsUpdate.failed.first.filename])
+      end
+
+      it 'does not report the apply as completed' do
+        allow(TariffSynchronizer::Instrumentation).to receive(:apply_completed)
+
+        described_class.apply
+
+        expect(TariffSynchronizer::Instrumentation).not_to have_received(:apply_completed)
       end
     end
 
@@ -159,14 +219,17 @@ RSpec.describe CdsSynchronizer, :truncation do
     context 'when the Redis lock cannot be acquired' do
       before do
         allow(TradeTariffBackend).to receive(:with_redis_lock).and_raise(Redlock::LockError, 'tariff-lock')
-        allow(TariffSynchronizer::Instrumentation).to receive(:lock_failed)
         allow(TariffSynchronizer::Instrumentation).to receive(:rollback_completed)
       end
 
-      it 'leaves tariff data unchanged and emits lock-failure instrumentation', :aggregate_failures do
-        expect { described_class.rollback(rollback_date) }.not_to change(Measure, :count)
+      it 'raises rather than reporting a rollback that never happened' do
+        expect { described_class.rollback(rollback_date) }.to raise_error(Redlock::LockError)
+      end
 
-        expect(TariffSynchronizer::Instrumentation).to have_received(:lock_failed).with(phase: 'rollback')
+      it 'leaves tariff data unchanged', :aggregate_failures do
+        expect { described_class.rollback(rollback_date) }.to raise_error(Redlock::LockError)
+
+        expect(Measure.count).to eq(2)
         expect(TariffSynchronizer::Instrumentation).not_to have_received(:rollback_completed)
       end
     end

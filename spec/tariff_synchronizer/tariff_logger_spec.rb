@@ -10,13 +10,15 @@ RSpec.describe TariffSynchronizer::TariffLogger, :truncation do
       allow(TradeTariffBackend).to receive(
         :with_redis_lock,
       ).and_raise(Redlock::LockError, 'foo')
-      allow(TariffSynchronizer::Instrumentation).to receive(:lock_failed)
+      allow(TariffSynchronizer::Instrumentation).to receive(:rollback_completed)
     end
 
-    it 'emits a lock_failed instrumentation event' do
-      TaricSynchronizer.rollback(Time.zone.today, keep: true)
+    it 'raises rather than reporting a rollback that never happened', :aggregate_failures do
+      expect {
+        TaricSynchronizer.rollback(Time.zone.today, keep: true)
+      }.to raise_error(Redlock::LockError)
 
-      expect(TariffSynchronizer::Instrumentation).to have_received(:lock_failed).with(phase: 'rollback')
+      expect(TariffSynchronizer::Instrumentation).not_to have_received(:rollback_completed)
     end
   end
 

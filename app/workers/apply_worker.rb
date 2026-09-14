@@ -12,7 +12,14 @@ class ApplyWorker
     TariffSynchronizer::Instrumentation.sync_run_started(triggered_by: self.class.name)
     TariffSynchronizer::Instrumentation.apply_started(pending_count: TariffSynchronizer::BaseUpdate.pending.count)
 
-    TradeTariffBackend.uk? ? CdsSynchronizer.apply : TaricSynchronizer.apply
+    apply_result = TradeTariffBackend.uk? ? CdsSynchronizer.apply : TaricSynchronizer.apply
+
+    # Another process holds the sync lock, so nothing was applied here. Reporting
+    # a completed run would hide that from the sync log and the age metric.
+    if apply_result == TariffSynchronizer::LOCK_UNAVAILABLE
+      TariffSynchronizer::Instrumentation.sync_run_skipped(reason: 'lock_unavailable')
+      return
+    end
 
     MaterializeViewHelper.refresh_materialized_view
 
