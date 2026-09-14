@@ -132,5 +132,92 @@ namespace :vat_guidance do
     puts "Commodity chapters: #{summary.fetch('commodity_chapters')}"
   end
   # rubocop:enable Rails/RakeEnvironment
+
+  desc 'Build the offline AI-1146 HMRC proof of concept from validated question journeys'
+  # This artifact-only task intentionally avoids booting the database-backed Rails environment.
+  # rubocop:disable Rails/RakeEnvironment
+  task :hmrc_poc do
+    require 'active_support/all'
+    require 'cgi'
+    require 'digest'
+    require 'json'
+    require_relative '../../app/services/vat_guidance/question_journey_contract'
+    require_relative '../../app/services/vat_guidance/question_journey_artifact_builder'
+    require_relative '../../app/services/vat_guidance/answer_path_enumerator'
+    require_relative '../../app/services/vat_guidance/tariff_snapshot_contract'
+    require_relative '../../app/services/vat_guidance/review_decision_contract'
+    require_relative '../../app/services/vat_guidance/spike_review_fixture'
+    require_relative '../../app/services/vat_guidance/commodity_journey_composer'
+    require_relative '../../app/services/vat_guidance/hmrc_poc_artifact_builder'
+    require_relative '../../app/services/vat_guidance/hmrc_poc_renderer'
+    require_relative '../../app/services/vat_guidance/hmrc_poc_artifact_writer'
+
+    repository_root = Pathname.new(File.expand_path('../..', __dir__))
+    graph_path = ENV.fetch(
+      'VAT_GUIDANCE_GRAPH_PATH',
+      repository_root.join('data/vat_guidance/context_graph.json'),
+    )
+    packets_path = ENV.fetch(
+      'VAT_GUIDANCE_PACKETS_PATH',
+      repository_root.join('data/vat_guidance/context_packets.json'),
+    )
+    journeys_path = ENV.fetch(
+      'VAT_GUIDANCE_JOURNEYS_PATH',
+      repository_root.join('data/vat_guidance/question_journeys.json'),
+    )
+    json_path = ENV.fetch(
+      'VAT_GUIDANCE_HMRC_POC_PATH',
+      repository_root.join('data/vat_guidance/hmrc_poc.json'),
+    )
+    html_path = ENV.fetch(
+      'VAT_GUIDANCE_HMRC_POC_HTML_PATH',
+      repository_root.join('data/vat_guidance/hmrc_poc.html'),
+    )
+    artifact = VatGuidance::HmrcPocArtifactBuilder.new(
+      JSON.parse(File.read(graph_path)),
+      JSON.parse(File.read(packets_path)),
+      JSON.parse(File.read(journeys_path)),
+    ).call
+    VatGuidance::HmrcPocArtifactWriter.new(json_path, html_path, artifact).call
+
+    summary = artifact.fetch('summary')
+    puts "Wrote #{json_path}"
+    puts "Wrote #{html_path}"
+    puts "Answer paths inventoried: #{summary.fetch('answer_paths')}"
+    puts "Section packets accounted for: #{summary.fetch('section_packets_accounted_for')}"
+    puts "Rule connection paths: #{summary.fetch('rule_connection_paths')}"
+    puts "Pinned measure proposals: #{summary.fetch('pinned_measure_proposals')}"
+    puts "Approved measure connections: #{summary.fetch('approved_measure_connections')}"
+    puts "Synthetic quote approvals: #{summary.fetch('synthetic_quote_support_approvals')}"
+    puts "Composed spike commodities: #{summary.fetch('composed_spike_commodities')}"
+    puts "Dispositions: #{summary.fetch('dispositions')}"
+    puts 'Production ready: false (spike evidence only)'
+  end
+  # rubocop:enable Rails/RakeEnvironment
+
+  desc 'Refresh the independently verified tariff snapshot used by the AI-1146 Spike'
+  # rubocop:disable Rails/RakeEnvironment
+  task :hmrc_poc_tariff_snapshot do
+    require 'active_support/all'
+    require 'json'
+    require_relative '../../app/services/vat_guidance/question_journey_contract'
+    require_relative '../../app/services/vat_guidance/question_journey_artifact_builder'
+    require_relative '../../app/services/vat_guidance/tariff_snapshot_contract'
+    require_relative '../../app/services/vat_guidance/spike_tariff_snapshot_refresher'
+
+    repository_root = Pathname.new(File.expand_path('../..', __dir__))
+    snapshot_path = Pathname.new(ENV.fetch(
+                                   'VAT_GUIDANCE_TARIFF_SNAPSHOT_PATH',
+                                   repository_root.join('data/vat_guidance/spike_tariff_snapshot.json'),
+                                 ))
+    retrieved_at = ENV.fetch('VAT_GUIDANCE_TARIFF_RETRIEVED_AT') do
+      abort 'Set VAT_GUIDANCE_TARIFF_RETRIEVED_AT to the fixed ISO timestamp for this reviewed capture'
+    end
+    seed = JSON.parse(File.read(snapshot_path))
+    refreshed = VatGuidance::SpikeTariffSnapshotRefresher.new(seed, retrieved_at: retrieved_at).call
+    File.atomic_write(snapshot_path) { |file| file.write("#{JSON.pretty_generate(refreshed)}\n") }
+    puts "Wrote independently verified tariff snapshot to #{snapshot_path}"
+  end
+  # rubocop:enable Rails/RakeEnvironment
 end
 # rubocop:enable Metrics/BlockLength

@@ -77,3 +77,45 @@ The raw sweep writes `packet_generation_attempts`. A fully successful sweep can 
 All committed outcomes currently use explicit guidance. Individual packet rules decline through the hidden module boundary; they do not invent a standard default from an incomplete notice-wide relief set. The AI-1146 composer must resolve those boundaries and may emit an exhaustive standard default only after it proves that the full applicable relief set was traversed and every relief answer declined.
 
 The Chapter 84 journeys separately ask the airline, passenger-or-freight use, state-institution, 8,000kg maximum-take-off-weight, and recreation-or-pleasure conditions. The Chapter 20 journeys cover potato crisps, sweetened dried cranberries, and prepared fruit/plant mixtures. These remain unapproved, human-review-required spike artifacts and are not loaded by any production route, controller, database model, or decision service.
+
+## Build the AI-1146 HMRC proof of concept
+
+AI-1146 turns the validated AI-1145 journeys into a browsable, offline spike artifact. It enumerates every reachable answer path rather than reviewing shared outcomes once, records standard and composition-gate dispositions, and creates provisional VATZ/VATR/VATE connection candidates only from rule journeys. Commodity journeys and the catering comparison remain evidence prototypes; they do not originate measure connections.
+
+```sh
+bundle exec rake vat_guidance:hmrc_poc
+```
+
+Then open `data/vat_guidance/hmrc_poc.html` in a browser.
+
+Use `VAT_GUIDANCE_JOURNEYS_PATH`, `VAT_GUIDANCE_HMRC_POC_PATH`, and `VAT_GUIDANCE_HMRC_POC_HTML_PATH` to write isolated test outputs. The source journey hash is carried into every stable path subject, so upstream changes invalidate the review identity rather than silently inheriting an old decision.
+
+The pinned tariff evidence is reproducible from the public UK Trade Tariff API. A refresh deliberately requires a fixed review timestamp, independently captures each measure-origin response and each scoped commodity response, and refuses to write when the live non-standard VAT inventory differs from the reviewed measure set:
+
+```sh
+VAT_GUIDANCE_TARIFF_RETRIEVED_AT=2026-08-20T12:00:00Z \
+  bundle exec rake vat_guidance:hmrc_poc_tariff_snapshot
+```
+
+The PoC is deliberately fail-closed:
+
+- it remains `runtime_approved: false` and is not served by a Rails route;
+- real rule-connection and quote-support reviews remain pending and visible;
+- a separate `synthetic_spike_fixture` records hash-bound positive decisions for all 53 paths, four exclusions and the pinned measure proposal, solely to exercise downstream contracts;
+- production-mode composition rejects that synthetic fixture and requires `authorised_human_review` decisions;
+- changing a reviewed path, proposal, evidence record or decision invalidates its hash and blocks composition;
+- commodity exhaustion notes never permit standard-by-default while applicable measures or approvals are incomplete;
+- the 6506101000 safety-headgear signpost pins one real UK tariff snapshot: VATZ measure `-1012552782`, inherited from `6506100000` by declarable commodities `6506101000` and `6506108000`;
+- the pinned snapshot records complete inherited cohorts for the Chapter 20 measures rooted at headings `2005` and `2008`, the direct/inherited Chapter 84 aviation and machinery measures, protective headgear, and the reduced-rate child-seat measure;
+- its closed schema validates VAT measure type `305`, effective dates, additional-code values, ten-digit declarable codes, allowlisted source URLs, response hashes, cohort uniqueness and an independently captured per-commodity VAT inventory;
+- 12 exact path×measure proposals cover protective equipment, child car seats, food exceptions and the aviation rule families. Every relief route uses only proposals approved for that exact rule path; treatment-only delegation is forbidden;
+- curated Chapter 20 and Chapter 84 guidance-rule extractions have new hash-bound rule identities, explicit source lineage and reviewed applicability scopes. The original per-commodity source journeys remain validation evidence and never become connection subjects;
+- the synthetic simulation composes 11 scoped commodities, including every inherited Chapter 84 descendant and the child-seat case;
+- fallthrough recursively enters the next rule in the declared order. A composed route reaches standard-by-exhaustion only when that same route reaches the end of the complete ordered relief set;
+- each exhaustion note compares proposals against the separately captured commodity VAT inventory, rather than deriving both sides of the check from the proposal list;
+- that signpost remains a pending real path-to-measure proposal with an explicit wrong-relief challenge, not an approved mapping or a claim that tariff availability proves eligibility;
+- all trader-facing copy says the service guides from the trader's answers and presents candidate treatments for review; it does not determine VAT liability.
+
+This is an incremental spike demonstrator for the graph → packet → rule → answer-path → approval → measure inventory → sequential commodity-composition workflow. It reports `end_to_end_simulation_ready: true` across the three notices, Chapter 20 prepared food, Chapter 84 aviation/machinery, child car seats, and the safety-headgear signpost. It deliberately keeps `hmrc_demo_ready: false`: all real pairing and quote-support approvals remain pending. It must not be connected to a production journey without replacing the synthetic fixture with authorised reviews and rebuilding against current pinned tariff responses.
+
+For the cross-application browser demo, `GET /uk/api/v2/vat_guidance_demo` exposes a read-only projection of the hash-validated artifact. The frontend consumes the composed journey for the commodity already selected in the duty calculator and offers its questions from the existing VAT-rate step; it does not expose a standalone journey chooser. The endpoint associates the two complete VAT Notice 701/14 food-exception paths and the three complete paths from the reference-expanded VAT Notice 709/1 catering comparison with the three curated Chapter 20 commodities, allowing the VAT step to offer those evidence-only choices only where relevant. They remain pending domain review and cannot present an additional code or tariff-measure connection. The endpoint is available automatically in development and test, and in a deployed demo only when `VAT_GUIDANCE_DEMO_ENABLED=true`. It fails closed unless the artifact remains simulation-ready, runtime-unapproved, production-unready and contains no production-eligible commodity journey.
