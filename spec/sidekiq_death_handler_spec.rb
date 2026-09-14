@@ -92,12 +92,43 @@ RSpec.describe SidekiqDeathHandler do
   context 'when the job sets slack_channel' do
     let(:job) { super().merge('slack_channel' => '#tariffs-etl') }
 
-    it 'routes the alert to that channel' do
+    it 'routes the alert through the notifier' do
+      notifier = Slack::Notifier.new('https://hooks.slack.example/test')
+      allow(notifier).to receive(:post)
+      allow(Rails.application.config).to receive(:slack_notifier).and_return(notifier)
+      allow(SlackNotifierService).to receive(:call).and_call_original
+
       described_class.call(job, exception)
 
-      expect(SlackNotifierService).to have_received(:call).with(
-        hash_including(channel: '#tariffs-etl'),
+      expect(notifier).to have_received(:post).with(
+        hash_including(channel: '#tariffs-etl', attachments: be_present),
       )
+    end
+
+    context 'when alerts are opted out' do
+      let(:job) { super().merge('slack_alerts' => false) }
+
+      it 'does not send a Slack alert' do
+        described_class.call(job, exception)
+
+        expect(SlackNotifierService).not_to have_received(:call)
+      end
+    end
+  end
+
+  [nil, '', ' '].each do |channel|
+    context "when slack_channel is #{channel.inspect}" do
+      let(:job) { super().merge('slack_channel' => channel) }
+
+      it 'uses the configured failure channel' do
+        allow(TradeTariffBackend).to receive(:slack_failures_channel).and_return('#default-failures')
+
+        described_class.call(job, exception)
+
+        expect(SlackNotifierService).to have_received(:call).with(
+          hash_including(channel: '#default-failures'),
+        )
+      end
     end
   end
 end
