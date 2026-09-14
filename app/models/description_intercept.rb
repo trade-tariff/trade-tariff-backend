@@ -6,6 +6,10 @@ class DescriptionIntercept < Sequel::Model
   plugin :auto_validations, not_null: :presence
   plugin :has_paper_trail
   skip_auto_validations(:not_null)
+  # Term uniqueness is validated by validate_unique_search_terms, including
+  # conflicts with other intercepts' aliases. Skip the auto unique check so a
+  # duplicate term does not also add Sequel's "is already taken" error.
+  skip_auto_validations(:unique)
 
   module DatasetFilters
     def search(query)
@@ -117,7 +121,6 @@ class DescriptionIntercept < Sequel::Model
     validate_aliases
     validate_unique_search_terms
     validate_guidance_dependencies
-    validates_unique :term
   end
 
   def before_validation

@@ -221,6 +221,17 @@ RSpec.describe DescriptionIntercept do
         expect(intercept.errors[:term]).to include('is already used by another description intercept (present)')
       end
     end
+
+    context 'when a term is already used by another intercept' do
+      let(:attrs) { { term: 'gift' } }
+
+      before { create(:description_intercept, term: 'gift') }
+
+      it 'is invalid with a single uniqueness error' do
+        expect(intercept).not_to be_valid
+        expect(intercept.errors[:term]).to eq(['is already used by another description intercept (gift)'])
+      end
+    end
   end
 
   describe '.for_search' do
@@ -294,7 +305,7 @@ RSpec.describe DescriptionIntercept do
       intercept = build(:description_intercept, term: ' Gift ')
 
       expect(intercept).not_to be_valid
-      expect(intercept.errors[:term]).to include('is already taken')
+      expect(intercept.errors[:term]).to eq(['is already used by another description intercept (gift)'])
     end
   end
 end
