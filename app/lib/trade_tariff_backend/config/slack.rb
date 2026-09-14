@@ -20,6 +20,10 @@ module TradeTariffBackend
       def slack_failures_channel
         ENV.fetch('SLACK_FAILURES_CHANNEL', '#production-alerts')
       end
+
+      def slack_observability_channel
+        ENV.fetch('SLACK_OBSERVABILITY_CHANNEL', '#production-observability')
+      end
     end
   end
 end
