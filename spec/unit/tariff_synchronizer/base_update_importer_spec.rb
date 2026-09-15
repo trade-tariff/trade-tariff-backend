@@ -17,9 +17,9 @@ RSpec.describe TariffSynchronizer::BaseUpdateImporter do
       it 'do not call the import! method to the object if is not pending' do
         update.mark_as_failed
 
-        expect(TariffSynchronizer::TaricUpdateImporter).not_to have_received(:perform).with(update)
-
         base_update_importer.apply
+
+        expect(TariffSynchronizer::TaricUpdateImporter).not_to have_received(:perform).with(update)
       end
 
       it 'marks the record as failed if an error occurs' do
@@ -50,7 +50,7 @@ RSpec.describe TariffSynchronizer::BaseUpdateImporter do
 
       it 'subscribes to all events' do
         allow(ActiveSupport::Notifications).to receive(:subscribe)
-        allow(update).to receive(:import!).and_return(true)
+        allow(TariffSynchronizer::TaricUpdateImporter).to receive(:perform).and_return(true)
 
         base_update_importer.apply
 

@@ -18,8 +18,8 @@ module TariffSynchronizer
       staging_manager.promote!
 
       check_oplog_inserts
-      @taric_update.mark_as_applied
       store_oplog_inserts
+      @taric_update.mark_as_applied
 
       duration_ms = (Process.clock_gettime(Process::CLOCK_MONOTONIC) - started_at) * 1000
       Instrumentation.file_import_completed(filename: @taric_update.filename, duration_ms:)
