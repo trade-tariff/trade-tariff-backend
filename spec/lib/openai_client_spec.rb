@@ -105,6 +105,7 @@ RSpec.describe OpenaiClient do
           reasoning_effort: 'medium',
           reasoning_tokens: 180,
           openai_request_id: 'req_openai_header',
+          openai_response_id: 'chatcmpl-body-id',
         )
       end
     end
@@ -130,10 +131,12 @@ RSpec.describe OpenaiClient do
           .to_return(status: 200, body: response_body.to_json, headers: { 'Content-Type' => 'application/json' })
       end
 
-      it 'uses the completion id as the request id' do
+      it 'records the completion id separately from the request id' do
         result = client.call(context)
+        metadata = AiUsage.metadata_from(result)
 
-        expect(AiUsage.metadata_from(result).openai_request_id).to eq('chatcmpl-body-id')
+        expect(metadata.openai_response_id).to eq('chatcmpl-body-id')
+        expect(metadata.openai_request_id).to be_nil
       end
     end
 

@@ -76,6 +76,7 @@ RSpec.describe EmbeddingService do
       expect(AiUsage.metadata_from(result).to_h).to include(
         served_model: 'text-embedding-3-small',
         openai_request_id: 'req_embed_header',
+        openai_response_id: 'embd-body-id',
       )
     end
   end
@@ -287,7 +288,11 @@ RSpec.describe EmbeddingService do
     context 'when the API returns a non-retryable error' do
       before do
         stub_request(:post, "#{api_base_url}/embeddings")
-          .to_return(status: 400, body: { error: 'Bad Request' }.to_json, headers: { 'Content-Type' => 'application/json' })
+          .to_return(
+            status: 400,
+            body: { error: 'Bad Request', usage: { prompt_tokens: 9, total_tokens: 9 } }.to_json,
+            headers: { 'Content-Type' => 'application/json', 'x-request-id' => 'req_embed_error' },
+          )
       end
 
       it 'raises a ClientError immediately without retrying' do
@@ -299,6 +304,16 @@ RSpec.describe EmbeddingService do
         service.embed_batch(%w[test])
       rescue EmbeddingService::ClientError => e
         expect(e.http_status).to eq(400)
+      end
+
+      it 'attaches provider request metadata on the error' do
+        service.embed_batch(%w[test], event_kind: 'label_scoring_embedding')
+      rescue EmbeddingService::ClientError => e
+        expect(e.ai_usage.to_h).to include(
+          event_kind: 'label_scoring_embedding',
+          input_tokens: 9,
+          openai_request_id: 'req_embed_error',
+        )
       end
     end
 
