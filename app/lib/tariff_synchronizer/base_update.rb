@@ -148,10 +148,6 @@ module TariffSynchronizer
       TariffSynchronizer::FileService.file_presigned_url(file_path)
     end
 
-    def import!
-      raise NotImplementedError
-    end
-
     def clear_errors
       raise NotImplementedError
     end
@@ -180,32 +176,8 @@ module TariffSynchronizer
     class << self
       delegate :instrument, to: ActiveSupport::Notifications
 
-      def sync(initial_date:)
-        applicable_download_date_range(initial_date:).each { |date| download(date) }
-      end
-
       def update_type
         raise 'Update Type should be specified in inheriting class'
-      end
-
-      def applicable_download_date_range(initial_date:)
-        download_start_date(initial_date:)..download_end_date
-      end
-
-    private
-
-      def download_end_date
-        Time.zone.today
-      end
-
-      def download_start_date(initial_date:)
-        if pending_applied_or_failed.count.zero?
-          initial_date
-        else
-          last_download = oldest_pending || most_recent_applied || most_recent_failed
-
-          [last_download.issue_date, DOWNLOAD_FROM.ago.to_date].min
-        end
       end
     end
   end
