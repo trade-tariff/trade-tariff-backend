@@ -300,8 +300,9 @@ RSpec.describe AiUsage do
       expect(usage.to_h).to include(
         input_tokens: nil,
         output_tokens: nil,
-        total_tokens: 0,
+        total_tokens: nil,
         total_cost_usd: nil,
+        pricing_known: false,
       )
     end
   end
@@ -350,6 +351,31 @@ RSpec.describe AiUsage do
 
     it 'sums reasoning tokens across merged calls' do
       expect(described_class.merge_metadata(left, right).reasoning_tokens).to eq(10)
+    end
+
+    it 'keeps entirely missing usage unknown' do
+      unknown = described_class.metadata_for(model: 'gpt-test', event_kind: 'test', usage: {})
+
+      expect(described_class.merge_metadata(unknown, unknown).to_h).to include(
+        input_tokens: nil,
+        cached_input_tokens: nil,
+        cache_write_input_tokens: nil,
+        output_tokens: nil,
+        total_tokens: nil,
+        total_cost_usd: nil,
+        pricing_known: false,
+      )
+    end
+
+    it 'retains measured totals alongside missing usage' do
+      unknown = described_class.metadata_for(model: 'gpt-test', event_kind: 'test', usage: {})
+
+      expect(described_class.merge_metadata(left, unknown).to_h).to include(
+        input_tokens: 10,
+        output_tokens: 0,
+        total_tokens: 10,
+        pricing_known: false,
+      )
     end
 
     it 'keeps the later response identifiers' do

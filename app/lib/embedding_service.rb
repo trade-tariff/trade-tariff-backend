@@ -95,8 +95,7 @@ private
 
   def usage_metadata(response, event_kind:)
     body = response.respond_to?(:body) ? response.body : response
-    body = body.to_h if body.respond_to?(:to_h)
-    return unless body.is_a?(Hash)
+    body = {} unless body.is_a?(Hash)
 
     extras = {
       served_model: body['model'],
@@ -106,7 +105,9 @@ private
     usage = body['usage']
     return if usage.nil? && extras.empty?
 
-    usage = usage.to_h.merge('completion_tokens' => 0) unless usage.nil? || usage.to_h.key?('completion_tokens')
+    if usage.is_a?(Hash) && !usage['prompt_tokens'].nil? && !usage.key?('completion_tokens')
+      usage = usage.merge('completion_tokens' => 0)
+    end
     AiUsage.metadata_for(model: MODEL, event_kind:, usage: usage || {}, **extras)
   end
 

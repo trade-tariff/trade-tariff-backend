@@ -131,7 +131,6 @@ private
 
   def usage_metadata(response, model:, event_kind:, reasoning_effort: nil)
     body = response_body_hash(response)
-    return unless body
 
     extras = response_metadata(body, response, reasoning_effort:)
     error = body['error']
@@ -143,7 +142,7 @@ private
 
   def response_body_hash(response)
     body = response.respond_to?(:body) ? response.body : response
-    body.to_h if body.respond_to?(:to_h)
+    body.is_a?(Hash) ? body : {}
   end
 
   def response_metadata(body, response, reasoning_effort:)

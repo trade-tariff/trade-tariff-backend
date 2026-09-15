@@ -23,7 +23,7 @@ class AiUsage::PricingCalculator
       cache_write_input_tokens: @cache_write_input_tokens,
       output_tokens: @output_tokens,
       reasoning_tokens: @reasoning_tokens,
-      total_tokens: @usage[:total_tokens] || [@input_tokens, @output_tokens].compact.sum,
+      total_tokens: @usage[:total_tokens] || (@input_tokens && @output_tokens && @input_tokens + @output_tokens),
       input_cost_usd: @input_cost,
       cached_input_cost_usd: @cached_input_cost,
       cache_write_input_cost_usd: @cache_write_input_cost,
@@ -83,7 +83,7 @@ private
   end
 
   def pricing_known?
-    !!(@pricing.present? &&
+    !!(@pricing.present? && @input_tokens && @output_tokens &&
       (@uncached_input_tokens.to_i <= 0 || @input_price) &&
       (@cached_input_tokens.to_i <= 0 || @cached_input_price) &&
       (@cache_write_input_tokens.to_i <= 0 || @cache_write_input_price) &&
