@@ -104,6 +104,32 @@ RSpec.describe AiUsage do
       )
     end
 
+    it 'reads Responses API cache details' do
+      usage = described_class.metadata_for(
+        model: 'gpt-test',
+        event_kind: 'interactive_search',
+        usage: {
+          'input_tokens' => 1_000,
+          'input_tokens_details' => {
+            'cached_tokens' => 400,
+            'cache_write_tokens' => 200,
+          },
+          'output_tokens' => 250,
+          'total_tokens' => 1_250,
+        },
+      )
+
+      expect(usage.to_h).to include(
+        cached_input_tokens: 400,
+        cache_write_input_tokens: 200,
+        input_cost_usd: 0.0015,
+        cached_input_cost_usd: 0.0002,
+        cache_write_input_cost_usd: 0.0005,
+        total_cost_usd: be_within(1e-12).of(0.0035),
+        pricing_known: true,
+      )
+    end
+
     it 'uses standard prices at the long-context threshold' do
       usage = described_class.metadata_for(
         model: 'gpt-test',
@@ -303,6 +329,46 @@ RSpec.describe AiUsage do
         total_tokens: nil,
         total_cost_usd: nil,
         pricing_known: false,
+      )
+    end
+  end
+
+  describe 'configured catalogue pricing' do
+    let(:standard_usage) do
+      { 'prompt_tokens' => 100, 'completion_tokens' => 20, 'total_tokens' => 120 }
+    end
+
+    it 'prices every selectable chat model' do
+      OpenaiClient::MODEL_CONFIGS.each_key do |model|
+        usage = described_class.metadata_for(
+          model:,
+          event_kind: 'interactive_search',
+          usage: standard_usage,
+        )
+
+        expect(usage.pricing_known).to be(true), "#{model} is missing known standard pricing"
+      end
+    end
+
+    it 'prices GPT-5.6 Sol alias and snapshot' do
+      alias_usage = described_class.metadata_for(
+        model: 'gpt-5.6',
+        event_kind: 'interactive_search',
+        usage: standard_usage,
+      )
+      snapshot_usage = described_class.metadata_for(
+        model: 'gpt-5.6-sol',
+        event_kind: 'interactive_search',
+        usage: standard_usage,
+      )
+
+      expect(alias_usage).to have_attributes(
+        pricing_known: true,
+        total_cost_usd: be_within(1e-12).of(0.0008),
+      )
+      expect(snapshot_usage).to have_attributes(
+        pricing_known: true,
+        total_cost_usd: alias_usage.total_cost_usd,
       )
     end
   end

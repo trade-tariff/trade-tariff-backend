@@ -64,7 +64,8 @@ private
 
   def normalize_usage(usage)
     usage = usage.respond_to?(:to_h) ? usage.to_h : {}
-    prompt_details = usage['prompt_tokens_details'] || usage[:prompt_tokens_details] || {}
+    prompt_details = usage['prompt_tokens_details'] || usage[:prompt_tokens_details] ||
+      usage['input_tokens_details'] || usage[:input_tokens_details] || {}
     completion_details = usage['completion_tokens_details'] || usage[:completion_tokens_details] ||
       usage['output_tokens_details'] || usage[:output_tokens_details] || {}
     {

@@ -2,27 +2,39 @@
 #
 # Models missing from this file are still reported with token usage and
 # pricing_known=false so they remain visible in the AI costs dashboard.
+#
+# GPT-5.6 Sol promotional rates apply at least through 21 November 2026.
 development: &pricing
-  gpt-5.6:
-    input_per_million_tokens: 5.0
-    cached_input_per_million_tokens: 0.5
-    output_per_million_tokens: 30.0
+  gpt-6-astra:
+    input_per_million_tokens: 10.0
+    cached_input_per_million_tokens: 1.0
+    output_per_million_tokens: 50.0
     cache_write_input_multiplier: 1.25
     long_context_input_token_threshold: 272000
     long_context_input_multiplier: 2.0
     long_context_output_multiplier: 1.5
+  gpt-5.6: &gpt_5_6_sol
+    input_per_million_tokens: 4.0
+    cached_input_per_million_tokens: 0.4
+    output_per_million_tokens: 20.0
+    cache_write_input_multiplier: 1.25
+    long_context_input_token_threshold: 272000
+    long_context_input_multiplier: 2.0
+    long_context_output_multiplier: 1.5
+  gpt-5.6-sol:
+    <<: *gpt_5_6_sol
   gpt-5.6-terra:
-    input_per_million_tokens: 2.5
-    cached_input_per_million_tokens: 0.25
-    output_per_million_tokens: 15.0
+    input_per_million_tokens: 2.0
+    cached_input_per_million_tokens: 0.2
+    output_per_million_tokens: 12.0
     cache_write_input_multiplier: 1.25
     long_context_input_token_threshold: 272000
     long_context_input_multiplier: 2.0
     long_context_output_multiplier: 1.5
   gpt-5.6-luna:
-    input_per_million_tokens: 1.0
-    cached_input_per_million_tokens: 0.1
-    output_per_million_tokens: 6.0
+    input_per_million_tokens: 0.2
+    cached_input_per_million_tokens: 0.02
+    output_per_million_tokens: 1.2
     cache_write_input_multiplier: 1.25
     long_context_input_token_threshold: 272000
     long_context_input_multiplier: 2.0
@@ -31,34 +43,93 @@ development: &pricing
     input_per_million_tokens: 5.0
     cached_input_per_million_tokens: 0.5
     output_per_million_tokens: 30.0
+    long_context_input_token_threshold: 272000
+    long_context_input_multiplier: 2.0
+    long_context_output_multiplier: 1.5
   gpt-5.4:
     input_per_million_tokens: 2.5
     cached_input_per_million_tokens: 0.25
     output_per_million_tokens: 15.0
+    long_context_input_token_threshold: 272000
+    long_context_input_multiplier: 2.0
+    long_context_output_multiplier: 1.5
+  gpt-5.4-mini:
+    input_per_million_tokens: 0.75
+    cached_input_per_million_tokens: 0.075
+    output_per_million_tokens: 4.5
+  gpt-5.4-nano:
+    input_per_million_tokens: 0.2
+    cached_input_per_million_tokens: 0.02
+    output_per_million_tokens: 1.25
   gpt-5.2:
     input_per_million_tokens: 1.75
     cached_input_per_million_tokens: 0.175
     output_per_million_tokens: 14.0
-  gpt-5.1-2025-11-13:
+  gpt-5.1-2025-11-13: &gpt_5_1
     input_per_million_tokens: 1.25
     cached_input_per_million_tokens: 0.125
     output_per_million_tokens: 10.0
-  gpt-5-2025-08-07:
+  gpt-5.1:
+    <<: *gpt_5_1
+  gpt-5-2025-08-07: &gpt_5
     input_per_million_tokens: 1.25
     cached_input_per_million_tokens: 0.125
     output_per_million_tokens: 10.0
-  gpt-5-mini-2025-08-07:
+  gpt-5:
+    <<: *gpt_5
+  gpt-5-mini-2025-08-07: &gpt_5_mini
     input_per_million_tokens: 0.25
     cached_input_per_million_tokens: 0.025
     output_per_million_tokens: 2.0
-  gpt-5-nano-2025-08-07:
+  gpt-5-mini:
+    <<: *gpt_5_mini
+  gpt-5-nano-2025-08-07: &gpt_5_nano
     input_per_million_tokens: 0.05
     cached_input_per_million_tokens: 0.005
     output_per_million_tokens: 0.4
-  gpt-4.1-mini-2025-04-14:
+  gpt-5-nano:
+    <<: *gpt_5_nano
+  gpt-4.1-2025-04-14: &gpt_4_1
+    input_per_million_tokens: 2.0
+    cached_input_per_million_tokens: 0.5
+    output_per_million_tokens: 8.0
+  gpt-4.1:
+    <<: *gpt_4_1
+  gpt-4.1-mini-2025-04-14: &gpt_4_1_mini
     input_per_million_tokens: 0.4
     cached_input_per_million_tokens: 0.1
     output_per_million_tokens: 1.6
+  gpt-4.1-mini:
+    <<: *gpt_4_1_mini
+  gpt-4.1-nano-2025-04-14: &gpt_4_1_nano
+    input_per_million_tokens: 0.1
+    cached_input_per_million_tokens: 0.025
+    output_per_million_tokens: 0.4
+  gpt-4.1-nano:
+    <<: *gpt_4_1_nano
+  gpt-4o:
+    input_per_million_tokens: 2.5
+    cached_input_per_million_tokens: 1.25
+    output_per_million_tokens: 10.0
+  gpt-4o-mini:
+    input_per_million_tokens: 0.15
+    cached_input_per_million_tokens: 0.075
+    output_per_million_tokens: 0.6
+  o3-2025-04-16: &o3
+    input_per_million_tokens: 2.0
+    cached_input_per_million_tokens: 0.5
+    output_per_million_tokens: 8.0
+  o3:
+    <<: *o3
+  o3-pro:
+    input_per_million_tokens: 20.0
+    output_per_million_tokens: 80.0
+  o4-mini-2025-04-16: &o4_mini
+    input_per_million_tokens: 1.1
+    cached_input_per_million_tokens: 0.275
+    output_per_million_tokens: 4.4
+  o4-mini:
+    <<: *o4_mini
   text-embedding-3-small:
     input_per_million_tokens: 0.02
 
