@@ -113,8 +113,13 @@ RSpec.describe 'admin_configurations:seed' do
 
     expected_latest_options = [
       {
+        'key' => 'gpt-6-astra',
+        'label' => 'GPT-6 Astra (latest flagship)',
+        'sub_options' => { 'reasoning_effort' => %w[low medium high xhigh max] },
+      },
+      {
         'key' => 'gpt-5.6',
-        'label' => 'GPT-5.6 Sol (latest flagship)',
+        'label' => 'GPT-5.6 Sol',
         'sub_options' => { 'reasoning_effort' => %w[none low medium high xhigh max] },
       },
       {
@@ -126,6 +131,16 @@ RSpec.describe 'admin_configurations:seed' do
         'key' => 'gpt-5.6-luna',
         'label' => 'GPT-5.6 Luna (cost-efficient)',
         'sub_options' => { 'reasoning_effort' => %w[none low medium high xhigh max] },
+      },
+      {
+        'key' => 'gpt-5.4-mini',
+        'label' => 'GPT-5.4 mini (fast)',
+        'sub_options' => { 'reasoning_effort' => %w[none low medium high xhigh] },
+      },
+      {
+        'key' => 'gpt-5.4-nano',
+        'label' => 'GPT-5.4 nano (fastest)',
+        'sub_options' => { 'reasoning_effort' => %w[none low medium high xhigh] },
       },
     ]
     expected_defaults = {
@@ -472,9 +487,12 @@ RSpec.describe 'admin_configurations:seed' do
       'sub_values' => { 'reasoning_effort' => 'high' },
     )
     expect(refreshed_value['options']).to include(
-      hash_including('key' => 'gpt-5.6', 'label' => 'GPT-5.6 Sol (latest flagship)'),
+      hash_including('key' => 'gpt-6-astra', 'label' => 'GPT-6 Astra (latest flagship)'),
+      hash_including('key' => 'gpt-5.6', 'label' => 'GPT-5.6 Sol'),
       hash_including('key' => 'gpt-5.6-terra', 'label' => 'GPT-5.6 Terra (balanced)'),
       hash_including('key' => 'gpt-5.6-luna', 'label' => 'GPT-5.6 Luna (cost-efficient)'),
+      hash_including('key' => 'gpt-5.4-mini', 'label' => 'GPT-5.4 mini (fast)'),
+      hash_including('key' => 'gpt-5.4-nano', 'label' => 'GPT-5.4 nano (fastest)'),
     )
 
     Rake::Task['admin_configurations:seed'].reenable

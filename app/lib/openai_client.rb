@@ -229,6 +229,9 @@ private
   end
 
   MODEL_CONFIGS = {
+    # GPT-6 (1M context)
+    'gpt-6-astra' => { reasoning_levels: %w[low medium high xhigh max] },
+
     # GPT-5.6 family (1M context)
     'gpt-5.6' => { reasoning_levels: %w[none low medium high xhigh max] },
     'gpt-5.6-terra' => { reasoning_levels: %w[none low medium high xhigh max] },
@@ -239,6 +242,8 @@ private
 
     # GPT-5.4 (1M context)
     'gpt-5.4' => { reasoning_levels: %w[none low medium high xhigh] },
+    'gpt-5.4-mini' => { reasoning_levels: %w[none low medium high xhigh] },
+    'gpt-5.4-nano' => { reasoning_levels: %w[none low medium high xhigh] },
 
     # GPT-5 Series
     'gpt-5.2' => { reasoning_levels: %w[none low medium high] },
