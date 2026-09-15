@@ -86,6 +86,7 @@ RSpec.describe SearchAnalyticsQueryResult do
     end
 
     it 'serializes competing definitions so a slow older fetch cannot overwrite the newer result', :truncation do
+      release = older = newer = nil
       entered = Queue.new
       release = Queue.new
       older = Thread.new do
@@ -106,7 +107,7 @@ RSpec.describe SearchAnalyticsQueryResult do
       expect(described_class.first.fingerprint).to eq('newer')
       expect(described_class.first.rows.to_a).to eq([{ 'count' => 2 }])
     ensure
-      release << true
+      release&.push(true)
       [older, newer].compact.each { |thread| thread.join(5) || thread.kill }
     end
 
