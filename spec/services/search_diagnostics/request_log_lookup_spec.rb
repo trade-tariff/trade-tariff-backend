@@ -156,6 +156,7 @@ RSpec.describe SearchDiagnostics::RequestLogLookup do
             'service_tier',
             'reasoning_effort',
             'openai_request_id',
+            'openai_response_id',
             'service = "search"',
             'service = "ai_usage"',
             'event_kind = "vector_search_query_embedding"',

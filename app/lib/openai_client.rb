@@ -152,15 +152,15 @@ private
       served_model: body['model'],
       service_tier: body['service_tier'],
       reasoning_effort: reasoning_effort.presence,
-      openai_request_id: openai_request_id(response, body),
+      openai_request_id: openai_request_id(response),
+      openai_response_id: body['id'].presence,
     }.compact
   end
 
-  def openai_request_id(response, body)
-    headers = response.respond_to?(:headers) ? response.headers : {}
-    headers['x-request-id'].presence ||
-      headers['openai-request-id'].presence ||
-      body['id'].presence
+  def openai_request_id(response)
+    return unless response.respond_to?(:headers)
+
+    response.headers['x-request-id'].presence || response.headers['openai-request-id'].presence
   end
 
   def raise_deadline_if_elapsed!(deadline:, timeout:, started_at:)

@@ -25,6 +25,7 @@ module AiUsage
     service_tier
     reasoning_effort
     openai_request_id
+    openai_response_id
   ].freeze
   OPTIONAL_FIELDS = {
     cache_write_input_tokens: nil,
@@ -35,8 +36,9 @@ module AiUsage
     service_tier: nil,
     reasoning_effort: nil,
     openai_request_id: nil,
+    openai_response_id: nil,
   }.freeze
-  RESPONSE_FIELDS = %i[finish_reason served_model service_tier reasoning_effort openai_request_id].freeze
+  RESPONSE_FIELDS = %i[finish_reason served_model service_tier reasoning_effort openai_request_id openai_response_id].freeze
   Metadata = Data.define(*LOG_FIELDS) do
     def initialize(**attributes)
       super(**OPTIONAL_FIELDS.merge(attributes))
@@ -107,6 +109,7 @@ module_function
       service_tier: right.service_tier || left.service_tier,
       reasoning_effort: right.reasoning_effort || left.reasoning_effort,
       openai_request_id: right.openai_request_id || left.openai_request_id,
+      openai_response_id: right.openai_response_id || left.openai_response_id,
     )
   end
 

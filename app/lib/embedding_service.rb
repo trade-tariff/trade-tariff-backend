@@ -68,7 +68,7 @@ class EmbeddingService
             error:,
           )
         },
-      ) { call_embeddings_api(batch) }
+      ) { call_embeddings_api(batch, event_kind:) }
 
       usage = apply_batch_response(response, slice_index, present_indices, embeddings, usage, event_kind, batch.size)
     end
@@ -100,7 +100,8 @@ private
 
     extras = {
       served_model: body['model'],
-      openai_request_id: openai_request_id(response, body),
+      openai_request_id: openai_request_id(response),
+      openai_response_id: body['id'].presence,
     }.compact
     usage = body['usage']
     return if usage.nil? && extras.empty?
@@ -109,22 +110,25 @@ private
     AiUsage.metadata_for(model: MODEL, event_kind:, usage: usage || {}, **extras)
   end
 
-  def openai_request_id(response, body)
-    headers = response.respond_to?(:headers) ? response.headers : {}
-    headers['x-request-id'].presence ||
-      headers['openai-request-id'].presence ||
-      body['id'].presence
+  def openai_request_id(response)
+    return unless response.respond_to?(:headers)
+
+    response.headers['x-request-id'].presence || response.headers['openai-request-id'].presence
   end
 
   def retry_delay(attempt, _error)
     RETRY_DELAY * (2**(attempt - 1))
   end
 
-  def call_embeddings_api(batch)
+  def call_embeddings_api(batch, event_kind:)
     resp = client.post('embeddings', { model: MODEL, input: batch }.to_json)
 
     if RETRYABLE_HTTP_STATUSES.include?(resp.status)
-      raise ServerError.new("EmbeddingService API error: #{resp.status}", http_status: resp.status)
+      raise ServerError.new(
+        "EmbeddingService API error: #{resp.status}",
+        http_status: resp.status,
+        ai_usage: usage_metadata(resp, event_kind:),
+      )
     end
 
     resp
@@ -141,7 +145,11 @@ private
 
       usage
     else
-      raise ClientError.new("EmbeddingService API error: #{response.status} - #{response.body}", http_status: response.status)
+      raise ClientError.new(
+        "EmbeddingService API error: #{response.status} - #{response.body}",
+        http_status: response.status,
+        ai_usage: usage_metadata(response, event_kind:),
+      )
     end
   end
 
