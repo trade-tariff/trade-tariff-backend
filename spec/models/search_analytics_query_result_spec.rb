@@ -85,9 +85,44 @@ RSpec.describe SearchAnalyticsQueryResult do
       expect(described_class.first.rows.to_a).to eq([{ 'count' => 1 }])
     end
 
+    it 'serializes competing definitions so a slow older fetch cannot overwrite the newer result', :truncation do
+      entered = Queue.new
+      release = Queue.new
+      older = Thread.new do
+        described_class.fetch(**identity) do
+          entered << true
+          release.pop
+          [{ 'count' => 1 }]
+        end
+      end
+      entered.pop
+      newer = Thread.new do
+        described_class.fetch(**identity.merge(fingerprint: 'newer')) { [{ 'count' => 2 }] }
+      end
+      wait_for_query_lock
+      release << true
+      [older, newer].each(&:value)
+
+      expect(described_class.first.fingerprint).to eq('newer')
+      expect(described_class.first.rows.to_a).to eq([{ 'count' => 2 }])
+    ensure
+      release << true
+      [older, newer].compact.each { |thread| thread.join(5) || thread.kill }
+    end
+
     it 'does not store a missing or invalid query result' do
       expect { described_class.fetch(**identity) { nil } }.to raise_error(ArgumentError, /array/) # rubocop:disable Style/RedundantFetchBlock
       expect(described_class.count).to eq(0)
+    end
+  end
+
+  def wait_for_query_lock
+    Timeout.timeout(5) do
+      loop do
+        break if described_class.db[:pg_stat_activity].where(wait_event: 'advisory', datname: described_class.db.opts[:database]).any?
+
+        sleep 0.01
+      end
     end
   end
 
