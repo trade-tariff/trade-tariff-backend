@@ -84,6 +84,16 @@ RSpec.describe SearchAnalytics::DailyQuery do
     expect(journey_sql).to include("`@timestamp` >= CAST('2026-09-14 21:00:00'", "request_source = 'frontend'")
   end
 
+  it 'gives each initial journey scan one distinct three-hour metric window' do
+    collect
+    bounds = starts.last(8).map { |request| request[:params][:query_string].scan(/`@timestamp` (?:>=|<) CAST\('([^']+)'/).flatten }
+    expected = Array.new(8) do |index|
+      start_at = Time.utc(2026, 9, 14) + index * 3.hours
+      [start_at.strftime('%F %T'), (start_at + 3.hours).strftime('%F %T')]
+    end
+    expect(bounds).to eq(expected)
+  end
+
   it 'retains all model and embedding calls without token or failure-cohort filtering' do
     sql = collector.query_definitions.fetch('ai_cost_trend')
     expect(sql).to include('GROUP BY request_id', "COALESCE(event_kind, operation, 'unknown')", "event = 'embedding_api_call_failed'")
@@ -154,6 +164,9 @@ RSpec.describe SearchAnalytics::DailyQuery do
     child_sql = starts[7][:params][:query_string]
     expect(child_sql).to include("`@timestamp` < CAST('2026-09-14 12:00:00'")
     expect(child_sql).to match(/request_id NOT IN \(.*2026-09-14 00:00:00.*2026-09-15 00:00:00/m)
+    expect(child_sql.scan(/`@timestamp` (?:>=|<) CAST\('([^']+)'/).flatten).to eq([
+      '2026-09-14 00:00:00', '2026-09-14 12:00:00', '2026-09-14 00:00:00', '2026-09-15 00:00:00'
+    ])
   end
 
   it 'disables automatic SDK retries when constructing the daily client' do
