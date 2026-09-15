@@ -22,6 +22,7 @@ class AiUsage::PricingCalculator
       cached_input_tokens: @cached_input_tokens,
       cache_write_input_tokens: @cache_write_input_tokens,
       output_tokens: @output_tokens,
+      reasoning_tokens: @reasoning_tokens,
       total_tokens: @usage[:total_tokens] || [@input_tokens, @output_tokens].compact.sum,
       input_cost_usd: @input_cost,
       cached_input_cost_usd: @cached_input_cost,
@@ -35,8 +36,8 @@ class AiUsage::PricingCalculator
 private
 
   def assign_tokens
-    @input_tokens, @cached_input_tokens, @cache_write_input_tokens, @output_tokens =
-      @usage.values_at(:input_tokens, :cached_input_tokens, :cache_write_input_tokens, :output_tokens)
+    @input_tokens, @cached_input_tokens, @cache_write_input_tokens, @output_tokens, @reasoning_tokens =
+      @usage.values_at(:input_tokens, :cached_input_tokens, :cache_write_input_tokens, :output_tokens, :reasoning_tokens)
     @uncached_input_tokens = @input_tokens && [@input_tokens - @cached_input_tokens.to_i - @cache_write_input_tokens.to_i, 0].max
   end
 
@@ -64,11 +65,14 @@ private
   def normalize_usage(usage)
     usage = usage.respond_to?(:to_h) ? usage.to_h : {}
     prompt_details = usage['prompt_tokens_details'] || usage[:prompt_tokens_details] || {}
+    completion_details = usage['completion_tokens_details'] || usage[:completion_tokens_details] ||
+      usage['output_tokens_details'] || usage[:output_tokens_details] || {}
     {
       input_tokens: integer_value(usage['prompt_tokens'] || usage[:prompt_tokens] || usage['input_tokens'] || usage[:input_tokens]),
       cached_input_tokens: integer_value(prompt_details['cached_tokens'] || prompt_details[:cached_tokens]),
       cache_write_input_tokens: integer_value(prompt_details['cache_write_tokens'] || prompt_details[:cache_write_tokens]),
       output_tokens: integer_value(usage['completion_tokens'] || usage[:completion_tokens] || usage['output_tokens'] || usage[:output_tokens]),
+      reasoning_tokens: integer_value(completion_details['reasoning_tokens'] || completion_details[:reasoning_tokens]),
       total_tokens: integer_value(usage['total_tokens'] || usage[:total_tokens]),
     }
   end

@@ -61,6 +61,82 @@ RSpec.describe OpenaiClient do
       end
     end
 
+    context 'when the provider returns response metadata' do
+      let(:context) { 'What is the capital of France?' }
+      let(:response_body) do
+        {
+          'id' => 'chatcmpl-body-id',
+          'model' => 'gpt-5.4-2025-01-01',
+          'service_tier' => 'default',
+          'choices' => [
+            {
+              'finish_reason' => 'stop',
+              'message' => { 'content' => '{"capital":"Paris"}' },
+            },
+          ],
+          'usage' => {
+            'prompt_tokens' => 1_000,
+            'completion_tokens' => 250,
+            'total_tokens' => 1_250,
+            'completion_tokens_details' => { 'reasoning_tokens' => 180 },
+          },
+        }
+      end
+
+      before do
+        stub_request(:post, "#{api_base_url}/chat/completions")
+          .to_return(
+            status: 200,
+            body: response_body.to_json,
+            headers: {
+              'Content-Type' => 'application/json',
+              'x-request-id' => 'req_openai_header',
+            },
+          )
+      end
+
+      it 'attaches served model and finish reason' do
+        result = client.call(context, event_kind: 'search_query_expansion', reasoning_effort: 'medium')
+
+        expect(AiUsage.metadata_from(result).to_h).to include(
+          served_model: 'gpt-5.4-2025-01-01',
+          finish_reason: 'stop',
+          service_tier: 'default',
+          reasoning_effort: 'medium',
+          reasoning_tokens: 180,
+          openai_request_id: 'req_openai_header',
+        )
+      end
+    end
+
+    context 'when only a completion id is present' do
+      let(:context) { 'What is the capital of France?' }
+      let(:response_body) do
+        {
+          'id' => 'chatcmpl-body-id',
+          'choices' => [
+            { 'message' => { 'content' => '{"capital":"Paris"}' } },
+          ],
+          'usage' => {
+            'prompt_tokens' => 1_000,
+            'completion_tokens' => 250,
+            'total_tokens' => 1_250,
+          },
+        }
+      end
+
+      before do
+        stub_request(:post, "#{api_base_url}/chat/completions")
+          .to_return(status: 200, body: response_body.to_json, headers: { 'Content-Type' => 'application/json' })
+      end
+
+      it 'uses the completion id as the request id' do
+        result = client.call(context)
+
+        expect(AiUsage.metadata_from(result).openai_request_id).to eq('chatcmpl-body-id')
+      end
+    end
+
     context 'when given a reasoning_effort parameter' do
       let(:context) { 'What is the capital of France?' }
 

@@ -19,7 +19,11 @@ RSpec.describe EmbeddingService do
 
     before do
       stub_request(:post, "#{api_base_url}/embeddings")
-        .to_return(status: 200, body: response_body.to_json, headers: { 'Content-Type' => 'application/json' })
+        .to_return(
+          status: 200,
+          body: response_body.merge('model' => 'text-embedding-3-small', 'id' => 'embd-body-id').to_json,
+          headers: { 'Content-Type' => 'application/json', 'x-request-id' => 'req_embed_header' },
+        )
     end
 
     it 'returns a single embedding vector' do
@@ -63,6 +67,15 @@ RSpec.describe EmbeddingService do
         input_cost_usd: 0.00000084,
         total_cost_usd: 0.00000084,
         pricing_known: true,
+      )
+    end
+
+    it 'attaches served model and provider request id' do
+      result = service.embed('Live horses', event_kind: 'label_scoring_embedding')
+
+      expect(AiUsage.metadata_from(result).to_h).to include(
+        served_model: 'text-embedding-3-small',
+        openai_request_id: 'req_embed_header',
       )
     end
   end

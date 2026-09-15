@@ -93,12 +93,27 @@ private
     raise ApiError.new('Embedding response was malformed', ai_usage: usage)
   end
 
-  def usage_metadata(body, event_kind:)
-    usage = body.to_h['usage']
-    return unless usage
+  def usage_metadata(response, event_kind:)
+    body = response.respond_to?(:body) ? response.body : response
+    body = body.to_h if body.respond_to?(:to_h)
+    return unless body.is_a?(Hash)
 
-    usage = usage.to_h.merge('completion_tokens' => 0) unless usage.to_h.key?('completion_tokens')
-    AiUsage.metadata_for(model: MODEL, event_kind:, usage:)
+    extras = {
+      served_model: body['model'],
+      openai_request_id: openai_request_id(response, body),
+    }.compact
+    usage = body['usage']
+    return if usage.nil? && extras.empty?
+
+    usage = usage.to_h.merge('completion_tokens' => 0) unless usage.nil? || usage.to_h.key?('completion_tokens')
+    AiUsage.metadata_for(model: MODEL, event_kind:, usage: usage || {}, **extras)
+  end
+
+  def openai_request_id(response, body)
+    headers = response.respond_to?(:headers) ? response.headers : {}
+    headers['x-request-id'].presence ||
+      headers['openai-request-id'].presence ||
+      body['id'].presence
   end
 
   def retry_delay(attempt, _error)
@@ -117,7 +132,7 @@ private
 
   def apply_batch_response(response, slice_index, present_indices, embeddings, usage, event_kind, expected_size)
     if response.success?
-      usage = AiUsage.merge_metadata(usage, usage_metadata(response.body, event_kind: event_kind))
+      usage = AiUsage.merge_metadata(usage, usage_metadata(response, event_kind: event_kind))
       batch_embeddings = extract_embeddings(response.body, usage: usage, expected_size: expected_size)
       batch_embeddings.each_with_index do |embedding, i|
         original_index = present_indices[slice_index * BATCH_SIZE + i]

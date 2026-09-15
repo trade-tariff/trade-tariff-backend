@@ -37,6 +37,26 @@ RSpec.describe AiUsage do
       )
     end
 
+    it 'records reasoning tokens without changing billed output cost' do
+      usage = described_class.metadata_for(
+        model: 'gpt-test',
+        event_kind: 'interactive_search',
+        usage: {
+          'prompt_tokens' => 1_000,
+          'completion_tokens' => 250,
+          'total_tokens' => 1_250,
+          'completion_tokens_details' => { 'reasoning_tokens' => 180 },
+        },
+      )
+
+      expect(usage.to_h).to include(
+        output_tokens: 250,
+        reasoning_tokens: 180,
+        output_cost_usd: 0.002,
+        total_cost_usd: 0.004,
+      )
+    end
+
     it 'charges cached input tokens at the configured discounted rate' do
       usage = described_class.metadata_for(
         model: 'gpt-test',
@@ -282,6 +302,63 @@ RSpec.describe AiUsage do
         output_tokens: nil,
         total_tokens: 0,
         total_cost_usd: nil,
+      )
+    end
+  end
+
+  describe '.merge_metadata' do
+    let(:left) do
+      described_class::Metadata.new(
+        provider: 'openai',
+        model: 'gpt-test',
+        event_kind: 'label_scoring_embedding',
+        input_tokens: 10,
+        cached_input_tokens: nil,
+        output_tokens: 0,
+        reasoning_tokens: 4,
+        total_tokens: 10,
+        input_cost_usd: nil,
+        cached_input_cost_usd: nil,
+        output_cost_usd: nil,
+        total_cost_usd: nil,
+        pricing_known: false,
+        finish_reason: 'stop',
+        served_model: 'gpt-test-2025-01-01',
+        openai_request_id: 'req_left',
+      )
+    end
+    let(:right) do
+      described_class::Metadata.new(
+        provider: 'openai',
+        model: 'gpt-test',
+        event_kind: 'label_scoring_embedding',
+        input_tokens: 5,
+        cached_input_tokens: nil,
+        output_tokens: 0,
+        reasoning_tokens: 6,
+        total_tokens: 5,
+        input_cost_usd: nil,
+        cached_input_cost_usd: nil,
+        output_cost_usd: nil,
+        total_cost_usd: nil,
+        pricing_known: false,
+        finish_reason: 'length',
+        served_model: 'gpt-test-2025-02-01',
+        openai_request_id: 'req_right',
+      )
+    end
+
+    it 'sums reasoning tokens across merged calls' do
+      expect(described_class.merge_metadata(left, right).reasoning_tokens).to eq(10)
+    end
+
+    it 'keeps the later response identifiers' do
+      merged = described_class.merge_metadata(left, right)
+
+      expect(merged.to_h).to include(
+        finish_reason: 'length',
+        served_model: 'gpt-test-2025-02-01',
+        openai_request_id: 'req_right',
       )
     end
   end
