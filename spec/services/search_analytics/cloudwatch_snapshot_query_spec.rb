@@ -256,6 +256,20 @@ RSpec.describe SearchAnalytics::CloudwatchSnapshotQuery do
       'selection_rate' => 0.14,
       'p90_latency_ms' => 800,
     )
+    expect(payloads.dig('all', 'request_sources', 'admin')).to include(
+      'searches' => 0,
+      'failure_rate' => 0.0,
+      'zero_result_rate' => 0.0,
+      'selection_rate' => 0.0,
+      'p90_latency_ms' => 0,
+    )
+    expect(payloads.dig('all', 'request_sources', 'mcp')).to include(
+      'searches' => 0,
+      'failure_rate' => 0.0,
+      'zero_result_rate' => 0.0,
+      'selection_rate' => 0.0,
+      'p90_latency_ms' => 0,
+    )
     expect(payloads.dig('all', 'request_sources', 'unknown')).to include(
       'searches' => 5,
       'failure_rate' => 0.0,
@@ -270,6 +284,8 @@ RSpec.describe SearchAnalytics::CloudwatchSnapshotQuery do
         'classic' => 49,
         'internal' => 8,
         'frontend' => 45,
+        'admin' => 0,
+        'mcp' => 0,
         'backend_only' => 7,
         'unknown' => 5,
       },

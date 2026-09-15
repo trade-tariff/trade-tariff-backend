@@ -179,6 +179,24 @@ RSpec.describe ApplicationController, type: :request do
         expect(payload[:request_source]).to eq('frontend')
       end
 
+      it 'classifies requests from the admin user agent' do
+        payload = process_action_payload_for(
+          params: { request_id: 'search-request-id' },
+          headers: { 'HTTP_USER_AGENT' => 'TradeTariffAdmin/b1c2d3e4' },
+        )
+
+        expect(payload[:request_source]).to eq('admin')
+      end
+
+      it 'classifies requests from the MCP user agent' do
+        payload = process_action_payload_for(
+          params: { request_id: 'search-request-id' },
+          headers: { 'HTTP_USER_AGENT' => 'TradeTariffMcp/c3d4e5f6' },
+        )
+
+        expect(payload[:request_source]).to eq('mcp')
+      end
+
       it 'classifies non-frontend requests as backend_only' do
         payload = process_action_payload_for(
           params: { request_id: 'search-request-id' },

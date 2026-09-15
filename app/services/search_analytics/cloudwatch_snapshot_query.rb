@@ -32,7 +32,7 @@ module SearchAnalytics
       unpriced_calls
     ].index_by { |field| "aggregated_#{field}" }.freeze
     VIEWS = %w[all classic internal].freeze
-    REQUEST_SOURCES = %w[frontend backend_only unknown].freeze
+    REQUEST_SOURCES = %w[frontend admin mcp backend_only unknown].freeze
     QueryError = Class.new(StandardError)
 
     def self.call(period:, client: self.client, now: Time.current, log_group_name: SEARCH_LOG_GROUP_NAME) = new(period:, client:, now:, log_group_name:).call
@@ -425,10 +425,7 @@ module SearchAnalytics
             'all' => bucket_search_count(bucket, 'all'),
             'classic' => bucket_search_count(bucket, 'classic'),
             'internal' => bucket_search_count(bucket, 'internal'),
-            'frontend' => bucket_search_count(bucket, 'all', request_source: 'frontend'),
-            'backend_only' => bucket_search_count(bucket, 'all', request_source: 'backend_only'),
-            'unknown' => bucket_search_count(bucket, 'all', request_source: 'unknown'),
-          }
+          }.merge(REQUEST_SOURCES.index_with { |source| bucket_search_count(bucket, 'all', request_source: source) })
         end
       end
 

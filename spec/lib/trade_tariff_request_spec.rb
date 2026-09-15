@@ -15,6 +15,28 @@ RSpec.describe TradeTariffRequest do
     end
   end
 
+  describe '.request_source_for_user_agent' do
+    it 'classifies the frontend user agent' do
+      expect(described_class.request_source_for_user_agent('TradeTariffFrontend/a4d021c2')).to eq('frontend')
+    end
+
+    it 'classifies the admin user agent' do
+      expect(described_class.request_source_for_user_agent('TradeTariffAdmin/b1c2d3e4')).to eq('admin')
+    end
+
+    it 'classifies the MCP user agent' do
+      expect(described_class.request_source_for_user_agent('TradeTariffMcp/c3d4e5f6')).to eq('mcp')
+    end
+
+    it 'classifies other user agents as backend_only' do
+      expect(described_class.request_source_for_user_agent('curl/8.0.1')).to eq('backend_only')
+    end
+
+    it 'classifies a blank user agent as backend_only' do
+      expect(described_class.request_source_for_user_agent(nil)).to eq('backend_only')
+    end
+  end
+
   describe '.search_failed?' do
     it 'checks the stable failures recorded for the current request' do
       described_class.record_search_failure(Search::FailureCodes::INTERACTIVE_SEARCH_FAILED)
