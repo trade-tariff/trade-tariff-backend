@@ -34,6 +34,33 @@ RSpec.describe 'Search analytics storage' do
     expect(first.refresh.rows.to_a).to eq([])
   end
 
+  it 'rejects direct SQL updates to immutable query results' do
+    result = query_result
+
+    expect { SearchAnalyticsQueryResult.where(id: result.id).update(rows: Sequel.pg_jsonb([])) }
+      .to raise_error(Sequel::DatabaseError, /query results are immutable/)
+  end
+
+  it 'rejects direct SQL deletion of immutable query results' do
+    result = query_result
+
+    expect { SearchAnalyticsQueryResult.where(id: result.id).delete }
+      .to raise_error(Sequel::DatabaseError, /query results are immutable/)
+  end
+
+  { service: 'xi', source: 'local', reporting_date: Date.new(2026, 9, 13), definition_version: 99 }.each do |field, value|
+    it "rejects a publication whose #{field} differs from its collection" do
+      expect { create(:search_analytics_day, collection_id: collection.id, field => value) }
+        .to raise_error(Sequel::ForeignKeyConstraintViolation)
+    end
+  end
+
+  { service: 'xi', source: 'local', reporting_date: Date.new(2026, 9, 13), region: 'eu-west-1', log_group_name: 'other-logs' }.each do |field, value|
+    it "rejects a reusable result whose #{field} differs from its collection" do
+      expect { query_result(field => value) }.to raise_error(Sequel::ForeignKeyConstraintViolation)
+    end
+  end
+
   it 'stores the exact result references used for a publication' do
     result = query_result
     manifest = Sequel.pg_jsonb('volume' => result.id)

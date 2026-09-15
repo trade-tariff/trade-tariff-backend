@@ -19,6 +19,7 @@ Sequel.migration do
       DateTime :started_at, null: false
       DateTime :finished_at
       String :error_class
+      index %i[id service source reporting_date definition_version], unique: true, name: :idx_search_analytics_collection_provenance
       index %i[service source reporting_date definition_version],
             unique: true, where: Sequel.lit("status = 'running'"), name: :idx_search_analytics_running_day
     end
@@ -46,9 +47,11 @@ Sequel.migration do
       String :source, null: false
       Date :reporting_date, null: false
       Integer :definition_version, null: false
-      foreign_key :collection_id, :search_analytics_collections, null: false
+      Integer :collection_id, null: false
       DateTime :published_at, null: false
       Jsonb :facts, null: false
+      foreign_key %i[collection_id service source reporting_date definition_version], :search_analytics_collections,
+                  key: %i[id service source reporting_date definition_version], name: :fk_search_analytics_day_provenance
       index %i[service source reporting_date definition_version], unique: true, name: :idx_search_analytics_day_identity
     end
   end
