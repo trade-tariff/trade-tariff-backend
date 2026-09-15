@@ -52,6 +52,7 @@ module ProductionEnvironmentConfig
           remote_ip: event.payload[:remote_ip],
           auth_type: event.payload[:auth_type],
           client_id: event.payload[:client_id],
+          request_source: event.payload[:request_source],
           accept: event.payload[:headers]&.[]('HTTP_ACCEPT'),
           exception_class: exception&.class&.name || exception_class,
           params: event.payload[:params].except('controller', 'action', 'format', 'utf8'),

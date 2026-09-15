@@ -1,7 +1,16 @@
 class TradeTariffRequest < ActiveSupport::CurrentAttributes
   FRONTEND_USER_AGENT_PREFIX = 'TradeTariffFrontend/'.freeze
+  ADMIN_USER_AGENT_PREFIX = 'TradeTariffAdmin/'.freeze
+  MCP_USER_AGENT_PREFIX = 'TradeTariffMcp/'.freeze
   FRONTEND_REQUEST_SOURCE = 'frontend'.freeze
+  ADMIN_REQUEST_SOURCE = 'admin'.freeze
+  MCP_REQUEST_SOURCE = 'mcp'.freeze
   BACKEND_ONLY_REQUEST_SOURCE = 'backend_only'.freeze
+  REQUEST_SOURCE_BY_USER_AGENT_PREFIX = {
+    FRONTEND_USER_AGENT_PREFIX => FRONTEND_REQUEST_SOURCE,
+    ADMIN_USER_AGENT_PREFIX => ADMIN_REQUEST_SOURCE,
+    MCP_USER_AGENT_PREFIX => MCP_REQUEST_SOURCE,
+  }.freeze
 
   attribute :whodunnit,
             :request_id,
@@ -36,10 +45,12 @@ class TradeTariffRequest < ActiveSupport::CurrentAttributes
   end
 
   def self.request_source_for_user_agent(user_agent)
-    if user_agent.to_s.start_with?(FRONTEND_USER_AGENT_PREFIX)
-      FRONTEND_REQUEST_SOURCE
-    else
-      BACKEND_ONLY_REQUEST_SOURCE
+    agent = user_agent.to_s
+
+    REQUEST_SOURCE_BY_USER_AGENT_PREFIX.each do |prefix, source|
+      return source if agent.start_with?(prefix)
     end
+
+    BACKEND_ONLY_REQUEST_SOURCE
   end
 end
