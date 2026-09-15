@@ -135,10 +135,12 @@ module SearchAnalytics
     def execute_window(sql, start_at, end_at)
       query_id = response = nil
       # Keep failure cohorts scoped to the full day while partitioning metrics.
-      bounded = sql.gsub(log_stream_filter, "#{log_stream_filter} AND #{window_filter(now - 1.day, now)}")
-      bounded = bounded.sub("FROM #{source} WHERE #{log_stream_filter}", "FROM #{source} WHERE #{log_stream_filter} AND #{window_filter(start_at, end_at)}")
-      # JourneyQueries uses a newline before WHERE.
-      bounded = bounded.sub("FROM #{source}\nWHERE #{log_stream_filter}", "FROM #{source}\nWHERE #{log_stream_filter} AND #{window_filter(start_at, end_at)}")
+      metric_scope = true
+      bounded = sql.gsub(log_stream_filter) do
+        bounds = metric_scope ? window_filter(start_at, end_at) : window_filter(now - 1.day, now)
+        metric_scope = false
+        "#{log_stream_filter} AND #{bounds}"
+      end
       query_id = client.start_query(query_language: 'SQL', start_time: (now - 1.day).to_i, end_time: now.to_i, query_string: bounded).query_id
       QUERY_MAX_POLLS.times do
         response = client.get_query_results(query_id:)
