@@ -8,6 +8,17 @@ module SearchAnalytics
     DEFAULT_PERIOD = '24h'
     DEFAULT_VIEW = 'all'
 
+    def self.for_range(date_range:, view:)
+      new(
+        key: 'custom',
+        view: VIEWS.include?(view) ? view : DEFAULT_VIEW,
+        duration: date_range.days.days,
+        bucket_size: date_range.days == 1 ? 'hour' : 'day',
+      )
+    end
+
+    def single_day? = duration == 1.day
+
     def self.for(period:, view:)
       period_key = PERIODS.key?(period) ? period : DEFAULT_PERIOD
       view_key = VIEWS.include?(view) ? view : DEFAULT_VIEW
