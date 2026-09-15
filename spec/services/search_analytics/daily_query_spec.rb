@@ -92,6 +92,7 @@ RSpec.describe SearchAnalytics::DailyQuery do
       [start_at.strftime('%F %T'), (start_at + 3.hours).strftime('%F %T')]
     end
     expect(bounds).to eq(expected)
+    expect(starts.last(8).map { |request| request[:params].values_at(:start_time, :end_time) }).to eq(expected.map { |pair| pair.map { |value| Time.find_zone!('UTC').parse(value).to_i } })
   end
 
   it 'retains all model and embedding calls without token or failure-cohort filtering' do
@@ -161,6 +162,7 @@ RSpec.describe SearchAnalytics::DailyQuery do
     client.stub_responses(:get_query_results, [*Array.new(6) { complete }, capped, child, child, *Array.new(9) { complete }])
     result = collect.fetch('search_term_improvements')
     expect(result.map { |row| row['query'] }).to eq(%w[keep keep])
+    expect(starts[7][:params].values_at(:start_time, :end_time)).to eq([Time.utc(2026, 9, 14).to_i, Time.utc(2026, 9, 15).to_i])
     child_sql = starts[7][:params][:query_string]
     expect(child_sql).to include("`@timestamp` < CAST('2026-09-14 12:00:00'")
     expect(child_sql).to match(/request_id NOT IN \(.*2026-09-14 00:00:00.*2026-09-15 00:00:00/m)

@@ -49,6 +49,10 @@ module SearchAnalytics
           queries[{ query_string:, query_language: 'SQL' }] << "#{period}/#{name}"
         end
       }.tap do |queries|
+        daily = DailyQuery.new(reporting_date: now.utc.to_date - 1, region: ENV.fetch('AWS_REGION', 'eu-west-2'), log_group_name:, now:)
+        daily.query_definitions.each do |name, query_string|
+          queries[{ query_string:, query_language: 'SQL' }] << "daily/#{name}"
+        end
         dashboard_queries.each { |name, query| queries[query.symbolize_keys] << name }
       end
     end

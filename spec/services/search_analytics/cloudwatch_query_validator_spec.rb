@@ -13,6 +13,7 @@ RSpec.describe SearchAnalytics::CloudwatchQueryValidator do
   let(:output) { StringIO.new }
 
   before do
+    allow(SearchAnalytics::DailyQuery).to receive(:new).and_return(instance_double(SearchAnalytics::DailyQuery, query_definitions: {}))
     allow(SearchAnalytics::CloudwatchSnapshotQuery).to receive(:query_definitions).and_return(
       { 'volume' => 'SELECT COUNT(*) FROM `platform-logs-development`' },
       { 'volume' => "SELECT COUNT(*) FROM `platform-logs-development` GROUP BY DATE_TRUNC('DAY', `@timestamp`)" },
@@ -47,6 +48,17 @@ RSpec.describe SearchAnalytics::CloudwatchQueryValidator do
       query_string: "SELECT COUNT(*) FROM `platform-logs-development` GROUP BY DATE_TRUNC('DAY', `@timestamp`)",
     ).once
     expect(output.string).to include('Validated 2 distinct CloudWatch queries')
+  end
+
+  it 'includes real daily query definitions without collecting or storing results' do
+    allow(SearchAnalytics::DailyQuery).to receive(:new).and_call_original
+    expect(Aws::CloudWatchLogs::Client).not_to receive(:new)
+    expect(SearchAnalyticsQueryResult).not_to receive(:fetch)
+
+    validate
+
+    expect(output.string).to include('Validated daily/search_journeys', 'Validated daily/ai_cost_summary', 'Validated 11 distinct CloudWatch queries')
+    expect(client).to have_received(:start_query).with(hash_including(query_string: a_string_including("request_source = 'frontend'", 'worker-uk/')))
   end
 
   it 'validates rendered native dashboard queries alongside SQL snapshots' do
