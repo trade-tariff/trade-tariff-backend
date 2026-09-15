@@ -24,10 +24,12 @@ RSpec.describe SearchAnalyticsCollection do
     end
   end
 
-  it 'does not treat provisional statistics as a reconciled charge' do
-    attempt = create(:search_analytics_collection, status: 'failed')
-    SearchAnalyticsQueryRun.create(collection_id: attempt.id, name: 'volume', status: 'Running', bytes_scanned: 1_000_000_000, started_at: Time.current)
-    expect(attempt.cost_summary).to include('known_estimated_cost_usd' => '0.005', 'cost_complete' => false)
+  %w[Submitting Scheduled Running Interrupted Unknown].each do |status|
+    it "does not treat #{status} statistics as a reconciled charge" do
+      attempt = create(:search_analytics_collection, status: 'failed')
+      SearchAnalyticsQueryRun.create(collection_id: attempt.id, name: 'volume', status:, bytes_scanned: 1_000_000_000, started_at: Time.current)
+      expect(attempt.cost_summary).to include('known_estimated_cost_usd' => '0.005', 'cost_complete' => false)
+    end
   end
 
   it 'does not report complete costs for a day with no attempts' do

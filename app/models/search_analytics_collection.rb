@@ -15,6 +15,8 @@ class SearchAnalyticsCollection < Sequel::Model
   def cost_summary
     runs = SearchAnalyticsQueryRun.where(collection_id: id).all
     known_bytes = runs.sum { |run| run.bytes_scanned || 0 }
+    # Unknown stops polling but does not confirm execution or final scan charges.
+    # Keep its measured subtotal visible until the query outcome is reconciled.
     complete = (runs.any? || query_results.present?) && runs.all? { |run| %w[Complete Failed Cancelled Timeout].include?(run.status) && !run.bytes_scanned.nil? }
 
     {
