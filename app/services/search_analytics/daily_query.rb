@@ -36,25 +36,23 @@ module SearchAnalytics
     def plan
       fingerprints.to_h do |name, fingerprint|
         available = SearchAnalyticsQueryResult.where(service: @service, reporting_date:, name:, fingerprint:).any?
-        action = if available && !forced?(name)
+        action = if @selected && !@selected.include?(name)
+                   'skip'
+                 elsif available && !forced?(name)
                    'reuse'
                  elsif @selected.nil? || @selected.include?(name)
                    'run'
-                 else
-                   'blocked'
                  end
         [name, action]
       end
     end
 
     def call
-      raise QueryError, 'An unselected query has no matching result' if plan.value?('blocked')
-
       versions = fingerprints
-      query_definitions.to_h do |name, sql|
+      definitions = query_definitions
+      definitions = definitions.slice(*@selected) if @selected
+      definitions.to_h do |name, sql|
         rows = SearchAnalyticsQueryResult.fetch(service: @service, reporting_date:, name:, fingerprint: versions.fetch(name), force: forced?(name)) do
-          raise QueryError, "#{name} was not selected" if @selected && !@selected.include?(name)
-
           collect(name, sql)
         end
         [name, rows]
