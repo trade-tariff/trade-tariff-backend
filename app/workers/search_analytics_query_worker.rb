@@ -13,7 +13,10 @@ class SearchAnalyticsQueryWorker
     collector.plan.filter_map do |name, action|
       next unless action == 'run'
 
-      perform_async(TradeTariffBackend.service, reporting_date.iso8601, name, region, log_group_name, force)
+      job_id = perform_async(TradeTariffBackend.service, reporting_date.iso8601, name, region, log_group_name, force)
+      raise "Could not enqueue search analytics query #{name}" unless job_id
+
+      job_id
     end
   end
 

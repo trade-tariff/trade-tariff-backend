@@ -28,26 +28,27 @@ RSpec.describe SearchAnalyticsSnapshotWorker, type: :worker do
   end
 
   describe '#perform' do
-    it 'delegates to the snapshot refresh service' do
-      refresh = instance_double(SearchAnalytics::SnapshotRefresh, call: true)
-
-      allow(SearchAnalytics::SnapshotRefresh).to receive(:new).and_return(refresh)
-
-      described_class.new.perform
-
-      expect(SearchAnalytics::SnapshotRefresh).to have_received(:new)
-      expect(refresh).to have_received(:call)
+    before do
+      allow(SearchAnalyticsQueryWorker).to receive(:enqueue_day).and_return([])
     end
 
-    it 'passes optional periods to the snapshot refresh service' do
-      refresh = instance_double(SearchAnalytics::SnapshotRefresh, call: true)
+    it 'queues only yesterday rather than rolling periods' do
+      described_class.new.perform
+      expect(SearchAnalyticsQueryWorker).to have_received(:enqueue_day).with(
+        reporting_date: Time.current.utc.to_date - 1,
+        region: ENV.fetch('AWS_REGION', ENV.fetch('AWS_DEFAULT_REGION', 'eu-west-2')),
+      )
+    end
 
-      allow(SearchAnalytics::SnapshotRefresh).to receive(:new).and_return(refresh)
+    it 'accepts an explicit historical day for manual collection' do
+      described_class.new.perform('2026-09-14')
+      expect(SearchAnalyticsQueryWorker).to have_received(:enqueue_day).with(hash_including(reporting_date: Date.new(2026, 9, 14)))
+    end
 
-      described_class.new.perform(%w[30d])
-
-      expect(SearchAnalytics::SnapshotRefresh).to have_received(:new).with(periods: %w[30d])
-      expect(refresh).to have_received(:call)
+    it 'handles already-queued rolling-period arguments without running the old collector' do
+      expect(SearchAnalytics::SnapshotRefresh).not_to receive(:new)
+      described_class.new.perform(%w[24h 7d 30d])
+      expect(SearchAnalyticsQueryWorker).to have_received(:enqueue_day).with(hash_including(reporting_date: Time.current.utc.to_date - 1))
     end
   end
 end

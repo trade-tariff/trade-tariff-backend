@@ -149,9 +149,17 @@ input phrase => input phrase, lexical alternative
 
 Rules are matched case-insensitively against complete terms or phrases. Keep mappings contextual: prefer `HEPA filter` or `USB connector` to broad rules for `HEPA` or `USB`.
 
+### Stored daily admin analytics
+
+The admin search analytics endpoint reads complete, matching query results from PostgreSQL. It does not submit CloudWatch queries on page reads and does not fall back to rolling snapshots. The daily 04:00 schedule queues only missing or changed queries for yesterday. Per-query jobs have no automatic retries and reuse successful results; failed queries leave an explicit coverage gap.
+
+For initial population or a manual rerun, use `bundle exec rake search_analytics:collect_day`. `REPORTING_DATE=YYYY-MM-DD` selects a completed UTC day, `QUERIES=volume,ai_cost_trend` limits the selection, and `FORCE=1` explicitly replaces selected successful results. Without a selection, all daily groups are considered. Initial deployment needs a completed collection before the endpoint can serve data; until then it returns 404. Longer ranges report partial coverage until their days have been collected. No automatic historical backfill is started.
+
+The existing search-count field now counts distinct frontend-origin search-start IDs across the selected dates. AI costs include all recorded calls for those IDs inside the same dates. Other rates retain their request-based denominators. Optional `from` and `to` parameters select inclusive UTC dates, at most 366 days and ending yesterday or earlier; invalid ranges return 400.
+
 ### Search analytics SQL cohorts
 
-Admin analytics snapshots and Search Overview exclude every event for a request ID with a recorded `search_degraded: true`, `search_failed`, or `search_stage_failed` search event in the selected time window. The snapshot failure lookup uses the same UK/XI log stream as its metrics. Missing, null, and empty request IDs remain included, as do historical requests without a linked failure. Use the complete journey window: a failure outside that window cannot exclude an event inside it. Operations, Quality, Experiment, and general AI Costs retain their existing cohorts in this extraction.
+The legacy rolling snapshots and Search Overview exclude every event for a request ID with a recorded `search_degraded: true`, `search_failed`, or `search_stage_failed` search event in the selected time window. The snapshot failure lookup uses the same UK/XI log stream as its metrics. Missing, null, and empty request IDs remain included, as do historical requests without a linked failure. Use the complete journey window: a failure outside that window cannot exclude an event inside it. Operations, Quality, Experiment, and general AI Costs retain their existing cohorts in this extraction.
 
 The shared `request_exclusion_filter.sql.tftpl` contains the SQL predicate used by Ruby and Terraform, with no inner row limit. Two-stage cost and selection queries place the failure lookup beside the request aggregation subquery to respect CloudWatch SQL's one-level nesting limit. Snapshot payload fields and millisecond units remain unchanged; Overview displays seconds. SQL percentiles use fractions and can differ slightly from QL's approximate percentiles.
 

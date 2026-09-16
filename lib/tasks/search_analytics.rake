@@ -1,6 +1,17 @@
 # frozen_string_literal: true
 
-namespace :search_analytics do
+namespace :search_analytics do # rubocop:disable Metrics/BlockLength
+  desc 'Queue missing queries for a completed UTC day (REPORTING_DATE, QUERIES, FORCE=1 optional)'
+  task collect_day: :environment do
+    date = ENV['REPORTING_DATE'] ? Date.iso8601(ENV.fetch('REPORTING_DATE')) : Time.current.utc.to_date - 1
+    ids = SearchAnalyticsQueryWorker.enqueue_day(
+      reporting_date: date,
+      region: ENV.fetch('AWS_REGION', ENV.fetch('AWS_DEFAULT_REGION', 'eu-west-2')),
+      queries: ENV['QUERIES']&.split(',')&.map(&:strip), force: ENV['FORCE'] == '1'
+    )
+    puts "Queued #{ids.size} queries for #{date.iso8601}"
+  end
+
   desc 'Render the actual Terraform dashboard queries without AWS access'
   task :render_dashboard_queries do # rubocop:disable Rails/RakeEnvironment
     require Rails.root.join('app/services/search_analytics/dashboard_query_catalog')
