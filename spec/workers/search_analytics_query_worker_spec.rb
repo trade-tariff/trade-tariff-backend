@@ -32,6 +32,11 @@ RSpec.describe SearchAnalyticsQueryWorker, type: :worker do
     end
   end
 
+  it 'reports a rejected enqueue rather than claiming the query was scheduled' do
+    allow(described_class).to receive(:perform_async).and_return(nil)
+    expect { described_class.enqueue_day(**options, queries: %w[volume]) }.to raise_error(/Could not enqueue search analytics query volume/)
+  end
+
   it 'executes only its query and reuses its success when a duplicate job arrives' do
     existing_client = client
     allow(Aws::CloudWatchLogs::Client).to receive(:new).and_return(existing_client)
