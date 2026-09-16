@@ -8,6 +8,26 @@ class SearchAnalyticsQueryWorker
   MAX_CONCURRENT = 3
   LOCK_NAMESPACE = 1_287_000
 
+  def self.enqueue_backfill(region:, days: 30, log_group_name: SearchAnalytics::DailyQuery::SEARCH_LOG_GROUP_NAME, force: false, now: Time.current)
+    unless days.is_a?(Integer) && days.between?(1, SearchAnalytics::DateRange::MAX_DAYS)
+      raise ArgumentError, "DAYS must be between 1 and #{SearchAnalytics::DateRange::MAX_DAYS}"
+    end
+
+    rejected = []
+    jobs = days.times.filter_map do |offset|
+      date = now.utc.to_date - 1 - offset
+      collector = SearchAnalytics::DailyQuery.new(reporting_date: date, region:, log_group_name:, force:, now:)
+      next unless collector.plan.value?('run')
+
+      job_id = perform_async(date.iso8601, nil, region, log_group_name, force, TradeTariffBackend.service)
+      rejected << date.iso8601 unless job_id
+      job_id
+    end
+    raise "Could not enqueue search analytics days: #{rejected.join(', ')}" if rejected.any?
+
+    jobs
+  end
+
   def self.enqueue_day(reporting_date:, region:, log_group_name: SearchAnalytics::DailyQuery::SEARCH_LOG_GROUP_NAME, queries: nil, force: false)
     collector = SearchAnalytics::DailyQuery.new(reporting_date:, region:, log_group_name:, queries:, force:)
     rejected = []
