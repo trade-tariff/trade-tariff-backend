@@ -23,6 +23,14 @@ RSpec.describe SearchAnalytics::DailyQuery do
     expect(sql).not_to include('request_source', 'request_id NOT IN')
   end
 
+  it 'recognises classification completions and preserves canonical empty-commodity semantics' do
+    collector = described_class.new(**options)
+    sql = collector.query_definitions.fetch('journey_outcomes')
+    expect(sql).to include("search_type = 'classification'", collector.send(:zero_result_condition))
+    expect(sql).to include('commodity_result_count IS NOT NULL AND commodity_result_count = 0', "results_type != 'exact_search'", "search_type = 'classification' AND result_count = 0")
+    expect(sql).to include('search_degraded IS NULL OR search_degraded = false')
+  end
+
   it 'hashes compact sets and records the actual non-overlapping collection windows' do
     result = collect
     expect(result.first).to include('journey_keys' => %w[one two].map { |id| Digest::SHA256.hexdigest(id) }, 'window_start' => '2026-09-14T00:00:00Z', 'window_end' => '2026-09-14T03:00:00Z')

@@ -35,9 +35,9 @@ RSpec.describe SearchAnalytics::DailyResults do
     ]
   end
 
-  def read(to: date)
+  def read(to: date, view: 'internal')
     range = SearchAnalytics::DateRange.parse(from: date.iso8601, to: to.iso8601, now: scope[:now])
-    described_class.call(period: SearchAnalytics::Period.for(period: '7d', view: 'internal'), date_range: range, **scope)
+    described_class.call(period: SearchAnalytics::Period.for(period: '7d', view:), date_range: range, **scope)
   end
 
   it 'reconciles 115 backend completions to 13 frontend journeys without changing legacy request denominators' do
@@ -47,6 +47,15 @@ RSpec.describe SearchAnalytics::DailyResults do
     expect(payload.dig('journeys', 'outcomes')).to include('completed' => 11, 'nonterminal' => 2, 'failed' => 0, 'unknown' => 0)
     expect(payload.dig('trends', 'outcomes').first).to include('completed' => 11, 'nonterminal' => 2)
     expect(payload.dig('journeys', 'outcomes').values_at('completed', 'failed', 'nonterminal', 'unknown').sum).to eq(13)
+  end
+
+  it 'includes classification journeys in All without leaking them into Internal outcomes' do
+    journeys = SearchAnalyticsQueryResult.where(name: 'search_journeys').first
+    journeys.update(rows: Sequel.pg_jsonb(journeys.rows.to_a + [{ '@timestamp' => '2026-09-14T08:00:00Z', 'search_type' => 'classification', 'request_source' => 'frontend', 'journey_keys' => %w[classification-id] }]))
+    classified = outcome_rows.first.merge('journey_keys' => %w[classification-id], 'zero_result' => '1')
+    store(date, 'journey_outcomes', outcome_rows + [classified])
+    expect(read(view: 'all').payload.dig('journeys', 'outcomes')).to include('completed' => 12, 'nonterminal' => 2, 'zero_result' => 1)
+    expect(read.payload.dig('journeys', 'outcomes')).to include('completed' => 11, 'nonterminal' => 2, 'zero_result' => 0)
   end
 
   it 'withholds the old misleading step trend until outcome collection exists' do

@@ -72,7 +72,7 @@ module SearchAnalytics
       }
       # Guided frontend events have no service field and are emitted for UK only.
       definitions['frontend_events'] = FrontendEventsQuery.call(source:) if @service == 'uk'
-      definitions['journey_outcomes'] = JourneyOutcomesQuery.call(source:, log_stream_filter:)
+      definitions['journey_outcomes'] = JourneyOutcomesQuery.call(source:, log_stream_filter:, zero_result_condition:)
       definitions
     end
 
