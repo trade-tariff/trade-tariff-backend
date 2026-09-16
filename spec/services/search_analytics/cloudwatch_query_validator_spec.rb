@@ -44,7 +44,7 @@ RSpec.describe SearchAnalytics::CloudwatchQueryValidator do
     expect(SearchAnalyticsQueryResult).not_to receive(:fetch)
     validate
     expect(output.string).to include('Validated daily/search_journeys', 'Validated daily/ai_cost_trend', "Validated #{TradeTariffBackend.service == 'uk' ? 10 : 9} distinct CloudWatch queries")
-    expect(client).to have_received(:start_query).with(hash_including(query_string: a_string_including("request_source = 'frontend'", 'worker-uk/')))
+    expect(client).to have_received(:start_query).with(hash_including(query_string: a_string_including("request_source = 'frontend'", "worker-#{TradeTariffBackend.service}/")))
   end
 
   it 'retains validation of rendered native dashboard queries' do
