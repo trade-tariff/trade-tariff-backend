@@ -34,7 +34,18 @@ RSpec.describe SearchAnalyticsQueryWorker, type: :worker do
 
   it 'reports a rejected enqueue rather than claiming the query was scheduled' do
     allow(described_class).to receive(:perform_async).and_return(nil)
-    expect { described_class.enqueue_day(**options, queries: %w[volume]) }.to raise_error(/Could not enqueue search analytics query volume/)
+    expect { described_class.enqueue_day(**options, queries: %w[volume]) }.to raise_error(/Could not enqueue search analytics queries: volume/)
+  end
+
+  it 'attempts each planned enqueue once before reporting all rejected query names' do
+    allow(described_class).to receive(:perform_async).and_return(nil, 'accepted-job', nil)
+
+    expect { described_class.enqueue_day(**options, queries: %w[volume ai_cost_summary ai_cost_trend]) }
+      .to raise_error('Could not enqueue search analytics queries: volume, ai_cost_trend')
+    expect(described_class).to have_received(:perform_async).exactly(3).times
+    %w[volume ai_cost_summary ai_cost_trend].each do |name|
+      expect(described_class).to have_received(:perform_async).with(TradeTariffBackend.service, date.iso8601, name, region, group, false).once
+    end
   end
 
   it 'executes only its query and reuses its success when a duplicate job arrives' do

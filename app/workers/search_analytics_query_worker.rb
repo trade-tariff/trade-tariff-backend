@@ -10,14 +10,17 @@ class SearchAnalyticsQueryWorker
 
   def self.enqueue_day(reporting_date:, region:, log_group_name: SearchAnalytics::DailyQuery::SEARCH_LOG_GROUP_NAME, queries: nil, force: false)
     collector = SearchAnalytics::DailyQuery.new(reporting_date:, region:, log_group_name:, queries:, force:)
-    collector.plan.filter_map do |name, action|
+    rejected = []
+    jobs = collector.plan.filter_map do |name, action|
       next unless action == 'run'
 
       job_id = perform_async(TradeTariffBackend.service, reporting_date.iso8601, name, region, log_group_name, force)
-      raise "Could not enqueue search analytics query #{name}" unless job_id
-
+      rejected << name unless job_id
       job_id
     end
+    raise "Could not enqueue search analytics queries: #{rejected.join(', ')}" if rejected.any?
+
+    jobs
   end
 
   def perform(service, date, name, region, log_group_name, force = false)
