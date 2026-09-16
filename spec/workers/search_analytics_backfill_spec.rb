@@ -64,7 +64,7 @@ RSpec.describe 'Search analytics backfill', type: :worker do
     coordinator = jobs.shift
     expect(coordinator['args'][4]).to be(true)
     SearchAnalyticsQueryWorker.new.perform(*coordinator['args'])
-    expect(jobs.size).to eq(8)
+    expect(jobs.size).to eq(SearchAnalytics::DailyQuery.new(reporting_date: yesterday, **scope, now:).query_definitions.size)
     expect(jobs.map { |job| job['args'][4] }).to all(be(true))
   end
 

@@ -33,7 +33,7 @@ namespace :search_analytics do # rubocop:disable Metrics/BlockLength
   desc 'Validate generated CloudWatch Logs Insights queries in AWS'
   # This CI task deliberately avoids booting the database-backed Rails environment.
   task :validate_cloudwatch_queries do # rubocop:disable Rails/RakeEnvironment
-    %w[period cloudwatch_snapshot_query journey_queries latency_histogram daily_query cloudwatch_query_validator].each do |service|
+    %w[period cloudwatch_snapshot_query journey_queries latency_histogram frontend_events_query daily_query cloudwatch_query_validator].each do |service|
       require Rails.root.join("app/services/search_analytics/#{service}")
     end
 

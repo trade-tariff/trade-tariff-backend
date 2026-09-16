@@ -60,7 +60,7 @@ module SearchAnalytics
     end
 
     def query_definitions
-      {
+      definitions = {
         'volume' => volume_query,
         'latency_histogram' => latency_histogram_query,
         'ai_cost_trend' => ai_cost_trend_query,
@@ -70,6 +70,9 @@ module SearchAnalytics
         'item_id_improvements' => improvement_terms_query(term_filter: "query RLIKE '^[0-9 .-]+$'"),
         'search_journeys' => JourneyQueries.new(source:, log_stream_filter:).journeys,
       }
+      # Guided frontend events have no service field and are emitted for UK only.
+      definitions['frontend_events'] = FrontendEventsQuery.call(source:) if @service == 'uk'
+      definitions
     end
 
   private
@@ -96,10 +99,10 @@ module SearchAnalytics
 
           row.except('request_ids', 'journey_count').merge('journey_keys' => ids.map { |id| Digest::SHA256.hexdigest(id) })
         end
-      elsif name.start_with?('ai_cost_')
+      elsif name.start_with?('ai_cost_') || name == 'frontend_events'
         rows.map do |row|
           id = row.fetch('request_id')
-          raise QueryError, 'Missing cost request identifier' if id.blank?
+          raise QueryError, 'Missing request identifier' if id.blank?
 
           row.except('request_id').merge('journey_key' => Digest::SHA256.hexdigest(id))
         end
@@ -114,10 +117,11 @@ module SearchAnalytics
 
       rows, matched = execute_window(sql, start_at, end_at)
       complete = rows.size < ROW_LIMIT
-      if name == 'search_journeys'
+      if %w[search_journeys frontend_events].include?(name)
         raise QueryError, 'Missing journey completeness statistics' if matched.nil?
 
-        complete &&= rows.sum { |row| Integer(row.fetch('started_events')) } == matched
+        count_field = name == 'frontend_events' ? 'event_count' : 'started_events'
+        complete &&= rows.sum { |row| Integer(row.fetch(count_field)) } == matched
       end
       return rows if complete
 
@@ -133,10 +137,11 @@ module SearchAnalytics
       query_id = response = nil
       # Keep failure cohorts scoped to the full day while partitioning metrics.
       metric_scope = true
-      bounded = sql.gsub(log_stream_filter) do
+      stream_filter = sql.include?(FrontendEventsQuery::STREAM_FILTER) ? FrontendEventsQuery::STREAM_FILTER : log_stream_filter
+      bounded = sql.gsub(stream_filter) do
         bounds = metric_scope ? window_filter(start_at, end_at) : window_filter(now - 1.day, now)
         metric_scope = false
-        "#{log_stream_filter} AND #{bounds}"
+        "#{stream_filter} AND #{bounds}"
       end
       scan_start, scan_end = sql.include?(request_exclusion_filter) ? [now - 1.day, now] : [start_at, end_at]
       query_id = client.start_query(query_language: 'SQL', start_time: scan_start.to_i, end_time: scan_end.to_i, query_string: bounded).query_id
