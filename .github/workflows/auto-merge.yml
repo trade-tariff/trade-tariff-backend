@@ -37,4 +37,5 @@ jobs:
       label: low-risk
       merge-method: rebase
     secrets:
-      github-token: ${{ secrets.PULL_REQUEST_PAT }}
+      pr-bot-app-id: ${{ secrets.TRADE_TARIFF_PR_BOT_GITHUB_APP_ID }}
+      pr-bot-app-private-key: ${{ secrets.TRADE_TARIFF_PR_BOT_GITHUB_APP_PRIVATE_KEY }}
