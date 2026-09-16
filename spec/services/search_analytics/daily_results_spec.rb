@@ -83,7 +83,8 @@ RSpec.describe SearchAnalytics::DailyResults do
   it 'does not substitute another region, log group or service' do
     expect(read(region: 'eu-west-1')).to be_nil
     expect(read(log_group_name: 'different-logs')).to be_nil
-    allow(TradeTariffBackend).to receive(:service).and_return('xi')
+    other_service = TradeTariffBackend.service == 'uk' ? 'xi' : 'uk'
+    allow(TradeTariffBackend).to receive(:service).and_return(other_service)
     expect(read).to be_nil
   end
 
@@ -156,6 +157,7 @@ RSpec.describe SearchAnalytics::DailyResults do
     volume = read.payload.dig('trends', 'volume')
     expect(volume.map { |row| row['bucket'] }).to eq(%w[2026-09-13T00:00:00Z 2026-09-14T00:00:00Z])
     expect(volume.map { |row| row['internal'] }).to eq([1, 0])
+    expect(volume.map { |row| row['unknown'] }).to eq([13, 93])
   end
 
   it 'retains journey-only buckets without inventing request outcomes' do
@@ -164,6 +166,7 @@ RSpec.describe SearchAnalytics::DailyResults do
     expect(payload.dig('trends', 'volume').map { |row| row['bucket'] }).to eq(%w[2026-09-14T08:00:00Z 2026-09-14T09:00:00Z])
     expect(payload.dig('trends', 'volume').map { |row| row['internal'] }).to eq([0, 1])
     expect(payload.dig('trends', 'outcomes').size).to eq(1)
+    expect(payload.dig('trends', 'volume').last).to include('frontend' => 0, 'admin' => 0, 'mcp' => 0, 'backend_only' => 0, 'unknown' => 0)
   end
 
   it 'does not include later calls for the same journey outside the selected dates' do
