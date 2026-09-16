@@ -47,8 +47,8 @@ RSpec.describe CdsImporter::ExcelWriter::QuotaDefinition do
           'Action',
           'Quota order number',
           'Balance updates',
-          'Old Quota Balance',
-          'New Quota Balance',
+          'Old balance',
+          'New balance',
           'Sample commodities',
           'SID',
           'Critical state',
@@ -86,7 +86,7 @@ RSpec.describe CdsImporter::ExcelWriter::QuotaDefinition do
     it 'uses the last balance event values' do
       row = mapper.data_row
 
-      expect(row[2]).to eq('2025-05-28')
+      expect(row[2]).to eq('2025-05-28 - New: 300 : Old: 400')
       expect(row[3]).to eq(400)
       expect(row[4]).to eq(300)
     end
@@ -103,8 +103,20 @@ RSpec.describe CdsImporter::ExcelWriter::QuotaDefinition do
         row = mapper.data_row
 
         expect(row[2]).to eq('')
-        expect(row[3]).to eq('')
-        expect(row[4]).to eq('')
+        expect(row[3]).to be_nil
+        expect(row[4]).to be_nil
+      end
+    end
+
+    context 'when balance events are out of order' do
+      let(:models) { [quota_definition, second_balance_event, first_balance_event] }
+
+      it 'uses the latest event by occurrence timestamp' do
+        row = mapper.data_row
+
+        expect(row[2]).to eq('2025-05-28 - New: 300 : Old: 400')
+        expect(row[3]).to eq(400)
+        expect(row[4]).to eq(300)
       end
     end
   end

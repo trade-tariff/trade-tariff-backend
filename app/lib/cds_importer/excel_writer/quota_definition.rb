@@ -22,8 +22,8 @@ class CdsImporter
           ['Action',
            'Quota order number',
            'Balance updates',
-           'Old Quota Balance',
-           'New Quota Balance',
+           'Old balance',
+           'New balance',
            'Sample commodities',
            'SID',
            'Critical state',
@@ -49,9 +49,9 @@ class CdsImporter
 
         ["#{expand_operation(quota_definition)} definition",
          quota_definition.quota_order_number_id,
-         last_event ? format_date_ymd(last_event.occurrence_timestamp) : '',
-         last_event&.old_balance || '',
-         last_event&.new_balance || '',
+         quota_balance_event_string(last_event),
+         last_event&.old_balance,
+         last_event&.new_balance,
          comm_code_string(quota_definition.quota_definition_sid),
          quota_definition.quota_definition_sid,
          quota_definition.critical_state,
@@ -64,6 +64,12 @@ class CdsImporter
       end
 
     private
+
+      def quota_balance_event_string(last_event)
+        return '' if last_event.blank?
+
+        "#{format_date_ymd(last_event.occurrence_timestamp)} - New: #{last_event.new_balance} : Old: #{last_event.old_balance}"
+      end
 
       def last_quota_balance_event(quota_balance_events)
         return if quota_balance_events.blank?
