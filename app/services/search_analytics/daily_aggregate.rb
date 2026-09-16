@@ -9,8 +9,8 @@ module SearchAnalytics
       end
       @histogram = results.fetch('latency_histogram')
       costs = RequestCosts.new(
-        summary_rows: results.fetch('ai_cost_summary'), trend_rows: results.fetch('ai_cost_trend'),
-        journey_keys: @journeys.fetch(period.view).keys
+        trend_rows: results.fetch('ai_cost_trend'),
+        journey_keys: @journeys.fetch(period.view).keys,
       ).call
       selections = %w[classic internal].flat_map do |view|
         results.fetch("#{view}_selection_trend").map { |row| row.merge('selectable_search_type' => view) }

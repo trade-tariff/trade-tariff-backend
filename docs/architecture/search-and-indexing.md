@@ -155,7 +155,7 @@ The admin search analytics endpoint reads complete, matching query results from 
 
 For initial population or a manual rerun, use `bundle exec rake search_analytics:collect_day`. `REPORTING_DATE=YYYY-MM-DD` selects a completed UTC day, `QUERIES=volume,ai_cost_trend` limits the selection, and `FORCE=1` explicitly replaces selected successful results. Without a selection, all daily groups are considered. Initial deployment needs a completed collection before the endpoint can serve data; until then it returns 404. Longer ranges report partial coverage until their days have been collected. No automatic historical backfill is started. Drain any previously queued `SearchAnalyticsSnapshotWorker` jobs before rollout; that obsolete worker and refresh service are removed. The old snapshot table is left untouched but no longer read.
 
-The existing search-count field now counts distinct frontend-origin search-start IDs across the selected dates. AI costs include all recorded calls for those IDs inside the same dates. Other rates retain their request-based denominators. Optional `from` and `to` parameters select inclusive UTC dates, at most 366 days and ending yesterday or earlier; invalid ranges return 400.
+The existing search-count field now counts distinct frontend-origin search-start IDs across the selected dates. AI costs include all recorded calls for those IDs inside the same dates. The total and operation breakdown both derive from the single stored `ai_cost_trend` query; no separate cost-summary query is collected. Other rates retain their request-based denominators. Optional `from` and `to` parameters select inclusive UTC dates, at most 366 days and ending yesterday or earlier; invalid ranges return 400.
 
 ### Search analytics SQL cohorts
 
