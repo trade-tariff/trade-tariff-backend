@@ -5,8 +5,8 @@ module SearchAnalytics
     def self.call(...) = new(...).call
 
     def initialize(records:, dates:, supported:)
-      @records = supported ? records : []
-      @dates = dates
+      @dates = dates.uniq.sort
+      @records = supported ? records.select { |record| @dates.include?(record.reporting_date) } : []
       @supported = supported
       @rows = @records.flat_map { |record| record.rows.to_a }
     end
@@ -21,7 +21,7 @@ module SearchAnalytics
           'collected_days' => collected.size,
           'collected_dates' => collected.map(&:iso8601),
           'missing_dates' => (@dates - collected).map(&:iso8601),
-          'complete' => @supported && collected.size == @dates.size,
+          'complete' => @supported && collected == @dates,
         },
         'generated_at' => @records.map(&:collected_at).max&.iso8601,
         'observed_journeys' => @rows.map { |row| row.fetch('journey_key') }.uniq.size,
