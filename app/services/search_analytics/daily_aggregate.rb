@@ -66,7 +66,15 @@ module SearchAnalytics
       original.merge('requests' => original.fetch('searches'), 'searches' => count)
     end
 
-    def trends(view) = super.merge('volume' => @journeys.fetch(view).trend)
+    def trends(view)
+      original = super
+      journeys = @journeys.fetch(view).trend.index_by { |row| row.fetch('bucket') }
+      buckets = (original.fetch('volume').pluck('bucket') + journeys.keys).uniq.sort
+      volume = buckets.map do |bucket|
+        journeys.fetch(bucket) { { 'bucket' => bucket }.merge(Period::VIEWS.index_with { 0 }) }
+      end
+      original.merge('volume' => volume)
+    end
 
     def latency_for(view, request_source: nil)
       return if request_source
