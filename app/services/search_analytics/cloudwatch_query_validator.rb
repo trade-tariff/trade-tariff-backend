@@ -3,9 +3,9 @@
 module SearchAnalytics
   class CloudwatchQueryValidator
     LOOKBACK = 5.minutes
-    QUERY_MAX_POLLS = CloudwatchSnapshotQuery::QUERY_MAX_POLLS
-    QUERY_POLL_INTERVAL_SECONDS = CloudwatchSnapshotQuery::QUERY_POLL_INTERVAL_SECONDS
-    TERMINAL_FAILURE_STATUSES = CloudwatchSnapshotQuery::TERMINAL_FAILURE_STATUSES
+    QUERY_MAX_POLLS = DailyQuery::QUERY_MAX_POLLS
+    QUERY_POLL_INTERVAL_SECONDS = DailyQuery::QUERY_POLL_INTERVAL_SECONDS
+    TERMINAL_FAILURE_STATUSES = DailyQuery::TERMINAL_FAILURE_STATUSES
     ValidationError = Class.new(StandardError)
     QueryError = Class.new(StandardError)
 
@@ -44,11 +44,11 @@ module SearchAnalytics
     attr_reader :log_group_name, :client, :now, :output, :dashboard_queries
 
     def distinct_queries
-      @distinct_queries ||= SnapshotRefresh::PERIODS.each_with_object(Hash.new { |hash, query| hash[query] = [] }) { |period, queries|
-        CloudwatchSnapshotQuery.query_definitions(period:, log_group_name:).each do |name, query_string|
-          queries[{ query_string:, query_language: 'SQL' }] << "#{period}/#{name}"
+      @distinct_queries ||= Hash.new { |hash, query| hash[query] = [] }.tap do |queries|
+        daily = DailyQuery.new(reporting_date: now.utc.to_date - 1, region: ENV.fetch('AWS_REGION', 'eu-west-2'), log_group_name:, now:)
+        daily.query_definitions.each do |name, query_string|
+          queries[{ query_string:, query_language: 'SQL' }] << "daily/#{name}"
         end
-      }.tap do |queries|
         dashboard_queries.each { |name, query| queries[query.symbolize_keys] << name }
       end
     end
