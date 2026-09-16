@@ -53,11 +53,16 @@ module TariffKnowledge
     end
 
     def bulk_reindex(goods_nomenclatures)
-      TradeTariffBackend.search_client.bulk(
+      response = TradeTariffBackend.search_client.bulk(
         {
           body: goods_nomenclatures.map { |goods_nomenclature| bulk_operation(index, goods_nomenclature) },
         }.merge(TradeTariffBackend.search_client.search_operation_options),
       )
+
+      # A `_bulk` request answers 200 even when individual documents were
+      # rejected, so without this check we would report the ATaR refresh as
+      # done and queue label scoring for documents that never made it in.
+      TradeTariffBackend::BulkResponse.check!(response, 'PublicAtarSearchRefresh')
     end
 
     def index
