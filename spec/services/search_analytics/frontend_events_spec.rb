@@ -58,6 +58,18 @@ RSpec.describe SearchAnalytics::FrontendEvents do
     expect(result['coverage']).to include('collected_days' => 1, 'expected_days' => 2, 'missing_dates' => [(date + 1).iso8601], 'complete' => false)
   end
 
+  it 'excludes unexpected dates from coverage and event totals' do
+    result = aggregate([record([row('outside', 'results')], day: date + 1)])
+    expect(result).to include('available' => false, 'observed_journeys' => 0)
+    expect(result['coverage']).to include('complete' => false, 'collected_days' => 0, 'missing_dates' => [date.iso8601])
+    expect(result['outcomes'].sum { |outcome| outcome['rendered_events'] }).to eq(0)
+  end
+
+  it 'compares unique requested dates independent of their order' do
+    result = aggregate([record([]), record([], day: date + 1)], dates: [date + 1, date, date])
+    expect(result['coverage']).to include('complete' => true, 'expected_days' => 2, 'collected_days' => 2, 'missing_dates' => [])
+  end
+
   it 'distinguishes a successful empty query from an unavailable query' do
     expect(aggregate([record([])])).to include('available' => true, 'observed_journeys' => 0)
     expect(aggregate([])).to include('available' => false, 'generated_at' => nil)
