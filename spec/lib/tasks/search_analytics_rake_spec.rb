@@ -1,4 +1,42 @@
 RSpec.describe 'search analytics rake tasks' do
+  describe 'search_analytics:backfill' do
+    let(:task) { Rake::Task['search_analytics:backfill'] }
+
+    before do
+      task.reenable
+      allow(ENV).to receive(:fetch).and_call_original
+      allow(ENV).to receive(:[]).and_call_original
+      allow(SearchAnalyticsQueryWorker).to receive(:enqueue_backfill).and_return(%w[day-job])
+    end
+
+    it 'defaults to thirty days and does not force existing results' do
+      allow(ENV).to receive(:fetch).with('DAYS', '30').and_return('30')
+      allow(ENV).to receive(:[]).with('FORCE').and_return(nil)
+      expect { task.invoke }.to output(/Queued 1 day jobs for 30 completed UTC days/).to_stdout
+      expect(SearchAnalyticsQueryWorker).to have_received(:enqueue_backfill).with(hash_including(days: 30, force: false))
+    end
+
+    it 'accepts DAYS and FORCE=true explicitly' do
+      allow(ENV).to receive(:fetch).with('DAYS', '30').and_return('7')
+      allow(ENV).to receive(:[]).with('FORCE').and_return('true')
+      expect { task.invoke }.to output(/Queued 1 day jobs for 7 completed UTC days/).to_stdout
+      expect(SearchAnalyticsQueryWorker).to have_received(:enqueue_backfill).with(hash_including(days: 7, force: true))
+    end
+
+    it 'does not treat FORCE=false as true' do
+      allow(ENV).to receive(:fetch).with('DAYS', '30').and_return('1')
+      allow(ENV).to receive(:[]).with('FORCE').and_return('false')
+      expect { task.invoke }.to output(/Queued 1 day jobs/).to_stdout
+      expect(SearchAnalyticsQueryWorker).to have_received(:enqueue_backfill).with(hash_including(days: 1, force: false))
+    end
+
+    it 'rejects non-integer DAYS before requesting jobs' do
+      allow(ENV).to receive(:fetch).with('DAYS', '30').and_return('2.5')
+      expect { task.invoke }.to raise_error(ArgumentError)
+      expect(SearchAnalyticsQueryWorker).not_to have_received(:enqueue_backfill)
+    end
+  end
+
   describe 'search_analytics:collect_day' do
     let(:task) { Rake::Task['search_analytics:collect_day'] }
 
