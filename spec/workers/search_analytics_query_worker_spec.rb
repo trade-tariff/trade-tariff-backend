@@ -76,6 +76,20 @@ RSpec.describe SearchAnalyticsQueryWorker, type: :worker do
     expect(SearchAnalyticsQueryResult.select_map(:name)).to eq(%w[volume])
   end
 
+  it 'accepts previously queued service-first arguments without forcing a rerun' do
+    existing_client = client
+    allow(Aws::CloudWatchLogs::Client).to receive(:new).and_return(existing_client)
+    described_class.new.perform(TradeTariffBackend.service, date.iso8601, 'volume', region, group, false)
+    described_class.new.perform(TradeTariffBackend.service, date.iso8601, 'volume', region, group)
+    expect(client.api_requests.count { |request| request[:operation_name] == :start_query }).to eq(1)
+  end
+
+  it 'preserves explicit force on previously queued service-first arguments' do
+    allow(SearchAnalytics::DailyQuery).to receive(:call)
+    described_class.new.perform(TradeTariffBackend.service, date.iso8601, 'volume', region, group, true)
+    expect(SearchAnalytics::DailyQuery).to have_received(:call).with(**options, queries: %w[volume], force: true)
+  end
+
   it 'leaves a failed query missing without submitting it again' do
     existing_client = client
     client.stub_responses(:get_query_results, status: 'Failed', results: [])

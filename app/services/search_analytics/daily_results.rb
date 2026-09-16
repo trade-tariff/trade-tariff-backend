@@ -15,7 +15,7 @@ module SearchAnalytics
       # cost of a journey. Later calls belong to their own reporting dates.
       records = SearchAnalyticsQueryResult.where(service:, reporting_date: dates, name: definitions.keys).all
       compatible = records.select { |row| row.fingerprint == definitions.fetch(row.name) }.group_by(&:reporting_date)
-      complete = compatible.select { |_date, rows| rows.map(&:name).sort == definitions.keys.sort }
+      complete = compatible.select { |_date, rows| rows.map(&:name).sort == definitions.keys.sort && consistent_costs?(rows) }
       return if complete.empty?
 
       # Only full compatible days contribute; a failed query is a coverage gap,
@@ -45,5 +45,17 @@ module SearchAnalytics
         data_through: collected_dates.last.to_time(:utc) + 1.day, payload:
       )
     end
+
+    def self.consistent_costs?(rows)
+      queries = rows.index_by(&:name)
+      RequestCosts.new(
+        summary_rows: queries.fetch('ai_cost_summary').rows.to_a,
+        trend_rows: queries.fetch('ai_cost_trend').rows.to_a, journey_keys: {}
+      ).call
+      true
+    rescue RequestCosts::InconsistentResults
+      false
+    end
+    private_class_method :consistent_costs?
   end
 end

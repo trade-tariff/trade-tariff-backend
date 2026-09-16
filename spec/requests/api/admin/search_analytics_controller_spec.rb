@@ -95,6 +95,16 @@ RSpec.describe Api::Admin::SearchAnalyticsController do
     expect(response.parsed_body.dig('errors', 0, 'title')).to eq('Search analytics unavailable')
   end
 
+  it 'reports unavailable rather than returning 500 while forced cost results disagree' do
+    SearchAnalyticsQueryResult.where(name: 'ai_cost_trend').update(rows: Sequel.pg_jsonb([]))
+    request_analytics
+    expect(response).to have_http_status(:not_found)
+    create_results(date - 1)
+    request_analytics(period: '7d')
+    expect(response).to have_http_status(:ok)
+    expect(attributes['coverage']).to include('collected_days' => 1, 'complete' => false)
+  end
+
   it 'rejects stale query definitions instead of returning inconsistent data' do
     SearchAnalyticsQueryResult.where(name: 'ai_cost_trend').update(fingerprint: 'obsolete')
     request_analytics
