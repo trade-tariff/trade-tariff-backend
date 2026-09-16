@@ -121,9 +121,13 @@ RSpec.describe SearchAnalytics::DailyResults do
     expect(payload.dig('summary_statuses', 'p90_latency_ms', 'level')).to eq('neutral')
   end
 
-  it 'rejects disagreement between stored call summaries and trends' do
+  it 'excludes a day with inconsistent cost results while other complete days remain readable' do
+    original = SearchAnalyticsQueryResult.where(reporting_date: last_date, name: 'ai_cost_trend').first.rows.to_a
     replace_rows(last_date, 'ai_cost_trend', [])
-    expect { read }.to raise_error(ArgumentError, /Cost queries disagree/)
+    expect(read.payload['coverage']).to include('collected_days' => 1, 'collected_dates' => [first_date.iso8601])
+    expect(read('internal', '24h')).to be_nil
+    replace_rows(last_date, 'ai_cost_trend', original)
+    expect(read.payload['coverage']).to include('collected_days' => 2)
   end
 
   it 'keeps All and per-view frontend populations distinct' do

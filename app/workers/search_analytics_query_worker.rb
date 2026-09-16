@@ -24,6 +24,10 @@ class SearchAnalyticsQueryWorker
   end
 
   def perform(date = nil, name = nil, region = nil, log_group_name = SearchAnalytics::DailyQuery::SEARCH_LOG_GROUP_NAME, force = false, service = TradeTariffBackend.service)
+    # Jobs queued by the previous version put service before date.
+    if %w[uk xi].include?(date)
+      date, name, region, log_group_name, force, service = name, region, log_group_name, force, service == true, date
+    end
     raise ArgumentError, 'Query job belongs to a different service' unless service == TradeTariffBackend.service
 
     reporting_date = date ? Date.iso8601(date) : Time.current.utc.to_date - 1

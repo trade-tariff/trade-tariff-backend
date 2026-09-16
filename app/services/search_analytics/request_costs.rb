@@ -2,6 +2,8 @@
 
 module SearchAnalytics
   class RequestCosts
+    InconsistentResults = Class.new(ArgumentError)
+
     def initialize(summary_rows:, trend_rows:, journey_keys:)
       @summaries = summary_rows
       @trends = trend_rows
@@ -33,15 +35,15 @@ module SearchAnalytics
     def validate!
       summaries = @summaries.group_by { |row| row.fetch('journey_key') }
       trends = @trends.group_by { |row| row.fetch('journey_key') }
-      raise ArgumentError, 'Cost queries disagree on request identifiers' if (trends.keys - summaries.keys).any?
+      raise InconsistentResults, 'Cost queries disagree on request identifiers' if (trends.keys - summaries.keys).any?
 
       summaries.each do |key, rows|
         request_trends = trends.fetch(key, [])
         %w[priced_calls unpriced_calls].each do |field|
-          raise ArgumentError, "Cost queries disagree on #{field}" unless sum(rows, field) == sum(request_trends, field)
+          raise InconsistentResults, "Cost queries disagree on #{field}" unless sum(rows, field) == sum(request_trends, field)
         end
         if (sum(rows, 'total_cost_usd') - sum(request_trends, 'total_cost_usd')).abs > BigDecimal('0.000000000001')
-          raise ArgumentError, 'Cost queries disagree on recorded costs'
+          raise InconsistentResults, 'Cost queries disagree on recorded costs'
         end
       end
     end
