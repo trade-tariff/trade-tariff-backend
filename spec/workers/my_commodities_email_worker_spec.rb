@@ -21,6 +21,42 @@ RSpec.describe MyCommoditiesEmailWorker, type: :worker do
     end
   end
 
+  describe 'when retries are exhausted' do
+    subject(:exhaust_retries) do
+      described_class.sidekiq_retries_exhausted_block.call(
+        { 'args' => [user.id, date, count] },
+        StandardError.new('Notify is down'),
+      )
+    end
+
+    before { create(:tariff_changes_job_status, :with_emails_sent, operation_date: Date.new(2025, 12, 8)) }
+
+    it 'returns the date to the pending_emails redrive set' do
+      expect { exhaust_retries }
+        .to(change { TariffChangesJobStatus.pending_emails.include?(Date.new(2025, 12, 8)) }
+        .from(false).to(true))
+    end
+
+    it 'clears emails_sent_at for that date' do
+      expect { exhaust_retries }
+        .to(change { TariffChangesJobStatus.for_date(Date.new(2025, 12, 8)).emails_sent_at }.to(nil))
+    end
+
+    it 'leaves changes_generated_at alone so the day is not regenerated' do
+      expect { exhaust_retries }
+        .not_to(change { TariffChangesJobStatus.for_date(Date.new(2025, 12, 8)).changes_generated_at })
+    end
+
+    context 'when the job carried no date' do
+      let(:date) { nil }
+
+      it 'does not touch any job status' do
+        expect { exhaust_retries }
+          .not_to(change { TariffChangesJobStatus.for_date(Date.new(2025, 12, 8)).emails_sent_at })
+      end
+    end
+  end
+
   describe '#perform' do
     context 'when all parameters are valid' do
       it 'sends an email to the user' do
