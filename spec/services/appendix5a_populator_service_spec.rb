@@ -173,6 +173,30 @@ RSpec.describe Appendix5aPopulatorService do
       end
     end
 
+    context 'when enqueueing exhausts every attempt' do
+      let(:new_guidance) do
+        {
+          '1123' => {
+            'guidance_cds' => 'bar',
+          },
+        }
+      end
+
+      before do
+        allow(Notifications::EmailWorker).to receive(:perform_async).and_raise('redis down')
+        allow(Notifications::EnqueueService).to receive(:new).and_wrap_original do |original, items, **options, &block|
+          original.call(items, **options, retry_delay: 0, &block)
+        end
+      end
+
+      it 'raises so the worker fails instead of completing with nobody enqueued' do
+        expect { call }.to raise_error(
+          Notifications::EnqueueService::EnqueueFailedError,
+          'appendix5a: failed to enqueue notification for 0, 1 after 3 attempts',
+        )
+      end
+    end
+
     context 'when a recipient index no longer resolves to a configured email' do
       let(:cupid_emails) { ['cupid@example.com', ''] }
       let(:new_guidance) do

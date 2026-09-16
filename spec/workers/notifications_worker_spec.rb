@@ -53,10 +53,18 @@ RSpec.describe NotificationsWorker, type: :worker do
 
       before do
         allow(Rails.logger).to receive(:error)
-        worker.perform(notification_id)
+      end
+
+      it 'raises so Sidekiq retries rather than recording a success' do
+        expect { worker.perform(notification_id) }.to raise_error(
+          NotificationsWorker::MissingNotificationDataError,
+          "Notification data not found for ID: #{notification_id}",
+        )
       end
 
       it 'logs an error message' do
+        expect { worker.perform(notification_id) }.to raise_error(NotificationsWorker::MissingNotificationDataError)
+
         expect(Rails.logger).to have_received(:error).with("Notification data not found for ID: #{notification_id}")
       end
     end
