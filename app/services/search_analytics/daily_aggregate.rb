@@ -69,9 +69,11 @@ module SearchAnalytics
     def trends(view)
       original = super
       journeys = @journeys.fetch(view).trend.index_by { |row| row.fetch('bucket') }
-      buckets = (original.fetch('volume').pluck('bucket') + journeys.keys).uniq.sort
+      requests = original.fetch('volume').index_by { |row| row.fetch('bucket') }
+      buckets = (requests.keys + journeys.keys).uniq.sort
       volume = buckets.map do |bucket|
-        journeys.fetch(bucket) { { 'bucket' => bucket }.merge(Period::VIEWS.index_with { 0 }) }
+        sources = CloudwatchSnapshotQuery::REQUEST_SOURCES.index_with { 0 }.merge(requests.fetch(bucket, {}))
+        sources.merge(Period::VIEWS.index_with { 0 }).merge(journeys.fetch(bucket) { { 'bucket' => bucket } })
       end
       original.merge('volume' => volume)
     end

@@ -56,7 +56,8 @@ RSpec.describe SearchAnalyticsQueryWorker, type: :worker do
 
   it 'rejects a job for another configured service before collection' do
     allow(SearchAnalytics::DailyQuery).to receive(:call)
-    expect { described_class.new.perform('xi', date.iso8601, 'volume', region, group) }.to raise_error(ArgumentError, /different service/)
+    other_service = TradeTariffBackend.service == 'uk' ? 'xi' : 'uk'
+    expect { described_class.new.perform(other_service, date.iso8601, 'volume', region, group) }.to raise_error(ArgumentError, /different service/)
     expect(SearchAnalytics::DailyQuery).not_to have_received(:call)
   end
 
