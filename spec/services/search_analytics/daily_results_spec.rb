@@ -151,6 +151,28 @@ RSpec.describe SearchAnalytics::DailyResults do
     expect(read('internal', '24h').payload.dig('summary', 'searches')).to eq(0)
   end
 
+  it 'retains a collected request bucket as zero journeys when no frontend start exists' do
+    replace_rows(last_date, 'search_journeys', [])
+    volume = read.payload.dig('trends', 'volume')
+    expect(volume.map { |row| row['bucket'] }).to eq(%w[2026-09-13T00:00:00Z 2026-09-14T00:00:00Z])
+    expect(volume.map { |row| row['internal'] }).to eq([1, 0])
+  end
+
+  it 'retains journey-only buckets without inventing request outcomes' do
+    replace_rows(last_date, 'search_journeys', [{ '@timestamp' => '2026-09-14T09:00:00Z', 'search_type' => 'interactive', 'request_source' => 'frontend', 'journey_keys' => %w[only-started] }])
+    payload = read('internal', '24h').payload
+    expect(payload.dig('trends', 'volume').map { |row| row['bucket'] }).to eq(%w[2026-09-14T08:00:00Z 2026-09-14T09:00:00Z])
+    expect(payload.dig('trends', 'volume').map { |row| row['internal'] }).to eq([0, 1])
+    expect(payload.dig('trends', 'outcomes').size).to eq(1)
+  end
+
+  it 'does not include later calls for the same journey outside the selected dates' do
+    range = SearchAnalytics::DateRange.parse(from: first_date.iso8601, to: first_date.iso8601, now:)
+    payload = read(date_range: range).payload
+    expect(payload.dig('ai_costs', 'summary', 'total_cost_usd')).to eq(0.03)
+    expect(payload.dig('ai_costs', 'operations').first['calls']).to eq(3)
+  end
+
   it 'does not mutate stored hourly rows when rendering a daily range' do
     before = SearchAnalyticsQueryResult.where(name: 'ai_cost_trend').all.map { |row| row.rows.to_a }
     read

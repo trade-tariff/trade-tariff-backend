@@ -11,6 +11,8 @@ module SearchAnalytics
       dates = date_range ? date_range.dates : ((last_date - (period.duration / 1.day).to_i + 1)..last_date).to_a
       service = TradeTariffBackend.service
       definitions = DailyQuery.new(reporting_date: dates.first, region:, log_group_name:, now:).fingerprints
+      # Costs describe activity inside the selected UTC dates, not the lifetime
+      # cost of a journey. Later calls belong to their own reporting dates.
       records = SearchAnalyticsQueryResult.where(service:, reporting_date: dates, name: definitions.keys).all
       compatible = records.select { |row| row.fingerprint == definitions.fetch(row.name) }.group_by(&:reporting_date)
       complete = compatible.select { |_date, rows| rows.map(&:name).sort == definitions.keys.sort }
