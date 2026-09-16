@@ -47,9 +47,11 @@ RSpec.describe SearchAnalytics::DailyQuery do
     expect(SearchAnalyticsQueryResult.where(name: 'volume').select_map(:id)).to eq(ids)
   end
 
-  it 'blocks missing unselected results before submitting queries' do
-    expect { collect(queries: %w[volume]) }.to raise_error(described_class::QueryError, /unselected/)
-    expect(starts).to eq([])
+  it 'collects a selected query independently when other results are still missing' do
+    expect(collect(queries: %w[volume])).to eq('volume' => [])
+    expect(starts.size).to eq(1)
+    expect(SearchAnalyticsQueryResult.select_map(:name)).to eq(%w[volume])
+    expect(collector(queries: %w[volume]).plan.values.tally).to eq('reuse' => 1, 'skip' => 8)
   end
 
   it 'rejects unknown selections and incomplete dates without submissions' do
