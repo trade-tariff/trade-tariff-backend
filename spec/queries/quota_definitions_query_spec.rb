@@ -231,11 +231,11 @@ RSpec.describe QuotaDefinitionsQuery do
 
     context 'when query date is before a later reopening event' do
       let(:attributes) { { 'order_number' => order_number.quota_order_number_id } }
-      let(:query_date) { 36.hours.ago }
+      let(:query_date) { Time.zone.yesterday.in_time_zone + 12.hours }
 
       before do
-        create(:quota_exhaustion_event, quota_definition: definition, occurrence_timestamp: 2.days.ago)
-        create(:quota_reopening_event, quota_definition: definition, occurrence_timestamp: 1.day.ago)
+        create(:quota_exhaustion_event, quota_definition: definition, occurrence_timestamp: query_date - 1.hour)
+        create(:quota_reopening_event, quota_definition: definition, occurrence_timestamp: query_date + 1.hour)
       end
 
       it 'uses the passed date for status event cut-off' do
