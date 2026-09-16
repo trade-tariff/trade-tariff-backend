@@ -5,6 +5,8 @@ RSpec.describe SearchAnalyticsQueryWorker, type: :worker do
   let(:options) { { reporting_date: date, region:, log_group_name: group } }
   let(:client) { Aws::CloudWatchLogs::Client.new(region:, stub_responses: true) }
 
+  def query_count = SearchAnalytics::DailyQuery.new(**options).query_definitions.size
+
   before do
     client.stub_responses(:start_query, query_id: 'query-id')
     client.stub_responses(:get_query_results, status: 'Complete', results: [], statistics: { records_matched: 0.0 })
@@ -35,13 +37,13 @@ RSpec.describe SearchAnalyticsQueryWorker, type: :worker do
     Sidekiq::Testing.fake! do
       described_class.clear
       described_class.enqueue_day(**options)
-      expect(described_class.jobs.size).to eq(8)
-      expect(described_class.jobs.map { |job| job['args'][1] }.uniq.size).to eq(8)
+      expect(described_class.jobs.size).to eq(query_count)
+      expect(described_class.jobs.map { |job| job['args'][1] }.uniq.size).to eq(query_count)
       expect(described_class.jobs.first['args']).to eq([date.iso8601, 'volume', region, group, false, TradeTariffBackend.service])
       described_class.clear
       SearchAnalytics::DailyQuery.new(**options, client:, queries: %w[volume]).call
       described_class.enqueue_day(**options)
-      expect(described_class.jobs.size).to eq(7)
+      expect(described_class.jobs.size).to eq(query_count - 1)
       expect(described_class.jobs.map { |job| job['args'][1] }).not_to include('volume')
       described_class.clear
       described_class.enqueue_day(**options, queries: %w[volume], force: true)

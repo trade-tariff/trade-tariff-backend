@@ -14,18 +14,24 @@ module SearchAnalytics
       # Costs describe activity inside the selected UTC dates, not the lifetime
       # cost of a journey. Later calls belong to their own reporting dates.
       records = SearchAnalyticsQueryResult.where(service:, reporting_date: dates, name: definitions.keys).all
-      compatible = records.select { |row| row.fingerprint == definitions.fetch(row.name) }.group_by(&:reporting_date)
-      complete = compatible.select { |_date, rows| rows.map(&:name).sort == definitions.keys.sort }
+      compatible = records.select { |row| row.fingerprint == definitions.fetch(row.name) }
+      frontend_records, backend_records = compatible.partition { |row| row.name == 'frontend_events' }
+      required = definitions.keys - %w[frontend_events]
+      complete = backend_records.group_by(&:reporting_date).select { |_date, rows| rows.map(&:name).sort == required.sort }
       return if complete.empty?
 
       # Only full compatible days contribute; a failed query is a coverage gap,
       # not a zero value. This path never executes the collector or its cache fetch.
       collected_dates = complete.keys.sort
       rows = complete.values.flatten
-      results = definitions.keys.index_with do |name|
+      results = required.index_with do |name|
         rows.select { |row| row.name == name }.flat_map { |row| row.rows.to_a }
       end
       payload = DailyAggregate.new(period:, results:).payload
+      payload['frontend_events'] = FrontendEvents.call(
+        records: frontend_records.select { |row| collected_dates.include?(row.reporting_date) }, dates:,
+        supported: service == 'uk' && period.view != 'classic'
+      )
       missing = dates - collected_dates
       payload['coverage'] = {
         'from' => dates.first.iso8601,
