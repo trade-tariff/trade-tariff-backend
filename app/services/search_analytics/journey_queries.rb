@@ -20,18 +20,5 @@ module SearchAnalytics
         LIMIT 10000
       SQL
     end
-
-    def cost_summary(cost_filter:)
-      <<~SQL
-        SELECT request_id,
-          SUM(CASE WHEN pricing_known = true AND total_cost_usd IS NOT NULL THEN total_cost_usd ELSE 0 END) AS aggregated_total_cost_usd,
-          SUM(CASE WHEN pricing_known = true AND total_cost_usd IS NOT NULL THEN 1 ELSE 0 END) AS aggregated_priced_calls,
-          SUM(CASE WHEN pricing_known = true AND total_cost_usd IS NOT NULL THEN 0 ELSE 1 END) AS aggregated_unpriced_calls
-        FROM #{@source}
-        WHERE #{@stream} AND request_id IS NOT NULL AND request_id != '' AND (#{cost_filter})
-        GROUP BY request_id
-        LIMIT 10000
-      SQL
-    end
   end
 end

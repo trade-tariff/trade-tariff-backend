@@ -17,7 +17,6 @@ RSpec.describe Api::Admin::SearchAnalyticsController do
       { '@timestamp' => bucket, 'search_type' => 'interactive', 'request_source' => 'frontend', 'journey_keys' => %w[same-journey] },
       { '@timestamp' => bucket, 'search_type' => 'interactive', 'request_source' => 'admin', 'journey_keys' => %w[admin] },
     ]
-    rows['ai_cost_summary'] = [{ 'journey_key' => 'same-journey', 'total_cost_usd' => '0.03', 'priced_calls' => 2, 'unpriced_calls' => 1 }]
     rows['ai_cost_trend'] = [{ '@timestamp' => bucket, 'journey_key' => 'same-journey', 'event_kind' => 'interactive_search', 'total_cost_usd' => '0.03', 'calls' => 3, 'priced_calls' => 2, 'unpriced_calls' => 1 }]
     fingerprints = collector.fingerprints
     rows.each do |name, values|
@@ -74,13 +73,13 @@ RSpec.describe Api::Admin::SearchAnalyticsController do
     Sidekiq::Testing.fake! do
       SearchAnalyticsQueryWorker.clear
       SearchAnalyticsQueryWorker.new.perform
-      expect(SearchAnalyticsQueryWorker.jobs.size).to eq(9)
+      expect(SearchAnalyticsQueryWorker.jobs.size).to eq(8)
       SearchAnalyticsQueryWorker.drain
     end
     request_analytics
     expect(response).to have_http_status(:ok)
     expect(attributes['coverage']).to include('complete' => true, 'collected_days' => 1)
-    expect(SearchAnalyticsQueryResult.count).to eq(9)
+    expect(SearchAnalyticsQueryResult.count).to eq(8)
   end
 
   it 'normalises unknown period and view values' do
@@ -95,14 +94,13 @@ RSpec.describe Api::Admin::SearchAnalyticsController do
     expect(response.parsed_body.dig('errors', 0, 'title')).to eq('Search analytics unavailable')
   end
 
-  it 'reports unavailable rather than returning 500 while forced cost results disagree' do
+  it 'keeps cost totals consistent with a refreshed operation query without a second cost scan' do
     SearchAnalyticsQueryResult.where(name: 'ai_cost_trend').update(rows: Sequel.pg_jsonb([]))
     request_analytics
-    expect(response).to have_http_status(:not_found)
-    create_results(date - 1)
-    request_analytics(period: '7d')
     expect(response).to have_http_status(:ok)
-    expect(attributes['coverage']).to include('collected_days' => 1, 'complete' => false)
+    expect(attributes.dig('ai_costs', 'summary', 'total_cost_usd')).to eq(0)
+    expect(attributes.dig('ai_costs', 'operations')).to eq([])
+    expect(attributes['coverage']).to include('complete' => true)
   end
 
   it 'rejects stale query definitions instead of returning inconsistent data' do

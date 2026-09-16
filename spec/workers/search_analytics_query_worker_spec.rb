@@ -35,13 +35,13 @@ RSpec.describe SearchAnalyticsQueryWorker, type: :worker do
     Sidekiq::Testing.fake! do
       described_class.clear
       described_class.enqueue_day(**options)
-      expect(described_class.jobs.size).to eq(9)
-      expect(described_class.jobs.map { |job| job['args'][1] }.uniq.size).to eq(9)
+      expect(described_class.jobs.size).to eq(8)
+      expect(described_class.jobs.map { |job| job['args'][1] }.uniq.size).to eq(8)
       expect(described_class.jobs.first['args']).to eq([date.iso8601, 'volume', region, group, false, TradeTariffBackend.service])
       described_class.clear
       SearchAnalytics::DailyQuery.new(**options, client:, queries: %w[volume]).call
       described_class.enqueue_day(**options)
-      expect(described_class.jobs.size).to eq(8)
+      expect(described_class.jobs.size).to eq(7)
       expect(described_class.jobs.map { |job| job['args'][1] }).not_to include('volume')
       described_class.clear
       described_class.enqueue_day(**options, queries: %w[volume], force: true)
@@ -57,10 +57,10 @@ RSpec.describe SearchAnalyticsQueryWorker, type: :worker do
   it 'attempts each planned enqueue once before reporting all rejected query names' do
     allow(described_class).to receive(:perform_async).and_return(nil, 'accepted-job', nil)
 
-    expect { described_class.enqueue_day(**options, queries: %w[volume ai_cost_summary ai_cost_trend]) }
+    expect { described_class.enqueue_day(**options, queries: %w[volume latency_histogram ai_cost_trend]) }
       .to raise_error('Could not enqueue search analytics queries: volume, ai_cost_trend')
     expect(described_class).to have_received(:perform_async).exactly(3).times
-    %w[volume ai_cost_summary ai_cost_trend].each do |name|
+    %w[volume latency_histogram ai_cost_trend].each do |name|
       expect(described_class).to have_received(:perform_async).with(date.iso8601, name, region, group, false, TradeTariffBackend.service).once
     end
   end

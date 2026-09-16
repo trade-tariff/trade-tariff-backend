@@ -63,7 +63,6 @@ module SearchAnalytics
       {
         'volume' => volume_query,
         'latency_histogram' => latency_histogram_query,
-        'ai_cost_summary' => JourneyQueries.new(source:, log_stream_filter:).cost_summary(cost_filter: search_ai_cost_filter),
         'ai_cost_trend' => ai_cost_trend_query,
         'classic_selection_trend' => selection_query("search_type = 'classic' AND results_type = 'fuzzy_search'"),
         'internal_selection_trend' => selection_query("(search_type = 'interactive' OR search_type = 'internal') AND results_type IN ('opensearch', 'vector', 'hybrid')"),

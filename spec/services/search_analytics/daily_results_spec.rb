@@ -31,7 +31,6 @@ RSpec.describe SearchAnalytics::DailyResults do
     rows['latency_histogram'] = [{ 'search_type' => 'classic', 'latency_bucket' => SearchAnalytics::LatencyHistogram.bucket(1000), 'observations' => completed + failed }]
     rows['classic_selection_trend'] = [{ '@timestamp' => bucket, 'selected' => selected, 'selectable' => eligible }]
     rows['search_term_improvements'] = [{ 'query' => 'trainers', 'search_type' => 'classic', 'zero_results' => zero }]
-    rows['ai_cost_summary'] = [{ 'journey_key' => 'shared', 'total_cost_usd' => '0.03', 'priced_calls' => '2', 'unpriced_calls' => '1' }]
     rows['ai_cost_trend'] = [{ '@timestamp' => bucket, 'journey_key' => 'shared', 'event_kind' => 'interactive_search', 'total_cost_usd' => '0.03', 'calls' => '3', 'priced_calls' => '2', 'unpriced_calls' => '1' }]
     rows
   end
@@ -121,13 +120,13 @@ RSpec.describe SearchAnalytics::DailyResults do
     expect(payload.dig('summary_statuses', 'p90_latency_ms', 'level')).to eq('neutral')
   end
 
-  it 'excludes a day with inconsistent cost results while other complete days remain readable' do
-    original = SearchAnalyticsQueryResult.where(reporting_date: last_date, name: 'ai_cost_trend').first.rows.to_a
+  it 'updates cost totals and operation rows together when one stored cost query is refreshed' do
     replace_rows(last_date, 'ai_cost_trend', [])
-    expect(read.payload['coverage']).to include('collected_days' => 1, 'collected_dates' => [first_date.iso8601])
-    expect(read('internal', '24h')).to be_nil
-    replace_rows(last_date, 'ai_cost_trend', original)
-    expect(read.payload['coverage']).to include('collected_days' => 2)
+    payload = read.payload
+    expect(payload['coverage']).to include('collected_days' => 2)
+    expect(payload.dig('ai_costs', 'summary', 'total_cost_usd')).to eq(0.03)
+    expect(payload.dig('ai_costs', 'operations').first['calls']).to eq(3)
+    expect(read('internal', '24h').payload.dig('ai_costs', 'summary', 'total_cost_usd')).to eq(0)
   end
 
   it 'keeps All and per-view frontend populations distinct' do
