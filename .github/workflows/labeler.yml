@@ -12,4 +12,15 @@ jobs:
       pull-requests: write
 
     steps:
+      - name: Mint trade-tariff-pr-bot token
+        id: app-token
+        uses: actions/create-github-app-token@v3.2.0
+        with:
+          app-id: ${{ secrets.TRADE_TARIFF_PR_BOT_GITHUB_APP_ID }}
+          private-key: ${{ secrets.TRADE_TARIFF_PR_BOT_GITHUB_APP_PRIVATE_KEY }}
+          permission-contents: read
+          permission-pull-requests: write
+
       - uses: actions/labeler@v7
+        with:
+          repo-token: ${{ steps.app-token.outputs.token }}
