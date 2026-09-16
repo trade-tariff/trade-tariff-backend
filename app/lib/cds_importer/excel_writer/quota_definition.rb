@@ -11,17 +11,19 @@ class CdsImporter
         end
 
         def table_span
-          %w[A L]
+          %w[A N]
         end
 
         def column_widths
-          [30, 20, 50, 70, 20, 20, 20, 20, 20, 20, 20, 20]
+          [30, 20, 20, 20, 20, 70, 20, 20, 20, 20, 20, 20, 20, 20]
         end
 
         def heading
           ['Action',
            'Quota order number',
            'Balance updates',
+           'Old Quota Balance',
+           'New Quota Balance',
            'Sample commodities',
            'SID',
            'Critical state',
@@ -43,9 +45,13 @@ class CdsImporter
         quota_definition = grouped['QuotaDefinition'].first
         quota_balance_events = grouped['QuotaBalanceEvent']
 
+        last_event = last_quota_balance_event(quota_balance_events)
+
         ["#{expand_operation(quota_definition)} definition",
          quota_definition.quota_order_number_id,
-         quota_balance_event_string(quota_balance_events),
+         last_event ? format_date_ymd(last_event.occurrence_timestamp) : '',
+         last_event&.old_balance || '',
+         last_event&.new_balance || '',
          comm_code_string(quota_definition.quota_definition_sid),
          quota_definition.quota_definition_sid,
          quota_definition.critical_state,
@@ -59,15 +65,10 @@ class CdsImporter
 
     private
 
-      def quota_balance_event_string(quota_balance_events)
-        if quota_balance_events.blank?
-          ''
-        else
-          quota_balance_events.sort_by!(&:occurrence_timestamp)
-          last_event = quota_balance_events.last
+      def last_quota_balance_event(quota_balance_events)
+        return if quota_balance_events.blank?
 
-          "#{format_date_ymd(last_event.occurrence_timestamp)} - New: #{last_event.new_balance} : Old: #{last_event.old_balance}"
-        end
+        quota_balance_events.max_by(&:occurrence_timestamp)
       end
 
       def comm_code_string(definition_id)
