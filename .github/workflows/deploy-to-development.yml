@@ -87,7 +87,7 @@ jobs:
           CLOUDWATCH_DASHBOARD_QUERIES_FILE: /tmp/search-dashboard-queries.json
         run: bundle exec rake search_analytics:render_dashboard_queries
 
-      - name: Validate CloudWatch queries
+      - name: Validate CloudWatch queries # HMRC-2670 verification - do not merge
         env:
           CLOUDWATCH_DASHBOARD_QUERIES_FILE: /tmp/search-dashboard-queries.json
           CLOUDWATCH_QUERY_VALIDATION_LOG_GROUP: ${{ steps.environment-config.outputs.log-group }}
