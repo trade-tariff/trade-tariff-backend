@@ -32,6 +32,20 @@ The application is a Rails API using Sequel, PostgreSQL, Redis, Sidekiq, and Ope
 - Treat tariff data, measures, quotas, duties, certificates, rules of origin, auth, and sync logic as high-risk areas.
 - If you're adding caching to the backend service NEVER add caching to the worker clusters since this could break production by exhausting job memory
 
+## Pull request writing
+
+Write all pull request titles and descriptions in ASD-STE100 Simplified Technical English.
+
+- Write short sentences. Put one fact or one instruction in each sentence.
+- Use the same word for the same thing. Do not use synonyms.
+- Use active voice.
+- Use simple present tense for facts. Use simple past tense for completed work.
+- Use words that a general technical reader can understand. Keep product names and legal terms when they are necessary.
+- Do not write long noun clusters.
+- Do not write filler, marketing language, or vague claims.
+- Follow the repository pull request template. Fill each required section with concrete facts.
+- Write for the reviewer. Do not write a work diary.
+
 ## PR Risk Labels
 
 When opening a PR, use `.github/pull_request_template.md` as the canonical risk decision tree. Fill in the Risk section and apply exactly one matching GitHub label:
