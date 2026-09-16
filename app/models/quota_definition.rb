@@ -115,9 +115,9 @@ class QuotaDefinition < Sequel::Model
   #
   #       Status (pending a discussion) should be determined by active events and be prioritised in the following order:
   #
+  #       - exhausted
   #       - suspended
   #       - blocked
-  #       - exhausted
   #       - critical
   #       - open events
   #

@@ -207,5 +207,43 @@ RSpec.describe CustomsTariffImporter::Importer do
         )
       end
     end
+
+    context 'when the extract contains no notes at all' do
+      let(:extracted_result) do
+        CustomsTariffImporter::NotesExtractor::Result.new(chapters: {}, sections: {}, general_rules: {})
+      end
+
+      it 'returns a failed result rather than marking the version imported' do
+        expect(results.first.status).to eq(:failed)
+      end
+
+      it 'leaves the version eligible for reimport on the next run' do
+        results
+        expect(CustomsTariffUpdate.imported.where(version: '1.30')).to be_empty
+      end
+
+      it 'records the failure reason against the version' do
+        results
+        expect(CustomsTariffUpdate.first(version: '1.30').import_error).to match(/Empty extract/)
+      end
+
+      it 'creates no chapter notes' do
+        expect { results }.not_to change(CustomsTariffChapterNote, :count)
+      end
+
+      it 'emits a document_import_failed instrumentation event' do
+        results
+        expect(CustomsTariffImporter::Instrumentation).to have_received(:document_import_failed).with(
+          version: '1.30',
+          error_class: 'RuntimeError',
+          error_message: /Empty extract/,
+        )
+      end
+
+      it 'does not emit a document_imported instrumentation event' do
+        results
+        expect(CustomsTariffImporter::Instrumentation).not_to have_received(:document_imported)
+      end
+    end
   end
 end

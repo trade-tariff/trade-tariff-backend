@@ -19,7 +19,11 @@ RSpec.describe EmbeddingService do
 
     before do
       stub_request(:post, "#{api_base_url}/embeddings")
-        .to_return(status: 200, body: response_body.to_json, headers: { 'Content-Type' => 'application/json' })
+        .to_return(
+          status: 200,
+          body: response_body.merge('model' => 'text-embedding-3-small', 'id' => 'embd-body-id').to_json,
+          headers: { 'Content-Type' => 'application/json', 'x-request-id' => 'req_embed_header' },
+        )
     end
 
     it 'returns a single embedding vector' do
@@ -63,6 +67,16 @@ RSpec.describe EmbeddingService do
         input_cost_usd: 0.00000084,
         total_cost_usd: 0.00000084,
         pricing_known: true,
+      )
+    end
+
+    it 'attaches served model and provider request id' do
+      result = service.embed('Live horses', event_kind: 'label_scoring_embedding')
+
+      expect(AiUsage.metadata_from(result).to_h).to include(
+        served_model: 'text-embedding-3-small',
+        openai_request_id: 'req_embed_header',
+        openai_response_id: 'embd-body-id',
       )
     end
   end
@@ -274,7 +288,11 @@ RSpec.describe EmbeddingService do
     context 'when the API returns a non-retryable error' do
       before do
         stub_request(:post, "#{api_base_url}/embeddings")
-          .to_return(status: 400, body: { error: 'Bad Request' }.to_json, headers: { 'Content-Type' => 'application/json' })
+          .to_return(
+            status: 400,
+            body: { error: 'Bad Request', usage: { prompt_tokens: 9, total_tokens: 9 } }.to_json,
+            headers: { 'Content-Type' => 'application/json', 'x-request-id' => 'req_embed_error' },
+          )
       end
 
       it 'raises a ClientError immediately without retrying' do
@@ -286,6 +304,16 @@ RSpec.describe EmbeddingService do
         service.embed_batch(%w[test])
       rescue EmbeddingService::ClientError => e
         expect(e.http_status).to eq(400)
+      end
+
+      it 'attaches provider request metadata on the error' do
+        service.embed_batch(%w[test], event_kind: 'label_scoring_embedding')
+      rescue EmbeddingService::ClientError => e
+        expect(e.ai_usage.to_h).to include(
+          event_kind: 'label_scoring_embedding',
+          input_tokens: 9,
+          openai_request_id: 'req_embed_error',
+        )
       end
     end
 

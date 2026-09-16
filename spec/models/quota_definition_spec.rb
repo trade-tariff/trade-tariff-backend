@@ -58,6 +58,18 @@ RSpec.describe QuotaDefinition do
       it { is_expected.to eq QuotaDefinition::STATUS_CRITICAL }
     end
 
+    context 'when latest event is reopening and there is an active critical event' do
+      subject(:status) do
+        quota_definition = create(:quota_definition)
+        create(:quota_critical_event, :active, quota_definition:, occurrence_timestamp: 2.days.ago)
+        create(:quota_reopening_event, quota_definition:, occurrence_timestamp: 1.day.ago)
+
+        quota_definition.reload.status
+      end
+
+      it { is_expected.to eq QuotaDefinition::STATUS_CRITICAL }
+    end
+
     context 'when there are balance events and an inactive critical event' do
       subject(:status) { build(:quota_definition, :with_quota_balance_and_inactive_critical_events).status }
 
@@ -92,6 +104,37 @@ RSpec.describe QuotaDefinition do
       subject(:status) { create(:quota_definition, :with_expired_quota_blocking_period).reload.status }
 
       it { is_expected.to eq QuotaDefinition::STATUS_OPEN }
+    end
+
+    context 'when an exhaustion event occurs after point_in_time' do
+      subject(:status) do
+        quota_definition = create(:quota_definition, critical_state: 'N')
+        create(:quota_exhaustion_event, quota_definition:, occurrence_timestamp: 1.day.from_now)
+
+        quota_definition.reload.status
+      end
+
+      it 'ignores the future event' do
+        expect(status).to eq(QuotaDefinition::STATUS_OPEN)
+      end
+    end
+
+    context 'when a suspension period starts after point_in_time' do
+      subject(:status) do
+        quota_definition = create(:quota_definition, critical_state: 'N')
+        create(
+          :quota_suspension_period,
+          quota_definition_sid: quota_definition.quota_definition_sid,
+          suspension_start_date: Date.tomorrow,
+          suspension_end_date: 1.year.from_now.to_date,
+        )
+
+        quota_definition.reload.status
+      end
+
+      it 'ignores the future period' do
+        expect(status).to eq(QuotaDefinition::STATUS_OPEN)
+      end
     end
   end
 

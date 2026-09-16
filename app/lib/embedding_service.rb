@@ -68,7 +68,7 @@ class EmbeddingService
             error:,
           )
         },
-      ) { call_embeddings_api(batch) }
+      ) { call_embeddings_api(batch, event_kind:) }
 
       usage = apply_batch_response(response, slice_index, present_indices, embeddings, usage, event_kind, batch.size)
     end
@@ -93,23 +93,43 @@ private
     raise ApiError.new('Embedding response was malformed', ai_usage: usage)
   end
 
-  def usage_metadata(body, event_kind:)
-    usage = body.to_h['usage']
-    return unless usage
+  def usage_metadata(response, event_kind:)
+    body = response.respond_to?(:body) ? response.body : response
+    body = {} unless body.is_a?(Hash)
 
-    usage = usage.to_h.merge('completion_tokens' => 0) unless usage.to_h.key?('completion_tokens')
-    AiUsage.metadata_for(model: MODEL, event_kind:, usage:)
+    extras = {
+      served_model: body['model'],
+      openai_request_id: openai_request_id(response),
+      openai_response_id: body['id'].presence,
+    }.compact
+    usage = body['usage']
+    return if usage.nil? && extras.empty?
+
+    if usage.is_a?(Hash) && !usage['prompt_tokens'].nil? && !usage.key?('completion_tokens')
+      usage = usage.merge('completion_tokens' => 0)
+    end
+    AiUsage.metadata_for(model: MODEL, event_kind:, usage: usage || {}, **extras)
+  end
+
+  def openai_request_id(response)
+    return unless response.respond_to?(:headers)
+
+    response.headers['x-request-id'].presence || response.headers['openai-request-id'].presence
   end
 
   def retry_delay(attempt, _error)
     RETRY_DELAY * (2**(attempt - 1))
   end
 
-  def call_embeddings_api(batch)
+  def call_embeddings_api(batch, event_kind:)
     resp = client.post('embeddings', { model: MODEL, input: batch }.to_json)
 
     if RETRYABLE_HTTP_STATUSES.include?(resp.status)
-      raise ServerError.new("EmbeddingService API error: #{resp.status}", http_status: resp.status)
+      raise ServerError.new(
+        "EmbeddingService API error: #{resp.status}",
+        http_status: resp.status,
+        ai_usage: usage_metadata(resp, event_kind:),
+      )
     end
 
     resp
@@ -117,7 +137,7 @@ private
 
   def apply_batch_response(response, slice_index, present_indices, embeddings, usage, event_kind, expected_size)
     if response.success?
-      usage = AiUsage.merge_metadata(usage, usage_metadata(response.body, event_kind: event_kind))
+      usage = AiUsage.merge_metadata(usage, usage_metadata(response, event_kind: event_kind))
       batch_embeddings = extract_embeddings(response.body, usage: usage, expected_size: expected_size)
       batch_embeddings.each_with_index do |embedding, i|
         original_index = present_indices[slice_index * BATCH_SIZE + i]
@@ -126,7 +146,11 @@ private
 
       usage
     else
-      raise ClientError.new("EmbeddingService API error: #{response.status} - #{response.body}", http_status: response.status)
+      raise ClientError.new(
+        "EmbeddingService API error: #{response.status} - #{response.body}",
+        http_status: response.status,
+        ai_usage: usage_metadata(response, event_kind:),
+      )
     end
   end
 

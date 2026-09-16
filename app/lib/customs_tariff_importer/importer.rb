@@ -33,6 +33,10 @@ module CustomsTariffImporter
 
       extracted = NotesExtractor.new(fetched.version, fetched.content).call
 
+      if empty_extract?(extracted)
+        raise "Empty extract for #{fetched.version}: refusing to import a version with no notes"
+      end
+
       start_time = Process.clock_gettime(Process::CLOCK_MONOTONIC)
 
       CustomsTariffUpdate.db.transaction do
@@ -62,6 +66,14 @@ module CustomsTariffImporter
       )
       record_failure(fetched&.version, e.message)
       Result.new(status: :failed, version: fetched&.version, error: e.message)
+    end
+
+    # A wholly empty extract means the source document parsed to nothing usable. Importing it
+    # would create a CustomsTariffUpdate with no import_error, which CustomsTariffUpdate.imported
+    # treats as a finished version and #import_document then skips forever. Raising routes this
+    # through the rescue below, which records a failed row so the version is retried next run.
+    def empty_extract?(extracted)
+      extracted.chapters.empty? && extracted.sections.empty? && extracted.general_rules.empty?
     end
 
     def create_notes(update, extracted)

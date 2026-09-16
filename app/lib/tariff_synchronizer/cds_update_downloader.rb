@@ -1,5 +1,5 @@
 module TariffSynchronizer
-  class CdsUpdateDownloader
+  class CdsUpdateDownloader < BaseUpdateDownloader
     class AuthorisationError < StandardError; end
     class ListDownloadFailedError < StandardError; end
 
@@ -34,36 +34,19 @@ module TariffSynchronizer
         end
       end
 
-      def sync(initial_date:)
-        applicable_download_date_range(initial_date:).each { |date| new(date).perform }
-      end
-
-      def applicable_download_date_range(initial_date:)
-        download_start_date(initial_date:)..download_end_date
-      end
-
     private
+
+      def update_model
+        CdsUpdate
+      end
 
       def sync_variables_set?
         ENV['HMRC_API_HOST'].present? && ENV['HMRC_CLIENT_ID'].present? && ENV['HMRC_CLIENT_SECRET'].present?
       end
-
-      def download_end_date
-        Time.zone.today
-      end
-
-      def download_start_date(initial_date:)
-        if CdsUpdate.pending_applied_or_failed.count.zero?
-          initial_date
-        else
-          last_download = CdsUpdate.oldest_pending || CdsUpdate.most_recent_applied || CdsUpdate.most_recent_failed
-
-          [last_download.issue_date, DOWNLOAD_FROM.ago.to_date].min
-        end
-      end
     end
 
     def initialize(request_date)
+      super()
       @request_date = request_date
     end
 

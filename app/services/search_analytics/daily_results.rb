@@ -1,0 +1,49 @@
+# frozen_string_literal: true
+
+module SearchAnalytics
+  class DailyResults < Data.define(:service, :period, :view, :bucket_size, :generated_at, :data_through, :payload)
+    def self.call(period:, region:, log_group_name: DailyQuery::SEARCH_LOG_GROUP_NAME, date_range: nil, now: Time.current)
+      if date_range
+        date_range = DateRange.parse(from: date_range.from.iso8601, to: date_range.to.iso8601, now:)
+        period = Period.for_range(date_range:, view: period.view)
+      end
+      last_date = now.utc.to_date - 1
+      dates = date_range ? date_range.dates : ((last_date - (period.duration / 1.day).to_i + 1)..last_date).to_a
+      service = TradeTariffBackend.service
+      definitions = DailyQuery.new(reporting_date: dates.first, region:, log_group_name:, now:).fingerprints
+      # Costs describe activity inside the selected UTC dates, not the lifetime
+      # cost of a journey. Later calls belong to their own reporting dates.
+      records = SearchAnalyticsQueryResult.where(service:, reporting_date: dates, name: definitions.keys).all
+      compatible = records.select { |row| row.fingerprint == definitions.fetch(row.name) }.group_by(&:reporting_date)
+      complete = compatible.select { |_date, rows| rows.map(&:name).sort == definitions.keys.sort }
+      return if complete.empty?
+
+      # Only full compatible days contribute; a failed query is a coverage gap,
+      # not a zero value. This path never executes the collector or its cache fetch.
+      collected_dates = complete.keys.sort
+      rows = complete.values.flatten
+      results = definitions.keys.index_with do |name|
+        rows.select { |row| row.name == name }.flat_map { |row| row.rows.to_a }
+      end
+      payload = DailyAggregate.new(period:, results:).payload
+      missing = dates - collected_dates
+      payload['coverage'] = {
+        'from' => dates.first.iso8601,
+        'to' => dates.last.iso8601,
+        'expected_days' => dates.size,
+        'collected_days' => collected_dates.size,
+        'collected_dates' => collected_dates.map(&:iso8601),
+        'missing_dates' => missing.map(&:iso8601),
+        'complete' => missing.empty?,
+      }
+      payload['summary_statuses']['searches'] = {
+        'level' => 'neutral', 'message' => "#{collected_dates.size} of #{dates.size} complete UTC days collected"
+      }
+      new(
+        service:, period: period.key, view: period.view, bucket_size: period.bucket_size,
+        generated_at: rows.map(&:collected_at).max,
+        data_through: collected_dates.last.to_time(:utc) + 1.day, payload:
+      )
+    end
+  end
+end

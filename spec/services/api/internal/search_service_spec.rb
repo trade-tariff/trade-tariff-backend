@@ -117,6 +117,35 @@ RSpec.describe Api::Internal::SearchService do
         captured
       end
 
+      it 'preserves disabled configuration flags' do
+        disabled_flags = %w[
+          interactive_search_enabled
+          interactive_search_duplicate_question_guard_enabled
+          expand_search_enabled
+          expand_search_when_needed_enabled
+          refine_search_with_answers_enabled
+          search_labels_enabled
+          pos_search_enabled
+        ]
+        disabled_flags.each do |flag|
+          allow(AdminConfiguration).to receive(:enabled?).with(flag).and_return(false)
+        end
+
+        configuration = captured_diagnostics_configuration({})
+
+        expect(configuration).to include(disabled_flags.to_h { |flag| [flag.to_sym, false] })
+      end
+
+      it 'omits blank configuration values' do
+        allow(AdminConfiguration).to receive(:integer_value).with('vector_score_threshold').and_return(nil)
+        allow(AdminConfiguration).to receive(:nested_options_value).with('search_model')
+          .and_return(selected: ' ', sub_values: {})
+
+        configuration = captured_diagnostics_configuration({})
+
+        expect(configuration).not_to include(:vector_score_threshold, :search_model, :filter_prefixes)
+      end
+
       it 'reflects a search_non_declarables override of false even though AdminConfiguration reports true, proving || is not used' do
         allow(AdminConfiguration).to receive(:enabled?).with('search_non_declarables').and_return(true)
 

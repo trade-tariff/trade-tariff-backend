@@ -125,6 +125,7 @@ RSpec.describe ProductionEnvironmentConfig do
             'q' => 'tea',
           },
           user_agent: 'rspec',
+          request_source: 'frontend',
         },
       )
 
@@ -135,6 +136,7 @@ RSpec.describe ProductionEnvironmentConfig do
         remote_ip: '203.0.113.5',
         auth_type: 'token',
         client_id: 'client',
+        request_source: 'frontend',
         accept: 'application/json',
         exception_class: 'StandardError',
         exception_message: 'failure',

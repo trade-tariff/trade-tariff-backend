@@ -19,6 +19,9 @@ RSpec.describe 'Quotas', swagger_doc: 'v2/swagger.json', type: :request do
     parameter name: :day, in: :query, required: false,
               schema: { type: :integer },
               description: 'Filter by validity day (1–31)'
+    parameter name: :status, in: :query, required: false,
+              schema: { type: :string, enum: QuotaDefinitionsQuery::STATUS_VALUES },
+              description: 'Filter by quota status (e.g. "open", "exhausted", "blocked", "suspended", etc.)'
     parameter name: :page, in: :query, required: false,
               schema: { type: :integer },
               description: 'Page number (default: 1)'
@@ -92,10 +95,18 @@ RSpec.describe 'Quotas', swagger_doc: 'v2/swagger.json', type: :request do
         run_test!
       end
 
-      response '400', 'invalid order_number — must be exactly 6 digits' do
-        let(:order_number) { 'invalid' }
+      response '400', 'invalid request — order_number must be exactly 6 digits, and status must be one of the allowed values' do
+        context 'when order_number is not exactly 6 digits' do
+          let(:order_number) { 'invalid' }
 
-        run_test!
+          run_test!
+        end
+
+        context 'when status is not one of the allowed values' do
+          let(:status) { 'invalid_status' }
+
+          run_test!
+        end
       end
     end
   end

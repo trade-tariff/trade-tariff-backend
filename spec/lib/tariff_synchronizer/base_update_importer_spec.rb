@@ -4,7 +4,7 @@ RSpec.describe TariffSynchronizer::BaseUpdateImporter do
       let(:cds_update) { create(:cds_update, :pending) }
 
       before do
-        allow(cds_update).to receive(:import!).and_raise(StandardError, 'batch insert failed')
+        allow(TariffSynchronizer::CdsUpdateImporter).to receive(:perform).and_raise(StandardError, 'batch insert failed')
         allow(TariffSynchronizer::TariffLogger).to receive(:failed_update)
       end
 

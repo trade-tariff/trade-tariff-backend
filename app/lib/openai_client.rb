@@ -83,7 +83,7 @@ class OpenaiClient
       raise_deadline!(timeout:, started_at:) if deadline && remaining <= 0
 
       response = post(body, remaining:)
-      raise_on_error!(response, model:, event_kind:) unless response.success?
+      raise_on_error!(response, model:, event_kind:, reasoning_effort:) unless response.success?
 
       json = response.body.dig('choices', 0, 'message', 'content') || ''
       result = begin
@@ -93,7 +93,7 @@ class OpenaiClient
       end
 
       raise_deadline!(timeout:, started_at:) if deadline && remaining_time(deadline) <= 0
-      AiUsage.attach_metadata(result, usage_metadata(response.body, model:, event_kind:))
+      AiUsage.attach_metadata(result, usage_metadata(response, model:, event_kind:, reasoning_effort:))
     end
   end
 
@@ -118,8 +118,8 @@ private
     [timeout * scale, open_timeout * scale]
   end
 
-  def raise_on_error!(response, model: nil, event_kind: nil)
-    ai_usage = usage_metadata(response.body, model:, event_kind:)
+  def raise_on_error!(response, model: nil, event_kind: nil, reasoning_effort: nil)
+    ai_usage = usage_metadata(response, model:, event_kind:, reasoning_effort:)
 
     if response.status == 429
       retry_after = response.headers['Retry-After'] || response.headers['retry-after']
@@ -129,15 +129,37 @@ private
     raise ApiError.new(status: response.status, body: response.body, ai_usage:)
   end
 
-  def usage_metadata(body, model:, event_kind:)
-    return unless body.respond_to?(:to_h)
+  def usage_metadata(response, model:, event_kind:, reasoning_effort: nil)
+    body = response_body_hash(response)
 
-    body = body.to_h
+    extras = response_metadata(body, response, reasoning_effort:)
     error = body['error']
     usage = body['usage'] || (error['usage'] if error.is_a?(Hash))
-    return unless usage
+    return if usage.nil? && extras.empty?
 
-    AiUsage.metadata_for(model:, event_kind:, usage:)
+    AiUsage.metadata_for(model:, event_kind:, usage: usage || {}, **extras)
+  end
+
+  def response_body_hash(response)
+    body = response.respond_to?(:body) ? response.body : response
+    body.is_a?(Hash) ? body : {}
+  end
+
+  def response_metadata(body, response, reasoning_effort:)
+    {
+      finish_reason: body.dig('choices', 0, 'finish_reason'),
+      served_model: body['model'],
+      service_tier: body['service_tier'],
+      reasoning_effort: reasoning_effort.presence,
+      openai_request_id: openai_request_id(response),
+      openai_response_id: body['id'].presence,
+    }.compact
+  end
+
+  def openai_request_id(response)
+    return unless response.respond_to?(:headers)
+
+    response.headers['x-request-id'].presence || response.headers['openai-request-id'].presence
   end
 
   def raise_deadline_if_elapsed!(deadline:, timeout:, started_at:)
@@ -207,6 +229,9 @@ private
   end
 
   MODEL_CONFIGS = {
+    # GPT-6 (1M context)
+    'gpt-6-astra' => { reasoning_levels: %w[low medium high xhigh max] },
+
     # GPT-5.6 family (1M context)
     'gpt-5.6' => { reasoning_levels: %w[none low medium high xhigh max] },
     'gpt-5.6-terra' => { reasoning_levels: %w[none low medium high xhigh max] },
@@ -217,6 +242,8 @@ private
 
     # GPT-5.4 (1M context)
     'gpt-5.4' => { reasoning_levels: %w[none low medium high xhigh] },
+    'gpt-5.4-mini' => { reasoning_levels: %w[none low medium high xhigh] },
+    'gpt-5.4-nano' => { reasoning_levels: %w[none low medium high xhigh] },
 
     # GPT-5 Series
     'gpt-5.2' => { reasoning_levels: %w[none low medium high] },

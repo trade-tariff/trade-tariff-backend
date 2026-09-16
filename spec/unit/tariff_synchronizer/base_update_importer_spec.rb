@@ -5,34 +5,42 @@ RSpec.describe TariffSynchronizer::BaseUpdateImporter do
     describe '#apply', :truncation do
       before do
         allow(TradeTariffBackend).to receive(:service).and_return(service)
+        allow(TariffSynchronizer::TaricUpdateImporter).to receive(:perform)
       end
 
       it 'calls the import! method to the object' do
-        allow(update).to receive(:import!)
-
         base_update_importer.apply
 
-        expect(update).to have_received(:import!)
+        expect(TariffSynchronizer::TaricUpdateImporter).to have_received(:perform).with(update)
       end
 
       it 'do not call the import! method to the object if is not pending' do
-        allow(update).to receive(:import!)
-
         update.mark_as_failed
 
-        expect(update).not_to have_received(:import!)
-
         base_update_importer.apply
+
+        expect(TariffSynchronizer::TaricUpdateImporter).not_to have_received(:perform).with(update)
       end
 
       it 'marks the record as failed if an error occurs' do
-        allow(update).to receive(:import!).and_raise(Sequel::Rollback)
+        allow(TariffSynchronizer::TaricUpdateImporter).to receive(:perform).and_raise(Sequel::Rollback)
         base_update_importer.apply
 
         expect(update.reload).to be_failed
       end
 
       it 'updates the record with the exception if an error occurs', :aggregate_failures do
+        original_error = StandardError.new('boom')
+        original_error.set_backtrace(["#{backtrace_fragment}42:in `import'"])
+
+        allow(TariffSynchronizer::TaricUpdateImporter).to receive(:perform).and_raise(
+          TariffSynchronizer::Import::Error.new(
+            message: 'TARIC record import failed',
+            source: 'taric',
+            original: original_error,
+          ),
+        )
+
         base_update_importer.apply
 
         expect(update.reload).to be_failed
@@ -42,7 +50,7 @@ RSpec.describe TariffSynchronizer::BaseUpdateImporter do
 
       it 'subscribes to all events' do
         allow(ActiveSupport::Notifications).to receive(:subscribe)
-        allow(update).to receive(:import!).and_return(true)
+        allow(TariffSynchronizer::TaricUpdateImporter).to receive(:perform).and_return(true)
 
         base_update_importer.apply
 
@@ -52,7 +60,18 @@ RSpec.describe TariffSynchronizer::BaseUpdateImporter do
       end
 
       it 'emits instrumentation event and sends an email', :aggregate_failures do
+        original_error = StandardError.new('boom')
+        original_error.set_backtrace(["#{backtrace_fragment}42:in `import'"])
+
+        allow(TariffSynchronizer::TaricUpdateImporter).to receive(:perform).and_raise(
+          TariffSynchronizer::Import::Error.new(
+            message: 'TARIC record import failed',
+            source: 'taric',
+            original: original_error,
+          ),
+        )
         allow(TariffSynchronizer::Instrumentation).to receive(:file_import_failed)
+
         base_update_importer.apply
 
         expect(TariffSynchronizer::Instrumentation).to have_received(:file_import_failed)

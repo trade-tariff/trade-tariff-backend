@@ -227,6 +227,27 @@ RSpec.describe Api::Admin::DescriptionInterceptsController do
       json = JSON.parse(response.body)
       expect(json['errors'].first.dig('source', 'pointer')).to eq('/data/attributes/filter_prefixes')
     end
+
+    it 'returns a single uniqueness error when the term already exists' do
+      create(:description_intercept, term: 'gift')
+
+      expect {
+        post '/uk/admin/description_intercepts.json', params: { data: {
+          type: 'description_intercept',
+          attributes: {
+            term: 'gift',
+            excluded: false,
+            escalate_to_webchat: false,
+            sources: %w[guided_search],
+          },
+        } }, headers: request_headers(format: :json), as: :json
+      }.not_to change(DescriptionIntercept, :count)
+
+      expect(response).to have_http_status(:unprocessable_content)
+      json = JSON.parse(response.body)
+      expect(json['errors'].map { |error| error['title'] }).to eq(['is already used by another description intercept (gift)'])
+      expect(json['errors'].map { |error| error['detail'] }).to eq(['Term is already used by another description intercept (gift)'])
+    end
   end
 
   describe '#update' do

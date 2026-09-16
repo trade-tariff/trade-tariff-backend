@@ -5,7 +5,7 @@ module CustomsTariffImporter
     WORD_NS = { 'w' => 'http://schemas.openxmlformats.org/wordprocessingml/2006/main' }.freeze
 
     SECTION_PATTERN          = /\ASECTION\s+([IVX]+)\z/i
-    CHAPTER_PATTERN          = /\ACHAPTER\s+(\d+)\z/
+    CHAPTER_PATTERN          = /\ACHAPTER\s+(\d+)\z/i
     CHAPTER_NOTES_PATTERN    = /\AChapter\s+[Nn]otes?\z/i
     ADDITIONAL_NOTES_PATTERN = /\AAdditional\s+[Cc]hapter\s+[Nn]otes?\z/i
     ADDITIONAL_SECTION_NOTES_PATTERN = /\AAdditional\s+[Ss]ection\s+[Nn]otes?\z/i
