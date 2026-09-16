@@ -13,10 +13,10 @@ module SearchAnalytics
       definitions = DailyQuery.new(reporting_date: dates.first, region:, log_group_name:, now:).fingerprints
       # Costs describe activity inside the selected UTC dates, not the lifetime
       # cost of a journey. Later calls belong to their own reporting dates.
-      records = SearchAnalyticsQueryResult.where(service:, reporting_date: dates, name: definitions.keys).all
+      records = SearchAnalyticsQueryResult.where(service:, reporting_date: dates, name: definitions.keys - %w[journey_outcomes]).all
       compatible = records.select { |row| row.fingerprint == definitions.fetch(row.name) }
       frontend_records, backend_records = compatible.partition { |row| row.name == 'frontend_events' }
-      required = definitions.keys - %w[frontend_events]
+      required = definitions.keys - %w[frontend_events journey_outcomes]
       complete = backend_records.group_by(&:reporting_date).select { |_date, rows| rows.map(&:name).sort == required.sort }
       return if complete.empty?
 
@@ -28,6 +28,15 @@ module SearchAnalytics
         rows.select { |row| row.name == name }.flat_map { |row| row.rows.to_a }
       end
       payload = DailyAggregate.new(period:, results:).payload
+      outcomes = JourneyOutcomes.call(
+        journeys: JourneyMetrics.new(rows: results.fetch('search_journeys'), period:),
+        records: SearchAnalyticsQueryResult.where(service:, name: 'journey_outcomes', fingerprint: definitions.fetch('journey_outcomes')),
+        dates: collected_dates, buckets: payload.fetch('trends').fetch('volume').map { |row| row.fetch('bucket') }
+      )
+      payload['trends']['outcomes'] = outcomes.fetch('trend')
+      payload['journeys']['outcomes'] = outcomes.fetch('summary')
+      payload['availability']['journey_outcomes'] = outcomes.dig('coverage', 'complete')
+      payload['availability']['journey_outcome_coverage'] = outcomes.fetch('coverage')
       payload['frontend_events'] = FrontendEvents.call(
         records: frontend_records.select { |row| collected_dates.include?(row.reporting_date) }, dates:,
         supported: service == 'uk' && period.view != 'classic'

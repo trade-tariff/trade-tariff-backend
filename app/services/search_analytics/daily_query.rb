@@ -72,6 +72,7 @@ module SearchAnalytics
       }
       # Guided frontend events have no service field and are emitted for UK only.
       definitions['frontend_events'] = FrontendEventsQuery.call(source:) if @service == 'uk'
+      definitions['journey_outcomes'] = JourneyOutcomesQuery.call(source:, log_stream_filter:)
       definitions
     end
 
@@ -82,7 +83,7 @@ module SearchAnalytics
 
     def collect(name, sql)
       @partition_count = 0
-      rows = if name == 'search_journeys'
+      rows = if %w[search_journeys journey_outcomes].include?(name)
                8.times.flat_map do |index|
                  start_at = now - 1.day + index * 3.hours
                  partition(name, sql, start_at, start_at + 3.hours)
@@ -90,7 +91,7 @@ module SearchAnalytics
              else
                partition(name, sql, now - 1.day, now)
              end
-      if name == 'search_journeys'
+      if %w[search_journeys journey_outcomes].include?(name)
         rows.map do |row|
           ids = JSON.parse(row.fetch('request_ids'))
           unless ids.is_a?(Array) && ids.all? { |id| id.is_a?(String) && id.present? } && ids.uniq.size == Integer(row.fetch('journey_count'))
@@ -117,13 +118,18 @@ module SearchAnalytics
 
       rows, matched = execute_window(sql, start_at, end_at)
       complete = rows.size < ROW_LIMIT
-      if %w[search_journeys frontend_events].include?(name)
+      if %w[search_journeys frontend_events journey_outcomes].include?(name)
         raise QueryError, 'Missing journey completeness statistics' if matched.nil?
 
-        count_field = name == 'frontend_events' ? 'event_count' : 'started_events'
+        count_field = name == 'search_journeys' ? 'started_events' : 'event_count'
         complete &&= rows.sum { |row| Integer(row.fetch(count_field)) } == matched
       end
-      return rows if complete
+      complete &&= rows.all? { |row| complete_identifier_set?(row) } if name == 'journey_outcomes'
+      if complete
+        return rows unless name == 'journey_outcomes'
+
+        return rows.map { |row| row.merge('window_start' => start_at.utc.iso8601, 'window_end' => end_at.utc.iso8601) }
+      end
 
       raise QueryError, 'Latency histogram reached its row limit' if name == 'latency_histogram'
       raise QueryError, "#{name} is incomplete within one second" if end_at - start_at <= 1
@@ -131,6 +137,13 @@ module SearchAnalytics
 
       middle = start_at + ((end_at - start_at) / 2).floor
       partition(name, sql, start_at, middle) + partition(name, sql, middle, end_at)
+    end
+
+    def complete_identifier_set?(row)
+      ids = JSON.parse(row.fetch('request_ids'))
+      ids.is_a?(Array) && ids.all? { |id| id.is_a?(String) && id.present? } && ids.uniq.size == Integer(row.fetch('journey_count'))
+    rescue JSON::ParserError, ArgumentError
+      false
     end
 
     def execute_window(sql, start_at, end_at)

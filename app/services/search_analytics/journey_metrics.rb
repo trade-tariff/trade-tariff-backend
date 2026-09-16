@@ -12,6 +12,11 @@ module SearchAnalytics
     end
 
     def count = keys.size
+
+    def keys_by_bucket
+      @rows.group_by { |row| bucket(row.fetch('@timestamp')) }.sort.to_h.transform_values { |rows| keys_for(rows, @period.view) }
+    end
+
     def all_keys = keys_for(@rows, 'all')
 
     # A journey is counted once per displayed bucket. The range headline is

@@ -163,12 +163,12 @@ RSpec.describe SearchAnalytics::DailyResults do
     expect(volume.map { |row| row['unknown'] }).to eq([13, 93])
   end
 
-  it 'retains journey-only buckets without inventing request outcomes' do
+  it 'retains journey-only buckets and reports unobserved outcomes as unknown' do
     replace_rows(last_date, 'search_journeys', [{ '@timestamp' => '2026-09-14T09:00:00Z', 'search_type' => 'interactive', 'request_source' => 'frontend', 'journey_keys' => %w[only-started] }])
     payload = read('internal', '24h').payload
     expect(payload.dig('trends', 'volume').map { |row| row['bucket'] }).to eq(%w[2026-09-14T08:00:00Z 2026-09-14T09:00:00Z])
     expect(payload.dig('trends', 'volume').map { |row| row['internal'] }).to eq([0, 1])
-    expect(payload.dig('trends', 'outcomes').size).to eq(1)
+    expect(payload.dig('trends', 'outcomes').map { |row| row.values_at('completed', 'failed', 'unknown') }).to eq([[0, 0, 0], [0, 0, 1]])
     expect(payload.dig('trends', 'volume').last).to include('frontend' => 0, 'admin' => 0, 'mcp' => 0, 'backend_only' => 0, 'unknown' => 0)
   end
 
