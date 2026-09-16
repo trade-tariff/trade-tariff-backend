@@ -141,7 +141,8 @@ module SearchAnalytics
         metric_scope = false
         "#{log_stream_filter} AND #{bounds}"
       end
-      query_id = client.start_query(query_language: 'SQL', start_time: (now - 1.day).to_i, end_time: now.to_i, query_string: bounded).query_id
+      scan_start, scan_end = sql.include?(request_exclusion_filter) ? [now - 1.day, now] : [start_at, end_at]
+      query_id = client.start_query(query_language: 'SQL', start_time: scan_start.to_i, end_time: scan_end.to_i, query_string: bounded).query_id
       QUERY_MAX_POLLS.times do
         response = client.get_query_results(query_id:)
         return [response.results.map { |row| parsed_row(row) }, response.statistics&.records_matched] if response.status == 'Complete'
