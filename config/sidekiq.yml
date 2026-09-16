@@ -45,7 +45,7 @@
     PopulateSearchSuggestionsWorker:
       cron: "0 18 * * *"
       description: "Populates search suggestions which are used in the frontend"
-    SearchAnalyticsSnapshotWorker:
+    SearchAnalyticsQueryWorker:
       cron: "0 4 * * *"
       queue: within_1_day
       description: "Queues missing daily search analytics queries for yesterday"

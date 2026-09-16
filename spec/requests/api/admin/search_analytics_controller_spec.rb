@@ -73,7 +73,7 @@ RSpec.describe Api::Admin::SearchAnalyticsController do
     allow(SearchAnalyticsQueryWorker).to receive(:enqueue_day).and_call_original
     Sidekiq::Testing.fake! do
       SearchAnalyticsQueryWorker.clear
-      SearchAnalyticsSnapshotWorker.new.perform
+      SearchAnalyticsQueryWorker.new.perform
       expect(SearchAnalyticsQueryWorker.jobs.size).to eq(9)
       SearchAnalyticsQueryWorker.drain
     end
@@ -88,8 +88,7 @@ RSpec.describe Api::Admin::SearchAnalyticsController do
     expect(response.parsed_body.dig('data', 'id')).to eq("#{TradeTariffBackend.service}-24h-all")
   end
 
-  it 'returns not found for an incomplete day without falling back to rolling snapshots' do
-    create(:search_analytics_snapshot)
+  it 'returns not found for an incomplete day' do
     SearchAnalyticsQueryResult.where(name: 'search_journeys').delete
     request_analytics
     expect(response).to have_http_status(:not_found)

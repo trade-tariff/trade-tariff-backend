@@ -48,13 +48,14 @@ RSpec.describe 'config/sidekiq.yml' do
 
     [uk_schedule, xi_schedule].each do |schedule|
       expect(schedule).to include(
-        'SearchAnalyticsSnapshotWorker' => include(
+        'SearchAnalyticsQueryWorker' => include(
           'cron' => '0 4 * * *',
           'queue' => 'within_1_day',
           'description' => 'Queues missing daily search analytics queries for yesterday',
         ),
       )
-      expect(schedule.fetch('SearchAnalyticsSnapshotWorker')).not_to include('enabled' => false)
+      expect(schedule.fetch('SearchAnalyticsQueryWorker')).not_to include('enabled' => false)
+      expect(schedule).not_to have_key('SearchAnalyticsSnapshotWorker')
     end
   end
 end
