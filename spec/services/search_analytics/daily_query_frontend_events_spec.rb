@@ -36,7 +36,7 @@ RSpec.describe SearchAnalytics::DailyQuery do
   it 'does not offer UK-only guided events to XI collection' do
     allow(TradeTariffBackend).to receive(:service).and_return('xi')
     expect { collect }.to raise_error(ArgumentError, /known daily query/)
-    expect(described_class.new(**options.except(:queries)).query_definitions.size).to eq(8)
+    expect(described_class.new(**options.except(:queries)).query_definitions.size).to eq(9)
     expect(starts).to be_empty
   end
 

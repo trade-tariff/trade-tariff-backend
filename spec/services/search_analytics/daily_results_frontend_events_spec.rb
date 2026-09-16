@@ -13,7 +13,7 @@ RSpec.describe SearchAnalytics::DailyResults do
   def definitions(day) = SearchAnalytics::DailyQuery.new(reporting_date: day, **scope).fingerprints
 
   def store_backend(day)
-    definitions(day).except('frontend_events').each { |name, fingerprint| store(day, name, [], fingerprint) }
+    definitions(day).except('frontend_events', 'journey_outcomes').each { |name, fingerprint| store(day, name, [], fingerprint) }
   end
 
   def store(day, name, rows, fingerprint = definitions(day).fetch(name))
