@@ -46,6 +46,7 @@ searches_without_match_or_synonym.csv
 *.sql
 *.sql.gz
 !db/structure.sql
+!app/services/search_analytics/sql/*.sql
 
 # Ignore Green Lanes categorisation data for now
 /data/green_lanes/categories.json
