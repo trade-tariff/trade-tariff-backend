@@ -57,4 +57,26 @@ The original query-result rows are never changed by a rebuild.
 
 This task is database preparation, not a historical CloudWatch backfill. Rebuild
 after restoring or changing source results before relying on the derived data.
-The storage and rebuild layer does not itself schedule work or change API reads.
+The rebuild task does not itself schedule work.
+
+## API reads
+
+`DailyResults` first checks metadata, without loading the identifier or term
+blobs. It uses a generation only when its processing version, query fingerprints
+and source revisions match every complete selected day. Source data and the
+chosen generation are read in one read-only, repeatable-read transaction. MVCC
+keeps that generation visible if another connection replaces it during the request.
+
+The API reconciles multi-day identities in PostgreSQL and returns compact counts.
+It also aggregates and ranks term totals in PostgreSQL before applying the
+per-type limit. The serializer, metric definitions and coverage rules stay the same.
+
+A compatible generation is required for the lower-memory path. An absent or
+outdated generation uses the existing reader, including its higher latency and
+memory cost. Calls inside an existing caller transaction also use that reader,
+because the fast path cannot establish its own snapshot isolation there.
+Rebuild after source changes to restore the fast path.
+
+Fast reads use transaction-local 32 MB `work_mem`. This permits range aggregation
+without changing the shared pool's session defaults. No result cache is added to
+web or worker processes.
