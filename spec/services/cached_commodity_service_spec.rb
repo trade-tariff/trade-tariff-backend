@@ -35,7 +35,8 @@ RSpec.describe CachedCommodityService do
       # MeasureType records must exist before measures because FactoryBot skips
       # the association block when measure_type_id is overridden.
       create(:duty_expression, :with_description, duty_expression_id: '01')
-      create(:measure_type, measure_type_id: '103', trade_movement_code: 0)
+      # Series A/B add the prohibitive role. Pin 103 so semantic_roles stay stable.
+      create(:measure_type, measure_type_id: '103', trade_movement_code: 0, measure_type_series_id: 'C')
       create(:measure_type, measure_type_id: '142', trade_movement_code: 0)
 
       areas = {
