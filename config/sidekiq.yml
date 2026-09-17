@@ -45,6 +45,10 @@
     PopulateSearchSuggestionsWorker:
       cron: "0 18 * * *"
       description: "Populates search suggestions which are used in the frontend"
+    SearchAnalyticsReadModelWorker:
+      cron: "*/15 * * * *"
+      queue: within_1_day
+      description: "Refreshes bootstrapped analytics read models when source revisions change"
     SearchAnalyticsQueryWorker:
       cron: "0 4 * * *"
       queue: within_1_day

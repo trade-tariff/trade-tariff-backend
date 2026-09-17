@@ -42,6 +42,13 @@ RSpec.describe 'config/sidekiq.yml' do
     )
   end
 
+  it 'checks bootstrapped analytics read models every fifteen minutes for both services' do
+    %w[uk xi].each do |service|
+      schedule = sidekiq_schedule(environment: 'production', service:)
+      expect(schedule.fetch('SearchAnalyticsReadModelWorker')).to include('cron' => '*/15 * * * *', 'queue' => 'within_1_day')
+    end
+  end
+
   it 'schedules yesterday collection once daily for each backend service' do
     uk_schedule = sidekiq_schedule(environment: 'production', service: 'uk')
     xi_schedule = sidekiq_schedule(environment: 'production', service: 'xi')

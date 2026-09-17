@@ -57,7 +57,9 @@ The original query-result rows are never changed by a rebuild.
 
 This task is database preparation, not a historical CloudWatch backfill. Rebuild
 after restoring or changing source results before relying on the derived data.
-The rebuild task does not itself schedule work.
+Building the first generation opts that service and region into scheduled
+maintenance. The maintenance worker checks every fifteen minutes and does no
+bulk work before this explicit bootstrap.
 
 ## API reads
 
@@ -75,8 +77,23 @@ A compatible generation is required for the lower-memory path. An absent or
 outdated generation uses the existing reader, including its higher latency and
 memory cost. Calls inside an existing caller transaction also use that reader,
 because the fast path cannot establish its own snapshot isolation there.
-Rebuild after source changes to restore the fast path.
+After source changes, the next successful maintenance run restores the fast path.
+Run an explicit rebuild to avoid waiting for the next scheduled check.
 
 Fast reads use transaction-local 32 MB `work_mem`. This permits range aggregation
 without changing the shared pool's session defaults. No result cache is added to
 web or worker processes.
+
+## Scheduled maintenance
+
+`SearchAnalyticsReadModelWorker` uses `within_1_day` with automatic retries
+disabled. It skips services without a generation. The rebuild service skips
+unchanged source revisions before applying its SQL resource settings. If another
+rebuild holds the advisory lock, the worker waits until its next scheduled check;
+other failures remain visible through normal job reporting.
+
+Maintenance uses the same database role and bounds as the explicit task. Confirm
+that role can set `temp_file_limit` and review shared database capacity before
+bootstrapping in production. A changed generation can require a full rebuild of
+available data in the rolling 366-day window. It does not run CloudWatch queries
+or hold identifier collections in worker memory.
