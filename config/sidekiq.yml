@@ -1,10 +1,12 @@
 :verbose: false
+# SIDEKIQ_CONCURRENCY is the total thread budget. The default capsule uses the
+# remainder after sync and within_1_day capsules are reserved in
+# TradeTariffBackend::SidekiqCapsuleConfig. Keep sync and within_1_day off this
+# list so the default capsule cannot occupy every thread with batch work.
 :concurrency: <%= ENV.fetch('SIDEKIQ_CONCURRENCY', 10) %>
 :queues:
-  - sync
   - default
   - within_1_hour
-  - within_1_day
 :scheduler:
   :schedule:
     #

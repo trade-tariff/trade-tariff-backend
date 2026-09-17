@@ -2,7 +2,7 @@ require 'erb'
 require 'yaml'
 
 RSpec.describe 'config/sidekiq.yml' do
-  def sidekiq_schedule(environment:, service: 'uk')
+  def sidekiq_yaml(environment:, service: 'uk')
     original_environment = ENV.fetch('ENVIRONMENT', nil)
     original_service = ENV.fetch('SERVICE', nil)
     ENV['ENVIRONMENT'] = environment
@@ -10,12 +10,22 @@ RSpec.describe 'config/sidekiq.yml' do
 
     begin
       YAML.safe_load(ERB.new(Rails.root.join('config/sidekiq.yml').read).result, permitted_classes: [Symbol], aliases: true)
-        .fetch(:scheduler)
-        .fetch(:schedule)
     ensure
       ENV['ENVIRONMENT'] = original_environment
       ENV['SERVICE'] = original_service
     end
+  end
+
+  def sidekiq_schedule(environment:, service: 'uk')
+    sidekiq_yaml(environment:, service:)
+      .fetch(:scheduler)
+      .fetch(:schedule)
+  end
+
+  it 'keeps sync and batch queues off the default capsule' do
+    expect(sidekiq_yaml(environment: 'production').fetch(:queues)).to eq(
+      %w[default within_1_hour],
+    )
   end
 
   it 'schedules the tariff knowledge compressed note refresh pipeline in staging' do
