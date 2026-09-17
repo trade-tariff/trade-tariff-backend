@@ -33,7 +33,7 @@ private
     return unless name
 
     @chemicals = Rails.cache.fetch(cache_id, expires_in: cache_expiry) do
-      ChemicalName.where(Sequel.like(:name, "%#{name}%")).map(&:chemical).uniq
+      ChemicalName.where(Sequel.like(:name, "%#{name}%")).eager(:chemical).all.map(&:chemical).uniq
     end
     Rails.cache.delete(cache_id) if @chemicals.blank?
     custom_paginator(@chemicals)
