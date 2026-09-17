@@ -1,5 +1,5 @@
 # Import TARIC or CDS file manually. Usually for initial seed files.
-DummyUpdate = Data.define(:file_path, :issue_date)
+DummyUpdate = Data.define(:file_path, :issue_date, :filename)
 
 namespace 'importer:taric' do
   desc 'Import TARIC file'
@@ -19,9 +19,11 @@ namespace 'importer:cds' do
   desc 'Import CDS file'
   task import: %i[environment class_eager_load] do
     if ENV['TARGET'] && TariffSynchronizer::FileService.file_exists?(ENV['TARGET'])
+      file_path = ENV['TARGET']
+      filename = File.basename(file_path)
       Sequel::Model.subclasses.each(&:unrestrict_primary_key)
       Sequel::Model.plugin :skip_create_refresh
-      dummy_update = DummyUpdate.new(file_path: ENV['TARGET'], issue_date: nil)
+      dummy_update = DummyUpdate.new(file_path:, issue_date: nil, filename:)
 
       CdsImporter.new(dummy_update).import
     else
