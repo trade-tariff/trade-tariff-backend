@@ -2,6 +2,7 @@ require 'sidekiq'
 require 'custom_job_logger'
 require 'sidekiq_death_handler'
 require 'trade_tariff_backend'
+require 'trade_tariff_backend/sidekiq_capsule_config'
 
 Sidekiq.strict_args!
 
