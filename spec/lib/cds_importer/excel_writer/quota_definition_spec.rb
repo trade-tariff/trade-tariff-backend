@@ -40,6 +40,29 @@ RSpec.describe CdsImporter::ExcelWriter::QuotaDefinition do
 
   let(:models) { [quota_definition, first_balance_event, second_balance_event] }
 
+  describe '.heading' do
+    it 'includes old and new balance columns' do
+      expect(described_class.heading).to eq(
+        [
+          'Action',
+          'Quota order number',
+          'Balance updates',
+          'Old balance',
+          'New balance',
+          'Sample commodities',
+          'SID',
+          'Critical state',
+          'Critical threshold',
+          'Initial volume',
+          'Volume',
+          'Maximum precision',
+          'Start date',
+          'End date',
+        ],
+      )
+    end
+  end
+
   describe '#data_row' do
     let!(:measures) do
       create_list(:measure, 5, :with_quota_definition, quota_definition_sid: 111, ordernumber: '123456')
@@ -50,24 +73,51 @@ RSpec.describe CdsImporter::ExcelWriter::QuotaDefinition do
 
       expect(row[0]).to eq('Create a new definition')
       expect(row[1]).to eq('123456')
-      expect(row[4]).to eq(111)
-      expect(row[5]).to eq('Y')
-      expect(row[6]).to eq(50)
-      expect(row[7]).to eq(1000)
-      expect(row[8]).to eq(500)
-      expect(row[9]).to eq(2)
-      expect(row[10]).to eq('01/01/2025')
-      expect(row[11]).to eq('31/12/2025')
+      expect(row[6]).to eq(111)
+      expect(row[7]).to eq('Y')
+      expect(row[8]).to eq(50)
+      expect(row[9]).to eq(1000)
+      expect(row[10]).to eq(500)
+      expect(row[11]).to eq(2)
+      expect(row[12]).to eq('01/01/2025')
+      expect(row[13]).to eq('31/12/2025')
     end
 
-    it 'uses the last balance event string' do
+    it 'uses the last balance event values' do
       row = mapper.data_row
-      expect(row[2]).to match(/2025-05-28 - New: 300 : Old: 400/)
+
+      expect(row[2]).to eq('2025-05-28 - New: 300 : Old: 400')
+      expect(row[3]).to eq(400)
+      expect(row[4]).to eq(300)
     end
 
     it 'joins comm codes into a comma-separated string' do
       row = mapper.data_row
-      expect(row[3]).to eq(measures.map(&:goods_nomenclature_item_id).uniq.sort.join(','))
+      expect(row[5]).to eq(measures.map(&:goods_nomenclature_item_id).uniq.sort.join(','))
+    end
+
+    context 'without quota balance events' do
+      let(:models) { [quota_definition] }
+
+      it 'leaves balance columns empty' do
+        row = mapper.data_row
+
+        expect(row[2]).to eq('')
+        expect(row[3]).to be_nil
+        expect(row[4]).to be_nil
+      end
+    end
+
+    context 'when balance events are out of order' do
+      let(:models) { [quota_definition, second_balance_event, first_balance_event] }
+
+      it 'uses the latest event by occurrence timestamp' do
+        row = mapper.data_row
+
+        expect(row[2]).to eq('2025-05-28 - New: 300 : Old: 400')
+        expect(row[3]).to eq(400)
+        expect(row[4]).to eq(300)
+      end
     end
   end
 end
