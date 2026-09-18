@@ -14,6 +14,7 @@ RSpec.describe 'Search analytics backfill', type: :worker do
 
   before do
     allow(Aws::CloudWatchLogs::Client).to receive(:new).and_raise('Backfill enqueue must not call AWS')
+    allow(SearchAnalytics::MaterializedViews).to receive(:refresh!).and_return(true)
   end
 
   def enqueue(**options) = SearchAnalyticsQueryWorker.enqueue_backfill(**scope, now:, **options)
@@ -41,20 +42,20 @@ RSpec.describe 'Search analytics backfill', type: :worker do
     expect(jobs.first['args'].first).to eq((yesterday - 1).iso8601)
   end
 
-  it 'queues one view refresh when every requested day is already current' do
+  it 'refreshes when every requested day is already current' do
     store_day(yesterday)
     store_day(yesterday - 1)
-    allow(SearchAnalyticsRefreshViewsWorker).to receive(:perform_async).and_return('refresh-job')
+    allow(SearchAnalyticsRefreshViewsWorker).to receive(:perform_async)
     expect(enqueue(days: 2)).to eq([])
-    expect(SearchAnalyticsRefreshViewsWorker).to have_received(:perform_async).with(TradeTariffBackend.service).once
+    expect(SearchAnalytics::MaterializedViews).to have_received(:refresh!).with(wait: true, only_if_populated: true).once
+    expect(SearchAnalyticsRefreshViewsWorker).not_to have_received(:perform_async)
     expect(jobs).to eq([])
   end
 
   it 'does not refresh while a coordinator is queued' do
     store_day(yesterday)
-    allow(SearchAnalyticsRefreshViewsWorker).to receive(:perform_async)
     expect(enqueue(days: 2).size).to eq(1)
-    expect(SearchAnalyticsRefreshViewsWorker).not_to have_received(:perform_async)
+    expect(SearchAnalytics::MaterializedViews).not_to have_received(:refresh!)
     expect(jobs.first['args'].first).to eq((yesterday - 1).iso8601)
   end
 
@@ -65,14 +66,16 @@ RSpec.describe 'Search analytics backfill', type: :worker do
     SearchAnalyticsQueryWorker.new.perform(*coordinator['args'])
     expect(jobs.size).to eq(1)
     expect(jobs.first['args'][1]).to eq('ai_cost_trend')
+    expect(SearchAnalytics::MaterializedViews).not_to have_received(:refresh!)
   end
 
-  it 'does nothing if another process filled the gap before the coordinator runs' do
+  it 'refreshes if another process filled the gap before the coordinator runs' do
     enqueue(days: 1)
     coordinator = jobs.shift
     store_day(yesterday)
     SearchAnalyticsQueryWorker.new.perform(*coordinator['args'])
     expect(jobs).to eq([])
+    expect(SearchAnalytics::MaterializedViews).to have_received(:refresh!).with(wait: true, only_if_populated: true)
   end
 
   it 'queues complete days when force is explicit without deleting the current results' do
@@ -83,6 +86,7 @@ RSpec.describe 'Search analytics backfill', type: :worker do
     SearchAnalyticsQueryWorker.new.perform(*coordinator['args'])
     expect(jobs.size).to eq(SearchAnalytics::DailyQuery.new(reporting_date: yesterday, **scope, now:).query_definitions.size)
     expect(jobs.map { |job| job['args'][4] }).to all(be(true))
+    expect(SearchAnalytics::MaterializedViews).not_to have_received(:refresh!)
   end
 
   it 'queues stale definitions but leaves matching successful groups reusable' do
@@ -92,6 +96,7 @@ RSpec.describe 'Search analytics backfill', type: :worker do
     coordinator = jobs.shift
     SearchAnalyticsQueryWorker.new.perform(*coordinator['args'])
     expect(jobs.map { |job| job['args'][1] }).to eq(%w[volume])
+    expect(SearchAnalytics::MaterializedViews).not_to have_received(:refresh!)
   end
 
   it 'rejects invalid day counts before enqueueing anything' do

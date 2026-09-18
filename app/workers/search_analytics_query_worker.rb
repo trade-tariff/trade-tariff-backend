@@ -25,7 +25,7 @@ class SearchAnalyticsQueryWorker
     end
     raise "Could not enqueue search analytics days: #{rejected.join(', ')}" if rejected.any?
 
-    enqueue_view_refresh if jobs.empty?
+    refresh_views! if jobs.empty?
     jobs
   end
 
@@ -41,22 +41,19 @@ class SearchAnalyticsQueryWorker
     end
     raise "Could not enqueue search analytics queries: #{rejected.join(', ')}" if rejected.any?
 
-    enqueue_refresh_if_complete(reporting_date:, region:, log_group_name:) if jobs.empty?
+    refresh_views_if_complete(reporting_date:, region:, log_group_name:) if jobs.empty?
     jobs
   end
 
-  def self.enqueue_refresh_if_complete(reporting_date:, region:, log_group_name:)
+  def self.refresh_views_if_complete(reporting_date:, region:, log_group_name:)
     plan = SearchAnalytics::DailyQuery.new(reporting_date:, region:, log_group_name:).plan
     return if plan.value?('run')
 
-    enqueue_view_refresh
+    refresh_views!
   end
 
-  def self.enqueue_view_refresh
-    job_id = SearchAnalyticsRefreshViewsWorker.perform_async(TradeTariffBackend.service)
-    raise 'Query results are stored, but the analytics view refresh could not be queued' unless job_id
-
-    job_id
+  def self.refresh_views!
+    SearchAnalytics::MaterializedViews.refresh!(wait: true, only_if_populated: true)
   end
 
   def perform(date = nil, name = nil, region = nil, log_group_name = SearchAnalytics::DailyQuery::SEARCH_LOG_GROUP_NAME, force = false, service = TradeTariffBackend.service)
@@ -82,9 +79,9 @@ class SearchAnalyticsQueryWorker
     if SearchAnalytics::MaterializedViews::SOURCE_NAMES.include?(name)
       # These are the view inputs. An unrelated optional query failing must not
       # leave successfully replaced journey data stale indefinitely.
-      self.class.enqueue_view_refresh
+      self.class.refresh_views!
     else
-      self.class.enqueue_refresh_if_complete(reporting_date:, region:, log_group_name:)
+      self.class.refresh_views_if_complete(reporting_date:, region:, log_group_name:)
     end
     result
   end

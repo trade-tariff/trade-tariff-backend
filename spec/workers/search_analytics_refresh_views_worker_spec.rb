@@ -1,117 +1,48 @@
 RSpec.describe SearchAnalyticsRefreshViewsWorker do
   let(:service) { TradeTariffBackend.service }
 
-  it 'refreshes without waiting and without bootstrapping unpopulated views' do
-    expect(SearchAnalytics::MaterializedViews).to receive(:refresh!).with(wait: false, only_if_populated: true)
-    described_class.new.perform
+  before do
+    allow(SearchAnalyticsQueryWorker).to receive(:refresh_views!).and_return(true)
   end
 
-  it 'does not consult ready? before the helper holds the lock' do
-    allow(SearchAnalytics::MaterializedViews).to receive(:refresh!).with(wait: false, only_if_populated: true)
-    expect(SearchAnalytics::MaterializedViews).not_to receive(:ready?)
+  it 'delegates already-queued jobs to the same synchronous refresh' do
     described_class.new.perform
+    expect(SearchAnalyticsQueryWorker).to have_received(:refresh_views!)
   end
 
-  it 'keeps already-enqueued service-only jobs and delayed followups on the same refresh path' do
-    expect(SearchAnalytics::MaterializedViews).to receive(:refresh!).with(wait: false, only_if_populated: true)
+  it 'keeps already-enqueued service-only jobs on the same refresh path' do
     described_class.new.perform(service)
+    expect(SearchAnalyticsQueryWorker).to have_received(:refresh_views!)
   end
 
   it 'ignores a leftover token argument from an already-enqueued followup' do
-    expect(SearchAnalytics::MaterializedViews).to receive(:refresh!).with(wait: false, only_if_populated: true)
     described_class.new.perform(service, 'old-token')
+    expect(SearchAnalyticsQueryWorker).to have_received(:refresh_views!)
   end
 
-  it 'schedules a delayed followup when the refresh lock is busy' do
-    allow(SearchAnalytics::MaterializedViews).to receive(:refresh!).and_raise(Sequel::AdvisoryLockError)
-    allow(described_class).to receive(:perform_in).and_return('followup-job')
-    described_class.new.perform
-    expect(described_class).to have_received(:perform_in).with(described_class::FOLLOWUP_INTERVAL, service)
-  end
-
-  it 'lets a busy followup schedule a successor without another collection signal' do
-    allow(SearchAnalytics::MaterializedViews).to receive(:refresh!).and_raise(Sequel::AdvisoryLockError)
-    allow(described_class).to receive(:perform_in).and_return('followup-job')
+  it 'uses the same wait and skip flags as collection' do
+    allow(SearchAnalyticsQueryWorker).to receive(:refresh_views!).and_call_original
+    allow(SearchAnalytics::MaterializedViews).to receive(:refresh!).and_return(true)
     described_class.new.perform(service, 'old-token')
-    expect(described_class).to have_received(:perform_in).with(described_class::FOLLOWUP_INTERVAL, service)
+    expect(SearchAnalytics::MaterializedViews).to have_received(:refresh!).with(wait: true, only_if_populated: true)
   end
 
-  it 'does not let an old token or leftover lease suppress a followup' do
-    Sidekiq.redis { |redis| redis.set("search_analytics:refresh_views:followup:#{service}", 'stale-lease', ex: 600) }
-    allow(SearchAnalytics::MaterializedViews).to receive(:refresh!).and_raise(Sequel::AdvisoryLockError)
-    allow(described_class).to receive(:perform_in).and_return('followup-job')
-    described_class.new.perform(service, 'stale-token')
-    expect(described_class).to have_received(:perform_in).with(described_class::FOLLOWUP_INTERVAL, service)
-  ensure
-    Sidekiq.redis { |redis| redis.del("search_analytics:refresh_views:followup:#{service}") }
+  it 'does not schedule a followup when refresh fails' do
+    allow(SearchAnalyticsQueryWorker).to receive(:refresh_views!).and_raise(Sequel::DatabaseError, 'refresh failed')
+    expect(described_class).not_to receive(:perform_in)
+    expect { described_class.new.perform }.to raise_error(Sequel::DatabaseError, /refresh failed/)
+    expect(described_class.sidekiq_options).to include('queue' => :within_1_day, 'retry' => false)
   end
 
-  it 'keeps a successful followup when a concurrent enqueue then returns nil' do
-    allow(SearchAnalytics::MaterializedViews).to receive(:refresh!).and_raise(Sequel::AdvisoryLockError)
-    started = Queue.new
-    release = Queue.new
-    enqueued = []
-    allow(described_class).to receive(:perform_in) do
-      if Thread.current[:refresh_enqueue] == :first
-        started << true
-        release.pop
-        nil
-      else
-        enqueued << 'kept-job'
-        'kept-job'
-      end
-    end
-
-    first = Thread.new do
-      Thread.current[:refresh_enqueue] = :first
-      expect { described_class.new.perform }.to raise_error(/could not be queued/)
-    end
-    Timeout.timeout(5) { started.pop }
-    described_class.new.perform
-    release << true
-    expect(first.join(5)).to eq(first)
-    expect(enqueued).to eq(%w[kept-job])
-    expect(described_class).to have_received(:perform_in).twice
-  end
-
-  it 'keeps a successful followup when a concurrent enqueue then raises' do
-    allow(SearchAnalytics::MaterializedViews).to receive(:refresh!).and_raise(Sequel::AdvisoryLockError)
-    started = Queue.new
-    release = Queue.new
-    enqueued = []
-    allow(described_class).to receive(:perform_in) do
-      if Thread.current[:refresh_enqueue] == :first
-        started << true
-        release.pop
-        raise 'enqueue failed'
-      else
-        enqueued << 'kept-job'
-        'kept-job'
-      end
-    end
-
-    first = Thread.new do
-      Thread.current[:refresh_enqueue] = :first
-      expect { described_class.new.perform }.to raise_error(RuntimeError, 'enqueue failed')
-    end
-    Timeout.timeout(5) { started.pop }
-    described_class.new.perform
-    release << true
-    expect(first.join(5)).to eq(first)
-    expect(enqueued).to eq(%w[kept-job])
-    expect(described_class).to have_received(:perform_in).twice
+  it 'does not schedule a followup when the helper lock is busy' do
+    allow(SearchAnalyticsQueryWorker).to receive(:refresh_views!).and_raise(Sequel::AdvisoryLockError)
+    expect(described_class).not_to receive(:perform_in)
+    expect { described_class.new.perform(service, 'old-token') }.to raise_error(Sequel::AdvisoryLockError)
   end
 
   it 'rejects another service before touching any view' do
     other = service == 'uk' ? 'xi' : 'uk'
-    expect(SearchAnalytics::MaterializedViews).not_to receive(:refresh!)
+    expect(SearchAnalyticsQueryWorker).not_to receive(:refresh_views!)
     expect { described_class.new.perform(other) }.to raise_error(ArgumentError, /different service/)
-  end
-
-  it 'reports database errors without an automatic retry or followup' do
-    allow(SearchAnalytics::MaterializedViews).to receive(:refresh!).and_raise(Sequel::DatabaseError, 'refresh failed')
-    expect(described_class).not_to receive(:perform_in)
-    expect { described_class.new.perform }.to raise_error(Sequel::DatabaseError, /refresh failed/)
-    expect(described_class.sidekiq_options).to include('queue' => :within_1_day, 'retry' => false)
   end
 end

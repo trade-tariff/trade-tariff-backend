@@ -49,28 +49,35 @@ bootstrap also enables completion-triggered maintenance for this service.
 
 ## Collection completion
 
-After bootstrap, successful `search_journeys` and `journey_outcomes` jobs enqueue
-`SearchAnalyticsRefreshViewsWorker`. Unrelated optional-query failures must not
-leave these updated inputs stale indefinitely. Completed daily collection and
-already-current backfill requests can also enqueue a refresh. These signals do
-not submit more CloudWatch queries.
+After bootstrap, successful `search_journeys` and `journey_outcomes` jobs refresh
+the analytics views in the same worker after the source result is stored and the
+collection lane is free. Unrelated optional-query failures must not leave these
+updated inputs stale indefinitely. Completed daily collection and already-current
+backfill requests use the same synchronous refresh. Coordinators that still have
+unfinished query work do not refresh. These signals do not submit more CloudWatch
+queries.
 
-The refresh worker uses `within_1_day`, without automatic retries. It does not
-wait for the refresh lock. If a refresh or bootstrap already holds the lock, the
-job schedules a delayed followup and returns the thread. Each busy signal may
-queue its own followup. The followup rechecks source revisions after the lock is
-free, so a source update committed during an active refresh is not lost. Extra
-followups that find matching revisions do no work. SQL failures do not schedule
-a followup.
+Collection jobs use `within_1_day` without automatic retries. The refresh waits
+for the helper advisory lock, so a source update committed during an active
+refresh is rebuilt when that job obtains the lock. Matching revisions do no work.
+The helper skips unpopulated views after taking the lock, so collection does not
+bootstrap a service that has not adopted the views. Explicit bootstrap remains
+`search_analytics:refresh_views`.
 
-There is no fifteen-minute polling schedule. View population remains explicit:
-the worker asks the helper to skip unpopulated views after taking the lock, so it
-does not bootstrap a service that has not adopted the views. If enqueueing or
-refreshing fails, stored query results remain intact. Use
+This tail-end refresh occupies the collection worker thread and a database
+connection while it waits or rebuilds. It does not isolate refresh work onto a
+separate queue, Redis lease or tariff materialized-view pass. A long refresh
+delays that worker until the lock is free and the rebuild returns.
+
+If the refresh fails, stored query results remain intact and reusable. Use
 `search_analytics:refresh_views` after resolving the failure. That rake task
-calls the helper directly and reports success only after the refresh returns. It
-does not enqueue a worker. Collection jobs finishing their enqueue is not proof
-that collection or refresh finished.
+calls the helper directly and reports success only after the refresh returns.
+A coordinator finishing enqueueing is not proof that its query jobs or refresh
+have finished.
+
+Already-queued `SearchAnalyticsRefreshViewsWorker` jobs call the same
+synchronous refresh and accept leftover arguments. They do not schedule
+followups.
 
 ## Consistency and refresh
 
