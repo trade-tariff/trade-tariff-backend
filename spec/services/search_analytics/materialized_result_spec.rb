@@ -56,7 +56,7 @@ RSpec.describe SearchAnalytics::MaterializedResult, :truncation do
   end
 
   def rebuild
-    SearchAnalytics::MaterializedViews.refresh!
+    SearchAnalytics::MaterializedViews.refresh!(force: true)
   end
 
   def arguments(view: 'all', from: first_date, to: first_date + 1)
@@ -86,6 +86,19 @@ RSpec.describe SearchAnalytics::MaterializedResult, :truncation do
 
     it 'preserves partial range coverage without counting missing days as zero' do
       expect_parity(from: first_date - 2)
+    end
+
+    it 'joins costs across midnight only when the frontend start is in the selected range' do
+      SearchAnalyticsQueryResult.where(reporting_date: first_date + 1, name: 'search_journeys').update(rows: Sequel.pg_jsonb([]))
+      rebuild
+      args = arguments
+      expect(described_class.call(**args).value.payload.dig('ai_costs', 'summary', 'total_cost_usd')).to eq(
+        SearchAnalytics::DailyResults.legacy_call(**args).payload.dig('ai_costs', 'summary', 'total_cost_usd'),
+      )
+      single = arguments(view: 'internal', from: first_date + 1, to: first_date + 1)
+      expect(described_class.call(**single).value.payload.dig('ai_costs', 'summary', 'total_cost_usd')).to eq(
+        SearchAnalytics::DailyResults.legacy_call(**single).payload.dig('ai_costs', 'summary', 'total_cost_usd'),
+      )
     end
 
     it 'ignores changes outside the selected dates' do
