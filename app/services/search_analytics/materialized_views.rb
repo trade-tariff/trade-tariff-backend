@@ -4,12 +4,13 @@ module SearchAnalytics
   class MaterializedViews
     VERSION = 1
     SOURCE_NAMES = %w[search_journeys journey_outcomes].freeze
-    MATVIEWS = %w[
-      search_analytics_daily_journeys
-      search_analytics_repeated_journeys
-      search_analytics_journey_rollup_totals
-      search_analytics_source_revisions
+    MODELS = [
+      DailyJourney,
+      RepeatedJourney,
+      JourneyRollupTotal,
+      SourceRevision,
     ].freeze
+    MATVIEWS = MODELS.map { |model| model.table_name.to_s }.freeze
     LOCK_NAMESPACE = 'search_analytics_materialized_views'
 
     def self.ready? = new.ready?
@@ -23,8 +24,8 @@ module SearchAnalytics
     def compatible?(records:, definitions:, dates:, service:)
       return false unless ready?
 
-      snapshot = source_revisions_dataset.where(service:).all
-      return false if snapshot.any? { |row| row.fetch(:definition_version) != VERSION }
+      snapshot = SourceRevision.where(service:).all
+      return false if snapshot.any? { |row| row[:definition_version] != VERSION }
 
       current = lambda { |row|
         dates.include?(reporting_date(row)) && row[:fingerprint] == definitions[source_name(row)]
@@ -75,7 +76,7 @@ module SearchAnalytics
     end
 
     def live_source_metadata
-      db[:search_analytics_query_results]
+      SearchAnalyticsQueryResult
         .where(name: SOURCE_NAMES)
         .select(:id, :service, :reporting_date, :name, :fingerprint, :collected_at)
         .order(:service, :reporting_date, :name, :id)
@@ -84,15 +85,11 @@ module SearchAnalytics
     end
 
     def snapshot_source_metadata
-      source_revisions_dataset
+      SourceRevision
         .select(:id, :service, :reporting_date, :name, :fingerprint, :collected_at, :definition_version)
         .order(:service, :reporting_date, :name, :id)
         .all
         .map { |row| source_identity(row, row[:definition_version]) }
-    end
-
-    def source_revisions_dataset
-      db[:search_analytics_source_revisions]
     end
 
     def source_identity(row, version = row[:definition_version])
@@ -112,10 +109,7 @@ module SearchAnalytics
     def collected_at(row) = row[:collected_at].utc.iso8601(6)
 
     def refresh_matviews(concurrently:)
-      keyword = concurrently ? ' CONCURRENTLY' : ''
-      MATVIEWS.each do |name|
-        db.run("REFRESH MATERIALIZED VIEW#{keyword} #{name}")
-      end
+      MODELS.each { |model| model.refresh!(concurrently:) }
     end
 
     def apply_local_settings
@@ -129,6 +123,6 @@ module SearchAnalytics
       Digest::SHA256.digest([LOCK_NAMESPACE, db.get(Sequel.function(:current_schema))].to_json).unpack1('q>')
     end
 
-    def db = SearchAnalyticsQueryResult.db
+    def db = DailyJourney.db
   end
 end
