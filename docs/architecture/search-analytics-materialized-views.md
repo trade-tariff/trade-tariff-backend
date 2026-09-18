@@ -55,15 +55,17 @@ leave these updated inputs stale indefinitely. Completed daily collection and
 already-current backfill requests can also enqueue a refresh. These signals do
 not submit more CloudWatch queries.
 
-The refresh worker uses `within_1_day`, without automatic retries. It waits for
-the refresh lock, then rechecks freshness before doing work. That prevents a
-source update arriving during an active refresh from being lost; duplicate
-signals normally become no-ops. Waiting refresh jobs can occupy worker threads
-and database connections, so queue priority is not resource isolation.
+The refresh worker uses `within_1_day`, without automatic retries. It does not
+wait for the refresh lock. If a refresh or bootstrap already holds the lock, one
+delayed followup is scheduled and further busy signals share that followup. The
+followup rechecks freshness after the lock is free, so a source update committed
+during an active refresh is not lost. Duplicate signals normally become no-ops.
+SQL failures do not schedule a followup.
 
 There is no fifteen-minute polling schedule. View population remains explicit:
-background jobs skip unpopulated views. If enqueueing or refreshing fails, stored
-query results remain intact. Use `search_analytics:refresh_views` after resolving
+the worker asks the helper to skip unpopulated views after taking the lock, so it
+does not bootstrap a service that has not adopted the views. If enqueueing or
+refreshing fails, stored query results remain intact. Use `search_analytics:refresh_views` after resolving
 the failure. The rake command finishing its enqueue is not proof that collection
 or refresh finished.
 

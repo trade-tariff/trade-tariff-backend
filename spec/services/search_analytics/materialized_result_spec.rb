@@ -117,6 +117,19 @@ RSpec.describe SearchAnalytics::MaterializedResult, :truncation do
       expect_parity(to: first_date)
     end
 
+    it 'sums daily term counts across search types the same way as the existing reader' do
+      SearchAnalyticsQueryResult.where(name: 'search_term_improvements').each do |row|
+        rows = [
+          { 'query' => 'shared-term', 'search_type' => 'classic', 'zero_results' => '10' },
+          { 'query' => 'shared-term', 'search_type' => 'interactive', 'zero_results' => '3' },
+        ]
+        row.update(rows: Sequel.pg_jsonb(rows), collected_at: now + 1)
+      end
+      expect_parity(view: 'all')
+      terms = described_class.call(**arguments(view: 'all')).value.payload.fetch('improvement_terms')
+      expect(terms).to include(hash_including('query' => 'shared-term', 'zero_results' => 26))
+    end
+
     it 'ranks complete range totals before applying each term-type limit' do
       rows = Array.new(150) { |index| { 'query' => sprintf('term-%03d', index), 'search_type' => 'classic', 'zero_results' => (index % 5).to_s } }
       rows += [
