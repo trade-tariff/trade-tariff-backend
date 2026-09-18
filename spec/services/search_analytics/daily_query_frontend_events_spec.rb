@@ -25,7 +25,7 @@ RSpec.describe SearchAnalytics::DailyQuery do
     expect(sql).to include('ecs/frontend/', "event = 'guided_search.journey'", 'schema_version = 1', '2026-09-14 00:00:00', '2026-09-15 00:00:00')
     expect(sql).not_to include('backend-uk/', 'worker-uk/', 'search_degraded')
     expect(sql).to include("GET_JSON_OBJECT(REGEXP_EXTRACT(`@message`, '([{].*[}])', 1), '$.request_id')", "'$.schema_version'", "'$.browser_session_id'", "'$.result_rank'", "'$.confidence'")
-    expect(sql).to include('result_rank, confidence')
+    expect(sql).to include("GROUP BY request_id, DATE_TRUNC('HOUR', `@timestamp`), outcome, COALESCE(destination, ''), result_rank, confidence")
   end
 
   it 'hashes browser session identifiers before storing them' do
