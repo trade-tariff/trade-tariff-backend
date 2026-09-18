@@ -1,5 +1,5 @@
 FactoryBot.define do
-  sequence(:quota_order_number_id) { |n| "09#{(5000 + n).to_s}" }
+  sequence(:quota_order_number_id) { |n| "09#{5000 + n}" }
 
   factory :quota_definition do
     quota_definition_sid            { generate(:quota_order_number_sid) }
