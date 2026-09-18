@@ -43,18 +43,18 @@ module SearchAnalytics
     end
 
     def terms
-      query = row_text(:j, 'query')
-      search_type = row_text(:j, 'search_type')
-      zero_text = row_text(:j, 'zero_results')
+      query = row_text(:term_row, 'query')
+      search_type = row_text(:term_row, 'search_type')
+      zero_text = row_text(:term_row, 'zero_results')
       types = SearchAnalytics::CloudwatchSnapshotQuery::VIEW_SEARCH_TYPES[@period.view]
-      totals = json_elements(:j)
-        .where(Sequel[:r][:service] => @service, Sequel[:r][:reporting_date] => @dates, Sequel[:r][:name] => %w[item_id_improvements search_term_improvements])
+      totals = json_elements(:term_row)
+        .where(Sequel[:query_result][:service] => @service, Sequel[:query_result][:reporting_date] => @dates, Sequel[:query_result][:name] => %w[item_id_improvements search_term_improvements])
         .exclude(query => nil)
         .exclude(query =~ /^\s*$/)
       totals = totals.where(search_type => types) if types
       totals = totals.select(
         query.as(:query),
-        Sequel.case([[Sequel[:r][:name] =~ 'item_id_improvements', 'item_ids']], 'search_terms').as(:term_type),
+        Sequel.case([[Sequel[:query_result][:name] =~ 'item_id_improvements', 'item_ids']], 'search_terms').as(:term_type),
         Sequel.function(:sum, Sequel.case([[zero_text =~ NUMERIC, Sequel.function(:trunc, Sequel.cast(zero_text, 'double precision')).cast(:bigint)]], 0)).cast(:bigint).as(:zero_results),
       ).group(:query, :term_type)
 
@@ -79,16 +79,16 @@ module SearchAnalytics
       return {} if @costs.empty?
 
       hours = VIEW_HOURS.fetch(@period.view)
-      key = row_text(:c, 'journey_key')
-      json_elements(:c)
+      key = row_text(:cost_row, 'journey_key')
+      json_elements(:cost_row)
         .join_table(:inner, DailyJourney.table_name, {
-          Sequel[:j][:service] => Sequel[:r][:service],
-          Sequel[:j][:journey_key] => Sequel.function(:decode, key, 'hex'),
-        }, table_alias: :j)
-        .where(Sequel[:r][:service] => @service, Sequel[:r][:reporting_date] => @dates, Sequel[:j][:reporting_date] => @dates, Sequel[:r][:name] => 'ai_cost_trend', Sequel[:r][:fingerprint] => @cost_fingerprint)
+          Sequel[:journey][:service] => Sequel[:query_result][:service],
+          Sequel[:journey][:journey_key] => Sequel.function(:decode, key, 'hex'),
+        }, table_alias: :journey)
+        .where(Sequel[:query_result][:service] => @service, Sequel[:query_result][:reporting_date] => @dates, Sequel[:journey][:reporting_date] => @dates, Sequel[:query_result][:name] => 'ai_cost_trend', Sequel[:query_result][:fingerprint] => @cost_fingerprint)
         .exclude(key => nil)
-        .where { Sequel[:j][hours] > 0 }
-        .select(Sequel.function(:encode, Sequel[:j][:journey_key], 'hex').as(:key))
+        .where { Sequel[:journey][hours] > 0 }
+        .select(Sequel.function(:encode, Sequel[:journey][:journey_key], 'hex').as(:key))
         .distinct
         .from_self(alias: :matched)
         .select_map(:key)
@@ -130,18 +130,18 @@ module SearchAnalytics
 
     def multi_summary
       db[:classified]
-        .select(Sequel[:v][:view], Sequel.cast(nil, :timestamp).as(:bucket), *count_columns(Sequel[:classified][:flags]))
-        .join_table(:inner, seen_values.lateral, { Sequel[:v][:seen] => true }, table_alias: :v)
-        .group(Sequel[:v][:view])
+        .select(Sequel[:origin][:view], Sequel.cast(nil, :timestamp).as(:bucket), *count_columns(Sequel[:classified][:flags]))
+        .join_table(:inner, seen_values.lateral, { Sequel[:origin][:seen] => true }, table_alias: :origin)
+        .group(Sequel[:origin][:view])
     end
 
     def multi_trend
-      dataset = db[:chosen].from_self(alias: :d)
-        .join(Sequel[:classified].as(:c), journey_key: :journey_key)
-        .select(Sequel[:v][:view], trend_bucket.as(:bucket), *count_columns(Sequel[:c][:flags]))
-        .join_table(:inner, hour_values.lateral, true, table_alias: :v)
-      dataset = dataset.cross_join(db.from { Sequel.function(:generate_series, 0, 23).as(:h) }) if @period.single_day?
-      dataset.where(hour_present).group(Sequel[:v][:view], trend_bucket)
+      dataset = db[:chosen].from_self(alias: :repeated)
+        .join(:classified, journey_key: :journey_key)
+        .select(Sequel[:origin][:view], trend_bucket.as(:bucket), *count_columns(Sequel[:classified][:flags]))
+        .join_table(:inner, hour_values.lateral, true, table_alias: :origin)
+      dataset = dataset.cross_join(db.from { Sequel.function(:generate_series, 0, 23).as(:hour_of_day) }) if @period.single_day?
+      dataset.where(hour_present).group(Sequel[:origin][:view], trend_bucket)
     end
 
     def day_totals
@@ -165,21 +165,21 @@ module SearchAnalytics
 
     def hour_values
       VIEW_HOURS.map { |view, column|
-        db.select(Sequel.as(view, :view), Sequel[:d][column].as(:hours))
+        db.select(Sequel.as(view, :view), Sequel[:repeated][column].as(:hours))
       }.reduce { |left, right| left.union(right, all: true, from_self: false) }
     end
 
     def trend_bucket
-      date = Sequel.cast(Sequel[:d][:reporting_date], :timestamp)
+      date = Sequel.cast(Sequel[:repeated][:reporting_date], :timestamp)
       return date unless @period.single_day?
 
-      date + Sequel.lit('make_interval(hours => h)')
+      date + Sequel.lit('make_interval(hours => hour_of_day)')
     end
 
     def hour_present
-      return Sequel[:v][:hours] > 0 unless @period.single_day?
+      return Sequel[:origin][:hours] > 0 unless @period.single_day?
 
-      Sequel.lit('(v.hours & (CAST(1 AS bigint) << h)) > 0')
+      Sequel.lit('(origin.hours & (CAST(1 AS bigint) << hour_of_day)) > 0')
     end
 
     def status_case
@@ -216,18 +216,18 @@ module SearchAnalytics
       end
     end
 
-    def json_elements(alias_name)
-      db.from(Sequel[SearchAnalyticsQueryResult.table_name].as(:r)).join_table(
+    def json_elements(row_alias)
+      db.from(Sequel[SearchAnalyticsQueryResult.table_name].as(:query_result)).join_table(
         :cross,
-        Sequel.function(:jsonb_array_elements, Sequel[:r][:rows]).as(alias_name, [:row]),
+        Sequel.function(:jsonb_array_elements, Sequel[:query_result][:rows]).as(row_alias, [:row]),
         nil,
-        table_alias: alias_name,
+        table_alias: row_alias,
         lateral: true,
       )
     end
 
-    def row_text(alias_name, key)
-      Sequel.function(:jsonb_extract_path_text, Sequel[alias_name][:row], key)
+    def row_text(row_alias, key)
+      Sequel.function(:jsonb_extract_path_text, Sequel[row_alias][:row], key)
     end
 
     def collate_c(column)

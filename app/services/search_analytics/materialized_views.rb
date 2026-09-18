@@ -61,12 +61,12 @@ module SearchAnalytics
     def populated?
       names = MATVIEWS.map { |name| db.literal(name) }.join(', ')
       rows = db.fetch(<<~SQL).all
-        SELECT c.relname, c.relispopulated
-        FROM pg_class c
-        JOIN pg_namespace n ON n.oid = c.relnamespace
-        WHERE n.nspname = current_schema()
-          AND c.relkind = 'm'
-          AND c.relname IN (#{names})
+        SELECT matview.relname, matview.relispopulated
+        FROM pg_class matview
+        JOIN pg_namespace namespace ON namespace.oid = matview.relnamespace
+        WHERE namespace.nspname = current_schema()
+          AND matview.relkind = 'm'
+          AND matview.relname IN (#{names})
       SQL
       rows.size == MATVIEWS.size && rows.all? { |row| row.fetch(:relispopulated) }
     end
