@@ -27,7 +27,7 @@ RSpec.describe SearchAnalytics::MaterializedResult, :truncation do
     end
     groups['journey_outcomes'] = [
       outcome(date, [key("classic-#{date}"), key("classification-#{date}"), key("admin-#{date}")], 'completed', 'selected' => '1', 'total_questions' => '0'),
-      outcome(date, [key('shared')], date == first_date ? 'failed' : 'completed', 'zero_result' => '1', 'total_questions' => '1'),
+      outcome(date, [key('shared')], date == first_date ? 'failed' : 'completed', 'zero_result' => '1', 'total_questions' => date == first_date ? '1' : '2'),
       outcome(date, [key("question-#{date}")], 'none', 'questions_seen' => '1', 'total_questions' => '3'),
     ]
     groups['ai_cost_trend'] = [key('shared'), key("admin-#{date}")].map do |id|
