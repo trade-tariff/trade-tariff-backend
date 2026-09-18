@@ -70,6 +70,7 @@ RSpec.describe Api::Admin::SearchAnalyticsController do
     client.stub_responses(:get_query_results, status: 'Complete', results: [], statistics: { records_matched: 0.0 })
     allow(Aws::CloudWatchLogs::Client).to receive(:new).and_return(client)
     allow(SearchAnalyticsQueryWorker).to receive(:enqueue_day).and_call_original
+    allow(SearchAnalytics::MaterializedViews).to receive(:refresh!).and_return(true)
     Sidekiq::Testing.fake! do
       SearchAnalyticsQueryWorker.clear
       SearchAnalyticsQueryWorker.new.perform
