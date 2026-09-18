@@ -43,6 +43,41 @@ RSpec.describe Notifications::DeliveryStatusChecker do
       end
     end
 
+    context 'when slack failure statuses are restricted to technical-failure' do
+      subject(:restricted_checker) do
+        described_class.new(
+          notification_uuid,
+          pipeline: 'my_ott',
+          identifier: '1.30',
+          slack_failure_statuses: [GovukNotifier::TECHNICAL_FAILURE],
+        )
+      end
+
+      it 'alerts Slack for technical-failure' do
+        allow(client).to receive(:get_email_status).and_return('technical-failure')
+        allow(Notifications::Instrumentation).to receive(:delivery_failed)
+        allow(SlackNotifierService).to receive(:call)
+
+        restricted_checker.call
+
+        expect(SlackNotifierService).to have_received(:call).with(
+          'my_ott: notification delivery failed for 1.30 (status: technical-failure) — check logs',
+        )
+      end
+
+      %w[permanent-failure temporary-failure].each do |status|
+        it "does not alert Slack for #{status}" do
+          allow(client).to receive(:get_email_status).and_return(status)
+          allow(Notifications::Instrumentation).to receive(:delivery_failed)
+          allow(SlackNotifierService).to receive(:call)
+
+          restricted_checker.call
+
+          expect(SlackNotifierService).not_to have_received(:call)
+        end
+      end
+    end
+
     it 'rescues a Slack failure and logs it instead of raising' do
       allow(client).to receive(:get_email_status).and_return('permanent-failure')
       allow(SlackNotifierService).to receive(:call).and_raise('slack down')

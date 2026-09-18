@@ -16,10 +16,11 @@ module Notifications
 
     METRIC_NAMESPACE = 'TradeTariff/Notify'.freeze
 
-    def initialize(notification_uuid, pipeline:, identifier:)
+    def initialize(notification_uuid, pipeline:, identifier:, slack_failure_statuses: FAILURE_STATUSES)
       @notification_uuid = notification_uuid
       @pipeline = pipeline
       @identifier = identifier
+      @slack_failure_statuses = slack_failure_statuses.dup.freeze
     end
 
     def call
@@ -29,12 +30,16 @@ module Notifications
       return unless FAILURE_STATUSES.include?(status)
 
       Instrumentation.delivery_failed(pipeline: @pipeline, identifier: @identifier, notification_uuid: @notification_uuid, status:)
-      notify_slack("#{@pipeline}: notification delivery failed for #{@identifier} (status: #{status}) — check logs")
+      notify_slack("#{@pipeline}: notification delivery failed for #{@identifier} (status: #{status}) — check logs") if should_notify_slack?(status)
       put_cloudwatch_metric(status)
       status
     end
 
   private
+
+    def should_notify_slack?(status)
+      @slack_failure_statuses.include?(status)
+    end
 
     def notify_slack(message)
       SlackNotifierService.call(message)

@@ -62,6 +62,7 @@ RSpec.describe GovukNotifierStatusCheckWorker, type: :worker do
       notification_id,
       pipeline: 'my_ott',
       identifier: user.id,
+      slack_failure_statuses: [GovukNotifier::TECHNICAL_FAILURE],
     )
   end
 end
