@@ -1,60 +1,28 @@
 # frozen_string_literal: true
 
 module SearchAnalytics
+  # rubocop:disable Style/NumericPredicate
   class MaterializedProjection
     SERIES = JourneyOutcomes::SERIES
+    VIEW_HOURS = {
+      'all' => :all_hours,
+      'classic' => :classic_hours,
+      'internal' => :internal_hours,
+    }.freeze
+    VIEW_SEEN = {
+      'all' => :all_seen,
+      'classic' => :classic_seen,
+      'internal' => :internal_seen,
+    }.freeze
+    NUMERIC = /^\s*[+-]?(?:[0-9]+(?:\.[0-9]*)?|\.[0-9]+)(?:[eE][+-]?[0-9]+)?\s*$/
 
     def initialize(service:, dates:, period:, costs:, cost_fingerprint:)
-      @db = SearchAnalyticsQueryResult.db
-      @dates = dates.map { |date| @db.literal(date) }.join(',')
-      @service = @db.literal(service)
+      @service = service
+      @dates = dates
       @period = period
       @costs = costs
-      @cost_fingerprint = @db.literal(cost_fingerprint)
-      sums = (%w[journeys] + SERIES).map { |name| "sum(#{name})::bigint AS #{name}" }.join(',')
-      counts = counts_sql('flags')
-      bucket = period.single_day? ? 'd.reporting_date::timestamp + make_interval(hours=>h)' : 'd.reporting_date::timestamp'
-      hours_join = period.single_day? ? 'CROSS JOIN generate_series(0,23) h' : ''
-      seen = period.single_day? ? '(hours & (1::bigint << h))>0' : 'hours>0'
-      sql = <<~SQL
-        WITH chosen AS MATERIALIZED (
-          SELECT * FROM search_analytics_repeated_journeys WHERE service = #{@service} AND reporting_date IN (#{@dates})
-        ), states AS MATERIALIZED (
-          SELECT journey_key, bit_or(all_hours)>0 AS all_seen,
-            bit_or(classic_hours)>0 AS classic_seen, bit_or(internal_hours)>0 AS internal_seen,
-            search_analytics_mv_latest_state(terminal) AS terminal, bit_or(flags) AS flags
-          FROM chosen GROUP BY journey_key
-        ), classified AS MATERIALIZED (
-          SELECT *, CASE WHEN (terminal & 3)=1 THEN 'completed'
-            WHEN (terminal & 3)=2 THEN 'failed'
-            WHEN terminal IS NOT NULL OR (flags & 8)>0 THEN 'unknown'
-            WHEN (flags & 4)>0 THEN 'nonterminal' ELSE 'unknown' END AS status
-          FROM states
-        ), multi_summary AS (
-          SELECT view, NULL::timestamp AS bucket, #{counts}
-          FROM classified CROSS JOIN LATERAL
-            (VALUES ('all',all_seen),('classic',classic_seen),('internal',internal_seen)) v(view,seen)
-          WHERE seen GROUP BY view
-        ), multi_trend AS (
-          SELECT view, #{bucket} AS bucket, #{counts_sql('c.flags')}
-          FROM chosen d JOIN classified c USING(journey_key)
-          CROSS JOIN LATERAL
-            (VALUES ('all',d.all_hours),('classic',d.classic_hours),('internal',d.internal_hours)) v(view,hours)
-          #{hours_join}
-          WHERE #{seen} GROUP BY view, bucket
-        ), combined AS (
-          SELECT view, NULL::timestamp AS bucket, #{sums}
-          FROM search_analytics_journey_rollup_totals WHERE service = #{@service} AND reporting_date IN (#{@dates}) AND bucket_size='day' GROUP BY view
-          UNION ALL
-          SELECT view, bucket, #{(%w[journeys] + SERIES).join(',')}
-          FROM search_analytics_journey_rollup_totals WHERE service = #{@service} AND reporting_date IN (#{@dates}) AND bucket_size='#{period.bucket_size}'
-          UNION ALL SELECT * FROM multi_summary
-          UNION ALL SELECT * FROM multi_trend
-        )
-        SELECT view, to_char(bucket, 'YYYY-MM-DD"T"HH24:MI:SS"Z"') AS bucket, #{sums}
-        FROM combined GROUP BY view,bucket ORDER BY bucket,view
-      SQL
-      @rows = @db.fetch(sql).all.map { |row| row.transform_keys(&:to_s) }
+      @cost_fingerprint = cost_fingerprint
+      @rows = window_rows
     end
 
     def summary(view)
@@ -63,7 +31,7 @@ module SearchAnalytics
 
     def trend
       @trend ||= @rows.reject { |row| row['bucket'].nil? }.group_by { |row| row['bucket'] }.sort.map do |bucket, rows|
-        { 'bucket' => bucket }.merge(SearchAnalytics::Period::VIEWS.index_with { |view| rows.find { |row| row['view'] == view }&.fetch('journeys') || 0 })
+        { 'bucket' => bucket }.merge(SearchAnalytics::Period::VIEWS.index_with { |name| rows.find { |row| row['view'] == name }&.fetch('journeys') || 0 })
       end
     end
 
@@ -75,63 +43,197 @@ module SearchAnalytics
     end
 
     def terms
+      query = row_text(:j, 'query')
+      search_type = row_text(:j, 'search_type')
+      zero_text = row_text(:j, 'zero_results')
       types = SearchAnalytics::CloudwatchSnapshotQuery::VIEW_SEARCH_TYPES[@period.view]
-      filter = types ? "AND j.row->>'search_type' IN (#{types.map { |type| @db.literal(type) }.join(',')})" : ''
-      @db.fetch(<<~SQL).all.map { |row| row.transform_keys(&:to_s) }
-        WITH totals AS (
-          SELECT j.row->>'query' AS query,
-            CASE r.name WHEN 'item_id_improvements' THEN 'item_ids' ELSE 'search_terms' END AS term_type,
-            sum(CASE WHEN j.row->>'zero_results' ~ '^[[:space:]]*[+-]?([0-9]+([.][0-9]*)?|[.][0-9]+)([eE][+-]?[0-9]+)?[[:space:]]*$'
-              THEN trunc((j.row->>'zero_results')::double precision)::bigint ELSE 0 END)::bigint AS zero_results
-          FROM search_analytics_query_results r
-          CROSS JOIN LATERAL jsonb_array_elements(r.rows) j(row)
-          WHERE r.service=#{@service} AND r.reporting_date IN (#{@dates})
-            AND r.name IN ('item_id_improvements','search_term_improvements')
-            AND j.row->>'query' IS NOT NULL AND j.row->>'query' !~ '^[[:space:]]*$'
-            #{filter}
-          GROUP BY query,term_type
-        ), ranked AS (
-          SELECT *,row_number() OVER(PARTITION BY term_type ORDER BY zero_results DESC,query COLLATE "C") AS rank
-          FROM totals
-        )
-        SELECT query,term_type,zero_results FROM ranked
-        WHERE rank<=#{CloudwatchSnapshotQuery::IMPROVEMENT_TERM_LIMIT} ORDER BY term_type COLLATE "C",zero_results DESC,query COLLATE "C"
-      SQL
+      totals = json_elements(:j)
+        .where(Sequel[:r][:service] => @service, Sequel[:r][:reporting_date] => @dates, Sequel[:r][:name] => %w[item_id_improvements search_term_improvements])
+        .exclude(query => nil)
+        .exclude(query =~ /^\s*$/)
+      totals = totals.where(search_type => types) if types
+      totals = totals.select(
+        query.as(:query),
+        Sequel.case([[Sequel[:r][:name] =~ 'item_id_improvements', 'item_ids']], 'search_terms').as(:term_type),
+        Sequel.function(:sum, Sequel.case([[zero_text =~ NUMERIC, Sequel.function(:trunc, Sequel.cast(zero_text, 'double precision')).cast(:bigint)]], 0)).cast(:bigint).as(:zero_results),
+      ).group(:query, :term_type)
+
+      ranked = db[:totals].select_all.select_append(
+        Sequel.function(:row_number).over(
+          partition: :term_type,
+          order: [Sequel.desc(:zero_results), collate_c(:query)],
+        ).as(:rank),
+      )
+
+      db[:ranked]
+        .select(:query, :term_type, :zero_results)
+        .where { rank <= CloudwatchSnapshotQuery::IMPROVEMENT_TERM_LIMIT }
+        .order(collate_c(:term_type), Sequel.desc(:zero_results), collate_c(:query))
+        .with(:totals, totals)
+        .with(:ranked, ranked)
+        .all
+        .map { |row| row.transform_keys(&:to_s) }
     end
 
     def cost_keys
       return {} if @costs.empty?
 
-      column = { 'all' => 'all_hours', 'classic' => 'classic_hours', 'internal' => 'internal_hours' }.fetch(@period.view)
-      @db.fetch(<<~SQL).all.to_h { |row| [row[:key], true] }
-        SELECT DISTINCT encode(j.journey_key, 'hex') AS key
-        FROM search_analytics_query_results r
-        CROSS JOIN LATERAL jsonb_array_elements(r.rows) c(row)
-        JOIN search_analytics_daily_journeys j
-          ON j.service = r.service
-         AND j.reporting_date = r.reporting_date
-         AND j.journey_key = decode(c.row->>'journey_key', 'hex')
-        WHERE r.service = #{@service}
-          AND r.reporting_date IN (#{@dates})
-          AND r.name = 'ai_cost_trend'
-          AND r.fingerprint = #{@cost_fingerprint}
-          AND c.row->>'journey_key' IS NOT NULL
-          AND j.#{column} > 0
-      SQL
+      hours = VIEW_HOURS.fetch(@period.view)
+      key = row_text(:c, 'journey_key')
+      json_elements(:c)
+        .join_table(:inner, DailyJourney.table_name, {
+          Sequel[:j][:service] => Sequel[:r][:service],
+          Sequel[:j][:reporting_date] => Sequel[:r][:reporting_date],
+          Sequel[:j][:journey_key] => Sequel.function(:decode, key, 'hex'),
+        }, table_alias: :j)
+        .where(Sequel[:r][:service] => @service, Sequel[:r][:reporting_date] => @dates, Sequel[:r][:name] => 'ai_cost_trend', Sequel[:r][:fingerprint] => @cost_fingerprint)
+        .exclude(key => nil)
+        .where { Sequel[:j][hours] > 0 }
+        .select(Sequel.function(:encode, Sequel[:j][:journey_key], 'hex').as(:key))
+        .distinct
+        .from_self(alias: :matched)
+        .select_map(:key)
+        .index_with(true)
     end
 
   private
 
-    def counts_sql(flags)
-      counts = SERIES.map do |name|
-        predicate = case name
-                    when 'selected' then "(#{flags} & 1)>0"
-                    when 'zero_result' then "(#{flags} & 2)>0"
-                    else "status='#{name}'"
-                    end
-        "count(*) FILTER (WHERE #{predicate}) AS #{name}"
+    def db = RepeatedJourney.db
+
+    def window_rows
+      chosen = RepeatedJourney.where(service: @service, reporting_date: @dates)
+      states = db[:chosen].select(
+        :journey_key,
+        (Sequel.function(:bit_or, :all_hours) > 0).as(:all_seen),
+        (Sequel.function(:bit_or, :classic_hours) > 0).as(:classic_seen),
+        (Sequel.function(:bit_or, :internal_hours) > 0).as(:internal_seen),
+        Sequel.function(:search_analytics_mv_latest_state, :terminal).as(:terminal),
+        Sequel.function(:bit_or, :flags).as(:flags),
+      ).group(:journey_key)
+      classified = db[:states].select(Sequel[:states].*, status_case.as(:status))
+      combined = day_totals.union(grain_totals, all: true, from_self: false)
+        .union(multi_summary, all: true, from_self: false)
+        .union(multi_trend, all: true, from_self: false)
+
+      db[:combined]
+        .select(:view, Sequel.function(:to_char, :bucket, 'YYYY-MM-DD"T"HH24:MI:SS"Z"').as(:bucket), *sum_columns)
+        .group(:view, :bucket)
+        .order(:bucket, :view)
+        .with(:chosen, chosen, materialized: true)
+        .with(:states, states, materialized: true)
+        .with(:classified, classified, materialized: true)
+        .with(:multi_summary, multi_summary)
+        .with(:multi_trend, multi_trend)
+        .with(:combined, combined)
+        .all
+        .map { |row| row.transform_keys(&:to_s) }
+    end
+
+    def multi_summary
+      db[:classified]
+        .select(Sequel[:v][:view], Sequel.cast(nil, :timestamp).as(:bucket), *count_columns(Sequel[:classified][:flags]))
+        .join_table(:inner, seen_values.lateral, { Sequel[:v][:seen] => true }, table_alias: :v)
+        .group(Sequel[:v][:view])
+    end
+
+    def multi_trend
+      dataset = db[:chosen].from_self(alias: :d)
+        .join(Sequel[:classified].as(:c), journey_key: :journey_key)
+        .select(Sequel[:v][:view], trend_bucket.as(:bucket), *count_columns(Sequel[:c][:flags]))
+        .join_table(:inner, hour_values.lateral, true, table_alias: :v)
+      dataset = dataset.cross_join(db.from { Sequel.function(:generate_series, 0, 23).as(:h) }) if @period.single_day?
+      dataset.where(hour_present).group(Sequel[:v][:view], trend_bucket)
+    end
+
+    def day_totals
+      JourneyRollupTotal
+        .where(service: @service, reporting_date: @dates, bucket_size: 'day')
+        .select(:view, Sequel.cast(nil, :timestamp).as(:bucket), *sum_columns)
+        .group(:view)
+    end
+
+    def grain_totals
+      JourneyRollupTotal
+        .where(service: @service, reporting_date: @dates, bucket_size: @period.bucket_size)
+        .select(:view, :bucket, *(%i[journeys] + SERIES.map(&:to_sym)))
+    end
+
+    def seen_values
+      VIEW_SEEN.map { |view, column|
+        db.select(Sequel.as(view, :view), Sequel[:classified][column].as(:seen))
+      }.reduce { |left, right| left.union(right, all: true, from_self: false) }
+    end
+
+    def hour_values
+      VIEW_HOURS.map { |view, column|
+        db.select(Sequel.as(view, :view), Sequel[:d][column].as(:hours))
+      }.reduce { |left, right| left.union(right, all: true, from_self: false) }
+    end
+
+    def trend_bucket
+      date = Sequel.cast(Sequel[:d][:reporting_date], :timestamp)
+      return date unless @period.single_day?
+
+      date + Sequel.lit('make_interval(hours => h)')
+    end
+
+    def hour_present
+      return Sequel[:v][:hours] > 0 unless @period.single_day?
+
+      Sequel.lit('(v.hours & (CAST(1 AS bigint) << h)) > 0')
+    end
+
+    def status_case
+      bits = Sequel[:terminal].sql_number & 3
+      Sequel.case(
+        [
+          [bits =~ 1, 'completed'],
+          [bits =~ 2, 'failed'],
+          [Sequel.|({ Sequel[:terminal] !~ nil => true }, (Sequel[:flags].sql_number & 8) > 0), 'unknown'],
+          [(Sequel[:flags].sql_number & 4) > 0, 'nonterminal'],
+        ],
+        'unknown',
+      )
+    end
+
+    def count_columns(flags)
+      status = Sequel.qualify(flags.table, :status)
+      [
+        Sequel.function(:count).*.as(:journeys),
+        *SERIES.map do |name|
+          predicate = case name
+                      when 'selected' then (flags.sql_number & 1) > 0
+                      when 'zero_result' then (flags.sql_number & 2) > 0
+                      else status =~ name
+                      end
+          Sequel.function(:count).*.filter(predicate).as(name)
+        end,
+      ]
+    end
+
+    def sum_columns
+      (%w[journeys] + SERIES).map do |name|
+        Sequel.function(:sum, name.to_sym).cast(:bigint).as(name)
       end
-      ['count(*) AS journeys', *counts].join(',')
+    end
+
+    def json_elements(alias_name)
+      db.from(Sequel[SearchAnalyticsQueryResult.table_name].as(:r)).join_table(
+        :cross,
+        Sequel.function(:jsonb_array_elements, Sequel[:r][:rows]).as(alias_name, [:row]),
+        nil,
+        table_alias: alias_name,
+        lateral: true,
+      )
+    end
+
+    def row_text(alias_name, key)
+      Sequel.function(:jsonb_extract_path_text, Sequel[alias_name][:row], key)
+    end
+
+    def collate_c(column)
+      Sequel.lit('? COLLATE "C"', column)
     end
   end
+  # rubocop:enable Style/NumericPredicate
 end
