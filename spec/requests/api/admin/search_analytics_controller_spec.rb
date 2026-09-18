@@ -17,7 +17,7 @@ RSpec.describe Api::Admin::SearchAnalyticsController do
       { '@timestamp' => bucket, 'search_type' => 'interactive', 'request_source' => 'frontend', 'journey_keys' => %w[same-journey] },
       { '@timestamp' => bucket, 'search_type' => 'interactive', 'request_source' => 'admin', 'journey_keys' => %w[admin] },
     ]
-    rows['ai_cost_trend'] = [{ '@timestamp' => bucket, 'journey_key' => 'same-journey', 'event_kind' => 'interactive_search', 'total_cost_usd' => '0.03', 'calls' => 3, 'priced_calls' => 2, 'unpriced_calls' => 1 }]
+    rows['ai_cost_trend'] = [{ '@timestamp' => bucket, 'journey_key' => 'same-journey', 'event_kind' => 'interactive_search', 'model' => 'gpt-5.4', 'total_cost_usd' => '0.03', 'calls' => 3, 'priced_calls' => 2, 'unpriced_calls' => 1 }]
     fingerprints = collector.fingerprints
     rows.each do |name, values|
       SearchAnalyticsQueryResult.create(service: TradeTariffBackend.service, reporting_date: day, name:, fingerprint: fingerprints.fetch(name), rows: Sequel.pg_jsonb(values), collected_at: Time.current)
@@ -38,6 +38,7 @@ RSpec.describe Api::Admin::SearchAnalyticsController do
     expect(attributes['summary']).to include('searches' => 1, 'requests' => 3)
     expect(attributes.dig('ai_costs', 'summary')).to include('total_cost_usd' => 0.03, 'priced_calls' => 2, 'unpriced_calls' => 1, 'complete' => false)
     expect(attributes.dig('ai_costs', 'operations').first['calls']).to eq(3)
+    expect(attributes.dig('ai_costs', 'models')).to contain_exactly(include('model' => 'gpt-5.4', 'calls' => 3, 'total_cost_usd' => 0.03))
     expect(attributes['coverage']).to include('from' => date.iso8601, 'to' => date.iso8601, 'complete' => true, 'collected_days' => 1)
     expect(attributes['availability']).to include('journey_metrics' => true, 'costs_match_view' => true)
     expect(attributes['bucket_size']).to eq('hour')

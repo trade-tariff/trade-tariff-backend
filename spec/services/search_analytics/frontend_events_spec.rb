@@ -43,6 +43,16 @@ RSpec.describe SearchAnalytics::FrontendEvents do
     expect(result['actions']).to eq('result_selected' => 3, 'dont_know' => 1)
   end
 
+  it 'treats SQL null confidence as unknown and groups it with missing confidence' do
+    rows = [
+      row('one', 'result_selected', result_rank: '1', confidence: 'null', event_count: '2'),
+      row('two', 'result_selected', result_rank: '1'),
+    ]
+    expect(aggregate([record(rows)])['selections']).to eq([
+      { 'result_rank' => 1, 'confidence' => nil, 'event_count' => 3 },
+    ])
+  end
+
   it 'keeps result rank and confidence pairs instead of collapsing them' do
     rows = [
       row('one', 'result_selected', result_rank: '1', confidence: 'strong', event_count: '2'),
