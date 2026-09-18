@@ -32,6 +32,8 @@ Sync and rollback work use `TradeTariffBackend.with_redis_lock` so only one upda
 
 Workers live under `app/workers/`. Queues and scheduled jobs are configured in `config/sidekiq.yml`.
 
+Each UK/XI worker process uses Sidekiq capsules so queue names are not the only isolation. `SIDEKIQ_CONCURRENCY` is the total thread budget. By default that splits as 4 threads for `default` and `within_1_hour`, 3 reserved for `sync`, and 3 reserved for `within_1_day`. Override the reserved sizes with `SIDEKIQ_SYNC_CONCURRENCY` and `SIDEKIQ_WITHIN_1_DAY_CONCURRENCY`. Capsules do not isolate CPU or memory; they only stop batch jobs occupying every thread.
+
 Queues:
 
 - `sync`

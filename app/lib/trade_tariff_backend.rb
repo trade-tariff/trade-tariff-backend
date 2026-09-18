@@ -14,6 +14,7 @@ require_relative 'trade_tariff_backend/clients'
 require_relative 'trade_tariff_backend/tariff_update_event_listener'
 require_relative 'trade_tariff_backend/search_response'
 require_relative 'trade_tariff_backend/service_timeout'
+require_relative 'trade_tariff_backend/sidekiq_capsule_config'
 
 module TradeTariffBackend
   extend Config
