@@ -24,10 +24,10 @@ is separate from page reads.
 - `search_analytics_source_revisions` materializes source identity, fingerprints
   and collection timestamps. It is current-state metadata, not a change history.
 
-The API combines additive rollups with exact reconciliation of repeated
-identities. It does not sum daily unique counts. It aggregates term rankings in
-PostgreSQL and does not transfer identifier collections or full term histories
-to Ruby.
+The relations store compact daily and hourly journey statistics plus the
+repeated-identity observations needed for later range reconciliation. They do
+not store term rankings or identifier collections. This change does not alter
+API reads.
 
 ## Migration and initial population
 
@@ -54,11 +54,9 @@ publishing all four materialized views together. A failure rolls back the entire
 refresh. Unchanged sources require no rebuild. A forced refresh is available for
 repair; it does not recollect CloudWatch data.
 
-The API pins live metadata and the materialized data in one read-only snapshot.
-It uses the faster path only when the views are populated and the relevant source
-revisions match. Missing, incompatible or unpopulated data retains the existing
-reader and its higher resource cost. No web request refreshes a view or collects
-logs.
+This change does not pin API reads to the views or add a faster API path.
+Missing, incompatible or unpopulated materialized data has no effect on the
+existing reader. No web request refreshes a view or collects logs.
 
 Refresh settings are transaction-local: UTC, 64 MB `work_mem`, 4 GB temporary-file
 limit and 120 seconds per statement. The file limit applies to simultaneous
