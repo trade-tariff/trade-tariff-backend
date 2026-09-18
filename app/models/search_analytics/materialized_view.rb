@@ -1,10 +1,6 @@
 # frozen_string_literal: true
 
 module SearchAnalytics
-  # A PostgreSQL materialized view of search analytics journey data.
-  # The dataset is the stored answer from expanding large JSON query results.
-  # Readers query it; they do not rebuild it. refresh! replaces that stored
-  # answer. These are not tariff oplog models.
   module MaterializedView
     def self.included(model)
       model.extend ClassMethods
