@@ -41,6 +41,23 @@ RSpec.describe 'Search analytics backfill', type: :worker do
     expect(jobs.first['args'].first).to eq((yesterday - 1).iso8601)
   end
 
+  it 'queues one view refresh when every requested day is already current' do
+    store_day(yesterday)
+    store_day(yesterday - 1)
+    allow(SearchAnalyticsRefreshViewsWorker).to receive(:perform_async).and_return('refresh-job')
+    expect(enqueue(days: 2)).to eq([])
+    expect(SearchAnalyticsRefreshViewsWorker).to have_received(:perform_async).with(TradeTariffBackend.service).once
+    expect(jobs).to eq([])
+  end
+
+  it 'does not refresh while a coordinator is queued' do
+    store_day(yesterday)
+    allow(SearchAnalyticsRefreshViewsWorker).to receive(:perform_async)
+    expect(enqueue(days: 2).size).to eq(1)
+    expect(SearchAnalyticsRefreshViewsWorker).not_to have_received(:perform_async)
+    expect(jobs.first['args'].first).to eq((yesterday - 1).iso8601)
+  end
+
   it 'lets each coordinator queue only the query still missing when it starts' do
     store_day(yesterday, except: 'ai_cost_trend')
     enqueue(days: 1)

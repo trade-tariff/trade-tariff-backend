@@ -65,9 +65,11 @@ SQL failures do not schedule a followup.
 There is no fifteen-minute polling schedule. View population remains explicit:
 the worker asks the helper to skip unpopulated views after taking the lock, so it
 does not bootstrap a service that has not adopted the views. If enqueueing or
-refreshing fails, stored query results remain intact. Use `search_analytics:refresh_views` after resolving
-the failure. The rake command finishing its enqueue is not proof that collection
-or refresh finished.
+refreshing fails, stored query results remain intact. Use
+`search_analytics:refresh_views` after resolving the failure. That rake task
+calls the helper directly and reports success only after the refresh returns. It
+does not enqueue a worker. Collection jobs finishing their enqueue is not proof
+that collection or refresh finished.
 
 ## Consistency and refresh
 
