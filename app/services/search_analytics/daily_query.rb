@@ -107,7 +107,7 @@ module SearchAnalytics
 
           session = row['browser_session_id']
           hashed = row.except('request_id', 'browser_session_id').merge('journey_key' => Digest::SHA256.hexdigest(id))
-          next hashed if session.blank?
+          next hashed unless session.to_s.match?(/\Av1:[0-9a-f]{64}\z/)
 
           hashed.merge('session_key' => Digest::SHA256.hexdigest(session))
         end

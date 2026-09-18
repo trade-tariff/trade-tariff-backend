@@ -29,11 +29,19 @@ RSpec.describe SearchAnalytics::DailyQuery do
   end
 
   it 'hashes browser session identifiers before storing them' do
+    session = "v1:#{'a' * 64}"
+    client.stub_responses(:get_query_results, response([row.merge('browser_session_id' => session)]))
+    result = collect.fetch('frontend_events').first
+    expect(result).to include('session_key' => Digest::SHA256.hexdigest(session))
+    expect(result).not_to have_key('browser_session_id')
+    expect(SearchAnalyticsQueryResult.first.rows.to_json).not_to include(session)
+  end
+
+  it 'does not store a session key for a malformed browser session identifier' do
     client.stub_responses(:get_query_results, response([row.merge('browser_session_id' => 'v1:session')]))
     result = collect.fetch('frontend_events').first
-    expect(result).to include('session_key' => Digest::SHA256.hexdigest('v1:session'))
+    expect(result).not_to have_key('session_key')
     expect(result).not_to have_key('browser_session_id')
-    expect(SearchAnalyticsQueryResult.first.rows.to_json).not_to include('v1:session')
   end
 
   it 'reuses a successful result without another AWS submission' do
