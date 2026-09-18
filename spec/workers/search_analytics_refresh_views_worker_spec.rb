@@ -8,6 +8,13 @@ RSpec.describe SearchAnalyticsRefreshViewsWorker do
     Sidekiq.redis { |redis| redis.set(key, token, ex: described_class::FOLLOWUP_LEASE) }
   end
 
+  before do
+    stub_const(
+      'SearchAnalyticsRefreshViewsWorker::FOLLOWUP_KEY_PREFIX',
+      "search_analytics:refresh_views:followup:spec:#{SecureRandom.uuid}:",
+    )
+  end
+
   after { Sidekiq.redis { |redis| redis.del(key) } }
 
   it 'refreshes without waiting and without bootstrapping unpopulated views' do
