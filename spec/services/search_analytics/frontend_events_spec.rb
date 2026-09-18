@@ -43,6 +43,18 @@ RSpec.describe SearchAnalytics::FrontendEvents do
     expect(result['actions']).to eq('result_selected' => 3, 'dont_know' => 1)
   end
 
+  it 'keeps result rank and confidence pairs instead of collapsing them' do
+    rows = [
+      row('one', 'result_selected', result_rank: '1', confidence: 'strong', event_count: '2'),
+      row('one', 'result_selected', result_rank: '2', confidence: 'good'),
+      row('two', 'result_selected', result_rank: '1', confidence: 'strong'),
+    ]
+    expect(aggregate([record(rows)])['selections']).to eq([
+      { 'result_rank' => 1, 'confidence' => 'strong', 'event_count' => 3 },
+      { 'result_rank' => 2, 'confidence' => 'good', 'event_count' => 1 },
+    ])
+  end
+
   it 'uses the maximum reported question count per journey across dates and keeps unknown distinct from zero' do
     first = record([row('one', 'question', reported_questions: '1'), row('zero', 'results', reported_questions: '0')])
     second = record([row('one', 'results', reported_questions: '3'), row('unknown', 'result_selected')], day: date + 1)
