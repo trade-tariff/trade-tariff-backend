@@ -63,8 +63,8 @@ existing reader. No web request refreshes a view or collects logs.
 Refresh settings are transaction-local: UTC, 64 MB `work_mem`, 4 GB temporary-file
 limit and 120 seconds per statement. The file limit applies to simultaneous
 backend temporary files, not cumulative writes over all refresh statements.
-Read-side aggregation uses 32 MB `work_mem`. These are per-operation allowances,
-not whole-process caps. Neither setting changes pooled connection defaults.
+These are per-operation allowances, not whole-process caps. They do not change
+pooled connection defaults.
 
 A native materialized-view refresh recomputes the whole relation, not only the
 changed reporting day. Keep this cost in operational capacity planning; the
