@@ -66,8 +66,9 @@ RSpec.describe SearchAnalytics::MaterializedViews, :truncation do # rubocop:disa
     store(date, 'volume', [{ 'searches' => 1 }], service:)
   end
 
-  def hex_keys(relation, service: 'uk')
-    db[relation].where(service:).select_map(:journey_key).map { |key| key.unpack1('H*') }.sort
+  def hex_keys(model = SearchAnalytics::DailyJourney, service: 'uk')
+    model = described_class::MODELS.find { |entry| entry.table_name.to_sym == model } if model.is_a?(Symbol)
+    model.where(service:).select_map(:journey_key).map { |key| key.unpack1('H*') }.sort
   end
 
   def source_records(service: 'uk')
@@ -83,32 +84,32 @@ RSpec.describe SearchAnalytics::MaterializedViews, :truncation do # rubocop:disa
 
     expect(refresh!).to be(true)
     expect(described_class.ready?).to be(true)
-    expect(db[:search_analytics_source_revisions].select_map(:definition_version).uniq).to eq([described_class::VERSION])
+    expect(SearchAnalytics::SourceRevision.select_map(:definition_version).uniq).to eq([described_class::VERSION])
     expect(hex_keys(:search_analytics_daily_journeys)).to eq([first_key, last_key].sort)
     expect(hex_keys(:search_analytics_repeated_journeys)).to eq([])
-    expect(db[:search_analytics_journey_rollup_totals].where(view: 'all', bucket_size: 'day').select_map(:journeys).sum).to eq(2)
+    expect(SearchAnalytics::JourneyRollupTotal.where(view: 'all', bucket_size: 'day').select_map(:journeys).sum).to eq(2)
   end
 
   it 'rebuilds after force replacement, deletion, a new selected date and a multi-day promotion' do
     store_day(first_date, keys: [shared_key])
     refresh!
-    expect(db[:search_analytics_journey_rollup_totals].where(view: 'all', bucket_size: 'day').get(:journeys)).to eq(1)
-    expect(db[:search_analytics_repeated_journeys].count).to eq(0)
+    expect(SearchAnalytics::JourneyRollupTotal.where(view: 'all', bucket_size: 'day').get(:journeys)).to eq(1)
+    expect(SearchAnalytics::RepeatedJourney.count).to eq(0)
 
     SearchAnalyticsQueryResult.where(reporting_date: first_date, name: 'search_journeys')
       .update(collected_at: now, rows: Sequel.pg_jsonb([journey_row(shared_key, first_date.to_time(:utc) + 9.hours)]))
     expect(refresh!).to be(true)
-    expect(db[:search_analytics_daily_journeys].get(:all_hours)).to eq(1 << 9)
+    expect(SearchAnalytics::DailyJourney.get(:all_hours)).to eq(1 << 9)
 
     SearchAnalyticsQueryResult.where(reporting_date: first_date, name: 'journey_outcomes').delete
     expect(refresh!).to be(true)
-    expect(db[:search_analytics_daily_journeys].count).to eq(1)
-    expect(db[:search_analytics_daily_journeys].get(:terminal)).to be_nil
+    expect(SearchAnalytics::DailyJourney.count).to eq(1)
+    expect(SearchAnalytics::DailyJourney.get(:terminal)).to be_nil
 
     store_day(last_date, keys: [shared_key])
     expect(refresh!).to be(true)
     expect(hex_keys(:search_analytics_repeated_journeys).uniq).to eq([shared_key])
-    expect(db[:search_analytics_journey_rollup_totals].where(view: 'all', bucket_size: 'day').select_map(:journeys).sum).to eq(0)
+    expect(SearchAnalytics::JourneyRollupTotal.where(view: 'all', bucket_size: 'day').select_map(:journeys).sum).to eq(0)
   end
 
   it 'skips a rebuild when populated source revisions already match live source metadata' do
@@ -144,7 +145,7 @@ RSpec.describe SearchAnalytics::MaterializedViews, :truncation do # rubocop:disa
     expect(hex_keys(:search_analytics_daily_journeys, service: 'xi')).to eq([last_key])
 
     expect(refresh!).to be(false)
-    expect(db[:search_analytics_source_revisions].select_map(:service).uniq.sort).to eq(%w[uk xi])
+    expect(SearchAnalytics::SourceRevision.select_map(:service).uniq.sort).to eq(%w[uk xi])
   end
 
   it 'rolls back a failed blocking rebuild and keeps the previous snapshot' do
@@ -154,7 +155,7 @@ RSpec.describe SearchAnalytics::MaterializedViews, :truncation do # rubocop:disa
 
     expect { refresh!(concurrently: false) }.to raise_error(Sequel::DatabaseError)
     expect(hex_keys(:search_analytics_daily_journeys)).to eq([first_key])
-    expect(db[:search_analytics_source_revisions].select_map(:reporting_date).uniq).to eq([first_date])
+    expect(SearchAnalytics::SourceRevision.select_map(:reporting_date).uniq).to eq([first_date])
   end
 
   it 'rolls back a failed concurrent rebuild and keeps the previous snapshot' do
@@ -164,7 +165,7 @@ RSpec.describe SearchAnalytics::MaterializedViews, :truncation do # rubocop:disa
 
     expect { refresh!(concurrently: true) }.to raise_error(Sequel::DatabaseError)
     expect(hex_keys(:search_analytics_daily_journeys)).to eq([first_key])
-    expect(db[:search_analytics_source_revisions].select_map(:reporting_date).uniq).to eq([first_date])
+    expect(SearchAnalytics::SourceRevision.select_map(:reporting_date).uniq).to eq([first_date])
   end
 
   it 'treats empty successful sources as present and ignores non-source query slots' do
@@ -173,8 +174,8 @@ RSpec.describe SearchAnalytics::MaterializedViews, :truncation do # rubocop:disa
     store(last_date, 'volume', [{ 'searches' => 1 }])
     refresh!
 
-    expect(db[:search_analytics_daily_journeys].count).to eq(0)
-    expect(db[:search_analytics_source_revisions].select_map(:name).sort).to eq(%w[journey_outcomes search_journeys])
+    expect(SearchAnalytics::DailyJourney.count).to eq(0)
+    expect(SearchAnalytics::SourceRevision.select_map(:name).sort).to eq(%w[journey_outcomes search_journeys])
   end
 
   it 'materialises stale outcome definitions without making current journey fingerprints incompatible' do
