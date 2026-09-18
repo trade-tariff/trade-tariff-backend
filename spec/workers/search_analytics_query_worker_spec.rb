@@ -110,6 +110,51 @@ RSpec.describe SearchAnalyticsQueryWorker, type: :worker do
     expect(SearchAnalytics::DailyQuery).not_to have_received(:call)
   end
 
+  it 'queues a refresh only after all groups for the day are current' do
+    definitions = SearchAnalytics::DailyQuery.new(**options).fingerprints
+    definitions.except('volume').each do |name, fingerprint|
+      SearchAnalyticsQueryResult.create(service: TradeTariffBackend.service, reporting_date: date, name:, fingerprint:, collected_at: Time.current, rows: Sequel.pg_jsonb([]))
+    end
+    allow(Aws::CloudWatchLogs::Client).to receive(:new).and_return(client)
+    allow(SearchAnalyticsRefreshViewsWorker).to receive(:perform_async).and_return('refresh-job')
+    described_class.new.perform(date.iso8601, 'volume', region, group)
+    expect(SearchAnalyticsRefreshViewsWorker).to have_received(:perform_async).with(TradeTariffBackend.service)
+  end
+
+  it 'refreshes successful journey inputs even when optional groups remain missing' do
+    allow(Aws::CloudWatchLogs::Client).to receive(:new).and_return(client)
+    allow(SearchAnalyticsRefreshViewsWorker).to receive(:perform_async).and_return('refresh-job')
+    described_class.new.perform(date.iso8601, 'search_journeys', region, group)
+    expect(SearchAnalyticsRefreshViewsWorker).to have_received(:perform_async).with(TradeTariffBackend.service)
+    expect(SearchAnalyticsQueryResult.where(reporting_date: date).select_map(:name)).to eq(%w[search_journeys])
+  end
+
+  it 'does not refresh after an unrelated query in a partially collected day' do
+    allow(Aws::CloudWatchLogs::Client).to receive(:new).and_return(client)
+    expect(SearchAnalyticsRefreshViewsWorker).not_to receive(:perform_async)
+    described_class.new.perform(date.iso8601, 'volume', region, group)
+  end
+
+  it 'can refresh an already collected day without another CloudWatch query' do
+    SearchAnalytics::DailyQuery.new(**options).fingerprints.each do |name, fingerprint|
+      SearchAnalyticsQueryResult.create(service: TradeTariffBackend.service, reporting_date: date, name:, fingerprint:, collected_at: Time.current, rows: Sequel.pg_jsonb([]))
+    end
+    allow(SearchAnalyticsRefreshViewsWorker).to receive(:perform_async).and_return('refresh-job')
+    expect(described_class.enqueue_day(**options)).to eq([])
+    expect(SearchAnalyticsRefreshViewsWorker).to have_received(:perform_async).with(TradeTariffBackend.service)
+    expect(client.api_requests).to eq([])
+  end
+
+  it 'reports refresh enqueue failure while preserving the successful collection' do
+    SearchAnalytics::DailyQuery.new(**options).fingerprints.except('volume').each do |name, fingerprint|
+      SearchAnalyticsQueryResult.create(service: TradeTariffBackend.service, reporting_date: date, name:, fingerprint:, collected_at: Time.current, rows: Sequel.pg_jsonb([]))
+    end
+    allow(Aws::CloudWatchLogs::Client).to receive(:new).and_return(client)
+    allow(SearchAnalyticsRefreshViewsWorker).to receive(:perform_async).and_return(nil)
+    expect { described_class.new.perform(date.iso8601, 'volume', region, group) }.to raise_error(/results are stored/)
+    expect(SearchAnalyticsQueryResult.where(reporting_date: date, name: 'volume').count).to eq(1)
+  end
+
   it 'uses at most three shared database lanes for all query jobs' do
     db = SearchAnalyticsQueryResult.db
     locks = []
