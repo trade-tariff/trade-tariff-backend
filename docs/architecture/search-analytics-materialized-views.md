@@ -52,7 +52,9 @@ The helper obtains a schema-specific advisory lock, then starts a repeatable-rea
 transaction. It refreshes dependencies first and source revision metadata last,
 publishing all four materialized views together. A failure rolls back the entire
 refresh. Unchanged sources require no rebuild. A forced refresh is available for
-repair; it does not recollect CloudWatch data.
+repair; it does not recollect CloudWatch data. A caller may skip unpopulated
+views after the lock is taken. A non-waiting caller still receives a lock error
+while another refresh holds it.
 
 This change does not pin API reads to the views or add a faster API path.
 Missing, incompatible or unpopulated materialized data has no effect on the

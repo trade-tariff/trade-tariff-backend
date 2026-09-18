@@ -201,6 +201,43 @@ RSpec.describe SearchAnalytics::MaterializedViews, :truncation do # rubocop:disa
     expect(db).to have_received(:with_advisory_lock).with(kind_of(Integer), wait: false)
   end
 
+  it 'skips unpopulated views after the lock' do
+    refresher = described_class.new
+    lock_id = refresher.send(:lock_id)
+    checker = postgres_connection
+    allow(refresher).to receive(:populated?) do
+      expect(checker.exec_params('SELECT pg_try_advisory_lock($1)', [lock_id]).getvalue(0, 0)).to eq('f')
+      false
+    end
+    allow(refresher).to receive(:apply_local_settings)
+    allow(refresher).to receive(:refresh_matviews)
+
+    expect(refresher.refresh!(only_if_populated: true)).to be(false)
+    expect(refresher).not_to have_received(:apply_local_settings)
+    expect(refresher).not_to have_received(:refresh_matviews)
+  ensure
+    checker&.close
+  end
+
+  it 'raises while the refresh lock is held' do
+    refresher = described_class.new
+    lock_id = refresher.send(:lock_id)
+    holder = postgres_connection
+    holder.exec_params('SELECT pg_advisory_lock($1)', [lock_id])
+    allow(refresher).to receive(:populated?).and_return(false)
+
+    expect { refresher.refresh!(only_if_populated: true, wait: false) }.to raise_error(Sequel::AdvisoryLockError)
+    expect(refresher).not_to have_received(:populated?)
+  ensure
+    holder&.exec_params('SELECT pg_advisory_unlock($1)', [lock_id]) if lock_id
+    holder&.close
+  end
+
+  it 'rebuilds populated views when asked' do
+    store_day(last_date, keys: [last_key])
+    expect(refresh!(only_if_populated: true)).to be(true)
+  end
+
   it 'uses a blocking fill when views are not populated' do
     store_day(last_date, keys: [last_key])
     refresher = described_class.new
@@ -260,5 +297,16 @@ RSpec.describe SearchAnalytics::MaterializedViews, :truncation do # rubocop:disa
       'temp_file_limit' => db.get { current_setting('temp_file_limit') },
       'statement_timeout' => db.get { current_setting('statement_timeout') },
     }
+  end
+
+  def postgres_connection
+    opts = db.opts
+    PG.connect(
+      host: opts[:host],
+      port: opts[:port],
+      dbname: opts[:database],
+      user: opts[:user],
+      password: opts[:password],
+    )
   end
 end

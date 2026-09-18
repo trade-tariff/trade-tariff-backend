@@ -34,13 +34,15 @@ module SearchAnalytics
       live.map { |row| source_identity(row, VERSION) }.sort == expected.sort
     end
 
-    def refresh!(concurrently: true, wait: false, force: false)
+    def refresh!(concurrently: true, wait: false, force: false, only_if_populated: false)
       if db.in_transaction?
         raise ArgumentError, 'Materialized view refresh must own its repeatable-read transaction'
       end
 
       db.with_advisory_lock(lock_id, wait:) do
         populated = populated?
+        next false if only_if_populated && !populated
+
         db.transaction(isolation: :repeatable) do
           if !force && populated && source_revisions_match_live?
             false
