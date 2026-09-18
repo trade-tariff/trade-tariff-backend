@@ -15,7 +15,7 @@ RSpec.describe 'search analytics materialized view rake tasks' do
       allow(ENV).to receive(:[]).with('FORCE').and_return(nil)
 
       expect { task.invoke }.to output(/Refreshed search analytics materialized views/).to_stdout
-      expect(SearchAnalytics::MaterializedViews).to have_received(:refresh!).with(hash_including(wait: false, force: false))
+      expect(SearchAnalytics::MaterializedViews).to have_received(:refresh!).with(wait: false, force: false)
     end
 
     it 'waits for the lock when WAIT is true' do
