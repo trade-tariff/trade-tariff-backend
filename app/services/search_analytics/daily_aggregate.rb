@@ -90,7 +90,7 @@ module SearchAnalytics
     def rate(numerator, denominator) = denominator.zero? ? 0.0 : numerator.to_f / denominator
 
     def ai_costs(_view)
-      { 'summary' => ai_cost_summary, 'trend' => ai_cost_trend, 'operations' => ai_cost_operations }
+      { 'summary' => ai_cost_summary, 'trend' => ai_cost_trend, 'operations' => ai_cost_operations, 'models' => ai_cost_models }
     end
 
     def ai_cost_summary(*) = super.merge('p50_cost_usd' => nil, 'p90_cost_usd' => nil)

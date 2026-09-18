@@ -28,6 +28,7 @@ module SearchAnalytics
         'observed_sessions' => @rows.filter_map { |row| row['session_key'] }.uniq.size,
         'outcomes' => FrontendEventsQuery::OUTCOMES.map { |outcome| outcome_counts(outcome) },
         'actions' => FrontendEventsQuery::ACTIONS.index_with { |action| count(@rows.select { |row| row['outcome'] == action }) },
+        'selections' => selections,
         'question_counts' => question_counts,
       }
     end
@@ -49,6 +50,14 @@ module SearchAnalytics
         'timed_visible_events' => observations,
         'average_navigation_ms' => observations.positive? ? total / observations : nil,
       }
+    end
+
+    def selections
+      @rows.select { |row| row['outcome'] == 'result_selected' }.group_by { |row|
+        [Integer(row['result_rank'], exception: false), row['confidence'].presence]
+      }.map { |(rank, confidence), rows|
+        { 'result_rank' => rank, 'confidence' => confidence, 'event_count' => count(rows) }
+      }.sort_by { |row| [row['result_rank'] || 999, row['confidence'].to_s] }
     end
 
     def question_counts

@@ -345,6 +345,7 @@ module SearchAnalytics
           'summary' => ai_cost_summary,
           'trend' => ai_cost_trend,
           'operations' => ai_cost_operations,
+          'models' => ai_cost_models,
         }
       end
 
@@ -353,6 +354,7 @@ module SearchAnalytics
           'summary' => ai_cost_summary({}),
           'trend' => [],
           'operations' => [],
+          'models' => [],
         }
       end
 
@@ -416,6 +418,19 @@ module SearchAnalytics
         end
 
         operations.sort_by { |row| [-row['total_cost_usd'], row['event_kind']] }
+      end
+
+      def ai_cost_models
+        rows_by_model = ai_cost_trend_rows.group_by { |row| row['model'].presence || 'unknown' }
+        rows_by_model.map { |model, rows|
+          {
+            'model' => model,
+            'calls' => sum_integer(rows, 'calls'),
+            'total_cost_usd' => sum_decimal(rows, 'total_cost_usd'),
+            'priced_calls' => sum_integer(rows, 'priced_calls'),
+            'unpriced_calls' => sum_integer(rows, 'unpriced_calls'),
+          }
+        }.sort_by { |row| [-row['total_cost_usd'], row['model']] }
       end
 
       def volume_trend

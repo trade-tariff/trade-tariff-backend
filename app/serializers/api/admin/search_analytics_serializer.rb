@@ -17,6 +17,7 @@ module Api
         }.freeze,
         'trend' => [].freeze,
         'operations' => [].freeze,
+        'models' => [].freeze,
       }.freeze
 
       set_type :search_analytics

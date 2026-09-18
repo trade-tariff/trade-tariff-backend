@@ -31,7 +31,7 @@ RSpec.describe SearchAnalytics::DailyResults do
     rows['latency_histogram'] = [{ 'search_type' => 'classic', 'latency_bucket' => SearchAnalytics::LatencyHistogram.bucket(1000), 'observations' => completed + failed }]
     rows['classic_selection_trend'] = [{ '@timestamp' => bucket, 'selected' => selected, 'selectable' => eligible }]
     rows['search_term_improvements'] = [{ 'query' => 'trainers', 'search_type' => 'classic', 'zero_results' => zero }]
-    rows['ai_cost_trend'] = [{ '@timestamp' => bucket, 'journey_key' => 'shared', 'event_kind' => 'interactive_search', 'total_cost_usd' => '0.03', 'calls' => '3', 'priced_calls' => '2', 'unpriced_calls' => '1' }]
+    rows['ai_cost_trend'] = [{ '@timestamp' => bucket, 'journey_key' => 'shared', 'event_kind' => 'interactive_search', 'model' => 'gpt-5.4', 'total_cost_usd' => '0.03', 'calls' => '3', 'priced_calls' => '2', 'unpriced_calls' => '1' }]
     rows
   end
 
@@ -51,6 +51,7 @@ RSpec.describe SearchAnalytics::DailyResults do
     expect(payload['summary']).to include('searches' => 1, 'requests' => 6)
     expect(payload.dig('ai_costs', 'summary')).to include('total_cost_usd' => 0.06, 'priced_calls' => 4, 'unpriced_calls' => 2, 'complete' => false)
     expect(payload.dig('ai_costs', 'operations').first['calls']).to eq(6)
+    expect(payload.dig('ai_costs', 'models')).to contain_exactly(include('model' => 'gpt-5.4', 'calls' => 6, 'total_cost_usd' => 0.06))
     expect(payload.dig('trends', 'volume').map { |row| row['internal'] }).to eq([1, 1])
   end
 
