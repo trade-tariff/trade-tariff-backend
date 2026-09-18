@@ -1,10 +1,10 @@
 # frozen_string_literal: true
 
 module SearchAnalytics
-  # Shared behaviour for stored analytics relations that cache expensive journey
-  # SQL. These are not tariff oplog models. PostgreSQL keeps the query answer on
-  # disk until refresh!. Readers use the model dataset; they do not rebuild the
-  # view. Refresh is a database command, not an insert.
+  # A PostgreSQL materialized view of search analytics journey data.
+  # The dataset is the stored answer from expanding large JSON query results.
+  # Readers query it; they do not rebuild it. refresh! replaces that stored
+  # answer. These are not tariff oplog models.
   module MaterializedView
     def self.included(model)
       model.extend ClassMethods

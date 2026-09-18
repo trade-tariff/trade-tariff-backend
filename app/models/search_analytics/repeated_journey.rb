@@ -1,10 +1,9 @@
 # frozen_string_literal: true
 
 module SearchAnalytics
-  # Daily journey rows whose hashed identity appears on more than one date.
-  # Same columns as DailyJourney. Range reads combine these leftovers so a
-  # journey spanning days is counted once. Journeys that never repeat are not
-  # stored here; their counts live in JourneyRollupTotal.
+  # Exists because unique journeys cannot be summed across days.
+  # Keep only identities that appear on more than one date so a range can count
+  # them once without scanning every daily journey.
   class RepeatedJourney < Sequel::Model(:search_analytics_repeated_journeys)
     include MaterializedView
 
