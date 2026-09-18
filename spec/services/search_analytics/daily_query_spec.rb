@@ -101,7 +101,7 @@ RSpec.describe SearchAnalytics::DailyQuery do
 
   it 'retains all model and embedding calls without token or failure-cohort filtering' do
     sql = collector.query_definitions.fetch('ai_cost_trend')
-    expect(sql).to include('GROUP BY request_id', "COALESCE(event_kind, operation, 'unknown')", "event = 'embedding_api_call_failed'")
+    expect(sql).to include('GROUP BY request_id', "COALESCE(event_kind, operation, 'unknown')", "COALESCE(model, 'unknown')", "event = 'embedding_api_call_failed'")
     expect(sql).not_to include('total_tokens IS NOT NULL', 'search_degraded', 'request_source')
   end
 

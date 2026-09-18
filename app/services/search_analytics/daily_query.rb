@@ -105,7 +105,11 @@ module SearchAnalytics
           id = row.fetch('request_id')
           raise QueryError, 'Missing request identifier' if id.blank?
 
-          row.except('request_id').merge('journey_key' => Digest::SHA256.hexdigest(id))
+          session = row['browser_session_id']
+          hashed = row.except('request_id', 'browser_session_id').merge('journey_key' => Digest::SHA256.hexdigest(id))
+          next hashed if session.blank?
+
+          hashed.merge('session_key' => Digest::SHA256.hexdigest(session))
         end
       else
         rows
@@ -219,6 +223,7 @@ module SearchAnalytics
     def ai_cost_trend_query
       <<~QUERY
         SELECT request_id, #{bucket_expression} AS `@timestamp`, COALESCE(event_kind, operation, 'unknown') AS cost_operation,
+          COALESCE(model, 'unknown') AS model,
           SUM(CASE WHEN pricing_known = true AND service = 'search' THEN input_cost_usd ELSE 0 END) AS aggregated_input_cost_usd,
           SUM(CASE WHEN pricing_known = true AND service = 'search' THEN cached_input_cost_usd ELSE 0 END) AS aggregated_cached_input_cost_usd,
           SUM(CASE WHEN pricing_known = true AND service = 'search' THEN cache_write_input_cost_usd ELSE 0 END) AS aggregated_cache_write_input_cost_usd,
@@ -231,7 +236,7 @@ module SearchAnalytics
           SUM(CASE WHEN pricing_known = true AND total_cost_usd IS NOT NULL THEN 1 ELSE 0 END) AS aggregated_priced_calls,
           SUM(CASE WHEN pricing_known = true AND total_cost_usd IS NOT NULL THEN 0 ELSE 1 END) AS aggregated_unpriced_calls
         FROM #{source} WHERE #{log_stream_filter} AND #{search_ai_cost_filter} AND request_id IS NOT NULL AND request_id != ''
-        GROUP BY request_id, #{bucket_expression}, COALESCE(event_kind, operation, 'unknown')
+        GROUP BY request_id, #{bucket_expression}, COALESCE(event_kind, operation, 'unknown'), COALESCE(model, 'unknown')
         LIMIT #{ROW_LIMIT}
       QUERY
     end

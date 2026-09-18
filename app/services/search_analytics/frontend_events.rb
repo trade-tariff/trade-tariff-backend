@@ -25,6 +25,7 @@ module SearchAnalytics
         },
         'generated_at' => @records.map(&:collected_at).max&.iso8601,
         'observed_journeys' => @rows.map { |row| row.fetch('journey_key') }.uniq.size,
+        'observed_sessions' => @rows.filter_map { |row| row['session_key'] }.uniq.size,
         'outcomes' => FrontendEventsQuery::OUTCOMES.map { |outcome| outcome_counts(outcome) },
         'actions' => FrontendEventsQuery::ACTIONS.index_with { |action| count(@rows.select { |row| row['outcome'] == action }) },
         'question_counts' => question_counts,

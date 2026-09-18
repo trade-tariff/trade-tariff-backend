@@ -10,6 +10,7 @@ RSpec.describe SearchAnalytics::JourneyOutcomesQuery do
       results_type: 'text',
       commodity_result_count: 'bigint',
       search_degraded: 'boolean',
+      total_questions: 'bigint',
       '@timestamp': 'timestamp' }
   end
 
@@ -23,6 +24,7 @@ RSpec.describe SearchAnalytics::JourneyOutcomesQuery do
       results_type: 'hybrid',
       commodity_result_count: nil,
       search_degraded: false,
+      total_questions: nil,
       '@timestamp': Time.utc(2026, 9, 14, 12) }.merge(attributes)
   end
 
@@ -37,6 +39,11 @@ RSpec.describe SearchAnalytics::JourneyOutcomesQuery do
     db.fetch(sql).each_with_object({}) do |row, result|
       JSON.parse(row.fetch(:request_ids).to_s).each { |id| result[id] = row.except(:request_ids) }
     end
+  end
+
+  it 'keeps the backend question count from the completed search event' do
+    rows = execute(event('one', 'interactive', total_questions: 4, final_result_type: 'answers'))
+    expect(rows.fetch('one')[:total_questions]).to eq(4)
   end
 
   it 'recognises classification, exact, empty retrieval and fallback results but not question steps' do
