@@ -3,14 +3,14 @@
 module SearchAnalytics
   # Adapts complete daily query results to the existing dashboard payload.
   class DailyAggregate < CloudwatchSnapshotQuery::Aggregate
-    def initialize(period:, results:)
-      @journeys = Period::VIEWS.index_with do |view|
+    def initialize(period:, results:, journeys: nil, cost_keys: nil)
+      @journeys = journeys || Period::VIEWS.index_with do |view|
         JourneyMetrics.new(rows: results.fetch('search_journeys'), period: period.with(view:))
       end
       @histogram = results.fetch('latency_histogram')
       costs = RequestCosts.new(
         trend_rows: results.fetch('ai_cost_trend'),
-        journey_keys: @journeys.fetch(period.view).keys,
+        journey_keys: cost_keys || @journeys.fetch(period.view).keys,
       ).call
       selections = %w[classic internal].flat_map do |view|
         results.fetch("#{view}_selection_trend").map { |row| row.merge('selectable_search_type' => view) }

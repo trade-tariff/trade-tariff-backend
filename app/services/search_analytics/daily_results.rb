@@ -3,6 +3,13 @@
 module SearchAnalytics
   class DailyResults < Data.define(:service, :period, :view, :bucket_size, :generated_at, :data_through, :payload)
     def self.call(period:, region:, log_group_name: DailyQuery::SEARCH_LOG_GROUP_NAME, date_range: nil, now: Time.current)
+      projected = MaterializedResult.call(period:, region:, log_group_name:, date_range:, now:)
+      return projected.value if projected.available
+
+      legacy_call(period:, region:, log_group_name:, date_range:, now:)
+    end
+
+    def self.legacy_call(period:, region:, log_group_name: DailyQuery::SEARCH_LOG_GROUP_NAME, date_range: nil, now: Time.current)
       if date_range
         date_range = DateRange.parse(from: date_range.from.iso8601, to: date_range.to.iso8601, now:)
         period = Period.for_range(date_range:, view: period.view)

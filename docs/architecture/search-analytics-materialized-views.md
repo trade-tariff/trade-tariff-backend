@@ -44,7 +44,28 @@ bundle exec rake search_analytics:refresh_views
 Use the service environment containing the stored query results. The database
 role must own the materialized views and be permitted to set `temp_file_limit`.
 No permissions are changed by this feature. Initial population uses a blocking
-refresh; subsequent refreshes can run concurrently with readers.
+refresh; subsequent refreshes can run concurrently with readers. Completing this
+bootstrap also enables completion-triggered maintenance for this service.
+
+## Collection completion
+
+After bootstrap, successful `search_journeys` and `journey_outcomes` jobs enqueue
+`SearchAnalyticsRefreshViewsWorker`. Unrelated optional-query failures must not
+leave these updated inputs stale indefinitely. Completed daily collection and
+already-current backfill requests can also enqueue a refresh. These signals do
+not submit more CloudWatch queries.
+
+The refresh worker uses `within_1_day`, without automatic retries. It waits for
+the refresh lock, then rechecks freshness before doing work. That prevents a
+source update arriving during an active refresh from being lost; duplicate
+signals normally become no-ops. Waiting refresh jobs can occupy worker threads
+and database connections, so queue priority is not resource isolation.
+
+There is no fifteen-minute polling schedule. View population remains explicit:
+background jobs skip unpopulated views. If enqueueing or refreshing fails, stored
+query results remain intact. Use `search_analytics:refresh_views` after resolving
+the failure. The rake command finishing its enqueue is not proof that collection
+or refresh finished.
 
 ## Consistency and refresh
 
