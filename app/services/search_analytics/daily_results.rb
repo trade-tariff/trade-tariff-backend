@@ -42,6 +42,7 @@ module SearchAnalytics
       )
       payload['trends']['outcomes'] = outcomes.fetch('trend')
       payload['journeys']['outcomes'] = outcomes.fetch('summary')
+      payload['journeys']['question_counts'] = outcomes.fetch('question_counts')
       payload['availability']['journey_outcomes'] = outcomes.dig('coverage', 'complete')
       payload['availability']['journey_outcome_coverage'] = outcomes.fetch('coverage')
       payload['frontend_events'] = FrontendEvents.call(
