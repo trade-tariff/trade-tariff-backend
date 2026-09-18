@@ -47,6 +47,7 @@ RSpec.describe SearchAnalytics::DailyResults do
     expect(payload.dig('journeys', 'outcomes')).to include('completed' => 11, 'nonterminal' => 2, 'failed' => 0, 'unknown' => 0)
     expect(payload.dig('trends', 'outcomes').first).to include('completed' => 11, 'nonterminal' => 2)
     expect(payload.dig('journeys', 'outcomes').values_at('completed', 'failed', 'nonterminal', 'unknown').sum).to eq(13)
+    expect(payload.dig('journeys', 'question_counts')).to eq([{ 'questions' => nil, 'journeys' => 13 }])
   end
 
   it 'includes classification journeys in All without leaking them into Internal outcomes' do

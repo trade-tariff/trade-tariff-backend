@@ -13,7 +13,7 @@ module SearchAnalytics
           COALESCE(destination, '') AS destination, COUNT(*) AS event_count,
           MAX(question_count) AS reported_questions,
           MAX(browser_session_id) AS browser_session_id,
-          MAX(result_rank) AS result_rank, MAX(confidence) AS confidence,
+          result_rank, confidence,
           SUM(CASE WHEN outcome = 'page_visible' AND client_navigation_ms >= 0 AND client_navigation_ms <= 86400000 THEN client_navigation_ms ELSE 0 END) AS navigation_total_ms,
           SUM(CASE WHEN outcome = 'page_visible' AND client_navigation_ms >= 0 AND client_navigation_ms <= 86400000 THEN 1 ELSE 0 END) AS navigation_observations
         FROM (
@@ -30,7 +30,7 @@ module SearchAnalytics
         ) AS frontend_events
         WHERE event = 'guided_search.journey' AND schema_version = 1
           AND request_id IS NOT NULL AND request_id != '' AND outcome IN (#{outcomes})
-        GROUP BY request_id, DATE_TRUNC('HOUR', `@timestamp`), outcome, COALESCE(destination, '')
+        GROUP BY request_id, DATE_TRUNC('HOUR', `@timestamp`), outcome, COALESCE(destination, ''), result_rank, confidence
         LIMIT 10000
       SQL
     end

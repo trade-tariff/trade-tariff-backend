@@ -16,12 +16,13 @@ module SearchAnalytics
     }.freeze
     NUMERIC = /^\s*[+-]?(?:[0-9]+(?:\.[0-9]*)?|\.[0-9]+)(?:[eE][+-]?[0-9]+)?\s*$/
 
-    def initialize(service:, dates:, period:, costs:, cost_fingerprint:)
+    def initialize(service:, dates:, period:, costs:, cost_fingerprint:, outcome_fingerprint:)
       @service = service
       @dates = dates
       @period = period
       @costs = costs
       @cost_fingerprint = cost_fingerprint
+      @outcome_fingerprint = outcome_fingerprint
       @rows = window_rows
     end
 
@@ -73,6 +74,28 @@ module SearchAnalytics
         .with(:ranked, ranked)
         .all
         .map { |row| row.transform_keys(&:to_s) }
+    end
+
+    def question_counts
+      hours = VIEW_HOURS.fetch(@period.view)
+      questions = Sequel.function(:jsonb_extract_path_text, Sequel[:outcome][:row], 'total_questions')
+      keys = Sequel.function(:jsonb_extract_path, Sequel[:outcome][:row], 'journey_keys')
+      asked = json_elements(:outcome)
+        .join_table(:cross, Sequel.function(:jsonb_array_elements_text, keys).as(:journey_hex, [:key]), nil, table_alias: :journey_hex, lateral: true)
+        .where(Sequel[:query_result][:service] => @service, Sequel[:query_result][:reporting_date] => @dates, Sequel[:query_result][:name] => 'journey_outcomes', Sequel[:query_result][:fingerprint] => @outcome_fingerprint)
+        .select(
+          Sequel[:journey_hex][:key].as(:journey_key),
+          Sequel.function(:max, Sequel.case([[questions =~ NUMERIC, Sequel.cast(questions, :bigint)]], nil)).as(:total_questions),
+        )
+        .group(Sequel[:journey_hex][:key])
+        .as_hash(:journey_key, :total_questions)
+      DailyJourney.where(service: @service, reporting_date: @dates).where { Sequel[hours] > 0 }
+        .select_map(Sequel.function(:encode, :journey_key, 'hex'))
+        .uniq
+        .map { |key| asked[key] }
+        .tally
+        .sort_by { |total, _count| total || -1 }
+        .map { |total, journeys| { 'questions' => total, 'journeys' => journeys } }
     end
 
     def cost_keys

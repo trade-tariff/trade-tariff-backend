@@ -63,6 +63,7 @@ module SearchAnalytics
         period: @period,
         costs: results.fetch('ai_cost_trend'),
         cost_fingerprint: @definitions.fetch('ai_cost_trend'),
+        outcome_fingerprint: @definitions.fetch('journey_outcomes'),
       )
       payload = MaterializedAggregate.new(period: @period, results:, projection:).payload
       attach_outcomes(payload, projection, compatible, dates)
@@ -97,6 +98,7 @@ module SearchAnalytics
       outcomes = projection.outcomes(view: @period.view, buckets: payload.fetch('trends').fetch('volume').map { |row| row.fetch('bucket') }, coverage:)
       payload['trends']['outcomes'] = outcomes.fetch('trend')
       payload['journeys']['outcomes'] = outcomes.fetch('summary')
+      payload['journeys']['question_counts'] = coverage.fetch('complete') ? projection.question_counts : []
       payload['availability']['journey_outcomes'] = coverage.fetch('complete')
       payload['availability']['journey_outcome_coverage'] = coverage
     end
