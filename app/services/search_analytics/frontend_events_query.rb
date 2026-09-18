@@ -12,14 +12,19 @@ module SearchAnalytics
         SELECT request_id, DATE_TRUNC('HOUR', `@timestamp`) AS `@timestamp`, outcome,
           COALESCE(destination, '') AS destination, COUNT(*) AS event_count,
           MAX(question_count) AS reported_questions,
+          MAX(browser_session_id) AS browser_session_id,
+          MAX(result_rank) AS result_rank, MAX(confidence) AS confidence,
           SUM(CASE WHEN outcome = 'page_visible' AND client_navigation_ms >= 0 AND client_navigation_ms <= 86400000 THEN client_navigation_ms ELSE 0 END) AS navigation_total_ms,
           SUM(CASE WHEN outcome = 'page_visible' AND client_navigation_ms >= 0 AND client_navigation_ms <= 86400000 THEN 1 ELSE 0 END) AS navigation_observations
         FROM (
           SELECT `@timestamp`, #{json_field('request_id')} AS request_id,
             #{json_field('event')} AS event, #{json_field('outcome')} AS outcome,
             #{json_field('destination')} AS destination,
+            #{json_field('browser_session_id')} AS browser_session_id,
             CAST(#{json_field('schema_version')} AS BIGINT) AS schema_version,
             CAST(#{json_field('question_count')} AS BIGINT) AS question_count,
+            CAST(#{json_field('result_rank')} AS BIGINT) AS result_rank,
+            #{json_field('confidence')} AS confidence,
             CAST(#{json_field('client_navigation_ms')} AS BIGINT) AS client_navigation_ms
           FROM #{source} WHERE #{STREAM_FILTER} AND `@message` LIKE '%guided_search.journey%'
         ) AS frontend_events

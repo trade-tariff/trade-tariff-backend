@@ -18,6 +18,7 @@ RSpec.describe SearchAnalytics::FrontendEvents do
     rows = [row('one', 'results', event_count: '2'), row('one', 'page_visible', destination: 'results'), row('two', 'results')]
     result = aggregate([record(rows)])
     expect(result['observed_journeys']).to eq(2)
+    expect(result['observed_sessions']).to eq(0)
     expect(result['outcomes'].find { |item| item['outcome'] == 'results' }).to include('rendered_events' => 3, 'visible_events' => 1, 'journeys' => 2)
   end
 
@@ -30,6 +31,11 @@ RSpec.describe SearchAnalytics::FrontendEvents do
   it 'does not invent a timing for an outcome without observations' do
     outcome = aggregate([record([row('one', 'results')])])['outcomes'].find { |item| item['outcome'] == 'results' }
     expect(outcome).to include('timed_visible_events' => 0, 'average_navigation_ms' => nil)
+  end
+
+  it 'counts distinct hashed browser sessions without treating missing session keys as users' do
+    rows = [row('one', 'results', session_key: 'session-a'), row('two', 'results', session_key: 'session-a'), row('three', 'results')]
+    expect(aggregate([record(rows)])['observed_sessions']).to eq(1)
   end
 
   it 'counts recorded actions rather than presenting them as unique clicks or answers' do

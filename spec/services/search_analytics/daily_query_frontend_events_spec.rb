@@ -20,10 +20,19 @@ RSpec.describe SearchAnalytics::DailyQuery do
     result = collect.fetch('frontend_events').first
     expect(result).to include('journey_key' => Digest::SHA256.hexdigest('private-journey'), 'event_count' => '1')
     expect(result).not_to have_key('request_id')
+    expect(result).not_to have_key('browser_session_id')
     sql = starts.first[:params][:query_string]
     expect(sql).to include('ecs/frontend/', "event = 'guided_search.journey'", 'schema_version = 1', '2026-09-14 00:00:00', '2026-09-15 00:00:00')
-    expect(sql).not_to include('backend-uk/', 'worker-uk/', 'browser_session_id', 'search_degraded')
-    expect(sql).to include("GET_JSON_OBJECT(REGEXP_EXTRACT(`@message`, '([{].*[}])', 1), '$.request_id')", "'$.schema_version'")
+    expect(sql).not_to include('backend-uk/', 'worker-uk/', 'search_degraded')
+    expect(sql).to include("GET_JSON_OBJECT(REGEXP_EXTRACT(`@message`, '([{].*[}])', 1), '$.request_id')", "'$.schema_version'", "'$.browser_session_id'", "'$.result_rank'", "'$.confidence'")
+  end
+
+  it 'hashes browser session identifiers before storing them' do
+    client.stub_responses(:get_query_results, response([row.merge('browser_session_id' => 'v1:session')]))
+    result = collect.fetch('frontend_events').first
+    expect(result).to include('session_key' => Digest::SHA256.hexdigest('v1:session'))
+    expect(result).not_to have_key('browser_session_id')
+    expect(SearchAnalyticsQueryResult.first.rows.to_json).not_to include('v1:session')
   end
 
   it 'reuses a successful result without another AWS submission' do

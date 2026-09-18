@@ -26,6 +26,16 @@ RSpec.describe SearchAnalytics::JourneyOutcomes do
     described_class.call(journeys:, records:, dates:, buckets: journeys.keys_by_bucket.keys)
   end
 
+  it 'keeps the highest backend question count per journey' do
+    store([
+      window(%w[one], total_questions: 1),
+      window(%w[one two], kind: 'completed', total_questions: 3),
+    ])
+    expect(outcomes([starts(%w[one two])])['question_counts']).to eq([
+      { 'questions' => 3, 'journeys' => 2 },
+    ])
+  end
+
   it 'joins only selected frontend IDs, deduplicates steps and distinguishes questions from unknown outcomes' do
     store([
       window(%w[one two], questions_seen: '1'),

@@ -16,7 +16,7 @@ module SearchAnalytics
           WHEN failed_at IS NOT NULL THEN 'failed' ELSE 'none' END
       SQL
       <<~SQL
-        SELECT #{state} AS terminal_state, questions_seen, unknown_seen, selected, zero_result,
+        SELECT #{state} AS terminal_state, questions_seen, unknown_seen, selected, zero_result, total_questions,
           TO_JSON(COLLECT_SET(request_id)) AS request_ids, COUNT(*) AS journey_count,
           SUM(observed_events) AS event_count
         FROM (
@@ -26,14 +26,15 @@ module SearchAnalytics
             MAX(CASE WHEN event = 'search_completed' AND final_result_type = 'questions' THEN 1 ELSE 0 END) AS questions_seen,
             MAX(CASE WHEN event = 'search_completed' AND NOT COALESCE((#{terminal}) OR final_result_type = 'questions', false) THEN 1 ELSE 0 END) AS unknown_seen,
             MAX(CASE WHEN event = 'result_selected' THEN 1 ELSE 0 END) AS selected,
-            MAX(CASE WHEN #{terminal} AND (#{zero_result_condition} OR (search_type = 'classification' AND result_count = 0)) AND (search_degraded IS NULL OR search_degraded = false) THEN 1 ELSE 0 END) AS zero_result
+            MAX(CASE WHEN #{terminal} AND (#{zero_result_condition} OR (search_type = 'classification' AND result_count = 0)) AND (search_degraded IS NULL OR search_degraded = false) THEN 1 ELSE 0 END) AS zero_result,
+            MAX(CASE WHEN event = 'search_completed' THEN total_questions ELSE NULL END) AS total_questions
           FROM #{source}
           WHERE #{log_stream_filter} AND service = 'search'
             AND event IN ('search_completed', 'search_failed', 'result_selected')
             AND request_id IS NOT NULL AND request_id != ''
           GROUP BY request_id
         ) AS observations
-        GROUP BY #{state}, questions_seen, unknown_seen, selected, zero_result, SUBSTRING(request_id, 1, 1)
+        GROUP BY #{state}, questions_seen, unknown_seen, selected, zero_result, total_questions, SUBSTRING(request_id, 1, 1)
         LIMIT 10000
       SQL
     end
