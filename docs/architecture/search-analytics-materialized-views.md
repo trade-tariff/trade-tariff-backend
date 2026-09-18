@@ -26,8 +26,8 @@ is separate from page reads.
 
 The relations store compact daily and hourly journey statistics plus the
 repeated-identity observations needed for later range reconciliation. They do
-not store term rankings or identifier collections. This change does not alter
-API reads.
+not store term rankings or identifier collections. Compatible populated views
+serve API reads. Missing, stale or incompatible views use the legacy reader.
 
 ## Migration and initial population
 
@@ -79,15 +79,17 @@ repair; it does not recollect CloudWatch data. A caller may skip unpopulated
 views after the lock is taken. A non-waiting caller still receives a lock error
 while another refresh holds it.
 
-This change does not pin API reads to the views or add a faster API path.
-Missing, incompatible or unpopulated materialized data has no effect on the
-existing reader. No web request refreshes a view or collects logs.
+The API pins live metadata and the materialized data in one read-only snapshot.
+It uses the faster path only when the views are populated and the relevant source
+revisions match. Missing, incompatible or unpopulated data retains the existing
+reader and its higher resource cost. No web request refreshes a view or collects
+logs.
 
 Refresh settings are transaction-local: UTC, 64 MB `work_mem`, 4 GB temporary-file
 limit and 120 seconds per statement. The file limit applies to simultaneous
 backend temporary files, not cumulative writes over all refresh statements.
-These are per-operation allowances, not whole-process caps. They do not change
-pooled connection defaults.
+Read-side aggregation uses 32 MB `work_mem`. These are per-operation allowances,
+not whole-process caps. Neither setting changes pooled connection defaults.
 
 A native materialized-view refresh recomputes the whole relation, not only the
 changed reporting day. Keep this cost in operational capacity planning; the
