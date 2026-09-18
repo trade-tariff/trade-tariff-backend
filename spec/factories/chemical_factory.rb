@@ -1,6 +1,8 @@
 FactoryBot.define do
+  sequence(:cas) { |n| "0-#{n}-0" }
+
   factory :chemical do
-    cas { "0-#{Forgery(:basic).number}-0" }
+    cas { generate(:cas) }
     sequence(:id) { |n| n }
 
     trait :with_name do
