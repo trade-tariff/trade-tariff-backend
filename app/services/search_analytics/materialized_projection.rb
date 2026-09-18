@@ -4,12 +4,13 @@ module SearchAnalytics
   class MaterializedProjection
     SERIES = JourneyOutcomes::SERIES
 
-    def initialize(service:, dates:, period:, costs:)
+    def initialize(service:, dates:, period:, costs:, cost_fingerprint:)
       @db = SearchAnalyticsQueryResult.db
       @dates = dates.map { |date| @db.literal(date) }.join(',')
       @service = @db.literal(service)
       @period = period
       @costs = costs
+      @cost_fingerprint = @db.literal(cost_fingerprint)
       sums = (%w[journeys] + SERIES).map { |name| "sum(#{name})::bigint AS #{name}" }.join(',')
       counts = counts_sql('flags')
       bucket = period.single_day? ? 'd.reporting_date::timestamp + make_interval(hours=>h)' : 'd.reporting_date::timestamp'
@@ -102,8 +103,21 @@ module SearchAnalytics
       return {} if @costs.empty?
 
       column = { 'all' => 'all_hours', 'classic' => 'classic_hours', 'internal' => 'internal_hours' }.fetch(@period.view)
-      keys = @costs.map { |row| row.fetch('journey_key') }.uniq.map { |key| "decode(#{@db.literal(key)},'hex')" }.join(',')
-      @db.fetch("SELECT DISTINCT encode(journey_key,'hex') AS key FROM search_analytics_daily_journeys WHERE service = #{@service} AND reporting_date IN (#{@dates}) AND #{column}>0 AND journey_key IN (#{keys})").all.to_h { |row| [row[:key], true] }
+      @db.fetch(<<~SQL).all.to_h { |row| [row[:key], true] }
+        SELECT DISTINCT encode(j.journey_key, 'hex') AS key
+        FROM search_analytics_query_results r
+        CROSS JOIN LATERAL jsonb_array_elements(r.rows) c(row)
+        JOIN search_analytics_daily_journeys j
+          ON j.service = r.service
+         AND j.reporting_date = r.reporting_date
+         AND j.journey_key = decode(c.row->>'journey_key', 'hex')
+        WHERE r.service = #{@service}
+          AND r.reporting_date IN (#{@dates})
+          AND r.name = 'ai_cost_trend'
+          AND r.fingerprint = #{@cost_fingerprint}
+          AND c.row->>'journey_key' IS NOT NULL
+          AND j.#{column} > 0
+      SQL
     end
 
   private

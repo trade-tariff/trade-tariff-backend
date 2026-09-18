@@ -51,15 +51,21 @@ module SearchAnalytics
 
   private
 
-    def build(metadata, complete, dates)
-      ids = metadata.reject { |row| PROJECTED.include?(row.name) }.select { |row| dates.include?(row.reporting_date) }.map(&:id)
+    def build(compatible, complete, dates)
+      ids = compatible.reject { |row| PROJECTED.include?(row.name) }.select { |row| dates.include?(row.reporting_date) }.map(&:id)
       frontend, backend = SearchAnalyticsQueryResult.where(id: ids).all.partition { |row| row.name == 'frontend_events' }
       results = (@required - PROJECTED).index_with do |name|
         backend.select { |row| row.name == name }.flat_map { |row| row.rows.to_a }
       end
-      projection = MaterializedProjection.new(service: @service, dates:, period: @period, costs: results.fetch('ai_cost_trend'))
+      projection = MaterializedProjection.new(
+        service: @service,
+        dates:,
+        period: @period,
+        costs: results.fetch('ai_cost_trend'),
+        cost_fingerprint: @definitions.fetch('ai_cost_trend'),
+      )
       payload = MaterializedAggregate.new(period: @period, results:, projection:).payload
-      attach_outcomes(payload, projection, metadata, dates)
+      attach_outcomes(payload, projection, compatible, dates)
       payload['frontend_events'] = FrontendEvents.call(records: frontend, dates: @dates, supported: @service == 'uk' && @period.view != 'classic')
       payload['coverage'] = {
         'from' => @dates.first.iso8601,
@@ -80,8 +86,8 @@ module SearchAnalytics
       )
     end
 
-    def attach_outcomes(payload, projection, metadata, dates)
-      collected = metadata.select { |row| row.name == 'journey_outcomes' && dates.include?(row.reporting_date) }.map(&:reporting_date).sort
+    def attach_outcomes(payload, projection, compatible, dates)
+      collected = compatible.select { |row| row.name == 'journey_outcomes' && dates.include?(row.reporting_date) }.map(&:reporting_date).sort
       coverage = {
         'complete' => collected == dates,
         'expected_days' => dates.size,
