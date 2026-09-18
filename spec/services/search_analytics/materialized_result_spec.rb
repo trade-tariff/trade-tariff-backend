@@ -239,6 +239,22 @@ RSpec.describe SearchAnalytics::MaterializedResult, :truncation do
       expect_parity
     end
 
+    it 'does not serve outcomes after the query definition changes' do
+      allow(SearchAnalytics::DailyQuery).to receive(:new).and_wrap_original do |method, **args|
+        query = method.call(**args)
+        fingerprints = query.fingerprints.merge('journey_outcomes' => 'changed')
+        allow(query).to receive(:fingerprints).and_return(fingerprints)
+        query
+      end
+      expect_parity
+      expect(described_class.call(**arguments).value.payload.dig('availability', 'journey_outcomes')).to be(false)
+    end
+
+    it 'ignores a stale frontend fingerprint the same way as the existing reader' do
+      SearchAnalyticsQueryResult.where(reporting_date: first_date, name: 'frontend_events').update(fingerprint: 'obsolete')
+      expect_parity
+    end
+
     it 'does not combine a new day with stale materialized views' do
       store_day(first_date - 1)
       expect(described_class.call(**arguments(from: first_date - 1)).available).to be(false)
