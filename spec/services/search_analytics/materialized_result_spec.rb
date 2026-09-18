@@ -26,9 +26,9 @@ RSpec.describe SearchAnalytics::MaterializedResult, :truncation do
       { '@timestamp' => bucket, 'search_type' => type, 'request_source' => 'frontend', 'event' => 'search_completed', 'searches' => '5', 'zero_results' => '1' }
     end
     groups['journey_outcomes'] = [
-      outcome(date, [key("classic-#{date}"), key("classification-#{date}"), key("admin-#{date}")], 'completed', 'selected' => '1'),
-      outcome(date, [key('shared')], date == first_date ? 'failed' : 'completed', 'zero_result' => '1'),
-      outcome(date, [key("question-#{date}")], 'none', 'questions_seen' => '1'),
+      outcome(date, [key("classic-#{date}"), key("classification-#{date}"), key("admin-#{date}")], 'completed', 'selected' => '1', 'total_questions' => '0'),
+      outcome(date, [key('shared')], date == first_date ? 'failed' : 'completed', 'zero_result' => '1', 'total_questions' => '1'),
+      outcome(date, [key("question-#{date}")], 'none', 'questions_seen' => '1', 'total_questions' => '3'),
     ]
     groups['ai_cost_trend'] = [key('shared'), key("admin-#{date}")].map do |id|
       { '@timestamp' => bucket, 'journey_key' => id, 'event_kind' => 'interactive_search_completed', 'total_cost_usd' => '0.012345678', 'priced_calls' => '1', 'unpriced_calls' => '0', 'calls' => '1' }

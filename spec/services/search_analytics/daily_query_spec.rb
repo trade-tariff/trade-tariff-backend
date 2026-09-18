@@ -114,10 +114,10 @@ RSpec.describe SearchAnalytics::DailyQuery do
   end
 
   it 'hashes cost request IDs before storing them and normalises operations' do
-    row = encoded('request_id' => 'private-id', 'cost_operation' => 'interactive_search', 'aggregated_total_cost_usd' => '0.01')
+    row = encoded('request_id' => 'private-id', 'cost_operation' => 'interactive_search', 'model' => 'gpt-5.4', 'aggregated_total_cost_usd' => '0.01')
     client.stub_responses(:get_query_results, [complete, complete, complete.merge(results: [row]), *Array.new(12) { complete }])
     rows = collect.fetch('ai_cost_trend')
-    expect(rows.first).to include('journey_key' => Digest::SHA256.hexdigest('private-id'), 'event_kind' => 'interactive_search', 'total_cost_usd' => '0.01')
+    expect(rows.first).to include('journey_key' => Digest::SHA256.hexdigest('private-id'), 'event_kind' => 'interactive_search', 'model' => 'gpt-5.4', 'total_cost_usd' => '0.01')
     expect(SearchAnalyticsQueryResult.all.map { |r| r.rows.to_json }.join).not_to include('private-id')
   end
 
