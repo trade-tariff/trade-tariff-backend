@@ -56,11 +56,12 @@ already-current backfill requests can also enqueue a refresh. These signals do
 not submit more CloudWatch queries.
 
 The refresh worker uses `within_1_day`, without automatic retries. It does not
-wait for the refresh lock. If a refresh or bootstrap already holds the lock, one
-delayed followup is scheduled and further busy signals share that followup. The
-followup rechecks freshness after the lock is free, so a source update committed
-during an active refresh is not lost. Duplicate signals normally become no-ops.
-SQL failures do not schedule a followup.
+wait for the refresh lock. If a refresh or bootstrap already holds the lock, the
+job schedules a delayed followup and returns the thread. Each busy signal may
+queue its own followup. The followup rechecks source revisions after the lock is
+free, so a source update committed during an active refresh is not lost. Extra
+followups that find matching revisions do no work. SQL failures do not schedule
+a followup.
 
 There is no fifteen-minute polling schedule. View population remains explicit:
 the worker asks the helper to skip unpopulated views after taking the lock, so it
