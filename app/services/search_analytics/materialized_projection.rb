@@ -83,10 +83,9 @@ module SearchAnalytics
       json_elements(:c)
         .join_table(:inner, DailyJourney.table_name, {
           Sequel[:j][:service] => Sequel[:r][:service],
-          Sequel[:j][:reporting_date] => Sequel[:r][:reporting_date],
           Sequel[:j][:journey_key] => Sequel.function(:decode, key, 'hex'),
         }, table_alias: :j)
-        .where(Sequel[:r][:service] => @service, Sequel[:r][:reporting_date] => @dates, Sequel[:r][:name] => 'ai_cost_trend', Sequel[:r][:fingerprint] => @cost_fingerprint)
+        .where(Sequel[:r][:service] => @service, Sequel[:r][:reporting_date] => @dates, Sequel[:j][:reporting_date] => @dates, Sequel[:r][:name] => 'ai_cost_trend', Sequel[:r][:fingerprint] => @cost_fingerprint)
         .exclude(key => nil)
         .where { Sequel[:j][hours] > 0 }
         .select(Sequel.function(:encode, Sequel[:j][:journey_key], 'hex').as(:key))
