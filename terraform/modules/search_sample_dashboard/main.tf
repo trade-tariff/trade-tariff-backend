@@ -15,6 +15,9 @@ locals {
   classic_empty_commodity_condition = "(search_type = \"classic\" and ((ispresent(commodity_result_count) and commodity_result_count = 0 and (not ispresent(results_type) or results_type != \"exact_search\")) or (not ispresent(commodity_result_count) and result_count = 0)))"
   interactive_no_results_condition  = "((search_type = \"interactive\" or search_type = \"internal\") and result_count = 0)"
   zero_result_condition             = "(${local.classic_empty_commodity_condition} or ${local.interactive_no_results_condition})"
+  classic_selectable_condition      = "(search_type = \"classic\" and results_type = \"fuzzy_search\")"
+  interactive_selectable_condition  = "((search_type = \"interactive\" or search_type = \"internal\") and results_type in [\"opensearch\", \"vector\", \"hybrid\"])"
+  selectable_condition              = "(${local.classic_selectable_condition} or ${local.interactive_selectable_condition})"
 
   search_dashboard_url            = "https://${var.region}.console.aws.amazon.com/cloudwatch/home?region=${var.region}#dashboards:name=Search-${var.environment}"
   search_operations_dashboard_url = "https://${var.region}.console.aws.amazon.com/cloudwatch/home?region=${var.region}#dashboards:name=SearchOperations-${var.environment}"
@@ -158,7 +161,7 @@ locals {
               | ${local.frontend_search_filter} and event in ["search_completed", "result_selected"]
               | ${local.request_id_filter}
               | stats max(if(event = "result_selected", 1, 0)) as selected,
-                  max(if(event = "search_completed" and result_count > 0, 1, 0)) as selectable,
+                  max(if(event = "search_completed" and ${local.selectable_condition}, 1, 0)) as selectable,
                   max(if(event = "search_completed", experiment, "")) as experiment by request_id
               | filter selectable = 1
               | ${local.cohort_field}
