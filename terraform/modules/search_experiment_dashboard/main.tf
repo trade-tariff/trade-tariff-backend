@@ -17,6 +17,7 @@ locals {
   search_dashboard_url            = "https://${var.region}.console.aws.amazon.com/cloudwatch/home?region=${var.region}#dashboards:name=Search-${var.environment}"
   search_operations_dashboard_url = "https://${var.region}.console.aws.amazon.com/cloudwatch/home?region=${var.region}#dashboards:name=SearchOperations-${var.environment}"
   search_quality_dashboard_url    = "https://${var.region}.console.aws.amazon.com/cloudwatch/home?region=${var.region}#dashboards:name=SearchQuality-${var.environment}"
+  search_sample_dashboard_url     = "https://${var.region}.console.aws.amazon.com/cloudwatch/home?region=${var.region}#dashboards:name=SearchSample-${var.environment}"
 }
 
 resource "aws_cloudwatch_dashboard" "search_experiment" {
@@ -53,7 +54,7 @@ locals {
               "**Empty commodity results (classic):** fuzzy/null with zero commodity hits (empty Best commodity matches). **Empty results (interactive):** no returned results. Shared widgets break series down by `search_type` where relevant.",
               "**Start here:** Set the dashboard time range to the UAT window, then review volume, reliability, latency, outcomes, questions, search terms, and costs.",
               "**Investigate:** copy the request ID into admin search diagnostics to reconstruct an individual request.",
-              "**Related:** [Search Overview](${local.search_dashboard_url}) | [Search Operations](${local.search_operations_dashboard_url}) | [Search Quality](${local.search_quality_dashboard_url})",
+              "**Related:** [Search Overview](${local.search_dashboard_url}) | [Search Operations](${local.search_operations_dashboard_url}) | [Search Quality](${local.search_quality_dashboard_url}) | [Search Sample](${local.search_sample_dashboard_url})",
             ])
           }
         }

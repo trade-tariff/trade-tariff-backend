@@ -50,6 +50,19 @@ output "search_experiment_dashboard_url" {
   value       = module.search_experiment_dashboard.dashboard_url
 }
 
+module "search_sample_dashboard" {
+  source = "./modules/search_sample_dashboard"
+
+  environment    = var.environment
+  log_group_name = "platform-logs-${var.environment}"
+  region         = var.region
+}
+
+output "search_sample_dashboard_url" {
+  description = "URL to the Search Sample CloudWatch dashboard"
+  value       = module.search_sample_dashboard.dashboard_url
+}
+
 module "search_operations_dashboard" {
   source = "./modules/search_operations_dashboard"
 

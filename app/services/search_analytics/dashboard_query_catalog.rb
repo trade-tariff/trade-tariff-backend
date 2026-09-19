@@ -5,7 +5,7 @@ require 'tmpdir'
 
 module SearchAnalytics
   class DashboardQueryCatalog
-    DASHBOARDS = %w[search_dashboard search_quality_dashboard search_experiment_dashboard search_operations_dashboard ai_costs_dashboard].freeze
+    DASHBOARDS = %w[search_dashboard search_quality_dashboard search_experiment_dashboard search_sample_dashboard search_operations_dashboard ai_costs_dashboard].freeze
 
     def self.call(log_group_name:)
       Dir.mktmpdir('search-dashboard-queries') do |directory|

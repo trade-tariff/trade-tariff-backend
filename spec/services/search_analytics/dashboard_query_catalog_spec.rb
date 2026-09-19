@@ -25,7 +25,7 @@ RSpec.describe SearchAnalytics::DashboardQueryCatalog do
       catalog
 
       modules = captured[:configuration].fetch('module')
-      expect(modules.keys).to contain_exactly('search_dashboard', 'search_quality_dashboard', 'search_experiment_dashboard', 'search_operations_dashboard', 'ai_costs_dashboard')
+      expect(modules.keys).to contain_exactly('search_dashboard', 'search_quality_dashboard', 'search_experiment_dashboard', 'search_sample_dashboard', 'search_operations_dashboard', 'ai_costs_dashboard')
       modules.each do |name, configuration|
         expect(configuration).to include('environment' => 'validation', 'log_group_name' => 'platform-logs-staging', 'region' => 'eu-west-2')
         expect(File.expand_path(configuration.fetch('source'), captured[:directory])).to eq(Rails.root.join('terraform/modules', name).to_s)
