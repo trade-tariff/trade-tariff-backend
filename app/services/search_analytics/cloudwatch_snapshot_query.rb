@@ -215,7 +215,7 @@ module SearchAnalytics
 
     def ai_cost_trend_query
       <<~QUERY
-        SELECT #{bucket_expression} AS `@timestamp`, event_kind,
+        SELECT #{bucket_expression} AS `@timestamp`, event_kind, COALESCE(model, 'unknown') AS model,
           SUM(CASE WHEN pricing_known = true AND service = 'search' THEN input_cost_usd ELSE 0 END) AS aggregated_input_cost_usd,
           SUM(CASE WHEN pricing_known = true AND service = 'search' THEN cached_input_cost_usd ELSE 0 END) AS aggregated_cached_input_cost_usd,
           SUM(CASE WHEN pricing_known = true AND service = 'search' THEN cache_write_input_cost_usd ELSE 0 END) AS aggregated_cache_write_input_cost_usd,
@@ -228,7 +228,7 @@ module SearchAnalytics
           SUM(CASE WHEN pricing_known = true AND total_cost_usd IS NOT NULL THEN 1 ELSE 0 END) AS aggregated_priced_calls,
           SUM(CASE WHEN pricing_known = true AND total_cost_usd IS NOT NULL THEN 0 ELSE 1 END) AS aggregated_unpriced_calls
         FROM #{source} WHERE #{log_stream_filter} AND #{search_ai_cost_filter} AND #{request_exclusion_filter}
-        GROUP BY #{bucket_expression}, event_kind
+        GROUP BY #{bucket_expression}, event_kind, COALESCE(model, 'unknown')
       QUERY
     end
 
@@ -421,7 +421,10 @@ module SearchAnalytics
       end
 
       def ai_cost_models
-        rows_by_model = ai_cost_trend_rows.group_by { |row| row['model'].presence || 'unknown' }
+        modelled_rows = ai_cost_trend_rows.select { |row| row.key?('model') }
+        return [] if modelled_rows.empty?
+
+        rows_by_model = modelled_rows.group_by { |row| row['model'].presence || 'unknown' }
         rows_by_model.map { |model, rows|
           {
             'model' => model,

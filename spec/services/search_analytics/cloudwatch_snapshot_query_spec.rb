@@ -72,6 +72,7 @@ RSpec.describe SearchAnalytics::CloudwatchSnapshotQuery do
         result_row(
           '@timestamp' => '2026-06-10 09:00:00.000',
           'event_kind' => 'interactive_search',
+          'model' => 'gpt-5.4',
           'aggregated_input_cost_usd' => '0.004',
           'aggregated_cached_input_cost_usd' => '0.0002',
           'aggregated_cache_write_input_cost_usd' => '0.0005',
@@ -90,6 +91,7 @@ RSpec.describe SearchAnalytics::CloudwatchSnapshotQuery do
         result_row(
           '@timestamp' => '2026-06-10 09:00:00.000',
           'event_kind' => 'vector_search_query_embedding',
+          'model' => 'text-embedding-3-small',
           'aggregated_input_cost_usd' => '0',
           'aggregated_cached_input_cost_usd' => '0',
           'aggregated_cache_write_input_cost_usd' => '0',
@@ -325,10 +327,15 @@ RSpec.describe SearchAnalytics::CloudwatchSnapshotQuery do
         include('event_kind' => 'vector_search_query_embedding', 'calls' => 1, 'total_tokens' => 10_000, 'input_cost_usd' => 0.0, 'output_cost_usd' => 0.0, 'embedding_cost_usd' => 0.0002, 'total_cost_usd' => 0.0002, 'unpriced_calls' => 0),
       ],
     )
+    expect(payloads.dig('all', 'ai_costs', 'models')).to contain_exactly(
+      include('model' => 'gpt-5.4', 'calls' => 4, 'total_cost_usd' => 0.01),
+      include('model' => 'text-embedding-3-small', 'calls' => 1, 'total_cost_usd' => 0.0002),
+    )
     expect(payloads.dig('classic', 'ai_costs')).to include(
       'summary' => include('total_cost_usd' => 0.0, 'assisted_searches' => 0),
       'trend' => [],
       'operations' => [],
+      'models' => [],
     )
     expect(payloads.dig('classic', 'trends', 'outcomes')).to contain_exactly(
       include(

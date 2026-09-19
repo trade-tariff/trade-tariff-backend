@@ -53,11 +53,11 @@ module SearchAnalytics
     end
 
     def selections
-      @rows.select { |row| row['outcome'] == 'result_selected' }.group_by { |row|
+      @rows.select { |row| row['outcome'] == 'result_selected' && Integer(row['result_rank'], exception: false) }.group_by { |row|
         [Integer(row['result_rank'], exception: false), sql_presence(row['confidence'])]
       }.map { |(rank, confidence), rows|
         { 'result_rank' => rank, 'confidence' => confidence, 'event_count' => count(rows) }
-      }.sort_by { |row| [row['result_rank'] || 999, row['confidence'].to_s] }
+      }.sort_by { |row| [row['result_rank'], row['confidence'].to_s] }
     end
 
     def sql_presence(value)
