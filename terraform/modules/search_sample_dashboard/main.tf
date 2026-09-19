@@ -161,8 +161,8 @@ locals {
               | ${local.request_id_filter}
               | stats max(if(event = "result_selected", 1, 0)) as selected,
                   max(if(event = "search_completed" and result_count > 0, 1, 0)) as selectable by request_id, cohort
-              | stats sum(selected) as selected_requests, sum(selectable) as selectable_requests by cohort
-              | filter selectable_requests > 0
+              | filter selectable = 1
+              | stats sum(selected) as selected_requests, count(*) as selectable_requests by cohort
               | fields selected_requests * 100.0 / selectable_requests as selection_rate_percent
               | display cohort, selected_requests, selectable_requests, selection_rate_percent
             EOT
@@ -202,6 +202,7 @@ locals {
             query  = <<-EOT
               ${local.source}
               | ${local.ai_cost_events}
+              | filter request_source = "frontend"
               | ${local.cohort_field}
               | ${local.compare_filter}
               | filter pricing_known

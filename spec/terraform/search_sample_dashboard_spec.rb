@@ -41,7 +41,9 @@ RSpec.describe 'search sample dashboard Terraform' do
   it 'collapses duplicate request IDs before volume and rate totals' do
     expect(widget_query('Completed Searches by Cohort and Type')).to include('datefloor(requested_at, 1h)')
     expect(widget_query('Empty Result Rate by Cohort and Type')).to include('empty_result_rate_percent')
+    expect(widget_query('Selection Rate by Cohort')).to include('filter selectable = 1')
     expect(widget_query('Selection Rate by Cohort')).to include('selection_rate_percent')
+    expect(widget_query('Priced AI Cost by Cohort')).to include('filter request_source = "frontend"')
     expect(widget_query('Recent Sample and Control Events')).to include('| limit 20')
     expect(widget_query('Recent Sample and Control Events')).not_to include('query')
   end
