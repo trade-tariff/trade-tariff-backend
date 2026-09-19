@@ -31,7 +31,7 @@ RSpec.describe SearchAnalytics::MaterializedResult, :truncation do
       outcome(date, [key("question-#{date}")], 'none', 'questions_seen' => '1', 'total_questions' => '3'),
     ]
     groups['ai_cost_trend'] = [key('shared'), key("admin-#{date}")].map do |id|
-      { '@timestamp' => bucket, 'journey_key' => id, 'event_kind' => 'interactive_search_completed', 'total_cost_usd' => '0.012345678', 'priced_calls' => '1', 'unpriced_calls' => '0', 'calls' => '1' }
+      { '@timestamp' => bucket, 'journey_key' => id, 'event_kind' => 'interactive_search_completed', 'model' => 'gpt-5.4', 'total_cost_usd' => '0.012345678', 'priced_calls' => '1', 'unpriced_calls' => '0', 'calls' => '1' }
     end
     groups['search_term_improvements'] = %w[zebra apple äpple].map do |query|
       { 'query' => query, 'search_type' => 'interactive', 'zero_results' => '2' }
