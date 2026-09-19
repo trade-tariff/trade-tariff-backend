@@ -89,11 +89,12 @@ RSpec.describe Api::Admin::SearchAnalyticsController do
     expect(response.parsed_body.dig('data', 'id')).to eq("#{TradeTariffBackend.service}-24h-all")
   end
 
-  it 'returns not found for an incomplete day' do
+  it 'serves remaining widgets when one stored query is missing' do
     SearchAnalyticsQueryResult.where(name: 'search_journeys').delete
     request_analytics
-    expect(response).to have_http_status(:not_found)
-    expect(response.parsed_body.dig('errors', 0, 'title')).to eq('Search analytics unavailable')
+    expect(response).to have_http_status(:ok)
+    expect(attributes['summary']).to include('searches' => 0, 'requests' => 3)
+    expect(attributes['coverage']).to include('complete' => false, 'collected_days' => 1)
   end
 
   it 'keeps cost totals consistent with a refreshed operation query without a second cost scan' do
@@ -105,10 +106,13 @@ RSpec.describe Api::Admin::SearchAnalyticsController do
     expect(attributes['coverage']).to include('complete' => true)
   end
 
-  it 'rejects stale query definitions instead of returning inconsistent data' do
+  it 'rejects stale query definitions instead of mixing query semantics' do
     SearchAnalyticsQueryResult.where(name: 'ai_cost_trend').update(fingerprint: 'obsolete')
     request_analytics
-    expect(response).to have_http_status(:not_found)
+    expect(response).to have_http_status(:ok)
+    expect(attributes['summary']).to include('searches' => 1, 'requests' => 3)
+    expect(attributes.dig('ai_costs', 'summary', 'total_cost_usd')).to eq(0)
+    expect(attributes.dig('coverage', 'queries', 'ai_cost_trend', 'complete')).to be(false)
   end
 
   it 'uses inclusive custom dates and includes the bounds in the resource ID' do

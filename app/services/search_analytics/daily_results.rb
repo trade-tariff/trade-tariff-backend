@@ -24,21 +24,21 @@ module SearchAnalytics
       compatible = records.select { |row| row.fingerprint == definitions.fetch(row.name) }
       frontend_records, backend_records = compatible.partition { |row| row.name == 'frontend_events' }
       required = definitions.keys - %w[frontend_events journey_outcomes]
-      complete = backend_records.group_by(&:reporting_date).select { |_date, rows| rows.map(&:name).sort == required.sort }
-      return if complete.empty?
+      return if backend_records.empty?
 
-      # Only full compatible days contribute; a failed query is a coverage gap,
-      # not a zero value. This path never executes the collector or its cache fetch.
-      collected_dates = complete.keys.sort
-      rows = complete.values.flatten
+      # Each matching query contributes its own days. A missing or stale group is a
+      # coverage gap for that widget, not a reason to hide the others. This path
+      # never executes the collector or its cache fetch.
+      collected_dates = backend_records.map(&:reporting_date).uniq.sort
       results = required.index_with do |name|
-        rows.select { |row| row.name == name }.flat_map { |row| row.rows.to_a }
+        backend_records.select { |row| row.name == name }.flat_map { |row| row.rows.to_a }
       end
       payload = DailyAggregate.new(period:, results:).payload
+      journey_dates = backend_records.select { |row| row.name == 'search_journeys' }.map(&:reporting_date).uniq.sort
       outcomes = JourneyOutcomes.call(
         journeys: JourneyMetrics.new(rows: results.fetch('search_journeys'), period:),
         records: SearchAnalyticsQueryResult.where(service:, name: 'journey_outcomes', fingerprint: definitions.fetch('journey_outcomes')),
-        dates: collected_dates, buckets: payload.fetch('trends').fetch('volume').map { |row| row.fetch('bucket') }
+        dates: journey_dates, buckets: payload.fetch('trends').fetch('volume').map { |row| row.fetch('bucket') }
       )
       payload['trends']['outcomes'] = outcomes.fetch('trend')
       payload['journeys']['outcomes'] = outcomes.fetch('summary')
@@ -46,27 +46,42 @@ module SearchAnalytics
       payload['availability']['journey_outcomes'] = outcomes.dig('coverage', 'complete')
       payload['availability']['journey_outcome_coverage'] = outcomes.fetch('coverage')
       payload['frontend_events'] = FrontendEvents.call(
-        records: frontend_records.select { |row| collected_dates.include?(row.reporting_date) }, dates:,
+        records: frontend_records, dates:,
         supported: service == 'uk' && period.view != 'classic'
       )
-      missing = dates - collected_dates
-      payload['coverage'] = {
+      payload['coverage'] = coverage(dates:, collected_dates:, records: backend_records, required:)
+      payload['summary_statuses']['searches'] = {
+        'level' => 'neutral', 'message' => "#{collected_dates.size} of #{dates.size} UTC days have stored results"
+      }
+      new(
+        service:, period: period.key, view: period.view, bucket_size: period.bucket_size,
+        generated_at: backend_records.map(&:collected_at).max,
+        data_through: collected_dates.last.to_time(:utc) + 1.day, payload:
+      )
+    end
+
+    def self.coverage(dates:, collected_dates:, records:, required:)
+      present = records.group_by(&:name).transform_values { |rows| rows.map(&:reporting_date).uniq.sort }
+      queries = required.index_with do |name|
+        got = present.fetch(name, [])
+        missing = dates - got
+        {
+          'collected_days' => got.size,
+          'collected_dates' => got.map(&:iso8601),
+          'missing_dates' => missing.map(&:iso8601),
+          'complete' => missing.empty?,
+        }
+      end
+      {
         'from' => dates.first.iso8601,
         'to' => dates.last.iso8601,
         'expected_days' => dates.size,
         'collected_days' => collected_dates.size,
         'collected_dates' => collected_dates.map(&:iso8601),
-        'missing_dates' => missing.map(&:iso8601),
-        'complete' => missing.empty?,
+        'missing_dates' => (dates - collected_dates).map(&:iso8601),
+        'complete' => queries.values.all? { |row| row.fetch('complete') },
+        'queries' => queries,
       }
-      payload['summary_statuses']['searches'] = {
-        'level' => 'neutral', 'message' => "#{collected_dates.size} of #{dates.size} complete UTC days collected"
-      }
-      new(
-        service:, period: period.key, view: period.view, bucket_size: period.bucket_size,
-        generated_at: rows.map(&:collected_at).max,
-        data_through: collected_dates.last.to_time(:utc) + 1.day, payload:
-      )
     end
   end
 end
