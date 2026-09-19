@@ -69,15 +69,21 @@ RSpec.describe SearchAnalytics::DailyResults do
     expect(snapshot.data_through).to eq(Time.utc(2026, 9, 15))
   end
 
-  it 'excludes a whole incomplete day until its missing query succeeds' do
+  it 'keeps other widgets when one query is missing for a day' do
     SearchAnalyticsQueryResult.where(reporting_date: first_date, name: 'latency_histogram').delete
-    expect(read.payload['coverage']).to include('collected_days' => 1, 'collected_dates' => [last_date.iso8601])
-    expect(read.payload.dig('ai_costs', 'summary', 'total_cost_usd')).to eq(0.03)
+    payload = read.payload
+    expect(payload['coverage']).to include('collected_days' => 2, 'collected_dates' => [first_date.iso8601, last_date.iso8601], 'complete' => false)
+    expect(payload.dig('coverage', 'queries', 'latency_histogram', 'collected_dates')).to eq([last_date.iso8601])
+    expect(payload.dig('ai_costs', 'summary', 'total_cost_usd')).to eq(0.06)
+    expect(payload.dig('trends', 'volume').map { |row| row['internal'] }).to eq([1, 1])
   end
 
   it 'excludes stale definitions rather than mixing query semantics' do
     SearchAnalyticsQueryResult.where(reporting_date: first_date, name: 'search_journeys').update(fingerprint: 'obsolete')
-    expect(read.payload.dig('coverage', 'collected_dates')).to eq([last_date.iso8601])
+    payload = read.payload
+    expect(payload.dig('coverage', 'collected_dates')).to eq([first_date.iso8601, last_date.iso8601])
+    expect(payload.dig('coverage', 'queries', 'search_journeys', 'collected_dates')).to eq([last_date.iso8601])
+    expect(payload.dig('summary', 'searches')).to eq(1)
   end
 
   it 'does not substitute another region, log group or service' do

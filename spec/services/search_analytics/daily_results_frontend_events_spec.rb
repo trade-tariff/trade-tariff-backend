@@ -59,9 +59,11 @@ RSpec.describe SearchAnalytics::DailyResults do
     expect(payload.dig('frontend_events', 'coverage')).to include('collected_days' => 1, 'expected_days' => 2, 'complete' => false)
   end
 
-  it 'excludes frontend rows for dates without complete backend groups' do
+  it 'keeps frontend rows for dates that do not have every backend group' do
     store(date + 1, 'frontend_events', [frontend_row])
-    expect(read(to: date + 1).payload.dig('frontend_events', 'available')).to be(false)
+    payload = read(to: date + 1).payload
+    expect(payload.dig('frontend_events', 'available')).to be(true)
+    expect(payload.dig('frontend_events', 'coverage', 'collected_dates')).to eq([(date + 1).iso8601])
   end
 
   it 'does not expose guided events on the Classic view' do
