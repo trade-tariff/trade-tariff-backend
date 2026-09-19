@@ -156,12 +156,13 @@ locals {
             query  = <<-EOT
               ${local.source}
               | ${local.frontend_search_filter} and event in ["search_completed", "result_selected"]
-              | ${local.cohort_field}
-              | ${local.compare_filter}
               | ${local.request_id_filter}
               | stats max(if(event = "result_selected", 1, 0)) as selected,
-                  max(if(event = "search_completed" and result_count > 0, 1, 0)) as selectable by request_id, cohort
+                  max(if(event = "search_completed" and result_count > 0, 1, 0)) as selectable,
+                  max(if(event = "search_completed", experiment, "")) as experiment by request_id
               | filter selectable = 1
+              | ${local.cohort_field}
+              | ${local.compare_filter}
               | stats sum(selected) as selected_requests, count(*) as selectable_requests by cohort
               | fields selected_requests * 100.0 / selectable_requests as selection_rate_percent
               | display cohort, selected_requests, selectable_requests, selection_rate_percent
