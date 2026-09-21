@@ -271,6 +271,21 @@ RSpec.describe SearchAnalytics::MaterializedViews, :truncation do # rubocop:disa
     expect(refresher.refresh!(concurrently: true)).to be(true)
   end
 
+  it 'applies refresh work_mem and statement_timeout inside the transaction' do
+    store_day(last_date, keys: [last_key])
+    refresher = described_class.new
+    seen = nil
+    allow(refresher).to receive(:refresh_matviews).and_wrap_original do |original, concurrently:|
+      seen = {
+        'work_mem' => db.get { current_setting('work_mem') },
+        'statement_timeout' => db.get { current_setting('statement_timeout') },
+      }
+      original.call(concurrently:)
+    end
+    expect(refresher.refresh!).to be(true)
+    expect(seen).to eq('work_mem' => '256MB', 'statement_timeout' => '15min')
+  end
+
   it 'restores session settings after a committed rebuild' do
     store_day(last_date, keys: [last_key])
     db.synchronize do
