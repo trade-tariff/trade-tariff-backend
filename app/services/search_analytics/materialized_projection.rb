@@ -16,13 +16,16 @@ module SearchAnalytics
     }.freeze
     NUMERIC = /^\s*[+-]?(?:[0-9]+(?:\.[0-9]*)?|\.[0-9]+)(?:[eE][+-]?[0-9]+)?\s*$/
 
-    def initialize(service:, dates:, period:, costs:, cost_fingerprint:, outcome_fingerprint:)
+    def initialize(service:, dates:, period:, costs:, cost_fingerprint:, outcome_fingerprint:, term_dates: nil, cost_dates: nil, term_fingerprints: nil)
       @service = service
       @dates = dates
       @period = period
       @costs = costs
       @cost_fingerprint = cost_fingerprint
       @outcome_fingerprint = outcome_fingerprint
+      @term_dates = term_dates || dates
+      @cost_dates = cost_dates || dates
+      @term_fingerprints = term_fingerprints
       @rows = window_rows
     end
 
@@ -49,9 +52,19 @@ module SearchAnalytics
       zero_text = row_text(:term_row, 'zero_results')
       types = SearchAnalytics::CloudwatchSnapshotQuery::VIEW_SEARCH_TYPES[@period.view]
       totals = json_elements(:term_row)
-        .where(Sequel[:query_result][:service] => @service, Sequel[:query_result][:reporting_date] => @dates, Sequel[:query_result][:name] => %w[item_id_improvements search_term_improvements])
-        .exclude(query => nil)
-        .exclude(query =~ /^\s*$/)
+        .where(Sequel[:query_result][:service] => @service, Sequel[:query_result][:reporting_date] => @term_dates, Sequel[:query_result][:name] => %w[item_id_improvements search_term_improvements])
+      if @term_fingerprints
+        totals = totals.where(
+          Sequel.|({
+            Sequel[:query_result][:name] => 'item_id_improvements',
+            Sequel[:query_result][:fingerprint] => @term_fingerprints.fetch('item_id_improvements'),
+          }, {
+            Sequel[:query_result][:name] => 'search_term_improvements',
+            Sequel[:query_result][:fingerprint] => @term_fingerprints.fetch('search_term_improvements'),
+          }),
+        )
+      end
+      totals = totals.exclude(query => nil).exclude(query =~ /^\s*$/)
       totals = totals.where(search_type => types) if types
       totals = totals.select(
         query.as(:query),
@@ -108,7 +121,7 @@ module SearchAnalytics
           Sequel[:journey][:service] => Sequel[:query_result][:service],
           Sequel[:journey][:journey_key] => Sequel.function(:decode, key, 'hex'),
         }, table_alias: :journey)
-        .where(Sequel[:query_result][:service] => @service, Sequel[:query_result][:reporting_date] => @dates, Sequel[:journey][:reporting_date] => @dates, Sequel[:query_result][:name] => 'ai_cost_trend', Sequel[:query_result][:fingerprint] => @cost_fingerprint)
+        .where(Sequel[:query_result][:service] => @service, Sequel[:query_result][:reporting_date] => @cost_dates, Sequel[:journey][:reporting_date] => @dates, Sequel[:query_result][:name] => 'ai_cost_trend', Sequel[:query_result][:fingerprint] => @cost_fingerprint)
         .exclude(key => nil)
         .where { Sequel[:journey][hours] > 0 }
         .select(Sequel.function(:encode, Sequel[:journey][:journey_key], 'hex').as(:key))

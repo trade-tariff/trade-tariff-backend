@@ -60,7 +60,8 @@ module SearchAnalytics
       query_dates = @required.index_with do |name|
         present.select { |row| row.name == name }.map(&:reporting_date).uniq.sort
       end
-      collected_dates = present.map(&:reporting_date).uniq.sort
+      frontend_dates = compatible.select { |row| row.name == 'frontend_events' }.map(&:reporting_date)
+      collected_dates = (present.map(&:reporting_date) + frontend_dates).uniq.sort
       projection = MaterializedProjection.new(
         service: @service,
         dates:,
@@ -68,6 +69,9 @@ module SearchAnalytics
         costs: results.fetch('ai_cost_trend'),
         cost_fingerprint: @definitions.fetch('ai_cost_trend'),
         outcome_fingerprint: @definitions.fetch('journey_outcomes'),
+        term_dates: (query_dates['search_term_improvements'] + query_dates['item_id_improvements']).uniq.sort,
+        cost_dates: query_dates['ai_cost_trend'],
+        term_fingerprints: @definitions.slice('item_id_improvements', 'search_term_improvements'),
       )
       payload = MaterializedAggregate.new(period: @period, results:, projection:, query_dates:).payload
       attach_outcomes(payload, projection, compatible, dates)
