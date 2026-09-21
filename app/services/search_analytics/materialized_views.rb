@@ -114,9 +114,11 @@ module SearchAnalytics
 
     def apply_local_settings
       db.run("SET LOCAL TIME ZONE 'UTC'")
-      db.run("SET LOCAL work_mem = '64MB'")
+      db.run("SET LOCAL work_mem = '256MB'")
       db.run("SET LOCAL temp_file_limit = '4GB'")
-      db.run("SET LOCAL statement_timeout = '120s'")
+      # Concurrent refresh of daily journeys exceeds 120s in production and then
+      # the API falls back to loading journey JSON into Ruby.
+      db.run("SET LOCAL statement_timeout = '15min'")
     end
 
     def lock_id
