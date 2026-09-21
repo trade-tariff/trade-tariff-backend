@@ -275,7 +275,15 @@ RSpec.describe SearchAnalytics::MaterializedResult, :truncation do
 
     it 'does not combine a new day with stale materialized views' do
       store_day(first_date - 1)
+      allow(Rails.logger).to receive(:warn)
       expect(described_class.call(**arguments(from: first_date - 1)).available).to be(false)
+      expect(Rails.logger).to have_received(:warn).with(
+        hash_including(
+          message: 'search_analytics_materialized_views_stale',
+          service: 'uk',
+          dates: including((first_date - 1).iso8601),
+        ),
+      )
     end
 
     it 'rejects an older materialized-view processing version' do
