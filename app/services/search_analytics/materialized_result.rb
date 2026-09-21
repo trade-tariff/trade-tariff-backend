@@ -84,7 +84,7 @@ module SearchAnalytics
       }
       DailyResults.new(
         service: @service, period: @period.key, view: @period.view, bucket_size: @period.bucket_size,
-        generated_at: present.map(&:collected_at).max,
+        generated_at: (present + compatible.select { |row| row.name == 'frontend_events' }).map(&:collected_at).max,
         data_through: collected_dates.last.to_time(:utc) + 1.day, payload:
       )
     end
