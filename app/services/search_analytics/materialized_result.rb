@@ -45,13 +45,13 @@ module SearchAnalytics
         # Keep range reconciliation in memory without changing the pool's defaults.
         # This is per PostgreSQL operation, not a global or worker cache setting.
         SearchAnalyticsQueryResult.db.run("SET LOCAL work_mem = '32MB'")
-        Result.new(available: true, value: build(compatible, present, journey_dates))
+        Result.new(available: true, value: build(compatible, present, journey_dates, metadata))
       end
     end
 
   private
 
-    def build(compatible, present, dates)
+    def build(compatible, present, dates, metadata)
       ids = compatible.reject { |row| PROJECTED.include?(row.name) }.map(&:id)
       frontend, backend = SearchAnalyticsQueryResult.where(id: ids).all.partition { |row| row.name == 'frontend_events' }
       results = (@required - PROJECTED).index_with do |name|
@@ -74,7 +74,7 @@ module SearchAnalytics
         term_fingerprints: @definitions.slice('item_id_improvements', 'search_term_improvements'),
       )
       payload = MaterializedAggregate.new(period: @period, results:, projection:, query_dates:).payload
-      attach_outcomes(payload, projection, compatible, dates)
+      attach_outcomes(payload, projection, metadata, dates)
       payload['frontend_events'] = FrontendEvents.call(records: frontend, dates: @dates, supported: @service == 'uk' && @period.view != 'classic')
       payload['coverage'] = DailyResults.coverage(
         dates: @dates, collected_dates:, records: present, required: @required,
@@ -89,8 +89,10 @@ module SearchAnalytics
       )
     end
 
-    def attach_outcomes(payload, projection, compatible, dates)
-      collected = compatible.select { |row| row.name == 'journey_outcomes' && dates.include?(row.reporting_date) }.map(&:reporting_date).sort
+    def attach_outcomes(payload, projection, metadata, dates)
+      stored = metadata.select { |row| row.name == 'journey_outcomes' && dates.include?(row.reporting_date) }
+      collected = stored.map(&:reporting_date).uniq.sort
+      current = stored.select { |row| row.fingerprint == @definitions.fetch('journey_outcomes') }.map(&:reporting_date).uniq.sort
       coverage = {
         'complete' => dates.any? && collected == dates,
         'expected_days' => dates.size,
@@ -103,7 +105,7 @@ module SearchAnalytics
       outcomes = projection.outcomes(view: @period.view, buckets:, coverage:)
       payload['trends']['outcomes'] = outcomes.fetch('trend')
       payload['journeys']['outcomes'] = outcomes.fetch('summary')
-      payload['journeys']['question_counts'] = coverage.fetch('complete') ? projection.question_counts : []
+      payload['journeys']['question_counts'] = current == dates ? projection.question_counts : []
       payload['availability']['journey_outcomes'] = collected.any?
       payload['availability']['journey_outcome_coverage'] = coverage
     end

@@ -8,11 +8,12 @@ module SearchAnalytics
 
     def self.call(...) = new(...).call
 
-    def initialize(journeys:, records:, dates:, buckets:)
+    def initialize(journeys:, records:, dates:, buckets:, fingerprint: nil)
       @journeys = journeys
       @records = records
       @dates = dates
       @buckets = buckets
+      @fingerprint = fingerprint
       @index = journeys.keys
       @index.each_key.with_index { |key, index| @index[key] = index }
       @states = Array.new(@index.size)
@@ -29,6 +30,7 @@ module SearchAnalytics
         true
       end
       complete = @dates.any? && @collected == @dates
+      questions_complete = complete && matching_fingerprint?
       {
         'coverage' => {
           'complete' => complete,
@@ -37,7 +39,7 @@ module SearchAnalytics
           'missing_dates' => (@dates - @collected).map(&:iso8601),
         },
         'summary' => complete ? counts(@index.keys) : nil,
-        'question_counts' => complete ? question_counts : [],
+        'question_counts' => questions_complete ? question_counts : [],
         'trend' => @collected.any? ? trend : [],
       }
     end
@@ -88,6 +90,12 @@ module SearchAnalytics
       @index.keys.map { |key| @questions[@index.fetch(key)] }.tally.sort_by { |questions, _count| questions || -1 }.map do |questions, journeys|
         { 'questions' => questions, 'journeys' => journeys }
       end
+    end
+
+    def matching_fingerprint?
+      return true if @fingerprint.nil?
+
+      @collected.all? { |date| @records.where(reporting_date: date, fingerprint: @fingerprint).any? }
     end
 
     def trend
