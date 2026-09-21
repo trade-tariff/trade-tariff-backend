@@ -90,7 +90,6 @@ RSpec.describe Sequel::Plugins::HasPaperTrail do
         GoodsNomenclatureSelfText
         SearchReference
         SectionNote
-        TariffKnowledge::CompressedNote
         TariffKnowledge::Node
       ])
     end
