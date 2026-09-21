@@ -92,16 +92,19 @@ module SearchAnalytics
     def attach_outcomes(payload, projection, compatible, dates)
       collected = compatible.select { |row| row.name == 'journey_outcomes' && dates.include?(row.reporting_date) }.map(&:reporting_date).sort
       coverage = {
-        'complete' => collected == dates,
+        'complete' => dates.any? && collected == dates,
         'expected_days' => dates.size,
         'collected_days' => collected.size,
         'missing_dates' => (dates - collected).map(&:iso8601),
       }
-      outcomes = projection.outcomes(view: @period.view, buckets: payload.fetch('trends').fetch('volume').map { |row| row.fetch('bucket') }, coverage:)
+      buckets = payload.fetch('trends').fetch('volume').map { |row| row.fetch('bucket') }.select do |bucket|
+        collected.include?(Time.find_zone!('UTC').parse(bucket).to_date)
+      end
+      outcomes = projection.outcomes(view: @period.view, buckets:, coverage:)
       payload['trends']['outcomes'] = outcomes.fetch('trend')
       payload['journeys']['outcomes'] = outcomes.fetch('summary')
       payload['journeys']['question_counts'] = coverage.fetch('complete') ? projection.question_counts : []
-      payload['availability']['journey_outcomes'] = coverage.fetch('complete')
+      payload['availability']['journey_outcomes'] = collected.any?
       payload['availability']['journey_outcome_coverage'] = coverage
     end
   end

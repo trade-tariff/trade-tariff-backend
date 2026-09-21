@@ -241,7 +241,9 @@ RSpec.describe SearchAnalytics::MaterializedResult, :truncation do
     it 'does not serve old outcomes after deletion' do
       SearchAnalyticsQueryResult.where(reporting_date: first_date, name: 'journey_outcomes').delete
       expect(described_class.call(**arguments).available).to be(false)
-      expect(SearchAnalytics::DailyResults.call(**arguments).payload.dig('availability', 'journey_outcomes')).to be(false)
+      payload = SearchAnalytics::DailyResults.call(**arguments).payload
+      expect(payload.dig('availability', 'journey_outcomes')).to be(true)
+      expect(payload.dig('availability', 'journey_outcome_coverage', 'missing_dates')).to eq([first_date.iso8601])
       rebuild
       expect_parity
     end
