@@ -106,12 +106,10 @@ RSpec.describe SearchAnalytics::MaterializedResult, :truncation do
       expect_parity(from: first_date + 1)
     end
 
-    it 'uses the existing reader when a required group is missing on some days' do
+    it 'keeps the indexed reader when a required group is missing on some days' do
       SearchAnalyticsQueryResult.where(reporting_date: first_date, name: 'volume').delete
-      args = arguments
-      expect(described_class.call(**args).available).to be(false)
-      expect(SearchAnalytics::DailyResults.call(**args)).to eq(SearchAnalytics::DailyResults.legacy_call(**args))
-      expect(SearchAnalytics::DailyResults.call(**args).payload.dig('coverage', 'queries', 'volume', 'collected_dates')).to eq([(first_date + 1).iso8601])
+      expect_parity
+      expect(SearchAnalytics::DailyResults.call(**arguments).payload.dig('coverage', 'queries', 'volume', 'collected_dates')).to eq([(first_date + 1).iso8601])
     end
 
     it 'preserves terminal ordering within the same second' do

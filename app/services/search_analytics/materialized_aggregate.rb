@@ -7,13 +7,14 @@ module SearchAnalytics
       delegate :trend, to: :projection
     end
 
-    def initialize(period:, results:, projection:)
+    def initialize(period:, results:, projection:, query_dates: nil)
       @projection = projection
       super(
         period:,
         results: results.merge('search_term_improvements' => [], 'item_id_improvements' => []),
         journeys: Period::VIEWS.index_with { |view| Metrics.new(projection:, view:) },
         cost_keys: projection.cost_keys,
+        query_dates:,
       )
     end
 
