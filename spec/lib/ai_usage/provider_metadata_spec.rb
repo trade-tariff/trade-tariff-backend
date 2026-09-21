@@ -79,7 +79,7 @@ RSpec.describe 'AI provider metadata' do
 
   context 'with Chat Completions' do
     let(:model) { 'gpt-test' }
-    let(:endpoint) { 'https://api.openai.com/v1/chat/completions' }
+    let(:endpoint) { 'https://gb.api.openai.com/v1/chat/completions' }
     let(:success_body) { { 'choices' => [{ 'message' => { 'content' => '{"answer":"test"}' } }] } }
     let(:error_class) { OpenaiClient::ApiError }
     let(:call_provider) { -> { OpenaiClient.new.call('test', model:, event_kind: 'metadata_test') } }
@@ -89,7 +89,7 @@ RSpec.describe 'AI provider metadata' do
 
   context 'with embeddings' do
     let(:model) { EmbeddingService::MODEL }
-    let(:endpoint) { 'https://api.openai.com/v1/embeddings' }
+    let(:endpoint) { 'https://gb.api.openai.com/v1/embeddings' }
     let(:success_body) { { 'data' => [{ 'index' => 0, 'embedding' => Array.new(1536, 0.1) }] } }
     let(:error_class) { EmbeddingService::ApiError }
     let(:call_provider) { -> { EmbeddingService.new.embed('test', event_kind: 'metadata_test') } }

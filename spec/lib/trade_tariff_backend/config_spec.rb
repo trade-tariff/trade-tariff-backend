@@ -430,9 +430,9 @@ RSpec.describe TradeTariffBackend::Config do
     end
 
     describe '.openai_api_base_url' do
-      it 'defaults to openai API' do
+      it 'defaults to the GB openai API' do
         ENV.delete('OPENAI_API_BASE_URL')
-        expect(config.openai_api_base_url).to eq('https://api.openai.com/v1')
+        expect(config.openai_api_base_url).to eq('https://gb.api.openai.com/v1')
       end
     end
 

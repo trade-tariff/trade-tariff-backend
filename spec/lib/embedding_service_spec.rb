@@ -1,7 +1,7 @@
 RSpec.describe EmbeddingService do
   subject(:service) { described_class.new }
 
-  let(:api_base_url) { 'https://api.openai.com/v1' }
+  let(:api_base_url) { 'https://gb.api.openai.com/v1' }
 
   before { described_class.reset_client! }
 
