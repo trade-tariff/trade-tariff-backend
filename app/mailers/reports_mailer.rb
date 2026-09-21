@@ -12,7 +12,7 @@ class ReportsMailer < ApplicationMailer
     attachments["differences_#{report.as_of}.xlsx"] = {
       mime_type: XLSX_CONTENT_TYPE,
       encoding: 'base64',
-      content: Base64.strict_encode64(report.workbook.read_string),
+      content: Base64.strict_encode64(report.workbook_data),
     }
 
     mail subject: "[HMRC Online Trade Tariff Support] UK tariff - potential issues report #{report.as_of}"

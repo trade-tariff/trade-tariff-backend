@@ -2,18 +2,16 @@ RSpec.describe Reporting::Differences do
   describe '.generate' do
     include_context 'with a stubbed reporting bucket'
 
-    let(:report) { instance_double(described_class) }
-    let(:workbook) { instance_double(Libxlsxwriter::Workbook) }
+    let(:report) { instance_double(described_class, generate: nil) }
 
     before do
       allow(described_class).to receive(:new).and_return(report)
-      allow(report).to receive(:generate).and_return(workbook)
     end
 
     context 'when running in production' do
       before do
         allow(Rails).to receive(:env).and_return(ActiveSupport::StringInquirer.new('production'))
-        allow(workbook).to receive(:read_string).and_return('xlsx-bytes')
+        allow(report).to receive(:workbook_data).and_return('xlsx-bytes')
         described_class.generate
       end
 
@@ -24,7 +22,7 @@ RSpec.describe Reporting::Differences do
             operation_name: :put_object,
             params: hash_including(
               bucket: s3_bucket.name,
-              key: /^uk\/reporting\/\d{4}\/\d{2}\/\d{2}\/differences_\d{4}-\d{2}-\d{2}\.xlsx$/,
+              key: %r{^uk/reporting/\d{4}/\d{2}/\d{2}/differences_\d{4}-\d{2}-\d{2}\.xlsx$},
               body: 'xlsx-bytes',
               content_type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
             ),
@@ -43,6 +41,23 @@ RSpec.describe Reporting::Differences do
         expect(described_class).to have_received(:new).with(File.basename(described_class.send(:object_key)))
         expect(s3_bucket.client.api_requests).to be_empty
       end
+    end
+  end
+
+  describe '#workbook_data' do
+    let(:report) { described_class.new }
+    let(:workbook) { instance_double(Libxlsxwriter::Workbook) }
+
+    before do
+      allow(report).to receive(:workbook).and_return(workbook)
+      allow(workbook).to receive(:read_string).and_return('xlsx-bytes')
+    end
+
+    it 'memoizes serialized workbook bytes' do
+      2.times { report.workbook_data }
+
+      expect(workbook).to have_received(:read_string).once
+      expect(report.workbook_data).to eq('xlsx-bytes')
     end
   end
 

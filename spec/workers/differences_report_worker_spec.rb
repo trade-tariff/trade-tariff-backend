@@ -14,8 +14,18 @@ RSpec.describe DifferencesReportWorker, type: :worker do
   describe '#perform' do
     before do
       allow(Reporting::Differences).to receive(:generate).and_return(differences)
+      allow(differences).to receive_messages(
+        sections: [],
+        as_of: report_date,
+        workbook_data: 'xlsx-bytes',
+        uk_commodities_link: 'https://example.test/uk-commodities',
+        xi_commodities_link: 'https://example.test/xi-commodities',
+        uk_supplementary_units_link: 'https://example.test/uk-supplementary-units',
+        xi_supplementary_units_link: 'https://example.test/xi-supplementary-units',
+      )
     end
 
+    let(:report_date) { Time.zone.today.iso8601 }
     let(:differences) { Reporting::Differences.new }
 
     context 'when delivering email' do
@@ -23,6 +33,13 @@ RSpec.describe DifferencesReportWorker, type: :worker do
 
       it { expect(Reporting::Differences).to have_received(:generate) }
       it { expect(ActionMailer::Base.deliveries.count).to eq(1) }
+
+      it 'serializes the workbook once and attaches those bytes' do
+        expect(differences).to have_received(:workbook_data).once
+
+        attachment = ActionMailer::Base.deliveries.last.attachments["differences_#{report_date}.xlsx"]
+        expect(attachment.body.decoded).to eq('xlsx-bytes')
+      end
     end
 
     context 'when not delivering email' do

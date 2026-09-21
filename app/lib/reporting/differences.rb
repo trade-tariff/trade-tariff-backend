@@ -144,6 +144,10 @@ module Reporting
       end
     end
 
+    def workbook_data
+      @workbook_data ||= workbook.read_string
+    end
+
     def add_overview_worksheet
       generate_sheet('Overview', self)
     end
@@ -329,10 +333,10 @@ module Reporting
         with_report_logging do
           filename = Rails.env.development? ? File.basename(object_key) : nil
           report = instrument_report_step('open_workbook') { new(filename) }
-          workbook = instrument_report_step('render_workbook') { report.generate(only:) }
+          instrument_report_step('render_workbook') { report.generate(only:) }
 
           if Rails.env.production?
-            workbook_data = instrument_report_step('serialize_workbook') { workbook.read_string }
+            workbook_data = instrument_report_step('serialize_workbook') { report.workbook_data }
             log_report_metric('output_bytes', workbook_data.bytesize)
 
             instrument_report_step('upload', output_bytes: workbook_data.bytesize) do
