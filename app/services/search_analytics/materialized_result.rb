@@ -33,7 +33,10 @@ module SearchAnalytics
         compatible = metadata.select { |row| row.fingerprint == @definitions.fetch(row.name) }
         present = compatible.select { |row| @required.include?(row.name) }
         complete = present.group_by(&:reporting_date).select { |_date, rows| rows.map(&:name).sort == @required.sort }
-        present_dates = present.map(&:reporting_date).uniq.sort
+        present_dates = (
+          present.map(&:reporting_date) +
+          compatible.select { |row| row.name == 'frontend_events' }.map(&:reporting_date)
+        ).uniq.sort
         # Partial days belong on the legacy reader. Returning available here would 404.
         if complete.empty?
           next Result.new(available: false, value: nil) if compatible.any?

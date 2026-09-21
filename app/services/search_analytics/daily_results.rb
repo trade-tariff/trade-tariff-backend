@@ -38,11 +38,20 @@ module SearchAnalytics
       end
       payload = DailyAggregate.new(period:, results:, query_dates:).payload
       journey_dates = query_dates.fetch('search_journeys')
-      outcomes = JourneyOutcomes.call(
-        journeys: JourneyMetrics.new(rows: results.fetch('search_journeys'), period:),
-        records: SearchAnalyticsQueryResult.where(service:, name: 'journey_outcomes', fingerprint: definitions.fetch('journey_outcomes')),
-        dates: journey_dates, buckets: payload.fetch('trends').fetch('volume').map { |row| row.fetch('bucket') }
-      )
+      outcomes = if journey_dates.empty?
+                   {
+                     'coverage' => { 'complete' => false, 'expected_days' => 0, 'collected_days' => 0, 'missing_dates' => [] },
+                     'summary' => nil,
+                     'question_counts' => [],
+                     'trend' => [],
+                   }
+                 else
+                   JourneyOutcomes.call(
+                     journeys: JourneyMetrics.new(rows: results.fetch('search_journeys'), period:),
+                     records: SearchAnalyticsQueryResult.where(service:, name: 'journey_outcomes', fingerprint: definitions.fetch('journey_outcomes')),
+                     dates: journey_dates, buckets: payload.fetch('trends').fetch('volume').map { |row| row.fetch('bucket') }
+                   )
+                 end
       payload['trends']['outcomes'] = outcomes.fetch('trend')
       payload['journeys']['outcomes'] = outcomes.fetch('summary')
       payload['journeys']['question_counts'] = outcomes.fetch('question_counts')
