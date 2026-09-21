@@ -38,7 +38,7 @@ module SearchAnalytics
           'collected_days' => @collected.size,
           'missing_dates' => (@dates - @collected).map(&:iso8601),
         },
-        'summary' => complete ? counts(@index.keys) : nil,
+        'summary' => questions_complete ? counts(@index.keys) : nil,
         'question_counts' => questions_complete ? question_counts : [],
         'trend' => @collected.any? ? trend : [],
       }
