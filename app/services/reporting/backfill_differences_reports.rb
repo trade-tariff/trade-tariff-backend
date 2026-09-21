@@ -66,15 +66,12 @@ module Reporting
     end
 
     class EmailReport
-      attr_reader :as_of, :workbook
+      attr_reader :as_of, :workbook, :workbook_data
 
       def initialize(as_of:, workbook_data:)
         @as_of = as_of.to_date.iso8601
         @workbook = WorkbookWrapper.new(workbook_data)
-      end
-
-      def workbook_data
-        workbook.read_string
+        @workbook_data = workbook_data
       end
 
       def sections
