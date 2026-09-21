@@ -1,5 +1,5 @@
 RSpec.describe OpenaiClient do
-  let(:api_base_url) { 'https://api.openai.com/v1' }
+  let(:api_base_url) { 'https://gb.api.openai.com/v1' }
   let(:response_body) do
     {
       'choices' => [

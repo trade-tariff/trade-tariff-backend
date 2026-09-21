@@ -488,7 +488,7 @@ RSpec.describe VectorRetrievalService do
           allow(EmbeddingService).to receive(:new).and_call_original
           body = { data:, usage: { prompt_tokens: 12, total_tokens: 12 } }
           body.delete(:data) if data.nil?
-          stub_request(:post, 'https://api.openai.com/v1/embeddings').to_return(
+          stub_request(:post, 'https://gb.api.openai.com/v1/embeddings').to_return(
             status: 200,
             body: body.to_json,
             headers: { 'Content-Type' => 'application/json' },

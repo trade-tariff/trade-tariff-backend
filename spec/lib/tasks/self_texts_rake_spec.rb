@@ -371,7 +371,7 @@ RSpec.describe 'self_texts rake tasks' do
 
     let(:embedding_for) { ->(text) { Array.new(1536) { text.length / 100.0 } } }
     let(:embedding) { embedding_for.call('Live horses') }
-    let(:api_base_url) { 'https://api.openai.com/v1' }
+    let(:api_base_url) { 'https://gb.api.openai.com/v1' }
 
     before do
       EmbeddingService.reset_client!
