@@ -84,6 +84,7 @@ RSpec.describe SearchAnalytics::DailyResults do
     expect(payload.dig('coverage', 'collected_dates')).to eq([first_date.iso8601, last_date.iso8601])
     expect(payload.dig('coverage', 'queries', 'search_journeys', 'collected_dates')).to eq([last_date.iso8601])
     expect(payload.dig('summary', 'searches')).to eq(1)
+    expect(payload.dig('availability', 'journey_metrics')).to be(true)
   end
 
   it 'does not substitute another region, log group or service' do

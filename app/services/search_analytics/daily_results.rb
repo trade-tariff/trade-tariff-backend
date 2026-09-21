@@ -24,17 +24,20 @@ module SearchAnalytics
       compatible = records.select { |row| row.fingerprint == definitions.fetch(row.name) }
       frontend_records, backend_records = compatible.partition { |row| row.name == 'frontend_events' }
       required = definitions.keys - %w[frontend_events journey_outcomes]
-      return if backend_records.empty?
+      return if backend_records.empty? && frontend_records.empty?
 
       # Each matching query contributes its own days. A missing or stale group is a
       # coverage gap for that widget, not a reason to hide the others. This path
       # never executes the collector or its cache fetch.
-      collected_dates = backend_records.map(&:reporting_date).uniq.sort
+      collected_dates = (backend_records + frontend_records).map(&:reporting_date).uniq.sort
+      query_dates = required.index_with do |name|
+        backend_records.select { |row| row.name == name }.map(&:reporting_date).uniq.sort
+      end
       results = required.index_with do |name|
         backend_records.select { |row| row.name == name }.flat_map { |row| row.rows.to_a }
       end
-      payload = DailyAggregate.new(period:, results:).payload
-      journey_dates = backend_records.select { |row| row.name == 'search_journeys' }.map(&:reporting_date).uniq.sort
+      payload = DailyAggregate.new(period:, results:, query_dates:).payload
+      journey_dates = query_dates.fetch('search_journeys')
       outcomes = JourneyOutcomes.call(
         journeys: JourneyMetrics.new(rows: results.fetch('search_journeys'), period:),
         records: SearchAnalyticsQueryResult.where(service:, name: 'journey_outcomes', fingerprint: definitions.fetch('journey_outcomes')),
@@ -55,7 +58,7 @@ module SearchAnalytics
       }
       new(
         service:, period: period.key, view: period.view, bucket_size: period.bucket_size,
-        generated_at: backend_records.map(&:collected_at).max,
+        generated_at: (backend_records + frontend_records).map(&:collected_at).max,
         data_through: collected_dates.last.to_time(:utc) + 1.day, payload:
       )
     end
