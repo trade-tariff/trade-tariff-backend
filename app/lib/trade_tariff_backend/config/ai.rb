@@ -14,7 +14,7 @@ module TradeTariffBackend
       end
 
       def openai_api_base_url
-        ENV.fetch('OPENAI_API_BASE_URL', 'https://gb.api.openai.com/v1')
+        'https://gb.api.openai.com/v1'
       end
 
       def openai_api_timeout
