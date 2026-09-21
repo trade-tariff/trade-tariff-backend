@@ -29,6 +29,14 @@ RSpec.describe SearchAnalytics::DailyResults do
     described_class.call(period: SearchAnalytics::Period.for(period: '7d', view:), date_range: range, **scope)
   end
 
+  it 'serves frontend events when every backend fingerprint is stale' do
+    SearchAnalyticsQueryResult.where(reporting_date: date).update(fingerprint: 'obsolete')
+    store(date, 'frontend_events', [frontend_row])
+    result = read
+    expect(result.payload.dig('frontend_events', 'available')).to be(true)
+    expect(result.payload.dig('availability', 'journey_metrics')).to be(false)
+  end
+
   it 'keeps the existing eight-group dashboard available before frontend collection' do
     result = read
     expect(result.payload.dig('coverage', 'complete')).to be(true)

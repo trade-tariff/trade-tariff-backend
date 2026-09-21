@@ -94,6 +94,7 @@ RSpec.describe Api::Admin::SearchAnalyticsController do
     request_analytics
     expect(response).to have_http_status(:ok)
     expect(attributes['summary']).to include('searches' => 0, 'requests' => 3)
+    expect(attributes['availability']).to include('journey_metrics' => false)
     expect(attributes['coverage']).to include('complete' => false, 'collected_days' => 1)
   end
 
@@ -111,7 +112,7 @@ RSpec.describe Api::Admin::SearchAnalyticsController do
     request_analytics
     expect(response).to have_http_status(:ok)
     expect(attributes['summary']).to include('searches' => 1, 'requests' => 3)
-    expect(attributes.dig('ai_costs', 'summary', 'total_cost_usd')).to eq(0)
+    expect(attributes['availability']).to include('costs_match_view' => false)
     expect(attributes.dig('coverage', 'queries', 'ai_cost_trend', 'complete')).to be(false)
   end
 

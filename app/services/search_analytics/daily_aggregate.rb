@@ -3,7 +3,8 @@
 module SearchAnalytics
   # Adapts complete daily query results to the existing dashboard payload.
   class DailyAggregate < CloudwatchSnapshotQuery::Aggregate
-    def initialize(period:, results:, journeys: nil, cost_keys: nil)
+    def initialize(period:, results:, journeys: nil, cost_keys: nil, query_dates: nil)
+      @query_dates = query_dates || {}
       @journeys = journeys || Period::VIEWS.index_with do |view|
         JourneyMetrics.new(rows: results.fetch('search_journeys'), period: period.with(view:))
       end
@@ -31,9 +32,9 @@ module SearchAnalytics
       payload_for(period.view).merge(
         'journeys' => { 'count' => @journeys.fetch(period.view).count },
         'availability' => {
-          'journey_metrics' => true,
-          'request_journeys' => true,
-          'costs_match_view' => true,
+          'journey_metrics' => query_present?('search_journeys'),
+          'request_journeys' => query_present?('search_journeys'),
+          'costs_match_view' => query_present?('ai_cost_trend'),
           'range_percentiles' => true,
           'latency_percentiles_approximate' => true,
           'latency_histogram_relative_width' => LatencyHistogram::RELATIVE_WIDTH,
@@ -44,6 +45,18 @@ module SearchAnalytics
     end
 
   private
+
+    def query_present?(name)
+      dates = @query_dates[name]
+      dates.nil? || dates.any?
+    end
+
+    def journey_collected?(bucket)
+      dates = @query_dates['search_journeys']
+      return true if dates.nil?
+
+      dates.include?(Time.find_zone!('UTC').parse(bucket).to_date)
+    end
 
     def buckets_for(rows, period)
       rows.map do |row|
@@ -73,7 +86,14 @@ module SearchAnalytics
       buckets = (requests.keys + journeys.keys).uniq.sort
       volume = buckets.map do |bucket|
         sources = CloudwatchSnapshotQuery::REQUEST_SOURCES.index_with { 0 }.merge(requests.fetch(bucket, {}))
-        sources.merge(Period::VIEWS.index_with { 0 }).merge(journeys.fetch(bucket) { { 'bucket' => bucket } })
+        row = sources.merge('bucket' => bucket)
+        if journeys[bucket]
+          row.merge(journeys.fetch(bucket))
+        elsif journey_collected?(bucket)
+          row.merge(Period::VIEWS.index_with { 0 })
+        else
+          row
+        end
       end
       original.merge('volume' => volume)
     end

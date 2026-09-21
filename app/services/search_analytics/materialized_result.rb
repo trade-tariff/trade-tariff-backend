@@ -32,9 +32,17 @@ module SearchAnalytics
         metadata = SearchAnalyticsQueryResult.where(service: @service, reporting_date: @dates, name: @definitions.keys).select(*METADATA).all
         compatible = metadata.select { |row| row.fingerprint == @definitions.fetch(row.name) }
         present = compatible.select { |row| @required.include?(row.name) }
-        next Result.new(available: true, value: nil) if present.empty?
+        complete = present.group_by(&:reporting_date).select { |_date, rows| rows.map(&:name).sort == @required.sort }
+        present_dates = present.map(&:reporting_date).uniq.sort
+        # Partial days belong on the legacy reader. Returning available here would 404.
+        if complete.empty?
+          next Result.new(available: false, value: nil) if compatible.any?
 
-        dates = present.map(&:reporting_date).uniq.sort
+          next Result.new(available: true, value: nil)
+        end
+        next Result.new(available: false, value: nil) unless complete.keys.sort == present_dates
+
+        dates = complete.keys.sort
         next Result.new(available: false, value: nil) unless MaterializedViews.ready?
         next Result.new(available: false, value: nil) unless MaterializedViews.compatible?(
           records: compatible, definitions: @definitions, dates:, service: @service,
@@ -43,13 +51,13 @@ module SearchAnalytics
         # Keep range reconciliation in memory without changing the pool's defaults.
         # This is per PostgreSQL operation, not a global or worker cache setting.
         SearchAnalyticsQueryResult.db.run("SET LOCAL work_mem = '32MB'")
-        Result.new(available: true, value: build(compatible, present, dates))
+        Result.new(available: true, value: build(compatible, complete, dates))
       end
     end
 
   private
 
-    def build(compatible, present, dates)
+    def build(compatible, complete, dates)
       ids = compatible.reject { |row| PROJECTED.include?(row.name) }.select { |row| dates.include?(row.reporting_date) }.map(&:id)
       frontend, backend = SearchAnalyticsQueryResult.where(id: ids).all.partition { |row| row.name == 'frontend_events' }
       results = (@required - PROJECTED).index_with do |name|
@@ -64,16 +72,17 @@ module SearchAnalytics
         outcome_fingerprint: @definitions.fetch('journey_outcomes'),
       )
       payload = MaterializedAggregate.new(period: @period, results:, projection:).payload
-      journey_dates = present.select { |row| row.name == 'search_journeys' }.map(&:reporting_date).uniq.sort
-      attach_outcomes(payload, projection, compatible, journey_dates)
+      attach_outcomes(payload, projection, compatible, dates)
       payload['frontend_events'] = FrontendEvents.call(records: frontend, dates: @dates, supported: @service == 'uk' && @period.view != 'classic')
-      payload['coverage'] = DailyResults.coverage(dates: @dates, collected_dates: dates, records: present, required: @required)
+      payload['coverage'] = DailyResults.coverage(
+        dates: @dates, collected_dates: dates, records: complete.values.flatten, required: @required,
+      )
       payload['summary_statuses']['searches'] = {
         'level' => 'neutral', 'message' => "#{dates.size} of #{@dates.size} UTC days have stored results"
       }
       DailyResults.new(
         service: @service, period: @period.key, view: @period.view, bucket_size: @period.bucket_size,
-        generated_at: present.map(&:collected_at).max,
+        generated_at: complete.values.flatten.map(&:collected_at).max,
         data_through: dates.last.to_time(:utc) + 1.day, payload:
       )
     end
