@@ -38,9 +38,11 @@ module SearchAnalytics
         journey_dates = present.select { |row| row.name == 'search_journeys' }.map(&:reporting_date).uniq.sort
         next Result.new(available: false, value: nil) if journey_dates.empty?
         next Result.new(available: false, value: nil) unless MaterializedViews.ready?
-        next Result.new(available: false, value: nil) unless MaterializedViews.compatible?(
-          records: compatible, definitions: @definitions, dates: journey_dates, service: @service,
-        )
+
+        unless MaterializedViews.compatible?(records: compatible, definitions: @definitions, dates: journey_dates, service: @service)
+          Rails.logger.warn({ message: 'search_analytics_materialized_views_stale', service: @service, dates: journey_dates.map(&:iso8601) })
+          next Result.new(available: false, value: nil)
+        end
 
         # Keep range reconciliation in memory without changing the pool's defaults.
         # This is per PostgreSQL operation, not a global or worker cache setting.
