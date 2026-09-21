@@ -79,7 +79,7 @@ AdminApi.routes.draw do
       resources :goods_nomenclature_labels, only: [:index]
       resources :goods_nomenclature_self_texts, only: [:index]
       resources :tariff_knowledge_compressed_notes, only: [:index]
-      resources :versions, only: [:index] do
+      resources :versions, only: %i[index show] do
         member do
           post :restore
         end

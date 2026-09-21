@@ -5,6 +5,13 @@ module Api
         render json: serialized_collection
       end
 
+      def show
+        version = Version.where(id: params[:id]).first
+        raise Sequel::RecordNotFound unless version
+
+        render json: VersionSerializer.new(version).serializable_hash, status: :ok
+      end
+
       RESTORABLE_TYPES = {
         'GoodsNomenclatureLabel' => GoodsNomenclatureLabel,
         'GoodsNomenclatureSelfText' => GoodsNomenclatureSelfText,
