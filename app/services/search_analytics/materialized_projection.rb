@@ -43,7 +43,7 @@ module SearchAnalytics
       by_bucket = @rows.select { |row| row['view'] == view && row['bucket'] }.index_by { |row| row['bucket'] }
       { 'coverage' => coverage,
         'summary' => coverage['complete'] ? summary(view).slice(*SERIES) : nil,
-        'trend' => coverage['complete'] ? buckets.map { |bucket| { 'bucket' => bucket }.merge(SERIES.index_with { |key| by_bucket[bucket]&.fetch(key) || 0 }) } : [] }
+        'trend' => coverage.fetch('collected_days', 0).positive? ? buckets.map { |bucket| { 'bucket' => bucket }.merge(SERIES.index_with { |key| by_bucket[bucket]&.fetch(key) || 0 }) } : [] }
     end
 
     def terms

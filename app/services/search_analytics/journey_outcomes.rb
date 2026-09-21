@@ -21,24 +21,24 @@ module SearchAnalytics
     end
 
     def call
-      collected = @dates.select do |date|
+      @collected = @dates.select do |date|
         rows = @records.where(reporting_date: date).get(:rows)
         next false unless rows
 
         rows.each { |row| consume(row) }
         true
       end
-      complete = collected == @dates
+      complete = @dates.any? && @collected == @dates
       {
         'coverage' => {
           'complete' => complete,
           'expected_days' => @dates.size,
-          'collected_days' => collected.size,
-          'missing_dates' => (@dates - collected).map(&:iso8601),
+          'collected_days' => @collected.size,
+          'missing_dates' => (@dates - @collected).map(&:iso8601),
         },
         'summary' => complete ? counts(@index.keys) : nil,
         'question_counts' => complete ? question_counts : [],
-        'trend' => complete ? trend : [],
+        'trend' => @collected.any? ? trend : [],
       }
     end
 
@@ -92,7 +92,9 @@ module SearchAnalytics
 
     def trend
       memberships = @journeys.keys_by_bucket
-      @buckets.map { |bucket| { 'bucket' => bucket }.merge(counts(memberships.fetch(bucket, {}).keys)) }
+      @buckets.select { |bucket| @collected.include?(Time.find_zone!('UTC').parse(bucket).to_date) }.map do |bucket|
+        { 'bucket' => bucket }.merge(counts(memberships.fetch(bucket, {}).keys))
+      end
     end
   end
 end

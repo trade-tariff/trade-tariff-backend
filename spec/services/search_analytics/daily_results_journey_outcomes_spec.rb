@@ -72,13 +72,16 @@ RSpec.describe SearchAnalytics::DailyResults do
     expect(read.payload.dig('availability', 'journey_outcomes')).to be(false)
   end
 
-  it 'requires outcomes for every backend-collected day without hiding other metrics' do
+  it 'keeps matching outcome days without hiding other metrics' do
     store(date, 'journey_outcomes', outcome_rows)
     store_base(date + 1)
     payload = read(to: date + 1).payload
     expect(payload.dig('coverage', 'complete')).to be(true)
-    expect(payload.dig('availability', 'journey_outcomes')).to be(false)
+    expect(payload.dig('availability', 'journey_outcomes')).to be(true)
+    expect(payload.dig('availability', 'journey_outcome_coverage', 'complete')).to be(false)
     expect(payload.dig('availability', 'journey_outcome_coverage', 'missing_dates')).to eq([(date + 1).iso8601])
+    expect(payload.dig('trends', 'outcomes')).not_to be_empty
+    expect(payload.dig('journeys', 'outcomes')).to be_nil
   end
 
   it 'serializes only counts, without leaking outcome identifiers' do
