@@ -93,9 +93,10 @@ module SearchAnalytics
     end
 
     def matching_fingerprint?
-      return true if @fingerprint.nil?
+      return true if @fingerprint.nil? || @collected.empty?
 
-      @collected.all? { |date| @records.where(reporting_date: date, fingerprint: @fingerprint).any? }
+      matched = @records.where(reporting_date: @collected, fingerprint: @fingerprint).select_map(:reporting_date)
+      (@collected - matched).empty?
     end
 
     def trend
