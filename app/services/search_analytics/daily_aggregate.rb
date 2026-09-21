@@ -51,8 +51,12 @@ module SearchAnalytics
       dates.nil? || dates.any?
     end
 
-    def journey_collected?(bucket)
-      dates = @query_dates['search_journeys']
+    def journey_collected?(bucket) = query_collected?('search_journeys', bucket)
+
+    def volume_collected?(bucket) = query_collected?('volume', bucket)
+
+    def query_collected?(name, bucket)
+      dates = @query_dates[name]
       return true if dates.nil?
 
       dates.include?(Time.find_zone!('UTC').parse(bucket).to_date)
@@ -85,7 +89,12 @@ module SearchAnalytics
       requests = original.fetch('volume').index_by { |row| row.fetch('bucket') }
       buckets = (requests.keys + journeys.keys).uniq.sort
       volume = buckets.map do |bucket|
-        sources = CloudwatchSnapshotQuery::REQUEST_SOURCES.index_with { 0 }.merge(requests.fetch(bucket, {}))
+        request_row = requests.fetch(bucket, {})
+        sources = if volume_collected?(bucket)
+                    CloudwatchSnapshotQuery::REQUEST_SOURCES.index_with { 0 }.merge(request_row)
+                  else
+                    request_row
+                  end
         row = sources.merge('bucket' => bucket)
         if journeys[bucket]
           row.merge(journeys.fetch(bucket))
