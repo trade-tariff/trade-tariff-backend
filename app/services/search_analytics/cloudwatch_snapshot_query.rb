@@ -6,7 +6,7 @@ module SearchAnalytics
     QUERY_MAX_POLLS = ENV.fetch('SEARCH_ANALYTICS_QUERY_MAX_POLLS', 60).to_i
     IMPROVEMENT_TERM_LIMIT = 100
     TERMINAL_FAILURE_STATUSES = %w[Failed Cancelled Timeout Unknown].freeze
-    SEARCH_LOG_GROUP_NAME = "platform-logs-#{TradeTariffBackend.environment}".freeze
+    SEARCH_LOG_GROUP_NAME = ENV.fetch('SEARCH_ANALYTICS_LOG_GROUP_NAME', "platform-logs-#{TradeTariffBackend.environment}").freeze
     VIEW_SEARCH_TYPES = {
       'classic' => %w[classic],
       'internal' => %w[interactive internal],
