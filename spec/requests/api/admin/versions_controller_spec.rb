@@ -49,6 +49,40 @@ RSpec.describe Api::Admin::VersionsController do
     end
   end
 
+  describe '#show' do
+    let!(:config) { create(:admin_configuration, name: 'show_test', value: 'original') }
+
+    before { config.update(value: 'changed') }
+
+    it 'returns the version' do
+      version = config.versions.first
+
+      get "/uk/admin/versions/#{version.id}.json", headers: request_headers(format: :json)
+
+      expect(response).to have_http_status(:ok)
+
+      json = JSON.parse(response.body)
+      expect(json['data']['id']).to eq(version.id.to_s)
+    end
+
+    it 'returns the item type of the record the version belongs to' do
+      version = config.versions.first
+
+      get "/uk/admin/versions/#{version.id}.json", headers: request_headers(format: :json)
+
+      json = JSON.parse(response.body)
+      expect(json['data']['attributes']['item_type']).to eq('AdminConfiguration')
+    end
+
+    context 'when the version does not exist' do
+      it 'returns 404' do
+        get '/uk/admin/versions/999999.json', headers: request_headers(format: :json)
+
+        expect(response).to have_http_status(:not_found)
+      end
+    end
+  end
+
   describe '#restore' do
     context 'with an AdminConfiguration' do
       let!(:config) { create(:admin_configuration, name: 'restore_test', value: 'original') }
