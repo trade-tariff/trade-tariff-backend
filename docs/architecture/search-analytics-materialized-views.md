@@ -95,8 +95,8 @@ revisions match. Missing, incompatible or unpopulated data retains the existing
 reader and its higher resource cost. No web request refreshes a view or collects
 logs.
 
-Refresh settings are transaction-local: UTC, 64 MB `work_mem`, 4 GB temporary-file
-limit and 120 seconds per statement. The file limit applies to simultaneous
+Refresh settings are transaction-local: UTC, 256 MB `work_mem`, 4 GB temporary-file
+limit and 15 minutes per statement. The file limit applies to simultaneous
 backend temporary files, not cumulative writes over all refresh statements.
 Read-side aggregation uses 32 MB `work_mem`. These are per-operation allowances,
 not whole-process caps. Neither setting changes pooled connection defaults.
