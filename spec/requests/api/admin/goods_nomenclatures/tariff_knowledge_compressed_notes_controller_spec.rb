@@ -50,8 +50,7 @@ RSpec.describe Api::Admin::GoodsNomenclatures::TariffKnowledgeCompressedNotesCon
     end
 
     it 'approves the current compressed note when a historical version is selected' do
-      note.update(content: 'Historical note')
-      historical_version_id = note.versions.order(:id).first.id
+      historical_version_id = create_compressed_note_version(content: 'Historical note')
 
       post '/uk/admin/goods_nomenclatures/123/tariff_knowledge_compressed_note/approve.json',
            params: { filter: { oid: historical_version_id } },
@@ -76,7 +75,7 @@ RSpec.describe Api::Admin::GoodsNomenclatures::TariffKnowledgeCompressedNotesCon
 
   describe '#versions' do
     it 'returns compressed note versions' do
-      note.update(content: 'Changed note')
+      create_compressed_note_version(content: 'Changed note')
 
       get '/uk/admin/goods_nomenclatures/123/tariff_knowledge_compressed_note/versions.json', headers: request_headers(format: :json)
 
@@ -98,5 +97,15 @@ RSpec.describe Api::Admin::GoodsNomenclatures::TariffKnowledgeCompressedNotesCon
         .to have_received(:call).with(goods_nomenclature_sids: [123])
       expect(response.parsed_body.dig('data', 'attributes', 'content')).to eq('Regenerated note')
     end
+  end
+
+  def create_compressed_note_version(content:)
+    Version.create(
+      item_type: 'TariffKnowledge::CompressedNote',
+      item_id: note.goods_nomenclature_sid.to_s,
+      event: 'update',
+      object: Sequel.pg_jsonb_wrap({ 'content' => content }),
+      created_at: Time.current,
+    ).id
   end
 end

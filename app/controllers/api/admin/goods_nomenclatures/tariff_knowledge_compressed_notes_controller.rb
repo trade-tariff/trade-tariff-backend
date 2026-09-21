@@ -34,7 +34,7 @@ module Api
         end
 
         def versions
-          render json: serialize_versions(compressed_note.versions.all)
+          render json: serialize_versions(versions_for_item.order(:created_at).all)
         end
 
       private

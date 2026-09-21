@@ -29,12 +29,12 @@ RSpec.describe TariffKnowledge::CompressedNote do
       expect(note.reload).to have_attributes(needs_review: false, approved: true)
     end
 
-    it 'tracks manual edits and versions' do
+    it 'tracks manual edits without creating versions' do
       note = create(:tariff_knowledge_compressed_note, needs_review: true, approved: false)
 
       expect {
         note.apply_manual_edit!(content: 'Reviewed compressed note')
-      }.to change(Version.where(item_type: described_class.name), :count).by(1)
+      }.not_to change(Version.where(item_type: described_class.name), :count)
 
       expect(note.reload).to have_attributes(
         content: 'Reviewed compressed note',
