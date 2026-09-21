@@ -73,6 +73,10 @@ module Reporting
         @workbook = WorkbookWrapper.new(workbook_data)
       end
 
+      def workbook_data
+        workbook.read_string
+      end
+
       def sections
         Reporting::Differences::Renderers::Overview::OVERVIEW_SECTION_CONFIG.keys.map do |section|
           worksheets = Reporting::Differences::Renderers::Overview::OVERVIEW_SECTION_CONFIG.dig(section, :worksheets).map do |worksheet, config|

@@ -75,6 +75,7 @@ module Reporting
     include Reporting::Reportable
 
     attr_reader :workbook,
+                :workbook_data,
                 :regular_style,
                 :date_style,
                 :bold_style,
@@ -144,8 +145,10 @@ module Reporting
       end
     end
 
-    def workbook_data
-      @workbook_data ||= workbook.read_string
+    def serialize_workbook
+      return workbook_data if workbook_data
+
+      @workbook_data = workbook.read_string
     end
 
     def add_overview_worksheet
@@ -334,9 +337,9 @@ module Reporting
           filename = Rails.env.development? ? File.basename(object_key) : nil
           report = instrument_report_step('open_workbook') { new(filename) }
           instrument_report_step('render_workbook') { report.generate(only:) }
+          workbook_data = instrument_report_step('serialize_workbook') { report.serialize_workbook }
 
           if Rails.env.production?
-            workbook_data = instrument_report_step('serialize_workbook') { report.workbook_data }
             log_report_metric('output_bytes', workbook_data.bytesize)
 
             instrument_report_step('upload', output_bytes: workbook_data.bytesize) do
