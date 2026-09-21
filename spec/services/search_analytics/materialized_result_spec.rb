@@ -255,7 +255,7 @@ RSpec.describe SearchAnalytics::MaterializedResult, :truncation do
       expect_parity
     end
 
-    it 'does not serve outcomes after the query definition changes' do
+    it 'keeps combinable outcome days after the query definition changes' do
       allow(SearchAnalytics::DailyQuery).to receive(:new).and_wrap_original do |method, **args|
         query = method.call(**args)
         fingerprints = query.fingerprints.merge('journey_outcomes' => 'changed')
@@ -263,7 +263,9 @@ RSpec.describe SearchAnalytics::MaterializedResult, :truncation do
         query
       end
       expect_parity
-      expect(described_class.call(**arguments).value.payload.dig('availability', 'journey_outcomes')).to be(false)
+      payload = described_class.call(**arguments).value.payload
+      expect(payload.dig('availability', 'journey_outcomes')).to be(true)
+      expect(payload.dig('journeys', 'question_counts')).to eq([])
     end
 
     it 'ignores a stale frontend fingerprint the same way as the existing reader' do

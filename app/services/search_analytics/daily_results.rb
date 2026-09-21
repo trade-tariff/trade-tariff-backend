@@ -48,8 +48,10 @@ module SearchAnalytics
                  else
                    JourneyOutcomes.call(
                      journeys: JourneyMetrics.new(rows: results.fetch('search_journeys'), period:),
-                     records: SearchAnalyticsQueryResult.where(service:, name: 'journey_outcomes', fingerprint: definitions.fetch('journey_outcomes')),
-                     dates: journey_dates, buckets: payload.fetch('trends').fetch('volume').map { |row| row.fetch('bucket') }
+                     records: SearchAnalyticsQueryResult.where(service:, name: 'journey_outcomes'),
+                     dates: journey_dates,
+                     buckets: payload.fetch('trends').fetch('volume').map { |row| row.fetch('bucket') },
+                     fingerprint: definitions.fetch('journey_outcomes'),
                    )
                  end
       payload['trends']['outcomes'] = outcomes.fetch('trend')

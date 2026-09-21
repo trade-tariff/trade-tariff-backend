@@ -67,9 +67,12 @@ RSpec.describe SearchAnalytics::DailyResults do
     expect(payload.dig('journeys', 'outcomes')).to be_nil
   end
 
-  it 'does not reuse an incompatible outcome definition' do
+  it 'still plots outcome days stored under an older fingerprint' do
     store(date, 'journey_outcomes', outcome_rows, fingerprint: 'old')
-    expect(read.payload.dig('availability', 'journey_outcomes')).to be(false)
+    payload = read.payload
+    expect(payload.dig('availability', 'journey_outcomes')).to be(true)
+    expect(payload.dig('trends', 'outcomes')).not_to be_empty
+    expect(payload.dig('journeys', 'question_counts')).to eq([])
   end
 
   it 'keeps matching outcome days without hiding other metrics' do
