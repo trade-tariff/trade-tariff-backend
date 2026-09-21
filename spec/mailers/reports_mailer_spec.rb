@@ -7,7 +7,7 @@ RSpec.describe ReportsMailer, type: :mailer do
     let(:xlsx_content) { "PK\x03\x04\x9D".b }
 
     before do
-      allow(report.workbook).to receive(:read_string).and_return(xlsx_content)
+      allow(report).to receive(:workbook_data).and_return(xlsx_content)
     end
 
     it { expect(mail.subject).to eq("[HMRC Online Trade Tariff Support] UK tariff - potential issues report #{Time.zone.today.iso8601}") }
