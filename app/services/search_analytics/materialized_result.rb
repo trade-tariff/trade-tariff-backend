@@ -104,7 +104,7 @@ module SearchAnalytics
       end
       outcomes = projection.outcomes(view: @period.view, buckets:, coverage:)
       payload['trends']['outcomes'] = outcomes.fetch('trend')
-      payload['journeys']['outcomes'] = outcomes.fetch('summary')
+      payload['journeys']['outcomes'] = current == dates ? outcomes.fetch('summary') : nil
       payload['journeys']['question_counts'] = current == dates ? projection.question_counts : []
       payload['availability']['journey_outcomes'] = collected.any?
       payload['availability']['journey_outcome_coverage'] = coverage
