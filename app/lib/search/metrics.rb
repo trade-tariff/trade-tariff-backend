@@ -24,14 +24,18 @@ module Search
     class << self
       def subscribe!(output: $stdout)
         unsubscribe!
-        @subscriber = ActiveSupport::Notifications.subscribe(/\.search\z/) do |*args|
+        # config.x outlives a Zeitwerk reload. A class ivar does not, so to_prepare would subscribe twice.
+        subscription_registry.search_metrics_subscriber = ActiveSupport::Notifications.subscribe(/\.search\z/) do |*args|
           record(ActiveSupport::Notifications::Event.new(*args), output:)
         end
       end
 
       def unsubscribe!
-        ActiveSupport::Notifications.unsubscribe(@subscriber) if @subscriber
-        @subscriber = nil
+        subscriber = subscription_registry.search_metrics_subscriber
+        return unless subscriber
+
+        ActiveSupport::Notifications.unsubscribe(subscriber)
+        subscription_registry.search_metrics_subscriber = nil
       end
 
       def record(event, output: $stdout, environment: TradeTariffBackend.environment, service: TradeTariffBackend.service, now: Time.current)
@@ -178,6 +182,10 @@ module Search
             CloudWatchMetrics: metrics,
           },
         }
+      end
+
+      def subscription_registry
+        Rails.application.config.x
       end
     end
   end
