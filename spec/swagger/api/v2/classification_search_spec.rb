@@ -24,6 +24,13 @@ RSpec.describe 'Classification Search', skip: 'Draft MCP API docs are held back 
       parameter name: :expanded_query, in: :query, required: false,
                 schema: { type: :string },
                 description: 'Optional expanded query text to use for retrieval'
+      parameter name: :filter_prefixes, in: :query, required: false,
+                style: :form, explode: false,
+                schema: { type: :array, items: { type: :string, pattern: '^\\d{2,10}$' }, maxItems: 10 },
+                description: 'Restrict retrieval to these goods nomenclature code prefixes, for a narrower second search inside a chapter or heading. Send one comma separated value, for example 6307,6301. Repeated keys are not supported: only the last value survives'
+      parameter name: :search_non_declarables, in: :query, required: false,
+                schema: { type: :boolean },
+                description: 'Include non-declarable goods nomenclatures such as headings and chapters. Omit to use the configured default'
 
       response '200', 'classification candidates found' do
         schema type: :object,
@@ -128,6 +135,16 @@ RSpec.describe 'Classification Search', skip: 'Draft MCP API docs are held back 
                     limit: { type: :integer, minimum: 1, maximum: 50 },
                     as_of: { type: :string, format: :date },
                     expanded_query: { type: :string },
+                    filter_prefixes: {
+                      type: :array,
+                      items: { type: :string, pattern: '^\\d{2,10}$' },
+                      maxItems: 10,
+                      description: 'Restrict retrieval to these goods nomenclature code prefixes, for a narrower second search inside a chapter or heading',
+                    },
+                    search_non_declarables: {
+                      type: :boolean,
+                      description: 'Include non-declarable goods nomenclatures such as headings and chapters. Omit to use the configured default',
+                    },
                   },
                 }
 

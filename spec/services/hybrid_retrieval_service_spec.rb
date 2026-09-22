@@ -248,6 +248,48 @@ RSpec.describe HybridRetrievalService do
       )
     end
 
+    it 'returns the whole fused set, because limit is the per leg fetch size' do
+      # Guided search passes opensearch_result_limit here and consumes every
+      # fused item. A cap in rrf_merge would halve the candidate pool that
+      # interactive search asks its questions about, so the cap belongs to the
+      # classification caller instead.
+      os = (1..40).map { |n| make_result(sid: n, item_id: sprintf('01012%05d', n), score: 40.0 - n) }
+      vec = (41..80).map { |n| make_result(sid: n, item_id: sprintf('01012%05d', n), score: (80.0 - n) / 100) }
+      allow(OpensearchRetrievalService).to receive(:call).and_return(
+        OpensearchRetrievalService::Result.new(results: os, expanded_query: expanded_query),
+      )
+      allow(VectorRetrievalService).to receive(:call_with_diagnostics).and_return(
+        VectorRetrievalService::Result.new(results: vec, max_score: 0.9),
+      )
+
+      result = described_class.call(query: 'horses', as_of: Time.zone.today, limit: 30)
+
+      expect(result.results.size).to eq(80)
+    end
+
+    it 'sorts the fused set by descending score' do
+      os = (1..40).map { |n| make_result(sid: n, item_id: sprintf('01012%05d', n), score: 40.0 - n) }
+      vec = [os.first] + (41..79).map { |n| make_result(sid: n, item_id: sprintf('01012%05d', n), score: (80.0 - n) / 100) }
+      allow(OpensearchRetrievalService).to receive(:call).and_return(
+        OpensearchRetrievalService::Result.new(results: os, expanded_query: expanded_query),
+      )
+      allow(VectorRetrievalService).to receive(:call_with_diagnostics).and_return(
+        VectorRetrievalService::Result.new(results: vec, max_score: 0.9),
+      )
+
+      result = described_class.call(query: 'horses', as_of: Time.zone.today, limit: 5)
+
+      scores = result.results.map(&:score)
+      expect(scores).to eq(scores.sort.reverse)
+      expect(result.results.first.goods_nomenclature_sid).to eq(1)
+    end
+
+    it 'returns every merged item when the limit is not reached' do
+      result = described_class.call(query: 'horses', as_of: Time.zone.today, limit: 30)
+
+      expect(result.results.map(&:goods_nomenclature_sid)).to contain_exactly(1, 2, 3, 4)
+    end
+
     it 'returns items from both lists ranked by RRF score' do
       result = described_class.call(query: 'horses', as_of: Time.zone.today)
 

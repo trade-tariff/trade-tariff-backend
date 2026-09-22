@@ -200,6 +200,10 @@ private
       items_by_sid[sid] ||= item
     end
 
+    # `limit` is the per leg fetch size, not the fused size, so the merged set
+    # can hold up to twice it. It stays whole here: guided search consumes every
+    # fused item, and a cap would shrink the candidate pool it asks questions
+    # about. A caller that wants a smaller response caps its own results.
     scores
       .sort_by { |_sid, score| -score }
       .map { |sid, score| build_result(items_by_sid[sid], score) }
