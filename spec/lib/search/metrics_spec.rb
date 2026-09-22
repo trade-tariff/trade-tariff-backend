@@ -39,6 +39,7 @@ RSpec.describe Search::Metrics do
     )
     expect(emitted).not_to have_key('EmptyResults')
     expect(emitted.dig('_aws', 'Timestamp')).to eq((now.to_f * 1000).to_i)
+    expect(emitted.dig('_aws', 'CloudWatchMetrics').map { |definition| definition['Namespace'] }.uniq).to eq(['TradeTariff/Search'])
     expect(emitted.dig('_aws', 'CloudWatchMetrics').flat_map { |definition| definition['Dimensions'].flatten }).not_to include('request_id')
     expect(dimension_sets('SearchEvents')).to eq([
       %w[Environment Service RequestSource Outcome],
@@ -64,6 +65,55 @@ RSpec.describe Search::Metrics do
     record
 
     expect(emitted).not_to have_key('EmptyResults')
+  end
+
+  it 'does not count an exact classic match when the result type is a symbol' do
+    payload[:commodity_result_count] = 0
+    payload[:results_type] = :exact_search
+
+    record
+
+    expect(emitted).not_to have_key('EmptyResults')
+  end
+
+  it 'counts a classic zero commodity result when the result type is omitted' do
+    payload.delete(:results_type)
+    payload[:commodity_result_count] = 0
+
+    record
+
+    expect(emitted['EmptyResults']).to eq(1)
+  end
+
+  it 'does not treat missing counts as empty' do
+    payload.delete(:commodity_result_count)
+    payload.delete(:result_count)
+
+    record
+
+    expect(emitted).not_to have_key('EmptyResults')
+
+    output.truncate(0)
+    output.rewind
+    described_class.record(
+      ActiveSupport::Notifications::Event.new(
+        'search_completed.search', now, now, 'id',
+        payload.merge(search_type: 'interactive', result_count: nil)
+      ),
+      output:, environment: 'production', service: 'uk', now:,
+    )
+    expect(JSON.parse(output.string)).not_to have_key('EmptyResults')
+  end
+
+  it 'keeps the search event when a duration or count is not finite' do
+    payload[:total_duration_ms] = Float::NAN
+    payload[:result_count] = Float::INFINITY
+
+    record
+
+    expect(emitted['SearchEvents']).to eq(1)
+    expect(emitted).not_to have_key('SearchDuration')
+    expect(emitted).not_to have_key('ResultCount')
   end
 
   it 'counts a classic search with no commodity count and zero results as empty' do
@@ -151,11 +201,39 @@ RSpec.describe Search::Metrics do
     expect(described_class.record(event, output: failing, environment: 'production', service: 'uk', now:)).to be(false)
   end
 
+  it 'drops a blocked, short, or oversized write' do
+    blocked = instance_double(IO)
+    allow(blocked).to receive(:write_nonblock).and_return(:wait_writable)
+    expect(described_class.record(event, output: blocked, environment: 'production', service: 'uk', now:)).to be(false)
+
+    short = instance_double(IO)
+    allow(short).to receive(:write_nonblock).and_return(1)
+    expect(described_class.record(event, output: short, environment: 'production', service: 'uk', now:)).to be(false)
+
+    allow(JSON).to receive(:generate).and_return('x' * described_class::MAX_LINE_BYTES)
+    expect(output).not_to receive(:write_nonblock)
+    expect(record).to be(false)
+  end
+
   it 'subscribes to search notifications and can be removed' do
     buffer = StringIO.new
     described_class.subscribe!(output: buffer)
     ActiveSupport::Notifications.instrument('query_expanded.search', {})
     described_class.unsubscribe!
+    ActiveSupport::Notifications.instrument('query_expanded.search', {})
+
+    expect(buffer.string.lines.size).to eq(1)
+  ensure
+    described_class.unsubscribe!
+  end
+
+  it 'keeps one subscription when the class state is discarded' do
+    buffer = StringIO.new
+    described_class.subscribe!(output: buffer)
+    expect(Rails.application.config.x.search_metrics_subscriber).to be_present
+    described_class.singleton_class.remove_instance_variable(:@subscriber) if described_class.singleton_class.instance_variable_defined?(:@subscriber)
+
+    described_class.subscribe!(output: buffer)
     ActiveSupport::Notifications.instrument('query_expanded.search', {})
 
     expect(buffer.string.lines.size).to eq(1)
