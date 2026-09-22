@@ -135,7 +135,7 @@ fields @timestamp, event, operation, failure_code, search_degraded, error_type, 
 
 `search_stage_failed` records a recovered or unrecovered stage failure with a scalar `failure_code`. A degraded request can end with `search_completed`; `search_failed` is the terminal unrecovered event. Expansion deadline expiry also has `query_expansion_timed_out` diagnostics. An unclassified hard failure sets `search_degraded: true` even if all six known stage flags remain false.
 
-Event counts are not affected-request counts: several events can describe one failure. Search Overview and admin snapshots exclude correlated degraded requests; Operations, Quality, Experiment and general AI Costs retain their existing cohorts. Use the [search and indexing guide](architecture/search-and-indexing.md) for alarm coverage, query-expansion measurements and analytics cohort details.
+Event counts are not affected-request counts: several events can describe one failure. Admin snapshots exclude correlated degraded requests. Search Overview counts each recorded event and does not remove that count when a later failure is linked. Operations, Quality, Experiment and general AI Costs retain their existing cohorts. Use the [search and indexing guide](architecture/search-and-indexing.md) for alarm coverage, query-expansion measurements and analytics cohort details.
 
 ## Verification and maintenance
 
