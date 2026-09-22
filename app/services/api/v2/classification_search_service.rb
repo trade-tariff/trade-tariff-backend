@@ -40,14 +40,20 @@ module Api
             search_type: 'classification',
           )
 
+          # Hybrid retrieval fuses two legs of up to `limit` items each, so it
+          # returns up to twice the limit this caller asked for. Cap it here.
+          # The fused set stays whole inside retrieval, because guided search
+          # uses the same service and needs every candidate.
+          results = result.results.first(limit)
+
           response = ClassificationSearchResultSerializer.serialize(
-            result.results,
-            meta: response_meta(result),
+            results,
+            meta: response_meta(result, results),
           )
           completion = {
-            result_count: result.results.size,
+            result_count: results.size,
             results_type: 'hybrid',
-            max_score: result.results.map(&:score).compact.max,
+            max_score: results.map(&:score).compact.max,
           }
           [response, completion]
         end
@@ -69,13 +75,15 @@ module Api
         }
       end
 
-      def response_meta(result)
+      # `results` is the capped set this response returns, so the counts match
+      # what the caller receives rather than what retrieval fetched.
+      def response_meta(result, results)
         {
           request_id: request_id,
           retrieval_method: 'hybrid',
           expanded_query: result.expanded_query,
-          result_count: result.results.size,
-          max_score: result.results.map(&:score).compact.max,
+          result_count: results.size,
+          max_score: results.map(&:score).compact.max,
           search_failures: Array(TradeTariffRequest.search_failures),
         }
       end

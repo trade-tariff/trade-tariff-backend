@@ -190,4 +190,65 @@ RSpec.describe Api::V2::ClassificationSearchService do
       )
     end
   end
+
+  describe 'limit' do
+    def make_result(sid:, score:)
+      GoodsNomenclatureResult.new(
+        id: sid,
+        goods_nomenclature_item_id: sprintf('01012%05d', sid),
+        goods_nomenclature_sid: sid,
+        producline_suffix: '80',
+        goods_nomenclature_class: 'Commodity',
+        description: "item #{sid}",
+        formatted_description: "Item #{sid}",
+        self_text: nil,
+        classification_description: "Item #{sid}",
+        full_description: "Item #{sid}",
+        heading_description: nil,
+        declarable: true,
+        score: score,
+        confidence: nil,
+      )
+    end
+
+    # Hybrid retrieval fuses two legs of up to `limit` items each, so it can
+    # return twice the limit the caller asked for. This service caps its own
+    # response. The fused set stays whole for guided search, which uses the
+    # same retrieval service and needs every candidate.
+    let(:fused_results) { (1..60).map { |sid| make_result(sid: sid, score: (100 - sid) / 100.0) } }
+
+    before do
+      allow(HybridRetrievalService).to receive(:call).and_return(
+        HybridRetrievalService::Result.new(results: fused_results, expanded_query: 'horses', source_results: fused_results),
+      )
+    end
+
+    it 'caps the response at the requested limit' do
+      response = described_class.new(q: 'horses', limit: 10).call
+
+      expect(response[:data].size).to eq(10)
+    end
+
+    it 'keeps the highest scoring results when it caps' do
+      response = described_class.new(q: 'horses', limit: 10).call
+
+      sids = response[:data].map { |record| record[:attributes][:goods_nomenclature_sid] }
+      expect(sids).to eq((1..10).to_a)
+    end
+
+    it 'reports the capped count and the capped max score in the meta' do
+      response = described_class.new(q: 'horses', limit: 10).call
+
+      expect(response[:meta][:result_count]).to eq(10)
+      expect(response[:meta][:max_score]).to eq(0.99)
+    end
+
+    it 'still asks retrieval for the full per leg limit' do
+      described_class.new(q: 'horses', limit: 10).call
+
+      expect(HybridRetrievalService).to have_received(:call).with(
+        hash_including(limit: 10),
+      )
+    end
+  end
 end

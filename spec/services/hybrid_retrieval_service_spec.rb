@@ -248,7 +248,11 @@ RSpec.describe HybridRetrievalService do
       )
     end
 
-    it 'truncates the merged result set to the requested limit' do
+    it 'returns the whole fused set, because limit is the per leg fetch size' do
+      # Guided search passes opensearch_result_limit here and consumes every
+      # fused item. A cap in rrf_merge would halve the candidate pool that
+      # interactive search asks its questions about, so the cap belongs to the
+      # classification caller instead.
       os = (1..40).map { |n| make_result(sid: n, item_id: sprintf('01012%05d', n), score: 40.0 - n) }
       vec = (41..80).map { |n| make_result(sid: n, item_id: sprintf('01012%05d', n), score: (80.0 - n) / 100) }
       allow(OpensearchRetrievalService).to receive(:call).and_return(
@@ -260,13 +264,11 @@ RSpec.describe HybridRetrievalService do
 
       result = described_class.call(query: 'horses', as_of: Time.zone.today, limit: 30)
 
-      expect(result.results.size).to eq(30)
+      expect(result.results.size).to eq(80)
     end
 
-    it 'keeps the highest ranked items when it truncates' do
+    it 'sorts the fused set by descending score' do
       os = (1..40).map { |n| make_result(sid: n, item_id: sprintf('01012%05d', n), score: 40.0 - n) }
-      # sid 1 is top of both legs, so it is the one item with an unambiguous
-      # best RRF score. Items that top only one leg tie with each other.
       vec = [os.first] + (41..79).map { |n| make_result(sid: n, item_id: sprintf('01012%05d', n), score: (80.0 - n) / 100) }
       allow(OpensearchRetrievalService).to receive(:call).and_return(
         OpensearchRetrievalService::Result.new(results: os, expanded_query: expanded_query),
@@ -278,7 +280,6 @@ RSpec.describe HybridRetrievalService do
       result = described_class.call(query: 'horses', as_of: Time.zone.today, limit: 5)
 
       scores = result.results.map(&:score)
-      expect(result.results.size).to eq(5)
       expect(scores).to eq(scores.sort.reverse)
       expect(result.results.first.goods_nomenclature_sid).to eq(1)
     end

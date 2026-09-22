@@ -116,6 +116,21 @@ RSpec.describe 'Classification search API' do
       end
     end
 
+    # The documented wire format is one comma separated value. OpenAPI's default
+    # array encoding repeats the key instead, and Rack keeps only the last value,
+    # so every prefix but the last would be dropped. Sending a raw query string
+    # here locks the documented form to what the service actually parses.
+    context 'with comma separated filter prefixes in a raw query string' do
+      it 'passes every prefix to hybrid retrieval' do
+        get '/uk/api/classification_search?q=dog+bed&filter_prefixes=6307,6301',
+            headers: request_headers(version: 2)
+
+        expect(HybridRetrievalService).to have_received(:call).with(
+          hash_including(filter_prefixes: %w[6307 6301]),
+        )
+      end
+    end
+
     context 'with invalid filter prefixes' do
       let(:params) { { q: 'dog bed', filter_prefixes: %w[63AB] } }
 
@@ -170,6 +185,55 @@ RSpec.describe 'Classification search API' do
         )
         expect(response.body).not_to include('all legs failed')
       end
+    end
+  end
+
+  # The route accepts GET and POST, so both must carry the retrieval controls.
+  describe 'POST /classification_search' do
+    let(:result) do
+      GoodsNomenclatureResult.new(
+        id: '123',
+        goods_nomenclature_item_id: '8518300090',
+        goods_nomenclature_sid: 123,
+        producline_suffix: '80',
+        goods_nomenclature_class: 'Commodity',
+        description: 'Headphones and earphones',
+        formatted_description: 'Headphones and earphones',
+        self_text: 'Headphones and earphones',
+        classification_description: 'Headphones and earphones',
+        full_description: 'Electrical machinery > Headphones and earphones',
+        heading_description: 'Headphones and earphones',
+        declarable: true,
+        score: 0.03125,
+        confidence: nil,
+      )
+    end
+
+    before do
+      allow(AdminConfiguration).to receive(:enabled?).with('input_sanitiser_enabled').and_return(false)
+      allow(HybridRetrievalService).to receive(:call).and_return(
+        HybridRetrievalService::Result.new(results: [result], expanded_query: 'dog bed', source_results: [result]),
+      )
+    end
+
+    it 'passes the retrieval controls from a JSON body' do
+      post '/uk/api/classification_search',
+           params: { q: 'dog bed', filter_prefixes: %w[6307 6301], search_non_declarables: true }.to_json,
+           headers: request_headers(version: 2).merge('CONTENT_TYPE' => 'application/json')
+
+      expect(response).to have_http_status(:ok)
+      expect(HybridRetrievalService).to have_received(:call).with(
+        hash_including(filter_prefixes: %w[6307 6301], search_non_declarables: true),
+      )
+    end
+
+    it 'rejects an invalid prefix from a JSON body' do
+      post '/uk/api/classification_search',
+           params: { q: 'dog bed', filter_prefixes: %w[63AB] }.to_json,
+           headers: request_headers(version: 2).merge('CONTENT_TYPE' => 'application/json')
+
+      expect(response).to have_http_status(:unprocessable_content)
+      expect(JSON.parse(response.body)).to include('errors' => [include('title' => 'Invalid filter_prefixes')])
     end
   end
 end

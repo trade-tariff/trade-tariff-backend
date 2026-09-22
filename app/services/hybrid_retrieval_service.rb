@@ -200,13 +200,12 @@ private
       items_by_sid[sid] ||= item
     end
 
-    # Both legs return up to @limit items each, so the merged set can hold up to
-    # twice the limit the caller asked for. Truncate to the requested limit:
-    # the caller sized its request for a reason, and an oversized response costs
-    # the client context it cannot spend on anything else.
+    # `limit` is the per leg fetch size, not the fused size, so the merged set
+    # can hold up to twice it. It stays whole here: guided search consumes every
+    # fused item, and a cap would shrink the candidate pool it asks questions
+    # about. A caller that wants a smaller response caps its own results.
     scores
       .sort_by { |_sid, score| -score }
-      .first(@limit)
       .map { |sid, score| build_result(items_by_sid[sid], score) }
   end
 
