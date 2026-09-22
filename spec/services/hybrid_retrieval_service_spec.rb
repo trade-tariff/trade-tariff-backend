@@ -248,6 +248,47 @@ RSpec.describe HybridRetrievalService do
       )
     end
 
+    it 'truncates the merged result set to the requested limit' do
+      os = (1..40).map { |n| make_result(sid: n, item_id: sprintf('01012%05d', n), score: 40.0 - n) }
+      vec = (41..80).map { |n| make_result(sid: n, item_id: sprintf('01012%05d', n), score: (80.0 - n) / 100) }
+      allow(OpensearchRetrievalService).to receive(:call).and_return(
+        OpensearchRetrievalService::Result.new(results: os, expanded_query: expanded_query),
+      )
+      allow(VectorRetrievalService).to receive(:call_with_diagnostics).and_return(
+        VectorRetrievalService::Result.new(results: vec, max_score: 0.9),
+      )
+
+      result = described_class.call(query: 'horses', as_of: Time.zone.today, limit: 30)
+
+      expect(result.results.size).to eq(30)
+    end
+
+    it 'keeps the highest ranked items when it truncates' do
+      os = (1..40).map { |n| make_result(sid: n, item_id: sprintf('01012%05d', n), score: 40.0 - n) }
+      # sid 1 is top of both legs, so it is the one item with an unambiguous
+      # best RRF score. Items that top only one leg tie with each other.
+      vec = [os.first] + (41..79).map { |n| make_result(sid: n, item_id: sprintf('01012%05d', n), score: (80.0 - n) / 100) }
+      allow(OpensearchRetrievalService).to receive(:call).and_return(
+        OpensearchRetrievalService::Result.new(results: os, expanded_query: expanded_query),
+      )
+      allow(VectorRetrievalService).to receive(:call_with_diagnostics).and_return(
+        VectorRetrievalService::Result.new(results: vec, max_score: 0.9),
+      )
+
+      result = described_class.call(query: 'horses', as_of: Time.zone.today, limit: 5)
+
+      scores = result.results.map(&:score)
+      expect(result.results.size).to eq(5)
+      expect(scores).to eq(scores.sort.reverse)
+      expect(result.results.first.goods_nomenclature_sid).to eq(1)
+    end
+
+    it 'returns every merged item when the limit is not reached' do
+      result = described_class.call(query: 'horses', as_of: Time.zone.today, limit: 30)
+
+      expect(result.results.map(&:goods_nomenclature_sid)).to contain_exactly(1, 2, 3, 4)
+    end
+
     it 'returns items from both lists ranked by RRF score' do
       result = described_class.call(query: 'horses', as_of: Time.zone.today)
 

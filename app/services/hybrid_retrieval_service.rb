@@ -200,8 +200,13 @@ private
       items_by_sid[sid] ||= item
     end
 
+    # Both legs return up to @limit items each, so the merged set can hold up to
+    # twice the limit the caller asked for. Truncate to the requested limit:
+    # the caller sized its request for a reason, and an oversized response costs
+    # the client context it cannot spend on anything else.
     scores
       .sort_by { |_sid, score| -score }
+      .first(@limit)
       .map { |sid, score| build_result(items_by_sid[sid], score) }
   end
 

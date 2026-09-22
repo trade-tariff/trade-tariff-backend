@@ -68,6 +68,8 @@ RSpec.describe 'Classification search API' do
         as_of: Time.zone.today,
         request_id: 'test-request-id',
         limit: 5,
+        filter_prefixes: [],
+        search_non_declarables: nil,
         search_type: 'classification',
       )
     end
@@ -99,6 +101,53 @@ RSpec.describe 'Classification search API' do
 
         expect(response).to have_http_status(:unprocessable_content)
         expect(JSON.parse(response.body)).to include('errors' => [include('title' => 'Invalid query')])
+      end
+    end
+
+    context 'with filter prefixes' do
+      let(:params) { { q: 'dog bed', filter_prefixes: %w[6307] } }
+
+      it 'passes the prefixes to hybrid retrieval' do
+        make_request
+
+        expect(HybridRetrievalService).to have_received(:call).with(
+          hash_including(filter_prefixes: %w[6307]),
+        )
+      end
+    end
+
+    context 'with invalid filter prefixes' do
+      let(:params) { { q: 'dog bed', filter_prefixes: %w[63AB] } }
+
+      it 'returns a validation error' do
+        make_request
+
+        expect(response).to have_http_status(:unprocessable_content)
+        expect(JSON.parse(response.body)).to include('errors' => [include('title' => 'Invalid filter_prefixes')])
+      end
+    end
+
+    context 'when the caller opts in to non declarables' do
+      let(:params) { { q: 'dog bed', search_non_declarables: 'true' } }
+
+      it 'passes the opt in to hybrid retrieval' do
+        make_request
+
+        expect(HybridRetrievalService).to have_received(:call).with(
+          hash_including(search_non_declarables: true),
+        )
+      end
+    end
+
+    context 'when the caller says nothing about non declarables' do
+      let(:params) { { q: 'dog bed' } }
+
+      it 'passes nil so the admin setting still decides' do
+        make_request
+
+        expect(HybridRetrievalService).to have_received(:call).with(
+          hash_including(search_non_declarables: nil),
+        )
       end
     end
 

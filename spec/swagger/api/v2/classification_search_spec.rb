@@ -24,6 +24,12 @@ RSpec.describe 'Classification Search', skip: 'Draft MCP API docs are held back 
       parameter name: :expanded_query, in: :query, required: false,
                 schema: { type: :string },
                 description: 'Optional expanded query text to use for retrieval'
+      parameter name: :filter_prefixes, in: :query, required: false,
+                schema: { type: :array, items: { type: :string, pattern: '^\\d{2,10}$' }, maxItems: 10 },
+                description: 'Restrict retrieval to these goods nomenclature code prefixes, for a narrower second search inside a chapter or heading'
+      parameter name: :search_non_declarables, in: :query, required: false,
+                schema: { type: :boolean },
+                description: 'Include non-declarable goods nomenclatures such as headings and chapters. Omit to use the configured default'
 
       response '200', 'classification candidates found' do
         schema type: :object,
