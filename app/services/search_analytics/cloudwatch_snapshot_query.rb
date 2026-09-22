@@ -155,7 +155,7 @@ module SearchAnalytics
       QUERY
     end
 
-    # Keep empty-commodity semantics in sync with terraform/modules/search_*_dashboard.
+    # Keep empty-commodity semantics in sync with Search::Metrics and the quality and experiment dashboards.
     def zero_result_condition
       <<~CONDITION.squish
         ((search_type = 'classic' AND (

@@ -1,20 +1,7 @@
 locals {
   dashboard_name = var.dashboard_name != null ? var.dashboard_name : "Search-${var.environment}"
-  source         = "FROM `${var.log_group_name}`"
-  service_filter = "service = 'search' AND ${local.request_exclusion_filter}"
-  request_exclusion_filter = templatefile("${path.module}/../../../app/services/search_analytics/request_exclusion_filter.sql.tftpl", {
-    log_group_name  = var.log_group_name
-    scope_condition = "1 = 1"
-  })
-  # Classic empty commodity results: fuzzy/null with commodity_result_count = 0 (empty Best commodity matches).
-  # Includes completely empty results and headings/chapters-only; excludes exact matches.
-  # Interactive empty results: result_count = 0 (filter also accepts search_type=internal for forward-compat).
-  # Historical classic falls back to result_count = 0.
-  # Keep in sync with SearchAnalytics::CloudwatchSnapshotQuery#zero_result_condition
-  # and the other search_*_dashboard modules.
-  classic_empty_commodity_condition = "(search_type = 'classic' and ((commodity_result_count IS NOT NULL and commodity_result_count = 0 and (results_type IS NULL or results_type != 'exact_search')) or (commodity_result_count IS NULL and result_count = 0)))"
-  interactive_no_results_condition  = "((search_type = 'interactive' or search_type = 'internal') and result_count = 0)"
-  zero_result_condition             = "(${local.classic_empty_commodity_condition} or ${local.interactive_no_results_condition})"
+  period         = 300
+  namespace      = "TradeTariff/Search"
 
   search_operations_dashboard_url = "https://${var.region}.console.aws.amazon.com/cloudwatch/home?region=${var.region}#dashboards:name=SearchOperations-${var.environment}"
   search_quality_dashboard_url    = "https://${var.region}.console.aws.amazon.com/cloudwatch/home?region=${var.region}#dashboards:name=SearchQuality-${var.environment}"
@@ -25,196 +12,227 @@ locals {
 
 resource "aws_cloudwatch_dashboard" "search" {
   dashboard_name = local.dashboard_name
-
-  dashboard_body = jsonencode(local.rendered_dashboard_body)
+  dashboard_body = jsonencode(local.dashboard_body)
 }
 
 locals {
-  rendered_dashboard_body = merge(local.dashboard_body, {
-    widgets = [for widget in local.dashboard_body.widgets : widget.type == "log" ? merge(widget, {
-      properties = merge(widget.properties, { queryLanguage = "SQL", query = "SOURCE '${var.log_group_name}' | ${widget.properties.query}" })
-    }) : widget]
-  })
   dashboard_body = {
-    widgets = concat(
-      [
-        {
-          type   = "text"
-          x      = 0
-          y      = 0
-          width  = 24
-          height = 2
-          properties = {
-            markdown = join("\n", [
-              "## Trade Tariff Search Overview",
-              "Long-range search trends excluding every event for request IDs with a recorded search failure in the selected time range. Use the complete journey window; older and uncorrelated logs remain included when no failure can be linked. Operations retains all failures.",
-              "**Read these trends:** compare latency, empty results and selections within the retained cohort. Use Search Operations for failure counts and operational health; excluded failures cannot be assessed here.",
-              "**Empty commodity results (classic):** fuzzy/null with zero commodity hits (empty Best commodity matches; includes fully empty and headings/chapters-only). **Empty results (interactive):** no returned results. See Search Quality for classic empty-kind pies and free-text rates.",
-              "**Start here:** use this dashboard for 3-month trends. Open Operations for active troubleshooting and Quality for intercepts, empty commodity/empty result terms, and result behaviour.",
-              "**Related:** [Search Operations](${local.search_operations_dashboard_url}) | [Search Quality](${local.search_quality_dashboard_url}) | [Search Experiments](${local.search_experiment_dashboard_url}) | [Label Generator](${local.label_dashboard_url}) | [Self-Text Generator](${local.self_text_dashboard_url})",
-            ])
-          }
+    widgets = [
+      {
+        type   = "text"
+        x      = 0
+        y      = 0
+        width  = 24
+        height = 5
+        properties = {
+          markdown = join("\n", [
+            "## Trade Tariff Search Overview",
+            "These charts read `${local.namespace}` metrics emitted when each search event is recorded. Opening this dashboard does not scan `${var.log_group_name}`.",
+            "**Collection:** metrics start when this version is running. Earlier dates stay empty. A gap is missing telemetry, not zero traffic. Metrics can take about a minute to appear.",
+            "**Counting:** `search_completed`, `search_failed`, `result_selected`, `query_expanded`, and `api_call_completed` increment immediately. A later failure does not remove an earlier count. Use Search Operations for failure investigation. Admin analytics keeps the failure-excluded cohort.",
+            "**Empty results:** classic fuzzy/null with zero commodity hits, including a missing commodity count and zero results. Interactive and internal count zero returned results. Exact classic matches are not empty commodity results.",
+            "**Series:** UK and XI are separate. Unexpected request sources and search types are recorded as `other`.",
+            "**Start here:** use this dashboard for recent trends. Open Operations for active troubleshooting and Quality for intercepts, empty-result terms, and result behaviour.",
+            "**Related:** [Search Operations](${local.search_operations_dashboard_url}) | [Search Quality](${local.search_quality_dashboard_url}) | [Search Experiments](${local.search_experiment_dashboard_url}) | [Label Generator](${local.label_dashboard_url}) | [Self-Text Generator](${local.self_text_dashboard_url})",
+          ])
         }
-      ],
-      [
-        {
-          type   = "log"
-          x      = 0
-          y      = 2
-          width  = 6
-          height = 6
-          properties = {
-            title  = "Search Volume by Request Source and Outcome"
-            region = var.region
-            view   = "timeSeries"
-            query  = <<-EOT
-              SELECT DATE_TRUNC('DAY', `@timestamp`) AS bucket, COUNT(*) AS searches, COALESCE(request_source, 'unknown') AS request_source, event
-              ${local.source} WHERE ${local.service_filter} AND event IN ('search_completed', 'search_failed')
-              GROUP BY DATE_TRUNC('DAY', `@timestamp`), COALESCE(request_source, 'unknown'), event
-            EOT
-          }
-        },
-        {
-          type   = "log"
-          x      = 6
-          y      = 2
-          width  = 6
-          height = 6
-          properties = {
-            title  = "Search Volume by Type"
-            region = var.region
-            view   = "timeSeries"
-            query  = <<-EOT
-              SELECT DATE_TRUNC('DAY', `@timestamp`) AS bucket, COUNT(*) AS searches, search_type
-              ${local.source} WHERE ${local.service_filter} AND event = 'search_completed'
-              GROUP BY DATE_TRUNC('DAY', `@timestamp`), search_type
-            EOT
-          }
-        },
-        {
-          type   = "log"
-          x      = 12
-          y      = 2
-          width  = 6
-          height = 6
-          properties = {
-            title  = "Completed vs Failed Searches"
-            region = var.region
-            view   = "timeSeries"
-            query  = <<-EOT
-              SELECT DATE_TRUNC('DAY', `@timestamp`) AS bucket, COUNT(*) AS count, event
-              ${local.source} WHERE ${local.service_filter} AND event IN ('search_completed', 'search_failed')
-              GROUP BY DATE_TRUNC('DAY', `@timestamp`), event
-            EOT
-          }
-        },
-        {
-          type   = "log"
-          x      = 18
-          y      = 2
-          width  = 6
-          height = 6
-          properties = {
-            title  = "Searches vs Selections"
-            region = var.region
-            view   = "timeSeries"
-            query  = <<-EOT
-              SELECT DATE_TRUNC('DAY', `@timestamp`) AS bucket, COUNT(*) AS count, event
-              ${local.source} WHERE ${local.service_filter} AND event IN ('search_completed', 'result_selected')
-              GROUP BY DATE_TRUNC('DAY', `@timestamp`), event
-            EOT
-          }
-        },
-      ],
-      [
-        {
-          type   = "log"
-          x      = 0
-          y      = 8
-          width  = 8
-          height = 6
-          properties = {
-            title  = "E2E Latency in seconds (p50/p90)"
-            region = var.region
-            view   = "timeSeries"
-            query  = <<-EOT
-              SELECT DATE_TRUNC('DAY', `@timestamp`) AS bucket, PERCENTILE_APPROX(total_duration_ms / 1000, 0.5) AS p50_seconds, PERCENTILE_APPROX(total_duration_ms / 1000, 0.9) AS p90_seconds
-              ${local.source} WHERE ${local.service_filter} AND event = 'search_completed'
-              GROUP BY DATE_TRUNC('DAY', `@timestamp`)
-            EOT
-          }
-        },
-        {
-          type   = "log"
-          x      = 8
-          y      = 8
-          width  = 8
-          height = 6
-          properties = {
-            title  = "AI API Latency in seconds (p50/p90)"
-            region = var.region
-            view   = "timeSeries"
-            query  = <<-EOT
-              SELECT DATE_TRUNC('DAY', `@timestamp`) AS bucket, PERCENTILE_APPROX(duration_ms / 1000, 0.5) AS p50_seconds, PERCENTILE_APPROX(duration_ms / 1000, 0.9) AS p90_seconds
-              ${local.source} WHERE ${local.service_filter} AND event = 'api_call_completed'
-              GROUP BY DATE_TRUNC('DAY', `@timestamp`)
-            EOT
-          }
-        },
-        {
-          type   = "log"
-          x      = 16
-          y      = 8
-          width  = 8
-          height = 6
-          properties = {
-            title  = "Query Expansions"
-            region = var.region
-            view   = "timeSeries"
-            query  = <<-EOT
-              SELECT DATE_TRUNC('DAY', `@timestamp`) AS bucket, COUNT(*) AS expansions
-              ${local.source} WHERE ${local.service_filter} AND event = 'query_expanded'
-              GROUP BY DATE_TRUNC('DAY', `@timestamp`)
-            EOT
-          }
-        },
-      ],
-      [
-        {
-          type   = "log"
-          x      = 0
-          y      = 14
-          width  = 12
-          height = 6
-          properties = {
-            title  = "Empty Commodity / Empty Result Searches"
-            region = var.region
-            view   = "timeSeries"
-            query  = <<-EOT
-              SELECT DATE_TRUNC('DAY', `@timestamp`) AS bucket, COUNT(*) AS searches, search_type
-              ${local.source} WHERE ${local.service_filter} AND event = 'search_completed' AND ${local.zero_result_condition}
-              GROUP BY DATE_TRUNC('DAY', `@timestamp`), search_type
-            EOT
-          }
-        },
-        {
-          type   = "log"
-          x      = 12
-          y      = 14
-          width  = 12
-          height = 6
-          properties = {
-            title  = "Average Result Count by Search Type"
-            region = var.region
-            view   = "timeSeries"
-            query  = <<-EOT
-              SELECT DATE_TRUNC('DAY', `@timestamp`) AS bucket, AVG(result_count) AS avg_results, PERCENTILE_APPROX(result_count, 0.5) AS median_results, AVG(commodity_result_count) AS avg_commodity_results, search_type
-              ${local.source} WHERE ${local.service_filter} AND event = 'search_completed'
-              GROUP BY DATE_TRUNC('DAY', `@timestamp`), search_type
-            EOT
-          }
-        },
-      ]
-    )
+      },
+      {
+        type   = "metric"
+        x      = 0
+        y      = 5
+        width  = 12
+        height = 6
+        properties = {
+          title   = "Search Volume by Request Source and Outcome"
+          region  = var.region
+          view    = "timeSeries"
+          period  = local.period
+          stat    = "Sum"
+          yAxis   = { left = { label = "Searches", showUnits = false, min = 0 } }
+          legend  = { position = "bottom" }
+          metrics = [[{ expression = "SEARCH('{${local.namespace},Environment,Service,RequestSource,Outcome} MetricName=\"SearchEvents\" Environment=\"${var.environment}\"', 'Sum', ${local.period})", id = "volume_by_source" }]]
+        }
+      },
+      {
+        type   = "metric"
+        x      = 12
+        y      = 5
+        width  = 12
+        height = 6
+        properties = {
+          title   = "Search Volume by Type"
+          region  = var.region
+          view    = "timeSeries"
+          period  = local.period
+          stat    = "Sum"
+          yAxis   = { left = { label = "Searches", showUnits = false, min = 0 } }
+          legend  = { position = "bottom" }
+          metrics = [[{ expression = "SEARCH('{${local.namespace},Environment,Service,SearchType,Outcome} MetricName=\"SearchEvents\" Environment=\"${var.environment}\" Outcome=\"completed\"', 'Sum', ${local.period})", id = "volume_by_type" }]]
+        }
+      },
+      {
+        type   = "metric"
+        x      = 0
+        y      = 11
+        width  = 8
+        height = 6
+        properties = {
+          title   = "Completed vs Failed Searches"
+          region  = var.region
+          view    = "timeSeries"
+          period  = local.period
+          stat    = "Sum"
+          yAxis   = { left = { label = "Searches", showUnits = false, min = 0 } }
+          legend  = { position = "bottom" }
+          metrics = [[{ expression = "SEARCH('{${local.namespace},Environment,Service,Outcome} MetricName=\"SearchEvents\" Environment=\"${var.environment}\"', 'Sum', ${local.period})", id = "completed_failed" }]]
+        }
+      },
+      {
+        type   = "metric"
+        x      = 8
+        y      = 11
+        width  = 8
+        height = 6
+        properties = {
+          title  = "Searches vs Selections"
+          region = var.region
+          view   = "timeSeries"
+          period = local.period
+          stat   = "Sum"
+          yAxis  = { left = { label = "Events", showUnits = false, min = 0 } }
+          metrics = [
+            [local.namespace, "SearchEvents", "Environment", var.environment, "Service", "uk", "Outcome", "completed", { stat = "Sum", label = "UK completed" }],
+            [local.namespace, "ResultSelections", "Environment", var.environment, "Service", "uk", { stat = "Sum", label = "UK selections" }],
+            [local.namespace, "SearchEvents", "Environment", var.environment, "Service", "xi", "Outcome", "completed", { stat = "Sum", label = "XI completed" }],
+            [local.namespace, "ResultSelections", "Environment", var.environment, "Service", "xi", { stat = "Sum", label = "XI selections" }],
+          ]
+        }
+      },
+      {
+        type   = "metric"
+        x      = 16
+        y      = 11
+        width  = 8
+        height = 6
+        properties = {
+          title  = "Query Expansions"
+          region = var.region
+          view   = "timeSeries"
+          period = local.period
+          stat   = "Sum"
+          yAxis  = { left = { label = "Expansions", showUnits = false, min = 0 } }
+          metrics = [
+            [local.namespace, "QueryExpansions", "Environment", var.environment, "Service", "uk", { stat = "Sum", label = "UK" }],
+            [local.namespace, "QueryExpansions", "Environment", var.environment, "Service", "xi", { stat = "Sum", label = "XI" }],
+          ]
+        }
+      },
+      {
+        type   = "metric"
+        x      = 0
+        y      = 17
+        width  = 8
+        height = 6
+        properties = {
+          title  = "E2E Latency in seconds (p50/p90)"
+          region = var.region
+          view   = "timeSeries"
+          period = local.period
+          yAxis  = { left = { label = "Seconds", showUnits = false, min = 0 } }
+          metrics = [
+            [local.namespace, "SearchDuration", "Environment", var.environment, "Service", "uk", { stat = "p50", label = "UK p50" }],
+            [local.namespace, "SearchDuration", "Environment", var.environment, "Service", "uk", { stat = "p90", label = "UK p90" }],
+            [local.namespace, "SearchDuration", "Environment", var.environment, "Service", "xi", { stat = "p50", label = "XI p50" }],
+            [local.namespace, "SearchDuration", "Environment", var.environment, "Service", "xi", { stat = "p90", label = "XI p90" }],
+          ]
+        }
+      },
+      {
+        type   = "metric"
+        x      = 8
+        y      = 17
+        width  = 8
+        height = 6
+        properties = {
+          title  = "AI API Latency in seconds (p50/p90)"
+          region = var.region
+          view   = "timeSeries"
+          period = local.period
+          yAxis  = { left = { label = "Seconds", showUnits = false, min = 0 } }
+          metrics = [
+            [local.namespace, "AiApiDuration", "Environment", var.environment, "Service", "uk", { stat = "p50", label = "UK p50" }],
+            [local.namespace, "AiApiDuration", "Environment", var.environment, "Service", "uk", { stat = "p90", label = "UK p90" }],
+            [local.namespace, "AiApiDuration", "Environment", var.environment, "Service", "xi", { stat = "p50", label = "XI p50" }],
+            [local.namespace, "AiApiDuration", "Environment", var.environment, "Service", "xi", { stat = "p90", label = "XI p90" }],
+          ]
+        }
+      },
+      {
+        type   = "metric"
+        x      = 16
+        y      = 17
+        width  = 8
+        height = 6
+        properties = {
+          title   = "Empty Commodity / Empty Result Searches"
+          region  = var.region
+          view    = "timeSeries"
+          period  = local.period
+          stat    = "Sum"
+          yAxis   = { left = { label = "Searches", showUnits = false, min = 0 } }
+          legend  = { position = "bottom" }
+          metrics = [[{ expression = "SEARCH('{${local.namespace},Environment,Service,SearchType} MetricName=\"EmptyResults\" Environment=\"${var.environment}\"', 'Sum', ${local.period})", id = "empty_results" }]]
+        }
+      },
+      {
+        type   = "metric"
+        x      = 0
+        y      = 23
+        width  = 8
+        height = 6
+        properties = {
+          title   = "Average Result Count by Search Type"
+          region  = var.region
+          view    = "timeSeries"
+          period  = local.period
+          legend  = { position = "bottom" }
+          yAxis   = { left = { label = "Results", showUnits = false, min = 0 } }
+          metrics = [[{ expression = "SEARCH('{${local.namespace},Environment,Service,SearchType} MetricName=\"ResultCount\" Environment=\"${var.environment}\"', 'Average', ${local.period})", id = "avg_results" }]]
+        }
+      },
+      {
+        type   = "metric"
+        x      = 8
+        y      = 23
+        width  = 8
+        height = 6
+        properties = {
+          title   = "Median Result Count by Search Type"
+          region  = var.region
+          view    = "timeSeries"
+          period  = local.period
+          legend  = { position = "bottom" }
+          yAxis   = { left = { label = "Results", showUnits = false, min = 0 } }
+          metrics = [[{ expression = "SEARCH('{${local.namespace},Environment,Service,SearchType} MetricName=\"ResultCount\" Environment=\"${var.environment}\"', 'p50', ${local.period})", id = "median_results" }]]
+        }
+      },
+      {
+        type   = "metric"
+        x      = 16
+        y      = 23
+        width  = 8
+        height = 6
+        properties = {
+          title   = "Average Commodity Result Count by Search Type"
+          region  = var.region
+          view    = "timeSeries"
+          period  = local.period
+          legend  = { position = "bottom" }
+          yAxis   = { left = { label = "Results", showUnits = false, min = 0 } }
+          metrics = [[{ expression = "SEARCH('{${local.namespace},Environment,Service,SearchType} MetricName=\"CommodityResultCount\" Environment=\"${var.environment}\"', 'Average', ${local.period})", id = "avg_commodity_results" }]]
+        }
+      },
+    ]
   }
 }

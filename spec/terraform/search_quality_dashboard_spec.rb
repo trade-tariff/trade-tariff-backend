@@ -2,7 +2,6 @@
 
 RSpec.describe 'search quality dashboard Terraform' do
   let(:module_main_tf) { Rails.root.join('terraform/modules/search_quality_dashboard/main.tf').read }
-  let(:overview_main_tf) { Rails.root.join('terraform/modules/search_dashboard/main.tf').read }
   let(:experiment_main_tf) { Rails.root.join('terraform/modules/search_experiment_dashboard/main.tf').read }
 
   def expand_tf_local(source, name, depth = 0)
@@ -22,13 +21,10 @@ RSpec.describe 'search quality dashboard Terraform' do
     block
   end
 
-  it 'defines empty commodity / empty result predicates consistently with overview and experiment dashboards' do
+  it 'defines empty commodity / empty result predicates consistently with the experiment dashboard' do
     quality_zero = expand_tf_local(module_main_tf, 'zero_result_condition')
-    overview_zero = expand_tf_local(overview_main_tf, 'zero_result_condition')
     experiment_zero = expand_tf_local(experiment_main_tf, 'zero_result_condition')
 
-    quality_sql = quality_zero.tr('"', "'").gsub(/not ispresent\((\w+)\)/, '\\1 IS NULL').gsub(/ispresent\((\w+)\)/, '\\1 IS NOT NULL')
-    expect(quality_sql).to eq(overview_zero)
     expect(quality_zero).to eq(experiment_zero)
     expect(quality_zero).to include('commodity_result_count = 0')
     expect(quality_zero).to include('results_type != "exact_search"')
