@@ -48,9 +48,10 @@ locals {
             query  = <<-EOT
               ${local.source}
               | ${local.ai_cost_events}
-              | filter pricing_known = true and ispresent(total_cost_usd)
-              | stats sum(total_cost_usd) as total_cost_usd by event_kind
-              | sort total_cost_usd desc
+              | filter pricing_known
+              | filter ispresent(total_cost_usd)
+              | stats sum(total_cost_usd) as cost_usd by event_kind
+              | sort cost_usd desc
             EOT
           }
         },
@@ -67,8 +68,8 @@ locals {
             query  = <<-EOT
               ${local.source}
               | ${local.ai_cost_events}
-              | stats sum(input_tokens) as input_tokens, sum(output_tokens) as output_tokens, sum(total_tokens) as total_tokens by event_kind
-              | sort total_tokens desc
+              | stats sum(input_tokens) as input_token_total, sum(output_tokens) as output_token_total, sum(total_tokens) as token_total by event_kind
+              | sort token_total desc
             EOT
           }
         }
@@ -86,9 +87,9 @@ locals {
             query  = <<-EOT
               ${local.source}
               | ${local.ai_cost_events}
-              | filter pricing_known = false or not ispresent(total_cost_usd)
-              | stats count(*) as events, sum(total_tokens) as total_tokens, sum(total_cost_usd) as partial_cost_usd by event_kind, model
-              | sort events desc, partial_cost_usd desc, total_tokens desc
+              | filter not pricing_known or not ispresent(total_cost_usd)
+              | stats count(*) as events, sum(total_tokens) as token_total, sum(total_cost_usd) as partial_cost_usd by event_kind, model
+              | sort events desc, partial_cost_usd desc, token_total desc
               | limit 50
             EOT
           }
