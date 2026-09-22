@@ -23,15 +23,22 @@ RSpec.describe 'AI costs dashboard Terraform' do
     expect(module_main_tf).to include('api_call_failed')
     expect(module_main_tf).to include('embedding_api_call_failed')
     expect(aggregate_query).to include('${local.ai_cost_events}')
-    expect(aggregate_query).to include('filter pricing_known = true and ispresent(total_cost_usd)')
-    expect(aggregate_query).to include('stats sum(total_cost_usd) as total_cost_usd by event_kind')
+    expect(aggregate_query).to include('filter pricing_known')
+    expect(aggregate_query).to include('filter ispresent(total_cost_usd)')
+    expect(aggregate_query).to include('stats sum(total_cost_usd) as cost_usd by event_kind')
+    expect(aggregate_query).not_to include('pricing_known = true')
+    expect(aggregate_query).not_to include('as total_cost_usd')
     expect(aggregate_query).not_to include('bin(')
   end
 
   it 'keeps token totals and unknown pricing visible for cost interpretation' do
-    expect(module_main_tf).to include('stats sum(input_tokens) as input_tokens, sum(output_tokens) as output_tokens, sum(total_tokens) as total_tokens by event_kind')
-    expect(module_main_tf).to include('filter pricing_known = false or not ispresent(total_cost_usd)')
+    expect(module_main_tf).to include('stats sum(input_tokens) as input_token_total, sum(output_tokens) as output_token_total, sum(total_tokens) as token_total by event_kind')
+    expect(module_main_tf).to include('filter not pricing_known or not ispresent(total_cost_usd)')
+    expect(module_main_tf).to include('sum(total_tokens) as token_total')
     expect(module_main_tf).to include('sum(total_cost_usd) as partial_cost_usd')
+    expect(module_main_tf).not_to include('pricing_known = false')
+    expect(module_main_tf).not_to include('sum(total_tokens) as total_tokens')
+    expect(module_main_tf).not_to include('as input_tokens')
     expect(module_main_tf).to include('Unknown Pricing Events')
   end
 end
