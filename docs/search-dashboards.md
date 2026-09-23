@@ -16,7 +16,6 @@ Metric counts are events, not unique requests, journeys or people. Every emitted
 | `SearchDuration` | Completed-search `total_duration_ms`, converted to seconds. |
 | `AiApiDuration` | Every `api_call_completed` duration, including errors, in seconds. Overall and operation-specific dimension sets. |
 | `AiApiCalls` | Every `api_call_completed`, split by operation and response type. The duplicate retry chart counts calls, not HTTP transport retries. |
-| `InteractiveSearchErrors` | Legacy counter: one for an interactive completion with `final_result_type=error`, otherwise zero for that interactive completion. Hard failures and the literal internal search type are excluded. |
 | `GuidedSearchErrors` | One per terminal interactive/internal event: one for an exception or returned error, zero otherwise. Sum counts errors; SampleCount counts finished requests; Average times 100 is the error percentage. |
 | `GuidedSearchDuration` | Completed interactive/internal server request duration in seconds, including returned errors. Exceptions have no duration sample. Not a whole browser journey. |
 | `GuidedSearchOutcomes` | One per terminal interactive/internal event, split into answers, questions, error, hard_failure, unknown or other. Missing and unexpected outcomes are not labelled as success. |
@@ -25,7 +24,6 @@ Metric counts are events, not unique requests, journeys or people. Every emitted
 | `RetrievalDuration` | Every `retrieval_leg_completed` duration in seconds, split by leg. Includes errors. |
 | `RetrievalFailures` | One for an errored retrieval leg, zero for a successful leg. Unknown statuses do not emit a failure sample. |
 | `RetrievalResultCount` | Result count from successful retrieval legs only. Zero matches is a valid success, not a failure. |
-| `DuplicateGuardFailOpen` | Legacy all-check counter: one for `reason=validator_unparseable`, zero for every other guard check, including disabled and non-suspicious checks. |
 | `DuplicateValidatorFailOpen` | Only checks with `suspicious=true`. One for `reason=validator_unparseable`, zero otherwise. Average times 100 is the fail-open percentage of validator-eligible checks. SampleCount is its denominator. No eligible checks means no percentage. |
 | `ResultSelections` | One per result-selection event, not a unique user or completed journey. |
 | `ResultCount`, `CommodityResultCount` | Counts on completed searches. Missing or invalid counts do not emit samples. |

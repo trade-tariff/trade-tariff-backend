@@ -25,14 +25,12 @@ module Search
       EmptyResults
       ResultCount
       CommodityResultCount
-      InteractiveSearchErrors
       QueryExpansionDuration
       QueryExpansionTimeouts
       AiApiCalls
       RetrievalDuration
       RetrievalFailures
       RetrievalResultCount
-      DuplicateGuardFailOpen
       GuidedSearchErrors
       GuidedSearchDuration
       GuidedSearchOutcomes
@@ -82,9 +80,6 @@ module Search
           add_duration(metrics, values, 'SearchDuration', event.payload[:total_duration_ms])
           add_result_metrics(event.payload, metrics, values)
           add_guided_metrics(event.payload, dimensions, metrics, values, failed: false)
-          if event.payload[:search_type].to_s == 'interactive'
-            add_value(metrics, values, 'InteractiveSearchErrors', event.payload[:final_result_type].to_s == 'error' ? 1 : 0)
-          end
         when 'search_failed'
           add_search_event(event.payload, dimensions, metrics, values, outcome: 'failed')
           add_guided_metrics(event.payload, dimensions, metrics, values, failed: true)
@@ -104,9 +99,8 @@ module Search
         when 'retrieval_leg_completed'
           add_retrieval_metrics(event.payload, dimensions, metrics, values)
         when 'duplicate_question_guard_checked'
-          fail_open = event.payload[:reason].to_s == 'validator_unparseable' ? 1 : 0
-          add_value(metrics, values, 'DuplicateGuardFailOpen', fail_open)
           if event.payload[:suspicious] == true
+            fail_open = event.payload[:reason].to_s == 'validator_unparseable' ? 1 : 0
             add_value(metrics, values, 'DuplicateValidatorFailOpen', fail_open)
           end
         else

@@ -89,6 +89,27 @@ run "operations_and_diagnostics" {
   }
 
   assert {
+    condition = alltrue([for w in local.dashboard_body.widgets :
+      length(w.properties.metrics) == (w.properties.title == "Retrieval latency (seconds, p50/p90)" ? 16 : 8) &&
+      length(distinct([for m in w.properties.metrics : m[8].label])) == length(w.properties.metrics) &&
+      alltrue([for m in w.properties.metrics :
+        contains(local.services, m[5]) && contains(["p50", "p90"], m[8].stat) &&
+        m[8].label == "${upper(m[5])} ${m[6] == "Leg" ? m[7] : local.operations[m[7]]} ${m[8].stat}"
+      ])
+      if contains(["Retrieval latency (seconds, p50/p90)", "Duplicate guard AI latency (seconds, p50/p90)"], try(w.properties.title, ""))
+    ])
+    error_message = "Dependency percentiles need explicit, unique service/leg or service/operation labels, including bounded fallback legs."
+  }
+
+  assert {
+    condition = length([for w in local.dashboard_body.widgets : w
+      if try(w.properties.title, "") == "Retrieval failures per 5 minutes" &&
+      strcontains(file("${path.module}/../../degradation_alarms.tf"), " ${try(w.properties.title, "")},")
+    ]) == 1
+    error_message = "The vector degradation alarm must name the existing retrieval-failures widget."
+  }
+
+  assert {
     condition = (
       length(local.diagnostics_body.widgets) == 7 &&
       local.diagnostics_body.start == "-PT1H" &&
