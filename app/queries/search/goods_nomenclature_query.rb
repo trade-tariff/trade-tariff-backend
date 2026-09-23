@@ -28,16 +28,7 @@ module Search
         index: index.name,
         body: {
           query: {
-            bool: {
-              must: [
-                hidden_goods_nomenclature_filter,
-                excluded_chapter_filter,
-                declarable_filter,
-                multi_match_clause,
-                validity_date_filter,
-                filter_prefixes_clause,
-              ].compact,
-            },
+            bool: bool_query,
           },
           size: size,
         },
@@ -45,6 +36,35 @@ module Search
     end
 
   private
+
+    # With filter prefixes the caller has already chosen the codes to search,
+    # for example a heading it has established. The query text then ranks the
+    # codes inside the prefixes and does not remove them, so a query with no
+    # words in common with the heading text still returns the heading's codes.
+    def bool_query
+      if filter_prefixes.any?
+        return {
+          must: [
+            hidden_goods_nomenclature_filter,
+            excluded_chapter_filter,
+            declarable_filter,
+            validity_date_filter,
+            filter_prefixes_clause,
+          ].compact,
+          should: [multi_match_clause],
+        }
+      end
+
+      {
+        must: [
+          hidden_goods_nomenclature_filter,
+          excluded_chapter_filter,
+          declarable_filter,
+          multi_match_clause,
+          validity_date_filter,
+        ].compact,
+      }
+    end
 
     def index
       @index ||= GoodsNomenclatureIndex.new
