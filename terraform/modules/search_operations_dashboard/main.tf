@@ -1,371 +1,129 @@
 locals {
-  dashboard_name = var.dashboard_name != null ? var.dashboard_name : "SearchOperations-${var.environment}"
-  source         = "SOURCE '${var.log_group_name}'"
-  service_filter = "filter service = \"search\""
+  dashboard_name  = var.dashboard_name != null ? var.dashboard_name : "SearchOperations-${var.environment}"
+  namespace       = "TradeTariff/Search"
+  period          = 300
+  services        = ["uk", "xi"]
+  source          = "SOURCE '${var.log_group_name}'"
+  service_filter  = "filter service = \"search\""
+  definitions_url = "https://github.com/trade-tariff/trade-tariff-backend/blob/main/docs/search-dashboards.md"
 
-  search_dashboard_url         = "https://${var.region}.console.aws.amazon.com/cloudwatch/home?region=${var.region}#dashboards:name=Search-${var.environment}"
-  search_quality_dashboard_url = "https://${var.region}.console.aws.amazon.com/cloudwatch/home?region=${var.region}#dashboards:name=SearchQuality-${var.environment}"
+  dashboard_url   = "https://${var.region}.console.aws.amazon.com/cloudwatch/home?region=${var.region}#dashboards:name=${local.dashboard_name}"
+  diagnostics_url = "${local.dashboard_url}-Diagnostics"
+  overview_url    = "https://${var.region}.console.aws.amazon.com/cloudwatch/home?region=${var.region}#dashboards:name=Search-${var.environment}"
+
+  # Each search expression selects one exact dimension set, not its rollups.
+  charts = [
+    {
+      title   = "Completed vs Failed Searches"
+      unit    = "Searches"
+      metrics = [[{ expression = "SEARCH('{${local.namespace},Environment,Service,Outcome} MetricName=\"SearchEvents\" Environment=\"${var.environment}\"', 'Sum', ${local.period})", id = "searches" }]]
+    },
+    {
+      title = "E2E Latency in seconds (p50/p90/p99)"
+      unit  = "Seconds"
+      metrics = flatten([for service in local.services : [for stat in ["p50", "p90", "p99"] : {
+        series = [local.namespace, "SearchDuration", "Environment", var.environment, "Service", service, { stat = stat, label = "${upper(service)} ${stat}" }]
+      }]])[*].series
+    },
+    {
+      title = "AI API Latency in seconds (p50/p90/p99)"
+      unit  = "Seconds"
+      metrics = flatten([for service in local.services : [for stat in ["p50", "p90", "p99"] : {
+        series = [local.namespace, "AiApiDuration", "Environment", var.environment, "Service", service, { stat = stat, label = "${upper(service)} ${stat}" }]
+      }]])[*].series
+    },
+    {
+      title   = "Hard Errors"
+      unit    = "Errors"
+      metrics = [for service in local.services : [local.namespace, "SearchEvents", "Environment", var.environment, "Service", service, "Outcome", "failed", { stat = "Sum", label = upper(service) }]]
+    },
+    {
+      title   = "Query Expansion Volume (including fallback)"
+      unit    = "Expansions"
+      metrics = [for service in local.services : [local.namespace, "QueryExpansions", "Environment", var.environment, "Service", service, { stat = "Sum", label = upper(service) }]]
+    },
+    {
+      title   = "Query Expansion Average Duration in seconds"
+      unit    = "Seconds"
+      metrics = [for service in local.services : [local.namespace, "QueryExpansionDuration", "Environment", var.environment, "Service", service, { stat = "Average", label = upper(service) }]]
+    },
+    {
+      title   = "Interactive Search Error Outcomes"
+      unit    = "Errors"
+      metrics = [for service in local.services : [local.namespace, "InteractiveSearchErrors", "Environment", var.environment, "Service", service, { stat = "Sum", label = upper(service) }]]
+    },
+    {
+      title   = "Query Expansion Timeouts"
+      unit    = "Timeouts"
+      metrics = [for service in local.services : [local.namespace, "QueryExpansionTimeouts", "Environment", var.environment, "Service", service, { stat = "Sum", label = upper(service) }]]
+    },
+    {
+      title   = "Hybrid Leg Latency in seconds (p50/p90)"
+      unit    = "Seconds"
+      metrics = [for stat in ["p50", "p90"] : [{ expression = "SEARCH('{${local.namespace},Environment,Service,Leg} MetricName=\"RetrievalDuration\" Environment=\"${var.environment}\"', '${stat}', ${local.period})", id = "latency_${stat}", label = stat }]]
+    },
+    {
+      title   = "Hybrid Leg Failures"
+      unit    = "Failures"
+      metrics = [[{ expression = "SEARCH('{${local.namespace},Environment,Service,Leg} MetricName=\"RetrievalFailures\" Environment=\"${var.environment}\"', 'Sum', ${local.period})", id = "failures" }]]
+    },
+    {
+      title   = "Hybrid Leg Average Result Counts (successful legs)"
+      unit    = "Results"
+      metrics = [[{ expression = "SEARCH('{${local.namespace},Environment,Service,Leg} MetricName=\"RetrievalResultCount\" Environment=\"${var.environment}\"', 'Average', ${local.period})", id = "results" }]]
+    },
+    {
+      title   = "AI API Errors by Operation"
+      unit    = "Errors"
+      metrics = [[{ expression = "SEARCH('{${local.namespace},Environment,Service,Operation,ResponseType} MetricName=\"AiApiCalls\" Environment=\"${var.environment}\" ResponseType=\"error\"', 'Sum', ${local.period})", id = "errors" }]]
+    },
+    {
+      title   = "Duplicate Guard AI Latency in seconds (p50/p90/p99)"
+      unit    = "Seconds"
+      metrics = [for stat in ["p50", "p90", "p99"] : [{ expression = "SEARCH('{${local.namespace},Environment,Service,Operation} MetricName=\"AiApiDuration\" Environment=\"${var.environment}\" (Operation=\"duplicate_question_validator\" OR Operation=\"duplicate_question_retry\")', '${stat}', ${local.period})", id = "guard_${stat}", label = stat }]]
+    },
+    {
+      title = "Duplicate Guard Fail-Open Rate (all checks)"
+      unit  = "Percent"
+      # Every check emits 0 or 1. Average therefore uses all checks as its denominator.
+      metrics = concat(
+        [for service in local.services : [local.namespace, "DuplicateGuardFailOpen", "Environment", var.environment, "Service", service, { stat = "Average", id = "checks_${service}", visible = false }]],
+        [for service in local.services : [{ expression = "100 * checks_${service}", id = "rate_${service}", label = upper(service) }]]
+      )
+    },
+    {
+      title   = "Duplicate Retry Volume"
+      unit    = "Calls"
+      metrics = [[{ expression = "SEARCH('{${local.namespace},Environment,Service,Operation,ResponseType} MetricName=\"AiApiCalls\" Environment=\"${var.environment}\" Operation=\"duplicate_question_retry\"', 'Sum', ${local.period})", id = "retries" }]]
+    }
+  ]
+
+  dashboard_body = {
+    widgets = concat([
+      {
+        type = "text", x = 0, y = 0, width = 24, height = 3
+        properties = {
+          markdown = join("\n", [
+            "## Search Operations",
+            "Search team: check errors and latency here; open diagnostics for individual requests.",
+            "UK and XI are separate. New metrics start at deployment; gaps are not zero. Counts are events, not unique journeys.",
+            "[Diagnostics](${local.diagnostics_url}) | [Overview](${local.overview_url}) | [Definitions](${local.definitions_url})",
+          ])
+        }
+      }
+      ], [for index, chart in local.charts : {
+        type = "metric", x = (index % 3) * 8, y = 3 + floor(index / 3) * 6, width = 8, height = 6
+        properties = {
+          title   = chart.title, region = var.region, view = "timeSeries", period = local.period
+          metrics = chart.metrics
+          legend  = { position = "bottom" }
+          yAxis   = { left = { label = chart.unit, showUnits = false, min = 0 } }
+        }
+    }])
+  }
 }
 
 resource "aws_cloudwatch_dashboard" "search_operations" {
   dashboard_name = local.dashboard_name
-
   dashboard_body = jsonencode(local.dashboard_body)
-}
-
-locals {
-  dashboard_body = {
-    widgets = concat(
-      [
-        {
-          type   = "text"
-          x      = 0
-          y      = 0
-          width  = 24
-          height = 2
-          properties = {
-            markdown = join("\n", [
-              "## Trade Tariff Search Operations",
-              "Recent operational troubleshooting dashboard for search. Use this for live incidents, latency spikes, and error investigation.",
-              "**Healthy:** p90 latency < 5s, API latency p90 < 5s, low hard-error volume, and hybrid retrieval failures near zero.",
-              "**Start here:** check completed vs failed searches and latency rows first, then drill into error and recent-event tables below.",
-              "**Related:** [Search Overview](${local.search_dashboard_url}) | [Search Quality](${local.search_quality_dashboard_url})",
-            ])
-          }
-        }
-      ],
-      [
-        {
-          type   = "log"
-          x      = 0
-          y      = 2
-          width  = 6
-          height = 6
-          properties = {
-            title  = "Completed vs Failed Searches"
-            region = var.region
-            view   = "timeSeries"
-            query  = <<-EOT
-              ${local.source}
-              | ${local.service_filter} and event in ["search_completed", "search_failed"]
-              | stats count(*) as count by event, bin(1h)
-            EOT
-          }
-        },
-        {
-          type   = "log"
-          x      = 6
-          y      = 2
-          width  = 6
-          height = 6
-          properties = {
-            title  = "E2E Latency in seconds (p50/p90/p99)"
-            region = var.region
-            view   = "timeSeries"
-            query  = <<-EOT
-              ${local.source}
-              | ${local.service_filter} and event = "search_completed"
-              | stats pct(total_duration_ms / 1000, 50) as p50_seconds, pct(total_duration_ms / 1000, 90) as p90_seconds, pct(total_duration_ms / 1000, 99) as p99_seconds by bin(1h)
-            EOT
-          }
-        },
-        {
-          type   = "log"
-          x      = 12
-          y      = 2
-          width  = 6
-          height = 6
-          properties = {
-            title  = "AI API Latency in seconds (p50/p90/p99)"
-            region = var.region
-            view   = "timeSeries"
-            query  = <<-EOT
-              ${local.source}
-              | ${local.service_filter} and event = "api_call_completed"
-              | stats pct(duration_ms / 1000, 50) as p50_seconds, pct(duration_ms / 1000, 90) as p90_seconds, pct(duration_ms / 1000, 99) as p99_seconds by bin(1h)
-            EOT
-          }
-        },
-        {
-          type   = "log"
-          x      = 18
-          y      = 2
-          width  = 6
-          height = 6
-          properties = {
-            title  = "Hard Errors"
-            region = var.region
-            view   = "timeSeries"
-            query  = <<-EOT
-              ${local.source}
-              | ${local.service_filter} and event = "search_failed"
-              | stats count(*) as errors by bin(1h)
-            EOT
-          }
-        },
-      ],
-      [
-        {
-          type   = "log"
-          x      = 0
-          y      = 8
-          width  = 8
-          height = 6
-          properties = {
-            title  = "Query Expansion Volume and Average Duration in seconds"
-            region = var.region
-            view   = "timeSeries"
-            query  = <<-EOT
-              ${local.source}
-              | ${local.service_filter} and event = "query_expanded"
-              | stats count(*) as expansions, avg(duration_ms / 1000) as avg_duration_seconds by bin(1h)
-            EOT
-          }
-        },
-        {
-          type   = "log"
-          x      = 8
-          y      = 8
-          width  = 8
-          height = 6
-          properties = {
-            title  = "Interactive Search Errors"
-            region = var.region
-            view   = "timeSeries"
-            query  = <<-EOT
-              ${local.source}
-              | ${local.service_filter} and event = "search_completed" and search_type = "interactive" and final_result_type = "error"
-              | stats count(*) as errors by bin(1h)
-            EOT
-          }
-        },
-        {
-          type   = "log"
-          x      = 16
-          y      = 8
-          width  = 8
-          height = 6
-          properties = {
-            title  = "Hard Errors by Type"
-            region = var.region
-            view   = "pie"
-            query  = <<-EOT
-              ${local.source}
-              | ${local.service_filter} and event = "search_failed"
-              | stats count(*) as errors by error_type
-            EOT
-          }
-        },
-      ],
-      [
-        {
-          type   = "log"
-          x      = 0
-          y      = 14
-          width  = 8
-          height = 6
-          properties = {
-            title  = "Hybrid Leg Latency in seconds (p50/p90)"
-            region = var.region
-            view   = "timeSeries"
-            query  = <<-EOT
-              ${local.source}
-              | ${local.service_filter} and event = "retrieval_leg_completed"
-              | stats pct(duration_ms / 1000, 50) as p50_seconds, pct(duration_ms / 1000, 90) as p90_seconds by leg, bin(1h)
-            EOT
-          }
-        },
-        {
-          type   = "log"
-          x      = 8
-          y      = 14
-          width  = 8
-          height = 6
-          properties = {
-            title  = "Hybrid Leg Failures"
-            region = var.region
-            view   = "timeSeries"
-            query  = <<-EOT
-              ${local.source}
-              | ${local.service_filter} and event = "retrieval_leg_completed" and status = "error"
-              | stats count(*) as failures by leg, bin(1h)
-            EOT
-          }
-        },
-        {
-          type   = "log"
-          x      = 16
-          y      = 14
-          width  = 8
-          height = 6
-          properties = {
-            title  = "Hybrid Leg Result Counts"
-            region = var.region
-            view   = "timeSeries"
-            query  = <<-EOT
-              ${local.source}
-              | ${local.service_filter} and event = "retrieval_leg_completed" and status = "success"
-              | stats avg(result_count) as avg_results by leg, bin(1h)
-            EOT
-          }
-        },
-      ],
-      [
-        {
-          type   = "log"
-          x      = 0
-          y      = 20
-          width  = 8
-          height = 6
-          properties = {
-            title  = "Query Expansion Detail in seconds"
-            region = var.region
-            query  = <<-EOT
-              ${local.source}
-              | ${local.service_filter} and event = "query_expanded"
-              | stats count(*) as expansions, avg(duration_ms / 1000) as avg_seconds by reason
-              | sort expansions desc
-            EOT
-          }
-        },
-        {
-          type   = "log"
-          x      = 8
-          y      = 20
-          width  = 8
-          height = 6
-          properties = {
-            title  = "Recent Error Log"
-            region = var.region
-            query  = <<-EOT
-              ${local.source}
-              | ${local.service_filter} and event in ["search_failed", "search_stage_failed", "search_completed"]
-              | filter event in ["search_failed", "search_stage_failed"] or final_result_type = "error"
-              | fields @timestamp, event, request_source, search_type, failure_code, operation, error_type, final_result_type, error_message, request_id
-              | sort @timestamp desc
-              | limit 20
-            EOT
-          }
-        },
-        {
-          type   = "log"
-          x      = 16
-          y      = 20
-          width  = 8
-          height = 6
-          properties = {
-            title  = "Recent Searches"
-            region = var.region
-            query  = <<-EOT
-              ${local.source}
-              | ${local.service_filter} and event = "search_started"
-              | stats latest(@timestamp) as latest_timestamp, latest(query) as latest_query,
-                  latest(request_source) as latest_request_source, latest(search_type) as latest_search_type
-                by request_id
-              | display latest_timestamp, latest_query, latest_request_source, latest_search_type, request_id
-              | sort latest_timestamp desc
-              | limit 30
-            EOT
-          }
-        },
-      ],
-      [
-        {
-          type   = "log"
-          x      = 0
-          y      = 26
-          width  = 8
-          height = 6
-          properties = {
-            title  = "Duplicate Guard AI Latency in seconds"
-            region = var.region
-            view   = "timeSeries"
-            query  = <<-EOT
-              ${local.source}
-              | ${local.service_filter} and event = "api_call_completed" and operation in ["duplicate_question_validator", "duplicate_question_retry"]
-              | stats pct(duration_ms / 1000, 50) as p50_seconds, pct(duration_ms / 1000, 90) as p90_seconds, pct(duration_ms / 1000, 99) as p99_seconds by operation, bin(1h)
-            EOT
-          }
-        },
-        {
-          type   = "log"
-          x      = 8
-          y      = 26
-          width  = 8
-          height = 6
-          properties = {
-            title  = "Duplicate Guard Fail-Open Rate"
-            region = var.region
-            view   = "timeSeries"
-            query  = <<-EOT
-              ${local.source}
-              | ${local.service_filter} and event = "duplicate_question_guard_checked"
-              | stats count(*) as checks,
-                  sum(if(reason = "validator_unparseable", 1, 0)) as fail_open_checks,
-                  round(100 * sum(if(reason = "validator_unparseable", 1, 0)) / count(*), 2) as fail_open_pct
-                by bin(1h)
-            EOT
-          }
-        },
-        {
-          type   = "log"
-          x      = 16
-          y      = 26
-          width  = 8
-          height = 6
-          properties = {
-            title  = "Duplicate Retry Volume"
-            region = var.region
-            view   = "timeSeries"
-            query  = <<-EOT
-              ${local.source}
-              | ${local.service_filter} and event = "api_call_completed" and operation = "duplicate_question_retry"
-              | stats count(*) as retries by response_type, bin(1h)
-            EOT
-          }
-        },
-      ],
-      [
-        {
-          type   = "log"
-          x      = 0
-          y      = 32
-          width  = 24
-          height = 6
-          properties = {
-            title  = "Recent Duplicate Guard AI Issues"
-            region = var.region
-            query  = <<-EOT
-              ${local.source}
-              | ${local.service_filter}
-              | filter (event = "api_call_completed" and operation in ["duplicate_question_validator", "duplicate_question_retry"] and response_type = "error") or (event = "duplicate_question_guard_checked" and reason = "validator_unparseable")
-              | fields @timestamp, event, request_id, operation, response_type, reason, error_type, error_message, effective_query, attempt_number
-              | sort @timestamp desc
-              | limit 30
-            EOT
-          }
-        },
-      ],
-      [
-        {
-          type   = "log"
-          x      = 0
-          y      = 38
-          width  = 24
-          height = 6
-          properties = {
-            title  = "Recent Completions"
-            region = var.region
-            query  = <<-EOT
-              ${local.source}
-              | ${local.service_filter} and event = "search_completed"
-              | fields @timestamp, request_source, search_type, total_duration_ms, result_count, final_result_type, request_id
-              | sort @timestamp desc
-              | limit 30
-            EOT
-          }
-        },
-      ]
-    )
-  }
 }

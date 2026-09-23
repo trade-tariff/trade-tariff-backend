@@ -10,6 +10,10 @@ module Search
     MAX_LINE_BYTES = 4096
     REQUEST_SOURCES = %w[frontend admin mcp backend_only].freeze
     SEARCH_TYPES = %w[classic interactive internal evaluation classification].freeze
+    OPERATIONS = %w[search_query_expansion interactive_search interactive_search_final_answer duplicate_question_validator duplicate_question_retry].freeze
+    RESPONSE_TYPES = %w[answers questions duplicate_validation error unknown].freeze
+    RETRIEVAL_LEGS = %w[opensearch vector].freeze
+    RETRIEVAL_STATUSES = %w[success error].freeze
     METRIC_NAMES = %w[
       SearchEvents
       SearchDuration
@@ -19,6 +23,14 @@ module Search
       EmptyResults
       ResultCount
       CommodityResultCount
+      InteractiveSearchErrors
+      QueryExpansionDuration
+      QueryExpansionTimeouts
+      AiApiCalls
+      RetrievalDuration
+      RetrievalFailures
+      RetrievalResultCount
+      DuplicateGuardFailOpen
     ].freeze
 
     class << self
@@ -63,16 +75,28 @@ module Search
           add_search_event(event.payload, dimensions, metrics, values, outcome: 'completed')
           add_duration(metrics, values, 'SearchDuration', event.payload[:total_duration_ms])
           add_result_metrics(event.payload, metrics, values)
+          if event.payload[:search_type].to_s == 'interactive'
+            add_value(metrics, values, 'InteractiveSearchErrors', event.payload[:final_result_type].to_s == 'error' ? 1 : 0)
+          end
         when 'search_failed'
           add_search_event(event.payload, dimensions, metrics, values, outcome: 'failed')
         when 'result_selected'
           metrics << metric('ResultSelections', [%w[Environment Service]])
           values[:ResultSelections] = 1
         when 'query_expanded'
-          metrics << metric('QueryExpansions', [%w[Environment Service]])
-          values[:QueryExpansions] = 1
+          add_value(metrics, values, 'QueryExpansions', 1)
+          add_duration(metrics, values, 'QueryExpansionDuration', event.payload[:duration_ms])
+        when 'query_expansion_timed_out'
+          add_value(metrics, values, 'QueryExpansionTimeouts', 1)
         when 'api_call_completed'
-          add_duration(metrics, values, 'AiApiDuration', event.payload[:duration_ms])
+          dimensions[:Operation] = label(event.payload[:operation], OPERATIONS)
+          dimensions[:ResponseType] = label(event.payload[:response_type], RESPONSE_TYPES)
+          add_duration(metrics, values, 'AiApiDuration', event.payload[:duration_ms], [%w[Environment Service], %w[Environment Service Operation]])
+          add_value(metrics, values, 'AiApiCalls', 1, [%w[Environment Service Operation ResponseType]])
+        when 'retrieval_leg_completed'
+          add_retrieval_metrics(event.payload, dimensions, metrics, values)
+        when 'duplicate_question_guard_checked'
+          add_value(metrics, values, 'DuplicateGuardFailOpen', event.payload[:reason].to_s == 'validator_unparseable' ? 1 : 0)
         else
           return
         end
@@ -110,12 +134,26 @@ module Search
         metrics << metric('EmptyResults', [%w[Environment Service SearchType]])
       end
 
-      def add_duration(metrics, values, name, milliseconds)
-        seconds = seconds(milliseconds)
-        return unless seconds
+      def add_retrieval_metrics(payload, dimensions, metrics, values)
+        dimensions[:Leg] = label(payload[:leg], RETRIEVAL_LEGS)
+        sets = [%w[Environment Service Leg]]
+        add_duration(metrics, values, 'RetrievalDuration', payload[:duration_ms], sets)
+        status = payload[:status].to_s
+        if RETRIEVAL_STATUSES.include?(status)
+          add_value(metrics, values, 'RetrievalFailures', status == 'error' ? 1 : 0, sets)
+        end
+        count = number(payload[:result_count])
+        add_value(metrics, values, 'RetrievalResultCount', count, sets) if status == 'success' && count
+      end
 
-        values[name.to_sym] = seconds
-        metrics << metric(name, [%w[Environment Service]])
+      def add_value(metrics, values, name, value, dimensions = [%w[Environment Service]])
+        values[name.to_sym] = value
+        metrics << metric(name, dimensions)
+      end
+
+      def add_duration(metrics, values, name, milliseconds, dimensions = [%w[Environment Service]])
+        value = seconds(milliseconds)
+        add_value(metrics, values, name, value, dimensions) if value
       end
 
       # Keep aligned with search_quality_dashboard zero_result_condition.

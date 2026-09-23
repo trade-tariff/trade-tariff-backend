@@ -62,15 +62,9 @@ locals {
           height = 2
           properties = {
             markdown = join("\n", [
-              "## Trade Tariff Search Quality",
-              "Behaviour and product-quality dashboard for search outcomes, empty-result terms, intercepts, and result selection patterns across **classic** and **interactive** search.",
-              "**Classic empty commodity results:** fuzzy/null with zero commodity hits (`commodity_result_count = 0`) — empty “Best commodity matches”. Exact matches are not counted.",
-              "**Classic empty kinds (pie):** split into **no results** (`result_count = 0`) vs **no commodities, other hits** (headings/chapters/sections only).",
-              "**Interactive empty results:** no returned results (`result_count = 0`). Counted separately from classic empty commodity results.",
-              "**Non-numeric free-text rates:** free-text only (`query not like /^[0-9 .-]+$/`). Classic = empty commodity % of non-exact free-text; interactive = empty result % of free-text guided search.",
-              "**Healthy:** empty-commodity terms stay stable, result types remain consistent, intercept matches track expected terms, and interactive outcomes do not skew towards errors.",
-              "**Start here:** classic outcome pies and empty commodity/empty result widgets first, then intercept and selection drill-downs.",
-              "**Related:** [Search Overview](${local.search_dashboard_url}) | [Search Operations](${local.search_operations_dashboard_url})",
+              "## Search Quality",
+              "Search team: find empty results and review selections. Classic empty means no commodity matches, excluding exact matches; interactive empty means no results.",
+              "[Overview](${local.search_dashboard_url}) | [Operations](${local.search_operations_dashboard_url}) | [Definitions](https://github.com/trade-tariff/trade-tariff-backend/blob/main/docs/search-dashboards.md)",
             ])
           }
         }

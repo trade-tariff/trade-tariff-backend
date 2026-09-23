@@ -15,7 +15,7 @@ output "dashboard_url" {
 
 output "queries" {
   description = "Rendered queries and languages for read-only validation"
-  value = { for widget in local.dashboard_body.widgets : widget.properties.title => {
+  value = { for widget in local.diagnostics_body.widgets : widget.properties.title => {
     query_string = widget.properties.query, query_language = lookup(widget.properties, "queryLanguage", "CWLI")
   } if widget.type == "log" }
 }

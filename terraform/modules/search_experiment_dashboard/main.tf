@@ -48,12 +48,9 @@ locals {
           height = 2
           properties = {
             markdown = join("\n", [
-              "## Trade Tariff Search Production UAT",
-              "All widgets are scoped to the experiment label selected above. Requests and estimated distinct guided-search browser sessions are reported separately. One browser session can contain multiple requests. CloudWatch may approximate high-cardinality counts.",
-              "**Empty commodity results (classic):** fuzzy/null with zero commodity hits (empty Best commodity matches). **Empty results (interactive):** no returned results. Shared widgets break series down by `search_type` where relevant.",
-              "**Start here:** Set the dashboard time range to the UAT window, then review volume, reliability, latency, outcomes, questions, search terms, and costs.",
-              "**Investigate:** copy the request ID into admin search diagnostics to reconstruct an individual request.",
-              "**Related:** [Search Overview](${local.search_dashboard_url}) | [Search Operations](${local.search_operations_dashboard_url}) | [Search Quality](${local.search_quality_dashboard_url})",
+              "## Search Experiments",
+              "Search team: select an experiment label and time range. Compare outcomes, latency and cost. Requests are not browser sessions; session counts are estimates, not people.",
+              "[Overview](${local.search_dashboard_url}) | [Operations](${local.search_operations_dashboard_url}) | [Quality](${local.search_quality_dashboard_url}) | [Definitions](https://github.com/trade-tariff/trade-tariff-backend/blob/main/docs/search-dashboards.md)",
             ])
           }
         }

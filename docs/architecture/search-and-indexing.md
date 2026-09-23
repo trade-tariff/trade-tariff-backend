@@ -95,7 +95,7 @@ Search events and search-related AI usage events include `search_degraded` and s
 
 Flags describe failures known when each event is emitted. A later failure does not rewrite earlier events. Hybrid completion combines the retrieval legs' flags after both finish. An unclassified hard failure emits `search_failed` with `search_degraded: true` while all stage flags remain false.
 
-Search Operations keeps terminal and recovered stage failures visible in its existing Recent Error Log, including the failure code and operation. General AI cost accounting continues to include billed failures.
+Search Operations uses metrics for operational trends. Its linked Diagnostics dashboard keeps terminal failures, recovered stage failures, expansion timeouts and failed AI calls visible in the Recent Error Log. See [Search dashboards](../search-dashboards.md) for metric definitions and counting rules. General AI cost accounting continues to include billed failures.
 
 To exclude degraded journeys from an experiment cohort, correlate all events sharing a `request_id` within the selected time window. Filtering individual events on `search_degraded` would retain costs and latency recorded before a later failure. The failure fields do not change dashboard cohorts by themselves.
 
@@ -165,7 +165,7 @@ The existing search-count field now counts distinct frontend-origin search-start
 
 ### Search analytics SQL cohorts
 
-Stored admin analytics exclude every event for a request ID with a recorded `search_degraded: true`, `search_failed`, or `search_stage_failed` search event in the selected time window. The snapshot failure lookup uses the same UK/XI log stream as its metrics. Missing, null, and empty request IDs remain included, as do historical requests without a linked failure. Use the complete journey window: a failure outside that window cannot exclude an event inside it. Search Overview does not use that cohort: it counts `TradeTariff/Search` metrics as each event is recorded and does not retract an earlier count when a later failure is linked. Operations, Quality, Experiment, and general AI Costs retain their existing log cohorts.
+Stored admin analytics exclude every event for a request ID with a recorded `search_degraded: true`, `search_failed`, or `search_stage_failed` search event in the selected time window. The snapshot failure lookup uses the same UK/XI log stream as its metrics. Missing, null, and empty request IDs remain included, as do historical requests without a linked failure. Use the complete journey window: a failure outside that window cannot exclude an event inside it. Search Overview does not use that cohort: it counts `TradeTariff/Search` metrics as each event is recorded and does not retract an earlier count when a later failure is linked. Operations also counts events through metrics. Quality, Experiment, and general AI Costs retain their existing log cohorts.
 
 The shared `request_exclusion_filter.sql.tftpl` contains the SQL predicate used by Ruby and Terraform, with no inner row limit. Two-stage cost and selection queries place the failure lookup beside the request aggregation subquery to respect CloudWatch SQL's one-level nesting limit. Snapshot payload fields and millisecond units remain unchanged. Overview latency metrics are stored in seconds. SQL percentiles use fractions and can differ slightly from QL's approximate percentiles.
 
