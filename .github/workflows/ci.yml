@@ -50,7 +50,7 @@ jobs:
     timeout-minutes: 10
     strategy:
       matrix:
-        module: [puma_capacity_dashboard, search_operations_dashboard, search_quality_dashboard]
+        module: [puma_capacity_dashboard, search_dashboard, search_operations_dashboard, search_quality_dashboard]
     permissions:
       contents: read
     defaults:

@@ -25,7 +25,7 @@ locals {
         properties = {
           markdown = join("\n", [
             "## Search Overview",
-            "Search team: track traffic, outcomes and latency. UK and XI are separate.",
+            "Search team: track traffic, outcomes and latency. Metrics separate UK and XI. Experiment activity below combines frontend sessions and runs one log query.",
             "Metrics start at deployment; gaps are not zero. Counts are events, not unique journeys, and include degraded searches.",
             "[Operations](${local.search_operations_dashboard_url}) | [Quality](${local.search_quality_dashboard_url}) | [Experiments](${local.search_experiment_dashboard_url}) | [Definitions](https://github.com/trade-tariff/trade-tariff-backend/blob/main/docs/search-dashboards.md)",
           ])
@@ -225,6 +225,28 @@ locals {
           legend  = { position = "bottom" }
           yAxis   = { left = { label = "Results", showUnits = false, min = 0 } }
           metrics = [[{ expression = "SEARCH('{${local.namespace},Environment,Service,SearchType} MetricName=\"CommodityResultCount\" Environment=\"${var.environment}\"', 'Average', ${local.period})", id = "avg_commodity_results" }]]
+        }
+      },
+      {
+        type = "text", x = 0, y = 27, width = 24, height = 2
+        properties = {
+          markdown = "## Active experiments\nEstimated sessions with a visible guided-search page in the selected range, not people or all enrolments. Top 30 labels; sessions can appear under multiple labels. Unlabelled events are excluded."
+        }
+      },
+      {
+        type = "log", x = 0, y = 29, width = 24, height = 8
+        properties = {
+          title  = "Active browser sessions by experiment"
+          region = var.region
+          view   = "bar"
+          query  = <<-EOT
+            SOURCE '${var.log_group_name}'
+            | filter event = "guided_search.journey" and schema_version = 1 and outcome = "page_visible"
+            | filter browser_session_id like /^v1:[0-9a-f]{64}$/ and experiment like /\S/
+            | stats count_distinct(browser_session_id) as estimated_active_browser_sessions by experiment
+            | sort estimated_active_browser_sessions desc
+            | limit 30
+          EOT
         }
       },
     ]
