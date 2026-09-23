@@ -24,10 +24,7 @@ module Api
           lookback_hours: params[:lookback_hours],
           limit: params[:limit],
         )
-        correlation = SearchDiagnostics::RelatedRequests.for_search_request(
-          request_id: params[:request_id],
-          lookback_hours: params[:lookback_hours],
-        )
+        correlation = related_requests
         diagnostic = SearchDiagnostics::Diagnostic.compose(result, correlation)
 
         render json: Api::Admin::SearchDiagnosticSerializer.new(diagnostic).serializable_hash
@@ -38,6 +35,16 @@ module Api
       end
 
     private
+
+      def related_requests
+        SearchDiagnostics::RelatedRequests.for_search_request(
+          request_id: params[:request_id],
+          lookback_hours: params[:lookback_hours],
+        )
+      rescue SearchDiagnostics::RequestLogLookup::QueryError, Aws::Errors::ServiceError => e
+        Rails.logger.warn("Related search diagnostics unavailable: #{e.class}")
+        nil
+      end
 
       def error_response(message, status:)
         {

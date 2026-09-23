@@ -6,7 +6,7 @@ module Api
       set_type :search_diagnostic
       set_id :request_id
 
-      attributes :request_id, :log_group_name, :start_time, :end_time, :experiment, :browser_session_id
+      attributes :request_id, :log_group_name, :start_time, :end_time, :experiment, :browser_session_id, :related_requests_available
 
       attribute :related_requests do |diagnostic|
         Array(diagnostic.related_requests).map do |request|
