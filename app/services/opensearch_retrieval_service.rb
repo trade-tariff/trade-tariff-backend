@@ -16,7 +16,17 @@ class OpensearchRetrievalService
   end
 
   def call
-    hits = run_search(@expanded_query)
+    hits = run_search(@expanded_query, require_text_match: true)
+
+    # A caller with filter prefixes has already chosen the codes to search,
+    # for example a heading it has established. When no code in the prefixes
+    # matches a query word, return the codes in the prefixes and do not return
+    # an empty list. Do this only when there is no text match, so that codes
+    # with no match never compete with real matches in a fused ranking.
+    if hits.empty? && @filter_prefixes.any?
+      hits = run_search(@expanded_query, require_text_match: false)
+    end
+
     Result.new(results: hits.map { |h| build_result_from_hit(h) }, expanded_query: @expanded_query)
   rescue StandardError => e
     Search::Instrumentation.search_stage_failed(
@@ -29,7 +39,7 @@ class OpensearchRetrievalService
 
 private
 
-  def run_search(expanded_query)
+  def run_search(expanded_query, require_text_match:)
     results = search_with_configured_labels do
       TradeTariffBackend.search_client.search(
         ::Search::GoodsNomenclatureQuery.new(
@@ -42,6 +52,7 @@ private
           qualifier_boost: pos_qualifier_boost,
           filter_prefixes: @filter_prefixes,
           search_non_declarables: search_non_declarables?,
+          require_text_match: require_text_match,
         ).query,
       )
     end

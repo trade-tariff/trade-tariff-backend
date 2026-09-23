@@ -251,4 +251,65 @@ RSpec.describe Api::V2::ClassificationSearchService do
       )
     end
   end
+
+  # Runs the real OpenSearch leg and fuses it with stubbed vector hits. Codes
+  # in the prefix with no query word match must not take the places of vector
+  # hits in the capped response.
+  describe 'ranking with filter prefixes' do
+    let(:text_match) do
+      { goods_nomenclature_sid: 9_730_810, goods_nomenclature_item_id: '7308100000', description: 'drip tray supports' }
+    end
+    let(:text_non_matches) do
+      [
+        { goods_nomenclature_sid: 9_730_820, goods_nomenclature_item_id: '7308200000', description: 'towers and lattice masts' },
+        { goods_nomenclature_sid: 9_730_830, goods_nomenclature_item_id: '7308300000', description: 'doors windows and their frames' },
+        { goods_nomenclature_sid: 9_730_840, goods_nomenclature_item_id: '7308400000', description: 'props for scaffolding' },
+      ]
+    end
+    let(:vector_item_ids) { %w[7308901000 7308902000 7308903000] }
+    let(:vector_results) do
+      vector_item_ids.each_with_index.map do |item_id, index|
+        GoodsNomenclatureResult.new(
+          id: 9_730_900 + index,
+          goods_nomenclature_item_id: item_id,
+          goods_nomenclature_sid: 9_730_900 + index,
+          producline_suffix: '80',
+          goods_nomenclature_class: 'Commodity',
+          description: 'other structures',
+          formatted_description: 'Other structures',
+          self_text: nil,
+          classification_description: nil,
+          full_description: nil,
+          heading_description: nil,
+          declarable: true,
+          score: 0.9 - (index * 0.1),
+          confidence: nil,
+        )
+      end
+    end
+
+    before do
+      allow(AdminConfiguration).to receive(:enabled?).and_call_original
+      allow(AdminConfiguration).to receive(:enabled?).with('hybrid_query_guardrail_enabled').and_return(false)
+      allow(AdminConfiguration).to receive(:integer_value).and_call_original
+      allow(AdminConfiguration).to receive(:integer_value).with('rrf_k').and_return(60)
+      allow(VectorRetrievalService).to receive(:call_with_diagnostics).and_return(
+        VectorRetrievalService::Result.new(results: vector_results, max_score: 0.9),
+      )
+      ([text_match] + text_non_matches).each { |document| index_goods_nomenclature_document(**document) }
+      refresh_search_indexes
+    end
+
+    after do
+      ([text_match] + text_non_matches).each { |document| delete_goods_nomenclature_document(document[:goods_nomenclature_sid]) }
+    end
+
+    it 'keeps the text match and the vector hits, not the codes with no match', :aggregate_failures do
+      response = described_class.new(q: 'tray', filter_prefixes: %w[7308], limit: 4).call
+
+      item_ids = response[:data].map { |record| record[:attributes][:goods_nomenclature_item_id] }
+      expect(item_ids).to contain_exactly(text_match[:goods_nomenclature_item_id], *vector_item_ids)
+      expect(item_ids).not_to include(*text_non_matches.pluck(:goods_nomenclature_item_id))
+    end
+  end
 end
