@@ -6,9 +6,9 @@ The Search team owns these dashboards. Start with **Search Operations** for erro
 
 Search and Search Operations read `TradeTariff/Search` metrics. Opening either dashboard does not scan logs. The backend emits Embedded Metric Format records from search notifications. Writes are best effort and do not block search. Missing telemetry is not zero traffic. Metrics can take about a minute to appear and have no backfill before their emitter is deployed. New operation and retrieval series start with the operations-metrics deployment; older overview series keep their existing history.
 
-UK and XI remain separate series, including percentiles. Do not average their percentiles or add different dimension rollups of the same metric. All operations charts use five-minute periods.
+Overview and Operations keep UK and XI separate, including percentiles. Do not average their percentiles or add different dimension rollups of the same metric. All operations charts use five-minute periods.
 
-Counts are events, not unique requests, journeys or people. Every emitted event counts, including repeated steps and degraded searches. A later failure does not remove an earlier count. Admin analytics uses a different, failure-excluded cohort. Quality and Experiments retain their log-based cohorts.
+Counts are events, not unique requests, journeys or people. Every emitted event counts, including repeated steps and degraded searches. A later failure does not remove an earlier count. Admin analytics uses a different, failure-excluded cohort. Quality retains its counting rules, using metrics for two count widgets. Experiments retains its log-based cohorts.
 
 | Metric | Source and meaning |
 | --- | --- |
@@ -28,6 +28,17 @@ Counts are events, not unique requests, journeys or people. Every emitted event 
 | `EmptyResults` | Completed searches satisfying the empty-result rules below. |
 
 Durations and result counts must be finite, non-negative numbers. Metric dimensions use fixed lists for request source, search type, operation, response type and retrieval leg. Missing labels become `unknown`; unexpected labels become `other`. Request IDs, model names, queries, error messages, error classes and free-text expansion reasons are not metric dimensions.
+
+## Metric reuse in Quality
+
+Quality reuses existing metrics for two widgets, without adding metric series:
+
+- **Searches vs Selections** sums completed `SearchEvents` and `ResultSelections` in one-hour buckets. It excludes failed searches, counts repeated events and includes events without request IDs. Each series combines UK and XI, as the original log query does.
+- **Empty Commodity / Empty Results by Search Type** sums `EmptyResults` across UK and XI, separately for classic, interactive and internal searches. The pie uses the entire selected window, not only its latest period.
+
+These charts reuse the overview metrics' existing history. They cannot show events before those metrics began collecting. A range that crosses that cutoff has partial coverage. Metric writes are best effort, so counts can differ from logs when records are dropped; metric aggregation and timestamp boundaries can also differ from log queries. Gaps are not filled with zero.
+
+Other Quality widgets stay on logs. Existing metrics cannot reproduce the combined UK/XI median, free-text cohorts, result-type breakdowns or request details. Experiment labels, AI costs and generator events also lack equivalent search metric dimensions or values. Reusing broader counts would change those measurements.
 
 ## Empty-result rules
 
