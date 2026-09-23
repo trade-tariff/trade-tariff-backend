@@ -177,22 +177,27 @@ module Search
       # Keep aligned with search_quality_dashboard zero_result_condition.
       # Classic exact matches are not empty commodity results. Missing counts
       # are not treated as zero except the classic fallback below.
+      # That fallback applies only when the raw commodity count is nil.
+      # A supplied count that number rejects is not absence and is not zero.
       def empty_result?(payload)
         search_type = payload[:search_type].to_s
-        result_count = payload[:result_count]
-        commodity_count = payload[:commodity_result_count]
+        result_count = number(payload[:result_count])
 
         if search_type == 'classic'
-          if commodity_count.nil?
-            !result_count.nil? && result_count.to_f.zero?
-          else
-            commodity_count.to_f.zero? && payload[:results_type].to_s != 'exact_search'
-          end
+          classic_empty_result?(payload, result_count)
         elsif %w[interactive internal].include?(search_type)
-          !result_count.nil? && result_count.to_f.zero?
+          result_count&.zero? == true
         else
           false
         end
+      end
+
+      def classic_empty_result?(payload, result_count)
+        raw_commodity_count = payload[:commodity_result_count]
+        deciding_count = raw_commodity_count.nil? ? result_count : number(raw_commodity_count)
+        return false unless deciding_count&.zero?
+
+        raw_commodity_count.nil? || payload[:results_type].to_s != 'exact_search'
       end
 
       def base_dimensions(environment, service)

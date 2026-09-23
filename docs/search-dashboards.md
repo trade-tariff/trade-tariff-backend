@@ -8,7 +8,7 @@ Search and Search Operations use `TradeTariff/Search` metrics for operational tr
 
 Metric charts in Overview and Operations keep UK and XI separate, including percentiles. Do not average their percentiles or add different dimension rollups of the same metric. Operations trends use fixed five-minute periods. Summary values and bar charts aggregate over the entire selected range.
 
-Metric counts are events, not unique requests, journeys or people. Every emitted event counts, including repeated steps and degraded searches. A later failure does not remove an earlier count. Admin analytics uses a different, failure-excluded cohort. Quality retains its counting rules, using metrics for two count widgets. Experiments retains its log-based cohorts.
+Metric counts are events, not unique requests, journeys or people. Every emitted event counts, including repeated steps and degraded searches. A later failure does not remove an earlier count. Admin analytics uses a different, failure-excluded cohort. Quality retains its counting rules, using metrics for two count widgets. Its other widgets use logs. Experiments retains its log-based cohorts.
 
 | Metric | Source and meaning |
 | --- | --- |
@@ -45,20 +45,42 @@ UK series use blue and XI series use orange where colours are assigned. Percenti
 
 Quality reuses existing metrics for two widgets, without adding metric series:
 
-- **Searches vs Selections** sums completed `SearchEvents` and `ResultSelections` in one-hour buckets. It excludes failed searches, counts repeated events and includes events without request IDs. Each series combines UK and XI, as the original log query does.
-- **Empty Commodity / Empty Results by Search Type** sums `EmptyResults` across UK and XI, separately for classic, interactive and internal searches. The pie uses the entire selected window, not only its latest period.
+- **Completed searches and selections per hour, UK + XI** sums completed `SearchEvents` and `ResultSelections` in one-hour buckets. It excludes failed searches, counts repeated events and includes events without request IDs. Each series combines UK and XI. These are separate event counts, not a conversion rate. The count axis starts at zero. A gap is not a verified zero.
+- **Recorded empty events by search type, UK + XI** sums `EmptyResults` across UK and XI, separately for classic, interactive and internal searches. The bar uses the entire selected window, not only its latest period. A missing search-type bar is not a verified zero.
 
 These charts reuse the overview metrics' existing history. They cannot show events before those metrics began collecting. A range that crosses that cutoff has partial coverage. Metric writes are best effort, so counts can differ from logs when records are dropped; metric aggregation and timestamp boundaries can also differ from log queries. Gaps are not filled with zero.
 
-Other Quality widgets stay on logs. Existing metrics cannot reproduce the combined UK/XI median, free-text cohorts, result-type breakdowns or request details. Experiment labels, AI costs and generator events also lack equivalent search metric dimensions or values. Reusing broader counts would change those measurements.
+Other Quality widgets stay on logs. Existing metrics cannot reproduce the combined UK/XI median, free-text cohorts, result-type breakdowns or request details. Experiment labels, AI costs and generator events also lack equivalent search metric dimensions or values. Reusing broader counts would change those measurements. Quality has 26 log widgets. The field-presence table is the additional scan. A row limit does not limit bytes scanned. This dashboard does not set log retention.
 
 ## Empty-result rules
 
-- Classic fuzzy or null searches are empty when they return zero commodity matches, even if headings or chapters are present. Exact classic matches are excluded when the commodity count is present. Historical events without a commodity count fall back to `result_count=0`.
+- Classic fuzzy or null searches are empty when they return zero commodity matches, even if headings or chapters are present. Exact classic matches are excluded when the commodity count is present. Historical events without a commodity count fall back to `result_count=0`, including an exact-labelled event with no commodity count and total `0`.
 - Interactive and internal searches are empty when `result_count=0`.
-- Missing result counts are not observed zeroes.
-- Quality separates completely empty results from results containing only non-commodity hits.
-- Free-text rates exclude queries made only of digits, spaces, dots and hyphens. The classic denominator is non-exact free-text searches; the interactive denominator is free-text guided searches.
+- Missing result counts are not observed zeroes. An invalid supplied count is not treated as absent and does not create an `EmptyResults` sample.
+- Quality separates completely empty results from results containing only non-commodity hits. The classic empty-event table uses that empty-event population as its denominator. It is not the percentage of all classic searches.
+- Free-text rates exclude queries made only of digits, spaces, dots and hyphens. The classic denominator is non-exact free-text searches; the guided denominator is free-text interactive and internal searches. Those cohort filters are unchanged.
+- **Empty events, % of classic, interactive and internal completions, hourly** includes only those three search types. Classification has no empty-result rule. It is omitted. It is not plotted as zero. The classic series in that chart includes exact and numeric lookups. That is a different denominator from the free-text non-exact chart.
+- The top 30 empty-query table includes code lookups. It labels a missing query and a blank or whitespace query. It does not change which events are empty, and it does not rewrite a nonblank query.
+
+## Quality reading notes
+
+Counts are completed-search events, not journeys or people. Hourly charts use one-hour buckets. Percentage charts use a 0-100 axis. Count charts start at zero. Two percentage series on the classic all-completions chart overlap. Do not add them.
+
+**Hourly mean and median results per completed event** keeps the mean and median as separate columns. A missing commodity count is omitted from that average. It is not stored as zero. The same row shows how many events had each field. **Hourly mean results per completed classic search, by level** is the same convention: a missing level count is left out of that average.
+
+**Guided round number at request completion** is the interactive completion field `total_attempts`. It is not an API retry count. **Submitted answer-history entries at request completion** is `total_questions`. It is not a count of questions shown. A missing value is labelled **Not recorded / not applicable**. A recorded zero stays zero.
+
+**Field presence by search type and free-text cohort, hourly** shows whether count fields are present. It is not validated telemetry. It does not prove that a present value is finite or non-negative. Its label uses the existing free-text condition. It does not change that condition or any rate denominator. A missing query is labelled **Missing query**. It is not placed in the free-text cohort. A query that meets the existing condition is **in free-text cohort**. Any other present query is **outside free-text cohort**. If that label expression is null, the row is **Unknown**, not a blank cohort. A complete classic level breakdown means the total and the four level counts are present. Other search types are not expected to have that breakdown.
+
+Hourly log buckets are partial when the selected window does not start and end on hour boundaries. The query API end time is inclusive. An end exactly on an hour boundary includes that instant, so it can appear in the next bucket. Do not read a boundary bucket as a complete hour.
+
+Intercept checks use **Matched**, **Not matched** and **Unknown**. The query compares `matched` with numeric `1` and `0`. A missing, null or other value is **Unknown**. It is not treated as not matched. Unmatched checks record only `matched`. They do not record term or guidance fields. **Matched intercept configurations** is a configuration table, not proof of a later user action. Missing or blank guidance is **Not configured**. **Top 30 intercept term/configuration combinations** still groups by term and the stored configuration fields. The title matches that grouping.
+
+Guard checks use one mutually exclusive outcome. `guard_disabled` is a reason string, not a field. A named allowed-without-fail-open outcome requires a present reason other than the reserved reasons. A missing reason is not treated as validator clearance. Guard and intercept flag comparisons use numeric `1` and `0` only. A combined comparison with bare `true` or `false` is not used. A nested sentinel expression for unknown values failed to parse, so it is not used. A missing flag is unknown because `ispresent` is false. A present value other than `0` or `1` is also unknown. Unknown is not observed false, and it cannot match a named guard outcome. The hourly guard table keeps every check in the denominator, including disabled and unknown checks. A JSON boolean fixture did not prove numeric compatibility.
+
+Suspicious-signal counts can overlap. One check can carry more than one signal. The signal query still parses `@message` and expands `guard.signals`. The latest guard table reads `jsonStringify(guard.signals)` because the discovered `signals` field can be absent when the parsed array is present. A final `display` projection keeps the parsed helper out of the columns. It keeps reason truncation, duplicate question text and duplicate answer text. Latest empty events and matched intercept checks still include query text. These tables do not change dashboard access.
+
+A sampled hour showed numeric `1` and `0` comparisons for these flags. The queries use that numeric form only. That sample does not prove the encoding of every older record.
 
 ## Active experiment sessions
 
