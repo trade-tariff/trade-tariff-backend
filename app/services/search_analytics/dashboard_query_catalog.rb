@@ -13,7 +13,9 @@ module SearchAnalytics
           terraform: { required_providers: { aws: { source: 'hashicorp/aws', version: '~> 5' } } },
           module: DASHBOARDS.index_with do |name|
             source = Rails.root.join('terraform/modules', name).relative_path_from(Pathname.new(directory)).to_s
-            { source:, environment: 'validation', log_group_name:, region: 'eu-west-2' }
+            inputs = { source:, environment: 'validation', region: 'eu-west-2' }
+            inputs[:log_group_name] = log_group_name unless name == 'search_dashboard'
+            inputs
           end,
         }
         File.write(File.join(directory, 'main.tf.json'), configuration.to_json)

@@ -3,11 +3,6 @@ variable "environment" {
   type        = string
 }
 
-variable "log_group_name" {
-  description = "CloudWatch Log Group name where search instrumentation logs are sent"
-  type        = string
-}
-
 variable "region" {
   description = "AWS region"
   type        = string
