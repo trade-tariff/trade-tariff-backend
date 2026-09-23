@@ -236,6 +236,64 @@ RSpec.describe Search::Metrics do
       expect(record_operation('search_failed', search_type: 'interactive')).not_to have_key('InteractiveSearchErrors')
     end
 
+    it 'records terminal health samples for both guided search types without changing existing latency rollups' do
+      %w[interactive internal].each do |search_type|
+        %w[answers questions error].each do |outcome|
+          result = record_operation('search_completed', search_type:, final_result_type: outcome, total_duration_ms: 1250)
+          expect(result).to include('GuidedSearchErrors' => outcome == 'error' ? 1 : 0, 'GuidedSearchOutcomes' => 1, 'GuidedOutcome' => outcome, 'GuidedSearchDuration' => 1.25, 'SearchDuration' => 1.25)
+          expect(dimension_sets('GuidedSearchErrors')).to eq([%w[Environment Service]])
+          expect(dimension_sets('GuidedSearchDuration')).to eq([%w[Environment Service]])
+          expect(dimension_sets('GuidedSearchOutcomes')).to eq([%w[Environment Service GuidedOutcome]])
+          expect(dimension_sets('SearchDuration')).to eq([%w[Environment Service]])
+        end
+        result = record_operation('search_failed', search_type:, total_duration_ms: 500)
+        expect(result).to include('GuidedSearchErrors' => 1, 'GuidedSearchOutcomes' => 1, 'GuidedOutcome' => 'hard_failure')
+        expect(result).not_to have_key('GuidedSearchDuration')
+      end
+    end
+
+    it 'keeps classic, evaluation, classification and unrecognised searches out of guided request health' do
+      ['classic', 'evaluation', 'classification', 'user-input', nil].each do |search_type|
+        %w[search_completed search_failed].each do |name|
+          result = record_operation(name, search_type:, final_result_type: 'error', total_duration_ms: 100)
+          expect(result.keys.grep(/Guided/)).to be_empty
+        end
+      end
+    end
+
+    it 'bounds guided outcomes without treating an unrecognised result as a confirmed success' do
+      result = record_operation('search_completed', search_type: :internal, final_result_type: 'sensitive arbitrary response')
+      expect(result).to include('GuidedOutcome' => 'other', 'GuidedSearchErrors' => 0)
+      expect(result.to_json).not_to include('sensitive arbitrary response')
+      expect(record_operation('search_completed', search_type: 'interactive')).to include('GuidedOutcome' => 'unknown')
+      expect(record_operation('search_completed', search_type: 'interactive', total_duration_ms: -1)).not_to have_key('GuidedSearchDuration')
+    end
+
+    it 'uses the same observed terminal events for request errors and their denominator' do
+      samples = [
+        record_operation('search_completed', search_type: 'interactive', final_result_type: 'questions'),
+        record_operation('search_completed', search_type: 'internal', final_result_type: 'answers'),
+        record_operation('search_completed', search_type: 'interactive', final_result_type: 'error'),
+        record_operation('search_failed', search_type: 'internal'),
+      ]
+      values = samples.map { |sample| sample.fetch('GuidedSearchErrors') }
+      expect(values).to eq([0, 0, 1, 1])
+      expect(100.0 * values.sum / values.size).to eq(50.0)
+      expect(samples.sum { |sample| sample.fetch('GuidedSearchOutcomes') }).to eq(values.size)
+    end
+
+    it 'excludes disabled and non-suspicious checks from the validator-only denominator' do
+      %w[guard_disabled not_suspicious].each do |reason|
+        expect(record_operation('duplicate_question_guard_checked', reason:, suspicious: false)).not_to have_key('DuplicateValidatorFailOpen')
+      end
+      expect(record_operation('duplicate_question_guard_checked', reason: 'validator_unparseable')).not_to have_key('DuplicateValidatorFailOpen')
+      %w[validator_unparseable duplicate new_question].each do |reason|
+        result = record_operation('duplicate_question_guard_checked', reason:, suspicious: true)
+        expect(result['DuplicateValidatorFailOpen']).to eq(reason == 'validator_unparseable' ? 1 : 0)
+        expect(dimension_sets('DuplicateValidatorFailOpen')).to eq([%w[Environment Service]])
+      end
+    end
+
     it 'records fallback expansion duration and a separate timeout count' do
       result = record_operation('query_expanded', duration_ms: 3789, query_expansion_failed: true, reason: 'arbitrary model prose')
       expect(result).to include('QueryExpansions' => 1, 'QueryExpansionDuration' => 3.789)
@@ -283,7 +341,7 @@ RSpec.describe Search::Metrics do
         'query_expanded' => { duration_ms: 100 },
         'query_expansion_timed_out' => {},
         'retrieval_leg_completed' => { leg: 'vector', status: 'success', duration_ms: 100, result_count: 2 },
-        'duplicate_question_guard_checked' => { reason: 'validator_unparseable' },
+        'duplicate_question_guard_checked' => { reason: 'validator_unparseable', suspicious: true },
         'search_completed' => payload.merge(search_type: 'interactive'),
       }
       events.each do |name, attributes|

@@ -4,9 +4,9 @@ The Search team owns these dashboards. Start with **Search Operations** for erro
 
 ## Metrics and coverage
 
-Search and Search Operations read `TradeTariff/Search` metrics. Opening either dashboard does not scan logs. The backend emits Embedded Metric Format records from search notifications. Writes are best effort and do not block search. Missing telemetry is not zero traffic. Metrics can take about a minute to appear and have no backfill before their emitter is deployed. New operation and retrieval series start with the operations-metrics deployment; older overview series keep their existing history.
+Search and Search Operations read `TradeTariff/Search` metrics. Opening either dashboard does not scan logs. The backend emits Embedded Metric Format records from search notifications. Writes are best effort and do not block search. Missing telemetry is not zero traffic. Metrics can take about a minute to appear and have no backfill before their emitter is deployed. Operation, retrieval, guided-request health and validator-only series start when their emitters are deployed; older overview series keep their existing history. Do not join new numerator series to older denominator series.
 
-Overview and Operations keep UK and XI separate, including percentiles. Do not average their percentiles or add different dimension rollups of the same metric. All operations charts use five-minute periods.
+Overview and Operations keep UK and XI separate, including percentiles. Do not average their percentiles or add different dimension rollups of the same metric. Operations trends use fixed five-minute periods. Summary values and bar charts aggregate over the entire selected range.
 
 Counts are events, not unique requests, journeys or people. Every emitted event counts, including repeated steps and degraded searches. A later failure does not remove an earlier count. Admin analytics uses a different, failure-excluded cohort. Quality retains its counting rules, using metrics for two count widgets. Experiments retains its log-based cohorts.
 
@@ -16,18 +16,32 @@ Counts are events, not unique requests, journeys or people. Every emitted event 
 | `SearchDuration` | Completed-search `total_duration_ms`, converted to seconds. |
 | `AiApiDuration` | Every `api_call_completed` duration, including errors, in seconds. Overall and operation-specific dimension sets. |
 | `AiApiCalls` | Every `api_call_completed`, split by operation and response type. The duplicate retry chart counts calls, not HTTP transport retries. |
-| `InteractiveSearchErrors` | One for an interactive completion with `final_result_type=error`, otherwise zero for that interactive completion. Hard failures are separate. |
+| `InteractiveSearchErrors` | Legacy counter: one for an interactive completion with `final_result_type=error`, otherwise zero for that interactive completion. Hard failures and the literal internal search type are excluded. |
+| `GuidedSearchErrors` | One per terminal interactive/internal event: one for an exception or returned error, zero otherwise. Sum counts errors; SampleCount counts finished requests; Average times 100 is the error percentage. |
+| `GuidedSearchDuration` | Completed interactive/internal server request duration in seconds, including returned errors. Exceptions have no duration sample. Not a whole browser journey. |
+| `GuidedSearchOutcomes` | One per terminal interactive/internal event, split into answers, questions, error, hard_failure, unknown or other. Missing and unexpected outcomes are not labelled as success. |
 | `QueryExpansions`, `QueryExpansionDuration` | Each `query_expanded` event and its duration in seconds. Includes cached results, unchanged queries and fallback; it does not imply successful AI expansion. |
 | `QueryExpansionTimeouts` | One per `query_expansion_timed_out`. A timeout can also produce an AI API error; do not add those charts to count affected requests. |
 | `RetrievalDuration` | Every `retrieval_leg_completed` duration in seconds, split by leg. Includes errors. |
 | `RetrievalFailures` | One for an errored retrieval leg, zero for a successful leg. Unknown statuses do not emit a failure sample. |
 | `RetrievalResultCount` | Result count from successful retrieval legs only. Zero matches is a valid success, not a failure. |
-| `DuplicateGuardFailOpen` | One for a check with `reason=validator_unparseable`, zero for every other guard check. Its average times 100 is the fail-open percentage of all checks, not just validator calls. No checks means no percentage. |
+| `DuplicateGuardFailOpen` | Legacy all-check counter: one for `reason=validator_unparseable`, zero for every other guard check, including disabled and non-suspicious checks. |
+| `DuplicateValidatorFailOpen` | Only checks with `suspicious=true`. One for `reason=validator_unparseable`, zero otherwise. Average times 100 is the fail-open percentage of validator-eligible checks. SampleCount is its denominator. No eligible checks means no percentage. |
 | `ResultSelections` | One per result-selection event, not a unique user or completed journey. |
 | `ResultCount`, `CommodityResultCount` | Counts on completed searches. Missing or invalid counts do not emit samples. |
 | `EmptyResults` | Completed searches satisfying the empty-result rules below. |
 
-Durations and result counts must be finite, non-negative numbers. Metric dimensions use fixed lists for request source, search type, operation, response type and retrieval leg. Missing labels become `unknown`; unexpected labels become `other`. Request IDs, model names, queries, error messages, error classes and free-text expansion reasons are not metric dimensions.
+Durations and result counts must be finite, non-negative numbers. Metric dimensions use fixed lists for request source, search type, guided outcome, operation, response type and retrieval leg. Missing labels become `unknown`; unexpected labels become `other`. Request IDs, model names, queries, error messages, error classes and free-text expansion reasons are not metric dimensions.
+
+## Operations layout and interpretation
+
+Start with request health, then inspect dependencies and supporting behaviour. The health section includes both `interactive` and `internal` search types and excludes classic, evaluation and classification terminal events. Each finished request contributes one error sample and one outcome sample. Repeated terminal events count again. A request that returns questions is not a completed user journey. Returned errors and exceptions are disjoint terminal outcomes, so the error percentage does not count stage failures again.
+
+Request volume and error percentage come from the same binary samples and share the same collection cutoff. Zero means observed requests without recorded errors; no requests means no percentage. Unknown outcomes remain visible separately and do not prove success. The health summaries use the selected range, not the latest five-minute bucket. Latency includes only completed requests, so it must be read beside errors and volume.
+
+Dependency charts include shared search callers, including evaluations. They are not restricted to the health section's population. AI latency is separated into expansion, question/answer generation and final-answer generation. Error counts by operation include duplicate validation and retries. Expansion fallback, retrieval failures and AI errors can refer to the same request; do not add them to count affected requests. Successful-leg result counts are supporting evidence, not a service-health target.
+
+UK series use blue and XI series use orange where colours are assigned. Percentile shades and labels distinguish distributions without pooling services. Trends label bucket counts as events per five minutes, not events per second. Percentages use a 0-100 axis and have adjacent volume charts. Request latency retains p99; smaller dependency populations use p50/p90, which can still be noisy at low volume. No operational thresholds or new alarms are implied.
 
 ## Metric reuse in Quality
 
