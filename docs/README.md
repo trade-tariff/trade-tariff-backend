@@ -44,7 +44,5 @@ AI tools should use this index before making code changes. Prefer source-backed 
 
 Shared tool entrypoints:
 
-- `AGENTS.md` for Codex and other agentic coding tools.
-- `CLAUDE.md` for Claude Code.
-- `GEMINI.md` for Gemini CLI-style tools.
+- `AGENTS.md` for Codex, Claude Code, and other agentic coding tools.
 - `.github/copilot-instructions.md` for GitHub Copilot.
