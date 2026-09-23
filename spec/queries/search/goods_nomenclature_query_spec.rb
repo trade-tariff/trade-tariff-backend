@@ -65,6 +65,44 @@ RSpec.describe Search::GoodsNomenclatureQuery do
       end
     end
 
+    context 'with filter prefixes' do
+      let(:query_string) { 'brace and tray' }
+      let(:query_options) { super().merge(filter_prefixes: %w[7308]) }
+      let(:unfiltered_must) do
+        described_class.new(query_string, date, **query_options.except(:filter_prefixes)).query.dig(:body, :query, :bool, :must)
+      end
+      let(:prefix_clause) do
+        { bool: { should: [{ prefix: { goods_nomenclature_item_id: '7308' } }], minimum_should_match: 1 } }
+      end
+
+      it 'requires the prefix' do
+        expect(query.dig(:body, :query, :bool, :must)).to include(prefix_clause)
+      end
+
+      # A caller filters to a heading it has already established. The heading's
+      # codes must come back even when no query word matches their text, so the
+      # text clause ranks the results and does not remove them.
+      it 'moves the text clause from must to should', :aggregate_failures do
+        bool_query = query.dig(:body, :query, :bool)
+        text_clauses = unfiltered_must - bool_query[:must]
+
+        expect(text_clauses.size).to eq(1)
+        expect(bool_query[:should]).to eq(text_clauses)
+      end
+
+      it 'keeps every other required clause' do
+        bool_query = query.dig(:body, :query, :bool)
+
+        expect(bool_query[:must]).to match_array((unfiltered_must - bool_query[:should]) + [prefix_clause])
+      end
+    end
+
+    context 'without filter prefixes' do
+      it 'has no optional clauses' do
+        expect(query.dig(:body, :query, :bool)).not_to have_key(:should)
+      end
+    end
+
     context 'with single-word query and expanded_query provided' do
       let(:query_string) { 'horses' }
       let(:query_options) { super().merge(expanded_query: 'horses OR horse OR equine OR ponies') }
