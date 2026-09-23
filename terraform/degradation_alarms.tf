@@ -44,7 +44,7 @@ locals {
       pattern             = "{ $.service = \"search\" && $.failure_code = \"vector_retrieval_failed\" && ($.event = \"search_stage_failed\" || ($.event = \"retrieval_leg_completed\" && $.leg = \"vector\" && $.status = \"error\")) }"
       metric_name         = "SearchVectorErrorCount"
       alarm_name          = "search-vector-error-${var.environment}"
-      alarm_description   = "Vector database retrieval failed for search in ${var.environment}. Owner: Trade Tariff search. First action: dashboard ${local.search_operations_dashboard} Hybrid Leg Failures, then ${local.log_group_name} filtered by service=search failure_code=vector_retrieval_failed. Use request_id, operation, error_type, and error_message to diagnose. Embedding generation failures use the separate embedding alarm."
+      alarm_description   = "Vector database retrieval failed for search in ${var.environment}. Owner: Trade Tariff search. First action: dashboard ${local.search_operations_dashboard} Retrieval failures per 5 minutes, then ${local.log_group_name} filtered by service=search failure_code=vector_retrieval_failed. Use request_id, operation, error_type, and error_message to diagnose. Embedding generation failures use the separate embedding alarm."
       threshold           = 0
       period              = 300
       evaluation_periods  = 1

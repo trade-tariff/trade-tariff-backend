@@ -200,7 +200,7 @@ RSpec.describe Search::Metrics do
       output.rewind
       notification = ActiveSupport::Notifications::Event.new("#{name}.search", now, now, 'id', attributes)
       described_class.record(notification, output:, environment: 'production', service: 'xi', now:)
-      JSON.parse(output.string)
+      JSON.parse(output.string) unless output.string.empty?
     end
 
     it 'keeps overall AI latency and adds bounded operation and response dimensions' do
@@ -226,14 +226,10 @@ RSpec.describe Search::Metrics do
       expect(record_operation('retrieval_leg_completed', duration_ms: 1)).to include('Leg' => 'unknown')
     end
 
-    it 'counts error outcomes only for completed interactive searches' do
-      %w[error answers questions].each do |outcome|
-        result = record_operation('search_completed', search_type: 'interactive', final_result_type: outcome)
-        expect(result['InteractiveSearchErrors']).to eq(outcome == 'error' ? 1 : 0)
-        expect(result['Outcome']).to eq('completed')
-      end
-      expect(record_operation('search_completed', search_type: 'classic', final_result_type: 'error')).not_to have_key('InteractiveSearchErrors')
-      expect(record_operation('search_failed', search_type: 'interactive')).not_to have_key('InteractiveSearchErrors')
+    it 'does not emit superseded counters without dashboard consumers' do
+      expect(described_class::METRIC_NAMES).not_to include('InteractiveSearchErrors', 'DuplicateGuardFailOpen')
+      expect(record_operation('search_completed', search_type: 'interactive', final_result_type: 'error')).not_to have_key('InteractiveSearchErrors')
+      expect(record_operation('duplicate_question_guard_checked', reason: 'validator_unparseable', suspicious: true)).not_to have_key('DuplicateGuardFailOpen')
     end
 
     it 'records terminal health samples for both guided search types without changing existing latency rollups' do
@@ -284,9 +280,9 @@ RSpec.describe Search::Metrics do
 
     it 'excludes disabled and non-suspicious checks from the validator-only denominator' do
       %w[guard_disabled not_suspicious].each do |reason|
-        expect(record_operation('duplicate_question_guard_checked', reason:, suspicious: false)).not_to have_key('DuplicateValidatorFailOpen')
+        expect(record_operation('duplicate_question_guard_checked', reason:, suspicious: false)).to be_nil
       end
-      expect(record_operation('duplicate_question_guard_checked', reason: 'validator_unparseable')).not_to have_key('DuplicateValidatorFailOpen')
+      expect(record_operation('duplicate_question_guard_checked', reason: 'validator_unparseable')).to be_nil
       %w[validator_unparseable duplicate new_question].each do |reason|
         result = record_operation('duplicate_question_guard_checked', reason:, suspicious: true)
         expect(result['DuplicateValidatorFailOpen']).to eq(reason == 'validator_unparseable' ? 1 : 0)
@@ -325,14 +321,6 @@ RSpec.describe Search::Metrics do
       expect(result).to include('RetrievalDuration' => 0.0)
       expect(result).not_to have_key('RetrievalFailures')
       expect(result).not_to have_key('RetrievalResultCount')
-    end
-
-    it 'uses every guard check as the fail-open denominator' do
-      %w[validator_unparseable not_suspicious duplicate new_question].each do |reason|
-        result = record_operation('duplicate_question_guard_checked', reason:)
-        expect(result['DuplicateGuardFailOpen']).to eq(reason == 'validator_unparseable' ? 1 : 0)
-        expect(dimension_sets('DuplicateGuardFailOpen')).to eq([%w[Environment Service]])
-      end
     end
 
     it 'emits metric definitions with valid units and bounded dimensions' do

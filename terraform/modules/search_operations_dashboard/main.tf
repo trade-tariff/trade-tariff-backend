@@ -79,8 +79,10 @@ locals {
       metrics = [[{ expression = "SEARCH('{${local.namespace},Environment,Service,Leg} MetricName=\"RetrievalFailures\" Environment=\"${var.environment}\"', 'Sum', ${local.period})", id = "failures" }]]
     },
     {
-      title   = "Retrieval latency (seconds, p50/p90)", unit = "Seconds", x = 0, y = 34, width = 12
-      metrics = [for stat in ["p50", "p90"] : [{ expression = "SEARCH('{${local.namespace},Environment,Service,Leg} MetricName=\"RetrievalDuration\" Environment=\"${var.environment}\"', '${stat}', ${local.period})", id = "latency_${stat}", label = stat }]]
+      title = "Retrieval latency (seconds, p50/p90)", unit = "Seconds", x = 0, y = 34, width = 12
+      metrics = flatten([for service in local.services : [for leg in ["opensearch", "vector", "unknown", "other"] : [for stat in ["p50", "p90"] : {
+        series = [local.namespace, "RetrievalDuration", "Environment", var.environment, "Service", service, "Leg", leg, { stat = stat, label = "${upper(service)} ${leg} ${stat}" }]
+      }]]])[*].series
     },
     {
       title   = "Mean results per successful retrieval", unit = "Results / successful leg", x = 12, y = 34, width = 12
@@ -112,8 +114,10 @@ locals {
       metrics = [for service in local.services : [local.namespace, "DuplicateValidatorFailOpen", "Environment", var.environment, "Service", service, { stat = "SampleCount", label = upper(service), color = local.colors[service] }]]
     },
     {
-      title   = "Duplicate guard AI latency (seconds, p50/p90)", unit = "Seconds", x = 0, y = 54, width = 12
-      metrics = [for stat in ["p50", "p90"] : [{ expression = "SEARCH('{${local.namespace},Environment,Service,Operation} MetricName=\"AiApiDuration\" Environment=\"${var.environment}\" (Operation=\"duplicate_question_validator\" OR Operation=\"duplicate_question_retry\")', '${stat}', ${local.period})", id = "guard_${stat}", label = stat }]]
+      title = "Duplicate guard AI latency (seconds, p50/p90)", unit = "Seconds", x = 0, y = 54, width = 12
+      metrics = flatten([for service in local.services : [for operation in ["duplicate_question_validator", "duplicate_question_retry"] : [for stat in ["p50", "p90"] : {
+        series = [local.namespace, "AiApiDuration", "Environment", var.environment, "Service", service, "Operation", operation, { stat = stat, label = "${upper(service)} ${local.operations[operation]} ${stat}" }]
+      }]]])[*].series
     },
     {
       title   = "Duplicate retry calls per 5 minutes", unit = "Calls / 5 min", x = 12, y = 54, width = 12
