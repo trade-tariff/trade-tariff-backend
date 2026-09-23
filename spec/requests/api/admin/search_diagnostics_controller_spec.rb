@@ -1,4 +1,41 @@
 RSpec.describe Api::Admin::SearchDiagnosticsController do
+  describe 'GET #index' do
+    let(:browser_session_id) { "v1:#{'b' * 64}" }
+    let(:related_request) do
+      SearchDiagnostics::RelatedRequests::Request.new(
+        request_id: 'aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee',
+        occurred_at: '2026-06-05 09:40:00.000',
+        query: 'fur coat',
+        experiment: 'hmrc-users',
+        browser_session_id:,
+      )
+    end
+    let(:correlation) do
+      SearchDiagnostics::RelatedRequests::Result.new(
+        browser_session_id:,
+        experiment: nil,
+        requests: [related_request],
+      )
+    end
+
+    before do
+      allow(SearchDiagnostics::RelatedRequests).to receive(:for_filter).and_return(correlation)
+    end
+
+    it 'returns clickable search requests for a browser session' do
+      get '/uk/admin/search_diagnostics.json', params: { browser_session_id: }, headers: request_headers(format: :json)
+
+      expect(response).to have_http_status(:ok)
+      expect(SearchDiagnostics::RelatedRequests).to have_received(:for_filter).with(
+        browser_session_id:,
+        experiment: nil,
+        lookback_hours: nil,
+      )
+      expect(response.parsed_body.dig('data', 0, 'id')).to eq(related_request.request_id)
+      expect(response.parsed_body.dig('data', 0, 'attributes', 'query')).to eq('fur coat')
+    end
+  end
+
   describe 'GET #show' do
     let(:diagnostic) do
       SearchDiagnostics::RequestLogLookup::Result.new(
@@ -44,8 +81,17 @@ RSpec.describe Api::Admin::SearchDiagnosticsController do
       )
     end
 
+    let(:correlation) do
+      SearchDiagnostics::RelatedRequests::Result.new(
+        browser_session_id: nil,
+        experiment: nil,
+        requests: [],
+      )
+    end
+
     before do
       allow(SearchDiagnostics::RequestLogLookup).to receive(:call).and_return(diagnostic)
+      allow(SearchDiagnostics::RelatedRequests).to receive_messages(for_search_request: correlation, for_filter: correlation)
     end
 
     it 'returns nested note evidence diagnostics unchanged' do
