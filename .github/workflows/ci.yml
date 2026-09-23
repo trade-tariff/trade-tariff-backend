@@ -48,11 +48,14 @@ jobs:
   terraform-test:
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    strategy:
+      matrix:
+        module: [puma_capacity_dashboard, search_operations_dashboard]
     permissions:
       contents: read
     defaults:
       run:
-        working-directory: terraform/modules/puma_capacity_dashboard
+        working-directory: terraform/modules/${{ matrix.module }}
     steps:
       - uses: actions/checkout@v7.0.1
       - uses: hashicorp/setup-terraform@v4

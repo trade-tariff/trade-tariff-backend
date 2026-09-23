@@ -189,9 +189,114 @@ RSpec.describe Search::Metrics do
     expect(lines.map { |line| line.except('_aws', 'Environment', 'Service') }).to eq([
       { 'ResultSelections' => 1 },
       { 'QueryExpansions' => 1 },
-      { 'AiApiDuration' => 0.25 },
+      { 'AiApiDuration' => 0.25, 'Operation' => 'unknown', 'ResponseType' => 'unknown', 'AiApiCalls' => 1 },
     ])
     expect(lines.last.dig('_aws', 'CloudWatchMetrics', 0, 'Metrics', 0)).to include('Name' => 'AiApiDuration', 'Unit' => 'Seconds')
+  end
+
+  describe 'operations metrics' do
+    def record_operation(name, attributes = {})
+      output.truncate(0)
+      output.rewind
+      notification = ActiveSupport::Notifications::Event.new("#{name}.search", now, now, 'id', attributes)
+      described_class.record(notification, output:, environment: 'production', service: 'xi', now:)
+      JSON.parse(output.string)
+    end
+
+    it 'keeps overall AI latency and adds bounded operation and response dimensions' do
+      result = record_operation('api_call_completed', operation: 'search_query_expansion', response_type: 'error', duration_ms: 3780)
+
+      expect(result).to include('Service' => 'xi', 'AiApiCalls' => 1, 'AiApiDuration' => 3.78, 'Operation' => 'search_query_expansion', 'ResponseType' => 'error')
+      expect(dimension_sets('AiApiDuration')).to eq([%w[Environment Service], %w[Environment Service Operation]])
+      expect(dimension_sets('AiApiCalls')).to eq([%w[Environment Service Operation ResponseType]])
+    end
+
+    it 'preserves every supported operation and response type' do
+      described_class::OPERATIONS.product(described_class::RESPONSE_TYPES).each do |operation, response_type|
+        expect(record_operation('api_call_completed', operation:, response_type:)).to include('Operation' => operation, 'ResponseType' => response_type, 'AiApiCalls' => 1)
+      end
+    end
+
+    it 'never exposes arbitrary labels or request data in metrics' do
+      result = record_operation('api_call_completed', operation: 'user-input', response_type: 'user-input', request_id: 'secret', effective_query: 'secret', error_message: 'secret', model: 'secret')
+
+      expect(result).to include('Operation' => 'other', 'ResponseType' => 'other')
+      expect(result.to_json).not_to include('user-input', 'secret')
+      expect(record_operation('retrieval_leg_completed', leg: 'user-input', status: 'success')).to include('Leg' => 'other')
+      expect(record_operation('retrieval_leg_completed', duration_ms: 1)).to include('Leg' => 'unknown')
+    end
+
+    it 'counts error outcomes only for completed interactive searches' do
+      %w[error answers questions].each do |outcome|
+        result = record_operation('search_completed', search_type: 'interactive', final_result_type: outcome)
+        expect(result['InteractiveSearchErrors']).to eq(outcome == 'error' ? 1 : 0)
+        expect(result['Outcome']).to eq('completed')
+      end
+      expect(record_operation('search_completed', search_type: 'classic', final_result_type: 'error')).not_to have_key('InteractiveSearchErrors')
+      expect(record_operation('search_failed', search_type: 'interactive')).not_to have_key('InteractiveSearchErrors')
+    end
+
+    it 'records fallback expansion duration and a separate timeout count' do
+      result = record_operation('query_expanded', duration_ms: 3789, query_expansion_failed: true, reason: 'arbitrary model prose')
+      expect(result).to include('QueryExpansions' => 1, 'QueryExpansionDuration' => 3.789)
+      expect(result).not_to have_key('reason')
+      expect(result).not_to have_key('QueryExpansionTimeouts')
+      expect(record_operation('query_expansion_timed_out', elapsed_ms: 3779, timeout_ms: 5000)).to include('QueryExpansionTimeouts' => 1)
+    end
+
+    it 'records successful and failed leg latency but only successful result counts' do
+      described_class::RETRIEVAL_LEGS.each do |leg|
+        result = record_operation('retrieval_leg_completed', leg:, status: 'success', duration_ms: 250, result_count: 0)
+        expect(result).to include('Leg' => leg, 'RetrievalDuration' => 0.25, 'RetrievalResultCount' => 0, 'RetrievalFailures' => 0)
+        expect(dimension_sets('RetrievalDuration')).to eq([%w[Environment Service Leg]])
+        expect(dimension_sets('RetrievalResultCount')).to eq([%w[Environment Service Leg]])
+        expect(dimension_sets('RetrievalFailures')).to eq([%w[Environment Service Leg]])
+        result = record_operation('retrieval_leg_completed', leg:, status: 'error', duration_ms: 500, result_count: 0)
+        expect(result).to include('RetrievalDuration' => 0.5, 'RetrievalFailures' => 1)
+        expect(result).not_to have_key('RetrievalResultCount')
+      end
+    end
+
+    it 'does not turn missing or invalid observations into zeroes' do
+      [nil, -1, Float::NAN, Float::INFINITY, '100'].each do |invalid|
+        expect(record_operation('api_call_completed', duration_ms: invalid)).not_to have_key('AiApiDuration')
+        expect(record_operation('query_expanded', duration_ms: invalid)).not_to have_key('QueryExpansionDuration')
+        expect(record_operation('retrieval_leg_completed', status: 'success', duration_ms: invalid, result_count: invalid)).not_to have_key('RetrievalResultCount')
+      end
+      result = record_operation('retrieval_leg_completed', status: 'unexpected', duration_ms: 0, result_count: 10)
+      expect(result).to include('RetrievalDuration' => 0.0)
+      expect(result).not_to have_key('RetrievalFailures')
+      expect(result).not_to have_key('RetrievalResultCount')
+    end
+
+    it 'uses every guard check as the fail-open denominator' do
+      %w[validator_unparseable not_suspicious duplicate new_question].each do |reason|
+        result = record_operation('duplicate_question_guard_checked', reason:)
+        expect(result['DuplicateGuardFailOpen']).to eq(reason == 'validator_unparseable' ? 1 : 0)
+        expect(dimension_sets('DuplicateGuardFailOpen')).to eq([%w[Environment Service]])
+      end
+    end
+
+    it 'emits metric definitions with valid units and bounded dimensions' do
+      events = {
+        'api_call_completed' => { duration_ms: 100, operation: 'duplicate_question_retry', response_type: 'questions' },
+        'query_expanded' => { duration_ms: 100 },
+        'query_expansion_timed_out' => {},
+        'retrieval_leg_completed' => { leg: 'vector', status: 'success', duration_ms: 100, result_count: 2 },
+        'duplicate_question_guard_checked' => { reason: 'validator_unparseable' },
+        'search_completed' => payload.merge(search_type: 'interactive'),
+      }
+      events.each do |name, attributes|
+        result = record_operation(name, attributes)
+        expect(output.string.bytesize).to be < described_class::MAX_LINE_BYTES
+        result.dig('_aws', 'CloudWatchMetrics').each do |definition|
+          metric = definition.fetch('Metrics').sole
+          expect(described_class::METRIC_NAMES).to include(metric.fetch('Name'))
+          expect(metric.fetch('Unit')).to eq(metric.fetch('Name').end_with?('Duration') ? 'Seconds' : 'Count')
+          definition.fetch('Dimensions').flatten.each { |dimension| expect(result).to have_key(dimension) }
+        end
+      end
+    end
   end
 
   it 'drops a failed write instead of raising' do

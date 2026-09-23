@@ -3,7 +3,7 @@
 RSpec.describe 'search experiment dashboard Terraform' do
   let(:dashboards_tf) { Rails.root.join('terraform/dashboards.tf').read }
   let(:module_main_tf) { Rails.root.join('terraform/modules/search_experiment_dashboard/main.tf').read }
-  let(:operations_dashboard_tf) { Rails.root.join('terraform/modules/search_operations_dashboard/main.tf').read }
+  let(:operations_dashboard_tf) { Rails.root.join('terraform/modules/search_operations_dashboard/diagnostics.tf').read }
   let(:search_dashboard_tf) { Rails.root.join('terraform/modules/search_dashboard/main.tf').read }
 
   it 'wires the search experiment dashboard into the dashboard stack' do
@@ -36,11 +36,10 @@ RSpec.describe 'search experiment dashboard Terraform' do
   end
 
   it 'explains how to interpret and investigate the production UAT cohort' do
-    expect(module_main_tf).to include('Production UAT')
-    expect(module_main_tf).to include('Requests and estimated distinct guided-search browser sessions are reported separately.')
-    expect(module_main_tf).to include('One browser session can contain multiple requests.')
-    expect(module_main_tf).to include('Set the dashboard time range to the UAT window')
-    expect(module_main_tf).to include('copy the request ID into admin search diagnostics')
+    expect(module_main_tf).to include('Search Experiments')
+    expect(module_main_tf).to include('Requests are not browser sessions; session counts are estimates, not people.')
+    expect(module_main_tf).to include('select an experiment label and time range')
+    expect(module_main_tf).to include('docs/search-dashboards.md')
     expect(module_main_tf).to include('Recent UAT Events')
     expect(module_main_tf).not_to include('Recent Search Journeys')
   end
@@ -229,11 +228,11 @@ RSpec.describe 'search experiment dashboard Terraform' do
     recent_searches_query = operations_widget_query('Recent Searches')
 
     expect(recent_searches_query).to include(
-      'stats latest(@timestamp) as latest_timestamp, latest(query) as latest_query,',
+      'stats latest(@timestamp) as latest_timestamp,',
     )
     expect(recent_searches_query).to include('by request_id')
     expect(recent_searches_query).to include(
-      'display latest_timestamp, latest_query, latest_request_source, latest_search_type, request_id',
+      'display latest_timestamp, latest_request_source, latest_search_type, request_id',
     )
   end
 
@@ -299,7 +298,7 @@ RSpec.describe 'search experiment dashboard Terraform' do
   end
 
   it 'is discoverable from the search overview dashboard' do
-    expect(search_dashboard_tf).to include('Search Experiments')
+    expect(search_dashboard_tf).to include('[Experiments]')
     expect(search_dashboard_tf).to include('SearchExperiment-${var.environment}')
   end
 

@@ -6,8 +6,6 @@ locals {
   search_operations_dashboard_url = "https://${var.region}.console.aws.amazon.com/cloudwatch/home?region=${var.region}#dashboards:name=SearchOperations-${var.environment}"
   search_quality_dashboard_url    = "https://${var.region}.console.aws.amazon.com/cloudwatch/home?region=${var.region}#dashboards:name=SearchQuality-${var.environment}"
   search_experiment_dashboard_url = "https://${var.region}.console.aws.amazon.com/cloudwatch/home?region=${var.region}#dashboards:name=SearchExperiment-${var.environment}"
-  label_dashboard_url             = "https://${var.region}.console.aws.amazon.com/cloudwatch/home?region=${var.region}#dashboards:name=LabelGenerator-${var.environment}"
-  self_text_dashboard_url         = "https://${var.region}.console.aws.amazon.com/cloudwatch/home?region=${var.region}#dashboards:name=SelfTextGenerator-${var.environment}"
 }
 
 resource "aws_cloudwatch_dashboard" "search" {
@@ -23,24 +21,20 @@ locals {
         x      = 0
         y      = 0
         width  = 24
-        height = 5
+        height = 3
         properties = {
           markdown = join("\n", [
-            "## Trade Tariff Search Overview",
-            "These charts read `${local.namespace}` metrics emitted when each search event is recorded. Opening this dashboard does not scan `${var.log_group_name}`.",
-            "**Collection:** metrics start when this version is running. Earlier dates stay empty. A gap is missing telemetry, not zero traffic. Metrics can take about a minute to appear.",
-            "**Counting:** `search_completed`, `search_failed`, `result_selected`, `query_expanded`, and `api_call_completed` increment immediately. A later failure does not remove an earlier count. Use Search Operations for failure investigation. Admin analytics keeps the failure-excluded cohort.",
-            "**Empty results:** classic fuzzy/null with zero commodity hits, including a missing commodity count and zero results. Interactive and internal count zero returned results. Exact classic matches are not empty commodity results.",
-            "**Series:** UK and XI are separate. Unexpected request sources and search types are recorded as `other`.",
-            "**Start here:** use this dashboard for recent trends. Open Operations for active troubleshooting and Quality for intercepts, empty-result terms, and result behaviour.",
-            "**Related:** [Search Operations](${local.search_operations_dashboard_url}) | [Search Quality](${local.search_quality_dashboard_url}) | [Search Experiments](${local.search_experiment_dashboard_url}) | [Label Generator](${local.label_dashboard_url}) | [Self-Text Generator](${local.self_text_dashboard_url})",
+            "## Search Overview",
+            "Search team: track traffic, outcomes and latency. UK and XI are separate.",
+            "Metrics start at deployment; gaps are not zero. Counts are events, not unique journeys, and include degraded searches.",
+            "[Operations](${local.search_operations_dashboard_url}) | [Quality](${local.search_quality_dashboard_url}) | [Experiments](${local.search_experiment_dashboard_url}) | [Definitions](https://github.com/trade-tariff/trade-tariff-backend/blob/main/docs/search-dashboards.md)",
           ])
         }
       },
       {
         type   = "metric"
         x      = 0
-        y      = 5
+        y      = 3
         width  = 12
         height = 6
         properties = {
@@ -57,7 +51,7 @@ locals {
       {
         type   = "metric"
         x      = 12
-        y      = 5
+        y      = 3
         width  = 12
         height = 6
         properties = {
@@ -74,7 +68,7 @@ locals {
       {
         type   = "metric"
         x      = 0
-        y      = 11
+        y      = 9
         width  = 8
         height = 6
         properties = {
@@ -91,7 +85,7 @@ locals {
       {
         type   = "metric"
         x      = 8
-        y      = 11
+        y      = 9
         width  = 8
         height = 6
         properties = {
@@ -112,7 +106,7 @@ locals {
       {
         type   = "metric"
         x      = 16
-        y      = 11
+        y      = 9
         width  = 8
         height = 6
         properties = {
@@ -131,7 +125,7 @@ locals {
       {
         type   = "metric"
         x      = 0
-        y      = 17
+        y      = 15
         width  = 8
         height = 6
         properties = {
@@ -151,7 +145,7 @@ locals {
       {
         type   = "metric"
         x      = 8
-        y      = 17
+        y      = 15
         width  = 8
         height = 6
         properties = {
@@ -171,7 +165,7 @@ locals {
       {
         type   = "metric"
         x      = 16
-        y      = 17
+        y      = 15
         width  = 8
         height = 6
         properties = {
@@ -188,7 +182,7 @@ locals {
       {
         type   = "metric"
         x      = 0
-        y      = 23
+        y      = 21
         width  = 8
         height = 6
         properties = {
@@ -204,7 +198,7 @@ locals {
       {
         type   = "metric"
         x      = 8
-        y      = 23
+        y      = 21
         width  = 8
         height = 6
         properties = {
@@ -220,7 +214,7 @@ locals {
       {
         type   = "metric"
         x      = 16
-        y      = 23
+        y      = 21
         width  = 8
         height = 6
         properties = {

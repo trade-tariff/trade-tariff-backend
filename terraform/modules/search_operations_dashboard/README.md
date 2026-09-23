@@ -22,6 +22,7 @@ No modules.
 
 | Name | Type |
 | ---- | ---- |
+| [aws_cloudwatch_dashboard.search_diagnostics](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cloudwatch_dashboard) | resource |
 | [aws_cloudwatch_dashboard.search_operations](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cloudwatch_dashboard) | resource |
 
 ## Inputs

@@ -17,9 +17,12 @@ RSpec.describe 'search overview dashboard Terraform' do
     expect(dashboard).to include('{${local.namespace},Environment,Service,SearchType}')
   end
 
-  it 'keeps the failure-excluded cohort off this dashboard' do
-    expect(dashboard).to include('does not remove an earlier count')
-    expect(dashboard).to include('A gap is missing telemetry, not zero traffic')
-    expect(dashboard).to include('Exact classic matches are not empty commodity results')
+  it 'keeps essential caveats short and links to the counting definitions' do
+    expect(dashboard).to include('gaps are not zero')
+    expect(dashboard).to include('include degraded searches')
+    expect(dashboard).to include('docs/search-dashboards.md')
+    definitions = Rails.root.join('docs/search-dashboards.md').read
+    expect(definitions).to include('A later failure does not remove an earlier count')
+    expect(definitions).to include('Exact classic matches are excluded')
   end
 end
