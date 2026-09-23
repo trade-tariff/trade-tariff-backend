@@ -147,6 +147,24 @@ RSpec.describe Api::Admin::SearchDiagnosticsController do
       )
     end
 
+    [SearchDiagnostics::RequestLogLookup::QueryError, Aws::Errors::ServiceError].each do |error_class|
+      context "when correlation raises #{error_class}" do
+        before do
+          error = error_class == Aws::Errors::ServiceError ? error_class.new(nil, 'Unavailable') : error_class.new('Unavailable')
+          allow(SearchDiagnostics::RelatedRequests).to receive(:for_search_request).and_raise(error)
+        end
+
+        it 'keeps the original diagnostics and marks related requests unavailable' do
+          get '/uk/admin/search_diagnostics/request-123.json', headers: request_headers(format: :json)
+
+          expect(response).to have_http_status(:ok)
+          attributes = response.parsed_body.dig('data', 'attributes')
+          expect(attributes).to include('related_requests_available' => false, 'related_requests' => [])
+          expect(attributes['events'].first['event']).to eq('search_completed')
+        end
+      end
+    end
+
     context 'when CloudWatch query fails' do
       before do
         allow(SearchDiagnostics::RequestLogLookup).to receive(:call).and_raise(

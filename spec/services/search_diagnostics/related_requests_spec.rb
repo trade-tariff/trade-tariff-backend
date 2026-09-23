@@ -71,6 +71,18 @@ RSpec.describe SearchDiagnostics::RelatedRequests do
       expect(result.requests.first.query).to eq('leather coat')
     end
 
+    it 'excludes the current request before limiting the other requests' do
+      ids = [request_id] + Array.new(20) { |index| sprintf('aaaaaaaa-bbbb-cccc-dddd-%012d', index) }
+      rows = ids.map do |id|
+        message_row('2026-06-05 09:59:00.000', { browser_session_id:, search_request_id: id })
+      end
+      allow(client).to receive(:get_query_results).with(query_id: 'related-query').and_return(results_response(rows))
+
+      result = described_class.for_search_request(request_id:, client:, now:)
+
+      expect(result.requests.map(&:request_id)).to eq(ids.drop(1))
+    end
+
     it 'does not query when the request id is not a search uuid' do
       result = described_class.for_search_request(request_id: 'request-123', client:, now:)
 

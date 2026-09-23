@@ -35,7 +35,7 @@ module SearchDiagnostics
       session_id, experiment = session_for(request_id)
       return Result.new(browser_session_id: nil, experiment:, requests: []) if session_id.blank?
 
-      requests = requests_for_session(session_id).reject { |request| request.request_id == request_id }
+      requests = requests_for_session(session_id, exclude_request_id: request_id)
       Result.new(browser_session_id: session_id, experiment:, requests:)
     end
 
@@ -82,7 +82,7 @@ module SearchDiagnostics
       [nil, nil]
     end
 
-    def requests_for_session(session_id)
+    def requests_for_session(session_id, exclude_request_id: nil)
       rows = query_rows(<<~QUERY)
         fields @timestamp, @message
         | filter @message like /#{session_id}/
@@ -91,7 +91,7 @@ module SearchDiagnostics
         | limit #{SCAN_LIMIT}
       QUERY
 
-      collect_requests(rows, browser_session_id: session_id)
+      collect_requests(rows, browser_session_id: session_id, exclude_request_id:)
     end
 
     def requests_for_experiment(experiment)
@@ -105,13 +105,14 @@ module SearchDiagnostics
       collect_requests(rows, experiment:)
     end
 
-    def collect_requests(rows, browser_session_id: nil, experiment: nil)
+    def collect_requests(rows, browser_session_id: nil, experiment: nil, exclude_request_id: nil)
       requests = {}
 
       rows.each do |row|
         fields = message_fields(row['@message']).merge(row.except('@message', '@timestamp', '@ptr'))
         request_id = search_request_id(fields)
         next unless request_id&.match?(REQUEST_ID_FORMAT)
+        next if request_id == exclude_request_id
 
         current = requests[request_id]
         occurred_at = row['@timestamp'].presence || fields['timestamp'].presence
