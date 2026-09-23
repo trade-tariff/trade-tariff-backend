@@ -50,4 +50,25 @@ RSpec.describe Search::Metrics do
       .select { |definition| definition.dig('Metrics', 0, 'Name') == 'EmptyResults' }
       .map { |definition| definition.fetch('Dimensions') }).to all(eq([%w[Environment Service SearchType]]))
   end
+
+  it 'keeps invalid supplied counts out of empty-result rollups' do
+    invalid_counts = ['bad', '0', '', true, false, -1, Float::NAN, Float::INFINITY]
+    invalid_counts.each do |count|
+      emit('search_completed', service: 'uk', attributes: {
+        search_type: 'classic',
+        commodity_result_count: count,
+        result_count: 0,
+        results_type: 'fuzzy_search',
+      })
+      emit('search_completed', service: 'xi', attributes: { search_type: 'interactive', result_count: count })
+      emit('search_completed', service: 'uk', attributes: { search_type: 'internal', result_count: count })
+    end
+    emit('search_completed', service: 'uk', attributes: { search_type: 'classic', result_count: 0, results_type: 'exact_search' })
+    emit('search_completed', service: 'xi', attributes: { search_type: 'classic', commodity_result_count: 0, result_count: 2, results_type: 'fuzzy_search' })
+
+    empty = samples.select { |sample| sample.key?('EmptyResults') }
+    expect(samples.count { |sample| sample['SearchEvents'] == 1 }).to eq((invalid_counts.size * 3) + 2)
+    expect(empty.sum { |sample| sample.fetch('EmptyResults') }).to eq(2)
+    expect(empty.map { |sample| sample.fetch('SearchType') }).to contain_exactly('classic', 'classic')
+  end
 end

@@ -126,6 +126,86 @@ RSpec.describe Search::Metrics do
     expect(emitted).not_to have_key('CommodityResultCount')
   end
 
+  it 'keeps the historical exact-labelled fallback when the commodity count is absent' do
+    payload.delete(:commodity_result_count)
+    payload[:result_count] = 0
+    payload[:results_type] = 'exact_search'
+
+    expect(record).to be(true)
+    expect(emitted['SearchEvents']).to eq(1)
+    expect(emitted['EmptyResults']).to eq(1)
+    expect(emitted['ResultCount']).to eq(0)
+    expect(emitted).not_to have_key('CommodityResultCount')
+  end
+
+  it 'does not treat an invalid supplied count as an observed empty' do
+    ['bad', '0', '', ' 0 ', true, false, -1, Float::NAN, Float::INFINITY].each do |invalid|
+      output.truncate(0)
+      output.rewind
+      recorded = described_class.record(
+        ActiveSupport::Notifications::Event.new(
+          'search_completed.search', now, now, 'id',
+          payload.merge(commodity_result_count: invalid, result_count: 0, results_type: 'fuzzy_search')
+        ),
+        output:, environment: 'production', service: 'uk', now:,
+      )
+
+      emitted_line = JSON.parse(output.string)
+      expect(recorded).to be(true)
+      expect(emitted_line['SearchEvents']).to eq(1)
+      expect(emitted_line).not_to have_key('EmptyResults')
+      expect(emitted_line).not_to have_key('CommodityResultCount')
+      expect(emitted_line['ResultCount']).to eq(0)
+
+      output.truncate(0)
+      output.rewind
+      recorded = described_class.record(
+        ActiveSupport::Notifications::Event.new(
+          'search_completed.search', now, now, 'id',
+          payload.except(:commodity_result_count).merge(result_count: invalid, results_type: 'exact_search')
+        ),
+        output:, environment: 'production', service: 'uk', now:,
+      )
+      emitted_line = JSON.parse(output.string)
+      expect(recorded).to be(true)
+      expect(emitted_line['SearchEvents']).to eq(1)
+      expect(emitted_line).not_to have_key('EmptyResults')
+      expect(emitted_line).not_to have_key('ResultCount')
+    end
+  end
+
+  it 'does not fall back when a supplied commodity count is rejected' do
+    payload[:commodity_result_count] = 'bad'
+    payload[:result_count] = 0
+    payload[:results_type] = 'exact_search'
+
+    expect(record).to be(true)
+    expect(emitted['SearchEvents']).to eq(1)
+    expect(emitted).not_to have_key('EmptyResults')
+  end
+
+  it 'does not count invalid guided result counts as empty' do
+    %w[interactive internal].each do |search_type|
+      ['bad', '0', true, false, -1, Float::NAN, Float::INFINITY].each do |invalid|
+        output.truncate(0)
+        output.rewind
+        recorded = described_class.record(
+          ActiveSupport::Notifications::Event.new(
+            'search_completed.search', now, now, 'id',
+            payload.merge(search_type:, result_count: invalid, commodity_result_count: nil)
+          ),
+          output:, environment: 'production', service: 'uk', now:,
+        )
+
+        emitted_line = JSON.parse(output.string)
+        expect(recorded).to be(true)
+        expect(emitted_line['SearchEvents']).to eq(1)
+        expect(emitted_line).not_to have_key('EmptyResults')
+        expect(emitted_line).not_to have_key('ResultCount')
+      end
+    end
+  end
+
   it 'counts interactive and internal zero-result searches, but not other types' do
     %w[interactive internal].each do |search_type|
       output.truncate(0)
