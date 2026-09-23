@@ -2,6 +2,7 @@ locals {
   dashboard_name = var.dashboard_name != null ? var.dashboard_name : "SearchQuality-${var.environment}"
   source         = "SOURCE '${var.log_group_name}'"
   service_filter = "filter service = \"search\""
+  namespace      = "TradeTariff/Search"
 
   # Classic product-quality empty commodities: fuzzy/null searches with commodity_result_count = 0.
   # That is "Best commodity matches" empty — includes both:
@@ -52,6 +53,7 @@ resource "aws_cloudwatch_dashboard" "search_quality" {
 
 locals {
   dashboard_body = {
+    periodOverride = "inherit"
     widgets = concat(
       [
         {
@@ -63,7 +65,8 @@ locals {
           properties = {
             markdown = join("\n", [
               "## Search Quality",
-              "Search team: find empty results and review selections. Classic empty means no commodity matches, excluding exact matches; interactive empty means no results.",
+              "Search team: review empty results and selections. See Definitions for counting rules.",
+              "Empty-result totals and searches vs selections use metrics (UK + XI); other charts use logs. History starts at metric collection; gaps are not zero.",
               "[Overview](${local.search_dashboard_url}) | [Operations](${local.search_operations_dashboard_url}) | [Definitions](https://github.com/trade-tariff/trade-tariff-backend/blob/main/docs/search-dashboards.md)",
             ])
           }
@@ -160,20 +163,26 @@ locals {
           }
         },
         {
-          type   = "log"
+          type   = "metric"
           x      = 16
           y      = 8
           width  = 8
           height = 6
           properties = {
-            title  = "Empty Commodity / Empty Results by Search Type"
-            region = var.region
-            view   = "pie"
-            query  = <<-EOT
-              ${local.source}
-              | ${local.service_filter} and event = "search_completed" and ${local.zero_result_condition}
-              | stats count(*) as searches by search_type
-            EOT
+            title                = "Empty Commodity / Empty Results by Search Type"
+            region               = var.region
+            view                 = "pie"
+            stat                 = "Sum"
+            setPeriodToTimeRange = true
+            metrics = concat(
+              [for search_type in ["classic", "interactive", "internal"] : [local.namespace, "EmptyResults", "Environment", var.environment, "Service", "uk", "SearchType", search_type, { id = "empty_${search_type}_uk", visible = false }]],
+              [for search_type in ["classic", "interactive", "internal"] : [local.namespace, "EmptyResults", "Environment", var.environment, "Service", "xi", "SearchType", search_type, { id = "empty_${search_type}_xi", visible = false }]],
+              [for search_type in ["classic", "interactive", "internal"] : [{
+                id         = "empty_${search_type}"
+                label      = search_type
+                expression = "IF(empty_${search_type}_uk + empty_${search_type}_xi > 0, empty_${search_type}_uk + empty_${search_type}_xi)"
+              }]]
+            )
           }
         },
       ],
@@ -306,7 +315,7 @@ locals {
       ],
       [
         {
-          type   = "log"
+          type   = "metric"
           x      = 0
           y      = 32
           width  = 8
@@ -315,11 +324,16 @@ locals {
             title  = "Searches vs Selections"
             region = var.region
             view   = "timeSeries"
-            query  = <<-EOT
-              ${local.source}
-              | ${local.service_filter} and event in ["search_completed", "result_selected"]
-              | stats count(*) as count by event, bin(1h)
-            EOT
+            stat   = "Sum"
+            period = 3600
+            metrics = concat(
+              [for service in ["uk", "xi"] : [local.namespace, "SearchEvents", "Environment", var.environment, "Service", service, "Outcome", "completed", { id = "completed_${service}", visible = false }]],
+              [for service in ["uk", "xi"] : [local.namespace, "ResultSelections", "Environment", var.environment, "Service", service, { id = "selected_${service}", visible = false }]],
+              [
+                [{ id = "completed", label = "search_completed", expression = "IF(completed_uk + completed_xi > 0, completed_uk + completed_xi)" }],
+                [{ id = "selected", label = "result_selected", expression = "IF(selected_uk + selected_xi > 0, selected_uk + selected_xi)" }],
+              ]
+            )
           }
         },
         {
