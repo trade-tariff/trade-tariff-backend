@@ -3,7 +3,8 @@ module Search
     NOISE_TAGS = %w[cc dt det in to prp prp$ md ex pdt wp wp$ wdt wrb].freeze
 
     attr_reader :query_string, :date, :expanded_query, :pos_search, :size,
-                :noun_boost, :qualifier_boost, :filter_prefixes, :search_non_declarables
+                :noun_boost, :qualifier_boost, :filter_prefixes, :search_non_declarables,
+                :require_text_match
 
     class << self
       def tagger
@@ -11,7 +12,7 @@ module Search
       end
     end
 
-    def initialize(query_string, date, size:, noun_boost:, qualifier_boost:, expanded_query: nil, pos_search: true, filter_prefixes: [], search_non_declarables: false)
+    def initialize(query_string, date, size:, noun_boost:, qualifier_boost:, expanded_query: nil, pos_search: true, filter_prefixes: [], search_non_declarables: false, require_text_match: true)
       @query_string = query_string
       @date = date
       @expanded_query = expanded_query
@@ -21,6 +22,7 @@ module Search
       @qualifier_boost = qualifier_boost
       @filter_prefixes = Array(filter_prefixes).compact_blank
       @search_non_declarables = search_non_declarables
+      @require_text_match = require_text_match
     end
 
     def query
@@ -28,7 +30,16 @@ module Search
         index: index.name,
         body: {
           query: {
-            bool: bool_query,
+            bool: {
+              must: [
+                hidden_goods_nomenclature_filter,
+                excluded_chapter_filter,
+                declarable_filter,
+                text_match_clause,
+                validity_date_filter,
+                filter_prefixes_clause,
+              ].compact,
+            },
           },
           size: size,
         },
@@ -37,37 +48,16 @@ module Search
 
   private
 
-    # With filter prefixes the caller has already chosen the codes to search,
-    # for example a heading it has established. The query text then ranks the
-    # codes inside the prefixes and does not remove them, so a query with no
-    # words in common with the heading text still returns the heading's codes.
-    def bool_query
-      if filter_prefixes.any?
-        return {
-          must: [
-            hidden_goods_nomenclature_filter,
-            excluded_chapter_filter,
-            declarable_filter,
-            validity_date_filter,
-            filter_prefixes_clause,
-          ].compact,
-          should: [multi_match_clause],
-        }
-      end
-
-      {
-        must: [
-          hidden_goods_nomenclature_filter,
-          excluded_chapter_filter,
-          declarable_filter,
-          multi_match_clause,
-          validity_date_filter,
-        ].compact,
-      }
-    end
-
     def index
       @index ||= GoodsNomenclatureIndex.new
+    end
+
+    # Without a text match the query returns every code the filters allow.
+    # Only use this with filter prefixes, so the filters bound the result.
+    def text_match_clause
+      return nil unless require_text_match
+
+      multi_match_clause
     end
 
     def multi_match_clause

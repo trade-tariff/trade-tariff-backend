@@ -65,41 +65,32 @@ RSpec.describe Search::GoodsNomenclatureQuery do
       end
     end
 
-    context 'with filter prefixes' do
-      let(:query_string) { 'brace and tray' }
+    context 'with require_text_match' do
       let(:query_options) { super().merge(filter_prefixes: %w[7308]) }
-      let(:unfiltered_must) do
-        described_class.new(query_string, date, **query_options.except(:filter_prefixes)).query.dig(:body, :query, :bool, :must)
-      end
+      let(:must_clauses) { query.dig(:body, :query, :bool, :must) }
       let(:prefix_clause) do
         { bool: { should: [{ prefix: { goods_nomenclature_item_id: '7308' } }], minimum_should_match: 1 } }
       end
 
-      it 'requires the prefix' do
-        expect(query.dig(:body, :query, :bool, :must)).to include(prefix_clause)
+      it 'requires a text match by default', :aggregate_failures do
+        expect(must_clauses).to include(a_hash_including(:multi_match))
+        expect(must_clauses).to include(prefix_clause)
       end
 
-      # A caller filters to a heading it has already established. The heading's
-      # codes must come back even when no query word matches their text, so the
-      # text clause ranks the results and does not remove them.
-      it 'moves the text clause from must to should', :aggregate_failures do
-        bool_query = query.dig(:body, :query, :bool)
-        text_clauses = unfiltered_must - bool_query[:must]
+      context 'when false' do
+        let(:query_options) { super().merge(require_text_match: false) }
 
-        expect(text_clauses.size).to eq(1)
-        expect(bool_query[:should]).to eq(text_clauses)
-      end
+        it 'omits the text clause', :aggregate_failures do
+          expect(must_clauses).not_to include(a_hash_including(:multi_match))
+          expect(query.dig(:body, :query, :bool)).not_to have_key(:should)
+        end
 
-      it 'keeps every other required clause' do
-        bool_query = query.dig(:body, :query, :bool)
+        it 'keeps every filter, including the prefix' do
+          text_match_required_query = described_class.new(query_string, date, **query_options.except(:require_text_match)).query
+          filter_clauses = text_match_required_query.dig(:body, :query, :bool, :must).reject { |clause| clause.key?(:multi_match) }
 
-        expect(bool_query[:must]).to match_array((unfiltered_must - bool_query[:should]) + [prefix_clause])
-      end
-    end
-
-    context 'without filter prefixes' do
-      it 'has no optional clauses' do
-        expect(query.dig(:body, :query, :bool)).not_to have_key(:should)
+          expect(must_clauses).to eq(filter_clauses)
+        end
       end
     end
 

@@ -660,6 +660,43 @@ RSpec.describe Api::Internal::SearchService do
       end
     end
 
+    # Runs real queries against the goods nomenclature index through a
+    # filtering description intercept.
+    context 'when a filtering description intercept runs against the index' do
+      let(:documents) do
+        [
+          { goods_nomenclature_sid: 9_950_310, goods_nomenclature_item_id: '9503001000', description: 'wheeled toys designed to be ridden by children' },
+          { goods_nomenclature_sid: 9_950_320, goods_nomenclature_item_id: '9503002000', description: 'dolls representing only human beings' },
+          { goods_nomenclature_sid: 9_950_410, goods_nomenclature_item_id: '9504001000', description: 'wheeled video game consoles' },
+        ]
+      end
+
+      before do
+        documents.each { |document| index_goods_nomenclature_document(**document) }
+        refresh_search_indexes
+      end
+
+      after do
+        documents.each { |document| delete_goods_nomenclature_document(document[:goods_nomenclature_sid]) }
+      end
+
+      def item_ids_for(query)
+        described_class.new(q: query).call[:data].map { |record| record[:attributes][:goods_nomenclature_item_id] }
+      end
+
+      it 'returns the codes in the intercept prefixes when no query word matches' do
+        create(:description_intercept, term: 'kite', filter_prefixes: Sequel.pg_array(%w[9503], :text))
+
+        expect(item_ids_for('kite')).to contain_exactly('9503001000', '9503002000')
+      end
+
+      it 'returns only the matching codes in the intercept prefixes when some codes match' do
+        create(:description_intercept, term: 'wheeled', filter_prefixes: Sequel.pg_array(%w[9503], :text))
+
+        expect(item_ids_for('wheeled')).to eq(%w[9503001000])
+      end
+    end
+
     context 'when valid query with no results' do
       let(:opensearch_response) { { 'hits' => { 'hits' => [] } } }
 
