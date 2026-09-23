@@ -27,8 +27,9 @@ output "label_generator_dashboard_url" {
 module "search_dashboard" {
   source = "./modules/search_dashboard"
 
-  environment = var.environment
-  region      = var.region
+  environment    = var.environment
+  log_group_name = "platform-logs-${var.environment}"
+  region         = var.region
 }
 
 output "search_dashboard_url" {

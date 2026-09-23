@@ -7,7 +7,7 @@ RSpec.describe SearchAnalytics::DashboardQueryCatalog do
     let(:stderr) { '' }
     let(:rendered) do
       {
-        'search_dashboard' => {},
+        'search_dashboard' => { 'Active browser sessions by experiment' => { 'query_language' => 'CWLI', 'query_string' => "SOURCE 'platform-logs-staging' | stats count_distinct(browser_session_id) by experiment" } },
         'search_quality_dashboard' => { 'Requests' => { 'query_language' => 'SQL', 'query_string' => "SOURCE 'platform-logs-staging' | SELECT COUNT(*) FROM `platform-logs-staging`" } },
         'search_operations_dashboard' => { 'Requests' => { 'query_language' => 'CWLI', 'query_string' => "SOURCE 'platform-logs-staging' | stats count(*)" } },
       }
@@ -22,18 +22,13 @@ RSpec.describe SearchAnalytics::DashboardQueryCatalog do
       end
     end
 
-    it 'passes the selected log group only to dashboards that use logs' do
+    it 'passes the selected log group to every dashboard' do
       catalog
 
       modules = captured[:configuration].fetch('module')
       expect(modules.keys).to contain_exactly('search_dashboard', 'search_quality_dashboard', 'search_experiment_dashboard', 'search_operations_dashboard', 'ai_costs_dashboard')
       modules.each do |name, configuration|
-        expect(configuration).to include('environment' => 'validation', 'region' => 'eu-west-2')
-        if name == 'search_dashboard'
-          expect(configuration).not_to have_key('log_group_name')
-        else
-          expect(configuration).to include('log_group_name' => 'platform-logs-staging')
-        end
+        expect(configuration).to include('environment' => 'validation', 'region' => 'eu-west-2', 'log_group_name' => 'platform-logs-staging')
         expect(File.expand_path(configuration.fetch('source'), captured[:directory])).to eq(Rails.root.join('terraform/modules', name).to_s)
       end
       expect(captured[:configuration].dig('terraform', 'required_providers', 'aws')).to eq('source' => 'hashicorp/aws', 'version' => '~> 5')
@@ -43,6 +38,7 @@ RSpec.describe SearchAnalytics::DashboardQueryCatalog do
 
     it 'flattens Terraform console output without losing dashboard names, languages or source envelopes' do
       expect(catalog).to eq(
+        'search_dashboard/Active browser sessions by experiment' => rendered.dig('search_dashboard', 'Active browser sessions by experiment'),
         'search_quality_dashboard/Requests' => rendered.dig('search_quality_dashboard', 'Requests'),
         'search_operations_dashboard/Requests' => rendered.dig('search_operations_dashboard', 'Requests'),
       )

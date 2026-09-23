@@ -4,11 +4,11 @@ The Search team owns these dashboards. Start with **Search Operations** for erro
 
 ## Metrics and coverage
 
-Search and Search Operations read `TradeTariff/Search` metrics. Opening either dashboard does not scan logs. The backend emits Embedded Metric Format records from search notifications. Writes are best effort and do not block search. Missing telemetry is not zero traffic. Metrics can take about a minute to appear and have no backfill before their emitter is deployed. Operation, retrieval, guided-request health and validator-only series start when their emitters are deployed; older overview series keep their existing history. Do not join new numerator series to older denominator series.
+Search and Search Operations use `TradeTariff/Search` metrics for operational trends. Operations does not scan logs. Search Overview also runs one log query for active experiment sessions. The backend emits Embedded Metric Format records from search notifications. Writes are best effort and do not block search. Missing telemetry is not zero traffic. Metrics can take about a minute to appear and have no backfill before their emitter is deployed. Operation, retrieval, guided-request health and validator-only series start when their emitters are deployed; older overview series keep their existing history. Do not join new numerator series to older denominator series.
 
-Overview and Operations keep UK and XI separate, including percentiles. Do not average their percentiles or add different dimension rollups of the same metric. Operations trends use fixed five-minute periods. Summary values and bar charts aggregate over the entire selected range.
+Metric charts in Overview and Operations keep UK and XI separate, including percentiles. Do not average their percentiles or add different dimension rollups of the same metric. Operations trends use fixed five-minute periods. Summary values and bar charts aggregate over the entire selected range.
 
-Counts are events, not unique requests, journeys or people. Every emitted event counts, including repeated steps and degraded searches. A later failure does not remove an earlier count. Admin analytics uses a different, failure-excluded cohort. Quality retains its counting rules, using metrics for two count widgets. Experiments retains its log-based cohorts.
+Metric counts are events, not unique requests, journeys or people. Every emitted event counts, including repeated steps and degraded searches. A later failure does not remove an earlier count. Admin analytics uses a different, failure-excluded cohort. Quality retains its counting rules, using metrics for two count widgets. Experiments retains its log-based cohorts.
 
 | Metric | Source and meaning |
 | --- | --- |
@@ -61,6 +61,16 @@ Other Quality widgets stay on logs. Existing metrics cannot reproduce the combin
 - Missing result counts are not observed zeroes.
 - Quality separates completely empty results from results containing only non-commodity hits.
 - Free-text rates exclude queries made only of digits, spaces, dots and hyphens. The classic denominator is non-exact free-text searches; the interactive denominator is free-text guided searches.
+
+## Active experiment sessions
+
+Search Overview shows **Active browser sessions by experiment** as a bar chart. It counts distinct valid `browser_session_id` values on frontend `guided_search.journey` events with `schema_version=1` and `outcome=page_visible`, grouped by the recorded experiment label over the entire selected range. Repeated page events within a label count once. It combines frontend activity across UK and XI and does not sum per-hour distinct counts.
+
+The chart excludes missing, null or blank experiment labels and absent or malformed session IDs. It shows the top 30 labels by estimated session count, including labels not known to the backend. Counts can be approximate at high cardinality. No matching events means no observations, not proof that nobody is enrolled.
+
+This is observed activity, not a count of people, current enrolments or configured experiments. The frontend records the most recently enrolled active experiment label, not every enrolment held by a session. A session can appear under different labels during the range, so the bars are not mutually exclusive and must not be summed as unique people. Cookie resets, session expiry and missing browser telemetry affect coverage. There is no explicit bot exclusion; events measure accepted browser telemetry.
+
+This widget scans logs on each refresh and has only the history retained in those logs. It creates no custom metric dimensions. Use the linked Experiments dashboard to investigate a label.
 
 ## Diagnostics and experiments
 
