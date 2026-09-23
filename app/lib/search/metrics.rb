@@ -10,6 +10,8 @@ module Search
     MAX_LINE_BYTES = 4096
     REQUEST_SOURCES = %w[frontend admin mcp backend_only].freeze
     SEARCH_TYPES = %w[classic interactive internal evaluation classification].freeze
+    GUIDED_SEARCH_TYPES = %w[interactive internal].freeze
+    GUIDED_OUTCOMES = %w[answers questions error].freeze
     OPERATIONS = %w[search_query_expansion interactive_search interactive_search_final_answer duplicate_question_validator duplicate_question_retry].freeze
     RESPONSE_TYPES = %w[answers questions duplicate_validation error unknown].freeze
     RETRIEVAL_LEGS = %w[opensearch vector].freeze
@@ -31,6 +33,10 @@ module Search
       RetrievalFailures
       RetrievalResultCount
       DuplicateGuardFailOpen
+      GuidedSearchErrors
+      GuidedSearchDuration
+      GuidedSearchOutcomes
+      DuplicateValidatorFailOpen
     ].freeze
 
     class << self
@@ -75,11 +81,13 @@ module Search
           add_search_event(event.payload, dimensions, metrics, values, outcome: 'completed')
           add_duration(metrics, values, 'SearchDuration', event.payload[:total_duration_ms])
           add_result_metrics(event.payload, metrics, values)
+          add_guided_metrics(event.payload, dimensions, metrics, values, failed: false)
           if event.payload[:search_type].to_s == 'interactive'
             add_value(metrics, values, 'InteractiveSearchErrors', event.payload[:final_result_type].to_s == 'error' ? 1 : 0)
           end
         when 'search_failed'
           add_search_event(event.payload, dimensions, metrics, values, outcome: 'failed')
+          add_guided_metrics(event.payload, dimensions, metrics, values, failed: true)
         when 'result_selected'
           metrics << metric('ResultSelections', [%w[Environment Service]])
           values[:ResultSelections] = 1
@@ -96,7 +104,11 @@ module Search
         when 'retrieval_leg_completed'
           add_retrieval_metrics(event.payload, dimensions, metrics, values)
         when 'duplicate_question_guard_checked'
-          add_value(metrics, values, 'DuplicateGuardFailOpen', event.payload[:reason].to_s == 'validator_unparseable' ? 1 : 0)
+          fail_open = event.payload[:reason].to_s == 'validator_unparseable' ? 1 : 0
+          add_value(metrics, values, 'DuplicateGuardFailOpen', fail_open)
+          if event.payload[:suspicious] == true
+            add_value(metrics, values, 'DuplicateValidatorFailOpen', fail_open)
+          end
         else
           return
         end
@@ -115,6 +127,18 @@ module Search
           %w[Environment Service SearchType Outcome],
           %w[Environment Service Outcome],
         ])
+      end
+
+      # One sample per terminal request event, including failures. Do not divide
+      # a new error series by older traffic metrics with a different history.
+      def add_guided_metrics(payload, dimensions, metrics, values, failed:)
+        return unless GUIDED_SEARCH_TYPES.include?(payload[:search_type].to_s)
+
+        outcome = failed ? 'hard_failure' : label(payload[:final_result_type], GUIDED_OUTCOMES)
+        dimensions[:GuidedOutcome] = outcome
+        add_value(metrics, values, 'GuidedSearchErrors', %w[error hard_failure].include?(outcome) ? 1 : 0)
+        add_value(metrics, values, 'GuidedSearchOutcomes', 1, [%w[Environment Service GuidedOutcome]])
+        add_duration(metrics, values, 'GuidedSearchDuration', payload[:total_duration_ms]) unless failed
       end
 
       def add_result_metrics(payload, metrics, values)

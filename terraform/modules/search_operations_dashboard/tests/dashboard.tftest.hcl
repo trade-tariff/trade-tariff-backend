@@ -13,7 +13,9 @@ run "operations_and_diagnostics" {
     condition = (
       aws_cloudwatch_dashboard.search_operations.dashboard_name == "SearchOperations-test" &&
       aws_cloudwatch_dashboard.search_diagnostics.dashboard_name == "SearchOperations-test-Diagnostics" &&
-      length(local.dashboard_body.widgets) == 16 &&
+      length(local.dashboard_body.widgets) == 24 &&
+      local.dashboard_body.periodOverride == "inherit" &&
+      local.dashboard_body.start == "-PT3H" &&
       alltrue([for w in local.dashboard_body.widgets : contains(["text", "metric"], w.type)])
     )
     error_message = "Operations must retain its name and load only metrics; diagnostics has its own dashboard."
@@ -35,7 +37,7 @@ run "operations_and_diagnostics" {
       alltrue([for m in w.properties.metrics : contains(["p50", "p90", "p99"], m[6].stat)]) &&
       length([for m in w.properties.metrics : m if m[5] == "uk"]) == 3 &&
       length([for m in w.properties.metrics : m if m[5] == "xi"]) == 3
-      if contains(["E2E Latency in seconds (p50/p90/p99)", "AI API Latency in seconds (p50/p90/p99)"], try(w.properties.title, ""))
+      if try(w.properties.title, "") == "Completed server request latency (seconds, p50/p90/p99)"
     ])
     error_message = "Overall percentiles must remain separate for UK and XI without averaging percentiles."
   }
@@ -43,11 +45,47 @@ run "operations_and_diagnostics" {
   assert {
     condition = (
       strcontains(aws_cloudwatch_dashboard.search_operations.dashboard_body, "100 * checks_uk") &&
-      strcontains(aws_cloudwatch_dashboard.search_operations.dashboard_body, "DuplicateGuardFailOpen") &&
+      strcontains(aws_cloudwatch_dashboard.search_operations.dashboard_body, "DuplicateValidatorFailOpen") &&
       !strcontains(aws_cloudwatch_dashboard.search_operations.dashboard_body, "FILL(") &&
       !strcontains(aws_cloudwatch_dashboard.search_operations.dashboard_body, "SUM(SEARCH")
     )
     error_message = "The fail-open rate must use observed checks without filling gaps or summing metric rollups."
+  }
+
+  assert {
+    condition = (
+      alltrue([for m in local.request_volume : m[1] == "GuidedSearchErrors" && m[6].stat == "SampleCount"]) &&
+      alltrue([for m in slice(local.request_error_percentage, 0, 2) : m[1] == "GuidedSearchErrors" && m[6].stat == "Average"]) &&
+      alltrue([for w in local.dashboard_body.widgets :
+        w.properties.setPeriodToTimeRange
+        if contains(["singleValue", "bar"], try(w.properties.view, ""))
+      ]) &&
+      alltrue([for w in local.dashboard_body.widgets :
+        w.properties.yAxis.left.max == 100
+        if try(w.properties.yAxis.left.label, "") == "Percent"
+      ])
+    )
+    error_message = "Error percentages and request counts need the same sample population, full-window summaries and percentage axes."
+  }
+
+  assert {
+    condition = (
+      alltrue([for w in local.dashboard_body.widgets :
+        alltrue([for m in w.properties.metrics : m[1] == "GuidedSearchDuration"])
+        if try(w.properties.title, "") == "Completed server request latency (seconds, p50/p90/p99)"
+      ]) &&
+      length([for w in local.dashboard_body.widgets : w if w.type == "text"]) == 4 &&
+      alltrue([for w in local.dashboard_body.widgets :
+        length(w.properties.metrics) == 4 &&
+        alltrue([for m in w.properties.metrics : m[6] == "Operation" && contains(["search_query_expansion", "interactive_search", "interactive_search_final_answer"], m[7]) && contains(["p50", "p90"], m[8].stat)])
+        if w.y == 22
+      ]) &&
+      alltrue([for w in local.dashboard_body.widgets :
+        alltrue([for m in w.properties.metrics : m[1] == "DuplicateValidatorFailOpen" && m[6].stat == "SampleCount"])
+        if try(w.properties.title, "") == "Validator-eligible checks per 5 minutes"
+      ])
+    )
+    error_message = "Separate request health from dependency diagnostics, isolate latency operations and show the validator denominator."
   }
 
   assert {
