@@ -14,6 +14,11 @@ RSpec.describe SearchAnalytics::DateRange do
     expect(period).to be_single_day
   end
 
+  it 'accepts today as an inclusive endpoint' do
+    range = described_class.parse(from: '2026-09-14', to: '2026-09-15', now:)
+    expect(range.dates).to eq([Date.new(2026, 9, 14), Date.new(2026, 9, 15)])
+  end
+
   it 'accepts exactly 366 days' do
     expect(described_class.parse(from: '2025-09-14', to: '2026-09-14', now:).days).to eq(366)
   end
@@ -29,7 +34,7 @@ RSpec.describe SearchAnalytics::DateRange do
     ['14/09/2026', '2026-09-14'],
     ['2026-09-31', '2026-09-14'],
     ['2026-09-14', '2026-09-13'],
-    ['2026-09-14', '2026-09-15'],
+    ['2026-09-14', '2026-09-16'],
     ['2025-09-13', '2026-09-14'],
     [%w[2026-09-14], '2026-09-14'],
     ['0000-01-01', '0000-01-01'],
