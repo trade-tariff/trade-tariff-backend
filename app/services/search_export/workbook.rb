@@ -58,11 +58,11 @@ module SearchExport
       return false if journey.request_id.blank? || journey.query.blank?
       return false unless END_PAGE_TYPES.include?(journey.end_page_type)
 
-      answers = array_of(journey.answers)
+      answers = journey.answers
       return false if answers.size > 7
       return false unless answers.all? { |answer| offered_answer?(answer) }
 
-      results = array_of(journey.results)
+      results = journey.results
       if journey.end_page_type == TerminalPage::RESULT
         results.any? && results.all? { |result| valid_result?(result) }
       else
@@ -71,13 +71,11 @@ module SearchExport
     end
 
     def offered_answer?(answer)
-      selected = field(answer, 'answer').to_s
-      options = Array(field(answer, 'options')).map(&:to_s)
-      field(answer, 'question').present? && selected.present? && options.include?(selected)
+      answer['question'].present? && answer['answer'].present? && answer['options'].include?(answer['answer'])
     end
 
     def valid_result?(result)
-      field(result, 'commodity_code').to_s.match?(/\A\d{10}\z/) && field(result, 'description').present?
+      result['commodity_code'].to_s.match?(/\A\d{10}\z/) && result['description'].present?
     end
 
     def fill(rows, row_count, omitted)
@@ -160,17 +158,17 @@ module SearchExport
     end
 
     def row_values(journey, clicks)
-      results = array_of(journey.results)
+      results = journey.results
       {
         'A' => journey.request_id,
         'B' => journey.query,
-        'C' => array_of(journey.expansion_terms).any? ? 'Yes' : 'No',
-        'D' => array_of(journey.expansion_terms).join("\n"),
+        'C' => journey.expansion_terms.any? ? 'Yes' : 'No',
+        'D' => journey.expansion_terms.join("\n"),
         'Z' => journey.end_page_type,
-        'AA' => results.map { |result| "#{field(result, 'commodity_code')} - #{field(result, 'description')}" }.join("\n"),
-        'AB' => results.map { |result| field(result, 'confidence_label').to_s }.join("\n"),
+        'AA' => results.map { |result| result_line(result) }.join("\n"),
+        'AB' => results.map { |result| result['confidence_label'] }.join("\n"),
         'AC' => click_lines(results, clicks),
-      }.merge(question_cells(array_of(journey.answers))).reject { |_column, value| value.nil? || value == '' }
+      }.merge(question_cells(journey.answers)).reject { |_column, value| value.nil? || value == '' }
     end
 
     def question_cells(answers)
@@ -178,15 +176,15 @@ module SearchExport
         answer = answers[index]
         next unless answer
 
-        cells[columns[0]] = field(answer, 'question').to_s
-        cells[columns[1]] = Array(field(answer, 'options')).join("\n")
-        cells[columns[2]] = field(answer, 'answer').to_s
+        cells[columns[0]] = answer['question']
+        cells[columns[1]] = answer['options'].join("\n")
+        cells[columns[2]] = answer['answer']
       end
     end
 
     def click_lines(results, clicks)
-      offered = results.to_h { |result| [field(result, 'commodity_code').to_s, "#{field(result, 'commodity_code')} - #{field(result, 'description')}"] }
-      clicks.sort_by { |click| [click.clicked_at, click.result_rank.to_i] }
+      offered = results.to_h { |result| [result['commodity_code'], result_line(result)] }
+      clicks.sort_by(&:clicked_at)
             .uniq(&:commodity_code)
             .filter_map { |click| offered[click.commodity_code] }
             .join("\n")
@@ -204,12 +202,8 @@ module SearchExport
       text.to_s.gsub(/[\x00-\x08\x0B\x0C\x0E-\x1F\uFFFE\uFFFF]/, '').gsub('&', '&amp;').gsub('<', '&lt;').gsub('>', '&gt;').gsub("\n", '&#10;')
     end
 
-    def array_of(value)
-      value.is_a?(Array) ? value : Array(value)
-    end
-
-    def field(record, key)
-      record[key] || record[key.to_sym]
+    def result_line(result)
+      "#{result['commodity_code']} - #{result['description']}"
     end
   end
 end

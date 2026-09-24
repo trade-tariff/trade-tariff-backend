@@ -82,6 +82,19 @@ RSpec.describe Api::Admin::SearchExport::WorkbooksController do
     expect(response).to have_http_status(:service_unavailable)
   end
 
+  ['', '/download'].each do |suffix|
+    it "handles Redis failures while loading an export#{suffix}" do
+      allow(SearchExport::WorkbookExport).to receive(:find).and_raise(RedisClient::CannotConnectError)
+      get "#{path}/unknown#{suffix}", headers: request_headers
+      expect(response).to have_http_status(:service_unavailable)
+    end
+  end
+
+  it 'returns not found for an unknown download' do
+    get "#{path}/unknown/download", headers: request_headers
+    expect(response).to have_http_status(:not_found)
+  end
+
   it 'enforces admission limits without queueing another export' do
     3.times { SearchExport::WorkbookExport.create(from_date: Date.yesterday, to_date: Date.current) }
     travel_to(today) { submit }

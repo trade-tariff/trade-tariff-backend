@@ -23,10 +23,10 @@ RSpec.describe SearchExport::Workbook do
       request_id: 'journey-1',
       omitted: false,
       query: 'frozen chicken',
-      expansion_terms: Sequel.pg_jsonb([]),
-      answers: Sequel.pg_jsonb([]),
+      expansion_terms: [],
+      answers: [],
       end_page_type: 'Result',
-      results: Sequel.pg_jsonb([{ 'commodity_code' => '0207141000', 'description' => 'Frozen cuts', 'confidence_label' => 'Strong' }]),
+      results: [{ 'commodity_code' => '0207141000', 'description' => 'Frozen cuts', 'confidence_label' => 'Strong' }],
       terminal_at: Time.utc(2026, 9, 23, 10),
     }.merge(overrides))
   end
@@ -94,7 +94,7 @@ RSpec.describe SearchExport::Workbook do
 
   it 'writes seven question groups and leaves later groups blank' do
     answers = Array.new(7) { |index| { 'question' => "Question #{index}", 'options' => %w[Yes No], 'answer' => 'Yes' } }
-    store_journey(answers: Sequel.pg_jsonb(answers))
+    store_journey(answers:)
 
     xml = sheet_xml(workbook.bytes, 'xl/worksheets/sheet2.xml')
 
@@ -104,7 +104,7 @@ RSpec.describe SearchExport::Workbook do
   end
 
   it 'writes cells in worksheet order and leaves review columns empty' do
-    store_journey(answers: Sequel.pg_jsonb([{ 'question' => 'Cut?', 'options' => %w[Fillet Whole], 'answer' => 'Fillet' }]))
+    store_journey(answers: [{ 'question' => 'Cut?', 'options' => %w[Fillet Whole], 'answer' => 'Fillet' }])
     document = Nokogiri::XML(sheet_xml(workbook.bytes, 'xl/worksheets/sheet2.xml'))
     document.remove_namespaces!
 
@@ -127,7 +127,7 @@ RSpec.describe SearchExport::Workbook do
   end
 
   it 'omits a selected answer that was not offered and reports the count' do
-    store_journey(answers: Sequel.pg_jsonb([{ 'question' => 'Cut?', 'options' => %w[Fillet], 'answer' => 'Whole' }]))
+    store_journey(answers: [{ 'question' => 'Cut?', 'options' => %w[Fillet], 'answer' => 'Whole' }])
 
     result = workbook
 
@@ -139,8 +139,8 @@ RSpec.describe SearchExport::Workbook do
 
   it 'writes the first click for each code, including a click after the range end' do
     store_journey
-    store_click(request_id: 'journey-1', commodity_code: '0207141000', result_rank: 2, clicked_at: Time.utc(2026, 9, 24, 1))
-    store_click(request_id: 'journey-1', commodity_code: '0207141000', result_rank: 1, clicked_at: Time.utc(2026, 9, 23, 11))
+    store_click(request_id: 'journey-1', commodity_code: '0207141000', clicked_at: Time.utc(2026, 9, 24, 1))
+    store_click(request_id: 'journey-1', commodity_code: '0207141000', clicked_at: Time.utc(2026, 9, 23, 11))
 
     xml = sheet_xml(workbook.bytes, 'xl/worksheets/sheet2.xml')
 
@@ -152,7 +152,7 @@ RSpec.describe SearchExport::Workbook do
     results = %w[0207141000 0207141001 0207141002].map do |code|
       { 'commodity_code' => code, 'description' => "Cuts #{code}", 'confidence_label' => 'Good' }
     end
-    store_journey(results: Sequel.pg_jsonb(results))
+    store_journey(results:)
     [
       ['0207141001', Time.utc(2026, 9, 23, 11)],
       ['0207141000', Time.utc(2026, 9, 24, 1)],
@@ -160,7 +160,7 @@ RSpec.describe SearchExport::Workbook do
       ['0207141002', generated_at + 1],
       ['9999999999', Time.utc(2026, 9, 24, 3)],
     ].each do |code, clicked_at|
-      store_click(request_id: 'journey-1', commodity_code: code, result_rank: 1, clicked_at:)
+      store_click(request_id: 'journey-1', commodity_code: code, clicked_at:)
     end
 
     document = Nokogiri::XML(sheet_xml(workbook.bytes, 'xl/worksheets/sheet2.xml'))
