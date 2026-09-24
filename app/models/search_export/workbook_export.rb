@@ -22,18 +22,10 @@ module SearchExport
       redis.call('EXPIRE', KEYS[1], ARGV[4])
       return 1
     LUA
-    TRANSITION = <<~LUA
-      if redis.call('GET', KEYS[1]) ~= ARGV[1] then return 0 end
-      local ttl = redis.call('PTTL', KEYS[1])
-      if ttl <= 0 then return 0 end
-      if ARGV[3] == 'file' then redis.call('SET', KEYS[2], ARGV[4], 'PX', ttl) end
-      redis.call('SET', KEYS[1], ARGV[2], 'KEEPTTL')
-      return 1
-    LUA
 
     attr_reader :id
 
-    def self.create(from_date:, to_date:, **)
+    def self.create(from_date:, to_date:)
       export = new(SecureRandom.uuid)
       now = Time.current
       payload = { status: QUEUED, from: from_date.iso8601, to: to_date.iso8601, updated_at: now.iso8601 }
@@ -105,14 +97,17 @@ module SearchExport
 
     def transition(from:, file: nil, **attributes)
       Sidekiq.redis do |redis|
-        previous = redis.get(key)
-        next false unless previous
+        # Abort if another worker changes the status or its key expires.
+        changed = redis.multi(watch: [key]) do |transaction|
+          stored = redis.get(key)&.then { |value| JSON.parse(value) }
+          ttl = redis.pttl(key)
+          next unless stored && stored['status'] == from && ttl.positive?
 
-        stored = JSON.parse(previous)
-        next false unless stored['status'] == from
-
-        updated = stored.merge(attributes.stringify_keys).merge('updated_at' => Time.current.iso8601)
-        redis.call('EVAL', TRANSITION, 2, key, file_key, previous, updated.to_json, file ? 'file' : '', file || '') == 1
+          updated = stored.merge(attributes.stringify_keys).merge('updated_at' => Time.current.iso8601)
+          transaction.set(file_key, file, px: ttl) if file
+          transaction.set(key, updated.to_json, keepttl: true)
+        end
+        changed.present?
       end
     end
   end

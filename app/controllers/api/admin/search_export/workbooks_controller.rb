@@ -4,64 +4,55 @@ module Api
   module Admin
     module SearchExport
       class WorkbooksController < AdminController
-        def create
-          return head :not_found unless TradeTariffBackend.uk?
+        before_action :find_export, only: %i[show download]
+        rescue_from RedisClient::Error do
+          unavailable('The workbook service is unavailable. Please try again.')
+        end
 
+        def create
           range = ::SearchExport::DateRange.parse(from: params[:from], to: params[:to])
-          export = ::SearchExport::WorkbookExport.create(from_date: range.from, to_date: range.to)
-          unless ::SearchExport::WorkbookWorker.perform_async(export.id)
-            export.delete
+          @export = ::SearchExport::WorkbookExport.create(from_date: range.from, to_date: range.to)
+          unless ::SearchExport::WorkbookWorker.perform_async(@export.id)
+            @export.delete
             return unavailable('The workbook could not be queued. Please try again.')
           end
-          render json: payload(export), status: :accepted
+          render_export(status: :accepted)
         rescue ::SearchExport::DateRange::InvalidRange => e
           render json: error_response('Invalid date range', e.message, :bad_request), status: :bad_request
         rescue ::SearchExport::WorkbookExport::Busy => e
           unavailable(e.message)
-        rescue RedisClient::Error
-          unavailable('The workbook service is unavailable. Please try again.')
         end
 
         def show
-          return head :not_found unless TradeTariffBackend.uk?
-
-          export = ::SearchExport::WorkbookExport.find(params[:id])
-          return head :not_found unless export
-
-          export.expire_if_stale!
-          result = payload(export)
-          return head :not_found unless result
-
-          render json: result
-        rescue RedisClient::Error
-          unavailable('The workbook service is unavailable. Please try again.')
+          @export.expire_if_stale!
+          render_export
         end
 
         def download
-          return head :not_found unless TradeTariffBackend.uk?
-
-          export = ::SearchExport::WorkbookExport.find(params[:id])
-          metadata = export&.payload
+          metadata = @export.payload
           return head :not_found unless metadata && metadata['status'] == 'ready'
 
-          bytes = export.file
+          bytes = @export.file
           return head :not_found unless bytes
 
           send_data bytes,
                     filename: "classifier-workbook-#{metadata.fetch('from')}-#{metadata.fetch('to')}.xlsx",
                     type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
                     disposition: 'attachment'
-        rescue RedisClient::Error
-          unavailable('The workbook service is unavailable. Please try again.')
         end
 
       private
 
-        def payload(export)
-          stored = export.payload
-          return unless stored
+        def find_export
+          @export = ::SearchExport::WorkbookExport.find(params[:id])
+          head :not_found unless @export
+        end
 
-          { data: { id: export.id, type: 'search_export_workbook', attributes: stored.slice('status', 'from', 'to', 'omitted_count', 'row_count', 'error') } }
+        def render_export(status: :ok)
+          stored = @export.payload
+          return head :not_found unless stored
+
+          render json: { data: { id: @export.id, type: 'search_export_workbook', attributes: stored.slice('status', 'from', 'to', 'omitted_count', 'row_count', 'error') } }, status:
         end
 
         def unavailable(message)

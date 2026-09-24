@@ -37,6 +37,36 @@ RSpec.describe SearchExport::WorkbookExport do
     expect(export.file).to be_nil
   end
 
+  it 'aborts completion when another worker changes the status during the transaction' do
+    export.claim
+    Sidekiq.redis do |redis|
+      allow(redis).to receive(:multi).and_wrap_original do |method, **options, &block|
+        method.call(**options) do |transaction|
+          block.call(transaction)
+          Thread.new { described_class.new(export.id).fail('Timed out') }.value
+        end
+      end
+      expect(export.finish(result)).to be(false)
+    end
+    expect(export.payload).to include('status' => 'failed', 'error' => 'Timed out')
+    expect(export.file).to be_nil
+  end
+
+  it 'aborts completion if the watched status expires before the transaction commits' do
+    export.claim
+    Sidekiq.redis do |redis|
+      allow(redis).to receive(:multi).and_wrap_original do |method, **options, &block|
+        method.call(**options) do |transaction|
+          block.call(transaction)
+          Thread.new { Sidekiq.redis { |other| other.del(export.key) } }.value
+        end
+      end
+      expect(export.finish(result)).to be(false)
+    end
+    expect(export.payload).to be_nil
+    expect(export.file).to be_nil
+  end
+
   it 'fails stale pending jobs and refuses a late completion' do
     export.claim
     travel 16.minutes do

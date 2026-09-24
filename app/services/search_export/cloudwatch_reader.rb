@@ -4,7 +4,7 @@ module SearchExport
   class CloudwatchReader
     Error = Class.new(StandardError)
     Journey = Data.define(:request_id, :query, :expansion_terms, :answers, :end_page_type, :results, :terminal_at, :omitted)
-    Click = Data.define(:commodity_code, :clicked_at, :result_rank)
+    Click = Data.define(:commodity_code, :clicked_at)
     Result = Data.define(:journeys, :clicks)
     LIMIT = 10_000
     MAX_QUERIES = 512
@@ -123,7 +123,7 @@ module SearchExport
       when 'evaluation_journey_recorded'
         record_journey(event, id)
       when 'result_selected'
-        @selections[id] << Click.new(commodity_code: event.fetch('goods_nomenclature_item_id'), clicked_at: timestamp, result_rank: nil)
+        @selections[id] << Click.new(commodity_code: event.fetch('goods_nomenclature_item_id'), clicked_at: timestamp)
       when 'search_failed', 'search_stage_failed'
         @failed.add(id)
       end
@@ -137,6 +137,10 @@ module SearchExport
       return if @journeys[id] && @journeys[id].terminal_at > terminal_at
 
       details = event.fetch('details')
+      raise TypeError unless %w[answers results expansion_terms].all? { |field| details.fetch(field).is_a?(Array) }
+      raise TypeError unless details['answers'].all? { |answer| answer.is_a?(Hash) && answer['options'].is_a?(Array) }
+      raise TypeError unless details['results'].all? { |result| result.is_a?(Hash) }
+
       @journeys[id] = Journey.new(
         request_id: id, query: event.fetch('query'), terminal_at:,
         expansion_terms: details.fetch('expansion_terms'), answers: details.fetch('answers'),

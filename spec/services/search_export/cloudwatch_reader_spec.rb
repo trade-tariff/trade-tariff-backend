@@ -88,6 +88,17 @@ RSpec.describe SearchExport::CloudwatchReader do
     expect { reader.call }.to raise_error(described_class::Error, /complete journey logs/)
   end
 
+  [
+    { answers: nil },
+    { answers: [{ question: 'Cut?', options: 'Whole', answer: 'Whole' }] },
+    { results: ['not a result object'] },
+  ].each do |invalid_details|
+    it "rejects a malformed trace structure: #{invalid_details.keys.join(', ')}" do
+      client.stub_responses(:get_query_results, response(trace.deep_merge(details: invalid_details)))
+      expect { reader.call }.to raise_error(described_class::Error, /complete journey logs/)
+    end
+  end
+
   it 'bounds retrieved bytes' do
     stub_const('SearchExport::CloudwatchReader::MAX_BYTES', 1)
     client.stub_responses(:get_query_results, response(trace))
