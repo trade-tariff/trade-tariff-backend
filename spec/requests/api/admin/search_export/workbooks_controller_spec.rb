@@ -54,6 +54,36 @@ RSpec.describe Api::Admin::SearchExport::WorkbooksController do
     end
   end
 
+  it 'does not select workbook bytes during a status poll' do
+    export = SearchExport::WorkbookExport.create(service: TradeTariffBackend.service, from_date: Date.yesterday, to_date: Date.current, status: 'ready', file: Sequel::SQL::Blob.new('workbook'))
+    messages = []
+    logger = Object.new
+    logger.define_singleton_method(:info) { |message| messages << message }
+    db = SearchExport::WorkbookExport.db
+    db.loggers << logger
+    begin
+      get "/#{TradeTariffBackend.service}/admin/search_export/workbooks/#{export.id}.json", headers: request_headers
+    ensure
+      db.loggers.delete(logger)
+    end
+
+    selects = messages.grep(/SELECT .*search_export_workbooks/)
+    expect(selects).not_to be_empty
+    expect(selects.join).not_to match(/SELECT \*|"file"/)
+  end
+
+  %w[queued running].each do |state|
+    it "marks a stale #{state} export failed when polled" do
+      export = SearchExport::WorkbookExport.create(service: TradeTariffBackend.service, from_date: Date.yesterday, to_date: Date.current, status: state)
+      SearchExport::WorkbookExport.where(id: export.id).update(updated_at: 16.minutes.ago)
+
+      get "/#{TradeTariffBackend.service}/admin/search_export/workbooks/#{export.id}.json", headers: request_headers
+
+      expect(response.parsed_body.dig('data', 'attributes', 'status')).to eq('failed')
+      expect(export.refresh.error_message).to include('timed out')
+    end
+  end
+
   it 'returns not found for an unknown export' do
     get "/#{TradeTariffBackend.service}/admin/search_export/workbooks/0.json", headers: request_headers
 

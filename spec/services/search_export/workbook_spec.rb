@@ -27,6 +27,42 @@ RSpec.describe SearchExport::Workbook do
     xml
   end
 
+  it 'accounts for wrapping in narrow columns without explicit newlines' do
+    store_journey(query: 'frozen chicken breast ' * 10)
+    document = Nokogiri::XML(sheet_xml(workbook.bytes, 'xl/worksheets/sheet2.xml'))
+    document.remove_namespaces!
+
+    expect(document.at_xpath('//row[@r="3"]')['ht'].to_f).to be > 15
+  end
+
+  it 'removes XML control characters without turning query text into markup' do
+    store_journey(query: "chicken\x01 & <cuts>")
+    xml = sheet_xml(workbook.bytes, 'xl/worksheets/sheet2.xml')
+
+    expect { Nokogiri::XML(xml, &:strict) }.not_to raise_error
+    expect(xml).to include('chicken &amp; &lt;cuts&gt;')
+  end
+
+  it 'writes each journey once across batches and bounds click queries to each batch' do
+    stub_const('SearchExport::Workbook::BATCH_SIZE', 2)
+    5.times { |index| store_journey(request_id: "journey-#{index}") }
+    allow(SearchExport::ResultClick).to receive(:where).and_call_original
+
+    result = workbook
+
+    expect(result.row_count).to eq(5)
+    expect(SearchExport::ResultClick).to have_received(:where).with(request_id: %w[journey-0 journey-1])
+    expect(SearchExport::ResultClick).to have_received(:where).with(request_id: %w[journey-2 journey-3])
+    expect(SearchExport::ResultClick).to have_received(:where).with(request_id: %w[journey-4])
+    expect(sheet_xml(result.bytes, 'xl/worksheets/sheet2.xml')).to include('ref="A1:AI7"')
+  end
+
+  it 'fails explicitly when the template dimensions change' do
+    builder = described_class.new(from:, to:, generated_at:)
+    expect { builder.send(:write_searches, StringIO.new, '<sheetData></sheetData>', StringIO.new, 0) }
+      .to raise_error('Unexpected classifier template dimensions')
+  end
+
   it 'writes an inline string for a term that starts with =' do
     store_journey(query: '=chicken')
 

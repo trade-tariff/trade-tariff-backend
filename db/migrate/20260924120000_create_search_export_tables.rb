@@ -15,12 +15,11 @@ Sequel.migration do
       String :end_page_type, null: false
       jsonb :results, null: false, default: '[]'
       TrueClass :omitted, null: false, default: false
-      TrueClass :truncated, null: false, default: false
       DateTime :terminal_at, null: false
       DateTime :created_at, null: false
       DateTime :updated_at, null: false
 
-      index :terminal_at
+      index %i[service request_source terminal_at]
     end
 
     create_table :search_export_result_clicks do

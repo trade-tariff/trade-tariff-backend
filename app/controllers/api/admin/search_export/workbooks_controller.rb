@@ -29,9 +29,11 @@ module Api
         def show
           return head :not_found unless TradeTariffBackend.uk?
 
-          export = ::SearchExport::WorkbookExport.where(service: TradeTariffBackend.service).with_pk(params[:id])
+          export = ::SearchExport::WorkbookExport.where(service: TradeTariffBackend.service)
+                                                .select(*::SearchExport::WorkbookExport::STATUS_COLUMNS).with_pk(params[:id])
           return head :not_found unless export
 
+          export.expire_if_stale!
           render json: payload(export)
         end
 

@@ -8105,7 +8105,6 @@ CREATE TABLE uk.search_export_journeys (
     end_page_type text NOT NULL,
     results jsonb DEFAULT '[]'::jsonb NOT NULL,
     omitted boolean DEFAULT false NOT NULL,
-    truncated boolean DEFAULT false NOT NULL,
     terminal_at timestamp without time zone NOT NULL,
     created_at timestamp without time zone NOT NULL,
     updated_at timestamp without time zone NOT NULL
@@ -14763,10 +14762,10 @@ CREATE INDEX rrto_regroltypopl_ionolepeslog_operation_date ON uk.regulation_role
 
 
 --
--- Name: search_export_journeys_terminal_at_index; Type: INDEX; Schema: uk; Owner: -
+-- Name: search_export_journeys_service_request_source_terminal_at_index; Type: INDEX; Schema: uk; Owner: -
 --
 
-CREATE INDEX search_export_journeys_terminal_at_index ON uk.search_export_journeys USING btree (terminal_at);
+CREATE INDEX search_export_journeys_service_request_source_terminal_at_index ON uk.search_export_journeys USING btree (service, request_source, terminal_at);
 
 
 --
