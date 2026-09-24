@@ -18,7 +18,6 @@ module SearchAnalytics
       @index.each_key.with_index { |key, index| @index[key] = index }
       @states = Array.new(@index.size)
       @flags = Array.new(@index.size, 0)
-      @questions = Array.new(@index.size)
     end
 
     def call
@@ -30,7 +29,7 @@ module SearchAnalytics
         true
       end
       complete = @dates.any? && @collected == @dates
-      questions_complete = complete && matching_fingerprint?
+      current = complete && matching_fingerprint?
       {
         'coverage' => {
           'complete' => complete,
@@ -38,8 +37,7 @@ module SearchAnalytics
           'collected_days' => @collected.size,
           'missing_dates' => (@dates - @collected).map(&:iso8601),
         },
-        'summary' => questions_complete ? counts(@index.keys) : nil,
-        'question_counts' => questions_complete ? question_counts : [],
+        'summary' => current ? counts(@index.keys) : nil,
         'trend' => @collected.any? ? trend : [],
       }
     end
@@ -49,16 +47,11 @@ module SearchAnalytics
     def consume(row)
       state = State.new(kind: row.fetch('terminal_state'), window_end: Time.iso8601(row.fetch('window_end')))
       flags = FLAGS.sum { |name, bit| row.fetch(name).to_i.positive? ? bit : 0 }
-      questions = Integer(row['total_questions'], exception: false)
       row.fetch('journey_keys').each do |key|
         index = @index[key]
         next if index.nil?
 
         @flags[index] |= flags
-        if questions
-          previous_questions = @questions[index]
-          @questions[index] = previous_questions.nil? ? questions : [previous_questions, questions].max
-        end
         next if state.kind == 'none'
 
         previous = @states[index]
@@ -83,12 +76,6 @@ module SearchAnalytics
         index = @index.fetch(key)
         totals[status(index)] += 1
         %w[selected zero_result].each { |name| totals[name] += 1 if (@flags[index] & FLAGS.fetch(name)).positive? }
-      end
-    end
-
-    def question_counts
-      @index.keys.map { |key| @questions[@index.fetch(key)] }.tally.sort_by { |questions, _count| questions || -1 }.map do |questions, journeys|
-        { 'questions' => questions, 'journeys' => journeys }
       end
     end
 

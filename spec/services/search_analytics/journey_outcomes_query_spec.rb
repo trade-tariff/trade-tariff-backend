@@ -41,11 +41,6 @@ RSpec.describe SearchAnalytics::JourneyOutcomesQuery do
     end
   end
 
-  it 'keeps the backend question count from the completed search event' do
-    rows = execute(event('one', 'interactive', total_questions: 4, final_result_type: 'answers'))
-    expect(rows.fetch('one')[:total_questions]).to eq(4)
-  end
-
   it 'recognises classification, exact, empty retrieval and fallback results but not question steps' do
     rows = execute(
       event('classification', 'classification', result_count: 0),
