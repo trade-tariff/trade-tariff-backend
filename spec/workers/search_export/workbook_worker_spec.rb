@@ -1,48 +1,49 @@
 RSpec.describe SearchExport::WorkbookWorker do
-  let(:export) do
-    SearchExport::WorkbookExport.create(
-      service: TradeTariffBackend.service,
-      from_date: Date.new(2026, 9, 23),
-      to_date: Date.new(2026, 9, 24),
-      status: 'queued',
-    )
+  include_context 'with workbook exports'
+
+  let(:export) { SearchExport::WorkbookExport.create(from_date: Date.yesterday, to_date: Date.current) }
+  let(:result) { SearchExport::Workbook::Result.new(bytes: 'workbook', row_count: 1, omitted_count: 0) }
+
+  before { allow(SearchExport::Workbook).to receive(:call).and_return(result) }
+
+  it 'builds in the worker and stores an expiring download' do
+    described_class.new.perform(export.id)
+    expect(export.payload).to include('status' => 'ready', 'row_count' => 1)
+    expect(export.file).to eq('workbook')
+    expect(SearchExport::Workbook).to have_received(:call).with(from: Date.yesterday, to: Date.current)
   end
 
-  describe '#perform' do
-    it 'does not start a job whose queue deadline has passed' do
-      SearchExport::WorkbookExport.where(id: export.id).update(updated_at: 16.minutes.ago)
-      allow(SearchExport::Workbook).to receive(:call)
+  it 'does not repeat a delivered job' do
+    2.times { described_class.new.perform(export.id) }
+    expect(SearchExport::Workbook).to have_received(:call).once
+  end
 
-      described_class.new.perform(export.id)
+  it 'ignores an expired job' do
+    id = export.id
+    export.delete
+    described_class.new.perform(id)
+    expect(SearchExport::Workbook).not_to have_received(:call)
+  end
 
-      expect(export.refresh.status).to eq('failed')
+  it 'does not build a stale queued job' do
+    id = export.id
+    travel 16.minutes do
+      described_class.new.perform(id)
+      expect(export.payload['status']).to eq('failed')
       expect(SearchExport::Workbook).not_to have_received(:call)
     end
+  end
 
-    it 'does not publish a result after another request expires the job' do
-      allow(SearchExport::Workbook).to receive(:call) do
-        SearchExport::WorkbookExport.where(id: export.id).update(status: 'failed')
-        SearchExport::Workbook::Result.new(bytes: 'late', omitted_count: 0, row_count: 0)
-      end
+  it 'reports incomplete CloudWatch retrieval without a partial file' do
+    allow(SearchExport::Workbook).to receive(:call).and_raise(SearchExport::CloudwatchReader::Error, 'Please shorten the date range.')
+    described_class.new.perform(export.id)
+    expect(export.payload).to include('status' => 'failed', 'error' => 'Please shorten the date range.')
+    expect(export.file).to be_nil
+  end
 
-      described_class.new.perform(export.id)
-
-      expect(export.refresh).to have_attributes(status: 'failed', file: nil)
-    end
-
-    it 'marks the export failed when its range grows beyond the row limit' do
-      allow(SearchExport::Workbook).to receive(:call).and_raise(SearchExport::Workbook::TooManyRows, 'Shorten the date range.')
-
-      described_class.new.perform(export.id)
-
-      expect(export.refresh).to have_attributes(status: 'failed', file: nil, error_message: 'Shorten the date range.')
-    end
-
-    it 'stores a safe failure message and propagates unexpected errors' do
-      allow(SearchExport::Workbook).to receive(:call).and_raise(IOError, 'private filesystem path')
-
-      expect { described_class.new.perform(export.id) }.to raise_error(IOError)
-      expect(export.refresh).to have_attributes(status: 'failed', file: nil, error_message: 'The workbook could not be built.')
-    end
+  it 'records a safe failure and re-raises unexpected errors' do
+    allow(SearchExport::Workbook).to receive(:call).and_raise(StandardError, 'private details')
+    expect { described_class.new.perform(export.id) }.to raise_error(StandardError)
+    expect(export.payload).to include('status' => 'failed', 'error' => 'The workbook could not be built.')
   end
 end

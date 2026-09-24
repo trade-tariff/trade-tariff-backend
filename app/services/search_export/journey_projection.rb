@@ -9,38 +9,14 @@ module SearchExport
       return unless TradeTariffRequest.request_source == TradeTariffRequest::FRONTEND_REQUEST_SOURCE
       return if request_id.blank?
 
-      if TradeTariffRequest.search_failures.present? || interactive_error?(response)
-        Journey.omit(request_id)
-        return
-      end
+      return if TradeTariffRequest.search_failures.present? || interactive_error?(response)
 
       page = TerminalPage.from_response(response)
       return unless page
 
-      Journey.upsert_terminal(
-        request_id:,
-        service: TradeTariffBackend.service,
-        request_source: TradeTariffRequest::FRONTEND_REQUEST_SOURCE,
-        query: query.to_s,
-        expansion_terms: Sequel.pg_jsonb(Array(expansion_terms)),
-        answers: Sequel.pg_jsonb(normalised_answers(answers)),
-        end_page_type: page.end_page_type,
-        results: Sequel.pg_jsonb(page.results.map { |result| result.to_h.transform_keys(&:to_s) }),
-        terminal_at:,
-      )
       emit_trace(request_id:, query:, answers:, expansion_terms:, page:, terminal_at:)
     rescue StandardError => e
       Rails.logger.warn("Could not capture classifier journey: #{e.class}")
-      nil
-    end
-
-    def self.omit(request_id)
-      return unless TradeTariffBackend.uk?
-      return unless TradeTariffRequest.request_source == TradeTariffRequest::FRONTEND_REQUEST_SOURCE
-
-      Journey.omit(request_id)
-    rescue StandardError => e
-      Rails.logger.warn("Could not omit classifier journey: #{e.class}")
       nil
     end
 
