@@ -42,10 +42,6 @@ module TariffSynchronizer
       end
     end
 
-    def clear_errors
-      # TARIC presence errors table is no longer populated; nothing to clear.
-    end
-
     def to_param
       filename.sub('.xml', '')
     end

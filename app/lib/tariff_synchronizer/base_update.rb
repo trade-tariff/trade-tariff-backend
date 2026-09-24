@@ -144,10 +144,6 @@ module TariffSynchronizer
       TariffSynchronizer::FileService.file_presigned_url(file_path)
     end
 
-    def clear_errors
-      raise NotImplementedError
-    end
-
     def cache_key_with_version
       [
         'tariff-update',
