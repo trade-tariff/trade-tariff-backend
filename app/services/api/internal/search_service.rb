@@ -21,6 +21,7 @@ module Api
       attr_reader :q, :as_of, :answers, :request_id, :description_intercept, :expanded_query
 
       def initialize(params = {})
+        @original_query = params[:q].to_s
         sanitiser_result = InputSanitiser.new(params[:q]).call
 
         if sanitiser_result[:errors]
@@ -386,7 +387,7 @@ module Api
       def finish_terminal(response)
         ::SearchExport::JourneyProjection.record(
           response:,
-          query: q,
+          query: @original_query,
           answers:,
           expansion_terms: Array(@retrieval_expansion_terms),
           request_id:,

@@ -6,7 +6,7 @@ module SearchExport
 
     def self.upsert_terminal(attributes)
       now = Time.current
-      values = attributes.merge(updated_at: now, created_at: now, omitted: false, truncated: false)
+      values = attributes.merge(updated_at: now, created_at: now, omitted: false)
       dataset.insert_conflict(
         target: :request_id,
         update: values.except(:request_id, :created_at),

@@ -29,6 +29,9 @@ module SearchExport
         terminal_at:,
       )
       emit_trace(request_id:, query:, answers:, expansion_terms:, page:, terminal_at:)
+    rescue StandardError => e
+      Rails.logger.warn("Could not capture classifier journey: #{e.class}")
+      nil
     end
 
     def self.omit(request_id)
@@ -36,6 +39,9 @@ module SearchExport
       return unless TradeTariffRequest.request_source == TradeTariffRequest::FRONTEND_REQUEST_SOURCE
 
       Journey.omit(request_id)
+    rescue StandardError => e
+      Rails.logger.warn("Could not omit classifier journey: #{e.class}")
+      nil
     end
 
     def self.interactive_error?(response)

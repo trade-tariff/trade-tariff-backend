@@ -52,6 +52,15 @@ RSpec.describe Api::Internal::SearchService do
       end
     end
 
+    it 'captures the original input before processing CAS prefixes' do
+      allow(TradeTariffBackend.search_client).to receive(:search).and_return({ 'hits' => { 'hits' => [] } })
+      allow(SearchExport::JourneyProjection).to receive(:record)
+
+      described_class.new(q: 'cas 10310-21-1').call
+
+      expect(SearchExport::JourneyProjection).to have_received(:record).with(hash_including(query: 'cas 10310-21-1'))
+    end
+
     it 'does not export answer refinements as part of a supplied expansion' do
       allow(AdminConfiguration).to receive(:enabled?).with('refine_search_with_answers_enabled').and_return(true)
       allow(TradeTariffBackend.search_client).to receive(:search).and_return({ 'hits' => { 'hits' => [] } })

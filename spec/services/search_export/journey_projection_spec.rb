@@ -11,6 +11,20 @@ RSpec.describe SearchExport::JourneyProjection do
     TradeTariffRequest.search_failures = []
   end
 
+  it 'does not propagate capture failures into a search response' do
+    allow(SearchExport::Journey).to receive(:upsert_terminal).and_raise(Sequel::DatabaseError, 'private details')
+    allow(Rails.logger).to receive(:warn)
+
+    expect { described_class.record(response:, query: 'chicken', answers: [], expansion_terms: [], request_id: 'journey-1') }.not_to raise_error
+    expect(Rails.logger).to have_received(:warn).with('Could not capture classifier journey: Sequel::DatabaseError')
+  end
+
+  it 'does not replace a search failure with an omission-write failure' do
+    allow(SearchExport::Journey).to receive(:omit).and_raise(Sequel::DatabaseError)
+
+    expect { described_class.omit('journey-1') }.not_to raise_error
+  end
+
   it 'stores the final answer for a frontend result and ignores admin traffic' do
     described_class.record(response:, query: 'frozen chicken', answers: [{ question: 'Cut?', options: %w[Fillet], answer: 'Fillet' }], expansion_terms: [], request_id: 'journey-1')
 
