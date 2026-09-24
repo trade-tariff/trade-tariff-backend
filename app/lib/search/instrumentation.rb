@@ -15,5 +15,6 @@ module Search
     ERROR_MESSAGE_MAX_LENGTH = 500
     MAX_LOGGED_RESULTS = 50
     EVALUATION_TRACE_VERSION = 'classification_evaluation_trace.v1'.freeze
+    EVALUATION_JOURNEY_VERSION = 'classification_evaluation_trace.v2'.freeze
   end
 end

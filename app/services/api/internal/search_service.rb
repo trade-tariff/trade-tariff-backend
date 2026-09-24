@@ -51,7 +51,7 @@ module Api
           query: q,
           description_intercept:,
         )
-        return empty_response if description_intercept&.excluded
+        return finish_terminal(empty_response) if description_intercept&.excluded
 
         ::Search::Instrumentation.interactive_configuration_used(
           request_id:,
@@ -87,16 +87,16 @@ module Api
           result: exact,
         )
 
-        [
+        response = finish_terminal(
           with_search_failures_meta(
             with_description_intercept_meta(GoodsNomenclatureSearchSerializer.serialize([exact])),
           ),
-          completion_payload(result_count: 1, results_type: 'exact_match'),
-        ]
+        )
+        [response, completion_payload(result_count: 1, results_type: 'exact_match')]
       end
 
       def empty_retrieval_response(retrieval)
-        [empty_response, completion_payload(result_count: 0, results_type: retrieval.results_type)]
+        [finish_terminal(empty_response), completion_payload(result_count: 0, results_type: retrieval.results_type)]
       end
 
       def interactive_search_response(retrieval)
@@ -122,6 +122,7 @@ module Api
           retrieval.expanded_query,
         )
         emit_evaluation_trace(retrieval:, interactive_result:)
+        finish_terminal(response)
 
         [response, interactive_completion_payload(response, retrieval, interactive_result)]
       end
@@ -211,12 +212,13 @@ module Api
           return retrieve_short_list_with_conditional_expansion
         end
 
-        retrieve_short_list_with_expanded_query(normalised_query.expanded_query)
+        normalised = normalised_query
+        retrieve_short_list_with_expanded_query(normalised.expanded_query, expansion_input: normalised.query)
       end
 
       def retrieve_short_list_with_conditional_expansion
         unexpanded_query = retrieval_query
-        preliminary_retrieval = retrieve_short_list_with_expanded_query(unexpanded_query)
+        preliminary_retrieval = retrieve_short_list_with_expanded_query(unexpanded_query, expansion_input: unexpanded_query)
         decision = SearchExpansionDecisionService.call(
           query: unexpanded_query,
           results: preliminary_retrieval.decision_results,
@@ -228,10 +230,11 @@ module Api
         expanded = expand_query(unexpanded_query)
         return preliminary_retrieval if expanded == unexpanded_query
 
-        retrieve_short_list_with_expanded_query(expanded)
+        retrieve_short_list_with_expanded_query(expanded, expansion_input: unexpanded_query)
       end
 
-      def retrieve_short_list_with_expanded_query(search_expanded_query)
+      def retrieve_short_list_with_expanded_query(search_expanded_query, expansion_input:)
+        @expansion_input = expansion_input
         case retrieval_method
         when 'vector' then vector_short_list(search_expanded_query)
         when 'hybrid' then hybrid_short_list(search_expanded_query)
@@ -358,10 +361,37 @@ module Api
       end
 
       def retrieval_query_with_synonyms(search_expanded_query)
-        return search_expanded_query unless AdminConfiguration.enabled?('expand_search_enabled')
-        return search_expanded_query unless expansion_decider_version == 'v2'
+        remember_retrieval_expansion(search_expanded_query)
+        return search_expanded_query unless synonyms_applied?
 
         ::Search::SynonymExpander.call(search_expanded_query)
+      end
+
+      def synonyms_applied?
+        AdminConfiguration.enabled?('expand_search_enabled') && expansion_decider_version == 'v2'
+      end
+
+      def remember_retrieval_expansion(search_expanded_query)
+        synonym_terms = synonyms_applied? ? ::Search::SynonymExpander.added_terms(search_expanded_query) : []
+        @retrieval_expansion_terms = ::SearchExport::ExpansionTerms.call(
+          expansion_input: @expansion_input || search_expanded_query,
+          # A supplied expansion is refined with selected answers before retrieval.
+          # Capture that expansion before refinement rather than treating answers as AI terms.
+          sent_query: expanded_query.presence || search_expanded_query,
+          answer_values: answered_values,
+          synonym_terms:,
+        )
+      end
+
+      def finish_terminal(response)
+        ::SearchExport::JourneyProjection.record(
+          response:,
+          query: q,
+          answers:,
+          expansion_terms: Array(@retrieval_expansion_terms),
+          request_id:,
+        )
+        response
       end
 
       def expansion_decider_version

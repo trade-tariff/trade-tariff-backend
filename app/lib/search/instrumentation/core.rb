@@ -27,6 +27,7 @@ module Search
       end
 
       def search_failed(request_id:, error_type:, error_message:, search_type:)
+        SearchExport::JourneyProjection.omit(request_id)
         instrument(
           'search_failed',
           {
@@ -40,6 +41,7 @@ module Search
 
       def search_stage_failed(request_id:, search_type:, failure_code:, error_type:, error_message:, operation: nil)
         TradeTariffRequest.record_search_failure(failure_code)
+        SearchExport::JourneyProjection.omit(request_id)
         instrument(
           'search_stage_failed',
           {

@@ -52,6 +52,23 @@ RSpec.describe Api::Internal::SearchService do
       end
     end
 
+    it 'does not export answer refinements as part of a supplied expansion' do
+      allow(AdminConfiguration).to receive(:enabled?).with('refine_search_with_answers_enabled').and_return(true)
+      allow(TradeTariffBackend.search_client).to receive(:search).and_return({ 'hits' => { 'hits' => [] } })
+      allow(SearchExport::JourneyProjection).to receive(:record)
+
+      described_class.new(
+        q: 'chicken',
+        expanded_query: 'chicken poultry',
+        request_id: 'expansion-journey',
+        answers: [{ question: 'Cut?', options: %w[Fillet Whole], answer: 'Fillet' }],
+      ).call
+
+      expect(SearchExport::JourneyProjection).to have_received(:record).with(
+        hash_including(query: 'chicken', expansion_terms: %w[poultry]),
+      )
+    end
+
     it 'emits interactive configuration diagnostics including the duplicate question guard gate' do
       captured_configuration = nil
       allow(Search::Instrumentation).to receive(:interactive_configuration_used) do |configuration:, **|
