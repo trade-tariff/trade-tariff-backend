@@ -3,11 +3,25 @@ RSpec.describe SearchExport::Workbook do
   let(:to) { Date.new(2026, 9, 23) }
   let(:generated_at) { Time.utc(2026, 9, 24, 12) }
 
+  let(:journeys) { [] }
+  let(:clicks) { Hash.new { |hash, key| hash[key] = [] } }
+
+  before do
+    allow(SearchExport::CloudwatchReader).to receive(:call) do |from:, to:, generated_at:|
+      selected = journeys.select { |journey| journey.terminal_at.to_date.between?(from, to) }
+      selected_clicks = clicks.transform_values { |values| values.select { |click| click.clicked_at <= generated_at } }
+      SearchExport::CloudwatchReader::Result.new(journeys: selected, clicks: selected_clicks)
+    end
+  end
+
+  def store_click(request_id:, **attributes)
+    clicks[request_id] << SearchExport::CloudwatchReader::Click.new(**attributes)
+  end
+
   def store_journey(**overrides)
-    SearchExport::Journey.upsert_terminal({
+    journeys << SearchExport::CloudwatchReader::Journey.new(**{
       request_id: 'journey-1',
-      service: TradeTariffBackend.service,
-      request_source: 'frontend',
+      omitted: false,
       query: 'frozen chicken',
       expansion_terms: Sequel.pg_jsonb([]),
       answers: Sequel.pg_jsonb([]),
@@ -43,17 +57,11 @@ RSpec.describe SearchExport::Workbook do
     expect(xml).to include('chicken &amp; &lt;cuts&gt;')
   end
 
-  it 'writes each journey once across batches and bounds click queries to each batch' do
-    stub_const('SearchExport::Workbook::BATCH_SIZE', 2)
+  it 'retrieves the complete source once and writes each journey' do
     5.times { |index| store_journey(request_id: "journey-#{index}") }
-    allow(SearchExport::ResultClick).to receive(:where).and_call_original
-
     result = workbook
-
     expect(result.row_count).to eq(5)
-    expect(SearchExport::ResultClick).to have_received(:where).with(request_id: %w[journey-0 journey-1])
-    expect(SearchExport::ResultClick).to have_received(:where).with(request_id: %w[journey-2 journey-3])
-    expect(SearchExport::ResultClick).to have_received(:where).with(request_id: %w[journey-4])
+    expect(SearchExport::CloudwatchReader).to have_received(:call).once.with(from:, to:, generated_at:)
     expect(sheet_xml(result.bytes, 'xl/worksheets/sheet2.xml')).to include('ref="A1:AI7"')
   end
 
@@ -131,8 +139,8 @@ RSpec.describe SearchExport::Workbook do
 
   it 'writes the first click for each code, including a click after the range end' do
     store_journey
-    SearchExport::ResultClick.record(request_id: 'journey-1', commodity_code: '0207141000', result_rank: 2, clicked_at: Time.utc(2026, 9, 24, 1))
-    SearchExport::ResultClick.record(request_id: 'journey-1', commodity_code: '0207141000', result_rank: 1, clicked_at: Time.utc(2026, 9, 23, 11))
+    store_click(request_id: 'journey-1', commodity_code: '0207141000', result_rank: 2, clicked_at: Time.utc(2026, 9, 24, 1))
+    store_click(request_id: 'journey-1', commodity_code: '0207141000', result_rank: 1, clicked_at: Time.utc(2026, 9, 23, 11))
 
     xml = sheet_xml(workbook.bytes, 'xl/worksheets/sheet2.xml')
 
@@ -152,7 +160,7 @@ RSpec.describe SearchExport::Workbook do
       ['0207141002', generated_at + 1],
       ['9999999999', Time.utc(2026, 9, 24, 3)],
     ].each do |code, clicked_at|
-      SearchExport::ResultClick.record(request_id: 'journey-1', commodity_code: code, result_rank: 1, clicked_at:)
+      store_click(request_id: 'journey-1', commodity_code: code, result_rank: 1, clicked_at:)
     end
 
     document = Nokogiri::XML(sheet_xml(workbook.bytes, 'xl/worksheets/sheet2.xml'))

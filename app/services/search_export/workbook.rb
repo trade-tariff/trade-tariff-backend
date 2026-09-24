@@ -7,7 +7,6 @@ module SearchExport
     Result = Data.define(:bytes, :omitted_count, :row_count)
     TooManyRows = Class.new(StandardError)
     MAX_ROWS = 200_000
-    BATCH_SIZE = 500
     TEMPLATE = Rails.root.join('lib/search_export/AI-1253-search-export-template.xlsx').freeze
     SEARCHES_SHEET = 'xl/worksheets/sheet2.xml'
     INSTRUCTIONS_SHEET = 'xl/worksheets/sheet1.xml'
@@ -19,10 +18,6 @@ module SearchExport
       new(from:, to:, generated_at:).call
     end
 
-    def self.candidate_count(from:, to:)
-      Journey.for_export(from:, to:).count
-    end
-
     def initialize(from:, to:, generated_at:)
       @from = from
       @to = to
@@ -30,7 +25,8 @@ module SearchExport
     end
 
     def call
-      raise TooManyRows, 'Shorten the date range. This export is limited to 200,000 journeys.' if candidates.count > MAX_ROWS
+      @source = CloudwatchReader.call(from:, to:, generated_at:)
+      raise TooManyRows, 'Shorten the date range. This export is limited to 200,000 journeys.' if @source.journeys.size > MAX_ROWS
 
       Tempfile.create(['classifier-rows', '.xml']) do |rows|
         written, omitted = write_rows(rows)
@@ -43,38 +39,18 @@ module SearchExport
 
     attr_reader :from, :to, :generated_at
 
-    def candidates
-      Journey.for_export(from:, to:)
-    end
-
     def write_rows(output)
       written = 0
       omitted = 0
-      candidates.paged_each(rows_per_fetch: BATCH_SIZE).each_slice(BATCH_SIZE) do |batch|
-        clicks = clicks_for(batch.map(&:request_id))
-        batch.each do |journey|
-          raise TooManyRows, 'Shorten the date range. This export is limited to 200,000 journeys.' if written + omitted >= MAX_ROWS
-
-          if writable?(journey)
-            output.write(row_xml(written + 3, journey, clicks.fetch(journey.request_id, [])))
-            written += 1
-          else
-            omitted += 1
-          end
+      @source.journeys.each do |journey|
+        if writable?(journey)
+          output.write(row_xml(written + 3, journey, @source.clicks.fetch(journey.request_id, [])))
+          written += 1
+        else
+          omitted += 1
         end
       end
       [written, omitted]
-    end
-
-    def clicks_for(request_ids)
-      return {} if request_ids.empty?
-
-      cutoff = generated_at
-      ResultClick.where(request_id: request_ids)
-                 .where { clicked_at <= cutoff }
-                 .order(:clicked_at, :result_rank)
-                 .all
-                 .group_by(&:request_id)
     end
 
     def writable?(journey)

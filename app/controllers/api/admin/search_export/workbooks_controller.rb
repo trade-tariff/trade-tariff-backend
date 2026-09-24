@@ -8,64 +8,64 @@ module Api
           return head :not_found unless TradeTariffBackend.uk?
 
           range = ::SearchExport::DateRange.parse(from: params[:from], to: params[:to])
-          if ::SearchExport::Workbook.candidate_count(from: range.from, to: range.to) > ::SearchExport::Workbook::MAX_ROWS
-            return render json: error_response('Date range too large', 'Shorten the date range. This export is limited to 200,000 journeys.', :unprocessable_content),
-                          status: :unprocessable_content
+          export = ::SearchExport::WorkbookExport.create(from_date: range.from, to_date: range.to)
+          unless ::SearchExport::WorkbookWorker.perform_async(export.id)
+            export.delete
+            return unavailable('The workbook could not be queued. Please try again.')
           end
-
-          export = ::SearchExport::WorkbookExport.create(
-            service: TradeTariffBackend.service,
-            from_date: range.from,
-            to_date: range.to,
-            status: ::SearchExport::WorkbookExport::QUEUED,
-            whodunnit: TradeTariffRequest.whodunnit,
-          )
-          ::SearchExport::WorkbookWorker.perform_async(export.id)
           render json: payload(export), status: :accepted
         rescue ::SearchExport::DateRange::InvalidRange => e
           render json: error_response('Invalid date range', e.message, :bad_request), status: :bad_request
+        rescue ::SearchExport::WorkbookExport::Busy => e
+          unavailable(e.message)
+        rescue RedisClient::Error
+          unavailable('The workbook service is unavailable. Please try again.')
         end
 
         def show
           return head :not_found unless TradeTariffBackend.uk?
 
-          export = ::SearchExport::WorkbookExport.where(service: TradeTariffBackend.service)
-                                                .select(*::SearchExport::WorkbookExport::STATUS_COLUMNS).with_pk(params[:id])
+          export = ::SearchExport::WorkbookExport.find(params[:id])
           return head :not_found unless export
 
           export.expire_if_stale!
-          render json: payload(export)
+          result = payload(export)
+          return head :not_found unless result
+
+          render json: result
+        rescue RedisClient::Error
+          unavailable('The workbook service is unavailable. Please try again.')
         end
 
         def download
           return head :not_found unless TradeTariffBackend.uk?
 
-          export = ::SearchExport::WorkbookExport.where(service: TradeTariffBackend.service).with_pk(params[:id])
-          return head :not_found unless export&.ready?
+          export = ::SearchExport::WorkbookExport.find(params[:id])
+          metadata = export&.payload
+          return head :not_found unless metadata && metadata['status'] == 'ready'
 
-          send_data export.file,
-                    filename: "classifier-workbook-#{export.from_date}-#{export.to_date}.xlsx",
+          bytes = export.file
+          return head :not_found unless bytes
+
+          send_data bytes,
+                    filename: "classifier-workbook-#{metadata.fetch('from')}-#{metadata.fetch('to')}.xlsx",
                     type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
                     disposition: 'attachment'
+        rescue RedisClient::Error
+          unavailable('The workbook service is unavailable. Please try again.')
         end
 
       private
 
         def payload(export)
-          {
-            data: {
-              id: export.id.to_s,
-              type: 'search_export_workbook',
-              attributes: {
-                status: export.status,
-                from: export.from_date.iso8601,
-                to: export.to_date.iso8601,
-                omitted_count: export.omitted_count,
-                row_count: export.row_count,
-                error: export.error_message,
-              },
-            },
-          }
+          stored = export.payload
+          return unless stored
+
+          { data: { id: export.id, type: 'search_export_workbook', attributes: stored.slice('status', 'from', 'to', 'omitted_count', 'row_count', 'error') } }
+        end
+
+        def unavailable(message)
+          render json: error_response('Workbook unavailable', message, :service_unavailable), status: :service_unavailable
         end
 
         def error_response(title, detail, status)
