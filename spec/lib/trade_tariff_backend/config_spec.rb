@@ -25,18 +25,6 @@ RSpec.describe TradeTariffBackend::Config do
       expect(config.tariff_sync_host).to eq('https://sync.example.com')
     end
 
-    describe '.tariff_ignore_presence_errors' do
-      it 'defaults to true' do
-        ENV.delete('TARIFF_IGNORE_PRESENCE_ERRORS')
-        expect(config.tariff_ignore_presence_errors).to be true
-      end
-
-      it 'returns false when set to 0' do
-        ENV['TARIFF_IGNORE_PRESENCE_ERRORS'] = '0'
-        expect(config.tariff_ignore_presence_errors).to be false
-      end
-    end
-
     describe '.patch_broken_taric_downloads?' do
       it 'defaults to false' do
         ENV.delete('PATCH_BROKEN_TARIC_DOWNLOADS')

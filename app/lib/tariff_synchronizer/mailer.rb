@@ -38,9 +38,6 @@ module TariffSynchronizer
     def applied(update_names, import_warnings)
       @update_names = update_names
       @import_warnings = import_warnings
-      if TaricSynchronizer.ignore_presence_errors
-        @presence_errors = TariffSynchronizer::TariffUpdatePresenceError.where(tariff_update_filename: update_names)
-      end
       mail subject: "#{subject_prefix(:warn)} Tariff updates applied"
     end
 

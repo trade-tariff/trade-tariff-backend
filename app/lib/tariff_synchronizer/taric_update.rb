@@ -43,7 +43,7 @@ module TariffSynchronizer
     end
 
     def clear_errors
-      presence_errors_dataset.destroy
+      # TARIC presence errors table is no longer populated; nothing to clear.
     end
 
     def to_param

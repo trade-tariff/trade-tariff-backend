@@ -55,7 +55,7 @@ RSpec.describe TariffSynchronizer::BaseUpdateImporter do
         base_update_importer.apply
 
         expect(ActiveSupport::Notifications).to have_received(:subscribe).with(/sql\.sequel/)
-        expect(ActiveSupport::Notifications).to have_received(:subscribe).with(/presence_error/)
+        expect(ActiveSupport::Notifications).not_to have_received(:subscribe).with(/presence_error/)
         expect(ActiveSupport::Notifications).not_to have_received(:subscribe).with(/cds_error/)
       end
 

@@ -1,12 +1,6 @@
 class TaricSynchronizer
   extend TariffSynchronizer
 
-  # 1 - does not raise an exception when record does not exist on TARIC DESTROY operation
-  #   - does not raise an exception when record does not exist on TARIC UPDATE operation
-  #   - creates new record when record does not exist on TARIC UPDATE operation
-  cattr_accessor :ignore_presence_errors
-  self.ignore_presence_errors = TradeTariffBackend.tariff_ignore_presence_errors
-
   cattr_accessor :username
   self.username = TradeTariffBackend.tariff_sync_username
 

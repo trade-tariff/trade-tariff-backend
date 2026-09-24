@@ -13,10 +13,6 @@ module TradeTariffBackend
         ENV['TARIFF_SYNC_HOST']
       end
 
-      def tariff_ignore_presence_errors
-        ENV.fetch('TARIFF_IGNORE_PRESENCE_ERRORS', '1') == '1'
-      end
-
       def patch_broken_taric_downloads?
         ENV['PATCH_BROKEN_TARIC_DOWNLOADS'] == 'true'
       end
