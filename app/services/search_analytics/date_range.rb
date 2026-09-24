@@ -14,7 +14,7 @@ module SearchAnalytics
       last = Date.iso8601(to)
       raise InvalidRange, 'Enter valid calendar dates for From and To.' unless first.year.positive? && last.year.positive?
       raise InvalidRange, 'From must be on or before To.' if first > last
-      raise InvalidRange, 'To must be yesterday or earlier (UTC).' if last >= now.utc.to_date
+      raise InvalidRange, 'To must be today or earlier (UTC).' if last > now.utc.to_date
       raise InvalidRange, "Choose a range of no more than #{MAX_DAYS} days." if (last - first).to_i + 1 > MAX_DAYS
 
       new(from: first, to: last)

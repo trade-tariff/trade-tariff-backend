@@ -131,13 +131,19 @@ RSpec.describe Api::Admin::SearchAnalyticsController do
     expect(attributes['bucket_size']).to eq('hour')
   end
 
+  it 'includes today without treating missing collection as complete coverage' do
+    request_analytics(from: date.iso8601, to: (date + 1).iso8601)
+    expect(response).to have_http_status(:ok)
+    expect(attributes['coverage']).to include('complete' => false, 'expected_days' => 2, 'collected_days' => 1)
+  end
+
   it 'rejects missing, invalid, future and oversized custom date ranges' do
     [
       { period: 'custom' },
       { from: date.iso8601 },
       { from: 'invalid', to: date.iso8601 },
       { from: date.iso8601, to: (date - 1).iso8601 },
-      { from: date.iso8601, to: (date + 1).iso8601 },
+      { from: date.iso8601, to: (date + 2).iso8601 },
       { from: (date - 366).iso8601, to: date.iso8601 },
     ].each do |params|
       request_analytics(params)
