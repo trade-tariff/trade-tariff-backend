@@ -19,6 +19,13 @@ AdminApi.routes.draw do
       resources :search_references, only: [:index]
       resources :search_diagnostics, only: %i[index show], param: :request_id, constraints: { request_id: /[^\/.]+/ }
       resources :search_analytics, only: [:index]
+      if TradeTariffBackend.uk?
+        namespace :search_export do
+          resources :workbooks, only: %i[create show] do
+            get :download, on: :member
+          end
+        end
+      end
       resources :cds_update_notifications, only: [:create]
       resources :reports, only: %i[index show], constraints: { id: /[a-z_]+/ } do
         member do

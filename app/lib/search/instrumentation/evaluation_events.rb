@@ -1,6 +1,21 @@
 module Search
   module Instrumentation
     module EvaluationEvents
+      def evaluation_journey_recorded(request_id:, query:, expansion_terms:, answers:, end_page_type:, results:, terminal_at:, trace_version:)
+        instrument(
+          'evaluation_journey_recorded',
+          request_id:,
+          search_type: 'interactive',
+          trace_version:,
+          query:,
+          expansion_terms:,
+          answers:,
+          end_page_type:,
+          results:,
+          terminal_at:,
+        )
+      end
+
       def evaluation_trace_returned(request_id:, query:, effective_query:, iteration:, answer_count:, retrieval_method:, results_type:, candidates:, final_result_type:, ranked_answers:, questions:, error_message:, ranking_source:, model:, result_limit:)
         candidate_summaries = summarize_results(candidates)
         ranked_answer_summaries = summarize_ranked_answers(ranked_answers)

@@ -10,6 +10,10 @@ module Search
         new(rules: rules_for(rules_path)).call(query)
       end
 
+      def added_terms(query, rules_path: DEFAULT_RULES_PATH)
+        new(rules: rules_for(rules_path)).added_terms(query)
+      end
+
     private
 
       def rules_for(path)
@@ -75,12 +79,20 @@ module Search
       query = query.to_s.squish
       return query if query.blank?
 
-      alternatives = matching_rules(query)
+      alternatives = added_terms(query)
+      return query if alternatives.empty?
+
+      [query, *alternatives].join(' ')
+    end
+
+    def added_terms(query)
+      query = query.to_s.squish
+      return [] if query.blank?
+
+      matching_rules(query)
         .flat_map(&:alternatives)
         .reject { |alternative| term_present?(query, alternative) }
         .uniq(&:downcase)
-
-      [query, *alternatives].join(' ')
     end
 
   private

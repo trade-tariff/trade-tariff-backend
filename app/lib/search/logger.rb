@@ -196,6 +196,23 @@ module Search
       info log_entry(data, event)
     end
 
+    def evaluation_journey_recorded(event)
+      info log_entry({
+        event: 'evaluation_journey_recorded',
+        request_id: event.payload[:request_id],
+        search_type: event.payload[:search_type],
+        trace_version: event.payload[:trace_version],
+        query: event.payload[:query],
+        end_page_type: event.payload[:end_page_type],
+        terminal_at: event.payload[:terminal_at],
+        details: {
+          expansion_terms: event.payload[:expansion_terms],
+          answers: event.payload[:answers],
+          results: event.payload[:results],
+        },
+      }, event)
+    end
+
     def evaluation_trace_returned(event)
       info log_entry({
         event: 'evaluation_trace_returned',
