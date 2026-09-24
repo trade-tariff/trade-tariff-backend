@@ -25,7 +25,6 @@ module TariffSynchronizer
           updates.each do |update|
             update.mark_as_pending
             update.clear_applied_at
-            update.clear_errors
             update.delete unless keep
           end
 

@@ -62,9 +62,6 @@ module_function
     puts "  Issue date      : #{update.issue_date}"
     puts "  Updated at      : #{update.updated_at}"
     puts "  Error           : #{update.exception_class}" if update.exception_class.present?
-
-    presence_count = update.presence_errors.count
-    puts "  Presence errors : #{presence_count}" if presence_count.positive?
     puts
   end
 

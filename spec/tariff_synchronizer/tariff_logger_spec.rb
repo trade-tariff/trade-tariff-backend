@@ -28,11 +28,9 @@ RSpec.describe TariffSynchronizer::TariffLogger, :truncation do
 
     before do
       allow(TariffSynchronizer::Mailer).to receive(:applied).and_return(mail_double)
-      allow(TaricSynchronizer).to receive(:ignore_presence_errors).and_return(false)
-      allow(TariffSynchronizer::TariffUpdatePresenceError).to receive(:where).and_return([])
     end
 
-    context 'when there are no import warnings and no presence errors' do
+    context 'when there are no import warnings' do
       it 'does not deliver the applied email' do
         described_class.apply(update_names, [])
         expect(TariffSynchronizer::Mailer).not_to have_received(:applied)
@@ -45,20 +43,6 @@ RSpec.describe TariffSynchronizer::TariffLogger, :truncation do
       it 'delivers the applied email' do
         described_class.apply(update_names, import_warnings)
         expect(TariffSynchronizer::Mailer).to have_received(:applied).with(update_names, import_warnings)
-      end
-    end
-
-    context 'when presence errors exist and ignore_presence_errors is enabled' do
-      before do
-        allow(TaricSynchronizer).to receive(:ignore_presence_errors).and_return(true)
-        allow(TariffSynchronizer::TariffUpdatePresenceError).to receive(:where)
-          .with(tariff_update_filename: update_names)
-          .and_return([instance_double(TariffSynchronizer::TariffUpdatePresenceError)])
-      end
-
-      it 'delivers the applied email' do
-        described_class.apply(update_names, [])
-        expect(TariffSynchronizer::Mailer).to have_received(:applied).with(update_names, [])
       end
     end
   end

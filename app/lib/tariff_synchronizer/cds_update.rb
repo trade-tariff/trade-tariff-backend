@@ -17,10 +17,6 @@ module TariffSynchronizer
       end
     end
 
-    def clear_errors
-      # CDS errors table has been dropped; nothing to clear.
-    end
-
     # Extract Date from filename
     def filename_sequence
       sequence_date = filename&.match(REGEX_CDS_SEQUENCE)

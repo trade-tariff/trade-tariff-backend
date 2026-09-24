@@ -6,7 +6,6 @@ class TariffSyncFailureDetailReporter
       update = update_from_env_filename
       print_header(update)
       print_exception(update)
-      print_presence_errors(update)
       print_previous_import_counts(update)
     end
 
@@ -54,18 +53,6 @@ class TariffSyncFailureDetailReporter
 
       $stdout.puts "\n=== Last SQL Queries ===\n\n"
       $stdout.puts update.exception_queries
-    end
-
-    def print_presence_errors(update)
-      presence_errors = update.presence_errors
-      return if presence_errors.empty?
-
-      $stdout.puts "\n=== Presence Errors (#{presence_errors.count} total, showing first 10) ===\n\n"
-      presence_errors.first(10).each_with_index do |error, index|
-        $stdout.puts "#{index + 1}. #{error.model_name}"
-        $stdout.puts error.details.inspect
-        $stdout.puts
-      end
     end
 
     def print_previous_import_counts(update)
