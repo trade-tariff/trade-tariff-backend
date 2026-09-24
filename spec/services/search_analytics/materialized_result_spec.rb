@@ -265,7 +265,7 @@ RSpec.describe SearchAnalytics::MaterializedResult, :truncation do
       expect_parity
       payload = described_class.call(**arguments).value.payload
       expect(payload.dig('availability', 'journey_outcomes')).to be(true)
-      expect(payload.dig('journeys', 'question_counts')).to eq([])
+      expect(payload['journeys']).not_to have_key('question_counts')
     end
 
     it 'ignores a stale frontend fingerprint the same way as the existing reader' do

@@ -19,7 +19,8 @@ RSpec.describe SearchAnalytics::DailyQuery do
   it 'collects failures, questions, results and selections without excluding failures or requiring downstream source markers' do
     sql = described_class.new(**options).query_definitions.fetch('journey_outcomes')
     expect(sql).to include("event = 'search_failed'", "final_result_type = 'questions'", "final_result_type = 'answers'", "final_result_type = 'error'", "results_type = 'exact_match'")
-    expect(sql).to include("THEN 'conflict'", 'GROUP BY request_id', 'COLLECT_SET(request_id)', 'total_questions')
+    expect(sql).to include("THEN 'conflict'", 'GROUP BY request_id', 'COLLECT_SET(request_id)')
+    expect(sql).not_to include('total_questions')
     expect(sql).not_to include('request_source', 'request_id NOT IN')
   end
 

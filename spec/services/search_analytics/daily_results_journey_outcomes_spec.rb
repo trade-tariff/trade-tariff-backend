@@ -47,7 +47,7 @@ RSpec.describe SearchAnalytics::DailyResults do
     expect(payload.dig('journeys', 'outcomes')).to include('completed' => 11, 'nonterminal' => 2, 'failed' => 0, 'unknown' => 0)
     expect(payload.dig('trends', 'outcomes').first).to include('completed' => 11, 'nonterminal' => 2)
     expect(payload.dig('journeys', 'outcomes').values_at('completed', 'failed', 'nonterminal', 'unknown').sum).to eq(13)
-    expect(payload.dig('journeys', 'question_counts')).to eq([{ 'questions' => nil, 'journeys' => 13 }])
+    expect(payload['journeys']).not_to have_key('question_counts')
   end
 
   it 'includes classification journeys in All without leaking them into Internal outcomes' do
@@ -72,7 +72,7 @@ RSpec.describe SearchAnalytics::DailyResults do
     payload = read.payload
     expect(payload.dig('availability', 'journey_outcomes')).to be(true)
     expect(payload.dig('trends', 'outcomes')).not_to be_empty
-    expect(payload.dig('journeys', 'question_counts')).to eq([])
+    expect(payload['journeys']).not_to have_key('question_counts')
   end
 
   it 'keeps matching outcome days without hiding other metrics' do

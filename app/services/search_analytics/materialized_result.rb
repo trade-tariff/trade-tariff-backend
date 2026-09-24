@@ -70,7 +70,6 @@ module SearchAnalytics
         period: @period,
         costs: results.fetch('ai_cost_trend'),
         cost_fingerprint: @definitions.fetch('ai_cost_trend'),
-        outcome_fingerprint: @definitions.fetch('journey_outcomes'),
         term_dates: (query_dates['search_term_improvements'] + query_dates['item_id_improvements']).uniq.sort,
         cost_dates: query_dates['ai_cost_trend'],
         term_fingerprints: @definitions.slice('item_id_improvements', 'search_term_improvements'),
@@ -107,7 +106,6 @@ module SearchAnalytics
       outcomes = projection.outcomes(view: @period.view, buckets:, coverage:)
       payload['trends']['outcomes'] = outcomes.fetch('trend')
       payload['journeys']['outcomes'] = current == dates ? outcomes.fetch('summary') : nil
-      payload['journeys']['question_counts'] = current == dates ? projection.question_counts : []
       payload['availability']['journey_outcomes'] = collected.any?
       payload['availability']['journey_outcome_coverage'] = coverage
     end
