@@ -191,6 +191,36 @@ RSpec.describe Api::V2::ClassificationSearchService do
     end
   end
 
+  describe 'expanded_query' do
+    before do
+      allow(HybridRetrievalService).to receive(:call).and_return(
+        HybridRetrievalService::Result.new(results: [], expanded_query: 'horses', source_results: []),
+      )
+    end
+
+    it 'retrieves on the expanded query when the caller supplies one' do
+      described_class.new(q: 'Dobbin', expanded_query: 'live horses').call
+
+      expect(HybridRetrievalService).to have_received(:call).with(
+        hash_including(query: 'live horses', expanded_query: 'live horses'),
+      )
+    end
+
+    it 'retrieves on the query when the caller supplies no expanded query' do
+      described_class.new(q: 'horses', expanded_query: ' ').call
+
+      expect(HybridRetrievalService).to have_received(:call).with(
+        hash_including(query: 'horses', expanded_query: nil),
+      )
+    end
+
+    it 'still records the query the caller sent in the search events' do
+      described_class.new(q: 'Dobbin', expanded_query: 'live horses', request_id: 'request-1').call
+
+      expect(events.first.payload).to include(query: 'Dobbin')
+    end
+  end
+
   describe 'limit' do
     def make_result(sid:, score:)
       GoodsNomenclatureResult.new(
@@ -310,6 +340,43 @@ RSpec.describe Api::V2::ClassificationSearchService do
       item_ids = response[:data].map { |record| record[:attributes][:goods_nomenclature_item_id] }
       expect(item_ids).to contain_exactly(text_match[:goods_nomenclature_item_id], *vector_item_ids)
       expect(item_ids).not_to include(*text_non_matches.pluck(:goods_nomenclature_item_id))
+    end
+  end
+
+  # Runs the real OpenSearch leg with no vector hits. The words in the query
+  # match a wrong item. The words in the expanded query match the right item.
+  # The expanded query must decide the ranking.
+  describe 'ranking with an expanded query' do
+    let(:wrong_item) do
+      { goods_nomenclature_sid: 9_210_510, goods_nomenclature_item_id: '2105001000', description: 'ice cream and other edible ice' }
+    end
+    let(:right_item) do
+      { goods_nomenclature_sid: 9_950_310, goods_nomenclature_item_id: '9503007000', description: 'toys and modelling pastes for children' }
+    end
+
+    before do
+      allow(AdminConfiguration).to receive(:enabled?).and_call_original
+      allow(AdminConfiguration).to receive(:enabled?).with('hybrid_query_guardrail_enabled').and_return(false)
+      allow(VectorRetrievalService).to receive(:call_with_diagnostics).and_return(
+        VectorRetrievalService::Result.new(results: [], max_score: nil),
+      )
+      [wrong_item, right_item].each { |document| index_goods_nomenclature_document(**document) }
+      refresh_search_indexes
+    end
+
+    after do
+      [wrong_item, right_item].each { |document| delete_goods_nomenclature_document(document[:goods_nomenclature_sid]) }
+    end
+
+    it 'ranks the item that matches the expanded query first' do
+      response = described_class.new(
+        q: 'ice cream play dough set',
+        expanded_query: 'modelling dough toy set for children',
+        filter_prefixes: %w[2105 9503],
+      ).call
+
+      item_ids = response[:data].map { |record| record[:attributes][:goods_nomenclature_item_id] }
+      expect(item_ids.first).to eq(right_item[:goods_nomenclature_item_id])
     end
   end
 end
