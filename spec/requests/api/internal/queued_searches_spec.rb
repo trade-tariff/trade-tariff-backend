@@ -6,6 +6,7 @@ RSpec.describe 'Queued internal searches', :internal do
       as_of: '2025-01-02',
       request_id: 'search-journey',
       expanded_query: 'live horse',
+      query_expansion: { ai_terms: ['live horse'] },
       skip_question: false,
       answers: [{ question: 'Use?', answer: 'Racing', options: '["Racing","Breeding"]' }],
     }
@@ -26,6 +27,13 @@ RSpec.describe 'Queued internal searches', :internal do
       id = response.parsed_body.fetch('id')
       expect(QueuedSearchWorker.jobs.last['args']).to eq([id])
       expect(QueuedSearch.new(id).payload.fetch('params')).to eq(inputs.deep_stringify_keys)
+    end
+
+    it 'preserves an explicitly empty expansion list' do
+      post path, params: inputs.merge(query_expansion: { ai_terms: [] }), as: :json
+
+      payload = QueuedSearch.new(response.parsed_body.fetch('id')).payload
+      expect(payload.dig('params', 'query_expansion')).to eq('ai_terms' => [])
     end
 
     it 'does not execute search in the request' do

@@ -69,6 +69,7 @@ RSpec.describe Api::Internal::SearchService do
       described_class.new(
         q: 'chicken',
         expanded_query: 'chicken poultry',
+        query_expansion: { ai_terms: %w[poultry] },
         request_id: 'expansion-journey',
         answers: [{ question: 'Cut?', options: %w[Fillet Whole], answer: 'Fillet' }],
       ).call
