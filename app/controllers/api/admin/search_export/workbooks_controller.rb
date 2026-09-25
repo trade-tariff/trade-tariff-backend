@@ -12,7 +12,7 @@ module Api
         def create
           range = ::SearchExport::DateRange.parse(from: params[:from], to: params[:to])
           @export = ::SearchExport::WorkbookExport.create(from_date: range.from, to_date: range.to)
-          unless ::SearchExport::WorkbookWorker.perform_async(@export.id)
+          if @export.newly_created? && !enqueue_export
             @export.delete
             return unavailable('The workbook could not be queued. Please try again.')
           end
@@ -39,6 +39,13 @@ module Api
         end
 
       private
+
+        def enqueue_export
+          ::SearchExport::WorkbookWorker.perform_async(@export.id)
+        rescue RedisClient::Error
+          @export.delete
+          raise
+        end
 
         def find_export
           @export = ::SearchExport::WorkbookExport.find(params[:id])
