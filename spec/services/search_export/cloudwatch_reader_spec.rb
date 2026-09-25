@@ -70,7 +70,7 @@ RSpec.describe SearchExport::CloudwatchReader do
     expect { reader.call }.to raise_error(described_class::Error, /one second/)
   end
 
-  it 'waits for CloudWatch completion without an export runtime budget' do
+  it 'allows queries longer than the former ten-minute limit' do
     client.stub_responses(:get_query_results, [{ status: 'Running' }, response(trace)])
     allow(reader).to receive(:sleep) { travel 11.minutes }
     expect(reader.call.journeys.size).to eq(1)
@@ -115,7 +115,7 @@ RSpec.describe SearchExport::CloudwatchReader do
     expect(reader.call.journeys.map(&:request_id)).to eq(%w[guided-1])
   end
 
-  it 'allows large scans to complete without a scan-volume budget' do
+  it 'allows large scans below the generous scan limit' do
     client.stub_responses(:get_query_results, [
       { status: 'Running', statistics: { bytes_scanned: 11.gigabytes.to_f } },
       response(trace).merge(statistics: { records_matched: 1.0, bytes_scanned: 12.gigabytes.to_f }),
@@ -123,6 +123,40 @@ RSpec.describe SearchExport::CloudwatchReader do
     ])
     allow(reader).to receive(:sleep)
     expect(reader.call.journeys.size).to eq(1)
+  end
+
+  it 'counts cumulative query statistics once across repeated polls' do
+    client.stub_responses(:get_query_results, [
+      { status: 'Running', statistics: { bytes_scanned: 300.gigabytes.to_f } },
+      { status: 'Running', statistics: { bytes_scanned: 300.gigabytes.to_f } },
+      response(trace).merge(statistics: { records_matched: 1.0, bytes_scanned: 400.gigabytes.to_f }),
+      response.merge(statistics: { records_matched: 0.0, bytes_scanned: 100.gigabytes.to_f }),
+    ])
+    allow(reader).to receive(:sleep)
+    expect(reader.call.journeys.size).to eq(1)
+  end
+
+  it 'cancels an active query when cumulative scanning exceeds 500 GiB' do
+    client.stub_responses(:get_query_results, [
+      response(trace).merge(statistics: { records_matched: 1.0, bytes_scanned: 400.gigabytes.to_f }),
+      { status: 'Running', statistics: { bytes_scanned: 101.gigabytes.to_f } },
+    ])
+    expect { reader.call }.to raise_error(described_class::Error, /500 GiB/)
+    expect(client.api_requests.count { |request| request[:operation_name] == :stop_query }).to eq(1)
+  end
+
+  it 'rejects completed results that exceed the scan limit' do
+    client.stub_responses(:get_query_results, response(trace).merge(statistics: { records_matched: 1.0, bytes_scanned: 501.gigabytes.to_f }))
+    expect { reader.call }.to raise_error(described_class::Error, /500 GiB/)
+    expect(client.api_requests.map { |request| request[:operation_name] }).not_to include(:stop_query)
+  end
+
+  it 'cancels an active query at forty minutes' do
+    allow(reader).to receive(:monotonic_time).and_return(0, 0, 0, 0, 2400)
+    allow(reader).to receive(:sleep)
+    client.stub_responses(:get_query_results, status: 'Running')
+    expect { reader.call }.to raise_error(described_class::Error, /40 minutes/)
+    expect(client.api_requests.map { |request| request[:operation_name] }).to include(:stop_query)
   end
 
   it 'interprets CloudWatch timestamps as UTC' do

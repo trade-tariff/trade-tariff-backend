@@ -7,6 +7,8 @@ module SearchExport
     Click = Data.define(:commodity_code, :clicked_at)
     Result = Data.define(:journeys, :clicks)
     LIMIT = 10_000
+    RUNTIME_LIMIT = 40.minutes
+    SCAN_LIMIT = 500.gigabytes
     LATE_CLICK_WINDOW = 1.day
     EVENTS = %w[evaluation_journey_recorded result_selected search_failed search_stage_failed].freeze
 
@@ -22,12 +24,15 @@ module SearchExport
       @journeys = {}
       @selections = Hash.new { |hash, key| hash[key] = [] }
       @failed = Set.new
+      @scanned_bytes = 0
     end
 
     def call
+      @deadline = monotonic_time + RUNTIME_LIMIT
       (@start...@cutoff).step(1.day.to_i) do |start|
         read_window(start, [start + 1.day.to_i, @cutoff].min)
       end
+      check_deadline!
       journeys = @journeys.values.sort_by { |journey| [journey.terminal_at, journey.request_id] }.map do |journey|
         journey.with(omitted: journey.omitted || @failed.include?(journey.request_id))
       end
@@ -39,6 +44,7 @@ module SearchExport
   private
 
     def read_window(start, finish)
+      check_deadline!
       query_id = @client.start_query(
         log_group_name: "platform-logs-#{TradeTariffBackend.environment}",
         start_time: start, end_time: finish, limit: LIMIT,
@@ -71,12 +77,18 @@ module SearchExport
 
     def await_results(query_id)
       complete = false
+      query_bytes = 0
       loop do
+        check_deadline!
         response = @client.get_query_results(query_id:)
-        if response.status == 'Complete'
-          complete = true
-          return response
-        end
+        complete = response.status == 'Complete'
+        reported_bytes = [response.statistics&.bytes_scanned.to_f, query_bytes].max
+        @scanned_bytes += reported_bytes - query_bytes
+        query_bytes = reported_bytes
+        raise Error, 'The export exceeded 500 GiB of scanned data.' if @scanned_bytes > SCAN_LIMIT
+
+        check_deadline!
+        return response if complete
         raise Error, 'CloudWatch could not complete the export query.' unless %w[Scheduled Running].include?(response.status)
 
         sleep 1
@@ -87,6 +99,12 @@ module SearchExport
       rescue Aws::Errors::ServiceError
         # Preserve the original failure; cancellation is best effort.
       end
+    end
+
+    def monotonic_time = Process.clock_gettime(Process::CLOCK_MONOTONIC)
+
+    def check_deadline!
+      raise Error, 'The export exceeded 40 minutes of log collection.' if monotonic_time >= @deadline
     end
 
     def consume(row)

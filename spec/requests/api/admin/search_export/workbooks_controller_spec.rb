@@ -23,6 +23,31 @@ RSpec.describe Api::Admin::SearchExport::WorkbooksController do
     end
   end
 
+  it 'returns the same job without enqueueing duplicate submissions' do
+    travel_to(today) do
+      submit
+      id = response.parsed_body.dig('data', 'id')
+      submit
+      expect(response).to have_http_status(:accepted)
+      expect(response.parsed_body.dig('data', 'id')).to eq(id)
+      SearchExport::WorkbookExport.find(id).claim
+      submit
+      expect(response.parsed_body.dig('data', 'id')).to eq(id)
+      expect(response.parsed_body.dig('data', 'attributes', 'status')).to eq('running')
+      expect(SearchExport::WorkbookWorker).to have_received(:perform_async).once.with(id)
+    end
+  end
+
+  it 'allows a fresh submission after a failed enqueue' do
+    allow(SearchExport::WorkbookWorker).to receive(:perform_async).and_return(nil, 'job-id')
+    travel_to(today) do
+      submit
+      expect(response).to have_http_status(:service_unavailable)
+      submit
+      expect(response).to have_http_status(:accepted)
+    end
+  end
+
   it 'builds the workbook asynchronously and serves its temporary bytes' do
     travel_to(today) do
       submit
@@ -74,6 +99,18 @@ RSpec.describe Api::Admin::SearchExport::WorkbooksController do
     travel_to(today) { submit }
     expect(response).to have_http_status(:service_unavailable)
     expect(workbook_exports.last.payload).to be_nil
+  end
+
+  it 'allows a fresh submission after enqueueing raises a Redis error' do
+    allow(SearchExport::WorkbookWorker).to receive(:perform_async).and_raise(RedisClient::CannotConnectError)
+    travel_to(today) do
+      submit
+      expect(response).to have_http_status(:service_unavailable)
+      expect(workbook_exports.last.payload).to be_nil
+      allow(SearchExport::WorkbookWorker).to receive(:perform_async).and_return('job-id')
+      submit
+      expect(response).to have_http_status(:accepted)
+    end
   end
 
   it 'returns service unavailable when Redis is unavailable' do

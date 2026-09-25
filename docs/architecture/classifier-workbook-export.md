@@ -37,6 +37,11 @@ never fetches the file. Both keys expire one hour after job creation. An atomic
 claim prevents duplicate execution; completion does not extend expiry or replace
 a failed job. Sidekiq does not retry failed exports automatically.
 
+A SHA-256 fingerprint of the service and normalised dates identifies equivalent
+export requests. An atomic Redis transaction returns the existing queued or
+running job for repeated submissions. Only the request that creates a job queues
+it. Completed, failed or expired exports allow a fresh submission.
+
 The handoff uses the existing Sidekiq Redis connection, not `Rails.cache`;
 worker caching remains disabled. Redis loss or expiry requires a new export request.
 
@@ -47,8 +52,13 @@ the CloudWatch limit or query statistics show more matches than returned rows.
 Half-open timestamp filters prevent overlap between split windows. A saturated
 one-second window fails the export rather than returning a partial workbook.
 
-Exports do not enforce application budgets for scan volume, retrieved bytes,
-query count, elapsed time, journey count, date-span length, retained jobs or file size.
+Log collection stops after 40 minutes or when reported cumulative scanning
+exceeds 500 GiB. Repeated polling statistics count only the increase for each
+query. An unfinished query is cancelled on failure. Scanning can continue between
+polls or during cancellation, so this is not a hard billing cap.
+
+There are no application limits on retrieved bytes, query count, journey count,
+date-span length, retained jobs or file size.
 The reader fails on incomplete queries or malformed required data; it does not
 publish rows collected before that failure. The workbook must fit the Excel
 worksheet format.

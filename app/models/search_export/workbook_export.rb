@@ -12,12 +12,29 @@ module SearchExport
     attr_reader :id
 
     def self.create(from_date:, to_date:)
-      export = new(SecureRandom.uuid)
-      now = Time.current
-      payload = { status: QUEUED, from: from_date.iso8601, to: to_date.iso8601, updated_at: now.iso8601 }
-      Sidekiq.redis { |redis| redis.set(export.key, payload.to_json, ex: RETENTION.to_i) }
+      fingerprint = Digest::SHA256.hexdigest([TradeTariffBackend.service, from_date.iso8601, to_date.iso8601].to_json)
+      active_key = "search_export:#{TradeTariffBackend.service}:active:#{fingerprint}"
+      Sidekiq.redis do |redis|
+        loop do
+          export = new(SecureRandom.uuid, newly_created: true)
+          existing = nil
+          created = redis.multi(watch: [active_key]) do |transaction|
+            active_id = redis.get(active_key)
+            active = new(active_id) if active_id
+            stored = redis.get(active.key)&.then { |value| JSON.parse(value) } if active
+            if stored && [QUEUED, RUNNING].include?(stored['status'])
+              existing = active
+              next
+            end
 
-      export
+            payload = { status: QUEUED, from: from_date.iso8601, to: to_date.iso8601, updated_at: Time.current.iso8601 }
+            transaction.set(export.key, payload.to_json, ex: RETENTION.to_i)
+            transaction.set(active_key, export.id, ex: RETENTION.to_i)
+          end
+          return existing if existing
+          return export if created.present?
+        end
+      end
     end
 
     def self.find(id)
@@ -27,9 +44,12 @@ module SearchExport
       export if export.payload
     end
 
-    def initialize(id)
+    def initialize(id, newly_created: false)
       @id = id
+      @newly_created = newly_created
     end
+
+    def newly_created? = @newly_created
 
     def key = "search_export:#{TradeTariffBackend.service}:#{id}"
     def file_key = "#{key}:file"
