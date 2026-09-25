@@ -29,8 +29,13 @@ module Api
         return empty_response if @query.blank?
 
         ::Search::Instrumentation.search(request_id:, query: @query, search_type: 'classification') do
+          # A caller that sends an expanded query has already rewritten the
+          # product in tariff terms. Retrieval must rank on that rewrite. If the
+          # raw query stays as `query`, the OpenSearch leg makes one boosted
+          # clause per raw word, and those clauses outvote the rewrite. The
+          # search events above still record the query the caller sent.
           result = HybridRetrievalService.call(
-            query: @query,
+            query: expanded_query || @query,
             expanded_query: expanded_query,
             as_of: parse_date(@params[:as_of]),
             request_id: request_id,
