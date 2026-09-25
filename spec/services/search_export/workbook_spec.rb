@@ -65,6 +65,21 @@ RSpec.describe SearchExport::Workbook do
     expect(sheet_xml(result.bytes, 'xl/worksheets/sheet2.xml')).to include('ref="A1:AI7"')
   end
 
+  it 'does not reject a source based on the former journey-count budget' do
+    store_journey
+    allow(journeys).to receive(:size).and_return(200_001)
+    allow(SearchExport::CloudwatchReader).to receive(:call).and_return(
+      SearchExport::CloudwatchReader::Result.new(journeys:, clicks:),
+    )
+    expect(workbook.row_count).to eq(1)
+  end
+
+  it 'rejects row numbers outside the Excel worksheet format' do
+    builder = described_class.new(from:, to:, generated_at:)
+    expect { builder.send(:row_xml, 1_048_577, nil, []) }
+      .to raise_error(RangeError, /Excel worksheet format/)
+  end
+
   it 'fails explicitly when the template dimensions change' do
     builder = described_class.new(from:, to:, generated_at:)
     expect { builder.send(:write_searches, StringIO.new, '<sheetData></sheetData>', StringIO.new, 0) }

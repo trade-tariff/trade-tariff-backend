@@ -35,29 +35,24 @@ Recent exports are provisional because log ingestion and clicks can arrive later
 Redis holds job metadata and workbook bytes in separate keys. Status polling
 never fetches the file. Both keys expire one hour after job creation. An atomic
 claim prevents duplicate execution; completion does not extend expiry or replace
-a failed job. A queued or running job becomes failed after 15 minutes without a
-state transition. Sidekiq does not retry failed exports automatically.
+a failed job. Sidekiq does not retry failed exports automatically.
 
-Admission is limited to three retained exports per service, including completed
-and failed exports. Each workbook is limited to 10 MiB. This bounds retained
-file payloads to 30 MiB per service, excluding metadata and Redis overhead. The
-handoff uses the existing Sidekiq Redis connection, not `Rails.cache`; worker
-caching remains disabled. Redis loss or expiry requires a new export request.
+The handoff uses the existing Sidekiq Redis connection, not `Rails.cache`;
+worker caching remains disabled. Redis loss or expiry requires a new export request.
 
-## Retrieval limits
+## Log retrieval
 
 The reader queries one UTC day at a time. It splits a window when results reach
 the CloudWatch limit or query statistics show more matches than returned rows.
 Half-open timestamp filters prevent overlap between split windows. A saturated
 one-second window fails the export rather than returning a partial workbook.
 
-Each export permits at most 512 queries, 100 MiB of accepted log messages,
-200,000 journeys and ten minutes of query polling. Scan volume is not capped.
-The reader fails on incomplete queries, malformed required data or exceeded limits;
-it does not publish the rows collected before that failure.
+Exports do not enforce application budgets for scan volume, retrieved bytes,
+query count, elapsed time, journey count, date-span length, retained jobs or file size.
+The reader fails on incomplete queries or malformed required data; it does not
+publish rows collected before that failure. The workbook must fit the Excel
+worksheet format.
 
-These are per-export limits, not process-memory limits. Ruby objects, query
-responses and XLSX generation require additional memory. Filtering shared
-application streams still scans unrelated traffic. Confirm the worker role can
-start, read and stop Logs Insights queries for the platform log group before
-enabling the admin feature. No IAM changes are included.
+Filtering shared application streams still scans unrelated traffic. The worker
+role needs permission to start, read and stop Logs Insights queries for the
+platform log group. No IAM changes are included.

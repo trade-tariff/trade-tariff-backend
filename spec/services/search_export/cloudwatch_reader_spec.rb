@@ -70,12 +70,12 @@ RSpec.describe SearchExport::CloudwatchReader do
     expect { reader.call }.to raise_error(described_class::Error, /one second/)
   end
 
-  it 'cancels an incomplete query at the deadline' do
-    client.stub_responses(:get_query_results, status: 'Running')
-    allow(reader).to receive(:monotonic_time).and_return(0, 0, 0, 601)
-    allow(reader).to receive(:sleep)
-    expect { reader.call }.to raise_error(described_class::Error, /timed out/)
-    expect(client.api_requests.map { |request| request[:operation_name] }).to include(:stop_query)
+  it 'waits for CloudWatch completion without an export runtime budget' do
+    client.stub_responses(:get_query_results, [{ status: 'Running' }, response(trace)])
+    allow(reader).to receive(:sleep) { travel 11.minutes }
+    expect(reader.call.journeys.size).to eq(1)
+  ensure
+    travel_back
   end
 
   it 'fails on query failure without returning partial data' do
@@ -99,16 +99,20 @@ RSpec.describe SearchExport::CloudwatchReader do
     end
   end
 
-  it 'bounds retrieved bytes' do
-    stub_const('SearchExport::CloudwatchReader::MAX_BYTES', 1)
-    client.stub_responses(:get_query_results, response(trace))
-    expect { reader.call }.to raise_error(described_class::Error, /too large/)
-  end
+  it 'accepts retrieved messages beyond the former byte limit' do
+    message = trace.to_json
+    allow(message).to receive(:bytesize).and_return(101.megabytes)
+    fields = [
+      Aws::CloudWatchLogs::Types::ResultField.new(field: '@timestamp', value: '2026-09-23T10:00:00Z'),
+      Aws::CloudWatchLogs::Types::ResultField.new(field: '@message', value: message),
+    ]
+    result = Aws::CloudWatchLogs::Types::GetQueryResultsResponse.new(
+      status: 'Complete', results: [fields],
+      statistics: Aws::CloudWatchLogs::Types::QueryStatistics.new(records_matched: 1.0)
+    )
+    allow(client).to receive(:get_query_results).and_return(result)
 
-  it 'bounds the number of retained journeys' do
-    stub_const('SearchExport::Workbook::MAX_ROWS', 0)
-    client.stub_responses(:get_query_results, response(trace))
-    expect { reader.call }.to raise_error(described_class::Error, /Too many journeys/)
+    expect(reader.call.journeys.map(&:request_id)).to eq(%w[guided-1])
   end
 
   it 'allows large scans to complete without a scan-volume budget' do
@@ -127,10 +131,11 @@ RSpec.describe SearchExport::CloudwatchReader do
     expect(reader.call.clicks['guided-1'].first.clicked_at).to eq(Time.utc(2026, 9, 23, 12))
   end
 
-  it 'limits query submissions' do
-    stub_const('SearchExport::CloudwatchReader::MAX_QUERIES', 1)
+  it 'submits more than 512 queries when the date range needs them' do
+    reader = described_class.new(from: from - 512, to: from, generated_at:, client:)
     client.stub_responses(:get_query_results, response)
-    expect { reader.call }.to raise_error(described_class::Error, /Too many log queries/)
+    expect(reader.call.journeys).to be_empty
+    expect(client.api_requests.count { |request| request[:operation_name] == :start_query }).to eq(514)
   end
 
   it 'bounds late-click retrieval to the day after the requested range' do

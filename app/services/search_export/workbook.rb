@@ -5,8 +5,6 @@ require 'zip'
 module SearchExport
   class Workbook
     Result = Data.define(:bytes, :omitted_count, :row_count)
-    TooManyRows = Class.new(StandardError)
-    MAX_ROWS = 200_000
     TEMPLATE = Rails.root.join('lib/search_export/AI-1253-search-export-template.xlsx').freeze
     SEARCHES_SHEET = 'xl/worksheets/sheet2.xml'
     INSTRUCTIONS_SHEET = 'xl/worksheets/sheet1.xml'
@@ -26,7 +24,6 @@ module SearchExport
 
     def call
       @source = CloudwatchReader.call(from:, to:, generated_at:)
-      raise TooManyRows, 'Shorten the date range. This export is limited to 200,000 journeys.' if @source.journeys.size > MAX_ROWS
 
       Tempfile.create(['classifier-rows', '.xml']) do |rows|
         written, omitted = write_rows(rows)
@@ -111,6 +108,8 @@ module SearchExport
     end
 
     def row_xml(number, journey, clicks)
+      raise RangeError, 'The rows exceed the Excel worksheet format.' if number > 1_048_576
+
       values = row_values(journey, clicks)
       lines = values.map { |column, value| wrapped_lines(column, value) }.max
       height = [15 * lines, 409].min
