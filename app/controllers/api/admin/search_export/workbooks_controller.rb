@@ -19,12 +19,9 @@ module Api
           render_export(status: :accepted)
         rescue ::SearchExport::DateRange::InvalidRange => e
           render json: error_response('Invalid date range', e.message, :bad_request), status: :bad_request
-        rescue ::SearchExport::WorkbookExport::Busy => e
-          unavailable(e.message)
         end
 
         def show
-          @export.expire_if_stale!
           render_export
         end
 

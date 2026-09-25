@@ -15,7 +15,7 @@ module SearchExport
 
       result = Workbook.call(from: Date.iso8601(payload.fetch('from')), to: Date.iso8601(payload.fetch('to')))
       export.finish(result)
-    rescue Workbook::TooManyRows, WorkbookExport::TooLarge, CloudwatchReader::Error => e
+    rescue CloudwatchReader::Error => e
       export&.fail(e.message)
     rescue StandardError
       export&.fail('The workbook could not be built.')

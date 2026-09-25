@@ -67,29 +67,27 @@ RSpec.describe SearchExport::WorkbookExport do
     expect(export.file).to be_nil
   end
 
-  it 'fails stale pending jobs and refuses a late completion' do
+  it 'allows completion after fifteen minutes' do
     export.claim
     travel 16.minutes do
-      export.expire_if_stale!
-      expect(export.payload['status']).to eq('failed')
-      expect(export.finish(result)).to be(false)
+      expect(export.finish(result)).to be(true)
+      expect(export.payload['status']).to eq('ready')
     end
   end
 
-  it 'rejects files above the per-export size bound' do
-    stub_const('SearchExport::WorkbookExport::MAX_FILE_BYTES', 1)
+  it 'stores files larger than ten MiB' do
+    large_result = result.with(bytes: 'x' * 11.megabytes)
     export.claim
-    expect { export.finish(result) }.to raise_error(described_class::TooLarge)
-    expect(export.file).to be_nil
+    expect(export.finish(large_result)).to be(true)
+    expect(export.file).to eq(large_result.bytes)
   end
 
-  it 'bounds retained exports including ready files and frees deleted slots' do
+  it 'creates exports without a retained-export quota' do
     export.claim
     export.finish(result)
-    2.times { described_class.create(from_date: Date.yesterday, to_date: Date.current) }
-    expect { described_class.create(from_date: Date.yesterday, to_date: Date.current) }.to raise_error(described_class::Busy)
-    export.delete
-    expect { described_class.create(from_date: Date.yesterday, to_date: Date.current) }.not_to raise_error
+    exports = Array.new(5) { described_class.create(from_date: Date.yesterday, to_date: Date.current) }
+    expect(exports.map { |entry| entry.payload['status'] }).to eq(Array.new(5, 'queued'))
+    expect(export.payload['status']).to eq('ready')
   end
 
   it 'keeps services separate' do

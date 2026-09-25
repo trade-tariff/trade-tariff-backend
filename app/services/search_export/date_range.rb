@@ -2,7 +2,6 @@
 
 module SearchExport
   class DateRange < Data.define(:from, :to)
-    MAX_DAYS = SearchAnalytics::DateRange::MAX_DAYS
     InvalidRange = Class.new(StandardError)
 
     def self.parse(from:, to:, now: Time.current)
@@ -15,7 +14,6 @@ module SearchExport
       raise InvalidRange, 'Enter valid calendar dates for From and To.' unless first.year.positive? && last.year.positive?
       raise InvalidRange, 'From must be on or before To.' if first > last
       raise InvalidRange, 'To must be today or earlier (UTC).' if last > now.utc.to_date
-      raise InvalidRange, "Choose a range of no more than #{MAX_DAYS} days." if (last - first).to_i + 1 > MAX_DAYS
 
       new(from: first, to: last)
     rescue Date::Error

@@ -7,9 +7,6 @@ module SearchExport
     Click = Data.define(:commodity_code, :clicked_at)
     Result = Data.define(:journeys, :clicks)
     LIMIT = 10_000
-    MAX_QUERIES = 512
-    MAX_BYTES = 100.megabytes
-    DEADLINE = 10.minutes
     LATE_CLICK_WINDOW = 1.day
     EVENTS = %w[evaluation_journey_recorded result_selected search_failed search_stage_failed].freeze
 
@@ -22,15 +19,12 @@ module SearchExport
       @finish = (to + 1).to_time(:utc).to_i
       @cutoff = [@finish + LATE_CLICK_WINDOW, generated_at.to_i].min
       @client = client
-      @queries = 0
-      @bytes = 0
       @journeys = {}
       @selections = Hash.new { |hash, key| hash[key] = [] }
       @failed = Set.new
     end
 
     def call
-      @deadline = monotonic_time + DEADLINE
       (@start...@cutoff).step(1.day.to_i) do |start|
         read_window(start, [start + 1.day.to_i, @cutoff].min)
       end
@@ -39,16 +33,12 @@ module SearchExport
       end
       Result.new(journeys:, clicks: @selections.slice(*@journeys.keys))
     rescue Aws::Errors::ServiceError, JSON::ParserError, KeyError, ArgumentError, TypeError
-      raise Error, 'Could not read complete journey logs. Please try again with a shorter date range.'
+      raise Error, 'Could not read complete journey logs. Please try again.'
     end
 
   private
 
     def read_window(start, finish)
-      @queries += 1
-      raise Error, 'Too many log queries. Please shorten the date range.' if @queries > MAX_QUERIES
-
-      check_deadline!
       query_id = @client.start_query(
         log_group_name: "platform-logs-#{TradeTariffBackend.environment}",
         start_time: start, end_time: finish, limit: LIMIT,
@@ -82,7 +72,6 @@ module SearchExport
     def await_results(query_id)
       complete = false
       loop do
-        check_deadline!
         response = @client.get_query_results(query_id:)
         if response.status == 'Complete'
           complete = true
@@ -103,9 +92,6 @@ module SearchExport
     def consume(row)
       fields = row.to_h { |field| [field.field, field.value] }
       message = fields.fetch('@message')
-      @bytes += message.bytesize
-      raise Error, 'Log results are too large. Please shorten the date range.' if @bytes > MAX_BYTES
-
       event = JSON.parse(message)
       id = event['request_id']
       return if id.blank?
@@ -139,15 +125,6 @@ module SearchExport
         results: details.fetch('results'), end_page_type: event.fetch('end_page_type'),
         omitted: event['search_degraded'] == true
       )
-      raise Error, 'Too many journeys. Please shorten the date range.' if @journeys.size > Workbook::MAX_ROWS
-    end
-
-    def check_deadline!
-      raise Error, 'CloudWatch export timed out. Please shorten the date range.' if monotonic_time >= @deadline
-    end
-
-    def monotonic_time
-      Process.clock_gettime(Process::CLOCK_MONOTONIC)
     end
   end
 end

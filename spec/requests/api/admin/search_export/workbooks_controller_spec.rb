@@ -48,11 +48,11 @@ RSpec.describe Api::Admin::SearchExport::WorkbooksController do
     expect(export).not_to have_received(:file)
   end
 
-  it 'marks a stale export failed when polled' do
+  it 'keeps a pending export available after fifteen minutes' do
     export = SearchExport::WorkbookExport.create(from_date: Date.yesterday, to_date: Date.current)
     travel 16.minutes do
       get "#{path}/#{export.id}.json", headers: request_headers
-      expect(response.parsed_body.dig('data', 'attributes', 'status')).to eq('failed')
+      expect(response.parsed_body.dig('data', 'attributes', 'status')).to eq('queued')
     end
   end
 
@@ -63,7 +63,7 @@ RSpec.describe Api::Admin::SearchExport::WorkbooksController do
 
   it 'rejects an invalid date range' do
     travel_to(today) do
-      post "#{path}.json", params: { from: '2025-01-01', to: '2026-09-24' }, headers: request_headers, as: :json
+      post "#{path}.json", params: { from: '2026-09-24', to: '2026-09-23' }, headers: request_headers, as: :json
       expect(response).to have_http_status(:bad_request)
       expect(SearchExport::WorkbookWorker).not_to have_received(:perform_async)
     end
@@ -95,10 +95,18 @@ RSpec.describe Api::Admin::SearchExport::WorkbooksController do
     expect(response).to have_http_status(:not_found)
   end
 
-  it 'enforces admission limits without queueing another export' do
+  it 'queues another export when three exports already exist' do
     3.times { SearchExport::WorkbookExport.create(from_date: Date.yesterday, to_date: Date.current) }
     travel_to(today) { submit }
-    expect(response).to have_http_status(:service_unavailable)
-    expect(SearchExport::WorkbookWorker).not_to have_received(:perform_async)
+    expect(response).to have_http_status(:accepted)
+    expect(SearchExport::WorkbookWorker).to have_received(:perform_async)
+  end
+
+  it 'accepts date ranges longer than a year' do
+    travel_to(today) do
+      post "#{path}.json", params: { from: '2025-01-01', to: '2026-09-24' }, headers: request_headers, as: :json
+      expect(response).to have_http_status(:accepted)
+      expect(SearchExport::WorkbookWorker).to have_received(:perform_async)
+    end
   end
 end

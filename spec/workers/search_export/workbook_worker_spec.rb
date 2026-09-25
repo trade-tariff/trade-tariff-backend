@@ -25,19 +25,19 @@ RSpec.describe SearchExport::WorkbookWorker do
     expect(SearchExport::Workbook).not_to have_received(:call)
   end
 
-  it 'does not build a stale queued job' do
+  it 'builds a job that waited more than fifteen minutes' do
     id = export.id
     travel 16.minutes do
       described_class.new.perform(id)
-      expect(export.payload['status']).to eq('failed')
-      expect(SearchExport::Workbook).not_to have_received(:call)
+      expect(export.payload['status']).to eq('ready')
+      expect(SearchExport::Workbook).to have_received(:call)
     end
   end
 
   it 'reports incomplete CloudWatch retrieval without a partial file' do
-    allow(SearchExport::Workbook).to receive(:call).and_raise(SearchExport::CloudwatchReader::Error, 'Please shorten the date range.')
+    allow(SearchExport::Workbook).to receive(:call).and_raise(SearchExport::CloudwatchReader::Error, 'CloudWatch could not complete the export query.')
     described_class.new.perform(export.id)
-    expect(export.payload).to include('status' => 'failed', 'error' => 'Please shorten the date range.')
+    expect(export.payload).to include('status' => 'failed', 'error' => 'CloudWatch could not complete the export query.')
     expect(export.file).to be_nil
   end
 
