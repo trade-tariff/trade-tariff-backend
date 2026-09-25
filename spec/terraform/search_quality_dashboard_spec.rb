@@ -200,7 +200,7 @@ end
 class CwliExpression
   def initialize(source, record)
     @record = record.transform_keys(&:to_s)
-    @tokens = source.scan(/"(?:\\.|[^"])*"|-?\d+|ispresent|[A-Za-z_][A-Za-z0-9_]*|!=|[=(),]/)
+    @tokens = source.scan(/"(?:\\.|[^"\\])*"|-?\d+|ispresent|[A-Za-z_][A-Za-z0-9_]*|!=|[=(),]/)
     @index = 0
   end
 
