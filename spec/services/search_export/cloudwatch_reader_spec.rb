@@ -111,18 +111,10 @@ RSpec.describe SearchExport::CloudwatchReader do
     expect { reader.call }.to raise_error(described_class::Error, /Too many journeys/)
   end
 
-  it 'cancels when reported scanning exceeds the budget' do
-    stub_const('SearchExport::CloudwatchReader::MAX_SCANNED_BYTES', 10)
-    client.stub_responses(:get_query_results, status: 'Running', statistics: { bytes_scanned: 11.0 })
-    expect { reader.call }.to raise_error(described_class::Error, /scan budget/)
-    expect(client.api_requests.map { |request| request[:operation_name] }).to include(:stop_query)
-  end
-
-  it 'does not count the same scanned bytes twice while polling' do
-    stub_const('SearchExport::CloudwatchReader::MAX_SCANNED_BYTES', 10)
+  it 'allows large scans to complete without a scan-volume budget' do
     client.stub_responses(:get_query_results, [
-      { status: 'Running', statistics: { bytes_scanned: 8.0 } },
-      response(trace).merge(statistics: { records_matched: 1.0, bytes_scanned: 8.0 }),
+      { status: 'Running', statistics: { bytes_scanned: 11.gigabytes.to_f } },
+      response(trace).merge(statistics: { records_matched: 1.0, bytes_scanned: 12.gigabytes.to_f }),
       response,
     ])
     allow(reader).to receive(:sleep)
