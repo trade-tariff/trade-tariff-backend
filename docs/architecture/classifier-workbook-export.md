@@ -52,10 +52,8 @@ Half-open timestamp filters prevent overlap between split windows. A saturated
 one-second window fails the export rather than returning a partial workbook.
 
 Each export permits at most 512 queries, 100 MiB of accepted log messages,
-200,000 journeys and ten minutes of query polling. A scan-budget check cancels
-queries after reported cumulative scanning exceeds 10 GiB. This is not a hard
-billing cap: scanning can continue between polls or during cancellation. The
-reader fails on incomplete queries, malformed required data or exceeded limits;
+200,000 journeys and ten minutes of query polling. Scan volume is not capped.
+The reader fails on incomplete queries, malformed required data or exceeded limits;
 it does not publish the rows collected before that failure.
 
 These are per-export limits, not process-memory limits. Ruby objects, query

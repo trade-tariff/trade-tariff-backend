@@ -9,7 +9,6 @@ module SearchExport
     LIMIT = 10_000
     MAX_QUERIES = 512
     MAX_BYTES = 100.megabytes
-    MAX_SCANNED_BYTES = 10.gigabytes
     DEADLINE = 10.minutes
     LATE_CLICK_WINDOW = 1.day
     EVENTS = %w[evaluation_journey_recorded result_selected search_failed search_stage_failed].freeze
@@ -25,7 +24,6 @@ module SearchExport
       @client = client
       @queries = 0
       @bytes = 0
-      @scanned_bytes = 0
       @journeys = {}
       @selections = Hash.new { |hash, key| hash[key] = [] }
       @failed = Set.new
@@ -83,15 +81,9 @@ module SearchExport
 
     def await_results(query_id)
       complete = false
-      scanned = 0
       loop do
         check_deadline!
         response = @client.get_query_results(query_id:)
-        current = response.statistics&.bytes_scanned.to_i
-        @scanned_bytes += [current - scanned, 0].max
-        scanned = current
-        raise Error, 'Log scan budget exceeded. Please shorten the date range.' if @scanned_bytes > MAX_SCANNED_BYTES
-
         if response.status == 'Complete'
           complete = true
           return response
