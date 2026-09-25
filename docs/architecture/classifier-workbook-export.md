@@ -14,6 +14,18 @@ the original query, expansion terms actually used, accumulated question history
 and the displayed result descriptions, order and confidence labels. No later
 commodity lookup changes those descriptions.
 
+The backend returns AI expansion terms separately in
+`meta.interactive_search.query_expansion.ai_terms`. The frontend passes this
+object back with each answer. An empty list means no AI expansion. Missing or
+invalid expansion data on a supplied expanded query prevents terminal capture: the
+query may already contain answers, so its expansion cannot be recovered safely.
+Mechanical synonym additions come from the current retrieval. Neither field
+changes retrieval or ranking.
+
+Deploy backend support before the frontend starts carrying this field. Older
+clients and in-flight journeys can lack this expansion data. Their uncaptured journeys
+are not counted as export omissions. Existing logs are not repaired.
+
 Dates are inclusive UTC dates. For each request ID, the export uses its latest
 terminal trace within that window. Existing backend `result_selected` events
 join by request ID; classic searches without a guided terminal trace do not

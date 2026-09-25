@@ -23,6 +23,34 @@ RSpec.describe Api::Internal::SearchController, :internal do
       )
     end
 
+    [[], ['poultry meat']].each do |terms|
+      it "passes expansion terms #{terms.inspect} to the service" do
+        service = instance_double(Api::Internal::SearchService, call: { data: [] })
+        allow(Api::Internal::SearchService).to receive(:new).and_return(service)
+
+        post api_search_path(format: :json), params: { q: 'chicken', query_expansion: { ai_terms: terms } }, as: :json
+
+        expect(Api::Internal::SearchService).to have_received(:new).with(
+          hash_including('query_expansion' => { 'ai_terms' => terms }),
+        )
+      end
+    end
+
+    [[], %w[Fillet]].each do |terms|
+      it "captures #{terms.inspect} without guessing from a query that also contains an answer" do
+        allow(TradeTariffBackend.search_client).to receive(:search).and_return('hits' => { 'hits' => [] })
+        allow(Search::Instrumentation).to receive(:evaluation_journey_recorded)
+        answers = [{ question: 'Cut?', options: '["Fillet","Whole"]', answer: 'Fillet' }]
+
+        post api_search_path(format: :json),
+             params: { q: 'chicken', expanded_query: 'chicken Fillet', query_expansion: { ai_terms: terms }, request_id: 'expansion-capture', answers: },
+             headers: { 'HTTP_X_ORIGINAL_USER_AGENT' => 'TradeTariffFrontend/test' }, as: :json
+
+        expect(response).to have_http_status(:ok)
+        expect(Search::Instrumentation).to have_received(:evaluation_journey_recorded).with(hash_including(expansion_terms: terms))
+      end
+    end
+
     context 'when text query with results' do
       before do
         index = Search::GoodsNomenclatureIndex.new
@@ -367,6 +395,7 @@ RSpec.describe Api::Internal::SearchController, :internal do
               'attempt' => 1,
               'model' => 'gpt-5.2',
               'result_limit' => 5,
+              'query_expansion' => { 'ai_terms' => [] },
               'answers' => [
                 {
                   'question' => 'What is the material?',

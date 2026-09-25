@@ -36,6 +36,8 @@ module Api
         @request_id = params[:request_id].presence || TradeTariffRequest.request_id.presence || SecureRandom.uuid
         TradeTariffRequest.request_id ||= @request_id
         @expanded_query = params[:expanded_query].to_s.strip.presence
+        @query_expansion = params[:query_expansion]
+        @retrieval_expansion_terms = []
         @skip_question = params[:skip_question].nil? ? nil : ActiveModel::Type::Boolean.new.cast(params[:skip_question])
         @configuration_overrides = params[:configuration_overrides] || {}
         @search_type = params[:search_type] || 'interactive'
@@ -374,17 +376,32 @@ module Api
 
       def remember_retrieval_expansion(search_expanded_query)
         synonym_terms = synonyms_applied? ? ::Search::SynonymExpander.added_terms(search_expanded_query) : []
-        @retrieval_expansion_terms = ::SearchExport::ExpansionTerms.call(
-          expansion_input: @expansion_input || search_expanded_query,
-          # A supplied expansion is refined with selected answers before retrieval.
-          # Capture that expansion before refinement rather than treating answers as AI terms.
-          sent_query: expanded_query.presence || search_expanded_query,
-          answer_values: answered_values,
-          synonym_terms:,
-        )
+        @ai_expansion_terms = if expanded_query.present?
+                                supplied_ai_expansion_terms
+                              else
+                                ::SearchExport::ExpansionTerms.call(
+                                  expansion_input: @expansion_input || search_expanded_query,
+                                  sent_query: search_expanded_query,
+                                  synonym_terms: [],
+                                )
+                              end
+        @retrieval_expansion_terms = @ai_expansion_terms&.then { |terms| (terms + synonym_terms).uniq }
+      end
+
+      def supplied_ai_expansion_terms
+        return unless @query_expansion.is_a?(Hash)
+
+        terms = @query_expansion.with_indifferent_access[:ai_terms]
+        return unless terms.is_a?(Array) && terms.all? { |term| term.is_a?(String) && term.present? }
+
+        terms
       end
 
       def finish_terminal(response)
+        # Older clients return a query containing both expansion and answer refinements.
+        # Without separate expansion data, omit the capture rather than guess.
+        return response if @retrieval_expansion_terms.nil?
+
         ::SearchExport::JourneyProjection.record(
           response:,
           query: @original_query,
@@ -676,6 +693,10 @@ module Api
             result_limit: interactive_result.result_limit,
             answers: build_answers_list(interactive_result),
           }
+
+          unless @ai_expansion_terms.nil?
+            interactive_meta[:query_expansion] = { ai_terms: @ai_expansion_terms }
+          end
 
           if expanded_query.present? && expanded_query != q
             interactive_meta[:expanded_query] = expanded_query

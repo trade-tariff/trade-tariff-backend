@@ -2,7 +2,7 @@ module Api
   module Internal
     class SearchController < InternalController
       def search
-        result = Api::Internal::SearchService.new(search_params).call
+        result = Api::Internal::SearchService.new(search_params.to_h).call
 
         if result.is_a?(Hash) && result[:errors]
           render json: result, status: :unprocessable_content
@@ -28,7 +28,7 @@ module Api
     private
 
       def search_params
-        params.permit(:q, :as_of, :request_id, :expanded_query, :skip_question, answers: %i[question answer options])
+        params.permit(:q, :as_of, :request_id, :expanded_query, :skip_question, answers: %i[question answer options], query_expansion: { ai_terms: [] })
       end
     end
   end
