@@ -8409,37 +8409,6 @@ ALTER TABLE uk.tariff_knowledge_public_atar_rulings ALTER COLUMN id ADD GENERATE
 
 
 --
--- Name: tariff_update_presence_errors; Type: TABLE; Schema: uk; Owner: -
---
-
-CREATE TABLE uk.tariff_update_presence_errors (
-    id integer NOT NULL,
-    tariff_update_filename text NOT NULL,
-    model_name text NOT NULL,
-    details jsonb
-);
-
-
---
--- Name: tariff_update_presence_errors_id_seq; Type: SEQUENCE; Schema: uk; Owner: -
---
-
-CREATE SEQUENCE uk.tariff_update_presence_errors_id_seq
-    START WITH 1
-    INCREMENT BY 1
-    NO MINVALUE
-    NO MAXVALUE
-    CACHE 1;
-
-
---
--- Name: tariff_update_presence_errors_id_seq; Type: SEQUENCE OWNED BY; Schema: uk; Owner: -
---
-
-ALTER SEQUENCE uk.tariff_update_presence_errors_id_seq OWNED BY uk.tariff_update_presence_errors.id;
-
-
---
 -- Name: tariff_update_state_changes; Type: TABLE; Schema: uk; Owner: -
 --
 
@@ -9357,13 +9326,6 @@ ALTER TABLE ONLY uk.section_notes ALTER COLUMN id SET DEFAULT nextval('uk.sectio
 --
 
 ALTER TABLE ONLY uk.sections ALTER COLUMN id SET DEFAULT nextval('uk.sections_id_seq'::regclass);
-
-
---
--- Name: tariff_update_presence_errors id; Type: DEFAULT; Schema: uk; Owner: -
---
-
-ALTER TABLE ONLY uk.tariff_update_presence_errors ALTER COLUMN id SET DEFAULT nextval('uk.tariff_update_presence_errors_id_seq'::regclass);
 
 
 --
@@ -10857,14 +10819,6 @@ ALTER TABLE ONLY uk.tariff_knowledge_nodes
 
 ALTER TABLE ONLY uk.tariff_knowledge_public_atar_rulings
     ADD CONSTRAINT tariff_knowledge_public_atar_rulings_pkey PRIMARY KEY (id);
-
-
---
--- Name: tariff_update_presence_errors tariff_update_presence_errors_pkey; Type: CONSTRAINT; Schema: uk; Owner: -
---
-
-ALTER TABLE ONLY uk.tariff_update_presence_errors
-    ADD CONSTRAINT tariff_update_presence_errors_pkey PRIMARY KEY (id);
 
 
 --
@@ -14892,13 +14846,6 @@ CREATE INDEX tariff_knowledge_public_atar_rulings_validity_start_date_index ON u
 
 
 --
--- Name: tariff_update_presence_errors_tariff_update_filename_index; Type: INDEX; Schema: uk; Owner: -
---
-
-CREATE INDEX tariff_update_presence_errors_tariff_update_filename_index ON uk.tariff_update_presence_errors USING btree (tariff_update_filename);
-
-
---
 -- Name: tariff_update_state_changes_tariff_update_filename_index; Type: INDEX; Schema: uk; Owner: -
 --
 
@@ -15359,3 +15306,4 @@ INSERT INTO "schema_migrations" ("filename") VALUES ('20260818120000_add_run_tim
 INSERT INTO "schema_migrations" ("filename") VALUES ('20260824120000_add_provider_calls_to_evaluation_results.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20260915110000_create_search_analytics_query_results.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20260918070000_create_search_analytics_materialized_views.rb');
+INSERT INTO "schema_migrations" ("filename") VALUES ('20260924130000_drop_tariff_update_presence_errors.rb');
