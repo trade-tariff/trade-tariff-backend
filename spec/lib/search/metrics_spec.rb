@@ -49,6 +49,20 @@ RSpec.describe Search::Metrics do
     expect(dimension_sets('SearchDuration')).to eq([%w[Environment Service]])
   end
 
+  it 'does not emit metrics for an HMRC staff search' do
+    payload[:experiment] = 'hmrc-users'
+
+    expect(record).to be(false)
+    expect(output.string).to be_empty
+  end
+
+  it 'emits metrics for an HMRC trader search' do
+    payload[:experiment] = 'hmrc-traders'
+
+    expect(record).to be(true)
+    expect(emitted['SearchEvents']).to eq(1)
+  end
+
   it 'counts a classic fuzzy search with zero commodity hits as empty' do
     payload[:commodity_result_count] = 0
 

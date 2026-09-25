@@ -16,6 +16,7 @@ module Search
     RESPONSE_TYPES = %w[answers questions duplicate_validation error unknown].freeze
     RETRIEVAL_LEGS = %w[opensearch vector].freeze
     RETRIEVAL_STATUSES = %w[success error].freeze
+    EXCLUDED_EXPERIMENT_LABELS = %w[hmrc-users].freeze
     METRIC_NAMES = %w[
       SearchEvents
       SearchDuration
@@ -69,6 +70,8 @@ module Search
     private
 
       def payload_for(event, environment:, service:, now:)
+        return if EXCLUDED_EXPERIMENT_LABELS.include?(event.payload[:experiment].to_s)
+
         name = event.name.to_s.delete_suffix('.search')
         dimensions = base_dimensions(environment, service)
         metrics = []

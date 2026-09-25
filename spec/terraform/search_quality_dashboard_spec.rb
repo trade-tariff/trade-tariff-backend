@@ -33,6 +33,15 @@ RSpec.describe 'search quality dashboard Terraform' do
     CwliExpression.new(expression, record).parse_or
   end
 
+  it 'omits HMRC staff from reported quality logs and keeps other experiment labels' do
+    filter = expand_tf_local(module_main_tf, 'service_filter')
+
+    expect(filter).to include('service = "search"')
+    expect(filter).to include('experiment != "hmrc-users"')
+    expect(filter).to include('not ispresent(experiment)')
+    expect(filter).not_to include('hmrc-traders')
+  end
+
   it 'defines empty commodity / empty result predicates consistently with the experiment dashboard' do
     quality_zero = expand_tf_local(module_main_tf, 'zero_result_condition')
     experiment_zero = expand_tf_local(experiment_main_tf, 'zero_result_condition')

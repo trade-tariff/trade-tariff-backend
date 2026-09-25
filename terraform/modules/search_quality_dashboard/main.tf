@@ -1,8 +1,11 @@
 locals {
   dashboard_name = var.dashboard_name != null ? var.dashboard_name : "SearchQuality-${var.environment}"
   source         = "SOURCE '${var.log_group_name}'"
-  service_filter = "filter service = \"search\""
-  namespace      = "TradeTariff/Search"
+  # Reported quality logs omit HMRC staff. Other labels, including hmrc-traders, stay in.
+  # Missing experiment stays in. Metric widgets follow Search::Metrics, which uses the same label.
+  staff_exclusion = "(not ispresent(experiment) or experiment != \"hmrc-users\")"
+  service_filter  = "filter service = \"search\" and ${local.staff_exclusion}"
+  namespace       = "TradeTariff/Search"
 
   # Classic product-quality empty commodities: fuzzy/null searches with commodity_result_count = 0.
   # That is "Best commodity matches" empty. It includes both:
@@ -84,7 +87,7 @@ locals {
           markdown = join("\n", [
             "## Search Quality",
             "Search team: review empty results and selections. Counts are completed-search events, not journeys or people.",
-            "Recorded empty events and completed searches versus selections use metrics (UK + XI). Other widgets use logs. History starts at metric collection; gaps are not zero.",
+            "Recorded empty events and completed searches versus selections use metrics (UK + XI). Other widgets use logs. Both omit new hmrc-users searches. History starts at metric collection; gaps are not zero.",
             "[Overview](${local.search_dashboard_url}) | [Operations](${local.search_operations_dashboard_url}) | [Definitions](https://github.com/trade-tariff/trade-tariff-backend/blob/main/docs/search-dashboards.md)",
           ])
         }

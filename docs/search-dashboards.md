@@ -8,7 +8,7 @@ Search and Search Operations use `TradeTariff/Search` metrics for operational tr
 
 Metric charts in Overview and Operations keep UK and XI separate, including percentiles. Do not average their percentiles or add different dimension rollups of the same metric. Operations trends use fixed five-minute periods. Summary values and bar charts aggregate over the entire selected range.
 
-Metric counts are events, not unique requests, journeys or people. Every emitted event counts, including repeated steps and degraded searches. A later failure does not remove an earlier count. Admin analytics uses a different, failure-excluded cohort. Quality retains its counting rules, using metrics for two count widgets. Its other widgets use logs. Experiments retains its log-based cohorts.
+Metric counts are events, not unique requests, journeys or people. Every emitted event counts, including repeated steps and degraded searches, except searches labelled `hmrc-users`. A later failure does not remove an earlier count. Admin analytics uses a different, failure-excluded cohort and still includes that label. Quality retains its counting rules, using metrics for two count widgets. Its other widgets use logs and omit the same label. Experiments retains its log-based cohorts and still shows a selected `hmrc-users` label.
 
 | Metric | Source and meaning |
 | --- | --- |
@@ -86,7 +86,7 @@ A sampled hour showed numeric `1` and `0` comparisons for these flags. The queri
 
 Search Overview shows **Active browser sessions by experiment** as a bar chart. It counts distinct valid `browser_session_id` values on frontend `guided_search.journey` events with `schema_version=1` and `outcome=page_visible`, grouped by the recorded experiment label over the entire selected range. Repeated page events within a label count once. It combines frontend activity across UK and XI and does not sum per-hour distinct counts.
 
-The chart excludes missing, null or blank experiment labels and absent or malformed session IDs. It shows the top 30 labels by estimated session count, including labels not known to the backend. Counts can be approximate at high cardinality. No matching events means no observations, not proof that nobody is enrolled.
+The chart excludes missing, null or blank experiment labels and absent or malformed session IDs. It still includes `hmrc-users`, so the omitted staff cohort remains visible here. It shows the top 30 labels by estimated session count, including labels not known to the backend. Counts can be approximate at high cardinality. No matching events means no observations, not proof that nobody is enrolled.
 
 This is observed activity, not a count of people, current enrolments or configured experiments. The frontend records the most recently enrolled active experiment label, not every enrolment held by a session. A session can appear under different labels during the range, so the bars are not mutually exclusive and must not be summed as unique people. Cookie resets, session expiry and missing browser telemetry affect coverage. There is no explicit bot exclusion; events measure accepted browser telemetry.
 

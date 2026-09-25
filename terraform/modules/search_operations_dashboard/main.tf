@@ -135,7 +135,7 @@ locals {
           markdown = join("\n", [
             "## Search Operations",
             "On-call: start with interactive/internal request health, then locate dependency failures. UK and XI stay separate.",
-            "New metrics start at deployment; gaps are not zero. Requests are server calls, not whole user journeys.",
+            "New metrics start at deployment; gaps are not zero. Requests are server calls, not whole user journeys. New hmrc-users searches are omitted.",
             "[Diagnostics](${local.diagnostics_url}) | [Overview](${local.overview_url}) | [Definitions](${local.definitions_url})",
           ])
         }

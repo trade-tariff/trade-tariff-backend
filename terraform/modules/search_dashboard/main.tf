@@ -26,7 +26,7 @@ locals {
           markdown = join("\n", [
             "## Search Overview",
             "Search team: track traffic, outcomes and latency. Metrics separate UK and XI. Experiment activity below combines frontend sessions and runs one log query.",
-            "Metrics start at deployment; gaps are not zero. Counts are events, not unique journeys, and include degraded searches.",
+            "Metrics start at deployment; gaps are not zero. Counts are events, not unique journeys, and include degraded searches. New hmrc-users searches are omitted.",
             "[Operations](${local.search_operations_dashboard_url}) | [Quality](${local.search_quality_dashboard_url}) | [Experiments](${local.search_experiment_dashboard_url}) | [Definitions](https://github.com/trade-tariff/trade-tariff-backend/blob/main/docs/search-dashboards.md)",
           ])
         }
