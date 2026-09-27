@@ -64,6 +64,10 @@ RSpec.describe SearchAnalytics::DailyQuery do
     expect(starts).to eq([])
   end
 
+  it 'keeps fingerprints identical across reporting dates' do
+    expect(collector(reporting_date: Date.new(2026, 9, 13)).fingerprints).to eq(collector.fingerprints)
+  end
+
   it 'invalidates fingerprints when region, group, service or query definitions change' do
     baseline = collector.fingerprints
     expect(collector(region: 'eu-west-1').fingerprints).not_to eq(baseline)

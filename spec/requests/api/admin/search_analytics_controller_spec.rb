@@ -137,6 +137,18 @@ RSpec.describe Api::Admin::SearchAnalyticsController do
     expect(attributes['coverage']).to include('complete' => false, 'expected_days' => 2, 'collected_days' => 1)
   end
 
+  %w[all classic internal].each do |view|
+    it "returns unavailable rather than invalid dates for today's uncollected #{view} analytics" do
+      today = (date + 1).iso8601
+      request_analytics(period: 'custom', view:, from: today, to: today)
+
+      expect(response).to have_http_status(:not_found)
+      expect(response.parsed_body.dig('errors', 0, 'title')).to eq('Search analytics unavailable')
+      expect(SearchAnalyticsQueryWorker).not_to have_received(:enqueue_day)
+      expect(Aws::CloudWatchLogs::Client).not_to have_received(:new)
+    end
+  end
+
   it 'rejects missing, invalid, future and oversized custom date ranges' do
     [
       { period: 'custom' },
