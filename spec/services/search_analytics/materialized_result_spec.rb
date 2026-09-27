@@ -82,6 +82,15 @@ RSpec.describe SearchAnalytics::MaterializedResult, :truncation do
       it "preserves #{view} hourly buckets for a single day" do
         expect_parity(view:, from: first_date + 1)
       end
+
+      it "returns no #{view} analytics in either reader when only today is selected" do
+        args = arguments(view:, from: now.utc.to_date, to: now.utc.to_date)
+
+        expect(SearchAnalytics::DailyResults.legacy_call(**args)).to be_nil
+        result = described_class.call(**args)
+        expect(result.available).to be(true)
+        expect(result.value).to be_nil
+      end
     end
 
     it 'preserves partial range coverage without counting missing days as zero' do

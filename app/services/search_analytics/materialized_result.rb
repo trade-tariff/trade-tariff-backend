@@ -17,7 +17,8 @@ module SearchAnalytics
       last_date = now.utc.to_date - 1
       @dates = date_range ? date_range.dates : ((last_date - (period.duration / 1.day).to_i + 1)..last_date).to_a
       @service = TradeTariffBackend.service
-      @definitions = DailyQuery.new(reporting_date: @dates.first, region:, log_group_name:, now:).fingerprints
+      # Fingerprints do not depend on the reporting date; collection requires a completed day.
+      @definitions = DailyQuery.new(reporting_date: last_date, region:, log_group_name:, now:).fingerprints
       @required = @definitions.keys - %w[frontend_events journey_outcomes]
     end
 
