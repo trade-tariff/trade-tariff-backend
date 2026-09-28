@@ -1480,7 +1480,6 @@ RSpec.describe Measure do
       create(:footnote, :with_measure_association, measure:, footnote_type_id: '02')
     end
 
-    it { is_expected.to all(be_a(described_class)) }
     it { expect(dataset.pluck(:footnote_type_id)).to eq(%w[01]) }
   end
 
@@ -1494,7 +1493,6 @@ RSpec.describe Measure do
       create(:footnote, :with_measure_association, measure:, footnote_id: '456')
     end
 
-    it { is_expected.to all(be_a(described_class)) }
     it { expect(dataset.pluck(:footnote_id)).to eq(%w[123]) }
   end
 

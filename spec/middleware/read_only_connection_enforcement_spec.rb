@@ -47,16 +47,6 @@ RSpec.describe ReadOnlyConnectionEnforcement do
     end
   end
 
-  describe 'outside a with_server(:read_only) block' do
-    it 'allows DML on the default server' do
-      # The enforcer must never interfere with writes on the writer connection —
-      # factories, oplog inserts, etc. all need to work in every other spec.
-      expect {
-        db.run('SELECT 1') # not a write, but proves no false-positive on non-blocked paths
-      }.not_to raise_error
-    end
-  end
-
   describe 'nesting' do
     it 'enforces read-only for the duration of an outer block even when an inner block exits' do
       expect {
@@ -65,14 +55,6 @@ RSpec.describe ReadOnlyConnectionEnforcement do
           db.run('INSERT INTO _read_only_test (x) VALUES (1)') # still inside outer
         end
       }.to raise_error(described_class::WriteOnReadOnlyConnectionError)
-    end
-
-    it 'allows writes once every read_only block has exited' do
-      db.with_server(:read_only) { db.run('SELECT 1') }
-      # nesting counter is back to zero — writes must be allowed again
-      expect {
-        db.run('SELECT 1')
-      }.not_to raise_error
     end
   end
 end

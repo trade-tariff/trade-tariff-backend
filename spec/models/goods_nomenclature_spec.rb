@@ -442,11 +442,8 @@ RSpec.describe GoodsNomenclature do
       create(:footnote)
     end
 
-    it { is_expected.to all(be_a(described_class)) }
     it { expect(goods_nomenclatures.first).to eq_pk goods_nomenclatures.second }
     it { expect(goods_nomenclatures.count).to eq(2) }
-    it { expect(goods_nomenclatures.pluck(:footnote_id)).to all(be_present) }
-    it { expect(goods_nomenclatures.pluck(:footnote_type_id)).to all(be_present) }
   end
 
   describe '.with_footnote_type_id' do
@@ -459,7 +456,6 @@ RSpec.describe GoodsNomenclature do
       create(:footnote, :with_goods_nomenclature_association, goods_nomenclature:, footnote_type_id: '02')
     end
 
-    it { is_expected.to all(be_a(described_class)) }
     it { expect(dataset.pluck(:footnote_type_id)).to eq(%w[01]) }
   end
 
@@ -473,7 +469,6 @@ RSpec.describe GoodsNomenclature do
       create(:footnote, :with_goods_nomenclature_association, goods_nomenclature:, footnote_id: '456')
     end
 
-    it { is_expected.to all(be_a(described_class)) }
     it { expect(dataset.pluck(:footnote_id)).to eq(%w[123]) }
   end
 
@@ -622,7 +617,6 @@ RSpec.describe GoodsNomenclature do
                })
       end
 
-      it { expect(label).to be_a(GoodsNomenclatureLabel) }
       it { expect(label.labels['descriptions']).to include('Natural honey') }
       it { expect(label.labels['colloquialisms']).to include('bee honey') }
     end

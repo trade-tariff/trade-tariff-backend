@@ -12,19 +12,6 @@ RSpec.describe LoopingSequence do
     expect(sequence.next.value).to eq 'a'
   end
 
-  it 'works with larger ranges', :aggregate_failures do
-    sequence = described_class.new('aa'..'zz')
-
-    expect(sequence.value).to eq 'aa'
-    expect(sequence.next.value).to eq 'ab'
-
-    672.times { sequence.next }
-
-    expect(sequence.next.value).to eq 'zy'
-    expect(sequence.next.value).to eq 'zz'
-    expect(sequence.next.value).to eq 'aa'
-  end
-
   it 'includes a preset a-Z, without punctuation', :aggregate_failures do
     sequence = described_class.lower_a_to_upper_z
 

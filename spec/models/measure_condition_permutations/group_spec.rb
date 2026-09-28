@@ -14,8 +14,6 @@ RSpec.describe MeasureConditionPermutations::Group do
     )
   end
 
-  it { is_expected.to respond_to :id }
-  it { is_expected.to respond_to :condition_code }
   it { is_expected.to have_attributes length: 1 }
 
   describe '#id' do

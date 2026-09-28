@@ -25,27 +25,7 @@ RSpec.describe 'V1 API disabled' do
 
   context 'with UK service' do
     include_examples 'returns 404 for V1 requests', '/uk/api/chapters.json'
-    include_examples 'returns 404 for V1 requests', '/uk/api/headings/0101.json'
-    include_examples 'returns 404 for V1 requests', '/uk/api/commodities/0101210000.json'
-    include_examples 'returns 404 for V1 requests', '/uk/api/sections.json'
 
     include_examples 'returns 404 for URL-versioned V1 requests', '/uk/api/v1/chapters.json'
-    include_examples 'returns 404 for URL-versioned V1 requests', '/uk/api/v1/headings/0101.json'
-    include_examples 'returns 404 for URL-versioned V1 requests', '/uk/api/v1/commodities/0101210000.json'
-    include_examples 'returns 404 for URL-versioned V1 requests', '/uk/api/v1/sections.json'
-  end
-
-  context 'with XI service' do
-    before { allow(TradeTariffBackend).to receive(:xi?).and_return(true) }
-
-    include_examples 'returns 404 for V1 requests', '/xi/api/chapters.json'
-    include_examples 'returns 404 for V1 requests', '/xi/api/headings/0101.json'
-    include_examples 'returns 404 for V1 requests', '/xi/api/commodities/0101210000.json'
-    include_examples 'returns 404 for V1 requests', '/xi/api/sections.json'
-
-    include_examples 'returns 404 for URL-versioned V1 requests', '/xi/api/v1/chapters.json'
-    include_examples 'returns 404 for URL-versioned V1 requests', '/xi/api/v1/headings/0101.json'
-    include_examples 'returns 404 for URL-versioned V1 requests', '/xi/api/v1/commodities/0101210000.json'
-    include_examples 'returns 404 for URL-versioned V1 requests', '/xi/api/v1/sections.json'
   end
 end

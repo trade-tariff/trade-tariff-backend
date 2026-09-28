@@ -45,14 +45,6 @@ RSpec.describe ScheduledJobHeartbeat do
       )
     end
 
-    it 'does not raise when CloudWatch returns a service error' do
-      allow(cloudwatch_client).to receive(:put_metric_data)
-        .and_raise(Aws::CloudWatch::Errors::ServiceError.new(nil, 'throttled'))
-      allow(Rails.logger).to receive(:error)
-
-      expect { worker.record_heartbeat }.not_to raise_error
-    end
-
     it 'logs the job name and error detail when CloudWatch raises a service error' do
       allow(cloudwatch_client).to receive(:put_metric_data)
         .and_raise(Aws::CloudWatch::Errors::ServiceError.new(nil, 'throttled'))

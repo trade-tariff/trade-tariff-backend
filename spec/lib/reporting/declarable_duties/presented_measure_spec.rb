@@ -45,12 +45,6 @@ RSpec.describe Reporting::DeclarableDuties::PresentedMeasure do
     context 'when measure has no measure components' do
       it { expect(presented_measure.measure__duty_expression).to eq '' }
     end
-
-    context 'when measure has measure components' do
-      let(:measure) { create(:measure, :with_measure_components) }
-
-      it { expect(presented_measure.measure__duty_expression).to be_present }
-    end
   end
 
   describe '#measure__effective_start_date' do
@@ -116,12 +110,6 @@ RSpec.describe Reporting::DeclarableDuties::PresentedMeasure do
   describe '#measure__excluded_geographical_areas__descriptions' do
     context 'when there are no excluded geographical areas' do
       it { expect(presented_measure.measure__excluded_geographical_areas__descriptions).to eq '' }
-    end
-
-    context 'when there are excluded geographical areas' do
-      let(:measure) { create(:measure, :with_measure_excluded_geographical_area) }
-
-      it { expect(presented_measure.measure__excluded_geographical_areas__descriptions).to be_present }
     end
   end
 

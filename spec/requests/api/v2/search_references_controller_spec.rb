@@ -7,12 +7,6 @@ RSpec.describe Api::V2::SearchReferencesController do
 
   describe 'GET #index' do
     context 'when a valid query[letter] param is provided' do
-      it 'returns a successful response' do
-        api_get '/uk/api/search_references', params: { query: { letter: 'a' } }
-
-        expect(response).to be_successful
-      end
-
       it 'filters results by letter' do
         api_get '/uk/api/search_references', params: { query: { letter: 'a' } }
 

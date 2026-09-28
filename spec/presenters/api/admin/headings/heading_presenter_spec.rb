@@ -13,7 +13,6 @@ RSpec.describe Api::Admin::Headings::HeadingPresenter do
     subject(:wrapped) { described_class.wrap([heading], counts) }
 
     it { is_expected.to have_attributes length: 1 }
-    it { is_expected.to all be_instance_of described_class }
     it { is_expected.to all have_attributes values: heading.values }
     it { is_expected.to all have_attributes search_references_count: 1 }
     it { expect(wrapped.first.commodities).to have_attributes length: 2 }
@@ -23,7 +22,6 @@ RSpec.describe Api::Admin::Headings::HeadingPresenter do
   describe '.new' do
     subject(:presented) { described_class.new(heading, counts) }
 
-    it { is_expected.to be_a described_class }
     it { is_expected.to have_attributes values: heading.values }
     it { is_expected.to have_attributes search_references_count: 1 }
     it { expect(presented.commodities).to have_attributes length: 2 }

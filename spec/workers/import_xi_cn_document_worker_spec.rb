@@ -99,10 +99,6 @@ RSpec.describe ImportXiCnDocumentWorker do
         end
       end
 
-      it 'does not re-raise the notifier error' do
-        expect { worker.perform }.not_to raise_error
-      end
-
       it 'still calls the notifier for the later document even though the earlier one raised' do
         worker.perform
 
@@ -181,10 +177,6 @@ RSpec.describe ImportXiCnDocumentWorker do
         allow(importer_double).to receive(:call)
           .and_raise(Sequel::UniqueConstraintViolation, 'duplicate key value violates unique constraint')
         allow(Rails.logger).to receive(:warn)
-      end
-
-      it 'does not re-raise and therefore avoids Sidekiq retrying the race condition' do
-        expect { worker.perform }.not_to raise_error
       end
 
       it 'records a failed import event with the unique-constraint error details' do

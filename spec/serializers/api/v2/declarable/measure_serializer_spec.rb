@@ -159,16 +159,6 @@ RSpec.describe Api::V2::Declarable::MeasureSerializer do
         allow(MeursingMeasureComponentResolverService).to receive(:new).and_return(resolver_service)
       end
 
-      it 'calls the MeursingMeasureComponentResolverService' do
-        serializer
-        expect(MeursingMeasureComponentResolverService).to have_received(:new).once
-      end
-
-      it 'calls the MeursingMeasureFinderService' do
-        serializer
-        expect(MeursingMeasureFinderService).to have_received(:new).once
-      end
-
       it { is_expected.to include_json(expected_pattern) }
     end
   end

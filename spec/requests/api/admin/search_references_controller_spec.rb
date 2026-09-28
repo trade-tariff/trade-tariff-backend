@@ -19,8 +19,6 @@ RSpec.describe Api::Admin::SearchReferencesController, :admin do
     context 'when letter is provided' do
       let(:query_letter) { { query: { letter: 'A' } } }
 
-      it { is_expected.to be_successful }
-
       it 'performs lookup with provided letter' do
         api_response
 
@@ -31,8 +29,6 @@ RSpec.describe Api::Admin::SearchReferencesController, :admin do
 
     context 'with no letter param' do
       let(:query_letter) { {} }
-
-      it { is_expected.to be_successful }
 
       it 'does not filter by letter' do
         api_response

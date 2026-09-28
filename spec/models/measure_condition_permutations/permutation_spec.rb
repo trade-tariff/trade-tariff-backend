@@ -9,10 +9,6 @@ RSpec.describe MeasureConditionPermutations::Permutation do
 
   let(:conditions) { measure.measure_conditions.to_a }
 
-  it { is_expected.to be_instance_of described_class }
-  it { is_expected.to respond_to :id }
-  it { is_expected.to respond_to :measure_conditions }
-  it { is_expected.to respond_to :measure_condition_ids }
   it { is_expected.to have_attributes length: 2 }
 
   describe '#initialize' do

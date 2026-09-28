@@ -232,9 +232,5 @@ RSpec.describe ClearInvalidSearchReferences, type: :worker do
     it 'still keeps the deletion that already happened' do
       expect { do_perform }.to change(SearchReference, :count).by(-1)
     end
-
-    it 'does not raise' do
-      expect { do_perform }.not_to raise_error
-    end
   end
 end

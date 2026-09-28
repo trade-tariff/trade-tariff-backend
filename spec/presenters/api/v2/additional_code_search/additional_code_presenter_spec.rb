@@ -19,7 +19,6 @@ RSpec.describe Api::V2::AdditionalCodeSearch::AdditionalCodePresenter do
     let(:goods_nomenclatures) { build_list :goods_nomenclature, 1, goods_nomenclature_sid: 1 }
     let(:grouped_goods_nomenclatures) { { 1 => goods_nomenclatures } }
 
-    it { expect(wrapped).to all(be_a(described_class)) }
     it { expect(wrapped.first.goods_nomenclatures).to eq goods_nomenclatures }
   end
 end

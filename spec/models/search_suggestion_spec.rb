@@ -1,16 +1,4 @@
 RSpec.describe SearchSuggestion do
-  describe '#goods_nomenclature' do
-    subject(:goods_nomenclature) do
-      create(
-        :search_suggestion,
-        :goods_nomenclature,
-        goods_nomenclature: create(:heading),
-      ).goods_nomenclature
-    end
-
-    it { is_expected.to be_a(Heading) }
-  end
-
   describe '.fuzzy_search' do
     subject(:fuzzy_search) { described_class.fuzzy_search(query) }
 
@@ -215,7 +203,6 @@ RSpec.describe SearchSuggestion do
     end
 
     it { expect(build.priority).to eq(1) }
-    it { expect(build).to be_a(described_class) }
     it { expect(build).to have_attributes(attributes) }
   end
 

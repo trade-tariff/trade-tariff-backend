@@ -1,10 +1,4 @@
 RSpec.describe FullChemical do
-  describe '#goods_nomenclature' do
-    subject(:goods_nomenclature) { create(:full_chemical).goods_nomenclature }
-
-    it { is_expected.to be_a(GoodsNomenclature) }
-  end
-
   describe 'validations' do
     subject(:errors) { described_class.new.tap(&:valid?).errors }
 
@@ -152,12 +146,6 @@ RSpec.describe FullChemical do
 
         it { is_expected.to be_empty }
       end
-
-      context 'when a nil code is provided' do
-        let(:code) { nil }
-
-        it { expect(full_chemicals).to be_a(Sequel::Dataset) }
-      end
     end
 
     describe '.by_suffix' do
@@ -175,12 +163,6 @@ RSpec.describe FullChemical do
         let(:suffix) { '81' }
 
         it { is_expected.to be_empty }
-      end
-
-      context 'when a nil suffix is provided' do
-        let(:suffix) { nil }
-
-        it { expect(full_chemicals).to be_a(Sequel::Dataset) }
       end
     end
 
@@ -200,12 +182,6 @@ RSpec.describe FullChemical do
 
         it { is_expected.to be_empty }
       end
-
-      context 'when a nil cus is provided' do
-        let(:cus) { nil }
-
-        it { expect(full_chemicals).to be_a(Sequel::Dataset) }
-      end
     end
 
     describe '.by_cas_rn' do
@@ -223,12 +199,6 @@ RSpec.describe FullChemical do
         let(:cas_rn) { '8028-66-9' }
 
         it { is_expected.to be_empty }
-      end
-
-      context 'when a nil cas_rn is provided' do
-        let(:cas_rn) { nil }
-
-        it { expect(full_chemicals).to be_a(Sequel::Dataset) }
       end
     end
   end

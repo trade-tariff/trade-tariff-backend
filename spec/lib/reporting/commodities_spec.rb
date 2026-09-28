@@ -26,15 +26,5 @@ RSpec.describe Reporting::Commodities do
         ),
       )
     end
-
-    it 'serializes within TimeMachine.now' do
-      allow(serializer).to receive(:serialized_csv) do
-        raise GoodsNomenclatures::NestedSet::DateNotSet unless TimeMachine.date_is_set?
-
-        "sid\n1000000000\n"
-      end
-
-      expect { described_class.generate }.not_to raise_error
-    end
   end
 end

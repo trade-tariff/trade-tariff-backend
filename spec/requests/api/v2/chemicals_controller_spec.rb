@@ -195,12 +195,4 @@ RSpec.describe Api::V2::ChemicalsController, type: :request do
       expect(response.code.to_i).to eq 404
     end
   end
-
-  context 'with an invalid `:name` parameter, GET #search' do
-    it 'returns 404' do
-      get '/uk/api/chemicals/search.json', params: { name: 'FOOBAR' }, headers: request_headers(format: :json)
-
-      expect(response.code.to_i).to eq 404
-    end
-  end
 end

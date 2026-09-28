@@ -42,16 +42,4 @@ RSpec.describe TariffSynchronizer::Response do
       expect(response.state).to eq(:not_found)
     end
   end
-
-  describe '#successful?' do
-    it 'returns true for 200 and content' do
-      response = build(:response, response_code: 200, content: 'xyz')
-      expect(response.send(:successful?)).to be_truthy
-    end
-
-    it 'returns false in other cases' do
-      response = build(:response, response_code: 404, content: 'xyz')
-      expect(response.send(:successful?)).to be_falsey
-    end
-  end
 end

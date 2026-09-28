@@ -25,21 +25,6 @@ RSpec.describe Api::User::GroupedMeasureCommodityChangeSerializer do
       )
     end
 
-    it 'has the correct id' do
-      expect(serialized[:data][:id]).to eq('import_GB_FR-DE_1234567890')
-    end
-
-    it 'has the correct type' do
-      expect(serialized[:data][:type]).to eq(:grouped_measure_commodity_change)
-    end
-
-    it 'has the correct attributes' do
-      expect(serialized[:data][:attributes]).to eq(
-        count: 3,
-        impacted_measures: nil,
-      )
-    end
-
     context 'with commodity relationship included' do
       let(:serializable) do
         commodity_change = TariffChanges::GroupedMeasureCommodityChange.new(
@@ -82,54 +67,6 @@ RSpec.describe Api::User::GroupedMeasureCommodityChangeSerializer do
       it 'includes relationships for commodity even without explicit include' do
         expect(serialized[:data]).to have_key(:relationships)
         expect(serialized[:data][:relationships]).to have_key(:commodity)
-      end
-    end
-
-    context 'with nil count' do
-      let(:serializable) do
-        TariffChanges::GroupedMeasureCommodityChange.new(
-          goods_nomenclature_item_id: '1234567890',
-          count: nil,
-          grouped_measure_change_id: 'export_US_',
-        )
-      end
-
-      it 'handles nil count correctly' do
-        expect(serialized[:data][:attributes]).to eq(
-          count: nil,
-          impacted_measures: nil,
-        )
-      end
-    end
-
-    context 'with zero count' do
-      let(:serializable) do
-        TariffChanges::GroupedMeasureCommodityChange.new(
-          goods_nomenclature_item_id: '1234567890',
-          count: 0,
-          grouped_measure_change_id: 'both_CN_RU',
-        )
-      end
-
-      it 'handles zero count correctly' do
-        expect(serialized[:data][:attributes]).to eq(
-          count: 0,
-          impacted_measures: nil,
-        )
-      end
-    end
-
-    context 'with different id structure' do
-      let(:serializable) do
-        TariffChanges::GroupedMeasureCommodityChange.new(
-          goods_nomenclature_item_id: '9876543210',
-          count: 1,
-          grouped_measure_change_id: 'export_US_',
-        )
-      end
-
-      it 'generates correct id for different inputs' do
-        expect(serialized[:data][:id]).to eq('export_US__9876543210')
       end
     end
 

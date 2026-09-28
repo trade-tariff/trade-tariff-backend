@@ -26,7 +26,6 @@ RSpec.describe ExchangeRates::Period do
         create(:exchange_rate_file, period_year: '2022', period_month: '3', type: 'monthly_csv')
       end
 
-      it { expect(period).to be_a(described_class) }
       it { expect(period).to have_attributes(month: '3', year: '2022') }
       it { expect(period.files.pluck(:type)).to eq(%w[monthly_csv]) }
     end
@@ -44,14 +43,6 @@ RSpec.describe ExchangeRates::Period do
         }],
         ExchangeRateCurrencyRate::MONTHLY_RATE_TYPE,
       )
-    end
-
-    it 'builds an array of periods' do
-      expect(periods).to be_an(Array)
-    end
-
-    it 'builds an array of one period' do
-      expect(periods.size).to eq(1)
     end
 
     it 'builds periods with correct month' do

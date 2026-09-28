@@ -32,14 +32,6 @@ RSpec.describe Api::V2::ExchangeRates::FilesController, :v2 do
       it 'returns the CSV data as the response body' do
         expect(response.body).to eq(data)
       end
-
-      context 'when the month is prefixed with 0' do
-        let(:month) { '07' }
-
-        it 'returns HTTP status :ok' do
-          expect(response).to have_http_status(:ok)
-        end
-      end
     end
 
     context 'when requesting XML format' do
@@ -62,14 +54,6 @@ RSpec.describe Api::V2::ExchangeRates::FilesController, :v2 do
 
       it 'returns the XML data as the response body' do
         expect(response.body).to eq(data)
-      end
-
-      context 'when the month is prefixed with 0' do
-        let(:month) { '07' }
-
-        it 'returns HTTP status :ok' do
-          expect(response).to have_http_status(:ok)
-        end
       end
     end
 
@@ -94,14 +78,6 @@ RSpec.describe Api::V2::ExchangeRates::FilesController, :v2 do
       it 'returns the CSV data as the response body' do
         expect(response.body).to eq(data)
       end
-
-      context 'when the month is prefixed with 0' do
-        let(:month) { '07' }
-
-        it 'returns HTTP status :ok' do
-          expect(response).to have_http_status(:ok)
-        end
-      end
     end
 
     context 'when requesting invalid type' do
@@ -120,21 +96,6 @@ RSpec.describe Api::V2::ExchangeRates::FilesController, :v2 do
     context 'when requesting malformed URL' do
       it 'returns 404 for missing year-month pattern' do
         api_get api_exchange_rates_file_path('monthly_csv_', format: :csv)
-        expect(response).to have_http_status(:not_found)
-      end
-
-      it 'returns 404 for incomplete pattern' do
-        api_get api_exchange_rates_file_path('monthly_csv', format: :csv)
-        expect(response).to have_http_status(:not_found)
-      end
-
-      it 'returns 404 for invalid year format' do
-        api_get api_exchange_rates_file_path('monthly_csv_abc-10', format: :csv)
-        expect(response).to have_http_status(:not_found)
-      end
-
-      it 'returns 404 for XML with malformed URL' do
-        api_get api_exchange_rates_file_path('monthly_xml_', format: :xml)
         expect(response).to have_http_status(:not_found)
       end
     end

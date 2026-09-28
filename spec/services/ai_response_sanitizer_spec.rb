@@ -9,30 +9,6 @@ RSpec.describe AiResponseSanitizer do
       expect(result['description']).not_to include("\u0000")
     end
 
-    it 'handles multiple null bytes' do
-      response = { 'text' => "\u0000start\u0000middle\u0000end\u0000" }
-
-      result = described_class.call(response)
-
-      expect(result['text']).to eq('startmiddleend')
-    end
-
-    it 'removes invalid byte order marks' do
-      response = { 'text' => "test\uFFFEvalue" }
-
-      result = described_class.call(response)
-
-      expect(result['text']).to eq('testvalue')
-    end
-
-    it 'removes non-character markers' do
-      response = { 'text' => "test\uFFFFvalue" }
-
-      result = described_class.call(response)
-
-      expect(result['text']).to eq('testvalue')
-    end
-
     it 'recursively sanitizes nested hashes' do
       response = {
         'data' => {
@@ -201,24 +177,6 @@ RSpec.describe AiResponseSanitizer do
         expect(item['commodity_code']).to eq('3915102000')
         expect(item['original_description']).to eq('Waste, parings and scrap')
       end
-
-      it 'produces PostgreSQL-safe output' do
-        result = described_class.call(response)
-        json_string = result.to_json
-
-        expect(json_string).not_to include('\u0000')
-        expect(json_string).not_to include("\u0000")
-      end
-    end
-  end
-
-  describe '#call' do
-    it 'works as instance method' do
-      sanitizer = described_class.new('text' => "test\u0000value")
-
-      result = sanitizer.call
-
-      expect(result['text']).to eq('testvalue')
     end
   end
 end

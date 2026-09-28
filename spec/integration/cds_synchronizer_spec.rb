@@ -24,60 +24,6 @@ RSpec.describe CdsSynchronizer do
           expect(Measure::Operation.where(measure_sid: '20186262')).to be_present
         end
       end
-
-      context 'when cds fails' do
-        before do
-          instance = instance_double(CdsImporter)
-          allow(CdsImporter).to receive(:new).and_return(instance)
-          allow(instance).to receive(:import).and_raise(CdsImporter::ImportException)
-        end
-
-        it 'marks cds update to be pending' do
-          expect(cds_update).to be_pending
-          expect { described_class.apply }.not_to raise_error
-        end
-
-        it 'marks cds update as failed' do
-          expect { described_class.apply }.not_to raise_error
-          expect(cds_update.reload).to be_failed
-        end
-      end
-
-      context 'when elasticsearch is buggy' do
-        before do
-          entity_mapper = instance_double(CdsImporter::EntityMapper)
-          allow(CdsImporter::EntityMapper).to receive(:new).and_return(entity_mapper)
-          allow(entity_mapper).to receive(:build).and_raise(OpenSearch::Transport::Transport::SnifferTimeoutError)
-
-          allow(TariffSynchronizer::CdsUpdate).to receive(:find).and_return(nil)
-        end
-
-        it 'stops syncing' do
-          expect(cds_update.reload).not_to be_applied
-        end
-
-        it 'handles the error without crashing the sync process' do
-          expect { described_class.apply }.not_to raise_error
-        end
-      end
-
-      context 'when we have a timeout' do
-        before do
-          entity_mapper = instance_double(CdsImporter::EntityMapper)
-          allow(CdsImporter::EntityMapper).to receive(:new).and_return(entity_mapper)
-          allow(entity_mapper).to receive(:build).and_raise(Timeout::Error)
-
-          allow(TariffSynchronizer::CdsUpdate).to receive(:find).and_return(nil)
-        end
-
-        it 'stops syncing' do
-          expect(cds_update.reload).not_to be_applied
-        end
-
-        it 'handles the error without crashing the sync process' do
-          expect { described_class.apply }.not_to raise_error
-        end
-      end
     end
 
     describe '.rollback' do

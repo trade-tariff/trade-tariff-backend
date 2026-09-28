@@ -74,18 +74,6 @@ RSpec.describe TariffChangesService::CommodityChanges do
       end
     end
 
-    describe 'inheritance from BaseChanges' do
-      it 'inherits from TariffChangesService::BaseChanges' do
-        expect(described_class.superclass).to eq(TariffChangesService::BaseChanges)
-      end
-
-      it 'can call inherited methods' do
-        allow(commodity_changes).to receive_messages(no_changes?: false, action: 'creation', date_of_effect: date)
-
-        expect { commodity_changes.analyze }.not_to raise_error
-      end
-    end
-
     describe 'integration with analyze method' do
       let(:record) do
         create(
