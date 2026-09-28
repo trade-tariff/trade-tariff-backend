@@ -24,6 +24,19 @@ RSpec.describe CdsSynchronizer do
           expect(Measure::Operation.where(measure_sid: '20186262')).to be_present
         end
       end
+
+      context 'when cds fails' do
+        before do
+          instance = instance_double(CdsImporter)
+          allow(CdsImporter).to receive(:new).and_return(instance)
+          allow(instance).to receive(:import).and_raise(CdsImporter::ImportException)
+        end
+
+        it 'marks cds update as failed' do
+          expect { described_class.apply }.not_to raise_error
+          expect(cds_update.reload).to be_failed
+        end
+      end
     end
 
     describe '.rollback' do

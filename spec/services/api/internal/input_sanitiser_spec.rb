@@ -23,6 +23,14 @@ RSpec.describe Api::Internal::InputSanitiser do
       end
     end
 
+    context 'when input contains script tags' do
+      let(:query) { '<script>alert(1)</script>' }
+
+      it 'strips the tags' do
+        expect(result).to eq(query: 'alert(1)')
+      end
+    end
+
     context 'when input has excessive whitespace' do
       let(:query) { '  red   shoes  ' }
 
