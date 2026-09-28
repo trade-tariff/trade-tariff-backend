@@ -9,6 +9,22 @@ RSpec.describe AiResponseSanitizer do
       expect(result['description']).not_to include("\u0000")
     end
 
+    it 'removes invalid byte order marks' do
+      response = { 'text' => "test\uFFFEvalue" }
+
+      result = described_class.call(response)
+
+      expect(result['text']).to eq('testvalue')
+    end
+
+    it 'removes non-character markers' do
+      response = { 'text' => "test\uFFFFvalue" }
+
+      result = described_class.call(response)
+
+      expect(result['text']).to eq('testvalue')
+    end
+
     it 'recursively sanitizes nested hashes' do
       response = {
         'data' => {
