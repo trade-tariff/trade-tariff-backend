@@ -106,7 +106,7 @@ module SearchAnalytics
       elsif name == 'frontend_events'
         rows.map { |row| hashed_request_row(row, identifier_keys: %w[event_id question_id], observed: true) }
       elsif name == 'classic_outcomes'
-        rows.map { |row| hashed_request_row(row, observed: true) }
+        ClassicOutcomesQuery.collapse(rows.map { |row| hashed_request_row(row, observed: true) })
       else
         rows
       end
