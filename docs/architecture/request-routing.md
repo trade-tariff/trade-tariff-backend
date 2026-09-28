@@ -31,7 +31,7 @@ Most V2 routes map to controllers under `app/controllers/api/v2/`. Serialisation
 ## Admin, Internal, and User APIs
 
 - `app/engines/admin_api.rb` exposes admin workflows such as updates, rollbacks, reports, content management, Green Lanes admin data, generated labels, generated self-texts, and search references.
-- `app/engines/internal_api.rb` exposes internal search endpoints.
+- `app/engines/internal_api.rb` exposes internal search and enquiry submission endpoints.
 - `app/engines/user_api.rb` exposes MyOTT/user subscription and tariff changes endpoints.
 
 Treat these surfaces separately when changing behaviour. Public V2 API changes usually need swagger coverage under `spec/swagger/api/v2/`; internal and admin changes usually need request/controller specs but are not always public OpenAPI endpoints.

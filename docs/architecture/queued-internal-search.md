@@ -225,7 +225,7 @@ unknown class. The retained payloads expire without a data migration.
 - Payload lifecycle: `app/models/queued_search.rb`
 - Worker: `app/workers/queued_search_worker.rb`
 - Existing search: `app/services/api/internal/search_service.rb`
-- Existing payload precedent: `app/controllers/api/v2/enquiry_form/submissions_controller.rb`
+- Existing payload precedent: `app/controllers/api/internal/enquiry_form/submissions_controller.rb`
 
 Run request, real-Redis lifecycle, worker and synchronous search regression
 coverage:
