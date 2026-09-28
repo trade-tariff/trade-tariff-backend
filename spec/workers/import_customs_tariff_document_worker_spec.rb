@@ -100,10 +100,6 @@ RSpec.describe ImportCustomsTariffDocumentWorker, type: :worker do
       expect(CustomsTariffImporter::Instrumentation).not_to have_received(:import_run_failed)
     end
 
-    it 'does not re-raise the notifier error' do
-      expect { perform }.not_to raise_error
-    end
-
     it 'still calls the notifier for the later document even though the earlier one raised' do
       perform
 

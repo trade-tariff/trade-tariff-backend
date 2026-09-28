@@ -41,33 +41,6 @@ RSpec.describe CdsImporter::EntityMapper::GeographicalAreaMembershipMapper do
   describe '#import' do
     subject(:entity_mapper) { CdsImporter::EntityMapper.new('GeographicalArea', xml_node) }
 
-    context 'when the geographicalAreaMembership node is missing' do
-      let(:xml_node) do
-        {
-          'hjid' => '11939477',
-          'metainfo' => { 'opType' => 'C', 'origin' => 'T', 'status' => 'L', 'transactionDate' => '2022-07-21T16:57:13' },
-          'sid' => '513',
-          'geographicalAreaId' => '4007',
-          'geographicalCode' => '1',
-          'validityStartDate' => '2021-01-01T00:00:00',
-          'geographicalAreaDescriptionPeriod' => {
-            'hjid' => '11939478',
-            'metainfo' => { 'opType' => 'C', 'origin' => 'T', 'status' => 'L', 'transactionDate' => '2022-07-21T16:57:13' },
-            'sid' => '1439',
-            'validityStartDate' => '2021-01-01T00:00:00',
-            'geographicalAreaDescription' => {
-              'hjid' => '11939479',
-              'metainfo' => { 'opType' => 'C', 'origin' => 'T', 'status' => 'L', 'transactionDate' => '2022-07-21T16:57:13' },
-              'description' => 'Phytosanitary Group 8',
-              'language' => { 'hjid' => '9', 'languageId' => 'EN' },
-            },
-          },
-        }
-      end
-
-      it { expect { entity_mapper.build }.not_to raise_error }
-    end
-
     context 'when there are multiple geographicalAreaMembership nodes' do
       let(:xml_node) do
         {

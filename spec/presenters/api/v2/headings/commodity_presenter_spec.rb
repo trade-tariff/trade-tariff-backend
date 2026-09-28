@@ -39,14 +39,6 @@ RSpec.describe Api::V2::Headings::CommodityPresenter do
     end
   end
 
-  describe '#wrap' do
-    subject { described_class.wrap [commodity, second_commodity] }
-
-    let(:second_commodity) { create :commodity }
-
-    it { is_expected.to all be_instance_of described_class }
-  end
-
   describe '#overview_measures' do
     before { measures }
 

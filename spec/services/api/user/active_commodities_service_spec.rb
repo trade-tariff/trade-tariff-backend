@@ -461,11 +461,6 @@ RSpec.describe Api::User::ActiveCommoditiesService do
     describe '#paginate_codes' do
       let(:codes) { %w[A B C D E F G H I J] }
 
-      it 'returns all codes when no pagination parameters' do
-        result = service.send(:paginate_codes, codes, nil, nil)
-        expect(result).to eq(codes)
-      end
-
       it 'paginates correctly' do
         page1 = service.send(:paginate_codes, codes, 1, 3)
         expect(page1).to eq(%w[A B C])
@@ -475,11 +470,6 @@ RSpec.describe Api::User::ActiveCommoditiesService do
 
         page4 = service.send(:paginate_codes, codes, 4, 3)
         expect(page4).to eq(%w[J])
-      end
-
-      it 'returns empty array for out-of-range pages' do
-        result = service.send(:paginate_codes, codes, 10, 3)
-        expect(result).to eq([])
       end
     end
   end

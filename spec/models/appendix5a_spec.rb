@@ -1,11 +1,6 @@
 RSpec.describe Appendix5a do
   subject(:appendix_5a) { create(:appendix_5a) }
 
-  it { is_expected.to respond_to(:updated_at) }
-  it { is_expected.to respond_to(:created_at) }
-  it { is_expected.to respond_to(:certificate_type_code) }
-  it { is_expected.to respond_to(:certificate_code) }
-
   describe '.fetch_latest' do
     subject(:fetch_latest) { described_class.fetch_latest }
 

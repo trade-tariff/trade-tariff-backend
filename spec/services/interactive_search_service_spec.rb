@@ -1329,30 +1329,6 @@ RSpec.describe InteractiveSearchService do
       allow(OpenaiClient).to receive(:call).and_return(ai_response)
     end
 
-    it 'returns an InteractiveSearchService::Result' do
-      expect(result).to be_a(described_class::Result)
-    end
-
-    it 'responds to type' do
-      expect(result).to respond_to(:type)
-    end
-
-    it 'responds to data' do
-      expect(result).to respond_to(:data)
-    end
-
-    it 'responds to attempt' do
-      expect(result).to respond_to(:attempt)
-    end
-
-    it 'responds to model' do
-      expect(result).to respond_to(:model)
-    end
-
-    it 'responds to result_limit' do
-      expect(result).to respond_to(:result_limit)
-    end
-
     it 'includes the configured result limit' do
       expect(result.result_limit).to eq(0)
     end

@@ -348,7 +348,6 @@ RSpec.describe GoodsNomenclatureLabel do
   describe '#labels' do
     subject(:labels) { create(:goods_nomenclature_label, :with_labels).labels }
 
-    it { is_expected.to be_a(Sequel::Postgres::JSONBHash) }
     it { expect(labels.keys).to include('description', 'colloquial_terms', 'known_brands', 'synonyms') }
   end
 

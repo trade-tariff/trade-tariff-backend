@@ -301,7 +301,6 @@ RSpec.describe PreferenceCode do
     subject(:all) { described_class.all }
 
     it { expect(all.count).to eq(28) }
-    it { expect(all.first).to be_a(described_class) }
   end
 
   describe '[]' do

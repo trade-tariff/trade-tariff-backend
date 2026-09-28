@@ -3,18 +3,6 @@ RSpec.describe ExchangeRates::ExchangeRateCollection do
   let(:month) { 6 }
   let(:publication_date) { '2023-06-22T00:00:00.000Z' }
 
-  describe '#id' do
-    subject(:rates_list) { build(:exchange_rates_collection, :with_rates_file) }
-
-    it { expect(rates_list.id).to be_present }
-  end
-
-  describe '#exchange_rate_file_ids' do
-    subject(:rates_list) { build(:exchange_rates_collection, :with_rates_file) }
-
-    it { expect(rates_list.exchange_rate_file_ids).to all(be_present) }
-  end
-
   describe '#exchange_rate_ids' do
     subject(:rates_list) { build(:exchange_rates_collection, :with_rates_file) }
 
@@ -25,10 +13,6 @@ RSpec.describe ExchangeRates::ExchangeRateCollection do
 
   describe '.build' do
     subject(:rates_list) { build(:exchange_rates_collection, :with_rates_file, year:, month:) }
-
-    it 'builds a rates list with exchange rates and exchange rate files' do
-      expect(rates_list).to be_an_instance_of(described_class)
-    end
 
     it 'sets the year correctly' do
       expect(rates_list.year).to eq(year)

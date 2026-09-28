@@ -19,7 +19,6 @@ RSpec.describe Api::V2::CertificateSearch::CertificatePresenter do
     let(:goods_nomenclatures) { build_list :goods_nomenclature, 1 }
     let(:grouped_goods_nomenclatures) { { '999L' => goods_nomenclatures } }
 
-    it { expect(wrapped).to all(be_a(described_class)) }
     it { expect(wrapped.first.goods_nomenclatures).to eq goods_nomenclatures }
   end
 end

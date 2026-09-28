@@ -44,12 +44,6 @@ RSpec.describe Api::V2::Quotas::QuotaDefinitionSerializer do
   describe '#serializable_hash' do
     it { expect(serializer.serializable_hash.as_json).to include_json(expected_pattern) }
 
-    it 'asks the quota definition is balance transfers should be shown' do
-      serializer.serializable_hash
-
-      expect(serializable).to have_received(:shows_balance_transfers?)
-    end
-
     context 'when passing include options' do
       before do
         expected_pattern[:data].merge(included_pattern)

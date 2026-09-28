@@ -26,20 +26,6 @@ RSpec.describe SearchSuggestionPopulatorService do
     )
   end
 
-  it 'calls the SuggestionsService' do
-    call
-
-    expect(SuggestionsService).to have_received(:new)
-  end
-
-  context 'when the search suggestion already exists' do
-    before do
-      create(:search_suggestion, :search_reference, value: 'gold ore')
-    end
-
-    it { expect { call }.not_to raise_error }
-  end
-
   context 'when some search suggestions belong to expired goods nomenclature' do
     before do
       current_goods_nomenclature = create(

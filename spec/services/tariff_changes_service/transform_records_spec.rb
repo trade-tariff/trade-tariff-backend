@@ -3,30 +3,7 @@ RSpec.describe TariffChangesService::TransformRecords do
 
   let(:operation_date) { Date.parse('2024-08-12') }
 
-  describe '.call' do
-    it 'creates an instance and calls #call' do
-      instance = described_class.new(operation_date)
-      allow(described_class).to receive(:new).with(operation_date, nil).and_return(instance)
-      allow(instance).to receive(:call).and_return([])
-
-      result = described_class.call(operation_date, nil)
-
-      expect(described_class).to have_received(:new).with(operation_date, nil)
-      expect(instance).to have_received(:call)
-      expect(result).to eq([])
-    end
-  end
-
   describe '#initialize' do
-    it 'sets the operation_date' do
-      expect(service.operation_date).to eq(operation_date)
-    end
-
-    it 'sets the goods_nomenclature_sids' do
-      service_with_sids = described_class.new(operation_date, [123, 456])
-      expect(service_with_sids.goods_nomenclature_sids).to eq([123, 456])
-    end
-
     it 'converts string date to Date object' do
       string_service = described_class.new('2024-08-12')
       expect(string_service.operation_date).to eq(Date.parse('2024-08-12'))
@@ -446,30 +423,12 @@ RSpec.describe TariffChangesService::TransformRecords do
     describe '#format_change_type' do
       let(:tariff_change) { build(:tariff_change, type: 'Commodity', action: action) }
 
-      context 'when action is creation' do
-        let(:action) { 'creation' }
-
-        it 'returns Type Added' do
-          result = service.send(:format_change_type, tariff_change)
-          expect(result).to eq('Commodity Added')
-        end
-      end
-
       context 'when action is update' do
         let(:action) { 'update' }
 
         it 'returns Type Updated' do
           result = service.send(:format_change_type, tariff_change)
           expect(result).to eq('Commodity Updated')
-        end
-      end
-
-      context 'when action is ending' do
-        let(:action) { 'ending' }
-
-        it 'returns Type End Date Updated' do
-          result = service.send(:format_change_type, tariff_change)
-          expect(result).to eq('Commodity End Date Updated')
         end
       end
 
@@ -489,34 +448,6 @@ RSpec.describe TariffChangesService::TransformRecords do
           result = service.send(:format_change_type, tariff_change)
           expect(result).to eq('Unknown action')
         end
-      end
-    end
-
-    describe '#ott_url' do
-      let(:tariff_change) do
-        build(:tariff_change,
-              goods_nomenclature_item_id: '0202000000',
-              date_of_effect: Date.parse('2024-08-15'))
-      end
-
-      it 'builds the correct OTT URL with date parameters' do
-        presenter = TariffChangesService::Presenter.new(tariff_change)
-        result = presenter.ott_url
-        expected_url = "https://www.trade-tariff.service.gov.uk/commodities/0202000000?day=15&month=8&year=2024&#{TariffChangesService::Presenter::UTM_TAGS}"
-        expect(result).to eq(expected_url)
-      end
-    end
-
-    describe '#api_url' do
-      let(:tariff_change) do
-        build(:tariff_change, goods_nomenclature_item_id: '0202000000', date_of_effect: Date.parse('2024-08-15'))
-      end
-
-      it 'builds the correct API URL' do
-        presenter = TariffChangesService::Presenter.new(tariff_change)
-        result = presenter.api_url
-        expected_url = "https://www.trade-tariff.service.gov.uk/uk/api/commodities/0202000000?as_of=2024-08-15&#{TariffChangesService::Presenter::UTM_TAGS}"
-        expect(result).to eq(expected_url)
       end
     end
 

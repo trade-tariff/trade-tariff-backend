@@ -1,14 +1,6 @@
 RSpec.describe ExchangeRates::PeriodList do
   let(:year) { 2020 }
 
-  describe '#id' do
-    subject(:period_list) { build(:period_list) }
-
-    it 'returns the correct id' do
-      expect(period_list.id).to be_present
-    end
-  end
-
   describe '#exchange_rate_year_ids' do
     subject(:period_list) { build(:period_list) }
 
@@ -27,10 +19,6 @@ RSpec.describe ExchangeRates::PeriodList do
 
   describe '.build' do
     subject(:period_list) { described_class.build(ExchangeRateCurrencyRate::MONTHLY_RATE_TYPE, year) }
-
-    it 'builds a period list with exchange rate periods and years' do
-      expect(period_list).to be_an_instance_of(described_class)
-    end
 
     it 'sets the year correctly' do
       expect(period_list.year).to eq(year)

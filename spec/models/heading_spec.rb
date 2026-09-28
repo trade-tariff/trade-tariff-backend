@@ -90,7 +90,6 @@ RSpec.describe Heading do
     let!(:first_heading) { create(:heading, goods_nomenclature_item_id: '1234000000') }
     let!(:second_heading) { create(:heading, goods_nomenclature_item_id: '4321000000') }
 
-    it { expect(described_class.by_code('1234')).to be_a(Sequel::Dataset) }
     it { expect(described_class.by_code('1234')).to include(first_heading) }
     it { expect(described_class.by_code('1234')).not_to include(second_heading) }
   end

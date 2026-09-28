@@ -35,7 +35,6 @@ RSpec.describe GreenLanes::CategoryAssessmentJson do
         }]'
       end
 
-      it { is_expected.to be_an Array }
       it { is_expected.to all be_instance_of described_class }
       it { is_expected.to have_attributes length: 1 }
 
@@ -72,7 +71,6 @@ RSpec.describe GreenLanes::CategoryAssessmentJson do
         ]'
       end
 
-      it { is_expected.to be_an Array }
       it { is_expected.to all be_instance_of described_class }
       it { is_expected.to have_attributes length: 3 }
     end
@@ -88,7 +86,6 @@ RSpec.describe GreenLanes::CategoryAssessmentJson do
     context 'with valid json file' do
       let(:test_file) { file_fixture 'green_lanes/categorisations.json' }
 
-      it { is_expected.to be_an Array }
       it { is_expected.to all be_instance_of described_class }
       it { is_expected.to all be_frozen }
       it { is_expected.to have_attributes length: 10 }
@@ -134,7 +131,6 @@ RSpec.describe GreenLanes::CategoryAssessmentJson do
     context 'when all read' do
       subject(:categorisation_all) { described_class.all }
 
-      it { is_expected.to be_an Array }
       it { is_expected.to all be_instance_of described_class }
       it { is_expected.to have_attributes length: 10 }
     end
@@ -170,7 +166,6 @@ RSpec.describe GreenLanes::CategoryAssessmentJson do
         allow(s3_object).to receive(:get).and_return(response)
       end
 
-      it { is_expected.to be_an Array }
       it { is_expected.to all be_instance_of described_class }
       it { is_expected.to all be_frozen }
       it { is_expected.to have_attributes length: 1 }
@@ -198,7 +193,6 @@ RSpec.describe GreenLanes::CategoryAssessmentJson do
         described_class.filter regulation_id: 'D000004', measure_type_id: '430'
       end
 
-      it { is_expected.to be_an Array }
       it { is_expected.to have_attributes length: 1 }
       it { expect(categorisation_filter.first).to have_attributes regulation_id: 'D000004', measure_type_id: '430' }
     end
@@ -208,7 +202,6 @@ RSpec.describe GreenLanes::CategoryAssessmentJson do
         described_class.filter regulation_id: '', measure_type_id: '430'
       end
 
-      it { is_expected.to be_an Array }
       it { is_expected.to be_empty }
     end
 

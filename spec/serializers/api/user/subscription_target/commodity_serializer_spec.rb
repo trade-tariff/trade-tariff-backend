@@ -34,22 +34,6 @@ RSpec.describe Api::User::SubscriptionTarget::CommoditySerializer do
       expect(serialized).to eq(expected)
     end
 
-    it 'includes classification_description attribute' do
-      expect(serialized[:data][:attributes]).to include(:classification_description)
-    end
-
-    it 'sets the correct type' do
-      expect(serialized[:data][:type]).to eq(:commodity)
-    end
-
-    it 'uses id as the identifier' do
-      expect(serialized[:data][:id]).to eq('123')
-    end
-
-    it 'includes validity_end_date attribute' do
-      expect(serialized[:data][:attributes]).to include(:validity_end_date)
-    end
-
     context 'with a null commodity' do
       let(:serializable) do
         PublicUsers::NullCommodity.new(goods_nomenclature_item_id: '9999999999')

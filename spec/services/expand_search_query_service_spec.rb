@@ -320,22 +320,6 @@ RSpec.describe ExpandSearchQueryService do
     end
   end
 
-  describe 'Result struct' do
-    let(:query) { 'laptop' }
-
-    it 'returns an ExpandSearchQueryService::Result' do
-      expect(result).to be_a(described_class::Result)
-    end
-
-    it 'responds to expanded_query' do
-      expect(result).to respond_to(:expanded_query)
-    end
-
-    it 'responds to reason' do
-      expect(result).to respond_to(:reason)
-    end
-  end
-
   describe 'caching' do
     let(:query) { 'laptop' }
     let(:memory_store) { ActiveSupport::Cache::MemoryStore.new }

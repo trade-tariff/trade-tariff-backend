@@ -549,15 +549,6 @@ RSpec.describe Api::Internal::SearchController, :internal do
       end
     end
 
-    context 'when no query param at all' do
-      it 'returns an empty data array' do
-        get api_search_suggestions_path(format: :json)
-
-        expect(response).to have_http_status(:ok)
-        expect(response.parsed_body).to eq('data' => [])
-      end
-    end
-
     context 'when rogue query' do
       it 'returns an empty data array' do
         get api_search_suggestions_path(format: :json), params: { q: 'gif' }

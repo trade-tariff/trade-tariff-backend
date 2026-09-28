@@ -5,8 +5,6 @@ RSpec.describe SlackNotifierService do
     allow(Rails.application.config).to receive(:slack_notifier).and_return(slack_notifier)
   end
 
-  it { expect(described_class.call('Hello Slack')).to eq('pong') }
-
   it 'forwards a string message' do
     described_class.call('Hello Slack')
 

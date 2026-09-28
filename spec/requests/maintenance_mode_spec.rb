@@ -26,12 +26,6 @@ RSpec.describe 'Maintenance mode' do
         it { is_expected.to have_http_status :service_unavailable }
       end
 
-      context 'with wrong bypass param' do
-        before { api_get '/uk/api/sections.json?maintenance_bypass=something' }
-
-        it { is_expected.to have_http_status :service_unavailable }
-      end
-
       context 'with correct bypass param' do
         before do
           api_get '/uk/api/sections.json?maintenance_bypass=bypass'

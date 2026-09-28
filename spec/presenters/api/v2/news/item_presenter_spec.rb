@@ -24,12 +24,4 @@ RSpec.describe Api::V2::News::ItemPresenter do
     it { is_expected.to include published }
     it { is_expected.not_to include unpublished }
   end
-
-  describe '.wrap' do
-    subject { described_class.wrap items }
-
-    let(:items) { create_list :news_item, 3 }
-
-    it { is_expected.to all be_instance_of described_class }
-  end
 end

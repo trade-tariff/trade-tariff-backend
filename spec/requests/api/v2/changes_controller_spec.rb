@@ -17,12 +17,6 @@ RSpec.describe Api::V2::ChangesController do
   end
 
   describe '#index' do
-    it 'is successful' do
-      get '/uk/api/changes.json', headers: request_headers(format: :json)
-
-      expect(response).to be_successful
-    end
-
     context 'when nothing has changed' do
       before { get '/uk/api/changes.json', headers: request_headers(format: :json) }
 

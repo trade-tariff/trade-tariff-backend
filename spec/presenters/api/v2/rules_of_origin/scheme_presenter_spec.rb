@@ -8,8 +8,6 @@ RSpec.describe Api::V2::RulesOfOrigin::SchemePresenter do
     build_list :rules_of_origin_rule, 3, scheme_code: scheme.scheme_code
   end
 
-  it { is_expected.to be_instance_of described_class }
-  it { is_expected.to respond_to :rules }
   it { is_expected.to have_attributes rules: }
   it { is_expected.to have_attributes rule_ids: rules.map(&:id_rule) }
   it { is_expected.to have_attributes link_ids: scheme.links.map(&:id) }
@@ -28,17 +26,13 @@ RSpec.describe Api::V2::RulesOfOrigin::SchemePresenter do
     end
 
     it { is_expected.to have_attributes length: 1 }
-    it { is_expected.to all be_instance_of described_class }
     it { expect(presenters[0].rules).to have_attributes length: 1 }
-    it { expect(presenters[0].rule_sets).to be_instance_of Array }
 
     context 'when presenting all schemes' do
       let(:query) { RulesOfOrigin::Query.new(roo_data_set, nil, nil, nil) }
 
       it { is_expected.to have_attributes length: 1 }
-      it { is_expected.to all be_instance_of described_class }
       it { expect(presenters[0].rules).to be_empty }
-      it { expect(presenters[0].rule_sets).to be_instance_of Array }
     end
   end
 

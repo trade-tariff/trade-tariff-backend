@@ -49,7 +49,6 @@ RSpec.describe SimplifiedProceduralCodeMeasure do
       let(:simplified_procedural_code) { '123' }
 
       it { is_expected.to have_attributes(count: 1) }
-      it { is_expected.to all(be_a(described_class)) }
       it { is_expected.to all(have_attributes(simplified_procedural_code: '123')) }
     end
 
@@ -63,7 +62,6 @@ RSpec.describe SimplifiedProceduralCodeMeasure do
       let(:simplified_procedural_code) { '' }
 
       it { is_expected.to have_attributes(count: 2) }
-      it { is_expected.to all(be_a(described_class)) }
     end
   end
 
@@ -78,7 +76,6 @@ RSpec.describe SimplifiedProceduralCodeMeasure do
       let(:date) { Date.new(2021, 12, 31) }
 
       it { is_expected.to have_attributes(count: 1) }
-      it { is_expected.to all(be_a(described_class)) }
       it { expect(from_date.map(&:validity_start_date)).to all(eq Date.new(2022, 1, 1)) }
     end
 
@@ -86,7 +83,6 @@ RSpec.describe SimplifiedProceduralCodeMeasure do
       let(:date) { Date.new(2022, 1, 1) }
 
       it { is_expected.to have_attributes(count: 1) }
-      it { is_expected.to all(be_a(described_class)) }
       it { expect(from_date.map(&:validity_start_date)).to all(eq Date.new(2022, 1, 1)) }
     end
 
@@ -114,7 +110,6 @@ RSpec.describe SimplifiedProceduralCodeMeasure do
       let(:date) { Date.new(2022, 1, 1) }
 
       it { is_expected.to have_attributes(count: 1) }
-      it { is_expected.to all(be_a(described_class)) }
       it { expect(to_date.map(&:validity_end_date)).to all(eq Date.new(2022, 1, 1)) }
     end
 
@@ -122,7 +117,6 @@ RSpec.describe SimplifiedProceduralCodeMeasure do
       let(:date) { Date.new(2022, 1, 3) }
 
       it { is_expected.to have_attributes(count: 1) }
-      it { is_expected.to all(be_a(described_class)) }
       it { expect(to_date.map(&:validity_end_date)).to all(eq Date.new(2022, 1, 1)) }
     end
   end

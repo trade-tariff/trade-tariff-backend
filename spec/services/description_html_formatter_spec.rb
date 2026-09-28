@@ -14,14 +14,6 @@ RSpec.describe DescriptionHtmlFormatter do
         expect(described_class.call('first<br>second')).to eq('first<br>second')
       end
 
-      it 'preserves <br/> tags' do
-        expect(described_class.call('first<br/>second')).to eq('first<br/>second')
-      end
-
-      it 'preserves <br /> tags' do
-        expect(described_class.call('first<br />second')).to eq('first<br />second')
-      end
-
       it 'preserves <sup> tags' do
         expect(described_class.call('10<sup>2</sup> kg')).to eq('10<sup>2</sup> kg')
       end

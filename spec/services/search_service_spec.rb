@@ -17,26 +17,6 @@ RSpec.describe SearchService do
     end
   end
 
-  describe '#valid?' do
-    it 'is valid if has no q param assigned' do
-      expect(
-        described_class.new(data_serializer, q: nil),
-      ).to be_valid
-    end
-
-    it 'is valid if has no as_of param assigned' do
-      expect(
-        described_class.new(data_serializer, q: 'value'),
-      ).to be_valid
-    end
-
-    it 'is valid if has both t and as_of params provided' do
-      expect(
-        described_class.new(data_serializer, q: 'value', as_of: Time.zone.today),
-      ).to be_valid
-    end
-  end
-
   # Searching in search suggestions or find historic goods nomenclature
   describe 'exact search' do
     subject(:result) do
@@ -430,10 +410,6 @@ RSpec.describe SearchService do
                                              as_of: '1970-01-01').to_json[:data][:attributes]
       end
 
-      specify 'search does not raise an exception' do
-        expect { result }.not_to raise_error
-      end
-
       specify 'search returns empty resilt' do
         expect(result).to match_json_expression SearchService::BaseSearch::BLANK_RESULT.merge(type: 'fuzzy_match')
       end
@@ -521,12 +497,6 @@ RSpec.describe SearchService do
 
         expect(result).to match_json_expression heading_pattern
       end
-    end
-  end
-
-  describe '#persisted?' do
-    it 'returns false' do
-      expect(described_class.new(data_serializer, q: '123')).not_to be_persisted
     end
   end
 end

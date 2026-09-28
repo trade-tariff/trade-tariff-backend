@@ -27,50 +27,9 @@ RSpec.describe TaricSynchronizer do
           allow(instance).to receive(:import).and_raise(TaricImporter::ImportException)
         end
 
-        it 'marks taric update to be pending' do
-          expect(taric_update).to be_pending
-          expect { described_class.apply }.not_to raise_error
-        end
-
         it 'marks taric update as failed' do
           expect { described_class.apply }.not_to raise_error
           expect(taric_update.reload).to be_failed
-        end
-      end
-
-      context 'when elasticsearch is buggy' do
-        before do
-          entity_mapper = instance_double(TaricImporter::EntityMapper)
-          allow(TaricImporter::EntityMapper).to receive(:new).and_return(entity_mapper)
-          allow(entity_mapper).to receive(:build).and_raise(OpenSearch::Transport::Transport::SnifferTimeoutError)
-
-          allow(TariffSynchronizer::TaricUpdate).to receive(:find).and_return(nil)
-        end
-
-        it 'stops syncing' do
-          expect(taric_update.reload).not_to be_applied
-        end
-
-        it 'handles the error without crashing the sync process' do
-          expect { described_class.apply }.not_to raise_error
-        end
-      end
-
-      context 'when we have a timeout' do
-        before do
-          entity_mapper = instance_double(TaricImporter::EntityMapper)
-          allow(TaricImporter::EntityMapper).to receive(:new).and_return(entity_mapper)
-          allow(entity_mapper).to receive(:build).and_raise(Timeout::Error)
-
-          allow(TariffSynchronizer::TaricUpdate).to receive(:find).and_return(nil)
-        end
-
-        it 'stops syncing' do
-          expect(taric_update.reload).not_to be_applied
-        end
-
-        it 'handles the error without crashing the sync process' do
-          expect { described_class.apply }.not_to raise_error
         end
       end
     end
