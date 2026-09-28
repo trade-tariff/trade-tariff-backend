@@ -599,21 +599,30 @@ CREATE VIEW uk.search_analytics_classic_outcome_rows AS
 --
 
 CREATE MATERIALIZED VIEW uk.search_analytics_classic_outcome_counts AS
- WITH classified AS (
-         SELECT DISTINCT ON (search_analytics_classic_outcome_rows.service, search_analytics_classic_outcome_rows.reporting_date, search_analytics_classic_outcome_rows.journey_key) search_analytics_classic_outcome_rows.service,
-            search_analytics_classic_outcome_rows.reporting_date,
-                CASE
-                    WHEN (search_analytics_classic_outcome_rows.result_count = 0) THEN 'no_results'::text
-                    ELSE 'results'::text
-                END AS outcome
-           FROM uk.search_analytics_classic_outcome_rows
-          ORDER BY search_analytics_classic_outcome_rows.service, search_analytics_classic_outcome_rows.reporting_date, search_analytics_classic_outcome_rows.journey_key, search_analytics_classic_outcome_rows.observed_at DESC
-        )
  SELECT service,
     reporting_date,
     outcome,
-    count(*) AS searches
-   FROM classified
+    sum(searches) AS searches
+   FROM ( SELECT r.service,
+            r.reporting_date,
+            (j."row" ->> 'outcome'::text) AS outcome,
+            ((j."row" ->> 'searches'::text))::bigint AS searches
+           FROM (uk.search_analytics_query_results r
+             CROSS JOIN LATERAL jsonb_array_elements(r.rows) j("row"))
+          WHERE ((r.name = 'classic_outcomes'::text) AND ((j."row" ->> 'outcome'::text) = ANY (ARRAY['results'::text, 'no_results'::text])) AND ((j."row" ->> 'searches'::text) ~ '^[0-9]+$'::text))
+        UNION ALL
+         SELECT classified.service,
+            classified.reporting_date,
+                CASE
+                    WHEN (classified.result_count = 0) THEN 'no_results'::text
+                    ELSE 'results'::text
+                END AS outcome,
+            1 AS searches
+           FROM ( SELECT DISTINCT ON (search_analytics_classic_outcome_rows.service, search_analytics_classic_outcome_rows.reporting_date, search_analytics_classic_outcome_rows.journey_key) search_analytics_classic_outcome_rows.service,
+                    search_analytics_classic_outcome_rows.reporting_date,
+                    search_analytics_classic_outcome_rows.result_count
+                   FROM uk.search_analytics_classic_outcome_rows
+                  ORDER BY search_analytics_classic_outcome_rows.service, search_analytics_classic_outcome_rows.reporting_date, search_analytics_classic_outcome_rows.journey_key, search_analytics_classic_outcome_rows.observed_at DESC) classified) combined
   GROUP BY service, reporting_date, outcome
   WITH NO DATA;
 
