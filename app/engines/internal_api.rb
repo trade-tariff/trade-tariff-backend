@@ -9,6 +9,10 @@ InternalApi.routes.draw do
       get 'search_suggestions' => 'search#suggestions'
       resources :queued_searches, only: %i[create show]
 
+      namespace :enquiry_form do
+        resources :submissions, only: %i[create]
+      end
+
       # ATaR rulings (and the gold queries generated from them) are a UK/HMRC-specific
       # data source — XI has no equivalent, so both stay behind the same UK-only guard.
       if TradeTariffBackend.uk?

@@ -1,5 +1,5 @@
 module Api
-  module V2
+  module Internal
     class EnquiryForm::SubmissionSerializer
       include JSONAPI::Serializer
 
