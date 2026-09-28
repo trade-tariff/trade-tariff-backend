@@ -3,6 +3,20 @@ RSpec.describe TariffChangesService::TransformRecords do
 
   let(:operation_date) { Date.parse('2024-08-12') }
 
+  describe '.call' do
+    it 'creates an instance and calls #call' do
+      instance = described_class.new(operation_date)
+      allow(described_class).to receive(:new).with(operation_date, nil).and_return(instance)
+      allow(instance).to receive(:call).and_return([])
+
+      result = described_class.call(operation_date, nil)
+
+      expect(described_class).to have_received(:new).with(operation_date, nil)
+      expect(instance).to have_received(:call)
+      expect(result).to eq([])
+    end
+  end
+
   describe '#initialize' do
     it 'converts string date to Date object' do
       string_service = described_class.new('2024-08-12')
