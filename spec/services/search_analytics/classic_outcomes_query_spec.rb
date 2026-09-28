@@ -19,4 +19,8 @@ RSpec.describe SearchAnalytics::ClassicOutcomesQuery do
     ])
     expect(rows.to_json).not_to include('journey_key')
   end
+
+  it 'stores nothing when the day has no classic completions' do
+    expect(described_class.collapse([])).to eq([])
+  end
 end
